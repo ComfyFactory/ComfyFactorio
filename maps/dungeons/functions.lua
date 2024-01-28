@@ -7,8 +7,8 @@ local LOOT_EVOLUTION_SCALE_FACTOR = 0.9
 local LOOT_MULTIPLIER = 3000
 local EVOLUTION_PER_FLOOR = 0.06
 
-local BiterRaffle = require 'functions.biter_raffle'
-local LootRaffle = require 'functions.loot_raffle'
+local BiterRaffle = require 'utils.functions.biter_raffle'
+local LootRaffle = require 'utils.functions.loot_raffle'
 local Get_noise = require 'utils.get_noise'
 local DungeonsTable = require 'maps.dungeons.table'
 
@@ -22,28 +22,30 @@ local math_floor = math.floor
 -- floor 4 = 8512 .. 9024
 -- floor 9 = 16512 .. 17024
 -- floor 19 = 32512 .. 33024
-LootRaffle.TweakItemWorth({
-	['modular-armor'] = 512, -- floors 1-5 from research.lua
-	['power-armor'] = 4096, -- floors 8-13 from research.lua
-	['personal-laser-defense-equipment'] = 1536, -- floors 10-14 from research.lua
-	['power-armor-mk2'] = 24576, -- floors 14-21 from research.lua
-	-- reduce ammo/follower rates
-    ['firearm-magazine'] = 8,
-    ['piercing-rounds-magazine'] = 16,
-    ['uranium-rounds-magazine'] = 128,
-    ['shotgun-shell'] = 8,
-    ['piercing-shotgun-shell'] = 64,
-    ['flamethrower-ammo'] = 128,
-    ['rocket'] = 16,
-    ['explosive-rocket'] = 128,
-    ['grenade'] = 32,
-    ['cluster-grenade'] = 128,
-    ['poison-capsule'] = 64,
-    ['slowdown-capsule'] = 32,
-    ['defender-capsule'] = 96,
-    ['distractor-capsule'] = 512,
-    ['destroyer-capsule'] = 2048,
-})
+LootRaffle.TweakItemWorth(
+    {
+        ['modular-armor'] = 512, -- floors 1-5 from research.lua
+        ['power-armor'] = 4096, -- floors 8-13 from research.lua
+        ['personal-laser-defense-equipment'] = 1536, -- floors 10-14 from research.lua
+        ['power-armor-mk2'] = 24576, -- floors 14-21 from research.lua
+        -- reduce ammo/follower rates
+        ['firearm-magazine'] = 8,
+        ['piercing-rounds-magazine'] = 16,
+        ['uranium-rounds-magazine'] = 128,
+        ['shotgun-shell'] = 8,
+        ['piercing-shotgun-shell'] = 64,
+        ['flamethrower-ammo'] = 128,
+        ['rocket'] = 16,
+        ['explosive-rocket'] = 128,
+        ['grenade'] = 32,
+        ['cluster-grenade'] = 128,
+        ['poison-capsule'] = 64,
+        ['slowdown-capsule'] = 32,
+        ['defender-capsule'] = 96,
+        ['distractor-capsule'] = 512,
+        ['destroyer-capsule'] = 2048
+    }
+)
 
 function Public.get_dungeon_evolution_factor(surface_index)
     local dungeontable = DungeonsTable.get_dungeontable()
@@ -62,8 +64,8 @@ local function blacklist(surface_index, special)
     local dungeontable = DungeonsTable.get_dungeontable()
     local evolution_factor = Public.get_loot_evolution_factor(surface_index)
     if special then
-	-- treasure rooms act as if they are 3 levels farther down.
-	evolution_factor = evolution_factor + 3 * EVOLUTION_PER_FLOOR
+        -- treasure rooms act as if they are 3 levels farther down.
+        evolution_factor = evolution_factor + 3 * EVOLUTION_PER_FLOOR
     end
     local blacklists = {}
     --general unused items on dungeons
@@ -74,7 +76,7 @@ local function blacklist(surface_index, special)
             blacklists['power-armor-mk2'] = true
             blacklists['fusion-reactor-equipment'] = true
             blacklists['rocket-silo'] = true
-	    blacklists['atomic-bomb'] = true
+            blacklists['atomic-bomb'] = true
         end
         if evolution_factor < 0.7 then -- floor 14
             blacklists['energy-shield-mk2-equipment'] = true
@@ -85,11 +87,11 @@ local function blacklist(surface_index, special)
             blacklists['artillery-wagon'] = true
             blacklists['power-armor'] = true
         end
-	if evolution_factor < 0.55 then -- floor 11
+        if evolution_factor < 0.55 then -- floor 11
             blacklists['discharge-defense-equipment'] = true
             blacklists['discharge-defense-remote'] = true
             blacklists['nuclear-reactor'] = true
-	end
+        end
         if evolution_factor < 0.4 then -- floor 8
             blacklists['steam-turbine'] = true
             blacklists['heat-exchanger'] = true
@@ -144,10 +146,10 @@ function Public.get_common_resource_amount(surface_index)
     if dungeontable.tiered then
         amount = amount / 8
         local floor = surface_index - dungeontable.original_surface_index
-	-- rocks stop going up here, so more than make up for it in resources on ground
-	if floor > FLOOR_FOR_MAX_ROCK_ORE then
-	    amount = amount * (1+(floor - FLOOR_FOR_MAX_ROCK_ORE)/10)
-	end
+        -- rocks stop going up here, so more than make up for it in resources on ground
+        if floor > FLOOR_FOR_MAX_ROCK_ORE then
+            amount = amount * (1 + (floor - FLOOR_FOR_MAX_ROCK_ORE) / 10)
+        end
     end
     return amount
 end
@@ -191,7 +193,7 @@ function Public.epic_loot_crate(surface, position, special)
     local dungeontable = DungeonsTable.get_dungeontable()
     local loot_value = get_loot_value(surface.index, 8) + math_random(512, 1024)
     if special then
-	loot_value = loot_value * 1.5
+        loot_value = loot_value * 1.5
     end
     local bonus_loot = nil
     if dungeontable.tiered and loot_value > 32000 and Public.get_dungeon_evolution_factor(surface.index) > 1 then
@@ -409,10 +411,10 @@ function Public.on_marked_for_deconstruction(event)
 end
 
 local function get_ore_amount(surface_index)
-   local floor = surface_index - DungeonsTable.get_dungeontable().original_surface_index
+    local floor = surface_index - DungeonsTable.get_dungeontable().original_surface_index
 
-   local amount = FLOOR_ZERO_ROCK_ORE + ROCK_ORE_INCREASE_PER_FLOOR * math.min(FLOOR_FOR_MAX_ROCK_ORE, floor)
-   return math_random(math_floor(amount * 0.7), math_floor(amount * 1.3))
+    local amount = FLOOR_ZERO_ROCK_ORE + ROCK_ORE_INCREASE_PER_FLOOR * math.min(FLOOR_FOR_MAX_ROCK_ORE, floor)
+    return math_random(math_floor(amount * 0.7), math_floor(amount * 1.3))
 end
 
 local function reward_ores(amount, mined_loot, surface, player, entity)
@@ -470,15 +472,15 @@ function Public.rocky_loot(event)
     local player = game.players[event.player_index]
     local amount = math.ceil(get_ore_amount(player.surface.index))
     local rock_mining
-    local floor = player.surface.index - DungeonsTable.get_dungeontable().original_surface_index;
+    local floor = player.surface.index - DungeonsTable.get_dungeontable().original_surface_index
     if floor < 10 then
-       -- early game science uses less copper and more iron/stone
-       rock_mining = {'iron-ore', 'iron-ore', 'iron-ore', 'iron-ore', 'copper-ore', 'copper-ore', 'stone', 'stone', 'coal', 'coal', 'coal'}
+        -- early game science uses less copper and more iron/stone
+        rock_mining = {'iron-ore', 'iron-ore', 'iron-ore', 'iron-ore', 'copper-ore', 'copper-ore', 'stone', 'stone', 'coal', 'coal', 'coal'}
     else
-	-- end game prod 3 base uses (for all-sciences) 1 stone : 2 coal : 3.5 copper : 4.5 iron
-	-- this is a decent approximation which will still require some modest amount of mining setup
-	-- coal gets 3 to compensate for coal-based power generation
-	rock_mining = {'iron-ore', 'iron-ore', 'iron-ore', 'iron-ore', 'copper-ore', 'copper-ore', 'copper-ore', 'stone', 'coal', 'coal', 'coal'}
+        -- end game prod 3 base uses (for all-sciences) 1 stone : 2 coal : 3.5 copper : 4.5 iron
+        -- this is a decent approximation which will still require some modest amount of mining setup
+        -- coal gets 3 to compensate for coal-based power generation
+        rock_mining = {'iron-ore', 'iron-ore', 'iron-ore', 'iron-ore', 'copper-ore', 'copper-ore', 'copper-ore', 'stone', 'coal', 'coal', 'coal'}
     end
     local mined_loot = rock_mining[math_random(1, #rock_mining)]
     local text = '+' .. amount .. ' [item=' .. mined_loot .. ']'

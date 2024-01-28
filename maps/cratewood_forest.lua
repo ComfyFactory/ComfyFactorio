@@ -12,7 +12,7 @@ local math_floor = math.floor
 local math_abs = math.abs
 local math_sqrt = math.sqrt
 
-local LootRaffle = require 'functions.loot_raffle'
+local LootRaffle = require 'utils.functions.loot_raffle'
 
 local function get_noise(name, pos)
     local seed = game.surfaces[1].map_gen_settings.seed

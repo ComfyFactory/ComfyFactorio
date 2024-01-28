@@ -25,7 +25,7 @@ end
 
 local function call_handlers(handlers, event)
     for i = 1, #handlers do
-        if _DEBUG then
+        if _DEBUG_HALT_ON_ERR then
             local handler = handlers[i]
             handler(event)
         else

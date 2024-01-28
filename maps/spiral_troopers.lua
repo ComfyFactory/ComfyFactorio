@@ -6,7 +6,7 @@ require 'modules.dynamic_landfill'
 require 'modules.spawners_contain_biters'
 require 'modules.satellite_score'
 
-local map_functions = require 'tools.map_functions'
+local map_functions = require 'utils.tools.map_functions'
 --require "rewards"
 
 local function shuffle(tbl)
@@ -627,8 +627,7 @@ local function on_entity_died(event)
     end
     if entity_drop_amount[event.entity.name] then
         if game.forces.enemy.evolution_factor < 0.5 then
-            local amount =
-                math.ceil(math.random(entity_drop_amount[event.entity.name].low, entity_drop_amount[event.entity.name].high) * (0.5 - game.forces.enemy.evolution_factor) * 2, 0)
+            local amount = math.ceil(math.random(entity_drop_amount[event.entity.name].low, entity_drop_amount[event.entity.name].high) * (0.5 - game.forces.enemy.evolution_factor) * 2, 0)
             event.entity.surface.spill_item_stack(event.entity.position, {name = ore_spill_raffle[math.random(1, #ore_spill_raffle)], count = amount}, true)
         end
     end

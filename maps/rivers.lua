@@ -10,7 +10,7 @@ local event = require 'utils.event'
 local table_insert = table.insert
 local math_random = math.random
 local simplex_noise = require 'utils.simplex_noise'.d2
-local map_functions = require 'tools.map_functions'
+local map_functions = require 'utils.tools.map_functions'
 
 local disabled_for_deconstruction = {
     ['fish'] = true

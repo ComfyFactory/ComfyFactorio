@@ -2,9 +2,9 @@ local Event = require 'utils.event'
 local Evolution = require 'maps.scrap_towny_ffa.evolution'
 local Town_center = require 'maps.scrap_towny_ffa.town_center'
 local Scrap = require 'maps.scrap_towny_ffa.scrap'
-local unearthing_worm = require 'functions.unearthing_worm'
-local unearthing_biters = require 'functions.unearthing_biters'
-local tick_tack_trap = require 'functions.tick_tack_trap'
+local unearthing_worm = require 'utils.functions.unearthing_worm'
+local unearthing_biters = require 'utils.functions.unearthing_biters'
+local tick_tack_trap = require 'utils.functions.tick_tack_trap'
 
 local math_random = math.random
 

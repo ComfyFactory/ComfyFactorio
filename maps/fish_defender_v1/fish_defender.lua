@@ -18,8 +18,8 @@ local event = require 'utils.event'
 local Server = require 'utils.server'
 local boss_biter = require 'maps.fish_defender.boss_biters'
 local Score = require 'utils.gui.score'
-require 'functions.boss_unit'
-local map_functions = require 'tools.map_functions'
+require 'utils.functions.boss_unit'
+local map_functions = require 'utils.tools.map_functions'
 local Difficulty = require 'modules.difficulty_vote'
 local math_random = math.random
 local insert = table.insert

@@ -1,5 +1,5 @@
 --luacheck: ignore
-require 'functions.maze'
+require 'utils.functions.maze'
 
 local event = require 'utils.event'
 

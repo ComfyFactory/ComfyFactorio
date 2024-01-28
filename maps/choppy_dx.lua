@@ -4,17 +4,17 @@
 
 require 'modules.satellite_score'
 require 'modules.spawners_contain_biters'
-require 'functions.create_entity_chain'
-require 'functions.create_tile_chain'
-require 'tools.map_functions'
+require 'utils.functions.create_entity_chain'
+require 'utils.functions.create_tile_chain'
+require 'utils.tools.map_functions'
 
 require 'modules.surrounded_by_worms'
 require 'modules.biter_noms_you'
 
 local Map = require 'modules.map_info'
-local unearthing_worm = require 'functions.unearthing_worm'
-local unearthing_biters = require 'functions.unearthing_biters'
-local tick_tack_trap = require 'functions.tick_tack_trap'
+local unearthing_worm = require 'utils.functions.unearthing_worm'
+local unearthing_biters = require 'utils.functions.unearthing_biters'
+local tick_tack_trap = require 'utils.functions.tick_tack_trap'
 
 local simplex_noise = require 'utils.simplex_noise'.d2
 local Event = require 'utils.event'

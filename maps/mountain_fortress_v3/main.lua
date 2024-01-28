@@ -186,6 +186,7 @@ function Public.reset_map()
     AntiGrief.damage_entity_threshold(20)
     AntiGrief.decon_surface_blacklist(surface.name)
     AntiGrief.filtered_types_on_decon({'tree', 'simple-entity', 'fish'})
+    AntiGrief.set_limit_per_table(0)
 
     PL.show_roles_in_list(true)
     PL.rpg_enabled(true)

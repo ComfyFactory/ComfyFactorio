@@ -16,11 +16,11 @@ require 'modules.trees_randomly_die'
 
 require 'maps.overgrowth_map_info'
 
-local Reset = require 'functions.soft_reset'
-local kaboom = require 'functions.omegakaboom'
+local Reset = require 'utils.functions.soft_reset'
+local kaboom = require 'utils.functions.omegakaboom'
 local Difficulty = require 'modules.difficulty_vote'
 
-local unearthing_biters = require 'functions.unearthing_biters'
+local unearthing_biters = require 'utils.functions.unearthing_biters'
 
 local event = require 'utils.event'
 local math_random = math.random

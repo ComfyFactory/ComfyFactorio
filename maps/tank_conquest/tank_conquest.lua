@@ -118,7 +118,7 @@ local table_of_slots = {
 
 local table_of_ores = {'iron-ore', 'copper-ore', 'stone', 'coal'}
 
-local map_functions = require 'tools.map_functions'
+local map_functions = require 'utils.tools.map_functions'
 
 local event = require 'utils.event'
 
@@ -457,8 +457,7 @@ function draw_gui_status(player)
 
     element_label.style.font_color = table_of_colors.white
 
-    local element_label =
-        element_frame.add({type = 'label', caption = math.floor(global.table_of_properties[global.table_of_properties[player.force.name].enemy].available_tickets)})
+    local element_label = element_frame.add({type = 'label', caption = math.floor(global.table_of_properties[global.table_of_properties[player.force.name].enemy].available_tickets)})
 
     element_label.style.left_padding = 20
 
@@ -836,10 +835,7 @@ function create_a_base(force_name, base_position)
         end
 
         if
-            object.name == 'infinity-chest' or object.name == 'substation' or object.name == 'big-electric-pole' or object.name == 'medium-electric-pole' or
-                object.name == 'inserter' or
-                object.name == 'accumulator' or
-                object.name == 'solar-panel' or
+            object.name == 'infinity-chest' or object.name == 'substation' or object.name == 'big-electric-pole' or object.name == 'medium-electric-pole' or object.name == 'inserter' or object.name == 'accumulator' or object.name == 'solar-panel' or
                 object.name == 'gun-turret'
          then
             entity.destructible = false
@@ -896,14 +892,11 @@ function create_a_spot(spot_name, spot_position, spot_blueprint)
         }
     )
 
-    local draw_spot_force =
-        rendering.draw_text({text = spot.force.name, surface = surface, target = {spot.position.x, spot.position.y + 0.5}, color = spot.color, scale = 5, alignment = 'center'})
+    local draw_spot_force = rendering.draw_text({text = spot.force.name, surface = surface, target = {spot.position.x, spot.position.y + 0.5}, color = spot.color, scale = 5, alignment = 'center'})
 
-    local draw_spot_value =
-        rendering.draw_text({text = spot.value, surface = surface, target = {spot.position.x, spot.position.y - 4}, color = spot.color, scale = 5, alignment = 'center'})
+    local draw_spot_value = rendering.draw_text({text = spot.value, surface = surface, target = {spot.position.x, spot.position.y - 4}, color = spot.color, scale = 5, alignment = 'center'})
 
-    local draw_spot_name =
-        rendering.draw_text({text = spot.name, surface = surface, target = {spot.position.x, spot.position.y - 2}, color = spot.color, scale = 5, alignment = 'center'})
+    local draw_spot_name = rendering.draw_text({text = spot.name, surface = surface, target = {spot.position.x, spot.position.y - 2}, color = spot.color, scale = 5, alignment = 'center'})
 
     local table_of_drawings = {name = draw_spot_name, value = draw_spot_value, force = draw_spot_force, border = draw_spot_border}
 
@@ -957,10 +950,7 @@ function create_a_spot(spot_name, spot_position, spot_blueprint)
         table.insert(table_of_entities, entity)
     end
 
-    table.insert(
-        global.table_of_spots,
-        {properties = table_of_properties, drawings = table_of_drawings, players = table_of_players, positions = table_of_positions, entities = table_of_entities}
-    )
+    table.insert(global.table_of_spots, {properties = table_of_properties, drawings = table_of_drawings, players = table_of_players, positions = table_of_positions, entities = table_of_entities})
 end
 
 function create_a_point_of_interest(poi_blueprint, poi_position)
@@ -1139,10 +1129,7 @@ function event_on_click_join(player)
     -- draw_gui_spawn( player ) -- only for tests
 
     for _, spot in pairs(global.table_of_spots) do
-        player.force.chart(
-            game.surfaces.tank_conquest,
-            {{x = spot.properties.position.x - 10, y = spot.properties.position.y - 10}, {x = spot.properties.position.x + 10, y = spot.properties.position.y + 10}}
-        )
+        player.force.chart(game.surfaces.tank_conquest, {{x = spot.properties.position.x - 10, y = spot.properties.position.y - 10}, {x = spot.properties.position.x + 10, y = spot.properties.position.y + 10}})
     end
 
     game.print(player.name .. ' joined ' .. global.table_of_properties[player.force.name].icon)
@@ -1240,10 +1227,7 @@ local function on_tick(event)
 
                 for _, player in pairs(game.connected_players) do
                     if player.force.name == spot.properties.force.name and spot.properties.value > 0 then
-                        player.force.chart(
-                            game.surfaces.tank_conquest,
-                            {{x = spot.properties.position.x - 10, y = spot.properties.position.y - 10}, {x = spot.properties.position.x + 10, y = spot.properties.position.y + 10}}
-                        )
+                        player.force.chart(game.surfaces.tank_conquest, {{x = spot.properties.position.x - 10, y = spot.properties.position.y - 10}, {x = spot.properties.position.x + 10, y = spot.properties.position.y + 10}})
                     end
                 end
 
@@ -1294,10 +1278,7 @@ local function on_tick(event)
                 global.table_of_properties.countdown_in_seconds = global.table_of_properties.countdown_in_seconds - 1
             end
 
-            if
-                global.table_of_properties.countdown_in_seconds < 0 or global.table_of_properties.force_player_one.available_tickets < 0 or
-                    global.table_of_properties.force_player_two.available_tickets < 0
-             then
+            if global.table_of_properties.countdown_in_seconds < 0 or global.table_of_properties.force_player_one.available_tickets < 0 or global.table_of_properties.force_player_two.available_tickets < 0 then
                 if global.table_of_properties.force_player_one.available_tickets == global.table_of_properties.force_player_two.available_tickets then
                     game.print('The battle is over. The round ended in a draw.')
                 elseif global.table_of_properties.force_player_one.available_tickets > global.table_of_properties.force_player_two.available_tickets then
@@ -1493,23 +1474,11 @@ local function on_tick(event)
         if game.surfaces.tank_conquest ~= nil and #game.connected_players and #global.table_of_spots then
             for _, player in pairs(game.connected_players) do
                 for _, spot in pairs(global.table_of_spots) do
-                    if
-                        player.force.is_chunk_charted(
-                            game.surfaces.tank_conquest,
-                            {x = math.floor(spot.properties.position.x / 32), y = math.floor(spot.properties.position.y / 32)}
-                        )
-                     then
-                        local chart_tags =
-                            player.force.find_chart_tags(
-                            game.surfaces.tank_conquest,
-                            {{spot.properties.position.x - 1, spot.properties.position.y - 1}, {spot.properties.position.x + 1, spot.properties.position.y + 1}}
-                        )
+                    if player.force.is_chunk_charted(game.surfaces.tank_conquest, {x = math.floor(spot.properties.position.x / 32), y = math.floor(spot.properties.position.y / 32)}) then
+                        local chart_tags = player.force.find_chart_tags(game.surfaces.tank_conquest, {{spot.properties.position.x - 1, spot.properties.position.y - 1}, {spot.properties.position.x + 1, spot.properties.position.y + 1}})
 
                         if #chart_tags == 0 then
-                            player.force.add_chart_tag(
-                                game.surfaces.tank_conquest,
-                                {icon = {type = 'virtual', name = 'signal-' .. spot.properties.name}, position = spot.properties.position}
-                            )
+                            player.force.add_chart_tag(game.surfaces.tank_conquest, {icon = {type = 'virtual', name = 'signal-' .. spot.properties.name}, position = spot.properties.position})
                         end
                     end
                 end
@@ -1712,10 +1681,7 @@ local function on_player_changed_position(event)
         end
 
         for _, position in pairs(spot_item.positions) do
-            if
-                math.floor(player.position.x) == position.x and math.floor(player.position.y) == position.y or
-                    math.ceil(player.position.x) == position.x and math.ceil(player.position.y) == position.y
-             then
+            if math.floor(player.position.x) == position.x and math.floor(player.position.y) == position.y or math.ceil(player.position.x) == position.x and math.ceil(player.position.y) == position.y then
                 if global.table_of_spots[spot_index].players[player.index] == nil then
                     global.table_of_spots[spot_index].players[player.index] = player
 
@@ -1805,16 +1771,12 @@ local function on_player_died(event)
 
     if event.cause and event.cause.valid then
         if event.cause.name == 'character' then
-            player_death_message =
-                global.table_of_properties[player.force.name].icon ..
-                ' ' .. player.name .. ' was killed by ' .. global.table_of_properties[event.cause.player.force.name].icon .. ' ' .. event.cause.player.name .. '.'
+            player_death_message = global.table_of_properties[player.force.name].icon .. ' ' .. player.name .. ' was killed by ' .. global.table_of_properties[event.cause.player.force.name].icon .. ' ' .. event.cause.player.name .. '.'
         elseif event.cause.name == 'car' or event.cause.name == 'tank' or event.cause.name == 'train' then
             local driver = event.cause.get_driver()
 
             if driver.player then
-                player_death_message =
-                    global.table_of_properties[player.force.name].icon ..
-                    ' ' .. player.name .. ' was killed with a vehicle by ' .. global.table_of_properties[driver.player.force.name].icon .. ' ' .. driver.player.name .. '.'
+                player_death_message = global.table_of_properties[player.force.name].icon .. ' ' .. player.name .. ' was killed with a vehicle by ' .. global.table_of_properties[driver.player.force.name].icon .. ' ' .. driver.player.name .. '.'
             else
                 player_death_message = global.table_of_properties[player.force.name].icon .. ' ' .. player.name .. ' was killed by run over.'
             end

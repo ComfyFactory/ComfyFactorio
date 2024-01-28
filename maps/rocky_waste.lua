@@ -163,8 +163,8 @@ local function on_player_joined_game(event)
     end
 end
 
-local unearthing_worm = require 'functions.unearthing_worm'
-local unearthing_biters = require 'functions.unearthing_biters'
+local unearthing_worm = require 'utils.functions.unearthing_worm'
+local unearthing_biters = require 'utils.functions.unearthing_biters'
 
 local function on_player_mined_entity(event)
     local entity = event.entity

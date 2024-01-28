@@ -1,6 +1,7 @@
 require 'utils.data_stages'
 _LIFECYCLE = _STAGE.control -- Control stage
 _DEBUG = false
+_DEBUG_HALT_ON_ERR = false
 _DUMP_ENV = false
 _PROFILE = false
 _PROFILE_ON_INIT = false
@@ -251,14 +252,14 @@ require 'utils.remote_chunks'
 ---------------------------------------------------------------
 
 ---------------- MOSTLY TERRAIN LAYOUTS HERE ----------------
---require 'terrain_layouts.winter'
---require 'terrain_layouts.caves'
---require 'terrain_layouts.cone_to_east'
---require 'terrain_layouts.biters_and_resources_east'
---require 'terrain_layouts.scrap_01'
---require 'terrain_layouts.scrap_02'
---require 'terrain_layouts.watery_world'
---require 'terrain_layouts.tree_01'
+--require 'utils.terrain_layouts.winter'
+--require 'utils.terrain_layouts.caves'
+--require 'utils.terrain_layouts.cone_to_east'
+--require 'utils.terrain_layouts.biters_and_resources_east'
+--require 'utils.terrain_layouts.scrap_01'
+--require 'utils.terrain_layouts.scrap_02'
+--require 'utils.terrain_layouts.watery_world'
+--require 'utils.terrain_layouts.tree_01'
 ---------------------------------------------------------------
 
 --- this file exists only for the panel to sync and start from within the panel

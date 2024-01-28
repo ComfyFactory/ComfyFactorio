@@ -5,9 +5,9 @@ local Chrono = require 'maps.chronosphere.chrono'
 local Upgrades = require 'maps.chronosphere.upgrades'
 local Public = {}
 
-local tick_tack_trap = require 'functions.tick_tack_trap'
-local unearthing_worm = require 'functions.unearthing_worm'
-local unearthing_biters = require 'functions.unearthing_biters'
+local tick_tack_trap = require 'utils.functions.tick_tack_trap'
+local unearthing_worm = require 'utils.functions.unearthing_worm'
+local unearthing_biters = require 'utils.functions.unearthing_biters'
 
 local math_random = math.random
 local math_floor = math.floor
@@ -162,10 +162,7 @@ function Public.shred_simple_entities(entity)
     if game.forces.enemy.evolution_factor < 0.25 then
         return
     end
-    local simple_entities =
-        entity.surface.find_entities_filtered(
-        {type = {'simple-entity', 'tree'}, area = {{entity.position.x - 3, entity.position.y - 3}, {entity.position.x + 3, entity.position.y + 3}}}
-    )
+    local simple_entities = entity.surface.find_entities_filtered({type = {'simple-entity', 'tree'}, area = {{entity.position.x - 3, entity.position.y - 3}, {entity.position.x + 3, entity.position.y + 3}}})
     for _, simple_entity in pairs(simple_entities) do
         if simple_entity.valid then
             simple_entity.destroy()
@@ -447,10 +444,7 @@ end
 
 function Public.check_if_overstayed()
     local objective = Chrono_table.get_table()
-    if
-        objective.passivetimer * objective.passive_chronocharge_rate > (objective.chronochargesneeded * 0.75) and
-            objective.chronojumps >= Balance.jumps_until_overstay_is_on(Difficulty.get().difficulty_vote_value)
-     then
+    if objective.passivetimer * objective.passive_chronocharge_rate > (objective.chronochargesneeded * 0.75) and objective.chronojumps >= Balance.jumps_until_overstay_is_on(Difficulty.get().difficulty_vote_value) then
         objective.overstaycount = objective.overstaycount + 1
     end
 end

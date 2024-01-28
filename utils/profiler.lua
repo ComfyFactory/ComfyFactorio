@@ -251,15 +251,15 @@ function Public.stop(averageMs, message)
 end
 ignored_functions[Public.stop] = true
 
-Event.on_init(
-    function()
-        if _PROFILE and _PROFILE_ON_INIT then
+if _PROFILE and _PROFILE_ON_INIT then
+    Event.on_init(
+        function()
             game.print('[PROFILER] Started!')
             log('[PROFILER] Started!')
             Public.start()
             Task.set_timeout_in_ticks(3600, stop_profiler_token)
         end
-    end
-)
+    )
+end
 
 return Public

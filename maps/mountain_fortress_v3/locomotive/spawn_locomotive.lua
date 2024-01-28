@@ -1,7 +1,7 @@
 local Public = require 'maps.mountain_fortress_v3.table'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local Task = require 'utils.task_token'
-local MapFunctions = require 'tools.map_functions'
+local MapFunctions = require 'utils.tools.map_functions'
 
 local random = math.random
 local floor = math.floor

@@ -2,7 +2,7 @@ require 'modules.no_deconstruction_of_neutral_entities'
 require 'modules.satellite_score'
 require 'modules.mineable_wreckage_yields_scrap'
 
-local LootRaffle = require 'functions.loot_raffle'
+local LootRaffle = require 'utils.functions.loot_raffle'
 local Get_noise = require 'utils.get_noise'
 local math_random = math.random
 local math_floor = math.floor

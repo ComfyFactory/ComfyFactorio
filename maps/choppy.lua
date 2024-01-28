@@ -5,17 +5,17 @@ require 'modules.dynamic_landfill'
 require 'modules.satellite_score'
 require 'modules.spawners_contain_biters'
 local Map = require 'modules.map_info'
-local unearthing_worm = require 'functions.unearthing_worm'
-local unearthing_biters = require 'functions.unearthing_biters'
-local tick_tack_trap = require 'functions.tick_tack_trap'
-local create_entity_chain = require 'functions.create_entity_chain'
-local create_tile_chain = require 'functions.create_tile_chain'
+local unearthing_worm = require 'utils.functions.unearthing_worm'
+local unearthing_biters = require 'utils.functions.unearthing_biters'
+local tick_tack_trap = require 'utils.functions.tick_tack_trap'
+local create_entity_chain = require 'utils.functions.create_entity_chain'
+local create_tile_chain = require 'utils.functions.create_tile_chain'
 
 local simplex_noise = require 'utils.simplex_noise'.d2
 local event = require 'utils.event'
 local table_insert = table.insert
 local math_random = math.random
-local map_functions = require 'tools.map_functions'
+local map_functions = require 'utils.tools.map_functions'
 
 local disabled_for_deconstruction = {
     ['fish'] = true,
@@ -164,9 +164,7 @@ local function process_tile(surface, pos, tile, seed)
                 surface.create_entity({name = 'tree-01', position = pos})
             end
         end
-        surface.create_decoratives(
-            {check_collision = false, decoratives = {{name = decos_inside_forest[math_random(1, #decos_inside_forest)], position = pos, amount = math_random(1, 2)}}}
-        )
+        surface.create_decoratives({check_collision = false, decoratives = {{name = decos_inside_forest[math_random(1, #decos_inside_forest)], position = pos, amount = math_random(1, 2)}}})
         return
     end
 
@@ -180,9 +178,7 @@ local function process_tile(surface, pos, tile, seed)
                 surface.create_entity({name = 'tree-02-red', position = pos})
             end
         end
-        surface.create_decoratives(
-            {check_collision = false, decoratives = {{name = decos_inside_forest[math_random(1, #decos_inside_forest)], position = pos, amount = math_random(1, 2)}}}
-        )
+        surface.create_decoratives({check_collision = false, decoratives = {{name = decos_inside_forest[math_random(1, #decos_inside_forest)], position = pos, amount = math_random(1, 2)}}})
         return
     end
 
@@ -387,11 +383,7 @@ local function on_entity_died(event)
         return
     end
     if event.entity.type == 'tree' then
-        for _, entity in pairs(
-            event.entity.surface.find_entities_filtered(
-                {area = {{event.entity.position.x - 4, event.entity.position.y - 4}, {event.entity.position.x + 4, event.entity.position.y + 4}}, name = 'fire-flame-on-tree'}
-            )
-        ) do
+        for _, entity in pairs(event.entity.surface.find_entities_filtered({area = {{event.entity.position.x - 4, event.entity.position.y - 4}, {event.entity.position.x + 4, event.entity.position.y + 4}}, name = 'fire-flame-on-tree'})) do
             if entity.valid then
                 entity.destroy()
             end

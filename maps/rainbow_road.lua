@@ -1,8 +1,8 @@
 --luacheck: ignore
 local event = require 'utils.event'
 local simplex_noise = require 'utils.simplex_noise'.d2
-local rainbow_colors = require 'tools.rainbow_colors'
-local map_functions = require 'tools.map_functions'
+local rainbow_colors = require 'utils.tools.rainbow_colors'
+local map_functions = require 'utils.tools.map_functions'
 require 'modules.satellite_score'
 
 local ore_spawn_raffle = {'iron-ore', 'iron-ore', 'iron-ore', 'iron-ore', 'copper-ore', 'copper-ore', 'copper-ore', 'coal', 'coal', 'coal', 'stone', 'uranium-ore', 'crude-oil'}

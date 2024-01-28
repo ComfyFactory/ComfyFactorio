@@ -1,7 +1,7 @@
 local Event = require 'utils.event'
 local Server = require 'utils.server'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
-local SoftReset = require 'functions.soft_reset'
+local SoftReset = require 'utils.functions.soft_reset'
 local Token = require 'utils.token'
 
 local math_random = math.random

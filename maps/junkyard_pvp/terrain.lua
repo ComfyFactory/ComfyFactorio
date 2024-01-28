@@ -3,7 +3,7 @@ local math_abs = math.abs
 local math_random = math.random
 local math_floor = math.floor
 local Treasure = require 'maps.junkyard_pvp.treasure'
-local Map_functions = require 'tools.map_functions'
+local Map_functions = require 'utils.tools.map_functions'
 local simplex_noise = require 'utils.simplex_noise'.d2
 local rock_raffle = {'sand-rock-big', 'sand-rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-huge'}
 local spawner_raffle = {'biter-spawner', 'biter-spawner', 'biter-spawner', 'spitter-spawner'}
@@ -96,11 +96,7 @@ function Public.create_mirror_surface()
             end
         end
     end
-    for _, e in pairs(
-        surface.find_entities_filtered(
-            {area = {{cargo_wagon_position.x - r, cargo_wagon_position.y - r}, {cargo_wagon_position.x + r, cargo_wagon_position.y + r}}, force = {'neutral', 'enemy'}}
-        )
-    ) do
+    for _, e in pairs(surface.find_entities_filtered({area = {{cargo_wagon_position.x - r, cargo_wagon_position.y - r}, {cargo_wagon_position.x + r, cargo_wagon_position.y + r}}, force = {'neutral', 'enemy'}})) do
         if math.sqrt(e.position.x ^ 2 + e.position.y ^ 2) < r then
             e.destroy()
         end

@@ -1,7 +1,7 @@
 --luacheck: ignore
 
 local Public = {}
-local LootRaffle = require "functions.loot_raffle"
+local LootRaffle = require "utils.functions.loot_raffle"
 local Get_noise = require "utils.get_noise"
 
 local safe_zone_radius = 16

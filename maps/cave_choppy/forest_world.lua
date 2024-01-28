@@ -4,12 +4,12 @@
 require 'modules.dynamic_landfill'
 require 'modules.satellite_score'
 require 'modules.spawners_contain_biters'
-require 'functions.create_entity_chain'
-require 'functions.create_tile_chain'
+require 'utils.functions.create_entity_chain'
+require 'utils.functions.create_tile_chain'
 
-local unearthing_worm = require 'functions.unearthing_worm'
-local unearthing_biters = require 'functions.unearthing_biters'
-local tick_tack_trap = require 'functions.tick_tack_trap'
+local unearthing_worm = require 'utils.functions.unearthing_worm'
+local unearthing_biters = require 'utils.functions.unearthing_biters'
+local tick_tack_trap = require 'utils.functions.tick_tack_trap'
 local Module = require 'infinity_chest'
 local Simplex = require 'utils.simplex_noise'.d2
 local Event = require 'utils.event'
