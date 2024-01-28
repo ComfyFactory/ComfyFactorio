@@ -12,7 +12,7 @@ local event_handlers = {}
 -- map of nth_tick to handlers[]
 local on_nth_tick_event_handlers = {}
 
-local xpcall = xpcall
+local xpcall = xpcall   
 local trace = debug.traceback
 local log = log
 local script_on_event = script.on_event
@@ -25,7 +25,7 @@ end
 
 local function call_handlers(handlers, event)
     for i = 1, #handlers do
-        if _DEBUG then
+        if _DEBUG_HALT_ON_ERR then
             local handler = handlers[i]
             handler(event)
         else

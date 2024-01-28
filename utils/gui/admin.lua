@@ -9,11 +9,32 @@ local Color = require 'utils.color_presets'
 local Server = require 'utils.server'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
+local Global = require 'utils.global'
 local Public = {}
 
 local insert = table.insert
 local lower = string.lower
+local ceil = math.ceil
+local max = math.max
+local min = math.min
 local module_name = Gui.uid_name()
+local next_button_name = Gui.uid_name()
+local prev_button_name = Gui.uid_name()
+local rows_per_page = 100
+
+local this = {
+    admin_panel_selected_history_index = {},
+    admin_panel_selected_player_index = {},
+    admin_panel_listable_players_index = {},
+    admin_panel_paginator_selected_page = {}
+}
+
+Global.register(
+    this,
+    function(tbl)
+        this = tbl
+    end
+)
 
 local function clear_validation_action(player_name, action)
     local admin_button_validation = AntiGrief.get('admin_button_validation')
@@ -400,8 +421,18 @@ end
 
 local function draw_events(data)
     local frame = data.frame
+    local player_name = data.player_name
     local search_text = data.search_text or nil
-    local history = frame['admin_history_select'].items[frame['admin_history_select'].selected_index]
+    local history = frame.pagination_table.admin_history_select.items[frame.pagination_table.admin_history_select.selected_index]
+
+    if not this.admin_panel_paginator_selected_page[player_name] then
+        this.admin_panel_paginator_selected_page[player_name] = 1
+    end
+
+    local current_page = this.admin_panel_paginator_selected_page[player_name]
+
+    local start_index = (current_page - 1) * rows_per_page + 1
+    local end_index = start_index + rows_per_page - 1
 
     local scroll_pane
     if frame.datalog then
@@ -428,6 +459,9 @@ local function draw_events(data)
         search_text,
         target_player_name,
         function(history_label, tooltip)
+            if not history_label then
+                return
+            end
             frame.datalog.add(
                 {
                     type = 'label',
@@ -435,7 +469,9 @@ local function draw_events(data)
                     tooltip = tooltip
                 }
             )
-        end
+        end,
+        start_index,
+        end_index
     )
 end
 
@@ -466,11 +502,65 @@ local function text_changed(event)
     if element.text ~= nil then
         local data = {
             frame = frame,
-            search_text = element.text:lower()
+            search_text = element.text:lower(),
+            player_name = player.name
         }
 
         draw_events(data)
     end
+end
+
+local function create_pagination_buttons(player, frame, table_count)
+    if table_count == 0 then
+        return
+    end
+    local last_page = ceil(table_count / rows_per_page)
+
+    if not this.admin_panel_paginator_selected_page[player.name] then
+        this.admin_panel_paginator_selected_page[player.name] = 1
+    end
+
+    local current_page = this.admin_panel_paginator_selected_page[player.name]
+
+    if current_page == 1 and current_page == last_page then
+        return
+    end
+
+    local button_flow =
+        frame.add {
+        type = 'flow',
+        direction = 'horizontal'
+    }
+    local prev_button =
+        button_flow.add {
+        type = 'button',
+        name = prev_button_name,
+        caption = '◀️',
+        style = 'back_button'
+    }
+    prev_button.style.font = 'default-bold'
+    prev_button.style.minimal_width = 32
+    prev_button.tooltip = 'Previous page\nHolding [color=yellow]shift[/color] while pressing LMB/RMB will jump to the first page.'
+
+    local count_label =
+        button_flow.add {
+        type = 'label',
+        caption = current_page .. '/' .. last_page
+    }
+    count_label.style.font = 'default-bold'
+
+    local next_button =
+        button_flow.add {
+        type = 'button',
+        name = next_button_name,
+        caption = '▶️',
+        style = 'forward_button'
+    }
+    next_button.style.font = 'default-bold'
+    next_button.style.minimal_width = 32
+    next_button.tooltip = 'Next page\nHolding [color=yellow]shift[/color] while pressing LMB/RMB will jump to the last page.'
+
+    Gui.set_data(next_button, table_count)
 end
 
 local function create_admin_panel(data)
@@ -481,24 +571,39 @@ local function create_admin_panel(data)
         return
     end
 
+    local checkbox_state = this.admin_panel_listable_players_index[player.name]
+
     frame.clear()
 
+    local players = game.connected_players
+
+    if checkbox_state then
+        players = game.players
+    end
+
     local player_names = {}
-    for _, p in pairs(game.connected_players) do
+    for _, p in pairs(players) do
         insert(player_names, tostring(p.name))
     end
     insert(player_names, 'Select Player')
 
     local selected_index = #player_names
-    if global.admin_panel_selected_player_index then
-        if global.admin_panel_selected_player_index[player.name] then
-            if player_names[global.admin_panel_selected_player_index[player.name]] then
-                selected_index = global.admin_panel_selected_player_index[player.name]
+    local selected = this.admin_panel_selected_player_index
+    if selected then
+        if selected[player.name] then
+            if player_names[selected[player.name]] then
+                selected_index = selected[player.name]
             end
         end
     end
 
-    local listable_players = frame.add({type = 'checkbox', name = 'admin_listable_players', caption = 'Toggle between all players or connected players.', state = false})
+    local checkbox_caption = 'Currently showing: connected players only.'
+    if checkbox_state then
+        checkbox_caption = 'Currently showing: all players that have played on this server.'
+    end
+
+    frame.add({type = 'checkbox', name = 'admin_listable_players', caption = checkbox_caption, state = checkbox_state or false})
+
     local drop_down = frame.add({type = 'drop-down', name = 'admin_player_select', items = player_names, selected_index = selected_index})
     drop_down.style.minimal_width = 326
     drop_down.style.right_padding = 12
@@ -683,19 +788,40 @@ local function create_admin_panel(data)
     bottomLine2.style.font_color = {r = 0.98, g = 0.66, b = 0.22}
 
     local selected_index_2 = 1
-    if global.admin_panel_selected_history_index then
-        if global.admin_panel_selected_history_index[player.name] then
-            selected_index_2 = global.admin_panel_selected_history_index[player.name]
+    local selected_history = this.admin_panel_selected_history_index
+    if selected_history then
+        if selected_history[player.name] then
+            selected_index_2 = selected_history[player.name]
         end
     end
 
-    local drop_down_2 = frame.add({type = 'drop-down', name = 'admin_history_select', items = histories, selected_index = selected_index_2})
+    local pagination_table = frame.add({type = 'table', column_count = 2, name = 'pagination_table'})
+
+    local drop_down_2 = pagination_table.add({type = 'drop-down', name = 'admin_history_select', items = histories, selected_index = selected_index_2})
     drop_down_2.style.right_padding = 12
     drop_down_2.style.left_padding = 12
 
+    local history_index = {
+        ['Capsule History'] = antigrief.capsule_history,
+        ['Message History'] = antigrief.message_history,
+        ['Friendly Fire History'] = antigrief.friendly_fire_history,
+        ['Mining History'] = antigrief.mining_history,
+        ['Mining Override History'] = antigrief.whitelist_mining_history,
+        ['Landfill History'] = antigrief.landfill_history,
+        ['Corpse Looting History'] = antigrief.corpse_history,
+        ['Cancel Crafting History'] = antigrief.cancel_crafting_history,
+        ['Deconstruct History'] = antigrief.deconstruct_history,
+        ['Scenario History'] = antigrief.scenario_history
+    }
+
+    local history = frame.pagination_table.admin_history_select.items[frame.pagination_table.admin_history_select.selected_index]
+
+    create_pagination_buttons(player, pagination_table, #history_index[history])
+
     local datas = {
         frame = frame,
-        antigrief = antigrief
+        antigrief = antigrief,
+        player_name = player.name
     }
 
     draw_events(datas)
@@ -873,10 +999,7 @@ local function on_gui_selection_state_changed(event)
     local name = event.element.name
 
     if name == 'admin_history_select' then
-        if not global.admin_panel_selected_history_index then
-            global.admin_panel_selected_history_index = {}
-        end
-        global.admin_panel_selected_history_index[player.name] = event.element.selected_index
+        this.admin_panel_selected_history_index[player.name] = event.element.selected_index
 
         local frame = Gui.get_player_active_frame(player)
         if not frame then
@@ -886,6 +1009,8 @@ local function on_gui_selection_state_changed(event)
             return
         end
 
+        this.admin_panel_paginator_selected_page[player.name] = 1
+
         local is_spamming = SpamProtection.is_spamming(player, nil, 'Admin Selection Changed')
         if is_spamming then
             return
@@ -894,10 +1019,7 @@ local function on_gui_selection_state_changed(event)
         create_admin_panel(data)
     end
     if name == 'admin_player_select' then
-        if not global.admin_panel_selected_player_index then
-            global.admin_panel_selected_player_index = {}
-        end
-        global.admin_panel_selected_player_index[player.name] = event.element.selected_index
+        this.admin_panel_selected_player_index[player.name] = event.element.selected_index
 
         local frame = Gui.get_player_active_frame(player)
         if not frame then
@@ -917,6 +1039,23 @@ local function on_gui_selection_state_changed(event)
     end
 end
 
+local function on_gui_checked_state_changed(event)
+    local element = event.element
+    local player = game.get_player(event.player_index)
+    if not player or not player.valid then
+        return
+    end
+
+    if not element or not element.valid then
+        return
+    end
+
+    this.admin_panel_listable_players_index[player.name] = element.state
+
+    local data = {player = player, frame = element.parent}
+    create_admin_panel(data)
+end
+
 Gui.add_tab_to_gui({name = module_name, caption = 'Admin', id = create_admin_panel_token, admin = true})
 
 Gui.on_click(
@@ -927,7 +1066,7 @@ Gui.on_click(
     end
 )
 
-function Public.contains_text(history, search_text, target_player_name, callback)
+function Public.contains_text(history, search_text, target_player_name, callback, start_index, end_index)
     local antigrief = AntiGrief.get()
     local history_index = {
         ['Capsule History'] = antigrief.capsule_history,
@@ -950,8 +1089,56 @@ function Public.contains_text(history, search_text, target_player_name, callback
             return
         end
 
-        for i = #history_index[history], 1, -1 do
-            if history_index[history][i]:find(target_player_name) then
+        if start_index then
+            for i = start_index, end_index do
+                if history_index[history][i] and history_index[history][i]:find(target_player_name) then
+                    if search_text then
+                        local success = contains_text(history_index[history][i], nil, search_text)
+                        if not success then
+                            goto continue
+                        end
+                    end
+
+                    if callback then
+                        if history == 'Message History' then
+                            tooltip = ''
+                        end
+
+                        callback(history_index[history][i], tooltip)
+                    else
+                        remote_tbl[#remote_tbl + 1] = history_index[history][i]
+                    end
+
+                    ::continue::
+                end
+            end
+        else
+            for i = #history_index[history], 1, -1 do
+                if history_index[history][i]:find(target_player_name) then
+                    if search_text then
+                        local success = contains_text(history_index[history][i], nil, search_text)
+                        if not success then
+                            goto continue
+                        end
+                    end
+
+                    if callback then
+                        if history == 'Message History' then
+                            tooltip = ''
+                        end
+
+                        callback(history_index[history][i], tooltip)
+                    else
+                        remote_tbl[#remote_tbl + 1] = history_index[history][i]
+                    end
+
+                    ::continue::
+                end
+            end
+        end
+    else
+        if start_index then
+            for i = start_index, end_index do
                 if search_text then
                     local success = contains_text(history_index[history][i], nil, search_text)
                     if not success then
@@ -960,36 +1147,30 @@ function Public.contains_text(history, search_text, target_player_name, callback
                 end
 
                 if callback then
-                    if history == 'Message History' then
-                        tooltip = ''
-                    end
-
                     callback(history_index[history][i], tooltip)
                 else
-                    local str = history_index[history][i]:gsub('%[color=yellow]', ''):gsub('%[/color]', '')
-                    remote_tbl[#remote_tbl + 1] = str
+                    remote_tbl[#remote_tbl + 1] = history_index[history][i]
                 end
 
                 ::continue::
             end
-        end
-    else
-        for i = #history_index[history], 1, -1 do
-            if search_text then
-                local success = contains_text(history_index[history][i], nil, search_text)
-                if not success then
-                    goto continue
+        else
+            for i = #history_index[history], 1, -1 do
+                if search_text then
+                    local success = contains_text(history_index[history][i], nil, search_text)
+                    if not success then
+                        goto continue
+                    end
                 end
-            end
 
-            if callback then
-                callback(history_index[history][i], tooltip)
-            else
-                local str = history_index[history][i]:gsub('%[color=yellow]', ''):gsub('%[/color]', '')
-                remote_tbl[#remote_tbl + 1] = str
-            end
+                if callback then
+                    callback(history_index[history][i], tooltip)
+                else
+                    remote_tbl[#remote_tbl + 1] = history_index[history][i]
+                end
 
-            ::continue::
+                ::continue::
+            end
         end
     end
 
@@ -998,8 +1179,108 @@ function Public.contains_text(history, search_text, target_player_name, callback
     end
 end
 
+Gui.on_click(
+    prev_button_name,
+    function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Prev button click')
+        if is_spamming then
+            return
+        end
+        local player = event.player
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        local element = event.element
+        if not element or not element.valid then
+            return
+        end
+
+        if not this.admin_panel_paginator_selected_page[player.name] then
+            this.admin_panel_paginator_selected_page[player.name] = 1
+        end
+
+        local current_page = this.admin_panel_paginator_selected_page[player.name]
+
+        if current_page == 1 then
+            current_page = 1
+            this.admin_panel_paginator_selected_page[player.name] = current_page
+            player.print('[Admin] There are no more pages beyond this point.', Color.warning)
+            return
+        end
+
+        local shift = event.shift
+        if shift then
+            current_page = 1
+        else
+            current_page = max(1, current_page - 1)
+        end
+
+        this.admin_panel_paginator_selected_page[player.name] = current_page
+
+        local data = {player = player, frame = element.parent.parent.parent}
+        create_admin_panel(data)
+    end
+)
+
+Gui.on_click(
+    next_button_name,
+    function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Next button click')
+        if is_spamming then
+            return
+        end
+
+        local element = event.element
+        if not element or not element.valid then
+            return
+        end
+
+        local player = event.player
+        if not player or not player.valid then
+            Gui.remove_data_recursively(element)
+            return
+        end
+
+        local element_indices = Gui.get_data(element)
+        if not element_indices then
+            Gui.remove_data_recursively(element)
+            return
+        end
+
+        if not this.admin_panel_paginator_selected_page[player.name] then
+            this.admin_panel_paginator_selected_page[player.name] = 1
+        end
+
+        local current_page = this.admin_panel_paginator_selected_page[player.name]
+        local last_page = ceil(element_indices / rows_per_page)
+
+        if current_page == last_page then
+            current_page = last_page
+            this.admin_panel_paginator_selected_page[player.name] = current_page
+            Gui.remove_data_recursively(element)
+            player.print('[Admin] There are no more pages beyond this point.', Color.warning)
+            return
+        end
+
+        local shift = event.shift
+        if shift then
+            current_page = last_page
+        else
+            current_page = min(last_page, current_page + 1)
+        end
+
+        this.admin_panel_paginator_selected_page[player.name] = current_page
+        Gui.remove_data_recursively(element)
+
+        local data = {player = player, frame = element.parent.parent.parent}
+        create_admin_panel(data)
+    end
+)
+
 Event.add(defines.events.on_gui_text_changed, text_changed)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_gui_selection_state_changed, on_gui_selection_state_changed)
+Event.add(defines.events.on_gui_checked_state_changed, on_gui_checked_state_changed)
 
 return Public

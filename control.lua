@@ -1,6 +1,7 @@
 require 'utils.data_stages'
 _LIFECYCLE = _STAGE.control -- Control stage
 _DEBUG = false
+_DEBUG_HALT_ON_ERR = false
 _DUMP_ENV = false
 _PROFILE = false
 _PROFILE_ON_INIT = false
