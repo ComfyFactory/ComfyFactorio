@@ -51,6 +51,7 @@ std = STD_CONTROL
 globals = {
     'print',
     '_DEBUG',
+    '_DEBUG_HALT_ON_ERR',
     '_PROFILE',
     '_PROFILE_ON_INIT',
     '_CHEATS',
