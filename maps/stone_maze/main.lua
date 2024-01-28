@@ -9,7 +9,7 @@ require 'modules.hunger'
 require 'modules.no_turrets'
 
 --essentials
-require 'functions.maze'
+require 'utils.functions.maze'
 require 'modules.biters_yield_coins'
 require 'modules.rocks_yield_ore'
 require 'modules.mineable_wreckage_yields_scrap'
@@ -35,7 +35,7 @@ local multirooms = {}
 multirooms['2x2'] = require 'maps.stone_maze.2x2_rooms'
 multirooms['3x3'] = require 'maps.stone_maze.3x3_rooms'
 
-map_functions = require 'tools.map_functions'
+map_functions = require 'utils.tools.map_functions'
 grid_size = 24
 --manual_mining_speed_modifier = 1
 main_ground_tile = 'dirt-3'
@@ -76,8 +76,7 @@ local function draw_depth_gui()
         if player.gui.top.evolution_gui then
             player.gui.top.evolution_gui.destroy()
         end
-        local element =
-            player.gui.top.add({type = 'sprite-button', name = 'evolution_gui', caption = 'Depth: ' .. global.maze_depth, tooltip = 'Delve deep and face increased dangers.'})
+        local element = player.gui.top.add({type = 'sprite-button', name = 'evolution_gui', caption = 'Depth: ' .. global.maze_depth, tooltip = 'Delve deep and face increased dangers.'})
         local style = element.style
         style.minimal_height = 38
         style.maximal_height = 38

@@ -4,7 +4,7 @@
 local event = require 'utils.event'
 local math_random = math.random
 local insert = table.insert
-local map_functions = require 'tools.map_functions'
+local map_functions = require 'utils.tools.map_functions'
 local simplex_noise = require 'utils.simplex_noise'
 local simplex_noise = simplex_noise.d2
 require 'maps.nightfall_map_intro'
@@ -420,14 +420,8 @@ local function generate_spawn_area(surface)
         for y = -160, 160, 1 do
             local pos = {x = x, y = y}
             if pos.x > fort_size * -1 and pos.x < fort_size and pos.y > fort_size * -1 and pos.y < fort_size then
-                if
-                    pos.x > (fort_size - fort_wall_width) * -1 and pos.x < fort_size - fort_wall_width and pos.y > (fort_size - fort_wall_width) * -1 and
-                        pos.y < fort_size - fort_wall_width
-                 then
-                    if
-                        pos.x <= (fort_size - fort_wall_width * 2) * -1 or pos.x >= (fort_size - fort_wall_width * 2) or pos.y <= (fort_size - fort_wall_width * 2) * -1 or
-                            pos.y >= (fort_size - fort_wall_width * 2)
-                     then
+                if pos.x > (fort_size - fort_wall_width) * -1 and pos.x < fort_size - fort_wall_width and pos.y > (fort_size - fort_wall_width) * -1 and pos.y < fort_size - fort_wall_width then
+                    if pos.x <= (fort_size - fort_wall_width * 2) * -1 or pos.x >= (fort_size - fort_wall_width * 2) or pos.y <= (fort_size - fort_wall_width * 2) * -1 or pos.y >= (fort_size - fort_wall_width * 2) then
                         table.insert(turrets, {name = 'gun-turret', position = {x = pos.x, y = pos.y}, force = 'player'})
                     end
                 end
@@ -440,10 +434,7 @@ local function generate_spawn_area(surface)
 
                 table.insert(tiles, {name = 'stone-path', position = {x = pos.x, y = pos.y}})
 
-                if
-                    pos.x <= (fort_size - fort_wall_width) * -1 or pos.x >= (fort_size - fort_wall_width) or pos.y <= (fort_size - fort_wall_width) * -1 or
-                        pos.y >= (fort_size - fort_wall_width)
-                 then
+                if pos.x <= (fort_size - fort_wall_width) * -1 or pos.x >= (fort_size - fort_wall_width) or pos.y <= (fort_size - fort_wall_width) * -1 or pos.y >= (fort_size - fort_wall_width) then
                     if math_random(1, 3) ~= 1 then
                         table.insert(entities, {name = 'stone-wall', position = {x = pos.x, y = pos.y}, force = 'player'})
                     end

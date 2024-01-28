@@ -1,5 +1,5 @@
 --luacheck: ignore
-local Basic_markets = require 'functions.basic_markets'
+local Basic_markets = require 'utils.functions.basic_markets'
 local get_noise = require 'maps.stone_maze.noise'
 
 local room = {}

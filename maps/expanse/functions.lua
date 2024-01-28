@@ -1,5 +1,5 @@
 local Price_raffle = require 'maps.expanse.price_raffle'
-local BiterRaffle = require 'functions.biter_raffle'
+local BiterRaffle = require 'utils.functions.biter_raffle'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Public = {}
@@ -142,7 +142,8 @@ local function is_container_position_valid(expanse, position)
 end
 
 local function create_costs_render(entity, name, offset)
-    local id = rendering.draw_sprite{
+    local id =
+        rendering.draw_sprite {
         sprite = 'virtual-signal/signal-grey',
         surface = entity.surface,
         target = entity,
@@ -152,8 +153,9 @@ local function create_costs_render(entity, name, offset)
         target_offset = {offset, -1.5},
         only_in_alt_mode = true
     }
-    local id2 = rendering.draw_sprite{
-        sprite = 'item/' ..name,
+    local id2 =
+        rendering.draw_sprite {
+        sprite = 'item/' .. name,
         surface = entity.surface,
         target = entity,
         x_scale = 0.75,
@@ -185,7 +187,7 @@ function Public.spawn_units(spawner)
     local position = spawner.position
     for i = 1, 4 + math.floor(8 * evolution), 1 do
         local biter_roll = BiterRaffle.roll('mixed', evolution)
-        local free_pos = spawner.surface.find_non_colliding_position(biter_roll, {x = position.x + math.random(-8,8), y = position.y + math.random(-8,8)}, 12, 0.05)
+        local free_pos = spawner.surface.find_non_colliding_position(biter_roll, {x = position.x + math.random(-8, 8), y = position.y + math.random(-8, 8)}, 12, 0.05)
         spawner.surface.create_entity({name = biter_roll, position = free_pos or position, force = 'enemy'})
     end
 end
@@ -196,7 +198,7 @@ end
 
 function Public.invasion_numbers()
     local evo = game.forces.enemy.evolution_factor
-    return {candidates = 3 + math.floor(evo * 10), groups =  1 + math.floor(evo * 4)}
+    return {candidates = 3 + math.floor(evo * 10), groups = 1 + math.floor(evo * 4)}
 end
 
 function Public.invasion_warn(event)
@@ -207,13 +209,13 @@ end
 function Public.invasion_detonate(event)
     local surface = event.surface
     local position = event.position
-    local entities_close = surface.find_entities_filtered{position = position, radius = 8}
+    local entities_close = surface.find_entities_filtered {position = position, radius = 8}
     for _, entity in pairs(entities_close) do
         if entity.valid then
             entity.die('enemy')
         end
     end
-    local entities_nearby = surface.find_entities_filtered{position = position, radius = 16}
+    local entities_nearby = surface.find_entities_filtered {position = position, radius = 16}
     for _, entity in pairs(entities_nearby) do
         if entity.valid and entity.is_entity_with_health then
             entity.damage(entity.prototype.max_health * 0.75, 'enemy')
@@ -230,10 +232,10 @@ function Public.invasion_trigger(event)
     local biters = {}
     for i = 1, 5 + math.floor(30 * evolution) + round * 5, 1 do
         local biter_roll = BiterRaffle.roll('mixed', evolution)
-        local free_pos = surface.find_non_colliding_position(biter_roll, {x = position.x + math.random(-8,8), y = position.y + math.random(-8,8)}, 12, 0.05)
+        local free_pos = surface.find_non_colliding_position(biter_roll, {x = position.x + math.random(-8, 8), y = position.y + math.random(-8, 8)}, 12, 0.05)
         biters[#biters + 1] = surface.create_entity({name = biter_roll, position = free_pos or position, force = 'enemy'})
     end
-    local group = surface.create_unit_group{position = position, force = 'enemy'}
+    local group = surface.create_unit_group {position = position, force = 'enemy'}
     for _, biter in pairs(biters) do
         group.add_member(biter)
     end
@@ -241,7 +243,7 @@ function Public.invasion_trigger(event)
     group.start_moving()
     local worm_roll = BiterRaffle.roll('worm', evolution)
     for i = 1, 3 + math.floor(7 * evolution), 1 do
-        local worm_pos = surface.find_non_colliding_position(worm_roll, {x = position.x + math.random(-12,12), y = position.y + math.random(-12,12)}, 12, 0.1)
+        local worm_pos = surface.find_non_colliding_position(worm_roll, {x = position.x + math.random(-12, 12), y = position.y + math.random(-12, 12)}, 12, 0.1)
         if worm_pos then
             surface.create_entity({name = worm_roll, position = worm_pos, force = 'enemy'})
         end

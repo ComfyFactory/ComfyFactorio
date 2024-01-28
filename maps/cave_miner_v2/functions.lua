@@ -3,8 +3,8 @@ local Public = {}
 
 local GetNoise = require 'utils.get_noise'
 local Constants = require 'maps.cave_miner_v2.constants'
-local BiterRaffle = require 'functions.biter_raffle'
-local LootRaffle = require 'functions.loot_raffle'
+local BiterRaffle = require 'utils.functions.biter_raffle'
+local LootRaffle = require 'utils.functions.loot_raffle'
 local Esq = require 'modules.entity_spawn_queue'
 local Pets = require 'modules.biter_pets'
 

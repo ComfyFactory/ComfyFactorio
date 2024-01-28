@@ -7,7 +7,7 @@ require 'modules.no_deconstruction_of_neutral_entities'
 require 'modules.spawners_contain_biters'
 
 local event = require 'utils.event'
-local map_functions = require 'tools.map_functions'
+local map_functions = require 'utils.tools.map_functions'
 local simplex_noise = require 'utils.simplex_noise'.d2
 local math_random = math.random
 
@@ -358,12 +358,7 @@ local function draw_ores(surface, position)
 end
 
 local function draw_water(surface, position)
-    map_functions.draw_noise_tile_circle(
-        {x = position.x + labyrinth_cell_size * 0.5, y = position.y + labyrinth_cell_size * 0.5},
-        'water',
-        surface,
-        math.floor(labyrinth_cell_size * 0.3)
-    )
+    map_functions.draw_noise_tile_circle({x = position.x + labyrinth_cell_size * 0.5, y = position.y + labyrinth_cell_size * 0.5}, 'water', surface, math.floor(labyrinth_cell_size * 0.3))
     for _, tile in pairs(surface.find_tiles_filtered({name = 'water', area = {{position.x, position.y}, {position.x + labyrinth_cell_size, position.y + labyrinth_cell_size}}})) do
         if math_random(1, 12) == 1 then
             surface.create_entity({name = 'fish', position = tile.position})
@@ -406,21 +401,13 @@ end
 local function draw_rocks(surface, position)
     local r = math_random(0, 100)
     if r < 50 then
-        surface.create_entity(
-            {name = rock_raffle[math_random(1, #rock_raffle)], position = {x = position.x + labyrinth_cell_size * 0.5, y = position.y + labyrinth_cell_size * 0.5}}
-        )
+        surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = {x = position.x + labyrinth_cell_size * 0.5, y = position.y + labyrinth_cell_size * 0.5}})
         return
     end
     if r <= 100 then
-        surface.create_entity(
-            {name = rock_raffle[math_random(1, #rock_raffle)], position = {x = position.x + labyrinth_cell_size * 0.5, y = position.y + labyrinth_cell_size * 0.25}}
-        )
-        surface.create_entity(
-            {name = rock_raffle[math_random(1, #rock_raffle)], position = {x = position.x + labyrinth_cell_size * 0.75, y = position.y + labyrinth_cell_size * 0.75}}
-        )
-        surface.create_entity(
-            {name = rock_raffle[math_random(1, #rock_raffle)], position = {x = position.x + labyrinth_cell_size * 0.25, y = position.y + labyrinth_cell_size * 0.75}}
-        )
+        surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = {x = position.x + labyrinth_cell_size * 0.5, y = position.y + labyrinth_cell_size * 0.25}})
+        surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = {x = position.x + labyrinth_cell_size * 0.75, y = position.y + labyrinth_cell_size * 0.75}})
+        surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = {x = position.x + labyrinth_cell_size * 0.25, y = position.y + labyrinth_cell_size * 0.75}})
         return
     end
 end
@@ -545,11 +532,7 @@ local function on_entity_died(event)
         return
     end
     if event.entity.type == 'tree' then
-        for _, entity in pairs(
-            event.entity.surface.find_entities_filtered(
-                {area = {{event.entity.position.x - 4, event.entity.position.y - 4}, {event.entity.position.x + 4, event.entity.position.y + 4}}, name = 'fire-flame-on-tree'}
-            )
-        ) do
+        for _, entity in pairs(event.entity.surface.find_entities_filtered({area = {{event.entity.position.x - 4, event.entity.position.y - 4}, {event.entity.position.x + 4, event.entity.position.y + 4}}, name = 'fire-flame-on-tree'})) do
             if entity.valid then
                 entity.destroy()
             end

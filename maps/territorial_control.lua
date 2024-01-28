@@ -15,12 +15,12 @@ require 'modules.rocks_yield_ore'
 require 'modules.biters_yield_coins'
 require 'modules.mineable_wreckage_yields_scrap'
 
-local shapes = require 'tools.shapes'
+local shapes = require 'utils.tools.shapes'
 local Event = require 'utils.event'
-local unearthing_worm = require 'functions.unearthing_worm'
-local unearthing_biters = require 'functions.unearthing_biters'
-local tick_tack_trap = require 'functions.tick_tack_trap'
-local map_functions = require 'tools.map_functions'
+local unearthing_worm = require 'utils.functions.unearthing_worm'
+local unearthing_biters = require 'utils.functions.unearthing_biters'
+local tick_tack_trap = require 'utils.functions.tick_tack_trap'
+local map_functions = require 'utils.tools.map_functions'
 local simplex_noise = require 'utils.simplex_noise'
 simplex_noise = simplex_noise.d2
 

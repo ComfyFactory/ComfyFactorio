@@ -2,7 +2,7 @@
 local Biters = require 'modules.wave_defense.biter_rolls'
 local Immersive_cargo_wagons = require 'modules.immersive_cargo_wagons.main'
 local Treasure = require 'maps.mountain_fortress_v2.treasure'
-local Market = require 'functions.basic_markets'
+local Market = require 'utils.functions.basic_markets'
 local math_random = math.random
 local math_floor = math.floor
 local math_abs = math.abs

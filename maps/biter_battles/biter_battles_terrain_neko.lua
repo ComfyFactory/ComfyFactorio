@@ -1,5 +1,5 @@
 --luacheck:ignore
-local simplex_noise = require 'tools.simplex_noise'
+local simplex_noise = require 'utils.tools.simplex_noise'
 local Event = require 'utils.event'
 biter_battles_terrain = {}
 
@@ -471,10 +471,7 @@ function biter_battles_terrain.generate_spawn_ores(ore_layout)
                 end
             end
             surface.set_tiles(tiles, true)
-            local entities =
-                surface.find_entities(
-                {{(rocket_silo.position.x - 4) - size / 2, (rocket_silo.position.y - 5) - size / 2}, {rocket_silo.position.x + 4 + size / 2, rocket_silo.position.y + 5 + size / 2}}
-            )
+            local entities = surface.find_entities({{(rocket_silo.position.x - 4) - size / 2, (rocket_silo.position.y - 5) - size / 2}, {rocket_silo.position.x + 4 + size / 2, rocket_silo.position.y + 5 + size / 2}})
             for _, entity in pairs(entities) do
                 if entity.type == 'simple-entity' or entity.type == 'tree' or entity.type == 'resource' then
                     entity.destroy()

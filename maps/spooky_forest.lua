@@ -18,9 +18,9 @@ require 'modules.rocks_broken_paint_tiles'
 require 'modules.rpg'
 require 'modules.hunger'
 
-local shapes = require 'tools.shapes'
+local shapes = require 'utils.tools.shapes'
 local event = require 'utils.event'
-local map_functions = require 'tools.map_functions'
+local map_functions = require 'utils.tools.map_functions'
 local simplex_noise = require 'utils.simplex_noise'
 simplex_noise = simplex_noise.d2
 

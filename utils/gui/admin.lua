@@ -498,6 +498,7 @@ local function create_admin_panel(data)
         end
     end
 
+    local listable_players = frame.add({type = 'checkbox', name = 'admin_listable_players', caption = 'Toggle between all players or connected players.', state = false})
     local drop_down = frame.add({type = 'drop-down', name = 'admin_player_select', items = player_names, selected_index = selected_index})
     drop_down.style.minimal_width = 326
     drop_down.style.right_padding = 12

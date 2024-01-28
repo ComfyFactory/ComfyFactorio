@@ -1,7 +1,7 @@
 --luacheck: ignore
 local Public = {}
-local LootRaffle = require 'functions.loot_raffle'
-local BiterRaffle = require 'functions.biter_raffle'
+local LootRaffle = require 'utils.functions.loot_raffle'
+local BiterRaffle = require 'utils.functions.biter_raffle'
 local bb_config = require 'maps.biter_battles_v2.config'
 
 local table_insert = table.insert
@@ -646,9 +646,7 @@ function Public.generate_silo(surface)
     for _, t in pairs(surface.find_tiles_filtered({area = {{pos.x - 6, pos.y - 6}, {pos.x + 6, pos.y + 6}}, name = {'water', 'deepwater'}})) do
         surface.set_tiles({{name = get_replacement_tile(surface, t.position), position = t.position}})
     end
-    for _, t in pairs(
-        surface.find_tiles_filtered({area = {{mirror_position.x - 6, mirror_position.y - 6}, {mirror_position.x + 6, mirror_position.y + 6}}, name = {'water', 'deepwater'}})
-    ) do
+    for _, t in pairs(surface.find_tiles_filtered({area = {{mirror_position.x - 6, mirror_position.y - 6}, {mirror_position.x + 6, mirror_position.y + 6}}, name = {'water', 'deepwater'}})) do
         surface.set_tiles({{name = get_replacement_tile(surface, t.position), position = t.position}})
     end
 

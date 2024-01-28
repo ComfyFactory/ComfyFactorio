@@ -6,7 +6,7 @@ require 'modules.flashlight_toggle_button'
 require 'maps.deep_jungle.generate'
 
 local Event = require 'utils.event'
-local map_functions = require 'tools.map_functions'
+local map_functions = require 'utils.tools.map_functions'
 local Task = require 'utils.task'
 local DPT = require 'maps.deep_jungle.table'
 local random = math.random

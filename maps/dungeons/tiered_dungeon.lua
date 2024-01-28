@@ -8,10 +8,10 @@ require 'modules.charging_station'
 local MIN_ROOMS_TO_DESCEND = 100
 
 local MapInfo = require 'modules.map_info'
-local Room_generator = require 'functions.room_generator'
+local Room_generator = require 'utils.functions.room_generator'
 local RPG = require 'modules.rpg.main'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
-local BiterRaffle = require 'functions.biter_raffle'
+local BiterRaffle = require 'utils.functions.biter_raffle'
 local Functions = require 'maps.dungeons.functions'
 local Get_noise = require 'utils.get_noise'
 local Alert = require 'utils.alert'
@@ -51,9 +51,9 @@ local function enable_hard_rooms(position, surface_index)
     -- 140 puts hard rooms halfway between the only dirtlands and the edge
     local floor_mindist = 140 - floor * 10
     if floor_mindist < 80 then -- all dirtlands within this
-       return true
+        return true
     end
-    return position.x ^ 2 + position.y ^ 2 > floor_mindist^2
+    return position.x ^ 2 + position.y ^ 2 > floor_mindist ^ 2
 end
 
 local function get_biome(position, surface_index)
@@ -70,20 +70,20 @@ local function get_biome(position, surface_index)
         return 'glitch'
     end
     if enable_hard_rooms(position, surface_index) then
-       a = a + 1
-       if Get_noise('dungeons', position, seed + seed_addition * a) > 0.60 then
-	  return 'doom'
-       end
-       a = a + 1
-       if Get_noise('dungeons', position, seed + seed_addition * a) > 0.62 then
-	  return 'acid_zone'
-       end
-       a = a + 1
-       if Get_noise('dungeons', position, seed + seed_addition * a) > 0.60 then
-	  return 'concrete'
-       end
+        a = a + 1
+        if Get_noise('dungeons', position, seed + seed_addition * a) > 0.60 then
+            return 'doom'
+        end
+        a = a + 1
+        if Get_noise('dungeons', position, seed + seed_addition * a) > 0.62 then
+            return 'acid_zone'
+        end
+        a = a + 1
+        if Get_noise('dungeons', position, seed + seed_addition * a) > 0.60 then
+            return 'concrete'
+        end
     else
-       a = a + 3
+        a = a + 3
     end
     a = a + 1
     if Get_noise('dungeons', position, seed + seed_addition * a) > 0.71 then
@@ -179,7 +179,7 @@ local function expand(surface, position)
     end
     local treasure_room_one_in = 30 + 15 * dungeontable.treasures[surface.index]
     if dungeontable.surface_size[surface.index] >= 225 and math.random(1, treasure_room_one_in) == 1 and room.room_tiles[1] then
-	log('Found treasure room, change was 1 in ' .. treasure_room_one_in)
+        log('Found treasure room, change was 1 in ' .. treasure_room_one_in)
         Biomes['treasure'](surface, room)
         if room.room_tiles[1] then
             dungeontable.treasures[surface.index] = dungeontable.treasures[surface.index] + 1
@@ -266,19 +266,19 @@ end
 local function init_player(player, surface)
     if surface == game.surfaces['dungeons_floor0'] then
         if player.character then
-	    player.disassociate_character(player.character)
+            player.disassociate_character(player.character)
             player.character.destroy()
         end
 
-	if not player.connected then
-	   log('BUG Player ' .. player.name .. ' is not connected; how did we get here?')
-	end
+        if not player.connected then
+            log('BUG Player ' .. player.name .. ' is not connected; how did we get here?')
+        end
 
         player.set_controller({type = defines.controllers.god})
         player.teleport(surface.find_non_colliding_position('character', {0, 0}, 50, 0.5), surface)
         if not player.create_character() then
-	   log('BUG: create_character for ' .. player.name .. ' failed')
-	end
+            log('BUG: create_character for ' .. player.name .. ' failed')
+        end
 
         player.insert({name = 'raw-fish', count = 8})
         player.set_quick_bar_slot(1, 'raw-fish')
@@ -398,11 +398,11 @@ local function on_player_joined_game(event)
     end
     local player = game.players[event.player_index]
     if player.online_time == 0 then
-       init_player(player, game.surfaces['dungeons_floor0'])
+        init_player(player, game.surfaces['dungeons_floor0'])
     end
     if player.character == nil and player.ticks_to_respawn == nil then
-       log('BUG: ' .. player.name .. ' is missing associated character and is not waiting to respawn')
-       init_player(player, game.surfaces['dungeons_floor0'])
+        log('BUG: ' .. player.name .. ' is missing associated character and is not waiting to respawn')
+        init_player(player, game.surfaces['dungeons_floor0'])
     end
     draw_light(player)
 end
@@ -472,7 +472,7 @@ local function on_player_mined_entity(event)
         if size < math.abs(entity.position.y) or size < math.abs(entity.position.x) then
             entity.surface.create_entity({name = entity.name, position = entity.position})
             entity.destroy()
-	    local player = game.players[event.player_index]
+            local player = game.players[event.player_index]
             RPG.gain_xp(player, -10)
             Alert.alert_player_warning(player, 30, {'dungeons_tiered.too_small'}, {r = 0.98, g = 0.22, b = 0})
             event.buffer.clear()
@@ -558,7 +558,7 @@ local function descend(player, button, shift)
     end
     local surface = game.surfaces[player.surface.index + 1]
     if not surface then
-        if dungeontable.surface_size[player.surface.index] < 200 + MIN_ROOMS_TO_DESCEND/4 then
+        if dungeontable.surface_size[player.surface.index] < 200 + MIN_ROOMS_TO_DESCEND / 4 then
             player.print({'dungeons_tiered.floor_size_required', MIN_ROOMS_TO_DESCEND})
             return
         end
@@ -850,9 +850,13 @@ Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
 Event.add(defines.events.on_player_respawned, on_player_respawned)
 
-Changelog.SetVersions({
-	{ ver = 'next', date = 'the future', desc = 'Make suggestions in the comfy #dungeons discord channel' },
-	{ ver = '1.1.1', date = '2022-04-10', desc = [[
+Changelog.SetVersions(
+    {
+        {ver = 'next', date = 'the future', desc = 'Make suggestions in the comfy #dungeons discord channel'},
+        {
+            ver = '1.1.1',
+            date = '2022-04-10',
+            desc = [[
 Balancing patch
 * Evolution goes up faster with floor level 0.05/level -> 0.06/level; e.g. floor 20 now like floor 24 before
 * Now require 100 open rooms to descend
@@ -869,8 +873,12 @@ Balancing patch
 * Require getting to room 100 before you can descend
 * Science from rooms 40-160+2.5*floor to 60-300+2.5*floor
 * Atomic bomb research moved to 40-50
-]]},
-	{ ver = '1.1', date = '2022-03-13', desc = [[
+]]
+        },
+        {
+            ver = '1.1',
+            date = '2022-03-13',
+            desc = [[
 * All research is now found at random.
   * Red science floors 0-1
   * Green on floors 1-5
@@ -891,6 +899,8 @@ Balancing patch
 * Autostash and corpse clearing from Mountain Fortress enabled
 * Harder rooms will occur somewhat farther out on the early floors.
 * Spawners and worm counts bounded in early rooms.
-]]},
-	{ ver = '1.0', date = 'past', desc = "Pre-changelog version of multi-floor dungeons" },
-})
+]]
+        },
+        {ver = '1.0', date = 'past', desc = 'Pre-changelog version of multi-floor dungeons'}
+    }
+)

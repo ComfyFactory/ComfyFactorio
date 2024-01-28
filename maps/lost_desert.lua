@@ -12,7 +12,7 @@ require 'modules.flashlight_toggle_button'
 
 local simplex_noise = require 'utils.simplex_noise'.d2
 local event = require 'utils.event'
-local map_functions = require 'tools.map_functions'
+local map_functions = require 'utils.tools.map_functions'
 local math_random = math.random
 require 'utils.table'
 

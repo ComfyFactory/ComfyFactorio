@@ -5,7 +5,7 @@
 
 local event = require 'utils.event'
 local bricks = require 'maps.tetris.bricks'
-local connect_belts = require 'functions.connect_belts'
+local connect_belts = require 'utils.functions.connect_belts'
 
 local playfield_left_top = {x = -17, y = -18}
 local playfield_width = 12
@@ -219,10 +219,7 @@ local function add_score_points(amount)
 end
 
 local function move_lines_down(surface, y)
-    local entities =
-        surface.find_entities_filtered(
-        {area = {{playfield_area.left_top.x, playfield_area.left_top.y}, {playfield_area.left_top.x + playfield_width + 1, playfield_area.left_top.y + y + 1}}, force = 'enemy'}
-    )
+    local entities = surface.find_entities_filtered({area = {{playfield_area.left_top.x, playfield_area.left_top.y}, {playfield_area.left_top.x + playfield_width + 1, playfield_area.left_top.y + y + 1}}, force = 'enemy'})
     for _, e in pairs(entities) do
         if e.valid then
             e.clone {position = {e.position.x, e.position.y + 1}, surface = surface, force = 'enemy'}
@@ -419,14 +416,7 @@ local function move(surface, item)
         return
     end
     for k, p in pairs(global.active_brick.positions) do
-        if
-            not global.tetris_grid[
-                coord_string(
-                    math.floor(global.active_brick.positions[k].x + move_translations[item][1]),
-                    math.floor(global.active_brick.positions[k].y + move_translations[item][2])
-                )
-            ]
-         then
+        if not global.tetris_grid[coord_string(math.floor(global.active_brick.positions[k].x + move_translations[item][1]), math.floor(global.active_brick.positions[k].y + move_translations[item][2]))] then
             return
         end
     end

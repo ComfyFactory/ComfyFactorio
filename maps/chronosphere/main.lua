@@ -19,7 +19,7 @@ local Locomotive = require 'maps.chronosphere.locomotive'
 local Map = require 'modules.map_info'
 local Minimap = require 'maps.chronosphere.minimap'
 local On_Event = require 'maps.chronosphere.on_event'
-local Reset = require 'functions.soft_reset'
+local Reset = require 'utils.functions.soft_reset'
 local Tick_functions = require 'maps.chronosphere.tick_functions'
 local Upgrades = require 'maps.chronosphere.upgrades'
 local Worlds = require 'maps.chronosphere.world_list'
@@ -92,12 +92,7 @@ local function chronojump(choice)
     end
 
     if objective.chronojumps <= 24 then
-        Locomotive.award_coins(
-            Balance.coin_reward_per_second_jumped_early(
-                objective.chronochargesneeded / objective.passive_chronocharge_rate + 180 - objective.passivetimer,
-                Difficulty.get().difficulty_vote_value
-            )
-        )
+        Locomotive.award_coins(Balance.coin_reward_per_second_jumped_early(objective.chronochargesneeded / objective.passive_chronocharge_rate + 180 - objective.passivetimer, Difficulty.get().difficulty_vote_value))
     end
 
     Chrono.process_jump()
@@ -180,7 +175,7 @@ local function do_tick()
     local objective = Chrono_table.get_table()
     local tick = game.tick
     Ai.Tick_actions(tick)
-    if  objective.passivetimer < 160 then
+    if objective.passivetimer < 160 then
         Tick_functions.request_chunks()
     end
     if tick % 30 == 20 then

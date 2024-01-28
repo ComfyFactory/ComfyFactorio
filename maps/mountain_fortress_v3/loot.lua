@@ -1,4 +1,4 @@
-local LootRaffle = require 'functions.loot_raffle'
+local LootRaffle = require 'utils.functions.loot_raffle'
 local Public = require 'maps.mountain_fortress_v3.table'
 local random = math.random
 local abs = math.abs

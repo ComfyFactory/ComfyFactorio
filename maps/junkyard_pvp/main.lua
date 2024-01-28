@@ -9,7 +9,7 @@ require 'modules.rocks_heal_over_time'
 require 'maps.junkyard_pvp.share_chat'
 require 'modules.mineable_wreckage_yields_scrap'
 local Team = require 'maps.junkyard_pvp.team'
-local Reset = require 'functions.soft_reset'
+local Reset = require 'utils.functions.soft_reset'
 local Map = require 'modules.map_info'
 local math_random = math.random
 local Public = {}

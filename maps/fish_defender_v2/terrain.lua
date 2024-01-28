@@ -1,5 +1,5 @@
 local Event = require 'utils.event'
-local map_functions = require 'tools.map_functions'
+local map_functions = require 'utils.tools.map_functions'
 local simplex_noise = require 'utils.simplex_noise'.d2
 local Public = require 'maps.fish_defender_v2.table'
 local Task = require 'utils.task'

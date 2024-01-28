@@ -5,7 +5,7 @@ local math_random = math.random
 local math_floor = math.floor
 local math_abs = math.abs
 
-local LootRaffle = require 'functions.loot_raffle'
+local LootRaffle = require 'utils.functions.loot_raffle'
 
 local blacklist = {
     ['cargo-wagon'] = true,

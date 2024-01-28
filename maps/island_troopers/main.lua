@@ -2,7 +2,7 @@
 --map by mewmew and kyte
 
 require 'maps.island_troopers.map_intro'
-require 'functions.noise_vector_path'
+require 'utils.functions.noise_vector_path'
 require 'modules.shopping_chests'
 require 'modules.no_turrets'
 require 'modules.dangerous_goods'
@@ -327,4 +327,4 @@ event.add(defines.events.on_tick, on_tick)
 event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
 
-require 'functions.boss_unit'
+require 'utils.functions.boss_unit'

@@ -3,7 +3,7 @@ local math_random = math.random
 local table_insert = table.insert
 local table_remove = table.remove
 
-local NoiseVector = require 'functions.noise_vector_path'
+local NoiseVector = require 'utils.functions.noise_vector_path'
 
 local function get_vector()
     local x = 1000 - math_random(0, 2000)

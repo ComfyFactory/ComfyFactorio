@@ -4,8 +4,8 @@
 global.offline_loot = true
 local darkness = false
 
-require 'functions.soft_reset'
-require 'functions.basic_markets'
+require 'utils.functions.soft_reset'
+require 'utils.functions.basic_markets'
 
 local Gui = require 'utils.gui'
 local Map_score = require 'utils.gui.map_score'
@@ -25,7 +25,7 @@ local Immersive_cargo_wagons = require 'modules.immersive_cargo_wagons.main'
 require 'maps.mountain_fortress_v2.flamethrower_nerf'
 local BiterRolls = require 'modules.wave_defense.biter_rolls'
 local BiterHealthBooster = require 'modules.biter_health_booster'
-local Reset = require 'functions.soft_reset'
+local Reset = require 'utils.functions.soft_reset'
 local Pets = require 'modules.biter_pets'
 local Map = require 'modules.map_info'
 local WD = require 'modules.wave_defense.table'

@@ -1,7 +1,7 @@
 --luacheck: ignore
 local math_abs = math.abs
 local math_random = math.random
-local Map_functions = require 'tools.map_functions'
+local Map_functions = require 'utils.tools.map_functions'
 local simplex_noise = require 'utils.simplex_noise'.d2
 local Public = {}
 
@@ -86,8 +86,7 @@ local function create_markets(surface)
     global.market1 = e
 
     local energy_source = {type = 'electric', buffer_capacity = '10GJ', usage_priority = 'tertiary', input_flow_limit = '1GW', output_flow_limit = '0W', drain = '0W'}
-    local eei =
-        surface.create_entity({type = 'electric-energy-interface', name = 'electric-energy-interface', energy_source = energy_source, position = {-200, -2}, force = 'west'})
+    local eei = surface.create_entity({type = 'electric-energy-interface', name = 'electric-energy-interface', energy_source = energy_source, position = {-200, -2}, force = 'west'})
     local ep = surface.create_entity({name = 'small-electric-pole', position = {-200, -5}, force = 'west'})
 
     ep.destructible = false
@@ -109,8 +108,7 @@ local function create_markets(surface)
     global.market = f
 
     local energy_source = {type = 'electric', buffer_capacity = '10GJ', usage_priority = 'tertiary', input_flow_limit = '1GW', output_flow_limit = '0W', drain = '0W'}
-    local eei2 =
-        surface.create_entity({type = 'electric-energy-interface', name = 'electric-energy-interface', energy_source = energy_source, position = {201, -2}, force = 'east'})
+    local eei2 = surface.create_entity({type = 'electric-energy-interface', name = 'electric-energy-interface', energy_source = energy_source, position = {201, -2}, force = 'east'})
     local ep2 = surface.create_entity({name = 'small-electric-pole', position = {200, -5}, force = 'east'})
 
     ep2.destructible = false
@@ -346,12 +344,7 @@ local function out_of_map_area(event)
             local p = {x = left_top.x + x, y = left_top.y + y}
             if is_out_of_map(p) then
                 if
-                    (p.x == -137 or p.x == -138 or p.x == -102 or p.x == -103 or p.x == -78 or p.x == -77 or p.x == -42 or p.x == -43 or p.x == -17 or p.x == -18 or p.x == 17 or
-                        p.x == 18 or
-                        p.x == 42 or
-                        p.x == 43 or
-                        p.x == 77 or
-                        p.x == 78) and
+                    (p.x == -137 or p.x == -138 or p.x == -102 or p.x == -103 or p.x == -78 or p.x == -77 or p.x == -42 or p.x == -43 or p.x == -17 or p.x == -18 or p.x == 17 or p.x == 18 or p.x == 42 or p.x == 43 or p.x == 77 or p.x == 78) and
                         (p.y == -32 or p.y == -33 or p.y == -95 or p.y == -96)
                  then
                     surface.set_tiles({{name = 'hazard-concrete-right', position = p}}, true)
@@ -436,11 +429,7 @@ local function out_of_map_area(event)
                         e.minable = false
                     end
                 elseif
-                    (p.x == 137 or p.x == 138 or p.x == 102 or p.x == 103 or p.x == 78 or p.x == 77 or p.x == 42 or p.x == 43 or p.x == 17 or p.x == 18 or p.x == -17 or p.x == -18 or
-                        p.x == -42 or
-                        p.x == -43 or
-                        p.x == -77 or
-                        p.x == -78) and
+                    (p.x == 137 or p.x == 138 or p.x == 102 or p.x == 103 or p.x == 78 or p.x == 77 or p.x == 42 or p.x == 43 or p.x == 17 or p.x == 18 or p.x == -17 or p.x == -18 or p.x == -42 or p.x == -43 or p.x == -77 or p.x == -78) and
                         (p.y == 32 or p.y == 33 or p.y == 95 or p.y == 96)
                  then
                     surface.set_tiles({{name = 'hazard-concrete-right', position = p}}, true)

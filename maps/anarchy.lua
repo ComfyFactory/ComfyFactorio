@@ -6,7 +6,7 @@ require 'modules.dynamic_player_spawn'
 
 local Event = require 'utils.event'
 local math_random = math.random
-local map_functions = require 'tools.map_functions'
+local map_functions = require 'utils.tools.map_functions'
 
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]

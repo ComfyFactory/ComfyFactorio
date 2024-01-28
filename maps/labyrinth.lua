@@ -8,11 +8,11 @@ require 'modules.satellite_score'
 local Event = require 'utils.event'
 local Server = require 'utils.server'
 local Global = require 'utils.global'
-local map_functions = require 'tools.map_functions'
+local map_functions = require 'utils.tools.map_functions'
 local simplex_noise = require 'utils.simplex_noise'.d2
 local Score = require 'utils.gui.score'
 local unique_rooms = require 'maps.labyrinth_unique_rooms'
-local SoftReset = require 'functions.soft_reset'
+local SoftReset = require 'utils.functions.soft_reset'
 local Autostash = require 'modules.autostash'
 local BottomFrame = require 'utils.gui.bottom_frame'
 local this = {
@@ -1022,7 +1022,9 @@ end
 
 local function on_entity_died(event)
     local entity = event.entity
-    if not entity or not entity.valid then return end
+    if not entity or not entity.valid then
+        return
+    end
     local name = entity.name
     local position = entity.position
     local evolution = game.forces.enemy.evolution_factor
@@ -1045,7 +1047,7 @@ local function on_entity_died(event)
             for _ = 1, math.random(t[2], t[3]), 1 do
                 local p = surface.find_non_colliding_position(t[1], position, 6, 1)
                 if p then
-                    surface.create_entity{name = t[1], position = p}
+                    surface.create_entity {name = t[1], position = p}
                 end
             end
         end
@@ -1235,7 +1237,9 @@ local loaders = {
     ['express-loader'] = true
 }
 local function on_built_entity(event)
-    if not event.created_entity or not event.created_entity.valid then return end
+    if not event.created_entity or not event.created_entity.valid then
+        return
+    end
     local get_score = Score.get_table().score_table
     local name = event.created_entity.name
     if inserters[name] then
