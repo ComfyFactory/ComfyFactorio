@@ -20,6 +20,7 @@ local min = math.min
 local module_name = Gui.uid_name()
 local next_button_name = Gui.uid_name()
 local prev_button_name = Gui.uid_name()
+local listable_players_name = Gui.uid_name()
 local rows_per_page = 100
 
 local this = {
@@ -602,7 +603,7 @@ local function create_admin_panel(data)
         checkbox_caption = 'Currently showing: all players that have played on this server.'
     end
 
-    frame.add({type = 'checkbox', name = 'admin_listable_players', caption = checkbox_caption, state = checkbox_state or false})
+    frame.add({type = 'checkbox', name = listable_players_name, caption = checkbox_caption, state = checkbox_state or false})
 
     local drop_down = frame.add({type = 'drop-down', name = 'admin_player_select', items = player_names, selected_index = selected_index})
     drop_down.style.minimal_width = 326
@@ -1039,23 +1040,6 @@ local function on_gui_selection_state_changed(event)
     end
 end
 
-local function on_gui_checked_state_changed(event)
-    local element = event.element
-    local player = game.get_player(event.player_index)
-    if not player or not player.valid then
-        return
-    end
-
-    if not element or not element.valid then
-        return
-    end
-
-    this.admin_panel_listable_players_index[player.name] = element.state
-
-    local data = {player = player, frame = element.parent}
-    create_admin_panel(data)
-end
-
 Gui.add_tab_to_gui({name = module_name, caption = 'Admin', id = create_admin_panel_token, admin = true})
 
 Gui.on_click(
@@ -1278,9 +1262,33 @@ Gui.on_click(
     end
 )
 
+Gui.on_checked_state_changed(
+    listable_players_name,
+    function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Listable players click')
+        if is_spamming then
+            return
+        end
+
+        local player = event.player
+        if not player or not player.valid then
+            return
+        end
+
+        local element = event.element
+        if not element or not element.valid then
+            return
+        end
+
+        this.admin_panel_listable_players_index[player.name] = element.state
+
+        local data = {player = player, frame = element.parent}
+        create_admin_panel(data)
+    end
+)
+
 Event.add(defines.events.on_gui_text_changed, text_changed)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_gui_selection_state_changed, on_gui_selection_state_changed)
-Event.add(defines.events.on_gui_checked_state_changed, on_gui_checked_state_changed)
 
 return Public
