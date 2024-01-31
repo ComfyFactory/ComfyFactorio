@@ -21,13 +21,12 @@ local module_name = Gui.uid_name()
 local next_button_name = Gui.uid_name()
 local prev_button_name = Gui.uid_name()
 local listable_players_name = Gui.uid_name()
-local rows_per_page = 100
+local count_label_name = Gui.uid_name()
+local rows_per_page = 500
+local create_admin_panel
 
 local this = {
-    admin_panel_selected_history_index = {},
-    admin_panel_selected_player_index = {},
-    admin_panel_listable_players_index = {},
-    admin_panel_paginator_selected_page = {}
+    player_data = {}
 }
 
 Global.register(
@@ -36,6 +35,29 @@ Global.register(
         this = tbl
     end
 )
+
+local function get_player_data(player, remove)
+    local data = this.player_data[player.name]
+    if remove and data then
+        if data and data.frame and data.frame.valid then
+            data.frame.destroy()
+        end
+
+        this.player_data[player.name] = nil
+        return
+    end
+
+    if not this.player_data[player.name] then
+        this.player_data[player.name] = {
+            selected_history_index = nil,
+            filter_player = nil,
+            show_all_players = nil,
+            current_page = nil
+        }
+    end
+
+    return this.player_data[player.name]
+end
 
 local function clear_validation_action(player_name, action)
     local admin_button_validation = AntiGrief.get('admin_button_validation')
@@ -405,6 +427,9 @@ local function match_test(value, pattern)
 end
 
 local function contains_text(key, value, search_text)
+    if not key then
+        return false
+    end
     if filter_brackets(search_text) then
         return false
     end
@@ -420,20 +445,76 @@ local function contains_text(key, value, search_text)
     return true
 end
 
-local function draw_events(data)
-    local frame = data.frame
-    local player_name = data.player_name
-    local search_text = data.search_text or nil
-    local history = frame.pagination_table.admin_history_select.items[frame.pagination_table.admin_history_select.selected_index]
+local function search_text_locally(history, player_data, callback)
+    local antigrief = AntiGrief.get()
+    local history_index = {
+        ['Capsule History'] = antigrief.capsule_history,
+        ['Message History'] = antigrief.message_history,
+        ['Friendly Fire History'] = antigrief.friendly_fire_history,
+        ['Mining History'] = antigrief.mining_history,
+        ['Mining Override History'] = antigrief.whitelist_mining_history,
+        ['Landfill History'] = antigrief.landfill_history,
+        ['Corpse Looting History'] = antigrief.corpse_history,
+        ['Cancel Crafting History'] = antigrief.cancel_crafting_history,
+        ['Deconstruct History'] = antigrief.deconstruct_history,
+        ['Scenario History'] = antigrief.scenario_history
+    }
 
-    if not this.admin_panel_paginator_selected_page[player_name] then
-        this.admin_panel_paginator_selected_page[player_name] = 1
+    local tooltip = 'Click to open mini camera.'
+    if not player_data.current_page then
+        player_data.current_page = 1
     end
 
-    local current_page = this.admin_panel_paginator_selected_page[player_name]
+    local target = game.get_player(player_data.target_player_name)
+    local search_text = player_data.search_text
 
-    local start_index = (current_page - 1) * rows_per_page + 1
+    local start_index = (player_data.current_page - 1) * rows_per_page + 1
     local end_index = start_index + rows_per_page - 1
+
+    if target ~= nil then
+        if not history_index or not history_index[history] or #history_index[history] <= 0 then
+            return
+        end
+
+        if search_text then
+            for i = start_index, end_index do
+                local success = contains_text(history_index[history][i], nil, search_text)
+                if success then
+                    if history == 'Message History' then
+                        tooltip = ''
+                    end
+
+                    callback(history_index[history][i], tooltip)
+                end
+            end
+        else
+            for i = start_index, end_index do
+                if history_index[history][i] and history_index[history][i]:find(player_data.target_player_name) then
+                    callback(history_index[history][i], tooltip)
+                end
+            end
+        end
+    else
+        if search_text then
+            for i = start_index, end_index do
+                local success = contains_text(history_index[history][i], nil, search_text)
+                if success then
+                    callback(history_index[history][i], tooltip)
+                end
+            end
+        else
+            for i = start_index, end_index do
+                callback(history_index[history][i], tooltip)
+            end
+        end
+    end
+end
+
+local function draw_events(player_data)
+    local frame = player_data.frame
+    local history = frame.pagination_table.admin_history_select.items[frame.pagination_table.admin_history_select.selected_index]
+    local target_player_name = frame['admin_player_select'].items[frame['admin_player_select'].selected_index]
+    player_data.target_player_name = target_player_name
 
     local scroll_pane
     if frame.datalog then
@@ -453,12 +534,9 @@ local function draw_events(data)
         scroll_pane.style.minimal_width = 790
     end
 
-    local target_player_name = frame['admin_player_select'].items[frame['admin_player_select'].selected_index]
-
-    Public.contains_text(
+    search_text_locally(
         history,
-        search_text,
-        target_player_name,
+        player_data,
         function(history_label, tooltip)
             if not history_label then
                 return
@@ -470,9 +548,7 @@ local function draw_events(data)
                     tooltip = tooltip
                 }
             )
-        end,
-        start_index,
-        end_index
+        end
     )
 end
 
@@ -500,28 +576,39 @@ local function text_changed(event)
         return
     end
 
-    if element.text ~= nil then
-        local data = {
-            frame = frame,
-            search_text = element.text:lower(),
-            player_name = player.name
-        }
+    local player_data = get_player_data(player)
+    player_data.frame = frame
+    player_data.search_text = element.text:lower()
 
-        draw_events(data)
+    local value = string.len(element.text)
+    if value >= 1000 then
+        player_data.search_text = nil
+        element.text = ''
+        return
     end
+
+    if player_data.search_text == '' then
+        player_data.search_text = nil
+        player_data.current_page = 1
+        local data = {player = player, frame = frame}
+        create_admin_panel(data)
+        return
+    end
+
+    draw_events(player_data)
 end
 
-local function create_pagination_buttons(player, frame, table_count)
+local function create_pagination_buttons(player_data, frame, table_count)
     if table_count == 0 then
         return
     end
     local last_page = ceil(table_count / rows_per_page)
 
-    if not this.admin_panel_paginator_selected_page[player.name] then
-        this.admin_panel_paginator_selected_page[player.name] = 1
+    if not player_data.current_page then
+        player_data.current_page = 1
     end
 
-    local current_page = this.admin_panel_paginator_selected_page[player.name]
+    local current_page = player_data.current_page
 
     if current_page == 1 and current_page == last_page then
         return
@@ -546,9 +633,11 @@ local function create_pagination_buttons(player, frame, table_count)
     local count_label =
         button_flow.add {
         type = 'label',
+        name = count_label_name,
         caption = current_page .. '/' .. last_page
     }
     count_label.style.font = 'default-bold'
+    player_data.count_label = count_label
 
     local next_button =
         button_flow.add {
@@ -561,10 +650,10 @@ local function create_pagination_buttons(player, frame, table_count)
     next_button.style.minimal_width = 32
     next_button.tooltip = 'Next page\nHolding [color=yellow]shift[/color] while pressing LMB/RMB will jump to the last page.'
 
-    Gui.set_data(next_button, table_count)
+    player_data.table_count = table_count
 end
 
-local function create_admin_panel(data)
+create_admin_panel = function(data)
     local player = data.player
     local frame = data.frame
     local antigrief = AntiGrief.get()
@@ -572,7 +661,9 @@ local function create_admin_panel(data)
         return
     end
 
-    local checkbox_state = this.admin_panel_listable_players_index[player.name]
+    local player_data = get_player_data(player)
+
+    local checkbox_state = player_data.show_all_players
 
     frame.clear()
 
@@ -589,12 +680,10 @@ local function create_admin_panel(data)
     insert(player_names, 'Select Player')
 
     local selected_index = #player_names
-    local selected = this.admin_panel_selected_player_index
+    local selected = player_data.filter_player
     if selected then
-        if selected[player.name] then
-            if player_names[selected[player.name]] then
-                selected_index = selected[player.name]
-            end
+        if player_names[selected] then
+            selected_index = selected
         end
     end
 
@@ -779,21 +868,29 @@ local function create_admin_panel(data)
         return
     end
 
-    local search_table = frame.add({type = 'table', column_count = 2})
+    local search_table = frame.add({type = 'table', column_count = 3})
     search_table.add({type = 'label', caption = 'Search: '})
     local search_text = search_table.add({type = 'textfield'})
+    search_text.text = player_data.search_text or ''
     search_text.style.width = 140
+    local btn =
+        search_table.add {
+        type = 'sprite-button',
+        tooltip = '[color=blue]Info![/color]\nSearching does not filter the amount of pages shown.\nThis is a limitation in the Factorio engine.\nIterating over the whole table would lag the game.\nSo when searching, you will still see the same amount of pages.\nAnd the results will be "janky".',
+        sprite = 'utility/questionmark'
+    }
+    btn.style.height = 20
+    btn.style.width = 20
+    btn.enabled = false
+    btn.focus()
 
     local bottomLine2 = frame.add({type = 'label', caption = '----------------------------------------------'})
     bottomLine2.style.font = 'default-listbox'
     bottomLine2.style.font_color = {r = 0.98, g = 0.66, b = 0.22}
 
     local selected_index_2 = 1
-    local selected_history = this.admin_panel_selected_history_index
-    if selected_history then
-        if selected_history[player.name] then
-            selected_index_2 = selected_history[player.name]
-        end
+    if player_data and player_data.selected_history_index then
+        selected_index_2 = player_data.selected_history_index
     end
 
     local pagination_table = frame.add({type = 'table', column_count = 2, name = 'pagination_table'})
@@ -817,15 +914,11 @@ local function create_admin_panel(data)
 
     local history = frame.pagination_table.admin_history_select.items[frame.pagination_table.admin_history_select.selected_index]
 
-    create_pagination_buttons(player, pagination_table, #history_index[history])
+    create_pagination_buttons(player_data, pagination_table, #history_index[history])
 
-    local datas = {
-        frame = frame,
-        antigrief = antigrief,
-        player_name = player.name
-    }
+    player_data.frame = frame
 
-    draw_events(datas)
+    draw_events(player_data)
 end
 
 local create_admin_panel_token = Token.register(create_admin_panel)
@@ -995,12 +1088,19 @@ local function on_gui_click(event)
     create_mini_camera_gui(player, element.caption, position, surface)
 end
 
+local function on_gui_closed(event)
+    local player = game.get_player(event.player_index)
+
+    get_player_data(player, true)
+end
+
 local function on_gui_selection_state_changed(event)
     local player = game.get_player(event.player_index)
     local name = event.element.name
 
     if name == 'admin_history_select' then
-        this.admin_panel_selected_history_index[player.name] = event.element.selected_index
+        local player_data = get_player_data(player)
+        player_data.selected_history_index = event.element.selected_index
 
         local frame = Gui.get_player_active_frame(player)
         if not frame then
@@ -1010,7 +1110,7 @@ local function on_gui_selection_state_changed(event)
             return
         end
 
-        this.admin_panel_paginator_selected_page[player.name] = 1
+        player_data.current_page = 1
 
         local is_spamming = SpamProtection.is_spamming(player, nil, 'Admin Selection Changed')
         if is_spamming then
@@ -1020,7 +1120,8 @@ local function on_gui_selection_state_changed(event)
         create_admin_panel(data)
     end
     if name == 'admin_player_select' then
-        this.admin_panel_selected_player_index[player.name] = event.element.selected_index
+        local player_data = get_player_data(player)
+        player_data.filter_player = event.element.selected_index
 
         local frame = Gui.get_player_active_frame(player)
         if not frame then
@@ -1050,7 +1151,7 @@ Gui.on_click(
     end
 )
 
-function Public.contains_text(history, search_text, target_player_name, callback, start_index, end_index)
+function Public.contains_text(history, search_text, target_player_name)
     local antigrief = AntiGrief.get()
     local history_index = {
         ['Capsule History'] = antigrief.capsule_history,
@@ -1065,102 +1166,43 @@ function Public.contains_text(history, search_text, target_player_name, callback
         ['Scenario History'] = antigrief.scenario_history
     }
 
-    local tooltip = 'Click to open mini camera.'
     local remote_tbl = {}
 
-    if game.get_player(target_player_name) ~= nil then
+    if target_player_name and string.len(target_player_name) > 0 and game.get_player(target_player_name) ~= nil then
         if not history_index or not history_index[history] or #history_index[history] <= 0 then
             return
         end
 
-        if start_index then
-            for i = start_index, end_index do
-                if history_index[history][i] and history_index[history][i]:find(target_player_name) then
-                    if search_text then
-                        local success = contains_text(history_index[history][i], nil, search_text)
-                        if not success then
-                            goto continue
-                        end
+        for i = #history_index[history], 1, -1 do
+            if history_index[history][i]:find(target_player_name) then
+                if search_text then
+                    local success = contains_text(history_index[history][i], nil, search_text)
+                    if not success then
+                        goto continue
                     end
-
-                    if callback then
-                        if history == 'Message History' then
-                            tooltip = ''
-                        end
-
-                        callback(history_index[history][i], tooltip)
-                    else
-                        remote_tbl[#remote_tbl + 1] = history_index[history][i]
-                    end
-
-                    ::continue::
                 end
-            end
-        else
-            for i = #history_index[history], 1, -1 do
-                if history_index[history][i]:find(target_player_name) then
-                    if search_text then
-                        local success = contains_text(history_index[history][i], nil, search_text)
-                        if not success then
-                            goto continue
-                        end
-                    end
 
-                    if callback then
-                        if history == 'Message History' then
-                            tooltip = ''
-                        end
+                remote_tbl[#remote_tbl + 1] = history_index[history][i]
 
-                        callback(history_index[history][i], tooltip)
-                    else
-                        remote_tbl[#remote_tbl + 1] = history_index[history][i]
-                    end
-
-                    ::continue::
-                end
+                ::continue::
             end
         end
     else
-        if start_index then
-            for i = start_index, end_index do
-                if search_text then
-                    local success = contains_text(history_index[history][i], nil, search_text)
-                    if not success then
-                        goto continue
-                    end
+        for i = #history_index[history], 1, -1 do
+            if search_text then
+                local success = contains_text(history_index[history][i], nil, search_text)
+                if not success then
+                    goto continue
                 end
-
-                if callback then
-                    callback(history_index[history][i], tooltip)
-                else
-                    remote_tbl[#remote_tbl + 1] = history_index[history][i]
-                end
-
-                ::continue::
             end
-        else
-            for i = #history_index[history], 1, -1 do
-                if search_text then
-                    local success = contains_text(history_index[history][i], nil, search_text)
-                    if not success then
-                        goto continue
-                    end
-                end
 
-                if callback then
-                    callback(history_index[history][i], tooltip)
-                else
-                    remote_tbl[#remote_tbl + 1] = history_index[history][i]
-                end
+            remote_tbl[#remote_tbl + 1] = history_index[history][i]
 
-                ::continue::
-            end
+            ::continue::
         end
     end
 
-    if not callback then
-        return remote_tbl
-    end
+    return remote_tbl
 end
 
 Gui.on_click(
@@ -1175,20 +1217,22 @@ Gui.on_click(
             return
         end
 
+        local player_data = get_player_data(player)
+
         local element = event.element
         if not element or not element.valid then
             return
         end
 
-        if not this.admin_panel_paginator_selected_page[player.name] then
-            this.admin_panel_paginator_selected_page[player.name] = 1
+        if not player_data.current_page then
+            player_data.current_page = 1
         end
 
-        local current_page = this.admin_panel_paginator_selected_page[player.name]
+        local current_page = player_data.current_page
 
         if current_page == 1 then
             current_page = 1
-            this.admin_panel_paginator_selected_page[player.name] = current_page
+            player_data.current_page = current_page
             player.print('[Admin] There are no more pages beyond this point.', Color.warning)
             return
         end
@@ -1200,7 +1244,7 @@ Gui.on_click(
             current_page = max(1, current_page - 1)
         end
 
-        this.admin_panel_paginator_selected_page[player.name] = current_page
+        player_data.current_page = current_page
 
         local data = {player = player, frame = element.parent.parent.parent}
         create_admin_panel(data)
@@ -1222,27 +1266,26 @@ Gui.on_click(
 
         local player = event.player
         if not player or not player.valid then
-            Gui.remove_data_recursively(element)
             return
         end
 
-        local element_indices = Gui.get_data(element)
-        if not element_indices then
-            Gui.remove_data_recursively(element)
+        local player_data = get_player_data(player)
+
+        local table_count = player_data.table_count
+        if not table_count then
             return
         end
 
-        if not this.admin_panel_paginator_selected_page[player.name] then
-            this.admin_panel_paginator_selected_page[player.name] = 1
+        if not player_data.current_page then
+            player_data.current_page = 1
         end
 
-        local current_page = this.admin_panel_paginator_selected_page[player.name]
-        local last_page = ceil(element_indices / rows_per_page)
+        local current_page = player_data.current_page
+        local last_page = ceil(table_count / rows_per_page)
 
         if current_page == last_page then
             current_page = last_page
-            this.admin_panel_paginator_selected_page[player.name] = current_page
-            Gui.remove_data_recursively(element)
+            player_data.current_page = current_page
             player.print('[Admin] There are no more pages beyond this point.', Color.warning)
             return
         end
@@ -1254,8 +1297,7 @@ Gui.on_click(
             current_page = min(last_page, current_page + 1)
         end
 
-        this.admin_panel_paginator_selected_page[player.name] = current_page
-        Gui.remove_data_recursively(element)
+        player_data.current_page = current_page
 
         local data = {player = player, frame = element.parent.parent.parent}
         create_admin_panel(data)
@@ -1275,12 +1317,14 @@ Gui.on_checked_state_changed(
             return
         end
 
+        local player_data = get_player_data(player)
+
         local element = event.element
         if not element or not element.valid then
             return
         end
 
-        this.admin_panel_listable_players_index[player.name] = element.state
+        player_data.show_all_players = element.state
 
         local data = {player = player, frame = element.parent}
         create_admin_panel(data)
@@ -1290,5 +1334,6 @@ Gui.on_checked_state_changed(
 Event.add(defines.events.on_gui_text_changed, text_changed)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_gui_selection_state_changed, on_gui_selection_state_changed)
+Event.add(Gui.events.on_gui_closed_main_frame, on_gui_closed)
 
 return Public

@@ -1114,7 +1114,7 @@ function Public.insert_into_capsule_history(player, position, msg)
         this.capsule_history = {}
     end
     if this.limit > 0 and #this.capsule_history > this.limit then
-        this.capsule_history = {}
+        overflow(this.capsule_history)
     end
     local t = abs(floor((game.tick) / 60))
     local formatted = FancyTime.short_fancy_time(t)
@@ -1253,7 +1253,7 @@ function Public.append_scenario_history(player, entity, message)
         this.scenario_history = {}
     end
     if this.limit > 0 and #this.scenario_history > this.limit + 8000 then
-        this.scenario_history = {}
+        overflow(this.scenario_history)
     end
     local t = abs(floor((game.tick) / 60))
     local formatted = FancyTime.short_fancy_time(t)

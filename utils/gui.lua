@@ -10,7 +10,10 @@ local tostring = tostring
 local next = next
 
 local Public = {}
-Public.events = {on_gui_removal = Event.generate_event_name('on_gui_removal')}
+Public.events = {
+    on_gui_removal = Event.generate_event_name('on_gui_removal'),
+    on_gui_closed_main_frame = Event.generate_event_name('on_gui_closed_main_frame')
+}
 
 -- local to this file
 local local_settings = {
@@ -678,6 +681,7 @@ function Public.clear_all_screen_frames(player)
 end
 
 function Public.clear_all_active_frames(player)
+    Event.raise(Public.events.on_gui_closed_main_frame, {player_index = player.index})
     for _, child in pairs(player.gui.left.children) do
         remove_data_recursively(child)
         child.destroy()
@@ -835,6 +839,8 @@ local function draw_main_frame(player)
         child.style.right_padding = 2
     end
 
+    player.opened = frame
+
     Public.reload_active_tab(player, true)
     return frame, inside_frame
 end
@@ -942,6 +948,8 @@ Public.on_click(
             remove_data_recursively(frame)
             frame.destroy()
             Event.raise(Public.events.on_gui_removal, {player_index = player.index})
+            local active_frame = Public.get_player_active_frame(player)
+            Event.raise(Public.events.on_gui_closed_main_frame, {player_index = player.index, element = active_frame or nil})
         else
             draw_main_frame(player)
         end
@@ -951,11 +959,23 @@ Public.on_click(
 Public.on_click(
     close_button_name,
     function(event)
-        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Main button')
-        if is_spamming then
-            return
-        end
         local player = event.player
+        local frame = Public.get_parent_frame(player)
+        local active_frame = Public.get_player_active_frame(player)
+        Event.raise(Public.events.on_gui_closed_main_frame, {player_index = player.index, element = active_frame or nil})
+        if frame then
+            remove_data_recursively(frame)
+            frame.destroy()
+        end
+    end
+)
+
+Public.on_custom_close(
+    main_frame_name,
+    function(event)
+        local player = event.player
+        local active_frame = Public.get_player_active_frame(player)
+        Event.raise(Public.events.on_gui_closed_main_frame, {player_index = player.index, element = active_frame or nil})
         local frame = Public.get_parent_frame(player)
         if frame then
             remove_data_recursively(frame)
