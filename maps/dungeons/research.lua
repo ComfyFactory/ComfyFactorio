@@ -1,7 +1,9 @@
 --- Tuning factors
-local first_research_room_min = 60
+  --每层探索达到这个数值开始刷科研房
+local first_research_room_min = 9
 local first_research_floor_scale = 1
-local last_research_room_max = 300
+  --每层探索达到这个数值前将所有的科研房刷完
+local last_research_room_max = 59
 local last_research_floor_scale = 2.5
 
 -- Early technologies are cheap and we have lots of excess resources for them. Slow down the early part of the
@@ -91,7 +93,8 @@ function Fixed.unlock_research(surface_index)
     local techs = game.forces.player.technologies
     local tech = get_surface_research(surface_index)
     if tech and techs[tech].enabled == false then
-        techs[tech].enabled = true
+        techs[tech].enabled = true  --锁定解锁
+        --techs[tech].enabled = true  --直接变为已研究
         game.print({'dungeons_tiered.tech_unlock', '[technology=' .. tech .. ']', floor_num(surface_index)})
     end
 end
@@ -234,7 +237,7 @@ local all_research = {
    { name = "uranium-processing", min = 8, max = 13 },
    { name = "power-armor", min = 8, max = 13 },
    { name = "advanced-material-processing-2", min = 8, max = 13 },
-   { name = "logistic-robotics", min = 8, max = 13 },
+   --{ name = "logistic-robotics", min = 8, max = 13 },
    { name = "research-speed-3", min = 8, max = 13 },
    { name = "inserter-capacity-bonus-3", min = 8, max = 13 },
    { name = "advanced-electronics-2", min = 8, max = 13 },
@@ -482,7 +485,8 @@ function Variable.unlock_research(index)
       game.print('BUG: attempt to duplicate-unlock technology ' .. tech.name)
       return
    end
-   game.forces.player.technologies[tech.name].enabled = true
+   game.forces.player.technologies[tech.name].enabled = true  --锁定解锁
+   --game.forces.player.technologies[tech.name].researched = true  --直接变为已研究
    game.print({'dungeons_tiered.tech_unlock', '[technology=' .. tech.name .. ']', floor})
    local floor_fraction = (tech_scale_end_level - floor) / tech_scale_end_level
    if floor_fraction < 0 then
@@ -492,7 +496,7 @@ function Variable.unlock_research(index)
       (tech_scale_start_price - tech_scale_end_price) * floor_fraction
    if tech_multiplier < game.difficulty_settings.technology_price_multiplier then
       game.difficulty_settings.technology_price_multiplier = tech_multiplier
-      game.print('Finding technology on floor ' .. floor .. ' made research easier')
+      game.print('如果在第 ' .. floor .. ' 层仔细搜索隐藏的知识并加以研究的话，可以大大降低游戏难度')
    end
    Variable.relock_research()
 end

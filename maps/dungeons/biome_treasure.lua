@@ -42,7 +42,7 @@ local function treasure(surface, room)
 	-- Small rooms are 9x9, big ones are 29x29, so 100-1000 tiles
 	-- middle size about 400 tiles, but test at that showed treasure rooms over-buffed.
 	-- test#2 at 200.
-	scale_factor = 10 * 200 / #tiles
+	scale_factor = 10 * 10000 / #tiles  --珍宝室的矿物含量  基础系数
     end
     for _, tile in pairs(tiles) do
         surface.set_tiles({{name = rainbow_tiles[math_random(1, 2)], position = tile.position}}, true)
