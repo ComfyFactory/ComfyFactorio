@@ -8,10 +8,10 @@ require 'modules.charging_station'
 local MIN_ROOMS_TO_DESCEND = 30  --最小探索几个房间
 
 local MapInfo = require 'modules.map_info'
-local Room_generator = require 'functions.room_generator'
+local Room_generator = require 'utils.functions.room_generator'
 local RPG = require 'modules.rpg.main'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
-local BiterRaffle = require 'functions.biter_raffle'
+local BiterRaffle = require 'utils.functions.biter_raffle'
 local Functions = require 'maps.dungeons.functions'
 local Get_noise = require 'utils.get_noise'
 local Alert = require 'utils.alert'
@@ -785,17 +785,17 @@ local function on_player_respawned(event)--复活
     draw_light(game.players[event.player_index])--设置光亮值
     local player = game.players[event.player_index]--获取玩家id
     player.character.destructible=false  --赋予无敌
-    local message = ('复活防蹲点机制：赋予保护20s!\n此窗口即是倒计时!')--预定义消息
+    local message = ('复活防蹲点机制：赋予保护20s!\n此窗口即是倒计时!')--预定义消息-如果玩家下线则没法解除 所以转移楼层也会解除
     Alert.alert_player_warning(player, 20,message)--发送消息
     Task.set_timeout_in_ticks(60*20, un_player_destructible, player)  --定时20s以后调用解除无敌
     local entities = player.surface.find_entities_filtered{position=player.position, radius = 20 , name =biter_name,force = game.forces.enemy}
         if #entities ~= 0 then for k,v in pairs(entities) do v.die() end
     end--循环查找范围内阵营为enemy的虫子，执行死亡操作
-    player.insert({name = 'raw-fish', count = 8})--初始物品-鱼
-    player.insert({name = 'poison-capsule', count = 8})--初始物品-剧毒胶囊
-    player.insert({name = 'slowdown-capsule', count = 8})--初始物品-减速胶囊
-    player.insert({name = 'distractor-capsule', count = 8})--初始物品-掩护无人机胶囊
-    player.insert({name = 'defender-capsule', count = 8})--初始物品-防御无人机胶囊
+    player.insert({name = 'raw-fish', count = 4})--初始物品-鱼
+    player.insert({name = 'poison-capsule', count = 2})--初始物品-剧毒胶囊
+    player.insert({name = 'slowdown-capsule', count = 2})--初始物品-减速胶囊
+    player.insert({name = 'distractor-capsule', count = 4})--初始物品-掩护无人机胶囊
+    player.insert({name = 'defender-capsule', count = 2})--初始物品-防御无人机胶囊
 end
 
 -- local function on_player_changed_position(event)

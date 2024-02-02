@@ -7,8 +7,8 @@ local LOOT_EVOLUTION_SCALE_FACTOR = 0.9
 local LOOT_MULTIPLIER = 3000
 local EVOLUTION_PER_FLOOR = 0.06
 
-local BiterRaffle = require 'functions.biter_raffle'
-local LootRaffle = require 'functions.loot_raffle'
+local BiterRaffle = require 'utils.functions.biter_raffle'
+local LootRaffle = require 'utils.functions.loot_raffle'
 local Get_noise = require 'utils.get_noise'
 local DungeonsTable = require 'maps.dungeons.table'
 
