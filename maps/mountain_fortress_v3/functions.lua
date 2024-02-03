@@ -835,8 +835,17 @@ remove_boost_movement_speed_on_respawn =
         if not player or not player.valid then
             return
         end
+        if not data.tries then
+            data.tries = 0
+        end
+
         if not player.character or not player.character.valid then
-            Task.set_timeout_in_ticks(10, remove_boost_movement_speed_on_respawn, {player = player})
+            data.tries = data.tries + 1
+            if data.tries > 10 then
+                return
+            end
+
+            Task.set_timeout_in_ticks(10, remove_boost_movement_speed_on_respawn, {player = player, tries = data.tries})
             return
         end
 

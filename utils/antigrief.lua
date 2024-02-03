@@ -123,9 +123,7 @@ end
 
 -- Removes the first 100 entries of a table
 local function overflow(t)
-    for _ = 1, 100, 1 do
-        table.remove(t, 1)
-    end
+    table.remove(t, 1)
 end
 
 local function get_entities(item_name, entities)
