@@ -206,8 +206,8 @@ function Public.initialize(init)
         mgs.terrain_segmentation = 'very-low'
         mgs.autoplace_controls.trees = {
             frequency = 0.666,
-            richness = 1,
-            size = 1.5
+            richness = 2,
+            size = 2
         }
         mgs.property_expression_names = {
             ['control-setting:aux:bias'] = '-0.500000',

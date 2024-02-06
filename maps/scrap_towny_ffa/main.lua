@@ -284,4 +284,4 @@ Event.add(
     end
 )
 
-require 'maps.scrap_towny_ffa.scrap_towny_ffa_layout'
+require 'maps.scrap_towny_ffa.terrain'
