@@ -114,6 +114,7 @@ local announce_new_map =
 )
 
 function Public.reset_map()
+    game.forces.player.reset()
     local this = Public.get()
     local wave_defense_table = WD.get_table()
     Misc.reset()

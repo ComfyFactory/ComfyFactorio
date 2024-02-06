@@ -17,6 +17,7 @@ local Core = require 'utils.core'
 local Beams = require 'modules.render_beam'
 local BottomFrame = require 'utils.gui.bottom_frame'
 local Modifiers = require 'utils.player_modifiers'
+local Session = require 'utils.datastore.session_data'
 
 local zone_settings = Public.zone_settings
 local remove_boost_movement_speed_on_respawn
@@ -1666,6 +1667,46 @@ function Public.get_func(key)
         return this[key]
     else
         return this
+    end
+end
+
+function Public.show_all_gui(player)
+    for _, child in pairs(player.gui.top.children) do
+        child.visible = true
+    end
+end
+
+function Public.clear_spec_tag(player)
+    if player.tag == '[Spectator]' then
+        player.tag = ''
+    end
+end
+
+function Public.equip_players(starting_items)
+    local players = Public.get('players')
+
+    for _, player in pairs(game.players) do
+        if player.character and player.character.valid then
+            player.character.destroy()
+        end
+        if player.connected then
+            if not player.character then
+                player.set_controller({type = defines.controllers.god})
+                player.create_character()
+            end
+            player.clear_items_inside()
+            Modifiers.update_player_modifiers(player)
+            starting_items = starting_items or this.starting_items
+            for item, item_data in pairs(this.starting_items) do
+                player.insert({name = item, count = item_data.count})
+            end
+            Public.show_all_gui(player)
+            Public.clear_spec_tag(player)
+        else
+            players[player.index] = nil
+            Session.clear_player(player)
+            game.remove_offline_players({player.index})
+        end
     end
 end
 

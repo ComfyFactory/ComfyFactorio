@@ -16,7 +16,6 @@ Global.register(
 )
 
 function Public.create_surface()
-    local starting_items = Public.get_func('starting_items')
     local map_gen_settings = {
         ['seed'] = math.random(10000, 99999),
         ['width'] = zone_settings.zone_width,
@@ -55,7 +54,7 @@ function Public.create_surface()
     if not this.active_surface_index then
         this.active_surface_index = game.create_surface(surface_name, map_gen_settings).index
     else
-        this.active_surface_index = Public.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings, starting_items).index
+        this.active_surface_index = Public.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings).index
     end
 
     -- this.soft_reset_counter = Public.get_reset_counter()

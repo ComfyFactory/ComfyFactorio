@@ -1,22 +1,8 @@
 local Server = require 'utils.server'
-local Session = require 'utils.datastore.session_data'
-local Modifers = require 'utils.player_modifiers'
 local Public = require 'maps.mountain_fortress_v3.table'
 local Event = require 'utils.event'
 
 local mapkeeper = '[color=blue]Mapkeeper:[/color]'
-
-local function show_all_gui(player)
-    for _, child in pairs(player.gui.top.children) do
-        child.visible = true
-    end
-end
-
-local function clear_spec_tag(player)
-    if player.tag == '[Spectator]' then
-        player.tag = ''
-    end
-end
 
 local function reset_forces(new_surface, old_surface)
     for _, f in pairs(game.forces) do
@@ -45,31 +31,6 @@ local function teleport_players(surface)
 
     for _, player in pairs(game.connected_players) do
         player.teleport(surface.find_non_colliding_position('character', position, 3, 0, 5), surface)
-    end
-end
-
-local function equip_players(player_starting_items, data)
-    for _, player in pairs(game.players) do
-        if player.character and player.character.valid then
-            player.character.destroy()
-        end
-        if player.connected then
-            if not player.character then
-                player.set_controller({type = defines.controllers.god})
-                player.create_character()
-            end
-            player.clear_items_inside()
-            Modifers.update_player_modifiers(player)
-            for item, item_data in pairs(player_starting_items) do
-                player.insert({name = item, count = item_data.count})
-            end
-            show_all_gui(player)
-            clear_spec_tag(player)
-        else
-            data.players[player.index] = nil
-            Session.clear_player(player)
-            game.remove_offline_players({player.index})
-        end
     end
 end
 
@@ -147,7 +108,7 @@ local function scheduled_surface_clearing()
     end
 end
 
-function Public.soft_reset_map(old_surface, map_gen_settings, player_starting_items)
+function Public.soft_reset_map(old_surface, map_gen_settings)
     local this = Public.get()
 
     if not this.soft_reset_counter then
@@ -164,7 +125,6 @@ function Public.soft_reset_map(old_surface, map_gen_settings, player_starting_it
 
     reset_forces(new_surface, old_surface)
     teleport_players(new_surface)
-    equip_players(player_starting_items, this)
 
     Public.add_schedule_to_delete_surface(true)
 
