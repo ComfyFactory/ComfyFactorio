@@ -7,7 +7,7 @@ local AntiGrief = require 'utils.antigrief'
 local SpamProtection = require 'utils.spam_protection'
 local Color = require 'utils.color_presets'
 local Server = require 'utils.server'
-local Task = require 'utils.task'
+local Task = require 'utils.task_token'
 local Token = require 'utils.token'
 local Global = require 'utils.global'
 local Public = {}
@@ -58,6 +58,29 @@ local function get_player_data(player, remove)
 
     return this.player_data[player.name]
 end
+
+local delayed_last_page_token =
+    Task.register(
+    function(event)
+        local player_index = event.player_index
+        local player = game.get_player(player_index)
+        if not player or not player.valid then
+            return
+        end
+
+        local element = event.element
+        if not element or not element.valid then
+            return
+        end
+
+        local player_data = get_player_data(player)
+        local last_page = ceil(player_data.table_count / rows_per_page)
+
+        player_data.current_page = last_page
+        local data = {player = player, frame = element}
+        create_admin_panel(data)
+    end
+)
 
 local function clear_validation_action(player_name, action)
     local admin_button_validation = AntiGrief.get('admin_button_validation')
@@ -477,7 +500,7 @@ local function search_text_locally(history, player_data, callback)
         end
 
         if search_text then
-            for i = start_index, end_index do
+            for i = end_index, start_index, -1 do
                 local success = contains_text(history_index[history][i], nil, search_text)
                 if success then
                     if history == 'Message History' then
@@ -488,7 +511,7 @@ local function search_text_locally(history, player_data, callback)
                 end
             end
         else
-            for i = start_index, end_index do
+            for i = end_index, start_index, -1 do
                 if history_index[history][i] and history_index[history][i]:find(player_data.target_player_name) then
                     callback(history_index[history][i], tooltip)
                 end
@@ -496,14 +519,14 @@ local function search_text_locally(history, player_data, callback)
         end
     else
         if search_text then
-            for i = start_index, end_index do
+            for i = end_index, start_index, -1 do
                 local success = contains_text(history_index[history][i], nil, search_text)
                 if success then
                     callback(history_index[history][i], tooltip)
                 end
             end
         else
-            for i = start_index, end_index do
+            for i = end_index, start_index, -1 do
                 callback(history_index[history][i], tooltip)
             end
         end
@@ -589,7 +612,8 @@ local function text_changed(event)
 
     if player_data.search_text == '' then
         player_data.search_text = nil
-        player_data.current_page = 1
+        local last_page = ceil(player_data.table_count / rows_per_page)
+        player_data.current_page = last_page
         local data = {player = player, frame = frame}
         create_admin_panel(data)
         return
@@ -605,7 +629,7 @@ local function create_pagination_buttons(player_data, frame, table_count)
     local last_page = ceil(table_count / rows_per_page)
 
     if not player_data.current_page then
-        player_data.current_page = 1
+        player_data.current_page = last_page
     end
 
     local current_page = player_data.current_page
@@ -1110,6 +1134,8 @@ local function on_gui_selection_state_changed(event)
             return
         end
 
+        Task.set_timeout_in_ticks(5, delayed_last_page_token, {player_index = player.index, element = frame})
+
         player_data.current_page = 1
 
         local is_spamming = SpamProtection.is_spamming(player, nil, 'Admin Selection Changed')
@@ -1224,8 +1250,10 @@ Gui.on_click(
             return
         end
 
+        local last_page = ceil(player_data.table_count / rows_per_page)
+
         if not player_data.current_page then
-            player_data.current_page = 1
+            player_data.current_page = last_page
         end
 
         local current_page = player_data.current_page
@@ -1276,12 +1304,12 @@ Gui.on_click(
             return
         end
 
+        local last_page = ceil(table_count / rows_per_page)
         if not player_data.current_page then
-            player_data.current_page = 1
+            player_data.current_page = last_page
         end
 
         local current_page = player_data.current_page
-        local last_page = ceil(table_count / rows_per_page)
 
         if current_page == last_page then
             current_page = last_page
