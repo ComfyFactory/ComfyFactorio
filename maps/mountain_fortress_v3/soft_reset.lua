@@ -125,6 +125,7 @@ function Public.soft_reset_map(old_surface, map_gen_settings)
 
     reset_forces(new_surface, old_surface)
     teleport_players(new_surface)
+    Public.equip_players(nil, true)
 
     Public.add_schedule_to_delete_surface(true)
 

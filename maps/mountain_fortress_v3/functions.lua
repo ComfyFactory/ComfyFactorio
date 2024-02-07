@@ -1682,7 +1682,7 @@ function Public.clear_spec_tag(player)
     end
 end
 
-function Public.equip_players(starting_items)
+function Public.equip_players(starting_items, recreate)
     local players = Public.get('players')
 
     for _, player in pairs(game.players) do
@@ -1696,9 +1696,11 @@ function Public.equip_players(starting_items)
             end
             player.clear_items_inside()
             Modifiers.update_player_modifiers(player)
-            starting_items = starting_items or this.starting_items
-            for item, item_data in pairs(this.starting_items) do
-                player.insert({name = item, count = item_data.count})
+            if not recreate then
+                starting_items = starting_items or this.starting_items
+                for item, item_data in pairs(this.starting_items) do
+                    player.insert({name = item, count = item_data.count})
+                end
             end
             Public.show_all_gui(player)
             Public.clear_spec_tag(player)
