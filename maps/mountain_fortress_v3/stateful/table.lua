@@ -169,25 +169,25 @@ local function get_random_force_buff(fetch_all)
             name = 'worker_robots_storage_bonus',
             discord = 'Robot storage bonus',
             modifier = 'force',
-            state = 0.05
+            state = 1
         },
         {
             name = 'worker_robots_battery_modifier',
             discord = 'Robot battery bonus',
             modifier = 'force',
-            state = 0.05
+            state = 1
         },
         {
             name = 'worker_robots_speed_modifier',
             discord = 'Robot speed modifier',
             modifier = 'force',
-            state = 0.05
+            state = 0.5
         },
         {
             name = 'mining_drill_productivity_bonus',
             discord = 'Drill productivity bonus',
             modifier = 'force',
-            state = 0.05
+            state = 0.5
         },
         {
             name = 'character_health_bonus',
@@ -1188,7 +1188,6 @@ local function grant_non_limit_reached_buff()
     if not all_buffs[1] then
         return get_random_force_buff()
     end
-
 
     return all_buffs[1]
 end
