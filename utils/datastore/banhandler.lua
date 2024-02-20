@@ -10,8 +10,7 @@ local ban_by_join_enabled = false
 local try_get_ban = Server.try_get_ban
 
 local valid_commands = {
-    ['ban'] = true,
-    ['unban'] = true
+    ['ban'] = true
 }
 
 local try_get_is_banned_token =

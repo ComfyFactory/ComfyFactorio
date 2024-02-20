@@ -1432,9 +1432,6 @@ function Public.ban_handler(event)
         return
     end
 
-    local reason
-    local str = ''
-
     local t = {}
     for i in gmatch(user, '%S+') do
         insert(t, i)
@@ -1442,62 +1439,12 @@ function Public.ban_handler(event)
 
     local target = t[1]
 
-    for i = 2, #t do
-        str = str .. t[i] .. ' '
-        reason = str
-    end
-
     if not target then
         return print('[on_console_command] - target was undefined.')
     end
 
-    if event.player_index then
-        local player = game.get_player(event.player_index)
-        if player and player.valid and player.admin then
-            local data = Public.build_embed_data()
-            data.username = target
-            data.admin = player.name
-
-            if cmd == 'ban' then
-                Public.set_data(jailed_data_set, target, nil) -- this is added here since we don't want to clutter the jail dataset.
-                if not reason then
-                    data.reason = 'Not specified.'
-                    Public.to_banned_embed(data)
-                    return
-                else
-                    data.reason = reason
-                    Public.to_banned_embed(data)
-                    return
-                end
-            elseif cmd == 'unban' then
-                Public.to_unbanned_embed(data)
-                return
-            end
-        end
-    else
-        local data = Public.build_embed_data()
-        data.username = target
-        data.admin = '<server>'
-
-        if event.user_override then
-            data.admin = event.user_override
-        end
-
-        if cmd == 'ban' then
-            Public.set_data(jailed_data_set, target, nil) -- this is added here since we don't want to clutter the jail dataset.
-            if not reason then
-                data.reason = 'Not specified.'
-                Public.to_banned_embed(data)
-                return
-            else
-                data.reason = reason
-                Public.to_banned_embed(data)
-                return
-            end
-        elseif cmd == 'unban' then
-            Public.to_unbanned_embed(data)
-            return
-        end
+    if cmd == 'ban' then
+        Public.set_data(jailed_data_set, target, nil) -- this is added here since we don't want to clutter the jail dataset.
     end
 end
 

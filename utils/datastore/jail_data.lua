@@ -608,7 +608,7 @@ local function jail(player, offender, msg, raised, mute)
     end
 
     local to_jail_player = game.get_player(offender)
-    if not to_jail_player then
+    if not to_jail_player or not to_jail_player.valid then
         return
     end
 
