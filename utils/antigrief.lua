@@ -319,6 +319,7 @@ local function on_player_built_tile(event)
     str = str .. ' '
     str = str .. 'surface:' .. surface
     increment(this.landfill_history, str)
+    Server.log_antigrief_data('landfill', str)
 end
 
 local function on_built_entity(event)
@@ -425,6 +426,7 @@ local function on_player_used_capsule(event)
         str = str .. ' '
         str = str .. 'surface:' .. player.surface.index
         increment(this.capsule_history, str)
+        Server.log_antigrief_data('capsule', str)
     end
 end
 
@@ -483,6 +485,7 @@ local function on_entity_died(event)
         str = str .. ' '
         str = str .. 'surface:' .. event.entity.surface.index
         increment(this.friendly_fire_history, str)
+        Server.log_antigrief_data('friendly_fire', str)
     elseif not blacklisted_types[event.entity.type] and this.whitelist_types[event.entity.type] then
         if cause then
             if cause.force.name ~= 'player' then
@@ -514,8 +517,10 @@ local function on_entity_died(event)
 
         if cause and cause.name == 'character' and cause.player then
             increment(this.friendly_fire_history, str)
+            Server.log_antigrief_data('friendly_fire', str)
         else
             increment(this.friendly_fire_history, str)
+            Server.log_antigrief_data('friendly_fire', str)
         end
     end
 end
@@ -554,6 +559,7 @@ local function on_player_mined_entity(event)
         str = str .. ' '
         str = str .. 'surface:' .. entity.surface.index
         increment(this.whitelist_mining_history, str)
+        Server.log_antigrief_data('whitelist_mining', str)
         return
     end
 
@@ -589,6 +595,7 @@ local function on_player_mined_entity(event)
     str = str .. ' '
     str = str .. 'surface:' .. event.entity.surface.index
     increment(this.mining_history, str)
+    Server.log_antigrief_data('mining', str)
 end
 
 local function on_gui_opened(event)
@@ -641,6 +648,7 @@ local function on_gui_opened(event)
         str = str .. ' '
         str = str .. 'surface:' .. event.entity.surface.index
         increment(this.corpse_history, str)
+        Server.log_antigrief_data('corpse', str)
     end
 end
 
@@ -696,6 +704,7 @@ local function on_pre_player_mined_item(event)
         str = str .. ' '
         str = str .. 'surface:' .. entity.surface.index
         increment(this.corpse_history, str)
+        Server.log_antigrief_data('corpse', str)
     end
 end
 
@@ -831,6 +840,7 @@ local function on_player_cancelled_crafting(event)
         str = str .. ' '
         str = str .. 'surface:' .. player.surface.index
         increment(this.cancel_crafting_history, str)
+        Server.log_antigrief_data('cancel_crafting', str)
     end
 end
 
@@ -955,6 +965,7 @@ local function on_player_deconstructed_area(event)
         str = str .. ' '
         str = str .. 'surface:' .. player.surface.index
         increment(this.deconstruct_history, str)
+        Server.log_antigrief_data('deconstruct', str)
 
         if this.enable_jail_when_decon and not player.admin then
             if not this.players_warn_when_decon[player.index] then
@@ -1124,6 +1135,7 @@ function Public.insert_into_capsule_history(player, position, msg)
     str = str .. ' '
     str = str .. 'surface:' .. player.surface.index
     increment(this.capsule_history, str)
+    Server.log_antigrief_data('capsule', str)
 end
 
 --- This will reset the table of antigrief
@@ -1263,6 +1275,7 @@ function Public.append_scenario_history(player, entity, message)
     str = str .. ' '
     str = str .. 'surface:' .. player.surface.index
     increment(this.scenario_history, str)
+    Server.log_antigrief_data('scenario', str)
 end
 
 --- Returns the table.

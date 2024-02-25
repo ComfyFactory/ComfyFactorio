@@ -74,6 +74,9 @@ local delayed_last_page_token =
         end
 
         local player_data = get_player_data(player)
+        if not player_data or not player_data.table_count then
+            return
+        end
         local last_page = ceil(player_data.table_count / rows_per_page)
 
         player_data.current_page = last_page
