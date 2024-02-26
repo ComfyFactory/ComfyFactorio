@@ -1243,18 +1243,18 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
         }
     else
         this.objectives = {
-            randomized_zone = scale(4, 20),
+            randomized_zone = scale(3, 20),
             randomized_wave = scale(200, 1000),
             supplies = get_random_items(),
             single_item = get_random_item(),
-            killed_enemies = scale(20000, 80000),
+            killed_enemies = scale(25000, 400000),
             research_level_selection = get_random_research_recipe(),
             locomotive_market_coins_spent = {
                 spent = 0,
                 required = scale(50000)
             },
-            trees_farmed = scale(6000, 240000),
-            rocks_farmed = scale(30000, 300000),
+            trees_farmed = scale(10000, 200000),
+            rocks_farmed = scale(20000, 250000),
             rockets_launched = scale(10, 700)
         }
     end
