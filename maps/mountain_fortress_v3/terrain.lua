@@ -586,7 +586,7 @@ local function zone_14(x, y, data, _, adjusted_zones)
     --Resource Spots
     if smol_areas < -0.71 then
         if random(1, 32) == 1 then
-            Public.spawn_random_buildings(buildings, p, zone_settings.zone_depth)
+            Public.spawn_random_buildings(buildings, p)
         end
     end
 
@@ -666,7 +666,7 @@ local function zone_13(x, y, data, _, adjusted_zones)
     --Resource Spots
     if smol_areas < -0.72 then
         if random(1, 32) == 1 then
-            Public.spawn_random_buildings(buildings, p, zone_settings.zone_depth)
+            Public.spawn_random_buildings(buildings, p)
         end
     end
 
@@ -747,7 +747,7 @@ local function zone_12(x, y, data, void_or_lab, adjusted_zones)
     --Resource Spots
     if smol_areas < -0.72 then
         if random(1, 32) == 1 then
-            Public.spawn_random_buildings(buildings, p, zone_settings.zone_depth)
+            Public.spawn_random_buildings(buildings, p)
         end
     end
 
@@ -841,7 +841,7 @@ local function zone_11(x, y, data, _, adjusted_zones)
     --Resource Spots
     if smol_areas < -0.72 then
         if random(1, 32) == 1 then
-            Public.spawn_random_buildings(buildings, p, zone_settings.zone_depth)
+            Public.spawn_random_buildings(buildings, p)
         end
     end
 
@@ -940,7 +940,7 @@ local function zone_10(x, y, data, _, adjusted_zones)
     --Resource Spots
     if smol_areas < -0.72 then
         if random(1, 32) == 1 then
-            Public.spawn_random_buildings(buildings, p, zone_settings.zone_depth)
+            Public.spawn_random_buildings(buildings, p)
         end
     end
 
@@ -1082,7 +1082,7 @@ local function zone_9(x, y, data, _, adjusted_zones)
     --Resource Spots
     if smol_areas < -0.72 then
         if random(1, 32) == 1 then
-            Public.spawn_random_buildings(buildings, p, zone_settings.zone_depth)
+            Public.spawn_random_buildings(buildings, p)
         end
     end
 
@@ -1205,7 +1205,7 @@ local function zone_scrap_2(x, y, data, void_or_lab, adjusted_zones)
     --Resource Spots
     if cave_rivers < -0.72 then
         if random(1, 32) == 1 then
-            Public.spawn_random_buildings(buildings, p, zone_settings.zone_depth)
+            Public.spawn_random_buildings(buildings, p)
         end
     end
 
@@ -1338,7 +1338,7 @@ local function zone_scrap_1(x, y, data, void_or_lab, adjusted_zones)
     --Resource Spots
     if smol_areas < -0.72 then
         if random(1, 32) == 1 then
-            Public.spawn_random_buildings(buildings, p, zone_settings.zone_depth)
+            Public.spawn_random_buildings(buildings, p)
         end
     end
 
@@ -1470,7 +1470,7 @@ local function zone_7(x, y, data, void_or_lab, adjusted_zones)
     --Resource Spots
     if smol_areas < -0.72 then
         if random(1, 32) == 1 then
-            Public.spawn_random_buildings(buildings, p, zone_settings.zone_depth)
+            Public.spawn_random_buildings(buildings, p)
         end
     end
 
@@ -1524,7 +1524,7 @@ local function zone_forest_2(x, y, data, void_or_lab, adjusted_zones)
     if smol_areas < 0.055 and smol_areas > -0.025 then
         tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
         if random(1, 32) == 1 then
-            Public.spawn_random_buildings(buildings, p, zone_settings.zone_depth)
+            Public.spawn_random_buildings(buildings, p)
         end
         if random(1, 128) == 1 then
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
@@ -1666,7 +1666,7 @@ local function zone_5(x, y, data, void_or_lab, adjusted_zones)
     if smol_areas < 0.055 and smol_areas > -0.025 then
         tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
         if random(1, 32) == 1 then
-            Public.spawn_random_buildings(buildings, p, zone_settings.zone_depth)
+            Public.spawn_random_buildings(buildings, p)
         end
         if random(1, 128) == 1 then
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
@@ -1802,7 +1802,7 @@ local function zone_4(x, y, data, void_or_lab, adjusted_zones)
     if smol_areas < 0.055 and smol_areas > -0.025 then
         tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
         if random(1, 32) == 1 then
-            Public.spawn_random_buildings(buildings, p, zone_settings.zone_depth)
+            Public.spawn_random_buildings(buildings, p)
         end
         if random(1, 128) == 1 then
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
@@ -1862,7 +1862,7 @@ local function zone_3(x, y, data, void_or_lab, adjusted_zones)
     if smol_areas < 0.055 and smol_areas > -0.025 then
         tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
         if random(1, 32) == 1 then
-            Public.spawn_random_buildings(buildings, p, zone_settings.zone_depth)
+            Public.spawn_random_buildings(buildings, p)
         end
         if random(1, 128) == 1 then
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
@@ -2025,7 +2025,7 @@ local function zone_2(x, y, data, void_or_lab, adjusted_zones)
     if smol_areas < 0.055 and smol_areas > -0.025 then
         tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
         if random(1, 32) == 1 then
-            Public.spawn_random_buildings(buildings, p, zone_settings.zone_depth)
+            Public.spawn_random_buildings(buildings, p)
         end
         if random(1, 128) == 1 then
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
@@ -2170,7 +2170,7 @@ local function zone_forest_1(x, y, data, void_or_lab, adjusted_zones)
     if smol_areas < 0.055 and smol_areas > -0.025 then
         tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
         if random(1, 32) == 1 then
-            Public.spawn_random_buildings(buildings, p, zone_settings.zone_depth)
+            Public.spawn_random_buildings(buildings, p)
         end
         if random(1, 128) == 1 then
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
@@ -2352,7 +2352,7 @@ local function zone_1(x, y, data, void_or_lab, adjusted_zones)
     if smol_areas < 0.055 and smol_areas > -0.025 then
         tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
         if random(1, 32) == 1 then
-            Public.spawn_random_buildings(buildings, p, zone_settings.zone_depth)
+            Public.spawn_random_buildings(buildings, p)
         end
         if random(1, 32) == 1 then
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
@@ -2519,7 +2519,7 @@ local function starting_zone(x, y, data, void_or_lab, adjusted_zones)
     if smol_areas < 0.057 and smol_areas > -0.021 then
         tiles[#tiles + 1] = {name = void_or_lab, position = p}
         if random(1, 32) == 1 then
-            Public.spawn_random_buildings(buildings, p, zone_settings.zone_depth)
+            Public.spawn_random_buildings(buildings, p)
         end
         if random(1, 128) == 1 then
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)

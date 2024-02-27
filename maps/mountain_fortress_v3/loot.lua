@@ -26,7 +26,7 @@ function Public.get_distance(position)
     return difficulty
 end
 
-function Public.add_loot(surface, position, chest)
+function Public.add_loot(surface, position, chest, collision)
     local loot_stats = Public.get('loot_stats') -- loot_stats.normal == 48
     local budget = loot_stats.normal + abs(position.y) * 1.75
     budget = budget * random(25, 175) * 0.01
@@ -52,7 +52,17 @@ function Public.add_loot(surface, position, chest)
     local slots = c.get_inventory_size(defines.inventory.chest)
 
     local item_stacks = LootRaffle.roll(result, slots, blacklist)
-    local container = surface.create_entity({name = chest, position = position, force = 'neutral', create_build_effect_smoke = false})
+    local new_position = position
+
+    if collision then
+        new_position = surface.find_non_colliding_position(chest, position, 32, 1)
+        if not new_position then
+            new_position = position
+        end
+    end
+
+    local container = surface.create_entity({name = chest, position = new_position, force = 'neutral', create_build_effect_smoke = false})
+
     for _, item_stack in pairs(item_stacks) do
         container.insert(item_stack)
     end

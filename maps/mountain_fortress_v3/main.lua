@@ -157,6 +157,8 @@ function Public.reset_map()
         surface.daytime = 0.45
     end
 
+    surface.brightness_visual_weights = {0.92, 0.92, 0.92}
+
     JailData.set_valid_surface(tostring(surface.name))
     JailData.reset_vote_table()
 
@@ -180,14 +182,14 @@ function Public.reset_map()
 
     Public.init_enemy_weapon_damage()
 
-    AntiGrief.whitelist_types('tree', true)
+    -- AntiGrief.whitelist_types('tree', true)
     AntiGrief.enable_capsule_warning(false)
     AntiGrief.enable_capsule_cursor_warning(false)
     AntiGrief.enable_jail(true)
     AntiGrief.damage_entity_threshold(20)
     AntiGrief.decon_surface_blacklist(surface.name)
     AntiGrief.filtered_types_on_decon({'tree', 'simple-entity', 'fish'})
-    AntiGrief.set_limit_per_table(0)
+    AntiGrief.set_limit_per_table(2000)
 
     PL.show_roles_in_list(true)
     PL.rpg_enabled(true)
@@ -265,7 +267,8 @@ function Public.reset_map()
 
     Task.set_queue_speed(16)
 
-    Public.get_scores()
+    -- Highscore currently being reworked
+    -- Public.get_scores()
 
     this.chunk_load_tick = game.tick + 400
     this.force_chunk = true
@@ -352,18 +355,20 @@ local has_the_game_ended = function()
                 game.print(({'main.reset_in', cause_msg, this.game_reset_tick / 60}), {r = 0.22, g = 0.88, b = 0.22})
             end
 
-            local diff_name = Difficulty.get('name')
+            -- local diff_name = Difficulty.get('name')
 
             if this.soft_reset and this.game_reset_tick == 0 then
                 this.game_reset_tick = nil
-                Public.set_scores(diff_name)
+                -- Highscore currently being reworked
+                -- Public.set_scores(diff_name)
                 Public.reset_map()
                 return
             end
 
             if this.restart and this.game_reset_tick == 0 then
                 if not this.announced_message then
-                    Public.set_scores(diff_name)
+                    -- Highscore currently being reworked
+                    -- Public.set_scores(diff_name)
                     game.print(({'entity.notify_restart'}), {r = 0.22, g = 0.88, b = 0.22})
                     local message = 'Soft-reset is disabled! Server will restart from scenario to load new changes.'
                     Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
@@ -374,7 +379,8 @@ local has_the_game_ended = function()
             end
             if this.shutdown and this.game_reset_tick == 0 then
                 if not this.announced_message then
-                    Public.set_scores(diff_name)
+                    -- Highscore currently being reworked
+                    -- Public.set_scores(diff_name)
                     game.print(({'entity.notify_shutdown'}), {r = 0.22, g = 0.88, b = 0.22})
                     local message = 'Soft-reset is disabled! Server will shutdown. Most likely because of updates.'
                     Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
@@ -482,40 +488,34 @@ local handle_changes = function()
     print('Received new changes from backend.')
 end
 
-local on_tick = function()
+local nth_40_tick = function()
     local update_gui = Public.update_gui
-    local tick = game.tick
     local players = game.connected_players
 
-    if tick % 40 == 0 then
-        for i = 1, #players do
-            local player = players[i]
-            update_gui(player)
-        end
-        lock_locomotive_positions()
-        is_player_valid()
-        is_locomotive_valid()
-        has_the_game_ended()
-        chunk_load()
+    for i = 1, #players do
+        local player = players[i]
+        update_gui(player)
     end
+    lock_locomotive_positions()
+    is_player_valid()
+    is_locomotive_valid()
+    has_the_game_ended()
+    chunk_load()
+end
 
-    if tick % 250 == 0 then
-        compare_collapse_and_train()
-        Public.set_spawn_position()
-    end
+local nth_250_tick = function()
+    compare_collapse_and_train()
+    Public.set_spawn_position()
+end
 
-    if tick % 1000 == 0 then
-        collapse_after_wave_200()
-        Public.set_difficulty()
-        Public.is_creativity_mode_on()
-    end
+local nth_1000_tick = function()
+    collapse_after_wave_200()
+    Public.set_difficulty()
+    Public.is_creativity_mode_on()
 end
 
 local on_init = function()
     Public.reset_map()
-
-    game.map_settings.path_finder.general_entity_collision_penalty = 10 -- Recommended value
-    game.map_settings.path_finder.general_entity_subsequent_collision_penalty = 3 -- Recommended value
 
     local tooltip = {
         [1] = ({'main.diff_tooltip', '500', '50%', '15%', '15%', '1', '12', '50', '10000', '100%', '15', '10'}),
@@ -556,7 +556,9 @@ Server.on_scenario_changed(
     end
 )
 
-Event.on_nth_tick(10, on_tick)
+Event.on_nth_tick(40, nth_40_tick)
+Event.on_nth_tick(250, nth_250_tick)
+Event.on_nth_tick(1000, nth_1000_tick)
 Event.on_init(on_init)
 
 return Public

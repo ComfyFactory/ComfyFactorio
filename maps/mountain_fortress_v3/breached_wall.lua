@@ -163,7 +163,14 @@ local check_distance_between_player_and_locomotive = function(player)
     local c_y = collapse_position.y
 
     if p_y - t_y <= gap_between_locomotive.neg_gap then
-        player.teleport({position.x, locomotive.position.y + gap_between_locomotive.neg_gap + 2}, surface)
+        local source = {position.x, locomotive.position.y + gap_between_locomotive.neg_gap + 4}
+        local source_position = surface.find_non_colliding_position('character', source, 32, 1)
+        if source_position then
+            player.teleport(source_position, surface)
+        else
+            player.teleport(source, surface)
+        end
+
         player.print(({'breached_wall.hinder'}), Color.warning)
         if player.driving then
             player.driving = false
@@ -178,7 +185,14 @@ local check_distance_between_player_and_locomotive = function(player)
     end
 
     if p_y - c_y <= gap_between_locomotive.neg_gap_collapse then
-        player.teleport({position.x, c_y + gap_between_locomotive.neg_gap_collapse + 2}, surface)
+        local source = {position.x, c_y + gap_between_locomotive.neg_gap_collapse + 4}
+        local source_position = surface.find_non_colliding_position('character', source, 32, 1)
+        if source_position then
+            player.teleport(source_position, surface)
+        else
+            player.teleport(source, surface)
+        end
+
         player.print(({'breached_wall.hinder_collapse'}), Color.warning)
         if player.driving then
             player.driving = false

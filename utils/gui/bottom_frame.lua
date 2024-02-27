@@ -495,6 +495,20 @@ Event.add(
     function(event)
         local player = game.get_player(event.player_index)
         destroy_frame(player)
+        if this.activate_custom_buttons then
+            get_player_data(player, true)
+        end
+    end
+)
+
+Event.add(
+    defines.events.on_player_left_game,
+    function(event)
+        local player = game.get_player(event.player_index)
+        destroy_frame(player)
+        if this.activate_custom_buttons then
+            get_player_data(player, true)
+        end
     end
 )
 

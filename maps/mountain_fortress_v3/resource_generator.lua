@@ -10,6 +10,7 @@ local types = {
 }
 
 local testing = false
+local zone_settings = Public.zone_settings
 
 local testing_loot = {
     {
@@ -652,37 +653,39 @@ if testing then
     }
 end
 
-function Public.spawn_random_buildings(entities, p, depth)
+function Public.spawn_random_buildings(entities, p)
     local randomizer = random(1, #buildings)
     local low = random(1, 2)
     local medium = random(2, 3)
     local high = 3
 
-    if abs(p.y) < depth * 1.5 then
+    local zone_depth = zone_settings.zone_depth
+
+    if abs(p.y) < zone_depth * 1.5 then
         if random(1, 16) == 1 then
             return buildings[randomizer](entities, p, medium)
         else
             return buildings[randomizer](entities, p, low)
         end
-    elseif abs(p.y) < depth * 2.5 then
+    elseif abs(p.y) < zone_depth * 2.5 then
         if random(1, 8) == 1 then
             return buildings[randomizer](entities, p, medium)
         else
             return buildings[randomizer](entities, p, medium)
         end
-    elseif abs(p.y) < depth * 3.5 then
+    elseif abs(p.y) < zone_depth * 3.5 then
         if random(1, 4) == 1 then
             return buildings[randomizer](entities, p, high)
         else
             return buildings[randomizer](entities, p, medium)
         end
-    elseif abs(p.y) < depth * 4.5 then
+    elseif abs(p.y) < zone_depth * 4.5 then
         if random(1, 4) == 1 then
             return buildings[randomizer](entities, p, high)
         else
             return buildings[randomizer](entities, p, high)
         end
-    elseif abs(p.y) < depth * 5.5 then
+    elseif abs(p.y) < zone_depth * 5.5 then
         if random(1, 4) == 1 then
             return buildings[randomizer](entities, p, high)
         elseif random(1, 2) == 1 then
@@ -690,10 +693,9 @@ function Public.spawn_random_buildings(entities, p, depth)
         elseif random(1, 8) == 1 then
             return buildings[randomizer](entities, p, high)
         end
-    end
-    if abs(p.y) > depth * 5.5 then
+    elseif abs(p.y) > zone_depth * 5.5 then
         if random(1, 32) == 1 then
-            return buildings[randomizer](entities, p, medium)
+            return buildings[randomizer](entities, p, high)
         end
     end
 end

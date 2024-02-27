@@ -97,24 +97,20 @@ local function on_player_respawned(event)
     Functions.on_player_respawned(player)
 end
 
-local function on_tick()
-    local tick = game.tick
-
-    if tick % 30 == 1 then
-        Functions.item_transfer()
-        local upgrades = WPT.get('upgrades')
-        if upgrades.has_upgraded_health_pool then
-            Functions.check_entity_healths()
-        end
+local function nth_30_tick()
+    Functions.item_transfer()
+    local upgrades = WPT.get('upgrades')
+    if upgrades.has_upgraded_health_pool then
+        Functions.check_entity_healths()
     end
+end
 
-    if tick % 240 == 0 then
-        Minimap.update_minimap()
-    end
+local function nth_240_tick()
+    Minimap.update_minimap()
+end
 
-    if tick % 400 == 0 then
-        Functions.remove_invalid_cars()
-    end
+local function nth_400_tick()
+    Functions.remove_invalid_cars()
 end
 
 local function on_gui_closed(event)
@@ -305,7 +301,9 @@ end
 local changed_surface = Minimap.changed_surface
 
 Event.on_init(on_init)
-Event.add(defines.events.on_tick, on_tick)
+Event.on_nth_tick(30, nth_30_tick)
+Event.on_nth_tick(240, nth_240_tick)
+Event.on_nth_tick(400, nth_400_tick)
 Event.add(defines.events.on_gui_opened, on_gui_opened)
 Event.add(defines.events.on_gui_closed, on_gui_closed)
 Event.add(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)

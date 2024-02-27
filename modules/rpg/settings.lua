@@ -141,6 +141,7 @@ function Public.update_spell_gui(player, spell_index)
     if rpg_t.dropdown_select_index_1 == rpg_t.dropdown_select_index then
         spell_table[spell1_button_name].enabled = false
         spell_table[spell1_button_name].number = 1
+        rpg_t.dropdown_select_name = rpg_t.dropdown_select_name_1
     else
         spell_table[spell1_button_name].enabled = true
         spell_table[spell1_button_name].number = nil
@@ -148,6 +149,7 @@ function Public.update_spell_gui(player, spell_index)
     if rpg_t.dropdown_select_index_2 == rpg_t.dropdown_select_index then
         spell_table[spell2_button_name].enabled = false
         spell_table[spell2_button_name].number = 1
+        rpg_t.dropdown_select_name = rpg_t.dropdown_select_name_2
     else
         spell_table[spell2_button_name].enabled = true
         spell_table[spell2_button_name].number = nil
@@ -155,6 +157,7 @@ function Public.update_spell_gui(player, spell_index)
     if rpg_t.dropdown_select_index_3 == rpg_t.dropdown_select_index then
         spell_table[spell3_button_name].enabled = false
         spell_table[spell3_button_name].number = 1
+        rpg_t.dropdown_select_name = rpg_t.dropdown_select_name_3
     else
         spell_table[spell3_button_name].enabled = true
         spell_table[spell3_button_name].number = nil

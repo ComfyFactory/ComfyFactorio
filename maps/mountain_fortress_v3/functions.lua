@@ -282,12 +282,18 @@ local artillery_target_callback =
     function(data)
         local position = data.position
         local entity = data.entity
+        local index = data.index
+
+        local art_table = this.art_table
+        local outpost = art_table[index]
 
         if not entity.valid then
+            outpost.last_fire_tick = 0
             return
         end
 
         local tx, ty = position.x, position.y
+        local fired_at_target = false
 
         local pos = entity.position
         local x, y = pos.x, pos.y
@@ -302,6 +308,7 @@ local artillery_target_callback =
                     force = 'enemy',
                     speed = 1.5
                 }
+                fired_at_target = true
             elseif entity.name ~= 'character' then
                 entity.surface.create_entity {
                     name = 'rocket',
@@ -310,7 +317,12 @@ local artillery_target_callback =
                     force = 'enemy',
                     speed = 1.5
                 }
+                fired_at_target = true
             end
+        end
+
+        if not fired_at_target then
+            outpost.last_fire_tick = 0
         end
     end
 )
@@ -430,8 +442,6 @@ local function do_artillery_turrets_targets()
         return
     end
 
-    outpost.last_fire_tick = now
-
     local turret = turrets[1]
     local area = outpost.artillery_area
     local surface = turret.surface
@@ -444,10 +454,12 @@ local function do_artillery_turrets_targets()
 
     local position = turret.position
 
+    outpost.last_fire_tick = now
+
     for i = 1, count do
         local entity = entities[random(#entities)]
         if entity and entity.valid then
-            local data = {position = position, entity = entity}
+            local data = {position = position, entity = entity, index = index}
             Task.set_timeout_in_ticks(i * 60, artillery_target_callback, data)
         end
     end
@@ -537,8 +549,12 @@ Public.disable_minable_and_ICW_callback =
     Task.register(
     function(entity)
         if entity and entity.valid then
+            local wagons_in_the_wild = Public.get('wagons_in_the_wild')
             entity.minable = false
+            entity.destructible = false
             ICW.register_wagon(entity)
+
+            wagons_in_the_wild[entity.unit_number] = entity
         end
     end
 )
@@ -1414,6 +1430,35 @@ function Public.on_player_respawned(event)
     end
 end
 
+function Public.on_player_driving_changed_state(event)
+    local player = game.get_player(event.player_index)
+    if not player or not player.valid then
+        return
+    end
+
+    local entity = event.entity
+    if not entity or not entity.valid then
+        return
+    end
+
+    local unit_number = entity.unit_number
+
+    local wagons_in_the_wild = Public.get('wagons_in_the_wild')
+    if not wagons_in_the_wild or not next(wagons_in_the_wild) then
+        return
+    end
+
+    local wagon = wagons_in_the_wild[unit_number]
+    if not wagon or not wagon.valid then
+        wagons_in_the_wild[unit_number] = nil
+        return
+    end
+
+    wagon.destructible = true
+
+    wagons_in_the_wild[unit_number] = nil
+end
+
 function Public.on_player_changed_position(event)
     local active_surface_index = Public.get('active_surface_index')
     if not active_surface_index then
@@ -1741,12 +1786,14 @@ local on_player_left_game = Public.on_player_left_game
 local on_research_finished = Public.on_research_finished
 local on_player_changed_position = Public.on_player_changed_position
 local on_player_respawned = Public.on_player_respawned
+local on_player_driving_changed_state = Public.on_player_driving_changed_state
 
 Event.add(de.on_player_joined_game, on_player_joined_game)
 Event.add(de.on_player_left_game, on_player_left_game)
 Event.add(de.on_research_finished, on_research_finished)
 Event.add(de.on_player_changed_position, on_player_changed_position)
 Event.add(de.on_player_respawned, on_player_respawned)
+Event.add(de.on_player_driving_changed_state, on_player_driving_changed_state)
 Event.on_nth_tick(10, tick)
 Event.add(WD.events.on_wave_created, on_wave_created)
 

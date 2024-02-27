@@ -84,20 +84,23 @@ local reset_game =
     function(data)
         local this = data.this
         if this.soft_reset then
-            Public.set_scores()
+            -- Highscore currently being reworked
+            -- Public.set_scores()
             this.game_reset_tick = nil
             Public.reset_map()
             return
         end
         if this.restart then
-            Public.set_scores()
+            -- Highscore currently being reworked
+            -- Public.set_scores()
             local message = ({'entity.reset_game'})
             Server.to_discord_bold(message, true)
             Server.start_scenario('Mountain_Fortress_v3')
             return
         end
         if this.shutdown then
-            Public.set_scores()
+            -- Highscore currently being reworked
+            -- Public.set_scores()
             local message = ({'entity.shutdown_game'})
             Server.to_discord_bold(message, true)
             Server.stop_scenario()
@@ -491,6 +494,27 @@ local immunity_spawner =
     end
 )
 
+local unstuck_player_token =
+    Task.register(
+    function(data)
+        local index = data.index
+        if not index then
+            return
+        end
+        local player = game.get_player(index)
+        if not player or not player.valid then
+            return
+        end
+
+        local surface = player.surface
+        local position = surface.find_non_colliding_position('character', player.position, 32, 1)
+        if not position then
+            return
+        end
+        player.teleport(position, surface)
+    end
+)
+
 local mining_events = {
     {
         function()
@@ -583,6 +607,7 @@ local mining_events = {
         function(entity, index)
             local player = game.get_player(index)
             hidden_treasure(player, entity)
+            Task.set_timeout_in_ticks(5, unstuck_player_token, {index = index})
         end,
         1024,
         'Treasure Tier #1'
@@ -591,6 +616,7 @@ local mining_events = {
         function(entity, index)
             local player = game.get_player(index)
             hidden_treasure(player, entity)
+            Task.set_timeout_in_ticks(5, unstuck_player_token, {index = index})
         end,
         512,
         'Treasure Tier #2'
@@ -599,6 +625,7 @@ local mining_events = {
         function(entity, index)
             local player = game.get_player(index)
             hidden_treasure(player, entity)
+            Task.set_timeout_in_ticks(5, unstuck_player_token, {index = index})
         end,
         256,
         'Treasure Tier #3'
@@ -607,6 +634,7 @@ local mining_events = {
         function(entity, index)
             local player = game.get_player(index)
             hidden_treasure(player, entity)
+            Task.set_timeout_in_ticks(5, unstuck_player_token, {index = index})
         end,
         128,
         'Treasure Tier #4'
@@ -615,6 +643,7 @@ local mining_events = {
         function(entity, index)
             local player = game.get_player(index)
             hidden_treasure(player, entity)
+            Task.set_timeout_in_ticks(5, unstuck_player_token, {index = index})
         end,
         64,
         'Treasure Tier #5'
@@ -623,6 +652,7 @@ local mining_events = {
         function(entity, index)
             local player = game.get_player(index)
             hidden_treasure(player, entity)
+            Task.set_timeout_in_ticks(5, unstuck_player_token, {index = index})
         end,
         32,
         'Treasure Tier #6'
@@ -631,6 +661,7 @@ local mining_events = {
         function(entity, index)
             local player = game.get_player(index)
             hidden_treasure(player, entity)
+            Task.set_timeout_in_ticks(5, unstuck_player_token, {index = index})
         end,
         16,
         'Treasure Tier #7'
@@ -650,7 +681,7 @@ local mining_events = {
 
             e.destructible = false
             Task.set_timeout_in_ticks(300, immunity_spawner, {entity = e})
-            Public.unstuck_player(index)
+            Task.set_timeout_in_ticks(5, unstuck_player_token, {index = index})
         end,
         512,
         'Nest #1'
@@ -670,7 +701,7 @@ local mining_events = {
 
             e.destructible = false
             Task.set_timeout_in_ticks(300, immunity_spawner, {entity = e})
-            Public.unstuck_player(index)
+            Task.set_timeout_in_ticks(5, unstuck_player_token, {index = index})
         end,
         512,
         'Nest #2'
@@ -715,7 +746,7 @@ local mining_events = {
             local position = entity.position
             local surface = entity.surface
             surface.create_entity({name = 'car', position = position, force = 'player'})
-            Public.unstuck_player(index)
+            Task.set_timeout_in_ticks(5, unstuck_player_token, {index = index})
             local player = game.players[index]
             local msg = ({'entity.found_car', player.name})
             Alert.alert_player(player, 15, msg)
@@ -1296,9 +1327,16 @@ local function show_mvps(player)
 end
 
 function Public.unstuck_player(index)
+    if not index then
+        return
+    end
     local player = game.get_player(index)
+    if not player or not player.valid then
+        return
+    end
+
     local surface = player.surface
-    local position = surface.find_non_colliding_position('character', player.position, 32, 0.5)
+    local position = surface.find_non_colliding_position('character', player.position, 32, 1)
     if not position then
         return
     end

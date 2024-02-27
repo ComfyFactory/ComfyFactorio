@@ -374,6 +374,7 @@ local function set_carriages()
     for i = 1, #carriages do
         local e = carriages[i]
         if (e and e.valid) then
+            e.destructible = true
             t[e.unit_number] = true
         end
     end

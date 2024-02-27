@@ -1243,7 +1243,7 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
         }
     else
         this.objectives = {
-            randomized_zone = scale(3, 20),
+            randomized_zone = scale(4, 15, 1.013),
             randomized_wave = scale(200, 1000),
             supplies = get_random_items(),
             single_item = get_random_item(),
