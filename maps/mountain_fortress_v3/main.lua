@@ -355,7 +355,7 @@ local has_the_game_ended = function()
                 game.print(({'main.reset_in', cause_msg, this.game_reset_tick / 60}), {r = 0.22, g = 0.88, b = 0.22})
             end
 
-            local diff_name = Difficulty.get('name')
+            -- local diff_name = Difficulty.get('name')
 
             if this.soft_reset and this.game_reset_tick == 0 then
                 this.game_reset_tick = nil
