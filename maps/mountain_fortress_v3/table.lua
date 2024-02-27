@@ -294,6 +294,8 @@ function Public.reset_main_table()
         rocks_yield_ore_distance_modifier = 0.020
     }
 
+    this.wagons_in_the_wild = {}
+
     for k, _ in pairs(this.players) do
         this.players[k] = {}
     end

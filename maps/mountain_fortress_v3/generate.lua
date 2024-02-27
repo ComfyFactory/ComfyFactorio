@@ -141,7 +141,17 @@ local function do_place_treasure(data)
         if random(1, 6) == 1 then
             e.chest = 'iron-chest'
         end
-        Public.add_loot(surface, e.position, e.chest)
+        if
+            surface.count_entities_filtered {
+                area = {{e.position.x - 2, e.position.y - 2}, {e.position.x + 2, e.position.y + 2}},
+                name = 'market',
+                limit = 1
+            } == 0
+         then
+            Public.add_loot(surface, e.position, e.chest)
+        else
+            Public.add_loot(surface, e.position, e.chest, true)
+        end
     end
 end
 

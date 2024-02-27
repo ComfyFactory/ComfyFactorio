@@ -102,19 +102,16 @@ local function on_gui_click(event)
     Functions.toggle_minimap(icw, event)
 end
 
-local function on_tick()
-    local tick = game.tick
+local function nth_5_tick()
+    Functions.item_transfer()
+end
 
-    if tick % 5 == 0 then
-        Functions.item_transfer()
-    end
+local function nth_20_tick()
+    Functions.hazardous_debris()
+end
 
-    if tick % 20 == 0 then
-        Functions.hazardous_debris()
-    end
-    if tick % 240 == 0 then
-        Functions.update_minimap()
-    end
+local function nth_240_tick()
+    Functions.update_minimap()
 end
 
 local function on_init()
@@ -157,7 +154,9 @@ end
 local on_player_or_robot_built_tile = Functions.on_player_or_robot_built_tile
 
 Event.on_init(on_init)
-Event.on_nth_tick(5, on_tick)
+Event.on_nth_tick(5, nth_5_tick)
+Event.on_nth_tick(20, nth_20_tick)
+Event.on_nth_tick(240, nth_240_tick)
 Event.add(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)
 Event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
 Event.add(defines.events.on_entity_died, on_entity_died)
