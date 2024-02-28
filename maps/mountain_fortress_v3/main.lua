@@ -157,7 +157,7 @@ function Public.reset_map()
         surface.daytime = 0.45
     end
 
-    surface.brightness_visual_weights = {0.92, 0.92, 0.92}
+    -- surface.brightness_visual_weights = {0.7, 0.7, 0.7}
 
     JailData.set_valid_surface(tostring(surface.name))
     JailData.reset_vote_table()
