@@ -1034,6 +1034,12 @@ local function apply_startup_settings(settings)
         game.print(message)
         Server.to_discord_embed(message_discord, true)
 
+        game.print(({'entity.notify_shutdown'}), {r = 0.22, g = 0.88, b = 0.22})
+        local notify_shutdown = ({'entity.shutdown_game'})
+        Server.to_discord_bold(notify_shutdown, true)
+
+        Server.stop_scenario()
+
         if server_name_matches then
             Server.set_data(dataset, dataset_key, settings)
         else
