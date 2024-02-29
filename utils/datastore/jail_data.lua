@@ -691,6 +691,7 @@ local function jail_temporary(player, offender, msg, mute)
     data.username = offender.name
     data.admin = player.name
     data.reason = msg
+    Server.to_jailed_embed(data)
     Server.to_jailed_named_embed(data)
 
     if votejail[offender.name] then
