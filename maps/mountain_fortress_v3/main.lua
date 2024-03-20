@@ -267,8 +267,7 @@ function Public.reset_map()
 
     Task.set_queue_speed(16)
 
-    -- Highscore currently being reworked
-    -- Public.get_scores()
+    Public.get_scores()
 
     this.chunk_load_tick = game.tick + 400
     this.force_chunk = true
@@ -355,20 +354,16 @@ local has_the_game_ended = function()
                 game.print(({'main.reset_in', cause_msg, this.game_reset_tick / 60}), {r = 0.22, g = 0.88, b = 0.22})
             end
 
-            -- local diff_name = Difficulty.get('name')
-
             if this.soft_reset and this.game_reset_tick == 0 then
                 this.game_reset_tick = nil
-                -- Highscore currently being reworked
-                -- Public.set_scores(diff_name)
+                Public.set_scores()
                 Public.reset_map()
                 return
             end
 
             if this.restart and this.game_reset_tick == 0 then
                 if not this.announced_message then
-                    -- Highscore currently being reworked
-                    -- Public.set_scores(diff_name)
+                    Public.set_scores()
                     game.print(({'entity.notify_restart'}), {r = 0.22, g = 0.88, b = 0.22})
                     local message = 'Soft-reset is disabled! Server will restart from scenario to load new changes.'
                     Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
@@ -379,8 +374,7 @@ local has_the_game_ended = function()
             end
             if this.shutdown and this.game_reset_tick == 0 then
                 if not this.announced_message then
-                    -- Highscore currently being reworked
-                    -- Public.set_scores(diff_name)
+                    Public.set_scores()
                     game.print(({'entity.notify_shutdown'}), {r = 0.22, g = 0.88, b = 0.22})
                     local message = 'Soft-reset is disabled! Server will shutdown. Most likely because of updates.'
                     Server.to_discord_bold(table.concat {'*** ', message, ' ***'})

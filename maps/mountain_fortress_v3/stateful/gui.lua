@@ -652,17 +652,17 @@ main_frame = function(player)
     spacer(frame)
     frame.add({type = 'line'})
     spacer(frame)
-    if not stateful.collection.final_arena_disabled then
-        local final_label = frame.add({type = 'label', caption = {'stateful.tooltip_final'}})
-        final_label.style.single_line = false
-    else
-        local final_label_disabled = frame.add({type = 'label', caption = {'stateful.tooltip_final_disabled'}})
-        final_label_disabled.style.single_line = false
-        local reason_label = frame.add({type = 'label', caption = {'stateful.tooltip_completing'}})
-        reason_label.style.single_line = false
-    end
-    spacer(frame)
-    frame.add({type = 'line'})
+    -- if not stateful.collection.final_arena_disabled then
+    --     local final_label = frame.add({type = 'label', caption = {'stateful.tooltip_final'}})
+    --     final_label.style.single_line = false
+    -- else
+    --     local final_label_disabled = frame.add({type = 'label', caption = {'stateful.tooltip_final_disabled'}})
+    --     final_label_disabled.style.single_line = false
+    --     local reason_label = frame.add({type = 'label', caption = {'stateful.tooltip_completing'}})
+    --     reason_label.style.single_line = false
+    -- end
+    -- spacer(frame)
+    -- frame.add({type = 'line'})
     spacer(frame)
 
     local close = frame.add({type = 'button', name = close_button, caption = 'Close'})

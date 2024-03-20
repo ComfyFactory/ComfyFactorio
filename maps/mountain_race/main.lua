@@ -132,6 +132,8 @@ local function init(mountain_race)
 
     Immersive_cargo_wagons.reset()
 
+    local surface = game.surfaces.nauvis
+
     Collapse.set_kill_entities(true)
     Collapse.set_speed(8)
     Collapse.set_amount(0)

@@ -187,7 +187,7 @@ function Public.reset_main_table()
     this.orbital_strikes = {
         enabled = true
     }
-    this.pickaxe_speed_per_purchase = 0.07
+    this.pickaxe_speed_per_purchase = 0.09
     this.breached_wall = 1
     this.final_battle = false
     this.disable_link_chest_cheese_mode = true
@@ -282,7 +282,8 @@ function Public.reset_main_table()
         scrap = {},
         forest = {},
         size = nil,
-        shuffled_zones = nil
+        shuffled_zones = nil,
+        starting_zone = false
     }
     this.alert_zone_1 = false -- alert the players
     this.radars_reveal_new_chunks = false -- allows for the player to explore the map instead,

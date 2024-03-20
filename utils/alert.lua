@@ -21,8 +21,7 @@ Global.register(
     function(tbl)
         active_alerts = tbl.active_alerts
         id_counter = tbl.id_counter
-    end,
-    'alert'
+    end
 )
 
 local alert_frame_name = Gui.uid_name()

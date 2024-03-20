@@ -1,8 +1,7 @@
 local Global = require 'utils.global'
 local Event = require 'utils.event'
 local BottomFrame = require 'utils.gui.bottom_frame'
-local Task = require 'utils.task'
-local Token = require 'utils.token'
+local Task = require 'utils.task_token'
 
 local Public = {}
 
@@ -28,8 +27,23 @@ Global.register(
 local util = require('util')
 local crash_site = require('crash-site')
 
+local clear_mod_gui_top_frame_token =
+    Task.register(
+    function(event)
+        local player_index = event.player_index
+        local player = game.get_player(player_index)
+        if not player or not player.valid then
+            return
+        end
+
+        if player.gui.top.mod_gui_top_frame and player.gui.top.mod_gui_top_frame.valid then
+            player.gui.top.mod_gui_top_frame.destroy()
+        end
+    end
+)
+
 local toggle_screen_for_player_token =
-    Token.register(
+    Task.register(
     function(data)
         local index = data.index
         local state = data.state
@@ -87,6 +101,10 @@ local chart_starting_area = function()
     force.chart(surface, {{origin.x - r, origin.y - r}, {origin.x + r, origin.y + r}})
 end
 
+local on_player_joined_game = function(event)
+    Task.set_timeout_in_ticks(5, clear_mod_gui_top_frame_token, event)
+end
+
 local on_player_created = function(event)
     if not this.modded then
         return
@@ -94,6 +112,7 @@ local on_player_created = function(event)
     if this.disabled then
         return
     end
+
     local player = game.get_player(event.player_index)
     util.insert_safe(player, this.created_items)
 
@@ -315,6 +334,7 @@ end
 
 Event.on_configuration_changed(on_configuration_changed)
 
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_created, on_player_created)
 Event.add(defines.events.on_player_respawned, on_player_respawned)
 Event.add(defines.events.on_cutscene_waypoint_reached, on_cutscene_waypoint_reached)

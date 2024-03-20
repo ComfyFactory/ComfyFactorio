@@ -80,7 +80,7 @@ local place_tiles_token =
             return
         end
 
-        MapFunctions.draw_noise_tile_circle(position, 'black-refined-concrete', surface, 12)
+        MapFunctions.draw_noise_tile_circle(position, 'black-refined-concrete', surface, 22)
     end
 )
 

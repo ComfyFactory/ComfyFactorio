@@ -2716,7 +2716,7 @@ local function process_bits(p, data, adjusted_zones)
     shuffle_terrains(adjusted_zones, index)
 
     local generate_zone
-    if left_top_y >= -zone_settings.zone_depth then
+    if adjusted_zones.starting_zone and left_top_y >= -zone_settings.zone_depth then
         generate_zone = starting_zone
     else
         generate_zone = zones[adjusted_zones.shuffled_zones[index]].fn

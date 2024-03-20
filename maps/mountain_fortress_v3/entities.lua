@@ -84,23 +84,20 @@ local reset_game =
     function(data)
         local this = data.this
         if this.soft_reset then
-            -- Highscore currently being reworked
-            -- Public.set_scores()
+            Public.set_scores()
             this.game_reset_tick = nil
             Public.reset_map()
             return
         end
         if this.restart then
-            -- Highscore currently being reworked
-            -- Public.set_scores()
+            Public.set_scores()
             local message = ({'entity.reset_game'})
             Server.to_discord_bold(message, true)
             Server.start_scenario('Mountain_Fortress_v3')
             return
         end
         if this.shutdown then
-            -- Highscore currently being reworked
-            -- Public.set_scores()
+            Public.set_scores()
             local message = ({'entity.shutdown_game'})
             Server.to_discord_bold(message, true)
             Server.stop_scenario()
