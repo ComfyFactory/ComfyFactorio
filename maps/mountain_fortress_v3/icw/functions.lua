@@ -884,7 +884,14 @@ end
 function Public.construct_train(icw, locomotive, carriages)
     for i, carriage in pairs(carriages) do
         if carriage == locomotive then
-            local stock = locomotive.get_connected_rolling_stock(defines.rail_direction.front)
+            local adjusted_zones = WPT.get('adjusted_zones')
+
+            local stock
+            if adjusted_zones.reversed then
+                stock = locomotive.get_connected_rolling_stock(defines.rail_direction.back)
+            else
+                stock = locomotive.get_connected_rolling_stock(defines.rail_direction.front)
+            end
             if stock ~= carriages[i - 1] then
                 local n = 1
                 local m = #carriages

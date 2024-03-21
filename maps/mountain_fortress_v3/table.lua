@@ -283,7 +283,9 @@ function Public.reset_main_table()
         forest = {},
         size = nil,
         shuffled_zones = nil,
-        starting_zone = false
+        starting_zone = false,
+        reversed = false,
+        disable_terrain = false
     }
     this.alert_zone_1 = false -- alert the players
     this.radars_reveal_new_chunks = false -- allows for the player to explore the map instead,

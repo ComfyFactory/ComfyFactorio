@@ -4,7 +4,12 @@ local simplex_noise = require 'utils.simplex_noise'.d2
 --add or use noise templates from here
 local noises = {
     ['cave_ponds'] = {{modifier = 0.014, weight = 0.77}, {modifier = 0.18, weight = 0.085}},
-    ['smol_areas'] = {{modifier = 0.0052, weight = 0.83}, {modifier = 0.139, weight = 0.022}, {modifier = 0.121, weight = 0.01}},
+    ['smol_areas'] = {
+        {modifier = 0.0052, weight = 0.83},
+        {modifier = 0.139, weight = 0.144},
+        {modifier = 0.129, weight = 0.072},
+        {modifier = 0.111, weight = 0.01}
+    },
     ['cave_rivers'] = {
         {modifier = 0.0053, weight = 0.71},
         {modifier = 0.0086, weight = 0.24},
@@ -26,16 +31,6 @@ local noises = {
         {modifier = 0.11, weight = 0.042},
         {modifier = 0.00363, weight = 1.05},
         {modifier = 0.01, weight = 0.23}
-    },
-    ['n1'] = {{modifier = 0.00011, weight = 1.1}},
-    ['n2'] = {{modifier = 0.0011, weight = 1.1}},
-    ['n3'] = {{modifier = 0.011, weight = 1.1}},
-    ['n4'] = {{modifier = 0.11, weight = 1.1}},
-    ['n5'] = {{modifier = 0.077, weight = 1.1}},
-    ['watery_world'] = {
-        {modifier = 0.00077, weight = 1.1},
-        {modifier = 0.011, weight = 0.022},
-        {modifier = 0.11, weight = 0.0055}
     },
     ['no_rocks'] = {
         {modifier = 0.00495, weight = 0.945},
@@ -61,11 +56,6 @@ local noises = {
         {modifier = 0.044, weight = 0.165},
         {modifier = 0.242, weight = 0.055},
         {modifier = 0.055, weight = 0.352}
-    },
-    ['big_cave'] = {
-        {modifier = 0.0033, weight = 1.1},
-        {modifier = 0.022, weight = 0.055},
-        {modifier = 0.165, weight = 0.022}
     },
     ['small_caves'] = {
         {modifier = 0.0066, weight = 1.1},
@@ -98,12 +88,6 @@ local noises = {
         {modifier = 0.006, weight = 1},
         {modifier = 0.02, weight = 0.15},
         {modifier = 0.25, weight = 0.025}
-    },
-    ['cm_ponds'] = {{modifier = 0.025, weight = 1}, {modifier = 0.05, weight = 0.25}, {modifier = 0.1, weight = 0.05}},
-    ['cm_ocean'] = {
-        {modifier = 0.002, weight = 1},
-        {modifier = 0.004, weight = 1},
-        {modifier = 0.02, weight = 0.05}
     }
 }
 

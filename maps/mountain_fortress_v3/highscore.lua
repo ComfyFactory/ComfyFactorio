@@ -96,10 +96,12 @@ local function sort_and_whitelist(whitelisted, column_name, tbl)
     )
 
     for i = 1, #t do
-        local name = t[i].name
-        if i < 11 then
-            tbl[get_key(tbl, name)][column_name] = t[i].score
-            whitelisted[name] = true
+        if t[i] and t[i].name then
+            local name = t[i].name
+            if i < 11 then
+                tbl[get_key(tbl, name)][column_name] = t[i].score
+                whitelisted[name] = true
+            end
         end
     end
 end
@@ -110,9 +112,11 @@ local function remove_non_top_10(whitelisted, tbl)
     end
 
     for i = 1, #tbl do
-        local name = tbl[i].name
-        if not whitelisted[name] then
-            tbl[i] = nil
+        if tbl[i] and tbl[i].name then
+            local name = tbl[i].name
+            if not whitelisted[name] then
+                tbl[i] = nil
+            end
         end
     end
 end
@@ -447,6 +451,11 @@ local sorting_symbol = {ascending = '▲', descending = '▼'}
 
 local function get_score_list()
     local score_force = this.score_table['player']
+    local whitelisted_score_tbl = {}
+    sort_and_whitelist(whitelisted_score_tbl, 'killscore', score_force.players)
+    sort_and_whitelist(whitelisted_score_tbl, 'mined_entities', score_force.players)
+    sort_and_whitelist(whitelisted_score_tbl, 'built_entities', score_force.players)
+    remove_non_top_10(whitelisted_score_tbl, score_force.players)
     local score_list = {}
     if not score_force then
         score_list[#score_list + 1] = {

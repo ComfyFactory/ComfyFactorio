@@ -24,6 +24,10 @@ local clear_breach_text_and_render = function()
     if beam2 and beam2.valid then
         beam2.destroy()
     end
+    local beam3 = Public.get('zone1_beam3')
+    if beam3 and beam3.valid then
+        beam3.destroy()
+    end
     local zone1_text1 = Public.get('zone1_text1')
     if zone1_text1 then
         rendering.set_text(zone1_text1, 'Collapse has begun!')

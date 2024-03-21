@@ -858,6 +858,7 @@ local function apply_buffs()
     local starting_items = Public.get_func('starting_items')
 
     if this.buffs and next(this.buffs) then
+        local total_buffs = 0
         if not this.buffs_collected then
             this.buffs_collected = {}
         end
@@ -867,6 +868,7 @@ local function apply_buffs()
         local force = game.forces.player
         for _, buff in pairs(this.buffs) do
             if buff then
+                total_buffs = total_buffs + 1
                 if buff.modifier == 'rpg_distance' then
                     for _, buff_name in pairs(buff.modifiers) do
                         if buff_name == 'character_reach_distance_bonus' then
@@ -977,6 +979,7 @@ local function apply_buffs()
                 end
             end
         end
+        this.total_buffs = total_buffs
     end
     Public.equip_players(starting_items)
 end
@@ -1011,6 +1014,8 @@ local function apply_startup_settings(settings)
         if server_name_matches then
             Server.set_data(dataset, dataset_key_previous, settings)
         end
+
+        Public.set_season_scores()
 
         local s = this.season or 1
         game.server_save('Season_' .. s .. '_Mtn_v3_' .. tostring(current_time))
@@ -1308,18 +1313,36 @@ function Public.migrate_and_create(locomotive)
     if not surface or not surface.valid then
         return
     end
+    local adjusted_zones = Public.get('adjusted_zones')
     local position = locomotive.position
     local inc = 6
-    local new_position = {x = position.x, y = position.y + inc}
+    if adjusted_zones.reversed then
+        local new_position = {x = position.x, y = position.y - inc}
 
-    for index, entity in pairs(carriages) do
-        if index ~= 1 then
-            if entity and entity.valid and entity.unit_number ~= locomotive.unit_number then
-                local new_wagon = surface.create_entity({name = entity.name, position = new_position, force = 'player', defines.direction.north})
-                if new_wagon and new_wagon.valid then
-                    inc = inc + 7
-                    new_position = {x = position.x, y = position.y + inc}
-                    ICW.migrate_wagon(entity, new_wagon)
+        for index, entity in pairs(carriages) do
+            if index ~= 1 then
+                if entity and entity.valid and entity.unit_number ~= locomotive.unit_number then
+                    local new_wagon = surface.create_entity({name = entity.name, position = new_position, force = 'player', defines.direction.south})
+                    if new_wagon and new_wagon.valid then
+                        inc = inc + 6
+                        new_position = {x = position.x, y = position.y - inc}
+                        ICW.migrate_wagon(entity, new_wagon)
+                    end
+                end
+            end
+        end
+    else
+        local new_position = {x = position.x, y = position.y + inc}
+
+        for index, entity in pairs(carriages) do
+            if index ~= 1 then
+                if entity and entity.valid and entity.unit_number ~= locomotive.unit_number then
+                    local new_wagon = surface.create_entity({name = entity.name, position = new_position, force = 'player', defines.direction.north})
+                    if new_wagon and new_wagon.valid then
+                        inc = inc + 7
+                        new_position = {x = position.x, y = position.y + inc}
+                        ICW.migrate_wagon(entity, new_wagon)
+                    end
                 end
             end
         end

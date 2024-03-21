@@ -334,7 +334,7 @@ local function do_beams_away()
         return
     end
 
-    if wave_number > 1000 then
+    if wave_number > 500 then
         local difficulty_index = Difficulty.get('index')
         local wave_nth = 9999
         if difficulty_index == 1 then
@@ -408,11 +408,6 @@ local do_season_fix_token = Task.register(do_season_fix)
 local function do_artillery_turrets_targets()
     local art_table = this.art_table
     local index = art_table.index
-
-    local difficulty_index = Difficulty.get('index')
-    if difficulty_index == 3 then
-        return
-    end
 
     if index > #art_table then
         art_table.index = 1
@@ -614,7 +609,12 @@ Public.refill_artillery_turret_callback =
 
             local pos = turret.position
             local x, y = pos.x, pos.y
-            artillery_data.artillery_area = {{x - 112, y}, {x + 112, y + 212}}
+            local adjusted_zones = Public.get('adjusted_zones')
+            if adjusted_zones.reversed then
+                artillery_data.artillery_area = {{x - 112, y - 212}, {x + 112, y}}
+            else
+                artillery_data.artillery_area = {{x - 112, y}, {x + 112, y + 212}}
+            end
             artillery_data.last_fire_tick = 0
 
             art_table[#art_table + 1] = artillery_data
@@ -1049,7 +1049,7 @@ function Public.set_difficulty()
     end
 end
 
-function Public.render_direction(surface)
+function Public.render_direction(surface, reversed)
     local counter = Public.get('soft_reset_counter')
     local winter_mode = Public.get('winter_mode')
     local text = 'Welcome to Mountain Fortress v3!'
@@ -1098,73 +1098,64 @@ function Public.render_direction(surface)
         }
     end
 
-    rendering.draw_text {
-        text = '▼',
-        surface = surface,
-        target = {-0, 20},
-        color = {r = 0.98, g = 0.66, b = 0.22},
-        scale = 3,
-        font = 'heading-1',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
-
-    rendering.draw_text {
-        text = '▼',
-        surface = surface,
-        target = {-0, 30},
-        color = {r = 0.98, g = 0.66, b = 0.22},
-        scale = 3,
-        font = 'heading-1',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
-    rendering.draw_text {
-        text = '▼',
-        surface = surface,
-        target = {-0, 40},
-        color = {r = 0.98, g = 0.66, b = 0.22},
-        scale = 3,
-        font = 'heading-1',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
-    rendering.draw_text {
-        text = '▼',
-        surface = surface,
-        target = {-0, 50},
-        color = {r = 0.98, g = 0.66, b = 0.22},
-        scale = 3,
-        font = 'heading-1',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
-    rendering.draw_text {
-        text = '▼',
-        surface = surface,
-        target = {-0, 60},
-        color = {r = 0.98, g = 0.66, b = 0.22},
-        scale = 3,
-        font = 'heading-1',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
-    rendering.draw_text {
-        text = 'Biters will attack this area.',
-        surface = surface,
-        target = {-0, 70},
-        color = {r = 0.98, g = 0.66, b = 0.22},
-        scale = 3,
-        font = 'heading-1',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
-
     local x_min = -zone_settings.zone_width / 2
     local x_max = zone_settings.zone_width / 2
 
-    surface.create_entity({name = 'electric-beam', position = {x_min, 74}, source = {x_min, 74}, target = {x_max, 74}})
-    surface.create_entity({name = 'electric-beam', position = {x_min, 74}, source = {x_min, 74}, target = {x_max, 74}})
+    if reversed then
+        local inc = 0
+        for _ = 1, 5 do
+            rendering.draw_text {
+                text = '▲',
+                surface = surface,
+                target = {-0, -20 - inc},
+                color = {r = 0.98, g = 0.66, b = 0.22},
+                scale = 3,
+                font = 'heading-1',
+                alignment = 'center',
+                scale_with_zoom = false
+            }
+            inc = inc + 10
+        end
+        rendering.draw_text {
+            text = 'Biters will attack this area.',
+            surface = surface,
+            target = {-0, -70},
+            color = {r = 0.98, g = 0.66, b = 0.22},
+            scale = 3,
+            font = 'heading-1',
+            alignment = 'center',
+            scale_with_zoom = false
+        }
+        surface.create_entity({name = 'electric-beam', position = {x_min, -74}, source = {x_min, -74}, target = {x_max, -74}})
+        surface.create_entity({name = 'electric-beam', position = {x_min, -74}, source = {x_min, -74}, target = {x_max, -74}})
+    else
+        local inc = 0
+        for _ = 1, 5 do
+            rendering.draw_text {
+                text = '▼',
+                surface = surface,
+                target = {-0, 20 + inc},
+                color = {r = 0.98, g = 0.66, b = 0.22},
+                scale = 3,
+                font = 'heading-1',
+                alignment = 'center',
+                scale_with_zoom = false
+            }
+            inc = inc + 10
+        end
+        rendering.draw_text {
+            text = 'Biters will attack this area.',
+            surface = surface,
+            target = {-0, 70},
+            color = {r = 0.98, g = 0.66, b = 0.22},
+            scale = 3,
+            font = 'heading-1',
+            alignment = 'center',
+            scale_with_zoom = false
+        }
+        surface.create_entity({name = 'electric-beam', position = {x_min, 74}, source = {x_min, 74}, target = {x_max, 74}})
+        surface.create_entity({name = 'electric-beam', position = {x_min, 74}, source = {x_min, 74}, target = {x_max, 74}})
+    end
 end
 
 function Public.boost_difficulty()
@@ -1481,6 +1472,7 @@ function Public.on_player_changed_position(event)
 
     local position = player.position
     local surface = game.surfaces[active_surface_index]
+    local adjusted_zones = Public.get('adjusted_zones')
 
     local p = {x = player.position.x, y = player.position.y}
     local config_tile = Public.get('void_or_tile')
@@ -1502,14 +1494,28 @@ function Public.on_player_changed_position(event)
         end
     end
 
-    if position.y >= 74 then
-        player.teleport({position.x, position.y - 1}, surface)
-        player.print(({'main.forcefield'}), {r = 0.98, g = 0.66, b = 0.22})
-        if player.character then
-            player.character.health = player.character.health - 5
-            player.character.surface.create_entity({name = 'water-splash', position = position})
-            if player.character.health <= 0 then
-                player.character.die('enemy')
+    if adjusted_zones.reversed then
+        if position.y < -74 then
+            player.teleport({position.x, position.y + 1}, surface)
+            player.print(({'main.forcefield'}), {r = 0.98, g = 0.66, b = 0.22})
+            if player.character then
+                player.character.health = player.character.health - 5
+                player.character.surface.create_entity({name = 'water-splash', position = position})
+                if player.character.health <= 0 then
+                    player.character.die('enemy')
+                end
+            end
+        end
+    else
+        if position.y >= 74 then
+            player.teleport({position.x, position.y - 1}, surface)
+            player.print(({'main.forcefield'}), {r = 0.98, g = 0.66, b = 0.22})
+            if player.character then
+                player.character.health = player.character.health - 5
+                player.character.surface.create_entity({name = 'water-splash', position = position})
+                if player.character.health <= 0 then
+                    player.character.die('enemy')
+                end
             end
         end
     end
@@ -1538,6 +1544,8 @@ function Public.disable_tech()
     force.technologies['spidertron'].researched = false
     force.technologies['atomic-bomb'].enabled = false
     force.technologies['atomic-bomb'].researched = false
+    force.technologies['artillery'].enabled = false
+    force.technologies['artillery'].researched = false
     force.technologies['artillery-shell-range-1'].enabled = false
     force.technologies['artillery-shell-range-1'].researched = false
     force.technologies['artillery-shell-speed-1'].enabled = false

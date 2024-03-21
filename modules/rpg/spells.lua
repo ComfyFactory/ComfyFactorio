@@ -1122,7 +1122,7 @@ spells[#spells + 1] = {
     end
 }
 
-spells[#spells + 1] = {
+local drone_enemy = {
     name = {'spells.drone_enemy'},
     entityName = 'drone_enemy',
     target = false,
@@ -1140,7 +1140,11 @@ spells[#spells + 1] = {
     callback = function(data)
         local self = data.self
         local player = data.player
-        Ai.create_char({player_index = player.index, command = 1, search_local = true})
+        local suc = Ai.create_char({player_index = player.index, command = 1, search_local = true})
+        if not suc then
+            Public.cast_spell(player, true)
+            return false
+        end
 
         Public.cast_spell(player)
         Public.remove_mana(player, self.mana_cost)
@@ -1148,7 +1152,15 @@ spells[#spells + 1] = {
     end
 }
 
-spells[#spells + 1] = {
+if _DEBUG then
+    drone_enemy.mana_cost = 1
+    drone_enemy.level = 1
+    drone_enemy.cooldown = 1
+end
+
+spells[#spells + 1] = drone_enemy
+
+local drone_mine = {
     name = {'spells.drone_mine'},
     entityName = 'drone_mine',
     target = false,
@@ -1166,13 +1178,25 @@ spells[#spells + 1] = {
     callback = function(data)
         local self = data.self
         local player = data.player
-        Ai.create_char({player_index = player.index, command = 2, search_local = false})
+        local suc = Ai.create_char({player_index = player.index, command = 2, search_local = false})
+        if not suc then
+            Public.cast_spell(player, true)
+            return false
+        end
 
         Public.cast_spell(player)
         Public.remove_mana(player, self.mana_cost)
         return true
     end
 }
+
+if _DEBUG then
+    drone_mine.mana_cost = 1
+    drone_mine.level = 1
+    drone_mine.cooldown = 1
+end
+
+spells[#spells + 1] = drone_mine
 
 Public.projectile_types = {
     ['explosives'] = {name = 'grenade', count = 0.5, max_range = 32, tick_speed = 1},

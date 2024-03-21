@@ -116,6 +116,15 @@ local announce_new_map =
 function Public.reset_map()
     game.forces.player.reset()
     local this = Public.get()
+    local is_reversed = this.adjusted_zones.reversed
+    if is_reversed then
+        is_reversed = false
+    else
+        is_reversed = true
+    end
+    Public.reset_main_table()
+
+    this.adjusted_zones.reversed = is_reversed
     local wave_defense_table = WD.get_table()
     Misc.reset()
     Misc.bottom_button(true)
@@ -126,6 +135,7 @@ function Public.reset_map()
     this.old_surface_index = this.active_surface_index
 
     Public.stateful.clear_all_frames()
+    local adjusted_zones = Public.get('adjusted_zones')
 
     Autostash.insert_into_furnace(true)
     Autostash.insert_into_wagon(true)
@@ -139,7 +149,6 @@ function Public.reset_map()
     IC.allowed_surface(game.surfaces[this.active_surface_index].name)
     Public.reset_func_table()
     game.reset_time_played()
-    Public.reset_main_table()
 
     OfflinePlayers.init(this.active_surface_index)
     OfflinePlayers.set_enabled(true)
@@ -167,7 +176,6 @@ function Public.reset_map()
 
     Beam.reset_valid_targets()
 
-    game.forces.player.set_spawn_position({x = -27, y = 25}, surface)
     game.forces.player.manual_mining_speed_modifier = 0
     game.forces.player.set_ammo_damage_modifier('artillery-shell', -0.95)
     game.forces.player.worker_robots_battery_modifier = 4
@@ -220,17 +228,24 @@ function Public.reset_map()
     -- Collapse.set_max_line_size(zone_settings.zone_width)
     Collapse.set_max_line_size(540)
     Collapse.set_surface_index(surface.index)
-    Collapse.set_position({0, 130})
-    Collapse.set_direction('north')
+
     Collapse.start_now(false)
     Collapse.disable_collapse(false)
 
     this.locomotive_health = 10000
     this.locomotive_max_health = 10000
 
-    Public.locomotive_spawn(surface, {x = -18, y = 25})
+    if adjusted_zones.reversed then
+        Collapse.set_position({0, -130})
+        Collapse.set_direction('south')
+        Public.locomotive_spawn(surface, {x = -18, y = -25}, adjusted_zones.reversed)
+    else
+        Collapse.set_position({0, 130})
+        Collapse.set_direction('north')
+        Public.locomotive_spawn(surface, {x = -18, y = 25}, adjusted_zones.reversed)
+    end
     Public.render_train_hp()
-    Public.render_direction(surface)
+    Public.render_direction(surface, adjusted_zones.reversed)
 
     WD.reset_wave_defense()
     wave_defense_table.surface_index = this.active_surface_index
@@ -257,12 +272,20 @@ function Public.reset_map()
     Public.disable_creative()
     Public.boost_difficulty()
 
-    if not surface.is_chunk_generated({x = -20, y = 22}) then
-        surface.request_to_generate_chunks({x = -20, y = 22}, 0.1)
-        surface.force_generate_chunk_requests()
+    if adjusted_zones.reversed then
+        if not surface.is_chunk_generated({x = -20, y = -22}) then
+            surface.request_to_generate_chunks({x = -20, y = -22}, 0.1)
+            surface.force_generate_chunk_requests()
+        end
+        game.forces.player.set_spawn_position({x = -27, y = -25}, surface)
+    else
+        if not surface.is_chunk_generated({x = -20, y = 22}) then
+            surface.request_to_generate_chunks({x = -20, y = 22}, 0.1)
+            surface.force_generate_chunk_requests()
+        end
+        game.forces.player.set_spawn_position({x = -27, y = 25}, surface)
     end
 
-    game.forces.player.set_spawn_position({x = -27, y = 25}, surface)
     game.speed = 1
 
     Task.set_queue_speed(16)

@@ -398,6 +398,10 @@ local function get_driver_action(entity)
         return
     end
 
+    if player.admin then
+        return
+    end
+
     if Session.get_session_player(player) then
         local total_time = player.online_time + Session.get_session_player(player)
 
