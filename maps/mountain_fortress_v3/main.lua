@@ -117,14 +117,20 @@ function Public.reset_map()
     game.forces.player.reset()
     local this = Public.get()
     local is_reversed = this.adjusted_zones.reversed
-    if is_reversed then
-        is_reversed = false
-    else
-        is_reversed = true
+    local check_on_init = this.adjusted_zones.check_on_init
+    if check_on_init then
+        if is_reversed then
+            is_reversed = false
+        else
+            is_reversed = true
+        end
     end
     Public.reset_main_table()
 
-    this.adjusted_zones.reversed = is_reversed
+    this.adjusted_zones.check_on_init = check_on_init
+    if check_on_init then
+        this.adjusted_zones.reversed = is_reversed
+    end
     local wave_defense_table = WD.get_table()
     Misc.reset()
     Misc.bottom_button(true)
@@ -135,7 +141,6 @@ function Public.reset_map()
     this.old_surface_index = this.active_surface_index
 
     Public.stateful.clear_all_frames()
-    local adjusted_zones = Public.get('adjusted_zones')
 
     Autostash.insert_into_furnace(true)
     Autostash.insert_into_wagon(true)
@@ -235,17 +240,17 @@ function Public.reset_map()
     this.locomotive_health = 10000
     this.locomotive_max_health = 10000
 
-    if adjusted_zones.reversed then
+    if this.adjusted_zones.reversed then
         Collapse.set_position({0, -130})
         Collapse.set_direction('south')
-        Public.locomotive_spawn(surface, {x = -18, y = -25}, adjusted_zones.reversed)
+        Public.locomotive_spawn(surface, {x = -18, y = -25}, this.adjusted_zones.reversed)
     else
         Collapse.set_position({0, 130})
         Collapse.set_direction('north')
-        Public.locomotive_spawn(surface, {x = -18, y = 25}, adjusted_zones.reversed)
+        Public.locomotive_spawn(surface, {x = -18, y = 25}, this.adjusted_zones.reversed)
     end
     Public.render_train_hp()
-    Public.render_direction(surface, adjusted_zones.reversed)
+    Public.render_direction(surface, this.adjusted_zones.reversed)
 
     WD.reset_wave_defense()
     wave_defense_table.surface_index = this.active_surface_index
@@ -272,7 +277,7 @@ function Public.reset_map()
     Public.disable_creative()
     Public.boost_difficulty()
 
-    if adjusted_zones.reversed then
+    if this.adjusted_zones.reversed then
         if not surface.is_chunk_generated({x = -20, y = -22}) then
             surface.request_to_generate_chunks({x = -20, y = -22}, 0.1)
             surface.force_generate_chunk_requests()

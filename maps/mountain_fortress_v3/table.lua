@@ -285,7 +285,8 @@ function Public.reset_main_table()
         shuffled_zones = nil,
         starting_zone = false,
         reversed = false,
-        disable_terrain = false
+        disable_terrain = false,
+        check_on_init = true
     }
     this.alert_zone_1 = false -- alert the players
     this.radars_reveal_new_chunks = false -- allows for the player to explore the map instead,
