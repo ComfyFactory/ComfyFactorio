@@ -205,15 +205,15 @@ local function show_score(data)
 
     -- Score entries
     local i = 0
-    for _, data in pairs(score_list) do
+    for _, score_data in pairs(score_list) do
         i = i + 1
 
         local lines = {
-            {caption = data.season_index},
-            {caption = data.rounds_survived},
-            {caption = data.buffs_granted},
-            {caption = data.started},
-            {caption = data.ended}
+            {caption = score_data.season_index},
+            {caption = score_data.rounds_survived},
+            {caption = score_data.buffs_granted},
+            {caption = score_data.started},
+            {caption = score_data.ended}
         }
         local default_color = {r = 0.9, g = 0.9, b = 0.9}
 
