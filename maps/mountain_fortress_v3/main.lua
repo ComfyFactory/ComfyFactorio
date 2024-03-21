@@ -2,7 +2,7 @@
 
 Mountain Fortress v3 is maintained by Gerkiz and hosted by Comfy.
 
-Want to host it? Ask Gerkiz#0001 at discord!
+Want to host it? Ask Gerkiz at discord!
 
 ]]
 require 'modules.shotgun_buff'
