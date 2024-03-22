@@ -148,7 +148,7 @@ local spidertron_too_far =
     end
 )
 
-local check_distance_between_player_and_locomotive = function(player, adjusted_zones)
+local check_distance_between_player_and_locomotive = function(player)
     local surface = player.surface
     local position = player.position
     local locomotive = Public.get('locomotive')
