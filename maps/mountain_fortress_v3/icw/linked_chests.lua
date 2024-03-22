@@ -1115,6 +1115,10 @@ local function on_entity_settings_pasted(event)
 end
 
 function Public.add(surface, position, force, name, mode)
+    if not surface or not surface.valid then
+        return
+    end
+
     local entity = surface.create_entity {name = 'linked-chest', position = position, force = force, create_build_effect_smoke = false}
     if not entity.valid then
         return

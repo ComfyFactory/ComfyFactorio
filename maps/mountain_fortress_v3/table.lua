@@ -12,6 +12,9 @@ local this = {
         next_operation = nil
     }
 }
+local stateful_settings = {
+    reversed = true
+}
 local Public = {}
 local random = math.random
 
@@ -25,6 +28,13 @@ Global.register(
     this,
     function(tbl)
         this = tbl
+    end
+)
+
+Global.register(
+    stateful_settings,
+    function(tbl)
+        stateful_settings = tbl
     end
 )
 
@@ -284,9 +294,8 @@ function Public.reset_main_table()
         size = nil,
         shuffled_zones = nil,
         starting_zone = false,
-        reversed = false,
-        disable_terrain = false,
-        check_on_init = true
+        reversed = stateful_settings.reversed,
+        disable_terrain = false
     }
     this.alert_zone_1 = false -- alert the players
     this.radars_reveal_new_chunks = false -- allows for the player to explore the map instead,
@@ -317,6 +326,14 @@ function Public.get(key)
     end
 end
 
+function Public.get_stateful_settings(key)
+    if key then
+        return stateful_settings[key]
+    else
+        return stateful_settings
+    end
+end
+
 function Public.set(key, value)
     if key and (value or value == false) then
         this[key] = value
@@ -325,6 +342,17 @@ function Public.set(key, value)
         return this[key]
     else
         return this
+    end
+end
+
+function Public.set_stateful_settings(key, value)
+    if key and (value or value == false) then
+        stateful_settings[key] = value
+        return stateful_settings[key]
+    elseif key then
+        return stateful_settings[key]
+    else
+        return stateful_settings
     end
 end
 

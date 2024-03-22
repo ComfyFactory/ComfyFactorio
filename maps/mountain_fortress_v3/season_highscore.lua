@@ -9,6 +9,7 @@ local SpamProtection = require 'utils.spam_protection'
 local module_name = Gui.uid_name()
 local score_dataset = 'seasons'
 local score_key = 'mtn_v3'
+local score_key_dev = 'mtn_v3_dev'
 local set_data = Server.set_data
 local try_get_data = Server.try_get_data
 
@@ -82,7 +83,12 @@ function Public.get_season_scores()
     if not secs then
         return
     else
-        try_get_data(score_dataset, score_key, get_scores)
+        local server_name_matches = Server.check_server_name('Mtn Fortress')
+        if server_name_matches then
+            try_get_data(score_dataset, score_key, get_scores)
+        else
+            try_get_data(score_dataset, score_key_dev, get_scores)
+        end
     end
 end
 
@@ -92,7 +98,12 @@ function Public.set_season_scores()
     if not secs then
         return
     else
-        write_additional_stats(score_key)
+        local server_name_matches = Server.check_server_name('Mtn Fortress')
+        if server_name_matches then
+            write_additional_stats(score_key)
+        else
+            write_additional_stats(score_key_dev)
+        end
     end
 end
 
@@ -299,10 +310,17 @@ end
 Server.on_data_set_changed(
     score_dataset,
     function(data)
-        if data.key == score_key then
-            if data.value then
-                this.seasons = data.value
-            end
+        if data.value then
+            this.seasons = data.value
+        end
+    end
+)
+
+Server.on_data_set_changed(
+    score_key_dev,
+    function(data)
+        if data.value then
+            this.seasons = data.value
         end
     end
 )

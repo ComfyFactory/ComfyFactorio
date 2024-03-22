@@ -1256,8 +1256,20 @@ function Public.set_spawn_position()
         local l_y = l.y
         local t_y = locomotive_position.y
         local c_y = collapse_pos.y
+        local adjusted_zones = Public.get('adjusted_zones')
+
+        local compare_pos
+        local compare_next
+        if adjusted_zones.reversed then
+            compare_pos = l_y - t_y >= spawn_near_collapse.compare
+            compare_next = c_y - t_y >= spawn_near_collapse.compare_next
+        else
+            compare_pos = l_y - t_y <= spawn_near_collapse.compare
+            compare_next = c_y - t_y <= spawn_near_collapse.compare_next
+        end
+
         if total_pos > spawn_near_collapse.total_pos then
-            if l_y - t_y <= spawn_near_collapse.compare then
+            if compare_pos then
                 if locomotive_position then
                     if check_tile(surface, sizeof, locomotive_positions.tbl, total_pos) then
                         debug_str('total_pos was higher - found oom')
@@ -1270,7 +1282,7 @@ function Public.set_spawn_position()
                     debug_str('total_pos was higher - spawning at locomotive_position')
                     WD.set_spawn_position(locomotive_position)
                 end
-            elseif c_y - t_y <= spawn_near_collapse.compare_next then
+            elseif compare_next then
                 if distance_from >= spawn_near_collapse.distance_from then
                     local success = check_tile(surface, locomotive_position, locomotive_positions.tbl, total_pos)
                     if success then
@@ -1448,6 +1460,19 @@ function Public.on_player_driving_changed_state(event)
     wagon.destructible = true
 
     wagons_in_the_wild[unit_number] = nil
+end
+
+function Public.on_pre_player_toggled_map_editor(event)
+    local player = game.get_player(event.player_index)
+    if not player or not player.valid then
+        return
+    end
+
+    if player.name == 'Gerkiz' or not game.is_multiplayer() then
+        return
+    end
+
+    player.toggle_map_editor()
 end
 
 function Public.on_player_changed_position(event)
@@ -1795,6 +1820,7 @@ local on_research_finished = Public.on_research_finished
 local on_player_changed_position = Public.on_player_changed_position
 local on_player_respawned = Public.on_player_respawned
 local on_player_driving_changed_state = Public.on_player_driving_changed_state
+local on_pre_player_toggled_map_editor = Public.on_pre_player_toggled_map_editor
 
 Event.add(de.on_player_joined_game, on_player_joined_game)
 Event.add(de.on_player_left_game, on_player_left_game)
@@ -1802,6 +1828,7 @@ Event.add(de.on_research_finished, on_research_finished)
 Event.add(de.on_player_changed_position, on_player_changed_position)
 Event.add(de.on_player_respawned, on_player_respawned)
 Event.add(de.on_player_driving_changed_state, on_player_driving_changed_state)
+Event.add(de.on_pre_player_toggled_map_editor, on_pre_player_toggled_map_editor)
 Event.on_nth_tick(10, tick)
 Event.add(WD.events.on_wave_created, on_wave_created)
 

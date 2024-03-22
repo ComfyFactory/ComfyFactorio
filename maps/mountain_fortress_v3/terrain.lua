@@ -458,7 +458,6 @@ local function wall(p, data)
                             local x_min = -zone_settings.zone_width / 2
                             local x_max = zone_settings.zone_width / 2
 
-
                             if adjusted_zones.reversed then
                                 Public.set('zone1_beam1', surface.create_entity({name = 'electric-beam', position = {x_min, p.y + 30}, source = {x_min, p.y + 30}, target = {x_max, p.y + 30}}))
                                 Public.set('zone1_beam2', surface.create_entity({name = 'electric-beam', position = {x_min, p.y + 30}, source = {x_min, p.y + 30}, target = {x_max, p.y + 30}}))
@@ -3016,7 +3015,7 @@ Event.add(
 
             local tiles = {}
 
-            if left_top.y < -128 then
+            if left_top.y > 32 then
                 for k, v in pairs(loading_chunk_vectors) do
                     tiles[k] = {name = 'out-of-map', position = {left_top.x + v[1], left_top.y + v[2]}}
                 end

@@ -53,6 +53,7 @@ local role_to_mention = Discord.role_mentions.mtn_fortress
 
 local floor = math.floor
 local remove = table.remove
+local abs = math.abs
 RPG.disable_cooldowns_on_spells()
 Gui.mod_gui_button_enabled = true
 Gui.button_style = 'mod_gui_button'
@@ -115,22 +116,9 @@ local announce_new_map =
 
 function Public.reset_map()
     game.forces.player.reset()
-    local this = Public.get()
-    local is_reversed = this.adjusted_zones.reversed
-    local check_on_init = this.adjusted_zones.check_on_init
-    if check_on_init then
-        if is_reversed then
-            is_reversed = false
-        else
-            is_reversed = true
-        end
-    end
     Public.reset_main_table()
 
-    this.adjusted_zones.check_on_init = check_on_init
-    if check_on_init then
-        this.adjusted_zones.reversed = is_reversed
-    end
+    local this = Public.get()
     local wave_defense_table = WD.get_table()
     Misc.reset()
     Misc.bottom_button(true)
@@ -241,10 +229,16 @@ function Public.reset_map()
     this.locomotive_max_health = 10000
 
     if this.adjusted_zones.reversed then
+        this.gap_between_locomotive.neg_gap = abs(this.gap_between_locomotive.neg_gap)
+        this.gap_between_locomotive.neg_gap_collapse = abs(this.gap_between_locomotive.neg_gap_collapse)
+        this.spawn_near_collapse.compare = abs(this.spawn_near_collapse.compare)
         Collapse.set_position({0, -130})
         Collapse.set_direction('south')
         Public.locomotive_spawn(surface, {x = -18, y = -25}, this.adjusted_zones.reversed)
     else
+        this.gap_between_locomotive.neg_gap = abs(this.gap_between_locomotive.neg_gap) * -1
+        this.gap_between_locomotive.neg_gap_collapse = abs(this.gap_between_locomotive.neg_gap_collapse) * -1
+        this.spawn_near_collapse.compare = abs(this.spawn_near_collapse.compare) * -1
         Collapse.set_position({0, 130})
         Collapse.set_direction('north')
         Public.locomotive_spawn(surface, {x = -18, y = 25}, this.adjusted_zones.reversed)
@@ -445,15 +439,24 @@ local lock_locomotive_positions = function()
         return
     end
 
+    local function check_position(tbl, pos)
+        for i = 1, #tbl do
+            if tbl[i].x == pos.x and tbl[i].y == pos.y then
+                return true
+            end
+        end
+        return false
+    end
+
     local locomotive_positions = Public.get('locomotive_pos')
+    local p = {x = floor(locomotive.position.x), y = floor(locomotive.position.y)}
     local success = is_position_near_tbl(locomotive.position, locomotive_positions.tbl)
-    local p = locomotive.position
-    if not success then
-        locomotive_positions.tbl[#locomotive_positions.tbl + 1] = {x = floor(p.x), y = floor(p.y)}
+    if not success and not check_position(locomotive_positions.tbl, p) then
+        locomotive_positions.tbl[#locomotive_positions.tbl + 1] = {x = p.x, y = p.y}
     end
 
     local total_pos = #locomotive_positions.tbl
-    if total_pos > 50 then
+    if total_pos > 30 then
         remove(locomotive_positions.tbl, 1)
     end
 end

@@ -41,6 +41,9 @@ local add_chests_to_wagon_token =
         local position4 = {cargo_wagon.right_bottom.x - 5, cargo_wagon.right_bottom.y - 2}
 
         local left_1 = LinkedChests.add(surface, position1, 'player', 'wagon_' .. wagon.entity.unit_number .. '_1')
+        if not left_1 then
+            return error('Surface was invalid, please check this out!')
+        end
         left_1.destructible = false
         left_1.minable = false
 

@@ -991,6 +991,47 @@ spells[#spells + 1] = {
         return create_projectiles(data)
     end
 }
+
+spells[#spells + 1] = {
+    name = {'spells.defender'},
+    entityName = 'defender-capsule',
+    target = true,
+    amount = 1,
+    damage = false,
+    range = 30,
+    force = 'player',
+    level = 55,
+    type = 'special',
+    mana_cost = 250,
+    cooldown = 320,
+    enabled = true,
+    sprite = 'recipe/defender-capsule',
+    special_sprite = 'recipe=defender-capsule',
+    tooltip = 'Spawns defenders',
+    callback = function(data)
+        return create_projectiles(data)
+    end
+}
+spells[#spells + 1] = {
+    name = {'spells.destroyer'},
+    entityName = 'destroyer-capsule',
+    target = true,
+    amount = 1,
+    damage = false,
+    range = 30,
+    force = 'player',
+    level = 60,
+    type = 'special',
+    mana_cost = 300,
+    cooldown = 320,
+    enabled = true,
+    sprite = 'recipe/destroyer-capsule',
+    special_sprite = 'recipe=destroyer-capsule',
+    tooltip = 'Spawns destroyers',
+    callback = function(data)
+        return create_projectiles(data)
+    end
+}
 spells[#spells + 1] = {
     name = {'spells.warp'},
     entityName = 'warp-gate',
@@ -1152,12 +1193,6 @@ local drone_enemy = {
     end
 }
 
-if _DEBUG then
-    drone_enemy.mana_cost = 1
-    drone_enemy.level = 1
-    drone_enemy.cooldown = 1
-end
-
 spells[#spells + 1] = drone_enemy
 
 local drone_mine = {
@@ -1190,17 +1225,22 @@ local drone_mine = {
     end
 }
 
-if _DEBUG then
-    drone_mine.mana_cost = 1
-    drone_mine.level = 1
-    drone_mine.cooldown = 1
-end
-
 spells[#spells + 1] = drone_mine
+
+if _DEBUG then
+    for i = 1, #spells do
+        local spell = spells[i]
+        spell.mana_cost = 1
+        spell.level = 1
+        spell.cooldown = 1
+    end
+end
 
 Public.projectile_types = {
     ['explosives'] = {name = 'grenade', count = 0.5, max_range = 32, tick_speed = 1},
     ['distractor-capsule'] = {name = 'distractor-capsule', count = 1, max_range = 32, tick_speed = 1},
+    ['defender-capsule'] = {name = 'defender-capsule', count = 1, max_range = 32, tick_speed = 1},
+    ['destroyer-capsule'] = {name = 'destroyer-capsule', count = 1, max_range = 32, tick_speed = 1},
     ['land-mine'] = {name = 'grenade', count = 1, max_range = 32, tick_speed = 1},
     ['grenade'] = {name = 'grenade', count = 1, max_range = 40, tick_speed = 1},
     ['cluster-grenade'] = {name = 'cluster-grenade', count = 1, max_range = 40, tick_speed = 3},

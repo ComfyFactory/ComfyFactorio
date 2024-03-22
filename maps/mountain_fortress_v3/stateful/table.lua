@@ -808,7 +808,8 @@ local function get_random_objectives()
             token = empty_token
         },
         items[2],
-        items[3]
+        items[3],
+        items[4]
     }
 end
 
@@ -945,8 +946,9 @@ local function apply_buffs()
                         this.buffs_collected['starting_items'] = {}
                     end
                     if type(buff.items) ~= 'table' then
-                        log(serpent.block(buff))
+                        break
                     end
+
                     for _, item in pairs(buff.items) do
                         if item then
                             if starting_items[item.name] and buff.limit and starting_items[item.name].item_limit and starting_items[item.name].item_limit >= buff.limit then
@@ -1224,8 +1226,7 @@ end
 
 function Public.reset_stateful(refresh_gui, clear_buffs)
     this.test_mode = false
-    this.objectives_completed = {}
-    this.objectives_completed_count = 0
+
     this.final_battle = false
     this.extra_wagons = 0
     if clear_buffs then
@@ -1250,22 +1251,48 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
             rockets_launched = 1
         }
     else
-        this.objectives = {
-            randomized_zone = scale(4, 15, 1.013),
-            randomized_wave = scale(200, 1000),
-            supplies = get_random_items(),
-            single_item = get_random_item(),
-            killed_enemies = scale(25000, 400000, 1.035),
-            research_level_selection = get_random_research_recipe(),
-            locomotive_market_coins_spent = {
+        if not this.objectives then
+            this.objectives = {}
+        end
+
+        if not this.objectives.randomized_zone or (this.objectives_completed ~= nil and this.objectives_completed.randomized_zone) then
+            this.objectives.randomized_zone = scale(4, 15, 1.013)
+        end
+        if not this.objectives.randomized_wave or (this.objectives_completed ~= nil and this.objectives_completed.randomized_wave) then
+            this.objectives.randomized_wave = scale(200, 1000)
+        end
+        if not this.objectives.supplies or (this.objectives_completed ~= nil and this.objectives_completed.supplies) then
+            this.objectives.supplies = get_random_items()
+        end
+        if not this.objectives.single_item or (this.objectives_completed ~= nil and this.objectives_completed.single_item) then
+            this.objectives.single_item = get_random_item()
+        end
+        if not this.objectives.killed_enemies or (this.objectives_completed ~= nil and this.objectives_completed.killed_enemies) then
+            this.objectives.killed_enemies = scale(25000, 400000, 1.035)
+        end
+        if not this.objectives.research_level_selection or (this.objectives_completed ~= nil and this.objectives_completed.research_level_selection) then
+            this.objectives.research_level_selection = get_random_research_recipe()
+        end
+        if not this.objectives.locomotive_market_coins_spent or (this.objectives_completed ~= nil and this.objectives_completed.locomotive_market_coins_spent) then
+            this.objectives.locomotive_market_coins_spent = {
                 spent = 0,
                 required = scale(50000)
-            },
-            trees_farmed = scale(10000, 200000),
-            rocks_farmed = scale(20000, 250000),
-            rockets_launched = scale(10, 700)
-        }
+            }
+        end
+        if not this.objectives.trees_farmed or (this.objectives_completed ~= nil and this.objectives_completed.trees_farmed) then
+            this.objectives.trees_farmed = scale(10000, 200000)
+        end
+        if not this.objectives.rocks_farmed or (this.objectives_completed ~= nil and this.objectives_completed.rocks_farmed) then
+            this.objectives.rocks_farmed = scale(20000, 250000)
+        end
+        if not this.objectives.rockets_launched or (this.objectives_completed ~= nil and this.objectives_completed.rockets_launched) then
+            this.objectives.rockets_launched = scale(10, 700)
+        end
     end
+
+    this.objectives_completed = {}
+    this.objectives_completed_count = 0
+
     this.collection = {
         time_until_attack = nil,
         time_until_attack_timer = nil,
@@ -1534,6 +1561,54 @@ Event.add(
     end
 )
 
+Server.on_data_set_changed(
+    dataset_key,
+    function(data)
+        if data.value then
+            local settings = data.value
+            if settings.rounds_survived ~= nil then
+                this.rounds_survived = settings.rounds_survived
+            end
+            if settings.season ~= nil then
+                this.season = settings.season
+            end
+            if settings.test_mode ~= nil then
+                this.test_mode = settings.test_mode
+            end
+            if settings.buffs ~= nil then
+                this.buffs = settings.buffs
+            end
+            if settings.current_date ~= nil then
+                this.current_date = settings.current_date
+            end
+        end
+    end
+)
+
+Server.on_data_set_changed(
+    dataset_key_dev,
+    function(data)
+        if data.value then
+            local settings = data.value
+            if settings.rounds_survived ~= nil then
+                this.rounds_survived = settings.rounds_survived
+            end
+            if settings.season ~= nil then
+                this.season = settings.season
+            end
+            if settings.test_mode ~= nil then
+                this.test_mode = settings.test_mode
+            end
+            if settings.buffs ~= nil then
+                this.buffs = settings.buffs
+            end
+            if settings.current_date ~= nil then
+                this.current_date = settings.current_date
+            end
+        end
+    end
+)
+
 Public.buff_to_string = buff_to_string
 Public.get_random_buff = get_random_buff
 Public.get_item_produced_count = get_item_produced_count
@@ -1558,6 +1633,7 @@ if _DEBUG then
                     {name = 'defense', discord = 'Defense starting supplies', modifier = 'starting_items', items = {{name = 'gun-turret', count = 2}, {name = 'firearm-magazine', count = 25}}, add_per_buff = 1, limit = 10},
                     {name = 'fast_startup_2', discord = 'Assemling starting supplies', modifier = 'starting_items', items = {{name = 'assembling-machine-3', count = 2}}, add_per_buff = 2, limit = 25},
                     {name = 'character_health_bonus', discord = 'Character health bonus', modifier = 'force', state = 250},
+                    {name = 'fast_startup_2', discord = 'Assemling starting supplies', modifier = 'starting_items', items = 0, add_per_buff = 2, limit = 25},
                     {name = 'supplies_2', discord = 'Starting items supplies', modifier = 'starting_items', items = {{name = 'iron-plate', count = 400}, {name = 'copper-plate', count = 400}}, add_per_buff = 400, limit = 1000},
                     {name = 'character_health_bonus', discord = 'Character health bonus', modifier = 'force', state = 250},
                     {name = 'defense_3', discord = 'Defense starting supplies', modifier = 'starting_items', items = {{name = 'rocket-launcher', count = 1}, {name = 'rocket', count = 100}}, add_per_buff = 1, limit = 1},
@@ -1567,10 +1643,12 @@ if _DEBUG then
                     {name = 'supplies', discord = 'Starting items supplies', modifier = 'starting_items', items = {{name = 'iron-plate', count = 100}, {name = 'copper-plate', count = 100}}, add_per_buff = 100, limit = 1000},
                     {name = 'xp_bonus', discord = 'RPG XP point bonus', modifier = 'rpg', state = 0.12},
                     {name = 'manual_mining_speed_modifier', discord = 'Mining speed modifier', modifier = 'force', state = 0.15},
+                    {name = 'fast_startup_2', discord = 'Assemling starting supplies', modifier = 'starting_items', items = 0, add_per_buff = 2, limit = 25},
                     {name = 'armor', discord = 'Armor starting supplies', modifier = 'starting_items', limit = 1, items = {{name = 'modular-armor', count = 1}, {name = 'solar-panel-equipment', count = 2}}, add_per_buff = 1},
                     {name = 'laboratory_productivity_bonus', discord = 'Productivity bonus', modifier = 'force', state = 0.15},
                     {name = 'laboratory_speed_modifier', discord = 'Laboratory speed modifier', modifier = 'force', state = 0.15},
                     {name = 'laboratory_productivity_bonus', discord = 'Productivity bonus', modifier = 'force', state = 0.15},
+                    {name = 'supplies_1', discord = 'Starting items supplies', modifier = 'starting_items', items = 0, add_per_buff = 200, limit = 1000},
                     {name = 'worker_robots_storage_bonus', discord = 'Robot storage bonus', modifier = 'force', state = 1},
                     {name = 'fast_startup_1', discord = 'Assemling starting supplies', modifier = 'starting_items', items = {{name = 'assembling-machine-2', count = 2}}, add_per_buff = 2, limit = 25},
                     {name = 'character_running_speed_modifier', discord = 'Running speed modifier', modifier = 'force', state = 0.05},
@@ -1579,14 +1657,22 @@ if _DEBUG then
                     {name = 'manual_crafting_speed_modifier', discord = 'Crafting speed modifier', modifier = 'force', state = 0.12},
                     {name = 'defense_2', discord = 'Defense starting supplies', modifier = 'starting_items', items = {{name = 'grenade', count = 25}, {name = 'poison-capsule', count = 15}}, add_per_buff = 1, limit = 10},
                     {name = 'heal-thy-buildings', discord = 'Repair starting supplies', modifier = 'starting_items', items = {{name = 'repair-pack', count = 5}}, add_per_buff = 2, limit = 20},
+                    {name = 'defense', discord = 'Defense starting supplies', modifier = 'starting_items', items = 0, add_per_buff = 1, limit = 10},
                     {name = 'worker_robots_storage_bonus', discord = 'Robot storage bonus', modifier = 'force', state = 1},
                     {name = 'worker_robots_storage_bonus', discord = 'Robot storage bonus', modifier = 'force', state = 1},
+                    {name = 'supplies_2', discord = 'Starting items supplies', modifier = 'starting_items', limit = 1000, add_per_buff = 400, items = 0},
                     {name = 'worker_robots_speed_modifier', discord = 'Robot speed modifier', modifier = 'force', state = 0.5},
                     {name = 'extra_wagons', discord = 'Extra wagon at start', modifier = 'locomotive', state = 1},
+                    {name = 'fast_startup_2', discord = 'Assembling starting supplies', modifier = 'starting_items', limit = 25, add_per_buff = 2, items = 0},
                     {name = 'worker_robots_storage_bonus', discord = 'Robot storage bonus', modifier = 'force', state = 1},
                     {name = 'xp_bonus', discord = 'RPG XP point bonus', modifier = 'rpg', state = 0.12},
                     {name = 'xp_bonus', discord = 'RPG XP point bonus', modifier = 'rpg', state = 0.12},
                     {name = 'manual_crafting_speed_modifier', discord = 'Crafting speed modifier', modifier = 'force', state = 0.12},
+                    {name = 'defense', discord = 'Defense starting supplies', modifier = 'starting_items', limit = 10, add_per_buff = 1, items = 0},
+                    {name = 'supplies_1', discord = 'Starting items supplies', modifier = 'starting_items', limit = 1000, add_per_buff = 200, items = 0},
+                    {name = 'defense_2', discord = 'Defense starting supplies', modifier = 'starting_items', limit = 10, add_per_buff = 1, items = 0},
+                    {name = 'defense', discord = 'Defense starting supplies', modifier = 'starting_items', limit = 10, add_per_buff = 1, items = 0},
+                    {name = 'fast_startup_2', discord = 'Assembling starting supplies', modifier = 'starting_items', limit = 25, add_per_buff = 2, items = 0},
                     {name = 'laboratory_productivity_bonus', discord = 'Productivity bonus', modifier = 'force', state = 0.15},
                     {name = 'manual_mining_speed_modifier', discord = 'Mining speed modifier', modifier = 'force', state = 0.15},
                     {
@@ -1597,6 +1683,8 @@ if _DEBUG then
                         state = 1
                     },
                     {name = 'character_running_speed_modifier', discord = 'Running speed modifier', modifier = 'force', state = 0.05},
+                    {name = 'fast_startup_1', discord = 'Assembling starting supplies', modifier = 'starting_items', limit = 25, add_per_buff = 2, items = 0},
+                    {name = 'fast_startup_1', discord = 'Assembling starting supplies', modifier = 'starting_items', limit = 25, add_per_buff = 2, items = 0},
                     {name = 'worker_robots_battery_modifier', discord = 'Robot battery bonus', modifier = 'force', state = 1},
                     {name = 'character_running_speed_modifier', discord = 'Running speed modifier', modifier = 'force', state = 0.05},
                     {name = 'production_1', discord = 'Production starting supplies', modifier = 'starting_items', limit = 2, add_per_buff = 1, items = {{name = 'steel-furnace', count = 4}, {name = 'solid-fuel', count = 100}}},
