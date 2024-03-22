@@ -1012,7 +1012,7 @@ local function apply_startup_settings(settings)
     local time_to_reset = (current_date - converted_stored_date)
     this.time_to_reset = this.reset_after - time_to_reset
 
-    if time_to_reset and time_to_reset > this.reset_after then
+    if time_to_reset and time_to_reset >= this.reset_after then
         if server_name_matches then
             Server.set_data(dataset, dataset_key_previous, settings)
         end
