@@ -218,7 +218,7 @@ function Public.reset_map()
     Collapse.set_speed(8)
     Collapse.set_amount(1)
     -- Collapse.set_max_line_size(zone_settings.zone_width)
-    Collapse.set_max_line_size(540)
+    Collapse.set_max_line_size(550)
     Collapse.set_surface_index(surface.index)
 
     Collapse.start_now(false)

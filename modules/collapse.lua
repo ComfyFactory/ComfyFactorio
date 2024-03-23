@@ -31,7 +31,7 @@ local directions = {
         if width > this.max_line_size then
             width = this.max_line_size
         end
-        local a = width * 0.5 + 1
+        local a = width * 0.5 + 4
         this.vector = {0, -1}
         this.area = {{position.x - a, position.y - 1}, {position.x + a, position.y}}
     end,
@@ -103,7 +103,8 @@ local function set_collapse_tiles(surface)
         print_debug(45)
     end
     game.forces.player.chart(surface, this.area)
-    this.tiles = surface.find_tiles_filtered({area = this.area})
+    this.tiles = surface.find_tiles_filtered({area = this.area, name = 'out-of-map', invert = true})
+
     if not this.tiles then
         return
     end
@@ -115,7 +116,8 @@ local function set_collapse_tiles(surface)
     local v = this.vector
     local area = this.area
     this.area = {{area[1][1] + v[1], area[1][2] + v[2]}, {area[2][1] + v[1], area[2][2] + v[2]}}
-    game.forces.player.chart(surface, this.area)
+    local chart_area = {{area[1][1] + v[1] + 4, area[1][2] + v[2] + 4}, {area[2][1] + v[1] + 4, area[2][2] + v[2] + 4}}
+    game.forces.player.chart(surface, chart_area)
 end
 
 local function progress()
@@ -156,7 +158,7 @@ local function progress()
         if this.specific_entities.enabled then
             local position = {tile.position.x + 0.5, tile.position.y + 0.5}
             local entities = this.specific_entities.entities
-            for _, e in pairs(surface.find_entities_filtered({area = {{position[1] - 2, position[2] - 2}, {position[1] + 2, position[2] + 2}}})) do
+            for _, e in pairs(surface.find_entities_filtered({area = {{position[1] - 4, position[2] - 2}, {position[1] + 4, position[2] + 2}}})) do
                 if entities[e.name] and e.valid and e.health then
                     e.die()
                 elseif e.valid then
@@ -166,7 +168,7 @@ local function progress()
         end
         if this.kill then
             local position = {tile.position.x + 0.5, tile.position.y + 0.5}
-            for _, e in pairs(surface.find_entities_filtered({area = {{position[1] - 2, position[2] - 2}, {position[1] + 2, position[2] + 2}}})) do
+            for _, e in pairs(surface.find_entities_filtered({area = {{position[1] - 4, position[2] - 2}, {position[1] + 4, position[2] + 2}}})) do
                 if e.valid and e.health then
                     e.die()
                 end
