@@ -15,7 +15,6 @@ local format_number = require 'util'.format_number
 local RPG_Progression = require 'utils.datastore.rpg_data'
 local WD = require 'modules.wave_defense.table'
 
-local zone_settings = Public.zone_settings
 local random = math.random
 local floor = math.floor
 local abs = math.abs
