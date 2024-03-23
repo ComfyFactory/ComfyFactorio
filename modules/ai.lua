@@ -26,6 +26,22 @@ local remove = table.remove
 local round = math.round
 local default_radius = 5
 
+local armor_names = {
+    'power-armor-mk2',
+    'power-armor',
+    'modular-armor',
+    'heavy-armor',
+    'light-armor'
+}
+
+local weapon_names = {
+    ['rocket-launcher'] = 'rocket',
+    ['submachine-gun'] = {'uranium-rounds-magazine', 'piercing-rounds-magazine', 'firearm-magazine'},
+    ['shotgun'] = {'piercing-shotgun-shell', 'shotgun-shell'},
+    ['pistol'] = {'uranium-rounds-magazine', 'piercing-rounds-magazine', 'firearm-magazine'}
+}
+local remove_character
+
 Public.command = {
     noop = 0,
     seek_and_destroy_cmd = 1,
@@ -63,6 +79,8 @@ local function char_callback(callback)
         local data = entities[i]
         if data and data.entity and data.entity.valid then
             callback(data)
+        elseif data and data.unit_number then
+            remove_character(data.unit_number)
         end
     end
 end
@@ -86,6 +104,21 @@ local function is_mining_target_taken(selected)
     )
 
     return false
+end
+
+local function count_active_characters(player_index)
+    if not next(this.characters) then
+        return
+    end
+
+    local count = 0
+
+    for _, data in pairs(this.characters) do
+        if data and data.player_index == player_index then
+            count = count + 1
+        end
+    end
+    return count
 end
 
 local function add_character(player_index, entity, render_id, data)
@@ -123,7 +156,7 @@ local function exists_character(unit_number)
     return false
 end
 
-local function remove_character(unit_number)
+remove_character = function(unit_number)
     if not next(this.characters) then
         return
     end
@@ -196,20 +229,37 @@ local function move_to(entity, target, min_distance)
     return state.walking
 end
 
-local function refill_ammo(entity)
+local function refill_ammo(player, entity)
     if not entity or not entity.valid then
         return
     end
+    local inventory = player.get_main_inventory()
+
     local weapon = entity.get_inventory(defines.inventory.character_guns)[entity.selected_gun_index]
     if weapon and weapon.valid_for_read then
         local selected_ammo = entity.get_inventory(defines.inventory.character_ammo)[entity.selected_gun_index]
         if selected_ammo then
             if not selected_ammo.valid_for_read then
+                if weapon.name == 'rocket-launcher' then
+                    local player_has_ammo = inventory.get_item_count('rocket')
+                    if player_has_ammo > 0 then
+                        entity.insert({name = 'rocket', count = 1})
+                        player.remove_item({name = 'rocket', count = 1})
+                    end
+                end
                 if weapon.name == 'shotgun' then
-                    entity.insert({name = 'shotgun-shell', count = 5})
+                    local player_has_ammo = inventory.get_item_count('shotgun-shell')
+                    if player_has_ammo > 4 then
+                        entity.insert({name = 'shotgun-shell', count = 5})
+                        player.remove_item({name = 'shotgun-shell', count = 5})
+                    end
                 end
                 if weapon.name == 'pistol' then
-                    entity.insert({name = 'firearm-magazine', count = 5})
+                    local player_has_ammo = inventory.get_item_count('firearm-magazine')
+                    if player_has_ammo > 4 then
+                        entity.insert({name = 'firearm-magazine', count = 5})
+                        player.remove_item({name = 'firearm-magazine', count = 5})
+                    end
                 end
             end
         end
@@ -253,7 +303,15 @@ local function shoot_stop(entity)
     }
 end
 
-local function insert_weapons(entity)
+local function has_armor_equipped(entity)
+    local armor = entity.get_inventory(defines.inventory.character_armor)[1]
+    if armor.valid_for_read then
+        return true
+    end
+    return false
+end
+
+local function insert_weapons_and_armor(player, entity, armor_only)
     if not entity or not entity.valid then
         return
     end
@@ -262,15 +320,41 @@ local function insert_weapons(entity)
         return
     end
 
-    if Utils.rand_range(1, 15) == 1 then
-        entity.insert({name = 'shotgun', count = 1})
-        entity.insert({name = 'shotgun-shell', count = 5})
-    elseif Utils.rand_range(1, 10) == 1 then
-        entity.insert({name = 'submachine-gun', count = 1})
-        entity.insert({name = 'firearm-magazine', count = 5})
-    else
-        entity.insert({name = 'pistol', count = 1})
-        entity.insert({name = 'firearm-magazine', count = 5})
+    local inventory = player.get_main_inventory()
+
+    for _, armor_name in pairs(armor_names) do
+        if not has_armor_equipped(entity) and inventory.get_item_count(armor_name) > 0 then
+            entity.insert({name = armor_name, count = 1})
+            player.remove_item({name = armor_name, count = 1})
+            break
+        end
+    end
+
+    if armor_only then
+        return
+    end
+
+    for weapon_name, ammo in pairs(weapon_names) do
+        if inventory.get_item_count(weapon_name) > 0 then
+            entity.insert({name = weapon_name, count = 1})
+            player.remove_item({name = weapon_name, count = 1})
+
+            if type(ammo) ~= 'table' then
+                if inventory.get_item_count(ammo) > 0 then
+                    entity.insert({name = ammo, count = 1})
+                    player.remove_item({name = ammo, count = 1})
+                end
+            else
+                for _, ammo_name in pairs(ammo) do
+                    if inventory.get_item_count(ammo_name) > 0 then
+                        entity.insert({name = ammo_name, count = 1})
+                        player.remove_item({name = ammo_name, count = 1})
+                        break
+                    end
+                end
+            end
+            break
+        end
     end
 end
 
@@ -331,6 +415,8 @@ local function seek_and_mine(data)
 
         data.radius = 1
 
+        insert_weapons_and_armor(player, entity, true)
+
         if not move_to(entity, target, 1) then
             if not is_mining_target_taken(target) then
                 if data.raised_event then
@@ -389,8 +475,8 @@ local function seek_enemy_and_destroy(data)
             return
         end
         data.radius = default_radius
-        insert_weapons(entity)
-        refill_ammo(entity)
+        insert_weapons_and_armor(player, entity)
+        refill_ammo(player, entity)
 
         local inside = ((entity.position.x - data.walking_position.position.x) ^ 2 + (entity.position.y - data.walking_position.position.y) ^ 2) < 1 ^ 2
         data.walking_position.position = get_near_position(entity)
@@ -406,7 +492,7 @@ local function seek_enemy_and_destroy(data)
             data.command = Public.command.seek_and_mine_cmd
             seek_and_mine(data)
         else
-            if not move_to(entity, target, Utils.rand_range(5, 10)) then
+            if not move_to(entity, target, Utils.rand_range(10, 20)) then
                 shoot_at(entity, target)
             else
                 shoot_stop(entity)
@@ -426,16 +512,21 @@ function Public.create_char(data)
     end
 
     if not data.player_index or not data.command then
-        return error('No correct data was not provided.', 2)
+        return error('No correct data was provided.', 2)
     end
 
     if data.command ~= Public.command.seek_and_destroy_cmd and data.command ~= Public.command.attack_objects_cmd and data.command ~= Public.command.seek_and_mine_cmd then
-        return error('No correct command was not provided.', 2)
+        return error('No correct command was provided.', 2)
     end
 
     local player = game.get_player(data.player_index)
     if not player or not player.valid or not player.connected then
         return error('Provided player was not valid or not connected.', 2)
+    end
+
+    local count = count_active_characters(data.player_index)
+    if count and count >= 5 then
+        return false
     end
 
     local surface = player.surface

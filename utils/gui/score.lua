@@ -49,7 +49,8 @@ function Public.init_player_table(player, reset)
             built_entities = 0,
             deaths = 0,
             killscore = 0,
-            mined_entities = 0
+            mined_entities = 0,
+            crafted_items = 0
         }
     end
 
@@ -66,7 +67,8 @@ function Public.init_player_table(player, reset)
             built_entities = 0,
             deaths = 0,
             killscore = 0,
-            mined_entities = 0
+            mined_entities = 0,
+            crafted_items = 0
         }
     end
 end
@@ -84,7 +86,8 @@ local function get_score_list(force)
                     killscore = score.killscore or 0,
                     deaths = score.deaths or 0,
                     built_entities = score.built_entities or 0,
-                    mined_entities = score.mined_entities or 0
+                    mined_entities = score.mined_entities or 0,
+                    crafted_items = score.crafted_items or 0
                 }
             )
         end
@@ -163,7 +166,7 @@ local function show_score(data)
     line.style.bottom_margin = 8
 
     -- Score per player
-    local t = frame.add {type = 'table', column_count = 5}
+    local t = frame.add {type = 'table', column_count = 6}
 
     -- Score headers
     local headers = {
@@ -171,7 +174,8 @@ local function show_score(data)
         {column = 'killscore', name = 'score_killscore', caption = 'Killscore'},
         {column = 'deaths', name = 'score_deaths', caption = 'Deaths'},
         {column = 'built_entities', name = 'score_built_entities', caption = 'Built structures'},
-        {column = 'mined_entities', name = 'score_mined_entities', caption = 'Mined entities'}
+        {column = 'mined_entities', name = 'score_mined_entities', caption = 'Mined entities'},
+        {column = 'crafted_items', name = 'score_crafted_items', caption = 'Crafted Items'}
     }
 
     local sorting_pref = this.sort_by[player.name]
@@ -193,7 +197,7 @@ local function show_score(data)
         }
         label.style.font = 'heading-2'
         label.style.font_color = {r = 0.98, g = 0.66, b = 0.22} -- yellow
-        label.style.minimal_width = 150
+        label.style.minimal_width = 125
         label.style.horizontal_align = 'center'
     end
 
@@ -216,11 +220,11 @@ local function show_score(data)
         }
     )
     scroll_pane.style.maximal_height = 400
-    local column_table = scroll_pane.add {type = 'table', column_count = 5}
+    local column_table = scroll_pane.add {type = 'table', column_count = 6}
 
     -- Score entries
     for _, entry in pairs(score_list) do
-        local p = game.players[entry.name]
+        local p = game.players[entry.name or ''] or {color = {r = 0.6, g = 0.6, b = 0.6}}
         local special_color = {
             r = p.color.r * 0.6 + 0.4,
             g = p.color.g * 0.6 + 0.4,
@@ -232,7 +236,8 @@ local function show_score(data)
             {caption = format_number(tonumber(entry.killscore), true)},
             {caption = format_number(tonumber(entry.deaths), true)},
             {caption = format_number(tonumber(entry.built_entities), true)},
-            {caption = format_number(tonumber(entry.mined_entities), true)}
+            {caption = format_number(tonumber(entry.mined_entities), true)},
+            {caption = format_number(tonumber(entry.crafted_items), true)}
         }
         local default_color = {r = 0.9, g = 0.9, b = 0.9}
 
@@ -244,8 +249,8 @@ local function show_score(data)
                 color = column.color or default_color
             }
             label.style.font = 'heading-3'
-            label.style.minimal_width = 150
-            label.style.maximal_width = 150
+            label.style.minimal_width = 125
+            label.style.maximal_width = 125
             label.style.horizontal_align = 'center'
         end -- foreach column
     end -- foreach entry
@@ -294,7 +299,8 @@ local function on_gui_click(event)
         ['score_killscore'] = 'killscore',
         ['score_deaths'] = 'deaths',
         ['score_built_entities'] = 'built_entities',
-        ['score_mined_entities'] = 'mined_entities'
+        ['score_mined_entities'] = 'mined_entities',
+        ['score_crafted_items'] = 'crafted_items'
     }
     local column = element_to_column[name]
     if column then
@@ -445,6 +451,13 @@ local function on_player_died(event)
     score.deaths = 1 + (score.deaths or 0)
 end
 
+local function on_player_crafted_item(event)
+    local player = game.players[event.player_index]
+    Public.init_player_table(player)
+    local score = this.score_table[player.force.name].players[player.name]
+    score.crafted_items = 1 + (score.crafted_items or 0)
+end
+
 local function on_player_mined_entity(event)
     if not event.entity.valid then
         return
@@ -483,6 +496,7 @@ Gui.on_click(
 )
 
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
+Event.add(defines.events.on_player_crafted_item, on_player_crafted_item)
 Event.add(defines.events.on_player_died, on_player_died)
 Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_entity_died, on_entity_died)

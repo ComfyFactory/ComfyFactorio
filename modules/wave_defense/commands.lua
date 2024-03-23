@@ -41,14 +41,14 @@ commands.add_command(
         end
 
         if param == 'spawn' then
-            Public.spawn_unit_group(true, true)
+            Public.spawn_unit_group({true}, true)
             p(module_name .. ' wave spawned!')
             return
         end
 
         if param == 'next' then
             Public.set_next_wave()
-            Public.spawn_unit_group(true, true)
+            Public.spawn_unit_group({true}, true)
             p(module_name .. ' wave spawned!')
             return
         end
@@ -57,7 +57,7 @@ commands.add_command(
             for _ = 1, 50 do
                 Public.set_next_wave()
             end
-            Public.spawn_unit_group(true, true)
+            Public.spawn_unit_group({true}, true)
             p(module_name .. ' wave spawned!')
             return
         end
@@ -66,7 +66,7 @@ commands.add_command(
             for _ = 1, 1500 do
                 Public.set_next_wave()
             end
-            Public.spawn_unit_group(true, true)
+            Public.spawn_unit_group({true}, true)
             p(module_name .. ' wave spawned!')
             return
         end

@@ -204,6 +204,10 @@ local function changed_surface(player)
     local rpg_settings = RPG.settings_frame_name
     local main = Public.get('locomotive')
     local icw_locomotive = Public.get('icw_locomotive')
+    if not icw_locomotive then
+        return
+    end
+
     local wagon_surface = icw_locomotive.surface
     local main_toggle_button = player.gui.top[main_toggle_button_name]
     local info = player.gui.top[main_button_name]

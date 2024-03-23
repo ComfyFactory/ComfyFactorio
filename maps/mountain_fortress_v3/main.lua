@@ -2,7 +2,7 @@
 
 Mountain Fortress v3 is maintained by Gerkiz and hosted by Comfy.
 
-Want to host it? Ask Gerkiz#0001 at discord!
+Want to host it? Ask Gerkiz at discord!
 
 ]]
 require 'modules.shotgun_buff'
@@ -53,6 +53,7 @@ local role_to_mention = Discord.role_mentions.mtn_fortress
 
 local floor = math.floor
 local remove = table.remove
+local abs = math.abs
 RPG.disable_cooldowns_on_spells()
 Gui.mod_gui_button_enabled = true
 Gui.button_style = 'mod_gui_button'
@@ -115,6 +116,8 @@ local announce_new_map =
 
 function Public.reset_map()
     game.forces.player.reset()
+    Public.reset_main_table()
+
     local this = Public.get()
     local wave_defense_table = WD.get_table()
     Misc.reset()
@@ -139,7 +142,6 @@ function Public.reset_map()
     IC.allowed_surface(game.surfaces[this.active_surface_index].name)
     Public.reset_func_table()
     game.reset_time_played()
-    Public.reset_main_table()
 
     OfflinePlayers.init(this.active_surface_index)
     OfflinePlayers.set_enabled(true)
@@ -167,7 +169,6 @@ function Public.reset_map()
 
     Beam.reset_valid_targets()
 
-    game.forces.player.set_spawn_position({x = -27, y = 25}, surface)
     game.forces.player.manual_mining_speed_modifier = 0
     game.forces.player.set_ammo_damage_modifier('artillery-shell', -0.95)
     game.forces.player.worker_robots_battery_modifier = 4
@@ -220,17 +221,30 @@ function Public.reset_map()
     -- Collapse.set_max_line_size(zone_settings.zone_width)
     Collapse.set_max_line_size(540)
     Collapse.set_surface_index(surface.index)
-    Collapse.set_position({0, 130})
-    Collapse.set_direction('north')
+
     Collapse.start_now(false)
     Collapse.disable_collapse(false)
 
     this.locomotive_health = 10000
     this.locomotive_max_health = 10000
 
-    Public.locomotive_spawn(surface, {x = -18, y = 25})
+    if this.adjusted_zones.reversed then
+        this.gap_between_locomotive.neg_gap = abs(this.gap_between_locomotive.neg_gap)
+        this.gap_between_locomotive.neg_gap_collapse = abs(this.gap_between_locomotive.neg_gap_collapse)
+        this.spawn_near_collapse.compare = abs(this.spawn_near_collapse.compare)
+        Collapse.set_position({0, -130})
+        Collapse.set_direction('south')
+        Public.locomotive_spawn(surface, {x = -18, y = -25}, this.adjusted_zones.reversed)
+    else
+        this.gap_between_locomotive.neg_gap = abs(this.gap_between_locomotive.neg_gap) * -1
+        this.gap_between_locomotive.neg_gap_collapse = abs(this.gap_between_locomotive.neg_gap_collapse) * -1
+        this.spawn_near_collapse.compare = abs(this.spawn_near_collapse.compare) * -1
+        Collapse.set_position({0, 130})
+        Collapse.set_direction('north')
+        Public.locomotive_spawn(surface, {x = -18, y = 25}, this.adjusted_zones.reversed)
+    end
     Public.render_train_hp()
-    Public.render_direction(surface)
+    Public.render_direction(surface, this.adjusted_zones.reversed)
 
     WD.reset_wave_defense()
     wave_defense_table.surface_index = this.active_surface_index
@@ -257,18 +271,25 @@ function Public.reset_map()
     Public.disable_creative()
     Public.boost_difficulty()
 
-    if not surface.is_chunk_generated({x = -20, y = 22}) then
-        surface.request_to_generate_chunks({x = -20, y = 22}, 0.1)
-        surface.force_generate_chunk_requests()
+    if this.adjusted_zones.reversed then
+        if not surface.is_chunk_generated({x = -20, y = -22}) then
+            surface.request_to_generate_chunks({x = -20, y = -22}, 0.1)
+            surface.force_generate_chunk_requests()
+        end
+        game.forces.player.set_spawn_position({x = -27, y = -25}, surface)
+    else
+        if not surface.is_chunk_generated({x = -20, y = 22}) then
+            surface.request_to_generate_chunks({x = -20, y = 22}, 0.1)
+            surface.force_generate_chunk_requests()
+        end
+        game.forces.player.set_spawn_position({x = -27, y = 25}, surface)
     end
 
-    game.forces.player.set_spawn_position({x = -27, y = 25}, surface)
     game.speed = 1
 
     Task.set_queue_speed(16)
 
-    -- Highscore currently being reworked
-    -- Public.get_scores()
+    Public.get_scores()
 
     this.chunk_load_tick = game.tick + 400
     this.force_chunk = true
@@ -355,20 +376,16 @@ local has_the_game_ended = function()
                 game.print(({'main.reset_in', cause_msg, this.game_reset_tick / 60}), {r = 0.22, g = 0.88, b = 0.22})
             end
 
-            -- local diff_name = Difficulty.get('name')
-
             if this.soft_reset and this.game_reset_tick == 0 then
                 this.game_reset_tick = nil
-                -- Highscore currently being reworked
-                -- Public.set_scores(diff_name)
+                Public.set_scores()
                 Public.reset_map()
                 return
             end
 
             if this.restart and this.game_reset_tick == 0 then
                 if not this.announced_message then
-                    -- Highscore currently being reworked
-                    -- Public.set_scores(diff_name)
+                    Public.set_scores()
                     game.print(({'entity.notify_restart'}), {r = 0.22, g = 0.88, b = 0.22})
                     local message = 'Soft-reset is disabled! Server will restart from scenario to load new changes.'
                     Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
@@ -379,8 +396,7 @@ local has_the_game_ended = function()
             end
             if this.shutdown and this.game_reset_tick == 0 then
                 if not this.announced_message then
-                    -- Highscore currently being reworked
-                    -- Public.set_scores(diff_name)
+                    Public.set_scores()
                     game.print(({'entity.notify_shutdown'}), {r = 0.22, g = 0.88, b = 0.22})
                     local message = 'Soft-reset is disabled! Server will shutdown. Most likely because of updates.'
                     Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
@@ -423,15 +439,24 @@ local lock_locomotive_positions = function()
         return
     end
 
+    local function check_position(tbl, pos)
+        for i = 1, #tbl do
+            if tbl[i].x == pos.x and tbl[i].y == pos.y then
+                return true
+            end
+        end
+        return false
+    end
+
     local locomotive_positions = Public.get('locomotive_pos')
+    local p = {x = floor(locomotive.position.x), y = floor(locomotive.position.y)}
     local success = is_position_near_tbl(locomotive.position, locomotive_positions.tbl)
-    local p = locomotive.position
-    if not success then
-        locomotive_positions.tbl[#locomotive_positions.tbl + 1] = {x = floor(p.x), y = floor(p.y)}
+    if not success and not check_position(locomotive_positions.tbl, p) then
+        locomotive_positions.tbl[#locomotive_positions.tbl + 1] = {x = p.x, y = p.y}
     end
 
     local total_pos = #locomotive_positions.tbl
-    if total_pos > 50 then
+    if total_pos > 30 then
         remove(locomotive_positions.tbl, 1)
     end
 end

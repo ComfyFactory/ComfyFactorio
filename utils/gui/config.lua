@@ -418,6 +418,18 @@ local fortress_functions = {
             WPT.set('winter_mode', false)
             get_actor(event, '[WinteryMode]', 'has disabled wintery mode.', true)
         end
+    end,
+    ['disable_terrain'] = function(event)
+        local WPT = is_loaded('maps.mountain_fortress_v3.table')
+        local adjusted_zones = WPT.get('adjusted_zones')
+        if event.element.switch_state == 'left' then
+            adjusted_zones.disable_terrain = false
+            get_actor(event, '[TerrainGen]', 'has enabled terrain gen.', true)
+        else
+            WPT.set('winter_mode', false)
+            adjusted_zones.disable_terrain = true
+            get_actor(event, '[TerrainGen]', 'has disabled terrain gen.', true)
+        end
     end
 }
 
@@ -776,6 +788,12 @@ local function build_config_gui(data)
                 switch_state = 'left'
             end
             add_switch(scroll_pane, switch_state, 'christmas_mode', 'Wintery Mode', 'On = Enables wintery mode.\nOff = Disables wintery mode.')
+            scroll_pane.add({type = 'line'})
+
+            if not Module.adjusted_zones.disable_terrain then
+                switch_state = 'left'
+            end
+            add_switch(scroll_pane, switch_state, 'disable_terrain', 'Disable Terrain', 'On = Enable terrain gen.\nOff = Disables terrain gen.')
             scroll_pane.add({type = 'line'})
         end
 

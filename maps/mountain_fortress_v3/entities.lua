@@ -15,7 +15,6 @@ local format_number = require 'util'.format_number
 local RPG_Progression = require 'utils.datastore.rpg_data'
 local WD = require 'modules.wave_defense.table'
 
-local zone_settings = Public.zone_settings
 local random = math.random
 local floor = math.floor
 local abs = math.abs
@@ -84,23 +83,20 @@ local reset_game =
     function(data)
         local this = data.this
         if this.soft_reset then
-            -- Highscore currently being reworked
-            -- Public.set_scores()
+            Public.set_scores()
             this.game_reset_tick = nil
             Public.reset_map()
             return
         end
         if this.restart then
-            -- Highscore currently being reworked
-            -- Public.set_scores()
+            Public.set_scores()
             local message = ({'entity.reset_game'})
             Server.to_discord_bold(message, true)
             Server.start_scenario('Mountain_Fortress_v3')
             return
         end
         if this.shutdown then
-            -- Highscore currently being reworked
-            -- Public.set_scores()
+            Public.set_scores()
             local message = ({'entity.shutdown_game'})
             Server.to_discord_bold(message, true)
             Server.stop_scenario()
@@ -407,9 +403,6 @@ local function angry_tree(entity, cause, player)
         return
     end
 
-    if abs(entity.position.y) < zone_settings.zone_depth then
-        return
-    end
     if random(1, 6) == 1 then
         Public.buried_biter(entity.surface, entity.position)
     end
@@ -1104,7 +1097,7 @@ local function on_entity_died(event)
             return
         end
         if random(1, 32) == 1 then
-            Public.buried_biter(entity.surface, entity.position)
+            Public.buried_biter(entity.surface, entity.position, 6)
             entity.destroy()
             return
         end

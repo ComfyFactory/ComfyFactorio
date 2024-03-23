@@ -652,17 +652,17 @@ main_frame = function(player)
     spacer(frame)
     frame.add({type = 'line'})
     spacer(frame)
-    if not stateful.collection.final_arena_disabled then
-        local final_label = frame.add({type = 'label', caption = {'stateful.tooltip_final'}})
-        final_label.style.single_line = false
-    else
-        local final_label_disabled = frame.add({type = 'label', caption = {'stateful.tooltip_final_disabled'}})
-        final_label_disabled.style.single_line = false
-        local reason_label = frame.add({type = 'label', caption = {'stateful.tooltip_completing'}})
-        reason_label.style.single_line = false
-    end
-    spacer(frame)
-    frame.add({type = 'line'})
+    -- if not stateful.collection.final_arena_disabled then
+    --     local final_label = frame.add({type = 'label', caption = {'stateful.tooltip_final'}})
+    --     final_label.style.single_line = false
+    -- else
+    --     local final_label_disabled = frame.add({type = 'label', caption = {'stateful.tooltip_final_disabled'}})
+    --     final_label_disabled.style.single_line = false
+    --     local reason_label = frame.add({type = 'label', caption = {'stateful.tooltip_completing'}})
+    --     reason_label.style.single_line = false
+    -- end
+    -- spacer(frame)
+    -- frame.add({type = 'line'})
     spacer(frame)
 
     local close = frame.add({type = 'button', name = close_button, caption = 'Close'})
@@ -860,8 +860,8 @@ local function update_raw()
     breached_wall = breached_wall - 1
     if stateful.objectives.randomized_zone then
         if breached_wall >= stateful.objectives.randomized_zone then
-            if not stateful.objectives_completed.randomized_zone_label then
-                stateful.objectives_completed.randomized_zone_label = true
+            if not stateful.objectives_completed.randomized_zone then
+                stateful.objectives_completed.randomized_zone = true
                 play_achievement_unlocked()
                 Alert.alert_all_players(10, 'Objective: **breach zone** has been complete!')
                 Server.to_discord_embed('Objective: **breach zone** has been complete!')
@@ -872,8 +872,8 @@ local function update_raw()
 
     if stateful.objectives.randomized_wave then
         if wave_number >= stateful.objectives.randomized_wave then
-            if not stateful.objectives_completed.randomized_wave_label then
-                stateful.objectives_completed.randomized_wave_label = true
+            if not stateful.objectives_completed.randomized_wave then
+                stateful.objectives_completed.randomized_wave = true
                 play_achievement_unlocked()
                 Alert.alert_all_players(10, 'Objective: **survive until wave** has been complete!')
                 Server.to_discord_embed('Objective: **survive until wave** has been complete!')
@@ -1010,7 +1010,7 @@ local function update_raw()
 
         if stateful.collection.final_arena_disabled then
             game.print('[color=yellow][Mtn v3][/color] Game won!')
-            game.print('[color=yellow][Mtn v3][/color] Final battle arena is currently disabled.')
+            game.print('[color=yellow][Mtn v3][/color] Final battle arena is currently being tweaked.')
             collection.game_won = true
             stateful.collection.time_until_attack = 0
             stateful.collection.time_until_attack_timer = 0
@@ -1019,6 +1019,13 @@ local function update_raw()
             collection.survive_for = 0
             collection.survive_for_timer = 0
             refresh_frames()
+
+            local reversed = Public.get_stateful_settings('reversed')
+            if reversed then
+                Public.set_stateful_settings('reversed', false)
+            else
+                Public.set_stateful_settings('reversed', true)
+            end
 
             collection.game_won_notified = true
             refresh_boss_frame()

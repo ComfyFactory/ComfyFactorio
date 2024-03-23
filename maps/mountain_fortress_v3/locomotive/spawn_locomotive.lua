@@ -80,7 +80,7 @@ local place_tiles_token =
             return
         end
 
-        MapFunctions.draw_noise_tile_circle(position, 'black-refined-concrete', surface, 12)
+        MapFunctions.draw_noise_tile_circle(position, 'black-refined-concrete', surface, 22)
     end
 )
 
@@ -129,16 +129,28 @@ local set_loco_cargo =
     end
 )
 
-function Public.locomotive_spawn(surface, position)
+function Public.locomotive_spawn(surface, position, reversed)
     local this = Public.get()
-    for y = -6, 6, 2 do
-        surface.create_entity({name = 'straight-rail', position = {position.x, position.y + y}, force = 'player', direction = 0})
-    end
-    this.locomotive = surface.create_entity({name = 'locomotive', position = {position.x, position.y + -3}, force = 'player'})
-    this.locomotive.get_inventory(defines.inventory.fuel).insert({name = 'wood', count = 100})
 
-    this.locomotive_cargo = surface.create_entity({name = 'cargo-wagon', position = {position.x, position.y + 3}, force = 'player'})
-    this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = 'raw-fish', count = 8})
+    if reversed then
+        for y = 6, -6, -2 do
+            surface.create_entity({name = 'straight-rail', position = {position.x, position.y + y}, force = 'player', direction = 0})
+        end
+        this.locomotive = surface.create_entity({name = 'locomotive', position = {position.x, position.y + 3}, force = 'player', direction = defines.direction.south})
+        this.locomotive.get_inventory(defines.inventory.fuel).insert({name = 'wood', count = 100})
+
+        this.locomotive_cargo = surface.create_entity({name = 'cargo-wagon', position = {position.x, position.y + -3}, force = 'player'})
+        this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = 'raw-fish', count = 8})
+    else
+        for y = -6, 6, 2 do
+            surface.create_entity({name = 'straight-rail', position = {position.x, position.y + y}, force = 'player', direction = 0})
+        end
+        this.locomotive = surface.create_entity({name = 'locomotive', position = {position.x, position.y + -3}, force = 'player'})
+        this.locomotive.get_inventory(defines.inventory.fuel).insert({name = 'wood', count = 100})
+
+        this.locomotive_cargo = surface.create_entity({name = 'cargo-wagon', position = {position.x, position.y + 3}, force = 'player'})
+        this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = 'raw-fish', count = 8})
+    end
 
     local winter_mode_locomotive = Public.wintery(this.locomotive, 5.5)
     if not winter_mode_locomotive then
@@ -215,21 +227,40 @@ function Public.locomotive_spawn(surface, position)
 
     if extra_wagons and extra_wagons > 0 then
         local pos = this.locomotive_cargo.position
-        local inc = 6
-        local new_position = {x = pos.x, y = pos.y + inc}
+        local inc = 7
+        if reversed then
+            local new_position = {x = pos.x, y = pos.y - inc}
 
-        for y = pos.y, new_position.y + (6 * extra_wagons), 2 do
-            surface.create_entity({name = 'straight-rail', position = {new_position.x, y}, force = 'player', direction = 0})
-        end
+            for y = pos.y, new_position.y - (6 * extra_wagons), -2 do
+                surface.create_entity({name = 'straight-rail', position = {new_position.x, y}, force = 'player', direction = 0})
+            end
 
-        for _ = 1, extra_wagons do
-            local new_wagon = surface.create_entity({name = 'cargo-wagon', position = new_position, force = 'player', defines.direction.north})
-            if new_wagon and new_wagon.valid then
-                new_wagon.minable = false
-                new_wagon.operable = true
-                inc = inc + 7
-                new_position = {x = pos.x, y = pos.y + inc}
-                ICW.register_wagon(new_wagon)
+            for _ = 1, extra_wagons do
+                local new_wagon = surface.create_entity({name = 'cargo-wagon', position = new_position, force = 'player', defines.direction.south})
+                if new_wagon and new_wagon.valid then
+                    new_wagon.minable = false
+                    new_wagon.operable = true
+                    inc = inc + 6
+                    new_position = {x = pos.x, y = pos.y - inc}
+                    ICW.register_wagon(new_wagon)
+                end
+            end
+        else
+            local new_position = {x = pos.x, y = pos.y + inc}
+
+            for y = pos.y, new_position.y + (6 * extra_wagons), 2 do
+                surface.create_entity({name = 'straight-rail', position = {new_position.x, y}, force = 'player', direction = 0})
+            end
+
+            for _ = 1, extra_wagons do
+                local new_wagon = surface.create_entity({name = 'cargo-wagon', position = new_position, force = 'player', defines.direction.north})
+                if new_wagon and new_wagon.valid then
+                    new_wagon.minable = false
+                    new_wagon.operable = true
+                    inc = inc + 7
+                    new_position = {x = pos.x, y = pos.y + inc}
+                    ICW.register_wagon(new_wagon)
+                end
             end
         end
     end
@@ -238,7 +269,7 @@ function Public.locomotive_spawn(surface, position)
     Task.set_timeout_in_ticks(300, place_tiles_token, {surface = surface, position = position})
     Task.set_timeout_in_ticks(50, set_loco_cargo, data)
 
-    game.forces.player.set_spawn_position({0, 19}, locomotive.surface)
+    game.forces.player.set_spawn_position({this.locomotive.position.x - 5, this.locomotive.position.y}, locomotive.surface)
 end
 
 return Public

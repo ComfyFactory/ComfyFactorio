@@ -41,6 +41,9 @@ local add_chests_to_wagon_token =
         local position4 = {cargo_wagon.right_bottom.x - 5, cargo_wagon.right_bottom.y - 2}
 
         local left_1 = LinkedChests.add(surface, position1, 'player', 'wagon_' .. wagon.entity.unit_number .. '_1')
+        if not left_1 then
+            return error('Surface was invalid, please check this out!')
+        end
         left_1.destructible = false
         left_1.minable = false
 
@@ -884,7 +887,14 @@ end
 function Public.construct_train(icw, locomotive, carriages)
     for i, carriage in pairs(carriages) do
         if carriage == locomotive then
-            local stock = locomotive.get_connected_rolling_stock(defines.rail_direction.front)
+            local adjusted_zones = WPT.get('adjusted_zones')
+
+            local stock
+            if adjusted_zones.reversed then
+                stock = locomotive.get_connected_rolling_stock(defines.rail_direction.back)
+            else
+                stock = locomotive.get_connected_rolling_stock(defines.rail_direction.front)
+            end
             if stock ~= carriages[i - 1] then
                 local n = 1
                 local m = #carriages

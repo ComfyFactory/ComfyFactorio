@@ -452,51 +452,101 @@ local function wall(p, data)
                             force = 'neutral',
                             callback = stone_wall
                         }
+                        local adjusted_zones = Public.get('adjusted_zones')
+
                         if not alert_zone_1 and data.y >= -zone_settings.zone_depth then
                             local x_min = -zone_settings.zone_width / 2
                             local x_max = zone_settings.zone_width / 2
-                            Public.set('zone1_beam1', surface.create_entity({name = 'electric-beam', position = {x_min, p.y}, source = {x_min, p.y}, target = {x_max, p.y}}))
-                            Public.set('zone1_beam2', surface.create_entity({name = 'electric-beam', position = {x_min, p.y}, source = {x_min, p.y}, target = {x_max, p.y}}))
-                            Public.set('alert_zone_1', true)
-                            Public.set(
-                                'zone1_text1',
-                                rendering.draw_text {
-                                    text = ({'breached_wall.warning'}),
-                                    surface = surface,
-                                    target = {0, p.y + 35},
-                                    color = {r = 255, g = 106, b = 0},
-                                    scale = 10,
-                                    font = 'heading-1',
-                                    alignment = 'center',
-                                    scale_with_zoom = false
-                                }
-                            )
-                            Public.set(
-                                'zone1_text2',
-                                rendering.draw_text {
-                                    text = ({'breached_wall.warning'}),
-                                    surface = surface,
-                                    target = {-180, p.y + 35},
-                                    color = {r = 255, g = 106, b = 0},
-                                    scale = 10,
-                                    font = 'heading-1',
-                                    alignment = 'center',
-                                    scale_with_zoom = false
-                                }
-                            )
-                            Public.set(
-                                'zone1_text3',
-                                rendering.draw_text {
-                                    text = ({'breached_wall.warning'}),
-                                    surface = surface,
-                                    target = {180, p.y + 35},
-                                    color = {r = 255, g = 106, b = 0},
-                                    scale = 10,
-                                    font = 'heading-1',
-                                    alignment = 'center',
-                                    scale_with_zoom = false
-                                }
-                            )
+
+                            if adjusted_zones.reversed then
+                                Public.set('zone1_beam1', surface.create_entity({name = 'electric-beam', position = {x_min, p.y + 30}, source = {x_min, p.y + 30}, target = {x_max, p.y + 30}}))
+                                Public.set('zone1_beam2', surface.create_entity({name = 'electric-beam', position = {x_min, p.y + 30}, source = {x_min, p.y + 30}, target = {x_max, p.y + 30}}))
+                                Public.set('zone1_beam3', surface.create_entity({name = 'electric-beam', position = {x_min, p.y + 30}, source = {x_min, p.y + 30}, target = {x_max, p.y + 30}}))
+                                Public.set('alert_zone_1', true)
+                                Public.set(
+                                    'zone1_text1',
+                                    rendering.draw_text {
+                                        text = ({'breached_wall.warning'}),
+                                        surface = surface,
+                                        target = {0, p.y - 35},
+                                        color = {r = 255, g = 106, b = 0},
+                                        scale = 10,
+                                        font = 'heading-1',
+                                        alignment = 'center',
+                                        scale_with_zoom = false
+                                    }
+                                )
+                                Public.set(
+                                    'zone1_text2',
+                                    rendering.draw_text {
+                                        text = ({'breached_wall.warning'}),
+                                        surface = surface,
+                                        target = {-180, p.y - 35},
+                                        color = {r = 255, g = 106, b = 0},
+                                        scale = 10,
+                                        font = 'heading-1',
+                                        alignment = 'center',
+                                        scale_with_zoom = false
+                                    }
+                                )
+                                Public.set(
+                                    'zone1_text3',
+                                    rendering.draw_text {
+                                        text = ({'breached_wall.warning'}),
+                                        surface = surface,
+                                        target = {180, p.y - 35},
+                                        color = {r = 255, g = 106, b = 0},
+                                        scale = 10,
+                                        font = 'heading-1',
+                                        alignment = 'center',
+                                        scale_with_zoom = false
+                                    }
+                                )
+                            else
+                                Public.set('zone1_beam1', surface.create_entity({name = 'electric-beam', position = {x_min, p.y}, source = {x_min, p.y}, target = {x_max, p.y}}))
+                                Public.set('zone1_beam2', surface.create_entity({name = 'electric-beam', position = {x_min, p.y}, source = {x_min, p.y}, target = {x_max, p.y}}))
+                                Public.set('zone1_beam3', surface.create_entity({name = 'electric-beam', position = {x_min, p.y}, source = {x_min, p.y}, target = {x_max, p.y}}))
+                                Public.set('alert_zone_1', true)
+                                Public.set(
+                                    'zone1_text1',
+                                    rendering.draw_text {
+                                        text = ({'breached_wall.warning'}),
+                                        surface = surface,
+                                        target = {0, p.y + 35},
+                                        color = {r = 255, g = 106, b = 0},
+                                        scale = 10,
+                                        font = 'heading-1',
+                                        alignment = 'center',
+                                        scale_with_zoom = false
+                                    }
+                                )
+                                Public.set(
+                                    'zone1_text2',
+                                    rendering.draw_text {
+                                        text = ({'breached_wall.warning'}),
+                                        surface = surface,
+                                        target = {-180, p.y + 35},
+                                        color = {r = 255, g = 106, b = 0},
+                                        scale = 10,
+                                        font = 'heading-1',
+                                        alignment = 'center',
+                                        scale_with_zoom = false
+                                    }
+                                )
+                                Public.set(
+                                    'zone1_text3',
+                                    rendering.draw_text {
+                                        text = ({'breached_wall.warning'}),
+                                        surface = surface,
+                                        target = {180, p.y + 35},
+                                        color = {r = 255, g = 106, b = 0},
+                                        scale = 10,
+                                        font = 'heading-1',
+                                        alignment = 'center',
+                                        scale_with_zoom = false
+                                    }
+                                )
+                            end
                         end
                     end
                 else
@@ -2716,7 +2766,7 @@ local function process_bits(p, data, adjusted_zones)
     shuffle_terrains(adjusted_zones, index)
 
     local generate_zone
-    if left_top_y >= -zone_settings.zone_depth then
+    if adjusted_zones.starting_zone and left_top_y >= -zone_settings.zone_depth then
         generate_zone = starting_zone
     else
         generate_zone = zones[adjusted_zones.shuffled_zones[index]].fn
@@ -2750,7 +2800,7 @@ local function border_chunk(p, data)
 
     local pos = p
 
-    if random(1, ceil(pos.y + pos.y) + 64) == 1 then
+    if random(1, ceil(abs(pos.y) + abs(pos.y)) + 64) == 1 then
         entities[#entities + 1] = {name = trees[random(1, #trees)], position = pos}
     end
 
@@ -2761,7 +2811,7 @@ local function border_chunk(p, data)
     local scrap_mineable_entities, scrap_mineable_entities_index = get_scrap_mineable_entities()
 
     if not is_out_of_map(pos) then
-        if random(1, ceil(pos.y + pos.y) + 32) == 1 then
+        if random(1, ceil(abs(pos.y) + abs(pos.y)) + 32) == 1 then
             entities[#entities + 1] = {
                 name = scrap_mineable_entities[random(1, scrap_mineable_entities_index)],
                 position = pos,
@@ -2769,14 +2819,14 @@ local function border_chunk(p, data)
             }
         end
 
-        if random(1, pos.y + 2) == 1 then
+        if random(1, abs(pos.y) + 2) == 1 then
             decoratives[#decoratives + 1] = {
                 name = 'rock-small',
                 position = pos,
                 amount = random(1, 32)
             }
         end
-        if random(1, pos.y + 2) == 1 then
+        if random(1, abs(pos.y) + 2) == 1 then
             decoratives[#decoratives + 1] = {
                 name = 'rock-tiny',
                 position = pos,
@@ -2842,31 +2892,56 @@ function Public.heavy_functions(data)
     local p = data.position
 
     local adjusted_zones = Public.get('adjusted_zones')
+    if adjusted_zones.disable_terrain then
+        return
+    end
     init_terrain(adjusted_zones)
 
     if not data.seed then
         data.seed = Public.get('random_seed')
     end
 
-    if top_y % zone_settings.zone_depth == 0 and top_y < 0 then
-        Public.set('left_top', data.left_top)
-        return wall(p, data)
-    end
+    if adjusted_zones.reversed then
+        if top_y % zone_settings.zone_depth == 0 and top_y > 0 then
+            Public.set('left_top', data.left_top)
+            return wall(p, data)
+        end
 
-    if top_y < 0 then
-        return process_bits(p, data, adjusted_zones)
-    end
+        if top_y > -0 then
+            return process_bits(p, data, adjusted_zones)
+        end
 
-    if top_y > 120 then
-        return out_of_map(p, data)
-    end
+        if top_y < -150 then
+            return out_of_map(p, data)
+        end
 
-    if top_y > 75 then
-        return biter_chunk(p, data)
-    end
+        if top_y < -100 then
+            return biter_chunk(p, data)
+        end
 
-    if top_y >= 0 then
-        return border_chunk(p, data)
+        if top_y <= -0 then
+            return border_chunk(p, data)
+        end
+    else
+        if top_y % zone_settings.zone_depth == 0 and top_y < 0 then
+            Public.set('left_top', data.left_top)
+            return wall(p, data)
+        end
+        if top_y < 0 then
+            return process_bits(p, data, adjusted_zones)
+        end
+
+        if top_y > 120 then
+            return out_of_map(p, data)
+        end
+
+        if top_y > 75 then
+            return biter_chunk(p, data)
+        end
+
+        if top_y >= 0 then
+            return border_chunk(p, data)
+        end
     end
 end
 
@@ -2894,6 +2969,11 @@ Event.add(
             return
         end
 
+        local adjusted_zones = Public.get('adjusted_zones')
+        if adjusted_zones.disable_terrain then
+            return
+        end
+
         local area = e.area
         local left_top = area.left_top
         if not surface then
@@ -2918,28 +2998,53 @@ Event.add(
             )
         end
 
-        if left_top.y == -128 and left_top.x == -128 then
-            local locomotive = Public.get('locomotive')
-            if locomotive and locomotive.valid then
-                local position = locomotive.position
-                for _, entity in pairs(surface.find_entities_filtered({area = {{position.x - 5, position.y - 6}, {position.x + 5, position.y + 10}}, type = 'simple-entity'})) do
-                    entity.destroy()
+        if adjusted_zones.reversed then
+            if left_top.y == 128 and left_top.x == -128 then
+                local locomotive = Public.get('locomotive')
+                if locomotive and locomotive.valid then
+                    local position = locomotive.position
+                    for _, entity in pairs(surface.find_entities_filtered({area = {{position.x - 5, position.y + 6}, {position.x + 5, position.y - 10}}, type = 'simple-entity'})) do
+                        entity.destroy()
+                    end
                 end
             end
-        end
 
-        if left_top.y < -32 then
-            game.forces.player.chart(surface, {{left_top.x, left_top.y}, {left_top.x + 31, left_top.y + 31}})
-        end
-
-        local tiles = {}
-
-        if math.abs(left_top.y) > 128 then
-            for k, v in pairs(loading_chunk_vectors) do
-                tiles[k] = {name = 'out-of-map', position = {left_top.x + v[1], left_top.y + v[2]}}
+            if left_top.y > 32 then
+                game.forces.player.chart(surface, {{left_top.x, left_top.y}, {left_top.x + 31, left_top.y + 31}})
             end
+
+            local tiles = {}
+
+            if left_top.y > 32 then
+                for k, v in pairs(loading_chunk_vectors) do
+                    tiles[k] = {name = 'out-of-map', position = {left_top.x + v[1], left_top.y + v[2]}}
+                end
+            end
+            surface.set_tiles(tiles, false)
+        else
+            if left_top.y == -128 and left_top.x == -128 then
+                local locomotive = Public.get('locomotive')
+                if locomotive and locomotive.valid then
+                    local position = locomotive.position
+                    for _, entity in pairs(surface.find_entities_filtered({area = {{position.x - 5, position.y - 6}, {position.x + 5, position.y + 10}}, type = 'simple-entity'})) do
+                        entity.destroy()
+                    end
+                end
+            end
+
+            if left_top.y < -32 then
+                game.forces.player.chart(surface, {{left_top.x, left_top.y}, {left_top.x + 31, left_top.y + 31}})
+            end
+
+            local tiles = {}
+
+            if math.abs(left_top.y) > 128 then
+                for k, v in pairs(loading_chunk_vectors) do
+                    tiles[k] = {name = 'out-of-map', position = {left_top.x + v[1], left_top.y + v[2]}}
+                end
+            end
+            surface.set_tiles(tiles, false)
         end
-        surface.set_tiles(tiles, false)
     end
 )
 

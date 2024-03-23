@@ -100,9 +100,6 @@ require 'utils.remote_chunks'
 --require 'maps.biter_battles_v2.main'
 --require 'maps.biter_battles.biter_battles'
 
---![[A map that imitating MF, defending rocket silos instead of trains]]--
---require 'maps.amap.main'
-
 --![[Guide a Train through rough terrain, while defending it from the biters]]--
 --require 'maps.mountain_fortress_v3.main'
 --require 'maps.mountain_fortress_v2.main'
@@ -112,7 +109,6 @@ require 'utils.remote_chunks'
 --require 'maps.tower_defense.main'
 
 --![[Defend the market against waves of biters]]--
---require 'maps.pidgeotto.main'
 --require 'maps.fish_defender_v2.main'
 --require 'maps.crab_defender.main'
 --require 'maps.fish_defender_v1.fish_defender'

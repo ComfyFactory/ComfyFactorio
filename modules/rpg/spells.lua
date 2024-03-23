@@ -274,8 +274,8 @@ spells[#spells + 1] = {
     entityName = 'stone-wall',
     level = 1,
     type = 'item',
-    mana_cost = 60,
-    cooldown = 100,
+    mana_cost = 30,
+    cooldown = 70,
     aoe = true,
     enabled = true,
     sprite = 'recipe/stone-wall',
@@ -289,8 +289,8 @@ spells[#spells + 1] = {
     entityName = 'wooden-chest',
     level = 1,
     type = 'item',
-    mana_cost = 50,
-    cooldown = 100,
+    mana_cost = 40,
+    cooldown = 70,
     aoe = true,
     enabled = true,
     sprite = 'recipe/wooden-chest',
@@ -304,8 +304,8 @@ spells[#spells + 1] = {
     entityName = 'iron-chest',
     level = 10,
     type = 'item',
-    mana_cost = 110,
-    cooldown = 200,
+    mana_cost = 50,
+    cooldown = 70,
     aoe = true,
     enabled = true,
     sprite = 'recipe/iron-chest',
@@ -319,8 +319,8 @@ spells[#spells + 1] = {
     entityName = 'steel-chest',
     level = 30,
     type = 'item',
-    mana_cost = 150,
-    cooldown = 300,
+    mana_cost = 100,
+    cooldown = 70,
     aoe = true,
     enabled = true,
     sprite = 'recipe/steel-chest',
@@ -334,8 +334,8 @@ spells[#spells + 1] = {
     entityName = 'transport-belt',
     level = 1,
     type = 'item',
-    mana_cost = 80,
-    cooldown = 100,
+    mana_cost = 30,
+    cooldown = 70,
     aoe = true,
     enabled = true,
     sprite = 'recipe/transport-belt',
@@ -349,8 +349,8 @@ spells[#spells + 1] = {
     entityName = 'fast-transport-belt',
     level = 10,
     type = 'item',
-    mana_cost = 110,
-    cooldown = 200,
+    mana_cost = 50,
+    cooldown = 70,
     aoe = true,
     enabled = true,
     sprite = 'recipe/fast-transport-belt',
@@ -362,10 +362,10 @@ spells[#spells + 1] = {
 spells[#spells + 1] = {
     name = {'entity-name.express-transport-belt'},
     entityName = 'express-transport-belt',
-    level = 30,
+    level = 20,
     type = 'item',
-    mana_cost = 150,
-    cooldown = 300,
+    mana_cost = 80,
+    cooldown = 70,
     aoe = true,
     enabled = true,
     sprite = 'recipe/express-transport-belt',
@@ -379,8 +379,8 @@ spells[#spells + 1] = {
     entityName = 'underground-belt',
     level = 1,
     type = 'item',
-    mana_cost = 80,
-    cooldown = 100,
+    mana_cost = 30,
+    cooldown = 70,
     aoe = true,
     enabled = true,
     sprite = 'recipe/underground-belt',
@@ -394,8 +394,8 @@ spells[#spells + 1] = {
     entityName = 'fast-underground-belt',
     level = 10,
     type = 'item',
-    mana_cost = 110,
-    cooldown = 200,
+    mana_cost = 50,
+    cooldown = 70,
     aoe = true,
     enabled = true,
     sprite = 'recipe/fast-underground-belt',
@@ -407,10 +407,10 @@ spells[#spells + 1] = {
 spells[#spells + 1] = {
     name = {'entity-name.express-underground-belt'},
     entityName = 'express-underground-belt',
-    level = 30,
+    level = 20,
     type = 'item',
-    mana_cost = 150,
-    cooldown = 300,
+    mana_cost = 80,
+    cooldown = 70,
     aoe = true,
     enabled = true,
     sprite = 'recipe/express-underground-belt',
@@ -424,7 +424,7 @@ spells[#spells + 1] = {
     entityName = 'pipe',
     level = 1,
     type = 'item',
-    mana_cost = 50,
+    mana_cost = 30,
     cooldown = 100,
     aoe = true,
     enabled = true,
@@ -439,8 +439,8 @@ spells[#spells + 1] = {
     entityName = 'pipe-to-ground',
     level = 1,
     type = 'item',
-    mana_cost = 100,
-    cooldown = 100,
+    mana_cost = 60,
+    cooldown = 70,
     aoe = true,
     enabled = true,
     sprite = 'recipe/pipe-to-ground',
@@ -452,10 +452,10 @@ spells[#spells + 1] = {
 spells[#spells + 1] = {
     name = {'entity-name.tree'},
     entityName = 'tree-05',
-    level = 30,
+    level = 20,
     type = 'entity',
-    mana_cost = 100,
-    cooldown = 350,
+    mana_cost = 30,
+    cooldown = 300,
     aoe = true,
     enabled = true,
     sprite = 'entity/tree-05',
@@ -469,8 +469,8 @@ spells[#spells + 1] = {
     entityName = 'sand-rock-big',
     level = 60,
     type = 'entity',
-    mana_cost = 120,
-    cooldown = 350,
+    mana_cost = 60,
+    cooldown = 300,
     aoe = true,
     enabled = true,
     sprite = 'entity/sand-rock-big',
@@ -485,7 +485,7 @@ spells[#spells + 1] = {
     level = 30,
     biter = true,
     type = 'entity',
-    mana_cost = 55,
+    mana_cost = 50,
     cooldown = 200,
     enabled = true,
     sprite = 'entity/small-biter',
@@ -500,7 +500,7 @@ spells[#spells + 1] = {
     level = 30,
     biter = true,
     type = 'entity',
-    mana_cost = 55,
+    mana_cost = 50,
     cooldown = 200,
     enabled = true,
     sprite = 'entity/small-spitter',
@@ -515,7 +515,7 @@ spells[#spells + 1] = {
     level = 60,
     biter = true,
     type = 'entity',
-    mana_cost = 100,
+    mana_cost = 60,
     cooldown = 300,
     enabled = true,
     sprite = 'entity/medium-biter',
@@ -530,7 +530,7 @@ spells[#spells + 1] = {
     level = 60,
     biter = true,
     type = 'entity',
-    mana_cost = 100,
+    mana_cost = 60,
     cooldown = 300,
     enabled = true,
     sprite = 'entity/medium-spitter',
@@ -991,6 +991,47 @@ spells[#spells + 1] = {
         return create_projectiles(data)
     end
 }
+
+spells[#spells + 1] = {
+    name = {'spells.defender'},
+    entityName = 'defender-capsule',
+    target = true,
+    amount = 1,
+    damage = false,
+    range = 30,
+    force = 'player',
+    level = 55,
+    type = 'special',
+    mana_cost = 250,
+    cooldown = 320,
+    enabled = true,
+    sprite = 'recipe/defender-capsule',
+    special_sprite = 'recipe=defender-capsule',
+    tooltip = 'Spawns defenders',
+    callback = function(data)
+        return create_projectiles(data)
+    end
+}
+spells[#spells + 1] = {
+    name = {'spells.destroyer'},
+    entityName = 'destroyer-capsule',
+    target = true,
+    amount = 1,
+    damage = false,
+    range = 30,
+    force = 'player',
+    level = 60,
+    type = 'special',
+    mana_cost = 300,
+    cooldown = 320,
+    enabled = true,
+    sprite = 'recipe/destroyer-capsule',
+    special_sprite = 'recipe=destroyer-capsule',
+    tooltip = 'Spawns destroyers',
+    callback = function(data)
+        return create_projectiles(data)
+    end
+}
 spells[#spells + 1] = {
     name = {'spells.warp'},
     entityName = 'warp-gate',
@@ -1122,7 +1163,7 @@ spells[#spells + 1] = {
     end
 }
 
-spells[#spells + 1] = {
+local drone_enemy = {
     name = {'spells.drone_enemy'},
     entityName = 'drone_enemy',
     target = false,
@@ -1140,7 +1181,11 @@ spells[#spells + 1] = {
     callback = function(data)
         local self = data.self
         local player = data.player
-        Ai.create_char({player_index = player.index, command = 1, search_local = true})
+        local suc = Ai.create_char({player_index = player.index, command = 1, search_local = true})
+        if not suc then
+            Public.cast_spell(player, true)
+            return false
+        end
 
         Public.cast_spell(player)
         Public.remove_mana(player, self.mana_cost)
@@ -1148,7 +1193,9 @@ spells[#spells + 1] = {
     end
 }
 
-spells[#spells + 1] = {
+spells[#spells + 1] = drone_enemy
+
+local drone_mine = {
     name = {'spells.drone_mine'},
     entityName = 'drone_mine',
     target = false,
@@ -1166,7 +1213,11 @@ spells[#spells + 1] = {
     callback = function(data)
         local self = data.self
         local player = data.player
-        Ai.create_char({player_index = player.index, command = 2, search_local = false})
+        local suc = Ai.create_char({player_index = player.index, command = 2, search_local = false})
+        if not suc then
+            Public.cast_spell(player, true)
+            return false
+        end
 
         Public.cast_spell(player)
         Public.remove_mana(player, self.mana_cost)
@@ -1174,9 +1225,22 @@ spells[#spells + 1] = {
     end
 }
 
+spells[#spells + 1] = drone_mine
+
+if _DEBUG then
+    for i = 1, #spells do
+        local spell = spells[i]
+        spell.mana_cost = 1
+        spell.level = 1
+        spell.cooldown = 1
+    end
+end
+
 Public.projectile_types = {
     ['explosives'] = {name = 'grenade', count = 0.5, max_range = 32, tick_speed = 1},
     ['distractor-capsule'] = {name = 'distractor-capsule', count = 1, max_range = 32, tick_speed = 1},
+    ['defender-capsule'] = {name = 'defender-capsule', count = 1, max_range = 32, tick_speed = 1},
+    ['destroyer-capsule'] = {name = 'destroyer-capsule', count = 1, max_range = 32, tick_speed = 1},
     ['land-mine'] = {name = 'grenade', count = 1, max_range = 32, tick_speed = 1},
     ['grenade'] = {name = 'grenade', count = 1, max_range = 40, tick_speed = 1},
     ['cluster-grenade'] = {name = 'cluster-grenade', count = 1, max_range = 40, tick_speed = 3},

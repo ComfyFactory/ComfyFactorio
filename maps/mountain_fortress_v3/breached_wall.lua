@@ -24,6 +24,10 @@ local clear_breach_text_and_render = function()
     if beam2 and beam2.valid then
         beam2.destroy()
     end
+    local beam3 = Public.get('zone1_beam3')
+    if beam3 and beam3.valid then
+        beam3.destroy()
+    end
     local zone1_text1 = Public.get('zone1_text1')
     if zone1_text1 then
         rendering.set_text(zone1_text1, 'Collapse has begun!')
@@ -152,7 +156,14 @@ local check_distance_between_player_and_locomotive = function(player)
         return
     end
 
+    local breached_wall = Public.get('breached_wall')
+
+    if breached_wall < 3 then
+        return
+    end
+
     local collapse_position = Collapse.get_position()
+    local adjusted_zones = Public.get('adjusted_zones')
 
     local gap_between_locomotive = Public.get('gap_between_locomotive')
     gap_between_locomotive.highest_pos = locomotive.position
@@ -162,7 +173,18 @@ local check_distance_between_player_and_locomotive = function(player)
     local t_y = gap_between_locomotive.highest_pos.y
     local c_y = collapse_position.y
 
-    if p_y - t_y <= gap_between_locomotive.neg_gap then
+    local locomotive_distance
+    local collapse_distance
+
+    if adjusted_zones.reversed then
+        locomotive_distance = p_y - t_y >= gap_between_locomotive.neg_gap
+        collapse_distance = p_y - c_y >= gap_between_locomotive.neg_gap_collapse
+    else
+        locomotive_distance = p_y - t_y <= gap_between_locomotive.neg_gap
+        collapse_distance = p_y - c_y <= gap_between_locomotive.neg_gap_collapse
+    end
+
+    if locomotive_distance then
         local source = {position.x, locomotive.position.y + gap_between_locomotive.neg_gap + 4}
         local source_position = surface.find_non_colliding_position('character', source, 32, 1)
         if source_position then
@@ -184,7 +206,7 @@ local check_distance_between_player_and_locomotive = function(player)
         end
     end
 
-    if p_y - c_y <= gap_between_locomotive.neg_gap_collapse then
+    if collapse_distance then
         local source = {position.x, c_y + gap_between_locomotive.neg_gap_collapse + 4}
         local source_position = surface.find_non_colliding_position('character', source, 32, 1)
         if source_position then
@@ -264,7 +286,20 @@ local compare_player_and_train = function(player, entity)
     local t_y = gap_between_zones.highest_pos.y
     local spidertron_warning_position = gap_between_zones.neg_gap + 50
 
-    if c_y - t_y <= spidertron_warning_position then
+    local adjusted_zones = Public.get('adjusted_zones')
+
+    local locomotive_distance
+    local collapse_distance
+
+    if adjusted_zones.reversed then
+        locomotive_distance = c_y - t_y >= spidertron_warning_position
+        collapse_distance = c_y - t_y >= gap_between_zones.neg_gap
+    else
+        locomotive_distance = c_y - t_y <= spidertron_warning_position
+        collapse_distance = c_y - t_y <= gap_between_zones.neg_gap
+    end
+
+    if locomotive_distance then
         local surface = player.surface
         surface.create_entity(
             {
@@ -276,7 +311,7 @@ local compare_player_and_train = function(player, entity)
         )
     end
 
-    if c_y - t_y <= gap_between_zones.neg_gap then
+    if collapse_distance then
         if entity.health then
             if car and car.health_pool and car.health_pool.health then
                 car.health_pool.health = car.health_pool.health - 500
@@ -315,8 +350,15 @@ local function distance(player)
 
     local distance_to_center = floor(sqrt(p.y ^ 2))
     local location = distance_to_center
-    if location < zone_settings.zone_depth * bonus - 10 then
-        return
+    local adjusted_zones = Public.get('adjusted_zones')
+    if adjusted_zones.reversed then
+        if location < zone_settings.zone_depth * bonus + 30 then
+            return
+        end
+    else
+        if location < zone_settings.zone_depth * bonus - 10 then
+            return
+        end
     end
 
     local breach_wall_warning = Public.get('breach_wall_warning')
@@ -417,6 +459,14 @@ local function on_player_changed_position(event)
     local map_name = 'mtn_v3'
 
     if sub(surface_name, 0, #map_name) ~= map_name then
+        return
+    end
+
+    if player.position.y > -100 and player.position.y < -100 then
+        return
+    end
+
+    if player.position.y > 100 and player.position.y < 100 then
         return
     end
 

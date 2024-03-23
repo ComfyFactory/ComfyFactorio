@@ -2,6 +2,7 @@ local Public = require 'maps.mountain_fortress_v3.table'
 local RPG = require 'modules.rpg.main'
 local Event = require 'utils.event'
 local Ai = require 'modules.ai'
+local Misc = require 'utils.commands.misc'
 require 'modules.check_fullness'
 
 local random = math.random
@@ -421,10 +422,15 @@ function Public.on_player_mined_entity(event)
     end
 
     local buffer = event.buffer
+    local creative_enabled = Misc.get('creative_enabled')
 
     if valid_rocks[entity.name] or valid_trees[entity.name] or is_scrap then
         if buffer then
             buffer.clear()
+        end
+
+        if creative_enabled then
+            return
         end
 
         local data = {

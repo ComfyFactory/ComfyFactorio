@@ -29,6 +29,7 @@ local this = {
     magic_crafters = {index = 1},
     magic_fluid_crafters = {index = 1},
     art_table = {index = 1},
+    editor_mode = {},
     starting_items = {
         ['pistol'] = {
             count = 1
@@ -47,6 +48,14 @@ local this = {
         }
     }
 }
+
+local exit_editor_mode_token =
+    Task.register(
+    function(event)
+        local player_index = event.player_index
+        this.editor_mode[player_index] = nil
+    end
+)
 
 local random_respawn_messages = {
     'The doctors stitched you up as best they could.',
@@ -334,7 +343,7 @@ local function do_beams_away()
         return
     end
 
-    if wave_number > 1000 then
+    if wave_number > 500 then
         local difficulty_index = Difficulty.get('index')
         local wave_nth = 9999
         if difficulty_index == 1 then
@@ -408,11 +417,6 @@ local do_season_fix_token = Task.register(do_season_fix)
 local function do_artillery_turrets_targets()
     local art_table = this.art_table
     local index = art_table.index
-
-    local difficulty_index = Difficulty.get('index')
-    if difficulty_index == 3 then
-        return
-    end
 
     if index > #art_table then
         art_table.index = 1
@@ -614,7 +618,12 @@ Public.refill_artillery_turret_callback =
 
             local pos = turret.position
             local x, y = pos.x, pos.y
-            artillery_data.artillery_area = {{x - 112, y}, {x + 112, y + 212}}
+            local adjusted_zones = Public.get('adjusted_zones')
+            if adjusted_zones.reversed then
+                artillery_data.artillery_area = {{x - 112, y - 212}, {x + 112, y}}
+            else
+                artillery_data.artillery_area = {{x - 112, y}, {x + 112, y + 212}}
+            end
             artillery_data.last_fire_tick = 0
 
             art_table[#art_table + 1] = artillery_data
@@ -1049,7 +1058,7 @@ function Public.set_difficulty()
     end
 end
 
-function Public.render_direction(surface)
+function Public.render_direction(surface, reversed)
     local counter = Public.get('soft_reset_counter')
     local winter_mode = Public.get('winter_mode')
     local text = 'Welcome to Mountain Fortress v3!'
@@ -1098,73 +1107,64 @@ function Public.render_direction(surface)
         }
     end
 
-    rendering.draw_text {
-        text = '▼',
-        surface = surface,
-        target = {-0, 20},
-        color = {r = 0.98, g = 0.66, b = 0.22},
-        scale = 3,
-        font = 'heading-1',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
-
-    rendering.draw_text {
-        text = '▼',
-        surface = surface,
-        target = {-0, 30},
-        color = {r = 0.98, g = 0.66, b = 0.22},
-        scale = 3,
-        font = 'heading-1',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
-    rendering.draw_text {
-        text = '▼',
-        surface = surface,
-        target = {-0, 40},
-        color = {r = 0.98, g = 0.66, b = 0.22},
-        scale = 3,
-        font = 'heading-1',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
-    rendering.draw_text {
-        text = '▼',
-        surface = surface,
-        target = {-0, 50},
-        color = {r = 0.98, g = 0.66, b = 0.22},
-        scale = 3,
-        font = 'heading-1',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
-    rendering.draw_text {
-        text = '▼',
-        surface = surface,
-        target = {-0, 60},
-        color = {r = 0.98, g = 0.66, b = 0.22},
-        scale = 3,
-        font = 'heading-1',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
-    rendering.draw_text {
-        text = 'Biters will attack this area.',
-        surface = surface,
-        target = {-0, 70},
-        color = {r = 0.98, g = 0.66, b = 0.22},
-        scale = 3,
-        font = 'heading-1',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
-
     local x_min = -zone_settings.zone_width / 2
     local x_max = zone_settings.zone_width / 2
 
-    surface.create_entity({name = 'electric-beam', position = {x_min, 74}, source = {x_min, 74}, target = {x_max, 74}})
-    surface.create_entity({name = 'electric-beam', position = {x_min, 74}, source = {x_min, 74}, target = {x_max, 74}})
+    if reversed then
+        local inc = 0
+        for _ = 1, 5 do
+            rendering.draw_text {
+                text = '▲',
+                surface = surface,
+                target = {-0, -20 - inc},
+                color = {r = 0.98, g = 0.66, b = 0.22},
+                scale = 3,
+                font = 'heading-1',
+                alignment = 'center',
+                scale_with_zoom = false
+            }
+            inc = inc + 10
+        end
+        rendering.draw_text {
+            text = 'Biters will attack this area.',
+            surface = surface,
+            target = {-0, -70},
+            color = {r = 0.98, g = 0.66, b = 0.22},
+            scale = 3,
+            font = 'heading-1',
+            alignment = 'center',
+            scale_with_zoom = false
+        }
+        surface.create_entity({name = 'electric-beam', position = {x_min, -74}, source = {x_min, -74}, target = {x_max, -74}})
+        surface.create_entity({name = 'electric-beam', position = {x_min, -74}, source = {x_min, -74}, target = {x_max, -74}})
+    else
+        local inc = 0
+        for _ = 1, 5 do
+            rendering.draw_text {
+                text = '▼',
+                surface = surface,
+                target = {-0, 20 + inc},
+                color = {r = 0.98, g = 0.66, b = 0.22},
+                scale = 3,
+                font = 'heading-1',
+                alignment = 'center',
+                scale_with_zoom = false
+            }
+            inc = inc + 10
+        end
+        rendering.draw_text {
+            text = 'Biters will attack this area.',
+            surface = surface,
+            target = {-0, 70},
+            color = {r = 0.98, g = 0.66, b = 0.22},
+            scale = 3,
+            font = 'heading-1',
+            alignment = 'center',
+            scale_with_zoom = false
+        }
+        surface.create_entity({name = 'electric-beam', position = {x_min, 74}, source = {x_min, 74}, target = {x_max, 74}})
+        surface.create_entity({name = 'electric-beam', position = {x_min, 74}, source = {x_min, 74}, target = {x_max, 74}})
+    end
 end
 
 function Public.boost_difficulty()
@@ -1265,8 +1265,20 @@ function Public.set_spawn_position()
         local l_y = l.y
         local t_y = locomotive_position.y
         local c_y = collapse_pos.y
+        local adjusted_zones = Public.get('adjusted_zones')
+
+        local compare_pos
+        local compare_next
+        if adjusted_zones.reversed then
+            compare_pos = l_y - t_y >= spawn_near_collapse.compare
+            compare_next = c_y - t_y >= spawn_near_collapse.compare_next
+        else
+            compare_pos = l_y - t_y <= spawn_near_collapse.compare
+            compare_next = c_y - t_y <= spawn_near_collapse.compare_next
+        end
+
         if total_pos > spawn_near_collapse.total_pos then
-            if l_y - t_y <= spawn_near_collapse.compare then
+            if compare_pos then
                 if locomotive_position then
                     if check_tile(surface, sizeof, locomotive_positions.tbl, total_pos) then
                         debug_str('total_pos was higher - found oom')
@@ -1279,7 +1291,7 @@ function Public.set_spawn_position()
                     debug_str('total_pos was higher - spawning at locomotive_position')
                     WD.set_spawn_position(locomotive_position)
                 end
-            elseif c_y - t_y <= spawn_near_collapse.compare_next then
+            elseif compare_next then
                 if distance_from >= spawn_near_collapse.distance_from then
                     local success = check_tile(surface, locomotive_position, locomotive_positions.tbl, total_pos)
                     if success then
@@ -1459,6 +1471,26 @@ function Public.on_player_driving_changed_state(event)
     wagons_in_the_wild[unit_number] = nil
 end
 
+function Public.on_pre_player_toggled_map_editor(event)
+    local player = game.get_player(event.player_index)
+    if not player or not player.valid then
+        return
+    end
+
+    if player.name == 'Gerkiz' or not game.is_multiplayer() then
+        return
+    end
+
+    if this.editor_mode[player.index] then
+        return
+    end
+
+    this.editor_mode[player.index] = true
+
+    player.toggle_map_editor()
+    Task.set_timeout_in_ticks(5, exit_editor_mode_token, {player_index = player.index})
+end
+
 function Public.on_player_changed_position(event)
     local active_surface_index = Public.get('active_surface_index')
     if not active_surface_index then
@@ -1481,6 +1513,7 @@ function Public.on_player_changed_position(event)
 
     local position = player.position
     local surface = game.surfaces[active_surface_index]
+    local adjusted_zones = Public.get('adjusted_zones')
 
     local p = {x = player.position.x, y = player.position.y}
     local config_tile = Public.get('void_or_tile')
@@ -1502,14 +1535,28 @@ function Public.on_player_changed_position(event)
         end
     end
 
-    if position.y >= 74 then
-        player.teleport({position.x, position.y - 1}, surface)
-        player.print(({'main.forcefield'}), {r = 0.98, g = 0.66, b = 0.22})
-        if player.character then
-            player.character.health = player.character.health - 5
-            player.character.surface.create_entity({name = 'water-splash', position = position})
-            if player.character.health <= 0 then
-                player.character.die('enemy')
+    if adjusted_zones.reversed then
+        if position.y < -74 then
+            player.teleport({position.x, position.y + 1}, surface)
+            player.print(({'main.forcefield'}), {r = 0.98, g = 0.66, b = 0.22})
+            if player.character then
+                player.character.health = player.character.health - 5
+                player.character.surface.create_entity({name = 'water-splash', position = position})
+                if player.character.health <= 0 then
+                    player.character.die('enemy')
+                end
+            end
+        end
+    else
+        if position.y >= 74 then
+            player.teleport({position.x, position.y - 1}, surface)
+            player.print(({'main.forcefield'}), {r = 0.98, g = 0.66, b = 0.22})
+            if player.character then
+                player.character.health = player.character.health - 5
+                player.character.surface.create_entity({name = 'water-splash', position = position})
+                if player.character.health <= 0 then
+                    player.character.die('enemy')
+                end
             end
         end
     end
@@ -1538,6 +1585,8 @@ function Public.disable_tech()
     force.technologies['spidertron'].researched = false
     force.technologies['atomic-bomb'].enabled = false
     force.technologies['atomic-bomb'].researched = false
+    force.technologies['artillery'].enabled = false
+    force.technologies['artillery'].researched = false
     force.technologies['artillery-shell-range-1'].enabled = false
     force.technologies['artillery-shell-range-1'].researched = false
     force.technologies['artillery-shell-speed-1'].enabled = false
@@ -1787,6 +1836,7 @@ local on_research_finished = Public.on_research_finished
 local on_player_changed_position = Public.on_player_changed_position
 local on_player_respawned = Public.on_player_respawned
 local on_player_driving_changed_state = Public.on_player_driving_changed_state
+local on_pre_player_toggled_map_editor = Public.on_pre_player_toggled_map_editor
 
 Event.add(de.on_player_joined_game, on_player_joined_game)
 Event.add(de.on_player_left_game, on_player_left_game)
@@ -1794,6 +1844,7 @@ Event.add(de.on_research_finished, on_research_finished)
 Event.add(de.on_player_changed_position, on_player_changed_position)
 Event.add(de.on_player_respawned, on_player_respawned)
 Event.add(de.on_player_driving_changed_state, on_player_driving_changed_state)
+Event.add(de.on_pre_player_toggled_map_editor, on_pre_player_toggled_map_editor)
 Event.on_nth_tick(10, tick)
 Event.add(WD.events.on_wave_created, on_wave_created)
 

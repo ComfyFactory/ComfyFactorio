@@ -21,12 +21,25 @@ local function reset_forces(new_surface, old_surface)
 end
 
 local function teleport_players(surface)
-    game.forces.player.set_spawn_position({-27, 25}, surface)
-    local position = game.forces.player.get_spawn_position(surface)
+    local adjusted_zones = Public.get('adjusted_zones')
+    local position
 
-    if not position then
+    if adjusted_zones.reversed then
+        game.forces.player.set_spawn_position({-27, -25}, surface)
+        position = game.forces.player.get_spawn_position(surface)
+
+        if not position then
+            game.forces.player.set_spawn_position({-27, -25}, surface)
+            position = game.forces.player.get_spawn_position(surface)
+        end
+    else
         game.forces.player.set_spawn_position({-27, 25}, surface)
         position = game.forces.player.get_spawn_position(surface)
+
+        if not position then
+            game.forces.player.set_spawn_position({-27, 25}, surface)
+            position = game.forces.player.get_spawn_position(surface)
+        end
     end
 
     for _, player in pairs(game.connected_players) do

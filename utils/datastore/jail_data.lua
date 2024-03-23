@@ -642,6 +642,7 @@ local function jail(player, offender, msg, raised, mute)
     data.username = offender
     data.admin = player
     data.reason = msg
+    Server.to_jailed_embed(data)
     Server.to_jailed_named_embed(data)
 
     if votejail[offender] then

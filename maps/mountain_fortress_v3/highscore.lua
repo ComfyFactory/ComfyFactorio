@@ -40,45 +40,84 @@ local biters = {
     'behemoth-spitter'
 }
 
-local function get_lowest(tbl, column_name)
-    local t = {}
-    if not tbl then
-        return 100
-    end
-    for _, value in pairs(tbl) do
-        insert(t, value[column_name])
-    end
-    table.sort(
-        t,
-        function(a, b)
-            return a < b
+local function get_key(tbl, key)
+    for k, v in pairs(tbl) do
+        if v and v.name and v.name == key then
+            return k
         end
-    )
-    if t[1] then
-        return t[1]
+    end
+    return false
+end
+
+local function calculateMedian(tbl)
+    table.sort(tbl)
+
+    local n = #tbl
+    if n % 2 == 1 then
+        return tbl[(n + 1) / 2]
     else
-        return 100
+        local mid1 = tbl[n / 2]
+        local mid2 = tbl[(n / 2) + 1]
+        return (mid1 + mid2) / 2
     end
 end
 
-local function get_highest(tbl, column_name)
+local function get_lowest(column_name, tbl)
     local t = {}
     if not tbl then
         return 100
     end
     for _, value in pairs(tbl) do
-        insert(t, value[column_name])
+        if value and value[column_name] then
+            insert(t, value[column_name])
+        end
     end
+
+    return calculateMedian(t)
+end
+
+local function sort_and_whitelist(whitelisted, column_name, tbl)
+    local t = {}
+    if not tbl then
+        return 100
+    end
+
+    for _, value in pairs(tbl) do
+        if value and value[column_name] then
+            insert(t, {name = value.name, score = value[column_name]})
+        end
+    end
+
     table.sort(
         t,
         function(a, b)
-            return a > b
+            return a.score > b.score
         end
     )
-    if t[1] then
-        return t[1]
-    else
-        return 10
+
+    for i = 1, #t do
+        if t[i] and t[i].name then
+            local name = t[i].name
+            if i < 11 then
+                tbl[get_key(tbl, name)][column_name] = t[i].score
+                whitelisted[name] = true
+            end
+        end
+    end
+end
+
+local function remove_non_top_10(whitelisted, tbl)
+    if not tbl then
+        return 100
+    end
+
+    for i = 1, #tbl do
+        if tbl[i] and tbl[i].name then
+            local name = tbl[i].name
+            if not whitelisted[name] then
+                tbl[i] = nil
+            end
+        end
     end
 end
 
@@ -114,12 +153,10 @@ end
 
 local function get_sorted_list(column_name, score_list)
     local sl = {}
-    local i = 0
     score_list = sort_list('descending', column_name, score_list)
 
     for key, player in ipairs(score_list) do
         sl[key] = player
-        i = i + 1
     end
     return sl
 end
@@ -136,6 +173,12 @@ local function get_mvps(clear_state)
     if clear_state then
         mvp = {}
     end
+    local whitelisted_score_tbl = {}
+
+    sort_and_whitelist(whitelisted_score_tbl, 'killscore', score.players)
+    sort_and_whitelist(whitelisted_score_tbl, 'mined_entities', score.players)
+    sort_and_whitelist(whitelisted_score_tbl, 'built_entities', score.players)
+    remove_non_top_10(whitelisted_score_tbl, score.players)
 
     for _, p in pairs(game.players) do
         if score.players[p.name] then
@@ -151,29 +194,29 @@ local function get_mvps(clear_state)
             if score.players[p.name].mined_entities then
                 mined_entities = score.players[p.name].mined_entities
             end
-            local deaths = 0
-            if score.players[p.name].deaths then
-                deaths = score.players[p.name].deaths
-            end
 
-            insert(score_list, {name = p.name, killscore = killscore, built_entities = built_entities, deaths = deaths, mined_entities = mined_entities})
+            insert(score_list, {name = p.name, killscore = killscore, built_entities = built_entities, mined_entities = mined_entities})
         end
     end
+
+    local whitelisted = {}
+
+    sort_and_whitelist(whitelisted, 'killscore', mvp)
+    sort_and_whitelist(whitelisted, 'mined_entities', mvp)
+    sort_and_whitelist(whitelisted, 'built_entities', mvp)
+    remove_non_top_10(whitelisted, mvp)
 
     local score_list_k = get_sorted_list('killscore', score_list)
     local score_list_m = get_sorted_list('mined_entities', score_list)
     local score_list_b = get_sorted_list('built_entities', score_list)
-    local score_list_d = get_sorted_list('deaths', score_list)
-    local lowest_k = get_lowest(mvp, 'killscore')
-    local lowest_m = get_lowest(mvp, 'mined_entities')
-    local lowest_b = get_lowest(mvp, 'built_entities')
-    local highest_d = get_highest(mvp, 'deaths')
+    local lowest_k = get_lowest('killscore', mvp)
+    local lowest_m = get_lowest('mined_entities', mvp)
+    local lowest_b = get_lowest('built_entities', mvp)
 
-    for i = 1, 30 do
+    for i = 1, 10 do
         local kill_list = score_list_k[i]
         local mined_list = score_list_m[i]
         local build_list = score_list_b[i]
-        local death_list = score_list_d[i]
 
         if kill_list then
             if not contains(mvp, 'name', kill_list.name) then
@@ -184,8 +227,7 @@ local function get_mvps(clear_state)
                             name = kill_list.name,
                             killscore = kill_list.killscore,
                             mined_entities = kill_list.mined_entities,
-                            built_entities = kill_list.built_entities,
-                            deaths = kill_list.deaths
+                            built_entities = kill_list.built_entities
                         }
                     )
                 end
@@ -205,11 +247,6 @@ local function get_mvps(clear_state)
                         else
                             mvp[index].built_entities = kill_list.built_entities
                         end
-                        if mvp[index].deaths and kill_list.deaths < mvp[index].deaths then
-                            mvp[index].deaths = kill_list.deaths
-                        else
-                            mvp[index].deaths = kill_list.deaths
-                        end
                     end
                 end
             end
@@ -223,8 +260,7 @@ local function get_mvps(clear_state)
                             name = mined_list.name,
                             killscore = mined_list.killscore,
                             mined_entities = mined_list.mined_entities,
-                            built_entities = mined_list.built_entities,
-                            deaths = mined_list.deaths
+                            built_entities = mined_list.built_entities
                         }
                     )
                 end
@@ -244,11 +280,6 @@ local function get_mvps(clear_state)
                         else
                             mvp[index].built_entities = mined_list.built_entities
                         end
-                        if mvp[index].deaths and mined_list.deaths < mvp[index].deaths then
-                            mvp[index].deaths = mined_list.deaths
-                        else
-                            mvp[index].deaths = mined_list.deaths
-                        end
                     end
                 end
             end
@@ -262,8 +293,7 @@ local function get_mvps(clear_state)
                             name = build_list.name,
                             killscore = build_list.killscore,
                             mined_entities = build_list.mined_entities,
-                            built_entities = build_list.built_entities,
-                            deaths = build_list.deaths
+                            built_entities = build_list.built_entities
                         }
                     )
                 end
@@ -283,57 +313,9 @@ local function get_mvps(clear_state)
                         else
                             mvp[index].mined_entities = build_list.mined_entities
                         end
-
-                        if mvp[index].deaths and build_list.deaths < mvp[index].deaths then
-                            mvp[index].deaths = build_list.deaths
-                        else
-                            mvp[index].deaths = build_list.deaths
-                        end
                     end
                 end
             end
-        end
-        if death_list then
-            if not contains(mvp, 'name', death_list.name) then
-                if death_list.deaths < highest_d then
-                    insert(
-                        mvp,
-                        {
-                            name = death_list.name,
-                            killscore = death_list.killscore,
-                            mined_entities = death_list.mined_entities,
-                            built_entities = death_list.built_entities,
-                            deaths = death_list.deaths
-                        }
-                    )
-                end
-            else
-                local index = contains(mvp, 'name', death_list.name, true)
-                if index then
-                    if mvp[index].deaths and death_list.deaths < mvp[index].deaths then
-                        mvp[index].deaths = death_list.deaths
-
-                        if mvp[index].killscore and death_list.killscore > mvp[index].killscore then
-                            mvp[index].killscore = death_list.killscore
-                        else
-                            mvp[index].killscore = death_list.killscore
-                        end
-                        if mvp[index].mined_entities and death_list.mined_entities > mvp[index].mined_entities then
-                            mvp[index].mined_entities = death_list.mined_entities
-                        else
-                            mvp[index].mined_entities = death_list.mined_entities
-                        end
-                        if mvp[index].built_entities and death_list.built_entities > mvp[index].built_entities then
-                            mvp[index].built_entities = death_list.built_entities
-                        else
-                            mvp[index].built_entities = death_list.built_entities
-                        end
-                    end
-                end
-            end
-        end
-        if mvp['GodGamer'] then
-            mvp['GodGamer'] = nil
         end
     end
 
@@ -352,7 +334,7 @@ local function get_total_biter_killcount(force)
     return count
 end
 
-local function write_additional_stats(key, difficulty)
+local function write_additional_stats(key)
     local player = game.forces.player
     local new_breached_zone = Public.get('breached_wall')
     local new_wave_number = WD.get('wave_number')
@@ -410,10 +392,6 @@ local function write_additional_stats(key, difficulty)
             end
         end
 
-        if difficulty then
-            t.difficulty = difficulty
-        end
-
         local new_stats = get_mvps(clear_state)
         if new_stats then
             t.players = new_stats
@@ -452,12 +430,12 @@ function Public.get_scores()
 end
 
 -- local Core = require 'maps.mountain_fortress_v3.core' Core.set_scores()
-function Public.set_scores(difficulty)
+function Public.set_scores()
     local secs = Server.get_current_time()
     if not secs then
         return
     else
-        write_additional_stats(score_key, difficulty)
+        write_additional_stats(score_key)
     end
 end
 
@@ -473,12 +451,16 @@ local sorting_symbol = {ascending = '▲', descending = '▼'}
 
 local function get_score_list()
     local score_force = this.score_table['player']
+    local whitelisted_score_tbl = {}
+    sort_and_whitelist(whitelisted_score_tbl, 'killscore', score_force.players)
+    sort_and_whitelist(whitelisted_score_tbl, 'mined_entities', score_force.players)
+    sort_and_whitelist(whitelisted_score_tbl, 'built_entities', score_force.players)
+    remove_non_top_10(whitelisted_score_tbl, score_force.players)
     local score_list = {}
     if not score_force then
         score_list[#score_list + 1] = {
             name = 'Nothing here yet',
             killscore = 0,
-            deaths = 0,
             built_entities = 0,
             mined_entities = 0
         }
@@ -492,7 +474,6 @@ local function get_score_list()
             {
                 name = score and score.name,
                 killscore = score and score.killscore or 0,
-                deaths = score and score.deaths or 20,
                 built_entities = score and score.built_entities or 0,
                 mined_entities = score and score.mined_entities or 0
             }
@@ -587,13 +568,12 @@ local function show_score(data)
     line.style.bottom_margin = 8
 
     -- Score per player
-    local t = frame.add {type = 'table', column_count = 5}
+    local t = frame.add {type = 'table', column_count = 4}
 
     -- Score headers
     local headers = {
         {name = 'score_player', caption = 'Player'},
         {column = 'killscore', name = 'score_killscore', caption = 'Killscore'},
-        {column = 'deaths', name = 'score_deaths', caption = 'Deaths'},
         {column = 'built_entities', name = 'score_built_entities', caption = 'Built structures'},
         {column = 'mined_entities', name = 'score_mined_entities', caption = 'Mined entities'}
     }
@@ -638,20 +618,19 @@ local function show_score(data)
         }
     )
     scroll_pane.style.maximal_height = 400
-    t = scroll_pane.add {type = 'table', column_count = 5}
+    scroll_pane.style.minimal_width = 700
+
+    t = scroll_pane.add {type = 'table', column_count = 4}
 
     -- Score entries
     local i = 0
     for _, entry in pairs(score_list) do
         i = i + 1
-        if i == 20 then
-            break
-        end
         local p
         if not (entry and entry.name) then
             p = {color = {r = random(1, 255), g = random(1, 255), b = random(1, 255)}}
         else
-            p = game.players[entry.name]
+            p = game.get_player(entry.name)
             if not p then
                 p = {color = {r = random(1, 255), g = random(1, 255), b = random(1, 255)}}
             end
@@ -663,15 +642,13 @@ local function show_score(data)
             a = 1
         }
 
-        local k = entry.killscore > 0 and entry.killscore or 'Not MVP'
-        local d = entry.deaths < 10 and entry.deaths or 'Not MVP'
-        local b = entry.built_entities > 0 and entry.built_entities or 'Not MVP'
-        local m = entry.mined_entities > 0 and entry.mined_entities or 'Not MVP'
+        local k = entry.killscore > 0 and entry.killscore or ''
+        local b = entry.built_entities > 0 and entry.built_entities or ''
+        local m = entry.mined_entities > 0 and entry.mined_entities or ''
 
         line = {
             {caption = entry.name, color = special_color},
             {caption = tostring(k)},
-            {caption = tostring(d)},
             {caption = tostring(b)},
             {caption = tostring(m)}
         }
@@ -723,7 +700,6 @@ local function on_gui_click(event)
     -- Handles click on a score header
     local element_to_column = {
         ['score_killscore'] = 'killscore',
-        ['score_deaths'] = 'deaths',
         ['score_built_entities'] = 'built_entities',
         ['score_mined_entities'] = 'mined_entities'
     }

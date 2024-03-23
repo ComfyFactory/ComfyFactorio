@@ -63,7 +63,7 @@ end
 function Public.setup_player(mountain_race, player)
     if player.force.name == 'player' then
         assign_force_to_player(player)
-        --player.print("You have been assigned to team " .. player.force.name .. "!")
+        player.print("You have been assigned to team " .. player.force.name .. "!")
 
         if player.character then
             if player.character.valid then
