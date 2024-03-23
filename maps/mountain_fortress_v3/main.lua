@@ -165,7 +165,6 @@ function Public.reset_map()
     JailData.reset_vote_table()
 
     Explosives.set_surface_whitelist({[surface.name] = true})
-    Explosives.check_growth_below_void(true)
 
     Beam.reset_valid_targets()
 
@@ -229,6 +228,7 @@ function Public.reset_map()
     this.locomotive_max_health = 10000
 
     if this.adjusted_zones.reversed then
+        Explosives.check_growth_below_void(false)
         this.gap_between_locomotive.neg_gap = abs(this.gap_between_locomotive.neg_gap)
         this.gap_between_locomotive.neg_gap_collapse = abs(this.gap_between_locomotive.neg_gap_collapse)
         this.spawn_near_collapse.compare = abs(this.spawn_near_collapse.compare)
@@ -236,6 +236,7 @@ function Public.reset_map()
         Collapse.set_direction('south')
         Public.locomotive_spawn(surface, {x = -18, y = -25}, this.adjusted_zones.reversed)
     else
+        Explosives.check_growth_below_void(true)
         this.gap_between_locomotive.neg_gap = abs(this.gap_between_locomotive.neg_gap) * -1
         this.gap_between_locomotive.neg_gap_collapse = abs(this.gap_between_locomotive.neg_gap_collapse) * -1
         this.spawn_near_collapse.compare = abs(this.spawn_near_collapse.compare) * -1
