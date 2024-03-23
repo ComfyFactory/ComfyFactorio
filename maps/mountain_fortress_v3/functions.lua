@@ -29,6 +29,7 @@ local this = {
     magic_crafters = {index = 1},
     magic_fluid_crafters = {index = 1},
     art_table = {index = 1},
+    editor_mode = {},
     starting_items = {
         ['pistol'] = {
             count = 1
@@ -47,6 +48,14 @@ local this = {
         }
     }
 }
+
+local exit_editor_mode_token =
+    Task.register(
+    function(event)
+        local player_index = event.player_index
+        this.editor_mode[player_index] = nil
+    end
+)
 
 local random_respawn_messages = {
     'The doctors stitched you up as best they could.',
@@ -1472,7 +1481,14 @@ function Public.on_pre_player_toggled_map_editor(event)
         return
     end
 
+    if this.editor_mode[player.index] then
+        return
+    end
+
+    this.editor_mode[player.index] = true
+
     player.toggle_map_editor()
+    Task.set_timeout_in_ticks(5, exit_editor_mode_token, {player_index = player.index})
 end
 
 function Public.on_player_changed_position(event)

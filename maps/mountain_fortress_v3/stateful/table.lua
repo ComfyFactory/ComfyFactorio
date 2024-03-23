@@ -1233,7 +1233,7 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
         this.buffs_collected = {}
     end
     this.enemies_boosted = false
-    this.tasks_required_to_win = 5
+    this.tasks_required_to_win = 6
 
     this.selected_objectives = get_random_objectives()
     if this.test_mode then
@@ -1311,6 +1311,8 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
         local delay = 25
         Task.set_timeout_in_ticks_alert(delay, {text = message})
     end
+
+    Public.set('coin_amount', Diff.index)
 
     local t = {
         ['randomized_zone'] = this.objectives.randomized_zone,

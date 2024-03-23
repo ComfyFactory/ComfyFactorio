@@ -156,6 +156,12 @@ local check_distance_between_player_and_locomotive = function(player)
         return
     end
 
+    local breached_wall = Public.get('breached_wall')
+
+    if breached_wall < 3 then
+        return
+    end
+
     local collapse_position = Collapse.get_position()
     local adjusted_zones = Public.get('adjusted_zones')
 
@@ -456,7 +462,11 @@ local function on_player_changed_position(event)
         return
     end
 
-    if player.position.y < -100 or player.position.y < 100 then
+    if player.position.y > -100 and player.position.y < -100 then
+        return
+    end
+
+    if player.position.y > 100 and player.position.y < 100 then
         return
     end
 

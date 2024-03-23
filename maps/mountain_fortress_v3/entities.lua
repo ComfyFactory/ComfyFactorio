@@ -404,9 +404,6 @@ local function angry_tree(entity, cause, player)
         return
     end
 
-    if abs(entity.position.y) < zone_settings.zone_depth then
-        return
-    end
     if random(1, 6) == 1 then
         Public.buried_biter(entity.surface, entity.position)
     end
@@ -1101,7 +1098,7 @@ local function on_entity_died(event)
             return
         end
         if random(1, 32) == 1 then
-            Public.buried_biter(entity.surface, entity.position)
+            Public.buried_biter(entity.surface, entity.position, 6)
             entity.destroy()
             return
         end

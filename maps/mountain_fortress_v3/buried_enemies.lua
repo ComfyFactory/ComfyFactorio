@@ -122,6 +122,9 @@ local function spawn_worms(data)
     end
 
     local unit_to_create = WD.wave_defense_roll_worm_name()
+    if not unit_to_create then
+        return
+    end
 
     local surface = data.surface
     if not (surface and surface.valid) then
@@ -148,7 +151,7 @@ local function spawn_worms(data)
     end
 end
 
-function Public.buried_biter(surface, position)
+function Public.buried_biter(surface, position, count)
     if not (surface and surface.valid) then
         return
     end
@@ -162,6 +165,10 @@ function Public.buried_biter(surface, position)
         return
     end
 
+    if not count then
+        count = 1
+    end
+
     for t = 1, 60, 1 do
         if not this[game.tick + t] then
             this[game.tick + t] = {}
@@ -173,10 +180,21 @@ function Public.buried_biter(surface, position)
         }
 
         if t == 60 then
-            this[game.tick + t][#this[game.tick + t] + 1] = {
-                callback = 'spawn_biters',
-                data = {surface = surface, position = {x = position.x, y = position.y}}
-            }
+            if count == 1 then
+                this[game.tick + t][#this[game.tick + t] + 1] = {
+                    callback = 'spawn_biters',
+                    data = {surface = surface, position = {x = position.x, y = position.y}, count = count or 1}
+                }
+            else
+                local tick = 2
+                for _ = 1, count do
+                    this[game.tick + t][#this[game.tick + t] + 1 + tick] = {
+                        callback = 'spawn_biters',
+                        data = {surface = surface, position = {x = position.x, y = position.y}, count = count or 1}
+                    }
+                    tick = tick + 2
+                end
+            end
         end
     end
 end

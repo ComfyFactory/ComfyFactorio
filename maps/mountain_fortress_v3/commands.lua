@@ -147,7 +147,7 @@ commands.add_command(
             this.reset_are_you_sure = nil
 
             Discord.send_notification_raw(scenario_name, player.name .. ' completed all the quest via command.')
-            Public.stateful.set_stateful('objectives_completed_count', 5)
+            Public.stateful.set_stateful('objectives_completed_count', 6)
             game.print(mapkeeper .. player.name .. ', has forced completed all quests!', {r = 0.98, g = 0.66, b = 0.22})
         else
             local this = Public.get()
@@ -160,7 +160,54 @@ commands.add_command(
             this.reset_are_you_sure = nil
             log('Quests completed.')
             Discord.send_notification_raw(scenario_name, 'Server completed all the quest via command')
-            Public.stateful.set_stateful('objectives_completed_count', 5)
+            Public.stateful.set_stateful('objectives_completed_count', 6)
+        end
+    end
+)
+
+commands.add_command(
+    'reverse_map',
+    'Usable only for admins - reverses the map!',
+    function()
+        local player = game.player
+
+        if player and player.valid then
+            if not player.admin then
+                player.print("[ERROR] You're not admin!", Color.fail)
+                return
+            end
+
+            local this = Public.get()
+            if not this.reset_are_you_sure then
+                this.reset_are_you_sure = true
+                player.print('[WARNING] This command will reverse the map and soft-reset!', Color.warning)
+                return
+            end
+
+            this.reset_are_you_sure = nil
+
+            local reversed = Public.get_stateful_settings('reversed')
+            Public.set_stateful_settings('reversed', not reversed)
+
+            Discord.send_notification_raw(scenario_name, player.name .. ' reversed the map.')
+            Public.reset_map()
+            game.print(mapkeeper .. player.name .. ', has reverse the map and reset the game!', {r = 0.98, g = 0.66, b = 0.22})
+        else
+            local this = Public.get()
+            if not this.reset_are_you_sure then
+                this.reset_are_you_sure = true
+                log('[WARNING] This command will reverse the map and soft-reset!')
+                return
+            end
+
+            this.reset_are_you_sure = nil
+
+            local reversed = Public.get_stateful_settings('reversed')
+            Public.set_stateful_settings('reversed', not reversed)
+
+            Discord.send_notification_raw(scenario_name, 'script has reversed the map.')
+            Public.reset_map()
+            game.print(mapkeeper .. 'script, has reverse the map and reset the game!', {r = 0.98, g = 0.66, b = 0.22})
         end
     end
 )

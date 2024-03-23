@@ -525,7 +525,7 @@ function Public.create_char(data)
     end
 
     local count = count_active_characters(data.player_index)
-    if count >= 5 then
+    if count and count >= 5 then
         return false
     end
 
