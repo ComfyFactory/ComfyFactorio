@@ -293,7 +293,7 @@ function Public.reset_main_table()
         forest = {},
         size = nil,
         shuffled_zones = nil,
-        starting_zone = false,
+        starting_zone = true,
         reversed = stateful_settings.reversed,
         disable_terrain = false
     }
