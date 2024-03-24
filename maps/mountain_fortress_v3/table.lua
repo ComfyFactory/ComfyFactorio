@@ -1,6 +1,8 @@
 -- one table to rule them all!
 local Global = require 'utils.global'
+local Server = require 'utils.server'
 local Event = require 'utils.event'
+local Task = require 'utils.task_token'
 
 local this = {
     players = {},
@@ -12,11 +14,15 @@ local this = {
         next_operation = nil
     }
 }
+
 local stateful_settings = {
     reversed = true
 }
 local Public = {}
 local random = math.random
+local dataset = 'scenario_settings'
+local dataset_key = 'mtn_v3_table'
+local dataset_key_dev = 'mtn_v3_table_dev'
 
 Public.events = {
     reset_map = Event.generate_event_name('reset_map'),
@@ -348,12 +354,8 @@ end
 function Public.set_stateful_settings(key, value)
     if key and (value or value == false) then
         stateful_settings[key] = value
-        return stateful_settings[key]
-    elseif key then
-        return stateful_settings[key]
-    else
-        return stateful_settings
     end
+    Public.save_stateful_settings()
 end
 
 function Public.remove(key, sub_key)
@@ -368,6 +370,52 @@ function Public.remove(key, sub_key)
     end
 end
 
+function Public.save_stateful_settings()
+    local server_name_matches = Server.check_server_name('Mtn Fortress')
+
+    if server_name_matches then
+        Server.set_data(dataset, dataset_key, stateful_settings)
+    else
+        Server.set_data(dataset, dataset_key_dev, stateful_settings)
+    end
+end
+
+local apply_settings_token =
+    Task.register(
+    function(data)
+        local server_name_matches = Server.check_server_name('Mtn Fortress')
+        local settings = data and data.value or nil
+
+        if not settings then
+            if server_name_matches then
+                Server.set_data(dataset, dataset_key, stateful_settings)
+            else
+                Server.set_data(dataset, dataset_key_dev, stateful_settings)
+            end
+            return
+        end
+
+        for k, v in pairs(settings) do
+            stateful_settings[k] = v
+        end
+    end
+)
+
 Event.on_init(Public.reset_main_table)
+Event.add(
+    Server.events.on_server_started,
+    function()
+        local server_name_matches = Server.check_server_name('Mtn Fortress')
+
+        this.settings_applied = true
+
+        if server_name_matches then
+            Server.try_get_data(dataset, dataset_key, apply_settings_token)
+        else
+            Server.try_get_data(dataset, dataset_key_dev, apply_settings_token)
+            this.test_mode = true
+        end
+    end
+)
 
 return Public

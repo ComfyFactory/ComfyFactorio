@@ -38,7 +38,7 @@ function Public.open_debug(player)
     frame.auto_center = true
     local frame_style = frame.style
     frame_style.height = 600
-    frame_style.width = 900
+    frame_style.width = 1100
 
     local tab_flow = frame.add {type = 'flow', direction = 'horizontal'}
     local container = frame.add {type = 'flow'}

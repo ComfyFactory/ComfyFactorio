@@ -22,7 +22,7 @@ function Public.show(container)
 
     local left_panel = main_flow.add {type = 'scroll-pane', name = left_panel_name}
     local left_panel_style = left_panel.style
-    left_panel_style.width = 300
+    left_panel_style.width = 400
 
     for token_id, token_name in pairs(Global.names) do
         local header = left_panel.add({type = 'flow'}).add {type = 'label', name = header_name, caption = token_name}

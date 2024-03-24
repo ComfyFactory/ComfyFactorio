@@ -133,13 +133,13 @@ function Public.locomotive_spawn(surface, position, reversed)
     local this = Public.get()
 
     if reversed then
-        for y = 6, -6, -2 do
+        for y = -6, 6, 2 do
             surface.create_entity({name = 'straight-rail', position = {position.x, position.y + y}, force = 'player', direction = 0})
         end
-        this.locomotive = surface.create_entity({name = 'locomotive', position = {position.x, position.y + 3}, force = 'player', direction = defines.direction.south})
+        this.locomotive = surface.create_entity({name = 'locomotive', position = {position.x, position.y + -3}, force = 'player', direction = defines.direction.south})
         this.locomotive.get_inventory(defines.inventory.fuel).insert({name = 'wood', count = 100})
 
-        this.locomotive_cargo = surface.create_entity({name = 'cargo-wagon', position = {position.x, position.y + -3}, force = 'player'})
+        this.locomotive_cargo = surface.create_entity({name = 'cargo-wagon', position = {position.x, position.y + 3}, force = 'player', direction = defines.direction.south})
         this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = 'raw-fish', count = 8})
     else
         for y = -6, 6, 2 do
