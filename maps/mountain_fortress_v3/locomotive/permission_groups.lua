@@ -135,10 +135,28 @@ function Public.add_player_to_permission_group(player, group, forced)
         return
     end
 
+    local limited_group = game.permissions.get_group('limited')
+    local main_surface_group = game.permissions.get_group('main_surface')
+    local near_locomotive_group = game.permissions.get_group('near_locomotive')
+
+    if limited_group then
+        limited_group.set_allows_action(defines.input_action.delete_blueprint_library, false)
+        limited_group.set_allows_action(defines.input_action.delete_blueprint_record, false)
+    end
+    if main_surface_group then
+        main_surface_group.set_allows_action(defines.input_action.delete_blueprint_library, false)
+        main_surface_group.set_allows_action(defines.input_action.delete_blueprint_record, false)
+    end
+    if near_locomotive_group then
+        near_locomotive_group.set_allows_action(defines.input_action.delete_blueprint_library, false)
+        near_locomotive_group.set_allows_action(defines.input_action.delete_blueprint_record, false)
+    end
+    if default_group then
+        default_group.set_allows_action(defines.input_action.delete_blueprint_library, false)
+        default_group.set_allows_action(defines.input_action.delete_blueprint_record, false)
+    end
+
     if enable_permission_group_disconnect then
-        local limited_group = game.permissions.get_group('limited')
-        local main_surface_group = game.permissions.get_group('main_surface')
-        local near_locomotive_group = game.permissions.get_group('near_locomotive')
         if limited_group then
             limited_group.set_allows_action(defines.input_action.disconnect_rolling_stock, true)
         end
@@ -152,9 +170,6 @@ function Public.add_player_to_permission_group(player, group, forced)
             default_group.set_allows_action(defines.input_action.disconnect_rolling_stock, true)
         end
     else
-        local limited_group = game.permissions.get_group('limited')
-        local main_surface_group = game.permissions.get_group('main_surface')
-        local near_locomotive_group = game.permissions.get_group('near_locomotive')
         if limited_group then
             limited_group.set_allows_action(defines.input_action.disconnect_rolling_stock, false)
         end
@@ -180,25 +195,25 @@ function Public.add_player_to_permission_group(player, group, forced)
         end
     else
         if group == 'limited' then
-            local limited_group = game.permissions.get_group('limited')
-            if not limited_group then
+            local limited_group_inner = game.permissions.get_group('limited')
+            if not limited_group_inner then
                 return
             end
-            limited_group.add_player(player)
+            limited_group_inner.add_player(player)
         elseif group == 'main_surface' then
-            local main_surface_group = game.permissions.get_group('main_surface')
-            if not main_surface_group then
+            local main_surface_group_inner = game.permissions.get_group('main_surface')
+            if not main_surface_group_inner then
                 return
             end
 
-            main_surface_group.add_player(player)
+            main_surface_group_inner.add_player(player)
         elseif group == 'near_locomotive' then
-            local near_locomotive_group = game.permissions.get_group('near_locomotive')
-            if not near_locomotive_group then
+            local near_locomotive_group_inner = game.permissions.get_group('near_locomotive')
+            if not near_locomotive_group_inner then
                 return
             end
 
-            near_locomotive_group.add_player(player)
+            near_locomotive_group_inner.add_player(player)
         elseif group == 'default' then
             default_group.add_player(player)
         end
