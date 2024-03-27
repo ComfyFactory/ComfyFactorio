@@ -31,6 +31,9 @@ local directions = {
         if width > this.max_line_size then
             width = this.max_line_size
         end
+        if this.max_line_size_force then
+            width = this.max_line_size
+        end
         local a = width * 0.5 + 4
         this.vector = {0, -1}
         this.area = {{position.x - a, position.y - 1}, {position.x + a, position.y}}
@@ -49,7 +52,10 @@ local directions = {
         if width > this.max_line_size then
             width = this.max_line_size
         end
-        local a = width * 0.5 + 1
+        if this.max_line_size_force then
+            width = this.max_line_size
+        end
+        local a = width * 0.5
         this.vector = {0, 1}
         this.area = {{position.x - a, position.y}, {position.x + a, position.y + 1}}
     end,
@@ -65,6 +71,9 @@ local directions = {
         end
         local width = surface.map_gen_settings.height
         if width > this.max_line_size then
+            width = this.max_line_size
+        end
+        if this.max_line_size_force then
             width = this.max_line_size
         end
         local a = width * 0.5 + 1
@@ -83,6 +92,9 @@ local directions = {
         end
         local width = surface.map_gen_settings.height
         if width > this.max_line_size then
+            width = this.max_line_size
+        end
+        if this.max_line_size_force then
             width = this.max_line_size
         end
         local a = width * 0.5 + 1
@@ -116,7 +128,7 @@ local function set_collapse_tiles(surface)
     local v = this.vector
     local area = this.area
     this.area = {{area[1][1] + v[1], area[1][2] + v[2]}, {area[2][1] + v[1], area[2][2] + v[2]}}
-    local chart_area = {{area[1][1] + v[1] + 4, area[1][2] + v[2] + 4}, {area[2][1] + v[1] + 4, area[2][2] + v[2] + 4}}
+    local chart_area = {{area[1][1] + v[1] - 4, area[1][2] + v[2] - 4}, {area[2][1] + v[1] + 4, area[2][2] + v[2] + 4}}
     game.forces.player.chart(surface, chart_area)
 end
 
@@ -285,7 +297,7 @@ function Public.get_start_now()
     return this.start_now
 end
 
-function Public.set_max_line_size(size)
+function Public.set_max_line_size(size, force)
     if not size then
         print_debug(22)
         return
@@ -296,6 +308,7 @@ function Public.set_max_line_size(size)
         return
     end
     this.max_line_size = size
+    this.max_line_size_force = force or false
 end
 
 function Public.set_kill_entities(a)
