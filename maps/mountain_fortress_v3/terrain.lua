@@ -2804,12 +2804,15 @@ local function border_chunk(p, data)
     local entities = data.entities
     local decoratives = data.decoratives
     local tiles = data.tiles
+    local surface = data.surface
 
     local pos = p
 
     if random(1, ceil(abs(pos.y) + abs(pos.y)) + 64) == 1 then
         entities[#entities + 1] = {name = trees[random(1, #trees)], position = pos}
     end
+
+    game.forces.player.chart(surface, {{p.x - 32, p.y - 32}, {p.x + 32, p.y + 32}})
 
     local noise = Public.get_noise('dungeon_sewer', pos, data.seed)
     local index = floor(noise * 32) % 11 + 1
@@ -2856,6 +2859,8 @@ local function biter_chunk(p, data)
     local disable_worms = {
         callback = Public.active_not_destructible_callback
     }
+
+    game.forces.player.chart(surface, {{p.x - 32, p.y - 32}, {p.x + 32, p.y + 32}})
 
     if random(1, 128) == 1 then
         local position = surface.find_non_colliding_position('biter-spawner', tile_positions[random(1, #tile_positions)], 16, 2)

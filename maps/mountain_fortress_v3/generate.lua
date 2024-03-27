@@ -9,8 +9,8 @@ local abs = math.abs
 local ceil = math.ceil
 local round = math.round
 local queue_task = Task.queue_task
-local tiles_per_call = 8
-local total_calls = ceil(1024 / tiles_per_call) + 5
+local tiles_per_call = 12
+local total_calls = ceil(1024 / tiles_per_call)
 local regen_decoratives = false
 local generate_map = Public.heavy_functions
 
