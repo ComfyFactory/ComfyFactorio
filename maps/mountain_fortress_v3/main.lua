@@ -475,8 +475,16 @@ local compare_collapse_and_train = function()
     local t_y = locomotive.position.y
 
     local gap_between_zones = Public.get('gap_between_zones')
+    local adjusted_zones = Public.get('adjusted_zones')
 
-    if c_y - t_y <= gap_between_zones.gap then
+    local distance
+    if adjusted_zones.reversed then
+        distance = c_y - t_y >= gap_between_zones.gap
+    else
+        distance = c_y - t_y <= gap_between_zones.gap
+    end
+
+    if distance then
         Public.set_difficulty()
     else
         Collapse.set_speed(1)

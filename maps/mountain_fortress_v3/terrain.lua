@@ -364,12 +364,20 @@ local function get_oil_amount(p)
 end
 
 local function spawn_turret(entities, p, probability)
+    local direction
+    local adjusted_zones = Public.get('adjusted_zones')
+    if adjusted_zones.reversed then
+        direction = defines.direction.north
+    else
+        direction = defines.direction.south
+    end
+
     entities[#entities + 1] = {
         name = turret_list[probability].name,
         position = p,
         force = 'enemy',
         callback = turret_list[probability].callback,
-        direction = 4,
+        direction = direction,
         collision = true,
         note = true
     }
