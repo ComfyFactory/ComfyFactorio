@@ -2808,6 +2808,16 @@ local function border_chunk(p, data)
 
     local pos = p
 
+    if data.reversed then
+        if p.y < -74 then
+            return
+        end
+    else
+        if p.y > 74 then
+            return
+        end
+    end
+
     if random(1, ceil(abs(pos.y) + abs(pos.y)) + 64) == 1 then
         entities[#entities + 1] = {name = trees[random(1, #trees)], position = pos}
     end
@@ -2900,20 +2910,22 @@ function Public.heavy_functions(data)
     if string.sub(surface.name, 0, #map_name) ~= map_name then
         return
     end
+    local adjusted_zones = Public.get('adjusted_zones')
+    data.reversed = adjusted_zones.reversed
 
     local p = data.position
 
-    local adjusted_zones = Public.get('adjusted_zones')
     if adjusted_zones.disable_terrain then
         return
     end
+
     init_terrain(adjusted_zones)
 
     if not data.seed then
         data.seed = Public.get('random_seed')
     end
 
-    if adjusted_zones.reversed then
+    if data.reversed then
         if top_y % zone_settings.zone_depth == 0 and top_y > 0 then
             Public.set('left_top', data.left_top)
             return wall(p, data)

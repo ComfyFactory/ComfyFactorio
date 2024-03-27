@@ -63,6 +63,7 @@ function Public.reset_wave_defense()
     this.average_unit_group_size = 24
     this.biter_raffle = {}
     this.debug = false
+    this.inverted = false
     this.debug_health = false
     this.disable_spawn_near_target = true
     this.log_wave_to_discord = true
@@ -479,8 +480,12 @@ end
 -- @param <boolean>
 function Public.enable_grace_time(boolean)
     this.enable_grace_time.enabled = boolean or false
+end
 
-    return this.debug_health
+--- Toggles a reverse search function
+-- @param <boolean>
+function Public.enable_inverted(boolean)
+    this.inverted = boolean or false
 end
 
 -- Event.on_nth_tick(30, Public.debug_module)

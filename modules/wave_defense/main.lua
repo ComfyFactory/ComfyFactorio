@@ -32,9 +32,16 @@ end
 
 local function normalize_spawn_position()
     local collapse_spawn_position = Collapse.get_position()
-    local new_pos = {x = 0, y = collapse_spawn_position.y - 40}
-    Public.set_spawn_position(new_pos)
-    return new_pos
+    local inverted = Public.get('inverted')
+    if inverted then
+        local new_pos = {x = 0, y = collapse_spawn_position.y + 40}
+        Public.set_spawn_position(new_pos)
+        return new_pos
+    else
+        local new_pos = {x = 0, y = collapse_spawn_position.y - 40}
+        Public.set_spawn_position(new_pos)
+        return new_pos
+    end
 end
 
 local function find_initial_spot(surface, position)
@@ -180,10 +187,19 @@ local function get_spawn_pos()
     local target = Public.get('target')
 
     if initial_position.y - target.position.y > 10 then
-        if random(1, 2) == 1 then
-            initial_position = {x = initial_position.x, y = initial_position.y - 30}
+        local inverted = Public.get('inverted')
+        if inverted then
+            if random(1, 2) == 1 then
+                initial_position = {x = initial_position.x, y = initial_position.y + 30}
+            else
+                initial_position = {x = initial_position.x, y = initial_position.y + 20}
+            end
         else
-            initial_position = {x = initial_position.x, y = initial_position.y - 20}
+            if random(1, 2) == 1 then
+                initial_position = {x = initial_position.x, y = initial_position.y - 30}
+            else
+                initial_position = {x = initial_position.x, y = initial_position.y - 20}
+            end
         end
     end
 
