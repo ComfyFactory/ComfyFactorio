@@ -100,6 +100,10 @@ end
 local function nth_30_tick()
     Functions.item_transfer()
     local upgrades = WPT.get('upgrades')
+    if not upgrades then
+        return
+    end
+
     if upgrades.has_upgraded_health_pool then
         Functions.check_entity_healths()
     end

@@ -12,6 +12,8 @@ require 'maps.mountain_fortress_v3.ic.main'
 require 'modules.wave_defense.main'
 
 local Event = require 'utils.event'
+local Color = require 'utils.color_presets'
+local Core = require 'utils.core'
 local Gui = require 'utils.gui'
 local Public = require 'maps.mountain_fortress_v3.core'
 local Discord = require 'utils.discord'
@@ -279,6 +281,7 @@ function Public.reset_map()
         end
         game.forces.player.set_spawn_position({x = -27, y = -25}, surface)
         WD.set_spawn_position({x = -16, y = -80})
+        WD.enable_inverted(true)
     else
         if not surface.is_chunk_generated({x = -20, y = 22}) then
             surface.request_to_generate_chunks({x = -20, y = 22}, 0.1)
@@ -286,6 +289,7 @@ function Public.reset_map()
         end
         game.forces.player.set_spawn_position({x = -27, y = 25}, surface)
         WD.set_spawn_position({x = -16, y = 80})
+        WD.enable_inverted(false)
     end
 
     game.speed = 1
@@ -550,7 +554,7 @@ local nth_1000_tick = function()
     Public.is_creativity_mode_on()
 end
 
-local on_init = function()
+function Public.init_mtn()
     Public.reset_map()
 
     local tooltip = {
@@ -595,6 +599,16 @@ Server.on_scenario_changed(
 Event.on_nth_tick(40, nth_40_tick)
 Event.on_nth_tick(250, nth_250_tick)
 Event.on_nth_tick(1000, nth_1000_tick)
-Event.on_init(on_init)
+
+Event.add(
+    defines.events.on_player_created,
+    function(event)
+        if event.player_index == 1 then
+            if not game.is_multiplayer() then
+                Public.init_mtn()
+            end
+        end
+    end
+)
 
 return Public

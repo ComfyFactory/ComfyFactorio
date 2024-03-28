@@ -1405,6 +1405,9 @@ local function create_market(data, rebuild)
     end
 
     local locomotive = this.icw_locomotive
+    if not locomotive then
+        return
+    end
 
     local loco_surface = this.icw_locomotive.surface
 

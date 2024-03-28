@@ -339,7 +339,7 @@ local artillery_target_callback =
 local function do_beams_away()
     local wave_number = WD.get_wave()
     local orbital_strikes = Public.get('orbital_strikes')
-    if not orbital_strikes.enabled then
+    if not orbital_strikes or not orbital_strikes.enabled then
         return
     end
 
@@ -373,7 +373,7 @@ local function do_clear_enemy_spawners()
     end
 
     local enemy_spawners = Public.get('enemy_spawners')
-    if not enemy_spawners.enabled then
+    if not enemy_spawners or not enemy_spawners.enabled then
         return
     end
 
@@ -1325,6 +1325,10 @@ end
 
 function Public.on_player_joined_game(event)
     local active_surface_index = Public.get('active_surface_index')
+    if not active_surface_index then
+        return
+    end
+
     local players = Public.get('players')
     local player = game.players[event.player_index]
     local surface = game.surfaces[active_surface_index]
@@ -1617,9 +1621,11 @@ function Public.on_research_finished(event)
     end
 
     research.force.character_inventory_slots_bonus = player.mining_drill_productivity_bonus * 50 -- +5 Slots /
-    bonus_drill.mining_drill_productivity_bonus = bonus_drill.mining_drill_productivity_bonus + 0.03
-    if bonus_drill.mining_drill_productivity_bonus >= 3 then
-        bonus_drill.mining_drill_productivity_bonus = 3
+    if bonus_drill then
+        bonus_drill.mining_drill_productivity_bonus = bonus_drill.mining_drill_productivity_bonus + 0.03
+        if bonus_drill.mining_drill_productivity_bonus >= 3 then
+            bonus_drill.mining_drill_productivity_bonus = 3
+        end
     end
 
     local players = game.connected_players

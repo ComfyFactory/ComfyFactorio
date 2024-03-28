@@ -1163,6 +1163,10 @@ Event.on_nth_tick(
     120,
     function()
         local containers = this.main_containers
+        if not containers or not next(containers) then
+            return
+        end
+
         local active_surface_index = WPT.get('active_surface_index')
 
         for index, container in pairs(containers) do

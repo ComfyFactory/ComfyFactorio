@@ -9,6 +9,7 @@ local Gui = require 'utils.gui'
 local Alert = require 'utils.alert'
 local Color = require 'utils.color_presets'
 local Modifiers = require 'utils.player_modifiers'
+local Core = require 'utils.core'
 
 local zone_settings = Public.zone_settings
 
@@ -398,10 +399,6 @@ local function get_driver_action(entity)
         return
     end
 
-    if player.admin then
-        return
-    end
-
     if Session.get_session_player(player) then
         local total_time = player.online_time + Session.get_session_player(player)
 
@@ -563,6 +560,32 @@ local function on_player_changed_surface(event)
     elseif player.surface.index == surface.index then
         return Public.add_player_to_permission_group(player, 'main_surface')
     end
+end
+
+local function check_on_player_changed_surface()
+    local active_surface = Public.get('active_surface_index')
+    if not active_surface then
+        return
+    end
+
+    local surface = game.get_surface(active_surface)
+    if not surface or not surface.valid then
+        return
+    end
+
+    Core.iter_players(
+        function(player)
+            if player.surface.name == 'nauvis' then
+                local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
+                if pos then
+                    player.teleport(pos, surface)
+                else
+                    pos = game.forces.player.get_spawn_position(surface)
+                    player.teleport(pos, surface)
+                end
+            end
+        end
+    )
 end
 
 local function on_player_driving_changed_state(event)
@@ -808,6 +831,7 @@ local function tick()
     local ticker = game.tick
 
     if ticker % 30 == 0 then
+        check_on_player_changed_surface()
         set_locomotive_health()
         validate_index()
         fish_tag()

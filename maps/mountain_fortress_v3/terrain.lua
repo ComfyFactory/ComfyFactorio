@@ -2834,7 +2834,10 @@ local function border_chunk(p, data)
 
     local noise = Public.get_noise('dungeon_sewer', pos, data.seed)
     local index = floor(noise * 32) % 11 + 1
-    tiles[#tiles + 1] = {name = start_ground_tiles[index], position = pos}
+    local tile = surface.get_tile(pos)
+    if tile and tile.valid and tile.name ~= 'black-refined-concrete' then
+        tiles[#tiles + 1] = {name = start_ground_tiles[index], position = pos}
+    end
 
     local scrap_mineable_entities, scrap_mineable_entities_index = get_scrap_mineable_entities()
 

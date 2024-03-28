@@ -674,6 +674,10 @@ local function update_data()
     local players = game.connected_players
     local stateful = Public.get_stateful()
     local breached_wall = Public.get('breached_wall')
+    if not breached_wall then
+        return
+    end
+
     breached_wall = breached_wall - 1
     local wave_number = WD.get('wave_number')
     local collection = stateful.collection
@@ -846,6 +850,7 @@ end
 
 local function update_raw()
     local game_lost = Public.get('game_lost')
+
     if game_lost then
         clear_all_frames()
         return
@@ -853,6 +858,9 @@ local function update_raw()
 
     local stateful = Public.get_stateful()
     local breached_wall = Public.get('breached_wall')
+    if not breached_wall then
+        return
+    end
     local wave_number = WD.get('wave_number')
     local collection = stateful.collection
     local tick = game.tick

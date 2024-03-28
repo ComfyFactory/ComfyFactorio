@@ -1348,6 +1348,10 @@ function Public.loco_died(invalid_locomotive)
     end
 
     local active_surface_index = Public.get('active_surface_index')
+    if not active_surface_index then
+        return
+    end
+
     local locomotive = Public.get('locomotive')
     local surface = game.surfaces[active_surface_index]
     local wave_defense_table = WD.get_table()
@@ -1442,7 +1446,7 @@ end
 
 local function on_entity_spawned(event)
     local enemy_spawners = Public.get('enemy_spawners')
-    if not enemy_spawners.enabled then
+    if not enemy_spawners or not enemy_spawners.enabled then
         return
     end
 

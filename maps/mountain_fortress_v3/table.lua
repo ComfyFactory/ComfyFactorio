@@ -124,6 +124,7 @@ function Public.reset_main_table()
     this.restart = false
     this.shutdown = false
     this.announced_message = false
+    this.game_reset_tick = nil
     -- @end
     this.breach_wall_warning = false
     this.icw_locomotive = nil
@@ -294,6 +295,7 @@ function Public.reset_main_table()
         current = {},
         temp_boosts = {}
     }
+
     this.adjusted_zones = {
         scrap = {},
         forest = {},
@@ -398,22 +400,24 @@ local apply_settings_token =
         for k, v in pairs(settings) do
             stateful_settings[k] = v
         end
+        Public.init_mtn()
     end
 )
 
-Event.on_init(Public.reset_main_table)
 Event.add(
     Server.events.on_server_started,
     function()
-        local server_name_matches = Server.check_server_name('Mtn Fortress')
+        local start_data = Server.get_start_data()
 
-        this.settings_applied = true
+        if not start_data.initialized then
+            local server_name_matches = Server.check_server_name('Mtn Fortress')
 
-        if server_name_matches then
-            Server.try_get_data(dataset, dataset_key, apply_settings_token)
-        else
-            Server.try_get_data(dataset, dataset_key_dev, apply_settings_token)
-            this.test_mode = true
+            if server_name_matches then
+                Server.try_get_data(dataset, dataset_key, apply_settings_token)
+            else
+                Server.try_get_data(dataset, dataset_key_dev, apply_settings_token)
+            end
+            start_data.initialized = true
         end
     end
 )

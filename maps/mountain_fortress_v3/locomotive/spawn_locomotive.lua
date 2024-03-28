@@ -226,10 +226,10 @@ function Public.locomotive_spawn(surface, position, reversed)
     local extra_wagons = Public.stateful.get_stateful('extra_wagons')
 
     if extra_wagons and extra_wagons > 0 then
-        local pos = this.locomotive.position
         local inc = 7
 
         if reversed then
+            local pos = this.locomotive.position
             local new_position = {x = pos.x, y = pos.y - inc}
 
             for y = pos.y, new_position.y - (6 * extra_wagons), -2 do
@@ -247,6 +247,7 @@ function Public.locomotive_spawn(surface, position, reversed)
                 end
             end
         else
+            local pos = this.locomotive_cargo.position
             local new_position = {x = pos.x, y = pos.y + inc}
 
             for y = pos.y, new_position.y + (6 * extra_wagons), 2 do
@@ -267,7 +268,6 @@ function Public.locomotive_spawn(surface, position, reversed)
     end
 
     Task.set_timeout_in_ticks(15, place_tiles_token, {surface = surface, position = position})
-    Task.set_timeout_in_ticks(300, place_tiles_token, {surface = surface, position = position})
     Task.set_timeout_in_ticks(50, set_loco_cargo, data)
 
     game.forces.player.set_spawn_position({this.locomotive.position.x - 5, this.locomotive.position.y}, locomotive.surface)
