@@ -36,6 +36,7 @@ local this = {
     cancel_crafting_history = {},
     deconstruct_history = {},
     scenario_history = {},
+    whisper_history = {},
     whitelist_types = {},
     permission_group_editing = {},
     players_warned = {},
@@ -708,6 +709,39 @@ local function on_pre_player_mined_item(event)
     end
 end
 
+local function on_console_command(event)
+    if not event.player_index then
+        return
+    end
+
+    if not event.command == 'whisper' then
+        return
+    end
+
+    local player = game.get_player(event.player_index)
+
+    if not this.whisper_history then
+        this.whisper_history = {}
+    end
+    if this.limit > 0 and #this.whisper_history > this.limit then
+        overflow(this.whisper_history)
+    end
+
+    local parameters = event.parameters
+
+    local name, message = parameters:match('(%a+)%s(.*)')
+    if not message then
+        return
+    end
+
+    local t = abs(floor((game.tick) / 60))
+    local formatted = FancyTime.short_fancy_time(t)
+    local str = '[' .. formatted .. '] '
+    str = str .. player.name .. ' whispered ' .. name .. ': ' .. message
+    increment(this.whisper_history, str)
+    Server.log_antigrief_data('whisper', str)
+end
+
 local function on_console_chat(event)
     if not event.player_index then
         return
@@ -1322,6 +1356,7 @@ Event.add(de.on_permission_group_added, on_permission_group_added)
 Event.add(de.on_permission_group_deleted, on_permission_group_deleted)
 Event.add(de.on_permission_group_edited, on_permission_group_edited)
 Event.add(de.on_permission_string_imported, on_permission_string_imported)
+Event.add(de.on_console_command, on_console_command)
 Event.add(de.on_console_chat, on_console_chat)
 Event.add(de.on_player_muted, on_player_muted)
 Event.add(de.on_player_unmuted, on_player_unmuted)

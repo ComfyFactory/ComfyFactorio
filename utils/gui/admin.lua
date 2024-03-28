@@ -10,6 +10,8 @@ local Server = require 'utils.server'
 local Task = require 'utils.task_token'
 local Token = require 'utils.token'
 local Global = require 'utils.global'
+local Discord = require 'utils.discord_handler'
+
 local Public = {}
 
 local insert = table.insert
@@ -373,6 +375,8 @@ local function delete_all_blueprints(player)
     else
         game.print(counter .. ' blueprints have been cleared!', {r = 0.98, g = 0.66, b = 0.22})
     end
+    local server_name = Server.get_server_name() or 'CommandHandler'
+    Discord.send_notification_raw(server_name, player.name .. ' cleared all the blueprints on the map.')
     admin_only_message(player.name .. ' has cleared all blueprints.')
     clear_validation_action(player.name, 'delete_all_blueprints')
 end
@@ -386,6 +390,8 @@ local function pause_game_tick(player)
     local paused_str = paused and 'unpaused' or 'paused'
     game.tick_paused = not paused
     game.print('Game has been ' .. paused_str .. ' by ' .. player.name, {r = 0.98, g = 0.66, b = 0.22})
+    local server_name = Server.get_server_name() or 'CommandHandler'
+    Discord.send_notification_raw(server_name, player.name .. ' ' .. paused_str .. ' the game.')
     clear_validation_action(player.name, 'pause_game_tick')
 end
 
@@ -483,7 +489,8 @@ local function search_text_locally(history, player_data, callback)
         ['Corpse Looting History'] = antigrief.corpse_history,
         ['Cancel Crafting History'] = antigrief.cancel_crafting_history,
         ['Deconstruct History'] = antigrief.deconstruct_history,
-        ['Scenario History'] = antigrief.scenario_history
+        ['Scenario History'] = antigrief.scenario_history,
+        ['Whisper History'] = antigrief.whisper_history
     }
 
     local tooltip = 'Click to open mini camera.'
@@ -890,6 +897,9 @@ create_admin_panel = function(data)
     if antigrief.scenario_history then
         insert(histories, 'Scenario History')
     end
+    if antigrief.whisper_history then
+        insert(histories, 'Whisper History')
+    end
 
     if #histories == 0 then
         return
@@ -936,7 +946,8 @@ create_admin_panel = function(data)
         ['Corpse Looting History'] = antigrief.corpse_history,
         ['Cancel Crafting History'] = antigrief.cancel_crafting_history,
         ['Deconstruct History'] = antigrief.deconstruct_history,
-        ['Scenario History'] = antigrief.scenario_history
+        ['Scenario History'] = antigrief.scenario_history,
+        ['Whisper History'] = antigrief.whisper_history
     }
 
     local history = frame.pagination_table.admin_history_select.items[frame.pagination_table.admin_history_select.selected_index]
@@ -1192,7 +1203,8 @@ function Public.contains_text(history, search_text, target_player_name)
         ['Corpse Looting History'] = antigrief.corpse_history,
         ['Cancel Crafting History'] = antigrief.cancel_crafting_history,
         ['Deconstruct History'] = antigrief.deconstruct_history,
-        ['Scenario History'] = antigrief.scenario_history
+        ['Scenario History'] = antigrief.scenario_history,
+        ['Whisper History'] = antigrief.whisper_history
     }
 
     local remote_tbl = {}
