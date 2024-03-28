@@ -12,8 +12,6 @@ require 'maps.mountain_fortress_v3.ic.main'
 require 'modules.wave_defense.main'
 
 local Event = require 'utils.event'
-local Color = require 'utils.color_presets'
-local Core = require 'utils.core'
 local Gui = require 'utils.gui'
 local Public = require 'maps.mountain_fortress_v3.core'
 local Discord = require 'utils.discord'

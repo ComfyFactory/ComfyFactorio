@@ -18,7 +18,8 @@ commands.add_command(
         end
 
         local param = tostring(cmd.parameter)
-        if param == nil then
+        if param == 'nil' then
+            p('[ERROR] Arguments are:\nskip\toggle_es\toggle_es_boss\nspawn\nnext\nnext_50\nnext_1500\nlog_all\ndebug_health')
             return
         end
 

@@ -21,15 +21,6 @@ local function valid(userdata)
     return true
 end
 
-local function shuffle(tbl)
-    local size = #tbl
-    for i = size, 1, -1 do
-        local rand = math.random(size)
-        tbl[i], tbl[rand] = tbl[rand], tbl[i]
-    end
-    return tbl
-end
-
 local function normalize_spawn_position()
     local collapse_spawn_position = Collapse.get_position()
     local inverted = Public.get('inverted')
@@ -45,43 +36,26 @@ local function normalize_spawn_position()
 end
 
 local function find_initial_spot(surface, position)
-    local spot = Public.get('spot')
-    if not spot then
-        local pos = surface.find_non_colliding_position('rocket-silo', position, 128, 1)
-        if not pos then
-            pos = surface.find_non_colliding_position('rocket-silo', position, 148, 1)
-        end
-        if not pos then
-            pos = surface.find_non_colliding_position('rocket-silo', position, 164, 1)
-        end
-        if not pos then
-            pos = surface.find_non_colliding_position('rocket-silo', position, 200, 1)
-        end
-        if not pos then
-            pos = position
-        end
-
-        if random(1, 2) == 1 then
-            local random_pos = {
-                {x = pos.x - 10, y = pos.y - 5},
-                {x = pos.x + 10, y = pos.y - 5},
-                {x = pos.x - 10, y = pos.y - 5},
-                {x = pos.x + 10, y = pos.y - 5}
-            }
-            local actual_pos = shuffle(random_pos)
-            pos = {x = actual_pos[1].x, y = actual_pos[1].y}
-        end
-
-        if not pos then
-            pos = position
-        end
-
-        Public.set('spot', pos)
-        return pos
-    else
-        spot = Public.get('spot')
-        return spot
+    local pos = surface.find_non_colliding_position('boiler', position, 128, 1)
+    if not pos then
+        pos = surface.find_non_colliding_position('boiler', position, 148, 1)
     end
+    if not pos then
+        pos = surface.find_non_colliding_position('boiler', position, 164, 1)
+    end
+    if not pos then
+        pos = surface.find_non_colliding_position('boiler', position, 200, 1)
+    end
+    if not pos then
+        pos = position
+    end
+
+    if not pos then
+        pos = position
+    end
+
+    Public.set('spot', pos)
+    return pos
 end
 
 local function is_closer(pos1, pos2, pos)
@@ -186,20 +160,14 @@ local function get_spawn_pos()
     local initial_position = Public.get('spawn_position')
     local target = Public.get('target')
 
-    if initial_position.y - target.position.y > 10 then
-        local inverted = Public.get('inverted')
-        if inverted then
-            if random(1, 2) == 1 then
-                initial_position = {x = initial_position.x, y = initial_position.y + 30}
-            else
-                initial_position = {x = initial_position.x, y = initial_position.y + 20}
-            end
-        else
-            if random(1, 2) == 1 then
-                initial_position = {x = initial_position.x, y = initial_position.y - 30}
-            else
-                initial_position = {x = initial_position.x, y = initial_position.y - 20}
-            end
+    local inverted = Public.get('inverted')
+    if inverted then
+        if initial_position.y - target.position.y < -10 then
+            initial_position = {x = initial_position.x, y = initial_position.y + 50}
+        end
+    else
+        if initial_position.y - target.position.y > 10 then
+            initial_position = {x = initial_position.x, y = initial_position.y - 50}
         end
     end
 

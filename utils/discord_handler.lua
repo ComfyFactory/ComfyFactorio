@@ -112,7 +112,7 @@ end
 ---@param message string
 function Public.send_notification_raw(scenario_name, message)
     if not scenario_name then
-        return error('A scenario name is required.', 2)
+        scenario_name = Server.get_server_name() or 'CommandHandler'
     end
 
     if not message then

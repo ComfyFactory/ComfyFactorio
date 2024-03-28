@@ -1,7 +1,7 @@
 local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Gui = require 'utils.gui'
-local Token = require 'utils.token'
+local Task = require 'utils.task_token'
 
 local module_name = Gui.uid_name()
 
@@ -18,6 +18,18 @@ Global.register(
     map_info,
     function(tbl)
         map_info = tbl
+    end
+)
+
+local call_active_tab_token =
+    Task.register(
+    function(event)
+        local player_index = event.player_index
+        local player = game.get_player(player_index)
+        if not player or not player.valid then
+            return
+        end
+        Gui.call_existing_tab(player, 'Map Info')
     end
 )
 
@@ -38,6 +50,10 @@ local function create_map_intro(data)
     local line = t.add {type = 'line'}
     line.style.top_margin = 4
     line.style.bottom_margin = 4
+
+    if not map_info.localised_category then
+        return
+    end
 
     local caption = map_info.main_caption or {map_info.localised_category .. '.map_info_main_caption'}
     local sub_caption = map_info.sub_caption or {map_info.localised_category .. '.map_info_sub_caption'}
@@ -86,12 +102,13 @@ local function create_map_intro(data)
     l_3.style.vertical_align = 'center'
 end
 
-local create_map_intro_token = Token.register(create_map_intro)
+local create_map_intro_token = Task.register(create_map_intro)
 
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
     if player.online_time == 0 then
         Gui.call_existing_tab(player, 'Map Info')
+        Task.set_timeout_in_ticks(5, call_active_tab_token, {player_index = player.index})
     end
 end
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)

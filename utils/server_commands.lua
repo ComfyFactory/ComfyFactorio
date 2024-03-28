@@ -18,6 +18,7 @@ function ServerCommands.raise_callback(func_token, data)
 end
 
 ServerCommands.raise_data_set = Server.raise_data_set
+ServerCommands.raise_admins = Server.raise_admins
 ServerCommands.get_tracked_data_sets = Server.get_tracked_data_sets
 
 ServerCommands.raise_scenario_changed = Server.raise_scenario_changed

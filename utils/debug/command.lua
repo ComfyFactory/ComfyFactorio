@@ -1,4 +1,5 @@
 local DebugView = require 'utils.debug.main_view'
+local Server = require 'utils.server'
 
 commands.add_command(
     'debug',
@@ -14,9 +15,13 @@ commands.add_command(
             return
         end
 
-        -- if (player.name ~= 'Gerkiz' and not _DEBUG) then
-        --     return
-        -- end
+        local secs = Server.get_current_time()
+        local admins = Server.get_admins_data()
+
+        if secs and not admins[player.name] then
+            player.print('Only admins can use this command.')
+            return
+        end
 
         DebugView.open_debug(player)
     end

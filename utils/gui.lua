@@ -807,13 +807,14 @@ local function draw_main_frame(player)
         Public.get_main_frame(player).destroy()
     end
 
+    local admins = Server.get_admins_data()
+
     local frame, inside_frame = Public.add_main_frame_with_toolbar(player, 'left', main_frame_name, nil, close_button_name, 'Comfy Factorio')
     local tabbed_pane = inside_frame.add({type = 'tabbed-pane', name = 'tabbed_pane'})
-
     for name, callback in pairs(tabs) do
         if not settings.disabled_tabs[name] then
+            local secs = Server.get_current_time()
             if callback.only_server_sided then
-                local secs = Server.get_current_time()
                 if secs then
                     local tab = tabbed_pane.add({type = 'tab', caption = name, name = callback.name})
                     local name_frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
@@ -821,9 +822,15 @@ local function draw_main_frame(player)
                 end
             elseif callback.admin == true then
                 if player.admin then
-                    local tab = tabbed_pane.add({type = 'tab', caption = name, name = callback.name})
-                    local name_frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
-                    tabbed_pane.add_tab(tab, name_frame)
+                    if not secs then
+                        local tab = tabbed_pane.add({type = 'tab', caption = name, name = callback.name})
+                        local name_frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
+                        tabbed_pane.add_tab(tab, name_frame)
+                    elseif secs and admins[player.name] then
+                        local tab = tabbed_pane.add({type = 'tab', caption = name, name = callback.name})
+                        local name_frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
+                        tabbed_pane.add_tab(tab, name_frame)
+                    end
                 end
             else
                 local tab = tabbed_pane.add({type = 'tab', caption = name, name = callback.name})
