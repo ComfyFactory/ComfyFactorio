@@ -226,13 +226,14 @@ function Public.locomotive_spawn(surface, position, reversed)
     local extra_wagons = Public.stateful.get_stateful('extra_wagons')
 
     if extra_wagons and extra_wagons > 0 then
-        local pos = this.locomotive_cargo.position
+        local pos = this.locomotive.position
         local inc = 7
+
         if reversed then
             local new_position = {x = pos.x, y = pos.y - inc}
 
             for y = pos.y, new_position.y - (6 * extra_wagons), -2 do
-                surface.create_entity({name = 'straight-rail', position = {new_position.x, y}, force = 'player', direction = 0})
+                surface.create_entity({name = 'straight-rail', position = {pos.x, y}, force = 'player', direction = 0})
             end
 
             for _ = 1, extra_wagons do
