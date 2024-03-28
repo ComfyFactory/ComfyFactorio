@@ -1172,6 +1172,12 @@ function Public.get_start_time()
     return start_data.start_time
 end
 
+--- Gets the server's start data. nil if not known.
+-- @return table?
+function Public.get_start_data()
+    return start_data
+end
+
 --- If the player exists bans the player.
 -- Regardless of whether or not the player exists the name is synchronized with other servers
 -- and stored in the database.
