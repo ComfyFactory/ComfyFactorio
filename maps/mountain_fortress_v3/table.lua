@@ -394,12 +394,12 @@ local apply_settings_token =
             else
                 Server.set_data(dataset, dataset_key_dev, stateful_settings)
             end
-            return
+        else
+            for k, v in pairs(settings) do
+                stateful_settings[k] = v
+            end
         end
 
-        for k, v in pairs(settings) do
-            stateful_settings[k] = v
-        end
         Public.init_mtn()
     end
 )
