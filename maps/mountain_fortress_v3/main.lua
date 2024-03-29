@@ -479,18 +479,22 @@ local compare_collapse_and_train = function()
     local gap_between_zones = Public.get('gap_between_zones')
     local adjusted_zones = Public.get('adjusted_zones')
 
-    local distance
     if adjusted_zones.reversed then
-        distance = c_y - t_y >= gap_between_zones.gap
+        local distance = c_y - t_y >= gap_between_zones.gap
+        if not distance then
+            Public.set_difficulty()
+        else
+            Collapse.set_speed(1)
+            Collapse.set_amount(10)
+        end
     else
-        distance = c_y - t_y <= gap_between_zones.gap
-    end
-
-    if distance then
-        Public.set_difficulty()
-    else
-        Collapse.set_speed(1)
-        Collapse.set_amount(10)
+        local distance = c_y - t_y <= gap_between_zones.gap
+        if distance then
+            Public.set_difficulty()
+        else
+            Collapse.set_speed(1)
+            Collapse.set_amount(10)
+        end
     end
 end
 

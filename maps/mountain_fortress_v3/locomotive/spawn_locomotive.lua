@@ -131,8 +131,10 @@ local set_loco_cargo =
 
 function Public.locomotive_spawn(surface, position, reversed)
     local this = Public.get()
+    local extra_wagons = Public.stateful.get_stateful('extra_wagons')
 
     if reversed then
+        position.y = position.y - (6 * extra_wagons)
         for y = -6, 6, 2 do
             surface.create_entity({name = 'straight-rail', position = {position.x, position.y + y}, force = 'player', direction = 0})
         end
@@ -223,46 +225,25 @@ function Public.locomotive_spawn(surface, position, reversed)
         surface = locomotive.surface
     }
 
-    local extra_wagons = Public.stateful.get_stateful('extra_wagons')
-
     if extra_wagons and extra_wagons > 0 then
         local inc = 7
 
-        if reversed then
-            local pos = this.locomotive.position
-            local new_position = {x = pos.x, y = pos.y - inc}
+        local pos = this.locomotive_cargo.position
 
-            for y = pos.y, new_position.y - (6 * extra_wagons), -2 do
-                surface.create_entity({name = 'straight-rail', position = {pos.x, y}, force = 'player', direction = 0})
-            end
+        local new_position = {x = pos.x, y = pos.y + inc}
 
-            for _ = 1, extra_wagons do
-                local new_wagon = surface.create_entity({name = 'cargo-wagon', position = new_position, force = 'player', defines.direction.south})
-                if new_wagon and new_wagon.valid then
-                    new_wagon.minable = false
-                    new_wagon.operable = true
-                    inc = inc + 6
-                    new_position = {x = pos.x, y = pos.y - inc}
-                    ICW.register_wagon(new_wagon)
-                end
-            end
-        else
-            local pos = this.locomotive_cargo.position
-            local new_position = {x = pos.x, y = pos.y + inc}
+        for y = pos.y, new_position.y + (6 * extra_wagons), 2 do
+            surface.create_entity({name = 'straight-rail', position = {new_position.x, y}, force = 'player', direction = 0})
+        end
 
-            for y = pos.y, new_position.y + (6 * extra_wagons), 2 do
-                surface.create_entity({name = 'straight-rail', position = {new_position.x, y}, force = 'player', direction = 0})
-            end
-
-            for _ = 1, extra_wagons do
-                local new_wagon = surface.create_entity({name = 'cargo-wagon', position = new_position, force = 'player', defines.direction.north})
-                if new_wagon and new_wagon.valid then
-                    new_wagon.minable = false
-                    new_wagon.operable = true
-                    inc = inc + 7
-                    new_position = {x = pos.x, y = pos.y + inc}
-                    ICW.register_wagon(new_wagon)
-                end
+        for _ = 1, extra_wagons do
+            local new_wagon = surface.create_entity({name = 'cargo-wagon', position = new_position, force = 'player', defines.direction.north})
+            if new_wagon and new_wagon.valid then
+                new_wagon.minable = false
+                new_wagon.operable = true
+                inc = inc + 7
+                new_position = {x = pos.x, y = pos.y + inc}
+                ICW.register_wagon(new_wagon)
             end
         end
     end

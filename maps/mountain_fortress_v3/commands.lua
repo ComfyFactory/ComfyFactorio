@@ -349,11 +349,13 @@ commands.add_command(
             end
             if Collapse.get_disable_state() then
                 Collapse.disable_collapse(false)
+                Collapse.start_now(true)
                 Discord.send_notification_raw(scenario_name, player.name .. ' has enabled collapse.')
                 game.print(mapkeeper .. ' ' .. player.name .. ', has enabled collapse!', {r = 0.98, g = 0.66, b = 0.22})
                 log(player.name .. ', has enabled collapse!')
             else
                 Collapse.disable_collapse(true)
+                Collapse.start_now(false)
                 Discord.send_notification_raw(scenario_name, player.name .. ' has disabled collapse.')
                 game.print(mapkeeper .. ' ' .. player.name .. ', has disabled collapse!', {r = 0.98, g = 0.66, b = 0.22})
                 log(player.name .. ', has disabled collapse!')
@@ -361,10 +363,12 @@ commands.add_command(
         else
             if Collapse.get_disable_state() then
                 Collapse.disable_collapse(false)
+                Collapse.start_now(true)
                 Discord.send_notification_raw(scenario_name, 'Server has enabled collapse.')
                 log('Collapse has started.')
             else
                 Collapse.disable_collapse(true)
+                Collapse.start_now(false)
                 Discord.send_notification_raw(scenario_name, 'Server has disabled collapse.')
                 log('Collapse has stopped.')
             end
