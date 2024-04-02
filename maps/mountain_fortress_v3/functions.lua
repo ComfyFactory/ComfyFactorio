@@ -865,16 +865,6 @@ remove_boost_movement_speed_on_respawn =
             data.tries = 0
         end
 
-        if not player.character or not player.character.valid then
-            data.tries = data.tries + 1
-            if data.tries > 10 then
-                return
-            end
-
-            Task.set_timeout_in_ticks(10, remove_boost_movement_speed_on_respawn, {player = player, tries = data.tries})
-            return
-        end
-
         Modifiers.update_single_modifier(player, 'character_running_speed_modifier', 'v3_move_boost')
         Modifiers.update_player_modifiers(player)
 
@@ -1336,6 +1326,8 @@ function Public.on_player_joined_game(event)
     Public.set_difficulty()
 
     ICW_Func.is_minimap_valid(player, surface)
+
+    Modifiers.update_player_modifiers(player)
 
     if player.online_time < 1 then
         if not players[player.index] then

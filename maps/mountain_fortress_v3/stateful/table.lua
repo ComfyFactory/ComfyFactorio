@@ -1095,6 +1095,8 @@ local apply_settings_token =
         local current_season = Public.get('current_season')
         rendering.set_text(current_season, 'Season: ' .. this.season)
 
+        this.objectives = {}
+
         Public.reset_stateful()
         Public.increase_enemy_damage_and_health()
     end
@@ -1540,8 +1542,6 @@ end
 function Public.enable(state)
     this.enabled = state or false
 end
-
-Event.on_init(Public.reset_stateful)
 
 Event.add(
     Server.events.on_server_started,
