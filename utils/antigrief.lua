@@ -714,7 +714,12 @@ local function on_console_command(event)
         return
     end
 
-    if not event.command == 'whisper' then
+    local valid_commands = {
+        ['r'] = true,
+        ['whisper'] = true
+    }
+
+    if not valid_commands[event.command] then
         return
     end
 
@@ -730,14 +735,26 @@ local function on_console_command(event)
     local parameters = event.parameters
 
     local name, message = parameters:match('(%a+)%s(.*)')
-    if not message then
+    if not message and event.command == 'whisper' then
+        return
+    end
+
+    local chat_message
+
+    if event.command == 'r' then
+        chat_message = ' replied: "' .. parameters .. '"'
+    else
+        chat_message = ' whispered: "' .. name .. ' ' .. message .. '"'
+    end
+
+    if chat_message:len() == 0 then
         return
     end
 
     local t = abs(floor((game.tick) / 60))
     local formatted = FancyTime.short_fancy_time(t)
     local str = '[' .. formatted .. '] '
-    str = str .. player.name .. ' whispered ' .. name .. ': ' .. message
+    str = str .. player.name .. chat_message
     increment(this.whisper_history, str)
     Server.log_antigrief_data('whisper', str)
 end

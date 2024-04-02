@@ -104,6 +104,11 @@ local antigrief_tag = '[ANTIGRIEF-LOG]'
 Public.raw_print = raw_print
 
 local function output_data(primary, secondary)
+    local secs = server_time.secs
+    if secs == nil then
+        return false
+    end
+
     if start_data and start_data.output then
         local write = game.write_file
         write(start_data.output, primary .. (secondary or '') .. newline, true, 0)
