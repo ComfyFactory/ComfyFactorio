@@ -169,7 +169,7 @@ local create_wave_gui = function(player)
         player.gui.top['crab_defender_waves'].destroy()
     end
     local this = FDT.get()
-    local frame = player.gui.top.add({type = 'frame', name = 'crab_defender_waves', tooltip = 'Click to show map info'})
+    local frame = player.gui.top.add({type = 'frame', name = 'crab_defender_waves'})
     frame.style.maximal_height = 38
 
     local wave_count = 0
@@ -188,10 +188,12 @@ local create_wave_gui = function(player)
 
         local next_level_progress = game.tick % this.wave_interval / this.wave_interval
 
-        local progressbar = frame.add({type = 'progressbar', value = next_level_progress})
-        progressbar.style.minimal_width = 120
-        progressbar.style.maximal_width = 120
-        progressbar.style.top_padding = 10
+        local progressbar = frame.add({type = 'progressbar', name = 'progressbar', value = next_level_progress})
+        progressbar.style = 'achievement_progressbar'
+        progressbar.style.minimal_width = 96
+        progressbar.style.maximal_width = 96
+        progressbar.style.padding = -1
+        progressbar.style.top_padding = 1
     else
         local time_remaining = math.floor(((this.wave_grace_period - (game.tick % this.wave_grace_period)) / 60) / 60)
         if time_remaining <= 0 then
