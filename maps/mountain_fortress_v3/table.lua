@@ -382,6 +382,13 @@ function Public.save_stateful_settings()
     end
 end
 
+local init_mtn_token =
+    Task.register(
+    function()
+        Public.init_mtn()
+    end
+)
+
 local apply_settings_token =
     Task.register(
     function(data)
@@ -400,7 +407,9 @@ local apply_settings_token =
             end
         end
 
-        Public.init_mtn()
+        Public.stateful_on_server_started()
+
+        Task.set_timeout_in_ticks(2, init_mtn_token)
     end
 )
 

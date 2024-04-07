@@ -857,6 +857,9 @@ local function update_raw()
     end
 
     local stateful = Public.get_stateful()
+    if not stateful or not stateful.objectives then
+        return
+    end
     local breached_wall = Public.get('breached_wall')
     if not breached_wall then
         return

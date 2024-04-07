@@ -1384,7 +1384,7 @@ function Public.loco_died(invalid_locomotive)
         show_mvps(player)
     end
 
-    if not locomotive.valid then
+    if not locomotive or not locomotive.valid then
         local this = Public.get()
 
         local data = {}

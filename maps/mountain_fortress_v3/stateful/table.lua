@@ -1093,7 +1093,9 @@ local apply_settings_token =
         this.season = settings.season
 
         local current_season = Public.get('current_season')
-        rendering.set_text(current_season, 'Season: ' .. this.season)
+        if current_season then
+            rendering.set_text(current_season, 'Season: ' .. this.season)
+        end
 
         this.objectives = {}
 
@@ -1541,6 +1543,23 @@ end
 
 function Public.enable(state)
     this.enabled = state or false
+end
+
+function Public.stateful_on_server_started()
+    if this.settings_applied then
+        return
+    end
+
+    local server_name_matches = Server.check_server_name('Mtn Fortress')
+
+    this.settings_applied = true
+
+    if server_name_matches then
+        Server.try_get_data(dataset, dataset_key, apply_settings_token)
+    else
+        Server.try_get_data(dataset, dataset_key_dev, apply_settings_token)
+        this.test_mode = true
+    end
 end
 
 Event.add(

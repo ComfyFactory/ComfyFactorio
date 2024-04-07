@@ -133,6 +133,10 @@ function Public.locomotive_spawn(surface, position, reversed)
     local this = Public.get()
     local extra_wagons = Public.stateful.get_stateful('extra_wagons')
 
+    if not extra_wagons then
+        extra_wagons = 0
+    end
+
     if reversed then
         position.y = position.y - (6 * extra_wagons)
         for y = -6, 6, 2 do
