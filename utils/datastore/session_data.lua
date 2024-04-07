@@ -309,6 +309,11 @@ end
 ---@param player LuaPlayer
 ---@return table|boolean
 function Public.get_session_player(player)
+    local secs = Server.get_current_time()
+    if secs == nil or secs == false then
+        return false
+    end
+
     return session and player and player.valid and session[player.name] or false
 end
 

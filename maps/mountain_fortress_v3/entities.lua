@@ -989,14 +989,33 @@ local function on_player_repaired_entity(event)
     end
     local entity = event.entity
     local carriages_numbers = Public.get('carriages_numbers')
+    local tick = game.tick
 
     if carriages_numbers[entity.unit_number] then
         local player = game.get_player(event.player_index)
-        local repair_speed = RPG.get_magicka(player)
+        local rpg_t = RPG.get_value_from_player(player.index)
+        local repair_speed
+
+        if not rpg_t.mtn_repair then
+            rpg_t.mtn_repair = 0
+        end
+
+        if rpg_t.mtn_repair > tick then
+            repair_speed = 1
+        else
+            repair_speed = RPG.get_magicka(player)
+        end
+
         if repair_speed <= 1 then
+            if rpg_t.mtn_repair < tick then
+                rpg_t.mtn_repair = tick + 10
+            end
             set_train_final_health(-1, true)
             return
         else
+            if rpg_t.mtn_repair < tick then
+                rpg_t.mtn_repair = tick + 10
+            end
             set_train_final_health(-repair_speed, true)
             return
         end

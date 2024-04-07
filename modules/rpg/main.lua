@@ -575,6 +575,11 @@ local function on_player_repaired_entity(event)
         return
     end
 
+    local rpg_t = Public.get_value_from_player(player.index)
+    if rpg_t.repaired_entity_delay > game.tick then
+        return
+    end
+
     Public.gain_xp(player, 0.05)
     Public.reward_mana(player, 0.2)
 
@@ -582,6 +587,9 @@ local function on_player_repaired_entity(event)
     if repair_speed <= 0 then
         return
     end
+
+    rpg_t.repaired_entity_delay = game.tick + 20
+
     entity.health = entity.health + repair_speed
 end
 

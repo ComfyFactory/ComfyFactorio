@@ -1088,7 +1088,7 @@ end
 
 function Public.get_magicka(player)
     local rpg_t = Public.get_value_from_player(player.index)
-    return (rpg_t.magicka - 10) * 0.10
+    return (rpg_t.magicka - 10) * 0.080
 end
 
 local show_cooldown
@@ -1230,6 +1230,7 @@ function Public.rpg_reset_player(player, one_time_reset)
                 capped = false,
                 bonus = rpg_extra.breached_walls or 1,
                 rotated_entity_delay = 0,
+                repaired_entity_delay = 0,
                 last_mined_entity_position = {x = 0, y = 0},
                 last_spell_cast = {x = 0, y = 0},
                 show_bars = false,
@@ -1277,6 +1278,7 @@ function Public.rpg_reset_player(player, one_time_reset)
                 total = 0,
                 bonus = 1,
                 rotated_entity_delay = 0,
+                repaired_entity_delay = 0,
                 last_mined_entity_position = {x = 0, y = 0},
                 last_spell_cast = {x = 0, y = 0},
                 show_bars = false,
