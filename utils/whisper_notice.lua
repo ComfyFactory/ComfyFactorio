@@ -118,6 +118,11 @@ local function on_console_command(event)
         return
     end
 
+    local secs = Server.get_current_time()
+    if not secs then
+        return
+    end
+
     local player = game.get_player(event.player_index)
 
     local gui_data = get_player_data(player)
