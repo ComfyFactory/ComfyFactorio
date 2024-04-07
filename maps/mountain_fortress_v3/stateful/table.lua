@@ -1101,6 +1101,7 @@ local apply_settings_token =
 
         Public.reset_stateful()
         Public.increase_enemy_damage_and_health()
+        Public.init_mtn()
     end
 )
 
