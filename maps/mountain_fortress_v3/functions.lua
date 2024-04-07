@@ -1395,7 +1395,16 @@ function Public.on_player_joined_game(event)
     if not locomotive or not locomotive.valid then
         return
     end
-    if player.position.y > locomotive.position.y then
+
+    local adjusted_zones = Public.get('adjusted_zones')
+    local distance_from_train
+    if adjusted_zones.reversed then
+        distance_from_train = player.position.y < locomotive.position.y
+    else
+        distance_from_train = player.position.y > locomotive.position.y
+    end
+
+    if distance_from_train then
         local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
         if pos then
             player.teleport(pos, surface)
