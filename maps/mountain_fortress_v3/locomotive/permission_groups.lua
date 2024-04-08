@@ -1,13 +1,18 @@
 local Public = require 'maps.mountain_fortress_v3.table'
 local Session = require 'utils.datastore.session_data'
-local Jailed = require 'utils.datastore.jail_data'
 
 local Antigrief = require 'utils.antigrief'
 
 local required_playtime = 5184000 -- 24 hours
 
+local valid_groups = {
+    ['default'] = true,
+    ['limited'] = true,
+    ['main_surface'] = true,
+    ['near_locomotive'] = true
+}
+
 function Public.add_player_to_permission_group(player, group, forced)
-    local jailed = Jailed.get_jailed_table()
     local enable_permission_group_disconnect = Public.get('disconnect_wagon')
     local session = Session.get_session_table()
     local AG = Antigrief.get()
@@ -15,13 +20,17 @@ function Public.add_player_to_permission_group(player, group, forced)
         return
     end
 
-    local allow_decon = Public.get('allow_decon')
-    local allow_decon_main_surface = Public.get('allow_decon_main_surface')
-
     local default_group = game.permissions.get_group('Default')
     if not default_group then
         return
     end
+
+    if not valid_groups[string.lower(player.permission_group.name)] then
+        return
+    end
+
+    local allow_decon = Public.get('allow_decon')
+    local allow_decon_main_surface = Public.get('allow_decon_main_surface')
 
     default_group.set_allows_action(defines.input_action.activate_cut, false)
     if allow_decon_main_surface then
@@ -113,14 +122,6 @@ function Public.add_player_to_permission_group(player, group, forced)
         return
     end
 
-    local gulag = game.permissions.get_group('gulag')
-    local tbl = gulag and gulag.players
-    for i = 1, #tbl do
-        if tbl[i].index == player.index then
-            return
-        end
-    end
-
     if forced then
         default_group.add_player(player)
         return
@@ -129,10 +130,6 @@ function Public.add_player_to_permission_group(player, group, forced)
     local playtime = player.online_time
     if session[player.name] then
         playtime = player.online_time + session[player.name]
-    end
-
-    if jailed[player.name] then
-        return
     end
 
     local limited_group = game.permissions.get_group('limited')

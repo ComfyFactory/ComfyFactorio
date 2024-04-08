@@ -160,71 +160,67 @@ local function hurt_players_outside_of_aura()
 
     local upgrades = Public.get('upgrades')
 
-    local players = game.connected_players
-    for i = 1, #players do
-        local player = players[i]
-        if not player or not player.valid then
-            goto pre_exit
-        end
-        local map_name = 'mtn_v3'
-
-        if sub(player.surface.name, 0, #map_name) == map_name then
-            local position = player.position
-            local inside = ((position.x - loco.x) ^ 2 + (position.y - loco.y) ^ 2) < upgrades.locomotive_aura_radius ^ 2
-            if not inside then
-                local entity = player.character
-                if entity and entity.valid then
-                    death_effects(player)
-                    player.surface.create_entity({name = 'fire-flame', position = position})
-                    if random(1, 3) == 1 then
-                        player.surface.create_entity({name = 'medium-scorchmark', position = position, force = 'neutral'})
-                    end
-                    local max_health = floor(player.character.prototype.max_health + player.character_health_bonus + player.force.character_health_bonus)
-                    local vehicle = player.vehicle
-                    if vehicle and vehicle.valid and non_valid_vehicles[vehicle.type] then
-                        player.driving = false
-                    end
-                    if death_mode then
-                        if entity.name == 'character' then
-                            game.print(player.name .. messages[random(1, #messages)], {r = 200, g = 0, b = 0})
+    local map_name = 'mtn_v3'
+    Core.iter_connected_players(
+        function(player)
+            if sub(player.surface.name, 0, #map_name) == map_name then
+                local position = player.position
+                local inside = ((position.x - loco.x) ^ 2 + (position.y - loco.y) ^ 2) < upgrades.locomotive_aura_radius ^ 2
+                if not inside then
+                    local entity = player.character
+                    if entity and entity.valid then
+                        death_effects(player)
+                        player.surface.create_entity({name = 'fire-flame', position = position})
+                        if random(1, 3) == 1 then
+                            player.surface.create_entity({name = 'medium-scorchmark', position = position, force = 'neutral'})
                         end
-                        if entity.valid then
-                            entity.die()
+                        local max_health = floor(player.character.prototype.max_health + player.character_health_bonus + player.force.character_health_bonus)
+                        local vehicle = player.vehicle
+                        if vehicle and vehicle.valid and non_valid_vehicles[vehicle.type] then
+                            player.driving = false
                         end
-                    else
-                        local armor_inventory = player.get_inventory(defines.inventory.character_armor)
-                        if not armor_inventory.valid then
-                            goto pre_exit
-                        end
-                        local armor = armor_inventory[1]
-                        if not armor.valid_for_read then
-                            goto pre_exit
-                        end
-                        local grid = armor.grid
-                        if not grid or not grid.valid then
-                            goto pre_exit
-                        end
-                        local equip = grid.equipment
-                        for _, piece in pairs(equip) do
-                            if piece.valid then
-                                piece.energy = 0
+                        if death_mode then
+                            if entity.name == 'character' then
+                                game.print(player.name .. messages[random(1, #messages)], {r = 200, g = 0, b = 0})
                             end
-                        end
-                        local damage = (max_health / 18)
-                        if entity.valid then
-                            if entity.health - damage <= 0 then
-                                if entity.name == 'character' then
-                                    game.print(player.name .. messages[random(1, #messages)], {r = 200, g = 0, b = 0})
+                            if entity.valid then
+                                entity.die()
+                            end
+                        else
+                            local armor_inventory = player.get_inventory(defines.inventory.character_armor)
+                            if not armor_inventory.valid then
+                                goto pre_exit
+                            end
+                            local armor = armor_inventory[1]
+                            if not armor.valid_for_read then
+                                goto pre_exit
+                            end
+                            local grid = armor.grid
+                            if not grid or not grid.valid then
+                                goto pre_exit
+                            end
+                            local equip = grid.equipment
+                            for _, piece in pairs(equip) do
+                                if piece.valid then
+                                    piece.energy = 0
                                 end
                             end
+                            local damage = (max_health / 18)
+                            if entity.valid then
+                                if entity.health - damage <= 0 then
+                                    if entity.name == 'character' then
+                                        game.print(player.name .. messages[random(1, #messages)], {r = 200, g = 0, b = 0})
+                                    end
+                                end
+                            end
+                            entity.damage(damage, 'enemy')
                         end
-                        entity.damage(damage, 'enemy')
                     end
                 end
             end
+            ::pre_exit::
         end
-        ::pre_exit::
-    end
+    )
 end
 local function give_passive_xp(data)
     local xp_floating_text_color = {r = 188, g = 201, b = 63}

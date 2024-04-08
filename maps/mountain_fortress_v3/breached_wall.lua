@@ -284,7 +284,6 @@ local compare_player_and_train = function(player, entity)
 
     local c_y = position.y
     local t_y = gap_between_zones.highest_pos.y
-    local spidertron_warning_position = gap_between_zones.neg_gap + 50
 
     local adjusted_zones = Public.get('adjusted_zones')
 
@@ -292,11 +291,13 @@ local compare_player_and_train = function(player, entity)
     local collapse_distance
 
     if adjusted_zones.reversed then
+        local spidertron_warning_position = abs(gap_between_zones.neg_gap) + 50
         locomotive_distance = c_y - t_y >= spidertron_warning_position
-        collapse_distance = c_y - t_y >= gap_between_zones.neg_gap
+        collapse_distance = c_y - t_y >= spidertron_warning_position
     else
+        local spidertron_warning_position = gap_between_zones.neg_gap + 50
         locomotive_distance = c_y - t_y <= spidertron_warning_position
-        collapse_distance = c_y - t_y <= gap_between_zones.neg_gap
+        collapse_distance = c_y - t_y <= spidertron_warning_position
     end
 
     if locomotive_distance then
