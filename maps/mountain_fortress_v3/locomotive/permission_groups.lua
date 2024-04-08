@@ -9,7 +9,8 @@ local valid_groups = {
     ['default'] = true,
     ['limited'] = true,
     ['main_surface'] = true,
-    ['near_locomotive'] = true
+    ['near_locomotive'] = true,
+    ['not_trusted'] = true
 }
 
 function Public.add_player_to_permission_group(player, group, forced)
