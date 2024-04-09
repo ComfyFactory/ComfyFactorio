@@ -3,9 +3,10 @@
 
 local Event = require 'utils.event'
 local Global = require 'utils.global'
-
+local Public = {}
 local this = {
     fish_in_space = 0,
+    fish_autolaunch = true,
     catplanet_goals = {
         {goal = 0, rank = false, achieved = true},
         {
@@ -162,9 +163,11 @@ local function fish_in_space_gui(player)
         progress = 1
     end
     local progressbar = frame.add({type = 'progressbar', value = progress})
-    progressbar.style.minimal_width = 100
-    progressbar.style.maximal_width = 100
-    progressbar.style.top_padding = 10
+    progressbar.style = 'achievement_progressbar'
+    progressbar.style.minimal_width = 96
+    progressbar.style.maximal_width = 96
+    progressbar.style.padding = -1
+    progressbar.style.top_padding = 1
 
     label = frame.add({type = 'label', caption = this.fish_in_space .. '/' .. tostring(this.catplanet_goals[i + 1].goal)})
     label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
@@ -253,6 +256,47 @@ local function on_gui_click(event)
     end
 end
 
+local function tick()
+    if not this.fish_autolaunch then
+        return
+    end
+    if game.tick % 6000 == 0 then
+        local found_silos = {}
+        for _, surface in pairs(game.surfaces) do
+            local objects = surface.find_entities_filtered {name = 'rocket-silo'}
+            for _, object in pairs(objects) do
+                table.insert(found_silos, object)
+            end
+        end
+        this.rocket_silos = found_silos
+    end
+
+    if this.rocket_silos and next(this.rocket_silos) then
+        for index, silo in pairs(this.rocket_silos) do
+            if silo.valid and silo.name == 'rocket-silo' then
+                local rocket_inventory = silo.get_inventory(defines.inventory.rocket_silo_rocket)
+                local fish
+                if rocket_inventory and rocket_inventory.valid then
+                    fish = rocket_inventory[1]
+                end
+                if fish and fish.valid_for_read and fish.count == 100 and fish.name == 'raw-fish' then
+                    silo.launch_rocket()
+                end
+            else
+                this.rocket_silos[index] = nil
+            end
+        end
+    end
+end
+
+function Public.reset()
+    this.rocket_silos = nil
+    this.fish_in_space = 0
+end
+
+Event.on_nth_tick(60, tick)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_rocket_launched, on_rocket_launched)
+
+return Public

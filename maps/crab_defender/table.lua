@@ -78,10 +78,24 @@ function Public.reset_table()
     }
     this.shotgun_shell_damage_modifier_old = {}
     this.flame_boots = {}
+    this.unit_groups = {}
+    this.max_biters = 2000
+    this.wave_limit = 2000
 end
 
 function Public.get(key)
     if key then
+        return this[key]
+    else
+        return this
+    end
+end
+
+function Public.set(key, value)
+    if key and (value or value == false) then
+        this[key] = value
+        return this[key]
+    elseif key then
         return this[key]
     else
         return this
