@@ -40,7 +40,7 @@ local function get_trusted_system(player)
             players = {
                 [player.name] = true
             },
-            allow_anyone = 'right',
+            allow_anyone = 'left',
             auto_upgrade = 'left'
         }
     end
@@ -1316,7 +1316,7 @@ function Public.item_transfer()
     for _, car in pairs(cars) do
         if validate_entity(car.entity) then
             if car.transfer_entities then
-                for k, e in pairs(car.transfer_entities) do
+                for _, e in pairs(car.transfer_entities) do
                     if validate_entity(e) then
                         transfer_functions[e.name](car, e)
                     end
@@ -1328,7 +1328,7 @@ end
 
 function Public.on_player_died(player)
     local cars = IC.get('cars')
-    for k, car in pairs(cars) do
+    for _, car in pairs(cars) do
         if car.owner == player.index then
             local entity = car.entity
             if entity and entity.valid then
@@ -1340,7 +1340,7 @@ end
 
 function Public.on_player_respawned(player)
     local cars = IC.get('cars')
-    for k, car in pairs(cars) do
+    for _, car in pairs(cars) do
         if car.owner == player.index then
             local entity = car.entity
             if entity and entity.valid then

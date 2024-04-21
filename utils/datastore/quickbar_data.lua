@@ -5,6 +5,7 @@ local Color = require 'utils.color_presets'
 local Server = require 'utils.server'
 local Event = require 'utils.event'
 local Global = require 'utils.global'
+local Core = require 'utils.core'
 
 local quickbar_dataset = 'quickbar'
 local quickbar_dataset_modded = 'quickbar_modded'
@@ -287,11 +288,11 @@ Event.add(
     function(event)
         local research = event.research
         if research.name == 'logistic-robotics' then
-            local players = game.connected_players
-            for i = 1, #players do
-                local player = players[i]
-                apply_stash(player)
-            end
+            Core.iter_connected_players(
+                function(player)
+                    apply_stash(player)
+                end
+            )
         end
     end
 )

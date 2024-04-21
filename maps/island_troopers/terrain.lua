@@ -1,6 +1,9 @@
 --luacheck: ignore
 local math_random = math.random
 local simplex_noise = require 'utils.simplex_noise'.d2
+local NoiseVectors = require 'utils.functions.noise_vector_path'
+local Enemies = require 'maps.island_troopers.enemies'
+local ShoppingChests = require 'modules.shopping_chests'
 
 local rock_raffle = {'sand-rock-big', 'sand-rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-huge'}
 
@@ -26,7 +29,7 @@ local function draw_island_tiles(surface, position, radius)
             local p = {x = x + position.x, y = y + position.y}
             if surface.get_tile(p).name == 'deepwater' then
                 local distance = math.sqrt(x ^ 2 + y ^ 2)
-                local tile = false
+                local tile
                 local noise_radius = island_noise_radius(p)
                 if distance < noise_radius - radius * 0.15 then
                     tile = {name = game.surfaces['island_tiles'].get_tile(x, y).name, position = p}
@@ -154,7 +157,7 @@ function draw_the_island()
         --end
     end
 
-    add_enemies(surface, tiles)
+    Enemies.add_enemies(surface, tiles)
     global.gamestate = 4
 end
 
@@ -190,32 +193,12 @@ function draw_path_to_next_stage()
         position = global.path_tiles[#global.path_tiles].position
     end
     --game.print(get_vector()[1] .. " " .. get_vector()[2])
-    global.path_tiles =
-        noise_vector_tile_path(
-        surface,
-        path_tile_names[math_random(1, #path_tile_names)],
-        position,
-        get_vector(),
-        global.stages[global.current_stage].path_length,
-        math.random(2, 4),
-        draw_path_tile_whitelist
-    )
+    global.path_tiles = NoiseVectors.noise_vector_tile_path(surface, path_tile_names[math_random(1, #path_tile_names)], position, get_vector(), global.stages[global.current_stage].path_length, math.random(2, 4), draw_path_tile_whitelist)
     add_path_decoratives(surface, global.path_tiles)
 
     if global.current_stage ~= #global.stages and global.current_stage > 2 then
         if math_random(1, 3) == 1 then
-            add_path_decoratives(
-                surface,
-                noise_vector_tile_path(
-                    surface,
-                    path_tile_names[math_random(1, #path_tile_names - 1)],
-                    position,
-                    {0, 1},
-                    global.stages[#global.stages].path_length,
-                    math.random(2, 4),
-                    draw_path_tile_whitelist
-                )
-            )
+            add_path_decoratives(surface, NoiseVectors.noise_vector_tile_path(surface, path_tile_names[math_random(1, #path_tile_names - 1)], position, {0, 1}, global.stages[#global.stages].path_length, math.random(2, 4), draw_path_tile_whitelist))
         end
     end
 
@@ -245,7 +228,7 @@ local function get_level_tiles(surface)
             end
         end
     end
-    for k, tile_row in pairs(global.level_tiles) do
+    for k, _ in pairs(global.level_tiles) do
         table.shuffle_table(global.level_tiles[k])
     end
 end
@@ -264,7 +247,7 @@ local function create_particles(surface, position)
     local m = math_random(10, 30)
     local m2 = m * 0.005
     for i = 1, 4, 1 do
-        surface.create_entity(
+        surface.create_particle(
             {
                 name = particle,
                 position = position,
@@ -328,10 +311,10 @@ local function process_tile(surface, position)
         if math.random(1, 4096) == 1 then
             if math.random(1, 4) == 1 then
                 surface.set_tiles({{name = 'sand-1', position = position}}, true)
-                create_dump_chest(surface, position, false)
+                ShoppingChests.create_dump_chest(surface, position, false)
             else
                 surface.set_tiles({{name = 'sand-1', position = position}}, true)
-                create_shopping_chest(surface, position, false)
+                ShoppingChests.create_shopping_chest(surface, position, false)
             end
         end
         return
@@ -351,10 +334,10 @@ local function process_tile(surface, position)
 
     if position.y == 6 then
         if position.x == -16 then
-            create_shopping_chest(surface, position, false)
+            ShoppingChests.create_shopping_chest(surface, position, false)
         end
         if position.x == 16 then
-            create_dump_chest(surface, position, false)
+            ShoppingChests.create_dump_chest(surface, position, false)
         end
     end
 

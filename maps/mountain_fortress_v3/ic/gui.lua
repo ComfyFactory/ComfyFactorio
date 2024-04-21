@@ -48,7 +48,7 @@ local function create_player_table(player)
             players = {
                 [player.name] = true
             },
-            allow_anyone = 'right',
+            allow_anyone = 'left',
             auto_upgrade = 'left'
         }
     end

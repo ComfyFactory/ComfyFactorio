@@ -430,6 +430,16 @@ local fortress_functions = {
             adjusted_zones.disable_terrain = true
             get_actor(event, '[TerrainGen]', 'has disabled terrain gen.', true)
         end
+    end,
+    ['toggle_trusted_collapse'] = function(event)
+        local WPT = is_loaded('maps.mountain_fortress_v3.table')
+        if event.element.switch_state == 'left' then
+            WPT.set('block_non_trusted_trigger_collapse', true)
+            get_actor(event, '[Collapse]', 'has enabled that non-trusted players can trigger collapse.', true)
+        else
+            WPT.set('block_non_trusted_trigger_collapse', false)
+            get_actor(event, '[Collapse]', 'has disabled that non-trusted players can trigger collapse.', true)
+        end
     end
 }
 
@@ -790,10 +800,18 @@ local function build_config_gui(data)
             add_switch(scroll_pane, switch_state, 'christmas_mode', 'Wintery Mode', 'On = Enables wintery mode.\nOff = Disables wintery mode.')
             scroll_pane.add({type = 'line'})
 
+            switch_state = 'right'
             if not Module.adjusted_zones.disable_terrain then
                 switch_state = 'left'
             end
             add_switch(scroll_pane, switch_state, 'disable_terrain', 'Disable Terrain', 'On = Enable terrain gen.\nOff = Disables terrain gen.')
+            scroll_pane.add({type = 'line'})
+
+            switch_state = 'right'
+            if Module.block_non_trusted_trigger_collapse then
+                switch_state = 'left'
+            end
+            add_switch(scroll_pane, switch_state, 'toggle_trusted_collapse', 'Non-trusted Collapse', 'On = Allow non-trusted to trigger collapse.\nOff = Disallow non-trusted to trigger collapse.')
             scroll_pane.add({type = 'line'})
         end
 

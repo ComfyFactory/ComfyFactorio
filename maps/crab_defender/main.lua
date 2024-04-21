@@ -541,9 +541,6 @@ local send_unit_group = function(unit_group)
             commands = commands
         }
     )
-    if unit_group and unit_group.valid then
-        unit_group.start_moving()
-    end
 end
 
 local spawn_boss_units = function(surface)
