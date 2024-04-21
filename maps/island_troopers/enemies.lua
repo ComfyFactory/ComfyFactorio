@@ -1,5 +1,6 @@
 --luacheck: ignore
 local Difficulty = require 'modules.difficulty_vote'
+local Public = {}
 
 local difficulties_votes = {
     [1] = {amount_modifier = 0.52, strength_modifier = 0.40, boss_modifier = 0.7},
@@ -104,7 +105,7 @@ local function is_boss_stage()
     end
 end
 
-local function add_enemies(surface, tiles)
+function Public.add_enemies(surface, tiles)
     local Diff = Difficulty.get()
     table.shuffle_table(tiles)
 
@@ -191,3 +192,5 @@ local function add_enemies(surface, tiles)
 
     update_stage_gui()
 end
+
+return Public
