@@ -1,3 +1,4 @@
+--luacheck: ignore
 --unique room contributions from N355A and mewmew
 
 local unique_rooms = {
