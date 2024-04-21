@@ -602,7 +602,7 @@ local function get_player_data(player)
     if players[player.index] then
         return player_data
     end
-    local fallback = WPT.get('active_surface_index') 
+    local fallback = WPT.get('active_surface_index')
     if not fallback then
         fallback = 1
     end

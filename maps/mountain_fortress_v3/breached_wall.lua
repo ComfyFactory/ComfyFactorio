@@ -204,7 +204,6 @@ local check_distance_between_player_and_locomotive = function(player)
     end
 
     if collapse_distance then
-        local source = {position.x, c_y + gap_between_locomotive.neg_gap_collapse + 4}
         player.teleport(source, surface)
 
         player.print(({'breached_wall.hinder_collapse'}), Color.warning)
