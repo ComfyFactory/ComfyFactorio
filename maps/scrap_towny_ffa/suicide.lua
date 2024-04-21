@@ -19,34 +19,32 @@ Event.add(defines.events.on_player_died, on_player_died)
 
 local suicide_handler =
     Scheduler.set(
-    function(data)
-        for i = 1, #data do
-            local this = ScenarioTable.get_table()
-            local player_index = data[i].player_index
-            local player = game.get_player(player_index)
-            if not player or not player.valid or not player.character then
-                return
-            end
+    function(event)
+        local this = ScenarioTable.get_table()
+        local player_index = event.player_index
+        local player = game.get_player(player_index)
+        if not player or not player.valid or not player.character then
+            return
+        end
 
-            if not this.suicides[player.index] then
-                -- the suicide was cancelled (the character died)
-                return
-            end
+        if not this.suicides[player.index] then
+            -- the suicide was cancelled (the character died)
+            return
+        end
 
-            local minutes_remaining = this.suicides[player.index].minutes_remaining
+        local minutes_remaining = this.suicides[player.index].minutes_remaining
 
-            if minutes_remaining <= 0 then
-                player.character.die()
-                this.suicides[player.index] = nil
+        if minutes_remaining <= 0 then
+            player.character.die()
+            this.suicides[player.index] = nil
+        else
+            if minutes_remaining == 1 then
+                player.print(minutes_remaining .. ' minute remaining until death.', yellow)
             else
-                if minutes_remaining == 1 then
-                    player.print(minutes_remaining .. ' minute remaining until death.', yellow)
-                else
-                    player.print(minutes_remaining .. ' minutes remaining until death.', yellow)
-                end
-                this.suicides[player.index].minutes_remaining = this.suicides[player.index].minutes_remaining - 1
-                Scheduler.timer(game.tick + one_minute, data[i].handler, {player_index = player.index, handler = data[i].handler})
+                player.print(minutes_remaining .. ' minutes remaining until death.', yellow)
             end
+            this.suicides[player.index].minutes_remaining = this.suicides[player.index].minutes_remaining - 1
+            Scheduler.timer(game.tick + one_minute, event.handler, {player_index = player.index, handler = event.handler, ttl = event.ttl + 1})
         end
     end
 )
@@ -68,7 +66,7 @@ commands.add_command(
         end
 
         this.suicides[player.index] = {minutes_remaining = minutes_to_die - 1}
-        Scheduler.timer(game.tick + one_minute, suicide_handler, {player_index = player.index, handler = suicide_handler})
+        Scheduler.timer(game.tick + one_minute, suicide_handler, {player_index = player.index, handler = suicide_handler, ttl = 1})
         player.print('You ate a poison pill. You will die in ' .. minutes_to_die .. ' minutes.', yellow)
     end
 )
