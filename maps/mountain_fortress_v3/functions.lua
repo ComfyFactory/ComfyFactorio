@@ -295,6 +295,9 @@ local artillery_target_callback =
 
         local art_table = this.art_table
         local outpost = art_table[index]
+        if not outpost then
+            return
+        end
 
         if not entity.valid then
             outpost.last_fire_tick = 0

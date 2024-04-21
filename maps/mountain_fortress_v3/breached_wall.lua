@@ -354,13 +354,14 @@ local function distance(player)
     end
 
     local breach_wall_warning = Public.get('breach_wall_warning')
+    local block_non_trusted_trigger_collapse = Public.get('block_non_trusted_trigger_collapse')
 
     local max = zone_settings.zone_depth * bonus
     local breach_max = zone_settings.zone_depth * breached_wall
     local breach_max_times = distance_to_center >= breach_max
     local max_times = distance_to_center >= max
     if max_times then
-        if not Session.get_trusted_player(player) then
+        if block_non_trusted_trigger_collapse and not Session.get_trusted_player(player) then
             if breach_wall_warning_teleport(player, true) then
                 return
             end
