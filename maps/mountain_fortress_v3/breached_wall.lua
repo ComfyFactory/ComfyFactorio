@@ -170,26 +170,23 @@ local check_distance_between_player_and_locomotive = function(player)
     gap_between_locomotive.highest_pos = locomotive.position
     gap_between_locomotive = Public.get('gap_between_locomotive')
 
-    local p_y = position.y
-    local t_y = gap_between_locomotive.highest_pos.y
-    local c_y = collapse_position.y
-
-    local locomotive_distance
-    local collapse_distance
-    local source
-
-    if adjusted_zones.reversed then
-        locomotive_distance = p_y - t_y >= gap_between_locomotive.neg_gap
-        collapse_distance = p_y - c_y >= gap_between_locomotive.neg_gap_collapse
-        source = {position.x, locomotive.position.y + gap_between_locomotive.neg_gap - 4}
-    else
-        locomotive_distance = p_y - t_y <= gap_between_locomotive.neg_gap
-        collapse_distance = p_y - c_y <= gap_between_locomotive.neg_gap_collapse
-        source = {position.x, locomotive.position.y + gap_between_locomotive.neg_gap + 4}
+    local p_y = abs(position.y)
+    if p_y < 300 then
+        return
     end
+    local t_y = abs(gap_between_locomotive.highest_pos.y)
+    local c_y = abs(collapse_position.y)
 
-    if locomotive_distance then
-        player.teleport(source, surface)
+    local locomotive_distance_too_far = p_y - t_y > gap_between_locomotive.neg_gap
+    local collapse_distance_too_far = p_y - c_y > gap_between_locomotive.neg_gap_collapse
+
+    if locomotive_distance_too_far then
+        if adjusted_zones.reversed then
+            player.teleport({position.x, t_y + gap_between_locomotive.neg_gap - 4}, surface)
+        else
+            player.teleport({position.x, (t_y + gap_between_locomotive.neg_gap - 4) * -1}, surface)
+        end
+
         player.print(({'breached_wall.hinder'}), Color.warning)
         if player.driving then
             player.driving = false
@@ -201,10 +198,12 @@ local check_distance_between_player_and_locomotive = function(player)
                 player.character.die('enemy')
             end
         end
-    end
-
-    if collapse_distance then
-        player.teleport(source, surface)
+    elseif collapse_distance_too_far then
+        if adjusted_zones.reversed then
+            player.teleport({position.x, t_y + gap_between_locomotive.neg_gap_collapse - 4}, surface)
+        else
+            player.teleport({position.x, (t_y + gap_between_locomotive.neg_gap_collapse - 4) * -1}, surface)
+        end
 
         player.print(({'breached_wall.hinder_collapse'}), Color.warning)
         if player.driving then
@@ -273,25 +272,13 @@ local compare_player_and_train = function(player, entity)
     gap_between_zones.highest_pos = locomotive.position
     gap_between_zones = Public.get('gap_between_zones')
 
-    local c_y = position.y
-    local t_y = gap_between_zones.highest_pos.y
+    local c_y = abs(position.y)
+    local t_y = abs(gap_between_zones.highest_pos.y)
 
-    local adjusted_zones = Public.get('adjusted_zones')
+    local spidertron_warning_position = gap_between_zones.neg_gap + 50
+    local locomotive_distance_too_far = c_y - t_y > spidertron_warning_position
 
-    local locomotive_distance
-    local collapse_distance
-
-    if adjusted_zones.reversed then
-        local spidertron_warning_position = abs(gap_between_zones.neg_gap) + 50
-        locomotive_distance = c_y - t_y >= spidertron_warning_position
-        collapse_distance = c_y - t_y >= spidertron_warning_position
-    else
-        local spidertron_warning_position = gap_between_zones.neg_gap + 50
-        locomotive_distance = c_y - t_y <= spidertron_warning_position
-        collapse_distance = c_y - t_y <= spidertron_warning_position
-    end
-
-    if locomotive_distance then
+    if locomotive_distance_too_far then
         local surface = player.surface
         surface.create_entity(
             {
@@ -301,9 +288,6 @@ local compare_player_and_train = function(player, entity)
                 color = {r = 0.9, g = 0.0, b = 0.0}
             }
         )
-    end
-
-    if collapse_distance then
         if entity.health then
             if car and car.health_pool and car.health_pool.health then
                 car.health_pool.health = car.health_pool.health - 500

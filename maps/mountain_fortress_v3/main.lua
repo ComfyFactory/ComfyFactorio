@@ -229,16 +229,12 @@ function Public.reset_map()
 
     if this.adjusted_zones.reversed then
         Explosives.check_growth_below_void(false)
-        this.gap_between_locomotive.neg_gap = abs(this.gap_between_locomotive.neg_gap)
-        this.gap_between_locomotive.neg_gap_collapse = abs(this.gap_between_locomotive.neg_gap_collapse)
         this.spawn_near_collapse.compare = abs(this.spawn_near_collapse.compare)
         Collapse.set_position({0, -130})
         Collapse.set_direction('south')
         Public.locomotive_spawn(surface, {x = -18, y = -25}, this.adjusted_zones.reversed)
     else
         Explosives.check_growth_below_void(true)
-        this.gap_between_locomotive.neg_gap = abs(this.gap_between_locomotive.neg_gap) * -1
-        this.gap_between_locomotive.neg_gap_collapse = abs(this.gap_between_locomotive.neg_gap_collapse) * -1
         this.spawn_near_collapse.compare = abs(this.spawn_near_collapse.compare) * -1
         Collapse.set_position({0, 130})
         Collapse.set_direction('north')
@@ -473,28 +469,18 @@ local compare_collapse_and_train = function()
         return
     end
 
-    local c_y = collapse_pos.y
-    local t_y = locomotive.position.y
+    local c_y = abs(collapse_pos.y)
+    local t_y = abs(locomotive.position.y)
+    local result = abs(c_y - t_y)
 
     local gap_between_zones = Public.get('gap_between_zones')
-    local adjusted_zones = Public.get('adjusted_zones')
 
-    if adjusted_zones.reversed then
-        local distance = c_y - t_y >= gap_between_zones.gap
-        if not distance then
-            Public.set_difficulty()
-        else
-            Collapse.set_speed(1)
-            Collapse.set_amount(10)
-        end
+    local distance = result > gap_between_zones.gap
+    if not distance then
+        Public.set_difficulty()
     else
-        local distance = c_y - t_y <= gap_between_zones.gap
-        if distance then
-            Public.set_difficulty()
-        else
-            Collapse.set_speed(1)
-            Collapse.set_amount(10)
-        end
+        Collapse.set_speed(1)
+        Collapse.set_amount(10)
     end
 end
 
