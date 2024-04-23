@@ -43,7 +43,7 @@ local function discharge_accumulators(surface, position, force, power_needs)
 
     local accumulators = surface.find_entities_filtered {type = 'accumulator', force = force, position = position, radius = 13}
     local power_drained = 0
-    power_needs = power_needs * 1
+    power_needs = power_needs
 
     for _, accu in pairs(accumulators) do
         if power_needs <= 0 then
@@ -62,12 +62,12 @@ local function discharge_accumulators(surface, position, force, power_needs)
         end
     end
 
-    -- can anybody explain why the original author multiplied and divided by 1?
-    return power_drained / 1
+    return power_drained
 end
 
 --- Charge player's equipped armor and modules by draining power from nearby accumulators.
-local function charge(player)
+---@param expensive_mult number? Optional multiplier to make charging cheaper/more costly. Default: 1.
+local function charge(player, expensive_mult)
     if not player.character then
         return player.print(module_name .. 'It seems that you are not in the realm of living.', Color.warning)
     end
@@ -103,7 +103,15 @@ local function charge(player)
         return player.print(module_name .. 'Your armor is fully charged!', Color.success)
     end
 
-    local energy_available = discharge_accumulators(player.surface, player.position, player.force, total_energy_needed)
+    expensive_mult = expensive_mult or 1
+
+    local energy_available = discharge_accumulators(
+        player.surface, player.position, player.force,
+        total_energy_needed * expensive_mult -- multiply our requirements
+    )
+    -- and pretend internally nothing happened
+    energy_available = energy_available / expensive_mult
+
     if energy_available <= 0 then
         return player.print(module_name .. 'No accumulators nearby or they are all empty!', Color.warning)
     end
