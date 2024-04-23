@@ -34,36 +34,46 @@ local function draw_charging_gui(player, activate_custom_buttons)
     end
 end
 
+--- Searches nearby electric accumulators at position and drains them up to required power.
+---@param surface LuaSurface
+---@param position MapPosition
+---@param power_needs number The amount of power (capacity) you want to draw in Joules (native electricity unit)
 local function discharge_accumulators(surface, position, force, power_needs)
-    local accumulators = surface.find_entities_filtered {name = 'accumulator', force = force, position = position, radius = 13}
+    local accu_min_limit = 3000000 -- 3 MJ
+
+    local accumulators = surface.find_entities_filtered {type = 'accumulator', force = force, position = position, radius = 13}
     local power_drained = 0
     power_needs = power_needs * 1
+
     for _, accu in pairs(accumulators) do
-        if accu.valid then
-            if accu.energy > 3000000 and power_needs > 0 then
-                if power_needs >= 2000000 then
-                    power_drained = power_drained + 2000000
-                    accu.energy = accu.energy - 2000000
-                    power_needs = power_needs - 2000000
-                else
-                    power_drained = power_drained + power_needs
-                    accu.energy = accu.energy - power_needs
-                end
-            elseif power_needs <= 0 then
-                break
-            end
+        if power_needs <= 0 then
+            break
+        end
+
+        if accu.valid and accu.energy > accu_min_limit then
+            local accu_max_capacity = accu.electric_buffer_size
+            local accu_energy_available = math.min(accu.energy, accu_max_capacity) - accu_min_limit
+
+            local charge_delta = math.min(accu_energy_available, power_needs)
+
+            accu.energy = accu.energy - charge_delta
+            power_drained = power_drained + charge_delta
+            power_needs = power_needs - charge_delta
         end
     end
+
+    -- can anybody explain why the original author multiplied and divided by 1?
     return power_drained / 1
 end
 
+--- Charge player's equipped armor and modules by draining power from nearby accumulators.
 local function charge(player)
     if not player.character then
         return player.print(module_name .. 'It seems that you are not in the realm of living.', Color.warning)
     end
     local armor_inventory = player.get_inventory(defines.inventory.character_armor)
     if not armor_inventory.valid then
-        return player.print(module_name .. 'No valid armor to charge was found.', Color.warning)
+        return player.print(module_name .. 'No valid armor inventory was found for charging.', Color.warning)
     end
     local armor = armor_inventory[1]
     if not armor.valid_for_read then
@@ -71,23 +81,45 @@ local function charge(player)
     end
     local grid = armor.grid
     if not grid or not grid.valid then
-        return player.print(module_name .. 'No valid armor to charge was found.', Color.warning)
+        return player.print(module_name .. 'No valid armor grid to charge was found.', Color.warning)
     end
-    local equip = grid.equipment
-    for _, piece in pairs(equip) do
+
+    local discharged_modules = {}
+    local total_energy_needed = 0
+
+    local armor_modules = grid.equipment
+    for _, piece in pairs(armor_modules) do
         if piece.valid and piece.generator_power == 0 then
+
             local energy_needs = piece.max_energy - piece.energy
             if energy_needs > 0 then
-                local energy = discharge_accumulators(player.surface, player.position, player.force, energy_needs)
-                if energy > 0 then
-                    if piece.energy + energy >= piece.max_energy then
-                        piece.energy = piece.max_energy
-                    else
-                        piece.energy = piece.energy + energy
-                    end
-                end
+                table.insert(discharged_modules, piece)
+                total_energy_needed = total_energy_needed + energy_needs
             end
         end
+    end
+
+    if total_energy_needed == 0 then
+        return player.print(module_name .. 'Your armor is fully charged!', Color.success)
+    end
+
+    local energy_available = discharge_accumulators(player.surface, player.position, player.force, total_energy_needed)
+    if energy_available <= 0 then
+        return player.print(module_name .. 'No accumulators nearby or they are all empty!', Color.warning)
+    end
+
+    for i = 1, #discharged_modules do
+        if energy_available <= 0 then
+            break
+        end
+
+        local piece = discharged_modules[i]
+
+        local piece_energy = piece.energy
+        local charge_delta = math.min(energy_available, piece.max_energy - piece_energy)
+
+        piece.energy = piece_energy + charge_delta
+        energy_available = energy_available - charge_delta
     end
 end
 
