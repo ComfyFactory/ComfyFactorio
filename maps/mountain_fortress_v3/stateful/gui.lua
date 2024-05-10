@@ -916,6 +916,11 @@ local function update_raw()
                         stateful.objectives_completed_count = stateful.objectives_completed_count + 1
                     end
                 end
+            else
+                if not supplies_data.total then
+                    supplies_data.total = supplies_data.count
+                end
+                supplies_data.count = supplies_data.total
             end
         end
     end
@@ -937,6 +942,12 @@ local function update_raw()
                     stateful.objectives_completed_count = stateful.objectives_completed_count + 1
                 end
             end
+        else
+            if not stateful.objectives.single_item.total then
+                stateful.objectives.single_item.total = stateful.objectives.single_item.count
+            end
+
+            stateful.objectives.single_item.count = stateful.objectives.single_item.total
         end
     end
 

@@ -321,6 +321,9 @@ local function insert_weapons_and_armor(player, entity, armor_only)
     end
 
     local inventory = player.get_main_inventory()
+    if not inventory then
+        return
+    end
 
     for _, armor_name in pairs(armor_names) do
         if not has_armor_equipped(entity) and inventory.get_item_count(armor_name) > 0 then

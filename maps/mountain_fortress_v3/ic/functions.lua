@@ -11,6 +11,18 @@ local Public = {}
 local main_tile_name = 'black-refined-concrete'
 local round = math.round
 local floor = math.floor
+local module_tag = '[color=blue]Comfylatron:[/color] '
+
+local messages = {
+    ' vehicle was nibbled to death.',
+    ' vehicle should not have played with the biters.',
+    ' vehicle is biter scrap.',
+    ' vehicle learned the hard way not to mess with biters.',
+    ' vehicle lost the battle to a hungry biter.',
+    ' vehicle was a tasty biter treat.',
+    ' vehicle lost their flux capacitator.',
+    ' vehicle met a squishy end.'
+}
 
 local function validate_entity(entity)
     if not (entity and entity.valid) then
@@ -448,7 +460,7 @@ local function restore_surface(player, entity)
     if saved_surfaces[player.index] then
         local success, msg = get_saved_entity(ce, index)
         if not success then
-            player.print(msg, Color.warning)
+            player.print(module_tag .. msg, Color.warning)
             return true
         end
         replace_entity(cars, ce, index)
@@ -683,7 +695,7 @@ function Public.save_car(event)
     if car.owner == player.index then
         save_surface(entity, player)
         if not players[player.index].notified then
-            player.print(player.name .. ', the ' .. car.name .. ' surface has been saved.', Color.success)
+            player.print(module_tag .. player.name .. ', the ' .. car.name .. ' surface has been saved.', Color.success)
             players[player.index].notified = true
         end
     else
@@ -704,8 +716,8 @@ function Public.save_car(event)
 
         log_err('Owner of this vehicle is: ' .. p.name)
         save_surface(entity, p)
-        Utils.action_warning('[Car]', player.name .. ' has looted ' .. p.name .. '´s car.')
-        player.print('This car was not yours to keep.', Color.warning)
+        Utils.action_warning(module_tag .. player.name .. ' has looted ' .. p.name .. '´s car.')
+        player.print(module_tag .. 'This car was not yours to keep.', Color.warning)
         local params = {
             player = player,
             car = car
@@ -717,7 +729,7 @@ function Public.save_car(event)
             restore_surface(p, e)
         elseif p.can_insert({name = car.name, count = 1}) then
             p.insert({name = car.name, count = 1, health = health})
-            p.print('Your car was stolen from you - the gods foresaw this and granted you a new one.', Color.info)
+            p.print(module_tag .. 'Your car was stolen from you - the gods foresaw this and granted you a new one.', Color.info)
         end
     end
 end
@@ -797,6 +809,9 @@ function Public.kill_car(entity)
         return
     end
 
+    local entity_position = entity.position
+    local entity_surface = entity.surface
+
     local surfaces = IC.get('surfaces')
     local cars = IC.get('cars')
     local car = cars[entity.unit_number]
@@ -829,6 +844,10 @@ function Public.kill_car(entity)
         rendering.destroy(renders[owner.index])
         renders[owner.index] = nil
     end
+
+    local gps_tag = '[gps=' .. entity_position.x .. ',' .. entity_position.y .. ',' .. entity_surface.name .. ']'
+
+    game.print(module_tag .. owner.name .. messages[math.random(1, #messages)] .. ' ' .. gps_tag)
 
     local player_gui_data = IC.get('player_gui_data')
     if player_gui_data[owner.name] then
@@ -959,7 +978,7 @@ function Public.validate_owner(player, entity)
                 if car.owner ~= player.index and player.driving then
                     player.driving = false
                     if not player.admin then
-                        return Utils.print_to(nil, '[Car] ' .. player.name .. ' tried to drive ' .. p.name .. '´s car.')
+                        return p(player.name .. ' tried to drive your car.', Color.warning)
                     end
                 end
             end
@@ -1113,11 +1132,11 @@ function Public.create_car(event)
     local name, mined = get_player_entity(player)
 
     if entity_type[name] and not mined then
-        return player.print('Multiple vehicles are not supported at the moment.', Color.warning)
+        return player.print(module_tag .. 'Multiple vehicles are not supported at the moment.', Color.warning)
     end
 
     if string.sub(ce.surface.name, 0, #map_name) ~= map_name then
-        return player.print('Multi-surface is not supported at the moment.', Color.warning)
+        return player.print(module_tag .. 'Multi-surface is not supported at the moment.', Color.warning)
     end
 
     local storage = get_trusted_system(player)
@@ -1128,7 +1147,7 @@ function Public.create_car(event)
         end
         upgrade_surface(player, ce)
         render_owner_text(renders, player, ce)
-        player.print('Your car-surface has been upgraded!', Color.success)
+        player.print(module_tag .. 'Your car-surface has been upgraded!', Color.success)
         return
     end
 
@@ -1242,7 +1261,7 @@ function Public.use_door_with_entity(player, door)
         if list.allow_anyone == 'right' then
             if not list.players[player.name] and not player.admin then
                 player.driving = false
-                return player.print('You have not been approved by ' .. owner.name .. ' to enter their vehicle.', Color.warning)
+                return player.print(module_tag .. 'You have not been approved by ' .. owner.name .. ' to enter their vehicle.', Color.warning)
             end
         end
     end
