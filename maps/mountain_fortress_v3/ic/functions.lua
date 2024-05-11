@@ -978,7 +978,7 @@ function Public.validate_owner(player, entity)
                 if car.owner ~= player.index and player.driving then
                     player.driving = false
                     if not player.admin then
-                        return p(player.name .. ' tried to drive your car.', Color.warning)
+                        return p.print(player.name .. ' tried to drive your car.', Color.warning)
                     end
                 end
             end
