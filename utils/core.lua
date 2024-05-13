@@ -317,6 +317,17 @@ function Public.action_warning(warning_prefixes, msg)
     Server.to_discord_bold(msg)
 end
 
+--- Takes msg and prints it to all admin players
+-- @param msg <string> The message to print
+function Public.action_notify_admins(msg)
+    for _, p in pairs(game.connected_players) do
+        if p.admin then
+            p.print(msg, Color.yellow)
+        end
+    end
+    print(msg)
+end
+
 --- Takes msg and prints it to all players. Also prints to the log and discord
 -- @param msg <string> The message to print
 -- @param warning_prefixes <string> The name of the module/warning

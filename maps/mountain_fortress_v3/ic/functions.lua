@@ -716,7 +716,7 @@ function Public.save_car(event)
 
         log_err('Owner of this vehicle is: ' .. p.name)
         save_surface(entity, p)
-        Utils.action_warning(module_tag .. player.name .. ' has looted ' .. p.name .. '´s car.')
+        game.print(module_tag .. player.name .. ' has looted ' .. p.name .. '´s car.')
         player.print(module_tag .. 'This car was not yours to keep.', Color.warning)
         local params = {
             player = player,
@@ -978,7 +978,9 @@ function Public.validate_owner(player, entity)
                 if car.owner ~= player.index and player.driving then
                     player.driving = false
                     if not player.admin then
-                        return p.print(player.name .. ' tried to drive your car.', Color.warning)
+                        p.print(player.name .. ' tried to drive your car.', Color.warning)
+                        Utils.action_notify_admins(player.name .. ' tried to drive ' .. p.name .. '´s car.')
+                        return
                     end
                 end
             end

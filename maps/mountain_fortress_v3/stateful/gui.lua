@@ -996,33 +996,57 @@ local function update_raw()
         elseif collection.survive_for and collection.survive_for < 0 then
             collection.survive_for = 0
             if collection.game_won and not collection.game_won_notified then
+                game.print('[color=yellow][Mtn v3][/color] Game won!')
+                collection.game_won = true
+                stateful.collection.time_until_attack = 0
+                stateful.collection.time_until_attack_timer = 0
+                stateful.collection.gather_time = 0
+                stateful.collection.gather_time_timer = 0
+                collection.survive_for = 0
+                collection.survive_for_timer = 0
+                refresh_frames()
+
+                local reversed = Public.get_stateful_settings('reversed')
+                if reversed then
+                    Public.set_stateful_settings('reversed', false)
+                else
+                    Public.set_stateful_settings('reversed', true)
+                end
+
                 collection.game_won_notified = true
                 refresh_boss_frame()
                 play_game_won()
+                WD.disable_spawning_biters(true)
+                Collapse.disable_collapse(true)
+                WD.nuke_wave_gui()
                 Server.to_discord_embed('Game won!')
                 stateful.rounds_survived = stateful.rounds_survived + 1
+                stateful.selected_objectives = nil
                 local buff = Stateful.save_settings()
                 notify_won_to_discord(buff)
                 local locomotive = Public.get('locomotive')
                 if locomotive and locomotive.valid then
                     locomotive.surface.spill_item_stack(locomotive.position, {name = 'coin', count = 512}, false)
-                    Public.set('game_reset_tick', 5400)
                 end
+                Public.set('game_reset_tick', 5400)
+                return
             end
         end
     end
 
-    for objective_index = 1, #stateful.selected_objectives do
-        local objective = stateful.selected_objectives[objective_index]
-        local objective_name = objective.name
-        local callback = Task.get(objective.token)
-        local completed, _, _ = callback()
-        if completed and completed == true and not stateful.objectives_completed[objective_name] then
-            stateful.objectives_completed[objective_name] = true
-            Alert.alert_all_players(10, 'Objective: **' .. objective_name .. '** has been completed!')
-            Server.to_discord_embed('Objective: **' .. objective_name .. '** has been completed!')
-            play_achievement_unlocked()
-            stateful.objectives_completed_count = stateful.objectives_completed_count + 1
+    if stateful.selected_objectives and next(stateful.selected_objectives) then
+        for objective_index = 1, #stateful.selected_objectives do
+            local objective = stateful.selected_objectives[objective_index]
+            local objective_name = objective.name
+            local callback = Task.get(objective.token)
+            local completed, _, _ = callback()
+            if completed and completed == true and not stateful.objectives_completed[objective_name] then
+                stateful.objectives_completed[objective_name] = true
+                Alert.alert_all_players(10, 'Objective: **' .. objective_name .. '** has been completed!')
+                Server.to_discord_embed('Objective: **' .. objective_name .. '** has been completed!')
+                play_achievement_unlocked()
+                stateful.objectives_completed_count = stateful.objectives_completed_count + 1
+            end
         end
     end
 
@@ -1058,6 +1082,7 @@ local function update_raw()
             WD.nuke_wave_gui()
             Server.to_discord_embed('Game won!')
             stateful.rounds_survived = stateful.rounds_survived + 1
+            stateful.selected_objectives = nil
             local buff = Stateful.save_settings()
             notify_won_to_discord(buff)
             local locomotive = Public.get('locomotive')
@@ -1070,6 +1095,7 @@ local function update_raw()
 
         stateful.collection.gather_time = tick + 54000
         stateful.collection.gather_time_timer = tick + 54000
+        game.forces.enemy.evolution_factor = 1
         play_achievement_unlocked()
         WD.disable_spawning_biters(true)
         Collapse.disable_collapse(true)
