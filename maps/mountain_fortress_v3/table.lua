@@ -130,6 +130,7 @@ function Public.reset_main_table()
     this.icw_locomotive = nil
     this.game_lost = false
     this.death_mode = false
+    this.collapse_started = false
     this.locomotive_health = 10000
     this.locomotive_max_health = 10000
     this.extra_wagons = 0

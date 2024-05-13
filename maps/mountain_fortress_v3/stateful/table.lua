@@ -1240,7 +1240,6 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
     this.enemies_boosted = false
     this.tasks_required_to_win = 6
 
-    this.selected_objectives = get_random_objectives()
     if this.test_mode then
         this.objectives = {
             randomized_zone = 2,
@@ -1258,6 +1257,10 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
     else
         if not this.objectives then
             this.objectives = {}
+        end
+
+        if not this.selected_objectives then
+            this.selected_objectives = get_random_objectives()
         end
 
         if not this.objectives.randomized_zone or (this.objectives_completed ~= nil and this.objectives_completed.randomized_zone) then

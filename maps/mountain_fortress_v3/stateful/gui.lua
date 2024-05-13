@@ -735,7 +735,7 @@ local function update_data()
                                     frame.sprite = 'utility/check_mark_green'
                                 else
                                     frame.number = supplies_data.count
-                                    frame.tooltip = count .. ' / ' .. supplies_data.total
+                                    frame.tooltip = 'Crafted: ' .. count .. '\nNeeded: ' .. supplies_data.total
                                 end
                                 if items_done == 3 then
                                     if data.supply_completed and data.supply_completed.valid then
@@ -744,7 +744,7 @@ local function update_data()
                                 end
                             else
                                 frame.number = supplies_data.count
-                                frame.tooltip = '0 / ' .. supplies_data.count
+                                frame.tooltip = 'Crafted: 0\nNeeded: ' .. supplies_data.total
                             end
                         end
                     end
@@ -771,10 +771,11 @@ local function update_data()
                         else
                             frame.number = single_item.count
                             frame.tooltip = count .. ' / ' .. single_item.total
+                            frame.tooltip = 'Crafted: ' .. count .. '\nNeeded: ' .. single_item.total
                         end
                     else
                         frame.number = single_item.count
-                        frame.tooltip = '0 / ' .. single_item.count
+                        frame.tooltip = 'Crafted: 0\nNeeded: ' .. single_item.total
                     end
                 end
             end

@@ -163,7 +163,7 @@ local check_distance_between_player_and_locomotive = function(player)
         return
     end
 
-    local collapse_position = Collapse.get_position()
+    -- local collapse_position = Collapse.get_position()
     local adjusted_zones = Public.get('adjusted_zones')
 
     local gap_between_locomotive = Public.get('gap_between_locomotive')
@@ -175,10 +175,10 @@ local check_distance_between_player_and_locomotive = function(player)
         return
     end
     local t_y = abs(gap_between_locomotive.highest_pos.y)
-    local c_y = abs(collapse_position.y)
+    -- local c_y = abs(collapse_position.y)
 
     local locomotive_distance_too_far = p_y - t_y > gap_between_locomotive.neg_gap
-    local collapse_distance_too_far = p_y - c_y > gap_between_locomotive.neg_gap_collapse
+    -- local collapse_distance_too_far = p_y - c_y > gap_between_locomotive.neg_gap_collapse
 
     if locomotive_distance_too_far then
         if adjusted_zones.reversed then
@@ -198,24 +198,24 @@ local check_distance_between_player_and_locomotive = function(player)
                 player.character.die('enemy')
             end
         end
-    elseif collapse_distance_too_far then
-        if adjusted_zones.reversed then
-            player.teleport({position.x, t_y + gap_between_locomotive.neg_gap_collapse - 4}, surface)
-        else
-            player.teleport({position.x, (t_y + gap_between_locomotive.neg_gap_collapse - 4) * -1}, surface)
-        end
+    -- elseif collapse_distance_too_far then
+    --     if adjusted_zones.reversed then
+    --         player.teleport({position.x, t_y + gap_between_locomotive.neg_gap_collapse - 4}, surface)
+    --     else
+    --         player.teleport({position.x, (t_y + gap_between_locomotive.neg_gap_collapse - 4) * -1}, surface)
+    --     end
 
-        player.print(({'breached_wall.hinder_collapse'}), Color.warning)
-        if player.driving then
-            player.driving = false
-        end
-        if player.character then
-            player.character.health = player.character.health - 5
-            player.character.surface.create_entity({name = 'water-splash', position = position})
-            if player.character.health <= 0 then
-                player.character.die('enemy')
-            end
-        end
+    --     player.print(({'breached_wall.hinder_collapse'}), Color.warning)
+    --     if player.driving then
+    --         player.driving = false
+    --     end
+    --     if player.character then
+    --         player.character.health = player.character.health - 5
+    --         player.character.surface.create_entity({name = 'water-splash', position = position})
+    --         if player.character.health <= 0 then
+    --             player.character.die('enemy')
+    --         end
+    --     end
     end
 end
 
@@ -337,6 +337,7 @@ local function distance(player)
     end
 
     local breach_wall_warning = Public.get('breach_wall_warning')
+    local collapse_started = Public.get('collapse_started')
     local block_non_trusted_trigger_collapse = Public.get('block_non_trusted_trigger_collapse')
 
     local max = zone_settings.zone_depth * bonus
@@ -344,7 +345,7 @@ local function distance(player)
     local breach_max_times = distance_to_center >= breach_max
     local max_times = distance_to_center >= max
     if max_times then
-        if block_non_trusted_trigger_collapse and not Session.get_trusted_player(player) then
+        if block_non_trusted_trigger_collapse and not Session.get_trusted_player(player) and not collapse_started then
             if breach_wall_warning_teleport(player, true) then
                 return
             end
@@ -405,6 +406,7 @@ local function distance(player)
 
         if not Collapse.get_start_now() then
             clear_breach_text_and_render()
+            Public.set('collapse_started', true)
             Collapse.start_now(true)
             local data = {
                 position = Collapse.get_position()

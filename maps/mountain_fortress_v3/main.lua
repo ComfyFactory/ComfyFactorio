@@ -363,7 +363,7 @@ local has_the_game_ended = function()
         local this = Public.get()
 
         this.game_reset_tick = this.game_reset_tick - 30
-        if this.game_reset_tick % 1800 == 0 then
+        if this.game_reset_tick % 600 == 0 then
             if this.game_reset_tick > 0 then
                 local cause_msg
                 if this.restart then
