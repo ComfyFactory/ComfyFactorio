@@ -1264,7 +1264,7 @@ function Public.create_car(event)
         type = ce.type
     }
 
-    local car = cars[un]
+    car = cars[un]
 
     car.surface = Public.create_room_surface(un)
     Public.create_car_room(car)

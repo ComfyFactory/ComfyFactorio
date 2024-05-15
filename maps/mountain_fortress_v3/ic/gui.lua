@@ -147,18 +147,15 @@ local function draw_add_player(player, frame)
     left_flow.style.horizontally_stretchable = true
 
     local close_button = left_flow.add({type = 'button', name = discard_add_player_name, caption = ({'ic.discard'})})
-    local close_button_style = close_button.style
-    close_button_style = 'back_button' ---@class GuiButtonStyle
-
-    close_button_style.maximal_width = 100
+    close_button.style = 'back_button' ---@class GuiButtonStyle
+    close_button.style.maximal_width = 100
 
     local right_flow = bottom_flow.add({type = 'flow'})
     right_flow.style.horizontal_align = 'right'
 
     local save_button = right_flow.add({type = 'button', name = save_add_player_button_name, caption = ({'ic.save'})})
-    local save_button_style = save_button.style
-    save_button_style = 'confirm_button' ---@class GuiButtonStyle
-    save_button_style.maximal_width = 100
+    save_button.style = 'confirm_button' ---@class GuiButtonStyle
+    save_button.style.maximal_width = 100
 
     Gui.set_data(save_button, add_player_frame)
 end
