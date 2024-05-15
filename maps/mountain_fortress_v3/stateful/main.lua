@@ -54,7 +54,7 @@ Event.on_nth_tick(
         Public.allocate()
         Public.set_final_battle()
 
-        if collection.time_until_attack and collection.time_until_attack <= 0 and collection.survive_for > 0 then
+        if collection.time_until_attack and collection.time_until_attack <= 0 and collection.survive_for and collection.survive_for > 0 then
             local surface = game.get_surface('boss_room')
             if not surface or not surface.valid then
                 return

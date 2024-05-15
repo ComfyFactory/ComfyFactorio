@@ -1,6 +1,9 @@
 local Utils = require 'utils.core'
 local Color = require 'utils.color_presets'
+local Alert = require 'utils.alert'
 local Task = require 'utils.task_token'
+local Core = require 'utils.core'
+local JailData = require 'utils.datastore.jail_data'
 local IC = require 'maps.mountain_fortress_v3.ic.table'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local RPG = require 'modules.rpg.main'
@@ -36,6 +39,22 @@ local function validate_entity(entity)
     return true
 end
 
+local enable_car_to_be_mined =
+    Task.register(
+    function(event)
+        local entity = event.entity
+        local owner_name = event.owner_name
+        if entity and entity.valid then
+            entity.minable = true
+            local msg = owner_name .. "'s vehicle is now minable!"
+            local p = {
+                position = entity.position
+            }
+            Alert.alert_all_players_location(p, msg, nil, 30)
+        end
+    end
+)
+
 local function log_err(err)
     local debug_mode = IC.get('debug_mode')
     if debug_mode then
@@ -58,6 +77,15 @@ local function get_trusted_system(player)
     end
 
     return trust_system[player.index]
+end
+
+local function does_player_table_exist(player)
+    local trust_system = IC.get('trust_system')
+    if not trust_system[player.index] then
+        return false
+    else
+        return true
+    end
 end
 
 local function upperCase(str)
@@ -125,17 +153,21 @@ local function kill_doors(car)
     end
 end
 
-local function get_owner_car_object(cars, player)
-    for k, car in pairs(cars) do
+---Returns the car object of the player.
+---@param player any
+---@return table|boolean
+local function get_owner_car_object(player)
+    local cars = IC.get('cars')
+    for _, car in pairs(cars) do
         if car.owner == player.index then
-            return k, car
+            return car
         end
     end
     return false
 end
 
 local function get_entity_from_player_surface(cars, player)
-    for k, car in pairs(cars) do
+    for _, car in pairs(cars) do
         if validate_entity(car.entity) then
             local surface_index = car.surface
             local surface = game.surfaces[surface_index]
@@ -185,9 +217,9 @@ local function get_player_entity(player)
     local cars = IC.get('cars')
     for _, car in pairs(cars) do
         if car.owner == player.index and type(car.entity) == 'boolean' then
-            return car.name, true
+            return car, true
         elseif car.owner == player.index then
-            return car.name, false
+            return car, false
         end
     end
     return false, false
@@ -316,8 +348,7 @@ local function upgrade_surface(player, entity)
     end
 
     if saved_surfaces[player.index] then
-        local c = get_owner_car_object(cars, player)
-        local car = cars[c]
+        local car = get_owner_car_object(player)
         if ce.name == 'spidertron' then
             car.name = 'spidertron'
         elseif ce.name == 'tank' then
@@ -364,7 +395,7 @@ local function check_if_players_are_in_nauvis()
     for _, player in pairs(game.connected_players) do
         local main_surface = game.surfaces[allowed_surface]
         if player.surface.name == 'nauvis' then
-            local pos = main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0, 5)
+            local pos = main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0)
             if pos then
                 player.teleport(pos, main_surface)
             else
@@ -375,7 +406,11 @@ local function check_if_players_are_in_nauvis()
     end
 end
 
-local function kick_players_from_surface(car)
+---Kicks players out of the car surface.
+---@param car any
+---@param owner_id any
+---@return nil
+local function kick_players_from_surface(car, owner_id)
     local surface_index = car.surface
     local surface = game.surfaces[surface_index]
     local allowed_surface = IC.get('allowed_surface')
@@ -388,7 +423,14 @@ local function kick_players_from_surface(car)
         if validate_entity(main_surface) then
             for _, e in pairs(surface.find_entities_filtered({area = car.area})) do
                 if validate_entity(e) and e.name == 'character' and e.player then
-                    e.player.teleport(main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0, 5), main_surface)
+                    if owner_id and owner_id == e.player.index then
+                        goto continue
+                    end
+                    local p = main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0)
+                    if p then
+                        e.player.teleport(p, main_surface)
+                    end
+                    ::continue::
                 end
             end
             check_if_players_are_in_nauvis()
@@ -398,15 +440,48 @@ local function kick_players_from_surface(car)
 
     for _, e in pairs(surface.find_entities_filtered({area = car.area})) do
         if validate_entity(e) and e.name == 'character' and e.player then
+            if owner_id and owner_id == e.player.index then
+                goto continue
+            end
             local p = car.entity.surface.find_non_colliding_position('character', car.entity.position, 128, 0.5)
             if p then
                 e.player.teleport(p, car.entity.surface)
             else
                 e.player.teleport(car.entity.position, car.entity.surface)
             end
+            ::continue::
         end
     end
     check_if_players_are_in_nauvis()
+end
+
+---Kicks players out of the car surface.
+---@param car any
+---@return nil
+local function kick_non_trusted_players_from_surface(car)
+    local surface_index = car.surface
+    local trust_system = IC.get('trust_system')
+    local allowed_surface = IC.get('allowed_surface') --[[@as string]]
+    local main_surface = game.get_surface(allowed_surface) --[[@as LuaSurface]]
+
+    local position = car.entity and car.entity.valid and car.entity.position or game.forces.player.get_spawn_position(main_surface)
+    local owner = game.get_player(car.owner) and game.get_player(car.owner).name or false
+    Core.iter_connected_players(
+        function(player)
+            local is_trusted = trust_system and trust_system.players and trust_system.players[player.name]
+            if player.surface.index == surface_index and player.index ~= car.owner and not is_trusted then
+                if position then
+                    local new_position = main_surface.find_non_colliding_position('character', position, 3, 0)
+                    if new_position then
+                        player.teleport(new_position, main_surface)
+                    else
+                        player.teleport(game.forces.player.get_spawn_position(main_surface), main_surface)
+                    end
+                    player.print('[IC] You were kicked out of ' .. owner .. "'s " .. car.entity.name .. ' because you were not in the trusted list.', Color.warning)
+                end
+            end
+        end
+    )
 end
 
 local function kick_player_from_surface(player, target)
@@ -418,8 +493,7 @@ local function kick_player_from_surface(player, target)
         return
     end
 
-    local c = get_owner_car_object(cars, player)
-    local car = cars[c]
+    local car = get_owner_car_object(player)
 
     if not validate_entity(car) then
         return
@@ -437,7 +511,7 @@ local function kick_player_from_surface(player, target)
                 if p then
                     target.teleport(p, car.entity.surface)
                 else
-                    target.teleport(main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0, 5), main_surface)
+                    target.teleport(main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0), main_surface)
                 end
                 target.print('You were kicked out of ' .. player.name .. ' vehicle.', Color.warning)
             end
@@ -614,7 +688,7 @@ local function get_player_data(player)
     if players[player.index] then
         return player_data
     end
-    local fallback = WPT.get('active_surface_index')
+    local fallback = WPT.get('active_surface_index') --[[@as string|integer]]
     if not fallback then
         fallback = 1
     end
@@ -737,7 +811,7 @@ end
 function Public.remove_surface(player)
     local surfaces = IC.get('surfaces')
     local cars = IC.get('cars')
-    local _, car = get_owner_car_object(cars, player)
+    local car = get_owner_car_object(player)
     if not car then
         return
     end
@@ -992,7 +1066,7 @@ end
 
 function Public.create_room_surface(unit_number)
     if game.surfaces[tostring(unit_number)] then
-        return game.surfaces[tostring(unit_number)]
+        return game.surfaces[tostring(unit_number)].index
     end
 
     local map_gen_settings = {
@@ -1131,10 +1205,12 @@ function Public.create_car(event)
     local renders = IC.get('renders')
     local upgrades = WPT.get('upgrades')
 
-    local name, mined = get_player_entity(player)
+    local car, mined = get_player_entity(player)
 
-    if entity_type[name] and not mined then
-        return player.print(module_tag .. 'Multiple vehicles are not supported at the moment.', Color.warning)
+    if car then
+        if entity_type[car.name] and not mined then
+            return player.print(module_tag .. 'Multiple vehicles are not supported at the moment.', Color.warning)
+        end
     end
 
     if string.sub(ce.surface.name, 0, #map_name) ~= map_name then
@@ -1211,6 +1287,15 @@ function Public.remove_invalid_cars()
                     end
                 end
                 kick_players_from_surface(car)
+            else
+                local owner = game.get_player(car.owner) and game.get_player(car.owner) or false
+                if (not (owner and owner.connected) or JailData.get_is_jailed(owner.name)) and not car.schedule_enable_mining then
+                    car.schedule_enable_mining = true
+                    Task.set_timeout_in_ticks(30, enable_car_to_be_mined, {entity = car.entity, owner_name = owner.name})
+                end
+                if owner and owner.connected then
+                    car.schedule_enable_mining = nil
+                end
             end
         end
     end
@@ -1459,11 +1544,16 @@ function Public.set_repair_health(data)
     entity.health = health_types[entity.name] * m
 end
 
+Public.get_trusted_system = get_trusted_system
+Public.does_player_table_exist = does_player_table_exist
 Public.kick_player_from_surface = kick_player_from_surface
 Public.get_player_surface = get_player_surface
 Public.get_entity_from_player_surface = get_entity_from_player_surface
 Public.get_owner_car_object = get_owner_car_object
+Public.get_player_entity = get_player_entity
 Public.render_owner_text = render_owner_text
+Public.kick_players_from_surface = kick_players_from_surface
+Public.kick_non_trusted_players_from_surface = kick_non_trusted_players_from_surface
 
 Event.add(
     OfflinePlayers.events.remove_surface,

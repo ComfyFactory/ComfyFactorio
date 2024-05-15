@@ -58,6 +58,9 @@ function Public.reset()
     }
 end
 
+---Fetches a value from the table.
+---@param key any
+---@return any
 function Public.get(key)
     if key then
         return this[key]

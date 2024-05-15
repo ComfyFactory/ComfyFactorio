@@ -93,6 +93,10 @@ local function is_revoked(name)
     return false
 end
 
+local function get_is_jailed(player_name)
+    return jailed and jailed[player_name]
+end
+
 local function add_revoked(name, admin, reason)
     if name then
         local date = Server.get_current_date_with_time()
@@ -1523,5 +1527,7 @@ Gui.on_click(
         end
     end
 )
+
+Public.get_is_jailed = get_is_jailed
 
 return Public

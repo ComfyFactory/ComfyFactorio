@@ -41,33 +41,10 @@ local function decrement(t, k)
     t[k] = nil
 end
 
-local function create_player_table(player)
-    local trust_system = ICT.get('trust_system')
-    if not trust_system[player.index] then
-        trust_system[player.index] = {
-            players = {
-                [player.name] = true
-            },
-            allow_anyone = 'left',
-            auto_upgrade = 'left'
-        }
-    end
-    return trust_system[player.index]
-end
-
-local function does_player_table_exist(player)
-    local trust_system = ICT.get('trust_system')
-    if not trust_system[player.index] then
-        return false
-    else
-        return true
-    end
-end
-
 local function get_players(player, frame, all)
     local tbl = {}
     local players = game.connected_players
-    local trust_system = create_player_table(player)
+    local trust_system = Functions.get_trusted_system(player)
 
     for _, p in pairs(players) do
         if next(trust_system.players) and not all then
@@ -104,10 +81,8 @@ local function transfer_player_table(player, new_player)
             increment(trust_system[new_player.index].players, name)
         end
 
-        local cars = ICT.get('cars')
         local renders = ICT.get('renders')
-        local c = Functions.get_owner_car_object(cars, player)
-        local car = cars[c]
+        local car = Functions.get_owner_car_object(player)
         if not car then
             return error('Car was not found! This should not happen!', 2)
         end
@@ -172,15 +147,18 @@ local function draw_add_player(player, frame)
     left_flow.style.horizontally_stretchable = true
 
     local close_button = left_flow.add({type = 'button', name = discard_add_player_name, caption = ({'ic.discard'})})
-    close_button.style = 'back_button'
-    close_button.style.maximal_width = 100
+    local close_button_style = close_button.style
+    close_button_style = 'back_button' ---@class GuiButtonStyle
+
+    close_button_style.maximal_width = 100
 
     local right_flow = bottom_flow.add({type = 'flow'})
     right_flow.style.horizontal_align = 'right'
 
     local save_button = right_flow.add({type = 'button', name = save_add_player_button_name, caption = ({'ic.save'})})
-    save_button.style = 'confirm_button'
-    save_button.style.maximal_width = 100
+    local save_button_style = save_button.style
+    save_button_style = 'confirm_button' ---@class GuiButtonStyle
+    save_button_style.maximal_width = 100
 
     Gui.set_data(save_button, add_player_frame)
 end
@@ -223,14 +201,14 @@ local function draw_transfer_car(player, frame)
     left_flow.style.horizontally_stretchable = true
 
     local close_button = left_flow.add({type = 'button', name = discard_transfer_car_name, caption = ({'ic.discard'})})
-    close_button.style = 'back_button'
+    close_button.style = 'back_button' ---@class GuiButtonStyle
     close_button.style.maximal_width = 100
 
     local right_flow = bottom_flow.add({type = 'flow'})
     right_flow.style.horizontal_align = 'right'
 
     local save_button = right_flow.add({type = 'button', name = save_transfer_car_button_name, caption = ({'ic.save'})})
-    save_button.style = 'confirm_button'
+    save_button.style = 'confirm_button' ---@class GuiButtonStyle
     save_button.style.maximal_width = 100
 
     Gui.set_data(save_button, transfer_car_frame)
@@ -277,14 +255,14 @@ local function draw_destroy_surface_name(frame)
     left_flow.style.horizontally_stretchable = true
 
     local close_button = left_flow.add({type = 'button', name = discard_destroy_surface_name, caption = ({'ic.discard'})})
-    close_button.style = 'back_button'
+    close_button.style = 'back_button' ---@class GuiButtonStyle
     close_button.style.maximal_width = 100
 
     local right_flow = bottom_flow.add({type = 'flow'})
     right_flow.style.horizontal_align = 'right'
 
     local save_button = right_flow.add({type = 'button', name = save_destroy_surface_button_name, caption = ({'ic.save'})})
-    save_button.style = 'confirm_button'
+    save_button.style = 'confirm_button' ---@class GuiButtonStyle
     save_button.style.maximal_width = 100
 
     Gui.set_data(save_button, save_destroy_surface_button_name)
@@ -294,7 +272,7 @@ local function draw_players(data)
     local player_table = data.player_table
     local add_player_frame = data.add_player_frame
     local player = data.player
-    local player_list = create_player_table(player)
+    local player_list = Functions.get_trusted_system(player)
 
     for p, _ in pairs(player_list.players) do
         Gui.set_data(add_player_frame, p)
@@ -366,7 +344,7 @@ local function draw_main_frame(player)
     inside_table_style.bottom_padding = 10
     inside_table_style.width = 350
 
-    local player_list = create_player_table(player)
+    local player_list = Functions.get_trusted_system(player)
 
     local add_player_frame = inside_table.add({type = 'button', caption = ({'ic.add_player'}), name = add_player_name})
     local transfer_car_frame = inside_table.add({type = 'button', caption = ({'ic.car_settings'}), name = transfer_car_name})
@@ -459,9 +437,8 @@ local function toggle(player, recreate)
     local main_frame = screen[main_frame_name]
 
     if recreate and main_frame then
-        local location = main_frame.location
         remove_main_frame(main_frame)
-        draw_main_frame(player, location)
+        draw_main_frame(player)
         return
     end
     if main_frame then
@@ -613,7 +590,7 @@ Gui.on_click(
             return
         end
 
-        local player_list = create_player_table(player)
+        local player_list = Functions.get_trusted_system(player)
 
         local screen = player.gui.screen
         local frame = screen[main_frame_name]
@@ -624,7 +601,11 @@ Gui.on_click(
                 player.print('[IC] Everyone is allowed to enter your car!', Color.warning)
             else
                 player_list.allow_anyone = 'right'
-                player.print('[IC] Everyone is disallowed to enter your car except your trusted list!', Color.warning)
+                player.print('[IC] Only trusted players are allowed to enter your car!', Color.warning)
+                local car = Functions.get_owner_car_object(player)
+                if car then
+                    Functions.kick_non_trusted_players_from_surface(car)
+                end
             end
 
             if player.gui.screen[main_frame_name] then
@@ -646,7 +627,7 @@ Gui.on_click(
             return
         end
 
-        local player_list = create_player_table(player)
+        local player_list = Functions.get_trusted_system(player)
 
         local screen = player.gui.screen
         local frame = screen[main_frame_name]
@@ -679,7 +660,7 @@ Gui.on_click(
             return
         end
 
-        local player_list = create_player_table(player)
+        local player_list = Functions.get_trusted_system(player)
 
         local screen = player.gui.screen
         local frame = screen[main_frame_name]
@@ -751,7 +732,7 @@ Gui.on_click(
                 end
                 local name = player_to_add.name
 
-                local does_player_have_a_car = does_player_table_exist(player_to_add)
+                local does_player_have_a_car = Functions.does_player_table_exist(player_to_add)
                 if does_player_have_a_car then
                     return player.print('[IC] ' .. name .. ' already has a vehicle.', Color.warning)
                 end
@@ -826,9 +807,7 @@ Gui.on_click(
         end
 
         if frame and frame.valid then
-            local cars = ICT.get('cars')
-            local c = Functions.get_owner_car_object(cars, player)
-            local car = cars[c]
+            local car = Functions.get_owner_car_object(player)
             if not car then
                 return
             end
@@ -860,7 +839,7 @@ Gui.on_click(
             return
         end
 
-        local player_list = create_player_table(player)
+        local player_list = Functions.get_trusted_system(player)
 
         local screen = player.gui.screen
         local frame = screen[main_frame_name]
