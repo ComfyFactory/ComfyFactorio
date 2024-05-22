@@ -43,7 +43,8 @@ end
 
 local function write_additional_stats(key)
     local current_date = Server.get_current_date(true)
-    if not current_date then
+    if current_date == nil then
+        log('Failed to get current date.')
         return
     end
 
@@ -53,7 +54,8 @@ local function write_additional_stats(key)
     local previous_raw_date = Public.get_stateful('current_date')
 
     local previous_date = Server.get_current_date(true, false, previous_raw_date)
-    if not previous_date then
+    if previous_date == nil then
+        log('Failed to get previous date.')
         return
     end
 
@@ -67,6 +69,8 @@ local function write_additional_stats(key)
 
     if key then
         set_data(score_dataset, key, this.seasons)
+    else
+        log('Failed to write additional stats.')
     end
 end
 

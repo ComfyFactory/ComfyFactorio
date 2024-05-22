@@ -1403,9 +1403,9 @@ function Public.get_current_date(pretty, as_table, current_time)
     if as_table then
         return {year = date.year, month = date.month, day = date.day}
     elseif pretty then
-        return tonumber(date.year .. '-' .. date.month .. '-' .. date.day)
+        return date.year .. '-' .. date.month .. '-' .. date.day
     else
-        return tonumber(date.year .. date.month .. date.day)
+        return date.year .. date.month .. date.day
     end
 end
 

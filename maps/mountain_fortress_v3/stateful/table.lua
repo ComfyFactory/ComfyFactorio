@@ -1013,10 +1013,7 @@ local function apply_startup_settings(settings)
     this.time_to_reset = this.reset_after - time_to_reset
 
     if time_to_reset and time_to_reset >= this.reset_after then
-        if server_name_matches then
-            Server.set_data(dataset, dataset_key_previous, settings)
-        end
-
+        Public.save_settings_before_reset()
         Public.set_season_scores()
 
         local s = this.season or 1
@@ -1227,6 +1224,23 @@ function Public.save_settings()
     end
 
     return granted_buff
+end
+
+function Public.save_settings_before_reset()
+    local settings = {
+        rounds_survived = this.rounds_survived,
+        season = this.season,
+        test_mode = this.test_mode,
+        buffs = this.buffs,
+        current_date = this.current_date
+    }
+
+    local server_name_matches = Server.check_server_name('Mtn Fortress')
+    if server_name_matches then
+        Server.set_data(dataset, dataset_key_previous, settings)
+    else
+        Server.set_data(dataset, dataset_key_previous, settings)
+    end
 end
 
 function Public.reset_stateful(refresh_gui, clear_buffs)
