@@ -132,8 +132,13 @@ local function create_main_button(event)
     end
 
     local player = game.get_player(event.player_index)
+    if not player or not player.valid or not player.character then
+        return
+    end
+
     if Gui.get_mod_gui_top_frame() then
-        Gui.add_mod_button(
+        local b =
+            Gui.add_mod_button(
             player,
             {
                 type = 'sprite-button',
@@ -143,6 +148,14 @@ local function create_main_button(event)
                 style = Gui.button_style
             }
         )
+        if b then
+            b.style.font_color = {165, 165, 165}
+            b.style.font = 'heading-3'
+            b.style.minimal_height = 36
+            b.style.maximal_height = 36
+            b.style.minimal_width = 40
+            b.style.padding = -2
+        end
     else
         local main_button = player.gui.top[main_button_name]
         if not main_button or not main_button.valid then

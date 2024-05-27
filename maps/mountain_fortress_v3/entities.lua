@@ -14,6 +14,9 @@ local Diff = require 'modules.difficulty_vote_by_amount'
 local format_number = require 'util'.format_number
 local RPG_Progression = require 'utils.datastore.rpg_data'
 local WD = require 'modules.wave_defense.table'
+local scenario_name = Public.scenario_name
+local StatData = require 'utils.datastore.statistics'
+StatData.add_normalize('coins', 'Coins collected'):set_tooltip('The amount of coins the player has collected through mining/killed enemies.')
 
 local random = math.random
 local floor = math.floor
@@ -470,8 +473,12 @@ local function give_coin(player)
     if coin_amount >= 1 then
         if coin_override then
             player.insert({name = 'coin', count = coin_override})
+            StatData.get_data(player):increase('coins', coin_override)
         else
+            ---@diagnostic disable-next-line: param-type-mismatch
             player.insert({name = 'coin', count = random(1, coin_amount)})
+
+            StatData.get_data(player):increase('coins', coin_amount)
         end
     end
 end
@@ -1230,7 +1237,7 @@ local function show_mvps(player)
         miners_label_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 
         local sent_to_discord = Public.get('sent_to_discord')
-        local server_name_matches = Server.check_server_name('Mtn Fortress')
+        local server_name_matches = Server.check_server_name(scenario_name)
 
         if not sent_to_discord and server_name_matches then
             local message = {
@@ -1704,7 +1711,7 @@ local on_player_or_robot_built_tile = function(event)
     if not tiles then
         return
     end
-    for k, v in pairs(tiles) do
+    for _, v in pairs(tiles) do
         local old_tile = v.old_tile
         if old_tile.name == 'black-refined-concrete' then
             surface.set_tiles({{name = 'black-refined-concrete', position = v.position}}, true)

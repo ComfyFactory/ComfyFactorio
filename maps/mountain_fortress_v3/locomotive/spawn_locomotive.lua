@@ -195,11 +195,17 @@ function Public.locomotive_spawn(surface, position, reversed)
         )
     end
 
+    local s = 'entity/compilatron'
+
+    if random(1, 10) == 1 then
+        s = 'entity/character-corpse'
+    end
+
     for y = -1, 0, 0.05 do
         local scale = random(50, 100) * 0.01
         rendering.draw_sprite(
             {
-                sprite = 'entity/small-biter',
+                sprite = s,
                 orientation = random(0, 100) * 0.01,
                 x_scale = scale,
                 y_scale = scale,
@@ -228,6 +234,8 @@ function Public.locomotive_spawn(surface, position, reversed)
     local data = {
         surface = locomotive.surface
     }
+
+    log(serpent.block(extra_wagons))
 
     if extra_wagons and extra_wagons > 0 then
         local inc = 7

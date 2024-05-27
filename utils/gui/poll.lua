@@ -767,7 +767,8 @@ local function player_joined(event)
     end
 
     if Gui.get_mod_gui_top_frame() then
-        Gui.add_mod_button(
+        local button =
+            Gui.add_mod_button(
             player,
             {
                 type = 'sprite-button',
@@ -777,6 +778,14 @@ local function player_joined(event)
                 style = Gui.button_style
             }
         )
+        if button then
+            button.style.font_color = {165, 165, 165}
+            button.style.font = 'heading-3'
+            button.style.minimal_height = 36
+            button.style.maximal_height = 36
+            button.style.minimal_width = 40
+            button.style.padding = -2
+        end
     else
         if player.gui.top[main_button_name] ~= nil then
             local frame = player.gui.top[main_frame_name]

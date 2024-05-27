@@ -14,7 +14,8 @@ local this = {
     disable_crashsite = false,
     crashed_ship_items = {},
     crashed_debris_items = {},
-    custom_surface_name = nil
+    custom_surface_name = nil,
+    clear_mod_gui_top = false
 }
 
 Global.register(
@@ -102,6 +103,10 @@ local chart_starting_area = function()
 end
 
 local on_player_joined_game = function(event)
+    if not this.clear_mod_gui_top then
+        return
+    end
+
     Task.set_timeout_in_ticks(5, clear_mod_gui_top_frame_token, event)
 end
 

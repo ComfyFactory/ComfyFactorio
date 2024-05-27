@@ -46,6 +46,7 @@ local Beam = require 'modules.render_beam'
 -- Use these settings for live
 local send_ping_to_channel = Discord.channel_names.mtn_channel
 local role_to_mention = Discord.role_mentions.mtn_fortress
+local scenario_name = Public.scenario_name
 -- Use these settings for testing
 -- bot-lounge
 -- local send_ping_to_channel = Discord.channel_names.bot_quarters
@@ -107,7 +108,7 @@ end
 local announce_new_map =
     Task.register(
     function()
-        local server_name = Server.check_server_name('Mtn Fortress')
+        local server_name = Server.check_server_name(scenario_name)
         if server_name then
             Server.to_discord_named_raw(send_ping_to_channel, role_to_mention .. ' ** Mtn Fortress was just reset! **')
         end
@@ -115,8 +116,11 @@ local announce_new_map =
 )
 
 function Public.reset_map()
+    log(serpent.block('resetting map'))
     game.forces.player.reset()
     Public.reset_main_table()
+
+    Difficulty.show_gui(false)
 
     local this = Public.get()
     local wave_defense_table = WD.get_table()
@@ -199,6 +203,7 @@ function Public.reset_map()
     local players = game.connected_players
     for i = 1, #players do
         local player = players[i]
+        Difficulty.clear_top_frame(player)
         Score.init_player_table(player, true)
         Misc.insert_all_items(player)
         Modifiers.reset_player_modifiers(player)
@@ -211,7 +216,6 @@ function Public.reset_map()
 
     Difficulty.reset_difficulty_poll({closing_timeout = game.tick + 36000})
     Difficulty.set_gui_width(20)
-    Difficulty.show_gui(false)
 
     Collapse.set_kill_entities(false)
     Collapse.set_kill_specific_entities(collapse_kill)
@@ -223,6 +227,12 @@ function Public.reset_map()
 
     Collapse.start_now(false)
     Collapse.disable_collapse(false)
+
+    Public.stateful.enable(true)
+    Public.stateful.create()
+    Public.stateful.reset_stateful(true, true)
+    Public.stateful.increase_enemy_damage_and_health()
+    Public.stateful.apply_startup_settings()
 
     this.locomotive_health = 10000
     this.locomotive_max_health = 10000
@@ -298,11 +308,6 @@ function Public.reset_map()
     this.game_lost = false
 
     RPG.reset_table()
-    Public.stateful.enable(true)
-    Public.stateful.create()
-    Public.stateful.reset_stateful(true, true)
-    Public.stateful.increase_enemy_damage_and_health()
-    Public.stateful.apply_startup_settings()
 
     RPG.rpg_reset_all_players()
     RPG.set_surface_name({game.surfaces[this.active_surface_index].name, 'boss_room'})

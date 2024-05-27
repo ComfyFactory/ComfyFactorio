@@ -259,6 +259,8 @@ Event.on_nth_tick(
             return
         end
 
+        Public.set('next_pause_interval', game.tick + 216000)
+
         local pause_without_votes = Public.get('pause_without_votes')
         if pause_without_votes then
             Public.toggle_pause_wave_without_votes()

@@ -2,6 +2,7 @@ local Public = require 'maps.mountain_fortress_v3.stateful.table'
 local Event = require 'utils.event'
 local WD = require 'modules.wave_defense.table'
 local Beam = require 'modules.render_beam'
+local RPG = require 'modules.rpg.main'
 
 Public.stateful_gui = require 'maps.mountain_fortress_v3.stateful.gui'
 Public.stateful_terrain = require 'maps.mountain_fortress_v3.stateful.terrain'
@@ -78,6 +79,123 @@ Event.on_nth_tick(
             if not collection.game_won then
                 collection.game_won = true
             end
+        end
+    end
+)
+
+Event.add(
+    defines.events.on_player_crafted_item,
+    function(event)
+        local player = game.get_player(event.player_index)
+        if not player or not player.valid then
+            return
+        end
+
+        local item = event.item_stack
+        if not item or not item.valid_for_read then
+            return
+        end
+
+        local objectives = Public.get_stateful('objectives')
+
+        local handcrafted_items_any = objectives.handcrafted_items_any
+        if handcrafted_items_any then
+            handcrafted_items_any.actual = handcrafted_items_any.actual + item.count
+        end
+
+        local handcrafted_items = objectives.handcrafted_items
+        if handcrafted_items then
+            if item.name ~= handcrafted_items.name then
+                return
+            end
+
+            handcrafted_items.actual = handcrafted_items.actual + item.count
+        end
+    end
+)
+
+Event.add(
+    defines.events.on_entity_died,
+    function(event)
+        local entity = event.entity
+        if not entity or not entity.valid then
+            return
+        end
+
+        if not Public.valid_enemy_forces[entity.force.name] then
+            return
+        end
+
+        local objectives = Public.get_stateful('objectives')
+
+        local damage_type = event.damage_type
+        if not damage_type then
+            return
+        end
+        local killed_enemies = objectives.killed_enemies_type
+        if not killed_enemies then
+            return
+        end
+
+        if killed_enemies.damage_type ~= damage_type.name then
+            return
+        end
+
+        if entity.type == 'unit' then
+            killed_enemies.actual = killed_enemies.actual + 1
+        end
+    end
+)
+
+Event.add(
+    defines.events.on_rocket_launched,
+    function(event)
+        local rocket_inventory = event.rocket.get_inventory(defines.inventory.rocket)
+        local slot = rocket_inventory[1]
+        if slot and slot.valid and slot.valid_for_read then
+            local objectives = Public.get_stateful('objectives')
+
+            local launch_item = objectives.launch_item
+            if launch_item then
+                if slot.name ~= launch_item.name then
+                    return
+                end
+
+                launch_item.actual = launch_item.actual + slot.count
+            end
+        end
+    end
+)
+
+Event.add(
+    RPG.events.on_spell_cast_success,
+    function(event)
+        local player = game.get_player(event.player_index)
+        if not player or not player.valid then
+            return
+        end
+
+        local spell_name = event.spell_name
+        local amount = event.amount
+
+        if not player.character or not player.character.valid then
+            return
+        end
+
+        local objectives = Public.get_stateful('objectives')
+
+        local cast_spell_any = objectives.cast_spell_any
+        if cast_spell_any then
+            cast_spell_any.actual = cast_spell_any.actual + amount
+        end
+
+        local cast_spell = objectives.cast_spell
+        if cast_spell then
+            if spell_name ~= cast_spell.name then
+                return
+            end
+
+            cast_spell.actual = cast_spell.actual + amount
         end
     end
 )

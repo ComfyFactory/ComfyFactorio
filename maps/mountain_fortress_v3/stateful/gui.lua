@@ -19,8 +19,12 @@ local main_button_name = Gui.uid_name()
 local main_frame_name = Gui.uid_name()
 local boss_frame_name = Gui.uid_name()
 local close_button = Gui.uid_name()
+local close_buffs_window_name = Gui.uid_name()
+local buffs_window_name = Gui.uid_name()
+local on_click_buff_name = Gui.uid_name()
 local random = math.random
 local floor = math.floor
+local scenario_name = Public.scenario_name
 local main_frame
 
 local function create_particles(surface, name, position, amount, cause_position)
@@ -68,11 +72,17 @@ local spread_particles_token =
     end
 )
 
+local function pretty_format(input)
+    local action = string.gsub(input, '-', ' ')
+    local result = string.upper(string.sub(action, 1, 1)) .. string.sub(action, 2)
+    return result
+end
+
 local function notify_won_to_discord(buff)
     if not buff then
         return error('Buff is required when sending message to discord.', 2)
     end
-    local server_name_matches = Server.check_server_name('Mtn Fortress')
+    local server_name_matches = Server.check_server_name(scenario_name)
 
     local stateful = Public.get_stateful()
 
@@ -182,18 +192,62 @@ local warn_player_sound_token =
 )
 
 local function create_button(player)
-    local b =
-        player.gui.top.add(
-        {
-            type = 'sprite-button',
-            name = main_button_name,
-            sprite = 'utility/custom_tag_icon',
-            tooltip = 'Has information about all objectives that needs to be completed',
-            style = Gui.button_style
-        }
-    )
-    b.style.minimal_height = 38
-    b.style.maximal_height = 38
+    if Gui.get_mod_gui_top_frame() then
+        local b =
+            Gui.add_mod_button(
+            player,
+            {
+                type = 'sprite-button',
+                name = main_button_name,
+                sprite = 'utility/custom_tag_icon',
+                tooltip = 'Has information about all objectives that needs to be completed',
+                style = Gui.button_style
+            }
+        )
+        if b then
+            b.style.font_color = {165, 165, 165}
+            b.style.font = 'heading-3'
+            b.style.minimal_height = 36
+            b.style.maximal_height = 36
+            b.style.minimal_width = 40
+            b.style.padding = -2
+        end
+    else
+        local b =
+            player.gui.top.add(
+            {
+                type = 'sprite-button',
+                name = main_button_name,
+                sprite = 'utility/custom_tag_icon',
+                tooltip = 'Has information about all objectives that needs to be completed',
+                style = Gui.button_style
+            }
+        )
+        b.style.minimal_height = 38
+        b.style.maximal_height = 38
+    end
+end
+
+local function create_input_element(frame, type, value, items, index, tooltip, custom_space)
+    if type == 'slider' then
+        return frame.add({type = 'slider', value = value, minimum_value = 0, maximum_value = 1})
+    end
+    if type == 'boolean' then
+        return frame.add({type = 'checkbox', state = value})
+    end
+    if type == 'label' then
+        local label = frame.add({type = 'label', caption = value})
+        label.style.font = 'default-listbox'
+        label.tooltip = tooltip or ''
+        if custom_space then
+            label.style.minimal_height = custom_space
+        end
+        return label
+    end
+    if type == 'dropdown' then
+        return frame.add({type = 'drop-down', items = items, selected_index = index})
+    end
+    return frame.add({type = 'text-box', text = value})
 end
 
 local function play_game_won()
@@ -319,6 +373,111 @@ local function objective_frames(stateful, player_frame, objective, data)
     local objective_locale_right_label = right_flow.add({type = 'label', caption = objective_locale_right, tooltip = tooltip_right})
     data.random_objectives[#data.random_objectives + 1] = {name = objective_name, frame = objective_locale_right_label}
     return
+end
+
+local function buff_window(player)
+    local buff_frame_name, inside_table = Gui.add_main_frame_with_toolbar(player, 'center', buffs_window_name, nil, close_buffs_window_name, 'Buffs gathered')
+    if not buff_frame_name then
+        return
+    end
+    if not inside_table then
+        return
+    end
+
+    local stateful = Public.get_stateful()
+
+    local inside_table_style = inside_table.style
+    inside_table_style.width = 530
+
+    local info_text = inside_table.add({type = 'label', caption = 'All the buffs that have been gathered throughout the runs!'})
+    local info_text_style = info_text.style
+    info_text_style.font = 'heading-2'
+    info_text_style.padding = 0
+    info_text_style.left_padding = 10
+    info_text_style.horizontal_align = 'left'
+    info_text_style.vertical_align = 'bottom'
+    info_text_style.font_color = {0.55, 0.55, 0.99}
+
+    local buff_pane = inside_table.add({type = 'scroll-pane'})
+    local ns = buff_pane.style
+    ns.vertically_squashable = true
+    ns.bottom_padding = 5
+    ns.left_padding = 5
+    ns.right_padding = 5
+    ns.top_padding = 5
+
+    buff_pane.add({type = 'line'})
+
+    local starting_items_label = buff_pane.add({type = 'label', caption = 'Starting items'})
+    local starting_items_label_style = starting_items_label.style
+    starting_items_label_style.font = 'heading-3'
+    starting_items_label_style.padding = 0
+    starting_items_label_style.horizontal_align = 'left'
+    starting_items_label_style.font_color = {0.55, 0.55, 0.99}
+
+    local starting_grid = buff_pane.add({type = 'table', column_count = 8})
+
+    buff_pane.add({type = 'line'})
+
+    local force_label = buff_pane.add({type = 'label', caption = 'Force Buffs'})
+    local force_label_style = force_label.style
+    force_label_style.font = 'heading-3'
+    force_label_style.padding = 0
+    force_label_style.horizontal_align = 'left'
+    force_label_style.font_color = {0.55, 0.55, 0.99}
+    local force_grid = buff_pane.add({type = 'table', column_count = 2})
+
+    buff_pane.add({type = 'line'})
+
+    local custom_label = buff_pane.add({type = 'label', caption = 'Custom Buffs'})
+    local custom_label_style = custom_label.style
+    custom_label_style.font = 'heading-3'
+    custom_label_style.padding = 0
+    custom_label_style.horizontal_align = 'left'
+    custom_label_style.font_color = {0.55, 0.55, 0.99}
+    local custom_grid = buff_pane.add({type = 'table', column_count = 2})
+
+    if stateful.buffs and next(stateful.buffs) then
+        if stateful.buffs_collected and next(stateful.buffs_collected) then
+            if stateful.buffs_collected.starting_items then
+                for item_name, item_data in pairs(stateful.buffs_collected.starting_items) do
+                    -- local text = pretty_format(item_name) .. ': [font=font-bold]' .. item_data.count
+                    local text = '[font=default-large] [item=' .. item_name .. '][/font]' .. ': [font=default-bold]' .. item_data.count .. '[/font]'
+                    create_input_element(starting_grid, 'label', text, nil, nil, item_data.discord, 30)
+                end
+            end
+
+            for name, buff_data in pairs(stateful.buffs_collected) do
+                if type(buff_data.amount) ~= 'table' and buff_data.force then
+                    local c = buff_data.count
+                    local text
+                    if name == 'xp_level' or name == 'xp_bonus' or name == 'character_health_bonus' then
+                        text = '[font=default-bold]' .. Stateful.buff_to_string[name] .. ': ' .. c .. '[/font]'
+                    else
+                        text = '[font=default-bold]' .. Stateful.buff_to_string[name] .. ': ' .. (c * 100) .. '%[/font]'
+                    end
+
+                    create_input_element(force_grid, 'label', text, nil, nil, buff_data.discord)
+                end
+
+                if name ~= 'starting_items' and not buff_data.force then
+                    if buff_data.name then
+                        local text_to_place = buff_data.count or 'Unlocked'
+                        local text = '[font=default-bold]' .. buff_data.name .. ': ' .. text_to_place .. ' [/font]'
+                        create_input_element(custom_grid, 'label', text, nil, nil, buff_data.discord)
+                    else
+                        for _, buff in pairs(buff_data) do
+                            local text_to_place = buff.count or 'Unlocked'
+                            local text = '[font=default-bold]' .. pretty_format(buff.name) .. ': ' .. text_to_place .. ' [/font]'
+                            create_input_element(custom_grid, 'label', text, nil, nil, buff.discord)
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    player.opened = buff_frame_name
 end
 
 local function boss_frame(player, alert)
@@ -480,7 +639,11 @@ main_frame = function(player)
     local wave_number = WD.get('wave_number')
 
     local frame = player.gui.screen.add {type = 'frame', name = main_frame_name, caption = {'stateful.win_conditions'}, direction = 'vertical', tooltip = {'stateful.win_conditions_tooltip'}}
-    frame.location = {x = 1, y = 45}
+    if Gui.get_mod_gui_top_frame() then
+        frame.location = {x = 0, y = 67}
+    else
+        frame.location = {x = 1, y = 45}
+    end
     frame.style.maximal_height = 700
     frame.style.minimal_width = 200
     frame.style.maximal_width = 400
@@ -533,31 +696,7 @@ main_frame = function(player)
         buff_right_flow.style.horizontal_align = 'right'
         buff_right_flow.style.horizontally_stretchable = true
 
-        local buffs = ''
-        if stateful.buffs_collected and next(stateful.buffs_collected) then
-            if stateful.buffs_collected.starting_items then
-                buffs = buffs .. 'Starting items:\n'
-                for item_name, item_data in pairs(stateful.buffs_collected.starting_items) do
-                    buffs = buffs .. item_name .. ': ' .. item_data.count
-                    buffs = buffs .. '\n'
-                end
-                buffs = buffs .. '\n'
-            end
-
-            buffs = buffs .. 'Force buffs:\n'
-            for name, buff_data in pairs(stateful.buffs_collected) do
-                if type(buff_data.amount) ~= 'table' and name ~= 'starting_items' then
-                    if name == 'xp_level' or name == 'xp_bonus' or name == 'character_health_bonus' then
-                        buffs = buffs .. Stateful.buff_to_string[name] .. ': ' .. buff_data.count
-                    else
-                        buffs = buffs .. Stateful.buff_to_string[name] .. ': ' .. (buff_data.count * 100) .. '%'
-                    end
-                    buffs = buffs .. '\n'
-                end
-            end
-        end
-
-        buff_right_flow.add({type = 'label', caption = '[img=utility/center]', tooltip = buffs})
+        buff_right_flow.add({name = on_click_buff_name, type = 'label', caption = '[img=utility/center]', tooltip = {'stateful.buff_tooltip_click'}})
 
         local buff_label = buff_left_flow.add({type = 'label', caption = {'stateful.buffs'}, tooltip = {'stateful.buff_tooltip'}})
         buff_label.style.single_line = false
@@ -874,6 +1013,7 @@ local function update_raw()
         if breached_wall >= stateful.objectives.randomized_zone then
             if not stateful.objectives_completed.randomized_zone then
                 stateful.objectives_completed.randomized_zone = true
+                stateful.objectives_time_spent.randomized_zone = tick
                 play_achievement_unlocked()
                 Alert.alert_all_players(10, 'Objective: **breach zone** has been complete!')
                 Server.to_discord_embed('Objective: **breach zone** has been complete!')
@@ -886,6 +1026,8 @@ local function update_raw()
         if wave_number >= stateful.objectives.randomized_wave then
             if not stateful.objectives_completed.randomized_wave then
                 stateful.objectives_completed.randomized_wave = true
+                stateful.objectives_time_spent.randomized_wave = tick
+
                 play_achievement_unlocked()
                 Alert.alert_all_players(10, 'Objective: **survive until wave** has been complete!')
                 Server.to_discord_embed('Objective: **survive until wave** has been complete!')
@@ -911,6 +1053,7 @@ local function update_raw()
                 if items_done == 3 then
                     if not stateful.objectives_completed.supplies then
                         stateful.objectives_completed.supplies = true
+                        stateful.objectives_time_spent.supplies = tick
                         Alert.alert_all_players(10, 'Objective: **produce 3 items multiple times** has been complete!')
                         Server.to_discord_embed('Objective: **produce 3 items multiple times** has been complete!')
                         play_achievement_unlocked()
@@ -937,6 +1080,7 @@ local function update_raw()
                 stateful.objectives.single_item.count = 0
                 if not stateful.objectives_completed.single_item then
                     stateful.objectives_completed.single_item = true
+                    stateful.objectives_time_spent.single_item = tick
                     play_achievement_unlocked()
                     Alert.alert_all_players(10, 'Objective: **produce an item multiple times** has been completed!')
                     Server.to_discord_embed('Objective: **produce an item multiple times** has been completed!')
@@ -1042,6 +1186,7 @@ local function update_raw()
             local completed, _, _ = callback()
             if completed and completed == true and not stateful.objectives_completed[objective_name] then
                 stateful.objectives_completed[objective_name] = true
+                stateful.objectives_time_spent[objective_name] = tick
                 Alert.alert_all_players(10, 'Objective: **' .. objective_name .. '** has been completed!')
                 Server.to_discord_embed('Objective: **' .. objective_name .. '** has been completed!')
                 play_achievement_unlocked()
@@ -1185,6 +1330,71 @@ Gui.on_click(
         if frame_boss then
             Gui.remove_data_recursively(frame_boss)
             frame_boss.destroy()
+        end
+    end
+)
+
+Gui.on_click(
+    close_buffs_window_name,
+    function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Buff Close Button')
+        if is_spamming then
+            return
+        end
+        local player = event.player
+        local center = player.gui.center
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        local frame_buff = center[buffs_window_name]
+        if frame_buff and frame_buff.valid then
+            Gui.remove_data_recursively(frame_buff)
+            frame_buff.destroy()
+        end
+    end
+)
+
+Gui.on_custom_close(
+    buffs_window_name,
+    function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Buff Custom Close')
+        if is_spamming then
+            return
+        end
+        local player = event.player
+        local center = player.gui.center
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        local frame_buff = center[buffs_window_name]
+        if frame_buff and frame_buff.valid then
+            Gui.remove_data_recursively(frame_buff)
+            frame_buff.destroy()
+        end
+    end
+)
+
+Gui.on_click(
+    on_click_buff_name,
+    function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Buff Open Button')
+        if is_spamming then
+            return
+        end
+        local player = event.player
+        local center = player.gui.center
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        local frame_buff = center[buffs_window_name]
+        if frame_buff and frame_buff.valid then
+            Gui.remove_data_recursively(frame_buff)
+            frame_buff.destroy()
+        else
+            buff_window(player)
         end
     end
 )

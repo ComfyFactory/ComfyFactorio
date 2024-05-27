@@ -27,7 +27,7 @@ local remove_data_recursively
 local data = {}
 local element_map = {}
 local settings = {
-    mod_gui_top_frame = false,
+    mod_gui_top_frame = true,
     disabled_tabs = {},
     disable_clear_invalid_data = true
 }
@@ -66,17 +66,17 @@ local main_toggle_button_name = Public.uid_name()
 local main_button_name = Public.uid_name()
 local close_button_name = Public.uid_name()
 
-Public.button_style = 'mod_gui_button'
-
 if not Public.mod_gui_button_enabled then
     Public.button_style = nil
 end
 
-Public.frame_style = 'non_draggable_frame'
-
 Public.top_main_gui_button = main_button_name
 Public.main_frame_name = main_frame_name
 Public.main_toggle_button_name = main_toggle_button_name
+Public.frame_style = 'non_draggable_frame'
+Public.button_style = 'mod_gui_button'
+Public.top_flow_button_enabled_style = 'menu_button_continue'
+Public.top_flow_button_disabled_style = Public.button_style
 
 --- Verifies if a frame is valid and destroys it.
 ---@param align userdata
@@ -575,7 +575,7 @@ function Public.add_mod_button(player, frame)
         return Public.get_button_flow(player)[frame.name]
     end
 
-    Public.get_button_flow(player).add(frame)
+    return Public.get_button_flow(player).add(frame)
 end
 
 ---@param state boolean
@@ -764,7 +764,13 @@ end
 
 local function top_button(player)
     if settings.mod_gui_top_frame then
-        Public.add_mod_button(player, {type = 'sprite-button', name = main_button_name, sprite = 'item/raw-fish', style = Public.button_style})
+        local button = Public.add_mod_button(player, {type = 'sprite-button', name = main_button_name, sprite = 'item/raw-fish', style = Public.button_style})
+        if button then
+            button.style.minimal_height = 36
+            button.style.maximal_height = 36
+            button.style.minimal_width = 40
+            button.style.padding = -2
+        end
     else
         if player.gui.top[main_button_name] then
             return
@@ -782,19 +788,42 @@ local function top_toggle_button(player)
         return
     end
 
-    local b =
-        player.gui.top.add(
-        {
-            type = 'sprite-button',
-            name = main_toggle_button_name,
-            sprite = 'utility/preset',
-            style = Public.button_style,
-            tooltip = 'Click to hide top buttons!'
-        }
-    )
-    b.style.padding = 2
-    b.style.width = 20
-    b.style.maximal_height = 38
+    if Public.get_mod_gui_top_frame() then
+        local b =
+            Public.add_mod_button(
+            player,
+            {
+                type = 'sprite-button',
+                name = main_toggle_button_name,
+                sprite = 'utility/preset',
+                tooltip = 'Click to hide top buttons!',
+                style = Public.button_style
+            }
+        )
+        if b then
+            b.style.font_color = {165, 165, 165}
+            b.style.font = 'heading-3'
+            b.style.minimal_height = 36
+            b.style.maximal_height = 36
+            b.style.minimal_width = 15
+            b.style.maximal_width = 15
+            b.style.padding = -2
+        end
+    else
+        local b =
+            player.gui.top.add(
+            {
+                type = 'sprite-button',
+                name = main_toggle_button_name,
+                sprite = 'utility/preset',
+                style = Public.button_style,
+                tooltip = 'Click to hide top buttons!'
+            }
+        )
+        b.style.padding = 2
+        b.style.width = 20
+        b.style.maximal_height = 38
+    end
 end
 
 local function draw_main_frame(player)
@@ -951,6 +980,7 @@ Public.on_click(
         end
         local player = event.player
         local frame = Public.get_parent_frame(player)
+
         if frame then
             remove_data_recursively(frame)
             frame.destroy()
@@ -999,9 +1029,17 @@ Public.on_click(
         local top = player.gui.top
 
         if button.sprite == 'utility/preset' then
-            for _, ele in pairs(top.children) do
-                if ele and ele.valid and ele.name ~= main_toggle_button_name then
-                    ele.visible = false
+            if Public.get_mod_gui_top_frame() then
+                for _, ele in pairs(top.mod_gui_top_frame.mod_gui_inner_frame.children) do
+                    if ele and ele.valid and ele.name ~= main_toggle_button_name then
+                        ele.visible = false
+                    end
+                end
+            else
+                for _, ele in pairs(top.children) do
+                    if ele and ele.valid and ele.name ~= main_toggle_button_name then
+                        ele.visible = false
+                    end
                 end
             end
 
@@ -1015,9 +1053,17 @@ Public.on_click(
             button.sprite = 'utility/expand_dots_white'
             button.tooltip = 'Click to show top buttons!'
         else
-            for _, ele in pairs(top.children) do
-                if ele and ele.valid and ele.name ~= main_toggle_button_name then
-                    ele.visible = true
+            if Public.get_mod_gui_top_frame() then
+                for _, ele in pairs(top.mod_gui_top_frame.mod_gui_inner_frame.children) do
+                    if ele and ele.valid and ele.name ~= main_toggle_button_name then
+                        ele.visible = true
+                    end
+                end
+            else
+                for _, ele in pairs(top.children) do
+                    if ele and ele.valid and ele.name ~= main_toggle_button_name then
+                        ele.visible = true
+                    end
                 end
             end
 

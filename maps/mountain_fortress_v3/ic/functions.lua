@@ -957,22 +957,42 @@ end
 
 function Public.kill_car_but_save_surface(entity)
     if not validate_entity(entity) then
-        return
+        return nil
     end
 
     local entity_type = IC.get('entity_type')
 
     if not entity_type[entity.type] then
-        return
+        return nil
+    end
+
+    local cars = IC.get('cars')
+    local car = cars[entity.unit_number]
+    if not car then
+        return nil
+    end
+
+    local surface_index = car.surface
+    local surface = game.get_surface(surface_index)
+    if not surface then
+        return nil
+    end
+
+    local c = 0
+    local entities = surface.find_entities_filtered({area = car.area, force = 'player'})
+    if entities and #entities > 0 then
+        for _, e in pairs(entities) do
+            if e and e.valid and e.name ~= 'character' then
+                c = c + 1
+            end
+        end
+        if c > 0 then
+            return false, c
+        end
     end
 
     local surfaces = IC.get('surfaces')
     local surfaces_deleted_by_button = IC.get('surfaces_deleted_by_button')
-    local cars = IC.get('cars')
-    local car = cars[entity.unit_number]
-    if not car then
-        return
-    end
 
     kick_players_out_of_vehicles(car)
     kick_players_from_surface(car)
@@ -992,7 +1012,7 @@ function Public.kill_car_but_save_surface(entity)
     end
 
     if not owner then
-        return
+        return nil
     end
 
     local renders = IC.get('renders')
@@ -1017,9 +1037,6 @@ function Public.kill_car_but_save_surface(entity)
         misc_settings[owner.index] = nil
     end
 
-    local surface_index = car.surface
-    local surface = game.surfaces[surface_index]
-
     if not surfaces_deleted_by_button[owner.name] then
         surfaces_deleted_by_button[owner.name] = {}
     end
@@ -1030,6 +1047,7 @@ function Public.kill_car_but_save_surface(entity)
     car.entity.force.chart(surface, car.area)
     surfaces[entity.unit_number] = nil
     cars[entity.unit_number] = nil
+    return true
 end
 
 function Public.validate_owner(player, entity)

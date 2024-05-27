@@ -6,7 +6,7 @@ local Collapse = require 'modules.collapse'
 local WD = require 'modules.wave_defense.table'
 local Discord = require 'utils.discord_handler'
 local mapkeeper = '[color=blue]Mapkeeper:[/color]'
-local scenario_name = 'Mtn Fortress'
+local scenario_name = Public.scenario_name
 
 commands.add_command(
     'scenario',

@@ -18,6 +18,7 @@ local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local Beam = require 'modules.render_beam'
 local Discord = require 'utils.discord'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
+local scenario_name = Public.scenario_name
 
 local this = {
     enabled = false,
@@ -28,6 +29,7 @@ local this = {
     time_to_reset = 60
 }
 
+local random = math.random
 local round = math.round
 local floor = math.floor
 local dataset = 'scenario_settings'
@@ -42,6 +44,8 @@ Global.register(
         this = tbl
     end
 )
+
+local damage_types = {'physical', 'electric', 'fire', 'poison', 'laser'}
 
 local stateful_spawn_points = {
     {{x = -205, y = -37}, {x = 195, y = 37}},
@@ -88,7 +92,7 @@ local buff_to_string = {
 }
 
 local function notify_season_over_to_discord()
-    local server_name_matches = Server.check_server_name('Mtn Fortress')
+    local server_name_matches = Server.check_server_name(scenario_name)
 
     local stateful = Public.get_stateful()
 
@@ -140,187 +144,123 @@ local function notify_season_over_to_discord()
     end
 end
 
-local function get_random_force_buff(fetch_all)
+local function get_random_buff(fetch_all, only_force)
     local buffs = {
         {
             name = 'character_running_speed_modifier',
-            discord = 'Running speed modifier',
+            discord = 'Running speed modifier - run faster!',
             modifier = 'force',
+            per_force = true,
             state = 0.05
         },
         {
             name = 'manual_mining_speed_modifier',
-            discord = 'Mining speed modifier',
+            discord = 'Mining speed modifier - mine faster!',
             modifier = 'force',
+            per_force = true,
             state = 0.15
         },
         {
             name = 'laboratory_speed_modifier',
-            discord = 'Laboratory speed modifier',
+            discord = 'Laboratory speed modifier - labs work faster!',
             modifier = 'force',
+            per_force = true,
             state = 0.15
         },
         {
             name = 'laboratory_productivity_bonus',
-            discord = 'Productivity bonus',
+            discord = 'Laboratory productivity bonus - labs dupe things!',
             modifier = 'force',
+            per_force = true,
             state = 0.15
         },
         {
             name = 'worker_robots_storage_bonus',
-            discord = 'Robot storage bonus',
+            discord = 'Robot storage bonus - robots carry more!',
             modifier = 'force',
+            per_force = true,
             state = 1
         },
         {
             name = 'worker_robots_battery_modifier',
-            discord = 'Robot battery bonus',
+            discord = 'Robot battery bonus - robots work longer!',
             modifier = 'force',
+            per_force = true,
             state = 1
         },
         {
             name = 'worker_robots_speed_modifier',
-            discord = 'Robot speed modifier',
+            discord = 'Robot speed modifier - robots move faster!',
             modifier = 'force',
+            per_force = true,
             state = 0.5
         },
         {
             name = 'mining_drill_productivity_bonus',
-            discord = 'Drill productivity bonus',
+            discord = 'Drill productivity bonus - drills work faster!',
             modifier = 'force',
+            per_force = true,
             state = 0.5
         },
         {
             name = 'character_health_bonus',
-            discord = 'Character health bonus',
+            discord = 'Character health bonus - more health!',
             modifier = 'force',
+            per_force = true,
             state = 250
         },
         {
             name = 'distance',
-            discord = 'RPG reach distance bonus',
+            discord = 'RPG reach distance bonus - reach further!',
             modifier = 'rpg_distance',
+            per_force = true,
             modifiers = {'character_resource_reach_distance_bonus', 'character_item_pickup_distance_bonus', 'character_loot_pickup_distance_bonus', 'character_reach_distance_bonus'},
             state = 0.05
         },
         {
             name = 'manual_crafting_speed_modifier',
-            discord = 'Crafting speed modifier',
+            discord = 'Crafting speed modifier - craft faster!',
             modifier = 'force',
+            per_force = true,
             state = 0.12
         },
         {
             name = 'xp_bonus',
-            discord = 'RPG XP point bonus',
+            discord = 'RPG XP point bonus - more XP points from kills etc.',
             modifier = 'rpg',
+            per_force = true,
             state = 0.12
         },
         {
             name = 'xp_level',
-            discord = 'RPG XP level bonus',
+            discord = 'RPG XP level bonus - start with more XP levels',
             modifier = 'rpg',
+            per_force = true,
             state = 20
-        }
-    }
-
-    if fetch_all then
-        return buffs
-    end
-
-    shuffle(buffs)
-    shuffle(buffs)
-    shuffle(buffs)
-    shuffle(buffs)
-    shuffle(buffs)
-    shuffle(buffs)
-
-    return buffs[1]
-end
-
-local function get_random_buff(fetch_all)
-    local buffs = {
-        {
-            name = 'character_running_speed_modifier',
-            discord = 'Running speed modifier',
-            modifier = 'force',
-            state = 0.05
         },
         {
-            name = 'manual_mining_speed_modifier',
-            discord = 'Mining speed modifier',
-            modifier = 'force',
-            state = 0.15
+            name = 'chemicals_s',
+            discord = 'Starting items supplies - start with some sulfur',
+            modifier = 'starting_items',
+            limit = 200,
+            add_per_buff = 50,
+            items = {
+                {name = 'sulfur', count = 50}
+            }
         },
         {
-            name = 'laboratory_speed_modifier',
-            discord = 'Laboratory speed modifier',
-            modifier = 'force',
-            state = 0.15
-        },
-        {
-            name = 'laboratory_productivity_bonus',
-            discord = 'Productivity bonus',
-            modifier = 'force',
-            state = 0.15
-        },
-        {
-            name = 'worker_robots_storage_bonus',
-            discord = 'Robot storage bonus',
-            modifier = 'force',
-            state = 1
-        },
-        {
-            name = 'worker_robots_battery_modifier',
-            discord = 'Robot battery bonus',
-            modifier = 'force',
-            state = 1
-        },
-        {
-            name = 'worker_robots_speed_modifier',
-            discord = 'Robot speed modifier',
-            modifier = 'force',
-            state = 0.5
-        },
-        {
-            name = 'mining_drill_productivity_bonus',
-            discord = 'Drill productivity bonus',
-            modifier = 'force',
-            state = 0.5
-        },
-        {
-            name = 'character_health_bonus',
-            discord = 'Character health bonus',
-            modifier = 'force',
-            state = 250
-        },
-        {
-            name = 'distance',
-            discord = 'RPG reach distance bonus',
-            modifier = 'rpg_distance',
-            modifiers = {'character_resource_reach_distance_bonus', 'character_item_pickup_distance_bonus', 'character_loot_pickup_distance_bonus', 'character_reach_distance_bonus'},
-            state = 0.05
-        },
-        {
-            name = 'manual_crafting_speed_modifier',
-            discord = 'Crafting speed modifier',
-            modifier = 'force',
-            state = 0.12
-        },
-        {
-            name = 'xp_bonus',
-            discord = 'RPG XP point bonus',
-            modifier = 'rpg',
-            state = 0.12
-        },
-        {
-            name = 'xp_level',
-            discord = 'RPG XP level bonus',
-            modifier = 'rpg',
-            state = 20
+            name = 'chemicals_p',
+            discord = 'Starting items supplies - start with some plastic bar',
+            modifier = 'starting_items',
+            limit = 200,
+            add_per_buff = 50,
+            items = {
+                {name = 'plastic-bar', count = 100}
+            }
         },
         {
             name = 'supplies',
-            discord = 'Starting items supplies',
+            discord = 'Starting items supplies - start with some copper and iron plates',
             modifier = 'starting_items',
             limit = 1000,
             add_per_buff = 100,
@@ -331,7 +271,7 @@ local function get_random_buff(fetch_all)
         },
         {
             name = 'supplies_1',
-            discord = 'Starting items supplies',
+            discord = 'Starting items supplies - start with more copper and iron plates',
             modifier = 'starting_items',
             limit = 1000,
             add_per_buff = 200,
@@ -342,7 +282,7 @@ local function get_random_buff(fetch_all)
         },
         {
             name = 'supplies_2',
-            discord = 'Starting items supplies',
+            discord = 'Starting items supplies - start with even more copper and iron plates',
             modifier = 'starting_items',
             limit = 1000,
             add_per_buff = 400,
@@ -353,7 +293,7 @@ local function get_random_buff(fetch_all)
         },
         {
             name = 'defense',
-            discord = 'Defense starting supplies',
+            discord = 'Defense starting supplies - start with some turrets and ammo',
             modifier = 'starting_items',
             limit = 10,
             add_per_buff = 1,
@@ -364,7 +304,7 @@ local function get_random_buff(fetch_all)
         },
         {
             name = 'defense_3',
-            discord = 'Defense starting supplies',
+            discord = 'Defense starting supplies - start with more turrets and ammo',
             modifier = 'starting_items',
             limit = 1,
             add_per_buff = 1,
@@ -375,7 +315,7 @@ local function get_random_buff(fetch_all)
         },
         {
             name = 'armor',
-            discord = 'Armor starting supplies',
+            discord = 'Armor starting supplies - start with some armor and solar panels',
             modifier = 'starting_items',
             limit = 1,
             add_per_buff = 1,
@@ -386,7 +326,7 @@ local function get_random_buff(fetch_all)
         },
         {
             name = 'production',
-            discord = 'Production starting supplies',
+            discord = 'Production starting supplies - start with some furnaces and coal',
             modifier = 'starting_items',
             limit = 2,
             add_per_buff = 1,
@@ -397,7 +337,7 @@ local function get_random_buff(fetch_all)
         },
         {
             name = 'production_1',
-            discord = 'Production starting supplies',
+            discord = 'Production starting supplies - start with some steel furnaces and solid fuel',
             modifier = 'starting_items',
             limit = 2,
             add_per_buff = 1,
@@ -408,7 +348,7 @@ local function get_random_buff(fetch_all)
         },
         {
             name = 'fast_startup',
-            discord = 'Assembling starting supplies',
+            discord = 'Assembling starting supplies - start with some assembling machines T1',
             modifier = 'starting_items',
             limit = 25,
             add_per_buff = 2,
@@ -418,7 +358,7 @@ local function get_random_buff(fetch_all)
         },
         {
             name = 'fast_startup_1',
-            discord = 'Assembling starting supplies',
+            discord = 'Assembling starting supplies - start with some assembling machines T2',
             modifier = 'starting_items',
             limit = 25,
             add_per_buff = 2,
@@ -428,7 +368,7 @@ local function get_random_buff(fetch_all)
         },
         {
             name = 'fast_startup_2',
-            discord = 'Assembling starting supplies',
+            discord = 'Assembling starting supplies - start with some assembling machines T3',
             modifier = 'starting_items',
             limit = 25,
             add_per_buff = 2,
@@ -438,7 +378,7 @@ local function get_random_buff(fetch_all)
         },
         {
             name = 'heal-thy-buildings',
-            discord = 'Repair starting supplies',
+            discord = 'Repair starting supplies - start with some repair packs',
             modifier = 'starting_items',
             limit = 20,
             add_per_buff = 2,
@@ -451,8 +391,103 @@ local function get_random_buff(fetch_all)
             discord = 'Extra wagon at start',
             modifier = 'locomotive',
             state = 1
+        },
+        {
+            name = 'american_oil',
+            discord = 'Oil tech - start with some crude oil barrels',
+            modifier = 'starting_items',
+            limit = 40,
+            add_per_buff = 20,
+            items = {
+                {name = 'crude-oil-barrel', count = 20}
+            }
+        },
+        {
+            name = 'steel_plates',
+            discord = 'Steel tech - start with some steel plates',
+            modifier = 'starting_items',
+            limit = 200,
+            add_per_buff = 100,
+            items = {
+                {name = 'steel-plate', count = 100}
+            }
+        },
+        {
+            name = 'red_science',
+            discord = 'Science tech - start with some red science packs',
+            modifier = 'starting_items',
+            limit = 200,
+            add_per_buff = 10,
+            items = {
+                {name = 'automation-science-pack', count = 10}
+            }
+        },
+        {
+            name = 'roboport_equipement',
+            discord = 'Equipement tech - start with a personal roboport',
+            modifier = 'starting_items',
+            limit = 4,
+            add_per_buff = 1,
+            items = {
+                {name = 'personal-roboport-equipment', count = 1}
+            }
+        },
+        {
+            name = 'mk1_tech_unlocked',
+            discord = 'Equipement tech - start with power armor tech unlocked.',
+            modifier = 'tech',
+            limit = 1,
+            add_per_buff = 1,
+            techs = {
+                {name = 'power-armor', count = 1}
+            }
+        },
+        {
+            name = 'steel_axe_unlocked',
+            discord = 'Equipement tech - start with steel axe tech unlocked.',
+            modifier = 'tech',
+            limit = 1,
+            add_per_buff = 1,
+            techs = {
+                {name = 'steel-axe', count = 1}
+            }
+        },
+        {
+            name = 'military_2_unlocked',
+            discord = 'Equipement tech - start with military 2 tech unlocked.',
+            modifier = 'tech',
+            limit = 1,
+            add_per_buff = 1,
+            techs = {
+                {name = 'military-2', count = 1}
+            }
+        },
+        {
+            name = 'all_the_fish',
+            discord = 'Wagon is full of fish!',
+            modifier = 'fish',
+            limit = 1,
+            add_per_buff = 1
         }
     }
+
+    if only_force then
+        local force_buffs = {}
+        for _, buff in pairs(buffs) do
+            if buff.per_force then
+                force_buffs[#force_buffs + 1] = buff
+            end
+        end
+
+        shuffle(force_buffs)
+        shuffle(force_buffs)
+        shuffle(force_buffs)
+        shuffle(force_buffs)
+        shuffle(force_buffs)
+        shuffle(force_buffs)
+
+        return force_buffs[1]
+    end
 
     if fetch_all then
         return buffs
@@ -608,6 +643,96 @@ local killed_enemies_token =
     end
 )
 
+local killed_enemies_type_token =
+    Task.register(
+    function()
+        local actual = this.objectives.killed_enemies_type.actual
+        local expected = this.objectives.killed_enemies_type.expected
+        if actual >= expected then
+            return true, {'stateful.enemies_killed_type', this.objectives.killed_enemies_type.damage_type}, {'stateful.done', format_number(expected, true), format_number(expected, true)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_completed'}
+        end
+
+        return false, {'stateful.enemies_killed_type', this.objectives.killed_enemies_type.damage_type}, {'stateful.not_done', format_number(actual, true), format_number(expected, true)}, {'stateful.generic_tooltip'}, {
+            'stateful.tooltip_not_completed'
+        }
+    end
+)
+
+local handcrafted_items_token =
+    Task.register(
+    function()
+        local actual = this.objectives.handcrafted_items.actual
+        local expected = this.objectives.handcrafted_items.expected
+        if actual >= expected then
+            return true, {'stateful.crafted_items', this.objectives.handcrafted_items.name}, {'stateful.done', format_number(expected, true), format_number(expected, true)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_completed'}
+        end
+
+        return false, {'stateful.crafted_items', this.objectives.handcrafted_items.name}, {'stateful.not_done', format_number(actual, true), format_number(expected, true)}, {'stateful.generic_tooltip'}, {
+            'stateful.tooltip_not_completed'
+        }
+    end
+)
+
+local handcrafted_items_any_token =
+    Task.register(
+    function()
+        local actual = this.objectives.handcrafted_items_any.actual
+        local expected = this.objectives.handcrafted_items_any.expected
+        if actual >= expected then
+            return true, {'stateful.crafted_items', this.objectives.handcrafted_items_any.name}, {'stateful.done', format_number(expected, true), format_number(expected, true)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_completed'}
+        end
+
+        return false, {'stateful.crafted_items', this.objectives.handcrafted_items_any.name}, {'stateful.not_done', format_number(actual, true), format_number(expected, true)}, {'stateful.generic_tooltip'}, {
+            'stateful.tooltip_not_completed'
+        }
+    end
+)
+
+local launch_item_token =
+    Task.register(
+    function()
+        local actual = this.objectives.launch_item.actual
+        local expected = this.objectives.launch_item.expected
+        if actual >= expected then
+            return true, {'stateful.launch_item', this.objectives.launch_item.name}, {'stateful.done', format_number(expected, true), format_number(expected, true)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_completed'}
+        end
+
+        return false, {'stateful.launch_item', this.objectives.launch_item.name}, {'stateful.not_done', format_number(actual, true), format_number(expected, true)}, {'stateful.generic_tooltip'}, {
+            'stateful.tooltip_not_completed'
+        }
+    end
+)
+
+local cast_spell_token =
+    Task.register(
+    function()
+        local actual = this.objectives.cast_spell.actual
+        local expected = this.objectives.cast_spell.expected
+        if actual >= expected then
+            return true, {'stateful.cast_spell', this.objectives.cast_spell.name}, {'stateful.done', format_number(expected, true), format_number(expected, true)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_completed'}
+        end
+
+        return false, {'stateful.cast_spell', this.objectives.cast_spell.name}, {'stateful.not_done', format_number(actual, true), format_number(expected, true)}, {'stateful.generic_tooltip'}, {
+            'stateful.tooltip_not_completed'
+        }
+    end
+)
+
+local cast_spell_any_token =
+    Task.register(
+    function()
+        local actual = this.objectives.cast_spell_any.actual
+        local expected = this.objectives.cast_spell_any.expected
+        if actual >= expected then
+            return true, {'stateful.cast_spell', this.objectives.cast_spell_any.name}, {'stateful.done', format_number(expected, true), format_number(expected, true)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_completed'}
+        end
+
+        return false, {'stateful.cast_spell', this.objectives.cast_spell_any.name}, {'stateful.not_done', format_number(actual, true), format_number(expected, true)}, {'stateful.generic_tooltip'}, {
+            'stateful.tooltip_not_completed'
+        }
+    end
+)
+
 local research_level_selection_token =
     Task.register(
     function()
@@ -633,27 +758,15 @@ local locomotive_market_coins_spent_token =
     end
 )
 
-local trees_farmed_token =
+local minerals_farmed_token =
     Task.register(
     function()
-        local actual = get_entity_mined_count('tree')
-        local expected = this.objectives.trees_farmed
+        local actual = get_entity_mined_count('rock') + get_entity_mined_count('tree')
+        local expected = this.objectives.minerals_farmed
         if actual >= expected then
-            return true, {'stateful.trees_mined'}, {'stateful.done', format_number(expected, true), format_number(expected, true)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_completed'}
+            return true, {'stateful.minerals_mined'}, {'stateful.done', format_number(expected, true), format_number(expected, true)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_completed'}
         end
-        return false, {'stateful.trees_mined'}, {'stateful.not_done', format_number(actual, true), format_number(expected, true)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_not_completed'}
-    end
-)
-
-local rocks_farmed_token =
-    Task.register(
-    function()
-        local actual = get_entity_mined_count('rock')
-        local expected = this.objectives.rocks_farmed
-        if actual >= expected then
-            return true, {'stateful.rocks_mined'}, {'stateful.done', format_number(expected, true), format_number(expected, true)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_completed'}
-        end
-        return false, {'stateful.rocks_mined'}, {'stateful.not_done', format_number(actual, true), format_number(expected, true)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_not_completed'}
+        return false, {'stateful.minerals_mined'}, {'stateful.not_done', format_number(actual, true), format_number(expected, true)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_not_completed'}
     end
 )
 
@@ -749,6 +862,102 @@ local function get_random_item()
     return {name = items[1][1], count = items[1][2]}
 end
 
+local function get_random_handcrafted_item()
+    local items = {
+        {'advanced-circuit', scale(2000, 500000)},
+        {'copper-cable', scale(10000, 500000)},
+        {'electronic-circuit', scale(5000, 1000000)},
+        {'engine-unit', scale(3500, 500000)},
+        {'iron-gear-wheel', scale(50000, 1000000)},
+        {'iron-stick', scale(75000, 3000000)},
+        {'rocket-control-unit', scale(1000, 50000)},
+        {'rocket', scale(5000, 1000000)},
+        {'explosive-rocket', scale(5000, 1000000)},
+        {'slowdown-capsule', scale(2500, 400000)},
+        {'laser-turret', scale(1500, 20000)},
+        {'stone-wall', scale(5000, 800000)},
+        {'accumulator', scale(1000, 200000)},
+        {'uranium-rounds-magazine', scale(1000, 60000)},
+        {'explosive-uranium-cannon-shell', scale(1000, 10000)},
+        {'distractor-capsule', scale(1500, 60000)},
+        {'grenade', scale(5000, 200000)},
+        {'cluster-grenade', scale(1000, 100000)},
+        {'small-lamp', scale(2500, 200000)},
+        {'rail', scale(5000, 100000)},
+        {'small-electric-pole', scale(5000, 100000)},
+        {'medium-electric-pole', scale(3500, 80000)},
+        {'big-electric-pole', scale(2000, 50000)},
+        {'transport-belt', scale(10000, 100000)},
+        {'fast-transport-belt', scale(3000, 50000)},
+        {'repair-pack', scale(10000, 100000)},
+        {'splitter', scale(10000, 100000)},
+        {'fast-splitter', scale(3000, 50000)},
+        {'inserter', scale(3000, 50000)},
+        {'firearm-magazine', scale(10000, 200000)},
+        {'piercing-rounds-magazine', scale(5000, 100000)},
+        {'pipe', scale(10000, 100000)},
+        {'pipe-to-ground', scale(3000, 50000)},
+        {'effectivity-module', scale(100, 50000)},
+        {'productivity-module', scale(100, 50000)},
+        {'speed-module', scale(100, 50000)}
+    }
+
+    shuffle(items)
+    shuffle(items)
+    shuffle(items)
+    shuffle(items)
+
+    return {name = items[1][1], count = items[1][2]}
+end
+
+local function get_random_spell()
+    local items = {
+        {'stone-wall', scale(1000, 250000)},
+        {'wooden-chest', scale(1000, 250000)},
+        {'iron-chest', scale(1000, 200000)},
+        {'steel-chest', scale(1000, 150000)},
+        {'transport-belt', scale(1000, 250000)},
+        {'fast-transport-belt', scale(1000, 200000)},
+        {'express-transport-belt', scale(1000, 150000)},
+        {'underground-belt', scale(1000, 250000)},
+        {'fast-underground-belt', scale(1000, 200000)},
+        {'express-underground-belt', scale(1000, 150000)},
+        {'pipe', scale(1000, 20000)},
+        {'pipe-to-ground', scale(1000, 250000)},
+        {'tree-05', scale(1000, 200000)},
+        {'sand-rock-big', scale(1000, 60000)},
+        {'small-biter', scale(1000, 10000)},
+        {'small-spitter', scale(1000, 60000)},
+        {'medium-biter', scale(1000, 200000)},
+        {'medium-spitter', scale(1000, 100000)},
+        {'biter-spawner', scale(1000, 200000)},
+        {'spitter-spawner', scale(1000, 100000)},
+        {'shotgun-shell', scale(1000, 100000)},
+        {'grenade', scale(1000, 80000)},
+        {'cluster-grenade', scale(1000, 50000)},
+        {'cannon-shell', scale(1000, 100000)},
+        {'explosive-cannon-shell', scale(1000, 50000)},
+        {'uranium-cannon-shell', scale(1000, 100000)},
+        {'rocket', scale(1000, 100000)},
+        {'repair_aoe', scale(1000, 50000)},
+        {'acid-stream-spitter-big', scale(1000, 200000)},
+        {'raw-fish', scale(3500, 500000)},
+        {'explosives', scale(5000, 100000)},
+        {'distractor-capsule', scale(5000, 100000)},
+        {'defender-capsule', scale(5000, 100000)},
+        {'destroyer-capsule', scale(5000, 100000)},
+        {'warp-gate', scale(5000, 500000)},
+        {'haste', scale(5000, 500000)}
+    }
+
+    shuffle(items)
+    shuffle(items)
+    shuffle(items)
+    shuffle(items)
+
+    return {name = items[1][1], count = items[1][2]}
+end
+
 local function get_random_research_recipe()
     -- scale(10, 20)
     local research_level_list = {
@@ -779,6 +988,30 @@ local function get_random_objectives()
             token = killed_enemies_token
         },
         {
+            name = 'killed_enemies_type',
+            token = killed_enemies_type_token
+        },
+        {
+            name = 'handcrafted_items',
+            token = handcrafted_items_token
+        },
+        {
+            name = 'handcrafted_items_any',
+            token = handcrafted_items_any_token
+        },
+        {
+            name = 'cast_spell',
+            token = cast_spell_token
+        },
+        {
+            name = 'launch_item',
+            token = launch_item_token
+        },
+        {
+            name = 'cast_spell_any',
+            token = cast_spell_any_token
+        },
+        {
             name = 'research_level_selection',
             token = research_level_selection_token
         },
@@ -787,12 +1020,8 @@ local function get_random_objectives()
             token = locomotive_market_coins_spent_token
         },
         {
-            name = 'trees_farmed',
-            token = trees_farmed_token
-        },
-        {
-            name = 'rocks_farmed',
-            token = rocks_farmed_token
+            name = 'minerals_farmed',
+            token = minerals_farmed_token
         },
         {
             name = 'rockets_launched',
@@ -801,6 +1030,17 @@ local function get_random_objectives()
     }
 
     shuffle(items)
+    shuffle(items)
+    shuffle(items)
+    shuffle(items)
+
+    if _DEBUG then
+        items[#items + 1] = {
+            name = 'supplies',
+            token = empty_token
+        }
+        return items
+    end
 
     return {
         {
@@ -857,6 +1097,8 @@ end
 
 local function apply_buffs()
     local starting_items = Public.get_func('starting_items')
+    local techs = Public.get_func('techs')
+    local limit_types = Public.get_func('limit_types')
 
     if this.buffs and next(this.buffs) then
         local total_buffs = 0
@@ -880,7 +1122,10 @@ local function apply_buffs()
 
                         if not this.buffs_collected[buff_name] then
                             this.buffs_collected[buff_name] = {
-                                count = buff.state
+                                name = 'Extra Reach',
+                                count = buff.state,
+                                discord = buff.discord,
+                                force = true
                             }
                         else
                             this.buffs_collected[buff_name].count = this.buffs_collected[buff_name].count + buff.state
@@ -892,7 +1137,9 @@ local function apply_buffs()
 
                     if not this.buffs_collected[buff.name] then
                         this.buffs_collected[buff.name] = {
-                            count = buff.state
+                            count = buff.state,
+                            discord = buff.discord,
+                            force = true
                         }
                     else
                         this.buffs_collected[buff.name].count = this.buffs_collected[buff.name].count + buff.state
@@ -906,8 +1153,72 @@ local function apply_buffs()
                         this.extra_wagons = this.extra_wagons + buff.state
                     end
 
+                    if not this.buffs_collected['locomotive'] then
+                        this.buffs_collected['locomotive'] = {
+                            name = 'Extra Wagons',
+                            count = buff.state,
+                            discord = buff.discord
+                        }
+                    else
+                        if this.extra_wagons > 4 then
+                            this.buffs_collected['locomotive'].count = this.extra_wagons
+                        else
+                            this.buffs_collected['locomotive'].count = this.extra_wagons + buff.state
+                        end
+                    end
+
                     if this.extra_wagons > 4 then
                         this.extra_wagons = 4
+                    end
+                end
+                if buff.modifier == 'fish' then
+                    limit_types[buff.name] = true
+                    Public.set('all_the_fish', true)
+                    if not this.buffs_collected['fish'] then
+                        this.buffs_collected['fish'] = {
+                            name = 'A thousand fishes',
+                            discord = buff.discord
+                        }
+                    end
+
+                    local locomotive_cargo = Public.get('locomotive_cargo')
+                    if not locomotive_cargo then
+                        break
+                    end
+                    if not locomotive_cargo.valid then
+                        break
+                    end
+                    locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = 'raw-fish', count = 999999})
+                end
+                if buff.modifier == 'tech' then
+                    if not this.buffs_collected['techs'] then
+                        this.buffs_collected['techs'] = {}
+                    end
+                    if type(buff.techs) ~= 'table' then
+                        break
+                    end
+
+                    for _, tech in pairs(buff.techs) do
+                        if tech then
+                            if techs[tech.name] then
+                                break
+                            end
+
+                            if not techs[tech.name] then
+                                techs[tech.name] = {
+                                    name = buff.name
+                                }
+                            end
+
+                            if not this.buffs_collected['techs'][tech.name] then
+                                this.buffs_collected['techs'][tech.name] = {
+                                    name = tech.name,
+                                    buff_type = buff.name,
+                                    discord = buff.discord
+                                }
+                            end
+                            force.technologies[tech.name].researched = true
+                        end
                     end
                 end
                 if buff.modifier == 'rpg' then
@@ -920,7 +1231,9 @@ local function apply_buffs()
                         end
                         if not this.buffs_collected['xp_bonus'] then
                             this.buffs_collected['xp_bonus'] = {
-                                count = buff.state
+                                name = 'XP Bonus',
+                                count = buff.state,
+                                discord = buff.discord
                             }
                         else
                             this.buffs_collected['xp_bonus'].count = this.buffs_collected['xp_bonus'].count + buff.state
@@ -934,7 +1247,9 @@ local function apply_buffs()
                         end
                         if not this.buffs_collected['xp_level'] then
                             this.buffs_collected['xp_level'] = {
-                                count = buff.state
+                                name = 'XP Level Bonus',
+                                count = buff.state,
+                                discord = buff.discord
                             }
                         else
                             this.buffs_collected['xp_level'].count = this.buffs_collected['xp_level'].count + buff.state
@@ -973,7 +1288,8 @@ local function apply_buffs()
                             else
                                 this.buffs_collected['starting_items'][item.name] = {
                                     buff_type = buff.name,
-                                    count = item.count
+                                    count = item.count,
+                                    discord = buff.discord
                                 }
                             end
                         end
@@ -999,7 +1315,7 @@ local function apply_startup_settings(settings)
 
     current_date = round(Utils.convert_date(current_date.year, current_date.month, current_date.day))
 
-    local server_name_matches = Server.check_server_name('Mtn Fortress')
+    local server_name_matches = Server.check_server_name(scenario_name)
 
     settings = settings or {}
     local stored_date = this.current_date
@@ -1052,7 +1368,7 @@ end
 local apply_settings_token =
     Task.register(
     function(data)
-        local server_name_matches = Server.check_server_name('Mtn Fortress')
+        local server_name_matches = Server.check_server_name(scenario_name)
         local settings = data and data.value or nil
         local current_time = Server.get_current_time()
         if not current_time then
@@ -1091,6 +1407,7 @@ local apply_settings_token =
 
         local current_season = Public.get('current_season')
         if current_season then
+            ---@diagnostic disable-next-line: param-type-mismatch
             rendering.set_text(current_season, 'Season: ' .. this.season)
         end
 
@@ -1173,7 +1490,6 @@ local apply_settings_dev_token =
 
         this.rounds_survived = settings.rounds_survived
 
-        Public.reset_stateful()
         Public.increase_enemy_damage_and_health()
     end
 )
@@ -1181,10 +1497,24 @@ local apply_settings_dev_token =
 local function grant_non_limit_reached_buff()
     local all_buffs = get_random_buff(true)
     local starting_items = Public.get_func('starting_items')
+    local techs = Public.get_func('techs')
+    local limit_types = Public.get_func('limit_types')
 
     for index, data in pairs(all_buffs) do
         for _, item_data in pairs(starting_items) do
             if item_data.buff_type == data.name and item_data.item_limit and data.limit and item_data.item_limit >= data.limit then
+                all_buffs[index] = nil
+            end
+        end
+
+        for _, tech_data in pairs(techs) do
+            if tech_data.name == data.name then
+                all_buffs[index] = nil
+            end
+        end
+
+        for limit_name, _ in pairs(limit_types) do
+            if limit_name == data.name then
                 all_buffs[index] = nil
             end
         end
@@ -1198,7 +1528,7 @@ local function grant_non_limit_reached_buff()
     shuffle(all_buffs)
 
     if not all_buffs[1] then
-        return get_random_force_buff()
+        return get_random_buff(nil, true)
     end
 
     return all_buffs[1]
@@ -1209,6 +1539,7 @@ function Public.save_settings()
     this.buffs[#this.buffs + 1] = granted_buff
 
     local settings = {
+        objectives_time_spent = this.objectives_time_spent,
         rounds_survived = this.rounds_survived,
         season = this.season,
         test_mode = this.test_mode,
@@ -1216,7 +1547,7 @@ function Public.save_settings()
         current_date = this.current_date
     }
 
-    local server_name_matches = Server.check_server_name('Mtn Fortress')
+    local server_name_matches = Server.check_server_name(scenario_name)
     if server_name_matches then
         Server.set_data(dataset, dataset_key, settings)
     else
@@ -1235,7 +1566,7 @@ function Public.save_settings_before_reset()
         current_date = this.current_date
     }
 
-    local server_name_matches = Server.check_server_name('Mtn Fortress')
+    local server_name_matches = Server.check_server_name(scenario_name)
     if server_name_matches then
         Server.set_data(dataset, dataset_key_previous, settings)
     else
@@ -1254,6 +1585,10 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
     this.enemies_boosted = false
     this.tasks_required_to_win = 6
 
+    if not this.previous_objectives_time_spent then
+        this.previous_objectives_time_spent = {}
+    end
+
     if this.test_mode then
         this.objectives = {
             randomized_zone = 2,
@@ -1261,11 +1596,41 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
             supplies = get_random_items(),
             single_item = get_random_item(),
             killed_enemies = 10,
+            killed_enemies_type = {
+                actual = 0,
+                expected = 10,
+                damage_type = damage_types[random(1, #damage_types)]
+            },
+            handcrafted_items = {
+                actual = 0,
+                expected = 10,
+                name = 'rail'
+            },
+            handcrafted_items_any = {
+                actual = 0,
+                expected = 10,
+                name = 'Any'
+            },
+            cast_spell = {
+                actual = 0,
+                expected = 10,
+                name = 'pipe'
+            },
+            cast_spell_any = {
+                actual = 0,
+                expected = 10,
+                name = 'Any'
+            },
+            launch_item = {
+                actual = 0,
+                expected = 10,
+                name = 'raw-fish'
+            },
             research_level_selection = get_random_research_recipe(),
             locomotive_market_coins_spent = 0,
             locomotive_market_coins_spent_required = 1,
             trees_farmed = 10,
-            rocks_farmed = 10,
+            minerals_farmed = 10,
             rockets_launched = 1
         }
     else
@@ -1292,6 +1657,51 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
         if not this.objectives.killed_enemies or (this.objectives_completed ~= nil and this.objectives_completed.killed_enemies) then
             this.objectives.killed_enemies = scale(25000, 400000, 1.035)
         end
+        if not this.objectives.killed_enemies_type or (this.objectives_completed ~= nil and this.objectives_completed.killed_enemies_type) then
+            this.objectives.killed_enemies_type = {
+                actual = 0,
+                expected = scale(10000, 400000, 1.035),
+                damage_type = damage_types[random(1, #damage_types)]
+            }
+        end
+        if not this.objectives.handcrafted_items or (this.objectives_completed ~= nil and this.objectives_completed.handcrafted_items) then
+            local item = get_random_handcrafted_item()
+            this.objectives.handcrafted_items = {
+                actual = 0,
+                expected = item.count,
+                name = item.name
+            }
+        end
+        if not this.objectives.handcrafted_items_any or (this.objectives_completed ~= nil and this.objectives_completed.handcrafted_items_any) then
+            this.objectives.handcrafted_items_any = {
+                actual = 0,
+                expected = scale(50000, 4000000, 1.035),
+                name = 'Any'
+            }
+        end
+        if not this.objectives.cast_spell or (this.objectives_completed ~= nil and this.objectives_completed.cast_spell) then
+            local item = get_random_spell()
+            this.objectives.cast_spell = {
+                actual = 0,
+                expected = item.count,
+                name = item.name
+            }
+        end
+        if not this.objectives.cast_spell_any or (this.objectives_completed ~= nil and this.objectives_completed.cast_spell_any) then
+            this.objectives.cast_spell_any = {
+                actual = 0,
+                expected = scale(50000, 4000000, 1.035),
+                name = 'Any'
+            }
+        end
+        if not this.objectives.launch_item or (this.objectives_completed ~= nil and this.objectives_completed.launch_item) then
+            local item = get_random_handcrafted_item()
+            this.objectives.launch_item = {
+                actual = 0,
+                expected = scale(10, 700),
+                name = item.name
+            }
+        end
         if not this.objectives.research_level_selection or (this.objectives_completed ~= nil and this.objectives_completed.research_level_selection) then
             this.objectives.research_level_selection = get_random_research_recipe()
         end
@@ -1301,18 +1711,40 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
                 required = scale(50000)
             }
         end
-        if not this.objectives.trees_farmed or (this.objectives_completed ~= nil and this.objectives_completed.trees_farmed) then
-            this.objectives.trees_farmed = scale(10000, 200000)
-        end
-        if not this.objectives.rocks_farmed or (this.objectives_completed ~= nil and this.objectives_completed.rocks_farmed) then
-            this.objectives.rocks_farmed = scale(20000, 250000)
+        if not this.objectives.minerals_farmed or (this.objectives_completed ~= nil and this.objectives_completed.minerals_farmed) then
+            this.objectives.minerals_farmed = scale(25000, 250000)
         end
         if not this.objectives.rockets_launched or (this.objectives_completed ~= nil and this.objectives_completed.rockets_launched) then
             this.objectives.rockets_launched = scale(10, 700)
         end
     end
 
+    local supplies = this.objectives.supplies
+    for _, supply in pairs(supplies) do
+        if supply and supply.total then
+            supply.count = supply.total
+        end
+    end
+
+    if supplies.single_item and supplies.single_item.total then
+        supplies.single_item.count = supplies.single_item.total
+    end
+
+    this.objectives.handcrafted_items.actual = 0
+    this.objectives.handcrafted_items_any.actual = 0
+    this.objectives.cast_spell.actual = 0
+    this.objectives.cast_spell_any.actual = 0
+    this.objectives.killed_enemies_type.actual = 0
+    this.objectives.launch_item.actual = 0
+    this.objectives.research_level_selection.research_count = 0
+    this.objectives.locomotive_market_coins_spent.spent = 0
+
     this.objectives_completed = {}
+    if this.objectives_time_spent and next(this.objectives_time_spent) then
+        this.previous_objectives_time_spent[#this.previous_objectives_time_spent + 1] = this.objectives_time_spent
+    end
+
+    this.objectives_time_spent = {}
     this.objectives_completed_count = 0
 
     this.collection = {
@@ -1320,7 +1752,7 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
         time_until_attack_timer = nil,
         survive_for = nil,
         survive_for_timer = nil,
-        final_arena_disabled = true
+        final_arena_disabled = false
     }
     this.stateful_locomotive_migrated = false
     this.force_chunk = true
@@ -1352,7 +1784,6 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
     clear_all_stats()
 
     apply_buffs()
-
     if refresh_gui then
         Public.refresh_frames()
     end
@@ -1568,7 +1999,7 @@ function Public.stateful_on_server_started()
         return
     end
 
-    local server_name_matches = Server.check_server_name('Mtn Fortress')
+    local server_name_matches = Server.check_server_name(scenario_name)
 
     this.settings_applied = true
 
@@ -1587,7 +2018,7 @@ Event.add(
             return
         end
 
-        local server_name_matches = Server.check_server_name('Mtn Fortress')
+        local server_name_matches = Server.check_server_name(scenario_name)
 
         this.settings_applied = true
 
@@ -1669,17 +2100,329 @@ if _DEBUG then
                 season = 4,
                 test_mode = false,
                 buffs = {
-                    {name = 'laboratory_productivity_bonus', discord = 'Productivity bonus', modifier = 'force', state = 0.15},
-                    {name = 'character_running_speed_modifier', discord = 'Running speed modifier', modifier = 'force', state = 0.05},
-                    {name = 'production_1', discord = 'Production starting supplies', modifier = 'starting_items', limit = 2, add_per_buff = 1, items = {{name = 'steel-furnace', count = 4}, {name = 'solid-fuel', count = 100}}},
-                    {name = 'manual_crafting_speed_modifier', discord = 'Crafting speed modifier', modifier = 'force', state = 0.12},
-                    {name = 'manual_mining_speed_modifier', discord = 'Mining speed modifier', modifier = 'force', state = 0.15},
-                    {name = 'armor', discord = 'Armor starting supplies', modifier = 'starting_items', limit = 1, add_per_buff = 1, items = {{name = 'modular-armor', count = 1}, {name = 'solar-panel-equipment', count = 2}}},
-                    {name = 'heal-thy-buildings', discord = 'Repair starting supplies', modifier = 'starting_items', limit = 20, add_per_buff = 2, items = {{name = 'repair-pack', count = 5}}},
-                    {name = 'character_running_speed_modifier', discord = 'Running speed modifier', modifier = 'force', state = 0.05},
-                    {name = 'defense', discord = 'Defense starting supplies', modifier = 'starting_items', limit = 10, add_per_buff = 1, items = {{name = 'gun-turret', count = 2}, {name = 'firearm-magazine', count = 25}}},
-                    {name = 'worker_robots_speed_modifier', discord = 'Robot speed modifier', modifier = 'force', state = 0.5},
-                    {name = 'extra_wagons', discord = 'Extra wagon at start', modifier = 'locomotive', state = 1}
+                    {
+                        name = 'steel_axe_unlocked',
+                        discord = 'Equipement tech - start with steel axe tech unlocked.',
+                        modifier = 'tech',
+                        limit = 1,
+                        add_per_buff = 1,
+                        techs = {
+                            {name = 'steel-axe', count = 1}
+                        }
+                    },
+                    {
+                        name = 'military_2_unlocked',
+                        discord = 'Equipement tech - start with military 2 tech unlocked.',
+                        modifier = 'tech',
+                        limit = 1,
+                        add_per_buff = 1,
+                        techs = {
+                            {name = 'military-2', count = 1}
+                        }
+                    },
+                    {
+                        name = 'character_running_speed_modifier',
+                        discord = 'Running speed modifier - run faster!',
+                        modifier = 'force',
+                        per_force = true,
+                        state = 0.05
+                    },
+                    {
+                        name = 'manual_mining_speed_modifier',
+                        discord = 'Mining speed modifier - mine faster!',
+                        modifier = 'force',
+                        per_force = true,
+                        state = 0.15
+                    },
+                    {
+                        name = 'laboratory_speed_modifier',
+                        discord = 'Laboratory speed modifier - labs work faster!',
+                        modifier = 'force',
+                        per_force = true,
+                        state = 0.15
+                    },
+                    {
+                        name = 'laboratory_productivity_bonus',
+                        discord = 'Laboratory productivity bonus - labs dupe things!',
+                        modifier = 'force',
+                        per_force = true,
+                        state = 0.15
+                    },
+                    {
+                        name = 'worker_robots_storage_bonus',
+                        discord = 'Robot storage bonus - robots carry more!',
+                        modifier = 'force',
+                        per_force = true,
+                        state = 1
+                    },
+                    {
+                        name = 'worker_robots_battery_modifier',
+                        discord = 'Robot battery bonus - robots work longer!',
+                        modifier = 'force',
+                        per_force = true,
+                        state = 1
+                    },
+                    {
+                        name = 'worker_robots_speed_modifier',
+                        discord = 'Robot speed modifier - robots move faster!',
+                        modifier = 'force',
+                        per_force = true,
+                        state = 0.5
+                    },
+                    {
+                        name = 'mining_drill_productivity_bonus',
+                        discord = 'Drill productivity bonus - drills work faster!',
+                        modifier = 'force',
+                        per_force = true,
+                        state = 0.5
+                    },
+                    {
+                        name = 'character_health_bonus',
+                        discord = 'Character health bonus - more health!',
+                        modifier = 'force',
+                        per_force = true,
+                        state = 250
+                    },
+                    {
+                        name = 'distance',
+                        discord = 'RPG reach distance bonus - reach further!',
+                        modifier = 'rpg_distance',
+                        per_force = true,
+                        modifiers = {'character_resource_reach_distance_bonus', 'character_item_pickup_distance_bonus', 'character_loot_pickup_distance_bonus', 'character_reach_distance_bonus'},
+                        state = 0.05
+                    },
+                    {
+                        name = 'manual_crafting_speed_modifier',
+                        discord = 'Crafting speed modifier - craft faster!',
+                        modifier = 'force',
+                        per_force = true,
+                        state = 0.12
+                    },
+                    {
+                        name = 'xp_bonus',
+                        discord = 'RPG XP point bonus - more XP points from kills etc.',
+                        modifier = 'rpg',
+                        per_force = true,
+                        state = 0.12
+                    },
+                    {
+                        name = 'xp_level',
+                        discord = 'RPG XP level bonus - start with more XP levels',
+                        modifier = 'rpg',
+                        per_force = true,
+                        state = 20
+                    },
+                    {
+                        name = 'chemicals_s',
+                        discord = 'Starting items supplies - start with some sulfur',
+                        modifier = 'starting_items',
+                        limit = 200,
+                        add_per_buff = 50,
+                        items = {
+                            {name = 'sulfur', count = 50}
+                        }
+                    },
+                    {
+                        name = 'chemicals_p',
+                        discord = 'Starting items supplies - start with some plastic bar',
+                        modifier = 'starting_items',
+                        limit = 200,
+                        add_per_buff = 50,
+                        items = {
+                            {name = 'plastic-bar', count = 100}
+                        }
+                    },
+                    {
+                        name = 'supplies',
+                        discord = 'Starting items supplies - start with some copper and iron plates',
+                        modifier = 'starting_items',
+                        limit = 1000,
+                        add_per_buff = 100,
+                        items = {
+                            {name = 'iron-plate', count = 100},
+                            {name = 'copper-plate', count = 100}
+                        }
+                    },
+                    {
+                        name = 'supplies_1',
+                        discord = 'Starting items supplies - start with more copper and iron plates',
+                        modifier = 'starting_items',
+                        limit = 1000,
+                        add_per_buff = 200,
+                        items = {
+                            {name = 'iron-plate', count = 200},
+                            {name = 'copper-plate', count = 200}
+                        }
+                    },
+                    {
+                        name = 'supplies_2',
+                        discord = 'Starting items supplies - start with even more copper and iron plates',
+                        modifier = 'starting_items',
+                        limit = 1000,
+                        add_per_buff = 400,
+                        items = {
+                            {name = 'iron-plate', count = 400},
+                            {name = 'copper-plate', count = 400}
+                        }
+                    },
+                    {
+                        name = 'defense',
+                        discord = 'Defense starting supplies - start with some turrets and ammo',
+                        modifier = 'starting_items',
+                        limit = 10,
+                        add_per_buff = 1,
+                        items = {
+                            {name = 'gun-turret', count = 2},
+                            {name = 'firearm-magazine', count = 25}
+                        }
+                    },
+                    {
+                        name = 'defense_3',
+                        discord = 'Defense starting supplies - start with more turrets and ammo',
+                        modifier = 'starting_items',
+                        limit = 1,
+                        add_per_buff = 1,
+                        items = {
+                            {name = 'rocket-launcher', count = 1},
+                            {name = 'rocket', count = 100}
+                        }
+                    },
+                    {
+                        name = 'armor',
+                        discord = 'Armor starting supplies - start with some armor and solar panels',
+                        modifier = 'starting_items',
+                        limit = 1,
+                        add_per_buff = 1,
+                        items = {
+                            {name = 'modular-armor', count = 1},
+                            {name = 'solar-panel-equipment', count = 2}
+                        }
+                    },
+                    {
+                        name = 'production',
+                        discord = 'Production starting supplies - start with some furnaces and coal',
+                        modifier = 'starting_items',
+                        limit = 2,
+                        add_per_buff = 1,
+                        items = {
+                            {name = 'stone-furnace', count = 4},
+                            {name = 'coal', count = 100}
+                        }
+                    },
+                    {
+                        name = 'production_1',
+                        discord = 'Production starting supplies - start with some steel furnaces and solid fuel',
+                        modifier = 'starting_items',
+                        limit = 2,
+                        add_per_buff = 1,
+                        items = {
+                            {name = 'steel-furnace', count = 4},
+                            {name = 'solid-fuel', count = 100}
+                        }
+                    },
+                    {
+                        name = 'fast_startup',
+                        discord = 'Assembling starting supplies - start with some assembling machines T1',
+                        modifier = 'starting_items',
+                        limit = 25,
+                        add_per_buff = 2,
+                        items = {
+                            {name = 'assembling-machine-1', count = 2}
+                        }
+                    },
+                    {
+                        name = 'fast_startup_1',
+                        discord = 'Assembling starting supplies - start with some assembling machines T2',
+                        modifier = 'starting_items',
+                        limit = 25,
+                        add_per_buff = 2,
+                        items = {
+                            {name = 'assembling-machine-2', count = 2}
+                        }
+                    },
+                    {
+                        name = 'fast_startup_2',
+                        discord = 'Assembling starting supplies - start with some assembling machines T3',
+                        modifier = 'starting_items',
+                        limit = 25,
+                        add_per_buff = 2,
+                        items = {
+                            {name = 'assembling-machine-3', count = 2}
+                        }
+                    },
+                    {
+                        name = 'heal-thy-buildings',
+                        discord = 'Repair starting supplies - start with some repair packs',
+                        modifier = 'starting_items',
+                        limit = 20,
+                        add_per_buff = 2,
+                        items = {
+                            {name = 'repair-pack', count = 5}
+                        }
+                    },
+                    {
+                        name = 'extra_wagons',
+                        discord = 'Extra wagon at start',
+                        modifier = 'locomotive',
+                        state = 1
+                    },
+                    {
+                        name = 'american_oil',
+                        discord = 'Oil tech - start with some crude oil barrels',
+                        modifier = 'starting_items',
+                        limit = 40,
+                        add_per_buff = 20,
+                        items = {
+                            {name = 'crude-oil-barrel', count = 20}
+                        }
+                    },
+                    {
+                        name = 'steel_plates',
+                        discord = 'Steel tech - start with some steel plates',
+                        modifier = 'starting_items',
+                        limit = 200,
+                        add_per_buff = 100,
+                        items = {
+                            {name = 'steel-plate', count = 100}
+                        }
+                    },
+                    {
+                        name = 'red_science',
+                        discord = 'Science tech - start with some red science packs',
+                        modifier = 'starting_items',
+                        limit = 200,
+                        add_per_buff = 10,
+                        items = {
+                            {name = 'automation-science-pack', count = 10}
+                        }
+                    },
+                    {
+                        name = 'roboport_equipement',
+                        discord = 'Equipement tech - start with a personal roboport',
+                        modifier = 'starting_items',
+                        limit = 4,
+                        add_per_buff = 1,
+                        items = {
+                            {name = 'personal-roboport-equipment', count = 1}
+                        }
+                    },
+                    {
+                        name = 'mk1_tech_unlocked',
+                        discord = 'Equipement tech - start with power armor tech unlocked.',
+                        modifier = 'tech',
+                        limit = 1,
+                        add_per_buff = 1,
+                        techs = {
+                            {name = 'power-armor', count = 1}
+                        }
+                    },
+                    {
+                        name = 'all_the_fish',
+                        discord = 'Wagon is full of fish!',
+                        modifier = 'fish',
+                        limit = 1,
+                        add_per_buff = 1
+                    }
                 },
                 current_date = 1711187954
             }

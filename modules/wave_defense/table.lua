@@ -70,6 +70,7 @@ function Public.reset_wave_defense()
     this.paused = false
     this.pause_without_votes = true
     this.pause_wave_in_ticks = 18000 -- 5 minutes
+    this.next_pause_interval = game.tick + 216000 -- 1 hour
     this.game_lost = false
     this.get_random_close_spawner_attempts = 5
     this.group_size = 2

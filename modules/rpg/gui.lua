@@ -49,11 +49,10 @@ function Public.draw_gui_char_button(player)
         if b then
             b.style.font_color = {165, 165, 165}
             b.style.font = 'heading-3'
-            b.style.minimal_height = 38
-            b.style.maximal_height = 38
-            b.style.minimal_width = 50
-            b.style.padding = 0
-            b.style.margin = 0
+            b.style.minimal_height = 36
+            b.style.maximal_height = 36
+            b.style.minimal_width = 40
+            b.style.padding = -2
         end
     else
         if player.gui.top[draw_main_frame_name] then
@@ -218,7 +217,7 @@ local function draw_main_frame(player, location)
         main_frame.location = location
     else
         if ComfyGui.get_mod_gui_top_frame() then
-            main_frame.location = {x = 1, y = 55}
+            main_frame.location = {x = 0, y = 67}
         else
             main_frame.location = {x = 1, y = 45}
         end
@@ -543,6 +542,7 @@ Gui.on_click(
         if is_spamming then
             return
         end
+
         local player = event.player
         if not player or not player.valid or not player.character then
             return

@@ -108,7 +108,7 @@ end
 
 --- Send a message to the connected channel.
 --- Requires a title and a description
----@param scenario_name string
+---@param scenario_name string|nil
 ---@param message string
 function Public.send_notification_raw(scenario_name, message)
     if not scenario_name then

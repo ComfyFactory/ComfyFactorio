@@ -6,9 +6,11 @@ local AntiGrief = require 'utils.antigrief'
 local SpamProtection = require 'utils.spam_protection'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local Explosives = require 'modules.explosives'
-
+local StatData = require 'utils.datastore.statistics'
 local WD = require 'modules.wave_defense.table'
 local Math2D = require 'math2d'
+
+StatData.add_normalize('spells', 'Spells casted')
 
 --RPG Settings
 local enemy_types = Public.enemy_types
@@ -1009,10 +1011,20 @@ local function on_player_used_capsule(event)
         cast_spell = Public.cast_spell
     }
 
+    rpg_t.amount = 0
+
     local cast_spell = spell.callback(data, funcs)
     if not cast_spell then
         return
     end
+
+    if rpg_t.amount == 0 then
+        rpg_t.amount = 1
+    end
+
+    Event.raise(Public.events.on_spell_cast_success, {player_index = player.index, spell_name = spell.entityName, amount = rpg_t.amount})
+
+    StatData.get_data(player):increase('spells')
 
     if spell.enforce_cooldown then
         Public.register_cooldown_for_player(player, spell)
@@ -1078,6 +1090,7 @@ Event.add(defines.events.on_player_used_capsule, on_player_used_capsule)
 Event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
 Event.add(defines.events.on_player_removed, on_player_removed)
 Event.on_nth_tick(10, tick)
+Event.on_nth_tick(2, Public.update_tidal_wave)
 
 Event.add(
     defines.events.on_gui_closed,

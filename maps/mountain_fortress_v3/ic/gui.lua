@@ -6,6 +6,7 @@ local Tabs = require 'utils.gui'
 local Event = require 'utils.event'
 local Task = require 'utils.task_token'
 local SpamProtection = require 'utils.spam_protection'
+local Discord = require 'utils.discord_handler'
 
 local Public = {}
 local insert = table.insert
@@ -29,9 +30,18 @@ local allow_anyone_to_enter_name = Gui.uid_name()
 local auto_upgrade_name = Gui.uid_name()
 local kick_player_name = Gui.uid_name()
 local destroy_surface_name = Gui.uid_name()
+local scenario_name = 'Mtn Fortress'
 
 local add_toolbar
 local remove_toolbar
+
+local function get_top_frame(player)
+    if Gui.get_mod_gui_top_frame() then
+        return Gui.get_button_flow(player)[main_toolbar_name]
+    else
+        return player.gui.top[main_toolbar_name]
+    end
+end
 
 local function increment(t, k)
     t[k] = true
@@ -448,28 +458,50 @@ end
 
 add_toolbar = function(player, remove)
     if remove then
-        if player.gui.top[main_toolbar_name] then
-            player.gui.top[main_toolbar_name].destroy()
+        if get_top_frame(player) then
+            get_top_frame(player).destroy()
             return
         end
     end
-    if player.gui.top[main_toolbar_name] then
+    if get_top_frame(player) then
         return
     end
 
     local tooltip = ({'ic.control'})
-    local button =
-        player.gui.top.add(
-        {
-            type = 'sprite-button',
-            sprite = 'item/spidertron',
-            name = main_toolbar_name,
-            tooltip = tooltip,
-            style = Gui.button_style
-        }
-    )
-    button.style.minimal_height = 38
-    button.style.maximal_height = 38
+    if Gui.get_mod_gui_top_frame() then
+        local b =
+            Gui.add_mod_button(
+            player,
+            {
+                type = 'sprite-button',
+                name = main_toolbar_name,
+                sprite = 'item/spidertron',
+                tooltip = tooltip,
+                style = Gui.button_style
+            }
+        )
+        if b then
+            b.style.font_color = {165, 165, 165}
+            b.style.font = 'heading-3'
+            b.style.minimal_height = 36
+            b.style.maximal_height = 36
+            b.style.minimal_width = 40
+            b.style.padding = -2
+        end
+    else
+        local button =
+            player.gui.top.add(
+            {
+                type = 'sprite-button',
+                sprite = 'item/spidertron',
+                name = main_toolbar_name,
+                tooltip = tooltip,
+                style = Gui.button_style
+            }
+        )
+        button.style.minimal_height = 38
+        button.style.maximal_height = 38
+    end
 end
 
 remove_toolbar = function(player)
@@ -480,8 +512,8 @@ remove_toolbar = function(player)
         remove_main_frame(main_frame)
     end
 
-    if player.gui.top[main_toolbar_name] then
-        player.gui.top[main_toolbar_name].destroy()
+    if get_top_frame(player) then
+        get_top_frame(player).destroy()
         return
     end
 end
@@ -811,8 +843,14 @@ Gui.on_click(
 
             local entity = car.entity
             if entity and entity.valid then
-                Functions.kill_car_but_save_surface(entity)
-                game.print('[IC] ' .. player.name .. ' has destroyed their surface!', Color.warning)
+                local position = entity.position
+                local suc, count = Functions.kill_car_but_save_surface(entity)
+                if suc then
+                    game.print('[IC] ' .. player.name .. ' has destroyed their surface!', Color.warning)
+                    Discord.send_notification_raw(scenario_name, player.name .. ' deleted their vehicle surface at x = ' .. position.x .. ' y = ' .. position.y .. '.')
+                else
+                    player.print('[IC] Entities are still on the surface. Please remove any entities and retry this operation. Found ' .. count .. ' entities!', Color.warning)
+                end
             end
 
             remove_main_frame(event.element)

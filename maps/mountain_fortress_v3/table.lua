@@ -30,6 +30,9 @@ Public.events = {
     on_market_item_purchased = Event.generate_event_name('on_market_item_purchased')
 }
 
+local scenario_name = 'Mtn Fortress'
+Public.scenario_name = scenario_name
+
 Global.register(
     this,
     function(tbl)
@@ -134,6 +137,7 @@ function Public.reset_main_table()
     this.locomotive_health = 10000
     this.locomotive_max_health = 10000
     this.extra_wagons = 0
+    this.all_the_fish = false
     this.gap_between_zones = {
         set = false,
         gap = 900,
@@ -177,6 +181,10 @@ function Public.reset_main_table()
     this.robotics_deployed = false
     this.upgrades = {
         showed_text = false,
+        burner_generator = {
+            limit = 50,
+            bought = 0
+        },
         landmine = {
             limit = 25,
             bought = 0,
@@ -375,7 +383,7 @@ function Public.remove(key, sub_key)
 end
 
 function Public.save_stateful_settings()
-    local server_name_matches = Server.check_server_name('Mtn Fortress')
+    local server_name_matches = Server.check_server_name(scenario_name)
 
     if server_name_matches then
         Server.set_data(dataset, dataset_key, stateful_settings)
@@ -387,7 +395,7 @@ end
 local apply_settings_token =
     Task.register(
     function(data)
-        local server_name_matches = Server.check_server_name('Mtn Fortress')
+        local server_name_matches = Server.check_server_name(scenario_name)
         local settings = data and data.value or nil
 
         if not settings then
@@ -412,7 +420,7 @@ Event.add(
         local start_data = Server.get_start_data()
 
         if not start_data.initialized then
-            local server_name_matches = Server.check_server_name('Mtn Fortress')
+            local server_name_matches = Server.check_server_name(scenario_name)
 
             if server_name_matches then
                 Server.try_get_data(dataset, dataset_key, apply_settings_token)

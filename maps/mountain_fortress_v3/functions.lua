@@ -30,6 +30,8 @@ local this = {
     magic_fluid_crafters = {index = 1},
     art_table = {index = 1},
     editor_mode = {},
+    techs = {},
+    limit_types = {},
     starting_items = {
         ['pistol'] = {
             count = 1
@@ -1342,6 +1344,7 @@ function Public.on_player_joined_game(event)
             local death_message = ({'main.death_mode_warning'})
             Alert.alert_player(player, 15, death_message)
         end
+        player.clear_items_inside()
         for item, data in pairs(this.starting_items) do
             player.insert({name = item, count = data.count})
         end
@@ -1793,12 +1796,12 @@ function Public.equip_players(starting_items, recreate)
         if player.character and player.character.valid then
             player.character.destroy()
         end
+        player.clear_items_inside()
         if player.connected then
             if not player.character then
                 player.set_controller({type = defines.controllers.god})
                 player.create_character()
             end
-            player.clear_items_inside()
             Modifiers.update_player_modifiers(player)
             if not recreate then
                 starting_items = starting_items or this.starting_items
@@ -1821,6 +1824,8 @@ function Public.reset_func_table()
     this.refill_turrets = {index = 1}
     this.magic_crafters = {index = 1}
     this.magic_fluid_crafters = {index = 1}
+    this.techs = {}
+    this.limit_types = {}
     this.starting_items = {
         ['pistol'] = {
             count = 1

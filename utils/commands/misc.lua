@@ -7,6 +7,7 @@ local Global = require 'utils.global'
 local BottomFrame = require 'utils.gui.bottom_frame'
 local Gui = require 'utils.gui'
 local SpamProtection = require 'utils.spam_protection'
+local Discord = require 'utils.discord_handler'
 
 local this = {
     players = {},
@@ -160,6 +161,62 @@ commands.add_command(
         end
         game.print('Map generation done!', Color.success)
         this.generate_map = nil
+    end
+)
+
+commands.add_command(
+    'repair',
+    'Revives all ghost entities.',
+    function(cmd)
+        local player = game.player
+        local param = tonumber(cmd.parameter)
+
+        if not (player and player.valid) then
+            return
+        end
+
+        local p = player.print
+        if not player.admin then
+            p("[ERROR] You're not admin!", Color.fail)
+            return
+        end
+
+        if param == nil then
+            player.print('[ERROR] Must specify radius!', Color.fail)
+            return
+        end
+        if param > 50 then
+            player.print('[ERROR] Value is too big.', Color.fail)
+            return
+        end
+
+        if not this.revive_warning then
+            this.revive_warning = true
+            player.print('[WARNING] This command will revive all the ghost entities in the given radius, run this command again if you really want to do this!', Color.yellow)
+            return
+        end
+
+        local radius = {{x = (player.position.x + -param), y = (player.position.y + -param)}, {x = (player.position.x + param), y = (player.position.y + param)}}
+
+        local c = 0
+        for _, v in pairs(player.surface.find_entities_filtered {type = 'entity-ghost', area = radius}) do
+            if v and v.valid then
+                c = c + 1
+                v.silent_revive()
+            end
+        end
+
+        if c == 0 then
+            player.print('No entities to repair were found!', Color.warning)
+            this.revive_warning = nil
+            return
+        end
+
+        Discord.send_notification_raw(nil, player.name .. ' repaired ' .. c .. ' entities!')
+
+        player.play_sound {path = 'utility/new_objective', volume_modifier = 1}
+        player.print('Repaired ' .. c .. ' entities!', Color.success)
+        this.revive_warning = nil
     end
 )
 

@@ -4,6 +4,7 @@ local Public = require 'maps.mountain_fortress_v3.table'
 local RPG = require 'modules.rpg.main'
 local Alert = require 'utils.alert'
 local Task = require 'utils.task_token'
+local StatData = require 'utils.datastore.statistics'
 
 local shuffle = table.shuffle_table
 local random = math.random
@@ -330,6 +331,7 @@ local mc_random_rewards = {
                 if player and player.valid then
                     if player.can_insert({name = 'coin', count = rng}) then
                         player.insert({name = 'coin', count = rng})
+                        StatData.get_data(player):increase('coins', rng)
                     end
                 end
             end

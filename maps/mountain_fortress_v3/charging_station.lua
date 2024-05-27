@@ -9,14 +9,15 @@ local Color = require 'utils.color_presets'
 
 local Public = {}
 local module_name = '[color=blue][Charging station][/color] '
+local charging_station_name = Gui.uid_name()
 
 local function draw_charging_gui(player, activate_custom_buttons)
     local button =
-        player.gui.top['charging_station'] or
+        player.gui.top[charging_station_name] or
         player.gui.top.add(
             {
                 type = 'sprite-button',
-                name = 'charging_station',
+                name = charging_station_name,
                 sprite = 'item/battery-mk2-equipment',
                 tooltip = {
                     'modules.charging_station_tooltip'
@@ -73,6 +74,12 @@ local function charge(player)
     if not grid or not grid.valid then
         return player.print(module_name .. 'No valid armor to charge was found.', Color.warning)
     end
+
+    local ents = player.surface.find_entities_filtered {name = 'accumulator', force = player.force, position = player.position, radius = 13}
+    if not ents or not next(ents) then
+        return player.print(module_name .. 'No accumulators nearby.', Color.warning)
+    end
+
     local equip = grid.equipment
     for _, piece in pairs(equip) do
         if piece.valid and piece.generator_power == 0 then
@@ -104,7 +111,7 @@ local function on_player_joined_game(event)
         BottomFrame.add_inner_frame(
             {
                 player = player,
-                element_name = 'charging_station',
+                element_name = charging_station_name,
                 tooltip = {
                     'modules.charging_station_tooltip'
                 },
@@ -114,29 +121,24 @@ local function on_player_joined_game(event)
     end
 end
 
-local function on_gui_click(event)
-    if not event then
-        return
-    end
-    if not event.element then
-        return
-    end
-    if not event.element.valid then
-        return
-    end
-    if event.element.name == 'charging_station' then
-        local player = game.players[event.player_index]
+Gui.on_click(
+    charging_station_name,
+    function(event)
+        local player = game.get_player(event.player_index)
+        if not player or not player.valid then
+            return
+        end
+
         local is_spamming = SpamProtection.is_spamming(player, nil, 'Charging Station Gui Click')
         if is_spamming then
             return
         end
+
         charge(player)
-        return
     end
-end
+)
 
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
-Event.add(defines.events.on_gui_click, on_gui_click)
 
 Event.add(
     BottomFrame.events.bottom_quickbar_location_changed,

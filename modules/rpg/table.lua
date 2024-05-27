@@ -34,6 +34,10 @@ Global.register(
 )
 
 local Public = {}
+Public.events = {
+    on_spell_cast_success = Event.generate_event_name('on_spell_cast_success'),
+    on_spell_cast_failure = Event.generate_event_name('on_spell_cast_failure')
+}
 
 Public.points_per_level = 5
 
@@ -192,6 +196,22 @@ function Public.set_value_to_player(key, value, setter)
         elseif (this.rpg_t[key] and not this.rpg_t[key][value]) then
             this.rpg_t[key][value] = setter or false
         end
+    end
+end
+
+--- Sets set_active_spell_enabled as enabled.
+---@param player_index string
+function Public.set_active_spell_enabled(player_index)
+    if (this.rpg_t[player_index]) then
+        this.rpg_t[player_index].has_custom_spell_active = true
+    end
+end
+
+--- Sets set_active_spell_disabled as nil.
+---@param player_index string
+function Public.set_active_spell_disabled(player_index)
+    if this.rpg_t[player_index] then
+        this.rpg_t[player_index].has_custom_spell_active = false
     end
 end
 

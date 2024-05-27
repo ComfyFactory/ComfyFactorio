@@ -1,6 +1,5 @@
 local Public = require 'modules.rpg.table'
-local Token = require 'utils.token'
-local Task = require 'utils.task'
+local Task = require 'utils.task_token'
 local Ai = require 'modules.ai'
 local Modifiers = require 'utils.player_modifiers'
 
@@ -14,9 +13,10 @@ local states = {
 }
 
 local restore_movement_speed_token
+local repeat_sound_token
 
 local repair_buildings =
-    Token.register(
+    Task.register(
     function(data)
         local entity = data.entity
         if entity and entity.valid then
@@ -34,6 +34,52 @@ local repair_buildings =
     end
 )
 
+repeat_sound_token =
+    Task.register(
+    function(event)
+        local player_index = event.player_index
+        local player = game.get_player(player_index)
+        if not player or not player.valid then
+            return
+        end
+
+        local sound = event.sound or 'utility/armor_insert'
+
+        local spell_active = Public.get_value_from_player(player_index, 'has_custom_spell_active')
+
+        if spell_active then
+            player.play_sound {path = sound, volume_modifier = 1}
+            if player.character ~= nil then
+                player.character.surface.create_entity({name = 'water-splash', position = player.position})
+            end
+            Task.set_timeout_in_ticks(30, repeat_sound_token, event)
+        else
+            player.play_sound {path = sound, volume_modifier = 1}
+            return
+        end
+    end
+)
+
+local x_marks_the_spot_token =
+    Task.register(
+    function(event)
+        local player_index = event.player_index
+        local old_surface_index = event.old_surface_index
+        local player = game.get_player(player_index)
+        if not player or not player.valid then
+            return
+        end
+        local old_position = event.old_position
+        if not old_position then
+            return
+        end
+
+        player.teleport(old_position, old_surface_index)
+        Public.set_active_spell_disabled(player_index)
+        Task.set_timeout_in_ticks(5, repeat_sound_token, {player_index = player.index, sound = 'utility/new_objective'})
+    end
+)
+
 local function get_area(pos, dist)
     local area = {
         left_top = {
@@ -46,6 +92,33 @@ local function get_area(pos, dist)
         }
     }
     return area
+end
+
+local levels = {
+    [150] = {length = 26, max_spread = 6},
+    [200] = {length = 27, max_spread = 6},
+    [250] = {length = 28, max_spread = 7},
+    [300] = {length = 29, max_spread = 7},
+    [350] = {length = 30, max_spread = 8},
+    [400] = {length = 31, max_spread = 8}
+}
+
+local function get_level_data(player_level)
+    local closest_level = nil
+
+    for level, _ in pairs(levels) do
+        if player_level >= level then
+            closest_level = level
+        else
+            break
+        end
+    end
+
+    if closest_level then
+        return levels[closest_level]
+    else
+        return {length = 26, max_spread = 6}
+    end
 end
 
 local function area_of_effect(player, position, state, radius, callback, find_entities)
@@ -87,7 +160,7 @@ local function area_of_effect(player, position, state, radius, callback, find_en
 end
 
 restore_movement_speed_token =
-    Token.register(
+    Task.register(
     function(event)
         local player_index = event.player_index
         local rpg_t = event.rpg_t
@@ -152,6 +225,7 @@ local function create_projectiles(data)
             }
             do_projectile(surface, projectile_types[self.entityName].name, position, force, target_pos, range)
             Public.remove_mana(player, self.mana_cost)
+            rpg_t.amount = rpg_t.amount + 1
             if self.damage then
                 for _, e in pairs(surface.find_entities_filtered({area = damage_area})) do
                     damage_entity(e)
@@ -222,6 +296,7 @@ local function create_entity(data)
                     has_cast = true
                     e.direction = player.character.direction
                     Public.remove_mana(player, self.mana_cost)
+                    rpg_t.amount = rpg_t.amount + 1
                 end
             end
         end
@@ -259,6 +334,7 @@ local function insert_onto(data)
 
             player.insert({name = self.entityName, count = self.amount})
             Public.remove_mana(player, self.mana_cost)
+            rpg_t.amount = rpg_t.amount + 1
         end
     else
         player.insert({name = self.entityName, count = self.amount})
@@ -1060,6 +1136,82 @@ spells[#spells + 1] = {
         Public.remove_mana(player, 999999)
         Public.damage_player_over_time(player, random(8, 16))
         player.play_sound {path = 'utility/armor_insert', volume_modifier = 1}
+        Public.cast_spell(player)
+        return true
+    end
+}
+
+spells[#spells + 1] = {
+    name = {'spells.mark_spot'},
+    entityName = 'mark-spot',
+    target = true,
+    force = 'player',
+    level = 60,
+    type = 'special',
+    mana_cost = 340,
+    cooldown = 2000,
+    enforce_cooldown = true,
+    check_if_active = true,
+    enabled = true,
+    log_spell = true,
+    sprite = 'virtual-signal/signal-X',
+    special_sprite = 'virtual-signal=signal-X',
+    tooltip = 'Warps you back to the locomotive and after a couple of seconds you return to your previous location.',
+    callback = function(data)
+        local player = data.player
+        local surface = data.surface
+        local old_position = player.position
+        local rpg_t = data.rpg_t
+        rpg_t.has_custom_spell_active = true
+
+        local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
+        if pos then
+            player.teleport(pos, surface)
+        else
+            pos = game.forces.player.get_spawn_position(surface)
+            player.teleport(pos, surface)
+        end
+
+        Task.set_timeout_in_ticks(5, repeat_sound_token, {player_index = player.index})
+        Task.set_timeout_in_ticks(300, x_marks_the_spot_token, {player_index = player.index, old_position = old_position, old_surface_index = surface.index})
+        Public.remove_mana(player, 340)
+        Public.cast_spell(player)
+        return true
+    end
+}
+
+spells[#spells + 1] = {
+    name = {'spells.tidal_wave'},
+    entityName = 'tidal-wave',
+    target = true,
+    force = 'player',
+    level = 100,
+    type = 'special',
+    mana_cost = 340,
+    cooldown = 1000,
+    enforce_cooldown = true,
+    check_if_active = false,
+    enabled = true,
+    log_spell = false,
+    sprite = 'virtual-signal/signal-T',
+    special_sprite = 'virtual-signal=signal-T',
+    tooltip = 'Spawns a tidal wave that pushes the enemies back.',
+    callback = function(data)
+        local player = data.player
+        local rpg_t = data.rpg_t
+        local cursor_position = data.position
+
+        local shape = 'cone'
+
+        if random(1, 2) == 1 then
+            shape = 'square'
+        end
+
+        local level_data = get_level_data(rpg_t.level)
+
+        Public.add_tidal_wave(player, cursor_position, shape, level_data.length, level_data.max_spread)
+
+        Public.remove_mana(player, 340)
         Public.cast_spell(player)
         return true
     end

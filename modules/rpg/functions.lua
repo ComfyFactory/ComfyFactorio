@@ -739,6 +739,114 @@ function Public.aoe_punch(cause, entity, damage, final_damage_amount)
     end
 end
 
+function Public.add_tidal_wave(cause, ent_position, shape, length, max_spread)
+    local rpg_extra = Public.get('rpg_extra')
+
+    if not cause or not cause.valid then
+        return
+    end
+
+    local wave = {
+        cause = cause,
+        start_position = cause.position,
+        direction = {ent_position.x - cause.position.x, ent_position.y - cause.position.y},
+        length = length or 24,
+        base_spread = 0.5,
+        max_spread = max_spread or 5,
+        shape = shape or false,
+        tick = 0
+    }
+    local vector_length = math.sqrt(wave.direction[1] ^ 2 + wave.direction[2] ^ 2)
+    wave.direction = {wave.direction[1] / vector_length, wave.direction[2] / vector_length}
+
+    rpg_extra.tidal_waves = rpg_extra.tidal_waves or {}
+    rpg_extra.tidal_waves[#rpg_extra.tidal_waves + 1] = wave
+end
+
+--Melee damage modifier
+function Public.update_tidal_wave()
+    local rpg_extra = Public.get('rpg_extra')
+
+    if not rpg_extra.tidal_waves or not next(rpg_extra.tidal_waves) then
+        return
+    end
+
+    for id, wave in pairs(rpg_extra.tidal_waves) do
+        if not wave then
+            break
+        end
+
+        local cone = wave.shape and wave.shape == 'cone' or false
+
+        local wave_player = wave.cause
+        if not wave_player or not wave_player.valid then
+            rpg_extra.tidal_waves[id] = nil
+            return
+        end
+
+        if wave.tick < wave.length then
+            local surface = wave.cause.surface
+            local cause_position = wave.start_position
+            local i = wave.tick + 1
+
+            local current_spread = wave.base_spread + (wave.max_spread - wave.base_spread) * (i / wave.length)
+
+            if not cone then
+                for j = -wave.max_spread, wave.max_spread do
+                    local offset_x = cause_position.x + wave.direction[1] * i + j * wave.direction[2]
+                    local offset_y = cause_position.y + wave.direction[2] * i - j * wave.direction[1]
+                    local position = {offset_x, offset_y}
+
+                    local next_offset_x = cause_position.x + wave.direction[1] * (i + 1) + j * wave.direction[2]
+                    local next_offset_y = cause_position.y + wave.direction[2] * (i + 1) - j * wave.direction[1]
+                    local next_position = {next_offset_x, next_offset_y}
+
+                    surface.create_entity({name = 'water-splash', position = position})
+                    -- surface.create_trivial_smoke({name = 'poison-capsule-smoke', position = position})
+                    local sound = 'utility/build_small'
+                    wave_player.play_sound {path = sound, volume_modifier = 1}
+
+                    for _, entity in pairs(surface.find_entities({{position[1] - 1, position[2] - 1}, {position[1] + 1, position[2] + 1}})) do
+                        if entity.valid and entity.name ~= 'character' and entity.destructible and entity.type == 'unit' and entity.force.index ~= 3 then
+                            local new_pos = surface.find_non_colliding_position('character', next_position, 3, 0.5)
+                            if new_pos then
+                                entity.teleport(new_pos)
+                            end
+                        end
+                    end
+                end
+            else
+                for j = -current_spread, current_spread, wave.base_spread do
+                    local offset_x = cause_position.x + wave.direction[1] * i + j * wave.direction[2]
+                    local offset_y = cause_position.y + wave.direction[2] * i - j * wave.direction[1]
+                    local position = {offset_x, offset_y}
+
+                    local next_offset_x = cause_position.x + wave.direction[1] * (i + 1) + j * wave.direction[2]
+                    local next_offset_y = cause_position.y + wave.direction[2] * (i + 1) - j * wave.direction[1]
+                    local next_position = {next_offset_x, next_offset_y}
+                    -- surface.create_trivial_smoke({name = 'poison-capsule-smoke', position = position})
+                    surface.create_entity({name = 'water-splash', position = position})
+                    local sound = 'utility/build_small'
+                    wave_player.play_sound {path = sound, volume_modifier = 1}
+
+                    for _, entity in pairs(surface.find_entities({{position[1] - 1, position[2] - 1}, {position[1] + 1, position[2] + 1}})) do
+                        if entity.valid and entity.name ~= 'character' and entity.destructible and entity.type == 'unit' and entity.force.index ~= 3 then
+                            local new_pos = surface.find_non_colliding_position('character', next_position, 3, 0.5)
+                            if new_pos then
+                                entity.teleport(new_pos)
+                            end
+                        end
+                    end
+                end
+            end
+
+            wave.tick = wave.tick + 1
+        else
+            rpg_extra.tidal_waves[id] = nil
+        end
+    end
+end
+
 function Public.level_limit_exceeded(player, value)
     local rpg_extra = Public.get('rpg_extra')
     local rpg_t = Public.get_value_from_player(player.index)
@@ -1219,6 +1327,7 @@ function Public.rpg_reset_player(player, one_time_reset)
                 dropdown_select_index_3 = 1,
                 dropdown_select_name_3 = Public.all_spells[1].name[1],
                 allocate_index = 1,
+                amount = 0,
                 explosive_bullets = false,
                 enable_entity_spawn = false,
                 health_bar = rpg_t.health_bar,
@@ -1268,6 +1377,7 @@ function Public.rpg_reset_player(player, one_time_reset)
                 dropdown_select_index_3 = 1,
                 dropdown_select_name_3 = Public.all_spells[1].name[1],
                 allocate_index = 1,
+                amount = 0,
                 explosive_bullets = false,
                 enable_entity_spawn = false,
                 points_left = 0,

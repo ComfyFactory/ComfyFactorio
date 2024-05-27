@@ -10,6 +10,11 @@ local function on_console_command(event)
 
     local commands = {
         ['editor'] = true,
+        ['open'] = true,
+        ['cheat'] = true,
+        ['permissions'] = true,
+        ['banlist'] = true,
+        ['config'] = true,
         ['command'] = true,
         ['silent-command'] = true,
         ['sc'] = true,
