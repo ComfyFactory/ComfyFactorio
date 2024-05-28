@@ -6,15 +6,12 @@ local Task = require 'utils.task_token'
 local shuffle = table.shuffle_table
 local WD = require 'modules.wave_defense.table'
 local format_number = require 'util'.format_number
-local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local ICWF = require 'maps.mountain_fortress_v3.icw.functions'
 local ICWT = require 'maps.mountain_fortress_v3.icw.table'
 local Core = require 'utils.core'
 local Public = require 'maps.mountain_fortress_v3.table'
 local Alert = require 'utils.alert'
-local IC = require 'maps.mountain_fortress_v3.ic.table'
 local RPG = require 'modules.rpg.table'
-local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local Beam = require 'modules.render_beam'
 local Discord = require 'utils.discord'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
@@ -1180,15 +1177,6 @@ local function apply_buffs()
                             discord = buff.discord
                         }
                     end
-
-                    local locomotive_cargo = Public.get('locomotive_cargo')
-                    if not locomotive_cargo then
-                        break
-                    end
-                    if not locomotive_cargo.valid then
-                        break
-                    end
-                    locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = 'raw-fish', count = 999999})
                 end
                 if buff.modifier == 'tech' then
                     if not this.buffs_collected['techs'] then

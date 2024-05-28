@@ -258,6 +258,11 @@ function Public.locomotive_spawn(surface, position, reversed)
         end
     end
 
+    local all_the_fish = Public.get('all_the_fish')
+    if all_the_fish then
+        this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = 'raw-fish', count = 999999})
+    end
+
     Task.set_timeout_in_ticks(15, place_tiles_token, {surface = surface, position = position})
     Task.set_timeout_in_ticks(50, set_loco_cargo, data)
 

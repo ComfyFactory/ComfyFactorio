@@ -757,7 +757,8 @@ spells[#spells + 1] = {
     force = 'player',
     level = 50,
     type = 'item',
-    mana_cost = 250,
+    mana_cost = 150,
+    enforce_cooldown = true,
     cooldown = 200,
     enabled = true,
     log_spell = true,
@@ -777,7 +778,8 @@ spells[#spells + 1] = {
     level = 70,
     type = 'item',
     mana_cost = 400,
-    cooldown = 200,
+    enforce_cooldown = true,
+    cooldown = 150,
     enabled = true,
     log_spell = true,
     sprite = 'recipe/uranium-cannon-shell',
@@ -862,7 +864,7 @@ spells[#spells + 1] = {
     level = 45,
     type = 'special',
     mana_cost = 400,
-    cooldown = 2400,
+    cooldown = 500,
     enabled = true,
     enforce_cooldown = true,
     log_spell = true,
@@ -909,7 +911,7 @@ spells[#spells + 1] = {
     level = 50,
     type = 'special',
     mana_cost = 700,
-    cooldown = 2500,
+    cooldown = 500,
     enabled = true,
     enforce_cooldown = true,
     sprite = 'virtual-signal/signal-S',
@@ -987,7 +989,8 @@ spells[#spells + 1] = {
     level = 50,
     type = 'special',
     mana_cost = 140,
-    cooldown = 320,
+    enforce_cooldown = true,
+    cooldown = 150,
     enabled = true,
     sprite = 'item/raw-fish',
     special_sprite = 'item=raw-fish',
@@ -1009,7 +1012,8 @@ spells[#spells + 1] = {
     level = 25,
     type = 'special',
     mana_cost = 140,
-    cooldown = 320,
+    enforce_cooldown = true,
+    cooldown = 150,
     enabled = true,
     sprite = 'item/explosives',
     special_sprite = 'item=explosives',
@@ -1029,7 +1033,8 @@ spells[#spells + 1] = {
     level = 60,
     type = 'special',
     mana_cost = 150,
-    cooldown = 320,
+    enforce_cooldown = true,
+    cooldown = 150,
     enabled = true,
     log_spell = true,
     sprite = 'entity/compilatron',
@@ -1058,7 +1063,8 @@ spells[#spells + 1] = {
     level = 50,
     type = 'special',
     mana_cost = 220,
-    cooldown = 320,
+    enforce_cooldown = true,
+    cooldown = 150,
     enabled = true,
     sprite = 'recipe/distractor-capsule',
     special_sprite = 'recipe=distractor-capsule',
@@ -1078,8 +1084,9 @@ spells[#spells + 1] = {
     force = 'player',
     level = 55,
     type = 'special',
+    enforce_cooldown = true,
     mana_cost = 250,
-    cooldown = 320,
+    cooldown = 150,
     enabled = true,
     sprite = 'recipe/defender-capsule',
     special_sprite = 'recipe=defender-capsule',
@@ -1098,8 +1105,9 @@ spells[#spells + 1] = {
     force = 'player',
     level = 60,
     type = 'special',
+    enforce_cooldown = true,
     mana_cost = 300,
-    cooldown = 320,
+    cooldown = 150,
     enabled = true,
     sprite = 'recipe/destroyer-capsule',
     special_sprite = 'recipe=destroyer-capsule',
@@ -1115,6 +1123,7 @@ spells[#spells + 1] = {
     force = 'player',
     level = 60,
     type = 'special',
+    enforce_cooldown = true,
     mana_cost = 340,
     cooldown = 2000,
     enabled = true,
@@ -1173,7 +1182,7 @@ spells[#spells + 1] = {
         end
 
         Task.set_timeout_in_ticks(5, repeat_sound_token, {player_index = player.index})
-        Task.set_timeout_in_ticks(300, x_marks_the_spot_token, {player_index = player.index, old_position = old_position, old_surface_index = surface.index})
+        Task.set_timeout_in_ticks(600, x_marks_the_spot_token, {player_index = player.index, old_position = old_position, old_surface_index = surface.index})
         Public.remove_mana(player, 340)
         Public.cast_spell(player)
         return true
@@ -1188,7 +1197,7 @@ spells[#spells + 1] = {
     level = 100,
     type = 'special',
     mana_cost = 340,
-    cooldown = 1000,
+    cooldown = 100,
     enforce_cooldown = true,
     check_if_active = false,
     enabled = true,
@@ -1257,13 +1266,13 @@ spells[#spells + 1] = {
     level = 200,
     type = 'special',
     mana_cost = 350,
-    cooldown = 1000,
+    cooldown = 300,
     enabled = true,
     enforce_cooldown = true,
     log_spell = true,
     sprite = 'virtual-signal/signal-info',
     special_sprite = 'virtual-signal=signal-info',
-    tooltip = 'Damages enemies in radius when cast. This is a WIP spell that might get disabled.',
+    tooltip = 'Damages enemies in radius when cast. Scales with player level.',
     callback = function(data)
         local self = data.self
         local player = data.player
@@ -1329,7 +1338,7 @@ local drone_enemy = {
     log_spell = true,
     sprite = 'virtual-signal/signal-info',
     special_sprite = 'virtual-signal=signal-info',
-    tooltip = 'Creates a drone that searches for enemies and destroys them. This is a WIP spell that might get disabled.',
+    tooltip = 'Creates a drone that searches for enemies and destroys them.',
     callback = function(data)
         local self = data.self
         local player = data.player
@@ -1361,7 +1370,7 @@ local drone_mine = {
     log_spell = true,
     sprite = 'virtual-signal/signal-info',
     special_sprite = 'virtual-signal=signal-info',
-    tooltip = 'Creates a drone that mines entities around you. This is a WIP spell that might get disabled.',
+    tooltip = 'Creates a drone that mines entities around you.',
     callback = function(data)
         local self = data.self
         local player = data.player
@@ -1379,14 +1388,14 @@ local drone_mine = {
 
 spells[#spells + 1] = drone_mine
 
-if _DEBUG then
-    for i = 1, #spells do
-        local spell = spells[i]
-        spell.mana_cost = 1
-        spell.level = 1
-        spell.cooldown = 1
-    end
-end
+-- if _DEBUG then
+--     for i = 1, #spells do
+--         local spell = spells[i]
+--         spell.mana_cost = 1
+--         spell.level = 1
+--         spell.cooldown = 1
+--     end
+-- end
 
 Public.projectile_types = {
     ['explosives'] = {name = 'grenade', count = 0.5, max_range = 32, tick_speed = 1},
