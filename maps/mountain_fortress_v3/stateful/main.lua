@@ -5,8 +5,6 @@ local Beam = require 'modules.render_beam'
 local RPG = require 'modules.rpg.main'
 
 Public.stateful_gui = require 'maps.mountain_fortress_v3.stateful.gui'
-Public.stateful_terrain = require 'maps.mountain_fortress_v3.stateful.terrain'
-Public.stateful_generate = require 'maps.mountain_fortress_v3.stateful.generate'
 Public.stateful_blueprints = require 'maps.mountain_fortress_v3.stateful.blueprints'
 
 local random = math.random
@@ -36,7 +34,7 @@ Event.add(
 )
 
 Event.on_nth_tick(
-    120,
+    350,
     function()
         local final_battle = Public.get_stateful('final_battle')
         if not final_battle then
@@ -56,22 +54,28 @@ Event.on_nth_tick(
         Public.set_final_battle()
 
         if collection.time_until_attack and collection.time_until_attack <= 0 and collection.survive_for and collection.survive_for > 0 then
-            local surface = game.get_surface('boss_room')
-            if not surface or not surface.valid then
-                return
-            end
-
             local spawn_positions = Public.stateful_spawn_points
             local sizeof = Public.sizeof_stateful_spawn_points
 
             local area = spawn_positions[random(1, sizeof)]
+
+            local locomotive = Public.get('locomotive')
+            if not locomotive or not locomotive.valid then
+                return
+            end
+
+            area[1].x = area[1].x - locomotive.position.x
+            area[1].y = area[1].y - locomotive.position.y
+
+            area[2].x = area[2].x + locomotive.position.x
+            area[2].y = area[2].y + locomotive.position.y
 
             shuffle(area)
 
             WD.build_worm_custom()
 
             WD.set_spawn_position(area[1])
-            Event.raise(WD.events.on_spawn_unit_group, {fs = true, bypass = true, random_bosses = true, scale = 4, force = 'aggressors_frenzy'})
+            Event.raise(WD.events.on_spawn_unit_group_simple, {fs = true, bypass = true, random_bosses = true, scale = 4, force = 'aggressors_frenzy'})
             return
         end
 
@@ -217,7 +221,8 @@ Event.on_nth_tick(
             return
         end
 
-        local surface = game.get_surface('boss_room')
+        local active_surface_index = Public.get('active_surface_index')
+        local surface = game.get_surface(active_surface_index)
         if not surface or not surface.valid then
             return
         end

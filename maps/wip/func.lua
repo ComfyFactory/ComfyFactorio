@@ -163,7 +163,6 @@ local calculate_bridge_token =
 local noise_vector_tiles_path_token =
     Scheduler.set(
     function(event)
-        log(serpent.block('noise_vector_tiles_path_token'))
         local surface = event.surface
         local tbl_tiles = event.tbl_tiles
         local position = global.position

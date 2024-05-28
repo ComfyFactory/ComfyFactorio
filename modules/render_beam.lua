@@ -73,6 +73,9 @@ function Public:new_target()
 
     local chunk = surface.get_random_chunk()
     local random_position = {x = (chunk.x + random()) * 32, y = (chunk.y + random()) * 32}
+    if not position then
+        return random_position, random_position
+    end
 
     return position, random_position
 end

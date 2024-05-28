@@ -151,7 +151,7 @@ end
 local pause_waves_custom_callback_token =
     Task.register(
     function(status)
-        Collapse.disable_collapse(status)
+        Collapse.start_now(status)
         local status_str = status and 'has stopped!' or 'is active once again!'
         Alert.alert_all_players(30, 'Collapse ' .. status_str, nil, 'achievement/tech-maniac', 0.6)
     end
@@ -389,6 +389,21 @@ local function do_clear_enemy_spawners()
     end
 end
 
+local function do_clear_rocks_slowly()
+    local rocks_to_remove = Public.get('rocks_to_remove')
+    if not rocks_to_remove or not next(rocks_to_remove) then
+        return
+    end
+
+    for _ = 1, 30 do
+        local entity = table.remove(rocks_to_remove, #rocks_to_remove)
+
+        if entity and entity.valid then
+            entity.destroy()
+        end
+    end
+end
+
 local function do_season_fix()
     local active_surface_index = Public.get('active_surface_index')
     local surface = game.surfaces[active_surface_index]
@@ -503,6 +518,7 @@ local function tick()
     do_artillery_turrets_targets()
     do_beams_away()
     do_clear_enemy_spawners()
+    do_clear_rocks_slowly()
 end
 
 Public.deactivate_callback =
@@ -917,7 +933,25 @@ local function on_wave_created(event)
     end
 end
 
+function Public.find_rocks_and_slowly_remove()
+    local active_surface_index = Public.get('active_surface_index')
+    local surface = game.get_surface(active_surface_index)
+    if not (surface and surface.valid) then
+        return
+    end
+
+    local ents = surface.find_entities_filtered({type = 'simple-entity'})
+    if ents and #ents > 0 then
+        Public.set('rocks_to_remove', ents)
+    end
+end
+
 function Public.set_difficulty()
+    local final_battle = Public.get('final_battle')
+    if final_battle then
+        return
+    end
+
     local game_lost = Public.get('game_lost')
     if game_lost then
         return
@@ -1348,30 +1382,6 @@ function Public.on_player_joined_game(event)
         for item, data in pairs(this.starting_items) do
             player.insert({name = item, count = data.count})
         end
-    end
-
-    -- local top = player.gui.top
-    -- if top['mod_gui_top_frame'] then
-    --     top['mod_gui_top_frame'].destroy()
-    -- end
-
-    local final_battle = Public.get('final_battle')
-    local collection = Public.get_stateful('collection')
-    if final_battle and not collection.final_arena_disabled then
-        local boss_room = game.get_surface('boss_room')
-        if not boss_room or not boss_room.valid then
-            return
-        end
-        if player.surface.index ~= boss_room.index then
-            local pos = boss_room.find_non_colliding_position('character', game.forces.player.get_spawn_position(boss_room), 3, 0, 5)
-            if pos then
-                player.teleport(pos, boss_room)
-            else
-                pos = game.forces.player.get_spawn_position(boss_room)
-                player.teleport(pos, boss_room)
-            end
-        end
-        return
     end
 
     if player.surface.index ~= active_surface_index then

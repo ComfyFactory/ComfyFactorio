@@ -594,7 +594,7 @@ local function on_pre_player_died(event)
 
     local surface = player.surface
 
-    local map_name = 'boss_room'
+    local map_name = 'mtn_v3'
 
     local corpse_removal_disabled = Public.get('corpse_removal_disabled')
     if corpse_removal_disabled then
@@ -1750,6 +1750,7 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
     this.collection = {
         time_until_attack = nil,
         time_until_attack_timer = nil,
+        clear_rocks = nil,
         survive_for = nil,
         survive_for_timer = nil,
         final_arena_disabled = false
@@ -1786,48 +1787,6 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
     apply_buffs()
     if refresh_gui then
         Public.refresh_frames()
-    end
-end
-
-function Public.migrate_and_create(locomotive)
-    local carriages = Public.get('carriages')
-    local surface = game.get_surface('boss_room')
-    if not surface or not surface.valid then
-        return
-    end
-    local adjusted_zones = Public.get('adjusted_zones')
-    local position = locomotive.position
-    local inc = 6
-    if adjusted_zones.reversed then
-        local new_position = {x = position.x, y = position.y - inc}
-
-        for index, entity in pairs(carriages) do
-            if index ~= 1 then
-                if entity and entity.valid and entity.unit_number ~= locomotive.unit_number then
-                    local new_wagon = surface.create_entity({name = entity.name, position = new_position, force = 'player', defines.direction.south})
-                    if new_wagon and new_wagon.valid then
-                        inc = inc + 6
-                        new_position = {x = position.x, y = position.y - inc}
-                        ICW.migrate_wagon(entity, new_wagon)
-                    end
-                end
-            end
-        end
-    else
-        local new_position = {x = position.x, y = position.y + inc}
-
-        for index, entity in pairs(carriages) do
-            if index ~= 1 then
-                if entity and entity.valid and entity.unit_number ~= locomotive.unit_number then
-                    local new_wagon = surface.create_entity({name = entity.name, position = new_position, force = 'player', defines.direction.north})
-                    if new_wagon and new_wagon.valid then
-                        inc = inc + 7
-                        new_position = {x = position.x, y = position.y + inc}
-                        ICW.migrate_wagon(entity, new_wagon)
-                    end
-                end
-            end
-        end
     end
 end
 
@@ -1872,32 +1831,26 @@ function Public.move_all_players()
 end
 
 function Public.set_final_battle()
+    if this.final_battle then
+        return
+    end
+
     WD.set_es('final_battle', true)
     this.final_battle = true
     Public.set('final_battle', true)
 end
 
 function Public.allocate()
-    local stateful_locomotive = Public.get_stateful('stateful_locomotive')
     local stateful_locomotive_migrated = Public.get_stateful('stateful_locomotive_migrated')
-    if stateful_locomotive and not stateful_locomotive_migrated then
+    if not stateful_locomotive_migrated then
         Task.set_timeout_in_ticks(100, move_all_players_token, {})
 
         Beam.new_valid_targets({'wall', 'turret', 'furnace', 'gate'})
 
-        Public.soft_reset.add_schedule_to_delete_surface()
         Public.set_stateful('stateful_locomotive_migrated', true)
-        local locomotive = Public.get('locomotive')
-        local icw_data = ICW.migrate_wagon(locomotive, stateful_locomotive)
-        local surface = game.get_surface('boss_room')
-        if not surface or not surface.valid then
-            return
-        end
 
         ICWT.set('speed', 0.3)
         ICWT.set('final_battle', true)
-
-        IC.set('allowed_surface', 'boss_room')
 
         local collection = Public.get_stateful('collection')
         if not collection then
@@ -1919,24 +1872,7 @@ function Public.allocate()
 
         collection.time_until_attack = 54000 + game.tick
         collection.time_until_attack_timer = 54000 + game.tick
-
-        Public.set_target(stateful_locomotive, icw_data)
-        game.forces.player.chart(surface, {{-358, -151}, {358, 151}})
-        Public.migrate_and_create(stateful_locomotive)
     end
-end
-
-function Public.set_target(target, icw_data)
-    Public.set('locomotive', target)
-    local wave_defense_table = WD.get()
-    wave_defense_table.surface_index = game.get_surface('boss_room').index
-    wave_defense_table.target = target
-    wave_defense_table.enable_side_target = false
-    wave_defense_table.spawn_position = {x = -206, y = -80}
-    Public.set('active_surface_index', game.get_surface('boss_room').index)
-    BiterHealthBooster.set('active_surface', game.get_surface('boss_room').name)
-    Public.set('icw_locomotive', icw_data)
-    Public.render_train_hp()
 end
 
 function Public.increase_enemy_damage_and_health()

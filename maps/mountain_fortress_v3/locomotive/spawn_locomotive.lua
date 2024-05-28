@@ -235,8 +235,6 @@ function Public.locomotive_spawn(surface, position, reversed)
         surface = locomotive.surface
     }
 
-    log(serpent.block(extra_wagons))
-
     if extra_wagons and extra_wagons > 0 then
         local inc = 7
 

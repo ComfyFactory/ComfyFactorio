@@ -14,6 +14,7 @@ local Discord = require 'utils.discord'
 local format_number = require 'util'.format_number
 local Explosives = require 'modules.explosives'
 
+local zone_settings = Public.zone_settings
 local send_ping_to_channel = Discord.channel_names.mtn_channel
 local main_button_name = Gui.uid_name()
 local main_frame_name = Gui.uid_name()
@@ -253,6 +254,7 @@ end
 local function play_game_won()
     Core.iter_connected_players(
         function(player)
+            Explosives.disable(false)
             Explosives.detonate_entity(player)
             player.play_sound {path = 'utility/game_won', volume_modifier = 0.75}
             Task.set_timeout_in_ticks(10, spread_particles_token, {player_index = player.index, particle = 'iron-ore-particle'})
@@ -1097,6 +1099,10 @@ local function update_raw()
     end
 
     if collection.time_until_attack and not collection.final_arena_disabled then
+        if not collection.clear_rocks then
+            Public.find_rocks_and_slowly_remove()
+            collection.clear_rocks = true
+        end
         collection.time_until_attack = collection.time_until_attack_timer - tick
         if collection.time_until_attack > 0 then
             collection.time_until_attack = collection.time_until_attack
@@ -1161,7 +1167,7 @@ local function update_raw()
                 refresh_boss_frame()
                 play_game_won()
                 WD.disable_spawning_biters(true)
-                Collapse.disable_collapse(true)
+                Collapse.start_now(false)
                 WD.nuke_wave_gui()
                 Server.to_discord_embed('Game won!')
                 stateful.rounds_survived = stateful.rounds_survived + 1
@@ -1199,6 +1205,8 @@ local function update_raw()
         stateful.objectives_completed.boss_time = true
 
         Server.to_discord_embed('All objectives has been completed!')
+        Alert.alert_all_players(300, 'All objectives has been completed!')
+        Alert.alert_all_players(300, 'Take your time to prepare for the final push!')
 
         if stateful.collection.final_arena_disabled then
             game.print('[color=yellow][Mtn v3][/color] Game won!')
@@ -1223,7 +1231,7 @@ local function update_raw()
             refresh_boss_frame()
             play_game_won()
             WD.disable_spawning_biters(true)
-            Collapse.disable_collapse(true)
+            Collapse.start_now(false)
             WD.nuke_wave_gui()
             Server.to_discord_embed('Game won!')
             stateful.rounds_survived = stateful.rounds_survived + 1
@@ -1242,10 +1250,19 @@ local function update_raw()
         stateful.collection.gather_time_timer = tick + 54000
         game.forces.enemy.evolution_factor = 1
         play_achievement_unlocked()
+        local reverse_position = zone_settings.zone_depth * (breached_wall + 1)
+        local reversed = Public.get_stateful_settings('reversed')
+        if not reversed then
+            reverse_position = reverse_position * -1
+        end
+        Explosives.disable(true)
         WD.disable_spawning_biters(true)
-        Collapse.disable_collapse(true)
+        Collapse.set_reverse_position({0, reverse_position})
+        Collapse.set_reverse_direction()
+        Collapse.reverse_start_now(true)
         Public.stateful_blueprints.blueprint()
         WD.nuke_wave_gui()
+        Public.set('pre_final_battle', true)
 
         refresh_frames()
     end

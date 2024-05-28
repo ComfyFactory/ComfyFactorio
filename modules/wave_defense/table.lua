@@ -14,7 +14,8 @@ Public.events = {
     on_target_aquired = Event.generate_event_name('on_target_aquired'),
     on_entity_created = Event.generate_event_name('on_entity_created'),
     on_biters_evolved = Event.generate_event_name('on_biters_evolved'),
-    on_spawn_unit_group = Event.generate_event_name('on_spawn_unit_group')
+    on_spawn_unit_group = Event.generate_event_name('on_spawn_unit_group'),
+    on_spawn_unit_group_simple = Event.generate_event_name('on_spawn_unit_group_simple'),
 }
 local insert = table.insert
 

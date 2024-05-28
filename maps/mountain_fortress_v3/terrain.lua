@@ -2926,6 +2926,13 @@ function Public.heavy_functions(data)
 
     local p = data.position
 
+    local pre_final_battle = Public.get('pre_final_battle')
+    if pre_final_battle then
+        local tiles = data.tiles
+        tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+        return
+    end
+
     if adjusted_zones.disable_terrain then
         return
     end
@@ -3015,6 +3022,18 @@ Event.add(
             return
         end
         if not surface.valid then
+            return
+        end
+
+        local pre_final_battle = Public.get('pre_final_battle')
+        if pre_final_battle then
+            local tiles = {}
+            for x = 0, 31 do
+                for y = 0, 31 do
+                    tiles[#tiles + 1] = {name = 'out-of-map', position = {left_top.x + x, left_top.y + y}}
+                end
+            end
+            surface.set_tiles(tiles, false)
             return
         end
 

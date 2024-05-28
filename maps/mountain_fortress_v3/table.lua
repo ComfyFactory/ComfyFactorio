@@ -216,6 +216,7 @@ function Public.reset_main_table()
     }
     this.pickaxe_speed_per_purchase = 0.09
     this.breached_wall = 1
+    this.pre_final_battle = false
     this.final_battle = false
     this.disable_link_chest_cheese_mode = true
     this.left_top = {
@@ -336,6 +337,9 @@ function Public.enable_bw(state)
     this.bw = state or false
 end
 
+--- Returns the main table or a specific key from the main table.
+---@param key any
+---@return any
 function Public.get(key)
     if key then
         return this[key]

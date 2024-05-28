@@ -116,7 +116,6 @@ local announce_new_map =
 )
 
 function Public.reset_map()
-    log(serpent.block('resetting map'))
     game.forces.player.reset()
     Public.reset_main_table()
 
@@ -226,10 +225,8 @@ function Public.reset_map()
     Collapse.set_surface_index(surface.index)
 
     Collapse.start_now(false)
-    Collapse.disable_collapse(false)
 
     Public.stateful.enable(true)
-    Public.stateful.create()
     Public.stateful.reset_stateful(true, true)
     Public.stateful.increase_enemy_damage_and_health()
     Public.stateful.apply_startup_settings()
@@ -310,7 +307,7 @@ function Public.reset_map()
     RPG.reset_table()
 
     RPG.rpg_reset_all_players()
-    RPG.set_surface_name({game.surfaces[this.active_surface_index].name, 'boss_room'})
+    RPG.set_surface_name({game.surfaces[this.active_surface_index].name})
     RPG.enable_health_and_mana_bars(true)
     RPG.enable_wave_defense(true)
     RPG.enable_mana(true)
@@ -330,7 +327,7 @@ function Public.reset_map()
     end
 
     if _DEBUG then
-        Collapse.disable_collapse(true)
+        Collapse.start_now(false)
         WD.disable_spawning_biters(true)
     end
 
@@ -477,8 +474,35 @@ local compare_collapse_and_train = function()
     local c_y = abs(collapse_pos.y)
     local t_y = abs(locomotive.position.y)
     local result = abs(c_y - t_y)
-
     local gap_between_zones = Public.get('gap_between_zones')
+    local pre_final_battle = Public.get('pre_final_battle')
+    if pre_final_battle then
+        local reverse_collapse_pos = Collapse.get_reverse_position()
+        if reverse_collapse_pos then
+            local r_c_y = abs(reverse_collapse_pos.y)
+            local reverse_result = abs(r_c_y - t_y)
+            if reverse_result > 200 then
+                Collapse.reverse_start_now(true)
+                Collapse.set_speed(1)
+                Collapse.set_amount(10)
+            else
+                if Collapse.has_reverse_collapse_started() then
+                    Collapse.reverse_start_now(false)
+                end
+            end
+        end
+
+        if result > 200 then
+            Collapse.start_now(true)
+            Collapse.set_speed(1)
+            Collapse.set_amount(10)
+        else
+            if Collapse.has_collapse_started() then
+                Collapse.start_now(false)
+            end
+        end
+        return
+    end
 
     local distance = result > gap_between_zones.gap
     if not distance then
@@ -499,13 +523,13 @@ local collapse_after_wave_200 = function()
     if not collapse_grace then
         return
     end
-    if Collapse.get_start_now() then
+    if Collapse.has_collapse_started() then
         return
     end
 
     local wave_number = WD.get_wave()
 
-    if wave_number >= 200 and not Collapse.get_start_now() then
+    if wave_number >= 200 and not Collapse.has_collapse_started() then
         Collapse.start_now(true)
         local data = {
             position = Collapse.get_position()

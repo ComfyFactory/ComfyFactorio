@@ -404,7 +404,7 @@ local function distance(player)
             end
         end
 
-        if not Collapse.get_start_now() then
+        if not Collapse.has_collapse_started() then
             clear_breach_text_and_render()
             Public.set('collapse_started', true)
             Collapse.start_now(true)
@@ -414,7 +414,7 @@ local function distance(player)
             Task.set_timeout_in_ticks(550, collapse_message, data)
         end
 
-        if Collapse.get_start_now() then
+        if Collapse.has_collapse_started() then
             clear_breach_text_and_render()
         end
 

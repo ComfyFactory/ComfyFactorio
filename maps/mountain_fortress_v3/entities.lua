@@ -284,25 +284,14 @@ local function set_train_final_health(final_damage_amount, repair)
     rendering.set_text(health_text, 'HP: ' .. round(locomotive_health) .. ' / ' .. round(locomotive_max_health))
 end
 
-local function is_protected(data, e)
-    if data.final_battle then
-        local boss_map_name = 'boss_room'
-        if string.sub(e.surface.name, 0, #boss_map_name) ~= boss_map_name then
-            return true
-        end
+local function is_protected(e)
+    local map_name = 'mtn_v3'
+    if string.sub(e.surface.name, 0, #map_name) ~= map_name then
+        return true
+    end
 
-        if protect_types[e.type] then
-            return true
-        end
-    else
-        local map_name = 'mtn_v3'
-        if string.sub(e.surface.name, 0, #map_name) ~= map_name then
-            return true
-        end
-
-        if protect_types[e.type] then
-            return true
-        end
+    if protect_types[e.type] then
+        return true
     end
 
     return false
@@ -331,7 +320,7 @@ local function protect_entities(data)
     end
 
     local carriages_numbers = Public.get('carriages_numbers')
-    if is_protected(data, entity) then
+    if is_protected(entity) then
         if (cause and cause.valid) then
             if Public.valid_enemy_forces[cause.force.name] then
                 if carriages_numbers and carriages_numbers[entity.unit_number] then

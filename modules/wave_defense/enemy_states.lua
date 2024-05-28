@@ -16,11 +16,10 @@ local set_timeout_in_ticks = Task.set_timeout_in_ticks
 
 local this = {
     states = {},
-    state_count = 0,
     settings = {
         frenzy_length = 3600,
         frenzy_burst_length = 160,
-        update_rate = 60,
+        update_rate = 120,
         enabled = true,
         track_bosses_only = true,
         wave_number = 0
@@ -94,8 +93,7 @@ work_token =
 
         if state:validate() then
             state:work(tick)
-
-            set_timeout_in_ticks(this.settings.update_rate, work_token, event)
+            set_timeout_in_ticks(state:get_update_rate(), work_token, event)
         else
             state:remove()
         end
@@ -382,7 +380,6 @@ end
 
 local function on_init()
     this.states = {}
-    this.state_count = 0
     this.settings.frenzy_length = 3600
     this.settings.frenzy_burst_length = 160
     this.settings.update_rate = 120
@@ -435,6 +432,9 @@ local function on_unit_group_created(event)
                 entity = entity
             }
             local state = Public.new(data)
+            if not state then
+                return
+            end
             state:set_burst_frenzy()
         end
     end
@@ -491,11 +491,17 @@ local function on_entity_created(event)
         if this.settings.track_bosses_only then
             if event.boss_unit then
                 state = Public.new(data)
+                if not state then
+                    return
+                end
                 state:set_burst_frenzy()
                 state:set_boss()
             end
         else
             state = Public.new(data)
+            if not state then
+                return
+            end
             state:set_burst_frenzy()
             if event.boss_unit then
                 state:set_boss()
@@ -569,8 +575,14 @@ end
 
 --- Creates a new state for a boss unit.
 ---@param data table
----@return table
+---@return table|nil
 function Public.new(data)
+    local uid = Public.get_count()
+
+    if uid > 200 then
+        return
+    end
+
     local state = setmetatable({}, {__index = Public._esp})
     local tick = game.tick
     state.entity = data.entity
@@ -578,7 +590,9 @@ function Public.new(data)
     state.force = game.forces.aggressors
     state.unit_number = state.entity.unit_number
     state.teleported = 0
+    state.uid = uid
     state.id = state.entity.unit_number
+    state.update_rate = this.settings.update_rate + (10 * state.uid)
     if data.delayed then
         state.delayed = tick + data.delayed
         state.ttl = data.ttl or (tick + data.delayed) + 7200 -- 2 minutes duration
@@ -587,10 +601,9 @@ function Public.new(data)
         state:validate()
     end
 
-    set_timeout_in_ticks(this.settings.update_rate, work_token, {unit_number = state.unit_number})
+    set_timeout_in_ticks(state.update_rate, work_token, {unit_number = state.unit_number})
 
     this.states[state.id] = state
-    this.state_count = this.state_count + 1
 
     return state
 end
@@ -642,6 +655,19 @@ function Public.get_boss_unit()
     end
 end
 
+-- Gets a boss unit
+---@return integer
+function Public.get_count()
+    local c = 1
+    for _, state in pairs(this.states) do
+        if state then
+            c = c + 1
+        end
+    end
+
+    return c
+end
+
 -- Gets a first matched unit
 ---@return table|nil
 function Public.get_any()
@@ -654,14 +680,11 @@ end
 
 -- Removes the given entity from tracking
 function Public._esp:remove()
-    if this.final_battle then
-        this.settings.generated_units = this.settings.generated_units - 1
-        if this.settings.generated_units <= 0 then
-            this.settings.generated_units = 0
-        end
-    end
     this.states[self.id] = nil
-    this.state_count = this.state_count - 1
+end
+
+function Public._esp:get_update_rate()
+    return self.update_rate
 end
 
 -- Sets the entity force
@@ -857,6 +880,16 @@ function Public._esp:find_targets()
         return
     end
 
+    if not self.last_searched then
+        self.last_searched = game.tick + 200
+    end
+
+    if game.tick < self.last_searched then
+        return
+    end
+
+    self.last_searched = game.tick + 200
+
     local unit_group_command_step_length = Public.get('unit_group_command_step_length')
     local step_length = unit_group_command_step_length
 
@@ -891,6 +924,9 @@ function Public._esp:attack_target()
 
     local tick = game.tick
     local orders = self.moving_to_attack_target
+    if not orders then
+        orders = 0
+    end
 
     if this.target_settings.commands and this.target_settings.commands.commands then
         this.target_settings.commands = nil
@@ -903,20 +939,6 @@ function Public._esp:attack_target()
 
     local compound_commands = this.target_settings.commands
 
-    if not orders then
-        self.moving_to_attack_target = tick + 200
-        orders = self.moving_to_attack_target
-        if self.commands and next(self.commands) then
-            compound_commands = self.commands
-        end
-        local command = {
-            type = defines.command.compound,
-            structure_type = defines.compound_command.return_last,
-            commands = compound_commands
-        }
-        entity.set_command(command)
-    end
-
     if tick > orders then
         self.moving_to_attack_target = tick + 200
         if self.commands and next(self.commands) then
@@ -928,7 +950,8 @@ function Public._esp:attack_target()
             structure_type = defines.compound_command.return_last,
             commands = compound_commands
         }
-        entity.set_command(command)
+        pcall(entity.set_command, command)
+    -- entity.set_command(command)
     end
     self.commands = nil
 end
@@ -994,11 +1017,6 @@ function Public._esp:set_boss()
     self.boss_unit = true
 
     if this.final_battle then
-        if not this.settings.generated_units then
-            this.settings.generated_units = 0
-        end
-
-        this.settings.generated_units = this.settings.generated_units + 1
         self.go_havoc = true
         self.proj_int = tick + 120
         self.clear_go_havoc = tick + 3600
@@ -1020,6 +1038,7 @@ function Public._esp:work(tick)
 
     if self.go_havoc and self.clear_go_havoc > tick then
         if tick > self.proj_int then
+            self:find_targets()
             self:attack_target()
             self:fire_projectile()
             self.proj_int = tick + 120
