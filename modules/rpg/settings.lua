@@ -15,6 +15,7 @@ local enable_spawning_frame_name = Public.enable_spawning_frame_name
 local spell1_button_name = Public.spell1_button_name
 local spell2_button_name = Public.spell2_button_name
 local spell3_button_name = Public.spell3_button_name
+local cooldown_indicator_name = Public.cooldown_indicator_name
 
 local settings_level = Public.gui_settings_levels
 
@@ -35,6 +36,7 @@ local function create_input_element(frame, type, value, items, index, tooltip)
     if type == 'boolean' then
         return frame.add({type = 'checkbox', state = value})
     end
+
     if type == 'label' then
         local label = frame.add({type = 'label', caption = value})
         label.style.font = 'default-listbox'
@@ -47,9 +49,15 @@ local function create_input_element(frame, type, value, items, index, tooltip)
     return frame.add({type = 'text-box', text = value})
 end
 
-local function create_custom_label_element(frame, sprite, localised_string, value, tooltip)
+local function create_sprite(frame, sprite, localised_string, value, tooltip)
     local t = frame.add({type = 'flow'})
-    t.add({type = 'label', caption = '[' .. sprite .. ']'})
+    local s = t.add({type = 'sprite', sprite = sprite})
+    if s then
+        s.style.minimal_width = 25
+        s.style.maximal_width = 25
+        s.style.minimal_height = 25
+        s.style.maximal_height = 25
+    end
 
     local heading = t.add({type = 'label', caption = localised_string})
     heading.tooltip = tooltip or ''
@@ -131,11 +139,18 @@ function Public.update_spell_gui(player, spell_index)
     local spell_2_data = Public.get_spell_by_name(rpg_t, rpg_t.dropdown_select_name_2)
     local spell_3_data = Public.get_spell_by_name(rpg_t, rpg_t.dropdown_select_name_3)
 
-    spell_table[spell1_button_name].tooltip = spell_1_data and spell_1_data.name or '---'
+    local shift_tooltip = 'Hold [color=yellow]SHIFT[/color] while clicking a spell to quickly change your spells.'
+
+    local t1 = {'', {spell_1_data and spell_1_data.name and spell_1_data.name[1] or '---'}, '\n', shift_tooltip}
+    spell_table[spell1_button_name].tooltip = t1
     spell_table[spell1_button_name].sprite = spell_1_data and spell_1_data.sprite
-    spell_table[spell2_button_name].tooltip = spell_2_data and spell_2_data.name or '---'
+
+    local t2 = {'', {spell_2_data and spell_2_data.name and spell_2_data.name[1] or '---'}, '\n', shift_tooltip}
+    spell_table[spell2_button_name].tooltip = t2
     spell_table[spell2_button_name].sprite = spell_2_data.sprite
-    spell_table[spell3_button_name].tooltip = spell_3_data and spell_3_data.name or '---'
+
+    local t3 = {'', {spell_3_data and spell_3_data.name and spell_3_data.name[1] or '---'}, '\n', shift_tooltip}
+    spell_table[spell3_button_name].tooltip = t3
     spell_table[spell3_button_name].sprite = spell_3_data.sprite
 
     if rpg_t.dropdown_select_index_1 == rpg_t.dropdown_select_index then
@@ -229,6 +244,16 @@ function Public.spell_gui_settings(player)
         b1.style.font_color = {r = 0.98, g = 0.98, b = 0.98}
         b2.style.font_color = {r = 0.98, g = 0.98, b = 0.98}
         b3.style.font_color = {r = 0.98, g = 0.98, b = 0.98}
+        local cooldown =
+            main_frame.add(
+            {
+                type = 'progressbar',
+                name = cooldown_indicator_name,
+                tooltip = 'Shows the cooldown of the active spell.',
+                value = 0
+            }
+        )
+        cooldown.style.maximal_width = 170
         Public.update_spell_gui(player, nil)
     else
         main_frame.destroy()
@@ -732,6 +757,8 @@ function Public.settings_tooltip(player)
         local normal_spell_pane = inside_table.add({type = 'scroll-pane'})
         local ns = normal_spell_pane.style
         ns.vertically_squashable = true
+        ns.minimal_width = 530
+        ns.maximal_width = 530
         ns.bottom_padding = 5
         ns.left_padding = 5
         ns.right_padding = 5
@@ -756,7 +783,7 @@ function Public.settings_tooltip(player)
 
         for _, entity in pairs(spells) do
             if entity.enabled then
-                local cooldown = (entity.cooldown / 60) .. 's'
+                local cooldown = (math.round(entity.cooldown / 60, 1)) .. 's'
                 if entity.type == 'item' then
                     local text = '[item=' .. entity.entityName .. '] ▪️ Level: [font=default-bold]' .. entity.level .. '[/font] Mana: [font=default-bold]' .. entity.mana_cost .. '[/font].  Cooldown: [font=default-bold]' .. cooldown .. '[/font]'
                     create_input_element(normal_spell_grid, 'label', text, nil, nil, entity.tooltip)
@@ -770,6 +797,9 @@ function Public.settings_tooltip(player)
         local special_spell_pane = inside_table.add({type = 'scroll-pane'})
         local ss = special_spell_pane.style
         ss.vertically_squashable = true
+        ss.maximal_height = 350
+        ss.minimal_width = 530
+        ss.maximal_width = 530
         ss.bottom_padding = 5
         ss.left_padding = 5
         ss.right_padding = 5
@@ -789,10 +819,10 @@ function Public.settings_tooltip(player)
 
         for _, entity in pairs(spells) do
             if entity.enabled then
-                local cooldown = (entity.cooldown / 60) .. 's'
+                local cooldown = (math.round(entity.cooldown / 60, 1)) .. 's'
                 if entity.type == 'special' then
                     local text = '▪️ Level: [font=default-bold]' .. entity.level .. '[/font] Mana: [font=default-bold]' .. entity.mana_cost .. '[/font]. Cooldown: [font=default-bold]' .. cooldown .. '[/font]'
-                    create_custom_label_element(special_spell_grid, entity.special_sprite, entity.name, text, entity.tooltip)
+                    create_sprite(special_spell_grid, entity.sprite, entity.name, text, entity.tooltip)
                 end
             end
         end

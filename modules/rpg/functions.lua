@@ -23,6 +23,7 @@ local sub = string.sub
 local angle_multipler = 2 * math.pi
 local start_angle = -angle_multipler / 4
 local update_rate = 4
+local update_rate_progressbar = 2
 local time_to_live = update_rate + 1
 
 local draw_arc = rendering.draw_arc
@@ -30,6 +31,7 @@ local draw_arc = rendering.draw_arc
 --RPG Frames
 local main_frame_name = Public.main_frame_name
 local spell_gui_frame_name = Public.spell_gui_frame_name
+local cooldown_indicator_name = Public.cooldown_indicator_name
 
 local travelings = {
     'bzzZZrrt',
@@ -1199,6 +1201,95 @@ function Public.get_magicka(player)
     return (rpg_t.magicka - 10) * 0.080
 end
 
+function Public.register_cooldown_for_spell(player)
+    local rpg_t = Public.get_value_from_player(player.index)
+
+    local active_spell = Public.get_spell_by_name(rpg_t, rpg_t.dropdown_select_name)
+
+    if not active_spell then
+        return
+    end
+
+    if not rpg_t.cooldowns then
+        rpg_t.cooldowns = {}
+    end
+
+    rpg_t.cooldowns[active_spell.entityName] = game.tick + active_spell.cooldown
+end
+
+function Public.is_cooldown_active_for_player(player)
+    local rpg_t = Public.get_value_from_player(player.index)
+
+    local active_spell = Public.get_spell_by_name(rpg_t, rpg_t.dropdown_select_name)
+
+    if not active_spell then
+        return false
+    end
+
+    if not rpg_t.cooldowns or not next(rpg_t.cooldowns) or not rpg_t.cooldowns[active_spell.entityName] then
+        return false
+    end
+
+    return rpg_t.cooldowns[active_spell.entityName] > game.tick
+end
+
+function Public.get_cooldown_progressbar_for_player(player)
+    local f = player.gui.screen[spell_gui_frame_name]
+    if not f then
+        return
+    end
+    local element = f[cooldown_indicator_name]
+    if not element or not element.valid then
+        return
+    end
+
+    return element
+end
+
+local show_cooldown_progressbar
+show_cooldown_progressbar =
+    Token.register(
+    function(event)
+        local player_index = event.player_index
+        local player = game.get_player(player_index)
+        if not player or not player.valid then
+            return
+        end
+
+        local tick = event.tick
+        local now = game.tick
+
+        local element = Public.get_cooldown_progressbar_for_player(player)
+        if not element or not element.valid then
+            if now >= tick then
+                return
+            else
+                Task.set_timeout_in_ticks(update_rate_progressbar, show_cooldown_progressbar, event)
+            end
+            return
+        end
+
+        if now >= tick then
+            element.value = 0
+            return
+        end
+
+        local rpg_t = Public.get_value_from_player(player.index)
+
+        local active_spell = Public.get_spell_by_name(rpg_t, rpg_t.dropdown_select_name)
+        if event.name ~= active_spell.entityName then
+            Task.set_timeout_in_ticks(update_rate_progressbar, show_cooldown_progressbar, event)
+            return
+        end
+
+        local fade = ((tick - now) / event.delay)
+        element.value = fade
+
+        Task.set_timeout_in_ticks(update_rate_progressbar, show_cooldown_progressbar, event)
+    end
+)
+Public.show_cooldown_progressbar = show_cooldown_progressbar
+
 local show_cooldown
 show_cooldown =
     Token.register(
@@ -1212,6 +1303,8 @@ show_cooldown =
         local tick = event.tick
         local now = game.tick
         if now >= tick then
+            local rpg_t = Public.get_value_from_player(player.index)
+            rpg_t.cooldown_enabled = nil
             return
         end
 
@@ -1241,7 +1334,19 @@ show_cooldown =
 Public.show_cooldown = show_cooldown
 
 function Public.register_cooldown_for_player(player, spell)
+    local rpg_t = Public.get_value_from_player(player.index)
+    if rpg_t.cooldown_enabled then
+        return
+    end
+
+    if not rpg_t.cooldown_enabled then
+        rpg_t.cooldown_enabled = true
+    end
     Task.set_timeout_in_ticks(update_rate, show_cooldown, {player_index = player.index, tick = game.tick + spell.cooldown, delay = spell.cooldown})
+end
+
+function Public.register_cooldown_for_player_progressbar(player, spell)
+    Task.set_timeout_in_ticks(update_rate, show_cooldown_progressbar, {player_index = player.index, tick = game.tick + spell.cooldown, delay = spell.cooldown, name = spell.entityName})
 end
 
 --- Gives connected player some bonus xp if the map was preemptively shut down.
@@ -1317,7 +1422,7 @@ function Public.rpg_reset_player(player, one_time_reset)
                 vitality = 10,
                 mana = 0,
                 mana_max = 0,
-                last_spawned = 0,
+                cooldowns = {},
                 dropdown_select_index = 1,
                 dropdown_select_name = Public.all_spells[1].name[1],
                 dropdown_select_index_1 = 1,
@@ -1367,7 +1472,7 @@ function Public.rpg_reset_player(player, one_time_reset)
                 vitality = 10,
                 mana = 0,
                 mana_max = 0,
-                last_spawned = 0,
+                cooldowns = {},
                 dropdown_select_index = 1,
                 dropdown_select_name = Public.all_spells[1].name[1],
                 dropdown_select_index_1 = 1,

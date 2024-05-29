@@ -882,16 +882,13 @@ remove_boost_movement_speed_on_respawn =
         if not player or not player.valid then
             return
         end
-        if not data.tries then
-            data.tries = 0
-        end
 
         Modifiers.update_single_modifier(player, 'character_running_speed_modifier', 'v3_move_boost')
         Modifiers.update_player_modifiers(player)
 
         player.print('Movement speed bonus removed!', Color.info)
         local rpg_t = RPG.get_value_from_player(player.index)
-        rpg_t.has_custom_spell_active = nil
+        rpg_t.has_boost_on_respawn = nil
     end
 )
 
@@ -907,7 +904,11 @@ local boost_movement_speed_on_respawn =
         end
 
         local rpg_t = RPG.get_value_from_player(player.index)
-        rpg_t.has_custom_spell_active = true
+        if rpg_t.has_boost_on_respawn then
+            return
+        end
+
+        rpg_t.has_boost_on_respawn = true
 
         Modifiers.update_single_modifier(player, 'character_running_speed_modifier', 'v3_move_boost', 1)
         Modifiers.update_player_modifiers(player)

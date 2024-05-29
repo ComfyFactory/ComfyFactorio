@@ -50,6 +50,11 @@ Public.pin_black_icon = 'file/utils/files/pin-black.png'
 Public.infinite_icon = 'file/utils/files/infinity.png'
 Public.arrow_up_icon = 'file/utils/files/arrow-up.png'
 Public.arrow_down_icon = 'file/utils/files/arrow-down.png'
+Public.tidal_icon = 'file/utils/files/tidal.png'
+Public.spew_icon = 'file/utils/files/spew.png'
+Public.berserk_icon = 'file/utils/files/berserk.png'
+Public.warp_icon = 'file/utils/files/warp.png'
+Public.x_icon = 'file/utils/files/x.png'
 Public.info_icon = 'file/utils/files/info.png'
 Public.mod_gui_button_enabled = false
 

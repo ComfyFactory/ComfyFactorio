@@ -25,6 +25,7 @@ local enable_spawning_frame_name = Gui.uid_name()
 local spell1_button_name = Gui.uid_name()
 local spell2_button_name = Gui.uid_name()
 local spell3_button_name = Gui.uid_name()
+local cooldown_indicator_name = Gui.uid_name()
 
 Global.register(
     this,
@@ -196,22 +197,6 @@ function Public.set_value_to_player(key, value, setter)
         elseif (this.rpg_t[key] and not this.rpg_t[key][value]) then
             this.rpg_t[key][value] = setter or false
         end
-    end
-end
-
---- Sets set_active_spell_enabled as enabled.
----@param player_index string
-function Public.set_active_spell_enabled(player_index)
-    if (this.rpg_t[player_index]) then
-        this.rpg_t[player_index].has_custom_spell_active = true
-    end
-end
-
---- Sets set_active_spell_disabled as nil.
----@param player_index string
-function Public.set_active_spell_disabled(player_index)
-    if this.rpg_t[player_index] then
-        this.rpg_t[player_index].has_custom_spell_active = false
     end
 end
 
@@ -514,6 +499,7 @@ Public.enable_spawning_frame_name = enable_spawning_frame_name
 Public.spell1_button_name = spell1_button_name
 Public.spell2_button_name = spell2_button_name
 Public.spell3_button_name = spell3_button_name
+Public.cooldown_indicator_name = cooldown_indicator_name
 
 local on_init = function()
     Public.reset_table()

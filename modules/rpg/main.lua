@@ -20,6 +20,8 @@ local nth_tick = Public.nth_tick
 
 --RPG Frames
 local main_frame_name = Public.main_frame_name
+local spell_gui_frame_name = Public.spell_gui_frame_name
+local cooldown_indicator_name = Public.cooldown_indicator_name
 
 local round = math.round
 local floor = math.floor
@@ -922,16 +924,19 @@ local function on_player_used_capsule(event)
         return
     end
 
-    if rpg_t.last_spawned >= game.tick then
-        return Public.cast_spell(player, true)
-    end
-
     local mana = rpg_t.mana
     local surface = player.surface
 
     local spell = Public.get_spell_by_name(rpg_t, rpg_t.dropdown_select_name)
     if not spell then
         return
+    end
+
+    if spell.enforce_cooldown then
+        if Public.is_cooldown_active_for_player(player) then
+            Public.cast_spell(player, true)
+            return
+        end
     end
 
     local position = event.position
@@ -984,13 +989,6 @@ local function on_player_used_capsule(event)
         force = 'player'
     end
 
-    if spell.check_if_active then
-        if rpg_t.has_custom_spell_active then
-            Public.cast_spell(player, true)
-            return
-        end
-    end
-
     local data = {
         self = spell,
         player = player,
@@ -1027,10 +1025,18 @@ local function on_player_used_capsule(event)
     StatData.get_data(player):increase('spells')
 
     if spell.enforce_cooldown then
-        Public.register_cooldown_for_player(player, spell)
+        if player.gui.screen[spell_gui_frame_name] then
+            local f = player.gui.screen[spell_gui_frame_name]
+            if f then
+                if f[cooldown_indicator_name] then
+                    Public.register_cooldown_for_player_progressbar(player, spell)
+                end
+            end
+        else
+            Public.register_cooldown_for_player(player, spell)
+        end
     end
 
-    rpg_t.last_spawned = game.tick + spell.cooldown
     Public.update_mana(player)
 
     local reward_xp = spell.mana_cost * 0.085
