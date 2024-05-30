@@ -2,6 +2,7 @@ local Event = require 'utils.event'
 local Public = require 'maps.mountain_fortress_v3.table'
 local RPG = require 'modules.rpg.main'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
+local StatData = require 'utils.datastore.statistics'
 local insert = table.insert
 local floor = math.floor
 local random = math.random
@@ -62,6 +63,8 @@ local function get_coin_count(entity)
     return coin_count
 end
 
+---comment
+---@param event EventData.on_entity_died
 local function on_entity_died(event)
     local entity = event.entity
     if not entity.valid then
@@ -120,9 +123,15 @@ local function on_entity_died(event)
                 if forest_zone then
                     if random(1, 12) == 1 then
                         player.insert({name = 'coin', count = coin_count})
+                        if p then
+                            StatData.get_data(p.index):increase('coins', coin_count)
+                        end
                     end
                 else
                     player.insert({name = 'coin', count = coin_count})
+                    if p then
+                        StatData.get_data(p.index):increase('coins', coin_count)
+                    end
                 end
             end
         end

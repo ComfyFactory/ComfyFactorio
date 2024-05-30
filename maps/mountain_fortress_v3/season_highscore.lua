@@ -12,6 +12,7 @@ local score_key = 'mtn_v3'
 local score_key_dev = 'mtn_v3_dev'
 local set_data = Server.set_data
 local try_get_data = Server.try_get_data
+local scenario_name = Public.scenario_name
 
 local insert = table.insert
 
@@ -59,7 +60,7 @@ local function write_additional_stats(key)
         return
     end
 
-    this.seasons[#this.seasons] = {
+    this.seasons[#this.seasons + 1] = {
         season_index = season,
         rounds_survived = rounds_survived,
         buffs_granted = total_buffs,
@@ -87,7 +88,7 @@ function Public.get_season_scores()
     if not secs then
         return
     else
-        local server_name_matches = Server.check_server_name('Mtn Fortress')
+        local server_name_matches = Server.check_server_name(scenario_name)
         if server_name_matches then
             try_get_data(score_dataset, score_key, get_scores)
         else
@@ -102,7 +103,7 @@ function Public.set_season_scores()
     if not secs then
         return
     else
-        local server_name_matches = Server.check_server_name('Mtn Fortress')
+        local server_name_matches = Server.check_server_name(scenario_name)
         if server_name_matches then
             write_additional_stats(score_key)
         else

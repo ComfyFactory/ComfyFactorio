@@ -54,6 +54,11 @@ function Public:new_render()
     if not surface or not surface.valid then
         return
     end
+
+    if self.render_id then
+        rendering.destroy(self.render_id)
+    end
+
     self.render_id = rendering.draw_sprite {target = self.position, sprite = self.sprite, surface = surface}
     return self
 end
@@ -73,6 +78,9 @@ function Public:new_target()
 
     local chunk = surface.get_random_chunk()
     local random_position = {x = (chunk.x + random()) * 32, y = (chunk.y + random()) * 32}
+    if not position then
+        return random_position, random_position
+    end
 
     return position, random_position
 end
@@ -108,6 +116,22 @@ end
 ---@return table
 function Public:random_position()
     return {x = self.position.x + (random() - 0.5) * 64, y = self.position.y + (random() - 0.5) * 64}
+end
+
+--- Sets a random sprite
+---@return table
+function Public:random_sprite()
+    if random(1, 2) == 1 then
+        self.sprite = Gui.beam
+        self:new_render()
+    elseif random(1, 2) == 2 then
+        self.sprite = Gui.beam_2
+        self:new_render()
+    else
+        self.sprite = Gui.beam_1
+        self:new_render()
+    end
+    return self
 end
 
 --- Changes the position of a render.
@@ -163,7 +187,7 @@ end
 
 --- Renders a new chart
 function Public:render_chart()
-    if self.chart then
+    if self.chart and self.chart.valid then
         self.chart.destroy()
     end
 
@@ -275,7 +299,7 @@ end
 
 --- Destroys a render.
 function Public:destroy_chart()
-    if self.chart then
+    if self.chart and self.chart.valid then
         self.chart.destroy()
     end
     return self

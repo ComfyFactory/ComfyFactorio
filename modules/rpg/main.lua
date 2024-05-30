@@ -6,9 +6,11 @@ local AntiGrief = require 'utils.antigrief'
 local SpamProtection = require 'utils.spam_protection'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local Explosives = require 'modules.explosives'
-
+local StatData = require 'utils.datastore.statistics'
 local WD = require 'modules.wave_defense.table'
 local Math2D = require 'math2d'
+
+StatData.add_normalize('spells', 'Spells casted')
 
 --RPG Settings
 local enemy_types = Public.enemy_types
@@ -18,6 +20,8 @@ local nth_tick = Public.nth_tick
 
 --RPG Frames
 local main_frame_name = Public.main_frame_name
+local spell_gui_frame_name = Public.spell_gui_frame_name
+local cooldown_indicator_name = Public.cooldown_indicator_name
 
 local round = math.round
 local floor = math.floor
@@ -920,16 +924,19 @@ local function on_player_used_capsule(event)
         return
     end
 
-    if rpg_t.last_spawned >= game.tick then
-        return Public.cast_spell(player, true)
-    end
-
     local mana = rpg_t.mana
     local surface = player.surface
 
     local spell = Public.get_spell_by_name(rpg_t, rpg_t.dropdown_select_name)
     if not spell then
         return
+    end
+
+    if spell.enforce_cooldown then
+        if Public.is_cooldown_active_for_player(player) then
+            Public.cast_spell(player, true)
+            return
+        end
     end
 
     local position = event.position
@@ -982,13 +989,6 @@ local function on_player_used_capsule(event)
         force = 'player'
     end
 
-    if spell.check_if_active then
-        if rpg_t.has_custom_spell_active then
-            Public.cast_spell(player, true)
-            return
-        end
-    end
-
     local data = {
         self = spell,
         player = player,
@@ -1009,16 +1009,34 @@ local function on_player_used_capsule(event)
         cast_spell = Public.cast_spell
     }
 
+    rpg_t.amount = 0
+
     local cast_spell = spell.callback(data, funcs)
     if not cast_spell then
         return
     end
 
-    if spell.enforce_cooldown then
-        Public.register_cooldown_for_player(player, spell)
+    if rpg_t.amount == 0 then
+        rpg_t.amount = 1
     end
 
-    rpg_t.last_spawned = game.tick + spell.cooldown
+    Event.raise(Public.events.on_spell_cast_success, {player_index = player.index, spell_name = spell.entityName, amount = rpg_t.amount})
+
+    StatData.get_data(player):increase('spells')
+
+    if spell.enforce_cooldown then
+        if player.gui.screen[spell_gui_frame_name] then
+            local f = player.gui.screen[spell_gui_frame_name]
+            if f then
+                if f[cooldown_indicator_name] then
+                    Public.register_cooldown_for_player_progressbar(player, spell)
+                end
+            end
+        else
+            Public.register_cooldown_for_player(player, spell)
+        end
+    end
+
     Public.update_mana(player)
 
     local reward_xp = spell.mana_cost * 0.085
@@ -1078,6 +1096,7 @@ Event.add(defines.events.on_player_used_capsule, on_player_used_capsule)
 Event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
 Event.add(defines.events.on_player_removed, on_player_removed)
 Event.on_nth_tick(10, tick)
+Event.on_nth_tick(2, Public.update_tidal_wave)
 
 Event.add(
     defines.events.on_gui_closed,

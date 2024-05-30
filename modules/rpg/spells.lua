@@ -1,7 +1,7 @@
 local Public = require 'modules.rpg.table'
-local Token = require 'utils.token'
-local Task = require 'utils.task'
+local Task = require 'utils.task_token'
 local Ai = require 'modules.ai'
+local Gui = require 'utils.gui'
 local Modifiers = require 'utils.player_modifiers'
 
 local spells = {}
@@ -13,10 +13,10 @@ local states = {
     ['support'] = 'poison-capsule-smoke'
 }
 
-local restore_movement_speed_token
+local repeat_sound_token
 
 local repair_buildings =
-    Token.register(
+    Task.register(
     function(data)
         local entity = data.entity
         if entity and entity.valid then
@@ -34,6 +34,58 @@ local repair_buildings =
     end
 )
 
+repeat_sound_token =
+    Task.register(
+    function(event)
+        local player_index = event.player_index
+        local player = game.get_player(player_index)
+        if not player or not player.valid then
+            return
+        end
+
+        local sound = event.sound or 'utility/armor_insert'
+
+        if event.once then
+            player.play_sound {path = sound, volume_modifier = 1}
+            if player.character ~= nil then
+                player.character.surface.create_entity({name = 'water-splash', position = player.position})
+            end
+            return
+        end
+
+        local tick = event.tick
+        local now = game.tick
+        if now >= tick then
+            return
+        end
+
+        player.play_sound {path = sound, volume_modifier = 1}
+        if player.character ~= nil then
+            player.character.surface.create_entity({name = 'water-splash', position = player.position})
+        end
+        Task.set_timeout_in_ticks(30, repeat_sound_token, event)
+    end
+)
+
+local x_marks_the_spot_token =
+    Task.register(
+    function(event)
+        local player_index = event.player_index
+        local old_surface_index = event.old_surface_index
+        local player = game.get_player(player_index)
+        if not player or not player.valid then
+            return
+        end
+        local old_position = event.old_position
+        if not old_position then
+            return
+        end
+
+        player.teleport(old_position, old_surface_index)
+        Task.set_timeout_in_ticks(5, repeat_sound_token, {player_index = player.index, sound = 'utility/new_objective', once = true})
+    end
+)
+
 local function get_area(pos, dist)
     local area = {
         left_top = {
@@ -46,6 +98,33 @@ local function get_area(pos, dist)
         }
     }
     return area
+end
+
+local levels = {
+    [150] = {length = 26, max_spread = 6},
+    [250] = {length = 27, max_spread = 6},
+    [350] = {length = 28, max_spread = 7},
+    [450] = {length = 29, max_spread = 7},
+    [550] = {length = 30, max_spread = 8},
+    [650] = {length = 31, max_spread = 8}
+}
+
+local function get_level_data(player_level)
+    local closest_level = nil
+
+    for level, _ in pairs(levels) do
+        if player_level >= level then
+            closest_level = level
+        else
+            break
+        end
+    end
+
+    if closest_level then
+        return levels[closest_level]
+    else
+        return {length = 18, max_spread = 4}
+    end
 end
 
 local function area_of_effect(player, position, state, radius, callback, find_entities)
@@ -86,23 +165,13 @@ local function area_of_effect(player, position, state, radius, callback, find_en
     end
 end
 
-restore_movement_speed_token =
-    Token.register(
+local restore_movement_speed_token =
+    Task.register(
     function(event)
         local player_index = event.player_index
-        local rpg_t = event.rpg_t
-
-        if rpg_t then
-            rpg_t.has_custom_spell_active = nil
-        end
 
         local player = game.get_player(player_index)
         if not player or not player.valid then
-            return
-        end
-
-        if not player.character or not player.character.valid then
-            Task.set_timeout_in_ticks(60, restore_movement_speed_token, {player_index = player_index, rpg_t = rpg_t})
             return
         end
 
@@ -152,6 +221,7 @@ local function create_projectiles(data)
             }
             do_projectile(surface, projectile_types[self.entityName].name, position, force, target_pos, range)
             Public.remove_mana(player, self.mana_cost)
+            rpg_t.amount = rpg_t.amount + 1
             if self.damage then
                 for _, e in pairs(surface.find_entities_filtered({area = damage_area})) do
                     damage_entity(e)
@@ -222,6 +292,7 @@ local function create_entity(data)
                     has_cast = true
                     e.direction = player.character.direction
                     Public.remove_mana(player, self.mana_cost)
+                    rpg_t.amount = rpg_t.amount + 1
                 end
             end
         end
@@ -259,6 +330,7 @@ local function insert_onto(data)
 
             player.insert({name = self.entityName, count = self.amount})
             Public.remove_mana(player, self.mana_cost)
+            rpg_t.amount = rpg_t.amount + 1
         end
     else
         player.insert({name = self.entityName, count = self.amount})
@@ -302,7 +374,7 @@ spells[#spells + 1] = {
 spells[#spells + 1] = {
     name = {'entity-name.iron-chest'},
     entityName = 'iron-chest',
-    level = 10,
+    level = 1,
     type = 'item',
     mana_cost = 50,
     cooldown = 70,
@@ -615,7 +687,7 @@ if _DEBUG then
         name = 'Kewl Nade',
         entityName = 'cluster-grenade',
         target = true,
-        amount = 20,
+        amount = 10,
         damage = true,
         aoe = true,
         force = 'player',
@@ -681,13 +753,15 @@ spells[#spells + 1] = {
     force = 'player',
     level = 50,
     type = 'item',
-    mana_cost = 250,
+    mana_cost = 150,
+    enforce_cooldown = true,
     cooldown = 200,
     enabled = true,
     log_spell = true,
     sprite = 'recipe/explosive-cannon-shell',
     tooltip = 'Spawns a explosive cannon shell where the mouse cursor is at',
     callback = function(data)
+        Public.register_cooldown_for_spell(data.player)
         return create_projectiles(data)
     end
 }
@@ -701,12 +775,15 @@ spells[#spells + 1] = {
     level = 70,
     type = 'item',
     mana_cost = 400,
-    cooldown = 200,
+    enforce_cooldown = true,
+    cooldown = 150,
     enabled = true,
     log_spell = true,
     sprite = 'recipe/uranium-cannon-shell',
     tooltip = 'Spawns a uranium cannon shell where the mouse cursor is at',
     callback = function(data)
+        Public.register_cooldown_for_spell(data.player)
+
         return create_projectiles(data)
     end
 }
@@ -745,7 +822,6 @@ spells[#spells + 1] = {
     enabled = true,
     log_spell = true,
     sprite = 'recipe/explosives',
-    special_sprite = 'recipe=explosives',
     tooltip = 'Spawns a pointy explosive',
     callback = function(data)
         local self = data.self
@@ -786,17 +862,18 @@ spells[#spells + 1] = {
     level = 45,
     type = 'special',
     mana_cost = 400,
-    cooldown = 2400,
+    cooldown = 500,
     enabled = true,
     enforce_cooldown = true,
     log_spell = true,
     sprite = 'recipe/repair-pack',
-    special_sprite = 'recipe=repair-pack',
     tooltip = 'Repairs multiple entities in a range',
     callback = function(data)
         local self = data.self
         local rpg_t = data.rpg_t
         local player = data.player
+        Public.register_cooldown_for_spell(player)
+
         local position = data.position
 
         local range = Public.get_area_of_effect_range(player)
@@ -833,15 +910,16 @@ spells[#spells + 1] = {
     level = 50,
     type = 'special',
     mana_cost = 700,
-    cooldown = 2500,
+    cooldown = 500,
     enabled = true,
     enforce_cooldown = true,
-    sprite = 'virtual-signal/signal-S',
-    special_sprite = 'virtual-signal=signal-S',
+    sprite = Gui.spew_icon,
     tooltip = 'Creates a puddle of acid stream',
     callback = function(data)
         local self = data.self
         local player = data.player
+        Public.register_cooldown_for_spell(player)
+
         local position = data.position
 
         local range = Public.get_area_of_effect_range(player)
@@ -874,7 +952,6 @@ spells[#spells + 1] = {
     cooldown = 320,
     enabled = false,
     sprite = 'entity/tank',
-    special_sprite = 'entity=tank',
     tooltip = 'Spawns a tank',
     callback = function(data)
         return create_entity(data)
@@ -893,7 +970,6 @@ spells[#spells + 1] = {
     enabled = false,
     log_spell = true,
     sprite = 'entity/spidertron',
-    special_sprite = 'entity=spidertron',
     tooltip = 'Spawns a spidertron',
     callback = function(data)
         return create_entity(data)
@@ -911,12 +987,14 @@ spells[#spells + 1] = {
     level = 50,
     type = 'special',
     mana_cost = 140,
-    cooldown = 320,
+    enforce_cooldown = true,
+    cooldown = 150,
     enabled = true,
     sprite = 'item/raw-fish',
-    special_sprite = 'item=raw-fish',
     tooltip = 'Spawns some fishies',
     callback = function(data)
+        Public.register_cooldown_for_spell(data.player)
+
         return insert_onto(data)
     end
 }
@@ -933,12 +1011,14 @@ spells[#spells + 1] = {
     level = 25,
     type = 'special',
     mana_cost = 140,
-    cooldown = 320,
+    enforce_cooldown = true,
+    cooldown = 150,
     enabled = true,
     sprite = 'item/explosives',
-    special_sprite = 'item=explosives',
     tooltip = 'Spawns some explosives',
     callback = function(data)
+        Public.register_cooldown_for_spell(data.player)
+
         return insert_onto(data)
     end
 }
@@ -953,15 +1033,17 @@ spells[#spells + 1] = {
     level = 60,
     type = 'special',
     mana_cost = 150,
-    cooldown = 320,
+    enforce_cooldown = true,
+    cooldown = 150,
     enabled = true,
     log_spell = true,
     sprite = 'entity/compilatron',
-    special_sprite = 'entity=compilatron',
     tooltip = 'Spawns a suicide comfylatron',
     callback = function(data)
         local self = data.self
         local player = data.player
+        Public.register_cooldown_for_spell(player)
+
         local position = data.position
         local surface = data.surface
 
@@ -982,12 +1064,14 @@ spells[#spells + 1] = {
     level = 50,
     type = 'special',
     mana_cost = 220,
-    cooldown = 320,
+    enforce_cooldown = true,
+    cooldown = 150,
     enabled = true,
     sprite = 'recipe/distractor-capsule',
-    special_sprite = 'recipe=distractor-capsule',
     tooltip = 'Spawns disctractors',
     callback = function(data)
+        Public.register_cooldown_for_spell(data.player)
+
         return create_projectiles(data)
     end
 }
@@ -1002,13 +1086,15 @@ spells[#spells + 1] = {
     force = 'player',
     level = 55,
     type = 'special',
+    enforce_cooldown = true,
     mana_cost = 250,
-    cooldown = 320,
+    cooldown = 150,
     enabled = true,
     sprite = 'recipe/defender-capsule',
-    special_sprite = 'recipe=defender-capsule',
     tooltip = 'Spawns defenders',
     callback = function(data)
+        Public.register_cooldown_for_spell(data.player)
+
         return create_projectiles(data)
     end
 }
@@ -1022,13 +1108,15 @@ spells[#spells + 1] = {
     force = 'player',
     level = 60,
     type = 'special',
+    enforce_cooldown = true,
     mana_cost = 300,
-    cooldown = 320,
+    cooldown = 150,
     enabled = true,
     sprite = 'recipe/destroyer-capsule',
-    special_sprite = 'recipe=destroyer-capsule',
     tooltip = 'Spawns destroyers',
     callback = function(data)
+        Public.register_cooldown_for_spell(data.player)
+
         return create_projectiles(data)
     end
 }
@@ -1039,15 +1127,17 @@ spells[#spells + 1] = {
     force = 'player',
     level = 60,
     type = 'special',
+    enforce_cooldown = true,
     mana_cost = 340,
     cooldown = 2000,
     enabled = true,
     log_spell = true,
-    sprite = 'virtual-signal/signal-W',
-    special_sprite = 'virtual-signal=signal-W',
+    sprite = Gui.warp_icon,
     tooltip = 'Warps you back to base',
     callback = function(data)
         local player = data.player
+        Public.register_cooldown_for_spell(player)
+
         local surface = data.surface
 
         local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
@@ -1064,6 +1154,80 @@ spells[#spells + 1] = {
         return true
     end
 }
+
+spells[#spells + 1] = {
+    name = {'spells.mark_spot'},
+    entityName = 'mark-spot',
+    target = true,
+    force = 'player',
+    level = 60,
+    type = 'special',
+    mana_cost = 340,
+    cooldown = 1500,
+    enforce_cooldown = true,
+    enabled = true,
+    log_spell = true,
+    sprite = Gui.x_icon,
+    tooltip = 'Warps you back to the locomotive and after a couple of seconds you return to your previous location.',
+    callback = function(data)
+        local player = data.player
+        local surface = data.surface
+        local old_position = player.position
+
+        Public.register_cooldown_for_spell(player)
+
+        local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
+        if pos then
+            player.teleport(pos, surface)
+        else
+            pos = game.forces.player.get_spawn_position(surface)
+            player.teleport(pos, surface)
+        end
+
+        Task.set_timeout_in_ticks(5, repeat_sound_token, {player_index = player.index, tick = game.tick + 600})
+        Task.set_timeout_in_ticks(600, x_marks_the_spot_token, {player_index = player.index, old_position = old_position, old_surface_index = surface.index})
+        Public.remove_mana(player, 340)
+        Public.cast_spell(player)
+        return true
+    end
+}
+
+spells[#spells + 1] = {
+    name = {'spells.tidal_wave'},
+    entityName = 'tidal-wave',
+    target = true,
+    force = 'player',
+    level = 100,
+    type = 'special',
+    mana_cost = 300,
+    cooldown = 200,
+    enforce_cooldown = true,
+    enabled = true,
+    log_spell = false,
+    sprite = Gui.tidal_icon,
+    tooltip = 'Spawns a tidal wave that pushes the enemies back.',
+    callback = function(data)
+        local player = data.player
+        local rpg_t = data.rpg_t
+        local cursor_position = data.position
+
+        Public.register_cooldown_for_spell(player)
+
+        local shape = 'cone'
+
+        if random(1, 2) == 1 then
+            shape = 'square'
+        end
+
+        local level_data = get_level_data(rpg_t.level)
+
+        Public.add_tidal_wave(player, cursor_position, shape, level_data.length, level_data.max_spread)
+
+        Public.remove_mana(player, 340)
+        Public.cast_spell(player)
+        return true
+    end
+}
 spells[#spells + 1] = {
     name = {'spells.charge'},
     entityName = 'haste',
@@ -1072,18 +1236,17 @@ spells[#spells + 1] = {
     level = 25,
     type = 'special',
     mana_cost = 100,
-    cooldown = 2000,
-    check_if_active = true,
+    enforce_cooldown = true,
+    cooldown = 300,
     enabled = true,
     log_spell = true,
-    sprite = 'virtual-signal/signal-info',
-    special_sprite = 'virtual-signal=signal-info',
+    sprite = 'item/exoskeleton-equipment',
     tooltip = 'Gives you a temporary movement boost.',
     callback = function(data)
         local self = data.self
         local player = data.player
         local rpg_t = data.rpg_t
-        rpg_t.has_custom_spell_active = true
+        Public.register_cooldown_for_spell(player)
 
         Public.remove_mana(player, self.mana_cost)
         for _ = 1, 3 do
@@ -1105,17 +1268,18 @@ spells[#spells + 1] = {
     level = 200,
     type = 'special',
     mana_cost = 350,
-    cooldown = 1000,
+    cooldown = 300,
     enabled = true,
     enforce_cooldown = true,
     log_spell = true,
-    sprite = 'virtual-signal/signal-info',
-    special_sprite = 'virtual-signal=signal-info',
-    tooltip = 'Damages enemies in radius when cast. This is a WIP spell that might get disabled.',
+    sprite = Gui.berserk_icon,
+    tooltip = 'Damages enemies in radius when cast. Scales with player level.',
     callback = function(data)
         local self = data.self
         local player = data.player
         local position = data.position
+
+        Public.register_cooldown_for_spell(player)
 
         local range = Public.get_area_of_effect_range(player)
 
@@ -1175,12 +1339,12 @@ local drone_enemy = {
     enabled = true,
     enforce_cooldown = true,
     log_spell = true,
-    sprite = 'virtual-signal/signal-info',
-    special_sprite = 'virtual-signal=signal-info',
-    tooltip = 'Creates a drone that searches for enemies and destroys them. This is a WIP spell that might get disabled.',
+    sprite = 'entity/character',
+    tooltip = 'Creates a drone that searches for enemies and destroys them.',
     callback = function(data)
         local self = data.self
         local player = data.player
+        Public.register_cooldown_for_spell(player)
         local suc = Ai.create_char({player_index = player.index, command = 1, search_local = true})
         if not suc then
             Public.cast_spell(player, true)
@@ -1207,12 +1371,12 @@ local drone_mine = {
     enabled = true,
     enforce_cooldown = true,
     log_spell = true,
-    sprite = 'virtual-signal/signal-info',
-    special_sprite = 'virtual-signal=signal-info',
-    tooltip = 'Creates a drone that mines entities around you. This is a WIP spell that might get disabled.',
+    sprite = 'entity/character',
+    tooltip = 'Creates a drone that mines entities around you.',
     callback = function(data)
         local self = data.self
         local player = data.player
+        Public.register_cooldown_for_spell(player)
         local suc = Ai.create_char({player_index = player.index, command = 2, search_local = false})
         if not suc then
             Public.cast_spell(player, true)
@@ -1227,14 +1391,14 @@ local drone_mine = {
 
 spells[#spells + 1] = drone_mine
 
-if _DEBUG then
-    for i = 1, #spells do
-        local spell = spells[i]
-        spell.mana_cost = 1
-        spell.level = 1
-        spell.cooldown = 1
-    end
-end
+-- if _DEBUG then
+--     for i = 1, #spells do
+--         local spell = spells[i]
+--         spell.mana_cost = 1
+--         spell.level = 1
+--         spell.cooldown = 1
+--     end
+-- end
 
 Public.projectile_types = {
     ['explosives'] = {name = 'grenade', count = 0.5, max_range = 32, tick_speed = 1},
@@ -1424,9 +1588,6 @@ function Public.set_new_spell(tbl)
         end
         if not tbl.log_spell then
             tbl.log_spell = false
-        end
-        if not tbl.check_if_active then
-            tbl.check_if_active = false
         end
         if not tbl.callback then
             return error('A spell requires a callback. <function>', 2)

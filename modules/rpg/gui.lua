@@ -29,11 +29,18 @@ local spell_gui_frame_name = Public.spell_gui_frame_name
 local spell1_button_name = Public.spell1_button_name
 local spell2_button_name = Public.spell2_button_name
 local spell3_button_name = Public.spell3_button_name
+local cooldown_indicator_name = Public.cooldown_indicator_name
 
 local round = math.round
 local floor = math.floor
 
 function Public.draw_gui_char_button(player)
+    local rpg_extra = Public.get('rpg_extra')
+    local tooltip = 'RPG'
+    if rpg_extra.enable_mana then
+        tooltip = 'RPG\nHold [color=yellow]SHIFT[/color] and press [color=yellow]LMB[/color] to quickly access the spells frame.'
+    end
+
     if ComfyGui.get_mod_gui_top_frame() then
         local b =
             ComfyGui.add_mod_button(
@@ -42,18 +49,17 @@ function Public.draw_gui_char_button(player)
                 type = 'sprite-button',
                 name = draw_main_frame_name,
                 caption = '[RPG]',
-                tooltip = 'RPG',
+                tooltip = tooltip,
                 style = Gui.button_style
             }
         )
         if b then
             b.style.font_color = {165, 165, 165}
             b.style.font = 'heading-3'
-            b.style.minimal_height = 38
-            b.style.maximal_height = 38
-            b.style.minimal_width = 50
-            b.style.padding = 0
-            b.style.margin = 0
+            b.style.minimal_height = 36
+            b.style.maximal_height = 36
+            b.style.minimal_width = 40
+            b.style.padding = -2
         end
     else
         if player.gui.top[draw_main_frame_name] then
@@ -218,7 +224,7 @@ local function draw_main_frame(player, location)
         main_frame.location = location
     else
         if ComfyGui.get_mod_gui_top_frame() then
-            main_frame.location = {x = 1, y = 55}
+            main_frame.location = {x = 0, y = 67}
         else
             main_frame.location = {x = 1, y = 45}
         end
@@ -543,8 +549,26 @@ Gui.on_click(
         if is_spamming then
             return
         end
+
         local player = event.player
         if not player or not player.valid or not player.character then
+            return
+        end
+
+        if not Public.check_is_surface_valid(player) then
+            return
+        end
+
+        if event.shift then
+            local screen = player.gui.screen
+            local frame = screen[spell_gui_frame_name]
+
+            if frame and frame.valid then
+                Gui.remove_data_recursively(frame)
+                frame.destroy()
+            else
+                Public.spell_gui_settings(player)
+            end
             return
         end
 
@@ -734,7 +758,7 @@ Gui.on_click(
                 end
             end
 
-            remove_target_frame(event.element)
+            remove_target_frame(frame)
 
             if player.gui.screen[main_frame_name] then
                 toggle(player, true)
@@ -870,6 +894,7 @@ Gui.on_click(
         if is_spamming then
             return
         end
+        ---@type LuaPlayer
         local player = event.player
         local screen = player.gui.screen
         local frame = screen[spell_gui_frame_name]
@@ -887,8 +912,22 @@ Gui.on_click(
             if not rpg_t.enable_entity_spawn then
                 player.print({'rpg_settings.cast_spell_enabled_label'}, Color.success)
                 player.play_sound({path = 'utility/armor_insert', volume_modifier = 0.75})
+                if player.cursor_stack and player.cursor_stack.valid_for_read then
+                    player.get_main_inventory().insert(player.cursor_stack)
+                    player.cursor_stack.clear()
+                end
+                local fishy = player.get_main_inventory().find_item_stack('raw-fish')
+                if player.cursor_stack and fishy then
+                    player.cursor_stack.transfer_stack(fishy)
+                end
+
                 rpg_t.enable_entity_spawn = true
             else
+                if player.cursor_stack and player.cursor_stack.valid_for_read and player.cursor_stack.name == 'raw-fish' then
+                    player.get_main_inventory().insert(player.cursor_stack)
+
+                    player.cursor_stack.clear()
+                end
                 player.print({'rpg_settings.cast_spell_disabled_label'}, Color.warning)
                 player.play_sound({path = 'utility/cannot_build', volume_modifier = 0.75})
                 rpg_t.enable_entity_spawn = false
@@ -943,7 +982,16 @@ Gui.on_click(
             return
         end
 
+        if event.shift then
+            ComfyGui.clear_all_center_frames(player)
+            Public.extra_settings(player)
+            return
+        end
+
         if frame and frame.valid then
+            if frame[cooldown_indicator_name] then
+                frame[cooldown_indicator_name].value = 0
+            end
             Public.update_spell_gui(player, 1)
         end
     end
@@ -967,7 +1015,16 @@ Gui.on_click(
             return
         end
 
+        if event.shift then
+            ComfyGui.clear_all_center_frames(player)
+            Public.extra_settings(player)
+            return
+        end
+
         if frame and frame.valid then
+            if frame[cooldown_indicator_name] then
+                frame[cooldown_indicator_name].value = 0
+            end
             Public.update_spell_gui(player, 2)
         end
     end
@@ -991,7 +1048,16 @@ Gui.on_click(
             return
         end
 
+        if event.shift then
+            ComfyGui.clear_all_center_frames(player)
+            Public.extra_settings(player)
+            return
+        end
+
         if frame and frame.valid then
+            if frame[cooldown_indicator_name] then
+                frame[cooldown_indicator_name].value = 0
+            end
             Public.update_spell_gui(player, 3)
         end
     end

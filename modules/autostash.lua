@@ -689,6 +689,14 @@ local function create_gui_button(player, bottom_frame_data)
                 style = Gui.button_style
             }
         )
+        if button then
+            button.style.font_color = {165, 165, 165}
+            button.style.font = 'heading-3'
+            button.style.minimal_height = 36
+            button.style.maximal_height = 36
+            button.style.minimal_width = 40
+            button.style.padding = -2
+        end
     else
         button =
             player.gui.top[auto_stash_button_name] or

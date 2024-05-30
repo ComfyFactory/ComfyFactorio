@@ -827,6 +827,9 @@ local function reform_group(group)
 end
 
 local function get_side_targets(group)
+    if not group then
+        return
+    end
     local unit_group_command_step_length = Public.get('unit_group_command_step_length')
     local search_side_targets = Public.get('search_side_targets')
 
@@ -1244,6 +1247,81 @@ local function spawn_unit_group(fs, only_bosses)
     return true
 end
 
+local function spawn_unit_group_simple(fs)
+    local target = Public.get('target')
+    if not valid(target) then
+        Public.debug_print('spawn_unit_group - Target was not valid?')
+        return
+    end
+
+    local surface_index = Public.get('surface_index')
+    local final_battle = Public.get('final_battle')
+
+    local surface = game.surfaces[surface_index]
+    local spawn_position = Public.get('spawn_position')
+    if not spawn_position then
+        return
+    end
+
+    local wave_number = Public.get('wave_number')
+    Public.wave_defense_set_unit_raffle(wave_number)
+
+    local event_data = {}
+
+    local es_settings = Public.get_es('settings')
+
+    local force = 'enemy'
+    if es_settings.enabled then
+        force = 'aggressors'
+    end
+
+    local generated_units = Public.get('generated_units')
+
+    local unit_group = surface.create_unit_group({position = spawn_position, force = force})
+
+    event_data.unit_group = unit_group
+
+    generated_units.unit_group_pos.index = generated_units.unit_group_pos.index + 1
+    generated_units.unit_group_pos.positions[unit_group.group_number] = {position = unit_group.position, index = 0}
+    local average_unit_group_size = Public.get('average_unit_group_size')
+    local unit_settings = Public.get('unit_settings')
+    event_data.unit_settings = unit_settings
+
+    local group_size = floor(average_unit_group_size * Public.group_size_modifier_raffle[random(1, Public.group_size_modifier_raffle_size)])
+
+    event_data.group_size = group_size
+    event_data.boss_wave = false
+
+    if not es_settings.generated_units then
+        es_settings.generated_units = 0
+    end
+    if es_settings.generated_units > 100 then
+        return
+    end
+
+    local count = fs.scale or 1
+    event_data.spawn_count = count
+    for _ = 1, count, 1 do
+        local biter = spawn_biter(surface, spawn_position, fs, true, unit_settings, final_battle)
+        if not biter then
+            Public.debug_print('spawn_unit_group - No biter was found?')
+            break
+        end
+        unit_group.add_member(biter)
+        raise(Public.events.on_entity_created, {entity = biter, boss_unit = true, target = target})
+    end
+
+    generated_units.unit_groups[unit_group.group_number] = unit_group
+    local unit_groups_size = Public.get('unit_groups_size')
+    Public.set('unit_groups_size', unit_groups_size + 1)
+    if random(1, 2) == 1 then
+        Public.set('random_group', unit_group)
+    end
+    Public.set('spot', 'nil')
+    raise(Public.events.on_unit_group_created, event_data)
+    return true
+end
+
 local function check_group_positions()
     local resolve_pathing = Public.get('resolve_pathing')
     if not resolve_pathing then
@@ -1410,6 +1488,7 @@ Event.add(
 )
 
 Event.add(Public.events.on_spawn_unit_group, spawn_unit_group)
+Event.add(Public.events.on_spawn_unit_group_simple, spawn_unit_group_simple)
 
 Event.on_nth_tick(
     50,

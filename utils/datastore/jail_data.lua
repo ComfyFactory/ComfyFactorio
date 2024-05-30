@@ -9,6 +9,9 @@ local Event = require 'utils.event'
 local Utils = require 'utils.core'
 local table = require 'utils.table'
 local Gui = require 'utils.gui'
+local StatData = require 'utils.datastore.statistics'
+
+StatData.add_normalize('jailed', 'Jailed')
 
 local module_name = '[Jail handler] '
 
@@ -72,7 +75,12 @@ Global.register(
     end
 )
 
-local Public = {}
+local Public = {
+    events = {
+        on_player_jailed = Event.generate_event_name('on_player_jailed'),
+        on_player_unjailed = Event.generate_event_name('on_player_unjailed')
+    }
+}
 
 local function validate_entity(entity)
     if not (entity and entity.valid) then
@@ -641,6 +649,10 @@ local function jail(player, offender, msg, raised, mute)
         set_data(jailed_data_set, offender, {jailed = true, actor = player, reason = msg, date = date})
     end
 
+    Event.raise(Public.events.on_player_jailed, {player_index = offender.index})
+
+    StatData.get_data(player):increase('jailed')
+
     Utils.print_to(nil, message)
     local data = Server.build_embed_data()
     data.username = offender
@@ -703,6 +715,10 @@ local function jail_temporary(player, offender, msg, mute)
         votejail[offender.name].jailed = true
     end
 
+    Event.raise(Public.events.on_player_jailed, {player_index = offender.index})
+
+    StatData.get_data(player):increase('jailed')
+
     offender.clear_console()
 
     draw_notice_frame(offender)
@@ -727,6 +743,8 @@ local function free(player, offender)
     local message = offender .. ' was set free from jail by ' .. player .. '.'
 
     set_data(jailed_data_set, offender, nil)
+
+    Event.raise(Public.events.on_player_unjailed, {player_index = offender.index})
 
     Utils.print_to(nil, message)
     local data = Server.build_embed_data()

@@ -6,7 +6,7 @@ local Collapse = require 'modules.collapse'
 local WD = require 'modules.wave_defense.table'
 local Discord = require 'utils.discord_handler'
 local mapkeeper = '[color=blue]Mapkeeper:[/color]'
-local scenario_name = 'Mtn Fortress'
+local scenario_name = Public.scenario_name
 
 commands.add_command(
     'scenario',
@@ -347,27 +347,23 @@ commands.add_command(
                 player.print("[ERROR] You're not admin!", Color.fail)
                 return
             end
-            if Collapse.get_disable_state() then
-                Collapse.disable_collapse(false)
+            if not Collapse.has_collapse_started() then
                 Collapse.start_now(true)
                 Discord.send_notification_raw(scenario_name, player.name .. ' has enabled collapse.')
                 game.print(mapkeeper .. ' ' .. player.name .. ', has enabled collapse!', {r = 0.98, g = 0.66, b = 0.22})
                 log(player.name .. ', has enabled collapse!')
             else
-                Collapse.disable_collapse(true)
                 Collapse.start_now(false)
                 Discord.send_notification_raw(scenario_name, player.name .. ' has disabled collapse.')
                 game.print(mapkeeper .. ' ' .. player.name .. ', has disabled collapse!', {r = 0.98, g = 0.66, b = 0.22})
                 log(player.name .. ', has disabled collapse!')
             end
         else
-            if Collapse.get_disable_state() then
-                Collapse.disable_collapse(false)
+            if not Collapse.has_collapse_started() then
                 Collapse.start_now(true)
                 Discord.send_notification_raw(scenario_name, 'Server has enabled collapse.')
                 log('Collapse has started.')
             else
-                Collapse.disable_collapse(true)
                 Collapse.start_now(false)
                 Discord.send_notification_raw(scenario_name, 'Server has disabled collapse.')
                 log('Collapse has stopped.')

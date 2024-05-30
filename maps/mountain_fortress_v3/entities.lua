@@ -14,6 +14,9 @@ local Diff = require 'modules.difficulty_vote_by_amount'
 local format_number = require 'util'.format_number
 local RPG_Progression = require 'utils.datastore.rpg_data'
 local WD = require 'modules.wave_defense.table'
+local scenario_name = Public.scenario_name
+local StatData = require 'utils.datastore.statistics'
+StatData.add_normalize('coins', 'Coins collected'):set_tooltip('The amount of coins the player has collected through mining/killed enemies.')
 
 local random = math.random
 local floor = math.floor
@@ -281,25 +284,14 @@ local function set_train_final_health(final_damage_amount, repair)
     rendering.set_text(health_text, 'HP: ' .. round(locomotive_health) .. ' / ' .. round(locomotive_max_health))
 end
 
-local function is_protected(data, e)
-    if data.final_battle then
-        local boss_map_name = 'boss_room'
-        if string.sub(e.surface.name, 0, #boss_map_name) ~= boss_map_name then
-            return true
-        end
+local function is_protected(e)
+    local map_name = 'mtn_v3'
+    if string.sub(e.surface.name, 0, #map_name) ~= map_name then
+        return true
+    end
 
-        if protect_types[e.type] then
-            return true
-        end
-    else
-        local map_name = 'mtn_v3'
-        if string.sub(e.surface.name, 0, #map_name) ~= map_name then
-            return true
-        end
-
-        if protect_types[e.type] then
-            return true
-        end
+    if protect_types[e.type] then
+        return true
     end
 
     return false
@@ -328,7 +320,7 @@ local function protect_entities(data)
     end
 
     local carriages_numbers = Public.get('carriages_numbers')
-    if is_protected(data, entity) then
+    if is_protected(entity) then
         if (cause and cause.valid) then
             if Public.valid_enemy_forces[cause.force.name] then
                 if carriages_numbers and carriages_numbers[entity.unit_number] then
@@ -470,8 +462,12 @@ local function give_coin(player)
     if coin_amount >= 1 then
         if coin_override then
             player.insert({name = 'coin', count = coin_override})
+            StatData.get_data(player):increase('coins', coin_override)
         else
+            ---@diagnostic disable-next-line: param-type-mismatch
             player.insert({name = 'coin', count = random(1, coin_amount)})
+
+            StatData.get_data(player):increase('coins', coin_amount)
         end
     end
 end
@@ -1230,7 +1226,7 @@ local function show_mvps(player)
         miners_label_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 
         local sent_to_discord = Public.get('sent_to_discord')
-        local server_name_matches = Server.check_server_name('Mtn Fortress')
+        local server_name_matches = Server.check_server_name(scenario_name)
 
         if not sent_to_discord and server_name_matches then
             local message = {
@@ -1704,7 +1700,7 @@ local on_player_or_robot_built_tile = function(event)
     if not tiles then
         return
     end
-    for k, v in pairs(tiles) do
+    for _, v in pairs(tiles) do
         local old_tile = v.old_tile
         if old_tile.name == 'black-refined-concrete' then
             surface.set_tiles({{name = 'black-refined-concrete', position = v.position}}, true)

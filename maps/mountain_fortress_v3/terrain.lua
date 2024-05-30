@@ -2702,17 +2702,17 @@ local zones = {
     zone_3 = {fn = zone_3, weight = 100, tags = {'zone_3'}},
     zone_4 = {fn = zone_4, weight = 100, tags = {'zone_4'}},
     zone_5 = {fn = zone_5, weight = 100, tags = {'zone_5'}},
-    zone_forest_1 = {fn = zone_forest_1, weight = 100, tags = {'forest'}},
-    zone_forest_2 = {fn = zone_forest_2, weight = 100, tags = {'forest'}},
-    zone_scrap_1 = {fn = zone_scrap_1, weight = 100, tags = {'scrap'}},
-    zone_scrap_2 = {fn = zone_scrap_2, weight = 100, tags = {'scrap'}},
+    zone_forest_1 = {fn = zone_forest_1, weight = 100, tags = {'forest_1'}},
+    zone_forest_2 = {fn = zone_forest_2, weight = 100, tags = {'forest_2'}},
+    zone_scrap_1 = {fn = zone_scrap_1, weight = 100, tags = {'scrap_1'}},
+    zone_scrap_2 = {fn = zone_scrap_2, weight = 100, tags = {'scrap_2'}},
     zone_7 = {fn = zone_7, weight = 100, tags = {'zone_7'}},
     zone_9 = {fn = zone_9, weight = 100, tags = {'zone_8'}},
-    zone_10 = {fn = zone_10, weight = 100, tags = {'forest'}},
+    zone_10 = {fn = zone_10, weight = 100, tags = {'forest_3'}},
     zone_11 = {fn = zone_11, weight = 100, tags = {'zone_11'}},
     zone_12 = {fn = zone_12, weight = 100, tags = {'zone_12'}},
     zone_13 = {fn = zone_13, weight = 100, tags = {'zone_13'}},
-    zone_14 = {fn = zone_14, weight = 100, tags = {'forest'}}
+    zone_14 = {fn = zone_14, weight = 100, tags = {'forest_4'}}
 }
 
 local function shuffle_terrains(adjusted_zones, new_zone)
@@ -2926,6 +2926,13 @@ function Public.heavy_functions(data)
 
     local p = data.position
 
+    local pre_final_battle = Public.get('pre_final_battle')
+    if pre_final_battle then
+        local tiles = data.tiles
+        tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+        return
+    end
+
     if adjusted_zones.disable_terrain then
         return
     end
@@ -3015,6 +3022,18 @@ Event.add(
             return
         end
         if not surface.valid then
+            return
+        end
+
+        local pre_final_battle = Public.get('pre_final_battle')
+        if pre_final_battle then
+            local tiles = {}
+            for x = 0, 31 do
+                for y = 0, 31 do
+                    tiles[#tiles + 1] = {name = 'out-of-map', position = {left_top.x + x, left_top.y + y}}
+                end
+            end
+            surface.set_tiles(tiles, false)
             return
         end
 

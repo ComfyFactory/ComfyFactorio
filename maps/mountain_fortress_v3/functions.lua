@@ -30,6 +30,8 @@ local this = {
     magic_fluid_crafters = {index = 1},
     art_table = {index = 1},
     editor_mode = {},
+    techs = {},
+    limit_types = {},
     starting_items = {
         ['pistol'] = {
             count = 1
@@ -149,7 +151,7 @@ end
 local pause_waves_custom_callback_token =
     Task.register(
     function(status)
-        Collapse.disable_collapse(status)
+        Collapse.start_now(status)
         local status_str = status and 'has stopped!' or 'is active once again!'
         Alert.alert_all_players(30, 'Collapse ' .. status_str, nil, 'achievement/tech-maniac', 0.6)
     end
@@ -387,6 +389,21 @@ local function do_clear_enemy_spawners()
     end
 end
 
+local function do_clear_rocks_slowly()
+    local rocks_to_remove = Public.get('rocks_to_remove')
+    if not rocks_to_remove or not next(rocks_to_remove) then
+        return
+    end
+
+    for _ = 1, 30 do
+        local entity = table.remove(rocks_to_remove, #rocks_to_remove)
+
+        if entity and entity.valid then
+            entity.destroy()
+        end
+    end
+end
+
 local function do_season_fix()
     local active_surface_index = Public.get('active_surface_index')
     local surface = game.surfaces[active_surface_index]
@@ -501,6 +518,7 @@ local function tick()
     do_artillery_turrets_targets()
     do_beams_away()
     do_clear_enemy_spawners()
+    do_clear_rocks_slowly()
 end
 
 Public.deactivate_callback =
@@ -864,16 +882,13 @@ remove_boost_movement_speed_on_respawn =
         if not player or not player.valid then
             return
         end
-        if not data.tries then
-            data.tries = 0
-        end
 
         Modifiers.update_single_modifier(player, 'character_running_speed_modifier', 'v3_move_boost')
         Modifiers.update_player_modifiers(player)
 
         player.print('Movement speed bonus removed!', Color.info)
         local rpg_t = RPG.get_value_from_player(player.index)
-        rpg_t.has_custom_spell_active = nil
+        rpg_t.has_boost_on_respawn = nil
     end
 )
 
@@ -889,7 +904,11 @@ local boost_movement_speed_on_respawn =
         end
 
         local rpg_t = RPG.get_value_from_player(player.index)
-        rpg_t.has_custom_spell_active = true
+        if rpg_t.has_boost_on_respawn then
+            return
+        end
+
+        rpg_t.has_boost_on_respawn = true
 
         Modifiers.update_single_modifier(player, 'character_running_speed_modifier', 'v3_move_boost', 1)
         Modifiers.update_player_modifiers(player)
@@ -915,7 +934,29 @@ local function on_wave_created(event)
     end
 end
 
+function Public.find_rocks_and_slowly_remove()
+    local active_surface_index = Public.get('active_surface_index')
+    local surface = game.get_surface(active_surface_index)
+    if not (surface and surface.valid) then
+        return
+    end
+
+    local ents = surface.find_entities_filtered({type = 'simple-entity'})
+    if ents and #ents > 0 then
+        Public.set('rocks_to_remove', ents)
+    end
+end
+
 function Public.set_difficulty()
+    local final_battle = Public.get('final_battle')
+    if final_battle then
+        return
+    end
+    local pre_final_battle = Public.get('pre_final_battle')
+    if pre_final_battle then
+        return
+    end
+
     local game_lost = Public.get('game_lost')
     if game_lost then
         return
@@ -1342,33 +1383,10 @@ function Public.on_player_joined_game(event)
             local death_message = ({'main.death_mode_warning'})
             Alert.alert_player(player, 15, death_message)
         end
+        player.clear_items_inside()
         for item, data in pairs(this.starting_items) do
             player.insert({name = item, count = data.count})
         end
-    end
-
-    -- local top = player.gui.top
-    -- if top['mod_gui_top_frame'] then
-    --     top['mod_gui_top_frame'].destroy()
-    -- end
-
-    local final_battle = Public.get('final_battle')
-    local collection = Public.get_stateful('collection')
-    if final_battle and not collection.final_arena_disabled then
-        local boss_room = game.get_surface('boss_room')
-        if not boss_room or not boss_room.valid then
-            return
-        end
-        if player.surface.index ~= boss_room.index then
-            local pos = boss_room.find_non_colliding_position('character', game.forces.player.get_spawn_position(boss_room), 3, 0, 5)
-            if pos then
-                player.teleport(pos, boss_room)
-            else
-                pos = game.forces.player.get_spawn_position(boss_room)
-                player.teleport(pos, boss_room)
-            end
-        end
-        return
     end
 
     if player.surface.index ~= active_surface_index then
@@ -1610,6 +1628,7 @@ end
 
 local disable_tech = Public.disable_tech
 
+---@param event EventData.on_research_finished
 function Public.on_research_finished(event)
     disable_tech()
 
@@ -1620,8 +1639,10 @@ function Public.on_research_finished(event)
     local research_name = research.name
     local force = research.force
 
-    if Public.get('print_tech_to_discord') and force.name == 'player' then
-        Server.to_discord_embed_raw('<a:Modded:835932131036364810> ' .. research_name:gsub('^%l', string.upper) .. ' has been researched!')
+    if event.tick > 1000 then
+        if Public.get('print_tech_to_discord') and force.name == 'player' then
+            Server.to_discord_embed_raw('<a:Modded:835932131036364810> ' .. research_name:gsub('^%l', string.upper) .. ' has been researched!')
+        end
     end
 
     research.force.character_inventory_slots_bonus = player.mining_drill_productivity_bonus * 50 -- +5 Slots /
@@ -1793,12 +1814,12 @@ function Public.equip_players(starting_items, recreate)
         if player.character and player.character.valid then
             player.character.destroy()
         end
+        player.clear_items_inside()
         if player.connected then
             if not player.character then
                 player.set_controller({type = defines.controllers.god})
                 player.create_character()
             end
-            player.clear_items_inside()
             Modifiers.update_player_modifiers(player)
             if not recreate then
                 starting_items = starting_items or this.starting_items
@@ -1821,6 +1842,8 @@ function Public.reset_func_table()
     this.refill_turrets = {index = 1}
     this.magic_crafters = {index = 1}
     this.magic_fluid_crafters = {index = 1}
+    this.techs = {}
+    this.limit_types = {}
     this.starting_items = {
         ['pistol'] = {
             count = 1

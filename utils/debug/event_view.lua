@@ -19,14 +19,17 @@ local name_lookup = {}
 
 -- GUI names
 local checkbox_name = Gui.uid_name()
+local checkbox_all_name = Gui.uid_name()
 local filter_name = Gui.uid_name()
 local clear_filter_name = Gui.uid_name()
 
 -- global tables
 local enabled = {}
+local enabled_for_all = false
 local last_events = {}
 global.debug_event_view = {
     enabled = enabled,
+    enabled_for_all = enabled_for_all,
     last_events = last_events,
     filter = ''
 }
@@ -83,6 +86,25 @@ local function on_gui_checked_state_changed(event)
     end
 end
 
+local function on_gui_checked_state_changed_all(event)
+    local element = event.element
+    local state = element.state and true or false
+    element.state = state
+    if state then
+        for name, _ in pairs(events) do
+            local id = events[name]
+            enabled[id] = true
+        end
+        enabled_for_all = true
+    else
+        for name, _ in pairs(events) do
+            local id = events[name]
+            enabled[id] = false
+        end
+        enabled_for_all = false
+    end
+end
+
 -- GUI
 
 -- Create a table with events sorted by their names
@@ -116,6 +138,12 @@ function Public.show(container)
     filter_flow.add({type = 'label', caption = 'filter'})
     local filter_textfield = filter_flow.add({type = 'textfield', name = filter_name, text = filter})
     local clear_button = filter_flow.add({type = 'button', name = clear_filter_name, caption = 'clear'})
+    filter_flow.add({type = 'flow'}).add {
+        name = checkbox_all_name,
+        type = 'checkbox',
+        state = enabled_for_all or false,
+        caption = 'Toggle all events'
+    }
 
     local scroll_pane = main_frame_flow.add({type = 'scroll-pane'})
     local gui_table = scroll_pane.add({type = 'table', column_count = 3, draw_horizontal_lines = true})
@@ -127,6 +155,7 @@ function Public.show(container)
 end
 
 Gui.on_checked_state_changed(checkbox_name, on_gui_checked_state_changed)
+Gui.on_checked_state_changed(checkbox_all_name, on_gui_checked_state_changed_all)
 
 Gui.on_text_changed(
     filter_name,

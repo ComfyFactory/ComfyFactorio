@@ -10,15 +10,15 @@ local Event = require 'utils.event'
 local table = require 'utils.table'
 
 local set_timeout_in_ticks = Task.set_timeout_in_ticks
+
 local session_data_set = 'sessions'
 local session = {}
 local online_track = {}
 local trusted = {}
 local settings = {
-    -- local trusted_value = 2592000 -- 12h
-    trusted_value = 5184000, -- 24h
-    required_only_time_to_save_time = 36000, -- nearest prime to 10 minutes in ticks
-    nth_tick = 18000 -- nearest prime to 5 minutes in ticks
+    trusted_value = 24 * 60 * 3600, -- 24h
+    required_only_time_to_save_time = 10 * 3600,
+    nth_tick = 5 * 3600
 }
 local set_data = Server.set_data
 local try_get_data = Server.try_get_data

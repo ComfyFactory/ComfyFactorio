@@ -24,28 +24,58 @@ local function validate_player(player)
     return true
 end
 
+local function get_top_frame(player)
+    if CoreGui.get_mod_gui_top_frame() then
+        return CoreGui.get_button_flow(player)['minimap_button']
+    else
+        return player.gui.top['minimap_button']
+    end
+end
+
 local function create_button(player)
-    local button =
-        player.gui.top['minimap_button'] or
-        player.gui.top.add(
+    if CoreGui.get_mod_gui_top_frame() then
+        local b =
+            CoreGui.add_mod_button(
+            player,
             {
                 type = 'sprite-button',
                 name = 'minimap_button',
                 sprite = 'utility/map',
                 tooltip = 'Open or close minimap.',
-                style = CoreGui.button_style
+                style = Gui.button_style
             }
         )
-    button.style.minimal_height = 38
-    button.style.maximal_height = 38
+        if b then
+            b.style.font_color = {165, 165, 165}
+            b.style.font = 'heading-3'
+            b.style.minimal_height = 36
+            b.style.maximal_height = 36
+            b.style.minimal_width = 40
+            b.style.padding = -2
+        end
+    else
+        local button =
+            player.gui.top['minimap_button'] or
+            player.gui.top.add(
+                {
+                    type = 'sprite-button',
+                    name = 'minimap_button',
+                    sprite = 'utility/map',
+                    tooltip = 'Open or close minimap.',
+                    style = CoreGui.button_style
+                }
+            )
+        button.style.minimal_height = 38
+        button.style.maximal_height = 38
+    end
 end
 
 function Public.toggle_button(player)
-    if not player.gui.top['minimap_button'] then
+    if not get_top_frame(player) then
         create_button(player)
     end
 
-    local button = player.gui.top['minimap_button']
+    local button = get_top_frame(player)
     if Functions.get_player_surface(player) then
         create_button(player)
     else
@@ -175,7 +205,7 @@ function Public.minimap(player, surface, position)
 end
 
 function Public.update_minimap()
-    for k, player in pairs(game.connected_players) do
+    for _, player in pairs(game.connected_players) do
         local player_data = get_player_data(player)
         if Functions.get_player_surface(player) and player.gui.left.minimap_toggle_frame and player_data.auto then
             kill_frame(player)

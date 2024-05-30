@@ -23,6 +23,7 @@ local sub = string.sub
 local angle_multipler = 2 * math.pi
 local start_angle = -angle_multipler / 4
 local update_rate = 4
+local update_rate_progressbar = 2
 local time_to_live = update_rate + 1
 
 local draw_arc = rendering.draw_arc
@@ -30,6 +31,7 @@ local draw_arc = rendering.draw_arc
 --RPG Frames
 local main_frame_name = Public.main_frame_name
 local spell_gui_frame_name = Public.spell_gui_frame_name
+local cooldown_indicator_name = Public.cooldown_indicator_name
 
 local travelings = {
     'bzzZZrrt',
@@ -739,6 +741,114 @@ function Public.aoe_punch(cause, entity, damage, final_damage_amount)
     end
 end
 
+function Public.add_tidal_wave(cause, ent_position, shape, length, max_spread)
+    local rpg_extra = Public.get('rpg_extra')
+
+    if not cause or not cause.valid then
+        return
+    end
+
+    local wave = {
+        cause = cause,
+        start_position = cause.position,
+        direction = {ent_position.x - cause.position.x, ent_position.y - cause.position.y},
+        length = length or 18,
+        base_spread = 0.5,
+        max_spread = max_spread or 4,
+        shape = shape or false,
+        tick = 0
+    }
+    local vector_length = math.sqrt(wave.direction[1] ^ 2 + wave.direction[2] ^ 2)
+    wave.direction = {wave.direction[1] / vector_length, wave.direction[2] / vector_length}
+
+    rpg_extra.tidal_waves = rpg_extra.tidal_waves or {}
+    rpg_extra.tidal_waves[#rpg_extra.tidal_waves + 1] = wave
+end
+
+--Melee damage modifier
+function Public.update_tidal_wave()
+    local rpg_extra = Public.get('rpg_extra')
+
+    if not rpg_extra.tidal_waves or not next(rpg_extra.tidal_waves) then
+        return
+    end
+
+    for id, wave in pairs(rpg_extra.tidal_waves) do
+        if not wave then
+            break
+        end
+
+        local cone = wave.shape and wave.shape == 'cone' or false
+
+        local wave_player = wave.cause
+        if not wave_player or not wave_player.valid then
+            rpg_extra.tidal_waves[id] = nil
+            return
+        end
+
+        if wave.tick < wave.length then
+            local surface = wave.cause.surface
+            local cause_position = wave.start_position
+            local i = wave.tick + 1
+
+            local current_spread = wave.base_spread + (wave.max_spread - wave.base_spread) * (i / wave.length)
+
+            if not cone then
+                for j = -wave.max_spread, wave.max_spread do
+                    local offset_x = cause_position.x + wave.direction[1] * i + j * wave.direction[2]
+                    local offset_y = cause_position.y + wave.direction[2] * i - j * wave.direction[1]
+                    local position = {offset_x, offset_y}
+
+                    local next_offset_x = cause_position.x + wave.direction[1] * (i + 1) + j * wave.direction[2]
+                    local next_offset_y = cause_position.y + wave.direction[2] * (i + 1) - j * wave.direction[1]
+                    local next_position = {next_offset_x, next_offset_y}
+
+                    surface.create_entity({name = 'water-splash', position = position})
+                    -- surface.create_trivial_smoke({name = 'poison-capsule-smoke', position = position})
+                    local sound = 'utility/build_small'
+                    wave_player.play_sound {path = sound, volume_modifier = 1}
+
+                    for _, entity in pairs(surface.find_entities({{position[1] - 1, position[2] - 1}, {position[1] + 1, position[2] + 1}})) do
+                        if entity.valid and entity.name ~= 'character' and entity.destructible and entity.type == 'unit' and entity.force.index ~= 3 then
+                            local new_pos = surface.find_non_colliding_position('character', next_position, 3, 0.5)
+                            if new_pos then
+                                entity.teleport(new_pos)
+                            end
+                        end
+                    end
+                end
+            else
+                for j = -current_spread, current_spread, wave.base_spread do
+                    local offset_x = cause_position.x + wave.direction[1] * i + j * wave.direction[2]
+                    local offset_y = cause_position.y + wave.direction[2] * i - j * wave.direction[1]
+                    local position = {offset_x, offset_y}
+
+                    local next_offset_x = cause_position.x + wave.direction[1] * (i + 1) + j * wave.direction[2]
+                    local next_offset_y = cause_position.y + wave.direction[2] * (i + 1) - j * wave.direction[1]
+                    local next_position = {next_offset_x, next_offset_y}
+                    -- surface.create_trivial_smoke({name = 'poison-capsule-smoke', position = position})
+                    surface.create_entity({name = 'water-splash', position = position})
+                    local sound = 'utility/build_small'
+                    wave_player.play_sound {path = sound, volume_modifier = 1}
+
+                    for _, entity in pairs(surface.find_entities({{position[1] - 1, position[2] - 1}, {position[1] + 1, position[2] + 1}})) do
+                        if entity.valid and entity.name ~= 'character' and entity.destructible and entity.type == 'unit' and entity.force.index ~= 3 then
+                            local new_pos = surface.find_non_colliding_position('character', next_position, 3, 0.5)
+                            if new_pos then
+                                entity.teleport(new_pos)
+                            end
+                        end
+                    end
+                end
+            end
+
+            wave.tick = wave.tick + 1
+        else
+            rpg_extra.tidal_waves[id] = nil
+        end
+    end
+end
+
 function Public.level_limit_exceeded(player, value)
     local rpg_extra = Public.get('rpg_extra')
     local rpg_t = Public.get_value_from_player(player.index)
@@ -1091,6 +1201,95 @@ function Public.get_magicka(player)
     return (rpg_t.magicka - 10) * 0.080
 end
 
+function Public.register_cooldown_for_spell(player)
+    local rpg_t = Public.get_value_from_player(player.index)
+
+    local active_spell = Public.get_spell_by_name(rpg_t, rpg_t.dropdown_select_name)
+
+    if not active_spell then
+        return
+    end
+
+    if not rpg_t.cooldowns then
+        rpg_t.cooldowns = {}
+    end
+
+    rpg_t.cooldowns[active_spell.entityName] = game.tick + active_spell.cooldown
+end
+
+function Public.is_cooldown_active_for_player(player)
+    local rpg_t = Public.get_value_from_player(player.index)
+
+    local active_spell = Public.get_spell_by_name(rpg_t, rpg_t.dropdown_select_name)
+
+    if not active_spell then
+        return false
+    end
+
+    if not rpg_t.cooldowns or not next(rpg_t.cooldowns) or not rpg_t.cooldowns[active_spell.entityName] then
+        return false
+    end
+
+    return rpg_t.cooldowns[active_spell.entityName] > game.tick
+end
+
+function Public.get_cooldown_progressbar_for_player(player)
+    local f = player.gui.screen[spell_gui_frame_name]
+    if not f then
+        return
+    end
+    local element = f[cooldown_indicator_name]
+    if not element or not element.valid then
+        return
+    end
+
+    return element
+end
+
+local show_cooldown_progressbar
+show_cooldown_progressbar =
+    Token.register(
+    function(event)
+        local player_index = event.player_index
+        local player = game.get_player(player_index)
+        if not player or not player.valid then
+            return
+        end
+
+        local tick = event.tick
+        local now = game.tick
+
+        local element = Public.get_cooldown_progressbar_for_player(player)
+        if not element or not element.valid then
+            if now >= tick then
+                return
+            else
+                Task.set_timeout_in_ticks(update_rate_progressbar, show_cooldown_progressbar, event)
+            end
+            return
+        end
+
+        if now >= tick then
+            element.value = 0
+            return
+        end
+
+        local rpg_t = Public.get_value_from_player(player.index)
+
+        local active_spell = Public.get_spell_by_name(rpg_t, rpg_t.dropdown_select_name)
+        if event.name ~= active_spell.entityName then
+            Task.set_timeout_in_ticks(update_rate_progressbar, show_cooldown_progressbar, event)
+            return
+        end
+
+        local fade = ((tick - now) / event.delay)
+        element.value = fade
+
+        Task.set_timeout_in_ticks(update_rate_progressbar, show_cooldown_progressbar, event)
+    end
+)
+Public.show_cooldown_progressbar = show_cooldown_progressbar
+
 local show_cooldown
 show_cooldown =
     Token.register(
@@ -1104,6 +1303,8 @@ show_cooldown =
         local tick = event.tick
         local now = game.tick
         if now >= tick then
+            local rpg_t = Public.get_value_from_player(player.index)
+            rpg_t.cooldown_enabled = nil
             return
         end
 
@@ -1133,7 +1334,19 @@ show_cooldown =
 Public.show_cooldown = show_cooldown
 
 function Public.register_cooldown_for_player(player, spell)
+    local rpg_t = Public.get_value_from_player(player.index)
+    if rpg_t.cooldown_enabled then
+        return
+    end
+
+    if not rpg_t.cooldown_enabled then
+        rpg_t.cooldown_enabled = true
+    end
     Task.set_timeout_in_ticks(update_rate, show_cooldown, {player_index = player.index, tick = game.tick + spell.cooldown, delay = spell.cooldown})
+end
+
+function Public.register_cooldown_for_player_progressbar(player, spell)
+    Task.set_timeout_in_ticks(update_rate, show_cooldown_progressbar, {player_index = player.index, tick = game.tick + spell.cooldown, delay = spell.cooldown, name = spell.entityName})
 end
 
 --- Gives connected player some bonus xp if the map was preemptively shut down.
@@ -1209,16 +1422,17 @@ function Public.rpg_reset_player(player, one_time_reset)
                 vitality = 10,
                 mana = 0,
                 mana_max = 0,
-                last_spawned = 0,
+                cooldowns = {},
                 dropdown_select_index = 1,
                 dropdown_select_name = Public.all_spells[1].name[1],
                 dropdown_select_index_1 = 1,
                 dropdown_select_name_1 = Public.all_spells[1].name[1],
-                dropdown_select_index_2 = 1,
-                dropdown_select_name_2 = Public.all_spells[1].name[1],
-                dropdown_select_index_3 = 1,
-                dropdown_select_name_3 = Public.all_spells[1].name[1],
+                dropdown_select_index_2 = 2,
+                dropdown_select_name_2 = Public.all_spells[2].name[1],
+                dropdown_select_index_3 = 3,
+                dropdown_select_name_3 = Public.all_spells[3].name[1],
                 allocate_index = 1,
+                amount = 0,
                 explosive_bullets = false,
                 enable_entity_spawn = false,
                 health_bar = rpg_t.health_bar,
@@ -1258,16 +1472,17 @@ function Public.rpg_reset_player(player, one_time_reset)
                 vitality = 10,
                 mana = 0,
                 mana_max = 0,
-                last_spawned = 0,
+                cooldowns = {},
                 dropdown_select_index = 1,
                 dropdown_select_name = Public.all_spells[1].name[1],
                 dropdown_select_index_1 = 1,
                 dropdown_select_name_1 = Public.all_spells[1].name[1],
-                dropdown_select_index_2 = 1,
-                dropdown_select_name_2 = Public.all_spells[1].name[1],
-                dropdown_select_index_3 = 1,
-                dropdown_select_name_3 = Public.all_spells[1].name[1],
+                dropdown_select_index_2 = 2,
+                dropdown_select_name_2 = Public.all_spells[2].name[1],
+                dropdown_select_index_3 = 3,
+                dropdown_select_name_3 = Public.all_spells[3].name[1],
                 allocate_index = 1,
+                amount = 0,
                 explosive_bullets = false,
                 enable_entity_spawn = false,
                 points_left = 0,

@@ -25,6 +25,22 @@ local function validate_entity(entity)
     return true
 end
 
+local function get_top_frame(player)
+    if Gui.get_mod_gui_top_frame() then
+        return Gui.get_button_flow(player)[main_frame_name]
+    else
+        return player.gui.top[main_frame_name]
+    end
+end
+
+local function get_top_frame_custom(player, name)
+    if Gui.get_mod_gui_top_frame() then
+        return Gui.get_button_flow(player)[name]
+    else
+        return player.gui.top[name]
+    end
+end
+
 local function validate_player(player)
     if not player then
         return false
@@ -45,22 +61,44 @@ local function validate_player(player)
 end
 
 local function create_button(player)
-    local b =
-        player.gui.top.add(
-        {
-            type = 'sprite-button',
-            name = main_button_name,
-            sprite = 'item/dummy-steel-axe',
-            tooltip = 'Shows statistics!',
-            style = Gui.button_style
-        }
-    )
-    b.style.minimal_height = 38
-    b.style.maximal_height = 38
+    if Gui.get_mod_gui_top_frame() then
+        local b =
+            Gui.add_mod_button(
+            player,
+            {
+                type = 'sprite-button',
+                name = main_button_name,
+                sprite = 'item/dummy-steel-axe',
+                tooltip = 'Shows statistics!',
+                style = Gui.button_style
+            }
+        )
+        if b then
+            b.style.font_color = {165, 165, 165}
+            b.style.font = 'heading-3'
+            b.style.minimal_height = 36
+            b.style.maximal_height = 36
+            b.style.minimal_width = 40
+            b.style.padding = -2
+        end
+    else
+        local b =
+            player.gui.top.add(
+            {
+                type = 'sprite-button',
+                name = main_button_name,
+                sprite = 'item/dummy-steel-axe',
+                tooltip = 'Shows statistics!',
+                style = Gui.button_style
+            }
+        )
+        b.style.minimal_height = 38
+        b.style.maximal_height = 38
+    end
 end
 
 local function spectate_button(player)
-    if player.gui.top[spectate_button_name] then
+    if get_top_frame_custom(player, spectate_button_name) then
         return
     end
 
@@ -68,29 +106,68 @@ local function spectate_button(player)
         return
     end
 
-    local b =
-        player.gui.top.add {
-        type = 'sprite-button',
-        name = spectate_button_name,
-        sprite = 'utility/ghost_time_to_live_modifier_icon',
-        tooltip = 'Spectate!\nThis will kill your character.',
-        style = Gui.button_style
-    }
+    if Gui.get_mod_gui_top_frame() then
+        local b =
+            Gui.add_mod_button(
+            player,
+            {
+                type = 'sprite-button',
+                name = spectate_button_name,
+                sprite = 'utility/ghost_time_to_live_modifier_icon',
+                tooltip = 'Spectate!\nThis will kill your character.',
+                style = Gui.button_style
+            }
+        )
+        if b then
+            b.style.font_color = {165, 165, 165}
+            b.style.font = 'heading-3'
+            b.style.minimal_height = 36
+            b.style.maximal_height = 36
+            b.style.minimal_width = 40
+            b.style.padding = -2
+        end
+    else
+        local b =
+            player.gui.top.add {
+            type = 'sprite-button',
+            name = spectate_button_name,
+            sprite = 'utility/ghost_time_to_live_modifier_icon',
+            tooltip = 'Spectate!\nThis will kill your character.',
+            style = Gui.button_style
+        }
 
-    b.style.maximal_height = 38
+        b.style.maximal_height = 38
+    end
 end
 
 local function create_main_frame(player)
     local label
     local line
-    if player.gui.top['wave_defense'] then
-        player.gui.top['wave_defense'].visible = true
+    if get_top_frame_custom(player, 'wave_defense') then
+        get_top_frame_custom(player, 'wave_defense').visible = true
     end
 
-    local frame = player.gui.top.add({type = 'frame', name = main_frame_name, style = 'finished_game_subheader_frame'})
-    frame.location = {x = 1, y = 40}
-    frame.style.minimal_height = 38
-    frame.style.maximal_height = 38
+    local frame
+
+    if Gui.get_mod_gui_top_frame() then
+        frame =
+            Gui.add_mod_button(
+            player,
+            {
+                type = 'frame',
+                name = main_frame_name,
+                style = 'finished_game_subheader_frame'
+            }
+        )
+        frame.location = {x = 1, y = 38}
+        frame.style.minimal_height = 36
+        frame.style.maximal_height = 36
+    else
+        frame = player.gui.top.add({type = 'frame', name = main_frame_name, style = 'finished_game_subheader_frame'})
+        frame.location = {x = 1, y = 40}
+        frame.style.minimal_height = 38
+        frame.style.maximal_height = 38
+    end
 
     label = frame.add({type = 'label', caption = ' ', name = 'label'})
     label.style.font_color = {r = 0.88, g = 0.88, b = 0.88}
@@ -166,17 +243,33 @@ local function create_main_frame(player)
 end
 
 local function hide_all_gui(player)
-    for _, child in pairs(player.gui.top.children) do
-        if child.name ~= spectate_button_name and child.name ~= 'minimap_button' and child.name ~= 'wave_defense' then
-            child.visible = false
+    if Gui.get_mod_gui_top_frame() then
+        for _, child in pairs(player.gui.top.mod_gui_top_frame.mod_gui_inner_frame.children) do
+            if child.name ~= spectate_button_name and child.name ~= 'minimap_button' and child.name ~= 'wave_defense' then
+                child.visible = false
+            end
+        end
+    else
+        for _, child in pairs(player.gui.top.children) do
+            if child.name ~= spectate_button_name and child.name ~= 'minimap_button' and child.name ~= 'wave_defense' then
+                child.visible = false
+            end
         end
     end
 end
 
 local function show_all_gui(player)
-    for _, child in pairs(player.gui.top.children) do
-        if child.name ~= spectate_button_name and child.name ~= 'minimap_button' then
-            child.visible = true
+    if Gui.get_mod_gui_top_frame() then
+        for _, child in pairs(player.gui.top.mod_gui_top_frame.mod_gui_inner_frame.children) do
+            if child.name ~= spectate_button_name and child.name ~= 'minimap_button' then
+                child.visible = true
+            end
+        end
+    else
+        for _, child in pairs(player.gui.top.children) do
+            if child.name ~= spectate_button_name and child.name ~= 'minimap_button' then
+                child.visible = true
+            end
         end
     end
 end
@@ -187,11 +280,11 @@ local function on_player_joined_game(event)
         return
     end
 
-    if not player.gui.top[spectate_button_name] then
+    if not get_top_frame_custom(player, spectate_button_name) then
         spectate_button(player)
     end
 
-    if not player.gui.top[main_button_name] then
+    if not get_top_frame_custom(player, main_button_name) then
         create_button(player)
     end
 end
@@ -209,19 +302,19 @@ local function changed_surface(player)
     end
 
     local wagon_surface = icw_locomotive.surface
-    local main_toggle_button = player.gui.top[main_toggle_button_name]
-    local info = player.gui.top[main_button_name]
-    local wd = player.gui.top['wave_defense']
-    local spectate = player.gui.top[spectate_button_name]
-    local minimap_button = player.gui.top['minimap_button']
-    local rpg_b = player.gui.top[rpg_button]
-    local poll_b = player.gui.top[poll_button]
+    local main_toggle_button = get_top_frame_custom(player, main_toggle_button_name)
+    local info = get_top_frame_custom(player, main_button_name)
+    local wd = get_top_frame_custom(player, 'wave_defense')
+    local spectate = get_top_frame_custom(player, spectate_button_name)
+    local minimap_button = get_top_frame_custom(player, 'minimap_button')
+    local rpg_b = get_top_frame_custom(player, rpg_button)
+    local poll_b = get_top_frame_custom(player, poll_button)
     local rpg_f = player.gui.screen[rpg_frame]
     local rpg_s = player.gui.screen[rpg_settings]
-    local diff = player.gui.top[Difficulty.top_button_name]
-    local charging = player.gui.top['charging_station']
+    local diff = get_top_frame_custom(player, Difficulty.top_button_name)
+    local charging = get_top_frame_custom(player, 'charging_station')
     local charging_frame = BottomFrame.get_section(player, 'charging_station')
-    local frame = player.gui.top[main_frame_name]
+    local frame = get_top_frame(player)
     local spell_gui_frame_name = RPG.spell_gui_frame_name
     local spell_cast_buttons = player.gui.screen[spell_gui_frame_name]
 
@@ -326,7 +419,7 @@ local function changed_surface(player)
             info.sprite = 'utility/map'
             info.visible = true
         end
-        if player.gui.top[main_frame_name] then
+        if get_top_frame(player) then
             if frame then
                 frame.visible = false
                 return
@@ -391,10 +484,10 @@ local function on_gui_click(event)
             end
             return
         end
-        if player.gui.top[main_frame_name] then
-            local info = player.gui.top[main_frame_name]
-            local wd = player.gui.top['wave_defense']
-            local diff = player.gui.top[Difficulty.top_button_name]
+        if get_top_frame(player) then
+            local info = get_top_frame(player)
+            local wd = get_top_frame_custom(player, 'wave_defense')
+            local diff = get_top_frame_custom(player, Difficulty.top_button_name)
 
             if info and info.visible then
                 if wd then
@@ -453,14 +546,14 @@ local function enable_guis(event)
     end
 
     local main_toggle_button_name = Gui.main_toggle_button_name
-    local main_toggle_button = player.gui.top[main_toggle_button_name]
+    local main_toggle_button = get_top_frame_custom(player, main_toggle_button_name)
     local rpg_button = RPG.draw_main_frame_name
-    local info = player.gui.top[main_button_name]
-    local wd = player.gui.top['wave_defense']
-    local spectate = player.gui.top[spectate_button_name]
-    local rpg_b = player.gui.top[rpg_button]
-    local diff = player.gui.top[Difficulty.top_button_name]
-    local charging = player.gui.top['charging_station']
+    local info = get_top_frame_custom(player, main_button_name)
+    local wd = get_top_frame_custom(player, 'wave_defense')
+    local spectate = get_top_frame_custom(player, spectate_button_name)
+    local rpg_b = get_top_frame_custom(player, rpg_button)
+    local diff = get_top_frame_custom(player, Difficulty.top_button_name)
+    local charging = get_top_frame_custom(player, 'charging_station')
     local charging_frame = BottomFrame.get_section(player, 'charging_station')
 
     IC_Gui.remove_toolbar(player)
@@ -511,14 +604,14 @@ function Public.update_gui(player)
         return
     end
 
-    if not player.gui.top[main_frame_name] then
+    if not get_top_frame(player) then
         return
     end
 
-    if not player.gui.top[main_frame_name].visible then
+    if not get_top_frame(player).visible then
         return
     end
-    local gui = player.gui.top[main_frame_name]
+    local gui = get_top_frame(player)
 
     local rpg_extra = RPG.get('rpg_extra')
     local mined_scrap = Public.get('mined_scrap')

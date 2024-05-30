@@ -195,11 +195,17 @@ function Public.locomotive_spawn(surface, position, reversed)
         )
     end
 
+    local s = 'entity/compilatron'
+
+    if random(1, 10) == 1 then
+        s = 'entity/character-corpse'
+    end
+
     for y = -1, 0, 0.05 do
         local scale = random(50, 100) * 0.01
         rendering.draw_sprite(
             {
-                sprite = 'entity/small-biter',
+                sprite = s,
                 orientation = random(0, 100) * 0.01,
                 x_scale = scale,
                 y_scale = scale,
@@ -250,6 +256,11 @@ function Public.locomotive_spawn(surface, position, reversed)
                 ICW.register_wagon(new_wagon)
             end
         end
+    end
+
+    local all_the_fish = Public.get('all_the_fish')
+    if all_the_fish then
+        this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = 'raw-fish', count = 999999})
     end
 
     Task.set_timeout_in_ticks(15, place_tiles_token, {surface = surface, position = position})

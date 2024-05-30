@@ -25,6 +25,7 @@ local enable_spawning_frame_name = Gui.uid_name()
 local spell1_button_name = Gui.uid_name()
 local spell2_button_name = Gui.uid_name()
 local spell3_button_name = Gui.uid_name()
+local cooldown_indicator_name = Gui.uid_name()
 
 Global.register(
     this,
@@ -34,6 +35,10 @@ Global.register(
 )
 
 local Public = {}
+Public.events = {
+    on_spell_cast_success = Event.generate_event_name('on_spell_cast_success'),
+    on_spell_cast_failure = Event.generate_event_name('on_spell_cast_failure')
+}
 
 Public.points_per_level = 5
 
@@ -494,6 +499,7 @@ Public.enable_spawning_frame_name = enable_spawning_frame_name
 Public.spell1_button_name = spell1_button_name
 Public.spell2_button_name = spell2_button_name
 Public.spell3_button_name = spell3_button_name
+Public.cooldown_indicator_name = cooldown_indicator_name
 
 local on_init = function()
     Public.reset_table()

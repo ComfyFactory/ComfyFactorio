@@ -429,6 +429,27 @@ local function get_items()
         upgrade = false,
         static = false
     }
+    if upgrades.burner_generator.bought >= upgrades.burner_generator.limit then
+        main_market_items['burner-generator'] = {
+            stack = 1,
+            value = 'coin',
+            price = 300,
+            tooltip = ({'main_market.sold_out'}),
+            enabled = false,
+            upgrade = false,
+            static = true
+        }
+    else
+        main_market_items['burner-generator'] = {
+            stack = 1,
+            value = 'coin',
+            price = 300,
+            tooltip = {'', {'item-name.burner-generator'}, ' bought: ', upgrades.burner_generator.bought, '/', upgrades.burner_generator.limit},
+            upgrade = false,
+            static = true
+        }
+    end
+
     main_market_items['car'] = {
         stack = 1,
         value = 'coin',
@@ -972,6 +993,31 @@ local function gui_click(event)
     if name == 'linked-chest' then
         local converted_chests = LinkedChests.get('converted_chests')
         LinkedChests.set('converted_chests', converted_chests + 1)
+    end
+
+    if name == 'burner-generator' then
+        if this.upgrades.burner_generator.bought >= this.upgrades.burner_generator.limit then
+            redraw_market_items(data.item_frame, player, data.search_text)
+            player.print(({'locomotive.limit_reached'}), {r = 0.98, g = 0.66, b = 0.22})
+            return
+        end
+        player.remove_item({name = item.value, count = item.price})
+
+        player.insert({name = name, count = item.stack})
+
+        Event.raise(Public.events.on_market_item_purchased, {cost = item.price})
+
+        if item.stack > this.upgrades.burner_generator.limit then
+            item.stack = this.upgrades.burner_generator.limit
+        end
+
+        this.upgrades.burner_generator.bought = this.upgrades.burner_generator.bought + item.stack
+
+        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + item.price
+        redraw_market_items(data.item_frame, player, data.search_text)
+        redraw_coins_left(data.coins_left, player)
+
+        return
     end
 
     if name == 'upgrade_pickaxe' then

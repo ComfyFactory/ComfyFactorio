@@ -113,12 +113,22 @@ function Public.display_pause_wave(player, text)
 end
 
 local function pause_waves_state(state)
+    local game_lost = Public.get('game_lost')
+    if game_lost then
+        return
+    end
+
+    local final_battle = Public.get('final_battle')
+    if final_battle then
+        return
+    end
+
     local custom_callback_token = Public.get_pause_waves_custom_callback()
     local custom_callback = Token.get(custom_callback_token)
 
     if state then
         if custom_callback then
-            custom_callback(true)
+            custom_callback(false)
         end
 
         local pause_wave_in_ticks = Public.get('pause_wave_in_ticks')
@@ -133,7 +143,7 @@ local function pause_waves_state(state)
         Public.set('next_wave', next_wave + 18000)
     else
         if custom_callback then
-            custom_callback(false)
+            custom_callback(true)
         end
         local message = ({'wave_defense.start_waves'})
         Alert.alert_all_players(30, message, nil, 'achievement/tech-maniac', 0.75)
@@ -258,6 +268,8 @@ Event.on_nth_tick(
         if paused then
             return
         end
+
+        Public.set('next_pause_interval', game.tick + 216000)
 
         local pause_without_votes = Public.get('pause_without_votes')
         if pause_without_votes then

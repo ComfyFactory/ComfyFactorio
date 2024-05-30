@@ -1,9 +1,12 @@
 local Public = {}
+local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Collapse = require 'modules.collapse'
 local this = {
     explosives = {},
     settings = {
+        disabled = false,
+        slow_explode = false,
         check_growth_below_void = false,
         valid_items = {
             ['explosives'] = 500,
@@ -24,7 +27,7 @@ local math_sqrt = math.sqrt
 local math_round = math.round
 local math_random = math.random
 local shuffle_table = table.shuffle_table
-local speed = 3
+local speed = 6
 local density = 1
 local density_r = density * 0.5
 local valid_container_types = {
@@ -32,6 +35,10 @@ local valid_container_types = {
     ['logistic-container'] = true,
     ['car'] = true,
     ['cargo-wagon'] = true
+}
+
+local disabled_container_names = {
+    ['logistic-chest-buffer'] = true
 }
 
 local function pos_to_key(position)
@@ -236,12 +243,32 @@ local function life_cycle(cell)
 end
 
 local function tick()
-    for key, cell in pairs(this.explosives.cells) do
-        if cell.spawn_tick < game.tick then
-            life_cycle(cell)
-            this.explosives.cells[key] = nil
+    if this.settings.disabled then
+        return
+    end
+
+    if this.settings.slow_explode then
+        local count = 0
+        for key, cell in pairs(this.explosives.cells) do
+            if cell.spawn_tick < game.tick then
+                count = count + 1
+                if count < 50 then
+                    life_cycle(cell)
+                    this.explosives.cells[key] = nil
+                else
+                    cell.spawn_tick = game.tick + speed
+                end
+            end
+        end
+    else
+        for key, cell in pairs(this.explosives.cells) do
+            if cell.spawn_tick < game.tick then
+                life_cycle(cell)
+                this.explosives.cells[key] = nil
+            end
         end
     end
+
     if game.tick % 216000 == 0 then
         this.explosives.tiles = {}
     end
@@ -259,10 +286,19 @@ local function check_entity_for_items(item)
 end
 
 local function on_entity_died(event)
+    if this.settings.disabled then
+        return false
+    end
+
     local entity = event.entity
     if not entity.valid then
         return
     end
+
+    if disabled_container_names[entity.name] then
+        return
+    end
+
     if not valid_container_types[entity.type] then
         return
     end
@@ -283,10 +319,16 @@ local function on_entity_died(event)
         return
     end
 
-    cell_birth(entity.surface.index, {x = entity.position.x, y = entity.position.y}, game.tick, {x = entity.position.x, y = entity.position.y}, amount * damage)
+    local final_damage = amount * damage
+
+    cell_birth(entity.surface.index, {x = entity.position.x, y = entity.position.y}, game.tick, {x = entity.position.x, y = entity.position.y}, final_damage)
 end
 
 function Public.detonate_chest(entity)
+    if this.settings.disabled then
+        return false
+    end
+
     if not entity or not entity.valid then
         return false
     end
@@ -318,6 +360,10 @@ function Public.detonate_chest(entity)
 end
 
 function Public.detonate_entity(entity, amount, damage)
+    if this.settings.disabled then
+        return false
+    end
+
     if not entity or not entity.valid then
         return false
     end
@@ -365,6 +411,10 @@ function Public.set_surface_whitelist(list)
     this.explosives.surface_whitelist = list
 end
 
+function Public.disable(state)
+    this.settings.disabled = state or false
+end
+
 function Public.get_table()
     return this.explosives
 end
@@ -373,11 +423,14 @@ function Public.check_growth_below_void(value)
     this.settings.check_growth_below_void = value or false
 end
 
+function Public.slow_explode(value)
+    this.settings.slow_explode = value or false
+end
+
 local function on_init()
     Public.reset()
 end
 
-local Event = require 'utils.event'
 Event.on_init(on_init)
 Event.on_nth_tick(speed, tick)
 Event.add(defines.events.on_entity_died, on_entity_died)

@@ -79,6 +79,13 @@ local function clear_main_frame(player)
     end
 end
 
+local function clear_top_frame(player)
+    local top = player.gui.top
+    if top[top_button_name] and top[top_button_name].valid then
+        top[top_button_name].destroy()
+    end
+end
+
 function Public.difficulty_gui()
     if not this.show_gui then
         return
@@ -459,5 +466,7 @@ Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_left_game, on_player_left_game)
 
 Public.top_button_name = top_button_name
+Public.clear_main_frame = clear_main_frame
+Public.clear_top_frame = clear_top_frame
 
 return Public

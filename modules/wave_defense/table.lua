@@ -14,7 +14,8 @@ Public.events = {
     on_target_aquired = Event.generate_event_name('on_target_aquired'),
     on_entity_created = Event.generate_event_name('on_entity_created'),
     on_biters_evolved = Event.generate_event_name('on_biters_evolved'),
-    on_spawn_unit_group = Event.generate_event_name('on_spawn_unit_group')
+    on_spawn_unit_group = Event.generate_event_name('on_spawn_unit_group'),
+    on_spawn_unit_group_simple = Event.generate_event_name('on_spawn_unit_group_simple'),
 }
 local insert = table.insert
 
@@ -70,6 +71,7 @@ function Public.reset_wave_defense()
     this.paused = false
     this.pause_without_votes = true
     this.pause_wave_in_ticks = 18000 -- 5 minutes
+    this.next_pause_interval = game.tick + 216000 -- 1 hour
     this.game_lost = false
     this.get_random_close_spawner_attempts = 5
     this.group_size = 2

@@ -1,4 +1,3 @@
-local Utils = require 'utils.core'
 local Color = require 'utils.color_presets'
 local Alert = require 'utils.alert'
 local Task = require 'utils.task_token'
@@ -69,10 +68,11 @@ local function get_trusted_system(player)
     if not trust_system[player.index] then
         trust_system[player.index] = {
             players = {
-                [player.name] = true
+                [player.name] = {trusted = true, drive = true}
             },
             allow_anyone = 'left',
-            auto_upgrade = 'left'
+            auto_upgrade = 'left',
+            notify_on_driver_change = 'left'
         }
     end
 
@@ -468,7 +468,7 @@ local function kick_non_trusted_players_from_surface(car)
     local owner = game.get_player(car.owner) and game.get_player(car.owner).name or false
     Core.iter_connected_players(
         function(player)
-            local is_trusted = trust_system and trust_system.players and trust_system.players[player.name]
+            local is_trusted = trust_system and trust_system.players and trust_system.players[player.name] and trust_system.players[player.name].trusted
             if player.surface.index == surface_index and player.index ~= car.owner and not is_trusted then
                 if position then
                     local new_position = main_surface.find_non_colliding_position('character', position, 3, 0)
@@ -957,22 +957,42 @@ end
 
 function Public.kill_car_but_save_surface(entity)
     if not validate_entity(entity) then
-        return
+        return nil
     end
 
     local entity_type = IC.get('entity_type')
 
     if not entity_type[entity.type] then
-        return
+        return nil
+    end
+
+    local cars = IC.get('cars')
+    local car = cars[entity.unit_number]
+    if not car then
+        return nil
+    end
+
+    local surface_index = car.surface
+    local surface = game.get_surface(surface_index)
+    if not surface then
+        return nil
+    end
+
+    local c = 0
+    local entities = surface.find_entities_filtered({area = car.area, force = 'player'})
+    if entities and #entities > 0 then
+        for _, e in pairs(entities) do
+            if e and e.valid and e.name ~= 'character' then
+                c = c + 1
+            end
+        end
+        if c > 0 then
+            return false, c
+        end
     end
 
     local surfaces = IC.get('surfaces')
     local surfaces_deleted_by_button = IC.get('surfaces_deleted_by_button')
-    local cars = IC.get('cars')
-    local car = cars[entity.unit_number]
-    if not car then
-        return
-    end
 
     kick_players_out_of_vehicles(car)
     kick_players_from_surface(car)
@@ -992,7 +1012,7 @@ function Public.kill_car_but_save_surface(entity)
     end
 
     if not owner then
-        return
+        return nil
     end
 
     local renders = IC.get('renders')
@@ -1017,9 +1037,6 @@ function Public.kill_car_but_save_surface(entity)
         misc_settings[owner.index] = nil
     end
 
-    local surface_index = car.surface
-    local surface = game.surfaces[surface_index]
-
     if not surfaces_deleted_by_button[owner.name] then
         surfaces_deleted_by_button[owner.name] = {}
     end
@@ -1030,6 +1047,7 @@ function Public.kill_car_but_save_surface(entity)
     car.entity.force.chart(surface, car.area)
     surfaces[entity.unit_number] = nil
     cars[entity.unit_number] = nil
+    return true
 end
 
 function Public.validate_owner(player, entity)
@@ -1044,7 +1062,7 @@ function Public.validate_owner(player, entity)
             local p = game.players[car.owner]
             local list = get_trusted_system(p)
             if p and p.valid and p.connected then
-                if list.players[player.name] then
+                if list.players[player.name] and list.players[player.name].drive then
                     return
                 end
             end
@@ -1052,8 +1070,9 @@ function Public.validate_owner(player, entity)
                 if car.owner ~= player.index and player.driving then
                     player.driving = false
                     if not player.admin then
-                        p.print(player.name .. ' tried to drive your car.', Color.warning)
-                        Utils.action_notify_admins(player.name .. ' tried to drive ' .. p.name .. '´s car.')
+                        if list.notify_on_driver_change == 'left' then
+                            p.print(player.name .. ' tried to drive your car.', Color.warning)
+                        end
                         return
                     end
                 end
@@ -1346,9 +1365,22 @@ function Public.use_door_with_entity(player, door)
     local list = get_trusted_system(owner)
     if owner and owner.valid and owner.index ~= player.index and player.connected then
         if list.allow_anyone == 'right' then
-            if not list.players[player.name] and not player.admin then
-                player.driving = false
-                return player.print(module_tag .. 'You have not been approved by ' .. owner.name .. ' to enter their vehicle.', Color.warning)
+            if ((not list.players[player.name]) or (list.players[player.name] and not list.players[player.name].trusted)) and not player.admin then
+                if list.players[player.name] and list.players[player.name].drive then
+                    return
+                else
+                    player.driving = false
+                    return player.print(module_tag .. 'You have not been approved by ' .. owner.name .. ' to enter their vehicle.', Color.warning)
+                end
+            end
+        else
+            if (list.players[player.name] and not list.players[player.name].trusted) and not player.admin then
+                if list.players[player.name].drive then
+                    return
+                else
+                    player.driving = false
+                    return player.print(module_tag .. 'You have not been approved by ' .. owner.name .. ' to enter their vehicle.', Color.warning)
+                end
             end
         end
     end

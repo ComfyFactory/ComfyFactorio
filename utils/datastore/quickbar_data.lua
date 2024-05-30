@@ -18,6 +18,14 @@ local this = {
     logistics = {}
 }
 
+local ignored_items = {
+    ['blueprint'] = true,
+    ['blueprint-book'] = true,
+    ['deconstruction-planner'] = true,
+    ['spidertron-remote'] = true,
+    ['upgrade-planner'] = true
+}
+
 Global.register(
     this,
     function(t)
@@ -123,7 +131,7 @@ function Public.save_quickbar(player)
 
     for i = 1, 100 do
         local slot = player.get_quick_bar_slot(i)
-        if slot ~= nil then
+        if slot ~= nil and not ignored_items[slot.name] then
             slots[i] = slot.name
         end
     end
