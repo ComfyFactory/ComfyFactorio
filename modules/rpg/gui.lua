@@ -38,7 +38,7 @@ function Public.draw_gui_char_button(player)
     local rpg_extra = Public.get('rpg_extra')
     local tooltip = 'RPG'
     if rpg_extra.enable_mana then
-        tooltip = 'RPG\nHold [color=yellow]SHIFT[/color] to quickly access the spells frame.'
+        tooltip = 'RPG\nHold [color=yellow]SHIFT[/color] and press [color=yellow]LMB[/color] to quickly access the spells frame.'
     end
 
     if ComfyGui.get_mod_gui_top_frame() then

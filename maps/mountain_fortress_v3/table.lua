@@ -183,7 +183,7 @@ function Public.reset_main_table()
     this.upgrades = {
         showed_text = false,
         burner_generator = {
-            limit = 50,
+            limit = 100,
             bought = 0
         },
         landmine = {

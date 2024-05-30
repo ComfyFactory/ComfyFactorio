@@ -311,7 +311,7 @@ local mc_random_rewards = {
         color = {r = 0.00, g = 0.45, b = 0.00},
         tooltip = 'Selecting this will insert random XP onto the global xp pool!',
         func = (function(player)
-            local rng = random(1024, 10240)
+            local rng = random(2048, 10240)
             RPG.add_to_global_pool(rng)
             local message = ({'locomotive.xp_bonus', player.name})
             Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
@@ -324,7 +324,7 @@ local mc_random_rewards = {
         color = {r = 0.00, g = 0.35, b = 0.00},
         tooltip = 'Selecting this will grant each player some coins!',
         func = (function(p)
-            local rng = random(256, 512)
+            local rng = random(512, 2048)
             local players = game.connected_players
             for i = 1, #players do
                 local player = players[i]
@@ -356,7 +356,7 @@ local mc_random_rewards = {
             mc_rewards.temp_boosts.movement = true
 
             Task.set_timeout_in_ticks(54000, restore_movement_speed_token)
-            force.character_running_speed_modifier = force.character_running_speed_modifier + 0.2
+            force.character_running_speed_modifier = force.character_running_speed_modifier + 0.6
             local message = ({'locomotive.movement_bonus', player.name})
             Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
             return true
@@ -378,7 +378,7 @@ local mc_random_rewards = {
             mc_rewards.temp_boosts.mining = true
 
             Task.set_timeout_in_ticks(54000, restore_mining_speed_token)
-            force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.5
+            force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 1
             local message = ({'locomotive.mining_bonus', player.name})
             Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
             return true
@@ -399,7 +399,7 @@ local mc_random_rewards = {
             mc_rewards.temp_boosts.crafting = true
 
             Task.set_timeout_in_ticks(54000, restore_crafting_speed_token)
-            force.manual_crafting_speed_modifier = force.manual_crafting_speed_modifier + 1
+            force.manual_crafting_speed_modifier = force.manual_crafting_speed_modifier + 2
             local message = ({'locomotive.crafting_bonus', player.name})
             Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
             return true

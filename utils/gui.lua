@@ -27,7 +27,7 @@ local remove_data_recursively
 local data = {}
 local element_map = {}
 local settings = {
-    mod_gui_top_frame = true,
+    mod_gui_top_frame = false,
     disabled_tabs = {},
     disable_clear_invalid_data = true
 }
