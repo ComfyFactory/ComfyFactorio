@@ -1,4 +1,5 @@
 --map by gerkiz and kyte
+--luacheck: ignore
 local Event = require 'utils.event'
 require 'maps.wip.func'
 local Map = require 'modules.map_info'
