@@ -1,4 +1,3 @@
-local Utils = require 'utils.core'
 local Color = require 'utils.color_presets'
 local Alert = require 'utils.alert'
 local Task = require 'utils.task_token'
