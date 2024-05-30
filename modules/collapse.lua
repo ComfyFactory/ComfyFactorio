@@ -441,8 +441,14 @@ function Public.get_speed()
     return this.speed
 end
 
-function Public.start_now(state)
+--- Set the collapse to start or not, accepts a second argument to disable the collapse completely.
+---@param state boolean
+---@param disabled boolean
+---@return boolean
+function Public.start_now(state, disabled)
     this.start_now = state or false
+
+    this.disabled = disabled or false
 
     return this.start_now
 end
@@ -454,6 +460,10 @@ function Public.reverse_start_now(state)
 end
 
 function Public.has_collapse_started()
+    if this.disabled then
+        return true
+    end
+
     return this.start_now
 end
 
@@ -499,6 +509,7 @@ local function on_init()
     this.tiles = nil
     this.reverse_tiles = nil
     this.speed = 1
+    this.disabled = false
     this.reverse_start_now = false
     this.amount = 8
     this.start_now = false
@@ -507,6 +518,10 @@ end
 local function on_tick()
     local tick = game.tick
     if tick % this.speed ~= 0 then
+        return
+    end
+
+    if this.disabled then
         return
     end
 

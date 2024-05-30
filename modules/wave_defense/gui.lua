@@ -117,9 +117,10 @@ function Public.update_gui(player)
         gui.wave_number.caption = wave_number
         if wave_number == 0 then
             gui.label.caption = {'wave_defense.gui_1'}
-            gui.label.tooltip = 'Next pause will occur in: ' .. floor((Public.get('next_pause_interval') - game.tick) / 60 / 60) + 1 .. ' minute(s)'
             gui.wave_number.caption = floor((next_wave - game.tick) / 60) + 1 .. 's'
         end
+        gui.label.tooltip = 'Next pause will occur in: ' .. floor((Public.get('next_pause_interval') - game.tick) / 60 / 60) + 1 .. ' minute(s)'
+        gui.wave_number.tooltip = 'Next pause will occur in: ' .. floor((Public.get('next_pause_interval') - game.tick) / 60 / 60) + 1 .. ' minute(s)'
         local interval = next_wave - last_wave
         local value = 1 - (next_wave - game.tick) / interval
         if value < 0 then
