@@ -1,7 +1,7 @@
 -- created by Gerkiz for ComfyFactorio
 
 local Gui = require 'utils.gui'
-local Token = require 'utils.token'
+local Task = require 'utils.task_token'
 local StatData = require 'utils.datastore.statistics'
 local format_number = require 'util'.format_number
 local Server = require 'utils.server'
@@ -89,7 +89,7 @@ local function show_score(data)
     end
 end
 
-local show_stats_token = Token.register(show_score)
+local show_stats_token = Task.register(show_score)
 
 Gui.add_tab_to_gui({name = module_name, caption = 'Statistics', id = show_stats_token, admin = false})
 

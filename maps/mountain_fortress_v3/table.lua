@@ -16,7 +16,7 @@ local this = {
 }
 
 local stateful_settings = {
-    reversed = true
+    reversed = false
 }
 local Public = {}
 local random = math.random
@@ -138,6 +138,7 @@ function Public.reset_main_table()
     this.locomotive_max_health = 10000
     this.extra_wagons = 0
     this.all_the_fish = false
+    this.reverse_collapse_warning = false
     this.gap_between_zones = {
         set = false,
         gap = 900,
@@ -266,7 +267,7 @@ function Public.reset_main_table()
         redraw_mystical_chest_cost = 3000
     }
     this.collapse_grace = true
-    this.corpse_removal_disabled = false
+    this.corpse_removal_disabled = true
     this.locomotive_biter = nil
     this.disconnect_wagon = false
     this.collapse_amount = false

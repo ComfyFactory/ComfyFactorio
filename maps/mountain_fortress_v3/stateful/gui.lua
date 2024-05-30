@@ -252,9 +252,9 @@ local function create_input_element(frame, type, value, items, index, tooltip, c
 end
 
 local function play_game_won()
+    Explosives.disable(false)
     Core.iter_connected_players(
         function(player)
-            Explosives.disable(false)
             Explosives.detonate_entity(player)
             player.play_sound {path = 'utility/game_won', volume_modifier = 0.75}
             Task.set_timeout_in_ticks(10, spread_particles_token, {player_index = player.index, particle = 'iron-ore-particle'})
@@ -1109,10 +1109,10 @@ local function update_raw()
         elseif collection.time_until_attack and collection.time_until_attack < 0 then
             collection.time_until_attack = 0
             if not collection.nuke_blueprint then
-                collection.survive_for = game.tick + Stateful.scale(random(54000, 72000), 126000)
+                collection.survive_for = game.tick + Stateful.scale(10 * 3600, 35 * 3600)
                 collection.survive_for_timer = collection.survive_for
                 collection.nuke_blueprint = true
-                Public.stateful_blueprints.nuke_blueprint()
+                -- Public.stateful_blueprints.nuke_blueprint()
                 WD.disable_spawning_biters(false)
                 Server.to_discord_embed('Final battle starts now!')
                 refresh_boss_frame()
@@ -1260,7 +1260,8 @@ local function update_raw()
         Collapse.set_reverse_position({0, reverse_position})
         Collapse.set_reverse_direction()
         Collapse.reverse_start_now(true)
-        Public.stateful_blueprints.blueprint()
+        Alert.alert_all_players(200, 'Reverse collapse has been initiated!')
+        -- Public.stateful_blueprints.blueprint()
         WD.nuke_wave_gui()
         Public.set('pre_final_battle', true)
 

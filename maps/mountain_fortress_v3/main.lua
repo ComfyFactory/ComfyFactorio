@@ -168,6 +168,8 @@ function Public.reset_map()
     JailData.reset_vote_table()
 
     Explosives.set_surface_whitelist({[surface.name] = true})
+    Explosives.disable(false)
+    Explosives.slow_explode(true)
 
     Beam.reset_valid_targets()
 

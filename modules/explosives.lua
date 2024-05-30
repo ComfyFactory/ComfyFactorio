@@ -6,6 +6,7 @@ local this = {
     explosives = {},
     settings = {
         disabled = false,
+        slow_explode = false,
         check_growth_below_void = false,
         valid_items = {
             ['explosives'] = 500,
@@ -26,7 +27,7 @@ local math_sqrt = math.sqrt
 local math_round = math.round
 local math_random = math.random
 local shuffle_table = table.shuffle_table
-local speed = 3
+local speed = 6
 local density = 1
 local density_r = density * 0.5
 local valid_container_types = {
@@ -242,12 +243,28 @@ local function tick()
         return
     end
 
-    for key, cell in pairs(this.explosives.cells) do
-        if cell.spawn_tick < game.tick then
-            life_cycle(cell)
-            this.explosives.cells[key] = nil
+    if this.settings.slow_explode then
+        local count = 0
+        for key, cell in pairs(this.explosives.cells) do
+            if cell.spawn_tick < game.tick then
+                count = count + 1
+                if count < 50 then
+                    life_cycle(cell)
+                    this.explosives.cells[key] = nil
+                else
+                    cell.spawn_tick = game.tick + speed
+                end
+            end
+        end
+    else
+        for key, cell in pairs(this.explosives.cells) do
+            if cell.spawn_tick < game.tick then
+                life_cycle(cell)
+                this.explosives.cells[key] = nil
+            end
         end
     end
+
     if game.tick % 216000 == 0 then
         this.explosives.tiles = {}
     end
@@ -293,7 +310,9 @@ local function on_entity_died(event)
         return
     end
 
-    cell_birth(entity.surface.index, {x = entity.position.x, y = entity.position.y}, game.tick, {x = entity.position.x, y = entity.position.y}, amount * damage)
+    local final_damage = amount * damage
+
+    cell_birth(entity.surface.index, {x = entity.position.x, y = entity.position.y}, game.tick, {x = entity.position.x, y = entity.position.y}, final_damage)
 end
 
 function Public.detonate_chest(entity)
@@ -393,6 +412,10 @@ end
 
 function Public.check_growth_below_void(value)
     this.settings.check_growth_below_void = value or false
+end
+
+function Public.slow_explode(value)
+    this.settings.slow_explode = value or false
 end
 
 local function on_init()

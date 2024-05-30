@@ -63,6 +63,8 @@ local function get_coin_count(entity)
     return coin_count
 end
 
+---comment
+---@param event EventData.on_entity_died
 local function on_entity_died(event)
     local entity = event.entity
     if not entity.valid then

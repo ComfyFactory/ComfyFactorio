@@ -60,7 +60,7 @@ local function write_additional_stats(key)
         return
     end
 
-    this.seasons[#this.seasons] = {
+    this.seasons[#this.seasons + 1] = {
         season_index = season,
         rounds_survived = rounds_survived,
         buffs_granted = total_buffs,

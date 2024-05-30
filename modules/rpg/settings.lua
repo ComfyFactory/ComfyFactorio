@@ -140,6 +140,7 @@ function Public.update_spell_gui(player, spell_index)
     local spell_3_data = Public.get_spell_by_name(rpg_t, rpg_t.dropdown_select_name_3)
 
     local shift_tooltip = 'Hold [color=yellow]SHIFT[/color] while clicking a spell to quickly change your spells.'
+    local shift_active_tooltip = 'Current activated spell.'
 
     local t1 = {'', {spell_1_data and spell_1_data.name and spell_1_data.name[1] or '---'}, '\n', shift_tooltip}
     spell_table[spell1_button_name].tooltip = t1
@@ -154,24 +155,30 @@ function Public.update_spell_gui(player, spell_index)
     spell_table[spell3_button_name].sprite = spell_3_data.sprite
 
     if rpg_t.dropdown_select_index_1 == rpg_t.dropdown_select_index then
+        local te1 = {'', {spell_1_data and spell_1_data.name and spell_1_data.name[1] or '---'}, '\n', shift_active_tooltip}
         spell_table[spell1_button_name].enabled = false
         spell_table[spell1_button_name].number = 1
+        spell_table[spell1_button_name].tooltip = te1
         rpg_t.dropdown_select_name = rpg_t.dropdown_select_name_1
     else
         spell_table[spell1_button_name].enabled = true
         spell_table[spell1_button_name].number = nil
     end
     if rpg_t.dropdown_select_index_2 == rpg_t.dropdown_select_index then
+        local te2 = {'', {spell_2_data and spell_2_data.name and spell_2_data.name[1] or '---'}, '\n', shift_active_tooltip}
         spell_table[spell2_button_name].enabled = false
         spell_table[spell2_button_name].number = 1
+        spell_table[spell2_button_name].tooltip = te2
         rpg_t.dropdown_select_name = rpg_t.dropdown_select_name_2
     else
         spell_table[spell2_button_name].enabled = true
         spell_table[spell2_button_name].number = nil
     end
     if rpg_t.dropdown_select_index_3 == rpg_t.dropdown_select_index then
+        local te3 = {'', {spell_3_data and spell_3_data.name and spell_3_data.name[1] or '---'}, '\n', shift_active_tooltip}
         spell_table[spell3_button_name].enabled = false
         spell_table[spell3_button_name].number = 1
+        spell_table[spell3_button_name].tooltip = te3
         rpg_t.dropdown_select_name = rpg_t.dropdown_select_name_3
     else
         spell_table[spell3_button_name].enabled = true

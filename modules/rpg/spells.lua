@@ -102,11 +102,11 @@ end
 
 local levels = {
     [150] = {length = 26, max_spread = 6},
-    [200] = {length = 27, max_spread = 6},
-    [250] = {length = 28, max_spread = 7},
-    [300] = {length = 29, max_spread = 7},
-    [350] = {length = 30, max_spread = 8},
-    [400] = {length = 31, max_spread = 8}
+    [250] = {length = 27, max_spread = 6},
+    [350] = {length = 28, max_spread = 7},
+    [450] = {length = 29, max_spread = 7},
+    [550] = {length = 30, max_spread = 8},
+    [650] = {length = 31, max_spread = 8}
 }
 
 local function get_level_data(player_level)
@@ -123,7 +123,7 @@ local function get_level_data(player_level)
     if closest_level then
         return levels[closest_level]
     else
-        return {length = 26, max_spread = 6}
+        return {length = 18, max_spread = 4}
     end
 end
 
@@ -374,7 +374,7 @@ spells[#spells + 1] = {
 spells[#spells + 1] = {
     name = {'entity-name.iron-chest'},
     entityName = 'iron-chest',
-    level = 10,
+    level = 1,
     type = 'item',
     mana_cost = 50,
     cooldown = 70,
@@ -687,7 +687,7 @@ if _DEBUG then
         name = 'Kewl Nade',
         entityName = 'cluster-grenade',
         target = true,
-        amount = 20,
+        amount = 10,
         damage = true,
         aoe = true,
         force = 'player',
@@ -1163,7 +1163,7 @@ spells[#spells + 1] = {
     level = 60,
     type = 'special',
     mana_cost = 340,
-    cooldown = 2000,
+    cooldown = 1500,
     enforce_cooldown = true,
     enabled = true,
     log_spell = true,
@@ -1199,8 +1199,8 @@ spells[#spells + 1] = {
     force = 'player',
     level = 100,
     type = 'special',
-    mana_cost = 340,
-    cooldown = 100,
+    mana_cost = 300,
+    cooldown = 200,
     enforce_cooldown = true,
     enabled = true,
     log_spell = false,

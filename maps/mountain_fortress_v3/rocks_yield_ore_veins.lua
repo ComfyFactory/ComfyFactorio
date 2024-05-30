@@ -123,7 +123,7 @@ local function ore_vein(player, entity)
         }
     end
 
-    StatData:get_data(player):increase('ore_veins')
+    StatData.get_data(player):increase('ore_veins')
 
     local ore_positions = {[entity.position.x .. '_' .. entity.position.y] = true}
     local count = random(size[2], size[3])
