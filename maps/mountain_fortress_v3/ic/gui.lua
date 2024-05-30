@@ -28,6 +28,9 @@ local add_player_name = Gui.uid_name()
 local transfer_car_name = Gui.uid_name()
 local allow_anyone_to_enter_name = Gui.uid_name()
 local auto_upgrade_name = Gui.uid_name()
+local notify_on_driver_change_name = Gui.uid_name()
+local trust_player_name = Gui.uid_name()
+local drive_player_name = Gui.uid_name()
 local kick_player_name = Gui.uid_name()
 local destroy_surface_name = Gui.uid_name()
 local scenario_name = 'Mtn Fortress'
@@ -44,7 +47,7 @@ local function get_top_frame(player)
 end
 
 local function increment(t, k)
-    t[k] = true
+    t[k] = {trusted = true, drive = true}
 end
 
 local function decrement(t, k)
@@ -281,7 +284,7 @@ local function draw_players(data)
     local player = data.player
     local player_list = Functions.get_trusted_system(player)
 
-    for p, _ in pairs(player_list.players) do
+    for p, p_data in pairs(player_list.players) do
         Gui.set_data(add_player_frame, p)
         local t_label =
             player_table.add(
@@ -293,30 +296,51 @@ local function draw_players(data)
         t_label.style.minimal_width = 75
         t_label.style.horizontal_align = 'center'
 
+        local a_flow = player_table.add {type = 'flow'}
         local a_label =
-            player_table.add(
+            a_flow.add(
             {
                 type = 'label',
-                caption = '✔️'
+                caption = p_data.trusted and '✔️' or '✖️',
+                name = trust_player_name,
+                tooltip = ({'ic.allowed_tooltip'})
             }
         )
         a_label.style.minimal_width = 75
         a_label.style.horizontal_align = 'center'
         a_label.style.font = 'default-large-bold'
 
+        local d_flow = player_table.add {type = 'flow'}
+        local d_label =
+            d_flow.add(
+            {
+                type = 'label',
+                caption = p_data.drive and '✔️' or '✖️',
+                name = drive_player_name,
+                tooltip = ({'ic.drive_tooltip'})
+            }
+        )
+        d_label.style.minimal_width = 75
+        d_label.style.horizontal_align = 'center'
+        d_label.style.font = 'default-large-bold'
+
         local kick_flow = player_table.add {type = 'flow'}
         local kick_player_button =
             kick_flow.add(
             {
                 type = 'button',
-                caption = ({'ic.kick', p}),
+                caption = ({'ic.kick'}),
                 name = kick_player_name
             }
         )
         if player.name == t_label.caption then
             kick_player_button.enabled = false
+            a_label.tooltip = ({'ic.not_self'})
+            d_label.tooltip = ({'ic.not_self'})
         end
         kick_player_button.style.minimal_width = 75
+        Gui.set_data(a_label, p)
+        Gui.set_data(d_label, p)
         Gui.set_data(kick_player_button, p)
     end
 end
@@ -335,7 +359,7 @@ local function draw_main_frame(player)
 
     main_frame.auto_center = true
     local main_frame_style = main_frame.style
-    main_frame_style.width = 400
+    main_frame_style.width = 450
     main_frame_style.use_header_filler = true
 
     local inside_frame = main_frame.add {type = 'frame', style = 'inside_shallow_frame'}
@@ -349,7 +373,7 @@ local function draw_main_frame(player)
     inside_table_style.left_padding = 10
     inside_table_style.right_padding = 0
     inside_table_style.bottom_padding = 10
-    inside_table_style.width = 350
+    inside_table_style.width = 400
 
     local player_list = Functions.get_trusted_system(player)
 
@@ -379,17 +403,29 @@ local function draw_main_frame(player)
         }
     )
 
+    local notify_on_driver_change =
+        inside_table.add(
+        {
+            type = 'switch',
+            name = notify_on_driver_change_name,
+            switch_state = player_list.notify_on_driver_change,
+            allow_none_state = false,
+            left_label_caption = ({'ic.notify_on_driver_change'}),
+            right_label_caption = ({'ic.off'})
+        }
+    )
+
     local player_table =
         inside_table.add {
         type = 'table',
-        column_count = 3,
+        column_count = 4,
         draw_horizontal_lines = true,
         draw_vertical_lines = true,
         vertical_centering = true
     }
     local player_table_style = player_table.style
     player_table_style.vertical_spacing = 10
-    player_table_style.width = 350
+    player_table_style.width = 400
     player_table_style.horizontal_spacing = 30
 
     local name_label =
@@ -414,6 +450,17 @@ local function draw_main_frame(player)
     trusted_label.style.minimal_width = 75
     trusted_label.style.horizontal_align = 'center'
 
+    local allowed_to_drive =
+        player_table.add(
+        {
+            type = 'label',
+            caption = ({'ic.drive'}),
+            tooltip = ''
+        }
+    )
+    allowed_to_drive.style.minimal_width = 75
+    allowed_to_drive.style.horizontal_align = 'center'
+
     local operations_label =
         player_table.add(
         {
@@ -432,6 +479,7 @@ local function draw_main_frame(player)
         destroy_surface_frame = destroy_surface_frame,
         allow_anyone_to_enter = allow_anyone_to_enter,
         auto_upgrade = auto_upgrade,
+        notify_on_driver_change = notify_on_driver_change,
         player = player
     }
     draw_players(data)
@@ -678,6 +726,39 @@ Gui.on_click(
 )
 
 Gui.on_click(
+    notify_on_driver_change_name,
+    function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Driver Change')
+        if is_spamming then
+            return
+        end
+        local player = event.player
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        local player_list = Functions.get_trusted_system(player)
+
+        local screen = player.gui.screen
+        local frame = screen[main_frame_name]
+
+        if frame and frame.valid then
+            if player_list.notify_on_driver_change == 'right' then
+                player_list.notify_on_driver_change = 'left'
+                player.print('[IC] You will now be notified whenever someone not trusted tries to drive your car!', Color.success)
+            else
+                player_list.notify_on_driver_change = 'right'
+                player.print('[IC] No notifications will be sent to you when someone not trusted tries to drive your car.', Color.warning)
+            end
+
+            if player.gui.screen[main_frame_name] then
+                toggle(player, true)
+            end
+        end
+    end
+)
+
+Gui.on_click(
     save_add_player_button_name,
     function(event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Save Add Player')
@@ -863,6 +944,111 @@ Gui.on_click(
 )
 
 Gui.on_click(
+    trust_player_name,
+    function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Trust Player')
+        if is_spamming then
+            return
+        end
+        local player = event.player
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        local player_list = Functions.get_trusted_system(player)
+
+        local screen = player.gui.screen
+        local frame = screen[main_frame_name]
+        local player_name = Gui.get_data(event.element)
+
+        if frame and frame.valid then
+            if not player_name then
+                return
+            end
+
+            if player_name ~= player.name then
+                local target = game.get_player(player_name)
+                if not target or not target.valid then
+                    player.print('[IC] Target player was not valid.', Color.warning)
+                    return
+                end
+                local name = target.name
+
+                if player_list.players[name] and player_list.players[name].trusted then
+                    player.print('[IC] ' .. name .. ' was removed from your vehicle.', Color.info)
+                    player_list.players[name].trusted = false
+                    player_list.players[name].drive = false
+                    Event.raise(
+                        ICT.events.on_player_kicked_from_surface,
+                        {
+                            player = player,
+                            target = target
+                        }
+                    )
+                elseif player_list.players[name] and not player_list.players[name].trusted then
+                    player.print('[IC] ' .. name .. ' was added to your vehicle.', Color.info)
+                    player_list.players[name].trusted = true
+                end
+            end
+
+            remove_main_frame(event.element)
+
+            if player.gui.screen[main_frame_name] then
+                toggle(player, true)
+            end
+        end
+    end
+)
+
+Gui.on_click(
+    drive_player_name,
+    function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Drive Player')
+        if is_spamming then
+            return
+        end
+        local player = event.player
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        local player_list = Functions.get_trusted_system(player)
+
+        local screen = player.gui.screen
+        local frame = screen[main_frame_name]
+        local player_name = Gui.get_data(event.element)
+
+        if frame and frame.valid then
+            if not player_name then
+                return
+            end
+            if player_name ~= player.name then
+                local target = game.get_player(player_name)
+                if not target or not target.valid then
+                    player.print('[IC] Target player was not valid.', Color.warning)
+                    return
+                end
+                local name = target.name
+
+                if player_list.players[name] and player_list.players[name].drive then
+                    player.print('[IC] ' .. name .. ' is forbidden to drive your vehicle.', Color.warning)
+                    player_list.players[name].drive = false
+                elseif player_list.players[name] and not player_list.players[name].drive then
+                    player.print('[IC] ' .. name .. ' can now drive your vehicle.', Color.info)
+                    player_list.players[name].drive = true
+                end
+            end
+
+            remove_main_frame(event.element)
+
+            if player.gui.screen[main_frame_name] then
+                toggle(player, true)
+            end
+        end
+    end
+)
+
+Gui.on_click(
     kick_player_name,
     function(event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Kick Player')
@@ -884,23 +1070,25 @@ Gui.on_click(
             if not player_name then
                 return
             end
-            local target = game.get_player(player_name)
-            if not target or not target.valid then
-                player.print('[IC] Target player was not valid.', Color.warning)
-                return
-            end
-            local name = target.name
+            if player_name ~= player.name then
+                local target = game.get_player(player_name)
+                if not target or not target.valid then
+                    player.print('[IC] Target player was not valid.', Color.warning)
+                    return
+                end
+                local name = target.name
 
-            if player_list.players[name] then
-                player.print('[IC] ' .. name .. ' was removed from your vehicle.', Color.info)
-                decrement(player_list.players, name)
-                Event.raise(
-                    ICT.events.on_player_kicked_from_surface,
-                    {
-                        player = player,
-                        target = target
-                    }
-                )
+                if player_list.players[name] then
+                    player.print('[IC] ' .. name .. ' was removed from your vehicle.', Color.info)
+                    decrement(player_list.players, name)
+                    Event.raise(
+                        ICT.events.on_player_kicked_from_surface,
+                        {
+                            player = player,
+                            target = target
+                        }
+                    )
+                end
             end
 
             remove_main_frame(event.element)

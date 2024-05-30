@@ -952,6 +952,10 @@ function Public.set_difficulty()
     if final_battle then
         return
     end
+    local pre_final_battle = Public.get('pre_final_battle')
+    if pre_final_battle then
+        return
+    end
 
     local game_lost = Public.get('game_lost')
     if game_lost then

@@ -270,7 +270,7 @@ local function progress_reverse()
         return
     end
 
-    for _ = 1, this.amount, 1 do
+    for _ = 1, this.amount + 20, 1 do
         local tile = tiles[this.reverse_size_of_tiles]
         if not tile then
             this.reverse_tiles = nil

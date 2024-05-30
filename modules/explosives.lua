@@ -37,6 +37,10 @@ local valid_container_types = {
     ['cargo-wagon'] = true
 }
 
+local disabled_container_names = {
+    ['logistic-chest-buffer'] = true
+}
+
 local function pos_to_key(position)
     return tostring(position.x .. '_' .. position.y)
 end
@@ -290,6 +294,11 @@ local function on_entity_died(event)
     if not entity.valid then
         return
     end
+
+    if disabled_container_names[entity.name] then
+        return
+    end
+
     if not valid_container_types[entity.type] then
         return
     end

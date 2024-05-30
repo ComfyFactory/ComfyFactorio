@@ -69,10 +69,11 @@ local function get_trusted_system(player)
     if not trust_system[player.index] then
         trust_system[player.index] = {
             players = {
-                [player.name] = true
+                [player.name] = {trusted = true, drive = true}
             },
             allow_anyone = 'left',
-            auto_upgrade = 'left'
+            auto_upgrade = 'left',
+            notify_on_driver_change = 'left'
         }
     end
 
@@ -468,7 +469,7 @@ local function kick_non_trusted_players_from_surface(car)
     local owner = game.get_player(car.owner) and game.get_player(car.owner).name or false
     Core.iter_connected_players(
         function(player)
-            local is_trusted = trust_system and trust_system.players and trust_system.players[player.name]
+            local is_trusted = trust_system and trust_system.players and trust_system.players[player.name] and trust_system.players[player.name].trusted
             if player.surface.index == surface_index and player.index ~= car.owner and not is_trusted then
                 if position then
                     local new_position = main_surface.find_non_colliding_position('character', position, 3, 0)
@@ -1062,7 +1063,7 @@ function Public.validate_owner(player, entity)
             local p = game.players[car.owner]
             local list = get_trusted_system(p)
             if p and p.valid and p.connected then
-                if list.players[player.name] then
+                if list.players[player.name] and list.players[player.name].drive then
                     return
                 end
             end
@@ -1070,8 +1071,9 @@ function Public.validate_owner(player, entity)
                 if car.owner ~= player.index and player.driving then
                     player.driving = false
                     if not player.admin then
-                        p.print(player.name .. ' tried to drive your car.', Color.warning)
-                        Utils.action_notify_admins(player.name .. ' tried to drive ' .. p.name .. '´s car.')
+                        if list.notify_on_driver_change == 'left' then
+                            p.print(player.name .. ' tried to drive your car.', Color.warning)
+                        end
                         return
                     end
                 end
@@ -1364,9 +1366,22 @@ function Public.use_door_with_entity(player, door)
     local list = get_trusted_system(owner)
     if owner and owner.valid and owner.index ~= player.index and player.connected then
         if list.allow_anyone == 'right' then
-            if not list.players[player.name] and not player.admin then
-                player.driving = false
-                return player.print(module_tag .. 'You have not been approved by ' .. owner.name .. ' to enter their vehicle.', Color.warning)
+            if ((not list.players[player.name]) or (list.players[player.name] and not list.players[player.name].trusted)) and not player.admin then
+                if list.players[player.name] and list.players[player.name].drive then
+                    return
+                else
+                    player.driving = false
+                    return player.print(module_tag .. 'You have not been approved by ' .. owner.name .. ' to enter their vehicle.', Color.warning)
+                end
+            end
+        else
+            if (list.players[player.name] and not list.players[player.name].trusted) and not player.admin then
+                if list.players[player.name].drive then
+                    return
+                else
+                    player.driving = false
+                    return player.print(module_tag .. 'You have not been approved by ' .. owner.name .. ' to enter their vehicle.', Color.warning)
+                end
             end
         end
     end
