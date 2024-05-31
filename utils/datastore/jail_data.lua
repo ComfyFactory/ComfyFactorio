@@ -651,7 +651,7 @@ local function jail(player, offender, msg, raised, mute)
 
     Event.raise(Public.events.on_player_jailed, {player_index = offender.index})
 
-    StatData.get_data(player):increase('jailed')
+    StatData.get_data(to_jail_player.index):increase('jailed')
 
     Utils.print_to(nil, message)
     local data = Server.build_embed_data()
@@ -717,7 +717,7 @@ local function jail_temporary(player, offender, msg, mute)
 
     Event.raise(Public.events.on_player_jailed, {player_index = offender.index})
 
-    StatData.get_data(player):increase('jailed')
+    StatData.get_data(offender.index):increase('jailed')
 
     offender.clear_console()
 
