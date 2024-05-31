@@ -167,9 +167,11 @@ local function refresh_frames()
     Core.iter_connected_players(
         function(player)
             local frame = player.gui.screen[main_frame_name]
-            if frame then
+            if frame and frame.valid then
                 Gui.remove_data_recursively(frame)
                 frame.destroy()
+                main_frame(player)
+            else
                 main_frame(player)
             end
         end
@@ -549,31 +551,7 @@ local function boss_frame(player, alert)
         local objective_tbl = frame.add {type = 'table', column_count = 2}
         objective_tbl.style.horizontally_stretchable = true
 
-        local attack_left_flow = objective_tbl.add({type = 'flow'})
-        attack_left_flow.style.horizontal_align = 'left'
-        attack_left_flow.style.horizontally_stretchable = true
-
-        attack_left_flow.add({type = 'label', caption = {'stateful.time_until_attack'}, tooltip = {'stateful.time_until_attack_tooltip'}})
-        frame.add({type = 'line', direction = 'vertical'})
-        local attack_right_flow = objective_tbl.add({type = 'flow'})
-        attack_right_flow.style.horizontal_align = 'right'
-        attack_right_flow.style.horizontally_stretchable = true
-
-        local time_left
-
-        if collection.time_until_attack / 60 / 60 <= 1 then
-            time_left = floor(collection.time_until_attack / 60) .. 's'
-        else
-            time_left = floor(collection.time_until_attack / 60 / 60) .. 'm'
-        end
-
-        if collection.time_until_attack <= 0 then
-            data.time_until_attack = attack_right_flow.add({type = 'label', caption = {'stateful.nom'}})
-        else
-            data.time_until_attack = attack_right_flow.add({type = 'label', caption = time_left})
-        end
-
-        if collection.time_until_attack <= 0 then
+        if collection.gather_time <= 0 then
             local survive_for_left_flow = objective_tbl.add({type = 'flow'})
             survive_for_left_flow.style.horizontal_align = 'left'
             survive_for_left_flow.style.horizontally_stretchable = true
@@ -956,24 +934,12 @@ local function update_data()
                 data_boss.rounds_survived_label.caption = stateful.rounds_survived
             end
 
-            if collection.time_until_attack and data_boss.time_until_attack and data_boss.time_until_attack.valid then
-                local time_left = floor(collection.time_until_attack / 60 / 60) .. 'm'
-                if collection.time_until_attack / 60 / 60 < 1 then
-                    time_left = floor(collection.time_until_attack / 60) .. 's'
+            if collection.survive_for and data_boss.survive_for and data_boss.survive_for.valid then
+                if not stateful.objectives_completed.warn_players then
+                    stateful.objectives_completed.warn_players = true
+                    alert_players_sound()
                 end
 
-                if collection.time_until_attack <= 0 then
-                    data_boss.time_until_attack.caption = {'stateful.nom'}
-                    if not stateful.objectives_completed.warn_players then
-                        stateful.objectives_completed.warn_players = true
-                        alert_players_sound()
-                        refresh_boss_frame()
-                    end
-                else
-                    data_boss.time_until_attack.caption = time_left
-                end
-            end
-            if collection.survive_for and data_boss.survive_for and data_boss.survive_for.valid then
                 local survive_for_timer = floor(collection.survive_for / 60 / 60) .. 'm'
 
                 if collection.survive_for / 60 / 60 <= 1 then
@@ -1098,29 +1064,7 @@ local function update_raw()
         end
     end
 
-    if collection.time_until_attack and not collection.final_arena_disabled then
-        if not collection.clear_rocks then
-            Public.find_rocks_and_slowly_remove()
-            collection.clear_rocks = true
-        end
-        collection.time_until_attack = collection.time_until_attack_timer - tick
-        if collection.time_until_attack > 0 then
-            collection.time_until_attack = collection.time_until_attack
-        elseif collection.time_until_attack and collection.time_until_attack < 0 then
-            collection.time_until_attack = 0
-            if not collection.nuke_blueprint then
-                collection.survive_for = game.tick + Stateful.scale(10 * 3600, 35 * 3600)
-                collection.survive_for_timer = collection.survive_for
-                collection.nuke_blueprint = true
-                -- Public.stateful_blueprints.nuke_blueprint()
-                WD.disable_spawning_biters(false)
-                Server.to_discord_embed('Final battle starts now!')
-                refresh_boss_frame()
-            end
-        end
-    end
-
-    if collection.gather_time then
+    if collection.gather_time and not collection.final_arena_disabled then
         collection.gather_time = collection.gather_time_timer - tick
         if collection.gather_time > 0 then
             collection.gather_time = collection.gather_time
@@ -1128,28 +1072,39 @@ local function update_raw()
             collection.gather_time = 0
             if not collection.gather_time_done then
                 collection.gather_time_done = true
+                if not collection.clear_rocks then
+                    Public.find_rocks_and_slowly_remove()
+                    collection.clear_rocks = true
+                end
                 LinkedChests.clear_linked_frames()
                 stateful.final_battle = true
                 Public.set('final_battle', true)
+
+                collection.survive_for = game.tick + Stateful.scale(10 * 3600, 35 * 3600)
+                collection.survive_for_timer = collection.survive_for
+                collection.nuke_blueprint = true
+                -- Public.stateful_blueprints.nuke_blueprint()
+                WD.disable_spawning_biters(false)
+                Public.allocate()
+                Public.set_final_battle()
+                Server.to_discord_embed('Final battle starts now!')
+                refresh_boss_frame()
             end
         end
     end
 
     if collection.survive_for and collection.survive_for_timer then
         collection.survive_for = collection.survive_for_timer - tick
-        if not collection.survive_for_alerted and collection.time_until_attack == 0 then
+        if not collection.survive_for_alerted and collection.gather_time <= 0 then
             collection.survive_for_alerted = true
             refresh_boss_frame()
         end
-        if collection.survive_for > 0 then
-            collection.survive_for = collection.survive_for
-        elseif collection.survive_for and collection.survive_for < 0 then
+
+        if collection.survive_for and collection.survive_for < 0 then
             collection.survive_for = 0
             if collection.game_won and not collection.game_won_notified then
                 game.print('[color=yellow][Mtn v3][/color] Game won!')
                 collection.game_won = true
-                stateful.collection.time_until_attack = 0
-                stateful.collection.time_until_attack_timer = 0
                 stateful.collection.gather_time = 0
                 stateful.collection.gather_time_timer = 0
                 collection.survive_for = 0
@@ -1212,8 +1167,6 @@ local function update_raw()
             game.print('[color=yellow][Mtn v3][/color] Game won!')
             game.print('[color=yellow][Mtn v3][/color] Final battle arena is currently being tweaked.')
             collection.game_won = true
-            stateful.collection.time_until_attack = 0
-            stateful.collection.time_until_attack_timer = 0
             stateful.collection.gather_time = 0
             stateful.collection.gather_time_timer = 0
             collection.survive_for = 0
@@ -1246,8 +1199,8 @@ local function update_raw()
             return
         end
 
-        stateful.collection.gather_time = tick + 54000
-        stateful.collection.gather_time_timer = tick + 54000
+        stateful.collection.gather_time = tick + (10 * 3600)
+        stateful.collection.gather_time_timer = tick + (10 * 3600)
         game.forces.enemy.evolution_factor = 1
         play_achievement_unlocked()
         local reverse_position = zone_settings.zone_depth * (breached_wall + 1)

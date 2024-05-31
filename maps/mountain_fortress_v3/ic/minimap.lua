@@ -5,6 +5,14 @@ local Functions = require 'maps.mountain_fortress_v3.ic.functions'
 local Gui = require 'maps.mountain_fortress_v3.ic.gui'
 local CoreGui = require 'utils.gui'
 
+local function get_top_frame_custom(player, name)
+    if CoreGui.get_mod_gui_top_frame() then
+        return CoreGui.get_button_flow(player)[name]
+    else
+        return player.gui.top[name]
+    end
+end
+
 local function validate_player(player)
     if not player then
         return false
@@ -269,8 +277,8 @@ function Public.changed_surface(event)
     if not surface or not surface.valid then
         return
     end
-    local wd = player.gui.top['wave_defense']
-    local diff = player.gui.top['difficulty_gui']
+    local wd = get_top_frame_custom(player, 'wave_defense')
+    local diff = get_top_frame_custom(player, 'difficulty_gui')
     local player_data = get_player_data(player)
 
     if Functions.get_player_surface(player) then

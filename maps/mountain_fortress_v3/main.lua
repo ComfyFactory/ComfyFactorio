@@ -485,23 +485,23 @@ local compare_collapse_and_train = function()
             local r_c_y = abs(reverse_collapse_pos.y)
             local reverse_result = abs(r_c_y - t_y)
             if reverse_result > 200 then
-                Collapse.reverse_start_now(true)
+                Collapse.reverse_start_now(true, false)
                 Collapse.set_speed(1)
                 Collapse.set_amount(10)
             else
                 if Collapse.has_reverse_collapse_started() then
-                    Collapse.reverse_start_now(false)
+                    Collapse.reverse_start_now(false, true)
                 end
             end
         end
 
         if result > 200 then
-            Collapse.start_now(true)
+            Collapse.start_now(true, false)
             Collapse.set_speed(1)
             Collapse.set_amount(10)
         else
             if Collapse.has_collapse_started() then
-                Collapse.start_now(false)
+                Collapse.start_now(false, true)
             end
         end
         return
@@ -526,6 +526,7 @@ local collapse_after_wave_200 = function()
     if not collapse_grace then
         return
     end
+
     if Collapse.has_collapse_started() then
         return
     end
@@ -538,7 +539,7 @@ local collapse_after_wave_200 = function()
             position = Collapse.get_position()
         }
         data.message = ({'breached_wall.collapse_start'})
-        Task.set_timeout_in_ticks(550, collapse_message, data)
+        Task.set_timeout_in_ticks(100, collapse_message, data)
     end
 end
 
@@ -565,11 +566,11 @@ end
 
 local nth_250_tick = function()
     compare_collapse_and_train()
+    collapse_after_wave_200()
     Public.set_spawn_position()
 end
 
 local nth_1000_tick = function()
-    collapse_after_wave_200()
     Public.set_difficulty()
     Public.is_creativity_mode_on()
 end

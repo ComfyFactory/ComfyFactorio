@@ -150,11 +150,11 @@ end
 
 local pause_waves_custom_callback_token =
     Task.register(
-    function(status)
+    function(event)
         local wave_number = WD.get_wave()
         if wave_number >= 200 then
-            Collapse.start_now(status)
-            local status_str = status and 'has stopped!' or 'is active once again!'
+            Collapse.start_now(event.start, not event.start)
+            local status_str = event.start and 'has stopped!' or 'is active once again!'
             Alert.alert_all_players(30, 'Collapse ' .. status_str, nil, 'achievement/tech-maniac', 0.6)
         end
     end

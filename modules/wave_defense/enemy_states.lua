@@ -881,7 +881,7 @@ function Public._esp:find_targets()
     end
 
     if not self.last_searched then
-        self.last_searched = game.tick + 200
+        self.last_searched = 0
     end
 
     if game.tick < self.last_searched then
@@ -923,10 +923,15 @@ function Public._esp:attack_target()
     end
 
     local tick = game.tick
-    local orders = self.moving_to_attack_target
-    if not orders then
-        orders = 0
+    if not self.moving_to_attack_target then
+        self.moving_to_attack_target = 0
     end
+
+    if tick < self.moving_to_attack_target then
+        return
+    end
+
+    self.moving_to_attack_target = tick + 200
 
     if this.target_settings.commands and this.target_settings.commands.commands then
         this.target_settings.commands = nil
@@ -939,20 +944,17 @@ function Public._esp:attack_target()
 
     local compound_commands = this.target_settings.commands
 
-    if tick > orders then
-        self.moving_to_attack_target = tick + 200
-        if self.commands and next(self.commands) then
-            compound_commands = self.commands
-        end
-
-        local command = {
-            type = defines.command.compound,
-            structure_type = defines.compound_command.return_last,
-            commands = compound_commands
-        }
-        pcall(entity.set_command, command)
-    -- entity.set_command(command)
+    if self.commands and next(self.commands) then
+        compound_commands = self.commands
     end
+
+    local command = {
+        type = defines.command.compound,
+        structure_type = defines.compound_command.return_last,
+        commands = compound_commands
+    }
+    pcall(entity.set_command, command)
+
     self.commands = nil
 end
 
@@ -1038,7 +1040,6 @@ function Public._esp:work(tick)
 
     if self.go_havoc and self.clear_go_havoc > tick then
         if tick > self.proj_int then
-            self:find_targets()
             self:attack_target()
             self:fire_projectile()
             self.proj_int = tick + 120
@@ -1059,12 +1060,12 @@ function Public._esp:work(tick)
             self:fire_projectile()
         elseif random(1, 60) == 1 then
             self:laser(6)
-        elseif random(1, 80) == 1 then
-            if this.settings.wave_number >= 1000 then
+        elseif random(1, 70) == 1 then
+            if this.settings.wave_number >= 200 then
                 self:area_of_spit_attack()
             end
-        elseif random(1, 100) == 1 then
-            if this.settings.wave_number >= 1000 then
+        elseif random(1, 80) == 1 then
+            if this.settings.wave_number >= 200 then
                 self:aoe_attack()
             end
         end

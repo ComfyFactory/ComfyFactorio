@@ -2,6 +2,7 @@ local Global = require 'utils.global'
 local Event = require 'utils.event'
 local Utils = require 'utils.utils'
 local Server = require 'utils.server'
+local Gui = require 'utils.gui'
 local Task = require 'utils.task_token'
 local shuffle = table.shuffle_table
 local WD = require 'modules.wave_defense.table'
@@ -43,29 +44,6 @@ Global.register(
 )
 
 local damage_types = {'physical', 'electric', 'poison', 'laser'}
-
-local stateful_spawn_points = {
-    {{x = -205, y = -37}, {x = 195, y = 37}},
-    {{x = -205, y = -112}, {x = 195, y = 112}},
-    {{x = -205, y = -146}, {x = 195, y = 146}},
-    {{x = -205, y = -112}, {x = 195, y = 112}},
-    {{x = -205, y = -72}, {x = 195, y = 72}},
-    {{x = -205, y = -146}, {x = 195, y = 146}},
-    {{x = -205, y = -37}, {x = 195, y = 37}},
-    {{x = -205, y = -5}, {x = 195, y = 5}},
-    {{x = -205, y = -23}, {x = 195, y = 23}},
-    {{x = -205, y = -5}, {x = 195, y = 5}},
-    {{x = -205, y = -72}, {x = 195, y = 72}},
-    {{x = -205, y = -23}, {x = 195, y = 23}},
-    {{x = -205, y = -54}, {x = 195, y = 54}},
-    {{x = -205, y = -80}, {x = 195, y = 80}},
-    {{x = -205, y = -54}, {x = 195, y = 54}},
-    {{x = -205, y = -80}, {x = 195, y = 80}},
-    {{x = -205, y = -103}, {x = 195, y = 103}},
-    {{x = -205, y = -150}, {x = 195, y = 150}},
-    {{x = -205, y = -103}, {x = 195, y = 103}},
-    {{x = -205, y = -150}, {x = 195, y = 150}}
-}
 
 local buff_to_string = {
     ['starting_items'] = 'Starting items',
@@ -1646,12 +1624,33 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
         this.previous_objectives_time_spent[#this.previous_objectives_time_spent + 1] = this.objectives_time_spent
     end
 
+    this.stateful_spawn_points = {
+        {{x = -205, y = -37}, {x = 195, y = 37}},
+        {{x = -205, y = -112}, {x = 195, y = 112}},
+        {{x = -205, y = -146}, {x = 195, y = 146}},
+        {{x = -205, y = -112}, {x = 195, y = 112}},
+        {{x = -205, y = -72}, {x = 195, y = 72}},
+        {{x = -205, y = -146}, {x = 195, y = 146}},
+        {{x = -205, y = -37}, {x = 195, y = 37}},
+        {{x = -205, y = -5}, {x = 195, y = 5}},
+        {{x = -205, y = -23}, {x = 195, y = 23}},
+        {{x = -205, y = -5}, {x = 195, y = 5}},
+        {{x = -205, y = -72}, {x = 195, y = 72}},
+        {{x = -205, y = -23}, {x = 195, y = 23}},
+        {{x = -205, y = -54}, {x = 195, y = 54}},
+        {{x = -205, y = -80}, {x = 195, y = 80}},
+        {{x = -205, y = -54}, {x = 195, y = 54}},
+        {{x = -205, y = -80}, {x = 195, y = 80}},
+        {{x = -205, y = -103}, {x = 195, y = 103}},
+        {{x = -205, y = -150}, {x = 195, y = 150}},
+        {{x = -205, y = -103}, {x = 195, y = 103}},
+        {{x = -205, y = -150}, {x = 195, y = 150}}
+    }
+
     this.objectives_time_spent = {}
     this.objectives_completed_count = 0
 
     this.collection = {
-        time_until_attack = nil,
-        time_until_attack_timer = nil,
         clear_rocks = nil,
         survive_for = nil,
         survive_for_timer = nil,
@@ -1693,22 +1692,10 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
 end
 
 function Public.move_all_players()
-    local market = Public.get('market')
-    if not market or not market.valid then
+    local active_surface_index = Public.get('active_surface_index')
+    local surface = game.surfaces[active_surface_index]
+    if not (surface and surface.valid) then
         return
-    end
-
-    local surface = market.surface
-    if not surface or not surface.valid then
-        return
-    end
-
-    local spawn_pos = surface.find_non_colliding_position('character', market.position, 3, 0, 5)
-
-    if spawn_pos then
-        game.forces.player.set_spawn_position(spawn_pos, surface)
-    else
-        game.forces.player.set_spawn_position(market.position, surface)
     end
 
     ICWF.disable_auto_minimap()
@@ -1717,15 +1704,15 @@ function Public.move_all_players()
     Alert.alert_all_players(50, message, nil, nil, 1)
     Core.iter_connected_players(
         function(player)
-            local pos = surface.find_non_colliding_position('character', market.position, 3, 0, 5)
+            local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
 
             Public.stateful_gui.boss_frame(player, true)
 
             if pos then
-                player.teleport(pos, surface)
+                player.teleport(pos)
             else
-                pos = market.position
-                player.teleport(pos, surface)
+                pos = game.forces.player.get_spawn_position(surface)
+                player.teleport(pos)
                 Public.unstuck_player(player.index)
             end
         end
@@ -1743,13 +1730,13 @@ function Public.set_final_battle()
 end
 
 function Public.allocate()
-    local stateful_locomotive_migrated = Public.get_stateful('stateful_locomotive_migrated')
-    if not stateful_locomotive_migrated then
-        Task.set_timeout_in_ticks(100, move_all_players_token, {})
+    local moved_all_players = Public.get_stateful('moved_all_players')
+    if not moved_all_players then
+        Task.set_timeout_in_ticks(10, move_all_players_token, {})
 
         Beam.new_valid_targets({'wall', 'turret', 'furnace', 'gate'})
 
-        Public.set_stateful('stateful_locomotive_migrated', true)
+        Public.set_stateful('moved_all_players', true)
 
         ICWT.set('speed', 0.3)
         ICWT.set('final_battle', true)
@@ -1763,17 +1750,25 @@ function Public.allocate()
 
         WD.set('final_battle', true)
 
-        Core.iter_connected_players(
-            function(player)
-                local wd = player.gui.top['wave_defense']
-                if wd and wd.valid then
-                    wd.destroy()
+        if Gui.get_mod_gui_top_frame() then
+            Core.iter_players(
+                function(player)
+                    local g = Gui.get_button_flow(player)['wave_defense']
+                    if g and g.valid then
+                        g.destroy()
+                    end
                 end
-            end
-        )
-
-        collection.time_until_attack = 54000 + game.tick
-        collection.time_until_attack_timer = 54000 + game.tick
+            )
+        else
+            Core.iter_connected_players(
+                function(player)
+                    local wd = player.gui.top['wave_defense']
+                    if wd and wd.valid then
+                        wd.destroy()
+                    end
+                end
+            )
+        end
     end
 end
 
@@ -1924,8 +1919,6 @@ Public.get_entity_mined_count = get_entity_mined_count
 Public.get_killed_enemies_count = get_killed_enemies_count
 Public.apply_startup_settings = apply_startup_settings
 Public.scale = scale
-Public.stateful_spawn_points = stateful_spawn_points
-Public.sizeof_stateful_spawn_points = #stateful_spawn_points
 Public.on_pre_player_died = on_pre_player_died
 Public.on_market_item_purchased = on_market_item_purchased
 

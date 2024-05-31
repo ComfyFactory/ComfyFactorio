@@ -1301,8 +1301,9 @@ local function spawn_unit_group_simple(fs)
 
     local count = fs.scale or 1
     event_data.spawn_count = count
-    for _ = 1, count, 1 do
-        local biter = spawn_biter(surface, spawn_position, fs, true, unit_settings, final_battle)
+    for i = 1, count, 1 do
+        local is_boss = i % 2 == 0
+        local biter = spawn_biter(surface, spawn_position, fs, is_boss, unit_settings, final_battle)
         if not biter then
             Public.debug_print('spawn_unit_group - No biter was found?')
             break

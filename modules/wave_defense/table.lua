@@ -1,5 +1,6 @@
 local Global = require 'utils.global'
 local Core = require 'utils.core'
+local Gui = require 'utils.gui'
 local Event = require 'utils.event'
 
 local this = {
@@ -15,7 +16,7 @@ Public.events = {
     on_entity_created = Event.generate_event_name('on_entity_created'),
     on_biters_evolved = Event.generate_event_name('on_biters_evolved'),
     on_spawn_unit_group = Event.generate_event_name('on_spawn_unit_group'),
-    on_spawn_unit_group_simple = Event.generate_event_name('on_spawn_unit_group_simple'),
+    on_spawn_unit_group_simple = Event.generate_event_name('on_spawn_unit_group_simple')
 }
 local insert = table.insert
 
@@ -435,13 +436,24 @@ end
 
 ---Removes the player wave defense gui
 function Public.nuke_wave_gui()
-    Core.iter_players(
-        function(player)
-            if player.gui.top.wave_defense and player.gui.top.wave_defense.valid then
-                player.gui.top.wave_defense.destroy()
+    if Gui.get_mod_gui_top_frame() then
+        Core.iter_players(
+            function(player)
+                local g = Gui.get_button_flow(player)['wave_defense']
+                if g and g.valid then
+                    g.destroy()
+                end
             end
-        end
-    )
+        )
+    else
+        Core.iter_players(
+            function(player)
+                if player.gui.top.wave_defense and player.gui.top.wave_defense.valid then
+                    player.gui.top.wave_defense.destroy()
+                end
+            end
+        )
+    end
 end
 
 --- Sets a custom callback whenever the pause_waves func is run

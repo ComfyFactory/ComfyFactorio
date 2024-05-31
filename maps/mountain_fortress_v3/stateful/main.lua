@@ -50,12 +50,40 @@ Event.on_nth_tick(
             return
         end
 
-        Public.allocate()
-        Public.set_final_battle()
+        if collection.gather_time and collection.gather_time <= 0 and collection.survive_for and collection.survive_for > 0 then
+            local spawn_positions = Public.get_stateful('stateful_spawn_points')
 
-        if collection.time_until_attack and collection.time_until_attack <= 0 and collection.survive_for and collection.survive_for > 0 then
-            local spawn_positions = Public.stateful_spawn_points
-            local sizeof = Public.sizeof_stateful_spawn_points
+            if not spawn_positions then
+                Public.set_stateful(
+                    'stateful_spawn_points',
+                    {
+                        {{x = -205, y = -37}, {x = 195, y = 37}},
+                        {{x = -205, y = -112}, {x = 195, y = 112}},
+                        {{x = -205, y = -146}, {x = 195, y = 146}},
+                        {{x = -205, y = -112}, {x = 195, y = 112}},
+                        {{x = -205, y = -72}, {x = 195, y = 72}},
+                        {{x = -205, y = -146}, {x = 195, y = 146}},
+                        {{x = -205, y = -37}, {x = 195, y = 37}},
+                        {{x = -205, y = -5}, {x = 195, y = 5}},
+                        {{x = -205, y = -23}, {x = 195, y = 23}},
+                        {{x = -205, y = -5}, {x = 195, y = 5}},
+                        {{x = -205, y = -72}, {x = 195, y = 72}},
+                        {{x = -205, y = -23}, {x = 195, y = 23}},
+                        {{x = -205, y = -54}, {x = 195, y = 54}},
+                        {{x = -205, y = -80}, {x = 195, y = 80}},
+                        {{x = -205, y = -54}, {x = 195, y = 54}},
+                        {{x = -205, y = -80}, {x = 195, y = 80}},
+                        {{x = -205, y = -103}, {x = 195, y = 103}},
+                        {{x = -205, y = -150}, {x = 195, y = 150}},
+                        {{x = -205, y = -103}, {x = 195, y = 103}},
+                        {{x = -205, y = -150}, {x = 195, y = 150}}
+                    }
+                )
+
+                spawn_positions = Public.get_stateful('stateful_spawn_points')
+            end
+
+            local sizeof = #spawn_positions
 
             local area = spawn_positions[random(1, sizeof)]
 
@@ -72,14 +100,13 @@ Event.on_nth_tick(
 
             shuffle(area)
 
-            WD.build_worm_custom()
-
             WD.set_spawn_position(area[1])
-            Event.raise(WD.events.on_spawn_unit_group_simple, {fs = true, bypass = true, random_bosses = true, scale = 4, force = 'aggressors_frenzy'})
+            WD.build_worm_custom()
+            Event.raise(WD.events.on_spawn_unit_group_simple, {fs = true, bypass = true, random_bosses = true, scale = 8, force = 'aggressors_frenzy'})
             return
         end
 
-        if collection.time_until_attack and collection.survive_for and collection.survive_for == 0 then
+        if collection.survive_for and collection.survive_for == 0 then
             if not collection.game_won then
                 collection.game_won = true
             end
@@ -227,7 +254,7 @@ Event.on_nth_tick(
             return
         end
 
-        if collection.time_until_attack and collection.time_until_attack <= 0 and collection.survive_for > 0 then
+        if collection.gather_time and collection.gather_time <= 0 and collection.survive_for > 0 then
             Beam.new_beam(surface, game.tick + 150)
         end
     end

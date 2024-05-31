@@ -39,14 +39,6 @@ local function remove_unit(entity)
     if not generated_units.active_biters[unit_number] then
         return
     end
-    local final_battle = Public.get('final_battle')
-    if final_battle then
-        generated_units.active_biters_final_battle = generated_units.active_biters_final_battle - 1
-        if generated_units.active_biters_final_battle <= 0 then
-            generated_units.active_biters_final_battle = 0
-        end
-    end
-
     local m = 1
     local biter_health_boost_units = BiterHealthBooster.get('biter_health_boost_units')
     if not biter_health_boost_units then

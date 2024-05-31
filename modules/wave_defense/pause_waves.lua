@@ -128,7 +128,7 @@ local function pause_waves_state(state)
 
     if state then
         if custom_callback then
-            custom_callback(false)
+            custom_callback({start = false})
         end
 
         local pause_wave_in_ticks = Public.get('pause_wave_in_ticks')
@@ -143,7 +143,7 @@ local function pause_waves_state(state)
         Public.set('next_wave', next_wave + 18000)
     else
         if custom_callback then
-            custom_callback(true)
+            custom_callback({start = true})
         end
         local message = ({'wave_defense.start_waves'})
         Alert.alert_all_players(30, message, nil, 'achievement/tech-maniac', 0.75)

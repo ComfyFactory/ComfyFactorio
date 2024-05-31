@@ -7,7 +7,8 @@ local table_shuffle_table = table.shuffle_table
 
 local this = {
     debug = false,
-    disabled = false
+    disabled = false,
+    reverse_disabled = false
 }
 Global.register(
     this,
@@ -165,7 +166,6 @@ local function set_reverse_collapse_tiles(surface)
     if not surface or surface.valid then
         print_debug(45)
     end
-    -- game.forces.player.chart(surface, this.reverse_area)
     this.reverse_tiles = surface.find_tiles_filtered({area = this.reverse_area, name = 'out-of-map', invert = true})
 
     if not this.reverse_tiles then
@@ -179,13 +179,10 @@ local function set_reverse_collapse_tiles(surface)
     local v = this.reverse_vector
     local area = this.reverse_area
     this.reverse_area = {{area[1][1] + v[1], area[1][2] + v[2]}, {area[2][1] + v[1], area[2][2] + v[2]}}
-    local chart_area = {{area[1][1] + v[1] - 4, area[1][2] + v[2] - 4}, {area[2][1] + v[1] + 4, area[2][2] + v[2] + 4}}
+    local chart_area = {{area[1][1] + v[1] - 4, area[1][2] + v[2] - 10}, {area[2][1] + v[1] + 4, area[2][2] + v[2] + 10}}
     local force = game.forces.player
-    if not force.is_chunk_charted(surface, {area[1][1] * 31, area[2][2] * 31}) then
-        return
-    end
-    game.print('here2')
-    game.forces.player.chart(surface, chart_area)
+
+    force.chart(surface, chart_area)
 end
 
 local function progress()
@@ -443,7 +440,7 @@ end
 
 --- Set the collapse to start or not, accepts a second argument to disable the collapse completely.
 ---@param state boolean
----@param disabled boolean
+---@param disabled? boolean
 ---@return boolean
 function Public.start_now(state, disabled)
     this.start_now = state or false
@@ -453,8 +450,14 @@ function Public.start_now(state, disabled)
     return this.start_now
 end
 
-function Public.reverse_start_now(state)
+--- Set the reverse collapse to start or not, accepts a second argument to disable the collapse completely.
+---@param state boolean
+---@param disabled? boolean
+---@return boolean
+function Public.reverse_start_now(state, disabled)
     this.reverse_start_now = state or false
+
+    this.reverse_disabled = disabled or false
 
     return this.reverse_start_now
 end
@@ -510,6 +513,7 @@ local function on_init()
     this.reverse_tiles = nil
     this.speed = 1
     this.disabled = false
+    this.reverse_disabled = false
     this.reverse_start_now = false
     this.amount = 8
     this.start_now = false
@@ -521,12 +525,13 @@ local function on_tick()
         return
     end
 
-    if this.disabled then
-        return
+    if not this.reverse_disabled then
+        progress_reverse()
     end
 
-    progress()
-    progress_reverse()
+    if not this.disabled then
+        progress()
+    end
 end
 
 if not Public.read_tables_only then
