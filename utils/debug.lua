@@ -127,7 +127,7 @@ function Debug.object_type(object)
 end
 
 ---Shows the given message if debug is on.
----@param position Position
+---@param position MapPosition
 ---@param message string
 function Debug.print_position(position, message)
     Debug.print(format('%s %s', serialize(position), message))
@@ -147,6 +147,10 @@ end
 -- @param  func<function>
 -- @return boolean
 function Debug.is_closure(func)
+    if debug_getupvalue == nil then
+        return false
+    end
+
     local i = 1
     while true do
         local n = debug_getupvalue(func, i)
