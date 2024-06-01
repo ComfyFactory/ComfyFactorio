@@ -229,6 +229,8 @@ function Public.reset_map()
 
     Collapse.start_now(false)
 
+    RPG.reset_table()
+
     Public.stateful.enable(true)
     Public.stateful.reset_stateful(true, true)
     Public.stateful.increase_enemy_damage_and_health()
@@ -306,8 +308,6 @@ function Public.reset_map()
     this.force_chunk = true
     this.market_announce = game.tick + 1200
     this.game_lost = false
-
-    RPG.reset_table()
 
     RPG.rpg_reset_all_players()
     RPG.set_surface_name({game.surfaces[this.active_surface_index].name})
