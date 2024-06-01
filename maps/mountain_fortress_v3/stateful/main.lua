@@ -3,12 +3,49 @@ local Event = require 'utils.event'
 local WD = require 'modules.wave_defense.table'
 local Beam = require 'modules.render_beam'
 local RPG = require 'modules.rpg.main'
+local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 
 Public.stateful_gui = require 'maps.mountain_fortress_v3.stateful.gui'
 Public.stateful_blueprints = require 'maps.mountain_fortress_v3.stateful.blueprints'
 
 local random = math.random
 local shuffle = table.shuffle_table
+
+local valid_types = {
+    ['unit'] = true,
+    ['turret'] = true
+}
+
+---@param event EventData.on_entity_died
+local function on_entity_died(event)
+    local entity = event.entity
+    if not entity or not entity.valid then
+        return
+    end
+
+    if not Public.valid_enemy_forces[entity.force.name] then
+        return
+    end
+
+    local objectives = Public.get_stateful('objectives')
+
+    local damage_type = event.damage_type
+    if not damage_type then
+        return
+    end
+    local killed_enemies = objectives.killed_enemies_type
+    if not killed_enemies then
+        return
+    end
+
+    if killed_enemies.damage_type ~= damage_type.name then
+        return
+    end
+
+    if valid_types[entity.type] then
+        killed_enemies.actual = killed_enemies.actual + 1
+    end
+end
 
 Event.add(
     defines.events.on_research_finished,
@@ -146,39 +183,6 @@ Event.add(
 )
 
 Event.add(
-    defines.events.on_entity_died,
-    function(event)
-        local entity = event.entity
-        if not entity or not entity.valid then
-            return
-        end
-
-        if not Public.valid_enemy_forces[entity.force.name] then
-            return
-        end
-
-        local objectives = Public.get_stateful('objectives')
-
-        local damage_type = event.damage_type
-        if not damage_type then
-            return
-        end
-        local killed_enemies = objectives.killed_enemies_type
-        if not killed_enemies then
-            return
-        end
-
-        if killed_enemies.damage_type ~= damage_type.name then
-            return
-        end
-
-        if entity.type == 'unit' then
-            killed_enemies.actual = killed_enemies.actual + 1
-        end
-    end
-)
-
-Event.add(
     defines.events.on_rocket_launched,
     function(event)
         local rocket_inventory = event.rocket.get_inventory(defines.inventory.rocket)
@@ -262,5 +266,7 @@ Event.on_nth_tick(
 
 Event.add(defines.events.on_pre_player_died, Public.on_pre_player_died)
 Event.add(Public.events.on_market_item_purchased, Public.on_market_item_purchased)
+Event.add(BiterHealthBooster.events.custom_on_entity_died, on_entity_died)
+Event.add(defines.events.on_entity_died, on_entity_died)
 
 return Public

@@ -252,7 +252,7 @@ if (debug.sethook) then
     end
     ignored_functions[Public.stop] = true
 
-    if _PROFILE and _PROFILE_ON_INIT then
+    if _PROFILE then
         Event.on_init(
             function()
                 game.print('[PROFILER] Started!')

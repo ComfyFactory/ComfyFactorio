@@ -18,6 +18,10 @@ local sqrt = math.sqrt
 local round = math.round
 local Public = {}
 
+Public.events = {
+    custom_on_entity_died = Event.generate_event_name('custom_on_entity_died')
+}
+
 local this = {
     biter_health_boost = 1,
     biter_health_boost_forced = false,
@@ -268,6 +272,7 @@ local function extra_projectiles(cause, target)
     end
 end
 
+---@param event EventData.on_entity_damaged
 local function on_entity_damaged(event)
     local biter = event.entity
     if not (biter and biter.valid) then
@@ -350,10 +355,13 @@ local function on_entity_damaged(event)
 
     if cause then
         if cause.valid then
+            Event.raise(Public.events.custom_on_entity_died, event)
             event.entity.die(cause.force, cause)
             return
         end
     end
+
+    Event.raise(Public.events.custom_on_entity_died, event)
     biter.die(biter.force)
 end
 
