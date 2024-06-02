@@ -1716,7 +1716,6 @@ function Public.move_all_players()
             if pos then
                 player.teleport(pos)
             else
-                pos = game.forces.player.get_spawn_position(surface)
                 player.teleport(locomotive.position)
                 Public.unstuck_player(player.index)
             end
@@ -1732,7 +1731,6 @@ function Public.move_all_players()
                 if pos then
                     player.teleport(pos)
                 else
-                    pos = game.forces.player.get_spawn_position(surface)
                     player.teleport(locomotive.position)
                     Public.unstuck_player(player.index)
                 end
