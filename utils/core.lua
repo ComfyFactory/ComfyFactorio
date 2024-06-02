@@ -115,6 +115,17 @@ function Public.iter_connected_players(callback)
     end
 end
 
+--- Iterates over all connected players
+---@param callback function
+function Public.iter_fake_connected_players(players, callback)
+    for i = 1, #players do
+        local player = players[i]
+        if player and player.valid then
+            callback(player, i)
+        end
+    end
+end
+
 --- Iterates over all players
 ---@param callback function
 function Public.iter_players(callback)

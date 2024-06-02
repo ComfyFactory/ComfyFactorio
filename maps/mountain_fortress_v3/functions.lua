@@ -1642,13 +1642,17 @@ function Public.on_research_finished(event)
     local research_name = research.name
     local force = research.force
 
-    if event.tick > 1000 then
+    if event.tick > 100 then
         if Public.get('print_tech_to_discord') and force.name == 'player' then
             Server.to_discord_embed_raw('<a:Modded:835932131036364810> ' .. research_name:gsub('^%l', string.upper) .. ' has been researched!')
         end
     end
 
-    research.force.character_inventory_slots_bonus = player.mining_drill_productivity_bonus * 50 -- +5 Slots /
+    if research.name == 'toolbelt' then
+        Public.set('toobelt_researched_count', 10)
+    end
+
+    research.force.character_inventory_slots_bonus = (player.mining_drill_productivity_bonus * 50) + Public.get('toobelt_researched_count')
     if bonus_drill then
         bonus_drill.mining_drill_productivity_bonus = bonus_drill.mining_drill_productivity_bonus + 0.03
         if bonus_drill.mining_drill_productivity_bonus >= 3 then

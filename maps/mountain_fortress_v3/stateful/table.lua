@@ -1698,13 +1698,18 @@ function Public.move_all_players()
         return
     end
 
+    local locomotive = Public.get('locomotive')
+    if not locomotive or not locomotive.valid then
+        return
+    end
+
     ICWF.disable_auto_minimap()
 
     local message = ({'stateful.final_boss_message_start'})
     Alert.alert_all_players(50, message, nil, nil, 1)
     Core.iter_connected_players(
         function(player)
-            local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
+            local pos = surface.find_non_colliding_position('character', locomotive.position, 10, 0)
 
             Public.stateful_gui.boss_frame(player, true)
 
@@ -1712,11 +1717,28 @@ function Public.move_all_players()
                 player.teleport(pos)
             else
                 pos = game.forces.player.get_spawn_position(surface)
-                player.teleport(pos)
+                player.teleport(locomotive.position)
                 Public.unstuck_player(player.index)
             end
         end
     )
+
+    if _DEBUG then
+        Core.iter_fake_connected_players(
+            global.characters,
+            function(player)
+                local pos = surface.find_non_colliding_position('character', locomotive.position, 10, 0)
+
+                if pos then
+                    player.teleport(pos)
+                else
+                    pos = game.forces.player.get_spawn_position(surface)
+                    player.teleport(locomotive.position)
+                    Public.unstuck_player(player.index)
+                end
+            end
+        )
+    end
 end
 
 function Public.set_final_battle()
