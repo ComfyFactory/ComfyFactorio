@@ -5,6 +5,7 @@ local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Gui = require 'utils.gui'
 local SpamProtection = require 'utils.spam_protection'
+local Commands = require 'utils.commands'
 
 local this = {
     players = {},
@@ -13,7 +14,7 @@ local this = {
 
 Global.register(
     this,
-    function(t)
+    function (t)
         this = t
     end
 )
@@ -91,7 +92,7 @@ local function create_mini_camera_gui(player, target, zoom, render, tooltip)
 
     local frame = player.gui.screen[locate_player_frame_name]
     if not validate_frame(frame) then
-        frame = player.gui.screen.add({type = 'frame', name = locate_player_frame_name, caption = target.name})
+        frame = player.gui.screen.add({ type = 'frame', name = locate_player_frame_name, caption = target.name })
     end
 
     frame.force_auto_center()
@@ -105,16 +106,16 @@ local function create_mini_camera_gui(player, target, zoom, render, tooltip)
     if render then
         local render_object =
             rendering.draw_text {
-            text = '▼',
-            surface = target.surface,
-            target = {target.position.x, target.position.y - 3},
-            color = {r = 0.98, g = 0.66, b = 0.22},
-            scale = 3,
-            players = {player.index},
-            font = 'heading-1',
-            alignment = 'center',
-            scale_with_zoom = false
-        }
+                text = '▼',
+                surface = target.surface,
+                target = { target.position.x, target.position.y - 3 },
+                color = { r = 0.98, g = 0.66, b = 0.22 },
+                scale = 3,
+                players = { player.index },
+                font = 'heading-1',
+                alignment = 'center',
+                scale_with_zoom = false
+            }
 
         if player_data then
             player_data.render_object = render_object
@@ -123,15 +124,15 @@ local function create_mini_camera_gui(player, target, zoom, render, tooltip)
 
     local camera =
         frame.add(
-        {
-            type = 'camera',
-            name = player_frame_name,
-            position = target.position,
-            zoom = zoom or 0.4,
-            surface_index = surface,
-            tooltip = tooltip or ''
-        }
-    )
+            {
+                type = 'camera',
+                name = player_frame_name,
+                position = target.position,
+                zoom = zoom or 0.4,
+                surface_index = surface,
+                tooltip = tooltip or ''
+            }
+        )
     camera.style.minimal_width = 740
     camera.style.minimal_height = 580
     player_data = create_player_data(player)
@@ -139,22 +140,13 @@ local function create_mini_camera_gui(player, target, zoom, render, tooltip)
     return frame
 end
 
-commands.add_command(
-    'where',
-    'Locates a player',
-    function(cmd)
-        local player = game.player
-
-        if player and player.valid then
-            if not cmd.parameter then
-                return
-            end
-
+Commands.new('where', 'Locates a player')
+    :add_parameter('player', false, 'player-online')
+    :callback(
+        function (player, target)
             if this.module_disabled then
-                return
+                return false
             end
-
-            local target = game.get_player(cmd.parameter)
 
             if target and target.valid then
                 local player_data = create_player_data(player)
@@ -164,11 +156,9 @@ commands.add_command(
                 remove_player_data(player)
                 player.print('[Where] Please type a name of a player who is connected.', Color.warning)
             end
-        else
-            return
         end
-    end
-)
+    )
+
 
 local function on_nth_tick()
     for p, data in pairs(this.players) do
@@ -197,7 +187,7 @@ end
 
 Gui.on_click(
     locate_player_frame_name,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Where Locate Player')
         if is_spamming then
             return
@@ -208,7 +198,7 @@ Gui.on_click(
 
 Gui.on_custom_close(
     locate_player_frame_name,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Where Locate Player')
         if is_spamming then
             return
@@ -219,7 +209,7 @@ Gui.on_custom_close(
 
 Gui.on_click(
     player_frame_name,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Where Player Frame')
         if is_spamming then
             return

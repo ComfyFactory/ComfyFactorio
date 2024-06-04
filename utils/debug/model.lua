@@ -106,6 +106,10 @@ end
 function Public.dump_function(func)
     local res = {'upvalues:\n'}
 
+    if debug.getupvalue == nil then
+        return concat(res)
+    end
+
     local i = 1
     while true do
         local n, v = debug.getupvalue(func, i)

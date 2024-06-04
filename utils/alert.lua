@@ -1,9 +1,10 @@
 local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Gui = require 'utils.gui'
-local Token = require 'utils.token'
+local Task = require 'utils.task_token'
 local Color = require 'utils.color_presets'
 local SpamProtection = require 'utils.spam_protection'
+local Commands = require 'utils.commands'
 
 local pairs = pairs
 local next = next
@@ -11,14 +12,14 @@ local next = next
 local Public = {}
 
 local active_alerts = {}
-local id_counter = {0}
+local id_counter = { 0 }
 local alert_zoom_to_pos = Gui.uid_name()
 
 local on_tick
 
 Global.register(
-    {active_alerts = active_alerts, id_counter = id_counter},
-    function(tbl)
+    { active_alerts = active_alerts, id_counter = id_counter },
+    function (tbl)
         active_alerts = tbl.active_alerts
         id_counter = tbl.id_counter
     end
@@ -33,6 +34,41 @@ local close_alert_name = Gui.uid_name()
 -- Two elements in the same parent cannot have the same name. If you need your
 -- own name you can use Public.close_alert(element)
 Public.close_alert_name = close_alert_name
+
+local delay_print_alert_token =
+    Task.register(
+        function (event)
+            local text = event.text
+            if not text then
+                return
+            end
+
+            local ttl = event.ttl
+            if not ttl then
+                ttl = 60
+            end
+
+            local sprite = event.sprite
+            local color = event.color
+
+            Public.alert_all_players(ttl, text, color, sprite, 1)
+        end
+    )
+
+Public.set_timeout_in_ticks_alert = function (delay, data)
+    if not data then
+        return error('Data was not provided', 2)
+    end
+    if type(data) ~= 'table' then
+        return error("Data must be of type 'table'", 2)
+    end
+
+    if not delay then
+        return error('No delay was provided', 2)
+    end
+
+    Task.set_timeout_in_ticks(delay, delay_print_alert_token, data)
+end
 
 ---Creates a unique ID for a alert message
 local function autoincrement()
@@ -77,15 +113,15 @@ end
 ---@param duration number in seconds
 ---@param sound string sound to play, nil to not play anything
 local function alert_to(player, duration, sound, volume)
-    local frame_holder = player.gui.left.add({type = 'flow'})
+    local frame_holder = player.gui.left.add({ type = 'flow' })
 
-    local frame = frame_holder.add({type = 'frame', name = alert_frame_name, direction = 'vertical', style = 'captionless_frame'})
+    local frame = frame_holder.add({ type = 'frame', name = alert_frame_name, direction = 'vertical', style = 'captionless_frame' })
     frame.style.width = 300
 
-    local container = frame.add({type = 'flow', name = alert_container_name, direction = 'horizontal'})
+    local container = frame.add({ type = 'flow', name = alert_container_name, direction = 'horizontal' })
     container.style.horizontally_stretchable = true
 
-    local progressbar = frame.add({type = 'progressbar', name = alert_progress_name})
+    local progressbar = frame.add({ type = 'progressbar', name = alert_progress_name })
     local style = progressbar.style
     style.width = 290
     style.height = 4
@@ -116,7 +152,7 @@ local function alert_to(player, duration, sound, volume)
 
     if sound then
         volume = volume or 0.60
-        player.play_sound({path = sound, volume_modifier = volume})
+        player.play_sound({ path = sound, volume_modifier = volume })
     end
 
     return container
@@ -173,20 +209,20 @@ local function update_alert(id, frame, tick)
 end
 
 on_tick =
-    Token.register(
-    function(event)
-        if not next(active_alerts) then
-            Event.remove_removable_nth_tick(2, on_tick)
-            return
-        end
+    Task.register(
+        function (event)
+            if not next(active_alerts) then
+                Event.remove_removable_nth_tick(2, on_tick)
+                return
+            end
 
-        local tick = event.tick
+            local tick = event.tick
 
-        for id, frame in pairs(active_alerts) do
-            update_alert(id, frame, tick)
+            for id, frame in pairs(active_alerts) do
+                update_alert(id, frame, tick)
+            end
         end
-    end
-)
+    )
 
 ---Message a specific player, template is a callable that receives a LuaGuiElement
 ---to add contents to and a player as second argument.
@@ -239,23 +275,23 @@ function Public.alert_all_players_location(player, message, color, duration)
     local length = duration or 15
     Public.alert_all_players_template(
         length,
-        function(container)
+        function (container)
             local sprite =
                 container.add {
-                type = 'sprite-button',
-                name = alert_zoom_to_pos,
-                sprite = 'utility/search_icon',
-                style = 'slot_button'
-            }
+                    type = 'sprite-button',
+                    name = alert_zoom_to_pos,
+                    sprite = 'utility/search_icon',
+                    style = 'slot_button'
+                }
 
             Gui.set_data(sprite, player.position)
 
             local label =
                 container.add {
-                type = 'label',
-                name = Public.close_alert_name,
-                caption = message
-            }
+                    type = 'label',
+                    name = Public.close_alert_name,
+                    caption = message
+                }
             local label_style = label.style
             label_style.single_line = false
             label_style.font_color = color or Color.comfy
@@ -272,13 +308,13 @@ function Public.alert_player(player, duration, message, color, sprite, volume)
     Public.alert_player_template(
         player,
         duration,
-        function(container)
+        function (container)
             container.add {
                 type = 'sprite-button',
                 sprite = sprite or 'achievement/you-are-doing-it-right',
                 style = 'slot_button'
             }
-            local label = container.add({type = 'label', name = close_alert_name, caption = message})
+            local label = container.add({ type = 'label', name = close_alert_name, caption = message })
             label.style.single_line = false
             label.style.font_color = color or Color.comfy
         end,
@@ -296,13 +332,13 @@ function Public.alert_player_warning(player, duration, message, color)
     Public.alert_player_template(
         player,
         duration,
-        function(container)
+        function (container)
             container.add {
                 type = 'sprite-button',
                 sprite = 'achievement/golem',
                 style = 'slot_button'
             }
-            local label = container.add({type = 'label', name = close_alert_name, caption = message})
+            local label = container.add({ type = 'label', name = close_alert_name, caption = message })
             label.style.single_line = false
             label.style.font_color = color or Color.comfy
         end
@@ -333,94 +369,28 @@ function Public.alert_all_players(duration, message, color, sprite, volume)
     end
 end
 
-commands.add_command(
-    'notify_all_players',
-    'Usable only for admins - sends an alert message to all players!',
-    function(cmd)
-        local p
-        local player = game.player
-        local param = cmd.parameter
+Commands.new('notify_all_players', 'Usable only for admins - sends an alert message to all players!')
+    :add_parameter('message', false, 'string')
+    :callback(
+        function (player, message)
+            local comfy = '[color=blue]' .. player.name .. ':[/color] \n'
+            message = comfy .. message
+            Public.alert_all_players_location(player, message)
+        end
+    )
 
-        if player then
-            if player ~= nil then
-                p = player.print
-                if not player.admin then
-                    p("[ERROR] You're not admin!", Color.fail)
-                    return
-                end
-                if not param then
-                    return p('Valid arguments are: message_to_print')
-                end
+Commands.new('notify_player', 'Usable only for admins - sends an alert message to a player!')
+    :add_parameter('player', false, 'player-online')
+    :add_parameter('message', false, 'string')
+    :callback(
+        function (player, target_player, message)
+            if target_player then
                 local comfy = '[color=blue]' .. player.name .. ':[/color] \n'
-                local message = comfy .. param
-                Public.alert_all_players_location(player, message)
-            end
-        else
-            p = log
-            if not param then
-                return p('Valid arguments are: message_to_print')
-            end
-            local comfy = '[color=blue]Server:[/color] \n'
-            local message = comfy .. param
-            p(param)
-            Public.alert_all_players(15, message)
-        end
-    end
-)
-
-commands.add_command(
-    'notify_player',
-    'Usable only for admins - sends an alert message to a player!',
-    function(cmd)
-        local p
-        local player = game.player
-        local param = cmd.parameter
-
-        if player then
-            if player ~= nil then
-                p = player.print
-                if not player.admin then
-                    p("[ERROR] You're not admin!", Color.fail)
-                    return
-                end
-
-                local t_player
-                local t_message
-                local target_player
-                local str = ''
-
-                if not param then
-                    return p('[ERROR] Valid arguments are:\nplayer = player,\nmessage = message', Color.fail)
-                end
-
-                local t = {}
-                for i in string.gmatch(param, '%S+') do
-                    table.insert(t, i)
-                end
-
-                t_player = t[1]
-
-                for i = 2, #t do
-                    str = str .. t[i] .. ' '
-                    t_message = str
-                end
-
-                if game.players[t_player] then
-                    target_player = game.players[t_player]
-                else
-                    return p('[ERROR] No player was provided', Color.fail)
-                end
-
-                if t_message then
-                    local comfy = '[color=blue]' .. player.name .. ':[/color] \n'
-                    local message = comfy .. t_message
-                    Public.alert_player_warning(target_player, 15, message)
-                else
-                    p('No message was provided', Color.fail)
-                end
+                message = comfy .. message
+                Public.alert_player_warning(target_player, 15, message)
             end
         end
-    end
-)
+    )
+
 
 return Public

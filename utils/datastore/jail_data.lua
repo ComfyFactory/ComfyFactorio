@@ -10,6 +10,7 @@ local Utils = require 'utils.core'
 local table = require 'utils.table'
 local Gui = require 'utils.gui'
 local StatData = require 'utils.datastore.statistics'
+local Commands = require 'utils.commands'
 
 StatData.add_normalize('jailed', 'Jailed')
 
@@ -24,10 +25,10 @@ local votejail = {}
 local votefree = {}
 local revoked_permissions = {}
 local settings = {
-    playtime_for_vote = 77760000, -- 15 days
+    playtime_for_vote = 77760000,          -- 15 days
     playtime_for_instant_jail = 362880000, -- 70 days
     -- playtime_for_instant_jail = 103680000, -- 20 days
-    clear_voted_player = 36000, -- remove player from vote-tbl after 10 minutes
+    clear_voted_player = 36000,            -- remove player from vote-tbl after 10 minutes
     clear_terms_tbl = 2000,
     votejail_count = 5,
     valid_surface = 'nauvis',
@@ -64,7 +65,7 @@ Global.register(
         terms_tbl = terms_tbl,
         revoked_permissions = revoked_permissions
     },
-    function(t)
+    function (t)
         jailed = t.jailed
         votejail = t.votejail
         votefree = t.votefree
@@ -111,7 +112,7 @@ local function add_revoked(name, admin, reason)
 
         if not revoked_permissions[name] then
             revoked_permissions[name] = true
-            set_data(revoked_permissions_set, name, {revoked = true, actor = admin, reason = reason, date = date})
+            set_data(revoked_permissions_set, name, { revoked = true, actor = admin, reason = reason, date = date })
             return true
         else
             return false
@@ -135,67 +136,67 @@ end
 
 local clear_terms_tbl =
     Token.register(
-    function(data)
-        local player = data.player
-        if not player then
-            return
-        end
+        function (data)
+            local player = data.player
+            if not player then
+                return
+            end
 
-        if terms_tbl[player] then
-            terms_tbl[player] = nil
-            return
+            if terms_tbl[player] then
+                terms_tbl[player] = nil
+                return
+            end
         end
-    end
-)
+    )
 
 local play_alert_sound =
     Token.register(
-    function(data)
-        local name = data.name
-        if not name then
-            return
-        end
-        local player = game.get_player(name)
-        if not player or not player.valid then
-            return
-        end
+        function (data)
+            local name = data.name
+            if not name then
+                return
+            end
+            local player = game.get_player(name)
+            if not player or not player.valid then
+                return
+            end
 
-        player.play_sound {path = 'utility/scenario_message', volume_modifier = 1}
-    end
-)
+            player.play_sound { path = 'utility/scenario_message', volume_modifier = 1 }
+        end
+    )
 
 local clear_jail_data_token =
     Token.register(
-    function(data)
-        local offender = data.offender
-        if not offender then
-            return
-        end
-        if votejail[offender] and votejail[offender].jailed then
-            return
-        end
+        function (data)
+            local offender = data.offender
+            if not offender then
+                return
+            end
+            if votejail[offender] and votejail[offender].jailed then
+                return
+            end
 
-        local msg_two = 'You have been cleared of all accusations because not enough players voted against you.'
-        Utils.print_to(offender, msg_two)
-        votejail[offender] = nil
-        votefree[offender] = nil
-    end
-)
+            local msg_two = 'You have been cleared of all accusations because not enough players voted against you.'
+            Utils.print_to(offender, msg_two)
+            votejail[offender] = nil
+            votefree[offender] = nil
+        end
+    )
 
 local clear_gui =
     Token.register(
-    function(data)
-        local player = data.player
-        if player and player.valid then
-            for _, child in pairs(player.gui.center.children) do
-                child.destroy()
-            end
-            for _, child in pairs(player.gui.left.children) do
-                child.destroy()
+        function (data)
+            local player = data.player
+            if player and player.valid then
+                for _, child in pairs(player.gui.center.children) do
+                    child.destroy()
+                end
+                for _, child in pairs(player.gui.left.children) do
+                    child.destroy()
+                end
             end
         end
-    end
-)
+    )
 
 local function validate_playtime(player)
     local tracker = Session.get_session_table()
@@ -266,46 +267,46 @@ local function create_gulag_surface()
         local walls = {}
         local tiles = {}
         pcall(
-            function()
+            function ()
                 surface =
                     game.create_surface(
-                    'gulag',
-                    {
-                        autoplace_controls = {
-                            ['coal'] = {frequency = 23, size = 3, richness = 3},
-                            ['stone'] = {frequency = 20, size = 3, richness = 3},
-                            ['copper-ore'] = {frequency = 25, size = 3, richness = 3},
-                            ['iron-ore'] = {frequency = 35, size = 3, richness = 3},
-                            ['uranium-ore'] = {frequency = 20, size = 3, richness = 3},
-                            ['crude-oil'] = {frequency = 80, size = 3, richness = 1},
-                            ['trees'] = {frequency = 0.75, size = 2, richness = 0.1},
-                            ['enemy-base'] = {frequency = 15, size = 0, richness = 1}
-                        },
-                        cliff_settings = {cliff_elevation_0 = 1024, cliff_elevation_interval = 10, name = 'cliff'},
-                        height = 64,
-                        width = 256,
-                        peaceful_mode = false,
-                        seed = 1337,
-                        starting_area = 'very-low',
-                        starting_points = {{x = 0, y = 0}},
-                        terrain_segmentation = 'normal',
-                        water = 'normal'
-                    }
-                )
+                        'gulag',
+                        {
+                            autoplace_controls = {
+                                ['coal'] = { frequency = 23, size = 3, richness = 3 },
+                                ['stone'] = { frequency = 20, size = 3, richness = 3 },
+                                ['copper-ore'] = { frequency = 25, size = 3, richness = 3 },
+                                ['iron-ore'] = { frequency = 35, size = 3, richness = 3 },
+                                ['uranium-ore'] = { frequency = 20, size = 3, richness = 3 },
+                                ['crude-oil'] = { frequency = 80, size = 3, richness = 1 },
+                                ['trees'] = { frequency = 0.75, size = 2, richness = 0.1 },
+                                ['enemy-base'] = { frequency = 15, size = 0, richness = 1 }
+                            },
+                            cliff_settings = { cliff_elevation_0 = 1024, cliff_elevation_interval = 10, name = 'cliff' },
+                            height = 64,
+                            width = 256,
+                            peaceful_mode = false,
+                            seed = 1337,
+                            starting_area = 'very-low',
+                            starting_points = { { x = 0, y = 0 } },
+                            terrain_segmentation = 'normal',
+                            water = 'normal'
+                        }
+                    )
             end
         )
         if not surface then
-            surface = game.create_surface('gulag', {width = 40, height = 40})
+            surface = game.create_surface('gulag', { width = 40, height = 40 })
         end
         surface.always_day = true
-        surface.request_to_generate_chunks({0, 0}, 9)
+        surface.request_to_generate_chunks({ 0, 0 }, 9)
         surface.force_generate_chunk_requests()
-        local area = {left_top = {x = -128, y = -32}, right_bottom = {x = 128, y = 32}}
+        local area = { left_top = { x = -128, y = -32 }, right_bottom = { x = 128, y = 32 } }
         for x = area.left_top.x, area.right_bottom.x, 1 do
             for y = area.left_top.y, area.right_bottom.y, 1 do
-                tiles[#tiles + 1] = {name = 'black-refined-concrete', position = {x = x, y = y}}
+                tiles[#tiles + 1] = { name = 'black-refined-concrete', position = { x = x, y = y } }
                 if x == area.left_top.x or x == area.right_bottom.x or y == area.left_top.y or y == area.right_bottom.y then
-                    walls[#walls + 1] = {name = 'stone-wall', force = 'neutral', position = {x = x, y = y}}
+                    walls[#walls + 1] = { name = 'stone-wall', force = 'neutral', position = { x = x, y = y } }
                 end
             end
         end
@@ -319,8 +320,8 @@ local function create_gulag_surface()
         rendering.draw_text {
             text = 'The pit of despair ☹',
             surface = surface,
-            target = {0, -50},
-            color = {r = 0.98, g = 0.66, b = 0.22},
+            target = { 0, -50 },
+            color = { r = 0.98, g = 0.66, b = 0.22 },
             scale = 10,
             font = 'heading-1',
             alignment = 'center',
@@ -346,7 +347,7 @@ local function teleport_player_to_gulag(player, action, mute)
             p_data.locked = true
             p_data.muted = mute or false
         end
-        player.teleport(gulag.find_non_colliding_position('character', {0, 0}, 128, 1), gulag.name)
+        player.teleport(gulag.find_non_colliding_position('character', { 0, 0 }, 128, 1), gulag.name)
         local data = {
             player = player
         }
@@ -374,7 +375,7 @@ local function teleport_player_to_gulag(player, action, mute)
         end
 
         p_group.add_player(player)
-        local pos = {x = p.x, y = p.y}
+        local pos = { x = p.x, y = p.y }
         ---@diagnostic disable-next-line: missing-parameter
         local get_tile = surface.get_tile(pos)
         if get_tile.valid and get_tile.name == 'out-of-map' then
@@ -555,10 +556,10 @@ local function vote_to_jail(player, offender, msg)
     end
 
     if not votejail[offender] then
-        votejail[offender] = {index = 0, actor = player.name}
+        votejail[offender] = { index = 0, actor = player.name }
         local message = player.name .. ' has started a vote to jail player ' .. offender
         Utils.print_to(nil, message)
-        Task.set_timeout_in_ticks(settings.clear_voted_player, clear_jail_data_token, {offender = offender})
+        Task.set_timeout_in_ticks(settings.clear_voted_player, clear_jail_data_token, { offender = offender })
     end
 
     if not votejail[offender][player.name] then
@@ -583,7 +584,7 @@ local function vote_to_free(player, offender)
     end
 
     if not votefree[offender] then
-        votefree[offender] = {index = 0, actor = player.name}
+        votefree[offender] = { index = 0, actor = player.name }
         local message = player.name .. ' has started a vote to free player ' .. offender
         Utils.print_to(nil, message)
     end
@@ -644,12 +645,12 @@ local function jail(player, offender, msg, raised, mute)
 
     local message = offender .. ' has been jailed by ' .. player .. '. Cause: ' .. msg
 
-    jailed[offender] = {jailed = true, actor = player, reason = msg}
+    jailed[offender] = { jailed = true, actor = player, reason = msg }
     if not raised then
-        set_data(jailed_data_set, offender, {jailed = true, actor = player, reason = msg, date = date})
+        set_data(jailed_data_set, offender, { jailed = true, actor = player, reason = msg, date = date })
     end
 
-    Event.raise(Public.events.on_player_jailed, {player_index = offender.index})
+    Event.raise(Public.events.on_player_jailed, { player_index = offender.index })
 
     StatData.get_data(to_jail_player.index):increase('jailed')
 
@@ -701,7 +702,7 @@ local function jail_temporary(player, offender, msg, mute)
 
     local message = offender.name .. ' has been temporary jailed by ' .. player.name .. '.'
 
-    jailed[offender.name] = {jailed = true, actor = player.name, reason = msg, temporary = true}
+    jailed[offender.name] = { jailed = true, actor = player.name, reason = msg, temporary = true }
 
     Utils.print_to(nil, message)
     local data = Server.build_embed_data()
@@ -715,7 +716,7 @@ local function jail_temporary(player, offender, msg, mute)
         votejail[offender.name].jailed = true
     end
 
-    Event.raise(Public.events.on_player_jailed, {player_index = offender.index})
+    Event.raise(Public.events.on_player_jailed, { player_index = offender.index })
 
     StatData.get_data(offender.index):increase('jailed')
 
@@ -723,7 +724,7 @@ local function jail_temporary(player, offender, msg, mute)
 
     draw_notice_frame(offender)
 
-    Task.set_timeout_in_ticks(10800, release_player_from_temporary_prison_token, {offender_name = offender.name, actor_name = player.name})
+    Task.set_timeout_in_ticks(10800, release_player_from_temporary_prison_token, { offender_name = offender.name, actor_name = player.name })
     return true
 end
 
@@ -744,7 +745,7 @@ local function free(player, offender)
 
     set_data(jailed_data_set, offender, nil)
 
-    Event.raise(Public.events.on_player_unjailed, {player_index = offender.index})
+    Event.raise(Public.events.on_player_unjailed, { player_index = offender.index })
 
     Utils.print_to(nil, message)
     local data = Server.build_embed_data()
@@ -759,34 +760,34 @@ end
 
 local is_jailed =
     Token.register(
-    function(data)
-        local key = data.key
-        local value = data.value
-        if value and value.jailed and value.reason then
-            jail('script', key, value.reason, true)
-        else
-            free('script', key)
+        function (data)
+            local key = data.key
+            local value = data.value
+            if value and value.jailed and value.reason then
+                jail('script', key, value.reason, true)
+            else
+                free('script', key)
+            end
         end
-    end
-)
+    )
 
 --! start gui handler
 
 release_player_from_temporary_prison_token =
     Token.register(
-    function(event)
-        local actor_name = event.actor_name
-        local offender_name = event.offender_name
+        function (event)
+            local actor_name = event.actor_name
+            local offender_name = event.offender_name
 
-        if jailed[offender_name] and jailed[offender_name].temporary then
-            free('script', offender_name)
-            Utils.print_to(nil, module_name .. 'If you find someone abusing their jail permissions - report them to the admins of Comfy!')
+            if jailed[offender_name] and jailed[offender_name].temporary then
+                free('script', offender_name)
+                Utils.print_to(nil, module_name .. 'If you find someone abusing their jail permissions - report them to the admins of Comfy!')
 
-            local actor = game.get_player(actor_name)
-            remove_action_needed(actor)
+                local actor = game.get_player(actor_name)
+                remove_action_needed(actor)
+            end
         end
-    end
-)
+    )
 
 local function remove_target_frame(target_frame)
     Gui.remove_data_recursively(target_frame)
@@ -806,12 +807,12 @@ local function draw_main_frame(player, offender)
 
     local warning_message =
         concat {
-        '[font=heading-2]You have jailed player: [color=yellow]',
-        offender.name,
-        '\n[/color][/font]'
-    }
+            '[font=heading-2]You have jailed player: [color=yellow]',
+            offender.name,
+            '\n[/color][/font]'
+        }
 
-    local info_warning_text = inside_table.add({type = 'label', caption = warning_message})
+    local info_warning_text = inside_table.add({ type = 'label', caption = warning_message })
     local info_warning_text_style = info_warning_text.style
     info_warning_text_style.single_line = false
     info_warning_text_style.width = 470
@@ -824,14 +825,14 @@ local function draw_main_frame(player, offender)
 
     local abuse_message =
         concat {
-        'Jailing is [color=red]NOT[/color] allowed to solve personal disputes, talk to each other instead of jailing!\n',
-        'Jail is only a temporary solution, the jailed offender will be released in less than one week automatically.\n',
-        'If the actions done by the offender was serious, report the offender to the admins on [color=yellow]https://getcomfy.eu/discord[/color]\n',
-        'Providing NO reason will free the offender after 3 minutes or if you close this window - note - this will log your actions to our admins.\n\n',
-        '[color=yellow]Explain why you jailed ' .. offender.name .. '[/color]'
-    }
+            'Jailing is [color=red]NOT[/color] allowed to solve personal disputes, talk to each other instead of jailing!\n',
+            'Jail is only a temporary solution, the jailed offender will be released in less than one week automatically.\n',
+            'If the actions done by the offender was serious, report the offender to the admins on [color=yellow]https://getcomfy.eu/discord[/color]\n',
+            'Providing NO reason will free the offender after 3 minutes or if you close this window - note - this will log your actions to our admins.\n\n',
+            '[color=yellow]Explain why you jailed ' .. offender.name .. '[/color]'
+        }
 
-    local info_warning_text_extended = inside_table.add({type = 'label', caption = abuse_message})
+    local info_warning_text_extended = inside_table.add({ type = 'label', caption = abuse_message })
     local info_warning_text_extended_style = info_warning_text_extended.style
     info_warning_text_extended_style.single_line = false
     info_warning_text_extended_style.font = 'heading-2'
@@ -842,7 +843,7 @@ local function draw_main_frame(player, offender)
     info_warning_text_extended_style.right_padding = 4
     info_warning_text_extended_style.bottom_padding = 4
 
-    local placeholder_text = inside_table.add({type = 'text-box', text = '', name = placeholder_jail_text_box})
+    local placeholder_text = inside_table.add({ type = 'text-box', text = '', name = placeholder_jail_text_box })
     local placeholder_text_style = placeholder_text.style
     placeholder_text_style.width = 470
     placeholder_text_style.height = 200
@@ -852,19 +853,19 @@ local function draw_main_frame(player, offender)
     placeholder_text_style.horizontally_squashable = false
     placeholder_text_style.vertically_squashable = false
 
-    local bottom_flow = main_frame.add({type = 'flow', direction = 'horizontal'})
+    local bottom_flow = main_frame.add({ type = 'flow', direction = 'horizontal' })
 
-    local left_flow = bottom_flow.add({type = 'flow'})
+    local left_flow = bottom_flow.add({ type = 'flow' })
     left_flow.style.horizontal_align = 'left'
     left_flow.style.horizontally_stretchable = true
 
-    local close_button = left_flow.add({type = 'button', name = discard_button_name, caption = 'Discard report'})
+    local close_button = left_flow.add({ type = 'button', name = discard_button_name, caption = 'Discard report' })
     close_button.style = 'back_button'
 
-    local right_flow = bottom_flow.add({type = 'flow'})
+    local right_flow = bottom_flow.add({ type = 'flow' })
     right_flow.style.horizontal_align = 'right'
 
-    local save_button = right_flow.add({type = 'button', name = save_button_name, caption = 'Save report'})
+    local save_button = right_flow.add({ type = 'button', name = save_button_name, caption = 'Save report' })
     save_button.style = 'confirm_button'
 
     local data = {
@@ -878,7 +879,7 @@ local function draw_main_frame(player, offender)
     player.opened = main_frame
 end
 
-remove_notice = function(player)
+remove_notice = function (player)
     local screen = player.gui.screen
     local notice = screen[notice_frame_name]
 
@@ -887,7 +888,7 @@ remove_notice = function(player)
     end
 end
 
-remove_action_needed = function(player)
+remove_action_needed = function (player)
     local screen = player.gui.screen
     local action_needed = screen[jail_frame_name]
 
@@ -896,7 +897,7 @@ remove_action_needed = function(player)
     end
 end
 
-draw_notice_frame = function(player)
+draw_notice_frame = function (player)
     local main_frame, inside_table = Gui.add_main_frame_with_toolbar(player, 'screen', notice_frame_name, nil, nil, 'Notice', true, 2)
 
     if not main_frame or not inside_table then
@@ -907,20 +908,20 @@ draw_notice_frame = function(player)
     main_frame_style.width = 400
     main_frame.auto_center = true
 
-    local content_flow = inside_table.add {type = 'flow', direction = 'horizontal'}
+    local content_flow = inside_table.add { type = 'flow', direction = 'horizontal' }
     content_flow.style.top_padding = 16
     content_flow.style.bottom_padding = 16
     content_flow.style.left_padding = 24
     content_flow.style.right_padding = 24
     content_flow.style.horizontally_stretchable = false
 
-    local sprite_flow = content_flow.add {type = 'flow'}
+    local sprite_flow = content_flow.add { type = 'flow' }
     sprite_flow.style.vertical_align = 'center'
     sprite_flow.style.vertically_stretchable = false
 
-    sprite_flow.add {type = 'sprite', sprite = 'utility/warning_icon'}
+    sprite_flow.add { type = 'sprite', sprite = 'utility/warning_icon' }
 
-    local label_flow = content_flow.add {type = 'flow'}
+    local label_flow = content_flow.add { type = 'flow' }
     label_flow.style.horizontal_align = 'left'
     label_flow.style.top_padding = 10
     label_flow.style.left_padding = 24
@@ -933,7 +934,7 @@ draw_notice_frame = function(player)
     end
 
     label_flow.style.horizontally_stretchable = false
-    local label = label_flow.add {type = 'label', caption = warning_message}
+    local label = label_flow.add { type = 'label', caption = warning_message }
     label.style.single_line = false
 
     player.opened = main_frame
@@ -943,19 +944,19 @@ end
 
 local update_jailed =
     Token.register(
-    function(data)
-        local key = data.key
-        local value = data.value or false
-        local player = data.player or 'script'
-        local message = data.message
-        local mute = data.mute or false
-        if value then
-            jail(player, key, message, nil, mute)
-        else
-            free(player, key)
+        function (data)
+            local key = data.key
+            local value = data.value or false
+            local player = data.player or 'script'
+            local message = data.message
+            local mute = data.mute or false
+            if value then
+                jail(player, key, message, nil, mute)
+            else
+                free(player, key)
+            end
         end
-    end
-)
+    )
 
 --- Tries to get data from the webpanel and updates the local table with values.
 -- @param data_set player token
@@ -1058,20 +1059,20 @@ end
 --- Writes the data called back from the server into the revoked_permissions table, clearing any previous entries
 local sync_revoked_permissions_callback =
     Token.register(
-    function(data)
-        if not data then
-            return
-        end
-        if not data.entries then
-            return
-        end
+        function (data)
+            if not data then
+                return
+            end
+            if not data.entries then
+                return
+            end
 
-        table.clear_table(revoked_permissions)
-        for k, v in pairs(data.entries) do
-            revoked_permissions[k] = v
+            table.clear_table(revoked_permissions)
+            for k, v in pairs(data.entries) do
+                revoked_permissions[k] = v
+            end
         end
-    end
-)
+    )
 
 --- Signals the server to retrieve the revoked_permissions dataset
 function Public.sync_revoked_permissions()
@@ -1105,7 +1106,7 @@ end
 
 Server.on_data_set_changed(
     jailed_data_set,
-    function(data)
+    function (data)
         if not data then
             return
         end
@@ -1122,7 +1123,7 @@ Server.on_data_set_changed(
 
 Server.on_data_set_changed(
     revoked_permissions_set,
-    function(data)
+    function (data)
         if not data then
             return
         end
@@ -1131,97 +1132,44 @@ Server.on_data_set_changed(
     end
 )
 
-commands.add_command(
-    'jail',
-    'Sends the player to gulag! Valid arguments are:\n/jail <LuaPlayer>',
-    function()
-    end
-)
+Commands.new('jail', 'Sends the player to gulag.')
+    :add_parameter('offender', false, 'player')
+    :callback(function ()
+    end)
 
-commands.add_command(
-    'free',
-    'Brings back the player from gulag.',
-    function()
-    end
-)
+Commands.new('free', 'Brings back the player from gulag.')
+    :add_parameter('offender', false, 'player')
+    :callback(function ()
+    end)
 
-commands.add_command(
-    'toggle_jail_permission',
-    'Usable only for admins - controls who may use jail commands!',
-    function(cmd)
-        local name
-        local player = game.player
-
-        if not player or not player.valid then
-            name = 'Server'
-        else
-            name = player.name
-
-            if not player.admin then
-                return
-            end
+Commands.new('toggle_jail_permission', 'Usable only for admins - controls who may use jail commands!')
+    :require_backend()
+    :add_parameter('target-player', false, 'player')
+    :add_parameter('reason', false, 'string')
+    :callback(function (player, target, reason)
+        if is_revoked(target.name) then
+            remove_revoked(target.name)
+            Utils.print_to(player, target.name .. ' can now utilize jail commands once again!')
+            return true
         end
 
-        local param = cmd.parameter
-
-        local t_player
-        local revoke_reason
-        local revoke_player
-        local str = ''
-
-        if not param then
-            return Utils.print_to(player, 'Both player and reason is needed!')
+        if reason and string.len(reason) <= 0 then
+            Utils.print_to(player, 'No valid reason was given.')
+            return false
         end
 
-        local t = {}
-        for i in string.gmatch(param, '%S+') do
-            table.insert(t, i)
+        if reason and string.len(reason) <= 10 then
+            Utils.print_to(player, 'Reason is too short.')
+            return false
         end
 
-        t_player = t[1]
+        add_revoked(target.name, player.name, reason)
+        Utils.print_to(player, target.name .. ' is now forbidden from utilizing jail commands!')
+    end)
 
-        for i = 2, #t do
-            str = str .. t[i] .. ' '
-            revoke_reason = str
-        end
-
-        if game.get_player(t_player) then
-            revoke_player = game.get_player(t_player)
-        else
-            return Utils.print_to(player, 'No player was provided.')
-        end
-
-        if not revoke_player then
-            return
-        end
-
-        if is_revoked(revoke_player.name) then
-            remove_revoked(revoke_player.name)
-            Utils.print_to(player, revoke_player.name .. ' can now utilize jail commands once again!')
-            return
-        end
-
-        if revoke_reason then
-            if revoke_reason and string.len(revoke_reason) <= 0 then
-                Utils.print_to(player, 'No valid reason was given.')
-                return
-            end
-
-            if revoke_reason and string.len(revoke_reason) <= 10 then
-                Utils.print_to(player, 'Reason is too short.')
-                return
-            end
-
-            add_revoked(revoke_player.name, name, revoke_reason)
-            Utils.print_to(player, revoke_player.name .. ' is now forbidden from utilizing jail commands!')
-        else
-            Utils.print_to(player, 'No message was provided')
-        end
-    end
-)
 
 Event.on_init(
-    function()
+    function ()
         get_gulag_permission_group()
         create_gulag_surface()
     end
@@ -1229,14 +1177,14 @@ Event.on_init(
 
 Event.add(
     Server.events.on_server_started,
-    function()
+    function ()
         Public.sync_revoked_permissions()
     end
 )
 
 Event.add(
     defines.events.on_console_command,
-    function(event)
+    function (event)
         local cmd = event.command
         if not valid_commands[cmd] then
             return
@@ -1293,11 +1241,11 @@ Event.add(
                         Utils.warning(player, "Jailing someone because they're afk or other stupid reasons is NOT valid!")
                         Utils.warning(player, 'Run this command again to if you really want to do this!')
                         for _ = 1, 4 do
-                            Task.set_timeout_in_ticks(delay, play_alert_sound, {name = player.name})
+                            Task.set_timeout_in_ticks(delay, play_alert_sound, { name = player.name })
                             delay = delay + 30
                         end
                         terms_tbl[player.name] = true
-                        Task.set_timeout_in_ticks(settings.clear_terms_tbl, clear_terms_tbl, {player = player.name})
+                        Task.set_timeout_in_ticks(settings.clear_terms_tbl, clear_terms_tbl, { player = player.name })
                         return
                     end
 
@@ -1328,11 +1276,11 @@ Event.add(
                         Utils.warning(player, "Jailing someone because they're afk or other stupid reasons is NOT valid!")
                         Utils.warning(player, 'Run this command again to if you really want to do this!')
                         for _ = 1, 4 do
-                            Task.set_timeout_in_ticks(delay, play_alert_sound, {name = player.name})
+                            Task.set_timeout_in_ticks(delay, play_alert_sound, { name = player.name })
                             delay = delay + 30
                         end
                         terms_tbl[player.name] = true
-                        Task.set_timeout_in_ticks(settings.clear_terms_tbl, clear_terms_tbl, {player = player.name})
+                        Task.set_timeout_in_ticks(settings.clear_terms_tbl, clear_terms_tbl, { player = player.name })
                         return
                     end
 
@@ -1373,7 +1321,7 @@ Event.add(
                     print(module_name .. 'Abusing the jail command will lead to revoked permissions. Jailing someone in case of disagreement is _NEVER_ OK!')
                     print(module_name .. 'Run this command again to if you really want to do this!')
                     terms_tbl['script'] = true
-                    Task.set_timeout_in_ticks(settings.clear_terms_tbl, clear_terms_tbl, {player = 'script'})
+                    Task.set_timeout_in_ticks(settings.clear_terms_tbl, clear_terms_tbl, { player = 'script' })
                     return
                 end
 
@@ -1391,7 +1339,7 @@ Event.add(
 
 Event.add(
     defines.events.on_player_joined_game,
-    function(event)
+    function (event)
         local player = game.get_player(event.player_index)
         if not player or not player.valid then
             return
@@ -1423,7 +1371,7 @@ Event.add(
 
 Event.add(
     defines.events.on_player_changed_surface,
-    function(event)
+    function (event)
         local player = game.get_player(event.player_index)
         if not player or not player.valid then
             return
@@ -1446,7 +1394,7 @@ Event.add(
 
 Gui.on_text_changed(
     placeholder_jail_text_box,
-    function(event)
+    function (event)
         local player = event.player
         if not player or not player.valid then
             return
@@ -1475,7 +1423,7 @@ Gui.on_text_changed(
 
 Gui.on_click(
     save_button_name,
-    function(event)
+    function (event)
         local player = event.player
         if not player or not player.valid then
             return
@@ -1500,7 +1448,7 @@ Gui.on_click(
                 return Utils.print_to(player, module_name .. 'Reason is too short. Explain thoroughly why you jailed ' .. offender .. '!')
             end
 
-            set_data(jailed_data_set, offender, {jailed = true, actor = player.name, reason = jailed[offender].reason, date = date})
+            set_data(jailed_data_set, offender, { jailed = true, actor = player.name, reason = jailed[offender].reason, date = date })
         end
 
         Utils.print_to(player, module_name .. 'Jail data has been submitted!')
@@ -1520,7 +1468,7 @@ Gui.on_click(
 
 Gui.on_click(
     discard_button_name,
-    function(event)
+    function (event)
         local player = event.player
         local screen = player.gui.screen
         local frame = screen[jail_frame_name]

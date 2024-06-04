@@ -75,7 +75,7 @@ function Public.show(container)
         type = 'sprite-button',
         name = refresh_name,
         sprite = 'utility/reset',
-        tooltip = 'refresh'
+        tooltip = 'Refresh'
     }
     local refresh_button_style = refresh_button.style
     refresh_button_style.width = 32
@@ -108,21 +108,32 @@ function Public.show(container)
     Gui.set_data(refresh_button, data)
 end
 
-local function draw_element_headers(element_panel, values, selected_index)
-    local copy = {}
-    for k, v in pairs(values) do
-        copy[k] = v
+local function rec(children, copy)
+    for key, child in next, children do
+        if child.name then
+            copy[key] = child
+        elseif type(child) == 'table' then
+            rec(child, copy)
+        end
     end
+end
+
+local function deepCopy(children)
+    local copy = {}
+    rec(children, copy)
+    return copy
+end
+
+local function draw_element_headers(element_panel, values, selected_index)
+    local copy = deepCopy(values)
 
     local selected_header = nil
-    local element_map = Gui.element_map()
     local name_map = Gui.names
 
     for ei, stored_data in pairs(copy) do
-        local ele = element_map[ei]
         local ele_name = ''
-        if ele and ele.valid then
-            ele_name = ele.name
+        if stored_data and stored_data.name then
+            ele_name = stored_data.name
         end
 
         local gui_name = name_map[ele_name]
@@ -161,6 +172,8 @@ Gui.on_click(
         if not header_data then
             return
         end
+        Gui.clear(element)
+
         local values = header_data.values
         local player_index = header_data.player_index
 
@@ -200,6 +213,7 @@ Gui.on_click(
         if not header_data then
             return
         end
+
         local stored_data = header_data.stored_data
         local element_index = header_data.element_index
 

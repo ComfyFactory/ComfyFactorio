@@ -22,13 +22,13 @@ local hours_to_ticks = 60 * 60 * 60
 local ticks_to_minutes = 1 / minutes_to_ticks
 local ticks_to_hours = 1 / hours_to_ticks
 
-local serialize_options = {sparse = true, compact = true}
+local serialize_options = { sparse = true, compact = true }
 
 local Public = {}
 
-local server_time = {secs = nil, tick = 0}
-local server_ups = {ups = 60}
-local start_data = {server_id = nil, server_name = nil, start_time = nil}
+local server_time = { secs = nil, tick = 0 }
+local server_ups = { ups = 60 }
+local start_data = { server_id = nil, server_name = nil, start_time = nil }
 local instances = {
     data = {}
 }
@@ -47,7 +47,7 @@ Global.register(
         instances = instances,
         admins = admins
     },
-    function(tbl)
+    function (tbl)
         server_time = tbl.server_time
         server_ups = tbl.server_ups
         start_data = tbl.start_data
@@ -109,6 +109,8 @@ local function output_data(primary, secondary)
         return false
     end
 
+    secondary = type(secondary) == 'table' and '' or secondary
+
     if start_data and start_data.output then
         local write = game.write_file
         write(start_data.output, primary .. (secondary or '') .. newline, true, 0)
@@ -168,7 +170,7 @@ end
 -- function()
 --      Trigger some sort of automated restart whenever the game ends.
 -- end)
-Public.events = {on_server_started = Event.generate_event_name('on_server_started'), on_changes_detected = Event.generate_event_name('on_changes_detected')}
+Public.events = { on_server_started = Event.generate_event_name('on_server_started'), on_changes_detected = Event.generate_event_name('on_changes_detected') }
 
 --- Sends a message to the linked discord channel. The message is sanitized of markdown server side.
 -- @param  message<string> message to send.
@@ -210,28 +212,28 @@ end
 -- @param  message<string> message to send.
 function Public.to_discord_named(channel_name, message)
     assert_non_empty_string_and_no_spaces(channel_name, 'channel_name')
-    output_data(concat({discord_named_tag, channel_name, ' ', message}))
+    output_data(concat({ discord_named_tag, channel_name, ' ', message }))
 end
 
 --- Sends a message to the named discord channel. The message is not sanitized of markdown.
 -- @param  message<string> message to send.
 function Public.to_discord_named_raw(channel_name, message)
     assert_non_empty_string_and_no_spaces(channel_name, 'channel_name')
-    output_data(concat({discord_named_raw_tag, channel_name, ' ', message}))
+    output_data(concat({ discord_named_raw_tag, channel_name, ' ', message }))
 end
 
 --- Sends a message to the named discord channel. The message is sanitized of markdown server side, then made bold.
 -- @param  message<string> message to send.
 function Public.to_discord_named_bold(channel_name, message)
     assert_non_empty_string_and_no_spaces(channel_name, 'channel_name')
-    output_data(concat({discord_named_bold_tag, channel_name, ' ', message}))
+    output_data(concat({ discord_named_bold_tag, channel_name, ' ', message }))
 end
 
 --- Sends an embed message to the named discord channel. The message is sanitized of markdown server side.
 -- @param  message<string> the content of the embed.
 function Public.to_discord_named_embed(channel_name, message)
     assert_non_empty_string_and_no_spaces(channel_name, 'channel_name')
-    output_data(concat({discord_named_embed_tag, channel_name, ' ', message}))
+    output_data(concat({ discord_named_embed_tag, channel_name, ' ', message }))
 end
 
 --- Sends an embed message that is parsed to the named discord channel. The message is sanitized of markdown server side.
@@ -260,7 +262,7 @@ end
 -- @param  message<string> the content of the embed.
 function Public.to_discord_named_embed_raw(channel_name, message)
     assert_non_empty_string_and_no_spaces(channel_name, 'channel_name')
-    output_data(concat({discord_named_embed_raw_tag, channel_name, ' ', message}))
+    output_data(concat({ discord_named_embed_raw_tag, channel_name, ' ', message }))
 end
 
 --- Sends a message to the linked admin discord channel. The message is sanitized of markdown server side.
@@ -284,6 +286,7 @@ function Public.to_banned(message, locale)
         output_data(discord_banned_tag .. message)
     end
 end
+
 --- Sends a message to the linked banned discord channel. The message is sanitized of markdown server side.
 -- @param  message<string> message to send.
 -- @param  locale<boolean> if the message should be handled as localized.
@@ -305,6 +308,7 @@ function Public.to_jailed(message, locale)
         output_data(discord_jailed_tag .. message)
     end
 end
+
 --- Sends a message to the linked connected discord channel. The message is sanitized of markdown server side.
 -- @param  message<string> message to send.
 -- @param  locale<boolean> if the message should be handled as localized.
@@ -553,20 +557,20 @@ end
 
 local default_ping_token =
     Token.register(
-    function(sent_tick)
-        local now = game.tick
-        local diff = now - sent_tick
+        function (sent_tick)
+            local now = game.tick
+            local diff = now - sent_tick
 
-        local message = concat({'Pong in ', diff, ' tick(s) ', 'sent tick: ', sent_tick, ' received tick: ', now})
-        game.print(message)
-    end
-)
+            local message = concat({ 'Pong in ', diff, ' tick(s) ', 'sent tick: ', sent_tick, ' received tick: ', now })
+            game.print(message)
+        end
+    )
 
 --- Pings the web server.
 -- @param  func_token<token> The function that is called when the web server replies.
 -- The function is passed the tick that the ping was sent.
 function Public.ping(func_token)
-    local message = concat({ping_tag, func_token or default_ping_token, ' ', game.tick})
+    local message = concat({ ping_tag, func_token or default_ping_token, ' ', game.tick })
     output_data(message)
 end
 
@@ -628,15 +632,15 @@ function Public.set_data(data_set, key, value)
     local message
     local vt = type(value)
     if vt == 'nil' then
-        message = concat({data_set_tag, '{data_set:"', data_set, '",key:"', key, '"}'})
+        message = concat({ data_set_tag, '{data_set:"', data_set, '",key:"', key, '"}' })
     elseif vt == 'string' then
         value = double_escape(value)
 
-        message = concat({data_set_tag, '{data_set:"', data_set, '",key:"', key, '",value:"\\"', value, '\\""}'})
+        message = concat({ data_set_tag, '{data_set:"', data_set, '",key:"', key, '",value:"\\"', value, '\\""}' })
     elseif vt == 'number' then
-        message = concat({data_set_tag, '{data_set:"', data_set, '",key:"', key, '",value:"', value, '"}'})
+        message = concat({ data_set_tag, '{data_set:"', data_set, '",key:"', key, '",value:"', value, '"}' })
     elseif vt == 'boolean' then
-        message = concat({data_set_tag, '{data_set:"', data_set, '",key:"', key, '",value:"', tostring(value), '"}'})
+        message = concat({ data_set_tag, '{data_set:"', data_set, '",key:"', key, '",value:"', tostring(value), '"}' })
     elseif vt == 'function' then
         error('value cannot be a function', 2)
     else -- table
@@ -646,7 +650,7 @@ function Public.set_data(data_set, key, value)
         -- Need to escape single quotes as serpent uses double quotes for strings.
         value = value:gsub('\\', '\\\\'):gsub("'", "\\'")
 
-        message = concat({data_set_tag, '{data_set:"', data_set, '",key:"', key, "\",value:'", value, "'}"})
+        message = concat({ data_set_tag, '{data_set:"', data_set, '",key:"', key, "\",value:'", value, "'}" })
     end
 
     output_data(message)
@@ -678,14 +682,14 @@ local function send_try_get_data(data_set, key, callback_token)
     data_set = double_escape(data_set)
     key = double_escape(key)
 
-    local message = concat {data_get_tag, callback_token, ' {', 'data_set:"', data_set, '",key:"', key, '"}'}
+    local message = concat { data_get_tag, callback_token, ' {', 'data_set:"', data_set, '",key:"', key, '"}' }
     output_data(message)
 end
 
 local function send_try_get_ban(username, callback_token)
     username = double_escape(username)
 
-    local message = concat {ban_get_tag, callback_token, ' {', 'username:"', username, '"}'}
+    local message = concat { ban_get_tag, callback_token, ' {', 'username:"', username, '"}' }
     output_data(message)
 end
 
@@ -694,7 +698,7 @@ local function send_try_get_data_and_print(data_set, key, to_print, callback_tok
     key = double_escape(key)
     to_print = double_escape(to_print)
 
-    local message = concat {data_get_and_print_tag, callback_token, ' {', 'data_set:"', data_set, '",key:"', key, '",to_print:"', to_print, '"}'}
+    local message = concat { data_get_and_print_tag, callback_token, ' {', 'data_set:"', data_set, '",key:"', key, '",to_print:"', to_print, '"}' }
     output_data(message)
 end
 
@@ -702,33 +706,33 @@ local function log_antigrief_data(category, action)
     category = double_escape(category)
     action = double_escape(action)
 
-    local message = concat {antigrief_tag, '{', 'category:"', category, '",action:"', action, '"}'}
+    local message = concat { antigrief_tag, '{', 'category:"', category, '",action:"', action, '"}' }
     output_data(message)
 end
 
 local cancelable_callback_token =
     Token.register(
-    function(data)
-        local data_set = data.data_set
-        local keys = requests[data_set]
-        if not keys then
-            return
-        end
+        function (data)
+            local data_set = data.data_set
+            local keys = requests[data_set]
+            if not keys then
+                return
+            end
 
-        local key = data.key
-        local callbacks = keys[key]
-        if not callbacks then
-            return
-        end
+            local key = data.key
+            local callbacks = keys[key]
+            if not callbacks then
+                return
+            end
 
-        keys[key] = nil
+            keys[key] = nil
 
-        for c, _ in next, callbacks do
-            local func = Token.get(c)
-            func(data)
+            for c, _ in next, callbacks do
+                local func = Token.get(c)
+                func(data)
+            end
         end
-    end
-)
+    )
 
 --- Gets data from the web server's persistent data storage.
 -- The callback is passed a table {data_set: string, key: string, value: any}.
@@ -827,7 +831,7 @@ local function cancel_try_get_data(data_set, key, callback_token)
         callbacks[callback_token] = nil
 
         local func = Token.get(callback_token)
-        local data = {data_set = data_set, key = key, cancelled = true}
+        local data = { data_set = data_set, key = key, cancelled = true }
         func(data)
 
         return true
@@ -851,10 +855,10 @@ end
 
 local timeout_token =
     Token.register(
-    function(data)
-        cancel_try_get_data(data.data_set, data.key, data.callback_token)
-    end
-)
+        function (data)
+            cancel_try_get_data(data.data_set, data.key, data.callback_token)
+        end
+    )
 
 --- Same as Server.try_get_data but the request is cancelled if the timeout expires before the request is complete.
 -- If the request is cancelled before it is complete the callback will be called with data.cancelled = true.
@@ -892,7 +896,7 @@ function Public.try_get_data_timeout(data_set, key, callback_token, timeout_tick
 
     try_get_data_cancelable(data_set, key, callback_token)
 
-    Task.set_timeout_in_ticks(timeout_ticks, timeout_token, {data_set = data_set, key = key, callback_token = callback_token})
+    Task.set_timeout_in_ticks(timeout_ticks, timeout_token, { data_set = data_set, key = key, callback_token = callback_token })
 end
 
 --- Gets all the data for the data_set from the web server's persistent data storage.
@@ -925,7 +929,7 @@ function Public.try_get_all_data(data_set, callback_token)
 
     data_set = double_escape(data_set)
 
-    local message = concat {data_get_all_tag, callback_token, ' {', 'data_set:"', data_set, '"}'}
+    local message = concat { data_get_all_tag, callback_token, ' {', 'data_set:"', data_set, '"}' }
     output_data(message)
 end
 
@@ -1022,7 +1026,7 @@ function Public.on_data_set_changed(data_set, handler)
 
     local handlers = data_set_handlers[data_set]
     if handlers == nil then
-        handlers = {handler}
+        handlers = { handler }
         data_set_handlers[data_set] = handlers
     else
         handlers[#handlers + 1] = handler
@@ -1051,7 +1055,7 @@ function Public.on_scenario_changed(scenario, handler)
 
     local handlers = scenario_handlers[scenario]
     if handlers == nil then
-        handlers = {handler}
+        handlers = { handler }
         scenario_handlers[scenario] = handlers
     else
         handlers[#handlers + 1] = handler
@@ -1072,7 +1076,7 @@ Public.log_antigrief_data = log_antigrief_data
 
 --- Called by the web server to determine which data_sets are being tracked.
 function Public.get_tracked_data_sets()
-    local message = {data_tracked_tag, '['}
+    local message = { data_tracked_tag, '[' }
 
     for k, _ in pairs(data_set_handlers) do
         k = double_escape(k)
@@ -1096,7 +1100,7 @@ end
 
 --- Called by the web server to determine which scenarios is being tracked.
 function Public.get_tracked_scenario()
-    local message = {scenario_tag, ''}
+    local message = { scenario_tag, '' }
 
     for k, _ in pairs(scenario_handlers) do
         k = double_escape(k)
@@ -1245,7 +1249,7 @@ function Public.ban_sync(username, reason, admin)
     reason = escape(reason)
     admin = escape(admin)
 
-    local message = concat({ban_sync_tag, '{username:"', username, '",reason:"', reason, '",admin:"', admin, '"}'})
+    local message = concat({ ban_sync_tag, '{username:"', username, '",reason:"', reason, '",admin:"', admin, '"}' })
     output_data(message)
 end
 
@@ -1283,7 +1287,7 @@ function Public.unban_sync(username, admin)
     username = escape(username)
     admin = escape(admin)
 
-    local message = concat({unbanned_sync_tag, '{username:"', username, '",admin:"', admin, '"}'})
+    local message = concat({ unbanned_sync_tag, '{username:"', username, '",admin:"', admin, '"}' })
     output_data(message)
 end
 
@@ -1401,7 +1405,7 @@ function Public.get_current_date(pretty, as_table, current_time)
     end
 
     if as_table then
-        return {year = date.year, month = date.month, day = date.day}
+        return { year = date.year, month = date.month, day = date.day }
     elseif pretty then
         return date.year .. '-' .. date.month .. '-' .. date.day
     else
@@ -1452,7 +1456,7 @@ end
 
 --- Called by the web server to re sync which players are online.
 function Public.query_online_players()
-    local message = {query_players_tag, '['}
+    local message = { query_players_tag, '[' }
 
     for _, p in ipairs(game.connected_players) do
         message[#message + 1] = '"'
@@ -1504,6 +1508,7 @@ local function command_handler(callback, ...)
         local success, err = pcall(callback, ...)
         return success, err
     else
+        ---@diagnostic disable-next-line: deprecated, param-type-mismatch
         local success, err = pcall(loadstring(callback), ...)
         return success, err
     end
@@ -1513,8 +1518,8 @@ end
 -- Doing this, enables achievements and the web-panel can communicate without any interruptions.
 commands.add_command(
     'cc',
-    'Evaluate command',
-    function(cmd)
+    '<callback> - Evaluate command',
+    function (cmd)
         local player = game.player
         if player then
             return
@@ -1544,7 +1549,7 @@ commands.add_command(
 --  players joining or leaving. So we send our own [PLAYER-JOIN] and [PLAYER-LEAVE] tags.
 Event.add(
     defines.events.on_player_joined_game,
-    function(event)
+    function (event)
         local player = game.get_player(event.player_index)
         if not player or not player.valid then
             return
@@ -1575,7 +1580,7 @@ local leave_reason_map = {
 
 Event.add(
     defines.events.on_player_left_game,
-    function(event)
+    function (event)
         local player = game.get_player(event.player_index)
         if not player then
             return
@@ -1593,7 +1598,7 @@ Event.add(
 
 Event.add(
     defines.events.on_player_died,
-    function(event)
+    function (event)
         local player = game.get_player(event.player_index)
 
         if not player or not player.valid then
@@ -1607,7 +1612,7 @@ Event.add(
 
         local cause = event.cause
 
-        local message = {discord_bold_tag, player.name}
+        local message = { discord_bold_tag, player.name }
         if cause and cause.valid then
             message[#message + 1] = ' was killed by '
 
@@ -1628,5 +1633,6 @@ Event.add(
 )
 
 Public.build_embed_data = build_embed_data
+Public.output_data = output_data
 
 return Public

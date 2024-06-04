@@ -111,9 +111,6 @@ local on_player_joined_game = function(event)
 end
 
 local on_player_created = function(event)
-    if not this.modded then
-        return
-    end
     if this.disabled then
         return
     end
@@ -151,9 +148,6 @@ local on_player_created = function(event)
 end
 
 local on_player_respawned = function(event)
-    if not this.modded then
-        return
-    end
     if this.disabled then
         return
     end
@@ -162,7 +156,7 @@ local on_player_respawned = function(event)
 end
 
 local on_cutscene_waypoint_reached = function(event)
-    if not this.modded then
+    if this.disabled then
         return
     end
     if not crash_site.is_crash_site_cutscene(event) then
@@ -187,7 +181,7 @@ local on_cutscene_waypoint_reached = function(event)
 end
 
 local skip_crash_site_cutscene = function(event)
-    if not this.modded then
+    if this.disabled then
         return
     end
 
@@ -216,10 +210,6 @@ local skip_crash_site_cutscene = function(event)
 end
 
 local on_cutscene_cancelled = function(event)
-    if not this.modded then
-        return
-    end
-
     if this.disabled then
         return
     end
@@ -315,7 +305,6 @@ Event.on_init(
     function()
         local game_has_mods = is_game_modded()
         if game_has_mods then
-            this.modded = true
             this.created_items = created_items()
             this.respawn_items = respawn_items()
             this.crashed_ship_items = ship_items()
