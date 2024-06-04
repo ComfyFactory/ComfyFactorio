@@ -24,11 +24,11 @@ local remove_boost_movement_speed_on_respawn
 local de = defines.events
 
 local this = {
-    power_sources = {index = 1},
-    refill_turrets = {index = 1},
-    magic_crafters = {index = 1},
-    magic_fluid_crafters = {index = 1},
-    art_table = {index = 1},
+    power_sources = { index = 1 },
+    refill_turrets = { index = 1 },
+    magic_crafters = { index = 1 },
+    magic_fluid_crafters = { index = 1 },
+    art_table = { index = 1 },
     editor_mode = {},
     techs = {},
     limit_types = {},
@@ -53,11 +53,11 @@ local this = {
 
 local exit_editor_mode_token =
     Task.register(
-    function(event)
-        local player_index = event.player_index
-        this.editor_mode[player_index] = nil
-    end
-)
+        function (event)
+            local player_index = event.player_index
+            this.editor_mode[player_index] = nil
+        end
+    )
 
 local random_respawn_messages = {
     'The doctors stitched you up as best they could.',
@@ -88,7 +88,7 @@ local health_values = {
 
 Global.register(
     this,
-    function(t)
+    function (t)
         this = t
     end
 )
@@ -131,9 +131,9 @@ end
 
 local function show_text(msg, pos, color, surface)
     if color == nil then
-        surface.create_entity({name = 'flying-text', position = pos, text = msg})
+        surface.create_entity({ name = 'flying-text', position = pos, text = msg })
     else
-        surface.create_entity({name = 'flying-text', position = pos, text = msg, color = color})
+        surface.create_entity({ name = 'flying-text', position = pos, text = msg, color = color })
     end
 end
 
@@ -150,15 +150,15 @@ end
 
 local pause_waves_custom_callback_token =
     Task.register(
-    function(event)
-        local wave_number = WD.get_wave()
-        if wave_number >= 200 then
-            Collapse.start_now(event.start, not event.start)
-            local status_str = event.start and 'has stopped!' or 'is active once again!'
-            Alert.alert_all_players(30, 'Collapse ' .. status_str, nil, 'achievement/tech-maniac', 0.6)
+        function (event)
+            local wave_number = WD.get_wave()
+            if wave_number >= 200 then
+                Collapse.start_now(event.start, not event.start)
+                local status_str = event.start and 'has stopped!' or 'is active once again!'
+                Alert.alert_all_players(30, 'Collapse ' .. status_str, nil, 'achievement/tech-maniac', 0.6)
+            end
         end
-    end
-)
+    )
 
 local function do_refill_turrets()
     local refill_turrets = this.refill_turrets
@@ -226,8 +226,8 @@ local function do_magic_crafters()
             end
 
             if fcount > 0 then
-                if entity.get_output_inventory().can_insert({name = data.item, count = fcount}) then
-                    entity.get_output_inventory().insert {name = data.item, count = fcount}
+                if entity.get_output_inventory().can_insert({ name = data.item, count = fcount }) then
+                    entity.get_output_inventory().insert { name = data.item, count = fcount }
                     entity.products_finished = entity.products_finished + fcount
                     data.last_tick = round(tick - (count - fcount) / rate)
                 end
@@ -277,7 +277,7 @@ local function do_magic_fluid_crafters()
                 local fluidbox_index = data.fluidbox_index
                 local fb = entity.fluidbox
 
-                local fb_data = fb[fluidbox_index] or {name = data.item, amount = 0}
+                local fb_data = fb[fluidbox_index] or { name = data.item, amount = 0 }
                 fb_data.amount = fb_data.amount + fcount
                 fb[fluidbox_index] = fb_data
 
@@ -293,56 +293,56 @@ end
 
 local artillery_target_callback =
     Task.register(
-    function(data)
-        local position = data.position
-        local entity = data.entity
-        local index = data.index
+        function (data)
+            local position = data.position
+            local entity = data.entity
+            local index = data.index
 
-        local art_table = this.art_table
-        local outpost = art_table[index]
-        if not outpost then
-            return
-        end
+            local art_table = this.art_table
+            local outpost = art_table[index]
+            if not outpost then
+                return
+            end
 
-        if not entity.valid then
-            outpost.last_fire_tick = 0
-            return
-        end
+            if not entity.valid then
+                outpost.last_fire_tick = 0
+                return
+            end
 
-        local tx, ty = position.x, position.y
-        local fired_at_target = false
+            local tx, ty = position.x, position.y
+            local fired_at_target = false
 
-        local pos = entity.position
-        local x, y = pos.x, pos.y
-        local dx, dy = tx - x, ty - y
-        local d = dx * dx + dy * dy
-        if d >= 1024 and d <= 441398 then -- 704 in depth~
-            if entity.name == 'character' then
-                entity.surface.create_entity {
-                    name = 'artillery-projectile',
-                    position = position,
-                    target = entity,
-                    force = 'enemy',
-                    speed = 1.5
-                }
-                fired_at_target = true
-            elseif entity.name ~= 'character' then
-                entity.surface.create_entity {
-                    name = 'rocket',
-                    position = position,
-                    target = entity,
-                    force = 'enemy',
-                    speed = 1.5
-                }
-                fired_at_target = true
+            local pos = entity.position
+            local x, y = pos.x, pos.y
+            local dx, dy = tx - x, ty - y
+            local d = dx * dx + dy * dy
+            if d >= 1024 and d <= 441398 then -- 704 in depth~
+                if entity.name == 'character' then
+                    entity.surface.create_entity {
+                        name = 'artillery-projectile',
+                        position = position,
+                        target = entity,
+                        force = 'enemy',
+                        speed = 1.5
+                    }
+                    fired_at_target = true
+                elseif entity.name ~= 'character' then
+                    entity.surface.create_entity {
+                        name = 'rocket',
+                        position = position,
+                        target = entity,
+                        force = 'enemy',
+                        speed = 1.5
+                    }
+                    fired_at_target = true
+                end
+            end
+
+            if not fired_at_target then
+                outpost.last_fire_tick = 0
             end
         end
-
-        if not fired_at_target then
-            outpost.last_fire_tick = 0
-        end
-    end
-)
+    )
 
 local function do_beams_away()
     local wave_number = WD.get_wave()
@@ -425,8 +425,8 @@ local function do_season_fix()
         rendering.draw_text {
             text = 'Season: ' .. Public.stateful.get_stateful('season'),
             surface = surface,
-            target = {-0, 12},
-            color = {r = 0.98, g = 0.77, b = 0.22},
+            target = { -0, 12 },
+            color = { r = 0.98, g = 0.77, b = 0.22 },
             scale = 3,
             font = 'heading-1',
             alignment = 'center',
@@ -473,7 +473,7 @@ local function do_artillery_turrets_targets()
     local area = outpost.artillery_area
     local surface = turret.surface
 
-    local entities = surface.find_entities_filtered {area = area, name = artillery_target_entities, force = 'player'}
+    local entities = surface.find_entities_filtered { area = area, name = artillery_target_entities, force = 'player' }
 
     if #entities == 0 then
         return
@@ -486,7 +486,7 @@ local function do_artillery_turrets_targets()
     for i = 1, count do
         local entity = entities[random(#entities)]
         if entity and entity.valid then
-            local data = {position = position, entity = entity, index = index}
+            local data = { position = position, entity = entity, index = index }
             Task.set_timeout_in_ticks(i * 60, artillery_target_callback, data)
         end
     end
@@ -526,287 +526,287 @@ end
 
 Public.deactivate_callback =
     Task.register(
-    function(entity)
-        if entity and entity.valid then
-            entity.active = false
-            entity.operable = false
-            entity.destructible = false
+        function (entity)
+            if entity and entity.valid then
+                entity.active = false
+                entity.operable = false
+                entity.destructible = false
+            end
         end
-    end
-)
+    )
 
 Public.neutral_force =
     Task.register(
-    function(entity)
-        if entity and entity.valid then
-            entity.force = 'neutral'
+        function (entity)
+            if entity and entity.valid then
+                entity.force = 'neutral'
+            end
         end
-    end
-)
+    )
 
 Public.enemy_force =
     Task.register(
-    function(entity)
-        if entity and entity.valid then
-            entity.force = 'enemy'
+        function (entity)
+            if entity and entity.valid then
+                entity.force = 'enemy'
+            end
         end
-    end
-)
+    )
 
 Public.active_not_destructible_callback =
     Task.register(
-    function(entity)
-        if entity and entity.valid then
-            entity.active = true
-            entity.operable = false
-            entity.destructible = false
+        function (entity)
+            if entity and entity.valid then
+                entity.active = true
+                entity.operable = false
+                entity.destructible = false
+            end
         end
-    end
-)
+    )
 
 Public.disable_minable_callback =
     Task.register(
-    function(entity)
-        if entity and entity.valid then
-            entity.minable = false
+        function (entity)
+            if entity and entity.valid then
+                entity.minable = false
+            end
         end
-    end
-)
+    )
 
 Public.disable_minable_and_ICW_callback =
     Task.register(
-    function(entity)
-        if entity and entity.valid then
-            local wagons_in_the_wild = Public.get('wagons_in_the_wild')
-            entity.minable = false
-            entity.destructible = false
-            ICW.register_wagon(entity)
+        function (entity)
+            if entity and entity.valid then
+                local wagons_in_the_wild = Public.get('wagons_in_the_wild')
+                entity.minable = false
+                entity.destructible = false
+                ICW.register_wagon(entity)
 
-            wagons_in_the_wild[entity.unit_number] = entity
+                wagons_in_the_wild[entity.unit_number] = entity
+            end
         end
-    end
-)
+    )
 
 Public.disable_destructible_callback =
     Task.register(
-    function(entity)
-        if entity and entity.valid then
-            entity.destructible = false
-            entity.minable = false
+        function (entity)
+            if entity and entity.valid then
+                entity.destructible = false
+                entity.minable = false
+            end
         end
-    end
-)
+    )
 Public.disable_active_callback =
     Task.register(
-    function(entity)
-        if entity and entity.valid then
-            entity.active = false
+        function (entity)
+            if entity and entity.valid then
+                entity.active = false
+            end
         end
-    end
-)
+    )
 
 local disable_active_callback = Public.disable_active_callback
 
 Public.refill_turret_callback =
     Task.register(
-    function(turret, data)
-        local refill_turrets = this.refill_turrets
-        local callback_data = data.callback_data
-        turret.direction = 3
+        function (turret, data)
+            local refill_turrets = this.refill_turrets
+            local callback_data = data.callback_data
+            turret.direction = 3
 
-        refill_turrets[#refill_turrets + 1] = {turret = turret, data = callback_data}
-    end
-)
+            refill_turrets[#refill_turrets + 1] = { turret = turret, data = callback_data }
+        end
+    )
 
 Public.refill_artillery_turret_callback =
     Task.register(
-    function(turret, data)
-        local refill_turrets = this.refill_turrets
-        local art_table = this.art_table
-        local index = art_table.index
+        function (turret, data)
+            local refill_turrets = this.refill_turrets
+            local art_table = this.art_table
+            local index = art_table.index
 
-        turret.active = false
-        turret.direction = 3
+            turret.active = false
+            turret.direction = 3
 
-        refill_turrets[#refill_turrets + 1] = {turret = turret, data = data.callback_data}
+            refill_turrets[#refill_turrets + 1] = { turret = turret, data = data.callback_data }
 
-        local artillery_data = art_table[index]
-        if not artillery_data then
-            artillery_data = {}
-        end
-
-        local artillery_turrets = artillery_data.artillery_turrets
-        if not artillery_turrets then
-            artillery_turrets = {}
-            artillery_data.artillery_turrets = artillery_turrets
-
-            local pos = turret.position
-            local x, y = pos.x, pos.y
-            local adjusted_zones = Public.get('adjusted_zones')
-            if adjusted_zones.reversed then
-                artillery_data.artillery_area = {{x - 112, y - 212}, {x + 112, y}}
-            else
-                artillery_data.artillery_area = {{x - 112, y}, {x + 112, y + 212}}
+            local artillery_data = art_table[index]
+            if not artillery_data then
+                artillery_data = {}
             end
-            artillery_data.last_fire_tick = 0
 
-            art_table[#art_table + 1] = artillery_data
+            local artillery_turrets = artillery_data.artillery_turrets
+            if not artillery_turrets then
+                artillery_turrets = {}
+                artillery_data.artillery_turrets = artillery_turrets
+
+                local pos = turret.position
+                local x, y = pos.x, pos.y
+                local adjusted_zones = Public.get('adjusted_zones')
+                if adjusted_zones.reversed then
+                    artillery_data.artillery_area = { { x - 112, y - 212 }, { x + 112, y } }
+                else
+                    artillery_data.artillery_area = { { x - 112, y }, { x + 112, y + 212 } }
+                end
+                artillery_data.last_fire_tick = 0
+
+                art_table[#art_table + 1] = artillery_data
+            end
+
+            artillery_turrets[#artillery_turrets + 1] = turret
         end
-
-        artillery_turrets[#artillery_turrets + 1] = turret
-    end
-)
+    )
 
 Public.refill_liquid_turret_callback =
     Task.register(
-    function(turret, data)
-        local refill_turrets = this.refill_turrets
-        local callback_data = data.callback_data
-        callback_data.liquid = true
+        function (turret, data)
+            local refill_turrets = this.refill_turrets
+            local callback_data = data.callback_data
+            callback_data.liquid = true
 
-        refill_turrets[#refill_turrets + 1] = {turret = turret, data = callback_data}
-    end
-)
+            refill_turrets[#refill_turrets + 1] = { turret = turret, data = callback_data }
+        end
+    )
 
 Public.power_source_callback =
     Task.register(
-    function(turret)
-        local power_sources = this.power_sources
-        power_sources[#power_sources + 1] = turret
-    end
-)
+        function (turret)
+            local power_sources = this.power_sources
+            power_sources[#power_sources + 1] = turret
+        end
+    )
 
 Public.magic_item_crafting_callback =
     Task.register(
-    function(entity, data)
-        local callback_data = data.callback_data
-        if not (entity and entity.valid) then
-            return
-        end
-
-        entity.minable = false
-        entity.destructible = false
-        entity.operable = false
-
-        local force = game.forces.player
-
-        local tech = callback_data.tech
-        if not callback_data.testing then
-            if tech then
-                if not force.technologies[tech].researched then
-                    entity.destroy()
-                    return
-                end
+        function (entity, data)
+            local callback_data = data.callback_data
+            if not (entity and entity.valid) then
+                return
             end
-        end
 
-        local recipe = callback_data.recipe
-        if recipe then
-            entity.set_recipe(recipe)
-        else
-            local furance_item = callback_data.furance_item
-            if furance_item then
-                local inv = entity.get_inventory(defines.inventory.furnace_result)
-                inv.insert(furance_item)
-            end
-        end
-
-        local p = entity.position
-        local x, y = p.x, p.y
-        local distance = sqrt(x * x + y * y)
-
-        local output = callback_data.output
-        if #output == 0 then
-            add_magic_crafter_output(entity, output, distance)
-        else
-            for i = 1, #output do
-                local o = output[i]
-                add_magic_crafter_output(entity, o, distance)
-            end
-        end
-
-        if not callback_data.keep_active then
-            Task.set_timeout_in_ticks(2, disable_active_callback, entity) -- causes problems with refineries.
-        end
-    end
-)
-
-Public.magic_item_crafting_callback_weighted =
-    Task.register(
-    function(entity, data)
-        local callback_data = data.callback_data
-        if not (entity and entity.valid) then
-            return
-        end
-
-        local weights = callback_data.weights
-        local loot = callback_data.loot
-        local destructible = callback_data.destructible
-
-        if not destructible then
+            entity.minable = false
             entity.destructible = false
-        end
+            entity.operable = false
 
-        entity.minable = false
-        entity.operable = false
+            local force = game.forces.player
 
-        local p = entity.position
-
-        local i = random() * weights.total
-
-        local index = table.binary_search(weights, i)
-        if (index < 0) then
-            index = bit32.bnot(index)
-        end
-
-        local stack = loot[index].stack
-        if not stack then
-            return
-        end
-
-        local force = game.forces.player
-
-        local tech = stack.tech
-        if not callback_data.testing then
-            if tech then
-                if force.technologies[tech] then
+            local tech = callback_data.tech
+            if not callback_data.testing then
+                if tech then
                     if not force.technologies[tech].researched then
                         entity.destroy()
                         return
                     end
                 end
             end
-        end
 
-        local recipe = stack.recipe
-        if recipe then
-            entity.set_recipe(recipe)
-        else
-            local furance_item = stack.furance_item
-            if furance_item then
-                local inv = entity.get_inventory(defines.inventory.furnace_result)
-                inv.insert(furance_item)
+            local recipe = callback_data.recipe
+            if recipe then
+                entity.set_recipe(recipe)
+            else
+                local furance_item = callback_data.furance_item
+                if furance_item then
+                    local inv = entity.get_inventory(defines.inventory.furnace_result)
+                    inv.insert(furance_item)
+                end
+            end
+
+            local p = entity.position
+            local x, y = p.x, p.y
+            local distance = sqrt(x * x + y * y)
+
+            local output = callback_data.output
+            if #output == 0 then
+                add_magic_crafter_output(entity, output, distance)
+            else
+                for i = 1, #output do
+                    local o = output[i]
+                    add_magic_crafter_output(entity, o, distance)
+                end
+            end
+
+            if not callback_data.keep_active then
+                Task.set_timeout_in_ticks(2, disable_active_callback, entity) -- causes problems with refineries.
             end
         end
+    )
 
-        local x, y = p.x, p.y
-        local distance = sqrt(x * x + y * y)
+Public.magic_item_crafting_callback_weighted =
+    Task.register(
+        function (entity, data)
+            local callback_data = data.callback_data
+            if not (entity and entity.valid) then
+                return
+            end
 
-        local output = stack.output
-        if #output == 0 then
-            add_magic_crafter_output(entity, output, distance)
-        else
-            for o_i = 1, #output do
-                local o = output[o_i]
-                add_magic_crafter_output(entity, o, distance)
+            local weights = callback_data.weights
+            local loot = callback_data.loot
+            local destructible = callback_data.destructible
+
+            if not destructible then
+                entity.destructible = false
+            end
+
+            entity.minable = false
+            entity.operable = false
+
+            local p = entity.position
+
+            local i = random() * weights.total
+
+            local index = table.binary_search(weights, i)
+            if (index < 0) then
+                index = bit32.bnot(index)
+            end
+
+            local stack = loot[index].stack
+            if not stack then
+                return
+            end
+
+            local force = game.forces.player
+
+            local tech = stack.tech
+            if not callback_data.testing then
+                if tech then
+                    if force.technologies[tech] then
+                        if not force.technologies[tech].researched then
+                            entity.destroy()
+                            return
+                        end
+                    end
+                end
+            end
+
+            local recipe = stack.recipe
+            if recipe then
+                entity.set_recipe(recipe)
+            else
+                local furance_item = stack.furance_item
+                if furance_item then
+                    local inv = entity.get_inventory(defines.inventory.furnace_result)
+                    inv.insert(furance_item)
+                end
+            end
+
+            local x, y = p.x, p.y
+            local distance = sqrt(x * x + y * y)
+
+            local output = stack.output
+            if #output == 0 then
+                add_magic_crafter_output(entity, output, distance)
+            else
+                for o_i = 1, #output do
+                    local o = output[o_i]
+                    add_magic_crafter_output(entity, o, distance)
+                end
+            end
+
+            if not callback_data.keep_active then
+                Task.set_timeout_in_ticks(2, disable_active_callback, entity) -- causes problems with refineries.
             end
         end
-
-        if not callback_data.keep_active then
-            Task.set_timeout_in_ticks(2, disable_active_callback, entity) -- causes problems with refineries.
-        end
-    end
-)
+    )
 
 function Public.prepare_weighted_loot(loot)
     local total = 0
@@ -855,7 +855,7 @@ function Public.do_random_loot(entity, weights, loot)
         count = stack.count
     end
 
-    entity.insert {name = stack.name, count = count}
+    entity.insert { name = stack.name, count = count }
 end
 
 local function calc_players()
@@ -866,7 +866,7 @@ local function calc_players()
     end
     local total = 0
     Core.iter_connected_players(
-        function(player)
+        function (player)
             if player.afk_time < 36000 then
                 total = total + 1
             end
@@ -880,46 +880,46 @@ end
 
 remove_boost_movement_speed_on_respawn =
     Task.register(
-    function(data)
-        local player = data.player
-        if not player or not player.valid then
-            return
+        function (data)
+            local player = data.player
+            if not player or not player.valid then
+                return
+            end
+
+            Modifiers.update_single_modifier(player, 'character_running_speed_modifier', 'v3_move_boost')
+            Modifiers.update_player_modifiers(player)
+
+            player.print('Movement speed bonus removed!', Color.info)
+            local rpg_t = RPG.get_value_from_player(player.index)
+            rpg_t.has_boost_on_respawn = nil
         end
-
-        Modifiers.update_single_modifier(player, 'character_running_speed_modifier', 'v3_move_boost')
-        Modifiers.update_player_modifiers(player)
-
-        player.print('Movement speed bonus removed!', Color.info)
-        local rpg_t = RPG.get_value_from_player(player.index)
-        rpg_t.has_boost_on_respawn = nil
-    end
-)
+    )
 
 local boost_movement_speed_on_respawn =
     Task.register(
-    function(data)
-        local player = data.player
-        if not player or not player.valid then
-            return
+        function (data)
+            local player = data.player
+            if not player or not player.valid then
+                return
+            end
+            if not player.character or not player.character.valid then
+                return
+            end
+
+            local rpg_t = RPG.get_value_from_player(player.index)
+            if rpg_t.has_boost_on_respawn then
+                return
+            end
+
+            rpg_t.has_boost_on_respawn = true
+
+            Modifiers.update_single_modifier(player, 'character_running_speed_modifier', 'v3_move_boost', 1)
+            Modifiers.update_player_modifiers(player)
+
+            Task.set_timeout_in_ticks(800, remove_boost_movement_speed_on_respawn, { player = player })
+            player.print('Movement speed bonus applied! Be quick and fetch your corpse!', Color.info)
         end
-        if not player.character or not player.character.valid then
-            return
-        end
-
-        local rpg_t = RPG.get_value_from_player(player.index)
-        if rpg_t.has_boost_on_respawn then
-            return
-        end
-
-        rpg_t.has_boost_on_respawn = true
-
-        Modifiers.update_single_modifier(player, 'character_running_speed_modifier', 'v3_move_boost', 1)
-        Modifiers.update_player_modifiers(player)
-
-        Task.set_timeout_in_ticks(800, remove_boost_movement_speed_on_respawn, {player = player})
-        player.print('Movement speed bonus applied! Be quick and fetch your corpse!', Color.info)
-    end
-)
+    )
 
 local function on_wave_created(event)
     if not event or not event.wave_number then
@@ -944,7 +944,7 @@ function Public.find_rocks_and_slowly_remove()
         return
     end
 
-    local ents = surface.find_entities_filtered({type = 'simple-entity'})
+    local ents = surface.find_entities_filtered({ type = 'simple-entity' })
     if ents and #ents > 0 then
         Public.set('rocks_to_remove', ents)
     end
@@ -1108,8 +1108,8 @@ function Public.render_direction(surface, reversed)
         rendering.draw_text {
             text = 'Season: ' .. Public.stateful.get_stateful('season'),
             surface = surface,
-            target = {-0, 12},
-            color = {r = 0.98, g = 0.77, b = 0.22},
+            target = { -0, 12 },
+            color = { r = 0.98, g = 0.77, b = 0.22 },
             scale = 3,
             font = 'heading-1',
             alignment = 'center',
@@ -1124,8 +1124,8 @@ function Public.render_direction(surface, reversed)
         rendering.draw_text {
             text = text .. '\nRun: ' .. counter,
             surface = surface,
-            target = {-0, 10},
-            color = {r = 0.98, g = 0.66, b = 0.22},
+            target = { -0, 10 },
+            color = { r = 0.98, g = 0.66, b = 0.22 },
             scale = 3,
             font = 'heading-1',
             alignment = 'center',
@@ -1135,8 +1135,8 @@ function Public.render_direction(surface, reversed)
         rendering.draw_text {
             text = text,
             surface = surface,
-            target = {-0, 10},
-            color = {r = 0.98, g = 0.66, b = 0.22},
+            target = { -0, 10 },
+            color = { r = 0.98, g = 0.66, b = 0.22 },
             scale = 3,
             font = 'heading-1',
             alignment = 'center',
@@ -1153,8 +1153,8 @@ function Public.render_direction(surface, reversed)
             rendering.draw_text {
                 text = '▲',
                 surface = surface,
-                target = {-0, -20 - inc},
-                color = {r = 0.98, g = 0.66, b = 0.22},
+                target = { -0, -20 - inc },
+                color = { r = 0.98, g = 0.66, b = 0.22 },
                 scale = 3,
                 font = 'heading-1',
                 alignment = 'center',
@@ -1165,23 +1165,23 @@ function Public.render_direction(surface, reversed)
         rendering.draw_text {
             text = 'Biters will attack this area.',
             surface = surface,
-            target = {-0, -70},
-            color = {r = 0.98, g = 0.66, b = 0.22},
+            target = { -0, -70 },
+            color = { r = 0.98, g = 0.66, b = 0.22 },
             scale = 3,
             font = 'heading-1',
             alignment = 'center',
             scale_with_zoom = false
         }
-        surface.create_entity({name = 'electric-beam', position = {x_min, -74}, source = {x_min, -74}, target = {x_max, -74}})
-        surface.create_entity({name = 'electric-beam', position = {x_min, -74}, source = {x_min, -74}, target = {x_max, -74}})
+        surface.create_entity({ name = 'electric-beam', position = { x_min, -74 }, source = { x_min, -74 }, target = { x_max, -74 } })
+        surface.create_entity({ name = 'electric-beam', position = { x_min, -74 }, source = { x_min, -74 }, target = { x_max, -74 } })
     else
         local inc = 0
         for _ = 1, 5 do
             rendering.draw_text {
                 text = '▼',
                 surface = surface,
-                target = {-0, 20 + inc},
-                color = {r = 0.98, g = 0.66, b = 0.22},
+                target = { -0, 20 + inc },
+                color = { r = 0.98, g = 0.66, b = 0.22 },
                 scale = 3,
                 font = 'heading-1',
                 alignment = 'center',
@@ -1192,15 +1192,15 @@ function Public.render_direction(surface, reversed)
         rendering.draw_text {
             text = 'Biters will attack this area.',
             surface = surface,
-            target = {-0, 70},
-            color = {r = 0.98, g = 0.66, b = 0.22},
+            target = { -0, 70 },
+            color = { r = 0.98, g = 0.66, b = 0.22 },
             scale = 3,
             font = 'heading-1',
             alignment = 'center',
             scale_with_zoom = false
         }
-        surface.create_entity({name = 'electric-beam', position = {x_min, 74}, source = {x_min, 74}, target = {x_max, 74}})
-        surface.create_entity({name = 'electric-beam', position = {x_min, 74}, source = {x_min, 74}, target = {x_max, 74}})
+        surface.create_entity({ name = 'electric-beam', position = { x_min, 74 }, source = { x_min, 74 }, target = { x_max, 74 } })
+        surface.create_entity({ name = 'electric-beam', position = { x_min, 74 }, source = { x_min, 74 }, target = { x_max, 74 } })
     end
 end
 
@@ -1336,22 +1336,22 @@ function Public.set_spawn_position()
                         return
                     end
                     debug_str('distance_from was higher - spawning at locomotive_position')
-                    WD.set_spawn_position({x = locomotive_position.x, y = collapse_pos.y - y_value_position})
+                    WD.set_spawn_position({ x = locomotive_position.x, y = collapse_pos.y - y_value_position })
                 else
                     debug_str('distance_from was lower - spawning at locomotive_position')
-                    WD.set_spawn_position({x = locomotive_position.x, y = collapse_pos.y - y_value_position})
+                    WD.set_spawn_position({ x = locomotive_position.x, y = collapse_pos.y - y_value_position })
                 end
             else
                 if collapse_position then
                     debug_str('total_pos was higher - spawning at collapse_position')
-                    collapse_position = {x = collapse_position.x, y = collapse_position.y - y_value_position}
+                    collapse_position = { x = collapse_position.x, y = collapse_position.y - y_value_position }
                     WD.set_spawn_position(collapse_position)
                 end
             end
         else
             if collapse_position then
                 debug_str('total_pos was lower - spawning at collapse_position')
-                collapse_position = {x = collapse_position.x, y = collapse_position.y - y_value_position}
+                collapse_position = { x = collapse_position.x, y = collapse_position.y - y_value_position }
                 WD.set_spawn_position(collapse_position)
             end
         end
@@ -1380,15 +1380,15 @@ function Public.on_player_joined_game(event)
         if not players[player.index] then
             players[player.index] = {}
         end
-        local message = ({'main.greeting', player.name})
+        local message = ({ 'main.greeting', player.name })
         Alert.alert_player(player, 15, message)
         if Public.get('death_mode') then
-            local death_message = ({'main.death_mode_warning'})
+            local death_message = ({ 'main.death_mode_warning' })
             Alert.alert_player(player, 15, death_message)
         end
         player.clear_items_inside()
         for item, data in pairs(this.starting_items) do
-            player.insert({name = item, count = data.count})
+            player.insert({ name = item, count = data.count })
         end
     end
 
@@ -1401,7 +1401,7 @@ function Public.on_player_joined_game(event)
             player.teleport(pos, surface)
         end
     else
-        local p = {x = player.position.x, y = player.position.y}
+        local p = { x = player.position.x, y = player.position.y }
         local get_tile = surface.get_tile(p)
         if get_tile.valid and get_tile.name == 'out-of-map' then
             local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
@@ -1465,7 +1465,7 @@ function Public.on_player_respawned(event)
         return
     end
     if player.character and player.character.valid then
-        Task.set_timeout_in_ticks(15, boost_movement_speed_on_respawn, {player = player})
+        Task.set_timeout_in_ticks(15, boost_movement_speed_on_respawn, { player = player })
         player.character.health = round(player.character.health * health_values[random(1, #health_values)])
         player.print(random_respawn_messages[random(1, #random_respawn_messages)])
     end
@@ -1517,7 +1517,7 @@ function Public.on_pre_player_toggled_map_editor(event)
     this.editor_mode[player.index] = true
 
     player.toggle_map_editor()
-    Task.set_timeout_in_ticks(5, exit_editor_mode_token, {player_index = player.index})
+    Task.set_timeout_in_ticks(5, exit_editor_mode_token, { player_index = player.index })
 end
 
 function Public.on_player_changed_position(event)
@@ -1544,21 +1544,21 @@ function Public.on_player_changed_position(event)
     local surface = game.surfaces[active_surface_index]
     local adjusted_zones = Public.get('adjusted_zones')
 
-    local p = {x = player.position.x, y = player.position.y}
+    local p = { x = player.position.x, y = player.position.y }
     local config_tile = Public.get('void_or_tile')
     if config_tile == 'lab-dark-2' then
         local get_tile = surface.get_tile(p)
         if get_tile.valid and get_tile.name == 'lab-dark-2' then
             if random(1, 2) == 1 then
                 if random(1, 2) == 1 then
-                    show_text('This path is not for players!', p, {r = 0.98, g = 0.66, b = 0.22}, surface)
+                    show_text('This path is not for players!', p, { r = 0.98, g = 0.66, b = 0.22 }, surface)
                 end
-                player.surface.create_entity({name = 'fire-flame', position = player.position})
+                player.surface.create_entity({ name = 'fire-flame', position = player.position })
                 player.character.health = player.character.health - tile_damage
                 if player.character.health == 0 then
                     player.character.die()
-                    local message = ({'main.death_message_' .. random(1, 7), player.name})
-                    game.print(message, {r = 0.98, g = 0.66, b = 0.22})
+                    local message = ({ 'main.death_message_' .. random(1, 7), player.name })
+                    game.print(message, { r = 0.98, g = 0.66, b = 0.22 })
                 end
             end
         end
@@ -1566,11 +1566,11 @@ function Public.on_player_changed_position(event)
 
     if adjusted_zones.reversed then
         if position.y < -74 then
-            player.teleport({position.x, position.y + 1}, surface)
-            player.print(({'main.forcefield'}), {r = 0.98, g = 0.66, b = 0.22})
+            player.teleport({ position.x, position.y + 1 }, surface)
+            player.print(({ 'main.forcefield' }), { r = 0.98, g = 0.66, b = 0.22 })
             if player.character then
                 player.character.health = player.character.health - 5
-                player.character.surface.create_entity({name = 'water-splash', position = position})
+                player.character.surface.create_entity({ name = 'water-splash', position = position })
                 if player.character.health <= 0 then
                     player.character.die('enemy')
                 end
@@ -1578,11 +1578,11 @@ function Public.on_player_changed_position(event)
         end
     else
         if position.y >= 74 then
-            player.teleport({position.x, position.y - 1}, surface)
-            player.print(({'main.forcefield'}), {r = 0.98, g = 0.66, b = 0.22})
+            player.teleport({ position.x, position.y - 1 }, surface)
+            player.print(({ 'main.forcefield' }), { r = 0.98, g = 0.66, b = 0.22 })
             if player.character then
                 player.character.health = player.character.health - 5
-                player.character.surface.create_entity({name = 'water-splash', position = position})
+                player.character.surface.create_entity({ name = 'water-splash', position = position })
                 if player.character.health <= 0 then
                     player.character.die('enemy')
                 end
@@ -1591,7 +1591,7 @@ function Public.on_player_changed_position(event)
     end
 end
 
-local disable_recipes = function(force)
+local disable_recipes = function (force)
     force.recipes['cargo-wagon'].enabled = false
     force.recipes['fluid-wagon'].enabled = false
     force.recipes['car'].enabled = false
@@ -1709,7 +1709,7 @@ function Public.set_player_to_god(player)
 
     spectate[player.index] = nil
 
-    player.set_controller({type = defines.controllers.god})
+    player.set_controller({ type = defines.controllers.god })
     player.create_character()
     local active_surface_index = Public.get('active_surface_index')
     local surface = game.get_surface(active_surface_index)
@@ -1726,11 +1726,11 @@ function Public.set_player_to_god(player)
             player.teleport(pos, surface)
         end
     else
-        local pos = player.surface.find_non_colliding_position('character', {0, 0}, 3, 0, 5)
+        local pos = player.surface.find_non_colliding_position('character', { 0, 0 }, 3, 0, 5)
         if pos then
             player.teleport(pos, player.surface)
         else
-            player.teleport({pos}, player.surface)
+            player.teleport({ pos }, player.surface)
         end
     end
 
@@ -1744,7 +1744,7 @@ function Public.set_player_to_god(player)
     player.tag = ''
 
     game.print('[color=blue][Spectate][/color] ' .. player.name .. ' is no longer spectating!')
-    Server.to_discord_bold(table.concat {'*** ', '[Spectate] ' .. player.name .. ' is no longer spectating!', ' ***'})
+    Server.to_discord_bold(table.concat { '*** ', '[Spectate] ' .. player.name .. ' is no longer spectating!', ' ***' })
     return true
 end
 
@@ -1775,9 +1775,9 @@ function Public.set_player_to_spectator(player)
     player.character = nil
     player.spectator = true
     player.tag = '[img=utility/ghost_time_to_live_modifier_icon]'
-    player.set_controller({type = defines.controllers.spectator})
+    player.set_controller({ type = defines.controllers.spectator })
     game.print('[color=blue][Spectate][/color] ' .. player.name .. ' is now spectating.')
-    Server.to_discord_bold(table.concat {'*** ', '[Spectate] ' .. player.name .. ' is now spectating.', ' ***'})
+    Server.to_discord_bold(table.concat { '*** ', '[Spectate] ' .. player.name .. ' is now spectating.', ' ***' })
 
     if spectate[player.index] and not spectate[player.index].delay then
         spectate[player.index].verify = true
@@ -1786,12 +1786,12 @@ function Public.set_player_to_spectator(player)
     return true
 end
 
-Public.firearm_magazine_ammo = {name = 'firearm-magazine', count = 200}
-Public.piercing_rounds_magazine_ammo = {name = 'piercing-rounds-magazine', count = 200}
-Public.uranium_rounds_magazine_ammo = {name = 'uranium-rounds-magazine', count = 200}
-Public.light_oil_ammo = {name = 'light-oil', amount = 100}
-Public.artillery_shell_ammo = {name = 'artillery-shell', count = 15}
-Public.laser_turrent_power_source = {buffer_size = 2400000, power_production = 40000}
+Public.firearm_magazine_ammo = { name = 'firearm-magazine', count = 200 }
+Public.piercing_rounds_magazine_ammo = { name = 'piercing-rounds-magazine', count = 200 }
+Public.uranium_rounds_magazine_ammo = { name = 'uranium-rounds-magazine', count = 200 }
+Public.light_oil_ammo = { name = 'light-oil', amount = 100 }
+Public.artillery_shell_ammo = { name = 'artillery-shell', count = 15 }
+Public.laser_turrent_power_source = { buffer_size = 2400000, power_production = 40000 }
 Public.pause_waves_custom_callback_token = pause_waves_custom_callback_token
 
 function Public.get_func(key)
@@ -1824,31 +1824,35 @@ function Public.equip_players(starting_items, recreate)
         player.clear_items_inside()
         if player.connected then
             if not player.character then
-                player.set_controller({type = defines.controllers.god})
+                player.set_controller({ type = defines.controllers.god })
                 player.create_character()
             end
+            player.character.destructible = true
             Modifiers.update_player_modifiers(player)
             if not recreate then
                 starting_items = starting_items or this.starting_items
                 for item, item_data in pairs(this.starting_items) do
-                    player.insert({name = item, count = item_data.count})
+                    player.insert({ name = item, count = item_data.count })
                 end
             end
             Public.show_all_gui(player)
             Public.clear_spec_tag(player)
         else
+            if player.character then
+                player.character.destructible = true
+            end
             players[player.index] = nil
             Session.clear_player(player)
-            game.remove_offline_players({player.index})
+            game.remove_offline_players({ player.index })
         end
     end
 end
 
 function Public.reset_func_table()
-    this.power_sources = {index = 1}
-    this.refill_turrets = {index = 1}
-    this.magic_crafters = {index = 1}
-    this.magic_fluid_crafters = {index = 1}
+    this.power_sources = { index = 1 }
+    this.refill_turrets = { index = 1 }
+    this.magic_crafters = { index = 1 }
+    this.magic_fluid_crafters = { index = 1 }
     this.techs = {}
     this.limit_types = {}
     this.starting_items = {
