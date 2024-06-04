@@ -215,7 +215,8 @@ stds.factorio_control = {
             fields = {
                 'commands',
                 'game_commands',
-                'remove_command'
+                'remove_command',
+                'add_command'
             },
             other_fields = false
         },
@@ -260,11 +261,6 @@ stds.factorio_control = {
         },
         rcon = {
             fields = { 'print' }
-        },
-        commands = {
-            fields = {
-                'add_command'
-            }
         },
         rendering = {
             other_fields = false,
