@@ -8,7 +8,7 @@ local Public = {}
 local this = {
     created_items = {},
     respawn_items = {},
-    disabled = false,
+    disabled = true,
     skip_intro = true,
     chart_distance = 0,
     disable_crashsite = false,
@@ -20,7 +20,7 @@ local this = {
 
 Global.register(
     this,
-    function(t)
+    function (t)
         this = t
     end
 )
@@ -30,37 +30,37 @@ local crash_site = require('crash-site')
 
 local clear_mod_gui_top_frame_token =
     Task.register(
-    function(event)
-        local player_index = event.player_index
-        local player = game.get_player(player_index)
-        if not player or not player.valid then
-            return
-        end
+        function (event)
+            local player_index = event.player_index
+            local player = game.get_player(player_index)
+            if not player or not player.valid then
+                return
+            end
 
-        if player.gui.top.mod_gui_top_frame and player.gui.top.mod_gui_top_frame.valid then
-            player.gui.top.mod_gui_top_frame.destroy()
+            if player.gui.top.mod_gui_top_frame and player.gui.top.mod_gui_top_frame.valid then
+                player.gui.top.mod_gui_top_frame.destroy()
+            end
         end
-    end
-)
+    )
 
 local toggle_screen_for_player_token =
     Task.register(
-    function(data)
-        local index = data.index
-        local state = data.state
-        local player = game.get_player(index)
-        if not player or not player.valid then
-            return
+        function (data)
+            local index = data.index
+            local state = data.state
+            local player = game.get_player(index)
+            if not player or not player.valid then
+                return
+            end
+            if state then
+                BottomFrame.toggle_player_frame(player, true)
+            else
+                BottomFrame.toggle_player_frame(player, false)
+            end
         end
-        if state then
-            BottomFrame.toggle_player_frame(player, true)
-        else
-            BottomFrame.toggle_player_frame(player, false)
-        end
-    end
-)
+    )
 
-local created_items = function()
+local created_items = function ()
     return {
         ['iron-plate'] = 8,
         ['wood'] = 1,
@@ -71,38 +71,38 @@ local created_items = function()
     }
 end
 
-local respawn_items = function()
+local respawn_items = function ()
     return {
         ['pistol'] = 1,
         ['firearm-magazine'] = 10
     }
 end
 
-local ship_parts = function()
+local ship_parts = function ()
     return crash_site.default_ship_parts()
 end
 
-local ship_items = function()
+local ship_items = function ()
     return {
         ['firearm-magazine'] = 8
     }
 end
 
-local debris_items = function()
+local debris_items = function ()
     return {
         ['iron-plate'] = 8
     }
 end
 
-local chart_starting_area = function()
+local chart_starting_area = function ()
     local r = this.chart_distance or 200
     local force = game.forces.player
     local surface = game.surfaces[1]
     local origin = force.get_spawn_position(surface)
-    force.chart(surface, {{origin.x - r, origin.y - r}, {origin.x + r, origin.y + r}})
+    force.chart(surface, { { origin.x - r, origin.y - r }, { origin.x + r, origin.y + r } })
 end
 
-local on_player_joined_game = function(event)
+local on_player_joined_game = function (event)
     if not this.clear_mod_gui_top then
         return
     end
@@ -110,7 +110,7 @@ local on_player_joined_game = function(event)
     Task.set_timeout_in_ticks(5, clear_mod_gui_top_frame_token, event)
 end
 
-local on_player_created = function(event)
+local on_player_created = function (event)
     if this.disabled then
         return
     end
@@ -127,7 +127,7 @@ local on_player_created = function(event)
         if not this.disable_crashsite then
             local surface = player.surface
             surface.daytime = 0.7
-            crash_site.create_crash_site(surface, {-5, -6}, util.copy(this.crashed_ship_items), util.copy(this.crashed_debris_items), util.copy(this.crashed_ship_parts))
+            crash_site.create_crash_site(surface, { -5, -6 }, util.copy(this.crashed_ship_items), util.copy(this.crashed_debris_items), util.copy(this.crashed_ship_parts))
 
             util.remove_safe(player, this.crashed_ship_items)
             util.remove_safe(player, this.crashed_debris_items)
@@ -139,15 +139,15 @@ local on_player_created = function(event)
 
             if not this.skip_intro then
                 BottomFrame.toggle_player_frame(player, false)
-                Task.set_timeout_in_ticks(1, toggle_screen_for_player_token, {index = player.index, state = false})
-                crash_site.create_cutscene(player, {-5, -4})
+                Task.set_timeout_in_ticks(1, toggle_screen_for_player_token, { index = player.index, state = false })
+                crash_site.create_cutscene(player, { -5, -4 })
             end
             return
         end
     end
 end
 
-local on_player_respawned = function(event)
+local on_player_respawned = function (event)
     if this.disabled then
         return
     end
@@ -155,7 +155,7 @@ local on_player_respawned = function(event)
     util.insert_safe(player, this.respawn_items)
 end
 
-local on_cutscene_waypoint_reached = function(event)
+local on_cutscene_waypoint_reached = function (event)
     if this.disabled then
         return
     end
@@ -167,7 +167,7 @@ local on_cutscene_waypoint_reached = function(event)
 
     player.exit_cutscene()
     BottomFrame.toggle_player_frame(player, true)
-    Task.set_timeout_in_ticks(5, toggle_screen_for_player_token, {index = player.index, state = true})
+    Task.set_timeout_in_ticks(5, toggle_screen_for_player_token, { index = player.index, state = true })
 
     if this.custom_surface_name then
         if player.surface.name == 'nauvis' then
@@ -175,12 +175,12 @@ local on_cutscene_waypoint_reached = function(event)
             if not get_custom_surface or not get_custom_surface.valid then
                 return
             end
-            player.teleport(get_custom_surface.find_non_colliding_position('character', {64, 64}, 50, 0.5), get_custom_surface.name)
+            player.teleport(get_custom_surface.find_non_colliding_position('character', { 64, 64 }, 50, 0.5), get_custom_surface.name)
         end
     end
 end
 
-local skip_crash_site_cutscene = function(event)
+local skip_crash_site_cutscene = function (event)
     if this.disabled then
         return
     end
@@ -196,7 +196,7 @@ local skip_crash_site_cutscene = function(event)
     if player.controller_type == defines.controllers.cutscene then
         player.exit_cutscene()
         BottomFrame.toggle_player_frame(player, true)
-        Task.set_timeout_in_ticks(5, toggle_screen_for_player_token, {index = player.index, state = true})
+        Task.set_timeout_in_ticks(5, toggle_screen_for_player_token, { index = player.index, state = true })
     end
     if this.custom_surface_name then
         if player.surface.name == 'nauvis' then
@@ -204,12 +204,12 @@ local skip_crash_site_cutscene = function(event)
             if not get_custom_surface or not get_custom_surface.valid then
                 return
             end
-            player.teleport(get_custom_surface.find_non_colliding_position('character', {64, 64}, 50, 0.5), get_custom_surface.name)
+            player.teleport(get_custom_surface.find_non_colliding_position('character', { 64, 64 }, 50, 0.5), get_custom_surface.name)
         end
     end
 end
 
-local on_cutscene_cancelled = function(event)
+local on_cutscene_cancelled = function (event)
     if this.disabled then
         return
     end
@@ -222,14 +222,14 @@ local on_cutscene_cancelled = function(event)
         player.character.destructible = true
     end
     BottomFrame.toggle_player_frame(player, true)
-    Task.set_timeout_in_ticks(5, toggle_screen_for_player_token, {index = player.index, state = true})
+    Task.set_timeout_in_ticks(5, toggle_screen_for_player_token, { index = player.index, state = true })
     if this.custom_surface_name then
         if player.surface.name == 'nauvis' then
             local get_custom_surface = game.get_surface(this.custom_surface_name)
             if not get_custom_surface or not get_custom_surface.valid then
                 return
             end
-            player.teleport(get_custom_surface.find_non_colliding_position('character', {64, 64}, 50, 0.5), get_custom_surface.name)
+            player.teleport(get_custom_surface.find_non_colliding_position('character', { 64, 64 }, 50, 0.5), get_custom_surface.name)
         end
     end
 
@@ -237,43 +237,43 @@ local on_cutscene_cancelled = function(event)
 end
 
 local freeplay_interface = {
-    get_created_items = function()
+    get_created_items = function ()
         return this.created_items
     end,
-    set_created_items = function(map)
+    set_created_items = function (map)
         this.created_items = map or error("Remote call parameter to freeplay set created items can't be nil.")
     end,
-    get_respawn_items = function()
+    get_respawn_items = function ()
         return this.respawn_items
     end,
-    set_respawn_items = function(map)
+    set_respawn_items = function (map)
         this.respawn_items = map or error("Remote call parameter to freeplay set respawn items can't be nil.")
     end,
-    set_skip_intro = function(bool)
+    set_skip_intro = function (bool)
         this.skip_intro = bool
     end,
-    set_disabled = function(bool)
+    set_disabled = function (bool)
         this.disabled = bool
     end,
-    set_custom_surface_name = function(str)
+    set_custom_surface_name = function (str)
         this.custom_surface_name = str or error('Remote call parameter to freeplay set custom_surface_name must be string')
     end,
-    set_chart_distance = function(value)
+    set_chart_distance = function (value)
         this.chart_distance = tonumber(value) or error('Remote call parameter to freeplay set chart distance must be a number')
     end,
-    set_disable_crashsite = function(bool)
+    set_disable_crashsite = function (bool)
         this.disable_crashsite = bool
     end,
-    get_ship_items = function()
+    get_ship_items = function ()
         return this.crashed_ship_items
     end,
-    set_ship_items = function(map)
+    set_ship_items = function (map)
         this.crashed_ship_items = map or error("Remote call parameter to freeplay set created items can't be nil.")
     end,
-    get_debris_items = function()
+    get_debris_items = function ()
         return this.crashed_debris_items
     end,
-    set_debris_items = function(map)
+    set_debris_items = function (map)
         this.crashed_debris_items = map or error("Remote call parameter to freeplay set respawn items can't be nil.")
     end
 }
@@ -302,7 +302,7 @@ function Public.set(key, value)
 end
 
 Event.on_init(
-    function()
+    function ()
         local game_has_mods = is_game_modded()
         if game_has_mods then
             this.created_items = created_items()
@@ -314,7 +314,7 @@ Event.on_init(
     end
 )
 
-local on_configuration_changed = function()
+local on_configuration_changed = function ()
     this.created_items = this.created_items or created_items()
     this.respawn_items = this.respawn_items or respawn_items()
     this.crashed_ship_items = this.crashed_ship_items or ship_items()
