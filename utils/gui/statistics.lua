@@ -61,7 +61,7 @@ local function show_score(data)
     local column_table = scroll_pane.add { type = 'table', column_count = 4 }
 
     for name, stat in pairs(stat_data) do
-        if not ignored_stats[name] then
+        if not ignored_stats[name] and normalized_names[name] then
             local c = stat
             if stat and type(stat) == 'number' then
                 c = format_number(stat, true)
