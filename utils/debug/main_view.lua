@@ -5,15 +5,12 @@ local Public = {}
 
 local pages = {
     require 'utils.debug.public_global_view',
-    require 'utils.debug.global_view'
+    require 'utils.debug.global_view',
+    require 'utils.debug.gui_data_view',
+    require 'utils.debug.package_view',
+    require 'utils.debug._g_view',
+    require 'utils.debug.event_view'
 }
-
-if _DEBUG then
-    pages[#pages + 1] = require 'utils.debug.gui_data_view'
-    pages[#pages + 1] = require 'utils.debug.package_view'
-    pages[#pages + 1] = require 'utils.debug._g_view'
-    pages[#pages + 1] = require 'utils.debug.event_view'
-end
 
 local main_frame_name = Gui.uid_name()
 local close_name = Gui.uid_name()
@@ -40,8 +37,8 @@ function Public.open_debug(player)
     frame_style.height = 600
     frame_style.width = 1100
 
-    local tab_flow = frame.add {type = 'flow', direction = 'horizontal'}
-    local container = frame.add {type = 'flow'}
+    local tab_flow = frame.add {type = 'flow', direction = 'horizontal', name = 'tab_flow'}
+    local container = frame.add {type = 'flow', name = 'container'}
     container.style.vertically_stretchable = true
 
     local data = {}
@@ -107,5 +104,7 @@ Gui.on_click(
         end
     end
 )
+
+Public.main_frame_name = main_frame_name
 
 return Public

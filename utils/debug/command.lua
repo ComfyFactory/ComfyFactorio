@@ -1,31 +1,20 @@
 local DebugView = require 'utils.debug.main_view'
-local Server = require 'utils.server'
+local Commands = require 'utils.commands'
+local Gui = require 'utils.gui'
 
-commands.add_command(
-    'debug',
-    'Opens the debugger',
-    function(_)
-        local player = game.player
-        if not player or not player.valid then
-            return
+Commands.new('debug', 'Usable only for admins - opens the debugger!')
+    :require_admin()
+    :callback(
+        function (player)
+            local screen = player.gui.screen
+            local frame = screen[DebugView.main_frame_name]
+            if frame and frame.valid then
+                Gui.destroy(frame)
+            end
+
+            DebugView.open_debug(player)
         end
-
-        if not player.admin then
-            player.print('Only admins can use this command.')
-            return
-        end
-
-        local secs = Server.get_current_time()
-        local admins = Server.get_admins_data()
-
-        if secs and not admins[player.name] then
-            player.print('Only admins can use this command.')
-            return
-        end
-
-        DebugView.open_debug(player)
-    end
-)
+    )
 
 if _DEBUG then
     local Model = require 'model'
@@ -35,76 +24,50 @@ if _DEBUG then
     local dump = Model.dump
     local log = log
 
-    commands.add_command(
-        'dump-log',
-        'Dumps value to log',
-        function(args)
-            local player = game.player
-            local p
-            if player then
-                p = player.print
-                if not player.admin then
-                    p('Only admins can use this command.')
-                    return
+    Commands.new('dump-log', 'Dumps value to log')
+        :require_admin()
+        :add_parameter('value', false, 'string')
+        :callback(
+            function (player, value)
+                local func, err = loadstring('return ' .. value)
+
+                if not func then
+                    player.print(err)
+                    return false
                 end
-            else
-                p = player.print
-            end
-            if args.parameter == nil then
-                return
-            end
-            local func, err = loadstring('return ' .. args.parameter)
 
-            if not func then
-                p(err)
-                return
-            end
+                local suc, v = pcall(func)
 
-            local suc, value = pcall(func)
-
-            if not suc then
-                p(value)
-                return
-            end
-
-            log(dump(value))
-        end
-    )
-
-    commands.add_command(
-        'dump-file',
-        'Dumps value to dump.lua',
-        function(args)
-            local player = game.player
-            local p
-            if player then
-                p = player.print
-                if not player.admin then
-                    p('Only admins can use this command.')
-                    return
+                if not suc then
+                    player.print(v)
+                    return false
                 end
-            else
-                p = player.print
-            end
-            if args.parameter == nil then
-                return
-            end
-            local func, err = loadstring('return ' .. args.parameter)
 
-            if not func then
-                p(err)
-                return
+                log(dump(v))
             end
+        )
 
-            local suc, value = pcall(func)
+    Commands.new('dump-file', 'Dumps value to dump.lua')
+        :require_admin()
+        :add_parameter('value', false, 'string')
+        :callback(
+            function (player, value)
+                local func, err = loadstring('return ' .. value)
 
-            if not suc then
-                p(value)
-                return
+                if not func then
+                    player.print(err)
+                    return false
+                end
+
+                local suc, v = pcall(func)
+
+                if not suc then
+                    player.print(v)
+                    return false
+                end
+
+                v = dump(v)
+                game.write_file('dump.lua', v, false)
             end
-
-            value = dump(value)
-            game.write_file('dump.lua', value, false)
-        end
-    )
+        )
 end

@@ -251,7 +251,7 @@ Gui.on_click(
         local element = event.element
 
         local button = event.button
-        local data = Gui.get_data_custom(tag, element)
+        local data = Gui.get_data(element)
         if not data then
             return
         end
@@ -288,7 +288,7 @@ Gui.on_click(
         local player = event.player
         local element = event.element
 
-        local data = Gui.get_data_custom(tag, element)
+        local data = Gui.get_data(element)
         if not data then
             return
         end
@@ -360,7 +360,6 @@ Gui.on_click(
     module_name,
     function(event)
         local player = event.player
-        Gui.set_data_custom(tag, {player_index = player.index, remove = true}, nil)
         Gui.reload_active_tab(player)
     end
 )
@@ -403,11 +402,5 @@ Gui.on_click(
 
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_left_game, on_player_left_game)
-Event.add(
-    Gui.events.on_gui_removal,
-    function(event)
-        Gui.set_data_custom(tag, {player_index = event.player_index, remove = true}, nil)
-    end
-)
 
 return Public

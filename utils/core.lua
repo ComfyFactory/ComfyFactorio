@@ -138,6 +138,26 @@ function Public.iter_players(callback)
     end
 end
 
+function Public.output_message(value, color, player)
+    color = color and Color[color] or Color.white
+
+    player = player or game.player
+
+    local message = value and type(value) == 'table' and serpent.block(value) or value or type(value) == 'userdata' and 'Cannot output userdata' or 'Cannot output nil'
+
+    if player then
+        player = player and type(player) == 'number' and game.get_player(player) and game.get_player(player).valid or player and player.valid and player or false
+        if not player then
+            error('Given player is not valid.', 2)
+        end
+
+        player.play_sound { path = 'utility/scenario_message' }
+        player.print(message, color)
+    else
+        Server.output_data(message)
+    end
+end
+
 function Public.cast_bool(var)
     if var then
         return true
@@ -278,9 +298,9 @@ end
 -- @param command the command's name as table element
 -- @param parameters the command's parameters as a table (optional)
 function Public.log_command(actor, command, parameters)
-    local action = concat {'[Admin-Command] ', actor, ' used: ', command}
+    local action = concat { '[Admin-Command] ', actor, ' used: ', command }
     if parameters then
-        action = concat {action, ' ', parameters}
+        action = concat { action, ' ', parameters }
     end
     print(action)
 end
@@ -305,7 +325,7 @@ end
 
 --- Returns a random RGB color as a table
 function Public.random_RGB()
-    return {r = random(0, 255), g = random(0, 255), b = random(0, 255)}
+    return { r = random(0, 255), g = random(0, 255), b = random(0, 255) }
 end
 
 --- Sets a table element to value while also returning value.
@@ -380,8 +400,9 @@ end
 --- Takes a string, number, or LuaPlayer and returns a valid LuaPlayer or nil.
 -- Intended for commands as there are extra checks in place.
 -- @param <string|number|LuaPlayer>
+-- @param <boolean>
 -- @return <LuaPlayer|nil> <string|nil> <number|nil> the LuaPlayer, their name, and their index
-function Public.validate_player(player_ident)
+function Public.validate_player(player_ident, check_admin)
     local data_type = type(player_ident)
     local player
 
@@ -398,6 +419,12 @@ function Public.validate_player(player_ident)
 
     if not player or not player.valid then
         return
+    end
+
+    if check_admin then
+        if not player.admin then
+            return
+        end
     end
 
     return player, player.name, player.index

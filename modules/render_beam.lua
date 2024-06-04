@@ -1,6 +1,7 @@
 local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Gui = require 'utils.gui'
+local Commands = require 'utils.commands'
 
 local this = {
     renders = {},
@@ -30,11 +31,11 @@ local this = {
 
 local Public = {}
 
-Public.metatable = {__index = Public}
+Public.metatable = { __index = Public }
 
 Global.register(
     this,
-    function(tbl)
+    function (tbl)
         this = tbl
         for _, render in pairs(this.renders) do
             setmetatable(render, Public.metatable)
@@ -59,7 +60,7 @@ function Public:new_render()
         rendering.destroy(self.render_id)
     end
 
-    self.render_id = rendering.draw_sprite {target = self.position, sprite = self.sprite, surface = surface}
+    self.render_id = rendering.draw_sprite { target = self.position, sprite = self.sprite, surface = surface }
     return self
 end
 
@@ -71,13 +72,13 @@ function Public:new_target()
         return
     end
     local position
-    local entities = surface.find_entities_filtered {type = this.valid_targets, force = 'player'}
+    local entities = surface.find_entities_filtered { type = this.valid_targets, force = 'player' }
     if entities and #entities > 0 then
         position = entities[random(#entities)].position
     end
 
     local chunk = surface.get_random_chunk()
-    local random_position = {x = (chunk.x + random()) * 32, y = (chunk.y + random()) * 32}
+    local random_position = { x = (chunk.x + random()) * 32, y = (chunk.y + random()) * 32 }
     if not position then
         return random_position, random_position
     end
@@ -91,7 +92,7 @@ function Public:subtr()
     if not self.position and self.target_position then
         return 0
     end
-    return {x = self.target_position.x - self.position.x, y = self.target_position.y - self.position.y}
+    return { x = self.target_position.x - self.position.x, y = self.target_position.y - self.position.y }
 end
 
 --- Sets the render scale.
@@ -101,7 +102,7 @@ function Public:set_render_scalar_size()
     end
 
     rendering.set_y_scale(self.render_id, 3.5) -- 1.5
-    rendering.set_x_scale(self.render_id, 7) -- 2
+    rendering.set_x_scale(self.render_id, 7)   -- 2
     rendering.set_color(
         self.render_id,
         {
@@ -115,7 +116,7 @@ end
 --- Gets a random position.
 ---@return table
 function Public:random_position()
-    return {x = self.position.x + (random() - 0.5) * 64, y = self.position.y + (random() - 0.5) * 64}
+    return { x = self.position.x + (random() - 0.5) * 64, y = self.position.y + (random() - 0.5) * 64 }
 end
 
 --- Sets a random sprite
@@ -150,12 +151,12 @@ function Public:change_position(max_abs, value)
     local multiply = sqrt(subtr.x * subtr.x + subtr.y * subtr.y)
     if (multiply > max_abs) then
         local close = max_abs / multiply
-        subtr = {x = subtr.x * close, y = subtr.y * close}
+        subtr = { x = subtr.x * close, y = subtr.y * close }
     end
     if value then
         subtr.y = subtr.y * scalar
     end
-    return {x = self.position.x + subtr.x, y = self.position.y + subtr.y}
+    return { x = self.position.x + subtr.x, y = self.position.y + subtr.y }
 end
 
 --- If a render is stuck, give it a new position.
@@ -168,7 +169,7 @@ function Public:switch_position()
             return
         end
         local chunk = surface.get_random_chunk()
-        self.target_position = {x = (chunk.x + math.random()) * 32, y = (chunk.y + math.random()) * 32}
+        self.target_position = { x = (chunk.x + math.random()) * 32, y = (chunk.y + math.random()) * 32 }
     end
 end
 
@@ -198,13 +199,13 @@ function Public:render_chart()
 
     self.chart =
         game.forces[self.force].add_chart_tag(
-        surface,
-        {
-            icon = {type = 'virtual', name = 'signal-info'},
-            position = self.position,
-            text = 'Beam'
-        }
-    )
+            surface,
+            {
+                icon = { type = 'virtual', name = 'signal-info' },
+                position = self.position,
+                text = 'Beam'
+            }
+        )
 end
 
 --- Sets a new position for a render.
@@ -233,12 +234,12 @@ function Public:render_fire_damage()
             return
         end
 
-        surface.create_entity({name = 'fire-flame', position = {x = self.position.x, y = self.position.y + 5}})
+        surface.create_entity({ name = 'fire-flame', position = { x = self.position.x, y = self.position.y + 5 } })
         if random(1, 5) == 1 then
             surface.create_entity(
                 {
                     name = 'medium-scorchmark',
-                    position = {x = self.position.x, y = self.position.y + 5},
+                    position = { x = self.position.x, y = self.position.y + 5 },
                     force = 'neutral'
                 }
             )
@@ -257,13 +258,13 @@ function Public:damage_entities_nearby()
         local damage = random(10, 15)
         local entities =
             surface.find_entities_filtered(
-            {
-                position = self.position,
-                radius = 20,
-                type = 'simple-entity',
-                invert = true
-            }
-        )
+                {
+                    position = self.position,
+                    radius = 20,
+                    type = 'simple-entity',
+                    invert = true
+                }
+            )
         for _, entity in pairs(entities) do
             if entity.valid then
                 if entity.health then
@@ -351,7 +352,7 @@ function Public.new(sprite, surface, ttl, scalar, delayed)
         render.delayed = game.tick + delayed
         render.ttl = ttl or (game.tick + delayed) + 7200 -- 2 minutes duration
     else
-        render.ttl = ttl or game.tick + 7200 -- 2 minutes duration
+        render.ttl = ttl or game.tick + 7200             -- 2 minutes duration
         render:validate()
         if not scalar then
             render:set_render_scalar_size()
@@ -396,7 +397,7 @@ end
 
 Event.add(
     defines.events.on_tick,
-    function()
+    function ()
         if #this.renders == 0 then
             return
         end
@@ -418,20 +419,13 @@ Event.add(
     end
 )
 if _DEBUG then
-    commands.add_command(
-        'laser',
-        'new laser',
-        function()
-            local player = game.player
-            if player and player.valid then
-                if not player.admin then
-                    return
-                end
-
+    Commands.new('laser', 'new laser')
+        :require_admin()
+        :callback(
+            function (player)
                 Public.new_beam_delayed(player.surface, 222)
             end
-        end
-    )
+        )
 end
 
 return Public

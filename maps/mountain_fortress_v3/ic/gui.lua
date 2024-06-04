@@ -47,7 +47,7 @@ local function get_top_frame(player)
 end
 
 local function increment(t, k)
-    t[k] = {trusted = true, drive = true}
+    t[k] = { trusted = true, drive = true }
 end
 
 local function decrement(t, k)
@@ -68,11 +68,12 @@ local function get_players(player, frame, all)
             insert(tbl, tostring(p.name))
         end
     end
-    insert(tbl, ({'ic.select_player'}))
+    insert(tbl, ({ 'ic.select_player' }))
 
     local selected_index = #tbl
 
-    local f = frame.add({type = 'drop-down', name = transfer_player_select_name, items = tbl, selected_index = selected_index})
+    local f = frame.add({ type = 'drop-down', name = transfer_player_select_name, items = tbl,
+        selected_index = selected_index })
     return f
 end
 
@@ -128,21 +129,21 @@ end
 local function draw_add_player(player, frame)
     local main_frame =
         frame.add(
-        {
-            type = 'frame',
-            name = draw_add_player_frame_name,
-            caption = ({'ic.add_player'}),
-            direction = 'vertical'
-        }
-    )
+            {
+                type = 'frame',
+                name = draw_add_player_frame_name,
+                caption = ({ 'ic.add_player' }),
+                direction = 'vertical'
+            }
+        )
     local main_frame_style = main_frame.style
     main_frame_style.width = 370
     main_frame_style.use_header_filler = true
 
-    local inside_frame = main_frame.add {type = 'frame', style = 'inside_shallow_frame'}
+    local inside_frame = main_frame.add { type = 'frame', style = 'inside_shallow_frame' }
     local inside_frame_style = inside_frame.style
     inside_frame_style.padding = 0
-    local inside_table = inside_frame.add {type = 'table', column_count = 1}
+    local inside_table = inside_frame.add { type = 'table', column_count = 1 }
     local inside_table_style = inside_table.style
     inside_table_style.vertical_spacing = 5
     inside_table_style.top_padding = 10
@@ -153,20 +154,20 @@ local function draw_add_player(player, frame)
 
     local add_player_frame = get_players(player, main_frame)
 
-    local bottom_flow = main_frame.add({type = 'flow', direction = 'horizontal'})
+    local bottom_flow = main_frame.add({ type = 'flow', direction = 'horizontal' })
 
-    local left_flow = bottom_flow.add({type = 'flow'})
+    local left_flow = bottom_flow.add({ type = 'flow' })
     left_flow.style.horizontal_align = 'left'
     left_flow.style.horizontally_stretchable = true
 
-    local close_button = left_flow.add({type = 'button', name = discard_add_player_name, caption = ({'ic.discard'})})
+    local close_button = left_flow.add({ type = 'button', name = discard_add_player_name, caption = ({ 'ic.discard' }) })
     close_button.style = 'back_button' ---@class GuiButtonStyle
     close_button.style.maximal_width = 100
 
-    local right_flow = bottom_flow.add({type = 'flow'})
+    local right_flow = bottom_flow.add({ type = 'flow' })
     right_flow.style.horizontal_align = 'right'
 
-    local save_button = right_flow.add({type = 'button', name = save_add_player_button_name, caption = ({'ic.save'})})
+    local save_button = right_flow.add({ type = 'button', name = save_add_player_button_name, caption = ({ 'ic.save' }) })
     save_button.style = 'confirm_button' ---@class GuiButtonStyle
     save_button.style.maximal_width = 100
 
@@ -176,21 +177,21 @@ end
 local function draw_transfer_car(player, frame)
     local main_frame =
         frame.add(
-        {
-            type = 'frame',
-            name = draw_transfer_car_frame_name,
-            caption = ({'ic.transfer_car'}),
-            direction = 'vertical'
-        }
-    )
+            {
+                type = 'frame',
+                name = draw_transfer_car_frame_name,
+                caption = ({ 'ic.transfer_car' }),
+                direction = 'vertical'
+            }
+        )
     local main_frame_style = main_frame.style
     main_frame_style.width = 370
     main_frame_style.use_header_filler = true
 
-    local inside_frame = main_frame.add {type = 'frame', style = 'inside_shallow_frame'}
+    local inside_frame = main_frame.add { type = 'frame', style = 'inside_shallow_frame' }
     local inside_frame_style = inside_frame.style
     inside_frame_style.padding = 0
-    local inside_table = inside_frame.add {type = 'table', column_count = 1}
+    local inside_table = inside_frame.add { type = 'table', column_count = 1 }
     local inside_table_style = inside_table.style
     inside_table_style.vertical_spacing = 5
     inside_table_style.top_padding = 10
@@ -199,25 +200,25 @@ local function draw_transfer_car(player, frame)
     inside_table_style.bottom_padding = 10
     inside_table_style.width = 325
 
-    local transfer_car_alert_frame = main_frame.add({type = 'label', caption = ({'ic.warning'})})
-    transfer_car_alert_frame.style.font_color = {r = 255, g = 0, b = 0}
+    local transfer_car_alert_frame = main_frame.add({ type = 'label', caption = ({ 'ic.warning' }) })
+    transfer_car_alert_frame.style.font_color = { r = 255, g = 0, b = 0 }
     transfer_car_alert_frame.style.font = 'heading-1'
     local transfer_car_frame = get_players(player, main_frame, true)
 
-    local bottom_flow = main_frame.add({type = 'flow', direction = 'horizontal'})
+    local bottom_flow = main_frame.add({ type = 'flow', direction = 'horizontal' })
 
-    local left_flow = bottom_flow.add({type = 'flow'})
+    local left_flow = bottom_flow.add({ type = 'flow' })
     left_flow.style.horizontal_align = 'left'
     left_flow.style.horizontally_stretchable = true
 
-    local close_button = left_flow.add({type = 'button', name = discard_transfer_car_name, caption = ({'ic.discard'})})
+    local close_button = left_flow.add({ type = 'button', name = discard_transfer_car_name, caption = ({ 'ic.discard' }) })
     close_button.style = 'back_button' ---@class GuiButtonStyle
     close_button.style.maximal_width = 100
 
-    local right_flow = bottom_flow.add({type = 'flow'})
+    local right_flow = bottom_flow.add({ type = 'flow' })
     right_flow.style.horizontal_align = 'right'
 
-    local save_button = right_flow.add({type = 'button', name = save_transfer_car_button_name, caption = ({'ic.save'})})
+    local save_button = right_flow.add({ type = 'button', name = save_transfer_car_button_name, caption = ({ 'ic.save' }) })
     save_button.style = 'confirm_button' ---@class GuiButtonStyle
     save_button.style.maximal_width = 100
 
@@ -227,21 +228,21 @@ end
 local function draw_destroy_surface_name(frame)
     local main_frame =
         frame.add(
-        {
-            type = 'frame',
-            name = draw_destroy_surface_frame_name,
-            caption = ({'ic.destroy_surface'}),
-            direction = 'vertical'
-        }
-    )
+            {
+                type = 'frame',
+                name = draw_destroy_surface_frame_name,
+                caption = ({ 'ic.destroy_surface' }),
+                direction = 'vertical'
+            }
+        )
     local main_frame_style = main_frame.style
     main_frame_style.width = 370
     main_frame_style.use_header_filler = true
 
-    local inside_frame = main_frame.add {type = 'frame', style = 'inside_shallow_frame'}
+    local inside_frame = main_frame.add { type = 'frame', style = 'inside_shallow_frame' }
     local inside_frame_style = inside_frame.style
     inside_frame_style.padding = 0
-    local inside_table = inside_frame.add {type = 'table', column_count = 1}
+    local inside_table = inside_frame.add { type = 'table', column_count = 1 }
     local inside_table_style = inside_table.style
     inside_table_style.vertical_spacing = 5
     inside_table_style.top_padding = 10
@@ -250,28 +251,29 @@ local function draw_destroy_surface_name(frame)
     inside_table_style.bottom_padding = 10
     inside_table_style.width = 325
 
-    local destroy_car_frame = main_frame.add({type = 'label', caption = ({'ic.warning'})})
-    destroy_car_frame.style.font_color = {r = 255, g = 0, b = 0}
+    local destroy_car_frame = main_frame.add({ type = 'label', caption = ({ 'ic.warning' }) })
+    destroy_car_frame.style.font_color = { r = 255, g = 0, b = 0 }
     destroy_car_frame.style.font = 'heading-1'
 
-    local warn_again_frame = main_frame.add({type = 'label', caption = ({'ic.warning_2'})})
-    warn_again_frame.style.font_color = {r = 255, g = 0, b = 0}
+    local warn_again_frame = main_frame.add({ type = 'label', caption = ({ 'ic.warning_2' }) })
+    warn_again_frame.style.font_color = { r = 255, g = 0, b = 0 }
     warn_again_frame.style.font = 'heading-1'
 
-    local bottom_flow = main_frame.add({type = 'flow', direction = 'horizontal'})
+    local bottom_flow = main_frame.add({ type = 'flow', direction = 'horizontal' })
 
-    local left_flow = bottom_flow.add({type = 'flow'})
+    local left_flow = bottom_flow.add({ type = 'flow' })
     left_flow.style.horizontal_align = 'left'
     left_flow.style.horizontally_stretchable = true
 
-    local close_button = left_flow.add({type = 'button', name = discard_destroy_surface_name, caption = ({'ic.discard'})})
+    local close_button = left_flow.add({ type = 'button', name = discard_destroy_surface_name, caption = ({ 'ic.discard' }) })
     close_button.style = 'back_button' ---@class GuiButtonStyle
     close_button.style.maximal_width = 100
 
-    local right_flow = bottom_flow.add({type = 'flow'})
+    local right_flow = bottom_flow.add({ type = 'flow' })
     right_flow.style.horizontal_align = 'right'
 
-    local save_button = right_flow.add({type = 'button', name = save_destroy_surface_button_name, caption = ({'ic.save'})})
+    local save_button = right_flow.add({ type = 'button', name = save_destroy_surface_button_name,
+        caption = ({ 'ic.save' }) })
     save_button.style = 'confirm_button' ---@class GuiButtonStyle
     save_button.style.maximal_width = 100
 
@@ -288,55 +290,55 @@ local function draw_players(data)
         Gui.set_data(add_player_frame, p)
         local t_label =
             player_table.add(
-            {
-                type = 'label',
-                caption = p
-            }
-        )
+                {
+                    type = 'label',
+                    caption = p
+                }
+            )
         t_label.style.minimal_width = 75
         t_label.style.horizontal_align = 'center'
 
-        local a_flow = player_table.add {type = 'flow'}
+        local a_flow = player_table.add { type = 'flow' }
         local a_label =
             a_flow.add(
-            {
-                type = 'label',
-                caption = p_data.trusted and '✔️' or '✖️',
-                name = trust_player_name,
-                tooltip = ({'ic.allowed_tooltip'})
-            }
-        )
+                {
+                    type = 'label',
+                    caption = p_data.trusted and '✔️' or '✖️',
+                    name = trust_player_name,
+                    tooltip = ({ 'ic.allowed_tooltip' })
+                }
+            )
         a_label.style.minimal_width = 75
         a_label.style.horizontal_align = 'center'
         a_label.style.font = 'default-large-bold'
 
-        local d_flow = player_table.add {type = 'flow'}
+        local d_flow = player_table.add { type = 'flow' }
         local d_label =
             d_flow.add(
-            {
-                type = 'label',
-                caption = p_data.drive and '✔️' or '✖️',
-                name = drive_player_name,
-                tooltip = ({'ic.drive_tooltip'})
-            }
-        )
+                {
+                    type = 'label',
+                    caption = p_data.drive and '✔️' or '✖️',
+                    name = drive_player_name,
+                    tooltip = ({ 'ic.drive_tooltip' })
+                }
+            )
         d_label.style.minimal_width = 75
         d_label.style.horizontal_align = 'center'
         d_label.style.font = 'default-large-bold'
 
-        local kick_flow = player_table.add {type = 'flow'}
+        local kick_flow = player_table.add { type = 'flow' }
         local kick_player_button =
             kick_flow.add(
-            {
-                type = 'button',
-                caption = ({'ic.kick'}),
-                name = kick_player_name
-            }
-        )
+                {
+                    type = 'button',
+                    caption = ({ 'ic.kick' }),
+                    name = kick_player_name
+                }
+            )
         if player.name == t_label.caption then
             kick_player_button.enabled = false
-            a_label.tooltip = ({'ic.not_self'})
-            d_label.tooltip = ({'ic.not_self'})
+            a_label.tooltip = ({ 'ic.not_self' })
+            d_label.tooltip = ({ 'ic.not_self' })
         end
         kick_player_button.style.minimal_width = 75
         Gui.set_data(a_label, p)
@@ -348,25 +350,25 @@ end
 local function draw_main_frame(player)
     local main_frame =
         player.gui.screen.add(
-        {
-            type = 'frame',
-            name = main_frame_name,
-            caption = ({'ic.car_settings'}),
-            direction = 'vertical',
-            style = 'inner_frame_in_outer_frame'
-        }
-    )
+            {
+                type = 'frame',
+                name = main_frame_name,
+                caption = ({ 'ic.car_settings' }),
+                direction = 'vertical',
+                style = 'inner_frame_in_outer_frame'
+            }
+        )
 
     main_frame.auto_center = true
     local main_frame_style = main_frame.style
     main_frame_style.width = 450
     main_frame_style.use_header_filler = true
 
-    local inside_frame = main_frame.add {type = 'frame', style = 'inside_shallow_frame'}
+    local inside_frame = main_frame.add { type = 'frame', style = 'inside_shallow_frame' }
     local inside_frame_style = inside_frame.style
     inside_frame_style.padding = 0
 
-    local inside_table = inside_frame.add {type = 'table', column_count = 1}
+    local inside_table = inside_frame.add { type = 'table', column_count = 1 }
     local inside_table_style = inside_table.style
     inside_table_style.vertical_spacing = 5
     inside_table_style.top_padding = 10
@@ -377,52 +379,54 @@ local function draw_main_frame(player)
 
     local player_list = Functions.get_trusted_system(player)
 
-    local add_player_frame = inside_table.add({type = 'button', caption = ({'ic.add_player'}), name = add_player_name})
-    local transfer_car_frame = inside_table.add({type = 'button', caption = ({'ic.car_settings'}), name = transfer_car_name})
-    local destroy_surface_frame = inside_table.add({type = 'button', caption = ({'ic.destroy_surface'}), name = destroy_surface_name})
+    local add_player_frame = inside_table.add({ type = 'button', caption = ({ 'ic.add_player' }), name = add_player_name })
+    local transfer_car_frame = inside_table.add({ type = 'button', caption = ({ 'ic.car_settings' }),
+        name = transfer_car_name })
+    local destroy_surface_frame = inside_table.add({ type = 'button', caption = ({ 'ic.destroy_surface' }),
+        name = destroy_surface_name })
     local allow_anyone_to_enter =
         inside_table.add(
-        {
-            type = 'switch',
-            name = allow_anyone_to_enter_name,
-            switch_state = player_list.allow_anyone,
-            allow_none_state = false,
-            left_label_caption = ({'ic.allow_anyone'}),
-            right_label_caption = ({'ic.off'})
-        }
-    )
+            {
+                type = 'switch',
+                name = allow_anyone_to_enter_name,
+                switch_state = player_list.allow_anyone,
+                allow_none_state = false,
+                left_label_caption = ({ 'ic.allow_anyone' }),
+                right_label_caption = ({ 'ic.off' })
+            }
+        )
     local auto_upgrade =
         inside_table.add(
-        {
-            type = 'switch',
-            name = auto_upgrade_name,
-            switch_state = player_list.auto_upgrade,
-            allow_none_state = false,
-            left_label_caption = ({'ic.auto_upgrade'}),
-            right_label_caption = ({'ic.off'})
-        }
-    )
+            {
+                type = 'switch',
+                name = auto_upgrade_name,
+                switch_state = player_list.auto_upgrade,
+                allow_none_state = false,
+                left_label_caption = ({ 'ic.auto_upgrade' }),
+                right_label_caption = ({ 'ic.off' })
+            }
+        )
 
     local notify_on_driver_change =
         inside_table.add(
-        {
-            type = 'switch',
-            name = notify_on_driver_change_name,
-            switch_state = player_list.notify_on_driver_change,
-            allow_none_state = false,
-            left_label_caption = ({'ic.notify_on_driver_change'}),
-            right_label_caption = ({'ic.off'})
-        }
-    )
+            {
+                type = 'switch',
+                name = notify_on_driver_change_name,
+                switch_state = player_list.notify_on_driver_change,
+                allow_none_state = false,
+                left_label_caption = ({ 'ic.notify_on_driver_change' }),
+                right_label_caption = ({ 'ic.off' })
+            }
+        )
 
     local player_table =
         inside_table.add {
-        type = 'table',
-        column_count = 4,
-        draw_horizontal_lines = true,
-        draw_vertical_lines = true,
-        vertical_centering = true
-    }
+            type = 'table',
+            column_count = 4,
+            draw_horizontal_lines = true,
+            draw_vertical_lines = true,
+            vertical_centering = true
+        }
     local player_table_style = player_table.style
     player_table_style.vertical_spacing = 10
     player_table_style.width = 400
@@ -430,45 +434,45 @@ local function draw_main_frame(player)
 
     local name_label =
         player_table.add(
-        {
-            type = 'label',
-            caption = ({'ic.name'}),
-            tooltip = ''
-        }
-    )
+            {
+                type = 'label',
+                caption = ({ 'ic.name' }),
+                tooltip = ''
+            }
+        )
     name_label.style.minimal_width = 75
     name_label.style.horizontal_align = 'center'
 
     local trusted_label =
         player_table.add(
-        {
-            type = 'label',
-            caption = ({'ic.allowed'}),
-            tooltip = ''
-        }
-    )
+            {
+                type = 'label',
+                caption = ({ 'ic.allowed' }),
+                tooltip = ''
+            }
+        )
     trusted_label.style.minimal_width = 75
     trusted_label.style.horizontal_align = 'center'
 
     local allowed_to_drive =
         player_table.add(
-        {
-            type = 'label',
-            caption = ({'ic.drive'}),
-            tooltip = ''
-        }
-    )
+            {
+                type = 'label',
+                caption = ({ 'ic.drive' }),
+                tooltip = ''
+            }
+        )
     allowed_to_drive.style.minimal_width = 75
     allowed_to_drive.style.horizontal_align = 'center'
 
     local operations_label =
         player_table.add(
-        {
-            type = 'label',
-            caption = ({'ic.operations'}),
-            tooltip = ''
-        }
-    )
+            {
+                type = 'label',
+                caption = ({ 'ic.operations' }),
+                tooltip = ''
+            }
+        )
     operations_label.style.minimal_width = 75
     operations_label.style.horizontal_align = 'center'
 
@@ -515,21 +519,21 @@ add_toolbar = function(player, remove)
         return
     end
 
-    local tooltip = ({'ic.control'})
+    local tooltip = ({ 'ic.control' })
     if Gui.get_mod_gui_top_frame() then
         local b =
             Gui.add_mod_button(
-            player,
-            {
-                type = 'sprite-button',
-                name = main_toolbar_name,
-                sprite = 'item/spidertron',
-                tooltip = tooltip,
-                style = Gui.button_style
-            }
-        )
+                player,
+                {
+                    type = 'sprite-button',
+                    name = main_toolbar_name,
+                    sprite = 'item/spidertron',
+                    tooltip = tooltip,
+                    style = Gui.button_style
+                }
+            )
         if b then
-            b.style.font_color = {165, 165, 165}
+            b.style.font_color = { 165, 165, 165 }
             b.style.font = 'heading-3'
             b.style.minimal_height = 36
             b.style.maximal_height = 36
@@ -539,14 +543,14 @@ add_toolbar = function(player, remove)
     else
         local button =
             player.gui.top.add(
-            {
-                type = 'sprite-button',
-                sprite = 'item/spidertron',
-                name = main_toolbar_name,
-                tooltip = tooltip,
-                style = Gui.button_style
-            }
-        )
+                {
+                    type = 'sprite-button',
+                    sprite = 'item/spidertron',
+                    name = main_toolbar_name,
+                    tooltip = tooltip,
+                    style = Gui.button_style
+                }
+            )
         button.style.minimal_height = 38
         button.style.maximal_height = 38
     end
@@ -745,10 +749,13 @@ Gui.on_click(
         if frame and frame.valid then
             if player_list.notify_on_driver_change == 'right' then
                 player_list.notify_on_driver_change = 'left'
-                player.print('[IC] You will now be notified whenever someone not trusted tries to drive your car!', Color.success)
+                player.print('[IC] You will now be notified whenever someone not trusted tries to drive your car!',
+                    Color.success)
             else
                 player_list.notify_on_driver_change = 'right'
-                player.print('[IC] No notifications will be sent to you when someone not trusted tries to drive your car.', Color.warning)
+                player.print(
+                '[IC] No notifications will be sent to you when someone not trusted tries to drive your car.',
+                    Color.warning)
             end
 
             if player.gui.screen[main_frame_name] then
@@ -852,7 +859,8 @@ Gui.on_click(
                     player.print('[IC] Please try again.', Color.warning)
                 else
                     player.print('[IC] You have successfully transferred your car to ' .. name, Color.success)
-                    player_to_add.print('[IC] You have become the rightfully owner of ' .. player.name .. "'s car!", Color.success)
+                    player_to_add.print('[IC] You have become the rightfully owner of ' .. player.name .. "'s car!",
+                        Color.success)
                 end
 
                 remove_main_frame(event.element)
@@ -867,16 +875,16 @@ Gui.on_click(
 
 local clear_misc_settings =
     Task.register(
-    function(data)
-        local player_index = data.player_index
-        local misc_settings = ICT.get('misc_settings')
-        if not misc_settings[player_index] then
-            return
-        end
+        function(data)
+            local player_index = data.player_index
+            local misc_settings = ICT.get('misc_settings')
+            if not misc_settings[player_index] then
+                return
+            end
 
-        misc_settings[player_index] = nil
-    end
-)
+            misc_settings[player_index] = nil
+        end
+    )
 
 Gui.on_click(
     save_destroy_surface_button_name,
@@ -905,14 +913,16 @@ Gui.on_click(
             }
 
             player.print('[IC] ARE YOU SURE? This action is irreversible!', Color.warning)
-            Task.set_timeout_in_ticks(600, clear_misc_settings, {player_index = player.index})
+            Task.set_timeout_in_ticks(600, clear_misc_settings, { player_index = player.index })
             return
         end
 
         if not misc_settings[player.index].final_warning then
             misc_settings[player.index].final_warning = true
-            player.print('[IC] WARNING! WARNING WARNING! Pressing the save button ONE MORE TIME will DELETE your surface. This action is irreversible!', Color.red)
-            Task.set_timeout_in_ticks(600, clear_misc_settings, {player_index = player.index})
+            player.print(
+            '[IC] WARNING! WARNING WARNING! Pressing the save button ONE MORE TIME will DELETE your surface. This action is irreversible!',
+                Color.red)
+            Task.set_timeout_in_ticks(600, clear_misc_settings, { player_index = player.index })
             return
         end
 
@@ -928,9 +938,13 @@ Gui.on_click(
                 local suc, count = Functions.kill_car_but_save_surface(entity)
                 if suc then
                     game.print('[IC] ' .. player.name .. ' has destroyed their surface!', Color.warning)
-                    Discord.send_notification_raw(scenario_name, player.name .. ' deleted their vehicle surface at x = ' .. position.x .. ' y = ' .. position.y .. '.')
+                    Discord.send_notification_raw(scenario_name,
+                        player.name ..
+                        ' deleted their vehicle surface at x = ' .. position.x .. ' y = ' .. position.y .. '.')
                 else
-                    player.print('[IC] Entities are still on the surface. Please remove any entities and retry this operation. Found ' .. count .. ' entities!', Color.warning)
+                    player.print(
+                    '[IC] Entities are still on the surface. Please remove any entities and retry this operation. Found ' ..
+                    count .. ' entities!', Color.warning)
                 end
             end
 

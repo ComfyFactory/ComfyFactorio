@@ -1,5 +1,4 @@
 require 'utils.datastore.server_ups_data'
-require 'utils.datastore.current_time_data'
 require 'utils.datastore.color_data'
 require 'utils.datastore.session_data'
 require 'utils.datastore.statistics'

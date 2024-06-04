@@ -539,7 +539,7 @@ local function refresh_main_frame(data)
                                 chestitem.enabled = false
                                 chestitem.tooltip = '[Antigrief] You have not grown accustomed to this technology yet.'
                             end
-                            Gui.set_data_parent(volatile_tbl, chestitem, {name = nil, unit_number = unit_number, share = source_chest.share.name})
+                            Gui.set_data(chestitem, {name = nil, unit_number = unit_number, share = source_chest.share.name})
                         end
                     end
                 end
@@ -1290,13 +1290,8 @@ Gui.on_click(
             Gui.remove_data_recursively(element)
             return
         end
-        local parent = player_data.volatile_tbl
-        if not parent or not parent.valid then
-            Gui.remove_data_recursively(element)
-            return
-        end
 
-        local data = Gui.get_data_parent(parent, element)
+        local data = Gui.get_data(element)
         if not data then
             return
         end
@@ -1333,10 +1328,10 @@ Gui.on_click(
             container.chest.minable = false
 
             this.linked_gui[event.player.name].updated = false
-            refresh_main_frame({unit_number = container.unit_number, player = event.player})
             if element and element.valid then
                 Gui.remove_data_recursively(element)
             end
+            refresh_main_frame({unit_number = container.unit_number, player = event.player})
         end
     end
 )
@@ -1497,6 +1492,7 @@ function Public.reset()
     this.pre_reset_run = false
 end
 
+Event.on_init(Public.reset)
 Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_robot_built_entity, built_entity_robot)
 Event.add(defines.events.on_pre_player_mined_item, on_pre_player_mined_item)

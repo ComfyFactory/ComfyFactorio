@@ -13,23 +13,44 @@ local header_name = Gui.uid_name()
 local left_panel_name = Gui.uid_name()
 local right_panel_name = Gui.uid_name()
 local input_text_box_name = Gui.uid_name()
+local filter_text_box_name = Gui.uid_name()
 local refresh_name = Gui.uid_name()
 
 Public.name = 'Global'
 
-function Public.show(container)
+function Public.show(container, filter)
+    container.clear()
     local main_flow = container.add {type = 'flow', direction = 'horizontal'}
 
-    local left_panel = main_flow.add {type = 'scroll-pane', name = left_panel_name}
+    local left_flow = main_flow.add({type = 'flow', direction = 'vertical'})
+    left_flow.style.width = 400
+
+    local left_top_flow = left_flow.add {type = 'flow', direction = 'horizontal'}
+
+    local filter_text_name = left_top_flow.add {type = 'text-box', name = filter_text_box_name, tooltip = 'Filter for tokens', text = filter or ''}
+
+    if filter then
+        filter_text_name.focus()
+    end
+
+    local left_panel = left_flow.add {type = 'scroll-pane', name = left_panel_name}
     local left_panel_style = left_panel.style
     left_panel_style.width = 400
 
     for token_id, token_name in pairs(Global.names) do
-        local header = left_panel.add({type = 'flow'}).add {type = 'label', name = header_name, caption = token_name}
-        Gui.set_data(header, token_id)
+        if filter then
+            if token_name:lower():find(filter:lower()) then
+                local header = left_panel.add({type = 'flow'}).add {type = 'label', name = header_name, caption = token_name}
+                Gui.set_data(header, token_id)
+            end
+        else
+            local header = left_panel.add({type = 'flow'}).add {type = 'label', name = header_name, caption = token_name}
+            Gui.set_data(header, token_id)
+        end
     end
 
     local right_flow = main_flow.add {type = 'flow', direction = 'vertical'}
+    right_flow.style.horizontally_stretchable = true
 
     local right_top_flow = right_flow.add {type = 'flow', direction = 'horizontal'}
 
@@ -39,7 +60,7 @@ function Public.show(container)
     input_text_box_style.height = 32
     input_text_box_style.maximal_width = 1000
 
-    local refresh_button = right_top_flow.add {type = 'sprite-button', name = refresh_name, sprite = 'utility/reset', tooltip = 'refresh'}
+    local refresh_button = right_top_flow.add {type = 'sprite-button', name = refresh_name, sprite = 'utility/reset', tooltip = 'Refresh'}
     local refresh_button_style = refresh_button.style
     refresh_button_style.width = 32
     refresh_button_style.height = 32
@@ -93,9 +114,9 @@ Gui.on_click(
 
         local id = Global.get_global(token_id)
         local content = dump(id) or 'Could not load data.'
-        if content:find('function_handlers') then
-            content = '{}' -- desync handler
-        end
+        -- if content:find('function_handlers') then
+        --     content = '{}' -- desync handler
+        -- end
         right_panel.text = content
     end
 )
@@ -117,6 +138,19 @@ Gui.on_text_changed(
         local data = Gui.get_data(element)
 
         update_dump(element, data, event.player)
+    end
+)
+
+Gui.on_text_changed(
+    filter_text_box_name,
+    function(event)
+        local element = event.element
+
+        local text = element.text
+        local parent = element.parent.parent.parent.parent
+
+        Gui.remove_data_recursively(parent)
+        Public.show(parent, text)
     end
 )
 

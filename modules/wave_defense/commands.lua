@@ -1,95 +1,80 @@
 local Public = require 'modules.wave_defense.table'
+local Commands = require 'utils.commands'
 local module_name = '[WD]'
 
-commands.add_command(
-    'wd_debug_module',
-    '',
-    function(cmd)
-        local p
-        local player = game.player
-
-        if not player or not player.valid then
-            p = print
-        else
-            p = player.print
-            if not player.admin then
-                return
+Commands.new('wd_debug_module', 'Usable only for admins - controls wave defense module!')
+    :require_admin()
+    :require_validation()
+    :add_parameter('skip/toggle_es/toggle_es_boss/spawn/next/next_50/next_1500/log_all/debug_health', false, 'string')
+    :callback(
+        function (player, action)
+            if action == 'skip' then
+                Public.get('enable_grace_time').enabled = false
+                player.print(module_name .. ' grace skipped!')
+                return true
             end
-        end
 
-        local param = tostring(cmd.parameter)
-        if param == 'nil' then
-            p('[ERROR] Arguments are:\nskip\toggle_es\toggle_es_boss\nspawn\nnext\nnext_50\nnext_1500\nlog_all\ndebug_health')
-            return
-        end
+            if action == 'toggle_es' then
+                Public.set_module_status()
+                player.print(module_name .. ' ES has been toggled!')
+                return true
+            end
 
-        if param == 'skip' then
-            Public.get('enable_grace_time').enabled = false
-            p(module_name .. ' grace skipped!')
-            return
-        end
+            if action == 'toggle_es_boss' then
+                Public.set_track_bosses_only()
+                player.print(module_name .. ' ES bosses has been toggled!')
+                return true
+            end
 
-        if param == 'toggle_es' then
-            Public.set_module_status()
-            p(module_name .. ' ES has been toggled!')
-            return
-        end
+            if action == 'spawn' then
+                Public.spawn_unit_group({ true }, true)
+                player.print(module_name .. ' wave spawned!')
+                return true
+            end
 
-        if param == 'toggle_es_boss' then
-            Public.set_track_bosses_only()
-            p(module_name .. ' ES bosses has been toggled!')
-            return
-        end
-
-        if param == 'spawn' then
-            Public.spawn_unit_group({true}, true)
-            p(module_name .. ' wave spawned!')
-            return
-        end
-
-        if param == 'next' then
-            Public.set_next_wave()
-            Public.spawn_unit_group({true}, true)
-            p(module_name .. ' wave spawned!')
-            return
-        end
-
-        if param == 'next_50' then
-            for _ = 1, 50 do
+            if action == 'next' then
                 Public.set_next_wave()
+                Public.spawn_unit_group({ true }, true)
+                player.print(module_name .. ' wave spawned!')
+                return true
             end
-            Public.spawn_unit_group({true}, true)
-            p(module_name .. ' wave spawned!')
-            return
-        end
 
-        if param == 'next_1500' then
-            for _ = 1, 1500 do
-                Public.set_next_wave()
+            if action == 'next_50' then
+                for _ = 1, 50 do
+                    Public.set_next_wave()
+                end
+                Public.spawn_unit_group({ true }, true)
+                player.print(module_name .. ' wave spawned!')
+                return true
             end
-            Public.spawn_unit_group({true}, true)
-            p(module_name .. ' wave spawned!')
-            return
+
+            if action == 'next_1500' then
+                for _ = 1, 1500 do
+                    Public.set_next_wave()
+                end
+                Public.spawn_unit_group({ true }, true)
+                player.print(module_name .. ' wave spawned!')
+                return true
+            end
+
+            if action == 'log_all' then
+                Public.toggle_debug()
+                player.print(module_name .. ' debug toggled!')
+                return true
+            end
+
+            if action == 'debug_health' then
+                Public.toggle_debug_health()
+                local this = Public.get()
+
+                this.next_wave = 1000
+                this.wave_interval = 200
+                this.wave_enforced = true
+                this.debug_only_on_wave_500 = true
+                player.print(module_name .. ' debug health toggled!')
+                return true
+            end
         end
-
-        if param == 'log_all' then
-            Public.toggle_debug()
-            p(module_name .. ' debug toggled!')
-            return
-        end
-
-        if param == 'debug_health' then
-            local this = Public.get()
-
-            Public.toggle_debug_health()
-
-            this.next_wave = 1000
-            this.wave_interval = 200
-            this.wave_enforced = true
-            this.debug_only_on_wave_500 = true
-            p(module_name .. ' debug health toggled!')
-        end
-    end
-)
+    )
 
 return Public

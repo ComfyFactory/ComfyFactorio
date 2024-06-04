@@ -5,6 +5,7 @@ local Color = require 'utils.color_presets'
 local SpamProtection = require 'utils.spam_protection'
 local Event = require 'utils.event'
 local Gui = require 'utils.gui'
+local Commands = require 'utils.commands'
 
 local this = {
     data = {},
@@ -14,7 +15,7 @@ local Public = {}
 
 Global.register(
     this,
-    function(tbl)
+    function (tbl)
         this = tbl
     end
 )
@@ -63,7 +64,7 @@ local function add_style(guiIn, styleIn)
 end
 
 local function adjust_space(guiIn)
-    add_style(guiIn.add {type = 'line', direction = 'horizontal'}, space)
+    add_style(guiIn.add { type = 'line', direction = 'horizontal' }, space)
 end
 
 local function is_valid(obj)
@@ -158,19 +159,19 @@ end
 
 local function get_inventory_type(player, inventory_type)
     local target_types = {
-        ['Main'] = function()
+        ['Main'] = function ()
             return unpack_inventory(player.get_main_inventory())
         end,
-        ['Armor'] = function()
+        ['Armor'] = function ()
             return unpack_inventory(player.get_inventory(defines.inventory.character_armor))
         end,
-        ['Guns'] = function()
+        ['Guns'] = function ()
             return unpack_inventory(player.get_inventory(defines.inventory.character_guns))
         end,
-        ['Ammo'] = function()
+        ['Ammo'] = function ()
             return unpack_inventory(player.get_inventory(defines.inventory.character_ammo))
         end,
-        ['Trash'] = function()
+        ['Trash'] = function ()
             return unpack_inventory(player.get_inventory(defines.inventory.character_trash))
         end
     }
@@ -180,7 +181,7 @@ end
 local function redraw_inventory(gui, source, target, caption, panel_type)
     gui.clear()
 
-    local items_table = gui.add({type = 'table', column_count = 11})
+    local items_table = gui.add({ type = 'table', column_count = 11 })
     local types = game.item_prototypes
 
     local screen = source.gui.screen
@@ -196,20 +197,20 @@ local function redraw_inventory(gui, source, target, caption, panel_type)
         if panel_type[i] and panel_type[i].valid_for_read then
             local name = panel_type[i].name
             local count = panel_type[i].count
-            local flow = items_table.add({type = 'flow'})
+            local flow = items_table.add({ type = 'flow' })
             flow.style.vertical_align = 'bottom'
 
             local button =
                 flow.add(
-                {
-                    type = 'sprite-button',
-                    sprite = 'item/' .. name,
-                    number = count,
-                    name = name,
-                    tooltip = types[name].localised_name,
-                    style = 'slot_button'
-                }
-            )
+                    {
+                        type = 'sprite-button',
+                        sprite = 'item/' .. name,
+                        number = count,
+                        name = name,
+                        tooltip = types[name].localised_name,
+                        style = 'slot_button'
+                    }
+                )
             button.enabled = false
 
             if caption == 'Armor' then
@@ -218,15 +219,15 @@ local function redraw_inventory(gui, source, target, caption, panel_type)
                     for k, v in pairs(p_armor) do
                         local armor_gui =
                             flow.add(
-                            {
-                                type = 'sprite-button',
-                                sprite = 'item/' .. k,
-                                number = v,
-                                name = k,
-                                tooltip = types[name].localised_name,
-                                style = 'slot_button'
-                            }
-                        )
+                                {
+                                    type = 'sprite-button',
+                                    sprite = 'item/' .. k,
+                                    number = v,
+                                    name = k,
+                                    tooltip = types[name].localised_name,
+                                    style = 'slot_button'
+                                }
+                            )
                         armor_gui.enabled = false
                     end
                 end
@@ -238,15 +239,15 @@ end
 local function add_inventory(panel, source, target, caption, panel_type)
     local data = get_player_data(source)
     data.panel_type = data.panel_type or {}
-    local pane_name = panel.add({type = 'tab', caption = caption, name = caption})
+    local pane_name = panel.add({ type = 'tab', caption = caption, name = caption })
     local scroll_pane =
         panel.add {
-        type = 'scroll-pane',
-        name = caption .. 'tab',
-        direction = 'vertical',
-        vertical_scroll_policy = 'always',
-        horizontal_scroll_policy = 'never'
-    }
+            type = 'scroll-pane',
+            name = caption .. 'tab',
+            direction = 'vertical',
+            vertical_scroll_policy = 'always',
+            horizontal_scroll_policy = 'never'
+        }
     scroll_pane.style.maximal_height = 200
     scroll_pane.style.horizontally_stretchable = true
     scroll_pane.style.minimal_height = 200
@@ -281,13 +282,13 @@ local function open_inventory(source, target)
 
     local frame =
         screen.add(
-        {
-            type = 'frame',
-            caption = 'Inventory',
-            direction = 'vertical',
-            name = main_frame_name
-        }
-    )
+            {
+                type = 'frame',
+                caption = 'Inventory',
+                direction = 'vertical',
+                name = main_frame_name
+            }
+        )
 
     if not (frame and frame.valid) then
         return
@@ -299,7 +300,7 @@ local function open_inventory(source, target)
 
     adjust_space(frame)
 
-    local panel = frame.add({type = 'tabbed-pane', name = 'tabbed_pane'})
+    local panel = frame.add({ type = 'tabbed-pane', name = 'tabbed_pane' })
     panel.selected_tab_index = 1
 
     local data = get_player_data(source)
@@ -416,42 +417,29 @@ local function update_gui(event)
     end
 end
 
-commands.add_command(
-    'inventory',
-    'Opens a players inventory!',
-    function(cmd)
-        local player = game.player
-
-        if this.module_disabled then
-            return
-        end
-
-        if validate_player(player) then
-            if not cmd.parameter then
-                return
+Commands.new('inventory', 'Open another players inventory')
+    :add_parameter('player', false, 'player-online')
+    :callback(
+        function (player, target)
+            if this.module_disabled then
+                return false
             end
-            local target_player = game.get_player(cmd.parameter)
 
-            if target_player == player and not player.admin then
-                return player.print('Cannot open self.', Color.warning)
-            end
-            local valid, opened = player_opened(player)
-            if valid then
-                if target_player == opened then
-                    return player.print('You are already viewing this players inventory.', Color.warning)
+            if target and target.valid then
+                local valid, opened = player_opened(player)
+                if valid then
+                    if target.index == opened then
+                        player.print('You are already viewing this players inventory.', Color.warning)
+                        return false
+                    end
                 end
-            end
 
-            if validate_player(target_player) then
-                open_inventory(player, target_player)
+                open_inventory(player, target)
             else
                 player.print('[Inventory] Please type a name of a player who is connected.', Color.warning)
             end
-        else
-            return
         end
-    end
-)
+    )
 
 function Public.show_inventory(player, target_player)
     if not player or not player.valid then
@@ -501,7 +489,7 @@ end
 
 Gui.on_custom_close(
     main_frame_name,
-    function(event)
+    function (event)
         local player = game.get_player(event.player_index)
         if not this.data[player.index] then
             return
