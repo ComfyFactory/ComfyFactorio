@@ -21,18 +21,12 @@ local this = {
     insert_into_wagon = false,
     bottom_button = false,
     small_radius = 2,
-    limit_containers = 50
+    limit_containers = 50,
+    enabled = true
 }
 
 local Public = {
-    enable_autostash_module = true
 }
-
---- Set the state of the module
----@param state any
-function Public.set_enable_autostash_module(state)
-    Public.enable_autostash_module = state
-end
 
 Global.register(
     this,
@@ -737,6 +731,9 @@ local function create_gui_button(player, bottom_frame_data)
 end
 
 local function do_whitelist()
+    if not this.enabled then
+        return
+    end
     Task.delay(on_init_token, {})
     local resources = game.entity_prototypes
     local items = game.item_prototypes
@@ -762,6 +759,10 @@ local function do_whitelist()
 end
 
 local function on_player_joined_game(event)
+    if not this.enabled then
+        return
+    end
+
     local player = game.get_player(event.player_index)
     create_gui_button(player)
     if this.bottom_button then
@@ -809,28 +810,33 @@ function Public.set_dungeons_initial_level(value)
     this.dungeons_initial_level = value
 end
 
-if Public.enable_autostash_module then
-    Event.on_configuration_changed(do_whitelist)
-
-    Event.on_init(do_whitelist)
-    Event.add(defines.events.on_player_joined_game, on_player_joined_game)
-
-    Event.add(
-        BottomFrame.events.bottom_quickbar_location_changed,
-        function (event)
-            local player_index = event.player_index
-            if not player_index then
-                return
-            end
-            local player = game.get_player(player_index)
-            if not player or not player.valid then
-                return
-            end
-
-            local bottom_frame_data = event.data
-            create_gui_button(player, bottom_frame_data)
-        end
-    )
+function Public.set_enabled(value)
+    this.enabled = value or false
 end
+
+Event.on_configuration_changed(do_whitelist)
+
+Event.on_init(do_whitelist)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+
+Event.add(
+    BottomFrame.events.bottom_quickbar_location_changed,
+    function (event)
+        if not this.enabled then
+            return
+        end
+        local player_index = event.player_index
+        if not player_index then
+            return
+        end
+        local player = game.get_player(player_index)
+        if not player or not player.valid then
+            return
+        end
+
+        local bottom_frame_data = event.data
+        create_gui_button(player, bottom_frame_data)
+    end
+)
 
 return Public

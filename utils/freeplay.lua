@@ -8,7 +8,7 @@ local Public = {}
 local this = {
     created_items = {},
     respawn_items = {},
-    disabled = true,
+    enabled = true,
     skip_intro = true,
     chart_distance = 0,
     disable_crashsite = false,
@@ -111,7 +111,7 @@ local on_player_joined_game = function (event)
 end
 
 local on_player_created = function (event)
-    if this.disabled then
+    if this.enabled then
         return
     end
 
@@ -148,7 +148,7 @@ local on_player_created = function (event)
 end
 
 local on_player_respawned = function (event)
-    if this.disabled then
+    if this.enabled then
         return
     end
     local player = game.players[event.player_index]
@@ -156,7 +156,7 @@ local on_player_respawned = function (event)
 end
 
 local on_cutscene_waypoint_reached = function (event)
-    if this.disabled then
+    if this.enabled then
         return
     end
     if not crash_site.is_crash_site_cutscene(event) then
@@ -181,7 +181,7 @@ local on_cutscene_waypoint_reached = function (event)
 end
 
 local skip_crash_site_cutscene = function (event)
-    if this.disabled then
+    if this.enabled then
         return
     end
 
@@ -210,7 +210,7 @@ local skip_crash_site_cutscene = function (event)
 end
 
 local on_cutscene_cancelled = function (event)
-    if this.disabled then
+    if this.enabled then
         return
     end
 
@@ -253,7 +253,7 @@ local freeplay_interface = {
         this.skip_intro = bool
     end,
     set_disabled = function (bool)
-        this.disabled = bool
+        this.enabled = bool
     end,
     set_custom_surface_name = function (str)
         this.custom_surface_name = str or error('Remote call parameter to freeplay set custom_surface_name must be string')
@@ -334,5 +334,9 @@ Event.add(defines.events.on_player_respawned, on_player_respawned)
 Event.add(defines.events.on_cutscene_waypoint_reached, on_cutscene_waypoint_reached)
 Event.add('crash-site-skip-cutscene', skip_crash_site_cutscene)
 Event.add(defines.events.on_cutscene_cancelled, on_cutscene_cancelled)
+
+function Public.set_enabled(value)
+    this.enabled = value or false
+end
 
 return Public

@@ -12,6 +12,7 @@ local Discord = require 'utils.discord_handler'
 local Commands = require 'utils.commands'
 
 local this = {
+    enabled = false,
     players = {},
     bottom_button = false
 }
@@ -24,12 +25,7 @@ Global.register(
 )
 
 local Public = {
-    enable_clear_corpse_button = true
 }
-
-function Public.set_enable_clear_corpse_button(value)
-    Public.enable_clear_corpse_button = value or false
-end
 
 local clear_corpse_button_name = Gui.uid_name()
 
@@ -507,24 +503,29 @@ function Public.bottom_button(value)
     this.bottom_button = value or false
 end
 
-if Public.enable_clear_corpse_button then
-    Event.add(
-        defines.events.on_player_joined_game,
-        function (event)
-            local player = game.players[event.player_index]
-            on_player_joined_game(player)
-            create_clear_corpse_frame(player)
-
-            if this.bottom_button then
-                BottomFrame.add_inner_frame({ player = player, element_name = clear_corpse_button_name, tooltip = { 'commands.clear_corpse' }, sprite = 'entity/behemoth-biter' })
-            end
+Event.add(
+    defines.events.on_player_joined_game,
+    function (event)
+        if not this.enabled then
+            return
         end
-    )
-end
+
+        local player = game.players[event.player_index]
+        on_player_joined_game(player)
+        create_clear_corpse_frame(player)
+
+        if this.bottom_button then
+            BottomFrame.add_inner_frame({ player = player, element_name = clear_corpse_button_name, tooltip = { 'commands.clear_corpse' }, sprite = 'entity/behemoth-biter' })
+        end
+    end
+)
 
 Gui.on_click(
     clear_corpse_button_name,
     function (event)
+        if not this.enabled then
+            return
+        end
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Clear Corpse')
         if is_spamming then
             return
@@ -536,6 +537,9 @@ Gui.on_click(
 Event.add(
     BottomFrame.events.bottom_quickbar_location_changed,
     function (event)
+        if not this.enabled then
+            return
+        end
         local player_index = event.player_index
         if not player_index then
             return
@@ -549,6 +553,10 @@ Event.add(
         create_clear_corpse_frame(player, bottom_frame_data)
     end
 )
+
+function Public.set_enabled(value)
+    this.enabled = value or false
+end
 
 Public.clear_corpses = clear_corpses
 
