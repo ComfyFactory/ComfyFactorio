@@ -22,7 +22,7 @@ local function show_score(data)
     local frame = data.frame
     frame.clear()
 
-    local t = frame.add {type = 'table', column_count = 2}
+    local t = frame.add { type = 'table', column_count = 2 }
 
     local tooltip = 'Your statistics that are gathered throughout Comfy servers.'
     local secs = Server.get_current_time()
@@ -32,16 +32,16 @@ local function show_score(data)
 
     local label =
         t.add {
-        type = 'label',
-        caption = tooltip
-    }
+            type = 'label',
+            caption = tooltip
+        }
 
     label.style.font = 'heading-2'
-    label.style.font_color = {r = 0.98, g = 0.66, b = 0.22}
+    label.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
     label.style.minimal_width = 125
     label.style.horizontal_align = 'center'
 
-    local line = frame.add {type = 'line'}
+    local line = frame.add { type = 'line' }
     line.style.top_margin = 8
     line.style.bottom_margin = 8
 
@@ -49,16 +49,16 @@ local function show_score(data)
 
     local scroll_pane =
         frame.add(
-        {
-            type = 'scroll-pane',
-            name = 'score_scroll_pane',
-            direction = 'vertical',
-            horizontal_scroll_policy = 'never',
-            vertical_scroll_policy = 'auto'
-        }
-    )
+            {
+                type = 'scroll-pane',
+                name = 'score_scroll_pane',
+                direction = 'vertical',
+                horizontal_scroll_policy = 'never',
+                vertical_scroll_policy = 'auto'
+            }
+        )
     scroll_pane.style.maximal_height = 400
-    local column_table = scroll_pane.add {type = 'table', column_count = 4}
+    local column_table = scroll_pane.add { type = 'table', column_count = 4 }
 
     for name, stat in pairs(stat_data) do
         if not ignored_stats[name] then
@@ -67,19 +67,19 @@ local function show_score(data)
                 c = format_number(stat, true)
             end
             local lines = {
-                {caption = normalized_names[name].name, tooltip = normalized_names[name].tooltip or ''},
-                {caption = c}
+                { caption = normalized_names[name] and normalized_names[name].name or name, tooltip = normalized_names[name].tooltip or '' },
+                { caption = c }
             }
-            local default_color = {r = 0.9, g = 0.9, b = 0.9}
+            local default_color = { r = 0.9, g = 0.9, b = 0.9 }
 
             for _, column in ipairs(lines) do
                 local l =
                     column_table.add {
-                    type = 'label',
-                    caption = column.caption,
-                    tooltip = column.tooltip,
-                    color = column.color or default_color
-                }
+                        type = 'label',
+                        caption = column.caption,
+                        tooltip = column.tooltip,
+                        color = column.color or default_color
+                    }
                 l.style.font = 'heading-3'
                 l.style.minimal_width = 175
                 l.style.maximal_width = 175
@@ -91,11 +91,11 @@ end
 
 local show_stats_token = Task.register(show_score)
 
-Gui.add_tab_to_gui({name = module_name, caption = 'Statistics', id = show_stats_token, admin = false})
+Gui.add_tab_to_gui({ name = module_name, caption = 'Statistics', id = show_stats_token, admin = false })
 
 Gui.on_click(
     module_name,
-    function(event)
+    function (event)
         local player = event.player
         Gui.reload_active_tab(player)
     end

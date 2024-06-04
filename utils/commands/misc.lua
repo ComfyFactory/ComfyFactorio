@@ -23,7 +23,13 @@ Global.register(
     end
 )
 
-local Public = {}
+local Public = {
+    enable_clear_corpse_button = true
+}
+
+function Public.set_enable_clear_corpse_button(value)
+    Public.enable_clear_corpse_button = value or false
+end
 
 local clear_corpse_button_name = Gui.uid_name()
 
@@ -501,18 +507,20 @@ function Public.bottom_button(value)
     this.bottom_button = value or false
 end
 
-Event.add(
-    defines.events.on_player_joined_game,
-    function (event)
-        local player = game.players[event.player_index]
-        on_player_joined_game(player)
-        create_clear_corpse_frame(player)
+if Public.enable_clear_corpse_button then
+    Event.add(
+        defines.events.on_player_joined_game,
+        function (event)
+            local player = game.players[event.player_index]
+            on_player_joined_game(player)
+            create_clear_corpse_frame(player)
 
-        if this.bottom_button then
-            BottomFrame.add_inner_frame({ player = player, element_name = clear_corpse_button_name, tooltip = { 'commands.clear_corpse' }, sprite = 'entity/behemoth-biter' })
+            if this.bottom_button then
+                BottomFrame.add_inner_frame({ player = player, element_name = clear_corpse_button_name, tooltip = { 'commands.clear_corpse' }, sprite = 'entity/behemoth-biter' })
+            end
         end
-    end
-)
+    )
+end
 
 Gui.on_click(
     clear_corpse_button_name,

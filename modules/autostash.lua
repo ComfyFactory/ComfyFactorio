@@ -24,11 +24,19 @@ local this = {
     limit_containers = 50
 }
 
-local Public = {}
+local Public = {
+    enable_autostash_module = true
+}
+
+--- Set the state of the module
+---@param state any
+function Public.set_enable_autostash_module(state)
+    Public.enable_autostash_module = state
+end
 
 Global.register(
     this,
-    function(t)
+    function (t)
         this = t
     end
 )
@@ -40,47 +48,47 @@ local bps_blacklist = {
 
 local on_init_token =
     Task.register(
-    function()
-        local tooltip
-        if this.insert_into_furnace and this.insert_into_wagon then
-            tooltip =
+        function ()
+            local tooltip
+            if this.insert_into_furnace and this.insert_into_wagon then
+                tooltip =
                 'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.\nCTRL+RMB: Fill nearby furnaces.\nSHIFT+LMB: Everything onto filtered slots to wagon/chests.\nSHIFT+RMB: Only ores to wagon'
-        elseif this.insert_into_furnace then
-            tooltip = 'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.\nCTRL+RMB: Fill nearby furnaces.'
-        elseif this.insert_into_wagon then
-            tooltip =
+            elseif this.insert_into_furnace then
+                tooltip = 'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.\nCTRL+RMB: Fill nearby furnaces.'
+            elseif this.insert_into_wagon then
+                tooltip =
                 'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.\nSHIFT+LMB: Everything onto filtered slots to wagon/chests.\nSHIFT+RMB: Only ores to wagon'
-        else
-            tooltip = 'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.'
-        end
+            else
+                tooltip = 'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.'
+            end
 
-        this.tooltip = tooltip
-    end
-)
+            this.tooltip = tooltip
+        end
+    )
 
 local delay_tooltip_token =
     Task.register(
-    function(event)
-        local player_index = event.player_index
-        local player = game.get_player(player_index)
-        if not player or not player.valid then
-            return
-        end
+        function (event)
+            local player_index = event.player_index
+            local player = game.get_player(player_index)
+            if not player or not player.valid then
+                return
+            end
 
-        if Gui.get_mod_gui_top_frame() then
-            local frame = Gui.get_button_flow(player)[auto_stash_button_name]
-            if frame and frame.valid then
-                frame.tooltip = this.tooltip
+            if Gui.get_mod_gui_top_frame() then
+                local frame = Gui.get_button_flow(player)[auto_stash_button_name]
+                if frame and frame.valid then
+                    frame.tooltip = this.tooltip
+                end
+            else
+                local frame = player.gui.top[auto_stash_button_name]
+                if frame and frame.valid then
+                    frame.tooltip = this.tooltip
+                end
             end
-        else
-            local frame = player.gui.top[auto_stash_button_name]
-            if frame and frame.valid then
-                frame.tooltip = this.tooltip
-            end
+            BottomFrame.add_inner_frame({ player = player, element_name = auto_stash_button_name, tooltip = this.tooltip, sprite = 'item/wooden-chest' })
         end
-        BottomFrame.add_inner_frame({player = player, element_name = auto_stash_button_name, tooltip = this.tooltip, sprite = 'item/wooden-chest'})
-    end
-)
+    )
 
 local function create_floaty_text(surface, position, name, count)
     if this.floating_text_y_offsets[position.x .. '_' .. position.y] then
@@ -95,8 +103,8 @@ local function create_floaty_text(surface, position, name, count)
                 position.x,
                 position.y + this.floating_text_y_offsets[position.x .. '_' .. position.y]
             },
-            text = {'', '-', count, ' ', game.item_prototypes[name].localised_name},
-            color = {r = 255, g = 255, b = 255}
+            text = { '', '-', count, ' ', game.item_prototypes[name].localised_name },
+            color = { r = 255, g = 255, b = 255 }
         }
     )
 end
@@ -107,7 +115,7 @@ local function prepare_floaty_text(list, surface, position, name, count)
         list[str] = {}
     end
     if not list[str][name] then
-        list[str][name] = {surface = surface, position = position, count = 0}
+        list[str][name] = { surface = surface, position = position, count = 0 }
     end
     list[str][name].count = list[str][name].count + count
 end
@@ -122,8 +130,8 @@ local function chest_is_valid(chest)
     for _, e in pairs(
         chest.surface.find_entities_filtered(
             {
-                type = {'inserter', 'loader'},
-                area = {{chest.position.x - 1, chest.position.y - 1}, {chest.position.x + 1, chest.position.y + 1}}
+                type = { 'inserter', 'loader' },
+                area = { { chest.position.x - 1, chest.position.y - 1 }, { chest.position.x + 1, chest.position.y + 1 } }
             }
         )
     ) do
@@ -141,26 +149,26 @@ local function chest_is_valid(chest)
         end
     end
 
-    local i1 = chest.surface.find_entity('long-handed-inserter', {chest.position.x - 2, chest.position.y})
+    local i1 = chest.surface.find_entity('long-handed-inserter', { chest.position.x - 2, chest.position.y })
     if i1 then
         if i1.direction == 2 or i1.direction == 6 then
             return false
         end
     end
-    local i2 = chest.surface.find_entity('long-handed-inserter', {chest.position.x + 2, chest.position.y})
+    local i2 = chest.surface.find_entity('long-handed-inserter', { chest.position.x + 2, chest.position.y })
     if i2 then
         if i2.direction == 2 or i2.direction == 6 then
             return false
         end
     end
 
-    local i3 = chest.surface.find_entity('long-handed-inserter', {chest.position.x, chest.position.y - 2})
+    local i3 = chest.surface.find_entity('long-handed-inserter', { chest.position.x, chest.position.y - 2 })
     if i3 then
         if i3.direction == 0 or i3.direction == 4 then
             return false
         end
     end
-    local i4 = chest.surface.find_entity('long-handed-inserter', {chest.position.x, chest.position.y + 2})
+    local i4 = chest.surface.find_entity('long-handed-inserter', { chest.position.x, chest.position.y + 2 })
     if i4 then
         if i4.direction == 0 or i4.direction == 4 then
             return false
@@ -208,30 +216,30 @@ local function get_nearby_chests(player, a, furnace, wagon)
     local r_square = r * r
     local chests, inventories = {}, {}
     local size_of_chests = 0
-    local area = {{player.position.x - r, player.position.y - r}, {player.position.x + r, player.position.y + r}}
+    local area = { { player.position.x - r, player.position.y - r }, { player.position.x + r, player.position.y + r } }
 
     area = a or area
 
-    local container_type = {'container', 'logistic-container', 'linked-container'}
+    local container_type = { 'container', 'logistic-container', 'linked-container' }
     local inventory_type = defines.inventory.chest
     local containers = {}
     local i = 0
 
     if furnace then
-        container_type = {'furnace'}
+        container_type = { 'furnace' }
         inventory_type = defines.inventory.furnace_source
     end
     if wagon then
-        container_type = {'cargo-wagon', 'logistic-container'}
+        container_type = { 'cargo-wagon', 'logistic-container' }
         inventory_type = defines.inventory.cargo_wagon
     end
 
     local forces = player.force
     if this.insert_to_neutral_chests then
-        forces = {player.force, 'neutral'}
+        forces = { player.force, 'neutral' }
     end
 
-    for _, e in pairs(player.surface.find_entities_filtered({type = container_type, area = area, force = forces})) do
+    for _, e in pairs(player.surface.find_entities_filtered({ type = container_type, area = area, force = forces })) do
         if ((player.position.x - e.position.x) ^ 2 + (player.position.y - e.position.y) ^ 2) <= r_square then
             i = i + 1
             containers[i] = e
@@ -244,7 +252,7 @@ local function get_nearby_chests(player, a, furnace, wagon)
         chests[size_of_chests] = entity
         inventories[size_of_chests] = entity.get_inventory(inventory_type)
     end
-    return {chest = chests, inventory = inventories}
+    return { chest = chests, inventory = inventories }
 end
 
 local function insert_to_furnace(player_inventory, chests, name, count, floaty_text_list)
@@ -282,12 +290,12 @@ local function insert_to_furnace(player_inventory, chests, name, count, floaty_t
                 if name == 'stone' then
                     local valid_to_insert = (amount % 2 == 0)
                     if valid_to_insert then
-                        if chest_inventory.can_insert({name = name, count = amount}) then
-                            local inserted_count = chest_inventory.insert({name = name, count = amount})
+                        if chest_inventory.can_insert({ name = name, count = amount }) then
+                            local inserted_count = chest_inventory.insert({ name = name, count = amount })
                             if inserted_count < 0 then
                                 return
                             end
-                            player_inventory.remove({name = name, count = inserted_count})
+                            player_inventory.remove({ name = name, count = inserted_count })
                             prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, inserted_count)
                             count = count - inserted_count
                             if count <= 0 then
@@ -304,12 +312,12 @@ local function insert_to_furnace(player_inventory, chests, name, count, floaty_t
                         end
                     end
                 else
-                    if chest_inventory.can_insert({name = name, count = amount}) then
-                        local inserted_count = chest_inventory.insert({name = name, count = amount})
+                    if chest_inventory.can_insert({ name = name, count = amount }) then
+                        local inserted_count = chest_inventory.insert({ name = name, count = amount })
                         if inserted_count < 0 then
                             return
                         end
-                        player_inventory.remove({name = name, count = inserted_count})
+                        player_inventory.remove({ name = name, count = inserted_count })
                         prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, inserted_count)
                         count = count - inserted_count
                         if count <= 0 then
@@ -335,12 +343,12 @@ local function insert_to_furnace(player_inventory, chests, name, count, floaty_t
                 return
             end
             local chest_inventory = chest.get_inventory(defines.inventory.chest)
-            if chest_inventory and chest_inventory.can_insert({name = name, count = amount}) then
-                local inserted_count = chest_inventory.insert({name = name, count = amount})
+            if chest_inventory and chest_inventory.can_insert({ name = name, count = amount }) then
+                local inserted_count = chest_inventory.insert({ name = name, count = amount })
                 if inserted_count < 0 then
                     return
                 end
-                player_inventory.remove({name = name, count = inserted_count})
+                player_inventory.remove({ name = name, count = inserted_count })
                 prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, inserted_count)
                 count = count - inserted_count
                 if count <= 0 then
@@ -574,9 +582,9 @@ local function auto_stash(player, event)
     end
 
     local floaty_text_list = {}
-    local chests = {chest = {}, inventory = {}}
+    local chests = { chest = {}, inventory = {} }
     local r = this.small_radius
-    local area = {{player.position.x - r, player.position.y - r}, {player.position.x + r, player.position.y + r}}
+    local area = { { player.position.x - r, player.position.y - r }, { player.position.x + r, player.position.y + r } }
     if ctrl then
         if button == defines.mouse_button_type.right and this.insert_into_furnace then
             chests = get_nearby_chests(player, nil, true, false)
@@ -594,7 +602,7 @@ local function auto_stash(player, event)
         return
     end
 
-    local filtered_chests = {chest = {}, inventory = {}}
+    local filtered_chests = { chest = {}, inventory = {} }
     for index, e in pairs(chests.chest) do
         if chest_is_valid(e) then
             filtered_chests.chest[index] = e
@@ -619,7 +627,7 @@ local function auto_stash(player, event)
         ['stone'] = 0
     }
 
-    local full_insert = {full = nil, name = nil}
+    local full_insert = { full = nil, name = nil }
     for i = #inventory, 1, -1 do
         if not inventory[i].valid_for_read then
             goto continue
@@ -633,21 +641,21 @@ local function auto_stash(player, event)
                         furnaceList[name] = (furnaceList[name] or 0) + inventory[i].count
                     end
                 end
-            elseif shift and this.insert_into_wagon then -- insert into wagon
+            elseif shift and this.insert_into_wagon then          -- insert into wagon
                 if button == defines.mouse_button_type.right then -- insert all ores into wagon
                     if is_resource then
-                        full_insert = {full = insert_into_wagon(inventory[i], chests, name, floaty_text_list), name = name}
+                        full_insert = { full = insert_into_wagon(inventory[i], chests, name, floaty_text_list), name = name }
                     end
                 end
                 if button == defines.mouse_button_type.left then -- insert all filtered into wagon
-                    full_insert = {full = insert_into_wagon_filtered(inventory[i], chests, name, floaty_text_list), name = name}
+                    full_insert = { full = insert_into_wagon_filtered(inventory[i], chests, name, floaty_text_list), name = name }
                 end
             elseif button == defines.mouse_button_type.right then -- only ores to nearby chests
                 if is_resource then
-                    full_insert = {full = insert_item_into_chest(inventory[i], chests, filtered_chests, name, floaty_text_list, full_insert), name = name}
+                    full_insert = { full = insert_item_into_chest(inventory[i], chests, filtered_chests, name, floaty_text_list, full_insert), name = name }
                 end
             elseif button == defines.mouse_button_type.left then -- all items to nearby chests
-                full_insert = {full = insert_item_into_chest(inventory[i], chests, filtered_chests, name, floaty_text_list, full_insert), name = name}
+                full_insert = { full = insert_item_into_chest(inventory[i], chests, filtered_chests, name, floaty_text_list, full_insert), name = name }
             end
             if not full_insert.success then
                 hotbar_items[#hotbar_items + 1] = name
@@ -680,17 +688,17 @@ local function create_gui_button(player, bottom_frame_data)
     if Gui.get_mod_gui_top_frame() then
         button =
             Gui.add_mod_button(
-            player,
-            {
-                type = 'sprite-button',
-                name = auto_stash_button_name,
-                sprite = 'item/wooden-chest',
-                tooltip = tooltip,
-                style = Gui.button_style
-            }
-        )
+                player,
+                {
+                    type = 'sprite-button',
+                    name = auto_stash_button_name,
+                    sprite = 'item/wooden-chest',
+                    tooltip = tooltip,
+                    style = Gui.button_style
+                }
+            )
         if button then
-            button.style.font_color = {165, 165, 165}
+            button.style.font_color = { 165, 165, 165 }
             button.style.font = 'heading-3'
             button.style.minimal_height = 36
             button.style.maximal_height = 36
@@ -709,7 +717,7 @@ local function create_gui_button(player, bottom_frame_data)
                     style = Gui.button_style
                 }
             )
-        button.style.font_color = {r = 0.11, g = 0.8, b = 0.44}
+        button.style.font_color = { r = 0.11, g = 0.8, b = 0.44 }
         button.style.font = 'heading-1'
         button.style.minimal_height = 40
         button.style.maximal_width = 40
@@ -757,13 +765,13 @@ local function on_player_joined_game(event)
     local player = game.get_player(event.player_index)
     create_gui_button(player)
     if this.bottom_button then
-        Task.delay(delay_tooltip_token, {player_index = player.index})
+        Task.delay(delay_tooltip_token, { player_index = player.index })
     end
 end
 
 Gui.on_click(
     auto_stash_button_name,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Autostash click')
         if is_spamming then
             return
@@ -800,26 +808,29 @@ end
 function Public.set_dungeons_initial_level(value)
     this.dungeons_initial_level = value
 end
-Event.on_configuration_changed(do_whitelist)
 
-Event.on_init(do_whitelist)
-Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+if Public.enable_autostash_module then
+    Event.on_configuration_changed(do_whitelist)
 
-Event.add(
-    BottomFrame.events.bottom_quickbar_location_changed,
-    function(event)
-        local player_index = event.player_index
-        if not player_index then
-            return
+    Event.on_init(do_whitelist)
+    Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+
+    Event.add(
+        BottomFrame.events.bottom_quickbar_location_changed,
+        function (event)
+            local player_index = event.player_index
+            if not player_index then
+                return
+            end
+            local player = game.get_player(player_index)
+            if not player or not player.valid then
+                return
+            end
+
+            local bottom_frame_data = event.data
+            create_gui_button(player, bottom_frame_data)
         end
-        local player = game.get_player(player_index)
-        if not player or not player.valid then
-            return
-        end
-
-        local bottom_frame_data = event.data
-        create_gui_button(player, bottom_frame_data)
-    end
-)
+    )
+end
 
 return Public
