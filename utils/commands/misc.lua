@@ -12,7 +12,7 @@ local Discord = require 'utils.discord_handler'
 local Commands = require 'utils.commands'
 
 local this = {
-    enabled = false,
+    enabled = true,
     players = {},
     bottom_button = false
 }
