@@ -1149,13 +1149,13 @@ local function apply_buffs()
                         this.buffs_collected['techs'] = {}
                     end
                     if type(buff.techs) ~= 'table' then
-                        break
+                        goto cont
                     end
 
                     for _, tech in pairs(buff.techs) do
                         if tech then
                             if techs[tech.name] then
-                                break
+                                goto cont
                             end
 
                             if not techs[tech.name] then
@@ -1215,14 +1215,14 @@ local function apply_buffs()
                         this.buffs_collected['starting_items'] = {}
                     end
                     if type(buff.items) ~= 'table' then
-                        break
+                        goto cont
                     end
 
                     for _, item in pairs(buff.items) do
                         if item then
                             if starting_items[item.name] and buff.limit and starting_items[item.name].item_limit and starting_items[item.name].item_limit >= buff.limit then
                                 starting_items[item.name].limit_reached = true
-                                break -- break if there is a limit set
+                                goto cont -- break if there is a limit set
                             end
 
                             if starting_items[item.name] then
@@ -1250,6 +1250,7 @@ local function apply_buffs()
                     end
                 end
             end
+            ::cont::
         end
         this.total_buffs = total_buffs
     end
