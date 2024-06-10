@@ -409,6 +409,7 @@ end
 
 local function do_replace_tiles_slowly()
     local active_surface_index = Public.get('active_surface_index')
+    if not active_surface_index then return end
     local surface = game.get_surface(active_surface_index)
     if not (surface and surface.valid) then
         return
