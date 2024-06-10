@@ -61,17 +61,17 @@ end
 
 local spread_particles_token =
     Task.register(
-    function(event)
-        local player_index = event.player_index
-        local player = game.get_player(player_index)
-        if not player or not player.valid then
-            return
-        end
-        local particle = event.particle
+        function (event)
+            local player_index = event.player_index
+            local player = game.get_player(player_index)
+            if not player or not player.valid then
+                return
+            end
+            local particle = event.particle
 
-        create_particles(player.surface, particle, player.position, 128)
-    end
-)
+            create_particles(player.surface, particle, player.position, 128)
+        end
+    )
 
 local function pretty_format(input)
     local action = string.gsub(input, '-', ' ')
@@ -147,7 +147,7 @@ end
 
 local function clear_all_frames()
     Core.iter_players(
-        function(player)
+        function (player)
             local b_frame = player.gui.screen[boss_frame_name]
             if b_frame then
                 Gui.remove_data_recursively(b_frame)
@@ -165,7 +165,7 @@ end
 
 local function refresh_frames()
     Core.iter_connected_players(
-        function(player)
+        function (player)
             local frame = player.gui.screen[main_frame_name]
             if frame and frame.valid then
                 Gui.remove_data_recursively(frame)
@@ -180,35 +180,35 @@ end
 
 local warn_player_sound_token =
     Task.register(
-    function(event)
-        local player_index = event.player_index
-        local player = game.get_player(player_index)
-        if not player or not player.valid then
-            return
+        function (event)
+            local player_index = event.player_index
+            local player = game.get_player(player_index)
+            if not player or not player.valid then
+                return
+            end
+            local particle = event.particle
+
+            player.play_sound { path = 'utility/new_objective', volume_modifier = 0.75 }
+
+            create_particles(player.surface, particle, player.position, 128)
         end
-        local particle = event.particle
-
-        player.play_sound {path = 'utility/new_objective', volume_modifier = 0.75}
-
-        create_particles(player.surface, particle, player.position, 128)
-    end
-)
+    )
 
 local function create_button(player)
     if Gui.get_mod_gui_top_frame() then
         local b =
             Gui.add_mod_button(
-            player,
-            {
-                type = 'sprite-button',
-                name = main_button_name,
-                sprite = 'utility/custom_tag_icon',
-                tooltip = 'Has information about all objectives that needs to be completed',
-                style = Gui.button_style
-            }
-        )
+                player,
+                {
+                    type = 'sprite-button',
+                    name = main_button_name,
+                    sprite = 'utility/custom_tag_icon',
+                    tooltip = 'Has information about all objectives that needs to be completed',
+                    style = Gui.button_style
+                }
+            )
         if b then
-            b.style.font_color = {165, 165, 165}
+            b.style.font_color = { 165, 165, 165 }
             b.style.font = 'heading-3'
             b.style.minimal_height = 36
             b.style.maximal_height = 36
@@ -218,14 +218,14 @@ local function create_button(player)
     else
         local b =
             player.gui.top.add(
-            {
-                type = 'sprite-button',
-                name = main_button_name,
-                sprite = 'utility/custom_tag_icon',
-                tooltip = 'Has information about all objectives that needs to be completed',
-                style = Gui.button_style
-            }
-        )
+                {
+                    type = 'sprite-button',
+                    name = main_button_name,
+                    sprite = 'utility/custom_tag_icon',
+                    tooltip = 'Has information about all objectives that needs to be completed',
+                    style = Gui.button_style
+                }
+            )
         b.style.minimal_height = 38
         b.style.maximal_height = 38
     end
@@ -233,13 +233,13 @@ end
 
 local function create_input_element(frame, type, value, items, index, tooltip, custom_space)
     if type == 'slider' then
-        return frame.add({type = 'slider', value = value, minimum_value = 0, maximum_value = 1})
+        return frame.add({ type = 'slider', value = value, minimum_value = 0, maximum_value = 1 })
     end
     if type == 'boolean' then
-        return frame.add({type = 'checkbox', state = value})
+        return frame.add({ type = 'checkbox', state = value })
     end
     if type == 'label' then
-        local label = frame.add({type = 'label', caption = value})
+        local label = frame.add({ type = 'label', caption = value })
         label.style.font = 'default-listbox'
         label.tooltip = tooltip or ''
         if custom_space then
@@ -248,62 +248,62 @@ local function create_input_element(frame, type, value, items, index, tooltip, c
         return label
     end
     if type == 'dropdown' then
-        return frame.add({type = 'drop-down', items = items, selected_index = index})
+        return frame.add({ type = 'drop-down', items = items, selected_index = index })
     end
-    return frame.add({type = 'text-box', text = value})
+    return frame.add({ type = 'text-box', text = value })
 end
 
 local function play_game_won()
     Explosives.disable(false)
     Core.iter_connected_players(
-        function(player)
+        function (player)
             Explosives.detonate_entity(player)
-            player.play_sound {path = 'utility/game_won', volume_modifier = 0.75}
-            Task.set_timeout_in_ticks(10, spread_particles_token, {player_index = player.index, particle = 'iron-ore-particle'})
-            Task.set_timeout_in_ticks(15, spread_particles_token, {player_index = player.index, particle = 'branch-particle'})
-            Task.set_timeout_in_ticks(20, spread_particles_token, {player_index = player.index, particle = 'copper-ore-particle'})
-            Task.set_timeout_in_ticks(25, spread_particles_token, {player_index = player.index, particle = 'branch-particle'})
-            Task.set_timeout_in_ticks(30, spread_particles_token, {player_index = player.index, particle = 'stone-particle'})
-            Task.set_timeout_in_ticks(35, spread_particles_token, {player_index = player.index, particle = 'branch-particle'})
-            Task.set_timeout_in_ticks(40, spread_particles_token, {player_index = player.index, particle = 'coal-particle'})
-            Task.set_timeout_in_ticks(45, spread_particles_token, {player_index = player.index, particle = 'branch-particle'})
+            player.play_sound { path = 'utility/game_won', volume_modifier = 0.75 }
+            Task.set_timeout_in_ticks(10, spread_particles_token, { player_index = player.index, particle = 'iron-ore-particle' })
+            Task.set_timeout_in_ticks(15, spread_particles_token, { player_index = player.index, particle = 'branch-particle' })
+            Task.set_timeout_in_ticks(20, spread_particles_token, { player_index = player.index, particle = 'copper-ore-particle' })
+            Task.set_timeout_in_ticks(25, spread_particles_token, { player_index = player.index, particle = 'branch-particle' })
+            Task.set_timeout_in_ticks(30, spread_particles_token, { player_index = player.index, particle = 'stone-particle' })
+            Task.set_timeout_in_ticks(35, spread_particles_token, { player_index = player.index, particle = 'branch-particle' })
+            Task.set_timeout_in_ticks(40, spread_particles_token, { player_index = player.index, particle = 'coal-particle' })
+            Task.set_timeout_in_ticks(45, spread_particles_token, { player_index = player.index, particle = 'branch-particle' })
         end
     )
 end
 
 local function play_achievement_unlocked()
     Core.iter_connected_players(
-        function(player)
-            player.play_sound {path = 'utility/achievement_unlocked', volume_modifier = 0.75}
-            Task.set_timeout_in_ticks(10, spread_particles_token, {player_index = player.index, particle = 'iron-ore-particle'})
-            Task.set_timeout_in_ticks(15, spread_particles_token, {player_index = player.index, particle = 'branch-particle'})
-            Task.set_timeout_in_ticks(20, spread_particles_token, {player_index = player.index, particle = 'copper-ore-particle'})
-            Task.set_timeout_in_ticks(25, spread_particles_token, {player_index = player.index, particle = 'branch-particle'})
-            Task.set_timeout_in_ticks(30, spread_particles_token, {player_index = player.index, particle = 'stone-particle'})
-            Task.set_timeout_in_ticks(35, spread_particles_token, {player_index = player.index, particle = 'branch-particle'})
-            Task.set_timeout_in_ticks(40, spread_particles_token, {player_index = player.index, particle = 'coal-particle'})
-            Task.set_timeout_in_ticks(45, spread_particles_token, {player_index = player.index, particle = 'branch-particle'})
+        function (player)
+            player.play_sound { path = 'utility/achievement_unlocked', volume_modifier = 0.75 }
+            Task.set_timeout_in_ticks(10, spread_particles_token, { player_index = player.index, particle = 'iron-ore-particle' })
+            Task.set_timeout_in_ticks(15, spread_particles_token, { player_index = player.index, particle = 'branch-particle' })
+            Task.set_timeout_in_ticks(20, spread_particles_token, { player_index = player.index, particle = 'copper-ore-particle' })
+            Task.set_timeout_in_ticks(25, spread_particles_token, { player_index = player.index, particle = 'branch-particle' })
+            Task.set_timeout_in_ticks(30, spread_particles_token, { player_index = player.index, particle = 'stone-particle' })
+            Task.set_timeout_in_ticks(35, spread_particles_token, { player_index = player.index, particle = 'branch-particle' })
+            Task.set_timeout_in_ticks(40, spread_particles_token, { player_index = player.index, particle = 'coal-particle' })
+            Task.set_timeout_in_ticks(45, spread_particles_token, { player_index = player.index, particle = 'branch-particle' })
         end
     )
 end
 
 local function alert_players_sound()
     Core.iter_connected_players(
-        function(player)
-            Task.set_timeout_in_ticks(10, warn_player_sound_token, {player_index = player.index, particle = 'iron-ore-particle'})
-            Task.set_timeout_in_ticks(20, warn_player_sound_token, {player_index = player.index, particle = 'branch-particle'})
-            Task.set_timeout_in_ticks(30, warn_player_sound_token, {player_index = player.index, particle = 'copper-ore-particle'})
-            Task.set_timeout_in_ticks(40, warn_player_sound_token, {player_index = player.index, particle = 'branch-particle'})
-            Task.set_timeout_in_ticks(50, warn_player_sound_token, {player_index = player.index, particle = 'stone-particle'})
-            Task.set_timeout_in_ticks(60, warn_player_sound_token, {player_index = player.index, particle = 'branch-particle'})
-            Task.set_timeout_in_ticks(70, warn_player_sound_token, {player_index = player.index, particle = 'coal-particle'})
-            Task.set_timeout_in_ticks(80, warn_player_sound_token, {player_index = player.index, particle = 'branch-particle'})
+        function (player)
+            Task.set_timeout_in_ticks(10, warn_player_sound_token, { player_index = player.index, particle = 'iron-ore-particle' })
+            Task.set_timeout_in_ticks(20, warn_player_sound_token, { player_index = player.index, particle = 'branch-particle' })
+            Task.set_timeout_in_ticks(30, warn_player_sound_token, { player_index = player.index, particle = 'copper-ore-particle' })
+            Task.set_timeout_in_ticks(40, warn_player_sound_token, { player_index = player.index, particle = 'branch-particle' })
+            Task.set_timeout_in_ticks(50, warn_player_sound_token, { player_index = player.index, particle = 'stone-particle' })
+            Task.set_timeout_in_ticks(60, warn_player_sound_token, { player_index = player.index, particle = 'branch-particle' })
+            Task.set_timeout_in_ticks(70, warn_player_sound_token, { player_index = player.index, particle = 'coal-particle' })
+            Task.set_timeout_in_ticks(80, warn_player_sound_token, { player_index = player.index, particle = 'branch-particle' })
         end
     )
 end
 
 local function spacer(frame)
-    local flow = frame.add({type = 'flow'})
+    local flow = frame.add({ type = 'flow' })
     flow.style.minimal_height = 2
 end
 
@@ -311,33 +311,33 @@ local function objective_frames(stateful, player_frame, objective, data)
     local objective_name = objective.name
     if objective_name == 'supplies' or objective_name == 'single_item' then
         local supplies = stateful.objectives.supplies
-        local tbl = player_frame.add {type = 'table', column_count = 2}
+        local tbl = player_frame.add { type = 'table', column_count = 2 }
         tbl.style.horizontally_stretchable = true
-        local left_flow = tbl.add({type = 'flow'})
+        local left_flow = tbl.add({ type = 'flow' })
         left_flow.style.horizontal_align = 'left'
         left_flow.style.horizontally_stretchable = true
 
         if objective_name == 'single_item' then
-            left_flow.add({type = 'label', caption = {'stateful.production_single'}, tooltip = {'stateful.production_tooltip'}})
+            left_flow.add({ type = 'label', caption = { 'stateful.production_single' }, tooltip = { 'stateful.production_tooltip' } })
         else
-            left_flow.add({type = 'label', caption = {'stateful.production'}, tooltip = {'stateful.production_tooltip'}})
+            left_flow.add({ type = 'label', caption = { 'stateful.production' }, tooltip = { 'stateful.production_tooltip' } })
         end
-        player_frame.add({type = 'line', direction = 'vertical'})
-        local right_flow = tbl.add({type = 'flow'})
+        player_frame.add({ type = 'line', direction = 'vertical' })
+        local right_flow = tbl.add({ type = 'flow' })
         right_flow.style.horizontal_align = 'right'
         right_flow.style.horizontally_stretchable = true
 
         if objective_name == 'single_item' then
             if stateful.objectives_completed.single_item then
-                data.single_item_complete = right_flow.add({type = 'label', caption = ' [img=utility/check_mark_green]', tooltip = {'stateful.tooltip_completed'}})
+                data.single_item_complete = right_flow.add({ type = 'label', caption = ' [img=utility/check_mark_green]', tooltip = { 'stateful.tooltip_completed' } })
             else
-                data.single_item_complete = right_flow.add({type = 'label', caption = ' [img=utility/not_available]', tooltip = {'stateful.tooltip_not_completed'}})
+                data.single_item_complete = right_flow.add({ type = 'label', caption = ' [img=utility/not_available]', tooltip = { 'stateful.tooltip_not_completed' } })
             end
         else
             if stateful.objectives_completed.supplies then
-                data.supply_completed = right_flow.add({type = 'label', caption = ' [img=utility/check_mark_green]', tooltip = {'stateful.tooltip_completed'}})
+                data.supply_completed = right_flow.add({ type = 'label', caption = ' [img=utility/check_mark_green]', tooltip = { 'stateful.tooltip_completed' } })
             else
-                data.supply_completed = right_flow.add({type = 'label', caption = ' [img=utility/not_available]', tooltip = {'stateful.tooltip_not_completed'}})
+                data.supply_completed = right_flow.add({ type = 'label', caption = ' [img=utility/not_available]', tooltip = { 'stateful.tooltip_not_completed' } })
             end
         end
 
@@ -345,15 +345,15 @@ local function objective_frames(stateful, player_frame, objective, data)
             data.supply = {}
         end
 
-        local flow = player_frame.add({type = 'flow'})
-        local item_table = flow.add({type = 'table', name = 'item_table', column_count = 3})
+        local flow = player_frame.add({ type = 'flow' })
+        local item_table = flow.add({ type = 'table', name = 'item_table', column_count = 3 })
         if objective_name ~= 'single_item' then
-            data.supply[#data.supply + 1] = item_table.add({type = 'sprite-button', name = supplies[1].name, sprite = 'item/' .. supplies[1].name, enabled = false, number = supplies[1].count})
-            data.supply[#data.supply + 1] = item_table.add({type = 'sprite-button', name = supplies[2].name, sprite = 'item/' .. supplies[2].name, enabled = false, number = supplies[2].count})
-            data.supply[#data.supply + 1] = item_table.add({type = 'sprite-button', name = supplies[3].name, sprite = 'item/' .. supplies[3].name, enabled = false, number = supplies[3].count})
+            data.supply[#data.supply + 1] = item_table.add({ type = 'sprite-button', name = supplies[1].name, sprite = 'item/' .. supplies[1].name, enabled = false, number = supplies[1].count })
+            data.supply[#data.supply + 1] = item_table.add({ type = 'sprite-button', name = supplies[2].name, sprite = 'item/' .. supplies[2].name, enabled = false, number = supplies[2].count })
+            data.supply[#data.supply + 1] = item_table.add({ type = 'sprite-button', name = supplies[3].name, sprite = 'item/' .. supplies[3].name, enabled = false, number = supplies[3].count })
         else
             local single_item = stateful.objectives.single_item
-            data.single_item = item_table.add({type = 'sprite-button', name = single_item.name, sprite = 'item/' .. single_item.name, enabled = false, number = single_item.count})
+            data.single_item = item_table.add({ type = 'sprite-button', name = single_item.name, sprite = 'item/' .. single_item.name, enabled = false, number = single_item.count })
         end
 
         return
@@ -363,19 +363,19 @@ local function objective_frames(stateful, player_frame, objective, data)
 
     local _, objective_locale_left, objective_locale_right, tooltip_left, tooltip_right = callback()
 
-    local tbl = player_frame.add {type = 'table', column_count = 2}
+    local tbl = player_frame.add { type = 'table', column_count = 2 }
     tbl.style.horizontally_stretchable = true
-    local left_flow = tbl.add({type = 'flow'})
+    local left_flow = tbl.add({ type = 'flow' })
     left_flow.style.horizontal_align = 'left'
     left_flow.style.horizontally_stretchable = true
 
-    left_flow.add({type = 'label', caption = objective_locale_left, tooltip = tooltip_left})
-    local right_flow = tbl.add({type = 'flow'})
+    left_flow.add({ type = 'label', caption = objective_locale_left, tooltip = tooltip_left })
+    local right_flow = tbl.add({ type = 'flow' })
     right_flow.style.horizontal_align = 'right'
     right_flow.style.horizontally_stretchable = true
 
-    local objective_locale_right_label = right_flow.add({type = 'label', caption = objective_locale_right, tooltip = tooltip_right})
-    data.random_objectives[#data.random_objectives + 1] = {name = objective_name, frame = objective_locale_right_label}
+    local objective_locale_right_label = right_flow.add({ type = 'label', caption = objective_locale_right, tooltip = tooltip_right })
+    data.random_objectives[#data.random_objectives + 1] = { name = objective_name, frame = objective_locale_right_label }
     return
 end
 
@@ -393,16 +393,16 @@ local function buff_window(player)
     local inside_table_style = inside_table.style
     inside_table_style.width = 530
 
-    local info_text = inside_table.add({type = 'label', caption = 'All the buffs that have been gathered throughout the runs!'})
+    local info_text = inside_table.add({ type = 'label', caption = 'All the buffs that have been gathered throughout the runs!' })
     local info_text_style = info_text.style
     info_text_style.font = 'heading-2'
     info_text_style.padding = 0
     info_text_style.left_padding = 10
     info_text_style.horizontal_align = 'left'
     info_text_style.vertical_align = 'bottom'
-    info_text_style.font_color = {0.55, 0.55, 0.99}
+    info_text_style.font_color = { 0.55, 0.55, 0.99 }
 
-    local buff_pane = inside_table.add({type = 'scroll-pane'})
+    local buff_pane = inside_table.add({ type = 'scroll-pane' })
     local ns = buff_pane.style
     ns.vertically_squashable = true
     ns.bottom_padding = 5
@@ -410,36 +410,36 @@ local function buff_window(player)
     ns.right_padding = 5
     ns.top_padding = 5
 
-    buff_pane.add({type = 'line'})
+    buff_pane.add({ type = 'line' })
 
-    local starting_items_label = buff_pane.add({type = 'label', caption = 'Starting items'})
+    local starting_items_label = buff_pane.add({ type = 'label', caption = 'Starting items' })
     local starting_items_label_style = starting_items_label.style
     starting_items_label_style.font = 'heading-3'
     starting_items_label_style.padding = 0
     starting_items_label_style.horizontal_align = 'left'
-    starting_items_label_style.font_color = {0.55, 0.55, 0.99}
+    starting_items_label_style.font_color = { 0.55, 0.55, 0.99 }
 
-    local starting_grid = buff_pane.add({type = 'table', column_count = 8})
+    local starting_grid = buff_pane.add({ type = 'table', column_count = 8 })
 
-    buff_pane.add({type = 'line'})
+    buff_pane.add({ type = 'line' })
 
-    local force_label = buff_pane.add({type = 'label', caption = 'Force Buffs'})
+    local force_label = buff_pane.add({ type = 'label', caption = 'Force Buffs' })
     local force_label_style = force_label.style
     force_label_style.font = 'heading-3'
     force_label_style.padding = 0
     force_label_style.horizontal_align = 'left'
-    force_label_style.font_color = {0.55, 0.55, 0.99}
-    local force_grid = buff_pane.add({type = 'table', column_count = 2})
+    force_label_style.font_color = { 0.55, 0.55, 0.99 }
+    local force_grid = buff_pane.add({ type = 'table', column_count = 2 })
 
-    buff_pane.add({type = 'line'})
+    buff_pane.add({ type = 'line' })
 
-    local custom_label = buff_pane.add({type = 'label', caption = 'Custom Buffs'})
+    local custom_label = buff_pane.add({ type = 'label', caption = 'Custom Buffs' })
     local custom_label_style = custom_label.style
     custom_label_style.font = 'heading-3'
     custom_label_style.padding = 0
     custom_label_style.horizontal_align = 'left'
-    custom_label_style.font_color = {0.55, 0.55, 0.99}
-    local custom_grid = buff_pane.add({type = 'table', column_count = 2})
+    custom_label_style.font_color = { 0.55, 0.55, 0.99 }
+    local custom_grid = buff_pane.add({ type = 'table', column_count = 2 })
 
     if stateful.buffs and next(stateful.buffs) then
         if stateful.buffs_collected and next(stateful.buffs_collected) then
@@ -501,64 +501,64 @@ local function boss_frame(player, alert)
     local stateful = Public.get_stateful()
     local collection = stateful.collection
 
-    local frame = player.gui.screen.add {type = 'frame', name = boss_frame_name, caption = {'stateful.win_conditions'}, direction = 'vertical'}
+    local frame = player.gui.screen.add { type = 'frame', name = boss_frame_name, caption = { 'stateful.win_conditions' }, direction = 'vertical' }
     if not alert then
-        frame.location = {x = 1, y = 45}
+        frame.location = { x = 1, y = 45 }
     else
-        frame.location = {x = 1, y = 123}
+        frame.location = { x = 1, y = 123 }
     end
     frame.style.maximal_height = 500
     frame.style.minimal_width = 200
     frame.style.maximal_width = 400
-    local season_tbl = frame.add {type = 'table', column_count = 2}
+    local season_tbl = frame.add { type = 'table', column_count = 2 }
     season_tbl.style.horizontally_stretchable = true
 
-    local season_left_flow = season_tbl.add({type = 'flow'})
+    local season_left_flow = season_tbl.add({ type = 'flow' })
     season_left_flow.style.horizontal_align = 'left'
     season_left_flow.style.horizontally_stretchable = true
 
-    season_left_flow.add({type = 'label', caption = {'stateful.season'}, tooltip = {'stateful.season_tooltip', stateful.time_to_reset}})
-    frame.add({type = 'line', direction = 'vertical'})
-    local season_right_flow = season_tbl.add({type = 'flow'})
+    season_left_flow.add({ type = 'label', caption = { 'stateful.season' }, tooltip = { 'stateful.season_tooltip', stateful.time_to_reset } })
+    frame.add({ type = 'line', direction = 'vertical' })
+    local season_right_flow = season_tbl.add({ type = 'flow' })
     season_right_flow.style.horizontal_align = 'right'
     season_right_flow.style.horizontally_stretchable = true
 
-    data.season_label = season_right_flow.add({type = 'label', caption = stateful.season})
+    data.season_label = season_right_flow.add({ type = 'label', caption = stateful.season })
 
     spacer(frame)
 
-    local rounds_survived_tbl = frame.add {type = 'table', column_count = 2}
+    local rounds_survived_tbl = frame.add { type = 'table', column_count = 2 }
     rounds_survived_tbl.style.horizontally_stretchable = true
 
-    local rounds_survived_left_flow = rounds_survived_tbl.add({type = 'flow'})
+    local rounds_survived_left_flow = rounds_survived_tbl.add({ type = 'flow' })
     rounds_survived_left_flow.style.horizontal_align = 'left'
     rounds_survived_left_flow.style.horizontally_stretchable = true
 
-    rounds_survived_left_flow.add({type = 'label', caption = {'stateful.rounds_survived'}, tooltip = {'stateful.rounds_survived_tooltip'}})
-    frame.add({type = 'line', direction = 'vertical'})
-    local rounds_survived_right_flow = rounds_survived_tbl.add({type = 'flow'})
+    rounds_survived_left_flow.add({ type = 'label', caption = { 'stateful.rounds_survived' }, tooltip = { 'stateful.rounds_survived_tooltip' } })
+    frame.add({ type = 'line', direction = 'vertical' })
+    local rounds_survived_right_flow = rounds_survived_tbl.add({ type = 'flow' })
     rounds_survived_right_flow.style.horizontal_align = 'right'
     rounds_survived_right_flow.style.horizontally_stretchable = true
 
-    data.rounds_survived_label = rounds_survived_right_flow.add({type = 'label', caption = stateful.rounds_survived})
+    data.rounds_survived_label = rounds_survived_right_flow.add({ type = 'label', caption = stateful.rounds_survived })
     spacer(frame)
 
-    frame.add({type = 'line'})
+    frame.add({ type = 'line' })
 
     spacer(frame)
 
     if not collection.game_won then
-        local objective_tbl = frame.add {type = 'table', column_count = 2}
+        local objective_tbl = frame.add { type = 'table', column_count = 2 }
         objective_tbl.style.horizontally_stretchable = true
 
         if collection.gather_time <= 0 then
-            local survive_for_left_flow = objective_tbl.add({type = 'flow'})
+            local survive_for_left_flow = objective_tbl.add({ type = 'flow' })
             survive_for_left_flow.style.horizontal_align = 'left'
             survive_for_left_flow.style.horizontally_stretchable = true
 
-            survive_for_left_flow.add({type = 'label', caption = {'stateful.survive_for'}})
-            frame.add({type = 'line', direction = 'vertical'})
-            local survive_for_right_flow = objective_tbl.add({type = 'flow'})
+            survive_for_left_flow.add({ type = 'label', caption = { 'stateful.survive_for' } })
+            frame.add({ type = 'line', direction = 'vertical' })
+            local survive_for_right_flow = objective_tbl.add({ type = 'flow' })
             survive_for_right_flow.style.horizontal_align = 'right'
             survive_for_right_flow.style.horizontally_stretchable = true
 
@@ -569,42 +569,42 @@ local function boss_frame(player, alert)
             end
 
             if collection.survive_for <= 0 then
-                data.survive_for = survive_for_right_flow.add({type = 'label', caption = {'stateful.won'}})
+                data.survive_for = survive_for_right_flow.add({ type = 'label', caption = { 'stateful.won' } })
             else
-                data.survive_for = survive_for_right_flow.add({type = 'label', caption = survive_for_timer})
+                data.survive_for = survive_for_right_flow.add({ type = 'label', caption = survive_for_timer })
             end
         end
         -- new frame
-        local biter_sprites_tbl = objective_tbl.add({type = 'flow'})
+        local biter_sprites_tbl = objective_tbl.add({ type = 'flow' })
         biter_sprites_tbl.style.horizontal_align = 'left'
         biter_sprites_tbl.style.horizontally_stretchable = true
 
-        biter_sprites_tbl.add({type = 'label', caption = {'stateful.biter_sprites'}})
+        biter_sprites_tbl.add({ type = 'label', caption = { 'stateful.biter_sprites' } })
     else
-        local objective_tbl = frame.add {type = 'table', column_count = 2}
+        local objective_tbl = frame.add { type = 'table', column_count = 2 }
         objective_tbl.style.horizontally_stretchable = true
 
-        local game_won_left_flow = objective_tbl.add({type = 'flow'})
+        local game_won_left_flow = objective_tbl.add({ type = 'flow' })
         game_won_left_flow.style.horizontal_align = 'left'
         game_won_left_flow.style.horizontally_stretchable = true
 
-        game_won_left_flow.add({type = 'label', caption = {'stateful.game_won'}})
+        game_won_left_flow.add({ type = 'label', caption = { 'stateful.game_won' } })
     end
 
-    local close = frame.add({type = 'button', name = close_button, caption = 'Close'})
+    local close = frame.add({ type = 'button', name = close_button, caption = 'Close' })
     close.style.horizontally_stretchable = true
     Gui.set_data(frame, data)
 end
 
 local function refresh_boss_frame()
     Core.iter_connected_players(
-        function(player)
+        function (player)
             boss_frame(player)
         end
     )
 end
 
-main_frame = function(player)
+main_frame = function (player)
     local main_player_frame = player.gui.screen[main_frame_name]
     if main_player_frame then
         Gui.remove_data_recursively(main_player_frame)
@@ -618,99 +618,99 @@ main_frame = function(player)
     breached_wall = breached_wall - 1
     local wave_number = WD.get('wave_number')
 
-    local frame = player.gui.screen.add {type = 'frame', name = main_frame_name, caption = {'stateful.win_conditions'}, direction = 'vertical', tooltip = {'stateful.win_conditions_tooltip'}}
+    local frame = player.gui.screen.add { type = 'frame', name = main_frame_name, caption = { 'stateful.win_conditions' }, direction = 'vertical', tooltip = { 'stateful.win_conditions_tooltip' } }
     if Gui.get_mod_gui_top_frame() then
-        frame.location = {x = 0, y = 67}
+        frame.location = { x = 0, y = 67 }
     else
-        frame.location = {x = 1, y = 45}
+        frame.location = { x = 1, y = 45 }
     end
     frame.style.maximal_height = 700
     frame.style.minimal_width = 200
     frame.style.maximal_width = 400
-    local season_tbl = frame.add {type = 'table', column_count = 2}
+    local season_tbl = frame.add { type = 'table', column_count = 2 }
     season_tbl.style.horizontally_stretchable = true
 
-    local season_left_flow = season_tbl.add({type = 'flow'})
+    local season_left_flow = season_tbl.add({ type = 'flow' })
     season_left_flow.style.horizontal_align = 'left'
     season_left_flow.style.horizontally_stretchable = true
 
-    season_left_flow.add({type = 'label', caption = {'stateful.season'}, tooltip = {'stateful.season_tooltip', stateful.time_to_reset}})
-    frame.add({type = 'line', direction = 'vertical'})
-    local season_right_flow = season_tbl.add({type = 'flow'})
+    season_left_flow.add({ type = 'label', caption = { 'stateful.season' }, tooltip = { 'stateful.season_tooltip', stateful.time_to_reset } })
+    frame.add({ type = 'line', direction = 'vertical' })
+    local season_right_flow = season_tbl.add({ type = 'flow' })
     season_right_flow.style.horizontal_align = 'right'
     season_right_flow.style.horizontally_stretchable = true
 
-    data.season_label = season_right_flow.add({type = 'label', caption = stateful.season})
+    data.season_label = season_right_flow.add({ type = 'label', caption = stateful.season })
 
     spacer(frame)
 
-    local rounds_survived_tbl = frame.add {type = 'table', column_count = 2}
+    local rounds_survived_tbl = frame.add { type = 'table', column_count = 2 }
     rounds_survived_tbl.style.horizontally_stretchable = true
 
-    local rounds_survived_left_flow = rounds_survived_tbl.add({type = 'flow'})
+    local rounds_survived_left_flow = rounds_survived_tbl.add({ type = 'flow' })
     rounds_survived_left_flow.style.horizontal_align = 'left'
     rounds_survived_left_flow.style.horizontally_stretchable = true
 
-    rounds_survived_left_flow.add({type = 'label', caption = {'stateful.rounds_survived'}, tooltip = {'stateful.rounds_survived_tooltip'}})
-    frame.add({type = 'line', direction = 'vertical'})
-    local rounds_survived_right_flow = rounds_survived_tbl.add({type = 'flow'})
+    rounds_survived_left_flow.add({ type = 'label', caption = { 'stateful.rounds_survived' }, tooltip = { 'stateful.rounds_survived_tooltip' } })
+    frame.add({ type = 'line', direction = 'vertical' })
+    local rounds_survived_right_flow = rounds_survived_tbl.add({ type = 'flow' })
     rounds_survived_right_flow.style.horizontal_align = 'right'
     rounds_survived_right_flow.style.horizontally_stretchable = true
 
-    data.rounds_survived_label = rounds_survived_right_flow.add({type = 'label', caption = stateful.rounds_survived})
+    data.rounds_survived_label = rounds_survived_right_flow.add({ type = 'label', caption = stateful.rounds_survived })
     spacer(frame)
 
-    frame.add({type = 'line'})
+    frame.add({ type = 'line' })
 
     spacer(frame)
 
     if stateful.buffs and next(stateful.buffs) then
-        local buff_tbl = frame.add {type = 'table', column_count = 2}
+        local buff_tbl = frame.add { type = 'table', column_count = 2 }
         buff_tbl.style.horizontally_stretchable = true
 
-        local buff_left_flow = buff_tbl.add({type = 'flow'})
+        local buff_left_flow = buff_tbl.add({ type = 'flow' })
         buff_left_flow.style.horizontal_align = 'left'
         buff_left_flow.style.horizontally_stretchable = true
 
-        local buff_right_flow = buff_tbl.add({type = 'flow'})
+        local buff_right_flow = buff_tbl.add({ type = 'flow' })
         buff_right_flow.style.horizontal_align = 'right'
         buff_right_flow.style.horizontally_stretchable = true
 
-        buff_right_flow.add({name = on_click_buff_name, type = 'label', caption = '[img=utility/center]', tooltip = {'stateful.buff_tooltip_click'}})
+        buff_right_flow.add({ name = on_click_buff_name, type = 'label', caption = '[img=utility/center]', tooltip = { 'stateful.buff_tooltip_click' } })
 
-        local buff_label = buff_left_flow.add({type = 'label', caption = {'stateful.buffs'}, tooltip = {'stateful.buff_tooltip'}})
+        local buff_label = buff_left_flow.add({ type = 'label', caption = { 'stateful.buffs' }, tooltip = { 'stateful.buff_tooltip' } })
         buff_label.style.single_line = false
-        frame.add({type = 'line', direction = 'vertical'})
+        frame.add({ type = 'line', direction = 'vertical' })
 
         spacer(frame)
 
-        frame.add({type = 'line'})
+        frame.add({ type = 'line' })
     end
 
     spacer(frame)
 
     if stateful.objectives_completed.boss_time then
-        local gather_objective_tbl = frame.add {type = 'table', column_count = 2}
+        local gather_objective_tbl = frame.add { type = 'table', column_count = 2 }
         gather_objective_tbl.style.horizontally_stretchable = true
 
-        local gather_warning_flow = gather_objective_tbl.add({type = 'flow'})
+        local gather_warning_flow = gather_objective_tbl.add({ type = 'flow' })
         gather_warning_flow.style.horizontal_align = 'left'
         gather_warning_flow.style.horizontally_stretchable = true
 
-        gather_warning_flow.add({type = 'label', caption = {'stateful.gather'}})
-        frame.add({type = 'line', direction = 'vertical'})
+        gather_warning_flow.add({ type = 'label', caption = { 'stateful.gather' } })
+        frame.add({ type = 'line', direction = 'vertical' })
 
-        local objective_tbl = frame.add {type = 'table', column_count = 2}
+        local objective_tbl = frame.add { type = 'table', column_count = 2 }
         objective_tbl.style.horizontally_stretchable = true
 
-        local warn_timer_flow_left = objective_tbl.add({type = 'flow'})
+        local warn_timer_flow_left = objective_tbl.add({ type = 'flow' })
         warn_timer_flow_left.style.horizontal_align = 'left'
         warn_timer_flow_left.style.horizontally_stretchable = true
 
-        warn_timer_flow_left.add({type = 'label', caption = {'stateful.warp'}, tooltip = {'stateful.warp_tooltip'}})
-        frame.add({type = 'line', direction = 'vertical'})
+        warn_timer_flow_left.add({ type = 'label', caption = { 'stateful.warp' }, tooltip = { 'stateful.warp_tooltip' } })
+        frame.add({ type = 'line', direction = 'vertical' })
 
-        local warn_timer_flow_right = objective_tbl.add({type = 'flow'})
+        local warn_timer_flow_right = objective_tbl.add({ type = 'flow' })
         warn_timer_flow_right.style.horizontal_align = 'right'
         warn_timer_flow_right.style.horizontally_stretchable = true
 
@@ -720,42 +720,42 @@ main_frame = function(player)
             time_left = floor(stateful.collection.gather_time / 60) .. 's'
         end
 
-        data.gather_time_label = warn_timer_flow_right.add({type = 'label', caption = time_left})
+        data.gather_time_label = warn_timer_flow_right.add({ type = 'label', caption = time_left })
     else
-        local objective_tbl = frame.add {type = 'table', column_count = 2}
+        local objective_tbl = frame.add { type = 'table', column_count = 2 }
         objective_tbl.style.horizontally_stretchable = true
 
-        local zone_left_flow = objective_tbl.add({type = 'flow'})
+        local zone_left_flow = objective_tbl.add({ type = 'flow' })
         zone_left_flow.style.horizontal_align = 'left'
         zone_left_flow.style.horizontally_stretchable = true
 
-        zone_left_flow.add({type = 'label', caption = {'stateful.zone'}, tooltip = {'stateful.zone_tooltip'}})
-        frame.add({type = 'line', direction = 'vertical'})
-        local zone_right_flow = objective_tbl.add({type = 'flow'})
+        zone_left_flow.add({ type = 'label', caption = { 'stateful.zone' }, tooltip = { 'stateful.zone_tooltip' } })
+        frame.add({ type = 'line', direction = 'vertical' })
+        local zone_right_flow = objective_tbl.add({ type = 'flow' })
         zone_right_flow.style.horizontal_align = 'right'
         zone_right_flow.style.horizontally_stretchable = true
 
         if breached_wall >= stateful.objectives.randomized_zone then
-            data.randomized_zone_label = zone_right_flow.add({type = 'label', caption = breached_wall .. '/' .. stateful.objectives.randomized_zone .. ' [img=utility/check_mark_green]', tooltip = {'stateful.tooltip_completed'}})
+            data.randomized_zone_label = zone_right_flow.add({ type = 'label', caption = breached_wall .. '/' .. stateful.objectives.randomized_zone .. ' [img=utility/check_mark_green]', tooltip = { 'stateful.tooltip_completed' } })
         else
-            data.randomized_zone_label = zone_right_flow.add({type = 'label', caption = breached_wall .. '/' .. stateful.objectives.randomized_zone .. ' [img=utility/not_available]', tooltip = {'stateful.tooltip_not_completed'}})
+            data.randomized_zone_label = zone_right_flow.add({ type = 'label', caption = breached_wall .. '/' .. stateful.objectives.randomized_zone .. ' [img=utility/not_available]', tooltip = { 'stateful.tooltip_not_completed' } })
         end
 
         -- new frame
-        local wave_left_flow = objective_tbl.add({type = 'flow'})
+        local wave_left_flow = objective_tbl.add({ type = 'flow' })
         wave_left_flow.style.horizontal_align = 'left'
         wave_left_flow.style.horizontally_stretchable = true
 
-        wave_left_flow.add({type = 'label', caption = {'stateful.wave'}, tooltip = {'stateful.wave_tooltip'}})
-        frame.add({type = 'line', direction = 'vertical'})
-        local wave_right_flow = objective_tbl.add({type = 'flow'})
+        wave_left_flow.add({ type = 'label', caption = { 'stateful.wave' }, tooltip = { 'stateful.wave_tooltip' } })
+        frame.add({ type = 'line', direction = 'vertical' })
+        local wave_right_flow = objective_tbl.add({ type = 'flow' })
         wave_right_flow.style.horizontal_align = 'right'
         wave_right_flow.style.horizontally_stretchable = true
 
         if wave_number >= stateful.objectives.randomized_wave then
-            data.randomized_wave_label = wave_right_flow.add({type = 'label', caption = wave_number .. '/' .. stateful.objectives.randomized_wave .. ' [img=utility/check_mark_green]', tooltip = {'stateful.tooltip_completed'}})
+            data.randomized_wave_label = wave_right_flow.add({ type = 'label', caption = wave_number .. '/' .. stateful.objectives.randomized_wave .. ' [img=utility/check_mark_green]', tooltip = { 'stateful.tooltip_completed' } })
         else
-            data.randomized_wave_label = wave_right_flow.add({type = 'label', caption = wave_number .. '/' .. stateful.objectives.randomized_wave .. ' [img=utility/not_available]', tooltip = {'stateful.tooltip_not_completed'}})
+            data.randomized_wave_label = wave_right_flow.add({ type = 'label', caption = wave_number .. '/' .. stateful.objectives.randomized_wave .. ' [img=utility/not_available]', tooltip = { 'stateful.tooltip_not_completed' } })
         end
 
         --dynamic conditions
@@ -769,7 +769,7 @@ main_frame = function(player)
 
     -- warn players
     spacer(frame)
-    frame.add({type = 'line'})
+    frame.add({ type = 'line' })
     spacer(frame)
     -- if not stateful.collection.final_arena_disabled then
     --     local final_label = frame.add({type = 'label', caption = {'stateful.tooltip_final'}})
@@ -784,7 +784,7 @@ main_frame = function(player)
     -- frame.add({type = 'line'})
     spacer(frame)
 
-    local close = frame.add({type = 'button', name = close_button, caption = 'Close'})
+    local close = frame.add({ type = 'button', name = close_button, caption = 'Close' })
     close.style.horizontally_stretchable = true
     Gui.set_data(frame, data)
 end
@@ -818,7 +818,7 @@ local function update_data()
             if data.randomized_zone_label and data.randomized_zone_label.valid and stateful.objectives.randomized_zone then
                 if breached_wall >= stateful.objectives.randomized_zone then
                     data.randomized_zone_label.caption = breached_wall .. '/' .. stateful.objectives.randomized_zone .. ' [img=utility/check_mark_green]'
-                    data.randomized_zone_label.tooltip = {'stateful.tooltip_completed'}
+                    data.randomized_zone_label.tooltip = { 'stateful.tooltip_completed' }
                 else
                     data.randomized_zone_label.caption = breached_wall .. '/' .. stateful.objectives.randomized_zone .. ' [img=utility/not_available]'
                 end
@@ -827,7 +827,7 @@ local function update_data()
             if data.randomized_wave_label and data.randomized_wave_label.valid and stateful.objectives.randomized_wave then
                 if wave_number >= stateful.objectives.randomized_wave then
                     data.randomized_wave_label.caption = wave_number .. '/' .. stateful.objectives.randomized_wave .. ' [img=utility/check_mark_green]'
-                    data.randomized_wave_label.tooltip = {'stateful.tooltip_completed'}
+                    data.randomized_wave_label.tooltip = { 'stateful.tooltip_completed' }
                 else
                     data.randomized_wave_label.caption = wave_number .. '/' .. stateful.objectives.randomized_wave .. ' [img=utility/not_available]'
                 end
@@ -947,7 +947,7 @@ local function update_data()
                 end
 
                 if collection.survive_for <= 0 then
-                    data_boss.survive_for.caption = {'stateful.won'}
+                    data_boss.survive_for.caption = { 'stateful.won' }
                 else
                     data_boss.survive_for.caption = survive_for_timer
                 end
@@ -1079,11 +1079,10 @@ local function update_raw()
                 LinkedChests.clear_linked_frames()
                 stateful.final_battle = true
                 Public.set('final_battle', true)
+                WD.set('final_battle', true)
 
                 collection.survive_for = game.tick + Stateful.scale(10 * 3600, 35 * 3600)
                 collection.survive_for_timer = collection.survive_for
-                collection.nuke_blueprint = true
-                -- Public.stateful_blueprints.nuke_blueprint()
                 WD.disable_spawning_biters(false)
                 Public.allocate()
                 Public.set_final_battle()
@@ -1131,7 +1130,7 @@ local function update_raw()
                 notify_won_to_discord(buff)
                 local locomotive = Public.get('locomotive')
                 if locomotive and locomotive.valid then
-                    locomotive.surface.spill_item_stack(locomotive.position, {name = 'coin', count = 512}, false)
+                    locomotive.surface.spill_item_stack(locomotive.position, { name = 'coin', count = 512 }, false)
                 end
                 Public.set('game_reset_tick', 5400)
                 return
@@ -1193,7 +1192,7 @@ local function update_raw()
             notify_won_to_discord(buff)
             local locomotive = Public.get('locomotive')
             if locomotive and locomotive.valid then
-                locomotive.surface.spill_item_stack(locomotive.position, {name = 'coin', count = 512}, false)
+                locomotive.surface.spill_item_stack(locomotive.position, { name = 'coin', count = 512 }, false)
             end
             Public.set('game_reset_tick', 5400)
             return
@@ -1210,13 +1209,15 @@ local function update_raw()
         end
         Explosives.disable(true)
         WD.disable_spawning_biters(true)
-        Collapse.set_reverse_position({0, reverse_position})
+        WD.set_track_bosses_only(false)
+        Collapse.set_reverse_position({ 0, reverse_position })
         Collapse.set_reverse_direction()
         Collapse.reverse_start_now(true)
         Alert.alert_all_players(200, 'Reverse collapse has been initiated!')
         Server.to_discord_embed('Reverse collapse has been initiated!')
         -- Public.stateful_blueprints.blueprint()
         WD.nuke_wave_gui()
+        WD.set('final_battle', true)
         Public.set('pre_final_battle', true)
 
         refresh_frames()
@@ -1236,7 +1237,7 @@ end
 
 Gui.on_click(
     main_button_name,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Mtn v3 open stateful Button')
         if is_spamming then
             return
@@ -1279,7 +1280,7 @@ Gui.on_click(
 
 Gui.on_click(
     close_button,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Mtn v3 close stateful Button')
         if is_spamming then
             return
@@ -1308,7 +1309,7 @@ Gui.on_click(
 
 Gui.on_click(
     close_buffs_window_name,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Buff Close Button')
         if is_spamming then
             return
@@ -1329,7 +1330,7 @@ Gui.on_click(
 
 Gui.on_custom_close(
     buffs_window_name,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Buff Custom Close')
         if is_spamming then
             return
@@ -1350,7 +1351,7 @@ Gui.on_custom_close(
 
 Gui.on_click(
     on_click_buff_name,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Buff Open Button')
         if is_spamming then
             return

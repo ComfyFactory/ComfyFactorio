@@ -33,7 +33,7 @@ local this = {
 
 Global.register(
     this,
-    function(tbl)
+    function (tbl)
         this = tbl
     end
 )
@@ -63,29 +63,29 @@ end
 
 local delayed_last_page_token =
     Task.register(
-    function(event)
-        local player_index = event.player_index
-        local player = game.get_player(player_index)
-        if not player or not player.valid then
-            return
-        end
+        function (event)
+            local player_index = event.player_index
+            local player = game.get_player(player_index)
+            if not player or not player.valid then
+                return
+            end
 
-        local element = event.element
-        if not element or not element.valid then
-            return
-        end
+            local element = event.element
+            if not element or not element.valid then
+                return
+            end
 
-        local player_data = get_player_data(player)
-        if not player_data or not player_data.table_count then
-            return
-        end
-        local last_page = ceil(player_data.table_count / rows_per_page)
+            local player_data = get_player_data(player)
+            if not player_data or not player_data.table_count then
+                return
+            end
+            local last_page = ceil(player_data.table_count / rows_per_page)
 
-        player_data.current_page = last_page
-        local data = {player = player, frame = element}
-        create_admin_panel(data)
-    end
-)
+            player_data.current_page = last_page
+            local data = { player = player, frame = element }
+            create_admin_panel(data)
+        end
+    )
 
 local function clear_validation_action(player_name, action)
     local admin_button_validation = AntiGrief.get('admin_button_validation')
@@ -96,22 +96,22 @@ end
 
 local clear_validation_token =
     Token.register(
-    function(event)
-        local action = event.action
-        if not action then
-            return
-        end
-        local player_name = event.player_name
-        if not player_name then
-            return
-        end
+        function (event)
+            local action = event.action
+            if not action then
+                return
+            end
+            local player_name = event.player_name
+            if not player_name then
+                return
+            end
 
-        local admin_button_validation = AntiGrief.get('admin_button_validation')
-        if admin_button_validation and admin_button_validation[action] then
-            admin_button_validation[action][player_name] = nil
+            local admin_button_validation = AntiGrief.get('admin_button_validation')
+            if admin_button_validation and admin_button_validation[action] then
+                admin_button_validation[action][player_name] = nil
+            end
         end
-    end
-)
+    )
 
 local function validate_action(player, action)
     local admin_button_validation = AntiGrief.get('admin_button_validation')
@@ -121,7 +121,7 @@ local function validate_action(player, action)
 
     if not admin_button_validation[action][player.name] then
         admin_button_validation[action][player.name] = true
-        Task.set_timeout_in_ticks(100, clear_validation_token, {player_name = player.name, action = action})
+        Task.set_timeout_in_ticks(200, clear_validation_token, { player_name = player.name, action = action })
         player.print('Please run this again if you are certain that you want to run this action[' .. action .. '].', Color.warning)
         return true
     end
@@ -131,7 +131,7 @@ end
 local function admin_only_message(str)
     for _, player in pairs(game.connected_players) do
         if player.admin == true then
-            player.print('Admins-only-message: ' .. str, {r = 0.88, g = 0.88, b = 0.88})
+            player.print('Admins-only-message: ' .. str, { r = 0.88, g = 0.88, b = 0.88 })
         end
     end
 end
@@ -142,12 +142,33 @@ local function jail(player, source_player)
     end
 
     if player.name == source_player.name then
-        player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+        player.print("You can't select yourself!", { r = 1, g = 0.5, b = 0.1 })
         clear_validation_action(source_player.name, 'jail')
         return
     end
     Jailed.try_ul_data(player.name, true, source_player.name, 'Jailed by ' .. source_player.name .. '!')
     clear_validation_action(source_player.name, 'jail')
+end
+
+local function clear_biters(player)
+    if validate_action(player, 'clear_biters') then
+        return
+    end
+
+    local surface = player.surface
+    local count = 0
+    for c in surface.get_chunks() do
+        for _, entity in pairs(surface.find_entities_filtered({ area = { { c.x * 32, c.y * 32 }, { c.x * 32 + 32, c.y * 32 + 32 } }, type = "unit" })) do
+            if entity and entity.valid then
+                entity.destroy()
+                count = count + 1
+            end
+        end
+    end
+
+    player.print('Cleared: ' .. count .. ' biters.', Color.warning)
+
+    clear_validation_action(player.name, 'clear_biters')
 end
 
 local function mute(player, source_player)
@@ -156,7 +177,7 @@ local function mute(player, source_player)
     end
 
     if player.name == source_player.name then
-        player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+        player.print("You can't select yourself!", { r = 1, g = 0.5, b = 0.1 })
         clear_validation_action(source_player.name, 'mute')
         return
     end
@@ -164,7 +185,7 @@ local function mute(player, source_player)
     local muted = Jailed.mute_player(player)
     local muted_str = muted and 'muted' or 'unmuted'
     clear_validation_action(source_player.name, 'jail')
-    game.print(player.name .. ' was ' .. muted_str .. ' by player ' .. source_player.name .. '!', {r = 1, g = 0.5, b = 0.1})
+    game.print(player.name .. ' was ' .. muted_str .. ' by player ' .. source_player.name .. '!', { r = 1, g = 0.5, b = 0.1 })
 end
 
 local function free(player, source_player)
@@ -173,7 +194,7 @@ local function free(player, source_player)
     end
 
     if player.name == source_player.name then
-        player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+        player.print("You can't select yourself!", { r = 1, g = 0.5, b = 0.1 })
         clear_validation_action(source_player.name, 'free')
         return
     end
@@ -193,19 +214,19 @@ local function bring_player(player, source_player)
     end
 
     if player.name == source_player.name then
-        player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+        player.print("You can't select yourself!", { r = 1, g = 0.5, b = 0.1 })
         clear_validation_action(source_player.name, 'bring_player')
         return
     end
     if player.driving == true then
-        source_player.print('Target player is in a vehicle, teleport not available.', {r = 0.88, g = 0.88, b = 0.88})
+        source_player.print('Target player is in a vehicle, teleport not available.', { r = 0.88, g = 0.88, b = 0.88 })
         clear_validation_action(source_player.name, 'bring_player')
         return
     end
     local pos = source_player.surface.find_non_colliding_position('character', source_player.position, 50, 1)
     if pos then
         player.teleport(pos, source_player.surface)
-        game.print(player.name .. ' has been teleported to ' .. source_player.name .. '. ' .. bring_player_messages[math.random(1, #bring_player_messages)], {r = 0.98, g = 0.66, b = 0.22})
+        game.print(player.name .. ' has been teleported to ' .. source_player.name .. '. ' .. bring_player_messages[math.random(1, #bring_player_messages)], { r = 0.98, g = 0.66, b = 0.22 })
         clear_validation_action(source_player.name, 'bring_player')
     end
 end
@@ -220,29 +241,29 @@ local function go_to_player(player, source_player)
     end
 
     if player.name == source_player.name then
-        player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+        player.print("You can't select yourself!", { r = 1, g = 0.5, b = 0.1 })
         clear_validation_action(source_player.name, 'go_to_player')
         return
     end
     local pos = player.surface.find_non_colliding_position('character', player.position, 50, 1)
     if pos then
         source_player.teleport(pos, player.surface)
-        game.print(source_player.name .. ' is visiting ' .. player.name .. '. ' .. go_to_player_messages[math.random(1, #go_to_player_messages)], {r = 0.98, g = 0.66, b = 0.22})
+        game.print(source_player.name .. ' is visiting ' .. player.name .. '. ' .. go_to_player_messages[math.random(1, #go_to_player_messages)], { r = 0.98, g = 0.66, b = 0.22 })
         clear_validation_action(source_player.name, 'go_to_player')
     end
 end
 
 local function spank(player, source_player)
     if player.name == source_player.name then
-        return player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+        return player.print("You can't select yourself!", { r = 1, g = 0.5, b = 0.1 })
     end
     if player.character then
         if player.character.health > 1 then
             player.character.damage(1, 'player')
         end
         player.character.health = player.character.health - 5
-        player.surface.create_entity({name = 'water-splash', position = player.position})
-        game.print(source_player.name .. ' spanked ' .. player.name, {r = 0.98, g = 0.66, b = 0.22})
+        player.surface.create_entity({ name = 'water-splash', position = player.position })
+        game.print(source_player.name .. ' spanked ' .. player.name, { r = 0.98, g = 0.66, b = 0.22 })
     end
 end
 
@@ -252,15 +273,15 @@ local damage_messages = {
 }
 local function damage(player, source_player)
     if player.name == source_player.name then
-        return player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+        return player.print("You can't select yourself!", { r = 1, g = 0.5, b = 0.1 })
     end
     if player.character then
         if player.character.health > 1 then
             player.character.damage(1, 'player')
         end
         player.character.health = player.character.health - 125
-        player.surface.create_entity({name = 'big-explosion', position = player.position})
-        game.print(player.name .. damage_messages[math.random(1, #damage_messages)] .. source_player.name, {r = 0.98, g = 0.66, b = 0.22})
+        player.surface.create_entity({ name = 'big-explosion', position = player.position })
+        game.print(player.name .. damage_messages[math.random(1, #damage_messages)] .. source_player.name, { r = 0.98, g = 0.66, b = 0.22 })
     end
 end
 
@@ -276,13 +297,13 @@ local function kill(player, source_player)
         return
     end
     if player.name == source_player.name then
-        player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+        player.print("You can't select yourself!", { r = 1, g = 0.5, b = 0.1 })
         clear_validation_action(source_player.name, 'kill')
         return
     end
     if player.character then
         player.character.die('player')
-        game.print(player.name .. kill_messages[math.random(1, #kill_messages)], {r = 0.98, g = 0.66, b = 0.22})
+        game.print(player.name .. kill_messages[math.random(1, #kill_messages)], { r = 0.98, g = 0.66, b = 0.22 })
         admin_only_message(source_player.name .. ' killed ' .. player.name)
         clear_validation_action(source_player.name, 'kill')
     end
@@ -298,7 +319,7 @@ local function enemy(player, source_player)
     end
 
     if player.name == source_player.name then
-        player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+        player.print("You can't select yourself!", { r = 1, g = 0.5, b = 0.1 })
         clear_validation_action(source_player.name, 'enemy')
         return
     end
@@ -306,7 +327,7 @@ local function enemy(player, source_player)
         game.create_force('enemy_players')
     end
     player.force = game.forces.enemy_players
-    game.print(player.name .. ' is now an enemy! ' .. enemy_messages[math.random(1, #enemy_messages)], {r = 0.95, g = 0.15, b = 0.15})
+    game.print(player.name .. ' is now an enemy! ' .. enemy_messages[math.random(1, #enemy_messages)], { r = 0.95, g = 0.15, b = 0.15 })
     admin_only_message(source_player.name .. ' has turned ' .. player.name .. ' into an enemy')
     clear_validation_action(source_player.name, 'enemy')
 end
@@ -317,12 +338,12 @@ local function ally(player, source_player)
     end
 
     if player.name == source_player.name then
-        player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+        player.print("You can't select yourself!", { r = 1, g = 0.5, b = 0.1 })
         clear_validation_action(source_player.name, 'ally')
         return
     end
     player.force = game.forces.player
-    game.print(player.name .. ' is our ally again!', {r = 0.98, g = 0.66, b = 0.22})
+    game.print(player.name .. ' is our ally again!', { r = 0.98, g = 0.66, b = 0.22 })
     admin_only_message(source_player.name .. ' made ' .. player.name .. ' our ally')
     clear_validation_action(source_player.name, 'ally')
 end
@@ -334,10 +355,10 @@ local function turn_off_global_speakers(player)
 
     local counter = 0
     for _, surface in pairs(game.surfaces) do
-        local speakers = surface.find_entities_filtered({name = 'programmable-speaker'})
+        local speakers = surface.find_entities_filtered({ name = 'programmable-speaker' })
         for _, speaker in pairs(speakers) do
             if speaker.parameters.playback_globally == true then
-                speaker.surface.create_entity({name = 'massive-explosion', position = speaker.position})
+                speaker.surface.create_entity({ name = 'massive-explosion', position = speaker.position })
                 speaker.destroy()
                 counter = counter + 1
             end
@@ -347,9 +368,9 @@ local function turn_off_global_speakers(player)
         return
     end
     if counter == 1 then
-        game.print(player.name .. ' has nuked ' .. counter .. ' global speaker.', {r = 0.98, g = 0.66, b = 0.22})
+        game.print(player.name .. ' has nuked ' .. counter .. ' global speaker.', { r = 0.98, g = 0.66, b = 0.22 })
     else
-        game.print(player.name .. ' has nuked ' .. counter .. ' global speakers.', {r = 0.98, g = 0.66, b = 0.22})
+        game.print(player.name .. ' has nuked ' .. counter .. ' global speakers.', { r = 0.98, g = 0.66, b = 0.22 })
     end
     clear_validation_action(player.name, 'turn_off_global_speakers')
 end
@@ -361,7 +382,7 @@ local function delete_all_blueprints(player)
 
     local counter = 0
     for _, surface in pairs(game.surfaces) do
-        for _, ghost in pairs(surface.find_entities_filtered({type = {'entity-ghost', 'tile-ghost'}})) do
+        for _, ghost in pairs(surface.find_entities_filtered({ type = { 'entity-ghost', 'tile-ghost' } })) do
             ghost.destroy()
             counter = counter + 1
         end
@@ -371,9 +392,9 @@ local function delete_all_blueprints(player)
         return
     end
     if counter == 1 then
-        game.print(counter .. ' blueprint has been cleared!', {r = 0.98, g = 0.66, b = 0.22})
+        game.print(counter .. ' blueprint has been cleared!', { r = 0.98, g = 0.66, b = 0.22 })
     else
-        game.print(counter .. ' blueprints have been cleared!', {r = 0.98, g = 0.66, b = 0.22})
+        game.print(counter .. ' blueprints have been cleared!', { r = 0.98, g = 0.66, b = 0.22 })
     end
     local server_name = Server.get_server_name() or 'CommandHandler'
     Discord.send_notification_raw(server_name, player.name .. ' cleared all the blueprints on the map.')
@@ -389,7 +410,7 @@ local function pause_game_tick(player)
     local paused = game.tick_paused
     local paused_str = paused and 'unpaused' or 'paused'
     game.tick_paused = not paused
-    game.print('Game has been ' .. paused_str .. ' by ' .. player.name, {r = 0.98, g = 0.66, b = 0.22})
+    game.print('Game has been ' .. paused_str .. ' by ' .. player.name, { r = 0.98, g = 0.66, b = 0.22 })
     local server_name = Server.get_server_name() or 'CommandHandler'
     Discord.send_notification_raw(server_name, player.name .. ' ' .. paused_str .. ' the game.')
     clear_validation_action(player.name, 'pause_game_tick')
@@ -411,7 +432,7 @@ local function clear_items_on_ground(player)
     end
 
     local i = 0
-    for _, entity in pairs(player.surface.find_entities_filtered {type = 'item-entity', name = 'item-on-ground'}) do
+    for _, entity in pairs(player.surface.find_entities_filtered { type = 'item-entity', name = 'item-on-ground' }) do
         if entity and entity.valid then
             entity.destroy()
             i = i + 1
@@ -429,7 +450,7 @@ local function create_mini_camera_gui(player, caption, position, surface)
     if player.gui.center['mini_camera'] then
         player.gui.center['mini_camera'].destroy()
     end
-    local frame = player.gui.center.add({type = 'frame', name = 'mini_camera', caption = caption})
+    local frame = player.gui.center.add({ type = 'frame', name = 'mini_camera', caption = caption })
     surface = tonumber(surface)
     surface = game.surfaces[surface]
     if not surface or not surface.valid then
@@ -438,14 +459,14 @@ local function create_mini_camera_gui(player, caption, position, surface)
 
     local camera =
         frame.add(
-        {
-            type = 'camera',
-            name = 'mini_cam_element',
-            position = position,
-            zoom = 0.6,
-            surface_index = surface.index
-        }
-    )
+            {
+                type = 'camera',
+                name = 'mini_cam_element',
+                position = position,
+                zoom = 0.6,
+                surface_index = surface.index
+            }
+        )
     camera.style.minimal_width = 640
     camera.style.minimal_height = 480
 end
@@ -555,14 +576,14 @@ local function draw_events(player_data)
     else
         scroll_pane =
             frame.add(
-            {
-                type = 'scroll-pane',
-                name = 'datalog',
-                direction = 'vertical',
-                horizontal_scroll_policy = 'never',
-                vertical_scroll_policy = 'auto'
-            }
-        )
+                {
+                    type = 'scroll-pane',
+                    name = 'datalog',
+                    direction = 'vertical',
+                    horizontal_scroll_policy = 'never',
+                    vertical_scroll_policy = 'auto'
+                }
+            )
         scroll_pane.style.maximal_height = 200
         scroll_pane.style.minimal_width = 790
     end
@@ -570,7 +591,7 @@ local function draw_events(player_data)
     search_text_locally(
         history,
         player_data,
-        function(history_label, tooltip)
+        function (history_label, tooltip)
             if not history_label then
                 return
             end
@@ -624,7 +645,7 @@ local function text_changed(event)
         player_data.search_text = nil
         local last_page = ceil(player_data.table_count / rows_per_page)
         player_data.current_page = last_page
-        local data = {player = player, frame = frame}
+        local data = { player = player, frame = frame }
         create_admin_panel(data)
         return
     end
@@ -650,36 +671,36 @@ local function create_pagination_buttons(player_data, frame, table_count)
 
     local button_flow =
         frame.add {
-        type = 'flow',
-        direction = 'horizontal'
-    }
+            type = 'flow',
+            direction = 'horizontal'
+        }
     local prev_button =
         button_flow.add {
-        type = 'button',
-        name = prev_button_name,
-        caption = '◀️',
-        style = 'back_button'
-    }
+            type = 'button',
+            name = prev_button_name,
+            caption = '◀️',
+            style = 'back_button'
+        }
     prev_button.style.font = 'default-bold'
     prev_button.style.minimal_width = 32
     prev_button.tooltip = 'Previous page\nHolding [color=yellow]shift[/color] while pressing LMB/RMB will jump to the first page.'
 
     local count_label =
         button_flow.add {
-        type = 'label',
-        name = count_label_name,
-        caption = current_page .. '/' .. last_page
-    }
+            type = 'label',
+            name = count_label_name,
+            caption = current_page .. '/' .. last_page
+        }
     count_label.style.font = 'default-bold'
     player_data.count_label = count_label
 
     local next_button =
         button_flow.add {
-        type = 'button',
-        name = next_button_name,
-        caption = '▶️',
-        style = 'forward_button'
-    }
+            type = 'button',
+            name = next_button_name,
+            caption = '▶️',
+            style = 'forward_button'
+        }
     next_button.style.font = 'default-bold'
     next_button.style.minimal_width = 32
     next_button.tooltip = 'Next page\nHolding [color=yellow]shift[/color] while pressing LMB/RMB will jump to the last page.'
@@ -687,7 +708,7 @@ local function create_pagination_buttons(player_data, frame, table_count)
     player_data.table_count = table_count
 end
 
-create_admin_panel = function(data)
+create_admin_panel = function (data)
     local player = data.player
     local frame = data.frame
     local antigrief = AntiGrief.get()
@@ -726,14 +747,14 @@ create_admin_panel = function(data)
         checkbox_caption = 'Currently showing: all players that have played on this server.'
     end
 
-    frame.add({type = 'checkbox', name = listable_players_name, caption = checkbox_caption, state = checkbox_state or false})
+    frame.add({ type = 'checkbox', name = listable_players_name, caption = checkbox_caption, state = checkbox_state or false })
 
-    local drop_down = frame.add({type = 'drop-down', name = 'admin_player_select', items = player_names, selected_index = selected_index})
+    local drop_down = frame.add({ type = 'drop-down', name = 'admin_player_select', items = player_names, selected_index = selected_index })
     drop_down.style.minimal_width = 326
     drop_down.style.right_padding = 12
     drop_down.style.left_padding = 12
 
-    local t = frame.add({type = 'table', column_count = 4})
+    local t = frame.add({ type = 'table', column_count = 4 })
     local buttons = {
         t.add(
             {
@@ -751,7 +772,7 @@ create_admin_panel = function(data)
                 tooltip = 'Jails and mutes the player, they will no longer be able to chat.'
             }
         ),
-        t.add({type = 'button', caption = 'Free', name = 'free', tooltip = 'Frees the player from jail.'}),
+        t.add({ type = 'button', caption = 'Free', name = 'free', tooltip = 'Frees the player from jail.' }),
         t.add(
             {
                 type = 'button',
@@ -800,7 +821,7 @@ create_admin_panel = function(data)
                 tooltip = 'Damages the selected player with greater damage.\nCan not kill the player.'
             }
         ),
-        t.add({type = 'button', caption = 'Kill', name = 'kill', tooltip = 'Kills the selected player instantly.'})
+        t.add({ type = 'button', caption = 'Kill', name = 'kill', tooltip = 'Kills the selected player instantly.' })
     }
     for _, button in pairs(buttons) do
         button.style.font = 'default-bold'
@@ -808,12 +829,12 @@ create_admin_panel = function(data)
         button.style.minimal_width = 106
     end
 
-    local line = frame.add {type = 'line'}
+    local line = frame.add { type = 'line' }
     line.style.top_margin = 8
     line.style.bottom_margin = 8
 
-    frame.add({type = 'label', caption = 'Global Actions:'})
-    local actionTable = frame.add({type = 'table', column_count = 4})
+    frame.add({ type = 'label', caption = 'Global Actions:' })
+    local actionTable = frame.add({ type = 'table', column_count = 4 })
     local bottomButtons = {
         actionTable.add(
             {
@@ -854,6 +875,14 @@ create_admin_panel = function(data)
                 name = 'clear_items_on_ground',
                 tooltip = 'Clears all items on the ground.\nThis might lag the game!'
             }
+        ),
+        actionTable.add(
+            {
+                type = 'button',
+                caption = 'Remove biters',
+                name = 'clear_biters',
+                tooltip = 'Clears out all biters (friendly and enemy).\nThis might lag the game!'
+            }
         )
         ---	t.add({type = "button", caption = "Cancel all deconstruction orders", name = "remove_all_deconstruction_orders"})
     }
@@ -862,7 +891,7 @@ create_admin_panel = function(data)
         button.style.minimal_width = 80
     end
 
-    local bottomLine = frame.add {type = 'line'}
+    local bottomLine = frame.add { type = 'line' }
     bottomLine.style.top_margin = 8
     bottomLine.style.bottom_margin = 8
 
@@ -905,34 +934,34 @@ create_admin_panel = function(data)
         return
     end
 
-    local search_table = frame.add({type = 'table', column_count = 3})
-    search_table.add({type = 'label', caption = 'Search: '})
-    local search_text = search_table.add({type = 'textfield'})
+    local search_table = frame.add({ type = 'table', column_count = 3 })
+    search_table.add({ type = 'label', caption = 'Search: ' })
+    local search_text = search_table.add({ type = 'textfield' })
     search_text.text = player_data.search_text or ''
     search_text.style.width = 140
     local btn =
         search_table.add {
-        type = 'sprite-button',
-        tooltip = '[color=blue]Info![/color]\nSearching does not filter the amount of pages shown.\nThis is a limitation in the Factorio engine.\nIterating over the whole table would lag the game.\nSo when searching, you will still see the same amount of pages.\nAnd the results will be "janky".',
-        sprite = 'utility/questionmark'
-    }
+            type = 'sprite-button',
+            tooltip = '[color=blue]Info![/color]\nSearching does not filter the amount of pages shown.\nThis is a limitation in the Factorio engine.\nIterating over the whole table would lag the game.\nSo when searching, you will still see the same amount of pages.\nAnd the results will be "janky".',
+            sprite = 'utility/questionmark'
+        }
     btn.style.height = 20
     btn.style.width = 20
     btn.enabled = false
     btn.focus()
 
-    local bottomLine2 = frame.add({type = 'label', caption = '----------------------------------------------'})
+    local bottomLine2 = frame.add({ type = 'label', caption = '----------------------------------------------' })
     bottomLine2.style.font = 'default-listbox'
-    bottomLine2.style.font_color = {r = 0.98, g = 0.66, b = 0.22}
+    bottomLine2.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
 
     local selected_index_2 = 1
     if player_data and player_data.selected_history_index then
         selected_index_2 = player_data.selected_history_index
     end
 
-    local pagination_table = frame.add({type = 'table', column_count = 2, name = 'pagination_table'})
+    local pagination_table = frame.add({ type = 'table', column_count = 2, name = 'pagination_table' })
 
-    local drop_down_2 = pagination_table.add({type = 'drop-down', name = 'admin_history_select', items = histories, selected_index = selected_index_2})
+    local drop_down_2 = pagination_table.add({ type = 'drop-down', name = 'admin_history_select', items = histories, selected_index = selected_index_2 })
     drop_down_2.style.right_padding = 12
     drop_down_2.style.left_padding = 12
 
@@ -979,7 +1008,8 @@ local admin_global_functions = {
     ['delete_all_blueprints'] = delete_all_blueprints,
     ['pause_game_tick'] = pause_game_tick,
     ['save_game'] = save_game,
-    ['clear_items_on_ground'] = clear_items_on_ground
+    ['clear_items_on_ground'] = clear_items_on_ground,
+    ['clear_biters'] = clear_biters
 }
 
 local function get_surface_from_string(str)
@@ -1047,7 +1077,7 @@ local function get_position_from_string(str)
     local y = string.sub(str, y_pos, y_pos + a1)
     x = tonumber(x)
     y = tonumber(y)
-    local position = {x = x, y = y}
+    local position = { x = x, y = y }
     return position
 end
 
@@ -1085,7 +1115,7 @@ local function on_gui_click(event)
             return
         end
         if target_player_name == 'Select Player' then
-            player.print('[AdminGui] No target player selected.', {r = 0.88, g = 0.88, b = 0.88})
+            player.print('[AdminGui] No target player selected.', { r = 0.88, g = 0.88, b = 0.88 })
             return
         end
         local target_player = game.players[target_player_name]
@@ -1148,7 +1178,7 @@ local function on_gui_selection_state_changed(event)
             return
         end
 
-        Task.set_timeout_in_ticks(5, delayed_last_page_token, {player_index = player.index, element = frame})
+        Task.set_timeout_in_ticks(5, delayed_last_page_token, { player_index = player.index, element = frame })
 
         player_data.current_page = 1
 
@@ -1156,7 +1186,7 @@ local function on_gui_selection_state_changed(event)
         if is_spamming then
             return
         end
-        local data = {player = player, frame = frame}
+        local data = { player = player, frame = frame }
         create_admin_panel(data)
     end
     if name == 'admin_player_select' then
@@ -1176,16 +1206,16 @@ local function on_gui_selection_state_changed(event)
             return
         end
 
-        local data = {player = player, frame = frame}
+        local data = { player = player, frame = frame }
         create_admin_panel(data)
     end
 end
 
-Gui.add_tab_to_gui({name = module_name, caption = 'Admin', id = create_admin_panel_token, admin = true})
+Gui.add_tab_to_gui({ name = module_name, caption = 'Admin', id = create_admin_panel_token, admin = true })
 
 Gui.on_click(
     module_name,
-    function(event)
+    function (event)
         local player = event.player
         Gui.reload_active_tab(player)
     end
@@ -1248,7 +1278,7 @@ end
 
 Gui.on_click(
     prev_button_name,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Prev button click')
         if is_spamming then
             return
@@ -1289,14 +1319,14 @@ Gui.on_click(
 
         player_data.current_page = current_page
 
-        local data = {player = player, frame = element.parent.parent.parent}
+        local data = { player = player, frame = element.parent.parent.parent }
         create_admin_panel(data)
     end
 )
 
 Gui.on_click(
     next_button_name,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Next button click')
         if is_spamming then
             return
@@ -1342,14 +1372,14 @@ Gui.on_click(
 
         player_data.current_page = current_page
 
-        local data = {player = player, frame = element.parent.parent.parent}
+        local data = { player = player, frame = element.parent.parent.parent }
         create_admin_panel(data)
     end
 )
 
 Gui.on_checked_state_changed(
     listable_players_name,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Listable players click')
         if is_spamming then
             return
@@ -1369,7 +1399,7 @@ Gui.on_checked_state_changed(
 
         player_data.show_all_players = element.state
 
-        local data = {player = player, frame = element.parent}
+        local data = { player = player, frame = element.parent }
         create_admin_panel(data)
     end
 )

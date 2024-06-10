@@ -8,6 +8,7 @@ local WPT = require 'maps.mountain_fortress_v3.table'
 local RPG = require 'modules.rpg.main'
 local OfflinePlayers = require 'modules.clear_vacant_players'
 local Event = require 'utils.event'
+local Server = require 'utils.server'
 
 local Public = {}
 local main_tile_name = 'black-refined-concrete'
@@ -40,19 +41,19 @@ end
 
 local enable_car_to_be_mined =
     Task.register(
-    function(event)
-        local entity = event.entity
-        local owner_name = event.owner_name
-        if entity and entity.valid then
-            entity.minable = true
-            local msg = owner_name .. "'s vehicle is now minable!"
-            local p = {
-                position = entity.position
-            }
-            Alert.alert_all_players_location(p, msg, nil, 30)
+        function (event)
+            local entity = event.entity
+            local owner_name = event.owner_name
+            if entity and entity.valid then
+                entity.minable = true
+                local msg = owner_name .. "'s vehicle is now minable!"
+                local p = {
+                    position = entity.position
+                }
+                Alert.alert_all_players_location(p, msg, nil, 30)
+            end
         end
-    end
-)
+    )
 
 local function log_err(err)
     local debug_mode = IC.get('debug_mode')
@@ -68,7 +69,7 @@ local function get_trusted_system(player)
     if not trust_system[player.index] then
         trust_system[player.index] = {
             players = {
-                [player.name] = {trusted = true, drive = true}
+                [player.name] = { trusted = true, drive = true }
             },
             allow_anyone = 'left',
             auto_upgrade = 'left',
@@ -112,29 +113,29 @@ local function render_owner_text(renders, player, entity, new_owner)
     if new_owner then
         renders[new_owner.index] =
             rendering.draw_text {
-            text = '## - ' .. new_owner.name .. "'s " .. ce_name .. ' - ##',
-            surface = entity.surface,
-            target = entity,
-            target_offset = {0, -2.6},
-            color = color,
-            scale = 1.05,
-            font = 'default-large-semibold',
-            alignment = 'center',
-            scale_with_zoom = false
-        }
+                text = '## - ' .. new_owner.name .. "'s " .. ce_name .. ' - ##',
+                surface = entity.surface,
+                target = entity,
+                target_offset = { 0, -2.6 },
+                color = color,
+                scale = 1.05,
+                font = 'default-large-semibold',
+                alignment = 'center',
+                scale_with_zoom = false
+            }
     else
         renders[player.index] =
             rendering.draw_text {
-            text = '## - ' .. player.name .. "'s " .. ce_name .. ' - ##',
-            surface = entity.surface,
-            target = entity,
-            target_offset = {0, -2.6},
-            color = color,
-            scale = 1.05,
-            font = 'default-large-semibold',
-            alignment = 'center',
-            scale_with_zoom = false
-        }
+                text = '## - ' .. player.name .. "'s " .. ce_name .. ' - ##',
+                surface = entity.surface,
+                target = entity,
+                target_offset = { 0, -2.6 },
+                color = color,
+                scale = 1.05,
+                font = 'default-large-semibold',
+                alignment = 'center',
+                scale_with_zoom = false
+            }
     end
     entity.color = color
 end
@@ -244,11 +245,11 @@ local function get_saved_entity(entity, index)
     if index and index.name ~= entity.name then
         local msg =
             table.concat(
-            {
-                'The built entity is not the same as the saved one. ',
-                'Saved entity is: ' .. upperCase(index.name) .. ' - Built entity is: ' .. upperCase(entity.name) .. '. '
-            }
-        )
+                {
+                    'The built entity is not the same as the saved one. ',
+                    'Saved entity is: ' .. upperCase(index.name) .. ' - Built entity is: ' .. upperCase(entity.name) .. '. '
+                }
+            )
         return false, msg
     end
     return true
@@ -376,7 +377,7 @@ local function save_surface(entity, player)
     car.entity = false
     car.saved_entity = entity.unit_number
 
-    saved_surfaces[player.index] = {saved_entity = entity.unit_number, name = entity.name}
+    saved_surfaces[player.index] = { saved_entity = entity.unit_number, name = entity.name }
 end
 
 local function kick_players_out_of_vehicles(car)
@@ -421,7 +422,7 @@ local function kick_players_from_surface(car, owner_id)
     if not car.entity or not car.entity.valid then
         local main_surface = game.surfaces[allowed_surface]
         if validate_entity(main_surface) then
-            for _, e in pairs(surface.find_entities_filtered({area = car.area})) do
+            for _, e in pairs(surface.find_entities_filtered({ area = car.area })) do
                 if validate_entity(e) and e.name == 'character' and e.player then
                     if owner_id and owner_id == e.player.index then
                         goto continue
@@ -438,7 +439,7 @@ local function kick_players_from_surface(car, owner_id)
         end
     end
 
-    for _, e in pairs(surface.find_entities_filtered({area = car.area})) do
+    for _, e in pairs(surface.find_entities_filtered({ area = car.area })) do
         if validate_entity(e) and e.name == 'character' and e.player then
             if owner_id and owner_id == e.player.index then
                 goto continue
@@ -467,7 +468,7 @@ local function kick_non_trusted_players_from_surface(car)
     local position = car.entity and car.entity.valid and car.entity.position or game.forces.player.get_spawn_position(main_surface)
     local owner = game.get_player(car.owner) and game.get_player(car.owner).name or false
     Core.iter_connected_players(
-        function(player)
+        function (player)
             local is_trusted = trust_system and trust_system.players and trust_system.players[player.name] and trust_system.players[player.name].trusted
             if player.surface.index == surface_index and player.index ~= car.owner and not is_trusted then
                 if position then
@@ -654,26 +655,26 @@ local function construct_doors(car)
 
     local doors = IC.get('doors')
 
-    for _, x in pairs({area.left_top.x - 1.5, area.right_bottom.x + 1.5}) do
-        local p = {x = x, y = area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)}
+    for _, x in pairs({ area.left_top.x - 1.5, area.right_bottom.x + 1.5 }) do
+        local p = { x = x, y = area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5) }
         if p.x < 0 then
-            surface.set_tiles({{name = main_tile_name, position = {x = p.x + 0.5, y = p.y}}}, true)
+            surface.set_tiles({ { name = main_tile_name, position = { x = p.x + 0.5, y = p.y } } }, true)
         else
-            surface.set_tiles({{name = main_tile_name, position = {x = p.x - 1, y = p.y}}}, true)
+            surface.set_tiles({ { name = main_tile_name, position = { x = p.x - 1, y = p.y } } }, true)
         end
         local e =
             surface.create_entity(
-            {
-                name = 'car',
-                position = {x, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)},
-                force = 'neutral',
-                create_build_effect_smoke = false
-            }
-        )
+                {
+                    name = 'car',
+                    position = { x, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5) },
+                    force = 'neutral',
+                    create_build_effect_smoke = false
+                }
+            )
         e.destructible = false
         e.minable = false
         e.operable = false
-        e.get_inventory(defines.inventory.fuel).insert({name = 'coal', count = 1})
+        e.get_inventory(defines.inventory.fuel).insert({ name = 'coal', count = 1 })
         if type(car.entity) == 'boolean' then
             return
         end
@@ -714,34 +715,34 @@ end
 
 local remove_car =
     Task.register(
-    function(data)
-        local player = data.player
-        local car = data.car
-        player.remove_item({name = car.name, count = 1})
-    end
-)
+        function (data)
+            local player = data.player
+            local car = data.car
+            player.remove_item({ name = car.name, count = 1 })
+        end
+    )
 
 local find_remove_car =
     Task.register(
-    function(data)
-        local index = data.index
-        local types = data.types
-        local position = data.position
+        function (data)
+            local index = data.index
+            local types = data.types
+            local position = data.position
 
-        local surface = game.get_surface(index)
-        if not surface or not surface.valid then
-            return
-        end
+            local surface = game.get_surface(index)
+            if not surface or not surface.valid then
+                return
+            end
 
-        for _, dropped_ent in pairs(surface.find_entities_filtered {type = 'item-entity', area = {{position.x - 10, position.y - 10}, {position.x + 10, position.y + 10}}}) do
-            if dropped_ent and dropped_ent.valid and dropped_ent.stack then
-                if types[dropped_ent.stack.name] then
-                    dropped_ent.destroy()
+            for _, dropped_ent in pairs(surface.find_entities_filtered { type = 'item-entity', area = { { position.x - 10, position.y - 10 }, { position.x + 10, position.y + 10 } } }) do
+                if dropped_ent and dropped_ent.valid and dropped_ent.stack then
+                    if types[dropped_ent.stack.name] then
+                        dropped_ent.destroy()
+                    end
                 end
             end
         end
-    end
-)
+    )
 
 function Public.save_car(event)
     local entity = event.entity
@@ -798,11 +799,11 @@ function Public.save_car(event)
         }
         Task.set_timeout_in_ticks(10, remove_car, params)
         if restore_on_theft then
-            local e = player.surface.create_entity({name = car.name, position = position, force = player.force, create_build_effect_smoke = false})
+            local e = player.surface.create_entity({ name = car.name, position = position, force = player.force, create_build_effect_smoke = false })
             e.health = health
             restore_surface(p, e)
-        elseif p.can_insert({name = car.name, count = 1}) then
-            p.insert({name = car.name, count = 1, health = health})
+        elseif p.can_insert({ name = car.name, count = 1 }) then
+            p.insert({ name = car.name, count = 1, health = health })
             p.print(module_tag .. 'Your car was stolen from you - the gods foresaw this and granted you a new one.', Color.info)
         end
     end
@@ -861,13 +862,13 @@ function Public.remove_surface(player)
         return
     end
 
-    for _, tile in pairs(surface.find_tiles_filtered({area = car.area})) do
-        surface.set_tiles({{name = 'out-of-map', position = tile.position}}, true)
+    for _, tile in pairs(surface.find_tiles_filtered({ area = car.area })) do
+        surface.set_tiles({ { name = 'out-of-map', position = tile.position } }, true)
     end
-    for _, x in pairs({car.area.left_top.x - 1.5, car.area.right_bottom.x + 1.5}) do
-        local p = {x = x, y = car.area.left_top.y + ((car.area.right_bottom.y - car.area.left_top.y) * 0.5)}
-        surface.set_tiles({{name = 'out-of-map', position = {x = p.x + 0.5, y = p.y}}}, true)
-        surface.set_tiles({{name = 'out-of-map', position = {x = p.x - 1, y = p.y}}}, true)
+    for _, x in pairs({ car.area.left_top.x - 1.5, car.area.right_bottom.x + 1.5 }) do
+        local p = { x = x, y = car.area.left_top.y + ((car.area.right_bottom.y - car.area.left_top.y) * 0.5) }
+        surface.set_tiles({ { name = 'out-of-map', position = { x = p.x + 0.5, y = p.y } } }, true)
+        surface.set_tiles({ { name = 'out-of-map', position = { x = p.x - 1, y = p.y } } }, true)
     end
     game.delete_surface(surface)
 end
@@ -923,6 +924,8 @@ function Public.kill_car(entity)
 
     game.print(module_tag .. owner.name .. messages[math.random(1, #messages)] .. ' ' .. gps_tag)
 
+    Server.to_discord_bold(table.concat { '*** ', '[Personal Vehicle] ***', owner.name .. messages[math.random(1, #messages)] .. ' ', gps_tag })
+
     local player_gui_data = IC.get('player_gui_data')
     if player_gui_data[owner.name] then
         player_gui_data[owner.name] = nil
@@ -941,13 +944,13 @@ function Public.kill_car(entity)
     local surface_index = car.surface
     local surface = game.surfaces[surface_index]
     kill_doors(car)
-    for _, tile in pairs(surface.find_tiles_filtered({area = car.area})) do
-        surface.set_tiles({{name = 'out-of-map', position = tile.position}}, true)
+    for _, tile in pairs(surface.find_tiles_filtered({ area = car.area })) do
+        surface.set_tiles({ { name = 'out-of-map', position = tile.position } }, true)
     end
-    for _, x in pairs({car.area.left_top.x - 1.5, car.area.right_bottom.x + 1.5}) do
-        local p = {x = x, y = car.area.left_top.y + ((car.area.right_bottom.y - car.area.left_top.y) * 0.5)}
-        surface.set_tiles({{name = 'out-of-map', position = {x = p.x + 0.5, y = p.y}}}, true)
-        surface.set_tiles({{name = 'out-of-map', position = {x = p.x - 1, y = p.y}}}, true)
+    for _, x in pairs({ car.area.left_top.x - 1.5, car.area.right_bottom.x + 1.5 }) do
+        local p = { x = x, y = car.area.left_top.y + ((car.area.right_bottom.y - car.area.left_top.y) * 0.5) }
+        surface.set_tiles({ { name = 'out-of-map', position = { x = p.x + 0.5, y = p.y } } }, true)
+        surface.set_tiles({ { name = 'out-of-map', position = { x = p.x - 1, y = p.y } } }, true)
     end
     car.entity.force.chart(surface, car.area)
     game.delete_surface(surface)
@@ -979,7 +982,7 @@ function Public.kill_car_but_save_surface(entity)
     end
 
     local c = 0
-    local entities = surface.find_entities_filtered({area = car.area, force = 'player'})
+    local entities = surface.find_entities_filtered({ area = car.area, force = 'player' })
     if entities and #entities > 0 then
         for _, e in pairs(entities) do
             if e and e.valid and e.name ~= 'character' then
@@ -1093,21 +1096,21 @@ function Public.create_room_surface(unit_number)
         ['height'] = 2,
         ['water'] = 0,
         ['starting_area'] = 1,
-        ['cliff_settings'] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
+        ['cliff_settings'] = { cliff_elevation_interval = 0, cliff_elevation_0 = 0 },
         ['default_enable_all_autoplace_controls'] = true,
         ['autoplace_settings'] = {
-            ['entity'] = {treat_missing_as_default = false},
-            ['tile'] = {treat_missing_as_default = true},
-            ['decorative'] = {treat_missing_as_default = false}
+            ['entity'] = { treat_missing_as_default = false },
+            ['tile'] = { treat_missing_as_default = true },
+            ['decorative'] = { treat_missing_as_default = false }
         }
     }
     local surface = game.create_surface(tostring(unit_number), map_gen_settings)
     surface.freeze_daytime = true
     surface.daytime = 0.1
-    surface.request_to_generate_chunks({16, 16}, 1)
+    surface.request_to_generate_chunks({ 16, 16 }, 1)
     surface.force_generate_chunk_requests()
-    for _, tile in pairs(surface.find_tiles_filtered({area = {{-2, -2}, {2, 2}}})) do
-        surface.set_tiles({{name = 'out-of-map', position = tile.position}}, true)
+    for _, tile in pairs(surface.find_tiles_filtered({ area = { { -2, -2 }, { 2, 2 } } })) do
+        surface.set_tiles({ { name = 'out-of-map', position = tile.position } }, true)
     end
     local surfaces = IC.get('surfaces')
     surfaces[unit_number] = surface.index
@@ -1129,18 +1132,18 @@ function Public.create_car_room(car)
 
     for x = area.left_top.x, area.right_bottom.x - 1, 1 do
         for y = area.left_top.y + 2, area.right_bottom.y - 3, 1 do
-            tiles[#tiles + 1] = {name = main_tile_name, position = {x, y}}
+            tiles[#tiles + 1] = { name = main_tile_name, position = { x, y } }
         end
     end
     for x = -3, 2, 1 do
         for y = area.right_bottom.y - 4, area.right_bottom.y - 2, 1 do
-            tiles[#tiles + 1] = {name = main_tile_name, position = {x, y}}
+            tiles[#tiles + 1] = { name = main_tile_name, position = { x, y } }
         end
     end
 
     for x = area.left_top.x, area.right_bottom.x - 1, 1 do
         for y = -0, 1, 1 do
-            tiles[#tiles + 1] = {name = 'water', position = {x, y}}
+            tiles[#tiles + 1] = { name = 'water', position = { x, y } }
         end
     end
 
@@ -1153,7 +1156,7 @@ function Public.create_car_room(car)
             local fishes = {}
             for x = area.left_top.x, area.right_bottom.x - 1, 1 do
                 for y = -0, 1, 1 do
-                    fishes[#fishes + 1] = {name = 'fish', position = {x, y}}
+                    fishes[#fishes + 1] = { name = 'fish', position = { x, y } }
                 end
             end
 
@@ -1172,33 +1175,33 @@ function Public.create_car_room(car)
 
     local lx, ly, rx, ry = 4, 1, 5, 1
 
-    local position1 = {area.left_top.x + lx, area.left_top.y + ly}
-    local position2 = {area.right_bottom.x - rx, area.left_top.y + ry}
+    local position1 = { area.left_top.x + lx, area.left_top.y + ly }
+    local position2 = { area.right_bottom.x - rx, area.left_top.y + ry }
 
     local e1 =
         surface.create_entity(
-        {
-            name = 'logistic-chest-requester',
-            position = position1,
-            force = 'neutral',
-            create_build_effect_smoke = false
-        }
-    )
+            {
+                name = 'logistic-chest-requester',
+                position = position1,
+                force = 'neutral',
+                create_build_effect_smoke = false
+            }
+        )
     e1.destructible = false
     e1.minable = false
 
     local e2 =
         surface.create_entity(
-        {
-            name = 'logistic-chest-passive-provider',
-            position = position2,
-            force = 'neutral',
-            create_build_effect_smoke = false
-        }
-    )
+            {
+                name = 'logistic-chest-passive-provider',
+                position = position2,
+                force = 'neutral',
+                create_build_effect_smoke = false
+            }
+        )
     e2.destructible = false
     e2.minable = false
-    car.transfer_entities = {e1, e2}
+    car.transfer_entities = { e1, e2 }
     return
 end
 
@@ -1269,8 +1272,8 @@ function Public.create_car(event)
     cars[un] = {
         entity = ce,
         area = {
-            left_top = {x = car_area.left_top.x, y = car_area.left_top.y},
-            right_bottom = {x = car_area.right_bottom.x, y = car_area.right_bottom.y}
+            left_top = { x = car_area.left_top.x, y = car_area.left_top.y },
+            right_bottom = { x = car_area.right_bottom.x, y = car_area.right_bottom.y }
         },
         doors = {},
         health_pool = {
@@ -1310,7 +1313,7 @@ function Public.remove_invalid_cars()
                 local owner = game.get_player(car.owner) and game.get_player(car.owner) or false
                 if (not (owner and owner.connected) or JailData.get_is_jailed(owner.name)) and not car.schedule_enable_mining then
                     car.schedule_enable_mining = true
-                    Task.set_timeout_in_ticks(30, enable_car_to_be_mined, {entity = car.entity, owner_name = owner.name})
+                    Task.set_timeout_in_ticks(30, enable_car_to_be_mined, { entity = car.entity, owner_name = owner.name })
                 end
                 if owner and owner.connected then
                     car.schedule_enable_mining = nil
@@ -1387,7 +1390,7 @@ function Public.use_door_with_entity(player, door)
 
     if validate_entity(car.entity) then
         player_data.fallback_surface = car.entity.surface
-        player_data.fallback_position = {car.entity.position.x, car.entity.position.y}
+        player_data.fallback_position = { car.entity.position.x, car.entity.position.y }
     end
 
     if validate_entity(car.entity) and car.entity.surface.name == player.surface.name then
@@ -1412,9 +1415,9 @@ function Public.use_door_with_entity(player, door)
         local x_vector = door.position.x - player.position.x
         local position
         if x_vector > 0 then
-            position = {area.left_top.x + 0.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)}
+            position = { area.left_top.x + 0.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5) }
         else
-            position = {area.right_bottom.x - 0.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)}
+            position = { area.right_bottom.x - 0.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5) }
         end
         local p = surface.find_non_colliding_position('character', position, 128, 0.5)
         if p then
@@ -1436,7 +1439,7 @@ function Public.use_door_with_entity(player, door)
         end
         local surface = car.entity.surface
         local x_vector = (door.position.x / math.abs(door.position.x)) * 2
-        local position = {car.entity.position.x + x_vector, car.entity.position.y}
+        local position = { car.entity.position.x + x_vector, car.entity.position.y }
         local surface_position = surface.find_non_colliding_position('character', position, 128, 0.5)
         if car.entity.type == 'car' or car.entity.name == 'spidertron' then
             player.teleport(surface_position, surface)
@@ -1589,7 +1592,7 @@ Public.kick_non_trusted_players_from_surface = kick_non_trusted_players_from_sur
 
 Event.add(
     OfflinePlayers.events.remove_surface,
-    function(event)
+    function (event)
         local target = event.target
         if not target then
             return

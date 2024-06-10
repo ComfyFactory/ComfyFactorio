@@ -388,6 +388,8 @@ function Public.new(name, help)
         error('Command already exists: ' .. name, 2)
     end
 
+    if game then error('Cannot run new() when game is initialized : ' .. name, 2) end
+
     local command =
         setmetatable(
             {
@@ -548,5 +550,25 @@ function Public:callback(func)
         end
     end
 end
+
+Public.new('get', 'Hover over an object to get its name.')
+    :require_admin()
+    :callback(
+        function (player)
+            local entity = player.selected
+            if not entity or not entity.valid then
+                return false
+            end
+
+            player.print('[color=orange]Name:[/color] ' .. entity.name)
+            player.print('[color=orange]Type:[/color] ' .. entity.type)
+            player.print('[color=orange]Force:[/color] ' .. entity.force.name)
+            player.print('[color=orange]Destructible:[/color] ' .. (entity.destructible and 'true' or 'false'))
+            player.print('[color=orange]Minable:[/color] ' .. (entity.minable and 'true' or 'false'))
+            player.print('[color=orange]Unit Number:[/color] ' .. (entity.unit_number or 'nil'))
+            player.print('[color=orange]Position:[/color] ' .. serpent.line(entity.position))
+            return true
+        end
+    )
 
 return Public

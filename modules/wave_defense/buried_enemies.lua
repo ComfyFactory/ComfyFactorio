@@ -7,7 +7,7 @@ local this = {}
 
 Global.register(
     this,
-    function(t)
+    function (t)
         this = t
     end
 )
@@ -50,7 +50,7 @@ local function create_particles(data)
                 frame_speed = 0.1,
                 vertical_speed = 0.1,
                 height = 0.1,
-                movement = {m2 - (random(0, m) * 0.01), m2 - (random(0, m) * 0.01)}
+                movement = { m2 - (random(0, m) * 0.01), m2 - (random(0, m) * 0.01) }
             }
         )
     end
@@ -87,7 +87,7 @@ local function spawn_biters(data)
 
     local unit_settings = Public.get('unit_settings')
 
-    local unit = surface.create_entity({name = unit_to_create, position = position})
+    local unit = surface.create_entity({ name = unit_to_create, position = position, force = data.force or 'enemy' })
 
     if random(1, 30) == 1 then
         BiterHealthBooster.add_boss_unit(unit, modified_boss_unit_health.current_value, 0.38)
@@ -98,6 +98,8 @@ local function spawn_biters(data)
         end
         BiterHealthBooster.add_unit(unit, final_health)
     end
+
+    Event.raise(Public.events.on_entity_created, { entity = unit, boss_unit = false })
 end
 
 local function spawn_worms(data)
@@ -110,7 +112,7 @@ local function spawn_worms(data)
 
     local unit_to_create = Public.wave_defense_roll_worm_name(sqrt(position.x ^ 2 + position.y ^ 2) * 0.20)
 
-    local unit = surface.create_entity({name = unit_to_create, position = position})
+    local unit = surface.create_entity({ name = unit_to_create, position = position })
     local worm_unit_settings = Public.get('worm_unit_settings')
 
     if random(1, 30) == 1 then
@@ -124,7 +126,7 @@ local function spawn_worms(data)
     end
 end
 
-function Public.buried_biter(surface, position, max, entity_name)
+function Public.buried_biter(surface, position, max, entity_name, force)
     if not surface then
         return
     end
@@ -155,7 +157,7 @@ function Public.buried_biter(surface, position, max, entity_name)
 
         this[game.tick + t][#this[game.tick + t] + 1] = {
             callback = 'create_particles',
-            data = {surface = surface, position = {x = position.x, y = position.y}, amount = 4}
+            data = { surface = surface, position = { x = position.x, y = position.y }, amount = 4 }
         }
 
         if t > 90 then
@@ -163,7 +165,7 @@ function Public.buried_biter(surface, position, max, entity_name)
                 a = a + 1
                 this[game.tick + t][#this[game.tick + t] + 1] = {
                     callback = 'spawn_biters',
-                    data = {surface = surface, position = {x = position.x, y = position.y}, entity_name = entity_name}
+                    data = { surface = surface, position = { x = position.x, y = position.y }, entity_name = entity_name, force = force or 'enemy' }
                 }
                 if a >= max then
                     break
@@ -202,13 +204,13 @@ function Public.buried_worm(surface, position)
 
         this[game.tick + t][#this[game.tick + t] + 1] = {
             callback = 'create_particles',
-            data = {surface = surface, position = {x = position.x, y = position.y}, amount = 4}
+            data = { surface = surface, position = { x = position.x, y = position.y }, amount = 4 }
         }
 
         if not a then
             this[game.tick + t][#this[game.tick + t] + 1] = {
                 callback = 'spawn_worms',
-                data = {surface = surface, position = {x = position.x, y = position.y}}
+                data = { surface = surface, position = { x = position.x, y = position.y } }
             }
             a = true
         end

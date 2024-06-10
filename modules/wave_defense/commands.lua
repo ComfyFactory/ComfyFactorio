@@ -6,8 +6,9 @@ Commands.new('wd_debug_module', 'Usable only for admins - controls wave defense 
     :require_admin()
     :require_validation()
     :add_parameter('skip/toggle_es/toggle_es_boss/spawn/next/next_50/next_1500/log_all/debug_health', false, 'string')
+    :add_parameter('state', true, 'boolean')
     :callback(
-        function (player, action)
+        function (player, action, state)
             if action == 'skip' then
                 Public.get('enable_grace_time').enabled = false
                 player.print(module_name .. ' grace skipped!')
@@ -15,13 +16,13 @@ Commands.new('wd_debug_module', 'Usable only for admins - controls wave defense 
             end
 
             if action == 'toggle_es' then
-                Public.set_module_status()
+                Public.set_module_status(state or false)
                 player.print(module_name .. ' ES has been toggled!')
                 return true
             end
 
             if action == 'toggle_es_boss' then
-                Public.set_track_bosses_only()
+                Public.set_track_bosses_only(state or false)
                 player.print(module_name .. ' ES bosses has been toggled!')
                 return true
             end

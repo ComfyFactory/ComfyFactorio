@@ -10,6 +10,7 @@ local Alert = require 'utils.alert'
 local Color = require 'utils.color_presets'
 local Modifiers = require 'utils.player_modifiers'
 local Core = require 'utils.core'
+local Task = require 'utils.task_token'
 
 local zone_settings = Public.zone_settings
 
@@ -44,6 +45,20 @@ local denied_train_types = {
     ['cargo-wagon'] = true,
     ['artillery-wagon'] = true
 }
+
+Public.check_if_spawning_near_train_custom_callback =
+    Task.register(
+        function (event)
+            local entity = event.entity
+            local disable_spawn_near_target = event.disable_spawn_near_target
+
+            if Public.is_around_train(entity) and disable_spawn_near_target then
+                return true
+            end
+
+            return false
+        end
+    )
 
 local function add_random_loot_to_main_market(rarity)
     local main_market_items = Public.get('main_market_items')
@@ -85,16 +100,16 @@ local function add_random_loot_to_main_market(rarity)
 end
 
 local function death_effects(player)
-    local position = {x = player.position.x - 0.75, y = player.position.y - 1}
+    local position = { x = player.position.x - 0.75, y = player.position.y - 1 }
     local b = 0.75
     for _ = 1, 5, 1 do
         local p = {
             (position.x + 0.4) + (b * -1 + math.random(0, b * 20) * 0.1),
             position.y + (b * -1 + math.random(0, b * 20) * 0.1)
         }
-        player.surface.create_entity({name = 'flying-text', position = p, text = '☠️', color = {255, math.random(0, 100), 0}})
+        player.surface.create_entity({ name = 'flying-text', position = p, text = '☠️', color = { 255, math.random(0, 100), 0 } })
     end
-    player.play_sound {path = 'utility/axe_fighting', volume_modifier = 0.9}
+    player.play_sound { path = 'utility/axe_fighting', volume_modifier = 0.9 }
 end
 
 local messages = {
@@ -162,7 +177,7 @@ local function hurt_players_outside_of_aura()
 
     local map_name = 'mtn_v3'
     Core.iter_connected_players(
-        function(player)
+        function (player)
             if sub(player.surface.name, 0, #map_name) == map_name then
                 local position = player.position
                 local inside = ((position.x - loco.x) ^ 2 + (position.y - loco.y) ^ 2) < upgrades.locomotive_aura_radius ^ 2
@@ -170,9 +185,9 @@ local function hurt_players_outside_of_aura()
                     local entity = player.character
                     if entity and entity.valid then
                         death_effects(player)
-                        player.surface.create_entity({name = 'fire-flame', position = position})
+                        player.surface.create_entity({ name = 'fire-flame', position = position })
                         if random(1, 3) == 1 then
-                            player.surface.create_entity({name = 'medium-scorchmark', position = position, force = 'neutral'})
+                            player.surface.create_entity({ name = 'medium-scorchmark', position = position, force = 'neutral' })
                         end
                         local max_health = floor(player.character.prototype.max_health + player.character_health_bonus + player.force.character_health_bonus)
                         local vehicle = player.vehicle
@@ -181,7 +196,7 @@ local function hurt_players_outside_of_aura()
                         end
                         if death_mode then
                             if entity.name == 'character' then
-                                game.print(player.name .. messages[random(1, #messages)], {r = 200, g = 0, b = 0})
+                                game.print(player.name .. messages[random(1, #messages)], { r = 200, g = 0, b = 0 })
                             end
                             if entity.valid then
                                 entity.die()
@@ -209,7 +224,7 @@ local function hurt_players_outside_of_aura()
                             if entity.valid then
                                 if entity.health - damage <= 0 then
                                     if entity.name == 'character' then
-                                        game.print(player.name .. messages[random(1, #messages)], {r = 200, g = 0, b = 0})
+                                        game.print(player.name .. messages[random(1, #messages)], { r = 200, g = 0, b = 0 })
                                     end
                                 end
                             end
@@ -223,7 +238,7 @@ local function hurt_players_outside_of_aura()
     )
 end
 local function give_passive_xp(data)
-    local xp_floating_text_color = {r = 188, g = 201, b = 63}
+    local xp_floating_text_color = { r = 188, g = 201, b = 63 }
     local visuals_delay = 1800
     local loco_surface = Public.get('loco_surface')
     if not (loco_surface and loco_surface.valid) then
@@ -238,7 +253,7 @@ local function give_passive_xp(data)
     local loco = locomotive.position
 
     Core.iter_connected_players(
-        function(player)
+        function (player)
             local position = player.position
             local inside = ((position.x - loco.x) ^ 2 + (position.y - loco.y) ^ 2) < upgrades.locomotive_aura_radius ^ 2
             if player.afk_time < 200 and not RPG.get_last_spell_cast(player) then
@@ -261,7 +276,7 @@ local function give_passive_xp(data)
 
                     player.create_local_flying_text {
                         text = '+' .. '',
-                        position = {x = pos.x, y = pos.y - 2},
+                        position = { x = pos.x, y = pos.y - 2 },
                         color = xp_floating_text_color,
                         time_to_live = 60,
                         speed = 3
@@ -320,7 +335,7 @@ local function fish_tag()
         locomotive_cargo.force.add_chart_tag(
             locomotive_cargo.surface,
             {
-                icon = {type = 'item', name = 'raw-fish'},
+                icon = { type = 'item', name = 'raw-fish' },
                 position = locomotive_cargo.position,
                 text = ' '
             }
@@ -341,7 +356,7 @@ local function set_player_spawn()
     if not position then
         return
     end
-    game.forces.player.set_spawn_position({x = position.x, y = position.y}, locomotive.surface)
+    game.forces.player.set_spawn_position({ x = position.x, y = position.y }, locomotive.surface)
 end
 
 local function refill_fish()
@@ -352,7 +367,7 @@ local function refill_fish()
     if not locomotive_cargo.valid then
         return
     end
-    locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = 'raw-fish', count = random(2, 5)})
+    locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'raw-fish', count = random(2, 5) })
 end
 
 local function set_carriages()
@@ -485,12 +500,12 @@ local function on_research_finished(event)
     local name = research.name
 
     if name == 'discharge-defense-equipment' then
-        local message = ({'locomotive.discharge_unlocked'})
+        local message = ({ 'locomotive.discharge_unlocked' })
         Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac', 0.1)
     end
 
     if name == 'artillery' then
-        local message = ({'locomotive.artillery_unlocked'})
+        local message = ({ 'locomotive.artillery_unlocked' })
         Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac', 0.1)
     end
 
@@ -506,7 +521,7 @@ local function on_research_finished(event)
 
     local breached_wall = Public.get('breached_wall')
     add_random_loot_to_main_market(breached_wall)
-    local message = ({'locomotive.new_items_at_market'})
+    local message = ({ 'locomotive.new_items_at_market' })
     Alert.alert_all_players(5, message, nil, 'achievement/tech-maniac', 0.1)
     Public.refresh_gui()
 end
@@ -569,7 +584,7 @@ local function check_on_player_changed_surface()
     end
 
     Core.iter_players(
-        function(player)
+        function (player)
             if player.surface.name == 'nauvis' then
                 local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
                 if pos then
@@ -756,7 +771,7 @@ function Public.render_train_hp()
             text = 'HP: ' .. locomotive_health .. ' / ' .. locomotive_max_health,
             surface = surface,
             target = locomotive,
-            target_offset = {0, -4.5},
+            target_offset = { 0, -4.5 },
             color = locomotive.color,
             scale = 1.40,
             font = 'default-game',
@@ -771,7 +786,7 @@ function Public.render_train_hp()
             text = 'Comfy Choo Choo',
             surface = surface,
             target = locomotive,
-            target_offset = {0, -6.25},
+            target_offset = { 0, -6.25 },
             color = locomotive.color,
             scale = 1.80,
             font = 'default-game',

@@ -4,7 +4,8 @@ local Gui = require 'utils.gui'
 local Event = require 'utils.event'
 
 local this = {
-    pause_waves_custom_callback = nil
+    pause_waves_custom_callback = nil,
+    threat_event_custom_callback = nil
 }
 local Public = {}
 Public.events = {
@@ -22,28 +23,28 @@ local insert = table.insert
 
 Global.register(
     this,
-    function(tbl)
+    function (tbl)
         this = tbl
     end
 )
 
 Public.group_size_modifier_raffle = {}
 local group_size_chances = {
-    {4, 0.4},
-    {5, 0.5},
-    {6, 0.6},
-    {7, 0.7},
-    {8, 0.8},
-    {9, 0.9},
-    {10, 1},
-    {9, 1.1},
-    {8, 1.2},
-    {7, 1.3},
-    {6, 1.4},
-    {5, 1.5},
-    {4, 1.6},
-    {3, 1.7},
-    {2, 1.8}
+    { 4,  0.4 },
+    { 5,  0.5 },
+    { 6,  0.6 },
+    { 7,  0.7 },
+    { 8,  0.8 },
+    { 9,  0.9 },
+    { 10, 1 },
+    { 9,  1.1 },
+    { 8,  1.2 },
+    { 7,  1.3 },
+    { 6,  1.4 },
+    { 5,  1.5 },
+    { 4,  1.6 },
+    { 3,  1.7 },
+    { 2,  1.8 }
 }
 
 for _, v in pairs(group_size_chances) do
@@ -71,7 +72,7 @@ function Public.reset_wave_defense()
     this.log_wave_to_discord = true
     this.paused = false
     this.pause_without_votes = true
-    this.pause_wave_in_ticks = 18000 -- 5 minutes
+    this.pause_wave_in_ticks = 18000              -- 5 minutes
     this.next_pause_interval = game.tick + 216000 -- 1 hour
     this.game_lost = false
     this.get_random_close_spawner_attempts = 5
@@ -89,7 +90,7 @@ function Public.reset_wave_defense()
     }
     this.side_targets = {}
     this.simple_entity_shredding_cost_modifier = 0.009
-    this.spawn_position = {x = 0, y = 64}
+    this.spawn_position = { x = 0, y = 64 }
     this.spitter_raffle = {}
     this.surface_index = 1
     this.target = nil
@@ -103,7 +104,7 @@ function Public.reset_wave_defense()
     this.random_group = nil
     this.unit_group_command_delay = 3600 * 20
     this.unit_group_command_step_length = 15
-    this.search_side_targets = {'simple-entity', 'tree', 'car', 'spider-vehicle', 'character'}
+    this.search_side_targets = { 'simple-entity', 'tree', 'car', 'spider-vehicle', 'character' }
     this.wave_interval = 3600
     this.wave_enforced = false
     this.wave_number = 0
@@ -162,10 +163,10 @@ function Public.reset_wave_defense()
     this.worm_unit_settings = {
         -- note that final health modifier isn't lower than 1
         scale_units_by_health = {
-            ['land-mine'] = 0.5, -- not active as of now
-            ['gun-turret'] = 0.5, -- not active as of now
+            ['land-mine'] = 0.5,           -- not active as of now
+            ['gun-turret'] = 0.5,          -- not active as of now
             ['flamethrower-turret'] = 0.4, -- not active as of now
-            ['artillery-turret'] = 0.25, -- not active as of now
+            ['artillery-turret'] = 0.25,   -- not active as of now
             ['small-worm-turret'] = 0.8,
             ['medium-worm-turret'] = 0.6,
             ['big-worm-turret'] = 0.3,
@@ -438,7 +439,7 @@ end
 function Public.nuke_wave_gui()
     if Gui.get_mod_gui_top_frame() then
         Core.iter_players(
-            function(player)
+            function (player)
                 local g = Gui.get_button_flow(player)['wave_defense']
                 if g and g.valid then
                     g.destroy()
@@ -447,7 +448,7 @@ function Public.nuke_wave_gui()
         )
     else
         Core.iter_players(
-            function(player)
+            function (player)
                 if player.gui.top.wave_defense and player.gui.top.wave_defense.valid then
                     player.gui.top.wave_defense.destroy()
                 end
@@ -456,14 +457,24 @@ function Public.nuke_wave_gui()
     end
 end
 
---- Sets a custom callback whenever the pause_waves func is run
-function Public.set_pause_waves_custom_callback(value)
-    this.pause_waves_custom_callback = value or nil
+--- Sets a custom callback
+function Public.set_pause_waves_custom_callback(callback)
+    this.pause_waves_custom_callback = callback or nil
 end
 
 --- Gets a custom callback
 function Public.get_pause_waves_custom_callback()
     return this.pause_waves_custom_callback or nil
+end
+
+--- Sets a custom callback
+function Public.set_threat_event_custom_callback(callback)
+    this.threat_event_custom_callback = callback or nil
+end
+
+--- Gets a custom callback
+function Public.get_threat_event_custom_callback()
+    return this.threat_event_custom_callback or nil
 end
 
 --- Toggle debug - when you need to troubleshoot.
@@ -505,7 +516,7 @@ end
 -- Event.on_nth_tick(30, Public.debug_module)
 
 Event.on_init(
-    function()
+    function ()
         Public.reset_wave_defense()
     end
 )

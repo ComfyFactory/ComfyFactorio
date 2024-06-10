@@ -22,7 +22,8 @@ local this = {
         update_rate = 120,
         enabled = true,
         track_bosses_only = true,
-        wave_number = 0
+        wave_number = 0,
+        unit_limit = 300,
     },
     target_settings = {}
 }
@@ -31,10 +32,10 @@ Public._esp = {}
 
 Global.register(
     this,
-    function(tbl)
+    function (tbl)
         this = tbl
         for _, state in pairs(this.states) do
-            setmetatable(state, {__index = Public._esp})
+            setmetatable(state, { __index = Public._esp })
         end
     end
 )
@@ -66,59 +67,77 @@ local tiers = {
 }
 
 local tier_damage = {
-    ['small-biter'] = {min = 25, max = 50},
-    ['medium-biter'] = {min = 50, max = 100},
-    ['big-biter'] = {min = 75, max = 150},
-    ['behemoth-biter'] = {min = 100, max = 200},
-    ['small-spitter'] = {min = 25, max = 50},
-    ['medium-spitter'] = {min = 50, max = 100},
-    ['big-spitter'] = {min = 75, max = 150},
-    ['behemoth-spitter'] = {min = 100, max = 200}
+    ['small-biter'] = { min = 25, max = 50 },
+    ['medium-biter'] = { min = 50, max = 100 },
+    ['big-biter'] = { min = 75, max = 150 },
+    ['behemoth-biter'] = { min = 100, max = 200 },
+    ['small-spitter'] = { min = 25, max = 50 },
+    ['medium-spitter'] = { min = 50, max = 100 },
+    ['big-spitter'] = { min = 75, max = 150 },
+    ['behemoth-spitter'] = { min = 100, max = 200 }
+}
+
+local commands = {
+    ['flee'] = 'goto',
+    ['goto'] = 'attack_area',
+    ['attack'] = 'attack',
+    ['attack_area'] = 'attack_area',
 }
 
 --- A token to register tasks that entities are given
 local work_token
 work_token =
     Token.register(
-    function(event)
-        if not event then
-            return
-        end
+        function (event)
+            if not event then
+                return
+            end
 
-        local state = Public.get_unit(event.unit_number)
-        local tick = game.tick
-        if not state then
-            return
-        end
+            local state = Public.get_unit(event.unit_number)
+            local tick = game.tick
+            if not state then
+                return
+            end
 
-        if state:validate() then
-            state:work(tick)
-            set_timeout_in_ticks(state:get_update_rate(), work_token, event)
-        else
-            state:remove()
+            if state:validate() then
+                state:work(tick)
+                state.command = commands[state.command]
+                set_timeout_in_ticks(state:get_update_rate(), work_token, event)
+            else
+                state:remove()
+            end
         end
-    end
-)
+    )
 
 --- Restores a given entity to their original force
 local restore_force_token =
     Token.register(
-    function(event)
-        if not event then
-            return
-        end
-        local force_name = event.force_name
-        if not force_name then
-            return
-        end
+        function (event)
+            if not event then
+                return
+            end
+            local force_name = event.force_name
+            if not force_name then
+                return
+            end
 
-        local state = Public.get_unit(event.unit_number)
-        if state then
-            state:set_force()
-            state.frenzied = false
+            local state = Public.get_unit(event.unit_number)
+            if state then
+                state:set_force()
+                state.frenzied = false
+            end
         end
+    )
+
+local function has_unit_limit_reached()
+    local uid = Public.get_count()
+    if uid >= (this.settings.unit_limit and this.settings.unit_limit) then
+        Public.debug_print('has_unit_limit_reached - Max units reached?')
+        return true
     end
-)
+
+    return false
+end
 
 local function is_closer(pos1, pos2, pos)
     return ((pos1.x - pos.x) ^ 2 + (pos1.y - pos.y) ^ 2) < ((pos2.x - pos.x) ^ 2 + (pos2.y - pos.y) ^ 2)
@@ -140,9 +159,9 @@ local function aoe_punch(entity, target, damage)
         return
     end
 
-    local base_vector = {target.position.x - entity.position.x, target.position.y - entity.position.y}
+    local base_vector = { target.position.x - entity.position.x, target.position.y - entity.position.y }
 
-    local vector = {base_vector[1], base_vector[2]}
+    local vector = { base_vector[1], base_vector[2] }
     vector[1] = vector[1] * 1000
     vector[2] = vector[2] * 1000
 
@@ -177,9 +196,9 @@ local function aoe_punch(entity, target, damage)
     for i = 1, 16, 1 do
         for x = i * -1 * a, i * a, 1 do
             for y = i * -1 * a, i * a, 1 do
-                local p = {cp.x + x + vector[1] * i, cp.y + y + vector[2] * i}
-                cs.create_trivial_smoke({name = 'train-smoke', position = p})
-                for _, e in pairs(cs.find_entities({{p[1] - a, p[2] - a}, {p[1] + a, p[2] + a}})) do
+                local p = { cp.x + x + vector[1] * i, cp.y + y + vector[2] * i }
+                cs.create_trivial_smoke({ name = 'train-smoke', position = p })
+                for _, e in pairs(cs.find_entities({ { p[1] - a, p[2] - a }, { p[1] + a, p[2] + a } })) do
                     if e.valid then
                         if e.health then
                             if e.destructible and e.minable and not valid_enemy_forces[e.force.name] then
@@ -249,9 +268,9 @@ local function area_of_effect(entity, radius, callback, find_entities)
         for y = area.left_top.y, area.right_bottom.y, 1 do
             local d = floor((cp.x - x) ^ 2 + (cp.y - y) ^ 2)
             if d < radius then
-                local p = {x = x, y = y}
+                local p = { x = x, y = y }
                 if find_entities then
-                    for _, e in pairs(cs.find_entities({{p.x - 1, p.y - 1}, {p.x + 1, p.y + 1}})) do
+                    for _, e in pairs(cs.find_entities({ { p.x - 1, p.y - 1 }, { p.x + 1, p.y + 1 } })) do
                         if e and e.valid and e.name ~= 'character' and e.health and e.destructible then
                             callback(e, p)
                         end
@@ -266,89 +285,8 @@ end
 
 local function shoot_laser(surface, source, enemy)
     local force = source.force
-    surface.create_entity {name = 'laser-beam', position = source.position, force = 'player', target = enemy, source = source, max_length = 32, duration = 60}
+    surface.create_entity { name = 'laser-beam', position = source.position, force = 'player', target = enemy, source = source, max_length = 32, duration = 60 }
     enemy.damage(20 * (1 + force.get_ammo_damage_modifier('laser') + force.get_gun_speed_modifier('laser')), force, 'laser', source)
-end
-
-local function set_commands()
-    local unit = this.target_settings.main_target
-    if not unit or not unit.valid then
-        return
-    end
-
-    local commands = {}
-
-    if this.target_settings.last_set_target == 'main' then
-        this.target_settings.last_set_target = 'random'
-        commands[#commands + 1] = {
-            type = defines.command.attack_area,
-            destination = {x = unit.position.x, y = unit.position.y},
-            radius = 15,
-            distraction = defines.distraction.by_enemy
-        }
-        commands[#commands + 1] = {
-            type = defines.command.build_base,
-            destination = {x = unit.position.x, y = unit.position.y}
-        }
-        commands[#commands + 1] = {
-            type = defines.command.attack_area,
-            destination = {x = unit.position.x, y = unit.position.y},
-            radius = 15,
-            distraction = defines.distraction.by_enemy
-        }
-        commands[#commands + 1] = {
-            type = defines.command.build_base,
-            destination = {x = unit.position.x, y = unit.position.y}
-        }
-    else
-        commands[#commands + 1] = {
-            type = defines.command.attack,
-            target = unit,
-            distraction = defines.distraction.by_anything
-        }
-        commands[#commands + 1] = {
-            type = defines.command.attack_area,
-            destination = {x = unit.position.x, y = unit.position.y},
-            radius = 15,
-            distraction = defines.distraction.by_enemy
-        }
-        commands[#commands + 1] = {
-            type = defines.command.build_base,
-            destination = {x = unit.position.x, y = unit.position.y}
-        }
-        commands[#commands + 1] = {
-            type = defines.command.attack,
-            target = unit,
-            distraction = defines.distraction.by_anything
-        }
-        commands[#commands + 1] = {
-            type = defines.command.attack_area,
-            destination = {x = unit.position.x, y = unit.position.y},
-            radius = 15,
-            distraction = defines.distraction.by_enemy
-        }
-        commands[#commands + 1] = {
-            type = defines.command.build_base,
-            destination = {x = unit.position.x, y = unit.position.y}
-        }
-        commands[#commands + 1] = {
-            type = defines.command.attack,
-            target = unit,
-            distraction = defines.distraction.by_anything
-        }
-        this.target_settings.last_set_target = 'main'
-    end
-
-    local command = {
-        type = defines.command.compound,
-        structure_type = defines.compound_command.return_last,
-        commands = commands
-    }
-
-    local surface = unit.surface
-
-    surface.set_multi_command({command = command, unit_count = 5000, force = 'aggressors'})
-    this.target_settings.commands = commands
 end
 
 local function set_forces()
@@ -380,11 +318,12 @@ end
 
 local function on_init()
     this.states = {}
+    this.settings.spawned_units = 0
     this.settings.frenzy_length = 3600
     this.settings.frenzy_burst_length = 160
     this.settings.update_rate = 120
     this.target_settings = {}
-    this.final_battle = false
+    this.settings.final_battle = false
     set_forces()
 end
 
@@ -457,18 +396,6 @@ local function on_target_aquired(event)
     else
         this.target_settings.main_target = event.target
     end
-
-    local tick = game.tick
-
-    if not this.target_settings.last_set_commands then
-        set_commands()
-        this.target_settings.last_set_commands = tick + 200
-        this.target_settings.last_set_target = 'main'
-    end
-
-    if tick > this.target_settings.last_set_commands then
-        set_commands()
-    end
 end
 
 local function on_entity_created(event)
@@ -496,10 +423,13 @@ local function on_entity_created(event)
                 end
                 state:set_burst_frenzy()
                 state:set_boss()
+            else
+                entity.destroy()
             end
         else
             state = Public.new(data)
             if not state then
+                entity.destroy()
                 return
             end
             state:set_burst_frenzy()
@@ -565,6 +495,10 @@ local function on_entity_damaged(event)
         state:spawn_children()
     end
 
+    if random(1, 128) == 1 then
+        state:flee_command()
+    end
+
     if state.boss_unit and entity.health <= max / 2 and state.teleported < 5 then
         state.teleported = state.teleported + 1
         if random(1, 4) == 1 then
@@ -577,13 +511,15 @@ end
 ---@param data table
 ---@return table|nil
 function Public.new(data)
-    local uid = Public.get_count()
-
-    if uid > 200 then
+    if has_unit_limit_reached() then
+        if data.entity and data.entity.valid then
+            data.entity.destroy()
+        end
         return
     end
 
-    local state = setmetatable({}, {__index = Public._esp})
+    local uid = Public.get_count()
+    local state = setmetatable({}, { __index = Public._esp })
     local tick = game.tick
     state.entity = data.entity
     state.surface_id = state.entity.surface_index
@@ -591,17 +527,13 @@ function Public.new(data)
     state.unit_number = state.entity.unit_number
     state.teleported = 0
     state.uid = uid
+    state.command = 'goto'
     state.id = state.entity.unit_number
     state.update_rate = this.settings.update_rate + (10 * state.uid)
-    if data.delayed then
-        state.delayed = tick + data.delayed
-        state.ttl = data.ttl or (tick + data.delayed) + 7200 -- 2 minutes duration
-    else
-        state.ttl = data.ttl or tick + 3600 -- 1 minutes duration
-        state:validate()
-    end
+    state.ttl = data.ttl or tick + (5 * 3600) -- 5 minutes duration
+    state:validate()
 
-    set_timeout_in_ticks(state.update_rate, work_token, {unit_number = state.unit_number})
+    set_timeout_in_ticks(state.update_rate, work_token, { unit_number = state.unit_number })
 
     this.states[state.id] = state
 
@@ -655,6 +587,22 @@ function Public.get_boss_unit()
     end
 end
 
+-- Clears invalid units
+---@return table|nil
+function Public.check_states()
+    local c = 0
+    for _, state in pairs(this.states) do
+        if state then
+            if not (state.entity and state.entity.valid) then
+                state:remove()
+            else
+                c = c + 1
+            end
+        end
+    end
+    this.settings.spawned_units = c
+end
+
 -- Gets a boss unit
 ---@return integer
 function Public.get_count()
@@ -664,6 +612,8 @@ function Public.get_count()
             c = c + 1
         end
     end
+
+    this.settings.spawned_units = c
 
     return c
 end
@@ -680,6 +630,10 @@ end
 
 -- Removes the given entity from tracking
 function Public._esp:remove()
+    if self.entity and self.entity.valid then
+        self.entity.destroy()
+    end
+
     this.states[self.id] = nil
 end
 
@@ -727,7 +681,7 @@ function Public._esp:set_burst_frenzy()
     end
 
     self.frenzied = true
-    set_timeout_in_ticks(this.settings.frenzy_burst_length, restore_force_token, {force_name = self.force.name, unit_number = self.unit_number})
+    set_timeout_in_ticks(this.settings.frenzy_burst_length, restore_force_token, { force_name = self.force.name, unit_number = self.unit_number })
 
     entity.force = game.forces.aggressors_frenzy
     self.force = entity.force
@@ -740,6 +694,10 @@ function Public._esp:spawn_children()
         return
     end
 
+    if has_unit_limit_reached() then
+        return
+    end
+
     local tier = tiers[entity.name]
 
     if not tier then
@@ -748,9 +706,9 @@ function Public._esp:spawn_children()
 
     local max = entity.prototype.max_health
 
-    if entity.health <= max / 2 and not self.spawned_children then
+    if entity.health <= max / 4 and not self.spawned_children then
         self.spawned_children = true
-        Public.buried_biter(entity.surface, entity.position, 1, tier)
+        Public.buried_biter(entity.surface, entity.position, 1, tier, entity.force.name)
     end
 end
 
@@ -789,7 +747,7 @@ function Public._esp:laser(boss)
 
     local surface = entity.surface
 
-    local enemies = surface.find_entities_filtered {radius = 10, limit = limit, force = 'player', position = entity.position}
+    local enemies = surface.find_entities_filtered { radius = 10, limit = limit, force = 'player', position = entity.position }
     if enemies == nil or #enemies == 0 then
         return
     end
@@ -808,9 +766,9 @@ function Public._esp:spew_damage()
         return
     end
 
-    local position = {entity.position.x + (-5 + random(0, 10)), entity.position.y + (-5 + random(0, 10))}
+    local position = { entity.position.x + (-5 + random(0, 10)), entity.position.y + (-5 + random(0, 10)) }
 
-    entity.surface.create_entity({name = 'acid-stream-spitter-medium', position = position, target = position, source = position})
+    entity.surface.create_entity({ name = 'acid-stream-spitter-medium', position = position, target = position, source = position })
 end
 
 --- Creates a projectile.
@@ -820,7 +778,7 @@ function Public._esp:fire_projectile()
         return
     end
 
-    local position = {entity.position.x + (-10 + random(0, 20)), entity.position.y + (-10 + random(0, 20))}
+    local position = { entity.position.x + (-10 + random(0, 20)), entity.position.y + (-10 + random(0, 20)) }
 
     entity.surface.create_entity(
         {
@@ -842,7 +800,7 @@ function Public._esp:aoe_attack()
         return
     end
 
-    local position = {x = entity.position.x + (-10 + random(0, 20)), y = entity.position.y + (-10 + random(0, 20))}
+    local position = { x = entity.position.x + (-10 + random(0, 20)), y = entity.position.y + (-10 + random(0, 20)) }
 
     local target = {
         valid = true,
@@ -867,7 +825,7 @@ function Public._esp:area_of_spit_attack(range)
     area_of_effect(
         entity,
         range or 10,
-        function(p)
+        function (p)
             do_projectile(entity.surface, 'acid-stream-spitter-big', p, entity.force, p)
         end,
         false
@@ -895,11 +853,11 @@ function Public._esp:find_targets()
 
     local obstacles =
         entity.surface.find_entities_filtered {
-        position = entity.position,
-        radius = step_length / 2,
-        type = {'simple-entity', 'tree'},
-        limit = 50
-    }
+            position = entity.position,
+            radius = step_length / 2,
+            type = { 'simple-entity', 'tree' },
+            limit = 50
+        }
     if obstacles then
         shuffle_distance(obstacles, entity.position)
         self.commands = self.commands or {}
@@ -913,49 +871,6 @@ function Public._esp:find_targets()
             end
         end
     end
-end
-
---- Attack target
-function Public._esp:attack_target()
-    local entity = self.entity
-    if not entity or not entity.valid then
-        return
-    end
-
-    local tick = game.tick
-    if not self.moving_to_attack_target then
-        self.moving_to_attack_target = 0
-    end
-
-    if tick < self.moving_to_attack_target then
-        return
-    end
-
-    self.moving_to_attack_target = tick + 200
-
-    if this.target_settings.commands and this.target_settings.commands.commands then
-        this.target_settings.commands = nil
-        return
-    end
-
-    if not this.target_settings.commands then
-        return
-    end
-
-    local compound_commands = this.target_settings.commands
-
-    if self.commands and next(self.commands) then
-        compound_commands = self.commands
-    end
-
-    local command = {
-        type = defines.command.compound,
-        structure_type = defines.compound_command.return_last,
-        commands = compound_commands
-    }
-    pcall(entity.set_command, command)
-
-    self.commands = nil
 end
 
 -- Sets the attack speed for the given force
@@ -982,7 +897,7 @@ function Public._esp:switch_position()
         return
     end
 
-    local position = {entity.position.x + (-5 + random(0, 15)), entity.position.y + (5 + random(0, 15))}
+    local position = { entity.position.x + (-5 + random(0, 15)), entity.position.y + (5 + random(0, 15)) }
 
     local rand = entity.surface.find_non_colliding_position(entity.name, position, 0.2, 0.5)
     if rand then
@@ -1018,7 +933,9 @@ function Public._esp:set_boss()
 
     self.boss_unit = true
 
-    if this.final_battle then
+    self:set_ttl(game.tick + (20 * 3600))
+
+    if this.settings.final_battle then
         self.go_havoc = true
         self.proj_int = tick + 120
         self.clear_go_havoc = tick + 3600
@@ -1033,21 +950,111 @@ function Public._esp:set_boss()
     end
 end
 
+--- Sets the time to live timer for the unit
+function Public._esp:set_ttl(ttl)
+    if not ttl then
+        error('No ttl given')
+    end
+
+    self.ttl = ttl
+end
+
+function Public._esp:go_to_location_command()
+    local unit = this.target_settings.main_target
+    if not unit or not unit.valid then
+        return
+    end
+
+    local entity = self.entity
+
+    if not entity or not entity.valid then
+        return
+    end
+
+    pcall(entity.set_command, {
+        type = defines.command.go_to_location,
+        destination_entity = unit,
+        radius = 3
+    })
+end
+
+function Public._esp:attack_command()
+    local unit = this.target_settings.main_target
+    if not unit or not unit.valid then
+        return
+    end
+
+    local entity = self.entity
+
+    if not entity or not entity.valid then
+        return
+    end
+
+    pcall(entity.set_command, {
+        type = defines.command.attack,
+        target = unit
+    })
+end
+
+function Public._esp:attack_area_command()
+    local unit = this.target_settings.main_target
+    if not unit or not unit.valid then
+        return
+    end
+
+    local entity = self.entity
+
+    if not entity or not entity.valid then
+        return
+    end
+
+    pcall(entity.set_command, {
+        type = defines.command.attack_area,
+        destination = { x = unit.position.x, y = unit.position.y },
+        radius = 15,
+        distraction = defines.distraction.by_anything
+    })
+end
+
+function Public._esp:flee_command()
+    local unit = this.target_settings.main_target
+    if not unit or not unit.valid then
+        return
+    end
+
+    local entity = self.entity
+
+    if not entity or not entity.valid then
+        return
+    end
+
+    pcall(entity.set_command, {
+        type = defines.command.flee,
+        from = unit,
+    })
+end
+
 function Public._esp:work(tick)
     if self.go_frenzy then
         self:set_frenzy()
     end
 
+    if self.command == 'goto' then
+        self:go_to_location_command()
+    elseif self.command == 'attack' then
+        self:attack_command()
+    elseif self.command == 'attack_area' then
+        self:attack_area_command()
+    end
+
     if self.go_havoc and self.clear_go_havoc > tick then
-        if tick > self.proj_int then
-            self:attack_target()
+        if tick < self.proj_int then
             self:fire_projectile()
             self.proj_int = tick + 120
         end
         return
     end
 
-    self:attack_target()
 
     if self.boss_unit then
         if random(1, 20) == 1 then
@@ -1069,6 +1076,9 @@ function Public._esp:work(tick)
                 self:aoe_attack()
             end
         end
+        if tick > self.ttl then
+            self:remove()
+        end
     elseif tick < self.ttl then
         if random(1, 30) == 1 then
             self:find_targets()
@@ -1084,15 +1094,6 @@ function Public._esp:work(tick)
     end
 end
 
-Public.set_module_status = function()
-    on_init()
-    this.settings.enabled = not this.settings.enabled
-end
-
-Public.set_track_bosses_only = function()
-    this.settings.track_bosses_only = not this.settings.track_bosses_only
-end
-
 Event.on_init(on_init)
 Event.add(de.on_entity_died, on_entity_died)
 Event.add(de.on_entity_damaged, on_entity_damaged)
@@ -1102,6 +1103,7 @@ Event.add(ev.on_entity_created, on_entity_created)
 Event.add(ev.on_target_aquired, on_target_aquired)
 Event.add(ev.on_evolution_factor_changed, on_evolution_factor_changed)
 Event.add(ev.on_game_reset, on_init)
+Event.on_nth_tick(100, Public.check_states)
 
 --- This gets values from our table
 -- @param key <string>
@@ -1131,5 +1133,23 @@ function Public.set_es(key, value)
         return this
     end
 end
+
+---@param value boolean
+function Public.set_module_status(value)
+    on_init()
+    this.settings.enabled = value or false
+end
+
+---@param value boolean
+function Public.set_track_bosses_only(value)
+    this.settings.track_bosses_only = value or false
+end
+
+---@param value integer|number
+function Public.set_es_unit_limit(value)
+    this.settings.unit_limit = value or 300
+end
+
+Public.has_unit_limit_reached = has_unit_limit_reached
 
 return Public

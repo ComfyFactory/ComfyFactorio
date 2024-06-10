@@ -398,11 +398,31 @@ local function do_clear_rocks_slowly()
         return
     end
 
-    for _ = 1, 30 do
+    for _ = 1, 300 do
         local entity = table.remove(rocks_to_remove, #rocks_to_remove)
 
         if entity and entity.valid then
             entity.destroy()
+        end
+    end
+end
+
+local function do_replace_tiles_slowly()
+    local active_surface_index = Public.get('active_surface_index')
+    local surface = game.get_surface(active_surface_index)
+    if not (surface and surface.valid) then
+        return
+    end
+
+    local tiles_to_replace = Public.get('tiles_to_replace')
+    if not tiles_to_replace or not next(tiles_to_replace) then
+        return
+    end
+
+    for _ = 1, 300 do
+        local tile = table.remove(tiles_to_replace, #tiles_to_replace)
+        if tile and tile.valid then
+            surface.set_tiles({ { name = 'water-shallow', position = tile.position } }, true)
         end
     end
 end
@@ -423,7 +443,7 @@ local function do_season_fix()
     Public.set(
         'current_season',
         rendering.draw_text {
-            text = 'Season: ' .. Public.stateful.get_stateful('season'),
+            text = 'Season: ' .. Public.get_stateful('season'),
             surface = surface,
             target = { -0, 12 },
             color = { r = 0.98, g = 0.77, b = 0.22 },
@@ -522,6 +542,7 @@ local function tick()
     do_beams_away()
     do_clear_enemy_spawners()
     do_clear_rocks_slowly()
+    do_replace_tiles_slowly()
 end
 
 Public.deactivate_callback =
@@ -950,6 +971,27 @@ function Public.find_rocks_and_slowly_remove()
     end
 end
 
+function Public.find_void_tiles_and_replace()
+    local active_surface_index = Public.get('active_surface_index')
+    local surface = game.get_surface(active_surface_index)
+    if not (surface and surface.valid) then
+        return
+    end
+
+    local cp = Collapse.get_position()
+    local rp = Collapse.get_reverse_position()
+
+    local area = {
+        left_top = { x = (-zone_settings.zone_width / 2) + 10, y = cp.y },
+        right_bottom = { x = (zone_settings.zone_width / 2) - 10, y = rp.y }
+    }
+
+    local tiles = surface.find_tiles_filtered({ area = area, name = { 'out-of-map', 'water', 'deepwater', 'water-green', 'deepwater-green' } })
+    if tiles and #tiles > 0 then
+        Public.set('tiles_to_replace', tiles)
+    end
+end
+
 function Public.set_difficulty()
     local final_battle = Public.get('final_battle')
     if final_battle then
@@ -1106,7 +1148,7 @@ function Public.render_direction(surface, reversed)
     Public.set(
         'current_season',
         rendering.draw_text {
-            text = 'Season: ' .. Public.stateful.get_stateful('season'),
+            text = 'Season: ' .. Public.get_stateful('season'),
             surface = surface,
             target = { -0, 12 },
             color = { r = 0.98, g = 0.77, b = 0.22 },

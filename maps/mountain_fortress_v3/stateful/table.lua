@@ -311,16 +311,6 @@ local function get_random_buff(fetch_all, only_force)
             }
         },
         {
-            name = 'fast_startup',
-            discord = 'Assembling starting supplies - start with some assembling machines T1',
-            modifier = 'starting_items',
-            limit = 25,
-            add_per_buff = 2,
-            items = {
-                { name = 'assembling-machine-1', count = 2 }
-            }
-        },
-        {
             name = 'fast_startup_1',
             discord = 'Assembling starting supplies - start with some assembling machines T2',
             modifier = 'starting_items',
@@ -749,6 +739,15 @@ local rockets_launched_token =
 local function scale(setting, limit, factor)
     factor = factor or 1.05
     local scale_value = floor(setting * (factor ^ this.rounds_survived))
+    if limit and scale_value >= limit then
+        return limit
+    end
+    return floor(scale_value)
+end
+
+local function scale_lin(setting, limit, factor)
+    factor = factor or 1.05
+    local scale_value = math.floor(setting + (factor * this.rounds_survived))
     if limit and scale_value >= limit then
         return limit
     end
@@ -1610,6 +1609,8 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
         supplies.single_item.count = supplies.single_item.total
     end
 
+    WD.set_es_unit_limit(scale_lin(100, 1000, 5.819))
+
     this.objectives.handcrafted_items.actual = 0
     this.objectives.handcrafted_items_any.actual = 0
     this.objectives.cast_spell.actual = 0
@@ -1625,22 +1626,22 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
     end
 
     this.stateful_spawn_points = {
-        { { x = -205, y = -37 }, { x = 195, y = 37 } },
+        { { x = -205, y = -37 },  { x = 195, y = 37 } },
         { { x = -205, y = -112 }, { x = 195, y = 112 } },
         { { x = -205, y = -146 }, { x = 195, y = 146 } },
         { { x = -205, y = -112 }, { x = 195, y = 112 } },
-        { { x = -205, y = -72 }, { x = 195, y = 72 } },
+        { { x = -205, y = -72 },  { x = 195, y = 72 } },
         { { x = -205, y = -146 }, { x = 195, y = 146 } },
-        { { x = -205, y = -37 }, { x = 195, y = 37 } },
-        { { x = -205, y = -5 }, { x = 195, y = 5 } },
-        { { x = -205, y = -23 }, { x = 195, y = 23 } },
-        { { x = -205, y = -5 }, { x = 195, y = 5 } },
-        { { x = -205, y = -72 }, { x = 195, y = 72 } },
-        { { x = -205, y = -23 }, { x = 195, y = 23 } },
-        { { x = -205, y = -54 }, { x = 195, y = 54 } },
-        { { x = -205, y = -80 }, { x = 195, y = 80 } },
-        { { x = -205, y = -54 }, { x = 195, y = 54 } },
-        { { x = -205, y = -80 }, { x = 195, y = 80 } },
+        { { x = -205, y = -37 },  { x = 195, y = 37 } },
+        { { x = -205, y = -5 },   { x = 195, y = 5 } },
+        { { x = -205, y = -23 },  { x = 195, y = 23 } },
+        { { x = -205, y = -5 },   { x = 195, y = 5 } },
+        { { x = -205, y = -72 },  { x = 195, y = 72 } },
+        { { x = -205, y = -23 },  { x = 195, y = 23 } },
+        { { x = -205, y = -54 },  { x = 195, y = 54 } },
+        { { x = -205, y = -80 },  { x = 195, y = 80 } },
+        { { x = -205, y = -54 },  { x = 195, y = 54 } },
+        { { x = -205, y = -80 },  { x = 195, y = 80 } },
         { { x = -205, y = -103 }, { x = 195, y = 103 } },
         { { x = -205, y = -150 }, { x = 195, y = 150 } },
         { { x = -205, y = -103 }, { x = 195, y = 103 } },
@@ -1709,7 +1710,7 @@ function Public.move_all_players()
     Alert.alert_all_players(50, message, nil, nil, 1)
     Core.iter_connected_players(
         function (player)
-            local pos = surface.find_non_colliding_position('character', locomotive.position, 10, 0)
+            local pos = surface.find_non_colliding_position('character', locomotive.position, 32, 1)
 
             Public.stateful_gui.boss_frame(player, true)
 
@@ -1726,7 +1727,7 @@ function Public.move_all_players()
         Core.iter_fake_connected_players(
             global.characters,
             function (player)
-                local pos = surface.find_non_colliding_position('character', locomotive.position, 10, 0)
+                local pos = surface.find_non_colliding_position('character', locomotive.position, 32, 1)
 
                 if pos then
                     player.teleport(pos)
@@ -1744,8 +1745,9 @@ function Public.set_final_battle()
         return
     end
 
+    local es_settings = WD.get_es('settings')
     WD.set_es('final_battle', true)
-    this.final_battle = true
+    es_settings.final_battle = true
     Public.set('final_battle', true)
 end
 
