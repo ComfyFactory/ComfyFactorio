@@ -202,7 +202,7 @@ function Public.invasion_numbers()
 end
 
 function Public.invasion_warn(event)
-    local seconds = (120 * 60 - event.delay) / 60
+    local seconds = (120 * 60 - (event.delay or 0)) / 60
     game.print({'expanse.biters_invasion_warning', seconds, event.size}, {r = 0.88, g = 0.22, b = 0.22})
 end
 
