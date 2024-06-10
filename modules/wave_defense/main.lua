@@ -25,11 +25,11 @@ local function normalize_spawn_position()
     local collapse_spawn_position = Collapse.get_position()
     local inverted = Public.get('inverted')
     if inverted then
-        local new_pos = {x = 0, y = collapse_spawn_position.y + 40}
+        local new_pos = { x = 0, y = collapse_spawn_position.y + 40 }
         Public.set_spawn_position(new_pos)
         return new_pos
     else
-        local new_pos = {x = 0, y = collapse_spawn_position.y - 40}
+        local new_pos = { x = 0, y = collapse_spawn_position.y - 40 }
         Public.set_spawn_position(new_pos)
         return new_pos
     end
@@ -92,8 +92,8 @@ local function remove_trees(entity)
     local surface = entity.surface
     local radius = 10
     local pos = entity.position
-    local area = {{pos.x - radius, pos.y - radius}, {pos.x + radius, pos.y + radius}}
-    local trees = surface.find_entities_filtered {area = area, type = 'tree'}
+    local area = { { pos.x - radius, pos.y - radius }, { pos.x + radius, pos.y + radius } }
+    local trees = surface.find_entities_filtered { area = area, type = 'tree' }
     if #trees > 0 then
         for _, tree in pairs(trees) do
             if tree and tree.valid then
@@ -110,8 +110,8 @@ local function remove_rocks(entity)
     local surface = entity.surface
     local radius = 10
     local pos = entity.position
-    local area = {{pos.x - radius, pos.y - radius}, {pos.x + radius, pos.y + radius}}
-    local rocks = surface.find_entities_filtered {area = area, type = 'simple-entity'}
+    local area = { { pos.x - radius, pos.y - radius }, { pos.x + radius, pos.y + radius } }
+    local rocks = surface.find_entities_filtered { area = area, type = 'simple-entity' }
     if #rocks > 0 then
         for _, rock in pairs(rocks) do
             if rock and rock.valid then
@@ -136,11 +136,11 @@ local function fill_tiles(entity, size)
         'deepwater',
         'deepwater-green'
     }
-    local area = {{pos.x - radius, pos.y - radius}, {pos.x + radius, pos.y + radius}}
-    local tiles = surface.find_tiles_filtered {area = area, name = t}
+    local area = { { pos.x - radius, pos.y - radius }, { pos.x + radius, pos.y + radius } }
+    local tiles = surface.find_tiles_filtered { area = area, name = t }
     if #tiles > 0 then
         for _, tile in pairs(tiles) do
-            surface.set_tiles({{name = 'sand-1', position = tile.position}}, true)
+            surface.set_tiles({ { name = 'sand-1', position = tile.position } }, true)
         end
     end
     Public.debug_print('fill_tiles - filled tiles cause we found non-placable tiles.')
@@ -163,11 +163,11 @@ local function get_spawn_pos()
     local inverted = Public.get('inverted')
     if inverted then
         if initial_position.y - target.position.y < -10 then
-            initial_position = {x = initial_position.x, y = initial_position.y + 50}
+            initial_position = { x = initial_position.x, y = initial_position.y + 50 }
         end
     else
         if initial_position.y - target.position.y > 10 then
-            initial_position = {x = initial_position.x, y = initial_position.y - 50}
+            initial_position = { x = initial_position.x, y = initial_position.y - 50 }
         end
     end
 
@@ -188,9 +188,9 @@ local function get_spawn_pos()
             c = c + 1
             valid_position = Public.get('spawn_position')
             Public.debug_print(serpent.block('valid_position - x:' .. valid_position.x .. ' y:' .. valid_position.y))
-            remove_trees({surface = surface, position = valid_position, valid = true})
-            remove_rocks({surface = surface, position = valid_position, valid = true})
-            fill_tiles({surface = surface, position = valid_position, valid = true})
+            remove_trees({ surface = surface, position = valid_position, valid = true })
+            remove_rocks({ surface = surface, position = valid_position, valid = true })
+            fill_tiles({ surface = surface, position = valid_position, valid = true })
             Public.set('spot', 'nil')
             if c == 5 then
                 return Public.debug_print('get_spawn_pos - we could not find a spawning pos?')
@@ -333,7 +333,7 @@ local function set_main_target()
     local target = Public.get('target')
     if target then
         if target.valid then
-            raise(Public.events.on_target_aquired, {target = target})
+            raise(Public.events.on_target_aquired, { target = target })
             return
         end
     end
@@ -349,12 +349,12 @@ local function set_main_target()
         sec_target = get_random_character()
     end
     if not sec_target then
-        raise(Public.events.on_target_aquired, {target = target})
+        raise(Public.events.on_target_aquired, { target = target })
         return
     end
 
     Public.set('target', sec_target)
-    raise(Public.events.on_target_aquired, {target = target})
+    raise(Public.events.on_target_aquired, { target = target })
     Public.debug_print('set_main_target -- New main target ' .. sec_target.name .. ' at position x' .. sec_target.position.x .. ' y' .. sec_target.position.y .. ' selected.')
 end
 
@@ -367,7 +367,7 @@ local function set_group_spawn_position(surface)
     if not position then
         return
     end
-    Public.set('spawn_position', {x = position.x, y = position.y})
+    Public.set('spawn_position', { x = position.x, y = position.y })
     local spawn_position = get_spawn_pos()
     if spawn_position then
         Public.debug_print('set_group_spawn_position -- Changed position to x' .. spawn_position.x .. ' y' .. spawn_position.y .. '.')
@@ -403,7 +403,7 @@ local function set_enemy_evolution()
 
     enemy.evolution_factor = evolution_factor
 
-    raise(Public.events.on_evolution_factor_changed, {evolution_factor = evolution_factor})
+    raise(Public.events.on_evolution_factor_changed, { evolution_factor = evolution_factor })
 end
 
 local function can_units_spawn()
@@ -464,7 +464,7 @@ local function spawn_biter(surface, position, force_spawn, is_boss_biter, unit_s
     if not force_spawn then
         if not is_boss_biter then
             if not can_units_spawn() then
-                return
+                return false
             end
         end
     end
@@ -484,9 +484,9 @@ local function spawn_biter(surface, position, force_spawn, is_boss_biter, unit_s
 
     if enable_random_spawn_positions then
         if random(1, 3) == 1 then
-            position = {x = (-1 * (position.x + random(1, 10))), y = (position.y + random(1, 10))}
+            position = { x = (-1 * (position.x + random(1, 10))), y = (position.y + random(1, 10)) }
         else
-            position = {x = (position.x + random(1, 10)), y = (position.y + random(1, 10))}
+            position = { x = (position.x + random(1, 10)), y = (position.y + random(1, 10)) }
         end
     end
 
@@ -502,10 +502,20 @@ local function spawn_biter(surface, position, force_spawn, is_boss_biter, unit_s
         force = 'aggressors'
     end
 
-    local biter = surface.create_entity({name = name, position = position, force = force})
-    -- biter.ai_settings.allow_destroy_when_commands_fail = true
-    -- biter.ai_settings.allow_try_return_to_spawner = false
-    -- biter.ai_settings.do_separation = true
+    local e = { name = name, position = position, force = force }
+
+    if not surface.can_place_entity(e) then
+        return false
+    end
+
+    local biter = surface.create_entity(e)
+    if not biter or not biter.valid then
+        return false
+    end
+
+    biter.ai_settings.allow_destroy_when_commands_fail = true
+    biter.ai_settings.allow_try_return_to_spawner = false
+    biter.ai_settings.do_separation = true
 
     local increase_health_per_wave = Public.get('increase_health_per_wave')
     local boost_units_when_wave_is_above = Public.get('boost_units_when_wave_is_above')
@@ -553,7 +563,7 @@ local function spawn_biter(surface, position, force_spawn, is_boss_biter, unit_s
 
         generated_units.boss_units[#generated_units.boss_units + 1] = biter
     else
-        generated_units.active_biters[biter.unit_number] = {entity = biter, spawn_tick = game.tick}
+        generated_units.active_biters[biter.unit_number] = { entity = biter, spawn_tick = game.tick }
     end
     local active_biter_count = Public.get('active_biter_count')
     Public.set('active_biter_count', active_biter_count + 1)
@@ -573,9 +583,9 @@ local function spawn_worm(surface, position, is_boss_worm)
 
     if enable_random_spawn_positions then
         if random(1, 3) == 1 then
-            position = {x = (-1 * (position.x + random(1, 10))), y = (position.y + random(1, 10))}
+            position = { x = (-1 * (position.x + random(1, 10))), y = (position.y + random(1, 10)) }
         else
-            position = {x = (position.x + random(1, 10)), y = (position.y + random(1, 10))}
+            position = { x = (position.x + random(1, 10)), y = (position.y + random(1, 10)) }
         end
     end
 
@@ -591,7 +601,7 @@ local function spawn_worm(surface, position, is_boss_worm)
         force = 'aggressors'
     end
 
-    local worm = surface.create_entity({name = name, position = position, force = force})
+    local worm = surface.create_entity({ name = name, position = position, force = force })
     local increase_health_per_wave = Public.get('increase_health_per_wave')
     local boost_units_when_wave_is_above = Public.get('boost_units_when_wave_is_above')
     local boost_bosses_when_wave_is_above = Public.get('boost_bosses_when_wave_is_above')
@@ -757,7 +767,7 @@ local function set_next_wave()
             local pos = {
                 position = spawn_position
             }
-            Alert.alert_all_players_location(pos, msg, {r = 0.8, g = 0.1, b = 0.1})
+            Alert.alert_all_players_location(pos, msg, { r = 0.8, g = 0.1, b = 0.1 })
         end
         threat_gain = threat_gain * 2
     else
@@ -792,12 +802,12 @@ end
 
 local function reform_group(group)
     local unit_group_command_step_length = Public.get('unit_group_command_step_length')
-    local group_position = {x = group.position.x, y = group.position.y}
+    local group_position = { x = group.position.x, y = group.position.y }
     local step_length = unit_group_command_step_length
     local generated_units = Public.get('generated_units')
     local position = group.surface.find_non_colliding_position('biter-spawner', group_position, step_length, 4)
     if position then
-        local new_group = group.surface.create_unit_group {position = position, force = group.force}
+        local new_group = group.surface.create_unit_group { position = position, force = group.force }
         for _, biter in pairs(group.members) do
             new_group.add_member(biter)
         end
@@ -834,7 +844,7 @@ local function get_side_targets(group)
     local search_side_targets = Public.get('search_side_targets')
 
     local commands = {}
-    local group_position = {x = group.position.x, y = group.position.y}
+    local group_position = { x = group.position.x, y = group.position.y }
     local step_length = unit_group_command_step_length
 
     local side_target = Public.get_side_target()
@@ -849,11 +859,11 @@ local function get_side_targets(group)
         local old_position = group_position
         local obstacles =
             group.surface.find_entities_filtered {
-            position = old_position,
-            radius = step_length * 2,
-            type = search_side_targets,
-            limit = 100
-        }
+                position = old_position,
+                radius = step_length * 2,
+                type = search_side_targets,
+                limit = 100
+            }
         if obstacles then
             for v = 1, #obstacles, 1 do
                 if obstacles[v].valid then
@@ -879,7 +889,7 @@ end
 local function get_main_command(group)
     local unit_group_command_step_length = Public.get('unit_group_command_step_length')
     local commands = {}
-    local group_position = {x = group.position.x, y = group.position.y}
+    local group_position = { x = group.position.x, y = group.position.y }
     local step_length = unit_group_command_step_length
 
     local target = Public.get('target')
@@ -908,11 +918,11 @@ local function get_main_command(group)
             group_position.y = group_position.y + vector[2]
             local obstacles =
                 group.surface.find_entities_filtered {
-                position = old_position,
-                radius = step_length / 2,
-                type = {'simple-entity', 'tree'},
-                limit = 50
-            }
+                    position = old_position,
+                    radius = step_length / 2,
+                    type = { 'simple-entity', 'tree' },
+                    limit = 50
+                }
             if obstacles then
                 shuffle_distance(obstacles, old_position)
                 for ii = 1, #obstacles, 1 do
@@ -929,7 +939,7 @@ local function get_main_command(group)
             if position then
                 commands[#commands + 1] = {
                     type = defines.command.attack_area,
-                    destination = {x = position.x, y = position.y},
+                    destination = { x = position.x, y = position.y },
                     radius = 16,
                     distraction = defines.distraction.by_anything
                 }
@@ -939,7 +949,7 @@ local function get_main_command(group)
 
     commands[#commands + 1] = {
         type = defines.command.attack_area,
-        destination = {x = target_position.x, y = target_position.y},
+        destination = { x = target_position.x, y = target_position.y },
         radius = 8,
         distraction = defines.distraction.by_anything
     }
@@ -1131,10 +1141,10 @@ local function spawn_unit_group(fs, only_bosses)
 
     local radius = 10
     local area = {
-        left_top = {spawn_position.x - radius, spawn_position.y - radius},
-        right_bottom = {spawn_position.x + radius, spawn_position.y + radius}
+        left_top = { spawn_position.x - radius, spawn_position.y - radius },
+        right_bottom = { spawn_position.x + radius, spawn_position.y + radius }
     }
-    for _, v in pairs(surface.find_entities_filtered {area = area, name = 'land-mine'}) do
+    for _, v in pairs(surface.find_entities_filtered { area = area, name = 'land-mine' }) do
         if v and v.valid then
             Public.debug_print('spawn_unit_group - found land-mines')
             v.die()
@@ -1142,9 +1152,9 @@ local function spawn_unit_group(fs, only_bosses)
     end
 
     if remove_entities and not (fs and fs.bypass) then
-        remove_trees({surface = surface, position = spawn_position, valid = true})
-        remove_rocks({surface = surface, position = spawn_position, valid = true})
-        fill_tiles({surface = surface, position = spawn_position, valid = true})
+        remove_trees({ surface = surface, position = spawn_position, valid = true })
+        remove_rocks({ surface = surface, position = spawn_position, valid = true })
+        fill_tiles({ surface = surface, position = spawn_position, valid = true })
     end
 
     local wave_number = Public.get('wave_number')
@@ -1163,12 +1173,12 @@ local function spawn_unit_group(fs, only_bosses)
 
     local generated_units = Public.get('generated_units')
 
-    local unit_group = surface.create_unit_group({position = spawn_position, force = force})
+    local unit_group = surface.create_unit_group({ position = spawn_position, force = force })
 
     event_data.unit_group = unit_group
 
     generated_units.unit_group_pos.index = generated_units.unit_group_pos.index + 1
-    generated_units.unit_group_pos.positions[unit_group.group_number] = {position = unit_group.position, index = 0}
+    generated_units.unit_group_pos.positions[unit_group.group_number] = { position = unit_group.position, index = 0 }
     local average_unit_group_size = Public.get('average_unit_group_size')
     local unit_settings = Public.get('unit_settings')
     event_data.unit_settings = unit_settings
@@ -1189,7 +1199,7 @@ local function spawn_unit_group(fs, only_bosses)
                 end
                 unit_group.add_member(biter)
 
-                raise(Public.events.on_entity_created, {entity = biter, boss_unit = false, target = target})
+                raise(Public.events.on_entity_created, { entity = biter, boss_unit = false })
                 -- command_to_side_target(unit_group)
             end
         end
@@ -1211,7 +1221,7 @@ local function spawn_unit_group(fs, only_bosses)
                     break
                 end
                 unit_group.add_member(biter)
-                raise(Public.events.on_entity_created, {entity = biter, boss_unit = true, target = target})
+                raise(Public.events.on_entity_created, { entity = biter, boss_unit = true })
             end
             Public.set('boss_wave', false)
         end
@@ -1232,7 +1242,7 @@ local function spawn_unit_group(fs, only_bosses)
                 break
             end
             unit_group.add_member(biter)
-            raise(Public.events.on_entity_created, {entity = biter, boss_unit = true, target = target})
+            raise(Public.events.on_entity_created, { entity = biter, boss_unit = true })
         end
     end
 
@@ -1250,7 +1260,7 @@ end
 local function spawn_unit_group_simple(fs)
     local target = Public.get('target')
     if not valid(target) then
-        Public.debug_print('spawn_unit_group - Target was not valid?')
+        Public.debug_print('spawn_unit_group_simple - Target was not valid?')
         return
     end
 
@@ -1266,7 +1276,6 @@ local function spawn_unit_group_simple(fs)
     local wave_number = Public.get('wave_number')
     Public.wave_defense_set_unit_raffle(wave_number)
 
-    local event_data = {}
 
     local es_settings = Public.get_es('settings')
 
@@ -1277,20 +1286,13 @@ local function spawn_unit_group_simple(fs)
 
     local generated_units = Public.get('generated_units')
 
-    local unit_group = surface.create_unit_group({position = spawn_position, force = force})
+    local unit_group = surface.create_unit_group({ position = spawn_position, force = force })
 
-    event_data.unit_group = unit_group
 
     generated_units.unit_group_pos.index = generated_units.unit_group_pos.index + 1
-    generated_units.unit_group_pos.positions[unit_group.group_number] = {position = unit_group.position, index = 0}
-    local average_unit_group_size = Public.get('average_unit_group_size')
+    generated_units.unit_group_pos.positions[unit_group.group_number] = { position = unit_group.position, index = 0 }
     local unit_settings = Public.get('unit_settings')
-    event_data.unit_settings = unit_settings
 
-    local group_size = floor(average_unit_group_size * Public.group_size_modifier_raffle[random(1, Public.group_size_modifier_raffle_size)])
-
-    event_data.group_size = group_size
-    event_data.boss_wave = false
 
     if not es_settings.generated_units then
         es_settings.generated_units = 0
@@ -1300,16 +1302,20 @@ local function spawn_unit_group_simple(fs)
     end
 
     local count = fs.scale or 1
-    event_data.spawn_count = count
+    local s = 0
     for i = 1, count, 1 do
-        local is_boss = i % 2 == 0
-        local biter = spawn_biter(surface, spawn_position, fs, is_boss, unit_settings, final_battle)
-        if not biter then
-            Public.debug_print('spawn_unit_group - No biter was found?')
-            break
+        local is_boss = i % 4 == 0
+        local biter = spawn_biter(surface, spawn_position, fs and fs.bypass, is_boss, unit_settings, final_battle)
+        if biter then
+            s = s + 1
+            unit_group.add_member(biter)
+            raise(Public.events.on_entity_created, { entity = biter, boss_unit = is_boss })
         end
-        unit_group.add_member(biter)
-        raise(Public.events.on_entity_created, {entity = biter, boss_unit = true, target = target})
+    end
+
+    if s == 0 then
+        Public.debug_print('spawn_unit_group - No biter was spawned?')
+        return
     end
 
     generated_units.unit_groups[unit_group.group_number] = unit_group
@@ -1318,8 +1324,6 @@ local function spawn_unit_group_simple(fs)
     if random(1, 2) == 1 then
         Public.set('random_group', unit_group)
     end
-    Public.set('spot', 'nil')
-    raise(Public.events.on_unit_group_created, event_data)
     return true
 end
 
@@ -1381,7 +1385,7 @@ end
 if is_loaded_bool('maps.mountain_fortress_v3.table') then
     local Core = require 'maps.mountain_fortress_v3.core'
 
-    check_if_near_target = function(position)
+    check_if_near_target = function (position)
         local entity = {
             valid = true,
             position = position
@@ -1396,7 +1400,7 @@ if is_loaded_bool('maps.mountain_fortress_v3.table') then
         return false
     end
 else
-    check_if_near_target = function()
+    check_if_near_target = function ()
         return false
     end
 end
@@ -1421,16 +1425,19 @@ Public.spawn_unit_group = spawn_unit_group
 
 Event.on_nth_tick(
     30,
-    function()
+    function ()
         local tick = game.tick
         local game_lost = Public.get('game_lost')
         if game_lost then
             return
         end
         local final_battle = Public.get('final_battle')
+        if final_battle then
+            return
+        end
 
         local paused = Public.get('paused')
-        if paused and not final_battle then
+        if paused then
             local players = game.connected_players
             for _, player in pairs(players) do
                 Public.update_gui(player)
@@ -1462,10 +1469,6 @@ Event.on_nth_tick(
             tick_tasks_t2[t2]()
         end
 
-        if final_battle then
-            return
-        end
-
         local players = game.connected_players
         for _, player in pairs(players) do
             Public.update_gui(player)
@@ -1475,9 +1478,9 @@ Event.on_nth_tick(
 
 Event.add(
     Public.events.on_biters_evolved,
-    function(event)
+    function (event)
         if not event then
-            event = {force = game.forces.enemy}
+            event = { force = game.forces.enemy }
         end
 
         increase_biter_damage(event.force)
@@ -1493,11 +1496,12 @@ Event.add(Public.events.on_spawn_unit_group_simple, spawn_unit_group_simple)
 
 Event.on_nth_tick(
     50,
-    function()
+    function ()
         local final_battle = Public.get('final_battle')
         if final_battle then
             return
         end
+
 
         local tick_to_spawn_unit_groups = Public.get('tick_to_spawn_unit_groups')
         local tick = game.tick
@@ -1524,5 +1528,6 @@ Public.set_next_wave = set_next_wave
 Public.normalize_spawn_position = normalize_spawn_position
 Public.check_if_near_target = check_if_near_target
 Public.spawn_worm = spawn_worm
+Public.set_main_target = set_main_target
 
 return Public

@@ -8,7 +8,7 @@ local this = {}
 
 Global.register(
     this,
-    function(t)
+    function (t)
         this = t
     end
 )
@@ -51,7 +51,7 @@ local function create_particles(data)
                 frame_speed = 0.1,
                 vertical_speed = 0.1,
                 height = 0.1,
-                movement = {m2 - (random(0, m) * 0.01), m2 - (random(0, m) * 0.01)}
+                movement = { m2 - (random(0, m) * 0.01), m2 - (random(0, m) * 0.01) }
             }
         )
     end
@@ -97,7 +97,7 @@ local function spawn_biters(data)
 
     local unit_settings = WD.get('unit_settings')
 
-    local unit = surface.create_entity({name = unit_to_create, position = position})
+    local unit = surface.create_entity({ name = unit_to_create, position = position, force = data.force or 'enemy' })
     max_biters.amount = max_biters.amount + 1
 
     if random(1, 30) == 1 then
@@ -134,7 +134,7 @@ local function spawn_worms(data)
 
     WD.wave_defense_set_worm_raffle(sqrt(position.x ^ 2 + position.y ^ 2) * 0.20)
 
-    local unit = surface.create_entity({name = unit_to_create, position = position})
+    local unit = surface.create_entity({ name = unit_to_create, position = position })
     max_biters.amount = max_biters.amount + 1
 
     local worm_unit_settings = WD.get('worm_unit_settings')
@@ -151,7 +151,7 @@ local function spawn_worms(data)
     end
 end
 
-function Public.buried_biter(surface, position, count)
+function Public.buried_biter(surface, position, count, force)
     if not (surface and surface.valid) then
         return
     end
@@ -176,21 +176,21 @@ function Public.buried_biter(surface, position, count)
 
         this[game.tick + t][#this[game.tick + t] + 1] = {
             callback = 'create_particles',
-            data = {surface = surface, position = {x = position.x, y = position.y}, amount = math.ceil(t * 0.05)}
+            data = { surface = surface, position = { x = position.x, y = position.y }, amount = math.ceil(t * 0.05) }
         }
 
         if t == 60 then
             if count == 1 then
                 this[game.tick + t][#this[game.tick + t] + 1] = {
                     callback = 'spawn_biters',
-                    data = {surface = surface, position = {x = position.x, y = position.y}, count = count or 1}
+                    data = { surface = surface, position = { x = position.x, y = position.y }, count = count or 1, force = force or 'enemy' }
                 }
             else
                 local tick = 2
                 for _ = 1, count do
                     this[game.tick + t][#this[game.tick + t] + 1 + tick] = {
                         callback = 'spawn_biters',
-                        data = {surface = surface, position = {x = position.x, y = position.y}, count = count or 1}
+                        data = { surface = surface, position = { x = position.x, y = position.y }, count = count or 1, force = force or 'enemy' }
                     }
                     tick = tick + 2
                 end
@@ -220,13 +220,13 @@ function Public.buried_worm(surface, position)
 
         this[game.tick + t][#this[game.tick + t] + 1] = {
             callback = 'create_particles',
-            data = {surface = surface, position = {x = position.x, y = position.y}, amount = math.ceil(t * 0.05)}
+            data = { surface = surface, position = { x = position.x, y = position.y }, amount = math.ceil(t * 0.05) }
         }
 
         if t == 60 then
             this[game.tick + t][#this[game.tick + t] + 1] = {
                 callback = 'spawn_worms',
-                data = {surface = surface, position = {x = position.x, y = position.y}}
+                data = { surface = surface, position = { x = position.x, y = position.y } }
             }
         end
     end

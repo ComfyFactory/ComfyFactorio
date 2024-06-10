@@ -74,6 +74,8 @@ local function on_entity_died(event)
         return
     end
 
+
+
     local cause = event.cause
 
     local coin_count = get_coin_count(entity)
@@ -122,27 +124,33 @@ local function on_entity_died(event)
                 end
                 if forest_zone then
                     if random(1, 12) == 1 then
-                        player.insert({name = 'coin', count = coin_count})
+                        player.insert({ name = 'coin', count = coin_count })
                         if p then
                             StatData.get_data(p.index):increase('coins', coin_count)
                         end
                     end
                 else
-                    player.insert({name = 'coin', count = coin_count})
+                    player.insert({ name = 'coin', count = coin_count })
                     if p then
                         StatData.get_data(p.index):increase('coins', coin_count)
                     end
                 end
             end
         end
-        if entities_that_earn_coins[cause.name] then
-            event.entity.surface.spill_item_stack(cause.position, {name = 'coin', count = coin_count}, true)
-            reward_has_been_given = true
+        if not Public.get('final_battle') then
+            if entities_that_earn_coins[cause.name] then
+                event.entity.surface.spill_item_stack(cause.position, { name = 'coin', count = coin_count }, true)
+                reward_has_been_given = true
+            end
         end
     end
 
+    if Public.get('final_battle') then
+        return
+    end
+
     if reward_has_been_given == false then
-        event.entity.surface.spill_item_stack(event.entity.position, {name = 'coin', count = coin_count}, true)
+        event.entity.surface.spill_item_stack(event.entity.position, { name = 'coin', count = coin_count }, true)
     end
 end
 

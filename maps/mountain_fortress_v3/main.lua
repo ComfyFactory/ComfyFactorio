@@ -80,7 +80,7 @@ local collapse_kill = {
     enabled = true
 }
 
-local init_bonus_drill_force = function()
+local init_bonus_drill_force = function ()
     local bonus_drill = game.forces.bonus_drill
     local player = game.forces.player
     if not bonus_drill then
@@ -91,7 +91,7 @@ local init_bonus_drill_force = function()
     bonus_drill.mining_drill_productivity_bonus = 0.5
 end
 
-local is_position_near_tbl = function(position, tbl)
+local is_position_near_tbl = function (position, tbl)
     local status = false
     local function inside(pos)
         return pos.x >= position.x and pos.y >= position.y and pos.x <= position.x and pos.y <= position.y
@@ -108,13 +108,13 @@ end
 
 local announce_new_map =
     Task.register(
-    function()
-        local server_name = Server.check_server_name(scenario_name)
-        if server_name then
-            Server.to_discord_named_raw(send_ping_to_channel, role_to_mention .. ' ** Mtn Fortress was just reset! **')
+        function ()
+            local server_name = Server.check_server_name(scenario_name)
+            if server_name then
+                Server.to_discord_named_raw(send_ping_to_channel, role_to_mention .. ' ** Mtn Fortress was just reset! **')
+            end
         end
-    end
-)
+    )
 
 function Public.reset_map()
     game.forces.player.reset()
@@ -168,7 +168,7 @@ function Public.reset_map()
     JailData.set_valid_surface(tostring(surface.name))
     JailData.reset_vote_table()
 
-    Explosives.set_surface_whitelist({[surface.name] = true})
+    Explosives.set_surface_whitelist({ [surface.name] = true })
     Explosives.disable(false)
     Explosives.slow_explode(true)
 
@@ -194,7 +194,7 @@ function Public.reset_map()
     AntiGrief.enable_jail(true)
     AntiGrief.damage_entity_threshold(20)
     AntiGrief.decon_surface_blacklist(surface.name)
-    AntiGrief.filtered_types_on_decon({'tree', 'simple-entity', 'fish'})
+    AntiGrief.filtered_types_on_decon({ 'tree', 'simple-entity', 'fish' })
     AntiGrief.set_limit_per_table(2000)
 
     PL.show_roles_in_list(true)
@@ -213,10 +213,10 @@ function Public.reset_map()
             player.gui.left['mvps'].destroy()
         end
         ICMinimap.kill_minimap(player)
-        Event.raise(Public.events.reset_map, {player_index = player.index})
+        Event.raise(Public.events.reset_map, { player_index = player.index })
     end
 
-    Difficulty.reset_difficulty_poll({closing_timeout = game.tick + 36000})
+    Difficulty.reset_difficulty_poll({ closing_timeout = game.tick + 36000 })
     Difficulty.set_gui_width(20)
 
     Collapse.set_kill_entities(false)
@@ -242,15 +242,15 @@ function Public.reset_map()
     if this.adjusted_zones.reversed then
         Explosives.check_growth_below_void(false)
         this.spawn_near_collapse.compare = abs(this.spawn_near_collapse.compare)
-        Collapse.set_position({0, -130})
+        Collapse.set_position({ 0, -130 })
         Collapse.set_direction('south')
-        Public.locomotive_spawn(surface, {x = -18, y = -25}, this.adjusted_zones.reversed)
+        Public.locomotive_spawn(surface, { x = -18, y = -25 }, this.adjusted_zones.reversed)
     else
         Explosives.check_growth_below_void(true)
         this.spawn_near_collapse.compare = abs(this.spawn_near_collapse.compare) * -1
-        Collapse.set_position({0, 130})
+        Collapse.set_position({ 0, 130 })
         Collapse.set_direction('north')
-        Public.locomotive_spawn(surface, {x = -18, y = 25}, this.adjusted_zones.reversed)
+        Public.locomotive_spawn(surface, { x = -18, y = 25 }, this.adjusted_zones.reversed)
     end
     Public.render_train_hp()
     Public.render_direction(surface, this.adjusted_zones.reversed)
@@ -260,7 +260,7 @@ function Public.reset_map()
     wave_defense_table.target = this.locomotive
     wave_defense_table.nest_building_density = 32
     wave_defense_table.game_lost = false
-    wave_defense_table.spawn_position = {x = 0, y = 84}
+    wave_defense_table.spawn_position = { x = 0, y = 84 }
     WD.alert_boss_wave(true)
     WD.enable_side_target(true)
     WD.remove_entities(true)
@@ -273,28 +273,31 @@ function Public.reset_map()
     WD.increase_average_unit_group_size(true)
     WD.increase_max_active_unit_groups(true)
     WD.enable_random_spawn_positions(true)
-    Event.raise(WD.events.on_game_reset, {})
+    WD.set_track_bosses_only(false)
     WD.set_pause_waves_custom_callback(Public.pause_waves_custom_callback_token)
+    WD.set_threat_event_custom_callback(Public.check_if_spawning_near_train_custom_callback)
+    -- WD.set_es_unit_limit(400) -- moved to stateful
+    Event.raise(WD.events.on_game_reset, {})
 
     Public.set_difficulty()
     Public.disable_creative()
     Public.boost_difficulty()
 
     if this.adjusted_zones.reversed then
-        if not surface.is_chunk_generated({x = -20, y = -22}) then
-            surface.request_to_generate_chunks({x = -20, y = -22}, 0.1)
+        if not surface.is_chunk_generated({ x = -20, y = -22 }) then
+            surface.request_to_generate_chunks({ x = -20, y = -22 }, 0.1)
             surface.force_generate_chunk_requests()
         end
-        game.forces.player.set_spawn_position({x = -27, y = -25}, surface)
-        WD.set_spawn_position({x = -16, y = -80})
+        game.forces.player.set_spawn_position({ x = -27, y = -25 }, surface)
+        WD.set_spawn_position({ x = -16, y = -80 })
         WD.enable_inverted(true)
     else
-        if not surface.is_chunk_generated({x = -20, y = 22}) then
-            surface.request_to_generate_chunks({x = -20, y = 22}, 0.1)
+        if not surface.is_chunk_generated({ x = -20, y = 22 }) then
+            surface.request_to_generate_chunks({ x = -20, y = 22 }, 0.1)
             surface.force_generate_chunk_requests()
         end
-        game.forces.player.set_spawn_position({x = -27, y = 25}, surface)
-        WD.set_spawn_position({x = -16, y = 80})
+        game.forces.player.set_spawn_position({ x = -27, y = 25 }, surface)
+        WD.set_spawn_position({ x = -16, y = 80 })
         WD.enable_inverted(false)
     end
 
@@ -310,7 +313,7 @@ function Public.reset_map()
     this.game_lost = false
 
     RPG.rpg_reset_all_players()
-    RPG.set_surface_name({game.surfaces[this.active_surface_index].name})
+    RPG.set_surface_name({ game.surfaces[this.active_surface_index].name })
     RPG.enable_health_and_mana_bars(true)
     RPG.enable_wave_defense(true)
     RPG.enable_mana(true)
@@ -339,7 +342,7 @@ function Public.reset_map()
     end
 end
 
-local is_locomotive_valid = function()
+local is_locomotive_valid = function ()
     local locomotive = Public.get('locomotive')
     if not locomotive or not locomotive.valid then
         Public.set('game_lost', true)
@@ -347,18 +350,18 @@ local is_locomotive_valid = function()
     end
 end
 
-local is_player_valid = function()
+local is_player_valid = function ()
     local players = game.connected_players
     for i = 1, #players do
         local player = players[i]
         if player.connected and player.controller_type == 2 then
-            player.set_controller {type = defines.controllers.god}
+            player.set_controller { type = defines.controllers.god }
             player.create_character()
         end
     end
 end
 
-local has_the_game_ended = function()
+local has_the_game_ended = function ()
     local game_reset_tick = Public.get('game_reset_tick')
     if game_reset_tick then
         if game_reset_tick < 0 then
@@ -379,7 +382,7 @@ local has_the_game_ended = function()
                     cause_msg = 'soft-reset'
                 end
 
-                game.print(({'main.reset_in', cause_msg, this.game_reset_tick / 60}), {r = 0.22, g = 0.88, b = 0.22})
+                game.print(({ 'main.reset_in', cause_msg, this.game_reset_tick / 60 }), { r = 0.22, g = 0.88, b = 0.22 })
             end
 
             if this.soft_reset and this.game_reset_tick == 0 then
@@ -392,9 +395,9 @@ local has_the_game_ended = function()
             if this.restart and this.game_reset_tick == 0 then
                 if not this.announced_message then
                     Public.set_scores()
-                    game.print(({'entity.notify_restart'}), {r = 0.22, g = 0.88, b = 0.22})
+                    game.print(({ 'entity.notify_restart' }), { r = 0.22, g = 0.88, b = 0.22 })
                     local message = 'Soft-reset is disabled! Server will restart from scenario to load new changes.'
-                    Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
+                    Server.to_discord_bold(table.concat { '*** ', message, ' ***' })
                     Server.start_scenario('Mountain_Fortress_v3')
                     this.announced_message = true
                     return
@@ -403,9 +406,9 @@ local has_the_game_ended = function()
             if this.shutdown and this.game_reset_tick == 0 then
                 if not this.announced_message then
                     Public.set_scores()
-                    game.print(({'entity.notify_shutdown'}), {r = 0.22, g = 0.88, b = 0.22})
+                    game.print(({ 'entity.notify_shutdown' }), { r = 0.22, g = 0.88, b = 0.22 })
                     local message = 'Soft-reset is disabled! Server will shutdown. Most likely because of updates.'
-                    Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
+                    Server.to_discord_bold(table.concat { '*** ', message, ' ***' })
                     Server.stop_scenario()
                     this.announced_message = true
                     return
@@ -415,7 +418,7 @@ local has_the_game_ended = function()
     end
 end
 
-local chunk_load = function()
+local chunk_load = function ()
     local chunk_load_tick = Public.get('chunk_load_tick')
     local tick = game.tick
     if chunk_load_tick then
@@ -429,17 +432,17 @@ end
 
 local collapse_message =
     Task.register(
-    function(data)
-        local pos = data.position
-        local message = data.message
-        local collapse_position = {
-            position = pos
-        }
-        Alert.alert_all_players_location(collapse_position, message)
-    end
-)
+        function (data)
+            local pos = data.position
+            local message = data.message
+            local collapse_position = {
+                position = pos
+            }
+            Alert.alert_all_players_location(collapse_position, message)
+        end
+    )
 
-local lock_locomotive_positions = function()
+local lock_locomotive_positions = function ()
     local locomotive = Public.get('locomotive')
     if not locomotive or not locomotive.valid then
         return
@@ -455,10 +458,10 @@ local lock_locomotive_positions = function()
     end
 
     local locomotive_positions = Public.get('locomotive_pos')
-    local p = {x = floor(locomotive.position.x), y = floor(locomotive.position.y)}
+    local p = { x = floor(locomotive.position.x), y = floor(locomotive.position.y) }
     local success = is_position_near_tbl(locomotive.position, locomotive_positions.tbl)
     if not success and not check_position(locomotive_positions.tbl, p) then
-        locomotive_positions.tbl[#locomotive_positions.tbl + 1] = {x = p.x, y = p.y}
+        locomotive_positions.tbl[#locomotive_positions.tbl + 1] = { x = p.x, y = p.y }
     end
 
     local total_pos = #locomotive_positions.tbl
@@ -467,7 +470,7 @@ local lock_locomotive_positions = function()
     end
 end
 
-local compare_collapse_and_train = function()
+local compare_collapse_and_train = function ()
     local collapse_pos = Collapse.get_position()
     local locomotive = Public.get('locomotive')
     if not (locomotive and locomotive.valid) then
@@ -491,6 +494,7 @@ local compare_collapse_and_train = function()
             else
                 if Collapse.has_reverse_collapse_started() then
                     Collapse.reverse_start_now(false, true)
+                    Public.find_void_tiles_and_replace()
                 end
             end
         end
@@ -516,7 +520,7 @@ local compare_collapse_and_train = function()
     end
 end
 
-local collapse_after_wave_200 = function()
+local collapse_after_wave_200 = function ()
     local final_battle = Public.get('final_battle')
     if final_battle then
         return
@@ -538,18 +542,18 @@ local collapse_after_wave_200 = function()
         local data = {
             position = Collapse.get_position()
         }
-        data.message = ({'breached_wall.collapse_start'})
+        data.message = ({ 'breached_wall.collapse_start' })
         Task.set_timeout_in_ticks(100, collapse_message, data)
     end
 end
 
-local handle_changes = function()
+local handle_changes = function ()
     Public.set('restart', true)
     Public.set('soft_reset', false)
     print('Received new changes from backend.')
 end
 
-local nth_40_tick = function()
+local nth_40_tick = function ()
     local update_gui = Public.update_gui
     local players = game.connected_players
 
@@ -564,13 +568,13 @@ local nth_40_tick = function()
     chunk_load()
 end
 
-local nth_250_tick = function()
+local nth_250_tick = function ()
     compare_collapse_and_train()
     collapse_after_wave_200()
     Public.set_spawn_position()
 end
 
-local nth_1000_tick = function()
+local nth_1000_tick = function ()
     Public.set_difficulty()
     Public.is_creativity_mode_on()
 end
@@ -579,17 +583,17 @@ function Public.init_mtn()
     Public.reset_map()
 
     local tooltip = {
-        [1] = ({'main.diff_tooltip', '500', '50%', '15%', '15%', '1', '12', '50', '10000', '100%', '15', '10'}),
-        [2] = ({'main.diff_tooltip', '300', '25%', '10%', '10%', '2', '10', '50', '7000', '75%', '8', '8'}),
-        [3] = ({'main.diff_tooltip', '50', '0%', '0%', '0%', '4', '3', '10', '5000', '50%', '5', '6'})
+        [1] = ({ 'main.diff_tooltip', '500', '50%', '15%', '15%', '1', '12', '50', '10000', '100%', '15', '10' }),
+        [2] = ({ 'main.diff_tooltip', '300', '25%', '10%', '10%', '2', '10', '50', '7000', '75%', '8', '8' }),
+        [3] = ({ 'main.diff_tooltip', '50', '0%', '0%', '0%', '4', '3', '10', '5000', '50%', '5', '6' })
     }
 
     Difficulty.set_tooltip(tooltip)
 
     local T = Map.Pop_info()
     T.localised_category = 'mountain_fortress_v3'
-    T.main_caption_color = {r = 150, g = 150, b = 0}
-    T.sub_caption_color = {r = 0, g = 150, b = 0}
+    T.main_caption_color = { r = 150, g = 150, b = 0 }
+    T.sub_caption_color = { r = 0, g = 150, b = 0 }
 
     Explosives.set_destructible_tile('out-of-map', 1500)
     Explosives.set_destructible_tile('water', 1000)
@@ -609,7 +613,7 @@ end
 
 Server.on_scenario_changed(
     'Mountain_Fortress_v3',
-    function(data)
+    function (data)
         local scenario = data.scenario
         if scenario == 'Mountain_Fortress_v3' then
             handle_changes()
@@ -623,7 +627,7 @@ Event.on_nth_tick(1000, nth_1000_tick)
 
 Event.add(
     defines.events.on_player_created,
-    function(event)
+    function (event)
         if event.player_index == 1 then
             if not game.is_multiplayer() then
                 Public.init_mtn()

@@ -666,6 +666,7 @@ local function jail(player, offender, msg, raised, mute)
         votejail[offender].jailed = true
     end
 
+    -- Enable this to clear the console for the jailed player
     to_jail_player.clear_console()
     Utils.print_to(offender, message)
     return true

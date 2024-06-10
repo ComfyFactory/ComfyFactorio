@@ -9,7 +9,6 @@ Public.stateful_gui = require 'maps.mountain_fortress_v3.stateful.gui'
 Public.stateful_blueprints = require 'maps.mountain_fortress_v3.stateful.blueprints'
 
 local random = math.random
-local shuffle = table.shuffle_table
 
 local valid_types = {
     ['unit'] = true,
@@ -49,7 +48,7 @@ end
 
 Event.add(
     defines.events.on_research_finished,
-    function(event)
+    function (event)
         local research = event.research
         if not research then
             return
@@ -71,8 +70,8 @@ Event.add(
 )
 
 Event.on_nth_tick(
-    350,
-    function()
+    150,
+    function ()
         local final_battle = Public.get_stateful('final_battle')
         if not final_battle then
             return
@@ -88,32 +87,32 @@ Event.on_nth_tick(
         end
 
         if collection.gather_time and collection.gather_time <= 0 and collection.survive_for and collection.survive_for > 0 then
-            local spawn_positions = Public.get_stateful('stateful_spawn_points')
+            local spawn_positions = table.deepcopy(Public.get_stateful('stateful_spawn_points'))
 
             if not spawn_positions then
                 Public.set_stateful(
                     'stateful_spawn_points',
                     {
-                        {{x = -205, y = -37}, {x = 195, y = 37}},
-                        {{x = -205, y = -112}, {x = 195, y = 112}},
-                        {{x = -205, y = -146}, {x = 195, y = 146}},
-                        {{x = -205, y = -112}, {x = 195, y = 112}},
-                        {{x = -205, y = -72}, {x = 195, y = 72}},
-                        {{x = -205, y = -146}, {x = 195, y = 146}},
-                        {{x = -205, y = -37}, {x = 195, y = 37}},
-                        {{x = -205, y = -5}, {x = 195, y = 5}},
-                        {{x = -205, y = -23}, {x = 195, y = 23}},
-                        {{x = -205, y = -5}, {x = 195, y = 5}},
-                        {{x = -205, y = -72}, {x = 195, y = 72}},
-                        {{x = -205, y = -23}, {x = 195, y = 23}},
-                        {{x = -205, y = -54}, {x = 195, y = 54}},
-                        {{x = -205, y = -80}, {x = 195, y = 80}},
-                        {{x = -205, y = -54}, {x = 195, y = 54}},
-                        {{x = -205, y = -80}, {x = 195, y = 80}},
-                        {{x = -205, y = -103}, {x = 195, y = 103}},
-                        {{x = -205, y = -150}, {x = 195, y = 150}},
-                        {{x = -205, y = -103}, {x = 195, y = 103}},
-                        {{x = -205, y = -150}, {x = 195, y = 150}}
+                        { { x = -205, y = -37 },  { x = 195, y = 37 } },
+                        { { x = -205, y = -112 }, { x = 195, y = 112 } },
+                        { { x = -205, y = -146 }, { x = 195, y = 146 } },
+                        { { x = -205, y = -112 }, { x = 195, y = 112 } },
+                        { { x = -205, y = -72 },  { x = 195, y = 72 } },
+                        { { x = -205, y = -146 }, { x = 195, y = 146 } },
+                        { { x = -205, y = -37 },  { x = 195, y = 37 } },
+                        { { x = -205, y = -5 },   { x = 195, y = 5 } },
+                        { { x = -205, y = -23 },  { x = 195, y = 23 } },
+                        { { x = -205, y = -5 },   { x = 195, y = 5 } },
+                        { { x = -205, y = -72 },  { x = 195, y = 72 } },
+                        { { x = -205, y = -23 },  { x = 195, y = 23 } },
+                        { { x = -205, y = -54 },  { x = 195, y = 54 } },
+                        { { x = -205, y = -80 },  { x = 195, y = 80 } },
+                        { { x = -205, y = -54 },  { x = 195, y = 54 } },
+                        { { x = -205, y = -80 },  { x = 195, y = 80 } },
+                        { { x = -205, y = -103 }, { x = 195, y = 103 } },
+                        { { x = -205, y = -150 }, { x = 195, y = 150 } },
+                        { { x = -205, y = -103 }, { x = 195, y = 103 } },
+                        { { x = -205, y = -150 }, { x = 195, y = 150 } }
                     }
                 )
 
@@ -129,17 +128,19 @@ Event.on_nth_tick(
                 return
             end
 
-            area[1].x = area[1].x - locomotive.position.x
-            area[1].y = area[1].y - locomotive.position.y
-
-            area[2].x = area[2].x + locomotive.position.x
+            area[1].y = area[1].y + locomotive.position.y
             area[2].y = area[2].y + locomotive.position.y
 
-            shuffle(area)
+            if random(1, 2) == 1 then
+                WD.set_spawn_position(area[1])
+            else
+                WD.set_spawn_position(area[2])
+            end
 
-            WD.set_spawn_position(area[1])
+            WD.set_main_target()
             WD.build_worm_custom()
-            Event.raise(WD.events.on_spawn_unit_group_simple, {fs = true, bypass = true, random_bosses = true, scale = 8, force = 'aggressors_frenzy'})
+            -- WD.place_custom_nest(locomotive.surface, area[1], 'aggressors_frenzy')
+            Event.raise(WD.events.on_spawn_unit_group_simple, { fs = true, bypass = true, random_bosses = true, scale = 32, force = 'aggressors_frenzy' })
             return
         end
 
@@ -153,7 +154,7 @@ Event.on_nth_tick(
 
 Event.add(
     defines.events.on_player_crafted_item,
-    function(event)
+    function (event)
         local player = game.get_player(event.player_index)
         if not player or not player.valid then
             return
@@ -184,7 +185,7 @@ Event.add(
 
 Event.add(
     defines.events.on_rocket_launched,
-    function(event)
+    function (event)
         local rocket_inventory = event.rocket.get_inventory(defines.inventory.rocket)
         local slot = rocket_inventory[1]
         if slot and slot.valid and slot.valid_for_read then
@@ -204,7 +205,7 @@ Event.add(
 
 Event.add(
     RPG.events.on_spell_cast_success,
-    function(event)
+    function (event)
         local player = game.get_player(event.player_index)
         if not player or not player.valid then
             return
@@ -237,7 +238,7 @@ Event.add(
 
 Event.on_nth_tick(
     14400,
-    function()
+    function ()
         local final_battle = Public.get_stateful('final_battle')
         if not final_battle then
             return
@@ -259,7 +260,7 @@ Event.on_nth_tick(
         end
 
         if collection.gather_time and collection.gather_time <= 0 and collection.survive_for > 0 then
-            Beam.new_beam(surface, game.tick + 150)
+            Beam.new_beam(surface, game.tick + 350)
         end
     end
 )

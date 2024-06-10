@@ -35,14 +35,14 @@ Public.scenario_name = scenario_name
 
 Global.register(
     this,
-    function(tbl)
+    function (tbl)
         this = tbl
     end
 )
 
 Global.register(
     stateful_settings,
-    function(tbl)
+    function (tbl)
         stateful_settings = tbl
     end
 )
@@ -149,7 +149,7 @@ function Public.reset_main_table()
     this.gap_between_locomotive = {
         hinders = {},
         gap = 900,
-        neg_gap = 3520, -- earlier 2112 (3 zones, whereas 704 is one zone)
+        neg_gap = 3520,          -- earlier 2112 (3 zones, whereas 704 is one zone)
         neg_gap_collapse = 5520, -- earlier 2112 (3 zones, whereas 704 is one zone)
         highest_pos = nil
     }
@@ -170,7 +170,7 @@ function Public.reset_main_table()
     this.print_tech_to_discord = true
     this.biters_killed = 0
     this.cleared_nauvis = false
-    this.locomotive_pos = {tbl = {}}
+    this.locomotive_pos = { tbl = {} }
     this.trusted_only_car_tanks = true
     --!grief prevention
     this.enable_arties = 6 -- default to callback 6
@@ -304,6 +304,8 @@ function Public.reset_main_table()
     this.mystical_chest_completed = 0
     this.mystical_chest_enabled = true
     this.check_if_threat_below_zero = true
+    this.rocks_to_remove = nil
+    this.tiles_to_replace = nil
     this.mc_rewards = {
         current = {},
         temp_boosts = {}
@@ -318,7 +320,7 @@ function Public.reset_main_table()
         reversed = stateful_settings.reversed,
         disable_terrain = false
     }
-    this.alert_zone_1 = false -- alert the players
+    this.alert_zone_1 = false             -- alert the players
     this.radars_reveal_new_chunks = false -- allows for the player to explore the map instead,
 
     this.mining_utils = {
@@ -400,29 +402,29 @@ end
 
 local apply_settings_token =
     Task.register(
-    function(data)
-        local server_name_matches = Server.check_server_name(scenario_name)
-        local settings = data and data.value or nil
+        function (data)
+            local server_name_matches = Server.check_server_name(scenario_name)
+            local settings = data and data.value or nil
 
-        if not settings then
-            if server_name_matches then
-                Server.set_data(dataset, dataset_key, stateful_settings)
+            if not settings then
+                if server_name_matches then
+                    Server.set_data(dataset, dataset_key, stateful_settings)
+                else
+                    Server.set_data(dataset, dataset_key_dev, stateful_settings)
+                end
             else
-                Server.set_data(dataset, dataset_key_dev, stateful_settings)
+                for k, v in pairs(settings) do
+                    stateful_settings[k] = v
+                end
             end
-        else
-            for k, v in pairs(settings) do
-                stateful_settings[k] = v
-            end
-        end
 
-        Public.stateful_on_server_started()
-    end
-)
+            Public.stateful_on_server_started()
+        end
+    )
 
 Event.add(
     Server.events.on_server_started,
-    function()
+    function ()
         local start_data = Server.get_start_data()
 
         if not start_data.initialized then

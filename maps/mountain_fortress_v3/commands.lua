@@ -1,5 +1,5 @@
 local Public = require 'maps.mountain_fortress_v3.table'
-local Task = require 'utils.task'
+local Task = require 'utils.task_token'
 local Server = require 'utils.server'
 local Collapse = require 'modules.collapse'
 local WD = require 'modules.wave_defense.table'
@@ -7,6 +7,14 @@ local Discord = require 'utils.discord_handler'
 local Commands = require 'utils.commands'
 local mapkeeper = '[color=blue]Mapkeeper:[/color]'
 local scenario_name = Public.scenario_name
+
+local gather_time_token =
+    Task.register(
+        function ()
+            local stateful = Public.get_stateful()
+            stateful.collection.gather_time_timer = 0
+        end
+    )
 
 Commands.new('scenario', 'Usable only for admins - controls the scenario!')
     :require_admin()
@@ -101,7 +109,9 @@ Commands.new('mtn_complete_quests', 'Usable only for admins - sets the queue spe
     :callback(
         function (player)
             Discord.send_notification_raw(scenario_name, player.name .. ' completed all the quest via command.')
-            Public.stateful.set_stateful('objectives_completed_count', 6)
+            local stateful = Public.get_stateful()
+            stateful.objectives_completed_count = 6
+            Task.set_timeout_in_ticks(50, gather_time_token, {})
             game.print(mapkeeper .. player.name .. ', has forced completed all quests!', { r = 0.98, g = 0.66, b = 0.22 })
             player.print('Quests completed.')
         end
@@ -162,20 +172,6 @@ Commands.new('mtn_toggle_orbital_strikes',
                     { r = 0.98, g = 0.66, b = 0.22 })
                 this.orbital_strikes.enabled = true
             end
-        end
-    )
-
-Commands.new('mtn_toggle_end_game', 'Usable only for admins - initiates the final battle!')
-    :require_admin()
-    :require_validation()
-    :callback(
-        function (player)
-            Discord.send_notification_raw(scenario_name, player.name .. ' toggled the end game.')
-            Public.stateful.set_stateful('final_battle', true)
-            Public.set('final_battle', true)
-
-            game.print(mapkeeper .. ' ' .. player.name .. ', has triggered the final battle sequence!',
-                { r = 0.98, g = 0.66, b = 0.22 })
         end
     )
 
