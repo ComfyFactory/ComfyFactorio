@@ -1368,9 +1368,9 @@ local apply_settings_token =
 
             this.objectives = {}
 
+            Public.init_mtn()
             Public.reset_stateful()
             Public.increase_enemy_damage_and_health()
-            Public.init_mtn()
         end
     )
 
