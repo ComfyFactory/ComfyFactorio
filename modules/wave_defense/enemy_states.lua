@@ -472,7 +472,7 @@ local function on_entity_died(event)
 
     local state = Public.get_unit(entity.unit_number)
     if state then
-        state:remove()
+        state:remove(true)
     end
 end
 
@@ -629,8 +629,8 @@ function Public.get_any()
 end
 
 -- Removes the given entity from tracking
-function Public._esp:remove()
-    if self.entity and self.entity.valid then
+function Public._esp:remove(raised)
+    if not raised and self.entity and self.entity.valid then
         self.entity.destroy()
     end
 
