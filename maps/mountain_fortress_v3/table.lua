@@ -137,7 +137,7 @@ function Public.reset_main_table()
     this.locomotive_health = 10000
     this.locomotive_max_health = 10000
     this.extra_wagons = 0
-    this.toobelt_researched_count = 0
+    this.toolbelt_researched_count = 0
     this.all_the_fish = false
     this.reverse_collapse_warning = false
     this.gap_between_zones = {

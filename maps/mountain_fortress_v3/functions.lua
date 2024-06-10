@@ -1692,10 +1692,10 @@ function Public.on_research_finished(event)
     end
 
     if research.name == 'toolbelt' then
-        Public.set('toobelt_researched_count', 10)
+        Public.set('toolbelt_researched_count', 10)
     end
 
-    research.force.character_inventory_slots_bonus = (player.mining_drill_productivity_bonus * 50) + Public.get('toobelt_researched_count')
+    research.force.character_inventory_slots_bonus = (player.mining_drill_productivity_bonus * 50) + (Public.get('toolbelt_researched_count') or 0)
     if bonus_drill then
         bonus_drill.mining_drill_productivity_bonus = bonus_drill.mining_drill_productivity_bonus + 0.03
         if bonus_drill.mining_drill_productivity_bonus >= 3 then
