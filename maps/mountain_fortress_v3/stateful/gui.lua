@@ -854,7 +854,7 @@ local function update_data()
                                     frame.sprite = 'utility/check_mark_green'
                                 else
                                     frame.number = supplies_data.count
-                                    frame.tooltip = 'Crafted: ' .. count .. '\nNeeded: ' .. supplies_data.total
+                                    frame.tooltip = 'Crafted: ' .. count .. '\nNeeded: ' .. (supplies_data.total or 0)
                                 end
                                 if items_done == 3 then
                                     if data.supply_completed and data.supply_completed.valid then
@@ -863,7 +863,7 @@ local function update_data()
                                 end
                             else
                                 frame.number = supplies_data.count
-                                frame.tooltip = 'Crafted: 0\nNeeded: ' .. supplies_data.total
+                                frame.tooltip = 'Crafted: 0\nNeeded: ' .. (supplies_data.total or 0)
                             end
                         end
                     end
@@ -890,11 +890,11 @@ local function update_data()
                         else
                             frame.number = single_item.count
                             frame.tooltip = count .. ' / ' .. single_item.total
-                            frame.tooltip = 'Crafted: ' .. count .. '\nNeeded: ' .. single_item.total
+                            frame.tooltip = 'Crafted: ' .. count .. '\nNeeded: ' .. (single_item.total or 0)
                         end
                     else
                         frame.number = single_item.count
-                        frame.tooltip = 'Crafted: 0\nNeeded: ' .. single_item.total
+                        frame.tooltip = 'Crafted: 0\nNeeded: ' .. (single_item.total or 0)
                     end
                 end
             end
@@ -1081,7 +1081,7 @@ local function update_raw()
                 Public.set('final_battle', true)
                 WD.set('final_battle', true)
 
-                collection.survive_for = game.tick + Stateful.scale(10 * 3600, 35 * 3600)
+                collection.survive_for = game.tick + Stateful.scale((5 * 3600), (15 * 3600))
                 collection.survive_for_timer = collection.survive_for
                 WD.disable_spawning_biters(false)
                 Public.allocate()

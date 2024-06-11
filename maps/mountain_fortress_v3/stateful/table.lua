@@ -830,7 +830,6 @@ local function get_random_handcrafted_item()
         { 'advanced-circuit',               scale(2000, 500000) },
         { 'copper-cable',                   scale(10000, 500000) },
         { 'electronic-circuit',             scale(5000, 1000000) },
-        { 'engine-unit',                    scale(3500, 500000) },
         { 'iron-gear-wheel',                scale(50000, 1000000) },
         { 'iron-stick',                     scale(75000, 3000000) },
         { 'rocket-control-unit',            scale(1000, 50000) },
@@ -875,42 +874,26 @@ end
 
 local function get_random_spell()
     local items = {
-        { 'stone-wall',               scale(1000, 250000) },
-        { 'wooden-chest',             scale(1000, 250000) },
-        { 'iron-chest',               scale(1000, 200000) },
-        { 'steel-chest',              scale(1000, 150000) },
-        { 'transport-belt',           scale(1000, 250000) },
-        { 'fast-transport-belt',      scale(1000, 200000) },
-        { 'express-transport-belt',   scale(1000, 150000) },
-        { 'underground-belt',         scale(1000, 250000) },
-        { 'fast-underground-belt',    scale(1000, 200000) },
-        { 'express-underground-belt', scale(1000, 150000) },
-        { 'pipe',                     scale(1000, 20000) },
-        { 'pipe-to-ground',           scale(1000, 250000) },
-        { 'tree-05',                  scale(1000, 200000) },
-        { 'sand-rock-big',            scale(1000, 60000) },
-        { 'small-biter',              scale(1000, 10000) },
-        { 'small-spitter',            scale(1000, 60000) },
-        { 'medium-biter',             scale(1000, 200000) },
-        { 'medium-spitter',           scale(1000, 100000) },
-        { 'biter-spawner',            scale(1000, 200000) },
-        { 'spitter-spawner',          scale(1000, 100000) },
-        { 'shotgun-shell',            scale(1000, 100000) },
-        { 'grenade',                  scale(1000, 80000) },
-        { 'cluster-grenade',          scale(1000, 50000) },
-        { 'cannon-shell',             scale(1000, 100000) },
-        { 'explosive-cannon-shell',   scale(1000, 50000) },
-        { 'uranium-cannon-shell',     scale(1000, 100000) },
-        { 'rocket',                   scale(1000, 100000) },
-        { 'repair_aoe',               scale(1000, 50000) },
-        { 'acid-stream-spitter-big',  scale(1000, 200000) },
-        { 'raw-fish',                 scale(3500, 500000) },
-        { 'explosives',               scale(5000, 100000) },
-        { 'distractor-capsule',       scale(5000, 100000) },
-        { 'defender-capsule',         scale(5000, 100000) },
-        { 'destroyer-capsule',        scale(5000, 100000) },
-        { 'warp-gate',                scale(5000, 500000) },
-        { 'haste',                    scale(5000, 500000) }
+        { 'small-biter',             scale(1000, 10000) },
+        { 'small-spitter',           scale(1000, 60000) },
+        { 'medium-biter',            scale(1000, 200000) },
+        { 'medium-spitter',          scale(1000, 100000) },
+        { 'biter-spawner',           scale(1000, 200000) },
+        { 'spitter-spawner',         scale(1000, 100000) },
+        { 'shotgun-shell',           scale(1000, 100000) },
+        { 'grenade',                 scale(1000, 80000) },
+        { 'cluster-grenade',         scale(1000, 50000) },
+        { 'cannon-shell',            scale(1000, 100000) },
+        { 'explosive-cannon-shell',  scale(1000, 50000) },
+        { 'uranium-cannon-shell',    scale(1000, 100000) },
+        { 'rocket',                  scale(1000, 100000) },
+        { 'acid-stream-spitter-big', scale(1000, 200000) },
+        { 'explosives',              scale(5000, 100000) },
+        { 'distractor-capsule',      scale(5000, 100000) },
+        { 'defender-capsule',        scale(5000, 100000) },
+        { 'destroyer-capsule',       scale(5000, 100000) },
+        { 'warp-gate',               scale(5000, 500000) },
+        { 'haste',                   scale(5000, 500000) }
     }
 
     shuffle(items)
@@ -1712,15 +1695,16 @@ function Public.move_all_players()
     local message = ({ 'stateful.final_boss_message_start' })
     Alert.alert_all_players(50, message, nil, nil, 1)
     Core.iter_connected_players(
+    ---@param player LuaPlayer
         function (player)
             local pos = surface.find_non_colliding_position('character', locomotive.position, 32, 1)
 
             Public.stateful_gui.boss_frame(player, true)
 
             if pos then
-                player.teleport(pos)
+                player.teleport(pos, surface)
             else
-                player.teleport(locomotive.position)
+                player.teleport(locomotive.position, surface)
                 Public.unstuck_player(player.index)
             end
         end
@@ -1733,9 +1717,9 @@ function Public.move_all_players()
                 local pos = surface.find_non_colliding_position('character', locomotive.position, 32, 1)
 
                 if pos then
-                    player.teleport(pos)
+                    player.teleport(pos, surface)
                 else
-                    player.teleport(locomotive.position)
+                    player.teleport(locomotive.position, surface)
                     Public.unstuck_player(player.index)
                 end
             end

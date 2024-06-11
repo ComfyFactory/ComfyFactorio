@@ -987,6 +987,15 @@ function Public.find_void_tiles_and_replace()
         right_bottom = { x = (zone_settings.zone_width / 2) - 10, y = rp.y }
     }
 
+    local adjusted_zones = Public.get('adjusted_zones')
+
+    if adjusted_zones.reversed then
+        area = {
+            left_top = { x = ((zone_settings.zone_width / 2) + 10) * -1, y = rp.y },
+            right_bottom = { x = math.abs((-zone_settings.zone_width / 2) - 10), y = cp.y },
+        }
+    end
+
     local tiles = surface.find_tiles_filtered({ area = area, name = { 'out-of-map', 'water', 'deepwater', 'water-green', 'deepwater-green' } })
     if tiles and #tiles > 0 then
         Public.set('tiles_to_replace', tiles)
