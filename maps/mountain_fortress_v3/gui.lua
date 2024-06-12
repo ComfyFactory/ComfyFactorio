@@ -5,7 +5,6 @@ local IC_Gui = require 'maps.mountain_fortress_v3.ic.gui'
 local IC_Minimap = require 'maps.mountain_fortress_v3.ic.minimap'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 local Gui = require 'utils.gui'
-local Color = require 'utils.color_presets'
 local SpamProtection = require 'utils.spam_protection'
 local Polls = require 'utils.gui.poll'
 local BottomFrame = require 'utils.gui.bottom_frame'
@@ -64,17 +63,17 @@ local function create_button(player)
     if Gui.get_mod_gui_top_frame() then
         local b =
             Gui.add_mod_button(
-            player,
-            {
-                type = 'sprite-button',
-                name = main_button_name,
-                sprite = 'item/dummy-steel-axe',
-                tooltip = 'Shows statistics!',
-                style = Gui.button_style
-            }
-        )
+                player,
+                {
+                    type = 'sprite-button',
+                    name = main_button_name,
+                    sprite = 'item/dummy-steel-axe',
+                    tooltip = 'Shows statistics!',
+                    style = Gui.button_style
+                }
+            )
         if b then
-            b.style.font_color = {165, 165, 165}
+            b.style.font_color = { 165, 165, 165 }
             b.style.font = 'heading-3'
             b.style.minimal_height = 36
             b.style.maximal_height = 36
@@ -84,14 +83,14 @@ local function create_button(player)
     else
         local b =
             player.gui.top.add(
-            {
-                type = 'sprite-button',
-                name = main_button_name,
-                sprite = 'item/dummy-steel-axe',
-                tooltip = 'Shows statistics!',
-                style = Gui.button_style
-            }
-        )
+                {
+                    type = 'sprite-button',
+                    name = main_button_name,
+                    sprite = 'item/dummy-steel-axe',
+                    tooltip = 'Shows statistics!',
+                    style = Gui.button_style
+                }
+            )
         b.style.minimal_height = 38
         b.style.maximal_height = 38
     end
@@ -109,17 +108,17 @@ local function spectate_button(player)
     if Gui.get_mod_gui_top_frame() then
         local b =
             Gui.add_mod_button(
-            player,
-            {
-                type = 'sprite-button',
-                name = spectate_button_name,
-                sprite = 'utility/ghost_time_to_live_modifier_icon',
-                tooltip = 'Spectate!\nThis will kill your character.',
-                style = Gui.button_style
-            }
-        )
+                player,
+                {
+                    type = 'sprite-button',
+                    name = spectate_button_name,
+                    sprite = 'utility/ghost_time_to_live_modifier_icon',
+                    tooltip = 'Spectate!\nThis will kill your character.',
+                    style = Gui.button_style
+                }
+            )
         if b then
-            b.style.font_color = {165, 165, 165}
+            b.style.font_color = { 165, 165, 165 }
             b.style.font = 'heading-3'
             b.style.minimal_height = 36
             b.style.maximal_height = 36
@@ -129,12 +128,12 @@ local function spectate_button(player)
     else
         local b =
             player.gui.top.add {
-            type = 'sprite-button',
-            name = spectate_button_name,
-            sprite = 'utility/ghost_time_to_live_modifier_icon',
-            tooltip = 'Spectate!\nThis will kill your character.',
-            style = Gui.button_style
-        }
+                type = 'sprite-button',
+                name = spectate_button_name,
+                sprite = 'utility/ghost_time_to_live_modifier_icon',
+                tooltip = 'Spectate!\nThis will kill your character.',
+                style = Gui.button_style
+            }
 
         b.style.maximal_height = 38
     end
@@ -152,92 +151,92 @@ local function create_main_frame(player)
     if Gui.get_mod_gui_top_frame() then
         frame =
             Gui.add_mod_button(
-            player,
-            {
-                type = 'frame',
-                name = main_frame_name,
-                style = 'finished_game_subheader_frame'
-            }
-        )
-        frame.location = {x = 1, y = 38}
+                player,
+                {
+                    type = 'frame',
+                    name = main_frame_name,
+                    style = 'finished_game_subheader_frame'
+                }
+            )
+        frame.location = { x = 1, y = 38 }
         frame.style.minimal_height = 36
         frame.style.maximal_height = 36
     else
-        frame = player.gui.top.add({type = 'frame', name = main_frame_name, style = 'finished_game_subheader_frame'})
-        frame.location = {x = 1, y = 40}
+        frame = player.gui.top.add({ type = 'frame', name = main_frame_name, style = 'finished_game_subheader_frame' })
+        frame.location = { x = 1, y = 40 }
         frame.style.minimal_height = 38
         frame.style.maximal_height = 38
     end
 
-    label = frame.add({type = 'label', caption = ' ', name = 'label'})
-    label.style.font_color = {r = 0.88, g = 0.88, b = 0.88}
+    label = frame.add({ type = 'label', caption = ' ', name = 'label' })
+    label.style.font_color = { r = 0.88, g = 0.88, b = 0.88 }
     label.style.font = 'default-bold'
 
-    label = frame.add({type = 'label', caption = ' ', name = 'global_pool'})
-    label.style.font_color = {r = 0.88, g = 0.88, b = 0.88}
-    label.style.font = 'default-bold'
-    label.style.right_padding = 4
-
-    line = frame.add({type = 'line', direction = 'vertical'})
-    line.style.left_padding = 4
-    line.style.right_padding = 4
-
-    label = frame.add({type = 'label', caption = ' ', name = 'scrap_mined'})
-    label.style.font_color = {r = 0.88, g = 0.88, b = 0.88}
+    label = frame.add({ type = 'label', caption = ' ', name = 'global_pool' })
+    label.style.font_color = { r = 0.88, g = 0.88, b = 0.88 }
     label.style.font = 'default-bold'
     label.style.right_padding = 4
 
-    line = frame.add({type = 'line', direction = 'vertical'})
+    line = frame.add({ type = 'line', direction = 'vertical' })
     line.style.left_padding = 4
     line.style.right_padding = 4
 
-    label = frame.add({type = 'label', caption = ' ', name = 'pickaxe_tier'})
-    label.style.font_color = {r = 0.88, g = 0.88, b = 0.88}
+    label = frame.add({ type = 'label', caption = ' ', name = 'scrap_mined' })
+    label.style.font_color = { r = 0.88, g = 0.88, b = 0.88 }
     label.style.font = 'default-bold'
     label.style.right_padding = 4
 
-    line = frame.add({type = 'line', direction = 'vertical'})
+    line = frame.add({ type = 'line', direction = 'vertical' })
     line.style.left_padding = 4
     line.style.right_padding = 4
 
-    label = frame.add({type = 'label', caption = ' ', name = 'biters_killed'})
-    label.style.font_color = {r = 0.88, g = 0.88, b = 0.88}
+    label = frame.add({ type = 'label', caption = ' ', name = 'pickaxe_tier' })
+    label.style.font_color = { r = 0.88, g = 0.88, b = 0.88 }
     label.style.font = 'default-bold'
     label.style.right_padding = 4
 
-    line = frame.add({type = 'line', direction = 'vertical'})
+    line = frame.add({ type = 'line', direction = 'vertical' })
     line.style.left_padding = 4
     line.style.right_padding = 4
 
-    label = frame.add({type = 'label', caption = ' ', name = 'landmine'})
-    label.style.font_color = {r = 0.88, g = 0.88, b = 0.88}
+    label = frame.add({ type = 'label', caption = ' ', name = 'biters_killed' })
+    label.style.font_color = { r = 0.88, g = 0.88, b = 0.88 }
     label.style.font = 'default-bold'
     label.style.right_padding = 4
 
-    line = frame.add({type = 'line', direction = 'vertical'})
+    line = frame.add({ type = 'line', direction = 'vertical' })
     line.style.left_padding = 4
     line.style.right_padding = 4
 
-    label = frame.add({type = 'label', caption = ' ', name = 'flame_turret'})
-    label.style.font_color = {r = 0.88, g = 0.88, b = 0.88}
+    label = frame.add({ type = 'label', caption = ' ', name = 'landmine' })
+    label.style.font_color = { r = 0.88, g = 0.88, b = 0.88 }
     label.style.font = 'default-bold'
     label.style.right_padding = 4
 
-    line = frame.add({type = 'line', direction = 'vertical'})
+    line = frame.add({ type = 'line', direction = 'vertical' })
     line.style.left_padding = 4
     line.style.right_padding = 4
 
-    label = frame.add({type = 'label', caption = ' ', name = 'train_upgrade_contribution'})
-    label.style.font_color = {r = 0.88, g = 0.88, b = 0.88}
+    label = frame.add({ type = 'label', caption = ' ', name = 'flame_turret' })
+    label.style.font_color = { r = 0.88, g = 0.88, b = 0.88 }
     label.style.font = 'default-bold'
     label.style.right_padding = 4
 
-    line = frame.add({type = 'line', direction = 'vertical'})
+    line = frame.add({ type = 'line', direction = 'vertical' })
     line.style.left_padding = 4
     line.style.right_padding = 4
 
-    label = frame.add({type = 'label', caption = ' ', name = 'defense_enabled'})
-    label.style.font_color = {r = 0.88, g = 0.88, b = 0.88}
+    label = frame.add({ type = 'label', caption = ' ', name = 'train_upgrade_contribution' })
+    label.style.font_color = { r = 0.88, g = 0.88, b = 0.88 }
+    label.style.font = 'default-bold'
+    label.style.right_padding = 4
+
+    line = frame.add({ type = 'line', direction = 'vertical' })
+    line.style.left_padding = 4
+    line.style.right_padding = 4
+
+    label = frame.add({ type = 'label', caption = ' ', name = 'defense_enabled' })
+    label.style.font_color = { r = 0.88, g = 0.88, b = 0.88 }
     label.style.font = 'default-bold'
     label.style.right_padding = 4
 end
@@ -319,7 +318,7 @@ local function changed_surface(player)
     local spell_cast_buttons = player.gui.screen[spell_gui_frame_name]
 
     if info then
-        info.tooltip = ({'gui.info_tooltip'})
+        info.tooltip = ({ 'gui.info_tooltip' })
         info.sprite = 'item/dummy-steel-axe'
     end
 
@@ -373,7 +372,7 @@ local function changed_surface(player)
             charging_frame.enabled = true
         end
         if info then
-            info.tooltip = ({'gui.info_tooltip'})
+            info.tooltip = ({ 'gui.info_tooltip' })
             info.sprite = 'item/dummy-steel-axe'
             info.visible = true
         end
@@ -415,7 +414,7 @@ local function changed_surface(player)
             charging_frame.enabled = false
         end
         if info then
-            info.tooltip = ({'gui.hide_minimap'})
+            info.tooltip = ({ 'gui.hide_minimap' })
             info.sprite = 'utility/map'
             info.visible = true
         end
@@ -560,7 +559,7 @@ local function enable_guis(event)
     IC_Minimap.toggle_button(player)
 
     if info then
-        info.tooltip = ({'gui.info_tooltip'})
+        info.tooltip = ({ 'gui.info_tooltip' })
         info.sprite = 'item/dummy-steel-axe'
     end
 
@@ -593,7 +592,7 @@ local function enable_guis(event)
         charging_frame.enabled = true
     end
     if info then
-        info.tooltip = ({'gui.info_tooltip'})
+        info.tooltip = ({ 'gui.info_tooltip' })
         info.sprite = 'item/dummy-steel-axe'
         info.visible = true
     end
@@ -620,14 +619,14 @@ function Public.update_gui(player)
 
     if rpg_extra.global_pool == 0 then
         gui.global_pool.caption = 'XP: 0'
-        gui.global_pool.tooltip = ({'gui.global_pool_tooltip'})
+        gui.global_pool.tooltip = ({ 'gui.global_pool_tooltip' })
     elseif rpg_extra.global_pool >= 0 then
         gui.global_pool.caption = 'XP: ' .. format_number(floor(rpg_extra.global_pool), true)
-        gui.global_pool.tooltip = ({'gui.global_pool_amount', floor(rpg_extra.global_pool)})
+        gui.global_pool.tooltip = ({ 'gui.global_pool_amount', floor(rpg_extra.global_pool) })
     end
 
     gui.scrap_mined.caption = ' [img=entity.tree-01][img=entity.rock-huge]: ' .. format_number(mined_scrap, true)
-    gui.scrap_mined.tooltip = ({'gui.amount_harvested'})
+    gui.scrap_mined.tooltip = ({ 'gui.amount_harvested' })
 
     local pickaxe_upgrades = Public.pickaxe_upgrades
     local pick_tier = pickaxe_upgrades[upgrades.pickaxe_tier]
@@ -638,28 +637,28 @@ function Public.update_gui(player)
     end
 
     gui.pickaxe_tier.caption = ' [img=item.dummy-steel-axe]: ' .. pick_tier .. ' (' .. upgrades.pickaxe_tier .. ')'
-    gui.pickaxe_tier.tooltip = ({'gui.current_pickaxe_tier', pick_tier, speed})
+    gui.pickaxe_tier.tooltip = ({ 'gui.current_pickaxe_tier', pick_tier, speed })
 
     gui.biters_killed.caption = ' [img=entity.small-biter]: ' .. format_number(biters_killed, true)
-    gui.biters_killed.tooltip = ({'gui.biters_killed'})
+    gui.biters_killed.tooltip = ({ 'gui.biters_killed' })
 
     gui.landmine.caption = ' [img=entity.land-mine]: ' .. format_number(upgrades.landmine.built, true) .. ' / ' .. format_number(upgrades.landmine.limit, true)
-    gui.landmine.tooltip = ({'gui.land_mine_placed'})
+    gui.landmine.tooltip = ({ 'gui.land_mine_placed' })
 
     gui.flame_turret.caption = ' [img=entity.flamethrower-turret]: ' .. format_number(upgrades.flame_turret.built, true) .. ' / ' .. format_number(upgrades.flame_turret.limit, true)
-    gui.flame_turret.tooltip = ({'gui.flamethrowers_placed'})
+    gui.flame_turret.tooltip = ({ 'gui.flamethrowers_placed' })
 
     gui.train_upgrade_contribution.caption = ' [img=entity.locomotive]: ' .. train_upgrade_contribution .. 'k'
-    gui.train_upgrade_contribution.tooltip = ({'gui.train_upgrade_contribution'})
+    gui.train_upgrade_contribution.tooltip = ({ 'gui.train_upgrade_contribution' })
 
     local robotics_deployed = Public.get('robotics_deployed')
 
     if robotics_deployed then
         gui.defense_enabled.caption = ' [img=item.destroyer-capsule]: Deployed'
-        gui.defense_enabled.tooltip = ({'gui.robotics_deployed'})
+        gui.defense_enabled.tooltip = ({ 'gui.robotics_deployed' })
     else
         gui.defense_enabled.caption = ' [img=item.destroyer-capsule]: Standby'
-        gui.defense_enabled.tooltip = ({'gui.robotics_standby'})
+        gui.defense_enabled.tooltip = ({ 'gui.robotics_standby' })
     end
 end
 
@@ -670,7 +669,7 @@ Event.add(Public.events.reset_map, enable_guis)
 
 Gui.on_click(
     spectate_button_name,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Mtn v3 Spectate Button')
         if is_spamming then
             return
