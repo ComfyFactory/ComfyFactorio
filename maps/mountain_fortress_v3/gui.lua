@@ -681,10 +681,6 @@ Gui.on_click(
             return
         end
 
-        if Public.get('final_battle') then
-            return player.print('Not possible during the final battle.', Color.warning)
-        end
-
         if player.character and player.character.valid then
             local success = Public.set_player_to_spectator(player)
             if success then
