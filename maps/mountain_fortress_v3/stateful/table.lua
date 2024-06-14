@@ -1538,7 +1538,7 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
         if not this.objectives.handcrafted_items_any or (this.objectives_completed ~= nil and this.objectives_completed.handcrafted_items_any) then
             this.objectives.handcrafted_items_any = {
                 actual = 0,
-                expected = scale(50000, 4000000, 1.035),
+                expected = scale(50000, 4000000),
                 name = 'Any'
             }
         end
@@ -1553,7 +1553,7 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
         if not this.objectives.cast_spell_any or (this.objectives_completed ~= nil and this.objectives_completed.cast_spell_any) then
             this.objectives.cast_spell_any = {
                 actual = 0,
-                expected = scale(1000, 4000000, 1.035),
+                expected = scale(1000, 4000000),
                 name = 'Any'
             }
         end
