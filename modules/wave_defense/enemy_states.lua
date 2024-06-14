@@ -423,8 +423,6 @@ local function on_entity_created(event)
                 end
                 state:set_burst_frenzy()
                 state:set_boss()
-            else
-                entity.destroy()
             end
         else
             state = Public.new(data)

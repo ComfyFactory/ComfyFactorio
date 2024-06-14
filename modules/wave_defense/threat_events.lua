@@ -2,8 +2,10 @@ local Public = require 'modules.wave_defense.table'
 local Event = require 'utils.event'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local Token = require 'utils.token'
-local Task = require 'utils.task'
+local Task = require 'utils.task_token'
+local Misc = require 'utils.commands.misc'
 
+local raise = Event.raise
 local round = math.round
 local random = math.random
 
@@ -96,7 +98,7 @@ local place_nest_near_unit_group = function ()
             local result = cb({ entity = unit, disable_spawn_near_target = disable_spawn_near_target })
             if result then
                 Public.debug_print('place_nest_near_unit_group  - custom callback returned true')
-                return
+                -- return
             end
         end
     end
@@ -195,9 +197,10 @@ function Public.build_nest()
     end
 
     local threat = Public.get('threat')
-    if threat < 1024 then
+    if threat < 1024 and not Misc.get('creative_enabled') then
         return
     end
+
     local unit_groups_size = Public.get('unit_groups_size')
     if unit_groups_size == 0 then
         return
@@ -411,15 +414,16 @@ local function spawn_unit_spawner_inhabitants(entity)
         return
     end
     local wave_number = Public.get('wave_number')
-    local count = 8 + math.floor(wave_number * 0.02)
+    local count = 8 + math.floor(wave_number * 0.1)
     if count > 128 then
         count = 128
     end
     Public.wave_defense_set_unit_raffle(wave_number)
     for _ = 1, count, 1 do
         local position = { entity.position.x + (-4 + math.random(0, 8)), entity.position.y + (-4 + math.random(0, 8)) }
+        local biter
         if math.random(1, 4) == 1 then
-            entity.surface.create_entity(
+            biter = entity.surface.create_entity(
                 {
                     name = Public.wave_defense_roll_spitter_name(),
                     position = position,
@@ -427,13 +431,16 @@ local function spawn_unit_spawner_inhabitants(entity)
                 }
             )
         else
-            entity.surface.create_entity(
+            biter = entity.surface.create_entity(
                 {
                     name = Public.wave_defense_roll_biter_name(),
                     position = position,
                     force = 'enemy'
                 }
             )
+        end
+        if biter and biter.valid then
+            raise(Public.events.on_entity_created, { entity = biter, boss_unit = false })
         end
     end
 end

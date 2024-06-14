@@ -28,14 +28,14 @@ Commands.new('wd_debug_module', 'Usable only for admins - controls wave defense 
             end
 
             if action == 'spawn' then
-                Public.spawn_unit_group({ true }, true)
+                Public.spawn_unit_group({ true }, false)
                 player.print(module_name .. ' wave spawned!')
                 return true
             end
 
             if action == 'next' then
                 Public.set_next_wave()
-                Public.spawn_unit_group({ true }, true)
+                Public.spawn_unit_group({ true }, false)
                 player.print(module_name .. ' wave spawned!')
                 return true
             end

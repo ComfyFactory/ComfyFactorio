@@ -1436,6 +1436,9 @@ Event.on_nth_tick(
             return
         end
 
+        -- local generated_units = Public.get('generated_units')
+        -- game.print(serpent.block(generated_units.unit_groups))
+
         local paused = Public.get('paused')
         if paused then
             local players = game.connected_players

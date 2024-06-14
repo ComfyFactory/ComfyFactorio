@@ -273,7 +273,7 @@ function Public.reset_map()
     WD.increase_average_unit_group_size(true)
     WD.increase_max_active_unit_groups(true)
     WD.enable_random_spawn_positions(true)
-    WD.set_track_bosses_only(false)
+    WD.set_track_bosses_only(true)
     WD.set_pause_waves_custom_callback(Public.pause_waves_custom_callback_token)
     WD.set_threat_event_custom_callback(Public.check_if_spawning_near_train_custom_callback)
     -- WD.set_es_unit_limit(400) -- moved to stateful
