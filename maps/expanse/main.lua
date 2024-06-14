@@ -1,7 +1,7 @@
 -- a map where you feed hungry boxes, which unlocks new territory, with even more hungry boxes by mewmew
 
 --CONFIGS
-local cell_size = 15 -- size of each territory to unlock
+local cell_size = 15                 -- size of each territory to unlock
 local chance_to_receive_token = 0.20 -- chance of a hungry chest, dropping a token after unlocking, can be above 1 for multiple
 
 require 'modules.satellite_score'
@@ -27,7 +27,7 @@ local expanse = {
 }
 Global.register(
     expanse,
-    function(tbl)
+    function (tbl)
         expanse = tbl
     end
 )
@@ -39,13 +39,13 @@ local function create_button(player)
     if not player.gui.top[main_button_name] then
         local b =
             player.gui.top.add(
-            {
-                type = 'sprite-button',
-                name = main_button_name,
-                sprite = 'item/logistic-chest-requester',
-                tooltip = 'Show Expanse statistics!'
-            }
-        )
+                {
+                    type = 'sprite-button',
+                    name = main_button_name,
+                    sprite = 'item/logistic-chest-requester',
+                    tooltip = 'Show Expanse statistics!'
+                }
+            )
         b.style.minimal_height = 38
         b.style.maximal_height = 38
     end
@@ -55,21 +55,21 @@ local function set_nauvis()
     local surface = game.surfaces[1]
     local map_gen_settings = surface.map_gen_settings
     map_gen_settings.autoplace_controls = {
-        ['coal'] = {frequency = 6, size = 0.7, richness = 0.5},
-        ['stone'] = {frequency = 6, size = 0.4, richness = 0.5},
-        ['copper-ore'] = {frequency = 6, size = 0.7, richness = 0.95},
-        ['iron-ore'] = {frequency = 6, size = 0.7, richness = 1},
-        ['uranium-ore'] = {frequency = 10, size = 0.7, richness = 1},
-        ['crude-oil'] = {frequency = 20, size = 1.5, richness = 1.5},
-        ['trees'] = {frequency = 1.75, size = 1.25, richness = 1},
-        ['enemy-base'] = {frequency = 10, size = 10, richness = 2}
+        ['coal'] = { frequency = 6, size = 0.7, richness = 0.5 },
+        ['stone'] = { frequency = 6, size = 0.4, richness = 0.5 },
+        ['copper-ore'] = { frequency = 6, size = 0.7, richness = 0.95 },
+        ['iron-ore'] = { frequency = 6, size = 0.7, richness = 1 },
+        ['uranium-ore'] = { frequency = 10, size = 0.7, richness = 1 },
+        ['crude-oil'] = { frequency = 20, size = 1.5, richness = 1.5 },
+        ['trees'] = { frequency = 1.75, size = 1.25, richness = 1 },
+        ['enemy-base'] = { frequency = 10, size = 10, richness = 2 }
     }
     map_gen_settings.water = 0.25
     map_gen_settings.terrain_segmentation = 12
     map_gen_settings.starting_area = 0.08
     surface.map_gen_settings = map_gen_settings
     for chunk in surface.get_chunks() do
-        surface.delete_chunk({chunk.x, chunk.y})
+        surface.delete_chunk({ chunk.x, chunk.y })
     end
 end
 
@@ -86,22 +86,22 @@ local function reset()
     local map_gen_settings = {
         ['water'] = 0,
         ['starting_area'] = 1,
-        ['cliff_settings'] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
+        ['cliff_settings'] = { cliff_elevation_interval = 0, cliff_elevation_0 = 0 },
         ['default_enable_all_autoplace_controls'] = false,
         ['autoplace_settings'] = {
-            ['entity'] = {treat_missing_as_default = false},
-            ['tile'] = {treat_missing_as_default = false},
-            ['decorative'] = {treat_missing_as_default = false}
+            ['entity'] = { treat_missing_as_default = false },
+            ['tile'] = { treat_missing_as_default = false },
+            ['decorative'] = { treat_missing_as_default = false }
         },
         autoplace_controls = {
-            ['coal'] = {frequency = 0, size = 0, richness = 0},
-            ['stone'] = {frequency = 0, size = 0, richness = 0},
-            ['copper-ore'] = {frequency = 0, size = 0, richness = 0},
-            ['iron-ore'] = {frequency = 0, size = 0, richness = 0},
-            ['uranium-ore'] = {frequency = 0, size = 0, richness = 0},
-            ['crude-oil'] = {frequency = 0, size = 0, richness = 0},
-            ['trees'] = {frequency = 0, size = 0, richness = 0},
-            ['enemy-base'] = {frequency = 0, size = 0, richness = 0}
+            ['coal'] = { frequency = 0, size = 0, richness = 0 },
+            ['stone'] = { frequency = 0, size = 0, richness = 0 },
+            ['copper-ore'] = { frequency = 0, size = 0, richness = 0 },
+            ['iron-ore'] = { frequency = 0, size = 0, richness = 0 },
+            ['uranium-ore'] = { frequency = 0, size = 0, richness = 0 },
+            ['crude-oil'] = { frequency = 0, size = 0, richness = 0 },
+            ['trees'] = { frequency = 0, size = 0, richness = 0 },
+            ['enemy-base'] = { frequency = 0, size = 0, richness = 0 }
         }
     }
     game.create_surface('expanse', map_gen_settings)
@@ -111,25 +111,25 @@ local function reset()
     end
 
     local source_surface = game.surfaces[expanse.source_surface]
-    source_surface.request_to_generate_chunks({x = 0, y = 0}, 4)
+    source_surface.request_to_generate_chunks({ x = 0, y = 0 }, 4)
     source_surface.force_generate_chunk_requests()
 
     local surface = game.surfaces.expanse
-    surface.request_to_generate_chunks({x = 0, y = 0}, 4)
+    surface.request_to_generate_chunks({ x = 0, y = 0 }, 4)
     surface.force_generate_chunk_requests()
 
     for _, player in pairs(game.players) do
-        player.teleport({-4, -4}, source_surface)
+        player.teleport({ -4, -4 }, source_surface)
     end
 
-    Functions.expand(expanse, {x = 0, y = 0})
+    Functions.expand(expanse, { x = 0, y = 0 })
 
     for _, player in pairs(game.players) do
-        player.teleport(surface.find_non_colliding_position('character', {expanse.square_size * 0.5, expanse.square_size * 0.5}, 8, 0.5), surface)
+        player.teleport(surface.find_non_colliding_position('character', { expanse.square_size * 0.5, expanse.square_size * 0.5 }, 8, 0.5), surface)
     end
 end
 
-local ores = {'copper-ore', 'iron-ore', 'stone', 'coal', 'iron-ore', 'copper-ore', 'coal'}
+local ores = { 'copper-ore', 'iron-ore', 'stone', 'coal', 'iron-ore', 'copper-ore', 'coal' }
 local function generate_ore(surface, left_top)
     local seed = game.surfaces[1].map_gen_settings.seed
     local left_top_x = left_top.x
@@ -138,13 +138,13 @@ local function generate_ore(surface, left_top)
     --Draw the mixed ore patches.
     for x = 0, 31, 1 do
         for y = 0, 31, 1 do
-            local pos = {x = left_top_x + x, y = left_top_y + y}
-            if surface.can_place_entity({name = 'iron-ore', position = pos}) then
+            local pos = { x = left_top_x + x, y = left_top_y + y }
+            if surface.can_place_entity({ name = 'iron-ore', position = pos }) then
                 local noise = GetNoise('smol_areas', pos, seed)
                 if math.abs(noise) > 0.78 or math.abs(noise) < 0.11 then
                     local amount = 500 + math.sqrt(pos.x ^ 2 + pos.y ^ 2) * 4
                     local i = math.floor(noise * 40 + math.abs(pos.x) * 0.05) % 7 + 1
-                    surface.create_entity({name = ores[i], position = pos, amount = amount})
+                    surface.create_entity({ name = ores[i], position = pos, amount = amount })
                 end
             end
         end
@@ -157,7 +157,7 @@ local function on_resource_depleted(event)
         local distance = math.sqrt(ore.position.x ^ 2 + ore.position.y ^ 2)
         if ore.name == 'stone' and distance > 150 then
             if math.random(1, 4) == 1 then
-                ore.surface.create_entity({name = 'uranium-ore', position = ore.position, amount = 20 + math.floor(distance / 2)})
+                ore.surface.create_entity({ name = 'uranium-ore', position = ore.position, amount = 20 + math.floor(distance / 2) })
             end
         end
     end
@@ -169,12 +169,12 @@ local function on_chunk_generated(event)
     if surface.name ~= 'expanse' then
         if expanse.override_nauvis then
             if surface.index == 1 then
-                for _, e in pairs(surface.find_entities_filtered({area = event.area, name = {'iron-ore', 'copper-ore', 'coal', 'stone', 'uranium-ore'}})) do
-                    surface.create_entity({name = e.name, position = e.position, amount = 500 + math.sqrt(e.position.x ^ 2 + e.position.y ^ 2) * 3})
+                for _, e in pairs(surface.find_entities_filtered({ area = event.area, name = { 'iron-ore', 'copper-ore', 'coal', 'stone', 'uranium-ore' } })) do
+                    surface.create_entity({ name = e.name, position = e.position, amount = 500 + math.sqrt(e.position.x ^ 2 + e.position.y ^ 2) * 3 })
                     e.destroy()
                 end
                 generate_ore(surface, event.area.left_top)
-                for _, unit in pairs(surface.find_entities_filtered({area = event.area, type = {'unit', 'turret', 'unit-spawner', 'fish'}, force = {'enemy', 'neutral'}})) do
+                for _, unit in pairs(surface.find_entities_filtered({ area = event.area, type = { 'unit', 'turret', 'unit-spawner', 'fish' }, force = { 'enemy', 'neutral' } })) do
                     unit.active = false
                 end
             end
@@ -189,7 +189,7 @@ local function on_chunk_generated(event)
         for x = 0, 31, 1 do
             for y = 0, 31, 1 do
                 if x >= expanse.square_size or y >= expanse.square_size then
-                    tiles[i] = {name = 'out-of-map', position = {left_top.x + x, left_top.y + y}}
+                    tiles[i] = { name = 'out-of-map', position = { left_top.x + x, left_top.y + y } }
                     i = i + 1
                 end
             end
@@ -197,7 +197,7 @@ local function on_chunk_generated(event)
     else
         for x = 0, 31, 1 do
             for y = 0, 31, 1 do
-                tiles[i] = {name = 'out-of-map', position = {left_top.x + x, left_top.y + y}}
+                tiles[i] = { name = 'out-of-map', position = { left_top.x + x, left_top.y + y } }
                 i = i + 1
             end
         end
@@ -236,21 +236,22 @@ local function container_opened(event)
     local expansion_position = Functions.set_container(expanse, entity)
     if expansion_position then
         local player = game.players[event.player_index]
-        local colored_player_name = {'expanse.colored_text', player.color.r * 0.6 + 0.35, player.color.g * 0.6 + 0.35, player.color.b * 0.6 + 0.35, player.name}
-        game.print({'expanse.tile_unlock', colored_player_name, {'expanse.gps', math.floor(expansion_position.x), math.floor(expansion_position.y), 'expanse'}})
+        local surface = game.get_surface(player.surface.name)
+        local colored_player_name = { 'expanse.colored_text', player.color.r * 0.6 + 0.35, player.color.g * 0.6 + 0.35, player.color.b * 0.6 + 0.35, player.name }
+        game.print({ 'expanse.tile_unlock', colored_player_name, { 'expanse.gps', math.floor(expansion_position.x), math.floor(expansion_position.y), 'expanse' } })
         expanse.size = (expanse.size or 1) + 1
         if math.random(1, 4) == 1 then
-            if player.surface.count_tiles_filtered({position = expansion_position, radius = 6, collision_mask = 'water-tile'}) > 40 then
+            if surface.count_tiles_filtered({ position = expansion_position, radius = 6, collision_mask = 'water-tile' }) > 40 then
                 return
             end
-            local render = rendering.draw_sprite{
+            local render = rendering.draw_sprite {
                 sprite = 'utility/danger_icon',
-                surface = player.surface,
+                surface = surface,
                 target = expansion_position,
                 x_scale = 2,
                 y_scale = 2
             }
-            table.insert(expanse.invasion_candidates, {surface = player.surface, position = expansion_position, render = render})
+            table.insert(expanse.invasion_candidates, { surface_index = surface.index, position = expansion_position, render = render })
             Functions.check_invasion(expanse)
         end
     end
@@ -265,7 +266,7 @@ local function on_gui_closed(event)
 end
 
 local function assign_acid_tank(entity)
-    local tanks = entity.surface.find_entities_filtered{name = 'storage-tank', position = entity.position, radius = 8}
+    local tanks = entity.surface.find_entities_filtered { name = 'storage-tank', position = entity.position, radius = 8 }
     for _, tank in pairs(tanks) do
         if tank.get_fluid_count('sulfuric-acid') > 0 then
             return tank
@@ -283,23 +284,23 @@ local function uranium_mining(entity)
     if tank and tank.valid then
         local acid = tank.get_fluid_count('sulfuric-acid')
         if acid > 5 then
-            tank.remove_fluid{name = 'sulfuric-acid', amount = 4}
-            entity.surface.spill_item_stack(entity.position, {name = 'uranium-ore', count = 2}, true, nil, true)
-            entity.surface.create_entity{name = 'flying-text', position = tank.position, text = '-4 [fluid=sulfuric-acid]', color = {r = 0.88, g = 0.02, b = 0.02}}
+            tank.remove_fluid { name = 'sulfuric-acid', amount = 4 }
+            entity.surface.spill_item_stack(entity.position, { name = 'uranium-ore', count = 2 }, true, nil, true)
+            entity.surface.create_entity { name = 'flying-text', position = tank.position, text = '-4 [fluid=sulfuric-acid]', color = { r = 0.88, g = 0.02, b = 0.02 } }
         end
     end
 end
 
-local inf_ores = {'iron-ore', 'iron-ore', 'copper-ore', 'coal'}
+local inf_ores = { 'iron-ore', 'iron-ore', 'copper-ore', 'coal' }
 local function infini_rock(entity)
     if entity.type ~= 'simple-entity' then
         return
     end
     local a = math.floor(expanse.square_size * 0.5)
     if entity.position.x == a + 4 and entity.position.y == a - 4 then
-        entity.surface.create_entity({name = 'rock-big', position = {a + 4, a - 4}})
-        entity.surface.spill_item_stack(entity.position, {name = inf_ores[math.random(1, 4)], count = math.random(80, 160)}, true, nil, true)
-        entity.surface.spill_item_stack(entity.position, {name = 'stone', count = math.random(5, 15)}, true, nil, true)
+        entity.surface.create_entity({ name = 'rock-big', position = { a + 4, a - 4 } })
+        entity.surface.spill_item_stack(entity.position, { name = inf_ores[math.random(1, 4)], count = math.random(80, 160) }, true, nil, true)
+        entity.surface.spill_item_stack(entity.position, { name = 'stone', count = math.random(5, 15) }, true, nil, true)
         uranium_mining(entity)
     end
 end
@@ -310,7 +311,7 @@ local function infini_tree(entity)
     end
     local a = math.floor(expanse.square_size * 0.5)
     if entity.position.x == a - 4 and entity.position.y == a + 4 then
-        entity.surface.create_entity({name = 'tree-0' .. math.random(1, 9), position = {a - 4, a + 4}})
+        entity.surface.create_entity({ name = 'tree-0' .. math.random(1, 9), position = { a - 4, a + 4 } })
     end
 end
 
@@ -327,7 +328,7 @@ local function on_player_joined_game(event)
     local player = game.players[event.player_index]
     if player.online_time == 0 then
         local surface = game.surfaces.expanse
-        player.teleport(surface.find_non_colliding_position('character', {expanse.square_size * 0.5, expanse.square_size * 0.5}, 32, 0.5), surface)
+        player.teleport(surface.find_non_colliding_position('character', { expanse.square_size * 0.5, expanse.square_size * 0.5 }, 32, 0.5), surface)
     end
     create_button(player)
 end
@@ -344,20 +345,20 @@ local function on_pre_player_left_game(event)
     if not inventory then
         return
     end
-    local removed_count = inventory.remove({name = 'coin', count = 999999})
+    local removed_count = inventory.remove({ name = 'coin', count = 999999 })
     if removed_count > 0 then
         for _ = 1, removed_count, 1 do
-            player.surface.spill_item_stack(player.position, {name = 'coin', count = 1}, false, nil, false)
+            player.surface.spill_item_stack(player.position, { name = 'coin', count = 1 }, false, nil, false)
         end
-        game.print({'expanse.tokens_dropped', player.name, {'expanse.gps', math.floor(player.position.x), math.floor(player.position.y), player.surface.name}})
+        game.print({ 'expanse.tokens_dropped', player.name, { 'expanse.gps', math.floor(player.position.x), math.floor(player.position.y), player.surface.name } })
     end
 end
 
 local function on_init()
     local T = Map_info.Pop_info()
     T.localised_category = 'expanse'
-    T.main_caption_color = {r = 170, g = 170, b = 0}
-    T.sub_caption_color = {r = 120, g = 120, b = 0}
+    T.main_caption_color = { r = 170, g = 170, b = 0 }
+    T.sub_caption_color = { r = 120, g = 120, b = 0 }
 
     if not expanse.source_surface then
         expanse.source_surface = 'nauvis'
@@ -382,9 +383,9 @@ local function on_init()
     game.map_settings.enemy_expansion.min_expansion_cooldown = 1800
     game.map_settings.enemy_expansion.settler_group_max_size = 8
     game.map_settings.enemy_expansion.settler_group_min_size = 16
-    game.map_settings.enemy_evolution.destroy_factor = 0.003 --default game: 0.002
+    game.map_settings.enemy_evolution.destroy_factor = 0.003   --default game: 0.002
     game.map_settings.enemy_evolution.pollution_factor = 6e-07 --default game: 9e-07
-    game.map_settings.enemy_evolution.time_factor = 2e-06 --default game: 4e-06
+    game.map_settings.enemy_evolution.time_factor = 2e-06      --default game: 4e-06
 
     --Settings for cave miner
     --[[
@@ -408,22 +409,22 @@ local function on_tick()
 end
 
 local function resource_stats(parent, name, count)
-    local button = parent.add({type = 'sprite-button', name = name .. '_sprite', sprite = 'item/' .. name, enabled = false, tooltip = Functions.get_item_tooltip(name)})
-    local label = parent.add({type = 'label', name = name .. '_label', caption = format_number(tonumber(count), true), tooltip = count})
+    local button = parent.add({ type = 'sprite-button', name = name .. '_sprite', sprite = 'item/' .. name, enabled = false, tooltip = Functions.get_item_tooltip(name) })
+    local label = parent.add({ type = 'label', name = name .. '_label', caption = format_number(tonumber(count), true), tooltip = count })
     label.style.width = 40
     return button, label
 end
 
 local function create_main_frame(player)
-    local frame = player.gui.screen.add({type = 'frame', name = main_frame_name, caption = {'expanse.stats_gui'}, direction = 'vertical'})
-    frame.location = {x = 10, y = 40}
+    local frame = player.gui.screen.add({ type = 'frame', name = main_frame_name, caption = { 'expanse.stats_gui' }, direction = 'vertical' })
+    frame.location = { x = 10, y = 40 }
     frame.style.maximal_height = 600
     local invasion_numbers = Functions.invasion_numbers()
-    frame.add({type = 'label', name = 'size', caption = {'expanse.stats_size', expanse.size or 1}})
-    frame.add({type = 'label', name = 'biters', caption = {'expanse.stats_attack', #expanse.invasion_candidates, invasion_numbers.candidates, invasion_numbers.groups}})
-    local scroll = frame.add({type = 'scroll-pane', name = 'scroll_pane', horizontal_scroll_policy = 'never', vertical_scroll_policy = 'auto-and-reserve-space'})
-    local frame_table = scroll.add({type = 'table', name = 'resource_stats', column_count = 8})
-    for name, count in Random.spairs(expanse.cost_stats, function(t,a,b) return t[a] > t[b] end) do
+    frame.add({ type = 'label', name = 'size', caption = { 'expanse.stats_size', expanse.size or 1 } })
+    frame.add({ type = 'label', name = 'biters', caption = { 'expanse.stats_attack', #expanse.invasion_candidates, invasion_numbers.candidates, invasion_numbers.groups } })
+    local scroll = frame.add({ type = 'scroll-pane', name = 'scroll_pane', horizontal_scroll_policy = 'never', vertical_scroll_policy = 'auto-and-reserve-space' })
+    local frame_table = scroll.add({ type = 'table', name = 'resource_stats', column_count = 8 })
+    for name, count in Random.spairs(expanse.cost_stats, function (t, a, b) return t[a] > t[b] end) do
         resource_stats(frame_table, name, count)
     end
 end
@@ -433,8 +434,8 @@ local function update_resource_gui(event)
         if player.gui.screen[main_frame_name] then
             local frame = player.gui.screen[main_frame_name]
             local invasion_numbers = Functions.invasion_numbers()
-            frame['size'].caption = {'expanse.stats_size', expanse.size or 1}
-            frame['biters'].caption = {'expanse.stats_attack', #expanse.invasion_candidates, invasion_numbers.candidates, invasion_numbers.groups}
+            frame['size'].caption = { 'expanse.stats_size', expanse.size or 1 }
+            frame['biters'].caption = { 'expanse.stats_attack', #expanse.invasion_candidates, invasion_numbers.candidates, invasion_numbers.groups }
             local frame_table = frame['scroll_pane']['resource_stats']
             local count = expanse.cost_stats[event.item] or 0
             if not frame_table[event.item .. '_label'] then
