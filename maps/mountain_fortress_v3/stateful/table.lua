@@ -878,8 +878,6 @@ local function get_random_spell()
         { 'small-spitter',           scale(1000, 60000) },
         { 'medium-biter',            scale(1000, 200000) },
         { 'medium-spitter',          scale(1000, 100000) },
-        { 'biter-spawner',           scale(1000, 200000) },
-        { 'spitter-spawner',         scale(1000, 100000) },
         { 'shotgun-shell',           scale(1000, 100000) },
         { 'grenade',                 scale(1000, 80000) },
         { 'cluster-grenade',         scale(1000, 50000) },
