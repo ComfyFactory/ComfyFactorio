@@ -7,6 +7,7 @@ local this = {
     settings = {
         disabled = false,
         slow_explode = false,
+        slow_explode_tick = 300,
         check_growth_below_void = false,
         valid_items = {
             ['explosives'] = 500,
@@ -16,7 +17,7 @@ local this = {
 }
 Global.register(
     this,
-    function(tbl)
+    function (tbl)
         this = tbl
     end
 )
@@ -96,7 +97,7 @@ local function cell_birth(surface_index, origin_position, origin_tick, position,
         surface_index = surface_index,
         origin_position = origin_position,
         origin_tick = origin_tick,
-        position = {x = position.x, y = position.y},
+        position = { x = position.x, y = position.y },
         spawn_tick = game.tick + speed,
         health = health,
         atomic = atomic
@@ -192,17 +193,17 @@ local function damage_area(cell)
 
     if math_random(1, 4) == 1 then
         if cell.atomic then
-            surface.create_entity({name = 'nuke-explosion', position = cell.position})
+            surface.create_entity({ name = 'nuke-explosion', position = cell.position })
         else
-            surface.create_entity({name = get_explosion_name(cell.health), position = cell.position})
+            surface.create_entity({ name = get_explosion_name(cell.health), position = cell.position })
         end
     end
 
     for _, entity in pairs(
         surface.find_entities(
             {
-                {cell.position.x - density_r, cell.position.y - density_r},
-                {cell.position.x + density_r, cell.position.y + density_r}
+                { cell.position.x - density_r, cell.position.y - density_r },
+                { cell.position.x + density_r, cell.position.y + density_r }
             }
         )
     ) do
@@ -223,7 +224,7 @@ local function damage_area(cell)
             this.explosives.tiles[key] = nil
             if math_abs(tile.position.y) < surface.map_gen_settings.height * 0.5 and math_abs(tile.position.x) < surface.map_gen_settings.width * 0.5 then
                 if not check_y_pos(tile.position) then
-                    surface.set_tiles({{name = 'landfill', position = tile.position}}, true)
+                    surface.set_tiles({ { name = 'landfill', position = tile.position } }, true)
                 end
             end
         else
@@ -252,7 +253,7 @@ local function tick()
         for key, cell in pairs(this.explosives.cells) do
             if cell.spawn_tick < game.tick then
                 count = count + 1
-                if count < 50 then
+                if count < this.settings.slow_explode_tick then
                     life_cycle(cell)
                     this.explosives.cells[key] = nil
                 else
@@ -321,7 +322,7 @@ local function on_entity_died(event)
 
     local final_damage = amount * damage
 
-    cell_birth(entity.surface.index, {x = entity.position.x, y = entity.position.y}, game.tick, {x = entity.position.x, y = entity.position.y}, final_damage)
+    cell_birth(entity.surface.index, { x = entity.position.x, y = entity.position.y }, game.tick, { x = entity.position.x, y = entity.position.y }, final_damage)
 end
 
 function Public.detonate_chest(entity)
@@ -355,7 +356,7 @@ function Public.detonate_chest(entity)
         return false
     end
 
-    cell_birth(entity.surface.index, {x = entity.position.x, y = entity.position.y}, game.tick, {x = entity.position.x, y = entity.position.y}, amount * damage)
+    cell_birth(entity.surface.index, { x = entity.position.x, y = entity.position.y }, game.tick, { x = entity.position.x, y = entity.position.y }, amount * damage)
     return true
 end
 
@@ -376,7 +377,7 @@ function Public.detonate_entity(entity, amount, damage)
         damage = 700
     end
 
-    cell_birth(entity.surface.index, {x = entity.position.x, y = entity.position.y}, game.tick, {x = entity.position.x, y = entity.position.y}, amount * damage, true)
+    cell_birth(entity.surface.index, { x = entity.position.x, y = entity.position.y }, game.tick, { x = entity.position.x, y = entity.position.y }, amount * damage, true)
     return true
 end
 
@@ -384,7 +385,7 @@ function Public.reset()
     this.explosives.cells = {}
     this.explosives.tiles = {}
     if not this.explosives.vectors then
-        this.explosives.vectors = {{density, 0}, {density * -1, 0}, {0, density}, {0, density * -1}}
+        this.explosives.vectors = { { density, 0 }, { density * -1, 0 }, { 0, density }, { 0, density * -1 } }
     end
     if not this.explosives.damage_decay then
         this.explosives.damage_decay = 10
@@ -425,6 +426,10 @@ end
 
 function Public.slow_explode(value)
     this.settings.slow_explode = value or false
+end
+
+function Public.slow_explode_tick(value)
+    this.settings.slow_explode_tick = value or 300
 end
 
 local function on_init()

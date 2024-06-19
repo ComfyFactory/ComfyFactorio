@@ -9,17 +9,18 @@ local Task = require 'utils.task'
 local this = {
     timers = {},
     characters = {},
-    characters_unit_numbers = {}
+    characters_unit_numbers = {},
+    remove_character_on_death = false
 }
 
 Global.register(
     this,
-    function(tbl)
+    function (tbl)
         this = tbl
     end
 )
 
-local Public = {events = {on_entity_mined = Event.generate_event_name('on_entity_mined')}}
+local Public = { events = { on_entity_mined = Event.generate_event_name('on_entity_mined') } }
 
 local max_keepalive = 54000 -- 15 minutes
 local remove = table.remove
@@ -36,9 +37,9 @@ local armor_names = {
 
 local weapon_names = {
     ['rocket-launcher'] = 'rocket',
-    ['submachine-gun'] = {'uranium-rounds-magazine', 'piercing-rounds-magazine', 'firearm-magazine'},
-    ['shotgun'] = {'piercing-shotgun-shell', 'shotgun-shell'},
-    ['pistol'] = {'uranium-rounds-magazine', 'piercing-rounds-magazine', 'firearm-magazine'}
+    ['submachine-gun'] = { 'uranium-rounds-magazine', 'piercing-rounds-magazine', 'firearm-magazine' },
+    ['shotgun'] = { 'piercing-shotgun-shell', 'shotgun-shell' },
+    ['pistol'] = { 'uranium-rounds-magazine', 'piercing-rounds-magazine', 'firearm-magazine' }
 }
 local remove_character
 
@@ -50,27 +51,27 @@ Public.command = {
 
 local clear_corpse_token =
     Token.register(
-    function(event)
-        local position = event.position
-        local surface = game.get_surface(event.surface_index)
-        local search_info = {
-            type = 'character-corpse',
-            position = position,
-            radius = 1
-        }
+        function (event)
+            local position = event.position
+            local surface = game.get_surface(event.surface_index)
+            local search_info = {
+                type = 'character-corpse',
+                position = position,
+                radius = 1
+            }
 
-        local corpses = surface.find_entities_filtered(search_info)
-        if corpses and #corpses > 0 then
-            for _, corpse in pairs(corpses) do
-                if corpse and corpse.valid then
-                    if corpse.character_corpse_player_index == 65536 then
-                        corpse.destroy()
+            local corpses = surface.find_entities_filtered(search_info)
+            if corpses and #corpses > 0 then
+                for _, corpse in pairs(corpses) do
+                    if corpse and corpse.valid then
+                        if corpse.character_corpse_player_index == 65536 then
+                            corpse.destroy()
+                        end
                     end
                 end
             end
         end
-    end
-)
+    )
 
 local function char_callback(callback)
     local entities = this.characters
@@ -86,7 +87,7 @@ local function char_callback(callback)
 end
 
 local function get_near_position(entity)
-    return {x = round(entity.position.x, 0), y = round(entity.position.y, 0)}
+    return { x = round(entity.position.x, 0), y = round(entity.position.y, 0) }
 end
 
 local function is_mining_target_taken(selected)
@@ -95,7 +96,7 @@ local function is_mining_target_taken(selected)
     end
 
     char_callback(
-        function(data)
+        function (data)
             local entity = data.entity
             if entity.selected == selected then
                 return true
@@ -136,7 +137,7 @@ local function add_character(player_index, entity, render_id, data)
             max_radius_destroy = 150,
             render_id = render_id,
             search_local = data.search_local or false,
-            walking_position = {count = 1, position = get_near_position(entity)}
+            walking_position = { count = 1, position = get_near_position(entity) }
         }
     end
     if not this.characters_unit_numbers[entity.unit_number] then
@@ -156,7 +157,7 @@ local function exists_character(unit_number)
     return false
 end
 
-remove_character = function(unit_number)
+remove_character = function (unit_number)
     if not next(this.characters) then
         return
     end
@@ -243,22 +244,22 @@ local function refill_ammo(player, entity)
                 if weapon.name == 'rocket-launcher' then
                     local player_has_ammo = inventory.get_item_count('rocket')
                     if player_has_ammo > 0 then
-                        entity.insert({name = 'rocket', count = 1})
-                        player.remove_item({name = 'rocket', count = 1})
+                        entity.insert({ name = 'rocket', count = 1 })
+                        player.remove_item({ name = 'rocket', count = 1 })
                     end
                 end
                 if weapon.name == 'shotgun' then
                     local player_has_ammo = inventory.get_item_count('shotgun-shell')
                     if player_has_ammo > 4 then
-                        entity.insert({name = 'shotgun-shell', count = 5})
-                        player.remove_item({name = 'shotgun-shell', count = 5})
+                        entity.insert({ name = 'shotgun-shell', count = 5 })
+                        player.remove_item({ name = 'shotgun-shell', count = 5 })
                     end
                 end
                 if weapon.name == 'pistol' then
                     local player_has_ammo = inventory.get_item_count('firearm-magazine')
                     if player_has_ammo > 4 then
-                        entity.insert({name = 'firearm-magazine', count = 5})
-                        player.remove_item({name = 'firearm-magazine', count = 5})
+                        entity.insert({ name = 'firearm-magazine', count = 5 })
+                        player.remove_item({ name = 'firearm-magazine', count = 5 })
                     end
                 end
             end
@@ -293,13 +294,13 @@ end
 
 local function mine_entity(data, target)
     data.entity.selected = target
-    data.entity.mining_state = {mining = true, position = target.position}
+    data.entity.mining_state = { mining = true, position = target.position }
 end
 
 local function shoot_stop(entity)
     entity.shooting_state = {
         state = defines.shooting.not_shooting,
-        position = {0, 0}
+        position = { 0, 0 }
     }
 end
 
@@ -327,8 +328,8 @@ local function insert_weapons_and_armor(player, entity, armor_only)
 
     for _, armor_name in pairs(armor_names) do
         if not has_armor_equipped(entity) and inventory.get_item_count(armor_name) > 0 then
-            entity.insert({name = armor_name, count = 1})
-            player.remove_item({name = armor_name, count = 1})
+            entity.insert({ name = armor_name, count = 1 })
+            player.remove_item({ name = armor_name, count = 1 })
             break
         end
     end
@@ -339,19 +340,19 @@ local function insert_weapons_and_armor(player, entity, armor_only)
 
     for weapon_name, ammo in pairs(weapon_names) do
         if inventory.get_item_count(weapon_name) > 0 then
-            entity.insert({name = weapon_name, count = 1})
-            player.remove_item({name = weapon_name, count = 1})
+            entity.insert({ name = weapon_name, count = 1 })
+            player.remove_item({ name = weapon_name, count = 1 })
 
             if type(ammo) ~= 'table' then
                 if inventory.get_item_count(ammo) > 0 then
-                    entity.insert({name = ammo, count = 1})
-                    player.remove_item({name = ammo, count = 1})
+                    entity.insert({ name = ammo, count = 1 })
+                    player.remove_item({ name = ammo, count = 1 })
                 end
             else
                 for _, ammo_name in pairs(ammo) do
                     if inventory.get_item_count(ammo_name) > 0 then
-                        entity.insert({name = ammo_name, count = 1})
-                        player.remove_item({name = ammo_name, count = 1})
+                        entity.insert({ name = ammo_name, count = 1 })
+                        player.remove_item({ name = ammo_name, count = 1 })
                         break
                     end
                 end
@@ -463,7 +464,7 @@ local function seek_enemy_and_destroy(data)
     end
 
     local search_info = {
-        type = {'unit', 'unit-spawner', 'turret'},
+        type = { 'unit', 'unit-spawner', 'turret' },
         position = entity.position,
         radius = data.radius,
         force = 'enemy'
@@ -533,11 +534,11 @@ function Public.create_char(data)
     end
 
     local surface = player.surface
-    local valid_position = surface.find_non_colliding_position('character', {x = player.position.x, y = player.position.y + 2}, 3, 0.5)
+    local valid_position = surface.find_non_colliding_position('character', { x = player.position.x, y = player.position.y + 2 }, 3, 0.5)
     if not valid_position then
         return
     end
-    local entity = surface.create_entity {name = 'character', position = valid_position, force = player.force}
+    local entity = surface.create_entity { name = 'character', position = valid_position, force = player.force }
     if not entity or not entity.valid then
         return
     end
@@ -552,25 +553,25 @@ function Public.create_char(data)
 
     local render_id =
         rendering.draw_text {
-        text = player.name .. "'s drone #" .. index,
-        surface = player.surface,
-        target = entity,
-        target_offset = {0, -2.25},
-        color = Color.orange,
-        scale = 1.00,
-        font = 'default-large-semibold',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
+            text = player.name .. "'s drone #" .. index,
+            surface = player.surface,
+            target = entity,
+            target_offset = { 0, -2.25 },
+            color = Color.orange,
+            scale = 1.00,
+            font = 'default-large-semibold',
+            alignment = 'center',
+            scale_with_zoom = false
+        }
 
     add_character(player.index, entity, render_id, data)
 end
 
 Event.on_nth_tick(
     2,
-    function()
+    function ()
         char_callback(
-            function(data)
+            function (data)
                 check_progress_and_raise_event(data)
             end
         )
@@ -579,10 +580,10 @@ Event.on_nth_tick(
 
 Event.on_nth_tick(
     10,
-    function()
+    function ()
         local tick = game.tick
         char_callback(
-            function(data)
+            function (data)
                 if data.ttl <= tick then
                     remove_character(data.unit_number)
                     return
@@ -602,7 +603,7 @@ Event.on_nth_tick(
 
 Event.add(
     defines.events.on_entity_died,
-    function(event)
+    function (event)
         local entity = event.entity
         if not entity or not entity.valid then
             return
@@ -616,7 +617,9 @@ Event.add(
             return
         end
 
-        Task.set_timeout_in_ticks(1, clear_corpse_token, {position = entity.position, surface_index = entity.surface.index})
+        if this.remove_character_on_death then
+            Task.set_timeout_in_ticks(1, clear_corpse_token, { position = entity.position, surface_index = entity.surface.index })
+        end
 
         remove_character(unit_number)
     end
