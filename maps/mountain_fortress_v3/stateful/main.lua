@@ -197,7 +197,7 @@ Event.add(
                     return
                 end
 
-                launch_item.actual = launch_item.actual + slot.count
+                launch_item.actual = launch_item.actual + 1
             end
         end
     end

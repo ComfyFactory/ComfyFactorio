@@ -16,7 +16,7 @@ local sub = string.sub
 local sqrt = math.sqrt
 local zone_settings = Public.zone_settings
 
-local clear_breach_text_and_render = function()
+local clear_breach_text_and_render = function ()
     local beam1 = Public.get('zone1_beam1')
     if beam1 and beam1.valid then
         beam1.destroy()
@@ -45,81 +45,81 @@ end
 
 local collapse_message =
     Task.register(
-    function(data)
-        local pos = data.position
-        local message = ({'breached_wall.collapse_start'})
-        local collapse_position = {
-            position = pos
-        }
-        Alert.alert_all_players_location(collapse_position, message)
-    end
-)
+        function (data)
+            local pos = data.position
+            local message = ({ 'breached_wall.collapse_start' })
+            local collapse_position = {
+                position = pos
+            }
+            Alert.alert_all_players_location(collapse_position, message)
+        end
+    )
 
 local driving_state_changed_token =
     Task.register(
-    function(event)
-        local player_index = event.player_index
-        local player = game.get_player(player_index)
-        if not player or not player.valid then
-            return
-        end
+        function (event)
+            local player_index = event.player_index
+            local player = game.get_player(player_index)
+            if not player or not player.valid then
+                return
+            end
 
-        local entity = event.entity
-        if not (entity and entity.valid) then
-            return
-        end
+            local entity = event.entity
+            if not (entity and entity.valid) then
+                return
+            end
 
-        local s = Public.get('validate_spider')
-        if entity.name == 'spidertron' then
-            if player.driving then
-                if not s[player.index] then
-                    s[player.index] = entity
-                end
-            else
-                if s[player.index] then
-                    s[player.index] = nil
+            local s = Public.get('validate_spider')
+            if entity.name == 'spidertron' then
+                if player.driving then
+                    if not s[player.index] then
+                        s[player.index] = entity
+                    end
+                else
+                    if s[player.index] then
+                        s[player.index] = nil
+                    end
                 end
             end
         end
-    end
-)
+    )
 
 local spidertron_unlocked =
     Task.register(
-    function(event)
-        if event then
-            local message = ({'breached_wall.spidertron_unlocked'})
-            if event.bw then
-                message = ({'breached_wall.spidertron_unlocked_bw'})
+        function (event)
+            if event then
+                local message = ({ 'breached_wall.spidertron_unlocked' })
+                if event.bw then
+                    message = ({ 'breached_wall.spidertron_unlocked_bw' })
+                end
+                Alert.alert_all_players(30, message, nil, 'achievement/tech-maniac', 0.1)
             end
-            Alert.alert_all_players(30, message, nil, 'achievement/tech-maniac', 0.1)
         end
-    end
-)
+    )
 
 local first_player_to_zone =
     Task.register(
-    function(data)
-        local player = data.player
-        if not player or not player.valid then
-            return
+        function (data)
+            local player = data.player
+            if not player or not player.valid then
+                return
+            end
+            local breached_wall = data.breached_wall
+            local message = ({ 'breached_wall.first_to_reach', player.name, breached_wall })
+            Alert.alert_all_players(10, message)
+            Public.shuffle_prices()
         end
-        local breached_wall = data.breached_wall
-        local message = ({'breached_wall.first_to_reach', player.name, breached_wall})
-        Alert.alert_all_players(10, message)
-        Public.shuffle_prices()
-    end
-)
+    )
 
 local artillery_warning =
     Task.register(
-    function()
-        local message = ({'breached_wall.artillery_warning'})
-        Alert.alert_all_players(10, message)
-    end
-)
+        function ()
+            local message = ({ 'breached_wall.artillery_warning' })
+            Alert.alert_all_players(10, message)
+        end
+    )
 
-local breach_wall_warning_teleport = function(player, check_trusted)
+local breach_wall_warning_teleport = function (player, check_trusted)
     if not player or not player.valid then
         return
     end
@@ -130,10 +130,10 @@ local breach_wall_warning_teleport = function(player, check_trusted)
     end
 
     if not check_trusted then
-        local message = ({'breached_wall.warning_teleport', player.name})
+        local message = ({ 'breached_wall.warning_teleport', player.name })
         Alert.alert_all_players(40, message)
     else
-        local message = ({'breached_wall.warning_not_trusted_teleport', player.name})
+        local message = ({ 'breached_wall.warning_not_trusted_teleport', player.name })
         Alert.alert_all_players(40, message)
     end
     local pos = player.surface.find_non_colliding_position('character', player.force.get_spawn_position(player.surface), 3, 0)
@@ -148,14 +148,14 @@ end
 
 local spidertron_too_far =
     Task.register(
-    function(data)
-        local player = data.player
-        local message = ({'breached_wall.cheating_through', player.name})
-        Alert.alert_all_players(30, message)
-    end
-)
+        function (data)
+            local player = data.player
+            local message = ({ 'breached_wall.cheating_through', player.name })
+            Alert.alert_all_players(30, message)
+        end
+    )
 
-local check_distance_between_player_and_locomotive = function(player)
+local check_distance_between_player_and_locomotive = function (player)
     local surface = player.surface
     local position = player.position
     local locomotive = Public.get('locomotive')
@@ -182,44 +182,44 @@ local check_distance_between_player_and_locomotive = function(player)
 
     if locomotive_distance_too_far then
         if adjusted_zones.reversed then
-            player.teleport({position.x, t_y + gap_between_locomotive.neg_gap - 4}, surface)
+            player.teleport({ position.x, t_y + gap_between_locomotive.neg_gap - 4 }, surface)
         else
-            player.teleport({position.x, (t_y + gap_between_locomotive.neg_gap - 4) * -1}, surface)
+            player.teleport({ position.x, (t_y + gap_between_locomotive.neg_gap - 4) * -1 }, surface)
         end
 
-        player.print(({'breached_wall.hinder'}), Color.warning)
+        player.print(({ 'breached_wall.hinder' }), Color.warning)
         if player.driving then
             player.driving = false
         end
         if player.character then
             player.character.health = player.character.health - 5
-            player.character.surface.create_entity({name = 'water-splash', position = position})
+            player.character.surface.create_entity({ name = 'water-splash', position = position })
             if player.character.health <= 0 then
                 player.character.die('enemy')
             end
         end
-    -- elseif collapse_distance_too_far then
-    --     if adjusted_zones.reversed then
-    --         player.teleport({position.x, t_y + gap_between_locomotive.neg_gap_collapse - 4}, surface)
-    --     else
-    --         player.teleport({position.x, (t_y + gap_between_locomotive.neg_gap_collapse - 4) * -1}, surface)
-    --     end
+        -- elseif collapse_distance_too_far then
+        --     if adjusted_zones.reversed then
+        --         player.teleport({position.x, t_y + gap_between_locomotive.neg_gap_collapse - 4}, surface)
+        --     else
+        --         player.teleport({position.x, (t_y + gap_between_locomotive.neg_gap_collapse - 4) * -1}, surface)
+        --     end
 
-    --     player.print(({'breached_wall.hinder_collapse'}), Color.warning)
-    --     if player.driving then
-    --         player.driving = false
-    --     end
-    --     if player.character then
-    --         player.character.health = player.character.health - 5
-    --         player.character.surface.create_entity({name = 'water-splash', position = position})
-    --         if player.character.health <= 0 then
-    --             player.character.die('enemy')
-    --         end
-    --     end
+        --     player.print(({'breached_wall.hinder_collapse'}), Color.warning)
+        --     if player.driving then
+        --         player.driving = false
+        --     end
+        --     if player.character then
+        --         player.character.health = player.character.health - 5
+        --         player.character.surface.create_entity({name = 'water-splash', position = position})
+        --         if player.character.health <= 0 then
+        --             player.character.die('enemy')
+        --         end
+        --     end
     end
 end
 
-local compare_player_pos = function(player)
+local compare_player_pos = function (player)
     local p = player.position
     local index = player.index
     local adjusted_zones = Public.get('adjusted_zones')
@@ -251,7 +251,7 @@ local compare_player_pos = function(player)
     end
 end
 
-local compare_player_and_train = function(player, entity)
+local compare_player_and_train = function (player, entity)
     if not player.driving then
         return
     end
@@ -277,17 +277,37 @@ local compare_player_and_train = function(player, entity)
 
     local spidertron_warning_position = gap_between_zones.neg_gap + 50
     local locomotive_distance_too_far = c_y - t_y > spidertron_warning_position
+    local spidertron_warning_position_pre_warning = spidertron_warning_position - 100
+    local locomotive_distance_too_far_pre_warning = c_y - t_y > spidertron_warning_position_pre_warning
+    local surface = player.surface
 
-    if locomotive_distance_too_far then
-        local surface = player.surface
+    log(serpent.block(c_y - t_y))
+    log(serpent.block(spidertron_warning_position))
+    log(serpent.block(spidertron_warning_position_pre_warning))
+
+    local color = Color.yellow
+    if locomotive_distance_too_far_pre_warning and not locomotive_distance_too_far then
+        local msg = 'Warning! You are getting too far away from the train!'
         surface.create_entity(
             {
                 name = 'flying-text',
                 position = position,
-                text = 'Warning! You are too far away from the main locomotive!',
-                color = {r = 0.9, g = 0.0, b = 0.0}
+                text = msg,
+                color = color
             }
         )
+        player.print(msg, color)
+    elseif locomotive_distance_too_far then
+        local msg = 'Warning! You are too far away from the train! TURN BACK!'
+        surface.create_entity(
+            {
+                name = 'flying-text',
+                position = position,
+                text = msg,
+                color = color
+            }
+        )
+        player.print(msg, color)
         if entity.health then
             if car and car.health_pool and car.health_pool.health then
                 car.health_pool.health = car.health_pool.health - 500
@@ -296,7 +316,7 @@ local compare_player_and_train = function(player, entity)
             entity.health = entity.health - 500
             if entity.health <= 0 then
                 entity.die('enemy')
-                Task.set_timeout_in_ticks(30, spidertron_too_far, {player = player})
+                Task.set_timeout_in_ticks(30, spidertron_too_far, { player = player })
                 return
             end
         end
@@ -388,7 +408,7 @@ local function distance(player)
                         upgrade = false,
                         static = true
                     }
-                    Task.set_timeout_in_ticks(150, spidertron_unlocked, {bw = bw})
+                    Task.set_timeout_in_ticks(150, spidertron_unlocked, { bw = bw })
                 end
             end
 
@@ -478,7 +498,7 @@ local function on_player_driving_changed_state(event)
         return
     end
 
-    Task.set_timeout_in_ticks(15, driving_state_changed_token, {player_index = player.index, entity = entity})
+    Task.set_timeout_in_ticks(15, driving_state_changed_token, { player_index = player.index, entity = entity })
 end
 
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)

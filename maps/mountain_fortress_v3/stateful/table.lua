@@ -43,7 +43,7 @@ Global.register(
     end
 )
 
-local damage_types = { 'physical', 'electric', 'poison', 'laser' }
+local damage_types = { 'physical', 'explosion', 'laser' }
 
 local buff_to_string = {
     ['starting_items'] = 'Starting items',
@@ -874,24 +874,24 @@ end
 
 local function get_random_spell()
     local items = {
-        { 'small-biter',             scale(1000, 10000) },
-        { 'small-spitter',           scale(1000, 60000) },
-        { 'medium-biter',            scale(1000, 200000) },
-        { 'medium-spitter',          scale(1000, 100000) },
-        { 'shotgun-shell',           scale(1000, 100000) },
-        { 'grenade',                 scale(1000, 80000) },
-        { 'cluster-grenade',         scale(1000, 50000) },
-        { 'cannon-shell',            scale(1000, 100000) },
-        { 'explosive-cannon-shell',  scale(1000, 50000) },
-        { 'uranium-cannon-shell',    scale(1000, 100000) },
-        { 'rocket',                  scale(1000, 100000) },
-        { 'acid-stream-spitter-big', scale(1000, 200000) },
-        { 'explosives',              scale(5000, 100000) },
-        { 'distractor-capsule',      scale(5000, 100000) },
-        { 'defender-capsule',        scale(5000, 100000) },
-        { 'destroyer-capsule',       scale(5000, 100000) },
-        { 'warp-gate',               scale(5000, 500000) },
-        { 'haste',                   scale(5000, 500000) }
+        { 'small-biter',             scale(100, 2500) },
+        { 'small-spitter',           scale(100, 2500) },
+        { 'medium-biter',            scale(100, 2500) },
+        { 'medium-spitter',          scale(100, 2500) },
+        { 'shotgun-shell',           scale(100, 2500) },
+        { 'grenade',                 scale(100, 2500) },
+        { 'cluster-grenade',         scale(100, 2500) },
+        { 'cannon-shell',            scale(100, 2500) },
+        { 'explosive-cannon-shell',  scale(100, 2500) },
+        { 'uranium-cannon-shell',    scale(100, 2500) },
+        { 'rocket',                  scale(100, 2500) },
+        { 'acid-stream-spitter-big', scale(100, 2500) },
+        { 'explosives',              scale(100, 2500) },
+        { 'distractor-capsule',      scale(100, 2500) },
+        { 'defender-capsule',        scale(100, 2500) },
+        { 'destroyer-capsule',       scale(100, 2500) },
+        { 'warp-gate',               scale(100, 2500) },
+        { 'haste',                   scale(100, 2500) }
     }
 
     shuffle(items)
@@ -1551,7 +1551,7 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
         if not this.objectives.cast_spell_any or (this.objectives_completed ~= nil and this.objectives_completed.cast_spell_any) then
             this.objectives.cast_spell_any = {
                 actual = 0,
-                expected = scale(1000, 4000000),
+                expected = scale(100, 1000),
                 name = 'Any'
             }
         end
@@ -1559,7 +1559,7 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
             local item = get_random_handcrafted_item()
             this.objectives.launch_item = {
                 actual = 0,
-                expected = scale(10, 700),
+                expected = scale(1, 50),
                 name = item.name
             }
         end
