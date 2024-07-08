@@ -38,7 +38,7 @@ local this = {
 
 Global.register(
     this,
-    function(t)
+    function (t)
         this = t
     end
 )
@@ -55,51 +55,51 @@ local function get_header(tbl, name)
 end
 
 local header_modifier = {
-    ['username_asc'] = function(tbl)
+    ['username_asc'] = function (tbl)
         local setting = get_header(tbl, 'username')
         setting.name = setting.name .. '[color=yellow]' .. symbol_asc .. '[/color]'
     end,
-    ['username_desc'] = function(tbl)
+    ['username_desc'] = function (tbl)
         local setting = get_header(tbl, 'username')
         setting.name = setting.name .. '[color=yellow]' .. symbol_desc .. '[/color]'
     end,
-    ['rpg_asc'] = function(tbl)
+    ['rpg_asc'] = function (tbl)
         local setting = get_header(tbl, 'rpg')
         setting.name = setting.name .. '[color=yellow]' .. symbol_asc .. '[/color]'
     end,
-    ['rpg_desc'] = function(tbl)
+    ['rpg_desc'] = function (tbl)
         local setting = get_header(tbl, 'rpg')
         setting.name = setting.name .. '[color=yellow]' .. symbol_desc .. '[/color]'
     end,
-    ['coins_asc'] = function(tbl)
+    ['coins_asc'] = function (tbl)
         local setting = get_header(tbl, 'coins')
         setting.name = setting.name .. '[color=yellow]' .. symbol_asc .. '[/color]'
     end,
-    ['coins_desc'] = function(tbl)
+    ['coins_desc'] = function (tbl)
         local setting = get_header(tbl, 'coins')
         setting.name = setting.name .. '[color=yellow]' .. symbol_desc .. '[/color]'
     end,
-    ['total_time_asc'] = function(tbl)
+    ['total_time_asc'] = function (tbl)
         local setting = get_header(tbl, 'total_time')
         setting.name = setting.name .. '[color=yellow]' .. symbol_asc .. '[/color]'
     end,
-    ['total_time_desc'] = function(tbl)
+    ['total_time_desc'] = function (tbl)
         local setting = get_header(tbl, 'total_time')
         setting.name = setting.name .. '[color=yellow]' .. symbol_desc .. '[/color]'
     end,
-    ['current_time_asc'] = function(tbl)
+    ['current_time_asc'] = function (tbl)
         local setting = get_header(tbl, 'current_time')
         setting.name = setting.name .. '[color=yellow]' .. symbol_asc .. '[/color]'
     end,
-    ['current_time_desc'] = function(tbl)
+    ['current_time_desc'] = function (tbl)
         local setting = get_header(tbl, 'current_time')
         setting.name = setting.name .. '[color=yellow]' .. symbol_desc .. '[/color]'
     end,
-    ['poke_asc'] = function(tbl)
+    ['poke_asc'] = function (tbl)
         local setting = get_header(tbl, 'poke')
         setting.name = setting.name .. '[color=yellow]' .. symbol_asc .. '[/color]'
     end,
-    ['poke_desc'] = function(tbl)
+    ['poke_desc'] = function (tbl)
         local setting = get_header(tbl, 'poke')
         setting.name = setting.name .. '[color=yellow]' .. symbol_desc .. '[/color]'
     end
@@ -132,7 +132,7 @@ local function get_sorted_list(sort_by)
     local session_table = Session.get_session_table()
     local player_list = {}
     Core.iter_connected_players(
-        function(player, index)
+        function (player, index)
             local player_data = player_list[index] or {}
             player_data.rank = get_rank(player)
             player_data.name = player.name
@@ -187,19 +187,25 @@ local function player_list_show(data)
 
     local gui_data =
         Vars.gui_data(
-        {
-            header_label_name = header_label_name,
-            show_roles_in_list = this.show_roles_in_list,
-            locate_player_frame_name = locate_player_frame_name,
-            rpg_enabled = this.rpg_enabled,
-            poke_player_frame_name = poke_player_frame_name
-        }
-    )
+            {
+                header_label_name = header_label_name,
+                show_roles_in_list = this.show_roles_in_list,
+                locate_player_frame_name = locate_player_frame_name,
+                rpg_enabled = this.rpg_enabled,
+                poke_player_frame_name = poke_player_frame_name
+            }
+        )
+
+
 
     if sort_by then
         this.player_list.sorting_method[data.player.index] = sort_by
     else
         sort_by = this.player_list.sorting_method[data.player.index]
+    end
+
+    if this.player_list.sorting_method[data.player.index] == '_desc' or this.player_list.sorting_method[data.player.index] == '_asc' then
+        this.player_list.sorting_method[data.player.index] = 'total_time_desc'
     end
 
     if not sort_by then
@@ -208,10 +214,10 @@ local function player_list_show(data)
 
     header_modifier[sort_by](gui_data)
 
-    local player_tbl = frame.add {type = 'table', column_count = #gui_data}
+    local player_tbl = frame.add { type = 'table', column_count = #gui_data }
 
     for _, setting in pairs(gui_data) do
-        local label = player_tbl.add {type = 'label', caption = ''}
+        local label = player_tbl.add { type = 'label', caption = '' }
         label.style.minimal_width = setting.header_width
         label.style.maximal_width = setting.header_width
     end
@@ -223,15 +229,15 @@ local function player_list_show(data)
     -- List management
     local player_list_panel_table =
         frame.add {
-        type = 'scroll-pane',
-        name = 'scroll_pane',
-        direction = 'vertical',
-        horizontal_scroll_policy = 'never',
-        vertical_scroll_policy = 'auto'
-    }
+            type = 'scroll-pane',
+            name = 'scroll_pane',
+            direction = 'vertical',
+            horizontal_scroll_policy = 'never',
+            vertical_scroll_policy = 'auto'
+        }
     player_list_panel_table.style.maximal_height = 400
 
-    player_list_panel_table = player_list_panel_table.add {type = 'table', name = 'player_list_panel_table', column_count = #gui_data}
+    player_list_panel_table = player_list_panel_table.add { type = 'table', name = 'player_list_panel_table', column_count = #gui_data }
 
     local player_list = get_sorted_list(sort_by)
     for i = 1, #player_list, 1 do
@@ -246,7 +252,7 @@ local player_list_show_token = Token.register(player_list_show)
 
 Gui.on_click(
     locate_player_frame_name,
-    function(event)
+    function (event)
         local player = event.player
         local element = event.element
 
@@ -284,7 +290,7 @@ Gui.on_click(
 
 Gui.on_click(
     poke_player_frame_name,
-    function(event)
+    function (event)
         local player = event.player
         local element = event.element
 
@@ -321,7 +327,7 @@ local function refresh()
             if frame.name ~= tag then
                 return
             end
-            local data = {player = player, frame = frame, sort_by = this.player_list.sorting_method[player.index]}
+            local data = { player = player, frame = frame, sort_by = this.player_list.sorting_method[player.index] }
             player_list_show(data)
         end
     end
@@ -354,11 +360,11 @@ function Public.rpg_enabled(value)
     return this.rpg_enabled
 end
 
-Gui.add_tab_to_gui({name = module_name, caption = tag, id = player_list_show_token, admin = false})
+Gui.add_tab_to_gui({ name = module_name, caption = tag, id = player_list_show_token, admin = false })
 
 Gui.on_click(
     module_name,
-    function(event)
+    function (event)
         local player = event.player
         Gui.reload_active_tab(player)
     end
@@ -366,7 +372,7 @@ Gui.on_click(
 
 Gui.on_click(
     header_label_name,
-    function(event)
+    function (event)
         local player = event.player
         local element = event.element
         if not element or not element.valid then
@@ -387,10 +393,10 @@ Gui.on_click(
         end
 
         if string.find(element.caption, symbol_desc) then
-            local data = {player = player, frame = frame, sort_by = parent.name .. '_asc'}
+            local data = { player = player, frame = frame, sort_by = parent.name and parent.name:len() > 0 and parent.name .. '_asc' or nil }
             player_list_show(data)
         else
-            local data = {player = player, frame = frame, sort_by = parent.name .. '_desc'}
+            local data = { player = player, frame = frame, sort_by = parent.name and parent.name:len() > 0 and parent.name .. '_desc' or nil }
             player_list_show(data)
         end
         local is_spamming = SpamProtection.is_spamming(player, nil, 'PlayerList Gui Click')
