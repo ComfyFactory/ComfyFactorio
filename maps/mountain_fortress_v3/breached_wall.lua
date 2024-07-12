@@ -281,10 +281,6 @@ local compare_player_and_train = function (player, entity)
     local locomotive_distance_too_far_pre_warning = c_y - t_y > spidertron_warning_position_pre_warning
     local surface = player.surface
 
-    log(serpent.block(c_y - t_y))
-    log(serpent.block(spidertron_warning_position))
-    log(serpent.block(spidertron_warning_position_pre_warning))
-
     local color = Color.yellow
     if locomotive_distance_too_far_pre_warning and not locomotive_distance_too_far then
         local msg = 'Warning! You are getting too far away from the train!'
