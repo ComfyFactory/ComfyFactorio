@@ -918,7 +918,7 @@ local function get_random_research_recipe()
         return { name = research_level_list[1], count = 1, research_count = 0 }
     end
 
-    return { name = research_level_list[1], count = scale(2, 11, 1.03), research_count = 0 }
+    return { name = research_level_list[1], count = scale(2, 9, 1.03), research_count = 0 }
 end
 
 local function get_random_objectives()
