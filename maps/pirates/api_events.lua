@@ -1531,58 +1531,61 @@ local function event_on_player_joined_game(event)
 			Common.ensure_chunks_at(surface, spawnpoint, 5)
 		end
 
-		Common.notify_player_expected(player, {'pirates.player_join_game_info'})
+		Common.notify_player_expected(player, { 'pirates.player_join_game_info' })
 
 		player.force = Common.lobby_force_name
 
+
+		-- It was suggested to always spawn players in lobby, in hopes that they may want to create their crew increasing the popularity of scenario.
+
 		-- Auto-join the oldest crew:
-		local ages = {}
-		for _, memory in pairs(global_memory.crew_memories) do
-			if Common.is_id_valid(memory.id)
-				and (not memory.run_is_private)
-				and memory.crewstatus == Crew.enum.ADVENTURING
-				and memory.capacity
-				and memory.crewplayerindices
-				and #memory.crewplayerindices < memory.capacity
-				and (not (memory.tempbanned_from_joining_data
-					and memory.tempbanned_from_joining_data[player.index]
-					and game.tick < memory.tempbanned_from_joining_data[player.index] + Common.ban_from_rejoining_crew_ticks)) then
-				ages[#ages+1] = {id = memory.id, age = memory.age, large = (memory.capacity >= Common.minimum_run_capacity_to_enforce_space_for)}
-			end
-		end
-		table.sort(
-			ages,
-			function(a, b) --true if a should be to the left of b
-				if a.large and (not b.large) then
-					return true
-				elseif (not a.large) and b.large then
-					return false
-				else
-					return a.age > b.age
-				end
-			end
-		)
-		if ages[1] then
-			Crew.join_crew(player)
+		-- local ages = {}
+		-- for _, memory in pairs(global_memory.crew_memories) do
+		-- 	if Common.is_id_valid(memory.id)
+		-- 		and (not memory.run_is_private)
+		-- 		and memory.crewstatus == Crew.enum.ADVENTURING
+		-- 		and memory.capacity
+		-- 		and memory.crewplayerindices
+		-- 		and #memory.crewplayerindices < memory.capacity
+		-- 		and (not (memory.tempbanned_from_joining_data
+		-- 			and memory.tempbanned_from_joining_data[player.index]
+		-- 			and game.tick < memory.tempbanned_from_joining_data[player.index] + Common.ban_from_rejoining_crew_ticks)) then
+		-- 		ages[#ages+1] = {id = memory.id, age = memory.age, large = (memory.capacity >= Common.minimum_run_capacity_to_enforce_space_for)}
+		-- 	end
+		-- end
+		-- table.sort(
+		-- 	ages,
+		-- 	function(a, b) --true if a should be to the left of b
+		-- 		if a.large and (not b.large) then
+		-- 			return true
+		-- 		elseif (not a.large) and b.large then
+		-- 			return false
+		-- 		else
+		-- 			return a.age > b.age
+		-- 		end
+		-- 	end
+		-- )
+		-- if ages[1] then
+		-- 	Crew.join_crew(player)
 
-			local memory = global_memory.crew_memories[ages[1].id]
-			if (not memory.run_is_protected) and #memory.crewplayerindices <= 1 then
-				Roles.make_captain(player)
-			end
+		-- 	local memory = global_memory.crew_memories[ages[1].id]
+		-- 	if (not memory.run_is_protected) and #memory.crewplayerindices <= 1 then
+		-- 		Roles.make_captain(player)
+		-- 	end
 
-			if ages[2] then
-				if ages[1].large and (not ages[#ages].large) then
-					Common.notify_player_announce(player, {'pirates.goto_oldest_crew_with_large_capacity'})
-				else
-					Common.notify_player_announce(player, {'pirates.goto_oldest_crew'})
-				end
-			end
+		-- 	if ages[2] then
+		-- 		if ages[1].large and (not ages[#ages].large) then
+		-- 			Common.notify_player_announce(player, {'pirates.goto_oldest_crew_with_large_capacity'})
+		-- 		else
+		-- 			Common.notify_player_announce(player, {'pirates.goto_oldest_crew'})
+		-- 		end
+		-- 	end
 
-			if memory.run_is_protected and (not Roles.captain_exists()) then
-				Common.notify_player_expected(player, {'pirates.player_joins_protected_run_with_no_captain'})
-				Common.notify_player_expected(player, {'pirates.create_new_crew_tip'})
-			end
-		end
+		-- 	if memory.run_is_protected and (not Roles.captain_exists()) then
+		-- 		Common.notify_player_expected(player, {'pirates.player_joins_protected_run_with_no_captain'})
+		-- 		Common.notify_player_expected(player, {'pirates.create_new_crew_tip'})
+		-- 	end
+		-- end
 	end
 
 	if not _DEBUG then
