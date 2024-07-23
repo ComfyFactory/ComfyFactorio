@@ -126,6 +126,20 @@ local function get_class(player)
     return classes[high_attribute_name]
 end
 
+local function add_gui_progressbar(element, value, width, tooltip, min_height, max_height)
+    local e = element.add({
+        type = 'progressbar',
+        value = value
+    })
+    e.tooltip = tooltip or ''
+    e.style.maximal_width = width
+    e.style.minimal_width = width
+    e.style.maximal_height = max_height or 20
+    e.style.minimal_height = min_height or 19
+    e.style.bar_width = max_height or 20
+    return e
+end
+
 local function add_gui_description(element, value, width, tooltip, min_height, max_height)
     local e = element.add({type = 'label', caption = value})
     e.tooltip = tooltip or ''
@@ -213,6 +227,28 @@ local function toggle_state(player, label, modifier)
     end
 end
 
+function Public.update_xp_gui(player)
+    local rpg_t = Public.get_value_from_player(player.index)
+    if not rpg_t then
+        return
+    end
+    local f = player.gui.screen[main_frame_name]
+    if not f then
+        return
+    end
+    local d = Gui.get_data(f)
+    if d and d.exp_gui and d.exp_gui.valid then
+        d.exp_gui.caption = floor(rpg_t.xp)
+    end
+    if d and d.exp_bar and d.exp_bar.valid then
+        local xp_current = rpg_t.xp - experience_levels[rpg_t.level]
+        local xp_total = experience_levels[rpg_t.level + 1] - experience_levels[rpg_t.level]
+        local xp_progress = xp_current / xp_total
+        d.exp_bar.value = xp_progress
+        d.exp_bar.tooltip = ({'rpg_gui.xp_progress_tooltip', floor(xp_progress * 100), floor(xp_current), xp_total})
+    end
+end
+
 local function draw_main_frame(player, location)
     if not player.character then
         return
@@ -273,8 +309,14 @@ local function draw_main_frame(player, location)
     local exp_gui = add_gui_stat(scroll_table, floor(rpg_t.xp), 125, ({'rpg_gui.gain_info_tooltip'}))
     data.exp_gui = exp_gui
 
-    add_gui_description(scroll_table, ' ', 75)
-    add_gui_description(scroll_table, ' ', 75)
+    add_gui_description(scroll_table, ({'rpg_gui.xp_progress'}), 80)
+    local xp_current = rpg_t.xp - experience_levels[rpg_t.level]
+    local xp_total = experience_levels[rpg_t.level + 1] - experience_levels[rpg_t.level]
+    local xp_progress = xp_current / xp_total
+    local exp_bar = add_gui_progressbar(scroll_table, xp_progress, 80, ({'rpg_gui.xp_progress_tooltip',
+                                                                         floor(xp_progress * 100), floor(xp_current),
+                                                                         xp_total}))
+    data.exp_bar = exp_bar
 
     add_gui_description(scroll_table, ({'rpg_gui.next_level_name'}), 100)
     add_gui_stat(scroll_table, experience_levels[rpg_t.level + 1], 125, ({'rpg_gui.gain_info_tooltip'}))

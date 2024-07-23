@@ -704,14 +704,6 @@ local function on_pre_player_mined_item(event)
         xp_amount = (1.5 + entity.prototype.max_health * xp_modifier_when_mining) * distance_multiplier
     end
 
-    if player.gui.screen[main_frame_name] then
-        local f = player.gui.screen[main_frame_name]
-        local data = Gui.get_data(f)
-        if data.exp_gui and data.exp_gui.valid then
-            data.exp_gui.caption = floor(rpg_t.xp)
-        end
-    end
-
     Public.gain_xp(player, xp_amount)
     Public.reward_mana(player, 0.5 * distance_multiplier)
 end

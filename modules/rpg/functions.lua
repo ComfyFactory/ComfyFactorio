@@ -1579,17 +1579,11 @@ function Public.gain_xp(player, amount, added_to_pool, text)
         return
     end
 
-    local f = player.gui.screen[main_frame_name]
-    if f and f.valid then
-        local d = Gui.get_data(f)
-        if d.exp_gui and d.exp_gui.valid then
-            d.exp_gui.caption = math.floor(rpg_t.xp)
-        end
-    end
-
     if rpg_t.xp >= experience_levels[rpg_t.level + 1] then
         level_up(player)
     end
+
+    Public.update_xp_gui(player)
 
     if rpg_t.last_floaty_text > game.tick then
         if not text then
