@@ -1,6 +1,5 @@
 --RPG Modules
 local Public = require 'modules.rpg.core'
-local Gui = require 'utils.gui'
 local Event = require 'utils.event'
 local AntiGrief = require 'utils.antigrief'
 local SpamProtection = require 'utils.spam_protection'

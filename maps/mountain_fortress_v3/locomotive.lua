@@ -5,7 +5,6 @@ local ICFunctions = require 'maps.mountain_fortress_v3.ic.functions'
 local Session = require 'utils.datastore.session_data'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 local RPG = require 'modules.rpg.main'
-local Gui = require 'utils.gui'
 local Alert = require 'utils.alert'
 local Color = require 'utils.color_presets'
 local Modifiers = require 'utils.player_modifiers'
@@ -14,7 +13,6 @@ local Task = require 'utils.task_token'
 
 local zone_settings = Public.zone_settings
 
-local rpg_main_frame = RPG.main_frame_name
 local random = math.random
 local floor = math.floor
 local round = math.round
