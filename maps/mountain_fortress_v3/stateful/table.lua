@@ -87,9 +87,17 @@ local function notify_season_over_to_discord()
             for name, buff_data in pairs(stateful.buffs_collected) do
                 if type(buff_data.amount) ~= 'table' and name ~= 'starting_items' then
                     if name == 'xp_level' or name == 'xp_bonus' or name == 'character_health_bonus' then
-                        buffs = buffs .. buff_to_string[name] .. ': ' .. buff_data.count
+                        if buff_data.count and buff_to_string[name] then
+                            buffs = buffs .. buff_to_string[name] .. ': ' .. buff_data.count
+                        else
+                            buffs = buffs .. name .. ': Active'
+                        end
                     else
-                        buffs = buffs .. buff_to_string[name] .. ': ' .. (buff_data.count * 100) .. '%'
+                        if buff_data.count and buff_to_string[name] then
+                            buffs = buffs .. buff_to_string[name] .. ': ' .. (buff_data.count * 100) .. '%'
+                        else
+                            buffs = buffs .. name .. ': Active'
+                        end
                     end
                     buffs = buffs .. '\n'
                 end
