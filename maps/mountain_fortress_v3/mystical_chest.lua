@@ -240,7 +240,7 @@ local function init_price_check(locomotive, mystical_chest)
 
     local price = {}
     for k, v in pairs(item_stacks) do
-        insert(price, {name = k, count = v})
+        insert(price, { name = k, count = v })
     end
 
     mystical_chest.price = price
@@ -265,55 +265,55 @@ end
 
 local restore_mining_speed_token =
     Task.register(
-    function()
-        local mc_rewards = Public.get('mc_rewards')
-        local force = game.forces.player
-        if mc_rewards.temp_boosts.mining then
-            force.manual_mining_speed_modifier = force.manual_mining_speed_modifier - 0.5
-            mc_rewards.temp_boosts.mining = nil
-            local message = ({'locomotive.mining_bonus_end'})
-            Alert.alert_all_players(10, message, nil, 'achievement/tech-maniac')
+        function ()
+            local mc_rewards = Public.get('mc_rewards')
+            local force = game.forces.player
+            if mc_rewards.temp_boosts.mining then
+                force.manual_mining_speed_modifier = force.manual_mining_speed_modifier - 0.5
+                mc_rewards.temp_boosts.mining = nil
+                local message = ({ 'locomotive.mining_bonus_end' })
+                Alert.alert_all_players(10, message, nil, 'achievement/tech-maniac')
+            end
         end
-    end
-)
+    )
 
 local restore_crafting_speed_token =
     Task.register(
-    function()
-        local mc_rewards = Public.get('mc_rewards')
-        local force = game.forces.player
-        if mc_rewards.temp_boosts.crafting then
-            force.manual_crafting_speed_modifier = force.manual_crafting_speed_modifier - 1
-            mc_rewards.temp_boosts.crafting = nil
-            local message = ({'locomotive.crafting_bonus_end'})
-            Alert.alert_all_players(10, message, nil, 'achievement/tech-maniac')
+        function ()
+            local mc_rewards = Public.get('mc_rewards')
+            local force = game.forces.player
+            if mc_rewards.temp_boosts.crafting then
+                force.manual_crafting_speed_modifier = force.manual_crafting_speed_modifier - 1
+                mc_rewards.temp_boosts.crafting = nil
+                local message = ({ 'locomotive.crafting_bonus_end' })
+                Alert.alert_all_players(10, message, nil, 'achievement/tech-maniac')
+            end
         end
-    end
-)
+    )
 
 local restore_movement_speed_token =
     Task.register(
-    function()
-        local mc_rewards = Public.get('mc_rewards')
-        local force = game.forces.player
-        if mc_rewards.temp_boosts.movement then
-            force.character_running_speed_modifier = force.character_running_speed_modifier - 0.2
-            mc_rewards.temp_boosts.movement = nil
-            local message = ({'locomotive.movement_bonus_end'})
-            Alert.alert_all_players(10, message, nil, 'achievement/tech-maniac')
+        function (event)
+            local mc_rewards = Public.get('mc_rewards')
+            local force = game.forces.player
+            if mc_rewards.temp_boosts.movement then
+                force.character_running_speed_modifier = event.speed
+                mc_rewards.temp_boosts.movement = nil
+                local message = ({ 'locomotive.movement_bonus_end' })
+                Alert.alert_all_players(10, message, nil, 'achievement/tech-maniac')
+            end
         end
-    end
-)
+    )
 
 local mc_random_rewards = {
     {
         name = 'XP',
-        color = {r = 0.00, g = 0.45, b = 0.00},
+        color = { r = 0.00, g = 0.45, b = 0.00 },
         tooltip = 'Selecting this will insert random XP onto the global xp pool!',
-        func = (function(player)
+        func = (function (player)
             local rng = random(2048, 10240)
             RPG.add_to_global_pool(rng)
-            local message = ({'locomotive.xp_bonus', player.name})
+            local message = ({ 'locomotive.xp_bonus', player.name })
             Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
             return true
         end),
@@ -321,21 +321,21 @@ local mc_random_rewards = {
     },
     {
         name = 'Coins',
-        color = {r = 0.00, g = 0.35, b = 0.00},
+        color = { r = 0.00, g = 0.35, b = 0.00 },
         tooltip = 'Selecting this will grant each player some coins!',
-        func = (function(p)
+        func = (function (p)
             local rng = random(512, 2048)
             local players = game.connected_players
             for i = 1, #players do
                 local player = players[i]
                 if player and player.valid then
-                    if player.can_insert({name = 'coin', count = rng}) then
-                        player.insert({name = 'coin', count = rng})
+                    if player.can_insert({ name = 'coin', count = rng }) then
+                        player.insert({ name = 'coin', count = rng })
                         StatData.get_data(player):increase('coins', rng)
                     end
                 end
             end
-            local message = ({'locomotive.coin_bonus', p.name})
+            local message = ({ 'locomotive.coin_bonus', p.name })
             Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
             return true
         end),
@@ -344,9 +344,9 @@ local mc_random_rewards = {
     {
         name = 'Movement bonus',
         str = 'movement',
-        color = {r = 0.00, g = 0.25, b = 0.00},
+        color = { r = 0.00, g = 0.25, b = 0.00 },
         tooltip = 'Selecting this will grant the team a bonus movement speed for 15 minutes!',
-        func = (function(player)
+        func = (function (player)
             local mc_rewards = Public.get('mc_rewards')
             local force = game.forces.player
             if mc_rewards.temp_boosts.movement then
@@ -355,9 +355,9 @@ local mc_random_rewards = {
 
             mc_rewards.temp_boosts.movement = true
 
-            Task.set_timeout_in_ticks(54000, restore_movement_speed_token)
+            Task.set_timeout_in_ticks(54000, restore_movement_speed_token, { speed = force.character_running_speed_modifier })
             force.character_running_speed_modifier = force.character_running_speed_modifier + 0.6
-            local message = ({'locomotive.movement_bonus', player.name})
+            local message = ({ 'locomotive.movement_bonus', player.name })
             Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
             return true
         end),
@@ -366,9 +366,9 @@ local mc_random_rewards = {
     {
         name = 'Mining bonus',
         str = 'mining',
-        color = {r = 0.00, g = 0.00, b = 0.25},
+        color = { r = 0.00, g = 0.00, b = 0.25 },
         tooltip = 'Selecting this will grant the team a bonus mining speed for 15 minutes!',
-        func = (function(player)
+        func = (function (player)
             local mc_rewards = Public.get('mc_rewards')
             local force = game.forces.player
             if mc_rewards.temp_boosts.mining then
@@ -379,7 +379,7 @@ local mc_random_rewards = {
 
             Task.set_timeout_in_ticks(54000, restore_mining_speed_token)
             force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 1
-            local message = ({'locomotive.mining_bonus', player.name})
+            local message = ({ 'locomotive.mining_bonus', player.name })
             Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
             return true
         end),
@@ -387,9 +387,9 @@ local mc_random_rewards = {
     },
     {
         name = 'Crafting speed bonus',
-        color = {r = 0.00, g = 0.00, b = 0.25},
+        color = { r = 0.00, g = 0.00, b = 0.25 },
         tooltip = 'Selecting this will grant all players 100% crafting bonus for 15 minutes!',
-        func = (function(player)
+        func = (function (player)
             local mc_rewards = Public.get('mc_rewards')
             local force = game.forces.player
             if mc_rewards.temp_boosts.crafting then
@@ -400,7 +400,7 @@ local mc_random_rewards = {
 
             Task.set_timeout_in_ticks(54000, restore_crafting_speed_token)
             force.manual_crafting_speed_modifier = force.manual_crafting_speed_modifier + 2
-            local message = ({'locomotive.crafting_bonus', player.name})
+            local message = ({ 'locomotive.crafting_bonus', player.name })
             Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
             return true
         end),
@@ -414,9 +414,9 @@ local function mystical_chest_reward(player)
         return
     end
 
-    local frame = player.gui.screen.add {type = 'frame', caption = 'Mystical Reward:', name = 'reward_system', direction = 'vertical'}
+    local frame = player.gui.screen.add { type = 'frame', caption = 'Mystical Reward:', name = 'reward_system', direction = 'vertical' }
     frame.auto_center = true
-    frame = frame.add {type = 'frame', name = 'reward_system_1', direction = 'vertical', style = 'inside_shallow_frame'}
+    frame = frame.add { type = 'frame', name = 'reward_system_1', direction = 'vertical', style = 'inside_shallow_frame' }
     frame.style.padding = 4
 
     local mc_rewards = Public.get('mc_rewards')
@@ -429,7 +429,7 @@ local function mystical_chest_reward(player)
                 id = i,
                 name = d.name
             }
-            local b = frame.add({type = 'button', name = tostring(i), caption = d.name})
+            local b = frame.add({ type = 'button', name = tostring(i), caption = d.name })
             b.style.font_color = d.color
             b.style.font = 'heading-2'
             b.style.minimal_width = 180
@@ -555,7 +555,7 @@ function Public.roll_item_stack(remaining_budget, blacklist)
         end
     end
 
-    return {name = item_name, count = item_count}
+    return { name = item_name, count = item_count }
 end
 
 function Public.roll(budget, max_slots, blacklist)

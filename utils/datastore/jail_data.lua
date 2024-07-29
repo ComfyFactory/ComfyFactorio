@@ -1393,6 +1393,36 @@ Event.add(
     end
 )
 
+---@param event EventData.on_console_chat
+Event.add(defines.events.on_console_chat, function (event)
+    if not event.player_index then
+        return
+    end
+    local player = game.get_player(event.player_index)
+    if not player or not player.valid then
+        return
+    end
+
+    local secs = Server.get_current_time()
+    if not secs then
+        return
+    end
+    local p_data = get_player_data(player)
+    if jailed[player.name] and p_data and p_data.locked then
+        p_data.ping = p_data.ping or 0
+        if string.match(event.message, "gps") ~= nil then
+            p_data.ping = p_data.ping + 1
+            if p_data.ping == 3 then
+                local gulag = get_super_gulag_permission_group()
+                gulag.add_player(player)
+                Utils.print_to(nil, module_name .. player.name .. ' tried to spammy spammy from the gulag but the warden denied their request.')
+                p_data.ping = nil
+            end
+            return
+        end
+    end
+end)
+
 Gui.on_text_changed(
     placeholder_jail_text_box,
     function (event)

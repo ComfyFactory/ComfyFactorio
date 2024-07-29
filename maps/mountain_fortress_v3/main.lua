@@ -490,7 +490,7 @@ local compare_collapse_and_train = function ()
             if reverse_result > 200 then
                 Collapse.reverse_start_now(true, false)
                 Collapse.set_speed(1)
-                Collapse.set_amount(10)
+                Collapse.set_amount(40)
             else
                 if Collapse.has_reverse_collapse_started() then
                     Collapse.reverse_start_now(false, true)
@@ -502,7 +502,7 @@ local compare_collapse_and_train = function ()
         if result > 200 then
             Collapse.start_now(true, false)
             Collapse.set_speed(1)
-            Collapse.set_amount(10)
+            Collapse.set_amount(40)
         else
             if Collapse.has_collapse_started() then
                 Collapse.start_now(false, true)
