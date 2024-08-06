@@ -155,9 +155,20 @@ local function validate_entity(entity)
     return true
 end
 
+local function surface_name_to_unit_number(name)
+    -- split by _ and get the last element
+    local split = name:split('_')
+    local unit_number = split[#split]
+    return tonumber(unit_number)
+end
+
+local function unit_number_to_surface_name(unit_number)
+    return 'train_' .. unit_number
+end
+
 local function delete_empty_surfaces(icw)
     for k, surface in pairs(icw.surfaces) do
-        if not icw.trains[tonumber(surface.name)] then
+        if not icw.trains[surface_name_to_unit_number(surface.name)] then
             game.delete_surface(surface)
             icw.surfaces[k] = nil
         end
@@ -554,8 +565,9 @@ function Public.kill_wagon(icw, entity)
 end
 
 function Public.create_room_surface(icw, unit_number)
-    if game.surfaces[tostring(unit_number)] then
-        return game.surfaces[tostring(unit_number)]
+    local surface_name = unit_number_to_surface_name(unit_number)
+    if game.surfaces[surface_name] then
+        return game.surfaces[surface_name]
     end
     local map_gen_settings = {
         ['width'] = 2,
@@ -570,7 +582,7 @@ function Public.create_room_surface(icw, unit_number)
             ['decorative'] = {treat_missing_as_default = false}
         }
     }
-    local surface = game.create_surface(tostring(unit_number), map_gen_settings)
+    local surface = game.create_surface(surface_name, map_gen_settings)
     surface.freeze_daytime = true
     surface.daytime = 0.1
     surface.request_to_generate_chunks({16, 16}, 1)

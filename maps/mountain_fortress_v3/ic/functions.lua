@@ -167,6 +167,16 @@ local function get_owner_car_object(player)
     return false
 end
 
+local function surface_name_to_unit_number(name)
+    local split = name:split('_')
+    local unit_number = split[#split]
+    return tonumber(unit_number)
+end
+
+local function unit_number_to_surface_name(car_type, unit_number)
+    return car_type .. '_' .. unit_number
+end
+
 local function get_entity_from_player_surface(cars, player)
     for _, car in pairs(cars) do
         if validate_entity(car.entity) then
@@ -295,9 +305,9 @@ local function replace_surface(surfaces, entity, index)
     for k, surface_index in pairs(surfaces) do
         local surface = game.surfaces[surface_index]
         local unit_number = entity.unit_number
-        if tostring(index.saved_entity) == surface.name then
+        if unit_number_to_surface_name(index.name, index.saved_entity) == surface.name then
             if validate_entity(surface) then
-                surface.name = tostring(unit_number)
+                surface.name = unit_number_to_surface_name(entity.name, unit_number)
                 surfaces[unit_number] = surface.index
                 surfaces[k] = nil
             end
@@ -315,7 +325,7 @@ local function replace_surface_entity(cars, entity, index)
             local surface_index = car.surface
             local surface = game.surfaces[surface_index]
             if validate_entity(surface) then
-                surface.name = tostring(unit_number)
+                surface.name = unit_number_to_surface_name(entity.name, unit_number)
             end
         end
     end
@@ -1086,9 +1096,10 @@ function Public.validate_owner(player, entity)
     return false
 end
 
-function Public.create_room_surface(unit_number)
-    if game.surfaces[tostring(unit_number)] then
-        return game.surfaces[tostring(unit_number)].index
+function Public.create_room_surface(ce, unit_number)
+    local surface_name = unit_number_to_surface_name(ce.name, unit_number)
+    if game.surfaces[surface_name] then
+        return game.surfaces[surface_name].index
     end
 
     local map_gen_settings = {
@@ -1104,7 +1115,7 @@ function Public.create_room_surface(unit_number)
             ['decorative'] = { treat_missing_as_default = false }
         }
     }
-    local surface = game.create_surface(tostring(unit_number), map_gen_settings)
+    local surface = game.create_surface(surface_name, map_gen_settings)
     surface.freeze_daytime = true
     surface.daytime = 0.1
     surface.request_to_generate_chunks({ 16, 16 }, 1)
@@ -1288,7 +1299,7 @@ function Public.create_car(event)
 
     car = cars[un]
 
-    car.surface = Public.create_room_surface(un)
+    car.surface = Public.create_room_surface(ce, un)
     Public.create_car_room(car)
     render_owner_text(renders, player, ce)
 
@@ -1326,7 +1337,7 @@ function Public.remove_invalid_cars()
         if not validate_entity(surface) then
             return
         end
-        if not cars[tonumber(surface.name)] then
+        if not cars[surface_name_to_unit_number(surface.name)] then
             game.delete_surface(surface)
             surfaces[k] = nil
         end
