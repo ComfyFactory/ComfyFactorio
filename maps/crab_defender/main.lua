@@ -1125,17 +1125,17 @@ local function deny_building(event)
     return false
 end
 
-local on_built_entity = function(event)
+local on_built_entity = function (event)
     local get_score = Score.get_table().score_table
     local this = FDT.get()
     local entity = event.created_entity
+
+    if not entity or not entity.valid then
+        return
+    end
     local surface = entity.surface
 
     if not surface or not surface.valid then
-        return
-    end
-
-    if not entity.valid then
         return
     end
 
