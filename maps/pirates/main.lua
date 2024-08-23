@@ -36,6 +36,7 @@ local _inspect = require 'utils.inspect'.inspect
 -- local Modifers = require 'player_modifiers'
 local BottomFrame = require 'utils.gui.bottom_frame'
 local Autostash = require 'modules.autostash'
+local AntiGrief = require 'utils.antigrief'
 require 'modules.inserter_drops_pickup'
 
 
@@ -78,8 +79,8 @@ local Public = {}
 -- parrot sprites from https://elthen.itch.io/2d-pixel-art-parrot-sprites, licensed appropriately
 
 local jetty_delayed = Token.register(
-	-- function(data)
-	function()
+-- function(data)
+	function ()
 		Surfaces.Lobby.place_lobby_jetty_and_boats()
 	end
 )
@@ -87,18 +88,20 @@ local function on_init()
 	Memory.global_reset_memory()
 	local global_memory = Memory.get_global_memory()
 
+	AntiGrief.enable_capsule_cursor_warning(false)
+
 	game.reset_time_played()
 
 	-- local spectator = game.create_force('spectator')
 	-- local spectator_permissions = game.permissions.create_group('spectator')
 	-- spectator_permissions.set_allows_action(defines.input_action.start_walking,false)
 
-    Autostash.insert_into_furnace(true)
-    -- Autostash.insert_into_wagon(true)
-    Autostash.bottom_button(true)
-    BottomFrame.reset()
-    BottomFrame.activate_custom_buttons(true)
-    -- BottomFrame.bottom_right(true)
+	Autostash.insert_into_furnace(true)
+	-- Autostash.insert_into_wagon(true)
+	Autostash.bottom_button(true)
+	BottomFrame.reset()
+	BottomFrame.activate_custom_buttons(true)
+	-- BottomFrame.bottom_right(true)
 
 	local mgs = game.surfaces['nauvis'].map_gen_settings
 	mgs.width = 16
@@ -135,7 +138,6 @@ local function on_init()
 
 	-- Delay.global_add(Delay.global_enum.PLACE_LOBBY_JETTY_AND_BOATS)
 	Task.set_timeout_in_ticks(2, jetty_delayed, {})
-
 end
 
 local event = require 'utils.event'
@@ -276,11 +278,11 @@ local function crew_tick()
 		if memory.crew_disband_tick_message < tick then
 			memory.crew_disband_tick_message = nil
 
-			local message1 = {'pirates.crew_disband_tick_message', 30}
+			local message1 = { 'pirates.crew_disband_tick_message', 30 }
 
 			Common.notify_force(memory.force, message1)
 
-			Server.to_discord_embed_raw({'', '[' .. memory.name .. '] ', message1}, true)
+			Server.to_discord_embed_raw({ '', '[' .. memory.name .. '] ', message1 }, true)
 		end
 	end
 
@@ -342,16 +344,16 @@ event.add(defines.events.on_chunk_generated, PiratesApiEvents.event_on_chunk_gen
 ----- FOR DESYNC BUGFIXING -----
 local gMeta = getmetatable(_ENV)
 if not gMeta then
-    gMeta = {}
-    setmetatable(_ENV, gMeta)
+	gMeta = {}
+	setmetatable(_ENV, gMeta)
 end
 
-gMeta.__newindex = function(_, n, v)
-    log('Desync warning: attempt to write to undeclared var ' .. n)
-    global[n] = v
+gMeta.__newindex = function (_, n, v)
+	log('Desync warning: attempt to write to undeclared var ' .. n)
+	global[n] = v
 end
-gMeta.__index = function(_, n)
-    return global[n]
+gMeta.__index = function (_, n)
+	return global[n]
 end
 
 return Public

@@ -394,6 +394,7 @@ function Public.tick_quest_structure_entry_price_check()
 				local count = 1
 				for k, v in pairs(entry_price.batchRawMaterials) do
 					local item_count = v * removed / entry_price.batchSize
+					item_count = math.floor(item_count)
 					if item_count > 0 then
 						red_invs[count].insert({name = k, count = item_count});
 						count = count + 1
