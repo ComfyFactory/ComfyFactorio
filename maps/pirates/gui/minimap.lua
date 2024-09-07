@@ -40,6 +40,7 @@ function Public.toggle_window(player)
 
 	flow = GuiCommon.new_window(player, window_name)
 	flow.caption = {'pirates.gui_minimap_outside_view'}
+	---@diagnostic disable-next-line: inject-field
 	flow.style.maximal_width = 800
 
 	local memory = Memory.get_crew_memory()

@@ -1399,14 +1399,16 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 
 	-- copy away wagons:
 	local saved_wagons = {}
-	for i = 1, #entities_on_boat do
-		local e = entities_on_boat[i]
-		if e and e.valid and (e.name == 'cargo-wagon' or e.name == 'locomotive' or (e.name == 'entity-ghost' and (e.ghost_name == 'cargo-wagon' or e.ghost_name == 'locomotive'))) and (not Utils.contains(unique_entities_list, e)) then
-			unique_entities_list[#unique_entities_list + 1] = e
-			local p, f = e.position, e.force
-			local ee = e.clone{position = {x = p.x - first_rail_found_p.x, y = p.y - first_rail_found_p.y}, surface = game.surfaces['piratedev1'], force = f, create_build_effect_smoke = false}
-			if ee and ee.valid then
-				saved_wagons[#saved_wagons + 1] = ee
+	if first_rail_found_p then
+		for i = 1, #entities_on_boat do
+			local e = entities_on_boat[i]
+			if e and e.valid and (e.name == 'cargo-wagon' or e.name == 'locomotive' or (e.name == 'entity-ghost' and (e.ghost_name == 'cargo-wagon' or e.ghost_name == 'locomotive'))) and (not Utils.contains(unique_entities_list, e)) then
+				unique_entities_list[#unique_entities_list + 1] = e
+				local p, f = e.position, e.force
+				local ee = e.clone{position = {x = p.x - first_rail_found_p.x, y = p.y - first_rail_found_p.y}, surface = game.surfaces['piratedev1'], force = f, create_build_effect_smoke = false}
+				if ee and ee.valid then
+					saved_wagons[#saved_wagons + 1] = ee
+				end
 			end
 		end
 	end
@@ -1438,19 +1440,21 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 	end
 
 
-	-- copy back rails:
-	for _, ee in ipairs(saved_rails) do
-		if ee and ee.valid then
-			local p, f = ee.position, ee.force
-			ee.clone{position = {p.x + first_rail_found_p.x + vector.x, p.y + first_rail_found_p.y + vector.y}, surface = newsurface, force = f, create_build_effect_smoke = false}
+	if first_rail_found_p then
+		-- copy back rails:
+		for _, ee in ipairs(saved_rails) do
+			if ee and ee.valid then
+				local p, f = ee.position, ee.force
+				ee.clone{position = {p.x + first_rail_found_p.x + vector.x, p.y + first_rail_found_p.y + vector.y}, surface = newsurface, force = f, create_build_effect_smoke = false}
+			end
 		end
-	end
 
-	-- copy back wagons:
-	for _, ee in ipairs(saved_wagons) do
-		if ee and ee.valid then
-			local p, f = ee.position, ee.force
-			ee.clone{position = {p.x + first_rail_found_p.x + vector.x, p.y + first_rail_found_p.y + vector.y}, surface = newsurface, force = f, create_build_effect_smoke = false}
+		-- copy back wagons:
+		for _, ee in ipairs(saved_wagons) do
+			if ee and ee.valid then
+				local p, f = ee.position, ee.force
+				ee.clone{position = {p.x + first_rail_found_p.x + vector.x, p.y + first_rail_found_p.y + vector.y}, surface = newsurface, force = f, create_build_effect_smoke = false}
+			end
 		end
 	end
 

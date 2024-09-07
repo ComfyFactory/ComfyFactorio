@@ -100,6 +100,7 @@ function Public.toggle_window(player)
 	flow = GuiCommon.new_window(player, window_name)
 	flow.caption = {'pirates.gui_classes'}
 	flow.auto_center = true
+	---@diagnostic disable-next-line: inject-field
 	flow.style.maximal_width = 500
 
 	flow2 = flow.add({

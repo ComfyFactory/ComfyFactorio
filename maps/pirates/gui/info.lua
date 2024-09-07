@@ -35,7 +35,9 @@ function Public.toggle_window(player)
 	flow.selected_tab_index = 1
 
 	flow.style = 'frame_tabbed_pane'
+	---@diagnostic disable-next-line: inject-field
 	flow.style.width = width
+	---@diagnostic disable-next-line: inject-field
 	flow.style.height = 420
 
 	flow2 = Public.flow_add_info_tab(flow, {'pirates.gui_info_info'})

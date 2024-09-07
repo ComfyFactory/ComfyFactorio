@@ -107,6 +107,7 @@ function Public.full_update(player)
 			evolution_total = (evolution_leagues or 0) + (evolution_time or 0) + (evolution_nests or 0) + (evolution_silo or 0) + (evolution_sandwurms or 0) + (evolution_kraken or 0)
 		end
 
+    	---@type (string|table)[]
 		local str = {'',{'pirates.gui_evo_tooltip_1', string.format('%.2f', evolution_total)}}
 
 		if evolution_leagues or evolution_time or evolution_nests or evolution_silo or evolution_sandwurms then
