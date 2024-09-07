@@ -21,7 +21,7 @@ local Public = {}
 
 Public.activeCrewsCap = 5
 Public.private_run_cap = 2
-Public.protected_run_cap = 2 -- more precisely protected, but not private run cap
+Public.protected_but_not_private_run_cap = 2
 Public.minimumCapacitySliderValue = 1
 Public.minimum_run_capacity_to_enforce_space_for = 22
 

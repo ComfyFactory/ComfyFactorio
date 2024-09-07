@@ -791,7 +791,7 @@ function Public.click(event)
 			end
 		elseif run_is_protected then
 			-- Make sure protected run can be created
-			if protected_but_not_private_run_count >= global_memory.protected_run_cap then
+			if protected_but_not_private_run_count >= global_memory.protected_but_not_private_run_cap then
 				Common.notify_player_error(player, {'pirates.gui_runs_proposal_maker_error_protected_run_limit'})
 				return
 			end
@@ -916,7 +916,7 @@ function Public.click(event)
 							end
 						end
 
-						if protected_but_not_private_run_count >= global_memory.protected_run_cap then
+						if protected_but_not_private_run_count >= global_memory.protected_but_not_private_run_cap then
 							Common.notify_player_error(player, {'pirates.gui_runs_proposal_maker_error_protected_run_limit'})
 							return
 						end

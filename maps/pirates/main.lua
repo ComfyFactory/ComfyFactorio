@@ -109,7 +109,7 @@ local function on_init()
 	Common.init_game_settings(Balance.technology_price_multiplier)
 
 	global_memory.active_crews_cap = Common.activeCrewsCap
-	global_memory.protected_run_cap = Common.protected_run_cap
+	global_memory.protected_but_not_private_run_cap = Common.protected_but_not_private_run_cap
 	global_memory.private_run_cap = Common.private_run_cap
 
 	global_memory.minimumCapacitySliderValue = Common.minimumCapacitySliderValue
