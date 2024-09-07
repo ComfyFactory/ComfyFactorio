@@ -17,7 +17,7 @@ local Public = {}
 local window_name = 'info'
 
 
-local width = 430
+local width = 400
 
 
 
@@ -225,9 +225,9 @@ function Public.full_update(player)
 
 	local flow2 = flow
 	-- warning, if you make these too small, it loses 'Click to dismiss.'
-	-- This is really really dumb, to have to change these manually. But sadly I couldn't get the window to look like that and also be expandable.
+	-- This is really really dumb, to have to change these manually. But sadly we couldn't get the window to look like that and also be expandable.
 	if flow2.selected_tab_index == 1 then
-		flow2.style.height = 400
+		flow2.style.height = 360
 	elseif flow2.selected_tab_index == 2 then
 		flow2.style.height = 490
 	elseif flow2.selected_tab_index == 3 then

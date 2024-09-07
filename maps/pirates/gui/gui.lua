@@ -28,6 +28,7 @@ local Event = require 'utils.event'
 local CustomEvents = require 'maps.pirates.custom_events'
 local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 local Kraken = require 'maps.pirates.surfaces.sea.kraken'
+local GuiWelcome = require 'maps.pirates.gui.welcome'
 
 local ComfyGui = require 'utils.gui'
 ComfyGui.set_disabled_tab('Scoreboard', true)
@@ -1263,13 +1264,14 @@ local function on_gui_click(event)
 		-- 	Public.fuel.toggle_window(player)
 		-- 	Public.fuel.full_update(player)
 	else
+		if GuiWelcome.handle_click then GuiWelcome.handle_click(event) end
 		if GuiRuns.click then GuiRuns.click(event) end
 		if GuiCrew.click then GuiCrew.click(event) end
 		if GuiClasses.click then GuiClasses.click(event) end
 		if GuiFuel.click then GuiFuel.click(event) end
 		if GuiMinimap.click then GuiMinimap.click(event) end
 		if GuiInfo.click then GuiInfo.click(event) end
-	end
+    end
 end
 
 local function on_gui_location_changed(event)

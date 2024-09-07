@@ -12,8 +12,6 @@ local Common = require 'maps.pirates.common'
 
 local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 
--- this file is an API to all the balance tuning knobs
-
 
 -- Kraken related parameters
 Public.biter_swim_speed = 1.5

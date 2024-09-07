@@ -426,7 +426,6 @@ function Public.is_officer(player_index)
     end
 end
 
--- lifted shamelessly from biter battles, since I haven't done balancing work on this:
 function Public.surplus_evo_biter_damage_modifier(surplus_evo)
     return Math.floor(surplus_evo / 2 * 1000) / 1000 --is this floor needed?
 end

@@ -38,6 +38,7 @@ local Ores = require 'maps.pirates.ores'
 
 local Server = require 'utils.server'
 -- local Modifers = require 'player_modifiers'
+local GuiWelcome = require 'maps.pirates.gui.welcome'
 
 local tick_tack_trap = require 'maps.pirates.locally_maintained_comfy_forks.tick_tack_trap' --'enemy' force, but that's okay
 
@@ -1534,7 +1535,7 @@ local function event_on_player_joined_game(event)
 			Common.ensure_chunks_at(surface, spawnpoint, 5)
 		end
 
-		Common.notify_player_expected(player, { 'pirates.player_join_game_info' })
+		GuiWelcome.show_welcome_window(player)
 
 		player.force = Common.lobby_force_name
 

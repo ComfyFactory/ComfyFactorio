@@ -16,10 +16,6 @@ The scenario is quite complex, but there are ways to get started, even if you do
 ]]
 
 --[[
-	personal note for thesixthroc looking at this in XX years: my design notes are all in Obsidian (edit: mostly moved to Github Projects)
-]]
-
---[[
 	Convention for Factorio blueprints in this folder: Use Snap to grid -> Relative, Offset of zeroes.
 	We record tiles and entities separately. For tiles, we use the factorio dev approved 'concrete trick', painting each tile type separately as concrete. The concrete BP will typically need an offset, since it doesn't remember the center of the entities BP — we configure this offset in the Lua rather than the BP itself, since it's easier to edit that way.
 ]]
@@ -28,9 +24,7 @@ The scenario is quite complex, but there are ways to get started, even if you do
 -- require 'modules.biters_yield_coins'
 require 'modules.biter_noms_you'
 require 'modules.no_deconstruction_of_neutral_entities'
-
 require 'maps.pirates.custom_events' --probably do this before anything else
-
 require 'utils.server'
 local _inspect = require 'utils.inspect'.inspect
 -- local Modifers = require 'player_modifiers'
@@ -38,11 +32,8 @@ local BottomFrame = require 'utils.gui.bottom_frame'
 local Autostash = require 'modules.autostash'
 local AntiGrief = require 'utils.antigrief'
 require 'modules.inserter_drops_pickup'
-
-
 local PiratesApiOnTick = require 'maps.pirates.api_on_tick'
 local ClassPiratesApiOnTick = require 'maps.pirates.roles.tick_functions'
-
 require 'maps.pirates.commands'
 require 'maps.pirates.math'
 local Memory = require 'maps.pirates.memory'
@@ -76,7 +67,7 @@ local Math = require 'maps.pirates.math'
 
 local Public = {}
 
--- parrot sprites from https://elthen.itch.io/2d-pixel-art-parrot-sprites, licensed appropriately
+-- parrot sprites from https://elthen.itch.io/2d-pixel-art-parrot-sprites
 
 local jetty_delayed = Token.register(
 -- function(data)
@@ -84,6 +75,7 @@ local jetty_delayed = Token.register(
 		Surfaces.Lobby.place_lobby_jetty_and_boats()
 	end
 )
+
 local function on_init()
 	Memory.global_reset_memory()
 	local global_memory = Memory.get_global_memory()
