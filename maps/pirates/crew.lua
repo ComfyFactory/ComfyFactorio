@@ -259,6 +259,7 @@ function Public.join_spectators(player, crewid)
 			-- end
 
 			Common.send_important_items_from_player_to_crew(player, true)
+			
 			char.die(memory.force_name)
 
 			player.set_controller{type = defines.controllers.spectator}
@@ -402,11 +403,7 @@ function Public.join_crew(player, rejoin)
 					end
 				end
 
-				-- We shouldn't give back items when player was on island, but that island is gone.
-				-- Left in case we decide to store player inventory in offline character instead of in the corpse.
-				-- if not (rejoin_data.on_island and (not (rejoin_surface and rejoin_surface.valid))) then
-				-- 	Common.give_back_items_to_temporarily_logged_off_player(player)
-				-- end
+				Common.give_back_items_to_temporarily_logged_off_player(player)
 
 				memory.temporarily_logged_off_player_data[player.index] = nil
 			end
@@ -468,27 +465,10 @@ function Public.leave_crew(player, to_lobby, quiet)
 		local boat_surface_type = SurfacesCommon.decode_surface_name(memory.boat.surface_name).type
 
 		-- @TODO: figure out why surface_name can be nil
-		-- When player remains in island when ship leaves, prevent him from getting items back
-		-- local save_items = true
-		-- if player.surface and
-		-- 	player.surface.valid and
-		-- 	memory.boat and
-		-- 	memory.boat.surface_name
-		-- then
-		-- 	if player_surface_type == Surfaces.enum.ISLAND and boat_surface_type == Surfaces.enum.SEA then
-		-- 		save_items = false
-		-- 	end
-		-- end
 
-		-- Code regarding item saving is left here if we decide it's better to store items in
-		-- logged off character as opposed to in the character corpse.
-		-- if to_lobby then
-			-- if save_items then
-			-- 	Common.send_important_items_from_player_to_crew(player, true)
-			-- end
-			-- char.die(memory.force_name)
-		-- else
-		if not to_lobby then
+		if to_lobby then
+			Common.send_important_items_from_player_to_crew(player, true)
+		else
 			if not memory.temporarily_logged_off_player_data then memory.temporarily_logged_off_player_data = {} end
 
 			memory.temporarily_logged_off_player_data[player.index] = {
@@ -499,10 +479,7 @@ function Public.leave_crew(player, to_lobby, quiet)
 				tick = game.tick
 			}
 
-			-- if save_items then
-			-- 	Common.temporarily_store_logged_off_character_items(player)
-			-- end
-			-- memory.temporarily_logged_off_characters[player.index] = game.tick
+			Common.temporarily_store_logged_off_character_items(player)
 		end
 
 		char.die(memory.force_name)
@@ -784,7 +761,7 @@ function Public.initialise_crew(accepted_proposal)
 	memory.tempbanned_from_joining_data = {}
 	memory.destinations = {}
 	-- memory.temporarily_logged_off_characters = {}
-	-- memory.temporarily_logged_off_characters_items = {}
+	memory.temporarily_logged_off_characters_items = {}
 	memory.temporarily_logged_off_player_data = {}
 	memory.class_renderings = {}
 	memory.class_auxiliary_data = {}

@@ -87,6 +87,7 @@ function Public.initialise_crew_memory(id) --mostly serves as a dev reference of
     memory.captain_accrued_time_data = nil
     memory.max_players_recorded = nil
     memory.temporarily_logged_off_player_data = nil
+    memory.temporarily_logged_off_characters_items = nil
 
     memory.speed_boost_characters = nil
 
