@@ -260,7 +260,7 @@ function Public.join_spectators(player, crewid)
 			-- end
 
 			Common.send_important_items_from_player_to_crew(player, true)
-			
+
 			char.die(memory.force_name)
 
 			player.set_controller{type = defines.controllers.spectator}
@@ -517,7 +517,7 @@ function Public.leave_crew(player, to_lobby, quiet)
 		if Common.autodisband_ticks and not exists_disband_tick then
 			memory.crew_disband_tick = game.tick + Common.autodisband_ticks
 		end
-		
+
 		-- if _DEBUG then memory.crew_disband_tick = game.tick + 30*60*60 end
 	end
 end

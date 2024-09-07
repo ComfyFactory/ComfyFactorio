@@ -527,7 +527,7 @@ function Public.full_update(player)
 		local crewid
 		if bool1 then
 			crewid = tonumber((flow.ongoing_runs.body.ongoing_runs_listbox.get_item(flow.ongoing_runs.body.ongoing_runs_listbox.selected_index))[2])
-			selected_joinable_bool = bool1 and crewid and (global_memory.crew_memories[crewid].crewstatus == Crew.enum.ADVENTURING)
+			selected_joinable_bool = bool1 and crewid ~= nil and global_memory.crew_memories[crewid] ~= nil and (global_memory.crew_memories[crewid].crewstatus == Crew.enum.ADVENTURING)
 		end
 
 		flow.ongoing_runs.body.helpful_tip.visible = not (playercrew_status.leaving or playercrew_status.adventuring or playercrew_status.spectating)

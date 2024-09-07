@@ -531,6 +531,8 @@ function Public.process_etaframe_update(player, flow1, bools)
 
 	if bools.cost_bool or bools.atsea_loading_bool or bools.atsea_waiting_bool or bools.eta_bool or bools.retreating_bool or bools.leave_anytime_bool then
 		flow1.visible = true
+
+		---@type string|table
 		local tooltip = ''
 
 		flow2 = flow1.etaframe_piratebutton_flow_2
@@ -830,6 +832,7 @@ function Public.process_siloframe_and_questframe_updates(flowsilo, flowquest, bo
 
 			if quest_type then
 
+				---@type string|table
 				local tooltip = ''
 
 				if quest_complete and quest_reward then

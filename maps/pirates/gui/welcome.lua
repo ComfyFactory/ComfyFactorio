@@ -17,7 +17,7 @@ function Public.show_welcome_window(player)
     title_flow.style.horizontal_align = 'center'
     title_flow.style.top_margin = 10
     title_flow.style.width = 220
-    
+
     local colors = {
         {r=1, g=0.5, b=0.5},
         {r=1, g=0.7, b=0.5},
@@ -26,7 +26,7 @@ function Public.show_welcome_window(player)
         {r=0.5, g=0.7, b=1},
         {r=0.7, g=0.5, b=1}
     }
-    
+
     -- Todo: Localize
     local welcome = {'W', 'E', 'L', 'C', 'O', 'M', 'E', '!'}
 
@@ -44,7 +44,7 @@ function Public.show_welcome_window(player)
     message.style.width = 220
     message.style.rich_text_setting = defines.rich_text_setting.enabled
 
-    local message = frame.add{type = 'label', caption = {'pirates.welcome_main_2'}}
+    message = frame.add{type = 'label', caption = {'pirates.welcome_main_2'}}
     message.style.font = 'default'
     message.style.horizontal_align = 'center'
     message.style.single_line = false
