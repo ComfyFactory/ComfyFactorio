@@ -30,6 +30,7 @@ local _inspect = require 'utils.inspect'.inspect
 -- local Modifers = require 'player_modifiers'
 local BottomFrame = require 'utils.gui.bottom_frame'
 local Autostash = require 'modules.autostash'
+local Misc = require 'utils.commands.misc'
 local AntiGrief = require 'utils.antigrief'
 require 'modules.inserter_drops_pickup'
 local PiratesApiOnTick = require 'maps.pirates.api_on_tick'
@@ -91,6 +92,7 @@ local function on_init()
 	Autostash.insert_into_furnace(true)
 	-- Autostash.insert_into_wagon(true)
 	Autostash.bottom_button(true)
+    Misc.bottom_button(true)
 	BottomFrame.reset()
 	BottomFrame.activate_custom_buttons(true)
 	-- BottomFrame.bottom_right(true)
