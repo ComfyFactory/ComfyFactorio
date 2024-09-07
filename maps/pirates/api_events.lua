@@ -1535,12 +1535,12 @@ local function event_on_player_joined_game(event)
 			Common.ensure_chunks_at(surface, spawnpoint, 5)
 		end
 
+		Common.notify_player_expected(player, {'pirates.welcome_main_chat'})
 		GuiWelcome.show_welcome_window(player)
 
 		player.force = Common.lobby_force_name
 
-
-		-- It was suggested to always spawn players in lobby, in hopes that they may want to create their crew increasing the popularity of scenario.
+		-- NOTE: It was suggested to always spawn players in lobby, in hopes that they may want to create their crew increasing the popularity of scenario. Hence the following code is disabled.
 
 		-- Auto-join the oldest crew:
 		-- local ages = {}
