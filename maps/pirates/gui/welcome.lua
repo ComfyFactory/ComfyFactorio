@@ -36,21 +36,21 @@ function Public.show_welcome_window(player)
         label.style.font_color = colors[(i-1) % #colors + 1]
     end
 
-    local message = frame.add{type = 'label', caption = {'pirates.welcome_main_1'}}
-    message.style.font = 'default'
-    message.style.horizontal_align = 'center'
-    message.style.single_line = false
-    message.style.top_margin = 12
-    message.style.width = 220
-    message.style.rich_text_setting = defines.rich_text_setting.enabled
+    local message1 = frame.add{type = 'label', caption = {'pirates.welcome_main_1'}}
+    message1.style.font = 'scenario-message-dialog'
+    message1.style.horizontal_align = 'center'
+    message1.style.single_line = false
+    message1.style.top_margin = 12
+    message1.style.width = 220
+    message1.style.rich_text_setting = defines.rich_text_setting.enabled
 
-    message = frame.add{type = 'label', caption = {'pirates.welcome_main_2'}}
-    message.style.font = 'default'
-    message.style.horizontal_align = 'center'
-    message.style.single_line = false
-    message.style.top_margin = 10
-    message.style.width = 220
-    message.style.rich_text_setting = defines.rich_text_setting.enabled
+    local message2 = frame.add{type = 'label', caption = {'pirates.welcome_main_2'}}
+    message2.style.font = 'scenario-message-dialog'
+    message2.style.horizontal_align = 'center'
+    message2.style.single_line = false
+    message2.style.top_margin = 10
+    message2.style.width = 220
+    message2.style.rich_text_setting = defines.rich_text_setting.enabled
 
     local close_instruction = frame.add{type = 'label', caption = {'pirates.welcome_end'}}
     close_instruction.style.font = 'default-small'

@@ -1,3 +1,4 @@
+---@diagnostic disable: inject-field
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 
@@ -17,9 +18,7 @@ function Public.toggle_window(player)
 
 	flow = GuiCommon.new_window(player, window_name)
 	flow.caption = 'Colors!'
-	---@diagnostic disable-next-line: inject-field
 	flow.style.width = 500
-	---@diagnostic disable-next-line: inject-field
 	flow.style.height = 500
 
 	-- local label = ''

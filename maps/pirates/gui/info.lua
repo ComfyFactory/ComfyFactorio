@@ -1,3 +1,4 @@
+---@diagnostic disable: inject-field
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 
@@ -35,9 +36,7 @@ function Public.toggle_window(player)
 	flow.selected_tab_index = 1
 
 	flow.style = 'frame_tabbed_pane'
-	---@diagnostic disable-next-line: inject-field
 	flow.style.width = width
-	---@diagnostic disable-next-line: inject-field
 	flow.style.height = 420
 
 	flow2 = Public.flow_add_info_tab(flow, {'pirates.gui_info_info'})
@@ -175,9 +174,9 @@ function Public.flow_add_info_tab(flow, tab_name)
     flow3.style.horizontal_align = 'center'
 
 	flow4 = flow3.add{type = "label", caption = {"pirates.softmod_info_body_clicky"}}
+    flow4.style.font = 'default-small'
 	flow4.style.font_color = GuiCommon.friendly_font_color
 	flow4.style.single_line = false
-	flow4.style.font = 'default'
 	flow4.style.bottom_margin = 4
 	flow4.style.top_margin = 3
 

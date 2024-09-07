@@ -1,3 +1,4 @@
+---@diagnostic disable: inject-field
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 
@@ -22,7 +23,7 @@ Public.bold_font_color = {255, 230, 192}
 Public.default_font_color = {1, 1, 1}
 Public.section_header_font_color = {r=0.40, g=0.80, b=0.60}
 Public.subsection_header_font_color = {229, 255, 242}
-Public.friendly_font_color = {240, 200, 255}
+Public.friendly_font_color = {246, 230, 255}
 Public.sufficient_font_color = {66, 220, 124}
 Public.insufficient_font_color = {1, 0.62, 0.19}
 Public.achieved_font_color = {227, 250, 192}

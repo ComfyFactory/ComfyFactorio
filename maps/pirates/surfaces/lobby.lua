@@ -85,7 +85,7 @@ function Public.terrain(args)
 	if Math.distance(args.p, {x = -316, y = 0}) < 230 then
 		args.tiles[#args.tiles + 1] = {name = 'dirt-3', position = args.p}
 		if x <= -80 and (y >= 10 or y <= -10) and math.random() < 0.1 then
-			args.entities[#args.entities + 1] = {name = "tree-02", position = args.p}
+			args.entities[#args.entities + 1] = {name = "tree-05", position = args.p}
 		end
 	elseif Math.distance(args.p, {x = -264, y = 0}) < 180 then
 			args.tiles[#args.tiles + 1] = {name = 'water-shallow', position = args.p}
