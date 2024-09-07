@@ -103,7 +103,7 @@ local function on_init()
 	game.surfaces['nauvis'].map_gen_settings = mgs
 	game.surfaces['nauvis'].clear()
 
-	game.create_surface('piratedev1', Common.default_map_gen_settings(100, 100))
+	game.create_surface('piratedev1', Common.default_map_gen_settings(100, 100)) --Create a surface used during the entity movement process
 	game.surfaces['piratedev1'].clear()
 
 	Common.init_game_settings(Balance.technology_price_multiplier)
@@ -120,7 +120,7 @@ local function on_init()
 	-- game.forces.player.character_running_speed_modifier = Balance.base_extra_character_speed
 
 	game.create_force('environment')
-	for id = 1, 3, 1 do
+	for id = 1, 5, 1 do
 		game.create_force(Common.get_enemy_force_name(id))
 		game.create_force(Common.get_ancient_friendly_force_name(id))
 		game.create_force(Common.get_ancient_hostile_force_name(id))
@@ -185,8 +185,6 @@ local function crew_tick()
 				PiratesApiOnTick.check_for_cliff_explosives_in_hold_wooden_chests()
 				PiratesApiOnTick.equalise_fluid_storages() -- Made the update less often for small performance gain, but frequency can be increased if players complain
 				PiratesApiOnTick.revealed_buried_treasure_distance_check()
-				PiratesApiOnTick.update_protected_run_lock_timer(60)
-				PiratesApiOnTick.update_private_run_lock_timer(60)
 				PiratesApiOnTick.victory_continue_reminder()
 				Kraken.overall_kraken_tick()
 
@@ -231,9 +229,13 @@ local function crew_tick()
 					end
 				end
 
+
+				if tick % (60 * Balance.class_reward_tick_rate_in_seconds) == 0 then
+					ClassPiratesApiOnTick.class_rewards_tick(60 * Balance.class_reward_tick_rate_in_seconds)
+				end
+
 				if tick % 300 == 0 then
 					PiratesApiOnTick.periodic_free_resources(300)
-					PiratesApiOnTick.update_recentcrewmember_list(300)
 					PiratesApiOnTick.update_pet_biter_lifetime(300)
 
 					if tick % 1800 == 0 then
@@ -241,13 +243,10 @@ local function crew_tick()
 
 						if tick % 3600 == 0 then
 							PiratesApiOnTick.prune_offline_characters_list(3600)
+							PiratesApiOnTick.update_protected_run_lock_timer(3600)
+							PiratesApiOnTick.update_private_run_lock_timer(3600)
 						end
 					end
-				end
-
-
-				if tick % (60 * Balance.class_reward_tick_rate_in_seconds) == 0 then
-					ClassPiratesApiOnTick.class_rewards_tick(60 * Balance.class_reward_tick_rate_in_seconds)
 				end
 			end
 		end

@@ -19,9 +19,9 @@ local LootRaffle = require 'utils.functions.loot_raffle'
 
 local Public = {}
 
-Public.activeCrewsCap = 3
-Public.private_run_cap = 1
-Public.protected_run_cap = 1 -- more precisely protected, but not private run cap
+Public.activeCrewsCap = 5
+Public.private_run_cap = 2
+Public.protected_run_cap = 2 -- more precisely protected, but not private run cap
 Public.minimumCapacitySliderValue = 1
 Public.minimum_run_capacity_to_enforce_space_for = 22
 -- auto-disbanding when there are no players left in the crew:

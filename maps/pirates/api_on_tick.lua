@@ -1324,24 +1324,6 @@ end
 -- end
 
 
-function Public.update_recentcrewmember_list(tickinterval)
-	local memory = Memory.get_crew_memory()
-
-	-- don't update this unless someone specifically becomes spectator or is planked:
-	-- for i = 1, #memory.crewplayerindices do
-	-- 	local s = memory.crewplayerindices[i]
-	-- 	if s then
-	-- 		memory.tempbanned_from_joining_data[s] = game.tick
-	-- 	end
-	-- end
-
-	-- for k, v in pairs(memory.tempbanned_from_joining_data or {}) do
-	-- 	if v <= game.tick - Common.ban_from_rejoining_crew_ticks then
-	-- 		memory.tempbanned_from_joining_data[k] = nil
-	-- 	end
-	-- end
-end
-
 
 -- function Public.globaltick_handle_delayed_tasks(tickinterval)
 -- 	local global_memory = Memory.get_global_memory()
