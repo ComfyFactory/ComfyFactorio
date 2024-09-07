@@ -135,6 +135,7 @@ function Public.try_lose(loss_reason)
 		memory.game_lost = true
 		memory.crew_disband_tick_message = game.tick + 60*10
 		memory.crew_disband_tick = game.tick + 60*40
+		memory.crew_disband_tick_cannot_be_prevented = true
 
 		local playtimetext = Utils.time_longform((memory.age or 0)/60)
 
@@ -427,8 +428,8 @@ function Public.join_crew(player, rejoin)
 		Roles.confirm_captain_exists(player)
 	end
 
-	if #Common.crew_get_crew_members() == 1 and memory.crew_disband_tick then
-		memory.crew_disband_tick = nil --to prevent disbanding the crew after saving the game (booting everyone) and loading it again (joining the crew as the only member)
+	if #Common.crew_get_crew_members() == 1 and memory.crew_disband_tick and not memory.crew_disband_tick_cannot_be_prevented then
+		memory.crew_disband_tick = nil
 	end
 
 	if memory.overworldx > 0 then
@@ -511,11 +512,13 @@ function Public.leave_crew(player, to_lobby, quiet)
 	Roles.player_left_so_redestribute_roles(player)
 
 	if #Common.crew_get_crew_members() == 0 then
-		if Common.autodisband_ticks then
+		local exists_disband_tick = memory.crew_disband_tick and memory.crew_disband_trick > game.tick
+
+		if Common.autodisband_ticks and not exists_disband_tick then
 			memory.crew_disband_tick = game.tick + Common.autodisband_ticks
 		end
-		-- memory.crew_disband_tick = game.tick + 60*60*2 --give players time to log back in after a crash or save
-		if _DEBUG then memory.crew_disband_tick = game.tick + 30*60*60 end
+		
+		-- if _DEBUG then memory.crew_disband_tick = game.tick + 30*60*60 end
 	end
 end
 

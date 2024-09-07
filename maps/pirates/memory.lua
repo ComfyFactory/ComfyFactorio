@@ -102,6 +102,7 @@ function Public.initialise_crew_memory(id) --mostly serves as a dev reference of
     memory.game_lost = false
     memory.game_won = false
     memory.crew_disband_tick = nil
+    memory.crew_disband_tick_cannot_be_prevented = nil
     memory.destinationsvisited_indices = nil
     memory.overworldx = nil
     memory.overworldy = nil
