@@ -283,7 +283,11 @@ end
 
 local function add_trees(x, y, entities)
     if Math.abs(y + 24) > 3 and Math.random() < 0.4 then
-        entities[#entities + 1] = {name = 'tree-05', position = {x = x, y = y}}
+		local tree_name = 'tree-05'
+		if math.random() < 0.2 then
+			tree_name = 'tree-07'
+		end
+        entities[#entities + 1] = {name = tree_name, position = {x = x, y = y}}
     end
 end
 
