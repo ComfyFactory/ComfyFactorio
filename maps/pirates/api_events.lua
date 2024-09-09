@@ -352,10 +352,9 @@ local function handle_damage_to_players(event)
 
 	-- if not (event.cause.name == 'small-biter') or (event.cause.name == 'small-spitter') or (event.cause.name == 'medium-biter') or (event.cause.name == 'medium-spitter') or (event.cause.name == 'big-biter') or (event.cause.name == 'big-spitter') or (event.cause.name == 'behemoth-biter') or (event.cause.name == 'behemoth-spitter') then return end
 
-	if not event.entity then return end
-	if not event.entity.player or not event.entity.player.valid then return end
-
 	if not (event.entity and event.entity.valid and event.entity.name and event.entity.name == 'character') then return end
+
+	if not event.entity.player or not event.entity.player.valid then return end
 
 	local player_index = event.entity.player.index
 	local player = game.players[player_index]
