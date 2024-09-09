@@ -296,10 +296,13 @@ function Public.join_spectators(player, crewid)
 	if not _DEBUG then
 		memory.tempbanned_from_joining_data[player.index] = game.tick
 	end
-	-- if #Common.crew_get_crew_members() == 0 then
-	-- 	memory.crew_disband_tick = game.tick + 30
-	-- 	-- memory.crew_disband_tick = game.tick + 60*60*2 --give players time to log back in after a crash or save
-	-- end
+
+	if #Common.crew_get_crew_members() == 0 then
+		if Common.autodisband_ticks then
+			memory.crew_disband_tick = game.tick + Common.autodisband_ticks
+		end
+	end
+
 	if not (memory.difficulty_votes) then memory.difficulty_votes = {} end
 	memory.difficulty_votes[player.index] = nil
 end
@@ -332,7 +335,6 @@ function Public.leave_spectators(player, quiet)
 		if Common.autodisband_ticks then
 			memory.crew_disband_tick = game.tick + Common.autodisband_ticks
 		end
-		if _DEBUG then memory.crew_disband_tick = game.tick + 30*60*60 end
 	end
 
 	player.force = Common.lobby_force_name
@@ -512,7 +514,7 @@ function Public.leave_crew(player, to_lobby, quiet)
 	Roles.player_left_so_redestribute_roles(player)
 
 	if #Common.crew_get_crew_members() == 0 then
-		local exists_disband_tick = memory.crew_disband_tick and memory.crew_disband_trick > game.tick
+		local exists_disband_tick = memory.crew_disband_tick and memory.crew_disband_tick > game.tick
 
 		if Common.autodisband_ticks and not exists_disband_tick then
 			memory.crew_disband_tick = game.tick + Common.autodisband_ticks
