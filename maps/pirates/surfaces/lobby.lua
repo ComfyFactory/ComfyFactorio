@@ -16,18 +16,6 @@ local Public = {}
 Public.StartingBoats = {
 	{
 		type = Boats.enum.SLOOP,
-		position = {x = Boats[Boats.enum.SLOOP].Data.width - 65, y = -1 - 2 * (23 + Boats[Boats.enum.SLOOP].Data.height/2)},
-		surface_name = CoreData.lobby_surface_name,
-		force_name = 'crew-005',
-	},
-	{
-		type = Boats.enum.SLOOP,
-		position = {x = Boats[Boats.enum.SLOOP].Data.width - 65, y = -1 - (23 + Boats[Boats.enum.SLOOP].Data.height/2)},
-		surface_name = CoreData.lobby_surface_name,
-		force_name = 'crew-003',
-	},
-	{
-		type = Boats.enum.SLOOP,
 		position = {x = Boats[Boats.enum.SLOOP].Data.width - 65, y = -1},
 		surface_name = CoreData.lobby_surface_name,
 		force_name = 'crew-001',
@@ -40,9 +28,21 @@ Public.StartingBoats = {
 	},
 	{
 		type = Boats.enum.SLOOP,
+		position = {x = Boats[Boats.enum.SLOOP].Data.width - 65, y = -1 - (23 + Boats[Boats.enum.SLOOP].Data.height/2)},
+		surface_name = CoreData.lobby_surface_name,
+		force_name = 'crew-003',
+	},
+	{
+		type = Boats.enum.SLOOP,
 		position = {x = Boats[Boats.enum.SLOOP].Data.width - 65, y = -1 + 2 * (23 + Boats[Boats.enum.SLOOP].Data.height/2)},
 		surface_name = CoreData.lobby_surface_name,
 		force_name = 'crew-004',
+	},
+	{
+		type = Boats.enum.SLOOP,
+		position = {x = Boats[Boats.enum.SLOOP].Data.width - 65, y = -1 - 2 * (23 + Boats[Boats.enum.SLOOP].Data.height/2)},
+		surface_name = CoreData.lobby_surface_name,
+		force_name = 'crew-005',
 	},
 	-- {
 	-- 	type = Boats.enum.CUTTER,
