@@ -661,7 +661,6 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 		Crowsnest.move_crowsnest(vector.x, vector.y)
 
 		if vector.x > 0 then
-
 			-- merchant is disabled
 			-- crew bonus resources per x:
 			-- local crew = Common.crew_get_crew_members()
@@ -680,8 +679,7 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 			-- 	Common.give_items_to_crew(Balance.periodic_free_resources_per_x())
 			-- end
 
-			-- Makes game hard to balance around this when productivity bonus is not constant.
-			-- Balance.apply_crew_buffs_per_league(memory.force, vector.x)
+			Balance.apply_crew_buffs_per_league(memory.force, vector.x)
 
 			-- add some evo: (this will get reset upon arriving at a destination anyway, so this is just relevant for sea monsters and the like:)
 			local extra_evo = Balance.base_evolution_leagues(memory.overworldx) - Balance.base_evolution_leagues(memory.overworldx - vector.x)

@@ -965,7 +965,17 @@ local function player_mined_resource(event)
 		memory.playtesting_stats.coins_gained_by_ore = memory.playtesting_stats.coins_gained_by_ore + a
 	end
 
-	give[#give + 1] = {name = entity.name, count = 2}
+	local mining_bonus = player.force.mining_drill_productivity_bonus + 1
+
+    local whole_amount = math.floor(mining_bonus)
+    local fractional_part = mining_bonus - whole_amount
+    
+    local ore_amount = whole_amount
+    if math.random() < fractional_part then
+        ore_amount = ore_amount + 1
+    end
+
+	give[#give + 1] = {name = entity.name, count = ore_amount}
 
 	Common.give(player, give, entity.position)
 end

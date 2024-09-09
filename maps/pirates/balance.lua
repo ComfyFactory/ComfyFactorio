@@ -384,7 +384,7 @@ end
 
 
 function Public.biter_timeofday_bonus_damage(darkness) -- a surface having min_brightness of 0.2 will cap darkness at 0.8
-	return 0.5 * darkness
+	return 0.3 * darkness
 end
 
 
@@ -441,8 +441,14 @@ function Public.island_richness_avg_multiplier(overworldx)
 
 	--we don't really have resources scaling by player count in this resource-constrained scenario, but we scale a little, to accommodate each player filling their inventory with useful tools. also, I would do higher than 1/40, but we go even slightly lower because we're applying this somewhat sooner than players actually get there.
 
-	-- return base + additional
 	return Math.clamp(base, 1.5, base + additional)
+end
+
+function Public.apply_crew_buffs_per_league(force, leagues_travelled)
+	-- The motivation for this effect is to slightly nerf the strategy of staying as long as possible on each island to research everything. However, given you can now wait at an island forever, it's less difficult to jump a lot and then research everything, so this is disabled for now. Note that enabling it might make the game harder to balance.
+	-- force.laboratory_productivity_bonus = force.laboratory_productivity_bonus + Math.max(0, 3/100 * leagues_travelled/40)
+
+	-- force.mining_drill_productivity_bonus = force.mining_drill_productivity_bonus + Math.max(0, 3/100 * leagues_travelled/40)
 end
 
 function Public.resource_quest_multiplier()
@@ -487,10 +493,6 @@ function Public.quest_furnace_entry_price_scale()
 	local scale = (1 + 0.03 * (Common.overworldx()/40 - 1)) * ((0.6 + Public.crew_scale())^(1/8)) * Math.sloped(Common.difficulty_scale(), 1/2) - 0.5
 	return Math.max(0.1, scale)
 end
-
--- function Public.apply_crew_buffs_per_league(force, leagues_travelled)
--- 	force.laboratory_productivity_bonus = force.laboratory_productivity_bonus + Math.max(0, 7/100 * leagues_travelled/40)
--- end
 
 function Public.class_cost(at_dock)
 	if at_dock then
