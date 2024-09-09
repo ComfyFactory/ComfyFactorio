@@ -297,7 +297,7 @@ function Public.generate_overworld_destination(p)
 
 		--scheduled raft raids moved to destination_on_arrival
 
-		local ores_multiplier = Balance.island_richness_avg_multiplier(p.x)
+		local ores_multiplier = 2 * Balance.game_resources_scale(p.x) / (1 + Public.builtin_mining_productivity_scale(p.x))
 
 		local base_ores = scope.Data.base_ores()
 
@@ -343,11 +343,11 @@ function Public.generate_overworld_destination(p)
 		local rng = 0.5 + 1 * Math.random()
 		static_params.starting_treasure_maps = Math.ceil((static_params.base_starting_treasure_maps or 0) * rng)
 		static_params.starting_wood = static_params.base_starting_wood or 1000
-		static_params.starting_wood = Math.ceil(static_params.starting_wood * Balance.island_richness_avg_multiplier(p.x))
-		static_params.starting_rock_material = Math.ceil(static_params.base_starting_rock_material or 300) * Balance.island_richness_avg_multiplier(p.x)
+		static_params.starting_wood = Math.ceil(static_params.starting_wood * Balance.game_resources_scale(p.x))
+		static_params.starting_rock_material = Math.ceil(static_params.base_starting_rock_material or 300) * Balance.game_resources_scale(p.x)
 
 		rng = 0.5 + 1 * Math.random()
-		static_params.starting_treasure = Math.ceil((static_params.base_starting_treasure or 1000) * Balance.island_richness_avg_multiplier(p.x) * rng)
+		static_params.starting_treasure = Math.ceil((static_params.base_starting_treasure or 1000) * Balance.game_resources_scale(p.x) * rng)
 
 		static_params.name = scope.Data.display_names[Math.random(#scope.Data.display_names)]
 
@@ -679,7 +679,7 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 			-- 	Common.give_items_to_crew(Balance.periodic_free_resources_per_x())
 			-- end
 
-			Balance.apply_crew_buffs_per_league(memory.force, vector.x)
+			Balance.apply_crew_buffs_from_leagues(memory.force, memory.overworldx, memory.overworldx + vector.x)
 
 			-- add some evo: (this will get reset upon arriving at a destination anyway, so this is just relevant for sea monsters and the like:)
 			local extra_evo = Balance.base_evolution_leagues(memory.overworldx) - Balance.base_evolution_leagues(memory.overworldx - vector.x)

@@ -417,38 +417,45 @@ end
 
 
 function Public.rocket_launch_fuel_reward()
-	return Math.ceil(2000 * Public.island_richness_avg_multiplier())
+	return Math.ceil(2000 * Public.game_resources_scale())
 	-- return Math.ceil(1000 * (1 + 0.1 * (Common.overworldx()/40)^(8/10)) / Math.sloped(Common.difficulty_scale(), 1/4))
 end
 
 function Public.rocket_launch_coin_reward()
-	return Math.ceil(3000 * Public.island_richness_avg_multiplier())
+	return Math.ceil(3000 * Public.game_resources_scale())
 end
 
 function Public.quest_reward_multiplier()
-	return 0.9 * Public.island_richness_avg_multiplier()
+	return 0.9 * Public.game_resources_scale()
 end
 
-function Public.island_richness_avg_multiplier(overworldx)
+function Public.game_resources_scale(overworldx)
 	overworldx = overworldx or Common.overworldx()
-	-- local base = 0.73
-	-- local additional = 0.120 * Math.clamp(0, 10, (overworldx/40)^(65/100) * Math.sloped(Public.crew_scale(), 1/40)) --tuned tbh
 
 	local base = 0.5
 	local additional = 0.032 * (overworldx/40)
 
-	-- now clamped, because it takes way too long to mine that many more resources
-
-	--we don't really have resources scaling by player count in this resource-constrained scenario, but we scale a little, to accommodate each player filling their inventory with useful tools. also, I would do higher than 1/40, but we go even slightly lower because we're applying this somewhat sooner than players actually get there.
-
-	return Math.clamp(base, 1.5, base + additional)
+	return base + additional
 end
 
-function Public.apply_crew_buffs_per_league(force, leagues_travelled)
+function Public.patch_size_multiplier(overworldx)
+	local base = 0.5
+	local additional = 0.032 * (overworldx/40)
+
+	return Math.clamp(base, 1, base + additional)
+end
+
+function Public.builtin_mining_productivity_scale(overworldx)
+	return 1 + 1 * (overworldx/600)
+end
+
+function Public.apply_crew_buffs_from_leagues(force, current_x_league, new_x_league)
 	-- The motivation for this effect is to slightly nerf the strategy of staying as long as possible on each island to research everything. However, given you can now wait at an island forever, it's less difficult to jump a lot and then research everything, so this is disabled for now. Note that enabling it might make the game harder to balance.
 	-- force.laboratory_productivity_bonus = force.laboratory_productivity_bonus + Math.max(0, 3/100 * leagues_travelled/40)
 
-	-- force.mining_drill_productivity_bonus = force.mining_drill_productivity_bonus + Math.max(0, 3/100 * leagues_travelled/40)
+	for i = current_x_league + 1, new_x_league do
+		force.mining_drill_productivity_bonus = force.mining_drill_productivity_bonus + (Public.builtin_mining_productivity_scale(i) - Public.builtin_mining_productivity_scale(i - 1))
+	end
 end
 
 function Public.resource_quest_multiplier()
@@ -539,13 +546,13 @@ end
 
 function Public.kraken_kill_reward_items()
 	return {
-		{name = 'coin', count = Math.ceil(800 * Public.island_richness_avg_multiplier())},
-		{name = 'utility-science-pack', count = Math.ceil(8 * Public.island_richness_avg_multiplier())}
+		{name = 'coin', count = Math.ceil(800 * Public.game_resources_scale())},
+		{name = 'utility-science-pack', count = Math.ceil(8 * Public.game_resources_scale())}
 	}
 end
 
 function Public.kraken_kill_reward_fuel()
-	return Math.ceil(150 * Public.island_richness_avg_multiplier())
+	return Math.ceil(150 * Public.game_resources_scale())
 end
 
 function Public.kraken_health()
@@ -611,10 +618,10 @@ end
 
 Public.research_buffs = { --currently disabled anyway
 	-- these already give .1 productivity so we're adding .1 to get to 20%
-	['mining-productivity-1'] = {['mining_drill_productivity_bonus'] = .1},
-	['mining-productivity-2'] = {['mining_drill_productivity_bonus'] = .1},
-	['mining-productivity-3'] = {['mining_drill_productivity_bonus'] = .1},
-	['mining-productivity-4'] = {['mining_drill_productivity_bonus'] = .1},
+	['mining-productivity-1'] = {['mining_drill_productivity_bonus'] = .2},
+	['mining-productivity-2'] = {['mining_drill_productivity_bonus'] = .2},
+	['mining-productivity-3'] = {['mining_drill_productivity_bonus'] = .2},
+	['mining-productivity-4'] = {['mining_drill_productivity_bonus'] = .2},
 	-- -- these already give .1 productivity so we're adding .1 to get to 20%
 	-- ['mining-productivity-1'] = {['mining-drill-productivity-bonus'] = .1, ['character-inventory-slots-bonus'] = 5},
 	-- ['mining-productivity-2'] = {['mining-drill-productivity-bonus'] = .1, ['character-inventory-slots-bonus'] = 5},
@@ -743,13 +750,13 @@ end
 
 
 function Public.pick_drilling_ore_amount()
-	return Math.ceil(100 * Public.island_richness_avg_multiplier() * Math.random_float_in_range(0.9, 1.1))
+	return Math.ceil(100 * Public.game_resources_scale() * Math.random_float_in_range(0.9, 1.1))
 end
 
 
 -- Note: 3333 crude oil amount ~= 1% = 0.1/sec
 function Public.pick_default_oil_amount()
-	return Math.ceil(30000 * Public.island_richness_avg_multiplier() * Math.random_float_in_range(0.9, 1.1))
+	return Math.ceil(30000 * Public.game_resources_scale() * Math.random_float_in_range(0.9, 1.1))
 end
 
 
@@ -759,11 +766,11 @@ function Public.biter_boat_average_arrival_rate()
 end
 
 function Public.coin_amount_from_tree()
-	return Math.ceil(8 * Public.island_richness_avg_multiplier() * Math.random_float_in_range(0.7, 1.3))
+	return Math.ceil(8 * Public.game_resources_scale() * Math.random_float_in_range(0.7, 1.3))
 end
 
 function Public.coin_amount_from_rock()
-	return Math.ceil(35 * Public.island_richness_avg_multiplier() * Math.random_float_in_range(0.8, 1.2))
+	return Math.ceil(35 * Public.game_resources_scale() * Math.random_float_in_range(0.8, 1.2))
 end
 
 return Public

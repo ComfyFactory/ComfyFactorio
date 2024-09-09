@@ -245,13 +245,13 @@ function Public.iron_chest_loot()
 		Math.clamp(0, 1, 5/100 + Common.game_completion_progress())
 	)
 
-	loot[#loot + 1] = {name = 'coin', count = Math.ceil(1000 * Balance.island_richness_avg_multiplier() * Math.random_float_in_range(0.8, 1.2))}
+	loot[#loot + 1] = {name = 'coin', count = Math.ceil(1000 * Balance.game_resources_scale() * Math.random_float_in_range(0.8, 1.2))}
 
     return loot
 end
 
 function Public.quest_structure_coin_loot()
-	return Math.ceil(2000 * Balance.island_richness_avg_multiplier() * Math.random_float_in_range(0.8, 1.2))
+	return Math.ceil(2000 * Balance.game_resources_scale() * Math.random_float_in_range(0.8, 1.2))
 end
 
 function Public.covered_wooden_chest_loot()
@@ -267,8 +267,8 @@ end
 function Public.covered_wooden_chest_loot_1()
 
     return {
-		{name = 'iron-plate', count = Math.ceil(600 * Balance.island_richness_avg_multiplier())},
-		{name = 'copper-plate', count = Math.ceil(200 * Balance.island_richness_avg_multiplier())}
+		{name = 'iron-plate', count = Math.ceil(600 * Balance.game_resources_scale())},
+		{name = 'copper-plate', count = Math.ceil(200 * Balance.game_resources_scale())}
 	}
 end
 
@@ -337,20 +337,20 @@ end
 function Public.swamp_storage_tank_fluid_loot()
 	local ret
 	-- ret = {name = 'sulfuric-acid', amount = 100*Math.ceil(Math.random(5^2, 40^2)^(1/2))} -- don't know why this formula made best amount most common, but lowest amount least common (was this intentional?).
-	ret = {name = 'sulfuric-acid', amount = Math.ceil(2000 * Math.random_float_in_range(0.8, 1.2) * Balance.island_richness_avg_multiplier())}
+	ret = {name = 'sulfuric-acid', amount = Math.ceil(2000 * Math.random_float_in_range(0.8, 1.2) * Balance.game_resources_scale())}
     return ret
 end
 
 function Public.roboport_bots_loot()
     return {
-		{name = 'logistic-robot', count = Math.ceil((15 + Math.random(5)) * Balance.island_richness_avg_multiplier())},
-		{name = 'construction-robot', count = Math.ceil((10 + Math.random(5)) * Balance.island_richness_avg_multiplier())},
+		{name = 'logistic-robot', count = Math.ceil((15 + Math.random(5)) * Balance.game_resources_scale())},
+		{name = 'construction-robot', count = Math.ceil((10 + Math.random(5)) * Balance.game_resources_scale())},
 	}
 end
 
 function Public.random_plates(multiplier)
 	multiplier = multiplier or 1
-	multiplier = multiplier * Balance.island_richness_avg_multiplier()
+	multiplier = multiplier * Balance.game_resources_scale()
 	multiplier = multiplier * Math.random_float_in_range(0.9, 1.1)
 
 	local platesrng = Math.random(5)
