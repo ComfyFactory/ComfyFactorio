@@ -117,7 +117,6 @@ local function on_init()
 	Surfaces.Lobby.create_starting_dock_surface()
 	local lobby = game.surfaces[CoreData.lobby_surface_name]
 	game.forces.player.set_spawn_position(Common.lobby_spawnpoint, lobby)
-	-- game.forces.player.character_running_speed_modifier = Balance.base_extra_character_speed
 
 	game.create_force('environment')
 	for id = 1, Common.starting_ships_count, 1 do

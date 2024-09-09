@@ -305,24 +305,22 @@ function Public.update_character_properties(tickinterval)
 
 			character.character_running_speed_modifier = speed_boost - 1
 
+			-- If they're a SAMURAI or HATAMOTO, and have a weapon equipped, unequip it:
+			if class == Classes.enum.SAMURAI or class == Classes.enum.HATAMOTO then
+				if not Common.validate_player(player) then return end
+				local main_gun_inv = player.get_inventory(defines.inventory.character_guns)[1]
 
-			local health_boost = 0 -- base health is 250
-			character.character_health_bonus = health_boost
-
-			-- moved to damage resistance:
-			-- if memory.classes_table and memory.classes_table[player_index] then
-			-- 	local class = memory.classes_table[player_index]
-			-- 	if class == Classes.enum.SAMURAI then
-			-- 		health_boost = health_boost + 800
-			-- 	elseif class == Classes.enum.HATAMOTO then
-			-- 		health_boost = health_boost + 1300
-			-- 	end
-			-- end
-
-			-- Captain health boost:
-			-- if Common.is_captain(player) then
-			-- 	health_boost = health_boost + 50
-			-- end
+				if main_gun_inv.valid_for_read then
+					local main_inv = player.get_main_inventory()
+					
+					if main_inv.can_insert(main_gun_inv) then
+						main_inv.insert(main_gun_inv)
+					else
+						main_gun_inv.drop()
+					end
+					main_gun_inv.clear()
+				end
+			end
 
 			-- == DO NOT DO THIS!: Removing inventory slots is evil. The player can spill inventory
 			-- if Common.is_captain(player) then

@@ -895,7 +895,6 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.manual_mining_speed_modifier = 3
 	crew_force.character_inventory_slots_bonus = 0
 	-- crew_force.character_inventory_slots_bonus = 10
-	-- crew_force.character_running_speed_modifier = Balance.base_extra_character_speed
 	crew_force.laboratory_productivity_bonus = 0
 	crew_force.ghost_time_to_live = 12 * 60 * 60
 	crew_force.worker_robots_speed_modifier = 0.5
