@@ -110,8 +110,7 @@ local function biters_chew_stuff_faster(event)
 	if not (event.cause and event.cause.valid and event.cause.force and event.cause.force.name and event.entity and event.entity.valid and event.entity.force and event.entity.force.name) then return end
 	if event.cause.force.name ~= memory.enemy_force_name then return end --Enemy Forces only
 
-	-- @TODO: "event.entity.force.index == 3" looks suspicious (and probably doesn't work?), investigate it
-	if (event.entity.force.index == 3 or event.entity.force.name == 'environment') then
+	if (event.entity.force.name == 'neutral' or event.entity.force.name == 'environment') then
 		event.entity.health = event.entity.health - event.final_damage_amount * 5
 		event.final_damage_amount = event.final_damage_amount * 6
 		if destination and destination.type == Surfaces.enum.ISLAND and destination.subtype == IslandEnum.enum.MAZE then
@@ -142,21 +141,21 @@ end
 -- end
 
 
-local function protect_special_entities(event)
+local function handle_damage_in_restricted_areas(event)
 	-- local memory = Memory.get_crew_memory()
 	local entity = event.entity
 
 	if event.cause and event.cause.valid and entity and entity.valid then
 		local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(entity.surface.name)
 		-- local dest = Common.current_destination()
-		if surfacedata.type == Surfaces.enum.CROWSNEST or surfacedata.type == Surfaces.enum.LOBBY then
+		if surfacedata.type == Surfaces.enum.CROWSNEST or surfacedata.type == Surfaces.enum.LOBBY or surfacedata.type == Surfaces.enum.CABIN then
 			entity.health = entity.health + event.final_damage_amount
 		end
 	end
 end
 
 
-local function damage_to_silo(event)
+local function handle_damage_to_silo(event)
 	local memory = Memory.get_crew_memory()
 	local entity = event.entity
 
@@ -194,7 +193,7 @@ local function damage_to_silo(event)
 end
 
 
-local function damage_to_enemyboat_spawners(event)
+local function handle_damage_to_enemyboat_spawners(event)
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 
@@ -220,7 +219,7 @@ local function damage_to_enemyboat_spawners(event)
 end
 
 -- Does not include krakens or biter boat spawners
-local function damage_to_elite_spawners(event)
+local function handle_damage_to_elite_spawners(event)
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 
@@ -245,7 +244,7 @@ local function damage_to_elite_spawners(event)
 	end
 end
 
-local function damage_to_elite_biters(event)
+local function handle_damage_to_elite_biters(event)
 	local memory = Memory.get_crew_memory()
 
 	local elite_biters = memory.elite_biters
@@ -266,8 +265,10 @@ local function damage_to_elite_biters(event)
 	end
 end
 
-local function damage_to_artillery(event)
+local function handle_damage_to_artillery(event)
 	local memory = Memory.get_crew_memory()
+
+	if not (event.entity and event.entity.valid and event.entity.name and event.entity.name == 'artillery-turret') then return end
 
 	if event.cause and event.cause.valid and event.cause.name and Utils.contains(CoreData.enemy_units, event.cause.name) then
 		if event.cause.force.name ~= memory.enemy_force_name then return end
@@ -297,7 +298,7 @@ local function damage_to_artillery(event)
 	end
 end
 
-local function damage_to_krakens(event)
+local function handle_damage_to_krakens(event)
 
 	if not event.entity then return end
 	if not event.entity.valid then return end
@@ -342,7 +343,7 @@ end
 
 
 
-local function damage_to_players_changes(event)
+local function handle_damage_to_players(event)
 	local memory = Memory.get_crew_memory()
 
 	if not event.cause then return end
@@ -353,6 +354,8 @@ local function damage_to_players_changes(event)
 
 	if not event.entity then return end
 	if not event.entity.player or not event.entity.player.valid then return end
+
+	if not (event.entity and event.entity.valid and event.entity.name and event.entity.name == 'character') then return end
 
 	local player_index = event.entity.player.index
 	local player = game.players[player_index]
@@ -435,13 +438,15 @@ local function damage_to_players_changes(event)
 end
 
 
-local function other_enemy_damage_bonuses(event)
+local function handle_enemy_nighttime_damage_bonus(event)
 
 	if not event.cause then return end
 	if not event.cause.valid then return end
 	if not event.cause.name then return end
 	if not event.cause.surface then return end
 	if not event.cause.surface.valid then return end
+
+	if event.entity.name == 'character' then return end
 
 	if event.damage_type.name == 'impact' then return end --avoid circularity
 
@@ -458,7 +463,7 @@ local function other_enemy_damage_bonuses(event)
 end
 
 
-local function damage_dealt_by_players_changes(event)
+local function handle_damage_dealt_by_players(event)
 	local memory = Memory.get_crew_memory()
 
 	if not event.cause then return end
@@ -569,7 +574,7 @@ end
 
 
 
-local function swamp_resist_poison(event)
+local function handle_poison_resistance_in_swamp(event)
 	local memory = Memory.get_crew_memory()
 
 	local entity = event.entity
@@ -589,7 +594,7 @@ local function swamp_resist_poison(event)
 end
 
 
-local function maze_walls_resistance(event)
+local function handle_maze_walls_damage_resistance(event)
 	-- local memory = Memory.get_crew_memory()
 
 	local entity = event.entity
@@ -650,7 +655,6 @@ end
 -- end
 
 
--- Piratux: I feel sorry for whoever needs to lay eyes on this. Bottle of bleach is adviced to have by your side.
 -- @TODO: Possible rework solution: "event_on_entity_damaged()" should accumulate final damage dealt multiplier, and "fix" entity health or deal proper damage to virtual healthbar at the very end of the function. Entity deaths should be handled at "event_on_entity_died()" instead, to avoid the mess.
 -- NOTE: "event.cause" may not always be provided.
 -- However, special care needs to be taken when "event.cause" is nil and entity has healthbar (better not ignore such damage or it can cause issues, such as needing to handle their death on "entity_died" functions as opposed to here)
@@ -667,32 +671,30 @@ local function event_on_entity_damaged(event)
 
 	if not event.entity.valid then return end
 
-	damage_to_silo(event)
-	damage_to_krakens(event)
-	damage_to_enemyboat_spawners(event)
-	damage_to_elite_spawners(event)
-	damage_to_elite_biters(event)
+	handle_damage_to_silo(event)
+	handle_damage_to_krakens(event)
+	handle_damage_to_enemyboat_spawners(event)
+	handle_damage_to_elite_spawners(event)
+	handle_damage_to_elite_biters(event)
+	handle_damage_to_artillery(event)
+	handle_damage_in_restricted_areas(event)
 
-	if event.entity and event.entity.valid and event.entity.name and event.entity.name == 'artillery-turret' then
-		damage_to_artillery(event)
-	end
+	if not (event.entity.valid and event.entity.health) then return end -- need to call again, healthbar'd object might have been killed by script, so we shouldn't proceed now
 
-	protect_special_entities(event)
+	handle_damage_to_players(event)
 
-	if not event.entity.valid then return end -- need to call again, healthbar'd object might have been killed by script, so we shouldn't proceed now
-	if not event.entity.health then return end
+	handle_enemy_nighttime_damage_bonus(event)
 
-	if (event.entity and event.entity.valid and event.entity.name and event.entity.name == 'character') then
-		damage_to_players_changes(event)
-	else
-		other_enemy_damage_bonuses(event)
-	end
+	if not (event.entity.valid and event.entity.health) then return end -- need to call again, healthbar'd object might have been killed by script, so we shouldn't proceed now
 
 	biters_chew_stuff_faster(event)
-	swamp_resist_poison(event)
-	maze_walls_resistance(event)
 
-	damage_dealt_by_players_changes(event)
+	if not (event.entity.valid and event.entity.health) then return end -- need to call again, healthbar'd object might have been killed by script, so we shouldn't proceed now
+
+	handle_poison_resistance_in_swamp(event)
+	handle_maze_walls_damage_resistance(event)
+
+	handle_damage_dealt_by_players(event)
 
 	-- damage_to_enemies(event)
 end
