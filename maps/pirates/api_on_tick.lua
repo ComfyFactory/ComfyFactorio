@@ -598,21 +598,26 @@ function Public.place_cached_structures(tickinterval)
 
 				elseif c.type == 'entities_randomlyplaced' then
 					local c2 = {type = c.type, force_name = force_name, built_entities = {}}
+					local occupied_positions = {}
 
 					for _ = 1, c.count do
 						local whilesafety = 0
 						local done = false
-						while whilesafety < 10 and done == false do
+						while whilesafety < 100 and not done do
 							local rng_x = Math.random(-c.r, c.r)
 							local rng_y = Math.random(-c.r, c.r)
 							local p = Utils.psum{position, c.offset, {x = rng_x, y = rng_y}}
-							local name = c.name
-							if name == 'random-worm' then name = Common.get_random_worm_type(memory.evolution_factor) end
-							local e = {name = name, position = p, force = force_name}
-							if surface.can_place_entity(e) then
-								local e2 = surface.create_entity(e)
-								c2.built_entities[#c2.built_entities + 1] = e2
-								done = true
+							local key = p.x .. "," .. p.y
+							if not occupied_positions[key] then
+								local name = c.name
+								if name == 'random-worm' then name = Common.get_random_worm_type(memory.evolution_factor) end
+								local e = {name = name, position = p, force = force_name}
+								if surface.can_place_entity(e) then
+									local e2 = surface.create_entity(e)
+									c2.built_entities[#c2.built_entities + 1] = e2
+									occupied_positions[key] = true
+									done = true
+								end
 							end
 							whilesafety = whilesafety + 1
 						end
@@ -622,11 +627,12 @@ function Public.place_cached_structures(tickinterval)
 
 				elseif c.type == 'entities_randomlyplaced_border' then
 					local c2 = {type = c.type, force_name = force_name, built_entities = {}}
+					local occupied_positions = {}
 
 					for _ = 1, c.count do
 						local whilesafety = 0
 						local done = false
-						while whilesafety < 10 and done == false do
+						while whilesafety < 100 and not done do
 							local rng_1 = Math.random(c.small_r, c.large_r)
 							local rng_2 = Math.random(- c.large_r, c.large_r)
 							local p
@@ -644,11 +650,15 @@ function Public.place_cached_structures(tickinterval)
 								end
 							end
 							local p2 = Utils.psum{position, c.offset, p}
-							local e = {name = c.name, position = p2, force = force_name}
-							if surface.can_place_entity(e) then
-								local e2 = surface.create_entity(e)
-								c2.built_entities[#c2.built_entities + 1] = e2
-								done = true
+							local key = p2.x .. "," .. p2.y
+							if not occupied_positions[key] then
+								local e = {name = c.name, position = p2, force = force_name}
+								if surface.can_place_entity(e) then
+									local e2 = surface.create_entity(e)
+									c2.built_entities[#c2.built_entities + 1] = e2
+									occupied_positions[key] = true
+									done = true
+								end
 							end
 							whilesafety = whilesafety + 1
 						end
