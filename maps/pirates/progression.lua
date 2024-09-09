@@ -640,7 +640,6 @@ function Public.go_from_currentdestination_to_sea()
 
 	Overworld.try_overworld_move_v2{x = d, y = 0}
 
-
 	-- If crew revealed treasure, but couldn't figure out how to dig it, give them tip
 	if destination.dynamic_data.some_player_was_close_to_buried_treasure then
 		local maps = destination.dynamic_data.treasure_maps or {}
@@ -651,32 +650,8 @@ function Public.go_from_currentdestination_to_sea()
 			end
 		end
 	end
-
-
-	local players_marooned_count = 0
-	for _, player in pairs(Common.crew_get_crew_members()) do
-		if (player.surface == oldsurface and player.character and player.character.valid) then
-			players_marooned_count = players_marooned_count + 1
-
-			-- When players are "hanging in front of ship" when boat departs, teleport them inside ship.
-			-- Side effect: if players happen to be on water tile during this tick and not too far from ship, they will be teleported to the boat.
-			-- @TODO: instead of checking 50 radius, check only smaller area around boat
-			if Math.distance(old_boatposition, player.character.position) < 50 then
-				local tile = oldsurface.get_tile(player.character.position.x, player.character.position.y)
-				if tile.valid then
-					if Utils.contains(CoreData.water_tile_names, tile.name) then
-						local newsurface = game.surfaces[seaname]
-						if newsurface and newsurface.valid then
-							player.teleport(newsurface.find_non_colliding_position('character', memory.spawnpoint, 32, 0.5) or memory.spawnpoint, newsurface)
-						end
-					end
-				end
-			end
-		end
-	end
-	if players_marooned_count == 0 then
-		Surfaces.clean_up(destination)
-	end
+	
+	Surfaces.clean_up(destination)
 end
 
 

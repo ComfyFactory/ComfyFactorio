@@ -598,7 +598,7 @@ function Public.check_for_destination_collisions()
 		if (relativex == 4 and relativey + destination_data.iconized_map_height/2 >= -3.5 and relativey - destination_data.iconized_map_height/2 <= 3.5) then
 			--or (relativey - destination_data.iconized_map.height/2 == 5 and (relativex >= -3.5 or relativex <= 4.5)) or (relativey + destination_data.iconized_map.height/2 == -4 and (relativex >= -3.5 or relativex <= 4.5))
 
-			Surfaces.clean_up(Common.current_destination())
+			-- Surfaces.clean_up(Common.current_destination())
 
 			Surfaces.create_surface(destination_data)
 
@@ -622,7 +622,7 @@ function Public.check_for_destination_collisions()
 end
 
 
-function Public.cleanup_old_destination_data() --we do actually access destinations behind us (during the cleanup process and for marooned players), so only fire this when safe
+function Public.cleanup_old_destination_data() --we do actually access destinations behind us (during the cleanup process and for marooned players), so only fire this when safe. (EDIT: Can this be refactored now that we no longer maroon?)
 	local memory = Memory.get_crew_memory()
 	for i, destination_data in pairs(memory.destinations) do
 		if destination_data.overworld_position.x < memory.overworldx then

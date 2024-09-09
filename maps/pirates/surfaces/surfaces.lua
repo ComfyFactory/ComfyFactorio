@@ -766,14 +766,7 @@ end
 
 
 
-
-
-
-
-
 function Public.clean_up(destination)
-	-- game.print('clean_up')
-
 	local memory = Memory.get_crew_memory()
 
 	local oldsurface = game.surfaces[destination.surface_name]
@@ -801,15 +794,6 @@ function Public.clean_up(destination)
 	memory.scripted_biters = nil
 	memory.scripted_unit_groups = nil
 	memory.floating_pollution = nil
-
-	if memory.enemy_force_name then
-		local ef = memory.enemy_force
-		if ef and ef.valid then
-			memory.enemy_force.reset_evolution()
-			local base_evo = Balance.base_evolution_leagues(memory.overworldx)
-			Common.set_evo(base_evo)
-		end
-	end
 
 	game.delete_surface(oldsurface)
 end
