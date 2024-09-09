@@ -535,6 +535,7 @@ function Public.captain_tax(captain_index)
 		end
 
 		if any_taken then
+			---@type (string|table)[]
 			local str = {''}
 			local j = 1
 			for i = 1, #items_to_req do
