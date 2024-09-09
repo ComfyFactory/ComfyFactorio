@@ -45,81 +45,81 @@ function Public.initialise_crew_memory(id) --mostly serves as a dev reference of
     -- but not _everything_ is stored here, it's just a guide to the most important things
 
     pirates_global_memory.crew_memories[id] = {}
-    local memory = pirates_global_memory.crew_memories[id]
+    -- local memory = pirates_global_memory.crew_memories[id]
 
-    memory.secs_id = nil
+    -- memory.secs_id = nil
 
-    memory.id = nil
-    memory.age = nil
-    memory.real_age = nil
-    memory.completion_time = nil
+    -- memory.id = nil
+    -- memory.age = nil
+    -- memory.real_age = nil
+    -- memory.completion_time = nil
 
-    memory.force_name = nil
-    memory.enemy_force_name = nil
+    -- memory.force_name = nil
+    -- memory.enemy_force_name = nil
 
-    memory.original_proposal = nil
-    memory.name = nil
-    memory.difficulty_option = nil
-    memory.capacity_option = nil
-    -- memory.mode_option = nil
-    memory.difficulty = nil
-    memory.capacity = nil
-    -- memory.mode = nil
+    -- memory.original_proposal = nil
+    -- memory.name = nil
+    -- memory.difficulty_option = nil
+    -- memory.capacity_option = nil
+    -- -- memory.mode_option = nil
+    -- memory.difficulty = nil
+    -- memory.capacity = nil
+    -- -- memory.mode = nil
 
-    memory.destinations = nil
-    memory.currentdestination_index = nil
+    -- memory.destinations = nil
+    -- memory.currentdestination_index = nil
 
-    memory.hold_surface_count = nil
-    memory.merchant_ships_unlocked = nil
+    -- memory.hold_surface_count = nil
+    -- memory.merchant_ships_unlocked = nil
 
-    memory.boat = nil
+    -- memory.boat = nil
 
-    memory.available_classes_pool = nil
-    -- Duplicating unlocked classes data for consistency reasons (this way, entries will remain in the same order when unlocked class data changes)
-    -- @TODO Might have to consider sacrificing consistency(or find a way to retain consistency) to reduce the chance of contradicting data which results in weird bugs (this happened once already)
-    memory.unlocked_classes = nil
+    -- memory.available_classes_pool = nil
+    -- -- Duplicating unlocked classes data for consistency reasons (this way, entries will remain in the same order when unlocked class data changes)
+    -- -- @TODO Might have to consider sacrificing consistency(or find a way to retain consistency) to reduce the chance of contradicting data which results in weird bugs (this happened once already)
+    -- memory.unlocked_classes = nil
 
-    memory.seconds_until_alert_sound_can_be_played_again = 0
-    memory.crewplayerindices = nil
-    memory.spectatorplayerindices = nil
-    memory.tempbanned_from_joining_data = nil
-    memory.playerindex_captain = nil
-    memory.captain_accrued_time_data = nil
-    memory.max_players_recorded = nil
-    memory.temporarily_logged_off_player_data = nil
-    memory.temporarily_logged_off_characters_items = nil
+    -- memory.seconds_until_alert_sound_can_be_played_again = 0
+    -- memory.crewplayerindices = nil
+    -- memory.spectatorplayerindices = nil
+    -- memory.tempbanned_from_joining_data = nil
+    -- memory.playerindex_captain = nil
+    -- memory.captain_accrued_time_data = nil
+    -- memory.max_players_recorded = nil
+    -- memory.temporarily_logged_off_player_data = nil
+    -- memory.temporarily_logged_off_characters_items = nil
 
-    memory.speed_boost_characters = nil
+    -- memory.speed_boost_characters = nil
 
-    memory.overworld_krakens = nil
-    memory.active_sea_enemies = nil
-    memory.kraken_stream_registrations = nil
+    -- memory.overworld_krakens = nil
+    -- memory.active_sea_enemies = nil
+    -- memory.kraken_stream_registrations = nil
 
-    memory.mainshop_availability_bools = nil
+    -- memory.mainshop_availability_bools = nil
 
-    memory.delayed_tasks = nil
-    memory.buffered_tasks = nil
-    memory.game_lost = false
-    memory.game_won = false
-    memory.crew_disband_tick = nil
-    memory.crew_disband_tick_cannot_be_prevented = nil
-    memory.destinationsvisited_indices = nil
-    memory.overworldx = nil
-    memory.overworldy = nil
-    memory.mapbeingloadeddestination_index = nil
-    memory.loadingticks = nil
-    memory.stored_fuel = nil
-    memory.spawnpoint = nil
+    -- memory.delayed_tasks = nil
+    -- memory.buffered_tasks = nil
+    -- memory.game_lost = false
+    -- memory.game_won = false
+    -- memory.crew_disband_tick = nil
+    -- memory.crew_disband_tick_cannot_be_prevented = nil
+    -- memory.destinationsvisited_indices = nil
+    -- memory.overworldx = nil
+    -- memory.overworldy = nil
+    -- memory.mapbeingloadeddestination_index = nil
+    -- memory.loadingticks = nil
+    -- memory.stored_fuel = nil
+    -- memory.spawnpoint = nil
 
-    memory.evolution_factor = nil
-    memory.scripted_biters = nil
-    memory.scripted_unit_groups = nil
-    memory.floating_pollution = nil
+    -- memory.evolution_factor = nil
+    -- memory.scripted_biters = nil
+    -- memory.scripted_unit_groups = nil
+    -- memory.floating_pollution = nil
 
-    memory.playtesting_stats = nil
+    -- memory.playtesting_stats = nil
 
-    memory.cliff_explosives_acquired_once = false -- used to give tip by parrot what to do with them(only triggers from buying it in captain's cabin)
-    memory.hold_surface_destroyable_wooden_chests = nil
+    -- memory.cliff_explosives_acquired_once = false -- used to give tip by parrot what to do with them(only triggers from buying it in captain's cabin)
+    -- memory.hold_surface_destroyable_wooden_chests = nil
 end
 
 function Public.fallthrough_crew_memory() --could make this a metatable, but metatables and factorio global seem not to play nicely
