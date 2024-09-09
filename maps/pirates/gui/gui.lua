@@ -836,7 +836,7 @@ function Public.process_siloframe_and_questframe_updates(flowsilo, flowquest, bo
 				local tooltip = ''
 
 				if quest_complete and quest_reward then
-					tooltip = {'pirates.gui_questframe_complete_tooltip'}
+					tooltip = {'pirates.gui_questframe_complete_tooltip', quest_type}
 					flow1.quest_label_1.caption = {'pirates.gui_questframe'}
 					flow1.quest_label_1.style.font_color = GuiCommon.achieved_font_color
 					flow1.quest_label_2.visible = true
