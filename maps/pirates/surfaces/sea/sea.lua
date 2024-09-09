@@ -45,8 +45,7 @@ end
 
 function Public.terrain(args)
 	args.tiles[#args.tiles + 1] = {name = 'deepwater', position = args.p}
-	local fishrng = Math.random(110)
-	if fishrng == 1 then
+	if Math.random(110) == 1 then
 		args.entities[#args.entities + 1] = {name = 'fish', position = args.p}
 	end
 	return nil

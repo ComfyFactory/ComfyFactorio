@@ -99,7 +99,7 @@ function Public.terrain(args)
 		args.tiles[#args.tiles + 1] = {name = CoreData.walkway_tile, position = args.p}
 	else
 		args.tiles[#args.tiles + 1] = {name = 'water', position = args.p}
-		if math.random(1, 64) == 1 then
+		if math.random(1, 400) == 1 then
 			args.entities[#args.entities + 1] = {name = 'fish', position = args.p}
 		end
 	end
