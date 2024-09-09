@@ -875,10 +875,12 @@ end
 
 
 function Public.loading_update(tickinterval)
+	local global_memory = Memory.get_global_memory()
 	local memory = Memory.get_crew_memory()
-	if memory.game_lost then return end
 
 	if not memory.loadingticks then return end
+
+	if memory.game_lost then return end
 
 	local currentdestination = Common.current_destination()
 
@@ -889,13 +891,38 @@ function Public.loading_update(tickinterval)
 
 	if not memory.boat.state then return end
 
-	local needs_loading_update = false
-	if memory.boat.state == Boats.enum_state.LANDED then needs_loading_update = true end
-	if memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP then needs_loading_update = true end
-	if memory.boat.state == Boats.enum_state.LEAVING_DOCK then needs_loading_update = true end
-	if memory.boat.state == Boats.enum_state.APPROACHING and destination_index == 1 then needs_loading_update = true end
+	local map_loads = false
+	if memory.boat.state == Boats.enum_state.LANDED then map_loads = true end
+	if memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP then map_loads = true end
+	if memory.boat.state == Boats.enum_state.LEAVING_DOCK then map_loads = true end
+	if memory.boat.state == Boats.enum_state.APPROACHING and destination_index == 1 then map_loads = true end
 
-	if not needs_loading_update then return end
+	if not map_loads then return end
+
+
+	local crew_to_wait_for = nil
+	if memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP then
+		for id, crew_memory in pairs(global_memory.crew_memories) do
+			if crew_memory.loadingticks and (crew_memory.loadingticks > memory.loadingticks or (crew_memory.loadingticks == memory.loadingticks and id < memory.id)) then
+				crew_to_wait_for = id
+				break
+			end
+		end
+	end
+
+	if crew_to_wait_for then
+		if not memory.waiting_for_other_crew or memory.waiting_for_other_crew ~= crew_to_wait_for then
+			memory.waiting_for_other_crew = crew_to_wait_for
+			local waiting_crew_name = global_memory.crew_memories[crew_to_wait_for].name or "Unknown crew"
+
+			Common.notify_force(memory.force, {'pirates.wait_for_crew_to_finish_loading', waiting_crew_name})
+		end
+
+		return
+	else
+		memory.waiting_for_other_crew = nil
+	end
+
 
 	memory.loadingticks = memory.loadingticks + tickinterval
 

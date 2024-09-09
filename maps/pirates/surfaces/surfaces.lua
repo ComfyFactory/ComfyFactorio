@@ -146,7 +146,7 @@ function Public.destination_on_collide(destination)
 	local memory = Memory.get_crew_memory()
 
 	local name = destination.static_params.name and destination.static_params.name or 'NameNotFound'
-	local message = {'', '[' .. memory.name .. '] ', {'pirates.approaching_destination', memory.destinationsvisited_indices and (#memory.destinationsvisited_indices + 1) or 0, name}} --notify the whole server
+	local message = {'', '[' .. memory.name .. '] ', {'pirates.loading_destination', memory.destinationsvisited_indices and (#memory.destinationsvisited_indices + 1) or 0, name}} --notify the whole server
 	Common.notify_game(message)
 
 	if destination.type ~= Public.enum.DOCK then
@@ -169,8 +169,6 @@ function Public.destination_on_collide(destination)
 	if destination.type == Public.enum.ISLAND then
 		local index = destination.destination_index
 		Crowsnest.paint_around_destination(index, CoreData.overworld_loading_tile)
-
-
 
 		if destination.subtype == IslandEnum.enum.RADIOACTIVE then
 			Common.parrot_speak(memory.force, {'pirates.parrot_radioactive_tip_1'})
