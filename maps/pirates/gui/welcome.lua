@@ -64,12 +64,18 @@ function Public.handle_click(event)
         local player = game.players[event.player_index]
         if player.gui.center['welcome_window'] then
             if event.element.name == 'welcome_window' or event.element.parent.name == 'welcome_window' then
-                player.gui.center['welcome_window'].destroy()
+                Public.close_welcome_window(player)
                 return true
             end
         end
     end
     return false
+end
+
+function Public.close_welcome_window(player)
+    if player.gui.center['welcome_window'] then
+        player.gui.center['welcome_window'].destroy()
+    end
 end
 
 return Public

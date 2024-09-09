@@ -1728,13 +1728,7 @@ local function on_player_changed_surface(event)
 
     Roles.update_privileges(player)
 
-	-- Close the welcome window if open:
-	if player.gui.center['welcome_window'] then
-		if event.element.name == 'welcome_window' or event.element.parent.name == 'welcome_window' then
-			player.gui.center['welcome_window'].destroy()
-			return true
-		end
-	end
+	GuiWelcome.close_welcome_window(player)
 end
 
 function Public.player_entered_vehicle(player, vehicle)
