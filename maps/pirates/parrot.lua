@@ -39,7 +39,6 @@ Public.framecounts = {
 -- 	"Why not buy the map designer a coffee! ko-fi.com/thesixthroc!",
 -- 	"Why not buy the map designer a coffee! ko-fi.com/thesixthroc!",
 -- 	"Make suggestions at getcomfy.eu/discord!",
--- 	"To launch a second run, you need a fifth of the server's pirates to endorse it!",
 -- 	"Resources granted to the ship appear in the captain's cabin!",
 -- 	"On each island after the first, the ship generates ore!",
 -- 	"Charge the silo to launch a rocket!",

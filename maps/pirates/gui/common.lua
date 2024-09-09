@@ -46,11 +46,6 @@ Public.default_window_positions = {
 	color = {x = 160, y = 96},
 }
 
--- Player who created the proposal is already an endorser
-function Public.proposal_endorsers_required()
-	return Math.min(4, Math.ceil((#game.connected_players or 0)/5))
-end
-
 function Public.new_window(player, name)
 
 	local global_memory = Memory.get_global_memory()
@@ -348,12 +343,11 @@ function Public.crew_overall_state_bools(player_index)
 	local ret = {
 		adventuring = false,
 		spectating = false,
-		endorsing = false,
+		created_crew = false,
 		proposing = false,
 		sloops_full = false,
 		needs_more_capacity = false,
 		crew_count_capped = false,
-		needs_more_endorsers = false,
 		leaving = false,
 		proposal_can_launch = false,
 	}
@@ -368,30 +362,25 @@ function Public.crew_overall_state_bools(player_index)
 	if memory.crewstatus == nil then
 		for _, crewid in pairs(global_memory.crew_active_ids) do
 			if global_memory.crew_memories[crewid].crewstatus == Crew.enum.LEAVING_INITIAL_DOCK then
-				for _, endorser_index in pairs(global_memory.crew_memories[crewid].original_proposal.endorserindices) do
-					if endorser_index == player_index then ret.leaving = true end
-				end
+				if global_memory.crew_memories[crewid].original_proposal.created_by_player == player_index then ret.leaving = true end
 			end
 		end
 		for _, proposal in pairs(global_memory.crewproposals) do
-			if #proposal.endorserindices > 0 and proposal.endorserindices[1] == player_index then
+			if proposal.created_by_player == player_index then
 				ret.proposing = true
-				if #global_memory.crew_active_ids >= 3 then
+				if #global_memory.crew_active_ids >= Common.starting_ships_count then
 					ret.sloops_full = true
 				elseif #global_memory.crew_active_ids >= global_memory.active_crews_cap_memory then
 					ret.crew_count_capped = true
 				elseif global_memory.active_crews_cap_memory > 1 and #global_memory.crew_active_ids == (global_memory.active_crews_cap_memory - 1) and not ((global_memory.crew_memories[1] and global_memory.crew_memories[1].capacity >= Common.minimum_run_capacity_to_enforce_space_for) or (global_memory.crew_memories[2] and global_memory.crew_memories[2].capacity >= Common.minimum_run_capacity_to_enforce_space_for) or (global_memory.crew_memories[3] and global_memory.crew_memories[3].capacity >= Common.minimum_run_capacity_to_enforce_space_for)) and not (CoreData.capacity_options[proposal.capacity_option].value >= Common.minimum_run_capacity_to_enforce_space_for) then
 					ret.needs_more_capacity = true
-				elseif proposal.endorserindices and #global_memory.crew_active_ids > 0 and #proposal.endorserindices < Public.proposal_endorsers_required() then
-					ret.needs_more_endorsers = true
 				end
-				if (not (ret.sloops_full or ret.needs_more_capacity or ret.needs_more_endorsers or ret.crew_count_capped)) then
+				if not (ret.sloops_full or ret.needs_more_capacity or ret.crew_count_capped) then
 					ret.proposal_can_launch = true
 				end
 			end
-			for _, i in pairs(proposal.endorserindices) do
-				if player_index == i then ret.endorsing = true end
-			end
+			
+			if player_index == proposal.created_by_player then ret.created_crew = true end
 		end
 	end
 

@@ -185,22 +185,8 @@ function Public.choose_crew_members()
 	local capacity = memory.capacity
 	local boat = memory.boat
 
-	-- if the boat is over capacity, should prefer original endorsers over everyone else:
 	local crew_members = {}
 	local crew_members_count = 0
-	for _, player in pairs(game.connected_players) do
-		if crew_members_count < capacity and player.surface.name == CoreData.lobby_surface_name and Boats.on_boat(boat, player.position) then
-			-- check if they were an endorser
-			local endorser = false
-			for _, index in pairs(memory.original_proposal.endorserindices) do
-				if player.index == index then endorser = true end
-			end
-			if endorser then
-				crew_members[player.index] = player
-				crew_members_count = crew_members_count + 1
-			end
-		end
-	end
 
 	if crew_members_count < capacity then
 		for _, player in pairs(game.connected_players) do
@@ -280,7 +266,6 @@ function Public.join_spectators(player, crewid)
 
 		Roles.player_left_so_redestribute_roles(player)
 	else
-		Public.player_abandon_endorsements(player)
 		local c = player.character
 		player.set_controller{type = defines.controllers.spectator}
 		player.teleport(memory.spawnpoint, game.surfaces[memory.boat.surface_name])
@@ -385,7 +370,6 @@ function Public.join_crew(player, rejoin)
 			player.create_character()
 		end
 
-		Public.player_abandon_endorsements(player)
 		player.force = memory.force
 
 		Common.notify_lobby({'pirates.lobby_to_crew_2', player.name, memory.name})
@@ -685,32 +669,13 @@ function Public.player_abandon_proposal(player)
 	local global_memory = Memory.get_global_memory()
 
 	for k, proposal in pairs(global_memory.crewproposals) do
-		if proposal.endorserindices and proposal.endorserindices[1] and proposal.endorserindices[1] == player.index then
-			proposal.endorserindices[k] = nil
+		if proposal.created_by_player and proposal.created_by_player == player.index then
 			Common.notify_lobby({'pirates.proposal_retracted', proposal.name})
 			-- Server.to_discord_embed(message)
 			global_memory.crewproposals[k] = nil
 		end
 	end
 end
-
-function Public.player_abandon_endorsements(player)
-	local global_memory = Memory.get_global_memory()
-
-	for k, proposal in pairs(global_memory.crewproposals) do
-		for k2, i in pairs(proposal.endorserindices) do
-			if i == player.index then
-				proposal.endorserindices[k2] = nil
-				if #proposal.endorserindices == 0 then
-					Common.notify_lobby({'pirates.proposal_abandoned', proposal.name})
-					-- Server.to_discord_embed(message)
-					global_memory.crewproposals[k] = nil
-				end
-			end
-		end
-	end
-end
-
 
 local crowsnest_delayed = Token.register(
 	function(data)

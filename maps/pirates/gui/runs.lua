@@ -296,26 +296,6 @@ function Public.toggle_window(player)
 	})
 
 	flow4 = flow3.add({
-		name = 'endorse_proposal',
-		type = 'button',
-		caption = {'pirates.gui_runs_proposals_endorse_proposal'},
-	})
-	flow4.style.minimal_width = 150
-	flow4.style.font = 'default-bold'
-	flow4.style.font_color = {r=0.10, g=0.10, b=0.10}
-	flow4.style.bottom_margin = 9
-
-	flow4 = flow3.add({
-		name = 'retract_endorsement',
-		type = 'button',
-		caption = {'pirates.gui_runs_proposals_retract_endorsement'},
-	})
-	flow4.style.minimal_width = 150
-	flow4.style.font = 'default-bold'
-	flow4.style.font_color = {r=0.10, g=0.10, b=0.10}
-	flow4.style.bottom_margin = 9
-
-	flow4 = flow3.add({
 		name = 'abandon_proposal',
 		type = 'button',
 		caption = {'pirates.gui_runs_proposals_abandon_proposal'},
@@ -458,13 +438,6 @@ function Public.toggle_window(player)
 	})
 
 	flow4 = flow3.add({
-		name = 'proposal_insufficient_endorsers',
-		type = 'label',
-		caption = {'pirates.gui_runs_launch_error_1'},
-	})
-	flow4.style.single_line = false
-
-	flow4 = flow3.add({
 		name = 'proposal_crew_count_capped',
 		type = 'label',
 		caption = {'pirates.gui_runs_launch_error_2'},
@@ -563,21 +536,15 @@ function Public.full_update(player)
 
 		flow.proposals.body.proposals_listbox.visible = (not playercrew_status.leaving) and (#global_memory.crewproposals > 0)
 
-		flow.proposals.body.flow_buttons.endorse_proposal.visible = (not playercrew_status.leaving) and (not playercrew_status.endorsing) and (#global_memory.crewproposals > 0) and flow.proposals.body.proposals_listbox.selected_index ~= 0
+		flow.proposals.body.flow_buttons.abandon_proposal.visible = (not playercrew_status.leaving) and playercrew_status.created_crew and playercrew_status.proposing and (#global_memory.crewproposals > 0)
 
-		flow.proposals.body.flow_buttons.abandon_proposal.visible = (not playercrew_status.leaving) and playercrew_status.endorsing and playercrew_status.endorsing and playercrew_status.proposing and (#global_memory.crewproposals > 0)
-
-		flow.proposals.body.flow_buttons.retract_endorsement.visible = (not playercrew_status.leaving) and playercrew_status.endorsing and (not playercrew_status.proposing) and (#global_memory.crewproposals > 0)
-
-		flow.proposals.body.proposal_maker.visible = (not playercrew_status.leaving) and (not playercrew_status.endorsing)
+		flow.proposals.body.proposal_maker.visible = (not playercrew_status.leaving) and (not playercrew_status.created_crew)
 
 		flow.proposals.body.flow_proposal_launch.proposal_insufficient_sloops.visible = playercrew_status.sloops_full
 
 		flow.proposals.body.flow_proposal_launch.proposal_insufficient_player_capacity.visible = playercrew_status.needs_more_capacity
 
 		flow.proposals.body.flow_proposal_launch.proposal_crew_count_capped.visible = playercrew_status.crew_count_capped
-
-		flow.proposals.body.flow_proposal_launch.proposal_insufficient_endorsers.visible = playercrew_status.needs_more_endorsers
 
 		-- flow.proposals.body.proposal_maker.body.proposal_cant_do_infinity_mode.visible = (flow.proposals.body.proposal_maker.body.options.mode.mode.switch.switch_state == 'right')
 
@@ -844,7 +811,7 @@ function Public.click(event)
 			difficulty_option = difficulty_option,
 			capacity_option = capacity_option,
 			-- mode_option = mode_option,
-			endorserindices = {player.index},
+			created_by_player = player.index,
 			run_is_protected = run_is_protected,
 			run_is_private = run_is_private,
 			private_run_password = private_run_password,
@@ -862,38 +829,15 @@ function Public.click(event)
 		return
 	end
 
-	if eventname == 'endorse_proposal' then
-		local lb = flow.proposals.body.proposals_listbox
-
-		local index = lb.selected_index
-		if index ~= 0 then
-			local name2 = lb.get_item(lb.selected_index)[2]
-
-			for _, proposal in pairs(global_memory.crewproposals) do
-
-				if proposal.name == name2 and #proposal.endorserindices < CoreData.capacity_options[proposal.capacity_option].value then
-					proposal.endorserindices[#proposal.endorserindices + 1] = player.index
-				end
-			end
-		end
-		return
-	end
-
 	if eventname == 'abandon_proposal' then
 		Crew.player_abandon_proposal(player)
-		Crew.player_abandon_endorsements(player)
-		return
-	end
-
-	if eventname == 'retract_endorsement' then
-		Crew.player_abandon_endorsements(player)
 		return
 	end
 
 	if eventname == 'launch_crew' then
 		if GuiCommon.crew_overall_state_bools(player.index).proposal_can_launch then --double check
 			for k, proposal in pairs(global_memory.crewproposals) do
-				if #proposal.endorserindices > 0 and proposal.endorserindices[1] == player.index then
+				if proposal.created_by_player == player.index then
 					-- Make sure private run can be created
 					if proposal.run_is_private then
 						-- NOTE: I didn't want to add this check in "proposal_can_launch", because different error message would get displayed (I think?).

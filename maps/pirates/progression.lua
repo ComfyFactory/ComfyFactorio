@@ -123,7 +123,6 @@ function Public.go_from_starting_dock_to_first_destination()
 		Roles.assign_captain_based_on_priorities()
 
 		for _, player in pairs(crew_members) do
-			Crew.player_abandon_endorsements(player)
 			for item, amount in pairs(Balance.starting_items_player) do
 				player.insert({name = item, count = amount})
 			end

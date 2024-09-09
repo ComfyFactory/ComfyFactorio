@@ -672,8 +672,8 @@ if _DEBUG then
 					capacity_option = 3,
 					difficulty_option = 4,
 					-- mode_option = 'left',
-					endorserindices = { 1 },
-					name = "AdminRun"
+					name = "AdminRun",
+					created_by_player = cmd.player_index
 				}
 
 				Crew.initialise_crew(proposal)
@@ -782,8 +782,8 @@ if _DEBUG then
 				capacity_option = 3,
 				difficulty_option = 2,
 				-- mode_option = 'left',
-				endorserindices = { 2 },
-				name = "TestRun"
+				name = "TestRun",
+				created_by_player = cmd.player_index
 			}
 
 			global_memory.crewproposals[#global_memory.crewproposals + 1] = proposal

@@ -1630,6 +1630,7 @@ local function event_on_pre_player_left_game(event)
 	local player = game.players[event.player_index]
 
 	local global_memory = Memory.get_global_memory()
+
 	-- figure out which crew this is about:
 	local crew_id = Common.get_id_from_force_name(player.force.name)
 	if crew_id then
@@ -1638,17 +1639,13 @@ local function event_on_pre_player_left_game(event)
 		log('INFO: ' .. player.name .. ' (crew ID: NONE) left the game')
 	end
 
+	Memory.set_working_id(crew_id)
+	local memory = Memory.get_crew_memory()
+
 	for k, proposal in pairs(global_memory.crewproposals) do
-		if proposal and proposal.endorserindices then
-			for k2, i in pairs(proposal.endorserindices) do
-				if i == event.player_index then
-					proposal.endorserindices[k2] = nil
-					if #proposal.endorserindices == 0 then
-						proposal = nil
-						global_memory.crewproposals[k] = nil
-					end
-				end
-			end
+		if proposal and proposal.created_by_player and proposal.created_by_player == event.player_index then
+			proposal = nil
+			global_memory.crewproposals[k] = nil
 		end
 	end
 
@@ -1658,9 +1655,6 @@ local function event_on_pre_player_left_game(event)
 		end
 		return -- nothing more needed
 	end
-
-	Memory.set_working_id(crew_id)
-	local memory = Memory.get_crew_memory()
 
 	if player.controller_type == defines.controllers.editor then player.toggle_map_editor() end
 
