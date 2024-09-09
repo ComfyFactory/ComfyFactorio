@@ -297,7 +297,7 @@ function Public.generate_overworld_destination(p)
 
 		--scheduled raft raids moved to destination_on_arrival
 
-		local ores_multiplier = 2 * Balance.game_resources_scale(p.x) / (1 + Public.builtin_mining_productivity_scale(p.x))
+		local ores_multiplier = 2 * Balance.game_resources_scale(p.x) / (1 + Balance.builtin_mining_productivity_scale(p.x))
 
 		local base_ores = scope.Data.base_ores()
 
