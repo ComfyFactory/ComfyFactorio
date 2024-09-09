@@ -28,6 +28,8 @@ Public.Minimarket = require 'maps.pirates.shop.dock'
 
 function Public.print_transaction(player, multiplier, offer_itemname, offer_itemcount, price)
 	local type = 'traded away'
+	
+    ---@type (string|table)[]
 	local s2 = {''}
 	local s3 = offer_itemcount * multiplier .. ' ' .. offer_itemname
 	if offer_itemname == 'coin' then type = 'sold' end

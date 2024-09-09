@@ -1542,6 +1542,8 @@ local function event_on_player_joined_game(event)
 
 		-- NOTE: It was suggested to always spawn players in lobby, in hopes that they may want to create their crew increasing the popularity of scenario. Hence the following code is disabled.
 
+		-- WARNING: If re-enabling autojoin, make sure it respects private/protected runs.
+
 		-- Auto-join the oldest crew:
 		-- local ages = {}
 		-- for _, memory in pairs(global_memory.crew_memories) do
