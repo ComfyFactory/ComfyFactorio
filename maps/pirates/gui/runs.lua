@@ -748,7 +748,7 @@ function Public.click(event)
 	end
 
 	if eventname == 'propose_crew' then
-		if #global_memory.crew_active_ids >= global_memory.active_crews_cap then
+		if #global_memory.crew_active_ids >= global_memory.active_crews_cap_memory then
 			Common.notify_player_error(player, {'pirates.gui_runs_launch_error_5'})
 			return
 		end

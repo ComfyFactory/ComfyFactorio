@@ -666,12 +666,16 @@ end
 
 
 function Public.generate_new_crew_id()
-	local global_memory = Memory.get_global_memory()
+    local global_memory = Memory.get_global_memory()
+    local max_crews = Common.starting_ships_count
 
-	if not global_memory.crew_memories[1] then return 1
-	elseif not global_memory.crew_memories[2] then return 2
-	elseif not global_memory.crew_memories[3] then return 3
-	else return end
+    for id = 1, max_crews do
+        if not global_memory.crew_memories[id] then
+            return id
+        end
+    end
+
+    return nil
 end
 
 

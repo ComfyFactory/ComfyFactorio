@@ -378,9 +378,9 @@ function Public.crew_overall_state_bools(player_index)
 				ret.proposing = true
 				if #global_memory.crew_active_ids >= 3 then
 					ret.sloops_full = true
-				elseif #global_memory.crew_active_ids >= global_memory.active_crews_cap then
+				elseif #global_memory.crew_active_ids >= global_memory.active_crews_cap_memory then
 					ret.crew_count_capped = true
-				elseif global_memory.active_crews_cap > 1 and #global_memory.crew_active_ids == (global_memory.active_crews_cap - 1) and not ((global_memory.crew_memories[1] and global_memory.crew_memories[1].capacity >= Common.minimum_run_capacity_to_enforce_space_for) or (global_memory.crew_memories[2] and global_memory.crew_memories[2].capacity >= Common.minimum_run_capacity_to_enforce_space_for) or (global_memory.crew_memories[3] and global_memory.crew_memories[3].capacity >= Common.minimum_run_capacity_to_enforce_space_for)) and not (CoreData.capacity_options[proposal.capacity_option].value >= Common.minimum_run_capacity_to_enforce_space_for) then
+				elseif global_memory.active_crews_cap_memory > 1 and #global_memory.crew_active_ids == (global_memory.active_crews_cap_memory - 1) and not ((global_memory.crew_memories[1] and global_memory.crew_memories[1].capacity >= Common.minimum_run_capacity_to_enforce_space_for) or (global_memory.crew_memories[2] and global_memory.crew_memories[2].capacity >= Common.minimum_run_capacity_to_enforce_space_for) or (global_memory.crew_memories[3] and global_memory.crew_memories[3].capacity >= Common.minimum_run_capacity_to_enforce_space_for)) and not (CoreData.capacity_options[proposal.capacity_option].value >= Common.minimum_run_capacity_to_enforce_space_for) then
 					ret.needs_more_capacity = true
 				elseif proposal.endorserindices and #global_memory.crew_active_ids > 0 and #proposal.endorserindices < Public.proposal_endorsers_required() then
 					ret.needs_more_endorsers = true

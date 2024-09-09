@@ -329,6 +329,7 @@ function Public.connect_up_linked_belts_to_deck() --assumes both are in standard
 		for _, c in pairs(connections) do
 			local b1 = boat.hold_whitebelts[1][c[1]]
 			local b2 = boat.deck_whitebelts[c[2]]
+			log(string.format("Connecting hold belt %d to deck belt %d", c[1], c[2]))
 			b1.connect_linked_belts(b2)
 		end
 	end

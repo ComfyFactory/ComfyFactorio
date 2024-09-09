@@ -108,7 +108,7 @@ local function on_init()
 
 	Common.init_game_settings(Balance.technology_price_multiplier)
 
-	global_memory.active_crews_cap = Common.activeCrewsCap
+	global_memory.active_crews_cap_memory = Common.active_crews_cap
 	global_memory.protected_but_not_private_run_cap = Common.protected_but_not_private_run_cap
 	global_memory.private_run_cap = Common.private_run_cap
 
@@ -120,7 +120,7 @@ local function on_init()
 	-- game.forces.player.character_running_speed_modifier = Balance.base_extra_character_speed
 
 	game.create_force('environment')
-	for id = 1, 5, 1 do
+	for id = 1, Common.starting_ships_count, 1 do
 		game.create_force(Common.get_enemy_force_name(id))
 		game.create_force(Common.get_ancient_friendly_force_name(id))
 		game.create_force(Common.get_ancient_hostile_force_name(id))

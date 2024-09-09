@@ -142,7 +142,7 @@ function(cmd)
 		local global_memory = Memory.get_global_memory()
 
 		if tonumber(param) then
-			global_memory.active_crews_cap = tonumber(param)
+			global_memory.active_crews_cap_memory = tonumber(param)
 			Common.notify_player_expected(player, {'pirates.cmd_notify_set_max_crews', param})
 		end
 	end

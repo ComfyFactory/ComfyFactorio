@@ -19,7 +19,8 @@ local LootRaffle = require 'utils.functions.loot_raffle'
 
 local Public = {}
 
-Public.activeCrewsCap = 5
+Public.starting_ships_count = 5
+Public.active_crews_cap = 5
 Public.private_run_cap = 2
 Public.protected_but_not_private_run_cap = 2
 Public.minimumCapacitySliderValue = 1
