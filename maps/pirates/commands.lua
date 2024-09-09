@@ -347,7 +347,7 @@ local go_2 = Token.register(
 		Memory.set_working_id(data.id)
 		local memory = Memory.get_crew_memory()
 
-		memory.mapbeingloadeddestination_index = 1
+		memory.mapbeingloadeddestination_index = CoreData.first_destination_index
 		memory.loadingticks = 0
 
 		-- local surface = game.surfaces[Common.current_destination().surface_name]
@@ -360,10 +360,10 @@ local go_1 = Token.register(
 	function(data)
 		Memory.set_working_id(data.id)
 		local memory = Memory.get_crew_memory()
-		Overworld.ensure_lane_generated_up_to(0, Crowsnest.Data.visibilitywidth/2)
-		Overworld.ensure_lane_generated_up_to(24, Crowsnest.Data.visibilitywidth/2)
-		Overworld.ensure_lane_generated_up_to(-24, Crowsnest.Data.visibilitywidth/2)
-		memory.currentdestination_index = 1
+		Overworld.ensure_lane_generated_up_to(0, 10)
+		Overworld.ensure_lane_generated_up_to(24, 10)
+		Overworld.ensure_lane_generated_up_to(-24, 10)
+		memory.currentdestination_index = CoreData.first_destination_index
 		script.raise_event(CustomEvents.enum['update_crew_progress_gui'], {})
 		Surfaces.create_surface(Common.current_destination())
 		Task.set_timeout_in_ticks(60, go_2, {id = data.id})

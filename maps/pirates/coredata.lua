@@ -23,6 +23,8 @@ Public.lobby_surface_name = '000-000-Lobby'
 Public.private_run_lock_amount_hr = 24 -- how many hours need to pass, when crew is empty or inactive, until private run becomes public
 Public.protected_run_lock_amount_hr = 24 -- how many hours need to pass, when crew is empty or inactive, until captain protection expires
 
+Public.first_destination_index = 3 --This is a hack to record the destination_index of the first (Eden-like) island. It comes out in an obscure way from the code.
+
 Public.colors = {
 	coal = {r=0.5, g=0.5, b=0.5},
 	wood = {r=204, g=158, b=67},
@@ -279,11 +281,16 @@ end
 -- 	}
 -- end
 
-
+local function add_trees(x, y, entities)
+    if Math.abs(y + 24) > 3 and Math.random() < 0.4 then
+        entities[#entities + 1] = {name = 'tree-05', position = {x = x, y = y}}
+    end
+end
 
 function Public.Lobby_iconized_map()
 
 	local tiles = {}
+	local entities = {}
 	local width = 4
 	-- local height = 20
 
@@ -293,14 +300,18 @@ function Public.Lobby_iconized_map()
 			local negxnoisy = negx + Math.random(3)-2
 			if negxnoisy >= 50 then
 				tiles[#tiles + 1] = {name = 'grass-3', position = {x = x, y = y}}
-			elseif negxnoisy >= 30 and (negxnoisy-30) >= Math.abs(y)^2/200 then
+				add_trees(x, y, entities)
+			elseif negxnoisy >= 30 and (negxnoisy-30) >= Math.abs(y+24)^2/200 then
 				tiles[#tiles + 1] = {name = 'dirt-4', position = {x = x, y = y}}
-			elseif negxnoisy >= 15 and (negxnoisy-15) >= Math.abs(y)^2/150 then
+				add_trees(x, y, entities)
+			elseif negxnoisy >= 15 and (negxnoisy-15) >= Math.abs(y+24)^2/150 then
 				tiles[#tiles + 1] = {name = 'dirt-2', position = {x = x, y = y}}
+				add_trees(x, y, entities)
+			elseif negx >= 5 and (negx-5) >= Math.abs(y+24)^2/100 then
+				tiles[#tiles + 1] = {name = 'sand-2', position = {x = x, y = y}}
+				add_trees(x, y, entities)
 			else
-				if negx >= 5 and (negx-5) >= Math.abs(y)^2/100 then
-					tiles[#tiles + 1] = {name = 'sand-2', position = {x = x, y = y}}
-				elseif (negx <= 8 and Math.abs(y)<1) or (negx < 1 and Math.abs(y)<3) then
+				if (negx <= 8 and Math.abs(y+24)<1) or (negx < 1 and Math.abs(y+24)<3) then
 					tiles[#tiles + 1] = {name = Public.walkway_tile, position = {x = x, y = y}}
 				else
 					tiles[#tiles + 1] = {name = 'water', position = {x = x, y = y}}
@@ -310,7 +321,7 @@ function Public.Lobby_iconized_map()
 	end
 	return {
 		tiles = tiles,
-		entities = {},
+		entities = entities,
 	}
 end
 

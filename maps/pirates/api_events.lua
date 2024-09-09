@@ -1547,7 +1547,10 @@ local function event_on_player_joined_game(event)
 		end
 
 		Common.notify_player_expected(player, {'pirates.welcome_main_chat'})
-		GuiWelcome.show_welcome_window(player)
+
+		if not _DEBUG then
+			GuiWelcome.show_welcome_window(player)
+		end
 
 		player.force = Common.lobby_force_name
 

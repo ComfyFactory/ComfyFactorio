@@ -953,6 +953,7 @@ function Public.loading_update(tickinterval)
 							Overworld.ensure_lane_generated_up_to(0, 10)
 							Overworld.ensure_lane_generated_up_to(24, 10)
 							Overworld.ensure_lane_generated_up_to(-24, 10)
+							log(_inspect(memory.destinations))
 							Surfaces.create_surface(memory.destinations[destination_index])
 							-- PiratesApiEvents.load_some_map_chunks(destination_index, 0.02)
 						end
@@ -1386,7 +1387,7 @@ end
 -- 			local memory = Memory.get_crew_memory()
 
 -- 			Progression.go_from_starting_dock_to_first_destination()
--- 			memory.mapbeingloadeddestination_index = 1
+-- 			memory.mapbeingloadeddestination_index = CoreData.first_destination_index
 -- 			memory.loadingticks = 0
 
 -- 		end

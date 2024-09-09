@@ -33,7 +33,7 @@ local Upgrades = require 'maps.pirates.boat_upgrades'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
 local ShopDock = require 'maps.pirates.shop.dock'
-
+local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 
 
 function Public.get_fuel_depletion_rate_once_per_second()
@@ -76,7 +76,7 @@ function Public.set_off_from_starting_dock()
 
 	Common.current_destination().type = Surfaces.enum.LOBBY
 
-	memory.mapbeingloadeddestination_index = 1 -- whatever the index of the first island is
+	memory.mapbeingloadeddestination_index = CoreData.first_destination_index -- whatever the index of the first island is
 	memory.loadingticks = 0
 
 	local surface = game.surfaces[CoreData.lobby_surface_name]
@@ -104,91 +104,91 @@ function Public.go_from_starting_dock_to_first_destination()
 	local crew_members = Crew.choose_crew_members()
 	local crew_members_count = #memory.crewplayerindices
 
-	if crew_members_count > 0 then
-		memory.crewstatus = Crew.enum.ADVENTURING
-
-		local message = '[' .. memory.name .. '] Crew members: '
-		local b = false
-		for _, index in pairs(memory.crewplayerindices) do
-			if game.players[index] and game.players[index].name then
-				if b == true then
-					message = message .. ', '
-				else b = true end
-				message = message .. game.players[index].name
-			end
-		end
-		message = message .. '.'
-		Server.to_discord_embed_raw(CoreData.comfy_emojis.pogkot .. message)
-
-		Roles.assign_captain_based_on_priorities()
-
-		for _, player in pairs(crew_members) do
-			for item, amount in pairs(Balance.starting_items_player) do
-				player.insert({name = item, count = amount})
-			end
-		end
-
-		boat.stored_resources = {}
-
-		Shop.Captains.initialise_captains_shop()
-
-		Hold.create_hold_surface(1)
-		boat.EEI_stage = 1
-		boat.random_class_purchase_count = 0
-		Cabin.create_cabin_surface()
-
-		local items = Balance.starting_items_crew_upstairs()
-		-- Boats.deck_place_random_obstacle_boxes(boat, 6, items, 0)
-
-		-- Let's try just adding the items to nearby boxes
-		local scope = Boats.get_scope(boat)
-		local surface = game.surfaces[boat.surface_name]
-		local boxes = surface.find_entities_filtered{
-			name = 'wooden-chest',
-			area = {
-				{x = boat.position.x - scope.Data.width/2, y = boat.position.y - scope.Data.height/2},
-				{x = boat.position.x + scope.Data.width/2, y = boat.position.y + scope.Data.height/2}
-			},
-		}
-		boxes = Math.shuffle(boxes)
-		for i = 1, #items do
-			if boxes[i] then
-				local inventory = boxes[i].get_inventory(defines.inventory.chest)
-				for name, count in pairs(items[i]) do
-					inventory.insert{name = name, count = count}
-				end
-			else
-				game.print('fail at ' .. boxes[i].position.x .. ' ' .. boxes[i].position.y)
-			end
-		end
-
-		Public.progress_to_destination(1) --index of first destination
-
-		-- local scope = Boats.get_scope(boat)
-		-- local boatwidth, boatheight = scope.Data.width, scope.Data.height
-		-- Common.surface_place_random_obstacle_boxes(game.surfaces[boat.surface_name], {x = boat.position.x - boatwidth*0.575, y = boat.position.y}, boatwidth*0.85, boatheight*0.8, 'oil-refinery', {[1] = 3, [2] = 3, [3] = 0, [4] = 0}, items)
-		-- go:
-		-- Public.progress_to_destination(1) --index of first destination
-
-		Boats.update_EEIs(boat)
-
-		-- if Common.difficulty_scale() == 1 then
-		-- 	Boats.upgrade_chests(boat, 'iron-chest')
-		-- 	Hold.upgrade_chests(1, 'iron-chest')
-		-- 	Crowsnest.upgrade_chests('iron-chest')
-		-- elseif Common.difficulty_scale() > 1 then
-		-- 	Boats.upgrade_chests(boat, 'steel-chest')
-		-- 	Hold.upgrade_chests(1, 'steel-chest')
-		-- 	Crowsnest.upgrade_chests('steel-chest')
-		-- end
-
-		memory.age = 0
-		memory.real_age = 0
-
-	else
+	if crew_members_count == 0 then
 		Boats.destroy_boat(boat)
 		Crew.disband_crew()
+		return
 	end
+
+	memory.crewstatus = Crew.enum.ADVENTURING
+	memory.age = 0
+	memory.real_age = 0
+
+	local message = '[' .. memory.name .. '] Crew members: '
+	local b = false
+	for _, index in pairs(memory.crewplayerindices) do
+		if game.players[index] and game.players[index].name then
+			if b == true then
+				message = message .. ', '
+			else b = true end
+			message = message .. game.players[index].name
+		end
+	end
+	message = message .. '.'
+	Server.to_discord_embed_raw(CoreData.comfy_emojis.pogkot .. message)
+
+	Roles.assign_captain_based_on_priorities()
+
+	for _, player in pairs(crew_members) do
+		for item, amount in pairs(Balance.starting_items_player) do
+			player.insert({name = item, count = amount})
+		end
+	end
+
+	boat.stored_resources = {}
+
+	Shop.Captains.initialise_captains_shop()
+
+	Hold.create_hold_surface(1)
+	boat.EEI_stage = 1
+	boat.random_class_purchase_count = 0
+	Cabin.create_cabin_surface()
+
+	local items = Balance.starting_items_crew_upstairs()
+	-- Boats.deck_place_random_obstacle_boxes(boat, 6, items, 0)
+
+	-- Let's try just adding the items to nearby boxes
+	local scope = Boats.get_scope(boat)
+	local surface = game.surfaces[boat.surface_name]
+	local boxes = surface.find_entities_filtered{
+		name = 'wooden-chest',
+		area = {
+			{x = boat.position.x - scope.Data.width/2, y = boat.position.y - scope.Data.height/2},
+			{x = boat.position.x + scope.Data.width/2, y = boat.position.y + scope.Data.height/2}
+		},
+	}
+	boxes = Math.shuffle(boxes)
+	for i = 1, #items do
+		if boxes[i] then
+			local inventory = boxes[i].get_inventory(defines.inventory.chest)
+			for name, count in pairs(items[i]) do
+				inventory.insert{name = name, count = count}
+			end
+		else
+			game.print('fail at ' .. boxes[i].position.x .. ' ' .. boxes[i].position.y)
+		end
+	end
+
+	-- Immediately move leftwards, lining us up with future docks (so newbies hit docks naturally).
+	Crowsnest.move_crowsnest(0, -24)
+
+	Public.progress_to_destination(CoreData.first_destination_index)
+
+	-- local scope = Boats.get_scope(boat)
+	-- local boatwidth, boatheight = scope.Data.width, scope.Data.height
+	-- Common.surface_place_random_obstacle_boxes(game.surfaces[boat.surface_name], {x = boat.position.x - boatwidth*0.575, y = boat.position.y}, boatwidth*0.85, boatheight*0.8, 'oil-refinery', {[1] = 3, [2] = 3, [3] = 0, [4] = 0}, items)
+
+	Boats.update_EEIs(boat)
+
+	-- if Common.difficulty_scale() == 1 then
+	-- 	Boats.upgrade_chests(boat, 'iron-chest')
+	-- 	Hold.upgrade_chests(1, 'iron-chest')
+	-- 	Crowsnest.upgrade_chests('iron-chest')
+	-- elseif Common.difficulty_scale() > 1 then
+	-- 	Boats.upgrade_chests(boat, 'steel-chest')
+	-- 	Hold.upgrade_chests(1, 'steel-chest')
+	-- 	Crowsnest.upgrade_chests('steel-chest')
+	-- end
 end
 
 
@@ -222,6 +222,8 @@ function Public.progress_to_destination(destination_index)
 	local subtype = destination_data.subtype
 	local newsurface_name = Surfaces.SurfacesCommon.encode_surface_name(memory.id, destination_index, type, subtype)
 	local newsurface = game.surfaces[newsurface_name]
+
+	log('progressing to destination ' .. destination_index .. ' with type ' .. type)
 
 	local initial_boatspeed, starting_boatposition
 
@@ -286,7 +288,6 @@ function Public.progress_to_destination(destination_index)
 	if old_type == Surfaces.enum.LOBBY or old_type == Surfaces.enum.DOCK then old_water = 'water' end
 
 	Boats.teleport_boat(boat, newsurface_name, starting_boatposition, CoreData.moving_boat_floor, old_water)
-
 
 	if old_type == Surfaces.enum.LOBBY then
 		Crowsnest.draw_extra_bits()

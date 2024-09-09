@@ -52,7 +52,7 @@ local C = {STANDARD, STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS}
 local D = {NIL, NIL, NIL, STANDARD, STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS, SWAMP, CAVE}
 
 local destinationScheme = {
-	[0] = {DOCK, FIRST, NIL},
+	[0] = {FIRST, NIL, NIL},
 	[1] = {HORSESHOE, HORSESHOE, HORSESHOE}, --map where you break rocks
 	[2] = {STANDARD_VARIANT, STANDARD_VARIANT, STANDARD_VARIANT}, --aesthetically different to previous map
 	[3] = {DOCK, NIL, NIL},
