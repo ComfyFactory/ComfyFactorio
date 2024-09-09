@@ -553,6 +553,17 @@ function(cmd)
 	end
 end)
 
+commands.add_command(
+'night',
+'night',
+function(cmd)
+	if check_admin(cmd) then
+		local player = game.players[cmd.player_index]
+		local surface = player.surface
+		surface.daytime = 0.5
+	end
+end)
+
 -- Move overworld boat right by a lot (you can jump over islands that way to skip them)
 commands.add_command(
 'jump',

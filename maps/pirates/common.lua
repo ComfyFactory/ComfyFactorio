@@ -1370,15 +1370,15 @@ function Public.send_important_items_from_player_to_crew(player, all_items)
 
     local any = false
 
-    for ii = 1, 5, 1 do
-        if player_inv[ii].valid then
+    for i = 1, 5, 1 do
+        if player_inv[i].valid then
             -- local to_keep = {}
             local to_remove = {}
-            for iii = 1, #player_inv[ii], 1 do
+            for j = 1, #player_inv[i], 1 do
                 -- local item_stack = player_inv[ii][iii] --don't do this as LuaItemStack is a reference!
-                if player_inv[ii] and player_inv[ii][iii].valid and player_inv[ii][iii].valid_for_read then
-                    if all_items or (player_inv[ii][iii].name and Utils.contains(Public.logout_unprotected_items, player_inv[ii][iii].name)) then
-                        to_remove[#to_remove + 1] = player_inv[ii][iii]
+                if player_inv[i] and player_inv[i][j].valid and player_inv[i][j].valid_for_read then
+                    if all_items or (player_inv[i][j].name and Utils.contains(Public.logout_unprotected_items, player_inv[i][j].name)) then
+                        to_remove[#to_remove + 1] = player_inv[i][j]
                         any = true
                     -- else
                     -- 	to_keep[#to_keep + 1] = Utils.deepcopy(player_inv[ii][iii])
@@ -1387,11 +1387,11 @@ function Public.send_important_items_from_player_to_crew(player, all_items)
             end
 
             if #to_remove > 0 then
-                for iii = 1, #to_remove, 1 do
-                    if to_remove[iii].valid_for_read then
+                for j = 1, #to_remove, 1 do
+                    if to_remove[j].valid_for_read then
                         -- Public.give_items_to_crew{{name = to_remove[iii].name, count = to_remove[iii].count}}
-                        Public.give_items_to_crew(to_remove[iii])
-                        to_remove[iii].clear()
+                        Public.give_items_to_crew(to_remove[j])
+                        to_remove[j].clear()
                     end
                 end
             -- clear and move over from to_keep if necessary?
@@ -1463,7 +1463,14 @@ function Public.give_items_to_crew(items)
     end
     local chest, chest2
 
+    local is_coin = false
     if items.name and items.name == 'coin' then
+        is_coin = true
+    elseif type(items) == 'table' and #items > 0 and items[1].name == 'coin' then
+        is_coin = true
+    end
+
+    if is_coin then
         chest = boat.backup_output_chest
         if not (chest and chest.valid) then
             return
