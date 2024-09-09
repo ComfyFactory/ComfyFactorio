@@ -575,164 +575,122 @@ function Public.try_create_permissions_groups()
 
     if not game.permissions.get_group('restricted_area') then
 		local group = game.permissions.create_group('restricted_area')
-		if not _DEBUG then
-			group.set_allows_action(defines.input_action.edit_permission_group, false)
-			group.set_allows_action(defines.input_action.import_permissions_string, false)
-			group.set_allows_action(defines.input_action.delete_permission_group, false)
-			group.set_allows_action(defines.input_action.add_permission_group, false)
-			group.set_allows_action(defines.input_action.admin_action, false)
+		group.set_allows_action(defines.input_action.edit_permission_group, false)
+		group.set_allows_action(defines.input_action.import_permissions_string, false)
+		group.set_allows_action(defines.input_action.delete_permission_group, false)
+		group.set_allows_action(defines.input_action.add_permission_group, false)
+		group.set_allows_action(defines.input_action.admin_action, false)
 
-			group.set_allows_action(defines.input_action.cancel_craft, false)
-			group.set_allows_action(defines.input_action.drop_item, false)
-			group.set_allows_action(defines.input_action.drop_blueprint_record, false)
-			group.set_allows_action(defines.input_action.build, false)
-			group.set_allows_action(defines.input_action.build_rail, false)
-			group.set_allows_action(defines.input_action.build_terrain, false)
-			group.set_allows_action(defines.input_action.begin_mining, false)
-			group.set_allows_action(defines.input_action.begin_mining_terrain, false)
-			-- group.set_allows_action(defines.input_action.deconstruct, false) --pick up dead players
-			group.set_allows_action(defines.input_action.activate_copy, false)
-			group.set_allows_action(defines.input_action.activate_cut, false)
-			group.set_allows_action(defines.input_action.activate_paste, false)
-			group.set_allows_action(defines.input_action.upgrade, false)
+		group.set_allows_action(defines.input_action.cancel_craft, false)
+		group.set_allows_action(defines.input_action.drop_item, false)
+		group.set_allows_action(defines.input_action.drop_blueprint_record, false)
+		group.set_allows_action(defines.input_action.build, false)
+		group.set_allows_action(defines.input_action.build_rail, false)
+		group.set_allows_action(defines.input_action.build_terrain, false)
+		group.set_allows_action(defines.input_action.begin_mining, false)
+		group.set_allows_action(defines.input_action.begin_mining_terrain, false)
+		-- group.set_allows_action(defines.input_action.deconstruct, false) --pick up dead players
+		group.set_allows_action(defines.input_action.activate_copy, false)
+		group.set_allows_action(defines.input_action.activate_cut, false)
+		group.set_allows_action(defines.input_action.activate_paste, false)
+		group.set_allows_action(defines.input_action.upgrade, false)
 
-			group.set_allows_action(defines.input_action.grab_blueprint_record, false)
-			if not CoreData.blueprint_library_allowed then
-				group.set_allows_action(defines.input_action.open_blueprint_library_gui, false)
-			end
-			if not CoreData.blueprint_importing_allowed then
-				group.set_allows_action(defines.input_action.import_blueprint_string, false)
-				group.set_allows_action(defines.input_action.import_blueprint, false)
-			end
-			group.set_allows_action(defines.input_action.fast_entity_transfer, false)
-			group.set_allows_action(defines.input_action.fast_entity_split, false)
+		group.set_allows_action(defines.input_action.grab_blueprint_record, false)
+		if not CoreData.blueprint_library_allowed then
+			group.set_allows_action(defines.input_action.open_blueprint_library_gui, false)
 		end
-    end
-
-    if not game.permissions.get_group('super_restricted_area') then
-		local group = game.permissions.create_group('super_restricted_area')
-		if not _DEBUG then
-			group.set_allows_action(defines.input_action.edit_permission_group, false)
-			group.set_allows_action(defines.input_action.import_permissions_string, false)
-			group.set_allows_action(defines.input_action.delete_permission_group, false)
-			group.set_allows_action(defines.input_action.add_permission_group, false)
-			group.set_allows_action(defines.input_action.admin_action, false)
-
-			group.set_allows_action(defines.input_action.cancel_craft, false)
-			group.set_allows_action(defines.input_action.drop_item, false)
-			group.set_allows_action(defines.input_action.drop_blueprint_record, false)
-			group.set_allows_action(defines.input_action.build, false)
-			group.set_allows_action(defines.input_action.build_rail, false)
-			group.set_allows_action(defines.input_action.build_terrain, false)
-			group.set_allows_action(defines.input_action.begin_mining, false)
-			group.set_allows_action(defines.input_action.begin_mining_terrain, false)
-			-- group.set_allows_action(defines.input_action.deconstruct, false) --pick up dead players
-			group.set_allows_action(defines.input_action.activate_copy, false)
-			group.set_allows_action(defines.input_action.activate_cut, false)
-			group.set_allows_action(defines.input_action.activate_paste, false)
-			group.set_allows_action(defines.input_action.upgrade, false)
-
-			group.set_allows_action(defines.input_action.grab_blueprint_record, false)
-			if not CoreData.blueprint_library_allowed then
-				group.set_allows_action(defines.input_action.open_blueprint_library_gui, false)
-			end
-			if not CoreData.blueprint_importing_allowed then
-				group.set_allows_action(defines.input_action.import_blueprint_string, false)
-				group.set_allows_action(defines.input_action.import_blueprint, false)
-			end
-
-			group.set_allows_action(defines.input_action.fast_entity_transfer, false)
-			group.set_allows_action(defines.input_action.fast_entity_split, false)
-
-			group.set_allows_action(defines.input_action.open_gui, false)
+		if not CoreData.blueprint_importing_allowed then
+			group.set_allows_action(defines.input_action.import_blueprint_string, false)
+			group.set_allows_action(defines.input_action.import_blueprint, false)
 		end
+
+		group.set_allows_action(defines.input_action.fast_entity_transfer, false)
+		group.set_allows_action(defines.input_action.fast_entity_split, false)
+
+		-- Note there is other code to prevent these players from opening chests
     end
 
     if not game.permissions.get_group('restricted_area_privileged') then
 		local group = game.permissions.create_group('restricted_area_privileged')
-		if not _DEBUG then
-			group.set_allows_action(defines.input_action.edit_permission_group, false)
-			group.set_allows_action(defines.input_action.import_permissions_string, false)
-			group.set_allows_action(defines.input_action.delete_permission_group, false)
-			group.set_allows_action(defines.input_action.add_permission_group, false)
-			group.set_allows_action(defines.input_action.admin_action, false)
+		group.set_allows_action(defines.input_action.edit_permission_group, false)
+		group.set_allows_action(defines.input_action.import_permissions_string, false)
+		group.set_allows_action(defines.input_action.delete_permission_group, false)
+		group.set_allows_action(defines.input_action.add_permission_group, false)
+		group.set_allows_action(defines.input_action.admin_action, false)
 
-			group.set_allows_action(defines.input_action.cancel_craft, false)
-			group.set_allows_action(defines.input_action.drop_item, false)
-			group.set_allows_action(defines.input_action.drop_blueprint_record, false)
-			group.set_allows_action(defines.input_action.build, false)
-			group.set_allows_action(defines.input_action.build_rail, false)
-			group.set_allows_action(defines.input_action.build_terrain, false)
-			group.set_allows_action(defines.input_action.begin_mining, false)
-			group.set_allows_action(defines.input_action.begin_mining_terrain, false)
-			-- group.set_allows_action(defines.input_action.deconstruct, false) --pick up dead players
-			group.set_allows_action(defines.input_action.activate_copy, false)
-			group.set_allows_action(defines.input_action.activate_cut, false)
-			group.set_allows_action(defines.input_action.activate_paste, false)
-			group.set_allows_action(defines.input_action.upgrade, false)
+		group.set_allows_action(defines.input_action.cancel_craft, false)
+		group.set_allows_action(defines.input_action.drop_item, false)
+		group.set_allows_action(defines.input_action.drop_blueprint_record, false)
+		group.set_allows_action(defines.input_action.build, false)
+		group.set_allows_action(defines.input_action.build_rail, false)
+		group.set_allows_action(defines.input_action.build_terrain, false)
+		group.set_allows_action(defines.input_action.begin_mining, false)
+		group.set_allows_action(defines.input_action.begin_mining_terrain, false)
+		-- group.set_allows_action(defines.input_action.deconstruct, false) --pick up dead players
+		group.set_allows_action(defines.input_action.activate_copy, false)
+		group.set_allows_action(defines.input_action.activate_cut, false)
+		group.set_allows_action(defines.input_action.activate_paste, false)
+		group.set_allows_action(defines.input_action.upgrade, false)
 
-			if not CoreData.blueprint_library_allowed then
-				group.set_allows_action(defines.input_action.open_blueprint_library_gui, false)
-				group.set_allows_action(defines.input_action.grab_blueprint_record, false)
-			end
-			if not CoreData.blueprint_importing_allowed then
-				group.set_allows_action(defines.input_action.import_blueprint_string, false)
-				group.set_allows_action(defines.input_action.import_blueprint, false)
-			end
+		if not CoreData.blueprint_library_allowed then
+			group.set_allows_action(defines.input_action.open_blueprint_library_gui, false)
+			group.set_allows_action(defines.input_action.grab_blueprint_record, false)
+		end
+		if not CoreData.blueprint_importing_allowed then
+			group.set_allows_action(defines.input_action.import_blueprint_string, false)
+			group.set_allows_action(defines.input_action.import_blueprint, false)
 		end
     end
 
     if not game.permissions.get_group('plebs') then
-        local plebs_group = game.permissions.create_group('plebs')
-		if not _DEBUG then
-			plebs_group.set_allows_action(defines.input_action.edit_permission_group, false)
-			plebs_group.set_allows_action(defines.input_action.import_permissions_string, false)
-			plebs_group.set_allows_action(defines.input_action.delete_permission_group, false)
-			plebs_group.set_allows_action(defines.input_action.add_permission_group, false)
-			plebs_group.set_allows_action(defines.input_action.admin_action, false)
+        local group = game.permissions.create_group('plebs')
+		group.set_allows_action(defines.input_action.edit_permission_group, false)
+		group.set_allows_action(defines.input_action.import_permissions_string, false)
+		group.set_allows_action(defines.input_action.delete_permission_group, false)
+		group.set_allows_action(defines.input_action.add_permission_group, false)
+		group.set_allows_action(defines.input_action.admin_action, false)
 
-			if not CoreData.blueprint_library_allowed then
-				plebs_group.set_allows_action(defines.input_action.open_blueprint_library_gui, false)
-				plebs_group.set_allows_action(defines.input_action.grab_blueprint_record, false)
-			end
-			if not CoreData.blueprint_importing_allowed then
-				plebs_group.set_allows_action(defines.input_action.import_blueprint_string, false)
-				plebs_group.set_allows_action(defines.input_action.import_blueprint, false)
-			end
+		if not CoreData.blueprint_library_allowed then
+			group.set_allows_action(defines.input_action.open_blueprint_library_gui, false)
+			group.set_allows_action(defines.input_action.grab_blueprint_record, false)
+		end
+		if not CoreData.blueprint_importing_allowed then
+			group.set_allows_action(defines.input_action.import_blueprint_string, false)
+			group.set_allows_action(defines.input_action.import_blueprint, false)
 		end
     end
 
     if not game.permissions.get_group('not_trusted') then
-        local not_trusted = game.permissions.create_group('not_trusted')
+        local group = game.permissions.create_group('not_trusted')
         -- not_trusted.set_allows_action(defines.input_action.cancel_craft, false)
-        not_trusted.set_allows_action(defines.input_action.edit_permission_group, false)
-        not_trusted.set_allows_action(defines.input_action.import_permissions_string, false)
-        not_trusted.set_allows_action(defines.input_action.delete_permission_group, false)
-        not_trusted.set_allows_action(defines.input_action.add_permission_group, false)
-        not_trusted.set_allows_action(defines.input_action.admin_action, false)
+        group.set_allows_action(defines.input_action.edit_permission_group, false)
+        group.set_allows_action(defines.input_action.import_permissions_string, false)
+        group.set_allows_action(defines.input_action.delete_permission_group, false)
+        group.set_allows_action(defines.input_action.add_permission_group, false)
+        group.set_allows_action(defines.input_action.admin_action, false)
         -- not_trusted.set_allows_action(defines.input_action.drop_item, false)
-        not_trusted.set_allows_action(defines.input_action.disconnect_rolling_stock, false)
-        not_trusted.set_allows_action(defines.input_action.connect_rolling_stock, false)
-        not_trusted.set_allows_action(defines.input_action.open_train_gui, false)
-        not_trusted.set_allows_action(defines.input_action.open_train_station_gui, false)
-        not_trusted.set_allows_action(defines.input_action.open_trains_gui, false)
-        not_trusted.set_allows_action(defines.input_action.change_train_stop_station, false)
-        not_trusted.set_allows_action(defines.input_action.change_train_wait_condition, false)
-        not_trusted.set_allows_action(defines.input_action.change_train_wait_condition_data, false)
-        not_trusted.set_allows_action(defines.input_action.drag_train_schedule, false)
-        not_trusted.set_allows_action(defines.input_action.drag_train_wait_condition, false)
-        not_trusted.set_allows_action(defines.input_action.go_to_train_station, false)
-        not_trusted.set_allows_action(defines.input_action.remove_train_station, false)
-        not_trusted.set_allows_action(defines.input_action.set_trains_limit, false)
-        not_trusted.set_allows_action(defines.input_action.set_train_stopped, false)
+        group.set_allows_action(defines.input_action.disconnect_rolling_stock, false)
+        group.set_allows_action(defines.input_action.connect_rolling_stock, false)
+        group.set_allows_action(defines.input_action.open_train_gui, false)
+        group.set_allows_action(defines.input_action.open_train_station_gui, false)
+        group.set_allows_action(defines.input_action.open_trains_gui, false)
+        group.set_allows_action(defines.input_action.change_train_stop_station, false)
+        group.set_allows_action(defines.input_action.change_train_wait_condition, false)
+        group.set_allows_action(defines.input_action.change_train_wait_condition_data, false)
+        group.set_allows_action(defines.input_action.drag_train_schedule, false)
+        group.set_allows_action(defines.input_action.drag_train_wait_condition, false)
+        group.set_allows_action(defines.input_action.go_to_train_station, false)
+        group.set_allows_action(defines.input_action.remove_train_station, false)
+        group.set_allows_action(defines.input_action.set_trains_limit, false)
+        group.set_allows_action(defines.input_action.set_train_stopped, false)
 
-		not_trusted.set_allows_action(defines.input_action.grab_blueprint_record, false)
+		group.set_allows_action(defines.input_action.grab_blueprint_record, false)
 		if not CoreData.blueprint_library_allowed then
-			not_trusted.set_allows_action(defines.input_action.open_blueprint_library_gui, false)
+			group.set_allows_action(defines.input_action.open_blueprint_library_gui, false)
 		end
 		if not CoreData.blueprint_importing_allowed then
-			not_trusted.set_allows_action(defines.input_action.import_blueprint_string, false)
-			not_trusted.set_allows_action(defines.input_action.import_blueprint, false)
+			group.set_allows_action(defines.input_action.import_blueprint_string, false)
+			group.set_allows_action(defines.input_action.import_blueprint, false)
 		end
     end
 end
@@ -788,19 +746,21 @@ function Public.update_privileges(player)
         return
     end
 
+	-- if _DEBUG then return end
+
 	if string.sub(player.surface.name, 9, 17) == 'Crowsnest' then
 		if Public.player_privilege_level(player) >= Public.privilege_levels.OFFICER then
 			return Public.add_player_to_permission_group(player, 'restricted_area_privileged')
 		else
-			return Public.add_player_to_permission_group(player, 'super_restricted_area')
+			return Public.add_player_to_permission_group(player, 'restricted_area')
 		end
 	elseif string.sub(player.surface.name, 9, 13) == 'Cabin' then
 		if Public.player_privilege_level(player) >= Public.privilege_levels.OFFICER then
 			return Public.add_player_to_permission_group(player, 'restricted_area_privileged')
 		else
 			-- return Public.add_player_to_permission_group(player, 'restricted_area')
-			-- Moved to super_restricted_area to prevent them messing with items in the blue chests.ssd
-			return Public.add_player_to_permission_group(player, 'super_restricted_area')
+			-- Moved to restricted_area to prevent them messing with items in the blue chests.ssd
+			return Public.add_player_to_permission_group(player, 'restricted_area')
 		end
     else
         return Public.add_player_to_permission_group(player)

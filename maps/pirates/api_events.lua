@@ -1727,6 +1727,14 @@ local function on_player_changed_surface(event)
 	end
 
     Roles.update_privileges(player)
+
+	-- Close the welcome window if open:
+	if player.gui.center['welcome_window'] then
+		if event.element.name == 'welcome_window' or event.element.parent.name == 'welcome_window' then
+			player.gui.center['welcome_window'].destroy()
+			return true
+		end
+	end
 end
 
 function Public.player_entered_vehicle(player, vehicle)
@@ -2268,6 +2276,23 @@ local function event_on_entity_spawned(event)
 	Common.try_make_biter_elite(entity)
 end
 
+local function event_on_gui_opened(event)
+	-- If the object is a chest, close the gui
+	local entity = event.entity
+	if not entity then return end
+	if not entity.valid then return end
+
+	local player = game.players[event.player_index]
+	if not player then return end
+	if not player.valid then return end
+
+	if not player.permission_group.name == 'restricted_area' then return end
+	
+	if entity.name == 'wooden-chest' or entity.name == 'iron-chest' or entity.name == 'steel-chest' or entity.name == 'red-chest' or entity.name == 'blue-chest' then
+		player.opened = nil
+	end
+end
+
 
 local event = require 'utils.event'
 event.add(defines.events.on_built_entity, event_on_built_entity)
@@ -2290,5 +2315,6 @@ event.add(defines.events.on_console_chat, event_on_console_chat)
 event.add(defines.events.on_market_item_purchased, event_on_market_item_purchased)
 event.add(defines.events.on_player_respawned, event_on_player_respawned)
 event.add(defines.events.on_entity_spawned, event_on_entity_spawned)
+event.add(defines.events.on_gui_opened, event_on_gui_opened)
 
 return Public
