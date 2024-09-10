@@ -39,6 +39,7 @@ local enum = {
 	MEDIC = 'medic',
 	DOCTOR = 'doctor',
 	SHAMAN = 'shaman',
+	LUMINOUS = 'luminous',
 }
 Public.enum = enum
 
@@ -75,6 +76,7 @@ Public.eng_form = {
 	[enum.MEDIC] = 'Medic',
 	[enum.DOCTOR] = 'Doctor',
 	[enum.SHAMAN] = 'Shaman',
+	[enum.LUMINOUS] = 'Luminous',
 }
 
 function Public.display_form(class)
@@ -162,6 +164,8 @@ function Public.explanation(class, add_is_class_obtainable)
 	elseif class == enum.SHAMAN then
 		local live_time = Math.ceil(Balance.shaman_summoned_biter_time_to_live / 60)
 		full_explanation = {'', {explanation, live_time}}
+	elseif class == enum.LUMINOUS then
+		full_explanation = {'', {explanation}}
 	else
 		full_explanation = {'', {explanation}}
 	end
@@ -235,6 +239,7 @@ function Public.initial_class_pool()
 		enum.SOLDIER,
 		enum.MEDIC,
 		enum.SHAMAN,
+		enum.LUMINOUS,
 	}
 end
 
@@ -660,6 +665,7 @@ function Public.get_class(player_index)
 		return nil
 	end
 end
+
 
 
 local event = require 'utils.event'

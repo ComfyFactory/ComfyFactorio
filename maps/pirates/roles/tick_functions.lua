@@ -218,6 +218,21 @@ function Public.class_renderings(tickinterval)
 								draw_on_ground = true,
 							}
 						}
+					elseif class == Classes.enum.LUMINOUS then
+						class_renderings[player_index] = {
+							rendering = rendering.draw_light({
+								surface = player.surface,
+								target = player.character,
+								color = {r = 1, g = 1, b = 1},
+								sprite = 'utility/light_medium',
+								scale = 10,
+								intensity = 1,
+								minimum_darkness = 0,
+								oriented = true,
+								visible = true,
+								only_in_alt_mode = false
+							})
+						}
 					end
 				end
 			else
