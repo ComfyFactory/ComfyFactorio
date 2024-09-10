@@ -910,7 +910,9 @@ function Public.reset_crew_and_enemy_force(id)
 		crew_force.set_turret_attack_modifier(k, v)
 	end
 
-	crew_force.technologies['kovarex-enrichment-process'].researched = true -- needed for radioactive island
+	-- Kovarex is auto-installed as a recipe in the uranium island centrifuges. If the players want more kovarex than that, they need to research it.
+	-- crew_force.technologies['kovarex-enrichment-process'].researched = true
+
 	-- crew_force.technologies['circuit-network'].researched = true
 	-- crew_force.technologies['uranium-processing'].researched = true
 	-- crew_force.technologies['gun-turret'].researched = true
