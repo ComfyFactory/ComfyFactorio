@@ -576,7 +576,16 @@ function Public.full_update(player)
 			elseif mem.crewplayerindices then
 				count = #mem.crewplayerindices
 			end
-			wrappedmemories[#wrappedmemories + 1] = {'pirates.run_displayform', mem.id, {'', mem.name .. ', ', CoreData.difficulty_options[mem.difficulty_option].text, ', [item=light-armor]' ..  count .. CoreData.capacity_options[mem.capacity_option].text2 .. ',  [item=rail] ' .. (mem.overworldx or 0)}}
+			
+			local extraCrewText = ''
+			if mem.run_is_protected and mem.run_is_private then
+				extraCrewText = ' (private, protected)'
+			elseif mem.run_is_private then
+				extraCrewText = ' (private)'
+			elseif mem.run_is_protected then
+				extraCrewText = ' (protected)'
+			end
+			wrappedmemories[#wrappedmemories + 1] = {'pirates.run_displayform', mem.id, {'', mem.name .. extraCrewText .. ', ', CoreData.difficulty_options[mem.difficulty_option].text, ', [item=light-armor]' ..  count .. CoreData.capacity_options[mem.capacity_option].text2 .. ',  [item=rail] ' .. (mem.overworldx or 0)}}
 			-- wrappedmemories[#wrappedmemories + 1] = {'pirates.run_displayform', mem.id, mem.name, Utils.spritepath_to_richtext(CoreData.difficulty_options[mem.difficulty_option].icon), count, CoreData.capacity_options[mem.capacity_option].text2, '      [item=rail] ', mem.overworldx or 0}
 		end
 		GuiCommon.update_listbox(flow.ongoing_runs.body.ongoing_runs_listbox, wrappedmemories)
