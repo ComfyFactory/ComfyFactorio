@@ -1708,7 +1708,7 @@ function Public.get_item_blacklist(tier)
     blacklist['loader'] = true
     blacklist['fast-loader'] = true
     blacklist['express-loader'] = true
-    -- blacklist['land-mine'] = true
+    blacklist['land-mine'] = true
     blacklist['wood'] = true -- too easy to acquire
 
     blacklist['speed-module-2'] = true
