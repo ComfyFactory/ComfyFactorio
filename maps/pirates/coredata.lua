@@ -128,7 +128,7 @@ Public.difficulty_options = {
 
 	{value = 1.0, icon = 'item/piercing-rounds-magazine', text = {'pirates.difficulty_normal'}, associated_color = {r = 255, g = 255, b = 50}},
 
-	{value = 1.5, icon = 'item/uranium-rounds-magazine', text = {'pirates.difficutly_hard'}, associated_color = {r = 255, g = 50, b = 50}},
+	{value = 1.6, icon = 'item/uranium-rounds-magazine', text = {'pirates.difficutly_hard'}, associated_color = {r = 255, g = 50, b = 50}},
 
 	{value = 2.25, icon = 'item/atomic-bomb', text = {'pirates.difficulty_nightmare'}, associated_color = {r = 170, g = 60, b = 60}},
 }
