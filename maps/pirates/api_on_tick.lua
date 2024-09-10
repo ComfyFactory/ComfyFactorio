@@ -56,6 +56,7 @@ end
 
 function Public.prevent_unbarreling_off_ship(tickinterval)
 	if Common.allow_barreling_off_ship then return end
+	if Common.activecrewcount() == 0 then return end
 
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
@@ -82,6 +83,9 @@ end
 
 function Public.prevent_disembark(tickinterval)
 	local memory = Memory.get_crew_memory()
+
+	if Common.activecrewcount() == 0 then return end
+
 	local destination = Common.current_destination()
 	local boat = memory.boat
 
@@ -323,6 +327,8 @@ function Public.periodic_free_resources(tickinterval)
 end
 
 function Public.pick_up_tick(tickinterval)
+	if Common.activecrewcount() == 0 then return end
+
 	local destination = Common.current_destination()
 	if not destination then return end
 	local dynamic_data = destination.dynamic_data
@@ -696,12 +702,16 @@ end
 
 
 function Public.update_boat_stored_resources(tickinterval)
+	if Common.activecrewcount() == 0 then return end
+
 	Common.update_boat_stored_resources()
 end
 
 
 
 function Public.buried_treasure_check(tickinterval)
+	if Common.activecrewcount() == 0 then return end
+
 	-- local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 
@@ -1485,6 +1495,8 @@ end
 
 -- Check for cliff explosives in chest.
 function Public.check_for_cliff_explosives_in_hold_wooden_chests()
+	if Common.activecrewcount() == 0 then return end
+
 	local memory = Memory.get_crew_memory()
 	local input_chests = memory.hold_surface_destroyable_wooden_chests
 	local queued_chests_timers = memory.hold_surface_timers_of_wooden_chests_queued_for_destruction
@@ -1614,6 +1626,7 @@ end
 
 function Public.revealed_buried_treasure_distance_check()
 	local destination = Common.current_destination()
+	if Common.activecrewcount() == 0 then return end
 
 	if destination.dynamic_data.some_player_was_close_to_buried_treasure then return end
 
