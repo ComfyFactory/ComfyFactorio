@@ -9,6 +9,10 @@ local GuiCommon = require 'maps.pirates.gui.common'
 local CoreData = require 'maps.pirates.coredata'
 local Server = require 'utils.server'
 local Public = {}
+local Surfaces = require 'maps.pirates.surfaces.surfaces'
+local SurfacesCommon = require 'maps.pirates.surfaces.common'
+local Hold = require 'maps.pirates.surfaces.hold'
+local Cabin = require 'maps.pirates.surfaces.cabin'
 
 local window_name = 'crew'
 
@@ -191,6 +195,26 @@ function Public.toggle_window(player)
     )
     flow3.style.margin = 2
     flow3.style.maximal_height = 150
+
+    --*** SPECTATOR TOOLS ***--
+
+    flow2 = GuiCommon.flow_add_section(flow, 'spectator_controls', {'pirates.gui_crew_window_spectator_controls'})
+
+    flow3 = flow2.add({
+        name = 'spectator_surfaces_listbox',
+        type = 'list-box'
+    })
+    flow3.style.margin = 5
+    flow3.style.maximal_height = 150
+
+    flow3 = flow2.add({
+        name = 'spectator_goto_surface',
+        type = 'button',
+        caption = {'pirates.gui_crew_window_spectator_goto_surface'}
+    })
+    flow3.style.minimal_width = 95
+    flow3.style.font = 'default-bold'
+    flow3.style.font_color = {r = 0.10, g = 0.10, b = 0.10}
 
     --*** DIFFICULTY VOTE ***--
 
@@ -392,21 +416,21 @@ function Public.full_update(player)
 
     --*** WHAT TO SHOW ***--
 
-    flow.difficulty_vote.visible = memory.overworldx and memory.overworldx == 0
+    flow.difficulty_vote.visible = memory.overworldx and memory.overworldx == 0 and not playercrew_status.spectating
 
-    flow.members.body.officer_resign.visible = Common.is_officer(player.index)
+    flow.members.body.officer_resign.visible = Common.is_officer(player.index) and not playercrew_status.spectating
 
     local selected_player_index = get_selected_player_index(flow)
     local other_player_selected = flow.members.body.members_listbox.selected_index ~= 0 and selected_player_index ~= player.index
 
-    flow.captain.visible = Common.is_captain(player)
-    flow.undock_tip.visible = Common.is_captain(player)
+    flow.captain.visible = Common.is_captain(player) and not playercrew_status.spectating
+    flow.undock_tip.visible = Common.is_captain(player) and not playercrew_status.spectating
 
     flow.captain.body.capn_pass.visible = other_player_selected
     flow.captain.body.capn_plank.visible = other_player_selected
 
-    flow.captain.body.make_officer.visible = other_player_selected and (not Common.is_officer(selected_player_index))
-    flow.captain.body.unmake_officer.visible = other_player_selected and Common.is_officer(selected_player_index)
+    flow.captain.body.make_officer.visible = other_player_selected and (not Common.is_officer(selected_player_index)) and not playercrew_status.spectating
+    flow.captain.body.unmake_officer.visible = other_player_selected and Common.is_officer(selected_player_index) and not playercrew_status.spectating
 
     -- flow.captain.body.capn_undock_normal.visible = memory.boat and memory.boat.state and ((memory.boat.state == Boats.enum_state.LANDED) or (memory.boat.state == Boats.enum_state.APPROACHING) or (memory.boat.state == Boats.enum_state.DOCKED))
 
@@ -426,6 +450,8 @@ function Public.full_update(player)
     -- flow.crew_age.visible = true
     -- -- flow.crew_age.visible = memory.mode and memory.mode == 'speedrun'
     -- flow.crew_difficulty.visible = true
+
+    flow.spectator_controls.visible = playercrew_status.spectating
 
     local count = 0
     if playercrew_status.spectating then
@@ -474,6 +500,32 @@ function Public.full_update(player)
             wrappedspectators[#wrappedspectators + 1] = {'pirates.crewmember_displayform', index, player2.color.r, player2.color.g, player2.color.b, player2.name, ''}
         end
         GuiCommon.update_listbox(flow.spectators.body.spectators_listbox, wrappedspectators)
+    end
+
+    if flow.spectator_controls.visible then
+        local surfaces = {
+            {name = 'Crow\'s Nest', surface_name = SurfacesCommon.encode_surface_name(memory.id, 0, Surfaces.enum.CROWSNEST, nil)},
+        }
+
+        for i = 1, memory.hold_surface_count do
+            local name
+            if (memory.hold_surface_count == 1) then
+                name = 'Hold'
+            else
+                name = 'Hold ' .. i
+            end
+            table.insert(surfaces, {name = name, surface_name = Hold.get_hold_surface_name(i)})
+        end
+        
+        if Common.current_destination() then
+            table.insert(surfaces, {name = 'Current Destination', surface_name = Common.current_destination().surface_name})
+        end
+    
+        local wrapped_surfaces = {}
+        for i, surface in ipairs(surfaces) do
+            wrapped_surfaces[#wrapped_surfaces + 1] = {'', i, '. ', surface.name}
+        end
+        GuiCommon.update_listbox(flow.spectator_controls.body.spectator_surfaces_listbox, wrapped_surfaces)
     end
 
     -- if flow.captain.body.capn_undock_normal.visible then
@@ -615,6 +667,38 @@ function Public.click(event)
         local other_id = get_selected_player_index(flow)
 
         Crew.plank(player, game.players[other_id])
+        return
+    end
+
+    if eventname == 'spectator_goto_surface' then
+        local selected_index = flow.spectator_controls.body.spectator_surfaces_listbox.selected_index
+        if selected_index ~= 0 then
+            local surfaces = {
+                SurfacesCommon.encode_surface_name(memory.id, 0, Surfaces.enum.CROWSNEST, nil)
+            }
+            
+            for i = 1, memory.hold_surface_count do
+                table.insert(surfaces, Hold.get_hold_surface_name(i))
+            end
+            
+            if Common.current_destination() then
+                table.insert(surfaces, Common.current_destination().surface_name)
+            end
+            
+            local target_surface = game.surfaces[surfaces[selected_index]]
+            if target_surface then
+                local position
+                if selected_index == 1 then  -- Crow's Nest
+                    position = {x = memory.overworldx, y = memory.overworldy}
+                elseif selected_index >= 2 and selected_index < 2 + memory.hold_surface_count then  -- Hold
+                    local hold_index = selected_index - 1
+                    position = {x = 0, y = 0}
+                else
+                    position = memory.boat.position
+                end
+                player.teleport(position, target_surface)
+            end
+        end
         return
     end
 end
