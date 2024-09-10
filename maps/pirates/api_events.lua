@@ -2111,6 +2111,10 @@ local function event_on_built_entity(event)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
 
+	if entity.name == "land-mine" then
+        memory.players_to_last_landmine_placement_tick = memory.players_to_last_landmine_placement_tick or {}
+        memory.players_to_last_landmine_placement_tick[player.index] = game.tick
+    end
 
     if entity.type == 'entity-ghost' and entity.force and entity.force.valid then
         entity.time_to_live = entity.force.ghost_time_to_live

@@ -20,6 +20,8 @@ Public.kraken_spit_targeting_player_chance = 0
 
 Public.base_extra_character_speed = 1.44
 Public.respawn_speed_boost = 1.85
+Public.landmine_speed_nerf = 0.5
+Public.landmine_speed_nerf_seconds = 2
 
 -- maximum rate at which alert sound can be played when important buildings are damaged (like silo or cannons)
 -- NOTE: frequency can sometimes be faster by 1 second than denoted, but accuracy doesn't really matter here
@@ -52,7 +54,7 @@ Public.shoresman_ore_grant_multiplier = 3
 Public.quartermaster_range = 19
 Public.quartermaster_bonus_physical_damage = 1.3
 Public.scout_extra_speed = 1.3
-Public.scout_damage_taken_multiplier = 1.25
+Public.scout_damage_taken_multiplier = 1.3
 Public.scout_damage_dealt_multiplier = 0.6
 Public.fisherman_fish_bonus = 2
 Public.fisherman_reach_bonus = 10

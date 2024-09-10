@@ -275,6 +275,10 @@ function Public.update_character_properties(tickinterval)
 				speed_boost = speed_boost * Balance.respawn_speed_boost
 			end
 
+			if memory.players_to_last_landmine_placement_tick and memory.players_to_last_landmine_placement_tick[player_index] and game.tick < memory.players_to_last_landmine_placement_tick[player_index] + Balance.landmine_speed_nerf_seconds * 60 then
+				speed_boost = speed_boost * Balance.landmine_speed_nerf
+			end
+
 			if class then
 				--local max_reach_bonus = 0
 				-- if memory.classes_table[player_index] == Classes.enum.DECKHAND then
