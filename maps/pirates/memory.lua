@@ -41,8 +41,7 @@ function Public.global_reset_memory()
     pirates_global_memory.last_players_health = {} --used to make damage reduction work somewhat properly
 end
 
-function Public.initialise_crew_memory(id) --mostly serves as a dev reference of memory entries
-    -- but not _everything_ is stored here, it's just a guide to the most important things
+function Public.initialise_crew_memory(id)
 
     pirates_global_memory.crew_memories[id] = {}
     local memory = pirates_global_memory.crew_memories[id]
