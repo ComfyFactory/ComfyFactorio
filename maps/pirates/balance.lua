@@ -446,13 +446,14 @@ function Public.patch_size_multiplier(overworldx)
 end
 
 function Public.builtin_mining_productivity_scale(overworldx)
-	return 1 + 1 * (overworldx/600)
+	return 1 + 1 * (overworldx/800)
 end
 
 function Public.apply_crew_buffs_from_leagues(force, current_x_league, new_x_league)
 	-- The motivation for this effect is to slightly nerf the strategy of staying as long as possible on each island to research everything. However, given you can now wait at an island forever, it's less difficult to jump a lot and then research everything, so this is disabled for now. Note that enabling it might make the game harder to balance.
 	-- force.laboratory_productivity_bonus = force.laboratory_productivity_bonus + Math.max(0, 3/100 * leagues_travelled/40)
 
+	-- stepwise derivative:
 	for i = current_x_league + 1, new_x_league do
 		force.mining_drill_productivity_bonus = force.mining_drill_productivity_bonus + (Public.builtin_mining_productivity_scale(i) - Public.builtin_mining_productivity_scale(i - 1))
 	end
