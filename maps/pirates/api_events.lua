@@ -1431,8 +1431,9 @@ function Public.apply_flamer_nerfs()
 	end
 	flamer_power = flamer_power + (force.technologies[flame_researches[7].name].level - 7) * 0.2
 
-	force.set_ammo_damage_modifier('flamethrower', flamer_power * Balance.flamers_tech_multipliers() + Balance.flamers_base_nerf())
-	force.set_turret_attack_modifier('flamethrower-turret', flamer_power * Balance.flamers_tech_multipliers() + Balance.flamers_base_nerf())
+	-- TODO: Check this code is valid after Factorio 2.0
+	force.set_ammo_damage_modifier('flamethrower', flamer_power * Balance.flamers_tech_multipliers() + (1 - Balance.flamers_base_damage_multiplier()))
+	force.set_turret_attack_modifier('flamethrower-turret', flamer_power * Balance.flamers_tech_multipliers() + (1 - Balance.flamers_base_damage_multiplier()))
 end
 
 local function event_on_research_finished(event)

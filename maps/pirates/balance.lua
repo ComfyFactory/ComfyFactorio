@@ -20,8 +20,8 @@ Public.kraken_spit_targeting_player_chance = 0
 
 Public.base_extra_character_speed = 1.44
 Public.respawn_speed_boost = 1.85
-Public.landmine_speed_nerf = 0.5
-Public.landmine_speed_nerf_seconds = 2
+Public.landmine_speed_nerf = 0.3
+Public.landmine_speed_nerf_seconds = 0.6
 
 -- maximum rate at which alert sound can be played when important buildings are damaged (like silo or cannons)
 -- NOTE: frequency can sometimes be faster by 1 second than denoted, but accuracy doesn't really matter here
@@ -631,11 +631,11 @@ Public.research_buffs = { --currently disabled anyway
 
 
 function Public.flamers_tech_multipliers()
-	return 0.7
+	return 0.4
 end
 
-function Public.flamers_base_nerf()
-	return -0.4
+function Public.flamers_base_damage_multiplier()
+	return 0.4
 end
 
 
