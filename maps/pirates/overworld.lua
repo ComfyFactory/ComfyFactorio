@@ -1,4 +1,4 @@
--- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 local Public = {}
 
@@ -43,18 +43,18 @@ local WALKWAYS = IslandEnum.enum.WALKWAYS
 local MAZE = IslandEnum.enum.MAZE
 local RADIOACTIVE = IslandEnum.enum.RADIOACTIVE
 local HORSESHOE = IslandEnum.enum.HORSESHOE
-local STANDARD_VARIANT = IslandEnum.enum.STANDARD_VARIANT
+local STANDARD2 = IslandEnum.enum.STANDARD_VARIANT
 local CAVE = IslandEnum.enum.CAVE
 
-local A = {STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS}
-local B = {NIL, NIL, NIL, STANDARD, STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS, CAVE}
-local C = {STANDARD, STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS}
-local D = {NIL, NIL, NIL, STANDARD, STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS, SWAMP, CAVE}
+local A = {STANDARD2, RED_DESERT, HORSESHOE, WALKWAYS}
+local B = {NIL, NIL, NIL, STANDARD, STANDARD2, RED_DESERT, HORSESHOE, WALKWAYS, CAVE}
+local C = {STANDARD, STANDARD2, RED_DESERT, HORSESHOE, WALKWAYS}
+local D = {NIL, NIL, NIL, STANDARD, STANDARD2, RED_DESERT, HORSESHOE, WALKWAYS, SWAMP, CAVE}
 
 local destinationScheme = {
 	[0] = {FIRST, NIL, NIL},
 	[1] = {HORSESHOE, HORSESHOE, HORSESHOE}, --map where you break rocks
-	[2] = {STANDARD_VARIANT, STANDARD_VARIANT, STANDARD_VARIANT}, --aesthetically different to previous map
+	[2] = {STANDARD2, STANDARD2, STANDARD2}, --aesthetically different to previous map
 	[3] = {DOCK, NIL, NIL},
 	[4] = {A, A, NIL},
 	[5] = {STANDARD, STANDARD, STANDARD}, --biter boats appear. large island works well so players run off
@@ -73,7 +73,7 @@ local destinationScheme = {
 	[18] = {C, C, C}, --first showing of robot frame cost
 	[19] = {DOCK, B, B},
 	[20] = {WALKWAYS, WALKWAYS, WALKWAYS}, --rocket launch cost begins
-	[21] = {SWAMP, RED_DESERT, STANDARD_VARIANT}, -- uniquely, this has a rocket launch cost, but still has an auto-undock timer
+	[21] = {SWAMP, RED_DESERT, STANDARD2}, -- uniquely, this has a rocket launch cost, but still has an auto-undock timer
 	[22] = {NIL, NIL, NIL},
 	[23] = {C, C, C},
 	[24] = {MAZE, MAZE, MAZE}, -- current 'boss map'
