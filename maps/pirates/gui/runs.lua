@@ -445,13 +445,6 @@ function Public.toggle_window(player)
 	flow4.style.single_line = false
 
 	flow4 = flow3.add({
-		name = 'proposal_insufficient_player_capacity',
-		type = 'label',
-		caption = {'pirates.gui_runs_launch_error_3'},
-	})
-	flow4.style.single_line = false
-
-	flow4 = flow3.add({
 		name = 'proposal_insufficient_sloops',
 		type = 'label',
 		caption = {'pirates.gui_runs_launch_error_4'},
@@ -542,8 +535,6 @@ function Public.full_update(player)
 
 		flow.proposals.body.flow_proposal_launch.proposal_insufficient_sloops.visible = playercrew_status.sloops_full
 
-		flow.proposals.body.flow_proposal_launch.proposal_insufficient_player_capacity.visible = playercrew_status.needs_more_capacity
-
 		flow.proposals.body.flow_proposal_launch.proposal_crew_count_capped.visible = playercrew_status.crew_count_capped
 
 		-- flow.proposals.body.proposal_maker.body.proposal_cant_do_infinity_mode.visible = (flow.proposals.body.proposal_maker.body.options.mode.mode.switch.switch_state == 'right')
@@ -576,7 +567,7 @@ function Public.full_update(player)
 			elseif mem.crewplayerindices then
 				count = #mem.crewplayerindices
 			end
-			
+
 			local extraCrewText = ''
 			if mem.run_is_protected and mem.run_is_private then
 				extraCrewText = ' (private, protected)'
@@ -724,7 +715,7 @@ function Public.click(event)
 	end
 
 	if eventname == 'propose_crew' then
-		if #global_memory.crew_active_ids >= global_memory.active_crews_cap_memory then
+		if #global_memory.crew_active_ids >= global_memory.active_crews_cap_in_memory then
 			Common.notify_player_error(player, {'pirates.gui_runs_launch_error_5'})
 			return
 		end

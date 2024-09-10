@@ -30,7 +30,7 @@ function Public.global_reset_memory()
 
     pirates_global_memory.lobby_boats = {}
 
-    pirates_global_memory.active_crews_cap_memory = nil
+    pirates_global_memory.active_crews_cap_in_memory = nil
     pirates_global_memory.crew_capacity_min = nil
 
     pirates_global_memory.crewproposals = {}

@@ -239,7 +239,7 @@ function Public.player_left_so_redestribute_roles(player)
 		local officers = Common.crew_get_non_afk_officers()
 		if memory.run_is_protected and #officers == 0 then
 			if memory.crewplayerindices and #memory.crewplayerindices > 0 then
-				Common.parrot_speak(memory.force, {'pirates.parrot_captain_left_protected_run'})
+				Common.parrot_speak(memory.force, {'pirates.parrot_captain_left_protected_run', Common.protected_run_lock_amount_hr})
 				Common.parrot_speak(memory.force, {'pirates.parrot_create_new_crew_tip'})
 			end
 		elseif memory.run_is_protected then

@@ -346,7 +346,6 @@ function Public.crew_overall_state_bools(player_index)
 		created_crew = false,
 		proposing = false,
 		sloops_full = false,
-		needs_more_capacity = false,
 		crew_count_capped = false,
 		leaving = false,
 		proposal_can_launch = false,
@@ -370,12 +369,10 @@ function Public.crew_overall_state_bools(player_index)
 				ret.proposing = true
 				if #global_memory.crew_active_ids >= Common.starting_ships_count then
 					ret.sloops_full = true
-				elseif #global_memory.crew_active_ids >= global_memory.active_crews_cap_memory then
+				elseif #global_memory.crew_active_ids >= global_memory.active_crews_cap_in_memory then
 					ret.crew_count_capped = true
-				elseif global_memory.active_crews_cap_memory > 1 and #global_memory.crew_active_ids == (global_memory.active_crews_cap_memory - 1) and not ((global_memory.crew_memories[1] and global_memory.crew_memories[1].capacity >= Common.minimum_run_capacity_to_enforce_space_for) or (global_memory.crew_memories[2] and global_memory.crew_memories[2].capacity >= Common.minimum_run_capacity_to_enforce_space_for) or (global_memory.crew_memories[3] and global_memory.crew_memories[3].capacity >= Common.minimum_run_capacity_to_enforce_space_for)) and not (CoreData.capacity_options[proposal.capacity_option].value >= Common.minimum_run_capacity_to_enforce_space_for) then
-					ret.needs_more_capacity = true
 				end
-				if not (ret.sloops_full or ret.needs_more_capacity or ret.crew_count_capped) then
+				if not (ret.sloops_full or ret.crew_count_capped) then
 					ret.proposal_can_launch = true
 				end
 			end
