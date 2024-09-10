@@ -433,20 +433,17 @@ function Public.game_resources_scale(overworldx)
 	overworldx = overworldx or Common.overworldx()
 
 	local base = 0.5
-	local additional = 0.032 * (overworldx/40)
+	local additional = overworldx/1250
 
 	return base + additional
 end
 
-function Public.patch_size_multiplier(overworldx)
-	local base = 0.5
-	local additional = 0.032 * (overworldx/40)
-
-	return Math.clamp(base, 1, base + additional)
+function Public.builtin_mining_productivity_scale(overworldx)
+	return 1 + 1 * (overworldx / 600)
 end
 
-function Public.builtin_mining_productivity_scale(overworldx)
-	return 1 + 1 * (overworldx/800)
+function Public.game_ores_scale(overworldx)
+	return Public.game_resources_scale(overworldx) * 2 / (1 + Public.builtin_mining_productivity_scale(overworldx))
 end
 
 function Public.apply_crew_buffs_from_leagues(force, current_x_league, new_x_league)

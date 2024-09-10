@@ -100,21 +100,21 @@ function Public.terrain(args)
 
 	if noises.forest_abs_suppressed(p) < 0.8 and noises.height(p) > 0.35 then
 		if noises.ore(p) > 1 then
-			local amount = Math.ceil(800 * noises.height(p) * Balance.game_resources_scale(args.overworldx) / (1 + Balance.builtin_mining_productivity_scale(args.overworldx)))
+			local amount = Math.ceil(400 * noises.height(p) * Balance.game_ores_scale(args.overworldx))
 			args.entities[#args.entities + 1] = {name = 'uranium-ore', position = args.p, amount = amount}
 		end
 	end
 
 	if noises.forest_abs_suppressed(p) < 0.8 and noises.height(p) < 0.35 and noises.height(p) > 0.05 then
 		if noises.ore(p) < -1.5 then
-			local amount = Math.ceil(1200 * noises.height(p) * Balance.game_resources_scale(args.overworldx) / (1 + Balance.builtin_mining_productivity_scale(args.overworldx)))
+			local amount = Math.ceil(600 * noises.height(p) * Balance.game_ores_scale(args.overworldx))
 			args.entities[#args.entities + 1] = {name = 'stone', position = args.p, amount = amount}
 		elseif noises.ore(p) < 0.005 and noises.ore(p) > -0.005 then
 			if noises.ore(p) > 0 then
-				local amount = Math.ceil(240 * noises.height(p) * Balance.game_resources_scale(args.overworldx) / (1 + Balance.builtin_mining_productivity_scale(args.overworldx)))
+				local amount = Math.ceil(120 * noises.height(p) * Balance.game_ores_scale(args.overworldx))
 				args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = amount}
 			else
-				local amount = Math.ceil(480 * noises.height(p) * Balance.game_resources_scale(args.overworldx)/ (1 + Balance.builtin_mining_productivity_scale(args.overworldx)))
+				local amount = Math.ceil(240 * noises.height(p) * Balance.game_ores_scale(args.overworldx))
 				args.entities[#args.entities + 1] = {name = 'copper-ore', position = args.p, amount = amount}
 			end
 		end
