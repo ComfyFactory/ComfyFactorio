@@ -114,7 +114,7 @@ function Public.apply_restrictions_to_machines(tickinterval)
 		else
 			if memory.crafters_disabled and Common.activecrewcount() == 0 then
 				return
-			elseif game.tick > memory.at_sea_waiting_game_tick + Balance.max_time_crafting_while_waiting_seconds() * 60 then
+			elseif game.tick > memory.at_sea_waiting_game_tick + Balance.seconds_until_machines_shut_down_at_sea() * 60 then
 				memory.crafters_disabled = true
 				Boats.update_EEIs(boat)
 				Common.parrot_speak(memory.force, {'pirates.parrot_crafters_disabled'})

@@ -181,7 +181,8 @@ function Public.max_time_on_island_formula_seconds() --always >0  --tuned
 	return Math.ceil(60 * minimum_mins * Public.game_slowness_scale())
 end
 
-function Public.max_time_crafting_while_waiting_seconds()
+-- Waiting at sea forever isn't generally fun for your teammates, so we encourage keeping the action moving:
+function Public.seconds_until_machines_shut_down_at_sea()
 	local minimum_mins = 3
 	return Math.ceil(60 * minimum_mins * Public.game_slowness_scale())
 end
