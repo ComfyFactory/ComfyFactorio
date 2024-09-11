@@ -562,7 +562,7 @@ function Public.process_etaframe_update(player, flow1, bools)
 			flow2.etaframe_label_2.caption = Utils.standard_string_form_of_time_in_seconds(passive_eta)
 
 		elseif bools.atsea_loading_bool then
-			if Kraken.get_active_kraken_count() > 0 then
+			if Kraken.get_active_kraken_count(memory.id) > 0 then
 				flow2.etaframe_label_1.visible = true
 				flow2.etaframe_label_2.visible = false
 
@@ -584,7 +584,7 @@ function Public.process_etaframe_update(player, flow1, bools)
 
 				local eta_ticks = total + (memory.extra_time_at_sea or 0) - memory.loadingticks
 
-				flow2.etaframe_label_1.caption = {'pirates.gui_etaframe_arriving_in'}
+				flow2.etaframe_label_1.caption = {'pirates.gui_etaframe_loading_for'}
 				flow2.etaframe_label_2.caption = Utils.standard_string_form_of_time_in_seconds(eta_ticks / 60)
 			end
 
@@ -606,7 +606,7 @@ function Public.process_etaframe_update(player, flow1, bools)
 			flow2.etaframe_label_2.caption = {'pirates.gui_etaframe_anytime'}
 		end
 
-		if bools.cost_bool and Kraken.get_active_kraken_count() == 0 then
+		if bools.cost_bool and Kraken.get_active_kraken_count(memory.id) == 0 then
 			local costs = destination.static_params.base_cost_to_undock
 			local adjusted_costs = Common.time_adjusted_departure_cost(costs)
 
@@ -1253,7 +1253,10 @@ local function on_gui_click(event)
 
 		elseif memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL then
 			if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
-				Progression.at_sea_begin_to_set_sail()
+				local destination_index = memory.mapbeingloadeddestination_index
+
+				Progression.progress_to_destination(destination_index)
+				memory.loadingticks = 0
 			end
 		end
 

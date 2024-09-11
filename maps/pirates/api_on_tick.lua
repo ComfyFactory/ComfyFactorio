@@ -27,6 +27,7 @@ local Crew = require 'maps.pirates.crew'
 local Math = require 'maps.pirates.math'
 local _inspect = require 'utils.inspect'.inspect
 local Kraken = require 'maps.pirates.surfaces.sea.kraken'
+local CustomEvents = require 'maps.pirates.custom_events'
 
 local Quest = require 'maps.pirates.quest'
 -- local ShopDock = require 'maps.pirates.shop.dock'
@@ -975,8 +976,6 @@ function Public.loading_update(tickinterval)
 	local destination_index = memory.mapbeingloadeddestination_index
 	if not destination_index then memory.loadingticks = nil return end
 
-	-- if (not memory.boat.state) or (not (memory.boat.state == Boats.enum_state.LANDED or memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP or memory.boat.state == Boats.enum_state.LEAVING_DOCK or (memory.boat.state == Boats.enum_state.APPROACHING and destination_index == 1))) then return end
-
 	if not memory.boat.state then return end
 
 	local map_loads = false
@@ -987,36 +986,65 @@ function Public.loading_update(tickinterval)
 
 	if not map_loads then return end
 
-
-	local crew_to_wait_for = nil
-	if memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP then
-		for id, crew_memory in pairs(global_memory.crew_memories) do
-			if crew_memory.loadingticks and (crew_memory.loadingticks > memory.loadingticks or (crew_memory.loadingticks == memory.loadingticks and id < memory.id)) then
-				crew_to_wait_for = id
-				break
-			end
-		end
-	end
-
-	if crew_to_wait_for then
-		if not memory.waiting_for_other_crew or memory.waiting_for_other_crew ~= crew_to_wait_for then
-			memory.waiting_for_other_crew = crew_to_wait_for
-			local waiting_crew_name = global_memory.crew_memories[crew_to_wait_for].name or "Unknown crew"
-
-			Common.notify_force(memory.force, {'pirates.wait_for_crew_to_finish_loading', waiting_crew_name})
-		end
-
-		return
-	else
-		memory.waiting_for_other_crew = nil
-	end
-
-
-	memory.loadingticks = memory.loadingticks + tickinterval
-
 	-- if memory.loadingticks % 100 == 0 then game.print(memory.loadingticks) end
 
 	local destination_data = memory.destinations[destination_index]
+
+	if memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP or memory.boat.state == Boats.enum_state.LEAVING_DOCK then
+		local other_crew_loading = nil
+		local crew_fighting_kraken = nil
+
+		for id, crew_memory in pairs(global_memory.crew_memories) do
+			if crew_memory.loadingticks and (crew_memory.loadingticks > memory.loadingticks or (crew_memory.loadingticks == memory.loadingticks and id < memory.id)) then
+				other_crew_loading = id
+			end
+
+			if Kraken.get_active_kraken_count(crew_memory.id) > 0 then
+				crew_fighting_kraken = id
+			end
+		end
+
+		if crew_fighting_kraken and crew_fighting_kraken == memory.id then
+			memory.halted_due_to_crew_loading = nil
+			memory.halted_due_to_crew_fighting_kraken = memory.id
+			return
+		end
+
+		-- When other crews are loading, we halt loading if we're ATSEA_LOADING_MAP:
+		if other_crew_loading and memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP then
+			if (not memory.halted_due_to_crew_loading) or memory.halted_due_to_crew_loading ~= other_crew_loading then
+				memory.halted_due_to_crew_loading = other_crew_loading
+				memory.halted_due_to_crew_fighting_kraken = nil
+
+				local waiting_crew_name = global_memory.crew_memories[other_crew_loading].name or "Unknown crew"
+				Common.notify_force(memory.force, {'pirates.wait_for_crew_to_finish_loading', waiting_crew_name})
+			end
+
+			return
+		end
+
+		if crew_fighting_kraken then
+			if (not memory.halted_due_to_crew_fighting_kraken) or memory.halted_due_to_crew_fighting_kraken ~= crew_fighting_kraken then
+				memory.halted_due_to_crew_loading = nil
+				memory.halted_due_to_crew_fighting_kraken = crew_fighting_kraken
+
+				local fighting_crew_name = global_memory.crew_memories[crew_fighting_kraken].name or "Unknown crew"
+				Common.notify_force(memory.force, {'pirates.wait_for_crew_to_finish_fighting_kraken', fighting_crew_name})
+			end
+
+			if (memory.boat.state == Boats.enum_state.LEAVING_DOCK) then
+				memory.boat.speed = 0 -- This line depends on the fact it executes after the tick event that sets the boat speed to a positive value.
+			end
+
+			return
+		end
+	end
+
+	memory.halted_due_to_crew_loading = nil
+	memory.halted_due_to_crew_fighting_kraken = nil
+
+	memory.loadingticks = memory.loadingticks + tickinterval
+
 	if (not destination_data) then
 		if memory.boat and currentdestination.type == Surfaces.enum.LOBBY then
 			if memory.loadingticks >= 350 - Common.loading_interval then
@@ -1106,19 +1134,22 @@ function Public.loading_update(tickinterval)
 
 			-- local eta_ticks = total - (memory.loadingticks - (memory.extra_time_at_sea or 0))
 
-			if Kraken.get_active_kraken_count() > 0 then
-				memory.loadingticks = memory.loadingticks - tickinterval --reverse the change to avoid causing lag from map loading during fight
-			else
-				local fraction = memory.loadingticks / (total + (memory.extra_time_at_sea or 0))
+			local fraction = memory.loadingticks / (total + (memory.extra_time_at_sea or 0))
 
-				if fraction > Common.fraction_of_map_loaded_at_sea then
-					Progression.progress_to_destination(destination_index)
-					memory.loadingticks = 0
-				else
-					PiratesApiEvents.load_some_map_chunks_random_order(surface, currentdestination, fraction) --random order is good for maze world
-					if currentdestination.subtype == IslandEnum.enum.CAVE then
-						PiratesApiEvents.load_some_map_chunks_random_order(currentdestination.dynamic_data.cave_miner.cave_surface, currentdestination, fraction)
-					end
+			if fraction > Common.fraction_of_map_loaded_at_sea then
+				memory.boat.state = Boats.enum_state.ATSEA_WAITING_TO_SAIL
+
+				memory.force_toggle_machine_states = true
+				Boats.update_EEIs(memory.boat)
+
+				local force = memory.force
+				if not (force and force.valid) then return end
+
+				script.raise_event(CustomEvents.enum['update_crew_fuel_gui'], {})
+			else
+				PiratesApiEvents.load_some_map_chunks_random_order(surface, currentdestination, fraction) --random order is good for maze world
+				if currentdestination.subtype == IslandEnum.enum.CAVE then
+					PiratesApiEvents.load_some_map_chunks_random_order(currentdestination.dynamic_data.cave_miner.cave_surface, currentdestination, fraction)
 				end
 			end
 
@@ -1338,7 +1369,7 @@ function Public.Kraken_Destroyed_Backup_check(tickinterval) -- a server became s
 	local boat = memory.boat
 
 	if boat and boat.surface_name and boat.state and boat.state == Boats.enum_state.ATSEA_LOADING_MAP then
-		if Kraken.get_active_kraken_count() > 0 then
+		if Kraken.get_active_kraken_count(memory.id) > 0 then
 
 			local surface = game.surfaces[boat.surface_name]
 

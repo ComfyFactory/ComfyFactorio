@@ -537,29 +537,6 @@ function Public.undock_from_dock(manual)
 end
 
 
-function Public.at_sea_begin_to_set_sail()
-	local memory = Memory.get_crew_memory()
-	local boat = memory.boat
-
-	boat.state = Boats.enum_state.ATSEA_SAILING
-
-	memory.force_toggle_machine_states = true
-	Boats.update_EEIs(memory.boat)
-
-	script.raise_event(CustomEvents.enum['update_crew_fuel_gui'], {})
-
-	local force = memory.force
-	if not (force and force.valid) then return end
-
-	if memory.victory_continue_message then
-		memory.victory_continue_message = false
-		Common.notify_force(force, {'pirates.crew_continue_on_freeplay'}, CoreData.colors.notify_victory)
-	else
-		Common.notify_force(force, {'pirates.ship_set_off_to_next_island'})
-	end
-end
-
-
 
 
 local parrot_set_sail_advice =
@@ -587,14 +564,11 @@ function Public.go_from_currentdestination_to_sea()
 	local destination = Common.current_destination()
 	if memory.game_lost then return end
 
-	local oldsurface = game.surfaces[destination.surface_name]
-
 	Sea.ensure_sea_surface()
 	local seaname = memory.sea_name
 
 	local boat = memory.boat
 
-	local old_boatposition = memory.boat.position
 	local new_boatposition = Utils.snap_coordinates_for_rails({x = Boats.get_scope(memory.boat).Data.width / 2, y = 0})
 
 	Boats.teleport_boat(boat, seaname, new_boatposition, CoreData.static_boat_floor, 'water')
@@ -619,15 +593,19 @@ function Public.go_from_currentdestination_to_sea()
 		end
 	end
 
-	memory.boat.state = Boats.enum_state.ATSEA_WAITING_TO_SAIL
-
-	memory.force_toggle_machine_states = true
-	Boats.update_EEIs(memory.boat)
+	boat.state = Boats.enum_state.ATSEA_SAILING
 	
-	memory.boat.speed = 0
-	memory.boat.position = new_boatposition
-	memory.boat.surface_name = seaname
-	memory.boat.fish_caught_while_at_sea = 0 -- how many times a fish was caught, rather than amount of fish caught in total
+	boat.speed = 0
+	boat.position = new_boatposition
+	boat.surface_name = seaname
+	boat.fish_caught_while_at_sea = 0 -- how many times a fish was caught, rather than amount of fish caught in total
+
+	local force = memory.force
+	if not (force and force.valid) then return end
+	if memory.victory_continue_message then
+		memory.victory_continue_message = false
+		Common.notify_force(force, {'pirates.crew_continue_on_freeplay'}, CoreData.colors.notify_victory)
+	end
 
 	memory.enemy_force.reset_evolution()
 

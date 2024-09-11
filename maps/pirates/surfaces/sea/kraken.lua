@@ -50,9 +50,11 @@ local swimming_biters_tick_token =
 	end
 )
 
-function Public.get_active_kraken_count()
-	local memory = Memory.get_crew_memory()
-	if memory.active_sea_enemies and memory.active_sea_enemies.kraken_count then
+function Public.get_active_kraken_count(crew_id)
+	local global_memory = Memory.get_global_memory()
+	local memory = global_memory.crew_memories[crew_id]
+
+	if memory and memory.active_sea_enemies and memory.active_sea_enemies.kraken_count then
 		return memory.active_sea_enemies.kraken_count
 	else
 		return 0
@@ -71,7 +73,7 @@ function Public.swimming_biters_tick(crew_id, kraken_id)
 	local surface = game.surfaces[memory.sea_name]
 	local spawners_biters = surface.find_entities_filtered{force = memory.enemy_force_name}
 
-	if Public.get_active_kraken_count() == 0 and #spawners_biters == 0 then return end
+	if Public.get_active_kraken_count(memory.id) == 0 and #spawners_biters == 0 then return end
 
 	for _, biter in pairs(spawners_biters) do
 		if biter and biter.valid then
@@ -280,7 +282,7 @@ end
 function Public.overall_kraken_tick()
 	local memory = Memory.get_crew_memory()
 
-	if Public.get_active_kraken_count() > 0 then
+	if Public.get_active_kraken_count(memory.id) > 0 then
 		local evo_increase = Balance.kraken_evo_increase_per_second()
 		if evo_increase > 0 then
 			if not memory.dynamic_kraken_evo then memory.dynamic_kraken_evo = 0 end
@@ -322,7 +324,7 @@ function Public.try_spawn_kraken()
 		Task.set_timeout_in_ticks(10, kraken_tick_token, {crew_id = memory.id, kraken_id = kraken_id, step = 1, substep = 1})
 
 		-- creating multiple swim tick tokens, causes biters to swim faster
-		if Public.get_active_kraken_count() == 1 then
+		if Public.get_active_kraken_count(memory.id) == 1 then
 			Task.set_timeout_in_ticks(10, swimming_biters_tick_token, {crew_id = memory.id, kraken_id = kraken_id})
 		end
 	end

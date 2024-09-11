@@ -242,7 +242,7 @@ function Public.tell_biters_near_silo_to_attack_it()
 	local enemy_force_name = memory.enemy_force_name
 
 	-- don't do this too early
-	if destination.dynamic_data.timer < destination.dynamic_data.timeratlandingtime + Common.seconds_after_landing_to_enable_AI * 4 then return end
+	if destination.dynamic_data.timeratlandingtime and destination.dynamic_data.timer < destination.dynamic_data.timeratlandingtime + Common.seconds_after_landing_to_enable_AI * 4 then return end
 	if not (destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid and destination.dynamic_data.rocketsilos[1].destructible) then return end
 
 	local attackcommand = Public.attack_target_entity(destination.dynamic_data.rocketsilos[1])

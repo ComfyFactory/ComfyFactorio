@@ -149,25 +149,6 @@ function(cmd)
 end)
 
 commands.add_command(
-'sail',
-{'pirates.cmd_explain_sail'},
-function(cmd)
-	cmd_set_memory(cmd)
-
-	local memory = Memory.get_crew_memory()
-	if not Common.is_id_valid(memory.id) then return end
-
-	--local param = tostring(cmd.parameter)
-	if check_admin(cmd) then
-		--local player = game.players[cmd.player_index]
-		Crew.summon_crew()
-		if memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL then
-			Progression.at_sea_begin_to_set_sail()
-		end
-	end
-end)
-
-commands.add_command(
 'setcaptain',
 {'pirates.cmd_explain_setcaptain'},
 function(cmd)
