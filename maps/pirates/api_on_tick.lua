@@ -126,25 +126,25 @@ function Public.apply_restrictions_to_machines(tickinterval)
 	end
 
 	for _, surface in ipairs(surfaces_to_check) do
-		local machines1 = surface.find_entities_filtered{
+		local crafters = surface.find_entities_filtered{
 			type = {'assembling-machine', 'furnace', 'lab'},
 			force = memory.force_name
 		}
-
-		local machines2 = surface.find_entities_filtered{
+		local drills = surface.find_entities_filtered{
 			type = {'mining-drill'},
 			force = memory.force_name
 		}
 
 		local disable_crafters = boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL
-		for _, machine in ipairs(machines1) do
+
+		for _, machine in ipairs(crafters) do
 			if machine and machine.valid then
 				machine.active = not disable_crafters
 			end
 		end
 
-		remove_productivity_modules(surface, machines1)
-		remove_productivity_modules(surface, machines2)
+		remove_productivity_modules(surface, crafters)
+		remove_productivity_modules(surface, drills)
 	end
 end
 
@@ -1140,7 +1140,6 @@ function Public.loading_update(tickinterval)
 			if fraction > Common.fraction_of_map_loaded_at_sea then
 				boat.state = Boats.enum_state.ATSEA_WAITING_TO_SAIL
 
-				memory.force_toggle_machine_states = true
 				Boats.update_EEIs(boat)
 
 				local force = memory.force
