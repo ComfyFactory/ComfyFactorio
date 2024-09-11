@@ -273,12 +273,11 @@ function Public.progress_to_destination(destination_index)
 		starting_boatposition = {x = static_params.boat_starting_xposition, y = static_params.boat_starting_yposition or 0}
 	end
 
-	-- if oldsurface.name == CoreData.lobby_surface_name then
-	-- 	initial_boatspeed = 3
-	-- else
-	-- 	initial_boatspeed = 1.5
-	-- end
-	initial_boatspeed = 1.4
+	if oldsurface.name == CoreData.lobby_surface_name then
+		initial_boatspeed = 2.5
+	else
+		initial_boatspeed = 1.4
+	end
 
 	boat.speed = initial_boatspeed
 	boat.state = destination_data.init_boat_state
