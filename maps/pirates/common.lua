@@ -1675,6 +1675,7 @@ function Public.is_id_valid(id)
     end
 end
 
+-- TODO: Remove this function or properly integrate it into the scenario
 -- NOTE: Items here are either unobtainable or hard to find/get
 -- Connected with crew.lua recipe and technology disables
 function Public.get_item_blacklist(tier)

@@ -136,6 +136,7 @@ Public.chest_loot_data_raw = {
 	{10, 0.2, 1.2, true, 'piercing-shotgun-shell', 6, 9},
 	{2, 0.3, 1.2, true, 'combat-shotgun', 1, 1},
 	{5, 0.2, 1.8, true, 'cluster-grenade', 8, 16},
+	{5, 0, 1.2, true, 'land-mine', 8, 32},
 
 	{0.04, 0.1, 1.9, true, 'modular-armor', 1, 1},
 	{0.01, 0.4, 1.6, true, 'power-armor', 1, 1},
@@ -200,7 +201,6 @@ Public.chest_loot_data_raw = {
 	-- {4, 0.2, 0.6, true, 'engine-unit', 8, 16},
 	--late-game:
 	--{9, 0.5, 0.8, false, "railgun-dart", 8, 16},
-	-- {5, 0, 1.2, true, 'land-mine', 16, 32},
 	-- {5, 0.4, 0.7, true, 'cannon-shell', 16, 32},
 	-- {5, 0.4, 0.8, true, 'explosive-cannon-shell', 16, 32},
 	-- {2, 0.25, 1.75, true, 'logistic-robot', 5, 25},
