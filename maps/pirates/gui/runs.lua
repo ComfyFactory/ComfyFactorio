@@ -745,6 +745,14 @@ function Public.click(event)
 				return
 			end
 
+			-- check if the player created any other private runs
+			for _, id in pairs(global_memory.crew_active_ids) do
+				if global_memory.crew_memories[id].run_is_private then
+					Common.notify_player_error(player, {'pirates.gui_runs_proposal_maker_error_two_private_runs'})
+					return
+				end
+			end
+
 			-- Check if passwords match
 			if flow.proposals.body.proposal_maker.body.password_namefield.text ~= flow.proposals.body.proposal_maker.body.confirm_password_namefield.text then
 				Common.notify_player_error(player, {'pirates.gui_runs_proposal_maker_error_private_run_password_no_match'})
@@ -762,6 +770,26 @@ function Public.click(event)
 				Common.notify_player_error(player, {'pirates.gui_runs_proposal_maker_error_protected_run_limit'})
 				return
 			end
+
+			-- check if the player created any other protected runs
+			for _, id in pairs(global_memory.crew_active_ids) do
+				if global_memory.crew_memories[id].run_is_protected then
+					Common.notify_player_error(player, {'pirates.gui_runs_proposal_maker_error_two_protected_runs'})
+					return
+				end
+			end
+		end
+
+		-- Check if they created at least two other runs
+		local player_run_count = 0
+		for _, id in pairs(global_memory.crew_active_ids) do
+			if global_memory.crew_memories[id].created_by_player == player.index then
+				player_run_count = player_run_count + 1
+			end
+		end
+		if player_run_count >= 2 then
+			Common.notify_player_error(player, {'pirates.gui_runs_proposal_maker_error_three_runs'})
+			return
 		end
 
 		local private_run_password = flow.proposals.body.proposal_maker.body.password_namefield.text
