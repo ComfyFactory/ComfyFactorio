@@ -101,19 +101,28 @@ function Public.apply_restrictions_to_machines(tickinterval)
 	local memory = Memory.get_crew_memory()
 	local boat = memory.boat
 
-	if boat.state == Boats.enum_state.ATSEA_VICTORIOUS or Boats.enum_state.ATSEA_WAITING_TO_SAIL then
+	if memory.game_lost then return end
+
+	if boat.state == Boats.enum_state.ATSEA_VICTORIOUS or boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL then
 		if boat.state == Boats.enum_state.ATSEA_VICTORIOUS then
-			memory.crafted_disabled = true
-		else
-			if not memory.crafters_disabled and (
-				game.tick > boat.at_sea_waiting_game_tick + Balance.max_time_crafting_while_waiting_seconds() * 60
-			) then
+			if memory.crafters_disabled and Common.activecrewcount() == 0 then
+				return
+			else
 				memory.crafters_disabled = true
-				Common.parrot_speak(memory.force, {'pirates.crafters_disabled'})
+				Boats.update_EEIs(boat)
+			end
+		else
+			if memory.crafters_disabled and Common.activecrewcount() == 0 then
+				return
+			elseif game.tick > memory.at_sea_waiting_game_tick + Balance.max_time_crafting_while_waiting_seconds() * 60 then
+				memory.crafters_disabled = true
+				Boats.update_EEIs(boat)
+				Common.parrot_speak(memory.force, {'pirates.parrot_crafters_disabled'})
 			end
 		end
 	else
 		memory.crafters_disabled = false
+		Boats.update_EEIs(boat)
 	end
 
 	local surfaces_to_check = {}
@@ -146,8 +155,17 @@ function Public.apply_restrictions_to_machines(tickinterval)
 			type = {'mining-drill'},
 			force = memory.force_name
 		}
+		local power_machines = surface.find_entities_filtered{
+			type = {'generator', 'solar-panel', 'boiler', 'reactor'},
+			force = memory.force_name
+		}
 
 		for _, machine in ipairs(crafters) do
+			if machine and machine.valid then
+				machine.active = not memory.crafters_disabled
+			end
+		end
+		for _, machine in ipairs(power_machines) do
 			if machine and machine.valid then
 				machine.active = not memory.crafters_disabled
 			end
@@ -1149,9 +1167,7 @@ function Public.loading_update(tickinterval)
 
 			if fraction > Common.fraction_of_map_loaded_at_sea then
 				boat.state = Boats.enum_state.ATSEA_WAITING_TO_SAIL
-				memory.boat.at_sea_waiting_game_tick = game.tick
-
-				Boats.update_EEIs(boat)
+				memory.at_sea_waiting_game_tick = game.tick
 
 				local force = memory.force
 				if not (force and force.valid) then return end

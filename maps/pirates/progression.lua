@@ -283,8 +283,6 @@ function Public.progress_to_destination(destination_index)
 	boat.state = destination_data.init_boat_state
 	boat.dockedposition = nil
 
-	Boats.update_EEIs(boat)
-
 	local old_water = 'deepwater'
 	if old_type == Surfaces.enum.LOBBY or old_type == Surfaces.enum.DOCK then old_water = 'water' end
 

@@ -36,7 +36,7 @@ local enum_state = {
 		ATSEA_SAILING = 'at_sea',
 		ATSEA_LOADING_MAP = 'waiting_for_load',
 		ATSEA_WAITING_TO_SAIL = 'waiting_for_sail',
-		ATSEA_VICTORIOUS = 'waiting_for_sail',
+		ATSEA_VICTORIOUS = 'victorious',
 		DOCKED = 'docked',
 }
 Public.enum_state = enum_state
@@ -162,6 +162,8 @@ end
 
 
 function Public.update_EEIs(boat)
+	local memory = Memory.get_crew_memory()
+
 	local EEI_stage = boat.EEI_stage
 
 	local multiplier
@@ -174,7 +176,7 @@ function Public.update_EEIs(boat)
 	boat.EEIpower_production = Balance.starting_boatEEIpower_production_MW() * 1000000 / 60 * multiplier
 	boat.EEIelectric_buffer_size = Balance.starting_boatEEIelectric_buffer_size_MJ() * 1000000 * multiplier
 
-	local disable_EEIs = boat.state == Public.enum_state.ATSEA_WAITING_TO_SAIL or boat.state == Public.enum_state.ATSEA_VICTORIOUS
+	local disable_EEIs = memory.crafters_disabled
 
 	for _, e in pairs(boat.EEIs) do
 		if e and e.valid then
