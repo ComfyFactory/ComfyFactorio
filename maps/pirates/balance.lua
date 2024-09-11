@@ -20,7 +20,8 @@ Public.kraken_spit_targeting_player_chance = 0
 
 Public.base_extra_character_speed = 1.44
 Public.respawn_speed_boost = 1.85
-Public.landmine_speed_nerf = 0.3
+-- Public.landmine_speed_nerf = 0.3
+Public.landmine_speed_nerf = 0.5
 Public.landmine_speed_nerf_seconds = 0.6
 
 -- maximum rate at which alert sound can be played when important buildings are damaged (like silo or cannons)
