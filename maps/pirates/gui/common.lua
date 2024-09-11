@@ -390,6 +390,7 @@ end
 
 function Public.player_and_crew_state_bools(player)
 	local memory = Memory.get_crew_memory()
+	local boat = memory.boat
 
 	-- if memory.player_and_crew_state_bools_memoized and memory.player_and_crew_state_bools_memoized.tick > game.tick - 30 then -- auto-memoize and only update every half-second
 	-- 	return memory.player_and_crew_state_bools_memoized.ret
@@ -406,17 +407,17 @@ function Public.player_and_crew_state_bools(player)
 		in_cabin_bool = string.sub(player.surface.name, 9, 13) == 'Cabin'
 
 		onmap_bool = destination.surface_name and (player.surface.name == destination.surface_name or (
-			memory.boat and memory.boat.surface_name == destination.surface_name and (in_crowsnest_bool or in_hold_bool or in_cabin_bool)
+			boat and boat.surface_name == destination.surface_name and (in_crowsnest_bool or in_hold_bool or in_cabin_bool)
 		))
 
 		if destination then
 			eta_bool = dynamic_data.time_remaining and dynamic_data.time_remaining > 0 and onmap_bool
-			approaching_bool = memory.boat and memory.boat.state == Boats.enum_state.APPROACHING and onmap_bool
-			retreating_bool = memory.boat and memory.boat.state == Boats.enum_state.RETREATING and onmap_bool
-			-- approaching_bool = memory.boat and memory.boat.state == Boats.enum_state.APPROACHING
-			atsea_sailing_bool = memory.boat and memory.boat.state == Boats.enum_state.ATSEA_SAILING
-			atsea_waiting_bool = memory.boat and memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL
-			landed_bool = memory.boat and memory.boat.state == Boats.enum_state.LANDED
+			approaching_bool = boat and boat.state == Boats.enum_state.APPROACHING and onmap_bool
+			retreating_bool = boat and boat.state == Boats.enum_state.RETREATING and onmap_bool
+			-- approaching_bool = boat and boat.state == Boats.enum_state.APPROACHING
+			atsea_sailing_bool = boat and boat.state == Boats.enum_state.ATSEA_SAILING
+			atsea_waiting_bool = boat and boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL
+			landed_bool = boat and boat.state == Boats.enum_state.LANDED
 			quest_bool = (dynamic_data.quest_type ~= nil) and onmap_bool
 			charged_bool = dynamic_data.silocharged
 			silo_bool = dynamic_data.rocketsilos and onmap_bool and ((dynamic_data.rocketsilos[1] and dynamic_data.rocketsilos[1].valid) or charged_bool)
@@ -428,23 +429,23 @@ function Public.player_and_crew_state_bools(player)
 			leave_anytime_bool = (landed_bool and not (eta_bool or cost_bool))
 		end
 
-		if memory.boat then
-			atsea_loading_bool = memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP and memory.loadingticks
+		if boat then
+			atsea_loading_bool = boat.state == Boats.enum_state.ATSEA_LOADING_MAP and memory.loadingticks
 
-			character_on_deck_bool = player.character and player.character.position and player.surface.name and player.surface.name == memory.boat.surface_name
+			character_on_deck_bool = player.character and player.character.position and player.surface.name and player.surface.name == boat.surface_name
 
 			if character_on_deck_bool then
-				local BoatData = Boats.get_scope(memory.boat).Data
+				local BoatData = Boats.get_scope(boat).Data
 
-				on_deck_standing_near_loco_bool = Math.distance(player.character.position, Math.vector_sum(memory.boat.position, BoatData.loco_pos)) < 2.5
+				on_deck_standing_near_loco_bool = Math.distance(player.character.position, Math.vector_sum(boat.position, BoatData.loco_pos)) < 2.5
 
-				on_deck_standing_near_cabin_bool = Math.distance(player.character.position, Math.vector_sum(memory.boat.position, BoatData.cabin_car)) < 2.0
+				on_deck_standing_near_cabin_bool = Math.distance(player.character.position, Math.vector_sum(boat.position, BoatData.cabin_car)) < 2.0
 
-				on_deck_standing_near_crowsnest_bool = Math.distance(player.character.position, Math.vector_sum(memory.boat.position, BoatData.crowsnest_center)) < 2.5
+				on_deck_standing_near_crowsnest_bool = Math.distance(player.character.position, Math.vector_sum(boat.position, BoatData.crowsnest_center)) < 2.5
 			end
 
-			approaching_dock_bool = destination.type == Surfaces.enum.DOCK and memory.boat.state == Boats.enum_state.APPROACHING
-			leaving_dock_bool = destination.type == Surfaces.enum.DOCK and memory.boat.state == Boats.enum_state.LEAVING_DOCK
+			approaching_dock_bool = destination.type == Surfaces.enum.DOCK and boat.state == Boats.enum_state.APPROACHING
+			leaving_dock_bool = destination.type == Surfaces.enum.DOCK and boat.state == Boats.enum_state.LEAVING_DOCK
 		end
 
 		local ret = {

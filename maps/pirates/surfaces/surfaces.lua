@@ -898,6 +898,7 @@ end
 
 function Public.player_exit_hold(player, relative_pos)
 	local memory = Memory.get_crew_memory()
+	local boat = memory.boat
 	local surface
 
 	if Boats.is_boat_at_sea() then
@@ -906,8 +907,8 @@ function Public.player_exit_hold(player, relative_pos)
 		surface = game.surfaces[Common.current_destination().surface_name]
 	end
 
-	local locopos = Boats.get_scope(memory.boat).Data.loco_pos
-	local newpos = {x = memory.boat.position.x + locopos.x + relative_pos.x, y = memory.boat.position.y + locopos.y + relative_pos.y}
+	local locopos = Boats.get_scope(boat).Data.loco_pos
+	local newpos = {x = boat.position.x + locopos.x + relative_pos.x, y = boat.position.y + locopos.y + relative_pos.y}
 
 	local newpos2 = surface.find_non_colliding_position('character', newpos, 10, 0.2) or newpos
 
@@ -936,6 +937,7 @@ end
 
 function Public.player_exit_cabin(player, relative_pos)
 	local memory = Memory.get_crew_memory()
+	local boat = memory.boat
 	local surface
 
 	if Boats.is_boat_at_sea() then
@@ -944,8 +946,8 @@ function Public.player_exit_cabin(player, relative_pos)
 		surface = game.surfaces[Common.current_destination().surface_name]
 	end
 
-	local carpos = Boats.get_scope(memory.boat).Data.cabin_car
-	local newpos = {x = memory.boat.position.x + carpos.x - relative_pos.x, y = memory.boat.position.y + carpos.y + relative_pos.y}
+	local carpos = Boats.get_scope(boat).Data.cabin_car
+	local newpos = {x = boat.position.x + carpos.x - relative_pos.x, y = boat.position.y + carpos.y + relative_pos.y}
 
 	local newpos2 = surface.find_non_colliding_position('character', newpos, 10, 0.2) or newpos
 

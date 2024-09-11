@@ -1488,12 +1488,13 @@ end
 
 function Public.is_boat_at_sea()
 	local memory = Memory.get_crew_memory()
-	if memory.boat and
-		memory.boat.state and
+	local boat = memory.boat
+	if boat and
+		boat.state and
 		(
-			memory.boat.state == Public.enum_state.ATSEA_SAILING or
-			memory.boat.state == Public.enum_state.ATSEA_WAITING_TO_SAIL or
-			memory.boat.state == Public.enum_state.ATSEA_LOADING_MAP
+			boat.state == Public.enum_state.ATSEA_SAILING or
+			boat.state == Public.enum_state.ATSEA_WAITING_TO_SAIL or
+			boat.state == Public.enum_state.ATSEA_LOADING_MAP
 		)
 	then
 		return true

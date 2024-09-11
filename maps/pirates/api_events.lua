@@ -875,6 +875,7 @@ end
 
 local function player_mined_fish(event)
 	local memory = Memory.get_crew_memory()
+	local boat = memory.boat
 	local destination = Common.current_destination()
 	local player = game.players[event.player_index]
 	local entity = event.entity
@@ -884,13 +885,13 @@ local function player_mined_fish(event)
 	-- NOTE: This however doesn't prevent catching fish with inserters, but that shouldn't matter much?
 	local boat_is_at_sea = Boats.is_boat_at_sea()
 	local fish_caught_while_at_sea = -1
-	if boat_is_at_sea and memory.boat and memory.boat.fish_caught_while_at_sea then
-		fish_caught_while_at_sea = memory.boat.fish_caught_while_at_sea
+	if boat_is_at_sea and boat and boat.fish_caught_while_at_sea then
+		fish_caught_while_at_sea = boat.fish_caught_while_at_sea
 	end
 
 	if (not boat_is_at_sea) or (boat_is_at_sea and fish_caught_while_at_sea < Balance.maximum_fish_allowed_to_catch_at_sea) then
 		if fish_caught_while_at_sea ~= -1 then
-			memory.boat.fish_caught_while_at_sea = memory.boat.fish_caught_while_at_sea + 1
+			boat.fish_caught_while_at_sea = boat.fish_caught_while_at_sea + 1
 		end
 
 		local fish_amount = Balance.base_caught_fish_amount
@@ -1320,6 +1321,7 @@ local function event_on_entity_died(event)
 	local crew_id = Common.get_id_from_force_name(entity.force.name)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
+	local boat = memory.boat
 	if not Common.is_id_valid(memory.id) then return end
 
 	base_kill_rewards(event)
@@ -1335,9 +1337,9 @@ local function event_on_entity_died(event)
 	end
 
 	if event.entity and event.entity.valid and event.entity.force and event.entity.force.name == memory.force_name then
-		if memory.boat and memory.boat.cannonscount and entity.name == 'artillery-turret' then
-			memory.boat.cannonscount = memory.boat.cannonscount - 1
-			-- if memory.boat.cannonscount <= 0 then
+		if boat and boat.cannonscount and entity.name == 'artillery-turret' then
+			boat.cannonscount = boat.cannonscount - 1
+			-- if boat.cannonscount <= 0 then
 			-- 	Crew.try_lose()
 			-- end
 			Crew.try_lose({'pirates.loss_cannon_destroyed'})

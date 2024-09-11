@@ -432,11 +432,11 @@ function Public.full_update(player)
     flow.captain.body.make_officer.visible = other_player_selected and (not Common.is_officer(selected_player_index)) and not playercrew_status.spectating
     flow.captain.body.unmake_officer.visible = other_player_selected and Common.is_officer(selected_player_index) and not playercrew_status.spectating
 
-    -- flow.captain.body.capn_undock_normal.visible = memory.boat and memory.boat.state and ((memory.boat.state == Boats.enum_state.LANDED) or (memory.boat.state == Boats.enum_state.APPROACHING) or (memory.boat.state == Boats.enum_state.DOCKED))
+    -- flow.captain.body.capn_undock_normal.visible = boat and boat.state and ((boat.state == boats.enum_state.LANDED) or (boat.state == Boats.enum_state.APPROACHING) or (boat.state == Boats.enum_state.DOCKED))
 
     flow.captain.body.capn_summon_crew.visible = false
     flow.captain.body.capn_requisition.visible = true
-    -- flow.captain.body.capn_summon_crew.visible = memory.boat and memory.boat.state and (memory.boat.state == Boats.enum_state.RETREATING or memory.boat.state == Boats.enum_state.LEAVING_DOCK)
+    -- flow.captain.body.capn_summon_crew.visible = boat and boat.state and (boat.state == Boats.enum_state.RETREATING or boat.state == Boats.enum_state.LEAVING_DOCK)
 
     local get_global_memory = Memory.get_global_memory()
 
@@ -529,7 +529,7 @@ function Public.full_update(player)
     end
 
     -- if flow.captain.body.capn_undock_normal.visible then
-    -- 	flow.captain.body.capn_undock_normal.enabled = ((memory.boat.state == Boats.enum_state.LANDED) and Common.query_can_pay_cost_to_leave()) or (memory.boat.state == Boats.enum_state.DOCKED)
+    -- 	flow.captain.body.capn_undock_normal.enabled = ((boat.state == Boats.enum_state.LANDED) and Common.query_can_pay_cost_to_leave()) or (boat.state == Boats.enum_state.DOCKED)
     -- end
 end
 

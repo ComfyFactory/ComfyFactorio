@@ -126,15 +126,16 @@ function Public.full_update(player)
 	local flow
 
 	local memory = Memory.get_crew_memory()
+	local boat = memory.boat
 
 	if not player.gui.screen[window_name .. '_piratewindow'] then return end
 	flow = player.gui.screen[window_name .. '_piratewindow']
 
     local element = flow['camera']
 	if element then
-		local position = memory.boat.position
+		local position = boat.position
 		local destination = Common.current_destination()
-		if (destination and destination.type and destination.type == Surfaces.enum.ISLAND and memory.boat.surface_name and memory.boat.surface_name == destination.surface_name and destination.static_params and destination.static_params.boat_starting_xposition) then
+		if (destination and destination.type and destination.type == Surfaces.enum.ISLAND and boat.surface_name and boat.surface_name == destination.surface_name and destination.static_params and destination.static_params.boat_starting_xposition) then
 			-- nicer viewing position:
 			position = {x = destination.static_params.boat_starting_xposition + 50, y = destination.static_params.boat_starting_yposition or 0}
 		end
@@ -142,8 +143,8 @@ function Public.full_update(player)
 		if position then
 			element.position = position
 		end
-		if memory.boat.surface_name and game.surfaces[memory.boat.surface_name] and game.surfaces[memory.boat.surface_name].valid then
-			element.surface_index = game.surfaces[memory.boat.surface_name].index
+		if boat.surface_name and game.surfaces[boat.surface_name] and game.surfaces[boat.surface_name].valid then
+			element.surface_index = game.surfaces[boat.surface_name].index
 		end
 	end
 end

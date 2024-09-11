@@ -916,7 +916,7 @@ function Public.boat_movement_tick(tickinterval)
 						if not Progression.check_for_end_of_boat_movement(eboat) then
 							-- if boat.unit_group and boat.unit_group.ref and boat.unit_group.ref.valid then boat.unit_group.ref.set_command({
 							-- 	type = defines.command.attack_area,
-							-- 	destination = ({memory.boat.position.x - 32, memory.boat.position.y} or {0,0}),
+							-- 	destination = ({boat.position.x - 32, boat.position.y} or {0,0}),
 							-- 	radius = 32,
 							-- 	distraction = defines.distraction.by_enemy
 							-- }) end
@@ -966,6 +966,7 @@ end
 function Public.loading_update(tickinterval)
 	local global_memory = Memory.get_global_memory()
 	local memory = Memory.get_crew_memory()
+	local boat = memory.boat
 
 	if not memory.loadingticks then return end
 
@@ -976,13 +977,13 @@ function Public.loading_update(tickinterval)
 	local destination_index = memory.mapbeingloadeddestination_index
 	if not destination_index then memory.loadingticks = nil return end
 
-	if not memory.boat.state then return end
+	if not boat.state then return end
 
 	local map_loads = false
-	if memory.boat.state == Boats.enum_state.LANDED then map_loads = true end
-	if memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP then map_loads = true end
-	if memory.boat.state == Boats.enum_state.LEAVING_DOCK then map_loads = true end
-	if memory.boat.state == Boats.enum_state.APPROACHING and destination_index == 1 then map_loads = true end
+	if boat.state == Boats.enum_state.LANDED then map_loads = true end
+	if boat.state == Boats.enum_state.ATSEA_LOADING_MAP then map_loads = true end
+	if boat.state == Boats.enum_state.LEAVING_DOCK then map_loads = true end
+	if boat.state == Boats.enum_state.APPROACHING and destination_index == 1 then map_loads = true end
 
 	if not map_loads then return end
 
@@ -990,7 +991,7 @@ function Public.loading_update(tickinterval)
 
 	local destination_data = memory.destinations[destination_index]
 
-	if memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP or memory.boat.state == Boats.enum_state.LEAVING_DOCK then
+	if boat.state == Boats.enum_state.ATSEA_LOADING_MAP or boat.state == Boats.enum_state.LEAVING_DOCK then
 		local other_crew_loading = nil
 		local crew_fighting_kraken = nil
 
@@ -1011,7 +1012,7 @@ function Public.loading_update(tickinterval)
 		end
 
 		-- When other crews are loading, we halt loading if we're ATSEA_LOADING_MAP:
-		if other_crew_loading and memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP then
+		if other_crew_loading and boat.state == Boats.enum_state.ATSEA_LOADING_MAP then
 			if (not memory.halted_due_to_crew_loading) or memory.halted_due_to_crew_loading ~= other_crew_loading then
 				memory.halted_due_to_crew_loading = other_crew_loading
 				memory.halted_due_to_crew_fighting_kraken = nil
@@ -1032,8 +1033,8 @@ function Public.loading_update(tickinterval)
 				Common.notify_force(memory.force, {'pirates.wait_for_crew_to_finish_fighting_kraken', fighting_crew_name})
 			end
 
-			if (memory.boat.state == Boats.enum_state.LEAVING_DOCK) then
-				memory.boat.speed = 0 -- This line depends on the fact it executes after the tick event that sets the boat speed to a positive value.
+			if (boat.state == Boats.enum_state.LEAVING_DOCK) then
+				boat.speed = 0 -- This line depends on the fact it executes after the tick event that sets the boat speed to a positive value.
 			end
 
 			return
@@ -1046,9 +1047,9 @@ function Public.loading_update(tickinterval)
 	memory.loadingticks = memory.loadingticks + tickinterval
 
 	if (not destination_data) then
-		if memory.boat and currentdestination.type == Surfaces.enum.LOBBY then
+		if boat and currentdestination.type == Surfaces.enum.LOBBY then
 			if memory.loadingticks >= 350 - Common.loading_interval then
-				if Boats.players_on_boat_count(memory.boat) > 0 then
+				if Boats.players_on_boat_count(boat) > 0 then
 					if memory.loadingticks < 350 then
 						Common.notify_game({'', '[' .. memory.name .. '] ', {'pirates.loading_new_game'}})
 					elseif memory.loadingticks > 410 then
@@ -1066,7 +1067,7 @@ function Public.loading_update(tickinterval)
 					end
 				else
 					if memory.loadingticks >= 1100 then
-						Boats.destroy_boat(memory.boat)
+						Boats.destroy_boat(boat)
 						Crew.disband_crew()
 						return
 					end
@@ -1085,27 +1086,27 @@ function Public.loading_update(tickinterval)
 
 			if memory.loadingticks >= 1260 then
 
-				if memory.boat and memory.boat.rendering_crewname_text and rendering.is_valid(memory.boat.rendering_crewname_text) then
-					rendering.destroy(memory.boat.rendering_crewname_text)
-					memory.boat.rendering_crewname_text = nil
+				if boat and boat.rendering_crewname_text and rendering.is_valid(boat.rendering_crewname_text) then
+					rendering.destroy(boat.rendering_crewname_text)
+					boat.rendering_crewname_text = nil
 				end
 
 				Progression.go_from_starting_dock_to_first_destination()
 
 			elseif memory.loadingticks > 1230 then
 
-				if memory.boat then
-					memory.boat.speed = 0
+				if boat then
+					boat.speed = 0
 				end
 
 			elseif memory.loadingticks > 860 then
 
-				if Boats.players_on_boat_count(memory.boat) > 0 then
+				if Boats.players_on_boat_count(boat) > 0 then
 					local fraction = 0.07 + 0.7 * (memory.loadingticks - 860) / 400
 
 					PiratesApiEvents.load_some_map_chunks(destination_index, fraction)
 				else
-					Boats.destroy_boat(memory.boat)
+					Boats.destroy_boat(boat)
 					Crew.disband_crew()
 					return
 				end
@@ -1123,7 +1124,7 @@ function Public.loading_update(tickinterval)
 			-- 	PiratesApiEvents.load_some_map_chunks(destination_index, fraction)
 			end
 
-		elseif memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP then
+		elseif boat.state == Boats.enum_state.ATSEA_LOADING_MAP then
 
 			local total = Common.map_loading_ticks_atsea
 			if currentdestination.type == Surfaces.enum.DOCK then
@@ -1137,10 +1138,10 @@ function Public.loading_update(tickinterval)
 			local fraction = memory.loadingticks / (total + (memory.extra_time_at_sea or 0))
 
 			if fraction > Common.fraction_of_map_loaded_at_sea then
-				memory.boat.state = Boats.enum_state.ATSEA_WAITING_TO_SAIL
+				boat.state = Boats.enum_state.ATSEA_WAITING_TO_SAIL
 
 				memory.force_toggle_machine_states = true
-				Boats.update_EEIs(memory.boat)
+				Boats.update_EEIs(boat)
 
 				local force = memory.force
 				if not (force and force.valid) then return end
@@ -1153,7 +1154,7 @@ function Public.loading_update(tickinterval)
 				end
 			end
 
-		elseif memory.boat.state == Boats.enum_state.LANDED then
+		elseif boat.state == Boats.enum_state.LANDED then
 			local fraction = Common.fraction_of_map_loaded_at_sea + (1 - Common.fraction_of_map_loaded_at_sea) * memory.loadingticks / Common.map_loading_ticks_onisland
 
 			if fraction > 1 then
@@ -1168,23 +1169,24 @@ end
 
 function Public.crowsnest_steer(tickinterval)
 	local memory = Memory.get_crew_memory()
+	local boat = memory.boat
 
 	if memory.game_lost then return end
 
 	if not 
 		(
-			memory.boat and
-			memory.boat.state and
-			memory.boat.state == Structures.Boats.enum_state.ATSEA_SAILING and
+			boat and
+			boat.state and
+			boat.state == Structures.Boats.enum_state.ATSEA_SAILING and
 			memory.game_lost == false and
-			memory.boat.crowsneststeeringchests
+			boat.crowsneststeeringchests
 		) 
 	then 
 		return
 	end
 
-	local leftchest = memory.boat.crowsneststeeringchests.left
-	local rightchest = memory.boat.crowsneststeeringchests.right
+	local leftchest = boat.crowsneststeeringchests.left
+	local rightchest = boat.crowsneststeeringchests.right
 	if not (leftchest and leftchest.valid and rightchest and rightchest.valid) then return end
 
 	local inv_left = leftchest.get_inventory(defines.inventory.chest)
@@ -1308,14 +1310,15 @@ end
 
 function Public.LOS_tick(tickinterval)
 	local memory = Memory.get_crew_memory()
+	local boat = memory.boat
 	local destination = Common.current_destination()
 	local force = memory.force
 	if not destination.surface_name then return end
 	local surface = game.surfaces[destination.surface_name]
 
-	if memory.boat and memory.boat.state == Boats.enum_state.APPROACHING or memory.boat.state == Boats.enum_state.LANDED or memory.boat.state == Boats.enum_state.RETREATING then
-		local p = memory.boat.position
-		local BoatData = Boats.get_scope(memory.boat).Data
+	if boat and boat.state == Boats.enum_state.APPROACHING or boat.state == Boats.enum_state.LANDED or boat.state == Boats.enum_state.RETREATING then
+		local p = boat.position
+		local BoatData = Boats.get_scope(boat).Data
 
 		force.chart(surface, {{p.x - BoatData.width/2 - 70, p.y - 80},{p.x - BoatData.width/2 + 70, p.y + 80}})
 	end
@@ -1332,7 +1335,7 @@ end
 function Public.minimap_jam(tickinterval)
 	local memory = Memory.get_crew_memory()
 
-	if memory.overworldx == Common.maze_minimap_jam_league and memory.boat and memory.boat.state == Boats.enum_state.LANDED then
+	if memory.overworldx == Common.maze_minimap_jam_league and boat and boat.state == Boats.enum_state.LANDED then
 		local destination = Common.current_destination()
 		if destination.type == Surfaces.enum.ISLAND and destination.subtype == IslandEnum.enum.MAZE then
 			if not destination.surface_name then return end
@@ -1799,6 +1802,7 @@ end
 
 function Public.update_time_remaining()
 	local memory = Memory.get_crew_memory()
+	local boat = memory.boat
 	local destination = Common.current_destination()
 
 	if not (destination.dynamic_data.time_remaining and destination.dynamic_data.time_remaining > 0) then return end
@@ -1806,9 +1810,9 @@ function Public.update_time_remaining()
 
 	if destination.dynamic_data.time_remaining ~= 0 then return end
 
-	if not memory.boat then return end
-	if memory.boat.state == Boats.enum_state.RETREATING then return end
-	if not memory.boat.surface_name then return end
+	if not boat then return end
+	if boat.state == Boats.enum_state.RETREATING then return end
+	if not boat.surface_name then return end
 
 	if destination.type == Surfaces.enum.ISLAND then
 		if destination.static_params and destination.static_params.base_cost_to_undock and Boats.need_resources_to_undock(Common.overworldx(), destination.subtype) and (not Common.query_can_pay_cost_to_leave()) then
