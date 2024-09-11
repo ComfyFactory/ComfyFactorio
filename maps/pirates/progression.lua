@@ -548,8 +548,6 @@ function Public.at_sea_begin_to_set_sail()
 
 	script.raise_event(CustomEvents.enum['update_crew_fuel_gui'], {})
 
-	Crew.summon_crew()
-
 	local force = memory.force
 	if not (force and force.valid) then return end
 
