@@ -72,9 +72,9 @@ function Public.execute_boat_purchase()
 	Hold.connect_up_linked_belts_to_deck()
 	Cabin.connect_up_linked_belts_to_deck()
 
-	memory.mainshop_availability_bools.new_boat_cutter_with_hold = false
-	memory.mainshop_availability_bools.new_boat_sloop_with_hold = false
-	memory.mainshop_availability_bools.new_boat_cutter = false
+	-- memory.mainshop_availability_bools.new_boat_cutter_with_hold = false
+	-- memory.mainshop_availability_bools.new_boat_sloop_with_hold = false
+	-- memory.mainshop_availability_bools.new_boat_cutter = false
 
 	script.raise_event(CustomEvents.enum['update_crew_fuel_gui'], {})
 end

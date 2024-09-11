@@ -139,7 +139,7 @@ function Public.initialise_captains_shop()
 		rail_signal = true,
 		artillery_shell = true,
 		artillery_remote = false, --good way to get trolled by crew and remove skill
-		extra_time = true,
+		extra_time = false,
 		new_boat_sloop_with_hold = false,
 		new_boat_cutter_with_hold = false,
 		new_boat_cutter = false,

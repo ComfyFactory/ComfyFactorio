@@ -82,21 +82,15 @@ Public.shaman_energy_required_per_summon = 1000000
 Public.shaman_max_charge = 30000000
 Public.shaman_summoned_biter_time_to_live = 60 * 2 -- in seconds
 Public.shaman_passive_charge = 200000 -- each second
-
 Public.class_cycle_count = 5 -- How many classes should be purchased to have a chance to buy the same class again
-
 Public.maximum_fish_allowed_to_catch_at_sea = 40
-
 Public.prevent_waves_from_spawning_in_cave_timer_length = 10 -- in seconds
-
 Public.min_ore_spawn_distance = 10
-
 Public.biter_boats_start_arrive_x = 40 * 5
 Public.need_resources_to_undock_x = 40 * 20
-
 Public.biters_spawned_on_elite_biter_death = 4
-
 Public.walkways_frozen_pool_damage = 12
+Public.at_sea_waiting_crafters_disable_time_seconds = 60 * 5
 
 function Public.starting_boatEEIpower_production_MW()
 	-- return 3 * Math.sloped(Common.capacity_scale(), 1/2) / 2 --/2 as we have 2

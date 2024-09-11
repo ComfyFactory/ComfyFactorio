@@ -17,12 +17,6 @@ local _inspect = require 'utils.inspect'.inspect
 
 local Public = {}
 
--- What is this even for?
-local enum = {
-	TIME = 'Time',
-}
-Public.enum = enum
-
 
 
 Public.offers_loaders = {

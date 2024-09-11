@@ -48,7 +48,7 @@ Public.coin_tax_percentage = 25
 Public.fraction_of_map_loaded_at_sea = 1
 Public.map_loading_ticks_atsea = 68 * 60
 Public.map_loading_ticks_atsea_maze = 80 * 60
-Public.map_loading_ticks_atsea_dock = 20 * 60
+Public.map_loading_ticks_atsea_dock = 10 * 60
 Public.map_loading_ticks_onisland = 2 * 60 * 60
 Public.loading_interval = 5
 

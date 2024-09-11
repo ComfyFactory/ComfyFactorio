@@ -99,10 +99,15 @@ end
 
 function Public.apply_restrictions_to_machines(tickinterval)
 	local memory = Memory.get_crew_memory()
-
-	if Common.activecrewcount() == 0 then return end
-
 	local boat = memory.boat
+
+	-- Skip redundant checks if there's nobody on the ship:
+	local disable_crafters = boat.state == Boats.enum_state.ATSEA_VICTORIOUS or (
+		boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL and game.tick >= boat.at_sea_waiting_game_tick + Balance.at_sea_waiting_crafters_disable_time_seconds * 60
+	)
+	if Common.activecrewcount() == 0 and disable_crafters == memory.disable_crafters_last_seen then return end
+	memory.disable_crafters_last_seen = disable_crafters
+
 	local surfaces_to_check = {}
 
 	if boat.surface_name and game.surfaces[boat.surface_name] and game.surfaces[boat.surface_name].valid then
@@ -133,8 +138,6 @@ function Public.apply_restrictions_to_machines(tickinterval)
 			type = {'mining-drill'},
 			force = memory.force_name
 		}
-
-		local disable_crafters = boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL or boat.state == Boats.enum_state.ATSEA_VICTORIOUS
 
 		for _, machine in ipairs(crafters) do
 			if machine and machine.valid then
@@ -1138,6 +1141,7 @@ function Public.loading_update(tickinterval)
 
 			if fraction > Common.fraction_of_map_loaded_at_sea then
 				boat.state = Boats.enum_state.ATSEA_WAITING_TO_SAIL
+				memory.boat.at_sea_waiting_game_tick = game.tick
 
 				Boats.update_EEIs(boat)
 
