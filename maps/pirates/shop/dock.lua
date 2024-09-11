@@ -52,7 +52,8 @@ Public.market_permanent_offers = {
 	{price = {{'coin', 6200}}, offer = {type = 'give-item', item = 'beacon', count = 2}},
 	{price = {{'coin', 4200}}, offer = {type = 'give-item', item = 'speed-module-2', count = 2}},
 	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'explosives', count = 50}},
-	{price = {{'coin', 30000}}, offer = {type = 'give-item', item = 'artillery-targeting-remote', count = 1}},
+	{price = {{'coin', 6500}, {'steel', 25}, {'dynamite', 50}}, offer = {type = 'give-item', item = 'land-mine', count = 100}},
+	-- {price = {{'coin', 30000}}, offer = {type = 'give-item', item = 'artillery-targeting-remote', count = 1}},
 }
 
 -- cheap but one-off
@@ -177,20 +178,20 @@ function Public.create_dock_markets(surface, p)
 		-- 	e.add_market_item(offer)
 		-- end
 
-		local toaddcount
+		local to_add_count
 
-		local salescopy = Utils.deepcopy(Public.market_permanent_offers)
+		local permanent_offers_copy = Utils.deepcopy(Public.market_permanent_offers)
 
-		toaddcount = 3 + Math.random(0, 2)
-		while toaddcount>0 and #salescopy > 0 do
-			local index = Math.random(#salescopy)
-			local offer = salescopy[index]
+		to_add_count = 3 + Math.random(0, 2)
+		while to_add_count>0 and #permanent_offers_copy > 0 do
+			local index = Math.random(#permanent_offers_copy)
+			local offer = permanent_offers_copy[index]
 			e.add_market_item(offer)
-			for i = index, #salescopy - 1 do
-				salescopy[i] = salescopy[i+1]
+			for i = index, #permanent_offers_copy - 1 do
+				permanent_offers_copy[i] = permanent_offers_copy[i+1]
 			end
-			salescopy[#salescopy] = nil
-			toaddcount = toaddcount - 1
+			permanent_offers_copy[#permanent_offers_copy] = nil
+			to_add_count = to_add_count - 1
 		end
 	end
 

@@ -107,11 +107,11 @@ Public.main_shop_data_2 = {
 		what_you_get_sprite_buttons = {['item/artillery-shell'] = 8},
 		base_cost = {coins = 800, fuel = 30},
 	},
-	artillery_remote = {
-		tooltip = 'An artillery targeting remote.',
-		what_you_get_sprite_buttons = {['item/artillery-targeting-remote'] = 1},
-		base_cost = {coins = 12000, fuel = 2500},
-	},
+	-- artillery_remote = {
+	-- 	tooltip = 'An artillery targeting remote.',
+	-- 	what_you_get_sprite_buttons = {['item/artillery-targeting-remote'] = 1},
+	-- 	base_cost = {coins = 12000, fuel = 2500},
+	-- },
 	-- buy_fast_loader = {
 	-- 	tooltip = 'A fast loader for 500 stored fuel.',
 	-- 	what_you_get_sprite_buttons = {['item/fast-loader'] = 1},
