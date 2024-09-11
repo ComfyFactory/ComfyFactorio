@@ -929,9 +929,8 @@ function Public.reset_crew_and_enemy_force(id)
 	-- crew_force.technologies['tank'].researched = true
 
 
-	--@TRYING this out:
-	crew_force.technologies['coal-liquefaction'].enabled = true
-	-- crew_force.technologies['coal-liquefaction'].researched = true -- don't see why this should be researched by default
+	-- Trying out having this be researched by default, in order to make coal (the resource needed to power the ship) interchangeable with oil, thereby making coal more precious:
+	crew_force.technologies['coal-liquefaction'].researched = true
 
 	-- crew_force.technologies['toolbelt'].enabled = false --trying this. we don't actually want players to carry too many things manually, and in fact in a resource-tight scenario that's problematic
 
@@ -1012,8 +1011,9 @@ function Public.reset_crew_and_enemy_force(id)
 	-- exploit?:
 	crew_force.technologies['gate'].enabled = true
 
-	-- crew_force.technologies['productivity-module-2'].enabled = true
-	-- crew_force.technologies['productivity-module-3'].enabled = false
+	-- crew_force.technologies['productivity-module'].enabled = false
+	crew_force.technologies['productivity-module-2'].enabled = false
+	crew_force.technologies['productivity-module-3'].enabled = false
 	-- crew_force.technologies['speed-module'].enabled = true
 	-- crew_force.technologies['speed-module-2'].enabled = false
 	-- crew_force.technologies['speed-module-3'].enabled = false

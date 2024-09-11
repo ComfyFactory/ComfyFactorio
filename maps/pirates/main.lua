@@ -169,6 +169,7 @@ local function crew_tick()
 		if tick % 30 == 0 then
 			PiratesApiOnTick.silo_update(30)
 			PiratesApiOnTick.buried_treasure_check(30)
+			PiratesApiOnTick.apply_restrictions_to_machines(30)
 			ClassPiratesApiOnTick.update_character_properties(30)
 			ClassPiratesApiOnTick.class_update_auxiliary_data(30)
 			ClassPiratesApiOnTick.class_renderings(30)

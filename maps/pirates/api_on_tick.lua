@@ -81,6 +81,74 @@ function Public.prevent_unbarreling_off_ship(tickinterval)
 end
 
 
+local function remove_productivity_modules(surface, machines)
+	for _, machine in ipairs(machines) do
+		if machine and machine.valid then
+			local modules = machine.get_module_inventory()
+			if modules and modules.valid then
+				local productivity_modules = modules.get_contents()['productivity-module']
+				if productivity_modules and productivity_modules > 0 then
+					modules.remove{name = 'productivity-module', count = productivity_modules}
+					surface.spill_item_stack(machine.position, {name = 'productivity-module', count = productivity_modules}, true, nil, true)
+				end
+			end
+		end
+	end
+end
+
+function Public.apply_restrictions_to_machines(tickinterval)
+	local memory = Memory.get_crew_memory()
+
+	if Common.activecrewcount() == 0 and not (memory.force_toggle_machine_states) then return end
+	memory.force_toggle_machine_states = false
+
+	local boat = memory.boat
+	local surfaces_to_check = {}
+
+	if boat.surface_name and game.surfaces[boat.surface_name] and game.surfaces[boat.surface_name].valid then
+		table.insert(surfaces_to_check, game.surfaces[boat.surface_name])
+	end
+
+	for i = 1, memory.hold_surface_count do
+		local hold_surface = Hold.get_hold_surface(i)
+		if hold_surface and hold_surface.valid then
+			table.insert(surfaces_to_check, hold_surface)
+		end
+	end
+
+	local destination = Common.current_destination()
+	if destination.dynamic_data and destination.dynamic_data.cave_miner and destination.dynamic_data.cave_miner.cave_surface then
+		local cave_surface = destination.dynamic_data.cave_miner.cave_surface
+		if cave_surface and cave_surface.valid then
+			table.insert(surfaces_to_check, cave_surface)
+		end
+	end
+
+	for _, surface in ipairs(surfaces_to_check) do
+		local machines1 = surface.find_entities_filtered{
+			type = {'assembling-machine', 'furnace', 'lab'},
+			force = memory.force_name
+		}
+
+		local machines2 = surface.find_entities_filtered{
+			type = {'mining-drill'},
+			force = memory.force_name
+		}
+
+		local disable_crafters = boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL
+		for _, machine in ipairs(machines1) do
+			if machine and machine.valid then
+				machine.active = not disable_crafters
+			end
+		end
+
+		remove_productivity_modules(surface, machines1)
+		remove_productivity_modules(surface, machines2)
+	end
+end
+
+
+
 function Public.prevent_disembark(tickinterval)
 	local memory = Memory.get_crew_memory()
 

@@ -543,6 +543,9 @@ function Public.at_sea_begin_to_set_sail()
 
 	boat.state = Boats.enum_state.ATSEA_SAILING
 
+	memory.force_toggle_machine_states = true
+	Boats.update_EEIs(memory.boat)
+
 	script.raise_event(CustomEvents.enum['update_crew_fuel_gui'], {})
 
 	Crew.summon_crew()
@@ -619,6 +622,10 @@ function Public.go_from_currentdestination_to_sea()
 	end
 
 	memory.boat.state = Boats.enum_state.ATSEA_WAITING_TO_SAIL
+
+	memory.force_toggle_machine_states = true
+	Boats.update_EEIs(memory.boat)
+	
 	memory.boat.speed = 0
 	memory.boat.position = new_boatposition
 	memory.boat.surface_name = seaname

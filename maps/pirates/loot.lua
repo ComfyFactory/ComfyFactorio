@@ -23,7 +23,6 @@ Public.buried_treasure_loot_data_raw = {
 	{150, 0, 1, false, 'crude-oil-barrel', 25, 45},
 	{70, 0, 1, false, 'effectivity-module-3', 3, 4},
 	{70, 0, 1, false, 'speed-module-3', 3, 4},
-	{10, 0, 1, false, 'productivity-module-2', 2, 2}, --3s are banned because of game mech
 	{70, 0, 1, false, 'plastic-bar', 40, 70},
 	{60, 0, 1, false, 'chemical-science-pack', 12, 24},
 	{70, 0, 1, false, 'assembling-machine-3', 2, 2},
@@ -117,8 +116,7 @@ Public.chest_loot_data_raw = {
 	{5, -1, 1, true, 'effectivity-module', 1, 3},
 	{3, 0, 1, true, 'effectivity-module-2', 1, 3},
 	{1, 0, 2, true, 'effectivity-module-3', 1, 1},
-	{3, 0, 1, false, 'productivity-module', 1, 1}, --not many of these, merely to make them availabile for future features
-
+	
 	{0.2, 0.2, 2, true, 'car', 1, 1},
 	{0.01, 0.2, 2, true, 'tank', 1, 1},
 	{4, 0, 0.1, false, 'light-armor', 1, 1},
@@ -420,7 +418,6 @@ Public.maze_treasure_data_raw = {
 
 	{1, 0, 0.8, false, 'speed-module-3', 2, 2},
 	{1, 0, 0.8, false, 'effectivity-module-3', 3, 3},
-	{0.5, 0, 1, false, 'productivity-module-2', 2, 2}, --3s are banned because of game mech
 
 	{2, 0, 1.5, true, 'production-science-pack', 20, 25},
 	{2, 0, 2, true, 'utility-science-pack', 7, 8},
@@ -492,7 +489,6 @@ Public.dredger_loot_raw = {
 
 	{0.05, 0, 1, false, 'speed-module-3', 1, 2},
 	{0.05, 0, 1, false, 'effectivity-module-3', 1, 2},
-	{0.05, 0, 1, false, 'productivity-module-2', 1, 2}, --3s are banned because of game mech
 
 	{0.1, 0, 1, false, 'rocket', 1, 3},
 	{0.01, 0, 1, false, 'explosive-rocket', 1, 2},

@@ -160,8 +160,6 @@ end
 
 
 
-
-
 function Public.update_EEIs(boat)
 	local EEI_stage = boat.EEI_stage
 
@@ -175,10 +173,17 @@ function Public.update_EEIs(boat)
 	boat.EEIpower_production = Balance.starting_boatEEIpower_production_MW() * 1000000 / 60 * multiplier
 	boat.EEIelectric_buffer_size = Balance.starting_boatEEIelectric_buffer_size_MJ() * 1000000 * multiplier
 
+	local disable_EEIs = (boat.state == Public.enum_state.ATSEA_WAITING_TO_SAIL)
+	
 	for _, e in pairs(boat.EEIs) do
 		if e and e.valid then
-			e.power_production = boat.EEIpower_production
-			e.electric_buffer_size = boat.EEIelectric_buffer_size
+			if disable_EEIs then
+				e.power_production = 0
+				e.electric_buffer_size = 0
+			else
+				e.power_production = boat.EEIpower_production
+				e.electric_buffer_size = boat.EEIelectric_buffer_size
+			end
 		end
 	end
 

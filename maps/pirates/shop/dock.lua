@@ -51,7 +51,6 @@ Public.market_permanent_offers = {
 	{price = {{'coin', 3600}}, offer = {type = 'give-item', item = 'fast-loader', count = 1}},
 	{price = {{'coin', 6200}}, offer = {type = 'give-item', item = 'beacon', count = 2}},
 	{price = {{'coin', 4200}}, offer = {type = 'give-item', item = 'speed-module-2', count = 2}},
-	{price = {{'coin', 4200}}, offer = {type = 'give-item', item = 'productivity-module', count = 2}},
 	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'explosives', count = 50}},
 	{price = {{'coin', 30000}}, offer = {type = 'give-item', item = 'artillery-targeting-remote', count = 1}},
 }

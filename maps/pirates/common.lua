@@ -1690,7 +1690,9 @@ function Public.get_item_blacklist(tier)
     -- blacklist['cannon-shell'] = true
     -- blacklist['explosive-cannon-shell'] = true
     -- blacklist['speed-module-3'] = true
-    -- blacklist['productivity-module-3'] = true
+    blacklist['productivity-module'] = true
+    blacklist['productivity-module-2'] = true
+    blacklist['productivity-module-3'] = true
     -- blacklist['effectivity-module-3'] = true
     -- blacklist['space-science-pack'] = true
     -- blacklist['rocket-control-unit'] = true
@@ -1708,7 +1710,7 @@ function Public.get_item_blacklist(tier)
     blacklist['loader'] = true
     blacklist['fast-loader'] = true
     blacklist['express-loader'] = true
-    -- blacklist['land-mine'] = true
+    blacklist['land-mine'] = true
     blacklist['wood'] = true -- too easy to acquire
 
     blacklist['speed-module-2'] = true

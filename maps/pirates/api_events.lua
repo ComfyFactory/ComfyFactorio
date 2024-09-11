@@ -1502,7 +1502,6 @@ local function event_on_player_joined_game(event)
 
 	if _DEBUG then
 		game.print('Debug mode on. Use /go to get started, /1 /4 /32 etc to change game speed.')
-		game.print('Current version: ' .. CoreData.version_string)
 	end
 
 	local crew_to_put_back_in = nil
@@ -2297,6 +2296,7 @@ local function event_on_gui_opened(event)
 end
 
 
+
 local event = require 'utils.event'
 event.add(defines.events.on_built_entity, event_on_built_entity)
 event.add(defines.events.on_entity_damaged, event_on_entity_damaged)
@@ -2319,5 +2319,4 @@ event.add(defines.events.on_market_item_purchased, event_on_market_item_purchase
 event.add(defines.events.on_player_respawned, event_on_player_respawned)
 event.add(defines.events.on_entity_spawned, event_on_entity_spawned)
 event.add(defines.events.on_gui_opened, event_on_gui_opened)
-
 return Public

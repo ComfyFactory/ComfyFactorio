@@ -570,7 +570,7 @@ function Public.full_update(player)
 
 			local extraCrewText = ''
 			if mem.run_is_protected and mem.run_is_private then
-				extraCrewText = ' (private, protected)'
+				extraCrewText = ' (private & protected)'
 			elseif mem.run_is_private then
 				extraCrewText = ' (private)'
 			elseif mem.run_is_protected then
