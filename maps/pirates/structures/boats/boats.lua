@@ -36,6 +36,7 @@ local enum_state = {
 		ATSEA_SAILING = 'at_sea',
 		ATSEA_LOADING_MAP = 'waiting_for_load',
 		ATSEA_WAITING_TO_SAIL = 'waiting_for_sail',
+		ATSEA_VICTORIOUS = 'waiting_for_sail',
 		DOCKED = 'docked',
 }
 Public.enum_state = enum_state
@@ -1494,6 +1495,7 @@ function Public.is_boat_at_sea()
 		(
 			boat.state == Public.enum_state.ATSEA_SAILING or
 			boat.state == Public.enum_state.ATSEA_WAITING_TO_SAIL or
+			boat.state == Public.enum_state.ATSEA_VICTORIOUS or
 			boat.state == Public.enum_state.ATSEA_LOADING_MAP
 		)
 	then

@@ -172,7 +172,7 @@ function Public.try_win()
 
 		game.play_sound{path='utility/game_won', volume_modifier=0.9}
 
-		memory.boat.state = Boats.enum_state.ATSEA_WAITING_TO_SAIL
+		memory.boat.state = Boats.enum_state.ATSEA_VICTORIOUS
 		memory.victory_continue_reminder = game.tick + 60*14
 		memory.victory_continue_message = true
 	end

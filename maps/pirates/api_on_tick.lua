@@ -100,8 +100,7 @@ end
 function Public.apply_restrictions_to_machines(tickinterval)
 	local memory = Memory.get_crew_memory()
 
-	if Common.activecrewcount() == 0 and not (memory.force_toggle_machine_states) then return end
-	memory.force_toggle_machine_states = false
+	if Common.activecrewcount() == 0 then return end
 
 	local boat = memory.boat
 	local surfaces_to_check = {}
@@ -135,7 +134,7 @@ function Public.apply_restrictions_to_machines(tickinterval)
 			force = memory.force_name
 		}
 
-		local disable_crafters = boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL
+		local disable_crafters = boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL or boat.state == Boats.enum_state.ATSEA_VICTORIOUS
 
 		for _, machine in ipairs(crafters) do
 			if machine and machine.valid then
@@ -286,7 +285,7 @@ function Public.victory_continue_reminder()
 
 	if memory.victory_continue_reminder and game.tick >= memory.victory_continue_reminder then
 		memory.victory_continue_reminder = nil
-		if memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL then
+		if memory.boat.state == Boats.enum_state.ATSEA_VICTORIOUS then
 			Common.notify_force(memory.force, {'pirates.victory_continue_reminder'}, CoreData.colors.notify_victory)
 		end
 	end

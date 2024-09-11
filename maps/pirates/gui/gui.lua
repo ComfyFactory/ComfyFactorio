@@ -529,7 +529,7 @@ function Public.process_etaframe_update(player, flow1, bools)
 
 	local flow2
 
-	if bools.cost_bool or bools.atsea_loading_bool or bools.atsea_waiting_bool or bools.eta_bool or bools.retreating_bool or bools.leave_anytime_bool then
+	if bools.cost_bool or bools.atsea_loading_bool or bools.atsea_waiting_bool or bools.atsea_victorious_bool or bools.eta_bool or bools.retreating_bool or bools.leave_anytime_bool then
 		flow1.visible = true
 
 		---@type string|table
@@ -595,6 +595,14 @@ function Public.process_etaframe_update(player, flow1, bools)
 			tooltip = {'pirates.atsea_waiting_tooltip'}
 
 			flow2.etaframe_label_1.caption = {'pirates.gui_etaframe_atsea_waiting'}
+
+		elseif bools.atsea_victorious_bool then
+			flow2.etaframe_label_1.visible = true
+			flow2.etaframe_label_2.visible = false
+
+			tooltip = {'pirates.atsea_victorious_tooltip'}
+
+			flow2.etaframe_label_1.caption = {'pirates.gui_etaframe_atsea_victorious'}
 
 		elseif bools.leave_anytime_bool then
 			flow2.etaframe_label_1.visible = true
@@ -1257,6 +1265,18 @@ local function on_gui_click(event)
 
 				Progression.progress_to_destination(destination_index)
 				memory.loadingticks = 0
+			end
+
+		elseif memory.boat.state == Boats.enum_state.ATSEA_VICTORIOUS then
+			if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
+				memory.boat.state = Boats.enum_state.ATSEA_SAILING
+
+				local force = memory.force
+				if not (force and force.valid) then return end
+				if memory.victory_continue_message then
+					memory.victory_continue_message = false
+					Common.notify_force(force, {'pirates.crew_continue_on_freeplay'}, CoreData.colors.notify_victory)
+				end
 			end
 		end
 

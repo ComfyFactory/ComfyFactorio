@@ -567,14 +567,13 @@ function Public.go_from_currentdestination_to_sea()
 
 	Sea.ensure_sea_surface()
 	local seaname = memory.sea_name
-
 	local boat = memory.boat
 
-	local new_boatposition = Utils.snap_coordinates_for_rails({x = Boats.get_scope(memory.boat).Data.width / 2, y = 0})
+	local new_boatposition = Utils.snap_coordinates_for_rails({x = Boats.get_scope(boat).Data.width / 2, y = 0})
 
 	Boats.teleport_boat(boat, seaname, new_boatposition, CoreData.static_boat_floor, 'water')
 
-	if memory.overworldx == 0 and memory.boat then
+	if memory.overworldx == 0 and boat then
 
 		local difficulty_name = CoreData.get_difficulty_option_informal_name_from_value(memory.difficulty)
 		if difficulty_name == 'nightmare' then
@@ -600,13 +599,6 @@ function Public.go_from_currentdestination_to_sea()
 	boat.position = new_boatposition
 	boat.surface_name = seaname
 	boat.fish_caught_while_at_sea = 0 -- how many times a fish was caught, rather than amount of fish caught in total
-
-	local force = memory.force
-	if not (force and force.valid) then return end
-	if memory.victory_continue_message then
-		memory.victory_continue_message = false
-		Common.notify_force(force, {'pirates.crew_continue_on_freeplay'}, CoreData.colors.notify_victory)
-	end
 
 	memory.enemy_force.reset_evolution()
 
