@@ -52,7 +52,7 @@ local function check_admin(cmd)
 		if player ~= nil then
 			p = player.print
 			--@temporary
-			if player.name == "Piratux" then
+			if player.name == "Piratux" or player.name == "thesixthroc" then
 				return true
 			end
 			if not player.admin then
@@ -1165,12 +1165,5 @@ if _DEBUG then
 			player.insert{name='burner-inserter', count = 50}
 			player.insert{name='accumulator', count = 50}
 		end
-	end)
-
-	commands.add_command(
-	'piratux_test',
-	'is a dev command of piratux.',
-	function(cmd)
-		game.print("hello there")
 	end)
 end

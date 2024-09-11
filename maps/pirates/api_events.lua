@@ -166,7 +166,7 @@ local function handle_damage_to_silo(event)
 			destination.dynamic_data.rocketsilos[1].valid and
 			entity == Common.current_destination().dynamic_data.rocketsilos[1]
 		then
-			if string.sub(event.cause.force.name, 1, 4) ~= 'crew' then -- @Piratux: wonder why this is needed
+			if string.sub(event.cause.force.name, 1, 4) ~= 'crew' then -- may as well check this
 
 				-- play alert sound for all crew members
 				if memory.seconds_until_alert_sound_can_be_played_again <= 0 then
@@ -423,7 +423,7 @@ local function handle_damage_to_players(event)
 
 
 	-- deal with damage reduction on lethal damage for players
-	-- Piratux wrote this code — it tracks player health (except passive regen), and intervenes on a lethal damage event, so it should work most of the time.
+	-- Piratux wrote this — it tracks player health (except passive regen), and intervenes on a lethal damage event, should work most of the time.
 	local global_memory = Memory.get_global_memory()
 
 	if damage_multiplier < 1 and event.final_health <= 0 then
