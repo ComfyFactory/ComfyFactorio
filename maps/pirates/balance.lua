@@ -90,7 +90,6 @@ Public.biter_boats_start_arrive_x = 40 * 5
 Public.need_resources_to_undock_x = 40 * 20
 Public.biters_spawned_on_elite_biter_death = 4
 Public.walkways_frozen_pool_damage = 12
-Public.at_sea_waiting_crafters_disable_time_seconds = 60 * 5
 
 function Public.starting_boatEEIpower_production_MW()
 	-- return 3 * Math.sloped(Common.capacity_scale(), 1/2) / 2 --/2 as we have 2
@@ -172,25 +171,28 @@ function Public.game_slowness_scale()
 end
 
 
--- In seconds
-function Public.max_time_on_island_formula() --always >0  --tuned
+function Public.max_time_on_island_formula_seconds() --always >0  --tuned
 	-- return 60 * (
 	-- 		-- (32 + 2.2 * (Common.overworldx()/40)^(1/3))
 	-- 		(33 + 0.2 * (Common.overworldx()/40)^(1/3)) --based on observing x=2000, lets try killing the extra time
 	-- ) * Public.game_slowness_scale()
 
-	local minimum_mins_on_island = 30
-	return Math.ceil(60 * minimum_mins_on_island * Public.game_slowness_scale())
+	local minimum_mins = 30
+	return Math.ceil(60 * minimum_mins * Public.game_slowness_scale())
 end
 
--- In seconds
-function Public.max_time_on_island(island_subtype)
+function Public.max_time_crafting_while_waiting_seconds()
+	local minimum_mins = 3
+	return Math.ceil(60 * minimum_mins * Public.game_slowness_scale())
+end
+
+function Public.max_time_on_island_seconds(island_subtype)
 	local x = Common.overworldx()
 	if x == 0 then
 	-- if Common.overworldx() == 0 or ((Common.overworldx()/40) > 20 and (Common.overworldx()/40) < 25) then
 		return -1
 	else
-		local time = Public.max_time_on_island_formula()
+		local time = Public.max_time_on_island_formula_seconds()
 
 		if x == 40 then -- it's important for this island to be somewhat chill, so that it's not such a shock to go here from the first lobby chill island
 			time = time * 1.2
@@ -208,7 +210,7 @@ end
 Public.expected_time_fraction = 0.7
 
 function Public.expected_time_on_island() --always >0
-	return Public.expected_time_fraction * Public.max_time_on_island_formula()
+	return Public.expected_time_fraction * Public.max_time_on_island_formula_seconds()
 end
 
 function Public.fuel_depletion_rate_static()
@@ -243,7 +245,7 @@ function Public.silo_total_pollution()
 end
 
 function Public.boat_passive_pollution_per_minute(time)
-	local T = Public.max_time_on_island_formula()
+	local T = Public.max_time_on_island_formula_seconds()
 	if (Common.overworldx()/40) > 25 then T = T * 0.9 end
 
 	local boost
@@ -350,7 +352,7 @@ function Public.evolution_per_nest_kill() --it's important to have evo go up wit
 
 		local time = destination.dynamic_data.timer
 		-- local time_to_jump_to = Public.expected_time_on_island() * ((1/Public.expected_time_fraction)^(2/3))
-		local time_to_jump_to = Public.max_time_on_island_formula()
+		local time_to_jump_to = Public.max_time_on_island_formula_seconds()
 		if time > time_to_jump_to then return base_evo_jump
 		else
 			-- evo it 'would have' contributed:

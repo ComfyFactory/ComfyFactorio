@@ -101,12 +101,20 @@ function Public.apply_restrictions_to_machines(tickinterval)
 	local memory = Memory.get_crew_memory()
 	local boat = memory.boat
 
-	-- Skip redundant checks if there's nobody on the ship:
-	local disable_crafters = boat.state == Boats.enum_state.ATSEA_VICTORIOUS or (
-		boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL and game.tick >= boat.at_sea_waiting_game_tick + Balance.at_sea_waiting_crafters_disable_time_seconds * 60
-	)
-	if Common.activecrewcount() == 0 and disable_crafters == memory.disable_crafters_last_seen then return end
-	memory.disable_crafters_last_seen = disable_crafters
+	if boat.state == Boats.enum_state.ATSEA_VICTORIOUS or Boats.enum_state.ATSEA_WAITING_TO_SAIL then
+		if boat.state == Boats.enum_state.ATSEA_VICTORIOUS then
+			memory.crafted_disabled = true
+		else
+			if not memory.crafters_disabled and (
+				game.tick > boat.at_sea_waiting_game_tick + Balance.max_time_crafting_while_waiting_seconds() * 60
+			) then
+				memory.crafters_disabled = true
+				Common.parrot_speak(memory.force, {'pirates.crafters_disabled'})
+			end
+		end
+	else
+		memory.crafters_disabled = false
+	end
 
 	local surfaces_to_check = {}
 
@@ -141,7 +149,7 @@ function Public.apply_restrictions_to_machines(tickinterval)
 
 		for _, machine in ipairs(crafters) do
 			if machine and machine.valid then
-				machine.active = not disable_crafters
+				machine.active = not memory.crafters_disabled
 			end
 		end
 

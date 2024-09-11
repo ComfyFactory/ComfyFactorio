@@ -234,7 +234,7 @@ function Public.destination_on_collide(destination)
 			-- 	end
 			-- end
 
-			local max_time = Balance.max_time_on_island(destination.subtype)
+			local max_time = Balance.max_time_on_island_seconds(destination.subtype)
 			local arrival_rate = Balance.biter_boat_average_arrival_rate()
 			local boat_count = Math.floor(max_time / arrival_rate) - 2 -- avoid spawning biter boats at very last seconds
 
@@ -285,7 +285,7 @@ function Public.destination_on_arrival(destination)
 
 		destination.dynamic_data.rocketsiloenergyneeded = Balance.silo_energy_needed_MJ() * 1000000
 
-		destination.dynamic_data.time_remaining = Balance.max_time_on_island(destination.subtype)
+		destination.dynamic_data.time_remaining = Balance.max_time_on_island_seconds(destination.subtype)
 
 		if destination.subtype ~= IslandEnum.enum.FIRST and destination.subtype ~= IslandEnum.enum.RADIOACTIVE and destination.destination_index ~= 2 then
 			-- if not destination.overworld_position.x ~= Common.first_cost_to_leave_macrox * 40 then
