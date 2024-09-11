@@ -226,7 +226,7 @@ function Public.class_renderings(tickinterval)
 								color = {r = 1, g = 1, b = 1},
 								sprite = 'utility/light_medium',
 								scale = 10,
-								intensity = 1,
+								intensity = 0.8,
 								minimum_darkness = 0,
 								oriented = true,
 								visible = true,
