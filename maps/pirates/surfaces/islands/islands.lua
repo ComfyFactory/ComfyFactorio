@@ -260,8 +260,9 @@ local silo_chart_tag = Token.register(
 
 		Memory.set_working_id(data.crew_id)
 		local memory = Memory.get_crew_memory()
-
 		if memory.game_lost then return end
+		if not Common.is_id_valid(data.crew_id) then return end --check if crew disbanded
+		
 		local destination = Common.current_destination()
 		local force = memory.force
 

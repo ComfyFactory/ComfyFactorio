@@ -330,6 +330,7 @@ end
 local crowsnest_delayed = Token.register(
 	function(data)
 		Memory.set_working_id(data.crew_id)
+		if not Common.is_id_valid(data.crew_id) then return end --check if crew disbanded
 		Public.crowsnest_surface_delayed_init()
 	end
 )
