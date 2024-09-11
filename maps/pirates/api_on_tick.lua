@@ -1333,6 +1333,7 @@ end
 
 function Public.minimap_jam(tickinterval)
 	local memory = Memory.get_crew_memory()
+	local boat = memory.boat
 
 	if memory.overworldx == Common.maze_minimap_jam_league and boat and boat.state == Boats.enum_state.LANDED then
 		local destination = Common.current_destination()
