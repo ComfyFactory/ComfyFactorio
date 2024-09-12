@@ -33,7 +33,7 @@ local Upgrades = require 'maps.pirates.boat_upgrades'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
 local ShopDock = require 'maps.pirates.shop.dock'
-local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
+-- local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 
 
 function Public.get_fuel_depletion_rate_once_per_second()
