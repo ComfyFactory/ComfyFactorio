@@ -26,9 +26,8 @@ function Public.noises(args)
 	return ret
 end
 
-
 local function maze_wall(args)
-	args.tiles[#args.tiles + 1] = {name = 'grass-2', position = args.p}
+	args.tiles[#args.tiles + 1] = { name = 'grass-2', position = args.p }
 	if Math.random(1, 2) == 1 then
 		args.entities[#args.entities + 1] = IslandsCommon.random_rock_1(args.p)
 	else
@@ -41,37 +40,37 @@ end
 local maze_scale = 24
 
 local steps_orthogonal = {
-    {x = 0, y = -maze_scale},
-    {x = -maze_scale, y = 0},
-    {x = maze_scale, y = 0},
-    {x = 0, y = maze_scale}
+	{ x = 0,           y = -maze_scale },
+	{ x = -maze_scale, y = 0 },
+	{ x = maze_scale,  y = 0 },
+	{ x = 0,           y = maze_scale }
 }
 local steps_diagonal = {
-    {diagonal = {x = -maze_scale, y = maze_scale}, connection_1 = {x = -maze_scale, y = 0}, connection_2 = {x = 0, y = maze_scale}},
-    {diagonal = {x = maze_scale, y = -maze_scale}, connection_1 = {x = maze_scale, y = 0}, connection_2 = {x = 0, y = -maze_scale}},
-    {diagonal = {x = maze_scale, y = maze_scale}, connection_1 = {x = maze_scale, y = 0}, connection_2 = {x = 0, y = maze_scale}},
-    {diagonal = {x = -maze_scale, y = -maze_scale}, connection_1 = {x = -maze_scale, y = 0}, connection_2 = {x = 0, y = -maze_scale}}
+	{ diagonal = { x = -maze_scale, y = maze_scale }, connection_1 = { x = -maze_scale, y = 0 }, connection_2 = { x = 0, y = maze_scale } },
+	{ diagonal = { x = maze_scale, y = -maze_scale }, connection_1 = { x = maze_scale, y = 0 }, connection_2 = { x = 0, y = -maze_scale } },
+	{ diagonal = { x = maze_scale, y = maze_scale }, connection_1 = { x = maze_scale, y = 0 }, connection_2 = { x = 0, y = maze_scale } },
+	{ diagonal = { x = -maze_scale, y = -maze_scale }, connection_1 = { x = -maze_scale, y = 0 }, connection_2 = { x = 0, y = -maze_scale } }
 }
 
 local function get_path_connections_count(lab_cells, p)
-    local connections = 0
-    for _, m in pairs(steps_orthogonal) do
-        if lab_cells[tostring(p.x + m.x) .. '_' .. tostring(p.y + m.y)] then
-            connections = connections + 1
-        end
-    end
-    return connections
+	local connections = 0
+	for _, m in pairs(steps_orthogonal) do
+		if lab_cells[tostring(p.x + m.x) .. '_' .. tostring(p.y + m.y)] then
+			connections = connections + 1
+		end
+	end
+	return connections
 end
 
 local function labyrinth_determine_walkable_cell(args)
 	-- local noises = Public.noises(args)
-    -- local mazenoise = noises.maze()
-	local reduced_p = {x = args.true_p.x - (args.true_p.x % maze_scale), y = args.true_p.y - (args.true_p.y % maze_scale)}
+	-- local mazenoise = noises.maze()
+	local reduced_p = { x = args.true_p.x - (args.true_p.x % maze_scale), y = args.true_p.y - (args.true_p.y % maze_scale) }
 
 	if not args.other_map_generation_data.labyrinth_cells then
 		args.other_map_generation_data.labyrinth_cells = {}
 	end
-    local lab_cells = args.other_map_generation_data.labyrinth_cells
+	local lab_cells = args.other_map_generation_data.labyrinth_cells
 
 	if lab_cells[tostring(reduced_p.x) .. '_' .. tostring(reduced_p.y)] == true then
 		return true
@@ -95,7 +94,7 @@ local function labyrinth_determine_walkable_cell(args)
 		if Math.random(4) == 1 then max_connections = 3 end
 
 		for _, m in pairs(steps_orthogonal) do
-			if get_path_connections_count(lab_cells, {x = reduced_p.x + m.x, y = reduced_p.y + m.y}) >= max_connections then
+			if get_path_connections_count(lab_cells, { x = reduced_p.x + m.x, y = reduced_p.y + m.y }) >= max_connections then
 				return false
 			end
 		end
@@ -152,12 +151,12 @@ local free_labyrinth_cell_raffle = {
 }
 
 local function free_labyrinth_cell_type(args)
-	local reduced_p = {x = args.true_p.x - (args.true_p.x % maze_scale), y = args.true_p.y - (args.true_p.y % maze_scale)}
+	local reduced_p = { x = args.true_p.x - (args.true_p.x % maze_scale), y = args.true_p.y - (args.true_p.y % maze_scale) }
 
 	if not args.other_map_generation_data.free_labyrinth_cell_types then
 		args.other_map_generation_data.free_labyrinth_cell_types = {}
 	end
-    local cell_types = args.other_map_generation_data.free_labyrinth_cell_types
+	local cell_types = args.other_map_generation_data.free_labyrinth_cell_types
 
 	local type
 	if cell_types[tostring(reduced_p.x) .. '_' .. tostring(reduced_p.y)] then
@@ -176,13 +175,13 @@ local function free_labyrinth_cell_contents(args)
 	-- local memory = Memory.get_crew_memory()
 
 	-- local noises = Public.noises(args)
-    -- local mazenoise = noises.maze()
-	local relative_p = {x = args.true_p.x % maze_scale, y = args.true_p.y % maze_scale}
+	-- local mazenoise = noises.maze()
+	local relative_p = { x = args.true_p.x % maze_scale, y = args.true_p.y % maze_scale }
 	-- local reduced_p = {x = args.true_p.x - relative_p.x, y = args.true_p.y - relative_p.y}
 
 	local type = free_labyrinth_cell_type(args)
 
-	if relative_p.x >= maze_scale/2-0.5 and relative_p.x < maze_scale/2+0.5 and relative_p.y >= maze_scale/2-0.5 and relative_p.y < maze_scale/2+0.5 then --should fire just once, and only if the center is included
+	if relative_p.x >= maze_scale / 2 - 0.5 and relative_p.x < maze_scale / 2 + 0.5 and relative_p.y >= maze_scale / 2 - 0.5 and relative_p.y < maze_scale / 2 + 0.5 then --should fire just once, and only if the center is included
 		-- terrain_entity_at_relative_position(args, {name = 'lab', rel_p = {x = 15, y = 15}, force = memory.ancient_friendly_force})
 		if type == 'empty' then
 			return nil
@@ -203,30 +202,30 @@ function Public.terrain(args)
 	if IslandsCommon.place_water_tile(args) then return end
 
 	if noises.height(p) < 0 then
-		args.tiles[#args.tiles + 1] = {name = 'water', position = args.p}
+		args.tiles[#args.tiles + 1] = { name = 'water', position = args.p }
 		return
 	end
 
 	if args.iconized_generation then
 		maze_wall(args)
 	else
-		if noises.height(p) < 0 + Math.max(0, 0.3 - 2*noises.farness(p)) then
+		if noises.height(p) < 0 + Math.max(0, 0.3 - 2 * noises.farness(p)) then
 			if args.true_p.x < 0 and Math.abs(args.true_p.y) < 3 then
-				args.tiles[#args.tiles + 1] = {name = 'stone-path', position = args.p}
+				args.tiles[#args.tiles + 1] = { name = 'stone-path', position = args.p }
 			else
-				args.tiles[#args.tiles + 1] = {name = 'sand-1', position = args.p}
+				args.tiles[#args.tiles + 1] = { name = 'sand-1', position = args.p }
 			end
 			if Math.random(500) == 1 then
-				args.specials[#args.specials + 1] = {name = 'buried-treasure', position = args.p}
+				args.specials[#args.specials + 1] = { name = 'buried-treasure', position = args.p }
 			end
-		elseif noises.height(p) < 0.1 + Math.max(0, 0.3 - 2*noises.farness(p)/2) then
+		elseif noises.height(p) < 0.1 + Math.max(0, 0.3 - 2 * noises.farness(p) / 2) then
 			if args.true_p.x < 0 and Math.abs(args.true_p.y) < 3 then
-				args.tiles[#args.tiles + 1] = {name = 'stone-path', position = args.p}
+				args.tiles[#args.tiles + 1] = { name = 'stone-path', position = args.p }
 			else
 				maze_wall(args)
 			end
 		else -- maze itself
-			args.tiles[#args.tiles + 1] = {name = 'grass-1', position = args.p}
+			args.tiles[#args.tiles + 1] = { name = 'grass-1', position = args.p }
 
 			if labyrinth_determine_walkable_cell(args) then
 				free_labyrinth_cell_contents(args)
@@ -237,23 +236,20 @@ function Public.terrain(args)
 	end
 end
 
-
 function Public.chunk_structures(args)
-
-	local spec = function(p)
-		local noises = Public.noises{p = p, noise_generator = args.noise_generator, static_params = args.static_params, seed = args.seed}
+	local spec = function (p)
+		local noises = Public.noises { p = p, noise_generator = args.noise_generator, static_params = args.static_params, seed = args.seed }
 
 		return {
 			placeable = noises.farness(p) > 0.66,
 			-- spawners_indestructible = noises.farness(p) > 0.7,
 			spawners_indestructible = false,
-			density_perchunk = 150 * Math.slopefromto(noises.farness(p), 0.3, 0.9)^2 * args.biter_base_density_scale,
+			density_perchunk = 150 * Math.slopefromto(noises.farness(p), 0.3, 0.9) ^ 2 * args.biter_base_density_scale,
 		}
 	end
 
 	IslandsCommon.enemies_1(args, spec)
 end
-
 
 -- function Public.break_rock(surface, p, entity_name)
 -- 	-- return Ores.try_ore_spawn(surface, p, entity_name)
@@ -263,6 +259,5 @@ end
 function Public.generate_silo_setup_position(points_to_avoid)
 	return Hunt.silo_setup_position(points_to_avoid)
 end
-
 
 return Public

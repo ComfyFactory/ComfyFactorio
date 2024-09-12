@@ -7,7 +7,7 @@
 
 local Public = {}
 
-Public.display_names = {{'pirates.location_displayname_first_1'}}
+Public.display_names = { { 'pirates.location_displayname_first_1' } }
 
 Public.terraingen_frame_width = 325
 Public.terraingen_frame_height = 325
@@ -37,7 +37,7 @@ Public.noiseparams = {
 		type = 'simplex_2d',
 		normalised = false,
 		params = {
-			{wavelength = 0, amplitude = rscale * 1},
+			{ wavelength = 0, amplitude = rscale * 1 },
 			-- {wavelength = 2.5, amplitude = rscale * 0.1},
 		},
 	},
@@ -47,7 +47,7 @@ Public.noiseparams = {
 		normalised = false,
 		params = {
 			-- {upperscale = 1000, amplitude = hscale * 200},
-			{upperscale = 600, amplitude = 0.15},
+			{ upperscale = 600, amplitude = 0.15 },
 		},
 	},
 
@@ -55,7 +55,7 @@ Public.noiseparams = {
 		type = 'forest1',
 		normalised = true,
 		params = {
-			{upperscale = 70, amplitude = 1},
+			{ upperscale = 70, amplitude = 1 },
 		},
 	},
 
@@ -63,7 +63,7 @@ Public.noiseparams = {
 		type = 'forest1',
 		normalised = true,
 		params = {
-			{upperscale = 120, amplitude = 1, seedfactor = 2},
+			{ upperscale = 120, amplitude = 1, seedfactor = 2 },
 		},
 	},
 }

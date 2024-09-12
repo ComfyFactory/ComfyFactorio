@@ -28,7 +28,7 @@ Public[enum.FURNACE1] = require 'maps.pirates.structures.quest_structures.furnac
 
 
 function Public.choose_quest_structure_type()
-    local destination = Common.current_destination()
+	local destination = Common.current_destination()
 	local subtype = destination.subtype
 
 	if subtype == IslandEnum.enum.WALKWAYS then
@@ -47,14 +47,11 @@ function Public.choose_quest_structure_type()
 	end
 end
 
-
-
 function Public.initialise_cached_quest_structure(position, quest_structure_type)
-    local destination = Common.current_destination()
+	local destination = Common.current_destination()
 	local surface = game.surfaces[destination.surface_name]
 
 	if quest_structure_type == enum.MARKET1 then
-
 		local structurePath = Public[enum.MARKET1]
 		local structureData = structurePath.Data.step1
 
@@ -66,40 +63,40 @@ function Public.initialise_cached_quest_structure(position, quest_structure_type
 		if not destination.dynamic_data.structures_waiting_to_be_placed then
 			destination.dynamic_data.structures_waiting_to_be_placed = {}
 		end
-		destination.dynamic_data.structures_waiting_to_be_placed[#destination.dynamic_data.structures_waiting_to_be_placed + 1] = {data = special, tick = game.tick}
+		destination.dynamic_data.structures_waiting_to_be_placed[#destination.dynamic_data.structures_waiting_to_be_placed + 1] = { data = special, tick = game.tick }
 
-		local rendering1 = rendering.draw_text{
+		local rendering1 = rendering.draw_text {
 			surface = surface,
-			target = {x = position.x + 2.65, y = position.y - 1.3},
+			target = { x = position.x + 2.65, y = position.y - 1.3 },
 			color = CoreData.colors.renderingtext_green,
 			scale = 1.5,
 			font = 'default-game',
 			alignment = 'right',
 		}
-		local rendering2 = rendering.draw_sprite{
+		local rendering2 = rendering.draw_sprite {
 			sprite = 'item/' .. entry_price.name,
 			surface = surface,
-			target = {x = position.x + 3.5, y = position.y - 0.65},
+			target = { x = position.x + 3.5, y = position.y - 0.65 },
 			x_scale = 1.5,
 			y_scale = 1.5
 		}
-		local rendering3 = rendering.draw_text{
+		local rendering3 = rendering.draw_text {
 			surface = surface,
-			target = {x = position.x + 0.5, y = position.y + 1.05},
+			target = { x = position.x + 0.5, y = position.y + 1.05 },
 			color = CoreData.colors.renderingtext_green,
 			scale = 1,
 			font = 'default-game',
 			alignment = 'center',
-			text = {'pirates.quest_structure_market_2'},
+			text = { 'pirates.quest_structure_market_2' },
 		}
-		local rendering4 = rendering.draw_text{
+		local rendering4 = rendering.draw_text {
 			surface = surface,
-			target = {x = position.x + 0.5, y = position.y + 1.7},
+			target = { x = position.x + 0.5, y = position.y + 1.7 },
 			color = CoreData.colors.renderingtext_green,
 			scale = 1,
 			font = 'default-game',
 			alignment = 'center',
-			text = {'pirates.quest_structure_market_3'},
+			text = { 'pirates.quest_structure_market_3' },
 		}
 
 		destination.dynamic_data.quest_structure_data = {
@@ -113,9 +110,7 @@ function Public.initialise_cached_quest_structure(position, quest_structure_type
 			rendering4 = rendering4,
 			completion_counter = 0,
 		}
-
 	elseif quest_structure_type == enum.FURNACE1 then
-
 		local structurePath = Public[enum.FURNACE1]
 		local structureData = structurePath.Data.step1
 
@@ -127,58 +122,58 @@ function Public.initialise_cached_quest_structure(position, quest_structure_type
 		if not destination.dynamic_data.structures_waiting_to_be_placed then
 			destination.dynamic_data.structures_waiting_to_be_placed = {}
 		end
-		destination.dynamic_data.structures_waiting_to_be_placed[#destination.dynamic_data.structures_waiting_to_be_placed + 1] = {data = special, tick = game.tick}
+		destination.dynamic_data.structures_waiting_to_be_placed[#destination.dynamic_data.structures_waiting_to_be_placed + 1] = { data = special, tick = game.tick }
 
-		local rendering0 = rendering.draw_text{
+		local rendering0 = rendering.draw_text {
 			surface = surface,
-			target = {x = position.x + 2.15, y = position.y - 2.35},
+			target = { x = position.x + 2.15, y = position.y - 2.35 },
 			color = CoreData.colors.renderingtext_green,
 			scale = 1.5,
 			font = 'default-game',
 			alignment = 'center',
-			text = {'pirates.quest_structure_furnace_1'},
+			text = { 'pirates.quest_structure_furnace_1' },
 		}
-		local rendering1 = rendering.draw_text{
+		local rendering1 = rendering.draw_text {
 			surface = surface,
-			target = {x = position.x + 2.3, y = position.y - 1.15},
+			target = { x = position.x + 2.3, y = position.y - 1.15 },
 			color = CoreData.colors.renderingtext_green,
 			scale = 1.5,
 			font = 'default-game',
 			alignment = 'right',
 		}
-		local rendering2 = rendering.draw_sprite{
+		local rendering2 = rendering.draw_sprite {
 			sprite = 'item/' .. entry_price.name,
 			surface = surface,
-			target = {x = position.x + 3.15, y = position.y - 0.5},
+			target = { x = position.x + 3.15, y = position.y - 0.5 },
 			x_scale = 1.5,
 			y_scale = 1.5
 		}
-		local rendering3 = rendering.draw_text{
+		local rendering3 = rendering.draw_text {
 			surface = surface,
-			target = {x = position.x + 2.15, y = position.y + 1.7},
+			target = { x = position.x + 2.15, y = position.y + 1.7 },
 			color = CoreData.colors.renderingtext_green,
 			scale = 1,
 			font = 'default-game',
 			alignment = 'center',
-			text = {'pirates.quest_structure_furnace_2'},
+			text = { 'pirates.quest_structure_furnace_2' },
 		}
-		local rendering4 = rendering.draw_text{
+		local rendering4 = rendering.draw_text {
 			surface = surface,
-			target = {x = position.x + 2.15, y = position.y + 2.35},
+			target = { x = position.x + 2.15, y = position.y + 2.35 },
 			color = CoreData.colors.renderingtext_green,
 			scale = 1,
 			font = 'default-game',
 			alignment = 'center',
-			text = {'pirates.quest_structure_furnace_3'},
+			text = { 'pirates.quest_structure_furnace_3' },
 		}
-		local rendering5 = rendering.draw_text{
+		local rendering5 = rendering.draw_text {
 			surface = surface,
-			target = {x = position.x + 2.15, y = position.y + 3.0},
+			target = { x = position.x + 2.15, y = position.y + 3.0 },
 			color = CoreData.colors.renderingtext_green,
 			scale = 1,
 			font = 'default-game',
 			alignment = 'center',
-			text = {'pirates.quest_structure_furnace_4'},
+			text = { 'pirates.quest_structure_furnace_4' },
 		}
 
 		destination.dynamic_data.quest_structure_data = {
@@ -199,37 +194,25 @@ function Public.initialise_cached_quest_structure(position, quest_structure_type
 	log('quest structure position: ' .. position.x .. ', ' .. position.y)
 end
 
-
-
-
 function Public.create_quest_structure_entities(name)
-
 	if name == enum.MARKET1 .. '_step1' then
 		local structurePath = Public[enum.MARKET1]
 		structurePath.create_step1_entities()
-
 	elseif name == enum.MARKET1 .. '_step2' then
 		local structurePath = Public[enum.MARKET1]
 		structurePath.create_step2_entities()
-
 	elseif name == enum.FURNACE1 .. '_step1' then
 		local structurePath = Public[enum.FURNACE1]
 		structurePath.create_step1_entities()
-
 	elseif name == enum.FURNACE1 .. '_step2' then
 		local structurePath = Public[enum.FURNACE1]
 		structurePath.create_step2_entities()
-
 	end
 end
 
-
-
-
-
 function Public.tick_quest_structure_entry_price_check()
 	if Common.activecrewcount() == 0 then return end
-	
+
 	-- function Public.tick_quest_structure_entry_price_check(tickinterval)
 	local memory = Memory.get_crew_memory()
 	if memory.game_lost then return end
@@ -240,7 +223,6 @@ function Public.tick_quest_structure_entry_price_check()
 	if not quest_structure_data then return end
 
 	if quest_structure_data.quest_structure_type == enum.MARKET1 then
-
 		local blue_chest = quest_structure_data.blue_chest
 		local red_chest = quest_structure_data.red_chest
 		if not (blue_chest and blue_chest.valid and red_chest and red_chest.valid) then return end
@@ -258,10 +240,10 @@ function Public.tick_quest_structure_entry_price_check()
 				-- @FIX: power armor loses components, items lose health!
 				-- Clarification: putting items in quest structure input chests, "repairs" them. For ex.: inserting ammo restores full stack (giving slight amount of ammo for free). Inserting broken items, repairs them, etc.
 
-				red_inv.insert({name = k, count = v});
+				red_inv.insert({ name = k, count = v });
 			end
 
-			blue_inv.remove({name = k, count = v});
+			blue_inv.remove({ name = k, count = v });
 		end
 
 		if quest_structure_data.state == 'covered' then
@@ -275,16 +257,14 @@ function Public.tick_quest_structure_entry_price_check()
 				local special = Utils.deepcopy(Public[enum.MARKET1].Data.step2)
 				special.position = quest_structure_data.position
 
-				destination.dynamic_data.structures_waiting_to_be_placed[#destination.dynamic_data.structures_waiting_to_be_placed + 1] = {data = special, tick = game.tick}
+				destination.dynamic_data.structures_waiting_to_be_placed[#destination.dynamic_data.structures_waiting_to_be_placed + 1] = { data = special, tick = game.tick }
 			else
 				if quest_structure_data.rendering1 then
-					rendering.set_text(quest_structure_data.rendering1, {'pirates.quest_structure_market_1', entry_price.count - quest_structure_data.completion_counter})
+					rendering.set_text(quest_structure_data.rendering1, { 'pirates.quest_structure_market_1', entry_price.count - quest_structure_data.completion_counter })
 				end
 			end
 		end
-
 	elseif quest_structure_data.quest_structure_type == enum.FURNACE1 then
-
 		local blue_chests = quest_structure_data.blue_chests
 		local red_chests = quest_structure_data.red_chests
 		if not (blue_chests and blue_chests[1] and blue_chests[1].valid and blue_chests[2] and blue_chests[2].valid and blue_chests[3] and blue_chests[3].valid and red_chests and red_chests[1] and red_chests[1].valid and red_chests[2] and red_chests[2].valid and red_chests[3] and red_chests[3].valid) then return end
@@ -307,9 +287,8 @@ function Public.tick_quest_structure_entry_price_check()
 		local entry_price = quest_structure_data.entry_price --fields {name, count, batchSize, batchRawMaterials}
 
 		if quest_structure_data.state == 'covered' then
-
 			local removed = 0
-			local available = {0, 0, 0}
+			local available = { 0, 0, 0 }
 
 			for i = 1, 3 do
 				local contents = blue_contents[i]
@@ -317,8 +296,8 @@ function Public.tick_quest_structure_entry_price_check()
 					if k == entry_price.name then
 						available[i] = available[i] + v
 					else
-						blue_invs[i].remove({name = k, count = v});
-						red_invs[i].insert({name = k, count = v});
+						blue_invs[i].remove({ name = k, count = v });
+						red_invs[i].insert({ name = k, count = v });
 					end
 				end
 			end
@@ -326,24 +305,24 @@ function Public.tick_quest_structure_entry_price_check()
 			for i = 1, 3 do
 				local to_remove_1 = Math.min(available[i] - (available[i] % entry_price.batchSize), entry_price.count - quest_structure_data.completion_counter)
 				if to_remove_1 > 0 then
-					blue_invs[i].remove({name = entry_price.name, count = to_remove_1});
+					blue_invs[i].remove({ name = entry_price.name, count = to_remove_1 });
 					available[i] = available[i] - to_remove_1
 					removed = removed + to_remove_1
 				end
 
-				if (available[i] + (available[i-1] or 0) + (available[i-2] or 0)) >= entry_price.batchSize then --remove one more batch
+				if (available[i] + (available[i - 1] or 0) + (available[i - 2] or 0)) >= entry_price.batchSize then --remove one more batch
 					local counter = entry_price.batchSize
-					if available[i-1] and available[i-1] > 0 then
-						blue_invs[i-1].remove({name = entry_price.name, count = available[i-1]});
-						available[i-1] = 0
-						counter = counter - available[i-1]
+					if available[i - 1] and available[i - 1] > 0 then
+						blue_invs[i - 1].remove({ name = entry_price.name, count = available[i - 1] });
+						available[i - 1] = 0
+						counter = counter - available[i - 1]
 					end
-					if available[i-2] and available[i-2] > 0 then
-						blue_invs[i-2].remove({name = entry_price.name, count = available[i-2]});
-						available[i-2] = 0
-						counter = counter - available[i-2]
+					if available[i - 2] and available[i - 2] > 0 then
+						blue_invs[i - 2].remove({ name = entry_price.name, count = available[i - 2] });
+						available[i - 2] = 0
+						counter = counter - available[i - 2]
 					end
-					blue_invs[i].remove({name = entry_price.name, count = counter});
+					blue_invs[i].remove({ name = entry_price.name, count = counter });
 
 					removed = removed + entry_price.batchSize
 				end
@@ -353,7 +332,7 @@ function Public.tick_quest_structure_entry_price_check()
 				quest_structure_data.completion_counter = quest_structure_data.completion_counter + removed
 				local count = 1
 				for k, v in pairs(entry_price.batchRawMaterials) do
-					red_invs[count].insert({name = k, count = v * removed / entry_price.batchSize});
+					red_invs[count].insert({ name = k, count = v * removed / entry_price.batchSize });
 					count = count + 1
 				end
 			end
@@ -370,7 +349,7 @@ function Public.tick_quest_structure_entry_price_check()
 				local special = Utils.deepcopy(Public[enum.FURNACE1].Data.step2)
 				special.position = quest_structure_data.position
 
-				destination.dynamic_data.structures_waiting_to_be_placed[#destination.dynamic_data.structures_waiting_to_be_placed + 1] = {data = special, tick = game.tick}
+				destination.dynamic_data.structures_waiting_to_be_placed[#destination.dynamic_data.structures_waiting_to_be_placed + 1] = { data = special, tick = game.tick }
 			else
 				if quest_structure_data.rendering1 then
 					rendering.set_text(quest_structure_data.rendering1, entry_price.count - quest_structure_data.completion_counter .. ' x')
@@ -383,11 +362,11 @@ function Public.tick_quest_structure_entry_price_check()
 				local contents = blue_contents[i]
 				for k, v in pairs(contents) do
 					if k == entry_price.name then
-						blue_invs[i].remove({name = k, count = v});
+						blue_invs[i].remove({ name = k, count = v });
 						removed = removed + v
 					else
-						blue_invs[i].remove({name = k, count = v});
-						red_invs[i].insert({name = k, count = v});
+						blue_invs[i].remove({ name = k, count = v });
+						red_invs[i].insert({ name = k, count = v });
 					end
 				end
 			end
@@ -398,7 +377,7 @@ function Public.tick_quest_structure_entry_price_check()
 					local item_count = v * removed / entry_price.batchSize
 					item_count = math.floor(item_count)
 					if item_count > 0 then
-						red_invs[count].insert({name = k, count = item_count});
+						red_invs[count].insert({ name = k, count = item_count });
 						count = count + 1
 					else
 						log('Error (non-critical): item_count is not positive. v: ' .. v .. '; removed: ' .. removed .. '; entry_price.batchSize: ' .. entry_price.batchSize)
@@ -408,6 +387,5 @@ function Public.tick_quest_structure_entry_price_check()
 		end
 	end
 end
-
 
 return Public

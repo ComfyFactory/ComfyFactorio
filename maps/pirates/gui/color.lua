@@ -14,7 +14,10 @@ local window_name = 'color'
 function Public.toggle_window(player)
 	local flow, flow2
 
-	if player.gui.screen[window_name .. '_piratewindow'] then player.gui.screen[window_name .. '_piratewindow'].destroy() return end
+	if player.gui.screen[window_name .. '_piratewindow'] then
+		player.gui.screen[window_name .. '_piratewindow'].destroy()
+		return
+	end
 
 	flow = GuiCommon.new_window(player, window_name)
 	flow.caption = 'Colors!'
@@ -45,8 +48,6 @@ function Public.toggle_window(player)
 	GuiCommon.flow_add_close_button(flow, window_name .. '_piratebutton')
 end
 
-
-
 -- function Public.regular_update(player)
 
 -- end
@@ -54,7 +55,6 @@ end
 function Public.full_update(player)
 	if Public.regular_update then Public.regular_update(player) end
 end
-
 
 -- function Public.click(event)
 -- end

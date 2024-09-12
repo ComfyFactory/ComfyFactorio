@@ -26,7 +26,10 @@ function Public.toggle_window(player)
 	local shop_data_1 = Shop.Captains.main_shop_data_1
 	local shop_data_2 = Shop.Captains.main_shop_data_2
 
-	if player.gui.screen[window_name .. '_piratewindow'] then player.gui.screen[window_name .. '_piratewindow'].destroy() return end
+	if player.gui.screen[window_name .. '_piratewindow'] then
+		player.gui.screen[window_name .. '_piratewindow'].destroy()
+		return
+	end
 
 	flow = GuiCommon.new_window(player, window_name)
 	flow.caption = 'Captain\'s Store'
@@ -37,10 +40,10 @@ function Public.toggle_window(player)
 		type = 'flow',
 		direction = 'vertical',
 	})
-    flow2.style.top_margin = 3
-    flow2.style.bottom_margin = 3
-    flow2.style.horizontal_align = 'center'
-    flow2.style.vertical_align = 'center'
+	flow2.style.top_margin = 3
+	flow2.style.bottom_margin = 3
+	flow2.style.horizontal_align = 'center'
+	flow2.style.vertical_align = 'center'
 
 	for k, _ in pairs(shop_data_1) do
 		GuiCommon.flow_add_shop_item(flow2, k)
@@ -50,7 +53,7 @@ function Public.toggle_window(player)
 		name = 'line_1',
 		type = 'line',
 	})
-    flow3.style.width = 100
+	flow3.style.width = 100
 
 	for k, _ in pairs(shop_data_2) do
 		GuiCommon.flow_add_shop_item(flow2, k)
@@ -67,7 +70,6 @@ function Public.toggle_window(player)
 		enabled = false,
 	})
 end
-
 
 function Public.regular_update(player)
 	local flow
@@ -91,7 +93,6 @@ function Public.regular_update(player)
 		flow.close_button_flow.hflow.tospend.visible = false
 	end
 end
-
 
 function Public.full_update(player)
 	if Public.regular_update then Public.regular_update(player) end
@@ -170,9 +171,7 @@ function Public.full_update(player)
 			end
 		end
 	end
-
 end
-
 
 function Public.click(event)
 	if not event.element then return end
@@ -190,7 +189,6 @@ function Public.click(event)
 	if eventname == 'buy_button' then
 		Shop.Captains.main_shop_try_purchase(player, event.element.parent.name)
 	end
-
 end
 
 return Public

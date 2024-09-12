@@ -51,7 +51,7 @@ function Public.decode_surface_name(name)
 		type = pull[1]
 		subtype = pull[2]
 	end
-	return {crewid = crewid, destination_index = destination_index, type = type, subtype = subtype}
+	return { crewid = crewid, destination_index = destination_index, type = type, subtype = subtype }
 end
 
 function Public.fetch_iconized_map(destination)

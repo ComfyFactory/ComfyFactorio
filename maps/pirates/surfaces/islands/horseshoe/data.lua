@@ -7,7 +7,7 @@
 
 local Public = {}
 
-Public.display_names = {{'pirates.location_displayname_horseshoe_1'}, {'pirates.location_displayname_horseshoe_2'}, {'pirates.location_displayname_horseshoe_3'}}
+Public.display_names = { { 'pirates.location_displayname_horseshoe_1' }, { 'pirates.location_displayname_horseshoe_2' }, { 'pirates.location_displayname_horseshoe_3' } }
 
 Public.terraingen_frame_width = 992
 Public.terraingen_frame_height = 992
@@ -38,16 +38,16 @@ Public.noiseparams = {
 		type = 'simplex_2d',
 		normalised = false,
 		params = {
-			{wavelength = 0, amplitude = rscale1 * 1},
-			{wavelength = 1.6, amplitude = rscale1 * 0.2},
+			{ wavelength = 0,   amplitude = rscale1 * 1 },
+			{ wavelength = 1.6, amplitude = rscale1 * 0.2 },
 		},
 	},
 	radius2 = {
 		type = 'simplex_2d',
 		normalised = false,
 		params = {
-			{wavelength = 0, amplitude = rscale2 * 1},
-			{wavelength = 1.6, amplitude = rscale2 * 0.2},
+			{ wavelength = 0,   amplitude = rscale2 * 1 },
+			{ wavelength = 1.6, amplitude = rscale2 * 0.2 },
 		},
 	},
 
@@ -56,8 +56,8 @@ Public.noiseparams = {
 		normalised = false,
 		params = {
 			-- {upperscale = 1000, amplitude = hscale * 200},
-			{upperscale = 1600, amplitude = hscale * 1},
-			{upperscale = 80, amplitude = hscale * 0.1},
+			{ upperscale = 1600, amplitude = hscale * 1 },
+			{ upperscale = 80,   amplitude = hscale * 0.1 },
 		},
 	},
 
@@ -65,7 +65,7 @@ Public.noiseparams = {
 		type = 'forest1',
 		normalised = true,
 		params = {
-			{upperscale = 90, amplitude = 1},
+			{ upperscale = 90, amplitude = 1 },
 			-- {upperscale = 0, amplitude = 0.15},
 		},
 	},
@@ -74,7 +74,7 @@ Public.noiseparams = {
 		type = 'forest1',
 		normalised = true,
 		params = {
-			{upperscale = 110, amplitude = 1, seedfactor = 2},
+			{ upperscale = 110, amplitude = 1, seedfactor = 2 },
 		},
 	},
 
@@ -82,8 +82,8 @@ Public.noiseparams = {
 		type = 'simplex_2d',
 		normalised = true,
 		params = {
-			{wavelength = 250, amplitude = 70},
-			{wavelength = 50, amplitude = 20},
+			{ wavelength = 250, amplitude = 70 },
+			{ wavelength = 50,  amplitude = 20 },
 		},
 	},
 }

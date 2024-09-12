@@ -30,9 +30,9 @@ local function add_class_entry(player, class, taken_by_player_index, index)
 	local full_explanation
 
 	if Classes.class_purchase_requirement[class] then
-		full_explanation = {'pirates.class_explanation_upgraded_class', Classes.display_form(class), Classes.display_form(Classes.class_purchase_requirement[class]), explanation}
+		full_explanation = { 'pirates.class_explanation_upgraded_class', Classes.display_form(class), Classes.display_form(Classes.class_purchase_requirement[class]), explanation }
 	else
-		full_explanation = {'pirates.class_explanation', Classes.display_form(class), explanation}
+		full_explanation = { 'pirates.class_explanation', Classes.display_form(class), explanation }
 	end
 
 	local available_class_label = class_list_panel_table.add({
@@ -41,7 +41,7 @@ local function add_class_entry(player, class, taken_by_player_index, index)
 		tooltip = full_explanation,
 	})
 	available_class_label.style.minimal_width = widths['available_classes']
-    available_class_label.style.maximal_width = widths['available_classes']
+	available_class_label.style.maximal_width = widths['available_classes']
 
 
 	-- Player label
@@ -52,7 +52,7 @@ local function add_class_entry(player, class, taken_by_player_index, index)
 		caption = taken_by_player_name,
 	})
 	taken_by_label.style.minimal_width = widths['taken_by']
-    taken_by_label.style.maximal_width = widths['taken_by']
+	taken_by_label.style.maximal_width = widths['taken_by']
 
 	-- Button
 	local button
@@ -61,29 +61,29 @@ local function add_class_entry(player, class, taken_by_player_index, index)
 		button = class_list_panel_table.add({
 			name = 'button' .. index,
 			type = 'button',
-			caption = {'pirates.gui_classes_take'},
-			tooltip = {'pirates.gui_classes_take_enabled_tooltip'},
+			caption = { 'pirates.gui_classes_take' },
+			tooltip = { 'pirates.gui_classes_take_enabled_tooltip' },
 		})
 	elseif taken_by_player_index == player.index then
 		button = class_list_panel_table.add({
 			name = 'button' .. index,
 			type = 'button',
-			caption = {'pirates.gui_classes_drop'},
-			tooltip = {'pirates.gui_classes_drop_tooltip'},
+			caption = { 'pirates.gui_classes_drop' },
+			tooltip = { 'pirates.gui_classes_drop_tooltip' },
 		})
-		button.style.font_color = {r=1, g=0, b=0}
-		button.style.hovered_font_color = {r=1, g=0, b=0}
-		button.style.clicked_font_color = {r=1, g=0, b=0}
+		button.style.font_color = { r = 1, g = 0, b = 0 }
+		button.style.hovered_font_color = { r = 1, g = 0, b = 0 }
+		button.style.clicked_font_color = { r = 1, g = 0, b = 0 }
 	else
 		button = class_list_panel_table.add({
 			name = 'button' .. index,
 			type = 'button',
 			enabled = false, -- wanted to make "visble = false" instead, but table doesn't like that
-			caption = {'pirates.gui_classes_take'},
-			tooltip = {'pirates.gui_classes_take_disabled_tooltip'},
+			caption = { 'pirates.gui_classes_take' },
+			tooltip = { 'pirates.gui_classes_take_disabled_tooltip' },
 		})
 	end
-	button.tags = {type = 'pirates_' .. window_name, index = index}
+	button.tags = { type = 'pirates_' .. window_name, index = index }
 
 	button.style.minimal_width = widths['action_buttons']
 	button.style.maximal_width = widths['action_buttons']
@@ -94,12 +94,15 @@ function Public.toggle_window(player)
 	local flow, flow2, flow3
 
 	--*** OVERALL FLOW ***--
-	if player.gui.screen[window_name .. '_piratewindow'] then player.gui.screen[window_name .. '_piratewindow'].destroy() return end
+	if player.gui.screen[window_name .. '_piratewindow'] then
+		player.gui.screen[window_name .. '_piratewindow'].destroy()
+		return
+	end
 
-    if not Common.is_id_valid(memory.id) then return end
+	if not Common.is_id_valid(memory.id) then return end
 
 	flow = GuiCommon.new_window(player, window_name)
-	flow.caption = {'pirates.gui_classes'}
+	flow.caption = { 'pirates.gui_classes' }
 	flow.auto_center = true
 	flow.style.maximal_width = 500
 
@@ -112,45 +115,45 @@ function Public.toggle_window(player)
 	flow3 = flow2.add({
 		name = 'available_classes',
 		type = 'label',
-		caption = {'pirates.gui_classes_available_classes'},
+		caption = { 'pirates.gui_classes_available_classes' },
 	})
 	flow3.style.minimal_width = widths['available_classes']
-    flow3.style.maximal_width = widths['available_classes']
+	flow3.style.maximal_width = widths['available_classes']
 	flow3.style.font = 'heading-2'
 	flow3.style.font_color = GuiCommon.section_header_font_color
 
 	flow3 = flow2.add({
 		name = 'taken_by',
 		type = 'label',
-		caption = {'pirates.gui_classes_taken_by'},
+		caption = { 'pirates.gui_classes_taken_by' },
 	})
 	flow3.style.minimal_width = widths['taken_by']
-    flow3.style.maximal_width = widths['taken_by']
+	flow3.style.maximal_width = widths['taken_by']
 	flow3.style.font = 'heading-2'
 	flow3.style.font_color = GuiCommon.section_header_font_color
 
 	flow3 = flow2.add({
 		name = 'action_buttons',
 		type = 'label',
-		caption = {'pirates.gui_classes_actions'},
+		caption = { 'pirates.gui_classes_actions' },
 	})
 	flow3.style.minimal_width = widths['action_buttons']
-    flow3.style.maximal_width = widths['action_buttons']
+	flow3.style.maximal_width = widths['action_buttons']
 	flow3.style.font = 'heading-2'
 	flow3.style.font_color = GuiCommon.section_header_font_color
 
 	-- List management
-    local scroll_pane = flow.add {
-        type = 'scroll-pane',
-        name = 'scroll_pane',
-        direction = 'vertical',
-        horizontal_scroll_policy = 'never',
-        vertical_scroll_policy = 'auto'
-    }
-    scroll_pane.style.maximal_height = 500
+	local scroll_pane = flow.add {
+		type = 'scroll-pane',
+		name = 'scroll_pane',
+		direction = 'vertical',
+		horizontal_scroll_policy = 'never',
+		vertical_scroll_policy = 'auto'
+	}
+	scroll_pane.style.maximal_height = 500
 	scroll_pane.style.bottom_margin = 10
 
-	scroll_pane.add{
+	scroll_pane.add {
 		type = 'table',
 		name = 'class_list_panel_table',
 		column_count = 3
@@ -164,8 +167,6 @@ function Public.toggle_window(player)
 
 	GuiCommon.flow_add_close_button(flow, window_name .. '_piratebutton')
 end
-
-
 
 function Public.full_update(player, force_refresh)
 	force_refresh = force_refresh or nil
@@ -193,27 +194,27 @@ function Public.full_update(player, force_refresh)
 			local class_entry = memory.unlocked_classes[i]
 			label.caption = class_entry.taken_by and game.players[class_entry.taken_by].name or ''
 
-			local black = {r=0, g=0, b=0}
-			local red = {r=1, g=0, b=0}
+			local black = { r = 0, g = 0, b = 0 }
+			local red = { r = 1, g = 0, b = 0 }
 
 			local button = class_list_panel_table['button' .. i]
 			if not class_entry.taken_by then
-				button.caption = {'pirates.gui_classes_take'}
-				button.tooltip = {'pirates.gui_classes_take_enabled_tooltip'}
+				button.caption = { 'pirates.gui_classes_take' }
+				button.tooltip = { 'pirates.gui_classes_take_enabled_tooltip' }
 				button.style.font_color = black
 				button.style.hovered_font_color = black
 				button.style.clicked_font_color = black
 				button.enabled = true
 			elseif class_entry.taken_by == player.index then
-				button.caption = {'pirates.gui_classes_drop'}
-				button.tooltip = {'pirates.gui_classes_drop_tooltip'}
+				button.caption = { 'pirates.gui_classes_drop' }
+				button.tooltip = { 'pirates.gui_classes_drop_tooltip' }
 				button.style.font_color = red
 				button.style.hovered_font_color = red
 				button.style.clicked_font_color = red
 				button.enabled = true
 			else
-				button.caption = {'pirates.gui_classes_take'}
-				button.tooltip = {'pirates.gui_classes_take_disabled_tooltip'}
+				button.caption = { 'pirates.gui_classes_take' }
+				button.tooltip = { 'pirates.gui_classes_take_disabled_tooltip' }
 				button.style.font_color = black
 				button.style.hovered_font_color = black
 				button.style.clicked_font_color = black
@@ -242,7 +243,6 @@ function Public.full_update(player, force_refresh)
 		memory.class_entry_count = #memory.unlocked_classes
 	end
 end
-
 
 function Public.click(event)
 	if not event.element then return end

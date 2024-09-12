@@ -16,26 +16,26 @@ local Public = {}
 
 -- Copied from modules
 local function discharge_accumulators(surface, position, force, power_needs)
-    local accumulators = surface.find_entities_filtered {name = 'accumulator', force = force, position = position, radius = 13}
-    local power_drained = 0
-    power_needs = power_needs
-    for _, accu in pairs(accumulators) do
-        if accu.valid then
-            if accu.energy > 3000000 and power_needs > 0 then
-                if power_needs >= 1000000 then
-                    power_drained = power_drained + 1000000
-                    accu.energy = accu.energy - 1000000
-                    power_needs = power_needs - 1000000
-                else
-                    power_drained = power_drained + power_needs
-                    accu.energy = accu.energy - power_needs
-                end
-            elseif power_needs <= 0 then
-                break
-            end
-        end
-    end
-    return power_drained
+	local accumulators = surface.find_entities_filtered { name = 'accumulator', force = force, position = position, radius = 13 }
+	local power_drained = 0
+	power_needs = power_needs
+	for _, accu in pairs(accumulators) do
+		if accu.valid then
+			if accu.energy > 3000000 and power_needs > 0 then
+				if power_needs >= 1000000 then
+					power_drained = power_drained + 1000000
+					accu.energy = accu.energy - 1000000
+					power_needs = power_needs - 1000000
+				else
+					power_drained = power_drained + power_needs
+					accu.energy = accu.energy - power_needs
+				end
+			elseif power_needs <= 0 then
+				break
+			end
+		end
+	end
+	return power_drained
 end
 
 -- NOTE: You can currently switch between classes shaman -> iron leg -> shaman, without losing your shaman charge, but I'm too lazy to fix.
@@ -134,7 +134,7 @@ function Public.class_renderings(tickinterval)
 					end
 					if class == Classes.enum.QUARTERMASTER then
 						class_renderings[player_index] = {
-							rendering = rendering.draw_circle{
+							rendering = rendering.draw_circle {
 								surface = player.surface,
 								target = player.character,
 								color = CoreData.colors.quartermaster_rendering,
@@ -146,7 +146,7 @@ function Public.class_renderings(tickinterval)
 						}
 					elseif class == Classes.enum.SAMURAI then
 						class_renderings[player_index] = {
-							rendering = rendering.draw_circle{
+							rendering = rendering.draw_circle {
 								surface = player.surface,
 								target = player.character,
 								color = CoreData.colors.toughness_rendering,
@@ -158,7 +158,7 @@ function Public.class_renderings(tickinterval)
 						}
 					elseif class == Classes.enum.HATAMOTO then
 						class_renderings[player_index] = {
-							rendering = rendering.draw_circle{
+							rendering = rendering.draw_circle {
 								surface = player.surface,
 								target = player.character,
 								color = CoreData.colors.toughness_rendering,
@@ -170,7 +170,7 @@ function Public.class_renderings(tickinterval)
 						}
 					elseif class == Classes.enum.IRON_LEG and data and data.iron_leg_active then
 						class_renderings[player_index] = {
-							rendering = rendering.draw_circle{
+							rendering = rendering.draw_circle {
 								surface = player.surface,
 								target = player.character,
 								color = CoreData.colors.toughness_rendering,
@@ -182,7 +182,7 @@ function Public.class_renderings(tickinterval)
 						}
 					elseif class == Classes.enum.MEDIC then
 						class_renderings[player_index] = {
-							rendering = rendering.draw_circle{
+							rendering = rendering.draw_circle {
 								surface = player.surface,
 								target = player.character,
 								color = CoreData.colors.healing_radius_rendering,
@@ -194,7 +194,7 @@ function Public.class_renderings(tickinterval)
 						}
 					elseif class == Classes.enum.DOCTOR then
 						class_renderings[player_index] = {
-							rendering = rendering.draw_circle{
+							rendering = rendering.draw_circle {
 								surface = player.surface,
 								target = player.character,
 								color = CoreData.colors.healing_radius_rendering,
@@ -208,7 +208,7 @@ function Public.class_renderings(tickinterval)
 						local max_render_radius = 3
 						local radius = max_render_radius * (data.shaman_charge / Balance.shaman_max_charge)
 						class_renderings[player_index] = {
-							rendering = rendering.draw_circle{
+							rendering = rendering.draw_circle {
 								surface = player.surface,
 								target = player.character,
 								color = CoreData.colors.shaman_charge_rendering,
@@ -223,7 +223,7 @@ function Public.class_renderings(tickinterval)
 							rendering = rendering.draw_light({
 								surface = player.surface,
 								target = player.character,
-								color = {r = 1, g = 1, b = 1},
+								color = { r = 1, g = 1, b = 1 },
 								sprite = 'utility/light_medium',
 								scale = 10,
 								intensity = 0.8,
@@ -254,9 +254,6 @@ function Public.class_renderings(tickinterval)
 		end
 	end
 end
-
-
-
 
 function Public.update_character_properties(tickinterval)
 	local memory = Memory.get_crew_memory()
@@ -331,7 +328,7 @@ function Public.update_character_properties(tickinterval)
 
 				if main_gun_inv.valid_for_read then
 					local main_inv = player.get_main_inventory()
-					
+
 					if main_inv.can_insert(main_gun_inv) then
 						main_inv.insert(main_gun_inv)
 					else
@@ -385,7 +382,7 @@ function Public.class_rewards_tick(tickinterval)
 			elseif class == Classes.enum.SHORESMAN and (not on_ship_bool) then
 				Classes.class_ore_grant(player, Balance.shoresman_ore_grant_multiplier)
 			elseif class == Classes.enum.QUARTERMASTER then
-				local nearby_players = #player.surface.find_entities_filtered{position = player.position, radius = Balance.quartermaster_range, name = 'character'}
+				local nearby_players = #player.surface.find_entities_filtered { position = player.position, radius = Balance.quartermaster_range, name = 'character' }
 
 				if nearby_players > 1 then
 					Classes.class_ore_grant(player, nearby_players - 1)
@@ -393,26 +390,26 @@ function Public.class_rewards_tick(tickinterval)
 			end
 		end
 
-			-- Smoldering class is disabled
-			-- if memory.classes_table and memory.classes_table[player.index] then
-			-- 	if game.tick % tickinterval == 0 and Common.validate_player_and_character(player) then
-			-- 		if memory.classes_table[player.index] == Classes.enum.SMOLDERING then
-			-- 			local inv = player.get_inventory(defines.inventory.character_main)
-			-- 			if not (inv and inv.valid) then return end
-			-- 			local max_coal = 50
-			-- 			-- local max_transfer = 1
-			-- 			local wood_count = inv.get_item_count('wood')
-			-- 			local coal_count = inv.get_item_count('coal')
-			-- 			if wood_count >= 1 and coal_count < max_coal then
-			-- 				-- local count = Math.min(wood_count, max_coal-coal_count, max_transfer)
-			-- 				local count = 1
-			-- 				inv.remove({name = 'wood', count = count})
-			-- 				inv.insert({name = 'coal', count = count})
-			-- 				Common.flying_text_small(player.surface, player.position, '[item=coal]')
-			-- 			end
-			-- 		end
-			-- 	end
-			-- end
+		-- Smoldering class is disabled
+		-- if memory.classes_table and memory.classes_table[player.index] then
+		-- 	if game.tick % tickinterval == 0 and Common.validate_player_and_character(player) then
+		-- 		if memory.classes_table[player.index] == Classes.enum.SMOLDERING then
+		-- 			local inv = player.get_inventory(defines.inventory.character_main)
+		-- 			if not (inv and inv.valid) then return end
+		-- 			local max_coal = 50
+		-- 			-- local max_transfer = 1
+		-- 			local wood_count = inv.get_item_count('wood')
+		-- 			local coal_count = inv.get_item_count('coal')
+		-- 			if wood_count >= 1 and coal_count < max_coal then
+		-- 				-- local count = Math.min(wood_count, max_coal-coal_count, max_transfer)
+		-- 				local count = 1
+		-- 				inv.remove({name = 'wood', count = count})
+		-- 				inv.insert({name = 'coal', count = count})
+		-- 				Common.flying_text_small(player.surface, player.position, '[item=coal]')
+		-- 			end
+		-- 		end
+		-- 	end
+		-- end
 	end
 end
 

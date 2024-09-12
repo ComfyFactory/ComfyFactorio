@@ -35,18 +35,18 @@ Public.main_shop_data_1 = {
 	-- },
 	new_boat_cutter = {
 		tooltip = 'Purchase a cutter.',
-		what_you_get_sprite_buttons = {['utility/spawn_flag'] = false},
-		base_cost = {fuel = 3000},
+		what_you_get_sprite_buttons = { ['utility/spawn_flag'] = false },
+		base_cost = { fuel = 3000 },
 	},
 	new_boat_sloop_with_hold = {
 		tooltip = 'Purchase a sloop (with hold).',
-		what_you_get_sprite_buttons = {['utility/spawn_flag'] = false},
-		base_cost = {fuel = 3500},
+		what_you_get_sprite_buttons = { ['utility/spawn_flag'] = false },
+		base_cost = { fuel = 3500 },
 	},
 	new_boat_cutter_with_hold = {
 		tooltip = 'Purchase a cutter (with hold).',
-		what_you_get_sprite_buttons = {['utility/spawn_flag'] = false},
-		base_cost = {fuel = 5000},
+		what_you_get_sprite_buttons = { ['utility/spawn_flag'] = false },
+		base_cost = { fuel = 5000 },
 	},
 	-- buy_iron = {
 	-- 	tooltip = 'Purchase 250 iron plates for 300 stored fuel.',
@@ -70,42 +70,42 @@ Public.main_shop_data_1 = {
 	-- },
 	-- as as initial pass let's try making the fuel values half of the old gold values...
 	[Upgrades.enum.MORE_POWER] = {
-		tooltip = {'pirates.market_description_upgrade_power'},
-		what_you_get_sprite_buttons = {['utility/status_working'] = false},
-		base_cost = {coins = 7000, fuel = 500},
+		tooltip = { 'pirates.market_description_upgrade_power' },
+		what_you_get_sprite_buttons = { ['utility/status_working'] = false },
+		base_cost = { coins = 7000, fuel = 500 },
 	},
 	[Upgrades.enum.EXTRA_HOLD] = {
-		tooltip = {'pirates.market_description_upgrade_hold'},
-		what_you_get_sprite_buttons = {['item/steel-chest'] = false},
-		base_cost = {coins = 7000, fuel = 500},
+		tooltip = { 'pirates.market_description_upgrade_hold' },
+		what_you_get_sprite_buttons = { ['item/steel-chest'] = false },
+		base_cost = { coins = 7000, fuel = 500 },
 	},
 	[Upgrades.enum.UNLOCK_MERCHANTS] = {
-		tooltip = {'pirates.market_description_upgrade_merchants'},
-		what_you_get_sprite_buttons = {['entity/market'] = false},
-		base_cost = {coins = 14000, fuel = 1000},
+		tooltip = { 'pirates.market_description_upgrade_merchants' },
+		what_you_get_sprite_buttons = { ['entity/market'] = false },
+		base_cost = { coins = 14000, fuel = 1000 },
 	},
 	[Upgrades.enum.ROCKETS_FOR_SALE] = {
-		tooltip = {'pirates.market_description_upgrade_rockets'},
-		what_you_get_sprite_buttons = {['item/rocket-launcher'] = false},
-		base_cost = {coins = 21000, fuel = 1000},
+		tooltip = { 'pirates.market_description_upgrade_rockets' },
+		what_you_get_sprite_buttons = { ['item/rocket-launcher'] = false },
+		base_cost = { coins = 21000, fuel = 1000 },
 	},
 	[Upgrades.enum.UPGRADE_CANNONS] = {
-		tooltip = {'pirates.market_description_upgrade_turrets'},
-		what_you_get_sprite_buttons = {['item/artillery-turret'] = false},
-		base_cost = {coins = 5000, fuel = 800},
+		tooltip = { 'pirates.market_description_upgrade_turrets' },
+		what_you_get_sprite_buttons = { ['item/artillery-turret'] = false },
+		base_cost = { coins = 5000, fuel = 800 },
 	},
 }
 
 Public.main_shop_data_2 = {
 	rail_signal = {
 		tooltip = "50 signals, used to steer the boat one space in the Crow's Nest View.",
-		what_you_get_sprite_buttons = {['item/rail-signal'] = 50},
-		base_cost = {coins = 500, fuel = 50},
+		what_you_get_sprite_buttons = { ['item/rail-signal'] = 50 },
+		base_cost = { coins = 500, fuel = 50 },
 	},
 	artillery_shell = {
 		tooltip = '8 cannon shells.',
-		what_you_get_sprite_buttons = {['item/artillery-shell'] = 8},
-		base_cost = {coins = 800, fuel = 30},
+		what_you_get_sprite_buttons = { ['item/artillery-shell'] = 8 },
+		base_cost = { coins = 800, fuel = 30 },
 	},
 	-- artillery_remote = {
 	-- 	tooltip = 'An artillery targeting remote.',
@@ -119,13 +119,13 @@ Public.main_shop_data_2 = {
 	-- },
 	uranium_ore = {
 		tooltip = '10 green rocks of unknown origin.',
-		what_you_get_sprite_buttons = {['item/uranium-238'] = 10},
-		base_cost = {coins = 1000, fuel = 100},
+		what_you_get_sprite_buttons = { ['item/uranium-238'] = 10 },
+		base_cost = { coins = 1000, fuel = 100 },
 	},
 	extra_time = {
 		tooltip = 'Relax at sea for an extra minute. (Increases the next destination\'s loading time.)',
-		what_you_get_sprite_buttons = {['utility/time_editor_icon'] = 60},
-		base_cost = {coins = 10, fuel = 1},
+		what_you_get_sprite_buttons = { ['utility/time_editor_icon'] = 60 },
+		base_cost = { coins = 10, fuel = 1 },
 	},
 }
 

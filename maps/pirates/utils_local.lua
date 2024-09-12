@@ -19,63 +19,63 @@ function Public.rgb_from_hsv(h, s, v)
 	-- 0 ≤ H < 360, 0 ≤ S ≤ 1 and 0 ≤ V ≤ 1
 	local r, g, b
 	local c = v * s
-	local x = c * (1 - Math.abs(((h/60) % 2) - 1))
+	local x = c * (1 - Math.abs(((h / 60) % 2) - 1))
 	local m = v - c
 	if h < 60 then
-		r=c+m
-		g=x+m
-		b=m
+		r = c + m
+		g = x + m
+		b = m
 	elseif h < 120 then
-		r=x+m
-		g=c+m
-		b=m
+		r = x + m
+		g = c + m
+		b = m
 	elseif h < 180 then
-		r=m
-		g=c+m
-		b=x+m
+		r = m
+		g = c + m
+		b = x + m
 	elseif h < 240 then
-		r=m
-		g=x+m
-		b=c+m
+		r = m
+		g = x + m
+		b = c + m
 	elseif h < 300 then
-		r=x+m
-		g=m
-		b=c+m
+		r = x + m
+		g = m
+		b = c + m
 	else
-		r=c+m
-		g=m
-		b=x+m
+		r = c + m
+		g = m
+		b = x + m
 	end
-	return {r = 255*r, g = 255*g, b = 255*b}
+	return { r = 255 * r, g = 255 * g, b = 255 * b }
 end
 
 function Public.stable_sort(list, comp) --sorts but preserves ordering of equals
 	comp = comp or function (a, b) return a < b end
 
-    local num = 0
-    for k, _ in ipairs(list) do
-        num = num + 1
-    end
+	local num = 0
+	for k, _ in ipairs(list) do
+		num = num + 1
+	end
 
-    if num <= 1 then
-        return
-    end
+	if num <= 1 then
+		return
+	end
 
-    local sorted = false
-    local n = num
-    while not sorted do
-        sorted = true
-        for i = 1, n - 1 do
-            if comp(list[i+1], list[i]) then
-                local tmp = list[i]
-                list[i] = list[i+1]
-                list[i+1] = tmp
+	local sorted = false
+	local n = num
+	while not sorted do
+		sorted = true
+		for i = 1, n - 1 do
+			if comp(list[i + 1], list[i]) then
+				local tmp = list[i]
+				list[i] = list[i + 1]
+				list[i + 1] = tmp
 
-                sorted = false
-            end
-        end
-        n = n - 1
-    end
+				sorted = false
+			end
+		end
+		n = n - 1
+	end
 end
 
 function Public.psum(plist)
@@ -91,11 +91,11 @@ function Public.psum(plist)
 			totaly = totaly + plist[i].y
 		end
 	end
-	return {x = totalx, y = totaly}
+	return { x = totalx, y = totaly }
 end
 
 function Public.interpolate(vector1, vector2, param)
-	return {x = vector1.x * (1-param) + vector2.x * param, y = vector1.y * (1-param) + vector2.y * param}
+	return { x = vector1.x * (1 - param) + vector2.x * param, y = vector1.y * (1 - param) + vector2.y * param }
 end
 
 function Public.contains(table, element)
@@ -109,7 +109,7 @@ function Public.contains(table, element)
 end
 
 function Public.snap_coordinates_for_rails(p)
-	return {x = p.x + (p.x % 2) - 1, y = p.y + (p.y % 2)}
+	return { x = p.x + (p.x % 2) - 1, y = p.y + (p.y % 2) }
 end
 
 function Public.spritepath_to_richtext(spritepath)
@@ -218,14 +218,14 @@ end
 
 -- Implementation of table.fast_remove
 function Public.fast_remove(tbl, index)
-    local count = #tbl
-    if index > count then
-        return
-    elseif index < count then
-        tbl[index] = tbl[count]
-    end
+	local count = #tbl
+	if index > count then
+		return
+	elseif index < count then
+		tbl[index] = tbl[count]
+	end
 
-    tbl[count] = nil
+	tbl[count] = nil
 end
 
 function Public.length(tbl)
@@ -242,7 +242,7 @@ function Public.standard_string_form_of_time_in_seconds(time)
 		time2 = time
 		str1 = ''
 	else
-		time2 = - time
+		time2 = -time
 		str1 = '-'
 	end
 	local str2
@@ -265,7 +265,7 @@ function Public.time_longform(seconds)
 		seconds2 = seconds
 		str1 = ''
 	else
-		seconds2 = - seconds
+		seconds2 = -seconds
 		str1 = '-'
 	end
 	local str2
@@ -274,9 +274,9 @@ function Public.time_longform(seconds)
 	elseif seconds2 < 60 * 60 - 1 then
 		str2 = string.format('%.0f mins, %.0f seconds', Math.floor(Math.ceil(seconds2) / 60), Math.ceil(seconds2) % 60)
 	elseif seconds2 < 60 * 60 * 24 - 1 then
-		str2 = string.format('%.0f hours, %.0f mins, %.0f seconds', Math.floor(Math.ceil(seconds2) / (60*60)), Math.floor(Math.ceil(seconds2) / 60) % 60, Math.ceil(seconds2) % 60)
+		str2 = string.format('%.0f hours, %.0f mins, %.0f seconds', Math.floor(Math.ceil(seconds2) / (60 * 60)), Math.floor(Math.ceil(seconds2) / 60) % 60, Math.ceil(seconds2) % 60)
 	else
-		str2 = string.format('%.0f days, %.0f hours, %.0f mins, %.0f seconds', Math.floor(Math.ceil(seconds2) / (24*60*60)), Math.floor(Math.ceil(seconds2) / (60*60)) % 24, Math.floor(Math.ceil(seconds2) / 60) % 60, Math.ceil(seconds2) % 60)
+		str2 = string.format('%.0f days, %.0f hours, %.0f mins, %.0f seconds', Math.floor(Math.ceil(seconds2) / (24 * 60 * 60)), Math.floor(Math.ceil(seconds2) / (60 * 60)) % 24, Math.floor(Math.ceil(seconds2) / 60) % 60, Math.ceil(seconds2) % 60)
 	end
 	return str1 .. str2
 end
@@ -287,7 +287,7 @@ function Public.time_mediumform(seconds)
 		seconds2 = seconds
 		str1 = ''
 	else
-		seconds2 = - seconds
+		seconds2 = -seconds
 		str1 = '-'
 	end
 	local str2
@@ -297,9 +297,9 @@ function Public.time_mediumform(seconds)
 	elseif seconds3 < 60 * 60 - 1 then
 		str2 = string.format('%.0fm%.0fs', Math.floor(seconds3 / 60), seconds3 % 60)
 	elseif seconds3 < 60 * 60 * 24 - 1 then
-		str2 = string.format('%.0fh%.0fm%.0fs', Math.floor(seconds3 / (60*60)), Math.floor(seconds3 / 60) % 60, seconds3 % 60)
+		str2 = string.format('%.0fh%.0fm%.0fs', Math.floor(seconds3 / (60 * 60)), Math.floor(seconds3 / 60) % 60, seconds3 % 60)
 	else
-		str2 = string.format('%.0fd%.0fh%.0fm%.0fs', Math.floor(seconds3 / (24*60*60)), Math.floor(seconds3 / (60*60)) % 24, Math.floor(seconds3 / 60) % 60, seconds3 % 60)
+		str2 = string.format('%.0fd%.0fh%.0fm%.0fs', Math.floor(seconds3 / (24 * 60 * 60)), Math.floor(seconds3 / (60 * 60)) % 24, Math.floor(seconds3 / 60) % 60, seconds3 % 60)
 	end
 	return str1 .. str2
 end
@@ -311,17 +311,13 @@ function Public.deepcopy(obj) --doesn't copy metatables
 	return res
 end
 
-
-
-
-
 function Public.bignumber_abbrevform(number) --e.g. 516, 1.2k, 21.4k, 137k
 	local str1, str2, number2
 	if number >= 0 then
 		number2 = number
 		str1 = ''
 	else
-		number2 = - number
+		number2 = -number
 		str1 = '-'
 	end
 
@@ -330,20 +326,21 @@ function Public.bignumber_abbrevform(number) --e.g. 516, 1.2k, 21.4k, 137k
 	elseif number2 < 1000 then
 		str2 = string.format('%.0d', Math.floor(number2))
 	elseif number2 < 100000 then
-		str2 = string.format('%.1fk', Math.floor(number2/100)/10)
+		str2 = string.format('%.1fk', Math.floor(number2 / 100) / 10)
 	else
-		str2 = string.format('%.0dk', Math.floor(number2/1000))
+		str2 = string.format('%.0dk', Math.floor(number2 / 1000))
 	end
 
 	return str1 .. str2
 end
+
 function Public.bignumber_abbrevform2(number) --e.g. 516, 1.2k, 21k, 137k
 	local str1, str2, number2
 	if number >= 0 then
 		number2 = number
 		str1 = ''
 	else
-		number2 = - number
+		number2 = -number
 		str1 = '-'
 	end
 
@@ -352,26 +349,27 @@ function Public.bignumber_abbrevform2(number) --e.g. 516, 1.2k, 21k, 137k
 	elseif number2 < 1000 then
 		str2 = string.format('%.0d', Math.floor(number2))
 	elseif number2 < 10000 then
-		str2 = string.format('%.1fk', Math.floor(number2/100)/10)
+		str2 = string.format('%.1fk', Math.floor(number2 / 100) / 10)
 	else
-		str2 = string.format('%.0dk', Math.floor(number2/1000))
+		str2 = string.format('%.0dk', Math.floor(number2 / 1000))
 	end
 
 	return str1 .. str2
 end
+
 function Public.negative_rate_abbrevform(number)
 	local str1, str2, number2
 	if number > 0 then
 		number2 = number
 		str1 = ''
 	else
-		number2 = - number
+		number2 = -number
 		str1 = '-'
 	end
 	if number2 == 0 then
 		str2 = '0'
 	elseif number2 < 10 then
-		str2 = string.format('%.1f', Math.ceil(number2*10)/10)
+		str2 = string.format('%.1f', Math.ceil(number2 * 10) / 10)
 	else
 		str2 = string.format('%.0d', Math.ceil(number2))
 	end
@@ -379,11 +377,10 @@ function Public.negative_rate_abbrevform(number)
 	return str1 .. str2 .. '/s'
 end
 
-
 function Public.noise_field_simplex_2d(noise_data, seed, normalised)
 	normalised = normalised or false
 
-	local f = function(position)
+	local f = function (position)
 		local noise, _seed, weight_sum = 0, seed, 0
 		for i = 1, #noise_data do
 			local n = noise_data[i]
@@ -402,8 +399,6 @@ function Public.noise_field_simplex_2d(noise_data, seed, normalised)
 	return f
 end
 
-
-
 function Public.hardcoded_noise_field_decompress(fieldtype, noise_data, seed, normalised)
 	normalised = normalised or false
 
@@ -412,7 +407,7 @@ function Public.hardcoded_noise_field_decompress(fieldtype, noise_data, seed, no
 	local hardcoded_wordlength = NoisePregen[fieldtype].wordlength
 	local factor = NoisePregen[fieldtype].factor
 
-	local f = function(position)
+	local f = function (position)
 		local noise, weight_sum, _seed = 0, 0, seed
 		for i = 1, #noise_data do
 			local n = noise_data[i]
@@ -427,19 +422,19 @@ function Public.hardcoded_noise_field_decompress(fieldtype, noise_data, seed, no
 				local x2 = position.x / scale
 				local y2 = position.y / scale
 
-				local x2remainder = x2%1
-				local y2remainder = y2%1
+				local x2remainder = x2 % 1
+				local y2remainder = y2 % 1
 
 				local x2floor = x2 - x2remainder
 				local y2floor = y2 - y2remainder
 
-				local topleftnoiseindex = seed2 % (1000*1000)
+				local topleftnoiseindex = seed2 % (1000 * 1000)
 
 				local relativeindex00 = x2floor + y2floor * 1000
 
-				local totalindex00 = (topleftnoiseindex + relativeindex00) % (1000*1000)
-				local totalindex10 = (1 + topleftnoiseindex + relativeindex00) % (1000*1000)
-				local totalindex01 = (1000 + topleftnoiseindex + relativeindex00) % (1000*1000)
+				local totalindex00 = (topleftnoiseindex + relativeindex00) % (1000 * 1000)
+				local totalindex10 = (1 + topleftnoiseindex + relativeindex00) % (1000 * 1000)
+				local totalindex01 = (1000 + topleftnoiseindex + relativeindex00) % (1000 * 1000)
 
 				local strindex00 = 1 + totalindex00 * hardcoded_wordlength
 				local strindex10 = 1 + totalindex10 * hardcoded_wordlength
@@ -449,20 +444,20 @@ function Public.hardcoded_noise_field_decompress(fieldtype, noise_data, seed, no
 				local str10 = NoisePregen[fieldtype].Data:sub(strindex10, strindex10 + (hardcoded_wordlength - 1))
 				local str01 = NoisePregen[fieldtype].Data:sub(strindex01, strindex01 + (hardcoded_wordlength - 1))
 				local noise00, noise10, noise01 = 0, 0, 0
-				for j = 0, hardcoded_wordlength-1 do
+				for j = 0, hardcoded_wordlength - 1 do
 					noise00 = noise00 + NoisePregen.dec[str00:sub(hardcoded_wordlength - j, hardcoded_wordlength - j)] * (NoisePregen.encoding_length ^ j)
 					noise10 = noise10 + NoisePregen.dec[str10:sub(hardcoded_wordlength - j, hardcoded_wordlength - j)] * (NoisePregen.encoding_length ^ j)
 					noise01 = noise01 + NoisePregen.dec[str01:sub(hardcoded_wordlength - j, hardcoded_wordlength - j)] * (NoisePregen.encoding_length ^ j)
 				end
 
 				if noise00 % 2 == 1 then noise00 = -noise00 end
-				noise00 = noise00 / (NoisePregen.encoding_length ^ (hardcoded_wordlength-1))
+				noise00 = noise00 / (NoisePregen.encoding_length ^ (hardcoded_wordlength - 1))
 
 				if noise10 % 2 == 1 then noise10 = -noise10 end
-				noise10 = noise10 / (NoisePregen.encoding_length ^ (hardcoded_wordlength-1))
+				noise10 = noise10 / (NoisePregen.encoding_length ^ (hardcoded_wordlength - 1))
 
 				if noise01 % 2 == 1 then noise01 = -noise01 end
-				noise01 = noise01 / (NoisePregen.encoding_length ^ (hardcoded_wordlength-1))
+				noise01 = noise01 / (NoisePregen.encoding_length ^ (hardcoded_wordlength - 1))
 
 				-- local hardnoise00 = tonumber(strsub00:sub(2,6))/10000
 				-- if strsub00:sub(1,1) == '-' then hardnoise00 = -hardnoise00 end
@@ -474,7 +469,7 @@ function Public.hardcoded_noise_field_decompress(fieldtype, noise_data, seed, no
 				-- log(_inspect{topleftnoiseindex, topleftnoiseindex2, relativeindex00, relativeindex10, relativeindex01})
 				-- log(_inspect{strindex00, strindex10, strindex01, hardnoise1, hardnoise2, hardnoise3})
 
-				local interpolatedhardnoise = noise00 + x2remainder*(noise10-noise00) + y2remainder*(noise01-noise00)
+				local interpolatedhardnoise = noise00 + x2remainder * (noise10 - noise00) + y2remainder * (noise01 - noise00)
 
 				toadd = toadd * factor * tonumber(interpolatedhardnoise)
 				_seed = _seed + 12345
@@ -489,8 +484,6 @@ function Public.hardcoded_noise_field_decompress(fieldtype, noise_data, seed, no
 	return f
 end
 
-
-
 function Public.hardcoded_noise_field(fieldtype, noise_data, seed, normalised)
 	normalised = normalised or false
 
@@ -499,7 +492,7 @@ function Public.hardcoded_noise_field(fieldtype, noise_data, seed, normalised)
 	local hardcoded_wordlength = NoisePregen[fieldtype].wordlength
 	local factor = NoisePregen[fieldtype].factor
 
-	local f = function(position)
+	local f = function (position)
 		local noise, weight_sum, _seed = 0, 0, seed
 		for i = 1, #noise_data do
 			local n = noise_data[i]
@@ -514,21 +507,21 @@ function Public.hardcoded_noise_field(fieldtype, noise_data, seed, normalised)
 				local x2 = position.x / scale
 				local y2 = position.y / scale
 
-				local x2remainder = x2%1
-				local y2remainder = y2%1
+				local x2remainder = x2 % 1
+				local y2remainder = y2 % 1
 
 				local x2floor = x2 - x2remainder
 				local y2floor = y2 - y2remainder
 
-				local seedindex = seed2 % (1000*1000)
+				local seedindex = seed2 % (1000 * 1000)
 
 				local relativeindex00 = x2floor + y2floor * 1000
 
 				local noiseindex1 = seedindex + relativeindex00
 
-				local totalindex00 = noiseindex1 % (1000*1000)
-				local totalindex10 = (1 + noiseindex1) % (1000*1000)
-				local totalindex01 = (1000 + noiseindex1) % (1000*1000)
+				local totalindex00 = noiseindex1 % (1000 * 1000)
+				local totalindex10 = (1 + noiseindex1) % (1000 * 1000)
+				local totalindex01 = (1000 + noiseindex1) % (1000 * 1000)
 
 				local strindex00 = 1 + totalindex00 * hardcoded_wordlength
 				local strindex10 = 1 + totalindex10 * hardcoded_wordlength
@@ -538,17 +531,17 @@ function Public.hardcoded_noise_field(fieldtype, noise_data, seed, normalised)
 				local str10 = NoisePregen[fieldtype].Data:sub(strindex10, strindex10 + (hardcoded_wordlength - 1))
 				local str01 = NoisePregen[fieldtype].Data:sub(strindex01, strindex01 + (hardcoded_wordlength - 1))
 
-				local noise00 = tonumber(str00:sub(2,6))/10000
-				if str00:sub(1,1) == '-' then noise00 = -noise00 end
-				local noise10 = tonumber(str10:sub(2,6))/10000
-				if str10:sub(1,1) == '-' then noise10 = -noise10 end
-				local noise01 = tonumber(str01:sub(2,6))/10000
-				if str01:sub(1,1) == '-' then noise01 = -noise01 end
+				local noise00 = tonumber(str00:sub(2, 6)) / 10000
+				if str00:sub(1, 1) == '-' then noise00 = -noise00 end
+				local noise10 = tonumber(str10:sub(2, 6)) / 10000
+				if str10:sub(1, 1) == '-' then noise10 = -noise10 end
+				local noise01 = tonumber(str01:sub(2, 6)) / 10000
+				if str01:sub(1, 1) == '-' then noise01 = -noise01 end
 
 				-- log(_inspect{topleftnoiseindex, topleftnoiseindex2, relativeindex00, relativeindex10, relativeindex01})
 				-- log(_inspect{strindex00, strindex10, strindex01, hardnoise1, hardnoise2, hardnoise3})
 
-				local interpolatedhardnoise = noise00 + x2remainder*(noise10-noise00) + y2remainder*(noise01-noise00)
+				local interpolatedhardnoise = noise00 + x2remainder * (noise10 - noise00) + y2remainder * (noise01 - noise00)
 
 				toadd = toadd * factor * tonumber(interpolatedhardnoise)
 				_seed = _seed + 12345 --some deficiencies
@@ -562,8 +555,6 @@ function Public.hardcoded_noise_field(fieldtype, noise_data, seed, normalised)
 	end
 	return f
 end
-
-
 
 function Public.noise_generator(noiseparams, seed)
 	--memoizes locally
@@ -584,36 +575,37 @@ function Public.noise_generator(noiseparams, seed)
 	end
 
 	function ret:addNoise(key, new_noise_function)
-		if self[key] then return
+		if self[key] then
+			return
 		else
 			self[key] = Public.memoize(new_noise_function)
 		end
 	end
+
 	ret.seed = seed
 	-- ret.noiseparams = noiseparams
 	return ret
 end
 
-
 local function cache_get(cache, params)
-  local node = cache
-  for i=1, #params do
-    node = node.children and node.children[params[i]]
-    if not node then return nil end
-  end
-  return node.results
+	local node = cache
+	for i = 1, #params do
+		node = node.children and node.children[params[i]]
+		if not node then return nil end
+	end
+	return node.results
 end
 
 local function cache_put(cache, params, results)
-  local node = cache
-  local param
-  for i=1, #params do
-    param = params[i]
-    node.children = node.children or {}
-    node.children[param] = node.children[param] or {}
-    node = node.children[param]
-  end
-  node.results = results
+	local node = cache
+	local param
+	for i = 1, #params do
+		param = params[i]
+		node.children = node.children or {}
+		node.children[param] = node.children[param] or {}
+		node = node.children[param]
+	end
+	node.results = results
 end
 
 
@@ -644,8 +636,8 @@ local function is_callable(f)
 	local tf = type(f)
 	if tf == 'function' then return true end
 	if tf == 'table' then
-	  local mt = getmetatable(f)
-	  return type(mt) == 'table' and is_callable(mt.__call)
+		local mt = getmetatable(f)
+		return type(mt) == 'table' and is_callable(mt.__call)
 	end
 	return false
 end
@@ -654,25 +646,25 @@ end
 -- memoize takes in a function and outputs an auto-memoizing version of the same
 -- e.g. local memoized_f = memoize(f, <cache>), explicit cache is optional
 function Public.memoize(f, cache)
-  cache = cache or {}
+	cache = cache or {}
 
-  if not is_callable(f) then
-    log(string.format(
-        "Only functions and callable tables are memoizable. Received %s (a %s)",
-        tostring(f), type(f)))
-  end
+	if not is_callable(f) then
+		log(string.format(
+			"Only functions and callable tables are memoizable. Received %s (a %s)",
+			tostring(f), type(f)))
+	end
 
-  return function (...)
-    local params = {...}
+	return function (...)
+		local params = { ... }
 
-    local results = cache_get(cache, params)
-    if not results then
-      results = { f(...) }
-      cache_put(cache, params, results)
-    end
+		local results = cache_get(cache, params)
+		if not results then
+			results = { f(...) }
+			cache_put(cache, params, results)
+		end
 
-    return table.unpack(results)
-  end
+		return table.unpack(results)
+	end
 end
 
 return Public

@@ -29,8 +29,8 @@ local BottomFrame = require 'utils.gui.bottom_frame'
 
 local Public = {}
 local enum = {
-		ADVENTURING = 'adventuring',
-		LEAVING_INITIAL_DOCK = 'leavinginitialdock'
+	ADVENTURING = 'adventuring',
+	LEAVING_INITIAL_DOCK = 'leavinginitialdock'
 }
 Public.enum = enum
 
@@ -51,14 +51,13 @@ function Public.difficulty_vote(player_index, difficulty_id)
 		if not option then return end
 
 		local color = option.associated_color
-		Common.notify_force(memory.force, {'pirates.notify_difficulty_vote',player.name, color.r, color.g, color.b, option.text})
+		Common.notify_force(memory.force, { 'pirates.notify_difficulty_vote', player.name, color.r, color.g, color.b, option.text })
 
 		memory.difficulty_votes[player_index] = difficulty_id
 
 		Public.update_difficulty()
 	end
 end
-
 
 function Public.update_difficulty()
 	local memory = Memory.get_crew_memory()
@@ -84,7 +83,7 @@ function Public.update_difficulty()
 	if modal_id ~= memory.difficulty_option then
 		local color = CoreData.difficulty_options[modal_id].associated_color
 
-		local message1 = {'pirates.notify_difficulty_change', color.r, color.g, color.b, CoreData.difficulty_options[modal_id].text}
+		local message1 = { 'pirates.notify_difficulty_change', color.r, color.g, color.b, CoreData.difficulty_options[modal_id].text }
 
 		Common.notify_force(memory.force, message1)
 
@@ -99,7 +98,6 @@ function Public.update_difficulty()
 		Cabin.update_captains_market_offers_based_on_difficulty(memory.difficulty_option)
 	end
 end
-
 
 function Public.try_add_extra_time_at_sea(ticks)
 	local memory = Memory.get_crew_memory()
@@ -131,26 +129,26 @@ function Public.try_lose(loss_reason)
 	local memory = Memory.get_crew_memory()
 
 	if (not memory.game_lost) then
-	-- if (not memory.game_lost) and (not memory.game_won) then
+		-- if (not memory.game_lost) and (not memory.game_won) then
 		memory.game_lost = true
-		memory.crew_disband_tick_message = game.tick + 60*10
-		memory.crew_disband_tick = game.tick + 60*40
+		memory.crew_disband_tick_message = game.tick + 60 * 10
+		memory.crew_disband_tick = game.tick + 60 * 40
 		memory.crew_disband_tick_cannot_be_prevented = true
 
-		local playtimetext = Utils.time_longform((memory.age or 0)/60)
+		local playtimetext = Utils.time_longform((memory.age or 0) / 60)
 
-		local message = {'', loss_reason, ' ', {'pirates.loss_rest_of_message_long', playtimetext, memory.overworldx, Public.get_crewmembers_printable_string()}}
+		local message = { '', loss_reason, ' ', { 'pirates.loss_rest_of_message_long', playtimetext, memory.overworldx, Public.get_crewmembers_printable_string() } }
 
-		Server.to_discord_embed_raw({'', CoreData.comfy_emojis.trashbin .. '[' .. memory.name .. '] ', message}, true)
+		Server.to_discord_embed_raw({ '', CoreData.comfy_emojis.trashbin .. '[' .. memory.name .. '] ', message }, true)
 
-		local message2 = {'', loss_reason, ' ', {'pirates.loss_rest_of_message_short', '[font=default-large-semibold]' .. playtimetext .. '[/font]', memory.overworldx}}
+		local message2 = { '', loss_reason, ' ', { 'pirates.loss_rest_of_message_short', '[font=default-large-semibold]' .. playtimetext .. '[/font]', memory.overworldx } }
 
-		Common.notify_game({'', '[' .. memory.name .. '] ', message2}, CoreData.colors.notify_gameover)
+		Common.notify_game({ '', '[' .. memory.name .. '] ', message2 }, CoreData.colors.notify_gameover)
 
 		local force = memory.force
 		if not (force and force.valid) then return end
 
-		force.play_sound{path='utility/game_lost', volume_modifier=0.75} --playing to the whole game might scare ppl
+		force.play_sound { path = 'utility/game_lost', volume_modifier = 0.75 } --playing to the whole game might scare ppl
 	end
 end
 
@@ -158,26 +156,25 @@ function Public.try_win()
 	local memory = Memory.get_crew_memory()
 
 	if (not (memory.game_lost or memory.game_won)) then
-	-- if (not memory.game_lost) and (not memory.game_won) then
-		memory.completion_time = Math.floor((memory.age or 0)/60)
+		-- if (not memory.game_lost) and (not memory.game_won) then
+		memory.completion_time = Math.floor((memory.age or 0) / 60)
 
-		local speedrun_time = (memory.age or 0)/60
+		local speedrun_time = (memory.age or 0) / 60
 		local speedrun_time_str = Utils.time_longform(speedrun_time)
 		memory.game_won = true
 		-- memory.crew_disband_tick = game.tick + 1200
 
-		Server.to_discord_embed_raw({'', CoreData.comfy_emojis.goldenobese .. '[' .. memory.name .. '] Victory, on v' .. CoreData.version_string .. ', ', CoreData.difficulty_options[memory.difficulty_option].text, ', capacity ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '. Playtime: ' .. speedrun_time_str .. ' since 1st island. Crewmembers: ' .. Public.get_crewmembers_printable_string()}, true)
+		Server.to_discord_embed_raw({ '', CoreData.comfy_emojis.goldenobese .. '[' .. memory.name .. '] Victory, on v' .. CoreData.version_string .. ', ', CoreData.difficulty_options[memory.difficulty_option].text, ', capacity ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '. Playtime: ' .. speedrun_time_str .. ' since 1st island. Crewmembers: ' .. Public.get_crewmembers_printable_string() }, true)
 
-		Common.notify_game({'', '[' .. memory.name .. '] ', {'pirates.victory',CoreData.version_string, CoreData.difficulty_options[memory.difficulty_option].text, CoreData.capacity_options[memory.capacity_option].text3, speedrun_time_str, Public.get_crewmembers_printable_string()}}, CoreData.colors.notify_victory)
+		Common.notify_game({ '', '[' .. memory.name .. '] ', { 'pirates.victory', CoreData.version_string, CoreData.difficulty_options[memory.difficulty_option].text, CoreData.capacity_options[memory.capacity_option].text3, speedrun_time_str, Public.get_crewmembers_printable_string() } }, CoreData.colors.notify_victory)
 
-		game.play_sound{path='utility/game_won', volume_modifier=0.9}
+		game.play_sound { path = 'utility/game_won', volume_modifier = 0.9 }
 
 		memory.boat.state = Boats.enum_state.ATSEA_VICTORIOUS
-		memory.victory_continue_reminder = game.tick + 60*14
+		memory.victory_continue_reminder = game.tick + 60 * 14
 		memory.victory_continue_message = true
 	end
 end
-
 
 function Public.choose_crew_members()
 	-- local global_memory = Memory.get_global_memory()
@@ -204,7 +201,6 @@ function Public.choose_crew_members()
 
 	return crew_members
 end
-
 
 function Public.join_spectators(player, crewid)
 	if not (crewid > 0) then return end
@@ -237,7 +233,7 @@ function Public.join_spectators(player, crewid)
 			local p = char.position
 			-- local surface_name = char.surface.name
 			if p then
-				Common.notify_force(force, {'pirates.crew_to_spectator', player.name})
+				Common.notify_force(force, { 'pirates.crew_to_spectator', player.name })
 				-- Server.to_discord_embed_raw(CoreData.comfy_emojis.feel .. '[' .. memory.name .. '] ' .. message)
 			end
 			-- if p then
@@ -249,31 +245,31 @@ function Public.join_spectators(player, crewid)
 
 			char.die(memory.force_name)
 
-			player.set_controller{type = defines.controllers.spectator}
+			player.set_controller { type = defines.controllers.spectator }
 		else
-			Common.notify_force(force, {'pirates.crew_to_spectator', player.name})
+			Common.notify_force(force, { 'pirates.crew_to_spectator', player.name })
 			-- Server.to_discord_embed_raw(CoreData.comfy_emojis.feel .. '[' .. memory.name .. '] ' .. message)
-			player.set_controller{type = defines.controllers.spectator}
+			player.set_controller { type = defines.controllers.spectator }
 		end
 
-		local c = surface.create_entity{name = 'character', position = surface.find_non_colliding_position('character', Common.lobby_spawnpoint, 32, 0.5) or Common.lobby_spawnpoint, force = Common.lobby_force_name}
+		local c = surface.create_entity { name = 'character', position = surface.find_non_colliding_position('character', Common.lobby_spawnpoint, 32, 0.5) or Common.lobby_spawnpoint, force = Common.lobby_force_name }
 
 		player.associate_character(c)
 
-		player.set_controller{type = defines.controllers.spectator}
+		player.set_controller { type = defines.controllers.spectator }
 
 		memory.crewplayerindices = Utils.ordered_table_with_values_removed(memory.crewplayerindices, player.index)
 
 		Roles.player_left_so_redestribute_roles(player)
 	else
 		local c = player.character
-		player.set_controller{type = defines.controllers.spectator}
+		player.set_controller { type = defines.controllers.spectator }
 		player.teleport(memory.spawnpoint, game.surfaces[memory.boat.surface_name])
 		player.force = force
 		player.associate_character(c)
 
-		Common.notify_force(force, {'pirates.lobby_to_spectator', player.name})
-		Common.notify_lobby({'pirates.lobby_to_spectator_2', player.name, memory.name})
+		Common.notify_force(force, { 'pirates.lobby_to_spectator', player.name })
+		Common.notify_lobby({ 'pirates.lobby_to_spectator_2', player.name, memory.name })
 	end
 
 	memory.spectatorplayerindices[#memory.spectatorplayerindices + 1] = player.index
@@ -292,7 +288,6 @@ function Public.join_spectators(player, crewid)
 	memory.difficulty_votes[player.index] = nil
 end
 
-
 function Public.leave_spectators(player, quiet)
 	quiet = quiet or false
 	local memory = Memory.get_crew_memory()
@@ -301,15 +296,15 @@ function Public.leave_spectators(player, quiet)
 	if not Common.validate_player(player) then return end
 
 	if not quiet then
-		Common.notify_force(player.force, {'pirates.spectator_to_lobby', player.name})
+		Common.notify_force(player.force, { 'pirates.spectator_to_lobby', player.name })
 	end
 
 	local chars = player.get_associated_characters()
 	if #chars > 0 then
 		player.teleport(chars[1].position, surface)
-		player.set_controller{type = defines.controllers.character, character = chars[1]}
+		player.set_controller { type = defines.controllers.character, character = chars[1] }
 	else
-		player.set_controller{type = defines.controllers.god}
+		player.set_controller { type = defines.controllers.god }
 		player.teleport(surface.find_non_colliding_position('character', Common.lobby_spawnpoint, 32, 0.5) or Common.lobby_spawnpoint, surface)
 		player.create_character()
 	end
@@ -324,7 +319,6 @@ function Public.leave_spectators(player, quiet)
 
 	player.force = Common.lobby_force_name
 end
-
 
 function Public.join_crew(player, rejoin)
 	local memory = Memory.get_crew_memory()
@@ -360,19 +354,19 @@ function Public.join_crew(player, rejoin)
 
 		player.teleport(surface.find_non_colliding_position('character', memory.spawnpoint, 32, 0.5) or memory.spawnpoint, surface)
 
-		player.set_controller{type = defines.controllers.god}
+		player.set_controller { type = defines.controllers.god }
 		player.create_character()
 
 		memory.spectatorplayerindices = Utils.ordered_table_with_values_removed(memory.spectatorplayerindices, player.index)
 	else
 		if not (player.character and player.character.valid) then
-			player.set_controller{type = defines.controllers.god}
+			player.set_controller { type = defines.controllers.god }
 			player.create_character()
 		end
 
 		player.force = memory.force
 
-		Common.notify_lobby({'pirates.lobby_to_crew_2', player.name, memory.name})
+		Common.notify_lobby({ 'pirates.lobby_to_crew_2', player.name, memory.name })
 
 		player.teleport(surface.find_non_colliding_position('character', memory.spawnpoint, 32, 0.5) or memory.spawnpoint, surface)
 
@@ -397,7 +391,7 @@ function Public.join_crew(player, rejoin)
 		end
 	end
 
-	Common.notify_force(player.force, {'pirates.lobby_to_crew', player.name})
+	Common.notify_force(player.force, { 'pirates.lobby_to_crew', player.name })
 	-- Server.to_discord_embed_raw(CoreData.comfy_emojis.yum1 .. '[' .. memory.name .. '] ' .. message)
 
 	memory.crewplayerindices[#memory.crewplayerindices + 1] = player.index
@@ -406,7 +400,7 @@ function Public.join_crew(player, rejoin)
 	-- just using tempbanned_from_joining_data as a quick proxy for whether the player has ever been in this run before
 	if not (memory.tempbanned_from_joining_data and memory.tempbanned_from_joining_data[player.index]) and (not rejoin) then
 		for item, amount in pairs(Balance.starting_items_player_late) do
-			player.insert({name = item, count = amount})
+			player.insert({ name = item, count = amount })
 		end
 	end
 
@@ -421,9 +415,9 @@ function Public.join_crew(player, rejoin)
 	if memory.overworldx > 0 then
 		local color = CoreData.difficulty_options[memory.difficulty_option].associated_color
 
-		Common.notify_player_announce(player, {'pirates.personal_join_string_1', memory.name, CoreData.capacity_options[memory.capacity_option].text3, color.r, color.g, color.b, CoreData.difficulty_options[memory.difficulty_option].text})
+		Common.notify_player_announce(player, { 'pirates.personal_join_string_1', memory.name, CoreData.capacity_options[memory.capacity_option].text3, color.r, color.g, color.b, CoreData.difficulty_options[memory.difficulty_option].text })
 	else
-		Common.notify_player_announce(player, {'pirates.personal_join_string_1', memory.name, CoreData.capacity_options[memory.capacity_option].text3})
+		Common.notify_player_announce(player, { 'pirates.personal_join_string_1', memory.name, CoreData.capacity_options[memory.capacity_option].text3 })
 	end
 end
 
@@ -439,9 +433,9 @@ function Public.leave_crew(player, to_lobby, quiet)
 		-- local p = char.position
 		-- local surface_name = char.surface.name
 		if not quiet then
-			Common.notify_force(player.force, {'pirates.crew_leave', player.name})
-		-- else
-		-- 	message = player.name .. ' left.'
+			Common.notify_force(player.force, { 'pirates.crew_leave', player.name })
+			-- else
+			-- 	message = player.name .. ' left.'
 		end
 		-- if p then
 		-- 	Common.notify_force(player.force, message .. ' [gps=' .. Math.ceil(p.x) .. ',' .. Math.ceil(p.y) .. ',' .. surface_name ..']')
@@ -453,9 +447,7 @@ function Public.leave_crew(player, to_lobby, quiet)
 
 		-- @TODO: figure out why surface_name can be nil
 
-		if to_lobby then
-			-- Common.send_important_items_from_player_to_crew(player, true)
-		else
+		if not to_lobby then
 			if not memory.temporarily_logged_off_player_data then memory.temporarily_logged_off_player_data = {} end
 
 			memory.temporarily_logged_off_player_data[player.index] = {
@@ -471,20 +463,20 @@ function Public.leave_crew(player, to_lobby, quiet)
 
 		char.die(memory.force_name)
 
-	-- else
-	-- 	if not quiet then
-	-- 		-- local message = player.name .. ' left the crew.'
-	-- 		-- Common.notify_force(player.force, message)
-	-- 	end
+		-- else
+		-- 	if not quiet then
+		-- 		-- local message = player.name .. ' left the crew.'
+		-- 		-- Common.notify_force(player.force, message)
+		-- 	end
 	end
 
 	if to_lobby then
-		player.set_controller{type = defines.controllers.god}
+		player.set_controller { type = defines.controllers.god }
 
 		player.teleport(surface.find_non_colliding_position('character', Common.lobby_spawnpoint, 32, 0.5) or Common.lobby_spawnpoint, surface)
 		player.force = Common.lobby_force_name
 		player.create_character()
-		Event.raise(BottomFrame.events.bottom_quickbar_respawn_raise, {player_index = player.index})
+		Event.raise(BottomFrame.events.bottom_quickbar_respawn_raise, { player_index = player.index })
 	end
 
 	memory.crewplayerindices = Utils.ordered_table_with_values_removed(memory.crewplayerindices, player.index)
@@ -508,8 +500,6 @@ function Public.leave_crew(player, to_lobby, quiet)
 	end
 end
 
-
-
 function Public.get_unaffiliated_players()
 	local global_memory = Memory.get_global_memory()
 
@@ -527,7 +517,6 @@ function Public.get_unaffiliated_players()
 	return playerlist
 end
 
-
 function Public.plank(captain, player)
 	local memory = Memory.get_crew_memory()
 
@@ -535,22 +524,20 @@ function Public.plank(captain, player)
 		if captain.index ~= player.index then
 			Server.to_discord_embed_raw(CoreData.comfy_emojis.despair .. string.format("%s planked %s!", captain.name, player.name))
 
-			Common.notify_force(player.force, {'pirates.plank', captain.name, player.name})
+			Common.notify_force(player.force, { 'pirates.plank', captain.name, player.name })
 
 			Public.join_spectators(player, memory.id)
 			memory.tempbanned_from_joining_data[player.index] = game.tick + 60 * 120
 			return true
 		else
-			Common.notify_player_error(player, {'pirates.plank_error_self'})
+			Common.notify_player_error(player, { 'pirates.plank_error_self' })
 			return false
 		end
 	else
-		Common.notify_player_error(player, {'pirates.plank_error_invalid_player'})
+		Common.notify_player_error(player, { 'pirates.plank_error_invalid_player' })
 		return false
 	end
 end
-
-
 
 function Public.disband_crew(donotprint)
 	local global_memory = Memory.get_global_memory()
@@ -561,16 +548,15 @@ function Public.disband_crew(donotprint)
 	local id = memory.id
 	local players = Common.crew_get_crew_members_and_spectators()
 
-	for _,player in pairs(players) do
+	for _, player in pairs(players) do
 		if player.controller_type == defines.controllers.editor then player.toggle_map_editor() end
 		player.force = Common.lobby_force_name
 	end
 
 	if (not donotprint) then
-
-		local message = {'pirates.crew_disband', memory.name, Utils.time_longform((memory.real_age or 0)/60)}
+		local message = { 'pirates.crew_disband', memory.name, Utils.time_longform((memory.real_age or 0) / 60) }
 		Common.notify_game(message)
-		Server.to_discord_embed_raw({'', CoreData.comfy_emojis.despair, message}, true)
+		Server.to_discord_embed_raw({ '', CoreData.comfy_emojis.despair, message }, true)
 
 		-- if memory.game_won then
 		--		 game.print({'chronosphere.message_game_won_restart'}, {r=0.98, g=0.66, b=0.22})
@@ -583,19 +569,18 @@ function Public.disband_crew(donotprint)
 
 	local lobby = game.surfaces[CoreData.lobby_surface_name]
 	for _, player in pairs(players) do
-
 		if player.character then
 			player.character.destroy()
 			player.character = nil
 		end
 
-		player.set_controller({type=defines.controllers.god})
+		player.set_controller({ type = defines.controllers.god })
 
 		if player.get_associated_characters() and #player.get_associated_characters() == 1 then
 			local char = player.get_associated_characters()[1]
 			player.teleport(char.position, char.surface)
 
-			player.set_controller({type=defines.controllers.character, character=char})
+			player.set_controller({ type = defines.controllers.character, character = char })
 		else
 			local pos = lobby.find_non_colliding_position('character', Common.lobby_spawnpoint, 32, 0.5) or Common.lobby_spawnpoint
 			player.teleport(pos, lobby)
@@ -650,27 +635,25 @@ function Public.disband_crew(donotprint)
 	Lobby.place_starting_dock_showboat(id)
 end
 
-
 function Public.generate_new_crew_id()
-    local global_memory = Memory.get_global_memory()
-    local max_crews = Common.starting_ships_count
+	local global_memory = Memory.get_global_memory()
+	local max_crews = Common.starting_ships_count
 
-    for id = 1, max_crews do
-        if not global_memory.crew_memories[id] then
-            return id
-        end
-    end
+	for id = 1, max_crews do
+		if not global_memory.crew_memories[id] then
+			return id
+		end
+	end
 
-    return nil
+	return nil
 end
-
 
 function Public.player_abandon_proposal(player)
 	local global_memory = Memory.get_global_memory()
 
 	for k, proposal in pairs(global_memory.crewproposals) do
 		if proposal.created_by_player and proposal.created_by_player == player.index then
-			Common.notify_lobby({'pirates.proposal_retracted', proposal.name})
+			Common.notify_lobby({ 'pirates.proposal_retracted', proposal.name })
 			-- Server.to_discord_embed(message)
 			global_memory.crewproposals[k] = nil
 		end
@@ -678,7 +661,7 @@ function Public.player_abandon_proposal(player)
 end
 
 local crowsnest_delayed = Token.register(
-	function(data)
+	function (data)
 		Memory.set_working_id(data.crew_id)
 		Crowsnest.crowsnest_surface_delayed_init()
 	end
@@ -686,12 +669,13 @@ local crowsnest_delayed = Token.register(
 function Public.initialise_crowsnest()
 	local memory = Memory.get_crew_memory()
 	Crowsnest.create_crowsnest_surface()
-	Task.set_timeout_in_ticks(5, crowsnest_delayed, {crew_id = memory.id})
+	Task.set_timeout_in_ticks(5, crowsnest_delayed, { crew_id = memory.id })
 end
 
 function Public.initialise_crowsnest_1()
 	Crowsnest.create_crowsnest_surface()
 end
+
 function Public.initialise_crowsnest_2()
 	Crowsnest.crowsnest_surface_delayed_init()
 end
@@ -706,18 +690,18 @@ function Public.initialise_crew(accepted_proposal)
 
 	global_memory.crew_active_ids[#global_memory.crew_active_ids + 1] = new_id
 
-    global_memory.crew_memories[new_id] = {}
-	
+	global_memory.crew_memories[new_id] = {}
+
 	Memory.set_working_id(new_id)
 
 	local memory = Memory.get_crew_memory()
 
 	memory.id = new_id
-    
-    memory.game_lost = false
-    memory.game_won = false
 
-    local secs = Server.get_current_time()
+	memory.game_lost = false
+	memory.game_won = false
+
+	local secs = Server.get_current_time()
 	if not secs then secs = 0 end
 	memory.secs_id = secs
 
@@ -787,12 +771,12 @@ function Public.initialise_crew(accepted_proposal)
 
 	memory.officers_table = {}
 
-	memory.classes_table = {} -- stores all unlocked taken classes
-	memory.spare_classes = {} -- stores all unlocked untaken classes
-	memory.recently_purchased_classes = {} -- stores recently unlocked classes to add it back to available class pool list later
-	memory.unlocked_classes = {} -- stores all unlocked classes just for GUI (to have consistent order)
+	memory.classes_table = {}                                 -- stores all unlocked taken classes
+	memory.spare_classes = {}                                 -- stores all unlocked untaken classes
+	memory.recently_purchased_classes = {}                    -- stores recently unlocked classes to add it back to available class pool list later
+	memory.unlocked_classes = {}                              -- stores all unlocked classes just for GUI (to have consistent order)
 	memory.available_classes_pool = Classes.initial_class_pool() -- stores classes that can be randomly picked for unlocking
-	memory.class_entry_count = 0 -- used to track whether new class entries should be added during "full_update"
+	memory.class_entry_count = 0                              -- used to track whether new class entries should be added during "full_update"
 
 	memory.healthbars = {}
 	memory.overworld_krakens = {}
@@ -811,11 +795,11 @@ function Public.initialise_crew(accepted_proposal)
 
 	memory.force.set_spawn_position(memory.spawnpoint, surface)
 
-	local message = {'pirates.crew_launch', accepted_proposal.name}
+	local message = { 'pirates.crew_launch', accepted_proposal.name }
 	Common.notify_game(message)
 	-- Server.to_discord_embed_raw(CoreData.comfy_emojis.pogkot .. message .. ' Difficulty: ' .. CoreData.difficulty_options[memory.difficulty_option].text .. ', Capacity: ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '.')
-	Server.to_discord_embed_raw({'', CoreData.comfy_emojis.pogkot, message, ' Capacity: ', CoreData.capacity_options[memory.capacity_option].text3, '.'}, true)
-	game.surfaces[CoreData.lobby_surface_name].play_sound{path='utility/new_objective', volume_modifier=0.75}
+	Server.to_discord_embed_raw({ '', CoreData.comfy_emojis.pogkot, message, ' Capacity: ', CoreData.capacity_options[memory.capacity_option].text3, '.' }, true)
+	game.surfaces[CoreData.lobby_surface_name].play_sound { path = 'utility/new_objective', volume_modifier = 0.75 }
 
 	memory.boat = global_memory.lobby_boats[new_id]
 	local boat = memory.boat
@@ -836,20 +820,20 @@ function Public.set_initial_damage_modifiers()
 	local force = memory.force
 
 	local ammo_damage_modifiers = Balance.player_ammo_damage_modifiers()
-    local turret_attack_modifiers = Balance.player_turret_attack_modifiers()
-    local gun_speed_modifiers = Balance.player_gun_speed_modifiers()
+	local turret_attack_modifiers = Balance.player_turret_attack_modifiers()
+	local gun_speed_modifiers = Balance.player_gun_speed_modifiers()
 
-    for category, factor in pairs(ammo_damage_modifiers) do
-        force.set_ammo_damage_modifier(category, factor)
-    end
+	for category, factor in pairs(ammo_damage_modifiers) do
+		force.set_ammo_damage_modifier(category, factor)
+	end
 
-    for category, factor in pairs(turret_attack_modifiers) do
-        force.set_turret_attack_modifier(category, factor)
-    end
+	for category, factor in pairs(turret_attack_modifiers) do
+		force.set_turret_attack_modifier(category, factor)
+	end
 
-    for category, factor in pairs(gun_speed_modifiers) do
-        force.set_gun_speed_modifier(category, factor)
-    end
+	for category, factor in pairs(gun_speed_modifiers) do
+		force.set_gun_speed_modifier(category, factor)
+	end
 end
 
 function Public.buff_all_damage(amount)
@@ -857,13 +841,13 @@ function Public.buff_all_damage(amount)
 	local force = memory.force
 
 	local ammo_damage_modifiers = Balance.player_ammo_damage_modifiers()
-    local turret_attack_modifiers = Balance.player_turret_attack_modifiers()
-    local gun_speed_modifiers = Balance.player_gun_speed_modifiers()
+	local turret_attack_modifiers = Balance.player_turret_attack_modifiers()
+	local gun_speed_modifiers = Balance.player_gun_speed_modifiers()
 
-    for category, factor in pairs(ammo_damage_modifiers) do
+	for category, factor in pairs(ammo_damage_modifiers) do
 		local current_modifier = force.get_ammo_damage_modifier(category)
-        force.set_ammo_damage_modifier(category, current_modifier + amount * (1 + factor))
-    end
+		force.set_ammo_damage_modifier(category, current_modifier + amount * (1 + factor))
+	end
 
 	for category, factor in pairs(turret_attack_modifiers) do
 		local current_modifier = force.get_turret_attack_modifier(category)
@@ -875,7 +859,6 @@ function Public.buff_all_damage(amount)
 		force.set_gun_speed_modifier(category, current_modifier + amount * (1 + factor))
 	end
 end
-
 
 function Public.summon_crew()
 	local memory = Memory.get_crew_memory()
@@ -894,7 +877,7 @@ function Public.summon_crew()
 		end
 	end
 	if print then
-		Common.notify_force(memory.force, {'pirates.crew_summon'})
+		Common.notify_force(memory.force, { 'pirates.crew_summon' })
 	end
 end
 
@@ -910,7 +893,7 @@ function Public.reset_crew_and_enemy_force(id)
 	ancient_friendly_force.reset()
 	ancient_enemy_force.reset()
 
-    ancient_enemy_force.set_turret_attack_modifier('gun-turret', 0.2)
+	ancient_enemy_force.set_turret_attack_modifier('gun-turret', 0.2)
 
 	enemy_force.reset_evolution()
 	for _, tech in pairs(crew_force.technologies) do

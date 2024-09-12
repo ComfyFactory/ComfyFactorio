@@ -48,26 +48,23 @@ function Public.quest_reward()
 	local rng = Math.random()
 
 	if rng <= 0.3 then
-		ret = {name = 'iron-plate', count = Math.ceil(2000 * multiplier), display_sprite = '[item=iron-plate]', display_amount = string.format('%.1fk', 2 * multiplier), chat_name = '[item=iron-plate]'}
+		ret = { name = 'iron-plate', count = Math.ceil(2000 * multiplier), display_sprite = '[item=iron-plate]', display_amount = string.format('%.1fk', 2 * multiplier), chat_name = '[item=iron-plate]' }
 	elseif rng <= 0.5 then
-		ret = {name = 'copper-plate', count = Math.ceil(2000 * multiplier), display_sprite = '[item=copper-plate]', display_amount = string.format('%.1fk', 2 * multiplier), chat_name = '[item=copper-plate]'}
+		ret = { name = 'copper-plate', count = Math.ceil(2000 * multiplier), display_sprite = '[item=copper-plate]', display_amount = string.format('%.1fk', 2 * multiplier), chat_name = '[item=copper-plate]' }
 	elseif rng <= 0.6 then
-		ret = {name = 'steel-plate', count = Math.ceil(380 * multiplier), display_sprite = '[item=steel-plate]', display_amount = string.format('%.0f', 380 * multiplier), chat_name = '[item=steel-plate]'}
+		ret = { name = 'steel-plate', count = Math.ceil(380 * multiplier), display_sprite = '[item=steel-plate]', display_amount = string.format('%.0f', 380 * multiplier), chat_name = '[item=steel-plate]' }
 	elseif rng <= 0.7 then
-		ret = {name = 'raw-fish', count = Math.ceil(420 * (multiplier^(1/2))), display_sprite = '[item=raw-fish]', display_amount = string.format('%.0f', 420 * (multiplier^(1/2))), chat_name = '[item=raw-fish]'}
+		ret = { name = 'raw-fish', count = Math.ceil(420 * (multiplier ^ (1 / 2))), display_sprite = '[item=raw-fish]', display_amount = string.format('%.0f', 420 * (multiplier ^ (1 / 2))), chat_name = '[item=raw-fish]' }
 	elseif rng <= 0.85 then
-		ret = {name = 'piercing-rounds-magazine', count = Math.ceil(250 * multiplier), display_sprite = '[item=piercing-rounds-magazine]', display_amount = string.format('%.0f', Math.ceil(250 * multiplier)), chat_name = '[item=piercing-rounds-magazine]'}
+		ret = { name = 'piercing-rounds-magazine', count = Math.ceil(250 * multiplier), display_sprite = '[item=piercing-rounds-magazine]', display_amount = string.format('%.0f', Math.ceil(250 * multiplier)), chat_name = '[item=piercing-rounds-magazine]' }
 	elseif rng <= 0.94 then
-		ret = {name = 'solid-fuel', count = Math.ceil(450 * multiplier), display_sprite = '[item=solid-fuel]', display_amount = string.format('%.0f', Math.ceil(450 * multiplier)), chat_name = '[item=solid-fuel]'}
+		ret = { name = 'solid-fuel', count = Math.ceil(450 * multiplier), display_sprite = '[item=solid-fuel]', display_amount = string.format('%.0f', Math.ceil(450 * multiplier)), chat_name = '[item=solid-fuel]' }
 	else
-		ret = {name = 'modular-armor', count = 1, display_sprite = '[item=modular-armor]', display_amount = '1', chat_name = '[item=modular-armor]'}
+		ret = { name = 'modular-armor', count = 1, display_sprite = '[item=modular-armor]', display_amount = '1', chat_name = '[item=modular-armor]' }
 	end
 
 	return ret
 end
-
-
-
 
 function Public.initialise_random_quest()
 	local destination = Common.current_destination()
@@ -117,7 +114,6 @@ function Public.initialise_find_quest()
 	local destination = Common.current_destination()
 
 	if destination.subtype == IslandEnum.enum.STANDARD or destination.subtype == IslandEnum.enum.RADIOACTIVE or destination.subtype == IslandEnum.enum.STANDARD_VARIANT then
-
 		destination.dynamic_data.quest_type = enum.FIND
 		destination.dynamic_data.quest_reward = Public.quest_reward()
 		destination.dynamic_data.quest_progress = 0
@@ -134,7 +130,6 @@ function Public.initialise_find_quest()
 	end
 end
 
-
 function Public.initialise_nodamage_quest()
 	local destination = Common.current_destination()
 
@@ -148,7 +143,6 @@ function Public.initialise_nodamage_quest()
 
 	return true
 end
-
 
 -- @UNUSED
 -- function Public.initialise_resourceflow_quest()
@@ -186,20 +180,19 @@ function Public.initialise_resourcecount_quest()
 	local generated_production_quest = Public.generate_resourcecount_quest()
 	if not generated_production_quest then return false end
 
-	destination.dynamic_data.quest_params = {item = generated_production_quest.item}
+	destination.dynamic_data.quest_params = { item = generated_production_quest.item }
 
 	local force = memory.force
 	if force and force.valid then
-		destination.dynamic_data.quest_params.initial_count = force.item_production_statistics.get_flow_count{name = generated_production_quest.item, input = true, precision_index = defines.flow_precision_index.one_thousand_hours, count = true}
+		destination.dynamic_data.quest_params.initial_count = force.item_production_statistics.get_flow_count { name = generated_production_quest.item, input = true, precision_index = defines.flow_precision_index.one_thousand_hours, count = true }
 	end
 
 	local progressneeded_before_rounding = generated_production_quest.base_rate * Balance.resource_quest_multiplier()
 
-	destination.dynamic_data.quest_progressneeded = Math.ceil(progressneeded_before_rounding/10)*10
+	destination.dynamic_data.quest_progressneeded = Math.ceil(progressneeded_before_rounding / 10) * 10
 
 	return true
 end
-
 
 function Public.initialise_worms_quest()
 	local destination = Common.current_destination()
@@ -208,7 +201,7 @@ function Public.initialise_worms_quest()
 
 	local surface = game.surfaces[destination.surface_name]
 
-	local worms = surface.find_entities_filtered{type = 'turret'}
+	local worms = surface.find_entities_filtered { type = 'turret' }
 
 	local count = 0
 	for i = 1, #worms do
@@ -278,16 +271,14 @@ function Public.initialise_compilatron_quest()
 	return true
 end
 
-
 function Public.try_resolve_quest()
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 
 	if destination.dynamic_data.quest_type and destination.dynamic_data.quest_progress and destination.dynamic_data.quest_progressneeded and destination.dynamic_data.quest_progress >= destination.dynamic_data.quest_progressneeded and (not destination.dynamic_data.quest_complete) then
-
 		local force = memory.force
 		if not (force and force.valid) then return end
-		Common.notify_force_light(force, {'pirates.granted_1', {'pirates.granted_quest_complete'}, destination.dynamic_data.quest_reward.display_amount .. destination.dynamic_data.quest_reward.chat_name})
+		Common.notify_force_light(force, { 'pirates.granted_1', { 'pirates.granted_quest_complete' }, destination.dynamic_data.quest_reward.display_amount .. destination.dynamic_data.quest_reward.chat_name })
 
 		local name = destination.dynamic_data.quest_reward.name
 		local count = destination.dynamic_data.quest_reward.count
@@ -308,24 +299,20 @@ function Public.try_resolve_quest()
 		if not chest and chest.valid then return end
 
 		local inventory = chest.get_inventory(defines.inventory.chest)
-		local inserted = inventory.insert{name = name, count = count}
+		local inserted = inventory.insert { name = name, count = count }
 
 		if inserted < count then
 			local chest2 = boat.backup_output_chest
 			if chest2 and chest2.valid then
 				local inventory2 = chest2.get_inventory(defines.inventory.chest)
-				local inserted2 = inventory2.insert{name = name, count = count - inserted}
+				local inserted2 = inventory2.insert { name = name, count = count - inserted }
 				if (inserted + inserted2) < count then
-					Common.notify_force(force, {'pirates.error_cabin_full'})
+					Common.notify_force(force, { 'pirates.error_cabin_full' })
 				end
 			end
 		end
 	end
 end
-
-
-
-
 
 -- Public.flow_quest_data_raw = {
 -- 	{0.2, 0, 1, false, 'submachine-gun', 3 * 12},
@@ -390,21 +377,21 @@ end
 
 
 Public.resourcecount_quest_data_raw = {
-	{1.1, 0, 1, false, 'iron-gear-wheel', 2400},
-	{0.5, 0, 1, false, 'electronic-circuit', 1400},
-	{1.1, 0, 1, false, 'transport-belt', 1600},
-	{0.8, 0, 1, false, 'repair-pack', 350},
+	{ 1.1,  0,    1,   false, 'iron-gear-wheel',       2400 },
+	{ 0.5,  0,    1,   false, 'electronic-circuit',    1400 },
+	{ 1.1,  0,    1,   false, 'transport-belt',        1600 },
+	{ 0.8,  0,    1,   false, 'repair-pack',           350 },
 	-- {0.1, 0, 1, false, 'red-wire', 500},
-	{0.4, 0, 1, false, 'empty-barrel', 200},
-	{0.7, 0, 0.5, false, 'underground-belt', 200},
-	{0.7, 0, 0.5, false, 'splitter', 150},
-	{0.35, 0.2, 1, false, 'fast-splitter', 60},
-	{0.35, 0.2, 1, false, 'fast-underground-belt', 75},
-	{0.7, 0.3, 1, false, 'big-electric-pole', 100},
-	{0.3, 0.61, 1, false, 'advanced-circuit', 350},
-	{1, 0, 1, false, 'shotgun-shell', 600},
-	{1, 0.9, 1, false, 'processing-unit', 40},
-	{0.6, 0.8, 1, false, 'electric-engine-unit', 1 * 6},
+	{ 0.4,  0,    1,   false, 'empty-barrel',          200 },
+	{ 0.7,  0,    0.5, false, 'underground-belt',      200 },
+	{ 0.7,  0,    0.5, false, 'splitter',              150 },
+	{ 0.35, 0.2,  1,   false, 'fast-splitter',         60 },
+	{ 0.35, 0.2,  1,   false, 'fast-underground-belt', 75 },
+	{ 0.7,  0.3,  1,   false, 'big-electric-pole',     100 },
+	{ 0.3,  0.61, 1,   false, 'advanced-circuit',      350 },
+	{ 1,    0,    1,   false, 'shotgun-shell',         600 },
+	{ 1,    0.9,  1,   false, 'processing-unit',       40 },
+	{ 0.6,  0.8,  1,   false, 'electric-engine-unit',  1 * 6 },
 }
 
 function Public.resourcecount_quest_data()
@@ -413,13 +400,13 @@ function Public.resourcecount_quest_data()
 	for i = 1, #data do
 		local datum = data[i]
 		ret[#ret + 1] = {
-            weight = datum[1],
-            game_completion_progress_min = datum[2],
-            game_completion_progress_max = datum[3],
-            scaling = datum[4],
-            item = datum[5],
+			weight = datum[1],
+			game_completion_progress_min = datum[2],
+			game_completion_progress_max = datum[3],
+			scaling = datum[4],
+			item = datum[5],
 			base_rate = datum[6],
-        }
+		}
 	end
 	return ret
 end
@@ -428,10 +415,10 @@ function Public.generate_resourcecount_quest()
 	local game_completion_progress = Common.game_completion_progress_capped()
 
 	local data = Public.resourcecount_quest_data()
-    local v, w = {}, {}
+	local v, w = {}, {}
 
-    for i = 1, #data, 1 do
-        table.insert(v, {item = data[i].item, base_rate = data[i].base_rate})
+	for i = 1, #data, 1 do
+		table.insert(v, { item = data[i].item, base_rate = data[i].base_rate })
 
 		local destination = Common.current_destination()
 		if not (destination and destination.subtype and data[i].map_subtype and data[i].map_subtype == destination.subtype) then
@@ -447,13 +434,9 @@ function Public.generate_resourcecount_quest()
 				end
 			end
 		end
-    end
+	end
 
 	return Raffle.raffle(v, w)
 end
-
-
-
-
 
 return Public

@@ -30,7 +30,6 @@ function Public.noises(args)
 	return ret
 end
 
-
 function Public.terrain(args)
 	local noises = Public.noises(args)
 	local p = args.p
@@ -39,64 +38,63 @@ function Public.terrain(args)
 	if IslandsCommon.place_water_tile(args) then return end
 
 	if noises.height(p) < 0 then
-		args.tiles[#args.tiles + 1] = {name = 'water', position = args.p}
+		args.tiles[#args.tiles + 1] = { name = 'water', position = args.p }
 		return
 	end
 
 	if noises.height(p) < 0.05 then
-		args.tiles[#args.tiles + 1] = {name = 'sand-1', position = args.p}
+		args.tiles[#args.tiles + 1] = { name = 'sand-1', position = args.p }
 		if (not args.iconized_generation) and noises.farness(p) > 0.02 and noises.farness(p) < 0.6 and Math.random(500) == 1 then
-			args.specials[#args.specials + 1] = {name = 'buried-treasure', position = args.p}
+			args.specials[#args.specials + 1] = { name = 'buried-treasure', position = args.p }
 		end
 	elseif noises.height(p) < 0.12 then
-		args.tiles[#args.tiles + 1] = {name = 'sand-2', position = args.p}
+		args.tiles[#args.tiles + 1] = { name = 'sand-2', position = args.p }
 	else
 		if noises.forest_abs_suppressed(p) > 0.3 and noises.rock(p) < -0.1 then
-			args.tiles[#args.tiles + 1] = {name = 'dirt-1', position = args.p}
+			args.tiles[#args.tiles + 1] = { name = 'dirt-1', position = args.p }
 		else
 			if noises.mood(p) > 0.66 then
-				args.tiles[#args.tiles + 1] = {name = 'water', position = args.p}
+				args.tiles[#args.tiles + 1] = { name = 'water', position = args.p }
 				if Math.random(100) == 1 then
-					args.entities[#args.entities + 1] = {name = 'fish', position = args.p}
+					args.entities[#args.entities + 1] = { name = 'fish', position = args.p }
 				end
 			else
-				args.tiles[#args.tiles + 1] = {name = 'sand-3', position = args.p}
+				args.tiles[#args.tiles + 1] = { name = 'sand-3', position = args.p }
 			end
 		end
 	end
 
 	if (not args.iconized_generation) and noises.height(p) > 0 and Math.random(6000) == 1 then --but has lots of chests due to spawning anywhere
-		args.specials[#args.specials + 1] = {name = 'chest', position = args.p}
+		args.specials[#args.specials + 1] = { name = 'chest', position = args.p }
 	elseif noises.height(p) > 0.02 then
 		if noises.forest_abs_suppressed(p) > 0.58 then
 			local forest_noise = noises.forest(p)
 			local treedensity
 			if forest_noise > 0 then
 				treedensity = 0.5 * Math.slopefromto(noises.forest_abs_suppressed(p), 0.58, 0.75)
-				if Math.random(1,100) < treedensity*100 then args.entities[#args.entities + 1] = {name = 'tree-06', position = args.p, visible_on_overworld = true} end
+				if Math.random(1, 100) < treedensity * 100 then args.entities[#args.entities + 1] = { name = 'tree-06', position = args.p, visible_on_overworld = true } end
 			elseif noises.forest_abs_suppressed(p) > 0.68 then
 				treedensity = 0.5 * Math.slopefromto(forest_noise, -0.7, -0.75)
-				if Math.random(1,100) < treedensity*100 then args.entities[#args.entities + 1] = {name = 'tree-08-brown', position = args.p, visible_on_overworld = true} end
+				if Math.random(1, 100) < treedensity * 100 then args.entities[#args.entities + 1] = { name = 'tree-08-brown', position = args.p, visible_on_overworld = true } end
 			end
 		end
 	end
 
 
 	if noises.forest_abs_suppressed(p) < 0.45 then
-
 		if noises.height(p) > 0.05 then
 			if noises.rock_abs(p) > 0.15 then
-				local rockdensity = 1/500 * Math.slopefromto(noises.rock_abs(p), 0.15, 0.5)
+				local rockdensity = 1 / 500 * Math.slopefromto(noises.rock_abs(p), 0.15, 0.5)
 				if noises.height(p) < 0.12 then rockdensity = rockdensity * 3 end
 				local rockrng = Math.random()
 				if rockrng < rockdensity then
 					args.entities[#args.entities + 1] = IslandsCommon.random_rock_1(args.p)
 				elseif rockrng < rockdensity * 1.5 then
-					args.decoratives[#args.decoratives + 1] = {name = 'rock-medium', position = args.p}
+					args.decoratives[#args.decoratives + 1] = { name = 'rock-medium', position = args.p }
 				elseif rockrng < rockdensity * 2 then
-					args.decoratives[#args.decoratives + 1] = {name = 'rock-small', position = args.p}
+					args.decoratives[#args.decoratives + 1] = { name = 'rock-small', position = args.p }
 				elseif rockrng < rockdensity * 2.5 then
-					args.decoratives[#args.decoratives + 1] = {name = 'rock-tiny', position = args.p}
+					args.decoratives[#args.decoratives + 1] = { name = 'rock-tiny', position = args.p }
 				end
 			end
 		end
@@ -104,16 +102,14 @@ function Public.terrain(args)
 
 	if noises.height(p) > 0.18 and noises.mood(p) > 0.2 then
 		if noises.forest_abs(p) < 0.2 and noises.rock_abs(p) > 1.8 then
-			args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = 8}
+			args.entities[#args.entities + 1] = { name = 'coal', position = args.p, amount = 8 }
 		end
 	end
 end
 
-
 function Public.chunk_structures(args)
-
-	local spec = function(p)
-		local noises = Public.noises{p = p, noise_generator = args.noise_generator, static_params = args.static_params, seed = args.seed}
+	local spec = function (p)
+		local noises = Public.noises { p = p, noise_generator = args.noise_generator, static_params = args.static_params, seed = args.seed }
 
 		return {
 			placeable = noises.farness(p) > 0.36,
@@ -127,8 +123,8 @@ function Public.chunk_structures(args)
 
 	-- Make testing easier by spawning special structures on 2nd island
 	if _DEBUG then
-		local spec2 = function(p)
-			local noises = Public.noises{p = p, noise_generator = args.noise_generator, static_params = args.static_params, seed = args.seed}
+		local spec2 = function (p)
+			local noises = Public.noises { p = p, noise_generator = args.noise_generator, static_params = args.static_params, seed = args.seed }
 
 			return {
 				-- placeable = noises.height(p) >= 0 and noises.forest_abs_suppressed(p) < 0.3 + Math.max(0, 0.2 - noises.height(p)),
@@ -151,15 +147,12 @@ function Public.chunk_structures(args)
 	-- IslandsCommon.assorted_structures_1(args, spec2)
 end
 
-
 function Public.break_rock(surface, p, entity_name)
 	return Ores.try_ore_spawn(surface, p, entity_name)
 end
 
-
 function Public.generate_silo_setup_position(points_to_avoid)
 	return Hunt.silo_setup_position(points_to_avoid, 0, 30)
 end
-
 
 return Public

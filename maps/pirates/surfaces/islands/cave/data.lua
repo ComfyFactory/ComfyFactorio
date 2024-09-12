@@ -2,7 +2,7 @@
 
 local Public = {}
 
-Public.display_names = {{'pirates.location_displayname_cave_1'}}
+Public.display_names = { { 'pirates.location_displayname_cave_1' } }
 
 Public.terraingen_frame_width = 640
 Public.terraingen_frame_height = 640
@@ -14,7 +14,7 @@ Public.static_params_default = {
 	base_starting_treasure_maps = 0,
 	starting_time_of_day = 0.43,
 	daynightcycletype = 1,
-	brightness_visual_weights = {0.92, 0.92, 0.92},
+	brightness_visual_weights = { 0.92, 0.92, 0.92 },
 	min_brightness = 0.08,
 }
 
@@ -32,7 +32,7 @@ end
 
 function Public.spawn_fish(args)
 	if math.random(1, 32) == 1 then
-		args.entities[#args.entities + 1] = {name = 'fish', position = args.p}
+		args.entities[#args.entities + 1] = { name = 'fish', position = args.p }
 	end
 end
 

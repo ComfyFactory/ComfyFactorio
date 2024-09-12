@@ -8,7 +8,7 @@ local Public = {}
 -- register only this
 Global.register(
     pirates_global_memory,
-    function(tbl)
+    function (tbl)
         pirates_global_memory = tbl
     end
 )

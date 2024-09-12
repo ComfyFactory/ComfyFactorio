@@ -65,13 +65,10 @@ function Public.initialise_destination(o)
 	o.dynamic_data.other_map_generation_data = o.dynamic_data.other_map_generation_data or {}
 
 	if o.type == enum.ISLAND then
-
 		o.init_boat_state = Boats.enum_state.APPROACHING
 
 		Public.generate_detailed_island_data(o)
-
 	elseif o.type == enum.DOCK then
-
 		o.init_boat_state = Boats.enum_state.APPROACHING
 
 		o.iconized_map_width = scope.Data.iconized_map_width
@@ -80,7 +77,6 @@ function Public.initialise_destination(o)
 
 	return o
 end
-
 
 function Public.get_scope(destination)
 	if destination.type then
@@ -93,11 +89,6 @@ function Public.get_scope(destination)
 		return {}
 	end
 end
-
-
-
-
-
 
 function Public.on_surface_generation(destination)
 	-- local memory = Memory.get_crew_memory()
@@ -135,17 +126,15 @@ function Public.on_surface_generation(destination)
 
 		destination.dynamic_data.buried_treasure = {}
 
-	-- elseif destination.type == enum.DOCK then
-
+		-- elseif destination.type == enum.DOCK then
 	end
 end
-
 
 function Public.destination_on_collide(destination)
 	local memory = Memory.get_crew_memory()
 
 	local name = destination.static_params.name and destination.static_params.name or 'NameNotFound'
-	local message = {'', '[' .. memory.name .. '] ', {'pirates.loading_destination', memory.destinationsvisited_indices and (#memory.destinationsvisited_indices + 1) or 0, name}} --notify the whole server
+	local message = { '', '[' .. memory.name .. '] ', { 'pirates.loading_destination', memory.destinationsvisited_indices and (#memory.destinationsvisited_indices + 1) or 0, name } } --notify the whole server
 	Common.notify_game(message)
 
 	if destination.type ~= Public.enum.DOCK then
@@ -170,11 +159,9 @@ function Public.destination_on_collide(destination)
 		Crowsnest.paint_around_destination(index, CoreData.overworld_loading_tile)
 
 		if destination.subtype == IslandEnum.enum.RADIOACTIVE then
-			Common.parrot_speak(memory.force, {'pirates.parrot_radioactive_tip_1'})
-
+			Common.parrot_speak(memory.force, { 'pirates.parrot_radioactive_tip_1' })
 		elseif destination.subtype == IslandEnum.enum.CAVE then
-			Common.parrot_speak(memory.force, {'pirates.parrot_cave_tip_1'})
-
+			Common.parrot_speak(memory.force, { 'pirates.parrot_cave_tip_1' })
 		elseif memory.overworldx >= Balance.biter_boats_start_arrive_x then
 			local scheduled_raft_raids = {}
 			-- temporarily placed this back here, as moving it to shorehit broke things:
@@ -183,22 +170,22 @@ function Public.destination_on_collide(destination)
 
 			local difficulty_name = CoreData.get_difficulty_option_informal_name_from_value(Common.difficulty_scale())
 			if difficulty_name == 'easy' then
-				if memory.overworldx/40 < 20 then
-					max_evo = 0.9 - (20 - memory.overworldx/40) * 1/100
+				if memory.overworldx / 40 < 20 then
+					max_evo = 0.9 - (20 - memory.overworldx / 40) * 1 / 100
 				else
-					max_evo = 0.91 + (memory.overworldx/40 - 20) * 0.25/100
+					max_evo = 0.91 + (memory.overworldx / 40 - 20) * 0.25 / 100
 				end
 			elseif difficulty_name == 'normal' then
-				if memory.overworldx/40 < 15 then
-					max_evo = 0.9 - (15 - memory.overworldx/40) * 0.5/100
+				if memory.overworldx / 40 < 15 then
+					max_evo = 0.9 - (15 - memory.overworldx / 40) * 0.5 / 100
 				else
-					max_evo = 0.91 + (memory.overworldx/40 - 15) * 0.25/100
+					max_evo = 0.91 + (memory.overworldx / 40 - 15) * 0.25 / 100
 				end
 			else
-				if memory.overworldx/40 < 12 then
+				if memory.overworldx / 40 < 12 then
 					max_evo = 0.9
 				else
-					max_evo = 0.91 + (memory.overworldx/40 - 12) * 0.25/100
+					max_evo = 0.91 + (memory.overworldx / 40 - 12) * 0.25 / 100
 				end
 			end
 
@@ -238,7 +225,7 @@ function Public.destination_on_collide(destination)
 			local boat_count = Math.floor(max_time / arrival_rate) - 2 -- avoid spawning biter boats at very last seconds
 
 			for i = 1, boat_count do
-				local spawn_time = Math.random((i-1) * arrival_rate, (i+1) * arrival_rate)
+				local spawn_time = Math.random((i - 1) * arrival_rate, (i + 1) * arrival_rate)
 				spawn_time = spawn_time + 5
 
 				if memory.overworldx == Balance.biter_boats_start_arrive_x then
@@ -249,7 +236,7 @@ function Public.destination_on_collide(destination)
 					end
 				end
 
-				scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = spawn_time, max_evo = max_evo}
+				scheduled_raft_raids[#scheduled_raft_raids + 1] = { timeinseconds = spawn_time, max_evo = max_evo }
 			end
 
 			destination.static_params.scheduled_raft_raids = scheduled_raft_raids
@@ -257,13 +244,11 @@ function Public.destination_on_collide(destination)
 	end
 
 	if memory.overworldx == Balance.biter_boats_start_arrive_x then
-		Common.parrot_speak(memory.force, {'pirates.parrot_boats_warning'})
+		Common.parrot_speak(memory.force, { 'pirates.parrot_boats_warning' })
 	elseif memory.overworldx == Balance.need_resources_to_undock_x then
-		Common.parrot_speak(memory.force, {'pirates.parrot_need_resources_to_undock_warning'})
+		Common.parrot_speak(memory.force, { 'pirates.parrot_need_resources_to_undock_warning' })
 	end
 end
-
-
 
 function Public.destination_on_arrival(destination)
 	local memory = Memory.get_crew_memory()
@@ -280,7 +265,6 @@ function Public.destination_on_arrival(destination)
 	memory.active_sea_enemies.krakens = {}
 
 	if destination.type == enum.ISLAND then
-
 		destination.dynamic_data.rocketsiloenergyneeded = Balance.silo_energy_needed_MJ() * 1000000
 
 		destination.dynamic_data.time_remaining = Balance.max_time_on_island_seconds(destination.subtype)
@@ -292,7 +276,7 @@ function Public.destination_on_arrival(destination)
 			else
 				Quest.initialise_random_quest()
 			end
-		-- else
+			-- else
 			-- if _DEBUG then
 			-- 	Quest.initialise_random_quest()
 			-- end
@@ -328,9 +312,7 @@ function Public.destination_on_arrival(destination)
 		-- 		s.destructible = false
 		-- 	end
 		-- end
-
 	elseif destination.type == enum.DOCK then
-
 		-- -- kick players out of crow's nest
 		-- local crowsnestname = SurfacesCommon.encode_surface_name(memory.id, 0, enum.CROWSNEST, nil)
 		-- for _, player in pairs(game.connected_players) do
@@ -342,13 +324,12 @@ function Public.destination_on_arrival(destination)
 		-- New dock class sales:
 		local class_for_sale = Classes.generate_class_for_sale()
 		destination.static_params.class_for_sale = class_for_sale
-
 	end
 
 	local name = destination.static_params.name and destination.static_params.name or 'NameNotFound'
-	local message = {'pirates.approaching_destination', memory.destinationsvisited_indices and #memory.destinationsvisited_indices or 0, name}
+	local message = { 'pirates.approaching_destination', memory.destinationsvisited_indices and #memory.destinationsvisited_indices or 0, name }
 	if not (#memory.destinationsvisited_indices and #memory.destinationsvisited_indices == 1) then --don't need to notify for the first island
-		Server.to_discord_embed_raw({'', (destination.static_params.discord_emoji or CoreData.comfy_emojis.hype) .. '[' .. memory.name .. '] Approaching ', name, ', ' .. memory.overworldx .. ' leagues.'}, true)
+		Server.to_discord_embed_raw({ '', (destination.static_params.discord_emoji or CoreData.comfy_emojis.hype) .. '[' .. memory.name .. '] Approaching ', name, ', ' .. memory.overworldx .. ' leagues.' }, true)
 	end
 	-- if destination.static_params.name == 'Dock' then
 	-- 	message = message .. ' ' .. 'New trades are available in the Captain\'s Store.'
@@ -356,7 +337,6 @@ function Public.destination_on_arrival(destination)
 	Common.notify_force(memory.force, message)
 
 	if destination.type == enum.ISLAND then
-
 		--game.print('spawning ores, quest structures, etc.')
 		local points_to_avoid = {}
 
@@ -370,7 +350,7 @@ function Public.destination_on_arrival(destination)
 				local position = special.position
 				local avoid_radius = math.sqrt(special.width * special.width + special.height * special.height) / 2 + 5
 
-				points_to_avoid[#points_to_avoid + 1] = {x = position.x, y = position.y, r = avoid_radius}
+				points_to_avoid[#points_to_avoid + 1] = { x = position.x, y = position.y, r = avoid_radius }
 			end
 		end
 
@@ -390,8 +370,8 @@ function Public.destination_on_arrival(destination)
 			if first_silo_pos then
 				local silo_count = Balance.silo_count()
 				for i = 1, silo_count do
-					local avoid_pos = {x = first_silo_pos.x + 9 * (i-1), y = first_silo_pos.y}
-					points_to_avoid[#points_to_avoid + 1] = {x = avoid_pos.x, y = avoid_pos.y, r = 22}
+					local avoid_pos = { x = first_silo_pos.x + 9 * (i - 1), y = first_silo_pos.y }
+					points_to_avoid[#points_to_avoid + 1] = { x = avoid_pos.x, y = avoid_pos.y, r = 22 }
 				end
 			end
 		end
@@ -401,7 +381,7 @@ function Public.destination_on_arrival(destination)
 		if (memory.overworldx >= Balance.quest_structures_first_appear_at and destination.subtype ~= IslandEnum.enum.RADIOACTIVE) or _DEBUG then
 			local covered = Islands.spawn_quest_structure(destination, points_to_avoid)
 			if covered then
-				points_to_avoid[#points_to_avoid + 1] = {x = covered.x, y = covered.y, r = 25}
+				points_to_avoid[#points_to_avoid + 1] = { x = covered.x, y = covered.y, r = 25 }
 			end
 		end
 
@@ -421,8 +401,8 @@ function Public.destination_on_departure(destination)
 
 	-- need to put tips only where we know there are islands:
 
-	if memory.overworldx == 40*9 then
-		Common.parrot_speak(memory.force, {'pirates.parrot_kraken_warning'})
+	if memory.overworldx == 40 * 9 then
+		Common.parrot_speak(memory.force, { 'pirates.parrot_kraken_warning' })
 	end
 
 	if destination.subtype == IslandEnum.enum.MAZE then
@@ -430,9 +410,6 @@ function Public.destination_on_departure(destination)
 		force.manual_mining_speed_modifier = 3 --put back to normal
 	end
 end
-
-
-
 
 function Public.destination_on_crewboat_hits_shore(destination)
 	local memory = Memory.get_crew_memory()
@@ -445,29 +422,28 @@ function Public.destination_on_crewboat_hits_shore(destination)
 	Boats.place_boat(boat, CoreData.static_boat_floor, false, false)
 
 	if destination.type == enum.ISLAND then
-
 		destination.dynamic_data.initial_spawner_count = Common.spawner_count(game.surfaces[destination.surface_name])
 
 		if memory.overworldx == 0 then
-			Common.parrot_speak(memory.force, {'pirates.parrot_0'})
+			Common.parrot_speak(memory.force, { 'pirates.parrot_0' })
 		elseif memory.overworldx == 80 then
-			Common.parrot_speak(memory.force, {'pirates.parrot_night_warning'})
+			Common.parrot_speak(memory.force, { 'pirates.parrot_night_warning' })
 		end
 
 		if destination.subtype == IslandEnum.enum.RADIOACTIVE then
 			-- replace all miners, so that they sit on uranium properly:
 			local surface = game.surfaces[destination.surface_name]
-			local miners = surface.find_entities_filtered({name = 'electric-mining-drill'})
+			local miners = surface.find_entities_filtered({ name = 'electric-mining-drill' })
 			for _, m in pairs(miners) do
 				local direction = m.direction
 				local position = m.position
 				m.destroy()
-				surface.create_entity{name = 'electric-mining-drill', direction = direction, position = position}
+				surface.create_entity { name = 'electric-mining-drill', direction = direction, position = position }
 			end
 
-			Common.parrot_speak(memory.force, {'pirates.parrot_radioactive_tip_2'})
+			Common.parrot_speak(memory.force, { 'pirates.parrot_radioactive_tip_2' })
 		elseif destination.subtype == IslandEnum.enum.MAZE and memory.overworldx == Common.maze_minimap_jam_league then
-			Common.parrot_speak(memory.force, {'pirates.parrot_maze_tip_1'})
+			Common.parrot_speak(memory.force, { 'pirates.parrot_maze_tip_1' })
 		end
 
 		if (memory.merchant_ships_unlocked or _DEBUG) and destination.subtype ~= IslandEnum.enum.CAVE then
@@ -497,14 +473,7 @@ function Public.destination_on_crewboat_hits_shore(destination)
 	end
 end
 
-
-
-
-
-
-
 function Public.generate_detailed_island_data(destination)
-
 	local scope = Public.get_scope(destination)
 
 	local frame_width = scope.Data.terraingen_frame_width
@@ -512,14 +481,14 @@ function Public.generate_detailed_island_data(destination)
 	local boat_extra_distance_from_shore = destination.boat_extra_distance_from_shore
 
 	-- scale 1:32
-	local chunks_horizontal = 2 * Math.floor(frame_width/64)
-	local chunks_vertical = 2 * Math.floor(frame_height/64)
+	local chunks_horizontal = 2 * Math.floor(frame_width / 64)
+	local chunks_vertical = 2 * Math.floor(frame_height / 64)
 
 	local entities = {}
 	local entitymap = {}
 	local tiles = {}
 	local tiles2 = {}
-	local leftboundary, rightboundary, topboundary, bottomboundary = chunks_horizontal/2 + 1, -chunks_horizontal/2 - 1, chunks_vertical/2 + 1, -chunks_vertical/2 - 1 -- reversed, because we'll iterate
+	local leftboundary, rightboundary, topboundary, bottomboundary = chunks_horizontal / 2 + 1, -chunks_horizontal / 2 - 1, chunks_vertical / 2 + 1, -chunks_vertical / 2 - 1 -- reversed, because we'll iterate
 
 	-- local subtype = destination.subtype
 
@@ -527,19 +496,19 @@ function Public.generate_detailed_island_data(destination)
 
 	local noise_generator = Utils.noise_generator(scope.Data.noiseparams, destination.seed)
 
-	for y = -chunks_vertical/2, chunks_vertical/2 - 1, 1 do
-		for x = -chunks_horizontal/2, chunks_horizontal/2 - 1, 1 do
-			local macroposition = {x = x + 0.5, y = y + 0.5}
-			local chunk_frameposition_topleft = {x = x * 32, y = y * 32}
+	for y = -chunks_vertical / 2, chunks_vertical / 2 - 1, 1 do
+		for x = -chunks_horizontal / 2, chunks_horizontal / 2 - 1, 1 do
+			local macroposition = { x = x + 0.5, y = y + 0.5 }
+			local chunk_frameposition_topleft = { x = x * 32, y = y * 32 }
 
 			-- average over the chunk
 			local modalcounts = {}
 			for y2 = 5, 27, 11 do
 				for x2 = 5, 27, 11 do
-					local p2 = {x = chunk_frameposition_topleft.x + x2, y = chunk_frameposition_topleft.y + y2}
+					local p2 = { x = chunk_frameposition_topleft.x + x2, y = chunk_frameposition_topleft.y + y2 }
 
 					local tiles3, entities3 = {}, {}
-					terrain_fn{
+					terrain_fn {
 						p = p2,
 						noise_generator = noise_generator,
 						static_params = destination.static_params,
@@ -569,7 +538,7 @@ function Public.generate_detailed_island_data(destination)
 					modaltile, max = k, v
 				end
 			end
-			tiles[#tiles + 1] = {name = modaltile, position = macroposition}
+			tiles[#tiles + 1] = { name = modaltile, position = macroposition }
 
 			if (not Utils.contains(CoreData.water_tile_names, modaltile)) then
 				leftboundary, rightboundary, topboundary, bottomboundary = Math.min(leftboundary, x), Math.max(rightboundary, x + 1), Math.min(topboundary, y), Math.max(bottomboundary, y + 1)
@@ -586,25 +555,24 @@ function Public.generate_detailed_island_data(destination)
 		local y = tile.position.y
 		if tile.name ~= 'water' and x >= leftboundary and x <= rightboundary and y >= topboundary and y <= bottomboundary then --nil represents water
 			--arrange image so that {0,0} is on the centre of the left edge:
-			local p = {x = x - leftboundary, y = y - (topboundary + bottomboundary)/2}
-			if (topboundary + bottomboundary)/2 % 1 ~= 0 then
+			local p = { x = x - leftboundary, y = y - (topboundary + bottomboundary) / 2 }
+			if (topboundary + bottomboundary) / 2 % 1 ~= 0 then
 				p.y = p.y + 0.5 --adjust so that tiles land on half-integer positions
 			end
 
-			tiles2[#tiles2 + 1] = {name = tile.name, position = p}
+			tiles2[#tiles2 + 1] = { name = tile.name, position = p }
 
 			if (not Utils.contains(CoreData.tiles_that_conflict_with_resource_layer, tile.name)) then
-
 				local ename = entitymap[tile.position]
 				if ename then
-					entities[#entities + 1] = {name = ename, position = p}
+					entities[#entities + 1] = { name = ename, position = p }
 				else
 					if (p.x + 2) % 4 <= 2 and (p.y) % 4 <= 2 then --for the ingame minimap, the ore texture checker only colors these squares
 						local nearby_es = {
-							entitymap[{x = tile.position.x + 1, y = tile.position.y}],
-							entitymap[{x = tile.position.x - 1, y = tile.position.y}],
-							entitymap[{x = tile.position.x, y = tile.position.y + 1}],
-							entitymap[{x = tile.position.x, y = tile.position.y - 1}],
+							entitymap[{ x = tile.position.x + 1, y = tile.position.y }],
+							entitymap[{ x = tile.position.x - 1, y = tile.position.y }],
+							entitymap[{ x = tile.position.x, y = tile.position.y + 1 }],
+							entitymap[{ x = tile.position.x, y = tile.position.y - 1 }],
 						}
 						if not (nearby_es[1] or nearby_es[2] or nearby_es[3] or nearby_es[4]) then
 							positions_free_to_hold_resources[#positions_free_to_hold_resources + 1] = p
@@ -622,11 +590,11 @@ function Public.generate_detailed_island_data(destination)
 		local orestoadd = {}
 		for k, v in pairs(destination.static_params.abstract_ore_amounts) do
 			if k == 'crude-oil' then
-				local count = Math.ceil((v/20)^(1/2)) --assuming the abstract values are about 20 times as big as for other ores
-				orestoadd[k] = {count = count, sizing_each = Common.oil_abstract_to_real(v)/count}
+				local count = Math.ceil((v / 20) ^ (1 / 2)) --assuming the abstract values are about 20 times as big as for other ores
+				orestoadd[k] = { count = count, sizing_each = Common.oil_abstract_to_real(v) / count }
 			else
-				local count = Math.ceil(v^(1/2))
-				orestoadd[k] = {count = count, sizing_each = Common.ore_abstract_to_real(v)/count}
+				local count = Math.ceil(v ^ (1 / 2))
+				orestoadd[k] = { count = count, sizing_each = Common.ore_abstract_to_real(v) / count }
 			end
 		end
 		for k, v in pairs(orestoadd) do
@@ -635,10 +603,10 @@ function Public.generate_detailed_island_data(destination)
 					local random_index = Math.random(#positions_free_to_hold_resources)
 					local p = positions_free_to_hold_resources[random_index]
 
-					entities[#entities + 1] = {name = k, position = p, amount = v.sizing_each}
+					entities[#entities + 1] = { name = k, position = p, amount = v.sizing_each }
 
 					for j = random_index, #positions_free_to_hold_resources - 1 do
-						positions_free_to_hold_resources[j] = positions_free_to_hold_resources[j+1]
+						positions_free_to_hold_resources[j] = positions_free_to_hold_resources[j + 1]
 					end
 					positions_free_to_hold_resources[#positions_free_to_hold_resources] = nil
 				end
@@ -651,10 +619,10 @@ function Public.generate_detailed_island_data(destination)
 	for ystep = -10, 10, 10 do
 		for xstep = 0, 300, 3 do
 			local x = leftboundary * 32 + 16 + xstep
-			local y = (topboundary*32 + bottomboundary*32)/2 + ystep
+			local y = (topboundary * 32 + bottomboundary * 32) / 2 + ystep
 			local tiles3 = {}
-			terrain_fn{
-				p = {x = x, y = y},
+			terrain_fn {
+				p = { x = x, y = y },
 				noise_generator = noise_generator,
 				static_params = destination.static_params,
 				tiles = tiles3,
@@ -680,19 +648,19 @@ function Public.generate_detailed_island_data(destination)
 
 	local extension_to_left = Math.ceil(Common.boat_default_starting_distance_from_shore + boat_extra_distance_from_shore + Common.mapedge_distance_from_boat_starting_position - xcorrection)
 
-	local terraingen_coordinates_offset = {x = (leftboundary*32 + rightboundary*32)/2 - extension_to_left/2, y = (topboundary*32 + bottomboundary*32)/2}
-	local width = rightboundary*32 - leftboundary*32 + extension_to_left
-	local height = bottomboundary*32 - topboundary*32
+	local terraingen_coordinates_offset = { x = (leftboundary * 32 + rightboundary * 32) / 2 - extension_to_left / 2, y = (topboundary * 32 + bottomboundary * 32) / 2 }
+	local width = rightboundary * 32 - leftboundary * 32 + extension_to_left
+	local height = bottomboundary * 32 - topboundary * 32
 
-	local deepwater_terraingenframe_xposition = leftboundary*32 - Common.deepwater_distance_from_leftmost_shore
-	local islandcenter_position = {x = extension_to_left/2, y = 0}
+	local deepwater_terraingenframe_xposition = leftboundary * 32 - Common.deepwater_distance_from_leftmost_shore
+	local islandcenter_position = { x = extension_to_left / 2, y = 0 }
 	local deepwater_xposition = deepwater_terraingenframe_xposition - terraingen_coordinates_offset.x
 
 	-- -- must ceil this, because if it's a half integer big things will teleport badly:
 	-- local boat_starting_xposition = Math.ceil(- width/2 + Common.mapedge_distance_from_boat_starting_position)
 	-- worse, must make this even due to rails:
-	local boat_starting_xposition = 2*Math.ceil(
-		(- width/2 + Common.mapedge_distance_from_boat_starting_position)/2
+	local boat_starting_xposition = 2 * Math.ceil(
+		(-width / 2 + Common.mapedge_distance_from_boat_starting_position) / 2
 	)
 
 	destination.static_params.terraingen_coordinates_offset = terraingen_coordinates_offset
@@ -711,11 +679,7 @@ function Public.generate_detailed_island_data(destination)
 	destination.iconized_map_height = iconheight
 end
 
-
-
-
 function Public.create_surface(destination)
-
 	local surface_name = destination.surface_name
 	if game.surfaces[surface_name] then return end
 
@@ -727,8 +691,8 @@ function Public.create_surface(destination)
 	-- ))
 
 	local mgs = Utils.deepcopy(Common.default_map_gen_settings(
-		Math.max(0,destination.static_params.width) or 128,
-		Math.max(0,destination.static_params.height) or 128,
+		Math.max(0, destination.static_params.width) or 128,
+		Math.max(0, destination.static_params.height) or 128,
 		destination.seed or Math.random(1, 1000000)
 	))
 
@@ -741,7 +705,7 @@ function Public.create_surface(destination)
 	surface.solar_power_multiplier = destination.static_params.solar_power_multiplier or 1
 	surface.show_clouds = destination.static_params.clouds or false
 	surface.min_brightness = destination.static_params.min_brightness or 0.15
-	surface.brightness_visual_weights = destination.static_params.brightness_visual_weights or {1, 1, 1}
+	surface.brightness_visual_weights = destination.static_params.brightness_visual_weights or { 1, 1, 1 }
 	surface.daytime = destination.static_params.starting_time_of_day or 0
 
 	local daynightcycletype = destination.static_params.daynightcycletype or 1
@@ -758,9 +722,6 @@ function Public.create_surface(destination)
 
 	Public.on_surface_generation(destination)
 end
-
-
-
 
 function Public.clean_up(destination)
 	local memory = Memory.get_crew_memory()
@@ -793,13 +754,6 @@ function Public.clean_up(destination)
 
 	game.delete_surface(oldsurface)
 end
-
-
-
-
-
-
-
 
 -- function Public.crowsnest_init_destinations()
 -- 	local memory = Memory.get_crew_memory()
@@ -840,12 +794,12 @@ function Public.player_goto_crows_nest(player, player_relative_pos)
 
 	local carpos
 	if player_relative_pos.x < 0 then
-		carpos = {x = -2.29687, y = 0}
+		carpos = { x = -2.29687, y = 0 }
 	else
-		carpos = {x = 3.29687, y = 0}
+		carpos = { x = 3.29687, y = 0 }
 	end
 
-	local newpos = {x = memory.overworldx + carpos.x - player_relative_pos.x, y = memory.overworldy + carpos.y + player_relative_pos.y}
+	local newpos = { x = memory.overworldx + carpos.x - player_relative_pos.x, y = memory.overworldy + carpos.y + player_relative_pos.y }
 
 	local newpos2 = surface.find_non_colliding_position('character', newpos, 5, 0.2) or newpos
 
@@ -853,7 +807,6 @@ function Public.player_goto_crows_nest(player, player_relative_pos)
 
 	-- player.minimap_enabled = false
 end
-
 
 function Public.player_exit_crows_nest(player, player_relative_pos)
 	local memory = Memory.get_crew_memory()
@@ -871,7 +824,7 @@ function Public.player_exit_crows_nest(player, player_relative_pos)
 	else
 		carpos = Boats.get_scope(memory.boat).Data.entercrowsnest_cars.left
 	end
-	local newpos = {x = memory.boat.position.x + carpos.x - player_relative_pos.x, y = memory.boat.position.y + carpos.y + player_relative_pos.y}
+	local newpos = { x = memory.boat.position.x + carpos.x - player_relative_pos.x, y = memory.boat.position.y + carpos.y + player_relative_pos.y }
 
 	local newpos2 = surface.find_non_colliding_position('character', newpos, 10, 0.2) or newpos
 
@@ -880,19 +833,17 @@ function Public.player_exit_crows_nest(player, player_relative_pos)
 	-- player.minimap_enabled = true
 end
 
-
 function Public.player_goto_hold(player, relative_pos, nth)
 	-- local memory = Memory.get_crew_memory()
 
 	local surface = Hold.get_hold_surface(nth)
 
-	local newpos = {x = Hold.Data.loco_offset.x + 1 + relative_pos.x, y = Hold.Data.loco_offset.y + relative_pos.y}
+	local newpos = { x = Hold.Data.loco_offset.x + 1 + relative_pos.x, y = Hold.Data.loco_offset.y + relative_pos.y }
 
 	local newpos2 = surface.find_non_colliding_position('character', newpos, 5, 0.2) or newpos
 
 	if newpos2 then player.teleport(newpos2, surface) end
 end
-
 
 function Public.player_exit_hold(player, relative_pos)
 	local memory = Memory.get_crew_memory()
@@ -906,21 +857,19 @@ function Public.player_exit_hold(player, relative_pos)
 	end
 
 	local locopos = Boats.get_scope(boat).Data.loco_pos
-	local newpos = {x = boat.position.x + locopos.x + relative_pos.x, y = boat.position.y + locopos.y + relative_pos.y}
+	local newpos = { x = boat.position.x + locopos.x + relative_pos.x, y = boat.position.y + locopos.y + relative_pos.y }
 
 	local newpos2 = surface.find_non_colliding_position('character', newpos, 10, 0.2) or newpos
 
 	if newpos2 then player.teleport(newpos2, surface) end
 end
 
-
-
 function Public.player_goto_cabin(player, relative_pos)
 	local memory = Memory.get_crew_memory()
 
 	local surface = Cabin.get_cabin_surface()
 
-	local newpos = {x = Cabin.Data.car_pos.x - relative_pos.x, y = Cabin.Data.car_pos.y + relative_pos.y}
+	local newpos = { x = Cabin.Data.car_pos.x - relative_pos.x, y = Cabin.Data.car_pos.y + relative_pos.y }
 
 	local newpos2 = surface.find_non_colliding_position('character', newpos, 5, 0.2) or newpos
 
@@ -928,10 +877,9 @@ function Public.player_goto_cabin(player, relative_pos)
 
 	if (not memory.captain_cabin_hint_given) and Common.is_captain(player) then
 		memory.captain_cabin_hint_given = true
-		Common.parrot_speak(memory.force, {'pirates.parrot_captain_first_time_in_cabin_hint'})
+		Common.parrot_speak(memory.force, { 'pirates.parrot_captain_first_time_in_cabin_hint' })
 	end
 end
-
 
 function Public.player_exit_cabin(player, relative_pos)
 	local memory = Memory.get_crew_memory()
@@ -945,17 +893,11 @@ function Public.player_exit_cabin(player, relative_pos)
 	end
 
 	local carpos = Boats.get_scope(boat).Data.cabin_car
-	local newpos = {x = boat.position.x + carpos.x - relative_pos.x, y = boat.position.y + carpos.y + relative_pos.y}
+	local newpos = { x = boat.position.x + carpos.x - relative_pos.x, y = boat.position.y + carpos.y + relative_pos.y }
 
 	local newpos2 = surface.find_non_colliding_position('character', newpos, 10, 0.2) or newpos
 
 	if newpos2 then player.teleport(newpos2, surface) end
 end
-
-
-
-
-
-
 
 return Public

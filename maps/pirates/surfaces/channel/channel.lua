@@ -19,13 +19,11 @@ Public.info = {
 }
 
 function Public.terrain(args)
-
-	if (args.p.y>30 or args.p.y<-20) and args.p.x>-80 and args.p.x<80 then
-		args.tiles[#args.tiles + 1] = {name = 'sand-1', position = args.p}
+	if (args.p.y > 30 or args.p.y < -20) and args.p.x > -80 and args.p.x < 80 then
+		args.tiles[#args.tiles + 1] = { name = 'sand-1', position = args.p }
 	else
-		args.tiles[#args.tiles + 1] = {name = 'deepwater', position = args.p}
+		args.tiles[#args.tiles + 1] = { name = 'deepwater', position = args.p }
 	end
-
 end
 
 function Public.chunk_structures()

@@ -7,7 +7,7 @@
 
 local Public = {}
 
-Public.display_names = {{'pirates.location_displayname_maze_1'}}
+Public.display_names = { { 'pirates.location_displayname_maze_1' } }
 
 Public.terraingen_frame_width = 896
 Public.terraingen_frame_height = 896
@@ -38,8 +38,8 @@ Public.noiseparams = {
 		type = 'simplex_2d',
 		normalised = false,
 		params = {
-			{wavelength = 0, amplitude = rscale * 1},
-			{wavelength = 1.6, amplitude = rscale * 0.15},
+			{ wavelength = 0,   amplitude = rscale * 1 },
+			{ wavelength = 1.6, amplitude = rscale * 0.15 },
 		},
 	},
 
@@ -47,8 +47,8 @@ Public.noiseparams = {
 		type = 'simplex_2d',
 		normalised = true,
 		params = {
-			{wavelength = 250, amplitude = 70},
-			{wavelength = 50, amplitude = 20},
+			{ wavelength = 250, amplitude = 70 },
+			{ wavelength = 50,  amplitude = 20 },
 		},
 	},
 }

@@ -7,13 +7,13 @@
 
 local Public = {}
 
-Public.display_names = {{'pirates.location_displayname_radioactive_1'}}
+Public.display_names = { { 'pirates.location_displayname_radioactive_1' } }
 
 Public.terraingen_frame_width = 700
 Public.terraingen_frame_height = 700
 Public.static_params_default = {
 	starting_time_of_day = 0.45,
-	brightness_visual_weights = {0.8, 0.6, 0.8},
+	brightness_visual_weights = { 0.8, 0.6, 0.8 },
 	daynightcycletype = 4,
 	min_brightness = 0.05,
 	base_starting_treasure = 1000,
@@ -39,8 +39,8 @@ Public.noiseparams = {
 		type = 'simplex_2d',
 		normalised = false,
 		params = {
-			{wavelength = 0, amplitude = rscale * 1},
-			{wavelength = 2.5, amplitude = rscale * 0.12},
+			{ wavelength = 0,   amplitude = rscale * 1 },
+			{ wavelength = 2.5, amplitude = rscale * 0.12 },
 		},
 	},
 
@@ -49,8 +49,8 @@ Public.noiseparams = {
 		normalised = false,
 		params = {
 			-- {upperscale = 1000, amplitude = hscale * 200},
-			{upperscale = 1600, amplitude = hscale * 1},
-			{upperscale = 80, amplitude = hscale * 0.1},
+			{ upperscale = 1600, amplitude = hscale * 1 },
+			{ upperscale = 80,   amplitude = hscale * 0.1 },
 		},
 	},
 
@@ -58,7 +58,7 @@ Public.noiseparams = {
 		type = 'forest1',
 		normalised = true,
 		params = {
-			{upperscale = 180, amplitude = 1},
+			{ upperscale = 180, amplitude = 1 },
 			-- {upperscale = 0, amplitude = 0.15},
 		},
 	},
@@ -67,7 +67,7 @@ Public.noiseparams = {
 		type = 'forest1',
 		normalised = true,
 		params = {
-			{upperscale = 110, amplitude = 1, seedfactor = 2},
+			{ upperscale = 110, amplitude = 1, seedfactor = 2 },
 		},
 	},
 
@@ -75,7 +75,7 @@ Public.noiseparams = {
 		type = 'forest1',
 		normalised = true,
 		params = {
-			{upperscale = 40, amplitude = 1, seedfactor = 3},
+			{ upperscale = 40, amplitude = 1, seedfactor = 3 },
 		},
 	},
 }

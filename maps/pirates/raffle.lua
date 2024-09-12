@@ -9,9 +9,8 @@ local Public = {}
 -- - MAY return random equally distributed item from "values" when there is at least 1 weight <= 0 and
 -- - WILL with all weights <= 0
 function Public.raffle(values, weights) --arguments of the form {[a] = A, [b] = B, ...} and {[a] = a_weight, [b] = b_weight, ...} or just {a,b,c,...} and {1,2,3...}
-
 	local total_weight = 0
-	for k,w in pairs(weights) do
+	for k, w in pairs(weights) do
 		assert(values[k])
 		if w > 0 then
 			total_weight = total_weight + w
@@ -27,7 +26,7 @@ function Public.raffle(values, weights) --arguments of the form {[a] = A, [b] = 
 
 	local cumulative_probability = 0
 	local rng = Math.random()
-	for k,v in pairs(values) do
+	for k, v in pairs(values) do
 		assert(weights[k])
 		cumulative_probability = cumulative_probability + (weights[k] / total_weight)
 		if rng <= cumulative_probability then
@@ -45,7 +44,6 @@ end
 -- - MAY return random equally distributed item from "values" when there is at least 1 weight <= 0 and
 -- - WILL with all weights <= 0
 function Public.raffle2(table) --arguments of the form {v1 = w1, v2 = w2, ...}
-
 	local total_weight = 0
 	for _, w in pairs(table) do
 		if w > 0 then
@@ -69,7 +67,7 @@ function Public.raffle2(table) --arguments of the form {v1 = w1, v2 = w2, ...}
 	local cumulative_probability = 0
 	local rng = Math.random()
 	for k, w in pairs(table) do
-		cumulative_probability = cumulative_probability + w/total_weight
+		cumulative_probability = cumulative_probability + w / total_weight
 		if rng <= cumulative_probability then
 			return k
 		end
@@ -86,33 +84,32 @@ function Public.raffle2(table) --arguments of the form {v1 = w1, v2 = w2, ...}
 	end
 end
 
-
 --==thesixthroc's Lambda Raffles
 
 -- This file provides a one-parameter family of raffles called 'Lambda raffles'. When you want to roll the raffle, you also provide a parameter 'lambda', and the raffle weights vary with lambda in a specified way. For example, the parameter could be the game completion progress, and the raffle could produce certain items only in the late game.
 
 function Public.LambdaRaffle(data, lambda, extraConditionParameter)
--- 	example_argument = {
--- 	['iron-stick'] = {
--- 		overallWeight = 1,
--- 		minLambda = 0,
--- 		maxLambda = 0.5,
--- 		shape = 'uniform', -- a uniform raffle weight of 1, if lambda is between 0 and 1
--- 	},
--- 	['coal'] = {
--- 		overallWeight = 3,
--- 		minLambda = 0,
--- 		maxLambda = 0.5,
--- 		shape = 'density', -- a uniform raffle weight of 6, if lambda is between 0 and 1
--- 	},
--- 	['copper-wire'] = {
--- 		overallWeight = 1,
--- 		minLambda = 0,
--- 		maxLambda = 1,
--- 		shape = 'bump', -- the raffle weight is a ⋀ shape, going from (0, 0) to (0.5, 2) to (1, 0)
--- 		condition = function(x) return x == 'copperIsland' end, --this optional key performs a check on extraConditionParameter to see whether this raffle value should be included at all
--- 	},
--- }
+	-- 	example_argument = {
+	-- 	['iron-stick'] = {
+	-- 		overallWeight = 1,
+	-- 		minLambda = 0,
+	-- 		maxLambda = 0.5,
+	-- 		shape = 'uniform', -- a uniform raffle weight of 1, if lambda is between 0 and 1
+	-- 	},
+	-- 	['coal'] = {
+	-- 		overallWeight = 3,
+	-- 		minLambda = 0,
+	-- 		maxLambda = 0.5,
+	-- 		shape = 'density', -- a uniform raffle weight of 6, if lambda is between 0 and 1
+	-- 	},
+	-- 	['copper-wire'] = {
+	-- 		overallWeight = 1,
+	-- 		minLambda = 0,
+	-- 		maxLambda = 1,
+	-- 		shape = 'bump', -- the raffle weight is a ⋀ shape, going from (0, 0) to (0.5, 2) to (1, 0)
+	-- 		condition = function(x) return x == 'copperIsland' end, --this optional key performs a check on extraConditionParameter to see whether this raffle value should be included at all
+	-- 	},
+	-- }
 	local raffle = {}
 
 	for k, v in pairs(data) do
@@ -150,7 +147,6 @@ function Public.LambdaRaffle(data, lambda, extraConditionParameter)
 	return Public.raffle2(raffle)
 end
 
-
 -- a function that accepts more abbreviated raffle data:
 function Public.LambdaRaffleFromAbbreviatedData(abbreviatedData, lambda, extraConditionParameter)
 	-- 	example_argument = {
@@ -174,7 +170,5 @@ function Public.LambdaRaffleFromAbbreviatedData(abbreviatedData, lambda, extraCo
 	end
 	return Public.LambdaRaffle(data, lambda, extraConditionParameter)
 end
-
-
 
 return Public

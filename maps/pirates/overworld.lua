@@ -46,44 +46,44 @@ local HORSESHOE = IslandEnum.enum.HORSESHOE
 local STANDARD2 = IslandEnum.enum.STANDARD_VARIANT
 local CAVE = IslandEnum.enum.CAVE
 
-local A = {STANDARD2, RED_DESERT, HORSESHOE, WALKWAYS}
-local B = {NIL, NIL, NIL, STANDARD, STANDARD2, RED_DESERT, HORSESHOE, WALKWAYS, CAVE}
-local C = {STANDARD, STANDARD2, RED_DESERT, HORSESHOE, WALKWAYS}
-local D = {NIL, NIL, NIL, STANDARD, STANDARD2, RED_DESERT, HORSESHOE, WALKWAYS, SWAMP, CAVE}
+local A = { STANDARD2, RED_DESERT, HORSESHOE, WALKWAYS }
+local B = { NIL, NIL, NIL, STANDARD, STANDARD2, RED_DESERT, HORSESHOE, WALKWAYS, CAVE }
+local C = { STANDARD, STANDARD2, RED_DESERT, HORSESHOE, WALKWAYS }
+local D = { NIL, NIL, NIL, STANDARD, STANDARD2, RED_DESERT, HORSESHOE, WALKWAYS, SWAMP, CAVE }
 
 local destinationScheme = {
-	[0] = {FIRST, NIL, NIL},
-	[1] = {HORSESHOE, HORSESHOE, HORSESHOE}, --map where you break rocks
-	[2] = {STANDARD2, STANDARD2, STANDARD2}, --aesthetically different to previous map
-	[3] = {DOCK, NIL, NIL},
-	[4] = {A, A, NIL},
-	[5] = {STANDARD, STANDARD, STANDARD}, --biter boats appear. large island works well so players run off
-	[6] = {MAZE, MAZE, MAZE},
-	[7] = {DOCK, B, B},
-	[8] = {NIL, NIL, NIL},
-	[9] = {B, B, B},
-	[10] = {NIL, NIL, NIL},
-	[11] = {DOCK, B, B},
-	[12] = {SWAMP, SWAMP, C}, --gotta steer if you don't want to do swamp
-	[13] = {B, B, B},
-	[14] = {B, B, B},
-	[15] = {DOCK, B, B},
-	[16] = {RADIOACTIVE, RADIOACTIVE, RADIOACTIVE},
-	[17] = {B, B, B},
-	[18] = {C, C, C}, --first showing of robot frame cost
-	[19] = {DOCK, B, B},
-	[20] = {WALKWAYS, WALKWAYS, WALKWAYS}, --rocket launch cost begins
-	[21] = {SWAMP, RED_DESERT, STANDARD2}, -- uniquely, this has a rocket launch cost, but still has an auto-undock timer
-	[22] = {NIL, NIL, NIL},
-	[23] = {C, C, C},
-	[24] = {MAZE, MAZE, MAZE}, -- current 'boss map'
-	[25] = {NIL, NIL, NIL},
+	[0] = { FIRST, NIL, NIL },
+	[1] = { HORSESHOE, HORSESHOE, HORSESHOE }, --map where you break rocks
+	[2] = { STANDARD2, STANDARD2, STANDARD2 }, --aesthetically different to previous map
+	[3] = { DOCK, NIL, NIL },
+	[4] = { A, A, NIL },
+	[5] = { STANDARD, STANDARD, STANDARD }, --biter boats appear. large island works well so players run off
+	[6] = { MAZE, MAZE, MAZE },
+	[7] = { DOCK, B, B },
+	[8] = { NIL, NIL, NIL },
+	[9] = { B, B, B },
+	[10] = { NIL, NIL, NIL },
+	[11] = { DOCK, B, B },
+	[12] = { SWAMP, SWAMP, C }, --gotta steer if you don't want to do swamp
+	[13] = { B, B, B },
+	[14] = { B, B, B },
+	[15] = { DOCK, B, B },
+	[16] = { RADIOACTIVE, RADIOACTIVE, RADIOACTIVE },
+	[17] = { B, B, B },
+	[18] = { C, C, C },                 --first showing of robot frame cost
+	[19] = { DOCK, B, B },
+	[20] = { WALKWAYS, WALKWAYS, WALKWAYS }, --rocket launch cost begins
+	[21] = { SWAMP, RED_DESERT, STANDARD2 }, -- uniquely, this has a rocket launch cost, but still has an auto-undock timer
+	[22] = { NIL, NIL, NIL },
+	[23] = { C, C, C },
+	[24] = { MAZE, MAZE, MAZE }, -- current 'boss map'
+	[25] = { NIL, NIL, NIL },
 }
 
 
 
 function Public.generate_destination_type_and_subtype(overworld_position)
-	local macro_p = {x = overworld_position.x/40, y = overworld_position.y/24}
+	local macro_p = { x = overworld_position.x / 40, y = overworld_position.y / 24 }
 	local macro_x = macro_p.x
 	local macro_y = macro_p.y
 
@@ -125,67 +125,63 @@ function Public.generate_destination_type_and_subtype(overworld_position)
 		type2 = Surfaces.enum.ISLAND
 	end
 
-	return {type = type2, subtype = subtype}
+	return { type = type2, subtype = subtype }
 	-- return {type = Surfaces.enum.ISLAND, subtype = IslandEnum.enum.CAVE}
 end
 
-
-
-
 function Public.generate_destination_base_cost_to_undock(p, subtype)
-
-	local macro_p = {x = p.x/40, y = p.y/24}
+	local macro_p = { x = p.x / 40, y = p.y / 24 }
 
 	local base_cost_to_undock
 
-	local normal_costitems = {'electronic-circuit', 'advanced-circuit'}
+	local normal_costitems = { 'electronic-circuit', 'advanced-circuit' }
 	-- local special_costitems = {'rocket-fuel', 'flying-robot-frame'}
 
 	-- These need to scale up slightly slower than the static fuel depletion rate, so you're increasingly incentivised to leave:
 	local base_cost_1 = {
-		['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*120),
+		['electronic-circuit'] = Math.ceil(((macro_p.x - 2) ^ (2 / 3)) * 120),
 	}
 	local base_cost_2 = {
-		['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*200),
-		['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*20),
+		['electronic-circuit'] = Math.ceil(((macro_p.x - 2) ^ (2 / 3)) * 200),
+		['advanced-circuit'] = Math.ceil(((macro_p.x - 14) ^ (2 / 3)) * 20),
 		-- the below got this response from a new player: "This feels... underwhelming."
 		-- ['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*120),
 		-- ['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*18),
 	}
 	local base_cost_2b = {
-		['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*200),
+		['electronic-circuit'] = Math.ceil(((macro_p.x - 2) ^ (2 / 3)) * 200),
 		['flying-robot-frame'] = 5,
 	}
 	local base_cost_3 = {
-		['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*160),
-		['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*20),
+		['electronic-circuit'] = Math.ceil(((macro_p.x - 2) ^ (2 / 3)) * 160),
+		['advanced-circuit'] = Math.ceil(((macro_p.x - 14) ^ (2 / 3)) * 20),
 		['launch_rocket'] = true,
 	}
 	local base_cost_4 = {
-		['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*140),
-		['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*20),
-		['flying-robot-frame'] = Math.ceil(((macro_p.x-18)^(2/3))*25),
+		['electronic-circuit'] = Math.ceil(((macro_p.x - 2) ^ (2 / 3)) * 140),
+		['advanced-circuit'] = Math.ceil(((macro_p.x - 14) ^ (2 / 3)) * 20),
+		['flying-robot-frame'] = Math.ceil(((macro_p.x - 18) ^ (2 / 3)) * 25),
 		['launch_rocket'] = true,
 	}
 	local base_cost_5 = {
-		['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*140),
-		['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*20),
-		['flying-robot-frame'] = Math.ceil(((macro_p.x-18)^(2/3))*10),
+		['electronic-circuit'] = Math.ceil(((macro_p.x - 2) ^ (2 / 3)) * 140),
+		['advanced-circuit'] = Math.ceil(((macro_p.x - 14) ^ (2 / 3)) * 20),
+		['flying-robot-frame'] = Math.ceil(((macro_p.x - 18) ^ (2 / 3)) * 10),
 		-- ['rocket-fuel'] = Math.ceil(((macro_p.x-18)^(2/3))*10),
 		-- ['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*100),
 		-- ['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*20),
 		-- ['flying-robot-frame'] = Math.ceil(((macro_p.x-18)^(2/3))*10),
 	}
 	-- if macro_p.x == 0 then
-		-- if _DEBUG then
-		-- 	base_cost_to_undock = {
-		-- 		['electronic-circuit'] = 5,
-		-- 		['engine-unit'] = 5,
-		-- 		['advanced-circuit'] = 5,
-		-- 		['flying-robot-frame'] = 5,
-		-- 	}
-		-- end
-		-- base_cost_to_undock = nil
+	-- if _DEBUG then
+	-- 	base_cost_to_undock = {
+	-- 		['electronic-circuit'] = 5,
+	-- 		['engine-unit'] = 5,
+	-- 		['advanced-circuit'] = 5,
+	-- 		['flying-robot-frame'] = 5,
+	-- 	}
+	-- end
+	-- base_cost_to_undock = nil
 	-- elseif macro_p.x <= 6 then
 	if macro_p.x <= Common.first_cost_to_leave_macrox - 1 then
 		-- base_cost_to_undock = {['electronic-circuit'] = 5}
@@ -243,31 +239,25 @@ function Public.generate_destination_base_cost_to_undock(p, subtype)
 
 	-- -- debug override:
 	-- if _DEBUG then
-		-- base_cost_to_undock = {
-		-- 	['electronic-circuit'] = 200,
-		-- 	['launch_rocket'] = true,
-		-- }
+	-- base_cost_to_undock = {
+	-- 	['electronic-circuit'] = 200,
+	-- 	['launch_rocket'] = true,
+	-- }
 	-- end
 
 	return base_cost_to_undock -- Multiplication by Balance.cost_to_leave_multiplier() happens later, in destination_on_collide.
 end
 
-
-
-
-
-
-
 local infront_positions = {}
 for x = -6, -3 do
-	for y = - 3, 3 do
-		infront_positions[#infront_positions + 1] = {x = x, y = y}
+	for y = -3, 3 do
+		infront_positions[#infront_positions + 1] = { x = x, y = y }
 	end
 end
 local interior_positions = {}
 for x = 1, 14 do
-	for y = - 3, 3 do
-		interior_positions[#interior_positions + 1] = {x = x, y = y}
+	for y = -3, 3 do
+		interior_positions[#interior_positions + 1] = { x = x, y = y }
 	end
 end
 
@@ -277,14 +267,13 @@ function Public.generate_overworld_destination(p)
 	-- be careful when calling any Balance functions that depend on overworldx — they will be evaluated when the island is chosen, not on arrival
 	local memory = Memory.get_crew_memory()
 
-	local macro_p = {x = p.x/40, y = p.y/24}
+	local macro_p = { x = p.x / 40, y = p.y / 24 }
 
 	local type_data = Public.generate_destination_type_and_subtype(p)
 	local type = type_data.type
 	local subtype = type_data.subtype
 
 	if type == Surfaces.enum.ISLAND then
-
 		local scope = Surfaces[Surfaces.enum.ISLAND][subtype]
 
 		local static_params = Utils.deepcopy(scope.Data.static_params_default)
@@ -328,7 +317,7 @@ function Public.generate_overworld_destination(p)
 		for k, v in pairs(base_ores) do
 			local rng = 1
 			if not (k == 'coal' or macro_p.x == 0) then
-				rng = rngs[k] / (rngsum/rngcount) --average of 1
+				rng = rngs[k] / (rngsum / rngcount) --average of 1
 			end
 			abstract_ore_amounts[k] = ores_multiplier * v * rng
 		end
@@ -351,17 +340,15 @@ function Public.generate_overworld_destination(p)
 
 		static_params.name = scope.Data.display_names[Math.random(#scope.Data.display_names)]
 
-        local dest = Surfaces.initialise_destination{
-            static_params = static_params,
-            type = type,
-            subtype = subtype,
-            overworld_position = p,
-        }
+		local dest = Surfaces.initialise_destination {
+			static_params = static_params,
+			type = type,
+			subtype = subtype,
+			overworld_position = p,
+		}
 
 		Crowsnest.draw_destination(dest)
-
 	elseif type == Surfaces.enum.DOCK then
-
 		local boat_for_sale_type
 		-- if macro_p.x == 3 then
 		-- 	boat_for_sale_type = Boats.enum.CUTTER
@@ -403,13 +390,13 @@ function Public.generate_overworld_destination(p)
 
 		static_params.name = Dock.Data.display_names[Math.random(#Dock.Data.display_names)]
 
-        local dest = Surfaces.initialise_destination{
-            static_params = static_params,
-            type = type,
-            subtype = subtype,
-            overworld_position = {x = p.x, y = -36},
-            -- overworld_position = {x = p.x, y = 36},
-        }
+		local dest = Surfaces.initialise_destination {
+			static_params = static_params,
+			type = type,
+			subtype = subtype,
+			overworld_position = { x = p.x, y = -36 },
+			-- overworld_position = {x = p.x, y = 36},
+		}
 
 		Crowsnest.draw_destination(dest)
 
@@ -419,16 +406,16 @@ function Public.generate_overworld_destination(p)
 		local x = Crowsnest.platformrightmostedge + dest.overworld_position.x
 		local y = dest.overworld_position.y
 		if dest.static_params.upgrade_for_sale then
-			local display_form = {'', Upgrades.crowsnest_display_form[dest.static_params.upgrade_for_sale], ':'}
+			local display_form = { '', Upgrades.crowsnest_display_form[dest.static_params.upgrade_for_sale], ':' }
 
 			if not dest.dynamic_data.crowsnest_renderings then
 				dest.dynamic_data.crowsnest_renderings = {}
 			end
 
-			dest.dynamic_data.crowsnest_renderings.base_text_rendering = rendering.draw_text{
+			dest.dynamic_data.crowsnest_renderings.base_text_rendering = rendering.draw_text {
 				text = display_form,
 				surface = surface,
-				target = {x = x + 5.5, y = y + 2.5},
+				target = { x = x + 5.5, y = y + 2.5 },
 				color = CoreData.colors.renderingtext_green,
 				scale = 7,
 				font = 'default-game',
@@ -445,20 +432,20 @@ function Public.generate_overworld_destination(p)
 					sprite = 'item/coin'
 				end
 				dest.dynamic_data.crowsnest_renderings[price_name] = {
-					text_rendering = rendering.draw_text{
+					text_rendering = rendering.draw_text {
 						text = Utils.bignumber_abbrevform2(price_count),
 						surface = surface,
-						target = {x = x + 6, y = y + 8.3 - i * 3.5},
+						target = { x = x + 6, y = y + 8.3 - i * 3.5 },
 						color = CoreData.colors.renderingtext_green,
 						scale = 5.2,
 						font = 'default-game',
 						alignment = 'left',
 						visible = false,
 					},
-					sprite_rendering = rendering.draw_sprite{
+					sprite_rendering = rendering.draw_sprite {
 						sprite = sprite,
 						surface = surface,
-						target = {x = x + 14.1, y = y + 10.8 - i * 3.5},
+						target = { x = x + 14.1, y = y + 10.8 - i * 3.5 },
 						x_scale = 4.5,
 						y_scale = 4.5,
 						visible = false,
@@ -491,7 +478,7 @@ function Public.generate_overworld_destination(p)
 	end
 
 	-- if _DEBUG then
-		-- kraken_count = 1
+	-- kraken_count = 1
 	-- end
 
 	if position_candidates then
@@ -499,17 +486,13 @@ function Public.generate_overworld_destination(p)
 		if random_indices then
 			for _, idx in ipairs(random_indices) do
 				local p_chosen = position_candidates[idx]
-				local p_kraken = Utils.psum{p_chosen, p}
+				local p_kraken = Utils.psum { p_chosen, p }
 				Crowsnest.draw_kraken(p_kraken)
 				memory.overworld_krakens[#memory.overworld_krakens + 1] = p_kraken
 			end
 		end
 	end
 end
-
-
-
-
 
 function Public.ensure_lane_generated_up_to(lane_yvalue, x)
 	-- make sure lane_yvalue=0 is painted first
@@ -529,7 +512,7 @@ function Public.ensure_lane_generated_up_to(lane_yvalue, x)
 			for _, dest in pairs(memory.destinations) do
 				if dest.static_params.upgrade_for_sale and dest.dynamic_data.crowsnest_renderings then
 					if rendering.is_valid(dest.dynamic_data.crowsnest_renderings.base_text_rendering) then
-						rendering.set_text(dest.dynamic_data.crowsnest_renderings.base_text_rendering, {'', Upgrades.crowsnest_display_form[dest.static_params.upgrade_for_sale], ':'})
+						rendering.set_text(dest.dynamic_data.crowsnest_renderings.base_text_rendering, { '', Upgrades.crowsnest_display_form[dest.static_params.upgrade_for_sale], ':' })
 					end
 					for rendering_name, r in pairs(dest.dynamic_data.crowsnest_renderings) do
 						if type(r) == 'table' and r.text_rendering and rendering.is_valid(r.text_rendering) then
@@ -540,14 +523,11 @@ function Public.ensure_lane_generated_up_to(lane_yvalue, x)
 			end
 			Crowsnest.update_destination_renderings()
 		end
-		Public.generate_overworld_destination{x = highest_x, y = lane_yvalue}
+		Public.generate_overworld_destination { x = highest_x, y = lane_yvalue }
 	end
 
 	memory['greatest_overworldx_generated_for_' .. lane_yvalue] = highest_x
 end
-
-
-
 
 function Public.is_position_free_to_move_to(p)
 	local memory = Memory.get_crew_memory()
@@ -557,8 +537,8 @@ function Public.is_position_free_to_move_to(p)
 	for _, destination_data in pairs(memory.destinations) do
 		if p.x >= destination_data.overworld_position.x + 1 and
 			p.x <= destination_data.overworld_position.x + destination_data.iconized_map_width + Crowsnest.platformwidth - 1 and
-			p.y >= destination_data.overworld_position.y - destination_data.iconized_map_width/2 - Crowsnest.platformheight/2 + 1 and
-			p.y <= destination_data.overworld_position.y + destination_data.iconized_map_width/2 + Crowsnest.platformheight/2 - 1
+			p.y >= destination_data.overworld_position.y - destination_data.iconized_map_width / 2 - Crowsnest.platformheight / 2 + 1 and
+			p.y <= destination_data.overworld_position.y + destination_data.iconized_map_width / 2 + Crowsnest.platformheight / 2 - 1
 		then
 			ret = false
 			break
@@ -566,7 +546,6 @@ function Public.is_position_free_to_move_to(p)
 	end
 	return ret
 end
-
 
 function Public.check_for_kraken_collisions()
 	local memory = Memory.get_crew_memory()
@@ -583,7 +562,6 @@ function Public.check_for_kraken_collisions()
 	end
 end
 
-
 function Public.check_for_destination_collisions()
 	local memory = Memory.get_crew_memory()
 
@@ -591,11 +569,10 @@ function Public.check_for_destination_collisions()
 	-- to avoid crashing into the finish line...
 
 	for _, destination_data in pairs(memory.destinations) do
-
 		local relativex = Crowsnest.platformrightmostedge + destination_data.overworld_position.x - memory.overworldx
 		local relativey = destination_data.overworld_position.y - memory.overworldy
 
-		if (relativex == 4 and relativey + destination_data.iconized_map_height/2 >= -3.5 and relativey - destination_data.iconized_map_height/2 <= 3.5) then
+		if (relativex == 4 and relativey + destination_data.iconized_map_height / 2 >= -3.5 and relativey - destination_data.iconized_map_height / 2 <= 3.5) then
 			--or (relativey - destination_data.iconized_map.height/2 == 5 and (relativex >= -3.5 or relativex <= 4.5)) or (relativey + destination_data.iconized_map.height/2 == -4 and (relativex >= -3.5 or relativex <= 4.5))
 
 			-- Surfaces.clean_up(Common.current_destination())
@@ -621,7 +598,6 @@ function Public.check_for_destination_collisions()
 	return false
 end
 
-
 function Public.cleanup_old_destination_data() --we do actually access destinations behind us (during the cleanup process and for marooned players), so only fire this when safe. (EDIT: Can this be refactored now that we no longer maroon?)
 	local memory = Memory.get_crew_memory()
 	for i, destination_data in pairs(memory.destinations) do
@@ -632,9 +608,6 @@ function Public.cleanup_old_destination_data() --we do actually access destinati
 		end
 	end
 end
-
-
-
 
 function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 	local memory = Memory.get_crew_memory()
@@ -653,11 +626,10 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 		-- Public.overwrite_a_dock_upgrade()
 	end
 
-	if not Public.is_position_free_to_move_to{x = memory.overworldx + vector.x, y = memory.overworldy+ vector.y} then
+	if not Public.is_position_free_to_move_to { x = memory.overworldx + vector.x, y = memory.overworldy + vector.y } then
 		if _DEBUG then log(string.format('can\'t move by ' .. vector.x .. ', ' .. vector.y)) end
 		return false
 	else
-
 		Crowsnest.move_crowsnest(vector.x, vector.y)
 
 		if vector.x > 0 then
@@ -706,63 +678,55 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 	end
 end
 
-
 -- UNUSED
 function Public.overwrite_a_dock_upgrade()
 	local memory = Memory.get_crew_memory()
 
-	if (memory.overworldx % (40*8)) == (40*4-1) then -- pick a point that _must_ be visited, i.e. right before a destination
+	if (memory.overworldx % (40 * 8)) == (40 * 4 - 1) then -- pick a point that _must_ be visited, i.e. right before a destination
 		-- POWER upgrade is disabled at docks
 		-- if (memory.overworldx) == (40*4-1) then -- LEAVE A GAP at x=40*11, because we haven't developed an upgrade to put there yet
-			-- for _, dest in pairs(memory.destinations) do
-			-- 	if dest.type == Surfaces.enum.DOCK then
-			-- 		if dest.overworld_position.x == memory.overworldx + 1 + (40*7) then
-			-- 			dest.static_params.upgrade_for_sale = Upgrades.enum.MORE_POWER
-			-- 		end
-			-- 	end
-			-- end
+		-- for _, dest in pairs(memory.destinations) do
+		-- 	if dest.type == Surfaces.enum.DOCK then
+		-- 		if dest.overworld_position.x == memory.overworldx + 1 + (40*7) then
+		-- 			dest.static_params.upgrade_for_sale = Upgrades.enum.MORE_POWER
+		-- 		end
+		-- 	end
+		-- end
 		-- else
-			local upgrade_to_overwrite_with
+		local upgrade_to_overwrite_with
 
-			if not memory.dock_overwrite_variable then memory.dock_overwrite_variable = 1 end
+		if not memory.dock_overwrite_variable then memory.dock_overwrite_variable = 1 end
 
-			local possible_overwrites = {}
-			if (not memory.merchant_ships_unlocked) then
-				possible_overwrites[#possible_overwrites + 1] = Upgrades.enum.UNLOCK_MERCHANTS
+		local possible_overwrites = {}
+		if (not memory.merchant_ships_unlocked) then
+			possible_overwrites[#possible_overwrites + 1] = Upgrades.enum.UNLOCK_MERCHANTS
+		end
+		if (not memory.rockets_for_sale) then
+			possible_overwrites[#possible_overwrites + 1] = Upgrades.enum.ROCKETS_FOR_SALE
+		end
+
+		if #possible_overwrites > 0 then
+			if memory.dock_overwrite_variable > #possible_overwrites then memory.dock_overwrite_variable = 1 end
+			upgrade_to_overwrite_with = possible_overwrites[memory.dock_overwrite_variable]
+
+			-- bump the variable up, but only if the list hasn't reduced in length. use a second variable to track this:
+			if memory.dock_overwrite_variable_2 and memory.dock_overwrite_variable_2 == #possible_overwrites then
+				memory.dock_overwrite_variable = memory.dock_overwrite_variable + 1
 			end
-			if (not memory.rockets_for_sale) then
-				possible_overwrites[#possible_overwrites + 1] = Upgrades.enum.ROCKETS_FOR_SALE
-			end
+			memory.dock_overwrite_variable_2 = #possible_overwrites
+		end
 
-			if #possible_overwrites > 0 then
-				if memory.dock_overwrite_variable > #possible_overwrites then memory.dock_overwrite_variable = 1 end
-				upgrade_to_overwrite_with = possible_overwrites[memory.dock_overwrite_variable]
-
-				-- bump the variable up, but only if the list hasn't reduced in length. use a second variable to track this:
-				if memory.dock_overwrite_variable_2 and memory.dock_overwrite_variable_2 == #possible_overwrites then
-					memory.dock_overwrite_variable = memory.dock_overwrite_variable + 1
-				end
-				memory.dock_overwrite_variable_2 = #possible_overwrites
-			end
-
-			if upgrade_to_overwrite_with then
-				for _, dest in pairs(memory.destinations) do
-					if dest.type == Surfaces.enum.DOCK then
-						if dest.overworld_position.x == memory.overworldx + 1 + (40*7) then
-							dest.static_params.upgrade_for_sale = upgrade_to_overwrite_with
-						end
+		if upgrade_to_overwrite_with then
+			for _, dest in pairs(memory.destinations) do
+				if dest.type == Surfaces.enum.DOCK then
+					if dest.overworld_position.x == memory.overworldx + 1 + (40 * 7) then
+						dest.static_params.upgrade_for_sale = upgrade_to_overwrite_with
 					end
 				end
 			end
+		end
 		-- end
 	end
 end
-
-
-
-
-
-
-
 
 return Public

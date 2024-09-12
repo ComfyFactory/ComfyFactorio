@@ -7,14 +7,14 @@
 
 local Public = {}
 
-Public.display_names = {{'pirates.location_displayname_swamp_1'}}
+Public.display_names = { { 'pirates.location_displayname_swamp_1' } }
 
 Public.terraingen_frame_width = 480
 Public.terraingen_frame_height = 480
 Public.static_params_default = {
 	starting_time_of_day = 0.26,
 	daynightcycletype = 1,
-	brightness_visual_weights = {0, 0, 0},
+	brightness_visual_weights = { 0, 0, 0 },
 	default_decoratives = true,
 	base_starting_treasure = 1000,
 	base_starting_rock_material = 800,
@@ -38,8 +38,8 @@ Public.noiseparams = {
 		type = 'simplex_2d',
 		normalised = false,
 		params = {
-			{wavelength = 0, amplitude = rscale * 1},
-			{wavelength = 2, amplitude = rscale * 0.2},
+			{ wavelength = 0, amplitude = rscale * 1 },
+			{ wavelength = 2, amplitude = rscale * 0.2 },
 		},
 	},
 
@@ -48,7 +48,7 @@ Public.noiseparams = {
 		normalised = false,
 		params = {
 			-- {upperscale = 1000, amplitude = hscale * 200},
-			{upperscale = 600, amplitude = 0.1},
+			{ upperscale = 600, amplitude = 0.1 },
 		},
 	},
 
@@ -56,7 +56,7 @@ Public.noiseparams = {
 		type = 'forest1',
 		normalised = true,
 		params = {
-			{upperscale = 70, amplitude = 1},
+			{ upperscale = 70, amplitude = 1 },
 		},
 	},
 
@@ -64,7 +64,7 @@ Public.noiseparams = {
 		type = 'forest1',
 		normalised = true,
 		params = {
-			{upperscale = 120, amplitude = 1, seedfactor = 2},
+			{ upperscale = 120, amplitude = 1, seedfactor = 2 },
 		},
 	},
 
@@ -72,8 +72,8 @@ Public.noiseparams = {
 		type = 'simplex_2d',
 		normalised = true,
 		params = {
-			{wavelength = 250, amplitude = 70},
-			{wavelength = 50, amplitude = 20},
+			{ wavelength = 250, amplitude = 70 },
+			{ wavelength = 50,  amplitude = 20 },
 		},
 	},
 
@@ -81,7 +81,7 @@ Public.noiseparams = {
 		type = 'simplex_2d',
 		normalised = true,
 		params = {
-			{wavelength = 48, amplitude = 1},
+			{ wavelength = 48, amplitude = 1 },
 		},
 	},
 }

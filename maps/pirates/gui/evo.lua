@@ -79,13 +79,16 @@ function Public.full_update(player)
 		local evolution_sandwurms = 0
 		local evolution_total
 
-		local types = {'leagues', 'kraken', 'time', 'silo', 'nests', 'sandwurms'}
+		local types = { 'leagues', 'kraken', 'time', 'silo', 'nests', 'sandwurms' }
 
 		if Boats.is_boat_at_sea() then
 			local krakens = false
 			if memory.active_sea_enemies and memory.active_sea_enemies.krakens then
 				for i = 1, Kraken.kraken_slots do
-					if memory.active_sea_enemies.krakens[i] then krakens = true break end
+					if memory.active_sea_enemies.krakens[i] then
+						krakens = true
+						break
+					end
 				end
 			end
 			if krakens then
@@ -107,37 +110,37 @@ function Public.full_update(player)
 			evolution_total = (evolution_leagues or 0) + (evolution_time or 0) + (evolution_nests or 0) + (evolution_silo or 0) + (evolution_sandwurms or 0) + (evolution_kraken or 0)
 		end
 
-    	---@type (string|table)[]
-		local str = {'',{'pirates.gui_evo_tooltip_1', string.format('%.2f', evolution_total)}}
+		---@type (string|table)[]
+		local str = { '', { 'pirates.gui_evo_tooltip_1', string.format('%.2f', evolution_total) } }
 
 		if evolution_leagues or evolution_time or evolution_nests or evolution_silo or evolution_sandwurms then
-			str[#str+1] = {'','\n'}
+			str[#str + 1] = { '', '\n' }
 		end
 
 		for _, type in ipairs(types) do
 			if type == 'leagues' then
 				if evolution_leagues then
-					str[#str+1] = {'','\n',{'pirates.gui_evo_tooltip_2', string.format('%.2f', evolution_leagues)}}
+					str[#str + 1] = { '', '\n', { 'pirates.gui_evo_tooltip_2', string.format('%.2f', evolution_leagues) } }
 				end
 			elseif type == 'kraken' then
 				if evolution_kraken then
-					str[#str+1] = {'','\n',{'pirates.gui_evo_tooltip_3', string.format('%.2f', evolution_kraken)}}
+					str[#str + 1] = { '', '\n', { 'pirates.gui_evo_tooltip_3', string.format('%.2f', evolution_kraken) } }
 				end
 			elseif type == 'time' then
 				if evolution_time then
-					str[#str+1] = {'','\n',{'pirates.gui_evo_tooltip_4', string.format('%.2f', evolution_time)}}
+					str[#str + 1] = { '', '\n', { 'pirates.gui_evo_tooltip_4', string.format('%.2f', evolution_time) } }
 				end
 			elseif type == 'silo' then
 				if evolution_silo then
-					str[#str+1] = {'','\n',{'pirates.gui_evo_tooltip_5', string.format('%.2f', evolution_silo)}}
+					str[#str + 1] = { '', '\n', { 'pirates.gui_evo_tooltip_5', string.format('%.2f', evolution_silo) } }
 				end
 			elseif type == 'nests' then
 				if evolution_nests then
-					str[#str+1] = {'','\n',{'pirates.gui_evo_tooltip_6', string.format('%.2f', evolution_nests)}}
+					str[#str + 1] = { '', '\n', { 'pirates.gui_evo_tooltip_6', string.format('%.2f', evolution_nests) } }
 				end
 			elseif type == 'sandwurms' then
 				if evolution_sandwurms then
-					str[#str+1] = {'','\n',{'pirates.gui_evo_tooltip_7', string.format('%.2f', evolution_sandwurms)}}
+					str[#str + 1] = { '', '\n', { 'pirates.gui_evo_tooltip_7', string.format('%.2f', evolution_sandwurms) } }
 				end
 			end
 		end
@@ -162,6 +165,5 @@ function Public.full_update(player)
 		end
 	end
 end
-
 
 return Public

@@ -44,9 +44,9 @@ function Public.ensure_sea_surface()
 end
 
 function Public.terrain(args)
-	args.tiles[#args.tiles + 1] = {name = 'deepwater', position = args.p}
+	args.tiles[#args.tiles + 1] = { name = 'deepwater', position = args.p }
 	if Math.random(110) == 1 then
-		args.entities[#args.entities + 1] = {name = 'fish', position = args.p}
+		args.entities[#args.entities + 1] = { name = 'fish', position = args.p }
 	end
 	return nil
 end
@@ -55,6 +55,4 @@ function Public.chunk_structures()
 	return nil
 end
 
-
 return Public
-

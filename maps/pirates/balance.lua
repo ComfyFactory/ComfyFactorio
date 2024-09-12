@@ -80,9 +80,9 @@ Public.doctor_heal_radius = 20
 Public.doctor_heal_percentage_amount = 0.15
 Public.shaman_energy_required_per_summon = 1000000
 Public.shaman_max_charge = 30000000
-Public.shaman_summoned_biter_time_to_live = 60 * 2 -- in seconds
-Public.shaman_passive_charge = 200000 -- each second
-Public.class_cycle_count = 5 -- How many classes should be purchased to have a chance to buy the same class again
+Public.shaman_summoned_biter_time_to_live = 60 * 2           -- in seconds
+Public.shaman_passive_charge = 200000                        -- each second
+Public.class_cycle_count = 5                                 -- How many classes should be purchased to have a chance to buy the same class again
 Public.maximum_fish_allowed_to_catch_at_sea = 40
 Public.prevent_waves_from_spawning_in_cave_timer_length = 10 -- in seconds
 Public.min_ore_spawn_distance = 10
@@ -93,21 +93,23 @@ Public.walkways_frozen_pool_damage = 12
 
 function Public.starting_boatEEIpower_production_MW()
 	-- return 3 * Math.sloped(Common.capacity_scale(), 1/2) / 2 --/2 as we have 2
-	return 3/2
+	return 3 / 2
 end
+
 function Public.starting_boatEEIelectric_buffer_size_MJ() --maybe needs to be at least the power_production
 	-- return 3 * Math.sloped(Common.capacity_scale(), 1/2) / 2 --/2 as we have 2
-	return 3/2
+	return 3 / 2
 end
+
 Public.EEI_stages = { --multipliers
-	1,2,4,6,8,11,14
+	1, 2, 4, 6, 8, 11, 14
 }
 
 
 function Public.scripted_biters_pollution_cost_multiplier()
-	local early_game_factor = 1 + 1.2 / ((1 + (Common.overworldx()/40))^(1.5+Common.difficulty_scale())) -- the complicated factor makes the early-game easier; in particular the first island, but on easier difficulties the next few islands as well
+	local early_game_factor = 1 + 1.2 / ((1 + (Common.overworldx() / 40)) ^ (1.5 + Common.difficulty_scale())) -- the complicated factor makes the early-game easier; in particular the first island, but on easier difficulties the next few islands as well
 
-	local factor_accounting_for_new_damage_upgrades = 0.98 ^ (Common.overworldx()/40)
+	local factor_accounting_for_new_damage_upgrades = 0.98 ^ (Common.overworldx() / 40)
 
 	return (1.1 / Math.sloped(Common.difficulty_scale(), 0.7)) * early_game_factor * factor_accounting_for_new_damage_upgrades
 end
@@ -124,8 +126,8 @@ end
 
 -- Avoid using e >= 1/4 in calculations "crew_scale()^(e)" to strictly avoid situations where people want to have less people in the crew
 function Public.crew_scale()
-	local ret = Common.activecrewcount()/10
-	if ret == 0 then ret = 1/10 end --if all players are afk
+	local ret = Common.activecrewcount() / 10
+	if ret == 0 then ret = 1 / 10 end --if all players are afk
 	if ret > 2.1 then ret = 2.1 end --An upper cap on this is important, for two reasons:
 	-- large crews become disorganised
 	-- Higher values of this scale lower the amount of time you get on each island. But the amount of time certain island tasks take is fixed; e.g. the amount of ore is mostly invariant, and you need time to mine it.
@@ -133,10 +135,10 @@ function Public.crew_scale()
 end
 
 function Public.silo_base_est_time()
-	local T = Public.expected_time_on_island() * Public.crew_scale()^(1/5) --to undo some of the time scaling
+	local T = Public.expected_time_on_island() * Public.crew_scale() ^ (1 / 5) --to undo some of the time scaling
 	local est_secs
 	if T > 0 then
-		est_secs = T/6
+		est_secs = T / 6
 	else
 		est_secs = 60 * 6
 	end
@@ -151,7 +153,7 @@ end
 function Public.silo_energy_needed_MJ()
 	local est_secs = Public.silo_base_est_time()
 
-	local est_base_power = 2*Public.starting_boatEEIpower_production_MW() * (1 + 0.05 * (Common.overworldx()/40)^(5/3))
+	local est_base_power = 2 * Public.starting_boatEEIpower_production_MW() * (1 + 0.05 * (Common.overworldx() / 40) ^ (5 / 3))
 
 	return est_secs * est_base_power
 	-- return est_secs * est_base_power * Math.sloped(Common.difficulty_scale(), 1/3)
@@ -159,10 +161,9 @@ end
 
 function Public.silo_count()
 	local E = Public.silo_energy_needed_MJ()
-	return Math.min(Math.ceil(E/(16.8 * 300)),6)
+	return Math.min(Math.ceil(E / (16.8 * 300)), 6)
 	-- return Math.ceil(E/(16.8 * 300)) --no more than this many seconds to charge it. Players can in fact go even faster using beacons
 end
-
 
 -- Higher scale = slower game
 function Public.game_slowness_scale()
@@ -170,10 +171,9 @@ function Public.game_slowness_scale()
 	-- return 1 / (Public.crew_scale()^(50/100) / Math.sloped(Common.difficulty_scale(), 1/4)) --changed crew_scale factor significantly to help smaller crews
 
 	-- local scale = 0.3 + Math.sloped(Common.difficulty_scale(), -0.15) / (Public.crew_scale()^(1/8))
-	local scale = 2.6 * Math.sloped(Common.difficulty_scale(), -0.2) - Public.crew_scale()^(1/4)
+	local scale = 2.6 * Math.sloped(Common.difficulty_scale(), -0.2) - Public.crew_scale() ^ (1 / 4)
 	return Math.max(1, scale)
 end
-
 
 function Public.max_time_on_island_formula_seconds() --always >0  --tuned
 	-- return 60 * (
@@ -194,15 +194,15 @@ end
 function Public.max_time_on_island_seconds(island_subtype)
 	local x = Common.overworldx()
 	if x == 0 then
-	-- if Common.overworldx() == 0 or ((Common.overworldx()/40) > 20 and (Common.overworldx()/40) < 25) then
+		-- if Common.overworldx() == 0 or ((Common.overworldx()/40) > 20 and (Common.overworldx()/40) < 25) then
 		return -1
 	else
 		local time = Public.max_time_on_island_formula_seconds()
 
 		if x == 40 then -- it's important for this island to be somewhat chill, so that it's not such a shock to go here from the first lobby chill island
 			time = time * 1.2
-		-- elseif island_subtype == IslandEnum.enum.MAZE then --more time
-		-- 	time = time * 1.05
+			-- elseif island_subtype == IslandEnum.enum.MAZE then --more time
+			-- 	time = time * 1.05
 		elseif island_subtype == IslandEnum.enum.CAVE then -- supposed to be chill island
 			time = time * 0.9
 		elseif island_subtype == IslandEnum.enum.RED_DESERT then --this island has big amount of resources so rather high risk (need time to mine resources) and high reward (lots of iron/copper/stone)
@@ -231,7 +231,7 @@ function Public.fuel_depletion_rate_static()
 		-- - More people doesn't necessarily mean faster progression: people just focus on other things (and on some islands it's hard to "employ" every crew member to be productive, due to lack of activities).
 		-- - Although more players can setup miners faster, miners don't dig ore faster.
 		-- - It's not fun being punished when noobs(or just your casual friends) join game and don't contribute "enough" to make up for increased coal consumption (among other things).
-		return -0.2 * ((Common.overworldx()/40)^(9/10)) * Public.crew_scale()^(1/5) * Math.sloped(Common.difficulty_scale(), 4/10)
+		return -0.2 * ((Common.overworldx() / 40) ^ (9 / 10)) * Public.crew_scale() ^ (1 / 5) * Math.sloped(Common.difficulty_scale(), 4 / 10)
 	else
 		return 0
 	end
@@ -240,36 +240,36 @@ end
 function Public.fuel_depletion_rate_sailing()
 	if (not Common.overworldx()) then return 0 end
 
-	return - 7.75 * (1 + 0.135 * (Common.overworldx()/40)^(100/100)) * Math.sloped(Common.difficulty_scale(), 1/20) --shouldn't depend on difficulty much if at all, as available resources don't depend much on difficulty
+	return -7.75 * (1 + 0.135 * (Common.overworldx() / 40) ^ (100 / 100)) * Math.sloped(Common.difficulty_scale(), 1 / 20) --shouldn't depend on difficulty much if at all, as available resources don't depend much on difficulty
 end
 
 function Public.silo_total_pollution()
 	return (
-		310 * Common.difficulty_scale() * Public.crew_scale()^(1/5) * (3.2 + 0.7 * (Common.overworldx()/40)^(1.6)) --shape of the curve with x is tuned.
-)
+		310 * Common.difficulty_scale() * Public.crew_scale() ^ (1 / 5) * (3.2 + 0.7 * (Common.overworldx() / 40) ^ (1.6)) --shape of the curve with x is tuned.
+	)
 end
 
 function Public.boat_passive_pollution_per_minute(time)
 	local T = Public.max_time_on_island_formula_seconds()
-	if (Common.overworldx()/40) > 25 then T = T * 0.9 end
+	if (Common.overworldx() / 40) > 25 then T = T * 0.9 end
 
 	local boost
 	if time then --sharp rise approaching T, steady increase thereafter
 		if time > T then
-			boost = 20 + 10 * (time - T) / (30/100 * T)
-		elseif time >= 90/100 * T then
+			boost = 20 + 10 * (time - T) / (30 / 100 * T)
+		elseif time >= 90 / 100 * T then
 			boost = 16
-		elseif time >= 85/100 * T then
+		elseif time >= 85 / 100 * T then
 			boost = 12
-		elseif time >= 80/100 * T then
+		elseif time >= 80 / 100 * T then
 			boost = 8
-		elseif time >= 70/100 * T then
+		elseif time >= 70 / 100 * T then
 			boost = 5
-		elseif time >= 60/100 * T then
+		elseif time >= 60 / 100 * T then
 			boost = 3
-		elseif time >= 50/100 * T then
+		elseif time >= 50 / 100 * T then
 			boost = 2
-		elseif time >= 40/100 * T then
+		elseif time >= 40 / 100 * T then
 			boost = 1.5
 		else
 			boost = 1
@@ -279,10 +279,9 @@ function Public.boat_passive_pollution_per_minute(time)
 	end
 
 	return boost * (
-			2 * Common.difficulty_scale() * (Common.overworldx()/40)^(1.8) * (Public.crew_scale())^(1/5)-- There is no _explicit_ T dependence, but it depends almost the same way on the crew_scale as T does.
-	 )
+		2 * Common.difficulty_scale() * (Common.overworldx() / 40) ^ (1.8) * (Public.crew_scale()) ^ (1 / 5) -- There is no _explicit_ T dependence, but it depends almost the same way on the crew_scale as T does.
+	)
 end
-
 
 function Public.base_evolution_leagues(leagues)
 	local evo
@@ -309,7 +308,7 @@ function Public.base_evolution_leagues(leagues)
 		-- end --extra slope from 600 to 1000 adds 2.5% evo
 
 
-		evo = (0.0201 * (overworldx/40)) * Math.sloped(Common.difficulty_scale(), 0.4)
+		evo = (0.0201 * (overworldx / 40)) * Math.sloped(Common.difficulty_scale(), 0.4)
 		evo = evo + 0.02 * Common.difficulty_scale()
 	end
 
@@ -351,17 +350,17 @@ function Public.evolution_per_nest_kill() --it's important to have evo go up wit
 	if Common.overworldx() == 0 then return 0 end
 
 	if destination and destination.dynamic_data and destination.dynamic_data.timer and destination.dynamic_data.timer > 0 and destination.dynamic_data.initial_spawner_count and destination.dynamic_data.initial_spawner_count > 0 then
-
 		local initial_spawner_count = destination.dynamic_data.initial_spawner_count
-		local base_evo_jump = 0.04 * (1/initial_spawner_count) --extra friction to make them hard to mow through, even at late times
+		local base_evo_jump = 0.04 * (1 / initial_spawner_count) --extra friction to make them hard to mow through, even at late times
 
 		local time = destination.dynamic_data.timer
 		-- local time_to_jump_to = Public.expected_time_on_island() * ((1/Public.expected_time_fraction)^(2/3))
 		local time_to_jump_to = Public.max_time_on_island_formula_seconds()
-		if time > time_to_jump_to then return base_evo_jump
+		if time > time_to_jump_to then
+			return base_evo_jump
 		else
 			-- evo it 'would have' contributed:
-			return (1/initial_spawner_count) * Public.expected_time_evo() * (time_to_jump_to - time)/time_to_jump_to + base_evo_jump
+			return (1 / initial_spawner_count) * Public.expected_time_evo() * (time_to_jump_to - time) / time_to_jump_to + base_evo_jump
 		end
 	else
 		return 0
@@ -371,11 +370,11 @@ function Public.evolution_per_nest_kill() --it's important to have evo go up wit
 end
 
 function Public.evolution_per_full_silo_charge()
-	 --too low and you always charge immediately, too high and you always charge late
+	--too low and you always charge immediately, too high and you always charge late
 	-- return 0.05
 	-- observed x=2000 run, changed this to:
 	-- return 0.05 + 0.03 * Common.overworldx()/1000
-	return 0.06 + 0.025 * Common.overworldx()/1000
+	return 0.06 + 0.025 * Common.overworldx() / 1000
 end
 
 -- function Public.bonus_damage_to_humans()
@@ -390,7 +389,6 @@ end
 function Public.biter_timeofday_bonus_damage(darkness) -- a surface having min_brightness of 0.2 will cap darkness at 0.8
 	return 0.3 * darkness
 end
-
 
 -- function Public.periodic_free_resources_per_x()
 -- 	return {
@@ -413,12 +411,11 @@ end
 function Public.biter_base_density_scale()
 	local p = Public.crew_scale()
 	if p >= 1 then
-		return p^(1/2)
+		return p ^ (1 / 2)
 	else
-		return Math.max((p*10/6)^(1/2), 0.6)
+		return Math.max((p * 10 / 6) ^ (1 / 2), 0.6)
 	end
 end
-
 
 function Public.rocket_launch_fuel_reward()
 	return Math.ceil(2000 * Public.game_resources_scale())
@@ -437,7 +434,7 @@ function Public.game_resources_scale(overworldx)
 	overworldx = overworldx or Common.overworldx()
 
 	local base = 0.5
-	local additional = overworldx/1250
+	local additional = overworldx / 1250
 
 	return base + additional
 end
@@ -461,7 +458,7 @@ function Public.apply_crew_buffs_from_leagues(force, current_x_league, new_x_lea
 end
 
 function Public.resource_quest_multiplier()
-	return (0.9 + 0.1 * (Common.overworldx()/40)^(7/10)) * Math.sloped(Common.difficulty_scale(), 1/3) * (Public.crew_scale())^(1/10)
+	return (0.9 + 0.1 * (Common.overworldx() / 40) ^ (7 / 10)) * Math.sloped(Common.difficulty_scale(), 1 / 3) * (Public.crew_scale()) ^ (1 / 10)
 end
 
 function Public.quest_market_entry_price_scale()
@@ -480,7 +477,7 @@ function Public.quest_market_entry_price_scale()
 	-- return (1 + 0.05 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty_scale(), 1/2) - 0.4
 
 
-	local scale = (1 + 0.05 * (Common.overworldx()/40 - 1)) * ((0.6 + Public.crew_scale())^(1/8)) * Math.sloped(Common.difficulty_scale(), 1/2) - 0.5
+	local scale = (1 + 0.05 * (Common.overworldx() / 40 - 1)) * ((0.6 + Public.crew_scale()) ^ (1 / 8)) * Math.sloped(Common.difficulty_scale(), 1 / 2) - 0.5
 	return Math.max(0.1, scale)
 end
 
@@ -499,7 +496,7 @@ function Public.quest_furnace_entry_price_scale()
 	-- x = 1000 (25th island): 1.008
 	-- return (1 + 0.03 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty_scale(), 1/2) - 0.4
 
-	local scale = (1 + 0.03 * (Common.overworldx()/40 - 1)) * ((0.6 + Public.crew_scale())^(1/8)) * Math.sloped(Common.difficulty_scale(), 1/2) - 0.5
+	local scale = (1 + 0.03 * (Common.overworldx() / 40 - 1)) * ((0.6 + Public.crew_scale()) ^ (1 / 8)) * Math.sloped(Common.difficulty_scale(), 1 / 2) - 0.5
 	return Math.max(0.1, scale)
 end
 
@@ -517,9 +514,8 @@ function Public.weapon_damage_upgrade_percentage()
 end
 
 function Public.weapon_damage_upgrade_price()
-	return {{name = 'coin', amount = 2000}, {name = 'steel-plate', amount = 100}} --NOTE: Should be different to other 'nothing' costs. See the use of this function in shop.lua.
+	return { { name = 'coin', amount = 2000 }, { name = 'steel-plate', amount = 100 } } --NOTE: Should be different to other 'nothing' costs. See the use of this function in shop.lua.
 end
-
 
 Public.quest_structures_first_appear_at = 40
 
@@ -543,21 +539,21 @@ function Public.kraken_evo_increase_per_shot()
 end
 
 function Public.kraken_evo_increase_per_second()
-	return (1/100) / 20
+	return (1 / 100) / 20
 end
 
 function Public.sandworm_evo_increase_per_spawn()
 	if _DEBUG then
-		return 1/100
+		return 1 / 100
 	else
-		return (1/100) * (1/7) * Math.sloped(Common.difficulty_scale(), 3/5)
+		return (1 / 100) * (1 / 7) * Math.sloped(Common.difficulty_scale(), 3 / 5)
 	end
 end
 
 function Public.kraken_kill_reward_items()
 	return {
-		{name = 'coin', count = Math.ceil(800 * Public.game_resources_scale())},
-		{name = 'utility-science-pack', count = Math.ceil(8 * Public.game_resources_scale())}
+		{ name = 'coin',                 count = Math.ceil(800 * Public.game_resources_scale()) },
+		{ name = 'utility-science-pack', count = Math.ceil(8 * Public.game_resources_scale()) }
 	}
 end
 
@@ -569,7 +565,7 @@ function Public.kraken_health()
 	-- return Math.ceil(3500 * Math.max(1, 1 + 0.075 * (Common.overworldx()/40)^(13/10)) * (Public.crew_scale()^(4/8)) * Math.sloped(Common.difficulty_scale(), 3/4))
 	-- return Math.ceil(3500 * Math.max(1, 1 + 0.08 * ((Common.overworldx()/40)^(13/10)-6)) * (Public.crew_scale()^(5/8)) * Math.sloped(Common.difficulty_scale(), 3/4))
 
-	return Math.ceil(2200 * Math.max(1, 1 + 0.075 * (Common.overworldx()/40)^(13/10)) * (Public.crew_scale()^(1/5)) * Math.sloped(Common.difficulty_scale(), 3/4))
+	return Math.ceil(2200 * Math.max(1, 1 + 0.075 * (Common.overworldx() / 40) ^ (13 / 10)) * (Public.crew_scale() ^ (1 / 5)) * Math.sloped(Common.difficulty_scale(), 3 / 4))
 end
 
 Public.kraken_regen_scale = 0.1 --starting off low
@@ -589,7 +585,7 @@ function Public.krakens_per_free_slot(overworldx)
 	local rng = Math.random()
 	local multiplier = 1
 	if overworldx and overworldx > 600 then
-		multiplier = 1 + (overworldx-600)/600
+		multiplier = 1 + (overworldx - 600) / 600
 	end
 	if rng < 0.0025 * multiplier then
 		return 3
@@ -603,11 +599,11 @@ function Public.krakens_per_free_slot(overworldx)
 end
 
 function Public.biter_boat_health()
-	return Math.ceil(1500 * Math.max(1, 1 + 0.075 * (Common.overworldx()/40)^(13/10)) * (Public.crew_scale()^(1/5)) * Math.sloped(Common.difficulty_scale(), 3/4))
+	return Math.ceil(1500 * Math.max(1, 1 + 0.075 * (Common.overworldx() / 40) ^ (13 / 10)) * (Public.crew_scale() ^ (1 / 5)) * Math.sloped(Common.difficulty_scale(), 3 / 4))
 end
 
 function Public.elite_spawner_health()
-	return Math.ceil(5000 * Math.max(1, 1 + 0.075 * (Common.overworldx()/40)^(13/10)) * (Public.crew_scale()^(1/5)) * Math.sloped(Common.difficulty_scale(), 3/4))
+	return Math.ceil(5000 * Math.max(1, 1 + 0.075 * (Common.overworldx() / 40) ^ (13 / 10)) * (Public.crew_scale() ^ (1 / 5)) * Math.sloped(Common.difficulty_scale(), 3 / 4))
 end
 
 function Public.main_shop_cost_multiplier()
@@ -619,7 +615,7 @@ function Public.barter_decay_parameter()
 end
 
 function Public.sandworm_speed()
-	return 6.4 * Math.sloped(Common.difficulty_scale(), 1/5)
+	return 6.4 * Math.sloped(Common.difficulty_scale(), 1 / 5)
 end
 
 -- function Public.island_otherresources_prospect_decay_parameter()
@@ -628,10 +624,10 @@ end
 
 Public.research_buffs = { --currently disabled anyway
 	-- these already give .1 productivity so we're adding .1 to get to 20%
-	['mining-productivity-1'] = {['mining_drill_productivity_bonus'] = .1},
-	['mining-productivity-2'] = {['mining_drill_productivity_bonus'] = .1},
-	['mining-productivity-3'] = {['mining_drill_productivity_bonus'] = .1},
-	['mining-productivity-4'] = {['mining_drill_productivity_bonus'] = .1},
+	['mining-productivity-1'] = { ['mining_drill_productivity_bonus'] = .1 },
+	['mining-productivity-2'] = { ['mining_drill_productivity_bonus'] = .1 },
+	['mining-productivity-3'] = { ['mining_drill_productivity_bonus'] = .1 },
+	['mining-productivity-4'] = { ['mining_drill_productivity_bonus'] = .1 },
 	-- -- these already give .1 productivity so we're adding .1 to get to 20%
 	-- ['mining-productivity-1'] = {['mining-drill-productivity-bonus'] = .1, ['character-inventory-slots-bonus'] = 5},
 	-- ['mining-productivity-2'] = {['mining-drill-productivity-bonus'] = .1, ['character-inventory-slots-bonus'] = 5},
@@ -657,6 +653,7 @@ function Public.player_ammo_damage_modifiers() -- modifiers are fractional. bull
 	}
 	return data
 end
+
 function Public.player_turret_attack_modifiers()
 	local data = {
 		['gun-turret'] = 0,
@@ -666,6 +663,7 @@ function Public.player_turret_attack_modifiers()
 	}
 	return data
 end
+
 function Public.player_gun_speed_modifiers()
 	local data = {
 		['artillery-shell'] = 0,
@@ -683,7 +681,6 @@ function Public.player_gun_speed_modifiers()
 	}
 	return data
 end
-
 
 Public.starting_items_player = {
 	['pistol'] = 1,
@@ -713,54 +710,51 @@ Public.starting_items_player_late = {
 
 function Public.starting_items_crew_upstairs()
 	return {
-		{['steel-plate'] = 38},
-		{['stone-brick'] = 60},
-		{['grenade'] = 3},
-		{['shotgun'] = 2, ['shotgun-shell'] = 36},
+		{ ['steel-plate'] = 38 },
+		{ ['stone-brick'] = 60 },
+		{ ['grenade'] = 3 },
+		{ ['shotgun'] = 2,     ['shotgun-shell'] = 36 },
 		-- {['raw-fish'] = 5},
-		{['coin'] = 1000},
+		{ ['coin'] = 1000 },
 	}
 end
 
 function Public.starting_items_crew_downstairs()
 	return {
-		{['transport-belt'] = Math.random(600,650)},
-		{['underground-belt'] = 80},
-		{['splitter'] = Math.random(50,56)},
-		{['inserter'] = Math.random(120,140)},
-		{['storage-tank'] = 2},
-		{['medium-electric-pole'] = Math.random(15,21)},
-		{['coin'] = 1000},
-		{['solar-panel'] = 3},
+		{ ['transport-belt'] = Math.random(600, 650) },
+		{ ['underground-belt'] = 80 },
+		{ ['splitter'] = Math.random(50, 56) },
+		{ ['inserter'] = Math.random(120, 140) },
+		{ ['storage-tank'] = 2 },
+		{ ['medium-electric-pole'] = Math.random(15, 21) },
+		{ ['coin'] = 1000 },
+		{ ['solar-panel'] = 3 },
 	}
 end
 
 function Public.pick_random_drilling_ore()
 	local number = Math.random(10)
-	if number <= 4 then -- 40%
+	if number <= 4 then  -- 40%
 		return 'iron-ore'
 	elseif number <= 7 then -- 30%
 		return 'copper-ore'
 	elseif number <= 9 then -- 20%
 		return 'coal'
-	else -- 10%
+	else                 -- 10%
 		return 'stone'
 	end
 end
 
-
 function Public.pick_drilling_ore_amount()
 	return Math.ceil(100 * Public.game_resources_scale() * Math.random_float_in_range(0.9, 1.1))
 end
-
 
 -- Note: 3333 crude oil amount ~= 1% = 0.1/sec
 function Public.pick_default_oil_amount()
 	return Math.ceil(30000 * Public.game_resources_scale() * Math.random_float_in_range(0.9, 1.1))
 end
 
-
- -- Returns frequency in seconds
+-- Returns frequency in seconds
 function Public.biter_boat_average_arrival_rate()
 	return Math.ceil((7.5 * 60) / Math.sloped(Common.difficulty_scale(), 0.5))
 end
