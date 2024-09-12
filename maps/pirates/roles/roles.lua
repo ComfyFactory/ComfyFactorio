@@ -736,6 +736,9 @@ function Public.add_player_to_permission_group(player, group_override)
 			group = game.permissions.get_group('plebs')
 		end
 	end
+
+	-- if _DEBUG then return end
+
 	group.add_player(player)
 end
 
@@ -745,8 +748,6 @@ function Public.update_privileges(player)
     if not Common.validate_player_and_character(player) then
         return
     end
-
-	-- if _DEBUG then return end
 
 	if string.sub(player.surface.name, 9, 17) == 'Crowsnest' then
 		if Public.player_privilege_level(player) >= Public.privilege_levels.OFFICER then
@@ -762,7 +763,9 @@ function Public.update_privileges(player)
 			-- Moved to restricted_area to prevent them messing with items in the blue chests.ssd
 			return Public.add_player_to_permission_group(player, 'restricted_area')
 		end
-    else
+    elseif player.surface.name == CoreData.lobby_surface_name then
+		return Public.add_player_to_permission_group(player, 'restricted_area')
+	else
         return Public.add_player_to_permission_group(player)
 	end
 end

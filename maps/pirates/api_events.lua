@@ -1507,7 +1507,7 @@ local function event_on_player_joined_game(event)
 		local surface = game.surfaces[CoreData.lobby_surface_name]
 
 		player.teleport(surface.find_non_colliding_position('character', spawnpoint, 32, 0.5) or spawnpoint, surface)
-		Roles.add_player_to_permission_group(player)
+		Roles.update_privileges(player)
 
 		if not player.name then return end
 
