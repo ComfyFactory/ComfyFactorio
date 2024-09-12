@@ -1,6 +1,6 @@
 require 'utils.data_stages'
 _LIFECYCLE = _STAGE.control -- Control stage
-_DEBUG = true
+_DEBUG = false
 _DUMP_ENV = false
 _PROFILE = false
 
@@ -100,7 +100,7 @@ require 'utils.remote_chunks'
 --require 'maps.chronosphere.main'
 
 --![[Adventure as a crew of pirates]]--
-require 'maps.pirates.main'
+-- require 'maps.pirates.main'
 
 --![[Launch rockets in increasingly harder getting worlds.]]--
 --require 'maps.journey.main'
