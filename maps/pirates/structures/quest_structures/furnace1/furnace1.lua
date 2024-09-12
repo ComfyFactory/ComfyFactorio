@@ -84,6 +84,14 @@ function Public.create_step2_entities()
 		quest_structure_data.market.rotatable = false
 		quest_structure_data.market.destructible = false
 
+        quest_structure_data.market.add_market_item{
+            price = Balance.weapon_damage_upgrade_price(),
+            offer = {
+                type = "nothing",
+                effect_description = {'pirates.market_description_purchase_attack_upgrade'}
+            }
+        }
+
 		-- quest_structure_data.market.add_market_item{price={{'pistol', 1}}, offer={type = 'give-item', item = 'coin', count = Balance.coin_sell_amount}}
 		-- quest_structure_data.market.add_market_item{price={{'burner-mining-drill', 1}}, offer={type = 'give-item', item = 'iron-plate', count = 9}}
 
@@ -105,14 +113,6 @@ function Public.create_step2_entities()
 		for _, o in pairs(coin_offers) do
 			quest_structure_data.market.add_market_item(o)
 		end
-
-        quest_structure_data.market.add_market_item{
-            price = Balance.weapon_damage_upgrade_price(),
-            offer = {
-                type = "nothing",
-                effect_description = {'pirates.market_description_purchase_attack_upgrade'}
-            }
-        }
 
 		if destination.static_params.class_for_sale then
 			quest_structure_data.market.add_market_item{price={{'coin', Balance.class_cost(false)}}, offer={type="nothing", effect_description = {'pirates.market_description_purchase_class', Classes.display_form(destination.static_params.class_for_sale)}}}

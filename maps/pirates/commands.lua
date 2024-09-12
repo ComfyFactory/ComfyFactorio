@@ -1166,4 +1166,14 @@ if _DEBUG then
 			player.insert{name='accumulator', count = 50}
 		end
 	end)
+
+	commands.add_command(
+	'buff',
+	'buffs all damage by 10%',
+	function(cmd)
+		if check_admin(cmd) then
+			local player = game.players[cmd.player_index]
+			Crew.buff_all_damage(0.1)
+		end
+	end)
 end

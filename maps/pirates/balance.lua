@@ -632,6 +632,7 @@ Public.research_buffs = { --currently disabled anyway
 	-- ['mining-productivity-4'] = {['mining-drill-productivity-bonus'] = .1, ['character-inventory-slots-bonus'] = 5},
 }
 
+-- TODO: Update these for 2.0?
 function Public.player_ammo_damage_modifiers() -- modifiers are fractional. bullet affects gun turrets, but flamethrower does not affect flamer turrets
 	local data = {
 		['artillery-shell'] = 0,
