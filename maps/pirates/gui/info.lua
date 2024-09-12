@@ -52,14 +52,14 @@ function Public.toggle_window(player)
 
 	Public.flow_add_info_sections(flow2, {'game_description'})
 
+	flow2 = Public.flow_add_info_tab(flow, {'pirates.gui_info_tips'})
+
+	Public.flow_add_info_sections(flow2, {'new_players', 'tips'})
+
 	flow2 = Public.flow_add_info_tab(flow, {'pirates.gui_info_updates'})
 
 	Public.flow_add_info_sections(flow2, {'updates'})
 	-- Public.flow_add_info_sections(flow2, {'updates', 'bugs'})
-
-	flow2 = Public.flow_add_info_tab(flow, {'pirates.gui_info_tips'})
-
-	Public.flow_add_info_sections(flow2, {'new_players', 'tips'})
 
 	flow2 = Public.flow_add_info_tab(flow, {'pirates.gui_info_credits'})
 
@@ -226,13 +226,13 @@ function Public.full_update(player)
 
 	local flow2 = flow
 	-- warning, if you make these too small, it loses 'Click to dismiss.'
-	-- This is really really dumb, to have to change these manually. But sadly we couldn't get the window to look like that and also be expandable.
+	-- This is really really dumb, to have to change these manually. But sadly we couldn't get the window to look like it does and also be expandable.
 	if flow2.selected_tab_index == 1 then
-		flow2.style.height = 360
+		flow2.style.height = 400
 	elseif flow2.selected_tab_index == 2 then
-		flow2.style.height = 490
+		flow2.style.height = 550
 	elseif flow2.selected_tab_index == 3 then
-		flow2.style.height = 580
+		flow2.style.height = 680
 	elseif flow2.selected_tab_index == 4 then
 		flow2.style.height = 340
 	end
