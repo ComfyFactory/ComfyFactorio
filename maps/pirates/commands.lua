@@ -554,9 +554,9 @@ if _DEBUG then
 		function(data)
 			Memory.set_working_id(data.id)
 			local memory = Memory.get_crew_memory()
-			Overworld.ensure_lane_generated_up_to(0, 10)
-			Overworld.ensure_lane_generated_up_to(24, 10)
-			Overworld.ensure_lane_generated_up_to(-24, 10)
+			Overworld.ensure_lane_generated_up_to(0, Crowsnest.Data.visibilitywidth)
+			Overworld.ensure_lane_generated_up_to(24, Crowsnest.Data.visibilitywidth)
+			Overworld.ensure_lane_generated_up_to(-24, Crowsnest.Data.visibilitywidth)
 			memory.currentdestination_index = CoreData.first_destination_index
 			script.raise_event(CustomEvents.enum['update_crew_progress_gui'], {})
 			Surfaces.create_surface(Common.current_destination())
