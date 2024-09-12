@@ -1221,6 +1221,36 @@ function Public.reassign_fluid_storage_references(boat, newsurface, newposition)
 	end
 end
 
+local function process_saved_rails_and_wagons(saved_rails, saved_wagons, first_rail_found_p, vector, newsurface)
+	-- copy back rails:
+	for _, ee in ipairs(saved_rails) do
+		if ee and ee.valid then
+			local p, f = ee.position, ee.force
+			ee.clone { position = { p.x + first_rail_found_p.x + vector.x, p.y + first_rail_found_p.y + vector.y }, surface = newsurface, force = f, create_build_effect_smoke = false }
+		end
+	end
+
+	-- copy back wagons:
+	for _, ee in ipairs(saved_wagons) do
+		if ee and ee.valid then
+			local p, f = ee.position, ee.force
+			ee.clone { position = { p.x + first_rail_found_p.x + vector.x, p.y + first_rail_found_p.y + vector.y }, surface = newsurface, force = f, create_build_effect_smoke = false }
+		end
+	end
+
+	-- destroy copies of rail/wagons:
+	for _, e in ipairs(saved_wagons) do
+		if e and e.valid then
+			e.destroy()
+		end
+	end
+	for _, e in ipairs(saved_rails) do
+		if e and e.valid then
+			e.destroy()
+		end
+	end
+end
+
 --if you're teleporting to the same surface, only do this in an orthogonal direction
 function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile, old_water_tile)
 	new_floor_tile = new_floor_tile or CoreData.moving_boat_floor
@@ -1406,33 +1436,7 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 
 
 	if first_rail_found_p then
-		-- copy back rails:
-		for _, ee in ipairs(saved_rails) do
-			if ee and ee.valid then
-				local p, f = ee.position, ee.force
-				ee.clone { position = { p.x + first_rail_found_p.x + vector.x, p.y + first_rail_found_p.y + vector.y }, surface = newsurface, force = f, create_build_effect_smoke = false }
-			end
-		end
-
-		-- copy back wagons:
-		for _, ee in ipairs(saved_wagons) do
-			if ee and ee.valid then
-				local p, f = ee.position, ee.force
-				ee.clone { position = { p.x + first_rail_found_p.x + vector.x, p.y + first_rail_found_p.y + vector.y }, surface = newsurface, force = f, create_build_effect_smoke = false }
-			end
-		end
-	end
-
-	-- destroy copies of rail/wagons:
-	for _, e in ipairs(saved_wagons) do
-		if e and e.valid then
-			e.destroy()
-		end
-	end
-	for _, e in ipairs(saved_rails) do
-		if e and e.valid then
-			e.destroy()
-		end
+		process_saved_rails_and_wagons(saved_rails, saved_wagons, first_rail_found_p, vector, newsurface)
 	end
 
 	Public.reassign_fluid_storage_references(boat, newsurface, newposition)
