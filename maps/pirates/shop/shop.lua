@@ -4,7 +4,7 @@
 local Memory = require 'maps.pirates.memory'
 -- local Roles = require 'maps.pirates.roles.roles'
 local Classes = require 'maps.pirates.roles.classes'
--- local Crew = require 'maps.pirates.crew'
+local Crew = require 'maps.pirates.crew'
 -- local Boats = require 'maps.pirates.structures.boats.boats'
 -- local Dock = require 'maps.pirates.surfaces.dock'
 local Balance = require 'maps.pirates.balance'
@@ -223,25 +223,35 @@ function Public.event_on_market_item_purchased(event)
 
 		else
 
-			if thisPurchaseData.offer_type == 'nothing' and destination.static_params.class_for_sale then
+			if thisPurchaseData.offer_type == 'nothing' then
+				local isDamageUpgrade = thisPurchaseData.price[1].amount == Balance.weapon_damage_upgrade_price()[1].amount and thisPurchaseData.price[1].name == Balance.weapon_damage_upgrade_price()[1].name and thisPurchaseData.price[2] and thisPurchaseData.price[2].amount == Balance.weapon_damage_upgrade_price()[2].amount and thisPurchaseData.price[2].name == Balance.weapon_damage_upgrade_price()[2].name
 
-				local class_for_sale = destination.static_params.class_for_sale
-				-- if not class_for_sale then return end
-				local required_class = Classes.class_purchase_requirement[class_for_sale]
+				if isDamageUpgrade then
+                    Common.notify_force_light(player.force, {'pirates.market_event_attack_upgrade_purchased', player.name})
+                    market.remove_market_item(offer_index)
 
-				local ok = Classes.try_unlock_class(class_for_sale, player, false)
+					Crew.buff_all_damage(0.1)
 
-				if ok then
-					market.remove_market_item(offer_index)
-				else -- if this happens, I believe there is something wrong with code
-					if force and force.valid then
-						Common.notify_force_error(force, {'pirates.class_purchase_error_prerequisite_class', Classes.display_form(required_class)})
+				elseif destination.static_params.class_for_sale then
+
+					local class_for_sale = destination.static_params.class_for_sale
+					-- if not class_for_sale then return end
+					local required_class = Classes.class_purchase_requirement[class_for_sale]
+	
+					local ok = Classes.try_unlock_class(class_for_sale, player, false)
+	
+					if ok then
+						market.remove_market_item(offer_index)
+					else -- if this happens, I believe there is something wrong with code
+						if force and force.valid then
+							Common.notify_force_error(force, {'pirates.class_purchase_error_prerequisite_class', Classes.display_form(required_class)})
+						end
+	
+						--refund
+						refunds = refunds + 1
+						Public.refund_items(player, thisPurchaseData.price, 1)
+						log('Error purchasing class: ' .. class_for_sale)
 					end
-
-					--refund
-					refunds = refunds + 1
-					Public.refund_items(player, thisPurchaseData.price, 1)
-					log('Error purchasing class: ' .. class_for_sale)
 				end
 			else
 				Common.notify_force_light(player.force, {'pirates.market_event_buy', player.name, thisPurchaseData.offer_giveitem_count .. ' ' .. thisPurchaseData.offer_giveitem_name, thisPurchaseData.price[1].amount .. ' ' .. thisPurchaseData.price[1].name})

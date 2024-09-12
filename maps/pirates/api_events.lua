@@ -1410,39 +1410,11 @@ function Public.research_apply_buffs(event)
 end
 
 
-function Public.apply_flamer_nerfs()
-	local memory = Memory.get_crew_memory()
-	-- local difficulty = memory.difficulty
-	local force = memory.force
-
-	-- This code matches the vanilla game. Written by Hanakocz I think.
-	local flame_researches = {
-		[1] = {name = 'refined-flammables-1', bonus = 0.2},
-		[2] = {name = 'refined-flammables-2', bonus = 0.2},
-		[3] = {name = 'refined-flammables-3', bonus = 0.2},
-		[4] = {name = 'refined-flammables-4', bonus = 0.3},
-		[5] = {name = 'refined-flammables-5', bonus = 0.3},
-		[6] = {name = 'refined-flammables-6', bonus = 0.4},
-		[7] = {name = 'refined-flammables-7', bonus = 0.2}
-	}
-	local flamer_power = 0
-	for i = 1, 6, 1 do
-		if force.technologies[flame_researches[i].name].researched then
-			flamer_power = flamer_power + flame_researches[i].bonus
-		end
-	end
-	flamer_power = flamer_power + (force.technologies[flame_researches[7].name].level - 7) * 0.2
-
-	-- TODO: Check this code is valid after Factorio 2.0
-	force.set_ammo_damage_modifier('flamethrower', flamer_power * Balance.flamers_tech_multipliers() + (1 - Balance.flamers_base_damage_multiplier()))
-	force.set_turret_attack_modifier('flamethrower-turret', flamer_power * Balance.flamers_tech_multipliers() + (1 - Balance.flamers_base_damage_multiplier()))
-end
-
 local function event_on_research_finished(event)
 	-- figure out which crew this is about:
 	local research = event.research
-	local p_force = research.force
-	local crew_id = Common.get_id_from_force_name(p_force.name)
+	local force = research.force
+	local crew_id = Common.get_id_from_force_name(force.name)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
 
@@ -1453,42 +1425,39 @@ local function event_on_research_finished(event)
 		Server.to_discord_embed_raw({'', '[' .. memory.name .. '] ', {'pirates.research_notification', game.technology_prototypes[research.name].localised_name}}, true)
 	end
 
-	Public.apply_flamer_nerfs()
-	-- Public.research_apply_buffs(event) -- this is broken right now
-
 	for _, e in ipairs(research.effects) do
-	local t = e.type
+		local t = e.type
 		if t == 'ammo-damage' then
 			local category = e.ammo_category
 			local factor = Balance.player_ammo_damage_modifiers()[category]
 
 			if factor then
-				local current_m = p_force.get_ammo_damage_modifier(category)
+				local current_m = force.get_ammo_damage_modifier(category)
 				local m = e.modifier
-				p_force.set_ammo_damage_modifier(category, current_m + factor * m)
+				force.set_ammo_damage_modifier(category, current_m + factor * m)
 			end
 		elseif t == 'gun-speed' then
 			local category = e.ammo_category
 			local factor = Balance.player_gun_speed_modifiers()[category]
 
 			if factor then
-				local current_m = p_force.get_gun_speed_modifier(category)
+				local current_m = force.get_gun_speed_modifier(category)
 				local m = e.modifier
-				p_force.set_gun_speed_modifier(category, current_m + factor * m)
+				force.set_gun_speed_modifier(category, current_m + factor * m)
 			end
 		elseif t == 'turret-attack' then
 			local category = e.ammo_category
 			local factor = Balance.player_turret_attack_modifiers()[category]
 
 			if factor then
-				local current_m = p_force.get_turret_attack_modifier(category)
+				local current_m = force.get_turret_attack_modifier(category)
 				local m = e.modifier
-				p_force.set_turret_attack_modifier(category, current_m + factor * m)
+				force.set_turret_attack_modifier(category, current_m + factor * m)
 			end
 		end
 	end
 
-	Crew.disable_recipes(p_force)
+	Crew.disable_recipes(force)
 end
 
 local function event_on_player_joined_game(event)

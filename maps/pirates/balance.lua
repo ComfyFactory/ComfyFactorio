@@ -501,11 +501,16 @@ end
 
 function Public.class_cost(at_dock)
 	if at_dock then
-		return 10000
+		return 8000
 	else
-		return 6000
+		return 5000
 	end
 	-- return Math.ceil(10000 / (Public.crew_scale()*10/4)^(1/6))
+end
+
+
+function Public.weapon_damage_upgrade_price()
+	return {{name = 'coin', amount = 4000}, {name = 'steel-plate', amount = 100}} --NOTE: Should be different to other 'nothing' costs. See the use of this function in shop.lua.
 end
 
 
@@ -616,28 +621,16 @@ end
 
 Public.research_buffs = { --currently disabled anyway
 	-- these already give .1 productivity so we're adding .1 to get to 20%
-	['mining-productivity-1'] = {['mining_drill_productivity_bonus'] = .2},
-	['mining-productivity-2'] = {['mining_drill_productivity_bonus'] = .2},
-	['mining-productivity-3'] = {['mining_drill_productivity_bonus'] = .2},
-	['mining-productivity-4'] = {['mining_drill_productivity_bonus'] = .2},
+	['mining-productivity-1'] = {['mining_drill_productivity_bonus'] = .1},
+	['mining-productivity-2'] = {['mining_drill_productivity_bonus'] = .1},
+	['mining-productivity-3'] = {['mining_drill_productivity_bonus'] = .1},
+	['mining-productivity-4'] = {['mining_drill_productivity_bonus'] = .1},
 	-- -- these already give .1 productivity so we're adding .1 to get to 20%
 	-- ['mining-productivity-1'] = {['mining-drill-productivity-bonus'] = .1, ['character-inventory-slots-bonus'] = 5},
 	-- ['mining-productivity-2'] = {['mining-drill-productivity-bonus'] = .1, ['character-inventory-slots-bonus'] = 5},
 	-- ['mining-productivity-3'] = {['mining-drill-productivity-bonus'] = .1, ['character-inventory-slots-bonus'] = 5},
 	-- ['mining-productivity-4'] = {['mining-drill-productivity-bonus'] = .1, ['character-inventory-slots-bonus'] = 5},
 }
-
-
-function Public.flamers_tech_multipliers()
-	return 0.4
-end
-
-function Public.flamers_base_damage_multiplier()
-	return 0.4
-end
-
-
-
 
 function Public.player_ammo_damage_modifiers() -- modifiers are fractional. bullet affects gun turrets, but flamethrower does not affect flamer turrets
 	local data = {
@@ -647,7 +640,7 @@ function Public.player_ammo_damage_modifiers() -- modifiers are fractional. bull
 		['cannon-shell'] = 0,
 		['capsule'] = 0,
 		['electric'] = 0,
-		['flamethrower'] = 0, --these nerfs are elsewhere for finer control
+		['flamethrower'] = -0.6, --these nerfs are elsewhere for finer control
 		['grenade'] = -0.05,
 		['landmine'] = 0,
 		['melee'] = 0, -- doesn't do anything apparently
@@ -661,6 +654,7 @@ function Public.player_turret_attack_modifiers()
 		['gun-turret'] = 0,
 		['artillery-turret'] = 0,
 		['laser-turret'] = 0,
+		['flamethrower-turret'] = -0.6,
 	}
 	return data
 end
@@ -672,7 +666,7 @@ function Public.player_gun_speed_modifiers()
 		['cannon-shell'] = 0,
 		['capsule'] = 0,
 		['electric'] = 0,
-		['flamethrower'] = 0, --these nerfs are elsewhere for finer control
+		['flamethrower'] = 0,
 		['grenade'] = -0.25,
 		['landmine'] = 0,
 		['melee'] = 0, -- doesn't do anything apparently

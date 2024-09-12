@@ -106,6 +106,14 @@ function Public.create_step2_entities()
 			quest_structure_data.market.add_market_item(o)
 		end
 
+        quest_structure_data.market.add_market_item{
+            price = Balance.weapon_damage_upgrade_price(),
+            offer = {
+                type = "nothing",
+                effect_description = {'pirates.market_description_purchase_attack_upgrade'}
+            }
+        }
+
 		if destination.static_params.class_for_sale then
 			quest_structure_data.market.add_market_item{price={{'coin', Balance.class_cost(false)}}, offer={type="nothing", effect_description = {'pirates.market_description_purchase_class', Classes.display_form(destination.static_params.class_for_sale)}}}
 

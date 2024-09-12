@@ -103,7 +103,6 @@ function Public.on_surface_generation(destination)
 	-- local memory = Memory.get_crew_memory()
 
 	-- game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = Balance.defaultai_attack_pollution_consumption_modifier()
-		-- Event_functions.flamer_nerfs()
 
 	if destination.type == enum.ISLAND then
 		local subtype = destination.subtype
@@ -270,7 +269,6 @@ function Public.destination_on_arrival(destination)
 	local memory = Memory.get_crew_memory()
 
 	-- game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = Balance.defaultai_attack_pollution_consumption_modifier()
-	-- Event_functions.flamer_nerfs()
 
 	log('Playthrough stats:')
 	log(_inspect(memory.playtesting_stats))

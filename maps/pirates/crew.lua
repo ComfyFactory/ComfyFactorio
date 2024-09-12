@@ -700,21 +700,26 @@ function Public.initialise_crew(accepted_proposal)
 	local global_memory = Memory.get_global_memory()
 
 	local new_id = Public.generate_new_crew_id()
-
-	global_memory.crew_active_ids[#global_memory.crew_active_ids + 1] = new_id
-
-	Memory.initialise_crew_memory(new_id)
-	Memory.set_working_id(new_id)
+	if not new_id then return end
 
 	game.reset_time_played() -- affects the multiplayer lobby view
 
+	global_memory.crew_active_ids[#global_memory.crew_active_ids + 1] = new_id
+
+    global_memory.crew_memories[new_id] = {}
+	
+	Memory.set_working_id(new_id)
+
 	local memory = Memory.get_crew_memory()
+
+	memory.id = new_id
+    
+    memory.game_lost = false
+    memory.game_won = false
 
     local secs = Server.get_current_time()
 	if not secs then secs = 0 end
 	memory.secs_id = secs
-
-	memory.id = new_id
 
 	memory.force_name = Common.get_crew_force_name(new_id)
 	memory.enemy_force_name = Common.get_enemy_force_name(new_id)
@@ -822,6 +827,53 @@ function Public.initialise_crew(accepted_proposal)
 	boat.dockedposition = boat.position
 	boat.speed = 0
 	boat.cannonscount = 2
+
+	Public.set_initial_damage_modifiers()
+end
+
+function Public.set_initial_damage_modifiers()
+	local memory = Memory.get_crew_memory()
+	local force = memory.force
+
+	local ammo_damage_modifiers = Balance.player_ammo_damage_modifiers()
+    local turret_attack_modifiers = Balance.player_turret_attack_modifiers()
+    local gun_speed_modifiers = Balance.player_gun_speed_modifiers()
+
+    for category, factor in pairs(ammo_damage_modifiers) do
+        force.set_ammo_damage_modifier(category, factor)
+    end
+
+    for category, factor in pairs(turret_attack_modifiers) do
+        force.set_turret_attack_modifier(category, factor)
+    end
+
+    for category, factor in pairs(gun_speed_modifiers) do
+        force.set_gun_speed_modifier(category, factor)
+    end
+end
+
+function Public.buff_all_damage(amount)
+	local memory = Memory.get_crew_memory()
+	local force = memory.force
+
+	local ammo_damage_modifiers = Balance.player_ammo_damage_modifiers()
+    local turret_attack_modifiers = Balance.player_turret_attack_modifiers()
+    local gun_speed_modifiers = Balance.player_gun_speed_modifiers()
+
+    for category, factor in pairs(ammo_damage_modifiers) do
+		local current_modifier = force.get_ammo_damage_modifier(category)
+        force.set_ammo_damage_modifier(category, current_modifier + amount * (1 + factor))
+    end
+
+	for category, factor in pairs(turret_attack_modifiers) do
+		local current_modifier = force.get_turret_attack_modifier(category)
+		force.set_turret_attack_modifier(category, current_modifier + amount * (1 + factor))
+	end
+
+	for category, factor in pairs(gun_speed_modifiers) do
+		local current_modifier = force.get_gun_speed_modifier(category)
+		force.set_gun_speed_modifier(category, current_modifier + amount * (1 + factor))
+	end
 end
 
 

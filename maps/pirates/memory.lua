@@ -41,15 +41,6 @@ function Public.global_reset_memory()
     pirates_global_memory.last_players_health = {} --used to make damage reduction work somewhat properly
 end
 
-function Public.initialise_crew_memory(id)
-
-    pirates_global_memory.crew_memories[id] = {}
-    local memory = pirates_global_memory.crew_memories[id]
-    
-    memory.game_lost = false
-    memory.game_won = false
-end
-
 function Public.fallthrough_crew_memory() --could make this a metatable, but metatables and factorio global seem not to play nicely
     return {
         id = 0,
