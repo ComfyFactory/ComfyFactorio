@@ -102,28 +102,46 @@ function Public.apply_restrictions_to_machines(tickinterval)
 	local boat = memory.boat
 
 	if memory.game_lost then return end
+	if memory.crewstatus == Crew.enum.LEAVING_INITIAL_DOCK then return end
+
+	local should_update = false
 
 	if boat.state == Boats.enum_state.ATSEA_VICTORIOUS or boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL then
 		if boat.state == Boats.enum_state.ATSEA_VICTORIOUS then
-			if memory.crafters_disabled and Common.activecrewcount() == 0 then
-				return
+			if memory.crafters_disabled then
+				if Common.activecrewcount() > 0 then
+					should_update = true
+				end
 			else
 				memory.crafters_disabled = true
+				should_update = true
 				Boats.update_EEIs(boat)
 			end
+
 		else
-			if memory.crafters_disabled and Common.activecrewcount() == 0 then
-				return
-			elseif game.tick > memory.at_sea_waiting_game_tick + Balance.seconds_until_machines_shut_down_at_sea() * 60 then
-				memory.crafters_disabled = true
-				Boats.update_EEIs(boat)
-				Common.parrot_speak(memory.force, {'pirates.parrot_crafters_disabled'})
+			if memory.crafters_disabled then
+				if Common.activecrewcount() > 0 then
+					should_update = true
+				end
+			else
+				if game.tick > memory.at_sea_waiting_game_tick + Balance.seconds_until_machines_shut_down_at_sea() * 60 then
+					memory.crafters_disabled = true
+					should_update = true
+					Boats.update_EEIs(boat)
+					Common.parrot_speak(memory.force, {'pirates.parrot_crafters_disabled'})
+				end
 			end
+
 		end
 	else
-		memory.crafters_disabled = false
-		Boats.update_EEIs(boat)
+		if memory.crafters_disabled then
+			memory.crafters_disabled = false
+			should_update = true
+			Boats.update_EEIs(boat)
+		end
 	end
+
+	if not should_update then return end
 
 	local surfaces_to_check = {}
 
