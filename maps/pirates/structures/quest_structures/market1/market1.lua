@@ -78,7 +78,7 @@ function Public.create_step2_entities()
             price = Balance.weapon_damage_upgrade_price(),
             offer = {
                 type = "nothing",
-                effect_description = {'pirates.market_description_purchase_attack_upgrade'}
+                effect_description = {'pirates.market_description_purchase_attack_upgrade', Balance.weapon_damage_upgrade_percentage()}
             }
         }
 

@@ -508,9 +508,12 @@ function Public.class_cost(at_dock)
 	-- return Math.ceil(10000 / (Public.crew_scale()*10/4)^(1/6))
 end
 
+function Public.weapon_damage_upgrade_percentage()
+	return 5
+end
 
 function Public.weapon_damage_upgrade_price()
-	return {{name = 'coin', amount = 4000}, {name = 'steel-plate', amount = 100}} --NOTE: Should be different to other 'nothing' costs. See the use of this function in shop.lua.
+	return {{name = 'coin', amount = 2000}, {name = 'steel-plate', amount = 100}} --NOTE: Should be different to other 'nothing' costs. See the use of this function in shop.lua.
 end
 
 

@@ -227,10 +227,10 @@ function Public.event_on_market_item_purchased(event)
 				local isDamageUpgrade = thisPurchaseData.price[1].amount == Balance.weapon_damage_upgrade_price()[1].amount and thisPurchaseData.price[1].name == Balance.weapon_damage_upgrade_price()[1].name and thisPurchaseData.price[2] and thisPurchaseData.price[2].amount == Balance.weapon_damage_upgrade_price()[2].amount and thisPurchaseData.price[2].name == Balance.weapon_damage_upgrade_price()[2].name
 
 				if isDamageUpgrade then
-                    Common.notify_force_light(player.force, {'pirates.market_event_attack_upgrade_purchased', player.name})
+                    Common.notify_force_light(player.force, {'pirates.market_event_attack_upgrade_purchased', player.name, Balance.weapon_damage_upgrade_percentage()})
                     market.remove_market_item(offer_index)
 
-					Crew.buff_all_damage(0.1)
+					Crew.buff_all_damage(Balance.weapon_damage_upgrade_percentage() / 100)
 
 				elseif destination.static_params.class_for_sale then
 
