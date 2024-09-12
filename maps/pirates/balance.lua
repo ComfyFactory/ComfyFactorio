@@ -648,7 +648,7 @@ function Public.player_ammo_damage_modifiers() -- modifiers are fractional. bull
 		['cannon-shell'] = 0,
 		['capsule'] = 0,
 		['electric'] = 0,
-		['flamethrower'] = -0.6, --these nerfs are elsewhere for finer control
+		['flamethrower'] = -0.5,
 		['grenade'] = -0.05,
 		['landmine'] = 0,
 		['melee'] = 0, -- doesn't do anything apparently
@@ -662,7 +662,7 @@ function Public.player_turret_attack_modifiers()
 		['gun-turret'] = 0,
 		['artillery-turret'] = 0,
 		['laser-turret'] = 0,
-		['flamethrower-turret'] = -0.6,
+		['flamethrower-turret'] = -0.5,
 	}
 	return data
 end
