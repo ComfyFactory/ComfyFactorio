@@ -1853,7 +1853,7 @@ function Public.delete_entities(surface, position, width, height)
 
     for _, e in pairs(existing) do
         if not (e.name == 'iron-ore' or e.name == 'copper-ore' or e.name == 'stone' or e.name == 'uranium-ore' or e.name == 'crude-oil') then
-            if not (e.name == 'rocket-silo') then
+            if e.name ~= 'rocket-silo' then
                 e.destroy()
             end
         end

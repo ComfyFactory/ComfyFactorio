@@ -307,7 +307,7 @@ local function handle_damage_to_krakens(event)
 	if event.entity.force.name ~= memory.enemy_force_name then return end
 
 	local surface_name = memory.boat and memory.boat.surface_name
-	if not (surface_name == memory.sea_name) then return end
+	if surface_name ~= memory.sea_name then return end
 
 	local unit_number = event.entity.unit_number
 
@@ -579,7 +579,7 @@ local function handle_poison_resistance_in_swamp(event)
 	local destination = Common.current_destination()
 	if not (destination and destination.subtype == IslandEnum.enum.SWAMP) then return end
 
-	if not (destination.surface_name == entity.surface.name) then return end
+	if destination.surface_name ~= entity.surface.name then return end
 
 	if not ((entity.type and entity.type == 'tree') or (event.entity.force and event.entity.force.name == memory.enemy_force_name)) then return end
 
@@ -597,7 +597,7 @@ local function handle_maze_walls_damage_resistance(event)
 	local destination = Common.current_destination()
 	if not (destination and destination.subtype == IslandEnum.enum.MAZE) then return end
 
-	if not (destination.surface_name == entity.surface.name) then return end
+	if destination.surface_name ~= entity.surface.name then return end
 
 	if not ((entity.type and entity.type == 'tree') or entity.name == 'rock-huge' or entity.name == 'rock-big' or entity.name == 'sand-rock-big') then return end
 
@@ -2225,7 +2225,7 @@ local function event_on_gui_opened(event)
 	if not player then return end
 	if not player.valid then return end
 
-	if not player.permission_group.name == 'restricted_area' then return end
+	if player.permission_group.name ~= 'restricted_area' then return end
 
 	if entity.name == 'wooden-chest' or entity.name == 'iron-chest' or entity.name == 'steel-chest' or entity.name == 'red-chest' or entity.name == 'blue-chest' then
 		player.opened = nil

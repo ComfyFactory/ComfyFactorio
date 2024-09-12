@@ -461,7 +461,7 @@ function Public.full_update(player)
             end
         end
     end
-    flow.membership_buttons.spectator_join_crew.visible = playercrew_status.spectating and (not (count >= memory.capacity)) and (not memory.run_is_private)
+    flow.membership_buttons.spectator_join_crew.visible = playercrew_status.spectating and (count < memory.capacity) and (not memory.run_is_private)
 
     flow.membership_buttons.leave_crew.visible = playercrew_status.adventuring
     -- flow.membership_buttons.crewmember_join_spectators.visible = playercrew_status.adventuring

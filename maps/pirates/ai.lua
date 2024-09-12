@@ -115,7 +115,7 @@ function Public.eat_up_fraction_of_all_pollution(surface, fraction_of_global_pol
 
 		surface.pollute(p, -pollution_to_eat)
 		-- Radioactive world doesn't absorb map pollution:
-		if not (Common.current_destination().subtype == IslandEnum.enum.RADIOACTIVE) then
+		if Common.current_destination().subtype ~= IslandEnum.enum.RADIOACTIVE then
 			pollution_available = pollution_available + pollution_to_eat
 		end
 	end

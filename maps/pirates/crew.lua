@@ -203,7 +203,7 @@ function Public.choose_crew_members()
 end
 
 function Public.join_spectators(player, crewid)
-	if not (crewid > 0) then return end
+	if crewid == 0 then return end
 
 	Memory.set_working_id(crewid)
 	local memory = Memory.get_crew_memory()

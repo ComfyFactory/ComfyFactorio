@@ -19,7 +19,7 @@ function Public.raffle(values, weights) --arguments of the form {[a] = A, [b] = 
 	end
 
 	-- Fallback case
-	if (not (total_weight > 0)) then
+	if (total_weight <= 0) then
 		local index = Math.random(1, table_size(values))
 		return values[index]
 	end
@@ -53,7 +53,7 @@ function Public.raffle2(table) --arguments of the form {v1 = w1, v2 = w2, ...}
 	end
 
 	-- Fallback case
-	if (not (total_weight > 0)) then
+	if (total_weight <= 0) then
 		local index = Math.random(1, table_size(table))
 		for k, _ in pairs(table) do
 			if index == 1 then

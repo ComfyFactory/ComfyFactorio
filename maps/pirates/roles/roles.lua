@@ -110,7 +110,7 @@ function Public.tag_text(player)
 		str = str .. t
 	end
 
-	if (not (str == '')) then str = '[' .. str .. ']' end
+	if (str ~= '') then str = '[' .. str .. ']' end
 
 	return str
 end
@@ -415,7 +415,7 @@ function Public.assign_captain_based_on_priorities(excluded_player_index)
 		for _, player_index in pairs(crew_members) do
 			local player = game.players[player_index]
 
-			if Common.validate_player(player) and not (player.index == excluded_player_index) then
+			if Common.validate_player(player) and player.index ~= excluded_player_index then
 				local player_active = Utils.contains(Common.crew_get_nonafk_crew_members(), player)
 
 				-- prefer non-afk players:

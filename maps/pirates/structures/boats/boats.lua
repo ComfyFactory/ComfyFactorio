@@ -61,7 +61,7 @@ function Public.currentdestination_move_boat_natural()
 	local boat = memory.boat
 	local destination = Common.current_destination()
 
-	if (destination and destination.dynamic_data and destination.dynamic_data.timer) and (not (destination.dynamic_data.timer >= 1)) then return end
+	if (destination and destination.dynamic_data and destination.dynamic_data.timer) and (destination.dynamic_data.timer < 1) then return end
 
 	local water_type = 'water'
 	if destination and destination.subtype == IslandEnum.enum.RADIOACTIVE then
@@ -82,7 +82,7 @@ function Public.currentdestination_try_move_boat_steered()
 	local boat = memory.boat
 	local destination = Common.current_destination()
 
-	if (destination and destination.dynamic_data and destination.dynamic_data.timer) and (not (destination.dynamic_data.timer >= 1)) then return end
+	if (destination and destination.dynamic_data and destination.dynamic_data.timer) and (destination.dynamic_data.timer < 1) then return end
 
 	if boat and boat.decksteeringchests then
 		local leftchest, rightchest = boat.decksteeringchests.left, boat.decksteeringchests.right

@@ -133,10 +133,8 @@ function Public.refund_items(player, price, price_multiplier, item_purchased_nam
 	local inv = player.get_inventory(defines.inventory.character_main)
 	if not inv then return end
 
-	local refunded_counts = {}
 	for _, p in pairs(price) do
 		local inserted = inv.insert { name = p.name, count = p.amount * price_multiplier }
-		refunded_counts[p.name] = (refunded_counts[p.name] or 0) + inserted
 		if inserted < p.amount * price_multiplier then
 			-- Inventory is full, drop the remaining items on the ground
 			player.surface.spill_item_stack(player.position, { name = p.name, count = p.amount * price_multiplier - inserted }, true, player.force, false)
