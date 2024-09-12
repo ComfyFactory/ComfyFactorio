@@ -1,4 +1,4 @@
--- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 
 local Memory = require 'maps.pirates.memory'
@@ -35,7 +35,6 @@ function Public.noises(args)
 	return ret
 end
 
-
 function Public.terrain(args)
 	local noises = Public.noises(args)
 	local p = args.p
@@ -44,47 +43,46 @@ function Public.terrain(args)
 	if IslandsCommon.place_water_tile(args) then return end
 
 	if noises.height(p) < 0 then
-		args.tiles[#args.tiles + 1] = {name = 'water', position = args.p}
+		args.tiles[#args.tiles + 1] = { name = 'water', position = args.p }
 		return
 	end
 
 	if noises.height(p) < 0.19 then
-		args.tiles[#args.tiles + 1] = {name = 'sand-1', position = args.p}
+		args.tiles[#args.tiles + 1] = { name = 'sand-1', position = args.p }
 	elseif noises.height(p) < 0.22 then
-		args.tiles[#args.tiles + 1] = {name = 'red-desert-3', position = args.p}
+		args.tiles[#args.tiles + 1] = { name = 'red-desert-3', position = args.p }
 	else
 		if noises.height_background(p) > 0.4 then
-			args.tiles[#args.tiles + 1] = {name = 'red-desert-2', position = args.p}
+			args.tiles[#args.tiles + 1] = { name = 'red-desert-2', position = args.p }
 		elseif noises.height_background(p) > -0.15 then
-			args.tiles[#args.tiles + 1] = {name = 'red-desert-1', position = args.p}
+			args.tiles[#args.tiles + 1] = { name = 'red-desert-1', position = args.p }
 		else
-			args.tiles[#args.tiles + 1] = {name = 'red-desert-0', position = args.p}
+			args.tiles[#args.tiles + 1] = { name = 'red-desert-0', position = args.p }
 		end
 	end
 
 	if noises.height(p) > 0.32 then
 		if noises.rock_abs(p) > 0.25 then
-
 			if noises.mood(p) < -0.5 then
 				local density = 0.003 * Math.slopefromto(noises.rock_abs(p), 0.25, 0.4)
 				local rng = Math.random()
 				if rng < density then
-					args.decoratives[#args.decoratives + 1] = {name = 'worms-decal', position = args.p}
+					args.decoratives[#args.decoratives + 1] = { name = 'worms-decal', position = args.p }
 				end
 			end
 
 			if noises.mood(p) < 0.1 then
 				local rng = Math.random()
 				if rng < 0.0004 then
-					args.entities[#args.entities + 1] = {name = 'medium-remnants', position = args.p}
+					args.entities[#args.entities + 1] = { name = 'medium-remnants', position = args.p }
 				elseif rng < 0.0007 then
-					args.entities[#args.entities + 1] = {name = 'spidertron-remnants', position = args.p}
+					args.entities[#args.entities + 1] = { name = 'spidertron-remnants', position = args.p }
 				elseif rng < 0.001 then
-					args.entities[#args.entities + 1] = {name = 'medium-ship-wreck', position = args.p}
+					args.entities[#args.entities + 1] = { name = 'medium-ship-wreck', position = args.p }
 				elseif rng < 0.0013 then
-					args.specials[#args.specials + 1] = {name = 'big-ship-wreck-2', position = args.p}
+					args.specials[#args.specials + 1] = { name = 'big-ship-wreck-2', position = args.p }
 				elseif rng < 0.0014 then
-					args.specials[#args.specials + 1] = {name = 'big-ship-wreck-1', position = args.p}
+					args.specials[#args.specials + 1] = { name = 'big-ship-wreck-1', position = args.p }
 				end
 			end
 		end
@@ -93,65 +91,62 @@ function Public.terrain(args)
 	if noises.forest_abs_suppressed(p) > 0.85 then
 		local treedensity = 0.3 * Math.slopefromto(noises.forest_abs_suppressed(p), 0.85, 0.9)
 		if noises.forest(p) > 1.6 then
-			if Math.random(1,100) < treedensity*100 then args.entities[#args.entities + 1] = {name = 'dry-hairy-tree', position = args.p, visible_on_overworld = true} end
+			if Math.random(1, 100) < treedensity * 100 then args.entities[#args.entities + 1] = { name = 'dry-hairy-tree', position = args.p, visible_on_overworld = true } end
 		elseif noises.forest(p) < -0.95 then
-			if Math.random(1,100) < treedensity*100 then args.entities[#args.entities + 1] = {name = 'dead-tree-desert', position = args.p, visible_on_overworld = true} end
+			if Math.random(1, 100) < treedensity * 100 then args.entities[#args.entities + 1] = { name = 'dead-tree-desert', position = args.p, visible_on_overworld = true } end
 		end
 	end
 
 	if noises.forest_abs_suppressed(p) < 0.65 then
 		if noises.height(p) > 0.15 then
 			if noises.rock_abs(p) > 0.25 then
-				local rockdensity = 1/200 * Math.slopefromto(noises.rock_abs(p), 0.25, 0.6)
+				local rockdensity = 1 / 200 * Math.slopefromto(noises.rock_abs(p), 0.25, 0.6)
 				local rockrng = Math.random()
 				if rockrng < rockdensity then
 					args.entities[#args.entities + 1] = IslandsCommon.random_rock_1(args.p)
 				elseif rockrng < rockdensity * 1.5 then
-					args.decoratives[#args.decoratives + 1] = {name = 'rock-medium', position = args.p}
+					args.decoratives[#args.decoratives + 1] = { name = 'rock-medium', position = args.p }
 				elseif rockrng < rockdensity * 2 then
-					args.decoratives[#args.decoratives + 1] = {name = 'rock-small', position = args.p}
+					args.decoratives[#args.decoratives + 1] = { name = 'rock-small', position = args.p }
 				elseif rockrng < rockdensity * 2.5 then
-					args.decoratives[#args.decoratives + 1] = {name = 'rock-tiny', position = args.p}
+					args.decoratives[#args.decoratives + 1] = { name = 'rock-tiny', position = args.p }
 				end
 			end
 		end
 	end
 
 	if noises.forest_abs_suppressed(p) < 0.8 and noises.mood(p) > -0.3 then
-		local amount = Math.ceil(80 * noises.height(p) * Balance.island_richness_avg_multiplier(args.overworldx) * Math.random_float_in_range(0.9, 1.1))
+		local amount = Math.ceil(80 * noises.height(p) * Balance.game_ores_scale(args.overworldx) * Math.random_float_in_range(0.9, 1.1))
 		if noises.height(p) > 0.27 then
 			if noises.ore(p) > 1.5 then
 				local name = 'iron-ore'
 				if (args.p.x + args.p.y) % 2 < 1 then
 					name = 'copper-ore'
 				end
-				args.entities[#args.entities + 1] = {name = name, position = args.p, amount = amount}
+				args.entities[#args.entities + 1] = { name = name, position = args.p, amount = amount }
 			elseif noises.ore(p) < -1.6 then
-				args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = amount}
+				args.entities[#args.entities + 1] = { name = 'coal', position = args.p, amount = amount }
 			elseif noises.ore(p) < 0.041 and noises.ore(p) > -0.041 then
-				args.entities[#args.entities + 1] = {name = 'stone', position = args.p, amount = amount}
+				args.entities[#args.entities + 1] = { name = 'stone', position = args.p, amount = amount }
 			end
 		elseif noises.height(p) < 0.19 then
 			if noises.ore(p) > 2.1 then
-				args.entities[#args.entities + 1] = {name = 'copper-ore', position = args.p, amount = amount}
+				args.entities[#args.entities + 1] = { name = 'copper-ore', position = args.p, amount = amount }
 			elseif noises.ore(p) < -2.1 then
-				args.entities[#args.entities + 1] = {name = 'iron-ore', position = args.p, amount = amount}
-			-- elseif noises.ore(p) < 0.010 and noises.ore(p) > -0.010 then
-			-- 	args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = 5}
+				args.entities[#args.entities + 1] = { name = 'iron-ore', position = args.p, amount = amount }
+				-- elseif noises.ore(p) < 0.010 and noises.ore(p) > -0.010 then
+				-- 	args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = 5}
 			end
 		end
 	end
 end
 
-
-
-
 function Public.chunk_structures(args)
 	local rng = Math.random()
 	local left_top = args.left_top
 
-	local spec = function(p)
-		local noises = Public.noises{p = p, noise_generator = args.noise_generator, static_params = args.static_params, seed = args.seed}
+	local spec = function (p)
+		local noises = Public.noises { p = p, noise_generator = args.noise_generator, static_params = args.static_params, seed = args.seed }
 
 		return {
 			placeable_strict = noises.height(p) > 0.05 and noises.mood(p) > -0.6 and noises.farness(p) > 0.1,
@@ -163,10 +158,10 @@ function Public.chunk_structures(args)
 	-- initial attempt, to avoid placing two structures too close to each other, is to divide up the map into 2x2 chonks, and spawn once in each
 	local bool1, bool2 = left_top.x % 64 < 32, left_top.y % 64 < 32
 	local all_four_chunks = {
-		{x = left_top.x, y = left_top.y},
-		{x = left_top.x + (bool1 and 32 or -32), y = left_top.y},
-		{x = left_top.x, y = left_top.y + (bool2 and 32 or -32)},
-		{x = left_top.x + (bool1 and 32 or -32), y = left_top.y + (bool2 and 32 or -32)},
+		{ x = left_top.x,                         y = left_top.y },
+		{ x = left_top.x + (bool1 and 32 or -32), y = left_top.y },
+		{ x = left_top.x,                         y = left_top.y + (bool2 and 32 or -32) },
+		{ x = left_top.x + (bool1 and 32 or -32), y = left_top.y + (bool2 and 32 or -32) },
 	}
 
 	if not args.other_map_generation_data.chunks_loaded then args.other_map_generation_data.chunks_loaded = {} end
@@ -176,7 +171,7 @@ function Public.chunk_structures(args)
 	chunks_loaded[args.left_top.x][args.left_top.y] = true
 
 	local nearby_chunks_generated_count = 0
-	for i=1,4 do
+	for i = 1, 4 do
 		if chunks_loaded[all_four_chunks[i].x] and chunks_loaded[all_four_chunks[i].x][all_four_chunks[i].y] then
 			nearby_chunks_generated_count = nearby_chunks_generated_count + 1
 		end
@@ -184,34 +179,31 @@ function Public.chunk_structures(args)
 
 	if nearby_chunks_generated_count == 4 then --should trigger only once per 4 chunks
 		local avgleft_top = {
-			x = (all_four_chunks[1].x + all_four_chunks[4].x)/2,
-			y = (all_four_chunks[1].y + all_four_chunks[4].y)/2,
+			x = (all_four_chunks[1].x + all_four_chunks[4].x) / 2,
+			y = (all_four_chunks[1].y + all_four_chunks[4].y) / 2,
 		}
 		local leftmost_topmost = {
 			x = avgleft_top.x - 32,
 			y = avgleft_top.y - 32,
 		}
 
-		local spec2 = spec{x = avgleft_top.x + 16, y = avgleft_top.y + 16}
+		local spec2 = spec { x = avgleft_top.x + 16, y = avgleft_top.y + 16 }
 
 		if rng < spec2.chanceper4chunks then
-
 			local rng2 = Math.random()
 			local struct
 
-			if rng2 < 28/100 then
+			if rng2 < 28 / 100 then
 				struct = Structures.IslandStructures.ROC.shelter2
 			else
 				struct = Structures.IslandStructures.ROC.shelter1
 			end
 			if struct then
-				Structures.try_place(struct, args.specials, leftmost_topmost, 64, 64, function(p) return spec(p).placeable_strict end, function(p) return spec(p).placeable_optional end)
+				Structures.try_place(struct, args.specials, leftmost_topmost, 64, 64, function (p) return spec(p).placeable_strict end, function (p) return spec(p).placeable_optional end)
 			end
 		end
 	end
 end
-
-
 
 -- function Public.break_rock(surface, p, entity_name)
 -- 	-- return Ores.try_ore_spawn(surface, p, entity_name)
@@ -230,7 +222,6 @@ local function red_desert_tick()
 
 		if destination.subtype == IslandEnum.enum.RED_DESERT then
 			if memory.boat and memory.boat.surface_name and memory.boat.surface_name == destination.surface_name then
-
 				Public.underground_worms_ai()
 
 				if game.tick % 300 == 0 and destination.dynamic_data.timer and destination.dynamic_data.timer > 60 then
@@ -270,7 +261,7 @@ function Public.underground_worms_ai()
 			indices_to_remove[#indices_to_remove + 1] = i
 		else
 			-- move
-			w.position = {x = w.position.x + Balance.sandworm_speed() * 30/60 * w.direction.x, y = w.position.y + Balance.sandworm_speed() * 30/60 * w.direction.y}
+			w.position = { x = w.position.x + Balance.sandworm_speed() * 30 / 60 * w.direction.x, y = w.position.y + Balance.sandworm_speed() * 30 / 60 * w.direction.y }
 
 			if w.chart_tag then w.chart_tag.destroy() end
 
@@ -284,10 +275,10 @@ function Public.underground_worms_ai()
 				local big_bool = (w.age % 4 == 0)
 				Effects.worm_movement_effect(surface, w.position, solid_ground, big_bool)
 
-				w.chart_tag = player_force.add_chart_tag(surface, {icon = {type = 'virtual', name = 'signal-red'}, position = w.position})
+				w.chart_tag = player_force.add_chart_tag(surface, { icon = { type = 'virtual', name = 'signal-red' }, position = w.position })
 
 				if not solid_ground then
-					local nearby_characters = surface.find_entities_filtered{position = w.position, radius = 7, name = 'character'}
+					local nearby_characters = surface.find_entities_filtered { position = w.position, radius = 7, name = 'character' }
 
 					local character_outside = false
 					for j = 1, #nearby_characters do
@@ -312,7 +303,7 @@ function Public.underground_worms_ai()
 							local can_emerge = (not solid_ground) and (not (tile and tile.valid and Utils.contains(CoreData.worm_solid_tile_names, emerge_position_tile.name)))
 
 							if can_emerge then
-								surface.create_entity{name = type, position = emerge_position, force = enemy_force_name}
+								surface.create_entity { name = type, position = emerge_position, force = enemy_force_name }
 								Effects.worm_emerge_effect(surface, emerge_position)
 								indices_to_remove[#indices_to_remove + 1] = i
 								if w.chart_tag then w.chart_tag.destroy() end
@@ -325,7 +316,6 @@ function Public.underground_worms_ai()
 								end
 							end
 						end
-
 					end
 				end
 			end
@@ -335,32 +325,30 @@ function Public.underground_worms_ai()
 	for i = 1, #indices_to_remove do
 		local index = indices_to_remove[i]
 
-		for j = index, #worms-1 do
-			worms[j] = worms[j+1]
+		for j = index, #worms - 1 do
+			worms[j] = worms[j + 1]
 		end
 		worms[#worms] = nil
 	end
 
-	local max_worms = Math.ceil(45 * Math.sloped(Common.difficulty_scale(), 1/2))
+	local max_worms = Math.ceil(45 * Math.sloped(Common.difficulty_scale(), 1 / 2))
 
 	-- spawn worms
 	if game.tick % 90 == 0 then
 		if #worms < max_worms then
 			local island_center = destination.static_params.islandcenter_position
-			local r = Math.max(destination.static_params.width, destination.static_params.height)/2
+			local r = Math.max(destination.static_params.width, destination.static_params.height) / 2
 
-			local theta = Math.random()*5.75 - Math.pi/2+0.25
-			local p = {x = island_center.x + r*Math.sin(theta), y = island_center.y + r*Math.cos(theta)}
+			local theta = Math.random() * 5.75 - Math.pi / 2 + 0.25
+			local p = { x = island_center.x + r * Math.sin(theta), y = island_center.y + r * Math.cos(theta) }
 
-			local theta2 = Math.random()*1.4-0.7
-			local d = {x = -Math.sin(theta+theta2), y = -Math.cos(theta+theta2)}
+			local theta2 = Math.random() * 1.4 - 0.7
+			local d = { x = -Math.sin(theta + theta2), y = -Math.cos(theta + theta2) }
 
-			worms[#worms + 1] = {position = p, direction = d, age = 0, max_age = 2*r/(Balance.sandworm_speed() * 30/60) * Math.cos(theta2/2)}
+			worms[#worms + 1] = { position = p, direction = d, age = 0, max_age = 2 * r / (Balance.sandworm_speed() * 30 / 60) * Math.cos(theta2 / 2) }
 		end
 	end
 end
-
-
 
 function Public.custom_biter_ai()
 	local memory = Memory.get_crew_memory()
@@ -371,7 +359,7 @@ function Public.custom_biter_ai()
 	local enemy_force_name = memory.enemy_force_name
 	local evolution = memory.evolution_factor
 
-	local fraction_of_floating_pollution = 1/2
+	local fraction_of_floating_pollution = 1 / 2
 	local minimum_avg_units = 30
 	local maximum_units = 256
 
@@ -381,7 +369,7 @@ function Public.custom_biter_ai()
 	if budget >= minimum_avg_units * Common.averageUnitPollutionCost(evolution) then
 		local initialbudget = budget
 
-		local position = Hunt.position_away_from_players_1({static_params = destination.static_params}, 50)
+		local position = Hunt.position_away_from_players_1({ static_params = destination.static_params }, 50)
 
 		local units_created_count = 0
 		local units_created = {}
@@ -395,11 +383,11 @@ function Public.custom_biter_ai()
 			local p = surface.find_non_colliding_position(name2, position, 50, 2)
 			if not p then return end
 
-			local biter = surface.create_entity({name = name2, force = enemy_force_name, position = p})
+			local biter = surface.create_entity({ name = name2, force = enemy_force_name, position = p })
 			Common.try_make_biter_elite(biter)
 
 			units_created[#units_created + 1] = biter
-			memory.scripted_biters[biter.unit_number] = {entity = biter, created_at = game.tick}
+			memory.scripted_biters[biter.unit_number] = { entity = biter, created_at = game.tick }
 
 			return biter.unit_number
 		end
@@ -421,15 +409,15 @@ function Public.custom_biter_ai()
 
 		local position2 = surface.find_non_colliding_position('rocket-silo', position, 256, 2) or position
 
-		local unit_group = surface.create_unit_group({position = position2, force = enemy_force_name})
+		local unit_group = surface.create_unit_group({ position = position2, force = enemy_force_name })
 		for _, unit in pairs(units_created) do
 			unit_group.add_member(unit)
 		end
-		memory.scripted_unit_groups[unit_group.group_number] = {ref = unit_group, script_type = 'burrowed'}
+		memory.scripted_unit_groups[unit_group.group_number] = { ref = unit_group, script_type = 'burrowed' }
 
-		local target = {valid = true, position = {x = memory.boat.position.x - 60, y = memory.boat.position.y} or nil, name = 'boatarea'}
+		local target = { valid = true, position = { x = memory.boat.position.x - 60, y = memory.boat.position.y } or nil, name = 'boatarea' }
 
-		unit_group.set_command{
+		unit_group.set_command {
 			type = defines.command.attack_area,
 			destination = target.position,
 			radius = 30,

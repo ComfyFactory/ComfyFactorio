@@ -1,4 +1,4 @@
--- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 
 local Memory = require 'maps.pirates.memory'
@@ -38,16 +38,16 @@ function Public.reveal(surface, source_surface, position, brushsize)
     local terraingen_coordinates_offset = destination.static_params.terraingen_coordinates_offset
 
     -- TODO: use radius search for "find_tiles_filtered" instead to avoid the check?
-    for _, tile in pairs(source_surface.find_tiles_filtered({area = {{position.x - brushsize, position.y - brushsize}, {position.x + brushsize, position.y + brushsize}}})) do
+    for _, tile in pairs(source_surface.find_tiles_filtered({ area = { { position.x - brushsize, position.y - brushsize }, { position.x + brushsize, position.y + brushsize } } })) do
         local tile_position = tile.position
         if tile.name ~= 'lab-dark-2' and tile.name ~= 'lab-dark-1' and (position.x - tile_position.x) ^ 2 + (position.y - tile_position.y) ^ 2 < brushsize_square then
             i = i + 1
-            copied_tiles[i] = {name = 'lab-dark-1', position = tile.position}
+            copied_tiles[i] = { name = 'lab-dark-1', position = tile.position }
 
             -- Avoid re-exploring these areas as they have been already revealed when map was loaded
             -- Revealed areas when map gets loaded are: river and entrance (beach with sand)
-            local true_pos = Utils.psum{tile_position, {1, terraingen_coordinates_offset}}
-            true_pos = Utils.psum{true_pos, {x = 0.5, y = 0.5}}
+            local true_pos = Utils.psum { tile_position, { 1, terraingen_coordinates_offset } }
+            true_pos = Utils.psum { true_pos, { x = 0.5, y = 0.5 } }
             local d = true_pos.x ^ 2 + true_pos.y ^ 2
 
             local boat_height = Math.max(BoatData.height, 15) -- even if boat height is smaller, we need to be at least 10+ just so formulas below play out nicely
@@ -57,18 +57,18 @@ function Public.reveal(surface, source_surface, position, brushsize)
 
             -- Don't copy river upon which ship arrives + ship entrance
             if not (true_pos.x < 0 and d >= spawn_radius ^ 2 and Math.abs(2 * true_pos.y) < river_width) then
-                tiles[i] = {name = tile.name, position = tile.position}
+                tiles[i] = { name = tile.name, position = tile.position }
             end
         end
     end
     surface.set_tiles(tiles, true, false, false, false)
     source_surface.set_tiles(copied_tiles, false, false, false, false)
 
-    for _, entity in pairs(source_surface.find_entities_filtered({area = {{position.x - brushsize, position.y - brushsize}, {position.x + brushsize, position.y + brushsize}}})) do
+    for _, entity in pairs(source_surface.find_entities_filtered({ area = { { position.x - brushsize, position.y - brushsize }, { position.x + brushsize, position.y + brushsize } } })) do
         if entity.valid then
-            local entity_position = {x = entity.position.x, y = entity.position.y}
+            local entity_position = { x = entity.position.x, y = entity.position.y }
             if (position.x - entity_position.x) ^ 2 + (position.y - entity_position.y) ^ 2 < brushsize_square then
-                local e = entity.clone({position = entity_position, surface = surface})
+                local e = entity.clone({ position = entity_position, surface = surface })
                 if e and e.valid then
                     if e.name == 'market' then
                         rendering.draw_light(
@@ -78,7 +78,7 @@ function Public.reveal(surface, source_surface, position, brushsize)
                                 intensity = 0.8,
                                 minimum_darkness = 0,
                                 oriented = true,
-                                color = {255, 255, 255},
+                                color = { 255, 255, 255 },
                                 target = e,
                                 surface = surface,
                                 visible = true,
@@ -105,7 +105,7 @@ function Public.reveal(surface, source_surface, position, brushsize)
         end
     end
 
-    source_surface.set_tiles({{name = 'lab-dark-2', position = position}}, false)
+    source_surface.set_tiles({ { name = 'lab-dark-2', position = position } }, false)
     source_surface.request_to_generate_chunks(position, 3)
 end
 
@@ -125,28 +125,27 @@ function Public.try_make_spawner_elite(spawner, destination)
     end
 end
 
-
 function Public.roll_source_surface(destination_data)
     local map_gen_settings = {
         ['water'] = 0,
         ['seed'] = Math.random(1, 1000000),
         ['starting_area'] = 1,
-        ['cliff_settings'] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
+        ['cliff_settings'] = { cliff_elevation_interval = 0, cliff_elevation_0 = 0 },
         ['default_enable_all_autoplace_controls'] = false,
         ['autoplace_settings'] = {
-            ['entity'] = {treat_missing_as_default = false},
-            ['tile'] = {treat_missing_as_default = false},
-            ['decorative'] = {treat_missing_as_default = false}
+            ['entity'] = { treat_missing_as_default = false },
+            ['tile'] = { treat_missing_as_default = false },
+            ['decorative'] = { treat_missing_as_default = false }
         },
         autoplace_controls = {
-            ['coal'] = {frequency = 0, size = 0, richness = 0},
-            ['stone'] = {frequency = 0, size = 0, richness = 0},
-            ['copper-ore'] = {frequency = 0, size = 0, richness = 0},
-            ['iron-ore'] = {frequency = 0, size = 0, richness = 0},
-            ['uranium-ore'] = {frequency = 0, size = 0, richness = 0},
-            ['crude-oil'] = {frequency = 0, size = 0, richness = 0},
-            ['trees'] = {frequency = 0, size = 0, richness = 0},
-            ['enemy-base'] = {frequency = 0, size = 0, richness = 0}
+            ['coal'] = { frequency = 0, size = 0, richness = 0 },
+            ['stone'] = { frequency = 0, size = 0, richness = 0 },
+            ['copper-ore'] = { frequency = 0, size = 0, richness = 0 },
+            ['iron-ore'] = { frequency = 0, size = 0, richness = 0 },
+            ['uranium-ore'] = { frequency = 0, size = 0, richness = 0 },
+            ['crude-oil'] = { frequency = 0, size = 0, richness = 0 },
+            ['trees'] = { frequency = 0, size = 0, richness = 0 },
+            ['enemy-base'] = { frequency = 0, size = 0, richness = 0 }
         },
     }
 
@@ -156,39 +155,39 @@ function Public.roll_source_surface(destination_data)
     local cave_surface_name = SurfacesCommon.encode_surface_name(island_surface_name.crewid, island_surface_name.destination_index, island_surface_name.type, IslandEnum.enum.CAVE_SOURCE)
 
     cave_miner.cave_surface = game.create_surface(cave_surface_name, map_gen_settings)
-    cave_miner.cave_surface.request_to_generate_chunks({x = 0, y = 0}, 2)
+    cave_miner.cave_surface.request_to_generate_chunks({ x = 0, y = 0 }, 2)
     -- cave_miner.cave_surface.force_generate_chunk_requests() -- Figure out if this is needed at all since it causes issues
 end
 
 function Public.cleanup_cave_surface(destination_data)
     local dynamic_data = destination_data.dynamic_data
-	if dynamic_data and dynamic_data.cave_miner and dynamic_data.cave_miner.cave_surface then
-		game.delete_surface(dynamic_data.cave_miner.cave_surface)
-	end
+    if dynamic_data and dynamic_data.cave_miner and dynamic_data.cave_miner.cave_surface then
+        game.delete_surface(dynamic_data.cave_miner.cave_surface)
+    end
 end
 
 local biomes = {}
 
 function biomes.void(args)
-	args.tiles[#args.tiles + 1] = {name = 'out-of-map', position = args.p}
+    args.tiles[#args.tiles + 1] = { name = 'out-of-map', position = args.p }
 end
 
 function biomes.entrance(args, square_distance)
     if square_distance < (BoatData.height + 40) ^ 2 then
-        args.tiles[#args.tiles + 1] = {name = 'sand-1', position = args.p}
+        args.tiles[#args.tiles + 1] = { name = 'sand-1', position = args.p }
     else
-        args.tiles[#args.tiles + 1] = {name = 'water-shallow', position = args.p}
+        args.tiles[#args.tiles + 1] = { name = 'water-shallow', position = args.p }
     end
 end
 
 function biomes.river(args)
-	args.tiles[#args.tiles + 1] = {name = 'water', position = args.p}
+    args.tiles[#args.tiles + 1] = { name = 'water', position = args.p }
 
     Public.Data.spawn_fish(args);
 end
 
 function Public.terrain(args)
-	local position = args.p
+    local position = args.p
     local d = position.x ^ 2 + position.y ^ 2
 
     local boat_height = Math.max(BoatData.height, 15) -- even if boat height is smaller, we need to be at least 10+ just so formulas below play out nicely
@@ -199,22 +198,21 @@ function Public.terrain(args)
     -- Spawn location for market
     if d < spawn_radius ^ 2 then
         biomes.void(args)
-    -- Cave entrance
-    elseif position.x < 0  and d < entrance_radius ^ 2 and Math.abs(2 * position.y) < river_width then
+        -- Cave entrance
+    elseif position.x < 0 and d < entrance_radius ^ 2 and Math.abs(2 * position.y) < river_width then
         biomes.entrance(args, d)
-    -- River upon which ship arrives
+        -- River upon which ship arrives
     elseif position.x < 0 and Math.abs(2 * position.y) < river_width then
-		biomes.river(args)
+        biomes.river(args)
     else
         biomes.void(args)
-	end
+    end
 
     -- fallback case when no tiles were placed
     if #args.tiles == 0 then
-        args.tiles[#args.tiles + 1] = {name = 'dirt-7', position = args.p}
+        args.tiles[#args.tiles + 1] = { name = 'dirt-7', position = args.p }
     end
 end
-
 
 -- function Public.chunk_structures(args)
 
@@ -245,7 +243,7 @@ local function on_player_changed_position(event)
     local cave_miner = destination_data.dynamic_data.cave_miner
 
     -- TODO: make more reliable way to get island surface
-    Public.reveal(player.surface, cave_miner.cave_surface, {x = Math.floor(player.position.x), y = Math.floor(player.position.y)}, 11)
+    Public.reveal(player.surface, cave_miner.cave_surface, { x = Math.floor(player.position.x), y = Math.floor(player.position.y) }, 11)
 end
 
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)

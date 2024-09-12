@@ -1,4 +1,4 @@
--- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 --[[
  Pirate Ship is maintained by thesixthroc and hosted by Comfy.
@@ -16,10 +16,6 @@ The scenario is quite complex, but there are ways to get started, even if you do
 ]]
 
 --[[
-	personal note for thesixthroc looking at this in XX years: my design notes are all in Obsidian (edit: mostly moved to Github Projects)
-]]
-
---[[
 	Convention for Factorio blueprints in this folder: Use Snap to grid -> Relative, Offset of zeroes.
 	We record tiles and entities separately. For tiles, we use the factorio dev approved 'concrete trick', painting each tile type separately as concrete. The concrete BP will typically need an offset, since it doesn't remember the center of the entities BP — we configure this offset in the Lua rather than the BP itself, since it's easier to edit that way.
 ]]
@@ -28,21 +24,17 @@ The scenario is quite complex, but there are ways to get started, even if you do
 -- require 'modules.biters_yield_coins'
 require 'modules.biter_noms_you'
 require 'modules.no_deconstruction_of_neutral_entities'
-
 require 'maps.pirates.custom_events' --probably do this before anything else
-
 require 'utils.server'
 local _inspect = require 'utils.inspect'.inspect
 -- local Modifers = require 'player_modifiers'
 local BottomFrame = require 'utils.gui.bottom_frame'
 local Autostash = require 'modules.autostash'
+local Misc = require 'utils.commands.misc'
 local AntiGrief = require 'utils.antigrief'
 require 'modules.inserter_drops_pickup'
-
-
 local PiratesApiOnTick = require 'maps.pirates.api_on_tick'
 local ClassPiratesApiOnTick = require 'maps.pirates.roles.tick_functions'
-
 require 'maps.pirates.commands'
 require 'maps.pirates.math'
 local Memory = require 'maps.pirates.memory'
@@ -76,7 +68,7 @@ local Math = require 'maps.pirates.math'
 
 local Public = {}
 
--- parrot sprites from https://elthen.itch.io/2d-pixel-art-parrot-sprites, licensed appropriately
+-- parrot sprites from https://elthen.itch.io/2d-pixel-art-parrot-sprites
 
 local jetty_delayed = Token.register(
 -- function(data)
@@ -84,6 +76,7 @@ local jetty_delayed = Token.register(
 		Surfaces.Lobby.place_lobby_jetty_and_boats()
 	end
 )
+
 local function on_init()
 	Memory.global_reset_memory()
 	local global_memory = Memory.get_global_memory()
@@ -99,6 +92,7 @@ local function on_init()
 	Autostash.insert_into_furnace(true)
 	-- Autostash.insert_into_wagon(true)
 	Autostash.bottom_button(true)
+	Misc.bottom_button(true)
 	BottomFrame.reset()
 	BottomFrame.activate_custom_buttons(true)
 	-- BottomFrame.bottom_right(true)
@@ -109,13 +103,13 @@ local function on_init()
 	game.surfaces['nauvis'].map_gen_settings = mgs
 	game.surfaces['nauvis'].clear()
 
-	game.create_surface('piratedev1', Common.default_map_gen_settings(100, 100))
+	game.create_surface('piratedev1', Common.default_map_gen_settings(100, 100)) --Create a surface used during the entity movement process
 	game.surfaces['piratedev1'].clear()
 
 	Common.init_game_settings(Balance.technology_price_multiplier)
 
-	global_memory.active_crews_cap = Common.activeCrewsCap
-	global_memory.protected_run_cap = Common.protected_run_cap
+	global_memory.active_crews_cap_in_memory = Common.active_crews_cap
+	global_memory.protected_but_not_private_run_cap = Common.protected_but_not_private_run_cap
 	global_memory.private_run_cap = Common.private_run_cap
 
 	global_memory.minimumCapacitySliderValue = Common.minimumCapacitySliderValue
@@ -123,10 +117,9 @@ local function on_init()
 	Surfaces.Lobby.create_starting_dock_surface()
 	local lobby = game.surfaces[CoreData.lobby_surface_name]
 	game.forces.player.set_spawn_position(Common.lobby_spawnpoint, lobby)
-	-- game.forces.player.character_running_speed_modifier = Balance.base_extra_character_speed
 
 	game.create_force('environment')
-	for id = 1, 3, 1 do
+	for id = 1, Common.starting_ships_count, 1 do
 		game.create_force(Common.get_enemy_force_name(id))
 		game.create_force(Common.get_ancient_friendly_force_name(id))
 		game.create_force(Common.get_ancient_hostile_force_name(id))
@@ -176,6 +169,7 @@ local function crew_tick()
 		if tick % 30 == 0 then
 			PiratesApiOnTick.silo_update(30)
 			PiratesApiOnTick.buried_treasure_check(30)
+			PiratesApiOnTick.apply_restrictions_to_machines(30)
 			ClassPiratesApiOnTick.update_character_properties(30)
 			ClassPiratesApiOnTick.class_update_auxiliary_data(30)
 			ClassPiratesApiOnTick.class_renderings(30)
@@ -191,8 +185,6 @@ local function crew_tick()
 				PiratesApiOnTick.check_for_cliff_explosives_in_hold_wooden_chests()
 				PiratesApiOnTick.equalise_fluid_storages() -- Made the update less often for small performance gain, but frequency can be increased if players complain
 				PiratesApiOnTick.revealed_buried_treasure_distance_check()
-				PiratesApiOnTick.update_protected_run_lock_timer(60)
-				PiratesApiOnTick.update_private_run_lock_timer(60)
 				PiratesApiOnTick.victory_continue_reminder()
 				Kraken.overall_kraken_tick()
 
@@ -237,9 +229,13 @@ local function crew_tick()
 					end
 				end
 
+
+				if tick % (60 * Balance.class_reward_tick_rate_in_seconds) == 0 then
+					ClassPiratesApiOnTick.class_rewards_tick(60 * Balance.class_reward_tick_rate_in_seconds)
+				end
+
 				if tick % 300 == 0 then
 					PiratesApiOnTick.periodic_free_resources(300)
-					PiratesApiOnTick.update_recentcrewmember_list(300)
 					PiratesApiOnTick.update_pet_biter_lifetime(300)
 
 					if tick % 1800 == 0 then
@@ -247,13 +243,10 @@ local function crew_tick()
 
 						if tick % 3600 == 0 then
 							PiratesApiOnTick.prune_offline_characters_list(3600)
+							PiratesApiOnTick.update_protected_run_lock_timer(3600)
+							PiratesApiOnTick.update_private_run_lock_timer(3600)
 						end
 					end
-				end
-
-
-				if tick % (60 * Balance.class_reward_tick_rate_in_seconds) == 0 then
-					ClassPiratesApiOnTick.class_rewards_tick(60 * Balance.class_reward_tick_rate_in_seconds)
 				end
 			end
 		end
@@ -278,7 +271,7 @@ local function crew_tick()
 		if memory.crew_disband_tick_message < tick then
 			memory.crew_disband_tick_message = nil
 
-			local message1 = { 'pirates.crew_disband_tick_message', 30 }
+			local message1 = { 'pirates.crew_disband_tick_message' }
 
 			Common.notify_force(memory.force, message1)
 

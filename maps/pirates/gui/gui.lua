@@ -1,4 +1,4 @@
--- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
@@ -28,6 +28,7 @@ local Event = require 'utils.event'
 local CustomEvents = require 'maps.pirates.custom_events'
 local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 local Kraken = require 'maps.pirates.surfaces.sea.kraken'
+local GuiWelcome = require 'maps.pirates.gui.welcome'
 
 local ComfyGui = require 'utils.gui'
 ComfyGui.set_disabled_tab('Scoreboard', true)
@@ -528,8 +529,10 @@ function Public.process_etaframe_update(player, flow1, bools)
 
 	local flow2
 
-	if bools.cost_bool or bools.atsea_loading_bool or bools.atsea_waiting_bool or bools.eta_bool or bools.retreating_bool or bools.leave_anytime_bool then
+	if bools.cost_bool or bools.atsea_loading_bool or bools.atsea_waiting_bool or bools.atsea_victorious_bool or bools.eta_bool or bools.retreating_bool or bools.leave_anytime_bool then
 		flow1.visible = true
+
+		---@type string|table
 		local tooltip = ''
 
 		flow2 = flow1.etaframe_piratebutton_flow_2
@@ -559,7 +562,7 @@ function Public.process_etaframe_update(player, flow1, bools)
 			flow2.etaframe_label_2.caption = Utils.standard_string_form_of_time_in_seconds(passive_eta)
 
 		elseif bools.atsea_loading_bool then
-			if Kraken.get_active_kraken_count() > 0 then
+			if Kraken.get_active_kraken_count(memory.id) > 0 then
 				flow2.etaframe_label_1.visible = true
 				flow2.etaframe_label_2.visible = false
 
@@ -581,7 +584,7 @@ function Public.process_etaframe_update(player, flow1, bools)
 
 				local eta_ticks = total + (memory.extra_time_at_sea or 0) - memory.loadingticks
 
-				flow2.etaframe_label_1.caption = {'pirates.gui_etaframe_arriving_in'}
+				flow2.etaframe_label_1.caption = {'pirates.gui_etaframe_loading_for'}
 				flow2.etaframe_label_2.caption = Utils.standard_string_form_of_time_in_seconds(eta_ticks / 60)
 			end
 
@@ -593,6 +596,14 @@ function Public.process_etaframe_update(player, flow1, bools)
 
 			flow2.etaframe_label_1.caption = {'pirates.gui_etaframe_atsea_waiting'}
 
+		elseif bools.atsea_victorious_bool then
+			flow2.etaframe_label_1.visible = true
+			flow2.etaframe_label_2.visible = false
+
+			tooltip = {'pirates.atsea_victorious_tooltip'}
+
+			flow2.etaframe_label_1.caption = {'pirates.gui_etaframe_atsea_victorious'}
+
 		elseif bools.leave_anytime_bool then
 			flow2.etaframe_label_1.visible = true
 			flow2.etaframe_label_2.visible = true
@@ -603,7 +614,7 @@ function Public.process_etaframe_update(player, flow1, bools)
 			flow2.etaframe_label_2.caption = {'pirates.gui_etaframe_anytime'}
 		end
 
-		if bools.cost_bool and Kraken.get_active_kraken_count() == 0 then
+		if bools.cost_bool and Kraken.get_active_kraken_count(memory.id) == 0 then
 			local costs = destination.static_params.base_cost_to_undock
 			local adjusted_costs = Common.time_adjusted_departure_cost(costs)
 
@@ -829,10 +840,11 @@ function Public.process_siloframe_and_questframe_updates(flowsilo, flowquest, bo
 
 			if quest_type then
 
+				---@type string|table
 				local tooltip = ''
 
 				if quest_complete and quest_reward then
-					tooltip = {'pirates.gui_questframe_complete_tooltip'}
+					tooltip = {'pirates.gui_questframe_complete_tooltip', quest_type}
 					flow1.quest_label_1.caption = {'pirates.gui_questframe'}
 					flow1.quest_label_1.style.font_color = GuiCommon.achieved_font_color
 					flow1.quest_label_2.visible = true
@@ -1249,7 +1261,22 @@ local function on_gui_click(event)
 
 		elseif memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL then
 			if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
-				Progression.at_sea_begin_to_set_sail()
+				local destination_index = memory.mapbeingloadeddestination_index
+
+				Progression.progress_to_destination(destination_index)
+				memory.loadingticks = 0
+			end
+
+		elseif memory.boat.state == Boats.enum_state.ATSEA_VICTORIOUS then
+			if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
+				memory.boat.state = Boats.enum_state.ATSEA_SAILING
+
+				local force = memory.force
+				if not (force and force.valid) then return end
+				if memory.victory_continue_message then
+					memory.victory_continue_message = false
+					Common.notify_force(force, {'pirates.crew_continue_on_freeplay'}, CoreData.colors.notify_victory)
+				end
 			end
 		end
 
@@ -1263,13 +1290,14 @@ local function on_gui_click(event)
 		-- 	Public.fuel.toggle_window(player)
 		-- 	Public.fuel.full_update(player)
 	else
+		if GuiWelcome.handle_click then GuiWelcome.handle_click(event) end
 		if GuiRuns.click then GuiRuns.click(event) end
 		if GuiCrew.click then GuiCrew.click(event) end
 		if GuiClasses.click then GuiClasses.click(event) end
 		if GuiFuel.click then GuiFuel.click(event) end
 		if GuiMinimap.click then GuiMinimap.click(event) end
 		if GuiInfo.click then GuiInfo.click(event) end
-	end
+    end
 end
 
 local function on_gui_location_changed(event)

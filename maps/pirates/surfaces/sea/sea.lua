@@ -1,4 +1,4 @@
--- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
@@ -44,10 +44,9 @@ function Public.ensure_sea_surface()
 end
 
 function Public.terrain(args)
-	args.tiles[#args.tiles + 1] = {name = 'deepwater', position = args.p}
-	local fishrng = Math.random(110)
-	if fishrng == 1 then
-		args.entities[#args.entities + 1] = {name = 'fish', position = args.p}
+	args.tiles[#args.tiles + 1] = { name = 'deepwater', position = args.p }
+	if Math.random(110) == 1 then
+		args.entities[#args.entities + 1] = { name = 'fish', position = args.p }
 	end
 	return nil
 end
@@ -56,6 +55,4 @@ function Public.chunk_structures()
 	return nil
 end
 
-
 return Public
-

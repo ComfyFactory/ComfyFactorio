@@ -1,4 +1,4 @@
--- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 local Math = require 'maps.pirates.math'
 local Raffle = require 'maps.pirates.raffle'
@@ -19,15 +19,16 @@ local LootRaffle = require 'utils.functions.loot_raffle'
 
 local Public = {}
 
-Public.activeCrewsCap = 3
-Public.private_run_cap = 1
-Public.protected_run_cap = 1 -- more precisely protected, but not private run cap
+Public.starting_ships_count = 7
+Public.active_crews_cap = 7
+Public.private_run_cap = 3
+Public.protected_but_not_private_run_cap = 3
 Public.minimumCapacitySliderValue = 1
 Public.minimum_run_capacity_to_enforce_space_for = 22
+
 -- auto-disbanding when there are no players left in the crew:
-Public.autodisband_ticks = nil
--- Public.autodisband_ticks = 30*60*60
--- Public.autodisband_ticks = 30 --the reason this is low is because the comfy server runs very slowly when no-one is on it
+-- Public.autodisband_ticks = nil
+Public.autodisband_ticks = 60 * 60 * 60 * 24 * 3 -- should not be zero (as this messes with saving and loading a game, which  boots the player for a moment.) Also note that the server may run very slowly when no-one is on it.
 
 Public.boat_steps_at_a_time = 1
 
@@ -37,7 +38,7 @@ Public.boat_default_starting_distance_from_shore = 22
 -- Public.mapedge_distance_from_boat_starting_position = 136
 Public.mapedge_distance_from_boat_starting_position = 272 -- to accommodate horseshoe
 Public.deepwater_distance_from_leftmost_shore = 32
-Public.lobby_spawnpoint = {x = -72, y = -8}
+Public.lobby_spawnpoint = { x = -72, y = -8 }
 Public.structure_ensure_chunk_radius = 2
 
 Public.allow_barreling_off_ship = true
@@ -47,7 +48,7 @@ Public.coin_tax_percentage = 25
 Public.fraction_of_map_loaded_at_sea = 1
 Public.map_loading_ticks_atsea = 68 * 60
 Public.map_loading_ticks_atsea_maze = 80 * 60
-Public.map_loading_ticks_atsea_dock = 20 * 60
+Public.map_loading_ticks_atsea_dock = 10 * 60
 Public.map_loading_ticks_onisland = 2 * 60 * 60
 Public.loading_interval = 5
 
@@ -61,8 +62,8 @@ Public.ban_from_rejoining_crew_ticks = 45 * 60 --to prevent observing map and re
 
 Public.afk_time = 60 * 60 * 5
 Public.afk_warning_time = 60 * 60 * 4.5
-Public.temporarily_logged_off_player_data_preservation_minutes = 1
-Public.logout_unprotected_items = {'uranium-235', 'uranium-238', 'fluid-wagon', 'coal', 'electric-engine-unit', 'flying-robot-frame', 'advanced-circuit', 'beacon', 'speed-module-3', 'speed-module-2', 'roboport', 'construction-robot'} --internal inventories of these will not be preserved
+Public.temporarily_logged_off_player_data_preservation_minutes = 3
+Public.logout_unprotected_items = { 'uranium-235', 'uranium-238', 'fluid-wagon', 'coal', 'electric-engine-unit', 'flying-robot-frame', 'advanced-circuit', 'beacon', 'speed-module-3', 'speed-module-2', 'roboport', 'construction-robot' } --internal inventories of these will not be preserved
 
 Public.lobby_force_name = 'player'
 
@@ -71,6 +72,7 @@ Public.lobby_force_name = 'player'
 function Public.ore_real_to_abstract(amount)
     return amount / 1800
 end
+
 function Public.ore_abstract_to_real(amount)
     return Math.ceil(amount * 1800)
 end
@@ -79,6 +81,7 @@ end
 function Public.oil_real_to_abstract(amount)
     return amount / (3000)
 end
+
 function Public.oil_abstract_to_real(amount)
     return Math.ceil(amount * 3000)
 end
@@ -91,19 +94,24 @@ function Public.difficulty_scale()
         return 0.75
     end
 end
+
 function Public.capacity()
     return Memory.get_crew_memory().capacity
 end
+
 -- function Public.mode() return Memory.get_crew_memory().mode end
 function Public.overworldx()
     return Memory.get_crew_memory().overworldx
 end
+
 function Public.game_completion_progress()
     return Public.overworldx() / CoreData.victory_x
 end
+
 function Public.game_completion_progress_capped()
     return Math.clamp(0, 1, Public.overworldx() / CoreData.victory_x)
 end
+
 function Public.capacity_scale()
     local capacity = Public.capacity()
     if not capacity then --e.g. for EE wattage on boats not owned by a crew
@@ -141,58 +149,58 @@ end
 
 function Public.notify_game(message, color_override)
     color_override = color_override or CoreData.colors.notify_game
-    game.print({'', '>> ', message}, color_override)
+    game.print({ '', '>> ', message }, color_override)
 end
 
 function Public.notify_lobby(message, color_override)
     color_override = color_override or CoreData.colors.notify_lobby
-    game.forces[Public.lobby_force_name].print({'', '>> ', message}, color_override)
+    game.forces[Public.lobby_force_name].print({ '', '>> ', message }, color_override)
 end
 
 function Public.notify_force(force, message, color_override)
     color_override = color_override or CoreData.colors.notify_force
-    force.print({'', '>> ', message}, color_override)
+    force.print({ '', '>> ', message }, color_override)
 end
 
 function Public.notify_force_light(force, message, color_override)
     color_override = color_override or CoreData.colors.notify_force_light
-    force.print({'', '>> ', message}, color_override)
+    force.print({ '', '>> ', message }, color_override)
 end
 
 function Public.notify_force_error(force, message, color_override)
     color_override = color_override or CoreData.colors.notify_error
-    force.print({'', '>> ', message}, color_override)
-    force.play_sound {path = 'utility/cannot_build'}
+    force.print({ '', '>> ', message }, color_override)
+    force.play_sound { path = 'utility/cannot_build' }
 end
 
 function Public.notify_player_error(player, message, color_override)
     color_override = color_override or CoreData.colors.notify_error
-    player.print({'', '## ', {'pirates.notify_whisper'}, ' ', message}, color_override)
-    player.play_sound {path = 'utility/cannot_build'}
+    player.print({ '', '## ', { 'pirates.notify_whisper' }, ' ', message }, color_override)
+    player.play_sound { path = 'utility/cannot_build' }
 end
 
 function Public.notify_player_expected(player, message, color_override)
     color_override = color_override or CoreData.colors.notify_player_expected
-    player.print({'', '## ', {'pirates.notify_whisper'}, ' ', message}, color_override)
+    player.print({ '', '## ', { 'pirates.notify_whisper' }, ' ', message }, color_override)
 end
 
 function Public.notify_player_announce(player, message, color_override)
     color_override = color_override or CoreData.colors.notify_player_announce
-    player.print({'', '## ', {'pirates.notify_whisper'}, ' ', message}, color_override)
+    player.print({ '', '## ', { 'pirates.notify_whisper' }, ' ', message }, color_override)
 end
 
 function Public.parrot_speak(force, message)
-    force.print({'', {'pirates.notify_parrot'}, ' ', message}, CoreData.colors.parrot)
+    force.print({ '', { 'pirates.notify_parrot' }, ' ', message }, CoreData.colors.parrot)
 
     local memory = Memory.get_crew_memory()
-    Server.to_discord_embed_raw({'', '[' .. memory.name .. '] ', {'pirates.notify_parrot'}, ' ', message}, true)
+    Server.to_discord_embed_raw({ '', '[' .. memory.name .. '] ', { 'pirates.notify_parrot' }, ' ', message }, true)
 end
 
 function Public.flying_text(surface, position, text)
     surface.create_entity(
         {
             name = 'flying-text',
-            position = {position.x - 0.7, position.y - 3.05},
+            position = { position.x - 0.7, position.y - 3.05 },
             text = text
         }
     )
@@ -202,7 +210,7 @@ function Public.flying_text_small(surface, position, text) --differs just in the
     surface.create_entity(
         {
             name = 'flying-text',
-            position = {position.x - 0.08, position.y - 1.5},
+            position = { position.x - 0.08, position.y - 1.5 },
             -- position = {position.x - 0.06, position.y - 1.5},
             text = text
         }
@@ -241,7 +249,7 @@ function Public.raffle_from_processed_loot_data(processed_loot_data, how_many, g
     local loot_types, loot_weights = {}, {}
     for i = 1, #processed_loot_data, 1 do
         local data = processed_loot_data[i]
-        table.insert(loot_types, {['name'] = data.name, ['min_count'] = data.min_count, ['max_count'] = data.max_count})
+        table.insert(loot_types, { ['name'] = data.name, ['min_count'] = data.min_count, ['max_count'] = data.max_count })
 
         local destination = Public.current_destination()
         if not (destination and destination.subtype and data.map_subtype and data.map_subtype == destination.subtype) then
@@ -272,7 +280,7 @@ function Public.raffle_from_processed_loot_data(processed_loot_data, how_many, g
             elseif lucky <= 12 then
                 _count = _count * 2
             end
-            ret[#ret + 1] = {name = loot.name, count = _count}
+            ret[#ret + 1] = { name = loot.name, count = _count }
         end
     end
 
@@ -292,7 +300,7 @@ function Public.give(player, stacks, spill_position, short_form, spill_surface, 
     local stacks2 = stacks
     table.sort(
         stacks2,
-        function(a, b)
+        function (a, b)
             return a.name < b.name
         end
     )
@@ -311,7 +319,7 @@ function Public.give(player, stacks, spill_position, short_form, spill_surface, 
 
     for j = 1, #stacks2 do
         local stack = stacks2[j]
-        local itemname, itemcount, flying_text_color = stack.name, stack.count or 1, stack.color or (CoreData.colors[stack.name] or {r = 1, g = 1, b = 1})
+        local itemname, itemcount, flying_text_color = stack.name, stack.count or 1, stack.color or (CoreData.colors[stack.name] or { r = 1, g = 1, b = 1 })
         local itemcount_remember = itemcount
 
         if not itemname then
@@ -320,11 +328,11 @@ function Public.give(player, stacks, spill_position, short_form, spill_surface, 
 
         if itemcount > 0 then
             if player then
-                local a = inv.insert {name = itemname, count = itemcount}
+                local a = inv.insert { name = itemname, count = itemcount }
                 itemcount = itemcount - a
                 if itemcount >= 50 then
                     for i = 1, Math.floor(itemcount / 50), 1 do
-                        local e = spill_surface.create_entity {name = 'item-on-ground', position = spill_position, stack = {name = itemname, count = 50}}
+                        local e = spill_surface.create_entity { name = 'item-on-ground', position = spill_position, stack = { name = itemname, count = 50 } }
                         if e and e.valid then
                             e.to_be_looted = true
                         end
@@ -340,14 +348,14 @@ function Public.give(player, stacks, spill_position, short_form, spill_surface, 
                     -- 		e.to_be_looted = true
                     -- 	end
                     -- end
-                    spill_surface.spill_item_stack(spill_position, {name = itemname, count = itemcount}, true)
+                    spill_surface.spill_item_stack(spill_position, { name = itemname, count = itemcount }, true)
                 end
             else
                 -- local e = spill_surface.create_entity{name = 'item-on-ground', position = spill_position, stack = {name = itemname, count = itemcount}}
                 -- if e and e.valid then
                 -- 	e.to_be_looted = true
                 -- end
-                spill_surface.spill_item_stack(spill_position, {name = itemname, count = itemcount}, true)
+                spill_surface.spill_item_stack(spill_position, { name = itemname, count = itemcount }, true)
             end
         end
 
@@ -426,10 +434,10 @@ function Public.is_officer(player_index)
     end
 end
 
--- lifted shamelessly from biter battles, since I haven't done balancing work on this:
 function Public.surplus_evo_biter_damage_modifier(surplus_evo)
     return Math.floor(surplus_evo / 2 * 1000) / 1000 --is this floor needed?
 end
+
 -- function Public.surplus_evo_biter_health_fractional_modifier(surplus_evo)
 -- 	return surplus_evo*3
 -- 	-- return Math.floor(surplus_evo*3*1000)/1000
@@ -555,7 +563,7 @@ function Public.time_adjusted_departure_cost(cost)
         memory.time_adjusted_departure_cost_memoized = {
             tick = game.tick,
             cost = ret,
-            resources_strings = {resources_strings1, resources_strings2}
+            resources_strings = { resources_strings1, resources_strings2 }
         }
     else
         ret = memory.time_adjusted_departure_cost_memoized.cost
@@ -612,9 +620,9 @@ function Public.surface_place_random_obstacle_boxes(surface, center, width, heig
     end
 
     local function boxposition()
-        local p1 = {x = center.x - width / 2 + Math.random(Math.ceil(width)), y = center.y - height / 2 + Math.random(Math.ceil(height))}
+        local p1 = { x = center.x - width / 2 + Math.random(Math.ceil(width)), y = center.y - height / 2 + Math.random(Math.ceil(height)) }
         local p2 = surface.find_non_colliding_position(spacing_entity, p1, 32, 2, true) or p1
-        return {x = p2.x, y = p2.y}
+        return { x = p2.x, y = p2.y }
     end
 
     local placed = 0
@@ -625,7 +633,7 @@ function Public.surface_place_random_obstacle_boxes(surface, center, width, heig
                 local p = boxposition()
                 for j = 1, size ^ 2 do
                     local p2 = surface.find_non_colliding_position('wooden-chest', p, 5, 0.1, true) or p
-                    local e = surface.create_entity {name = 'wooden-chest', position = p2, force = memory.force_name, create_build_effect_smoke = false}
+                    local e = surface.create_entity { name = 'wooden-chest', position = p2, force = memory.force_name, create_build_effect_smoke = false }
                     memory.hold_surface_destroyable_wooden_chests[e.unit_number] = e
                     e.destructible = false
                     e.minable = false
@@ -633,7 +641,7 @@ function Public.surface_place_random_obstacle_boxes(surface, center, width, heig
                     if contents[placed] and j == 1 then
                         local inventory = e.get_inventory(defines.inventory.chest)
                         for name, count2 in pairs(contents[placed]) do
-                            inventory.insert {name = name, count = count2}
+                            inventory.insert { name = name, count = count2 }
                         end
                     end
                 end
@@ -687,7 +695,7 @@ function Public.spend_stored_resources(to_spend)
             local to_spend_i = to_spend[item_type] or 0
 
             if to_spend_i > 0 then
-                inv.remove {name = item_type, count = to_spend_i}
+                inv.remove { name = item_type, count = to_spend_i }
             end
         end
     end
@@ -715,31 +723,31 @@ function Public.new_healthbar(text, target_entity, max_health, optional_id, heal
 
     local render1 =
         rendering.draw_sprite(
-        {
-            sprite = 'virtual-signal/signal-white',
-            tint = {0, 200, 0},
-            x_scale = size * 15,
-            y_scale = size,
-            render_layer = 'light-effect',
-            target = target_entity,
-            target_offset = {0, -2.5 + extra_offset},
-            surface = target_entity.surface
-        }
-    )
+            {
+                sprite = 'virtual-signal/signal-white',
+                tint = { 0, 200, 0 },
+                x_scale = size * 15,
+                y_scale = size,
+                render_layer = 'light-effect',
+                target = target_entity,
+                target_offset = { 0, -2.5 + extra_offset },
+                surface = target_entity.surface
+            }
+        )
     local render2
     if text then
         render2 =
             rendering.draw_text(
-            {
-                color = {255, 255, 255},
-                scale = 1.2 + size * 2,
-                render_layer = 'light-effect',
-                target = target_entity,
-                target_offset = {0, -3.6 - size * 0.6 + extra_offset},
-                surface = target_entity.surface,
-                alignment = 'center'
-            }
-        )
+                {
+                    color = { 255, 255, 255 },
+                    scale = 1.2 + size * 2,
+                    render_layer = 'light-effect',
+                    target = target_entity,
+                    target_offset = { 0, -3.6 - size * 0.6 + extra_offset },
+                    surface = target_entity.surface,
+                    alignment = 'center'
+                }
+            )
     end
 
     local new_healthbar = {
@@ -836,7 +844,7 @@ function Public.update_healthbar_rendering(new_healthbar, health)
         local m = health / max_health
         local x_scale = rendering.get_y_scale(render1) * 15
         rendering.set_x_scale(render1, x_scale * m)
-        rendering.set_color(render1, {Math.floor(255 - 255 * m), Math.floor(200 * m), 0})
+        rendering.set_color(render1, { Math.floor(255 - 255 * m), Math.floor(200 * m), 0 })
 
         if render2 then
             rendering.set_text(render2, string.format('HP: %d/%d', Math.ceil(health), Math.ceil(max_health)))
@@ -852,16 +860,16 @@ end
 function Public.spawner_count(surface)
     local memory = Memory.get_crew_memory()
 
-    local spawners = surface.find_entities_filtered({type = 'unit-spawner', force = memory.enemy_force_name})
+    local spawners = surface.find_entities_filtered({ type = 'unit-spawner', force = memory.enemy_force_name })
     return #spawners or 0
 end
 
 function Public.create_poison_clouds(surface, position)
-    local random_angles = {Math.rad(Math.random(359)), Math.rad(Math.random(359))}
+    local random_angles = { Math.rad(Math.random(359)), Math.rad(Math.random(359)) }
 
-    surface.create_entity({name = 'poison-cloud', position = {x = position.x, y = position.y}})
-    surface.create_entity({name = 'poison-cloud', position = {x = position.x + 12 * Math.cos(random_angles[1]), y = position.y + 12 * Math.sin(random_angles[1])}})
-    surface.create_entity({name = 'poison-cloud', position = {x = position.x + 12 * Math.cos(random_angles[2]), y = position.y + 12 * Math.sin(random_angles[2])}})
+    surface.create_entity({ name = 'poison-cloud', position = { x = position.x, y = position.y } })
+    surface.create_entity({ name = 'poison-cloud', position = { x = position.x + 12 * Math.cos(random_angles[1]), y = position.y + 12 * Math.sin(random_angles[1]) } })
+    surface.create_entity({ name = 'poison-cloud', position = { x = position.x + 12 * Math.cos(random_angles[2]), y = position.y + 12 * Math.sin(random_angles[2]) } })
 end
 
 function Public.crew_get_crew_members()
@@ -958,9 +966,9 @@ function Public.crew_get_non_afk_officers()
 end
 
 function Public.destroy_decoratives_in_area(surface, area, offset)
-    local area2 = {{area[1][1] + offset.x, area[1][2] + offset.y}, {area[2][1] + offset.x, area[2][2] + offset.y}}
+    local area2 = { { area[1][1] + offset.x, area[1][2] + offset.y }, { area[2][1] + offset.x, area[2][2] + offset.y } }
 
-    surface.destroy_decoratives {area = area2}
+    surface.destroy_decoratives { area = area2 }
 end
 
 function Public.can_place_silo_setup(surface, p, points_to_avoid, silo_count, generous, build_check_type_name)
@@ -975,11 +983,11 @@ function Public.can_place_silo_setup(surface, p, points_to_avoid, silo_count, ge
     local s = true
     local allowed = true
     for i = 1, silo_count do
-        local pos = {x = p.x + 9 * (i - 1), y = p.y}
-        s = (surface.can_place_entity {name = 'rocket-silo', position = pos, build_check_type = build_check_type} or (generous and i > 2)) and s
+        local pos = { x = p.x + 9 * (i - 1), y = p.y }
+        s = (surface.can_place_entity { name = 'rocket-silo', position = pos, build_check_type = build_check_type } or (generous and i > 2)) and s
 
         for _, pa in pairs(points_to_avoid) do
-            if Math.distance({x = pa.x, y = pa.y}, pos) < pa.r then
+            if Math.distance({ x = pa.x, y = pa.y }, pos) < pa.r then
                 allowed = false
                 break
             end
@@ -1008,13 +1016,13 @@ function Public.default_map_gen_settings(width, height, seed)
         ['height'] = height,
         ['water'] = 0,
         --FIXME: Back when this was at x=2000, a crash was caused once by a player spawning at x=2000. So there will be a crash in future under unknown circumstances if there is no space at x=0,y=0.
-        ['starting_points'] = {{x = 0, y = 0}},
-        ['cliff_settings'] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
+        ['starting_points'] = { { x = 0, y = 0 } },
+        ['cliff_settings'] = { cliff_elevation_interval = 0, cliff_elevation_0 = 0 },
         ['default_enable_all_autoplace_controls'] = true,
         ['autoplace_settings'] = {
-            ['entity'] = {treat_missing_as_default = false},
-            ['tile'] = {treat_missing_as_default = true},
-            ['decorative'] = {treat_missing_as_default = true}
+            ['entity'] = { treat_missing_as_default = false },
+            ['tile'] = { treat_missing_as_default = true },
+            ['decorative'] = { treat_missing_as_default = true }
         },
         ['property_expression_names'] = {}
     }
@@ -1025,12 +1033,12 @@ end
 function Public.build_from_blueprint(bp_string, surface, pos, force, flipped)
     flipped = flipped or false
 
-    local bp_entity = game.surfaces['nauvis'].create_entity {name = 'item-on-ground', position = {x = 158.5, y = 158.5}, stack = 'blueprint'}
+    local bp_entity = game.surfaces['nauvis'].create_entity { name = 'item-on-ground', position = { x = 158.5, y = 158.5 }, stack = 'blueprint' }
     bp_entity.stack.import_stack(bp_string)
 
     local direction = flipped and defines.direction.south or defines.direction.north
 
-    local entities = bp_entity.stack.build_blueprint {surface = surface, force = force, position = {x = pos.x, y = pos.y}, force_build = true, skip_fog_of_war = false, direction = direction}
+    local entities = bp_entity.stack.build_blueprint { surface = surface, force = force, position = { x = pos.x, y = pos.y }, force_build = true, skip_fog_of_war = false, direction = direction }
 
     bp_entity.destroy()
 
@@ -1049,8 +1057,8 @@ function Public.build_from_blueprint(bp_string, surface, pos, force, flipped)
             rev_entities[#rev_entities + 1] = revived_entity
 
             if revived_entity and revived_entity.valid and revived_entity.name == 'locomotive' then
-                revived_entity.color = {255, 106, 52}
-                revived_entity.get_inventory(defines.inventory.fuel).insert({name = 'wood', count = 16})
+                revived_entity.color = { 255, 106, 52 }
+                revived_entity.get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 16 })
                 revived_entity.operable = false
             end
         end
@@ -1060,14 +1068,14 @@ function Public.build_from_blueprint(bp_string, surface, pos, force, flipped)
 end
 
 function Public.build_small_loco(surface, pos, force, color)
-    local p1 = {x = pos.x, y = pos.y}
-    local p2 = {x = pos.x, y = pos.y - 2}
-    local p3 = {x = pos.x, y = pos.y + 2}
+    local p1 = { x = pos.x, y = pos.y }
+    local p2 = { x = pos.x, y = pos.y - 2 }
+    local p3 = { x = pos.x, y = pos.y + 2 }
     local es = {}
-    es[1] = surface.create_entity({name = 'straight-rail', position = p1, force = force, create_build_effect_smoke = false})
-    es[2] = surface.create_entity({name = 'straight-rail', position = p2, force = force, create_build_effect_smoke = false})
-    es[3] = surface.create_entity({name = 'straight-rail', position = p3, force = force, create_build_effect_smoke = false})
-    es[4] = surface.create_entity({name = 'locomotive', position = p1, force = force, create_build_effect_smoke = false})
+    es[1] = surface.create_entity({ name = 'straight-rail', position = p1, force = force, create_build_effect_smoke = false })
+    es[2] = surface.create_entity({ name = 'straight-rail', position = p2, force = force, create_build_effect_smoke = false })
+    es[3] = surface.create_entity({ name = 'straight-rail', position = p3, force = force, create_build_effect_smoke = false })
+    es[4] = surface.create_entity({ name = 'locomotive', position = p1, force = force, create_build_effect_smoke = false })
     for _, e in pairs(es) do
         if e and e.valid then
             e.destructible = false
@@ -1078,19 +1086,19 @@ function Public.build_small_loco(surface, pos, force, color)
     end
     if es[4] and es[4].valid then
         es[4].color = color
-        es[4].get_inventory(defines.inventory.fuel).insert({name = 'wood', count = 16})
+        es[4].get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 16 })
     end
 end
 
 function Public.add_tiles_from_blueprint(tilesTable, bp_string, tile_name, offset)
-    local bp_entity = game.surfaces['nauvis'].create_entity {name = 'item-on-ground', position = {x = 158.5, y = 158.5}, stack = 'blueprint'}
+    local bp_entity = game.surfaces['nauvis'].create_entity { name = 'item-on-ground', position = { x = 158.5, y = 158.5 }, stack = 'blueprint' }
     bp_entity.stack.import_stack(bp_string)
 
     local bp_tiles = bp_entity.stack.get_blueprint_tiles()
 
     if bp_tiles then
         for _, tile in pairs(bp_tiles) do
-            tilesTable[#tilesTable + 1] = {name = tile_name, position = {x = tile.position.x + offset.x, y = tile.position.y + offset.y}}
+            tilesTable[#tilesTable + 1] = { name = tile_name, position = { x = tile.position.x + offset.x, y = tile.position.y + offset.y } }
         end
     end
 
@@ -1102,7 +1110,7 @@ end
 function Public.tile_positions_from_blueprint(bp_string, offset)
     -- May '22 change: There seems to be a base game bug(?) which causes the tiles to be offset. We now correct for that (with ` - (max_x - min_x)/2` and ` - (max_y - min_y)/2`).
 
-    local bp_entity = game.surfaces['nauvis'].create_entity {name = 'item-on-ground', position = {x = 158.5, y = 158.5}, stack = 'blueprint'}
+    local bp_entity = game.surfaces['nauvis'].create_entity { name = 'item-on-ground', position = { x = 158.5, y = 158.5 }, stack = 'blueprint' }
     bp_entity.stack.import_stack(bp_string)
 
     local bp_tiles = bp_entity.stack.get_blueprint_tiles()
@@ -1115,7 +1123,7 @@ function Public.tile_positions_from_blueprint(bp_string, offset)
     local positions = {}
     if bp_tiles then
         for _, tile in pairs(bp_tiles) do
-            positions[#positions + 1] = {x = tile.position.x, y = tile.position.y}
+            positions[#positions + 1] = { x = tile.position.x, y = tile.position.y }
             if not min_x or tile.position.x < min_x then
                 min_x = tile.position.x
             end
@@ -1146,7 +1154,7 @@ end
 function Public.tile_positions_from_blueprint_arrayform(bp_string, offset)
     -- does not include the above May '22 fix yet, so may give different results
 
-    local bp_entity = game.surfaces['nauvis'].create_entity {name = 'item-on-ground', position = {x = 158.5, y = 158.5}, stack = 'blueprint'}
+    local bp_entity = game.surfaces['nauvis'].create_entity { name = 'item-on-ground', position = { x = 158.5, y = 158.5 }, stack = 'blueprint' }
     bp_entity.stack.import_stack(bp_string)
 
     local bp_tiles = bp_entity.stack.get_blueprint_tiles()
@@ -1169,7 +1177,7 @@ function Public.tile_positions_from_blueprint_arrayform(bp_string, offset)
 end
 
 function Public.entity_positions_from_blueprint(bp_string, offset)
-    local bp_entity = game.surfaces['nauvis'].create_entity {name = 'item-on-ground', position = {x = 158.5, y = 158.5}, stack = 'blueprint'}
+    local bp_entity = game.surfaces['nauvis'].create_entity { name = 'item-on-ground', position = { x = 158.5, y = 158.5 }, stack = 'blueprint' }
     bp_entity.stack.import_stack(bp_string)
 
     local es = bp_entity.stack.get_blueprint_entities()
@@ -1177,7 +1185,7 @@ function Public.entity_positions_from_blueprint(bp_string, offset)
     local positions = {}
     if es then
         for _, e in pairs(es) do
-            positions[#positions + 1] = {x = e.position.x + offset.x, y = e.position.y + offset.y}
+            positions[#positions + 1] = { x = e.position.x + offset.x, y = e.position.y + offset.y }
         end
     end
 
@@ -1300,7 +1308,7 @@ function Public.orthog_positions_in_orthog_area(area)
     local positions = {}
     for y = area[1][2] + 0.5, area[2][2] - 0.5, 1 do
         for x = area[1][1] + 0.5, area[2][1] - 0.5, 1 do
-            positions[#positions + 1] = {x = x, y = y}
+            positions[#positions + 1] = { x = x, y = y }
         end
     end
     return positions
@@ -1308,7 +1316,7 @@ end
 
 function Public.tileslist_add_area_offset(tiles_list_to_add_to, area, offset, tile_type)
     for _, p in pairs(Public.orthog_positions_in_orthog_area(area)) do
-        tiles_list_to_add_to[#tiles_list_to_add_to + 1] = {name = tile_type, position = {x = offset.x + p.x, y = offset.y + p.y}}
+        tiles_list_to_add_to[#tiles_list_to_add_to + 1] = { name = tile_type, position = { x = offset.x + p.x, y = offset.y + p.y } }
     end
 end
 
@@ -1320,7 +1328,7 @@ function Public.central_positions_within_area(area, offset)
     local positions = {}
     for y = yr1 + 0.5, yr2 - 0.5, 1 do
         for x = xr1 + 0.5, xr2 - 0.5, 1 do
-            positions[#positions + 1] = {x = x, y = y}
+            positions[#positions + 1] = { x = x, y = y }
         end
     end
     return positions
@@ -1328,7 +1336,7 @@ end
 
 function Public.tiles_from_area(tiles_list_to_add_to, area, offset, tile_type)
     for _, p in pairs(Public.central_positions_within_area(area, offset)) do
-        tiles_list_to_add_to[#tiles_list_to_add_to + 1] = {name = tile_type, position = {x = p.x, y = p.y}}
+        tiles_list_to_add_to[#tiles_list_to_add_to + 1] = { name = tile_type, position = { x = p.x, y = p.y } }
     end
 end
 
@@ -1336,7 +1344,7 @@ function Public.tiles_horizontally_flipped(tiles, x_to_flip_about)
     local tiles2 = {}
     for _, t in pairs(tiles) do
         local t2 = Utils.deepcopy(t)
-        t2.position = {x = 2 * x_to_flip_about - t2.position.x, y = t2.position.y}
+        t2.position = { x = 2 * x_to_flip_about - t2.position.x, y = t2.position.y }
         tiles2[#tiles2 + 1] = t2
     end
     return tiles2
@@ -1370,31 +1378,31 @@ function Public.send_important_items_from_player_to_crew(player, all_items)
 
     local any = false
 
-    for ii = 1, 5, 1 do
-        if player_inv[ii].valid then
+    for i = 1, 5, 1 do
+        if player_inv[i].valid then
             -- local to_keep = {}
             local to_remove = {}
-            for iii = 1, #player_inv[ii], 1 do
+            for j = 1, #player_inv[i], 1 do
                 -- local item_stack = player_inv[ii][iii] --don't do this as LuaItemStack is a reference!
-                if player_inv[ii] and player_inv[ii][iii].valid and player_inv[ii][iii].valid_for_read then
-                    if all_items or (player_inv[ii][iii].name and Utils.contains(Public.logout_unprotected_items, player_inv[ii][iii].name)) then
-                        to_remove[#to_remove + 1] = player_inv[ii][iii]
+                if player_inv[i] and player_inv[i][j].valid and player_inv[i][j].valid_for_read then
+                    if all_items or (player_inv[i][j].name and Utils.contains(Public.logout_unprotected_items, player_inv[i][j].name)) then
+                        to_remove[#to_remove + 1] = player_inv[i][j]
                         any = true
-                    -- else
-                    -- 	to_keep[#to_keep + 1] = Utils.deepcopy(player_inv[ii][iii])
+                        -- else
+                        -- 	to_keep[#to_keep + 1] = Utils.deepcopy(player_inv[ii][iii])
                     end
                 end
             end
 
             if #to_remove > 0 then
-                for iii = 1, #to_remove, 1 do
-                    if to_remove[iii].valid_for_read then
+                for j = 1, #to_remove, 1 do
+                    if to_remove[j].valid_for_read then
                         -- Public.give_items_to_crew{{name = to_remove[iii].name, count = to_remove[iii].count}}
-                        Public.give_items_to_crew(to_remove[iii])
-                        to_remove[iii].clear()
+                        Public.give_items_to_crew(to_remove[j])
+                        to_remove[j].clear()
                     end
                 end
-            -- clear and move over from to_keep if necessary?
+                -- clear and move over from to_keep if necessary?
             end
         end
     end
@@ -1463,7 +1471,14 @@ function Public.give_items_to_crew(items)
     end
     local chest, chest2
 
+    local is_coin = false
     if items.name and items.name == 'coin' then
+        is_coin = true
+    elseif type(items) == 'table' and #items > 0 and items[1].name == 'coin' then
+        is_coin = true
+    end
+
+    if is_coin then
         chest = boat.backup_output_chest
         if not (chest and chest.valid) then
             return
@@ -1599,7 +1614,7 @@ function Public.init_game_settings(technology_price_multiplier)
 
     -- (0,2) for a symmetric search:
     game.map_settings.path_finder.goal_pressure_ratio = -0.1 --small pressure for stupid paths
-    game.map_settings.path_finder.fwd2bwd_ratio = 2 -- on experiments I found that this value was symmetric, despite the vanilla game comments saying it is 1...
+    game.map_settings.path_finder.fwd2bwd_ratio = 2          -- on experiments I found that this value was symmetric, despite the vanilla game comments saying it is 1...
     game.map_settings.max_failed_behavior_count = 2
     game.map_settings.path_finder.max_work_done_per_tick = 20000
     game.map_settings.path_finder.short_cache_min_algo_steps_to_cache = 100
@@ -1668,6 +1683,7 @@ function Public.is_id_valid(id)
     end
 end
 
+-- TODO: Remove this function or properly integrate it into the scenario
 -- NOTE: Items here are either unobtainable or hard to find/get
 -- Connected with crew.lua recipe and technology disables
 function Public.get_item_blacklist(tier)
@@ -1683,7 +1699,9 @@ function Public.get_item_blacklist(tier)
     -- blacklist['cannon-shell'] = true
     -- blacklist['explosive-cannon-shell'] = true
     -- blacklist['speed-module-3'] = true
-    -- blacklist['productivity-module-3'] = true
+    blacklist['productivity-module'] = true
+    blacklist['productivity-module-2'] = true
+    blacklist['productivity-module-3'] = true
     -- blacklist['effectivity-module-3'] = true
     -- blacklist['space-science-pack'] = true
     -- blacklist['rocket-control-unit'] = true
@@ -1701,7 +1719,7 @@ function Public.get_item_blacklist(tier)
     blacklist['loader'] = true
     blacklist['fast-loader'] = true
     blacklist['express-loader'] = true
-    -- blacklist['land-mine'] = true
+    blacklist['land-mine'] = true
     blacklist['wood'] = true -- too easy to acquire
 
     blacklist['speed-module-2'] = true
@@ -1719,9 +1737,13 @@ function Public.pick_random_price(tier, scale, tech_tier)
     end
 
     local item_stacks = LootRaffle.roll(math.floor(scale * (tier ^ 2 + 10 * tier)), 20, Public.get_item_blacklist(tech_tier))
+    if not item_stacks then
+        return
+    end
+
     local price = {}
     for _, item_stack in pairs(item_stacks) do
-        price[#price + 1] = {name = item_stack.name, amount = item_stack.count}
+        price[#price + 1] = { name = item_stack.name, amount = item_stack.count }
     end
 
     return price
@@ -1822,16 +1844,16 @@ end
 
 -- position here refers to middle position
 function Public.delete_entities(surface, position, width, height)
-    local area = {left_top = {position.x - width / 2, position.y - height / 2}, right_bottom = {position.x + width / 2 + 0.5, position.y + height / 2 + 0.5}}
-    surface.destroy_decoratives {area = area}
-    local existing = surface.find_entities_filtered {area = area}
+    local area = { left_top = { position.x - width / 2, position.y - height / 2 }, right_bottom = { position.x + width / 2 + 0.5, position.y + height / 2 + 0.5 } }
+    surface.destroy_decoratives { area = area }
+    local existing = surface.find_entities_filtered { area = area }
     if not existing then
         return
     end
 
     for _, e in pairs(existing) do
         if not (e.name == 'iron-ore' or e.name == 'copper-ore' or e.name == 'stone' or e.name == 'uranium-ore' or e.name == 'crude-oil') then
-            if not (e.name == 'rocket-silo') then
+            if e.name ~= 'rocket-silo' then
                 e.destroy()
             end
         end
@@ -1839,8 +1861,8 @@ function Public.delete_entities(surface, position, width, height)
 end
 
 function Public.replace_unwalkable_tiles(surface, position, width, height)
-    local area = {left_top = {position.x - width / 2, position.y - height / 2}, right_bottom = {position.x + width / 2 + 0.5, position.y + height / 2 + 0.5}}
-    local existing = surface.find_tiles_filtered {area = area, collision_mask = 'water-tile'}
+    local area = { left_top = { position.x - width / 2, position.y - height / 2 }, right_bottom = { position.x + width / 2 + 0.5, position.y + height / 2 + 0.5 } }
+    local existing = surface.find_tiles_filtered { area = area, collision_mask = 'water-tile' }
     if not existing then
         return
     end
@@ -1848,7 +1870,7 @@ function Public.replace_unwalkable_tiles(surface, position, width, height)
     local tiles = {}
 
     for _, t in pairs(existing) do
-        tiles[#tiles + 1] = {name = 'landfill', position = t.position}
+        tiles[#tiles + 1] = { name = 'landfill', position = t.position }
     end
 
     if #tiles > 0 then
@@ -1860,7 +1882,7 @@ function Public.get_valid_spawners(surface)
     local memory = Memory.get_crew_memory()
     local destination = Public.current_destination()
 
-    local spawners = surface.find_entities_filtered({type = 'unit-spawner', force = memory.enemy_force_name})
+    local spawners = surface.find_entities_filtered({ type = 'unit-spawner', force = memory.enemy_force_name })
 
     local boat_spawners = {}
 

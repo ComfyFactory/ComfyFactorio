@@ -1,4 +1,4 @@
--- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 local Memory = require 'maps.pirates.memory'
 local Common = require 'maps.pirates.common'
@@ -296,26 +296,6 @@ function Public.toggle_window(player)
 	})
 
 	flow4 = flow3.add({
-		name = 'endorse_proposal',
-		type = 'button',
-		caption = {'pirates.gui_runs_proposals_endorse_proposal'},
-	})
-	flow4.style.minimal_width = 150
-	flow4.style.font = 'default-bold'
-	flow4.style.font_color = {r=0.10, g=0.10, b=0.10}
-	flow4.style.bottom_margin = 9
-
-	flow4 = flow3.add({
-		name = 'retract_endorsement',
-		type = 'button',
-		caption = {'pirates.gui_runs_proposals_retract_endorsement'},
-	})
-	flow4.style.minimal_width = 150
-	flow4.style.font = 'default-bold'
-	flow4.style.font_color = {r=0.10, g=0.10, b=0.10}
-	flow4.style.bottom_margin = 9
-
-	flow4 = flow3.add({
 		name = 'abandon_proposal',
 		type = 'button',
 		caption = {'pirates.gui_runs_proposals_abandon_proposal'},
@@ -458,23 +438,9 @@ function Public.toggle_window(player)
 	})
 
 	flow4 = flow3.add({
-		name = 'proposal_insufficient_endorsers',
-		type = 'label',
-		caption = {'pirates.gui_runs_launch_error_1'},
-	})
-	flow4.style.single_line = false
-
-	flow4 = flow3.add({
 		name = 'proposal_crew_count_capped',
 		type = 'label',
 		caption = {'pirates.gui_runs_launch_error_2'},
-	})
-	flow4.style.single_line = false
-
-	flow4 = flow3.add({
-		name = 'proposal_insufficient_player_capacity',
-		type = 'label',
-		caption = {'pirates.gui_runs_launch_error_3'},
 	})
 	flow4.style.single_line = false
 
@@ -527,7 +493,7 @@ function Public.full_update(player)
 		local crewid
 		if bool1 then
 			crewid = tonumber((flow.ongoing_runs.body.ongoing_runs_listbox.get_item(flow.ongoing_runs.body.ongoing_runs_listbox.selected_index))[2])
-			selected_joinable_bool = bool1 and crewid and (global_memory.crew_memories[crewid].crewstatus == Crew.enum.ADVENTURING)
+			selected_joinable_bool = bool1 and crewid ~= nil and global_memory.crew_memories[crewid] ~= nil and (global_memory.crew_memories[crewid].crewstatus == Crew.enum.ADVENTURING)
 		end
 
 		flow.ongoing_runs.body.helpful_tip.visible = not (playercrew_status.leaving or playercrew_status.adventuring or playercrew_status.spectating)
@@ -563,21 +529,13 @@ function Public.full_update(player)
 
 		flow.proposals.body.proposals_listbox.visible = (not playercrew_status.leaving) and (#global_memory.crewproposals > 0)
 
-		flow.proposals.body.flow_buttons.endorse_proposal.visible = (not playercrew_status.leaving) and (not playercrew_status.endorsing) and (#global_memory.crewproposals > 0) and flow.proposals.body.proposals_listbox.selected_index ~= 0
+		flow.proposals.body.flow_buttons.abandon_proposal.visible = (not playercrew_status.leaving) and playercrew_status.created_crew and playercrew_status.proposing and (#global_memory.crewproposals > 0)
 
-		flow.proposals.body.flow_buttons.abandon_proposal.visible = (not playercrew_status.leaving) and playercrew_status.endorsing and playercrew_status.endorsing and playercrew_status.proposing and (#global_memory.crewproposals > 0)
-
-		flow.proposals.body.flow_buttons.retract_endorsement.visible = (not playercrew_status.leaving) and playercrew_status.endorsing and (not playercrew_status.proposing) and (#global_memory.crewproposals > 0)
-
-		flow.proposals.body.proposal_maker.visible = (not playercrew_status.leaving) and (not playercrew_status.endorsing)
+		flow.proposals.body.proposal_maker.visible = (not playercrew_status.leaving) and (not playercrew_status.created_crew)
 
 		flow.proposals.body.flow_proposal_launch.proposal_insufficient_sloops.visible = playercrew_status.sloops_full
 
-		flow.proposals.body.flow_proposal_launch.proposal_insufficient_player_capacity.visible = playercrew_status.needs_more_capacity
-
 		flow.proposals.body.flow_proposal_launch.proposal_crew_count_capped.visible = playercrew_status.crew_count_capped
-
-		flow.proposals.body.flow_proposal_launch.proposal_insufficient_endorsers.visible = playercrew_status.needs_more_endorsers
 
 		-- flow.proposals.body.proposal_maker.body.proposal_cant_do_infinity_mode.visible = (flow.proposals.body.proposal_maker.body.options.mode.mode.switch.switch_state == 'right')
 
@@ -609,7 +567,16 @@ function Public.full_update(player)
 			elseif mem.crewplayerindices then
 				count = #mem.crewplayerindices
 			end
-			wrappedmemories[#wrappedmemories + 1] = {'pirates.run_displayform', mem.id, {'', mem.name .. ', ', CoreData.difficulty_options[mem.difficulty_option].text, ', [item=light-armor]' ..  count .. CoreData.capacity_options[mem.capacity_option].text2 .. ',  [item=rail] ' .. (mem.overworldx or 0)}}
+
+			local extraCrewText = ''
+			if mem.run_is_protected and mem.run_is_private then
+				extraCrewText = ' (private & protected)'
+			elseif mem.run_is_private then
+				extraCrewText = ' (private)'
+			elseif mem.run_is_protected then
+				extraCrewText = ' (protected)'
+			end
+			wrappedmemories[#wrappedmemories + 1] = {'pirates.run_displayform', mem.id, {'', mem.name .. extraCrewText .. ', ', CoreData.difficulty_options[mem.difficulty_option].text, ', [item=light-armor]' ..  count .. CoreData.capacity_options[mem.capacity_option].text2 .. ',  [item=rail] ' .. (mem.overworldx or 0)}}
 			-- wrappedmemories[#wrappedmemories + 1] = {'pirates.run_displayform', mem.id, mem.name, Utils.spritepath_to_richtext(CoreData.difficulty_options[mem.difficulty_option].icon), count, CoreData.capacity_options[mem.capacity_option].text2, '      [item=rail] ', mem.overworldx or 0}
 		end
 		GuiCommon.update_listbox(flow.ongoing_runs.body.ongoing_runs_listbox, wrappedmemories)
@@ -748,7 +715,7 @@ function Public.click(event)
 	end
 
 	if eventname == 'propose_crew' then
-		if #global_memory.crew_active_ids >= global_memory.active_crews_cap then
+		if #global_memory.crew_active_ids >= global_memory.active_crews_cap_in_memory then
 			Common.notify_player_error(player, {'pirates.gui_runs_launch_error_5'})
 			return
 		end
@@ -778,6 +745,14 @@ function Public.click(event)
 				return
 			end
 
+			-- check if the player created any other private runs
+			for _, id in pairs(global_memory.crew_active_ids) do
+				if global_memory.crew_memories[id].run_is_private then
+					Common.notify_player_error(player, {'pirates.gui_runs_proposal_maker_error_two_private_runs'})
+					return
+				end
+			end
+
 			-- Check if passwords match
 			if flow.proposals.body.proposal_maker.body.password_namefield.text ~= flow.proposals.body.proposal_maker.body.confirm_password_namefield.text then
 				Common.notify_player_error(player, {'pirates.gui_runs_proposal_maker_error_private_run_password_no_match'})
@@ -791,10 +766,30 @@ function Public.click(event)
 			end
 		elseif run_is_protected then
 			-- Make sure protected run can be created
-			if protected_but_not_private_run_count >= global_memory.protected_run_cap then
+			if protected_but_not_private_run_count >= global_memory.protected_but_not_private_run_cap then
 				Common.notify_player_error(player, {'pirates.gui_runs_proposal_maker_error_protected_run_limit'})
 				return
 			end
+
+			-- check if the player created any other protected runs
+			for _, id in pairs(global_memory.crew_active_ids) do
+				if global_memory.crew_memories[id].run_is_protected then
+					Common.notify_player_error(player, {'pirates.gui_runs_proposal_maker_error_two_protected_runs'})
+					return
+				end
+			end
+		end
+
+		-- Check if they created at least two other runs
+		local player_run_count = 0
+		for _, id in pairs(global_memory.crew_active_ids) do
+			if global_memory.crew_memories[id].created_by_player == player.index then
+				player_run_count = player_run_count + 1
+			end
+		end
+		if player_run_count >= 2 then
+			Common.notify_player_error(player, {'pirates.gui_runs_proposal_maker_error_three_runs'})
+			return
 		end
 
 		local private_run_password = flow.proposals.body.proposal_maker.body.password_namefield.text
@@ -844,7 +839,7 @@ function Public.click(event)
 			difficulty_option = difficulty_option,
 			capacity_option = capacity_option,
 			-- mode_option = mode_option,
-			endorserindices = {player.index},
+			created_by_player = player.index,
 			run_is_protected = run_is_protected,
 			run_is_private = run_is_private,
 			private_run_password = private_run_password,
@@ -862,38 +857,15 @@ function Public.click(event)
 		return
 	end
 
-	if eventname == 'endorse_proposal' then
-		local lb = flow.proposals.body.proposals_listbox
-
-		local index = lb.selected_index
-		if index ~= 0 then
-			local name2 = lb.get_item(lb.selected_index)[2]
-
-			for _, proposal in pairs(global_memory.crewproposals) do
-
-				if proposal.name == name2 and #proposal.endorserindices < CoreData.capacity_options[proposal.capacity_option].value then
-					proposal.endorserindices[#proposal.endorserindices + 1] = player.index
-				end
-			end
-		end
-		return
-	end
-
 	if eventname == 'abandon_proposal' then
 		Crew.player_abandon_proposal(player)
-		Crew.player_abandon_endorsements(player)
-		return
-	end
-
-	if eventname == 'retract_endorsement' then
-		Crew.player_abandon_endorsements(player)
 		return
 	end
 
 	if eventname == 'launch_crew' then
 		if GuiCommon.crew_overall_state_bools(player.index).proposal_can_launch then --double check
 			for k, proposal in pairs(global_memory.crewproposals) do
-				if #proposal.endorserindices > 0 and proposal.endorserindices[1] == player.index then
+				if proposal.created_by_player == player.index then
 					-- Make sure private run can be created
 					if proposal.run_is_private then
 						-- NOTE: I didn't want to add this check in "proposal_can_launch", because different error message would get displayed (I think?).
@@ -916,7 +888,7 @@ function Public.click(event)
 							end
 						end
 
-						if protected_but_not_private_run_count >= global_memory.protected_run_cap then
+						if protected_but_not_private_run_count >= global_memory.protected_but_not_private_run_cap then
 							Common.notify_player_error(player, {'pirates.gui_runs_proposal_maker_error_protected_run_limit'})
 							return
 						end

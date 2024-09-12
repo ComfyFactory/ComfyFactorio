@@ -1,4 +1,4 @@
--- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 
 -- local Memory = require 'maps.pirates.memory'
@@ -51,7 +51,7 @@ function Public.decode_surface_name(name)
 		type = pull[1]
 		subtype = pull[2]
 	end
-	return {crewid = crewid, destination_index = destination_index, type = type, subtype = subtype}
+	return { crewid = crewid, destination_index = destination_index, type = type, subtype = subtype }
 end
 
 function Public.fetch_iconized_map(destination)

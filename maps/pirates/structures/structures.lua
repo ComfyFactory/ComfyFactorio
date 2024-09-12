@@ -1,4 +1,4 @@
--- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 
 local Memory = require 'maps.pirates.memory'
@@ -44,10 +44,10 @@ function Public.configure_structure_entities(special_name, components)
 					e.rotatable = false
 				end
 			end
-		-- elseif type == 'plain' then
-		-- 	for _, e in pairs(c.built_entities) do
-		-- 		--
-		-- 	end
+			-- elseif type == 'plain' then
+			-- 	for _, e in pairs(c.built_entities) do
+			-- 		--
+			-- 	end
 		elseif type == 'static_inoperable' then
 			for _, e in pairs(c.built_entities) do
 				if e and e.valid then
@@ -72,10 +72,10 @@ function Public.configure_structure_entities(special_name, components)
 					e.rotatable = false
 				end
 			end
-		-- elseif type == 'entities_minable' then
-		-- 	for _, e in pairs(c.built_entities) do
-		-- 		--
-		-- 	end
+			-- elseif type == 'entities_minable' then
+			-- 	for _, e in pairs(c.built_entities) do
+			-- 		--
+			-- 	end
 		end
 
 
@@ -90,7 +90,6 @@ function Public.configure_structure_entities(special_name, components)
 						local l = loot[i]
 						inv.insert(l)
 					end
-
 				elseif e.name == 'stone-furnace' then
 					local inv = e.get_inventory(defines.inventory.fuel)
 					local loot = Loot.stone_furnace_loot()
@@ -98,7 +97,6 @@ function Public.configure_structure_entities(special_name, components)
 						local l = loot[i]
 						inv.insert(l)
 					end
-
 				elseif e.name == 'roboport' then
 					local inv = e.get_inventory(defines.inventory.roboport_robot)
 					local loot = Loot.roboport_bots_loot()
@@ -106,31 +104,23 @@ function Public.configure_structure_entities(special_name, components)
 						local l = loot[i]
 						inv.insert(l)
 					end
-
 				elseif e.name == 'centrifuge' then
 					local inv = e.get_inventory(defines.inventory.assembling_machine_input)
 					e.set_recipe('kovarex-enrichment-process')
-					inv.insert{name = 'uranium-235', count = 20}
-
+					inv.insert { name = 'uranium-235', count = 20 }
 				elseif e.name == 'gun-turret' and special_name == 'small_radioactive_centrifuge' then
 					e.force = memory.force
-
 				elseif e.name == 'fast-splitter' and special_name == 'small_radioactive_centrifuge' then
 					e.splitter_output_priority = 'left'
 					e.splitter_filter = 'uranium-235'
-
 				elseif e.name == 'storage-tank' and special_name == 'swamp_lonely_storage_tank' then
 					e.insert_fluid(Loot.swamp_storage_tank_fluid_loot())
-
 				elseif e.name == 'storage-tank' and special_name == 'small_oilrig_base' then
 					e.insert_fluid(Loot.storage_tank_fluid_loot('crude-oil'))
-
 				elseif e.name == 'storage-tank' and special_name == 'small_abandoned_refinery' then
 					e.insert_fluid(Loot.storage_tank_fluid_loot('petroleum-gas'))
-
-				elseif e.name == 'storage-tank' and (not (special_name == 'small_radioactive_reactor')) then
+				elseif e.name == 'storage-tank' and special_name ~= 'small_radioactive_reactor' then
 					e.insert_fluid(Loot.storage_tank_fluid_loot())
-
 				elseif e.name == 'lab' and (special_name == 'maze_labs' or special_name == 'small_radioactive_lab') then
 					local inv = e.get_inventory(defines.inventory.lab_input)
 					local loot = Loot.lab_loot()
@@ -138,7 +128,6 @@ function Public.configure_structure_entities(special_name, components)
 						local l = loot[i]
 						inv.insert(l)
 					end
-
 				elseif e.name == 'steel-chest' and special_name == 'maze_treasure' then
 					local inv = e.get_inventory(defines.inventory.chest)
 					local loot = Loot.maze_treasure_loot()
@@ -146,7 +135,6 @@ function Public.configure_structure_entities(special_name, components)
 						local l = loot[i]
 						inv.insert(l)
 					end
-
 				elseif e.name == 'wooden-chest' and (special_name == 'maze_defended_camp' or special_name == 'maze_undefended_camp') then
 					local inv = e.get_inventory(defines.inventory.chest)
 					local loot = Loot.maze_camp_loot()
@@ -154,7 +142,6 @@ function Public.configure_structure_entities(special_name, components)
 						local l = loot[i]
 						inv.insert(l)
 					end
-
 				elseif special_name == 'small_cliff_base' then
 					-- this is to make friendly gun turrets work
 					e.force = memory.force
@@ -181,12 +168,11 @@ function Public.configure_structure_entities(special_name, components)
 				if force_name and string.sub(force_name, 1, 15) == 'ancient-hostile' then
 					if e.name == 'gun-turret' then
 						if memory.overworldx < 800 then
-							e.insert({name = "piercing-rounds-magazine", count = 64})
+							e.insert({ name = "piercing-rounds-magazine", count = 64 })
 						else
-							e.insert({name = "uranium-rounds-magazine", count = 64})
+							e.insert({ name = "uranium-rounds-magazine", count = 64 })
 						end
 					end
-
 				elseif force_name and string.sub(force_name, 1, 16) == 'ancient-friendly' then
 					if e.name == 'oil-refinery' then
 						e.set_recipe('advanced-oil-processing')
@@ -196,7 +182,6 @@ function Public.configure_structure_entities(special_name, components)
 		end
 	end
 end
-
 
 function Public.try_place(structureScope, specialsTable, left_top, areawidth, areaheight, placeability_function_strict, placeability_function_optional)
 	local structureData = structureScope.Data
@@ -212,8 +197,8 @@ function Public.try_place(structureScope, specialsTable, left_top, areawidth, ar
 			y = left_top.y + Math.random(areaheight + 1 - structureData.height) - 1,
 		}
 		local structure_center = {
-			x = structure_topleft.x + structureData.width/2,
-			y = structure_topleft.y + structureData.height/2,
+			x = structure_topleft.x + structureData.width / 2,
+			y = structure_topleft.y + structureData.height / 2,
 		}
 		local structure_topright = {
 			x = structure_topleft.x + structureData.width,
@@ -230,7 +215,7 @@ function Public.try_place(structureScope, specialsTable, left_top, areawidth, ar
 
 		--game.print('trying: structure_yes: ' .. structureData.name .. ' at ' .. structure_center.x .. ', ' .. structure_center.y)
 
-		local positions_to_check = {structure_topleft, structure_topright, structure_bottomleft, structure_bottomright, structure_center}
+		local positions_to_check = { structure_topleft, structure_topright, structure_bottomleft, structure_bottomright, structure_center }
 
 		local placable_strict_count = 0
 		for _, pos in pairs(positions_to_check) do
@@ -241,7 +226,6 @@ function Public.try_place(structureScope, specialsTable, left_top, areawidth, ar
 
 		-- check if positions aren't in water
 		if placable_strict_count == #positions_to_check then
-
 			local placable_optional_count = 0
 			for _, pos in pairs(positions_to_check) do
 				if placeability_function_optional(pos) then
@@ -274,7 +258,6 @@ function Public.try_place(structureScope, specialsTable, left_top, areawidth, ar
 		end
 	end
 end
-
 
 function Public.tryAddStructureByName(specialsTable, name, p)
 	local structureScope = Public[enum.ISLANDSTRUCTURES][Public[enum.ISLANDSTRUCTURES].enum.ROC][name] or Public[enum.ISLANDSTRUCTURES][Public[enum.ISLANDSTRUCTURES].enum.MATTISSO][name]

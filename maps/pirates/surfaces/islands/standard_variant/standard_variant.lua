@@ -1,4 +1,4 @@
--- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 
 -- local Memory = require 'maps.pirates.memory'
@@ -120,8 +120,8 @@ function Public.chunk_structures(args)
 
 		return {
 			placeable = noises.farness(p) > 0.3,
-			spawners_indestructible = false,
-			-- spawners_indestructible = noises.farness(p) > 0.7,
+			-- spawners_indestructible = false,
+			spawners_indestructible = noises.farness(p) > 0.7,
 			density_perchunk = 25 * Math.slopefromto(noises.mood(p), 0.16, -0.1) * Math.slopefromto(noises.farness(p), 0.3, 1)^2 * args.biter_base_density_scale,
 		}
 	end

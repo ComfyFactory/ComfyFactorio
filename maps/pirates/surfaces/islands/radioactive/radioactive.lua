@@ -1,4 +1,4 @@
--- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 
 local Memory = require 'maps.pirates.memory'
@@ -34,7 +34,6 @@ function Public.noises(args)
 	return ret
 end
 
-
 function Public.terrain(args)
 	local noises = Public.noises(args)
 	local p = args.p
@@ -43,30 +42,30 @@ function Public.terrain(args)
 	if IslandsCommon.place_water_tile(args, true) then return end
 
 	if noises.height(p) < 0 then
-		args.tiles[#args.tiles + 1] = {name = 'water-green', position = args.p}
+		args.tiles[#args.tiles + 1] = { name = 'water-green', position = args.p }
 		return
 	end
 
 	if noises.height(p) < 0.05 then
-		args.tiles[#args.tiles + 1] = {name = 'sand-1', position = args.p}
+		args.tiles[#args.tiles + 1] = { name = 'sand-1', position = args.p }
 		if (not args.iconized_generation) and noises.farness(p) > 0.02 and noises.farness(p) < 0.6 and Math.random(500) == 1 then
-			args.specials[#args.specials + 1] = {name = 'buried-treasure', position = args.p}
+			args.specials[#args.specials + 1] = { name = 'buried-treasure', position = args.p }
 		end
 	else
-		if Math.random() < Math.min(0.4,noises.height(p)) then
-			args.decoratives[#args.decoratives + 1] = {name = 'white-desert-bush', position = p, amount = 1}
-		elseif Math.random() > Math.max(0.8,1.2-noises.height(p)) then
-			args.decoratives[#args.decoratives + 1] = {name = 'green-bush-mini', position = p, amount = 1}
+		if Math.random() < Math.min(0.4, noises.height(p)) then
+			args.decoratives[#args.decoratives + 1] = { name = 'white-desert-bush', position = p, amount = 1 }
+		elseif Math.random() > Math.max(0.8, 1.2 - noises.height(p)) then
+			args.decoratives[#args.decoratives + 1] = { name = 'green-bush-mini', position = p, amount = 1 }
 		end
 		if noises.height(p) < 0.33 then
-			args.tiles[#args.tiles + 1] = {name = 'sand-2', position = args.p}
+			args.tiles[#args.tiles + 1] = { name = 'sand-2', position = args.p }
 		elseif noises.height(p) < 0.35 then
-			args.tiles[#args.tiles + 1] = {name = 'dirt-1', position = args.p}
+			args.tiles[#args.tiles + 1] = { name = 'dirt-1', position = args.p }
 		else
 			if noises.height_background(p) > 0.4 then
-				args.tiles[#args.tiles + 1] = {name = 'nuclear-ground', position = args.p}
+				args.tiles[#args.tiles + 1] = { name = 'nuclear-ground', position = args.p }
 			else
-				args.tiles[#args.tiles + 1] = {name = 'dirt-3', position = args.p}
+				args.tiles[#args.tiles + 1] = { name = 'dirt-3', position = args.p }
 			end
 		end
 	end
@@ -74,25 +73,25 @@ function Public.terrain(args)
 	if noises.forest_abs_suppressed(p) > 1 then
 		local treedensity = 0.02 * Math.slopefromto(noises.forest_abs_suppressed(p), 1, 1.1)
 		if noises.forest(p) > 1.4 then
-			if Math.random(1,100) < treedensity*100 then args.entities[#args.entities + 1] = {name = 'dead-grey-trunk', position = args.p, visible_on_overworld = true} end
+			if Math.random(1, 100) < treedensity * 100 then args.entities[#args.entities + 1] = { name = 'dead-grey-trunk', position = args.p, visible_on_overworld = true } end
 		elseif noises.forest(p) < -0.95 then
-			if Math.random(1,100) < treedensity*100 then args.entities[#args.entities + 1] = {name = 'dry-tree', position = args.p, visible_on_overworld = true} end
+			if Math.random(1, 100) < treedensity * 100 then args.entities[#args.entities + 1] = { name = 'dry-tree', position = args.p, visible_on_overworld = true } end
 		end
 	end
 
 	if noises.forest_abs_suppressed(p) < 0.65 then
 		if noises.height(p) > 0.12 then
 			if noises.rock_abs(p) > 0.25 then
-				local rockdensity = 1/200 * Math.slopefromto(noises.rock_abs(p), 0.25, 0.6)
+				local rockdensity = 1 / 200 * Math.slopefromto(noises.rock_abs(p), 0.25, 0.6)
 				local rockrng = Math.random()
 				if rockrng < rockdensity then
 					args.entities[#args.entities + 1] = IslandsCommon.random_rock_1(args.p)
 				elseif rockrng < rockdensity * 1.5 then
-					args.decoratives[#args.decoratives + 1] = {name = 'rock-medium', position = args.p}
+					args.decoratives[#args.decoratives + 1] = { name = 'rock-medium', position = args.p }
 				elseif rockrng < rockdensity * 2 then
-					args.decoratives[#args.decoratives + 1] = {name = 'rock-small', position = args.p}
+					args.decoratives[#args.decoratives + 1] = { name = 'rock-small', position = args.p }
 				elseif rockrng < rockdensity * 2.5 then
-					args.decoratives[#args.decoratives + 1] = {name = 'rock-tiny', position = args.p}
+					args.decoratives[#args.decoratives + 1] = { name = 'rock-tiny', position = args.p }
 				end
 			end
 		end
@@ -100,47 +99,40 @@ function Public.terrain(args)
 
 	if noises.forest_abs_suppressed(p) < 0.8 and noises.height(p) > 0.35 then
 		if noises.ore(p) > 1 then
-			local amount = Math.ceil(400 * noises.height(p) * Balance.island_richness_avg_multiplier(args.overworldx))
-			args.entities[#args.entities + 1] = {name = 'uranium-ore', position = args.p, amount = amount}
+			local amount = Math.ceil(400 * noises.height(p) * Balance.game_ores_scale(args.overworldx))
+			args.entities[#args.entities + 1] = { name = 'uranium-ore', position = args.p, amount = amount }
 		end
 	end
 
 	if noises.forest_abs_suppressed(p) < 0.8 and noises.height(p) < 0.35 and noises.height(p) > 0.05 then
 		if noises.ore(p) < -1.5 then
-			local amount = Math.ceil(600 * noises.height(p) * Balance.island_richness_avg_multiplier(args.overworldx))
-			args.entities[#args.entities + 1] = {name = 'stone', position = args.p, amount = amount}
+			local amount = Math.ceil(600 * noises.height(p) * Balance.game_ores_scale(args.overworldx))
+			args.entities[#args.entities + 1] = { name = 'stone', position = args.p, amount = amount }
 		elseif noises.ore(p) < 0.005 and noises.ore(p) > -0.005 then
 			if noises.ore(p) > 0 then
-				local amount = Math.ceil(120 * noises.height(p) * Balance.island_richness_avg_multiplier(args.overworldx))
-				args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = amount}
+				local amount = Math.ceil(120 * noises.height(p) * Balance.game_ores_scale(args.overworldx))
+				args.entities[#args.entities + 1] = { name = 'coal', position = args.p, amount = amount }
 			else
-				local amount = Math.ceil(240 * noises.height(p) * Balance.island_richness_avg_multiplier(args.overworldx))
-				args.entities[#args.entities + 1] = {name = 'copper-ore', position = args.p, amount = amount}
+				local amount = Math.ceil(240 * noises.height(p) * Balance.game_ores_scale(args.overworldx))
+				args.entities[#args.entities + 1] = { name = 'copper-ore', position = args.p, amount = amount }
 			end
 		end
 	end
 end
 
-
-
-
 function Public.chunk_structures(args)
-
-	local spec = function(p)
-		local noises = Public.noises{p = p, noise_generator = args.noise_generator, static_params = args.static_params, seed = args.seed}
+	local spec = function (p)
+		local noises = Public.noises { p = p, noise_generator = args.noise_generator, static_params = args.static_params, seed = args.seed }
 
 		return {
 			placeable = noises.farness(p) > 0.3,
-			-- spawners_indestructible = noises.farness(p) > 0.63,
-			spawners_indestructible = false,
-			density_perchunk = 20 * Math.slopefromto(noises.farness(p), 0.3, 1.08)^2 * args.biter_base_density_scale,
+			spawners_indestructible = noises.farness(p) > 0.63,
+			density_perchunk = 20 * Math.slopefromto(noises.farness(p), 0.3, 1.08) ^ 2 * args.biter_base_density_scale,
 		}
 	end
 
-	IslandsCommon.enemies_1(args, spec, true)
-
+	IslandsCommon.enemies_1(args, spec)
 end
-
 
 function Public.spawn_structures()
 	-- local memory = Memory.get_crew_memory()
@@ -162,9 +154,9 @@ function Public.spawn_structures()
 		local structureData
 		if i == 1 then
 			structureData = Structures.IslandStructures.MATTISSO.small_radioactive_reactor.Data
-		elseif i==2 then
+		elseif i == 2 then
 			structureData = Structures.IslandStructures.MATTISSO.uranium_miners.Data
-		elseif i>2 and i<7 then
+		elseif i > 2 and i < 7 then
 			structureData = Structures.IslandStructures.MATTISSO.small_radioactive_centrifuge.Data
 		else
 			structureData = Structures.IslandStructures.MATTISSO.small_radioactive_lab.Data
@@ -177,29 +169,21 @@ function Public.spawn_structures()
 			height = structureData.height,
 			name = structureData.name,
 		}
-		destination.dynamic_data.structures_waiting_to_be_placed[#destination.dynamic_data.structures_waiting_to_be_placed + 1] = {data = special, tick = game.tick}
+		destination.dynamic_data.structures_waiting_to_be_placed[#destination.dynamic_data.structures_waiting_to_be_placed + 1] = { data = special, tick = game.tick }
 	end
 end
 
-
-
-
-
-
-
-
 function Public.structure_positions()
-
 	-- local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 	local surface = game.surfaces[destination.surface_name]
 
 	local island_center = destination.static_params.islandcenter_position
-    local width = destination.static_params.width
-    local height = destination.static_params.height
+	local width = destination.static_params.width
+	local height = destination.static_params.height
 
 	local tries = 0
-	local ret = {{x = 0, y = 0}}
+	local ret = { { x = 0, y = 0 } }
 
 	local max_exclusion_distance = 45
 	local maxtries = 2400
@@ -210,22 +194,21 @@ function Public.structure_positions()
 	}
 
 	while #ret < 8 and tries < maxtries do
-
 		local p2
 		if #ret == 1 then
-			p2 = {x = island_center.x + Math.random(-35, 10), y = island_center.y + Math.random(-40, 40)}
+			p2 = { x = island_center.x + Math.random(-35, 10), y = island_center.y + Math.random(-40, 40) }
 		else
-			p2 = {x = island_center.x + Math.random(Math.ceil(-width/2), Math.ceil(width/2)), y = island_center.y + Math.random(Math.ceil(-height/2), Math.ceil(height/2))}
+			p2 = { x = island_center.x + Math.random(Math.ceil(-width / 2), Math.ceil(width / 2)), y = island_center.y + Math.random(Math.ceil(-height / 2), Math.ceil(height / 2)) }
 		end
 
-        Common.ensure_chunks_at(surface, p2, 0.01)
+		Common.ensure_chunks_at(surface, p2, 0.01)
 
 		local tile = surface.get_tile(p2)
-        if tile and tile.valid and tile.name then
-            if (not Utils.contains(CoreData.tiles_that_conflict_with_resource_layer, tile.name)) then
+		if tile and tile.valid and tile.name then
+			if (not Utils.contains(CoreData.tiles_that_conflict_with_resource_layer, tile.name)) then
 				local okay = true
 
-                local p3 = {x = p2.x + args.static_params.terraingen_coordinates_offset.x, y = p2.y + args.static_params.terraingen_coordinates_offset.y}
+				local p3 = { x = p2.x + args.static_params.terraingen_coordinates_offset.x, y = p2.y + args.static_params.terraingen_coordinates_offset.y }
 				local farness = IslandsCommon.island_farness_1(args)(p3)
 				if (not okay) or (not (farness > 0.05 and farness < 0.55)) then
 					okay = false
@@ -242,8 +225,8 @@ function Public.structure_positions()
 				if okay then
 					ret[#ret + 1] = p2
 				end
-            end
-        end
+			end
+		end
 
 		tries = tries + 1
 	end
@@ -254,11 +237,8 @@ function Public.structure_positions()
 
 	if #ret < 8 then log('couldn\'t find four positions after 2400 tries') end
 
-    return ret
+	return ret
 end
-
-
-
 
 -- function Public.break_rock(surface, p, entity_name)
 -- 	-- return Ores.try_ore_spawn(surface, p, entity_name)
@@ -278,7 +258,7 @@ local function radioactive_tick()
 			local surface_name = memory.boat and memory.boat.surface_name
 			if surface_name ~= memory.sea_name then
 				-- faster evo (doesn't need difficulty scaling as higher difficulties have higher base evo):
-				local extra_evo = 0.22 * tickinterval/60 / Balance.expected_time_on_island()
+				local extra_evo = 0.22 * tickinterval / 60 / Balance.expected_time_on_island()
 				Common.increment_evo(extra_evo)
 				if (not destination.dynamic_data.evolution_accrued_time) then
 					destination.dynamic_data.evolution_accrued_time = 0
@@ -291,7 +271,7 @@ local function radioactive_tick()
 				local pollution = 0
 				local timer = destination.dynamic_data.timer
 				if timer and timer > 15 then
-					pollution = 6 * (Common.difficulty_scale()^(1.1) * (memory.overworldx/40)^(18/10) * (Balance.crew_scale())^(1/5)) / 3600 * tickinterval * (1 + (Common.difficulty_scale()-1)*0.2 + 0.001 * timer)
+					pollution = 6 * (Common.difficulty_scale() ^ (1.1) * (memory.overworldx / 40) ^ (18 / 10) * (Balance.crew_scale()) ^ (1 / 5)) / 3600 * tickinterval * (1 + (Common.difficulty_scale() - 1) * 0.2 + 0.001 * timer)
 				end
 
 				if pollution > 0 then
@@ -301,7 +281,7 @@ local function radioactive_tick()
 				end
 
 				local surface = game.surfaces[destination.surface_name]
-				if surface and surface.valid and (not surface.freeze_daytime) and destination.dynamic_data.timer and destination.dynamic_data.timer >= CoreData.daynightcycle_types[Public.Data.static_params_default.daynightcycletype].ticksperday/60/2 then --once daytime, never go back to night
+				if surface and surface.valid and (not surface.freeze_daytime) and destination.dynamic_data.timer and destination.dynamic_data.timer >= CoreData.daynightcycle_types[Public.Data.static_params_default.daynightcycletype].ticksperday / 60 / 2 then --once daytime, never go back to night
 					surface.freeze_daytime = true
 				end
 			end

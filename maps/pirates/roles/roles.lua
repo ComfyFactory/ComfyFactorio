@@ -1,4 +1,4 @@
--- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 local Session = require 'utils.datastore.session_data'
 local Antigrief = require 'utils.antigrief'
@@ -37,18 +37,18 @@ function Public.make_officer(captain, player)
 			if Common.validate_player(player) then
 				memory.officers_table[player.index] = true
 
-				Common.notify_force_light(force,{'pirates.roles_make_officer', captain.name, player.name})
+				Common.notify_force_light(force, { 'pirates.roles_make_officer', captain.name, player.name })
 				Public.update_privileges(player)
 			else
-				Common.notify_player_error(captain,{'pirates.roles_make_officer_error_1'})
+				Common.notify_player_error(captain, { 'pirates.roles_make_officer_error_1' })
 				return false
 			end
 		else
-			Common.notify_player_error(captain,{'pirates.roles_make_officer_error_2'})
+			Common.notify_player_error(captain, { 'pirates.roles_make_officer_error_2' })
 			return false
 		end
 	else
-		Common.notify_player_error(captain,{'pirates.roles_make_officer_error_3'})
+		Common.notify_player_error(captain, { 'pirates.roles_make_officer_error_3' })
 		return false
 	end
 end
@@ -61,15 +61,15 @@ function Public.unmake_officer(captain, player)
 		if Common.is_officer(player.index) then
 			memory.officers_table[player.index] = nil
 
-			Common.notify_force_light(force,{'pirates.roles_unmake_officer', captain.name, player.name})
+			Common.notify_force_light(force, { 'pirates.roles_unmake_officer', captain.name, player.name })
 			Public.update_privileges(player)
 			return true
 		else
-			Common.notify_player_error(captain,{'pirates.roles_unmake_officer_error_1'})
+			Common.notify_player_error(captain, { 'pirates.roles_unmake_officer_error_1' })
 			return false
 		end
 	else
-		Common.notify_player_error(captain,{'pirates.roles_unmake_officer_error_2'})
+		Common.notify_player_error(captain, { 'pirates.roles_unmake_officer_error_2' })
 		return false
 	end
 end
@@ -106,17 +106,16 @@ function Public.tag_text(player)
 	end
 
 	for i, t in ipairs(tags) do
-		if i>1 then str = str .. ', ' end
+		if i > 1 then str = str .. ', ' end
 		str = str .. t
 	end
 
-	if (not (str == '')) then str = '[' .. str .. ']' end
+	if (str ~= '') then str = '[' .. str .. ']' end
 
 	return str
 end
 
 function Public.update_tags(player)
-
 	local str = Public.tag_text(player)
 	player.tag = str
 end
@@ -132,25 +131,24 @@ end
 -- end
 
 function Public.get_class_print_string(class, add_is_class_obstainable)
-
 	for _, class2 in pairs(Classes.enum) do
 		if Classes.eng_form[class2]:lower() == class:lower() or class2 == class:lower() then
 			local explanation = Classes.explanation(class2, add_is_class_obstainable)
 
 			if Classes.class_purchase_requirement[class2] then
-				return {'pirates.class_explanation_upgraded_class', Classes.display_form(class2), Classes.display_form(Classes.class_purchase_requirement[class2]), explanation}
+				return { 'pirates.class_explanation_upgraded_class', Classes.display_form(class2), Classes.display_form(Classes.class_purchase_requirement[class2]), explanation }
 			else
-				return {'pirates.class_explanation', Classes.display_form(class2), explanation}
+				return { 'pirates.class_explanation', Classes.display_form(class2), explanation }
 			end
 		end
 	end
 
 	if class:lower() == 'officer' then
-		return {'pirates.class_explanation', {'pirates.role_officer'}, {'pirates.role_officer_description'}}
+		return { 'pirates.class_explanation', { 'pirates.role_officer' }, { 'pirates.role_officer_description' } }
 	end
 
 	if class:lower() == 'captain' then
-		return {'pirates.class_explanation', {'pirates.role_captain'}, {'pirates.role_captain_description'}}
+		return { 'pirates.class_explanation', { 'pirates.role_captain' }, { 'pirates.role_captain_description' } }
 	end
 
 	return nil
@@ -194,14 +192,14 @@ function Public.make_captain(player)
 	-- don't use "unmake_officer" as it prints additional messages
 	memory.officers_table[player.index] = nil
 
-    Public.update_privileges(player)
+	Public.update_privileges(player)
 
 	local force = player.force
 	if force and force.valid then
-		local message = {'pirates.roles_new_captain', player.name}
+		local message = { 'pirates.roles_new_captain', player.name }
 
 		Common.notify_force(force, message)
-		Server.to_discord_embed_raw({'', CoreData.comfy_emojis.derp .. '[' .. memory.name .. '] ', message}, true)
+		Server.to_discord_embed_raw({ '', CoreData.comfy_emojis.derp .. '[' .. memory.name .. '] ', message }, true)
 	end
 
 	log('INFO: ' .. (player.name or 'noname') .. ' is now new captain.')
@@ -212,20 +210,20 @@ function Public.player_confirm_captainhood(player)
 	local captain_index = memory.playerindex_captain
 
 	if player.index ~= captain_index then
-		Common.notify_player_error(player, {'pirates.roles_confirm_captain_error_1'})
+		Common.notify_player_error(player, { 'pirates.roles_confirm_captain_error_1' })
 	else
 		if memory.captain_acceptance_timer then
 			local force = player.force
 			if force and force.valid then
-				local message = {'pirates.roles_confirm_captain', player.name}
+				local message = { 'pirates.roles_confirm_captain', player.name }
 
 				Common.notify_force(force, message)
-				Server.to_discord_embed_raw({'', CoreData.comfy_emojis.derp .. '[' .. memory.name .. '] ', message}, true)
+				Server.to_discord_embed_raw({ '', CoreData.comfy_emojis.derp .. '[' .. memory.name .. '] ', message }, true)
 			end
 
 			Public.make_captain(player)
 		else
-			Common.notify_player_error(player, {'pirates.roles_confirm_captain_error_2'})
+			Common.notify_player_error(player, { 'pirates.roles_confirm_captain_error_2' })
 		end
 	end
 end
@@ -239,8 +237,8 @@ function Public.player_left_so_redestribute_roles(player)
 		local officers = Common.crew_get_non_afk_officers()
 		if memory.run_is_protected and #officers == 0 then
 			if memory.crewplayerindices and #memory.crewplayerindices > 0 then
-				Common.parrot_speak(memory.force, {'pirates.parrot_captain_left_protected_run'})
-				Common.parrot_speak(memory.force, {'pirates.parrot_create_new_crew_tip'})
+				Common.parrot_speak(memory.force, { 'pirates.parrot_captain_left_protected_run', Common.protected_run_lock_amount_hr })
+				Common.parrot_speak(memory.force, { 'pirates.parrot_create_new_crew_tip' })
 			end
 		elseif memory.run_is_protected then
 			Public.make_captain(officers[1])
@@ -270,22 +268,20 @@ function Public.player_left_so_redestribute_roles(player)
 	end
 end
 
-
 function Public.renounce_captainhood(player)
 	local global_memory = Memory.get_global_memory()
 	local memory = Memory.get_crew_memory()
 
 	if #Common.crew_get_crew_members() == 1 then
-		Common.notify_player_error(player, {'pirates.roles_renounce_captain_error_1'})
+		Common.notify_player_error(player, { 'pirates.roles_renounce_captain_error_1' })
 	else
-
 		local force = memory.force
 		global_memory.playerindex_to_captainhood_priority[player.index] = nil
 		if force and force.valid then
-			local message = {'pirates.roles_renounce_captain', player.name}
+			local message = { 'pirates.roles_renounce_captain', player.name }
 
 			Common.notify_force(force, message)
-			Server.to_discord_embed_raw({'', CoreData.comfy_emojis.ree1 .. '[' .. memory.name .. '] ', message}, true)
+			Server.to_discord_embed_raw({ '', CoreData.comfy_emojis.ree1 .. '[' .. memory.name .. '] ', message }, true)
 		end
 
 		Public.assign_captain_based_on_priorities(player.index)
@@ -300,10 +296,10 @@ function Public.resign_as_officer(player)
 		memory.officers_table[player.index] = nil
 
 
-		local message = {'pirates.roles_resign_officer', player.name}
+		local message = { 'pirates.roles_resign_officer', player.name }
 
 		Common.notify_force(force, message)
-		Server.to_discord_embed_raw({'', CoreData.comfy_emojis.ree1 .. '[' .. memory.name .. '] ', message}, true)
+		Server.to_discord_embed_raw({ '', CoreData.comfy_emojis.ree1 .. '[' .. memory.name .. '] ', message }, true)
 	else
 		log('Error: player tried to resign as officer despite not being one.')
 	end
@@ -329,7 +325,6 @@ function Public.captain_exists()
 	return false
 end
 
-
 function Public.confirm_captain_exists(player_to_make_captain_otherwise)
 	-- Currently this catches an issue where a crew drops to zero players, and then someone else joins.
 	if not Public.captain_exists() then
@@ -351,10 +346,10 @@ function Public.pass_captainhood(player, player_to_pass_to)
 
 
 
-	local message = {'pirates.roles_pass_captainhood', player.name, player_to_pass_to.name}
+	local message = { 'pirates.roles_pass_captainhood', player.name, player_to_pass_to.name }
 
 	Common.notify_force(force, message)
-	Server.to_discord_embed_raw({'', CoreData.comfy_emojis.spurdo .. '[' .. memory.name .. '] ', message}, true)
+	Server.to_discord_embed_raw({ '', CoreData.comfy_emojis.spurdo .. '[' .. memory.name .. '] ', message }, true)
 
 	Public.make_captain(player_to_pass_to)
 end
@@ -372,10 +367,10 @@ function Public.afk_player_tick(player)
 		else
 			local force = memory.force
 			if force and force.valid then
-				local message = {'pirates.roles_lose_captainhood_by_afk', player.name}
+				local message = { 'pirates.roles_lose_captainhood_by_afk', player.name }
 
 				Common.notify_force(force, message)
-				Server.to_discord_embed_raw({'', CoreData.comfy_emojis.loops .. '[' .. memory.name .. '] ', message}, true)
+				Server.to_discord_embed_raw({ '', CoreData.comfy_emojis.loops .. '[' .. memory.name .. '] ', message }, true)
 			end
 
 			if memory.run_is_protected then
@@ -386,7 +381,6 @@ function Public.afk_player_tick(player)
 		end
 	end
 end
-
 
 function Public.assign_captain_based_on_priorities(excluded_player_index)
 	excluded_player_index = excluded_player_index or nil
@@ -421,8 +415,7 @@ function Public.assign_captain_based_on_priorities(excluded_player_index)
 		for _, player_index in pairs(crew_members) do
 			local player = game.players[player_index]
 
-			if Common.validate_player(player) and not (player.index == excluded_player_index) then
-
+			if Common.validate_player(player) and player.index ~= excluded_player_index then
 				local player_active = Utils.contains(Common.crew_get_nonafk_crew_members(), player)
 
 				-- prefer non-afk players:
@@ -447,7 +440,7 @@ function Public.assign_captain_based_on_priorities(excluded_player_index)
 	if not captain_index then
 		captain_index = crew_members[1]
 		captain_name = game.players[captain_index].name
-		Common.notify_force(force,{'pirates.roles_notify_looking_for_captain'})
+		Common.notify_force(force, { 'pirates.roles_notify_looking_for_captain' })
 	end
 
 	if captain_index then
@@ -462,11 +455,11 @@ function Public.assign_captain_based_on_priorities(excluded_player_index)
 		local rng = Math.random(4)
 		local message
 		if rng <= 2 then
-			message = {'pirates.roles_ask_player_about_captainhood_variant_1', captain_name}
+			message = { 'pirates.roles_ask_player_about_captainhood_variant_1', captain_name }
 		elseif rng <= 3 then
-			message = {'pirates.roles_ask_player_about_captainhood_variant_2', captain_name}
+			message = { 'pirates.roles_ask_player_about_captainhood_variant_2', captain_name }
 		else
-			message = {'pirates.roles_ask_player_about_captainhood_variant_3', captain_name}
+			message = { 'pirates.roles_ask_player_about_captainhood_variant_3', captain_name }
 		end
 
 		Common.notify_force_light(force, message)
@@ -477,14 +470,13 @@ function Public.assign_captain_based_on_priorities(excluded_player_index)
 	end
 end
 
-
 function Public.captain_tax(captain_index)
 	if not captain_index then return end
 
 	local memory = Memory.get_crew_memory()
 	local any_taken = false
 
-	local items_to_req = {'coin', 'rail-signal', 'uranium-235'}
+	local items_to_req = { 'coin', 'rail-signal', 'uranium-235' }
 
 	local item_count_table = {}
 	for _, i in pairs(items_to_req) do
@@ -505,10 +497,10 @@ function Public.captain_tax(captain_index)
 					if inv and inv.valid then
 						for _, i in pairs(items_to_req) do
 							local amount = inv.get_item_count(i)
-							if i == 'coin' then amount = Math.floor(amount/100*Common.coin_tax_percentage) end
+							if i == 'coin' then amount = Math.floor(amount / 100 * Common.coin_tax_percentage) end
 							if amount and amount > 0 then
-								inv.remove{name=i, count=amount}
-								captain_inv.insert{name=i, count=amount}
+								inv.remove { name = i, count = amount }
+								captain_inv.insert { name = i, count = amount }
 								item_count_table[i] = item_count_table[i] + amount
 								any_taken = true
 							end
@@ -522,7 +514,7 @@ function Public.captain_tax(captain_index)
 								local cursor_stack_count = cursor_stack.count
 								if cursor_stack_count > 0 then
 									cursor_stack.count = 0
-									captain_inv.insert{name=i, count = cursor_stack_count}
+									captain_inv.insert { name = i, count = cursor_stack_count }
 									item_count_table[i] = item_count_table[i] + cursor_stack_count
 									any_taken = true
 								end
@@ -535,7 +527,8 @@ function Public.captain_tax(captain_index)
 		end
 
 		if any_taken then
-			local str = {''}
+			---@type (string|table)[]
+			local str = { '' }
 			local j = 1
 			for i = 1, #items_to_req do
 				local item = items_to_req[i]
@@ -543,90 +536,54 @@ function Public.captain_tax(captain_index)
 				if count > 0 then
 					if j > 1 then
 						if i == #items_to_req then
-							str[#str+1] = {'pirates.separator_2'}
+							str[#str + 1] = { 'pirates.separator_2' }
 						else
-							str[#str+1] = {'pirates.separator_1'}
+							str[#str + 1] = { 'pirates.separator_1' }
 						end
 					end
 					local display_name = item
 					if display_name == 'coin' then display_name = 'doubloons' end
 					if count >= 1000 then
-						str[#str+1] = Utils.bignumber_abbrevform2(count)
-						str[#str+1] = ' '
-						str[#str+1] = display_name
+						str[#str + 1] = Utils.bignumber_abbrevform2(count)
+						str[#str + 1] = ' '
+						str[#str + 1] = display_name
 					else
-						str[#str+1] = count
-						str[#str+1] = ' '
-						str[#str+1] = display_name
+						str[#str + 1] = count
+						str[#str + 1] = ' '
+						str[#str + 1] = display_name
 					end
 					j = j + 1
 				end
 			end
-			Common.notify_force(memory.force, {'pirates.tax', str})
+			Common.notify_force(memory.force, { 'pirates.tax', str })
 		else
-			Common.notify_player_error(captain, {'pirates.tax_error_nothing'})
+			Common.notify_player_error(captain, { 'pirates.tax_error_nothing' })
 		end
 	end
 end
 
-
 function Public.try_create_permissions_groups()
-
-    if not game.permissions.get_group('restricted_area') then
+	if not game.permissions.get_group('restricted_area') then
 		local group = game.permissions.create_group('restricted_area')
-        group.set_allows_action(defines.input_action.edit_permission_group, false)
-        group.set_allows_action(defines.input_action.import_permissions_string, false)
-        group.set_allows_action(defines.input_action.delete_permission_group, false)
-        group.set_allows_action(defines.input_action.add_permission_group, false)
-        group.set_allows_action(defines.input_action.admin_action, false)
+		group.set_allows_action(defines.input_action.edit_permission_group, false)
+		group.set_allows_action(defines.input_action.import_permissions_string, false)
+		group.set_allows_action(defines.input_action.delete_permission_group, false)
+		group.set_allows_action(defines.input_action.add_permission_group, false)
+		group.set_allows_action(defines.input_action.admin_action, false)
 
-        group.set_allows_action(defines.input_action.cancel_craft, false)
-        group.set_allows_action(defines.input_action.drop_item, false)
-        group.set_allows_action(defines.input_action.drop_blueprint_record, false)
-        group.set_allows_action(defines.input_action.build, false)
-        group.set_allows_action(defines.input_action.build_rail, false)
-        group.set_allows_action(defines.input_action.build_terrain, false)
-        group.set_allows_action(defines.input_action.begin_mining, false)
-        group.set_allows_action(defines.input_action.begin_mining_terrain, false)
-        -- group.set_allows_action(defines.input_action.deconstruct, false) --pick up dead players
-        group.set_allows_action(defines.input_action.activate_copy, false)
-        group.set_allows_action(defines.input_action.activate_cut, false)
-        group.set_allows_action(defines.input_action.activate_paste, false)
-        group.set_allows_action(defines.input_action.upgrade, false)
-
-		group.set_allows_action(defines.input_action.grab_blueprint_record, false)
-		if not CoreData.blueprint_library_allowed then
-			group.set_allows_action(defines.input_action.open_blueprint_library_gui, false)
-		end
-		if not CoreData.blueprint_importing_allowed then
-			group.set_allows_action(defines.input_action.import_blueprint_string, false)
-			group.set_allows_action(defines.input_action.import_blueprint, false)
-		end
-        group.set_allows_action(defines.input_action.fast_entity_transfer, false)
-        group.set_allows_action(defines.input_action.fast_entity_split, false)
-    end
-
-    if not game.permissions.get_group('super_restricted_area') then
-		local group = game.permissions.create_group('super_restricted_area')
-        group.set_allows_action(defines.input_action.edit_permission_group, false)
-        group.set_allows_action(defines.input_action.import_permissions_string, false)
-        group.set_allows_action(defines.input_action.delete_permission_group, false)
-        group.set_allows_action(defines.input_action.add_permission_group, false)
-        group.set_allows_action(defines.input_action.admin_action, false)
-
-        group.set_allows_action(defines.input_action.cancel_craft, false)
-        group.set_allows_action(defines.input_action.drop_item, false)
-        group.set_allows_action(defines.input_action.drop_blueprint_record, false)
-        group.set_allows_action(defines.input_action.build, false)
-        group.set_allows_action(defines.input_action.build_rail, false)
-        group.set_allows_action(defines.input_action.build_terrain, false)
-        group.set_allows_action(defines.input_action.begin_mining, false)
-        group.set_allows_action(defines.input_action.begin_mining_terrain, false)
-        -- group.set_allows_action(defines.input_action.deconstruct, false) --pick up dead players
-        group.set_allows_action(defines.input_action.activate_copy, false)
-        group.set_allows_action(defines.input_action.activate_cut, false)
-        group.set_allows_action(defines.input_action.activate_paste, false)
-        group.set_allows_action(defines.input_action.upgrade, false)
+		group.set_allows_action(defines.input_action.cancel_craft, false)
+		group.set_allows_action(defines.input_action.drop_item, false)
+		group.set_allows_action(defines.input_action.drop_blueprint_record, false)
+		group.set_allows_action(defines.input_action.build, false)
+		group.set_allows_action(defines.input_action.build_rail, false)
+		group.set_allows_action(defines.input_action.build_terrain, false)
+		group.set_allows_action(defines.input_action.begin_mining, false)
+		group.set_allows_action(defines.input_action.begin_mining_terrain, false)
+		-- group.set_allows_action(defines.input_action.deconstruct, false) --pick up dead players
+		group.set_allows_action(defines.input_action.activate_copy, false)
+		group.set_allows_action(defines.input_action.activate_cut, false)
+		group.set_allows_action(defines.input_action.activate_paste, false)
+		group.set_allows_action(defines.input_action.upgrade, false)
 
 		group.set_allows_action(defines.input_action.grab_blueprint_record, false)
 		if not CoreData.blueprint_library_allowed then
@@ -637,33 +594,33 @@ function Public.try_create_permissions_groups()
 			group.set_allows_action(defines.input_action.import_blueprint, false)
 		end
 
-        group.set_allows_action(defines.input_action.fast_entity_transfer, false)
-        group.set_allows_action(defines.input_action.fast_entity_split, false)
+		group.set_allows_action(defines.input_action.fast_entity_transfer, false)
+		group.set_allows_action(defines.input_action.fast_entity_split, false)
 
-        group.set_allows_action(defines.input_action.open_gui, false)
-    end
+		-- Note there is other code to prevent these players from opening chests
+	end
 
-    if not game.permissions.get_group('restricted_area_privileged') then
+	if not game.permissions.get_group('restricted_area_privileged') then
 		local group = game.permissions.create_group('restricted_area_privileged')
-        group.set_allows_action(defines.input_action.edit_permission_group, false)
-        group.set_allows_action(defines.input_action.import_permissions_string, false)
-        group.set_allows_action(defines.input_action.delete_permission_group, false)
-        group.set_allows_action(defines.input_action.add_permission_group, false)
-        group.set_allows_action(defines.input_action.admin_action, false)
+		group.set_allows_action(defines.input_action.edit_permission_group, false)
+		group.set_allows_action(defines.input_action.import_permissions_string, false)
+		group.set_allows_action(defines.input_action.delete_permission_group, false)
+		group.set_allows_action(defines.input_action.add_permission_group, false)
+		group.set_allows_action(defines.input_action.admin_action, false)
 
-        group.set_allows_action(defines.input_action.cancel_craft, false)
-        group.set_allows_action(defines.input_action.drop_item, false)
-        group.set_allows_action(defines.input_action.drop_blueprint_record, false)
-        group.set_allows_action(defines.input_action.build, false)
-        group.set_allows_action(defines.input_action.build_rail, false)
-        group.set_allows_action(defines.input_action.build_terrain, false)
-        group.set_allows_action(defines.input_action.begin_mining, false)
-        group.set_allows_action(defines.input_action.begin_mining_terrain, false)
-        -- group.set_allows_action(defines.input_action.deconstruct, false) --pick up dead players
-        group.set_allows_action(defines.input_action.activate_copy, false)
-        group.set_allows_action(defines.input_action.activate_cut, false)
-        group.set_allows_action(defines.input_action.activate_paste, false)
-        group.set_allows_action(defines.input_action.upgrade, false)
+		group.set_allows_action(defines.input_action.cancel_craft, false)
+		group.set_allows_action(defines.input_action.drop_item, false)
+		group.set_allows_action(defines.input_action.drop_blueprint_record, false)
+		group.set_allows_action(defines.input_action.build, false)
+		group.set_allows_action(defines.input_action.build_rail, false)
+		group.set_allows_action(defines.input_action.build_terrain, false)
+		group.set_allows_action(defines.input_action.begin_mining, false)
+		group.set_allows_action(defines.input_action.begin_mining_terrain, false)
+		-- group.set_allows_action(defines.input_action.deconstruct, false) --pick up dead players
+		group.set_allows_action(defines.input_action.activate_copy, false)
+		group.set_allows_action(defines.input_action.activate_cut, false)
+		group.set_allows_action(defines.input_action.activate_paste, false)
+		group.set_allows_action(defines.input_action.upgrade, false)
 
 		if not CoreData.blueprint_library_allowed then
 			group.set_allows_action(defines.input_action.open_blueprint_library_gui, false)
@@ -673,91 +630,87 @@ function Public.try_create_permissions_groups()
 			group.set_allows_action(defines.input_action.import_blueprint_string, false)
 			group.set_allows_action(defines.input_action.import_blueprint, false)
 		end
-    end
+	end
 
-    if not game.permissions.get_group('plebs') then
-        local plebs_group = game.permissions.create_group('plebs')
-		if not _DEBUG then
-			plebs_group.set_allows_action(defines.input_action.edit_permission_group, false)
-			plebs_group.set_allows_action(defines.input_action.import_permissions_string, false)
-			plebs_group.set_allows_action(defines.input_action.delete_permission_group, false)
-			plebs_group.set_allows_action(defines.input_action.add_permission_group, false)
-			plebs_group.set_allows_action(defines.input_action.admin_action, false)
+	if not game.permissions.get_group('plebs') then
+		local group = game.permissions.create_group('plebs')
+		group.set_allows_action(defines.input_action.edit_permission_group, false)
+		group.set_allows_action(defines.input_action.import_permissions_string, false)
+		group.set_allows_action(defines.input_action.delete_permission_group, false)
+		group.set_allows_action(defines.input_action.add_permission_group, false)
+		group.set_allows_action(defines.input_action.admin_action, false)
 
-			if not CoreData.blueprint_library_allowed then
-				plebs_group.set_allows_action(defines.input_action.open_blueprint_library_gui, false)
-				plebs_group.set_allows_action(defines.input_action.grab_blueprint_record, false)
-			end
-			if not CoreData.blueprint_importing_allowed then
-				plebs_group.set_allows_action(defines.input_action.import_blueprint_string, false)
-				plebs_group.set_allows_action(defines.input_action.import_blueprint, false)
-			end
-		end
-    end
-
-    if not game.permissions.get_group('not_trusted') then
-        local not_trusted = game.permissions.create_group('not_trusted')
-        -- not_trusted.set_allows_action(defines.input_action.cancel_craft, false)
-        not_trusted.set_allows_action(defines.input_action.edit_permission_group, false)
-        not_trusted.set_allows_action(defines.input_action.import_permissions_string, false)
-        not_trusted.set_allows_action(defines.input_action.delete_permission_group, false)
-        not_trusted.set_allows_action(defines.input_action.add_permission_group, false)
-        not_trusted.set_allows_action(defines.input_action.admin_action, false)
-        -- not_trusted.set_allows_action(defines.input_action.drop_item, false)
-        not_trusted.set_allows_action(defines.input_action.disconnect_rolling_stock, false)
-        not_trusted.set_allows_action(defines.input_action.connect_rolling_stock, false)
-        not_trusted.set_allows_action(defines.input_action.open_train_gui, false)
-        not_trusted.set_allows_action(defines.input_action.open_train_station_gui, false)
-        not_trusted.set_allows_action(defines.input_action.open_trains_gui, false)
-        not_trusted.set_allows_action(defines.input_action.change_train_stop_station, false)
-        not_trusted.set_allows_action(defines.input_action.change_train_wait_condition, false)
-        not_trusted.set_allows_action(defines.input_action.change_train_wait_condition_data, false)
-        not_trusted.set_allows_action(defines.input_action.drag_train_schedule, false)
-        not_trusted.set_allows_action(defines.input_action.drag_train_wait_condition, false)
-        not_trusted.set_allows_action(defines.input_action.go_to_train_station, false)
-        not_trusted.set_allows_action(defines.input_action.remove_train_station, false)
-        not_trusted.set_allows_action(defines.input_action.set_trains_limit, false)
-        not_trusted.set_allows_action(defines.input_action.set_train_stopped, false)
-
-		not_trusted.set_allows_action(defines.input_action.grab_blueprint_record, false)
 		if not CoreData.blueprint_library_allowed then
-			not_trusted.set_allows_action(defines.input_action.open_blueprint_library_gui, false)
+			group.set_allows_action(defines.input_action.open_blueprint_library_gui, false)
+			group.set_allows_action(defines.input_action.grab_blueprint_record, false)
 		end
 		if not CoreData.blueprint_importing_allowed then
-			not_trusted.set_allows_action(defines.input_action.import_blueprint_string, false)
-			not_trusted.set_allows_action(defines.input_action.import_blueprint, false)
+			group.set_allows_action(defines.input_action.import_blueprint_string, false)
+			group.set_allows_action(defines.input_action.import_blueprint, false)
 		end
-    end
+	end
+
+	if not game.permissions.get_group('not_trusted') then
+		local group = game.permissions.create_group('not_trusted')
+		-- not_trusted.set_allows_action(defines.input_action.cancel_craft, false)
+		group.set_allows_action(defines.input_action.edit_permission_group, false)
+		group.set_allows_action(defines.input_action.import_permissions_string, false)
+		group.set_allows_action(defines.input_action.delete_permission_group, false)
+		group.set_allows_action(defines.input_action.add_permission_group, false)
+		group.set_allows_action(defines.input_action.admin_action, false)
+		-- not_trusted.set_allows_action(defines.input_action.drop_item, false)
+		group.set_allows_action(defines.input_action.disconnect_rolling_stock, false)
+		group.set_allows_action(defines.input_action.connect_rolling_stock, false)
+		group.set_allows_action(defines.input_action.open_train_gui, false)
+		group.set_allows_action(defines.input_action.open_train_station_gui, false)
+		group.set_allows_action(defines.input_action.open_trains_gui, false)
+		group.set_allows_action(defines.input_action.change_train_stop_station, false)
+		group.set_allows_action(defines.input_action.change_train_wait_condition, false)
+		group.set_allows_action(defines.input_action.change_train_wait_condition_data, false)
+		group.set_allows_action(defines.input_action.drag_train_schedule, false)
+		group.set_allows_action(defines.input_action.drag_train_wait_condition, false)
+		group.set_allows_action(defines.input_action.go_to_train_station, false)
+		group.set_allows_action(defines.input_action.remove_train_station, false)
+		group.set_allows_action(defines.input_action.set_trains_limit, false)
+		group.set_allows_action(defines.input_action.set_train_stopped, false)
+
+		group.set_allows_action(defines.input_action.grab_blueprint_record, false)
+		if not CoreData.blueprint_library_allowed then
+			group.set_allows_action(defines.input_action.open_blueprint_library_gui, false)
+		end
+		if not CoreData.blueprint_importing_allowed then
+			group.set_allows_action(defines.input_action.import_blueprint_string, false)
+			group.set_allows_action(defines.input_action.import_blueprint, false)
+		end
+	end
 end
 
-
-
 function Public.add_player_to_permission_group(player, group_override)
-    -- local jailed = Jailed.get_jailed_table()
-    -- local enable_permission_group_disconnect = WPT.get('disconnect_wagon')
-    local session = Session.get_session_table()
-    local AG = Antigrief.get()
+	-- local jailed = Jailed.get_jailed_table()
+	-- local enable_permission_group_disconnect = WPT.get('disconnect_wagon')
+	local session = Session.get_session_table()
+	local AG = Antigrief.get()
 
-    local gulag = game.permissions.get_group('gulag')
-    local tbl = gulag and gulag.players
-    for i = 1, #tbl do
-        if tbl[i].index == player.index then
-            return
-        end
-    end
+	local gulag = game.permissions.get_group('gulag')
+	local tbl = gulag and gulag.players
+	for i = 1, #tbl do
+		if tbl[i].index == player.index then
+			return
+		end
+	end
 
-    -- if player.admin then
-    --     return
-    -- end
+	-- if player.admin then
+	--     return
+	-- end
 
-    local playtime = player.online_time
-    if session and session[player.name] then
-        playtime = player.online_time + session[player.name]
-    end
+	local playtime = player.online_time
+	if session and session[player.name] then
+		playtime = player.online_time + session[player.name]
+	end
 
-    -- if jailed[player.name] then
-    --     return
-    -- end
+	-- if jailed[player.name] then
+	--     return
+	-- end
 
 	Public.try_create_permissions_groups()
 
@@ -771,32 +724,38 @@ function Public.add_player_to_permission_group(player, group_override)
 			group = game.permissions.get_group('plebs')
 		end
 	end
+
+	-- if _DEBUG then return end
+
 	group.add_player(player)
 end
 
 function Public.update_privileges(player)
 	Public.try_create_permissions_groups()
 
-    if not Common.validate_player_and_character(player) then
-        return
-    end
+	if not Common.validate_player_and_character(player) then
+		return
+	end
 
 	if string.sub(player.surface.name, 9, 17) == 'Crowsnest' then
 		if Public.player_privilege_level(player) >= Public.privilege_levels.OFFICER then
 			return Public.add_player_to_permission_group(player, 'restricted_area_privileged')
 		else
-			return Public.add_player_to_permission_group(player, 'super_restricted_area')
+			return Public.add_player_to_permission_group(player, 'restricted_area')
 		end
 	elseif string.sub(player.surface.name, 9, 13) == 'Cabin' then
 		if Public.player_privilege_level(player) >= Public.privilege_levels.OFFICER then
 			return Public.add_player_to_permission_group(player, 'restricted_area_privileged')
 		else
+			-- return Public.add_player_to_permission_group(player, 'restricted_area')
+			-- Moved to restricted_area to prevent them messing with items in the blue chests.ssd
 			return Public.add_player_to_permission_group(player, 'restricted_area')
 		end
-    else
-        return Public.add_player_to_permission_group(player)
+	elseif player.surface.name == CoreData.lobby_surface_name then
+		return Public.add_player_to_permission_group(player, 'restricted_area')
+	else
+		return Public.add_player_to_permission_group(player)
 	end
 end
-
 
 return Public

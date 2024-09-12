@@ -1,4 +1,4 @@
--- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 
 local Memory = require 'maps.pirates.memory'
@@ -31,7 +31,7 @@ Public[enum.HORSESHOE] = require 'maps.pirates.surfaces.islands.horseshoe.horses
 Public[enum.SWAMP] = require 'maps.pirates.surfaces.islands.swamp.swamp'
 Public[enum.MAZE] = require 'maps.pirates.surfaces.islands.maze.maze'
 Public[enum.CAVE] = require 'maps.pirates.surfaces.islands.cave.cave'
-Public[enum.CAVE_SOURCE] = require 'maps.pirates.surfaces.islands.cave.cave_source'  -- Used as extra layer for cave island
+Public[enum.CAVE_SOURCE] = require 'maps.pirates.surfaces.islands.cave.cave_source' -- Used as extra layer for cave island
 Public['IslandsCommon'] = require 'maps.pirates.surfaces.islands.common'
 
 
@@ -77,7 +77,7 @@ function Public.spawn_treasure_maps(destination, points_to_avoid)
 		-- game.print(p)
 
 		map.position = p
-		map.mapobject_rendering = rendering.draw_sprite{
+		map.mapobject_rendering = rendering.draw_sprite {
 			surface = surface,
 			target = p,
 			sprite = 'utility/gps_map_icon',
@@ -92,8 +92,6 @@ function Public.spawn_treasure_maps(destination, points_to_avoid)
 		destination.dynamic_data.treasure_maps[#destination.dynamic_data.treasure_maps + 1] = map
 	end
 end
-
-
 
 function Public.spawn_ghosts(destination, points_to_avoid)
 	points_to_avoid = points_to_avoid or {}
@@ -117,7 +115,7 @@ function Public.spawn_ghosts(destination, points_to_avoid)
 		local p = Hunt.mid_farness_position_1(args, points_to_avoid)
 
 		ghost.position = p
-		ghost.ghostobject_rendering = rendering.draw_sprite{
+		ghost.ghostobject_rendering = rendering.draw_sprite {
 			surface = surface,
 			target = p,
 			sprite = 'utility/ghost_time_to_live_modifier_icon',
@@ -130,8 +128,6 @@ function Public.spawn_ghosts(destination, points_to_avoid)
 		destination.dynamic_data.ghosts[#destination.dynamic_data.ghosts + 1] = ghost
 	end
 end
-
-
 
 function Public.spawn_quest_structure(destination, points_to_avoid)
 	points_to_avoid = points_to_avoid or {}
@@ -153,8 +149,6 @@ function Public.spawn_quest_structure(destination, points_to_avoid)
 	return p
 end
 
-
-
 function Public.spawn_ores_on_arrival(destination, points_to_avoid)
 	points_to_avoid = points_to_avoid or {}
 	-- local memory = Memory.get_crew_memory()
@@ -162,7 +156,7 @@ function Public.spawn_ores_on_arrival(destination, points_to_avoid)
 	if not surface and surface.valid then return end
 
 	if destination.subtype == enum.STANDARD or destination.subtype == enum.STANDARD_VARIANT or destination.subtype == enum.MAZE then
-		local ores = {'iron-ore', 'copper-ore', 'stone', 'coal', 'crude-oil'}
+		local ores = { 'iron-ore', 'copper-ore', 'stone', 'coal', 'crude-oil' }
 
 		local args = {
 			static_params = destination.static_params,
@@ -179,22 +173,21 @@ function Public.spawn_ores_on_arrival(destination, points_to_avoid)
 			if destination.static_params.abstract_ore_amounts[ore] then
 				local p = Hunt.close_position_try_avoiding_entities(args, points_to_avoid, farness_low, farness_high)
 				if p then
-					points_to_avoid[#points_to_avoid + 1] = {x=p.x, y=p.y, r=11}
+					points_to_avoid[#points_to_avoid + 1] = { x = p.x, y = p.y, r = 11 }
 
 					if ore == 'crude-oil' then
-
-						local count = Math.max(1, Math.ceil((destination.static_params.abstract_ore_amounts[ore]/3)^(1/2)))
+						local count = Math.max(1, Math.ceil((destination.static_params.abstract_ore_amounts[ore] / 3) ^ (1 / 2)))
 						local amount = Common.oil_abstract_to_real(destination.static_params.abstract_ore_amounts[ore]) / count
 
 						for i = 1, count do
-							local p2 = {p.x + Math.random(-7, 7), p.y + Math.random(-7, 7)}
+							local p2 = { p.x + Math.random(-7, 7), p.y + Math.random(-7, 7) }
 							local whilesafety = 0
-							while (not surface.can_place_entity{name = 'crude-oil', position = p2}) and whilesafety < 30 do
-								p2 = {p.x + Math.random(-7, 7), p.y + Math.random(-7, 7)}
+							while (not surface.can_place_entity { name = 'crude-oil', position = p2 }) and whilesafety < 30 do
+								p2 = { p.x + Math.random(-7, 7), p.y + Math.random(-7, 7) }
 								whilesafety = whilesafety + 1
 							end
 
-							surface.create_entity{name = 'crude-oil', position = p2, amount = amount}
+							surface.create_entity { name = 'crude-oil', position = p2, amount = amount }
 						end
 
 						destination.dynamic_data.ore_types_spawned[ore] = true
@@ -212,8 +205,6 @@ function Public.spawn_ores_on_arrival(destination, points_to_avoid)
 		end
 	end
 end
-
-
 
 function Public.spawn_merchant_ship(destination)
 	-- local memory = Memory.get_crew_memory()
@@ -247,10 +238,8 @@ function Public.spawn_merchant_ship(destination)
 	end
 end
 
-
-
 local silo_chart_tag = Token.register(
-	function(data)
+	function (data)
 		local p_silo = data.p_silo
 		local surface_name = data.surface_name
 
@@ -260,12 +249,13 @@ local silo_chart_tag = Token.register(
 
 		Memory.set_working_id(data.crew_id)
 		local memory = Memory.get_crew_memory()
-
 		if memory.game_lost then return end
+		if not Common.is_id_valid(data.crew_id) then return end --check if crew disbanded
+
 		local destination = Common.current_destination()
 		local force = memory.force
 
-		destination.dynamic_data.silo_chart_tag = force.add_chart_tag(surface, {icon = {type = 'item', name = 'rocket-silo'}, position = p_silo})
+		destination.dynamic_data.silo_chart_tag = force.add_chart_tag(surface, { icon = { type = 'item', name = 'rocket-silo' }, position = p_silo })
 	end
 )
 function Public.spawn_silo_setup(points_to_avoid)
@@ -289,15 +279,15 @@ function Public.spawn_silo_setup(points_to_avoid)
 	end
 
 	for i = 1, silo_count do
-		local pos = {x = p_silo.x + 9*(i-1), y = p_silo.y}
+		local pos = { x = p_silo.x + 9 * (i - 1), y = p_silo.y }
 
 		Common.delete_entities(surface, pos, 11, 11)
 		Common.replace_unwalkable_tiles(surface, pos, 11, 11)
 
-		local silo = surface.create_entity({name = 'rocket-silo', position = pos, force = force, create_build_effect_smoke = false})
+		local silo = surface.create_entity({ name = 'rocket-silo', position = pos, force = force, create_build_effect_smoke = false })
 		if silo and silo.valid then
 			if not destination.dynamic_data.rocketsilos then destination.dynamic_data.rocketsilos = {} end
-			destination.dynamic_data.rocketsilos[#destination.dynamic_data.rocketsilos + 1]= silo
+			destination.dynamic_data.rocketsilos[#destination.dynamic_data.rocketsilos + 1] = silo
 			silo.minable = false
 			silo.rotatable = false
 			silo.operable = false
@@ -308,7 +298,7 @@ function Public.spawn_silo_setup(points_to_avoid)
 				silo.destructible = false
 			end
 			local modulesinv = silo.get_module_inventory()
-			modulesinv.insert{name = 'productivity-module-3', count = 4}
+			modulesinv.insert { name = 'productivity-module-3', count = 4 }
 		end
 	end
 
@@ -333,8 +323,8 @@ function Public.spawn_silo_setup(points_to_avoid)
 
 	if CoreData.rocket_silo_death_causes_loss or (destination.static_params and destination.static_params.base_cost_to_undock and destination.static_params.base_cost_to_undock['launch_rocket'] == true) then
 		-- we need to know where it is
-		force.chart(surface, {{p_silo.x - 4, p_silo.y - 4},{p_silo.x + 4, p_silo.y + 4}})
-		Task.set_timeout_in_ticks(2, silo_chart_tag, {p_silo = p_silo, surface_name = destination.surface_name, crew_id = memory.id})
+		force.chart(surface, { { p_silo.x - 4, p_silo.y - 4 }, { p_silo.x + 4, p_silo.y + 4 } })
+		Task.set_timeout_in_ticks(2, silo_chart_tag, { p_silo = p_silo, surface_name = destination.surface_name, crew_id = memory.id })
 	end
 
 	-- render_silo_hp()
@@ -342,16 +332,13 @@ function Public.spawn_silo_setup(points_to_avoid)
 	return p_silo
 end
 
-
-
-
 -- NOTE: Currently the boats can trigger landing early if 2 boats spawn in same lane in short interval. Too lazy to fix.
 -- NOTE: As well as biter boats can miss the island on smaller ones when boat is steered
 function Public.spawn_enemy_boat(type)
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 	local surface = game.surfaces[destination.surface_name]
-	local offsets = {50, -50, 63, -63, 76, -76, 89, -89}
+	local offsets = { 50, -50, 63, -63, 76, -76, 89, -89 }
 
 	local enemyboats = destination.dynamic_data.enemyboats
 	if enemyboats then
@@ -359,7 +346,7 @@ function Public.spawn_enemy_boat(type)
 			state = Boats.enum_state.APPROACHING,
 			type = type,
 			speed = 4,
-			position = {x = - surface.map_gen_settings.width/2 + 23.5, y = (memory.boat.dockedposition or memory.boat.position).y + offsets[Math.random(#offsets)]},
+			position = { x = -surface.map_gen_settings.width / 2 + 23.5, y = (memory.boat.dockedposition or memory.boat.position).y + offsets[Math.random(#offsets)] },
 			force_name = memory.enemy_force_name,
 			surface_name = surface.name,
 			unit_group = nil,
@@ -369,7 +356,7 @@ function Public.spawn_enemy_boat(type)
 
 		Boats.place_boat(boat, CoreData.static_boat_floor, true, true)
 
-		local e = surface.create_entity({name = 'biter-spawner', force = boat.force_name, position = {boat.position.x + Boats.get_scope(boat).Data.spawn_point.x, boat.position.y + Boats.get_scope(boat).Data.spawn_point.y}})
+		local e = surface.create_entity({ name = 'biter-spawner', force = boat.force_name, position = { boat.position.x + Boats.get_scope(boat).Data.spawn_point.x, boat.position.y + Boats.get_scope(boat).Data.spawn_point.y } })
 
 		if e and e.valid then
 			-- e.destructible = false
@@ -382,6 +369,5 @@ function Public.spawn_enemy_boat(type)
 		return enemyboats[#enemyboats]
 	end
 end
-
 
 return Public

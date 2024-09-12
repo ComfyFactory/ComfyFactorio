@@ -1,4 +1,4 @@
--- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 
 local Memory = require 'maps.pirates.memory'
@@ -20,7 +20,7 @@ Public.Data = require 'maps.pirates.structures.quest_structures.market1.data'
 
 
 function Public.create_step1_entities()
-    local destination = Common.current_destination()
+	local destination = Common.current_destination()
 	local surface = game.surfaces[destination.surface_name]
 
 	local quest_structure_data = destination.dynamic_data.quest_structure_data
@@ -29,14 +29,14 @@ function Public.create_step1_entities()
 	local position = quest_structure_data.position
 	local hardcoded_data = Public.Data.step1
 
-	quest_structure_data.blue_chest = surface.create_entity{name = 'blue-chest', position = Math.vector_sum(position, hardcoded_data.blue_chest), force = 'environment'}
+	quest_structure_data.blue_chest = surface.create_entity { name = 'blue-chest', position = Math.vector_sum(position, hardcoded_data.blue_chest), force = 'environment' }
 	if quest_structure_data.blue_chest and quest_structure_data.blue_chest.valid then
 		quest_structure_data.blue_chest.minable = false
 		quest_structure_data.blue_chest.rotatable = false
 		quest_structure_data.blue_chest.operable = false
 		quest_structure_data.blue_chest.destructible = false
 	end
-	quest_structure_data.red_chest = surface.create_entity{name = 'red-chest', position = Math.vector_sum(position, hardcoded_data.red_chest), force = 'environment'}
+	quest_structure_data.red_chest = surface.create_entity { name = 'red-chest', position = Math.vector_sum(position, hardcoded_data.red_chest), force = 'environment' }
 	if quest_structure_data.red_chest and quest_structure_data.red_chest.valid then
 		quest_structure_data.red_chest.minable = false
 		quest_structure_data.red_chest.rotatable = false
@@ -45,7 +45,7 @@ function Public.create_step1_entities()
 	end
 	quest_structure_data.door_walls = {}
 	for _, p in pairs(hardcoded_data.walls) do
-		local e = surface.create_entity{name = 'stone-wall', position = Math.vector_sum(position, p), force = 'environment'}
+		local e = surface.create_entity { name = 'stone-wall', position = Math.vector_sum(position, p), force = 'environment' }
 		if e and e.valid then
 			e.minable = false
 			e.rotatable = false
@@ -56,10 +56,9 @@ function Public.create_step1_entities()
 	end
 end
 
-
 function Public.create_step2_entities()
 	local memory = Memory.get_crew_memory()
-    local destination = Common.current_destination()
+	local destination = Common.current_destination()
 	local surface = game.surfaces[destination.surface_name]
 
 	local quest_structure_data = destination.dynamic_data.quest_structure_data
@@ -68,11 +67,19 @@ function Public.create_step2_entities()
 	local position = quest_structure_data.position
 	local hardcoded_data = Public.Data.step2
 
-	quest_structure_data.market = surface.create_entity{name = 'market', position = Math.vector_sum(position, hardcoded_data.market), force = memory.ancient_friendly_force_name}
+	quest_structure_data.market = surface.create_entity { name = 'market', position = Math.vector_sum(position, hardcoded_data.market), force = memory.ancient_friendly_force_name }
 	if quest_structure_data.market and quest_structure_data.market.valid then
 		quest_structure_data.market.minable = false
 		quest_structure_data.market.rotatable = false
 		quest_structure_data.market.destructible = false
+
+		quest_structure_data.market.add_market_item {
+			price = Balance.weapon_damage_upgrade_price(),
+			offer = {
+				type = "nothing",
+				effect_description = { 'pirates.market_description_purchase_attack_upgrade', Balance.weapon_damage_upgrade_percentage() }
+			}
+		}
 
 		-- quest_structure_data.market.add_market_item{price={{'pistol', 1}}, offer={type = 'give-item', item = 'coin', count = Balance.coin_sell_amount}}
 		-- quest_structure_data.market.add_market_item{price={{'burner-mining-drill', 1}}, offer={type = 'give-item', item = 'iron-plate', count = 9}}
@@ -82,12 +89,12 @@ function Public.create_step2_entities()
 
 		-- Thinking of not having these offers available always (if it's bad design decision can always change it back)
 		if Math.random(4) == 1 then
-			quest_structure_data.market.add_market_item{price={{'pistol', 1}}, offer={type = 'give-item', item = 'coin', count = Balance.coin_sell_amount}}
+			quest_structure_data.market.add_market_item { price = { { 'pistol', 1 } }, offer = { type = 'give-item', item = 'coin', count = Balance.coin_sell_amount } }
 			how_many_coin_offers = how_many_coin_offers - 1
 		end
 
 		if Math.random(4) == 1 then
-			quest_structure_data.market.add_market_item{price={{'burner-mining-drill', 1}}, offer={type = 'give-item', item = 'iron-plate', count = 9}}
+			quest_structure_data.market.add_market_item { price = { { 'burner-mining-drill', 1 } }, offer = { type = 'give-item', item = 'iron-plate', count = 9 } }
 			how_many_coin_offers = how_many_coin_offers - 1
 		end
 
@@ -97,7 +104,7 @@ function Public.create_step2_entities()
 		end
 
 		if destination.static_params.class_for_sale then
-			quest_structure_data.market.add_market_item{price={{'coin', Balance.class_cost(false)}}, offer={type="nothing", effect_description = {'pirates.market_description_purchase_class', Classes.display_form(destination.static_params.class_for_sale)}}}
+			quest_structure_data.market.add_market_item { price = { { 'coin', Balance.class_cost(false) } }, offer = { type = "nothing", effect_description = { 'pirates.market_description_purchase_class', Classes.display_form(destination.static_params.class_for_sale) } } }
 
 			-- destination.dynamic_data.market_class_offer_rendering = rendering.draw_text{
 			-- 	text = 'Class available: ' .. Classes.display_form(destination.static_params.class_for_sale),
@@ -111,7 +118,7 @@ function Public.create_step2_entities()
 		end
 	end
 
-	quest_structure_data.steel_chest = surface.create_entity{name = 'steel-chest', position = Math.vector_sum(position, hardcoded_data.steel_chest), force = memory.ancient_friendly_force_name}
+	quest_structure_data.steel_chest = surface.create_entity { name = 'steel-chest', position = Math.vector_sum(position, hardcoded_data.steel_chest), force = memory.ancient_friendly_force_name }
 	if quest_structure_data.steel_chest and quest_structure_data.steel_chest.valid then
 		quest_structure_data.steel_chest.minable = false
 		quest_structure_data.steel_chest.rotatable = false
@@ -134,7 +141,7 @@ function Public.create_step2_entities()
 
 	quest_structure_data.wooden_chests = {}
 	for k, p in ipairs(hardcoded_data.wooden_chests) do
-		local e = surface.create_entity{name = 'wooden-chest', position = Math.vector_sum(position, p), force = memory.ancient_friendly_force_name}
+		local e = surface.create_entity { name = 'wooden-chest', position = Math.vector_sum(position, p), force = memory.ancient_friendly_force_name }
 		if e and e.valid then
 			e.minable = false
 			e.rotatable = false
@@ -142,7 +149,7 @@ function Public.create_step2_entities()
 
 			local inv = e.get_inventory(defines.inventory.chest)
 			local loot = Loot.covered_wooden_chest_loot()
-			if k==1 then loot[1] = {name = 'coin', count = Loot.quest_structure_coin_loot()} end
+			if k == 1 then loot[1] = { name = 'coin', count = Loot.quest_structure_coin_loot() } end
 			--@TODO: log this in coin stats
 			for j = 1, #loot do
 				local l = loot[j]
@@ -163,7 +170,7 @@ Public.entry_price_data_raw = {
 		maxLambda = 0.4,
 		shape = false,
 		base_amount = 1500,
-		raw_materials = {{name = 'iron-plate', count = 750}}
+		raw_materials = { { name = 'iron-plate', count = 750 } }
 	},
 	['copper-cable'] = {
 		overallWeight = 0.85,
@@ -171,7 +178,7 @@ Public.entry_price_data_raw = {
 		maxLambda = 0.4,
 		shape = false,
 		base_amount = 1500,
-		raw_materials = {{name = 'copper-plate', count = 750}}
+		raw_materials = { { name = 'copper-plate', count = 750 } }
 	},
 	['small-electric-pole'] = {
 		overallWeight = 1,
@@ -179,7 +186,7 @@ Public.entry_price_data_raw = {
 		maxLambda = 0.3,
 		shape = false,
 		base_amount = 450,
-		raw_materials = {{name = 'copper-plate', count = 900}}
+		raw_materials = { { name = 'copper-plate', count = 900 } }
 	},
 	['assembling-machine-1'] = {
 		overallWeight = 1,
@@ -187,7 +194,7 @@ Public.entry_price_data_raw = {
 		maxLambda = 0.6,
 		shape = false,
 		base_amount = 80,
-		raw_materials = {{name = 'iron-plate', count = 1760}, {name = 'copper-plate', count = 360}}
+		raw_materials = { { name = 'iron-plate', count = 1760 }, { name = 'copper-plate', count = 360 } }
 	},
 	['burner-mining-drill'] = {
 		overallWeight = 0.25,
@@ -195,7 +202,7 @@ Public.entry_price_data_raw = {
 		maxLambda = 0.4,
 		shape = false,
 		base_amount = 150,
-		raw_materials = {{name = 'iron-plate', count = 1350}}
+		raw_materials = { { name = 'iron-plate', count = 1350 } }
 	},
 	['burner-inserter'] = {
 		overallWeight = 0.75,
@@ -203,7 +210,7 @@ Public.entry_price_data_raw = {
 		maxLambda = 0.3,
 		shape = false,
 		base_amount = 300,
-		raw_materials = {{name = 'iron-plate', count = 900}}
+		raw_materials = { { name = 'iron-plate', count = 900 } }
 	},
 	['small-lamp'] = {
 		overallWeight = 1,
@@ -211,7 +218,7 @@ Public.entry_price_data_raw = {
 		maxLambda = 0.4,
 		shape = false,
 		base_amount = 300,
-		raw_materials = {{name = 'iron-plate', count = 600}, {name = 'copper-plate', count = 900}}
+		raw_materials = { { name = 'iron-plate', count = 600 }, { name = 'copper-plate', count = 900 } }
 	},
 	['firearm-magazine'] = {
 		overallWeight = 1,
@@ -219,7 +226,7 @@ Public.entry_price_data_raw = {
 		maxLambda = 0.4,
 		shape = false,
 		base_amount = 700,
-		raw_materials = {{name = 'iron-plate', count = 2800}}
+		raw_materials = { { name = 'iron-plate', count = 2800 } }
 	},
 	['constant-combinator'] = {
 		overallWeight = 0.6,
@@ -227,7 +234,7 @@ Public.entry_price_data_raw = {
 		maxLambda = 0.4,
 		shape = false,
 		base_amount = 276,
-		raw_materials = {{name = 'iron-plate', count = 552}, {name = 'copper-plate', count = 1518}}
+		raw_materials = { { name = 'iron-plate', count = 552 }, { name = 'copper-plate', count = 1518 } }
 	},
 	['stone-furnace'] = {
 		overallWeight = 1,
@@ -235,7 +242,7 @@ Public.entry_price_data_raw = {
 		maxLambda = 0.4,
 		shape = false,
 		base_amount = 250,
-		raw_materials = {{name = 'stone', count = 1250}}
+		raw_materials = { { name = 'stone', count = 1250 } }
 	},
 	['wooden-chest'] = {
 		overallWeight = 0.5,
@@ -251,7 +258,7 @@ Public.entry_price_data_raw = {
 		maxLambda = 0.5,
 		shape = false,
 		base_amount = 250,
-		raw_materials = {{name = 'iron-plate', count = 2000}}
+		raw_materials = { { name = 'iron-plate', count = 2000 } }
 	},
 	['steel-chest'] = {
 		overallWeight = 0.5,
@@ -259,7 +266,7 @@ Public.entry_price_data_raw = {
 		maxLambda = 1,
 		shape = false,
 		base_amount = 125,
-		raw_materials = {{name = 'steel-plate', count = 1000}}
+		raw_materials = { { name = 'steel-plate', count = 1000 } }
 	},
 	['rail'] = {
 		overallWeight = 1,
@@ -267,7 +274,7 @@ Public.entry_price_data_raw = {
 		maxLambda = 1,
 		shape = false,
 		base_amount = 400,
-		raw_materials = {{name = 'iron-plate', count = 1100}}
+		raw_materials = { { name = 'iron-plate', count = 1100 } }
 	},
 	['plastic-bar'] = {
 		overallWeight = 1,
@@ -275,7 +282,7 @@ Public.entry_price_data_raw = {
 		maxLambda = 1,
 		shape = false,
 		base_amount = 400,
-		raw_materials = {{name = 'coal', count = 200}, {name = 'petroleum-gas-barrel', count = 80}}
+		raw_materials = { { name = 'coal', count = 200 }, { name = 'petroleum-gas-barrel', count = 80 } }
 	},
 	['sulfur'] = {
 		overallWeight = 1,
@@ -283,7 +290,7 @@ Public.entry_price_data_raw = {
 		maxLambda = 1,
 		shape = false,
 		base_amount = 400,
-		raw_materials = {{name = 'petroleum-gas-barrel', count = 120}}
+		raw_materials = { { name = 'petroleum-gas-barrel', count = 120 } }
 	},
 	['electronic-circuit'] = {
 		overallWeight = 1,
@@ -291,7 +298,7 @@ Public.entry_price_data_raw = {
 		maxLambda = 0.5,
 		shape = false,
 		base_amount = 700,
-		raw_materials = {{name = 'iron-plate', count = 700}, {name = 'copper-plate', count = 1050}}
+		raw_materials = { { name = 'iron-plate', count = 700 }, { name = 'copper-plate', count = 1050 } }
 	},
 	['advanced-circuit'] = {
 		overallWeight = 1,
@@ -299,7 +306,7 @@ Public.entry_price_data_raw = {
 		maxLambda = 1,
 		shape = false,
 		base_amount = 180,
-		raw_materials = {{name = 'iron-plate', count = 360}, {name = 'copper-plate', count = 900}, {name = 'plastic-bar', count = 360}}
+		raw_materials = { { name = 'iron-plate', count = 360 }, { name = 'copper-plate', count = 900 }, { name = 'plastic-bar', count = 360 } }
 	},
 }
 
@@ -322,6 +329,5 @@ function Public.entry_price()
 		raw_materials = raw_materials,
 	}
 end
-
 
 return Public

@@ -1,4 +1,4 @@
--- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 
 -- local Math = require 'maps.pirates.math'
@@ -39,7 +39,6 @@ Public.framecounts = {
 -- 	"Why not buy the map designer a coffee! ko-fi.com/thesixthroc!",
 -- 	"Why not buy the map designer a coffee! ko-fi.com/thesixthroc!",
 -- 	"Make suggestions at getcomfy.eu/discord!",
--- 	"To launch a second run, you need a fifth of the server's pirates to endorse it!",
 -- 	"Resources granted to the ship appear in the captain's cabin!",
 -- 	"On each island after the first, the ship generates ore!",
 -- 	"Charge the silo to launch a rocket!",

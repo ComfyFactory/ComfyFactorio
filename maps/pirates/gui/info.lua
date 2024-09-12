@@ -1,4 +1,5 @@
--- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+---@diagnostic disable: inject-field
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 
 -- local Memory = require 'maps.pirates.memory'
@@ -17,7 +18,7 @@ local Public = {}
 local window_name = 'info'
 
 
-local width = 430
+local width = 400
 
 
 
@@ -51,14 +52,14 @@ function Public.toggle_window(player)
 
 	Public.flow_add_info_sections(flow2, {'game_description'})
 
+	flow2 = Public.flow_add_info_tab(flow, {'pirates.gui_info_tips'})
+
+	Public.flow_add_info_sections(flow2, {'new_players', 'tips'})
+
 	flow2 = Public.flow_add_info_tab(flow, {'pirates.gui_info_updates'})
 
 	Public.flow_add_info_sections(flow2, {'updates'})
 	-- Public.flow_add_info_sections(flow2, {'updates', 'bugs'})
-
-	flow2 = Public.flow_add_info_tab(flow, {'pirates.gui_info_tips'})
-
-	Public.flow_add_info_sections(flow2, {'new_players', 'tips'})
 
 	flow2 = Public.flow_add_info_tab(flow, {'pirates.gui_info_credits'})
 
@@ -173,9 +174,9 @@ function Public.flow_add_info_tab(flow, tab_name)
     flow3.style.horizontal_align = 'center'
 
 	flow4 = flow3.add{type = "label", caption = {"pirates.softmod_info_body_clicky"}}
+    flow4.style.font = 'default-small'
 	flow4.style.font_color = GuiCommon.friendly_font_color
 	flow4.style.single_line = false
-	flow4.style.font = 'default'
 	flow4.style.bottom_margin = 4
 	flow4.style.top_margin = 3
 
@@ -225,13 +226,13 @@ function Public.full_update(player)
 
 	local flow2 = flow
 	-- warning, if you make these too small, it loses 'Click to dismiss.'
-	-- This is really really dumb, to have to change these manually. But sadly I couldn't get the window to look like that and also be expandable.
+	-- This is really really dumb, to have to change these manually. But sadly we couldn't get the window to look like it does and also be expandable.
 	if flow2.selected_tab_index == 1 then
 		flow2.style.height = 400
 	elseif flow2.selected_tab_index == 2 then
-		flow2.style.height = 490
+		flow2.style.height = 550
 	elseif flow2.selected_tab_index == 3 then
-		flow2.style.height = 580
+		flow2.style.height = 680
 	elseif flow2.selected_tab_index == 4 then
 		flow2.style.height = 340
 	end

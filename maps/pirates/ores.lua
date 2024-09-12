@@ -1,4 +1,4 @@
--- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 local Balance = require 'maps.pirates.balance'
 -- local Memory = require 'maps.pirates.memory'
@@ -26,7 +26,7 @@ function Public.try_give_ore(player, realp, source_name)
 		local total_ore_left = 0
 
 		for k, v in pairs(choices) do
-			if v>0 then choices_possible[k] = v end
+			if v > 0 then choices_possible[k] = v end
 
 			total_ore_left = total_ore_left + v
 
@@ -55,11 +55,11 @@ function Public.try_give_ore(player, realp, source_name)
 				coin_amount = coin_amount * 2
 			end
 
-			given_amount = Math.max(8 * Balance.island_richness_avg_multiplier(), given_amount)
+			given_amount = Math.max(8 * Balance.game_resources_scale(), given_amount)
 
 			local to_give = {}
-			to_give[#to_give+1] = {name = choice, count = Math.ceil(given_amount)}
-			to_give[#to_give+1] = {name = 'coin', count = Math.ceil(coin_amount)}
+			to_give[#to_give + 1] = { name = choice, count = Math.ceil(given_amount) }
+			to_give[#to_give + 1] = { name = 'coin', count = Math.ceil(coin_amount) }
 			Common.give(player, to_give, realp)
 
 			-- 1 here indicates that ore type should still be given
@@ -86,7 +86,7 @@ function Public.try_ore_spawn(surface, realp, source_name, density_bonus, from_t
 		local choices_to_prioitise = {}
 
 		for k, v in pairs(choices) do
-			if v>0 then choices_possible[k] = v end
+			if v > 0 then choices_possible[k] = v end
 
 			if (not destination.dynamic_data.ore_types_spawned[k]) then
 				choices_to_prioitise[#choices_to_prioitise + 1] = k
@@ -103,14 +103,13 @@ function Public.try_ore_spawn(surface, realp, source_name, density_bonus, from_t
 
 			local placed
 			if choice == 'crude-oil' then
-
-				placed = Common.oil_abstract_to_real(6 + 0.7*choices[choice]/(Math.max(1, Math.ceil((choices[choice]/4)^(1/2))))) * (0.8 + 0.4 * Math.random()) --thesixthroc's magic function, just plot this to see that it makes sense
+				placed = Common.oil_abstract_to_real(6 + 0.7 * choices[choice] / (Math.max(1, Math.ceil((choices[choice] / 4) ^ (1 / 2))))) * (0.8 + 0.4 * Math.random()) --thesixthroc's magic function, just plot this to see that it makes sense
 
 				placed = Math.min(placed, Common.oil_abstract_to_real(choices[choice]))
 
 				local tile = surface.get_tile(realp)
 				if (not (tile and tile.name and Utils.contains(CoreData.tiles_that_conflict_with_resource_layer_extended, tile.name))) then
-					surface.create_entity{name = 'crude-oil', amount = placed, position = realp}
+					surface.create_entity { name = 'crude-oil', amount = placed, position = realp }
 				else
 					placed = 0
 				end
@@ -131,7 +130,7 @@ function Public.try_ore_spawn(surface, realp, source_name, density_bonus, from_t
 				end
 				real_amount = Math.max(Common.minimum_ore_placed_per_tile, real_amount)
 
-				local density = (density_bonus + 17 + 4 * Math.random()) -- not too big, and not too much variation; it makes players have to stay longer
+				local density = (density_bonus + 17 + 4 * Math.random())                                                                                                                                                           -- not too big, and not too much variation; it makes players have to stay longer
 
 				local radius_squared = (destination.static_params and destination.static_params.radius_squared_modifier or 1) * (12 + 45 * Math.slopefromto(Common.ore_abstract_to_real(choices[choice]), 800, 20000)) * (0.6 + Math.random()) --tuned
 
@@ -157,8 +156,6 @@ function Public.try_ore_spawn(surface, realp, source_name, density_bonus, from_t
 	return ret
 end
 
-
-
 function Public.draw_noisy_ore_patch(surface, position, name, budget, radius_squared, density, forced, flat)
 	flat = flat or false
 	budget = budget or 999999999
@@ -166,7 +163,7 @@ function Public.draw_noisy_ore_patch(surface, position, name, budget, radius_squ
 	local amountplaced = 0
 	local radius = Math.sqrt(radius_squared)
 
-	position = {x = Math.ceil(position.x) - 0.5, y = Math.ceil(position.y) - 0.5}
+	position = { x = Math.ceil(position.x) - 0.5, y = Math.ceil(position.y) - 0.5 }
 
 	if not position then return 0 end
 	if not name then return 0 end
@@ -181,22 +178,21 @@ function Public.draw_noisy_ore_patch(surface, position, name, budget, radius_squ
 	local function try_draw_at_relative_position(x, y, strength)
 		local absx = x + position.x
 		local absy = y + position.y
-		local absp = {x = absx, y = absy}
+		local absp = { x = absx, y = absy }
 
 		local amount_to_place_here = Math.min(density * strength, budget - amountplaced)
 
 		if amount_to_place_here >= Common.minimum_ore_placed_per_tile then
-
 			if name == 'mixed' then
 				local noise = simplex_noise(x * 0.005, y * 0.005, seed) + simplex_noise(x * 0.01, y * 0.01, seed) * 0.3 + simplex_noise(x * 0.05, y * 0.05, seed) * 0.2
 				local i = (Math.floor(noise * 100) % #mixed_ore_raffle) + 1
 				name = mixed_ore_raffle[i]
 			end
-			local entity = {name = name, position = absp, amount = amount_to_place_here}
+			local entity = { name = name, position = absp, amount = amount_to_place_here }
 			-- local area = {{absx - 0.05, absy - 0.05}, {absx + 0.05, absy + 0.05}}
-			local area2 = {{absx - 0.1, absy - 0.1}, {absx + 0.1, absy + 0.1}}
-			local area3 = {{absx - 2, absy - 2}, {absx + 2, absy + 2}}
-			local preexisting_ores = surface.find_entities_filtered{area = area2, type = 'resource'}
+			local area2 = { { absx - 0.1, absy - 0.1 }, { absx + 0.1, absy + 0.1 } }
+			local area3 = { { absx - 2, absy - 2 }, { absx + 2, absy + 2 } }
+			local preexisting_ores = surface.find_entities_filtered { area = area2, type = 'resource' }
 
 			local added
 			if #preexisting_ores >= 1 then
@@ -214,19 +210,19 @@ function Public.draw_noisy_ore_patch(surface, position, name, budget, radius_squ
 				end
 			else
 				local tile = surface.get_tile(absp)
-				local silos = surface.find_entities_filtered{area=area3, name='rocket-silo'}
+				local silos = surface.find_entities_filtered { area = area3, name = 'rocket-silo' }
 				if #silos == 0 and (not (tile and tile.name and Utils.contains(CoreData.tiles_that_conflict_with_resource_layer_extended, tile.name))) then
 					if forced then
-						surface.destroy_decoratives{area = area2}
-						for _, tree in pairs(surface.find_entities_filtered{area=area2, type='tree'}) do
+						surface.destroy_decoratives { area = area2 }
+						for _, tree in pairs(surface.find_entities_filtered { area = area2, type = 'tree' }) do
 							tree.destroy()
 						end
 						added = surface.create_entity(entity)
 					else
 						local pos2 = surface.find_non_colliding_position(name, absp, 10, 1, true)
 						pos2 = pos2 or absp
-						entity = {name = name, position = pos2, amount = amount_to_place_here}
-						surface.destroy_decoratives{area = area2}
+						entity = { name = name, position = pos2, amount = amount_to_place_here }
+						surface.destroy_decoratives { area = area2 }
 						if pos2 and surface.can_place_entity(entity) then
 							added = surface.create_entity(entity)
 						end
@@ -241,15 +237,15 @@ function Public.draw_noisy_ore_patch(surface, position, name, budget, radius_squ
 
 	for _, p in ipairs(Math.points_in_m20t20_squared_sorted_by_distance_to_origin) do
 		local x, y = p[1], p[2]
-		local distance_to_center = Math.sqrt(x^2 + y^2)
+		local distance_to_center = Math.sqrt(x ^ 2 + y ^ 2)
 		local noise
 		if flat then
-			noise = 0.99 * simplex_noise((position.x + x) * 1/3, (position.y + y) * 1/3, seed) * simplex_noise((position.x + x) * 1/9, (position.y + y) * 1/9, seed+100)
+			noise = 0.99 * simplex_noise((position.x + x) * 1 / 3, (position.y + y) * 1 / 3, seed) * simplex_noise((position.x + x) * 1 / 9, (position.y + y) * 1 / 9, seed + 100)
 		else --put noise on the unit circle
 			if distance_to_center > 0 then
-				noise = 0.99 * simplex_noise((position.x + x/distance_to_center) * 1/3, (position.y + y/distance_to_center) * 1/3, seed) * simplex_noise((position.x + x/distance_to_center) * 1/9, (position.y + y/distance_to_center) * 1/9, seed+100)
+				noise = 0.99 * simplex_noise((position.x + x / distance_to_center) * 1 / 3, (position.y + y / distance_to_center) * 1 / 3, seed) * simplex_noise((position.x + x / distance_to_center) * 1 / 9, (position.y + y / distance_to_center) * 1 / 9, seed + 100)
 			else
-				noise = 0.99 * simplex_noise((position.x) * 1/3, (position.y) * 1/3, seed) * simplex_noise((position.x) * 1/9, (position.y) * 1/9, seed+100)
+				noise = 0.99 * simplex_noise((position.x) * 1 / 3, (position.y) * 1 / 3, seed) * simplex_noise((position.x) * 1 / 9, (position.y) * 1 / 9, seed + 100)
 			end
 		end
 		local radius_noisy = radius * (1 + noise)
@@ -260,7 +256,7 @@ function Public.draw_noisy_ore_patch(surface, position, name, budget, radius_squ
 				-- its hard to make it both noncircular and flat in per-tile count
 				strength = 1
 			else
-				strength = (3/2) * (1 - (distance_to_center/radius_noisy)^2)
+				strength = (3 / 2) * (1 - (distance_to_center / radius_noisy) ^ 2)
 			end
 			try_draw_at_relative_position(x, y, strength)
 		end
@@ -269,6 +265,5 @@ function Public.draw_noisy_ore_patch(surface, position, name, budget, radius_squ
 
 	return amountplaced
 end
-
 
 return Public
