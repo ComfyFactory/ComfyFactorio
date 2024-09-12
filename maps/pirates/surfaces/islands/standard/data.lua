@@ -9,8 +9,8 @@ local Public = {}
 
 Public.display_names = {{'pirates.location_displayname_standard_1'}}
 
-Public.terraingen_frame_width = 896
-Public.terraingen_frame_height = 896
+Public.terraingen_frame_width = 1024
+Public.terraingen_frame_height = 1024
 Public.static_params_default = {
 	default_decoratives = true,
 	base_starting_treasure = 1000,
@@ -32,7 +32,7 @@ function Public.base_ores()
 	}
 end
 
-local rscale = 250
+local rscale = 280
 local hscale = 0.1
 Public.noiseparams = {
 	radius = {

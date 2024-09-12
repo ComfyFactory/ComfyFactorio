@@ -9,8 +9,8 @@ local Public = {}
 
 Public.display_names = {{'pirates.location_displayname_swamp_1'}}
 
-Public.terraingen_frame_width = 400
-Public.terraingen_frame_height = 400
+Public.terraingen_frame_width = 480
+Public.terraingen_frame_height = 480
 Public.static_params_default = {
 	starting_time_of_day = 0.26,
 	daynightcycletype = 1,
@@ -32,7 +32,7 @@ function Public.base_ores()
 	}
 end
 
-local rscale = 170
+local rscale = 185
 Public.noiseparams = {
 	radius = {
 		type = 'simplex_2d',
