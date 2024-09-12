@@ -541,7 +541,6 @@ if _DEBUG then
 			Memory.set_working_id(data.id)
 			local memory = Memory.get_crew_memory()
 
-			memory.mapbeingloadeddestination_index = CoreData.first_destination_index
 			memory.loadingticks = 0
 
 			-- local surface = game.surfaces[Common.current_destination().surface_name]
@@ -557,7 +556,15 @@ if _DEBUG then
 			Overworld.ensure_lane_generated_up_to(0, Crowsnest.Data.visibilitywidth)
 			Overworld.ensure_lane_generated_up_to(24, Crowsnest.Data.visibilitywidth)
 			Overworld.ensure_lane_generated_up_to(-24, Crowsnest.Data.visibilitywidth)
-			memory.currentdestination_index = CoreData.first_destination_index
+
+			for i = 1, #memory.destinations do
+				if memory.destinations[i].overworld_position.x == 0 then
+					memory.mapbeingloadeddestination_index = i
+					break
+				end
+			end
+
+			memory.currentdestination_index = memory.mapbeingloadeddestination_index
 			script.raise_event(CustomEvents.enum['update_crew_progress_gui'], {})
 			Surfaces.create_surface(Common.current_destination())
 			Task.set_timeout_in_ticks(60, go_2, {id = data.id})

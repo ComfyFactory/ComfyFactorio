@@ -76,7 +76,7 @@ function Public.set_off_from_starting_dock()
 
 	Common.current_destination().type = Surfaces.enum.LOBBY
 
-	memory.mapbeingloadeddestination_index = CoreData.first_destination_index -- whatever the index of the first island is
+	memory.mapbeingloadeddestination_index = 0 --This is a dummy value, overwritten later
 	memory.loadingticks = 0
 
 	local surface = game.surfaces[CoreData.lobby_surface_name]
@@ -172,7 +172,8 @@ function Public.go_from_starting_dock_to_first_destination()
 	-- Immediately move leftwards, lining us up with future docks (so newbies hit docks naturally).
 	Crowsnest.move_crowsnest(0, -24)
 
-	Public.progress_to_destination(CoreData.first_destination_index)
+
+	Public.progress_to_destination(memory.mapbeingloadeddestination_index)
 
 	-- local scope = Boats.get_scope(boat)
 	-- local boatwidth, boatheight = scope.Data.width, scope.Data.height

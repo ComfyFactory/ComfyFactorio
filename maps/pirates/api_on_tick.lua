@@ -1106,9 +1106,17 @@ function Public.loading_update(tickinterval)
 							Overworld.ensure_lane_generated_up_to(0, Crowsnest.Data.visibilitywidth)
 							Overworld.ensure_lane_generated_up_to(24, Crowsnest.Data.visibilitywidth)
 							Overworld.ensure_lane_generated_up_to(-24, Crowsnest.Data.visibilitywidth)
+
 							log(_inspect(memory.destinations))
-							Surfaces.create_surface(memory.destinations[destination_index])
-							-- PiratesApiEvents.load_some_map_chunks(destination_index, 0.02)
+
+							for i = 1, #memory.destinations do
+								if memory.destinations[i].overworld_position.x == 0 then
+									memory.mapbeingloadeddestination_index = i
+									break
+								end
+							end
+
+							Surfaces.create_surface(memory.destinations[memory.mapbeingloadeddestination_index])
 						end
 					end
 				else
@@ -1516,41 +1524,6 @@ end
 
 -- function Public.parrot_tick(tickinterval)
 -- 	Parrot.parrot_tick()
--- end
-
-
-
--- function Public.globaltick_handle_delayed_tasks(tickinterval)
--- 	local global_memory = Memory.get_global_memory()
-
--- 	for _, task in pairs(global_memory.global_buffered_tasks) do
-
--- 		if task == Delay.global_enum.PLACE_LOBBY_JETTY_AND_BOATS then
--- 			Surfaces.Lobby.place_lobby_jetty_and_boats()
-
--- 		elseif task == Delay.global_enum.ADMIN_GO2 then
--- 			Delay.global_add(Delay.global_enum.ADMIN_GO3)
-
--- 		elseif task == Delay.global_enum.ADMIN_GO3 then
--- 			Memory.set_working_id(1)
--- 			local memory = Memory.get_crew_memory()
--- 			Overworld.ensure_generated_up_to_x(Crowsnest.Data.visibilitywidth/2)
--- 			memory.currentdestination_index = 1
--- 			Surfaces.create_surface(Common.current_destination())
--- 			Delay.global_add(Delay.global_enum.ADMIN_GO4)
-
--- 		elseif task == Delay.global_enum.ADMIN_GO4 then
--- 			Memory.set_working_id(1)
--- 			local memory = Memory.get_crew_memory()
-
--- 			Progression.go_from_starting_dock_to_first_destination()
--- 			memory.mapbeingloadeddestination_index = CoreData.first_destination_index
--- 			memory.loadingticks = 0
-
--- 		end
--- 	end
--- 	Delay.global_clear_buffer()
--- 	Delay.global_move_tasks_to_buffer()
 -- end
 
 

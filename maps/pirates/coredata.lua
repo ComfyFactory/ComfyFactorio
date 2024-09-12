@@ -23,8 +23,6 @@ Public.lobby_surface_name = '000-000-Lobby'
 Public.private_run_lock_amount_hr = 24 -- how many hours need to pass, when crew is empty or inactive, until private run becomes public
 Public.protected_run_lock_amount_hr = 24 -- how many hours need to pass, when crew is empty or inactive, until captain protection expires
 
-Public.first_destination_index = 3 --This is a hack to record the destination_index of the first (Eden-like) island. It comes out in an obscure way from the code.
-
 Public.colors = {
 	coal = {r=0.5, g=0.5, b=0.5},
 	wood = {r=204, g=158, b=67},
