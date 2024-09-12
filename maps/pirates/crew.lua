@@ -813,6 +813,8 @@ function Public.initialise_crew(accepted_proposal)
 	boat.cannonscount = 2
 
 	Public.set_initial_damage_modifiers()
+
+	memory.seconds_until_alert_sound_can_be_played_again = 0
 end
 
 function Public.set_initial_damage_modifiers()
