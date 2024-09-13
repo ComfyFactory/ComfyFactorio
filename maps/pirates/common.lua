@@ -1620,7 +1620,7 @@ function Public.init_game_settings(technology_price_multiplier)
     game.map_settings.path_finder.short_cache_min_algo_steps_to_cache = 100
     game.map_settings.path_finder.cache_accept_path_start_distance_ratio = 0.1
 
-    game.map_settings.enemy_expansion.enabled = true
+    game.map_settings.enemy_expansion.enabled = false
     -- faster expansion:
     -- game.map_settings.enemy_expansion.min_expansion_cooldown = 4 * 3600
     -- game.map_settings.enemy_expansion.max_expansion_cooldown = 30 * 3600
