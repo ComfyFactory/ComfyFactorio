@@ -374,6 +374,11 @@ commands.add_command(
 		if check_creator_of_crew(cmd) then
 			local player = game.players[cmd.player_index]
 
+			if not memory.private_run_password then
+				Common.notify_player_error(player, { 'pirates.cmd_error_no_existing_password' })
+				return false
+			end
+
 			memory.private_run_password = param
 			Common.notify_player_expected(player, { 'pirates.cmd_notify_set_private_run_password', memory.name, param })
 		end
