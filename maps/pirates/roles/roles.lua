@@ -586,6 +586,7 @@ function Public.try_create_permissions_groups()
 		group.set_allows_action(defines.input_action.activate_cut, false)
 		group.set_allows_action(defines.input_action.activate_paste, false)
 		group.set_allows_action(defines.input_action.upgrade, false)
+		group.set_allows_action(defines.input_action.deconstruct, false)
 
 		group.set_allows_action(defines.input_action.grab_blueprint_record, false)
 		if not CoreData.blueprint_library_allowed then
@@ -625,6 +626,7 @@ function Public.try_create_permissions_groups()
 		group.set_allows_action(defines.input_action.activate_cut, false)
 		group.set_allows_action(defines.input_action.activate_paste, false)
 		group.set_allows_action(defines.input_action.upgrade, false)
+		group.set_allows_action(defines.input_action.deconstruct, false)
 
 		if not CoreData.blueprint_library_allowed then
 			group.set_allows_action(defines.input_action.open_blueprint_library_gui, false)
