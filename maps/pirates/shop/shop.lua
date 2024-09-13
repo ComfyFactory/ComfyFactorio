@@ -216,7 +216,7 @@ function Public.event_on_market_item_purchased(event)
 			end
 		else
 			if thisPurchaseData.offer_type == 'nothing' then
-				local isDamageUpgrade = thisPurchaseData.price[1].amount == Balance.weapon_damage_upgrade_price()[1].amount and thisPurchaseData.price[1].name == Balance.weapon_damage_upgrade_price()[1].name and thisPurchaseData.price[2] and thisPurchaseData.price[2].amount == Balance.weapon_damage_upgrade_price()[2].amount and thisPurchaseData.price[2].name == Balance.weapon_damage_upgrade_price()[2].name
+				local isDamageUpgrade = thisPurchaseData.price[1].amount == Balance.weapon_damage_upgrade_price()[1].amount and thisPurchaseData.price[1].name == Balance.weapon_damage_upgrade_price()[1].name
 
 				if isDamageUpgrade then
 					Common.notify_force_light(player.force, { 'pirates.market_event_attack_upgrade_purchased', player.name, Balance.weapon_damage_upgrade_percentage() })
