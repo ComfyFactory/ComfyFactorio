@@ -66,7 +66,7 @@ function Public.Tick_actions(tickinterval)
 	-- if destination.subtype == IslandEnum.enum.RED_DESERT then return end -- This was a hack to stop biter boats causing attacks, but, it has the even worse effect of stopping all floating_pollution gathering.
 
 
-	local minute_cycle = { -- warning: use even seconds only
+	local ai_cycle_seconds = { -- warning: use even seconds only
 		[2] = Public.tell_biters_near_silo_to_attack_it,
 		[4] = Public.poke_script_groups,
 		[6] = Public.try_main_attack,
@@ -75,18 +75,18 @@ function Public.Tick_actions(tickinterval)
 		[18] = Public.poke_script_groups,
 		[20] = Public.try_secondary_attack,
 
-		[32] = Public.tell_biters_near_silo_to_attack_it,
-		[34] = Public.poke_script_groups,
-		[36] = Public.try_rogue_attack,
+		[42] = Public.tell_biters_near_silo_to_attack_it,
+		[44] = Public.poke_script_groups,
+		[46] = Public.try_rogue_attack,
 
-		[46] = Public.poke_inactive_scripted_biters,
-		[48] = Public.create_mail_delivery_biters,
+		[56] = Public.poke_inactive_scripted_biters,
+		[58] = Public.create_mail_delivery_biters,
 
-		[54] = Public.try_boat_biters_attack,
+		[74] = Public.try_boat_biters_attack,
 	}
 
-	if minute_cycle[(game.tick / 60) % 60] then
-		minute_cycle[(game.tick / 60) % 60]()
+	if ai_cycle_seconds[(game.tick / 60) % 80] then
+		ai_cycle_seconds[(game.tick / 60) % 80]()
 	end
 end
 
