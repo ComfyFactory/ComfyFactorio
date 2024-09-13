@@ -632,7 +632,7 @@ if _DEBUG then
 						created_by_player = cmd.player_index
 					}
 
-					Crew.initialise_crew(proposal)
+					Crew.initialise_crew(proposal, player.position)
 					Crew.initialise_crowsnest() --contains a Task
 
 					local memory = Memory.get_crew_memory()

@@ -635,17 +635,24 @@ function Public.disband_crew(donotprint)
 	Lobby.place_starting_dock_showboat(id)
 end
 
-function Public.generate_new_crew_id()
+function Public.generate_new_crew_id(player_position)
 	local global_memory = Memory.get_global_memory()
 	local max_crews = Common.starting_ships_count
+	local closest_id = nil
+	local closest_distance = math.huge
 
 	for id = 1, max_crews do
 		if not global_memory.crew_memories[id] then
-			return id
+			local boat_position = Lobby.StartingBoats[id].position
+			local distance = Math.distance(player_position, boat_position)
+			if distance < closest_distance then
+				closest_distance = distance
+				closest_id = id
+			end
 		end
 	end
 
-	return nil
+	return closest_id
 end
 
 function Public.player_abandon_proposal(player)
@@ -680,10 +687,10 @@ function Public.initialise_crowsnest_2()
 	Crowsnest.crowsnest_surface_delayed_init()
 end
 
-function Public.initialise_crew(accepted_proposal)
+function Public.initialise_crew(accepted_proposal, player_position)
 	local global_memory = Memory.get_global_memory()
 
-	local new_id = Public.generate_new_crew_id()
+	local new_id = Public.generate_new_crew_id(player_position)
 	if not new_id then return end
 
 	game.reset_time_played() -- affects the multiplayer lobby view

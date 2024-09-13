@@ -1010,7 +1010,7 @@ function Public.loading_update(tickinterval)
 		for id, crew_memory in pairs(global_memory.crew_memories) do
 			local is_loading = crew_memory.loadingticks ~= nil and crew_memory.boat and crew_memory.boat.state and crew_memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP
 
-			if is_loading and (crew_memory.loadingticks > memory.loadingticks or (crew_memory.loadingticks == memory.loadingticks and id < memory.id)) then
+			if is_loading and (crew_memory.loadingticks > memory.loadingticks or (crew_memory.loadingticks == memory.loadingticks and crew_memory.age < memory.age)) then
 				other_crew_loading = id
 			end
 
