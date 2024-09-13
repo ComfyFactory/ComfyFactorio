@@ -7,7 +7,7 @@ local _inspect = require 'utils.inspect'.inspect
 local Public = {}
 
 Public.scenario_id_name = 'pirates'
-Public.version_string = '1.6.0' --major.minor.patch versioning, to match factorio mod portal
+Public.version_string = '1.6.1' --major.minor.patch versioning, to match factorio mod portal
 
 Public.blueprint_library_allowed = true
 Public.blueprint_importing_allowed = true
@@ -122,11 +122,11 @@ Public.difficulty_options = {
 	-- The difficulty values we currently offer
 
 	--For the value of Easy difficulty, we are pulled in two directions: We wish to make the game comfy to play for those who haven't played it, but we also wish to represent the game mechanics faithfully so that Normal is not a crazy distance away.
-	{ value = 0.5, icon = 'item/firearm-magazine',         text = { 'pirates.difficulty_easy' },    associated_color = { r = 50, g = 255, b = 50 } },
+	{ value = 0.5, icon = 'item/firearm-magazine',         text = { 'pirates.difficulty_easy' },      associated_color = { r = 50, g = 255, b = 50 } },
 
-	{ value = 1.0, icon = 'item/piercing-rounds-magazine', text = { 'pirates.difficulty_normal' },  associated_color = { r = 255, g = 255, b = 50 } },
+	{ value = 1.0, icon = 'item/piercing-rounds-magazine', text = { 'pirates.difficulty_normal' },    associated_color = { r = 255, g = 255, b = 50 } },
 
-	{ value = 1.5, icon = 'item/uranium-rounds-magazine',  text = { 'pirates.difficutly_hard' },    associated_color = { r = 255, g = 50, b = 50 } },
+	{ value = 1.5, icon = 'item/uranium-rounds-magazine',  text = { 'pirates.difficutly_hard' },      associated_color = { r = 255, g = 50, b = 50 } },
 
 	{ value = 2,   icon = 'item/atomic-bomb',              text = { 'pirates.difficulty_nightmare' }, associated_color = { r = 170, g = 60, b = 60 } },
 }
@@ -162,10 +162,10 @@ end
 -- }
 
 Public.daynightcycle_types = {
-	{ displayname = { 'pirates.daynightcycle_static' },    0 },
-	{ displayname = { 'pirates.daynightcycle_slowcyclic' }, ticksperday = 100000 },
-	{ displayname = { 'pirates.daynightcycle_cyclic' },    ticksperday = 80000 },
-	{ displayname = { 'pirates.daynightcycle_fastcyclic' }, ticksperday = 60000 },
+	{ displayname = { 'pirates.daynightcycle_static' },      0 },
+	{ displayname = { 'pirates.daynightcycle_slowcyclic' },  ticksperday = 100000 },
+	{ displayname = { 'pirates.daynightcycle_cyclic' },      ticksperday = 80000 },
+	{ displayname = { 'pirates.daynightcycle_fastcyclic' },  ticksperday = 60000 },
 	{ displayname = { 'pirates.daynightcycle_rapidcyclic' }, ticksperday = 40000 },
 }
 
