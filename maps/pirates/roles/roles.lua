@@ -565,7 +565,9 @@ end
 function Public.try_create_permissions_groups()
 	if not game.permissions.get_group('restricted_area') then
 		local group = game.permissions.create_group('restricted_area')
-		group.set_allows_action(defines.input_action.edit_permission_group, false)
+		if not _DEBUG then
+			group.set_allows_action(defines.input_action.edit_permission_group, false)
+		end
 		group.set_allows_action(defines.input_action.import_permissions_string, false)
 		group.set_allows_action(defines.input_action.delete_permission_group, false)
 		group.set_allows_action(defines.input_action.add_permission_group, false)
@@ -602,7 +604,9 @@ function Public.try_create_permissions_groups()
 
 	if not game.permissions.get_group('restricted_area_privileged') then
 		local group = game.permissions.create_group('restricted_area_privileged')
-		group.set_allows_action(defines.input_action.edit_permission_group, false)
+		if not _DEBUG then
+			group.set_allows_action(defines.input_action.edit_permission_group, false)
+		end
 		group.set_allows_action(defines.input_action.import_permissions_string, false)
 		group.set_allows_action(defines.input_action.delete_permission_group, false)
 		group.set_allows_action(defines.input_action.add_permission_group, false)
@@ -634,7 +638,9 @@ function Public.try_create_permissions_groups()
 
 	if not game.permissions.get_group('plebs') then
 		local group = game.permissions.create_group('plebs')
-		group.set_allows_action(defines.input_action.edit_permission_group, false)
+		if not _DEBUG then
+			group.set_allows_action(defines.input_action.edit_permission_group, false)
+		end
 		group.set_allows_action(defines.input_action.import_permissions_string, false)
 		group.set_allows_action(defines.input_action.delete_permission_group, false)
 		group.set_allows_action(defines.input_action.add_permission_group, false)
@@ -653,7 +659,9 @@ function Public.try_create_permissions_groups()
 	if not game.permissions.get_group('not_trusted') then
 		local group = game.permissions.create_group('not_trusted')
 		-- not_trusted.set_allows_action(defines.input_action.cancel_craft, false)
-		group.set_allows_action(defines.input_action.edit_permission_group, false)
+		if not _DEBUG then
+			group.set_allows_action(defines.input_action.edit_permission_group, false)
+		end
 		group.set_allows_action(defines.input_action.import_permissions_string, false)
 		group.set_allows_action(defines.input_action.delete_permission_group, false)
 		group.set_allows_action(defines.input_action.add_permission_group, false)
