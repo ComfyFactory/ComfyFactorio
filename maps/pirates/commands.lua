@@ -102,6 +102,28 @@ local function check_captain_or_admin(cmd)
 	return true
 end
 
+local function check_creator_of_crew(cmd)
+	local player = game.players[cmd.player_index]
+	local p
+	if player then
+		if player ~= nil then
+			p = player.print
+
+			cmd_set_memory(cmd)
+
+			local memory = Memory.get_crew_memory()
+			if not Common.is_id_valid(memory.id) then return end
+
+			local creator = memory.original_proposal.created_by_player
+
+			if creator ~= player.index then
+				Common.notify_player_error(player, { 'pirates.cmd_error_not_creator_of_crew' })
+				return false
+			end
+		end
+	end
+end
+
 
 -- @UNUSED
 -- local function check_trusted(cmd)
@@ -334,6 +356,30 @@ commands.add_command(
 			Boats.clear_fluid_from_ship_tanks(2)
 		end
 	end)
+
+-- *** *** --
+--*** CREATOR OF CREW COMMANDS ***--
+-- *** *** --
+
+commands.add_command(
+	'reset_password',
+	{ 'pirates.cmd_explain_set_private_run_password' },
+	function (cmd)
+		cmd_set_memory(cmd)
+
+		local memory = Memory.get_crew_memory()
+		if not Common.is_id_valid(memory.id) then return end
+
+		local param = tostring(cmd.parameter)
+		if check_creator_of_crew(cmd) then
+			local player = game.players[cmd.player_index]
+
+			memory.private_run_password = param
+			Common.notify_player_expected(player, { 'pirates.cmd_notify_set_private_run_password', memory.name, param })
+		end
+	end)
+
+
 
 -- *** *** --
 --*** ADMIN COMMANDS ***--
