@@ -746,7 +746,7 @@ function Public.click(event)
 
 			-- check if the player created any other private runs
 			for _, id in pairs(global_memory.crew_active_ids) do
-				if global_memory.crew_memories[id].run_is_private then
+				if global_memory.crew_memories[id].run_is_private and global_memory.crew_memories[id].created_by_player == player.index then
 					Common.notify_player_error(player, { 'pirates.gui_runs_proposal_maker_error_two_private_runs' })
 					return
 				end
@@ -772,7 +772,7 @@ function Public.click(event)
 
 			-- check if the player created any other protected runs
 			for _, id in pairs(global_memory.crew_active_ids) do
-				if global_memory.crew_memories[id].run_is_protected then
+				if global_memory.crew_memories[id].run_is_protected and global_memory.crew_memories[id].created_by_player == player.index then
 					Common.notify_player_error(player, { 'pirates.gui_runs_proposal_maker_error_two_protected_runs' })
 					return
 				end
