@@ -85,12 +85,8 @@ function Public.toggle_window(player)
 end
 
 
--- function Public.regular_update(player)
-
--- end
 
 function Public.full_update(player)
-	if Public.regular_update then Public.regular_update(player) end
 	if not player.gui.screen[window_name .. '_piratewindow'] then return end
 	local flow = player.gui.screen[window_name .. '_piratewindow']
 
