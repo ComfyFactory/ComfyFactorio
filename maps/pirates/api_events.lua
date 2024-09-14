@@ -1455,6 +1455,10 @@ local function event_on_player_joined_game(event)
 		end
 	end
 
+	-- if not _DEBUG then
+	-- 	Gui.info.toggle_window(player)
+	-- end
+
 	if crew_to_put_back_in then
 		log('INFO: ' .. player.name .. ' (crew ID: ' .. crew_to_put_back_in .. ') joined the game')
 
@@ -1549,10 +1553,6 @@ local function event_on_player_joined_game(event)
 		-- 		Common.notify_player_expected(player, {'pirates.create_new_crew_tip'})
 		-- 	end
 		-- end
-	end
-
-	if not _DEBUG then
-		Gui.info.toggle_window(player)
 	end
 
 	global_memory.last_players_health[event.player_index] = player.character.health
