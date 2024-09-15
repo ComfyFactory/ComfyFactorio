@@ -32,8 +32,6 @@ Public.autodisband_hours = 24 * 5 -- should not be zero (as this messes with sav
 
 Public.boat_steps_at_a_time = 1
 
-Public.grace_period_on_arriving_at_island_seconds = 150
-
 Public.boat_default_starting_distance_from_shore = 22
 -- Public.mapedge_distance_from_boat_starting_position = 136
 Public.mapedge_distance_from_boat_starting_position = 272 -- to accommodate horseshoe

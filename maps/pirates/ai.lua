@@ -54,7 +54,7 @@ function Public.Tick_actions(tickinterval)
 	if destination.type ~= Surfaces.enum.ISLAND then return end
 	if memory.boat.state ~= Boats.enum_state.LANDED and memory.boat.state ~= Boats.enum_state.RETREATING then return end
 
-	if (memory.game_lost) or (destination.dynamic_data.timeratlandingtime and destination.dynamic_data.timer < destination.dynamic_data.timeratlandingtime + Common.grace_period_on_arriving_at_island_seconds) then return end
+	if (memory.game_lost) or (destination.dynamic_data.timeratlandingtime and destination.dynamic_data.timer < destination.dynamic_data.timeratlandingtime + Balance.grace_period_on_arriving_at_island_seconds) then return end
 
 	if game.tick % (tickinterval * 2) == 0 and memory.boat.state == Boats.enum_state.LANDED then
 		local extra_evo = 2 * tickinterval / 60 * Balance.evolution_per_second()
@@ -155,8 +155,10 @@ function Public.wave_size_rng() -- random variance in attack sizes
 			wave_size_multiplier = 1.5
 		elseif rng2 >= 15 * rng_scale then
 			wave_size_multiplier = 2
-		else
+		elseif rng2 >= 2 * rng_scale then
 			wave_size_multiplier = 3
+		else
+			wave_size_multiplier = 4
 		end
 	end
 
@@ -237,7 +239,7 @@ function Public.tell_biters_near_silo_to_attack_it()
 	local enemy_force_name = memory.enemy_force_name
 
 	-- don't do this too early
-	if destination.dynamic_data.timeratlandingtime and destination.dynamic_data.timer < destination.dynamic_data.timeratlandingtime + Common.grace_period_on_arriving_at_island_seconds * 2 then return end
+	if destination.dynamic_data.timeratlandingtime and destination.dynamic_data.timer < destination.dynamic_data.timeratlandingtime + Balance.grace_period_on_arriving_at_island_seconds * 2 then return end
 	if not (destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid and destination.dynamic_data.rocketsilos[1].destructible) then return end
 
 	local attackcommand = Public.attack_target_entity(destination.dynamic_data.rocketsilos[1])

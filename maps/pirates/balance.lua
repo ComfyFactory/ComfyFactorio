@@ -214,6 +214,8 @@ end
 
 Public.expected_time_fraction = 0.7
 
+Public.grace_period_on_arriving_at_island_seconds = 120
+
 function Public.expected_time_on_island() --always >0
 	return Public.expected_time_fraction * Public.max_time_on_island_formula_seconds() + Public.grace_period_on_arriving_at_island_seconds
 end
