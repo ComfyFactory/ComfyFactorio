@@ -1150,11 +1150,12 @@ function Public.loading_update(tickinterval)
 			local fraction = memory.loadingticks / (total + (memory.extra_time_at_sea or 0))
 
 			if fraction > Common.fraction_of_map_loaded_at_sea then
-				boat.state = Boats.enum_state.ATSEA_WAITING_TO_SAIL
-				memory.at_sea_waiting_game_tick = game.tick
-
-				local force = memory.force
-				if not (force and force.valid) then return end
+				if currentdestination.type == Surfaces.enum.DOCK then
+					Progression.progress_to_destination(destination_index)
+				else
+					boat.state = Boats.enum_state.ATSEA_WAITING_TO_SAIL
+					memory.at_sea_waiting_game_tick = game.tick
+				end
 			else
 				PiratesApiEvents.load_some_map_chunks_random_order(surface, currentdestination, fraction) --random order is good for maze world
 				if currentdestination.subtype == IslandEnum.enum.CAVE then
