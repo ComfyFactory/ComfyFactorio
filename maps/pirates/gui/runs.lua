@@ -512,10 +512,10 @@ function Public.full_update(player)
 
 		flow.ongoing_runs.body.leaving_prompt.visible = playercrew_status.leaving
 
-		local show_protected_info = crewid and global_memory.crew_memories[crewid].run_is_protected
+		local show_protected_info = crewid and global_memory.crew_memories[crewid].run_is_protected and global_memory.crew_memories[crewid].protected_run_lock_timer < 60 * 60 * 60 * CoreData.protected_run_lock_amount_hr
 		flow.ongoing_runs.body.join_protected_crew_info.visible = show_protected_info
 
-		local show_private_info = crewid and global_memory.crew_memories[crewid].run_is_private
+		local show_private_info = crewid and global_memory.crew_memories[crewid].run_is_private and global_memory.crew_memories[crewid].private_run_lock_timer < 60 * 60 * 60 * CoreData.private_run_lock_amount_hr
 		flow.ongoing_runs.body.join_private_crew_info.visible = show_private_info
 		flow.ongoing_runs.body.password_namefield.visible = show_private_info
 	end
