@@ -155,10 +155,8 @@ function Public.wave_size_rng() -- random variance in attack sizes
 			wave_size_multiplier = 1.5
 		elseif rng2 >= 15 * rng_scale then
 			wave_size_multiplier = 2
-		elseif rng2 >= 5 * rng_scale then
-			wave_size_multiplier = 3
 		else
-			wave_size_multiplier = 4
+			wave_size_multiplier = 3
 		end
 	end
 
@@ -413,19 +411,7 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 		if initial_spawner_count > 0 then
 			local spawnerscount = Common.spawner_count(surface)
 			if spawnerscount > 0 then
-				-- if Common.current_destination().subtype and Common.current_destination().subtype == IslandEnum.enum.RADIOACTIVE then
-				-- 	-- destroying spawners doesn't do quite as much here:
-				-- 	base_pollution_cost_multiplier = (initial_spawner_count/spawnerscount)^(1/3)
-				-- else
-				-- 	base_pollution_cost_multiplier = (initial_spawner_count/spawnerscount)^(1/2)
-				-- end
-				-- base_pollution_cost_multiplier = (initial_spawner_count/spawnerscount)^(1/2)
-				-- Now directly proportional:
-				map_pollution_cost_multiplier = initial_spawner_count / spawnerscount
-
-				if memory.overworldx == 0 then
-					map_pollution_cost_multiplier = Math.max(1, map_pollution_cost_multiplier)
-				end -- The first map not being fully loaded when you get there commonly means it records too few initial spawners, which this helps fix
+				map_pollution_cost_multiplier = Math.max(initial_spawner_count / spawnerscount, 1)
 			else
 				map_pollution_cost_multiplier = 1000000
 			end
