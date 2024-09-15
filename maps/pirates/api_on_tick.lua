@@ -1075,8 +1075,6 @@ function Public.loading_update(tickinterval)
 							Overworld.ensure_lane_generated_up_to(24, Crowsnest.Data.visibilitywidth)
 							Overworld.ensure_lane_generated_up_to(-24, Crowsnest.Data.visibilitywidth)
 
-							log(_inspect(memory.destinations))
-
 							for i = 1, #memory.destinations do
 								if memory.destinations[i].overworld_position.x == 0 then
 									memory.mapbeingloadeddestination_index = i
@@ -1112,6 +1110,8 @@ function Public.loading_update(tickinterval)
 				end
 
 				Progression.go_from_starting_dock_to_first_destination()
+
+				log("starting game for crew " .. memory.name)
 			elseif memory.loadingticks > 1230 then
 				if boat then
 					boat.speed = 0
