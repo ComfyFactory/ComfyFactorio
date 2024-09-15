@@ -2225,10 +2225,15 @@ local function event_on_gui_opened(event)
 	if not player then return end
 	if not player.valid then return end
 
-	if player.permission_group.name ~= 'restricted_area' then return end
-
-	if entity.name == 'wooden-chest' or entity.name == 'iron-chest' or entity.name == 'steel-chest' or entity.name == 'red-chest' or entity.name == 'blue-chest' then
-		player.opened = nil
+	if player.permission_group.name == 'cabin_privileged' then
+		if entity.name == 'red-chest' then
+			-- Even the captain has to wait for items to be removed from the red chests by loaders:
+			player.opened = nil
+		end
+	elseif player.permission_group.name == 'cabin' then
+		if entity.name == 'wooden-chest' or entity.name == 'iron-chest' or entity.name == 'steel-chest' or entity.name == 'red-chest' or entity.name == 'blue-chest' then
+			player.opened = nil
+		end
 	end
 end
 
