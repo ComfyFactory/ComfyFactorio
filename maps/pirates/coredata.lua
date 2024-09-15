@@ -109,26 +109,41 @@ Public.comfy_emojis = {
 }
 
 Public.capacity_options = {
-	{ value = 2,   icon = 'virtual-signal/signal-2',     text = '2',    text2 = '/2',  text3 = '2' },
-	{ value = 4,   icon = 'virtual-signal/signal-4',     text = '4',    text2 = '/4',  text3 = '4' },
-	{ value = 8,   icon = 'virtual-signal/signal-8',     text = '8',    text2 = '/8',  text3 = '8' },
-	{ value = 24,  icon = 'virtual-signal/signal-blue',  text = '24',   text2 = '/24', text3 = '24' },
-	{ value = 999, icon = 'virtual-signal/signal-white', text = 'Inf.', text2 = '',    text3 = 'Inf' },
+	{ value = 2,   icon = 'virtual-signal/signal-2',     text = '2',    text2 = '/2',   text3 = '2' },
+	{ value = 4,   icon = 'virtual-signal/signal-4',     text = '4',    text2 = '/4',   text3 = '4' },
+	{ value = 8,   icon = 'virtual-signal/signal-8',     text = '8',    text2 = '/8',   text3 = '8' },
+	{ value = 24,  icon = 'virtual-signal/signal-blue',  text = '24',   text2 = '/24',  text3 = '24' },
+	{ value = 999, icon = 'virtual-signal/signal-white', text = 'Inf.', text2 = '/inf', text3 = 'Inf' },
 	-- {value = 64, icon = 'item/storage-tank', text = '64'},
 }
 
 -- Prefer not to change difficulty values if possible, since even tiny value change can have big effect on some formulas that rely on it.
 Public.difficulty_options = {
-	-- The difficulty values we currently offer
-
 	--For the value of Easy difficulty, we are pulled in two directions: We wish to make the game comfy to play for those who haven't played it, but we also wish to represent the game mechanics faithfully so that Normal is not a crazy distance away.
-	{ value = 0.5, icon = 'item/firearm-magazine',         text = { 'pirates.difficulty_easy' },      associated_color = { r = 50, g = 255, b = 50 } },
-
-	{ value = 1.0, icon = 'item/piercing-rounds-magazine', text = { 'pirates.difficulty_normal' },    associated_color = { r = 255, g = 255, b = 50 } },
-
-	{ value = 1.5, icon = 'item/uranium-rounds-magazine',  text = { 'pirates.difficutly_hard' },      associated_color = { r = 255, g = 50, b = 50 } },
-
-	{ value = 2,   icon = 'item/atomic-bomb',              text = { 'pirates.difficulty_nightmare' }, associated_color = { r = 170, g = 60, b = 60 } },
+	{
+		value = 0.5,
+		icon = 'firearm-magazine',
+		text = { 'pirates.difficulty_easy' },
+		associated_color = { r = 50, g = 255, b = 50 }
+	},
+	{
+		value = 1.0,
+		icon = 'piercing-rounds-magazine',
+		text = { 'pirates.difficulty_normal' },
+		associated_color = { r = 255, g = 255, b = 50 }
+	},
+	{
+		value = 1.5,
+		icon = 'uranium-rounds-magazine',
+		text = { 'pirates.difficutly_hard' },
+		associated_color = { r = 255, g = 50, b = 50 }
+	},
+	{
+		value = 2,
+		icon = 'atomic-bomb',
+		text = { 'pirates.difficulty_nightmare' },
+		associated_color = { r = 170, g = 60, b = 60 }
+	},
 }
 
 function Public.get_difficulty_option_from_value(difficulty_value)

@@ -226,7 +226,7 @@ function Public.toggle_window(player)
                 {
                     name = 'difficulty_option_' .. i,
                     type = 'button',
-                    caption = o.text
+                    caption = { "", "[item=", o.icon, "] ", o.text }
                 }
             )
         flow3.style.minimal_width = 95

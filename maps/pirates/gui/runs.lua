@@ -418,6 +418,8 @@ function Public.toggle_window(player)
 	-- flow_add_proposal_slider(flow5, 'difficulty', 'Difficulty', #CoreData.difficulty_options, 2, {'pirates.difficulty_tooltip'})
 	-- flow_add_proposal_switch(flow5, 'mode', 'Mode', 'left', {'pirates.mode_tooltip'})
 
+	flow5.visible = false --maybe will bring this back for the speedrun ship?
+
 	flow5 = flow4.add({
 		name = 'propose_crew',
 		type = 'button',
@@ -556,15 +558,16 @@ function Public.full_update(player)
 				count = #mem.crewplayerindices
 			end
 
-			local extraCrewText = ''
-			if mem.run_is_protected and mem.run_is_private then
-				extraCrewText = ' (private & protected)'
-			elseif mem.run_is_private then
-				extraCrewText = ' (private)'
-			elseif mem.run_is_protected then
-				extraCrewText = ' (protected)'
-			end
-			wrappedmemories[#wrappedmemories + 1] = { 'pirates.run_displayform', mem.id, { '', mem.name .. extraCrewText .. ', ', CoreData.difficulty_options[mem.difficulty_option].text, ', [item=light-armor]' .. count .. CoreData.capacity_options[mem.capacity_option].text2 .. ',  [item=rail] ' .. (mem.overworldx or 0) } }
+			wrappedmemories[#wrappedmemories + 1] = { '',
+				mem.name .. " (" .. count .. (count == 1 and ' player' or ' players') .. ") — ",
+				'[item=', CoreData.difficulty_options[mem.difficulty_option].icon, '], ',
+				-- Utils.spritepath_to_richtext(CoreData.capacity_options[mem.capacity_option].icon) .. ", ",
+				'[item=rail]',
+				mem.overworldx or 0,
+				mem.run_is_private and { 'pirates.run_condition_private' } or '',
+				mem.run_is_protected and { 'pirates.run_condition_captain_protected' } or '',
+				mem.run_has_blueprints_disabled and { 'pirates.run_condition_blueprints_disabled' } or ''
+			}
 		end
 		GuiCommon.update_listbox(flow.ongoing_runs.body.ongoing_runs_listbox, wrappedmemories)
 
@@ -596,7 +599,14 @@ function Public.full_update(player)
 	if flow.proposals.visible then
 		local wrappedproposals = {}
 		for _, proposal in pairs(global_memory.crewproposals) do
-			wrappedproposals[#wrappedproposals + 1] = { 'pirates.proposal_displayform', proposal.name, Utils.spritepath_to_richtext(CoreData.capacity_options[proposal.capacity_option].icon) }
+			wrappedproposals[#wrappedproposals + 1] = { '',
+				proposal.name .. ' — ',
+				'[item=rail]',
+				0,
+				proposal.run_is_private and { 'pirates.run_condition_private' } or '',
+				proposal.run_is_protected and { 'pirates.run_condition_captain_protected' } or '',
+				proposal.run_has_blueprints_disabled and { 'pirates.run_condition_blueprints_disabled' } or ''
+			}
 		end
 		GuiCommon.update_listbox(flow.proposals.body.proposals_listbox, wrappedproposals)
 	end
