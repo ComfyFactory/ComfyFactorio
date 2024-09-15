@@ -130,6 +130,7 @@ Public.difficulty_options = {
 
 	{ value = 2,   icon = 'item/atomic-bomb',              text = { 'pirates.difficulty_nightmare' }, associated_color = { r = 170, g = 60, b = 60 } },
 }
+
 function Public.get_difficulty_option_from_value(difficulty_value)
 	-- given a difficulty value, key in to the closesy entry in the above table. (organising things this way allows us to make changes to the 'value' keys in the above table without disrupting e.g. past highscores data)
 	if difficulty_value <= 0.75 then

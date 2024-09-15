@@ -215,7 +215,7 @@ end
 Public.expected_time_fraction = 0.7
 
 function Public.expected_time_on_island() --always >0
-	return Public.expected_time_fraction * Public.max_time_on_island_formula_seconds()
+	return Public.expected_time_fraction * Public.max_time_on_island_formula_seconds() + Public.grace_period_on_arriving_at_island_seconds
 end
 
 function Public.fuel_depletion_rate_static()
@@ -255,21 +255,23 @@ function Public.boat_passive_pollution_per_minute(time)
 
 	local boost
 	if time then --sharp rise approaching T, steady increase thereafter
-		if time > T then
-			boost = 20 + 10 * (time - T) / (30 / 100 * T)
-		elseif time >= 90 / 100 * T then
+		local adjusted_time = Math.max(0, time - Public.grace_period_on_arriving_at_island_seconds)
+
+		if adjusted_time > T then
+			boost = 20 + 10 * (adjusted_time - T) / (30 / 100 * T)
+		elseif adjusted_time >= 90 / 100 * T then
 			boost = 16
-		elseif time >= 85 / 100 * T then
+		elseif adjusted_time >= 85 / 100 * T then
 			boost = 12
-		elseif time >= 80 / 100 * T then
+		elseif adjusted_time >= 80 / 100 * T then
 			boost = 8
-		elseif time >= 70 / 100 * T then
+		elseif adjusted_time >= 70 / 100 * T then
 			boost = 5
-		elseif time >= 60 / 100 * T then
+		elseif adjusted_time >= 60 / 100 * T then
 			boost = 3
-		elseif time >= 50 / 100 * T then
+		elseif adjusted_time >= 50 / 100 * T then
 			boost = 2
-		elseif time >= 40 / 100 * T then
+		elseif adjusted_time >= 40 / 100 * T then
 			boost = 1.5
 		else
 			boost = 1
@@ -346,25 +348,27 @@ function Public.evolution_per_second()
 end
 
 function Public.evolution_per_nest_kill() --it's important to have evo go up with biter base kills, to provide resistance if you try to plow through all the bases
-	local destination = Common.current_destination()
-	if Common.overworldx() == 0 then return 0 end
+	-- local destination = Common.current_destination()
+	-- if Common.overworldx() == 0 then return 0 end
 
-	if destination and destination.dynamic_data and destination.dynamic_data.timer and destination.dynamic_data.timer > 0 and destination.dynamic_data.initial_spawner_count and destination.dynamic_data.initial_spawner_count > 0 then
-		local initial_spawner_count = destination.dynamic_data.initial_spawner_count
-		local base_evo_jump = 0.04 * (1 / initial_spawner_count) --extra friction to make them hard to mow through, even at late times
+	-- if destination and destination.dynamic_data and destination.dynamic_data.timer and destination.dynamic_data.timer > 0 and destination.dynamic_data.initial_spawner_count and destination.dynamic_data.initial_spawner_count > 0 then
+	-- 	local initial_spawner_count = destination.dynamic_data.initial_spawner_count
+	-- 	local base_evo_jump = 0.04 * (1 / initial_spawner_count) --extra friction to make them hard to mow through, even at late times
 
-		local time = destination.dynamic_data.timer
-		-- local time_to_jump_to = Public.expected_time_on_island() * ((1/Public.expected_time_fraction)^(2/3))
-		local time_to_jump_to = Public.max_time_on_island_formula_seconds()
-		if time > time_to_jump_to then
-			return base_evo_jump
-		else
-			-- evo it 'would have' contributed:
-			return (1 / initial_spawner_count) * Public.expected_time_evo() * (time_to_jump_to - time) / time_to_jump_to + base_evo_jump
-		end
-	else
-		return 0
-	end
+	-- 	local time = destination.dynamic_data.timer
+	-- 	-- local time_to_jump_to = Public.expected_time_on_island() * ((1/Public.expected_time_fraction)^(2/3))
+	-- 	local time_to_jump_to = Public.max_time_on_island_formula_seconds()
+	-- 	if time > time_to_jump_to then
+	-- 		return base_evo_jump
+	-- 	else
+	-- 		-- evo it 'would have' contributed:
+	-- 		return (1 / initial_spawner_count) * Public.expected_time_evo() * (time_to_jump_to - time) / time_to_jump_to + base_evo_jump
+	-- 	end
+	-- else
+	-- 	return 0
+	-- end
+
+	return 0
 
 	-- return 0.003 * Common.difficulty_scale()
 end
