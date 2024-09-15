@@ -24,7 +24,7 @@ local Progression = require 'maps.pirates.progression'
 local Surfaces = require 'maps.pirates.surfaces.surfaces'
 local Roles = require 'maps.pirates.roles.roles'
 local Event = require 'utils.event'
-local CustomEvents = require 'maps.pirates.custom_events'
+
 local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 local Kraken = require 'maps.pirates.surfaces.sea.kraken'
 local GuiWelcome = require 'maps.pirates.gui.welcome'
@@ -33,19 +33,8 @@ local ComfyGui = require 'utils.gui'
 ComfyGui.set_disabled_tab('Scoreboard', true)
 ComfyGui.set_disabled_tab('Groups', true)
 
-
 local Public = {}
--- this seems to be never used
-local enum = {
-	PROGRESS = 'progress',
-	RUNS = 'runs',
-	CREW = 'crew',
-	CLASSES = 'classes',
-	MINIMAP = 'minimap',
-	INFO = 'info',
-	COLOR = 'color',
-}
-Public.enum = enum
+
 Public.progress = require 'maps.pirates.gui.progress'
 Public.runs = require 'maps.pirates.gui.runs'
 Public.crew = require 'maps.pirates.gui.crew'
@@ -53,23 +42,6 @@ Public.classes = require 'maps.pirates.gui.classes'
 Public.minimap = require 'maps.pirates.gui.minimap'
 Public.info = require 'maps.pirates.gui.info'
 Public.color = require 'maps.pirates.gui.color'
-
-
-function Public.update_crew_gui(which_gui)
-	if not Public[which_gui] then return end
-
-	local players = Common.crew_get_crew_members_and_spectators()
-
-	for _, player in pairs(players) do
-		Public[which_gui].full_update(player)
-	end
-end
-
-function Public.update_crew_progress_gui()
-	return Public.update_crew_gui('progress')
-end
-
-Event.add(CustomEvents.enum['update_crew_progress_gui'], Public.update_crew_progress_gui)
 
 local function create_gui(player)
 	local flow1, flow2, flow3, flow4
@@ -1277,12 +1249,8 @@ local function on_gui_location_changed(event)
 end
 
 
-
-
 local event = require 'utils.event'
 event.add(defines.events.on_gui_click, on_gui_click)
 event.add(defines.events.on_gui_location_changed, on_gui_location_changed)
-
-
 
 return Public

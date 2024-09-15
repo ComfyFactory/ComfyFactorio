@@ -24,7 +24,6 @@ The scenario is quite complex, but there are ways to get started, even if you do
 -- require 'modules.biters_yield_coins'
 require 'modules.biter_noms_you'
 require 'modules.no_deconstruction_of_neutral_entities'
-require 'maps.pirates.custom_events' --probably do this before anything else
 require 'utils.server'
 local _inspect = require 'utils.inspect'.inspect
 -- local Modifers = require 'player_modifiers'

@@ -10,7 +10,7 @@ local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
 local Utils = require 'maps.pirates.utils_local'
 local _inspect = require 'utils.inspect'.inspect
-local CustomEvents = require 'maps.pirates.custom_events'
+
 
 -- local Structures = require 'maps.pirates.structures.structures'
 local Boats = require 'maps.pirates.structures.boats.boats'
@@ -25,7 +25,7 @@ local Roles = require 'maps.pirates.roles.roles'
 -- local Parrot = require 'maps.pirates.parrot'
 -- local Quest = require 'maps.pirates.quest'
 
-local Shop = require 'maps.pirates.shop.shop'
+-- local Shop = require 'maps.pirates.shop.shop'
 local Overworld = require 'maps.pirates.overworld'
 local Hold = require 'maps.pirates.surfaces.hold'
 local Cabin = require 'maps.pirates.surfaces.cabin'
@@ -304,8 +304,6 @@ function Public.progress_to_destination(destination_index)
 
 	memory.currentdestination_index = destination_index --already done when we collide with it typically
 	local destination = Common.current_destination()
-
-	script.raise_event(CustomEvents.enum['update_crew_progress_gui'], {})
 
 	destination.dynamic_data.timer = 0
 	destination.dynamic_data.timeratlandingtime = nil

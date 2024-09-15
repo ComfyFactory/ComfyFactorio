@@ -25,11 +25,11 @@ local Crew = require 'maps.pirates.crew'
 -- local Parrot = require 'maps.pirates.parrot'
 -- local Hold = require 'maps.pirates.surfaces.hold'
 -- local Cabin = require 'maps.pirates.surfaces.cabin'
-local Shop = require 'maps.pirates.shop.shop'
+-- local Shop = require 'maps.pirates.shop.shop'
 local Upgrades = require 'maps.pirates.shop.boat_upgrades'
 local Kraken = require 'maps.pirates.surfaces.sea.kraken'
 local Highscore = require 'maps.pirates.highscore'
-local CustomEvents = require 'maps.pirates.custom_events'
+
 local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 
 
@@ -590,8 +590,6 @@ function Public.check_for_destination_collisions()
 			memory.mapbeingloadeddestination_index = index
 			memory.currentdestination_index = index
 			memory.boat.state = Boats.enum_state.ATSEA_LOADING_MAP
-
-			script.raise_event(CustomEvents.enum['update_crew_progress_gui'], {})
 
 			local destination = Common.current_destination()
 			Surfaces.destination_on_collide(destination)

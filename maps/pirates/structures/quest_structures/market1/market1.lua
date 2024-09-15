@@ -8,7 +8,7 @@ local Common = require 'maps.pirates.common'
 -- local CoreData = require 'maps.pirates.coredata'
 -- local Utils = require 'maps.pirates.utils_local'
 local _inspect = require 'utils.inspect'.inspect
--- local CustomEvents = require 'maps.pirates.custom_events'
+--
 -- local SurfacesCommon = require 'maps.pirates.surfaces.common'
 local Raffle = require 'maps.pirates.raffle'
 local ShopCovered = require 'maps.pirates.shop.covered'

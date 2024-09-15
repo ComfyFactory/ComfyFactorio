@@ -12,7 +12,7 @@ local Cabin = require 'maps.pirates.surfaces.cabin'
 local CoreData = require 'maps.pirates.coredata'
 local Utils = require 'maps.pirates.utils_local'
 local _inspect = require 'utils.inspect'.inspect
-local CustomEvents = require 'maps.pirates.custom_events'
+
 
 
 local Public = {}

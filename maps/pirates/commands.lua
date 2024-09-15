@@ -29,7 +29,7 @@ local simplex_noise = require 'utils.simplex_noise'.d2
 local Token = require 'utils.token'
 local Task = require 'utils.task'
 local Highscore = require 'maps.pirates.highscore'
-local CustomEvents = require 'maps.pirates.custom_events'
+
 local Classes = require 'maps.pirates.roles.classes'
 local Gui = require 'maps.pirates.gui.gui'
 -- local Session = require 'utils.datastore.session_data'
@@ -616,7 +616,6 @@ if _DEBUG then
 			end
 
 			memory.currentdestination_index = memory.mapbeingloadeddestination_index
-			script.raise_event(CustomEvents.enum['update_crew_progress_gui'], {})
 			Surfaces.create_surface(Common.current_destination())
 			Task.set_timeout_in_ticks(60, go_2, { id = data.id })
 		end

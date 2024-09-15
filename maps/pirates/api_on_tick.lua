@@ -27,7 +27,7 @@ local Crew = require 'maps.pirates.crew'
 local Math = require 'maps.pirates.math'
 local _inspect = require 'utils.inspect'.inspect
 local Kraken = require 'maps.pirates.surfaces.sea.kraken'
-local CustomEvents = require 'maps.pirates.custom_events'
+
 
 local Quest = require 'maps.pirates.quest'
 -- local ShopDock = require 'maps.pirates.shop.dock'
