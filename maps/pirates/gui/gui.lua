@@ -1203,7 +1203,6 @@ local function on_gui_click(event)
 				local destination_index = memory.mapbeingloadeddestination_index
 
 				Progression.progress_to_destination(destination_index)
-				memory.loadingticks = 0
 			end
 		elseif memory.boat.state == Boats.enum_state.ATSEA_VICTORIOUS then
 			if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
