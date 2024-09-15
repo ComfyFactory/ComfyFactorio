@@ -23,7 +23,6 @@ local Crowsnest = require 'maps.pirates.surfaces.crowsnest'
 local Progression = require 'maps.pirates.progression'
 local Surfaces = require 'maps.pirates.surfaces.surfaces'
 local Roles = require 'maps.pirates.roles.roles'
-local Event = require 'utils.event'
 
 local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 local Kraken = require 'maps.pirates.surfaces.sea.kraken'

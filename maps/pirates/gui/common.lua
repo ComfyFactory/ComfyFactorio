@@ -11,7 +11,7 @@ local _inspect = require 'utils.inspect'.inspect
 local Crew = require 'maps.pirates.crew'
 -- local Progression = require 'maps.pirates.progression'
 -- local Structures = require 'maps.pirates.structures.structures'
-local Shop = require 'maps.pirates.shop.shop'
+-- local Shop = require 'maps.pirates.shop.shop'
 local Boats = require 'maps.pirates.structures.boats.boats'
 local Surfaces = require 'maps.pirates.surfaces.surfaces'
 
