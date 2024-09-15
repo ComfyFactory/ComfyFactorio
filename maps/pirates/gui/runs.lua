@@ -558,7 +558,7 @@ function Public.full_update(player)
 				count = #mem.crewplayerindices
 			end
 
-			wrappedmemories[#wrappedmemories + 1] = { '',
+			wrappedmemories[#wrappedmemories + 1] = { 'pirates.second_element', mem.id, { '',
 				mem.name .. " (" .. count .. (count == 1 and ' player' or ' players') .. ") — ",
 				'[item=', CoreData.difficulty_options[mem.difficulty_option].icon, '], ',
 				-- Utils.spritepath_to_richtext(CoreData.capacity_options[mem.capacity_option].icon) .. ", ",
@@ -567,6 +567,7 @@ function Public.full_update(player)
 				mem.run_is_private and { 'pirates.run_condition_private' } or '',
 				mem.run_is_protected and { 'pirates.run_condition_captain_protected' } or '',
 				mem.run_has_blueprints_disabled and { 'pirates.run_condition_blueprints_disabled' } or ''
+			},
 			}
 		end
 		GuiCommon.update_listbox(flow.ongoing_runs.body.ongoing_runs_listbox, wrappedmemories)
