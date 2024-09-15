@@ -13,7 +13,7 @@ local Utils = require 'maps.pirates.utils_local'
 local Math = require 'maps.pirates.math'
 local _inspect = require 'utils.inspect'.inspect
 
--- local Upgrades = require 'maps.pirates.boat_upgrades'
+-- local Upgrades = require 'maps.pirates.shop.boat_upgrades'
 
 local Public = {}
 
@@ -26,7 +26,7 @@ Public.offers_loaders = {
 }
 
 Public.offers_rockets = {
-	{ price = { { 'coin', 250 }, { 'electronic-circuit', 80 } },                offer = { type = 'give-item', item = 'rocket-launcher', count = 1 } },
+	{ price = { { 'coin', 250 }, { 'electronic-circuit', 80 } },                        offer = { type = 'give-item', item = 'rocket-launcher', count = 1 } },
 	{ price = { { 'coin', 1200 }, { 'explosives', 20 }, { 'electronic-circuit', 20 } }, offer = { type = 'give-item', item = 'rocket', count = 20 } },
 }
 
@@ -34,19 +34,19 @@ Public.offers_default = {
 	{ price = { { 'coin', 1500 } }, offer = { type = 'give-item', item = 'copper-plate', count = 300 } },
 	{ price = { { 'coin', 1500 } }, offer = { type = 'give-item', item = 'iron-plate', count = 300 } },
 	{ price = { { 'coin', 1000 } }, offer = { type = 'give-item', item = 'piercing-rounds-magazine', count = 60 } },
-	{ price = { { 'coin', 900 } }, offer = { type = 'give-item', item = 'heavy-armor', count = 1 } },
+	{ price = { { 'coin', 900 } },  offer = { type = 'give-item', item = 'heavy-armor', count = 1 } },
 	{ price = { { 'coin', 1000 } }, offer = { type = 'give-item', item = 'grenade', count = 30 } },
 	{ price = { { 'coin', 1200 } }, offer = { type = 'give-item', item = 'defender-capsule', count = 15 } },
 	{ price = { { 'coin', 1500 } }, offer = { type = 'give-item', item = 'distractor-capsule', count = 15 } },
 	{ price = { { 'coin', 1000 } }, offer = { type = 'give-item', item = 'slowdown-capsule', count = 25 } },
 	{ price = { { 'coin', 1000 } }, offer = { type = 'give-item', item = 'poison-capsule', count = 15 } },
 	{ price = { { 'coin', 1400 } }, offer = { type = 'give-item', item = 'gate', count = 25 } },
-	{ price = { { 'coin', 800 } }, offer = { type = 'give-item', item = 'storage-tank', count = 20 } },
-	{ price = { { 'coin', 600 } }, offer = { type = 'give-item', item = 'big-electric-pole', count = 15 } },
-	{ price = { { 'coin', 850 } }, offer = { type = 'give-item', item = 'stack-inserter', count = 7 } },
-	{ price = { { 'coin', 900 } }, offer = { type = 'give-item', item = 'piercing-shotgun-shell', count = 15 } },
-	{ price = { { 'coin', 960 } }, offer = { type = 'give-item', item = 'flamethrower', count = 1 } },
-	{ price = { { 'coin', 980 } }, offer = { type = 'give-item', item = 'flamethrower', count = 1 } },
+	{ price = { { 'coin', 800 } },  offer = { type = 'give-item', item = 'storage-tank', count = 20 } },
+	{ price = { { 'coin', 600 } },  offer = { type = 'give-item', item = 'big-electric-pole', count = 15 } },
+	{ price = { { 'coin', 850 } },  offer = { type = 'give-item', item = 'stack-inserter', count = 7 } },
+	{ price = { { 'coin', 900 } },  offer = { type = 'give-item', item = 'piercing-shotgun-shell', count = 15 } },
+	{ price = { { 'coin', 960 } },  offer = { type = 'give-item', item = 'flamethrower', count = 1 } },
+	{ price = { { 'coin', 980 } },  offer = { type = 'give-item', item = 'flamethrower', count = 1 } },
 	{ price = { { 'coin', 1700 } }, offer = { type = 'give-item', item = 'flamethrower-ammo', count = 15 } },
 	{ price = { { 'coin', 1800 } }, offer = { type = 'give-item', item = 'flamethrower-ammo', count = 20 } },
 	{ price = { { 'coin', 1800 } }, offer = { type = 'give-item', item = 'flying-robot-frame', count = 5 } },

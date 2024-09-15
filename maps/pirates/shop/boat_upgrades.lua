@@ -49,13 +49,78 @@ Public.crowsnest_display_form = {
 	[enum.UPGRADE_CANNONS] = { 'pirates.upgrade_cannons_crowsnest_form' },
 }
 
--- WARNING: The dock market pulls from these values, but the Crowsnest caption pulls data from main_shop_data_1. So don't change one without the other
-Public.market_offer_form = {
-	[enum.MORE_POWER] = { price = { { 'coin', 7000 }, { 'coal', 500 } }, offer = { type = 'nothing', effect_description = { 'pirates.market_description_upgrade_power' } } },
-	[enum.EXTRA_HOLD] = { price = { { 'coin', 7000 }, { 'coal', 500 } }, offer = { type = 'nothing', effect_description = { 'pirates.market_description_upgrade_hold' } } },
-	[enum.UNLOCK_MERCHANTS] = { price = { { 'coin', 14000 }, { 'coal', 1000 } }, offer = { type = 'nothing', effect_description = { 'pirates.market_description_upgrade_merchants' } } },
-	[enum.ROCKETS_FOR_SALE] = { price = { { 'coin', 21000 }, { 'coal', 1000 } }, offer = { type = 'nothing', effect_description = { 'pirates.market_description_upgrade_rockets' } } },
-	[enum.UPGRADE_CANNONS] = { price = { { 'repair-pack', 20 }, { 'coin', 5000 }, { 'coal', 800 } }, offer = { type = 'nothing', effect_description = { 'pirates.market_description_upgrade_turrets' } } },
+Public.upgrades_data = {
+	[enum.MORE_POWER] = {
+		market_item = {
+			price = {
+				{ 'coin', 7000 },
+				{ 'coal', 500 }
+			},
+			offer = {
+				type = 'nothing',
+				effect_description = { 'pirates.market_description_upgrade_power' }
+			},
+		},
+		tooltip = { 'pirates.market_description_upgrade_power' },
+		what_you_get_sprite_buttons = { ['utility/status_working'] = false },
+	},
+	[enum.EXTRA_HOLD] = {
+		market_item = {
+			price = {
+				{ 'coin', 7000 },
+				{ 'coal', 500 }
+			},
+			offer = {
+				type = 'nothing',
+				effect_description = { 'pirates.market_description_upgrade_hold' }
+			},
+		},
+		tooltip = { 'pirates.market_description_upgrade_hold' },
+		what_you_get_sprite_buttons = { ['item/steel-chest'] = false },
+	},
+	[enum.UNLOCK_MERCHANTS] = {
+		market_item = {
+			price = {
+				{ 'coin', 14000 },
+				{ 'coal', 1000 }
+			},
+			offer = {
+				type = 'nothing',
+				effect_description = { 'pirates.market_description_upgrade_merchants' }
+			},
+		},
+		tooltip = { 'pirates.market_description_upgrade_merchants' },
+		what_you_get_sprite_buttons = { ['entity/market'] = false },
+	},
+	[enum.ROCKETS_FOR_SALE] = {
+		market_item = {
+			price = {
+				{ 'coin', 21000 },
+				{ 'coal', 1000 }
+			},
+			offer = {
+				type = 'nothing',
+				effect_description = { 'pirates.market_description_upgrade_rockets' }
+			},
+		},
+		tooltip = { 'pirates.market_description_upgrade_rockets' },
+		what_you_get_sprite_buttons = { ['item/rocket-launcher'] = false },
+	},
+	[enum.UPGRADE_CANNONS] = {
+		market_item = {
+			price = {
+				{ 'repair-pack', 20 },
+				{ 'coin',        5000 },
+				{ 'coal',        800 }
+			},
+			offer = {
+				type = 'nothing',
+				effect_description = { 'pirates.market_description_upgrade_turrets' }
+			},
+		},
+		tooltip = { 'pirates.market_description_upgrade_turrets' },
+		what_you_get_sprite_buttons = { ['item/artillery-turret'] = false },
+	},
 }
 
 function Public.execute_upgade(upgrade_type, player)

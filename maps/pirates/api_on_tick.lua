@@ -1155,8 +1155,6 @@ function Public.loading_update(tickinterval)
 
 				local force = memory.force
 				if not (force and force.valid) then return end
-
-				script.raise_event(CustomEvents.enum['update_crew_fuel_gui'], {})
 			else
 				PiratesApiEvents.load_some_map_chunks_random_order(surface, currentdestination, fraction) --random order is good for maze world
 				if currentdestination.subtype == IslandEnum.enum.CAVE then

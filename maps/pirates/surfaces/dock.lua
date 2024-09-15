@@ -75,8 +75,6 @@ function Public.execute_boat_purchase()
 	-- memory.mainshop_availability_bools.new_boat_cutter_with_hold = false
 	-- memory.mainshop_availability_bools.new_boat_sloop_with_hold = false
 	-- memory.mainshop_availability_bools.new_boat_cutter = false
-
-	script.raise_event(CustomEvents.enum['update_crew_fuel_gui'], {})
 end
 
 function Public.place_dock_jetty_and_boats()

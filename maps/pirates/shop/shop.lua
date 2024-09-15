@@ -14,12 +14,11 @@ local Roles = require 'maps.pirates.roles.roles'
 local Math = require 'maps.pirates.math'
 local _inspect = require 'utils.inspect'.inspect
 local SurfacesCommon = require 'maps.pirates.surfaces.common'
-local Upgrades = require 'maps.pirates.boat_upgrades'
+local Upgrades = require 'maps.pirates.shop.boat_upgrades'
 local Cabin = require 'maps.pirates.surfaces.cabin'
--- local Upgrades = require 'maps.pirates.boat_upgrades'
+-- local Upgrades = require 'maps.pirates.shop.boat_upgrades'
 
 local Public = {}
-Public.Captains = require 'maps.pirates.shop.captains'
 Public.Covered = require 'maps.pirates.shop.covered'
 Public.Merchants = require 'maps.pirates.shop.merchants'
 Public.Minimarket = require 'maps.pirates.shop.dock'

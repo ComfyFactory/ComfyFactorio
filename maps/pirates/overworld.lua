@@ -26,7 +26,7 @@ local Crew = require 'maps.pirates.crew'
 -- local Hold = require 'maps.pirates.surfaces.hold'
 -- local Cabin = require 'maps.pirates.surfaces.cabin'
 local Shop = require 'maps.pirates.shop.shop'
-local Upgrades = require 'maps.pirates.boat_upgrades'
+local Upgrades = require 'maps.pirates.shop.boat_upgrades'
 local Kraken = require 'maps.pirates.surfaces.sea.kraken'
 local Highscore = require 'maps.pirates.highscore'
 local CustomEvents = require 'maps.pirates.custom_events'
@@ -424,12 +424,13 @@ function Public.generate_overworld_destination(p)
 			}
 
 			local i = 1
-			for price_name, price_count in pairs(Shop.Captains.main_shop_data_1[dest.static_params.upgrade_for_sale].base_cost) do
+			for _, price_data in ipairs(Upgrades.upgrades_data[dest.static_params.upgrade_for_sale].market_item.price) do
+				local price_name, price_count = price_data[1], price_data[2]
 				local sprite
-				if price_name == 'fuel' then
+				if price_name == 'coal' then
 					sprite = 'item/coal'
 				else
-					sprite = 'item/coin'
+					sprite = 'item/' .. price_name
 				end
 				dest.dynamic_data.crowsnest_renderings[price_name] = {
 					text_rendering = rendering.draw_text {
@@ -516,7 +517,12 @@ function Public.ensure_lane_generated_up_to(lane_yvalue, x)
 					end
 					for rendering_name, r in pairs(dest.dynamic_data.crowsnest_renderings) do
 						if type(r) == 'table' and r.text_rendering and rendering.is_valid(r.text_rendering) then
-							rendering.set_text(r.text_rendering, Utils.bignumber_abbrevform2(Shop.Captains.main_shop_data_1[dest.static_params.upgrade_for_sale].base_cost[rendering_name]))
+							for _, price_data in ipairs(Upgrades.upgrades_data[dest.static_params.upgrade_for_sale].market_item.price) do
+								if price_data[1] == rendering_name then
+									rendering.set_text(r.text_rendering, Utils.bignumber_abbrevform2(price_data[2]))
+									break
+								end
+							end
 						end
 					end
 				end

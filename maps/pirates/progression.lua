@@ -29,7 +29,7 @@ local Shop = require 'maps.pirates.shop.shop'
 local Overworld = require 'maps.pirates.overworld'
 local Hold = require 'maps.pirates.surfaces.hold'
 local Cabin = require 'maps.pirates.surfaces.cabin'
-local Upgrades = require 'maps.pirates.boat_upgrades'
+local Upgrades = require 'maps.pirates.shop.boat_upgrades'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
 local ShopDock = require 'maps.pirates.shop.dock'
@@ -132,8 +132,6 @@ function Public.go_from_starting_dock_to_first_destination()
 	end
 
 	boat.stored_resources = {}
-
-	Shop.Captains.initialise_captains_shop()
 
 	Hold.create_hold_surface(1)
 	boat.EEI_stage = 1
@@ -260,8 +258,6 @@ function Public.progress_to_destination(destination_index)
 				end
 			end
 		end
-
-		script.raise_event(CustomEvents.enum['update_crew_fuel_gui'], {})
 
 		-- Delay.add(Delay.enum.PLACE_DOCK_JETTY_AND_BOATS)
 		Task.set_timeout_in_ticks(2, place_dock_jetty_and_boats, { crew_id = memory.id })
@@ -413,8 +409,6 @@ function Public.check_for_end_of_boat_movement(boat)
 			memory.mainshop_availability_bools.unlock_merchants = false
 			memory.mainshop_availability_bools.rockets_for_sale = false
 
-			script.raise_event(CustomEvents.enum['update_crew_fuel_gui'], {})
-
 			Public.go_from_currentdestination_to_sea()
 
 			return true
@@ -491,8 +485,6 @@ function Public.undock_from_dock(manual)
 	memory.mainshop_availability_bools.new_boat_cutter = false
 	memory.mainshop_availability_bools.new_boat_cutter_with_hold = false
 	memory.mainshop_availability_bools.new_boat_sloop_with_hold = false
-
-	script.raise_event(CustomEvents.enum['update_crew_fuel_gui'], {})
 
 	Crew.summon_crew()
 
