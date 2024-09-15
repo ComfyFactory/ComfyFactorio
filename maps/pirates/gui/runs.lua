@@ -475,132 +475,81 @@ function Public.full_update(player)
 	local global_memory = Memory.get_global_memory()
 	local memory = Memory.get_crew_memory()
 
-	if not player.gui.screen['runs_piratewindow'] then return end
-	local flow = player.gui.screen['runs_piratewindow'].scroll_pane
+	local window = player.gui.screen['runs_piratewindow']
+	if not window then return end
+	local flow = window.scroll_pane
 	local playercrew_status = GuiCommon.crew_overall_state_bools(player.index)
 	if not playercrew_status then return end
 
+	local ongoing_runs = flow.ongoing_runs
+	ongoing_runs.visible = (#global_memory.crew_active_ids > 0)
 
-	--*** WHAT TO SHOW ***--
-
-	flow.ongoing_runs.visible = (#global_memory.crew_active_ids > 0)
-	if flow.ongoing_runs.visible then
-		local bool1 = (not playercrew_status.leaving) and (not playercrew_status.adventuring) and (not playercrew_status.spectating) and (flow.ongoing_runs.body.ongoing_runs_listbox.selected_index ~= 0)
-
-		local selected_joinable_bool = false
-		local crewid
-		if bool1 then
-			crewid = tonumber((flow.ongoing_runs.body.ongoing_runs_listbox.get_item(flow.ongoing_runs.body.ongoing_runs_listbox.selected_index))[2])
-			selected_joinable_bool = bool1 and crewid ~= nil and global_memory.crew_memories[crewid] ~= nil and (global_memory.crew_memories[crewid].crewstatus == Crew.enum.ADVENTURING)
-		end
-
-		flow.ongoing_runs.body.helpful_tip.visible = not (playercrew_status.leaving or playercrew_status.adventuring or playercrew_status.spectating)
-
-		flow.ongoing_runs.body.flow_buttons.visible = selected_joinable_bool or playercrew_status.spectating
-		flow.ongoing_runs.body.flow_buttons.join_spectators.visible = selected_joinable_bool
-		flow.ongoing_runs.body.flow_buttons.leave_spectators.visible = playercrew_status.spectating
-		flow.ongoing_runs.body.flow_buttons.join_crew.visible = selected_joinable_bool and (not (crewid and global_memory.crew_memories[crewid] and (global_memory.crew_memories[crewid].crewstatus == Crew.enum.LEAVING_INITIAL_DOCK or #global_memory.crew_memories[crewid].crewplayerindices >= global_memory.crew_memories[crewid].capacity or (global_memory.crew_memories[crewid].tempbanned_from_joining_data and global_memory.crew_memories[crewid].tempbanned_from_joining_data[player.index] and game.tick < global_memory.crew_memories[crewid].tempbanned_from_joining_data[player.index] + Common.ban_from_rejoining_crew_ticks))))
-
-		flow.ongoing_runs.body.wait_to_join.visible = selected_joinable_bool and crewid and global_memory.crew_memories[crewid] and (global_memory.crew_memories[crewid].tempbanned_from_joining_data and global_memory.crew_memories[crewid].tempbanned_from_joining_data[player.index] and game.tick < global_memory.crew_memories[crewid].tempbanned_from_joining_data[player.index] + Common.ban_from_rejoining_crew_ticks) and (not (global_memory.crew_memories[crewid].crewstatus == Crew.enum.LEAVING_INITIAL_DOCK or #global_memory.crew_memories[crewid].crewplayerindices >= global_memory.crew_memories[crewid].capacity))
-		if flow.ongoing_runs.body.wait_to_join.visible then
-			flow.ongoing_runs.body.wait_to_join.caption = { 'pirates.gui_runs_wait_to_join', Math.ceil(((global_memory.crew_memories[crewid].tempbanned_from_joining_data[player.index] - (game.tick - Common.ban_from_rejoining_crew_ticks))) / 60) }
-		end
-
-		if not selected_joinable_bool then flow.ongoing_runs.body.ongoing_runs_listbox.selected_index = 0 end
-
-		flow.ongoing_runs.body.leaving_prompt.visible = playercrew_status.leaving
-
-		local show_protected_info = crewid and global_memory.crew_memories[crewid].run_is_protected and global_memory.crew_memories[crewid].protected_run_lock_timer < 60 * 60 * 60 * CoreData.protected_run_lock_amount_hr
-		flow.ongoing_runs.body.join_protected_crew_info.visible = show_protected_info
-
-		local show_private_info = crewid and global_memory.crew_memories[crewid].run_is_private
-		flow.ongoing_runs.body.join_private_crew_info.visible = show_private_info
-		flow.ongoing_runs.body.password.visible = show_private_info
-	end
-
-	flow.proposals.visible = (memory.crewstatus == nil and not playercrew_status.leaving)
-	if flow.proposals.visible then
-		if playercrew_status.proposing then
-			flow.proposals.body.proposals_listbox.selected_index = 0
-			flow.proposals.body.proposals_listbox.selected_index = 0
-		end
-
-		flow.proposals.body.proposals_listbox.visible = (not playercrew_status.leaving) and (#global_memory.crewproposals > 0)
-
-		flow.proposals.body.flow_buttons.abandon_proposal.visible = (not playercrew_status.leaving) and playercrew_status.created_crew and playercrew_status.proposing and (#global_memory.crewproposals > 0)
-
-		flow.proposals.body.proposal_maker.visible = (not playercrew_status.leaving) and (not playercrew_status.created_crew)
-
-		flow.proposals.body.flow_proposal_launch.proposal_insufficient_sloops.visible = playercrew_status.sloops_full
-
-		flow.proposals.body.flow_proposal_launch.proposal_crew_count_capped.visible = playercrew_status.crew_count_capped
-
-		flow.proposals.body.flow_proposal_launch.launch_crew.visible = playercrew_status.proposal_can_launch
-
-		local checkbox_state = flow.proposals.body.proposal_maker.body.settings.private_checkbox.state
-		flow.proposals.body.proposal_maker.body.settings.password_label.visible = checkbox_state
-		flow.proposals.body.proposal_maker.body.settings.password.visible = checkbox_state
-		flow.proposals.body.proposal_maker.body.settings.confirm_password_label.visible = checkbox_state
-		flow.proposals.body.proposal_maker.body.settings.confirm_password.visible = checkbox_state
-	end
-
-
-
-	--*** UPDATE CONTENT ***--
-
-	if flow.ongoing_runs.visible then
+	if ongoing_runs.visible then
 		local wrappedmemories = {}
 		for _, mem in pairs(global_memory.crew_memories) do
-			local count = 0
-			if mem.crewstatus and mem.crewstatus == Crew.enum.LEAVING_INITIAL_DOCK then
-				count = Boats.players_on_boat_count(mem.boat)
-			elseif mem.crewplayerindices then
-				count = #mem.crewplayerindices
-			end
-
-			wrappedmemories[#wrappedmemories + 1] = { 'pirates.second_element', mem.id, { '',
-				mem.name .. " (" .. count .. (count == 1 and ' player' or ' players') .. ") — ",
-				'[item=', CoreData.difficulty_options[mem.difficulty_option].icon, '], ',
-				-- Utils.spritepath_to_richtext(CoreData.capacity_options[mem.capacity_option].icon) .. ", ",
-				'[item=rail]',
-				mem.overworldx or 0,
-				mem.run_is_private and { 'pirates.run_condition_private' } or '',
-				mem.run_is_protected and { 'pirates.run_condition_captain_protected' } or '',
-				mem.run_has_blueprints_disabled and { 'pirates.run_condition_blueprints_disabled' } or ''
-			},
+			local count = (mem.crewstatus == Crew.enum.LEAVING_INITIAL_DOCK) and Boats.players_on_boat_count(mem.boat) or #mem.crewplayerindices
+			local crew_info = {
+				'pirates.second_element',
+				mem.id,
+				{ '', mem.name .. " (" .. count .. (count == 1 and ' player' or ' players') .. ") — ",
+					'[item=', CoreData.difficulty_options[mem.difficulty_option].icon, '], ',
+					'[item=rail]', mem.overworldx or 0,
+					mem.run_is_private and { 'pirates.run_condition_private' } or '',
+					mem.run_is_protected and { 'pirates.run_condition_captain_protected' } or '',
+					mem.run_has_blueprints_disabled and { 'pirates.run_condition_blueprints_disabled' } or '' }
 			}
+			table.insert(wrappedmemories, crew_info)
 		end
-		GuiCommon.update_listbox(flow.ongoing_runs.body.ongoing_runs_listbox, wrappedmemories)
+		GuiCommon.update_listbox(ongoing_runs.body.ongoing_runs_listbox, wrappedmemories)
 
-		local crewid = nil
-		local bool1 = (not playercrew_status.leaving) and (not playercrew_status.adventuring) and (not playercrew_status.spectating) and (flow.ongoing_runs.body.ongoing_runs_listbox.selected_index ~= 0)
-		if bool1 then
-			crewid = tonumber((flow.ongoing_runs.body.ongoing_runs_listbox.get_item(flow.ongoing_runs.body.ongoing_runs_listbox.selected_index))[2])
-		end
+		local selected_index = ongoing_runs.body.ongoing_runs_listbox.selected_index
+		local selected_crew = selected_index ~= 0 and global_memory.crew_memories[tonumber(ongoing_runs.body.ongoing_runs_listbox.get_item(selected_index)[2])]
 
-		-- Update timer when captain protection expires
-		if crewid and flow.ongoing_runs.body.join_protected_crew_info.visible then
-			local lock_timer = global_memory.crew_memories[crewid].protected_run_lock_timer
-			local sec = Math.floor((lock_timer / (60)) % 60)
-			local min = Math.floor((lock_timer / (60 * 60)) % 60)
-			local hrs = Math.floor((lock_timer / (60 * 60 * 60)) % 60)
-			flow.ongoing_runs.body.join_protected_crew_info.caption = { 'pirates.gui_join_protected_run_info', hrs, min, sec }
+		if playercrew_status.leaving or playercrew_status.adventuring or playercrew_status.spectating then
+			selected_crew = false
 		end
 
-		-- Update timer when run will become public
-		if crewid and flow.ongoing_runs.body.join_private_crew_info.visible then
-			local lock_timer = global_memory.crew_memories[crewid].private_run_lock_timer
-			local sec = Math.floor((lock_timer / (60)) % 60)
-			local min = Math.floor((lock_timer / (60 * 60)) % 60)
-			local hrs = Math.floor((lock_timer / (60 * 60 * 60)) % 60)
-			flow.ongoing_runs.body.join_private_crew_info.caption = { 'pirates.gui_join_private_run_info', hrs, min, sec }
+		local can_join = selected_crew and selected_crew.crewstatus == Crew.enum.ADVENTURING
+
+		ongoing_runs.body.helpful_tip.visible = not (playercrew_status.leaving or playercrew_status.adventuring or playercrew_status.spectating)
+		ongoing_runs.body.flow_buttons.visible = can_join or playercrew_status.spectating
+		ongoing_runs.body.flow_buttons.join_spectators.visible = can_join
+		ongoing_runs.body.flow_buttons.leave_spectators.visible = playercrew_status.spectating
+		ongoing_runs.body.flow_buttons.join_crew.visible = can_join and selected_crew and not (selected_crew.crewstatus == Crew.enum.LEAVING_INITIAL_DOCK or #selected_crew.crewplayerindices >= selected_crew.capacity or (selected_crew.tempbanned_from_joining_data and selected_crew.tempbanned_from_joining_data[player.index] and game.tick < selected_crew.tempbanned_from_joining_data[player.index] + Common.ban_from_rejoining_crew_ticks))
+
+		local show_wait_message = can_join and selected_crew and selected_crew.tempbanned_from_joining_data and selected_crew.tempbanned_from_joining_data[player.index] and game.tick < selected_crew.tempbanned_from_joining_data[player.index] + Common.ban_from_rejoining_crew_ticks
+		ongoing_runs.body.wait_to_join.visible = show_wait_message
+		if show_wait_message then
+			local wait_time = selected_crew and Math.ceil((selected_crew.tempbanned_from_joining_data[player.index] - (game.tick - Common.ban_from_rejoining_crew_ticks)) / 60) or 0
+			ongoing_runs.body.wait_to_join.caption = { 'pirates.gui_runs_wait_to_join', wait_time }
+		end
+
+		ongoing_runs.body.leaving_prompt.visible = playercrew_status.leaving
+		ongoing_runs.body.join_protected_crew_info.visible = selected_crew and selected_crew.run_is_protected and selected_crew.protected_run_lock_timer < 60 * 60 * 60 * CoreData.protected_run_lock_amount_hr
+		ongoing_runs.body.join_private_crew_info.visible = selected_crew and selected_crew.run_is_private
+		ongoing_runs.body.password.visible = selected_crew and selected_crew.run_is_private
+
+		if selected_crew then
+			if ongoing_runs.body.join_protected_crew_info.visible then
+				local lock_timer = selected_crew.protected_run_lock_timer
+				local hrs, min, sec = Math.floor((lock_timer / (60 * 60 * 60)) % 60), Math.floor((lock_timer / (60 * 60)) % 60), Math.floor((lock_timer / 60) % 60)
+				ongoing_runs.body.join_protected_crew_info.caption = { 'pirates.gui_join_protected_run_info', hrs, min, sec }
+			end
+			if ongoing_runs.body.join_private_crew_info.visible then
+				local lock_timer = selected_crew.private_run_lock_timer
+				local hrs, min, sec = Math.floor((lock_timer / (60 * 60 * 60)) % 60), Math.floor((lock_timer / (60 * 60)) % 60), Math.floor((lock_timer / 60) % 60)
+				ongoing_runs.body.join_private_crew_info.caption = { 'pirates.gui_join_private_run_info', hrs, min, sec }
+			end
 		end
 	end
 
-	if flow.proposals.visible then
+	local proposals = flow.proposals
+	proposals.visible = (memory.crewstatus == nil and not playercrew_status.leaving)
+
+	if proposals.visible then
 		local wrappedproposals = {}
 		for _, proposal in pairs(global_memory.crewproposals) do
-			wrappedproposals[#wrappedproposals + 1] = { '',
+			local proposal_info = { '',
 				proposal.name .. ' — ',
 				'[item=rail]',
 				0,
@@ -608,20 +557,29 @@ function Public.full_update(player)
 				proposal.run_is_protected and { 'pirates.run_condition_captain_protected' } or '',
 				proposal.run_has_blueprints_disabled and { 'pirates.run_condition_blueprints_disabled' } or ''
 			}
+			table.insert(wrappedproposals, proposal_info)
 		end
-		GuiCommon.update_listbox(flow.proposals.body.proposals_listbox, wrappedproposals)
-	end
+		GuiCommon.update_listbox(proposals.body.proposals_listbox, wrappedproposals)
 
-	-- update proposal maker
-	if flow.proposals.body.proposal_maker.visible then
-		local capacity_slider_value = flow.proposals.body.proposal_maker.body.capacity_options.capacity.capacity.slider.slider_value
-		for i, opt in pairs(CoreData.capacity_options) do
-			if capacity_slider_value == i then
-				flow.proposals.body.proposal_maker.body.capacity_options.capacity.capacity.readoff_text.caption = opt.text
-				flow.proposals.body.proposal_maker.body.capacity_options.capacity_readoff_icon.sprite = opt.icon
-			end
+		proposals.body.proposals_listbox.visible = not playercrew_status.leaving and #global_memory.crewproposals > 0
+		proposals.body.flow_buttons.abandon_proposal.visible = not playercrew_status.leaving and playercrew_status.created_crew and playercrew_status.proposing and #global_memory.crewproposals > 0
+		proposals.body.proposal_maker.visible = not playercrew_status.leaving and not playercrew_status.created_crew
+		proposals.body.flow_proposal_launch.proposal_insufficient_sloops.visible = playercrew_status.sloops_full
+		proposals.body.flow_proposal_launch.proposal_crew_count_capped.visible = playercrew_status.crew_count_capped
+		proposals.body.flow_proposal_launch.launch_crew.visible = playercrew_status.proposal_can_launch
+
+		if proposals.body.proposal_maker.visible then
+			local capacity_slider = proposals.body.proposal_maker.body.capacity_options.capacity.capacity
+			local capacity_option = CoreData.capacity_options[capacity_slider.slider.slider_value]
+			capacity_slider.readoff_text.caption = capacity_option.text == '∞' and { 'pirates.gui_runs_proposal_maker_no_limit' } or capacity_option.text
+			proposals.body.proposal_maker.body.capacity_options.capacity_readoff_icon.sprite = capacity_option.icon
+
+			local is_private = proposals.body.proposal_maker.body.settings.private_checkbox.state
+			proposals.body.proposal_maker.body.settings.password_label.visible = is_private
+			proposals.body.proposal_maker.body.settings.password.visible = is_private
+			proposals.body.proposal_maker.body.settings.confirm_password_label.visible = is_private
+			proposals.body.proposal_maker.body.settings.confirm_password.visible = is_private
 		end
-		if flow.proposals.body.proposal_maker.body.capacity_options.capacity.capacity.readoff_text.caption == '∞' then flow.proposals.body.proposal_maker.body.capacity_options.capacity.capacity.readoff_text.caption = { 'pirates.gui_runs_proposal_maker_no_limit' } end
 	end
 end
 
