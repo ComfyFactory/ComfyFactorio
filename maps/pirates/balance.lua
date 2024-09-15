@@ -171,7 +171,7 @@ function Public.game_slowness_scale()
 	-- return 1 / (Public.crew_scale()^(50/100) / Math.sloped(Common.difficulty_scale(), 1/4)) --changed crew_scale factor significantly to help smaller crews
 
 	-- local scale = 0.3 + Math.sloped(Common.difficulty_scale(), -0.15) / (Public.crew_scale()^(1/8))
-	local scale = 2.6 * Math.sloped(Common.difficulty_scale(), -0.2) - Public.crew_scale() ^ (1 / 4)
+	local scale = 2.6 * Math.sloped(Common.difficulty_scale(), -0.2) - Public.crew_scale() ^ (1 / 2)
 	return Math.max(1, scale)
 end
 
@@ -187,7 +187,7 @@ end
 
 -- Waiting at sea forever isn't generally fun for your teammates, so we encourage keeping the action moving:
 function Public.seconds_until_machines_shut_down_at_sea()
-	local minimum_mins = 3
+	local minimum_mins = 7
 	return Math.ceil(60 * minimum_mins * Public.game_slowness_scale())
 end
 
