@@ -597,6 +597,7 @@ local function set_restricted_permissions(group)
 	group.set_allows_action(defines.input_action.activate_paste, false)
 	group.set_allows_action(defines.input_action.upgrade, false)
 	group.set_allows_action(defines.input_action.deconstruct, false)
+	group.set_allows_action(defines.input_action.open_gui, false)
 	group.set_allows_action(defines.input_action.fast_entity_transfer, false)
 	group.set_allows_action(defines.input_action.fast_entity_split, false)
 end
@@ -623,6 +624,7 @@ function Public.try_create_permissions_groups()
 		set_restricted_permissions(group)
 		group.set_allows_action(defines.input_action.deconstruct, true) --pick up dead players
 
+		group.set_allows_action(defines.input_action.open_gui, true)
 		group.set_allows_action(defines.input_action.fast_entity_transfer, true)
 		group.set_allows_action(defines.input_action.fast_entity_split, true)
 	end
@@ -632,7 +634,7 @@ function Public.try_create_permissions_groups()
 		group.set_allows_action(defines.input_action.deconstruct, true) --pick up dead players
 		set_restricted_permissions(group)
 
-		-- Note there is other code to prevent these players from opening chests
+		group.set_allows_action(defines.input_action.open_gui, true) -- We want you to open the market, but there is other code to prevent you from opening certain chests
 	end
 
 	if not game.permissions.get_group('cabin_privileged') then
@@ -640,7 +642,7 @@ function Public.try_create_permissions_groups()
 		group.set_allows_action(defines.input_action.deconstruct, true) --pick up dead players
 		set_restricted_permissions(group)
 
-		-- Note there is other code to prevent these players from opening chests
+		group.set_allows_action(defines.input_action.open_gui, true) -- We want you to open the market, but there is other code to prevent you from opening certain chests
 	end
 
 	if not game.permissions.get_group('plebs') then
