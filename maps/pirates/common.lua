@@ -23,7 +23,6 @@ Public.starting_ships_count = 7
 Public.active_crews_cap = 7
 Public.private_run_cap = 4
 Public.protected_but_not_private_run_cap = 2
-Public.minimumCapacitySliderValue = 1
 Public.minimum_run_capacity_to_enforce_space_for = 22
 
 -- auto-disbanding when there are no players left in the crew:

@@ -112,8 +112,6 @@ local function on_init()
 	global_memory.protected_but_not_private_run_cap = Common.protected_but_not_private_run_cap
 	global_memory.private_run_cap = Common.private_run_cap
 
-	global_memory.minimumCapacitySliderValue = Common.minimumCapacitySliderValue
-
 	Surfaces.Lobby.create_starting_dock_surface()
 	local lobby = game.surfaces[CoreData.lobby_surface_name]
 	game.forces.player.set_spawn_position(Common.lobby_spawnpoint, lobby)

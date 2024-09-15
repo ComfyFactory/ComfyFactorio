@@ -9,8 +9,8 @@ local Public = {}
 Public.scenario_id_name = 'pirates'
 Public.version_string = '1.6.2' --major.minor.patch versioning, to match factorio mod portal
 
-Public.blueprint_library_allowed = true
-Public.blueprint_importing_allowed = true
+-- Public.blueprint_library_allowed = true
+-- Public.blueprint_importing_allowed = true
 
 Public.rocket_silo_death_causes_loss = false
 

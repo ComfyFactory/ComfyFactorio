@@ -752,6 +752,7 @@ function Public.initialise_crew(accepted_proposal, player_position)
 	memory.difficulty = CoreData.difficulty_options[accepted_proposal.difficulty_option].value
 	memory.capacity = CoreData.capacity_options[accepted_proposal.capacity_option].value
 	-- memory.mode = CoreData.mode_options[accepted_proposal.mode_option].value
+	memory.run_has_blueprints_disabled = accepted_proposal.run_has_blueprints_disabled
 	memory.run_is_protected = accepted_proposal.run_is_protected
 	memory.protected_run_lock_timer = 60 * 60 * 60 * CoreData.protected_run_lock_amount_hr
 	memory.run_is_private = accepted_proposal.run_is_private

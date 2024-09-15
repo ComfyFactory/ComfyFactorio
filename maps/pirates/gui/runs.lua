@@ -164,7 +164,7 @@ end
 
 function Public.toggle_window(player)
 	local window
-	local flow, flow2, flow3, flow4, flow5
+	local flow, flow2, flow3, flow4, flow5, flow6
 
 	--*** OVERALL FLOW ***--
 	if player.gui.screen[window_name .. '_piratewindow'] then
@@ -223,7 +223,7 @@ function Public.toggle_window(player)
 	flow3.style.single_line = false
 
 	flow3 = flow2.add({
-		name = 'password_namefield',
+		name = 'password',
 		type = 'textfield',
 		text = '',
 		visible = false,
@@ -336,11 +336,25 @@ function Public.toggle_window(player)
 	flow5.style.width = 150
 	flow5.style.height = 24
 	flow5.style.top_margin = -3
-	flow5.style.bottom_margin = 3
 
-	-- PROTECTED RUN ELEMENTS --
+	-- CREW SETTINGS --
 
-	flow4.add({
+	flow5 = flow4.add({
+		name = 'settings',
+		type = 'flow',
+		direction = 'vertical',
+	})
+	flow5.style.horizontal_align = 'left'
+	flow5.style.bottom_margin = 5
+
+	flow5.add({
+		name = 'blueprints_disabled_checkbox',
+		type = 'checkbox',
+		caption = { 'pirates.gui_runs_proposal_maker_blueprints_disabled' },
+		state = false,
+	})
+
+	flow5.add({
 		name = 'protected_checkbox',
 		type = 'checkbox',
 		caption = { 'pirates.gui_runs_proposal_maker_protected' },
@@ -348,9 +362,7 @@ function Public.toggle_window(player)
 		tooltip = { 'pirates.gui_runs_proposal_maker_protected_tooltip', CoreData.protected_run_lock_amount_hr }
 	})
 
-	-- PRIVATE RUN ELEMENTS --
-
-	flow4.add({
+	flow5.add({
 		name = 'private_checkbox',
 		type = 'checkbox',
 		caption = { 'pirates.gui_runs_proposal_maker_private' },
@@ -358,44 +370,44 @@ function Public.toggle_window(player)
 		tooltip = { 'pirates.gui_runs_proposal_maker_private_tooltip', CoreData.private_run_lock_amount_hr }
 	})
 
-	flow5 = flow4.add({
+	flow6 = flow5.add({
 		name = 'password_label',
 		type = 'label',
 		caption = { 'pirates.gui_runs_proposal_maker_password' },
 	})
-	flow5.style.font = 'heading-3'
+	flow6.style.font = 'heading-3'
 
-	flow5 = flow4.add({
-		name = 'password_namefield',
+	flow6 = flow5.add({
+		name = 'password',
 		type = 'textfield',
 		text = '',
 	})
-	flow5.style.width = 150
-	flow5.style.height = 24
-	flow5.style.top_margin = -3
-	flow5.style.bottom_margin = 3
+	flow6.style.width = 150
+	flow6.style.height = 24
+	flow6.style.top_margin = -3
+	flow6.style.bottom_margin = 3
 
-	flow5 = flow4.add({
+	flow6 = flow5.add({
 		name = 'confirm_password_label',
 		type = 'label',
 		caption = { 'pirates.gui_runs_proposal_maker_confirm_password' },
 	})
-	flow5.style.font = 'heading-3'
+	flow6.style.font = 'heading-3'
 
-	flow5 = flow4.add({
-		name = 'confirm_password_namefield',
+	flow6 = flow5.add({
+		name = 'confirm_password',
 		type = 'textfield',
 		text = '',
 	})
-	flow5.style.width = 150
-	flow5.style.height = 24
-	flow5.style.top_margin = -3
-	flow5.style.bottom_margin = 3
+	flow6.style.width = 150
+	flow6.style.height = 24
+	flow6.style.top_margin = -3
+	flow6.style.bottom_margin = 3
 
 	-- CREW SIZE LIMIT SLIDER --
 
 	flow5 = flow4.add({
-		name = 'options',
+		name = 'capacity_options',
 		type = 'table',
 		column_count = 2,
 	})
@@ -405,22 +417,6 @@ function Public.toggle_window(player)
 	flow_add_proposal_slider(flow5, 'capacity', { 'pirates.gui_runs_proposal_maker_capacity' }, #CoreData.capacity_options, 5, { 'pirates.capacity_tooltip' })
 	-- flow_add_proposal_slider(flow5, 'difficulty', 'Difficulty', #CoreData.difficulty_options, 2, {'pirates.difficulty_tooltip'})
 	-- flow_add_proposal_switch(flow5, 'mode', 'Mode', 'left', {'pirates.mode_tooltip'})
-
-	-- flow5 = flow4.add({
-	-- 	name = 'proposal_cant_do_infinity_mode',
-	-- 	type = 'label',
-	-- 	caption = 'Infinity mode isn\'t available at the moment.',
-	-- })
-	-- flow5.style.single_line = false
-	-- flow5.style.maximal_width = 200
-
-	flow5 = flow4.add({
-		name = 'proposal_disabled_low_crew_caps',
-		type = 'label',
-		caption = { 'pirates.gui_runs_proposal_maker_capacity_disabled' },
-	})
-	flow5.style.single_line = false
-	flow5.style.maximal_width = 200
 
 	flow5 = flow4.add({
 		name = 'propose_crew',
@@ -515,9 +511,9 @@ function Public.full_update(player)
 		local show_protected_info = crewid and global_memory.crew_memories[crewid].run_is_protected and global_memory.crew_memories[crewid].protected_run_lock_timer < 60 * 60 * 60 * CoreData.protected_run_lock_amount_hr
 		flow.ongoing_runs.body.join_protected_crew_info.visible = show_protected_info
 
-		local show_private_info = crewid and global_memory.crew_memories[crewid].run_is_private and global_memory.crew_memories[crewid].private_run_lock_timer < 60 * 60 * 60 * CoreData.private_run_lock_amount_hr
+		local show_private_info = crewid and global_memory.crew_memories[crewid].run_is_private
 		flow.ongoing_runs.body.join_private_crew_info.visible = show_private_info
-		flow.ongoing_runs.body.password_namefield.visible = show_private_info
+		flow.ongoing_runs.body.password.visible = show_private_info
 	end
 
 	flow.proposals.visible = (memory.crewstatus == nil and not playercrew_status.leaving)
@@ -537,21 +533,13 @@ function Public.full_update(player)
 
 		flow.proposals.body.flow_proposal_launch.proposal_crew_count_capped.visible = playercrew_status.crew_count_capped
 
-		-- flow.proposals.body.proposal_maker.body.proposal_cant_do_infinity_mode.visible = (flow.proposals.body.proposal_maker.body.options.mode.mode.switch.switch_state == 'right')
-
-		-- flow.proposals.body.proposal_maker.body.proposal_disabled_low_crew_caps.visible = false
-		flow.proposals.body.proposal_maker.body.proposal_disabled_low_crew_caps.visible = (flow.proposals.body.proposal_maker.body.options.capacity.capacity.slider.slider_value < global_memory.minimumCapacitySliderValue)
-
-		flow.proposals.body.proposal_maker.body.propose_crew.visible = (flow.proposals.body.proposal_maker.body.proposal_disabled_low_crew_caps.visible == false)
-		-- flow.proposals.body.proposal_maker.body.propose_crew.visible = (flow.proposals.body.proposal_maker.body.proposal_cant_do_infinity_mode.visible == false) and (flow.proposals.body.proposal_maker.body.proposal_disabled_low_crew_caps.visible == false)
-
 		flow.proposals.body.flow_proposal_launch.launch_crew.visible = playercrew_status.proposal_can_launch
 
-		local checkbox_state = flow.proposals.body.proposal_maker.body.private_checkbox.state
-		flow.proposals.body.proposal_maker.body.password_label.visible = checkbox_state
-		flow.proposals.body.proposal_maker.body.password_namefield.visible = checkbox_state
-		flow.proposals.body.proposal_maker.body.confirm_password_label.visible = checkbox_state
-		flow.proposals.body.proposal_maker.body.confirm_password_namefield.visible = checkbox_state
+		local checkbox_state = flow.proposals.body.proposal_maker.body.settings.private_checkbox.state
+		flow.proposals.body.proposal_maker.body.settings.password_label.visible = checkbox_state
+		flow.proposals.body.proposal_maker.body.settings.password.visible = checkbox_state
+		flow.proposals.body.proposal_maker.body.settings.confirm_password_label.visible = checkbox_state
+		flow.proposals.body.proposal_maker.body.settings.confirm_password.visible = checkbox_state
 	end
 
 
@@ -577,7 +565,6 @@ function Public.full_update(player)
 				extraCrewText = ' (protected)'
 			end
 			wrappedmemories[#wrappedmemories + 1] = { 'pirates.run_displayform', mem.id, { '', mem.name .. extraCrewText .. ', ', CoreData.difficulty_options[mem.difficulty_option].text, ', [item=light-armor]' .. count .. CoreData.capacity_options[mem.capacity_option].text2 .. ',  [item=rail] ' .. (mem.overworldx or 0) } }
-			-- wrappedmemories[#wrappedmemories + 1] = {'pirates.run_displayform', mem.id, mem.name, Utils.spritepath_to_richtext(CoreData.difficulty_options[mem.difficulty_option].icon), count, CoreData.capacity_options[mem.capacity_option].text2, '      [item=rail] ', mem.overworldx or 0}
 		end
 		GuiCommon.update_listbox(flow.ongoing_runs.body.ongoing_runs_listbox, wrappedmemories)
 
@@ -610,37 +597,20 @@ function Public.full_update(player)
 		local wrappedproposals = {}
 		for _, proposal in pairs(global_memory.crewproposals) do
 			wrappedproposals[#wrappedproposals + 1] = { 'pirates.proposal_displayform', proposal.name, Utils.spritepath_to_richtext(CoreData.capacity_options[proposal.capacity_option].icon) }
-			-- wrappedproposals[#wrappedproposals + 1] = {'pirates.proposal_displayform', proposal.name, Utils.spritepath_to_richtext(CoreData.difficulty_options[proposal.difficulty_option].icon), Utils.spritepath_to_richtext(CoreData.capacity_options[proposal.capacity_option].icon)}
 		end
 		GuiCommon.update_listbox(flow.proposals.body.proposals_listbox, wrappedproposals)
 	end
 
 	-- update proposal maker
 	if flow.proposals.body.proposal_maker.visible then
-		local capacity_slider_value = flow.proposals.body.proposal_maker.body.options.capacity.capacity.slider.slider_value
+		local capacity_slider_value = flow.proposals.body.proposal_maker.body.capacity_options.capacity.capacity.slider.slider_value
 		for i, opt in pairs(CoreData.capacity_options) do
 			if capacity_slider_value == i then
-				flow.proposals.body.proposal_maker.body.options.capacity.capacity.readoff_text.caption = opt.text
-				flow.proposals.body.proposal_maker.body.options.capacity_readoff_icon.sprite = opt.icon
+				flow.proposals.body.proposal_maker.body.capacity_options.capacity.capacity.readoff_text.caption = opt.text
+				flow.proposals.body.proposal_maker.body.capacity_options.capacity_readoff_icon.sprite = opt.icon
 			end
 		end
-		if flow.proposals.body.proposal_maker.body.options.capacity.capacity.readoff_text.caption == '∞' then flow.proposals.body.proposal_maker.body.options.capacity.capacity.readoff_text.caption = { 'pirates.gui_runs_proposal_maker_no_limit' } end
-
-		-- local difficulty_slider_value = flow.proposals.body.proposal_maker.body.options.difficulty.difficulty.slider.slider_value
-		-- for i, opt in pairs(CoreData.difficulty_options) do
-		-- 	if difficulty_slider_value == i then
-		-- 		flow.proposals.body.proposal_maker.body.options.difficulty.difficulty.readoff_text.caption = opt.text
-		-- 		flow.proposals.body.proposal_maker.body.options.difficulty_readoff_icon.sprite = opt.icon
-		-- 	end
-		-- end
-
-		-- local mode_switch_state = flow.proposals.body.proposal_maker.body.options.mode.mode.switch.switch_state
-		-- for i, opt in pairs(CoreData.mode_options) do
-		-- 	if mode_switch_state == i then
-		-- 		flow.proposals.body.proposal_maker.body.options.mode.mode.readoff_text.caption = opt.text
-		-- 		flow.proposals.body.proposal_maker.body.options.mode_readoff_icon.sprite = opt.icon
-		-- 	end
-		-- end
+		if flow.proposals.body.proposal_maker.body.capacity_options.capacity.capacity.readoff_text.caption == '∞' then flow.proposals.body.proposal_maker.body.capacity_options.capacity.capacity.readoff_text.caption = { 'pirates.gui_runs_proposal_maker_no_limit' } end
 	end
 end
 
@@ -688,10 +658,10 @@ function Public.click(event)
 
 			-- If run is private
 			if memory.run_is_private then
-				if memory.private_run_password == flow.ongoing_runs.body.password_namefield.text then
+				if memory.private_run_password == flow.ongoing_runs.body.password.text then
 					Crew.join_crew(player)
 					flow.ongoing_runs.body.join_private_crew_info.visible = false
-					flow.ongoing_runs.body.password_namefield.visible = false
+					flow.ongoing_runs.body.password.visible = false
 
 					if memory.run_is_protected and (not Roles.captain_exists()) then
 						Common.notify_player_expected(player, { 'pirates.player_joins_protected_run_with_no_captain' })
@@ -735,8 +705,9 @@ function Public.click(event)
 			end
 		end
 
-		local run_is_protected = flow.proposals.body.proposal_maker.body.protected_checkbox.state
-		local run_is_private = flow.proposals.body.proposal_maker.body.private_checkbox.state
+		local run_has_blueprints_disabled = flow.proposals.body.proposal_maker.body.settings.blueprints_disabled_checkbox.state
+		local run_is_protected = flow.proposals.body.proposal_maker.body.settings.protected_checkbox.state
+		local run_is_private = flow.proposals.body.proposal_maker.body.settings.private_checkbox.state
 		if run_is_private then
 			-- Make sure private run can be created
 			if private_run_count >= global_memory.private_run_cap then
@@ -753,13 +724,13 @@ function Public.click(event)
 			end
 
 			-- Check if passwords match
-			if flow.proposals.body.proposal_maker.body.password_namefield.text ~= flow.proposals.body.proposal_maker.body.confirm_password_namefield.text then
+			if flow.proposals.body.proposal_maker.body.settings.password.text ~= flow.proposals.body.proposal_maker.body.settings.confirm_password.text then
 				Common.notify_player_error(player, { 'pirates.gui_runs_proposal_maker_error_private_run_password_no_match' })
 				return
 			end
 
 			-- Check if passwords aren't empty
-			if flow.proposals.body.proposal_maker.body.password_namefield.text == '' then
+			if flow.proposals.body.proposal_maker.body.settings.password.text == '' then
 				Common.notify_player_error(player, { 'pirates.gui_runs_proposal_maker_error_private_run_password_empty' })
 				return
 			end
@@ -791,14 +762,11 @@ function Public.click(event)
 			return
 		end
 
-		local private_run_password = flow.proposals.body.proposal_maker.body.password_namefield.text
+		local private_run_password = flow.proposals.body.proposal_maker.body.settings.password.text
 		local proposal_name = flow.proposals.body.proposal_maker.body.namefield.text
-		-- local proposal_name = string.sub(flow.proposals.body.proposal_maker.body.namefield.text, 1, 30)
 
-		local capacity_option = flow.proposals.body.proposal_maker.body.options.capacity.capacity.slider.slider_value
+		local capacity_option = flow.proposals.body.proposal_maker.body.capacity_options.capacity.capacity.slider.slider_value
 		local difficulty_option = 1
-		-- local difficulty_option = flow.proposals.body.proposal_maker.body.options.difficulty.difficulty.slider.slider_value
-		-- local mode_option = flow.proposals.body.proposal_maker.body.options.mode.mode.switch.switch_state
 
 		if (not proposal_name) or (proposal_name == '') then proposal_name = 'NoName' end
 
@@ -841,6 +809,7 @@ function Public.click(event)
 			created_by_player = player.index,
 			run_is_protected = run_is_protected,
 			run_is_private = run_is_private,
+			run_has_blueprints_disabled = run_has_blueprints_disabled,
 			private_run_password = private_run_password,
 		}
 

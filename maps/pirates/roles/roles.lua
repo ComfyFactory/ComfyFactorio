@@ -605,6 +605,11 @@ function Public.try_create_permissions_groups()
 	if not game.permissions.get_group('lobby') then
 		local group = game.permissions.create_group('lobby')
 		set_restricted_permissions(group)
+
+		group.set_allows_action(defines.input_action.open_blueprint_library_gui, false)
+		group.set_allows_action(defines.input_action.grab_blueprint_record, false)
+		group.set_allows_action(defines.input_action.import_blueprint_string, false)
+		group.set_allows_action(defines.input_action.import_blueprint, false)
 	end
 
 	if not game.permissions.get_group('crowsnest') then
@@ -664,13 +669,39 @@ function Public.try_create_permissions_groups()
 		group.set_allows_action(defines.input_action.set_trains_limit, false)
 		group.set_allows_action(defines.input_action.set_train_stopped, false)
 	end
+
+	local blueprint_disabled_groups = {
+		'crowsnest_bps_disabled',
+		'crowsnest_privileged_bps_disabled',
+		'cabin_bps_disabled',
+		'cabin_privileged_bps_disabled',
+		'plebs_bps_disabled',
+		'not_trusted_bps_disabled'
+	}
+
+	for _, group_name in ipairs(blueprint_disabled_groups) do
+		if not game.permissions.get_group(group_name) then
+			local group = game.permissions.create_group(group_name)
+			local base_group_name = group_name:gsub('_bps_disabled', '')
+			local base_group = game.permissions.get_group(base_group_name)
+
+			for _, action in pairs(defines.input_action) do
+				group.set_allows_action(action, base_group.allows_action(action))
+			end
+
+			group.set_allows_action(defines.input_action.open_blueprint_library_gui, false)
+			group.set_allows_action(defines.input_action.grab_blueprint_record, false)
+			group.set_allows_action(defines.input_action.import_blueprint_string, false)
+			group.set_allows_action(defines.input_action.import_blueprint, false)
+		end
+	end
 end
 
 function Public.add_player_to_permission_group(player, group_override)
+	Public.try_create_permissions_groups()
+
 	-- local jailed = Jailed.get_jailed_table()
 	-- local enable_permission_group_disconnect = WPT.get('disconnect_wagon')
-	local session = Session.get_session_table()
-	local AG = Antigrief.get()
 
 	local gulag = game.permissions.get_group('gulag')
 	local tbl = gulag and gulag.players
@@ -684,29 +715,11 @@ function Public.add_player_to_permission_group(player, group_override)
 	--     return
 	-- end
 
-	local playtime = player.online_time
-	if session and session[player.name] then
-		playtime = player.online_time + session[player.name]
-	end
-
 	-- if jailed[player.name] then
 	--     return
 	-- end
 
-	Public.try_create_permissions_groups()
-
-	local group
-	if group_override then
-		group = game.permissions.get_group(group_override)
-	else
-		if AG.enabled and not player.admin and playtime < 5184000 then -- 24 hours
-			group = game.permissions.get_group('not_trusted')
-		else
-			group = game.permissions.get_group('plebs')
-		end
-	end
-
-	-- if _DEBUG then return end
+	local group = game.permissions.get_group(group_override)
 
 	group.add_player(player)
 end
@@ -718,22 +731,37 @@ function Public.update_privileges(player)
 		return
 	end
 
+	local memory = Memory.get_crew_memory()
+	local bps_disabled_suffix = memory.run_has_blueprints_disabled and '_bps_disabled' or ''
+
 	if string.sub(player.surface.name, 9, 17) == 'Crowsnest' then
 		if Public.player_privilege_level(player) >= Public.privilege_levels.OFFICER then
-			return Public.add_player_to_permission_group(player, 'crowsnest_privileged')
+			return Public.add_player_to_permission_group(player, 'crowsnest_privileged' .. bps_disabled_suffix)
 		else
-			return Public.add_player_to_permission_group(player, 'crowsnest')
+			return Public.add_player_to_permission_group(player, 'crowsnest' .. bps_disabled_suffix)
 		end
 	elseif string.sub(player.surface.name, 9, 13) == 'Cabin' then
 		if Public.player_privilege_level(player) >= Public.privilege_levels.OFFICER then
-			return Public.add_player_to_permission_group(player, 'cabin_privileged')
+			return Public.add_player_to_permission_group(player, 'cabin_privileged' .. bps_disabled_suffix)
 		else
-			return Public.add_player_to_permission_group(player, 'cabin')
+			return Public.add_player_to_permission_group(player, 'cabin' .. bps_disabled_suffix)
 		end
 	elseif player.surface.name == CoreData.lobby_surface_name then
 		return Public.add_player_to_permission_group(player, 'lobby')
 	else
-		return Public.add_player_to_permission_group(player)
+		local session = Session.get_session_table()
+		local AG = Antigrief.get()
+
+		local playtime = player.online_time
+		if session and session[player.name] then
+			playtime = player.online_time + session[player.name]
+		end
+
+		if AG and AG.enabled and not player.admin and playtime < 5184000 then -- 24 hours
+			Public.add_player_to_permission_group(player, 'not_trusted' .. bps_disabled_suffix)
+		else
+			Public.add_player_to_permission_group(player, 'plebs' .. bps_disabled_suffix)
+		end
 	end
 end
 
