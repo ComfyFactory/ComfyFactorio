@@ -16,6 +16,7 @@ local Surfaces = require 'maps.pirates.surfaces.surfaces'
 -- local Progression = require 'maps.pirates.progression'
 local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 local Roles = require 'maps.pirates.roles.roles'
+local Permissions = require 'maps.pirates.permissions'
 -- local Gui = require 'maps.pirates.gui.gui'
 -- local Sea = require 'maps.pirates.surfaces.sea.sea'
 -- local Hold = require 'maps.pirates.surfaces.hold'
@@ -1483,7 +1484,7 @@ local function event_on_player_joined_game(event)
 		local surface = game.surfaces[CoreData.lobby_surface_name]
 
 		player.teleport(surface.find_non_colliding_position('character', spawnpoint, 32, 0.5) or spawnpoint, surface)
-		Roles.update_privileges(player)
+		Permissions.update_privileges(player)
 
 		if not player.name then return end
 
@@ -1672,7 +1673,7 @@ local function on_player_changed_surface(event)
 		end
 	end
 
-	Roles.update_privileges(player)
+	Permissions.update_privileges(player)
 
 	GuiWelcome.close_welcome_window(player)
 end
