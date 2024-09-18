@@ -29,7 +29,7 @@ local simplex_noise = require 'utils.simplex_noise'.d2
 local Token = require 'utils.token'
 local Task = require 'utils.task'
 local Highscore = require 'maps.pirates.highscore'
-
+local Permissions = require 'maps.pirates.permissions'
 local Classes = require 'maps.pirates.roles.classes'
 local Gui = require 'maps.pirates.gui.gui'
 -- local Session = require 'utils.datastore.session_data'
@@ -73,7 +73,7 @@ local function check_captain(cmd)
 		if player ~= nil then
 			p = player.print
 			if not Common.validate_player(player) then return end
-			if not (Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN) then
+			if not (Permissions.player_privilege_level(player) >= Permissions.privilege_levels.CAPTAIN) then
 				p({ 'pirates.cmd_error_not_captain' }, Color.fail)
 				return false
 			end
@@ -91,7 +91,7 @@ local function check_captain_or_admin(cmd)
 		if player ~= nil then
 			p = player.print
 			if not Common.validate_player(player) then return end
-			if not (player.admin or Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN) then
+			if not (player.admin or Permissions.player_privilege_level(player) >= Permissions.privilege_levels.CAPTAIN) then
 				p({ 'pirates.cmd_error_not_captain' }, Color.fail)
 				return false
 			end

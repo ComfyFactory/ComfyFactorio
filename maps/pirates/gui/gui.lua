@@ -22,12 +22,11 @@ local Cabin = require 'maps.pirates.surfaces.cabin'
 local Crowsnest = require 'maps.pirates.surfaces.crowsnest'
 local Progression = require 'maps.pirates.progression'
 local Surfaces = require 'maps.pirates.surfaces.surfaces'
-local Roles = require 'maps.pirates.roles.roles'
-
+-- local Roles = require 'maps.pirates.roles.roles'
+local Permissions = require 'maps.pirates.permissions'
 local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 local Kraken = require 'maps.pirates.surfaces.sea.kraken'
 local GuiWelcome = require 'maps.pirates.gui.welcome'
-
 local ComfyGui = require 'utils.gui'
 ComfyGui.set_disabled_tab('Scoreboard', true)
 ComfyGui.set_disabled_tab('Groups', true)
@@ -1186,7 +1185,7 @@ local function on_gui_click(event)
 
 	if event.element.name and event.element.name == 'etaframe_piratebutton' then
 		if (memory.boat.state == Boats.enum_state.DOCKED or memory.boat.state == Boats.enum_state.LANDED) then
-			if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
+			if Permissions.player_privilege_level(player) >= Permissions.privilege_levels.CAPTAIN then
 				if (not memory.undock_shortcut_are_you_sure_data) then memory.undock_shortcut_are_you_sure_data = {} end
 				if memory.undock_shortcut_are_you_sure_data[player.index] and memory.undock_shortcut_are_you_sure_data[player.index] > game.tick - 60 * 4 then
 					if memory.boat.state == Boats.enum_state.DOCKED then
@@ -1199,13 +1198,13 @@ local function on_gui_click(event)
 				end
 			end
 		elseif memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL then
-			if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
+			if Permissions.player_privilege_level(player) >= Permissions.privilege_levels.CAPTAIN then
 				local destination_index = memory.mapbeingloadeddestination_index
 
 				Progression.progress_to_destination(destination_index)
 			end
 		elseif memory.boat.state == Boats.enum_state.ATSEA_VICTORIOUS then
-			if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
+			if Permissions.player_privilege_level(player) >= Permissions.privilege_levels.CAPTAIN then
 				memory.boat.state = Boats.enum_state.ATSEA_SAILING
 
 				local force = memory.force

@@ -14,12 +14,6 @@ local Classes = require 'maps.pirates.roles.classes'
 local Permissions = require 'maps.pirates.permissions'
 
 local Public = {}
-local privilege_levels = {
-	NORMAL = 1,
-	OFFICER = 2,
-	CAPTAIN = 3
-}
-Public.privilege_levels = privilege_levels
 
 
 --== Roles — General ==--
@@ -153,18 +147,6 @@ function Public.get_class_print_string(class, add_is_class_obstainable)
 	end
 
 	return nil
-end
-
-function Public.player_privilege_level(player)
-	local memory = Memory.get_crew_memory()
-
-	if Common.is_id_valid(memory.id) and Common.is_captain(player) then
-		return Public.privilege_levels.CAPTAIN
-	elseif Common.is_officer(player.index) then
-		return Public.privilege_levels.OFFICER
-	else
-		return Public.privilege_levels.NORMAL
-	end
 end
 
 function Public.make_captain(player)
