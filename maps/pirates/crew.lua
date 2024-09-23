@@ -1057,8 +1057,9 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['gate'].enabled = true
 
 	-- crew_force.technologies['productivity-module'].enabled = false
-	crew_force.technologies['productivity-module-2'].enabled = false
-	crew_force.technologies['productivity-module-3'].enabled = false
+	-- crew_force.technologies['productivity-module-2'].enabled = false
+	-- crew_force.technologies['productivity-module-3'].enabled = false
+
 	-- crew_force.technologies['speed-module'].enabled = true
 	-- crew_force.technologies['speed-module-2'].enabled = false
 	-- crew_force.technologies['speed-module-3'].enabled = false

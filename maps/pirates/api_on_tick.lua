@@ -80,20 +80,20 @@ function Public.prevent_unbarreling_off_ship(tickinterval)
 	end
 end
 
-local function remove_productivity_modules(surface, machines)
-	for _, machine in ipairs(machines) do
-		if machine and machine.valid then
-			local modules = machine.get_module_inventory()
-			if modules and modules.valid then
-				local productivity_modules = modules.get_contents()['productivity-module']
-				if productivity_modules and productivity_modules > 0 then
-					modules.remove { name = 'productivity-module', count = productivity_modules }
-					surface.spill_item_stack(machine.position, { name = 'productivity-module', count = productivity_modules }, true, nil, true)
-				end
-			end
-		end
-	end
-end
+-- local function remove_productivity_modules(surface, machines)
+-- 	for _, machine in ipairs(machines) do
+-- 		if machine and machine.valid then
+-- 			local modules = machine.get_module_inventory()
+-- 			if modules and modules.valid then
+-- 				local productivity_modules = modules.get_contents()['productivity-module']
+-- 				if productivity_modules and productivity_modules > 0 then
+-- 					modules.remove { name = 'productivity-module', count = productivity_modules }
+-- 					surface.spill_item_stack(machine.position, { name = 'productivity-module', count = productivity_modules }, true, nil, true)
+-- 				end
+-- 			end
+-- 		end
+-- 	end
+-- end
 
 function Public.apply_restrictions_to_machines(tickinterval)
 	local memory = Memory.get_crew_memory()
@@ -165,10 +165,10 @@ function Public.apply_restrictions_to_machines(tickinterval)
 			type = { 'assembling-machine', 'furnace', 'lab' },
 			force = memory.force_name
 		}
-		local drills = surface.find_entities_filtered {
-			type = { 'mining-drill' },
-			force = memory.force_name
-		}
+		-- local drills = surface.find_entities_filtered {
+		-- 	type = { 'mining-drill' },
+		-- 	force = memory.force_name
+		-- }
 		local power_machines = surface.find_entities_filtered {
 			type = { 'generator', 'solar-panel', 'boiler', 'reactor' },
 			force = memory.force_name
@@ -184,9 +184,6 @@ function Public.apply_restrictions_to_machines(tickinterval)
 				machine.active = not memory.crafters_disabled
 			end
 		end
-
-		remove_productivity_modules(surface, crafters)
-		remove_productivity_modules(surface, drills)
 	end
 end
 
