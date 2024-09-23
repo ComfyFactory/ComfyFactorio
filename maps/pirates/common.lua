@@ -27,7 +27,7 @@ Public.minimum_run_capacity_to_enforce_space_for = 22
 
 -- auto-disbanding when there are no players left in the crew:
 -- Public.autodisband_hours = nil
-Public.autodisband_hours = 24 * 5 -- should not be zero (as this messes with saving and loading a game, which boots the player for a moment.) Also note that the server may run very slowly when no-one is on it.
+Public.autodisband_hours = 24 * 2 -- should not be zero (as this messes with saving and loading a game, which boots the player for a moment.) Also note that the server may run very slowly when no-one is on it.
 
 Public.boat_steps_at_a_time = 1
 
