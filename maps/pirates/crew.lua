@@ -975,7 +975,7 @@ function Public.reset_crew_and_enemy_force(id)
 
 
 	-- Trying out having this be researched by default, in order to make coal (the resource needed to power the ship) interchangeable with oil, thereby making coal more precious:
-	crew_force.technologies['coal-liquefaction'].researched = true
+	-- crew_force.technologies['coal-liquefaction'].researched = true
 
 	-- crew_force.technologies['toolbelt'].enabled = false --trying this. we don't actually want players to carry too many things manually, and in fact in a resource-tight scenario that's problematic
 
