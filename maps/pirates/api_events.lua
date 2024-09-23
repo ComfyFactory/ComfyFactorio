@@ -2092,10 +2092,7 @@ local function event_on_console_chat(event)
 	local global_memory = Memory.get_global_memory()
 
 	local player = game.players[event.player_index]
-	local tag = player.tag
-	if not tag then
-		tag = ''
-	end
+	local tag = player.tag or ''
 	local color = player.chat_color
 
 	-- if global.tournament_mode then
@@ -2116,11 +2113,13 @@ local function event_on_console_chat(event)
 		end
 	else
 		-- NOTE: For some reason memory.name(or player.name?) can be nil so need this check. It was observed it happened after crew died and resetted, then I said something in lobby before launching new run. That's the only recorded occurence so far.
-		if memory.name then
+		if memory.name and player.name then
 			game.forces.player.print(player.name .. tag .. ' [' .. memory.name .. ']: ' .. event.message, color)
-		else
-			game.forces.player.print(player.name .. tag .. event.message, color)
+		elseif player.name then
+			game.forces.player.print(player.name .. tag .. ': ' .. event.message, color)
 			log('Error (non-critical): memory.name is nil')
+		else
+			log('Error (non-critical): player.name is nil')
 		end
 	end
 end
