@@ -101,7 +101,7 @@ function Public.mid_farness_position_1(args, points_to_avoid)
 			if (not Utils.contains(CoreData.tiles_that_conflict_with_resource_layer, tile.name)) and (not Utils.contains(CoreData.edgemost_tile_names, tile.name)) then
 				local p3 = { x = p2.x + args.static_params.terraingen_coordinates_offset.x, y = p2.y + args.static_params.terraingen_coordinates_offset.y }
 
-				if IslandsCommon.island_farness_1(args)(p3) > 0.1 and IslandsCommon.island_farness_1(args)(p3) < 0.7 then
+				if IslandsCommon.island_farness_1(args)(p3) > 0.1 and IslandsCommon.island_farness_1(args)(p3) < 0.75 then
 					local allowed = true
 					for _, pa in pairs(points_to_avoid) do
 						if Math.distance({ x = pa.x, y = pa.y }, p2) < pa.r then

@@ -24,7 +24,6 @@ The scenario is quite complex, but there are ways to get started, even if you do
 -- require 'modules.biters_yield_coins'
 require 'modules.biter_noms_you'
 require 'modules.no_deconstruction_of_neutral_entities'
-require 'maps.pirates.custom_events' --probably do this before anything else
 require 'utils.server'
 local _inspect = require 'utils.inspect'.inspect
 -- local Modifers = require 'player_modifiers'
@@ -57,7 +56,7 @@ require 'maps.pirates.ores'
 require 'maps.pirates.quest'
 require 'maps.pirates.parrot'
 require 'maps.pirates.shop.shop'
-require 'maps.pirates.boat_upgrades'
+require 'maps.pirates.shop.boat_upgrades'
 local Token = require 'utils.token'
 local Task = require 'utils.task'
 local Server = require 'utils.server'
@@ -111,8 +110,6 @@ local function on_init()
 	global_memory.active_crews_cap_in_memory = Common.active_crews_cap
 	global_memory.protected_but_not_private_run_cap = Common.protected_but_not_private_run_cap
 	global_memory.private_run_cap = Common.private_run_cap
-
-	global_memory.minimumCapacitySliderValue = Common.minimumCapacitySliderValue
 
 	Surfaces.Lobby.create_starting_dock_surface()
 	local lobby = game.surfaces[CoreData.lobby_surface_name]
@@ -243,8 +240,6 @@ local function crew_tick()
 
 						if tick % 3600 == 0 then
 							PiratesApiOnTick.prune_offline_characters_list(3600)
-							PiratesApiOnTick.update_protected_run_lock_timer(3600)
-							PiratesApiOnTick.update_private_run_lock_timer(3600)
 						end
 					end
 				end

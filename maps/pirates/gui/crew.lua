@@ -13,6 +13,7 @@ local Surfaces = require 'maps.pirates.surfaces.surfaces'
 local SurfacesCommon = require 'maps.pirates.surfaces.common'
 local Hold = require 'maps.pirates.surfaces.hold'
 -- local Cabin = require 'maps.pirates.surfaces.cabin'
+local Permissions = require 'maps.pirates.permissions'
 
 local window_name = 'crew'
 
@@ -226,7 +227,7 @@ function Public.toggle_window(player)
                 {
                     name = 'difficulty_option_' .. i,
                     type = 'button',
-                    caption = o.text
+                    caption = { "", "[item=", o.icon, "] ", o.text }
                 }
             )
         flow3.style.minimal_width = 95
@@ -596,7 +597,7 @@ function Public.click(event)
 
     if eventname == 'capn_summon_crew' then
         --double check:
-        if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
+        if Permissions.player_privilege_level(player) >= Permissions.privilege_levels.CAPTAIN then
             Crew.summon_crew()
         end
         return
@@ -604,7 +605,7 @@ function Public.click(event)
 
     if eventname == 'capn_requisition' then
         --double check:
-        if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
+        if Permissions.player_privilege_level(player) >= Permissions.privilege_levels.CAPTAIN then
             Roles.captain_tax(memory.playerindex_captain)
         end
         return
@@ -622,7 +623,7 @@ function Public.click(event)
 
     if eventname == 'capn_disband_crew' then
         --double check:
-        if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
+        if Permissions.player_privilege_level(player) >= Permissions.privilege_levels.CAPTAIN then
             if not memory.disband_are_you_sure_ticks then
                 memory.disband_are_you_sure_ticks = {}
             end
@@ -633,7 +634,7 @@ function Public.click(event)
 
     if eventname == 'capn_disband_are_you_sure' then
         --double check:
-        if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
+        if Permissions.player_privilege_level(player) >= Permissions.privilege_levels.CAPTAIN then
             local force = memory.force
             if force and force.valid then
                 local message = { 'pirates.crew_disbanded', player.name, memory.name, Utils.time_longform((memory.real_age or 0) / 60) }

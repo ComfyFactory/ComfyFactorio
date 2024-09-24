@@ -128,7 +128,7 @@ function Public.create_hold_surface(nth)
 
 	local surface = game.create_surface(holdname, map_gen_settings)
 	surface.freeze_daytime = true
-	surface.daytime = 0.3
+	surface.daytime = 0.25
 	surface.show_clouds = false
 	surface.solar_power_multiplier = 0
 

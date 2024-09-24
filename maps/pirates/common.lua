@@ -21,18 +21,15 @@ local Public = {}
 
 Public.starting_ships_count = 7
 Public.active_crews_cap = 7
-Public.private_run_cap = 3
-Public.protected_but_not_private_run_cap = 3
-Public.minimumCapacitySliderValue = 1
+Public.private_run_cap = 4
+Public.protected_but_not_private_run_cap = 2
 Public.minimum_run_capacity_to_enforce_space_for = 22
 
 -- auto-disbanding when there are no players left in the crew:
--- Public.autodisband_ticks = nil
-Public.autodisband_ticks = 60 * 60 * 60 * 24 * 3 -- should not be zero (as this messes with saving and loading a game, which  boots the player for a moment.) Also note that the server may run very slowly when no-one is on it.
+-- Public.autodisband_hours = nil
+Public.autodisband_hours = 24 * 4 -- should not be zero (as this messes with saving and loading a game, which boots the player for a moment.) Also note that the server may run very slowly when no-one is on it.
 
 Public.boat_steps_at_a_time = 1
-
-Public.seconds_after_landing_to_enable_AI = 45
 
 Public.boat_default_starting_distance_from_shore = 22
 -- Public.mapedge_distance_from_boat_starting_position = 136
@@ -1620,7 +1617,7 @@ function Public.init_game_settings(technology_price_multiplier)
     game.map_settings.path_finder.short_cache_min_algo_steps_to_cache = 100
     game.map_settings.path_finder.cache_accept_path_start_distance_ratio = 0.1
 
-    game.map_settings.enemy_expansion.enabled = true
+    game.map_settings.enemy_expansion.enabled = false
     -- faster expansion:
     -- game.map_settings.enemy_expansion.min_expansion_cooldown = 4 * 3600
     -- game.map_settings.enemy_expansion.max_expansion_cooldown = 30 * 3600
@@ -1699,9 +1696,9 @@ function Public.get_item_blacklist(tier)
     -- blacklist['cannon-shell'] = true
     -- blacklist['explosive-cannon-shell'] = true
     -- blacklist['speed-module-3'] = true
-    blacklist['productivity-module'] = true
-    blacklist['productivity-module-2'] = true
-    blacklist['productivity-module-3'] = true
+    -- blacklist['productivity-module'] = true
+    -- blacklist['productivity-module-2'] = true
+    -- blacklist['productivity-module-3'] = true
     -- blacklist['effectivity-module-3'] = true
     -- blacklist['space-science-pack'] = true
     -- blacklist['rocket-control-unit'] = true

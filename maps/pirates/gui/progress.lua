@@ -17,14 +17,16 @@ local Public = {}
 local window_name = 'progress'
 
 function Public.toggle_window(player)
-
-	if player.gui.screen[window_name .. '_piratewindow'] then player.gui.screen[window_name .. '_piratewindow'].destroy() return end
+	if player.gui.screen[window_name .. '_piratewindow'] then
+		player.gui.screen[window_name .. '_piratewindow'].destroy()
+		return
+	end
 
 	local flow, flow2, flow3
 	flow = GuiCommon.new_window(player, window_name)
-	flow.caption = {'pirates.gui_progress'}
+	flow.caption = { 'pirates.gui_progress' }
 
-	flow2 = GuiCommon.flow_add_section(flow, 'distance_travelled', {'pirates.gui_progress_distance_travelled'})
+	flow2 = GuiCommon.flow_add_section(flow, 'distance_travelled', { 'pirates.gui_progress_distance_travelled' })
 
 	flow3 = flow2.add({
 		name = 'leagues',
@@ -37,7 +39,7 @@ function Public.toggle_window(player)
 	flow3.style.maximal_width = 160
 	flow3.style.font = 'default-dropdown'
 
-	flow2 = GuiCommon.flow_add_section(flow, 'current_location', {'pirates.gui_progress_current_location', ''})
+	flow2 = GuiCommon.flow_add_section(flow, 'current_location', { 'pirates.gui_progress_current_location', '' })
 
 	-- flow3 = flow2.add({
 	-- 	name = 'location_name',
@@ -67,7 +69,7 @@ function Public.toggle_window(player)
 	-- flow3 = flow2.add({type = 'label', name = 'patch_size', caption = ''})
 	-- flow3.style.top_margin = -3
 
-	flow3 = flow2.add({type = 'label', name = 'daynight', caption = ''})
+	flow3 = flow2.add({ type = 'label', name = 'daynight', caption = '' })
 	flow3.style.top_margin = -3
 
 
@@ -83,7 +85,6 @@ function Public.toggle_window(player)
 	GuiCommon.flow_add_close_button(flow, window_name .. '_piratebutton')
 	return nil
 end
-
 
 -- function Public.regular_update(player)
 
@@ -109,8 +110,8 @@ function Public.full_update(player)
 		name = Lobby.Data.display_name
 	end
 
-	flow.current_location.header.caption = {'pirates.gui_progress_current_location', name}
-	flow.distance_travelled.body.leagues.caption = {'pirates.gui_progress_leagues', memory.overworldx or 0}
+	flow.current_location.header.caption = { 'pirates.gui_progress_current_location', name }
+	flow.distance_travelled.body.leagues.caption = { 'pirates.gui_progress_leagues', memory.overworldx or 0 }
 
 	-- local daynighttype
 	-- if destination.static_params and destination.static_params.daynightcycletype then
@@ -145,7 +146,7 @@ function Public.full_update(player)
 	-- 	flow.current_location.body.daynight.visible = false
 	-- end
 	local daynightcycletype = destination.static_params.daynightcycletype or 1
-	flow.current_location.body.daynight.caption = {'pirates.gui_progress_time_of_day', CoreData.daynightcycle_types[daynightcycletype].displayname}
+	flow.current_location.body.daynight.caption = { 'pirates.gui_progress_time_of_day', CoreData.daynightcycle_types[daynightcycletype].displayname }
 
 
 	-- local ores
@@ -172,6 +173,5 @@ function Public.full_update(player)
 	-- 	flow.current_location.body.hidden_ores_no.visible = true
 	-- end
 end
-
 
 return Public

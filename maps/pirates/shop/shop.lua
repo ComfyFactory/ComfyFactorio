@@ -10,16 +10,15 @@ local Crew = require 'maps.pirates.crew'
 local Balance = require 'maps.pirates.balance'
 local Common = require 'maps.pirates.common'
 -- local Utils = require 'maps.pirates.utils_local'
-local Roles = require 'maps.pirates.roles.roles'
+-- local Roles = require 'maps.pirates.roles.roles'
 local Math = require 'maps.pirates.math'
 local _inspect = require 'utils.inspect'.inspect
 local SurfacesCommon = require 'maps.pirates.surfaces.common'
-local Upgrades = require 'maps.pirates.boat_upgrades'
+local Upgrades = require 'maps.pirates.shop.boat_upgrades'
 local Cabin = require 'maps.pirates.surfaces.cabin'
--- local Upgrades = require 'maps.pirates.boat_upgrades'
-
+-- local Upgrades = require 'maps.pirates.shop.boat_upgrades'
+local Permissions = require 'maps.pirates.permissions'
 local Public = {}
-Public.Captains = require 'maps.pirates.shop.captains'
 Public.Covered = require 'maps.pirates.shop.covered'
 Public.Merchants = require 'maps.pirates.shop.merchants'
 Public.Minimarket = require 'maps.pirates.shop.dock'
@@ -92,7 +91,7 @@ local function purchaseData(market, player, offer_index)
 	local in_captains_cabin = type and type == SurfacesCommon.enum.CABIN
 	local dock_upgrades_market = destination.dynamic_data.dock_captains_market and (destination.dynamic_data.dock_captains_market == market)
 
-	local permission_level_fail = (in_captains_cabin and Roles.player_privilege_level(player) < Roles.privilege_levels.OFFICER) or (dock_upgrades_market and Roles.player_privilege_level(player) < Roles.privilege_levels.OFFICER)
+	local permission_level_fail = (in_captains_cabin and Permissions.player_privilege_level(player) < Permissions.privilege_levels.OFFICER) or (dock_upgrades_market and Permissions.player_privilege_level(player) < Permissions.privilege_levels.OFFICER)
 
 	if in_captains_cabin then
 		decay_type = 'static'
@@ -216,7 +215,7 @@ function Public.event_on_market_item_purchased(event)
 			end
 		else
 			if thisPurchaseData.offer_type == 'nothing' then
-				local isDamageUpgrade = thisPurchaseData.price[1].amount == Balance.weapon_damage_upgrade_price()[1].amount and thisPurchaseData.price[1].name == Balance.weapon_damage_upgrade_price()[1].name and thisPurchaseData.price[2] and thisPurchaseData.price[2].amount == Balance.weapon_damage_upgrade_price()[2].amount and thisPurchaseData.price[2].name == Balance.weapon_damage_upgrade_price()[2].name
+				local isDamageUpgrade = thisPurchaseData.price[1].amount == Balance.weapon_damage_upgrade_price()[1].amount and thisPurchaseData.price[1].name == Balance.weapon_damage_upgrade_price()[1].name
 
 				if isDamageUpgrade then
 					Common.notify_force_light(player.force, { 'pirates.market_event_attack_upgrade_purchased', player.name, Balance.weapon_damage_upgrade_percentage() })

@@ -21,7 +21,7 @@ local Islands = require 'maps.pirates.surfaces.islands.islands'
 local Progression = require 'maps.pirates.progression'
 local Crowsnest = require 'maps.pirates.surfaces.crowsnest'
 local PiratesApiEvents = require 'maps.pirates.api_events'
-local Upgrades = require 'maps.pirates.boat_upgrades'
+local Upgrades = require 'maps.pirates.shop.boat_upgrades'
 local Effects = require 'maps.pirates.effects'
 local Kraken = require 'maps.pirates.surfaces.sea.kraken'
 local _inspect = require 'utils.inspect'.inspect
@@ -29,7 +29,7 @@ local simplex_noise = require 'utils.simplex_noise'.d2
 local Token = require 'utils.token'
 local Task = require 'utils.task'
 local Highscore = require 'maps.pirates.highscore'
-local CustomEvents = require 'maps.pirates.custom_events'
+local Permissions = require 'maps.pirates.permissions'
 local Classes = require 'maps.pirates.roles.classes'
 local Gui = require 'maps.pirates.gui.gui'
 -- local Session = require 'utils.datastore.session_data'
@@ -73,7 +73,7 @@ local function check_captain(cmd)
 		if player ~= nil then
 			p = player.print
 			if not Common.validate_player(player) then return end
-			if not (Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN) then
+			if not (Permissions.player_privilege_level(player) >= Permissions.privilege_levels.CAPTAIN) then
 				p({ 'pirates.cmd_error_not_captain' }, Color.fail)
 				return false
 			end
@@ -91,7 +91,7 @@ local function check_captain_or_admin(cmd)
 		if player ~= nil then
 			p = player.print
 			if not Common.validate_player(player) then return end
-			if not (player.admin or Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN) then
+			if not (player.admin or Permissions.player_privilege_level(player) >= Permissions.privilege_levels.CAPTAIN) then
 				p({ 'pirates.cmd_error_not_captain' }, Color.fail)
 				return false
 			end
@@ -100,6 +100,28 @@ local function check_captain_or_admin(cmd)
 		end
 	end
 	return true
+end
+
+local function check_creator_of_crew(cmd)
+	local player = game.players[cmd.player_index]
+	local p
+	if player then
+		if player ~= nil then
+			p = player.print
+
+			cmd_set_memory(cmd)
+
+			local memory = Memory.get_crew_memory()
+			if not Common.is_id_valid(memory.id) then return end
+
+			local creator = memory.original_proposal.created_by_player
+
+			if creator ~= player.index then
+				Common.notify_player_error(player, { 'pirates.cmd_error_not_creator_of_crew' })
+				return false
+			end
+		end
+	end
 end
 
 
@@ -336,6 +358,35 @@ commands.add_command(
 	end)
 
 -- *** *** --
+--*** CREATOR OF CREW COMMANDS ***--
+-- *** *** --
+
+commands.add_command(
+	'reset_password',
+	{ 'pirates.cmd_explain_set_private_run_password' },
+	function (cmd)
+		cmd_set_memory(cmd)
+
+		local memory = Memory.get_crew_memory()
+		if not Common.is_id_valid(memory.id) then return end
+
+		local param = tostring(cmd.parameter)
+		if check_creator_of_crew(cmd) then
+			local player = game.players[cmd.player_index]
+
+			if not memory.private_run_password then
+				Common.notify_player_error(player, { 'pirates.cmd_error_no_existing_password' })
+				return false
+			end
+
+			memory.private_run_password = param
+			Common.notify_player_expected(player, { 'pirates.cmd_notify_set_private_run_password', memory.name, param })
+		end
+	end)
+
+
+
+-- *** *** --
 --*** ADMIN COMMANDS ***--
 -- *** *** --
 
@@ -565,7 +616,6 @@ if _DEBUG then
 			end
 
 			memory.currentdestination_index = memory.mapbeingloadeddestination_index
-			script.raise_event(CustomEvents.enum['update_crew_progress_gui'], {})
 			Surfaces.create_surface(Common.current_destination())
 			Task.set_timeout_in_ticks(60, go_2, { id = data.id })
 		end
@@ -632,7 +682,7 @@ if _DEBUG then
 						created_by_player = cmd.player_index
 					}
 
-					Crew.initialise_crew(proposal)
+					Crew.initialise_crew(proposal, player.position)
 					Crew.initialise_crowsnest() --contains a Task
 
 					local memory = Memory.get_crew_memory()

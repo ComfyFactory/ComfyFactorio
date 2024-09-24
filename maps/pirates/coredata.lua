@@ -7,10 +7,7 @@ local _inspect = require 'utils.inspect'.inspect
 local Public = {}
 
 Public.scenario_id_name = 'pirates'
-Public.version_string = '1.6.0' --major.minor.patch versioning, to match factorio mod portal
-
-Public.blueprint_library_allowed = true
-Public.blueprint_importing_allowed = true
+Public.version_string = '1.6.5' --major.minor.patch versioning, to match factorio mod portal
 
 Public.rocket_silo_death_causes_loss = false
 
@@ -19,9 +16,6 @@ Public.victory_x = 1000
 Public.total_max_biters = 2200
 
 Public.lobby_surface_name = '000-000-Lobby'
-
-Public.private_run_lock_amount_hr = 24   -- how many hours need to pass, when crew is empty or inactive, until private run becomes public
-Public.protected_run_lock_amount_hr = 24 -- how many hours need to pass, when crew is empty or inactive, until captain protection expires
 
 Public.colors = {
 	coal = { r = 0.5, g = 0.5, b = 0.5 },
@@ -109,27 +103,43 @@ Public.comfy_emojis = {
 }
 
 Public.capacity_options = {
-	{ value = 2,   icon = 'virtual-signal/signal-2',     text = '2',    text2 = '/2',  text3 = '2' },
-	{ value = 4,   icon = 'virtual-signal/signal-4',     text = '4',    text2 = '/4',  text3 = '4' },
-	{ value = 8,   icon = 'virtual-signal/signal-8',     text = '8',    text2 = '/8',  text3 = '8' },
-	{ value = 24,  icon = 'virtual-signal/signal-blue',  text = '24',   text2 = '/24', text3 = '24' },
-	{ value = 999, icon = 'virtual-signal/signal-white', text = 'Inf.', text2 = '',    text3 = 'Inf' },
+	{ value = 2,   icon = 'virtual-signal/signal-2',     text = '2',    text2 = '/2',   text3 = '2' },
+	{ value = 4,   icon = 'virtual-signal/signal-4',     text = '4',    text2 = '/4',   text3 = '4' },
+	{ value = 8,   icon = 'virtual-signal/signal-8',     text = '8',    text2 = '/8',   text3 = '8' },
+	{ value = 24,  icon = 'virtual-signal/signal-blue',  text = '24',   text2 = '/24',  text3 = '24' },
+	{ value = 999, icon = 'virtual-signal/signal-white', text = 'Inf.', text2 = '/inf', text3 = 'Inf' },
 	-- {value = 64, icon = 'item/storage-tank', text = '64'},
 }
 
 -- Prefer not to change difficulty values if possible, since even tiny value change can have big effect on some formulas that rely on it.
 Public.difficulty_options = {
-	-- The difficulty values we currently offer
-
 	--For the value of Easy difficulty, we are pulled in two directions: We wish to make the game comfy to play for those who haven't played it, but we also wish to represent the game mechanics faithfully so that Normal is not a crazy distance away.
-	{ value = 0.5, icon = 'item/firearm-magazine',         text = { 'pirates.difficulty_easy' },    associated_color = { r = 50, g = 255, b = 50 } },
-
-	{ value = 1.0, icon = 'item/piercing-rounds-magazine', text = { 'pirates.difficulty_normal' },  associated_color = { r = 255, g = 255, b = 50 } },
-
-	{ value = 1.5, icon = 'item/uranium-rounds-magazine',  text = { 'pirates.difficutly_hard' },    associated_color = { r = 255, g = 50, b = 50 } },
-
-	{ value = 2,   icon = 'item/atomic-bomb',              text = { 'pirates.difficulty_nightmare' }, associated_color = { r = 170, g = 60, b = 60 } },
+	{
+		value = 0.5,
+		icon = 'firearm-magazine',
+		text = { 'pirates.difficulty_easy' },
+		associated_color = { r = 50, g = 255, b = 50 }
+	},
+	{
+		value = 1.0,
+		icon = 'piercing-rounds-magazine',
+		text = { 'pirates.difficulty_normal' },
+		associated_color = { r = 255, g = 255, b = 50 }
+	},
+	{
+		value = 1.5,
+		icon = 'uranium-rounds-magazine',
+		text = { 'pirates.difficutly_hard' },
+		associated_color = { r = 255, g = 50, b = 50 }
+	},
+	{
+		value = 2,
+		icon = 'atomic-bomb',
+		text = { 'pirates.difficulty_nightmare' },
+		associated_color = { r = 170, g = 60, b = 60 }
+	},
 }
+
 function Public.get_difficulty_option_from_value(difficulty_value)
 	-- given a difficulty value, key in to the closesy entry in the above table. (organising things this way allows us to make changes to the 'value' keys in the above table without disrupting e.g. past highscores data)
 	if difficulty_value <= 0.75 then
@@ -162,10 +172,10 @@ end
 -- }
 
 Public.daynightcycle_types = {
-	{ displayname = { 'pirates.daynightcycle_static' },    0 },
-	{ displayname = { 'pirates.daynightcycle_slowcyclic' }, ticksperday = 100000 },
-	{ displayname = { 'pirates.daynightcycle_cyclic' },    ticksperday = 80000 },
-	{ displayname = { 'pirates.daynightcycle_fastcyclic' }, ticksperday = 60000 },
+	{ displayname = { 'pirates.daynightcycle_static' },      0 },
+	{ displayname = { 'pirates.daynightcycle_slowcyclic' },  ticksperday = 100000 },
+	{ displayname = { 'pirates.daynightcycle_cyclic' },      ticksperday = 80000 },
+	{ displayname = { 'pirates.daynightcycle_fastcyclic' },  ticksperday = 60000 },
 	{ displayname = { 'pirates.daynightcycle_rapidcyclic' }, ticksperday = 40000 },
 }
 

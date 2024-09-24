@@ -28,13 +28,17 @@ local function spawn_market(args, is_main)
     if is_main then
         offers = ShopCovered.market_generate_coin_offers(6)
 
-        offers[#offers + 1] = {
-            price = Balance.weapon_damage_upgrade_price(),
-            offer = {
-                type = "nothing",
-                effect_description = { 'pirates.market_description_purchase_attack_upgrade', Balance.weapon_damage_upgrade_percentage() }
+        if not destination_data.dynamic_data.offered_weapon_damage_upgrade then
+            offers[#offers + 1] = {
+                price = Balance.weapon_damage_upgrade_price(),
+                offer = {
+                    type = "nothing",
+                    effect_description = { 'pirates.market_description_purchase_attack_upgrade', Balance.weapon_damage_upgrade_percentage() }
+                }
             }
-        }
+
+            destination_data.dynamic_data.offered_weapon_damage_upgrade = true
+        end
 
         if destination_data.static_params.class_for_sale then
             offers[#offers + 1] = { price = { { 'coin', Balance.class_cost(true) } }, offer = { type = "nothing", effect_description = { 'pirates.market_description_purchase_class', Classes.display_form(destination_data.static_params.class_for_sale) } } }

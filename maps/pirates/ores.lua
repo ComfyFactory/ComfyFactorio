@@ -9,7 +9,7 @@ local _inspect = require 'utils.inspect'.inspect
 local Common = require 'maps.pirates.common'
 local Utils = require 'maps.pirates.utils_local'
 local simplex_noise = require 'utils.simplex_noise'.d2
--- local CustomEvents = require 'maps.pirates.custom_events'
+--
 
 local Public = {}
 
@@ -150,8 +150,6 @@ function Public.try_ore_spawn(surface, realp, source_name, density_bonus, from_t
 			end
 		end
 	end
-
-	-- script.raise_event(CustomEvents.enum['update_crew_progress_gui'], {})
 
 	return ret
 end

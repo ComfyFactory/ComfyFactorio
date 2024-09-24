@@ -10,7 +10,7 @@ local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
 local Utils = require 'maps.pirates.utils_local'
 local _inspect = require 'utils.inspect'.inspect
-local CustomEvents = require 'maps.pirates.custom_events'
+
 
 -- local Structures = require 'maps.pirates.structures.structures'
 local Boats = require 'maps.pirates.structures.boats.boats'
@@ -25,11 +25,11 @@ local Roles = require 'maps.pirates.roles.roles'
 -- local Parrot = require 'maps.pirates.parrot'
 -- local Quest = require 'maps.pirates.quest'
 
-local Shop = require 'maps.pirates.shop.shop'
+-- local Shop = require 'maps.pirates.shop.shop'
 local Overworld = require 'maps.pirates.overworld'
 local Hold = require 'maps.pirates.surfaces.hold'
 local Cabin = require 'maps.pirates.surfaces.cabin'
-local Upgrades = require 'maps.pirates.boat_upgrades'
+-- local Upgrades = require 'maps.pirates.shop.boat_upgrades'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
 local ShopDock = require 'maps.pirates.shop.dock'
@@ -133,8 +133,6 @@ function Public.go_from_starting_dock_to_first_destination()
 
 	boat.stored_resources = {}
 
-	Shop.Captains.initialise_captains_shop()
-
 	Hold.create_hold_surface(1)
 	boat.EEI_stage = 1
 	boat.random_class_purchase_count = 0
@@ -233,36 +231,6 @@ function Public.progress_to_destination(destination_index)
 		-- starting_boatposition = {x = -destination_data.static_params.width/2 + BoatData.width + 10, y = Dock.Data.player_boat_top - BoatData.height/2}
 		Common.current_destination().dynamic_data.time_remaining = 180
 
-		-- memory.mainshop_availability_bools.sell_iron = true
-		memory.mainshop_availability_bools.buy_iron = true
-		memory.mainshop_availability_bools.buy_copper = true
-		-- memory.mainshop_availability_bools.buy_fast_loader = true
-		-- memory.mainshop_availability_bools.sell_copper = true
-
-		memory.mainshop_availability_bools.upgrade_cannons = true
-
-		local boat_for_sale_type = Common.current_destination().static_params.boat_for_sale_type
-		if boat_for_sale_type then
-			if boat_for_sale_type == Boats.enum.CUTTER then
-				memory.mainshop_availability_bools.new_boat_cutter = true
-			elseif boat_for_sale_type == Boats.enum.CUTTER_WITH_HOLD then
-				memory.mainshop_availability_bools.new_boat_cutter_with_hold = true
-			elseif boat_for_sale_type == Boats.enum.SLOOP_WITH_HOLD then
-				memory.mainshop_availability_bools.new_boat_sloop_with_hold = true
-			end
-		end
-
-		local upgrade_for_sale = Common.current_destination().static_params.upgrade_for_sale
-		if upgrade_for_sale then
-			for _, u in pairs(Upgrades.List) do
-				if upgrade_for_sale == u then
-					memory.mainshop_availability_bools[u] = true
-				end
-			end
-		end
-
-		script.raise_event(CustomEvents.enum['update_crew_fuel_gui'], {})
-
 		-- Delay.add(Delay.enum.PLACE_DOCK_JETTY_AND_BOATS)
 		Task.set_timeout_in_ticks(2, place_dock_jetty_and_boats, { crew_id = memory.id })
 	else
@@ -308,8 +276,6 @@ function Public.progress_to_destination(destination_index)
 
 	memory.currentdestination_index = destination_index --already done when we collide with it typically
 	local destination = Common.current_destination()
-
-	script.raise_event(CustomEvents.enum['update_crew_progress_gui'], {})
 
 	destination.dynamic_data.timer = 0
 	destination.dynamic_data.timeratlandingtime = nil
@@ -398,23 +364,6 @@ function Public.check_for_end_of_boat_movement(boat)
 			Boats.place_boat(boat, CoreData.static_boat_floor, false, false)
 			return true
 		elseif leaving_dock and boat.position.x >= game.surfaces[boat.surface_name].map_gen_settings.width / 2 - 60 then
-			memory.mainshop_availability_bools.new_boat_cutter = false
-			memory.mainshop_availability_bools.new_boat_cutter_with_hold = false
-			memory.mainshop_availability_bools.new_boat_sloop_with_hold = false
-			-- memory.mainshop_availability_bools.sell_iron = false
-			memory.mainshop_availability_bools.buy_iron = false
-			memory.mainshop_availability_bools.buy_copper = false
-			-- memory.mainshop_availability_bools.buy_fast_loader = false
-			-- memory.mainshop_availability_bools.sell_copper = false
-			memory.mainshop_availability_bools.upgrade_cannons = false
-
-			memory.mainshop_availability_bools.extra_hold = false
-			memory.mainshop_availability_bools.upgrade_power = false
-			memory.mainshop_availability_bools.unlock_merchants = false
-			memory.mainshop_availability_bools.rockets_for_sale = false
-
-			script.raise_event(CustomEvents.enum['update_crew_fuel_gui'], {})
-
 			Public.go_from_currentdestination_to_sea()
 
 			return true
@@ -487,12 +436,6 @@ function Public.undock_from_dock(manual)
 	destination.dynamic_data.time_remaining = -1
 
 	Boats.place_boat(boat, CoreData.moving_boat_floor, false, false)
-
-	memory.mainshop_availability_bools.new_boat_cutter = false
-	memory.mainshop_availability_bools.new_boat_cutter_with_hold = false
-	memory.mainshop_availability_bools.new_boat_sloop_with_hold = false
-
-	script.raise_event(CustomEvents.enum['update_crew_fuel_gui'], {})
 
 	Crew.summon_crew()
 

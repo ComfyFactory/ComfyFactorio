@@ -16,7 +16,8 @@ local Surfaces = require 'maps.pirates.surfaces.surfaces'
 -- local Progression = require 'maps.pirates.progression'
 local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 local Roles = require 'maps.pirates.roles.roles'
-local Gui = require 'maps.pirates.gui.gui'
+local Permissions = require 'maps.pirates.permissions'
+-- local Gui = require 'maps.pirates.gui.gui'
 -- local Sea = require 'maps.pirates.surfaces.sea.sea'
 -- local Hold = require 'maps.pirates.surfaces.hold'
 -- local Cabin = require 'maps.pirates.surfaces.cabin'
@@ -1455,6 +1456,10 @@ local function event_on_player_joined_game(event)
 		end
 	end
 
+	-- if not _DEBUG then
+	-- 	Gui.info.toggle_window(player)
+	-- end
+
 	if crew_to_put_back_in then
 		log('INFO: ' .. player.name .. ' (crew ID: ' .. crew_to_put_back_in .. ') joined the game')
 
@@ -1479,7 +1484,7 @@ local function event_on_player_joined_game(event)
 		local surface = game.surfaces[CoreData.lobby_surface_name]
 
 		player.teleport(surface.find_non_colliding_position('character', spawnpoint, 32, 0.5) or spawnpoint, surface)
-		Roles.update_privileges(player)
+		Permissions.update_privileges(player)
 
 		if not player.name then return end
 
@@ -1549,10 +1554,6 @@ local function event_on_player_joined_game(event)
 		-- 		Common.notify_player_expected(player, {'pirates.create_new_crew_tip'})
 		-- 	end
 		-- end
-	end
-
-	if not _DEBUG then
-		Gui.info.toggle_window(player)
 	end
 
 	global_memory.last_players_health[event.player_index] = player.character.health
@@ -1672,7 +1673,7 @@ local function on_player_changed_surface(event)
 		end
 	end
 
-	Roles.update_privileges(player)
+	Permissions.update_privileges(player)
 
 	GuiWelcome.close_welcome_window(player)
 end
@@ -2091,10 +2092,7 @@ local function event_on_console_chat(event)
 	local global_memory = Memory.get_global_memory()
 
 	local player = game.players[event.player_index]
-	local tag = player.tag
-	if not tag then
-		tag = ''
-	end
+	local tag = player.tag or ''
 	local color = player.chat_color
 
 	-- if global.tournament_mode then
@@ -2115,11 +2113,13 @@ local function event_on_console_chat(event)
 		end
 	else
 		-- NOTE: For some reason memory.name(or player.name?) can be nil so need this check. It was observed it happened after crew died and resetted, then I said something in lobby before launching new run. That's the only recorded occurence so far.
-		if memory.name then
+		if memory.name and player.name then
 			game.forces.player.print(player.name .. tag .. ' [' .. memory.name .. ']: ' .. event.message, color)
-		else
-			game.forces.player.print(player.name .. tag .. event.message, color)
+		elseif player.name then
+			game.forces.player.print(player.name .. tag .. ': ' .. event.message, color)
 			log('Error (non-critical): memory.name is nil')
+		else
+			log('Error (non-critical): player.name is nil')
 		end
 	end
 end
@@ -2225,10 +2225,15 @@ local function event_on_gui_opened(event)
 	if not player then return end
 	if not player.valid then return end
 
-	if player.permission_group.name ~= 'restricted_area' then return end
-
-	if entity.name == 'wooden-chest' or entity.name == 'iron-chest' or entity.name == 'steel-chest' or entity.name == 'red-chest' or entity.name == 'blue-chest' then
-		player.opened = nil
+	if player.permission_group.name == 'cabin_privileged' then
+		if entity.name == 'red-chest' then
+			-- Even the captain has to wait for items to be removed from the red chests by loaders:
+			player.opened = nil
+		end
+	elseif player.permission_group.name == 'cabin' then
+		if entity.name == 'wooden-chest' or entity.name == 'iron-chest' or entity.name == 'steel-chest' or entity.name == 'red-chest' or entity.name == 'blue-chest' then
+			player.opened = nil
+		end
 	end
 end
 

@@ -9,8 +9,8 @@ local Public = {}
 
 Public.display_names = { { 'pirates.location_displayname_horseshoe_1' }, { 'pirates.location_displayname_horseshoe_2' }, { 'pirates.location_displayname_horseshoe_3' } }
 
-Public.terraingen_frame_width = 992
-Public.terraingen_frame_height = 992
+Public.terraingen_frame_width = 896
+Public.terraingen_frame_height = 896
 Public.static_params_default = {
 	starting_time_of_day = 0,
 	daynightcycletype = 1,
@@ -30,8 +30,8 @@ function Public.base_ores()
 	}
 end
 
-local rscale1 = 264
-local rscale2 = 230
+local rscale1 = 240
+local rscale2 = 210
 local hscale = 0.1
 Public.noiseparams = {
 	radius1 = {

@@ -109,7 +109,7 @@ Public.EEI_stages = { --multipliers
 function Public.scripted_biters_pollution_cost_multiplier()
 	local early_game_factor = 1 + 1.2 / ((1 + (Common.overworldx() / 40)) ^ (1.5 + Common.difficulty_scale())) -- the complicated factor makes the early-game easier; in particular the first island, but on easier difficulties the next few islands as well
 
-	local factor_accounting_for_new_damage_upgrades = 0.98 ^ (Common.overworldx() / 40)
+	local factor_accounting_for_new_damage_upgrades = 0.985 ^ (Common.overworldx() / 40)
 
 	return (1.1 / Math.sloped(Common.difficulty_scale(), 0.7)) * early_game_factor * factor_accounting_for_new_damage_upgrades
 end
@@ -171,7 +171,7 @@ function Public.game_slowness_scale()
 	-- return 1 / (Public.crew_scale()^(50/100) / Math.sloped(Common.difficulty_scale(), 1/4)) --changed crew_scale factor significantly to help smaller crews
 
 	-- local scale = 0.3 + Math.sloped(Common.difficulty_scale(), -0.15) / (Public.crew_scale()^(1/8))
-	local scale = 2.6 * Math.sloped(Common.difficulty_scale(), -0.2) - Public.crew_scale() ^ (1 / 4)
+	local scale = 2.6 * Math.sloped(Common.difficulty_scale(), -0.2) - Public.crew_scale() ^ (1 / 2)
 	return Math.max(1, scale)
 end
 
@@ -187,7 +187,7 @@ end
 
 -- Waiting at sea forever isn't generally fun for your teammates, so we encourage keeping the action moving:
 function Public.seconds_until_machines_shut_down_at_sea()
-	local minimum_mins = 3
+	local minimum_mins = 7
 	return Math.ceil(60 * minimum_mins * Public.game_slowness_scale())
 end
 
@@ -214,8 +214,10 @@ end
 
 Public.expected_time_fraction = 0.7
 
+Public.grace_period_on_arriving_at_island_seconds = 120
+
 function Public.expected_time_on_island() --always >0
-	return Public.expected_time_fraction * Public.max_time_on_island_formula_seconds()
+	return Public.expected_time_fraction * Public.max_time_on_island_formula_seconds() + Public.grace_period_on_arriving_at_island_seconds
 end
 
 function Public.fuel_depletion_rate_static()
@@ -255,21 +257,23 @@ function Public.boat_passive_pollution_per_minute(time)
 
 	local boost
 	if time then --sharp rise approaching T, steady increase thereafter
-		if time > T then
-			boost = 20 + 10 * (time - T) / (30 / 100 * T)
-		elseif time >= 90 / 100 * T then
+		local adjusted_time = Math.max(0, time - Public.grace_period_on_arriving_at_island_seconds)
+
+		if adjusted_time > T then
+			boost = 20 + 10 * (adjusted_time - T) / (30 / 100 * T)
+		elseif adjusted_time >= 90 / 100 * T then
 			boost = 16
-		elseif time >= 85 / 100 * T then
+		elseif adjusted_time >= 85 / 100 * T then
 			boost = 12
-		elseif time >= 80 / 100 * T then
+		elseif adjusted_time >= 80 / 100 * T then
 			boost = 8
-		elseif time >= 70 / 100 * T then
+		elseif adjusted_time >= 70 / 100 * T then
 			boost = 5
-		elseif time >= 60 / 100 * T then
+		elseif adjusted_time >= 60 / 100 * T then
 			boost = 3
-		elseif time >= 50 / 100 * T then
+		elseif adjusted_time >= 50 / 100 * T then
 			boost = 2
-		elseif time >= 40 / 100 * T then
+		elseif adjusted_time >= 40 / 100 * T then
 			boost = 1.5
 		else
 			boost = 1
@@ -346,25 +350,27 @@ function Public.evolution_per_second()
 end
 
 function Public.evolution_per_nest_kill() --it's important to have evo go up with biter base kills, to provide resistance if you try to plow through all the bases
-	local destination = Common.current_destination()
-	if Common.overworldx() == 0 then return 0 end
+	-- local destination = Common.current_destination()
+	-- if Common.overworldx() == 0 then return 0 end
 
-	if destination and destination.dynamic_data and destination.dynamic_data.timer and destination.dynamic_data.timer > 0 and destination.dynamic_data.initial_spawner_count and destination.dynamic_data.initial_spawner_count > 0 then
-		local initial_spawner_count = destination.dynamic_data.initial_spawner_count
-		local base_evo_jump = 0.04 * (1 / initial_spawner_count) --extra friction to make them hard to mow through, even at late times
+	-- if destination and destination.dynamic_data and destination.dynamic_data.timer and destination.dynamic_data.timer > 0 and destination.dynamic_data.initial_spawner_count and destination.dynamic_data.initial_spawner_count > 0 then
+	-- 	local initial_spawner_count = destination.dynamic_data.initial_spawner_count
+	-- 	local base_evo_jump = 0.04 * (1 / initial_spawner_count) --extra friction to make them hard to mow through, even at late times
 
-		local time = destination.dynamic_data.timer
-		-- local time_to_jump_to = Public.expected_time_on_island() * ((1/Public.expected_time_fraction)^(2/3))
-		local time_to_jump_to = Public.max_time_on_island_formula_seconds()
-		if time > time_to_jump_to then
-			return base_evo_jump
-		else
-			-- evo it 'would have' contributed:
-			return (1 / initial_spawner_count) * Public.expected_time_evo() * (time_to_jump_to - time) / time_to_jump_to + base_evo_jump
-		end
-	else
-		return 0
-	end
+	-- 	local time = destination.dynamic_data.timer
+	-- 	-- local time_to_jump_to = Public.expected_time_on_island() * ((1/Public.expected_time_fraction)^(2/3))
+	-- 	local time_to_jump_to = Public.max_time_on_island_formula_seconds()
+	-- 	if time > time_to_jump_to then
+	-- 		return base_evo_jump
+	-- 	else
+	-- 		-- evo it 'would have' contributed:
+	-- 		return (1 / initial_spawner_count) * Public.expected_time_evo() * (time_to_jump_to - time) / time_to_jump_to + base_evo_jump
+	-- 	end
+	-- else
+	-- 	return 0
+	-- end
+
+	return 0
 
 	-- return 0.003 * Common.difficulty_scale()
 end
@@ -514,7 +520,10 @@ function Public.weapon_damage_upgrade_percentage()
 end
 
 function Public.weapon_damage_upgrade_price()
-	return { { name = 'coin', amount = 2000 }, { name = 'steel-plate', amount = 100 } } --NOTE: Should be different to other 'nothing' costs. See the use of this function in shop.lua.
+	-- local steel_plate_cost = 100
+	local steel_plate_cost = 100 * (1 + 0.1 * (Common.overworldx() / 40))
+
+	return { { name = 'coin', amount = 2000 }, { name = 'steel-plate', amount = steel_plate_cost } } --NOTE: Coin cost should be different to other 'nothing' costs. See the use of this function in shop.lua.
 end
 
 Public.quest_structures_first_appear_at = 40

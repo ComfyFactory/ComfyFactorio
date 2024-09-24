@@ -54,7 +54,7 @@ function Public.Tick_actions(tickinterval)
 	if destination.type ~= Surfaces.enum.ISLAND then return end
 	if memory.boat.state ~= Boats.enum_state.LANDED and memory.boat.state ~= Boats.enum_state.RETREATING then return end
 
-	if (memory.game_lost) or (destination.dynamic_data.timeratlandingtime and destination.dynamic_data.timer < destination.dynamic_data.timeratlandingtime + Common.seconds_after_landing_to_enable_AI) then return end
+	if (memory.game_lost) or (destination.dynamic_data.timeratlandingtime and destination.dynamic_data.timer < destination.dynamic_data.timeratlandingtime + Balance.grace_period_on_arriving_at_island_seconds) then return end
 
 	if game.tick % (tickinterval * 2) == 0 and memory.boat.state == Boats.enum_state.LANDED then
 		local extra_evo = 2 * tickinterval / 60 * Balance.evolution_per_second()
@@ -66,7 +66,7 @@ function Public.Tick_actions(tickinterval)
 	-- if destination.subtype == IslandEnum.enum.RED_DESERT then return end -- This was a hack to stop biter boats causing attacks, but, it has the even worse effect of stopping all floating_pollution gathering.
 
 
-	local minute_cycle = { -- warning: use even seconds only
+	local ai_cycle_seconds = { -- warning: use even seconds only
 		[2] = Public.tell_biters_near_silo_to_attack_it,
 		[4] = Public.poke_script_groups,
 		[6] = Public.try_main_attack,
@@ -75,18 +75,18 @@ function Public.Tick_actions(tickinterval)
 		[18] = Public.poke_script_groups,
 		[20] = Public.try_secondary_attack,
 
-		[32] = Public.tell_biters_near_silo_to_attack_it,
-		[34] = Public.poke_script_groups,
-		[36] = Public.try_rogue_attack,
+		[42] = Public.tell_biters_near_silo_to_attack_it,
+		[44] = Public.poke_script_groups,
+		[46] = Public.try_rogue_attack,
 
-		[46] = Public.poke_inactive_scripted_biters,
-		[48] = Public.create_mail_delivery_biters,
+		[56] = Public.poke_inactive_scripted_biters,
+		[58] = Public.create_mail_delivery_biters,
 
-		[54] = Public.try_boat_biters_attack,
+		[74] = Public.try_boat_biters_attack,
 	}
 
-	if minute_cycle[(game.tick / 60) % 60] then
-		minute_cycle[(game.tick / 60) % 60]()
+	if ai_cycle_seconds[(game.tick / 60) % 80] then
+		ai_cycle_seconds[(game.tick / 60) % 80]()
 	end
 end
 
@@ -155,7 +155,7 @@ function Public.wave_size_rng() -- random variance in attack sizes
 			wave_size_multiplier = 1.5
 		elseif rng2 >= 15 * rng_scale then
 			wave_size_multiplier = 2
-		elseif rng2 >= 5 * rng_scale then
+		elseif rng2 >= 2 * rng_scale then
 			wave_size_multiplier = 3
 		else
 			wave_size_multiplier = 4
@@ -239,7 +239,7 @@ function Public.tell_biters_near_silo_to_attack_it()
 	local enemy_force_name = memory.enemy_force_name
 
 	-- don't do this too early
-	if destination.dynamic_data.timeratlandingtime and destination.dynamic_data.timer < destination.dynamic_data.timeratlandingtime + Common.seconds_after_landing_to_enable_AI * 4 then return end
+	if destination.dynamic_data.timeratlandingtime and destination.dynamic_data.timer < destination.dynamic_data.timeratlandingtime + Balance.grace_period_on_arriving_at_island_seconds * 2 then return end
 	if not (destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid and destination.dynamic_data.rocketsilos[1].destructible) then return end
 
 	local attackcommand = Public.attack_target_entity(destination.dynamic_data.rocketsilos[1])
@@ -413,19 +413,7 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 		if initial_spawner_count > 0 then
 			local spawnerscount = Common.spawner_count(surface)
 			if spawnerscount > 0 then
-				-- if Common.current_destination().subtype and Common.current_destination().subtype == IslandEnum.enum.RADIOACTIVE then
-				-- 	-- destroying spawners doesn't do quite as much here:
-				-- 	base_pollution_cost_multiplier = (initial_spawner_count/spawnerscount)^(1/3)
-				-- else
-				-- 	base_pollution_cost_multiplier = (initial_spawner_count/spawnerscount)^(1/2)
-				-- end
-				-- base_pollution_cost_multiplier = (initial_spawner_count/spawnerscount)^(1/2)
-				-- Now directly proportional:
-				map_pollution_cost_multiplier = initial_spawner_count / spawnerscount
-
-				if memory.overworldx == 0 then
-					map_pollution_cost_multiplier = Math.max(1, map_pollution_cost_multiplier)
-				end -- The first map not being fully loaded when you get there commonly means it records too few initial spawners, which this helps fix
+				map_pollution_cost_multiplier = Math.max(initial_spawner_count / spawnerscount, 1)
 			else
 				map_pollution_cost_multiplier = 1000000
 			end

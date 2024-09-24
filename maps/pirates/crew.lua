@@ -279,8 +279,10 @@ function Public.join_spectators(player, crewid)
 	end
 
 	if #Common.crew_get_crew_members() == 0 then
-		if Common.autodisband_ticks then
-			memory.crew_disband_tick = game.tick + Common.autodisband_ticks
+		local exists_disband_tick = memory.crew_disband_tick and memory.crew_disband_tick > game.tick
+
+		if Common.autodisband_hours and not exists_disband_tick and Server.get_current_time() then
+			memory.crew_disband_tick = game.tick + Common.autodisband_hours * 60 * 60 * 60
 		end
 	end
 
@@ -312,8 +314,10 @@ function Public.leave_spectators(player, quiet)
 	memory.spectatorplayerindices = Utils.ordered_table_with_values_removed(memory.spectatorplayerindices, player.index)
 
 	if #Common.crew_get_crew_members() == 0 then
-		if Common.autodisband_ticks then
-			memory.crew_disband_tick = game.tick + Common.autodisband_ticks
+		local exists_disband_tick = memory.crew_disband_tick and memory.crew_disband_tick > game.tick
+
+		if Common.autodisband_hours and not exists_disband_tick and Server.get_current_time() then
+			memory.crew_disband_tick = game.tick + Common.autodisband_hours * 60 * 60 * 60
 		end
 	end
 
@@ -492,8 +496,8 @@ function Public.leave_crew(player, to_lobby, quiet)
 	if #Common.crew_get_crew_members() == 0 then
 		local exists_disband_tick = memory.crew_disband_tick and memory.crew_disband_tick > game.tick
 
-		if Common.autodisband_ticks and not exists_disband_tick then
-			memory.crew_disband_tick = game.tick + Common.autodisband_ticks
+		if Common.autodisband_hours and not exists_disband_tick and Server.get_current_time() then
+			memory.crew_disband_tick = game.tick + Common.autodisband_hours * 60 * 60 * 60
 		end
 
 		-- if _DEBUG then memory.crew_disband_tick = game.tick + 30*60*60 end
@@ -635,17 +639,24 @@ function Public.disband_crew(donotprint)
 	Lobby.place_starting_dock_showboat(id)
 end
 
-function Public.generate_new_crew_id()
+function Public.generate_new_crew_id(player_position)
 	local global_memory = Memory.get_global_memory()
 	local max_crews = Common.starting_ships_count
+	local closest_id = nil
+	local closest_distance = math.huge
 
 	for id = 1, max_crews do
 		if not global_memory.crew_memories[id] then
-			return id
+			local boat_position = Lobby.StartingBoats[id].position
+			local distance = Math.distance(player_position, boat_position)
+			if distance < closest_distance then
+				closest_distance = distance
+				closest_id = id
+			end
 		end
 	end
 
-	return nil
+	return closest_id
 end
 
 function Public.player_abandon_proposal(player)
@@ -680,10 +691,10 @@ function Public.initialise_crowsnest_2()
 	Crowsnest.crowsnest_surface_delayed_init()
 end
 
-function Public.initialise_crew(accepted_proposal)
+function Public.initialise_crew(accepted_proposal, player_position)
 	local global_memory = Memory.get_global_memory()
 
-	local new_id = Public.generate_new_crew_id()
+	local new_id = Public.generate_new_crew_id(player_position)
 	if not new_id then return end
 
 	game.reset_time_played() -- affects the multiplayer lobby view
@@ -745,11 +756,10 @@ function Public.initialise_crew(accepted_proposal)
 	memory.difficulty = CoreData.difficulty_options[accepted_proposal.difficulty_option].value
 	memory.capacity = CoreData.capacity_options[accepted_proposal.capacity_option].value
 	-- memory.mode = CoreData.mode_options[accepted_proposal.mode_option].value
+	memory.run_has_blueprints_disabled = accepted_proposal.run_has_blueprints_disabled
 	memory.run_is_protected = accepted_proposal.run_is_protected
-	memory.protected_run_lock_timer = 60 * 60 * 60 * CoreData.protected_run_lock_amount_hr
 	memory.run_is_private = accepted_proposal.run_is_private
 	memory.private_run_password = accepted_proposal.private_run_password
-	memory.private_run_lock_timer = 60 * 60 * 60 * CoreData.private_run_lock_amount_hr
 
 	memory.destinationsvisited_indices = {}
 	memory.stored_fuel = Balance.starting_fuel
@@ -967,7 +977,7 @@ function Public.reset_crew_and_enemy_force(id)
 
 
 	-- Trying out having this be researched by default, in order to make coal (the resource needed to power the ship) interchangeable with oil, thereby making coal more precious:
-	crew_force.technologies['coal-liquefaction'].researched = true
+	-- crew_force.technologies['coal-liquefaction'].researched = true
 
 	-- crew_force.technologies['toolbelt'].enabled = false --trying this. we don't actually want players to carry too many things manually, and in fact in a resource-tight scenario that's problematic
 
@@ -1049,8 +1059,9 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['gate'].enabled = true
 
 	-- crew_force.technologies['productivity-module'].enabled = false
-	crew_force.technologies['productivity-module-2'].enabled = false
-	crew_force.technologies['productivity-module-3'].enabled = false
+	-- crew_force.technologies['productivity-module-2'].enabled = false
+	-- crew_force.technologies['productivity-module-3'].enabled = false
+
 	-- crew_force.technologies['speed-module'].enabled = true
 	-- crew_force.technologies['speed-module-2'].enabled = false
 	-- crew_force.technologies['speed-module-3'].enabled = false

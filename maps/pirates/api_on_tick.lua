@@ -27,7 +27,7 @@ local Crew = require 'maps.pirates.crew'
 local Math = require 'maps.pirates.math'
 local _inspect = require 'utils.inspect'.inspect
 local Kraken = require 'maps.pirates.surfaces.sea.kraken'
-local CustomEvents = require 'maps.pirates.custom_events'
+
 
 local Quest = require 'maps.pirates.quest'
 -- local ShopDock = require 'maps.pirates.shop.dock'
@@ -80,20 +80,20 @@ function Public.prevent_unbarreling_off_ship(tickinterval)
 	end
 end
 
-local function remove_productivity_modules(surface, machines)
-	for _, machine in ipairs(machines) do
-		if machine and machine.valid then
-			local modules = machine.get_module_inventory()
-			if modules and modules.valid then
-				local productivity_modules = modules.get_contents()['productivity-module']
-				if productivity_modules and productivity_modules > 0 then
-					modules.remove { name = 'productivity-module', count = productivity_modules }
-					surface.spill_item_stack(machine.position, { name = 'productivity-module', count = productivity_modules }, true, nil, true)
-				end
-			end
-		end
-	end
-end
+-- local function remove_productivity_modules(surface, machines)
+-- 	for _, machine in ipairs(machines) do
+-- 		if machine and machine.valid then
+-- 			local modules = machine.get_module_inventory()
+-- 			if modules and modules.valid then
+-- 				local productivity_modules = modules.get_contents()['productivity-module']
+-- 				if productivity_modules and productivity_modules > 0 then
+-- 					modules.remove { name = 'productivity-module', count = productivity_modules }
+-- 					surface.spill_item_stack(machine.position, { name = 'productivity-module', count = productivity_modules }, true, nil, true)
+-- 				end
+-- 			end
+-- 		end
+-- 	end
+-- end
 
 function Public.apply_restrictions_to_machines(tickinterval)
 	local memory = Memory.get_crew_memory()
@@ -165,10 +165,10 @@ function Public.apply_restrictions_to_machines(tickinterval)
 			type = { 'assembling-machine', 'furnace', 'lab' },
 			force = memory.force_name
 		}
-		local drills = surface.find_entities_filtered {
-			type = { 'mining-drill' },
-			force = memory.force_name
-		}
+		-- local drills = surface.find_entities_filtered {
+		-- 	type = { 'mining-drill' },
+		-- 	force = memory.force_name
+		-- }
 		local power_machines = surface.find_entities_filtered {
 			type = { 'generator', 'solar-panel', 'boiler', 'reactor' },
 			force = memory.force_name
@@ -184,9 +184,6 @@ function Public.apply_restrictions_to_machines(tickinterval)
 				machine.active = not memory.crafters_disabled
 			end
 		end
-
-		remove_productivity_modules(surface, crafters)
-		remove_productivity_modules(surface, drills)
 	end
 end
 
@@ -1008,7 +1005,9 @@ function Public.loading_update(tickinterval)
 		local crew_fighting_kraken = nil
 
 		for id, crew_memory in pairs(global_memory.crew_memories) do
-			if crew_memory.loadingticks and (crew_memory.loadingticks > memory.loadingticks or (crew_memory.loadingticks == memory.loadingticks and id < memory.id)) then
+			local is_loading = crew_memory.loadingticks ~= nil and crew_memory.boat and crew_memory.boat.state and crew_memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP
+
+			if is_loading and (crew_memory.loadingticks > memory.loadingticks or (crew_memory.loadingticks == memory.loadingticks and crew_memory.age < memory.age)) then
 				other_crew_loading = id
 			end
 
@@ -1073,8 +1072,6 @@ function Public.loading_update(tickinterval)
 							Overworld.ensure_lane_generated_up_to(24, Crowsnest.Data.visibilitywidth)
 							Overworld.ensure_lane_generated_up_to(-24, Crowsnest.Data.visibilitywidth)
 
-							log(_inspect(memory.destinations))
-
 							for i = 1, #memory.destinations do
 								if memory.destinations[i].overworld_position.x == 0 then
 									memory.mapbeingloadeddestination_index = i
@@ -1110,6 +1107,8 @@ function Public.loading_update(tickinterval)
 				end
 
 				Progression.go_from_starting_dock_to_first_destination()
+
+				log("starting game for crew " .. memory.name)
 			elseif memory.loadingticks > 1230 then
 				if boat then
 					boat.speed = 0
@@ -1148,13 +1147,12 @@ function Public.loading_update(tickinterval)
 			local fraction = memory.loadingticks / (total + (memory.extra_time_at_sea or 0))
 
 			if fraction > Common.fraction_of_map_loaded_at_sea then
-				boat.state = Boats.enum_state.ATSEA_WAITING_TO_SAIL
-				memory.at_sea_waiting_game_tick = game.tick
-
-				local force = memory.force
-				if not (force and force.valid) then return end
-
-				script.raise_event(CustomEvents.enum['update_crew_fuel_gui'], {})
+				if currentdestination.type == Surfaces.enum.DOCK then
+					Progression.progress_to_destination(destination_index)
+				else
+					boat.state = Boats.enum_state.ATSEA_WAITING_TO_SAIL
+					memory.at_sea_waiting_game_tick = game.tick
+				end
 			else
 				PiratesApiEvents.load_some_map_chunks_random_order(surface, currentdestination, fraction) --random order is good for maze world
 				if currentdestination.subtype == IslandEnum.enum.CAVE then
@@ -1708,43 +1706,6 @@ function Public.revealed_buried_treasure_distance_check()
 					end
 				end
 			end
-		end
-	end
-end
-
-function Public.update_protected_run_lock_timer(tickinterval)
-	local memory = Memory.get_crew_memory()
-	if memory.run_is_protected then
-		if not Roles.captain_exists() then
-			if memory.protected_run_lock_timer > 0 then
-				memory.protected_run_lock_timer = memory.protected_run_lock_timer - tickinterval
-
-				if memory.protected_run_lock_timer <= 0 then
-					Common.notify_game({ 'pirates.protected_run_lock_expired', memory.name })
-					memory.run_is_protected = false
-					Roles.assign_captain_based_on_priorities()
-				end
-			end
-		else
-			memory.protected_run_lock_timer = 60 * 60 * 60 * CoreData.protected_run_lock_amount_hr
-		end
-	end
-end
-
-function Public.update_private_run_lock_timer(tickinterval)
-	local memory = Memory.get_crew_memory()
-	if memory.run_is_private then
-		if Common.activecrewcount() <= 0 then
-			if memory.private_run_lock_timer > 0 then
-				memory.private_run_lock_timer = memory.private_run_lock_timer - tickinterval
-
-				if memory.private_run_lock_timer <= 0 then
-					Common.notify_game({ 'pirates.private_run_lock_expired', memory.name })
-					memory.run_is_private = false
-				end
-			end
-		else
-			memory.private_run_lock_timer = 60 * 60 * 60 * CoreData.private_run_lock_amount_hr
 		end
 	end
 end

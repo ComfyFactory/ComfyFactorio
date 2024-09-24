@@ -12,7 +12,7 @@ local Cabin = require 'maps.pirates.surfaces.cabin'
 local CoreData = require 'maps.pirates.coredata'
 local Utils = require 'maps.pirates.utils_local'
 local _inspect = require 'utils.inspect'.inspect
-local CustomEvents = require 'maps.pirates.custom_events'
+
 
 
 local Public = {}
@@ -71,12 +71,6 @@ function Public.execute_boat_purchase()
 
 	Hold.connect_up_linked_belts_to_deck()
 	Cabin.connect_up_linked_belts_to_deck()
-
-	-- memory.mainshop_availability_bools.new_boat_cutter_with_hold = false
-	-- memory.mainshop_availability_bools.new_boat_sloop_with_hold = false
-	-- memory.mainshop_availability_bools.new_boat_cutter = false
-
-	script.raise_event(CustomEvents.enum['update_crew_fuel_gui'], {})
 end
 
 function Public.place_dock_jetty_and_boats()
