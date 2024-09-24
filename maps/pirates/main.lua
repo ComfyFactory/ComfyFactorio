@@ -240,8 +240,6 @@ local function crew_tick()
 
 						if tick % 3600 == 0 then
 							PiratesApiOnTick.prune_offline_characters_list(3600)
-							PiratesApiOnTick.update_protected_run_lock_timer(3600)
-							PiratesApiOnTick.update_private_run_lock_timer(3600)
 						end
 					end
 				end

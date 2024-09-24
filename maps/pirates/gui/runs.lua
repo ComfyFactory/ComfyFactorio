@@ -209,7 +209,7 @@ function Public.toggle_window(player)
 	flow3 = flow2.add({
 		name = 'join_protected_crew_info',
 		type = 'label',
-		caption = { 'pirates.gui_join_protected_run_info', 0, 0, 0 },
+		caption = { 'pirates.gui_join_protected_run_info' },
 		visible = false,
 	})
 	flow3.style.single_line = false
@@ -217,7 +217,7 @@ function Public.toggle_window(player)
 	flow3 = flow2.add({
 		name = 'join_private_crew_info',
 		type = 'label',
-		caption = { 'pirates.gui_join_private_run_info', 0, 0, 0 },
+		caption = { 'pirates.gui_join_private_run_info' },
 		visible = false,
 	})
 	flow3.style.single_line = false
@@ -359,7 +359,7 @@ function Public.toggle_window(player)
 		type = 'checkbox',
 		caption = { 'pirates.gui_runs_proposal_maker_protected' },
 		state = false,
-		tooltip = { 'pirates.gui_runs_proposal_maker_protected_tooltip', CoreData.protected_run_lock_amount_hr }
+		tooltip = { 'pirates.gui_runs_proposal_maker_protected_tooltip' }
 	})
 
 	flow5.add({
@@ -367,7 +367,7 @@ function Public.toggle_window(player)
 		type = 'checkbox',
 		caption = { 'pirates.gui_runs_proposal_maker_private' },
 		state = false,
-		tooltip = { 'pirates.gui_runs_proposal_maker_private_tooltip', CoreData.private_run_lock_amount_hr }
+		tooltip = { 'pirates.gui_runs_proposal_maker_private_tooltip' }
 	})
 
 	flow6 = flow5.add({
@@ -525,20 +525,16 @@ function Public.full_update(player)
 		end
 
 		ongoing_runs.body.leaving_prompt.visible = playercrew_status.leaving
-		ongoing_runs.body.join_protected_crew_info.visible = selected_crew and selected_crew.run_is_protected and selected_crew.protected_run_lock_timer < 60 * 60 * 60 * CoreData.protected_run_lock_amount_hr
+		ongoing_runs.body.join_protected_crew_info.visible = selected_crew and selected_crew.run_is_protected
 		ongoing_runs.body.join_private_crew_info.visible = selected_crew and selected_crew.run_is_private
 		ongoing_runs.body.password.visible = selected_crew and selected_crew.run_is_private
 
 		if selected_crew then
 			if ongoing_runs.body.join_protected_crew_info.visible then
-				local lock_timer = selected_crew.protected_run_lock_timer
-				local hrs, min, sec = Math.floor((lock_timer / (60 * 60 * 60)) % 60), Math.floor((lock_timer / (60 * 60)) % 60), Math.floor((lock_timer / 60) % 60)
-				ongoing_runs.body.join_protected_crew_info.caption = { 'pirates.gui_join_protected_run_info', hrs, min, sec }
+				ongoing_runs.body.join_protected_crew_info.caption = { 'pirates.gui_join_protected_run_info' }
 			end
 			if ongoing_runs.body.join_private_crew_info.visible then
-				local lock_timer = selected_crew.private_run_lock_timer
-				local hrs, min, sec = Math.floor((lock_timer / (60 * 60 * 60)) % 60), Math.floor((lock_timer / (60 * 60)) % 60), Math.floor((lock_timer / 60) % 60)
-				ongoing_runs.body.join_private_crew_info.caption = { 'pirates.gui_join_private_run_info', hrs, min, sec }
+				ongoing_runs.body.join_private_crew_info.caption = { 'pirates.gui_join_private_run_info' }
 			end
 		end
 	end

@@ -754,10 +754,8 @@ function Public.initialise_crew(accepted_proposal, player_position)
 	-- memory.mode = CoreData.mode_options[accepted_proposal.mode_option].value
 	memory.run_has_blueprints_disabled = accepted_proposal.run_has_blueprints_disabled
 	memory.run_is_protected = accepted_proposal.run_is_protected
-	memory.protected_run_lock_timer = 60 * 60 * 60 * CoreData.protected_run_lock_amount_hr
 	memory.run_is_private = accepted_proposal.run_is_private
 	memory.private_run_password = accepted_proposal.private_run_password
-	memory.private_run_lock_timer = 60 * 60 * 60 * CoreData.private_run_lock_amount_hr
 
 	memory.destinationsvisited_indices = {}
 	memory.stored_fuel = Balance.starting_fuel
