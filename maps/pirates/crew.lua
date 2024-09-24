@@ -279,7 +279,9 @@ function Public.join_spectators(player, crewid)
 	end
 
 	if #Common.crew_get_crew_members() == 0 then
-		if Common.autodisband_hours then
+		local exists_disband_tick = memory.crew_disband_tick and memory.crew_disband_tick > game.tick
+
+		if Common.autodisband_hours and not exists_disband_tick and Server.get_current_time() then
 			memory.crew_disband_tick = game.tick + Common.autodisband_hours * 60 * 60 * 60
 		end
 	end
@@ -312,7 +314,9 @@ function Public.leave_spectators(player, quiet)
 	memory.spectatorplayerindices = Utils.ordered_table_with_values_removed(memory.spectatorplayerindices, player.index)
 
 	if #Common.crew_get_crew_members() == 0 then
-		if Common.autodisband_hours then
+		local exists_disband_tick = memory.crew_disband_tick and memory.crew_disband_tick > game.tick
+
+		if Common.autodisband_hours and not exists_disband_tick and Server.get_current_time() then
 			memory.crew_disband_tick = game.tick + Common.autodisband_hours * 60 * 60 * 60
 		end
 	end
@@ -492,7 +496,7 @@ function Public.leave_crew(player, to_lobby, quiet)
 	if #Common.crew_get_crew_members() == 0 then
 		local exists_disband_tick = memory.crew_disband_tick and memory.crew_disband_tick > game.tick
 
-		if Common.autodisband_hours and not exists_disband_tick then
+		if Common.autodisband_hours and not exists_disband_tick and Server.get_current_time() then
 			memory.crew_disband_tick = game.tick + Common.autodisband_hours * 60 * 60 * 60
 		end
 
