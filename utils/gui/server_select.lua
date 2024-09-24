@@ -16,7 +16,7 @@ local function get_instance()
     if server_instances and server_instances[id] then
         return server_instances[id]
     else
-        return {name = 'Offline', id = id, status = 'offline', version = game.active_mods.base}
+        return { name = 'Offline', id = id, status = 'offline', version = game.active_mods.base }
     end
 end
 
@@ -49,12 +49,12 @@ local function draw_main_frame(player)
         insert(instances, i)
     end
 
-    local viewer_table = inside_frame.add {type = 'table', column_count = 3}
+    local viewer_table = inside_frame.add { type = 'table', column_count = 3 }
     viewer_table.style.cell_padding = 4
 
     sort(
         instances,
-        function(a, b)
+        function (a, b)
             return a.id < b.id
         end
     )
@@ -73,17 +73,17 @@ local function draw_main_frame(player)
                     tooltip = i.connected .. '\nVersion: ' .. i.version,
                     style = 'caption_label'
                 }
-                local flow = viewer_table.add {type = 'flow'}
+                local flow = viewer_table.add { type = 'flow' }
                 flow.style.horizontal_align = 'right'
                 flow.style.horizontally_stretchable = true
-                local empty_flow = viewer_table.add {type = 'flow'}
+                local empty_flow = viewer_table.add { type = 'flow' }
                 local button =
                     empty_flow.add {
-                    type = 'button',
-                    caption = 'Connect',
-                    tooltip = 'Click to connect to this server.\n' .. i.connected .. '\nVersion: ' .. i.version,
-                    name = instance_id_name
-                }
+                        type = 'button',
+                        caption = 'Connect',
+                        tooltip = 'Click to connect to this server.\n' .. i.connected .. '\nVersion: ' .. i.version,
+                        name = instance_id_name
+                    }
                 Gui.set_data(button, i.id)
                 apply_button_style(button)
 
@@ -92,10 +92,10 @@ local function draw_main_frame(player)
                     button.tooltip = 'You are here'
                 elseif i.status == 'unknown' then
                     button.enabled = i.game_port ~= nil
-                    button.style.font_color = {r = 0.65}
-                    button.style.hovered_font_color = {r = 0.65}
-                    button.style.clicked_font_color = {r = 0.65}
-                    button.style.disabled_font_color = {r = 0.75, g = 0.1, b = 0.1}
+                    button.style.font_color = { r = 0.65 }
+                    button.style.hovered_font_color = { r = 0.65 }
+                    button.style.clicked_font_color = { r = 0.65 }
+                    button.style.disabled_font_color = { r = 0.75, g = 0.1, b = 0.1 }
                     button.tooltip = 'Unknown status for this server'
                 elseif i.status ~= 'running' then
                     button.enabled = false
@@ -139,18 +139,18 @@ local function create_main_button(event)
     if Gui.get_mod_gui_top_frame() then
         local b =
             Gui.add_mod_button(
-            player,
-            {
-                type = 'sprite-button',
-                name = main_button_name,
-                sprite = 'utility/surface_editor_icon',
-                tooltip = 'Connect to another Comfy server!',
-                style = Gui.button_style
-            }
-        )
+                player,
+                {
+                    type = 'sprite-button',
+                    name = main_button_name,
+                    sprite = 'utility/surface_editor_icon',
+                    tooltip = 'Connect to another Comfy server!',
+                    style = Gui.button_style
+                }
+            )
         if b then
-            b.style.font_color = {165, 165, 165}
-            b.style.font = 'heading-3'
+            b.style.font_color = { 165, 165, 165 }
+            b.style.font = 'default-semibold'
             b.style.minimal_height = 36
             b.style.maximal_height = 36
             b.style.minimal_width = 40
@@ -161,15 +161,15 @@ local function create_main_button(event)
         if not main_button or not main_button.valid then
             main_button =
                 player.gui.top.add(
-                {
-                    type = 'sprite-button',
-                    sprite = 'utility/surface_editor_icon',
-                    tooltip = 'Connect to another Comfy server!',
-                    name = main_button_name,
-                    style = Gui.button_style
-                }
-            )
-            main_button.style.font_color = {r = 0.11, g = 0.8, b = 0.44}
+                    {
+                        type = 'sprite-button',
+                        sprite = 'utility/surface_editor_icon',
+                        tooltip = 'Connect to another Comfy server!',
+                        name = main_button_name,
+                        style = Gui.button_style
+                    }
+                )
+            main_button.style.font_color = { r = 0.11, g = 0.8, b = 0.44 }
             main_button.style.font = 'heading-1'
             main_button.style.minimal_height = 40
             main_button.style.maximal_width = 40
@@ -183,7 +183,7 @@ end
 
 Gui.on_click(
     main_button_name,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Server Select Main')
         if is_spamming then
             return
@@ -198,7 +198,7 @@ Gui.on_click(
 
 Gui.on_click(
     discard_button_name,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Server Select Discard')
         if is_spamming then
             return
@@ -213,7 +213,7 @@ Gui.on_click(
 
 Gui.on_click(
     instance_id_name,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Server Select Connect')
         if is_spamming then
             return

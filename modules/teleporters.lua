@@ -1,6 +1,6 @@
 local Event = require 'utils.event'
 local key_item = 'player-port'
-local blacklisted_tiles = {'out-of-map', 'water', 'deepwater', 'water-green', 'lab-white', 'lab-dark-1'}
+local blacklisted_tiles = { 'out-of-map', 'water', 'deepwater', 'water-green', 'lab-white', 'lab-dark-1' }
 local teleporter_names = {
     'Stuedrik',
     'Wrirrirb',
@@ -84,12 +84,12 @@ local teleporter_names = {
 
 local charged_accumulators_required = 8
 local function get_power_status(teleporter_index, drain_power)
-    local surface = game.surfaces[global.teleporters[teleporter_index].surface]
+    local surface = game.surfaces[storage.teleporters[teleporter_index].surface]
     local a = {
-        left_top = {x = global.teleporters[teleporter_index].position.x - 5, y = global.teleporters[teleporter_index].position.y - 5},
-        right_bottom = {x = global.teleporters[teleporter_index].position.x + 6, y = global.teleporters[teleporter_index].position.y + 6}
+        left_top = { x = storage.teleporters[teleporter_index].position.x - 5, y = storage.teleporters[teleporter_index].position.y - 5 },
+        right_bottom = { x = storage.teleporters[teleporter_index].position.x + 6, y = storage.teleporters[teleporter_index].position.y + 6 }
     }
-    local power_cells = surface.find_entities_filtered({area = a, name = 'accumulator'})
+    local power_cells = surface.find_entities_filtered({ area = a, name = 'accumulator' })
     if not power_cells[1] then
         return 'No energy source found - Operation not possible'
     end
@@ -120,7 +120,7 @@ local function gui_spawn_new_teleporter(player)
     if player.gui.left['spawn_new_teleporter_button'] then
         player.gui.left['spawn_new_teleporter_button'].destroy()
     end
-    local b = player.gui.left.add({type = 'button', name = 'spawn_new_teleporter_button', caption = 'Deploy Teleporter'})
+    local b = player.gui.left.add({ type = 'button', name = 'spawn_new_teleporter_button', caption = 'Deploy Teleporter' })
     b.style.minimal_height = 38
     b.style.minimal_width = 38
     b.style.top_padding = 6
@@ -128,30 +128,30 @@ local function gui_spawn_new_teleporter(player)
     b.style.right_padding = 12
     b.style.bottom_padding = 6
     b.style.font = 'default-listbox'
-    b.style.font_color = {r = 0.35, g = 0.5, b = 1}
+    b.style.font_color = { r = 0.35, g = 0.5, b = 1 }
 end
 
 local function gui_teleporter(player, visited_teleporter_index)
     if player.gui.left['gui_teleporter'] then
         player.gui.left['gui_teleporter'].destroy()
     end
-    local frame = player.gui.left.add({type = 'frame', name = 'gui_teleporter', direction = 'vertical'})
-    local t = frame.add({type = 'table', column_count = 2, name = 'teleporter_heading'})
-    local l = t.add({type = 'label', caption = '<Teleporter> '})
-    l.style.font_color = {r = 0.35, g = 0.5, b = 1}
+    local frame = player.gui.left.add({ type = 'frame', name = 'gui_teleporter', direction = 'vertical' })
+    local t = frame.add({ type = 'table', column_count = 2, name = 'teleporter_heading' })
+    local l = t.add({ type = 'label', caption = '<Teleporter> ' })
+    l.style.font_color = { r = 0.35, g = 0.5, b = 1 }
     l.style.font = 'heading-1'
-    l = t.add({type = 'label', caption = global.teleporters[visited_teleporter_index].name, name = visited_teleporter_index})
-    l.style.font_color = {r = 0.77, g = 0.77, b = 0.77}
+    l = t.add({ type = 'label', caption = storage.teleporters[visited_teleporter_index].name, name = visited_teleporter_index })
+    l.style.font_color = { r = 0.77, g = 0.77, b = 0.77 }
     l.style.font = 'default-bold'
     l.style.top_padding = 4
 
-    local frame2 = frame.add({type = 'frame', direction = 'vertical'})
+    local frame2 = frame.add({ type = 'frame', direction = 'vertical' })
     frame2.style.maximal_height = 400
     frame2.style.top_padding = 8
     frame2.style.font = 'default-bold'
-    frame2.style.font_color = {r = 0.88, g = 0.22, b = 0.22}
+    frame2.style.font_color = { r = 0.88, g = 0.22, b = 0.22 }
 
-    if #global.teleporters < 2 then
+    if #storage.teleporters < 2 then
         frame2.caption = 'No connected teleporters found.'
         frame2.style.top_padding = 14
         frame2.style.bottom_padding = 0
@@ -166,40 +166,40 @@ local function gui_teleporter(player, visited_teleporter_index)
         return
     end
 
-    local scroll_pane = frame2.add({type = 'scroll-pane', direction = 'vertical', horizontal_scroll_policy = 'never', vertical_scroll_policy = 'auto'})
+    local scroll_pane = frame2.add({ type = 'scroll-pane', direction = 'vertical', horizontal_scroll_policy = 'never', vertical_scroll_policy = 'auto' })
 
-    for x = #global.teleporters, 1, -1 do
-        local surface = game.surfaces[global.teleporters[x].surface]
-        local tile = surface.get_tile(global.teleporters[x].position)
+    for x = #storage.teleporters, 1, -1 do
+        local surface = game.surfaces[storage.teleporters[x].surface]
+        local tile = surface.get_tile(storage.teleporters[x].position)
         if x ~= visited_teleporter_index and tile.name == 'lab-white' then
-            t = scroll_pane.add({type = 'table', column_count = 2})
+            t = scroll_pane.add({ type = 'table', column_count = 2 })
 
-            local b = t.add({type = 'button', caption = '> ' .. global.teleporters[x].name .. ' <', name = 'teleporter_' .. x})
+            local b = t.add({ type = 'button', caption = '> ' .. storage.teleporters[x].name .. ' <', name = 'teleporter_' .. x })
             b.style.minimal_width = 250
-            b.style.font_color = {r = 0.35, g = 0.5, b = 1}
+            b.style.font_color = { r = 0.35, g = 0.5, b = 1 }
             b.style.font = 'default-listbox'
             b.style.top_padding = 7
             b.style.bottom_padding = 7
 
-            local tt = t.add({type = 'table', column_count = 2})
+            local tt = t.add({ type = 'table', column_count = 2 })
 
-            l = tt.add({type = 'label', caption = global.teleporters[x].surface .. ': '})
-            l.style.font_color = {r = 0.22, g = 0.88, b = 0.44}
+            l = tt.add({ type = 'label', caption = storage.teleporters[x].surface .. ': ' })
+            l.style.font_color = { r = 0.22, g = 0.88, b = 0.44 }
             l.style.font = 'default-bold'
             l.style.minimal_width = 65
             l.style.top_padding = 0
             l.style.bottom_padding = 0
             l.style.left_padding = 8
 
-            l = tt.add({type = 'label', caption = 'X: ' .. tostring(global.teleporters[x].position.x) .. '  Y: ' .. tostring(global.teleporters[x].position.y)})
+            l = tt.add({ type = 'label', caption = 'X: ' .. tostring(storage.teleporters[x].position.x) .. '  Y: ' .. tostring(storage.teleporters[x].position.y) })
             l.style.font = 'default'
-            l.style.font_color = {r = 0.77, g = 0.77, b = 0.77}
+            l.style.font_color = { r = 0.77, g = 0.77, b = 0.77 }
             l.style.minimal_width = 100
             l.style.top_padding = 0
             l.style.bottom_padding = 0
 
-            l = tt.add({type = 'label', caption = 'Distance: '})
-            l.style.font_color = {r = 0.22, g = 0.88, b = 0.44}
+            l = tt.add({ type = 'label', caption = 'Distance: ' })
+            l.style.font_color = { r = 0.22, g = 0.88, b = 0.44 }
             l.style.font = 'default-bold'
             l.style.minimal_width = 65
             l.style.top_padding = 0
@@ -208,25 +208,25 @@ local function gui_teleporter(player, visited_teleporter_index)
 
             l =
                 tt.add(
-                {
-                    type = 'label',
-                    caption = tostring(
-                        math.ceil(
-                            math.sqrt((global.teleporters[x].position.x - player.position.x) ^ 2 + (global.teleporters[x].position.y - player.position.y) ^ 2),
-                            0
-                        )
-                    ) .. ' Units'
-                }
-            )
+                    {
+                        type = 'label',
+                        caption = tostring(
+                            math.ceil(
+                                math.sqrt((storage.teleporters[x].position.x - player.position.x) ^ 2 + (storage.teleporters[x].position.y - player.position.y) ^ 2),
+                                0
+                            )
+                        ) .. ' Units'
+                    }
+                )
             l.style.font = 'default'
-            l.style.font_color = {r = 0.77, g = 0.77, b = 0.77}
+            l.style.font_color = { r = 0.77, g = 0.77, b = 0.77 }
             l.style.minimal_width = 100
             l.style.top_padding = 0
             l.style.bottom_padding = 0
 
-            if #global.teleporters > 2 and x ~= 1 then
-                l = scroll_pane.add({type = 'label', caption = '-----------------------------------------------------------------'})
-                l.style.font_color = {r = 0.77, g = 0.77, b = 0.77}
+            if #storage.teleporters > 2 and x ~= 1 then
+                l = scroll_pane.add({ type = 'label', caption = '-----------------------------------------------------------------' })
+                l.style.font_color = { r = 0.77, g = 0.77, b = 0.77 }
                 l.style.font = 'default'
                 l.style.top_padding = 0
                 l.style.bottom_padding = 0
@@ -236,19 +236,19 @@ local function gui_teleporter(player, visited_teleporter_index)
 end
 
 local function spawn_teleporter(player)
-    if not global.teleporters then
-        global.teleporters = {}
+    if not storage.teleporters then
+        storage.teleporters = {}
     end
     local surface = player.surface
-    local pos = {x = math.floor(player.position.x, 0), y = math.floor(player.position.y, 0)}
+    local pos = { x = math.floor(player.position.x, 0), y = math.floor(player.position.y, 0) }
     local a = {
-        left_top = {x = pos.x - 3, y = pos.y - 3},
-        right_bottom = {x = pos.x + 3, y = pos.y + 3}
+        left_top = { x = pos.x - 3, y = pos.y - 3 },
+        right_bottom = { x = pos.x + 3, y = pos.y + 3 }
     }
-    local c = surface.count_tiles_filtered {area = a, name = blacklisted_tiles, limit = 1}
+    local c = surface.count_tiles_filtered { area = a, name = blacklisted_tiles, limit = 1 }
     if c == 0 then
         local i = player.get_main_inventory()
-        local removed_item_count = i.remove({name = key_item, count = 1})
+        local removed_item_count = i.remove({ name = key_item, count = 1 })
         if removed_item_count ~= 1 then
             return
         end
@@ -257,20 +257,20 @@ local function spawn_teleporter(player)
         while str == str2 do
             str2 = teleporter_names[math.random(1, #teleporter_names)]
         end
-        table.insert(global.teleporters, {position = {x = pos.x, y = pos.y}, name = str .. ' ' .. str2, surface = surface.name})
+        table.insert(storage.teleporters, { position = { x = pos.x, y = pos.y }, name = str .. ' ' .. str2, surface = surface.name })
         local tiles = {
-            {name = 'lab-white', position = pos},
-            {name = 'lab-dark-1', position = {pos.x - 1, pos.y - 1}},
-            {name = 'lab-dark-1', position = {pos.x, pos.y - 1}},
-            {name = 'lab-dark-1', position = {pos.x + 1, pos.y - 1}},
-            {name = 'lab-dark-1', position = {pos.x + 1, pos.y}},
-            {name = 'lab-dark-1', position = {pos.x + 1, pos.y + 1}},
-            {name = 'lab-dark-1', position = {pos.x, pos.y + 1}},
-            {name = 'lab-dark-1', position = {pos.x - 1, pos.y + 1}},
-            {name = 'lab-dark-1', position = {pos.x - 1, pos.y}}
+            { name = 'lab-white',  position = pos },
+            { name = 'lab-dark-1', position = { pos.x - 1, pos.y - 1 } },
+            { name = 'lab-dark-1', position = { pos.x, pos.y - 1 } },
+            { name = 'lab-dark-1', position = { pos.x + 1, pos.y - 1 } },
+            { name = 'lab-dark-1', position = { pos.x + 1, pos.y } },
+            { name = 'lab-dark-1', position = { pos.x + 1, pos.y + 1 } },
+            { name = 'lab-dark-1', position = { pos.x, pos.y + 1 } },
+            { name = 'lab-dark-1', position = { pos.x - 1, pos.y + 1 } },
+            { name = 'lab-dark-1', position = { pos.x - 1, pos.y } }
         }
         surface.set_tiles(tiles, true)
-        game.print(player.name .. ' has deployed a Teleporter!', {r = 0.35, g = 0.5, b = 1})
+        game.print(player.name .. ' has deployed a Teleporter!', { r = 0.35, g = 0.5, b = 1 })
     end
 end
 
@@ -286,7 +286,7 @@ local function check_inventory_for_key_item(player_index)
 end
 
 local function on_player_changed_position(event)
-    if not global.teleporters then
+    if not storage.teleporters then
         return
     end
     local player = game.players[event.player_index]
@@ -295,17 +295,17 @@ local function on_player_changed_position(event)
     end
     --if game.tick % 2 == 1 then return end
     local a = {
-        left_top = {x = player.position.x - 1, y = player.position.y - 1},
-        right_bottom = {x = player.position.x + 1, y = player.position.y + 1}
+        left_top = { x = player.position.x - 1, y = player.position.y - 1 },
+        right_bottom = { x = player.position.x + 1, y = player.position.y + 1 }
     }
-    local tile = player.surface.find_tiles_filtered {area = a, name = 'lab-white', limit = 1}
+    local tile = player.surface.find_tiles_filtered { area = a, name = 'lab-white', limit = 1 }
     if not tile[1] then
         if player.gui.left['gui_teleporter'] then
             player.gui.left['gui_teleporter'].destroy()
         end
         return
     end
-    for x, teleporter in pairs(global.teleporters) do
+    for x, teleporter in pairs(storage.teleporters) do
         if teleporter.position.x == tile[1].position.x and teleporter.position.y == tile[1].position.y then
             gui_teleporter(player, x)
             break
@@ -343,18 +343,18 @@ local function on_gui_click(event)
     local visited_teleporter_index = tonumber(player.gui.left['gui_teleporter']['teleporter_heading'].children[2].name)
     local status = get_power_status(visited_teleporter_index, true)
     if status == true then
-        local surface = game.surfaces[global.teleporters[index].surface]
+        local surface = game.surfaces[storage.teleporters[index].surface]
         for _, p in pairs(game.connected_players) do
-            p.play_sound {path = 'utility/armor_insert', volume_modifier = 1, position = global.teleporters[visited_teleporter_index].position}
-            p.play_sound {path = 'utility/armor_insert', volume_modifier = 1, position = global.teleporters[index].position}
+            p.play_sound { path = 'utility/armor_insert', volume_modifier = 1, position = storage.teleporters[visited_teleporter_index].position }
+            p.play_sound { path = 'utility/armor_insert', volume_modifier = 1, position = storage.teleporters[index].position }
         end
-        surface.create_entity({name = 'water-splash', position = player.position})
-        surface.create_entity({name = 'blood-explosion-big', position = player.position})
-        local p = surface.find_non_colliding_position('character', global.teleporters[index].position, 2, 0.5)
+        surface.create_entity({ name = 'water-splash', position = player.position })
+        surface.create_entity({ name = 'blood-explosion-big', position = player.position })
+        local p = surface.find_non_colliding_position('character', storage.teleporters[index].position, 2, 0.5)
         if p then
-            player.teleport(p, global.teleporters[index].surface)
+            player.teleport(p, storage.teleporters[index].surface)
         else
-            player.teleport(global.teleporters[index].position, global.teleporters[index].surface)
+            player.teleport(storage.teleporters[index].position, storage.teleporters[index].surface)
         end
     end
 end

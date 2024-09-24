@@ -234,9 +234,9 @@ local function get_player_data(player, remove)
 end
 
 local function get_gulag_permission_group()
-    local gulag = game.permissions.get_group('gulag')
+    local gulag = game.permissions.get_group('Gulag')
     if not gulag then
-        gulag = game.permissions.create_group('gulag')
+        gulag = game.permissions.create_group('Gulag')
         for action_name, _ in pairs(defines.input_action) do
             ---@diagnostic disable-next-line: need-check-nil
             gulag.set_allows_action(defines.input_action[action_name], false)
@@ -261,8 +261,14 @@ local function get_super_gulag_permission_group()
     return gulag
 end
 
+local function exclude_surface(surface)
+    for _, force in pairs(game.forces) do
+        force.set_surface_hidden(surface, true)
+    end
+end
+
 local function create_gulag_surface()
-    local surface = game.surfaces['gulag']
+    local surface = game.surfaces['Gulag']
     if not surface then
         local walls = {}
         local tiles = {}
@@ -270,7 +276,7 @@ local function create_gulag_surface()
             function ()
                 surface =
                     game.create_surface(
-                        'gulag',
+                        'Gulag',
                         {
                             autoplace_controls = {
                                 ['coal'] = { frequency = 23, size = 3, richness = 3 },
@@ -296,7 +302,7 @@ local function create_gulag_surface()
             end
         )
         if not surface then
-            surface = game.create_surface('gulag', { width = 40, height = 40 })
+            surface = game.create_surface('Gulag', { width = 40, height = 40 })
         end
         surface.always_day = true
         surface.request_to_generate_chunks({ 0, 0 }, 9)
@@ -328,7 +334,8 @@ local function create_gulag_surface()
             scale_with_zoom = false
         }
     end
-    surface = game.surfaces['gulag']
+    surface = game.surfaces['Gulag']
+    exclude_surface(surface)
     return surface
 end
 
@@ -339,7 +346,7 @@ local function teleport_player_to_gulag(player, action, mute)
     end
 
     if action == 'jail' then
-        local gulag = game.surfaces['gulag']
+        local gulag = game.surfaces['Gulag']
         if p_data and not p_data.locked then
             p_data.fallback_surface_index = player.surface.index
             p_data.position = player.position
@@ -1352,7 +1359,7 @@ Event.add(
             return
         end
 
-        local surface = game.surfaces['gulag']
+        local surface = game.surfaces['Gulag']
 
         if player.surface.index ~= surface.index then
             local p_data = get_player_data(player)
@@ -1382,7 +1389,7 @@ Event.add(
             return
         end
 
-        local surface = game.surfaces['gulag']
+        local surface = game.surfaces['Gulag']
         if player.surface.index ~= surface.index then
             local p_data = get_player_data(player)
             if jailed[player.name] and p_data and p_data.locked then

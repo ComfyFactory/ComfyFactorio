@@ -20,52 +20,52 @@ Public.name = 'Global'
 
 function Public.show(container, filter)
     container.clear()
-    local main_flow = container.add {type = 'flow', direction = 'horizontal'}
+    local main_flow = container.add { type = 'flow', direction = 'horizontal' }
 
-    local left_flow = main_flow.add({type = 'flow', direction = 'vertical'})
+    local left_flow = main_flow.add({ type = 'flow', direction = 'vertical' })
     left_flow.style.width = 400
 
-    local left_top_flow = left_flow.add {type = 'flow', direction = 'horizontal'}
+    local left_top_flow = left_flow.add { type = 'flow', direction = 'horizontal' }
 
-    local filter_text_name = left_top_flow.add {type = 'text-box', name = filter_text_box_name, tooltip = 'Filter for tokens', text = filter or ''}
+    local filter_text_name = left_top_flow.add { type = 'text-box', name = filter_text_box_name, tooltip = 'Filter for tokens', text = filter or '' }
 
     if filter then
         filter_text_name.focus()
     end
 
-    local left_panel = left_flow.add {type = 'scroll-pane', name = left_panel_name}
+    local left_panel = left_flow.add { type = 'scroll-pane', name = left_panel_name }
     local left_panel_style = left_panel.style
     left_panel_style.width = 400
 
     for token_id, token_name in pairs(Global.names) do
         if filter then
             if token_name:lower():find(filter:lower()) then
-                local header = left_panel.add({type = 'flow'}).add {type = 'label', name = header_name, caption = token_name}
+                local header = left_panel.add({ type = 'flow' }).add { type = 'label', name = header_name, caption = token_name }
                 Gui.set_data(header, token_id)
             end
         else
-            local header = left_panel.add({type = 'flow'}).add {type = 'label', name = header_name, caption = token_name}
+            local header = left_panel.add({ type = 'flow' }).add { type = 'label', name = header_name, caption = token_name }
             Gui.set_data(header, token_id)
         end
     end
 
-    local right_flow = main_flow.add {type = 'flow', direction = 'vertical'}
+    local right_flow = main_flow.add { type = 'flow', direction = 'vertical' }
     right_flow.style.horizontally_stretchable = true
 
-    local right_top_flow = right_flow.add {type = 'flow', direction = 'horizontal'}
+    local right_top_flow = right_flow.add { type = 'flow', direction = 'horizontal' }
 
-    local input_text_box = right_top_flow.add {type = 'text-box', name = input_text_box_name}
+    local input_text_box = right_top_flow.add { type = 'text-box', name = input_text_box_name }
     local input_text_box_style = input_text_box.style
     input_text_box_style.horizontally_stretchable = true
     input_text_box_style.height = 32
     input_text_box_style.maximal_width = 1000
 
-    local refresh_button = right_top_flow.add {type = 'sprite-button', name = refresh_name, sprite = 'utility/reset', tooltip = 'Refresh'}
+    local refresh_button = right_top_flow.add { type = 'sprite-button', name = refresh_name, sprite = 'utility/reset', tooltip = 'Refresh' }
     local refresh_button_style = refresh_button.style
     refresh_button_style.width = 32
     refresh_button_style.height = 32
 
-    local right_panel = right_flow.add {type = 'text-box', name = right_panel_name}
+    local right_panel = right_flow.add { type = 'text-box', name = right_panel_name }
     right_panel.read_only = true
     right_panel.selectable = true
 
@@ -88,7 +88,7 @@ end
 
 Gui.on_click(
     header_name,
-    function(event)
+    function (event)
         local element = event.element
         local token_id = Gui.get_data(element)
 
@@ -109,7 +109,7 @@ Gui.on_click(
         element.style.font_color = Color.orange
         data.selected_header = element
 
-        input_text_box.text = concat {'global.tokens.', token_id}
+        input_text_box.text = concat { 'storage.tokens.', token_id }
         input_text_box.style.font_color = Color.black
 
         local id = Global.get_global(token_id)
@@ -121,8 +121,8 @@ Gui.on_click(
     end
 )
 
-local function update_dump(text_input, data, player)
-    local suc, ouput = dump_text(text_input.text, player)
+local function update_dump(text_input, data)
+    local suc, ouput = dump_text(text_input.text)
     if not suc then
         text_input.style.font_color = Color.red
     else
@@ -133,17 +133,17 @@ end
 
 Gui.on_text_changed(
     input_text_box_name,
-    function(event)
+    function (event)
         local element = event.element
         local data = Gui.get_data(element)
 
-        update_dump(element, data, event.player)
+        update_dump(element, data)
     end
 )
 
 Gui.on_text_changed(
     filter_text_box_name,
-    function(event)
+    function (event)
         local element = event.element
 
         local text = element.text
@@ -156,7 +156,7 @@ Gui.on_text_changed(
 
 Gui.on_click(
     refresh_name,
-    function(event)
+    function (event)
         local element = event.element
         local data = Gui.get_data(element)
         if not data then

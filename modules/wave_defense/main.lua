@@ -397,11 +397,13 @@ local function set_enemy_evolution()
 
     BiterHealthBooster.set('biter_health_boost', biter_health_boost)
 
-    if enemy.evolution_factor == 1 and evolution_factor == 1 then
+    local surface_index = Public.get('surface_index')
+
+    if enemy.get_evolution_factor(surface_index) == 1 and evolution_factor == 1 then
         return
     end
 
-    enemy.evolution_factor = evolution_factor
+    enemy.set_evolution_factor(evolution_factor, surface_index)
 
     raise(Public.events.on_evolution_factor_changed, { evolution_factor = evolution_factor })
 end

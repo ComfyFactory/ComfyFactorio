@@ -4,8 +4,8 @@ local function on_research_finished(event)
         return
     end
     local multiplier = 4
-    if global.shotgun_shell_damage_research_multiplier then
-        multiplier = global.shotgun_shell_damage_research_multiplier
+    if storage.shotgun_shell_damage_research_multiplier then
+        multiplier = storage.shotgun_shell_damage_research_multiplier
     end
 
     local modifier = game.forces[research.force.name].get_ammo_damage_modifier('shotgun-shell')

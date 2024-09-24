@@ -7,7 +7,7 @@ local this = {
 
 Global.register(
     this,
-    function(tbl)
+    function (tbl)
         this = tbl
     end
 )
@@ -27,7 +27,7 @@ local function on_console_chat(event)
     local y_offset = -4
 
     if this.player_floaty_chat[player.index] then
-        rendering.destroy(this.player_floaty_chat[player.index])
+        rendering.get_object_by_id(this.player_floaty_chat[player.index]).destroy()
         this.player_floaty_chat[player.index] = nil
     end
 
@@ -41,25 +41,27 @@ local function on_console_chat(event)
         return
     end
 
+    if player.character.surface ~= player.surface.index then return end
+
     this.player_floaty_chat[player.index] =
         rendering.draw_text {
-        text = event.message,
-        surface = player.surface,
-        target = player.character,
-        target_offset = {-0.05, y_offset},
-        color = {
-            r = player.color.r * 0.6 + 0.25,
-            g = player.color.g * 0.6 + 0.25,
-            b = player.color.b * 0.6 + 0.25,
-            a = 1
-        },
-        players = players,
-        time_to_live = 600,
-        scale = 1.50,
-        font = 'default-game',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
+            text = event.message,
+            surface = player.surface,
+            target = player.character,
+            target_offset = { -0.05, y_offset },
+            color = {
+                r = player.color.r * 0.6 + 0.25,
+                g = player.color.g * 0.6 + 0.25,
+                b = player.color.b * 0.6 + 0.25,
+                a = 1
+            },
+            players = players,
+            time_to_live = 600,
+            scale = 1.50,
+            font = 'default-game',
+            alignment = 'center',
+            scale_with_zoom = false
+        }
 end
 
 Event.add(defines.events.on_console_chat, on_console_chat)

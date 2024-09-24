@@ -3,9 +3,9 @@
 local Event = require 'utils.event'
 
 local function refresh_difficulty()
-    global.connected_players = #game.connected_players
-    if global.connected_players > 75 then
-        global.connected_players = 75
+    storage.connected_players = #game.connected_players
+    if storage.connected_players > 75 then
+        storage.connected_players = 75
     end
 
     local f = game.forces.enemy
@@ -25,7 +25,7 @@ local function on_entity_damaged(event)
     if event.entity.type ~= 'unit' then
         return
     end
-    if math.random(1, 100) >= global.connected_players then
+    if math.random(1, 100) >= storage.connected_players then
         return
     end
     if event.final_damage_amount > event.entity.prototype.max_health then

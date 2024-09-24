@@ -38,7 +38,7 @@ local function add_style(frame, style)
 end
 
 local function add_space(frame)
-    add_style(frame.add {type = 'line', direction = 'horizontal'}, space)
+    add_style(frame.add { type = 'line', direction = 'horizontal' }, space)
 end
 
 local function get_items()
@@ -68,7 +68,7 @@ local function get_items()
             stack = 1,
             value = 'coin',
             price = pickaxe_cost,
-            tooltip = ({'main_market.sold_out'}),
+            tooltip = ({ 'main_market.sold_out' }),
             sprite = 'achievement/delivery-service',
             enabled = false,
             upgrade = true,
@@ -79,7 +79,7 @@ local function get_items()
             stack = 1,
             value = 'coin',
             price = pickaxe_cost,
-            tooltip = ({'main_market.purchase_pickaxe', offer, upgrades.pickaxe_tier, market_limits.pickaxe_tier_limit}),
+            tooltip = ({ 'main_market.purchase_pickaxe', offer, upgrades.pickaxe_tier, market_limits.pickaxe_tier_limit }),
             sprite = 'achievement/delivery-service',
             enabled = true,
             upgrade = true,
@@ -92,7 +92,7 @@ local function get_items()
             stack = 1,
             value = 'coin',
             price = health_cost,
-            tooltip = ({'locomotive.limit_reached'}),
+            tooltip = ({ 'locomotive.limit_reached' }),
             sprite = 'achievement/getting-on-track',
             enabled = false,
             upgrade = true,
@@ -103,7 +103,7 @@ local function get_items()
             stack = 1,
             value = 'coin',
             price = health_cost,
-            tooltip = ({'main_market.locomotive_max_health', upgrades.health_upgrades, market_limits.health_upgrades_limit}),
+            tooltip = ({ 'main_market.locomotive_max_health', upgrades.health_upgrades, market_limits.health_upgrades_limit }),
             sprite = 'achievement/getting-on-track',
             enabled = true,
             upgrade = true,
@@ -116,7 +116,7 @@ local function get_items()
             stack = 1,
             value = 'coin',
             price = aura_cost,
-            tooltip = ({'locomotive.limit_reached'}),
+            tooltip = ({ 'locomotive.limit_reached' }),
             sprite = 'achievement/tech-maniac',
             enabled = false,
             upgrade = true,
@@ -127,7 +127,7 @@ local function get_items()
             stack = 1,
             value = 'coin',
             price = aura_cost,
-            tooltip = ({'main_market.locomotive_aura_radius', upgrades.aura_upgrades, upgrades.aura_upgrades_max}),
+            tooltip = ({ 'main_market.locomotive_aura_radius', upgrades.aura_upgrades, upgrades.aura_upgrades_max }),
             sprite = 'achievement/tech-maniac',
             enabled = true,
             upgrade = true,
@@ -140,7 +140,7 @@ local function get_items()
             stack = 1,
             value = 'coin',
             price = car_health_upgrade_pool,
-            tooltip = ({'main_market.sold_out'}),
+            tooltip = ({ 'main_market.sold_out' }),
             sprite = 'achievement/iron-throne-1',
             enabled = false,
             upgrade = true,
@@ -151,7 +151,7 @@ local function get_items()
             stack = 1,
             value = 'coin',
             price = car_health_upgrade_pool,
-            tooltip = ({'main_market.global_car_health_modifier'}),
+            tooltip = ({ 'main_market.global_car_health_modifier' }),
             sprite = 'achievement/iron-throne-1',
             enabled = true,
             upgrade = true,
@@ -164,7 +164,7 @@ local function get_items()
             stack = 1,
             value = 'coin',
             price = upgraded_tile_when_mining_cost,
-            tooltip = ({'main_market.sold_out'}),
+            tooltip = ({ 'main_market.sold_out' }),
             sprite = 'achievement/run-forrest-run',
             enabled = false,
             upgrade = true,
@@ -175,7 +175,7 @@ local function get_items()
             stack = 1,
             value = 'coin',
             price = upgraded_tile_when_mining_cost,
-            tooltip = ({'main_market.tile_when_mining'}),
+            tooltip = ({ 'main_market.tile_when_mining' }),
             sprite = 'achievement/run-forrest-run',
             enabled = true,
             upgrade = true,
@@ -188,7 +188,7 @@ local function get_items()
             stack = 1,
             value = 'coin',
             price = xp_point_boost_cost,
-            tooltip = ({'locomotive.limit_reached'}),
+            tooltip = ({ 'locomotive.limit_reached' }),
             sprite = 'achievement/trans-factorio-express',
             enabled = false,
             upgrade = true,
@@ -199,7 +199,7 @@ local function get_items()
             stack = 1,
             value = 'coin',
             price = xp_point_boost_cost,
-            tooltip = ({'main_market.xp_points_boost', upgrades.xp_points_upgrade, market_limits.xp_points_limit}),
+            tooltip = ({ 'main_market.xp_points_boost', upgrades.xp_points_upgrade, market_limits.xp_points_limit }),
             sprite = 'achievement/trans-factorio-express',
             enabled = true,
             upgrade = true,
@@ -211,7 +211,7 @@ local function get_items()
         stack = 1,
         value = 'coin',
         price = redraw_mystical_chest_cost,
-        tooltip = ({'main_market.mystical_chest'}),
+        tooltip = ({ 'main_market.mystical_chest' }),
         sprite = 'achievement/logistic-network-embargo',
         enabled = true,
         upgrade = true,
@@ -223,7 +223,7 @@ local function get_items()
             stack = 1,
             value = 'coin',
             price = explosive_bullets_cost,
-            tooltip = ({'main_market.sold_out'}),
+            tooltip = ({ 'main_market.sold_out' }),
             sprite = 'achievement/steamrolled',
             enabled = false,
             upgrade = true,
@@ -234,7 +234,7 @@ local function get_items()
             stack = 1,
             value = 'coin',
             price = explosive_bullets_cost,
-            tooltip = ({'main_market.explosive_bullets'}),
+            tooltip = ({ 'main_market.explosive_bullets' }),
             sprite = 'achievement/steamrolled',
             enabled = true,
             upgrade = true,
@@ -246,7 +246,7 @@ local function get_items()
         stack = 1,
         value = 'coin',
         price = flamethrower_turrets_cost,
-        tooltip = ({'main_market.flamethrower_turret', flame_turret}),
+        tooltip = ({ 'main_market.flamethrower_turret', flame_turret }),
         sprite = 'achievement/pyromaniac',
         enabled = true,
         upgrade = true,
@@ -256,7 +256,7 @@ local function get_items()
         stack = 1,
         value = 'coin',
         price = land_mine_cost,
-        tooltip = ({'main_market.land_mine', upgrades.landmine.bought}),
+        tooltip = ({ 'main_market.land_mine', upgrades.landmine.bought }),
         sprite = 'achievement/watch-your-step',
         enabled = true,
         upgrade = true,
@@ -268,7 +268,7 @@ local function get_items()
             stack = 1,
             value = 'coin',
             price = 128,
-            tooltip = ({'entity-name.loader'}),
+            tooltip = ({ 'entity-name.loader' }),
             upgrade = false,
             static = true
         }
@@ -278,7 +278,7 @@ local function get_items()
             stack = 1,
             value = 'coin',
             price = 256,
-            tooltip = ({'entity-name.fast-loader'}),
+            tooltip = ({ 'entity-name.fast-loader' }),
             upgrade = false,
             static = true
         }
@@ -288,7 +288,7 @@ local function get_items()
             stack = 1,
             value = 'coin',
             price = 512,
-            tooltip = ({'entity-name.express-loader'}),
+            tooltip = ({ 'entity-name.express-loader' }),
             upgrade = false,
             static = true
         }
@@ -297,7 +297,7 @@ local function get_items()
         stack = 1,
         value = 'coin',
         price = 500,
-        tooltip = ({'entity-name.linked-chest'}),
+        tooltip = ({ 'entity-name.linked-chest' }),
         upgrade = false,
         static = true
     }
@@ -306,7 +306,7 @@ local function get_items()
         stack = 1,
         value = 'coin',
         price = 5,
-        tooltip = ({'entity-name.small-lamp'}),
+        tooltip = ({ 'entity-name.small-lamp' }),
         upgrade = false,
         static = false
     }
@@ -316,7 +316,7 @@ local function get_items()
             stack = 1,
             value = 'coin',
             price = 9216,
-            tooltip = ({'equipment-name.discharge-defense-equipment'}),
+            tooltip = ({ 'equipment-name.discharge-defense-equipment' }),
             upgrade = false,
             static = false
         }
@@ -324,7 +324,7 @@ local function get_items()
             stack = 1,
             value = 'coin',
             price = 1024,
-            tooltip = ({'item-name.discharge-defense-remote'}),
+            tooltip = ({ 'item-name.discharge-defense-remote' }),
             upgrade = false,
             static = false
         }
@@ -335,7 +335,7 @@ local function get_items()
             stack = 1,
             value = 'coin',
             price = 9216,
-            tooltip = ({'item-name.artillery-turret'}),
+            tooltip = ({ 'item-name.artillery-turret' }),
             upgrade = false,
             static = false
         }
@@ -343,7 +343,7 @@ local function get_items()
             stack = 1,
             value = 'coin',
             price = 1024,
-            tooltip = ({'item-name.artillery-shell'}),
+            tooltip = ({ 'item-name.artillery-shell' }),
             upgrade = false,
             static = false
         }
@@ -353,7 +353,7 @@ local function get_items()
         stack = 50,
         value = 'coin',
         price = 12,
-        tooltip = ({'item-name.wood'}),
+        tooltip = ({ 'item-name.wood' }),
         upgrade = false,
         static = false
     }
@@ -361,7 +361,7 @@ local function get_items()
         stack = 50,
         value = 'coin',
         price = 12,
-        tooltip = ({'item-name.iron-ore'}),
+        tooltip = ({ 'item-name.iron-ore' }),
         upgrade = false,
         static = false
     }
@@ -369,7 +369,7 @@ local function get_items()
         stack = 50,
         value = 'coin',
         price = 12,
-        tooltip = ({'item-name.copper-ore'}),
+        tooltip = ({ 'item-name.copper-ore' }),
         upgrade = false,
         static = false
     }
@@ -377,7 +377,7 @@ local function get_items()
         stack = 50,
         value = 'coin',
         price = 12,
-        tooltip = ({'item-name.stone'}),
+        tooltip = ({ 'item-name.stone' }),
         upgrade = false,
         static = false
     }
@@ -385,7 +385,7 @@ local function get_items()
         stack = 50,
         value = 'coin',
         price = 12,
-        tooltip = ({'item-name.coal'}),
+        tooltip = ({ 'item-name.coal' }),
         upgrade = false,
         static = false
     }
@@ -393,7 +393,7 @@ local function get_items()
         stack = 50,
         value = 'coin',
         price = 12,
-        tooltip = ({'item-name.uranium-ore'}),
+        tooltip = ({ 'item-name.uranium-ore' }),
         upgrade = false,
         static = false
     }
@@ -401,7 +401,7 @@ local function get_items()
         stack = 1,
         value = 'coin',
         price = 10,
-        tooltip = ({'entity-name.land-mine'}),
+        tooltip = ({ 'entity-name.land-mine' }),
         upgrade = false,
         static = false
     }
@@ -409,7 +409,7 @@ local function get_items()
         stack = 1,
         value = 'coin',
         price = 4,
-        tooltip = ({'item-name.raw-fish'}),
+        tooltip = ({ 'item-name.raw-fish' }),
         upgrade = false,
         static = false
     }
@@ -417,7 +417,7 @@ local function get_items()
         stack = 1,
         value = 'coin',
         price = 5,
-        tooltip = ({'item-name.firearm-magazine'}),
+        tooltip = ({ 'item-name.firearm-magazine' }),
         upgrade = false,
         static = false
     }
@@ -425,7 +425,7 @@ local function get_items()
         stack = 1,
         value = 'coin',
         price = 8,
-        tooltip = ({'item-name.crude-oil-barrel'}),
+        tooltip = ({ 'item-name.crude-oil-barrel' }),
         upgrade = false,
         static = false
     }
@@ -434,7 +434,7 @@ local function get_items()
             stack = 1,
             value = 'coin',
             price = 300,
-            tooltip = ({'main_market.sold_out'}),
+            tooltip = ({ 'main_market.sold_out' }),
             enabled = false,
             upgrade = false,
             static = true
@@ -444,7 +444,7 @@ local function get_items()
             stack = 1,
             value = 'coin',
             price = 300,
-            tooltip = {'', {'item-name.burner-generator'}, ' bought: ', upgrades.burner_generator.bought, '/', upgrades.burner_generator.limit},
+            tooltip = { '', { 'item-name.burner-generator' }, ' bought: ', upgrades.burner_generator.bought, '/', upgrades.burner_generator.limit },
             upgrade = false,
             static = true
         }
@@ -454,7 +454,7 @@ local function get_items()
         stack = 1,
         value = 'coin',
         price = 4500,
-        tooltip = ({'main_market.car'}),
+        tooltip = ({ 'main_market.car' }),
         upgrade = false,
         static = true
     }
@@ -462,7 +462,7 @@ local function get_items()
         stack = 1,
         value = 'coin',
         price = 12000,
-        tooltip = ({'main_market.tank'}),
+        tooltip = ({ 'main_market.tank' }),
         upgrade = false,
         static = true
     }
@@ -473,7 +473,7 @@ local function get_items()
             stack = 1,
             value = 'coin',
             price = 25000,
-            tooltip = ({'item-name.tank-cannon'}),
+            tooltip = ({ 'item-name.tank-cannon' }),
             upgrade = false,
             static = true,
             enabled = true
@@ -483,7 +483,7 @@ local function get_items()
             stack = 1,
             value = 'coin',
             price = 25000,
-            tooltip = ({'main_market.tank_cannon_na', 650}),
+            tooltip = ({ 'main_market.tank_cannon_na', 650 }),
             upgrade = false,
             static = true,
             enabled = false
@@ -494,7 +494,7 @@ local function get_items()
             stack = 1,
             value = 'coin',
             price = 500,
-            tooltip = ({'item-name.vehicle-machine-gun'}),
+            tooltip = ({ 'item-name.vehicle-machine-gun' }),
             upgrade = false,
             static = true,
             enabled = true
@@ -504,7 +504,7 @@ local function get_items()
             stack = 1,
             value = 'coin',
             price = 500,
-            tooltip = ({'main_market.vehicle_machine_gun_na', 100}),
+            tooltip = ({ 'main_market.vehicle_machine_gun_na', 100 }),
             upgrade = false,
             static = true,
             enabled = false
@@ -571,14 +571,14 @@ local function redraw_market_items(gui, player, search_text)
 
     local upgrades_label =
         gui.add(
-        {
-            type = 'label',
-            caption = ({'locomotive.upgrades'})
-        }
-    )
+            {
+                type = 'label',
+                caption = ({ 'locomotive.upgrades' })
+            }
+        )
     upgrades_label.style.font = 'heading-2'
 
-    local upgrade_table = gui.add({type = 'table', column_count = 6})
+    local upgrade_table = gui.add({ type = 'table', column_count = 6 })
 
     for item, data in pairs(get_items()) do
         if data.upgrade then
@@ -594,31 +594,31 @@ local function redraw_market_items(gui, player, search_text)
             local item_count = data.stack
             local item_cost = data.price
 
-            local frame = upgrade_table.add({type = 'flow'})
+            local frame = upgrade_table.add({ type = 'flow' })
             frame.style.vertical_align = 'bottom'
 
             player_item_count = inventory.get_item_count(data.value)
 
             local button =
                 frame.add(
-                {
-                    type = 'sprite-button',
-                    ---@diagnostic disable-next-line: ambiguity-1
-                    sprite = data.sprite or 'item/' .. item,
-                    number = item_count,
-                    name = item,
-                    tooltip = data.tooltip,
-                    style = 'slot_button',
-                    enabled = data.enabled
-                }
-            )
+                    {
+                        type = 'sprite-button',
+                        ---@diagnostic disable-next-line: ambiguity-1
+                        sprite = data.sprite or 'item/' .. item,
+                        number = item_count,
+                        name = item,
+                        tooltip = data.tooltip,
+                        style = 'slot_button',
+                        enabled = data.enabled
+                    }
+                )
             local label =
                 frame.add(
-                {
-                    type = 'label',
-                    caption = concat {'[item=', data.value, ']: '} .. format_number(item_cost, true)
-                }
-            )
+                    {
+                        type = 'label',
+                        caption = concat { '[item=', data.value, ']: ' } .. format_number(item_cost, true)
+                    }
+                )
             label.style.font = 'default-bold'
 
             if player_item_count < item_cost then
@@ -629,15 +629,15 @@ local function redraw_market_items(gui, player, search_text)
     end
     local items_label =
         gui.add(
-        {
-            type = 'label',
-            caption = ({'locomotive.items'})
-        }
-    )
+            {
+                type = 'label',
+                caption = ({ 'locomotive.items' })
+            }
+        )
     items_label.style.font = 'heading-2'
 
     local slider_value = ceil(players[player.index].data.slider.slider_value)
-    local items_table = gui.add({type = 'table', column_count = 6})
+    local items_table = gui.add({ type = 'table', column_count = 6 })
 
     for item, data in pairs(get_items()) do
         if not data.upgrade then
@@ -653,45 +653,45 @@ local function redraw_market_items(gui, player, search_text)
             local item_count = data.stack * slider_value
             local item_cost = data.price * slider_value
 
-            local frame = items_table.add({type = 'flow'})
+            local frame = items_table.add({ type = 'flow' })
             frame.style.vertical_align = 'bottom'
 
             player_item_count = inventory.get_item_count(data.value)
 
             local button =
                 frame.add(
-                {
-                    type = 'sprite-button',
-                    ---@diagnostic disable-next-line: ambiguity-1
-                    sprite = data.sprite or 'item/' .. item,
-                    number = item_count,
-                    name = item,
-                    tooltip = data.tooltip,
-                    style = 'slot_button',
-                    enabled = data.enabled
-                }
-            )
+                    {
+                        type = 'sprite-button',
+                        ---@diagnostic disable-next-line: ambiguity-1
+                        sprite = data.sprite or 'item/' .. item,
+                        number = item_count,
+                        name = item,
+                        tooltip = data.tooltip,
+                        style = 'slot_button',
+                        enabled = data.enabled
+                    }
+                )
             if Public.get('trusted_only_car_tanks') then
                 local trustedPlayer = Session.get_trusted_player(player)
                 if not trustedPlayer then
                     if item == 'tank' then
                         button.enabled = false
-                        button.tooltip = ({'locomotive.not_trusted'})
+                        button.tooltip = ({ 'locomotive.not_trusted' })
                     end
                     if item == 'car' then
                         button.enabled = false
-                        button.tooltip = ({'locomotive.not_trusted'})
+                        button.tooltip = ({ 'locomotive.not_trusted' })
                     end
                 end
             end
 
             local label =
                 frame.add(
-                {
-                    type = 'label',
-                    caption = concat {'[item=', data.value, ']: '} .. format_number(item_cost, true)
-                }
-            )
+                    {
+                        type = 'label',
+                        caption = concat { '[item=', data.value, ']: ' } .. format_number(item_cost, true)
+                    }
+                )
             label.style.font = 'default-bold'
 
             if player_item_count < item_cost then
@@ -713,11 +713,11 @@ local function redraw_coins_left(gui, player)
 
     local coinsleft =
         gui.add(
-        {
-            type = 'label',
-            caption = ({'locomotive.coins_left', format_number(player_item_count, true)})
-        }
-    )
+            {
+                type = 'label',
+                caption = ({ 'locomotive.coins_left', format_number(player_item_count, true) })
+            }
+        )
 
     add_space(coinsleft)
 end
@@ -865,63 +865,63 @@ local function gui_opened(event)
 
     player.opened = frame
 
-    local search_table = inside_table.add({type = 'table', column_count = 2})
-    local search_name = search_table.add({type = 'label', caption = ({'locomotive.search_text'})})
+    local search_table = inside_table.add({ type = 'table', column_count = 2 })
+    local search_name = search_table.add({ type = 'label', caption = ({ 'locomotive.search_text' }) })
     search_name.style.font = 'heading-2'
-    local search_text = search_table.add({type = 'textfield'})
+    local search_text = search_table.add({ type = 'textfield' })
     search_text.style.width = 140
 
     add_space(inside_table)
 
     local pane =
         inside_table.add {
-        type = 'scroll-pane',
-        direction = 'vertical',
-        vertical_scroll_policy = 'always',
-        horizontal_scroll_policy = 'never'
-    }
+            type = 'scroll-pane',
+            direction = 'vertical',
+            vertical_scroll_policy = 'always',
+            horizontal_scroll_policy = 'never'
+        }
     pane.style.maximal_height = 200
     pane.style.horizontally_stretchable = true
     pane.style.minimal_height = 200
     pane.style.right_padding = 0
 
-    local flow = inside_table.add({type = 'flow'})
+    local flow = inside_table.add({ type = 'flow' })
 
     add_space(flow)
 
-    local bottom_grid = inside_table.add({type = 'table', column_count = 4})
+    local bottom_grid = inside_table.add({ type = 'table', column_count = 4 })
     bottom_grid.style.vertically_stretchable = false
 
-    local bg = bottom_grid.add({type = 'label', caption = ({'locomotive.quantity_text'})})
+    local bg = bottom_grid.add({ type = 'label', caption = ({ 'locomotive.quantity_text' }) })
     bg.style.font = 'default-bold'
 
     local text_input =
         bottom_grid.add(
-        {
-            type = 'text-box',
-            text = 1
-        }
-    )
+            {
+                type = 'text-box',
+                text = 1
+            }
+        )
     text_input.style.maximal_height = 28
 
     local slider =
         inside_table.add(
-        {
-            type = 'slider',
-            minimum_value = 1,
-            maximum_value = 1e2,
-            value = 1
-        }
-    )
+            {
+                type = 'slider',
+                minimum_value = 1,
+                maximum_value = 1e2,
+                value = 1
+            }
+        )
     slider.style.width = 115
     text_input.style.width = 60
 
-    local coinsleft = inside_table.add({type = 'flow'})
+    local coinsleft = inside_table.add({ type = 'flow' })
 
     coinsleft.add(
         {
             type = 'label',
-            caption = ({'locomotive.coins_left', format_number(player_item_count, true)})
+            caption = ({ 'locomotive.coins_left', format_number(player_item_count, true) })
         }
     )
 
@@ -998,14 +998,14 @@ local function gui_click(event)
     if name == 'burner-generator' then
         if this.upgrades.burner_generator.bought >= this.upgrades.burner_generator.limit then
             redraw_market_items(data.item_frame, player, data.search_text)
-            player.print(({'locomotive.limit_reached'}), {r = 0.98, g = 0.66, b = 0.22})
+            player.print(({ 'locomotive.limit_reached' }), { r = 0.98, g = 0.66, b = 0.22 })
             return
         end
-        player.remove_item({name = item.value, count = item.price})
+        player.remove_item({ name = item.value, count = item.price })
 
-        player.insert({name = name, count = item.stack})
+        player.insert({ name = name, count = item.stack })
 
-        Event.raise(Public.events.on_market_item_purchased, {cost = item.price})
+        Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
 
         if item.stack > this.upgrades.burner_generator.limit then
             item.stack = this.upgrades.burner_generator.limit
@@ -1021,9 +1021,9 @@ local function gui_click(event)
     end
 
     if name == 'upgrade_pickaxe' then
-        player.remove_item({name = item.value, count = item.price})
+        player.remove_item({ name = item.value, count = item.price })
 
-        Event.raise(Public.events.on_market_item_purchased, {cost = item.price})
+        Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
 
         this.upgrades.pickaxe_tier = this.upgrades.pickaxe_tier + item.stack
 
@@ -1055,10 +1055,10 @@ local function gui_click(event)
         return
     end
     if name == 'locomotive_max_health' then
-        player.remove_item({name = item.value, count = item.price})
-        local message = ({'locomotive.health_bought_info', shopkeeper, player.name, format_number(item.price, true)})
+        player.remove_item({ name = item.value, count = item.price })
+        local message = ({ 'locomotive.health_bought_info', shopkeeper, player.name, format_number(item.price, true) })
 
-        Event.raise(Public.events.on_market_item_purchased, {cost = item.price})
+        Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
 
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
@@ -1097,7 +1097,9 @@ local function gui_click(event)
 
         this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + item.price
         this.upgrades.health_upgrades = this.upgrades.health_upgrades + item.stack
-        rendering.set_text(this.health_text, 'HP: ' .. round(this.locomotive_health) .. ' / ' .. round(this.locomotive_max_health))
+        if this.health_text and this.health_text.valid then
+            this.health_text.text = 'HP: ' .. round(this.locomotive_health) .. ' / ' .. round(this.locomotive_max_health)
+        end
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
@@ -1107,14 +1109,14 @@ local function gui_click(event)
     if name == 'locomotive_aura_radius' then
         if this.upgrades.locomotive_aura_radius == this.market_limits.aura_limit then
             redraw_market_items(data.item_frame, player, data.search_text)
-            player.print(({'locomotive.limit_reached'}), {r = 0.98, g = 0.66, b = 0.22})
+            player.print(({ 'locomotive.limit_reached' }), { r = 0.98, g = 0.66, b = 0.22 })
             return
         end
-        player.remove_item({name = item.value, count = item.price})
+        player.remove_item({ name = item.value, count = item.price })
 
-        Event.raise(Public.events.on_market_item_purchased, {cost = item.price})
+        Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
 
-        local message = ({'locomotive.aura_bought_info', shopkeeper, player.name, format_number(item.price, true)})
+        local message = ({ 'locomotive.aura_bought_info', shopkeeper, player.name, format_number(item.price, true) })
 
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
@@ -1126,8 +1128,8 @@ local function gui_click(event)
         this.upgrades.aura_upgrades = this.upgrades.aura_upgrades + item.stack
         this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + item.price
 
-        if this.circle then
-            rendering.destroy(this.circle)
+        if this.circle and this.circle.valid then
+            this.circle.destroy()
         end
         local difficulty_index = Difficulty.get('index')
 
@@ -1138,13 +1140,13 @@ local function gui_click(event)
 
         this.circle =
             rendering.draw_circle {
-            surface = game.surfaces[this.active_surface_index],
-            target = this.locomotive,
-            color = this.locomotive.color,
-            filled = false,
-            radius = this.upgrades.locomotive_aura_radius,
-            only_in_alt_mode = fill_circle
-        }
+                surface = game.surfaces[this.active_surface_index],
+                target = this.locomotive,
+                color = this.locomotive.color,
+                filled = false,
+                radius = this.upgrades.locomotive_aura_radius,
+                only_in_alt_mode = fill_circle
+            }
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
@@ -1153,10 +1155,10 @@ local function gui_click(event)
     end
 
     if name == 'xp_points_boost' then
-        player.remove_item({name = item.value, count = item.price})
-        local message = ({'locomotive.xp_bought_info', shopkeeper, player.name, format_number(item.price, true)})
+        player.remove_item({ name = item.value, count = item.price })
+        local message = ({ 'locomotive.xp_bought_info', shopkeeper, player.name, format_number(item.price, true) })
 
-        Event.raise(Public.events.on_market_item_purchased, {cost = item.price})
+        Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
 
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
@@ -1175,10 +1177,10 @@ local function gui_click(event)
     end
 
     if name == 'redraw_mystical_chest' then
-        player.remove_item({name = item.value, count = item.price})
-        local message = ({'locomotive.mystical_bought_info', shopkeeper, player.name, format_number(item.price, true)})
+        player.remove_item({ name = item.value, count = item.price })
+        local message = ({ 'locomotive.mystical_bought_info', shopkeeper, player.name, format_number(item.price, true) })
 
-        Event.raise(Public.events.on_market_item_purchased, {cost = item.price})
+        Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
 
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
@@ -1196,7 +1198,7 @@ local function gui_click(event)
     end
 
     if name == 'explosive_bullets' then
-        player.remove_item({name = item.value, count = item.price})
+        player.remove_item({ name = item.value, count = item.price })
         local message = ({
             'locomotive.explosive_bullet_bought_info',
             shopkeeper,
@@ -1204,7 +1206,7 @@ local function gui_click(event)
             format_number(item.price, true)
         })
 
-        Event.raise(Public.events.on_market_item_purchased, {cost = item.price})
+        Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
 
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
@@ -1222,7 +1224,7 @@ local function gui_click(event)
     end
 
     if name == 'car_health_upgrade_pool' then
-        player.remove_item({name = item.value, count = item.price})
+        player.remove_item({ name = item.value, count = item.price })
         local message = ({
             'locomotive.car_health_upgrade_pool_bought_info',
             shopkeeper,
@@ -1230,7 +1232,7 @@ local function gui_click(event)
             format_number(item.price, true)
         })
 
-        Event.raise(Public.events.on_market_item_purchased, {cost = item.price})
+        Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
 
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
@@ -1247,7 +1249,7 @@ local function gui_click(event)
     end
 
     if name == 'upgraded_tile_when_mining_cost' then
-        player.remove_item({name = item.value, count = item.price})
+        player.remove_item({ name = item.value, count = item.price })
         local message = ({
             'locomotive.tile_upgrade_bought_info',
             shopkeeper,
@@ -1255,7 +1257,7 @@ local function gui_click(event)
             format_number(item.price, true)
         })
 
-        Event.raise(Public.events.on_market_item_purchased, {cost = item.price})
+        Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
 
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
@@ -1272,8 +1274,8 @@ local function gui_click(event)
     end
 
     if name == 'flamethrower_turrets' then
-        player.remove_item({name = item.value, count = item.price})
-        Event.raise(Public.events.on_market_item_purchased, {cost = item.price})
+        player.remove_item({ name = item.value, count = item.price })
+        Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
 
         if item.stack >= 1 then
             local message = ({
@@ -1312,9 +1314,9 @@ local function gui_click(event)
         return
     end
     if name == 'land_mine' then
-        player.remove_item({name = item.value, count = item.price})
+        player.remove_item({ name = item.value, count = item.price })
 
-        Event.raise(Public.events.on_market_item_purchased, {cost = item.price})
+        Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
 
         if item.stack >= 1 and this.upgrades.landmine.bought % 10 == 0 then
             local message = ({
@@ -1344,29 +1346,29 @@ local function gui_click(event)
     end
 
     if player_item_count >= cost then
-        if player.can_insert({name = name, count = item_count}) then
-            player.play_sound({path = 'entity-close/stone-furnace', volume_modifier = 0.65})
-            local inserted_count = player.insert({name = name, count = item_count})
+        if player.can_insert({ name = name, count = item_count }) then
+            player.play_sound({ path = 'entity-close/stone-furnace', volume_modifier = 0.65 })
+            local inserted_count = player.insert({ name = name, count = item_count })
             if inserted_count < item_count then
-                player.play_sound({path = 'utility/cannot_build', volume_modifier = 0.65})
-                player.print(({'locomotive.full_inventory', inserted_count, name}), {r = 0.98, g = 0.66, b = 0.22})
-                player.print(({'locomotive.change_returned'}), {r = 0.98, g = 0.66, b = 0.22})
-                player.insert({name = name, count = inserted_count})
-                player.remove_item({name = item.value, count = ceil(item.price * (inserted_count / item.stack))})
-                Event.raise(Public.events.on_market_item_purchased, {cost = ceil(item.price * (inserted_count / item.stack))})
+                player.play_sound({ path = 'utility/cannot_build', volume_modifier = 0.65 })
+                player.print(({ 'locomotive.full_inventory', inserted_count, name }), { r = 0.98, g = 0.66, b = 0.22 })
+                player.print(({ 'locomotive.change_returned' }), { r = 0.98, g = 0.66, b = 0.22 })
+                player.insert({ name = name, count = inserted_count })
+                player.remove_item({ name = item.value, count = ceil(item.price * (inserted_count / item.stack)) })
+                Event.raise(Public.events.on_market_item_purchased, { cost = ceil(item.price * (inserted_count / item.stack)) })
             else
-                player.remove_item({name = item.value, count = cost})
-                Event.raise(Public.events.on_market_item_purchased, {cost = cost})
+                player.remove_item({ name = item.value, count = cost })
+                Event.raise(Public.events.on_market_item_purchased, { cost = cost })
             end
             redraw_market_items(data.item_frame, player, data.search_text)
             redraw_coins_left(data.coins_left, player)
         else
-            player.play_sound({path = 'utility/cannot_build', volume_modifier = 0.65})
+            player.play_sound({ path = 'utility/cannot_build', volume_modifier = 0.65 })
             if (random(1, 10) > 1) then
-                player.print(({'locomotive.notify_full_inventory_1'}), {r = 0.98, g = 0.66, b = 0.22})
-                player.print(({'locomotive.notify_full_inventory_2'}), {r = 0.98, g = 0.66, b = 0.22})
+                player.print(({ 'locomotive.notify_full_inventory_1' }), { r = 0.98, g = 0.66, b = 0.22 })
+                player.print(({ 'locomotive.notify_full_inventory_2' }), { r = 0.98, g = 0.66, b = 0.22 })
             else
-                player.print(({'locomotive.notify_full_inventory_2'}), {r = 0.98, g = 0.66, b = 0.22})
+                player.print(({ 'locomotive.notify_full_inventory_2' }), { r = 0.98, g = 0.66, b = 0.22 })
             end
         end
     end
@@ -1410,8 +1412,8 @@ local function on_player_changed_position(event)
     if data and data.frame and data.frame.valid then
         local position = market.position
         local area = {
-            left_top = {x = position.x - 10, y = position.y - 10},
-            right_bottom = {x = position.x + 10, y = position.y + 10}
+            left_top = { x = position.x - 10, y = position.y - 10 },
+            right_bottom = { x = position.x + 10, y = position.y + 10 }
         }
         if Math2D.bounding_box.contains_point(area, player.position) then
             return
@@ -1437,14 +1439,14 @@ local function create_market(data, rebuild)
 
     if rebuild then
         local radius = 512
-        local area = {{x = -radius, y = -radius}, {x = radius, y = radius}}
-        for _, entity in pairs(surface.find_entities_filtered {area = area, name = 'market'}) do
+        local area = { { x = -radius, y = -radius }, { x = radius, y = radius } }
+        for _, entity in pairs(surface.find_entities_filtered { area = area, name = 'market' }) do
             entity.destroy()
         end
-        for _, entity in pairs(surface.find_entities_filtered {area = area, type = 'item-entity', name = 'item-on-ground'}) do
+        for _, entity in pairs(surface.find_entities_filtered { area = area, type = 'item-entity', name = 'item-on-ground' }) do
             entity.destroy()
         end
-        for _, entity in pairs(surface.find_entities_filtered {area = area, type = 'unit'}) do
+        for _, entity in pairs(surface.find_entities_filtered { area = area, type = 'unit' }) do
             entity.destroy()
         end
         this.market = nil
@@ -1470,7 +1472,7 @@ local function create_market(data, rebuild)
         this.icw_area = center_position
     end
 
-    this.market = surface.create_entity {name = 'market', position = center_position, force = 'player'}
+    this.market = surface.create_entity { name = 'market', position = center_position, force = 'player' }
 
     for y = -1, 0, 0.05 do
         local scale = random(50, 100) * 0.01
@@ -1480,10 +1482,10 @@ local function create_market(data, rebuild)
                 orientation = random(0, 100) * 0.01,
                 x_scale = scale,
                 y_scale = scale,
-                tint = {random(60, 255), random(60, 255), random(60, 255)},
+                tint = { random(60, 255), random(60, 255), random(60, 255) },
                 render_layer = 'selection-box',
                 target = this.market,
-                target_offset = {-0.7 + random(0, 140) * 0.01, y},
+                target_offset = { -0.7 + random(0, 140) * 0.01, y },
                 surface = surface
             }
         )
@@ -1496,7 +1498,7 @@ local function create_market(data, rebuild)
         end
 
         this.mystical_chest = {
-            entity = surface.create_entity {name = 'logistic-chest-requester', position = {x = center_position.x, y = center_position.y + 2}, force = 'neutral'}
+            entity = surface.create_entity { name = 'requester-chest', position = { x = center_position.x, y = center_position.y + 2 }, force = 'neutral' }
         }
         this.mystical_chest.entity.minable = false
         this.mystical_chest.entity.destructible = false
@@ -1508,8 +1510,8 @@ local function create_market(data, rebuild)
             surface = surface,
             target = this.mystical_chest.entity,
             scale = 1.2,
-            target_offset = {0, 0},
-            color = {r = 0.98, g = 0.66, b = 0.22},
+            target_offset = { 0, 0 },
+            color = { r = 0.98, g = 0.66, b = 0.22 },
             alignment = 'center'
         }
     end
@@ -1521,8 +1523,8 @@ local function create_market(data, rebuild)
         surface = surface,
         target = this.market,
         scale = 1.5,
-        target_offset = {0, -2},
-        color = {r = 0.98, g = 0.66, b = 0.22},
+        target_offset = { 0, -2 },
+        color = { r = 0.98, g = 0.66, b = 0.22 },
         alignment = 'center'
     }
 
@@ -1533,17 +1535,17 @@ local function create_market(data, rebuild)
     for x = center_position.x - 5, center_position.x + 5, 1 do
         for y = center_position.y - 5, center_position.y + 5, 1 do
             if random(1, 2) == 1 then
-                loco_surface.spill_item_stack({x + random(0, 9) * 0.1, y + random(0, 9) * 0.1}, {name = 'raw-fish', count = 1}, false)
+                loco_surface.spill_item_stack { position = { x = x + random(0, 9) * 0.1, y = y + random(0, 9) * 0.1 }, stack = { name = 'raw-fish', count = 1 } }
             end
-            loco_surface.set_tiles({{name = 'blue-refined-concrete', position = {x, y}}}, true)
+            loco_surface.set_tiles({ { name = 'blue-refined-concrete', position = { x = x, y = y } } }, true)
         end
     end
     for x = center_position.x - 3, center_position.x + 3, 1 do
         for y = center_position.y - 3, center_position.y + 3, 1 do
             if random(1, 2) == 1 then
-                loco_surface.spill_item_stack({x + random(0, 9) * 0.1, y + random(0, 9) * 0.1}, {name = 'raw-fish', count = 1}, false)
+                loco_surface.spill_item_stack { position = { x = x + random(0, 9) * 0.1, y = y + random(0, 9) * 0.1 }, stack = { name = 'raw-fish', count = 1 } }
             end
-            loco_surface.set_tiles({{name = 'cyan-refined-concrete', position = {x, y}}}, true)
+            loco_surface.set_tiles({ { name = 'cyan-refined-concrete', position = { x, y } } }, true)
         end
     end
 end
@@ -1613,7 +1615,7 @@ end
 
 Gui.on_click(
     close_market_gui_name,
-    function(event)
+    function (event)
         local player = event.player
         if not player or not player.valid or not player.character then
             return

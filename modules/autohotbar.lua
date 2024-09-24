@@ -41,7 +41,7 @@ local function set_hotbar(player, item)
 end
 
 local function on_player_fast_transferred(event)
-    if not global.auto_hotbar_enabled[event.player_index] then
+    if not storage.auto_hotbar_enabled[event.player_index] then
         return
     end
     local player = game.players[event.player_index]
@@ -51,28 +51,28 @@ local function on_player_fast_transferred(event)
 end
 
 local function on_player_crafted_item(event)
-    if not global.auto_hotbar_enabled[event.player_index] then
+    if not storage.auto_hotbar_enabled[event.player_index] then
         return
     end
     set_hotbar(game.players[event.player_index], event.item_stack.name)
 end
 
 local function on_picked_up_item(event)
-    if not global.auto_hotbar_enabled[event.player_index] then
+    if not storage.auto_hotbar_enabled[event.player_index] then
         return
     end
     set_hotbar(game.players[event.player_index], event.item_stack.name)
 end
 
 local function on_player_mined_entity(event)
-    if not global.auto_hotbar_enabled[event.player_index] then
+    if not storage.auto_hotbar_enabled[event.player_index] then
         return
     end
     set_hotbar(game.players[event.player_index], event.entity.name)
 end
 
 local function on_init()
-    global.auto_hotbar_enabled = {}
+    storage.auto_hotbar_enabled = {}
 end
 
 event.on_init(on_init)

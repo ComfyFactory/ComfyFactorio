@@ -446,7 +446,10 @@ local function set_locomotive_health()
         if locomotive_health > locomotive_max_health then
             Public.set('locomotive_health', locomotive_max_health)
         end
-        rendering.set_text(Public.get('health_text'), 'HP: ' .. round(locomotive_health) .. ' / ' .. round(locomotive_max_health))
+        local health_text = Public.get('health_text')
+        if health_text and health_text.valid then
+            health_text.text = 'HP: ' .. round(locomotive_health) .. ' / ' .. round(locomotive_max_health)
+        end
         local carriages = Public.get('carriages')
         if carriages then
             for i = 1, #carriages do
@@ -552,7 +555,7 @@ local function on_player_changed_surface(event)
     end
 
     if player.surface.name == 'nauvis' then
-        local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
+        local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
         if pos then
             player.teleport(pos, surface)
         else
@@ -586,7 +589,7 @@ local function check_on_player_changed_surface()
     Core.iter_players(
         function (player)
             if player.surface.name == 'nauvis' then
-                local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
+                local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
                 if pos then
                     player.teleport(pos, surface)
                 else
@@ -753,16 +756,20 @@ function Public.render_train_hp()
 
     local locomotive_health = Public.get('locomotive_health')
     local locomotive_max_health = Public.get('locomotive_max_health')
-    local locomotive = Public.get('locomotive')
     local upgrades = Public.get('upgrades')
+    local locomotive = Public.get('locomotive')
     if not locomotive or not locomotive.valid then
+        return
+    end
+    local locomotive_cargo = Public.get('locomotive_cargo')
+    if not locomotive_cargo or not locomotive_cargo.valid then
         return
     end
 
     local health_text = Public.get('health_text')
 
-    if health_text then
-        rendering.destroy(health_text)
+    if health_text and health_text.valid then
+        health_text.destroy()
     end
 
     Public.set(
@@ -771,7 +778,6 @@ function Public.render_train_hp()
             text = 'HP: ' .. locomotive_health .. ' / ' .. locomotive_max_health,
             surface = surface,
             target = locomotive,
-            target_offset = { 0, -4.5 },
             color = locomotive.color,
             scale = 1.40,
             font = 'default-game',
@@ -785,8 +791,7 @@ function Public.render_train_hp()
         rendering.draw_text {
             text = 'Comfy Choo Choo',
             surface = surface,
-            target = locomotive,
-            target_offset = { 0, -6.25 },
+            target = locomotive_cargo,
             color = locomotive.color,
             scale = 1.80,
             font = 'default-game',
@@ -830,7 +835,7 @@ function Public.transfer_pollution()
 
     local pollution = surface.get_total_pollution() * (3 / (4 / 3 + 1)) * Difficulty.get().value
     active_surface.pollute(locomotive.position, pollution)
-    game.pollution_statistics.on_flow('locomotive', pollution - total_interior_pollution)
+    game.get_pollution_statistics(surface).on_flow('locomotive', pollution - total_interior_pollution)
     surface.clear_pollution()
 end
 

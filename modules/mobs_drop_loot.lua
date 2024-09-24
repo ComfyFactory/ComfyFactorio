@@ -94,9 +94,9 @@ local item_worths = {
     ['speed-module'] = 128,
     ['speed-module-2'] = 512,
     ['speed-module-3'] = 2048,
-    ['effectivity-module'] = 128,
-    ['effectivity-module-2'] = 512,
-    ['effectivity-module-3'] = 2048,
+    ['efficiency-module'] = 128,
+    ['efficiency-module-2'] = 512,
+    ['efficiency-module-3'] = 2048,
     ['productivity-module'] = 128,
     ['productivity-module-2'] = 512,
     ['productivity-module-3'] = 2048,
@@ -120,7 +120,7 @@ local item_worths = {
     ['copper-cable'] = 1,
     ['iron-stick'] = 1,
     ['iron-gear-wheel'] = 2,
-    ['empty-barrel'] = 4,
+    ['barrel'] = 4,
     ['electronic-circuit'] = 4,
     ['advanced-circuit'] = 16,
     ['processing-unit'] = 128,
@@ -244,9 +244,9 @@ local function roll_item_stack(entity, wave)
         end
     end
 
-    entity.surface.spill_item_stack(entity.position, {name = item_name, count = random(1, item_count)}, true)
+    entity.surface.spill_item_stack(entity.position, { name = item_name, count = random(1, item_count) }, true)
 
-    return {name = item_name, count = item_count}
+    return { name = item_name, count = item_count }
 end
 
 -- local Public = require 'modules.mobs_drop_loot' Public.drop_loot(game.get_player('Gerkiz'), 80)

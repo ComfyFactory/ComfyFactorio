@@ -9,7 +9,7 @@ local this = {}
 ---------------------------global table-----------------------------------------
 Global.register(
     this,
-    function(tbl)
+    function (tbl)
         this = tbl
     end
 )
@@ -30,7 +30,7 @@ function Public.get_table()
     return this
 end
 
-local on_init = function()
+local on_init = function ()
     Public.reset_table()
 end
 
@@ -57,7 +57,7 @@ local function scheduled_surface_clearing()
             return
         end
         if schedule[step].operation == 'biter_clearing' then
-            local biters = surface.find_entities_filtered {type = 'unit', limit = 10000}
+            local biters = surface.find_entities_filtered { type = 'unit', limit = 10000 }
             for _, biter in pairs(biters) do
                 if biter.valid then
                     biter.destroy()
@@ -66,7 +66,7 @@ local function scheduled_surface_clearing()
             schedule[step] = nil
             add_step()
         elseif schedule[step].operation == 'nest_clearing' then
-            local nests = surface.find_entities_filtered {type = 'unit-spawner'}
+            local nests = surface.find_entities_filtered { type = 'unit-spawner' }
             for _, nest in pairs(nests) do
                 if nest.valid then
                     nest.destroy()
@@ -75,7 +75,7 @@ local function scheduled_surface_clearing()
             schedule[step] = nil
             add_step()
         elseif schedule[step].operation == 'scrap_clearing' then
-            local scrap = surface.find_entities_filtered {force = 'neutral', limit = 5000}
+            local scrap = surface.find_entities_filtered { force = 'neutral', limit = 5000 }
             for _, e in pairs(scrap) do
                 if e.valid then
                     e.destroy()
@@ -98,21 +98,21 @@ end
 function Public.add_schedule_to_delete_surface(surface)
     local step = this.schedule_max_step
     local add = 1
-    this.schedule[step + add] = {operation = 'nest_clearing', surface = surface}
+    this.schedule[step + add] = { operation = 'nest_clearing', surface = surface }
     add = add + 1
-    local count_biters = surface.count_entities_filtered {type = 'unit'}
+    local count_biters = surface.count_entities_filtered { type = 'unit' }
     for i = 1, count_biters, 10000 do
-        this.schedule[step + add] = {operation = 'biter_clearing', surface = surface}
+        this.schedule[step + add] = { operation = 'biter_clearing', surface = surface }
         add = add + 1
     end
-    local count_scrap = surface.count_entities_filtered {force = 'neutral'}
+    local count_scrap = surface.count_entities_filtered { force = 'neutral' }
     for i = 1, count_scrap, 5000 do
-        this.schedule[step + add] = {operation = 'scrap_clearing', surface = surface}
+        this.schedule[step + add] = { operation = 'scrap_clearing', surface = surface }
         add = add + 1
     end
-    this.schedule[step + add] = {operation = 'clear', surface = surface}
+    this.schedule[step + add] = { operation = 'clear', surface = surface }
     add = add + 1
-    this.schedule[step + add] = {operation = 'delete', surface = surface}
+    this.schedule[step + add] = { operation = 'delete', surface = surface }
     this.schedule_max_step = this.schedule_max_step + add
     if this.schedule_step == step then
         this.schedule_step = this.schedule_step + 1
@@ -124,7 +124,7 @@ function Public.add_schedule_to_delete_surface(surface)
 end
 
 function Public.change_entities_to_neutral(surface, force, delete_pollution)
-    local entities = surface.find_entities_filtered {force = force or 'player'}
+    local entities = surface.find_entities_filtered { force = force or 'player' }
     for _, entity in pairs(entities) do
         if entity.valid then
             entity.force = 'neutral'
@@ -134,7 +134,7 @@ function Public.change_entities_to_neutral(surface, force, delete_pollution)
     if delete_pollution then
         local pollution = surface.get_total_pollution()
         surface.clear_pollution()
-        game.pollution_statistics.on_flow('power-switch', -pollution)
+        game.get_pollution_statistics(surface).on_flow('power-switch', -pollution)
     end
 end
 
@@ -162,13 +162,13 @@ end
 local function teleport_players(surface, small_force_chunk)
     for _, player in pairs(game.connected_players) do
         local spawn = player.force.get_spawn_position(surface)
-        local chunk = {math.floor(spawn.x / 32), math.floor(spawn.y / 32)}
+        local chunk = { math.floor(spawn.x / 32), math.floor(spawn.y / 32) }
         if not surface.is_chunk_generated(chunk) then
             if not small_force_chunk then
                 surface.request_to_generate_chunks(spawn, 1)
                 surface.force_generate_chunk_requests()
             else
-                surface.request_to_generate_chunks({0, 0}, 0.1)
+                surface.request_to_generate_chunks({ 0, 0 }, 0.1)
                 surface.force_generate_chunk_requests()
             end
         end
@@ -183,11 +183,11 @@ local function equip_players(player_starting_items)
             player.character.destroy()
         end
         player.character = nil
-        player.set_controller({type = defines.controllers.god})
+        player.set_controller({ type = defines.controllers.god })
         player.create_character()
         if player_starting_items then
             for item, amount in pairs(player_starting_items) do
-                player.insert({name = item, count = amount})
+                player.insert({ name = item, count = amount })
             end
         end
         Modifiers.update_player_modifiers(player)
@@ -196,12 +196,12 @@ end
 
 local function clear_robots(new_surface)
     local radius = 512
-    local area = {{x = -radius, y = -radius}, {x = radius, y = radius}}
-    for _, entity in pairs(new_surface.find_entities_filtered {area = area, type = 'logistic-robot'}) do
+    local area = { { x = -radius, y = -radius }, { x = radius, y = radius } }
+    for _, entity in pairs(new_surface.find_entities_filtered { area = area, type = 'logistic-robot' }) do
         entity.destroy()
     end
 
-    for _, entity in pairs(new_surface.find_entities_filtered {area = area, type = 'construction-robot'}) do
+    for _, entity in pairs(new_surface.find_entities_filtered { area = area, type = 'construction-robot' }) do
         entity.destroy()
     end
 end
@@ -214,10 +214,10 @@ function Public.soft_reset_map(old_surface, map_gen_settings, player_starting_it
 
     local new_surface = game.create_surface(this.original_surface_name .. '_' .. tostring(this.soft_reset_counter), map_gen_settings)
     if not small_force_chunk then
-        new_surface.request_to_generate_chunks({0, 0}, 1)
+        new_surface.request_to_generate_chunks({ 0, 0 }, 1)
         new_surface.force_generate_chunk_requests()
     else
-        new_surface.request_to_generate_chunks({0, 0}, 0.1)
+        new_surface.request_to_generate_chunks({ 0, 0 }, 0.1)
         new_surface.force_generate_chunk_requests()
     end
 
@@ -229,12 +229,12 @@ function Public.soft_reset_map(old_surface, map_gen_settings, player_starting_it
     Public.change_entities_to_neutral(old_surface)
     Public.add_schedule_to_delete_surface(old_surface)
 
-    local to_discord = {'modules.soft_reset_welcome', this.original_surface_name}
-    local restarting_to_discord = {'modules.soft_reset_reshape', this.original_surface_name, tostring(this.soft_reset_counter)}
+    local to_discord = { 'modules.soft_reset_welcome', this.original_surface_name }
+    local restarting_to_discord = { 'modules.soft_reset_reshape', this.original_surface_name, tostring(this.soft_reset_counter) }
 
     local message
     if this.enable_mapkeeper then
-        message = {'modules.soft_reset_welcome_mapkeeper', this.original_surface_name}
+        message = { 'modules.soft_reset_welcome_mapkeeper', this.original_surface_name }
     else
         message = to_discord
     end
@@ -251,7 +251,7 @@ function Public.soft_reset_map(old_surface, map_gen_settings, player_starting_it
         end
     end
 
-    game.print(message, {r = 0.98, g = 0.66, b = 0.22})
+    game.print(message, { r = 0.98, g = 0.66, b = 0.22 })
     Server.to_discord_embed(message, true)
 
     return new_surface

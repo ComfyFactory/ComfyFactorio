@@ -39,6 +39,36 @@ local function validate_entity(entity)
     return true
 end
 
+---Returns the car from the unit_number.
+---@param unit_number any
+---@return table|boolean
+local function get_car_by_unit_number(unit_number)
+    local cars = IC.get('cars')
+    return cars[unit_number]
+end
+
+---Returns the car from the surface_name.
+---@param surface_name any
+---@return table|nil
+local function get_car_by_surface_name(surface_name)
+    local cars = IC.get('cars')
+    for _, car in pairs(cars) do
+        if car.surface_name == surface_name then
+            return car
+        end
+    end
+    return nil
+end
+
+local function log_err(err)
+    local debug_mode = IC.get('debug_mode')
+    if debug_mode then
+        if type(err) == 'string' then
+            log('IC: ' .. err)
+        end
+    end
+end
+
 local enable_car_to_be_mined =
     Task.register(
         function (event)
@@ -54,15 +84,6 @@ local enable_car_to_be_mined =
             end
         end
     )
-
-local function log_err(err)
-    local debug_mode = IC.get('debug_mode')
-    if debug_mode then
-        if type(err) == 'string' then
-            log('IC: ' .. err)
-        end
-    end
-end
 
 local function get_trusted_system(player)
     local trust_system = IC.get('trust_system')
@@ -100,8 +121,8 @@ local function render_owner_text(renders, player, entity, new_owner)
         b = player.color.b * 0.6 + 0.25,
         a = 1
     }
-    if renders[player.index] then
-        rendering.destroy(renders[player.index])
+    if renders[player.index] and renders[player.index].valid then
+        renders[player.index].destroy()
     end
 
     local ce_name = entity.name
@@ -153,6 +174,7 @@ local function kill_doors(car)
         end
     end
 end
+
 
 ---Returns the car object of the player.
 ---@param player any
@@ -297,7 +319,8 @@ local function replace_surface(surfaces, entity, index)
         local unit_number = entity.unit_number
         if tostring(index.saved_entity) == surface.name then
             if validate_entity(surface) then
-                surface.name = tostring(unit_number)
+                local car = get_car_by_unit_number(unit_number)
+                surface.name = car.surface_name
                 surfaces[unit_number] = surface.index
                 surfaces[k] = nil
             end
@@ -310,12 +333,11 @@ local function replace_surface_entity(cars, entity, index)
         return
     end
     for _, car in pairs(cars) do
-        local unit_number = entity.unit_number
         if index and index.saved_entity == car.saved_entity then
             local surface_index = car.surface
             local surface = game.surfaces[surface_index]
             if validate_entity(surface) then
-                surface.name = tostring(unit_number)
+                surface.name = car.surface_name
             end
         end
     end
@@ -404,6 +426,12 @@ local function check_if_players_are_in_nauvis()
                 player.teleport(pos, main_surface)
             end
         end
+    end
+end
+
+local function exclude_surface(surface)
+    for _, force in pairs(game.forces) do
+        force.set_surface_hidden(surface, true)
     end
 end
 
@@ -641,8 +669,8 @@ local function output_cargo(car, passive_chest)
 end
 
 local transfer_functions = {
-    ['logistic-chest-requester'] = input_cargo,
-    ['logistic-chest-passive-provider'] = output_cargo
+    ['requester-chest'] = input_cargo,
+    ['passive-chest-provider'] = output_cargo
 }
 
 local function construct_doors(car)
@@ -832,7 +860,7 @@ function Public.remove_surface(player)
     local renders = IC.get('renders')
 
     if renders[player.index] then
-        rendering.destroy(renders[player.index])
+        renders[player.index].destroy()
         renders[player.index] = nil
     end
 
@@ -915,8 +943,8 @@ function Public.kill_car(entity)
         return
     end
 
-    if renders[owner.index] then
-        rendering.destroy(renders[owner.index])
+    if renders[owner.index] and renders[owner.index].valid then
+        renders[owner.index].destroy()
         renders[owner.index] = nil
     end
 
@@ -1020,8 +1048,8 @@ function Public.kill_car_but_save_surface(entity)
 
     local renders = IC.get('renders')
 
-    if renders[owner.index] then
-        rendering.destroy(renders[owner.index])
+    if renders[owner.index] and renders[owner.index].valid then
+        renders[owner.index].destroy()
         renders[owner.index] = nil
     end
 
@@ -1086,9 +1114,11 @@ function Public.validate_owner(player, entity)
     return false
 end
 
-function Public.create_room_surface(unit_number)
-    if game.surfaces[tostring(unit_number)] then
-        return game.surfaces[tostring(unit_number)].index
+function Public.create_room_surface(car)
+    local unit_number = car.entity.unit_number
+
+    if game.surfaces[car.surface_name] then
+        return game.surfaces[car.surface_name].index
     end
 
     local map_gen_settings = {
@@ -1104,11 +1134,12 @@ function Public.create_room_surface(unit_number)
             ['decorative'] = { treat_missing_as_default = false }
         }
     }
-    local surface = game.create_surface(tostring(unit_number), map_gen_settings)
+    local surface = game.create_surface(car.surface_name, map_gen_settings)
     surface.freeze_daytime = true
     surface.daytime = 0.1
     surface.request_to_generate_chunks({ 16, 16 }, 1)
     surface.force_generate_chunk_requests()
+    exclude_surface(surface)
     for _, tile in pairs(surface.find_tiles_filtered({ area = { { -2, -2 }, { 2, 2 } } })) do
         surface.set_tiles({ { name = 'out-of-map', position = tile.position } }, true)
     end
@@ -1181,7 +1212,7 @@ function Public.create_car_room(car)
     local e1 =
         surface.create_entity(
             {
-                name = 'logistic-chest-requester',
+                name = 'requester-chest',
                 position = position1,
                 force = 'neutral',
                 create_build_effect_smoke = false
@@ -1193,7 +1224,7 @@ function Public.create_car_room(car)
     local e2 =
         surface.create_entity(
             {
-                name = 'logistic-chest-passive-provider',
+                name = 'passive-chest-provider',
                 position = position2,
                 force = 'neutral',
                 create_build_effect_smoke = false
@@ -1282,13 +1313,16 @@ function Public.create_car(event)
             max = health
         },
         owner = player.index,
+        owner_name = player.name,
         name = ce.name,
-        type = ce.type
+        type = ce.type,
+        unit_number = ce.unit_number,
+        surface_name = player.name .. '_' .. ce.type .. '_' .. un
     }
 
     car = cars[un]
 
-    car.surface = Public.create_room_surface(un)
+    car.surface = Public.create_room_surface(car)
     Public.create_car_room(car)
     render_owner_text(renders, player, ce)
 
@@ -1320,15 +1354,16 @@ function Public.remove_invalid_cars()
                 end
             end
         end
-    end
-    for k, index in pairs(surfaces) do
-        local surface = game.surfaces[index]
-        if not validate_entity(surface) then
-            return
-        end
-        if not cars[tonumber(surface.name)] then
-            game.delete_surface(surface)
-            surfaces[k] = nil
+
+        for surface_key, index in pairs(surfaces) do
+            local surface = game.surfaces[index]
+            if not validate_entity(surface) then
+                return
+            end
+            if not get_car_by_surface_name(car.surface_name) then
+                game.delete_surface(surface)
+                surfaces[surface_key] = nil
+            end
         end
     end
 end

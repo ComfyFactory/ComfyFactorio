@@ -3,7 +3,7 @@ local Public = {}
 local math_random = math.random
 
 function Public.add_unit(force_name, unit_number, unit)
-    global.map_forces[force_name].units[unit_number] = unit
+    storage.map_forces[force_name].units[unit_number] = unit
 end
 
 function Public.on_buy_wave(surface, force, tier)
@@ -12,20 +12,20 @@ function Public.on_buy_wave(surface, force, tier)
         for i = 1, random_biter, 1 do
             local unit =
                 game.surfaces[surface].create_entity {
-                name = 'small-biter',
-                position = {global.map_forces[force].spawn.x + i, global.map_forces[force].spawn.y},
-                force = game.forces[force]
-            }
-            global.map_forces[force].units[unit.unit_number] = unit
+                    name = 'small-biter',
+                    position = { storage.map_forces[force].spawn.x + i, storage.map_forces[force].spawn.y },
+                    force = game.forces[force]
+                }
+            storage.map_forces[force].units[unit.unit_number] = unit
         end
         for i = 1, 10 - random_biter, 1 do
             local unit =
                 game.surfaces[surface].create_entity {
-                name = 'small-spitter',
-                position = {global.map_forces[force].spawn.x + i, global.map_forces[force].spawn.y},
-                force = game.forces[force]
-            }
-            global.map_forces[force].units[unit.unit_number] = unit
+                    name = 'small-spitter',
+                    position = { storage.map_forces[force].spawn.x + i, storage.map_forces[force].spawn.y },
+                    force = game.forces[force]
+                }
+            storage.map_forces[force].units[unit.unit_number] = unit
         end
         return
     end
@@ -34,20 +34,20 @@ function Public.on_buy_wave(surface, force, tier)
         for i = 1, random_biter, 1 do
             local unit =
                 game.surfaces[surface].create_entity {
-                name = 'medium-biter',
-                position = {global.map_forces[force].spawn.x + i, global.map_forces[force].spawn.y},
-                force = game.forces[force]
-            }
-            global.map_forces[force].units[unit.unit_number] = unit
+                    name = 'medium-biter',
+                    position = { storage.map_forces[force].spawn.x + i, storage.map_forces[force].spawn.y },
+                    force = game.forces[force]
+                }
+            storage.map_forces[force].units[unit.unit_number] = unit
         end
         for i = 1, 10 - random_biter, 1 do
             local unit =
                 game.surfaces[surface].create_entity {
-                name = 'medium-spitter',
-                position = {global.map_forces[force].spawn.x + i, global.map_forces[force].spawn.y},
-                force = game.forces[force]
-            }
-            global.map_forces[force].units[unit.unit_number] = unit
+                    name = 'medium-spitter',
+                    position = { storage.map_forces[force].spawn.x + i, storage.map_forces[force].spawn.y },
+                    force = game.forces[force]
+                }
+            storage.map_forces[force].units[unit.unit_number] = unit
         end
         return
     end
@@ -56,20 +56,20 @@ function Public.on_buy_wave(surface, force, tier)
         for i = 1, random_biter, 1 do
             local unit =
                 game.surfaces[surface].create_entity {
-                name = 'big-biter',
-                position = {global.map_forces[force].spawn.x + i, global.map_forces[force].spawn.y},
-                force = game.forces[force]
-            }
-            global.map_forces[force].units[unit.unit_number] = unit
+                    name = 'big-biter',
+                    position = { storage.map_forces[force].spawn.x + i, storage.map_forces[force].spawn.y },
+                    force = game.forces[force]
+                }
+            storage.map_forces[force].units[unit.unit_number] = unit
         end
         for i = 1, 10 - random_biter, 1 do
             local unit =
                 game.surfaces[surface].create_entity {
-                name = 'big-spitter',
-                position = {global.map_forces[force].spawn.x + i, global.map_forces[force].spawn.y},
-                force = game.forces[force]
-            }
-            global.map_forces[force].units[unit.unit_number] = unit
+                    name = 'big-spitter',
+                    position = { storage.map_forces[force].spawn.x + i, storage.map_forces[force].spawn.y },
+                    force = game.forces[force]
+                }
+            storage.map_forces[force].units[unit.unit_number] = unit
         end
         return
     end
@@ -78,41 +78,41 @@ function Public.on_buy_wave(surface, force, tier)
         for i = 1, random_biter, 1 do
             local unit =
                 game.surfaces[surface].create_entity {
-                name = '-biter',
-                position = {global.map_forces[force].spawn.x + i, global.map_forces[force].spawn.y},
-                force = game.forces[force]
-            }
-            global.map_forces[force].units[unit.unit_number] = unit
+                    name = '-biter',
+                    position = { storage.map_forces[force].spawn.x + i, storage.map_forces[force].spawn.y },
+                    force = game.forces[force]
+                }
+            storage.map_forces[force].units[unit.unit_number] = unit
         end
         for i = 1, 10 - random_biter, 1 do
             local unit =
                 game.surfaces[surface].create_entity {
-                name = 'behemoth-spitter',
-                position = {global.map_forces[force].spawn.x + i, global.map_forces[force].spawn.y},
-                force = game.forces[force]
-            }
-            global.map_forces[force].units[unit.unit_number] = unit
+                    name = 'behemoth-spitter',
+                    position = { storage.map_forces[force].spawn.x + i, storage.map_forces[force].spawn.y },
+                    force = game.forces[force]
+                }
+            storage.map_forces[force].units[unit.unit_number] = unit
         end
         return
     end
 end
 
 function Public.buy_worm_turret(surface, force_name, dist, player, player_nb_sp, nb_sp_price, sp)
-    local size_table_turret = #global.map_forces[force_name].worm_turrets_positions
+    local size_table_turret = #storage.map_forces[force_name].worm_turrets_positions
     if dist == 'All' then
         local player_sp_count = player_nb_sp
         count = 0
-        for k, pos in pairs(global.map_forces[force_name].worm_turrets_positions) do
-            local turret = surface.find_entity('small-worm-turret', {pos.x, pos.y})
+        for k, pos in pairs(storage.map_forces[force_name].worm_turrets_positions) do
+            local turret = surface.find_entity('small-worm-turret', { pos.x, pos.y })
             if turret == nil and player_sp_count >= nb_sp_price then
-                local turrets = surface.find_entities_filtered {position = {pos.x, pos.y}, name = {'medium-worm-turret', 'big-worm-turret', 'behemoth-worm-turret'}}
+                local turrets = surface.find_entities_filtered { position = { pos.x, pos.y }, name = { 'medium-worm-turret', 'big-worm-turret', 'behemoth-worm-turret' } }
                 if #turrets == 0 then
-                    local position = surface.find_non_colliding_position('big-worm-turret', {pos.x, pos.y}, 5, 1)
+                    local position = surface.find_non_colliding_position('big-worm-turret', { pos.x, pos.y }, 5, 1)
                     if not position then
-                        position = {pos.x, pos.y}
+                        position = { pos.x, pos.y }
                     end
-                    surface.create_entity({name = 'small-worm-turret', position = {position.x, position.y}, force = force_name})
-                    player.remove_item({name = sp, count = nb_sp_price})
+                    surface.create_entity({ name = 'small-worm-turret', position = { position.x, position.y }, force = force_name })
+                    player.remove_item({ name = sp, count = nb_sp_price })
                     player_sp_count = player_sp_count - nb_sp_price
                     count = count + 1
                 end
@@ -125,17 +125,17 @@ function Public.buy_worm_turret(surface, force_name, dist, player, player_nb_sp,
         end
     elseif dist == 'Farthest' then
         for i = size_table_turret, 1, -1 do
-            local pos = global.map_forces[force_name].worm_turrets_positions[i]
-            local turret = surface.find_entity('small-worm-turret', {pos.x, pos.y})
+            local pos = storage.map_forces[force_name].worm_turrets_positions[i]
+            local turret = surface.find_entity('small-worm-turret', { pos.x, pos.y })
             if turret == nil and player_nb_sp >= nb_sp_price then
-                local turrets = surface.find_entities_filtered {position = {pos.x, pos.y}, name = {'medium-worm-turret', 'big-worm-turret', 'behemoth-worm-turret'}}
+                local turrets = surface.find_entities_filtered { position = { pos.x, pos.y }, name = { 'medium-worm-turret', 'big-worm-turret', 'behemoth-worm-turret' } }
                 if #turrets == 0 then
-                    local position = surface.find_non_colliding_position('big-worm-turret', {pos.x, pos.y}, 5, 1)
+                    local position = surface.find_non_colliding_position('big-worm-turret', { pos.x, pos.y }, 5, 1)
                     if not position then
-                        position = {pos.x, pos.y}
+                        position = { pos.x, pos.y }
                     end
-                    surface.create_entity({name = 'small-worm-turret', position = {position.x, position.y}, force = force_name})
-                    player.remove_item({name = sp, count = nb_sp_price})
+                    surface.create_entity({ name = 'small-worm-turret', position = { position.x, position.y }, force = force_name })
+                    player.remove_item({ name = sp, count = nb_sp_price })
                     return true
                 end
             end
@@ -143,17 +143,17 @@ function Public.buy_worm_turret(surface, force_name, dist, player, player_nb_sp,
         return false
     elseif dist == 'Closest' then
         for i = 1, size_table_turret, 1 do
-            local pos = global.map_forces[force_name].worm_turrets_positions[i]
-            local turret = surface.find_entity('small-worm-turret', {pos.x, pos.y})
+            local pos = storage.map_forces[force_name].worm_turrets_positions[i]
+            local turret = surface.find_entity('small-worm-turret', { pos.x, pos.y })
             if turret == nil and player_nb_sp >= nb_sp_price then
-                local turrets = surface.find_entities_filtered {position = {pos.x, pos.y}, name = {'medium-worm-turret', 'big-worm-turret', 'behemoth-worm-turret'}}
+                local turrets = surface.find_entities_filtered { position = { pos.x, pos.y }, name = { 'medium-worm-turret', 'big-worm-turret', 'behemoth-worm-turret' } }
                 if #turrets == 0 then
-                    local position = surface.find_non_colliding_position('big-worm-turret', {pos.x, pos.y}, 5, 1)
+                    local position = surface.find_non_colliding_position('big-worm-turret', { pos.x, pos.y }, 5, 1)
                     if not position then
-                        position = {pos.x, pos.y}
+                        position = { pos.x, pos.y }
                     end
-                    surface.create_entity({name = 'small-worm-turret', position = {position.x, position.y}, force = force_name})
-                    player.remove_item({name = sp, count = nb_sp_price})
+                    surface.create_entity({ name = 'small-worm-turret', position = { position.x, position.y }, force = force_name })
+                    player.remove_item({ name = sp, count = nb_sp_price })
                     return true
                 end
             end
@@ -168,21 +168,21 @@ function Public.upgrade_worm_turret(surface, force_name, dist, player, player_nb
         ['big-worm-turret'] = 'medium-worm-turret',
         ['behemoth-worm-turret'] = 'big-worm-turret'
     }
-    local size_table_turret = #global.map_forces[force_name].worm_turrets_positions
+    local size_table_turret = #storage.map_forces[force_name].worm_turrets_positions
     print(size_table_turret)
     if dist == 'All' then
         local player_sp_count = player_nb_sp
         count = 0
-        for k, pos in pairs(global.map_forces[force_name].worm_turrets_positions) do
-            local turret = surface.find_entity(table_upgrade[tier], {pos.x, pos.y})
+        for k, pos in pairs(storage.map_forces[force_name].worm_turrets_positions) do
+            local turret = surface.find_entity(table_upgrade[tier], { pos.x, pos.y })
             if turret ~= nil and player_nb_sp >= nb_sp_price then
                 turret.destroy()
-                local position = surface.find_non_colliding_position('big-worm-turret', {pos.x, pos.y}, 5, 1)
+                local position = surface.find_non_colliding_position('big-worm-turret', { pos.x, pos.y }, 5, 1)
                 if not position then
-                    position = {pos.x, pos.y}
+                    position = { pos.x, pos.y }
                 end
-                surface.create_entity({name = tier, position = {position.x, position.y}, force = force_name})
-                player.remove_item({name = sp, count = nb_sp_price})
+                surface.create_entity({ name = tier, position = { position.x, position.y }, force = force_name })
+                player.remove_item({ name = sp, count = nb_sp_price })
                 player_sp_count = player_sp_count - nb_sp_price
                 count = count + 1
             else
@@ -194,39 +194,39 @@ function Public.upgrade_worm_turret(surface, force_name, dist, player, player_nb
             return true
         end
     elseif dist == 'Farthest' then
-        for i = #global.map_forces[force_name].worm_turrets_positions, 1, -1 do
+        for i = #storage.map_forces[force_name].worm_turrets_positions, 1, -1 do
             local turret =
-                surface.find_entity(table_upgrade[tier], {global.map_forces[force_name].worm_turrets_positions[i].x, global.map_forces[force_name].worm_turrets_positions[i].y})
+                surface.find_entity(table_upgrade[tier], { storage.map_forces[force_name].worm_turrets_positions[i].x, storage.map_forces[force_name].worm_turrets_positions[i].y })
             if turret ~= nil and player_nb_sp >= nb_sp_price then
                 turret.destroy()
                 local position =
                     surface.find_non_colliding_position(
-                    'big-worm-turret',
-                    {global.map_forces[force_name].worm_turrets_positions[i].x, global.map_forces[force_name].worm_turrets_positions[i].y},
-                    5,
-                    1
-                )
+                        'big-worm-turret',
+                        { storage.map_forces[force_name].worm_turrets_positions[i].x, storage.map_forces[force_name].worm_turrets_positions[i].y },
+                        5,
+                        1
+                    )
                 if not position then
-                    position = {pos.x, pos.y}
+                    position = { pos.x, pos.y }
                 end
-                surface.create_entity({name = tier, position = {position.x, position.y}, force = force_name})
-                player.remove_item({name = sp, count = nb_sp_price})
+                surface.create_entity({ name = tier, position = { position.x, position.y }, force = force_name })
+                player.remove_item({ name = sp, count = nb_sp_price })
                 return true
             else
             end
         end
         return false
     elseif dist == 'Closest' then
-        for k, pos in pairs(global.map_forces[force_name].worm_turrets_positions) do
-            local turret = surface.find_entity(table_upgrade[tier], {pos.x, pos.y})
+        for k, pos in pairs(storage.map_forces[force_name].worm_turrets_positions) do
+            local turret = surface.find_entity(table_upgrade[tier], { pos.x, pos.y })
             if turret ~= nil and player_nb_sp >= nb_sp_price then
                 turret.destroy()
-                local position = surface.find_non_colliding_position('big-worm-turret', {pos.x, pos.y}, 5, 1)
+                local position = surface.find_non_colliding_position('big-worm-turret', { pos.x, pos.y }, 5, 1)
                 if not position then
-                    position = {pos.x, pos.y}
+                    position = { pos.x, pos.y }
                 end
-                surface.create_entity({name = tier, position = {position.x, position.y}, force = force_name})
-                player.remove_item({name = sp, count = nb_sp_price})
+                surface.create_entity({ name = tier, position = { position.x, position.y }, force = force_name })
+                player.remove_item({ name = sp, count = nb_sp_price })
                 return true
             else
             end
@@ -237,7 +237,7 @@ end
 
 function Public.buy_extra_life(force_name)
     local force_index = game.forces[force_name].index
-    global.biter_reanimator.forces[force_index] = global.biter_reanimator.forces[force_index] + 1
+    storage.biter_reanimator.forces[force_index] = storage.biter_reanimator.forces[force_index] + 1
 end
 
 return Public

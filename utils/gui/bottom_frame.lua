@@ -113,7 +113,7 @@ local function refresh_inner_frames(player)
         if row_index_data and type(row_index_data) == 'table' then
             local section_row_index = player_data.section[row_index]
             local vertical_flow = horizontal_flow.add {type = 'flow', direction = 'vertical'}
-            vertical_flow.style = 'shortcut_bar_column'
+            vertical_flow.style.vertical_spacing = 0
 
             if not section_row_index then
                 player_data.section[row_index] = {}

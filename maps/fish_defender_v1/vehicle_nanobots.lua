@@ -1,7 +1,7 @@
 local Event = require 'utils.event'
 
 local function on_player_changed_position(event)
-    if not global.vehicle_nanobots_unlocked then
+    if not storage.vehicle_nanobots_unlocked then
         return
     end
     local player = game.players[event.player_index]

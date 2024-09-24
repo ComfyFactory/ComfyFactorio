@@ -5,22 +5,22 @@ local math_floor = math.floor
 local Treasure = require 'maps.junkyard_pvp.treasure'
 local Map_functions = require 'utils.tools.map_functions'
 local simplex_noise = require 'utils.simplex_noise'.d2
-local rock_raffle = {'sand-rock-big', 'sand-rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-huge'}
-local spawner_raffle = {'biter-spawner', 'biter-spawner', 'biter-spawner', 'spitter-spawner'}
+local rock_raffle = { 'sand-rock-big', 'sand-rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-huge' }
+local spawner_raffle = { 'biter-spawner', 'biter-spawner', 'biter-spawner', 'spitter-spawner' }
 local noises = {
-    ['no_rocks'] = {{modifier = 0.0033, weight = 1}, {modifier = 0.01, weight = 0.22}, {modifier = 0.05, weight = 0.05}, {modifier = 0.1, weight = 0.04}},
-    ['no_rocks_2'] = {{modifier = 0.013, weight = 1}, {modifier = 0.1, weight = 0.1}},
-    ['large_caves'] = {{modifier = 0.0033, weight = 1}, {modifier = 0.01, weight = 0.22}, {modifier = 0.05, weight = 0.05}, {modifier = 0.1, weight = 0.04}},
-    ['small_caves'] = {{modifier = 0.008, weight = 1}, {modifier = 0.03, weight = 0.15}, {modifier = 0.25, weight = 0.05}},
-    ['small_caves_2'] = {{modifier = 0.009, weight = 1}, {modifier = 0.05, weight = 0.25}, {modifier = 0.25, weight = 0.05}},
-    ['cave_ponds'] = {{modifier = 0.01, weight = 1}, {modifier = 0.1, weight = 0.06}},
-    ['cave_rivers'] = {{modifier = 0.005, weight = 1}, {modifier = 0.01, weight = 0.25}, {modifier = 0.05, weight = 0.01}},
-    ['cave_rivers_2'] = {{modifier = 0.003, weight = 1}, {modifier = 0.01, weight = 0.21}, {modifier = 0.05, weight = 0.01}},
-    ['cave_rivers_3'] = {{modifier = 0.002, weight = 1}, {modifier = 0.01, weight = 0.15}, {modifier = 0.05, weight = 0.01}},
-    ['cave_rivers_4'] = {{modifier = 0.001, weight = 1}, {modifier = 0.01, weight = 0.11}, {modifier = 0.05, weight = 0.01}},
-    ['scrapyard'] = {{modifier = 0.005, weight = 1}, {modifier = 0.01, weight = 0.35}, {modifier = 0.05, weight = 0.23}, {modifier = 0.1, weight = 0.11}}
+    ['no_rocks'] = { { modifier = 0.0033, weight = 1 }, { modifier = 0.01, weight = 0.22 }, { modifier = 0.05, weight = 0.05 }, { modifier = 0.1, weight = 0.04 } },
+    ['no_rocks_2'] = { { modifier = 0.013, weight = 1 }, { modifier = 0.1, weight = 0.1 } },
+    ['large_caves'] = { { modifier = 0.0033, weight = 1 }, { modifier = 0.01, weight = 0.22 }, { modifier = 0.05, weight = 0.05 }, { modifier = 0.1, weight = 0.04 } },
+    ['small_caves'] = { { modifier = 0.008, weight = 1 }, { modifier = 0.03, weight = 0.15 }, { modifier = 0.25, weight = 0.05 } },
+    ['small_caves_2'] = { { modifier = 0.009, weight = 1 }, { modifier = 0.05, weight = 0.25 }, { modifier = 0.25, weight = 0.05 } },
+    ['cave_ponds'] = { { modifier = 0.01, weight = 1 }, { modifier = 0.1, weight = 0.06 } },
+    ['cave_rivers'] = { { modifier = 0.005, weight = 1 }, { modifier = 0.01, weight = 0.25 }, { modifier = 0.05, weight = 0.01 } },
+    ['cave_rivers_2'] = { { modifier = 0.003, weight = 1 }, { modifier = 0.01, weight = 0.21 }, { modifier = 0.05, weight = 0.01 } },
+    ['cave_rivers_3'] = { { modifier = 0.002, weight = 1 }, { modifier = 0.01, weight = 0.15 }, { modifier = 0.05, weight = 0.01 } },
+    ['cave_rivers_4'] = { { modifier = 0.001, weight = 1 }, { modifier = 0.01, weight = 0.11 }, { modifier = 0.05, weight = 0.01 } },
+    ['scrapyard'] = { { modifier = 0.005, weight = 1 }, { modifier = 0.01, weight = 0.35 }, { modifier = 0.05, weight = 0.23 }, { modifier = 0.1, weight = 0.11 } }
 }
-local cargo_wagon_position = {x = 86, y = 0}
+local cargo_wagon_position = { x = 86, y = 0 }
 local Public = {}
 
 local function get_noise(name, pos, seed)
@@ -38,19 +38,19 @@ end
 local function create_objectives(surface)
     local d = 6
 
-    for key, modifier in pairs({west = -1, east = 1}) do
+    for key, modifier in pairs({ west = -1, east = 1 }) do
         for x = -6, 6, 2 do
-            surface.create_entity({name = 'straight-rail', position = {(cargo_wagon_position.x + x) * modifier, cargo_wagon_position.y}, force = key, direction = 2})
+            surface.create_entity({ name = 'straight-rail', position = { (cargo_wagon_position.x + x) * modifier, cargo_wagon_position.y }, force = key, direction = 2 })
         end
-        local e = surface.create_entity({name = 'locomotive', position = {(cargo_wagon_position.x + 3) * modifier, cargo_wagon_position.y}, force = key, direction = d})
-        e.color = {0, 255, 0}
+        local e = surface.create_entity({ name = 'locomotive', position = { (cargo_wagon_position.x + 3) * modifier, cargo_wagon_position.y }, force = key, direction = d })
+        e.color = { 0, 255, 0 }
         if key == 'east' then
-            e.color = {0, 0, 255}
+            e.color = { 0, 0, 255 }
         end
-        e.get_inventory(defines.inventory.fuel).insert({name = 'wood', count = 50})
-        local e = surface.create_entity({name = 'cargo-wagon', position = {(cargo_wagon_position.x - 3) * modifier, cargo_wagon_position.y}, force = key})
+        e.get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 50 })
+        local e = surface.create_entity({ name = 'cargo-wagon', position = { (cargo_wagon_position.x - 3) * modifier, cargo_wagon_position.y }, force = key })
         e.minable = false
-        global.map_forces[key].cargo_wagon = e
+        storage.map_forces[key].cargo_wagon = e
         d = d - 4
     end
 end
@@ -65,38 +65,38 @@ function Public.create_mirror_surface()
     map_gen_settings.water = 0.2
     map_gen_settings.starting_area = 1.5
     map_gen_settings.terrain_segmentation = 8
-    map_gen_settings.cliff_settings = {cliff_elevation_interval = 0, cliff_elevation_0 = 0}
+    map_gen_settings.cliff_settings = { cliff_elevation_interval = 0, cliff_elevation_0 = 0 }
     map_gen_settings.autoplace_controls = {
-        ['coal'] = {frequency = 10, size = 0.6, richness = 0.5},
-        ['stone'] = {frequency = 10, size = 0.6, richness = 0.5},
-        ['copper-ore'] = {frequency = 20, size = 0.6, richness = 0.75},
-        ['iron-ore'] = {frequency = 20, size = 0.6, richness = 1},
-        ['uranium-ore'] = {frequency = 5, size = 0.5, richness = 0.5},
-        ['crude-oil'] = {frequency = 10, size = 1, richness = 1},
-        ['trees'] = {frequency = math_random(5, 15) * 0.1, size = math_random(4, 8) * 0.1, richness = 0.1},
-        ['enemy-base'] = {frequency = 0, size = 0, richness = 0}
+        ['coal'] = { frequency = 10, size = 0.6, richness = 0.5 },
+        ['stone'] = { frequency = 10, size = 0.6, richness = 0.5 },
+        ['copper-ore'] = { frequency = 20, size = 0.6, richness = 0.75 },
+        ['iron-ore'] = { frequency = 20, size = 0.6, richness = 1 },
+        ['uranium-ore'] = { frequency = 5, size = 0.5, richness = 0.5 },
+        ['crude-oil'] = { frequency = 10, size = 1, richness = 1 },
+        ['trees'] = { frequency = math_random(5, 15) * 0.1, size = math_random(4, 8) * 0.1, richness = 0.1 },
+        ['enemy-base'] = { frequency = 0, size = 0, richness = 0 }
     }
     local surface = game.create_surface('mirror_terrain', map_gen_settings)
 
     local x = cargo_wagon_position.x - 16
     local offset = 38
 
-    surface.request_to_generate_chunks({x, 0}, 5)
+    surface.request_to_generate_chunks({ x, 0 }, 5)
     surface.force_generate_chunk_requests()
 
     local r = 15
     for x = r * -1, r, 1 do
         for y = r * -1, r, 1 do
-            local p = {x = cargo_wagon_position.x + x, y = cargo_wagon_position.y + y}
+            local p = { x = cargo_wagon_position.x + x, y = cargo_wagon_position.y + y }
             if math.sqrt(x ^ 2 + y ^ 2) < r then
                 local tile = surface.get_tile(p)
                 if tile.collides_with('resource-layer') then
-                    surface.set_tiles({{name = 'landfill', position = p}}, true)
+                    surface.set_tiles({ { name = 'landfill', position = p } }, true)
                 end
             end
         end
     end
-    for _, e in pairs(surface.find_entities_filtered({area = {{cargo_wagon_position.x - r, cargo_wagon_position.y - r}, {cargo_wagon_position.x + r, cargo_wagon_position.y + r}}, force = {'neutral', 'enemy'}})) do
+    for _, e in pairs(surface.find_entities_filtered({ area = { { cargo_wagon_position.x - r, cargo_wagon_position.y - r }, { cargo_wagon_position.x + r, cargo_wagon_position.y + r } }, force = { 'neutral', 'enemy' } })) do
         if math.sqrt(e.position.x ^ 2 + e.position.y ^ 2) < r then
             e.destroy()
         end
@@ -110,26 +110,26 @@ local function mirror_chunk(event, source_surface, x_modifier)
     if x_modifier == -1 then
         offset = 32
     end
-    local mirror_left_top = {x = left_top.x * x_modifier - offset, y = left_top.y * x_modifier - offset}
+    local mirror_left_top = { x = left_top.x * x_modifier - offset, y = left_top.y * x_modifier - offset }
 
     source_surface.request_to_generate_chunks(mirror_left_top, 1)
     source_surface.force_generate_chunk_requests()
 
-    local mirror_area = {{mirror_left_top.x, mirror_left_top.y}, {mirror_left_top.x + 32, mirror_left_top.y + 32}}
+    local mirror_area = { { mirror_left_top.x, mirror_left_top.y }, { mirror_left_top.x + 32, mirror_left_top.y + 32 } }
 
-    for _, tile in pairs(source_surface.find_tiles_filtered({area = mirror_area})) do
-        surface.set_tiles({{name = tile.name, position = {x = tile.position.x * x_modifier, y = tile.position.y * x_modifier}}}, true)
+    for _, tile in pairs(source_surface.find_tiles_filtered({ area = mirror_area })) do
+        surface.set_tiles({ { name = tile.name, position = { x = tile.position.x * x_modifier, y = tile.position.y * x_modifier } } }, true)
     end
-    for _, entity in pairs(source_surface.find_entities_filtered({area = mirror_area})) do
+    for _, entity in pairs(source_surface.find_entities_filtered({ area = mirror_area })) do
         --if surface.can_place_entity({name = entity.name, position = {x = entity.position.x * x_modifier, y = entity.position.y * x_modifier}}) then
-        entity.clone({position = {x = entity.position.x * x_modifier, y = entity.position.y * x_modifier}, surface = surface})
+        entity.clone({ position = { x = entity.position.x * x_modifier, y = entity.position.y * x_modifier }, surface = surface })
         --end
     end
-    for _, decorative in pairs(source_surface.find_decoratives_filtered {area = mirror_area}) do
+    for _, decorative in pairs(source_surface.find_decoratives_filtered { area = mirror_area }) do
         surface.create_decoratives {
             check_collision = false,
             decoratives = {
-                {name = decorative.decorative.name, position = {x = decorative.position.x * x_modifier, y = decorative.position.y * x_modifier}, amount = decorative.amount}
+                { name = decorative.decorative.name, position = { x = decorative.position.x * x_modifier, y = decorative.position.y * x_modifier }, amount = decorative.amount }
             }
         }
     end
@@ -167,7 +167,7 @@ local function process_junk_position(p, seed, tiles, entities, markets, treasure
     local scrapyard = get_noise('scrapyard', p, seed)
 
     if p.x < 5 + scrapyard * 3 then
-        tiles[#tiles + 1] = {name = 'water-shallow', position = p}
+        tiles[#tiles + 1] = { name = 'water-shallow', position = p }
         return
     end
     if p.x < cargo_wagon_position.x + 16 + scrapyard * 32 then
@@ -178,23 +178,23 @@ local function process_junk_position(p, seed, tiles, entities, markets, treasure
     local small_caves = get_noise('small_caves', p, seed)
     if noise_cave_ponds < 0.15 and noise_cave_ponds > -0.15 then
         if small_caves > 0.35 then
-            tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+            tiles[#tiles + 1] = { name = 'out-of-map', position = p }
             return
         end
         if small_caves < -0.35 then
-            tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+            tiles[#tiles + 1] = { name = 'out-of-map', position = p }
             return
         end
     end
 
     if scrapyard < -0.25 or scrapyard > 0.25 then
         if math_random(1, 1024) == 1 then
-            entities[#entities + 1] = {name = 'gun-turret', position = p, force = 'enemy'}
+            entities[#entities + 1] = { name = 'gun-turret', position = p, force = 'enemy' }
         end
-        tiles[#tiles + 1] = {name = 'dirt-7', position = p}
+        tiles[#tiles + 1] = { name = 'dirt-7', position = p }
         if scrapyard < -0.65 or scrapyard > 0.65 then
             if math_random(1, 5) > 1 then
-                entities[#entities + 1] = {name = rock_raffle[math_random(1, #rock_raffle)], position = p}
+                entities[#entities + 1] = { name = rock_raffle[math_random(1, #rock_raffle)], position = p }
             end
             return
         end
@@ -203,10 +203,10 @@ local function process_junk_position(p, seed, tiles, entities, markets, treasure
             --entities[#entities + 1] = {name = "small-worm-turret", position = p, force = "enemy"}
             --end
             if math_random(1, 96) == 1 then
-                entities[#entities + 1] = {name = scrap_entities[math_random(1, scrap_entities_index)], position = p, force = 'enemy'}
+                entities[#entities + 1] = { name = scrap_entities[math_random(1, scrap_entities_index)], position = p, force = 'enemy' }
             end
             if math_random(1, 3) > 1 then
-                entities[#entities + 1] = {name = 'mineable-wreckage', position = p}
+                entities[#entities + 1] = { name = 'mineable-wreckage', position = p }
             end
             return
         end
@@ -215,9 +215,9 @@ local function process_junk_position(p, seed, tiles, entities, markets, treasure
 
     local cave_ponds = get_noise('cave_ponds', p, seed)
     if cave_ponds < -0.6 and scrapyard > -0.2 and scrapyard < 0.2 then
-        tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
+        tiles[#tiles + 1] = { name = 'deepwater-green', position = p }
         if math_random(1, 128) == 1 then
-            entities[#entities + 1] = {name = 'fish', position = p}
+            entities[#entities + 1] = { name = 'fish', position = p }
         end
         return
     end
@@ -225,9 +225,9 @@ local function process_junk_position(p, seed, tiles, entities, markets, treasure
     local large_caves = get_noise('large_caves', p, seed)
     if scrapyard > -0.15 and scrapyard < 0.15 then
         if math_floor(large_caves * 10) % 4 < 1 then
-            tiles[#tiles + 1] = {name = 'dirt-7', position = p}
+            tiles[#tiles + 1] = { name = 'dirt-7', position = p }
             if math_random(1, 2) > 1 then
-                entities[#entities + 1] = {name = rock_raffle[math_random(1, #rock_raffle)], position = p}
+                entities[#entities + 1] = { name = rock_raffle[math_random(1, #rock_raffle)], position = p }
             end
             return
         end
@@ -236,7 +236,7 @@ local function process_junk_position(p, seed, tiles, entities, markets, treasure
     if noise_cave_ponds < 0.7 then
         return
     end
-    tiles[#tiles + 1] = {name = 'stone-path', position = p}
+    tiles[#tiles + 1] = { name = 'stone-path', position = p }
 end
 
 local function is_out_of_map(p)
@@ -257,9 +257,9 @@ local function out_of_map_area(event)
     local left_top = event.area.left_top
     for x = -1, 32, 1 do
         for y = -1, 32, 1 do
-            local p = {x = left_top.x + x, y = left_top.y + y}
+            local p = { x = left_top.x + x, y = left_top.y + y }
             if is_out_of_map(p) then
-                surface.set_tiles({{name = 'out-of-map', position = p}}, true)
+                surface.set_tiles({ { name = 'out-of-map', position = p } }, true)
             end
         end
     end
@@ -298,17 +298,17 @@ local function process_main_surface(event)
 end
 
 local entity_functions = {
-    ['turret'] = function(surface, entity)
+    ['turret'] = function (surface, entity)
         surface.create_entity(entity)
     end,
-    ['simple-entity'] = function(surface, entity)
+    ['simple-entity'] = function (surface, entity)
         surface.create_entity(entity)
     end,
-    ['ammo-turret'] = function(surface, entity)
+    ['ammo-turret'] = function (surface, entity)
         local e = surface.create_entity(entity)
-        e.insert({name = 'firearm-magazine', count = math_random(16, 64)})
+        e.insert({ name = 'firearm-magazine', count = math_random(16, 64) })
     end,
-    ['container'] = function(surface, entity)
+    ['container'] = function (surface, entity)
         Treasure(surface, entity.position, entity.name)
     end
 }
@@ -322,7 +322,7 @@ local function process_mirror_surface(event)
     local seed = surface.map_gen_settings.seed
     for y = 0, 31, 1 do
         for x = 0, 31, 1 do
-            local p = {x = left_top.x + x, y = left_top.y + y}
+            local p = { x = left_top.x + x, y = left_top.y + y }
             process_junk_position(p, seed, tiles, entities, treasure)
         end
     end

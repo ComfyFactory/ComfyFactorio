@@ -83,7 +83,6 @@ function Public.spawn_biter()
         'medium-spitter',
         'big-spitter',
         'behemoth-spitter',
-        'compilatron'
     }
 
     local size_of = #biters

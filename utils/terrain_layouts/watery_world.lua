@@ -21,7 +21,7 @@ local math_abs = math.abs
 local spawn_size = 160
 local spawn_check = spawn_size + 96
 
-local waters = {'deepwater', 'water'}
+local waters = { 'deepwater', 'water' }
 
 local function is_water(position, noise, seed)
     if math_abs(position.y) <= spawn_check or math_abs(position.x) <= spawn_check then
@@ -54,13 +54,13 @@ local function on_chunk_generated(event)
 
     for x = 0, 31, 1 do
         for y = 0, 31, 1 do
-            position = {x = left_top_x + x, y = left_top_y + y}
+            position = { x = left_top_x + x, y = left_top_y + y }
             if not get_tile(position).collides_with('resource-layer') then
                 noise = get_noise('watery_world', position, seed)
                 if is_water(position, noise, seed) then
-                    set_tiles({{name = waters[math_floor(noise * 10 % 2 + 1)], position = position}}, true)
+                    set_tiles({ { name = waters[math_floor(noise * 10 % 2 + 1)], position = position } }, true)
                     if math_random(1, 128) == 1 then
-                        surface.create_entity({name = global.watery_world_fishes[math_random(1, #global.watery_world_fishes)], position = position})
+                        surface.create_entity({ name = storage.watery_world_fishes[math_random(1, #storage.watery_world_fishes)], position = position })
                     end
                 end
             end
@@ -69,10 +69,10 @@ local function on_chunk_generated(event)
 end
 
 local function on_init()
-    global.watery_world_fishes = {}
+    storage.watery_world_fishes = {}
     for _, prototype in pairs(game.entity_prototypes) do
         if prototype.type == 'fish' then
-            table.insert(global.watery_world_fishes, prototype.name)
+            table.insert(storage.watery_world_fishes, prototype.name)
         end
     end
 end

@@ -181,8 +181,6 @@ local function init_map()
     surface.request_to_generate_chunks({0, 0}, 3)
     surface.force_generate_chunk_requests()
 
-    game.forces.player.research_queue_enabled = true
-
     map_functions.draw_smoothed_out_ore_circle({x = -3, y = -3}, 'iron-ore', surface, 8, 5000)
     map_functions.draw_smoothed_out_ore_circle({x = 3, y = 3}, 'copper-ore', surface, 8, 5000)
     map_functions.draw_smoothed_out_ore_circle({x = 3, y = -3}, 'stone', surface, 8, 5000)

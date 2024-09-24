@@ -24,7 +24,7 @@ local this = {
 
 Global.register(
     this,
-    function(t)
+    function (t)
         this = t
     end
 )
@@ -84,13 +84,13 @@ local function sort_and_whitelist(whitelisted, column_name, tbl)
 
     for _, value in pairs(tbl) do
         if value and value[column_name] then
-            insert(t, {name = value.name, score = value[column_name]})
+            insert(t, { name = value.name, score = value[column_name] })
         end
     end
 
     table.sort(
         t,
-        function(a, b)
+        function (a, b)
             return a.score > b.score
         end
     )
@@ -140,10 +140,10 @@ end
 
 local function sort_list(method, column_name, score_list)
     local comparators = {
-        ['ascending'] = function(a, b)
+        ['ascending'] = function (a, b)
             return a[column_name] < b[column_name]
         end,
-        ['descending'] = function(a, b)
+        ['descending'] = function (a, b)
             return a[column_name] > b[column_name]
         end
     }
@@ -195,7 +195,7 @@ local function get_mvps(clear_state)
                 mined_entities = score.players[p.name].mined_entities
             end
 
-            insert(score_list, {name = p.name, killscore = killscore, built_entities = built_entities, mined_entities = mined_entities})
+            insert(score_list, { name = p.name, killscore = killscore, built_entities = built_entities, mined_entities = mined_entities })
         end
     end
 
@@ -326,10 +326,13 @@ local function get_mvps(clear_state)
     return mvp
 end
 
+---@param force LuaForce
 local function get_total_biter_killcount(force)
     local count = 0
     for _, biter in pairs(biters) do
-        count = count + force.kill_count_statistics.get_input_count(biter)
+        for _, surface in pairs(game.surfaces) do
+            count = count + force.get_kill_count_statistics(surface).get_input_count(biter)
+        end
     end
     return count
 end
@@ -410,15 +413,15 @@ end
 
 local get_scores =
     Task.register(
-    function(data)
-        local value = data.value
-        if not this.score_table['player'] then
-            this.score_table['player'] = {}
-        end
+        function (data)
+            local value = data.value
+            if not this.score_table['player'] then
+                this.score_table['player'] = {}
+            end
 
-        this.score_table['player'] = value
-    end
-)
+            this.score_table['player'] = value
+        end
+    )
 
 function Public.get_scores()
     local secs = Server.get_current_time()
@@ -447,7 +450,7 @@ local function on_init()
     end
 end
 
-local sorting_symbol = {ascending = '▲', descending = '▼'}
+local sorting_symbol = { ascending = '▲', descending = '▼' }
 
 local function get_score_list()
     local score_force = this.score_table['player']
@@ -485,59 +488,59 @@ end
 local function add_global_stats(frame)
     local score = this.score_table['player']
 
-    local t = frame.add {type = 'table', column_count = 6}
+    local t = frame.add { type = 'table', column_count = 6 }
 
-    local rocket_label = t.add {type = 'label', caption = 'Rockets: '}
+    local rocket_label = t.add { type = 'label', caption = 'Rockets: ' }
     rocket_label.style.font = 'default-game'
-    rocket_label.style.font_color = {r = 175, g = 75, b = 255}
+    rocket_label.style.font_color = { r = 175, g = 75, b = 255 }
     rocket_label.style.minimal_width = 100
 
-    local launched_rockets_label = t.add {type = 'label', caption = score.rockets_launched}
+    local launched_rockets_label = t.add { type = 'label', caption = score.rockets_launched }
     launched_rockets_label.style.font = 'heading-2'
-    launched_rockets_label.style.font_color = {r = 0.9, g = 0.9, b = 0.9}
+    launched_rockets_label.style.font_color = { r = 0.9, g = 0.9, b = 0.9 }
     launched_rockets_label.style.minimal_width = 100
 
-    local dead_bugs_label = t.add {type = 'label', caption = 'Dead bugs: '}
+    local dead_bugs_label = t.add { type = 'label', caption = 'Dead bugs: ' }
     dead_bugs_label.style.font = 'default-game'
-    dead_bugs_label.style.font_color = {r = 0.90, g = 0.3, b = 0.3}
+    dead_bugs_label.style.font_color = { r = 0.90, g = 0.3, b = 0.3 }
     dead_bugs_label.style.minimal_width = 100
 
-    local biters_killed_label = t.add {type = 'label', caption = score.biters_killed}
+    local biters_killed_label = t.add { type = 'label', caption = score.biters_killed }
     biters_killed_label.style.font = 'heading-2'
-    biters_killed_label.style.font_color = {r = 0.9, g = 0.9, b = 0.9}
+    biters_killed_label.style.font_color = { r = 0.9, g = 0.9, b = 0.9 }
     biters_killed_label.style.minimal_width = 100
 
-    local breached_zones_label = t.add {type = 'label', caption = 'Breached zones: '}
+    local breached_zones_label = t.add { type = 'label', caption = 'Breached zones: ' }
     breached_zones_label.style.font = 'default-game'
-    breached_zones_label.style.font_color = {r = 0, g = 128, b = 0}
+    breached_zones_label.style.font_color = { r = 0, g = 128, b = 0 }
     breached_zones_label.style.minimal_width = 100
     local zone = score.breached_zone - 1
     if score.breached_zone == 0 then
         zone = 0
     end
-    local zone_label = t.add {type = 'label', caption = zone}
+    local zone_label = t.add { type = 'label', caption = zone }
     zone_label.style.font = 'heading-2'
-    zone_label.style.font_color = {r = 0.9, g = 0.9, b = 0.9}
+    zone_label.style.font_color = { r = 0.9, g = 0.9, b = 0.9 }
     zone_label.style.minimal_width = 100
 
-    local highest_wave_label = t.add {type = 'label', caption = 'Highest wave: '}
+    local highest_wave_label = t.add { type = 'label', caption = 'Highest wave: ' }
     highest_wave_label.style.font = 'default-game'
-    highest_wave_label.style.font_color = {r = 128, g = 128, b = 0.9}
+    highest_wave_label.style.font_color = { r = 128, g = 128, b = 0.9 }
     highest_wave_label.style.minimal_width = 100
 
-    local wave_number_label = t.add {type = 'label', caption = score.wave_number}
+    local wave_number_label = t.add { type = 'label', caption = score.wave_number }
     wave_number_label.style.font = 'heading-2'
-    wave_number_label.style.font_color = {r = 0.9, g = 0.9, b = 0.9}
+    wave_number_label.style.font_color = { r = 0.9, g = 0.9, b = 0.9 }
     wave_number_label.style.minimal_width = 100
 
-    local last_total_label = t.add {type = 'label', caption = 'Last run total time: '}
+    local last_total_label = t.add { type = 'label', caption = 'Last run total time: ' }
     last_total_label.style.font = 'default-game'
-    last_total_label.style.font_color = {r = 0.9, g = 128, b = 128}
+    last_total_label.style.font_color = { r = 0.9, g = 128, b = 128 }
     last_total_label.style.minimal_width = 100
 
-    local format_time_label = t.add {type = 'label', caption = Core.format_time(score.total_time)}
+    local format_time_label = t.add { type = 'label', caption = Core.format_time(score.total_time) }
     format_time_label.style.font = 'heading-2'
-    format_time_label.style.font_color = {r = 0.9, g = 0.9, b = 0.9}
+    format_time_label.style.font_color = { r = 0.9, g = 0.9, b = 0.9 }
     format_time_label.style.minimal_width = 100
 end
 
@@ -546,16 +549,16 @@ local function show_score(data)
     local frame = data.frame
     frame.clear()
 
-    local flow = frame.add {type = 'flow'}
+    local flow = frame.add { type = 'flow' }
     local sFlow = flow.style
     sFlow.horizontally_stretchable = true
     sFlow.horizontal_align = 'center'
     sFlow.vertical_align = 'center'
 
-    local stats = flow.add {type = 'label', caption = 'Highest score so far:'}
+    local stats = flow.add { type = 'label', caption = 'Highest score so far:' }
     local s_stats = stats.style
     s_stats.font = 'heading-1'
-    s_stats.font_color = {r = 0.98, g = 0.66, b = 0.22}
+    s_stats.font_color = { r = 0.98, g = 0.66, b = 0.22 }
     s_stats.horizontal_align = 'center'
     s_stats.vertical_align = 'center'
 
@@ -563,19 +566,19 @@ local function show_score(data)
     add_global_stats(frame)
 
     -- Separator
-    local line = frame.add {type = 'line'}
+    local line = frame.add { type = 'line' }
     line.style.top_margin = 8
     line.style.bottom_margin = 8
 
     -- Score per player
-    local t = frame.add {type = 'table', column_count = 4}
+    local t = frame.add { type = 'table', column_count = 4 }
 
     -- Score headers
     local headers = {
-        {name = 'score_player', caption = 'Player'},
-        {column = 'killscore', name = 'score_killscore', caption = 'Killscore'},
-        {column = 'built_entities', name = 'score_built_entities', caption = 'Built structures'},
-        {column = 'mined_entities', name = 'score_mined_entities', caption = 'Mined entities'}
+        { name = 'score_player',     caption = 'Player' },
+        { column = 'killscore',      name = 'score_killscore',      caption = 'Killscore' },
+        { column = 'built_entities', name = 'score_built_entities', caption = 'Built structures' },
+        { column = 'mined_entities', name = 'score_mined_entities', caption = 'Mined entities' }
     }
 
     local sorting_pref = this.sort_by[player.index]
@@ -591,12 +594,12 @@ local function show_score(data)
         -- Header
         local label =
             t.add {
-            type = 'label',
-            caption = cap,
-            name = header.name
-        }
+                type = 'label',
+                caption = cap,
+                name = header.name
+            }
         label.style.font = 'default-listbox'
-        label.style.font_color = {r = 0.98, g = 0.66, b = 0.22} -- yellow
+        label.style.font_color = { r = 0.98, g = 0.66, b = 0.22 } -- yellow
         label.style.minimal_width = 150
         label.style.horizontal_align = 'right'
     end
@@ -609,18 +612,18 @@ local function show_score(data)
     -- New pane for scores (while keeping headers at same position)
     local scroll_pane =
         frame.add(
-        {
-            type = 'scroll-pane',
-            name = 'score_scroll_pane',
-            direction = 'vertical',
-            horizontal_scroll_policy = 'never',
-            vertical_scroll_policy = 'auto'
-        }
-    )
+            {
+                type = 'scroll-pane',
+                name = 'score_scroll_pane',
+                direction = 'vertical',
+                horizontal_scroll_policy = 'never',
+                vertical_scroll_policy = 'auto'
+            }
+        )
     scroll_pane.style.maximal_height = 400
     scroll_pane.style.minimal_width = 700
 
-    t = scroll_pane.add {type = 'table', column_count = 4}
+    t = scroll_pane.add { type = 'table', column_count = 4 }
 
     -- Score entries
     local i = 0
@@ -628,11 +631,11 @@ local function show_score(data)
         i = i + 1
         local p
         if not (entry and entry.name) then
-            p = {color = {r = random(1, 255), g = random(1, 255), b = random(1, 255)}}
+            p = { color = { r = random(1, 255), g = random(1, 255), b = random(1, 255) } }
         else
             p = game.get_player(entry.name)
             if not p then
-                p = {color = {r = random(1, 255), g = random(1, 255), b = random(1, 255)}}
+                p = { color = { r = random(1, 255), g = random(1, 255), b = random(1, 255) } }
             end
         end
         local special_color = {
@@ -647,26 +650,26 @@ local function show_score(data)
         local m = entry.mined_entities > 0 and entry.mined_entities or ''
 
         line = {
-            {caption = entry.name, color = special_color},
-            {caption = tostring(k)},
-            {caption = tostring(b)},
-            {caption = tostring(m)}
+            { caption = entry.name, color = special_color },
+            { caption = tostring(k) },
+            { caption = tostring(b) },
+            { caption = tostring(m) }
         }
-        local default_color = {r = 0.9, g = 0.9, b = 0.9}
+        local default_color = { r = 0.9, g = 0.9, b = 0.9 }
 
         for _, column in ipairs(line) do
             local label =
                 t.add {
-                type = 'label',
-                caption = column.caption,
-                color = column.color or default_color
-            }
+                    type = 'label',
+                    caption = column.caption,
+                    color = column.color or default_color
+                }
             label.style.font = 'default'
             label.style.minimal_width = 150
             label.style.maximal_width = 150
             label.style.horizontal_align = 'right'
         end -- foreach column
-    end -- foreach entry
+    end     -- foreach entry
 end
 
 local show_score_token = Task.register(show_score)
@@ -712,7 +715,7 @@ local function on_gui_click(event)
             sorting_pref.method = 'descending'
             sorting_pref.column = column
         end
-        show_score({player = player, frame = frame})
+        show_score({ player = player, frame = frame })
         return
     end
 end
@@ -720,7 +723,7 @@ end
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
     if not this.sort_by[player.index] then
-        this.sort_by[player.index] = {method = 'descending', column = 'killscore'}
+        this.sort_by[player.index] = { method = 'descending', column = 'killscore' }
     end
 end
 
@@ -733,7 +736,7 @@ end
 
 Server.on_data_set_changed(
     score_dataset,
-    function(data)
+    function (data)
         if data.key == score_key then
             if data.value then
                 this.score_table['player'] = data.value
@@ -742,11 +745,11 @@ Server.on_data_set_changed(
     end
 )
 
-Gui.add_tab_to_gui({name = module_name, caption = 'Highscore', id = show_score_token, admin = false, only_server_sided = true})
+Gui.add_tab_to_gui({ name = module_name, caption = 'Highscore', id = show_score_token, admin = false, only_server_sided = true })
 
 Gui.on_click(
     module_name,
-    function(event)
+    function (event)
         local player = event.player
         Gui.reload_active_tab(player)
     end

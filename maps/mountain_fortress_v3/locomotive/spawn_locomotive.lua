@@ -195,11 +195,7 @@ function Public.locomotive_spawn(surface, position, reversed)
         )
     end
 
-    local s = 'entity/compilatron'
-
-    if random(1, 10) == 1 then
-        s = 'entity/character-corpse'
-    end
+    local s = 'entity/character-corpse'
 
     for y = -1, 0, 0.05 do
         local scale = random(50, 100) * 0.01

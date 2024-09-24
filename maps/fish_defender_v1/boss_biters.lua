@@ -13,7 +13,7 @@ local acid_lines = {
 for x = radius * -1, radius, 1 do
     for y = radius * -1, radius, 1 do
         if math.sqrt(x ^ 2 + y ^ 2) <= radius then
-            targets[#targets + 1] = {x = x, y = y}
+            targets[#targets + 1] = { x = x, y = y }
         end
     end
 end
@@ -27,7 +27,7 @@ local function acid_nova(event)
                 position = event.entity.position,
                 force = event.entity.force.name,
                 source = event.entity.position,
-                target = {x = event.entity.position.x + targets[i].x, y = event.entity.position.y + targets[i].y},
+                target = { x = event.entity.position.x + targets[i].x, y = event.entity.position.y + targets[i].y },
                 max_range = radius,
                 speed = 0.001
             }
@@ -35,21 +35,21 @@ local function acid_nova(event)
     end
 end
 
-boss_biter.died = function(event)
+boss_biter.died = function (event)
     if acid_splashes[event.entity.name] then
         acid_nova(event)
     end
-    if global.acid_lines_delay[event.entity.unit_number] then
-        global.acid_lines_delay[event.entity.unit_number] = nil
+    if storage.acid_lines_delay[event.entity.unit_number] then
+        storage.acid_lines_delay[event.entity.unit_number] = nil
     end
-    global.boss_biters[event.entity.unit_number] = nil
+    storage.boss_biters[event.entity.unit_number] = nil
 end
 
 local function acid_line(surface, name, source, target)
     local distance = math.sqrt((source.x - target.x) ^ 2 + (source.y - target.y) ^ 2)
-    local modifier = {(target.x - source.x) / distance, (target.y - source.y) / distance}
+    local modifier = { (target.x - source.x) / distance, (target.y - source.y) / distance }
 
-    local position = {source.x, source.y}
+    local position = { source.x, source.y }
 
     for i = 1, distance * 1.5, 1 do
         if math_random(1, 2) ~= 1 then
@@ -65,18 +65,18 @@ local function acid_line(surface, name, source, target)
                 }
             )
         end
-        position = {position[1] + modifier[1], position[2] + modifier[2]}
+        position = { position[1] + modifier[1], position[2] + modifier[2] }
     end
 end
 
-boss_biter.damaged_entity = function(event)
+boss_biter.damaged_entity = function (event)
     if acid_lines[event.cause.name] then
-        if not global.acid_lines_delay[event.cause.unit_number] then
-            global.acid_lines_delay[event.cause.unit_number] = 0
+        if not storage.acid_lines_delay[event.cause.unit_number] then
+            storage.acid_lines_delay[event.cause.unit_number] = 0
         end
-        if global.acid_lines_delay[event.cause.unit_number] < game.tick then
+        if storage.acid_lines_delay[event.cause.unit_number] < game.tick then
             acid_line(event.cause.surface, acid_lines[event.cause.name], event.cause.position, event.entity.position)
-            global.acid_lines_delay[event.cause.unit_number] = game.tick + 180
+            storage.acid_lines_delay[event.cause.unit_number] = game.tick + 180
         end
     end
 end

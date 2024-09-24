@@ -22,7 +22,7 @@ local math_floor = math.floor
 local cave_miner = {}
 Global.register(
     cave_miner,
-    function(tbl)
+    function (tbl)
         cave_miner = tbl
     end
 )
@@ -48,7 +48,7 @@ local function on_player_joined_game(event)
         return
     end
     for name, count in pairs(Constants.starting_items) do
-        player.insert({name = name, count = count})
+        player.insert({ name = name, count = count })
     end
 end
 
@@ -60,7 +60,7 @@ local function on_player_changed_position(event)
     if not player.character.valid then
         return
     end
-    Functions.reveal(cave_miner, game.surfaces.nauvis, game.surfaces.cave_miner_source, {x = math_floor(player.position.x), y = math_floor(player.position.y)}, 11)
+    Functions.reveal(cave_miner, game.surfaces.nauvis, game.surfaces.cave_miner_source, { x = math_floor(player.position.x), y = math_floor(player.position.y) }, 11)
 end
 
 local function on_chunk_generated(event)
@@ -126,7 +126,7 @@ local function init(cave_miner)
 
     local surface = game.surfaces.nauvis
     surface.min_brightness = 0.08
-    surface.brightness_visual_weights = {0.92, 0.92, 0.92}
+    surface.brightness_visual_weights = { 0.92, 0.92, 0.92 }
     surface.daytime = 0.43
     surface.freeze_daytime = true
     surface.solar_power_multiplier = 3
@@ -155,7 +155,7 @@ local function spawn_players(cave_miner)
     if tick % 60 ~= 0 then
         return
     end
-    Functions.reveal(cave_miner, game.surfaces.nauvis, game.surfaces.cave_miner_source, {x = 0, y = 0}, 8)
+    Functions.reveal(cave_miner, game.surfaces.nauvis, game.surfaces.cave_miner_source, { x = 0, y = 0 }, 8)
     Market.spawn(cave_miner)
     for _, player in pairs(game.connected_players) do
         Functions.spawn_player(player)
@@ -165,7 +165,7 @@ end
 
 local game_tasks = {
     [15] = Functions.update_top_gui,
-    [30] = function()
+    [30] = function ()
         local reveal = cave_miner.reveal_queue[1]
         if not reveal then
             return
@@ -174,7 +174,7 @@ local game_tasks = {
         if Constants.reveal_chain_brush_sizes[reveal[1]] then
             brush_size = Constants.reveal_chain_brush_sizes[reveal[1]]
         end
-        Functions.reveal(cave_miner, game.surfaces.nauvis, game.surfaces.cave_miner_source, {x = reveal[2], y = reveal[3]}, brush_size)
+        Functions.reveal(cave_miner, game.surfaces.nauvis, game.surfaces.cave_miner_source, { x = reveal[2], y = reveal[3] }, brush_size)
         table.remove(cave_miner.reveal_queue, 1)
     end,
     [45] = Functions.darkness
@@ -207,7 +207,7 @@ local function on_init()
     cave_miner.reveal_queue = {}
     cave_miner.buildings_raffle = {}
 
-    local types = {'furnace', 'assembling-machine', 'reactor', 'artillery-turret', 'boiler', 'beacon', 'generator', 'storage-tank', 'roboport'}
+    local types = { 'furnace', 'assembling-machine', 'reactor', 'artillery-turret', 'boiler', 'beacon', 'generator', 'storage-tank', 'roboport' }
     for _, e in pairs(game.entity_prototypes) do
         for _, t in pairs(types) do
             if e.type == t then
@@ -216,9 +216,9 @@ local function on_init()
         end
     end
 
-    global.rocks_yield_ore_maximum_amount = 256
-    global.rocks_yield_ore_base_amount = 16
-    global.rocks_yield_ore_distance_modifier = 0.0064
+    storage.rocks_yield_ore_maximum_amount = 256
+    storage.rocks_yield_ore_base_amount = 16
+    storage.rocks_yield_ore_distance_modifier = 0.0064
 
     Explosives.set_destructible_tile('out-of-map', 5000)
     Explosives.set_destructible_tile('water', 2000)
@@ -232,13 +232,13 @@ local function on_init()
     game.map_settings.enemy_evolution.pollution_factor = 0
     game.map_settings.enemy_evolution.time_factor = 0
 
-    global.rocks_yield_ore_veins.amount_modifier = 0.20
-    global.rocks_yield_ore_veins.chance = 1024
+    storage.rocks_yield_ore_veins.amount_modifier = 0.20
+    storage.rocks_yield_ore_veins.chance = 1024
 
     local T = Map_info.Pop_info()
     T.localised_category = 'cave_miner'
-    T.main_caption_color = {r = 200, g = 100, b = 0}
-    T.sub_caption_color = {r = 0, g = 175, b = 175}
+    T.main_caption_color = { r = 200, g = 100, b = 0 }
+    T.sub_caption_color = { r = 0, g = 175, b = 175 }
 
     Autostash.insert_into_furnace(true)
     Autostash.insert_into_wagon(true)

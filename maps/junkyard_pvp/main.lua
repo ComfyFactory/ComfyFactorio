@@ -18,40 +18,40 @@ local map_gen_settings = {
     ['seed'] = 1,
     ['water'] = 1,
     ['starting_area'] = 1,
-    ['cliff_settings'] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
+    ['cliff_settings'] = { cliff_elevation_interval = 0, cliff_elevation_0 = 0 },
     ['default_enable_all_autoplace_controls'] = false,
     ['autoplace_settings'] = {
-        ['entity'] = {treat_missing_as_default = false},
-        ['tile'] = {treat_missing_as_default = false},
-        ['decorative'] = {treat_missing_as_default = false}
+        ['entity'] = { treat_missing_as_default = false },
+        ['tile'] = { treat_missing_as_default = false },
+        ['decorative'] = { treat_missing_as_default = false }
     }
 }
 
 local function set_player_colors()
     for _, player in pairs(game.forces.west.players) do
-        player.color = {50, 255, 50}
+        player.color = { 50, 255, 50 }
     end
     for _, player in pairs(game.forces.east.players) do
-        player.color = {50, 50, 255}
+        player.color = { 50, 50, 255 }
     end
 end
 
 function Public.reset_map()
     Terrain.create_mirror_surface()
 
-    if not global.active_surface_index then
-        global.active_surface_index = game.create_surface('pvp_junkyard', map_gen_settings).index
+    if not storage.active_surface_index then
+        storage.active_surface_index = game.create_surface('pvp_junkyard', map_gen_settings).index
     else
-        global.active_surface_index = Reset.soft_reset_map(game.surfaces[global.active_surface_index], map_gen_settings, Team.starting_items).index
+        storage.active_surface_index = Reset.soft_reset_map(game.surfaces[storage.active_surface_index], map_gen_settings, Team.starting_items).index
     end
 
-    local surface = game.surfaces[global.active_surface_index]
+    local surface = game.surfaces[storage.active_surface_index]
 
-    surface.request_to_generate_chunks({0, 0}, 6)
+    surface.request_to_generate_chunks({ 0, 0 }, 6)
     surface.force_generate_chunk_requests()
-    game.forces.spectator.set_spawn_position({0, -128}, surface)
-    game.forces.west.set_spawn_position({-85, 5}, surface)
-    game.forces.east.set_spawn_position({85, 5}, surface)
+    game.forces.spectator.set_spawn_position({ 0, -128 }, surface)
+    game.forces.west.set_spawn_position({ -85, 5 }, surface)
+    game.forces.east.set_spawn_position({ 85, 5 }, surface)
 
     Team.set_force_attributes()
     Team.assign_random_force_to_active_players()
@@ -76,43 +76,43 @@ local function on_entity_died(event)
     if not entity.valid then
         return
     end
-    if global.game_reset_tick then
+    if storage.game_reset_tick then
         return
     end
 
     if entity.name ~= 'cargo-wagon' then
         return
     end
-    if entity == global.map_forces.east.cargo_wagon or entity == global.map_forces.west.cargo_wagon then
+    if entity == storage.map_forces.east.cargo_wagon or entity == storage.map_forces.west.cargo_wagon then
         if entity.force.name == 'east' then
-            game.print('East lost their cargo-wagon.', {100, 100, 100})
-            game.print(string.upper('>>>> West team has won the game!!! <<<<'), {250, 120, 0})
-            game.forces.east.play_sound {path = 'utility/game_lost', volume_modifier = 0.85}
-            game.forces.west.play_sound {path = 'utility/game_won', volume_modifier = 0.85}
+            game.print('East lost their cargo-wagon.', { 100, 100, 100 })
+            game.print(string.upper('>>>> West team has won the game!!! <<<<'), { 250, 120, 0 })
+            game.forces.east.play_sound { path = 'utility/game_lost', volume_modifier = 0.85 }
+            game.forces.west.play_sound { path = 'utility/game_won', volume_modifier = 0.85 }
             for _, player in pairs(game.forces.west.connected_players) do
-                if global.map_forces.east.player_count > 0 then
+                if storage.map_forces.east.player_count > 0 then
                     Map_score.set_score(player, Map_score.get_score(player) + 1)
                 end
             end
         else
-            game.print('West lost their cargo-wagon.', {100, 100, 100})
-            game.print(string.upper('>>>> East team has won the game!!! <<<<'), {250, 120, 0})
-            game.forces.west.play_sound {path = 'utility/game_lost', volume_modifier = 0.85}
-            game.forces.east.play_sound {path = 'utility/game_won', volume_modifier = 0.85}
+            game.print('West lost their cargo-wagon.', { 100, 100, 100 })
+            game.print(string.upper('>>>> East team has won the game!!! <<<<'), { 250, 120, 0 })
+            game.forces.west.play_sound { path = 'utility/game_lost', volume_modifier = 0.85 }
+            game.forces.east.play_sound { path = 'utility/game_won', volume_modifier = 0.85 }
             for _, player in pairs(game.forces.east.connected_players) do
-                if global.map_forces.west.player_count > 0 then
+                if storage.map_forces.west.player_count > 0 then
                     Map_score.set_score(player, Map_score.get_score(player) + 1)
                 end
             end
         end
 
-        game.print('Next round starting in 60 seconds..', {150, 150, 150})
+        game.print('Next round starting in 60 seconds..', { 150, 150, 150 })
 
         for _, player in pairs(game.forces.spectator.connected_players) do
-            player.play_sound {path = 'utility/game_won', volume_modifier = 0.85}
+            player.play_sound { path = 'utility/game_won', volume_modifier = 0.85 }
         end
 
-        global.game_reset_tick = game.tick + 3600
+        storage.game_reset_tick = game.tick + 3600
         game.delete_surface('mirror_terrain')
 
         for _, player in pairs(game.connected_players) do
@@ -126,12 +126,12 @@ end
 
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
-    local surface = game.surfaces[global.active_surface_index]
+    local surface = game.surfaces[storage.active_surface_index]
 
     set_player_colors()
     MapGui.spectate_button(player)
 
-    if player.surface.index ~= global.active_surface_index then
+    if player.surface.index ~= storage.active_surface_index then
         if player.force.name == 'spectator' then
             Team.set_player_to_spectator(player)
             Team.teleport_player_to_active_surface(player)
@@ -145,21 +145,21 @@ local function on_player_joined_game(event)
 end
 
 local function set_player_spawn_and_refill_fish()
-    for key, force in pairs(global.map_forces) do
+    for key, force in pairs(storage.map_forces) do
         local cargo_wagon = force.cargo_wagon
         if cargo_wagon then
             if cargo_wagon.valid then
                 local surface = cargo_wagon.surface
 
                 --fill fish in cargo wagon
-                cargo_wagon.get_inventory(defines.inventory.cargo_wagon).insert({name = 'raw-fish', count = math.random(1, 2)})
+                cargo_wagon.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'raw-fish', count = math.random(1, 2) })
 
                 --set player spawn to cargo wagon position
                 local position = surface.find_non_colliding_position('stone-furnace', cargo_wagon.position, 16, 2)
                 if not position then
                     return
                 end
-                game.forces[key].set_spawn_position({x = position.x, y = position.y}, surface)
+                game.forces[key].set_spawn_position({ x = position.x, y = position.y }, surface)
 
                 --set fish chart tag
                 if force.fish_tag then
@@ -169,13 +169,13 @@ local function set_player_spawn_and_refill_fish()
                 end
                 force.fish_tag =
                     cargo_wagon.force.add_chart_tag(
-                    surface,
-                    {
-                        icon = {type = 'item', name = 'raw-fish'},
-                        position = cargo_wagon.position,
-                        text = ' '
-                    }
-                )
+                        surface,
+                        {
+                            icon = { type = 'item', name = 'raw-fish' },
+                            position = cargo_wagon.position,
+                            text = ' '
+                        }
+                    )
             end
         end
     end
@@ -188,14 +188,14 @@ end
 local function tick()
     local game_tick = game.tick
     if game_tick % 240 == 0 then
-        local surface = game.surfaces[global.active_surface_index]
-        local area = {{-256, -127}, {255, 128}}
+        local surface = game.surfaces[storage.active_surface_index]
+        local area = { { -256, -127 }, { 255, 128 } }
         game.forces.west.chart(surface, area)
         game.forces.east.chart(surface, area)
     end
-    if global.game_reset_tick then
-        if global.game_reset_tick < game_tick then
-            global.game_reset_tick = nil
+    if storage.game_reset_tick then
+        if storage.game_reset_tick < game_tick then
+            storage.game_reset_tick = nil
             Public.reset_map()
         end
         return
@@ -212,7 +212,7 @@ local function on_init()
     game.map_settings.enemy_evolution.time_factor = 0
     game.map_settings.enemy_expansion.enabled = false
     game.map_settings.pollution.enabled = false
-    global.map_forces = {
+    storage.map_forces = {
         ['west'] = {},
         ['east'] = {}
     }
@@ -222,20 +222,20 @@ local function on_init()
     T.sub_caption = 'a playground made of scrap'
     T.text =
         table.concat(
-        {
-            'The opponent team wants your fish cargo!\n',
-            '\n',
-            'Destroy their cargo wagon to win the round!\n',
-            '\n'
-            --"Sometimes you will encounter impassable dark chasms or ponds.\n",
-            --"Some explosives may cause parts of the ceiling to crumble, filling the void, creating new ways.\n",
-            --"All they need is a container and a well aimed shot.\n",
-        }
-    )
-    T.main_caption_color = {r = 150, g = 0, b = 255}
-    T.sub_caption_color = {r = 0, g = 250, b = 150}
+            {
+                'The opponent team wants your fish cargo!\n',
+                '\n',
+                'Destroy their cargo wagon to win the round!\n',
+                '\n'
+                --"Sometimes you will encounter impassable dark chasms or ponds.\n",
+                --"Some explosives may cause parts of the ceiling to crumble, filling the void, creating new ways.\n",
+                --"All they need is a container and a well aimed shot.\n",
+            }
+        )
+    T.main_caption_color = { r = 150, g = 0, b = 255 }
+    T.sub_caption_color = { r = 0, g = 250, b = 150 }
 
-    global.rocks_yield_ore_base_amount = 150
+    storage.rocks_yield_ore_base_amount = 150
 
     Team.create_forces()
     Public.reset_map()

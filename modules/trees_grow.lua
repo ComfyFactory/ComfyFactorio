@@ -9,7 +9,7 @@ local r = 8
 for x = r * -1, r, 0.25 do
     for y = r * -1, r, 0.25 do
         if math.sqrt(x ^ 2 + y ^ 2) <= r then
-            vectors[#vectors + 1] = {x, y}
+            vectors[#vectors + 1] = { x, y }
         end
     end
 end
@@ -35,15 +35,15 @@ local function coord_string(x, y)
 end
 
 local function get_chunk()
-    if #global.trees_grow_chunk_raffle == 0 then
+    if #storage.trees_grow_chunk_raffle == 0 then
         return false
     end
-    local p = global.trees_grow_chunk_position[global.trees_grow_chunk_raffle[math_random(1, #global.trees_grow_chunk_raffle)]]
+    local p = storage.trees_grow_chunk_position[storage.trees_grow_chunk_raffle[math_random(1, #storage.trees_grow_chunk_raffle)]]
     local str = coord_string(p.x, p.y)
-    if not global.trees_grow_chunk_next_visit[str] then
+    if not storage.trees_grow_chunk_next_visit[str] then
         return p
     end
-    if global.trees_grow_chunk_next_visit[str] < game.tick then
+    if storage.trees_grow_chunk_next_visit[str] < game.tick then
         return p
     end
     return false
@@ -54,14 +54,14 @@ local function get_trees(surface)
     if not p then
         return false
     end
-    local trees = surface.find_entities_filtered({type = 'tree', area = {{p.x * 32, p.y * 32}, {p.x * 32 + 32, p.y * 32 + 32}}})
+    local trees = surface.find_entities_filtered({ type = 'tree', area = { { p.x * 32, p.y * 32 }, { p.x * 32 + 32, p.y * 32 + 32 } } })
 
     local a = 750
     local Diff = Difficulty.get()
     if Diff.difficulty_vote_value then
         a = a / Diff.difficulty_vote_value
     end
-    global.trees_grow_chunk_next_visit[coord_string(p.x, p.y)] = math.floor(game.tick + math.floor(a + (#trees * 5)))
+    storage.trees_grow_chunk_next_visit[coord_string(p.x, p.y)] = math.floor(game.tick + math.floor(a + (#trees * 5)))
 
     if not trees[1] then
         return false
@@ -84,16 +84,16 @@ local function grow_trees(surface)
         if not blacklist[tree.name] then
             local vector = vectors[math_random(1, #vectors)]
 
-            local p = surface.find_non_colliding_position('car', {tree.position.x + vector[1], tree.position.y + vector[2]}, 8, 4)
+            local p = surface.find_non_colliding_position('car', { tree.position.x + vector[1], tree.position.y + vector[2] }, 8, 4)
             if p then
                 local tile = surface.get_tile(p)
                 if resistant_tiles[tile.name] then
                     if math_random(1, resistant_tiles[tile.name]) == 1 then
-                        surface.set_tiles({{name = tile.hidden_tile, position = p}})
-                        surface.create_entity({name = tree.name, position = p, force = tree.force.name})
+                        surface.set_tiles({ { name = tile.hidden_tile, position = p } })
+                        surface.create_entity({ name = tree.name, position = p, force = tree.force.name })
                     end
                 else
-                    surface.create_entity({name = tree.name, position = p, force = tree.force.name})
+                    surface.create_entity({ name = tree.name, position = p, force = tree.force.name })
                 end
             end
         end
@@ -105,14 +105,14 @@ end
 local function on_chunk_charted(event)
     local position = event.position
     local str = coord_string(position.x, position.y)
-    if global.trees_grow_chunks_charted[str] then
+    if storage.trees_grow_chunks_charted[str] then
         return
     end
-    global.trees_grow_chunks_charted[str] = true
-    global.trees_grow_chunks_charted_counter = global.trees_grow_chunks_charted_counter + 1
+    storage.trees_grow_chunks_charted[str] = true
+    storage.trees_grow_chunks_charted_counter = storage.trees_grow_chunks_charted_counter + 1
 
-    global.trees_grow_chunk_raffle[#global.trees_grow_chunk_raffle + 1] = str
-    global.trees_grow_chunk_position[str] = {x = position.x, y = position.y}
+    storage.trees_grow_chunk_raffle[#storage.trees_grow_chunk_raffle + 1] = str
+    storage.trees_grow_chunk_position[str] = { x = position.x, y = position.y }
 end
 
 local function tick()
@@ -129,12 +129,12 @@ local function tick()
 end
 
 local function on_init()
-    global.trees_grow_chunk_next_visit = {}
-    global.trees_grow_chunk_raffle = {}
-    global.trees_grow_chunk_position = {}
+    storage.trees_grow_chunk_next_visit = {}
+    storage.trees_grow_chunk_raffle = {}
+    storage.trees_grow_chunk_position = {}
 
-    global.trees_grow_chunks_charted = {}
-    global.trees_grow_chunks_charted_counter = 0
+    storage.trees_grow_chunks_charted = {}
+    storage.trees_grow_chunks_charted_counter = 0
 end
 
 Event.on_init(on_init)

@@ -100,8 +100,8 @@ Gui.on_click(
     end
 )
 
-local function update_dump(text_input, data, player)
-    local suc, ouput = dump_text(text_input.text, player)
+local function update_dump(text_input, data)
+    local suc, ouput = dump_text(text_input.text)
     if not suc then
         text_input.style.font_color = Color.red
     else
@@ -116,7 +116,7 @@ Gui.on_text_changed(
         local element = event.element
         local data = Gui.get_data(element)
 
-        update_dump(element, data, event.player)
+        update_dump(element, data)
     end
 )
 

@@ -99,9 +99,9 @@ local item_worths = {
     ['speed-module'] = 128,
     ['speed-module-2'] = 512,
     ['speed-module-3'] = 2048,
-    ['effectivity-module'] = 128,
-    ['effectivity-module-2'] = 512,
-    ['effectivity-module-3'] = 2048,
+    ['efficiency-module'] = 128,
+    ['efficiency-module-2'] = 512,
+    ['efficiency-module-3'] = 2048,
     ['productivity-module'] = 128,
     ['productivity-module-2'] = 512,
     ['productivity-module-3'] = 2048,
@@ -123,7 +123,7 @@ local item_worths = {
     ['copper-cable'] = 1,
     ['iron-stick'] = 1,
     ['iron-gear-wheel'] = 2,
-    ['empty-barrel'] = 4,
+    ['barrel'] = 4,
     ['electronic-circuit'] = 4,
     ['advanced-circuit'] = 16,
     ['processing-unit'] = 128,
@@ -249,7 +249,7 @@ function Public.roll_item_stack(remaining_budget, blacklist, value_blacklist)
         end
     end
 
-    return {name = item_name, count = item_count}
+    return { name = item_name, count = item_count }
 end
 
 local function roll_item_stacks(remaining_budget, max_slots, blacklist, value_blacklist)

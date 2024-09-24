@@ -311,7 +311,6 @@ end
 
 function Public.add_new_force(force_name)
     local force = game.create_force(force_name)
-    force.research_queue_enabled = true
     force.share_chart = true
     force.technologies['atomic-bomb'].enabled = false
     force.technologies['explosive-rocketry'].enabled = false

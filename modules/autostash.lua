@@ -693,7 +693,7 @@ local function create_gui_button(player, bottom_frame_data)
             )
         if button then
             button.style.font_color = { 165, 165, 165 }
-            button.style.font = 'heading-3'
+            button.style.font = 'default-semibold'
             button.style.minimal_height = 36
             button.style.maximal_height = 36
             button.style.minimal_width = 40

@@ -6,9 +6,9 @@ function Public.spectate_button(player)
     if player.gui.top.spectate_button then
         return
     end
-    local button = player.gui.top.add({type = 'button', name = 'spectate_button', caption = 'Spectate'})
+    local button = player.gui.top.add({ type = 'button', name = 'spectate_button', caption = 'Spectate' })
     button.style.font = 'default-bold'
-    button.style.font_color = {r = 0.0, g = 0.0, b = 0.0}
+    button.style.font_color = { r = 0.0, g = 0.0, b = 0.0 }
     button.style.minimal_height = 38
     button.style.minimal_width = 38
     button.style.top_padding = 2
@@ -21,15 +21,15 @@ function Public.unit_health_buttons(player)
     if player.gui.top.health_boost_west then
         return
     end
-    local button = player.gui.top.add({type = 'sprite-button', name = 'health_boost_west', caption = 1, tooltip = 'Health modfier of west side biters.\nIncreases by feeding.'})
+    local button = player.gui.top.add({ type = 'sprite-button', name = 'health_boost_west', caption = 1, tooltip = 'Health modfier of west side biters.\nIncreases by feeding.' })
     button.style.font = 'heading-1'
-    button.style.font_color = {r = 0, g = 180, b = 0}
+    button.style.font_color = { r = 0, g = 180, b = 0 }
     button.style.minimal_height = 38
     button.style.minimal_width = 78
     button.style.padding = 2
-    button = player.gui.top.add({type = 'sprite-button', name = 'health_boost_east', caption = 1, tooltip = 'Health modfier of east side biters.\nIncreases by feeding.'})
+    button = player.gui.top.add({ type = 'sprite-button', name = 'health_boost_east', caption = 1, tooltip = 'Health modfier of east side biters.\nIncreases by feeding.' })
     button.style.font = 'heading-1'
-    button.style.font_color = {r = 180, g = 180, b = 0}
+    button.style.font_color = { r = 180, g = 180, b = 0 }
     button.style.minimal_height = 38
     button.style.minimal_width = 78
     button.style.padding = 2
@@ -37,19 +37,19 @@ end
 
 function Public.update_health_boost_buttons(player)
     local gui = player.gui.top
-    gui.health_boost_west.caption = math.round(global.map_forces.west.unit_health_boost * 100, 1) .. '%'
-    gui.health_boost_east.caption = math.round(global.map_forces.east.unit_health_boost * 100, 1) .. '%'
+    gui.health_boost_west.caption = math.round(storage.map_forces.west.unit_health_boost * 100, 1) .. '%'
+    gui.health_boost_east.caption = math.round(storage.map_forces.east.unit_health_boost * 100, 1) .. '%'
 end
 
 local function create_spectate_confirmation(player)
     if player.gui.center.spectate_confirmation_frame then
         return
     end
-    local frame = player.gui.center.add({type = 'frame', name = 'spectate_confirmation_frame', caption = 'Are you sure you want to spectate this round?'})
+    local frame = player.gui.center.add({ type = 'frame', name = 'spectate_confirmation_frame', caption = 'Are you sure you want to spectate this round?' })
     frame.style.font = 'default'
-    frame.style.font_color = {r = 0.3, g = 0.65, b = 0.3}
-    frame.add({type = 'button', name = 'confirm_spectate', caption = 'Spectate'})
-    frame.add({type = 'button', name = 'cancel_spectate', caption = 'Cancel'})
+    frame.style.font_color = { r = 0.3, g = 0.65, b = 0.3 }
+    frame.add({ type = 'button', name = 'confirm_spectate', caption = 'Spectate' })
+    frame.add({ type = 'button', name = 'cancel_spectate', caption = 'Cancel' })
 end
 
 function Public.rejoin_question(hatchery)
@@ -58,19 +58,19 @@ function Public.rejoin_question(hatchery)
     end
     for _, player in pairs(game.forces.spectator.players) do
         if not player.gui.center.rejoin_question_frame then
-            local frame = player.gui.center.add({type = 'frame', name = 'rejoin_question_frame', caption = 'Rejoin the game?'})
+            local frame = player.gui.center.add({ type = 'frame', name = 'rejoin_question_frame', caption = 'Rejoin the game?' })
             frame.style.font = 'default'
-            frame.style.font_color = {r = 0.3, g = 0.65, b = 0.3}
-            frame.add({type = 'button', name = 'confirm_rejoin', caption = 'Rejoin'})
-            frame.add({type = 'button', name = 'cancel_rejoin', caption = 'Cancel'})
+            frame.style.font_color = { r = 0.3, g = 0.65, b = 0.3 }
+            frame.add({ type = 'button', name = 'confirm_rejoin', caption = 'Rejoin' })
+            frame.add({ type = 'button', name = 'cancel_rejoin', caption = 'Cancel' })
         end
     end
     hatchery.reset_counter = hatchery.reset_counter + 1
     local message = 'Biter Hatchery round #' .. hatchery.reset_counter .. ' has begun!'
-    game.print(message, {180, 0, 250})
-    Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
+    game.print(message, { 180, 0, 250 })
+    Server.to_discord_bold(table.concat { '*** ', message, ' ***' })
     for _, player in pairs(game.connected_players) do
-        player.play_sound {path = 'utility/new_objective', volume_modifier = 0.85}
+        player.play_sound { path = 'utility/new_objective', volume_modifier = 0.85 }
     end
     hatchery.gamestate = 'game_in_progress'
     print(hatchery.gamestate)

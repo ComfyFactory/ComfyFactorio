@@ -209,7 +209,7 @@ local function create_button(player)
             )
         if b then
             b.style.font_color = { 165, 165, 165 }
-            b.style.font = 'heading-3'
+            b.style.font = 'default-semibold'
             b.style.minimal_height = 36
             b.style.maximal_height = 36
             b.style.minimal_width = 40
@@ -307,7 +307,7 @@ local function spacer(frame)
     flow.style.minimal_height = 2
 end
 
-local function objective_frames(stateful, player_frame, objective, data)
+local function objective_frames(player, stateful, player_frame, objective, data)
     local objective_name = objective.name
     if objective_name == 'supplies' or objective_name == 'single_item' then
         local supplies = stateful.objectives.supplies
@@ -361,7 +361,7 @@ local function objective_frames(stateful, player_frame, objective, data)
 
     local callback = Task.get(objective.token)
 
-    local _, objective_locale_left, objective_locale_right, tooltip_left, tooltip_right = callback()
+    local _, objective_locale_left, objective_locale_right, tooltip_left, tooltip_right = callback(player)
 
     local tbl = player_frame.add { type = 'table', column_count = 2 }
     tbl.style.horizontally_stretchable = true
@@ -414,7 +414,7 @@ local function buff_window(player)
 
     local starting_items_label = buff_pane.add({ type = 'label', caption = 'Starting items' })
     local starting_items_label_style = starting_items_label.style
-    starting_items_label_style.font = 'heading-3'
+    starting_items_label_style.font = 'default-semibold'
     starting_items_label_style.padding = 0
     starting_items_label_style.horizontal_align = 'left'
     starting_items_label_style.font_color = { 0.55, 0.55, 0.99 }
@@ -425,7 +425,7 @@ local function buff_window(player)
 
     local force_label = buff_pane.add({ type = 'label', caption = 'Force Buffs' })
     local force_label_style = force_label.style
-    force_label_style.font = 'heading-3'
+    force_label_style.font = 'default-semibold'
     force_label_style.padding = 0
     force_label_style.horizontal_align = 'left'
     force_label_style.font_color = { 0.55, 0.55, 0.99 }
@@ -435,7 +435,7 @@ local function buff_window(player)
 
     local custom_label = buff_pane.add({ type = 'label', caption = 'Custom Buffs' })
     local custom_label_style = custom_label.style
-    custom_label_style.font = 'heading-3'
+    custom_label_style.font = 'default-semibold'
     custom_label_style.padding = 0
     custom_label_style.horizontal_align = 'left'
     custom_label_style.font_color = { 0.55, 0.55, 0.99 }
@@ -763,7 +763,7 @@ main_frame = function (player)
 
         for index = 1, #stateful.selected_objectives do
             local objective = stateful.selected_objectives[index]
-            objective_frames(stateful, frame, objective, data)
+            objective_frames(player, stateful, frame, objective, data)
         end
     end
 
@@ -841,7 +841,7 @@ local function update_data()
                         local frame = data.supply[index]
                         if frame and frame.valid then
                             local supplies_data = supplies[index]
-                            local count = Stateful.get_item_produced_count(supplies_data.name)
+                            local count = Stateful.get_item_produced_count(player, supplies_data.name)
                             if count then
                                 if not supplies_data.total then
                                     supplies_data.total = supplies_data.count
@@ -874,7 +874,7 @@ local function update_data()
                 local single_item = stateful.objectives.single_item
                 if single_item then
                     local frame = data.single_item
-                    local count = Stateful.get_item_produced_count(single_item.name)
+                    local count = Stateful.get_item_produced_count(player, single_item.name)
                     if count then
                         if not single_item.total then
                             single_item.total = single_item.count
@@ -976,6 +976,13 @@ local function update_raw()
     local collection = stateful.collection
     local tick = game.tick
 
+    local active_surface_index = Public.get('active_surface_index')
+    local surface = game.get_surface(active_surface_index)
+
+    local player = {
+        surface = surface
+    }
+
     breached_wall = breached_wall - 1
     if stateful.objectives.randomized_zone then
         if breached_wall >= stateful.objectives.randomized_zone then
@@ -1008,7 +1015,7 @@ local function update_raw()
         local items_done = 0
         for index = 1, #stateful.objectives.supplies do
             local supplies_data = stateful.objectives.supplies[index]
-            local count = Stateful.get_item_produced_count(supplies_data.name)
+            local count = Stateful.get_item_produced_count(player, supplies_data.name)
             if count then
                 if not supplies_data.total then
                     supplies_data.total = supplies_data.count
@@ -1038,7 +1045,7 @@ local function update_raw()
     end
 
     if stateful.objectives.single_item then
-        local count = Stateful.get_item_produced_count(stateful.objectives.single_item.name)
+        local count = Stateful.get_item_produced_count(player, stateful.objectives.single_item.name)
         if count then
             if not stateful.objectives.single_item.total then
                 stateful.objectives.single_item.total = stateful.objectives.single_item.count
@@ -1143,7 +1150,7 @@ local function update_raw()
             local objective = stateful.selected_objectives[objective_index]
             local objective_name = objective.name
             local callback = Task.get(objective.token)
-            local completed, _, _ = callback()
+            local completed, _, _ = callback(player)
             if completed and completed == true and not stateful.objectives_completed[objective_name] then
                 stateful.objectives_completed[objective_name] = true
                 stateful.objectives_time_spent[objective_name] = tick
@@ -1200,7 +1207,7 @@ local function update_raw()
 
         stateful.collection.gather_time = tick + (10 * 3600)
         stateful.collection.gather_time_timer = tick + (10 * 3600)
-        game.forces.enemy.evolution_factor = 1
+        game.forces.enemy.set_evolution_factor(1, player.surface)
         play_achievement_unlocked()
         local reverse_position = zone_settings.zone_depth * (breached_wall + 1)
         local reversed = Public.get_stateful_settings('reversed')
