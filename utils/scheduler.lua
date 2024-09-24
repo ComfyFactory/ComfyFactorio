@@ -16,18 +16,18 @@ function Public.set(var)
 end
 
 function Public.get_handlers()
-    local handlers = global.tick_handler
+    local handlers = storage.tick_handler
 
     if not handlers then
-        global.tick_handler = {}
-        handlers = global.tick_handler
+        storage.tick_handler = {}
+        handlers = storage.tick_handler
     end
 
     return handlers
 end
 
 function Public.search(id)
-    local handlers = global.tick_handler
+    local handlers = storage.tick_handler
 
     for _, data in pairs(handlers) do
         if data and (data.parent_id == id or (data.custom_name and data.custom_name == id)) then
@@ -72,7 +72,7 @@ function Public.timeout(tick, id, data, custom_name)
 
     tick = game.tick + tick
 
-    local handlers = global.tick_handler
+    local handlers = storage.tick_handler
     if not handlers then
         handlers = Public.get_handlers()
     end
@@ -104,7 +104,7 @@ function Public.timeout(tick, id, data, custom_name)
 end
 
 local function increment_handler(tick, handler)
-    local handlers = global.tick_handler
+    local handlers = storage.tick_handler
 
     ::retry::
     tick = tick + 1
@@ -121,7 +121,7 @@ end
 
 local function on_tick()
     local tick = game.tick
-    local handlers = global.tick_handler
+    local handlers = storage.tick_handler
 
     if not handlers then
         handlers = Public.get_handlers()

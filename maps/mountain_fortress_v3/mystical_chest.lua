@@ -13,111 +13,10 @@ local insert = table.insert
 local abs = math.abs
 
 local item_worths = {
-    ['wooden-chest'] = 4,
-    ['iron-chest'] = 8,
-    ['steel-chest'] = 64,
-    ['storage-tank'] = 64,
-    ['transport-belt'] = 4,
-    ['fast-transport-belt'] = 16,
-    ['express-transport-belt'] = 64,
-    ['underground-belt'] = 16,
-    ['fast-underground-belt'] = 64,
-    ['express-underground-belt'] = 256,
-    ['splitter'] = 16,
-    ['fast-splitter'] = 64,
-    ['express-splitter'] = 256,
-    ['burner-inserter'] = 2,
-    ['inserter'] = 8,
-    ['long-handed-inserter'] = 16,
-    ['fast-inserter'] = 32,
-    ['filter-inserter'] = 40,
-    ['stack-inserter'] = 128,
-    ['stack-filter-inserter'] = 160,
-    ['small-electric-pole'] = 4,
-    ['medium-electric-pole'] = 32,
-    ['big-electric-pole'] = 64,
-    ['substation'] = 256,
-    ['pipe'] = 1,
-    ['pipe-to-ground'] = 15,
-    ['pump'] = 32,
-    ['rail'] = 8,
-    ['train-stop'] = 64,
-    ['rail-signal'] = 16,
-    ['rail-chain-signal'] = 16,
-    ['logistic-robot'] = 256,
-    ['construction-robot'] = 256,
-    ['logistic-chest-active-provider'] = 256,
-    ['logistic-chest-passive-provider'] = 256,
-    ['logistic-chest-storage'] = 256,
-    ['logistic-chest-buffer'] = 512,
-    ['logistic-chest-requester'] = 512,
-    ['roboport'] = 2048,
-    ['small-lamp'] = 16,
-    ['red-wire'] = 4,
-    ['green-wire'] = 4,
-    ['arithmetic-combinator'] = 16,
-    ['decider-combinator'] = 16,
-    ['constant-combinator'] = 16,
-    ['power-switch'] = 16,
-    ['programmable-speaker'] = 32,
-    ['stone-brick'] = 2,
-    ['concrete'] = 4,
-    ['hazard-concrete'] = 4,
-    ['refined-concrete'] = 16,
-    ['refined-hazard-concrete'] = 16,
-    ['cliff-explosives'] = 256,
-    ['repair-pack'] = 8,
-    ['boiler'] = 8,
-    ['steam-engine'] = 32,
-    ['solar-panel'] = 64,
-    ['accumulator'] = 64,
-    ['nuclear-reactor'] = 8192,
-    ['heat-pipe'] = 128,
-    ['heat-exchanger'] = 256,
-    ['steam-turbine'] = 256,
-    ['burner-mining-drill'] = 8,
-    ['electric-mining-drill'] = 32,
-    ['offshore-pump'] = 16,
-    ['pumpjack'] = 64,
-    ['stone-furnace'] = 4,
-    ['steel-furnace'] = 64,
-    ['electric-furnace'] = 256,
-    ['assembling-machine-1'] = 32,
-    ['assembling-machine-2'] = 128,
-    ['assembling-machine-3'] = 512,
-    ['oil-refinery'] = 256,
-    ['chemical-plant'] = 128,
-    ['centrifuge'] = 2048,
-    ['lab'] = 64,
-    ['beacon'] = 512,
-    ['speed-module'] = 128,
-    ['speed-module-2'] = 512,
-    ['speed-module-3'] = 2048,
-    ['effectivity-module'] = 128,
-    ['effectivity-module-2'] = 512,
-    ['effectivity-module-3'] = 2048,
-    ['productivity-module'] = 128,
-    ['productivity-module-2'] = 512,
-    ['productivity-module-3'] = 2048,
-    ['iron-plate'] = 1,
-    ['copper-plate'] = 1,
-    ['solid-fuel'] = 16,
-    ['steel-plate'] = 8,
-    ['plastic-bar'] = 8,
-    ['sulfur'] = 4,
-    ['battery'] = 16,
-    ['explosives'] = 4,
-    ['crude-oil-barrel'] = 8,
-    ['heavy-oil-barrel'] = 16,
-    ['light-oil-barrel'] = 16,
-    ['lubricant-barrel'] = 16,
-    ['petroleum-gas-barrel'] = 16,
-    ['sulfuric-acid-barrel'] = 16,
     ['water-barrel'] = 4,
     ['copper-cable'] = 1,
     ['iron-stick'] = 1,
     ['iron-gear-wheel'] = 2,
-    ['empty-barrel'] = 4,
     ['electronic-circuit'] = 4,
     ['advanced-circuit'] = 16,
     ['processing-unit'] = 128,
@@ -125,7 +24,6 @@ local item_worths = {
     ['electric-engine-unit'] = 64,
     ['flying-robot-frame'] = 128,
     ['satellite'] = 32768,
-    ['rocket-control-unit'] = 256,
     ['low-density-structure'] = 64,
     ['rocket-fuel'] = 256,
     ['nuclear-fuel'] = 1024,
@@ -240,7 +138,7 @@ local function init_price_check(locomotive, mystical_chest)
 
     local price = {}
     for k, v in pairs(item_stacks) do
-        insert(price, { name = k, count = v })
+        insert(price, { min = v, value = { comparator = "=", name = k, quality = "normal" } })
     end
 
     mystical_chest.price = price
@@ -611,12 +509,13 @@ function Public.add_mystical_chest(player)
 
     local entity = mystical_chest.entity
 
-    local inventory = mystical_chest.entity.get_inventory(defines.inventory.chest)
+    local inventory = entity.get_inventory(defines.inventory.chest)
 
     for key, item_stack in pairs(mystical_chest.price) do
-        local count_removed = inventory.remove(item_stack)
-        mystical_chest.price[key].count = mystical_chest.price[key].count - count_removed
-        if mystical_chest.price[key].count <= 0 then
+        local stack = { name = item_stack.value.name, count = item_stack.min }
+        local count_removed = inventory.remove(stack)
+        mystical_chest.price[key].min = mystical_chest.price[key].min - count_removed
+        if mystical_chest.price[key].min <= 0 then
             table.remove(mystical_chest.price, key)
         end
     end
@@ -631,12 +530,13 @@ function Public.add_mystical_chest(player)
         return true
     end
 
-    for slot = 1, 30, 1 do
-        entity.clear_request_slot(slot)
-    end
+    if entity.get_requester_point() then
+        entity.get_requester_point().remove_section(1)
+        entity.get_requester_point().add_section()
 
-    for slot, item_stack in pairs(mystical_chest.price) do
-        mystical_chest.entity.set_request_slot(item_stack, slot)
+        for slot, item_stack in pairs(mystical_chest.price) do
+            entity.get_requester_point().get_section(1).set_slot(slot, item_stack)
+        end
     end
 end
 

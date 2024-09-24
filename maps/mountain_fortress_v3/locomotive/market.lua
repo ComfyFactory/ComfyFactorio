@@ -1128,7 +1128,9 @@ local function gui_click(event)
 
         this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + item.price
         this.upgrades.health_upgrades = this.upgrades.health_upgrades + item.stack
-        rendering.set_text(this.health_text, 'HP: ' .. round(this.locomotive_health) .. ' / ' .. round(this.locomotive_max_health))
+        if this.health_text and this.health_text.valid then
+            this.health_text.text = 'HP: ' .. round(this.locomotive_health) .. ' / ' .. round(this.locomotive_max_health)
+        end
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
@@ -1157,8 +1159,8 @@ local function gui_click(event)
         this.upgrades.aura_upgrades = this.upgrades.aura_upgrades + item.stack
         this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + item.price
 
-        if this.circle then
-            rendering.destroy(this.circle)
+        if this.circle and this.circle.valid then
+            this.circle.destroy()
         end
         local difficulty_index = Difficulty.get('index')
 
@@ -1527,7 +1529,7 @@ local function create_market(data, rebuild)
         end
 
         this.mystical_chest = {
-            entity = surface.create_entity { name = 'logistic-chest-requester', position = { x = center_position.x, y = center_position.y + 2 }, force = 'neutral' }
+            entity = surface.create_entity { name = 'requester-chest', position = { x = center_position.x, y = center_position.y + 2 }, force = 'neutral' }
         }
         this.mystical_chest.entity.minable = false
         this.mystical_chest.entity.destructible = false
@@ -1564,15 +1566,15 @@ local function create_market(data, rebuild)
     for x = center_position.x - 5, center_position.x + 5, 1 do
         for y = center_position.y - 5, center_position.y + 5, 1 do
             if random(1, 2) == 1 then
-                loco_surface.spill_item_stack({ x + random(0, 9) * 0.1, y + random(0, 9) * 0.1 }, { name = 'raw-fish', count = 1 }, false)
+                loco_surface.spill_item_stack { position = { x = x + random(0, 9) * 0.1, y = y + random(0, 9) * 0.1 }, stack = { name = 'raw-fish', count = 1 } }
             end
-            loco_surface.set_tiles({ { name = 'blue-refined-concrete', position = { x, y } } }, true)
+            loco_surface.set_tiles({ { name = 'blue-refined-concrete', position = { x = x, y = y } } }, true)
         end
     end
     for x = center_position.x - 3, center_position.x + 3, 1 do
         for y = center_position.y - 3, center_position.y + 3, 1 do
             if random(1, 2) == 1 then
-                loco_surface.spill_item_stack({ x + random(0, 9) * 0.1, y + random(0, 9) * 0.1 }, { name = 'raw-fish', count = 1 }, false)
+                loco_surface.spill_item_stack { position = { x = x + random(0, 9) * 0.1, y = y + random(0, 9) * 0.1 }, stack = { name = 'raw-fish', count = 1 } }
             end
             loco_surface.set_tiles({ { name = 'cyan-refined-concrete', position = { x, y } } }, true)
         end

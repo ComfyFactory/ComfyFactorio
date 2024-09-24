@@ -17,30 +17,30 @@ local role_to_mention = Discord.role_mentions.biter_battles
 local Public = {}
 
 local gui_values = {
-    ['north'] = {c1 = 'Team North', color1 = {r = 0.55, g = 0.55, b = 0.99}},
-    ['south'] = {c1 = 'Team South', color1 = {r = 0.99, g = 0.33, b = 0.33}}
+    ['north'] = { c1 = 'Team North', color1 = { r = 0.55, g = 0.55, b = 0.99 } },
+    ['south'] = { c1 = 'Team South', color1 = { r = 0.99, g = 0.33, b = 0.33 } }
 }
 
 function Public.reveal_map()
-    for _, f in pairs({'north', 'south', 'player', 'spectator'}) do
+    for _, f in pairs({ 'north', 'south', 'player', 'spectator' }) do
         local r = 768
-        game.forces[f].chart(game.surfaces['biter_battles'], {{r * -1, r * -1}, {r, r}})
+        game.forces[f].chart(game.surfaces['biter_battles'], { { r * -1, r * -1 }, { r, r } })
     end
 end
 
 local function create_victory_gui(player)
-    local values = gui_values[global.bb_game_won_by_team]
+    local values = gui_values[storage.bb_game_won_by_team]
     local c = values.c1
-    if global.tm_custom_name[global.bb_game_won_by_team] then
-        c = global.tm_custom_name[global.bb_game_won_by_team]
+    if storage.tm_custom_name[storage.bb_game_won_by_team] then
+        c = storage.tm_custom_name[storage.bb_game_won_by_team]
     end
-    local frame = player.gui.left.add {type = 'frame', name = 'bb_victory_gui', direction = 'vertical', caption = c .. ' won!'}
+    local frame = player.gui.left.add { type = 'frame', name = 'bb_victory_gui', direction = 'vertical', caption = c .. ' won!' }
     frame.style.font = 'heading-1'
     frame.style.font_color = values.color1
 
-    local l = frame.add {type = 'label', caption = global.victory_time}
+    local l = frame.add { type = 'label', caption = storage.victory_time }
     l.style.font = 'heading-2'
-    l.style.font_color = {r = 0.77, g = 0.77, b = 0.77}
+    l.style.font_color = { r = 0.77, g = 0.77, b = 0.77 }
 end
 
 local function silo_kaboom(entity)
@@ -62,17 +62,17 @@ local function silo_kaboom(entity)
     local drops = {}
     for x = -32, 32, 1 do
         for y = -32, 32, 1 do
-            local p = {x = center_position.x + x, y = center_position.y + y}
+            local p = { x = center_position.x + x, y = center_position.y + y }
             local distance_to_silo = math.sqrt((center_position.x - p.x) ^ 2 + (center_position.y - p.y) ^ 2)
             local count = math.floor((32 - distance_to_silo * 1.2) * 0.28)
             if distance_to_silo < 32 and count > 0 then
-                table.insert(drops, {p, count})
+                table.insert(drops, { p, count })
             end
         end
     end
     for _, drop in pairs(drops) do
         for _ = 1, drop[2], 1 do
-            entity.surface.spill_item_stack({drop[1].x + math.random(0, 9) * 0.1, drop[1].y + math.random(0, 9) * 0.1}, {name = 'raw-fish', count = 1}, false, nil, true)
+            entity.surface.spill_item_stack({ drop[1].x + math.random(0, 9) * 0.1, drop[1].y + math.random(0, 9) * 0.1 }, { name = 'raw-fish', count = 1 }, false, nil, true)
         end
     end
 end
@@ -118,16 +118,16 @@ local function get_mvps(force)
             if score.players[p.name].mined_entities then
                 mined_entities = score.players[p.name].mined_entities
             end
-            table.insert(score_list, {name = p.name, killscore = killscore, deaths = deaths, built_entities = built_entities, mined_entities = mined_entities})
+            table.insert(score_list, { name = p.name, killscore = killscore, deaths = deaths, built_entities = built_entities, mined_entities = mined_entities })
         end
     end
     local mvp = {}
     score_list = get_sorted_list('killscore', score_list)
-    mvp.killscore = {name = score_list[1].name, score = score_list[1].killscore}
+    mvp.killscore = { name = score_list[1].name, score = score_list[1].killscore }
     score_list = get_sorted_list('deaths', score_list)
-    mvp.deaths = {name = score_list[1].name, score = score_list[1].deaths}
+    mvp.deaths = { name = score_list[1].name, score = score_list[1].deaths }
     score_list = get_sorted_list('built_entities', score_list)
-    mvp.built_entities = {name = score_list[1].name, score = score_list[1].built_entities}
+    mvp.built_entities = { name = score_list[1].name, score = score_list[1].built_entities }
     return mvp
 end
 
@@ -139,36 +139,36 @@ local function show_mvps(player)
     if player.gui.left['mvps'] then
         return
     end
-    local frame = player.gui.left.add({type = 'frame', name = 'mvps', direction = 'vertical'})
-    local l = frame.add({type = 'label', caption = 'MVPs - North:'})
+    local frame = player.gui.left.add({ type = 'frame', name = 'mvps', direction = 'vertical' })
+    local l = frame.add({ type = 'label', caption = 'MVPs - North:' })
     l.style.font = 'default-listbox'
-    l.style.font_color = {r = 0.55, g = 0.55, b = 0.99}
+    l.style.font_color = { r = 0.55, g = 0.55, b = 0.99 }
 
-    local t = frame.add({type = 'table', column_count = 2})
+    local t = frame.add({ type = 'table', column_count = 2 })
     local mvp = get_mvps('north')
     if mvp then
-        local l = t.add({type = 'label', caption = 'Defender >> '})
+        local l = t.add({ type = 'label', caption = 'Defender >> ' })
         l.style.font = 'default-listbox'
-        l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-        local l = t.add({type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score})
+        l.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
+        local l = t.add({ type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score })
         l.style.font = 'default-bold'
-        l.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+        l.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
-        local l = t.add({type = 'label', caption = 'Builder >> '})
+        local l = t.add({ type = 'label', caption = 'Builder >> ' })
         l.style.font = 'default-listbox'
-        l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-        local l = t.add({type = 'label', caption = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things'})
+        l.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
+        local l = t.add({ type = 'label', caption = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things' })
         l.style.font = 'default-bold'
-        l.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+        l.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
-        local l = t.add({type = 'label', caption = 'Deaths >> '})
+        local l = t.add({ type = 'label', caption = 'Deaths >> ' })
         l.style.font = 'default-listbox'
-        l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-        local l = t.add({type = 'label', caption = mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times'})
+        l.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
+        local l = t.add({ type = 'label', caption = mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times' })
         l.style.font = 'default-bold'
-        l.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+        l.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
-        if not global.results_sent_north then
+        if not storage.results_sent_north then
             local result = {}
             table.insert(result, 'NORTH: \\n')
             table.insert(result, 'MVP Defender: \\n')
@@ -181,39 +181,39 @@ local function show_mvps(player)
             table.insert(result, mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times')
             local message = table.concat(result)
             Server.to_discord_embed(message)
-            global.results_sent_north = true
+            storage.results_sent_north = true
         end
     end
 
-    local l = frame.add({type = 'label', caption = 'MVPs - South:'})
+    local l = frame.add({ type = 'label', caption = 'MVPs - South:' })
     l.style.font = 'default-listbox'
-    l.style.font_color = {r = 0.99, g = 0.33, b = 0.33}
+    l.style.font_color = { r = 0.99, g = 0.33, b = 0.33 }
 
-    local t = frame.add({type = 'table', column_count = 2})
+    local t = frame.add({ type = 'table', column_count = 2 })
     local mvp = get_mvps('south')
     if mvp then
-        local l = t.add({type = 'label', caption = 'Defender >> '})
+        local l = t.add({ type = 'label', caption = 'Defender >> ' })
         l.style.font = 'default-listbox'
-        l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-        local l = t.add({type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score})
+        l.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
+        local l = t.add({ type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score })
         l.style.font = 'default-bold'
-        l.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+        l.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
-        local l = t.add({type = 'label', caption = 'Builder >> '})
+        local l = t.add({ type = 'label', caption = 'Builder >> ' })
         l.style.font = 'default-listbox'
-        l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-        local l = t.add({type = 'label', caption = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things'})
+        l.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
+        local l = t.add({ type = 'label', caption = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things' })
         l.style.font = 'default-bold'
-        l.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+        l.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
-        local l = t.add({type = 'label', caption = 'Deaths >> '})
+        local l = t.add({ type = 'label', caption = 'Deaths >> ' })
         l.style.font = 'default-listbox'
-        l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-        local l = t.add({type = 'label', caption = mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times'})
+        l.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
+        local l = t.add({ type = 'label', caption = mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times' })
         l.style.font = 'default-bold'
-        l.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+        l.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
-        if not global.results_sent_south then
+        if not storage.results_sent_south then
             local result = {}
             table.insert(result, 'SOUTH: \\n')
             table.insert(result, 'MVP Defender: \\n')
@@ -226,7 +226,7 @@ local function show_mvps(player)
             table.insert(result, mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times')
             local message = table.concat(result)
             Server.to_discord_embed(message)
-            global.results_sent_south = true
+            storage.results_sent_south = true
         end
     end
 end
@@ -237,46 +237,46 @@ local enemy_team_of = {
 }
 
 function Public.server_restart()
-    if not global.server_restart_timer then
+    if not storage.server_restart_timer then
         return
     end
-    global.server_restart_timer = global.server_restart_timer - 5
-    if global.server_restart_timer == 150 then
+    storage.server_restart_timer = storage.server_restart_timer - 5
+    if storage.server_restart_timer == 150 then
         return
     end
-    if global.server_restart_timer == 10 then
+    if storage.server_restart_timer == 10 then
         game.delete_surface(game.surfaces.bb_source)
         return
     end
-    if global.server_restart_timer == 5 then
+    if storage.server_restart_timer == 5 then
         Init.source_surface()
         return
     end
 
-    if global.server_restart_timer == 0 then
-        if global.restart then
-            if not global.announced_message then
+    if storage.server_restart_timer == 0 then
+        if storage.restart then
+            if not storage.announced_message then
                 local message = 'Soft-reset is disabled! Server will restart from scenario to load new changes.'
-                game.print(message, {r = 0.22, g = 0.88, b = 0.22})
-                Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
+                game.print(message, { r = 0.22, g = 0.88, b = 0.22 })
+                Server.to_discord_bold(table.concat { '*** ', message, ' ***' })
                 Server.start_scenario('Biter_Battles')
-                global.announced_message = true
+                storage.announced_message = true
                 return
             end
         end
-        if global.shutdown then
-            if not global.announced_message then
+        if storage.shutdown then
+            if not storage.announced_message then
                 local message = 'Soft-reset is disabled! Server will shutdown. Most likely because of updates.'
-                game.print(message, {r = 0.22, g = 0.88, b = 0.22})
-                Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
+                game.print(message, { r = 0.22, g = 0.88, b = 0.22 })
+                Server.to_discord_bold(table.concat { '*** ', message, ' ***' })
                 Server.stop_scenario()
-                global.announced_message = true
+                storage.announced_message = true
                 return
             end
         end
-        game.print('Map is restarting!', {r = 0.22, g = 0.88, b = 0.22})
+        game.print('Map is restarting!', { r = 0.22, g = 0.88, b = 0.22 })
         local message = 'Map is restarting! '
-        Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
+        Server.to_discord_bold(table.concat { '*** ', message, ' ***' })
 
         Server.to_discord_named_raw(send_ping_to_channel, role_to_mention .. ' ** Biter Battles was just reset! **')
 
@@ -292,12 +292,12 @@ function Public.server_restart()
         end
         game.surfaces.biter_battles.clear(true)
         game.reset_time_played()
-        global.server_restart_timer = nil
+        storage.server_restart_timer = nil
         game.speed = 1
         return
     end
-    if global.server_restart_timer % 30 == 0 then
-        game.print('Map will restart in ' .. global.server_restart_timer .. ' seconds!', {r = 0.22, g = 0.88, b = 0.22})
+    if storage.server_restart_timer % 30 == 0 then
+        game.print('Map will restart in ' .. storage.server_restart_timer .. ' seconds!', { r = 0.22, g = 0.88, b = 0.22 })
     end
 end
 
@@ -312,16 +312,16 @@ local function set_victory_time()
     else
         hours = ''
     end
-    global.victory_time = 'Time - ' .. hours
-    global.victory_time = global.victory_time .. minutes
-    global.victory_time = global.victory_time .. ' minutes'
+    storage.victory_time = 'Time - ' .. hours
+    storage.victory_time = storage.victory_time .. minutes
+    storage.victory_time = storage.victory_time .. ' minutes'
 end
 
 local function freeze_all_biters(surface)
-    for _, e in pairs(surface.find_entities_filtered({force = 'north_biters'})) do
+    for _, e in pairs(surface.find_entities_filtered({ force = 'north_biters' })) do
         e.active = false
     end
-    for _, e in pairs(surface.find_entities_filtered({force = 'south_biters'})) do
+    for _, e in pairs(surface.find_entities_filtered({ force = 'south_biters' })) do
         e.active = false
     end
 end
@@ -342,23 +342,23 @@ function Public.silo_death(event)
     if entity.name ~= 'rocket-silo' then
         return
     end
-    if global.bb_game_won_by_team then
+    if storage.bb_game_won_by_team then
         return
     end
-    if entity == global.rocket_silo.south or entity == global.rocket_silo.north then
+    if entity == storage.rocket_silo.south or entity == storage.rocket_silo.north then
         --Respawn Silo in case of friendly fire
         if not biter_killed_the_silo(event) then
-            global.rocket_silo[entity.force.name] = entity.clone({position = entity.position, surface = entity.surface, force = entity.force})
-            global.rocket_silo[entity.force.name].health = 5
+            storage.rocket_silo[entity.force.name] = entity.clone({ position = entity.position, surface = entity.surface, force = entity.force })
+            storage.rocket_silo[entity.force.name].health = 5
             return
         end
 
-        global.bb_game_won_by_team = enemy_team_of[entity.force.name]
+        storage.bb_game_won_by_team = enemy_team_of[entity.force.name]
 
         set_victory_time()
 
         for _, player in pairs(game.connected_players) do
-            player.play_sound {path = 'utility/game_won', volume_modifier = 1}
+            player.play_sound { path = 'utility/game_won', volume_modifier = 1 }
             if player.gui.left['bb_main_gui'] then
                 player.gui.left['bb_main_gui'].visible = false
             end
@@ -378,17 +378,17 @@ function Public.silo_death(event)
 			]]
         end
 
-        global.spy_fish_timeout['north'] = game.tick + 999999
-        global.spy_fish_timeout['south'] = game.tick + 999999
-        global.server_restart_timer = 150
+        storage.spy_fish_timeout['north'] = game.tick + 999999
+        storage.spy_fish_timeout['south'] = game.tick + 999999
+        storage.server_restart_timer = 150
 
-        local c = gui_values[global.bb_game_won_by_team].c1
-        if global.tm_custom_name[global.bb_game_won_by_team] then
-            c = global.tm_custom_name[global.bb_game_won_by_team]
+        local c = gui_values[storage.bb_game_won_by_team].c1
+        if storage.tm_custom_name[storage.bb_game_won_by_team] then
+            c = storage.tm_custom_name[storage.bb_game_won_by_team]
         end
 
         Server.to_discord_embed(c .. ' has won!')
-        Server.to_discord_embed(global.victory_time)
+        Server.to_discord_embed(storage.victory_time)
 
         silo_kaboom(entity)
 

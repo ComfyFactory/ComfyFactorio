@@ -20,7 +20,7 @@ local simplex_noise = require 'utils.simplex_noise'.d2
 local Event = require 'utils.event'
 local math_random = math.random
 
---global.choppy_nightmare = true
+--storage.choppy_nightmare = true
 
 local disabled_for_deconstruction = {
     ['fish'] = true,
@@ -46,7 +46,7 @@ local tile_replacements = {
     ['red-desert-3'] = 'grass-4'
 }
 
-local rocks = {'rock-big', 'rock-big', 'rock-huge'}
+local rocks = { 'rock-big', 'rock-big', 'rock-huge' }
 local decos = {
     'green-hairy-grass',
     'green-hairy-grass',
@@ -63,18 +63,18 @@ local decos = {
 local noises = {
     --["forest_location"] = {{modifier = 0.006, weight = 1}, {modifier = 0.01, weight = 0.25}, {modifier = 0.05, weight = 0.15}, {modifier = 0.1, weight = 0.05}},
     ['forest_location'] = {
-        {modifier = 0.006, weight = 0.60},
-        {modifier = 0.01, weight = 0.20},
-        {modifier = 0.05, weight = 0.12},
-        {modifier = 0.1, weight = 0.08}
+        { modifier = 0.006, weight = 0.60 },
+        { modifier = 0.01,  weight = 0.20 },
+        { modifier = 0.05,  weight = 0.12 },
+        { modifier = 0.1,   weight = 0.08 }
     },
-    ['forest_density'] = {{modifier = 0.01, weight = 0.8}, {modifier = 0.05, weight = 0.4}},
+    ['forest_density'] = { { modifier = 0.01, weight = 0.8 }, { modifier = 0.05, weight = 0.4 } },
     --["forest_region"] = {{modifier = 0.001, weight = 1}, {modifier = 0.025, weight = 0.5}, {modifier = 0.02, weight = 0.025}}
     ['forest_region'] = {
-        {modifier = 0.0005, weight = 0.85},
-        {modifier = 0.005, weight = 0.25},
-        {modifier = 0.01, weight = 0.15},
-        {modifier = 0.05, weight = 0.05}
+        { modifier = 0.0005, weight = 0.85 },
+        { modifier = 0.005,  weight = 0.25 },
+        { modifier = 0.01,   weight = 0.15 },
+        { modifier = 0.05,   weight = 0.05 }
     }
 }
 local function get_noise(name, pos, seed)
@@ -134,7 +134,7 @@ local function process_entity(e)
     end
     if entities_to_convert[e.name] then
         if math_random(1, 100) > 33 then
-            e.surface.create_entity({name = rocks[math_random(1, #rocks)], position = e.position})
+            e.surface.create_entity({ name = rocks[math_random(1, #rocks)], position = e.position })
         end
         e.destroy()
         return
@@ -147,16 +147,16 @@ local function process_tile(surface, pos, tile, entities, seed)
     if tile.collides_with('player-layer') then
         return
     end
-    if not surface.can_place_entity({name = 'tree-01', position = pos}) then
+    if not surface.can_place_entity({ name = 'tree-01', position = pos }) then
         return
     end
 
     if math_random(1, 100000) == 1 then
-        local wrecks = {'big-ship-wreck-1', 'big-ship-wreck-2', 'big-ship-wreck-3'}
-        local e = surface.create_entity {name = wrecks[math_random(1, #wrecks)], position = pos, force = 'neutral'}
-        e.insert({name = 'raw-fish', count = math_random(3, 25)})
+        local wrecks = { 'big-ship-wreck-1', 'big-ship-wreck-2', 'big-ship-wreck-3' }
+        local e = surface.create_entity { name = wrecks[math_random(1, #wrecks)], position = pos, force = 'neutral' }
+        e.insert({ name = 'raw-fish', count = math_random(3, 25) })
         if math_random(1, 3) == 1 then
-            e.insert({name = 'wood', count = math_random(11, 44)})
+            e.insert({ name = 'wood', count = math_random(11, 44) })
         end
     end
     --
@@ -165,7 +165,7 @@ local function process_tile(surface, pos, tile, entities, seed)
     local noise_forest_location = get_noise("forest_location", pos, seed)
 
     if noise_forest_location > 0.095 then
-        if not global.choppy_nightmare then
+        if not storage.choppy_nightmare then
             if noise_forest_location > 0.6 then
                 if math_random(1,100) > 42 then surface.create_entity({name = "tree-08-brown", position = pos}) end
             else
@@ -179,7 +179,7 @@ local function process_tile(surface, pos, tile, entities, seed)
     end
 
     if noise_forest_location < -0.095 then
-        if not global.choppy_nightmare then
+        if not storage.choppy_nightmare then
             if noise_forest_location < -0.6 then
                 if math_random(1,100) > 42 then surface.create_entity({name = "tree-04", position = pos}) end
             else
@@ -191,7 +191,8 @@ local function process_tile(surface, pos, tile, entities, seed)
         surface.create_decoratives({check_collision=false, decoratives={{name = decos_inside_forest[math_random(1, #decos_inside_forest)], position = pos, amount = math_random(1, 2)}}})
         return
     end
-    ]] local density =
+    ]]
+    local density =
         75
 
     local noise_forest_regionA = get_noise('forest_region', pos, seed)
@@ -205,23 +206,23 @@ local function process_tile(surface, pos, tile, entities, seed)
         if noise_forest_regionB > 0.05 then
             if noise_forest_area > 0.1 then
                 if math_random(1, 100) > density then
-                    entities[#entities + 1] = {name = 'tree-02-red', position = pos}
+                    entities[#entities + 1] = { name = 'tree-02-red', position = pos }
                 end
             elseif noise_forest_area < -0.1 then
                 --else
                 if math_random(1, 100) > density then
-                    entities[#entities + 1] = {name = 'tree-09-brown', position = pos}
+                    entities[#entities + 1] = { name = 'tree-09-brown', position = pos }
                 end
             end
         elseif noise_forest_regionB < -0.05 then
             if noise_forest_area > 0.1 then
                 if math_random(1, 100) > density then
-                    entities[#entities + 1] = {name = 'tree-04', position = pos}
+                    entities[#entities + 1] = { name = 'tree-04', position = pos }
                 end
             elseif noise_forest_area < -0.1 then
                 --else
                 if math_random(1, 100) > density then
-                    entities[#entities + 1] = {name = 'tree-08-red', position = pos}
+                    entities[#entities + 1] = { name = 'tree-08-red', position = pos }
                 end
             end
         end
@@ -229,23 +230,23 @@ local function process_tile(surface, pos, tile, entities, seed)
         if noise_forest_regionB > 0.05 then
             if noise_forest_area > 0.1 then
                 if math_random(1, 100) > density then
-                    entities[#entities + 1] = {name = 'tree-01', position = pos}
+                    entities[#entities + 1] = { name = 'tree-01', position = pos }
                 end
             elseif noise_forest_area < -0.1 then
                 --else
                 if math_random(1, 100) > density then
-                    entities[#entities + 1] = {name = 'tree-05', position = pos}
+                    entities[#entities + 1] = { name = 'tree-05', position = pos }
                 end
             end
         elseif noise_forest_regionB < -0.05 then
             if noise_forest_area > 0.1 then
                 if math_random(1, 100) > density then
-                    entities[#entities + 1] = {name = 'tree-08-brown', position = pos}
+                    entities[#entities + 1] = { name = 'tree-08-brown', position = pos }
                 end
             elseif noise_forest_area < -0.1 then
                 --else
                 if math_random(1, 100) > density then
-                    entities[#entities + 1] = {name = 'tree-03', position = pos}
+                    entities[#entities + 1] = { name = 'tree-03', position = pos }
                 end
             end
         end
@@ -255,7 +256,7 @@ local function process_tile(surface, pos, tile, entities, seed)
         surface.create_decoratives(
             {
                 check_collision = false,
-                decoratives = {{name = decos[math_random(1, #decos)], position = pos, amount = math_random(1, 2)}}
+                decoratives = { { name = decos[math_random(1, #decos)], position = pos, amount = math_random(1, 2) } }
             }
         )
     end
@@ -268,17 +269,17 @@ local function process_chunk(area)
     local seed = game.surfaces[1].map_gen_settings.seed
     local surface = game.surfaces['nauvis']
 
-    for _, e in pairs(surface.find_entities_filtered({area = area})) do
+    for _, e in pairs(surface.find_entities_filtered({ area = area })) do
         process_entity(e)
     end
 
     for x = 0.5, 31.5, 1 do
         for y = 0.5, 31.5, 1 do
-            local pos = {x = left_top.x + x, y = left_top.y + y}
+            local pos = { x = left_top.x + x, y = left_top.y + y }
 
             local tile = surface.get_tile(pos)
             if tile_replacements[tile.name] then
-                tiles[#tiles + 1] = {name = tile_replacements[tile.name], position = pos}
+                tiles[#tiles + 1] = { name = tile_replacements[tile.name], position = pos }
             end
 
             process_tile(surface, pos, tile, entities, seed)
@@ -286,8 +287,8 @@ local function process_chunk(area)
     end
     surface.set_tiles(tiles, true)
 
-    for _, e in pairs(surface.find_entities_filtered({area = area, type = 'unit-spawner'})) do
-        for _, entity in pairs(e.surface.find_entities_filtered({area = {{e.position.x - 7, e.position.y - 7}, {e.position.x + 7, e.position.y + 7}}, force = 'neutral'})) do
+    for _, e in pairs(surface.find_entities_filtered({ area = area, type = 'unit-spawner' })) do
+        for _, entity in pairs(e.surface.find_entities_filtered({ area = { { e.position.x - 7, e.position.y - 7 }, { e.position.x + 7, e.position.y + 7 } }, force = 'neutral' })) do
             if entity.valid then
                 entity.destroy()
             end
@@ -297,16 +298,16 @@ local function process_chunk(area)
     for _, e in ipairs(entities) do
         local pos = e.position
         local name = e.name
-        surface.create_entity {name = name, position = pos}
+        surface.create_entity { name = name, position = pos }
     end
-    if global.spawn_generated then
+    if storage.spawn_generated then
         return
     end
     if left_top.x < 96 then
         return
     end
 
-    for _, e in pairs(surface.find_entities_filtered({area = {{-50, -50}, {50, 50}}})) do
+    for _, e in pairs(surface.find_entities_filtered({ area = { { -50, -50 }, { 50, 50 } } })) do
         local distance_to_center = math.sqrt(e.position.x ^ 2 + e.position.y ^ 2)
         if e.valid then
             if distance_to_center < 12 and e.type == 'tree' and math_random(1, 5) ~= 1 then
@@ -314,13 +315,13 @@ local function process_chunk(area)
             end
         end
     end
-    global.spawn_generated = true
+    storage.spawn_generated = true
 end
 
 local function process_chunk_queue()
-    for k, area in pairs(global.chunk_queue) do
+    for k, area in pairs(storage.chunk_queue) do
         process_chunk(area)
-        table.remove(global.chunk_queue, k)
+        table.remove(storage.chunk_queue, k)
         return
     end
 end
@@ -349,7 +350,7 @@ local function on_chunk_generated(event)
     if game.tick == 0 then
         process_chunk(area)
     else
-        table.insert(global.chunk_queue, area)
+        table.insert(storage.chunk_queue, area)
     end
 end
 
@@ -365,13 +366,13 @@ end
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
     if player.online_time == 0 then
-        player.insert({name = 'pistol', count = 1})
-        player.insert({name = 'firearm-magazine', count = 8})
+        player.insert({ name = 'pistol', count = 1 })
+        player.insert({ name = 'firearm-magazine', count = 8 })
     end
 
     -- game.print({"comfy.welcome"})
 
-    if global.map_init_done then
+    if storage.map_init_done then
         return
     end
 
@@ -381,70 +382,70 @@ local function on_player_joined_game(event)
 
     --game.surfaces["nauvis"].ticks_per_day = game.surfaces["nauvis"].ticks_per_day * 2
 
-    global.entity_yield = {
-        ['tree-01'] = {'iron-ore'},
-        ['tree-02-red'] = {'copper-ore'},
-        ['tree-04'] = {'coal'},
-        ['tree-08-brown'] = {'stone'},
-        ['rock-big'] = {'uranium-ore'},
-        ['rock-huge'] = {'uranium-ore'},
-        ['tree-09-brown'] = {'stone', 'coal'},
-        ['tree-08-red'] = {'copper-ore', 'iron-ore'},
-        ['tree-03'] = {'coal', 'iron-ore'},
-        ['tree-05'] = {'copper-ore', 'stone'}
+    storage.entity_yield = {
+        ['tree-01'] = { 'iron-ore' },
+        ['tree-02-red'] = { 'copper-ore' },
+        ['tree-04'] = { 'coal' },
+        ['tree-08-brown'] = { 'stone' },
+        ['rock-big'] = { 'uranium-ore' },
+        ['rock-huge'] = { 'uranium-ore' },
+        ['tree-09-brown'] = { 'stone', 'coal' },
+        ['tree-08-red'] = { 'copper-ore', 'iron-ore' },
+        ['tree-03'] = { 'coal', 'iron-ore' },
+        ['tree-05'] = { 'copper-ore', 'stone' }
     }
 
     if game.item_prototypes['angels-ore1'] then
-        global.entity_yield['tree-01'] = {'angels-ore1', 'angels-ore2'}
-        global.entity_yield['tree-02-red'] = {'angels-ore5', 'angels-ore6'}
-        global.entity_yield['tree-04'] = {'coal'}
-        global.entity_yield['tree-08-brown'] = {'angels-ore3', 'angels-ore4'}
-    --else
-    --game.map_settings.pollution.ageing = 0
+        storage.entity_yield['tree-01'] = { 'angels-ore1', 'angels-ore2' }
+        storage.entity_yield['tree-02-red'] = { 'angels-ore5', 'angels-ore6' }
+        storage.entity_yield['tree-04'] = { 'coal' }
+        storage.entity_yield['tree-08-brown'] = { 'angels-ore3', 'angels-ore4' }
+        --else
+        --game.map_settings.pollution.ageing = 0
     end
 
     if game.item_prototypes['thorium-ore'] then
-        global.entity_yield['rock-big'] = {'uranium-ore', 'thorium-ore'}
-        global.entity_yield['rock-huge'] = {'uranium-ore', 'thorium-ore'}
+        storage.entity_yield['rock-big'] = { 'uranium-ore', 'thorium-ore' }
+        storage.entity_yield['rock-huge'] = { 'uranium-ore', 'thorium-ore' }
     end
 
     local surface = player.surface
 
-    global.average_worm_amount_per_chunk = 2
-    global.worm_distance = surface.map_gen_settings.starting_area * 300
+    storage.average_worm_amount_per_chunk = 2
+    storage.worm_distance = surface.map_gen_settings.starting_area * 300
     game.forces.player.technologies['landfill'].enabled = false
     game.forces.player.technologies['spidertron'].enabled = false
 
-    if global.choppy_nightmare then
+    if storage.choppy_nightmare then
         surface.daytime = 0.5
         surface.freeze_daytime = true
     end
 
     game.map_settings.pollution.ageing = 0.05
 
-    global.map_init_done = true
+    storage.map_init_done = true
 end
 
 function choppy_debug()
-    if not global.choppy_loaderswon then
-        global.choppy_loaderswon = 0
+    if not storage.choppy_loaderswon then
+        storage.choppy_loaderswon = 0
     end
-    if not global.choppy_veinsfound then
-        global.choppy_veinsfound = 0
+    if not storage.choppy_veinsfound then
+        storage.choppy_veinsfound = 0
     end
-    if not global.choppy_wormsdugup then
-        global.choppy_wormsdugup = 0
+    if not storage.choppy_wormsdugup then
+        storage.choppy_wormsdugup = 0
     end
-    game.print('veins   found :' .. global.choppy_veinsfound)
-    game.print('loaders found :' .. global.choppy_loaderswon)
-    game.print('worms  dug up :' .. global.choppy_wormsdugup)
+    game.print('veins   found :' .. storage.choppy_veinsfound)
+    game.print('loaders found :' .. storage.choppy_loaderswon)
+    game.print('worms  dug up :' .. storage.choppy_wormsdugup)
 end
 
 local function get_amount(entity)
     local distance_to_center = math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2)
     local amount = 15 + (distance_to_center * 0.07)
 
-    if global.choppy_nightmare then
+    if storage.choppy_nightmare then
         amount = 20 + (distance_to_center * 0.09)
     end
 
@@ -462,10 +463,10 @@ local function trap(entity)
     end
     if math_random(1, 256) == 1 then
         unearthing_worm(entity.surface, entity.position)
-        if not global.choppy_wormsdugup then
-            global.choppy_wormsdugup = 0
+        if not storage.choppy_wormsdugup then
+            storage.choppy_wormsdugup = 0
         end
-        global.choppy_wormsdugup = global.choppy_wormsdugup + 1
+        storage.choppy_wormsdugup = storage.choppy_wormsdugup + 1
     end
     if math_random(1, 128) == 1 then
         unearthing_biters(entity.surface, entity.position, math_random(4, 8))
@@ -473,7 +474,7 @@ local function trap(entity)
 end
 
 local function treasure(player, amount)
-    local prizes = {'loader'}
+    local prizes = { 'loader' }
 
     --if amount > 80 then prizes = {"loader","loader","fast-loader"} end
     --if amount > 160 then prizes = {"loader","fast-loader","fast-loader"} end
@@ -483,36 +484,36 @@ local function treasure(player, amount)
     --if amount > 420 then prizes = {"fast-loader","express-loader","express-loader"} end
     --if amount > 500 then prizes = {"express-loader"} end
     if amount > 500 then
-        prizes = {'express-loader'}
+        prizes = { 'express-loader' }
     elseif amount > 420 then
-        prizes = {'fast-loader', 'express-loader', 'express-loader'}
+        prizes = { 'fast-loader', 'express-loader', 'express-loader' }
     elseif amount > 360 then
-        prizes = {'fast-loader', 'express-loader'}
+        prizes = { 'fast-loader', 'express-loader' }
     elseif amount > 300 then
-        prizes = {'fast-loader', 'fast-loader', 'express-loader'}
+        prizes = { 'fast-loader', 'fast-loader', 'express-loader' }
     elseif amount > 240 then
-        prizes = {'fast-loader'}
+        prizes = { 'fast-loader' }
     elseif amount > 160 then
-        prizes = {'loader', 'fast-loader', 'fast-loader'}
+        prizes = { 'loader', 'fast-loader', 'fast-loader' }
     elseif amount > 80 then
-        prizes = {'loader', 'loader', 'fast-loader'}
+        prizes = { 'loader', 'loader', 'fast-loader' }
     end
 
     local prize = prizes[math_random(1, #prizes)]
     local give = 1
 
-    local inserted_count = player.insert({name = prize, count = give})
+    local inserted_count = player.insert({ name = prize, count = give })
     give = give - inserted_count
     if give > 0 then
-        player.surface.spill_item_stack(player.position, {name = prize, count = give}, true)
+        player.surface.spill_item_stack(player.position, { name = prize, count = give }, true)
     end
 
-    if not global.choppy_loaderswon then
-        global.choppy_loaderswon = 0
+    if not storage.choppy_loaderswon then
+        storage.choppy_loaderswon = 0
     end
-    global.choppy_loaderswon = global.choppy_loaderswon + 1
+    storage.choppy_loaderswon = storage.choppy_loaderswon + 1
 
-    player.print("You notice a strange device underneath the roots of the tree. It's a " .. prize .. ', talk about lucky!!', {r = 0.98, g = 0.66, b = 0.22})
+    player.print("You notice a strange device underneath the roots of the tree. It's a " .. prize .. ', talk about lucky!!', { r = 0.98, g = 0.66, b = 0.22 })
 end
 
 local function generate_treevein(entity, player)
@@ -522,39 +523,39 @@ local function generate_treevein(entity, player)
     --local tile_distance_to_center = p.x^2 + p.y^2
     local ore_count = get_amount(entity)
     local mined_loot
-    if not global.choppy_nightmare then
-        mined_loot = global.entity_yield[entity.name][math_random(1, #global.entity_yield[entity.name])]
+    if not storage.choppy_nightmare then
+        mined_loot = storage.entity_yield[entity.name][math_random(1, #storage.entity_yield[entity.name])]
     else
         local ore = get_ore_from_entpos(entity)
         --game.print(ore)
-        mined_loot = global.entity_yield[ore][math_random(1, #global.entity_yield[ore])]
+        mined_loot = storage.entity_yield[ore][math_random(1, #storage.entity_yield[ore])]
     end
     --if	ore_count > 40 then
     local radius = 28
     --player.print("checking")
     if
         surface.count_entities_filtered {
-            area = {{p.x - radius, p.y - radius}, {p.x + radius, p.y + radius}},
-            name = {'iron-ore', 'copper-ore', 'coal', 'stone', 'uranium-ore'},
+            area = { { p.x - radius, p.y - radius }, { p.x + radius, p.y + radius } },
+            name = { 'iron-ore', 'copper-ore', 'coal', 'stone', 'uranium-ore' },
             limit = 1
         } == 0
-     then
+    then
         --player.print("yes")
         --local size_raffle = {{"huge", 24, 40},{"big", 16, 28},{"small", 8, 18},{"tiny", 5, 10}}
-        local size_raffle = {{'huge', 24, 40}, {'big', 16, 28}, {'small', 8, 18}}
+        local size_raffle = { { 'huge', 24, 40 }, { 'big', 16, 28 }, { 'small', 8, 18 } }
         local size = size_raffle[math_random(1, #size_raffle)]
-        player.print("You notice something underneath the roots of the tree. It's a " .. size[1] .. ' vein of ' .. mined_loot .. '!!', {r = 0.98, g = 0.66, b = 0.22})
+        player.print("You notice something underneath the roots of the tree. It's a " .. size[1] .. ' vein of ' .. mined_loot .. '!!', { r = 0.98, g = 0.66, b = 0.22 })
         --tile_distance_to_center = math.sqrt(tile_distance_to_center)
         local ore_entities_placed = 0
-        local modifier_raffle = {{0, -1}, {-1, 0}, {1, 0}, {0, 1}}
+        local modifier_raffle = { { 0, -1 }, { -1, 0 }, { 1, 0 }, { 0, 1 } }
         local ores_to_place = math_random(size[2], size[3]) + math.floor(ore_count * 0.040)
         while ore_entities_placed < ores_to_place do
             local a = math.ceil(math_random(ore_count * 14, ore_count * 20) + ore_entities_placed * 8, 0)
             for x = 1, 150, 1 do
                 local m = modifier_raffle[math_random(1, #modifier_raffle)]
-                local pos = {x = p.x + m[1], y = p.y + m[2]}
-                if surface.can_place_entity({name = mined_loot, position = pos, amount = a}) then
-                    surface.create_entity {name = mined_loot, position = pos, amount = a}
+                local pos = { x = p.x + m[1], y = p.y + m[2] }
+                if surface.can_place_entity({ name = mined_loot, position = pos, amount = a }) then
+                    surface.create_entity { name = mined_loot, position = pos, amount = a }
                     p = pos
                     break
                 end
@@ -562,10 +563,10 @@ local function generate_treevein(entity, player)
             ore_entities_placed = ore_entities_placed + 1
         end
 
-        if not global.choppy_veinsfound then
-            global.choppy_veinsfound = 0
+        if not storage.choppy_veinsfound then
+            storage.choppy_veinsfound = 0
         end
-        global.choppy_veinsfound = global.choppy_veinsfound + 1
+        storage.choppy_veinsfound = storage.choppy_veinsfound + 1
 
         return true
     end
@@ -584,7 +585,7 @@ local function on_player_mined_entity(event)
         trap(entity)
     end
 
-    if global.entity_yield[entity.name] then
+    if storage.entity_yield[entity.name] then
         if event.buffer then
             event.buffer.clear()
         end
@@ -596,12 +597,12 @@ local function on_player_mined_entity(event)
         local second_item = 'wood'
 
         local main_item
-        if not global.choppy_nightmare then
-            main_item = global.entity_yield[entity.name][math_random(1, #global.entity_yield[entity.name])]
+        if not storage.choppy_nightmare then
+            main_item = storage.entity_yield[entity.name][math_random(1, #storage.entity_yield[entity.name])]
         else
             local ore = get_ore_from_entpos(entity)
             --game.print(ore)
-            main_item = global.entity_yield[ore][math_random(1, #global.entity_yield[ore])]
+            main_item = storage.entity_yield[ore][math_random(1, #storage.entity_yield[ore])]
         end
 
         if entity.type == 'simple-entity' then
@@ -631,27 +632,26 @@ local function on_player_mined_entity(event)
             end
         end
 
-        --local main_item = global.entity_yield[entity.name][math_random(1,#global.entity_yield[entity.name])]
+        --local main_item = storage.entity_yield[entity.name][math_random(1,#storage.entity_yield[entity.name])]
 
-        entity.surface.create_entity(
+        player.create_local_flying_text(
             {
-                name = 'flying-text',
-                position = entity.position,
-                text = '+' .. amount .. ' [item=' .. main_item .. '] +' .. second_item_amount .. ' [item=' .. second_item .. ']',
-                color = {r = 0.8, g = 0.8, b = 0.8}
+            position = entity.position,
+            text = '+' .. amount .. ' [item=' .. main_item .. '] +' .. second_item_amount .. ' [item=' .. second_item .. ']',
+            color = { r = 0.8, g = 0.8, b = 0.8 }
             }
         )
 
-        local inserted_count = player.insert({name = main_item, count = amount})
+        local inserted_count = player.insert({ name = main_item, count = amount })
         amount = amount - inserted_count
         if amount > 0 then
-            entity.surface.spill_item_stack(entity.position, {name = main_item, count = amount}, true)
+            entity.surface.spill_item_stack(entity.position, { name = main_item, count = amount }, true)
         end
 
-        local inserted_count = player.insert({name = second_item, count = second_item_amount})
+        local inserted_count = player.insert({ name = second_item, count = second_item_amount })
         second_item_amount = second_item_amount - inserted_count
         if second_item_amount > 0 then
-            entity.surface.spill_item_stack(entity.position, {name = second_item, count = second_item_amount}, true)
+            entity.surface.spill_item_stack(entity.position, { name = second_item, count = second_item_amount }, true)
         end
     end
 end
@@ -687,8 +687,8 @@ local function on_entity_died(event)
             event.entity.surface.find_entities_filtered(
                 {
                     area = {
-                        {event.entity.position.x - 4, event.entity.position.y - 4},
-                        {event.entity.position.x + 4, event.entity.position.y + 4}
+                        { event.entity.position.x - 4, event.entity.position.y - 4 },
+                        { event.entity.position.x + 4, event.entity.position.y + 4 }
                     },
                     name = 'fire-flame-on-tree'
                 }
@@ -701,12 +701,12 @@ local function on_entity_died(event)
     end
 end
 
-local on_init = function()
+local on_init = function ()
     local T = Map.Pop_info()
     T.main_caption = 'Choppy'
     T.sub_caption = ''
     T.text =
-        [[
+    [[
     You are a lumberjack with a passion to chop.
 
     Different kinds of trees yield different kinds of ore and wood.
@@ -726,9 +726,9 @@ local on_init = function()
     Senario Created by MewMew - Tweeked By Neko Baron
 ]]
 
-    T.main_caption_color = {r = 0, g = 120, b = 0}
-    T.sub_caption_color = {r = 255, g = 0, b = 255}
-    global.chunk_queue = {}
+    T.main_caption_color = { r = 0, g = 120, b = 0 }
+    T.sub_caption_color = { r = 255, g = 0, b = 255 }
+    storage.chunk_queue = {}
     game.difficulty_settings.technology_price_multiplier = 4
 end
 

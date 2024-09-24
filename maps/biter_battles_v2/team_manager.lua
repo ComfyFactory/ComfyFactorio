@@ -3,9 +3,9 @@ local Public = {}
 local Server = require 'utils.server'
 
 local forces = {
-    {name = 'north', color = {r = 0, g = 0, b = 200}},
-    {name = 'spectator', color = {r = 111, g = 111, b = 111}},
-    {name = 'south', color = {r = 200, g = 0, b = 0}}
+    { name = 'north',     color = { r = 0, g = 0, b = 200 } },
+    { name = 'spectator', color = { r = 111, g = 111, b = 111 } },
+    { name = 'south',     color = { r = 200, g = 0, b = 0 } }
 }
 
 local function get_player_array(force_name)
@@ -17,13 +17,13 @@ local function get_player_array(force_name)
 end
 
 local function freeze_players()
-    if not global.freeze_players then
+    if not storage.freeze_players then
         return
     end
-    global.team_manager_default_permissions = {}
+    storage.team_manager_default_permissions = {}
     local p = game.permissions.get_group('Default')
     for action_name, _ in pairs(defines.input_action) do
-        global.team_manager_default_permissions[action_name] = p.allows_action(defines.input_action[action_name])
+        storage.team_manager_default_permissions[action_name] = p.allows_action(defines.input_action[action_name])
         p.set_allows_action(defines.input_action[action_name], false)
     end
     local defs = {
@@ -44,7 +44,7 @@ end
 local function unfreeze_players()
     local p = game.permissions.get_group('Default')
     for action_name, _ in pairs(defines.input_action) do
-        if global.team_manager_default_permissions[action_name] then
+        if storage.team_manager_default_permissions[action_name] then
             p.set_allows_action(defines.input_action[action_name], true)
         end
     end
@@ -83,29 +83,29 @@ local function leave_corpse(player)
         player.character.destroy()
     end
     player.character = nil
-    player.set_controller({type = defines.controllers.god})
+    player.set_controller({ type = defines.controllers.god })
     player.create_character()
 end
 
 local function switch_force(player_name, force_name)
     if not game.players[player_name] then
-        game.print('Team Manager >> Player ' .. player_name .. ' does not exist.', {r = 0.98, g = 0.66, b = 0.22})
+        game.print('Team Manager >> Player ' .. player_name .. ' does not exist.', { r = 0.98, g = 0.66, b = 0.22 })
         return
     end
     if not game.forces[force_name] then
-        game.print('Team Manager >> Force ' .. force_name .. ' does not exist.', {r = 0.98, g = 0.66, b = 0.22})
+        game.print('Team Manager >> Force ' .. force_name .. ' does not exist.', { r = 0.98, g = 0.66, b = 0.22 })
         return
     end
 
     local player = game.players[player_name]
     player.force = game.forces[force_name]
 
-    game.print(player_name .. ' has been switched into team ' .. force_name .. '.', {r = 0.98, g = 0.66, b = 0.22})
+    game.print(player_name .. ' has been switched into team ' .. force_name .. '.', { r = 0.98, g = 0.66, b = 0.22 })
     Server.to_discord_bold(player_name .. ' has joined team ' .. force_name .. '!')
 
     leave_corpse(player)
 
-    global.chosen_team[player_name] = nil
+    storage.chosen_team[player_name] = nil
     if force_name == 'spectator' then
         spectate(player, true)
     else
@@ -117,9 +117,9 @@ function Public.draw_top_toggle_button(player)
     if player.gui.top['team_manager_toggle_button'] then
         player.gui.top['team_manager_toggle_button'].destroy()
     end
-    local button = player.gui.top.add({type = 'sprite-button', name = 'team_manager_toggle_button', caption = 'Team Manager', tooltip = tooltip})
+    local button = player.gui.top.add({ type = 'sprite-button', name = 'team_manager_toggle_button', caption = 'Team Manager', tooltip = tooltip })
     button.style.font = 'heading-2'
-    button.style.font_color = {r = 0.88, g = 0.55, b = 0.11}
+    button.style.font_color = { r = 0.88, g = 0.55, b = 0.11 }
     button.style.minimal_height = 38
     button.style.minimal_width = 120
     button.style.top_padding = 2
@@ -133,145 +133,145 @@ local function draw_manager_gui(player)
         player.gui.center['team_manager_gui'].destroy()
     end
 
-    local frame = player.gui.center.add({type = 'frame', name = 'team_manager_gui', caption = 'Manage Teams', direction = 'vertical'})
+    local frame = player.gui.center.add({ type = 'frame', name = 'team_manager_gui', caption = 'Manage Teams', direction = 'vertical' })
 
-    local t = frame.add({type = 'table', name = 'team_manager_root_table', column_count = 5})
+    local t = frame.add({ type = 'table', name = 'team_manager_root_table', column_count = 5 })
 
     local i2 = 1
     for i = 1, #forces * 2 - 1, 1 do
         if i % 2 == 1 then
-            local l = t.add({type = 'sprite-button', caption = string.upper(forces[i2].name), name = forces[i2].name})
+            local l = t.add({ type = 'sprite-button', caption = string.upper(forces[i2].name), name = forces[i2].name })
             l.style.minimal_width = 160
             l.style.maximal_width = 160
             l.style.font_color = forces[i2].color
             l.style.font = 'heading-1'
             i2 = i2 + 1
         else
-            local tt = t.add({type = 'label', caption = ' '})
+            local tt = t.add({ type = 'label', caption = ' ' })
         end
     end
 
     local i2 = 1
     for i = 1, #forces * 2 - 1, 1 do
         if i % 2 == 1 then
-            local list_box = t.add({type = 'list-box', name = 'team_manager_list_box_' .. i2, items = get_player_array(forces[i2].name)})
+            local list_box = t.add({ type = 'list-box', name = 'team_manager_list_box_' .. i2, items = get_player_array(forces[i2].name) })
             list_box.style.minimal_height = 360
             list_box.style.minimal_width = 160
             list_box.style.maximal_height = 480
             i2 = i2 + 1
         else
-            local tt = t.add({type = 'table', column_count = 1})
-            local b = tt.add({type = 'sprite-button', name = i2 - 1, caption = '→'})
+            local tt = t.add({ type = 'table', column_count = 1 })
+            local b = tt.add({ type = 'sprite-button', name = i2 - 1, caption = '→' })
             b.style.font = 'heading-1'
             b.style.maximal_height = 38
             b.style.maximal_width = 38
-            local b = tt.add({type = 'sprite-button', name = i2, caption = '←'})
+            local b = tt.add({ type = 'sprite-button', name = i2, caption = '←' })
             b.style.font = 'heading-1'
             b.style.maximal_height = 38
             b.style.maximal_width = 38
         end
     end
 
-    frame.add({type = 'label', caption = ''})
+    frame.add({ type = 'label', caption = '' })
 
-    local t = frame.add({type = 'table', name = 'team_manager_bottom_buttons', column_count = 4})
+    local t = frame.add({ type = 'table', name = 'team_manager_bottom_buttons', column_count = 4 })
     local button =
         t.add(
-        {
-            type = 'button',
-            name = 'team_manager_close',
-            caption = 'Close',
-            tooltip = 'Close this window.'
-        }
-    )
-    button.style.font = 'heading-2'
-
-    if global.tournament_mode then
-        button =
-            t.add(
             {
                 type = 'button',
-                name = 'team_manager_activate_tournament',
-                caption = 'Tournament Mode Enabled',
-                tooltip = 'Only admins can move players and vote for difficulty.\nActive players can no longer go spectate.\nNew joining players are spectators.'
+                name = 'team_manager_close',
+                caption = 'Close',
+                tooltip = 'Close this window.'
             }
         )
-        button.style.font_color = {r = 222, g = 22, b = 22}
+    button.style.font = 'heading-2'
+
+    if storage.tournament_mode then
+        button =
+            t.add(
+                {
+                    type = 'button',
+                    name = 'team_manager_activate_tournament',
+                    caption = 'Tournament Mode Enabled',
+                    tooltip = 'Only admins can move players and vote for difficulty.\nActive players can no longer go spectate.\nNew joining players are spectators.'
+                }
+            )
+        button.style.font_color = { r = 222, g = 22, b = 22 }
     else
         button =
             t.add(
-            {
-                type = 'button',
-                name = 'team_manager_activate_tournament',
-                caption = 'Tournament Mode Disabled',
-                tooltip = 'Only admins can move players. Active players can no longer go spectate. New joining players are spectators.'
-            }
-        )
-        button.style.font_color = {r = 55, g = 55, b = 55}
+                {
+                    type = 'button',
+                    name = 'team_manager_activate_tournament',
+                    caption = 'Tournament Mode Disabled',
+                    tooltip = 'Only admins can move players. Active players can no longer go spectate. New joining players are spectators.'
+                }
+            )
+        button.style.font_color = { r = 55, g = 55, b = 55 }
     end
     button.style.font = 'heading-2'
 
-    if global.freeze_players then
+    if storage.freeze_players then
         button =
             t.add(
-            {
-                type = 'button',
-                name = 'team_manager_freeze_players',
-                caption = 'Unfreeze Players',
-                tooltip = 'Releases all players.'
-            }
-        )
-        button.style.font_color = {r = 222, g = 22, b = 22}
+                {
+                    type = 'button',
+                    name = 'team_manager_freeze_players',
+                    caption = 'Unfreeze Players',
+                    tooltip = 'Releases all players.'
+                }
+            )
+        button.style.font_color = { r = 222, g = 22, b = 22 }
     else
         button =
             t.add(
-            {
-                type = 'button',
-                name = 'team_manager_freeze_players',
-                caption = 'Freeze Players',
-                tooltip = 'Freezes all players, unable to perform actions, until released.'
-            }
-        )
-        button.style.font_color = {r = 55, g = 55, b = 222}
+                {
+                    type = 'button',
+                    name = 'team_manager_freeze_players',
+                    caption = 'Freeze Players',
+                    tooltip = 'Freezes all players, unable to perform actions, until released.'
+                }
+            )
+        button.style.font_color = { r = 55, g = 55, b = 222 }
     end
     button.style.font = 'heading-2'
 
-    if global.training_mode then
+    if storage.training_mode then
         button =
             t.add(
-            {
-                type = 'button',
-                name = 'team_manager_activate_training',
-                caption = 'Training Mode Activated',
-                tooltip = "Feed your own team's biters and only teams with players gain threat & evo."
-            }
-        )
-        button.style.font_color = {r = 222, g = 22, b = 22}
+                {
+                    type = 'button',
+                    name = 'team_manager_activate_training',
+                    caption = 'Training Mode Activated',
+                    tooltip = "Feed your own team's biters and only teams with players gain threat & evo."
+                }
+            )
+        button.style.font_color = { r = 222, g = 22, b = 22 }
     else
         button =
             t.add(
-            {
-                type = 'button',
-                name = 'team_manager_activate_training',
-                caption = 'Training Mode Disabled',
-                tooltip = "Feed your own team's biters and only teams with players gain threat & evo."
-            }
-        )
-        button.style.font_color = {r = 55, g = 55, b = 55}
+                {
+                    type = 'button',
+                    name = 'team_manager_activate_training',
+                    caption = 'Training Mode Disabled',
+                    tooltip = "Feed your own team's biters and only teams with players gain threat & evo."
+                }
+            )
+        button.style.font_color = { r = 55, g = 55, b = 55 }
     end
     button.style.font = 'heading-2'
 end
 
 local function set_custom_team_name(force_name, team_name)
     if team_name == '' then
-        global.tm_custom_name[force_name] = nil
+        storage.tm_custom_name[force_name] = nil
         return
     end
     if not team_name then
-        global.tm_custom_name[force_name] = nil
+        storage.tm_custom_name[force_name] = nil
         return
     end
-    global.tm_custom_name[force_name] = tostring(team_name)
+    storage.tm_custom_name[force_name] = tostring(team_name)
 end
 
 local function custom_team_name_gui(player, force_name)
@@ -279,34 +279,34 @@ local function custom_team_name_gui(player, force_name)
         player.gui.center['custom_team_name_gui'].destroy()
         return
     end
-    local frame = player.gui.center.add({type = 'frame', name = 'custom_team_name_gui', caption = 'Set custom team name:', direction = 'vertical'})
+    local frame = player.gui.center.add({ type = 'frame', name = 'custom_team_name_gui', caption = 'Set custom team name:', direction = 'vertical' })
     local text = force_name
-    if global.tm_custom_name[force_name] then
-        text = global.tm_custom_name[force_name]
+    if storage.tm_custom_name[force_name] then
+        text = storage.tm_custom_name[force_name]
     end
 
-    local textfield = frame.add({type = 'textfield', name = force_name, text = text})
-    local t = frame.add({type = 'table', column_count = 2})
+    local textfield = frame.add({ type = 'textfield', name = force_name, text = text })
+    local t = frame.add({ type = 'table', column_count = 2 })
     local button =
         t.add(
-        {
-            type = 'button',
-            name = 'custom_team_name_gui_set',
-            caption = 'Set',
-            tooltip = 'Set custom team name.'
-        }
-    )
+            {
+                type = 'button',
+                name = 'custom_team_name_gui_set',
+                caption = 'Set',
+                tooltip = 'Set custom team name.'
+            }
+        )
     button.style.font = 'heading-2'
 
     local button =
         t.add(
-        {
-            type = 'button',
-            name = 'custom_team_name_gui_close',
-            caption = 'Close',
-            tooltip = 'Close this window.'
-        }
-    )
+            {
+                type = 'button',
+                name = 'custom_team_name_gui_close',
+                caption = 'Close',
+                tooltip = 'Close this window.'
+            }
+        )
     button.style.font = 'heading-2'
 end
 
@@ -316,7 +316,7 @@ local function team_manager_gui_click(event)
 
     if game.forces[name] then
         if not player.admin then
-            player.print('Only admins can change team names.', {r = 175, g = 0, b = 0})
+            player.print('Only admins can change team names.', { r = 175, g = 0, b = 0 })
             return
         end
         custom_team_name_gui(player, name)
@@ -331,60 +331,60 @@ local function team_manager_gui_click(event)
 
     if name == 'team_manager_activate_tournament' then
         if not player.admin then
-            player.print('Only admins can switch tournament mode.', {r = 175, g = 0, b = 0})
+            player.print('Only admins can switch tournament mode.', { r = 175, g = 0, b = 0 })
             return
         end
-        if global.tournament_mode then
-            global.tournament_mode = false
+        if storage.tournament_mode then
+            storage.tournament_mode = false
             draw_manager_gui(player)
-            game.print('>>> Tournament Mode has been disabled.', {r = 111, g = 111, b = 111})
+            game.print('>>> Tournament Mode has been disabled.', { r = 111, g = 111, b = 111 })
             return
         end
-        global.tournament_mode = true
+        storage.tournament_mode = true
         draw_manager_gui(player)
-        game.print('>>> Tournament Mode has been enabled!', {r = 225, g = 0, b = 0})
+        game.print('>>> Tournament Mode has been enabled!', { r = 225, g = 0, b = 0 })
         return
     end
 
     if name == 'team_manager_freeze_players' then
-        if global.freeze_players then
+        if storage.freeze_players then
             if not player.admin then
-                player.print('Only admins can unfreeze players.', {r = 175, g = 0, b = 0})
+                player.print('Only admins can unfreeze players.', { r = 175, g = 0, b = 0 })
                 return
             end
-            global.freeze_players = false
+            storage.freeze_players = false
             draw_manager_gui(player)
-            game.print('>>> Players have been unfrozen!', {r = 255, g = 77, b = 77})
+            game.print('>>> Players have been unfrozen!', { r = 255, g = 77, b = 77 })
             unfreeze_players()
             return
         end
         if not player.admin then
-            player.print('Only admins can freeze players.', {r = 175, g = 0, b = 0})
+            player.print('Only admins can freeze players.', { r = 175, g = 0, b = 0 })
             return
         end
-        global.freeze_players = true
+        storage.freeze_players = true
         draw_manager_gui(player)
-        game.print('>>> Players have been frozen!', {r = 111, g = 111, b = 255})
+        game.print('>>> Players have been frozen!', { r = 111, g = 111, b = 255 })
         freeze_players()
         return
     end
 
     if name == 'team_manager_activate_training' then
         if not player.admin then
-            player.print('Only admins can switch training mode.', {r = 175, g = 0, b = 0})
+            player.print('Only admins can switch training mode.', { r = 175, g = 0, b = 0 })
             return
         end
-        if global.training_mode then
-            global.training_mode = false
-            global.game_lobby_active = true
+        if storage.training_mode then
+            storage.training_mode = false
+            storage.game_lobby_active = true
             draw_manager_gui(player)
-            game.print('>>> Training Mode has been disabled.', {r = 111, g = 111, b = 111})
+            game.print('>>> Training Mode has been disabled.', { r = 111, g = 111, b = 111 })
             return
         end
-        global.training_mode = true
-        global.game_lobby_active = false
+        storage.training_mode = true
+        storage.game_lobby_active = false
         draw_manager_gui(player)
-        game.print('>>> Training Mode has been enabled!', {r = 225, g = 0, b = 0})
+        game.print('>>> Training Mode has been enabled!', { r = 225, g = 0, b = 0 })
         return
     end
 
@@ -400,14 +400,14 @@ local function team_manager_gui_click(event)
         return
     end
     if not player.admin then
-        player.print('Only admins can manage teams.', {r = 175, g = 0, b = 0})
+        player.print('Only admins can manage teams.', { r = 175, g = 0, b = 0 })
         return
     end
 
     local listbox = player.gui.center['team_manager_gui']['team_manager_root_table']['team_manager_list_box_' .. tonumber(name)]
     local selected_index = listbox.selected_index
     if selected_index == 0 then
-        player.print('No player selected.', {r = 175, g = 0, b = 0})
+        player.print('No player selected.', { r = 175, g = 0, b = 0 })
         return
     end
     local player_name = listbox.items[selected_index]

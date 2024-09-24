@@ -115,8 +115,9 @@ end
 local function alert_to(player, duration, sound, volume)
     local frame_holder = player.gui.left.add({ type = 'flow' })
 
-    local frame = frame_holder.add({ type = 'frame', name = alert_frame_name, direction = 'vertical', style = 'captionless_frame' })
+    local frame = frame_holder.add({ type = 'frame', name = alert_frame_name, direction = 'vertical' })
     frame.style.width = 300
+    frame.style.padding = 3
 
     local container = frame.add({ type = 'flow', name = alert_container_name, direction = 'horizontal' })
     container.style.horizontally_stretchable = true

@@ -31,12 +31,12 @@ local function draw_player_headers(player_panel, selected_index)
         end
 
         local header =
-            player_panel.add({type = 'flow'}).add {
-            type = 'label',
-            name = player_header_name,
-            caption = concat({player_index, ' - ', player_name})
-        }
-        Gui.set_data(header, {values = values, player_index = player_index})
+            player_panel.add({ type = 'flow' }).add {
+                type = 'label',
+                name = player_header_name,
+                caption = concat({ player_index, ' - ', player_name })
+            }
+        Gui.set_data(header, { values = values, player_index = player_index })
 
         if player_index == selected_index then
             selected_header = header
@@ -47,24 +47,24 @@ local function draw_player_headers(player_panel, selected_index)
 end
 
 function Public.show(container)
-    local main_flow = container.add {type = 'flow', direction = 'horizontal'}
+    local main_flow = container.add { type = 'flow', direction = 'horizontal' }
 
-    local player_panel = main_flow.add {type = 'scroll-pane', name = player_panel_name}
+    local player_panel = main_flow.add { type = 'scroll-pane', name = player_panel_name }
     local player_panel_style = player_panel.style
     player_panel_style.width = 200
 
     draw_player_headers(player_panel)
 
-    local right_flow = main_flow.add {type = 'flow', direction = 'vertical'}
+    local right_flow = main_flow.add { type = 'flow', direction = 'vertical' }
 
-    local element_panel = right_flow.add {type = 'scroll-pane', name = element_panel_name}
+    local element_panel = right_flow.add { type = 'scroll-pane', name = element_panel_name }
     local element_panel_style = element_panel.style
     element_panel_style.horizontally_stretchable = true
     element_panel_style.height = 200
 
-    local right_middle_flow = right_flow.add {type = 'flow', direction = 'horizontal'}
+    local right_middle_flow = right_flow.add { type = 'flow', direction = 'horizontal' }
 
-    local input_text_box = right_middle_flow.add {type = 'text-box', name = input_text_box_name}
+    local input_text_box = right_middle_flow.add { type = 'text-box', name = input_text_box_name }
     local input_text_box_style = input_text_box.style
     input_text_box_style.horizontally_stretchable = true
     input_text_box_style.height = 32
@@ -72,16 +72,16 @@ function Public.show(container)
 
     local refresh_button =
         right_middle_flow.add {
-        type = 'sprite-button',
-        name = refresh_name,
-        sprite = 'utility/reset',
-        tooltip = 'Refresh'
-    }
+            type = 'sprite-button',
+            name = refresh_name,
+            sprite = 'utility/reset',
+            tooltip = 'Refresh'
+        }
     local refresh_button_style = refresh_button.style
     refresh_button_style.width = 32
     refresh_button_style.height = 32
 
-    local data_panel = right_flow.add {type = 'text-box', name = data_panel_name}
+    local data_panel = right_flow.add { type = 'text-box', name = data_panel_name }
     data_panel.read_only = true
     data_panel.selectable = true
 
@@ -146,13 +146,13 @@ local function draw_element_headers(element_panel, values, selected_index)
         end
 
         local middle_header =
-            element_panel.add({type = 'flow'}).add {
-            type = 'label',
-            name = element_header_name,
-            caption = concat({ei, ' - ', ele_name})
-        }
+            element_panel.add({ type = 'flow' }).add {
+                type = 'label',
+                name = element_header_name,
+                caption = concat({ ei, ' - ', ele_name })
+            }
 
-        Gui.set_data(middle_header, {stored_data = stored_data, element_index = ei})
+        Gui.set_data(middle_header, { stored_data = stored_data, element_index = ei })
 
         if ei == selected_index then
             selected_header = middle_header
@@ -166,7 +166,7 @@ end
 
 Gui.on_click(
     player_header_name,
-    function(event)
+    function (event)
         local element = event.element
         local header_data = Gui.get_data(element)
         if not header_data then
@@ -207,7 +207,7 @@ Gui.on_click(
 
 Gui.on_click(
     element_header_name,
-    function(event)
+    function (event)
         local element = event.element
         local header_data = Gui.get_data(element)
         if not header_data then
@@ -237,7 +237,7 @@ Gui.on_click(
         local selected_player_index = data.selected_player_index
 
         if selected_player_index then
-            input_text_box.text = concat {'global.tokens[', Gui.token, '].data[', selected_player_index, '][', element_index, ']'}
+            input_text_box.text = concat { 'storage.tokens[', Gui.token, '].data[', selected_player_index, '][', element_index, ']' }
         else
             input_text_box.text = 'missing player'
         end
@@ -247,8 +247,8 @@ Gui.on_click(
     end
 )
 
-local function update_dump(text_input, data, player)
-    local suc, ouput = dump_text(text_input.text, player)
+local function update_dump(text_input, data)
+    local suc, ouput = dump_text(text_input.text)
     if not suc then
         text_input.style.font_color = Color.red
     else
@@ -259,17 +259,17 @@ end
 
 Gui.on_text_changed(
     input_text_box_name,
-    function(event)
+    function (event)
         local element = event.element
         local data = Gui.get_data(element)
 
-        update_dump(element, data, event.player)
+        update_dump(element, data)
     end
 )
 
 Gui.on_click(
     refresh_name,
-    function(event)
+    function (event)
         local element = event.element
         local data = Gui.get_data(element)
         if not data then

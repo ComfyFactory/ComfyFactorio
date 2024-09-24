@@ -67,14 +67,14 @@ local function create_button(player)
                 {
                     type = 'sprite-button',
                     name = main_button_name,
-                    sprite = 'item/dummy-steel-axe',
+                    sprite = 'utility/expand',
                     tooltip = 'Shows statistics!',
                     style = Gui.button_style
                 }
             )
         if b then
             b.style.font_color = { 165, 165, 165 }
-            b.style.font = 'heading-3'
+            b.style.font = 'default-semibold'
             b.style.minimal_height = 36
             b.style.maximal_height = 36
             b.style.minimal_width = 40
@@ -86,7 +86,7 @@ local function create_button(player)
                 {
                     type = 'sprite-button',
                     name = main_button_name,
-                    sprite = 'item/dummy-steel-axe',
+                    sprite = 'utility/expand',
                     tooltip = 'Shows statistics!',
                     style = Gui.button_style
                 }
@@ -112,14 +112,14 @@ local function spectate_button(player)
                 {
                     type = 'sprite-button',
                     name = spectate_button_name,
-                    sprite = 'utility/ghost_time_to_live_modifier_icon',
+                    sprite = 'utility/create_ghost_on_entity_death_modifier_icon',
                     tooltip = 'Spectate!\nThis will kill your character.',
                     style = Gui.button_style
                 }
             )
         if b then
             b.style.font_color = { 165, 165, 165 }
-            b.style.font = 'heading-3'
+            b.style.font = 'default-semibold'
             b.style.minimal_height = 36
             b.style.maximal_height = 36
             b.style.minimal_width = 40
@@ -130,7 +130,7 @@ local function spectate_button(player)
             player.gui.top.add {
                 type = 'sprite-button',
                 name = spectate_button_name,
-                sprite = 'utility/ghost_time_to_live_modifier_icon',
+                sprite = 'utility/create_ghost_on_entity_death_modifier_icon',
                 tooltip = 'Spectate!\nThis will kill your character.',
                 style = Gui.button_style
             }
@@ -155,18 +155,22 @@ local function create_main_frame(player)
                 {
                     type = 'frame',
                     name = main_frame_name,
-                    style = 'finished_game_subheader_frame'
                 }
             )
         frame.location = { x = 1, y = 38 }
         frame.style.minimal_height = 36
         frame.style.maximal_height = 36
     else
-        frame = player.gui.top.add({ type = 'frame', name = main_frame_name, style = 'finished_game_subheader_frame' })
+        frame = player.gui.top.add({ type = 'frame', name = main_frame_name })
         frame.location = { x = 1, y = 40 }
         frame.style.minimal_height = 38
         frame.style.maximal_height = 38
     end
+
+    frame.style.top_padding = 6
+    frame.style.right_padding = 12
+    frame.style.bottom_padding = 5
+    frame.style.left_padding = 12
 
     label = frame.add({ type = 'label', caption = ' ', name = 'label' })
     label.style.font_color = { r = 0.88, g = 0.88, b = 0.88 }
@@ -319,7 +323,7 @@ local function changed_surface(player)
 
     if info then
         info.tooltip = ({ 'gui.info_tooltip' })
-        info.sprite = 'item/dummy-steel-axe'
+        info.sprite = 'utility/expand'
     end
 
     if not main then
@@ -373,7 +377,7 @@ local function changed_surface(player)
         end
         if info then
             info.tooltip = ({ 'gui.info_tooltip' })
-            info.sprite = 'item/dummy-steel-axe'
+            info.sprite = 'utility/expand'
             info.visible = true
         end
     elseif player.surface == wagon_surface then
@@ -560,7 +564,7 @@ local function enable_guis(event)
 
     if info then
         info.tooltip = ({ 'gui.info_tooltip' })
-        info.sprite = 'item/dummy-steel-axe'
+        info.sprite = 'utility/expand'
     end
 
     if main_toggle_button and not main_toggle_button.visible then
@@ -593,7 +597,7 @@ local function enable_guis(event)
     end
     if info then
         info.tooltip = ({ 'gui.info_tooltip' })
-        info.sprite = 'item/dummy-steel-axe'
+        info.sprite = 'utility/expand'
         info.visible = true
     end
 end
@@ -636,7 +640,7 @@ function Public.update_gui(player)
         train_upgrade_contribution = upgrades.train_upgrade_contribution / 1000
     end
 
-    gui.pickaxe_tier.caption = ' [img=item.dummy-steel-axe]: ' .. pick_tier .. ' (' .. upgrades.pickaxe_tier .. ')'
+    gui.pickaxe_tier.caption = ' [img=utility.expand]: ' .. pick_tier .. ' (' .. upgrades.pickaxe_tier .. ')'
     gui.pickaxe_tier.tooltip = ({ 'gui.current_pickaxe_tier', pick_tier, speed })
 
     gui.biters_killed.caption = ' [img=entity.small-biter]: ' .. format_number(biters_killed, true)

@@ -22,7 +22,7 @@ local mining_chance_weights = {
     { name = 'pipe',                           chance = 100 },
     { name = 'iron-stick',                     chance = 50 },
     { name = 'battery',                        chance = 20 },
-    { name = 'empty-barrel',                   chance = 10 },
+    { name = 'barrel',                         chance = 10 },
     { name = 'crude-oil-barrel',               chance = 30 },
     { name = 'lubricant-barrel',               chance = 20 },
     { name = 'petroleum-gas-barrel',           chance = 15 },
@@ -41,7 +41,6 @@ local mining_chance_weights = {
     { name = 'used-up-uranium-fuel-cell',      chance = 1 },
     { name = 'uranium-fuel-cell',              chance = 1 },
     { name = 'rocket-fuel',                    chance = 3 },
-    { name = 'rocket-control-unit',            chance = 1 },
     { name = 'low-density-structure',          chance = 1 },
     { name = 'heat-pipe',                      chance = 1 },
     { name = 'engine-unit',                    chance = 4 },
@@ -73,7 +72,7 @@ local scrap_yield_amounts = {
     ['steel-plate'] = 4,
     ['pipe'] = 8,
     ['solid-fuel'] = 4,
-    ['empty-barrel'] = 3,
+    ['barrel'] = 3,
     ['crude-oil-barrel'] = 3,
     ['lubricant-barrel'] = 3,
     ['petroleum-gas-barrel'] = 3,
@@ -91,7 +90,6 @@ local scrap_yield_amounts = {
     ['used-up-uranium-fuel-cell'] = 1,
     ['uranium-fuel-cell'] = 0.3,
     ['rocket-fuel'] = 0.3,
-    ['rocket-control-unit'] = 0.3,
     ['low-density-structure'] = 0.3,
     ['heat-pipe'] = 1,
     ['green-wire'] = 8,
@@ -116,9 +114,9 @@ local scrap_yield_amounts = {
 }
 
 local valid_rocks = {
-    ['sand-rock-big'] = true,
-    ['rock-big'] = true,
-    ['rock-huge'] = true
+    ['big-sand-rock'] = true,
+    ['big-rock'] = true,
+    ['huge-rock'] = true
 }
 
 local valid_trees = {
@@ -146,9 +144,9 @@ local valid_scrap = {
 }
 
 local rock_yield = {
-    ['rock-big'] = 1,
-    ['rock-huge'] = 2,
-    ['sand-rock-big'] = 1
+    ['big-rock'] = 1,
+    ['huge-rock'] = 2,
+    ['big-sand-rock'] = 1
 }
 
 local particles = {

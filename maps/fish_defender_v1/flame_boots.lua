@@ -1,7 +1,7 @@
 local Event = require 'utils.event'
 
 local function on_player_changed_position(event)
-    if not global.flame_boots then
+    if not storage.flame_boots then
         return
     end
     local player = game.players[event.player_index]
@@ -12,44 +12,44 @@ local function on_player_changed_position(event)
         return
     end
 
-    if not global.flame_boots[player.index] then
-        global.flame_boots[player.index] = {}
+    if not storage.flame_boots[player.index] then
+        storage.flame_boots[player.index] = {}
     end
 
-    if not global.flame_boots[player.index].fuel then
+    if not storage.flame_boots[player.index].fuel then
         return
     end
 
-    if global.flame_boots[player.index].fuel < 0 then
-        player.print('Your flame boots have worn out.', {r = 0.22, g = 0.77, b = 0.44})
-        global.flame_boots[player.index] = {}
+    if storage.flame_boots[player.index].fuel < 0 then
+        player.print('Your flame boots have worn out.', { r = 0.22, g = 0.77, b = 0.44 })
+        storage.flame_boots[player.index] = {}
         return
     end
 
-    if global.flame_boots[player.index].fuel % 500 == 0 then
-        player.print('Fuel remaining: ' .. global.flame_boots[player.index].fuel, {r = 0.22, g = 0.77, b = 0.44})
+    if storage.flame_boots[player.index].fuel % 500 == 0 then
+        player.print('Fuel remaining: ' .. storage.flame_boots[player.index].fuel, { r = 0.22, g = 0.77, b = 0.44 })
     end
 
-    if not global.flame_boots[player.index].step_history then
-        global.flame_boots[player.index].step_history = {}
+    if not storage.flame_boots[player.index].step_history then
+        storage.flame_boots[player.index].step_history = {}
     end
 
-    local elements = #global.flame_boots[player.index].step_history
+    local elements = #storage.flame_boots[player.index].step_history
 
-    global.flame_boots[player.index].step_history[elements + 1] = {x = player.position.x, y = player.position.y}
+    storage.flame_boots[player.index].step_history[elements + 1] = { x = player.position.x, y = player.position.y }
 
     if elements < 50 then
         return
     end
 
-    player.surface.create_entity({name = 'fire-flame', position = global.flame_boots[player.index].step_history[elements - 2]})
+    player.surface.create_entity({ name = 'fire-flame', position = storage.flame_boots[player.index].step_history[elements - 2] })
 
-    global.flame_boots[player.index].fuel = global.flame_boots[player.index].fuel - 1
+    storage.flame_boots[player.index].fuel = storage.flame_boots[player.index].fuel - 1
 end
 
 local function on_init()
-    if not global.flame_boots then
-        global.flame_boots = {}
+    if not storage.flame_boots then
+        storage.flame_boots = {}
     end
 end
 

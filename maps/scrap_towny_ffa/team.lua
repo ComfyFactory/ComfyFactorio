@@ -731,7 +731,6 @@ function Public.add_new_force(force_name)
     for _, recipe_name in pairs(all_force_enabled_recipes) do
         force.recipes[recipe_name].enabled = true
     end
-    force.research_queue_enabled = true
     -- balance initial combat
     CombatBalance.init_player_weapon_damage(force)
     if (this.testing_mode == true) then
@@ -918,7 +917,6 @@ local function setup_player_force()
     disable_tips_and_tricks(permission_group)
     -- disable research
     force.disable_research()
-    force.research_queue_enabled = false
     -- friendly fire
     force.friendly_fire = true
     -- disable recipes
@@ -960,7 +958,6 @@ local function setup_rogue_force()
     disable_tips_and_tricks(permission_group)
     -- disable research
     force.disable_research()
-    force.research_queue_enabled = false
     -- friendly fire
     force.friendly_fire = true
     -- disable recipes

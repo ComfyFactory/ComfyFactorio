@@ -5,7 +5,7 @@ local math_random = math.random
 require 'utils.table'
 
 local search_radius = 6
-local explosions = {'explosion', 'explosion', 'explosion', 'explosion', 'explosion', 'explosion', 'medium-explosion', 'uranium-cannon-explosion', 'uranium-cannon-explosion'}
+local explosions = { 'explosion', 'explosion', 'explosion', 'explosion', 'explosion', 'explosion', 'medium-explosion', 'uranium-cannon-explosion', 'uranium-cannon-explosion' }
 
 local entity_limits = {
     ['transport-belt'] = search_radius * 2 + 1,
@@ -79,7 +79,7 @@ local function error_message()
         'major'
     }
     table.shuffle_table(errors)
-    local message = table.concat({errors[1], ' ', errors[2], ' ', errors[3], '!'})
+    local message = table.concat({ errors[1], ' ', errors[2], ' ', errors[3], '!' })
     return message
 end
 
@@ -89,7 +89,7 @@ local function count_same_entities(entity)
         entity.surface.find_entities_filtered(
             {
                 type = entity.type,
-                area = {{entity.position.x - search_radius, entity.position.y - search_radius}, {entity.position.x + search_radius, entity.position.y + search_radius}}
+                area = { { entity.position.x - search_radius, entity.position.y - search_radius }, { entity.position.x + search_radius, entity.position.y + search_radius } }
             }
         )
     ) do
@@ -109,25 +109,25 @@ local function spaghett(surface, entity, inventory, player)
         limit = 2
     end
     if count_same_entities(entity) > limit then
-        inventory.insert({name = entity.name, count = 1})
-        surface.create_entity({name = explosions[math_random(1, #explosions)], position = entity.position})
+        inventory.insert({ name = entity.name, count = 1 })
+        surface.create_entity({ name = explosions[math_random(1, #explosions)], position = entity.position })
         if player then
-            if not global.last_spaghett_error then
-                global.last_spaghett_error = {}
+            if not storage.last_spaghett_error then
+                storage.last_spaghett_error = {}
             end
-            if not global.last_spaghett_error[player.index] then
-                global.last_spaghett_error[player.index] = 0
+            if not storage.last_spaghett_error[player.index] then
+                storage.last_spaghett_error[player.index] = 0
             end
-            if game.tick - global.last_spaghett_error[player.index] > 30 then
+            if game.tick - storage.last_spaghett_error[player.index] > 30 then
                 surface.create_entity(
                     {
                         name = 'flying-text',
                         position = entity.position,
                         text = error_message(),
-                        color = {r = math.random(200, 255), g = math.random(0, 125), b = math.random(0, 125)}
+                        color = { r = math.random(200, 255), g = math.random(0, 125), b = math.random(0, 125) }
                     }
                 )
-                global.last_spaghett_error[player.index] = game.tick
+                storage.last_spaghett_error[player.index] = game.tick
             end
         end
         entity.die('player')

@@ -25,20 +25,20 @@ end
 
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
-    if not global.map_init_done then
+    if not storage.map_init_done then
         local map_gen_settings = {}
         map_gen_settings.water = 'none'
         game.create_surface('spaghettorio', map_gen_settings)
-        game.forces['player'].set_spawn_position({0, 0}, game.surfaces['spaghettorio'])
+        game.forces['player'].set_spawn_position({ 0, 0 }, game.surfaces['spaghettorio'])
         game.forces['player'].technologies['logistic-system'].enabled = false
-        global.map_init_done = true
+        storage.map_init_done = true
     end
     local surface = game.surfaces['spaghettorio']
-    if player.online_time < 5 and surface.is_chunk_generated({0, 0}) then
-        player.teleport(surface.find_non_colliding_position('character', {0, 0}, 2, 1), 'spaghettorio')
+    if player.online_time < 5 and surface.is_chunk_generated({ 0, 0 }) then
+        player.teleport(surface.find_non_colliding_position('character', { 0, 0 }, 2, 1), 'spaghettorio')
     else
         if player.online_time < 5 then
-            player.teleport({0, 0}, 'spaghettorio')
+            player.teleport({ 0, 0 }, 'spaghettorio')
         end
     end
     disable_recipes()
@@ -65,7 +65,7 @@ local function get_noise(name, pos)
     end
 end
 
-local splitter_raffle = {'splitter', 'splitter', 'splitter', 'fast-splitter', 'fast-splitter', 'express-splitter'}
+local splitter_raffle = { 'splitter', 'splitter', 'splitter', 'fast-splitter', 'fast-splitter', 'express-splitter' }
 local assembly_raffle = {
     'assembling-machine-1',
     'assembling-machine-2',
@@ -83,10 +83,10 @@ local assembly_raffle = {
     'oil-refinery',
     'lab'
 }
-local smelting_raffle = {'steel-furnace', 'stone-furnace'}
-local steampower_raffle = {'steam-engine', 'steam-engine', 'boiler'}
-local nuclearpower_raffle = {'steam-turbine', 'steam-turbine', 'steam-turbine', 'heat-exchanger', 'heat-exchanger', 'centrifuge'}
-local direction_raffle = {0, 2, 4, 6}
+local smelting_raffle = { 'steel-furnace', 'stone-furnace' }
+local steampower_raffle = { 'steam-engine', 'steam-engine', 'boiler' }
+local nuclearpower_raffle = { 'steam-turbine', 'steam-turbine', 'steam-turbine', 'heat-exchanger', 'heat-exchanger', 'centrifuge' }
+local direction_raffle = { 0, 2, 4, 6 }
 
 local function on_chunk_generated(event)
     local surface = game.surfaces['spaghettorio']
@@ -99,23 +99,23 @@ local function on_chunk_generated(event)
 
     for x = 0, 31, 1 do
         for y = 0, 31, 1 do
-            local pos = {x = event.area.left_top.x + x, y = event.area.left_top.y + y}
+            local pos = { x = event.area.left_top.x + x, y = event.area.left_top.y + y }
             local noise_water = get_noise('water', pos)
             local noise_assembly = get_noise('assembly', pos)
             while true do
                 if noise_water > 0.8 or noise_water < -0.8 then
-                    table.insert(tiles, {name = 'water', position = pos})
+                    table.insert(tiles, { name = 'water', position = pos })
                     break
                 end
                 if noise_water > 0.68 then
                     if math_random(1, 50) == 1 then
                         local a = {
-                            left_top = {x = pos.x - 75, y = pos.y - 75},
-                            right_bottom = {x = pos.x + 75, y = pos.y + 75}
+                            left_top = { x = pos.x - 75, y = pos.y - 75 },
+                            right_bottom = { x = pos.x + 75, y = pos.y + 75 }
                         }
-                        local z = surface.count_tiles_filtered {area = a, limit = 1, name = 'water'}
+                        local z = surface.count_tiles_filtered { area = a, limit = 1, name = 'water' }
                         if z == 1 then
-                            table.insert(entities, {name = steampower_raffle[math_random(1, #steampower_raffle)], position = pos})
+                            table.insert(entities, { name = steampower_raffle[math_random(1, #steampower_raffle)], position = pos })
                         end
                     end
                     break
@@ -123,29 +123,29 @@ local function on_chunk_generated(event)
                 if noise_water < -0.7 then
                     if math_random(1, 100) == 1 then
                         local a = {
-                            left_top = {x = pos.x - 75, y = pos.y - 75},
-                            right_bottom = {x = pos.x + 75, y = pos.y + 75}
+                            left_top = { x = pos.x - 75, y = pos.y - 75 },
+                            right_bottom = { x = pos.x + 75, y = pos.y + 75 }
                         }
-                        local z = surface.count_tiles_filtered {area = a, limit = 1, name = 'water'}
+                        local z = surface.count_tiles_filtered { area = a, limit = 1, name = 'water' }
                         if z == 1 then
-                            table.insert(entities, {name = nuclearpower_raffle[math_random(1, #nuclearpower_raffle)], position = pos})
+                            table.insert(entities, { name = nuclearpower_raffle[math_random(1, #nuclearpower_raffle)], position = pos })
                         end
                     end
                     break
                 end
                 if noise_assembly > 0.6 then
                     if math_random(1, 75) == 1 then
-                        table.insert(entities, {name = assembly_raffle[math_random(1, #assembly_raffle)], position = pos})
+                        table.insert(entities, { name = assembly_raffle[math_random(1, #assembly_raffle)], position = pos })
                     end
                 end
                 if noise_assembly < -0.8 then
                     if math_random(1, 35) == 1 then
-                        table.insert(entities, {name = smelting_raffle[math_random(1, #smelting_raffle)], position = pos})
+                        table.insert(entities, { name = smelting_raffle[math_random(1, #smelting_raffle)], position = pos })
                     end
                 end
                 if math_random(1, 250) == 1 then
                     if noise_assembly < -0.6 or noise_assembly > 0.6 or noise_water < -0.6 or noise_water > 0.6 then
-                        table.insert(entities, {name = splitter_raffle[math_random(1, #splitter_raffle)], position = pos})
+                        table.insert(entities, { name = splitter_raffle[math_random(1, #splitter_raffle)], position = pos })
                     end
                 end
                 break
@@ -156,8 +156,8 @@ local function on_chunk_generated(event)
 
     for _, e in pairs(entities) do
         local d = direction_raffle[math_random(1, #direction_raffle)]
-        if surface.can_place_entity({name = e.name, position = e.position, direction = d}) then
-            local entity = surface.create_entity {name = e.name, position = e.position, direction = d, force = 'player'}
+        if surface.can_place_entity({ name = e.name, position = e.position, direction = d }) then
+            local entity = surface.create_entity { name = e.name, position = e.position, direction = d, force = 'player' }
             entity.minable = false
             entity.destructible = false
             if entity.name == 'stone-furnace' or entity.name == 'steel-furnace' then
@@ -167,13 +167,13 @@ local function on_chunk_generated(event)
     end
 end
 
-local disabled_entities = {'stone-furnace', 'electric-furnace', 'solar-panel'}
+local disabled_entities = { 'stone-furnace', 'electric-furnace', 'solar-panel' }
 local function on_built_entity(event)
     for _, e in pairs(disabled_entities) do
         if e == event.created_entity.name then
             if event.player_index then
                 local player = game.players[event.player_index]
-                player.insert({name = event.created_entity.name, count = 1})
+                player.insert({ name = event.created_entity.name, count = 1 })
             end
             event.created_entity.destroy()
         end

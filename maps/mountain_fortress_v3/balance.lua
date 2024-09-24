@@ -25,15 +25,12 @@ function Public.init_enemy_weapon_damage()
 
     e.technologies['refined-flammables-1'].researched = true
     e.technologies['refined-flammables-2'].researched = true
-    e.technologies['energy-weapons-damage-1'].researched = true
 
     a.technologies['refined-flammables-1'].researched = true
     a.technologies['refined-flammables-2'].researched = true
-    a.technologies['energy-weapons-damage-1'].researched = true
 
     af.technologies['refined-flammables-1'].researched = true
     af.technologies['refined-flammables-2'].researched = true
-    af.technologies['energy-weapons-damage-1'].researched = true
 
     for k, v in pairs(data) do
         e.set_ammo_damage_modifier(k, v)

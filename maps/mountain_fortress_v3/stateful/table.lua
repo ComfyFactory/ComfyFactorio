@@ -478,10 +478,10 @@ local function get_random_buff(fetch_all, only_force)
     return buffs[1]
 end
 
-local function get_item_produced_count(item_name)
+local function get_item_produced_count(player, item_name)
     local force = game.forces.player
 
-    local production = force.item_production_statistics.input_counts[item_name]
+    local production = force.get_item_production_statistics(player.surface).input_counts[item_name]
     if not production then
         return false
     end
@@ -489,15 +489,16 @@ local function get_item_produced_count(item_name)
     return production
 end
 
-local function get_entity_mined_count(item_name)
+local function get_entity_mined_count(event, item_name)
     local force = game.forces.player
 
     local count = 0
-    for name, entity_count in pairs(force.entity_build_count_statistics.output_counts) do
+    for name, entity_count in pairs(force.get_entity_build_count_statistics(event.surface).output_counts) do
         if name:find(item_name) then
             count = count + entity_count
         end
     end
+
 
     return count
 end
@@ -506,9 +507,11 @@ local function get_killed_enemies_count(primary, secondary)
     local force = game.forces.player
 
     local count = 0
-    for name, entity_count in pairs(force.kill_count_statistics.input_counts) do
-        if name:find(primary) or name:find(secondary) then
-            count = count + entity_count
+    for _, surface in pairs(game.surfaces) do
+        for name, entity_count in pairs(force.get_kill_count_statistics(surface).input_counts) do
+            if name:find(primary) or name:find(secondary) then
+                count = count + entity_count
+            end
         end
     end
 
@@ -735,8 +738,8 @@ local locomotive_market_coins_spent_token =
 
 local minerals_farmed_token =
     Task.register(
-        function ()
-            local actual = get_entity_mined_count('rock') + get_entity_mined_count('tree')
+        function (event)
+            local actual = get_entity_mined_count(event, 'rock') + get_entity_mined_count(event, 'tree')
             local expected = this.objectives.minerals_farmed
             if actual >= expected then
                 return true, { 'stateful.minerals_mined' }, { 'stateful.done', format_number(expected, true), format_number(expected, true) }, { 'stateful.generic_tooltip' }, { 'stateful.tooltip_completed' }
@@ -788,7 +791,6 @@ local function get_random_items()
         { 'iron-plate',                     scale(2000000, 80000000) },
         { 'iron-stick',                     scale(75000, 3000000) },
         { 'processing-unit',                scale(40000, 1600000) },
-        { 'rocket-control-unit',            scale(8000, 320000) },
         { 'steel-plate',                    scale(200000, 8000000) },
         { 'rocket',                         scale(25000, 1000000) },
         { 'explosive-rocket',               scale(25000, 1000000) },
@@ -827,13 +829,13 @@ end
 
 local function get_random_item()
     local items = {
-        { 'effectivity-module',    scale(1000, 400000) },
+        { 'efficiency-module',     scale(1000, 400000) },
         { 'productivity-module',   scale(10000, 400000) },
         { 'speed-module',          scale(10000, 400000) },
-        { 'effectivity-module-2',  scale(200, 100000) },
+        { 'efficiency-module-2',   scale(200, 100000) },
         { 'productivity-module-2', scale(1000, 100000) },
         { 'speed-module-2',        scale(1000, 100000) },
-        { 'effectivity-module-3',  scale(50, 30000) },
+        { 'efficiency-module-3',   scale(50, 30000) },
         { 'productivity-module-3', scale(500, 30000) },
         { 'speed-module-3',        scale(500, 30000) }
     }
@@ -853,7 +855,6 @@ local function get_random_handcrafted_item()
         { 'electronic-circuit',             scale(5000, 1000000) },
         { 'iron-gear-wheel',                scale(50000, 1000000) },
         { 'iron-stick',                     scale(75000, 3000000) },
-        { 'rocket-control-unit',            scale(1000, 50000) },
         { 'rocket',                         scale(5000, 1000000) },
         { 'explosive-rocket',               scale(5000, 1000000) },
         { 'slowdown-capsule',               scale(2500, 400000) },
@@ -880,7 +881,7 @@ local function get_random_handcrafted_item()
         { 'piercing-rounds-magazine',       scale(5000, 100000) },
         { 'pipe',                           scale(10000, 100000) },
         { 'pipe-to-ground',                 scale(3000, 50000) },
-        { 'effectivity-module',             scale(100, 50000) },
+        { 'efficiency-module',              scale(100, 50000) },
         { 'productivity-module',            scale(100, 50000) },
         { 'speed-module',                   scale(100, 50000) }
     }
@@ -1308,11 +1309,11 @@ local function apply_startup_settings(settings)
         game.print(message)
         Server.to_discord_embed(message_discord, true)
 
-        game.print(({ 'entity.notify_shutdown' }), { r = 0.22, g = 0.88, b = 0.22 })
-        local notify_shutdown = ({ 'entity.shutdown_game' })
-        Server.to_discord_bold(notify_shutdown, true)
+        -- game.print(({ 'entity.notify_shutdown' }), { r = 0.22, g = 0.88, b = 0.22 })
+        -- local notify_shutdown = ({ 'entity.shutdown_game' })
+        -- Server.to_discord_bold(notify_shutdown, true)
 
-        Server.stop_scenario()
+        -- Server.stop_scenario()
 
         if server_name_matches then
             Server.set_data(dataset, dataset_key, settings)
@@ -1357,15 +1358,15 @@ local apply_settings_token =
             this.current_date = settings.current_date
             this.buffs = settings.buffs
 
-            apply_startup_settings(settings)
 
             this.rounds_survived = settings.rounds_survived
             this.season = settings.season
 
+            apply_startup_settings(settings)
             local current_season = Public.get('current_season')
-            if current_season then
+            if current_season and current_season.valid then
                 ---@diagnostic disable-next-line: param-type-mismatch
-                rendering.set_text(current_season, 'Season: ' .. this.season)
+                current_season.text = 'Season: ' .. this.season
             end
 
             this.objectives = {}
@@ -1731,7 +1732,7 @@ function Public.move_all_players()
 
     if _DEBUG then
         Core.iter_fake_connected_players(
-            global.characters,
+            storage.characters,
             function (player)
                 local pos = surface.find_non_colliding_position('character', locomotive.position, 32, 1)
 

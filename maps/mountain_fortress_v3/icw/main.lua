@@ -171,7 +171,7 @@ Event.add(defines.events.on_gui_switch_state_changed, on_gui_switch_state_change
 Event.add(defines.events.on_entity_cloned, on_entity_cloned)
 Event.add(
     defines.events.on_built_entity,
-    function(event)
+    function (event)
         local icw = ICW.get()
         return Functions.create_wagon(icw, event.created_entity)
     end

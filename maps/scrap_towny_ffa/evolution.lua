@@ -36,197 +36,197 @@ local max_factor = 0.8
 
 -- technology weights (biter, spitter, worm)
 local technology_weights = {
-    ['advanced-electronics'] = {biter = 1, spitter = 1, worm = 1},
-    ['advanced-electronics-2'] = {biter = 1, spitter = 1, worm = 1},
-    ['advanced-material-processing'] = {biter = 1, spitter = 1, worm = 1},
-    ['advanced-material-processing-2'] = {biter = 1, spitter = 1, worm = 1},
-    ['advanced-oil-processing'] = {biter = 1, spitter = 1, worm = 1},
-    ['artillery'] = {biter = 1, spitter = 1, worm = 1},
-    ['artillery-shell-range-1'] = {biter = 1, spitter = 1, worm = 1},
-    ['artillery-shell-speed-1'] = {biter = 1, spitter = 1, worm = 1},
-    ['atomic-bomb'] = {biter = 1, spitter = 1, worm = 1},
-    ['automated-rail-transportation'] = {biter = 1, spitter = 1, worm = 1},
-    ['automation'] = {biter = 1, spitter = 1, worm = 1},
-    ['automation-2'] = {biter = 1, spitter = 1, worm = 1},
-    ['automation-3'] = {biter = 1, spitter = 1, worm = 1},
-    ['automobilism'] = {biter = 1, spitter = 1, worm = 1},
-    ['battery'] = {biter = 1, spitter = 1, worm = 1},
-    ['battery-equipment'] = {biter = 1, spitter = 1, worm = 1},
-    ['battery-mk2-equipment'] = {biter = 1, spitter = 1, worm = 1},
-    ['belt-immunity-equipment'] = {biter = 1, spitter = 1, worm = 1},
-    ['braking-force-1'] = {biter = 1, spitter = 1, worm = 1},
-    ['braking-force-2'] = {biter = 1, spitter = 1, worm = 1},
-    ['braking-force-3'] = {biter = 1, spitter = 1, worm = 1},
-    ['braking-force-4'] = {biter = 1, spitter = 1, worm = 1},
-    ['braking-force-5'] = {biter = 1, spitter = 1, worm = 1},
-    ['braking-force-6'] = {biter = 1, spitter = 1, worm = 1},
-    ['braking-force-7'] = {biter = 1, spitter = 1, worm = 1},
-    ['chemical-science-pack'] = {biter = 125, spitter = 125, worm = 125},
-    ['circuit-network'] = {biter = 1, spitter = 1, worm = 1},
-    ['cliff-explosives'] = {biter = 1, spitter = 1, worm = 1},
-    ['coal-liquefaction'] = {biter = 1, spitter = 1, worm = 1},
-    ['concrete'] = {biter = 1, spitter = 1, worm = 1},
-    ['construction-robotics'] = {biter = 1, spitter = 1, worm = 1},
-    ['defender'] = {biter = 1, spitter = 1, worm = 1},
-    ['destroyer'] = {biter = 1, spitter = 1, worm = 1},
-    ['discharge-defense-equipment'] = {biter = 5, spitter = 5, worm = 5},
-    ['distractor'] = {biter = 1, spitter = 1, worm = 1},
-    ['effect-transmission'] = {biter = 1, spitter = 1, worm = 1},
-    ['effectivity-module'] = {biter = 1, spitter = 1, worm = 1},
-    ['effectivity-module-2'] = {biter = 1, spitter = 1, worm = 1},
-    ['effectivity-module-3'] = {biter = 1, spitter = 1, worm = 1},
-    ['electric-energy-accumulators'] = {biter = 1, spitter = 1, worm = 1},
-    ['electric-energy-distribution-1'] = {biter = 1, spitter = 1, worm = 1},
-    ['electric-energy-distribution-2'] = {biter = 1, spitter = 1, worm = 1},
-    ['electric-engine'] = {biter = 1, spitter = 1, worm = 1},
-    ['electronics'] = {biter = 1, spitter = 1, worm = 1},
-    ['energy-shield-equipment'] = {biter = 5, spitter = 5, worm = 5},
-    ['energy-shield-mk2-equipment'] = {biter = 5, spitter = 5, worm = 5},
-    ['energy-weapons-damage-1'] = {biter = 5, spitter = 5, worm = 5},
-    ['energy-weapons-damage-2'] = {biter = 5, spitter = 5, worm = 5},
-    ['energy-weapons-damage-3'] = {biter = 5, spitter = 5, worm = 5},
-    ['energy-weapons-damage-4'] = {biter = 5, spitter = 5, worm = 5},
-    ['energy-weapons-damage-5'] = {biter = 5, spitter = 5, worm = 5},
-    ['energy-weapons-damage-6'] = {biter = 5, spitter = 5, worm = 5},
-    ['energy-weapons-damage-7'] = {biter = 5, spitter = 5, worm = 5},
-    ['engine'] = {biter = 1, spitter = 1, worm = 1},
-    ['exoskeleton-equipment'] = {biter = 5, spitter = 5, worm = 5},
-    ['explosive-rocketry'] = {biter = 1, spitter = 1, worm = 1},
-    ['explosives'] = {biter = 5, spitter = 5, worm = 5},
-    ['fast-inserter'] = {biter = 1, spitter = 1, worm = 1},
-    ['flamethrower'] = {biter = 5, spitter = 5, worm = 5},
-    ['flammables'] = {biter = 1, spitter = 1, worm = 1},
-    ['fluid-handling'] = {biter = 1, spitter = 1, worm = 1},
-    ['fluid-wagon'] = {biter = 1, spitter = 1, worm = 1},
-    ['follower-robot-count-1'] = {biter = 1, spitter = 1, worm = 1},
-    ['follower-robot-count-2'] = {biter = 1, spitter = 1, worm = 1},
-    ['follower-robot-count-3'] = {biter = 1, spitter = 1, worm = 1},
-    ['follower-robot-count-4'] = {biter = 1, spitter = 1, worm = 1},
-    ['follower-robot-count-5'] = {biter = 1, spitter = 1, worm = 1},
-    ['follower-robot-count-6'] = {biter = 1, spitter = 1, worm = 1},
-    ['follower-robot-count-7'] = {biter = 1, spitter = 1, worm = 1},
-    ['fusion-reactor-equipment'] = {biter = 1, spitter = 1, worm = 1},
-    ['gate'] = {biter = 1, spitter = 1, worm = 1},
-    ['gun-turret'] = {biter = 1, spitter = 1, worm = 1},
-    ['heavy-armor'] = {biter = 5, spitter = 5, worm = 5},
-    ['inserter-capacity-bonus-1'] = {biter = 1, spitter = 1, worm = 1},
-    ['inserter-capacity-bonus-3'] = {biter = 1, spitter = 1, worm = 1},
-    ['inserter-capacity-bonus-4'] = {biter = 1, spitter = 1, worm = 1},
-    ['inserter-capacity-bonus-5'] = {biter = 1, spitter = 1, worm = 1},
-    ['inserter-capacity-bonus-6'] = {biter = 1, spitter = 1, worm = 1},
-    ['inserter-capacity-bonus-7'] = {biter = 1, spitter = 1, worm = 1},
-    ['kovarex-enrichment-process'] = {biter = 1, spitter = 1, worm = 1},
-    ['land-mine'] = {biter = 5, spitter = 5, worm = 5},
-    ['landfill'] = {biter = 1, spitter = 1, worm = 1},
-    ['laser'] = {biter = 5, spitter = 5, worm = 5},
-    ['laser-shooting-speed-1'] = {biter = 5, spitter = 5, worm = 5},
-    ['laser-shooting-speed-2'] = {biter = 5, spitter = 5, worm = 5},
-    ['laser-shooting-speed-3'] = {biter = 5, spitter = 5, worm = 5},
-    ['laser-shooting-speed-4'] = {biter = 5, spitter = 5, worm = 5},
-    ['laser-shooting-speed-5'] = {biter = 5, spitter = 5, worm = 5},
-    ['laser-shooting-speed-6'] = {biter = 5, spitter = 5, worm = 5},
-    ['laser-shooting-speed-7'] = {biter = 5, spitter = 5, worm = 5},
-    ['laser-turret'] = {biter = 5, spitter = 5, worm = 5},
-    ['logistic-robotics'] = {biter = 1, spitter = 1, worm = 1},
-    ['logistic-science-pack'] = {biter = 25, spitter = 25, worm = 25},
-    ['logistic-system'] = {biter = 1, spitter = 1, worm = 1},
-    ['logistics'] = {biter = 1, spitter = 1, worm = 1},
-    ['logistics-2'] = {biter = 1, spitter = 1, worm = 1},
-    ['logistics-3'] = {biter = 1, spitter = 1, worm = 1},
-    ['low-density-structure'] = {biter = 1, spitter = 1, worm = 1},
-    ['lubricant'] = {biter = 1, spitter = 1, worm = 1},
-    ['military'] = {biter = 5, spitter = 5, worm = 5},
-    ['military-2'] = {biter = 5, spitter = 5, worm = 5},
-    ['military-3'] = {biter = 5, spitter = 5, worm = 51},
-    ['military-4'] = {biter = 5, spitter = 5, worm = 5},
-    ['military-science-pack'] = {biter = 50, spitter = 50, worm = 50},
-    ['mining-productivity-1'] = {biter = 1, spitter = 1, worm = 1},
-    ['mining-productivity-2'] = {biter = 1, spitter = 1, worm = 1},
-    ['mining-productivity-3'] = {biter = 1, spitter = 1, worm = 1},
-    ['mining-productivity-4'] = {biter = 1, spitter = 1, worm = 1},
-    ['modular-armor'] = {biter = 1, spitter = 1, worm = 1},
-    ['modules'] = {biter = 1, spitter = 1, worm = 1},
-    ['night-vision-equipment'] = {biter = 1, spitter = 1, worm = 1},
-    ['nuclear-fuel-reprocessing'] = {biter = 1, spitter = 1, worm = 1},
-    ['nuclear-power'] = {biter = 1, spitter = 1, worm = 1},
-    ['oil-processing'] = {biter = 1, spitter = 1, worm = 1},
-    ['optics'] = {biter = 1, spitter = 1, worm = 1},
-    ['personal-laser-defense-equipment'] = {biter = 5, spitter = 5, worm = 5},
-    ['personal-roboport-equipment'] = {biter = 1, spitter = 1, worm = 1},
-    ['personal-roboport-mk2-equipment'] = {biter = 1, spitter = 1, worm = 1},
-    ['physical-projectile-damage-1'] = {biter = 5, spitter = 5, worm = 5},
-    ['physical-projectile-damage-2'] = {biter = 5, spitter = 5, worm = 5},
-    ['physical-projectile-damage-3'] = {biter = 5, spitter = 5, worm = 5},
-    ['physical-projectile-damage-4'] = {biter = 5, spitter = 5, worm = 5},
-    ['physical-projectile-damage-5'] = {biter = 5, spitter = 5, worm = 5},
-    ['physical-projectile-damage-6'] = {biter = 5, spitter = 5, worm = 5},
-    ['physical-projectile-damage-7'] = {biter = 5, spitter = 5, worm = 5},
-    ['plastics'] = {biter = 1, spitter = 1, worm = 1},
-    ['power-armor'] = {biter = 5, spitter = 5, worm = 5},
-    ['power-armor-mk2'] = {biter = 5, spitter = 5, worm = 5},
-    ['production-science-pack'] = {biter = 250, spitter = 250, worm = 250},
-    ['productivity-module'] = {biter = 1, spitter = 1, worm = 1},
-    ['productivity-module-2'] = {biter = 1, spitter = 1, worm = 1},
-    ['productivity-module-3'] = {biter = 1, spitter = 1, worm = 1},
-    ['rail-signals'] = {biter = 1, spitter = 1, worm = 1},
-    ['railway'] = {biter = 1, spitter = 1, worm = 1},
-    ['refined-flammables-1'] = {biter = 5, spitter = 5, worm = 5},
-    ['refined-flammables-2'] = {biter = 5, spitter = 5, worm = 51},
-    ['refined-flammables-3'] = {biter = 5, spitter = 5, worm = 5},
-    ['refined-flammables-4'] = {biter = 5, spitter = 5, worm = 5},
-    ['refined-flammables-5'] = {biter = 5, spitter = 5, worm = 5},
-    ['refined-flammables-6'] = {biter = 5, spitter = 5, worm = 5},
-    ['refined-flammables-7'] = {biter = 5, spitter = 5, worm = 51},
-    ['research-speed-1'] = {biter = 1, spitter = 1, worm = 1},
-    ['research-speed-2'] = {biter = 1, spitter = 1, worm = 1},
-    ['research-speed-3'] = {biter = 1, spitter = 1, worm = 1},
-    ['research-speed-4'] = {biter = 1, spitter = 1, worm = 1},
-    ['research-speed-5'] = {biter = 1, spitter = 1, worm = 1},
-    ['research-speed-6'] = {biter = 1, spitter = 1, worm = 1},
-    ['robotics'] = {biter = 1, spitter = 1, worm = 1},
-    ['rocket-control-unit'] = {biter = 1, spitter = 1, worm = 1},
-    ['rocket-fuel'] = {biter = 1, spitter = 1, worm = 1},
-    ['rocket-silo'] = {biter = 1, spitter = 1, worm = 1},
-    ['rocketry'] = {biter = 1, spitter = 1, worm = 1},
-    ['solar-energy'] = {biter = 1, spitter = 1, worm = 1},
-    ['solar-panel-equipment'] = {biter = 1, spitter = 1, worm = 1},
-    ['space-science-pack'] = {biter = 1000, spitter = 1000, worm = 1000},
-    ['speed-module'] = {biter = 1, spitter = 1, worm = 1},
-    ['speed-module-2'] = {biter = 1, spitter = 1, worm = 1},
-    ['speed-module-3'] = {biter = 1, spitter = 1, worm = 1},
-    ['spidertron'] = {biter = 1, spitter = 1, worm = 1},
-    ['stack-inserter'] = {biter = 1, spitter = 1, worm = 1},
-    ['steel-axe'] = {biter = 1, spitter = 1, worm = 1},
-    ['steel-processing'] = {biter = 1, spitter = 1, worm = 1},
-    ['stone-wall'] = {biter = 1, spitter = 1, worm = 1},
-    ['stronger-explosives-1'] = {biter = 5, spitter = 5, worm = 5},
-    ['stronger-explosives-2'] = {biter = 5, spitter = 5, worm = 5},
-    ['stronger-explosives-3'] = {biter = 5, spitter = 5, worm = 5},
-    ['stronger-explosives-4'] = {biter = 5, spitter = 5, worm = 5},
-    ['stronger-explosives-5'] = {biter = 5, spitter = 5, worm = 5},
-    ['stronger-explosives-6'] = {biter = 5, spitter = 5, worm = 5},
-    ['stronger-explosives-7'] = {biter = 5, spitter = 5, worm = 51},
-    ['sulfur-processing'] = {biter = 1, spitter = 1, worm = 1},
-    ['tank'] = {biter = 1, spitter = 1, worm = 1},
-    ['toolbelt'] = {biter = 1, spitter = 1, worm = 1},
-    ['uranium-ammo'] = {biter = 1, spitter = 1, worm = 1},
-    ['uranium-processing'] = {biter = 1, spitter = 1, worm = 1},
-    ['utility-science-pack'] = {biter = 500, spitter = 500, worm = 500},
-    ['weapon-shooting-speed-1'] = {biter = 5, spitter = 5, worm = 5},
-    ['weapon-shooting-speed-2'] = {biter = 5, spitter = 5, worm = 5},
-    ['weapon-shooting-speed-3'] = {biter = 5, spitter = 5, worm = 5},
-    ['weapon-shooting-speed-4'] = {biter = 5, spitter = 5, worm = 5},
-    ['weapon-shooting-speed-5'] = {biter = 5, spitter = 5, worm = 5},
-    ['weapon-shooting-speed-6'] = {biter = 5, spitter = 5, worm = 5},
-    ['worker-robots-speed-1'] = {biter = 1, spitter = 1, worm = 1},
-    ['worker-robots-speed-2'] = {biter = 1, spitter = 1, worm = 1},
-    ['worker-robots-speed-3'] = {biter = 1, spitter = 1, worm = 1},
-    ['worker-robots-speed-4'] = {biter = 1, spitter = 1, worm = 1},
-    ['worker-robots-speed-5'] = {biter = 1, spitter = 1, worm = 1},
-    ['worker-robots-speed-6'] = {biter = 1, spitter = 1, worm = 1},
-    ['worker-robots-storage-1'] = {biter = 1, spitter = 1, worm = 1},
-    ['worker-robots-storage-2'] = {biter = 1, spitter = 1, worm = 1},
-    ['worker-robots-storage-3'] = {biter = 1, spitter = 1, worm = 1}
+    ['advanced-electronics'] = { biter = 1, spitter = 1, worm = 1 },
+    ['advanced-electronics-2'] = { biter = 1, spitter = 1, worm = 1 },
+    ['advanced-material-processing'] = { biter = 1, spitter = 1, worm = 1 },
+    ['advanced-material-processing-2'] = { biter = 1, spitter = 1, worm = 1 },
+    ['advanced-oil-processing'] = { biter = 1, spitter = 1, worm = 1 },
+    ['artillery'] = { biter = 1, spitter = 1, worm = 1 },
+    ['artillery-shell-range-1'] = { biter = 1, spitter = 1, worm = 1 },
+    ['artillery-shell-speed-1'] = { biter = 1, spitter = 1, worm = 1 },
+    ['atomic-bomb'] = { biter = 1, spitter = 1, worm = 1 },
+    ['automated-rail-transportation'] = { biter = 1, spitter = 1, worm = 1 },
+    ['automation'] = { biter = 1, spitter = 1, worm = 1 },
+    ['automation-2'] = { biter = 1, spitter = 1, worm = 1 },
+    ['automation-3'] = { biter = 1, spitter = 1, worm = 1 },
+    ['automobilism'] = { biter = 1, spitter = 1, worm = 1 },
+    ['battery'] = { biter = 1, spitter = 1, worm = 1 },
+    ['battery-equipment'] = { biter = 1, spitter = 1, worm = 1 },
+    ['battery-mk2-equipment'] = { biter = 1, spitter = 1, worm = 1 },
+    ['belt-immunity-equipment'] = { biter = 1, spitter = 1, worm = 1 },
+    ['braking-force-1'] = { biter = 1, spitter = 1, worm = 1 },
+    ['braking-force-2'] = { biter = 1, spitter = 1, worm = 1 },
+    ['braking-force-3'] = { biter = 1, spitter = 1, worm = 1 },
+    ['braking-force-4'] = { biter = 1, spitter = 1, worm = 1 },
+    ['braking-force-5'] = { biter = 1, spitter = 1, worm = 1 },
+    ['braking-force-6'] = { biter = 1, spitter = 1, worm = 1 },
+    ['braking-force-7'] = { biter = 1, spitter = 1, worm = 1 },
+    ['chemical-science-pack'] = { biter = 125, spitter = 125, worm = 125 },
+    ['circuit-network'] = { biter = 1, spitter = 1, worm = 1 },
+    ['cliff-explosives'] = { biter = 1, spitter = 1, worm = 1 },
+    ['coal-liquefaction'] = { biter = 1, spitter = 1, worm = 1 },
+    ['concrete'] = { biter = 1, spitter = 1, worm = 1 },
+    ['construction-robotics'] = { biter = 1, spitter = 1, worm = 1 },
+    ['defender'] = { biter = 1, spitter = 1, worm = 1 },
+    ['destroyer'] = { biter = 1, spitter = 1, worm = 1 },
+    ['discharge-defense-equipment'] = { biter = 5, spitter = 5, worm = 5 },
+    ['distractor'] = { biter = 1, spitter = 1, worm = 1 },
+    ['effect-transmission'] = { biter = 1, spitter = 1, worm = 1 },
+    ['efficiency-module'] = { biter = 1, spitter = 1, worm = 1 },
+    ['efficiency-module-2'] = { biter = 1, spitter = 1, worm = 1 },
+    ['efficiency-module-3'] = { biter = 1, spitter = 1, worm = 1 },
+    ['electric-energy-accumulators'] = { biter = 1, spitter = 1, worm = 1 },
+    ['electric-energy-distribution-1'] = { biter = 1, spitter = 1, worm = 1 },
+    ['electric-energy-distribution-2'] = { biter = 1, spitter = 1, worm = 1 },
+    ['electric-engine'] = { biter = 1, spitter = 1, worm = 1 },
+    ['electronics'] = { biter = 1, spitter = 1, worm = 1 },
+    ['energy-shield-equipment'] = { biter = 5, spitter = 5, worm = 5 },
+    ['energy-shield-mk2-equipment'] = { biter = 5, spitter = 5, worm = 5 },
+    ['energy-weapons-damage-1'] = { biter = 5, spitter = 5, worm = 5 },
+    ['energy-weapons-damage-2'] = { biter = 5, spitter = 5, worm = 5 },
+    ['energy-weapons-damage-3'] = { biter = 5, spitter = 5, worm = 5 },
+    ['energy-weapons-damage-4'] = { biter = 5, spitter = 5, worm = 5 },
+    ['energy-weapons-damage-5'] = { biter = 5, spitter = 5, worm = 5 },
+    ['energy-weapons-damage-6'] = { biter = 5, spitter = 5, worm = 5 },
+    ['energy-weapons-damage-7'] = { biter = 5, spitter = 5, worm = 5 },
+    ['engine'] = { biter = 1, spitter = 1, worm = 1 },
+    ['exoskeleton-equipment'] = { biter = 5, spitter = 5, worm = 5 },
+    ['explosive-rocketry'] = { biter = 1, spitter = 1, worm = 1 },
+    ['explosives'] = { biter = 5, spitter = 5, worm = 5 },
+    ['fast-inserter'] = { biter = 1, spitter = 1, worm = 1 },
+    ['flamethrower'] = { biter = 5, spitter = 5, worm = 5 },
+    ['flammables'] = { biter = 1, spitter = 1, worm = 1 },
+    ['fluid-handling'] = { biter = 1, spitter = 1, worm = 1 },
+    ['fluid-wagon'] = { biter = 1, spitter = 1, worm = 1 },
+    ['follower-robot-count-1'] = { biter = 1, spitter = 1, worm = 1 },
+    ['follower-robot-count-2'] = { biter = 1, spitter = 1, worm = 1 },
+    ['follower-robot-count-3'] = { biter = 1, spitter = 1, worm = 1 },
+    ['follower-robot-count-4'] = { biter = 1, spitter = 1, worm = 1 },
+    ['follower-robot-count-5'] = { biter = 1, spitter = 1, worm = 1 },
+    ['follower-robot-count-6'] = { biter = 1, spitter = 1, worm = 1 },
+    ['follower-robot-count-7'] = { biter = 1, spitter = 1, worm = 1 },
+    ['fusion-reactor-equipment'] = { biter = 1, spitter = 1, worm = 1 },
+    ['gate'] = { biter = 1, spitter = 1, worm = 1 },
+    ['gun-turret'] = { biter = 1, spitter = 1, worm = 1 },
+    ['heavy-armor'] = { biter = 5, spitter = 5, worm = 5 },
+    ['inserter-capacity-bonus-1'] = { biter = 1, spitter = 1, worm = 1 },
+    ['inserter-capacity-bonus-3'] = { biter = 1, spitter = 1, worm = 1 },
+    ['inserter-capacity-bonus-4'] = { biter = 1, spitter = 1, worm = 1 },
+    ['inserter-capacity-bonus-5'] = { biter = 1, spitter = 1, worm = 1 },
+    ['inserter-capacity-bonus-6'] = { biter = 1, spitter = 1, worm = 1 },
+    ['inserter-capacity-bonus-7'] = { biter = 1, spitter = 1, worm = 1 },
+    ['kovarex-enrichment-process'] = { biter = 1, spitter = 1, worm = 1 },
+    ['land-mine'] = { biter = 5, spitter = 5, worm = 5 },
+    ['landfill'] = { biter = 1, spitter = 1, worm = 1 },
+    ['laser'] = { biter = 5, spitter = 5, worm = 5 },
+    ['laser-shooting-speed-1'] = { biter = 5, spitter = 5, worm = 5 },
+    ['laser-shooting-speed-2'] = { biter = 5, spitter = 5, worm = 5 },
+    ['laser-shooting-speed-3'] = { biter = 5, spitter = 5, worm = 5 },
+    ['laser-shooting-speed-4'] = { biter = 5, spitter = 5, worm = 5 },
+    ['laser-shooting-speed-5'] = { biter = 5, spitter = 5, worm = 5 },
+    ['laser-shooting-speed-6'] = { biter = 5, spitter = 5, worm = 5 },
+    ['laser-shooting-speed-7'] = { biter = 5, spitter = 5, worm = 5 },
+    ['laser-turret'] = { biter = 5, spitter = 5, worm = 5 },
+    ['logistic-robotics'] = { biter = 1, spitter = 1, worm = 1 },
+    ['logistic-science-pack'] = { biter = 25, spitter = 25, worm = 25 },
+    ['logistic-system'] = { biter = 1, spitter = 1, worm = 1 },
+    ['logistics'] = { biter = 1, spitter = 1, worm = 1 },
+    ['logistics-2'] = { biter = 1, spitter = 1, worm = 1 },
+    ['logistics-3'] = { biter = 1, spitter = 1, worm = 1 },
+    ['low-density-structure'] = { biter = 1, spitter = 1, worm = 1 },
+    ['lubricant'] = { biter = 1, spitter = 1, worm = 1 },
+    ['military'] = { biter = 5, spitter = 5, worm = 5 },
+    ['military-2'] = { biter = 5, spitter = 5, worm = 5 },
+    ['military-3'] = { biter = 5, spitter = 5, worm = 51 },
+    ['military-4'] = { biter = 5, spitter = 5, worm = 5 },
+    ['military-science-pack'] = { biter = 50, spitter = 50, worm = 50 },
+    ['mining-productivity-1'] = { biter = 1, spitter = 1, worm = 1 },
+    ['mining-productivity-2'] = { biter = 1, spitter = 1, worm = 1 },
+    ['mining-productivity-3'] = { biter = 1, spitter = 1, worm = 1 },
+    ['mining-productivity-4'] = { biter = 1, spitter = 1, worm = 1 },
+    ['modular-armor'] = { biter = 1, spitter = 1, worm = 1 },
+    ['modules'] = { biter = 1, spitter = 1, worm = 1 },
+    ['night-vision-equipment'] = { biter = 1, spitter = 1, worm = 1 },
+    ['nuclear-fuel-reprocessing'] = { biter = 1, spitter = 1, worm = 1 },
+    ['nuclear-power'] = { biter = 1, spitter = 1, worm = 1 },
+    ['oil-processing'] = { biter = 1, spitter = 1, worm = 1 },
+    ['optics'] = { biter = 1, spitter = 1, worm = 1 },
+    ['personal-laser-defense-equipment'] = { biter = 5, spitter = 5, worm = 5 },
+    ['personal-roboport-equipment'] = { biter = 1, spitter = 1, worm = 1 },
+    ['personal-roboport-mk2-equipment'] = { biter = 1, spitter = 1, worm = 1 },
+    ['physical-projectile-damage-1'] = { biter = 5, spitter = 5, worm = 5 },
+    ['physical-projectile-damage-2'] = { biter = 5, spitter = 5, worm = 5 },
+    ['physical-projectile-damage-3'] = { biter = 5, spitter = 5, worm = 5 },
+    ['physical-projectile-damage-4'] = { biter = 5, spitter = 5, worm = 5 },
+    ['physical-projectile-damage-5'] = { biter = 5, spitter = 5, worm = 5 },
+    ['physical-projectile-damage-6'] = { biter = 5, spitter = 5, worm = 5 },
+    ['physical-projectile-damage-7'] = { biter = 5, spitter = 5, worm = 5 },
+    ['plastics'] = { biter = 1, spitter = 1, worm = 1 },
+    ['power-armor'] = { biter = 5, spitter = 5, worm = 5 },
+    ['power-armor-mk2'] = { biter = 5, spitter = 5, worm = 5 },
+    ['production-science-pack'] = { biter = 250, spitter = 250, worm = 250 },
+    ['productivity-module'] = { biter = 1, spitter = 1, worm = 1 },
+    ['productivity-module-2'] = { biter = 1, spitter = 1, worm = 1 },
+    ['productivity-module-3'] = { biter = 1, spitter = 1, worm = 1 },
+    ['rail-signals'] = { biter = 1, spitter = 1, worm = 1 },
+    ['railway'] = { biter = 1, spitter = 1, worm = 1 },
+    ['refined-flammables-1'] = { biter = 5, spitter = 5, worm = 5 },
+    ['refined-flammables-2'] = { biter = 5, spitter = 5, worm = 51 },
+    ['refined-flammables-3'] = { biter = 5, spitter = 5, worm = 5 },
+    ['refined-flammables-4'] = { biter = 5, spitter = 5, worm = 5 },
+    ['refined-flammables-5'] = { biter = 5, spitter = 5, worm = 5 },
+    ['refined-flammables-6'] = { biter = 5, spitter = 5, worm = 5 },
+    ['refined-flammables-7'] = { biter = 5, spitter = 5, worm = 51 },
+    ['research-speed-1'] = { biter = 1, spitter = 1, worm = 1 },
+    ['research-speed-2'] = { biter = 1, spitter = 1, worm = 1 },
+    ['research-speed-3'] = { biter = 1, spitter = 1, worm = 1 },
+    ['research-speed-4'] = { biter = 1, spitter = 1, worm = 1 },
+    ['research-speed-5'] = { biter = 1, spitter = 1, worm = 1 },
+    ['research-speed-6'] = { biter = 1, spitter = 1, worm = 1 },
+    ['robotics'] = { biter = 1, spitter = 1, worm = 1 },
+    ['rocket-control-unit'] = { biter = 1, spitter = 1, worm = 1 },
+    ['rocket-fuel'] = { biter = 1, spitter = 1, worm = 1 },
+    ['rocket-silo'] = { biter = 1, spitter = 1, worm = 1 },
+    ['rocketry'] = { biter = 1, spitter = 1, worm = 1 },
+    ['solar-energy'] = { biter = 1, spitter = 1, worm = 1 },
+    ['solar-panel-equipment'] = { biter = 1, spitter = 1, worm = 1 },
+    ['space-science-pack'] = { biter = 1000, spitter = 1000, worm = 1000 },
+    ['speed-module'] = { biter = 1, spitter = 1, worm = 1 },
+    ['speed-module-2'] = { biter = 1, spitter = 1, worm = 1 },
+    ['speed-module-3'] = { biter = 1, spitter = 1, worm = 1 },
+    ['spidertron'] = { biter = 1, spitter = 1, worm = 1 },
+    ['stack-inserter'] = { biter = 1, spitter = 1, worm = 1 },
+    ['steel-axe'] = { biter = 1, spitter = 1, worm = 1 },
+    ['steel-processing'] = { biter = 1, spitter = 1, worm = 1 },
+    ['stone-wall'] = { biter = 1, spitter = 1, worm = 1 },
+    ['stronger-explosives-1'] = { biter = 5, spitter = 5, worm = 5 },
+    ['stronger-explosives-2'] = { biter = 5, spitter = 5, worm = 5 },
+    ['stronger-explosives-3'] = { biter = 5, spitter = 5, worm = 5 },
+    ['stronger-explosives-4'] = { biter = 5, spitter = 5, worm = 5 },
+    ['stronger-explosives-5'] = { biter = 5, spitter = 5, worm = 5 },
+    ['stronger-explosives-6'] = { biter = 5, spitter = 5, worm = 5 },
+    ['stronger-explosives-7'] = { biter = 5, spitter = 5, worm = 51 },
+    ['sulfur-processing'] = { biter = 1, spitter = 1, worm = 1 },
+    ['tank'] = { biter = 1, spitter = 1, worm = 1 },
+    ['toolbelt'] = { biter = 1, spitter = 1, worm = 1 },
+    ['uranium-ammo'] = { biter = 1, spitter = 1, worm = 1 },
+    ['uranium-processing'] = { biter = 1, spitter = 1, worm = 1 },
+    ['utility-science-pack'] = { biter = 500, spitter = 500, worm = 500 },
+    ['weapon-shooting-speed-1'] = { biter = 5, spitter = 5, worm = 5 },
+    ['weapon-shooting-speed-2'] = { biter = 5, spitter = 5, worm = 5 },
+    ['weapon-shooting-speed-3'] = { biter = 5, spitter = 5, worm = 5 },
+    ['weapon-shooting-speed-4'] = { biter = 5, spitter = 5, worm = 5 },
+    ['weapon-shooting-speed-5'] = { biter = 5, spitter = 5, worm = 5 },
+    ['weapon-shooting-speed-6'] = { biter = 5, spitter = 5, worm = 5 },
+    ['worker-robots-speed-1'] = { biter = 1, spitter = 1, worm = 1 },
+    ['worker-robots-speed-2'] = { biter = 1, spitter = 1, worm = 1 },
+    ['worker-robots-speed-3'] = { biter = 1, spitter = 1, worm = 1 },
+    ['worker-robots-speed-4'] = { biter = 1, spitter = 1, worm = 1 },
+    ['worker-robots-speed-5'] = { biter = 1, spitter = 1, worm = 1 },
+    ['worker-robots-speed-6'] = { biter = 1, spitter = 1, worm = 1 },
+    ['worker-robots-storage-1'] = { biter = 1, spitter = 1, worm = 1 },
+    ['worker-robots-storage-2'] = { biter = 1, spitter = 1, worm = 1 },
+    ['worker-robots-storage-3'] = { biter = 1, spitter = 1, worm = 1 }
 }
 
 local max_biter_weight = 0
@@ -533,30 +533,30 @@ local function set_biter_type(entity)
 
     if entity.valid then
         for _ = 1, behemoth do
-            local e = surface.create_entity({name = biters[4], position = get_nearby_location(position, surface, 5, biters[4])})
+            local e = surface.create_entity({ name = biters[4], position = get_nearby_location(position, surface, 5, biters[4]) })
             e.copy_settings(entity)
             e.ai_settings.allow_try_return_to_spawner = true
         end
         for _ = 1, big do
-            local e = surface.create_entity({name = biters[3], position = get_nearby_location(position, surface, 5, biters[3])})
+            local e = surface.create_entity({ name = biters[3], position = get_nearby_location(position, surface, 5, biters[3]) })
             e.copy_settings(entity)
             e.ai_settings.allow_try_return_to_spawner = true
         end
         for _ = 1, medium do
-            local e = surface.create_entity({name = biters[2], position = get_nearby_location(position, surface, 5, biters[2])})
+            local e = surface.create_entity({ name = biters[2], position = get_nearby_location(position, surface, 5, biters[2]) })
             e.copy_settings(entity)
             e.ai_settings.allow_try_return_to_spawner = true
         end
         for _ = 1, small do
-            local e = surface.create_entity({name = biters[1], position = get_nearby_location(position, surface, 5, biters[1])})
+            local e = surface.create_entity({ name = biters[1], position = get_nearby_location(position, surface, 5, biters[1]) })
             e.copy_settings(entity)
             e.ai_settings.allow_try_return_to_spawner = true
         end
-        local e = surface.create_entity({name = entity_name, position = get_nearby_location(position, surface, 5, entity_name)})
+        local e = surface.create_entity({ name = entity_name, position = get_nearby_location(position, surface, 5, entity_name) })
         e.copy_settings(entity)
         e.ai_settings.allow_try_return_to_spawner = true
         entity.destroy()
-    --log("spawned " .. entity_name)
+        --log("spawned " .. entity_name)
     end
 end
 
@@ -578,30 +578,30 @@ local function set_spitter_type(entity)
 
     if entity.valid then
         for _ = 1, behemoth do
-            local e = surface.create_entity({name = spitters[4], position = get_nearby_location(position, surface, 5, spitters[4])})
+            local e = surface.create_entity({ name = spitters[4], position = get_nearby_location(position, surface, 5, spitters[4]) })
             e.copy_settings(entity)
             e.ai_settings.allow_try_return_to_spawner = true
         end
         for _ = 1, big do
-            local e = surface.create_entity({name = spitters[3], position = get_nearby_location(position, surface, 5, spitters[3])})
+            local e = surface.create_entity({ name = spitters[3], position = get_nearby_location(position, surface, 5, spitters[3]) })
             e.copy_settings(entity)
             e.ai_settings.allow_try_return_to_spawner = true
         end
         for _ = 1, medium do
-            local e = surface.create_entity({name = spitters[2], position = get_nearby_location(position, surface, 5, spitters[2])})
+            local e = surface.create_entity({ name = spitters[2], position = get_nearby_location(position, surface, 5, spitters[2]) })
             e.copy_settings(entity)
             e.ai_settings.allow_try_return_to_spawner = true
         end
         for _ = 1, small do
-            local e = surface.create_entity({name = spitters[1], position = get_nearby_location(position, surface, 5, spitters[1])})
+            local e = surface.create_entity({ name = spitters[1], position = get_nearby_location(position, surface, 5, spitters[1]) })
             e.copy_settings(entity)
             e.ai_settings.allow_try_return_to_spawner = true
         end
-        local e = surface.create_entity({name = entity_name, position = get_nearby_location(position, surface, 5, entity_name)})
+        local e = surface.create_entity({ name = entity_name, position = get_nearby_location(position, surface, 5, entity_name) })
         e.copy_settings(entity)
         e.ai_settings.allow_try_return_to_spawner = true
         entity.destroy()
-    --log("spawned " .. entity_name)
+        --log("spawned " .. entity_name)
     end
 end
 
@@ -617,8 +617,8 @@ local function set_worm_type(entity)
     local surface = entity.surface
     if entity.valid then
         entity.destroy()
-        surface.create_entity({name = entity_name, position = position})
-    --log("spawned " .. entity_name)
+        surface.create_entity({ name = entity_name, position = position })
+        --log("spawned " .. entity_name)
     end
 end
 

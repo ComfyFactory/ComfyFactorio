@@ -40,7 +40,7 @@ local tile_replacements = {
     ['red-desert-3'] = 'grass-4'
 }
 
-local rocks = {'rock-big', 'rock-big', 'rock-huge'}
+local rocks = { 'rock-big', 'rock-big', 'rock-huge' }
 local decos = {
     'green-hairy-grass',
     'green-hairy-grass',
@@ -52,19 +52,19 @@ local decos = {
     'green-carpet-grass',
     'green-pita'
 }
-local decos_inside_forest = {'brown-asterisk', 'brown-asterisk', 'brown-carpet-grass', 'brown-hairy-grass'}
+local decos_inside_forest = { 'brown-asterisk', 'brown-asterisk', 'brown-carpet-grass', 'brown-hairy-grass' }
 
 local noises = {
     ['forest_location'] = {
-        {modifier = 0.006, weight = 1},
-        {modifier = 0.01, weight = 0.25},
-        {modifier = 0.05, weight = 0.15},
-        {modifier = 0.1, weight = 0.05}
+        { modifier = 0.006, weight = 1 },
+        { modifier = 0.01,  weight = 0.25 },
+        { modifier = 0.05,  weight = 0.15 },
+        { modifier = 0.1,   weight = 0.05 }
     },
     ['forest_density'] = {
-        {modifier = 0.01, weight = 1},
-        {modifier = 0.05, weight = 0.5},
-        {modifier = 0.1, weight = 0.025}
+        { modifier = 0.01, weight = 1 },
+        { modifier = 0.05, weight = 0.5 },
+        { modifier = 0.1,  weight = 0.025 }
     }
 }
 local function get_noise(name, pos, seed)
@@ -130,57 +130,57 @@ local function create_choppy_stats_gui(player)
 
     local captions = {}
     local caption_style = {
-        {'font', 'default-bold'},
-        {'font_color', {r = 0.63, g = 0.63, b = 0.63}},
-        {'top_padding', 2},
-        {'left_padding', 0},
-        {'right_padding', 0},
-        {'minimal_width', 0}
+        { 'font',          'default-bold' },
+        { 'font_color',    { r = 0.63, g = 0.63, b = 0.63 } },
+        { 'top_padding',   2 },
+        { 'left_padding',  0 },
+        { 'right_padding', 0 },
+        { 'minimal_width', 0 }
     }
     local stat_numbers = {}
     local stat_number_style = {
-        {'font', 'default-bold'},
-        {'font_color', {r = 0.77, g = 0.77, b = 0.77}},
-        {'top_padding', 2},
-        {'left_padding', 0},
-        {'right_padding', 0},
-        {'minimal_width', 0}
+        { 'font',          'default-bold' },
+        { 'font_color',    { r = 0.77, g = 0.77, b = 0.77 } },
+        { 'top_padding',   2 },
+        { 'left_padding',  0 },
+        { 'right_padding', 0 },
+        { 'minimal_width', 0 }
     }
     local separators = {}
     local separator_style = {
-        {'font', 'default-bold'},
-        {'font_color', {r = 0.15, g = 0.15, b = 0.89}},
-        {'top_padding', 2},
-        {'left_padding', 2},
-        {'right_padding', 2},
-        {'minimal_width', 0}
+        { 'font',          'default-bold' },
+        { 'font_color',    { r = 0.15, g = 0.15, b = 0.89 } },
+        { 'top_padding',   2 },
+        { 'left_padding',  2 },
+        { 'right_padding', 2 },
+        { 'minimal_width', 0 }
     }
 
-    local frame = player.gui.top.add {type = 'frame', name = 'choppy_stats_frame'}
+    local frame = player.gui.top.add { type = 'frame', name = 'choppy_stats_frame' }
     frame.style.minimal_height = 38
     frame.style.maximal_height = 38
 
-    local t = frame.add {type = 'table', column_count = 16}
+    local t = frame.add { type = 'table', column_count = 16 }
 
-    captions[1] = t.add {type = 'label', caption = '[img=item/iron-ore] :'}
+    captions[1] = t.add { type = 'label', caption = '[img=item/iron-ore] :' }
     captions[1].tooltip = 'Amount of ores harvested.'
 
-    global.total_ores_mined =
-        global.stats_ores_found + game.forces.player.item_production_statistics.get_input_count('coal') + game.forces.player.item_production_statistics.get_input_count('iron-ore') +
-        game.forces.player.item_production_statistics.get_input_count('copper-ore') +
-        game.forces.player.item_production_statistics.get_input_count('uranium-ore')
+    storage.total_ores_mined =
+        storage.stats_ores_found + game.forces.player.get_item_production_statistics(player.surface).get_input_count('coal') + game.forces.player.get_item_production_statistics(player.surface).get_input_count('iron-ore') +
+        game.forces.player.get_item_production_statistics(player.surface).get_input_count('copper-ore') +
+        game.forces.player.get_item_production_statistics(player.surface).get_input_count('uranium-ore')
 
-    stat_numbers[1] = t.add {type = 'label', caption = global.total_ores_mined}
+    stat_numbers[1] = t.add { type = 'label', caption = storage.total_ores_mined }
 
-    separators[1] = t.add {type = 'label', caption = '|'}
+    separators[1] = t.add { type = 'label', caption = '|' }
 
-    captions[2] = t.add {type = 'label', caption = '[img=entity.tree-04] :'}
+    captions[2] = t.add { type = 'label', caption = '[img=entity.tree-04] :' }
     captions[2].tooltip = 'Amount of trees chopped.'
-    stat_numbers[2] = t.add {type = 'label', caption = global.stats_wood_chopped}
+    stat_numbers[2] = t.add { type = 'label', caption = storage.stats_wood_chopped }
 
-    separators[2] = t.add {type = 'label', caption = '|'}
+    separators[2] = t.add { type = 'label', caption = '|' }
 
-    captions[3] = t.add {type = 'label', caption = '[img=item.productivity-module] :'}
+    captions[3] = t.add { type = 'label', caption = '[img=item.productivity-module] :' }
     captions[3].tooltip = 'Current mining speed bonus.'
     local x = math.floor(game.forces.player.manual_mining_speed_modifier * 100)
     local str = ''
@@ -189,16 +189,16 @@ local function create_choppy_stats_gui(player)
     end
     str = str .. tostring(x)
     str = str .. '%'
-    stat_numbers[3] = t.add {type = 'label', caption = str}
+    stat_numbers[3] = t.add { type = 'label', caption = str }
 
     if game.forces.player.manual_mining_speed_modifier > 0 or game.forces.player.mining_drill_productivity_bonus > 0 then
-        separators[3] = t.add {type = 'label', caption = '|'}
+        separators[3] = t.add { type = 'label', caption = '|' }
 
-        captions[3] = t.add {type = 'label', caption = '[img=utility.hand] :'}
+        captions[3] = t.add { type = 'label', caption = '[img=utility.hand] :' }
         local str = '+'
         str = str .. tostring(game.forces.player.mining_drill_productivity_bonus * 100)
         str = str .. '%'
-        stat_numbers[3] = t.add {type = 'label', caption = str}
+        stat_numbers[3] = t.add { type = 'label', caption = str }
     end
 
     for _, s in pairs(caption_style) do
@@ -216,8 +216,8 @@ local function create_choppy_stats_gui(player)
             l.style[s[1]] = s[2]
         end
     end
-    stat_numbers[1].style.minimal_width = 9 * string.len(tostring(global.stats_ores_found))
-    stat_numbers[2].style.minimal_width = 9 * string.len(tostring(global.stats_rocks_broken))
+    stat_numbers[1].style.minimal_width = 9 * string.len(tostring(storage.stats_ores_found))
+    stat_numbers[2].style.minimal_width = 9 * string.len(tostring(storage.stats_rocks_broken))
 end
 
 local function on_gui_click(event)
@@ -268,7 +268,7 @@ local function process_entity(e)
     end
     if entities_to_convert[e.name] then
         if math_random(1, 100) > 33 then
-            e.surface.create_entity({name = rocks[math_random(1, #rocks)], position = e.position})
+            e.surface.create_entity({ name = rocks[math_random(1, #rocks)], position = e.position })
         end
         e.destroy()
         return
@@ -279,16 +279,16 @@ local function process_tile(surface, pos, tile, seed)
     if tile.collides_with('player-layer') then
         return
     end
-    if not surface.can_place_entity({name = 'tree-01', position = pos}) then
+    if not surface.can_place_entity({ name = 'tree-01', position = pos }) then
         return
     end
 
     if math_random(1, 100000) == 1 then
-        local wrecks = {'big-ship-wreck-1', 'big-ship-wreck-2', 'big-ship-wreck-3'}
-        local e = surface.create_entity {name = wrecks[math_random(1, #wrecks)], position = pos, force = 'neutral'}
-        e.insert({name = 'raw-fish', count = math_random(3, 25)})
+        local wrecks = { 'big-ship-wreck-1', 'big-ship-wreck-2', 'big-ship-wreck-3' }
+        local e = surface.create_entity { name = wrecks[math_random(1, #wrecks)], position = pos, force = 'neutral' }
+        e.insert({ name = 'raw-fish', count = math_random(3, 25) })
         if math_random(1, 3) == 1 then
-            e.insert({name = 'wood', count = math_random(11, 44)})
+            e.insert({ name = 'wood', count = math_random(11, 44) })
         end
     end
 
@@ -300,11 +300,11 @@ local function process_tile(surface, pos, tile, seed)
     if noise_forest_location > 0.095 then
         if noise_forest_location > 0.6 then
             if math_random(1, 100) > 42 then
-                surface.create_entity({name = 'tree-08-brown', position = pos})
+                surface.create_entity({ name = 'tree-08-brown', position = pos })
             end
         else
             if math_random(1, 100) > 42 then
-                surface.create_entity({name = 'tree-01', position = pos})
+                surface.create_entity({ name = 'tree-01', position = pos })
             end
         end
         surface.create_decoratives(
@@ -325,11 +325,11 @@ local function process_tile(surface, pos, tile, seed)
     if noise_forest_location < -0.095 then
         if noise_forest_location < -0.6 then
             if math_random(1, 100) > 42 then
-                surface.create_entity({name = 'tree-04', position = pos})
+                surface.create_entity({ name = 'tree-04', position = pos })
             end
         else
             if math_random(1, 100) > 42 then
-                surface.create_entity({name = 'tree-02-red', position = pos})
+                surface.create_entity({ name = 'tree-02-red', position = pos })
             end
         end
         surface.create_decoratives(
@@ -350,7 +350,7 @@ local function process_tile(surface, pos, tile, seed)
     surface.create_decoratives(
         {
             check_collision = false,
-            decoratives = {{name = decos[math_random(1, #decos)], position = pos, amount = math_random(1, 2)}}
+            decoratives = { { name = decos[math_random(1, #decos)], position = pos, amount = math_random(1, 2) } }
         }
     )
 end
@@ -366,17 +366,17 @@ local function on_chunk_generated(event)
 
     --surface.destroy_decoratives({area = event.area})
 
-    for _, e in pairs(surface.find_entities_filtered({area = event.area})) do
+    for _, e in pairs(surface.find_entities_filtered({ area = event.area })) do
         process_entity(e)
     end
 
     for x = 0.5, 31.5, 1 do
         for y = 0.5, 31.5, 1 do
-            local pos = {x = left_top.x + x, y = left_top.y + y}
+            local pos = { x = left_top.x + x, y = left_top.y + y }
 
             local tile = surface.get_tile(pos)
             if tile_replacements[tile.name] then
-                table_insert(tiles, {name = tile_replacements[tile.name], position = pos})
+                table_insert(tiles, { name = tile_replacements[tile.name], position = pos })
             end
 
             process_tile(surface, pos, tile, seed)
@@ -384,22 +384,22 @@ local function on_chunk_generated(event)
     end
     surface.set_tiles(tiles, true)
 
-    for _, e in pairs(surface.find_entities_filtered({area = event.area, type = 'unit-spawner'})) do
-        for _, entity in pairs(e.surface.find_entities_filtered({area = {{e.position.x - 7, e.position.y - 7}, {e.position.x + 7, e.position.y + 7}}, force = 'neutral'})) do
+    for _, e in pairs(surface.find_entities_filtered({ area = event.area, type = 'unit-spawner' })) do
+        for _, entity in pairs(e.surface.find_entities_filtered({ area = { { e.position.x - 7, e.position.y - 7 }, { e.position.x + 7, e.position.y + 7 } }, force = 'neutral' })) do
             if entity.valid then
                 entity.destroy()
             end
         end
     end
 
-    if global.spawn_generated then
+    if storage.spawn_generated then
         return
     end
     if left_top.x < 96 then
         return
     end
 
-    for _, e in pairs(surface.find_entities_filtered({area = {{-50, -50}, {50, 50}}})) do
+    for _, e in pairs(surface.find_entities_filtered({ area = { { -50, -50 }, { 50, 50 } } })) do
         local distance_to_center = math.sqrt(e.position.x ^ 2 + e.position.y ^ 2)
         if e.valid then
             if distance_to_center < 8 and e.type == 'tree' and math_random(1, 5) ~= 1 then
@@ -407,7 +407,7 @@ local function on_chunk_generated(event)
             end
         end
     end
-    global.spawn_generated = true
+    storage.spawn_generated = true
 end
 
 local function on_marked_for_deconstruction(event)
@@ -420,7 +420,7 @@ local function on_marked_for_deconstruction(event)
 end
 
 local function on_player_joined_game()
-    if global.map_choppy_init_done then
+    if storage.map_choppy_init_done then
         return
     end
 
@@ -430,30 +430,30 @@ local function on_player_joined_game()
 
     game.surfaces['choppy'].ticks_per_day = game.surfaces['choppy'].ticks_per_day * 2
 
-    global.entity_yield = {
-        ['tree-01'] = {'iron-ore'},
-        ['tree-02-red'] = {'copper-ore'},
-        ['tree-04'] = {'coal'},
-        ['tree-08-brown'] = {'stone'},
-        ['rock-big'] = {'uranium-ore'},
-        ['rock-huge'] = {'uranium-ore'}
+    storage.entity_yield = {
+        ['tree-01'] = { 'iron-ore' },
+        ['tree-02-red'] = { 'copper-ore' },
+        ['tree-04'] = { 'coal' },
+        ['tree-08-brown'] = { 'stone' },
+        ['rock-big'] = { 'uranium-ore' },
+        ['rock-huge'] = { 'uranium-ore' }
     }
 
     if game.item_prototypes['angels-ore1'] then
-        global.entity_yield['tree-01'] = {'angels-ore1', 'angels-ore2'}
-        global.entity_yield['tree-02-red'] = {'angels-ore5', 'angels-ore6'}
-        global.entity_yield['tree-04'] = {'coal'}
-        global.entity_yield['tree-08-brown'] = {'angels-ore3', 'angels-ore4'}
+        storage.entity_yield['tree-01'] = { 'angels-ore1', 'angels-ore2' }
+        storage.entity_yield['tree-02-red'] = { 'angels-ore5', 'angels-ore6' }
+        storage.entity_yield['tree-04'] = { 'coal' }
+        storage.entity_yield['tree-08-brown'] = { 'angels-ore3', 'angels-ore4' }
     else
         game.map_settings.pollution.ageing = 0
     end
 
     if game.item_prototypes['thorium-ore'] then
-        global.entity_yield['rock-big'] = {'uranium-ore', 'thorium-ore'}
-        global.entity_yield['rock-huge'] = {'uranium-ore', 'thorium-ore'}
+        storage.entity_yield['rock-big'] = { 'uranium-ore', 'thorium-ore' }
+        storage.entity_yield['rock-huge'] = { 'uranium-ore', 'thorium-ore' }
     end
 
-    global.map_choppy_init_done = true
+    storage.map_choppy_init_done = true
 end
 
 local function changed_surface(event)
@@ -462,8 +462,8 @@ local function changed_surface(event)
     if surface.name ~= 'choppy' then
         goto continue
     end
-    player.print('Warped to Choppy!', {r = 0.10, g = 0.75, b = 0.5})
-    player.play_sound {path = 'utility/mining_wood', volume_modifier = 1}
+    player.print('Warped to Choppy!', { r = 0.10, g = 0.75, b = 0.5 })
+    player.play_sound { path = 'utility/mining_wood', volume_modifier = 1 }
     if player.gui.top['caver_miner_stats_toggle_button'] then
         player.gui.top['caver_miner_stats_toggle_button'].destroy()
     end
@@ -478,7 +478,7 @@ local function changed_surface(event)
     end
     create_choppy_stats_gui(player)
 
-    player.print(choppy_messages[math_random(1, #choppy_messages)], {r = 0.10, g = 0.75, b = 0.5})
+    player.print(choppy_messages[math_random(1, #choppy_messages)], { r = 0.10, g = 0.75, b = 0.5 })
     ::continue::
 end
 
@@ -519,7 +519,7 @@ local function on_player_mined_entity(event)
         trap(entity)
     end
 
-    if global.entity_yield[entity.name] then
+    if storage.entity_yield[entity.name] then
         if event.buffer then
             event.buffer.clear()
         end
@@ -536,33 +536,33 @@ local function on_player_mined_entity(event)
             second_item = 'stone'
         end
 
-        local main_item = global.entity_yield[entity.name][math_random(1, #global.entity_yield[entity.name])]
+        local main_item = storage.entity_yield[entity.name][math_random(1, #storage.entity_yield[entity.name])]
 
         entity.surface.create_entity(
             {
                 name = 'flying-text',
                 position = entity.position,
                 text = '+' .. amount .. ' [item=' .. main_item .. '] +' .. second_item_amount .. ' [item=' .. second_item .. ']',
-                color = {r = 0.8, g = 0.8, b = 0.8}
+                color = { r = 0.8, g = 0.8, b = 0.8 }
             }
         )
 
-        global.stats_ores_found = global.stats_ores_found + amount
-        global.stats_wood_chopped = global.stats_wood_chopped + 1
+        storage.stats_ores_found = storage.stats_ores_found + amount
+        storage.stats_wood_chopped = storage.stats_wood_chopped + 1
         refresh_gui()
 
         local player = game.players[event.player_index]
 
-        local inserted_count = player.insert({name = main_item, count = amount})
+        local inserted_count = player.insert({ name = main_item, count = amount })
         amount = amount - inserted_count
         if amount > 0 then
-            entity.surface.spill_item_stack(entity.position, {name = main_item, count = amount}, true)
+            entity.surface.spill_item_stack(entity.position, { name = main_item, count = amount }, true)
         end
 
-        local inserted_count = player.insert({name = second_item, count = second_item_amount})
+        local inserted_count = player.insert({ name = second_item, count = second_item_amount })
         second_item_amount = second_item_amount - inserted_count
         if second_item_amount > 0 then
-            entity.surface.spill_item_stack(entity.position, {name = second_item, count = second_item_amount}, true)
+            entity.surface.spill_item_stack(entity.position, { name = second_item, count = second_item_amount }, true)
         end
     end
 end
@@ -590,8 +590,8 @@ local function on_entity_died(event)
             event.entity.surface.find_entities_filtered(
                 {
                     area = {
-                        {event.entity.position.x - 4, event.entity.position.y - 4},
-                        {event.entity.position.x + 4, event.entity.position.y + 4}
+                        { event.entity.position.x - 4, event.entity.position.y - 4 },
+                        { event.entity.position.x + 4, event.entity.position.y + 4 }
                     },
                     name = 'fire-flame-on-tree'
                 }
@@ -613,32 +613,32 @@ local function init()
     local storage = {}
     local newPlace = init_surface(game.create_surface('choppy'))
     local surface = game.surfaces['choppy']
-    newPlace.request_to_generate_chunks({0, 0}, 4)
-    global.surface_choppy_elevator = surface.create_entity({name = 'player-port', position = {1, -4}, force = game.forces.neutral})
-    global.surface_choppy_chest = Module.create_chest(surface, {1, -8}, storage)
+    newPlace.request_to_generate_chunks({ 0, 0 }, 4)
+    storage.surface_choppy_elevator = surface.create_entity({ name = 'player-port', position = { 1, -4 }, force = game.forces.neutral })
+    storage.surface_choppy_chest = Module.create_chest(surface, { 1, -8 }, storage)
 
     rendering.draw_text {
         text = 'Storage',
         surface = surface,
-        target = global.surface_choppy_chest,
-        target_offset = {0, 0.4},
-        color = {r = 0.98, g = 0.66, b = 0.22},
+        target = storage.surface_choppy_chest,
+        target_offset = { 0, 0.4 },
+        color = { r = 0.98, g = 0.66, b = 0.22 },
         alignment = 'center'
     }
 
     rendering.draw_text {
         text = 'Elevator',
         surface = surface,
-        target = global.surface_choppy_elevator,
-        target_offset = {0, 1},
-        color = {r = 0.98, g = 0.66, b = 0.22},
+        target = storage.surface_choppy_elevator,
+        target_offset = { 0, 1 },
+        color = { r = 0.98, g = 0.66, b = 0.22 },
         alignment = 'center'
     }
 
-    global.surface_choppy_chest.minable = false
-    global.surface_choppy_chest.destructible = false
-    global.surface_choppy_elevator.minable = false
-    global.surface_choppy_elevator.destructible = false
+    storage.surface_choppy_chest.minable = false
+    storage.surface_choppy_chest.destructible = false
+    storage.surface_choppy_elevator.minable = false
+    storage.surface_choppy_elevator.destructible = false
 end
 
 Event.on_init(init)

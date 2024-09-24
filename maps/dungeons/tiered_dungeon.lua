@@ -112,10 +112,10 @@ end
 local function draw_arrows_gui()
     for _, player in pairs(game.connected_players) do
         if not player.gui.top.dungeon_down then
-            player.gui.top.add({type = 'sprite-button', name = 'dungeon_down', sprite = 'utility/editor_speed_down', tooltip = {'dungeons_tiered.descend'}})
+            player.gui.top.add({ type = 'sprite-button', name = 'dungeon_down', sprite = 'utility/editor_speed_down', tooltip = { 'dungeons_tiered.descend' } })
         end
         if not player.gui.top.dungeon_up then
-            player.gui.top.add({type = 'sprite-button', name = 'dungeon_up', sprite = 'utility/editor_speed_up', tooltip = {'dungeons_tiered.ascend'}})
+            player.gui.top.add({ type = 'sprite-button', name = 'dungeon_up', sprite = 'utility/editor_speed_up', tooltip = { 'dungeons_tiered.ascend' } })
         end
     end
 end
@@ -130,11 +130,11 @@ local function draw_depth_gui()
         if player.gui.top.dungeon_depth then
             player.gui.top.dungeon_depth.destroy()
         end
-        if surface.name == 'gulag' or surface.name == 'nauvis' or surface.name == 'dungeons_floor_arena' then
+        if surface.name == 'Gulag' or surface.name == 'nauvis' or surface.name == 'dungeons_floor_arena' then
             return
         end
-        local element = player.gui.top.add({type = 'sprite-button', name = 'dungeon_depth'})
-        element.caption = {'dungeons_tiered.depth', surface.index - dungeontable.original_surface_index, dungeontable.depth[surface.index]}
+        local element = player.gui.top.add({ type = 'sprite-button', name = 'dungeon_depth' })
+        element.caption = { 'dungeons_tiered.depth', surface.index - dungeontable.original_surface_index, dungeontable.depth[surface.index] }
         element.tooltip = {
             'dungeons_tiered.depth_tooltip',
             Functions.get_dungeon_evolution_factor(surface.index) * 100,
@@ -153,7 +153,7 @@ local function draw_depth_gui()
         style.left_padding = 4
         style.right_padding = 4
         style.bottom_padding = 2
-        style.font_color = {r = 0, g = 0, b = 0}
+        style.font_color = { r = 0, g = 0, b = 0 }
         style.font = 'default-large-bold'
     end
 end
@@ -183,7 +183,7 @@ local function expand(surface, position)
         Biomes['treasure'](surface, room)
         if room.room_tiles[1] then
             dungeontable.treasures[surface.index] = dungeontable.treasures[surface.index] + 1
-            game.print({'dungeons_tiered.treasure_room', surface.index - dungeontable.original_surface_index}, {r = 0.88, g = 0.22, b = 0})
+            game.print({ 'dungeons_tiered.treasure_room', surface.index - dungeontable.original_surface_index }, { r = 0.88, g = 0.22, b = 0 })
         end
     elseif Research.room_is_lab(surface.index) then
         Biomes['laboratory'](surface, room)
@@ -251,7 +251,7 @@ local function draw_light(player)
             intensity = scale,
             minimum_darkness = 0,
             oriented = false,
-            color = {255, 255, 255},
+            color = { 255, 255, 255 },
             target = player.character,
             surface = player.surface,
             visible = true,
@@ -274,19 +274,19 @@ local function init_player(player, surface)
             log('BUG Player ' .. player.name .. ' is not connected; how did we get here?')
         end
 
-        player.set_controller({type = defines.controllers.god})
-        player.teleport(surface.find_non_colliding_position('character', {0, 0}, 50, 0.5), surface)
+        player.set_controller({ type = defines.controllers.god })
+        player.teleport(surface.find_non_colliding_position('character', { 0, 0 }, 50, 0.5), surface)
         if not player.create_character() then
             log('BUG: create_character for ' .. player.name .. ' failed')
         end
 
-        player.insert({name = 'raw-fish', count = 8})
+        player.insert({ name = 'raw-fish', count = 8 })
         player.set_quick_bar_slot(1, 'raw-fish')
-        player.insert({name = 'pistol', count = 1})
-        player.insert({name = 'firearm-magazine', count = 16})
+        player.insert({ name = 'pistol', count = 1 })
+        player.insert({ name = 'firearm-magazine', count = 16 })
     else
         if player.surface == surface then
-            player.teleport(surface.find_non_colliding_position('character', {0, 0}, 50, 0.5), surface)
+            player.teleport(surface.find_non_colliding_position('character', { 0, 0 }, 50, 0.5), surface)
         end
     end
 end
@@ -310,9 +310,9 @@ local function on_entity_spawned(event)
         local non_colliding_position = surface.find_non_colliding_position(name, unit.position, 16, 1)
         local bonus_unit
         if non_colliding_position then
-            bonus_unit = surface.create_entity({name = name, position = non_colliding_position, force = force})
+            bonus_unit = surface.create_entity({ name = name, position = non_colliding_position, force = force })
         else
-            bonus_unit = surface.create_entity({name = name, position = unit.position, force = force})
+            bonus_unit = surface.create_entity({ name = name, position = unit.position, force = force })
         end
         bonus_unit.ai_settings.allow_try_return_to_spawner = true
         bonus_unit.ai_settings.allow_destroy_when_commands_fail = true
@@ -329,7 +329,7 @@ end
 
 local function on_chunk_generated(event)
     local surface = event.surface
-    if surface.name == 'nauvis' or surface.name == 'gulag' or surface.name == 'dungeons_floor_arena' then
+    if surface.name == 'nauvis' or surface.name == 'Gulag' or surface.name == 'dungeons_floor_arena' then
         return
     end
 
@@ -339,8 +339,8 @@ local function on_chunk_generated(event)
     local i = 1
     for x = 0, 31, 1 do
         for y = 0, 31, 1 do
-            local position = {x = left_top.x + x, y = left_top.y + y}
-            tiles[i] = {name = 'out-of-map', position = position}
+            local position = { x = left_top.x + x, y = left_top.y + y }
+            tiles[i] = { name = 'out-of-map', position = position }
             i = i + 1
         end
     end
@@ -386,7 +386,7 @@ local function on_chunk_generated(event)
         for _, p in pairs(game.connected_players) do
             init_player(p, surface)
         end
-        game.forces.player.chart(surface, {{-128, -128}, {128, 128}})
+        game.forces.player.chart(surface, { { -128, -128 }, { 128, 128 } })
     end
 end
 
@@ -470,11 +470,11 @@ local function on_player_mined_entity(event)
     if entity.name == 'rock-big' then
         local size = dungeontable.surface_size[entity.surface.index]
         if size < math.abs(entity.position.y) or size < math.abs(entity.position.x) then
-            entity.surface.create_entity({name = entity.name, position = entity.position})
+            entity.surface.create_entity({ name = entity.name, position = entity.position })
             entity.destroy()
             local player = game.players[event.player_index]
             RPG.gain_xp(player, -10)
-            Alert.alert_player_warning(player, 30, {'dungeons_tiered.too_small'}, {r = 0.98, g = 0.22, b = 0})
+            Alert.alert_player_warning(player, 30, { 'dungeons_tiered.too_small' }, { r = 0.98, g = 0.22, b = 0 })
             event.buffer.clear()
             return
         end
@@ -510,12 +510,12 @@ local function get_map_gen_settings()
         ['seed'] = math_random(1, 1000000),
         ['water'] = 0,
         ['starting_area'] = 1,
-        ['cliff_settings'] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
+        ['cliff_settings'] = { cliff_elevation_interval = 0, cliff_elevation_0 = 0 },
         ['default_enable_all_autoplace_controls'] = false,
         ['autoplace_settings'] = {
-            ['entity'] = {treat_missing_as_default = false},
-            ['tile'] = {treat_missing_as_default = false},
-            ['decorative'] = {treat_missing_as_default = false}
+            ['entity'] = { treat_missing_as_default = false },
+            ['tile'] = { treat_missing_as_default = false },
+            ['decorative'] = { treat_missing_as_default = false }
         }
     }
     return settings
@@ -545,21 +545,21 @@ local function descend(player, button, shift)
     local dungeontable = DungeonsTable.get_dungeontable()
     local rpg = RPG.get('rpg_t')
     if player.surface.index >= dungeontable.original_surface_index + 50 then
-        player.print({'dungeons_tiered.max_depth'})
+        player.print({ 'dungeons_tiered.max_depth' })
         return
     end
     if player.position.x ^ 2 + player.position.y ^ 2 > 400 then
-        player.print({'dungeons_tiered.only_on_spawn'})
+        player.print({ 'dungeons_tiered.only_on_spawn' })
         return
     end
     if rpg[player.index].level < (player.surface.index - dungeontable.original_surface_index) * 10 + 10 then
-        player.print({'dungeons_tiered.level_required', (player.surface.index - dungeontable.original_surface_index) * 10 + 10})
+        player.print({ 'dungeons_tiered.level_required', (player.surface.index - dungeontable.original_surface_index) * 10 + 10 })
         return
     end
     local surface = game.surfaces[player.surface.index + 1]
     if not surface then
         if dungeontable.surface_size[player.surface.index] < 200 + MIN_ROOMS_TO_DESCEND / 4 then
-            player.print({'dungeons_tiered.floor_size_required', MIN_ROOMS_TO_DESCEND})
+            player.print({ 'dungeons_tiered.floor_size_required', MIN_ROOMS_TO_DESCEND })
             return
         end
         surface = game.create_surface('dungeons_floor' .. player.surface.index - dungeontable.original_surface_index + 1, get_map_gen_settings())
@@ -568,16 +568,16 @@ local function descend(player, button, shift)
         else
             dungeontable.spawn_size = 42
         end
-        surface.request_to_generate_chunks({0, 0}, 2)
+        surface.request_to_generate_chunks({ 0, 0 }, 2)
         surface.force_generate_chunk_requests()
         surface.daytime = 0.25 + 0.30 * (surface.index / (dungeontable.original_surface_index + 50))
         surface.freeze_daytime = true
         surface.min_brightness = 0
-        surface.brightness_visual_weights = {1, 1, 1}
+        surface.brightness_visual_weights = { 1, 1, 1 }
         dungeontable.surface_size[surface.index] = 200
         dungeontable.treasures[surface.index] = 0
-        game.print({'dungeons_tiered.first_visit', player.name, rpg[player.index].level, surface.index - dungeontable.original_surface_index}, {r = 0.8, g = 0.5, b = 0})
-    --Alert.alert_all_players(15, {"dungeons_tiered.first_visit", player.name, rpg[player.index].level, surface.index - 2}, {r=0.8,g=0.2,b=0},"recipe/artillery-targeting-remote", 0.7)
+        game.print({ 'dungeons_tiered.first_visit', player.name, rpg[player.index].level, surface.index - dungeontable.original_surface_index }, { r = 0.8, g = 0.5, b = 0 })
+        --Alert.alert_all_players(15, {"dungeons_tiered.first_visit", player.name, rpg[player.index].level, surface.index - 2}, {r=0.8,g=0.2,b=0},"recipe/artillery-targeting-remote", 0.7)
     end
     if button == defines.mouse_button_type.right then
         surface = game.surfaces[math.min(get_lowest_safe_floor(player), player.surface.index + 5)]
@@ -585,18 +585,18 @@ local function descend(player, button, shift)
     if shift then
         surface = game.surfaces[get_lowest_safe_floor(player)]
     end
-    player.teleport(surface.find_non_colliding_position('character', {0, 0}, 50, 0.5), surface)
+    player.teleport(surface.find_non_colliding_position('character', { 0, 0 }, 50, 0.5), surface)
     --player.print({"dungeons_tiered.travel_down"})
 end
 
 local function ascend(player, button, shift)
     local dungeontable = DungeonsTable.get_dungeontable()
     if player.surface.index <= dungeontable.original_surface_index then
-        player.print({'dungeons_tiered.min_depth'})
+        player.print({ 'dungeons_tiered.min_depth' })
         return
     end
     if player.position.x ^ 2 + player.position.y ^ 2 > 400 then
-        player.print({'dungeons_tiered.only_on_spawn'})
+        player.print({ 'dungeons_tiered.only_on_spawn' })
         return
     end
     local surface = game.surfaces[player.surface.index - 1]
@@ -606,7 +606,7 @@ local function ascend(player, button, shift)
     if shift then
         surface = game.surfaces[dungeontable.original_surface_index]
     end
-    player.teleport(surface.find_non_colliding_position('character', {0, 0}, 50, 0.5), surface)
+    player.teleport(surface.find_non_colliding_position('character', { 0, 0 }, 50, 0.5), surface)
     --player.print({"dungeons_tiered.travel_up"})
 end
 
@@ -623,10 +623,10 @@ local function on_built_entity(event)
             if not try_mine then
                 if entity.valid then
                     entity.destroy()
-                    player.insert({name = 'spidertron', count = 1})
+                    player.insert({ name = 'spidertron', count = 1 })
                 end
             end
-            Alert.alert_player_warning(player, 8, {'dungeons_tiered.spidertron_not_allowed'})
+            Alert.alert_player_warning(player, 8, { 'dungeons_tiered.spidertron_not_allowed' })
         end
     end
 end
@@ -742,7 +742,7 @@ local function on_init()
 
     local surface = game.create_surface('dungeons_floor0', get_map_gen_settings())
 
-    surface.request_to_generate_chunks({0, 0}, 2)
+    surface.request_to_generate_chunks({ 0, 0 }, 2)
     surface.force_generate_chunk_requests()
     surface.daytime = 0.25
     surface.freeze_daytime = true
@@ -755,7 +755,7 @@ local function on_init()
     map_settings.width = 3
     nauvis.map_gen_settings = map_settings
     for chunk in nauvis.get_chunks() do
-        nauvis.delete_chunk({chunk.x, chunk.y})
+        nauvis.delete_chunk({ chunk.x, chunk.y })
     end
 
     game.forces.player.manual_mining_speed_modifier = 0.5
@@ -802,8 +802,8 @@ local function on_init()
 
     local T = MapInfo.Pop_info()
     T.localised_category = 'dungeons_tiered'
-    T.main_caption_color = {r = 0, g = 0, b = 0}
-    T.sub_caption_color = {r = 150, g = 0, b = 20}
+    T.main_caption_color = { r = 0, g = 0, b = 0 }
+    T.sub_caption_color = { r = 150, g = 0, b = 20 }
 end
 
 local function on_tick()
@@ -852,7 +852,7 @@ Event.add(defines.events.on_player_respawned, on_player_respawned)
 
 Changelog.SetVersions(
     {
-        {ver = 'next', date = 'the future', desc = 'Make suggestions in the comfy #dungeons discord channel'},
+        { ver = 'next', date = 'the future', desc = 'Make suggestions in the comfy #dungeons discord channel' },
         {
             ver = '1.1.1',
             date = '2022-04-10',
@@ -901,6 +901,6 @@ Balancing patch
 * Spawners and worm counts bounded in early rooms.
 ]]
         },
-        {ver = '1.0', date = 'past', desc = 'Pre-changelog version of multi-floor dungeons'}
+        { ver = '1.0',  date = 'past',       desc = 'Pre-changelog version of multi-floor dungeons' }
     }
 )

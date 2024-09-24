@@ -72,8 +72,12 @@ local function get_players(player, frame, all)
 
     local selected_index = #tbl
 
-    local f = frame.add({ type = 'drop-down', name = transfer_player_select_name, items = tbl,
-        selected_index = selected_index })
+    local f = frame.add({
+        type = 'drop-down',
+        name = transfer_player_select_name,
+        items = tbl,
+        selected_index = selected_index
+    })
     return f
 end
 
@@ -272,8 +276,11 @@ local function draw_destroy_surface_name(frame)
     local right_flow = bottom_flow.add({ type = 'flow' })
     right_flow.style.horizontal_align = 'right'
 
-    local save_button = right_flow.add({ type = 'button', name = save_destroy_surface_button_name,
-        caption = ({ 'ic.save' }) })
+    local save_button = right_flow.add({
+        type = 'button',
+        name = save_destroy_surface_button_name,
+        caption = ({ 'ic.save' })
+    })
     save_button.style = 'confirm_button' ---@class GuiButtonStyle
     save_button.style.maximal_width = 100
 
@@ -353,7 +360,7 @@ local function draw_main_frame(player)
             {
                 type = 'frame',
                 name = main_frame_name,
-                caption = ({ 'ic.car_settings' }),
+                caption = ({ 'ic.transfer_car' }),
                 direction = 'vertical',
                 style = 'inner_frame_in_outer_frame'
             }
@@ -380,10 +387,16 @@ local function draw_main_frame(player)
     local player_list = Functions.get_trusted_system(player)
 
     local add_player_frame = inside_table.add({ type = 'button', caption = ({ 'ic.add_player' }), name = add_player_name })
-    local transfer_car_frame = inside_table.add({ type = 'button', caption = ({ 'ic.car_settings' }),
-        name = transfer_car_name })
-    local destroy_surface_frame = inside_table.add({ type = 'button', caption = ({ 'ic.destroy_surface' }),
-        name = destroy_surface_name })
+    local transfer_car_frame = inside_table.add({
+        type = 'button',
+        caption = ({ 'ic.transfer_car' }),
+        name = transfer_car_name
+    })
+    local destroy_surface_frame = inside_table.add({
+        type = 'button',
+        caption = ({ 'ic.destroy_surface' }),
+        name = destroy_surface_name
+    })
     local allow_anyone_to_enter =
         inside_table.add(
             {
@@ -508,7 +521,7 @@ local function toggle(player, recreate)
     end
 end
 
-add_toolbar = function(player, remove)
+add_toolbar = function (player, remove)
     if remove then
         if get_top_frame(player) then
             get_top_frame(player).destroy()
@@ -534,7 +547,7 @@ add_toolbar = function(player, remove)
             )
         if b then
             b.style.font_color = { 165, 165, 165 }
-            b.style.font = 'heading-3'
+            b.style.font = 'default-semibold'
             b.style.minimal_height = 36
             b.style.maximal_height = 36
             b.style.minimal_width = 40
@@ -556,7 +569,7 @@ add_toolbar = function(player, remove)
     end
 end
 
-remove_toolbar = function(player)
+remove_toolbar = function (player)
     local screen = player.gui.screen
     local main_frame = screen[main_frame_name]
 
@@ -583,7 +596,7 @@ end
 
 Gui.on_click(
     add_player_name,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Add Player')
         if is_spamming then
             return
@@ -609,7 +622,7 @@ Gui.on_click(
 
 Gui.on_click(
     transfer_car_name,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Transfer Car')
         if is_spamming then
             return
@@ -635,7 +648,7 @@ Gui.on_click(
 
 Gui.on_click(
     destroy_surface_name,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Destroy Surface')
         if is_spamming then
             return
@@ -661,7 +674,7 @@ Gui.on_click(
 
 Gui.on_click(
     allow_anyone_to_enter_name,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Allow Anyone To Enter')
         if is_spamming then
             return
@@ -698,7 +711,7 @@ Gui.on_click(
 
 Gui.on_click(
     auto_upgrade_name,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Auto Upgrade')
         if is_spamming then
             return
@@ -731,7 +744,7 @@ Gui.on_click(
 
 Gui.on_click(
     notify_on_driver_change_name,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Driver Change')
         if is_spamming then
             return
@@ -754,7 +767,7 @@ Gui.on_click(
             else
                 player_list.notify_on_driver_change = 'right'
                 player.print(
-                '[IC] No notifications will be sent to you when someone not trusted tries to drive your car.',
+                    '[IC] No notifications will be sent to you when someone not trusted tries to drive your car.',
                     Color.warning)
             end
 
@@ -767,7 +780,7 @@ Gui.on_click(
 
 Gui.on_click(
     save_add_player_button_name,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Save Add Player')
         if is_spamming then
             return
@@ -818,7 +831,7 @@ Gui.on_click(
 
 Gui.on_click(
     save_transfer_car_button_name,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Save Transfer Car')
         if is_spamming then
             return
@@ -875,7 +888,7 @@ Gui.on_click(
 
 local clear_misc_settings =
     Task.register(
-        function(data)
+        function (data)
             local player_index = data.player_index
             local misc_settings = ICT.get('misc_settings')
             if not misc_settings[player_index] then
@@ -888,7 +901,7 @@ local clear_misc_settings =
 
 Gui.on_click(
     save_destroy_surface_button_name,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Save Destroy Car')
         if is_spamming then
             return
@@ -920,7 +933,7 @@ Gui.on_click(
         if not misc_settings[player.index].final_warning then
             misc_settings[player.index].final_warning = true
             player.print(
-            '[IC] WARNING! WARNING WARNING! Pressing the save button ONE MORE TIME will DELETE your surface. This action is irreversible!',
+                '[IC] WARNING! WARNING WARNING! Pressing the save button ONE MORE TIME will DELETE your surface. This action is irreversible!',
                 Color.red)
             Task.set_timeout_in_ticks(600, clear_misc_settings, { player_index = player.index })
             return
@@ -943,8 +956,8 @@ Gui.on_click(
                         ' deleted their vehicle surface at x = ' .. position.x .. ' y = ' .. position.y .. '.')
                 else
                     player.print(
-                    '[IC] Entities are still on the surface. Please remove any entities and retry this operation. Found ' ..
-                    count .. ' entities!', Color.warning)
+                        '[IC] Entities are still on the surface. Please remove any entities and retry this operation. Found ' ..
+                        count .. ' entities!', Color.warning)
                 end
             end
 
@@ -959,7 +972,7 @@ Gui.on_click(
 
 Gui.on_click(
     trust_player_name,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Trust Player')
         if is_spamming then
             return
@@ -1016,7 +1029,7 @@ Gui.on_click(
 
 Gui.on_click(
     drive_player_name,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Drive Player')
         if is_spamming then
             return
@@ -1064,7 +1077,7 @@ Gui.on_click(
 
 Gui.on_click(
     kick_player_name,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Kick Player')
         if is_spamming then
             return
@@ -1116,7 +1129,7 @@ Gui.on_click(
 
 Gui.on_click(
     discard_add_player_name,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Discard Add Player')
         if is_spamming then
             return
@@ -1141,7 +1154,7 @@ Gui.on_click(
 
 Gui.on_click(
     discard_transfer_car_name,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Discard Transfer Car')
         if is_spamming then
             return
@@ -1166,7 +1179,7 @@ Gui.on_click(
 
 Gui.on_click(
     discard_destroy_surface_name,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Discard Destroy Surface')
         if is_spamming then
             return
@@ -1191,7 +1204,7 @@ Gui.on_click(
 
 Gui.on_click(
     main_toolbar_name,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Main Toolbar')
         if is_spamming then
             return
@@ -1214,7 +1227,7 @@ Gui.on_click(
 
 Gui.on_selection_state_changed(
     transfer_player_select_name,
-    function(event)
+    function (event)
         local player = event.player
         if not player or not player.valid or not player.character then
             return
@@ -1264,7 +1277,7 @@ Public.remove_toolbar = remove_toolbar
 
 Event.add(
     defines.events.on_gui_closed,
-    function(event)
+    function (event)
         local player = game.get_player(event.player_index)
         if not player or not player.valid or not player.character then
             return

@@ -83,7 +83,7 @@ require 'utils.remote_chunks'
 --require 'maps.biter_battles.biter_battles'
 
 --![[Guide a Train through rough terrain, while defending it from the biters]]--
---require 'maps.mountain_fortress_v3.main'
+require 'maps.mountain_fortress_v3.main'
 --require 'maps.mountain_fortress_v2.main'
 --require 'maps.mountain_fortress'
 
@@ -100,7 +100,7 @@ require 'utils.remote_chunks'
 --require 'maps.chronosphere.main'
 
 --![[Adventure as a crew of pirates]]--
--- require 'maps.pirates.main'
+--require 'maps.pirates.main'
 
 --![[Launch rockets in increasingly harder getting worlds.]]--
 --require 'maps.journey.main'
@@ -254,14 +254,16 @@ end
 
 local function on_player_created(event)
     local player = game.players[event.player_index]
-    player.gui.top.style = 'slot_table_spacing_horizontal_flow'
-    player.gui.left.style = 'slot_table_spacing_vertical_flow'
-end
-
-local loaded = _G.package.loaded
-function require(path)
-    return loaded[path] or error('Can only require files at runtime that have been required in the control stage.', 2)
+    player.gui.top.style = 'packed_horizontal_flow'
+    player.gui.left.style = 'vertical_flow'
 end
 
 local Event = require 'utils.event'
 Event.add(defines.events.on_player_created, on_player_created)
+
+local loaded = _G.package.loaded
+function require(path)
+    local level_path = '__level__/' .. path
+    level_path = string.gsub(level_path, "%.", "/") .. ".lua"
+    return loaded[level_path] or error('Can only require files at runtime that have been required in the control stage.', 2)
+end

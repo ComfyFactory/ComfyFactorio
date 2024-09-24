@@ -437,8 +437,8 @@ local function do_season_fix()
 
     local current_season = Public.get('current_season')
 
-    if current_season then
-        rendering.destroy(current_season)
+    if current_season and current_season.valid then
+        current_season.destroy()
     end
 
     Public.set(
@@ -959,6 +959,46 @@ local function on_wave_created(event)
     end
 end
 
+local function on_player_cursor_stack_changed(event)
+    local player = game.get_player(event.player_index)
+    if not player or not player.valid then
+        return
+    end
+
+    if player.admin then
+        return
+    end
+
+    local item = player.cursor_stack
+
+    if not item then
+        return
+    end
+
+    if not item.valid_for_read then
+        return
+    end
+
+    local name = item.name
+
+    local pm = player.permission_group.name
+
+    local blacklisted_spawn_items = {
+        ['cut-paste-tool'] = true,
+        ['rts-tool'] = true,
+        ['artillery-targeting-remote'] = true,
+    }
+
+    if pm == 'Default' or pm == 'limited' or pm == 'jail' or pm == 'not_trusted' or pm == 'near_locomotive' or pm == 'main_surface' then
+        if blacklisted_spawn_items[name] then
+            player.print('You are not allowed to use this item.', Color.warning)
+            player.cursor_stack.clear()
+            return
+        end
+        return
+    end
+end
+
 function Public.find_rocks_and_slowly_remove()
     local active_surface_index = Public.get('active_surface_index')
     local surface = game.get_surface(active_surface_index)
@@ -1445,7 +1485,7 @@ function Public.on_player_joined_game(event)
     end
 
     if player.surface.index ~= active_surface_index then
-        local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
+        local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
         if pos then
             player.teleport(pos, surface)
         else
@@ -1454,9 +1494,9 @@ function Public.on_player_joined_game(event)
         end
     else
         local p = { x = player.position.x, y = player.position.y }
-        local get_tile = surface.get_tile(p)
+        local get_tile = surface.get_tile(p.x, p.y)
         if get_tile.valid and get_tile.name == 'out-of-map' then
-            local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
+            local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
             if pos then
                 player.teleport(pos, surface)
             else
@@ -1481,7 +1521,7 @@ function Public.on_player_joined_game(event)
     end
 
     if distance_from_train then
-        local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
+        local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
         if pos then
             player.teleport(pos, surface)
         else
@@ -1599,7 +1639,7 @@ function Public.on_player_changed_position(event)
     local p = { x = player.position.x, y = player.position.y }
     local config_tile = Public.get('void_or_tile')
     if config_tile == 'lab-dark-2' then
-        local get_tile = surface.get_tile(p)
+        local get_tile = surface.get_tile(p.x, p.y)
         if get_tile.valid and get_tile.name == 'lab-dark-2' then
             if random(1, 2) == 1 then
                 if random(1, 2) == 1 then
@@ -1651,12 +1691,9 @@ local disable_recipes = function (force)
     force.recipes['artillery-wagon'].enabled = false
     force.recipes['artillery-turret'].enabled = false
     force.recipes['artillery-shell'].enabled = false
-    force.recipes['artillery-targeting-remote'].enabled = false
     force.recipes['locomotive'].enabled = false
     force.recipes['pistol'].enabled = false
-    force.recipes['spidertron-remote'].enabled = false
     force.recipes['discharge-defense-equipment'].enabled = false
-    force.recipes['discharge-defense-remote'].enabled = false
 end
 
 function Public.disable_tech()
@@ -1672,7 +1709,9 @@ function Public.disable_tech()
     force.technologies['artillery-shell-range-1'].researched = false
     force.technologies['artillery-shell-speed-1'].enabled = false
     force.technologies['artillery-shell-speed-1'].researched = false
-    force.technologies['optics'].researched = true
+    force.technologies['artillery-shell-damage-1'].enabled = false
+    force.technologies['artillery-shell-damage-1'].researched = false
+    force.technologies['lamp'].researched = true
     force.technologies['railway'].researched = true
     force.technologies['land-mine'].enabled = false
     force.technologies['fluid-wagon'].enabled = false
@@ -1770,7 +1809,7 @@ function Public.set_player_to_god(player)
     end
 
     if string.sub(player.surface.name, 0, #surface.name) == surface.name then
-        local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
+        local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
         if pos then
             player.teleport(pos, surface)
         else
@@ -1778,7 +1817,7 @@ function Public.set_player_to_god(player)
             player.teleport(pos, surface)
         end
     else
-        local pos = player.surface.find_non_colliding_position('character', { 0, 0 }, 3, 0, 5)
+        local pos = player.surface.find_non_colliding_position('character', { 0, 0 }, 3, 0)
         if pos then
             player.teleport(pos, player.surface)
         else
@@ -1826,7 +1865,7 @@ function Public.set_player_to_spectator(player)
 
     player.character = nil
     player.spectator = true
-    player.tag = '[img=utility/ghost_time_to_live_modifier_icon]'
+    player.tag = '[img=utility/create_ghost_on_entity_death_modifier_icon]'
     player.set_controller({ type = defines.controllers.spectator })
     game.print('[color=blue][Spectate][/color] ' .. player.name .. ' is now spectating.')
     Server.to_discord_bold(table.concat { '*** ', '[Spectate] ' .. player.name .. ' is now spectating.', ' ***' })
@@ -1941,6 +1980,7 @@ Event.add(de.on_player_changed_position, on_player_changed_position)
 Event.add(de.on_player_respawned, on_player_respawned)
 Event.add(de.on_player_driving_changed_state, on_player_driving_changed_state)
 Event.add(de.on_pre_player_toggled_map_editor, on_pre_player_toggled_map_editor)
+Event.add(de.on_player_cursor_stack_changed, on_player_cursor_stack_changed)
 Event.on_nth_tick(10, tick)
 Event.add(WD.events.on_wave_created, on_wave_created)
 

@@ -3,7 +3,7 @@ local radius = 8
 
 local function damage_entities_around_target(entity, damage)
     for _, e in pairs(
-        entity.surface.find_entities_filtered({area = {{entity.position.x - radius, entity.position.y - radius}, {entity.position.x + radius, entity.position.y + radius}}})
+        entity.surface.find_entities_filtered({ area = { { entity.position.x - radius, entity.position.y - radius }, { entity.position.x + radius, entity.position.y + radius } } })
     ) do
         if e.health then
             if e.force.name ~= 'player' then
@@ -17,7 +17,7 @@ local function damage_entities_around_target(entity, damage)
 end
 
 local function on_entity_died(event)
-    if not global.ultra_mines_unlocked then
+    if not storage.ultra_mines_unlocked then
         return
     end
     if not event.entity.valid then

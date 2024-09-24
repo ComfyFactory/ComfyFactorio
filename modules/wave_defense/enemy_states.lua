@@ -450,12 +450,14 @@ local function on_evolution_factor_changed(event)
 
     local forces = game.forces
 
-    if forces.aggressors.evolution_factor == 1 and evolution_factor == 1 then
+    local surface_index = Public.get('surface_index')
+
+    if forces.aggressors.get_evolution_factor(surface_index) == 1 and evolution_factor == 1 then
         return
     end
 
-    forces.aggressors.evolution_factor = evolution_factor
-    forces.aggressors_frenzy.evolution_factor = evolution_factor
+    forces.aggressors.set_evolution_factor(evolution_factor, surface_index)
+    forces.aggressors_frenzy.set_evolution_factor(evolution_factor, surface_index)
 end
 
 local function on_entity_died(event)

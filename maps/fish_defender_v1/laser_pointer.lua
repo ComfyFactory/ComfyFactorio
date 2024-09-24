@@ -2,7 +2,7 @@ local Event = require 'utils.event'
 local radius = 32
 
 local function on_player_used_capsule(event)
-    if not global.laser_pointer_unlocked then
+    if not storage.laser_pointer_unlocked then
         return
     end
 

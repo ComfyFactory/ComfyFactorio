@@ -7,7 +7,7 @@ local function on_player_changed_position(event)
     if math_random(1, 128) ~= 1 then
         return
     end
-    if game.tick - global.biters_attack_moving_players_last_action_tick < 7200 then
+    if game.tick - storage.biters_attack_moving_players_last_action_tick < 7200 then
         return
     end
     local player = game.players[event.player_index]
@@ -31,11 +31,11 @@ local function on_player_changed_position(event)
             unit_search_distance = 1024
         }
     )
-    global.biters_attack_moving_players_last_action_tick = game.tick
+    storage.biters_attack_moving_players_last_action_tick = game.tick
 end
 
 local function on_init()
-    global.biters_attack_moving_players_last_action_tick = 0
+    storage.biters_attack_moving_players_last_action_tick = 0
 end
 
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)

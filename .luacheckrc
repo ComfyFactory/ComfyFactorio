@@ -387,7 +387,7 @@ stds.factorio_control = {
                 'json_to_table',
                 'kick_player',
                 'merge_forces',
-                'pollution_statistics',
+                'get_pollution_statistics',
                 'mute_player',
                 'play_sound',
                 'print',
@@ -454,8 +454,8 @@ stds.factorio_control = {
     globals = {
         -- @global@: The global dictionary, useful for storing data persistent across a save-load cycle.
         -- Writing access is given to the mod-id field (for mod-wise saved data).
-        -- (http://lua-api.factorio.com/latest/Global.html)
-        'global',
+        -- (http://lua-api.factorio.com/latest/storage.html)
+        'storage',
         -- @MOD@: Keep it organized, use this variable for anything that "NEEDS" to be global for some reason.
         'MOD'
     }

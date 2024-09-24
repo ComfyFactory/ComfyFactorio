@@ -625,7 +625,7 @@ local explode_ship =
         local bb = Blueprints.reference_get_bounding_box(ship)
         LayersFunctions.remove_excluding_bounding_box(bb)
         Blueprints.destroy_reference(surface, ship)
-        rendering.destroy(id)
+        rendering.get_object_by_id(id).destroy()
     end
 )
 
@@ -936,7 +936,6 @@ local function init_player(p)
         merch.set_friend(p.force, true)
     end
 
-    p.force.research_queue_enabled = true
     for _, tech in pairs(p.force.technologies) do
         for name, status in pairs(MapConfig.technologies) do
             if tech.name == name then

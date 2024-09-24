@@ -29,34 +29,34 @@ local math_random = math.random
 local insert = table.insert
 local enable_start_grace_period = true
 
-local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['raw-fish'] = 3, ['iron-plate'] = 32}
+local starting_items = { ['pistol'] = 1, ['firearm-magazine'] = 16, ['raw-fish'] = 3, ['iron-plate'] = 32 }
 
 local biter_count_limit = 1024 --maximum biters on the east side of the map, next wave will be delayed if the maximum has been reached
 local boss_waves = {
-    [50] = {{name = 'big-biter', count = 3}},
-    [100] = {{name = 'behemoth-biter', count = 1}},
-    [150] = {{name = 'behemoth-spitter', count = 4}, {name = 'big-spitter', count = 16}},
+    [50] = { { name = 'big-biter', count = 3 } },
+    [100] = { { name = 'behemoth-biter', count = 1 } },
+    [150] = { { name = 'behemoth-spitter', count = 4 }, { name = 'big-spitter', count = 16 } },
     [200] = {
-        {name = 'behemoth-biter', count = 4},
-        {name = 'behemoth-spitter', count = 2},
-        {name = 'big-biter', count = 32}
+        { name = 'behemoth-biter',   count = 4 },
+        { name = 'behemoth-spitter', count = 2 },
+        { name = 'big-biter',        count = 32 }
     },
     [250] = {
-        {name = 'behemoth-biter', count = 8},
-        {name = 'behemoth-spitter', count = 4},
-        {name = 'big-spitter', count = 32}
+        { name = 'behemoth-biter',   count = 8 },
+        { name = 'behemoth-spitter', count = 4 },
+        { name = 'big-spitter',      count = 32 }
     },
-    [300] = {{name = 'behemoth-biter', count = 16}, {name = 'behemoth-spitter', count = 8}}
+    [300] = { { name = 'behemoth-biter', count = 16 }, { name = 'behemoth-spitter', count = 8 } }
 }
 
 local difficulties_votes = {
-    [1] = {wave_interval = 4500, amount_modifier = 0.52, strength_modifier = 0.40, boss_modifier = 3.0},
-    [2] = {wave_interval = 4100, amount_modifier = 0.76, strength_modifier = 0.65, boss_modifier = 4.0},
-    [3] = {wave_interval = 3800, amount_modifier = 0.92, strength_modifier = 0.85, boss_modifier = 5.0},
-    [4] = {wave_interval = 3600, amount_modifier = 1.00, strength_modifier = 1.00, boss_modifier = 6.0},
-    [5] = {wave_interval = 3400, amount_modifier = 1.08, strength_modifier = 1.25, boss_modifier = 7.0},
-    [6] = {wave_interval = 3100, amount_modifier = 1.24, strength_modifier = 1.75, boss_modifier = 8.0},
-    [7] = {wave_interval = 2700, amount_modifier = 1.48, strength_modifier = 2.50, boss_modifier = 9.0}
+    [1] = { wave_interval = 4500, amount_modifier = 0.52, strength_modifier = 0.40, boss_modifier = 3.0 },
+    [2] = { wave_interval = 4100, amount_modifier = 0.76, strength_modifier = 0.65, boss_modifier = 4.0 },
+    [3] = { wave_interval = 3800, amount_modifier = 0.92, strength_modifier = 0.85, boss_modifier = 5.0 },
+    [4] = { wave_interval = 3600, amount_modifier = 1.00, strength_modifier = 1.00, boss_modifier = 6.0 },
+    [5] = { wave_interval = 3400, amount_modifier = 1.08, strength_modifier = 1.25, boss_modifier = 7.0 },
+    [6] = { wave_interval = 3100, amount_modifier = 1.24, strength_modifier = 1.75, boss_modifier = 8.0 },
+    [7] = { wave_interval = 2700, amount_modifier = 1.48, strength_modifier = 2.50, boss_modifier = 9.0 }
 }
 
 local function shuffle(tbl)
@@ -73,7 +73,7 @@ local function create_wave_gui(player)
         player.gui.top['fish_defense_waves'].destroy()
     end
     local this = FDT.get()
-    local frame = player.gui.top.add({type = 'frame', name = 'fish_defense_waves', tooltip = 'Click to show map info'})
+    local frame = player.gui.top.add({ type = 'frame', name = 'fish_defense_waves', tooltip = 'Click to show map info' })
     frame.style.maximal_height = 38
 
     local wave_count = 0
@@ -82,17 +82,17 @@ local function create_wave_gui(player)
     end
 
     if not this.wave_grace_period then
-        local label = frame.add({type = 'label', caption = 'Wave: ' .. wave_count})
-        label.style.font_color = {r = 0.88, g = 0.88, b = 0.88}
+        local label = frame.add({ type = 'label', caption = 'Wave: ' .. wave_count })
+        label.style.font_color = { r = 0.88, g = 0.88, b = 0.88 }
         label.style.font = 'default-listbox'
         label.style.left_padding = 4
         label.style.right_padding = 4
         label.style.minimal_width = 68
-        label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+        label.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
         local next_level_progress = game.tick % this.wave_interval / this.wave_interval
 
-        local progressbar = frame.add({type = 'progressbar', value = next_level_progress})
+        local progressbar = frame.add({ type = 'progressbar', value = next_level_progress })
         progressbar.style.minimal_width = 120
         progressbar.style.maximal_width = 120
         progressbar.style.top_padding = 10
@@ -103,12 +103,12 @@ local function create_wave_gui(player)
             return
         end
 
-        local label = frame.add({type = 'label', caption = 'Waves will start in ' .. time_remaining .. ' minutes.'})
-        label.style.font_color = {r = 0.88, g = 0.88, b = 0.88}
+        local label = frame.add({ type = 'label', caption = 'Waves will start in ' .. time_remaining .. ' minutes.' })
+        label.style.font_color = { r = 0.88, g = 0.88, b = 0.88 }
         label.style.font = 'default-listbox'
         label.style.left_padding = 4
         label.style.right_padding = 4
-        label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+        label.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
         if not enable_start_grace_period then
             this.wave_grace_period = nil
@@ -128,19 +128,19 @@ local function show_fd_stats(player)
 
     local frame =
         player.gui.left.add {
-        type = 'frame',
-        name = gui_id
-    }
+            type = 'frame',
+            name = gui_id
+        }
     local table =
         frame.add {
-        type = 'table',
-        name = table_id,
-        column_count = 2
-    }
+            type = 'table',
+            name = table_id,
+            column_count = 2
+        }
 
-    local table_header = {'Building', 'Placed' .. '/' .. 'Limit'}
+    local table_header = { 'Building', 'Placed' .. '/' .. 'Limit' }
     for k, v in pairs(table_header) do
-        local h = table.add {type = 'label', caption = v}
+        local h = table.add { type = 'label', caption = v }
         h.style.font = 'heading-2'
     end
 
@@ -148,7 +148,7 @@ local function show_fd_stats(player)
         local name = v.str
         local placed = v.placed
         local limit = v.limit
-        local entry = {name, placed .. '/' .. limit}
+        local entry = { name, placed .. '/' .. limit }
         for k, v in pairs(entry) do
             table.add {
                 type = 'label',
@@ -173,10 +173,10 @@ local function add_fd_stats_button(player)
     end
     local button =
         player.gui.top.add {
-        type = 'sprite-button',
-        name = button_id,
-        sprite = 'item/submachine-gun'
-    }
+            type = 'sprite-button',
+            name = button_id,
+            sprite = 'item/submachine-gun'
+        }
 end
 
 local function on_gui_click(event)
@@ -215,129 +215,129 @@ local function get_biter_initial_pool()
     local biter_pool
     if wave_count > 1750 then
         biter_pool = {
-            {name = 'behemoth-biter', threat = threat_values.behemoth_biter, weight = 2},
-            {name = 'behemoth-spitter', threat = threat_values.behemoth_spitter, weight = 1}
+            { name = 'behemoth-biter',   threat = threat_values.behemoth_biter,   weight = 2 },
+            { name = 'behemoth-spitter', threat = threat_values.behemoth_spitter, weight = 1 }
         }
         return biter_pool
     end
     if wave_count > 1500 then
         biter_pool = {
-            {name = 'big-biter', threat = threat_values.big_biter, weight = 1},
-            {name = 'behemoth-biter', threat = threat_values.behemoth_biter, weight = 2},
-            {name = 'behemoth-spitter', threat = threat_values.behemoth_spitter, weight = 1}
+            { name = 'big-biter',        threat = threat_values.big_biter,        weight = 1 },
+            { name = 'behemoth-biter',   threat = threat_values.behemoth_biter,   weight = 2 },
+            { name = 'behemoth-spitter', threat = threat_values.behemoth_spitter, weight = 1 }
         }
         return biter_pool
     end
     if wave_count > 1250 then
         biter_pool = {
-            {name = 'big-biter', threat = threat_values.big_biter, weight = 2},
-            {name = 'behemoth-biter', threat = threat_values.behemoth_biter, weight = 2},
-            {name = 'behemoth-spitter', threat = threat_values.behemoth_spitter, weight = 1}
+            { name = 'big-biter',        threat = threat_values.big_biter,        weight = 2 },
+            { name = 'behemoth-biter',   threat = threat_values.behemoth_biter,   weight = 2 },
+            { name = 'behemoth-spitter', threat = threat_values.behemoth_spitter, weight = 1 }
         }
         return biter_pool
     end
     if wave_count > 1000 then
         biter_pool = {
-            {name = 'big-biter', threat = threat_values.big_biter, weight = 3},
-            {name = 'behemoth-biter', threat = threat_values.behemoth_biter, weight = 2},
-            {name = 'behemoth-spitter', threat = threat_values.behemoth_spitter, weight = 1}
+            { name = 'big-biter',        threat = threat_values.big_biter,        weight = 3 },
+            { name = 'behemoth-biter',   threat = threat_values.behemoth_biter,   weight = 2 },
+            { name = 'behemoth-spitter', threat = threat_values.behemoth_spitter, weight = 1 }
         }
         return biter_pool
     end
     if game.forces.enemy.evolution_factor < 0.1 then
         biter_pool = {
-            {name = 'small-biter', threat = threat_values.small_biter, weight = 3},
-            {name = 'small-spitter', threat = threat_values.small_spitter, weight = 1}
+            { name = 'small-biter',   threat = threat_values.small_biter,   weight = 3 },
+            { name = 'small-spitter', threat = threat_values.small_spitter, weight = 1 }
         }
         return biter_pool
     end
     if game.forces.enemy.evolution_factor < 0.2 then
         biter_pool = {
-            {name = 'small-biter', threat = threat_values.small_biter, weight = 10},
-            {name = 'medium-biter', threat = threat_values.medium_biter, weight = 2},
-            {name = 'small-spitter', threat = threat_values.small_spitter, weight = 5},
-            {name = 'medium-spitter', threat = threat_values.medium_spitter, weight = 1}
+            { name = 'small-biter',    threat = threat_values.small_biter,    weight = 10 },
+            { name = 'medium-biter',   threat = threat_values.medium_biter,   weight = 2 },
+            { name = 'small-spitter',  threat = threat_values.small_spitter,  weight = 5 },
+            { name = 'medium-spitter', threat = threat_values.medium_spitter, weight = 1 }
         }
         return biter_pool
     end
     if game.forces.enemy.evolution_factor < 0.3 then
         biter_pool = {
-            {name = 'small-biter', threat = threat_values.small_biter, weight = 18},
-            {name = 'medium-biter', threat = threat_values.medium_biter, weight = 6},
-            {name = 'small-spitter', threat = threat_values.small_spitter, weight = 8},
-            {name = 'medium-spitter', threat = threat_values.medium_spitter, weight = 3},
-            {name = 'big-biter', threat = threat_values.big_biter, weight = 1}
+            { name = 'small-biter',    threat = threat_values.small_biter,    weight = 18 },
+            { name = 'medium-biter',   threat = threat_values.medium_biter,   weight = 6 },
+            { name = 'small-spitter',  threat = threat_values.small_spitter,  weight = 8 },
+            { name = 'medium-spitter', threat = threat_values.medium_spitter, weight = 3 },
+            { name = 'big-biter',      threat = threat_values.big_biter,      weight = 1 }
         }
         return biter_pool
     end
     if game.forces.enemy.evolution_factor < 0.4 then
         biter_pool = {
-            {name = 'small-biter', threat = threat_values.small_biter, weight = 2},
-            {name = 'medium-biter', threat = threat_values.medium_biter, weight = 8},
-            {name = 'big-biter', threat = threat_values.big_biter, weight = 2},
-            {name = 'small-spitter', threat = threat_values.small_spitter, weight = 1},
-            {name = 'medium-spitter', threat = threat_values.medium_spitter, weight = 4},
-            {name = 'big-spitter', threat = threat_values.big_spitter, weight = 1}
+            { name = 'small-biter',    threat = threat_values.small_biter,    weight = 2 },
+            { name = 'medium-biter',   threat = threat_values.medium_biter,   weight = 8 },
+            { name = 'big-biter',      threat = threat_values.big_biter,      weight = 2 },
+            { name = 'small-spitter',  threat = threat_values.small_spitter,  weight = 1 },
+            { name = 'medium-spitter', threat = threat_values.medium_spitter, weight = 4 },
+            { name = 'big-spitter',    threat = threat_values.big_spitter,    weight = 1 }
         }
         return biter_pool
     end
     if game.forces.enemy.evolution_factor < 0.5 then
         biter_pool = {
-            {name = 'small-biter', threat = threat_values.small_biter, weight = 2},
-            {name = 'medium-biter', threat = threat_values.medium_biter, weight = 4},
-            {name = 'big-biter', threat = threat_values.big_biter, weight = 8},
-            {name = 'small-spitter', threat = threat_values.small_spitter, weight = 1},
-            {name = 'medium-spitter', threat = threat_values.medium_spitter, weight = 2},
-            {name = 'big-spitter', threat = threat_values.big_spitter, weight = 4}
+            { name = 'small-biter',    threat = threat_values.small_biter,    weight = 2 },
+            { name = 'medium-biter',   threat = threat_values.medium_biter,   weight = 4 },
+            { name = 'big-biter',      threat = threat_values.big_biter,      weight = 8 },
+            { name = 'small-spitter',  threat = threat_values.small_spitter,  weight = 1 },
+            { name = 'medium-spitter', threat = threat_values.medium_spitter, weight = 2 },
+            { name = 'big-spitter',    threat = threat_values.big_spitter,    weight = 4 }
         }
         return biter_pool
     end
     if game.forces.enemy.evolution_factor < 0.6 then
         biter_pool = {
-            {name = 'medium-biter', threat = threat_values.medium_biter, weight = 4},
-            {name = 'big-biter', threat = threat_values.big_biter, weight = 8},
-            {name = 'medium-spitter', threat = threat_values.medium_spitter, weight = 2},
-            {name = 'big-spitter', threat = threat_values.big_spitter, weight = 4}
+            { name = 'medium-biter',   threat = threat_values.medium_biter,   weight = 4 },
+            { name = 'big-biter',      threat = threat_values.big_biter,      weight = 8 },
+            { name = 'medium-spitter', threat = threat_values.medium_spitter, weight = 2 },
+            { name = 'big-spitter',    threat = threat_values.big_spitter,    weight = 4 }
         }
         return biter_pool
     end
     if game.forces.enemy.evolution_factor < 0.7 then
         biter_pool = {
-            {name = 'behemoth-biter', threat = threat_values.small_biter, weight = 2},
-            {name = 'medium-biter', threat = threat_values.medium_biter, weight = 12},
-            {name = 'big-biter', threat = threat_values.big_biter, weight = 20},
-            {name = 'behemoth-spitter', threat = threat_values.small_spitter, weight = 1},
-            {name = 'medium-spitter', threat = threat_values.medium_spitter, weight = 6},
-            {name = 'big-spitter', threat = threat_values.big_spitter, weight = 10}
+            { name = 'behemoth-biter',   threat = threat_values.small_biter,    weight = 2 },
+            { name = 'medium-biter',     threat = threat_values.medium_biter,   weight = 12 },
+            { name = 'big-biter',        threat = threat_values.big_biter,      weight = 20 },
+            { name = 'behemoth-spitter', threat = threat_values.small_spitter,  weight = 1 },
+            { name = 'medium-spitter',   threat = threat_values.medium_spitter, weight = 6 },
+            { name = 'big-spitter',      threat = threat_values.big_spitter,    weight = 10 }
         }
         return biter_pool
     end
     if game.forces.enemy.evolution_factor < 0.8 then
         biter_pool = {
-            {name = 'behemoth-biter', threat = threat_values.small_biter, weight = 2},
-            {name = 'medium-biter', threat = threat_values.medium_biter, weight = 4},
-            {name = 'big-biter', threat = threat_values.big_biter, weight = 10},
-            {name = 'behemoth-spitter', threat = threat_values.small_spitter, weight = 1},
-            {name = 'medium-spitter', threat = threat_values.medium_spitter, weight = 2},
-            {name = 'big-spitter', threat = threat_values.big_spitter, weight = 5}
+            { name = 'behemoth-biter',   threat = threat_values.small_biter,    weight = 2 },
+            { name = 'medium-biter',     threat = threat_values.medium_biter,   weight = 4 },
+            { name = 'big-biter',        threat = threat_values.big_biter,      weight = 10 },
+            { name = 'behemoth-spitter', threat = threat_values.small_spitter,  weight = 1 },
+            { name = 'medium-spitter',   threat = threat_values.medium_spitter, weight = 2 },
+            { name = 'big-spitter',      threat = threat_values.big_spitter,    weight = 5 }
         }
         return biter_pool
     end
     if game.forces.enemy.evolution_factor <= 0.9 then
         biter_pool = {
-            {name = 'big-biter', threat = threat_values.big_biter, weight = 12},
-            {name = 'behemoth-biter', threat = threat_values.behemoth_biter, weight = 2},
-            {name = 'big-spitter', threat = threat_values.big_spitter, weight = 6},
-            {name = 'behemoth-spitter', threat = threat_values.behemoth_spitter, weight = 1}
+            { name = 'big-biter',        threat = threat_values.big_biter,        weight = 12 },
+            { name = 'behemoth-biter',   threat = threat_values.behemoth_biter,   weight = 2 },
+            { name = 'big-spitter',      threat = threat_values.big_spitter,      weight = 6 },
+            { name = 'behemoth-spitter', threat = threat_values.behemoth_spitter, weight = 1 }
         }
         return biter_pool
     end
     if game.forces.enemy.evolution_factor <= 1 then
         biter_pool = {
-            {name = 'big-biter', threat = threat_values.big_biter, weight = 4},
-            {name = 'behemoth-biter', threat = threat_values.behemoth_biter, weight = 2},
-            {name = 'big-spitter', threat = threat_values.big_spitter, weight = 2},
-            {name = 'behemoth-spitter', threat = threat_values.behemoth_spitter, weight = 1}
+            { name = 'big-biter',        threat = threat_values.big_biter,        weight = 4 },
+            { name = 'behemoth-biter',   threat = threat_values.behemoth_biter,   weight = 2 },
+            { name = 'big-spitter',      threat = threat_values.big_spitter,      weight = 2 },
+            { name = 'behemoth-spitter', threat = threat_values.behemoth_spitter, weight = 1 }
         }
         return biter_pool
     end
@@ -348,7 +348,7 @@ local function get_biter_pool()
     local biter_raffle = {}
     for _, biter_type in pairs(biter_pool) do
         for x = 1, biter_type.weight, 1 do
-            insert(biter_raffle, {name = biter_type.name, threat = biter_type.threat})
+            insert(biter_raffle, { name = biter_type.name, threat = biter_type.threat })
         end
     end
     return biter_raffle
@@ -364,7 +364,7 @@ local function spawn_biter(pos, biter_pool)
     biter_pool = shuffle(biter_pool)
     this.attack_wave_threat = this.attack_wave_threat - biter_pool[1].threat
     local valid_pos = surface.find_non_colliding_position(biter_pool[1].name, pos, 100, 2)
-    local biter = surface.create_entity({name = biter_pool[1].name, position = valid_pos})
+    local biter = surface.create_entity({ name = biter_pool[1].name, position = valid_pos })
     biter.ai_settings.allow_destroy_when_commands_fail = false
     biter.ai_settings.allow_try_return_to_spawner = false
     return biter
@@ -380,14 +380,14 @@ local function get_y_coord_raffle_table()
 end
 
 local attack_group_count_thresholds = {
-    {0, 1},
-    {50, 2},
-    {100, 3},
-    {150, 4},
-    {200, 5},
-    {1000, 6},
-    {2000, 7},
-    {3000, 8}
+    { 0,    1 },
+    { 50,   2 },
+    { 100,  3 },
+    { 150,  4 },
+    { 200,  5 },
+    { 1000, 6 },
+    { 2000, 7 },
+    { 3000, 8 }
 }
 
 local function get_number_of_attack_groups()
@@ -414,7 +414,7 @@ local function clear_corpses(surface)
     if wave_count > 500 then
         chance = 2
     end
-    for _, entity in pairs(surface.find_entities_filtered {type = 'corpse'}) do
+    for _, entity in pairs(surface.find_entities_filtered { type = 'corpse' }) do
         if math_random(1, chance) == 1 then
             entity.destroy()
         end
@@ -425,7 +425,7 @@ local function send_unit_group(unit_group)
     local commands = {}
     local market = FDT.get('market')
     for x = unit_group.position.x, market.position.x, -48 do
-        local destination = unit_group.surface.find_non_colliding_position('stone-wall', {x = x, y = unit_group.position.y}, 32, 4)
+        local destination = unit_group.surface.find_non_colliding_position('stone-wall', { x = x, y = unit_group.position.y }, 32, 4)
         if destination then
             commands[#commands + 1] = {
                 type = defines.command.attack_area,
@@ -437,7 +437,7 @@ local function send_unit_group(unit_group)
     end
     commands[#commands + 1] = {
         type = defines.command.attack_area,
-        destination = {x = market.position.x, y = unit_group.position.y},
+        destination = { x = market.position.x, y = unit_group.position.y },
         radius = 16,
         distraction = defines.distraction.by_enemy
     }
@@ -460,9 +460,9 @@ local function spawn_boss_units(surface)
     local Diff = Difficulty.get()
     local this = FDT.get()
     if this.wave_count <= 2000 then
-        game.print({'fish_defender.boss_message', this.wave_count, {'fish_defender.' .. this.wave_count}}, {r = 0.8, g = 0.1, b = 0.1})
+        game.print({ 'fish_defender.boss_message', this.wave_count, { 'fish_defender.' .. this.wave_count } }, { r = 0.8, g = 0.1, b = 0.1 })
     else
-        game.print({'fish_defender.boss_message', this.wave_count}, {r = 0.8, g = 0.1, b = 0.1})
+        game.print({ 'fish_defender.boss_message', this.wave_count }, { r = 0.8, g = 0.1, b = 0.1 })
     end
 
     if not boss_waves[this.wave_count] then
@@ -471,8 +471,8 @@ local function spawn_boss_units(surface)
             amount = 1000
         end
         boss_waves[this.wave_count] = {
-            {name = 'behemoth-biter', count = math.floor(amount / 20)},
-            {name = 'behemoth-spitter', count = math.floor(amount / 40)}
+            { name = 'behemoth-biter',   count = math.floor(amount / 20) },
+            { name = 'behemoth-spitter', count = math.floor(amount / 40) }
         }
     end
 
@@ -481,13 +481,13 @@ local function spawn_boss_units(surface)
         health_factor = health_factor * 2
     end
 
-    local position = {x = 216, y = 0}
-    local biter_group = surface.create_unit_group({position = position})
+    local position = { x = 216, y = 0 }
+    local biter_group = surface.create_unit_group({ position = position })
     for _, entry in pairs(boss_waves[this.wave_count]) do
         for x = 1, entry.count, 1 do
             local pos = surface.find_non_colliding_position(entry.name, position, 64, 3)
             if pos then
-                local biter = surface.create_entity({name = entry.name, position = pos})
+                local biter = surface.create_entity({ name = entry.name, position = pos })
                 biter.ai_settings.allow_destroy_when_commands_fail = false
                 biter.ai_settings.allow_try_return_to_spawner = false
                 this.boss_biters[biter.unit_number] = biter
@@ -506,7 +506,7 @@ local function wake_up_the_biters(surface)
         return
     end
 
-    local units = surface.find_entities_filtered({type = 'unit'})
+    local units = surface.find_entities_filtered({ type = 'unit' })
     units = shuffle(units)
     local unit_groups = {}
     local y_raffle = get_y_coord_raffle_table()
@@ -526,7 +526,7 @@ local function wake_up_the_biters(surface)
             y = y_raffle[i]
         end
 
-        unit_groups[i] = surface.create_unit_group({position = {x = x, y = y}})
+        unit_groups[i] = surface.create_unit_group({ position = { x = x, y = y } })
         local biters = surface.find_enemy_units(units[i].position, 24, 'player')
         for _, biter in pairs(biters) do
             unit_groups[i].add_member(biter)
@@ -568,7 +568,7 @@ local function damage_entity_outside_of_fence(e)
         return
     end
 
-    e.surface.create_entity({name = 'water-splash', position = e.position})
+    e.surface.create_entity({ name = 'water-splash', position = e.position })
 
     if e.type == 'entity-ghost' then
         e.destroy()
@@ -596,7 +596,7 @@ local function biter_attack_wave()
     clear_corpses(surface)
     wake_up_the_biters(surface)
 
-    if surface.count_entities_filtered({type = 'unit'}) > biter_count_limit then
+    if surface.count_entities_filtered({ type = 'unit' }) > biter_count_limit then
         --game.print("Biter limit reached, wave delayed.", {r = 0.7, g = 0.1, b = 0.1})
         return
     end
@@ -648,7 +648,7 @@ local function biter_attack_wave()
     --	end
     --end
 
-    for _, e in pairs(surface.find_entities_filtered({area = {{160, -256}, {360, 256}}})) do
+    for _, e in pairs(surface.find_entities_filtered({ area = { { 160, -256 }, { 360, 256 } } })) do
         damage_entity_outside_of_fence(e)
     end
 
@@ -657,11 +657,11 @@ local function biter_attack_wave()
     local unit_groups = {}
     if this.wave_count > 50 and math_random(1, 8) == 1 then
         for i = 1, 10, 1 do
-            unit_groups[i] = surface.create_unit_group({position = {x = 256, y = y_raffle[i]}})
+            unit_groups[i] = surface.create_unit_group({ position = { x = 256, y = y_raffle[i] } })
         end
     else
         for i = 1, get_number_of_attack_groups(), 1 do
-            unit_groups[i] = surface.create_unit_group({position = {x = 256, y = y_raffle[i]}})
+            unit_groups[i] = surface.create_unit_group({ position = { x = 256, y = y_raffle[i] } })
         end
     end
 
@@ -745,11 +745,11 @@ local function get_mvps()
     end
     local mvp = {}
     score_list = get_sorted_list('killscore', score_list)
-    mvp.killscore = {name = score_list[1].name, score = score_list[1].killscore}
+    mvp.killscore = { name = score_list[1].name, score = score_list[1].killscore }
     score_list = get_sorted_list('deaths', score_list)
-    mvp.deaths = {name = score_list[1].name, score = score_list[1].deaths}
+    mvp.deaths = { name = score_list[1].name, score = score_list[1].deaths }
     score_list = get_sorted_list('built_entities', score_list)
-    mvp.built_entities = {name = score_list[1].name, score = score_list[1].built_entities}
+    mvp.built_entities = { name = score_list[1].name, score = score_list[1].built_entities }
     return mvp
 end
 
@@ -767,64 +767,64 @@ local function is_game_lost()
         end
         local f =
             player.gui.left.add(
-            {
-                type = 'frame',
-                name = 'fish_defense_game_lost',
-                caption = 'The fish market was overrun! The biters are having a feast :3',
-                direction = 'vertical'
-            }
-        )
-        f.style.font_color = {r = 0.65, g = 0.1, b = 0.99}
+                {
+                    type = 'frame',
+                    name = 'fish_defense_game_lost',
+                    caption = 'The fish market was overrun! The biters are having a feast :3',
+                    direction = 'vertical'
+                }
+            )
+        f.style.font_color = { r = 0.65, g = 0.1, b = 0.99 }
 
-        local t = f.add({type = 'table', column_count = 2})
-        local l = t.add({type = 'label', caption = 'Survival Time >> '})
+        local t = f.add({ type = 'table', column_count = 2 })
+        local l = t.add({ type = 'label', caption = 'Survival Time >> ' })
         l.style.font = 'default-listbox'
-        l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
+        l.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
 
         if this.market_age >= 216000 then
             local l =
                 t.add(
-                {
-                    type = 'label',
-                    caption = math.floor(((this.market_age / 60) / 60) / 60) .. ' hours ' .. math.ceil((this.market_age % 216000 / 60) / 60) .. ' minutes'
-                }
-            )
+                    {
+                        type = 'label',
+                        caption = math.floor(((this.market_age / 60) / 60) / 60) .. ' hours ' .. math.ceil((this.market_age % 216000 / 60) / 60) .. ' minutes'
+                    }
+                )
             l.style.font = 'default-bold'
-            l.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+            l.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
         else
-            local l = t.add({type = 'label', caption = math.ceil((this.market_age % 216000 / 60) / 60) .. ' minutes'})
+            local l = t.add({ type = 'label', caption = math.ceil((this.market_age % 216000 / 60) / 60) .. ' minutes' })
             l.style.font = 'default-bold'
-            l.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+            l.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
         end
 
         local mvp = get_mvps()
         if mvp then
-            local l = t.add({type = 'label', caption = 'MVP Defender >> '})
+            local l = t.add({ type = 'label', caption = 'MVP Defender >> ' })
             l.style.font = 'default-listbox'
-            l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-            local l = t.add({type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score})
+            l.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
+            local l = t.add({ type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score })
             l.style.font = 'default-bold'
-            l.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+            l.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
-            local l = t.add({type = 'label', caption = 'MVP Builder >> '})
+            local l = t.add({ type = 'label', caption = 'MVP Builder >> ' })
             l.style.font = 'default-listbox'
-            l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
+            l.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
             local l =
                 t.add(
-                {
-                    type = 'label',
-                    caption = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things'
-                }
-            )
+                    {
+                        type = 'label',
+                        caption = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things'
+                    }
+                )
             l.style.font = 'default-bold'
-            l.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+            l.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
-            local l = t.add({type = 'label', caption = 'MVP Deaths >> '})
+            local l = t.add({ type = 'label', caption = 'MVP Deaths >> ' })
             l.style.font = 'default-listbox'
-            l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-            local l = t.add({type = 'label', caption = mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times'})
+            l.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
+            local l = t.add({ type = 'label', caption = mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times' })
             l.style.font = 'default-bold'
-            l.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+            l.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
             if not this.results_sent then
                 local result = {}
@@ -843,7 +843,7 @@ local function is_game_lost()
         end
 
         for _, player in pairs(game.connected_players) do
-            player.play_sound {path = 'utility/game_lost', volume_modifier = 0.75}
+            player.play_sound { path = 'utility/game_lost', volume_modifier = 0.75 }
         end
     end
 
@@ -856,7 +856,7 @@ local function is_game_lost()
 end
 
 local function damage_entities_in_radius(surface, position, radius, damage)
-    local entities_to_damage = surface.find_entities_filtered({area = {{position.x - radius, position.y - radius}, {position.x + radius, position.y + radius}}})
+    local entities_to_damage = surface.find_entities_filtered({ area = { { position.x - radius, position.y - radius }, { position.x + radius, position.y + radius } } })
     for _, entity in pairs(entities_to_damage) do
         if entity.valid then
             if entity.health and entity.name ~= 'land-mine' then
@@ -887,7 +887,7 @@ local function market_kill_visuals()
                 frame_speed = 0.1,
                 vertical_speed = 0.1,
                 height = 0.1,
-                movement = {m2 - (math.random(0, m) * 0.01), m2 - (math.random(0, m) * 0.01)}
+                movement = { m2 - (math.random(0, m) * 0.01), m2 - (math.random(0, m) * 0.01) }
             }
         )
     end
@@ -897,7 +897,7 @@ local function market_kill_visuals()
                 market.surface.create_trivial_smoke(
                     {
                         name = 'smoke-fast',
-                        position = {market.position.x + (x * 0.35), market.position.y + (y * 0.35)}
+                        position = { market.position.x + (x * 0.35), market.position.y + (y * 0.35) }
                     }
                 )
             end
@@ -905,32 +905,32 @@ local function market_kill_visuals()
                 market.surface.create_trivial_smoke(
                     {
                         name = 'train-smoke',
-                        position = {market.position.x + (x * 0.35), market.position.y + (y * 0.35)}
+                        position = { market.position.x + (x * 0.35), market.position.y + (y * 0.35) }
                     }
                 )
             end
         end
     end
-    market.surface.spill_item_stack(market.position, {name = 'raw-fish', count = 1024}, true)
+    market.surface.spill_item_stack(market.position, { name = 'raw-fish', count = 1024 }, true)
 end
 
 local biter_splash_damage = {
     ['medium-biter'] = {
-        visuals = {'blood-explosion-big', 'big-explosion'},
+        visuals = { 'blood-explosion-big', 'big-explosion' },
         radius = 1.5,
         damage_min = 50,
         damage_max = 100,
         chance = 32
     },
     ['big-biter'] = {
-        visuals = {'blood-explosion-huge', 'ground-explosion'},
+        visuals = { 'blood-explosion-huge', 'ground-explosion' },
         radius = 2,
         damage_min = 75,
         damage_max = 150,
         chance = 48
     },
     ['behemoth-biter'] = {
-        visuals = {'blood-explosion-huge', 'big-artillery-explosion'},
+        visuals = { 'blood-explosion-huge', 'big-artillery-explosion' },
         radius = 2.5,
         damage_min = 100,
         damage_max = 200,
@@ -956,7 +956,7 @@ local function on_entity_died(event)
         if splash then
             if math_random(1, splash.chance) == 1 then
                 for _, visual in pairs(splash.visuals) do
-                    surface.create_entity({name = visual, position = event.entity.position})
+                    surface.create_entity({ name = visual, position = event.entity.position })
                 end
                 damage_entities_in_radius(surface, event.entity.position, splash.radius, math_random(splash.damage_min, splash.damage_max))
                 return
@@ -967,13 +967,13 @@ local function on_entity_died(event)
             if math_random(1, 16) == 1 then
                 local p = surface.find_non_colliding_position('big-biter', event.entity.position, 3, 0.5)
                 if p then
-                    surface.create_entity {name = 'big-biter', position = p}
+                    surface.create_entity { name = 'big-biter', position = p }
                 end
             end
             for i = 1, math_random(1, 2), 1 do
                 local p = surface.find_non_colliding_position('medium-biter', event.entity.position, 3, 0.5)
                 if p then
-                    surface.create_entity {name = 'medium-biter', position = p}
+                    surface.create_entity { name = 'medium-biter', position = p }
                 end
             end
         end
@@ -998,11 +998,11 @@ local function on_player_joined_game(event)
     local active_surface_index = FDT.get('active_surface_index')
 
     if player.online_time == 0 then
-        player.insert({name = 'pistol', count = 1})
+        player.insert({ name = 'pistol', count = 1 })
         --player.insert({name = "iron-axe", count = 1})
-        player.insert({name = 'raw-fish', count = 3})
-        player.insert({name = 'firearm-magazine', count = 16})
-        player.insert({name = 'iron-plate', count = 32})
+        player.insert({ name = 'raw-fish', count = 3 })
+        player.insert({ name = 'firearm-magazine', count = 16 })
+        player.insert({ name = 'iron-plate', count = 32 })
     end
 
     local surface = game.surfaces[active_surface_index]
@@ -1010,7 +1010,7 @@ local function on_player_joined_game(event)
         return
     end
 
-    if player.surface.index ~= active_surface_index and surface.is_chunk_generated({0, 0}) then
+    if player.surface.index ~= active_surface_index and surface.is_chunk_generated({ 0, 0 }) then
         player.teleport(surface.find_non_colliding_position('character', game.forces['player'].get_spawn_position(surface), 50, 1), active_surface_index)
     else
         if player.surface.index ~= active_surface_index then
@@ -1047,7 +1047,7 @@ local function on_built_entity(event)
                     name = 'flying-text',
                     position = entity.position,
                     text = this.entity_limits[entity.name].placed .. ' / ' .. this.entity_limits[entity.name].limit .. ' ' .. this.entity_limits[entity.name].str .. 's',
-                    color = {r = 0.98, g = 0.66, b = 0.22}
+                    color = { r = 0.98, g = 0.66, b = 0.22 }
                 }
             )
             update_fd_stats()
@@ -1057,11 +1057,11 @@ local function on_built_entity(event)
                     name = 'flying-text',
                     position = entity.position,
                     text = this.entity_limits[entity.name].str .. ' limit reached.',
-                    color = {r = 0.82, g = 0.11, b = 0.11}
+                    color = { r = 0.82, g = 0.11, b = 0.11 }
                 }
             )
             local player = game.players[event.player_index]
-            player.insert({name = entity.name, count = 1})
+            player.insert({ name = entity.name, count = 1 })
             if get_score then
                 if get_score[player.force.name] then
                     if get_score[player.force.name].players[player.name] then
@@ -1086,7 +1086,7 @@ local function on_robot_built_entity(event)
                     name = 'flying-text',
                     position = entity.position,
                     text = entity_limits[entity.name].placed .. ' / ' .. entity_limits[entity.name].limit .. ' ' .. entity_limits[entity.name].str .. 's',
-                    color = {r = 0.98, g = 0.66, b = 0.22}
+                    color = { r = 0.98, g = 0.66, b = 0.22 }
                 }
             )
             update_fd_stats()
@@ -1096,11 +1096,11 @@ local function on_robot_built_entity(event)
                     name = 'flying-text',
                     position = entity.position,
                     text = entity_limits[entity.name].str .. ' limit reached.',
-                    color = {r = 0.82, g = 0.11, b = 0.11}
+                    color = { r = 0.82, g = 0.11, b = 0.11 }
                 }
             )
             local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
-            inventory.insert({name = entity.name, count = 1})
+            inventory.insert({ name = entity.name, count = 1 })
             entity.destroy()
         end
     end
@@ -1115,32 +1115,32 @@ local function on_init(reset)
     AntiGrief.reset_tables()
     FDT.reset_table()
     Poll.reset()
-    global.fish_in_space = 0
+    storage.fish_in_space = 0
 
     local difficulties = {
         [1] = {
             name = 'Normal',
             value = 1,
-            color = {r = 0.00, g = 0.00, b = 0.25},
-            print_color = {r = 0.0, g = 0.0, b = 0.5}
+            color = { r = 0.00, g = 0.00, b = 0.25 },
+            print_color = { r = 0.0, g = 0.0, b = 0.5 }
         },
         [2] = {
             name = 'Hard',
             value = 1.5,
-            color = {r = 0.25, g = 0.00, b = 0.00},
-            print_color = {r = 0.4, g = 0.0, b = 0.00}
+            color = { r = 0.25, g = 0.00, b = 0.00 },
+            print_color = { r = 0.4, g = 0.0, b = 0.00 }
         },
         [3] = {
             name = 'Nightmare',
             value = 3,
-            color = {r = 0.35, g = 0.00, b = 0.00},
-            print_color = {r = 0.6, g = 0.0, b = 0.00}
+            color = { r = 0.35, g = 0.00, b = 0.00 },
+            print_color = { r = 0.6, g = 0.0, b = 0.00 }
         },
         [4] = {
             name = 'Impossible',
             value = 5,
-            color = {r = 0.45, g = 0.00, b = 0.00},
-            print_color = {r = 0.8, g = 0.0, b = 0.00}
+            color = { r = 0.45, g = 0.00, b = 0.00 },
+            print_color = { r = 0.8, g = 0.0, b = 0.00 }
         }
     }
     Difficulty.set_difficulties(difficulties)
@@ -1161,16 +1161,16 @@ local function on_init(reset)
     map_gen_settings.water = 0.10
     map_gen_settings.seed = math_random(10000, 99999)
     map_gen_settings.terrain_segmentation = 3
-    map_gen_settings.cliff_settings = {cliff_elevation_interval = 32, cliff_elevation_0 = 32}
+    map_gen_settings.cliff_settings = { cliff_elevation_interval = 32, cliff_elevation_0 = 32 }
     map_gen_settings.autoplace_controls = {
-        ['coal'] = {frequency = 3, size = 1.5, richness = 1},
-        ['stone'] = {frequency = 3, size = 1.5, richness = 1},
-        ['copper-ore'] = {frequency = 3, size = 1.5, richness = 1},
-        ['iron-ore'] = {frequency = 3, size = 1.5, richness = 1},
-        ['uranium-ore'] = {frequency = 0, size = 0, richness = 0},
-        ['crude-oil'] = {frequency = 5, size = 1.25, richness = 2},
-        ['trees'] = {frequency = 2, size = 1, richness = 1},
-        ['enemy-base'] = {frequency = 'none', size = 'none', richness = 'none'}
+        ['coal'] = { frequency = 3, size = 1.5, richness = 1 },
+        ['stone'] = { frequency = 3, size = 1.5, richness = 1 },
+        ['copper-ore'] = { frequency = 3, size = 1.5, richness = 1 },
+        ['iron-ore'] = { frequency = 3, size = 1.5, richness = 1 },
+        ['uranium-ore'] = { frequency = 0, size = 0, richness = 0 },
+        ['crude-oil'] = { frequency = 5, size = 1.25, richness = 2 },
+        ['trees'] = { frequency = 2, size = 1, richness = 1 },
+        ['enemy-base'] = { frequency = 'none', size = 'none', richness = 'none' }
     }
 
     if not this.active_surface_index then
@@ -1202,7 +1202,7 @@ local function on_init(reset)
     game.forces['enemy'].set_cease_fire('decoratives', true)
     game.forces.player.set_cease_fire('decoratives', true)
 
-    Terrain.fish_eye(surface, {x = -2150, y = -300})
+    Terrain.fish_eye(surface, { x = -2150, y = -300 })
 
     game.map_settings.enemy_expansion.enabled = false
     game.forces.player.technologies['artillery'].researched = false
@@ -1212,8 +1212,8 @@ local function on_init(reset)
 
     local T = Map.Pop_info()
     T.localised_category = 'fish_defender'
-    T.main_caption_color = {r = 0.11, g = 0.8, b = 0.44}
-    T.sub_caption_color = {r = 0.33, g = 0.66, b = 0.9}
+    T.main_caption_color = { r = 0.11, g = 0.8, b = 0.44 }
+    T.sub_caption_color = { r = 0.33, g = 0.66, b = 0.9 }
 
     for _, player in pairs(game.connected_players) do
         if player.gui.left['fish_defense_game_lost'] then
@@ -1245,7 +1245,7 @@ local function on_tick()
         end
         if game.tick % 180 == 0 then
             if surface then
-                game.forces.player.chart(surface, {{-160, -128}, {192, 128}})
+                game.forces.player.chart(surface, { { -160, -128 }, { 192, 128 } })
                 if Diff.difficulty_vote_index then
                     this.wave_interval = difficulties_votes[Diff.difficulty_vote_index].wave_interval
                 end
@@ -1265,7 +1265,7 @@ local function on_tick()
                 if this.game_restart_timer > 0 then
                     this.game_reset = true
                     this.game_has_ended = true
-                    game.print('Map will restart in ' .. this.game_restart_timer / 60 .. ' seconds!', {r = 0.22, g = 0.88, b = 0.22})
+                    game.print('Map will restart in ' .. this.game_restart_timer / 60 .. ' seconds!', { r = 0.22, g = 0.88, b = 0.22 })
                 end
                 if this.game_restart_timer == 0 then
                     on_init(true)
@@ -1277,7 +1277,7 @@ local function on_tick()
     if this.wave_count >= this.wave_limit then
         if this.market and this.market.valid then
             this.market.die()
-            game.print('Game wave limit reached! Game will soft-reset shortly.', {r = 0.22, g = 0.88, b = 0.22})
+            game.print('Game wave limit reached! Game will soft-reset shortly.', { r = 0.22, g = 0.88, b = 0.22 })
         end
     end
 
@@ -1305,13 +1305,13 @@ local function on_player_changed_position(event)
         return
     end
     if player.position.x >= 160 then
-        player.teleport({player.position.x - 1, player.position.y}, surface)
+        player.teleport({ player.position.x - 1, player.position.y }, surface)
         if player.position.y > map_height or player.position.y < map_height * -1 then
-            player.teleport({player.position.x, 0}, surface)
+            player.teleport({ player.position.x, 0 }, surface)
         end
         if player.character then
             player.character.health = player.character.health - 25
-            player.character.surface.create_entity({name = 'water-splash', position = player.position})
+            player.character.surface.create_entity({ name = 'water-splash', position = player.position })
             if player.character.health <= 0 then
                 player.character.die('enemy')
             end

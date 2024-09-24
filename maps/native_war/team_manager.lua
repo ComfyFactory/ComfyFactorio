@@ -12,9 +12,9 @@ local wait_messages = {
     'send love to Mewmew'
 }
 local forces = {
-    {name = 'west', color = {r = 1, g = 1, b = 255}},
-    {name = 'spectator', color = {r = 111, g = 111, b = 111}},
-    {name = 'east', color = {r = 255, g = 1, b = 1}}
+    { name = 'west',      color = { r = 1, g = 1, b = 255 } },
+    { name = 'spectator', color = { r = 111, g = 111, b = 111 } },
+    { name = 'east',      color = { r = 255, g = 1, b = 1 } }
 }
 local gui_values = {
     ['west'] = {
@@ -22,20 +22,20 @@ local gui_values = {
         c1 = 'west',
         c2 = 'JOIN ',
         n1 = 'join_west_button',
-        color1 = {r = 1, g = 1, b = 255},
-        color2 = {r = 0.66, g = 0.66, b = 0.99}
+        color1 = { r = 1, g = 1, b = 255 },
+        color2 = { r = 0.66, g = 0.66, b = 0.99 }
     }, --tech_spy = "spy-north-tech", prod_spy = "spy-north-prod"
     ['east'] = {
         force = 'east',
         c1 = 'east',
         c2 = 'JOIN ',
         n1 = 'join_east_button',
-        color1 = {r = 255, g = 1, b = 1},
-        color2 = {r = 0.99, g = 0.44, b = 0.44}
+        color1 = { r = 255, g = 1, b = 1 },
+        color2 = { r = 0.99, g = 0.44, b = 0.44 }
     } --tech_spy = "spy-north-tech", prod_spy = "spy-north-prod"
 }
 
-starting_items = {['iron-plate'] = 32, ['iron-gear-wheel'] = 16, ['stone'] = 25}
+starting_items = { ['iron-plate'] = 32, ['iron-gear-wheel'] = 16, ['stone'] = 25 }
 
 local function get_player_array(force_name)
     local a = {}
@@ -46,13 +46,13 @@ local function get_player_array(force_name)
 end
 
 local function freeze_players()
-    if not global.freeze_players then
+    if not storage.freeze_players then
         return
     end
-    global.team_manager_default_permissions = {}
+    storage.team_manager_default_permissions = {}
     local p = game.permissions.get_group('Default')
     for action_name, _ in pairs(defines.input_action) do
-        global.team_manager_default_permissions[action_name] = p.allows_action(defines.input_action[action_name])
+        storage.team_manager_default_permissions[action_name] = p.allows_action(defines.input_action[action_name])
         p.set_allows_action(defines.input_action[action_name], false)
     end
     local defs = {
@@ -73,7 +73,7 @@ end
 local function unfreeze_players()
     local p = game.permissions.get_group('Default')
     for action_name, _ in pairs(defines.input_action) do
-        if global.team_manager_default_permissions[action_name] then
+        if storage.team_manager_default_permissions[action_name] then
             p.set_allows_action(defines.input_action[action_name], true)
         end
     end
@@ -112,28 +112,28 @@ local function leave_corpse(player)
         player.character.destroy()
     end
     player.character = nil
-    player.set_controller({type = defines.controllers.god})
+    player.set_controller({ type = defines.controllers.god })
     player.create_character()
 end
 
 local function switch_force(player_name, force_name)
     if not game.players[player_name] then
-        game.print('Team Manager >> Player ' .. player_name .. ' does not exist.', {r = 0.98, g = 0.66, b = 0.22})
+        game.print('Team Manager >> Player ' .. player_name .. ' does not exist.', { r = 0.98, g = 0.66, b = 0.22 })
         return
     end
     if not game.forces[force_name] then
-        game.print('Team Manager >> Force ' .. force_name .. ' does not exist.', {r = 0.98, g = 0.66, b = 0.22})
+        game.print('Team Manager >> Force ' .. force_name .. ' does not exist.', { r = 0.98, g = 0.66, b = 0.22 })
         return
     end
 
     local player = game.players[player_name]
     player.force = game.forces[force_name]
 
-    game.print(player_name .. ' has been switched into team ' .. force_name .. '.', {r = 0.98, g = 0.66, b = 0.22})
+    game.print(player_name .. ' has been switched into team ' .. force_name .. '.', { r = 0.98, g = 0.66, b = 0.22 })
 
     leave_corpse(player)
 
-    global.chosen_team[player_name] = nil
+    storage.chosen_team[player_name] = nil
     if force_name == 'spectator' then
         spectate(player, true)
     else
@@ -142,55 +142,55 @@ local function switch_force(player_name, force_name)
 end
 
 local function create_first_join_gui(player)
-    if not global.game_lobby_timeout then
-        global.game_lobby_timeout = 10
+    if not storage.game_lobby_timeout then
+        storage.game_lobby_timeout = 10
     end --[[5999940]]
-    if global.game_lobby_timeout - game.tick < 0 then
-        global.game_lobby_active = false
+    if storage.game_lobby_timeout - game.tick < 0 then
+        storage.game_lobby_active = false
     end
-    local frame = player.gui.left.add {type = 'frame', name = 'nv_main_gui', direction = 'vertical'}
-    local b = frame.add {type = 'label', caption = 'Defend your Market!'}
+    local frame = player.gui.left.add { type = 'frame', name = 'nv_main_gui', direction = 'vertical' }
+    local b = frame.add { type = 'label', caption = 'Defend your Market!' }
     b.style.font = 'heading-1'
-    b.style.font_color = {r = 0.98, g = 0.66, b = 0.22}
-    local b = frame.add {type = 'label', caption = 'Feed the market with science to send native waves!'}
+    b.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
+    local b = frame.add { type = 'label', caption = 'Feed the market with science to send native waves!' }
     b.style.font = 'heading-2'
-    b.style.font_color = {r = 0.98, g = 0.66, b = 0.22}
-    frame.add {type = 'label', caption = '-----------------------------------------------------------'}
+    b.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
+    frame.add { type = 'label', caption = '-----------------------------------------------------------' }
     for _, gui_value in pairs(gui_values) do
-        local t = frame.add {type = 'table', column_count = 3}
+        local t = frame.add { type = 'table', column_count = 3 }
         local c = gui_value.c1
-        --if global.tm_custom_name[gui_value.force] then c = global.tm_custom_name[gui_value.force] end
-        local l = t.add {type = 'label', caption = c}
+        --if storage.tm_custom_name[gui_value.force] then c = storage.tm_custom_name[gui_value.force] end
+        local l = t.add { type = 'label', caption = c }
         l.style.font = 'heading-2'
         l.style.font_color = gui_value.color1
         l.style.single_line = false
         l.style.maximal_width = 290
-        local l = t.add {type = 'label', caption = '  -  '}
+        local l = t.add { type = 'label', caption = '  -  ' }
         local c = #game.forces[gui_value.force].connected_players .. ' Player'
         if #game.forces[gui_value.force].connected_players >= 1 then
             c = c .. 's'
         end
-        local l = t.add {type = 'label', caption = c}
-        l.style.font_color = {r = 0.22, g = 0.88, b = 0.22}
+        local l = t.add { type = 'label', caption = c }
+        l.style.font_color = { r = 0.22, g = 0.88, b = 0.22 }
         local c = gui_value.c2
         local font_color = gui_value.color1
-        if global.game_lobby_active then
-            font_color = {r = 0.7, g = 0.7, b = 0.7}
+        if storage.game_lobby_active then
+            font_color = { r = 0.7, g = 0.7, b = 0.7 }
             c = c .. ' (waiting for players...  '
-            c = c .. math.ceil((global.game_lobby_timeout - game.tick) / 60)
+            c = c .. math.ceil((storage.game_lobby_timeout - game.tick) / 60)
             c = c .. ')'
         end
-        local t = frame.add {type = 'table', column_count = 4}
+        local t = frame.add { type = 'table', column_count = 4 }
         for _, p in pairs(game.forces[gui_value.force].connected_players) do
-            local l = t.add({type = 'label', caption = p.name})
-            l.style.font_color = {r = p.color.r * 0.6 + 0.4, g = p.color.g * 0.6 + 0.4, b = p.color.b * 0.6 + 0.4, a = 1}
+            local l = t.add({ type = 'label', caption = p.name })
+            l.style.font_color = { r = p.color.r * 0.6 + 0.4, g = p.color.g * 0.6 + 0.4, b = p.color.b * 0.6 + 0.4, a = 1 }
             l.style.font = 'heading-2'
         end
-        local b = frame.add {type = 'sprite-button', name = gui_value.n1, caption = c}
+        local b = frame.add { type = 'sprite-button', name = gui_value.n1, caption = c }
         b.style.font = 'default-large-bold'
         b.style.font_color = font_color
         b.style.minimal_width = 350
-        frame.add {type = 'label', caption = '-----------------------------------------------------------'}
+        frame.add { type = 'label', caption = '-----------------------------------------------------------' }
     end
 end
 
@@ -199,48 +199,48 @@ local function create_main_gui(player)
     if player.gui.left['nv_main_gui'] then
         player.gui.left['nv_main_gui'].destroy()
     end
-    --if global.bb_game_won_by_team then return end
-    if not global.chosen_team[player.name] then
-        if not global.tournament_mode then
+    --if storage.bb_game_won_by_team then return end
+    if not storage.chosen_team[player.name] then
+        if not storage.tournament_mode then
             create_first_join_gui(player)
             return
         end
     end
-    local frame = player.gui.left.add {type = 'frame', name = 'nv_main_gui', direction = 'vertical'}
+    local frame = player.gui.left.add { type = 'frame', name = 'nv_main_gui', direction = 'vertical' }
     -- Science sending GUI
     local first_team = true
     for _, gui_value in pairs(gui_values) do
         -- Line separator
         if not first_team then
-            frame.add {type = 'line', caption = 'this line', direction = 'horizontal'}
+            frame.add { type = 'line', caption = 'this line', direction = 'horizontal' }
         else
             first_team = false
         end
         -- Team name & Player count
-        local t = frame.add {type = 'table', column_count = 3}
+        local t = frame.add { type = 'table', column_count = 3 }
         -- Team name
         local c = gui_value.c1
-        --if global.tm_custom_name[gui_value.force] then c = global.tm_custom_name[gui_value.force] end
-        local l = t.add {type = 'label', caption = c}
+        --if storage.tm_custom_name[gui_value.force] then c = storage.tm_custom_name[gui_value.force] end
+        local l = t.add { type = 'label', caption = c }
         l.style.font = 'default-bold'
         l.style.font_color = gui_value.color1
         l.style.single_line = false
         --l.style.minimal_width = 100
         l.style.maximal_width = 102
         -- Number of players
-        local l = t.add {type = 'label', caption = ' - '}
+        local l = t.add { type = 'label', caption = ' - ' }
         local c = #game.forces[gui_value.force].connected_players .. ' Player'
         if #game.forces[gui_value.force].connected_players >= 1 then
             c = c .. 's'
         end
-        local l = t.add {type = 'label', caption = c}
+        local l = t.add { type = 'label', caption = c }
         l.style.font = 'default'
-        l.style.font_color = {r = 0.22, g = 0.88, b = 0.22}
+        l.style.font_color = { r = 0.22, g = 0.88, b = 0.22 }
         -- Player list
-        local t = frame.add {type = 'table', column_count = 4}
+        local t = frame.add { type = 'table', column_count = 4 }
         for _, p in pairs(game.forces[gui_value.force].connected_players) do
-            local l = t.add {type = 'label', caption = p.name}
-            l.style.font_color = {r = p.color.r * 0.6 + 0.4, g = p.color.g * 0.6 + 0.4, b = p.color.b * 0.6 + 0.4, a = 1}
+            local l = t.add { type = 'label', caption = p.name }
+            l.style.font_color = { r = p.color.r * 0.6 + 0.4, g = p.color.g * 0.6 + 0.4, b = p.color.b * 0.6 + 0.4, a = 1 }
         end
 
         -- Statistics
@@ -252,19 +252,19 @@ local function create_main_gui(player)
         --end
     end
     -- Action frame
-    local t = frame.add {type = 'table', column_count = 2}
+    local t = frame.add { type = 'table', column_count = 2 }
     -- Spectate / Rejoin team
     if is_spec then
-        local b = t.add {type = 'sprite-button', name = 'nv_leave_spectate', caption = 'Join Team'}
+        local b = t.add { type = 'sprite-button', name = 'nv_leave_spectate', caption = 'Join Team' }
     else
-        local b = t.add {type = 'sprite-button', name = 'nv_spectate', caption = 'Spectate'}
+        local b = t.add { type = 'sprite-button', name = 'nv_spectate', caption = 'Spectate' }
     end
     -- Playerlist button
     local b_width = is_spec and 97 or 86
     -- 111 when prod_spy button will be there
     for _, b in pairs(t.children) do
         b.style.font = 'default-bold'
-        b.style.font_color = {r = 0.98, g = 0.66, b = 0.22}
+        b.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
         b.style.top_padding = 1
         b.style.left_padding = 1
         b.style.right_padding = 1
@@ -287,8 +287,8 @@ function join_team(player, force_name, forced_join)
         return
     end
     if not forced_join then
-        if global.tournament_mode then
-            player.print('The game is set to tournament mode. Teams can only be changed via team manager.', {r = 0.98, g = 0.66, b = 0.22})
+        if storage.tournament_mode then
+            player.print('The game is set to tournament mode. Teams can only be changed via team manager.', { r = 0.98, g = 0.66, b = 0.22 })
             return
         end
     end
@@ -302,23 +302,23 @@ function join_team(player, force_name, forced_join)
         enemy_team = 'east'
     end
 
-    if not global.training_mode and global.nv_settings.team_balancing then
+    if not storage.training_mode and storage.nv_settings.team_balancing then
         if not forced_join then
             if #game.forces[force_name].connected_players > #game.forces[enemy_team].connected_players then
-                if not global.chosen_team[player.name] then
-                    player.print('Team ' .. force_name .. ' has too many players currently.', {r = 0.98, g = 0.66, b = 0.22})
+                if not storage.chosen_team[player.name] then
+                    player.print('Team ' .. force_name .. ' has too many players currently.', { r = 0.98, g = 0.66, b = 0.22 })
                     return
                 end
             end
         end
     end
 
-    if global.chosen_team[player.name] then
+    if storage.chosen_team[player.name] then
         if not forced_join then
-            if game.tick - global.spectator_rejoin_delay[player.name] < 7200 then
+            if game.tick - storage.spectator_rejoin_delay[player.name] < 7200 then
                 player.print(
-                    'Not ready to return to your team yet. Please wait ' .. 120 - (math.floor((game.tick - global.spectator_rejoin_delay[player.name]) / 60)) .. ' seconds.',
-                    {r = 0.98, g = 0.66, b = 0.22}
+                    'Not ready to return to your team yet. Please wait ' .. 120 - (math.floor((game.tick - storage.spectator_rejoin_delay[player.name]) / 60)) .. ' seconds.',
+                    { r = 0.98, g = 0.66, b = 0.22 }
                 )
                 return
             end
@@ -329,8 +329,8 @@ function join_team(player, force_name, forced_join)
         player.character.destructible = true
         Public.refresh()
         game.permissions.get_group('Default').add_player(player)
-        local msg = table.concat({'Team ', player.force.name, ' player ', player.name, ' is no longer spectating.'})
-        game.print(msg, {r = 0.98, g = 0.66, b = 0.22})
+        local msg = table.concat({ 'Team ', player.force.name, ' player ', player.name, ' is no longer spectating.' })
+        game.print(msg, { r = 0.98, g = 0.66, b = 0.22 })
         --Server.to_discord_bold(msg)
         player.spectator = false
         return
@@ -345,17 +345,17 @@ function join_team(player, force_name, forced_join)
     game.permissions.get_group('Default').add_player(player)
     if not forced_join then
         local c = player.force.name
-        --if global.tm_custom_name[player.force.name] then c = global.tm_custom_name[player.force.name] end
-        local message = table.concat({player.name, ' has joined team ', c, '!'})
-        game.print(message, {r = 0.98, g = 0.66, b = 0.22})
-    --Server.to_discord_bold(message)
+        --if storage.tm_custom_name[player.force.name] then c = storage.tm_custom_name[player.force.name] end
+        local message = table.concat({ player.name, ' has joined team ', c, '!' })
+        game.print(message, { r = 0.98, g = 0.66, b = 0.22 })
+        --Server.to_discord_bold(message)
     end
     local i = player.get_inventory(defines.inventory.character_main)
     i.clear()
     for item, amount in pairs(starting_items) do
-        player.insert({name = item, count = amount})
+        player.insert({ name = item, count = amount })
     end
-    global.chosen_team[player.name] = force_name
+    storage.chosen_team[player.name] = force_name
     player.spectator = false
     Public.refresh()
 end
@@ -365,21 +365,21 @@ function spectate(player, forced_join)
         return
     end
     if not forced_join then
-        if global.tournament_mode then
-            player.print('The game is set to tournament mode. Teams can only be changed via team manager.', {r = 0.98, g = 0.66, b = 0.22})
+        if storage.tournament_mode then
+            player.print('The game is set to tournament mode. Teams can only be changed via team manager.', { r = 0.98, g = 0.66, b = 0.22 })
             return
         end
     end
-    player.teleport(player.surface.find_non_colliding_position('character', {0, -190}, 4, 1))
+    player.teleport(player.surface.find_non_colliding_position('character', { 0, -190 }, 4, 1))
     player.force = game.forces.spectator
     player.character.destructible = false
     if not forced_join then
         local msg = player.name .. ' is spectating.'
-        game.print(msg, {r = 0.98, g = 0.66, b = 0.22})
-    --Server.to_discord_bold(msg)
+        game.print(msg, { r = 0.98, g = 0.66, b = 0.22 })
+        --Server.to_discord_bold(msg)
     end
     game.permissions.get_group('spectator').add_player(player)
-    global.spectator_rejoin_delay[player.name] = game.tick
+    storage.spectator_rejoin_delay[player.name] = game.tick
     create_main_gui(player)
     player.spectator = true
 end
@@ -388,9 +388,9 @@ function Public.draw_top_toggle_button(player)
     if player.gui.top['team_manager_toggle_button'] then
         player.gui.top['team_manager_toggle_button'].destroy()
     end
-    local button = player.gui.top.add({type = 'sprite-button', name = 'team_manager_toggle_button', caption = 'Team Manager', tooltip = tooltip})
+    local button = player.gui.top.add({ type = 'sprite-button', name = 'team_manager_toggle_button', caption = 'Team Manager', tooltip = tooltip })
     button.style.font = 'heading-2'
-    button.style.font_color = {r = 0.88, g = 0.55, b = 0.11}
+    button.style.font_color = { r = 0.88, g = 0.55, b = 0.11 }
     button.style.minimal_height = 38
     button.style.minimal_width = 120
     button.style.top_padding = 2
@@ -404,145 +404,145 @@ local function draw_manager_gui(player)
         player.gui.center['team_manager_gui'].destroy()
     end
 
-    local frame = player.gui.center.add({type = 'frame', name = 'team_manager_gui', caption = 'Manage Teams', direction = 'vertical'})
+    local frame = player.gui.center.add({ type = 'frame', name = 'team_manager_gui', caption = 'Manage Teams', direction = 'vertical' })
 
-    local t = frame.add({type = 'table', name = 'team_manager_root_table', column_count = 5})
+    local t = frame.add({ type = 'table', name = 'team_manager_root_table', column_count = 5 })
 
     local i2 = 1
     for i = 1, #forces * 2 - 1, 1 do
         if i % 2 == 1 then
-            local l = t.add({type = 'sprite-button', caption = string.upper(forces[i2].name), name = forces[i2].name})
+            local l = t.add({ type = 'sprite-button', caption = string.upper(forces[i2].name), name = forces[i2].name })
             l.style.minimal_width = 160
             l.style.maximal_width = 160
             l.style.font_color = forces[i2].color
             l.style.font = 'heading-1'
             i2 = i2 + 1
         else
-            local tt = t.add({type = 'label', caption = ' '})
+            local tt = t.add({ type = 'label', caption = ' ' })
         end
     end
 
     local i2 = 1
     for i = 1, #forces * 2 - 1, 1 do
         if i % 2 == 1 then
-            local list_box = t.add({type = 'list-box', name = 'team_manager_list_box_' .. i2, items = get_player_array(forces[i2].name)})
+            local list_box = t.add({ type = 'list-box', name = 'team_manager_list_box_' .. i2, items = get_player_array(forces[i2].name) })
             list_box.style.minimal_height = 360
             list_box.style.minimal_width = 160
             list_box.style.maximal_height = 480
             i2 = i2 + 1
         else
-            local tt = t.add({type = 'table', column_count = 1})
-            local b = tt.add({type = 'sprite-button', name = i2 - 1, caption = '→'})
+            local tt = t.add({ type = 'table', column_count = 1 })
+            local b = tt.add({ type = 'sprite-button', name = i2 - 1, caption = '→' })
             b.style.font = 'heading-1'
             b.style.maximal_height = 38
             b.style.maximal_width = 38
-            local b = tt.add({type = 'sprite-button', name = i2, caption = '←'})
+            local b = tt.add({ type = 'sprite-button', name = i2, caption = '←' })
             b.style.font = 'heading-1'
             b.style.maximal_height = 38
             b.style.maximal_width = 38
         end
     end
 
-    frame.add({type = 'label', caption = ''})
+    frame.add({ type = 'label', caption = '' })
 
-    local t = frame.add({type = 'table', name = 'team_manager_bottom_buttons', column_count = 4})
+    local t = frame.add({ type = 'table', name = 'team_manager_bottom_buttons', column_count = 4 })
     local button =
         t.add(
-        {
-            type = 'button',
-            name = 'team_manager_close',
-            caption = 'Close',
-            tooltip = 'Close this window.'
-        }
-    )
-    button.style.font = 'heading-2'
-
-    if global.tournament_mode then
-        button =
-            t.add(
             {
                 type = 'button',
-                name = 'team_manager_activate_tournament',
-                caption = 'Tournament Mode Enabled',
-                tooltip = 'Only admins can move players and vote for difficulty.\nActive players can no longer go spectate.\nNew joining players are spectators.'
+                name = 'team_manager_close',
+                caption = 'Close',
+                tooltip = 'Close this window.'
             }
         )
-        button.style.font_color = {r = 222, g = 22, b = 22}
+    button.style.font = 'heading-2'
+
+    if storage.tournament_mode then
+        button =
+            t.add(
+                {
+                    type = 'button',
+                    name = 'team_manager_activate_tournament',
+                    caption = 'Tournament Mode Enabled',
+                    tooltip = 'Only admins can move players and vote for difficulty.\nActive players can no longer go spectate.\nNew joining players are spectators.'
+                }
+            )
+        button.style.font_color = { r = 222, g = 22, b = 22 }
     else
         button =
             t.add(
-            {
-                type = 'button',
-                name = 'team_manager_activate_tournament',
-                caption = 'Tournament Mode Disabled',
-                tooltip = 'Only admins can move players. Active players can no longer go spectate. New joining players are spectators.'
-            }
-        )
-        button.style.font_color = {r = 55, g = 55, b = 55}
+                {
+                    type = 'button',
+                    name = 'team_manager_activate_tournament',
+                    caption = 'Tournament Mode Disabled',
+                    tooltip = 'Only admins can move players. Active players can no longer go spectate. New joining players are spectators.'
+                }
+            )
+        button.style.font_color = { r = 55, g = 55, b = 55 }
     end
     button.style.font = 'heading-2'
 
-    if global.freeze_players then
+    if storage.freeze_players then
         button =
             t.add(
-            {
-                type = 'button',
-                name = 'team_manager_freeze_players',
-                caption = 'Unfreeze Players',
-                tooltip = 'Releases all players.'
-            }
-        )
-        button.style.font_color = {r = 222, g = 22, b = 22}
+                {
+                    type = 'button',
+                    name = 'team_manager_freeze_players',
+                    caption = 'Unfreeze Players',
+                    tooltip = 'Releases all players.'
+                }
+            )
+        button.style.font_color = { r = 222, g = 22, b = 22 }
     else
         button =
             t.add(
-            {
-                type = 'button',
-                name = 'team_manager_freeze_players',
-                caption = 'Freeze Players',
-                tooltip = 'Freezes all players, unable to perform actions, until released.'
-            }
-        )
-        button.style.font_color = {r = 55, g = 55, b = 222}
+                {
+                    type = 'button',
+                    name = 'team_manager_freeze_players',
+                    caption = 'Freeze Players',
+                    tooltip = 'Freezes all players, unable to perform actions, until released.'
+                }
+            )
+        button.style.font_color = { r = 55, g = 55, b = 222 }
     end
     button.style.font = 'heading-2'
 
-    if global.training_mode then
+    if storage.training_mode then
         button =
             t.add(
-            {
-                type = 'button',
-                name = 'team_manager_activate_training',
-                caption = 'Training Mode Activated',
-                tooltip = "Feed your own team's biters and only teams with players gain threat & evo."
-            }
-        )
-        button.style.font_color = {r = 222, g = 22, b = 22}
+                {
+                    type = 'button',
+                    name = 'team_manager_activate_training',
+                    caption = 'Training Mode Activated',
+                    tooltip = "Feed your own team's biters and only teams with players gain threat & evo."
+                }
+            )
+        button.style.font_color = { r = 222, g = 22, b = 22 }
     else
         button =
             t.add(
-            {
-                type = 'button',
-                name = 'team_manager_activate_training',
-                caption = 'Training Mode Disabled',
-                tooltip = "Feed your own team's biters and only teams with players gain threat & evo."
-            }
-        )
-        button.style.font_color = {r = 55, g = 55, b = 55}
+                {
+                    type = 'button',
+                    name = 'team_manager_activate_training',
+                    caption = 'Training Mode Disabled',
+                    tooltip = "Feed your own team's biters and only teams with players gain threat & evo."
+                }
+            )
+        button.style.font_color = { r = 55, g = 55, b = 55 }
     end
     button.style.font = 'heading-2'
 end
 
 local function set_custom_team_name(force_name, team_name)
     if team_name == '' then
-        global.tm_custom_name[force_name] = nil
+        storage.tm_custom_name[force_name] = nil
         return
     end
     if not team_name then
-        global.tm_custom_name[force_name] = nil
+        storage.tm_custom_name[force_name] = nil
         return
     end
-    global.tm_custom_name[force_name] = tostring(team_name)
+    storage.tm_custom_name[force_name] = tostring(team_name)
 end
 
 local function custom_team_name_gui(player, force_name)
@@ -550,34 +550,34 @@ local function custom_team_name_gui(player, force_name)
         player.gui.center['custom_team_name_gui'].destroy()
         return
     end
-    local frame = player.gui.center.add({type = 'frame', name = 'custom_team_name_gui', caption = 'Set custom team name:', direction = 'vertical'})
+    local frame = player.gui.center.add({ type = 'frame', name = 'custom_team_name_gui', caption = 'Set custom team name:', direction = 'vertical' })
     local text = force_name
-    if global.tm_custom_name[force_name] then
-        text = global.tm_custom_name[force_name]
+    if storage.tm_custom_name[force_name] then
+        text = storage.tm_custom_name[force_name]
     end
 
-    local textfield = frame.add({type = 'textfield', name = force_name, text = text})
-    local t = frame.add({type = 'table', column_count = 2})
+    local textfield = frame.add({ type = 'textfield', name = force_name, text = text })
+    local t = frame.add({ type = 'table', column_count = 2 })
     local button =
         t.add(
-        {
-            type = 'button',
-            name = 'custom_team_name_gui_set',
-            caption = 'Set',
-            tooltip = 'Set custom team name.'
-        }
-    )
+            {
+                type = 'button',
+                name = 'custom_team_name_gui_set',
+                caption = 'Set',
+                tooltip = 'Set custom team name.'
+            }
+        )
     button.style.font = 'heading-2'
 
     local button =
         t.add(
-        {
-            type = 'button',
-            name = 'custom_team_name_gui_close',
-            caption = 'Close',
-            tooltip = 'Close this window.'
-        }
-    )
+            {
+                type = 'button',
+                name = 'custom_team_name_gui_close',
+                caption = 'Close',
+                tooltip = 'Close this window.'
+            }
+        )
     button.style.font = 'heading-2'
 end
 
@@ -587,7 +587,7 @@ local function team_manager_gui_click(event)
 
     if game.forces[name] then
         if not player.admin then
-            player.print('Only admins can change team names.', {r = 175, g = 0, b = 0})
+            player.print('Only admins can change team names.', { r = 175, g = 0, b = 0 })
             return
         end
         custom_team_name_gui(player, name)
@@ -602,60 +602,60 @@ local function team_manager_gui_click(event)
 
     if name == 'team_manager_activate_tournament' then
         if not player.admin then
-            player.print('Only admins can switch tournament mode.', {r = 175, g = 0, b = 0})
+            player.print('Only admins can switch tournament mode.', { r = 175, g = 0, b = 0 })
             return
         end
-        if global.tournament_mode then
-            global.tournament_mode = false
+        if storage.tournament_mode then
+            storage.tournament_mode = false
             draw_manager_gui(player)
-            game.print('>>> Tournament Mode has been disabled.', {r = 111, g = 111, b = 111})
+            game.print('>>> Tournament Mode has been disabled.', { r = 111, g = 111, b = 111 })
             return
         end
-        global.tournament_mode = true
+        storage.tournament_mode = true
         draw_manager_gui(player)
-        game.print('>>> Tournament Mode has been enabled!', {r = 225, g = 0, b = 0})
+        game.print('>>> Tournament Mode has been enabled!', { r = 225, g = 0, b = 0 })
         return
     end
 
     if name == 'team_manager_freeze_players' then
-        if global.freeze_players then
+        if storage.freeze_players then
             if not player.admin then
-                player.print('Only admins can unfreeze players.', {r = 175, g = 0, b = 0})
+                player.print('Only admins can unfreeze players.', { r = 175, g = 0, b = 0 })
                 return
             end
-            global.freeze_players = false
+            storage.freeze_players = false
             draw_manager_gui(player)
-            game.print('>>> Players have been unfrozen!', {r = 255, g = 77, b = 77})
+            game.print('>>> Players have been unfrozen!', { r = 255, g = 77, b = 77 })
             unfreeze_players()
             return
         end
         if not player.admin then
-            player.print('Only admins can freeze players.', {r = 175, g = 0, b = 0})
+            player.print('Only admins can freeze players.', { r = 175, g = 0, b = 0 })
             return
         end
-        global.freeze_players = true
+        storage.freeze_players = true
         draw_manager_gui(player)
-        game.print('>>> Players have been frozen!', {r = 111, g = 111, b = 255})
+        game.print('>>> Players have been frozen!', { r = 111, g = 111, b = 255 })
         freeze_players()
         return
     end
 
     if name == 'team_manager_activate_training' then
         if not player.admin then
-            player.print('Only admins can switch training mode.', {r = 175, g = 0, b = 0})
+            player.print('Only admins can switch training mode.', { r = 175, g = 0, b = 0 })
             return
         end
-        if global.training_mode then
-            global.training_mode = false
-            global.game_lobby_active = true
+        if storage.training_mode then
+            storage.training_mode = false
+            storage.game_lobby_active = true
             draw_manager_gui(player)
-            game.print('>>> Training Mode has been disabled.', {r = 111, g = 111, b = 111})
+            game.print('>>> Training Mode has been disabled.', { r = 111, g = 111, b = 111 })
             return
         end
-        global.training_mode = true
-        global.game_lobby_active = false
+        storage.training_mode = true
+        storage.game_lobby_active = false
         draw_manager_gui(player)
-        game.print('>>> Training Mode has been enabled!', {r = 225, g = 0, b = 0})
+        game.print('>>> Training Mode has been enabled!', { r = 225, g = 0, b = 0 })
         return
     end
 
@@ -671,14 +671,14 @@ local function team_manager_gui_click(event)
         return
     end
     if not player.admin then
-        player.print('Only admins can manage teams.', {r = 175, g = 0, b = 0})
+        player.print('Only admins can manage teams.', { r = 175, g = 0, b = 0 })
         return
     end
 
     local listbox = player.gui.center['team_manager_gui']['team_manager_root_table']['team_manager_list_box_' .. tonumber(name)]
     local selected_index = listbox.selected_index
     if selected_index == 0 then
-        player.print('No player selected.', {r = 175, g = 0, b = 0})
+        player.print('No player selected.', { r = 175, g = 0, b = 0 })
         return
     end
     local player_name = listbox.items[selected_index]
@@ -697,7 +697,7 @@ local function create_sprite_button(player)
     if player.gui.top['nv_toggle_button'] then
         return
     end
-    local button = player.gui.top.add({type = 'sprite-button', name = 'nv_toggle_button', sprite = 'item/splitter'})
+    local button = player.gui.top.add({ type = 'sprite-button', name = 'nv_toggle_button', sprite = 'item/splitter' })
     button.style.font = 'default-bold'
     button.style.minimal_height = 38
     button.style.minimal_width = 38
@@ -717,14 +717,14 @@ local function join_gui_click(name, player)
         return
     end
 
-    if global.game_lobby_active then
+    if storage.game_lobby_active then
         if player.admin then
             join_team(player, team[name])
-            game.print('Lobby disabled, admin override.', {r = 0.98, g = 0.66, b = 0.22})
-            global.game_lobby_active = false
+            game.print('Lobby disabled, admin override.', { r = 0.98, g = 0.66, b = 0.22 })
+            storage.game_lobby_active = false
             return
         end
-        player.print('Waiting for more players, ' .. wait_messages[math_random(1, #wait_messages)], {r = 0.98, g = 0.66, b = 0.22})
+        player.print('Waiting for more players, ' .. wait_messages[math_random(1, #wait_messages)], { r = 0.98, g = 0.66, b = 0.22 })
         return
     end
     join_team(player, team[name])
@@ -795,7 +795,7 @@ local function on_gui_click(event)
         return
     end
     if name == 'nv_leave_spectate' then
-        join_team(player, global.chosen_team[player.name])
+        join_team(player, storage.chosen_team[player.name])
     end
     if name == 'nv_spectate' then
         spectate(player)
@@ -806,23 +806,23 @@ end
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
 
-    --if not global.bb_view_players then global.bb_view_players = {} end
-    if not global.chosen_team then
-        global.chosen_team = {}
+    --if not storage.bb_view_players then storage.bb_view_players = {} end
+    if not storage.chosen_team then
+        storage.chosen_team = {}
     end
 
-    --global.bb_view_players[player.name] = false
+    --storage.bb_view_players[player.name] = false
 
     if #game.connected_players > 1 then
-        --global.game_lobby_timeout = math.ceil(36000 / #game.connected_players)
-        global.game_lobby_timeout = math.ceil(1 / #game.connected_players) --EVL
+        --storage.game_lobby_timeout = math.ceil(36000 / #game.connected_players)
+        storage.game_lobby_timeout = math.ceil(1 / #game.connected_players) --EVL
     else
-        --global.game_lobby_timeout = 599940
-        global.game_lobby_timeout = 1 --EVL
+        --storage.game_lobby_timeout = 599940
+        storage.game_lobby_timeout = 1 --EVL
     end
 
-    if not global.chosen_team[player.name] then
-        if global.tournament_mode then
+    if not storage.chosen_team[player.name] then
+        if storage.tournament_mode then
             player.force = game.forces.spectator
         else
             player.force = game.forces.player
@@ -834,7 +834,7 @@ local function on_player_joined_game(event)
 end
 
 function Public.init()
-    global.tm_custom_name = {}
+    storage.tm_custom_name = {}
 end
 
 local event = require 'utils.event'

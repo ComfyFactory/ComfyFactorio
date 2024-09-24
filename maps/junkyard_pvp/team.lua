@@ -1,7 +1,7 @@
 local Public = {}
 local math_random = math.random
 
-Public.starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16}
+Public.starting_items = { ['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16 }
 
 function Public.set_force_attributes()
     game.forces.west.set_friend('spectator', true)
@@ -10,16 +10,15 @@ function Public.set_force_attributes()
     game.forces.spectator.set_friend('east', true)
     game.forces.west.share_chart = true
     game.forces.east.share_chart = true
-    for _, force_name in pairs({'west', 'east'}) do
-        game.forces[force_name].research_queue_enabled = true
+    for _, force_name in pairs({ 'west', 'east' }) do
         game.forces[force_name].technologies['artillery'].enabled = false
         game.forces[force_name].technologies['artillery-shell-range-1'].enabled = false
         game.forces[force_name].technologies['artillery-shell-speed-1'].enabled = false
         game.forces[force_name].technologies['railway'].researched = true
-        global.map_forces[force_name].unit_health_boost = 1
-        global.map_forces[force_name].unit_count = 0
-        global.map_forces[force_name].max_unit_count = 1024
-        global.map_forces[force_name].player_count = 0
+        storage.map_forces[force_name].unit_health_boost = 1
+        storage.map_forces[force_name].unit_count = 0
+        storage.map_forces[force_name].max_unit_count = 1024
+        storage.map_forces[force_name].player_count = 0
     end
 end
 
@@ -67,11 +66,11 @@ function Public.assign_force_to_player(player)
 end
 
 function Public.teleport_player_to_active_surface(player)
-    local surface = game.surfaces[global.active_surface_index]
+    local surface = game.surfaces[storage.active_surface_index]
     local position
     if player.force.name == 'spectator' then
         position = player.force.get_spawn_position(surface)
-        position = {x = (position.x - 160) + math_random(0, 320), y = (position.y - 16) + math_random(0, 32)}
+        position = { x = (position.x - 160) + math_random(0, 320), y = (position.y - 16) + math_random(0, 32) }
     else
         position = surface.find_non_colliding_position('character', player.force.get_spawn_position(surface), 48, 1)
         if not position then
@@ -88,12 +87,12 @@ function Public.put_player_into_random_team(player)
         end
     end
     player.character = nil
-    player.set_controller({type = defines.controllers.god})
+    player.set_controller({ type = defines.controllers.god })
     player.create_character()
     for item, amount in pairs(Public.starting_items) do
-        player.insert({name = item, count = amount})
+        player.insert({ name = item, count = amount })
     end
-    global.map_forces[player.force.name].player_count = global.map_forces[player.force.name].player_count + 1
+    storage.map_forces[player.force.name].player_count = storage.map_forces[player.force.name].player_count + 1
 end
 
 function Public.set_player_to_spectator(player)
@@ -103,7 +102,7 @@ function Public.set_player_to_spectator(player)
     player.force = game.forces.spectator
     player.character = nil
     player.spectator = true
-    player.set_controller({type = defines.controllers.spectator})
+    player.set_controller({ type = defines.controllers.spectator })
 end
 
 return Public

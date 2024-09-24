@@ -27,7 +27,7 @@ local clear_filter_name = Gui.uid_name()
 local enabled = {}
 local enabled_for_all = false
 local last_events = {}
-global.debug_event_view = {
+storage.debug_event_view = {
     enabled = enabled,
     enabled_for_all = enabled_for_all,
     last_events = last_events,
@@ -35,7 +35,7 @@ global.debug_event_view = {
 }
 
 function Public.on_open_debug()
-    local tbl = global.debug_event_view
+    local tbl = storage.debug_event_view
     if tbl then
         enabled = tbl.enabled
         last_events = tbl.last_events
@@ -43,7 +43,7 @@ function Public.on_open_debug()
         enabled = {}
         last_events = {}
 
-        global.debug_event_view = {
+        storage.debug_event_view = {
             enabled = enabled,
             last_events = last_events
         }
@@ -119,7 +119,7 @@ local function redraw_event_table(gui_table, filter)
     for _, event_name in pairs(grid_builder) do
         if filter == '' or event_name:find(filter) then
             local index = events[event_name]
-            gui_table.add({type = 'flow'}).add {
+            gui_table.add({ type = 'flow' }).add {
                 name = checkbox_name,
                 type = 'checkbox',
                 state = enabled[index] or false,
@@ -130,26 +130,26 @@ local function redraw_event_table(gui_table, filter)
 end
 
 function Public.show(container)
-    local filter = global.debug_event_view.filter
+    local filter = storage.debug_event_view.filter
 
-    local main_frame_flow = container.add({type = 'flow', direction = 'vertical'})
+    local main_frame_flow = container.add({ type = 'flow', direction = 'vertical' })
 
-    local filter_flow = main_frame_flow.add({type = 'flow', direction = 'horizontal'})
-    filter_flow.add({type = 'label', caption = 'filter'})
-    local filter_textfield = filter_flow.add({type = 'textfield', name = filter_name, text = filter})
-    local clear_button = filter_flow.add({type = 'button', name = clear_filter_name, caption = 'clear'})
-    filter_flow.add({type = 'flow'}).add {
+    local filter_flow = main_frame_flow.add({ type = 'flow', direction = 'horizontal' })
+    filter_flow.add({ type = 'label', caption = 'filter' })
+    local filter_textfield = filter_flow.add({ type = 'textfield', name = filter_name, text = filter })
+    local clear_button = filter_flow.add({ type = 'button', name = clear_filter_name, caption = 'clear' })
+    filter_flow.add({ type = 'flow' }).add {
         name = checkbox_all_name,
         type = 'checkbox',
         state = enabled_for_all or false,
         caption = 'Toggle all events'
     }
 
-    local scroll_pane = main_frame_flow.add({type = 'scroll-pane'})
-    local gui_table = scroll_pane.add({type = 'table', column_count = 3, draw_horizontal_lines = true})
+    local scroll_pane = main_frame_flow.add({ type = 'scroll-pane' })
+    local gui_table = scroll_pane.add({ type = 'table', column_count = 3, draw_horizontal_lines = true })
 
     Gui.set_data(filter_textfield, gui_table)
-    Gui.set_data(clear_button, {gui_table = gui_table, filter_textfield = filter_textfield})
+    Gui.set_data(clear_button, { gui_table = gui_table, filter_textfield = filter_textfield })
 
     redraw_event_table(gui_table, filter)
 end
@@ -159,7 +159,7 @@ Gui.on_checked_state_changed(checkbox_all_name, on_gui_checked_state_changed_all
 
 Gui.on_text_changed(
     filter_name,
-    function(event)
+    function (event)
         local element = event.element
         local gui_table = Gui.get_data(element)
         if not gui_table then
@@ -168,7 +168,7 @@ Gui.on_text_changed(
 
         local filter = element.text:gsub(' ', '_')
 
-        global.debug_event_view.filter = filter
+        storage.debug_event_view.filter = filter
         element.text = filter
 
         gui_table.clear()
@@ -178,7 +178,7 @@ Gui.on_text_changed(
 
 Gui.on_click(
     clear_filter_name,
-    function(event)
+    function (event)
         local element = event.element
         local data = Gui.get_data(element)
         if not data then
@@ -189,7 +189,7 @@ Gui.on_click(
         local gui_table = data.gui_table
 
         filter_textfield.text = ''
-        global.debug_event_view.filter = ''
+        storage.debug_event_view.filter = ''
 
         gui_table.clear()
         redraw_event_table(gui_table, '')

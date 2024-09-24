@@ -18,12 +18,12 @@ local module_name = Gui.uid_name()
 
 Global.register(
     this,
-    function(t)
+    function (t)
         this = t
     end
 )
 
-local sorting_symbol = {ascending = '▲', descending = '▼'}
+local sorting_symbol = { ascending = '▲', descending = '▼' }
 local building_and_mining_blacklist = {
     ['tile-ghost'] = true,
     ['entity-ghost'] = true,
@@ -97,10 +97,10 @@ end
 
 local function get_sorted_list(method, column_name, score_list)
     local comparators = {
-        ['ascending'] = function(a, b)
+        ['ascending'] = function (a, b)
             return a[column_name] < b[column_name]
         end,
-        ['descending'] = function(a, b)
+        ['descending'] = function (a, b)
             return a[column_name] > b[column_name]
         end
     }
@@ -121,32 +121,34 @@ local biters = {
 local function get_total_biter_killcount(force)
     local count = 0
     for _, biter in pairs(biters) do
-        count = count + force.kill_count_statistics.get_input_count(biter)
+        for _, surface in pairs(game.surfaces) do
+            count = count + force.get_kill_count_statistics(surface).get_input_count(biter)
+        end
     end
     return count
 end
 
 local function add_global_stats(frame, player)
-    local t = frame.add {type = 'table', column_count = 5}
+    local t = frame.add { type = 'table', column_count = 5 }
 
-    local l = t.add {type = 'label', caption = 'Rockets launched: '}
+    local l = t.add { type = 'label', caption = 'Rockets launched: ' }
     l.style.font = 'heading-2'
-    l.style.font_color = {r = 175, g = 75, b = 255}
+    l.style.font_color = { r = 175, g = 75, b = 255 }
     l.style.minimal_width = 140
 
-    local rocketsLaunched_label = t.add {type = 'label', caption = format_number(player.force.rockets_launched, true)}
-    rocketsLaunched_label.style.font = 'heading-3'
-    rocketsLaunched_label.style.font_color = {r = 0.9, g = 0.9, b = 0.9}
+    local rocketsLaunched_label = t.add { type = 'label', caption = format_number(player.force.rockets_launched, true) }
+    rocketsLaunched_label.style.font = 'default-semibold'
+    rocketsLaunched_label.style.font_color = { r = 0.9, g = 0.9, b = 0.9 }
     rocketsLaunched_label.style.minimal_width = 123
 
-    local bugs_dead_label = t.add {type = 'label', caption = 'Dead bugs: '}
+    local bugs_dead_label = t.add { type = 'label', caption = 'Dead bugs: ' }
     bugs_dead_label.style.font = 'heading-2'
-    bugs_dead_label.style.font_color = {r = 0.90, g = 0.3, b = 0.3}
+    bugs_dead_label.style.font_color = { r = 0.90, g = 0.3, b = 0.3 }
     bugs_dead_label.style.minimal_width = 100
 
-    local killcount_label = t.add {type = 'label', caption = format_number(tonumber(get_total_biter_killcount(player.force)), true)}
-    killcount_label.style.font = 'heading-3'
-    killcount_label.style.font_color = {r = 0.9, g = 0.9, b = 0.9}
+    local killcount_label = t.add { type = 'label', caption = format_number(tonumber(get_total_biter_killcount(player.force)), true) }
+    killcount_label.style.font = 'default-semibold'
+    killcount_label.style.font_color = { r = 0.9, g = 0.9, b = 0.9 }
     killcount_label.style.minimal_width = 145
 end
 
@@ -161,21 +163,21 @@ local function show_score(data)
     add_global_stats(frame, player)
 
     -- Separator
-    local line = frame.add {type = 'line'}
+    local line = frame.add { type = 'line' }
     line.style.top_margin = 8
     line.style.bottom_margin = 8
 
     -- Score per player
-    local t = frame.add {type = 'table', column_count = 6}
+    local t = frame.add { type = 'table', column_count = 6 }
 
     -- Score headers
     local headers = {
-        {name = 'score_player', caption = 'Player'},
-        {column = 'killscore', name = 'score_killscore', caption = 'Killscore'},
-        {column = 'deaths', name = 'score_deaths', caption = 'Deaths'},
-        {column = 'built_entities', name = 'score_built_entities', caption = 'Built structures'},
-        {column = 'mined_entities', name = 'score_mined_entities', caption = 'Mined entities'},
-        {column = 'crafted_items', name = 'score_crafted_items', caption = 'Crafted Items'}
+        { name = 'score_player',     caption = 'Player' },
+        { column = 'killscore',      name = 'score_killscore',      caption = 'Killscore' },
+        { column = 'deaths',         name = 'score_deaths',         caption = 'Deaths' },
+        { column = 'built_entities', name = 'score_built_entities', caption = 'Built structures' },
+        { column = 'mined_entities', name = 'score_mined_entities', caption = 'Mined entities' },
+        { column = 'crafted_items',  name = 'score_crafted_items',  caption = 'Crafted Items' }
     }
 
     local sorting_pref = this.sort_by[player.name]
@@ -191,12 +193,12 @@ local function show_score(data)
         -- Header
         local label =
             t.add {
-            type = 'label',
-            caption = cap,
-            name = header.name
-        }
+                type = 'label',
+                caption = cap,
+                name = header.name
+            }
         label.style.font = 'heading-2'
-        label.style.font_color = {r = 0.98, g = 0.66, b = 0.22} -- yellow
+        label.style.font_color = { r = 0.98, g = 0.66, b = 0.22 } -- yellow
         label.style.minimal_width = 125
         label.style.horizontal_align = 'center'
     end
@@ -211,20 +213,20 @@ local function show_score(data)
     -- New pane for scores (while keeping headers at same position)
     local scroll_pane =
         frame.add(
-        {
-            type = 'scroll-pane',
-            name = 'score_scroll_pane',
-            direction = 'vertical',
-            horizontal_scroll_policy = 'never',
-            vertical_scroll_policy = 'auto'
-        }
-    )
+            {
+                type = 'scroll-pane',
+                name = 'score_scroll_pane',
+                direction = 'vertical',
+                horizontal_scroll_policy = 'never',
+                vertical_scroll_policy = 'auto'
+            }
+        )
     scroll_pane.style.maximal_height = 400
-    local column_table = scroll_pane.add {type = 'table', column_count = 6}
+    local column_table = scroll_pane.add { type = 'table', column_count = 6 }
 
     -- Score entries
     for _, entry in pairs(score_list) do
-        local p = game.players[entry.name or ''] or {color = {r = 0.6, g = 0.6, b = 0.6}}
+        local p = game.players[entry.name or ''] or { color = { r = 0.6, g = 0.6, b = 0.6 } }
         local special_color = {
             r = p.color.r * 0.6 + 0.4,
             g = p.color.g * 0.6 + 0.4,
@@ -232,28 +234,28 @@ local function show_score(data)
             a = 1
         }
         local lines = {
-            {caption = entry.name, color = special_color},
-            {caption = format_number(tonumber(entry.killscore), true)},
-            {caption = format_number(tonumber(entry.deaths), true)},
-            {caption = format_number(tonumber(entry.built_entities), true)},
-            {caption = format_number(tonumber(entry.mined_entities), true)},
-            {caption = format_number(tonumber(entry.crafted_items), true)}
+            { caption = entry.name,                                         color = special_color },
+            { caption = format_number(tonumber(entry.killscore), true) },
+            { caption = format_number(tonumber(entry.deaths), true) },
+            { caption = format_number(tonumber(entry.built_entities), true) },
+            { caption = format_number(tonumber(entry.mined_entities), true) },
+            { caption = format_number(tonumber(entry.crafted_items), true) }
         }
-        local default_color = {r = 0.9, g = 0.9, b = 0.9}
+        local default_color = { r = 0.9, g = 0.9, b = 0.9 }
 
         for _, column in ipairs(lines) do
             local label =
                 column_table.add {
-                type = 'label',
-                caption = column.caption,
-                color = column.color or default_color
-            }
-            label.style.font = 'heading-3'
+                    type = 'label',
+                    caption = column.caption,
+                    color = column.color or default_color
+                }
+            label.style.font = 'default-semibold'
             label.style.minimal_width = 125
             label.style.maximal_width = 125
             label.style.horizontal_align = 'center'
         end -- foreach column
-    end -- foreach entry
+    end     -- foreach entry
 end
 
 local show_score_token = Token.register(show_score)
@@ -265,7 +267,7 @@ local function refresh_score_full()
             if frame.name ~= 'Scoreboard' then
                 return
             end
-            show_score({player = player, frame = frame})
+            show_score({ player = player, frame = frame })
         end
     end
 end
@@ -274,7 +276,7 @@ local function on_player_joined_game(event)
     local player = game.players[event.player_index]
     Public.init_player_table(player)
     if not this.sort_by[player.name] then
-        this.sort_by[player.name] = {method = 'descending', column = 'killscore'}
+        this.sort_by[player.name] = { method = 'descending', column = 'killscore' }
     end
 end
 
@@ -315,7 +317,7 @@ local function on_gui_click(event)
             sorting_pref.method = 'descending'
             sorting_pref.column = column
         end
-        show_score({player = player, frame = frame})
+        show_score({ player = player, frame = frame })
         return
     end
 
@@ -358,22 +360,22 @@ local function train_type_cause(event)
 end
 
 local kill_causes = {
-    ['character'] = function(event)
+    ['character'] = function (event)
         if not event.cause.player then
             return
         end
-        return {event.cause.player}
+        return { event.cause.player }
     end,
-    ['combat-robot'] = function(event)
+    ['combat-robot'] = function (event)
         if not event.cause.last_user then
             return
         end
         if not game.players[event.cause.last_user.index] then
             return
         end
-        return {game.players[event.cause.last_user.index]}
+        return { game.players[event.cause.last_user.index] }
     end,
-    ['car'] = function(event)
+    ['car'] = function (event)
         local players = {}
         local driver = event.cause.get_driver()
         if driver then
@@ -389,7 +391,7 @@ local kill_causes = {
         end
         return players
     end,
-    ['spider-vehicle'] = function(event)
+    ['spider-vehicle'] = function (event)
         local players = {}
         local driver = event.cause.get_driver()
         if driver then
@@ -485,11 +487,11 @@ local function on_built_entity(event)
     score.built_entities = 1 + (score.built_entities or 0)
 end
 
-Gui.add_tab_to_gui({name = module_name, caption = 'Scoreboard', id = show_score_token, admin = false})
+Gui.add_tab_to_gui({ name = module_name, caption = 'Scoreboard', id = show_score_token, admin = false })
 
 Gui.on_click(
     module_name,
-    function(event)
+    function (event)
         local player = event.player
         Gui.reload_active_tab(player)
     end

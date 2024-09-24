@@ -17,7 +17,6 @@ function Public.configure_teams(mountain_race)
         local force = game.forces[force_name]
         force.reset()
         force.share_chart = true
-        force.research_queue_enabled = true
         force.technologies['artillery'].enabled = false
         force.technologies['artillery-shell-range-1'].enabled = false
         force.technologies['artillery-shell-speed-1'].enabled = false

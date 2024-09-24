@@ -85,7 +85,7 @@ local function draw_screen_gui(player)
     if not clear_tag_element then
         return
     end
-    clear_tag_element.sprite = 'utility/close_white'
+    clear_tag_element.sprite = 'utility/close'
     clear_tag_element.tooltip = 'Clear Tag'
 end
 

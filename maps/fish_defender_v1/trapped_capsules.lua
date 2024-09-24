@@ -9,7 +9,7 @@ local whitelist = {
 }
 
 local function on_entity_died(event)
-    if not global.trapped_capsules_unlocked then
+    if not storage.trapped_capsules_unlocked then
         return
     end
 
@@ -24,7 +24,7 @@ local function on_entity_died(event)
     local position = event.entity.position
 
     for _, e in pairs(
-        event.entity.surface.find_entities_filtered({area = {{position.x - radius, position.y - radius}, {position.x + radius, position.y + radius}}, force = 'enemy'})
+        event.entity.surface.find_entities_filtered({ area = { { position.x - radius, position.y - radius }, { position.x + radius, position.y + radius } }, force = 'enemy' })
     ) do
         if e.health then
             local distance_from_center = math.sqrt((e.position.x - position.x) ^ 2 + (e.position.y - position.y) ^ 2)

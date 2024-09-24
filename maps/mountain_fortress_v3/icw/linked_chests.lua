@@ -26,7 +26,7 @@ local Public = {}
 
 Global.register(
     this,
-    function(tbl)
+    function (tbl)
         this = tbl
     end
 )
@@ -54,53 +54,53 @@ end
 
 local clear_chest_token =
     Task.register(
-    function(event)
-        local entity = event.entity
-        if not entity or not entity.valid then
-            return
-        end
-        local link_id = event.link_id
+        function (event)
+            local entity = event.entity
+            if not entity or not entity.valid then
+                return
+            end
+            local link_id = event.link_id
 
-        if link_id then
-            entity.link_id = link_id
-        end
+            if link_id then
+                entity.link_id = link_id
+            end
 
-        entity.get_inventory(defines.inventory.chest).clear()
-        entity.destroy()
-    end
-)
+            entity.get_inventory(defines.inventory.chest).clear()
+            entity.destroy()
+        end
+    )
 
 local create_clear_chest_token =
     Task.register(
-    function(event)
-        local surface = game.get_surface('gulag')
-        local entity = surface.create_entity {name = 'linked-chest', position = {x = -62, y = -6}, force = game.forces.player}
-        if not entity or not entity.valid then
-            return
-        end
+        function (event)
+            local surface = game.get_surface('Gulag')
+            local entity = surface.create_entity { name = 'linked-chest', position = { x = -62, y = -6 }, force = game.forces.player }
+            if not entity or not entity.valid then
+                return
+            end
 
-        local link_id = event.link_id
-        if link_id then
-            entity.link_id = link_id
-        end
+            local link_id = event.link_id
+            if link_id then
+                entity.link_id = link_id
+            end
 
-        entity.get_inventory(defines.inventory.chest).clear()
-        entity.destroy()
-    end
-)
+            entity.get_inventory(defines.inventory.chest).clear()
+            entity.destroy()
+        end
+    )
 
 local remove_all_linked_items_token =
     Task.register(
-    function(event)
-        local player_index = event.player_index
-        local player = game.get_player(player_index)
-        if not player or not player.valid then
-            return
-        end
+        function (event)
+            local player_index = event.player_index
+            local player = game.get_player(player_index)
+            if not player or not player.valid then
+                return
+            end
 
-        player.remove_item({name = 'linked-chest', count = 99999})
-    end
-)
+            player.remove_item({ name = 'linked-chest', count = 99999 })
+        end
+    )
 
 local function create_message(player, action, source_position, destination_position)
     if not this.notify_discord then
@@ -141,20 +141,20 @@ local function draw_convert_chest_button(parent, entity)
     }
     frame =
         parent.add {
-        type = 'frame',
-        name = chest_converter_frame_for_player_name,
-        anchor = anchor,
-        direction = 'vertical'
-    }
+            type = 'frame',
+            name = chest_converter_frame_for_player_name,
+            anchor = anchor,
+            direction = 'vertical'
+        }
 
     local button =
         frame.add {
-        type = 'sprite-button',
-        sprite = 'item/' .. entity.name,
-        name = convert_chest_to_linked,
-        style = Gui.button_style,
-        tooltip = '[color=blue][Linked chest][/color]\nYou can easily convert this chest to an linked chest.\nAllowing items to be moved instantly.\n\nCosts ' .. this.cost_to_convert .. ' coins.'
-    }
+            type = 'sprite-button',
+            sprite = 'item/' .. entity.name,
+            name = convert_chest_to_linked,
+            style = Gui.button_style,
+            tooltip = '[color=blue][Linked chest][/color]\nYou can easily convert this chest to an linked chest.\nAllowing items to be moved instantly.\n\nCosts ' .. this.cost_to_convert .. ' coins.'
+        }
     Gui.set_data(button, entity)
 end
 
@@ -315,16 +315,16 @@ local function restore_link(unit_number, new_unit_number)
     end
 end
 
-remove_chest = function(unit_number)
+remove_chest = function (unit_number)
     restore_links(unit_number)
     remove_object(unit_number)
 end
 
 local function refund_player(source_player)
-    source_player.insert({name = 'coin', count = this.cost_to_convert})
-    source_player.remove_item({name = 'linked-chest', count = 99999})
+    source_player.insert({ name = 'coin', count = this.cost_to_convert })
+    source_player.remove_item({ name = 'linked-chest', count = 99999 })
 
-    Task.set_timeout_in_ticks(10, remove_all_linked_items_token, {player_index = source_player.index})
+    Task.set_timeout_in_ticks(10, remove_all_linked_items_token, { player_index = source_player.index })
 end
 
 local function on_entity_died(event)
@@ -415,13 +415,13 @@ local function refresh_main_frame(data)
     end
 
     if mode == 1 then
-        local share_tbl = volatile_tbl.add {type = 'table', column_count = 8, name = 'share_tbl'}
-        local share_one_bottom_flow = share_tbl.add {type = 'flow'}
+        local share_tbl = volatile_tbl.add { type = 'table', column_count = 8, name = 'share_tbl' }
+        local share_one_bottom_flow = share_tbl.add { type = 'flow' }
         share_one_bottom_flow.style.minimal_width = 40
 
-        local share_two_label = share_one_bottom_flow.add({type = 'label', caption = 'Share Name: '})
+        local share_two_label = share_one_bottom_flow.add({ type = 'label', caption = 'Share Name: ' })
         share_two_label.style.font = 'heading-2'
-        local share_two_text = share_one_bottom_flow.add({type = 'textfield', name = 'share_name', text = container.share.name})
+        local share_two_text = share_one_bottom_flow.add({ type = 'textfield', name = 'share_name', text = container.share.name })
         share_two_text.enabled = false
         share_two_text.style.width = 150
         share_two_text.allow_decimal = true
@@ -431,23 +431,23 @@ local function refresh_main_frame(data)
         local linker_tooltip = '[color=yellow]Link Info:[/color]\nThis will only work if there are any current placed linked chests.'
 
         if container then
-            local disconnect = volatile_tbl.add {type = 'table', column_count = 2, name = 'disconnect'}
-            local linker = volatile_tbl.add {type = 'table', column_count = 1, name = 'linker'}
+            local disconnect = volatile_tbl.add { type = 'table', column_count = 2, name = 'disconnect' }
+            local linker = volatile_tbl.add { type = 'table', column_count = 1, name = 'linker' }
             local chests = get_all_chests(unit_number)
             local linked_container = fetch_container(container.linked_to)
 
             if not next(chests) then
-                local link_label = linker.add({type = 'label', caption = 'No chests found. '})
+                local link_label = linker.add({ type = 'label', caption = 'No chests found. ' })
                 link_label.style.font = 'heading-2'
-                local link_info_label = linker.add({type = 'label', caption = 'A chest needs an unique share name.'})
+                local link_info_label = linker.add({ type = 'label', caption = 'A chest needs an unique share name.' })
                 link_info_label.style.font = 'heading-2'
                 return
             end
 
             if container.linked_to and linked_container then
-                local disconnect_label = disconnect.add({type = 'label', caption = 'Disconnect link? '})
+                local disconnect_label = disconnect.add({ type = 'label', caption = 'Disconnect link? ' })
                 disconnect_label.style.font = 'heading-2'
-                local disconnect_button = disconnect.add({type = 'checkbox', name = 'disconnect_state', state = false})
+                local disconnect_button = disconnect.add({ type = 'checkbox', name = 'disconnect_state', state = false })
                 disconnect_button.tooltip = 'Click to disconnect this link!'
                 disconnect_button.style.minimal_height = 25
 
@@ -456,27 +456,27 @@ local function refresh_main_frame(data)
                     disconnect_button.tooltip = '[Antigrief] You have not grown accustomed to this technology yet.'
                 end
 
-                local share_tbl = volatile_tbl.add {type = 'table', column_count = 8, name = 'share_tbl'}
-                local share_one_bottom_flow = share_tbl.add {type = 'flow'}
+                local share_tbl = volatile_tbl.add { type = 'table', column_count = 8, name = 'share_tbl' }
+                local share_one_bottom_flow = share_tbl.add { type = 'flow' }
                 share_one_bottom_flow.style.minimal_width = 40
 
-                local share_two_label = share_one_bottom_flow.add({type = 'label', caption = 'Linked with: '})
+                local share_two_label = share_one_bottom_flow.add({ type = 'label', caption = 'Linked with: ' })
                 share_two_label.style.font = 'heading-2'
-                local share_two_text = share_one_bottom_flow.add({type = 'textfield', text = linked_container.share.name})
+                local share_two_text = share_one_bottom_flow.add({ type = 'textfield', text = linked_container.share.name })
                 share_two_text.enabled = false
                 share_two_text.style.width = 150
                 share_two_text.allow_decimal = true
                 share_two_text.allow_negative = false
                 share_two_text.style.minimal_width = 25
             else
-                local link_chest_label = linker.add({type = 'label', caption = 'Link with chest:\n', tooltip = linker_tooltip})
+                local link_chest_label = linker.add({ type = 'label', caption = 'Link with chest:\n', tooltip = linker_tooltip })
                 link_chest_label.style.font = 'heading-2'
                 local chest_scroll_pane =
                     linker.add {
-                    type = 'scroll-pane',
-                    vertical_scroll_policy = 'auto',
-                    horizontal_scroll_policy = 'never'
-                }
+                        type = 'scroll-pane',
+                        vertical_scroll_policy = 'auto',
+                        horizontal_scroll_policy = 'never'
+                    }
                 local chest_scroll_style = chest_scroll_pane.style
                 chest_scroll_style.maximal_height = 250
                 chest_scroll_style.vertically_squashable = true
@@ -486,13 +486,13 @@ local function refresh_main_frame(data)
                 chest_scroll_style.top_padding = 2
 
                 if not chest_scroll_pane.first_wagon then
-                    local carriage_label = chest_scroll_pane.add {type = 'label', caption = 'Carriage no. 1', name = 'first_wagon', alignment = 'center'}
+                    local carriage_label = chest_scroll_pane.add { type = 'label', caption = 'Carriage no. 1', name = 'first_wagon', alignment = 'center' }
                     carriage_label.style.minimal_width = 400
                     carriage_label.style.horizontal_align = 'center'
-                    chest_scroll_pane.add {type = 'line'}
+                    chest_scroll_pane.add { type = 'line' }
                 end
 
-                local chestlinker = chest_scroll_pane.add {type = 'table', column_count = 9}
+                local chestlinker = chest_scroll_pane.add { type = 'table', column_count = 9 }
 
                 local added_count = 0
                 local added_total = 0
@@ -502,22 +502,22 @@ local function refresh_main_frame(data)
                     if chests then
                         local source_chest = chests[i]
                         if type(source_chest) ~= 'string' and source_chest.share.name ~= '' and source_chest.share.name ~= source_chest.chest.unit_number then
-                            local flowlinker = chestlinker.add {type = 'flow'}
+                            local flowlinker = chestlinker.add { type = 'flow' }
 
                             added_count = added_count + 1
                             added_total = added_total + 1
                             added_total_row = added_total_row + 1
                             local chestitem =
                                 flowlinker.add {
-                                type = 'sprite-button',
-                                name = item_name_frame_name,
-                                style = 'slot_button',
-                                sprite = 'item/' .. source_chest.chest.name,
-                                tooltip = 'Chest: [color=yellow]' .. source_chest.share.name .. '[/color]\nRight click to show on map.'
-                            }
+                                    type = 'sprite-button',
+                                    name = item_name_frame_name,
+                                    style = 'slot_button',
+                                    sprite = 'item/' .. source_chest.chest.name,
+                                    tooltip = 'Chest: [color=yellow]' .. source_chest.share.name .. '[/color]\nRight click to show on map.'
+                                }
                             if added_count == 4 and added_total ~= 8 then
                                 added_count = 0
-                                local splitspace = chestlinker.add {type = 'flow'}
+                                local splitspace = chestlinker.add { type = 'flow' }
                                 splitspace.style.width = 40
                             end
                             if added_total == 8 then
@@ -528,18 +528,18 @@ local function refresh_main_frame(data)
                                 carriage_length = carriage_length + 1
                                 added_total_row = 0
                                 if not chest_scroll_pane[tostring(i)] then
-                                    local carriage_label = chest_scroll_pane.add {type = 'label', caption = 'Carriage no. ' .. carriage_length, name = chest_scroll_pane[tostring(i)], alignment = 'center'}
+                                    local carriage_label = chest_scroll_pane.add { type = 'label', caption = 'Carriage no. ' .. carriage_length, name = chest_scroll_pane[tostring(i)], alignment = 'center' }
                                     carriage_label.style.minimal_width = 400
                                     carriage_label.style.horizontal_align = 'center'
                                 end
-                                chest_scroll_pane.add {type = 'line'}
-                                chestlinker = chest_scroll_pane.add {type = 'table', column_count = 9}
+                                chest_scroll_pane.add { type = 'line' }
+                                chestlinker = chest_scroll_pane.add { type = 'table', column_count = 9 }
                             end
                             if not trusted_player then
                                 chestitem.enabled = false
                                 chestitem.tooltip = '[Antigrief] You have not grown accustomed to this technology yet.'
                             end
-                            Gui.set_data(chestitem, {name = nil, unit_number = unit_number, share = source_chest.share.name})
+                            Gui.set_data(chestitem, { name = nil, unit_number = unit_number, share = source_chest.share.name })
                         end
                     end
                 end
@@ -576,29 +576,29 @@ local function gui_opened(event)
     if not frame or not frame.valid then
         frame =
             player.gui.center.add {
-            type = 'frame',
-            caption = 'Linked chest',
-            direction = 'vertical',
-            name = tostring(unit_number)
-        }
+                type = 'frame',
+                caption = 'Linked chest',
+                direction = 'vertical',
+                name = tostring(unit_number)
+            }
     end
 
-    local controls = frame.add {type = 'flow', direction = 'horizontal'}
-    local controls2 = frame.add {type = 'flow', direction = 'horizontal'}
-    local items = frame.add {type = 'flow', direction = 'vertical'}
+    local controls = frame.add { type = 'flow', direction = 'horizontal' }
+    local controls2 = frame.add { type = 'flow', direction = 'horizontal' }
+    local items = frame.add { type = 'flow', direction = 'vertical' }
 
     local mode = container.mode
     local selected = mode and mode or 1
-    local controltbl = controls.add {type = 'table', column_count = 1}
-    local btntbl = controltbl.add {type = 'table', column_count = 2}
-    local volatile_tbl = controls2.add {type = 'table', column_count = 1}
+    local controltbl = controls.add { type = 'table', column_count = 1 }
+    local btntbl = controltbl.add { type = 'table', column_count = 2 }
+    local volatile_tbl = controls2.add { type = 'table', column_count = 1 }
 
     local btn =
         btntbl.add {
-        type = 'sprite-button',
-        tooltip = '[color=blue]Info![/color]\nChest ID: ' .. unit_number .. '\n\nFor a smoother link:\nSHIFT + RMB on the source entity\nSHIFT + LMB on the destination entity.\n\nTo mine a linked chest, disconnect the link first.',
-        sprite = Gui.info_icon
-    }
+            type = 'sprite-button',
+            tooltip = '[color=blue]Info![/color]\nChest ID: ' .. unit_number .. '\n\nFor a smoother link:\nSHIFT + RMB on the source entity\nSHIFT + LMB on the destination entity.\n\nTo mine a linked chest, disconnect the link first.',
+            sprite = Gui.info_icon
+        }
     btn.style.height = 20
     btn.style.width = 20
     btn.enabled = false
@@ -615,7 +615,7 @@ local function gui_opened(event)
     container.mode = selected
     player.opened = frame
 
-    refresh_main_frame({unit_number = unit_number, player = player})
+    refresh_main_frame({ unit_number = unit_number, player = player })
 end
 
 local function on_built_entity(event, mode, bypass)
@@ -647,7 +647,7 @@ local function on_built_entity(event, mode, bypass)
 
         if player.surface.index ~= active_surface_index then
             if entity.type ~= 'entity-ghost' then
-                player.insert({name = 'linked-chest', count = 1})
+                player.insert({ name = 'linked-chest', count = 1 })
             end
             entity.destroy()
             player.print(module_name .. 'Linked chests only work on the main surface.', Color.warning)
@@ -656,7 +656,7 @@ local function on_built_entity(event, mode, bypass)
 
         if not WPT.locomotive.is_around_train(entity) then
             if entity.type ~= 'entity-ghost' then
-                player.insert({name = 'linked-chest', count = 1})
+                player.insert({ name = 'linked-chest', count = 1 })
             end
             entity.destroy()
             player.print(module_name .. 'Linked chests only work inside the locomotive aura.', Color.warning)
@@ -667,7 +667,7 @@ local function on_built_entity(event, mode, bypass)
 
         if not trusted_player then
             if entity.type ~= 'entity-ghost' then
-                player.insert({name = 'linked-chest', count = 1})
+                player.insert({ name = 'linked-chest', count = 1 })
             end
             entity.destroy()
             player.print('[Antigrief] You have not grown accustomed to this technology yet.', Color.warning)
@@ -685,7 +685,7 @@ local function on_built_entity(event, mode, bypass)
     local position = entity.position
     if mode and entity.name ~= 'linked-chest' then
         entity.destroy()
-        entity = surface.create_entity {name = 'linked-chest', position = position, force = game.forces.player}
+        entity = surface.create_entity { name = 'linked-chest', position = position, force = game.forces.player }
         event.entity = entity
     end
     if not entity.valid then
@@ -737,7 +737,7 @@ local function built_entity_robot(event)
 
                     if player.surface.index ~= active_surface_index then
                         if entity.type ~= 'entity-ghost' then
-                            player.insert({name = 'linked-chest', count = 1})
+                            player.insert({ name = 'linked-chest', count = 1 })
                         end
                         entity.destroy()
                         player.print(module_name .. 'Linked chests only work on the main surface.', Color.warning)
@@ -746,7 +746,7 @@ local function built_entity_robot(event)
 
                     if not WPT.locomotive.is_around_train(entity) then
                         if entity.type ~= 'entity-ghost' then
-                            player.insert({name = 'linked-chest', count = 1})
+                            player.insert({ name = 'linked-chest', count = 1 })
                         end
                         entity.destroy()
                         player.print(module_name .. 'Linked chests only work inside the locomotive aura.', Color.warning)
@@ -757,7 +757,7 @@ local function built_entity_robot(event)
 
                     if not trusted_player then
                         if entity.type ~= 'entity-ghost' then
-                            player.insert({name = 'linked-chest', count = 1})
+                            player.insert({ name = 'linked-chest', count = 1 })
                         end
                         entity.destroy()
                         player.print('[Antigrief] You have not grown accustomed to this technology yet.', Color.warning)
@@ -771,7 +771,7 @@ local function built_entity_robot(event)
                             return
                         end
                         if entity.type ~= 'entity-ghost' then
-                            player.insert({name = 'linked-chest', count = 1})
+                            player.insert({ name = 'linked-chest', count = 1 })
                             entity.destroy()
                             player.print(module_name .. 'Blueprinted removed chests does not work.', Color.warning)
                             return
@@ -784,7 +784,7 @@ local function built_entity_robot(event)
                     local created = event.created_entity
                     if created and created.valid then
                         local inventory = robot.get_inventory(defines.inventory.robot_cargo)
-                        inventory.insert({name = created.name, count = 1})
+                        inventory.insert({ name = created.name, count = 1 })
                         created.destroy()
                         return
                     end
@@ -796,7 +796,7 @@ local function built_entity_robot(event)
             local created = event.created_entity
             if created and created.valid then
                 local inventory = robot.get_inventory(defines.inventory.robot_cargo)
-                inventory.insert({name = created.name, count = 1})
+                inventory.insert({ name = created.name, count = 1 })
                 created.destroy()
             end
         end
@@ -836,7 +836,7 @@ local function update_gui()
             return
         end
 
-        local tbl = frame.add {type = 'table', column_count = 10, name = 'linked_chest_inventory'}
+        local tbl = frame.add { type = 'table', column_count = 10, name = 'linked_chest_inventory' }
         local total = 0
         local items = {}
 
@@ -862,19 +862,19 @@ local function update_gui()
             else
                 btn =
                     tbl.add {
-                    type = 'sprite-button',
-                    sprite = 'item/' .. item_name,
-                    style = 'slot_button',
-                    number = item_count,
-                    name = item_name,
-                    tooltip = {'', {localized_name}, '\nCount: ', item_count}
-                }
+                        type = 'sprite-button',
+                        sprite = 'item/' .. item_name,
+                        style = 'slot_button',
+                        number = item_count,
+                        name = item_name,
+                        tooltip = { '', { localized_name }, '\nCount: ', item_count }
+                    }
                 btn.enabled = false
             end
         end
 
         while total < 16 do
-            local btns = tbl.add {type = 'sprite-button', style = 'slot_button'}
+            local btns = tbl.add { type = 'sprite-button', style = 'slot_button' }
             btns.enabled = false
 
             total = total + 1
@@ -941,7 +941,7 @@ local function on_gui_checked_state_changed(event)
         container.link_id = nil
         container.chest.minable = true
         container.chest.get_inventory(defines.inventory.chest).set_bar(1)
-        refresh_main_frame({unit_number = unit_number, player = player})
+        refresh_main_frame({ unit_number = unit_number, player = player })
     end
 
     pGui.updated = false
@@ -973,7 +973,7 @@ local function state_changed(event)
         container.mode = element.selected_index
         local mode = container.mode
 
-        refresh_main_frame({unit_number = unit_number, player = player})
+        refresh_main_frame({ unit_number = unit_number, player = player })
 
         if mode >= 2 then
             this.linked_gui[player.name].updated = false
@@ -1119,7 +1119,7 @@ function Public.add(surface, position, force, name, mode)
         return
     end
 
-    local entity = surface.create_entity {name = 'linked-chest', position = position, force = force, create_build_effect_smoke = false}
+    local entity = surface.create_entity { name = 'linked-chest', position = position, force = force, create_build_effect_smoke = false }
     if not entity.valid then
         return
     end
@@ -1151,7 +1151,7 @@ end
 
 Event.on_nth_tick(
     5,
-    function()
+    function ()
         if not this.enabled then
             return
         end
@@ -1161,7 +1161,7 @@ Event.on_nth_tick(
 
 Event.on_nth_tick(
     120,
-    function()
+    function ()
         local containers = this.main_containers
         if not containers or not next(containers) then
             return
@@ -1203,7 +1203,7 @@ Event.on_nth_tick(
 
 Gui.on_click(
     convert_chest_to_linked,
-    function(event)
+    function (event)
         local player = event.player
         local inventory = player.get_main_inventory()
         local player_item_count = inventory.get_item_count('coin')
@@ -1225,7 +1225,7 @@ Gui.on_click(
                     return
                 end
 
-                player.remove_item({name = 'coin', count = this.cost_to_convert})
+                player.remove_item({ name = 'coin', count = this.cost_to_convert })
                 player.opened = nil
                 event.created_entity = entity
                 event.entity = entity
@@ -1245,7 +1245,7 @@ Gui.on_click(
 
 Event.add(
     defines.events.on_gui_opened,
-    function(event)
+    function (event)
         local player = game.get_player(event.player_index)
         if not player or not player.valid then
             return
@@ -1264,7 +1264,7 @@ Event.add(
 
 Event.add(
     defines.events.on_gui_closed,
-    function(event)
+    function (event)
         local player = game.get_player(event.player_index)
         if not player or not player.valid then
             return
@@ -1282,7 +1282,7 @@ Event.add(
 
 Gui.on_click(
     item_name_frame_name,
-    function(event)
+    function (event)
         local player = game.get_player(event.player_index)
         local player_data = this.linked_gui[player.name]
         local element = event.element
@@ -1308,12 +1308,12 @@ Gui.on_click(
             if button == defines.mouse_button_type.right then
                 local camera_frame =
                     Where.create_mini_camera_gui(
-                    player,
-                    {valid = true, name = share_container.share.name, surface = share_container.chest.surface, position = share_container.chest.position},
-                    0.5,
-                    true,
-                    'SHIFT + LMB to link to this chest.\nLMB or RMB to exit this view.'
-                )
+                        player,
+                        { valid = true, name = share_container.share.name, surface = share_container.chest.surface, position = share_container.chest.position },
+                        0.5,
+                        true,
+                        'SHIFT + LMB to link to this chest.\nLMB or RMB to exit this view.'
+                    )
                 player_data.camera = camera_frame
                 player_data.camera_element = element
                 return
@@ -1331,13 +1331,13 @@ Gui.on_click(
             if element and element.valid then
                 Gui.remove_data_recursively(element)
             end
-            refresh_main_frame({unit_number = container.unit_number, player = event.player})
+            refresh_main_frame({ unit_number = container.unit_number, player = event.player })
         end
     end
 )
 Gui.on_click(
     player_frame_name,
-    function(event)
+    function (event)
         local button = event.button
         local shift = event.shift
         if button == defines.mouse_button_type.left and shift then
@@ -1385,7 +1385,7 @@ Gui.on_click(
                 container.chest.minable = false
 
                 this.linked_gui[event.player.name].updated = false
-                refresh_main_frame({unit_number = container.unit_number, player = event.player})
+                refresh_main_frame({ unit_number = container.unit_number, player = event.player })
                 Where.remove_camera_frame(player)
                 if element and element.valid then
                     Gui.remove_data_recursively(element)
@@ -1409,8 +1409,8 @@ local function on_player_changed_position(event)
         if data.entity and data.entity.valid then
             local position = data.entity.position
             local area = {
-                left_top = {x = position.x - 8, y = position.y - 8},
-                right_bottom = {x = position.x + 8, y = position.y + 8}
+                left_top = { x = position.x - 8, y = position.y - 8 },
+                right_bottom = { x = position.x + 8, y = position.y + 8 }
             }
             if Math2D.bounding_box.contains_point(area, player.position) then
                 return
@@ -1426,7 +1426,7 @@ end
 
 function Public.clear_linked_frames()
     Core.iter_connected_players(
-        function(player)
+        function (player)
             local data = this.linked_gui[player.name]
             if data and data.frame and data.frame.valid then
                 data.frame.destroy()
@@ -1446,17 +1446,17 @@ function Public.pre_reset()
 
     local iter = 1
     for i = 1, 500 do
-        Task.set_timeout_in_ticks(iter, create_clear_chest_token, {link_id = i})
+        Task.set_timeout_in_ticks(iter, create_clear_chest_token, { link_id = i })
         iter = iter + 1
     end
 
     local surface = game.get_surface(surface_index)
     if surface and surface.valid then
-        local ents = surface.find_entities_filtered {name = 'linked-chest'}
+        local ents = surface.find_entities_filtered { name = 'linked-chest' }
         iter = 1
         if ents and next(ents) then
             for _, e in pairs(ents) do
-                Task.set_timeout_in_ticks(iter, clear_chest_token, {entity = e})
+                Task.set_timeout_in_ticks(iter, clear_chest_token, { entity = e })
                 iter = iter + 1
             end
         end
