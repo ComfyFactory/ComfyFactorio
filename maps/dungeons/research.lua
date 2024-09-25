@@ -297,7 +297,6 @@ local all_research = {
    { name = "worker-robots-speed-5",            min = 14, max = 21 },
    { name = "worker-robots-speed-6",            min = 14, max = 21 },
    { name = "personal-roboport-mk2-equipment",  min = 14, max = 21 },
-   { name = "rocket-control-unit",              min = 14, max = 21 },
    { name = "logistic-system",                  min = 14, max = 21 },
    { name = "military-4",                       min = 14, max = 21 },
    { name = "fusion-reactor-equipment",         min = 14, max = 21 },
