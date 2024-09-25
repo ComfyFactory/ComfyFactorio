@@ -302,6 +302,8 @@ function Public.reset_map()
     end
 
     game.speed = 1
+    surface.destroy_decoratives({ name = "brown-cup", invert = true })
+    surface.destroy_decoratives({ name = "small-sand-rock", invert = true })
 
     Task.set_queue_speed(16)
 

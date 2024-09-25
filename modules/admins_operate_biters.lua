@@ -694,7 +694,7 @@ end
 
 local function on_unit_group_created(event)
     if event and event.group and event.group.valid then
-        storage.biter_command.active_unit_groups[event.group.group_number] = { id = event.group.group_number, group = event.group }
+        storage.biter_command.active_unit_groups[event.groupunique_id] = { id = event.groupunique_id, group = event.group }
         refresh_panel()
     end
 end
@@ -702,7 +702,7 @@ end
 local function on_unit_removed_from_group(event)
     if event and event.group and event.group.valid then
         if #event.group.members == 1 then
-            storage.biter_command.active_unit_groups[event.group.group_number] = nil
+            storage.biter_command.active_unit_groups[event.groupunique_id] = nil
             refresh_panel()
         end
     end

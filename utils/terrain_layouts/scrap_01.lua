@@ -10,23 +10,12 @@ local scrap_entities = {
     'crash-site-assembling-machine-1-broken',
     'crash-site-assembling-machine-2-broken',
     'crash-site-lab-broken',
-    'medium-ship-wreck',
-    'small-ship-wreck',
     'crash-site-chest-1',
     'crash-site-chest-2',
     'crash-site-chest-1',
     'crash-site-chest-2',
     'crash-site-chest-1',
     'crash-site-chest-2',
-    'big-ship-wreck-1',
-    'big-ship-wreck-2',
-    'big-ship-wreck-3',
-    'big-ship-wreck-1',
-    'big-ship-wreck-2',
-    'big-ship-wreck-3',
-    'big-ship-wreck-1',
-    'big-ship-wreck-2',
-    'big-ship-wreck-3'
 }
 local scrap_entities_index = #scrap_entities
 

@@ -10,7 +10,7 @@ local this = {
 
 Global.register(
     this,
-    function(tbl)
+    function (tbl)
         this = tbl
     end
 )
@@ -21,22 +21,22 @@ function Public.create_surface()
         ['width'] = zone_settings.zone_width,
         ['water'] = 0.001,
         ['starting_area'] = 1,
-        ['cliff_settings'] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
+        ['cliff_settings'] = { cliff_elevation_interval = 0, cliff_elevation_0 = 0 },
         ['default_enable_all_autoplace_controls'] = true,
         ['autoplace_settings'] = {
-            ['entity'] = {treat_missing_as_default = false},
+            ['entity'] = { treat_missing_as_default = false },
             ['tile'] = {
                 settings = {
-                    ['deepwater'] = {frequency = 1, size = 0, richness = 1},
-                    ['deepwater-green'] = {frequency = 1, size = 0, richness = 1},
-                    ['water'] = {frequency = 1, size = 0, richness = 1},
-                    ['water-green'] = {frequency = 1, size = 0, richness = 1},
-                    ['water-mud'] = {frequency = 1, size = 0, richness = 1},
-                    ['water-shallow'] = {frequency = 1, size = 0, richness = 1}
+                    ['deepwater'] = { frequency = 1, size = 0, richness = 1 },
+                    ['deepwater-green'] = { frequency = 1, size = 0, richness = 1 },
+                    ['water'] = { frequency = 1, size = 0, richness = 1 },
+                    ['water-green'] = { frequency = 1, size = 0, richness = 1 },
+                    ['water-mud'] = { frequency = 1, size = 0, richness = 1 },
+                    ['water-shallow'] = { frequency = 1, size = 0, richness = 1 }
                 },
                 treat_missing_as_default = true
             },
-            ['decorative'] = {treat_missing_as_default = true}
+            ['decorative'] = { treat_missing_as_default = false }
         },
         property_expression_names = {
             cliffiness = 0,

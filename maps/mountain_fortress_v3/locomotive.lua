@@ -494,6 +494,9 @@ local function validate_index()
 
     local icw_table = ICW.get_table()
     local icw_locomotive = Public.get('icw_locomotive')
+    if not icw_locomotive or not icw_locomotive.valid then
+        return
+    end
     local loco_surface = icw_locomotive.surface
     local unit_surface = locomotive.unit_number
     local locomotive_surface = game.surfaces[icw_table.wagons[unit_surface].surface.index]
@@ -834,6 +837,9 @@ function Public.transfer_pollution()
     end
 
     local icw_locomotive = Public.get('icw_locomotive')
+    if not icw_locomotive or not icw_locomotive.valid then
+        return
+    end
     local surface = icw_locomotive.surface
     if not surface or not surface.valid then
         return

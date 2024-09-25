@@ -490,24 +490,6 @@ Public.mining_events = {
         function (cave_miner, entity, player_index)
             local position = entity.position
             local surface = entity.surface
-            surface.create_entity({ name = 'compilatron', position = position, force = 'player' })
-        end,
-        64,
-        'Friendly Compilatron'
-    },
-    {
-        function (cave_miner, entity, player_index)
-            local position = entity.position
-            local surface = entity.surface
-            surface.create_entity({ name = 'compilatron', position = position, force = 'enemy' })
-        end,
-        128,
-        'Enemy Compilatron'
-    },
-    {
-        function (cave_miner, entity, player_index)
-            local position = entity.position
-            local surface = entity.surface
             local entity = surface.create_entity({ name = cave_miner.buildings_raffle[math_random(1, #cave_miner.buildings_raffle)], position = position, force = 'player' })
             entity.health = math_random(1, entity.prototype.max_health)
             local player = game.players[player_index]

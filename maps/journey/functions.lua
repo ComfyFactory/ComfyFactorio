@@ -729,10 +729,11 @@ function Public.draw_mothership(journey)
         protect(chest, false)
     end
 
-    for _ = 1, 3, 1 do
-        local comp = surface.create_entity({ name = 'compilatron', position = Constants.mothership_teleporter_position, force = 'player' })
-        comp.destructible = false
-    end
+    -- removed for 1.2/2.0
+    -- for _ = 1, 3, 1 do
+    --     local comp = surface.create_entity({ name = 'compilatron', position = Constants.mothership_teleporter_position, force = 'player' })
+    --     comp.destructible = false
+    -- end
     Public.draw_gui(journey)
     surface.daytime = 0.5
 

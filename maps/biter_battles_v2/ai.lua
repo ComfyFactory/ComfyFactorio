@@ -433,7 +433,7 @@ local function create_attack_group(surface, force_name, biter_force_name)
 
     send_group(unit_group, force_name, side_target)
 
-    storage.unit_groups[unit_group.group_number] = unit_group
+    storage.unit_groups[unit_groupunique_id] = unit_group
 end
 
 Public.pre_main_attack = function ()

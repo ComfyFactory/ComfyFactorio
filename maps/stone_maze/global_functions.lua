@@ -59,7 +59,7 @@ function get_ammo()
     end
 end
 
-local special_scraps = { 'crash-site-assembling-machine-1-broken', 'crash-site-assembling-machine-2-broken', 'crash-site-lab-broken', 'medium-ship-wreck' }
+local special_scraps = { 'crash-site-assembling-machine-1-broken', 'crash-site-assembling-machine-2-broken', 'crash-site-lab-broken' }
 function get_scrap()
     if math.random(1, 128) == 1 then
         return special_scraps[math.random(1, 4)]
