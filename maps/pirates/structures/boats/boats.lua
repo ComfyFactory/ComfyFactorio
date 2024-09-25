@@ -137,12 +137,12 @@ function Public.destroy_boat(boat, tile_type, flipped)
 	flipped = flipped or false
 	tile_type = tile_type or 'water'
 	if boat.rendering_crewname_text then
-		rendering.destroy(boat.rendering_crewname_text)
+		boat.rendering_crewname_text.destroy()
 		boat.rendering_crewname_text = nil
 	end
 	if boat.renderings_power and #boat.renderings_power > 0 then
 		for _, r in pairs(boat.renderings_power) do
-			rendering.destroy(r)
+			r.destroy()
 		end
 	end
 	Public.place_boat(boat, tile_type, false, true, flipped)
@@ -180,7 +180,7 @@ function Public.update_EEIs(boat)
 
 	if boat.renderings_power and #boat.renderings_power > 0 then
 		for _, r in pairs(boat.renderings_power) do
-			rendering.destroy(r)
+			r.destroy()
 		end
 	end
 	Public.draw_power_renderings(boat)
@@ -1128,15 +1128,15 @@ local function teleport_handle_renderings(boat, oldsurface_name, newsurface_name
 	if boat.renderings_power and #boat.renderings_power > 0 then
 		if oldsurface_name == newsurface_name then
 			for _, r in pairs(boat.renderings_power) do
-				if rendering.is_valid(r) then
-					local p = rendering.get_target(r).position
-					rendering.set_target(r, { x = p.x + vector.x, y = p.y + vector.y })
+				if r.valid then
+					local p = r.target.position
+					r.target = { x = p.x + vector.x, y = p.y + vector.y }
 				end
 			end
 		else
 			for _, r in pairs(boat.renderings_power) do
-				if rendering.is_valid(r) then
-					rendering.destroy(r)
+				if r.valid then
+					r.destroy()
 				end
 			end
 			Public.draw_power_renderings(boat)
@@ -1147,9 +1147,9 @@ local function teleport_handle_renderings(boat, oldsurface_name, newsurface_name
 		local p = Utils.psum { boat.position, scope.Data.crewname_rendering_position }
 
 		if oldsurface_name == newsurface_name then
-			rendering.set_target(boat.rendering_crewname_text, p)
+			boat.rendering_crewname_text.target = p
 		else
-			rendering.destroy(boat.rendering_crewname_text)
+			boat.rendering_crewname_text.destroy()
 			boat.rendering_crewname_text = rendering.draw_text {
 				text = memory.name,
 				-- render_layer = '125', --does nothing

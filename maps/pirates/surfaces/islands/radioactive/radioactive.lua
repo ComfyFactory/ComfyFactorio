@@ -274,15 +274,17 @@ local function radioactive_tick()
 					pollution = 6 * (Common.difficulty_scale() ^ (1.1) * (memory.overworldx / 40) ^ (18 / 10) * (Balance.crew_scale()) ^ (1 / 5)) / 3600 * tickinterval * (1 + (Common.difficulty_scale() - 1) * 0.2 + 0.001 * timer)
 				end
 
-				if pollution > 0 then
-					memory.floating_pollution = memory.floating_pollution + pollution
-
-					game.pollution_statistics.on_flow('uranium-ore', pollution)
-				end
-
 				local surface = game.surfaces[destination.surface_name]
-				if surface and surface.valid and (not surface.freeze_daytime) and destination.dynamic_data.timer and destination.dynamic_data.timer >= CoreData.daynightcycle_types[Public.Data.static_params_default.daynightcycletype].ticksperday / 60 / 2 then --once daytime, never go back to night
-					surface.freeze_daytime = true
+				if surface and surface.valid then
+					if pollution > 0 then
+						memory.floating_pollution = memory.floating_pollution + pollution
+
+						game.get_pollution_statistics(surface).on_flow('uranium-ore', pollution)
+					end
+
+					if (not surface.freeze_daytime) and destination.dynamic_data.timer and destination.dynamic_data.timer >= CoreData.daynightcycle_types[Public.Data.static_params_default.daynightcycletype].ticksperday / 60 / 2 then --once daytime, never go back to night
+						surface.freeze_daytime = true
+					end
 				end
 			end
 		end

@@ -471,25 +471,13 @@ end
 function Public.set_evo(evolution)
     local memory = Memory.get_crew_memory()
     memory.evolution_factor = evolution
-    if memory.enemy_force_name then
-        local ef = memory.enemy_force
-        if ef and ef.valid then
-            ef.evolution_factor = memory.evolution_factor
-            Public.set_biter_surplus_evo_modifiers()
-        end
-    end
+    Public.set_biter_surplus_evo_modifiers()
 end
 
 function Public.increment_evo(evolution)
     local memory = Memory.get_crew_memory()
     memory.evolution_factor = memory.evolution_factor + evolution
-    if memory.enemy_force_name then
-        local ef = memory.enemy_force
-        if ef and ef.valid then
-            ef.evolution_factor = memory.evolution_factor
-            Public.set_biter_surplus_evo_modifiers()
-        end
-    end
+    Public.set_biter_surplus_evo_modifiers()
 end
 
 function Public.current_destination()
@@ -788,11 +776,11 @@ function Public.transfer_healthbar(old_unit_number, new_entity, location_overrid
 
     Public.new_healthbar(old_healthbar.render2, new_entity, old_healthbar.max_health, old_healthbar.id, old_healthbar.health, old_healthbar.size, old_healthbar.extra_offset, location_override)
 
-    if rendering.is_valid(old_healthbar.render1) then
-        rendering.destroy(old_healthbar.render1)
+    if old_healthbar.render1 and old_healthbar.render1.valid then
+        old_healthbar.render1.destroy()
     end
-    if old_healthbar.render2 and rendering.is_valid(old_healthbar.render2) then
-        rendering.destroy(old_healthbar.render2)
+    if old_healthbar.render2 and old_healthbar.render2.valid then
+        old_healthbar.render2.destroy()
     end
 
     location_override.healthbars[old_unit_number] = nil
@@ -839,17 +827,17 @@ function Public.update_healthbar_rendering(new_healthbar, health)
 
     if health > 0 then
         local m = health / max_health
-        local x_scale = rendering.get_y_scale(render1) * 15
-        rendering.set_x_scale(render1, x_scale * m)
-        rendering.set_color(render1, { Math.floor(255 - 255 * m), Math.floor(200 * m), 0 })
+        local x_scale = render1.y_scale * 15
+        render1.x_scale = x_scale * m
+        render1.color = { Math.floor(255 - 255 * m), Math.floor(200 * m), 0 }
 
         if render2 then
-            rendering.set_text(render2, string.format('HP: %d/%d', Math.ceil(health), Math.ceil(max_health)))
+            render2.text = string.format('HP: %d/%d', Math.ceil(health), Math.ceil(max_health))
         end
     else
-        rendering.destroy(render1)
+        render1.destroy()
         if render2 then
-            rendering.destroy(render2)
+            render2.destroy()
         end
     end
 end
@@ -1592,9 +1580,9 @@ end
 function Public.init_game_settings(technology_price_multiplier)
     --== Tuned for Pirate Ship ==--
 
-    global.friendly_fire_history = {}
-    global.landfill_history = {}
-    global.mining_history = {}
+    storage.friendly_fire_history = {}
+    storage.landfill_history = {}
+    storage.mining_history = {}
 
     game.difficulty_settings.technology_price_multiplier = technology_price_multiplier
 
@@ -1645,7 +1633,7 @@ function Public.init_game_settings(technology_price_multiplier)
     game.map_settings.pollution.diffusion_ratio = 0.035
     --
     -- game.forces.neutral.character_inventory_slots_bonus = 500
-    game.forces.enemy.evolution_factor = 0
+    -- game.forces.enemy.evolution_factor = 0
 end
 
 -- prefer memory.force_name if possible
@@ -1699,7 +1687,7 @@ function Public.get_item_blacklist(tier)
     -- blacklist['productivity-module'] = true
     -- blacklist['productivity-module-2'] = true
     -- blacklist['productivity-module-3'] = true
-    -- blacklist['effectivity-module-3'] = true
+    -- blacklist['efficiency-module-3'] = true
     -- blacklist['space-science-pack'] = true
     -- blacklist['rocket-control-unit'] = true
     blacklist['artillery-wagon'] = true

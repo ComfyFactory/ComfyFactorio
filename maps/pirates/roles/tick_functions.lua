@@ -125,12 +125,12 @@ function Public.class_renderings(tickinterval)
 			-- if Common.validate_player_and_character(player) and (c ~= Classes.enum.IRON_LEG or (memory.class_auxiliary_data[player_index] and memory.class_auxiliary_data[player_index].iron_leg_active)) then
 			if Common.validate_player_and_character(player) then
 				if class == c then
-					if r and rendering.is_valid(r) then
-						rendering.set_target(r, player.character)
+					if r and r.valid then
+						r.target = player.character
 					end
 				else
-					if r and rendering.is_valid(r) then
-						rendering.destroy(r)
+					if r and r.valid then
+						r.destroy()
 					end
 					if class == Classes.enum.QUARTERMASTER then
 						class_renderings[player_index] = {
@@ -237,7 +237,7 @@ function Public.class_renderings(tickinterval)
 				end
 			else
 				if r then
-					rendering.destroy(r)
+					r.destroy()
 				end
 				class_renderings[player_index] = nil
 			end
@@ -247,8 +247,8 @@ function Public.class_renderings(tickinterval)
 	for k, data in pairs(class_renderings) do
 		if not processed_players[k] then
 			local r = data.rendering
-			if r and rendering.is_valid(r) then
-				rendering.destroy(r)
+			if r and r.valid then
+				r.destroy()
 			end
 			class_renderings[k] = nil
 		end

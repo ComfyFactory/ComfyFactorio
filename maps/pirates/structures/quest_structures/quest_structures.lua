@@ -249,10 +249,10 @@ function Public.tick_quest_structure_entry_price_check()
 		if quest_structure_data.state == 'covered' then
 			if quest_structure_data.completion_counter >= entry_price.count then
 				quest_structure_data.state = 'uncovered'
-				rendering.destroy(quest_structure_data.rendering1)
-				rendering.destroy(quest_structure_data.rendering2)
-				rendering.destroy(quest_structure_data.rendering3)
-				rendering.destroy(quest_structure_data.rendering4)
+				quest_structure_data.rendering1.destroy()
+				quest_structure_data.rendering2.destroy()
+				quest_structure_data.rendering3.destroy()
+				quest_structure_data.rendering4.destroy()
 
 				local special = Utils.deepcopy(Public[enum.MARKET1].Data.step2)
 				special.position = quest_structure_data.position
@@ -260,7 +260,7 @@ function Public.tick_quest_structure_entry_price_check()
 				destination.dynamic_data.structures_waiting_to_be_placed[#destination.dynamic_data.structures_waiting_to_be_placed + 1] = { data = special, tick = game.tick }
 			else
 				if quest_structure_data.rendering1 then
-					rendering.set_text(quest_structure_data.rendering1, { 'pirates.quest_structure_market_1', entry_price.count - quest_structure_data.completion_counter })
+					quest_structure_data.rendering1.text = { 'pirates.quest_structure_market_1', entry_price.count - quest_structure_data.completion_counter }
 				end
 			end
 		end
@@ -339,12 +339,12 @@ function Public.tick_quest_structure_entry_price_check()
 
 			if quest_structure_data.completion_counter >= entry_price.count then
 				quest_structure_data.state = 'uncovered'
-				rendering.destroy(quest_structure_data.rendering0)
-				rendering.destroy(quest_structure_data.rendering1)
-				rendering.destroy(quest_structure_data.rendering2)
-				rendering.destroy(quest_structure_data.rendering3)
-				rendering.destroy(quest_structure_data.rendering4)
-				rendering.destroy(quest_structure_data.rendering5)
+				quest_structure_data.rendering0.destroy()
+				quest_structure_data.rendering1.destroy()
+				quest_structure_data.rendering2.destroy()
+				quest_structure_data.rendering3.destroy()
+				quest_structure_data.rendering4.destroy()
+				quest_structure_data.rendering5.destroy()
 
 				local special = Utils.deepcopy(Public[enum.FURNACE1].Data.step2)
 				special.position = quest_structure_data.position
@@ -352,7 +352,7 @@ function Public.tick_quest_structure_entry_price_check()
 				destination.dynamic_data.structures_waiting_to_be_placed[#destination.dynamic_data.structures_waiting_to_be_placed + 1] = { data = special, tick = game.tick }
 			else
 				if quest_structure_data.rendering1 then
-					rendering.set_text(quest_structure_data.rendering1, entry_price.count - quest_structure_data.completion_counter .. ' x')
+					quest_structure_data.rendering1.text = entry_price.count - quest_structure_data.completion_counter .. ' x'
 				end
 			end
 		else

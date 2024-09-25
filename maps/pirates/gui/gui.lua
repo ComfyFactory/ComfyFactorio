@@ -941,13 +941,13 @@ function Public.update_gui(player)
 	-- local lives = memory.lives or 1
 	-- local button = pirates_flow.lives_piratebutton_frame.lives_piratebutton
 	-- if lives == 1 then
-	-- 	button.sprite = 'item/effectivity-module'
+	-- 	button.sprite = 'item/efficiency-module'
 	-- 	button.number = 1
 	-- elseif lives == 2 then
-	-- 	button.sprite = 'item/effectivity-module-2'
+	-- 	button.sprite = 'item/efficiency-module-2'
 	-- 	button.number = 2
 	-- elseif lives == 3 then
-	-- 	button.sprite = 'item/effectivity-module-3'
+	-- 	button.sprite = 'item/efficiency-module-3'
 	-- 	button.number = 3
 	-- end
 

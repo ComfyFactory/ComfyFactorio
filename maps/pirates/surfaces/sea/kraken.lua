@@ -216,7 +216,7 @@ function Public.kraken_tick(crew_id, kraken_id, step, substep)
 				max_range = 500,
 				speed = 0.1
 			}
-			memory.kraken_stream_registrations[#memory.kraken_stream_registrations + 1] = { number = script.register_on_entity_destroyed(stream), position = spit_target_pos }
+			memory.kraken_stream_registrations[#memory.kraken_stream_registrations + 1] = { number = script.register_on_object_destroyed(stream), position = spit_target_pos }
 			Effects.kraken_effect_4(surface, kraken_data.position)
 		end
 
@@ -233,7 +233,7 @@ function Public.kraken_tick(crew_id, kraken_id, step, substep)
 	end
 end
 
-local function on_entity_destroyed(event)
+local function on_object_destroyed(event)
 	local registration_number = event.registration_number
 
 	local p
@@ -419,6 +419,6 @@ function Public.kraken_die(kraken_id)
 end
 
 local event = require 'utils.event'
-event.add(defines.events.on_entity_destroyed, on_entity_destroyed)
+event.add(defines.events.on_object_destroyed, on_object_destroyed)
 
 return Public

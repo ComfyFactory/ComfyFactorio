@@ -1,6 +1,5 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-
 local Memory = require 'maps.pirates.memory'
 local Balance = require 'maps.pirates.balance'
 local Math = require 'maps.pirates.math'
@@ -25,9 +24,7 @@ local Permissions = require 'maps.pirates.permissions'
 -- local Ores = require 'maps.pirates.ores'
 -- local Parrot = require 'maps.pirates.parrot'
 local Kraken = require 'maps.pirates.surfaces.sea.kraken'
-
 local Jailed = require 'utils.datastore.jail_data'
-
 local Crew = require 'maps.pirates.crew'
 local Quest = require 'maps.pirates.quest'
 local Shop = require 'maps.pirates.shop.shop'
@@ -36,7 +33,6 @@ local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Classes = require 'maps.pirates.roles.classes'
 local Ores = require 'maps.pirates.ores'
-
 local Server = require 'utils.server'
 -- local Modifers = require 'player_modifiers'
 local GuiWelcome = require 'maps.pirates.gui.welcome'
@@ -74,35 +70,6 @@ function Public.silo_die()
 	end
 end
 
--- function Public.damage_silo(final_damage_amount)
--- 	if final_damage_amount == 0 then return end
--- 	local destination = Common.current_destination()
--- 	-- local memory = Memory.get_crew_memory()
-
--- 	-- if we are doing the 'no damage' quest, then damage in the first 20 seconds after landing doesn't count:
--- 	if destination and destination.dynamic_data and destination.dynamic_data.quest_type == Quest.enum.NODAMAGE then
--- 		if not (destination.dynamic_data.timer and destination.dynamic_data.timeratlandingtime and destination.dynamic_data.timer > destination.dynamic_data.timeratlandingtime + 20) then return end
--- 	end
-
--- 	-- manual 'resistance:'
--- 	local final_damage_amount2 = final_damage_amount / 4
-
--- 	destination.dynamic_data.rocketsilohp = Math.max(0, Math.floor(destination.dynamic_data.rocketsilohp - final_damage_amount2))
--- 	if destination.dynamic_data.rocketsilohp > destination.dynamic_data.rocketsilomaxhp then destination.dynamic_data.rocketsilohp = destination.dynamic_data.rocketsilomaxhp end
-
--- 	if destination.dynamic_data.rocketsilohp <= 0 then
--- 	-- if destination.dynamic_data.rocketsilohp <= 0 and (not destination.dynamic_data.rocketlaunched) then
--- 		Public.silo_die()
--- 		rendering.destroy(destination.dynamic_data.rocketsilohptext)
--- 	else
--- 		rendering.set_text(destination.dynamic_data.rocketsilohptext, 'HP: ' .. destination.dynamic_data.rocketsilohp .. ' / ' .. destination.dynamic_data.rocketsilomaxhp)
--- 	end
--- 	-- if destination.dynamic_data.rocketsilohp < destination.dynamic_data.rocketsilomaxhp / 2 and final_damage_amount > 0 then
--- 	-- 	Upgrades.trigger_poison()
--- 	-- end
--- end
-
-
 local function biters_chew_stuff_faster(event)
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
@@ -128,18 +95,6 @@ local function biters_chew_stuff_faster(event)
 		event.final_damage_amount = event.final_damage_amount * 1.5
 	end
 end
-
-
-
--- local function event_on_player_repaired_entity(event)
--- 	local entity = event.entity
-
--- 	if entity and entity.valid and entity.name and entity.name == 'artillery-turret' then
--- 		entity.health = entity.health - 2 --prevents repairing
--- 	end
--- 	--@TODO: somehow fix the fact that drones can repair the turret
--- end
-
 
 local function handle_damage_in_restricted_areas(event)
 	-- local memory = Memory.get_crew_memory()
@@ -1358,7 +1313,7 @@ local function event_on_entity_died(event)
 
 				if not memory.elite_biters_stream_registrations then memory.elite_biters_stream_registrations = {} end
 				memory.elite_biters_stream_registrations[#memory.elite_biters_stream_registrations + 1] = {
-					number = script.register_on_entity_destroyed(stream),
+					number = script.register_on_object_destroyed(stream),
 					position = target_pos,
 					biter_name = entity.name,
 					surface_name = surface.name -- surface name is needed to know where biter died

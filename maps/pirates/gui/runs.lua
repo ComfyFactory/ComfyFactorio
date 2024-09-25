@@ -36,7 +36,7 @@ local function flow_add_proposal_slider(flow, name, displayname, indices_count, 
 		type = 'label',
 		caption = displayname,
 	})
-	flow3.style.font = 'heading-3'
+	flow3.style.font = 'default-semibold'
 	flow3.style.height = 20
 	flow3.style.margin = 0
 	flow3.style.padding = 0
@@ -109,7 +109,7 @@ end
 -- 		type = 'label',
 -- 		caption = displayname,
 -- 	})
--- 	flow3.style.font = 'heading-3'
+-- 	flow3.style.font = 'default-semibold'
 -- 	flow3.style.height = 20
 --     flow3.style.margin = 0
 --     flow3.style.padding = 0
@@ -325,7 +325,7 @@ function Public.toggle_window(player)
 		type = 'label',
 		caption = { 'pirates.gui_runs_proposal_maker_run_name' },
 	})
-	flow5.style.font = 'heading-3'
+	flow5.style.font = 'default-semibold'
 
 	flow5 = flow4.add({
 		name = 'namefield',
@@ -375,7 +375,7 @@ function Public.toggle_window(player)
 		type = 'label',
 		caption = { 'pirates.gui_runs_proposal_maker_password' },
 	})
-	flow6.style.font = 'heading-3'
+	flow6.style.font = 'default-semibold'
 
 	flow6 = flow5.add({
 		name = 'password',
@@ -392,7 +392,7 @@ function Public.toggle_window(player)
 		type = 'label',
 		caption = { 'pirates.gui_runs_proposal_maker_confirm_password' },
 	})
-	flow6.style.font = 'heading-3'
+	flow6.style.font = 'default-semibold'
 
 	flow6 = flow5.add({
 		name = 'confirm_password',

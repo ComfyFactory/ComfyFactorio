@@ -50,11 +50,11 @@ Public.offers_default = {
 	{ price = { { 'coin', 1700 } }, offer = { type = 'give-item', item = 'flamethrower-ammo', count = 15 } },
 	{ price = { { 'coin', 1800 } }, offer = { type = 'give-item', item = 'flamethrower-ammo', count = 20 } },
 	{ price = { { 'coin', 1800 } }, offer = { type = 'give-item', item = 'flying-robot-frame', count = 5 } },
-	{ price = { { 'coin', 1000 } }, offer = { type = 'give-item', item = 'logistic-chest-storage', count = 5 } },
-	{ price = { { 'coin', 1000 } }, offer = { type = 'give-item', item = 'logistic-chest-passive-provider', count = 5 } },
-	{ price = { { 'coin', 2500 } }, offer = { type = 'give-item', item = 'logistic-chest-active-provider', count = 5 } },
-	{ price = { { 'coin', 2500 } }, offer = { type = 'give-item', item = 'logistic-chest-buffer', count = 5 } },
-	{ price = { { 'coin', 2500 } }, offer = { type = 'give-item', item = 'logistic-chest-requester', count = 5 } },
+	{ price = { { 'coin', 1000 } }, offer = { type = 'give-item', item = 'storage-chest', count = 5 } },
+	{ price = { { 'coin', 1000 } }, offer = { type = 'give-item', item = 'passive-provider-chest', count = 5 } },
+	{ price = { { 'coin', 2500 } }, offer = { type = 'give-item', item = 'active-provider-chest', count = 5 } },
+	{ price = { { 'coin', 2500 } }, offer = { type = 'give-item', item = 'buffer-chest', count = 5 } },
+	{ price = { { 'coin', 2500 } }, offer = { type = 'give-item', item = 'requester-chest', count = 5 } },
 }
 
 

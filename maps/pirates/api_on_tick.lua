@@ -475,7 +475,7 @@ function Public.pick_up_tick(tickinterval)
 					map.buried_treasure_position = p2
 
 					map.state = 'picked_up'
-					rendering.destroy(map.mapobject_rendering)
+					map.mapobject_rendering.destroy()
 
 					Common.notify_force_light(player.force, { 'pirates.find_map', player.name })
 
@@ -529,7 +529,7 @@ function Public.pick_up_tick(tickinterval)
 					j = j + 1
 				end
 				if player then
-					rendering.destroy(ghost.ghostobject_rendering)
+					ghost.ghostobject_rendering.destroy()
 
 					ghost.state = 'picked_up'
 
@@ -863,10 +863,10 @@ function Public.buried_treasure_check(tickinterval)
 								local maps = destination.dynamic_data.treasure_maps
 								for _, m in pairs(maps) do
 									if m.state == 'on_ground' then
-										rendering.destroy(m.mapobject_rendering)
+										m.mapobject_rendering.destroy()
 									elseif m.state == 'picked_up' and m.x_renderings and #m.x_renderings > 0 then
-										rendering.destroy(m.x_renderings[1])
-										rendering.destroy(m.x_renderings[2])
+										m.x_renderings[1].destroy()
+										m.x_renderings[2].destroy()
 									end
 									m = nil
 								end
@@ -877,8 +877,8 @@ function Public.buried_treasure_check(tickinterval)
 								for _, m in pairs(maps) do
 									if m.state == 'picked_up' and m.buried_treasure_position and m.buried_treasure_position == p and m.x_renderings and #m.x_renderings > 0 then
 										m.state = 'inactive'
-										rendering.destroy(m.x_renderings[1])
-										rendering.destroy(m.x_renderings[2])
+										m.x_renderings[1].destroy()
+										m.x_renderings[2].destroy()
 									end
 								end
 							end
@@ -1101,8 +1101,8 @@ function Public.loading_update(tickinterval)
 
 		if currentdestination.type == Surfaces.enum.LOBBY then
 			if memory.loadingticks >= 1260 then
-				if boat and boat.rendering_crewname_text and rendering.is_valid(boat.rendering_crewname_text) then
-					rendering.destroy(boat.rendering_crewname_text)
+				if boat and boat.rendering_crewname_text and boat.rendering_crewname_text.valid then
+					boat.rendering_crewname_text.destroy()
 					boat.rendering_crewname_text = nil
 				end
 
@@ -1252,16 +1252,18 @@ function Public.silo_update(tickinterval)
 					local pollution = e / 1000000 * Balance.silo_total_pollution() / Balance.silo_energy_needed_MJ()
 
 					if p and pollution then
-						game.pollution_statistics.on_flow('rocket-silo', pollution)
+						local surface = game.surfaces[destination.surface_name]
+
+						game.get_pollution_statistics(surface).on_flow('rocket-silo', pollution)
 						if not memory.floating_pollution then memory.floating_pollution = 0 end
 
 						-- Eventually I want to reformulate pollution not to pull from the map directly, but to pull from pollution_statistics. Previously all the silo pollution went to the map, but this causes a lag ~1-2 minutes. So as a compromise, let's send some to floating_pollution directly, and some to the map:
 						memory.floating_pollution = memory.floating_pollution + 3 * pollution / 4
-						game.surfaces[destination.surface_name].pollute(p, pollution / 4)
+						surface.pollute(p, pollution / 4)
 
 						if memory.overworldx >= 0 and dynamic_data.rocketsiloenergyconsumed >= 0.25 * dynamic_data.rocketsiloenergyneeded and (not dynamic_data.parrot_silo_warned) then
 							dynamic_data.parrot_silo_warned = true
-							local spawnerscount = Common.spawner_count(game.surfaces[destination.surface_name])
+							local spawnerscount = Common.spawner_count(surface)
 							if spawnerscount > 0 then
 								Common.parrot_speak(memory.force, { 'pirates.parrot_silo_warning' })
 							end
@@ -1292,11 +1294,14 @@ function Public.slower_boat_tick(tickinterval)
 	end
 
 	local p = memory.boat.position
-	if p and destination.subtype ~= IslandEnum.enum.RADIOACTIVE and destination.surface_name and game.surfaces[destination.surface_name] and game.surfaces[destination.surface_name].valid then --no locomotive pollute on radioactive islands
+	if p and destination.subtype ~= IslandEnum.enum.RADIOACTIVE and destination.surface_name then --no locomotive pollute on radioactive islands
 		local pollution = Balance.boat_passive_pollution_per_minute(destination.dynamic_data.timer) / 3600 * tickinterval
 
-		game.surfaces[destination.surface_name].pollute(p, pollution)
-		game.pollution_statistics.on_flow('locomotive', pollution)
+		local surface = game.surfaces[destination.surface_name]
+		if surface and surface.valid then
+			surface.pollute(p, pollution)
+			game.get_pollution_statistics(destination.surface_name).on_flow('locomotive', pollution)
+		end
 	end
 
 	-- if memory.enemyboats then
