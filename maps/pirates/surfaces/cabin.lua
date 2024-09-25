@@ -107,19 +107,19 @@ Public.market_price_scale = 300
 Public.cabin_shop_data = {
 	{
 		-- Note: coin price for this offer changes based on difficulty.
-		price = { { 'coin', 4000 }, { 'coal', 20 }, { 'iron-plate', 20 } }, --should be inefficient on resources to merely buy arty to shoot nests
+		price = { { name = 'coin', count = 4000 }, { name = 'coal', count = 20 }, { name = 'iron-plate', count = 20 } }, --should be inefficient on resources to merely buy arty to shoot nests
 		offer = { type = 'give-item', item = 'artillery-shell', count = 5 },
 	},
 	{
-		price = { { 'coin', 2000 }, { 'electronic-circuit', 50 } },
+		price = { { name = 'coin', count = 2000 }, { name = 'electronic-circuit', count = 50 } },
 		offer = { type = 'give-item', item = 'rail-signal', count = 50 },
 	},
 	{
-		price = { { 'coin', 1000 }, { 'stone-brick', 50 } },
+		price = { { name = 'coin', count = 1000 }, { name = 'stone-brick', count = 50 } },
 		offer = { type = 'give-item', item = 'uranium-238', count = 10 },
 	},
 	{
-		price = { { 'coin', 1000 }, { 'explosives', 5 } },
+		price = { { name = 'coin', count = 1000 }, { name = 'explosives', count = 5 } },
 		offer = { type = 'give-item', item = 'cliff-explosives', count = 5 },
 	},
 	{
@@ -135,7 +135,7 @@ Public.cabin_shop_data = {
 		offer = { type = 'nothing', effect_description = { 'pirates.market_description_random_class' } }
 	},
 	{
-		price = { { 'coin', 100 }, { 'raw-fish', 1 } },
+		price = { { name = 'coin', count = 100 }, { name = 'raw-fish', count = 1 } },
 		offer = { type = 'nothing', effect_description = { 'pirates.market_description_reroll_prices' } }
 	},
 	--disabled now that we can wait after any destination:
@@ -201,7 +201,7 @@ function Public.create_cabin_surface()
 				filter = 'coal'
 			elseif splitter.type <= 6 then
 				priority = 'right'
-				filter = prototypes.item[CoreData.cost_items[splitter.type].name]
+				filter = CoreData.cost_items[splitter.type].name
 			elseif splitter.type == 7 then
 				priority = 'left'
 			elseif splitter.type == 8 then
@@ -401,7 +401,7 @@ function Public.update_captains_market_offers_based_on_difficulty(difficulty_opt
 		if i == enum.SLOT_ARTILLERY_SHELLS then
 			for _, price in pairs(offer.price) do
 				if price.name == "coin" then
-					price.amount = difficulty_option * 1000
+					price.count = difficulty_option * 1000
 				end
 			end
 		end

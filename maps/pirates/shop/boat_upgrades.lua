@@ -53,8 +53,8 @@ Public.upgrades_data = {
 	[enum.MORE_POWER] = {
 		market_item = {
 			price = {
-				{ 'coin', 7000 },
-				{ 'coal', 500 }
+				{ name = 'coin', count = 7000 },
+				{ name = 'coal', count = 500 }
 			},
 			offer = {
 				type = 'nothing',
@@ -67,8 +67,8 @@ Public.upgrades_data = {
 	[enum.EXTRA_HOLD] = {
 		market_item = {
 			price = {
-				{ 'coin', 7000 },
-				{ 'coal', 500 }
+				{ name = 'coin', count = 7000 },
+				{ name = 'coal', count = 500 }
 			},
 			offer = {
 				type = 'nothing',
@@ -81,8 +81,8 @@ Public.upgrades_data = {
 	[enum.UNLOCK_MERCHANTS] = {
 		market_item = {
 			price = {
-				{ 'coin', 14000 },
-				{ 'coal', 1000 }
+				{ name = 'coin', count = 14000 },
+				{ name = 'coal', count = 1000 }
 			},
 			offer = {
 				type = 'nothing',
@@ -95,8 +95,8 @@ Public.upgrades_data = {
 	[enum.ROCKETS_FOR_SALE] = {
 		market_item = {
 			price = {
-				{ 'coin', 21000 },
-				{ 'coal', 1000 }
+				{ name = 'coin', count = 21000 },
+				{ name = 'coal', count = 1000 }
 			},
 			offer = {
 				type = 'nothing',
@@ -109,9 +109,9 @@ Public.upgrades_data = {
 	[enum.UPGRADE_CANNONS] = {
 		market_item = {
 			price = {
-				{ 'repair-pack', 20 },
-				{ 'coin',        5000 },
-				{ 'coal',        800 }
+				{ name = 'repair-pack', count = 20 },
+				{ name = 'coin',        count = 5000 },
+				{ name = 'coal',        count = 800 }
 			},
 			offer = {
 				type = 'nothing',

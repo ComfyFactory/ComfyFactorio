@@ -33,7 +33,7 @@ function Public.print_transaction(player, multiplier, offer_itemname, offer_item
 	local s3 = offer_itemcount * multiplier .. ' ' .. offer_itemname
 	if offer_itemname == 'coin' then type = 'sold' end
 	for i, p in pairs(price) do
-		local p2 = { name = p.name, amount = p.amount }
+		local p2 = { name = p.name, amount = p.count }
 		if p2.name == 'raw-fish' then p2.name = 'fish' end
 		if p2.name == 'coin' then
 			type = 'bought'
@@ -46,7 +46,7 @@ function Public.print_transaction(player, multiplier, offer_itemname, offer_item
 				s2[#s2 + 1] = { 'pirates.separator_1' }
 			end
 		end
-		s2[#s2 + 1] = p2.amount * multiplier
+		s2[#s2 + 1] = p2.count * multiplier
 		s2[#s2 + 1] = ' '
 		s2[#s2 + 1] = p2.name
 	end
@@ -133,10 +133,10 @@ function Public.refund_items(player, price, price_multiplier, item_purchased_nam
 	if not inv then return end
 
 	for _, p in pairs(price) do
-		local inserted = inv.insert { name = p.name, count = p.amount * price_multiplier }
-		if inserted < p.amount * price_multiplier then
+		local inserted = inv.insert { name = p.name, count = p.count * price_multiplier }
+		if inserted < p.count * price_multiplier then
 			-- Inventory is full, drop the remaining items on the ground
-			player.surface.spill_item_stack(player.position, { name = p.name, count = p.amount * price_multiplier - inserted }, true, player.force, false)
+			player.surface.spill_item_stack(player.position, { name = p.name, count = p.count * price_multiplier - inserted }, true, player.force, false)
 		end
 	end
 
@@ -215,7 +215,7 @@ function Public.event_on_market_item_purchased(event)
 			end
 		else
 			if thisPurchaseData.offer_type == 'nothing' then
-				local isDamageUpgrade = thisPurchaseData.price[1].amount == Balance.weapon_damage_upgrade_price()[1].amount and thisPurchaseData.price[1].name == Balance.weapon_damage_upgrade_price()[1].name
+				local isDamageUpgrade = thisPurchaseData.price[1].count == Balance.weapon_damage_upgrade_price()[1].count and thisPurchaseData.price[1].name == Balance.weapon_damage_upgrade_price()[1].name
 
 				if isDamageUpgrade then
 					Common.notify_force_light(player.force, { 'pirates.market_event_attack_upgrade_purchased', player.name, Balance.weapon_damage_upgrade_percentage() })
@@ -243,7 +243,7 @@ function Public.event_on_market_item_purchased(event)
 					end
 				end
 			else
-				Common.notify_force_light(player.force, { 'pirates.market_event_buy', player.name, thisPurchaseData.offer_giveitem_count .. ' ' .. thisPurchaseData.offer_giveitem_name, thisPurchaseData.price[1].amount .. ' ' .. thisPurchaseData.price[1].name })
+				Common.notify_force_light(player.force, { 'pirates.market_event_buy', player.name, thisPurchaseData.offer_giveitem_count .. ' ' .. thisPurchaseData.offer_giveitem_name, thisPurchaseData.price[1].count .. ' ' .. thisPurchaseData.price[1].name })
 
 				market.remove_market_item(offer_index)
 			end
@@ -272,7 +272,7 @@ function Public.event_on_market_item_purchased(event)
 			-- if (thisPurchaseData.price and thisPurchaseData.price[1]) then
 			-- 	if not (thisPurchaseData.price[1].name and thisPurchaseData.price[1].name == 'burner-mining-drill') then --this one is too boring to announce
 			-- 		if thisPurchaseData.in_captains_cabin and thisPurchaseData.offer_type == 'nothing' then
-			-- 			Common.notify_force_light(player.force, {'pirates.market_event_buy', player.name, {'pirates.extra_time_at_sea'}, thisPurchaseData.price[1].amount .. ' ' .. thisPurchaseData.price[1].name})
+			-- 			Common.notify_force_light(player.force, {'pirates.market_event_buy', player.name, {'pirates.extra_time_at_sea'}, thisPurchaseData.price[1].count .. ' ' .. thisPurchaseData.price[1].name})
 			-- 		else
 			-- 			Public.print_transaction(player, trade_count - refunds, thisPurchaseData.offer_giveitem_name, thisPurchaseData.offer_giveitem_count, thisPurchaseData.price)
 			-- 		end
