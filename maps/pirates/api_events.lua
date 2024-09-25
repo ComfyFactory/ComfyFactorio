@@ -2011,7 +2011,7 @@ local function event_on_built_entity(event)
 	end
 
 	if entity.type == 'entity-ghost' and entity.force and entity.force.valid then
-		entity.time_to_live = entity.force.ghost_time_to_live
+		entity.time_to_live = 12 * 60 * 60
 	end
 
 	if memory.boat and memory.boat.surface_name and player.surface == game.surfaces[memory.boat.surface_name] and entity.valid and entity.position then
