@@ -131,7 +131,6 @@ local item_worths = {
     ['electric-engine-unit'] = 64,
     ['flying-robot-frame'] = 128,
     ['satellite'] = 32768,
-    ['rocket-control-unit'] = 256,
     ['low-density-structure'] = 64,
     ['rocket-fuel'] = 256,
     ['nuclear-fuel'] = 1024,

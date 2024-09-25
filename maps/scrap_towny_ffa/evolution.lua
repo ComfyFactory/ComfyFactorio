@@ -184,7 +184,6 @@ local technology_weights = {
     ['research-speed-5'] = { biter = 1, spitter = 1, worm = 1 },
     ['research-speed-6'] = { biter = 1, spitter = 1, worm = 1 },
     ['robotics'] = { biter = 1, spitter = 1, worm = 1 },
-    ['rocket-control-unit'] = { biter = 1, spitter = 1, worm = 1 },
     ['rocket-fuel'] = { biter = 1, spitter = 1, worm = 1 },
     ['rocket-silo'] = { biter = 1, spitter = 1, worm = 1 },
     ['rocketry'] = { biter = 1, spitter = 1, worm = 1 },
