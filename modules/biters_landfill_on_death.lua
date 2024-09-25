@@ -30,7 +30,7 @@ end
 local function get_replacement_tile(surface, position)
     for _, vector in pairs(vectors) do
         local tile = surface.get_tile({ position.x + vector[1], position.y + vector[2] })
-        if not tile.collides_with('resource-layer') then
+        if not tile.collides_with('resource') then
             return tile.name
         end
     end

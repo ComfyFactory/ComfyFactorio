@@ -241,7 +241,7 @@ local function container_opened(event)
         game.print({ 'expanse.tile_unlock', colored_player_name, { 'expanse.gps', math.floor(expansion_position.x), math.floor(expansion_position.y), 'expanse' } })
         expanse.size = (expanse.size or 1) + 1
         if math.random(1, 4) == 1 then
-            if surface.count_tiles_filtered({ position = expansion_position, radius = 6, collision_mask = 'water-tile' }) > 40 then
+            if surface.count_tiles_filtered({ position = expansion_position, radius = 6, collision_mask = 'water_tile' }) > 40 then
                 return
             end
             local render = rendering.draw_sprite {

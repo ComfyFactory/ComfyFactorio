@@ -1308,7 +1308,7 @@ local function spawn_obstacles(left_top, surface)
     for x = 0, 31, 1 do
         for y = 0, 31, 1 do
             local pos = { x = left_top.x + x, y = left_top.y + y }
-            if not surface.get_tile(pos).collides_with('player-layer') then
+            if not surface.get_tile(pos).collides_with('player') then
                 tile_positions[#tile_positions + 1] = pos
             end
         end

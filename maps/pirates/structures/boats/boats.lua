@@ -617,7 +617,7 @@ function Public.collision_infront(boat)
 		for _, relative_area in pairs(Public[boat.type].Data.areas_infront) do
 			for _, p in pairs(Common.central_positions_within_area(relative_area, boat.position)) do
 				local tile = surface.get_tile(p)
-				if tile and tile.valid and not tile.collides_with('resource-layer') then
+				if tile and tile.valid and not tile.collides_with('resource') then
 					return true
 				end
 			end

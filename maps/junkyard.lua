@@ -386,7 +386,7 @@ local function on_chunk_generated(event)
                 table_insert(tiles, { name = tile_replacements[tile.name], position = pos })
             end
 
-            if not tile.collides_with('player-layer') then
+            if not tile.collides_with('player') then
                 local noise = get_noise(1, pos)
                 if noise > 0.43 or noise < -0.43 then
                     if math_random(1, 3) ~= 1 then

@@ -144,7 +144,7 @@ end
 -- local nightmare_trees = {"tree-08-brown","tree-01","tree-04","tree-02-red"} // unused?
 
 local function process_tile(surface, pos, tile, entities, seed)
-    if tile.collides_with('player-layer') then
+    if tile.collides_with('player') then
         return
     end
     if not surface.can_place_entity({ name = 'tree-01', position = pos }) then

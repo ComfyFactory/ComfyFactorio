@@ -276,7 +276,7 @@ local function process_entity(e)
 end
 
 local function process_tile(surface, pos, tile, seed)
-    if tile.collides_with('player-layer') then
+    if tile.collides_with('player') then
         return
     end
     if not surface.can_place_entity({ name = 'tree-01', position = pos }) then

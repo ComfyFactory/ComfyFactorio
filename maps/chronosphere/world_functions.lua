@@ -70,7 +70,7 @@ local function get_replacement_tile(surface, position)
         table.shuffle_table(vectors)
         for k, v in pairs(vectors) do
             local tile = surface.get_tile(position.x + v[1], position.y + v[2])
-            if not tile.collides_with('resource-layer') then
+            if not tile.collides_with('resource') then
                 return tile.name
             end
         end
@@ -98,7 +98,7 @@ function Public.replace_water(surface, left_top)
             local tile = surface.get_tile(p)
             if tile.hidden_tile then
                 surface.set_hidden_tile(p, get_replacement_tile(surface, p).name)
-            elseif tile.collides_with('resource-layer') then
+            elseif tile.collides_with('resource') then
                 tiles[#tiles + 1] = { name = get_replacement_tile(surface, p), position = p }
             end
         end
@@ -166,9 +166,9 @@ local modifiers = {
     { x = 0,  y = 1 }
 }
 local modifiers_diagonal = {
-    { diagonal = { x = -1, y = 1 }, connection_1 = { x = -1, y = 0 }, connection_2 = { x = 0, y = 1 } },
-    { diagonal = { x = 1, y = -1 }, connection_1 = { x = 1, y = 0 }, connection_2 = { x = 0, y = -1 } },
-    { diagonal = { x = 1, y = 1 }, connection_1 = { x = 1, y = 0 }, connection_2 = { x = 0, y = 1 } },
+    { diagonal = { x = -1, y = 1 },  connection_1 = { x = -1, y = 0 }, connection_2 = { x = 0, y = 1 } },
+    { diagonal = { x = 1, y = -1 },  connection_1 = { x = 1, y = 0 },  connection_2 = { x = 0, y = -1 } },
+    { diagonal = { x = 1, y = 1 },   connection_1 = { x = 1, y = 0 },  connection_2 = { x = 0, y = 1 } },
     { diagonal = { x = -1, y = -1 }, connection_1 = { x = -1, y = 0 }, connection_2 = { x = 0, y = -1 } }
 }
 

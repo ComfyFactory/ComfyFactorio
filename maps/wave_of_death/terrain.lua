@@ -83,7 +83,7 @@ local function init(surface, left_top)
 
         game.forces[i].set_spawn_position({ x = position.x, y = position.y + 8 }, surface)
 
-        --rendering.draw_sprite({sprite = "file/maps/wave_of_death/WoD.png", target = {x = -140 + 160*(i - 1), y = 0}, surface = surface, orientation = 0, x_scale = 2, y_scale = 2, render_layer = "ground-tile"})
+        --rendering.draw_sprite({sprite = "file/maps/wave_of_death/WoD.png", target = {x = -140 + 160*(i - 1), y = 0}, surface = surface, orientation = 0, x_scale = 2, y_scale = 2, render_layer = "ground_tile"})
     end
 
     local center_position = { x = 32, y = 0 }

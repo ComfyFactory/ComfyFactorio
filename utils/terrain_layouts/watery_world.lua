@@ -55,7 +55,7 @@ local function on_chunk_generated(event)
     for x = 0, 31, 1 do
         for y = 0, 31, 1 do
             position = { x = left_top_x + x, y = left_top_y + y }
-            if not get_tile(position).collides_with('resource-layer') then
+            if not get_tile(position).collides_with('resource') then
                 noise = get_noise('watery_world', position, seed)
                 if is_water(position, noise, seed) then
                     set_tiles({ { name = waters[math_floor(noise * 10 % 2 + 1)], position = position } }, true)

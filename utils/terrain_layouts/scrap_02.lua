@@ -215,7 +215,7 @@ local function replace_ground(entity)
     local surface = entity.surface
     for _, v in pairs(vectors) do
         local position = { entity.position.x + v[1], entity.position.y + v[2] }
-        if not surface.get_tile(position).collides_with('resource-layer') then
+        if not surface.get_tile(position).collides_with('resource') then
             surface.set_tiles({ { name = 'landfill', position = position } }, true)
         end
     end
@@ -279,7 +279,7 @@ local function on_chunk_generated(event)
         for y = 0, 31, 1 do
             if math_random(1, 3) > 1 then
                 position = { x = left_top_x + x, y = left_top_y + y }
-                if not surface.get_tile(position).collides_with('resource-layer') then
+                if not surface.get_tile(position).collides_with('resource') then
                     noise = get_noise('scrapyard', position, seed)
                     if is_scrap_area(noise) then
                         surface.set_tiles({ { name = 'dirt-' .. math_floor(math_abs(noise) * 6) % 6 + 2, position = position } }, true)

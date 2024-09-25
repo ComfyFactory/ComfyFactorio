@@ -90,7 +90,7 @@ function Public.create_mirror_surface()
             local p = { x = cargo_wagon_position.x + x, y = cargo_wagon_position.y + y }
             if math.sqrt(x ^ 2 + y ^ 2) < r then
                 local tile = surface.get_tile(p)
-                if tile.collides_with('resource-layer') then
+                if tile.collides_with('resource') then
                     surface.set_tiles({ { name = 'landfill', position = p } }, true)
                 end
             end
