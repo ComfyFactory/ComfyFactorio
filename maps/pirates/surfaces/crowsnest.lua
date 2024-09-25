@@ -109,7 +109,7 @@ function Public.move_crowsnest(vectorx, vectory)
 	surface.set_tiles(tiles2, true, true, true)
 
 	if memory.crowsnest_surfacename_rendering then
-		local p = rendering.get_target(memory.crowsnest_surfacename_rendering).position
+		local p = memory.crowsnest_surfacename_rendering.target.position
 		memory.crowsnest_surfacename_rendering.target = { x = p.x + vectorx, y = p.y + vectory }
 	end
 
