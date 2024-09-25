@@ -351,7 +351,7 @@ function Public.assorted_structures_1(args, spec)
 end
 
 function Public.random_rock_1(p)
-	local rock_raffle = { 'sand-rock-big', 'sand-rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-huge', 'rock-huge' }
+	local rock_raffle = { 'big-sand-rock', 'big-sand-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'huge-rock', 'huge-rock' }
 	local s_rock_raffle = #rock_raffle
 
 	return { name = rock_raffle[Math.random(1, s_rock_raffle)], position = p }

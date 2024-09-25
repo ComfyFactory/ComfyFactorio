@@ -50,7 +50,7 @@ function Public.try_give_ore(player, realp, source_name)
 
 			local given_amount = Math.ceil(real_amount * Math.random_float_in_range(0.004, 0.006))
 
-			if source_name == 'rock-huge' then
+			if source_name == 'huge-rock' then
 				given_amount = given_amount * 2
 				coin_amount = coin_amount * 2
 			end
@@ -134,7 +134,7 @@ function Public.try_ore_spawn(surface, realp, source_name, density_bonus, from_t
 
 				local radius_squared = (destination.static_params and destination.static_params.radius_squared_modifier or 1) * (12 + 45 * Math.slopefromto(Common.ore_abstract_to_real(choices[choice]), 800, 20000)) * (0.6 + Math.random()) --tuned
 
-				if source_name == 'rock-huge' then
+				if source_name == 'huge-rock' then
 					radius_squared = radius_squared * 1.5
 				end
 

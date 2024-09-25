@@ -555,7 +555,7 @@ local function handle_maze_walls_damage_resistance(event)
 
 	if destination.surface_name ~= entity.surface.name then return end
 
-	if not ((entity.type and entity.type == 'tree') or entity.name == 'rock-huge' or entity.name == 'rock-big' or entity.name == 'sand-rock-big') then return end
+	if not ((entity.type and entity.type == 'tree') or entity.name == 'huge-rock' or entity.name == 'big-rock' or entity.name == 'big-sand-rock') then return end
 
 	if (event.damage_type.name and (event.damage_type.name == 'explosion' or event.damage_type.name == 'poison')) then
 		event.entity.health = event.entity.health + event.final_damage_amount
@@ -737,7 +737,7 @@ end
 -- 	-- local memory = Memory.get_crew_memory()
 
 -- 	-- if memory.planet[1].type.id == 11 then --rocky planet
--- 	-- 	if event.entity.name == 'rock-huge' or event.entity.name == 'rock-big' or event.entity.name == 'sand-rock-big' then
+-- 	-- 	if event.entity.name == 'huge-rock' or event.entity.name == 'big-rock' or event.entity.name == 'big-sand-rock' then
 -- 	-- 		Event_functions.trap(event.entity, false)
 -- 	-- 		event.entity.destroy()
 -- 	-- 		Event_functions.rocky_loot(event)
@@ -964,7 +964,7 @@ local function player_mined_rock(event)
 		local c2 = {}
 
 		if memory.overworldx >= 0 then --used to be only later levels
-			if entity.name == 'rock-huge' then
+			if entity.name == 'huge-rock' then
 				local a = Math.ceil(1.5 * Balance.coin_amount_from_rock())
 				c2[#c2 + 1] = { name = 'coin', count = a, color = CoreData.colors.coin }
 				memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
@@ -1044,7 +1044,7 @@ local function event_on_player_mined_entity(event)
 	elseif entity.name == 'coal' or entity.name == 'stone' or entity.name == 'copper-ore' or entity.name == 'iron-ore' then
 		player_mined_resource(event)
 		event.buffer.clear()
-	elseif entity.name == 'rock-huge' or entity.name == 'rock-big' or entity.name == 'sand-rock-big' then
+	elseif entity.name == 'huge-rock' or entity.name == 'big-rock' or entity.name == 'big-sand-rock' then
 		player_mined_rock(event)
 		event.buffer.clear()
 	end
@@ -1857,7 +1857,7 @@ function Public.event_on_chunk_generated(event)
 					e.rotatable = false
 					e.destructible = false
 
-					local water_tiles = surface.find_tiles_filtered { position = special.position, radius = 0.1, collision_mask = "water-tile" }
+					local water_tiles = surface.find_tiles_filtered { position = special.position, radius = 0.1, collision_mask = "water_tile" }
 
 					if water_tiles then
 						for _, t in pairs(water_tiles) do
