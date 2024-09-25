@@ -767,8 +767,7 @@ local function treasure_chest(position, surface)
         { { name = 'inserter', count = math_random(8, 16) },                        weight = 3,  evolution_min = 0.0, evolution_max = 0.4 },
         { { name = 'long-handed-inserter', count = math_random(8, 16) },            weight = 3,  evolution_min = 0.0, evolution_max = 0.4 },
         { { name = 'fast-inserter', count = math_random(8, 16) },                   weight = 3,  evolution_min = 0.1, evolution_max = 1 },
-        { { name = 'filter-inserter', count = math_random(8, 16) },                 weight = 1,  evolution_min = 0.2, evolution_max = 1 },
-        { { name = 'bulk-inserter', count = math_random(4, 8) },            weight = 1,  evolution_min = 0.4, evolution_max = 1 },
+        { { name = 'bulk-inserter', count = math_random(4, 8) },                    weight = 1,  evolution_min = 0.4, evolution_max = 1 },
         { { name = 'stack-inserter', count = math_random(4, 8) },                   weight = 3,  evolution_min = 0.3, evolution_max = 1 },
         { { name = 'small-electric-pole', count = math_random(16, 32) },            weight = 3,  evolution_min = 0.0, evolution_max = 0.3 },
         { { name = 'medium-electric-pole', count = math_random(8, 16) },            weight = 3,  evolution_min = 0.2, evolution_max = 1 },
@@ -1221,13 +1220,12 @@ local function on_player_joined_game(event)
     create_labyrinth_difficulty_gui(player)
 end
 
-local inserter_list = { 'inserter', 'long-handed-inserter', 'burner-inserter', 'fast-inserter', 'filter-inserter', 'bulk-inserter', 'stack-inserter' }
+local inserter_list = { 'inserter', 'long-handed-inserter', 'burner-inserter', 'fast-inserter', 'bulk-inserter', 'stack-inserter' }
 local inserters = {
     ['inserter'] = true,
     ['long-handed-inserter'] = true,
     ['burner-inserter'] = true,
     ['fast-inserter'] = true,
-    ['filter-inserter'] = true,
     ['bulk-inserter'] = true,
     ['stack-inserter'] = true
 }

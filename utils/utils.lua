@@ -1,7 +1,7 @@
 local Module = {}
 -- luacheck: ignore math
 
-Module.distance = function(pos1, pos2)
+Module.distance = function (pos1, pos2)
     local dx = pos2.x - pos1.x
     local dy = pos2.y - pos1.y
     return math.sqrt(dx * dx + dy * dy)
@@ -23,7 +23,7 @@ function math.clamp(num, min, max)
     end
 end
 
-Module.print_except = function(msg, player)
+Module.print_except = function (msg, player)
     for _, p in pairs(game.players) do
         if p.connected and p ~= player then
             p.print(msg)
@@ -31,7 +31,7 @@ Module.print_except = function(msg, player)
     end
 end
 
-Module.print_admins = function(msg)
+Module.print_admins = function (msg)
     for _, p in pairs(game.players) do
         if p.connected and p.admin then
             p.print(msg)
@@ -39,14 +39,14 @@ Module.print_admins = function(msg)
     end
 end
 
-Module.get_actor = function()
+Module.get_actor = function ()
     if game.player then
         return game.player.name
     end
     return '<server>'
 end
 
-Module.cast_bool = function(var)
+Module.cast_bool = function (var)
     if var then
         return true
     else
@@ -54,7 +54,7 @@ Module.cast_bool = function(var)
     end
 end
 
-Module.get_formatted_playtime = function(x)
+Module.get_formatted_playtime = function (x)
     if x < 5184000 then
         local y = x / 216000
         y = tostring(y)
@@ -114,7 +114,7 @@ Module.get_formatted_playtime = function(x)
     end
 end
 
-Module.find_entities_by_last_user = function(player, surface, filters)
+Module.find_entities_by_last_user = function (player, surface, filters)
     if type(player) == 'string' or not player then
         error("bad argument #1 to '" .. debug.getinfo(1, 'n').name .. "' (number or LuaPlayer expected, got " .. type(player) .. ')', 1)
         return
@@ -140,7 +140,7 @@ Module.find_entities_by_last_user = function(player, surface, filters)
     return entities
 end
 
-Module.ternary = function(c, t, f)
+Module.ternary = function (c, t, f)
     if c then
         return t
     else
@@ -152,7 +152,7 @@ local minutes_to_ticks = 60 * 60
 local hours_to_ticks = 60 * 60 * 60
 local ticks_to_minutes = 1 / minutes_to_ticks
 local ticks_to_hours = 1 / hours_to_ticks
-Module.format_time = function(ticks)
+Module.format_time = function (ticks)
     local result = {}
 
     local hours = math.floor(ticks * ticks_to_hours)
@@ -178,7 +178,7 @@ Module.format_time = function(ticks)
 end
 
 -- Convert date from 1999/01/01
-Module.convert_date = function(year, month, day)
+Module.convert_date = function (year, month, day)
     year = tonumber(year)
     month = tonumber(month)
     day = tonumber(day)

@@ -275,7 +275,7 @@ local function is_loader(entity)
 end
 
 local function is_filtered_inserter(entity)
-    return entity.name == 'filter-inserter' or entity.name == 'bulk-inserter'
+    return entity.name == 'fast-inserter' or entity.name == 'bulk-inserter'
 end
 
 local function max_stack_size(entity)
@@ -308,7 +308,6 @@ local function get_connected_entities(market)
         'inserter',
         'long-handed-inserter',
         'fast-inserter',
-        'filter-inserter',
         'stack-inserter',
         'bulk-inserter',
         'loader',

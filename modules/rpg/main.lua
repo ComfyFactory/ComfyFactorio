@@ -150,22 +150,22 @@ local function train_type_cause(cause)
 end
 
 local get_cause_player = {
-    ['character'] = function(cause)
+    ['character'] = function (cause)
         if not cause.player then
             return
         end
-        return {cause.player}
+        return { cause.player }
     end,
-    ['combat-robot'] = function(cause)
+    ['combat-robot'] = function (cause)
         if not cause.last_user then
             return
         end
         if not game.players[cause.last_user.index] then
             return
         end
-        return {game.players[cause.last_user.index]}
+        return { game.players[cause.last_user.index] }
     end,
-    ['car'] = function(cause)
+    ['car'] = function (cause)
         local players = {}
         local driver = cause.get_driver()
         if driver then
@@ -181,7 +181,7 @@ local get_cause_player = {
         end
         return players
     end,
-    ['spider-vehicle'] = function(cause)
+    ['spider-vehicle'] = function (cause)
         local players = {}
         local driver = cause.get_driver()
         if driver then
@@ -472,8 +472,8 @@ local function on_entity_damaged(event)
     local position = p.position
 
     local area = {
-        left_top = {x = position.x - 5, y = position.y - 5},
-        right_bottom = {x = position.x + 5, y = position.y + 5}
+        left_top = { x = position.x - 5, y = position.y - 5 },
+        right_bottom = { x = position.x + 5, y = position.y + 5 }
     }
 
     if not is_position_near(area, entity.position) then
@@ -503,20 +503,21 @@ local function on_entity_damaged(event)
         damage = damage * random(250, 350) * 0.01
         cause.surface.create_entity(
             {
-                name = 'flying-text',
+                name = 'compi-speech-bubble',
                 position = entity.position,
                 text = '‼' .. floor(damage),
-                color = {255, 0, 0}
+                source = entity,
+                lifetime = 30
             }
         )
-        cause.surface.create_entity({name = 'blood-explosion-huge', position = entity.position})
+        cause.surface.create_entity({ name = 'blood-explosion-huge', position = entity.position })
     else
         damage = damage * random(100, 125) * 0.01
         cause.player.create_local_flying_text(
             {
                 text = floor(damage),
                 position = entity.position,
-                color = {150, 150, 150},
+                color = { 150, 150, 150 },
                 time_to_live = 90,
                 speed = 2
             }
@@ -535,7 +536,7 @@ local function on_entity_damaged(event)
             local chance_to_hit = random(0, 999)
             local success = chance_to_hit < chance
             Public.log_aoe_punch(
-                function()
+                function ()
                     if success then
                         print('[OnePunch]: Chance: ' .. chance .. ' Chance to hit:  ' .. chance_to_hit .. ' Success: true' .. ' Damage: ' .. damage)
                     else
@@ -810,9 +811,9 @@ local function on_player_joined_game(event)
 end
 
 local function get_near_coord_modifier(range)
-    local coord = {x = (range * -1) + random(0, range * 2), y = (range * -1) + random(0, range * 2)}
+    local coord = { x = (range * -1) + random(0, range * 2), y = (range * -1) + random(0, range * 2) }
     for _ = 1, 5, 1 do
-        local new_coord = {x = (range * -1) + random(0, range * 2), y = (range * -1) + random(0, range * 2)}
+        local new_coord = { x = (range * -1) + random(0, range * 2), y = (range * -1) + random(0, range * 2) }
         if new_coord.x ^ 2 + new_coord.y ^ 2 < coord.x ^ 2 + coord.y ^ 2 then
             coord = new_coord
         end
@@ -837,7 +838,7 @@ local function damage_entity(e)
         return
     end
 
-    e.surface.create_entity({name = 'ground-explosion', position = e.position})
+    e.surface.create_entity({ name = 'ground-explosion', position = e.position })
 
     if e.type == 'entity-ghost' then
         e.destroy()
@@ -851,14 +852,14 @@ local function damage_entity(e)
 end
 
 local function floaty_hearts(entity, c)
-    local position = {x = entity.position.x - 0.75, y = entity.position.y - 1}
+    local position = { x = entity.position.x - 0.75, y = entity.position.y - 1 }
     local b = 1.35
     for _ = 1, c, 1 do
         local p = {
             (position.x + 0.4) + (b * -1 + random(0, b * 20) * 0.1),
             position.y + (b * -1 + random(0, b * 20) * 0.1)
         }
-        entity.surface.create_entity({name = 'flying-text', position = p, text = '♥', color = {random(150, 255), 0, 255}})
+        entity.surface.create_entity({ name = 'compi-speech-bubble', position = p, text = '♥', source = entity, lifetime = 30 })
     end
 end
 
@@ -869,7 +870,7 @@ local function tame_unit_effects(player, entity)
         text = '~' .. player.name .. "'s pet~",
         surface = player.surface,
         target = entity,
-        target_offset = {0, -2.6},
+        target_offset = { 0, -2.6 },
         color = {
             r = player.color.r * 0.6 + 0.25,
             g = player.color.g * 0.6 + 0.25,
@@ -946,8 +947,8 @@ local function on_player_used_capsule(event)
 
     local radius = 15
     local area = {
-        left_top = {x = position.x - radius, y = position.y - radius},
-        right_bottom = {x = position.x + radius, y = position.y + radius}
+        left_top = { x = position.x - radius, y = position.y - radius },
+        right_bottom = { x = position.x + radius, y = position.y + radius }
     }
 
     if not spell.enabled then
@@ -969,10 +970,10 @@ local function on_player_used_capsule(event)
 
     local target_pos
     if spell.target then
-        target_pos = {position.x, position.y}
+        target_pos = { position.x, position.y }
     elseif projectile_types[spell.entityName] then
         local coord_modifier = get_near_coord_modifier(projectile_types[spell.entityName].max_range)
-        target_pos = {position.x + coord_modifier.x, position.y + coord_modifier.y}
+        target_pos = { position.x + coord_modifier.x, position.y + coord_modifier.y }
     end
 
     local range
@@ -1020,7 +1021,7 @@ local function on_player_used_capsule(event)
         rpg_t.amount = 1
     end
 
-    Event.raise(Public.events.on_spell_cast_success, {player_index = player.index, spell_name = spell.entityName, amount = rpg_t.amount})
+    Event.raise(Public.events.on_spell_cast_success, { player_index = player.index, spell_name = spell.entityName, amount = rpg_t.amount })
 
     StatData.get_data(player):increase('spells')
 
@@ -1100,7 +1101,7 @@ Event.on_nth_tick(2, Public.update_tidal_wave)
 
 Event.add(
     defines.events.on_gui_closed,
-    function(event)
+    function (event)
         local player = game.get_player(event.player_index)
         if not player or not player.valid then
             return
@@ -1114,7 +1115,7 @@ if _DEBUG then
     Public.disable_cooldowns_on_spells()
 
     Event.on_init(
-        function()
+        function ()
             Public.rpg_reset_all_players()
             Public.enable_health_and_mana_bars(true)
             Public.enable_wave_defense(true)
