@@ -67,7 +67,7 @@ local function add_random_loot_to_main_market(rarity)
         return false
     end
 
-    local types = game.item_prototypes
+    local types = prototypes.item
 
     for k, v in pairs(main_market_items) do
         if not v.static then

@@ -18,7 +18,7 @@ local size_raffle = {
 local function get_chances()
     local chances = {}
 
-    if game.entity_prototypes['angels-ore1'] then
+    if prototypes.entity['angels-ore1'] then
         for i = 1, 6, 1 do
             table.insert(chances, { 'angels-ore' .. i, 1 })
         end
@@ -45,7 +45,7 @@ local function set_raffle()
         end
     end
 
-    if game.entity_prototypes['angels-ore1'] then
+    if prototypes.entity['angels-ore1'] then
         storage.rocks_yield_ore_veins.mixed_ores = { 'angels-ore1', 'angels-ore2', 'angels-ore3', 'angels-ore4', 'angels-ore5', 'angels-ore6', 'coal' }
         return
     end
@@ -90,7 +90,7 @@ local function ore_vein(event)
     local size = size_raffle[math_random(1, #size_raffle)]
     local ore = storage.rocks_yield_ore_veins.raffle[math_random(1, #storage.rocks_yield_ore_veins.raffle)]
     local icon
-    if game.entity_prototypes[ore] then
+    if prototypes.entity[ore] then
         icon = '[img=entity/' .. ore .. ']'
     else
         icon = ' '

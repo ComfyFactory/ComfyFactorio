@@ -794,7 +794,7 @@ local function on_chunk_generated(event)
     end
 
     local decorative_names = {}
-    for k, v in pairs(game.decorative_prototypes) do
+    for k, v in pairs(prototypes.decorative) do
         if v.autoplace_specification then
             decorative_names[#decorative_names + 1] = k
         end

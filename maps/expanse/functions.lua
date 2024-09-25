@@ -193,7 +193,7 @@ function Public.spawn_units(spawner)
 end
 
 function Public.get_item_tooltip(name)
-    return { 'expanse.stats_item_tooltip', game.item_prototypes[name].localised_name, Price_raffle.get_item_worth(name) }
+    return { 'expanse.stats_item_tooltip', prototypes.item[name].localised_name, Price_raffle.get_item_worth(name) }
 end
 
 function Public.invasion_numbers()

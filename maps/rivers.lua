@@ -16,7 +16,7 @@ local disabled_for_deconstruction = {
     ['fish'] = true
 }
 
-local rock_raffle = {'sand-rock-big', 'sand-rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-huge'}
+local rock_raffle = { 'sand-rock-big', 'sand-rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-huge' }
 
 local tile_replacements = {
     ['water'] = 'grass-2',
@@ -75,26 +75,26 @@ local connections = 0.08
 local function process_tiles(surface, pos, noise, noise_2)
     local tile = surface.get_tile(pos)
     if tile_replacements[tile.name] then
-        surface.set_tiles({{name = tile_replacements[tile.name], position = pos}}, true)
+        surface.set_tiles({ { name = tile_replacements[tile.name], position = pos } }, true)
     end
 
     if noise > water_level * -1 and noise < water_level then
         if noise_2 < connections * -1 or noise_2 > connections then
-            surface.set_tiles({{name = 'water', position = pos}}, true)
+            surface.set_tiles({ { name = 'water', position = pos } }, true)
             if math_random(1, 256) == 1 then
-                surface.create_entity({name = 'fish', position = pos})
+                surface.create_entity({ name = 'fish', position = pos })
             end
             return
         else
             if math_random(1, 2) == 1 then
-                surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = pos})
+                surface.create_entity({ name = rock_raffle[math_random(1, #rock_raffle)], position = pos })
             end
         end
     end
 end
 
 local function process_entities(surface, pos, noise, noise_2)
-    if not surface.can_place_entity({name = 'iron-ore', position = pos, amount = 1}) then
+    if not surface.can_place_entity({ name = 'iron-ore', position = pos, amount = 1 }) then
         return
     end
 
@@ -102,10 +102,10 @@ local function process_entities(surface, pos, noise, noise_2)
         local distance_to_center = math.sqrt(pos.x ^ 2 + pos.y ^ 2)
         local amount = (600 + distance_to_center) * math.abs(noise)
         if math.floor(noise * 15) % 3 ~= 0 then
-            surface.create_entity({name = 'iron-ore', position = pos, amount = amount})
+            surface.create_entity({ name = 'iron-ore', position = pos, amount = amount })
             return
         else
-            surface.create_entity({name = 'coal', position = pos, amount = amount})
+            surface.create_entity({ name = 'coal', position = pos, amount = amount })
             return
         end
     end
@@ -114,10 +114,10 @@ local function process_entities(surface, pos, noise, noise_2)
         local distance_to_center = math.sqrt(pos.x ^ 2 + pos.y ^ 2)
         local amount = (600 + distance_to_center) * math.abs(noise)
         if math.floor(noise * 15) % 3 ~= 0 then
-            surface.create_entity({name = 'copper-ore', position = pos, amount = amount})
+            surface.create_entity({ name = 'copper-ore', position = pos, amount = amount })
             return
         else
-            surface.create_entity({name = 'stone', position = pos, amount = amount})
+            surface.create_entity({ name = 'stone', position = pos, amount = amount })
             return
         end
     end
@@ -134,7 +134,7 @@ local function on_chunk_generated(event)
 
     for x = 0, 31, 1 do
         for y = 0, 31, 1 do
-            local pos = {x = left_top.x + x, y = left_top.y + y}
+            local pos = { x = left_top.x + x, y = left_top.y + y }
             local noise_1 = get_noise(1, pos)
             local noise_2 = get_noise(2, pos)
             process_tiles(surface, pos, noise_1, noise_2)
@@ -143,12 +143,12 @@ local function on_chunk_generated(event)
     end
 
     local decorative_names = {}
-    for k, v in pairs(game.decorative_prototypes) do
+    for k, v in pairs(prototypes.decorative) do
         if v.autoplace_specification then
             decorative_names[#decorative_names + 1] = k
         end
     end
-    surface.regenerate_decorative(decorative_names, {{left_top.x / 32, left_top.y / 32}})
+    surface.regenerate_decorative(decorative_names, { { left_top.x / 32, left_top.y / 32 } })
 end
 
 local function init_map()
@@ -159,15 +159,15 @@ local function init_map()
     local map_gen_settings = {}
     map_gen_settings.water = '0'
     map_gen_settings.starting_area = '1'
-    map_gen_settings.cliff_settings = {cliff_elevation_interval = 22, cliff_elevation_0 = 22}
+    map_gen_settings.cliff_settings = { cliff_elevation_interval = 22, cliff_elevation_0 = 22 }
     map_gen_settings.autoplace_controls = {
-        ['coal'] = {frequency = 'none', size = 'none', richness = 'none'},
-        ['stone'] = {frequency = 'none', size = 'none', richness = 'none'},
-        ['copper-ore'] = {frequency = 'none', size = 'none', richness = 'none'},
-        ['iron-ore'] = {frequency = 'none', size = 'none', richness = 'none'},
-        ['crude-oil'] = {frequency = '4', size = '1', richness = '1'},
-        ['trees'] = {frequency = '4', size = '1', richness = '1'},
-        ['enemy-base'] = {frequency = '50', size = '1.5', richness = '1'}
+        ['coal'] = { frequency = 'none', size = 'none', richness = 'none' },
+        ['stone'] = { frequency = 'none', size = 'none', richness = 'none' },
+        ['copper-ore'] = { frequency = 'none', size = 'none', richness = 'none' },
+        ['iron-ore'] = { frequency = 'none', size = 'none', richness = 'none' },
+        ['crude-oil'] = { frequency = '4', size = '1', richness = '1' },
+        ['trees'] = { frequency = '4', size = '1', richness = '1' },
+        ['enemy-base'] = { frequency = '50', size = '1.5', richness = '1' }
     }
     game.create_surface('rivers', map_gen_settings)
 
@@ -178,13 +178,13 @@ local function init_map()
     game.map_settings.enemy_expansion.min_expansion_cooldown = 18000
     game.map_settings.enemy_expansion.max_expansion_cooldown = 36000
 
-    surface.request_to_generate_chunks({0, 0}, 3)
+    surface.request_to_generate_chunks({ 0, 0 }, 3)
     surface.force_generate_chunk_requests()
 
-    map_functions.draw_smoothed_out_ore_circle({x = -3, y = -3}, 'iron-ore', surface, 8, 5000)
-    map_functions.draw_smoothed_out_ore_circle({x = 3, y = 3}, 'copper-ore', surface, 8, 5000)
-    map_functions.draw_smoothed_out_ore_circle({x = 3, y = -3}, 'stone', surface, 8, 5000)
-    map_functions.draw_smoothed_out_ore_circle({x = -3, y = 3}, 'coal', surface, 8, 5000)
+    map_functions.draw_smoothed_out_ore_circle({ x = -3, y = -3 }, 'iron-ore', surface, 8, 5000)
+    map_functions.draw_smoothed_out_ore_circle({ x = 3, y = 3 }, 'copper-ore', surface, 8, 5000)
+    map_functions.draw_smoothed_out_ore_circle({ x = 3, y = -3 }, 'stone', surface, 8, 5000)
+    map_functions.draw_smoothed_out_ore_circle({ x = -3, y = 3 }, 'coal', surface, 8, 5000)
 end
 
 local function on_player_joined_game(event)
@@ -192,9 +192,9 @@ local function on_player_joined_game(event)
 
     local player = game.players[event.player_index]
     if player.online_time == 0 then
-        player.insert({name = 'iron-plate', count = 32})
-        player.insert({name = 'iron-gear-wheel', count = 16})
-        player.teleport(game.surfaces['rivers'].find_non_colliding_position('character', {0, 2}, 50, 0.5), 'rivers')
+        player.insert({ name = 'iron-plate', count = 32 })
+        player.insert({ name = 'iron-gear-wheel', count = 16 })
+        player.teleport(game.surfaces['rivers'].find_non_colliding_position('character', { 0, 2 }, 50, 0.5), 'rivers')
     end
 end
 

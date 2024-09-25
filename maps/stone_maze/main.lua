@@ -187,7 +187,7 @@ local function regenerate_decoratives(surface, position)
     end
     surface.destroy_decoratives({ area = { { chunk.x * 32, chunk.y * 32 }, { chunk.x * 32 + 32, chunk.y * 32 + 32 } } })
     local decorative_names = {}
-    for k, v in pairs(game.decorative_prototypes) do
+    for k, v in pairs(prototypes.decorative) do
         if v.autoplace_specification then
             decorative_names[#decorative_names + 1] = k
         end

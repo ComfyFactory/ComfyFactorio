@@ -70,7 +70,7 @@ end
 
 local function on_init()
     storage.watery_world_fishes = {}
-    for _, prototype in pairs(game.entity_prototypes) do
+    for _, prototype in pairs(prototypes.entity) do
         if prototype.type == 'fish' then
             table.insert(storage.watery_world_fishes, prototype.name)
         end

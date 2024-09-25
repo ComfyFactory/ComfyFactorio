@@ -15,7 +15,7 @@ local this = {
 
 Global.register(
     this,
-    function(t)
+    function (t)
         this = t
     end
 )
@@ -27,22 +27,22 @@ local valid_entities = {
 }
 
 local size_raffle = {
-    {'giant', 65, 96},
-    {'huge', 33, 64},
-    {'big', 17, 32},
-    {'small', 9, 16},
-    {'tiny', 4, 8}
+    { 'giant', 65, 96 },
+    { 'huge',  33, 64 },
+    { 'big',   17, 32 },
+    { 'small', 9,  16 },
+    { 'tiny',  4,  8 }
 }
 
 local function get_chances()
     local chances = {}
 
-    table.insert(chances, {'iron-ore', 25})
-    table.insert(chances, {'copper-ore', 18})
-    table.insert(chances, {'mixed', 15})
-    table.insert(chances, {'coal', 14})
-    table.insert(chances, {'stone', 8})
-    table.insert(chances, {'uranium-ore', 3})
+    table.insert(chances, { 'iron-ore', 25 })
+    table.insert(chances, { 'copper-ore', 18 })
+    table.insert(chances, { 'mixed', 15 })
+    table.insert(chances, { 'coal', 14 })
+    table.insert(chances, { 'stone', 8 })
+    table.insert(chances, { 'uranium-ore', 3 })
 
     return chances
 end
@@ -55,7 +55,7 @@ local function set_raffle()
         end
     end
 
-    this.mixed_ores = {'iron-ore', 'copper-ore', 'stone', 'coal'}
+    this.mixed_ores = { 'iron-ore', 'copper-ore', 'stone', 'coal' }
 end
 
 local function get_amount(position)
@@ -66,14 +66,14 @@ local function get_amount(position)
 end
 
 local function draw_chain(surface, count, ore, ore_entities, ore_positions)
-    local vectors = {{0, -1}, {-1, 0}, {1, 0}, {0, 1}}
+    local vectors = { { 0, -1 }, { -1, 0 }, { 1, 0 }, { 0, 1 } }
     local r = random(1, #ore_entities)
-    local position = {x = ore_entities[r].position.x, y = ore_entities[r].position.y}
+    local position = { x = ore_entities[r].position.x, y = ore_entities[r].position.y }
     for _ = 1, count, 1 do
         table.shuffle_table(vectors)
         for i = 1, 4, 1 do
-            local p = {x = position.x + vectors[i][1], y = position.y + vectors[i][2]}
-            if surface.can_place_entity({name = 'coal', position = p, amount = 1}) then
+            local p = { x = position.x + vectors[i][1], y = position.y + vectors[i][2] }
+            if surface.can_place_entity({ name = 'coal', position = p, amount = 1 }) then
                 if not ore_positions[p.x .. '_' .. p.y] then
                     position.x = p.x
                     position.y = p.y
@@ -82,7 +82,7 @@ local function draw_chain(surface, count, ore, ore_entities, ore_positions)
                     if ore == 'mixed' then
                         name = this.mixed_ores[random(1, #this.mixed_ores)]
                     end
-                    ore_entities[#ore_entities + 1] = {name = name, position = p, amount = get_amount(position)}
+                    ore_entities[#ore_entities + 1] = { name = name, position = p, amount = get_amount(position) }
                     break
                 end
             end
@@ -95,7 +95,7 @@ local function ore_vein(player, entity)
     local size = size_raffle[random(1, #size_raffle)]
     local ore = this.raffle[random(1, #this.raffle)]
     local icon
-    if game.entity_prototypes[ore] then
+    if prototypes.entity[ore] then
         icon = '[img=entity/' .. ore .. ']'
     else
         icon = ' '
@@ -104,20 +104,20 @@ local function ore_vein(player, entity)
     player.print(
         {
             'rocks_yield_ore_veins.player_print',
-            {'rocks_yield_ore_veins_colors.' .. ore},
-            {'rocks_yield_ore_veins.' .. size[1]},
-            {'rocks_yield_ore_veins.' .. ore},
+            { 'rocks_yield_ore_veins_colors.' .. ore },
+            { 'rocks_yield_ore_veins.' .. size[1] },
+            { 'rocks_yield_ore_veins.' .. ore },
             icon
         },
-        {r = 0.80, g = 0.80, b = 0.80}
+        { r = 0.80, g = 0.80, b = 0.80 }
     )
 
-    local ore_entities = {{name = ore, position = {x = entity.position.x, y = entity.position.y}, amount = get_amount(entity.position)}}
+    local ore_entities = { { name = ore, position = { x = entity.position.x, y = entity.position.y }, amount = get_amount(entity.position) } }
     if ore == 'mixed' then
         ore_entities = {
             {
                 name = this.mixed_ores[random(1, #this.mixed_ores)],
-                position = {x = entity.position.x, y = entity.position.y},
+                position = { x = entity.position.x, y = entity.position.y },
                 amount = get_amount(entity.position)
             }
         }
@@ -125,7 +125,7 @@ local function ore_vein(player, entity)
 
     StatData.get_data(player):increase('ore_veins')
 
-    local ore_positions = {[entity.position.x .. '_' .. entity.position.y] = true}
+    local ore_positions = { [entity.position.x .. '_' .. entity.position.y] = true }
     local count = random(size[2], size[3])
 
     for _ = 1, 128, 1 do

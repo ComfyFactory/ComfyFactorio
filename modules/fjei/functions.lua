@@ -15,7 +15,7 @@ function Public.get_crafting_machines_for_recipe(force_name, recipe)
     local i = 1
     for _, name in pairs(crafting_machines) do
         if item_whitelist[name] or name == 'character' then
-            local crafting_categories = game.entity_prototypes[name].crafting_categories
+            local crafting_categories = prototypes.entity[name].crafting_categories
             for category, _ in pairs(crafting_categories) do
                 if recipe_category == category then
                     result[i] = name
@@ -32,7 +32,7 @@ local function set_crafting_machines()
     storage.fjei.crafting_machines = {}
     local list = storage.fjei.crafting_machines
     local i = 1
-    for _, prototype in pairs(game.entity_prototypes) do
+    for _, prototype in pairs(prototypes.entity) do
         if prototype.crafting_categories then
             list[i] = prototype.name
             i = i + 1
@@ -93,7 +93,7 @@ end
 local function set_item_list()
     storage.fjei.item_list = {}
     local item_list = storage.fjei.item_list
-    for recipe_name, recipe in pairs(game.recipe_prototypes) do
+    for recipe_name, recipe in pairs(prototypes.recipe) do
         for key, product in pairs(recipe.products) do
             add_item_list_product(item_list, product.name, recipe_name)
         end
@@ -132,8 +132,8 @@ local function set_sorted_item_list()
     storage.fjei.sorted_item_list = {}
     local sorted_item_list = storage.fjei.sorted_item_list
     local item_list = storage.fjei.item_list
-    local item_prototypes = game.item_prototypes
-    local fluid_prototypes = game.fluid_prototypes
+    local item_prototypes = prototypes.item
+    local fluid_prototypes = prototypes.fluid
 
     local sorted_items = {}
     local i = 1
@@ -186,13 +186,13 @@ local function add_recipe_to_whitelist(item_whitelist, recipe)
 
     --Adding "place_result" in case the inventory item can turn into a differently named entity after placement on the map.
     for key, product in pairs(recipe.products) do
-        local p = game.item_prototypes[product.name]
+        local p = prototypes.item[product.name]
         if p and p.place_result then
             item_whitelist[p.place_result.name] = true
         end
     end
     for key, ingredient in pairs(recipe.ingredients) do
-        local p = game.item_prototypes[ingredient.name]
+        local p = prototypes.item[ingredient.name]
         if p and p.place_result then
             item_whitelist[p.place_result.name] = true
         end
@@ -207,7 +207,7 @@ function Public.add_research_to_whitelist(force, effects)
     local items_have_been_added = false
     for _, effect in pairs(effects) do
         if effect.recipe then
-            add_recipe_to_whitelist(item_whitelist, game.recipe_prototypes[effect.recipe])
+            add_recipe_to_whitelist(item_whitelist, prototypes.recipe[effect.recipe])
             items_have_been_added = true
         end
     end
@@ -241,15 +241,15 @@ local function set_item_whitelists_for_all_forces()
 end
 
 local function get_localised_name(name)
-    local item = game.item_prototypes[name]
+    local item = prototypes.item[name]
     if item then
         return item.localised_name
     end
-    local fluid = game.fluid_prototypes[name]
+    local fluid = prototypes.fluid[name]
     if fluid then
         return fluid.localised_name
     end
-    local recipe = game.recipe_prototypes[name]
+    local recipe = prototypes.recipe[name]
     if recipe then
         return recipe.localised_name
     end

@@ -48,7 +48,7 @@ function Public.add_loot(surface, position, chest, collision)
 
     local result = base_amount + budget + distance_mod
 
-    local c = game.entity_prototypes[chest]
+    local c = prototypes.entity[chest]
     local slots = c.get_inventory_size(defines.inventory.chest)
 
     local item_stacks = LootRaffle.roll(result, slots, blacklist)
@@ -61,7 +61,7 @@ function Public.add_loot(surface, position, chest, collision)
         end
     end
 
-    local container = surface.create_entity({name = chest, position = new_position, force = 'neutral', create_build_effect_smoke = false})
+    local container = surface.create_entity({ name = chest, position = new_position, force = 'neutral', create_build_effect_smoke = false })
 
     for _, item_stack in pairs(item_stacks) do
         container.insert(item_stack)
@@ -69,20 +69,20 @@ function Public.add_loot(surface, position, chest, collision)
     container.minable = false
 
     if random(1, 8) == 1 then
-        container.insert({name = 'coin', count = random(1, 32)})
+        container.insert({ name = 'coin', count = random(1, 32) })
     elseif random(1, 32) == 1 then
-        container.insert({name = 'coin', count = random(1, 128)})
+        container.insert({ name = 'coin', count = random(1, 128) })
     elseif random(1, 128) == 1 then
-        container.insert({name = 'coin', count = random(1, 256)})
+        container.insert({ name = 'coin', count = random(1, 256) })
     elseif random(1, 256) == 1 then
-        container.insert({name = 'coin', count = random(1, 512)})
+        container.insert({ name = 'coin', count = random(1, 512) })
     elseif random(1, 512) == 1 then
-        container.insert({name = 'coin', count = random(1, 1024)})
+        container.insert({ name = 'coin', count = random(1, 1024) })
     end
 
     for _ = 1, 3, 1 do
         if random(1, 16) == 1 then
-            container.insert({name = 'explosives', count = random(25, 50)})
+            container.insert({ name = 'explosives', count = random(25, 50) })
         else
             break
         end
@@ -111,31 +111,31 @@ function Public.add_loot_rare(surface, position, chest, magic)
 
     local result = base_amount + budget + distance_mod
 
-    local c = game.entity_prototypes[chest]
+    local c = prototypes.entity[chest]
     local slots = c.get_inventory_size(defines.inventory.chest)
 
     local item_stacks = LootRaffle.roll(result, slots, blacklist)
-    local container = surface.create_entity({name = chest, position = position, force = 'neutral', create_build_effect_smoke = false})
+    local container = surface.create_entity({ name = chest, position = position, force = 'neutral', create_build_effect_smoke = false })
     for _, item_stack in pairs(item_stacks) do
         container.insert(item_stack)
     end
     container.minable = false
 
     if random(1, 8) == 1 then
-        container.insert({name = 'coin', count = random(1, 32)})
+        container.insert({ name = 'coin', count = random(1, 32) })
     elseif random(1, 32) == 1 then
-        container.insert({name = 'coin', count = random(1, 128)})
+        container.insert({ name = 'coin', count = random(1, 128) })
     elseif random(1, 128) == 1 then
-        container.insert({name = 'coin', count = random(1, 256)})
+        container.insert({ name = 'coin', count = random(1, 256) })
     elseif random(1, 256) == 1 then
-        container.insert({name = 'coin', count = random(1, 512)})
+        container.insert({ name = 'coin', count = random(1, 512) })
     elseif random(1, 512) == 1 then
-        container.insert({name = 'coin', count = random(1, 2048)})
+        container.insert({ name = 'coin', count = random(1, 2048) })
     end
 
     for _ = 1, 3, 1 do
         if random(1, 16) == 1 then
-            container.insert({name = 'explosives', count = random(25, 50)})
+            container.insert({ name = 'explosives', count = random(25, 50) })
         else
             break
         end

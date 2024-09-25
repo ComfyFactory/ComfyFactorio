@@ -355,7 +355,7 @@ function Public.insert_all_items(player)
                 player.get_inventory(defines.inventory.character_armor).clear()
             end
             player.insert { name = 'power-armor-mk2', count = 1 }
-            Modifiers.update_single_modifier(player, 'character_inventory_slots_bonus', 'creative', #game.item_prototypes)
+            Modifiers.update_single_modifier(player, 'character_inventory_slots_bonus', 'creative', #prototypes.item)
             Modifiers.update_single_modifier(player, 'character_mining_speed_modifier', 'creative', 150)
             Modifiers.update_single_modifier(player, 'character_health_bonus', 'creative', 2000)
             Modifiers.update_single_modifier(player, 'character_crafting_speed_modifier', 'creative', 150)
@@ -382,7 +382,7 @@ function Public.insert_all_items(player)
                 p_armor.put({ name = 'battery-mk2-equipment' })
                 p_armor.put({ name = 'battery-mk2-equipment' })
             end
-            local item = game.item_prototypes
+            local item = prototypes.item
             local i = 0
             for _k, _v in pairs(item) do
                 i = i + 1

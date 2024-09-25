@@ -458,7 +458,7 @@ function Public.roll_item_stack(remaining_budget, blacklist)
         end
     end
 
-    local stack_size = game.item_prototypes[item_name] and game.item_prototypes[item_name].stack_size and game.item_prototypes[item_name].stack_size
+    local stack_size = prototypes.item[item_name] and prototypes.item[item_name].stack_size and prototypes.item[item_name].stack_size
     if not stack_size then stack_size = 1 end
 
     local item_count = 1

@@ -223,7 +223,7 @@ local function on_init()
     surface.force_generate_chunk_requests()
 
     --storage.tree_raffle = {}
-    --for _, e in pairs(game.entity_prototypes) do
+    --for _, e in pairs(prototypes.entity) do
     --	if e.type == "tree" then
     --		table.insert(storage.tree_raffle, e.name)
     --	end
@@ -238,7 +238,7 @@ local function on_init()
         ['red-desert-decal'] = true
     }
     storage.decorative_names = {}
-    for k, v in pairs(game.decorative_prototypes) do
+    for k, v in pairs(prototypes.decorative) do
         if not blacklist[k] then
             if v.autoplace_specification then
                 storage.decorative_names[#storage.decorative_names + 1] = k

@@ -132,7 +132,7 @@ local function on_chunk_generated(event)
         if get_noise('oasis', entity.position, seed) <= oasis_start then
             entity.destroy()
         else
-            if game.item_prototypes[entity.name] then
+            if prototypes.item[entity.name] then
                 surface.create_entity(
                     { name = entity.name, position = entity.position, amount = math_random(200, 300) + math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2) * 0.65 }
                 )
@@ -278,7 +278,7 @@ local function deny_tile_building(surface, inventory, tiles, tile)
     for _, t in pairs(tiles) do
         if not save_tiles[t.old_tile.name] then
             surface.set_tiles({ { name = t.old_tile.name, position = t.position } }, true)
-            if game.item_prototypes[tile.name] then
+            if prototypes.item[tile.name] then
                 inventory.insert({ name = tile.name, count = 1 })
             else
                 if tile_to_item[tile.name] then

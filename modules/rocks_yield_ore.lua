@@ -27,7 +27,7 @@ local particles = {
 local function get_chances()
     local chances = {}
 
-    if game.entity_prototypes['angels-ore1'] then
+    if prototypes.entity['angels-ore1'] then
         for i = 1, 6, 1 do
             table.insert(chances, { 'angels-ore' .. i, 1 })
         end

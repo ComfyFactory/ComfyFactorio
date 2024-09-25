@@ -580,7 +580,7 @@ end
 local function input_filtered(car_inv, chest, chest_inv, free_slots)
     local request_stacks = {}
 
-    local prototypes = game.item_prototypes
+    local prototypes = prototypes.item
     for slot_index = 1, 30, 1 do
         local stack = chest.get_request_slot(slot_index)
         if stack then

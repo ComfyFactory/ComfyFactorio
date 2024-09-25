@@ -187,7 +187,7 @@ local function on_init()
         ['red-desert-decal'] = true
     }
     storage.decorative_names = {}
-    for k, v in pairs(game.decorative_prototypes) do
+    for k, v in pairs(prototypes.decorative) do
         if not blacklist[k] then
             if v.autoplace_specification then
                 storage.decorative_names[#storage.decorative_names + 1] = k
@@ -204,7 +204,7 @@ local function on_init()
     game.forces.shopping_chests.set_friend('player', true)
 
     local tree_raffle = {}
-    for _, e in pairs(game.entity_prototypes) do
+    for _, e in pairs(prototypes.entity) do
         if e.type == 'tree' then
             table.insert(tree_raffle, e.name)
         end
@@ -213,7 +213,7 @@ local function on_init()
     storage.tree_raffle = tree_raffle
 
     local corpses_raffle = {}
-    for _, e in pairs(game.entity_prototypes) do
+    for _, e in pairs(prototypes.entity) do
         if e.type == 'corpse' then
             table.insert(corpses_raffle, e.name)
         end

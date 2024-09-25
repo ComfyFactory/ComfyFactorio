@@ -68,15 +68,15 @@ local function get_formatted_amount(amount)
 end
 
 local function get_localised_name(name)
-    local item = game.item_prototypes[name]
+    local item = prototypes.item[name]
     if item then
         return item.localised_name
     end
-    local fluid = game.fluid_prototypes[name]
+    local fluid = prototypes.fluid[name]
     if fluid then
         return fluid.localised_name
     end
-    local recipe = game.recipe_prototypes[name]
+    local recipe = prototypes.recipe[name]
     if recipe then
         return recipe.localised_name
     end
@@ -84,16 +84,16 @@ local function get_localised_name(name)
 end
 
 local function get_sprite_type(name)
-    if game.item_prototypes[name] then
+    if prototypes.item[name] then
         return 'item'
     end
-    if game.fluid_prototypes[name] then
+    if prototypes.fluid[name] then
         return 'fluid'
     end
-    if game.entity_prototypes[name] then
+    if prototypes.entity[name] then
         return 'entity'
     end
-    if game.recipe_prototypes[name] then
+    if prototypes.recipe[name] then
         return 'recipe'
     end
     return false
@@ -321,7 +321,7 @@ local function draw_recipe_window_header(player, container, item_name, recipes, 
 end
 
 local function draw_recipe(player, container, recipe_name)
-    local recipe = game.recipe_prototypes[recipe_name]
+    local recipe = prototypes.recipe[recipe_name]
 
     local t = container.add({ type = 'table', column_count = 2 })
     add_choose_elem_button(t, recipe.name, true)
@@ -444,7 +444,7 @@ local function draw_recipe(player, container, recipe_name)
     element.style.font = 'heading-2'
 
     for key, machine in pairs(machines) do
-        local prototype = game.entity_prototypes[machine]
+        local prototype = prototypes.entity[machine]
         if prototype then
             add_choose_elem_button(t, machine)
         end
@@ -510,7 +510,7 @@ local function create_recipe_window(item_name, player, button, selected_recipe)
 
     if not selected_recipe then
         for key, recipe_name in pairs(recipes) do
-            if #Functions.get_crafting_machines_for_recipe(player.force.name, game.recipe_prototypes[recipe_name]) > 0 then
+            if #Functions.get_crafting_machines_for_recipe(player.force.name, prototypes.recipe[recipe_name]) > 0 then
                 selected_recipe = recipe_name
                 break
             end
@@ -559,7 +559,7 @@ local function create_recipe_window(item_name, player, button, selected_recipe)
 end
 
 local function add_to_history(item_name, player)
-    if not game.item_prototypes[item_name] and not game.fluid_prototypes[item_name] then
+    if not prototypes.item[item_name] and not prototypes.fluid[item_name] then
         return
     end
 

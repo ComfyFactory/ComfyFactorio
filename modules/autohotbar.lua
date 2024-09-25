@@ -24,10 +24,10 @@ local function is_item_already_present_in_hotbar(player, item)
 end
 
 local function set_hotbar(player, item)
-    if not game.entity_prototypes[item] then
+    if not prototypes.entity[item] then
         return
     end
-    if not game.recipe_prototypes[item] then
+    if not prototypes.recipe[item] then
         return
     end
     local slot_index = get_empty_hotbar_slot(player)
