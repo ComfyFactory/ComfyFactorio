@@ -279,28 +279,29 @@ local compare_player_and_train = function (player, entity)
     local locomotive_distance_too_far = c_y - t_y > spidertron_warning_position
     local spidertron_warning_position_pre_warning = spidertron_warning_position - 100
     local locomotive_distance_too_far_pre_warning = c_y - t_y > spidertron_warning_position_pre_warning
-    local surface = player.surface
 
     local color = Color.yellow
     if locomotive_distance_too_far_pre_warning and not locomotive_distance_too_far then
         local msg = 'Warning! You are getting too far away from the train!'
-        surface.create_entity(
+        player.create_local_flying_text(
             {
-                name = 'flying-text',
                 position = position,
                 text = msg,
-                color = color
+                color = color,
+                time_to_live = 300,
+                speed = 100
             }
         )
         player.print(msg, color)
     elseif locomotive_distance_too_far then
         local msg = 'Warning! You are too far away from the train! TURN BACK!'
-        surface.create_entity(
+        player.create_local_flying_text(
             {
-                name = 'flying-text',
                 position = position,
                 text = msg,
-                color = color
+                color = color,
+                time_to_live = 300,
+                speed = 100
             }
         )
         player.print(msg, color)

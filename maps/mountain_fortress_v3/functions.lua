@@ -129,12 +129,14 @@ local function debug_str(msg)
     print('Mtn: ' .. msg)
 end
 
-local function show_text(msg, pos, color, surface)
-    if color == nil then
-        surface.create_entity({ name = 'flying-text', position = pos, text = msg })
-    else
-        surface.create_entity({ name = 'flying-text', position = pos, text = msg, color = color })
-    end
+local function show_text(msg, pos, surface, player)
+    surface.create_entity({
+        name = 'compi-speech-bubble',
+        position = pos,
+        text = msg,
+        source = player.character,
+        lifetime = 30
+    })
 end
 
 local function fast_remove(tbl, index)
@@ -1643,7 +1645,7 @@ function Public.on_player_changed_position(event)
         if get_tile.valid and get_tile.name == 'lab-dark-2' then
             if random(1, 2) == 1 then
                 if random(1, 2) == 1 then
-                    show_text('This path is not for players!', p, { r = 0.98, g = 0.66, b = 0.22 }, surface)
+                    show_text('This path is not for players!', p, surface, player)
                 end
                 player.surface.create_entity({ name = 'fire-flame', position = player.position })
                 player.character.health = player.character.health - tile_damage

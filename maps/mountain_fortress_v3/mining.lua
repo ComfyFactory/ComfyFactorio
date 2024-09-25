@@ -303,12 +303,12 @@ local function randomness(data)
 
     local position = { x = entity.position.x, y = entity.position.y }
 
-    player.surface.create_entity(
+    player.create_local_flying_text(
         {
-            name = 'flying-text',
             position = position,
             text = '+' .. harvest_amount .. '  [img=item/' .. harvest .. ']',
-            color = { r = 200, g = 160, b = 30 }
+            time_to_live = 300,
+            speed = 100
         }
     )
 
@@ -361,12 +361,12 @@ local function randomness_scrap(data)
 
     local position = { x = entity.position.x, y = entity.position.y }
 
-    player.surface.create_entity(
+    player.create_local_flying_text(
         {
-            name = 'flying-text',
             position = position,
             text = '+' .. harvest_amount .. '  [img=item/' .. harvest .. ']',
-            color = { r = 200, g = 160, b = 30 }
+            time_to_live = 300,
+            speed = 100
         }
     )
 

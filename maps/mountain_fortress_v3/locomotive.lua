@@ -107,7 +107,15 @@ local function death_effects(player)
             (position.x + 0.4) + (b * -1 + math.random(0, b * 20) * 0.1),
             position.y + (b * -1 + math.random(0, b * 20) * 0.1)
         }
-        player.surface.create_entity({ name = 'flying-text', position = p, text = '☠️', color = { 255, math.random(0, 100), 0 } })
+
+        player.create_local_flying_text(
+            {
+                position = p,
+                text = '☠️',
+                time_to_live = 300,
+                speed = 100
+            }
+        )
     end
     player.play_sound { path = 'utility/axe_fighting', volume_modifier = 0.9 }
 end

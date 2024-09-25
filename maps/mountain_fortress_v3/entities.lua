@@ -830,10 +830,11 @@ local function kaboom(entity, target, damage)
 
     entity.surface.create_entity(
         {
-            name = 'flying-text',
+            name = 'compi-speech-bubble',
             position = { entity.position.x + base_vector[1] * 0.5, entity.position.y + base_vector[2] * 0.5 },
             text = msg[random(1, #msg)],
-            color = { 255, 0, 0 }
+            source = entity,
+            lifetime = 30
         }
     )
 
@@ -1491,12 +1492,13 @@ local function on_built_entity(event)
 
     if entity.name == 'radar' then
         if entity.surface.count_entities_filtered({ type = 'radar', position = position, radius = 64 }) > 1 then
-            player.surface.create_entity(
+            player.create_local_flying_text(
                 {
-                    name = 'flying-text',
                     position = entity.position,
                     text = ({ 'entity.radar_limit' }),
-                    color = { 255, 0, 0 }
+                    color = { 255, 0, 0 },
+                    time_to_live = 300,
+                    speed = 100
                 }
             )
 
@@ -1544,22 +1546,24 @@ local function on_built_entity(event)
             upgrades.unit_number[name][entity] = entity
             upgrades.showed_text = false
 
-            surface.create_entity(
+            player.create_local_flying_text(
                 {
-                    name = 'flying-text',
                     position = entity.position,
                     text = upgrades[name].built .. ' / ' .. limit[entity.name] .. ' ' .. entity.name,
-                    color = { r = 0.82, g = 0.11, b = 0.11 }
+                    color = { r = 0.82, g = 0.11, b = 0.11 },
+                    time_to_live = 300,
+                    speed = 100
                 }
             )
         else
             if not upgrades.showed_text then
-                surface.create_entity(
+                player.create_local_flying_text(
                     {
-                        name = 'flying-text',
                         position = entity.position,
                         text = ({ 'entity.entity_limit_reached', entity.name }),
-                        color = { r = 0.82, g = 0.11, b = 0.11 }
+                        color = { r = 0.82, g = 0.11, b = 0.11 },
+                        time_to_live = 300,
+                        speed = 100
                     }
                 )
 
@@ -1589,10 +1593,11 @@ local function on_robot_built_entity(event)
         if entity.surface.count_entities_filtered({ type = 'radar', position = position, radius = 64 }) > 1 then
             entity.surface.create_entity(
                 {
-                    name = 'flying-text',
+                    name = 'compi-speech-bubble',
                     position = entity.position,
                     text = ({ 'entity.radar_limit' }),
-                    color = { 255, 0, 0 }
+                    source = entity,
+                    lifetime = 30
                 }
             )
 
@@ -1642,20 +1647,22 @@ local function on_robot_built_entity(event)
 
             surface.create_entity(
                 {
-                    name = 'flying-text',
+                    name = 'compi-speech-bubble',
                     position = entity.position,
                     text = upgrades[name].built .. ' / ' .. limit[entity.name] .. ' ' .. entity.name,
-                    color = { r = 0.82, g = 0.11, b = 0.11 }
+                    source = entity,
+                    lifetime = 30
                 }
             )
         else
             if not upgrades.showed_text then
                 surface.create_entity(
                     {
-                        name = 'flying-text',
+                        name = 'compi-speech-bubble',
                         position = entity.position,
                         text = ({ 'entity.entity_limit_reached', entity.name }),
-                        color = { r = 0.82, g = 0.11, b = 0.11 }
+                        source = entity,
+                        lifetime = 30
                     }
                 )
 
