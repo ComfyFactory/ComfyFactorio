@@ -1046,7 +1046,7 @@ function Public.reset_crew_and_enemy_force(id)
 	-- these require 2000 white sci each:
 	crew_force.technologies['artillery-shell-range-1'].enabled = false --infinite techs
 	crew_force.technologies['artillery-shell-speed-1'].enabled = false --infinite techs
-	crew_force.technologies['artillery-shell-damage-1'].enabled = false --infinite techs
+	-- crew_force.technologies['artillery-shell-damage-1'].enabled = false --this is space age now
 
 	-- crew_force.technologies['steel-axe'].enabled = false
 
@@ -1098,7 +1098,7 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['belt-immunity-equipment'].enabled = false
 	crew_force.technologies['exoskeleton-equipment'].enabled = false
 	crew_force.technologies['battery-equipment'].enabled = false
-	crew_force.technologies['fusion-reactor'].enabled = false
+	-- crew_force.technologies['fusion-reactor'].enabled = false
 	crew_force.technologies['power-armor-mk2'].enabled = false
 	crew_force.technologies['energy-shield-mk2-equipment'].enabled = false
 	crew_force.technologies['personal-roboport-mk2-equipment'].enabled = false

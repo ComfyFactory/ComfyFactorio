@@ -195,16 +195,6 @@ Public.entry_price_data_raw = { -- choose things which make interesting minifact
 		itemBatchSize = 2,
 		batchRawMaterials = { ['iron-plate'] = 44, ['copper-plate'] = 9 },
 	},
-	['filter-inserter'] = {
-		overallWeight = 1,
-		minLambda = 0.1,
-		maxLambda = 0.6,
-		shape = 'density',
-		enabled = true,
-		base_amount = 500,
-		itemBatchSize = 2,
-		batchRawMaterials = { ['iron-plate'] = 32, ['copper-plate'] = 24 },
-	},
 	['programmable-speaker'] = {
 		overallWeight = 1,
 		minLambda = 0.1,
