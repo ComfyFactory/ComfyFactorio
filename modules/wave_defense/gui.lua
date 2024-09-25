@@ -52,6 +52,7 @@ local function create_gui(player)
     progressbar.style.maximal_width = 96
     progressbar.style.padding = -1
     progressbar.style.top_padding = 1
+    progressbar.style.height = 20
 
     local line = frame.add({ type = 'line', direction = 'vertical' })
     line.style.left_padding = 4

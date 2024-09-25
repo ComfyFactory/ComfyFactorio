@@ -127,6 +127,7 @@ local function show_rewards(player)
     l.style.font = 'default-bold'
     l.style.font_color = { r = 0.9, g = 0.9, b = 0.9 }
     l.style.minimal_width = 123
+    l.style.height = 20
 
     t = frame.add { type = 'table', column_count = 1 }
 

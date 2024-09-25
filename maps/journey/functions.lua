@@ -330,6 +330,7 @@ local function cargo_gui(name, itemname, tooltip, value, hidden)
             progressbar.style.maximal_width = 100
             progressbar.style.top_margin = 2
             progressbar.style.right_margin = 6
+            progressbar.style.height = 20
         end
         local frame = player.gui.top[name]
         frame.tooltip = tooltip

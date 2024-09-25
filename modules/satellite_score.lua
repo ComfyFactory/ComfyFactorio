@@ -66,6 +66,7 @@ local function satellites_in_space_gui(player)
     progressbar.style = 'achievement_progressbar'
     progressbar.style.minimal_width = 100
     progressbar.style.maximal_width = 100
+    progressbar.style.height = 20
 
     label = frame.add({ type = 'label', caption = this.satellites_in_space .. '/' .. tostring(this.satellite_score[i + 1].goal) })
     label.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
@@ -111,24 +112,24 @@ local function init()
     this.satellites_in_space = 0
     this.satellite_score = {
         { goal = 0,          rank = false,             achieved = true },
-        { goal = 1,          rank = 'Copper',          color = { r = 201, g = 133, b = 6 }, msg = '', msg2 = '', achieved = false },
+        { goal = 1,          rank = 'Copper',          color = { r = 201, g = 133, b = 6 },   msg = '', msg2 = '', achieved = false },
         { goal = 10,         rank = 'Iron',            color = { r = 219, g = 216, b = 206 }, msg = '', msg2 = '', achieved = false },
-        { goal = 100,        rank = 'Bronze',          color = { r = 186, g = 115, b = 39 }, msg = '', msg2 = '', achieved = false },
+        { goal = 100,        rank = 'Bronze',          color = { r = 186, g = 115, b = 39 },  msg = '', msg2 = '', achieved = false },
         { goal = 500,        rank = 'Silver',          color = { r = 186, g = 178, b = 171 }, msg = '', msg2 = '', achieved = false },
-        { goal = 1000,       rank = 'Gold',            color = { r = 255, g = 214, b = 33 }, msg = '', msg2 = '', achieved = false },
+        { goal = 1000,       rank = 'Gold',            color = { r = 255, g = 214, b = 33 },  msg = '', msg2 = '', achieved = false },
         { goal = 2500,       rank = 'Platinum',        color = { r = 224, g = 223, b = 215 }, msg = '', msg2 = '', achieved = false },
         { goal = 5000,       rank = 'Diamond',         color = { r = 237, g = 236, b = 232 }, msg = '', msg2 = '', achieved = false },
         { goal = 10000,      rank = 'Iridium',         color = { r = 255, g = 220, b = 220 }, msg = '', msg2 = '', achieved = false },
         { goal = 20000,      rank = 'Anti-Matter',     color = { r = 190, g = 255, b = 190 }, msg = '', msg2 = '', achieved = false },
-        { goal = 30000,      rank = 'Orange Dwarf',    color = { r = 255, g = 150, b = 50 }, msg = '', msg2 = '', achieved = false },
+        { goal = 30000,      rank = 'Orange Dwarf',    color = { r = 255, g = 150, b = 50 },  msg = '', msg2 = '', achieved = false },
         { goal = 40000,      rank = 'Blue Supergiant', color = { r = 130, g = 130, b = 255 }, msg = '', msg2 = '', achieved = false },
-        { goal = 50000,      rank = 'Red Hypergiant',  color = { r = 255, g = 90, b = 90 }, msg = '', msg2 = '', achieved = false },
+        { goal = 50000,      rank = 'Red Hypergiant',  color = { r = 255, g = 90, b = 90 },   msg = '', msg2 = '', achieved = false },
         { goal = 75000,      rank = 'Neutron Star',    color = { r = 200, g = 200, b = 255 }, msg = '', msg2 = '', achieved = false },
         { goal = 100000,     rank = 'Supernova',       color = { r = 200, g = 255, b = 200 }, msg = '', msg2 = '', achieved = false },
-        { goal = 150000,     rank = 'Black Hole',      color = { r = 0, g = 0, b = 0 },     msg = '', msg2 = '', achieved = false },
+        { goal = 150000,     rank = 'Black Hole',      color = { r = 0, g = 0, b = 0 },       msg = '', msg2 = '', achieved = false },
         { goal = 1000000,    rank = 'Blue Screen',     color = { r = 100, g = 100, b = 245 }, msg = '', msg2 = '', achieved = false },
-        { goal = 10000000,   rank = '?????',           color = { r = 0, g = 0, b = 0 },     msg = '', msg2 = '', achieved = false },
-        { goal = 1000000000, rank = '?!??!?',          color = { r = 0, g = 0, b = 0 },     msg = '', msg2 = '', achieved = false }
+        { goal = 10000000,   rank = '?????',           color = { r = 0, g = 0, b = 0 },       msg = '', msg2 = '', achieved = false },
+        { goal = 1000000000, rank = '?!??!?',          color = { r = 0, g = 0, b = 0 },       msg = '', msg2 = '', achieved = false }
     }
 end
 
