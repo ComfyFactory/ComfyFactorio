@@ -1325,18 +1325,18 @@ local function event_on_entity_died(event)
 	end
 end
 
-function Public.research_apply_buffs(event)
-	local memory = Memory.get_crew_memory()
-	local force = memory.force
+-- function Public.research_apply_buffs(event)
+-- 	local memory = Memory.get_crew_memory()
+-- 	local force = memory.force
 
-	if Balance.research_buffs[event.research.name] then
-		local tech = Balance.research_buffs[event.research.name]
-		-- @FIXME: This code is from another scenario but doesn't work
-		for k, v in pairs(tech) do
-			force[k] = force[k] + v
-		end
-	end
-end
+-- 	if Balance.research_buffs[event.research.name] then
+-- 		local tech = Balance.research_buffs[event.research.name]
+-- 		-- @FIXME: This code is from another scenario but doesn't work
+-- 		for k, v in pairs(tech) do
+-- 			force[k] = force[k] + v
+-- 		end
+-- 	end
+-- end
 
 local function event_on_research_finished(event)
 	-- figure out which crew this is about:
