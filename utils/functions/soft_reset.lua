@@ -152,7 +152,7 @@ local function reset_forces(new_surface, old_surface)
 
         for _, tech in pairs(game.forces.player.technologies) do
             tech.researched = false
-            game.forces.player.set_saved_technology_progress(tech, 0)
+            tech.saved_progress = 0
         end
         f.reset_evolution()
         f.set_spawn_position(spawn, new_surface)

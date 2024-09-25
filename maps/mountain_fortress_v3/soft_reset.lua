@@ -16,7 +16,7 @@ local function reset_forces(new_surface, old_surface)
     end
     for _, tech in pairs(game.forces.player.technologies) do
         tech.researched = false
-        game.forces.player.set_saved_technology_progress(tech, 0)
+        tech.saved_progress = 0
     end
 end
 
@@ -25,19 +25,19 @@ local function teleport_players(surface)
     local position
 
     if adjusted_zones.reversed then
-        game.forces.player.set_spawn_position({-27, -25}, surface)
+        game.forces.player.set_spawn_position({ -27, -25 }, surface)
         position = game.forces.player.get_spawn_position(surface)
 
         if not position then
-            game.forces.player.set_spawn_position({-27, -25}, surface)
+            game.forces.player.set_spawn_position({ -27, -25 }, surface)
             position = game.forces.player.get_spawn_position(surface)
         end
     else
-        game.forces.player.set_spawn_position({-27, 25}, surface)
+        game.forces.player.set_spawn_position({ -27, 25 }, surface)
         position = game.forces.player.get_spawn_position(surface)
 
         if not position then
-            game.forces.player.set_spawn_position({-27, 25}, surface)
+            game.forces.player.set_spawn_position({ -27, 25 }, surface)
             position = game.forces.player.get_spawn_position(surface)
         end
     end
@@ -80,7 +80,7 @@ local function scheduled_surface_clearing()
         end
         game.print(mapkeeper .. ' Removing old entities.')
 
-        local ent = surface.find_entities_filtered {force = 'player', limit = 1000}
+        local ent = surface.find_entities_filtered { force = 'player', limit = 1000 }
         for _, e in pairs(ent) do
             if e.valid then
                 e.destroy()
@@ -133,7 +133,7 @@ function Public.soft_reset_map(old_surface, map_gen_settings)
     this.soft_reset_counter = this.soft_reset_counter + 1
 
     local new_surface = game.create_surface(this.original_surface_name .. '_' .. tostring(this.soft_reset_counter), map_gen_settings)
-    new_surface.request_to_generate_chunks({0, 0}, 0.1)
+    new_surface.request_to_generate_chunks({ 0, 0 }, 0.1)
     new_surface.force_generate_chunk_requests()
 
     reset_forces(new_surface, old_surface)
@@ -143,30 +143,30 @@ function Public.soft_reset_map(old_surface, map_gen_settings)
     Public.add_schedule_to_delete_surface(true)
 
     local radius = 512
-    local area = {{x = -radius, y = -radius}, {x = radius, y = radius}}
-    for _, entity in pairs(new_surface.find_entities_filtered {area = area, type = 'logistic-robot'}) do
+    local area = { { x = -radius, y = -radius }, { x = radius, y = radius } }
+    for _, entity in pairs(new_surface.find_entities_filtered { area = area, type = 'logistic-robot' }) do
         entity.destroy()
     end
 
-    for _, entity in pairs(new_surface.find_entities_filtered {area = area, type = 'construction-robot'}) do
+    for _, entity in pairs(new_surface.find_entities_filtered { area = area, type = 'construction-robot' }) do
         entity.destroy()
     end
 
-    local message = table.concat({mapkeeper .. ' Welcome to ', this.original_surface_name, '!'})
-    local message_to_discord = table.concat({'** Welcome to ', this.original_surface_name, '! **'})
+    local message = table.concat({ mapkeeper .. ' Welcome to ', this.original_surface_name, '!' })
+    local message_to_discord = table.concat({ '** Welcome to ', this.original_surface_name, '! **' })
 
     if this.soft_reset_counter > 1 then
         message =
             table.concat(
-            {
-                mapkeeper,
-                ' The world has been reshaped, welcome to attempt number ',
-                tostring(this.soft_reset_counter),
-                '!'
-            }
-        )
+                {
+                    mapkeeper,
+                    ' The world has been reshaped, welcome to attempt number ',
+                    tostring(this.soft_reset_counter),
+                    '!'
+                }
+            )
     end
-    game.print(message, {r = 0.98, g = 0.66, b = 0.22})
+    game.print(message, { r = 0.98, g = 0.66, b = 0.22 })
     Server.to_discord_embed(message_to_discord)
 
     return new_surface

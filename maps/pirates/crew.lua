@@ -909,7 +909,7 @@ function Public.reset_crew_and_enemy_force(id)
 
 	enemy_force.reset_evolution()
 	for _, tech in pairs(crew_force.technologies) do
-		crew_force.set_saved_technology_progress(tech, 0)
+		tech.saved_progress = 0
 	end
 	local lobby = game.surfaces[CoreData.lobby_surface_name]
 	crew_force.set_spawn_position(Common.lobby_spawnpoint, lobby)
