@@ -395,7 +395,7 @@ local function on_player_joined_game(event)
         ['tree-05'] = { 'copper-ore', 'stone' }
     }
 
-    if game.item_prototypes['angels-ore1'] then
+    if prototypes.item['angels-ore1'] then
         storage.entity_yield['tree-01'] = { 'angels-ore1', 'angels-ore2' }
         storage.entity_yield['tree-02-red'] = { 'angels-ore5', 'angels-ore6' }
         storage.entity_yield['tree-04'] = { 'coal' }
@@ -404,7 +404,7 @@ local function on_player_joined_game(event)
         --game.map_settings.pollution.ageing = 0
     end
 
-    if game.item_prototypes['thorium-ore'] then
+    if prototypes.item['thorium-ore'] then
         storage.entity_yield['rock-big'] = { 'uranium-ore', 'thorium-ore' }
         storage.entity_yield['rock-huge'] = { 'uranium-ore', 'thorium-ore' }
     end
@@ -636,9 +636,9 @@ local function on_player_mined_entity(event)
 
         player.create_local_flying_text(
             {
-            position = entity.position,
-            text = '+' .. amount .. ' [item=' .. main_item .. '] +' .. second_item_amount .. ' [item=' .. second_item .. ']',
-            color = { r = 0.8, g = 0.8, b = 0.8 }
+                position = entity.position,
+                text = '+' .. amount .. ' [item=' .. main_item .. '] +' .. second_item_amount .. ' [item=' .. second_item .. ']',
+                color = { r = 0.8, g = 0.8, b = 0.8 }
             }
         )
 

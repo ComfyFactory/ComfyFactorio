@@ -208,7 +208,7 @@ local function on_init()
     cave_miner.buildings_raffle = {}
 
     local types = { 'furnace', 'assembling-machine', 'reactor', 'artillery-turret', 'boiler', 'beacon', 'generator', 'storage-tank', 'roboport' }
-    for _, e in pairs(game.entity_prototypes) do
+    for _, e in pairs(prototypes.entity) do
         for _, t in pairs(types) do
             if e.type == t then
                 table.insert(cave_miner.buildings_raffle, e.name)

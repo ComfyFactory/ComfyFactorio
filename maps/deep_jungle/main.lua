@@ -14,7 +14,7 @@ local random = math.random
 local function on_chunk_charted(event)
     local settings = DPT.get('settings')
     local surface = game.get_surface(event.surface_index)
-    local deco = game.decorative_prototypes
+    local deco = prototypes.decorative
     local position = event.position
     if settings.chunks_charted[tostring(position.x) .. tostring(position.y)] then
         return
@@ -27,27 +27,27 @@ local function on_chunk_charted(event)
             decorative_names[#decorative_names + 1] = k
         end
     end
-    surface.regenerate_decorative(decorative_names, {position})
+    surface.regenerate_decorative(decorative_names, { position })
 
     if random(1, 14) ~= 1 then
         return
     end
 
-    map_functions.draw_rainbow_patch({x = position.x * 32 + random(1, 32), y = position.y * 32 + random(1, 32)}, surface, random(14, 26), 2000)
+    map_functions.draw_rainbow_patch({ x = position.x * 32 + random(1, 32), y = position.y * 32 + random(1, 32) }, surface, random(14, 26), 2000)
 end
 
 local function on_player_joined_game(event)
     local player = game.get_player(event.player_index)
     local surface = game.get_surface('deep_jungle')
-    if player.online_time < 5 and surface.is_chunk_generated({0, 0}) then
-        player.teleport(surface.find_non_colliding_position('character', {0, 0}, 2, 1), 'deep_jungle')
+    if player.online_time < 5 and surface.is_chunk_generated({ 0, 0 }) then
+        player.teleport(surface.find_non_colliding_position('character', { 0, 0 }, 2, 1), 'deep_jungle')
     else
         if player.online_time < 5 then
-            player.teleport({0, 0}, 'deep_jungle')
+            player.teleport({ 0, 0 }, 'deep_jungle')
         end
     end
     if player.online_time < 2 then
-        player.insert {name = 'iron-plate', count = 32}
+        player.insert { name = 'iron-plate', count = 32 }
     end
 end
 
@@ -61,43 +61,43 @@ local function on_entity_died(event)
         if random(1, 8) == 1 then
             local p = surface.find_non_colliding_position('small-biter', entity.position, 2, 0.5)
             if p then
-                surface.create_entity {name = 'small-biter', position = entity.position}
+                surface.create_entity { name = 'small-biter', position = entity.position }
             end
             return
         end
         if random(1, 16) == 1 then
             local p = surface.find_non_colliding_position('medium-biter', entity.position, 2, 0.5)
             if p then
-                surface.create_entity {name = 'medium-biter', position = entity.position}
+                surface.create_entity { name = 'medium-biter', position = entity.position }
             end
             return
         end
         if random(1, 32) == 1 then
             local p = surface.find_non_colliding_position('big-biter', entity.position, 2, 0.5)
             if p then
-                surface.create_entity {name = 'big-biter', position = entity.position}
+                surface.create_entity { name = 'big-biter', position = entity.position }
             end
             return
         end
         if random(1, 512) == 1 then
             local p = surface.find_non_colliding_position('behemoth-biter', entity.position, 2, 0.5)
             if p then
-                surface.create_entity {name = 'behemoth-biter', position = entity.position}
+                surface.create_entity { name = 'behemoth-biter', position = entity.position }
             end
             return
         end
     end
     if entity.type == 'simple-entity' then
         if random(1, 8) == 1 then
-            surface.create_entity {name = 'small-worm-turret', position = entity.position}
+            surface.create_entity { name = 'small-worm-turret', position = entity.position }
             return
         end
         if random(1, 16) == 1 then
-            surface.create_entity {name = 'medium-worm-turret', position = entity.position}
+            surface.create_entity { name = 'medium-worm-turret', position = entity.position }
             return
         end
         if random(1, 32) == 1 then
-            surface.create_entity {name = 'big-worm-turret', position = entity.position}
+            surface.create_entity { name = 'big-worm-turret', position = entity.position }
             return
         end
     end
@@ -115,7 +115,7 @@ local function chunk_load()
     end
 end
 
-local on_tick = function()
+local on_tick = function ()
     local tick = game.tick
     if tick % 40 == 0 then
         chunk_load()
@@ -129,18 +129,18 @@ local function on_init()
     map_gen_settings.moisture = 0.99
     map_gen_settings.water = 'none'
     map_gen_settings.starting_area = 'normal'
-    map_gen_settings.cliff_settings = {cliff_elevation_interval = 4, cliff_elevation_0 = 0.1}
+    map_gen_settings.cliff_settings = { cliff_elevation_interval = 4, cliff_elevation_0 = 0.1 }
     map_gen_settings.autoplace_controls = {
-        ['coal'] = {frequency = 'none', size = 'none', richness = 'none'},
-        ['stone'] = {frequency = 'none', size = 'none', richness = 'none'},
-        ['copper-ore'] = {frequency = 'none', size = 'none', richness = 'none'},
-        ['iron-ore'] = {frequency = 'none', size = 'none', richness = 'none'},
-        ['crude-oil'] = {frequency = 'very-high', size = 'big', richness = 'normal'},
-        ['trees'] = {frequency = 'none', size = 'none', richness = 'none'},
-        ['enemy-base'] = {frequency = 'high', size = 'big', richness = 'good'}
+        ['coal'] = { frequency = 'none', size = 'none', richness = 'none' },
+        ['stone'] = { frequency = 'none', size = 'none', richness = 'none' },
+        ['copper-ore'] = { frequency = 'none', size = 'none', richness = 'none' },
+        ['iron-ore'] = { frequency = 'none', size = 'none', richness = 'none' },
+        ['crude-oil'] = { frequency = 'very-high', size = 'big', richness = 'normal' },
+        ['trees'] = { frequency = 'none', size = 'none', richness = 'none' },
+        ['enemy-base'] = { frequency = 'high', size = 'big', richness = 'good' }
     }
     game.create_surface('deep_jungle', map_gen_settings)
-    game.forces.player.set_spawn_position({0, 0}, game.surfaces['deep_jungle'])
+    game.forces.player.set_spawn_position({ 0, 0 }, game.surfaces['deep_jungle'])
     settings.force_chunk = true
     settings.chunk_load_tick = game.tick + 200
 end

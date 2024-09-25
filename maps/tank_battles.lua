@@ -15,7 +15,7 @@ local random = math.random
 
 Global.register(
     this,
-    function(tbl)
+    function (tbl)
         this = tbl
     end
 )
@@ -39,25 +39,25 @@ local tile_blacklist = {
 }
 
 local loot = {
-    {{name = 'flamethrower-ammo', count = 16}, weight = 2},
-    {{name = 'piercing-shotgun-shell', count = 16}, weight = 2},
-    {{name = 'explosive-rocket', count = 8}, weight = 2},
-    {{name = 'rocket', count = 8}, weight = 2},
-    {{name = 'grenade', count = 16}, weight = 2},
-    {{name = 'cluster-grenade', count = 8}, weight = 2},
-    {{name = 'defender-capsule', count = 6}, weight = 1},
-    {{name = 'distractor-capsule', count = 3}, weight = 1},
-    {{name = 'cannon-shell', count = 8}, weight = 16},
-    {{name = 'explosive-cannon-shell', count = 8}, weight = 16},
-    {{name = 'uranium-cannon-shell', count = 8}, weight = 6},
-    {{name = 'explosive-uranium-cannon-shell', count = 8}, weight = 6},
-    {{name = 'energy-shield-equipment', count = 1}, weight = 2},
-    {{name = 'fusion-reactor-equipment', count = 1}, weight = 2},
-    {{name = 'repair-pack', count = 1}, weight = 6},
-    {{name = 'coal', count = 16}, weight = 3},
-    {{name = 'nuclear-fuel', count = 1}, weight = 1},
-    {{name = 'gate', count = 16}, weight = 2},
-    {{name = 'stone-wall', count = 16}, weight = 2}
+    { { name = 'flamethrower-ammo', count = 16 },             weight = 2 },
+    { { name = 'piercing-shotgun-shell', count = 16 },        weight = 2 },
+    { { name = 'explosive-rocket', count = 8 },               weight = 2 },
+    { { name = 'rocket', count = 8 },                         weight = 2 },
+    { { name = 'grenade', count = 16 },                       weight = 2 },
+    { { name = 'cluster-grenade', count = 8 },                weight = 2 },
+    { { name = 'defender-capsule', count = 6 },               weight = 1 },
+    { { name = 'distractor-capsule', count = 3 },             weight = 1 },
+    { { name = 'cannon-shell', count = 8 },                   weight = 16 },
+    { { name = 'explosive-cannon-shell', count = 8 },         weight = 16 },
+    { { name = 'uranium-cannon-shell', count = 8 },           weight = 6 },
+    { { name = 'explosive-uranium-cannon-shell', count = 8 }, weight = 6 },
+    { { name = 'energy-shield-equipment', count = 1 },        weight = 2 },
+    { { name = 'fusion-reactor-equipment', count = 1 },       weight = 2 },
+    { { name = 'repair-pack', count = 1 },                    weight = 6 },
+    { { name = 'coal', count = 16 },                          weight = 3 },
+    { { name = 'nuclear-fuel', count = 1 },                   weight = 1 },
+    { { name = 'gate', count = 16 },                          weight = 2 },
+    { { name = 'stone-wall', count = 16 },                    weight = 2 }
 }
 local loot_raffle = {}
 for _, item in pairs(loot) do
@@ -81,10 +81,10 @@ local function create_gui(player)
         return
     end
 
-    frame = player.gui.left.add({type = 'frame', name = 'status_players', direction = 'vertical'})
+    frame = player.gui.left.add({ type = 'frame', name = 'status_players', direction = 'vertical' })
 
-    local lbl = frame.add({type = 'label', caption = 'Waiting for more players before round starts.'})
-    lbl.style.font_color = {r = 0.98, g = 0.66, b = 0.22}
+    local lbl = frame.add({ type = 'label', caption = 'Waiting for more players before round starts.' })
+    lbl.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
     lbl.style.font = 'default-listbox'
 
     frame.visible = false
@@ -142,9 +142,9 @@ local function create_tank_battle_score_gui()
 
     local scores = {}
     Core.iter_connected_players(
-        function(player_amp)
+        function (player_amp)
             if this.tank_battles_score[player_amp.index] then
-                insert(scores, {name = player_amp.name, score = this.tank_battles_score[player_amp.index], color = player_amp.color})
+                insert(scores, { name = player_amp.name, score = this.tank_battles_score[player_amp.index], color = player_amp.color })
             end
         end
     )
@@ -154,19 +154,19 @@ local function create_tank_battle_score_gui()
     end
 
     Core.iter_connected_players(
-        function(player)
+        function (player)
             local frame = player.gui.left['tank_battle_score']
             if frame and frame.valid then
                 frame.destroy()
             end
 
-            frame = player.gui.left.add({type = 'frame', name = 'tank_battle_score', direction = 'vertical'})
+            frame = player.gui.left.add({ type = 'frame', name = 'tank_battle_score', direction = 'vertical' })
 
-            local lbl = frame.add({type = 'label', caption = 'Won rounds'})
-            lbl.style.font_color = {r = 0.98, g = 0.66, b = 0.22}
+            local lbl = frame.add({ type = 'label', caption = 'Won rounds' })
+            lbl.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
             lbl.style.font = 'default-listbox'
 
-            local t = frame.add({type = 'table', column_count = 2})
+            local t = frame.add({ type = 'table', column_count = 2 })
 
             for _ = 1, #scores, 1 do
                 for y = 1, #scores, 1 do
@@ -186,11 +186,11 @@ local function create_tank_battle_score_gui()
                     local player_name = scores[i].name
                     local player_color = scores[i].color
                     local player_score = scores[i].score
-                    local l = t.add({type = 'label', caption = player_name})
-                    player_color = {r = player_color.r * 0.6 + 0.4, g = player_color.g * 0.6 + 0.4, b = player_color.b * 0.6 + 0.4, a = 1}
+                    local l = t.add({ type = 'label', caption = player_name })
+                    player_color = { r = player_color.r * 0.6 + 0.4, g = player_color.g * 0.6 + 0.4, b = player_color.b * 0.6 + 0.4, a = 1 }
                     l.style.font_color = player_color
                     l.style.font = 'default-bold'
-                    t.add({type = 'label', caption = player_score})
+                    t.add({ type = 'label', caption = player_score })
                 end
             end
         end
@@ -202,20 +202,20 @@ local function get_valid_random_spawn_position(surface, chunks)
 
     for _, chunk in pairs(chunks) do
         if chunk.x * 32 < arena_size and chunk.y * 32 < arena_size and chunk.x * 32 >= arena_size * -1 and chunk.y * 32 >= arena_size * -1 then
-            local area = {{chunk.x * 32 - 64, chunk.y * 32 - 64}, {chunk.x * 32 + 64, chunk.y * 32 + 64}}
-            if surface.count_entities_filtered({name = 'tank', area = area}) == 0 then
-                local pos = surface.find_non_colliding_position('tank', {chunk.x * 32 + 16, chunk.y * 32 + 16}, 16, 8)
+            local area = { { chunk.x * 32 - 64, chunk.y * 32 - 64 }, { chunk.x * 32 + 64, chunk.y * 32 + 64 } }
+            if surface.count_entities_filtered({ name = 'tank', area = area }) == 0 then
+                local pos = surface.find_non_colliding_position('tank', { chunk.x * 32 + 16, chunk.y * 32 + 16 }, 16, 8)
                 return pos
             end
         end
     end
 
-    local pos = surface.find_non_colliding_position('tank', {0, 0}, 32, 4)
+    local pos = surface.find_non_colliding_position('tank', { 0, 0 }, 32, 4)
     if pos then
         return pos
     end
 
-    return {0, 0}
+    return { 0, 0 }
 end
 
 local function put_players_into_arena()
@@ -223,11 +223,11 @@ local function put_players_into_arena()
 
     local chunks = {}
     for chunk in surface.get_chunks() do
-        insert(chunks, {x = chunk.x, y = chunk.y})
+        insert(chunks, { x = chunk.x, y = chunk.y })
     end
 
     Core.iter_connected_players(
-        function(player)
+        function (player)
             local permissions_group = game.permissions.get_group('Default')
             permissions_group.add_player(player.name)
 
@@ -238,22 +238,22 @@ local function put_players_into_arena()
 
             player.create_character()
 
-            player.insert({name = 'combat-shotgun', count = 1})
-            player.insert({name = 'rocket-launcher', count = 1})
-            player.insert({name = 'flamethrower', count = 1})
+            player.insert({ name = 'combat-shotgun', count = 1 })
+            player.insert({ name = 'rocket-launcher', count = 1 })
+            player.insert({ name = 'flamethrower', count = 1 })
 
             local pos = get_valid_random_spawn_position(surface, chunks)
 
-            player.force.chart(surface, {{x = -1 * arena_size, y = -1 * arena_size}, {x = arena_size, y = arena_size}})
+            player.force.chart(surface, { { x = -1 * arena_size, y = -1 * arena_size }, { x = arena_size, y = arena_size } })
 
             if pos then
                 player.teleport(pos, surface)
             else
                 pos = get_valid_random_spawn_position(surface, chunks)
             end
-            local tank = surface.create_entity({name = 'tank', force = game.forces[player.name], position = pos})
-            tank.insert({name = 'coal', count = 24})
-            tank.insert({name = 'cannon-shell', count = 16})
+            local tank = surface.create_entity({ name = 'tank', force = game.forces[player.name], position = pos })
+            tank.insert({ name = 'coal', count = 24 })
+            tank.insert({ name = 'cannon-shell', count = 16 })
             tank.set_driver(player)
         end
     )
@@ -261,7 +261,7 @@ end
 
 local function get_arena_layout_modifiers()
     this.arena_layout_modifiers = {}
-    local proto = game.entity_prototypes
+    local proto = prototypes.entity
 
     local tree_raffle = {}
     for _, e in pairs(proto) do
@@ -274,7 +274,7 @@ local function get_arena_layout_modifiers()
     this.arena_layout_modifiers.arena_tree_noise = random(0, 75) * 0.01
 
     local entity_raffle = {}
-    local types = {'furnace', 'assembling-machine', 'power-switch', 'programmable-speaker', 'reactor'}
+    local types = { 'furnace', 'assembling-machine', 'power-switch', 'programmable-speaker', 'reactor' }
     for _, e in pairs(proto) do
         for _, t in pairs(types) do
             if e.type == t then
@@ -286,7 +286,7 @@ local function get_arena_layout_modifiers()
 
     local tile_raffle = {}
 
-    for _, t in pairs(game.tile_prototypes) do
+    for _, t in pairs(prototypes.tile) do
         if not tile_blacklist[t.name] then
             insert(tile_raffle, t.name)
         end
@@ -298,12 +298,12 @@ end
 local function regenerate_arena()
     local surface = game.get_surface('nauvis')
     for chunk in surface.get_chunks() do
-        surface.set_chunk_generated_status({x = chunk.x, y = chunk.y}, defines.chunk_generated_status.custom_tiles)
+        surface.set_chunk_generated_status({ x = chunk.x, y = chunk.y }, defines.chunk_generated_status.custom_tiles)
     end
 
     this.noise_seed = nil
     ---@diagnostic disable-next-line: param-type-mismatch
-    surface.request_to_generate_chunks({0, 0}, math.ceil(arena_size / 32) + 3)
+    surface.request_to_generate_chunks({ 0, 0 }, math.ceil(arena_size / 32) + 3)
 
     get_arena_layout_modifiers()
 
@@ -331,12 +331,12 @@ local function shrink_arena()
 
     for x = arena_size * -1, arena_size, 1 do
         for y = current_arena_size * -1 - shrink_width, current_arena_size * -1, 1 do
-            local pos = {x = x, y = y}
+            local pos = { x = x, y = y }
             local tile = surface.get_tile(pos.x, pos.y)
             if tile.name ~= 'water' and tile.name ~= 'deepwater' then
                 if x > current_arena_size or y > current_arena_size or x < current_arena_size * -1 or y < current_arena_size * -1 then
                     if random(1, 3) ~= 1 then
-                        insert(tiles, {name = 'water', position = pos})
+                        insert(tiles, { name = 'water', position = pos })
                     end
                 end
             end
@@ -345,12 +345,12 @@ local function shrink_arena()
 
     for x = arena_size * -1, arena_size, 1 do
         for y = current_arena_size, current_arena_size + shrink_width, 1 do
-            local pos = {x = x, y = y}
+            local pos = { x = x, y = y }
             local tile = surface.get_tile(pos.x, pos.y)
             if tile.name ~= 'water' and tile.name ~= 'deepwater' then
                 if x > current_arena_size or y > current_arena_size or x < current_arena_size * -1 or y < current_arena_size * -1 then
                     if random(1, 3) ~= 1 then
-                        insert(tiles, {name = 'water', position = pos})
+                        insert(tiles, { name = 'water', position = pos })
                     end
                 end
             end
@@ -359,12 +359,12 @@ local function shrink_arena()
 
     for x = current_arena_size * -1 - shrink_width, current_arena_size * -1, 1 do
         for y = arena_size * -1, arena_size, 1 do
-            local pos = {x = x, y = y}
+            local pos = { x = x, y = y }
             local tile = surface.get_tile(pos.x, pos.y)
             if tile.name ~= 'water' and tile.name ~= 'deepwater' then
                 if x > current_arena_size or y > current_arena_size or x < current_arena_size * -1 or y < current_arena_size * -1 then
                     if random(1, 3) ~= 1 then
-                        insert(tiles, {name = 'water', position = pos})
+                        insert(tiles, { name = 'water', position = pos })
                     end
                 end
             end
@@ -373,12 +373,12 @@ local function shrink_arena()
 
     for x = current_arena_size, current_arena_size + shrink_width, 1 do
         for y = arena_size * -1, arena_size, 1 do
-            local pos = {x = x, y = y}
+            local pos = { x = x, y = y }
             local tile = surface.get_tile(pos.x, pos.y)
             if tile.name ~= 'water' and tile.name ~= 'deepwater' then
                 if x > current_arena_size or y > current_arena_size or x < current_arena_size * -1 or y < current_arena_size * -1 then
                     if random(1, 3) ~= 1 then
-                        insert(tiles, {name = 'water', position = pos})
+                        insert(tiles, { name = 'water', position = pos })
                     end
                 end
             end
@@ -395,49 +395,49 @@ local function get_arena_entity(surface, pos)
     local noise2 = get_noise('rocks_2', pos)
 
     if noise > -0.1 and noise < 0.1 and noise2 > -0.3 and noise2 < 0.3 then
-        return {name = 'rock-big', position = pos}
+        return { name = 'rock-big', position = pos }
     end
 
     if random(1, 16) == 1 and noise2 > 0.78 then
-        if surface.can_place_entity({name = 'wooden-chest', position = pos, force = 'enemy'}) then
-            return {name = 'wooden-chest', position = pos, force = 'enemy'}
+        if surface.can_place_entity({ name = 'wooden-chest', position = pos, force = 'enemy' }) then
+            return { name = 'wooden-chest', position = pos, force = 'enemy' }
         end
     end
 
     if random(1, 16) == 1 and noise2 < -0.78 then
-        if surface.can_place_entity({name = 'wooden-chest', position = pos, force = 'enemy'}) then
-            return {name = 'wooden-chest', position = pos, force = 'enemy'}
+        if surface.can_place_entity({ name = 'wooden-chest', position = pos, force = 'enemy' }) then
+            return { name = 'wooden-chest', position = pos, force = 'enemy' }
         end
     end
 
     if random(1, this.arena_layout_modifiers.arena_tree_chance) == 1 and noise > this.arena_layout_modifiers.arena_tree_noise then
-        return {name = this.arena_layout_modifiers.arena_tree, position = pos}
+        return { name = this.arena_layout_modifiers.arena_tree, position = pos }
     end
 
     if random(1, 1024) == 1 then
         if random(1, 16) == 1 then
-            if surface.can_place_entity({name = this.arena_layout_modifiers.secret_entity, position = pos, force = 'enemy'}) then
-                return {name = this.arena_layout_modifiers.secret_entity, position = pos, force = 'enemy'}
+            if surface.can_place_entity({ name = this.arena_layout_modifiers.secret_entity, position = pos, force = 'enemy' }) then
+                return { name = this.arena_layout_modifiers.secret_entity, position = pos, force = 'enemy' }
             end
         end
         if random(1, 64) == 1 then
-            if surface.can_place_entity({name = 'big-worm-turret', position = pos, force = 'enemy'}) then
-                return {name = 'big-worm-turret', position = pos, force = 'enemy'}
+            if surface.can_place_entity({ name = 'big-worm-turret', position = pos, force = 'enemy' }) then
+                return { name = 'big-worm-turret', position = pos, force = 'enemy' }
             end
         end
         if random(1, 32) == 1 then
-            if surface.can_place_entity({name = 'medium-worm-turret', position = pos, force = 'enemy'}) then
-                return {name = 'medium-worm-turret', position = pos, force = 'enemy'}
+            if surface.can_place_entity({ name = 'medium-worm-turret', position = pos, force = 'enemy' }) then
+                return { name = 'medium-worm-turret', position = pos, force = 'enemy' }
             end
         end
         if random(1, 512) == 1 then
-            if surface.can_place_entity({name = 'behemoth-biter', position = pos, force = 'enemy'}) then
-                return {name = 'behemoth-biter', position = pos, force = 'enemy'}
+            if surface.can_place_entity({ name = 'behemoth-biter', position = pos, force = 'enemy' }) then
+                return { name = 'behemoth-biter', position = pos, force = 'enemy' }
             end
         end
         if random(1, 64) == 1 then
-            if surface.can_place_entity({name = 'big-biter', position = pos, force = 'enemy'}) then
-                return {name = 'big-biter', position = pos, force = 'enemy'}
+            if surface.can_place_entity({ name = 'big-biter', position = pos, force = 'enemy' }) then
+                return { name = 'big-biter', position = pos, force = 'enemy' }
             end
         end
     end
@@ -450,7 +450,7 @@ local function render_arena_chunk(event)
     local surface = event.surface
     local left_top = event.area.left_top
 
-    for _, entity in pairs(surface.find_entities_filtered({area = event.area})) do
+    for _, entity in pairs(surface.find_entities_filtered({ area = event.area })) do
         if entity and entity.valid then
             if entity.name ~= 'character' then
                 entity.destroy()
@@ -461,15 +461,15 @@ local function render_arena_chunk(event)
     local tiles = {}
     for x = 0, 31, 1 do
         for y = 0, 31, 1 do
-            local pos = {x = left_top.x + x, y = left_top.y + y}
+            local pos = { x = left_top.x + x, y = left_top.y + y }
             if pos.x > arena_size or pos.y > arena_size or pos.x < arena_size * -1 or pos.y < arena_size * -1 then
-                insert(tiles, {name = 'water', position = pos})
+                insert(tiles, { name = 'water', position = pos })
             else
                 local noise = get_noise('terrain', pos)
                 if noise > 0 then
-                    insert(tiles, {name = this.arena_layout_modifiers.arena_tile_1, position = pos})
+                    insert(tiles, { name = this.arena_layout_modifiers.arena_tile_1, position = pos })
                 else
-                    insert(tiles, {name = this.arena_layout_modifiers.arena_tile_2, position = pos})
+                    insert(tiles, { name = this.arena_layout_modifiers.arena_tile_2, position = pos })
                 end
                 local entity = get_arena_entity(surface, pos)
                 if entity then
@@ -483,18 +483,18 @@ end
 
 local function kill_idle_players()
     Core.iter_connected_players(
-        function(player)
+        function (player)
             if player.character then
                 if player.afk_time > 600 then
-                    local area = {{player.position.x - 1, player.position.y - 1}, {player.position.x + 1, player.position.y + 1}}
-                    local water_tile_count = player.surface.count_tiles_filtered({name = {'water', 'deepwater'}, area = area})
+                    local area = { { player.position.x - 1, player.position.y - 1 }, { player.position.x + 1, player.position.y + 1 } }
+                    local water_tile_count = player.surface.count_tiles_filtered({ name = { 'water', 'deepwater' }, area = area })
                     if water_tile_count and water_tile_count > 3 then
                         player.character.die()
-                        game.print(player.name .. ' drowned.', {r = 150, g = 150, b = 0})
+                        game.print(player.name .. ' drowned.', { r = 150, g = 150, b = 0 })
                     else
                         if player.afk_time > 9000 then
                             player.character.die()
-                            game.print(player.name .. ' was idle for too long.', {r = 150, g = 150, b = 0})
+                            game.print(player.name .. ' was idle for too long.', { r = 150, g = 150, b = 0 })
                         end
                     end
                 end
@@ -511,7 +511,7 @@ local function check_for_game_over()
     create_tank_battle_score_gui()
 
     Core.iter_connected_players(
-        function(player)
+        function (player)
             if player.character and player.driving then
                 alive_players = alive_players + 1
             end
@@ -524,7 +524,7 @@ local function check_for_game_over()
 
     local player
     Core.iter_connected_players(
-        function(player_amp)
+        function (player_amp)
             if player_amp.character and player_amp.driving then
                 player = player_amp
             end
@@ -537,13 +537,13 @@ local function check_for_game_over()
         else
             this.tank_battles_score[player.index] = this.tank_battles_score[player.index] + 1
         end
-        game.print(player.name .. ' has won the battle!', {r = 150, g = 150, b = 0})
+        game.print(player.name .. ' has won the battle!', { r = 150, g = 150, b = 0 })
         Server.to_discord_embed(player.name .. ' has won the battle!')
         create_tank_battle_score_gui()
     end
 
     if alive_players == 0 then
-        game.print('No players alive! Round ends in a draw!', {r = 150, g = 150, b = 0})
+        game.print('No players alive! Round ends in a draw!', { r = 150, g = 150, b = 0 })
         Server.to_discord_embed('No players alive! Round ends in a draw!')
     end
 
@@ -630,7 +630,7 @@ local function on_player_joined_game(event)
 
     local permissions_group = game.permissions.get_group('Spectator')
     permissions_group.add_player(player.name)
-    player.teleport({0, 0}, 'nauvis')
+    player.teleport({ 0, 0 }, 'nauvis')
 end
 
 local function on_player_driving_changed_state(event)
@@ -672,7 +672,7 @@ local function on_player_respawned(event)
     player.character.destroy()
     player.character = nil
 
-    player.print('You are now spectating.', {r = 0, g = 150, b = 150})
+    player.print('You are now spectating.', { r = 0, g = 150, b = 150 })
 end
 
 local function lobby()
@@ -680,7 +680,7 @@ local function lobby()
 
     if connected_players_count < 2 then
         Core.iter_connected_players(
-            function(player)
+            function (player)
                 create_gui(player)
                 local gui = player.gui.left.status_players
                 if gui and gui.valid then
@@ -692,7 +692,7 @@ local function lobby()
     end
 
     Core.iter_connected_players(
-        function(player)
+        function (player)
             local gui = player.gui.left.status_players
             if gui and gui.valid then
                 gui.visible = false
@@ -705,10 +705,10 @@ local function lobby()
     end
     if this.lobby_timer % 600 == 0 then
         if this.lobby_timer <= 0 then
-            game.print('Round has started!', {r = 0, g = 150, b = 150})
+            game.print('Round has started!', { r = 0, g = 150, b = 150 })
             Server.to_discord_embed('Round has started!')
         else
-            game.print('Round will begin in ' .. this.lobby_timer / 60 .. ' seconds.', {r = 0, g = 150, b = 150})
+            game.print('Round will begin in ' .. this.lobby_timer / 60 .. ' seconds.', { r = 0, g = 150, b = 150 })
             Server.to_discord_embed('Round will begin in ' .. this.lobby_timer / 60 .. ' seconds.')
         end
     end
@@ -769,9 +769,9 @@ local function on_player_died(event)
         end
     end
     Core.iter_connected_players(
-        function(target_player)
+        function (target_player)
             if target_player.name ~= player.name then
-                player.print(player.name .. ' was killed' .. str, {r = 0.99, g = 0.0, b = 0.0})
+                player.print(player.name .. ' was killed' .. str, { r = 0.99, g = 0.0, b = 0.0 })
             end
         end
     )
@@ -793,7 +793,7 @@ local function on_console_chat(event)
     color.a = 1
 
     Core.iter_connected_players(
-        function(target_player)
+        function (target_player)
             if target_player.name ~= player.name then
                 target_player.print(player.name .. ': ' .. event.message, color)
             end
@@ -802,7 +802,7 @@ local function on_console_chat(event)
 end
 
 Event.on_init(
-    function()
+    function ()
         local surface = game.get_surface('nauvis')
         local mgs = surface.map_gen_settings
         mgs.width = 400
@@ -832,14 +832,14 @@ Event.on_init(
         T.sub_caption = 'a playground made for tanks'
         T.text =
             table.concat(
-            {
-                'The opponent wants your tank destroyed! Destroy their tank to win the round!\n',
-                '\n',
-                "The tank doors has oddly malfunctioned and you're locked inside.\n",
-                '\n',
-                'Destroying wooden chests seems to grant loot.\n'
-            }
-        )
+                {
+                    'The opponent wants your tank destroyed! Destroy their tank to win the round!\n',
+                    '\n',
+                    "The tank doors has oddly malfunctioned and you're locked inside.\n",
+                    '\n',
+                    'Destroying wooden chests seems to grant loot.\n'
+                }
+            )
     end
 )
 Event.add(defines.events.on_tick, on_tick)

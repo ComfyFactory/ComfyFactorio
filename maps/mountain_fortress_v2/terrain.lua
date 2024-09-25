@@ -1012,8 +1012,8 @@ local function rock_chunk(surface, left_top)
     end
 
     for _, entity in pairs(entities) do
-        if entity_functions[game.entity_prototypes[entity.name].type] then
-            entity_functions[game.entity_prototypes[entity.name].type](surface, entity)
+        if entity_functions[prototypes.entity[entity.name].type] then
+            entity_functions[prototypes.entity[entity.name].type](surface, entity)
         else
             if surface.can_place_entity(entity) then
                 surface.create_entity(entity)

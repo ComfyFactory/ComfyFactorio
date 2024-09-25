@@ -856,7 +856,7 @@ local function update_gui()
         local btn
 
         for item_name, item_count in pairs(items) do
-            local localized_name = game.item_prototypes[item_name].localised_name[1]
+            local localized_name = prototypes.item[item_name].localised_name[1]
             if container.requested_item and tbl[container.requested_item] then
                 tbl[container.requested_item].number = item_count
             else

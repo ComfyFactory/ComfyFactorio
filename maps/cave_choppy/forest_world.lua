@@ -439,7 +439,7 @@ local function on_player_joined_game()
         ['rock-huge'] = { 'uranium-ore' }
     }
 
-    if game.item_prototypes['angels-ore1'] then
+    if prototypes.item['angels-ore1'] then
         storage.entity_yield['tree-01'] = { 'angels-ore1', 'angels-ore2' }
         storage.entity_yield['tree-02-red'] = { 'angels-ore5', 'angels-ore6' }
         storage.entity_yield['tree-04'] = { 'coal' }
@@ -448,7 +448,7 @@ local function on_player_joined_game()
         game.map_settings.pollution.ageing = 0
     end
 
-    if game.item_prototypes['thorium-ore'] then
+    if prototypes.item['thorium-ore'] then
         storage.entity_yield['rock-big'] = { 'uranium-ore', 'thorium-ore' }
         storage.entity_yield['rock-huge'] = { 'uranium-ore', 'thorium-ore' }
     end

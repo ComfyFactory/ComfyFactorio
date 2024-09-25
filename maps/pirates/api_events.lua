@@ -1350,7 +1350,7 @@ local function event_on_research_finished(event)
 		-- using a localised string means we have to write this out (recall that "" signals concatenation)
 		memory.force.print({ "", '>> ', { 'pirates.research_notification', research.localised_name } }, CoreData.colors.notify_force_light)
 
-		Server.to_discord_embed_raw({ '', '[' .. memory.name .. '] ', { 'pirates.research_notification', game.technology_prototypes[research.name].localised_name } }, true)
+		Server.to_discord_embed_raw({ '', '[' .. memory.name .. '] ', { 'pirates.research_notification', prototypes.technology[research.name].localised_name } }, true)
 	end
 
 	for _, e in ipairs(research.effects) do

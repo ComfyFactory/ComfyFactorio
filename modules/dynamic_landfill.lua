@@ -16,16 +16,16 @@ local water_tile_whitelist = {
 local spiral_coords = {}
 for r = 1, 96, 1 do
     for x = r * -1, r - 1, 1 do
-        table_insert(spiral_coords, {x = x, y = r * -1})
+        table_insert(spiral_coords, { x = x, y = r * -1 })
     end
     for y = r * -1, r - 1, 1 do
-        table_insert(spiral_coords, {x = r, y = y})
+        table_insert(spiral_coords, { x = r, y = y })
     end
     for x = r, r * -1 + 1, -1 do
-        table_insert(spiral_coords, {x = x, y = r})
+        table_insert(spiral_coords, { x = x, y = r })
     end
     for y = r, r * -1 + 1, -1 do
-        table_insert(spiral_coords, {x = r * -1, y = y})
+        table_insert(spiral_coords, { x = r * -1, y = y })
     end
 end
 
@@ -51,14 +51,14 @@ local function regenerate_decoratives(surface, position)
     if not chunk then
         return
     end
-    surface.destroy_decoratives({area = {{chunk.x * 32, chunk.y * 32}, {chunk.x * 32 + 32, chunk.y * 32 + 32}}})
+    surface.destroy_decoratives({ area = { { chunk.x * 32, chunk.y * 32 }, { chunk.x * 32 + 32, chunk.y * 32 + 32 } } })
     local decorative_names = {}
-    for k, v in pairs(game.decorative_prototypes) do
+    for k, v in pairs(prototypes.decorative) do
         if v.autoplace_specification then
             decorative_names[#decorative_names + 1] = k
         end
     end
-    surface.regenerate_decorative(decorative_names, {chunk})
+    surface.regenerate_decorative(decorative_names, { chunk })
 end
 
 local function is_this_a_valid_source_tile(pos, tiles)
@@ -72,7 +72,7 @@ end
 
 local function place_fitting_tile(position, surface, tiles_placed)
     for _, coord in pairs(spiral_coords) do
-        local tile = surface.get_tile({position.x + coord.x, position.y + coord.y})
+        local tile = surface.get_tile({ position.x + coord.x, position.y + coord.y })
         if not tile.collides_with('player-layer') then
             local valid_source_tile = is_this_a_valid_source_tile(tile.position, tiles_placed)
             if tile.name == 'out-of-map' then
@@ -81,9 +81,9 @@ local function place_fitting_tile(position, surface, tiles_placed)
 
             if valid_source_tile then
                 if tile.hidden_tile then
-                    surface.set_tiles({{name = tile.hidden_tile, position = position}}, true)
+                    surface.set_tiles({ { name = tile.hidden_tile, position = position } }, true)
                 else
-                    surface.set_tiles({{name = tile.name, position = position}}, true)
+                    surface.set_tiles({ { name = tile.name, position = position } }, true)
                 end
                 return
             end

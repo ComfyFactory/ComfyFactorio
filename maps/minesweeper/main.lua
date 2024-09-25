@@ -494,7 +494,7 @@ local function deny_building(event)
         return
     end
 
-    if not game.item_prototypes[entity.name] then
+    if not prototypes.item[entity.name] then
         return
     end
     if not Functions.is_minefield_tile(entity.position, true) then

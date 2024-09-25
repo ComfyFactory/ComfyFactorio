@@ -201,7 +201,7 @@ function Public.create_cabin_surface()
 				filter = 'coal'
 			elseif splitter.type <= 6 then
 				priority = 'right'
-				filter = game.item_prototypes[CoreData.cost_items[splitter.type].name]
+				filter = prototypes.item[CoreData.cost_items[splitter.type].name]
 			elseif splitter.type == 7 then
 				priority = 'left'
 			elseif splitter.type == 8 then

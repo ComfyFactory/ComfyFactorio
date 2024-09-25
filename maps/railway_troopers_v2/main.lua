@@ -134,7 +134,7 @@ local function map_reset()
         ['gun'] = true,
         ['capsule'] = true
     }
-    for _, recipe in pairs(game.recipe_prototypes) do
+    for _, recipe in pairs(prototypes.recipe) do
         if types_to_disable[recipe.subgroup.name] then
             force.set_hand_crafting_disabled_for_recipe(recipe.name, true)
         end

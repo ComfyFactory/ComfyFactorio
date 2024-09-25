@@ -8,7 +8,7 @@ local stone_ratio = 0.25      --If math.random() is between diversity and this, 
 --Build a table of potential ores to pick from.  Uranium is exempt from popping up randomly.
 local function init()
     storage.diverse_ores = {}
-    for k, v in pairs(game.entity_prototypes) do
+    for k, v in pairs(prototypes.entity) do
         if v.type == 'resource' and v.resource_category == 'basic-solid' and v.mineable_properties.required_fluid == nil then
             table.insert(storage.diverse_ores, v.name)
         end

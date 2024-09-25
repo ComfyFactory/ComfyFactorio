@@ -182,7 +182,7 @@ local function redraw_inventory(gui, source, target, caption, panel_type)
     gui.clear()
 
     local items_table = gui.add({ type = 'table', column_count = 11 })
-    local types = game.item_prototypes
+    local types = prototypes.item
 
     local screen = source.gui.screen
 

@@ -39,7 +39,7 @@ local Public = {}
 
 Global.register(
     this,
-    function(tbl)
+    function (tbl)
         this = tbl
     end
 )
@@ -98,15 +98,15 @@ local function item(item_name, item_count, player, storage)
     local stack_size = this.stack_size[player.index]
     local item_stack
     if stack_size then
-        item_stack = game.item_prototypes[item_name].stack_size * stack_size
+        item_stack = prototypes.item[item_name].stack_size * stack_size
     else
-        item_stack = game.item_prototypes[item_name].stack_size
+        item_stack = prototypes.item[item_name].stack_size
     end
 
     local diff = item_count - item_stack
 
     if diff > 0 then
-        local count = player.remove({name = item_name, count = diff})
+        local count = player.remove({ name = item_name, count = diff })
         if not storage[item_name] then
             storage[item_name] = count
         else
@@ -117,10 +117,10 @@ local function item(item_name, item_count, player, storage)
             goto continue
         end
         if storage[item_name] > (diff * -1) then
-            local inserted = player.insert({name = item_name, count = (diff * -1)})
+            local inserted = player.insert({ name = item_name, count = (diff * -1) })
             storage[item_name] = storage[item_name] - inserted
         else
-            player.insert({name = item_name, count = storage[item_name]})
+            player.insert({ name = item_name, count = storage[item_name] })
             storage[item_name] = 0
         end
     end
@@ -167,25 +167,25 @@ local function draw_main_frame(player, target, chest_id)
     local p = target or player
     local frame =
         player.gui.screen.add {
-        type = 'frame',
-        caption = p.name .. '´s private portable stash',
-        direction = 'vertical',
-        name = main_frame_name
-    }
+            type = 'frame',
+            caption = p.name .. '´s private portable stash',
+            direction = 'vertical',
+            name = main_frame_name
+        }
     frame.auto_center = true
 
     local data = {}
 
-    local controls = frame.add {type = 'flow', direction = 'horizontal'}
-    local items = frame.add {type = 'flow', direction = 'vertical'}
+    local controls = frame.add { type = 'flow', direction = 'horizontal' }
+    local items = frame.add { type = 'flow', direction = 'vertical' }
 
-    local tbl = controls.add {type = 'table', column_count = 1}
+    local tbl = controls.add { type = 'table', column_count = 1 }
     local btn =
         tbl.add {
-        type = 'sprite-button',
-        tooltip = '[color=blue]Info![/color]\nYou can easily remove an item by left/right-clicking it.\n\nItems selected in the table below will remove all stacks except one from the player inventory.\nIf the stack-size is bigger in the personal stash than the players inventory stack then the players inventory will automatically refill from the personal stash.\n\n[color=red]Usage[/color]\nPressing the following keys will do the following actions:\nCTRL: Retrieves all stacks from clicked item\nSHIFT:Retrieves a stack from clicked item.\nStack-Size slider will always ensure that you have <x> amounts of stacks in your inventory.\n\n[color=red]Deleting[/color]\nDelete Mode: Will delete the clicked item instantly.',
-        sprite = 'utility/questionmark'
-    }
+            type = 'sprite-button',
+            tooltip = '[color=blue]Info![/color]\nYou can easily remove an item by left/right-clicking it.\n\nItems selected in the table below will remove all stacks except one from the player inventory.\nIf the stack-size is bigger in the personal stash than the players inventory stack then the players inventory will automatically refill from the personal stash.\n\n[color=red]Usage[/color]\nPressing the following keys will do the following actions:\nCTRL: Retrieves all stacks from clicked item\nSHIFT:Retrieves a stack from clicked item.\nStack-Size slider will always ensure that you have <x> amounts of stacks in your inventory.\n\n[color=red]Deleting[/color]\nDelete Mode: Will delete the clicked item instantly.',
+            sprite = 'utility/questionmark'
+        }
     btn.style.height = 20
     btn.style.width = 20
     btn.enabled = false
@@ -204,40 +204,40 @@ local function draw_main_frame(player, target, chest_id)
 
     local text =
         tbl.add {
-        type = 'label',
-        caption = format('Stores unlimited quantity of items (up to ' .. amount_and_types .. ' types).\nRead the tooltip by hovering the question-mark above!')
-    }
+            type = 'label',
+            caption = format('Stores unlimited quantity of items (up to ' .. amount_and_types .. ' types).\nRead the tooltip by hovering the question-mark above!')
+        }
     text.style.single_line = false
 
-    local tbl_2 = tbl.add {type = 'table', column_count = 4}
+    local tbl_2 = tbl.add { type = 'table', column_count = 4 }
     local stack_size = this.stack_size[player.index]
 
-    local stack_value = tbl_2.add({type = 'label', caption = 'Stack Size: ' .. stack_size .. ' '})
+    local stack_value = tbl_2.add({ type = 'label', caption = 'Stack Size: ' .. stack_size .. ' ' })
     stack_value.style.font = 'default-bold'
     data.stack_value = stack_value
 
     local slider =
         tbl_2.add(
-        {
-            type = 'slider',
-            minimum_value = 1,
-            maximum_value = 10,
-            name = stack_slider_name,
-            value = stack_size
-        }
-    )
+            {
+                type = 'slider',
+                minimum_value = 1,
+                maximum_value = 10,
+                name = stack_slider_name,
+                value = stack_size
+            }
+        )
     data.slider = slider
     slider.style.width = 115
     Gui.set_data(slider, data)
 
-    local delete_mode = tbl_2.add({type = 'label', caption = '  Delete Mode: '})
+    local delete_mode = tbl_2.add({ type = 'label', caption = '  Delete Mode: ' })
     delete_mode.style.font = 'default-bold'
-    local checkbox = tbl_2.add({type = 'checkbox', name = delete_mode_name, state = false})
+    local checkbox = tbl_2.add({ type = 'checkbox', name = delete_mode_name, state = false })
     data.checkbox = checkbox
 
     Gui.set_data(checkbox, data)
 
-    tbl.add({type = 'line'})
+    tbl.add({ type = 'line' })
 
     player.opened = frame
     if target and target.valid then
@@ -281,7 +281,7 @@ local function update_gui()
         end
         frame.clear()
 
-        local tbl = frame.add {type = 'table', column_count = 10, name = 'personal_inventory'}
+        local tbl = frame.add { type = 'table', column_count = 10, name = 'personal_inventory' }
         local total = 0
         local items = {}
 
@@ -302,12 +302,12 @@ local function update_gui()
         for item_name, item_count in pairs(items) do
             btn =
                 tbl.add {
-                type = 'sprite-button',
-                sprite = 'item/' .. item_name,
-                style = 'slot_button',
-                number = item_count,
-                name = item_name
-            }
+                    type = 'sprite-button',
+                    sprite = 'item/' .. item_name,
+                    style = 'slot_button',
+                    number = item_count,
+                    name = item_name
+                }
             btn.enabled = true
             btn.style.height = size
             btn.style.width = size
@@ -318,7 +318,7 @@ local function update_gui()
         end
 
         while total < this.total_slots[player.index] do
-            local btns = tbl.add {type = 'choose-elem-button', style = 'slot_button', elem_type = 'item'}
+            local btns = tbl.add { type = 'choose-elem-button', style = 'slot_button', elem_type = 'item' }
             btns.enabled = true
             btns.style.height = size
             btns.style.width = size
@@ -406,7 +406,7 @@ local function gui_click(event)
         if not count then
             return
         end
-        local inserted = player.insert {name = name, count = count}
+        local inserted = player.insert { name = name, count = count }
         if not inserted then
             return
         end
@@ -420,7 +420,7 @@ local function gui_click(event)
         end
     elseif shift then
         local count = storage[name]
-        local stack = game.item_prototypes[name].stack_size
+        local stack = prototypes.item[name].stack_size
         if not count then
             return
         end
@@ -428,10 +428,10 @@ local function gui_click(event)
             return
         end
         if count > stack then
-            local inserted = player.insert {name = name, count = stack}
+            local inserted = player.insert { name = name, count = stack }
             storage[name] = storage[name] - inserted
         else
-            player.insert {name = name, count = count}
+            player.insert { name = name, count = count }
             storage[name] = nil
         end
         if this.inf_gui[player.index] then
@@ -568,7 +568,7 @@ end
 
 Gui.on_click(
     main_button_name,
-    function(event)
+    function (event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Portable Chest Main Button')
         if is_spamming then
             return
@@ -590,7 +590,7 @@ Gui.on_click(
 
 Gui.on_value_changed(
     stack_slider_name,
-    function(event)
+    function (event)
         local player = event.player
         local element = event.element
 
@@ -617,7 +617,7 @@ Gui.on_value_changed(
 
 Gui.on_checked_state_changed(
     delete_mode_name,
-    function(event)
+    function (event)
         local player = event.player
         local element = event.element
 
@@ -639,7 +639,7 @@ Gui.on_checked_state_changed(
 commands.add_command(
     'open_stash',
     'Opens a players private stash!',
-    function(cmd)
+    function (cmd)
         local player = game.player
 
         if not validate_player(player) then
