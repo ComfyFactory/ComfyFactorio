@@ -12,7 +12,7 @@ local this = {
 
 Global.register(
     this,
-    function(t)
+    function (t)
         this = t
     end
 )
@@ -52,29 +52,29 @@ local sections = {
 
 local check_bottom_buttons_token =
     Task.register(
-    function(event)
-        local player_index = event.player_index
-        local player = game.get_player(player_index)
-        if not player or not player.valid then
-            return
-        end
+        function (event)
+            local player_index = event.player_index
+            local player = game.get_player(player_index)
+            if not player or not player.valid then
+                return
+            end
 
-        local player_data, storage_data = get_player_data(player)
-        if not player_data or not storage_data or not next(storage_data) then
-            destroy_frame(player)
-            remove_player(player.index)
-            return
+            local player_data, storage_data = get_player_data(player)
+            if not player_data or not storage_data or not next(storage_data) then
+                destroy_frame(player)
+                remove_player(player.index)
+                return
+            end
         end
-    end
-)
+    )
 
-remove_player = function(index)
+remove_player = function (index)
     this.players[index] = nil
     this.storage[index] = nil
     this.bottom_quickbar_button[index] = nil
 end
 
-get_player_data = function(player, remove_user_data)
+get_player_data = function (player, remove_user_data)
     if remove_user_data then
         this.players[player.index] = nil
         this.storage[player.index] = nil
@@ -106,13 +106,13 @@ local function refresh_inner_frames(player)
 
     local main_frame = player_data.frame
 
-    local horizontal_flow = main_frame.add {type = 'flow', direction = 'horizontal'}
+    local horizontal_flow = main_frame.add { type = 'flow', direction = 'horizontal' }
     horizontal_flow.style.horizontal_spacing = 0
 
     for row_index, row_index_data in pairs(storage_data) do
         if row_index_data and type(row_index_data) == 'table' then
             local section_row_index = player_data.section[row_index]
-            local vertical_flow = horizontal_flow.add {type = 'flow', direction = 'vertical'}
+            local vertical_flow = horizontal_flow.add { type = 'flow', direction = 'vertical' }
             vertical_flow.style.vertical_spacing = 0
 
             if not section_row_index then
@@ -131,12 +131,12 @@ local function refresh_inner_frames(player)
 
                 section_row_index[row_selection] =
                     section_row_index.inner_frame.add {
-                    type = 'sprite-button',
-                    sprite = row_selection_data.sprite,
-                    name = row_selection_data.name,
-                    tooltip = row_selection_data.tooltip or '',
-                    style = 'quick_bar_page_button'
-                }
+                        type = 'sprite-button',
+                        sprite = row_selection_data.sprite,
+                        name = row_selection_data.name,
+                        tooltip = row_selection_data.tooltip or '',
+                        style = 'quick_bar_page_button'
+                    }
             end
         end
     end
@@ -144,16 +144,16 @@ end
 
 local refresh_inner_frames_token =
     Task.register(
-    function(event)
-        local player_index = event.player_index
-        local player = game.get_player(player_index)
-        if not player or not player.valid then
-            return
-        end
+        function (event)
+            local player_index = event.player_index
+            local player = game.get_player(player_index)
+            if not player or not player.valid then
+                return
+            end
 
-        refresh_inner_frames(player)
-    end
-)
+            refresh_inner_frames(player)
+        end
+    )
 
 ---Adds a new inner frame to the bottom frame
 -- local BottomFrame = require 'utils.gui.bottom_frame'
@@ -217,10 +217,10 @@ local function add_inner_frame(data)
     player_data.row_selection = player_data.row_selection + 1
     player_data.row_selection_added = player_data.row_selection_added + 1
     player_data.row_selection = player_data.row_selection > 2 and 1 or player_data.row_selection
-    Task.priority_delay(2, refresh_inner_frames_token, {player_index = player.index})
+    Task.priority_delay(2, refresh_inner_frames_token, { player_index = player.index })
 end
 
-destroy_frame = function(player)
+destroy_frame = function (player)
     local gui = player.gui
     local frame = gui.screen[main_frame_name]
     if frame and frame.valid then
@@ -245,10 +245,10 @@ local function create_frame(player, alignment, location, data)
 
     frame =
         player.gui.screen.add {
-        type = 'frame',
-        name = main_frame_name,
-        direction = alignment
-    }
+            type = 'frame',
+            name = main_frame_name,
+            direction = alignment
+        }
 
     if data.visible ~= nil then
         if data.visible then
@@ -266,9 +266,9 @@ local function create_frame(player, alignment, location, data)
 
     local inner_frame =
         frame.add {
-        type = 'frame',
-        direction = alignment
-    }
+            type = 'frame',
+            direction = alignment
+        }
     inner_frame.style = 'quick_bar_inner_panel'
 
     frame.location = location
@@ -288,12 +288,12 @@ local function create_frame(player, alignment, location, data)
     data.section_data = data.section_data or {}
     data.alignment = alignment
 
-    Task.priority_delay(5, check_bottom_buttons_token, {player_index = player.index})
+    Task.priority_delay(5, check_bottom_buttons_token, { player_index = player.index })
 
     return frame
 end
 
-set_location = function(player, state)
+set_location = function (player, state)
     local data = get_player_data(player)
     local alignment = 'vertical'
 
@@ -328,7 +328,7 @@ set_location = function(player, state)
             alignment = 'horizontal'
         else
             location = {
-                x = (resolution.width / 2) - ((54 + -528) * scale),
+                x = (resolution.width / 2) - ((54 + -689) * scale),
                 y = (resolution.height - (96 * scale))
             }
         end
@@ -340,7 +340,7 @@ set_location = function(player, state)
         }
     end
 
-    Event.raise(Public.events.bottom_quickbar_location_changed, {player_index = player.index, data = data})
+    Event.raise(Public.events.bottom_quickbar_location_changed, { player_index = player.index, data = data })
 
     data.state = state
     create_frame(player, alignment, location, data)
@@ -459,7 +459,7 @@ end
 
 Event.add(
     defines.events.on_player_joined_game,
-    function(event)
+    function (event)
         if this.activate_custom_buttons then
             local player = game.get_player(event.player_index)
             local data = get_player_data(player)
@@ -470,7 +470,7 @@ Event.add(
 
 Event.add(
     defines.events.on_player_display_resolution_changed,
-    function(event)
+    function (event)
         if this.activate_custom_buttons then
             local player = game.get_player(event.player_index)
             local data = get_player_data(player)
@@ -481,7 +481,7 @@ Event.add(
 
 Event.add(
     defines.events.on_player_display_scale_changed,
-    function(event)
+    function (event)
         local player = game.get_player(event.player_index)
         if this.activate_custom_buttons then
             local data = get_player_data(player)
@@ -492,7 +492,7 @@ Event.add(
 
 Event.add(
     defines.events.on_pre_player_left_game,
-    function(event)
+    function (event)
         local player = game.get_player(event.player_index)
         destroy_frame(player)
         if this.activate_custom_buttons then
@@ -503,7 +503,7 @@ Event.add(
 
 Event.add(
     defines.events.on_player_left_game,
-    function(event)
+    function (event)
         local player = game.get_player(event.player_index)
         destroy_frame(player)
         if this.activate_custom_buttons then
@@ -514,7 +514,7 @@ Event.add(
 
 Event.add(
     defines.events.on_pre_player_died,
-    function(event)
+    function (event)
         if this.activate_custom_buttons then
             local player = game.get_player(event.player_index)
             destroy_frame(player)
@@ -524,7 +524,7 @@ Event.add(
 
 Event.add(
     defines.events.on_player_respawned,
-    function(event)
+    function (event)
         if this.activate_custom_buttons then
             local player = game.get_player(event.player_index)
             local data = get_player_data(player)
@@ -535,14 +535,14 @@ Event.add(
 
 Event.add(
     defines.events.on_player_removed,
-    function(event)
+    function (event)
         remove_player(event.player_index)
     end
 )
 
 Event.add(
     Public.events.bottom_quickbar_respawn_raise,
-    function(event)
+    function (event)
         if not event or not event.player_index then
             return
         end
@@ -557,7 +557,7 @@ Event.add(
 
 Event.add(
     Public.events.bottom_quickbar_location_changed,
-    function(event)
+    function (event)
         if not event or not event.player_index then
             return
         end

@@ -139,7 +139,7 @@ local function on_entity_died(event)
         end
         if not Public.get('final_battle') then
             if entities_that_earn_coins[cause.name] then
-                event.entity.surface.spill_item_stack(cause.position, { name = 'coin', count = coin_count }, true)
+                event.entity.surface.spill_item_stack({ position = cause.position, stack = { name = 'coin', count = coin_count }, enable_looted = true })
                 reward_has_been_given = true
             end
         end
@@ -150,7 +150,7 @@ local function on_entity_died(event)
     end
 
     if reward_has_been_given == false then
-        event.entity.surface.spill_item_stack(event.entity.position, { name = 'coin', count = coin_count }, true)
+        event.entity.surface.spill_item_stack({ position = event.entity.position, stack = { name = 'coin', count = coin_count }, enable_looted = true })
     end
 end
 

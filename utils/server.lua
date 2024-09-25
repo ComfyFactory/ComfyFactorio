@@ -106,7 +106,7 @@ Public.raw_print = raw_print
 local function output_data(primary, secondary)
     local secs = server_time.secs
     if secs == nil then
-        return false
+        return raw_print(primary .. (secondary or ''))
     end
 
     secondary = type(secondary) == 'table' and '' or secondary

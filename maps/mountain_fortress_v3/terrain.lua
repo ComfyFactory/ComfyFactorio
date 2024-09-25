@@ -71,14 +71,14 @@ local tree_raffle = {
 local size_of_tree_raffle = #tree_raffle
 
 local scrap_entities = {
-    'medium-ship-wreck',
-    'small-ship-wreck',
-    'medium-ship-wreck',
-    'small-ship-wreck',
-    'medium-ship-wreck',
-    'small-ship-wreck',
-    'medium-ship-wreck',
-    'small-ship-wreck'
+    'crash-site-spaceship-wreck-small-1',
+    'crash-site-spaceship-wreck-small-6',
+    'crash-site-spaceship-wreck-small-1',
+    'crash-site-spaceship-wreck-small-6',
+    'crash-site-spaceship-wreck-small-1',
+    'crash-site-spaceship-wreck-small-6',
+    'crash-site-spaceship-wreck-small-1',
+    'crash-site-spaceship-wreck-small-6'
 }
 
 local scrap_entities_index = #scrap_entities
@@ -2814,6 +2814,18 @@ local function border_chunk(p, data)
     local tiles = data.tiles
     local surface = data.surface
 
+    local game_decoratives = prototypes.decorative
+    local dec_tbl = {}
+    local taken = 0
+
+    for _, decorative in pairs(game_decoratives) do
+        taken = taken + 1
+        dec_tbl[#dec_tbl + 1] = decorative.name
+        if taken > 4 then
+            break
+        end
+    end
+
     local pos = p
 
     if data.reversed then
@@ -2850,26 +2862,15 @@ local function border_chunk(p, data)
             }
         end
 
-        if random(1, abs(pos.y) + 3) == 1 then
-            decoratives[#decoratives + 1] = {
-                name = 'small-rock',
-                position = pos,
-                amount = random(1, 32)
-            }
-        end
-        if random(1, abs(pos.y) + 2) == 1 then
-            decoratives[#decoratives + 1] = {
-                name = 'tiny-rock',
-                position = pos,
-                amount = random(1, 32)
-            }
-        end
-        if random(1, abs(pos.y) + 1) == 1 then
-            decoratives[#decoratives + 1] = {
-                name = 'tiny-rock-cluster',
-                position = pos,
-                amount = random(1, 32)
-            }
+
+        for _, decorative in pairs(dec_tbl) do
+            if random(1, abs(pos.y) + 3) == 1 then
+                decoratives[#decoratives + 1] = {
+                    name = decorative,
+                    position = pos,
+                    amount = random(1, 32)
+                }
+            end
         end
     end
 end

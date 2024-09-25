@@ -718,8 +718,8 @@ local biter_attack_wave = function ()
             unit_groups[i] = surface.create_unit_group({ position = { x = x_raffle[i], y = y_raffle[i] } })
             local unit_group = unit_groups[i]
             if unit_group and unit_group.valid then
-                if not this.unit_groups[unit_group.group_number] then
-                    this.unit_groups[unit_group.group_number] = unit_group
+                if not this.unit_groups[unit_groupunique_id] then
+                    this.unit_groups[unit_groupunique_id] = unit_group
                 end
                 Task.set_timeout_in_ticks(i, spawn_biters_token, { attack_wave_threat = this.attack_wave_threat, unit_group = unit_group, surface = surface, biter_pool = biter_pool })
             end
@@ -729,8 +729,8 @@ local biter_attack_wave = function ()
             unit_groups[i] = surface.create_unit_group({ position = { x = x_raffle[i], y = y_raffle[i] } })
             local unit_group = unit_groups[i]
             if unit_group and unit_group.valid then
-                if not this.unit_groups[unit_group.group_number] then
-                    this.unit_groups[unit_group.group_number] = unit_group
+                if not this.unit_groups[unit_groupunique_id] then
+                    this.unit_groups[unit_groupunique_id] = unit_group
                 end
                 Task.set_timeout_in_ticks(i, spawn_biters_token, { attack_wave_threat = this.attack_wave_threat, unit_group = unit_group, surface = surface, biter_pool = biter_pool })
             end

@@ -33,18 +33,6 @@ local main_frame_name = Public.main_frame_name
 local spell_gui_frame_name = Public.spell_gui_frame_name
 local cooldown_indicator_name = Public.cooldown_indicator_name
 
-local travelings = {
-    'bzzZZrrt',
-    'WEEEeeeeeee',
-    'out of my way son',
-    'on my way',
-    'i need to leave',
-    'comfylatron seeking target',
-    'gotta go fast',
-    'gas gas gas',
-    'comfylatron coming through'
-}
-
 local restore_crafting_boost_token =
     Token.register(
         function (event)
@@ -55,34 +43,6 @@ local restore_crafting_boost_token =
             end
 
             Public.restore_crafting_boost(player)
-        end
-    )
-
-local desync =
-    Token.register(
-        function (data)
-            local entity = data.entity
-            if not entity or not entity.valid then
-                return
-            end
-            local surface = data.surface
-            local fake_shooter = surface.create_entity({ name = 'character', position = entity.position, force = 'enemy' })
-            for _ = 1, 3 do
-                surface.create_entity(
-                    {
-                        name = 'explosive-rocket',
-                        position = entity.position,
-                        force = 'enemy',
-                        speed = 1,
-                        max_range = 1,
-                        target = entity,
-                        source = fake_shooter
-                    }
-                )
-            end
-            if fake_shooter and fake_shooter.valid then
-                fake_shooter.destroy()
-            end
         end
     )
 
@@ -320,58 +280,6 @@ function Public.repair_aoe(player, position)
         end
     end
     return count
-end
-
-function Public.suicidal_comfylatron(pos, surface)
-    local str = travelings[random(1, #travelings)]
-    local symbols = { '', '!', '!', '!!', '..' }
-    str = str .. symbols[random(1, #symbols)]
-    local text = str
-    local e =
-        surface.create_entity(
-            {
-                name = 'compilatron',
-                position = { x = pos.x, y = pos.y + 2 },
-                force = 'neutral'
-            }
-        )
-    surface.create_entity(
-        {
-            name = 'compi-speech-bubble',
-            position = e.position,
-            source = e,
-            text = text,
-            lifetime = 30
-        }
-    )
-    local nearest_player_unit = surface.find_nearest_enemy({ position = e.position, max_distance = 512, force = 'player' })
-
-    if nearest_player_unit and nearest_player_unit.active and nearest_player_unit.force.name ~= 'player' then
-        e.set_command(
-            {
-                type = defines.command.attack,
-                target = nearest_player_unit,
-                distraction = defines.distraction.none
-            }
-        )
-        local data = {
-            entity = e,
-            surface = surface
-        }
-        Task.set_timeout_in_ticks(600, desync, data)
-    else
-        e.surface.create_entity({ name = 'medium-explosion', position = e.position })
-        e.surface.create_entity(
-            {
-                name = 'compi-speech-bubble',
-                position = e.position,
-                text = 'DeSyyNC - no target found!',
-                source = e,
-                lifetime = 30
-            }
-        )
-        e.die()
-    end
 end
 
 function Public.validate_player(player)

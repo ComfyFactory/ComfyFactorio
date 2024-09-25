@@ -1023,37 +1023,6 @@ spells[#spells + 1] = {
     end
 }
 spells[#spells + 1] = {
-    name = {'spells.comfylatron'},
-    entityName = 'suicidal_comfylatron',
-    target = false,
-    amount = 4,
-    damage = false,
-    range = 30,
-    force = 'player',
-    level = 60,
-    type = 'special',
-    mana_cost = 150,
-    enforce_cooldown = true,
-    cooldown = 150,
-    enabled = true,
-    log_spell = true,
-    sprite = 'entity/compilatron',
-    tooltip = 'Spawns a suicide comfylatron',
-    callback = function(data)
-        local self = data.self
-        local player = data.player
-        Public.register_cooldown_for_spell(player)
-
-        local position = data.position
-        local surface = data.surface
-
-        Public.suicidal_comfylatron(position, surface)
-        Public.cast_spell(player)
-        Public.remove_mana(player, self.mana_cost)
-        return true
-    end
-}
-spells[#spells + 1] = {
     name = {'spells.distractor'},
     entityName = 'distractor-capsule',
     target = true,

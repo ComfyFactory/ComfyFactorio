@@ -70,8 +70,8 @@ function Public.fleeing_biteys(entity, cause)
         local unit_group = unit.unit_group
         if unit_group then
             if unit_group.valid then
-                if not unit_groups[unit_group.group_number] then
-                    unit_groups[unit_group.group_number] = unit_group
+                if not unit_groups[unit_groupunique_id] then
+                    unit_groups[unit_groupunique_id] = unit_group
                 end
             end
         else

@@ -126,6 +126,7 @@ Commands.new('mtn_reverse_map', 'Usable only for admins - reverses the map!')
             Public.set_stateful_settings('reversed', not reversed)
             Discord.send_notification_raw(scenario_name, player.name .. ' reversed the map.')
             Public.reset_map()
+            log(serpent.block('resetting map'))
             game.print(mapkeeper .. player.name .. ', has reverse the map and reset the game!',
                 { r = 0.98, g = 0.66, b = 0.22 })
             player.print('Map reversed.')

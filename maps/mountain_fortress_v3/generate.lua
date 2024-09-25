@@ -38,12 +38,12 @@ local function get_position(data)
         data.xv = data.xv + 1
     end
 
-    data.position = {x = (data.top_x + data.xv), y = (data.top_y + data.yv)}
+    data.position = { x = (data.top_x + data.xv), y = (data.top_y + data.yv) }
 end
 
 local function do_tile_inner(tiles, tile, pos)
     if type(tile) == 'string' then
-        tiles[#tiles + 1] = {name = tile, position = pos}
+        tiles[#tiles + 1] = { name = tile, position = pos }
     end
 end
 
@@ -56,7 +56,7 @@ local function do_row(row, data, shape)
 
     for x = top_x, top_x + 31 do
         data.x = x
-        local pos = {data.x, data.y}
+        local pos = { data.x, data.y }
 
         get_position(data)
 
@@ -68,7 +68,7 @@ local function do_row(row, data, shape)
 
             local hidden_tile = tile.hidden_tile
             if hidden_tile then
-                data.hidden_tiles[#data.hidden_tiles + 1] = {tile = hidden_tile, position = pos}
+                data.hidden_tiles[#data.hidden_tiles + 1] = { tile = hidden_tile, position = pos }
             end
 
             local entities = tile.entities
@@ -143,11 +143,11 @@ local function do_place_treasure(data)
         end
         if
             surface.count_entities_filtered {
-                area = {{e.position.x - 2, e.position.y - 2}, {e.position.x + 2, e.position.y + 2}},
+                area = { { e.position.x - 2, e.position.y - 2 }, { e.position.x + 2, e.position.y + 2 } },
                 name = 'market',
                 limit = 1
             } == 0
-         then
+        then
             Public.add_loot(surface, e.position, e.chest)
         else
             Public.add_loot(surface, e.position, e.chest, true)
@@ -169,11 +169,11 @@ local function do_place_markets(data)
     local pos = markets[random(1, #markets)]
     if
         surface.count_entities_filtered {
-            area = {{pos.x - 96, pos.y - 96}, {pos.x + 96, pos.y + 96}},
+            area = { { pos.x - 96, pos.y - 96 }, { pos.x + 96, pos.y + 96 } },
             name = 'market',
             limit = 1
         } == 0
-     then
+    then
         local market = Public.mountain_market(surface, pos, abs(pos.y) * 0.004)
         market.destructible = false
     end
@@ -202,12 +202,12 @@ local function do_place_decoratives(data)
         return
     end
     if regen_decoratives then
-        surface.regenerate_decorative(nil, {{data.top_x / 32, data.top_y / 32}})
+        surface.regenerate_decorative(nil, { { data.top_x / 32, data.top_y / 32 } })
     end
 
     local dec = data.decoratives
     if #dec > 0 then
-        surface.create_decoratives({check_collision = true, decoratives = dec})
+        surface.create_decoratives({ check_collision = true, decoratives = dec })
     end
 end
 
@@ -223,11 +223,11 @@ local function do_place_buildings(data)
             local p = e.position
             if
                 surface.count_entities_filtered {
-                    area = {{p.x - 32, p.y - 32}, {p.x + 32, p.y + 32}},
+                    area = { { p.x - 32, p.y - 32 }, { p.x + 32, p.y + 32 } },
                     type = e.e_type,
                     limit = 1
                 } == 0
-             then
+            then
                 e.create_build_effect_smoke = false
                 entity = surface.create_entity(e)
                 if entity and entity.valid then
@@ -240,7 +240,7 @@ local function do_place_buildings(data)
                     if e.callback then
                         local c = e.callback.callback
                         if c then
-                            local d = {callback_data = e.callback.data}
+                            local d = { callback_data = e.callback.data }
                             if not d then
                                 callback = Task.get(c)
                                 callback(entity)
@@ -260,7 +260,7 @@ local function wintery(ent, extra_lights)
     if not winter_mode then
         return false
     end
-    local colors = {{255, 0, 0}, {0, 255, 0}, {0, 0, 255}}
+    local colors = { { 255, 0, 0 }, { 0, 255, 0 }, { 0, 0, 255 } }
     local function add_light(e)
         local color = colors[math.random(1, 3)]
         local scale = extra_lights or 1
@@ -274,7 +274,7 @@ local function wintery(ent, extra_lights)
                 oriented = false,
                 color = color,
                 target = e,
-                target_offset = {0, -0.5},
+                target_offset = { 0, -0.5 },
                 surface = e.surface
             }
         )
@@ -332,7 +332,7 @@ local function do_place_entities(data)
                         if not c then
                             return
                         end
-                        local d = {callback_data = e.callback.data}
+                        local d = { callback_data = e.callback.data }
                         if not d then
                             callback = Task.get(c)
                             callback(entity)
@@ -369,7 +369,7 @@ local function do_place_entities(data)
                 if e.callback then
                     local c = e.callback.callback
                     if c then
-                        local d = {callback_data = e.callback.data}
+                        local d = { callback_data = e.callback.data }
                         if not d then
                             callback = Task.get(c)
                             callback(entity)
@@ -391,13 +391,13 @@ local function run_chart_update(data)
     if not surface or not surface.valid then
         return
     end
-    if game.forces.player.is_chunk_charted(surface, {x, y}) then
+    if game.forces.player.is_chunk_charted(surface, { x, y }) then
         -- Don't use full area, otherwise adjacent chunks get charted
         game.forces.player.chart(
             surface,
             {
-                {data.top_x, data.top_y},
-                {data.top_x + 1, data.top_y + 1}
+                { data.top_x,     data.top_y },
+                { data.top_x + 1, data.top_y + 1 }
             }
         )
     end
