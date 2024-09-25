@@ -238,7 +238,7 @@ function Public.enemies_specworms_separate(args, spec)
 				local memory = Memory.get_crew_memory()
 				local enemy_force_name = memory.enemy_force_name
 
-				local evolution = game.forces[enemy_force_name].evolution_factor
+				local evolution = memory.evolution_factor
 
 				args.entities[#args.entities + 1] = { name = Common.get_random_worm_type(evolution + 0.05), position = p, force = enemy_force_name }
 			end

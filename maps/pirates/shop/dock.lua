@@ -72,7 +72,7 @@ Public.market_sales = {
 	{ price = { { 'coin', 3000 } },                                      offer = { type = 'give-item', item = 'coin', count = 6000 } },
 	{ price = { { 'coin', 3000 } },                                      offer = { type = 'give-item', item = 'roboport', count = 1 } },
 	{ price = { { 'coin', 3000 } },                                      offer = { type = 'give-item', item = 'construction-robot', count = 10 } },
-	{ price = { { 'coin', 3000 } },                                      offer = { type = 'give-item', item = 'logistic-chest-passive-provider', count = 2 } },
+	{ price = { { 'coin', 3000 } },                                      offer = { type = 'give-item', item = 'passive-provider-chest', count = 2 } },
 	{ price = { { 'coin', 3000 } },                                      offer = { type = 'give-item', item = 'logistic-robot', count = 2 } },
 	{ price = { { 'transport-belt', 100 }, { 'coin', 800 } },            offer = { type = 'give-item', item = 'fast-transport-belt', count = 100 } },
 	{ price = { { 'fast-transport-belt', 100 }, { 'coin', 2500 } },      offer = { type = 'give-item', item = 'express-transport-belt', count = 100 } },

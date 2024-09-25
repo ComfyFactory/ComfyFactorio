@@ -400,7 +400,7 @@ function Public.custom_biter_ai()
 			spawn(name)
 		end
 
-		game.pollution_statistics.on_flow(name, budget - initialbudget)
+		game.get_pollution_statistics(surface).on_flow(name, budget - initialbudget)
 		memory.floating_pollution = pollution_available
 
 		if (not units_created) or (not #units_created) or (#units_created == 0) then return end

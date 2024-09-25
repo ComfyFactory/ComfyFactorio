@@ -110,7 +110,7 @@ function Public.move_crowsnest(vectorx, vectory)
 
 	if memory.crowsnest_surfacename_rendering then
 		local p = rendering.get_target(memory.crowsnest_surfacename_rendering).position
-		rendering.set_target(memory.crowsnest_surfacename_rendering, { x = p.x + vectorx, y = p.y + vectory })
+		memory.crowsnest_surfacename_rendering.target = { x = p.x + vectorx, y = p.y + vectory }
 	end
 
 	if vectorx ~= 0 then
@@ -128,30 +128,30 @@ function Public.update_destination_renderings()
 			if dest.overworld_position.x <= memory.overworldx + Public.Data.chartingdistance and dest.overworld_position.x >= memory.overworldx - Public.Data.chartingdistance then
 				for _, r in pairs(dest.dynamic_data.crowsnest_renderings) do
 					if type(r) == 'table' then
-						if rendering.is_valid(r.text_rendering) then
-							rendering.set_visible(r.text_rendering, true)
+						if r.text_rendering.valid then
+							r.text_rendering.visible = true
 						end
-						if rendering.is_valid(r.sprite_rendering) then
-							rendering.set_visible(r.sprite_rendering, true)
+						if r.sprite_rendering.valid then
+							r.sprite_rendering.visible = true
 						end
 					else
-						if rendering.is_valid(r) then
-							rendering.set_visible(r, true)
+						if r.valid then
+							r.visible = true
 						end
 					end
 				end
 			else
 				for _, r in pairs(dest.dynamic_data.crowsnest_renderings) do
 					if type(r) == 'table' then
-						if rendering.is_valid(r.text_rendering) then
-							rendering.set_visible(r.text_rendering, false)
+						if r.text_rendering.valid then
+							r.text_rendering.visible = false
 						end
-						if rendering.is_valid(r.sprite_rendering) then
-							rendering.set_visible(r.sprite_rendering, false)
+						if r.sprite_rendering.valid then
+							r.sprite_rendering.visible = false
 						end
 					else
-						if rendering.is_valid(r) then
-							rendering.set_visible(r, false)
+						if r.valid then
+							r.visible = false
 						end
 					end
 				end

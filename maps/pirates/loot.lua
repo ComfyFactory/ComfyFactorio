@@ -21,7 +21,7 @@ Public.buried_treasure_loot_data_raw = {
 	-- {100, 0, 1, false, 'electronic-circuit', 150, 250},
 	{ 70,  0, 1, false, 'advanced-circuit',         20,  40 },
 	{ 150, 0, 1, false, 'crude-oil-barrel',         25,  45 },
-	{ 70,  0, 1, false, 'effectivity-module-3',     3,   4 },
+	{ 70,  0, 1, false, 'efficiency-module-3',      3,   4 },
 	{ 70,  0, 1, false, 'speed-module-3',           3,   4 },
 	{ 70,  0, 1, false, 'plastic-bar',              40,  70 },
 	{ 60,  0, 1, false, 'chemical-science-pack',    12,  24 },
@@ -56,7 +56,7 @@ Public.chest_loot_data_raw = {
 	{ 0.25,  0,    0.5,  false, 'uranium-238',                      5,   8 },
 
 	{ 8,     0,    1.2,  true,  'steel-chest',                      4,   12 },
-	{ 2,     0,    0.8,  false, 'empty-barrel',                     1,   10 },
+	{ 2,     0,    0.8,  false, 'barrel',                           1,   10 },
 
 	{ 5,     -0.2, 0.8,  true,  'iron-gear-wheel',                  20,  80 },
 	{ 5,     -0.2, 0.8,  true,  'copper-cable',                     30,  100 },
@@ -113,9 +113,9 @@ Public.chest_loot_data_raw = {
 	{ 15,    -1,   1,    true,  'speed-module',                     1,   3 },
 	{ 5,     0,    1.5,  true,  'speed-module-2',                   1,   2 },
 	{ 2,     0,    2,    true,  'speed-module-3',                   1,   1 },
-	{ 5,     -1,   1,    true,  'effectivity-module',               1,   3 },
-	{ 3,     0,    1,    true,  'effectivity-module-2',             1,   3 },
-	{ 1,     0,    2,    true,  'effectivity-module-3',             1,   1 },
+	{ 5,     -1,   1,    true,  'efficiency-module',                1,   3 },
+	{ 3,     0,    1,    true,  'efficiency-module-2',              1,   3 },
+	{ 1,     0,    2,    true,  'efficiency-module-3',              1,   1 },
 
 
 
@@ -160,7 +160,7 @@ Public.chest_loot_data_raw = {
 
 	{ 0.5,   0.2,  1.4,  true,  'construction-robot',               5,   15 },
 	{ 2,     0.5,  1.5,  true,  'roboport',                         1,   1 },
-	{ 2,     0.5,  1.5,  false, 'logistic-chest-passive-provider',  2,   2 },
+	{ 2,     0.5,  1.5,  false, 'passive-provider-chest',           2,   2 },
 	{ 2,     0.5,  1.5,  false, 'logistic-robot',                   5,   15 },
 
 	{ 4,     0.2,  1.2,  true,  'lubricant-barrel',                 1,   4 },
@@ -418,7 +418,7 @@ Public.maze_treasure_data_raw = {
 	{ 0.5, 0,    1,   false, 'nuclear-fuel',                     1,   1 },
 
 	{ 1,   0,    0.8, false, 'speed-module-3',                   2,   2 },
-	{ 1,   0,    0.8, false, 'effectivity-module-3',             3,   3 },
+	{ 1,   0,    0.8, false, 'efficiency-module-3',              3,   3 },
 
 	{ 2,   0,    1.5, true,  'production-science-pack',          20,  25 },
 	{ 2,   0,    2,   true,  'utility-science-pack',             7,   8 },
@@ -426,7 +426,7 @@ Public.maze_treasure_data_raw = {
 	{ 3,   0,    0.9, false, 'beacon',                           1,   1 },
 
 	{ 1,   0,    1,   false, 'construction-robot',               30,  40 },
-	{ 3,   0,    1,   false, 'logistic-chest-passive-provider',  2,   2 },
+	{ 3,   0,    1,   false, 'passive-provider-chest',           2,   2 },
 
 	{ 1,   0.2,  1.8, true,  'explosive-rocket',                 6,   8 },
 
@@ -489,7 +489,7 @@ Public.dredger_loot_raw = {
 
 
 	{ 0.05,  0,  1,   false, 'speed-module-3',                   1,  2 },
-	{ 0.05,  0,  1,   false, 'effectivity-module-3',             1,  2 },
+	{ 0.05,  0,  1,   false, 'efficiency-module-3',              1,  2 },
 
 	{ 0.1,   0,  1,   false, 'rocket',                           1,  3 },
 	{ 0.01,  0,  1,   false, 'explosive-rocket',                 1,  2 },

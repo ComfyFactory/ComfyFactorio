@@ -512,14 +512,14 @@ function Public.ensure_lane_generated_up_to(lane_yvalue, x)
 			-- a little hack that we're updating this here rather than Crowsnest, due to the dependency on Shop to avoid a loop... almost finished 1.0, so too late to figure out how to restructure things for now!
 			for _, dest in pairs(memory.destinations) do
 				if dest.static_params.upgrade_for_sale and dest.dynamic_data.crowsnest_renderings then
-					if rendering.is_valid(dest.dynamic_data.crowsnest_renderings.base_text_rendering) then
-						rendering.set_text(dest.dynamic_data.crowsnest_renderings.base_text_rendering, { '', Upgrades.crowsnest_display_form[dest.static_params.upgrade_for_sale], ':' })
+					if dest.dynamic_data.crowsnest_renderings.base_text_rendering.valid then
+						dest.dynamic_data.crowsnest_renderings.base_text_rendering.text = { '', Upgrades.crowsnest_display_form[dest.static_params.upgrade_for_sale], ':' }
 					end
 					for rendering_name, r in pairs(dest.dynamic_data.crowsnest_renderings) do
-						if type(r) == 'table' and r.text_rendering and rendering.is_valid(r.text_rendering) then
+						if type(r) == 'table' and r.text_rendering and r.text_rendering.valid then
 							for _, price_data in ipairs(Upgrades.upgrades_data[dest.static_params.upgrade_for_sale].market_item.price) do
 								if price_data[1] == rendering_name then
-									rendering.set_text(r.text_rendering, Utils.bignumber_abbrevform2(price_data[2]))
+									r.text_rendering.text = Utils.bignumber_abbrevform2(price_data[2])
 									break
 								end
 							end

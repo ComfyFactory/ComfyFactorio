@@ -338,10 +338,10 @@ end
 
 gMeta.__newindex = function (_, n, v)
 	log('Desync warning: attempt to write to undeclared var ' .. n)
-	global[n] = v
+	storage[n] = v
 end
 gMeta.__index = function (_, n)
-	return global[n]
+	return storage[n]
 end
 
 return Public

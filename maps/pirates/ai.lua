@@ -458,7 +458,7 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 			temp_floating_pollution = temp_floating_pollution - unit_pollutioncost
 			budget = budget - unit_pollutioncost
 			-- flow statistics should reflect the number of biters generated. Therefore it should mismatch the actual pollution spent, because it should miss all the factors that can vary:
-			game.pollution_statistics.on_flow(name2, -CoreData.biterPollutionValues[name2])
+			game.get_pollution_statistics(surface).on_flow(name2, -CoreData.biterPollutionValues[name2])
 
 			return biter.unit_number
 		end
@@ -549,22 +549,6 @@ function Public.nearest_target(surface, position)
 	end
 	return nearest
 end
-
--- function Public.try_spend_pollution(surface, position, amount, flow_statistics_source)
--- 	local memory = Memory.get_crew_memory()
--- 	local force_name = memory.force_name
-
--- 	flow_statistics_source = flow_statistics_source or 'medium-biter'
---     if not (position and surface and surface.valid) then return end
-
---     local pollution = surface.get_pollution(position)
---     if pollution > amount then
---         surface.pollute(position, -amount)
---         game.forces[force_name].pollution_statistics.on_flow(flow_statistics_source, -amount)
---         return true
---     end
---     return false
--- end
 
 function Public.is_biter_inactive(biter)
 	if (not biter.entity) or (not biter.entity.valid) then
@@ -876,7 +860,7 @@ function Public.try_boat_biters_attack()
 	end
 end
 
-local function on_entity_destroyed(event)
+local function on_object_destroyed(event)
 	local registration_number = event.registration_number
 
 	local p
@@ -928,7 +912,7 @@ end
 
 
 local event = require 'utils.event'
-event.add(defines.events.on_entity_destroyed, on_entity_destroyed)
+event.add(defines.events.on_object_destroyed, on_object_destroyed)
 
 
 return Public

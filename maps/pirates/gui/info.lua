@@ -78,7 +78,7 @@ function Public.flow_add_info_sections(flow, sections_list)
 		flow2 = flow.add { type = "label", caption = { "pirates.softmod_info_" .. i .. "_1" } }
 		flow2.style.font_color = GuiCommon.friendly_font_color
 		flow2.style.single_line = false
-		flow2.style.font = 'heading-3'
+		flow2.style.font = 'default-semibold'
 		flow2.style.bottom_margin = -4
 
 		flow2 = flow.add { type = "label", caption = { "pirates.softmod_info_" .. i .. "_2" } }
