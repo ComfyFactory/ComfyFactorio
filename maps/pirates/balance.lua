@@ -631,19 +631,6 @@ end
 -- 	return 0.95
 -- end
 
-Public.research_buffs = { --currently disabled anyway
-	-- these already give .1 productivity so we're adding .1 to get to 20%
-	['mining-productivity-1'] = { ['mining_drill_productivity_bonus'] = .1 },
-	['mining-productivity-2'] = { ['mining_drill_productivity_bonus'] = .1 },
-	['mining-productivity-3'] = { ['mining_drill_productivity_bonus'] = .1 },
-	['mining-productivity-4'] = { ['mining_drill_productivity_bonus'] = .1 },
-	-- -- these already give .1 productivity so we're adding .1 to get to 20%
-	-- ['mining-productivity-1'] = {['mining-drill-productivity-bonus'] = .1, ['character-inventory-slots-bonus'] = 5},
-	-- ['mining-productivity-2'] = {['mining-drill-productivity-bonus'] = .1, ['character-inventory-slots-bonus'] = 5},
-	-- ['mining-productivity-3'] = {['mining-drill-productivity-bonus'] = .1, ['character-inventory-slots-bonus'] = 5},
-	-- ['mining-productivity-4'] = {['mining-drill-productivity-bonus'] = .1, ['character-inventory-slots-bonus'] = 5},
-}
-
 -- TODO: Update these for 2.0?
 function Public.player_ammo_damage_modifiers() -- modifiers are fractional. bullet affects gun turrets, but flamethrower does not affect flamer turrets
 	local data = {

@@ -985,7 +985,7 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['landfill'].enabled = false
 	crew_force.technologies['cliff-explosives'].enabled = false
 
-	crew_force.technologies['rail-signals'].enabled = false
+	crew_force.technologies['automated-rail-transportation'].enabled = false
 
 	crew_force.technologies['logistic-system'].enabled = false
 
@@ -1046,6 +1046,7 @@ function Public.reset_crew_and_enemy_force(id)
 	-- these require 2000 white sci each:
 	crew_force.technologies['artillery-shell-range-1'].enabled = false --infinite techs
 	crew_force.technologies['artillery-shell-speed-1'].enabled = false --infinite techs
+	crew_force.technologies['artillery-shell-damage-1'].enabled = false --infinite techs
 
 	-- crew_force.technologies['steel-axe'].enabled = false
 
@@ -1070,13 +1071,11 @@ function Public.reset_crew_and_enemy_force(id)
 	-- crew_force.technologies['rocket-control-unit'].enabled = false
 	-- crew_force.technologies['rocket-silo'].enabled = false
 	-- crew_force.technologies['space-scienkce-pack'].enabled = false
-	crew_force.technologies['mining-productivity-3'].enabled = false --huge trap. even the earlier ones are a trap?
-	crew_force.technologies['mining-productivity-4'].enabled = false
+	-- crew_force.technologies['mining-productivity-3'].enabled = false
 	-- crew_force.technologies['logistics-3'].enabled = true
 	-- crew_force.technologies['nuclear-fuel-reprocessing'].enabled = true
 
 	-- crew_force.technologies['railway'].enabled = false
-	crew_force.technologies['automated-rail-transportation'].enabled = false
 	crew_force.technologies['braking-force-1'].enabled = false
 	crew_force.technologies['braking-force-2'].enabled = false
 	crew_force.technologies['braking-force-3'].enabled = false
@@ -1099,7 +1098,7 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['belt-immunity-equipment'].enabled = false
 	crew_force.technologies['exoskeleton-equipment'].enabled = false
 	crew_force.technologies['battery-equipment'].enabled = false
-	crew_force.technologies['fusion-reactor-equipment'].enabled = false
+	crew_force.technologies['fusion-reactor'].enabled = false
 	crew_force.technologies['power-armor-mk2'].enabled = false
 	crew_force.technologies['energy-shield-mk2-equipment'].enabled = false
 	crew_force.technologies['personal-roboport-mk2-equipment'].enabled = false
