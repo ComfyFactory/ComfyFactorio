@@ -394,9 +394,9 @@ local swampy_rivers_layers = {
         type = 'LuaEntity',
         name = 'rocky',
         objects = {
-            'sand-rock-big',
-            'rock-big',
-            'rock-huge'
+            'big-sand-rock',
+            'big-rock',
+            'huge-rock'
         },
         elevation = 0.5,
         resolution = 0.1,
@@ -1384,9 +1384,9 @@ local valid_ents = {
     ['crash-site-spaceship-wreck-small-5'] = true,
     ['crash-site-spaceship-wreck-small-6'] = true,
     ['mineable-wreckage'] = true,
-    ['sand-rock-big'] = true,
-    ['rock-big'] = true,
-    ['rock-huge'] = true
+    ['big-sand-rock'] = true,
+    ['big-rock'] = true,
+    ['huge-rock'] = true
 }
 
 local function mined_wreckage(e)

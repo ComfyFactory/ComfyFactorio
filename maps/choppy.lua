@@ -19,9 +19,9 @@ local map_functions = require 'utils.tools.map_functions'
 
 local disabled_for_deconstruction = {
     ['fish'] = true,
-    ['rock-huge'] = true,
-    ['rock-big'] = true,
-    ['sand-rock-big'] = true,
+    ['huge-rock'] = true,
+    ['big-rock'] = true,
+    ['big-sand-rock'] = true,
     ['mineable-wreckage'] = true
 }
 
@@ -41,7 +41,7 @@ local tile_replacements = {
     ['red-desert-3'] = 'grass-4'
 }
 
-local rocks = { 'rock-big', 'rock-big', 'rock-huge' }
+local rocks = { 'big-rock', 'big-rock', 'huge-rock' }
 local decos = {
     'green-hairy-grass',
     'green-hairy-grass',
@@ -270,8 +270,8 @@ local function on_player_joined_game(event)
         ['tree-02-red'] = { 'copper-ore' },
         ['tree-04'] = { 'coal' },
         ['tree-08-brown'] = { 'stone' },
-        ['rock-big'] = { 'uranium-ore' },
-        ['rock-huge'] = { 'uranium-ore' }
+        ['big-rock'] = { 'uranium-ore' },
+        ['huge-rock'] = { 'uranium-ore' }
     }
 
     if prototypes.item['angels-ore1'] then
@@ -284,8 +284,8 @@ local function on_player_joined_game(event)
     end
 
     if prototypes.item['thorium-ore'] then
-        storage.entity_yield['rock-big'] = { 'uranium-ore', 'thorium-ore' }
-        storage.entity_yield['rock-huge'] = { 'uranium-ore', 'thorium-ore' }
+        storage.entity_yield['big-rock'] = { 'uranium-ore', 'thorium-ore' }
+        storage.entity_yield['huge-rock'] = { 'uranium-ore', 'thorium-ore' }
     end
 
     storage.map_init_done = true

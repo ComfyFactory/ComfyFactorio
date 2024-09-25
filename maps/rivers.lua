@@ -16,7 +16,7 @@ local disabled_for_deconstruction = {
     ['fish'] = true
 }
 
-local rock_raffle = { 'sand-rock-big', 'sand-rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-huge' }
+local rock_raffle = { 'big-sand-rock', 'big-sand-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'huge-rock' }
 
 local tile_replacements = {
     ['water'] = 'grass-2',

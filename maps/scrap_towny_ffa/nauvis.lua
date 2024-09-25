@@ -160,18 +160,18 @@ function Public.initialize(init)
     mgs.autoplace_settings = {
         entity = {
             settings = {
-                ['rock-huge'] = { frequency = 2, size = 1, richness = 1 },
-                ['rock-big'] = { frequency = 2, size = 1, richness = 1 },
-                ['sand-rock-big'] = { frequency = 2, size = 1, richness = 1 }
+                ['huge-rock'] = { frequency = 2, size = 1, richness = 1 },
+                ['big-rock'] = { frequency = 2, size = 1, richness = 1 },
+                ['big-sand-rock'] = { frequency = 2, size = 1, richness = 1 }
             }
         },
         decorative = {
             settings = {
-                ['rock-tiny'] = { frequency = 10, size = 'normal', richness = 'normal' },
-                ['rock-small'] = { frequency = 5, size = 'normal', richness = 'normal' },
-                ['rock-medium'] = { frequency = 2, size = 'normal', richness = 'normal' },
-                ['sand-rock-small'] = { frequency = 10, size = 'normal', richness = 'normal' },
-                ['sand-rock-medium'] = { frequency = 5, size = 'normal', richness = 'normal' }
+                ['tiny-rock'] = { frequency = 10, size = 'normal', richness = 'normal' },
+                ['small-rock'] = { frequency = 5, size = 'normal', richness = 'normal' },
+                ['medium-rock'] = { frequency = 2, size = 'normal', richness = 'normal' },
+                ['sand-small-rock'] = { frequency = 10, size = 'normal', richness = 'normal' },
+                ['sand-medium-rock'] = { frequency = 5, size = 'normal', richness = 'normal' }
             }
         },
         tile = {
@@ -258,7 +258,7 @@ function Public.initialize(init)
     surface.freeze_daytime = false
     -- surface.map_gen_settings.water = 0.5
     surface.clear(true)
-    surface.regenerate_entity({ 'rock-huge', 'rock-big', 'sand-rock-big' })
+    surface.regenerate_entity({ 'huge-rock', 'big-rock', 'big-sand-rock' })
     surface.regenerate_decorative()
 end
 

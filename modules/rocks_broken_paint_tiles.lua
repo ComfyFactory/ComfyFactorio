@@ -2,9 +2,9 @@
 local Event = require 'utils.event'
 
 local valid_entities = {
-    ['rock-big'] = true,
-    ['rock-huge'] = true,
-    ['sand-rock-big'] = true
+    ['big-rock'] = true,
+    ['huge-rock'] = true,
+    ['big-sand-rock'] = true
 }
 
 local replacement_tiles = {

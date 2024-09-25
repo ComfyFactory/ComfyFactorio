@@ -1277,15 +1277,15 @@ local worm_raffle_table = {
     }
 }
 local rock_raffle = {
-    'sand-rock-big',
-    'sand-rock-big',
-    'rock-big',
-    'rock-big',
-    'rock-big',
-    'rock-big',
-    'rock-big',
-    'rock-big',
-    'rock-huge'
+    'big-sand-rock',
+    'big-sand-rock',
+    'big-rock',
+    'big-rock',
+    'big-rock',
+    'big-rock',
+    'big-rock',
+    'big-rock',
+    'huge-rock'
 }
 
 local function spawn_obstacles(left_top, surface)

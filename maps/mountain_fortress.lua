@@ -26,9 +26,9 @@ local spawn_point = { x = 0, y = 2 }
 
 local disabled_for_deconstruction = {
     ['fish'] = true,
-    ['rock-huge'] = true,
-    ['rock-big'] = true,
-    ['sand-rock-big'] = true
+    ['huge-rock'] = true,
+    ['big-rock'] = true,
+    ['big-sand-rock'] = true
 }
 local worm_raffle_table = {
     [1] = { 'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'small-worm-turret' },
@@ -42,7 +42,7 @@ local worm_raffle_table = {
     [9] = { 'medium-worm-turret', 'medium-worm-turret', 'big-worm-turret', 'big-worm-turret', 'big-worm-turret', 'big-worm-turret' },
     [10] = { 'medium-worm-turret', 'big-worm-turret', 'big-worm-turret', 'big-worm-turret', 'big-worm-turret', 'big-worm-turret' }
 }
-local rock_raffle = { 'sand-rock-big', 'sand-rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-huge' }
+local rock_raffle = { 'big-sand-rock', 'big-sand-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'huge-rock' }
 local nest_raffle = { 'biter-spawner', 'biter-spawner', 'biter-spawner', 'spitter-spawner' }
 
 local function shuffle(tbl)
@@ -413,7 +413,7 @@ local function on_chunk_generated(event)
                 surface.create_decoratives {
                     check_collision = false,
                     decoratives = {
-                        { name = 'rock-medium', position = pos, amount = math_random(1, 1 + math.ceil(20 - y / 2)) }
+                        { name = 'medium-rock', position = pos, amount = math_random(1, 1 + math.ceil(20 - y / 2)) }
                     }
                 }
             end
@@ -421,7 +421,7 @@ local function on_chunk_generated(event)
                 surface.create_decoratives {
                     check_collision = false,
                     decoratives = {
-                        { name = 'rock-small', position = pos, amount = math_random(1, 1 + math.ceil(20 - y / 2)) }
+                        { name = 'small-rock', position = pos, amount = math_random(1, 1 + math.ceil(20 - y / 2)) }
                     }
                 }
             end
@@ -429,7 +429,7 @@ local function on_chunk_generated(event)
                 surface.create_decoratives {
                     check_collision = false,
                     decoratives = {
-                        { name = 'rock-tiny', position = pos, amount = math_random(1, 1 + math.ceil(20 - y / 2)) }
+                        { name = 'tiny-rock', position = pos, amount = math_random(1, 1 + math.ceil(20 - y / 2)) }
                     }
                 }
             end

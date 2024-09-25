@@ -5,7 +5,7 @@ local NoiseVectors = require 'utils.functions.noise_vector_path'
 local Enemies = require 'maps.island_troopers.enemies'
 local ShoppingChests = require 'modules.shopping_chests'
 
-local rock_raffle = { 'sand-rock-big', 'sand-rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-huge' }
+local rock_raffle = { 'big-sand-rock', 'big-sand-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'huge-rock' }
 
 local function island_noise(p, seed_1, seed_2, seed_3)
     local noise_1 = simplex_noise(p.x * seed_m1, p.y * seed_m1, seed_1)

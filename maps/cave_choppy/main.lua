@@ -282,7 +282,7 @@ local function create_cave_miner_stats_gui(player)
 
     separators[1] = t.add { type = 'label', caption = '|' }
 
-    captions[2] = t.add { type = 'label', caption = '[img=entity.rock-huge] :' }
+    captions[2] = t.add { type = 'label', caption = '[img=entity.huge-rock] :' }
     captions[2].tooltip = 'Amount of rocks mined.'
     stat_numbers[2] = t.add { type = 'label', caption = storage.stats_rocks_broken }
 
@@ -450,14 +450,14 @@ local function treasure_chest(position, distance_to_center)
             evolution_min = 0.0,
             evolution_max = 0.4
         },
-        { { name = 'fast-inserter', count = math.random(8, 16) },   weight = 3, evolution_min = 0.1, evolution_max = 1 },
+        { { name = 'fast-inserter', count = math.random(8, 16) }, weight = 3, evolution_min = 0.1, evolution_max = 1 },
         {
             { name = 'bulk-inserter', count = math.random(4, 8) },
             weight = 1,
             evolution_min = 0.4,
             evolution_max = 1
         },
-        { { name = 'stack-inserter', count = math.random(4, 8) },    weight = 3, evolution_min = 0.3, evolution_max = 1 },
+        { { name = 'stack-inserter', count = math.random(4, 8) }, weight = 3, evolution_min = 0.3, evolution_max = 1 },
         {
             { name = 'small-electric-pole', count = math.random(16, 24) },
             weight = 3,
@@ -1139,15 +1139,15 @@ local function on_player_joined_game(event)
 
         storage.rock_density = 62 ---- table.insert value up to 100
         storage.rock_raffle = {
-            'sand-rock-big',
-            'sand-rock-big',
-            'rock-big',
-            'rock-big',
-            'rock-big',
-            'rock-big',
-            'rock-big',
-            'rock-big',
-            'rock-huge'
+            'big-sand-rock',
+            'big-sand-rock',
+            'big-rock',
+            'big-rock',
+            'big-rock',
+            'big-rock',
+            'big-rock',
+            'big-rock',
+            'huge-rock'
         }
 
         storage.worm_free_zone_radius = math.sqrt(spawn_dome_size) + 40
@@ -1293,7 +1293,7 @@ local function biter_attack_event()
     for _, player in pairs(game.connected_players) do
         if player.character.driving == false then
             local position = { x = player.position.x, y = player.position.y }
-            local p = find_first_entity_spiral_scan(position, { 'rock-huge', 'rock-big', 'sand-rock-big' }, 32)
+            local p = find_first_entity_spiral_scan(position, { 'huge-rock', 'big-rock', 'big-sand-rock' }, 32)
             if p then
                 if p.x ^ 2 + p.y ^ 2 > spawn_dome_size then
                     table.insert(valid_positions, p)
@@ -1384,9 +1384,9 @@ local function darkness_checks()
 end
 
 local healing_amount = {
-    ['rock-big'] = 4,
-    ['sand-rock-big'] = 4,
-    ['rock-huge'] = 16
+    ['big-rock'] = 4,
+    ['big-sand-rock'] = 4,
+    ['huge-rock'] = 16
 }
 local function heal_rocks()
     for key, rock in pairs(storage.damaged_rocks) do
@@ -1490,15 +1490,15 @@ local function on_tick()
         for _, item in pairs(market_items.spawn) do
             storage.market.add_market_item(item)
         end
-        surface.regenerate_entity({ 'rock-big', 'rock-huge' })
+        surface.regenerate_entity({ 'big-rock', 'huge-rock' })
     end
 end
 
 local disabled_for_deconstruction = {
     ['fish'] = true,
-    ['rock-huge'] = true,
-    ['rock-big'] = true,
-    ['sand-rock-big'] = true,
+    ['huge-rock'] = true,
+    ['big-rock'] = true,
+    ['big-sand-rock'] = true,
     ['tree-02'] = true,
     ['tree-04'] = true
 }
@@ -1522,7 +1522,7 @@ local function pre_player_mined_item(event)
         return
     end
     if math.random(1, 12) == 1 then
-        if event.entity.name == 'rock-huge' or event.entity.name == 'rock-big' or event.entity.name == 'sand-rock-big' then
+        if event.entity.name == 'huge-rock' or event.entity.name == 'big-rock' or event.entity.name == 'big-sand-rock' then
             for x = 1, math.random(6, 10), 1 do
                 table.insert(storage.biter_spawn_schedule, { game.tick + 30 * x, event.entity.position })
             end
@@ -1533,7 +1533,7 @@ local function pre_player_mined_item(event)
         surface.spill_item_stack(player.position, { name = 'raw-fish', count = math.random(1, 2) }, true)
     end
 
-    if event.entity.name == 'rock-huge' or event.entity.name == 'rock-big' or event.entity.name == 'sand-rock-big' then
+    if event.entity.name == 'huge-rock' or event.entity.name == 'big-rock' or event.entity.name == 'big-sand-rock' then
         local rock_position = { x = event.entity.position.x, y = event.entity.position.y }
         event.entity.destroy()
 
@@ -1658,7 +1658,7 @@ local function on_player_mined_entity(event)
     if player.surface.name ~= 'cave_miner' then
         return
     end
-    if event.entity.name == 'rock-huge' or event.entity.name == 'rock-big' or event.entity.name == 'sand-rock-big' then
+    if event.entity.name == 'huge-rock' or event.entity.name == 'big-rock' or event.entity.name == 'big-sand-rock' then
         event.buffer.clear()
     end
     if event.entity.name == 'fish' then
@@ -1688,7 +1688,7 @@ local function on_entity_damaged(event)
     if not event.entity.valid then
         return
     end
-    if event.entity.name == 'rock-huge' or event.entity.name == 'rock-big' or event.entity.name == 'sand-rock-big' then
+    if event.entity.name == 'huge-rock' or event.entity.name == 'big-rock' or event.entity.name == 'big-sand-rock' then
         local rock_is_alive = true
         if event.force.name == 'enemy' then
             event.entity.health = event.entity.health + (event.final_damage_amount - 0.2)

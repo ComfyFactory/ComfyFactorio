@@ -54,7 +54,7 @@ local function init_surface()
     return surface
 end
 
-local wastes = { 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'mineable-wreckage', 'mineable-wreckage', 'mineable-wreckage', 'rock-huge' }
+local wastes = { 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'mineable-wreckage', 'mineable-wreckage', 'mineable-wreckage', 'huge-rock' }
 
 local function get_noise(name, pos)
     local seed = game.surfaces[1].map_gen_settings.seed
@@ -106,7 +106,7 @@ local function process_tile(surface, pos)
     end
 
     if math.random(1, 6) ~= 1 then
-        surface.create_entity({ name = 'rock-big', position = pos, force = 'neutral' })
+        surface.create_entity({ name = 'big-rock', position = pos, force = 'neutral' })
     end
 end
 
@@ -131,19 +131,19 @@ local function on_chunk_generated(event)
     end
 
     for _, e in pairs(surface.find_entities_filtered({ type = 'unit-spawner', area = event.area })) do
-        clear_entities_around_position(surface, 7, e.position, { 'rock-big' })
+        clear_entities_around_position(surface, 7, e.position, { 'big-rock' })
     end
 
     for _, e in pairs(surface.find_entities_filtered({ type = 'cliff', area = event.area })) do
-        clear_entities_around_position(surface, 2.25, e.position, { 'rock-big' })
+        clear_entities_around_position(surface, 2.25, e.position, { 'big-rock' })
     end
 
     for _, e in pairs(surface.find_entities_filtered({ type = 'tree', area = event.area })) do
-        clear_entities_around_position(surface, 1, e.position, { 'rock-big' })
+        clear_entities_around_position(surface, 1, e.position, { 'big-rock' })
     end
 
     if left_top.x == 128 and left_top.y == 128 then
-        clear_entities_around_position(surface, 5, { x = 0, y = 0 }, { 'rock-big' })
+        clear_entities_around_position(surface, 5, { x = 0, y = 0 }, { 'big-rock' })
     end
 end
 

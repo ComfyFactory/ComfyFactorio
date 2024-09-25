@@ -73,7 +73,7 @@ local biters_in_the_trees = {
     [20] = { 'behemoth-biter', 'behemoth-biter', 'behemoth-biter', 'behemoth-biter', 'behemoth-spitter', 'behemoth-spitter' }
 }
 
-local rock_raffle = { 'sand-rock-big', 'sand-rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-huge' }
+local rock_raffle = { 'big-sand-rock', 'big-sand-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'huge-rock' }
 
 local function secret_shop(pos, surface)
     local secret_market_items = {
@@ -610,9 +610,9 @@ end
 
 local disabled_for_deconstruction = {
     ['fish'] = true,
-    ['rock-huge'] = true,
-    ['rock-big'] = true,
-    ['sand-rock-big'] = true,
+    ['huge-rock'] = true,
+    ['big-rock'] = true,
+    ['big-sand-rock'] = true,
     ['tree-02'] = true,
     ['tree-04'] = true,
     ['dead-tree-desert'] = true

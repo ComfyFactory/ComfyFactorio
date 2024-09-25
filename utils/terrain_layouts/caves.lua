@@ -27,7 +27,7 @@ local math_random = math.random
 local math_floor = math.floor
 local math_abs = math.abs
 
-local rock_raffle = { 'sand-rock-big', 'sand-rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-huge' }
+local rock_raffle = { 'big-sand-rock', 'big-sand-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'huge-rock' }
 local size_of_rock_raffle = #rock_raffle
 
 local function place_entity(surface, position)

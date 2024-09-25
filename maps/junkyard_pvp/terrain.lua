@@ -5,7 +5,7 @@ local math_floor = math.floor
 local Treasure = require 'maps.junkyard_pvp.treasure'
 local Map_functions = require 'utils.tools.map_functions'
 local simplex_noise = require 'utils.simplex_noise'.d2
-local rock_raffle = { 'sand-rock-big', 'sand-rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-huge' }
+local rock_raffle = { 'big-sand-rock', 'big-sand-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'huge-rock' }
 local spawner_raffle = { 'biter-spawner', 'biter-spawner', 'biter-spawner', 'spitter-spawner' }
 local noises = {
     ['no_rocks'] = { { modifier = 0.0033, weight = 1 }, { modifier = 0.01, weight = 0.22 }, { modifier = 0.05, weight = 0.05 }, { modifier = 0.1, weight = 0.04 } },

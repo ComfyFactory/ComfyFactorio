@@ -2,9 +2,9 @@
 local Event = require 'utils.event'
 
 local entity_whitelist = {
-    ['rock-big'] = true,
-    ['sand-rock-big'] = true,
-    ['rock-huge'] = true,
+    ['big-rock'] = true,
+    ['big-sand-rock'] = true,
+    ['huge-rock'] = true,
     ['mineable-wreckage'] = true
 }
 

@@ -7,7 +7,7 @@ local math_random = math.random
 local math_floor = math.floor
 local math_abs = math.abs
 local simplex_noise = require 'utils.simplex_noise'.d2
-local rock_raffle = { 'sand-rock-big', 'sand-rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-huge' }
+local rock_raffle = { 'big-sand-rock', 'big-sand-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'huge-rock' }
 local wagon_raffle = { 'cargo-wagon', 'cargo-wagon', 'cargo-wagon', 'locomotive', 'fluid-wagon' }
 local size_of_rock_raffle = #rock_raffle
 local spawner_raffle = { 'biter-spawner', 'biter-spawner', 'biter-spawner', 'spitter-spawner' }
@@ -1035,7 +1035,7 @@ local function border_chunk(surface, left_top)
                 surface.create_decoratives {
                     check_collision = false,
                     decoratives = {
-                        { name = 'rock-medium', position = pos, amount = math_random(1, 1 + math.ceil(20 - y / 2)) }
+                        { name = 'medium-rock', position = pos, amount = math_random(1, 1 + math.ceil(20 - y / 2)) }
                     }
                 }
             end
@@ -1043,7 +1043,7 @@ local function border_chunk(surface, left_top)
                 surface.create_decoratives {
                     check_collision = false,
                     decoratives = {
-                        { name = 'rock-small', position = pos, amount = math_random(1, 1 + math.ceil(20 - y / 2)) }
+                        { name = 'small-rock', position = pos, amount = math_random(1, 1 + math.ceil(20 - y / 2)) }
                     }
                 }
             end
@@ -1051,7 +1051,7 @@ local function border_chunk(surface, left_top)
                 surface.create_decoratives {
                     check_collision = false,
                     decoratives = {
-                        { name = 'rock-tiny', position = pos, amount = math_random(1, 1 + math.ceil(20 - y / 2)) }
+                        { name = 'tiny-rock', position = pos, amount = math_random(1, 1 + math.ceil(20 - y / 2)) }
                     }
                 }
             end

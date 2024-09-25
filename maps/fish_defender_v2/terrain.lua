@@ -11,12 +11,12 @@ local sqrt = math.sqrt
 
 --rock spawning code for stone pile
 local rock_raffle = {
-    'sand-rock-big',
-    'sand-rock-big',
-    'rock-big',
-    'rock-big',
-    'rock-big',
-    'rock-huge'
+    'big-sand-rock',
+    'big-sand-rock',
+    'big-rock',
+    'big-rock',
+    'big-rock',
+    'huge-rock'
 }
 
 local size_of_rock_raffle = #rock_raffle
