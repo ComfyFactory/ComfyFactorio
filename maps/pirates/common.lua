@@ -1849,7 +1849,7 @@ end
 
 function Public.replace_unwalkable_tiles(surface, position, width, height)
     local area = { left_top = { position.x - width / 2, position.y - height / 2 }, right_bottom = { position.x + width / 2 + 0.5, position.y + height / 2 + 0.5 } }
-    local existing = surface.find_tiles_filtered { area = area, collision_mask = 'water-tile' }
+    local existing = surface.find_tiles_filtered { area = area, collision_mask = 'water_tile' }
     if not existing then
         return
     end

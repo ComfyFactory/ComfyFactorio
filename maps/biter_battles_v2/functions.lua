@@ -140,7 +140,7 @@ function Public.biters_landfill(entity)
     local surface = entity.surface
     for _, vector in pairs(landfill_biters_vectors) do
         local tile = surface.get_tile({ position.x + vector[1], position.y + vector[2] })
-        if tile.collides_with('resource-layer') then
+        if tile.collides_with('resource') then
             surface.set_tiles({ { name = 'landfill', position = tile.position } })
             local particle_pos = { tile.position.x + 0.5, tile.position.y + 0.5 }
             for i = 1, 50, 1 do

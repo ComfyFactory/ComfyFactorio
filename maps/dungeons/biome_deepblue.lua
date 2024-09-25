@@ -8,16 +8,16 @@ local math_abs = math.abs
 
 local function horizontal_water_barrier(surface, room)
     local a = room.radius * 2
-    local left_top = {x = room.center.x - room.radius, y = room.center.y - room.radius}
+    local left_top = { x = room.center.x - room.radius, y = room.center.y - room.radius }
     local center_position = room.center
 
     for x = 0, a, 1 do
         for y = 0, a, 1 do
-            local p = {x = left_top.x + x, y = left_top.y + y}
+            local p = { x = left_top.x + x, y = left_top.y + y }
             if math_abs(p.y - center_position.y) < room.radius * 0.4 then
-                surface.set_tiles({{name = 'water', position = p}})
+                surface.set_tiles({ { name = 'water', position = p } })
                 if math_random(1, 16) == 1 then
-                    surface.create_entity({name = 'fish', position = p})
+                    surface.create_entity({ name = 'fish', position = p })
                 end
             end
         end
@@ -26,16 +26,16 @@ end
 
 local function vertical_water_barrier(surface, room)
     local a = room.radius * 2
-    local left_top = {x = room.center.x - room.radius, y = room.center.y - room.radius}
+    local left_top = { x = room.center.x - room.radius, y = room.center.y - room.radius }
     local center_position = room.center
 
     for x = 0, a, 1 do
         for y = 0, a, 1 do
-            local p = {x = left_top.x + x, y = left_top.y + y}
+            local p = { x = left_top.x + x, y = left_top.y + y }
             if math_abs(p.x - center_position.x) < room.radius * 0.4 then
-                surface.set_tiles({{name = 'water', position = p}})
+                surface.set_tiles({ { name = 'water', position = p } })
                 if math_random(1, 16) == 1 then
-                    surface.create_entity({name = 'fish', position = p})
+                    surface.create_entity({ name = 'fish', position = p })
                 end
             end
         end
@@ -44,16 +44,16 @@ end
 
 local function vertical_bridge(surface, room)
     local a = room.radius * 2
-    local left_top = {x = room.center.x - room.radius, y = room.center.y - room.radius}
+    local left_top = { x = room.center.x - room.radius, y = room.center.y - room.radius }
     local center_position = room.center
 
     for x = 0, a, 1 do
         for y = 0, a, 1 do
-            local p = {x = left_top.x + x, y = left_top.y + y}
+            local p = { x = left_top.x + x, y = left_top.y + y }
             if math_abs(p.x - center_position.x) > room.radius * 0.4 then
-                surface.set_tiles({{name = 'water', position = p}})
+                surface.set_tiles({ { name = 'water', position = p } })
                 if math_random(1, 16) == 1 then
-                    surface.create_entity({name = 'fish', position = p})
+                    surface.create_entity({ name = 'fish', position = p })
                 end
             end
         end
@@ -62,16 +62,16 @@ end
 
 local function horizontal_bridge(surface, room)
     local a = room.radius * 2
-    local left_top = {x = room.center.x - room.radius, y = room.center.y - room.radius}
+    local left_top = { x = room.center.x - room.radius, y = room.center.y - room.radius }
     local center_position = room.center
 
     for x = 0, a, 1 do
         for y = 0, a, 1 do
-            local p = {x = left_top.x + x, y = left_top.y + y}
+            local p = { x = left_top.x + x, y = left_top.y + y }
             if math_abs(p.y - center_position.y) > room.radius * 0.4 then
-                surface.set_tiles({{name = 'water', position = p}})
+                surface.set_tiles({ { name = 'water', position = p } })
                 if math_random(1, 16) == 1 then
-                    surface.create_entity({name = 'fish', position = p})
+                    surface.create_entity({ name = 'fish', position = p })
                 end
             end
         end
@@ -80,18 +80,18 @@ end
 
 local function island(surface, room)
     local a = room.radius * 2
-    local left_top = {x = room.center.x - room.radius, y = room.center.y - room.radius}
+    local left_top = { x = room.center.x - room.radius, y = room.center.y - room.radius }
     local center_position = room.center
 
     for x = 0, a, 1 do
         for y = 0, a, 1 do
-            local p = {x = left_top.x + x, y = left_top.y + y}
-	    local inside_x = math_abs(p.x - center_position.x) < room.radius * 0.6
-	    local inside_y = math_abs(p.y - center_position.y) < room.radius * 0.6
+            local p = { x = left_top.x + x, y = left_top.y + y }
+            local inside_x = math_abs(p.x - center_position.x) < room.radius * 0.6
+            local inside_y = math_abs(p.y - center_position.y) < room.radius * 0.6
             if not inside_x and not inside_y then
-                surface.set_tiles({{name = 'water', position = p}})
+                surface.set_tiles({ { name = 'water', position = p } })
                 if math_random(1, 16) == 1 then
-                    surface.create_entity({name = 'fish', position = p})
+                    surface.create_entity({ name = 'fish', position = p })
                 end
             end
         end
@@ -100,18 +100,18 @@ end
 
 local function cross(surface, room)
     local a = room.radius * 2
-    local left_top = {x = room.center.x - room.radius, y = room.center.y - room.radius}
+    local left_top = { x = room.center.x - room.radius, y = room.center.y - room.radius }
     local center_position = room.center
 
     for x = 0, a, 1 do
         for y = 0, a, 1 do
-            local p = {x = left_top.x + x, y = left_top.y + y}
-	    local ok_x = math_abs(p.x - center_position.x) > (room.radius * 0.33)
-	    local ok_y = math_abs(p.y - center_position.y) > (room.radius * 0.33)
+            local p = { x = left_top.x + x, y = left_top.y + y }
+            local ok_x = math_abs(p.x - center_position.x) > (room.radius * 0.33)
+            local ok_y = math_abs(p.y - center_position.y) > (room.radius * 0.33)
             if ok_x and ok_y then
-                surface.set_tiles({{name = 'water', position = p}})
+                surface.set_tiles({ { name = 'water', position = p } })
                 if math_random(1, 16) == 1 then
-                    surface.create_entity({name = 'fish', position = p})
+                    surface.create_entity({ name = 'fish', position = p })
                 end
             end
         end
@@ -120,18 +120,18 @@ end
 
 local function cross_inverted(surface, room)
     local a = room.radius * 2
-    local left_top = {x = room.center.x - room.radius, y = room.center.y - room.radius}
+    local left_top = { x = room.center.x - room.radius, y = room.center.y - room.radius }
     local center_position = room.center
 
     for x = 0, a, 1 do
         for y = 0, a, 1 do
-            local p = {x = left_top.x + x, y = left_top.y + y}
-	    local outside_x = math_abs(p.x - center_position.x) > room.radius * 0.33
-	    local outside_y = math_abs(p.y - center_position.y) > room.radius * 0.33
+            local p = { x = left_top.x + x, y = left_top.y + y }
+            local outside_x = math_abs(p.x - center_position.x) > room.radius * 0.33
+            local outside_y = math_abs(p.y - center_position.y) > room.radius * 0.33
             if not outside_x and outside_y then
-                surface.set_tiles({{name = 'water', position = p}})
+                surface.set_tiles({ { name = 'water', position = p } })
                 if math_random(1, 16) == 1 then
-                    surface.create_entity({name = 'fish', position = p})
+                    surface.create_entity({ name = 'fish', position = p })
                 end
             end
         end
@@ -157,15 +157,15 @@ local function squares(surface, room)
         local square_left_top = tiles[math_random(1, #tiles)].position
         for x = 0, a, 1 do
             for y = 0, b, 1 do
-                local p = {x = square_left_top.x + x, y = square_left_top.y + y}
+                local p = { x = square_left_top.x + x, y = square_left_top.y + y }
                 if p.x - center_position.x < room.radius and p.y - center_position.y < room.radius then
                     if math_random(1, 2) == 1 then
-                        surface.set_tiles({{name = 'water', position = p}})
+                        surface.set_tiles({ { name = 'water', position = p } })
                     else
-                        surface.set_tiles({{name = 'deepwater', position = p}})
+                        surface.set_tiles({ { name = 'deepwater', position = p } })
                     end
                     if math_random(1, 16) == 1 then
-                        surface.create_entity({name = 'fish', position = p})
+                        surface.create_entity({ name = 'fish', position = p })
                     end
                 end
             end
@@ -189,7 +189,7 @@ end
 local function biome(surface, room)
     local dungeontable = DungeonsTable.get_dungeontable()
     for _, tile in pairs(room.path_tiles) do
-        surface.set_tiles({{name = 'concrete', position = tile.position}}, true)
+        surface.set_tiles({ { name = 'concrete', position = tile.position } }, true)
     end
 
     if not room.room_border_tiles[1] then
@@ -198,12 +198,12 @@ local function biome(surface, room)
 
     table_shuffle_table(room.room_tiles)
     for key, tile in pairs(room.room_tiles) do
-        surface.set_tiles({{name = 'blue-refined-concrete', position = tile.position}}, true)
+        surface.set_tiles({ { name = 'blue-refined-concrete', position = tile.position } }, true)
     end
 
     table_shuffle_table(room.room_border_tiles)
     for key, tile in pairs(room.room_border_tiles) do
-        surface.set_tiles({{name = 'cyan-refined-concrete', position = tile.position}}, true)
+        surface.set_tiles({ { name = 'cyan-refined-concrete', position = tile.position } }, true)
     end
 
     local choice = math_random(1, #water_shapes)
@@ -211,21 +211,21 @@ local function biome(surface, room)
     water_shapes[choice](surface, room)
     for key, tile in pairs(room.room_tiles) do
         tile = surface.get_tile(tile.position)
-        if not tile.collides_with('resource-layer') then
+        if not tile.collides_with('resource') then
             if math_random(1, 10) == 1 then
-                surface.create_entity({name = 'stone', position = tile.position, amount = Functions.get_common_resource_amount(surface.index)})
+                surface.create_entity({ name = 'stone', position = tile.position, amount = Functions.get_common_resource_amount(surface.index) })
             end
             if math_random(1, 320) == 1 then
                 Functions.crash_site_chest(surface, tile.position)
             end
             if key % 64 == 1 and math_random(1, 2) == 1 then
                 Functions.set_spawner_tier(
-                    surface.create_entity({name = Functions.roll_spawner_name(), position = tile.position, force = dungeontable.enemy_forces[surface.index]}),
+                    surface.create_entity({ name = Functions.roll_spawner_name(), position = tile.position, force = dungeontable.enemy_forces[surface.index] }),
                     surface.index
                 )
             end
             if math_random(1, 64) == 1 then
-                surface.create_entity({name = Functions.roll_worm_name(surface.index), position = tile.position, force = dungeontable.enemy_forces[surface.index]})
+                surface.create_entity({ name = Functions.roll_worm_name(surface.index), position = tile.position, force = dungeontable.enemy_forces[surface.index] })
             end
         end
     end

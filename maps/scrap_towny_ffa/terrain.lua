@@ -16,7 +16,7 @@ local scrap_entities = {
     { name = 'crash-site-spaceship-wreck-small-3' }, -- these do not have mining animation
     { name = 'crash-site-spaceship-wreck-small-4' }, -- these do not have mining animation
     { name = 'crash-site-spaceship-wreck-small-5' }, -- these do not have mining animation
-    { name = 'crash-site-spaceship-wreck-small-6' } -- these do not have mining animation
+    { name = 'crash-site-spaceship-wreck-small-6' }  -- these do not have mining animation
 }
 
 local scrap_entities_index = table.size(scrap_entities)
@@ -51,7 +51,7 @@ local scrap_containers = {
     { name = 'crash-site-spaceship-wreck-big-1',    size = 2 }, -- these do not have mining animation
     { name = 'crash-site-spaceship-wreck-big-2',    size = 2 }, -- these do not have mining animation
     { name = 'crash-site-spaceship-wreck-big-2',    size = 2 }, -- these do not have mining animation
-    { name = 'crash-site-spaceship-wreck-big-2',    size = 2 } -- these do not have mining animation
+    { name = 'crash-site-spaceship-wreck-big-2',    size = 2 }  -- these do not have mining animation
 }
 local scrap_containers_index = table.size(scrap_containers)
 
@@ -233,7 +233,7 @@ local function landfill_under(entity)
     local surface = entity.surface
     for _, v in pairs(vectors) do
         local position = { entity.position.x + v[1], entity.position.y + v[2] }
-        if not surface.get_tile(position).collides_with('resource-layer') then
+        if not surface.get_tile(position).collides_with('resource') then
             surface.set_tiles({ { name = 'landfill', position = position } }, true)
         end
     end
@@ -298,7 +298,7 @@ local function on_chunk_generated(event)
                     end
                 end
                 if math_random(1, 3) > 1 then
-                    if not surface.get_tile(position).collides_with('resource-layer') then
+                    if not surface.get_tile(position).collides_with('resource') then
                         noise = get_noise('scrap_towny_ffa', position, seed)
                         if is_scrap_area(noise) then
                             place_scrap(surface, position)
@@ -312,7 +312,7 @@ local function on_chunk_generated(event)
             for y = 0, 31, 1 do
                 position = { x = left_top_x + x, y = left_top_y + y }
                 if math_random(1, 3) > 1 then
-                    if not surface.get_tile(position).collides_with('resource-layer') then
+                    if not surface.get_tile(position).collides_with('resource') then
                         noise = get_noise('scrap_towny_ffa', position, seed)
                         if is_scrap_area(noise) then
                             place_scrap(surface, position)

@@ -38,7 +38,7 @@ local random = math.random
 
 Global.register(
     this,
-    function(tbl)
+    function (tbl)
         this = tbl
     end
 )
@@ -139,7 +139,7 @@ local function assign_perks(player)
     return this.perks[player.name]
 end
 
-local assign_camouflage = function(ent, common)
+local assign_camouflage = function (ent, common)
     local shade = common.rand_range(20, 200)
     ent.color = {
         r = shade,
@@ -151,41 +151,41 @@ end
 
 local set_noise_hostile_hook =
     Token.register(
-    function(data)
-        local ent = data
-        if not ent or not ent.valid then
-            return
-        end
-        ent.force = 'enemy'
-        if ent.name == 'character' then
-            assign_camouflage(ent, CommonFunctions)
-
-            if CommonFunctions.rand_range(1, 5) == 1 then
-                ent.insert({name = 'shotgun', count = 1})
-                ent.insert({name = 'shotgun-shell', count = 20})
-            else
-                ent.insert({name = 'pistol', count = 1})
-                ent.insert({name = 'firearm-magazine', count = 20})
+        function (data)
+            local ent = data
+            if not ent or not ent.valid then
+                return
             end
-        else
-            ent.insert({name = 'firearm-magazine', count = 200})
+            ent.force = 'enemy'
+            if ent.name == 'character' then
+                assign_camouflage(ent, CommonFunctions)
+
+                if CommonFunctions.rand_range(1, 5) == 1 then
+                    ent.insert({ name = 'shotgun', count = 1 })
+                    ent.insert({ name = 'shotgun-shell', count = 20 })
+                else
+                    ent.insert({ name = 'pistol', count = 1 })
+                    ent.insert({ name = 'firearm-magazine', count = 20 })
+                end
+            else
+                ent.insert({ name = 'firearm-magazine', count = 200 })
+            end
         end
-    end
-)
+    )
 
 local set_neutral_to_entity =
     Token.register(
-    function(entity)
-        entity.force = 'neutral'
-    end
-)
+        function (entity)
+            entity.force = 'neutral'
+        end
+    )
 
 local fetch_common =
     Token.register(
-    function()
-        return CommonFunctions
-    end
-)
+        function ()
+            return CommonFunctions
+        end
+    )
 
 local industrial_zone_layers = {
     {
@@ -466,17 +466,17 @@ end
 
 local init_player_ship_bp =
     Token.register(
-    function(data)
-        local player = data.player
-        local entity = data.entity
-        entity.force = player.force
-        if entity.name == 'crash-site-chest-1' then
-            for _, stack in pairs(MapConfig.player_ship_loot) do
-                entity.insert(stack)
+        function (data)
+            local player = data.player
+            local entity = data.entity
+            entity.force = player.force
+            if entity.name == 'crash-site-chest-1' then
+                for _, stack in pairs(MapConfig.player_ship_loot) do
+                    entity.insert(stack)
+                end
             end
         end
-    end
-)
+    )
 
 this.events = {
     merchant = {
@@ -484,27 +484,27 @@ this.events = {
         moving = false,
         spawn_tick = 0,
         embark_tick = 0,
-        position = {x = 0, y = 0},
+        position = { x = 0, y = 0 },
         offer = MapConfig.merchant_offer
     }
 }
 
 local init_merchant_bp =
     Token.register(
-    function(data)
-        local entity = data.entity
-        entity.force = 'merchant'
-        entity.rotatable = false
-        entity.minable = false
-        if entity.name ~= 'market' then
-            entity.operable = false
-        else
-            for _, entry in pairs(this.events.merchant.offer) do
-                entity.add_market_item(entry)
+        function (data)
+            local entity = data.entity
+            entity.force = 'merchant'
+            entity.rotatable = false
+            entity.minable = false
+            if entity.name ~= 'market' then
+                entity.operable = false
+            else
+                for _, entry in pairs(this.events.merchant.offer) do
+                    entity.add_market_item(entry)
+                end
             end
         end
-    end
-)
+    )
 
 local function create_orbit_group()
     local orbit = game.permissions.create_group('orbit')
@@ -550,7 +550,7 @@ local function init_game()
     game.difficulty_settings.technology_price_multiplier = 0.3
     game.difficulty_settings.research_queue_setting = 'always'
 
-    LayersFunctions.set_collision_mask({'water-tile'})
+    LayersFunctions.set_collision_mask({ 'water_tile' })
 
     for _, layer in pairs(preset) do
         LayersFunctions.add_noise_layer(layer.type, layer.name, layer.objects, layer.elevation, layer.resolution)
@@ -581,53 +581,53 @@ end
 
 local explode_ship_update =
     Token.register(
-    function(data)
-        local id = data.id
-        local time_left = data.time_left
-        local ship = data.ship
-        local time = CommonFunctions.get_time(time_left)
-        for _, ent in pairs(ship.entities) do
-            if not ent.valid then
-                return false
+        function (data)
+            local id = data.id
+            local time_left = data.time_left
+            local ship = data.ship
+            local time = CommonFunctions.get_time(time_left)
+            for _, ent in pairs(ship.entities) do
+                if not ent.valid then
+                    return false
+                end
             end
-        end
 
-        rendering.set_text(id, time)
-        return true
-    end
-)
+            rendering.set_text(id, time)
+            return true
+        end
+    )
 
 local explode_ship =
     Token.register(
-    function(data)
-        local ship = data.ship
-        local id = data.id
-        local active_surface = data.active_surface
-        local surface = game.get_surface(active_surface)
-        if not surface or not surface.valid then
-            return
-        end
-
-        for _, ent in pairs(Blueprints.reference_get_entities(ship)) do
-            if not ent.valid then
-                goto continue
+        function (data)
+            local ship = data.ship
+            local id = data.id
+            local active_surface = data.active_surface
+            local surface = game.get_surface(active_surface)
+            if not surface or not surface.valid then
+                return
             end
 
-            local explosion = {
-                name = 'massive-explosion',
-                position = ent.position
-            }
-            surface.create_entity(explosion)
+            for _, ent in pairs(Blueprints.reference_get_entities(ship)) do
+                if not ent.valid then
+                    goto continue
+                end
 
-            ::continue::
+                local explosion = {
+                    name = 'massive-explosion',
+                    position = ent.position
+                }
+                surface.create_entity(explosion)
+
+                ::continue::
+            end
+
+            local bb = Blueprints.reference_get_bounding_box(ship)
+            LayersFunctions.remove_excluding_bounding_box(bb)
+            Blueprints.destroy_reference(surface, ship)
+            rendering.get_object_by_id(id).destroy()
         end
-
-        local bb = Blueprints.reference_get_bounding_box(ship)
-        LayersFunctions.remove_excluding_bounding_box(bb)
-        Blueprints.destroy_reference(surface, ship)
-        rendering.get_object_by_id(id).destroy()
-    end
-)
+    )
 
 local function do_spawn_point(player)
     local point = {
@@ -654,7 +654,7 @@ local function do_spawn_point(player)
     }
 
     local id = rendering.draw_text(object)
-    local data = {id = id, time_left = time_left, ship = instance, active_surface = player.surface.index}
+    local data = { id = id, time_left = time_left, ship = instance, active_surface = player.surface.index }
 
     local timer = Timers.set_timer(time_left, explode_ship)
     Timers.set_timer_on_update(timer, explode_ship_update)
@@ -685,7 +685,7 @@ local function get_non_obstructed_position(s, radius)
         search_info = {
             position = chunk,
             radius = radius,
-            force = {'neutral', 'enemy'},
+            force = { 'neutral', 'enemy' },
             invert = true
         }
         local ents = s.find_entities_filtered(search_info)
@@ -897,7 +897,7 @@ local function on_gui_click(e)
 end
 
 local function init_player(p)
-    p.teleport({0, 0}, 'arena')
+    p.teleport({ 0, 0 }, 'arena')
     local s = p.surface
     local position = get_non_obstructed_position(s, 10)
 
@@ -926,7 +926,7 @@ local function init_player(p)
     end
 
     if not p.character or not p.character.valid then
-        p.set_controller({type = defines.controllers.god})
+        p.set_controller({ type = defines.controllers.god })
         p.create_character()
     end
 
@@ -1241,7 +1241,7 @@ local function remove_offline_players()
                                 game.merge_forces(player.name, 'neutral')
                             end
                             Session.clear_player(player)
-                            game.remove_offline_players({player})
+                            game.remove_offline_players({ player })
                             offline_players.players[i] = nil
                         end
                     end
@@ -1453,7 +1453,7 @@ local function on_player_died(e)
         return
     end
     Session.clear_player(p)
-    game.remove_offline_players({p})
+    game.remove_offline_players({ p })
 end
 
 local function on_player_respawned(e)
@@ -1471,12 +1471,12 @@ local function on_player_dropped_item(e)
     if ent.stack.name == 'raw-fish' then
         local ent_list =
             p.surface.find_entities_filtered(
-            {
-                name = 'character',
-                position = ent.position,
-                radius = 2
-            }
-        )
+                {
+                    name = 'character',
+                    position = ent.position,
+                    radius = 2
+                }
+            )
         if not ent_list then
             return
         end
@@ -1516,12 +1516,12 @@ local function on_player_dropped_item(e)
     elseif ent.stack.name == 'coal' then
         local ent_list =
             p.surface.find_entities_filtered(
-            {
-                name = 'character',
-                position = ent.position,
-                radius = 2
-            }
-        )
+                {
+                    name = 'character',
+                    position = ent.position,
+                    radius = 2
+                }
+            )
         if not ent_list then
             return
         end
@@ -1647,7 +1647,7 @@ local function hostile_death(e)
         return false
     end
 
-    loot.insert({name = 'coin', count = random(30, 70)})
+    loot.insert({ name = 'coin', count = random(30, 70) })
 
     return true
 end

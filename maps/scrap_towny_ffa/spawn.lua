@@ -33,13 +33,13 @@ local function get_area(position, w, h)
     local x2 = w - x1
     local y1 = math_floor(h / 2)
     local y2 = h - y1
-    return {{position.x - x1, position.y - y1}, {position.x + x2, position.y + y2}}
+    return { { position.x - x1, position.y - y1 }, { position.x + x2, position.y + y2 } }
 end
 
 local function clear_spawn(position, surface, w, h)
     --log("clear_spawn {" .. position.x .. "," .. position.y .. "}")
     local area = get_area(position, w, h)
-    for _, e in pairs(surface.find_entities_filtered({area = area})) do
+    for _, e in pairs(surface.find_entities_filtered({ area = area })) do
         if e.type ~= 'character' then
             e.destroy()
         end
@@ -102,17 +102,17 @@ local function is_empty(position, surface)
     end
     local entity_radius = 3
     local tile_radius = 2
-    local entities = surface.find_entities_filtered({position = position, radius = entity_radius})
+    local entities = surface.find_entities_filtered({ position = position, radius = entity_radius })
     --log("entities = " .. #entities)
     if #entities > 0 then
         return false
     end
-    local tiles = surface.count_tiles_filtered({position = position, radius = tile_radius, collision_mask = 'water-tile'})
-    --log("water-tiles = " .. tiles)
+    local tiles = surface.count_tiles_filtered({ position = position, radius = tile_radius, collision_mask = 'water_tile' })
+    --log("water_tiles = " .. tiles)
     if tiles > 0 then
         return false
     end
-    local result = surface.can_place_entity({name = 'character', position = position})
+    local result = surface.can_place_entity({ name = 'character', position = position })
     --log("is_empty = " .. tostring(result))
     return result
 end
@@ -122,7 +122,7 @@ local function find_valid_spawn_point(player, force_name, surface)
     local this = ScenarioTable.get_table()
 
     -- check center of map first if valid
-    local position = {x = 0, y = 0}
+    local position = { x = 0, y = 0 }
     --log("testing {" .. position.x .. "," .. position.y .. "}")
     force_load(position, surface, 1)
 
@@ -140,8 +140,8 @@ local function find_valid_spawn_point(player, force_name, surface)
     -- is the point near any other players
     local r = 55
     local area = {
-        left_top = {x = player.position.x - r, y = player.position.y - r},
-        right_bottom = {x = player.position.x + r, y = player.position.y + r}
+        left_top = { x = player.position.x - r, y = player.position.y - r },
+        right_bottom = { x = player.position.x + r, y = player.position.y + r }
     }
 
     if not is_position_near(area) then
@@ -162,7 +162,7 @@ local function find_valid_spawn_point(player, force_name, surface)
         if town_center ~= nil then
             position = town_center.market.position
         end
-    --log("town center is {" .. position.x .. "," .. position.y .. "}")
+        --log("town center is {" .. position.x .. "," .. position.y .. "}")
     end
     -- and start checking around it for a suitable spawn position
     local tries = 0
@@ -176,7 +176,7 @@ local function find_valid_spawn_point(player, force_name, surface)
             local t = math_rad(angle)
             local x = math_floor(position.x + math_cos(t) * radius)
             local y = math_floor(position.y + math_sin(t) * radius)
-            local target = {x = x, y = y}
+            local target = { x = x, y = y }
             --log("testing {" .. target.x .. "," .. target.y .. "}")
             force_load(position, surface, 1)
             if in_use(target) == false then
@@ -195,13 +195,13 @@ local function find_valid_spawn_point(player, force_name, surface)
         radius = radius + math_random(1, spawn_point_incremental_distance)
         tries = tries + 1
     end
-    return {x = 0, y = 0}
+    return { x = 0, y = 0 }
 end
 
 function Public.get_new_spawn_point(player, surface)
     local this = ScenarioTable.get_table()
     -- get a new spawn point
-    local position = {0, 0}
+    local position = { 0, 0 }
     if player ~= nil then
         local force = player.force
         if force ~= nil then
@@ -222,7 +222,7 @@ function Public.get_spawn_point(player, surface)
     -- if there is a spawn point and less than three strikes
     if position ~= nil and this.strikes[player.name] < 3 then
         -- check that the spawn point is not blocked
-        if surface.can_place_entity({name = 'character', position = position}) then
+        if surface.can_place_entity({ name = 'character', position = position }) then
             --log("player " .. player.name .. "using existing spawn point at {" .. position.x .. "," .. position.y .. "}")
             return position
         else
@@ -235,7 +235,7 @@ function Public.get_spawn_point(player, surface)
 end
 
 function Public.clear_spawn_point(position, surface)
-    Enemy.clear_worms(position, surface, spawn_point_safety) -- behemoth worms can attack from a range of 48, clear first time only
+    Enemy.clear_worms(position, surface, spawn_point_safety)   -- behemoth worms can attack from a range of 48, clear first time only
     Enemy.clear_enemies(position, surface, spawn_point_safety) -- behemoth worms can attack from a range of 48
     clear_spawn(position, surface, 7, 9)
 end

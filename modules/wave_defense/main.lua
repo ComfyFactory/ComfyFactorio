@@ -989,7 +989,7 @@ local function command_to_main_target(group, bypass)
     end
 
     local tile = group.surface.get_tile(group.position)
-    if tile.valid and tile.collides_with('player-layer') then
+    if tile.valid and tile.collides_with('player') then
         group = reform_group(group)
     end
     if not valid(group) then
@@ -1033,7 +1033,7 @@ local function command_to_side_target(group)
     end
 
     local tile = group.surface.get_tile(group.position)
-    if tile.valid and tile.collides_with('player-layer') then
+    if tile.valid and tile.collides_with('player') then
         group = reform_group(group)
     end
 

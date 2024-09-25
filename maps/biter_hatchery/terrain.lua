@@ -12,7 +12,7 @@ local function get_replacement_tile(surface, position)
         table.shuffle_table(vectors)
         for _, v in pairs(vectors) do
             local tile = surface.get_tile(position.x + v[1], position.y + v[2])
-            if not tile.collides_with('resource-layer') then
+            if not tile.collides_with('resource') then
                 return tile.name
             end
         end

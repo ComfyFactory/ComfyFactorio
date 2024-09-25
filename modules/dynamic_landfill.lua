@@ -73,7 +73,7 @@ end
 local function place_fitting_tile(position, surface, tiles_placed)
     for _, coord in pairs(spiral_coords) do
         local tile = surface.get_tile({ position.x + coord.x, position.y + coord.y })
-        if not tile.collides_with('player-layer') then
+        if not tile.collides_with('player') then
             local valid_source_tile = is_this_a_valid_source_tile(tile.position, tiles_placed)
             if tile.name == 'out-of-map' then
                 valid_source_tile = false

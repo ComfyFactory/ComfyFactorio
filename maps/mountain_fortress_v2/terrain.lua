@@ -50,7 +50,7 @@ local function get_replacement_tile(surface, position)
         table.shuffle_table(vectors)
         for k, v in pairs(vectors) do
             local tile = surface.get_tile(position.x + v[1], position.y + v[2])
-            if tile.valid and not tile.collides_with('resource-layer') then
+            if tile.valid and not tile.collides_with('resource') then
                 return tile.name
             end
         end
@@ -75,7 +75,7 @@ local function place_wagon(surface, left_top)
     end
 
     for k, tile in pairs(tiles) do
-        if tile.collides_with('resource-layer') then
+        if tile.collides_with('resource') then
             surface.set_tiles({ { name = 'landfill', position = tile.position } }, true)
         end
         for _, e in pairs(surface.find_entities_filtered({ position = tile.position, force = { 'neutral', 'enemy' } })) do
@@ -1103,7 +1103,7 @@ local function replace_water(surface, left_top)
     for x = 0, 31, 1 do
         for y = 0, 31, 1 do
             local p = { x = left_top.x + x, y = left_top.y + y }
-            if surface.get_tile(p).collides_with('resource-layer') then
+            if surface.get_tile(p).collides_with('resource') then
                 surface.set_tiles({ { name = get_replacement_tile(surface, p), position = p } }, true)
             end
         end

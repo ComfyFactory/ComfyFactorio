@@ -84,7 +84,7 @@ end
 
 local function process_tile(surface, pos)
     local tile = surface.get_tile(pos)
-    if tile.collides_with('player-layer') then
+    if tile.collides_with('player') then
         return
     end
 

@@ -74,7 +74,7 @@ local function drift_corpses_toward_beach()
     local surface = game.surfaces[1]
     for _, corpse in pairs(surface.find_entities_filtered({ name = 'character-corpse' })) do
         if corpse.position.y < 0 then
-            if surface.get_tile(corpse.position).collides_with('resource-layer') then
+            if surface.get_tile(corpse.position).collides_with('resource') then
                 corpse.clone {
                     position = { corpse.position.x, corpse.position.y + (math.random(50, 250) * 0.01) },
                     surface = surface,
