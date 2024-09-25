@@ -1764,6 +1764,11 @@ function Public.event_on_chunk_generated(event)
 		if scope.chunk_structures then chunk_structures_fn = scope.chunk_structures end
 	end
 
+	if not terrain_fn then
+		log('[WARN]: no terrain function')
+		return
+	end
+
 	if not width then
 		width = 999
 		log('no surface width? ' .. type)
