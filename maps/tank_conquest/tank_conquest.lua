@@ -433,6 +433,8 @@ function draw_gui_status(player)
 
     element_progressbar.style.color = table_of_colors.team
 
+    element_progressbar.style.height = 20
+
     local element_label = element_frame.add({ type = 'label', caption = math.floor(storage.table_of_properties[player.force.name].available_tickets) })
 
     element_label.style.font_color = table_of_colors.white
@@ -470,6 +472,8 @@ function draw_gui_status(player)
     element_progressbar.style.top_padding = 10
 
     element_progressbar.style.color = table_of_colors.enemy
+
+    element_progressbar.style.height = 20
 
     for _, element_item in pairs(element_frame.children) do
         element_item.style.font = 'heading-1'

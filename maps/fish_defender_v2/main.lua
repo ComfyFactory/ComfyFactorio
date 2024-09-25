@@ -142,6 +142,7 @@ local function create_wave_gui(player)
         progressbar.style.maximal_width = 96
         progressbar.style.padding = -1
         progressbar.style.top_padding = 1
+        progressbar.style.height = 20
     else
         local time_remaining = math.floor(((wave_grace_period - (game.tick % wave_grace_period)) / 60) / 60)
         if time_remaining <= 0 then
