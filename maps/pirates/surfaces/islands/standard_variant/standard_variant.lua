@@ -93,11 +93,11 @@ function Public.terrain(args)
 				if rockrng < rockdensity then
 					args.entities[#args.entities + 1] = IslandsCommon.random_rock_1(args.p)
 				elseif rockrng < rockdensity * 1.5 then
-					args.decoratives[#args.decoratives + 1] = { name = 'rock-medium', position = args.p }
+					args.decoratives[#args.decoratives + 1] = { name = 'medium-rock', position = args.p }
 				elseif rockrng < rockdensity * 2 then
-					args.decoratives[#args.decoratives + 1] = { name = 'rock-small', position = args.p }
+					args.decoratives[#args.decoratives + 1] = { name = 'small-rock', position = args.p }
 				elseif rockrng < rockdensity * 2.5 then
-					args.decoratives[#args.decoratives + 1] = { name = 'rock-tiny', position = args.p }
+					args.decoratives[#args.decoratives + 1] = { name = 'tiny-rock', position = args.p }
 				end
 			end
 		end

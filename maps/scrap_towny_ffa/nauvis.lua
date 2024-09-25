@@ -18,41 +18,41 @@ local map_height = 3840
 
 local apply_startup_settings_token =
     Token.register(
-    function(data)
-        local this = ScenarioTable.get_table()
-        local settings = {}
+        function (data)
+            local this = ScenarioTable.get_table()
+            local settings = {}
 
-        if not data or not data.value then
-            if this.shuffle_random_victory_time and math.random(1, 32) == 1 then
-                this.required_time_to_win = 48
-                this.required_time_to_win_in_ticks = 10368000
-                this.surface_terrain = 'forest'
-            end
-        else
-            local value = data.value
-            if value.required_time_to_win == 48 then
-                this.required_time_to_win = 72
-                this.required_time_to_win_in_ticks = 15552000
+            if not data or not data.value then
+                if this.shuffle_random_victory_time and math.random(1, 32) == 1 then
+                    this.required_time_to_win = 48
+                    this.required_time_to_win_in_ticks = 10368000
+                    this.surface_terrain = 'forest'
+                end
             else
-                this.required_time_to_win = 48
-                this.required_time_to_win_in_ticks = 10368000
+                local value = data.value
+                if value.required_time_to_win == 48 then
+                    this.required_time_to_win = 72
+                    this.required_time_to_win_in_ticks = 15552000
+                else
+                    this.required_time_to_win = 48
+                    this.required_time_to_win_in_ticks = 10368000
+                end
+                if value.surface_terrain == 'forest' then
+                    this.surface_terrain = 'desert'
+                else
+                    this.surface_terrain = 'forest'
+                end
             end
-            if value.surface_terrain == 'forest' then
-                this.surface_terrain = 'desert'
-            else
-                this.surface_terrain = 'forest'
-            end
+
+            settings.required_time_to_win = this.required_time_to_win
+            settings.required_time_to_win_in_ticks = this.required_time_to_win_in_ticks
+            settings.surface_terrain = this.surface_terrain
+
+            Server.set_data(dataset, dataset_key, settings)
         end
+    )
 
-        settings.required_time_to_win = this.required_time_to_win
-        settings.required_time_to_win_in_ticks = this.required_time_to_win_in_ticks
-        settings.surface_terrain = this.surface_terrain
-
-        Server.set_data(dataset, dataset_key, settings)
-    end
-)
-
-local apply_startup_settings = function(this, server_name_matches)
+local apply_startup_settings = function (this, server_name_matches)
     local settings = {}
 
     if this.required_time_to_win == 48 then
@@ -85,7 +85,7 @@ function Public.nuke(position)
     if not map_surface or not map_surface.valid then
         return
     end
-    map_surface.create_entity({name = 'atomic-rocket', position = position, target = position, speed = 0.5})
+    map_surface.create_entity({ name = 'atomic-rocket', position = position, target = position, speed = 0.5 })
 end
 
 function Public.armageddon()
@@ -98,10 +98,10 @@ function Public.armageddon()
             for _ = 1, 5 do
                 local px = market.position.x + math_random(1, 256) - 128
                 local py = market.position.y + math_random(1, 256) - 128
-                targets[offset] = {x = px, y = py}
+                targets[offset] = { x = px, y = py }
                 offset = offset + 1
             end
-            targets[offset] = {x = market.position.x, y = market.position.y}
+            targets[offset] = { x = market.position.x, y = market.position.y }
             offset = offset + 1
         end
     end
@@ -111,10 +111,10 @@ function Public.armageddon()
             for _ = 1, 5 do
                 local px = market.position.x + math_random(1, 256) - 128
                 local py = market.position.y + math_random(1, 256) - 128
-                targets[offset] = {x = px, y = py}
+                targets[offset] = { x = px, y = py }
                 offset = offset + 1
             end
-            targets[offset] = {x = market.position.x, y = market.position.y}
+            targets[offset] = { x = market.position.x, y = market.position.y }
             offset = offset + 1
         end
     end
@@ -130,7 +130,7 @@ function Public.armageddon()
         end
         this.nuke_tick_schedule[future][#this.nuke_tick_schedule[future] + 1] = {
             callback = 'nuke',
-            params = {position}
+            params = { position }
         }
     end
 end
@@ -148,40 +148,40 @@ function Public.initialize(init)
     local mgs = surface_seed.map_gen_settings
     mgs.default_enable_all_autoplace_controls = true -- don't mess with this!
     mgs.autoplace_controls = {
-        coal = {frequency = 2, size = 0.1, richness = 0.2},
-        stone = {frequency = 2, size = 0.1, richness = 0.2},
-        ['copper-ore'] = {frequency = 5, size = 0.1, richness = 0.1},
-        ['iron-ore'] = {frequency = 5, size = 0.1, richness = 0.1},
-        ['uranium-ore'] = {frequency = 0, size = 0.1, richness = 0.2},
-        ['crude-oil'] = {frequency = 5, size = 0.05, richness = 0.5},
-        trees = {frequency = 2, size = 1, richness = 1},
-        ['enemy-base'] = {frequency = 2, size = 2, richness = 1}
+        coal = { frequency = 2, size = 0.1, richness = 0.2 },
+        stone = { frequency = 2, size = 0.1, richness = 0.2 },
+        ['copper-ore'] = { frequency = 5, size = 0.1, richness = 0.1 },
+        ['iron-ore'] = { frequency = 5, size = 0.1, richness = 0.1 },
+        ['uranium-ore'] = { frequency = 0, size = 0.1, richness = 0.2 },
+        ['crude-oil'] = { frequency = 5, size = 0.05, richness = 0.5 },
+        trees = { frequency = 2, size = 1, richness = 1 },
+        ['enemy-base'] = { frequency = 2, size = 2, richness = 1 }
     }
     mgs.autoplace_settings = {
         entity = {
             settings = {
-                ['rock-huge'] = {frequency = 2, size = 1, richness = 1},
-                ['rock-big'] = {frequency = 2, size = 1, richness = 1},
-                ['sand-rock-big'] = {frequency = 2, size = 1, richness = 1}
+                ['rock-huge'] = { frequency = 2, size = 1, richness = 1 },
+                ['rock-big'] = { frequency = 2, size = 1, richness = 1 },
+                ['sand-rock-big'] = { frequency = 2, size = 1, richness = 1 }
             }
         },
         decorative = {
             settings = {
-                ['rock-tiny'] = {frequency = 10, size = 'normal', richness = 'normal'},
-                ['rock-small'] = {frequency = 5, size = 'normal', richness = 'normal'},
-                ['rock-medium'] = {frequency = 2, size = 'normal', richness = 'normal'},
-                ['sand-rock-small'] = {frequency = 10, size = 'normal', richness = 'normal'},
-                ['sand-rock-medium'] = {frequency = 5, size = 'normal', richness = 'normal'}
+                ['rock-tiny'] = { frequency = 10, size = 'normal', richness = 'normal' },
+                ['rock-small'] = { frequency = 5, size = 'normal', richness = 'normal' },
+                ['rock-medium'] = { frequency = 2, size = 'normal', richness = 'normal' },
+                ['sand-rock-small'] = { frequency = 10, size = 'normal', richness = 'normal' },
+                ['sand-rock-medium'] = { frequency = 5, size = 'normal', richness = 'normal' }
             }
         },
         tile = {
             settings = {
-                ['deepwater'] = {frequency = 1, size = 0, richness = 1},
-                ['deepwater-green'] = {frequency = 1, size = 0, richness = 1},
-                ['water'] = {frequency = 1, size = 0, richness = 1},
-                ['water-green'] = {frequency = 1, size = 0, richness = 1},
-                ['water-mud'] = {frequency = 1, size = 0, richness = 1},
-                ['water-shallow'] = {frequency = 1, size = 0, richness = 1}
+                ['deepwater'] = { frequency = 1, size = 0, richness = 1 },
+                ['deepwater-green'] = { frequency = 1, size = 0, richness = 1 },
+                ['water'] = { frequency = 1, size = 0, richness = 1 },
+                ['water-green'] = { frequency = 1, size = 0, richness = 1 },
+                ['water-mud'] = { frequency = 1, size = 0, richness = 1 },
+                ['water-shallow'] = { frequency = 1, size = 0, richness = 1 }
             },
             treat_missing_as_default = true
         }
@@ -258,7 +258,7 @@ function Public.initialize(init)
     surface.freeze_daytime = false
     -- surface.map_gen_settings.water = 0.5
     surface.clear(true)
-    surface.regenerate_entity({'rock-huge', 'rock-big', 'sand-rock-big'})
+    surface.regenerate_entity({ 'rock-huge', 'rock-big', 'sand-rock-big' })
     surface.regenerate_decorative()
 end
 
@@ -286,7 +286,7 @@ Event.add(defines.events.on_tick, on_tick)
 
 Event.add(
     Server.events.on_server_started,
-    function()
+    function ()
         local this = ScenarioTable.get_table()
         if this.settings_applied then
             return
