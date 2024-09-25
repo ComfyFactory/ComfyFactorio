@@ -50,8 +50,6 @@ local function set_restricted_permissions(group)
 	group.set_allows_action(defines.input_action.build_terrain, false)
 	group.set_allows_action(defines.input_action.begin_mining, false)
 	group.set_allows_action(defines.input_action.begin_mining_terrain, false)
-	group.set_allows_action(defines.input_action.activate_copy, false)
-	group.set_allows_action(defines.input_action.activate_cut, false)
 	group.set_allows_action(defines.input_action.activate_paste, false)
 	group.set_allows_action(defines.input_action.upgrade, false)
 	group.set_allows_action(defines.input_action.deconstruct, false)
@@ -165,9 +163,11 @@ local function add_player_to_permission_group(player, group_override)
 
 	local gulag = game.permissions.get_group('gulag')
 	local tbl = gulag and gulag.players
-	for i = 1, #tbl do
-		if tbl[i].index == player.index then
-			return
+	if tbl then
+		for i = 1, #tbl do
+			if tbl[i].index == player.index then
+				return
+			end
 		end
 	end
 
