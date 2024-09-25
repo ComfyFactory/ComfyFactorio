@@ -17,7 +17,6 @@ local neutral_whitelist = {
     ['express-loader'] = true,
     ['fast-inserter'] = true,
     ['fast-loader'] = true,
-    ['filter-inserter'] = true,
     ['inserter'] = true,
     ['iron-chest'] = true,
     ['loader'] = true,

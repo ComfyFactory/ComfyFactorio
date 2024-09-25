@@ -126,7 +126,6 @@ function Public.treasure_chest_old(surface, position, container_name)
         { { name = 'inserter', count = math_random(8, 16) },                        weight = 3,  d_min = 0.0, d_max = 0.4 },
         { { name = 'long-handed-inserter', count = math_random(8, 16) },            weight = 3,  d_min = 0.0, d_max = 0.4 },
         { { name = 'fast-inserter', count = math_random(8, 16) },                   weight = 3,  d_min = 0.1, d_max = 1 },
-        { { name = 'filter-inserter', count = math_random(8, 16) },                 weight = 1,  d_min = 0.2, d_max = 1 },
         { { name = 'bulk-inserter', count = math_random(4, 8) },                    weight = 1,  d_min = 0.4, d_max = 1 },
         { { name = 'stack-inserter', count = math_random(4, 8) },                   weight = 3,  d_min = 0.3, d_max = 1 },
         { { name = 'small-electric-pole', count = math_random(16, 24) },            weight = 3,  d_min = 0.0, d_max = 0.3 },
