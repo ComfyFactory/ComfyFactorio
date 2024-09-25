@@ -449,6 +449,28 @@ stds.factorio_control = {
                 tile_prototypes = { read_only = true, other_fields = true },
                 virtual_signal_prototypes = { read_only = true, other_fields = true }
             }
+        },
+        prototypes = {
+            other_fields = false,
+            read_only = false,
+            fields = {
+                style             = { read_only = true, other_fields = true },
+                entity            = { read_only = true, other_fields = true },
+                item              = { read_only = true, other_fields = true },
+                fluid             = { read_only = true, other_fields = true },
+                tile              = { read_only = true, other_fields = true },
+                equipment         = { read_only = true, other_fields = true },
+                damage            = { read_only = true, other_fields = true },
+                virtual_signal    = { read_only = true, other_fields = true },
+                equipment_grid    = { read_only = true, other_fields = true },
+                recipe            = { read_only = true, other_fields = true },
+                technology        = { read_only = true, other_fields = true },
+                decorative        = { read_only = true, other_fields = true },
+                particle          = { read_only = true, other_fields = true },
+                autoplace_control = { read_only = true, other_fields = true },
+                quality           = { read_only = true, other_fields = true },
+
+            }
         }
     },
     globals = {
