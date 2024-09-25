@@ -670,7 +670,7 @@ end
 
 local transfer_functions = {
     ['requester-chest'] = input_cargo,
-    ['passive-chest-provider'] = output_cargo
+    ['passive-provider-chest'] = output_cargo
 }
 
 local function construct_doors(car)
@@ -1224,7 +1224,7 @@ function Public.create_car_room(car)
     local e2 =
         surface.create_entity(
             {
-                name = 'passive-chest-provider',
+                name = 'passive-provider-chest',
                 position = position2,
                 force = 'neutral',
                 create_build_effect_smoke = false
