@@ -88,12 +88,9 @@ Public.chest_loot_data_raw = {
 
 	{ 4,     -0.3, 0.3,  true,  'inserter',                         8,   20 },
 	{ 4,     0,    1,    true,  'fast-inserter',                    2,   12 },
-	{ 3,     0,    1,    false, 'filter-inserter',                  2,   9 },
 	{ 3,     0,    1,    false, 'long-handed-inserter',             4,   16 },
 	{ 3,     0,    0.5,  false, 'stack-inserter',                   1,   4 },
 	{ 3,     0.5,  1,    false, 'stack-inserter',                   5,   8 },
-	{ 1,     0,    0.5,  false, 'stack-filter-inserter',            1,   4 },
-	{ 1,     0.5,  1,    false, 'stack-filter-inserter',            5,   8 },
 
 	{ 40,    -0.5, 0.5,  true,  'firearm-magazine',                 10,  32 },
 	{ 60,    -1,   1,    true,  'piercing-rounds-magazine',         8,   16 },
@@ -404,7 +401,6 @@ end
 Public.maze_treasure_data_raw = {
 	{ 2,   -1,   1,   true,  'rocket',                           18,  24 },
 	{ 2,   -0.8, 0.8, false, 'stack-inserter',                   8,   10 },
-	{ 2,   -0.8, 0.8, false, 'stack-filter-inserter',            5,   6 },
 	{ 2,   0,    1,   false, 'poison-capsule',                   22,  22 },
 	{ 2,   0,    1,   false, 'destroyer-capsule',                8,   8 },
 	{ 2,   0,    1,   false, 'slowdown-capsule',                 14,  14 },
