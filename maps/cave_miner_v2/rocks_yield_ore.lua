@@ -7,9 +7,9 @@ local math_floor = math.floor
 local math_sqrt = math.sqrt
 
 local rock_yield = {
-    ['rock-big'] = 1,
-    ['rock-huge'] = 2,
-    ['sand-rock-big'] = 1
+    ['big-rock'] = 1,
+    ['huge-rock'] = 2,
+    ['big-sand-rock'] = 1
 }
 
 local particles = {

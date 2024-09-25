@@ -14,7 +14,7 @@ local GetNoise = require 'utils.get_noise'
 local simplex_noise = require 'utils.simplex_noise'.d2
 local spawn_circle_size = 39
 local ores = { 'copper-ore', 'iron-ore', 'stone', 'coal' }
-local rocks = { 'sand-rock-big', 'sand-rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-huge' }
+local rocks = { 'big-sand-rock', 'big-sand-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'huge-rock' }
 
 local chunk_tile_vectors = {}
 for x = 0, 31, 1 do
@@ -629,7 +629,7 @@ function Public.generate_additional_rocks(surface)
         return
     end
     local position = { x = -96 + math_random(0, 192), y = -40 - math_random(0, 96) }
-    local rocks = { 'rock-huge', 'rock-big', 'rock-big', 'rock-big', 'sand-rock-big' }
+    local rocks = { 'huge-rock', 'big-rock', 'big-rock', 'big-rock', 'big-sand-rock' }
     for _ = 1, math_random(6, 10) do
         local name = rocks[math_random(1, 5)]
         local p = surface.find_non_colliding_position(name, { position.x + (-10 + math_random(0, 20)), position.y + (-10 + math_random(0, 20)) }, 16, 1)

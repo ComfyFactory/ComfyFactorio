@@ -24,9 +24,9 @@ local math_random = math.random
 
 local disabled_for_deconstruction = {
     ['fish'] = true,
-    ['rock-huge'] = true,
-    ['rock-big'] = true,
-    ['sand-rock-big'] = true,
+    ['huge-rock'] = true,
+    ['big-rock'] = true,
+    ['big-sand-rock'] = true,
     ['mineable-wreckage'] = true
 }
 
@@ -39,7 +39,7 @@ map_functions = require 'utils.tools.map_functions'
 grid_size = 24
 --manual_mining_speed_modifier = 1
 main_ground_tile = 'dirt-3'
-rock_raffle = { 'rock-huge', 'rock-big', 'rock-big', 'rock-big' }
+rock_raffle = { 'huge-rock', 'big-rock', 'big-rock', 'big-rock' }
 tree_raffle = {
     'tree-01',
     'tree-02',

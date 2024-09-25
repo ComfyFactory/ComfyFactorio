@@ -29,9 +29,9 @@ local scrap = require 'utils.tools.scrap'
 
 local disabled_for_deconstruction = {
     ['fish'] = true,
-    ['rock-huge'] = true,
-    ['rock-big'] = true,
-    ['sand-rock-big'] = true,
+    ['huge-rock'] = true,
+    ['big-rock'] = true,
+    ['big-sand-rock'] = true,
     ['crash-site-spaceship-wreck-small-1'] = true,
     ['crash-site-spaceship-wreck-small-2'] = true,
     ['crash-site-spaceship-wreck-small-3'] = true,
@@ -150,7 +150,7 @@ local function create_shipwreck(surface, position)
         { { name = 'inserter', count = math_random(4, 8) },                 weight = 3, evolution_min = 0.0, evolution_max = 0.4 },
         { { name = 'long-handed-inserter', count = math_random(4, 8) },     weight = 3, evolution_min = 0.0, evolution_max = 0.4 },
         { { name = 'fast-inserter', count = math_random(4, 8) },            weight = 3, evolution_min = 0.1, evolution_max = 1 },
-        { { name = 'bulk-inserter', count = math_random(2, 4) },    weight = 1, evolution_min = 0.4, evolution_max = 1 },
+        { { name = 'bulk-inserter', count = math_random(2, 4) },            weight = 1, evolution_min = 0.4, evolution_max = 1 },
         { { name = 'stack-inserter', count = math_random(2, 4) },           weight = 3, evolution_min = 0.3, evolution_max = 1 },
         { { name = 'small-electric-pole', count = math_random(8, 16) },     weight = 3, evolution_min = 0.0, evolution_max = 0.3 },
         { { name = 'medium-electric-pole', count = math_random(4, 8) },     weight = 3, evolution_min = 0.2, evolution_max = 1 },

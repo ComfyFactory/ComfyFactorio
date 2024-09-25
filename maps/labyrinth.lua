@@ -96,7 +96,7 @@ local function is_chunk_allowed_to_grow(chunk_position, surface)
         left_top = { x = pos_x, y = pos_y },
         right_bottom = { x = pos_x + 31, y = pos_y + 31 }
     }
-    if surface.count_entities_filtered { area = area, name = { 'sand-rock-big', 'rock-big', 'rock-huge' }, limit = 1 } == 0 then
+    if surface.count_entities_filtered { area = area, name = { 'big-sand-rock', 'big-rock', 'huge-rock' }, limit = 1 } == 0 then
         return true
     else
         return false
@@ -167,7 +167,7 @@ local function init_map()
 
     game.map_settings.pollution.pollution_restored_per_tree_damage = 0
     game.forces['player'].set_spawn_position({ 16, 0 }, surface)
-    surface.create_entity { name = 'rock-big', position = { 16, -16 } }
+    surface.create_entity { name = 'big-rock', position = { 16, -16 } }
     this.settings.seed = seed
 
     game.forces['player'].technologies['artillery'].enabled = false
@@ -195,7 +195,7 @@ worm_raffle[7] = { 'medium-worm-turret', 'medium-worm-turret', 'medium-worm-turr
 worm_raffle[8] = { 'medium-worm-turret', 'medium-worm-turret', 'medium-worm-turret', 'medium-worm-turret', 'big-worm-turret', 'big-worm-turret' }
 worm_raffle[9] = { 'medium-worm-turret', 'medium-worm-turret', 'medium-worm-turret', 'big-worm-turret', 'big-worm-turret', 'big-worm-turret' }
 worm_raffle[10] = { 'medium-worm-turret', 'medium-worm-turret', 'medium-worm-turret', 'big-worm-turret', 'big-worm-turret', 'big-worm-turret' }
-local rock_weights = { { 'sand-rock-big', 9 }, { 'rock-big', 32 }, { 'rock-huge', 1 } }
+local rock_weights = { { 'big-sand-rock', 9 }, { 'big-rock', 32 }, { 'huge-rock', 1 } }
 local rock_raffle = {}
 for _, t in pairs(rock_weights) do
     for _ = 1, t[2], 1 do
@@ -1063,13 +1063,13 @@ local function on_entity_died(event)
         return
     end
 
-    if name == 'sand-rock-big' or name == 'rock-big' or name == 'rock-huge' then
+    if name == 'big-sand-rock' or name == 'big-rock' or name == 'huge-rock' then
         local pos = { x = position.x, y = position.y }
-        if name == 'rock-huge' then
+        if name == 'huge-rock' then
             spawn_infinity_chest(pos, surface)
-        elseif name == 'rock-big' then
+        elseif name == 'big-rock' then
             treasure_chest(pos, surface)
-        elseif name == 'sand-rock-big' then
+        elseif name == 'big-sand-rock' then
             local n = ore_spawn_raffle[math.random(1, #ore_spawn_raffle)]
             --local amount_modifier = 1 + ((this.settings.labyrinth_size / labyrinth_difficulty_curve) * 10)
             local amount_modifier = math.ceil(1 + evolution * 5)
@@ -1090,7 +1090,7 @@ local function on_entity_died(event)
 end
 
 local function on_player_mined_entity(event)
-    if event.entity.name == 'sand-rock-big' or event.entity.name == 'rock-big' or event.entity.name == 'rock-huge' then
+    if event.entity.name == 'big-sand-rock' or event.entity.name == 'big-rock' or event.entity.name == 'huge-rock' then
         event.entity.die()
     end
 end
@@ -1356,7 +1356,7 @@ local function on_robot_built_entity(event)
 end
 
 local function on_entity_damaged(event)
-    if event.entity.name == 'rock-huge' or event.entity.name == 'rock-big' or event.entity.name == 'sand-rock-big' then
+    if event.entity.name == 'huge-rock' or event.entity.name == 'big-rock' or event.entity.name == 'big-sand-rock' then
         if event.force.name == 'enemy' then
             event.entity.health = event.entity.health + event.final_damage_amount
         end

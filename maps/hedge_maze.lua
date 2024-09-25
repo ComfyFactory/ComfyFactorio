@@ -28,7 +28,7 @@ local modifiers_diagonal = {
     { diagonal = { x = -1, y = -1 }, connection_1 = { x = -1, y = 0 }, connection_2 = { x = 0, y = -1 } }
 }
 
-local rock_raffle = { 'sand-rock-big', 'sand-rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-huge' }
+local rock_raffle = { 'big-sand-rock', 'big-sand-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'huge-rock' }
 
 local function shuffle(tbl)
     local size = #tbl
@@ -60,7 +60,7 @@ local function create_shipwreck(surface, position)
         { { name = 'inserter', count = math_random(4, 8) },                 weight = 3, evolution_min = 0.0, evolution_max = 0.4 },
         { { name = 'long-handed-inserter', count = math_random(4, 8) },     weight = 3, evolution_min = 0.0, evolution_max = 0.4 },
         { { name = 'fast-inserter', count = math_random(4, 8) },            weight = 3, evolution_min = 0.1, evolution_max = 1 },
-        { { name = 'bulk-inserter', count = math_random(2, 4) },    weight = 1, evolution_min = 0.4, evolution_max = 1 },
+        { { name = 'bulk-inserter', count = math_random(2, 4) },            weight = 1, evolution_min = 0.4, evolution_max = 1 },
         { { name = 'stack-inserter', count = math_random(2, 4) },           weight = 3, evolution_min = 0.3, evolution_max = 1 },
         { { name = 'small-electric-pole', count = math_random(8, 16) },     weight = 3, evolution_min = 0.0, evolution_max = 0.3 },
         { { name = 'medium-electric-pole', count = math_random(4, 8) },     weight = 3, evolution_min = 0.2, evolution_max = 1 },

@@ -629,7 +629,7 @@ function Public.update_gui(player)
         gui.global_pool.tooltip = ({ 'gui.global_pool_amount', floor(rpg_extra.global_pool) })
     end
 
-    gui.scrap_mined.caption = ' [img=entity.tree-01][img=entity.rock-huge]: ' .. format_number(mined_scrap, true)
+    gui.scrap_mined.caption = ' [img=entity.tree-01][img=entity.huge-rock]: ' .. format_number(mined_scrap, true)
     gui.scrap_mined.tooltip = ({ 'gui.amount_harvested' })
 
     local pickaxe_upgrades = Public.pickaxe_upgrades

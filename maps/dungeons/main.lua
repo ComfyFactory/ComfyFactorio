@@ -312,7 +312,7 @@ local function on_entity_damaged(event)
     if math_random(1, 256) == 1 then
         return
     end
-    if entity.name ~= 'rock-big' then
+    if entity.name ~= 'big-rock' then
         return
     end
     entity.health = entity.health + event.final_damage_amount
@@ -326,7 +326,7 @@ local function on_player_mined_entity(event)
     if entity.type == 'simple-entity' then
         Functions.mining_events(entity)
     end
-    if entity.name ~= 'rock-big' then
+    if entity.name ~= 'big-rock' then
         return
     end
     expand(entity.surface, entity.position)
@@ -340,7 +340,7 @@ local function on_entity_died(event)
     if entity.type == 'unit-spawner' then
         spawner_death(entity)
     end
-    if entity.name ~= 'rock-big' then
+    if entity.name ~= 'big-rock' then
         return
     end
     expand(entity.surface, entity.position)
@@ -410,7 +410,7 @@ local function on_tick()
 
 	local surface = game.surfaces["dungeons"]
 
-	local entities = surface.find_entities_filtered({name = "rock-big"})
+	local entities = surface.find_entities_filtered({name = "big-rock"})
 	if not entities[1] then return end
 
 	local entity = entities[math_random(1, #entities)]

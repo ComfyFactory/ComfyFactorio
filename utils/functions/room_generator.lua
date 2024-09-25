@@ -399,7 +399,7 @@ function Public.draw_random_room(surface, position, shape)
     for _, tile in pairs(room.room_border_tiles) do
         surface.set_tiles({ { name = 'dirt-7', position = tile.position } }, true)
         if math_random(1, 2) == 1 then
-            surface.create_entity({ name = 'rock-big', position = tile.position })
+            surface.create_entity({ name = 'big-rock', position = tile.position })
         end
     end
 

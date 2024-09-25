@@ -395,7 +395,7 @@ local function get_arena_entity(surface, pos)
     local noise2 = get_noise('rocks_2', pos)
 
     if noise > -0.1 and noise < 0.1 and noise2 > -0.3 and noise2 < 0.3 then
-        return { name = 'rock-big', position = pos }
+        return { name = 'big-rock', position = pos }
     end
 
     if random(1, 16) == 1 and noise2 > 0.78 then

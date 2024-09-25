@@ -12,9 +12,9 @@ local simplex_noise = require 'utils.simplex_noise'.d2
 
 local disabled_for_deconstruction = {
     ['fish'] = true,
-    ['rock-huge'] = true,
-    ['rock-big'] = true,
-    ['sand-rock-big'] = true,
+    ['huge-rock'] = true,
+    ['big-rock'] = true,
+    ['big-sand-rock'] = true,
     ['mineable-wreckage'] = true
 }
 
@@ -45,15 +45,15 @@ local function generate_outer_content(event)
     for x = 0, 31, 1 do
         for y = 0, 31, 1 do
             local tile_to_insert = false
-            local pos = {x = left_top.x + x, y = left_top.y + y}
+            local pos = { x = left_top.x + x, y = left_top.y + y }
             local noise = get_noise('ocean', pos)
             if math.floor(noise * 8) % 2 == 1 then
-                surface.set_tiles({{name = 'deepwater', position = pos}})
+                surface.set_tiles({ { name = 'deepwater', position = pos } })
             else
-                surface.set_tiles({{name = 'water', position = pos}})
+                surface.set_tiles({ { name = 'water', position = pos } })
             end
             if math_random(1, 256) == 1 then
-                surface.create_entity({name = 'fish', position = pos})
+                surface.create_entity({ name = 'fish', position = pos })
             end
         end
     end
@@ -65,23 +65,23 @@ local function generate_inner_content(event)
     for x = 0, 31, 1 do
         for y = 0, 31, 1 do
             local tile_to_insert = false
-            local pos = {x = left_top.x + x, y = left_top.y + y}
+            local pos = { x = left_top.x + x, y = left_top.y + y }
             if pos.x < 2 and pos.y < 2 and pos.x > -3 and pos.y > -3 then
-                surface.set_tiles({{name = 'grass-1', position = pos}})
-                surface.create_entity({name = 'stone', position = pos, amount = 999999})
+                surface.set_tiles({ { name = 'grass-1', position = pos } })
+                surface.create_entity({ name = 'stone', position = pos, amount = 999999 })
             else
                 local noise = get_noise('ocean', pos)
                 if math.floor(noise * 8) % 2 == 1 then
-                    surface.set_tiles({{name = 'deepwater', position = pos}})
+                    surface.set_tiles({ { name = 'deepwater', position = pos } })
                 else
-                    surface.set_tiles({{name = 'water', position = pos}})
+                    surface.set_tiles({ { name = 'water', position = pos } })
                 end
                 if math_random(1, 256) == 1 then
-                    surface.create_entity({name = 'fish', position = pos})
+                    surface.create_entity({ name = 'fish', position = pos })
                 end
             end
             if pos.x == 0 and pos.y == 0 then
-                surface.create_entity({name = 'rock-big', position = pos})
+                surface.create_entity({ name = 'big-rock', position = pos })
             end
         end
     end
@@ -96,7 +96,7 @@ local function on_chunk_generated(event)
     local tiles = {}
     local entities = {}
 
-    for _, e in pairs(surface.find_entities_filtered({area = event.area})) do
+    for _, e in pairs(surface.find_entities_filtered({ area = event.area })) do
         if e.name ~= 'character' then
             e.destroy()
         end
@@ -116,20 +116,20 @@ local function init_map()
 
     local map_gen_settings = {}
     map_gen_settings.water = 'small'
-    map_gen_settings.cliff_settings = {cliff_elevation_interval = 22, cliff_elevation_0 = 22}
+    map_gen_settings.cliff_settings = { cliff_elevation_interval = 22, cliff_elevation_0 = 22 }
     map_gen_settings.autoplace_controls = {
-        ['coal'] = {frequency = 'none', size = 'none', richness = 'none'},
-        ['stone'] = {frequency = 'none', size = 'none', richness = 'none'},
-        ['copper-ore'] = {frequency = 'none', size = 'none', richness = 'none'},
-        ['iron-ore'] = {frequency = 'none', size = 'none', richness = 'none'},
-        ['crude-oil'] = {frequency = 'none', size = 'none', richness = 'none'},
-        ['trees'] = {frequency = 'none', size = 'none', richness = 'none'},
-        ['enemy-base'] = {frequency = 'none', size = 'none', richness = 'none'}
+        ['coal'] = { frequency = 'none', size = 'none', richness = 'none' },
+        ['stone'] = { frequency = 'none', size = 'none', richness = 'none' },
+        ['copper-ore'] = { frequency = 'none', size = 'none', richness = 'none' },
+        ['iron-ore'] = { frequency = 'none', size = 'none', richness = 'none' },
+        ['crude-oil'] = { frequency = 'none', size = 'none', richness = 'none' },
+        ['trees'] = { frequency = 'none', size = 'none', richness = 'none' },
+        ['enemy-base'] = { frequency = 'none', size = 'none', richness = 'none' }
     }
     game.create_surface('lost', map_gen_settings)
     game.surfaces['lost'].ticks_per_day = game.surfaces['lost'].ticks_per_day * 2
 
-    game.surfaces['lost'].request_to_generate_chunks({0, 0}, 3)
+    game.surfaces['lost'].request_to_generate_chunks({ 0, 0 }, 3)
     game.surfaces['lost'].force_generate_chunk_requests()
 
     game.forces.player.manual_mining_speed_modifier = 0.5
@@ -142,7 +142,7 @@ local function on_player_joined_game(event)
 
     local player = game.players[event.player_index]
     if player.online_time == 0 then
-        player.teleport(game.surfaces['lost'].find_non_colliding_position('character', {0, 2}, 50, 0.5), 'lost')
+        player.teleport(game.surfaces['lost'].find_non_colliding_position('character', { 0, 2 }, 50, 0.5), 'lost')
     end
 end
 
@@ -155,7 +155,7 @@ local function on_player_mined_entity(event)
         return
     end
     if entity.position.x == 0 and entity.position.y == 0 then
-        entity.surface.create_entity({name = 'rock-big', position = {0, 0}})
+        entity.surface.create_entity({ name = 'big-rock', position = { 0, 0 } })
     end
 end
 

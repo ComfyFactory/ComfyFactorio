@@ -9,7 +9,7 @@ local math_abs = math.abs
 local math_random = math.random
 local math_floor = math.floor
 
-local rock_raffle = {'sand-rock-big', 'sand-rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-huge'}
+local rock_raffle = { 'big-sand-rock', 'big-sand-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'huge-rock' }
 local size_of_rock_raffle = #rock_raffle
 
 local loot_blacklist = {
@@ -20,26 +20,26 @@ function Public.roll_source_surface()
     local map_gen_settings = {
         ['water'] = 0,
         ['starting_area'] = 1,
-        ['cliff_settings'] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
+        ['cliff_settings'] = { cliff_elevation_interval = 0, cliff_elevation_0 = 0 },
         ['default_enable_all_autoplace_controls'] = false,
         ['autoplace_settings'] = {
-            ['entity'] = {treat_missing_as_default = false},
-            ['tile'] = {treat_missing_as_default = false},
-            ['decorative'] = {treat_missing_as_default = false}
+            ['entity'] = { treat_missing_as_default = false },
+            ['tile'] = { treat_missing_as_default = false },
+            ['decorative'] = { treat_missing_as_default = false }
         },
         autoplace_controls = {
-            ['coal'] = {frequency = 0, size = 0, richness = 0},
-            ['stone'] = {frequency = 0, size = 0, richness = 0},
-            ['copper-ore'] = {frequency = 0, size = 0, richness = 0},
-            ['iron-ore'] = {frequency = 0, size = 0, richness = 0},
-            ['uranium-ore'] = {frequency = 0, size = 0, richness = 0},
-            ['crude-oil'] = {frequency = 0, size = 0, richness = 0},
-            ['trees'] = {frequency = 0, size = 0, richness = 0},
-            ['enemy-base'] = {frequency = 0, size = 0, richness = 0}
+            ['coal'] = { frequency = 0, size = 0, richness = 0 },
+            ['stone'] = { frequency = 0, size = 0, richness = 0 },
+            ['copper-ore'] = { frequency = 0, size = 0, richness = 0 },
+            ['iron-ore'] = { frequency = 0, size = 0, richness = 0 },
+            ['uranium-ore'] = { frequency = 0, size = 0, richness = 0 },
+            ['crude-oil'] = { frequency = 0, size = 0, richness = 0 },
+            ['trees'] = { frequency = 0, size = 0, richness = 0 },
+            ['enemy-base'] = { frequency = 0, size = 0, richness = 0 }
         }
     }
     local surface = game.create_surface('cave_miner_source', map_gen_settings)
-    surface.request_to_generate_chunks({x = 0, y = 0}, 2)
+    surface.request_to_generate_chunks({ x = 0, y = 0 }, 2)
     surface.force_generate_chunk_requests()
 end
 
@@ -51,7 +51,7 @@ function Public.out_of_map(event)
     for x = 0, 31, 1 do
         for y = 0, 31, 1 do
             i = i + 1
-            tiles[i] = {name = 'out-of-map', position = {left_top_x + x, left_top_y + y}}
+            tiles[i] = { name = 'out-of-map', position = { left_top_x + x, left_top_y + y } }
         end
     end
     event.surface.set_tiles(tiles, false)
@@ -60,23 +60,23 @@ end
 local function place_rock(surface, position)
     local a = (-49 + math_random(0, 98)) * 0.01
     local b = (-49 + math_random(0, 98)) * 0.01
-    surface.create_entity({name = rock_raffle[math_random(1, size_of_rock_raffle)], position = {position.x + a, position.y + b}})
+    surface.create_entity({ name = rock_raffle[math_random(1, size_of_rock_raffle)], position = { position.x + a, position.y + b } })
 end
 
 local biomes = {}
 
 function biomes.oasis(surface, seed, position, square_distance, noise)
     if noise > 0.83 then
-        surface.set_tiles({{name = 'deepwater', position = position}}, true)
+        surface.set_tiles({ { name = 'deepwater', position = position } }, true)
         if math_random(1, 16) == 1 then
-            surface.create_entity({name = 'fish', position = position})
+            surface.create_entity({ name = 'fish', position = position })
         end
         return
     end
     local noise_decoratives = GetNoise('decoratives', position, seed + 50000)
-    surface.set_tiles({{name = 'grass-1', position = position}}, true)
+    surface.set_tiles({ { name = 'grass-1', position = position } }, true)
     if math_random(1, 16) == 1 and math_abs(noise_decoratives) > 0.17 then
-        surface.create_entity({name = 'tree-04', position = position})
+        surface.create_entity({ name = 'tree-04', position = position })
     end
     if math_random(1, 128) == 1 then
         Functions.place_crude_oil(surface, position, 1)
@@ -88,16 +88,16 @@ function biomes.oasis(surface, seed, position, square_distance, noise)
 end
 
 function biomes.void(surface, seed, position)
-    surface.set_tiles({{name = 'out-of-map', position = position}}, false, false, false, false)
+    surface.set_tiles({ { name = 'out-of-map', position = position } }, false, false, false, false)
 end
 
 function biomes.pond_cave(surface, seed, position, square_distance, noise)
     local noise_2 = GetNoise('cm_ponds', position, seed)
 
     if math_abs(noise_2) > 0.60 then
-        surface.set_tiles({{name = 'water', position = position}}, true, false, false, false)
+        surface.set_tiles({ { name = 'water', position = position } }, true, false, false, false)
         if math_random(1, 16) == 1 then
-            surface.create_entity({name = 'fish', position = position})
+            surface.create_entity({ name = 'fish', position = position })
         end
         return
     end
@@ -123,9 +123,9 @@ function biomes.spawn(surface, seed, position, square_distance)
     local noise = GetNoise('decoratives', position, seed)
 
     if math_abs(noise) > 0.60 and square_distance < 900 then
-        surface.set_tiles({{name = 'water', position = position}}, true, false, false, false)
+        surface.set_tiles({ { name = 'water', position = position } }, true, false, false, false)
         if math_random(1, 16) == 1 then
-            surface.create_entity({name = 'fish', position = position})
+            surface.create_entity({ name = 'fish', position = position })
         end
         return
     end
@@ -142,16 +142,16 @@ end
 
 function biomes.ocean(surface, seed, position, square_distance, noise)
     if noise > 0.66 then
-        surface.set_tiles({{name = 'deepwater', position = position}}, true, false, false, false)
+        surface.set_tiles({ { name = 'deepwater', position = position } }, true, false, false, false)
         if math_random(1, 32) == 1 then
-            surface.create_entity({name = 'fish', position = position})
+            surface.create_entity({ name = 'fish', position = position })
         end
         return
     end
     if noise > 0.63 then
-        surface.set_tiles({{name = 'water', position = position}}, true, false, false, false)
+        surface.set_tiles({ { name = 'water', position = position } }, true, false, false, false)
         if math_random(1, 32) == 1 then
-            surface.create_entity({name = 'fish', position = position})
+            surface.create_entity({ name = 'fish', position = position })
         end
         return
     end
@@ -169,7 +169,7 @@ function biomes.worm_desert(surface, seed, position, square_distance, noise)
     end
 
     local i = math_floor((GetNoise('decoratives', position, seed) * 8) % 3) + 1
-    surface.set_tiles({{name = 'sand-' .. i, position = position}}, true, false, false, false)
+    surface.set_tiles({ { name = 'sand-' .. i, position = position } }, true, false, false, false)
 
     if math_random(1, 64) == 1 then
         local e = Functions.place_worm(surface, position, 1)
@@ -180,8 +180,8 @@ function biomes.worm_desert(surface, seed, position, square_distance, noise)
     if math_random(1, 32) == 1 then
         local n = GetNoise('decoratives', position, seed + 10000)
         if n > 0.2 then
-            local trees = {'dead-grey-trunk', 'dead-grey-trunk', 'dry-tree'}
-            surface.create_entity({name = trees[math_random(1, 3)], position = position})
+            local trees = { 'dead-grey-trunk', 'dead-grey-trunk', 'dry-tree' }
+            surface.create_entity({ name = trees[math_random(1, 3)], position = position })
             return
         end
     end
@@ -200,9 +200,9 @@ function biomes.cave(surface, seed, position, square_distance, noise)
     if math_abs(noise_cave_rivers1) < 0.025 then
         local noise_cave_rivers2 = GetNoise('cave_rivers_3', position, seed + 200000)
         if noise_cave_rivers2 > 0 then
-            surface.set_tiles({{name = 'water-shallow', position = position}}, true, false, false, false)
+            surface.set_tiles({ { name = 'water-shallow', position = position } }, true, false, false, false)
             if math_random(1, 16) == 1 then
-                surface.create_entity({name = 'fish', position = position})
+                surface.create_entity({ name = 'fish', position = position })
             end
             return
         end
@@ -215,7 +215,7 @@ function biomes.cave(surface, seed, position, square_distance, noise)
                 Market.spawn_random_cave_market(surface, position)
             end
         end
-        surface.set_tiles({{name = 'dirt-' .. math_floor(no_rocks_2 * 16) % 4 + 3, position = position}}, true, false, false, false)
+        surface.set_tiles({ { name = 'dirt-' .. math_floor(no_rocks_2 * 16) % 4 + 3, position = position } }, true, false, false, false)
         return
     end
 
@@ -229,7 +229,7 @@ function biomes.cave(surface, seed, position, square_distance, noise)
         if math_random(1, 3) > 1 then
             local a = (-49 + math_random(0, 98)) * 0.01
             local b = (-49 + math_random(0, 98)) * 0.01
-            surface.create_entity({name = rock_raffle[math_random(1, size_of_rock_raffle)], position = {position.x + a, position.y + b}})
+            surface.create_entity({ name = rock_raffle[math_random(1, size_of_rock_raffle)], position = { position.x + a, position.y + b } })
         end
         if math_random(1, 2048) == 1 then
             Functions.loot_crate(surface, position, 'wooden-chest')
@@ -250,7 +250,7 @@ function biomes.cave(surface, seed, position, square_distance, noise)
         return
     end
     if math_random(1, 64) == 1 then
-        local e = surface.create_entity({name = 'biter-spawner', position = position, force = 'enemy'})
+        local e = surface.create_entity({ name = 'biter-spawner', position = position, force = 'enemy' })
         e.active = false
         return
     end
@@ -310,15 +310,15 @@ function Public.generate_cave(event)
     for x = 0, 31, 1 do
         for y = 0, 31, 1 do
             i = i + 1
-            local position = {x = left_top_x + x, y = left_top_y + y}
-            tiles[i] = {name = Functions.get_base_ground_tile(position, seed), position = position}
+            local position = { x = left_top_x + x, y = left_top_y + y }
+            tiles[i] = { name = Functions.get_base_ground_tile(position, seed), position = position }
         end
     end
     surface.set_tiles(tiles, true)
 
     for x = 0.5, 31.5, 1 do
         for y = 0.5, 31.5, 1 do
-            local position = {x = left_top_x + x, y = left_top_y + y}
+            local position = { x = left_top_x + x, y = left_top_y + y }
             local biome, square_distance, noise = get_biome(surface, seed, position)
             biome(surface, seed, position, square_distance, noise)
         end

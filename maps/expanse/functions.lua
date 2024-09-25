@@ -351,7 +351,7 @@ function Public.expand(expanse, left_top)
         end
         surface.create_entity({ name = 'crude-oil', position = { a - 4, a - 4 }, amount = 1500000 })
         Task.set_timeout_in_ticks(30, delay_infini_tree_token, { surface = surface, position = { a - 4, a + 4 } })
-        surface.create_entity({ name = 'rock-big', position = { a + 4, a - 4 } })
+        surface.create_entity({ name = 'big-rock', position = { a + 4, a - 4 } })
         surface.spill_item_stack({ a, a + 2 }, { name = 'coin', count = 1 }, false, nil, false)
         surface.spill_item_stack({ a + 0.5, a + 2.5 }, { name = 'coin', count = 1 }, false, nil, false)
         surface.spill_item_stack({ a - 0.5, a + 2.5 }, { name = 'coin', count = 1 }, false, nil, false)

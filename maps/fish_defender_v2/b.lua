@@ -45,15 +45,15 @@ local tile_map = {
 }
 
 local rock_raffle = {
-    'sand-rock-big',
-    'sand-rock-big',
-    'rock-big',
-    'rock-big',
-    'rock-big',
-    'rock-big',
-    'rock-big',
-    'rock-big',
-    'rock-huge'
+    'big-sand-rock',
+    'big-sand-rock',
+    'big-rock',
+    'big-rock',
+    'big-rock',
+    'big-rock',
+    'big-rock',
+    'big-rock',
+    'huge-rock'
 }
 
 local function decompress()
@@ -98,7 +98,7 @@ local function get_pos(x, y)
     end
 end
 
-local ores = {'coal', 'iron-ore', 'copper-ore', 'stone'}
+local ores = { 'coal', 'iron-ore', 'copper-ore', 'stone' }
 
 local function plankton_territory(position, seed, ent)
     local noise = simplex_noise(position.x * 0.009, position.y * 0.009, seed)
@@ -120,19 +120,19 @@ local function plankton_territory(position, seed, ent)
     if noise_2 > 0.75 then
         local i = floor(noise * 6) % 4 + 1
         --surface.set_tiles({{name = "grass-" .. i, position = position}}, true)
-        ent[#ent + 1] = {name = ores[i], position = position, amount = 1 + 2500 * abs(noise_2 * 3)}
+        ent[#ent + 1] = { name = ores[i], position = position, amount = 1 + 2500 * abs(noise_2 * 3) }
         return ('grass-' .. i)
     end
     if noise_2 < -0.76 then
         local i = floor(noise * 6) % 4 + 1
         --surface.set_tiles({{name = "grass-" .. i, position = position}}, true)
         if noise_2 < -0.86 then
-            ent[#ent + 1] = {name = 'uranium-ore', position = position, amount = 1 + 1000 * abs(noise_2 * 2)}
+            ent[#ent + 1] = { name = 'uranium-ore', position = position, amount = 1 + 1000 * abs(noise_2 * 2) }
 
             return ('grass-' .. i)
         end
         if random(1, 3) ~= 1 then
-            ent[#ent + 1] = {name = rock_raffle[random(1, #rock_raffle)], position = position}
+            ent[#ent + 1] = { name = rock_raffle[random(1, #rock_raffle)], position = position }
         end
         return ('grass-' .. i)
     end
@@ -141,14 +141,14 @@ local function plankton_territory(position, seed, ent)
         local i = floor(noise * 32) % 4 + 1
         --surface.set_tiles({{name = "grass-" .. i, position = position}}, true)
         if random(1, 5) == 1 then
-            ent[#ent + 1] = {name = rock_raffle[random(1, #rock_raffle)], position = position}
+            ent[#ent + 1] = { name = rock_raffle[random(1, #rock_raffle)], position = position }
         end
         return ('grass-' .. i)
     end
 
     --surface.set_tiles({{name = "water", position = position}}, true)
     if random(1, 128) == 1 then
-        ent[#ent + 1] = {name = 'fish', position = position}
+        ent[#ent + 1] = { name = 'fish', position = position }
     end
 
     return 'water'
@@ -185,20 +185,20 @@ function Public.make_chunk(event)
 
     for x = x1, x2 do
         for y = y1, y2 do
-            local pos = {x = x, y = y}
+            local pos = { x = x, y = y }
             local new = get_pos(x, y)
             local ore = get_random_ore(pos)
 
             if new and type(new) == 'string' then
                 if new == 'lab-dark-2' then
-                    ent[#ent + 1] = {name = ore, position = pos, amount = 2500}
+                    ent[#ent + 1] = { name = ore, position = pos, amount = 2500 }
                 else
-                    tiles[#tiles + 1] = {name = new, position = pos}
+                    tiles[#tiles + 1] = { name = new, position = pos }
                 end
             else
                 local tile_to_set = plankton_territory(pos, seed, ent)
                 if tile_to_set then
-                    noise[#noise + 1] = {name = tile_to_set, position = pos}
+                    noise[#noise + 1] = { name = tile_to_set, position = pos }
                 end
             end
         end
@@ -208,9 +208,9 @@ function Public.make_chunk(event)
     surface.set_tiles(noise, true)
     for i = 1, #ent do
         if ent[i].amount then
-            surface.create_entity({name = ent[i].name, position = ent[i].position, amount = ent[i].amount})
+            surface.create_entity({ name = ent[i].name, position = ent[i].position, amount = ent[i].amount })
         else
-            surface.create_entity({name = ent[i].name, position = ent[i].position})
+            surface.create_entity({ name = ent[i].name, position = ent[i].position })
         end
     end
 end

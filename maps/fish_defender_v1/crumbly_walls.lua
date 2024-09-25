@@ -1,7 +1,7 @@
 local Event = require 'utils.event'
 local math_random = math.random
 
-local rock_raffle = { 'sand-rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-huge' }
+local rock_raffle = { 'big-sand-rock', 'big-rock', 'big-rock', 'big-rock', 'huge-rock' }
 
 local function on_entity_died(event)
     if not storage.crumbly_walls_unlocked then

@@ -224,37 +224,37 @@ end
 
 function Public.market(surface, position)
     local offers = {
-        { price = { { 'pistol', 1 } },               offer = { type = 'give-item', item = 'iron-plate', count = math_random(3, 4) } },
-        { price = { { 'submachine-gun', 1 } },       offer = { type = 'give-item', item = 'iron-plate', count = math_random(15, 20) } },
-        { price = { { 'shotgun', 1 } },              offer = { type = 'give-item', item = 'iron-plate', count = math_random(12, 18) } },
-        { price = { { 'combat-shotgun', 1 } },       offer = { type = 'give-item', item = 'steel-plate', count = math_random(7, 10) } },
-        { price = { { 'rocket-launcher', 1 } },      offer = { type = 'give-item', item = 'iron-plate', count = math_random(7, 10) } },
-        { price = { { 'flamethrower', 1 } },         offer = { type = 'give-item', item = 'iron-plate', count = math_random(12, 18) } },
-        { price = { { 'light-armor', 1 } },          offer = { type = 'give-item', item = 'iron-plate', count = math_random(15, 20) } },
-        { price = { { 'heavy-armor', 1 } },          offer = { type = 'give-item', item = 'steel-plate', count = math_random(15, 20) } },
-        { price = { { 'modular-armor', 1 } },        offer = { type = 'give-item', item = 'advanced-circuit', count = math_random(15, 20) } },
-        { price = { { 'night-vision-equipment', 1 } }, offer = { type = 'give-item', item = 'steel-plate', count = math_random(3, 4) } },
-        { price = { { 'solar-panel-equipment', 1 } }, offer = { type = 'give-item', item = 'copper-plate', count = math_random(15, 25) } },
-        { price = { { 'red-wire', 100 } },           offer = { type = 'give-item', item = 'copper-cable', count = math_random(75, 100) } },
-        { price = { { 'green-wire', 100 } },         offer = { type = 'give-item', item = 'copper-cable', count = math_random(75, 100) } },
-        { price = { { 'barrel', 10 } },              offer = { type = 'give-item', item = 'steel-plate', count = math_random(6, 8) } },
-        { price = { { 'arithmetic-combinator', 10 } }, offer = { type = 'give-item', item = 'electronic-circuit', count = math_random(15, 25) } },
-        { price = { { 'decider-combinator', 10 } },  offer = { type = 'give-item', item = 'electronic-circuit', count = math_random(15, 25) } },
-        { price = { { 'constant-combinator', 10 } }, offer = { type = 'give-item', item = 'electronic-circuit', count = math_random(9, 12) } },
-        { price = { { 'power-switch', 10 } },        offer = { type = 'give-item', item = 'electronic-circuit', count = math_random(9, 12) } },
-        { price = { { 'programmable-speaker', 10 } }, offer = { type = 'give-item', item = 'electronic-circuit', count = math_random(20, 30) } },
-        { price = { { 'belt-immunity-equipment', 1 } }, offer = { type = 'give-item', item = 'advanced-circuit', count = math_random(2, 3) } },
+        { price = { { 'pistol', 1 } },                   offer = { type = 'give-item', item = 'iron-plate', count = math_random(3, 4) } },
+        { price = { { 'submachine-gun', 1 } },           offer = { type = 'give-item', item = 'iron-plate', count = math_random(15, 20) } },
+        { price = { { 'shotgun', 1 } },                  offer = { type = 'give-item', item = 'iron-plate', count = math_random(12, 18) } },
+        { price = { { 'combat-shotgun', 1 } },           offer = { type = 'give-item', item = 'steel-plate', count = math_random(7, 10) } },
+        { price = { { 'rocket-launcher', 1 } },          offer = { type = 'give-item', item = 'iron-plate', count = math_random(7, 10) } },
+        { price = { { 'flamethrower', 1 } },             offer = { type = 'give-item', item = 'iron-plate', count = math_random(12, 18) } },
+        { price = { { 'light-armor', 1 } },              offer = { type = 'give-item', item = 'iron-plate', count = math_random(15, 20) } },
+        { price = { { 'heavy-armor', 1 } },              offer = { type = 'give-item', item = 'steel-plate', count = math_random(15, 20) } },
+        { price = { { 'modular-armor', 1 } },            offer = { type = 'give-item', item = 'advanced-circuit', count = math_random(15, 20) } },
+        { price = { { 'night-vision-equipment', 1 } },   offer = { type = 'give-item', item = 'steel-plate', count = math_random(3, 4) } },
+        { price = { { 'solar-panel-equipment', 1 } },    offer = { type = 'give-item', item = 'copper-plate', count = math_random(15, 25) } },
+        { price = { { 'red-wire', 100 } },               offer = { type = 'give-item', item = 'copper-cable', count = math_random(75, 100) } },
+        { price = { { 'green-wire', 100 } },             offer = { type = 'give-item', item = 'copper-cable', count = math_random(75, 100) } },
+        { price = { { 'barrel', 10 } },                  offer = { type = 'give-item', item = 'steel-plate', count = math_random(6, 8) } },
+        { price = { { 'arithmetic-combinator', 10 } },   offer = { type = 'give-item', item = 'electronic-circuit', count = math_random(15, 25) } },
+        { price = { { 'decider-combinator', 10 } },      offer = { type = 'give-item', item = 'electronic-circuit', count = math_random(15, 25) } },
+        { price = { { 'constant-combinator', 10 } },     offer = { type = 'give-item', item = 'electronic-circuit', count = math_random(9, 12) } },
+        { price = { { 'power-switch', 10 } },            offer = { type = 'give-item', item = 'electronic-circuit', count = math_random(9, 12) } },
+        { price = { { 'programmable-speaker', 10 } },    offer = { type = 'give-item', item = 'electronic-circuit', count = math_random(20, 30) } },
+        { price = { { 'belt-immunity-equipment', 1 } },  offer = { type = 'give-item', item = 'advanced-circuit', count = math_random(2, 3) } },
         { price = { { 'discharge-defense-remote', 1 } }, offer = { type = 'give-item', item = 'electronic-circuit', count = 1 } },
-        { price = { { 'rail-signal', 10 } },         offer = { type = 'give-item', item = 'iron-plate', count = math_random(30, 40) } },
-        { price = { { 'rail-chain-signal', 10 } },   offer = { type = 'give-item', item = 'iron-plate', count = math_random(30, 40) } },
-        { price = { { 'train-stop', 10 } },          offer = { type = 'give-item', item = 'iron-plate', count = math_random(75, 100) } },
-        { price = { { 'locomotive', 1 } },           offer = { type = 'give-item', item = 'steel-plate', count = math_random(30, 40) } },
-        { price = { { 'cargo-wagon', 1 } },          offer = { type = 'give-item', item = 'iron-plate', count = math_random(30, 40) } },
-        { price = { { 'fluid-wagon', 1 } },          offer = { type = 'give-item', item = 'iron-plate', count = math_random(30, 40) } },
-        { price = { { 'car', 1 } },                  offer = { type = 'give-item', item = 'iron-plate', count = math_random(15, 20) } },
-        { price = { { 'radar', 10 } },               offer = { type = 'give-item', item = 'iron-plate', count = math_random(15, 20) } },
-        { price = { { 'cannon-shell', 10 } },        offer = { type = 'give-item', item = 'steel-plate', count = math_random(7, 10) } },
-        { price = { { 'uranium-cannon-shell', 10 } }, offer = { type = 'give-item', item = 'uranium-238', count = math_random(7, 10) } }
+        { price = { { 'rail-signal', 10 } },             offer = { type = 'give-item', item = 'iron-plate', count = math_random(30, 40) } },
+        { price = { { 'rail-chain-signal', 10 } },       offer = { type = 'give-item', item = 'iron-plate', count = math_random(30, 40) } },
+        { price = { { 'train-stop', 10 } },              offer = { type = 'give-item', item = 'iron-plate', count = math_random(75, 100) } },
+        { price = { { 'locomotive', 1 } },               offer = { type = 'give-item', item = 'steel-plate', count = math_random(30, 40) } },
+        { price = { { 'cargo-wagon', 1 } },              offer = { type = 'give-item', item = 'iron-plate', count = math_random(30, 40) } },
+        { price = { { 'fluid-wagon', 1 } },              offer = { type = 'give-item', item = 'iron-plate', count = math_random(30, 40) } },
+        { price = { { 'car', 1 } },                      offer = { type = 'give-item', item = 'iron-plate', count = math_random(15, 20) } },
+        { price = { { 'radar', 10 } },                   offer = { type = 'give-item', item = 'iron-plate', count = math_random(15, 20) } },
+        { price = { { 'cannon-shell', 10 } },            offer = { type = 'give-item', item = 'steel-plate', count = math_random(7, 10) } },
+        { price = { { 'uranium-cannon-shell', 10 } },    offer = { type = 'give-item', item = 'uranium-238', count = math_random(7, 10) } }
     }
     table.shuffle_table(offers)
     local market = surface.create_entity({ name = 'market', position = position, force = 'neutral' })
@@ -370,7 +370,7 @@ function Public.place_border_rock(surface, position)
     if key then
         pos = { pos.x + vectors[key][1] * 0.45, pos.y + vectors[key][2] * 0.45 }
     end
-    surface.create_entity({ name = 'rock-big', position = pos })
+    surface.create_entity({ name = 'big-rock', position = pos })
 end
 
 function Public.create_scrap(surface, position)
@@ -393,9 +393,9 @@ end
 function Public.on_marked_for_deconstruction(event)
     local disabled_for_deconstruction = {
         ['fish'] = true,
-        ['rock-huge'] = true,
-        ['rock-big'] = true,
-        ['sand-rock-big'] = true,
+        ['huge-rock'] = true,
+        ['big-rock'] = true,
+        ['big-sand-rock'] = true,
         ['crash-site-spaceship-wreck-small-1'] = true,
         ['crash-site-spaceship-wreck-small-2'] = true,
         ['crash-site-spaceship-wreck-small-3'] = true,
@@ -462,9 +462,9 @@ function Public.rocky_loot(event)
         return
     end
     local allowed = {
-        ['rock-big'] = true,
-        ['rock-huge'] = true,
-        ['sand-rock-big'] = true
+        ['big-rock'] = true,
+        ['huge-rock'] = true,
+        ['big-sand-rock'] = true
     }
     if not allowed[event.entity.name] then
         return
@@ -610,15 +610,15 @@ function Public.draw_spawn(surface)
             local position = { x = x, y = y }
             if position.x <= spawn_size and position.y <= spawn_size and position.x >= spawn_size * -1 and position.y >= spawn_size * -1 then
                 if position.x == spawn_size then
-                    entities[i] = { name = 'rock-big', position = { position.x + 0.95, position.y } }
+                    entities[i] = { name = 'big-rock', position = { position.x + 0.95, position.y } }
                     i = i + 1
                 end
                 if position.y == spawn_size then
-                    entities[i] = { name = 'rock-big', position = { position.x, position.y + 0.95 } }
+                    entities[i] = { name = 'big-rock', position = { position.x, position.y + 0.95 } }
                     i = i + 1
                 end
                 if position.x == spawn_size * -1 or position.y == spawn_size * -1 then
-                    entities[i] = { name = 'rock-big', position = position }
+                    entities[i] = { name = 'big-rock', position = position }
                     i = i + 1
                 end
             end

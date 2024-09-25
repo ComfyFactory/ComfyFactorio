@@ -435,7 +435,7 @@ local function on_entity_damaged(event)
     end
     local size = dungeontable.surface_size[entity.surface.index]
     if size < math.abs(entity.position.y) or size < math.abs(entity.position.x) then
-        if entity.name == 'rock-big' then
+        if entity.name == 'big-rock' then
             entity.health = entity.health + event.final_damage_amount
         end
         return
@@ -455,7 +455,7 @@ local function on_entity_damaged(event)
     if math_random(1, 256) == 1 then
         return
     end
-    if entity.name ~= 'rock-big' then
+    if entity.name ~= 'big-rock' then
         return
     end
     entity.health = entity.health + event.final_damage_amount
@@ -467,7 +467,7 @@ local function on_player_mined_entity(event)
     if not entity.valid then
         return
     end
-    if entity.name == 'rock-big' then
+    if entity.name == 'big-rock' then
         local size = dungeontable.surface_size[entity.surface.index]
         if size < math.abs(entity.position.y) or size < math.abs(entity.position.x) then
             entity.surface.create_entity({ name = entity.name, position = entity.position })
@@ -483,7 +483,7 @@ local function on_player_mined_entity(event)
         Functions.mining_events(entity)
         Functions.rocky_loot(event)
     end
-    if entity.name ~= 'rock-big' then
+    if entity.name ~= 'big-rock' then
         return
     end
     expand(entity.surface, entity.position)
@@ -499,7 +499,7 @@ local function on_entity_died(event)
     if entity.type == 'unit-spawner' then
         spawner_death(entity)
     end
-    if entity.name ~= 'rock-big' then
+    if entity.name ~= 'big-rock' then
         return
     end
     expand(entity.surface, entity.position)
@@ -819,7 +819,7 @@ local function on_tick()
 
 	local surface = game.surfaces["dungeons"]
 
-	local entities = surface.find_entities_filtered({name = "rock-big"})
+	local entities = surface.find_entities_filtered({name = "big-rock"})
 	if not entities[1] then return end
 
 	local entity = entities[math_random(1, #entities)]

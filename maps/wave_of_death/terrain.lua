@@ -143,9 +143,9 @@ local function place_entities(surface, position, noise_position, seed)
         local random_noise = get_noise('random_things', noise_position, seed)
         if random_noise > 0.5 then
             if random_noise > 0.75 then
-                surface.create_entity({ name = 'rock-big', position = position })
+                surface.create_entity({ name = 'big-rock', position = position })
             else
-                surface.create_entity({ name = 'rock-huge', position = position })
+                surface.create_entity({ name = 'huge-rock', position = position })
             end
         end
         return

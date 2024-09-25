@@ -98,7 +98,7 @@ local function spawn_area(event)
                             end
                             if noise < -0.75 then
                                 if math.random(1, 16) == 1 then
-                                    event.surface.create_entity({ name = 'rock-big', position = p, force = 'neutral' })
+                                    event.surface.create_entity({ name = 'big-rock', position = p, force = 'neutral' })
                                 end
                             end
                         end

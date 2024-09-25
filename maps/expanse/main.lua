@@ -298,7 +298,7 @@ local function infini_rock(entity)
     end
     local a = math.floor(expanse.square_size * 0.5)
     if entity.position.x == a + 4 and entity.position.y == a - 4 then
-        entity.surface.create_entity({ name = 'rock-big', position = { a + 4, a - 4 } })
+        entity.surface.create_entity({ name = 'big-rock', position = { a + 4, a - 4 } })
         entity.surface.spill_item_stack(entity.position, { name = inf_ores[math.random(1, 4)], count = math.random(80, 160) }, true, nil, true)
         entity.surface.spill_item_stack(entity.position, { name = 'stone', count = math.random(5, 15) }, true, nil, true)
         uranium_mining(entity)

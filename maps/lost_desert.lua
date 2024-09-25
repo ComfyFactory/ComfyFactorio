@@ -36,9 +36,9 @@ local decorative_whitelist = {
 
 local disabled_for_deconstruction = {
     ['fish'] = true,
-    ['rock-huge'] = true,
-    ['rock-big'] = true,
-    ['sand-rock-big'] = true,
+    ['huge-rock'] = true,
+    ['big-rock'] = true,
+    ['big-sand-rock'] = true,
     ['mineable-wreckage'] = true
 }
 
@@ -92,7 +92,7 @@ local function shipwreck(position, surface)
 end
 
 local worm_raffle = { 'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'medium-worm-turret', 'medium-worm-turret', 'big-worm-turret' }
-local rock_raffle = { 'sand-rock-big', 'sand-rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-huge' }
+local rock_raffle = { 'big-sand-rock', 'big-sand-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'huge-rock' }
 local ore_spawn_raffle = { 'iron-ore', 'iron-ore', 'iron-ore', 'copper-ore', 'copper-ore', 'copper-ore', 'coal', 'coal', 'stone', 'stone', 'uranium-ore', 'crude-oil' }
 
 local function on_chunk_generated(event)
@@ -142,9 +142,9 @@ local function on_chunk_generated(event)
                 if noise > 0.5 then
                     if math_random(1, 3) ~= 1 then
                         if math_random(1, 2) == 1 then
-                            surface.create_entity({ name = 'rock-big', position = pos })
+                            surface.create_entity({ name = 'big-rock', position = pos })
                         else
-                            surface.create_entity({ name = 'rock-huge', position = pos })
+                            surface.create_entity({ name = 'huge-rock', position = pos })
                         end
                     else
                         if math_random(1, 2048) == 1 then

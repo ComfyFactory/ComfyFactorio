@@ -1484,11 +1484,11 @@ local function on_chunk_generated(event)
                 'dead-tree-desert',
                 'dry-hairy-tree',
                 'dry-tree',
-                'rock-big',
-                'rock-huge'
+                'big-rock',
+                'huge-rock'
             }
         )
-        --surface.regenerate_entity({"dead-dry-hairy-tree","dead-grey-trunk","dead-tree-desert","dry-hairy-tree","dry-tree","rock-big","rock-huge"})
+        --surface.regenerate_entity({"dead-dry-hairy-tree","dead-grey-trunk","dead-tree-desert","dry-hairy-tree","dry-tree","big-rock","huge-rock"})
         local entities = surface.find_entities({ { -10, -10 }, { 10, 10 } })
         for _, e in pairs(entities) do
             if e.type == 'simple-entity' or e.type == 'resource' or e.type == 'tree' then

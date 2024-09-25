@@ -8,9 +8,9 @@ local table_shuffle = table.shuffle_table
 
 
 local valid_entities = {
-    ['rock-big'] = true,
-    ['rock-huge'] = true,
-    ['sand-rock-big'] = true
+    ['big-rock'] = true,
+    ['huge-rock'] = true,
+    ['big-sand-rock'] = true
 }
 
 local size_raffle = {

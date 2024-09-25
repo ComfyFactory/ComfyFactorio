@@ -6,7 +6,7 @@ local math_random = math.random
 local math_abs = math.abs
 local math_floor = math.floor
 local math_sqrt = math.sqrt
-local rock_raffle = { 'sand-rock-big', 'sand-rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-huge' }
+local rock_raffle = { 'big-sand-rock', 'big-sand-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'huge-rock' }
 local size_of_rock_raffle = #rock_raffle
 local ore_raffle = {}
 for i = 1, 25, 1 do
@@ -34,9 +34,9 @@ for i = 1, 5, 1 do
 end
 local size_of_ore_raffle_2 = #ore_raffle_2
 local rock_yield = {
-    ['rock-big'] = 1,
-    ['rock-huge'] = 2,
-    ['sand-rock-big'] = 1
+    ['big-rock'] = 1,
+    ['huge-rock'] = 2,
+    ['big-sand-rock'] = 1
 }
 local solid_tiles = {
     ['concrete'] = true,

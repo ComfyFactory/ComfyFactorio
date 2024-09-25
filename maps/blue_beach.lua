@@ -85,7 +85,7 @@ local function south_side(surface, left_top)
                         surface.create_entity({ name = 'tree-02', position = pos })
                     else
                         if math_random(1, 512) == 1 then
-                            surface.create_entity({ name = 'rock-huge', position = pos })
+                            surface.create_entity({ name = 'huge-rock', position = pos })
                         end
                     end
                 end
