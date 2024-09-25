@@ -275,14 +275,14 @@ local function is_loader(entity)
 end
 
 local function is_filtered_inserter(entity)
-    return entity.name == 'filter-inserter' or entity.name == 'stack-filter-inserter'
+    return entity.name == 'filter-inserter' or entity.name == 'bulk-inserter'
 end
 
 local function max_stack_size(entity)
     if is_loader(entity) then
         return 1
     end
-    if (entity.name == 'stack-inserter' or entity.name == 'stack-filter-inserter') then
+    if (entity.name == 'stack-inserter' or entity.name == 'bulk-inserter') then
         local override = entity.inserter_stack_size_override
         if override > 0 then
             return override
@@ -310,7 +310,7 @@ local function get_connected_entities(market)
         'fast-inserter',
         'filter-inserter',
         'stack-inserter',
-        'stack-filter-inserter',
+        'bulk-inserter',
         'loader',
         'fast-loader',
         'express-loader'

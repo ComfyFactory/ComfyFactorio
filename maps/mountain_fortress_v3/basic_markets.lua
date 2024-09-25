@@ -95,7 +95,7 @@ local this = {
             ['fast-inserter'] = { value = 16, rarity = 4 },
             ['filter-inserter'] = { value = 24, rarity = 5 },
             ['stack-inserter'] = { value = 96, rarity = 6 },
-            ['stack-filter-inserter'] = { value = 128, rarity = 7 },
+            ['bulk-inserter'] = { value = 128, rarity = 7 },
             ['small-electric-pole'] = { value = 2, rarity = 1 },
             ['medium-electric-pole'] = { value = 12, rarity = 4 },
             ['big-electric-pole'] = { value = 24, rarity = 5 },
@@ -175,7 +175,7 @@ local function get_resource_market_sells()
         { price = { { name = 'coin', count = random(5, 10) } }, offer = { type = 'give-item', item = 'stone', count = 50 } },
         { price = { { name = 'coin', count = random(5, 10) } }, offer = { type = 'give-item', item = 'coal', count = 50 } },
         { price = { { name = 'coin', count = random(8, 16) } }, offer = { type = 'give-item', item = 'uranium-ore', count = 50 } },
-        { price = { { name = 'coin', count = random(2, 4) } }, offer = { type = 'give-item', item = 'crude-oil-barrel', count = 1 } }
+        { price = { { name = 'coin', count = random(2, 4) } },  offer = { type = 'give-item', item = 'crude-oil-barrel', count = 1 } }
     }
     table.shuffle_table(sells)
     return sells
@@ -183,18 +183,18 @@ end
 
 local function get_resource_market_buys()
     local buys = {
-        { price = { { name = 'wood', count = random(10, 12) } },     offer = { type = 'give-item', item = 'coin' } },
-        { price = { { name = 'iron-ore', count = random(10, 12) } }, offer = { type = 'give-item', item = 'coin' } },
+        { price = { { name = 'wood', count = random(10, 12) } },       offer = { type = 'give-item', item = 'coin' } },
+        { price = { { name = 'iron-ore', count = random(10, 12) } },   offer = { type = 'give-item', item = 'coin' } },
         { price = { { name = 'copper-ore', count = random(10, 12) } }, offer = { type = 'give-item', item = 'coin' } },
-        { price = { { name = 'stone', count = random(10, 12) } },    offer = { type = 'give-item', item = 'coin' } },
-        { price = { { name = 'coal', count = random(10, 12) } },     offer = { type = 'give-item', item = 'coin' } },
+        { price = { { name = 'stone', count = random(10, 12) } },      offer = { type = 'give-item', item = 'coin' } },
+        { price = { { name = 'coal', count = random(10, 12) } },       offer = { type = 'give-item', item = 'coin' } },
         { price = { { name = 'uranium-ore', count = random(8, 10) } }, offer = { type = 'give-item', item = 'coin' } },
-        { price = { { name = 'water-barrel', count = 1 } },          offer = { type = 'give-item', item = 'coin', count = random(1, 2) } },
-        { price = { { name = 'lubricant-barrel', count = 1 } },      offer = { type = 'give-item', item = 'coin', count = random(3, 6) } },
-        { price = { { name = 'sulfuric-acid-barrel', count = 1 } },  offer = { type = 'give-item', item = 'coin', count = random(4, 8) } },
-        { price = { { name = 'light-oil-barrel', count = 1 } },      offer = { type = 'give-item', item = 'coin', count = random(2, 4) } },
-        { price = { { name = 'heavy-oil-barrel', count = 1 } },      offer = { type = 'give-item', item = 'coin', count = random(2, 4) } },
-        { price = { { name = 'petroleum-gas-barrel', count = 1 } },  offer = { type = 'give-item', item = 'coin', count = random(3, 5) } }
+        { price = { { name = 'water-barrel', count = 1 } },            offer = { type = 'give-item', item = 'coin', count = random(1, 2) } },
+        { price = { { name = 'lubricant-barrel', count = 1 } },        offer = { type = 'give-item', item = 'coin', count = random(3, 6) } },
+        { price = { { name = 'sulfuric-acid-barrel', count = 1 } },    offer = { type = 'give-item', item = 'coin', count = random(4, 8) } },
+        { price = { { name = 'light-oil-barrel', count = 1 } },        offer = { type = 'give-item', item = 'coin', count = random(2, 4) } },
+        { price = { { name = 'heavy-oil-barrel', count = 1 } },        offer = { type = 'give-item', item = 'coin', count = random(2, 4) } },
+        { price = { { name = 'petroleum-gas-barrel', count = 1 } },    offer = { type = 'give-item', item = 'coin', count = random(3, 5) } }
     }
     table.shuffle_table(buys)
     return buys
