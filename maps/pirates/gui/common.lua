@@ -196,7 +196,7 @@ function Public.flow_add_subpanel(flow, name)
 		type = 'frame',
 		direction = 'vertical',
 	})
-	flow2.style = 'subpanel_frame'
+	flow2.style = 'tabbed_pane_frame'
 	flow2.style.natural_width = 100
 	flow2.style.top_padding = -2
 	flow2.style.top_margin = -8

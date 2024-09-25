@@ -699,6 +699,7 @@ function Public.consume_undock_cost_resources()
     end
 end
 
+-- TODO: Check if we need to update this borrowed code?
 function Public.new_healthbar(text, target_entity, max_health, optional_id, health, size, extra_offset, location_override)
     health = health or max_health
     size = size or 0.5
@@ -724,6 +725,7 @@ function Public.new_healthbar(text, target_entity, max_health, optional_id, heal
         render2 =
             rendering.draw_text(
                 {
+                    text = '',
                     color = { 255, 255, 255 },
                     scale = 1.2 + size * 2,
                     render_layer = 'light-effect',
