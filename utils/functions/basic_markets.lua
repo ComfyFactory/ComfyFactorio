@@ -101,7 +101,7 @@ market.logistic = {
     ['fast-inserter'] = { value = 16, rarity = 4 },
     ['filter-inserter'] = { value = 24, rarity = 5 },
     ['stack-inserter'] = { value = 96, rarity = 6 },
-    ['stack-filter-inserter'] = { value = 128, rarity = 7 },
+    ['bulk-inserter'] = { value = 128, rarity = 7 },
     ['small-electric-pole'] = { value = 2, rarity = 1 },
     ['medium-electric-pole'] = { value = 12, rarity = 4 },
     ['big-electric-pole'] = { value = 24, rarity = 5 },

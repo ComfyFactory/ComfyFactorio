@@ -771,7 +771,7 @@ Public.merchant_offer = {
         },
         offer = {
             type = 'unlock-recipe',
-            recipe = 'stack-filter-inserter'
+            recipe = 'bulk-inserter'
         }
     }
 }
