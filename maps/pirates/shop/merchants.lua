@@ -20,30 +20,30 @@ function Public.generate_merchant_trades(market)
 
 	if market and market.valid then
 		local game_completion_progress = Common.game_completion_progress()
-		market.add_market_item { price = { { 'coin', 8000 }, { 'raw-fish', 100 } }, offer = { type = 'give-item', item = 'modular-armor', count = 1 } }
-		market.add_market_item { price = { { 'coin', 5000 }, { 'raw-fish', 10 } }, offer = { type = 'give-item', item = 'battery-equipment', count = 1 } }
-		market.add_market_item { price = { { 'coin', 2000 }, { 'raw-fish', 10 } }, offer = { type = 'give-item', item = 'solar-panel-equipment', count = 5 } }
-		market.add_market_item { price = { { 'coin', 1000 }, { 'raw-fish', 10 } }, offer = { type = 'give-item', item = 'night-vision-equipment', count = 1 } }
-		market.add_market_item { price = { { 'coin', 2000 }, { 'raw-fish', 10 } }, offer = { type = 'give-item', item = 'energy-shield-equipment', count = 1 } }
-		market.add_market_item { price = { { 'coin', 1000 }, { 'raw-fish', 10 } }, offer = { type = 'give-item', item = 'personal-roboport-equipment', count = 1 } }
+		market.add_market_item { price = { { name = 'coin', count = 8000 }, { name = 'raw-fish', count = 100 } }, offer = { type = 'give-item', item = 'modular-armor', count = 1 } }
+		market.add_market_item { price = { { name = 'coin', count = 5000 }, { name = 'raw-fish', count = 10 } }, offer = { type = 'give-item', item = 'battery-equipment', count = 1 } }
+		market.add_market_item { price = { { name = 'coin', count = 2000 }, { name = 'raw-fish', count = 10 } }, offer = { type = 'give-item', item = 'solar-panel-equipment', count = 5 } }
+		market.add_market_item { price = { { name = 'coin', count = 1000 }, { name = 'raw-fish', count = 10 } }, offer = { type = 'give-item', item = 'night-vision-equipment', count = 1 } }
+		market.add_market_item { price = { { name = 'coin', count = 2000 }, { name = 'raw-fish', count = 10 } }, offer = { type = 'give-item', item = 'energy-shield-equipment', count = 1 } }
+		market.add_market_item { price = { { name = 'coin', count = 1000 }, { name = 'raw-fish', count = 10 } }, offer = { type = 'give-item', item = 'personal-roboport-equipment', count = 1 } }
 
 		if game_completion_progress >= 0.96 then
-			market.add_market_item { price = { { 'coin', 8000 }, { 'raw-fish', 100 } }, offer = { type = 'give-item', item = 'modular-armor', count = 1 } }
-			market.add_market_item { price = { { 'coin', 12000 }, { 'raw-fish', 100 } }, offer = { type = 'give-item', item = 'power-armor', count = 1 } }
-			market.add_market_item { price = { { 'coin', 5000 }, { 'raw-fish', 10 } }, offer = { type = 'give-item', item = 'battery-equipment', count = 1 } }
-			market.add_market_item { price = { { 'coin', 2000 }, { 'raw-fish', 10 } }, offer = { type = 'give-item', item = 'energy-shield-equipment', count = 1 } }
-			market.add_market_item { price = { { 'coin', 1000 }, { 'raw-fish', 10 } }, offer = { type = 'give-item', item = 'personal-roboport-equipment', count = 1 } }
-			market.add_market_item { price = { { 'coin', 8000 }, { 'raw-fish', 10 } }, offer = { type = 'give-item', item = 'battery-mk2-equipment', count = 1 } }
-			market.add_market_item { price = { { 'coin', 2000 }, { 'raw-fish', 10 } }, offer = { type = 'give-item', item = 'solar-panel-equipment', count = 5 } }
-			market.add_market_item { price = { { 'coin', 6000 }, { 'raw-fish', 10 } }, offer = { type = 'give-item', item = 'fusion-reactor-equipment', count = 1 } }
-			market.add_market_item { price = { { 'coin', 1000 }, { 'raw-fish', 10 } }, offer = { type = 'give-item', item = 'night-vision-equipment', count = 1 } }
-			market.add_market_item { price = { { 'coin', 5000 }, { 'raw-fish', 10 } }, offer = { type = 'give-item', item = 'energy-shield-mk2-equipment', count = 1 } }
-			market.add_market_item { price = { { 'coin', 4000 }, { 'raw-fish', 10 } }, offer = { type = 'give-item', item = 'personal-roboport-mk2-equipment', count = 1 } }
-			market.add_market_item { price = { { 'coin', 8000 }, { 'raw-fish', 10 } }, offer = { type = 'give-item', item = 'exoskeleton-equipment', count = 1 } }
-			market.add_market_item { price = { { 'coin', 10000 }, { 'raw-fish', 10 } }, offer = { type = 'give-item', item = 'personal-laser-defense-equipment', count = 1 } }
+			market.add_market_item { price = { { name = 'coin', count = 8000 }, { name = 'raw-fish', count = 100 } }, offer = { type = 'give-item', item = 'modular-armor', count = 1 } }
+			market.add_market_item { price = { { name = 'coin', count = 12000 }, { name = 'raw-fish', count = 100 } }, offer = { type = 'give-item', item = 'power-armor', count = 1 } }
+			market.add_market_item { price = { { name = 'coin', count = 5000 }, { name = 'raw-fish', count = 10 } }, offer = { type = 'give-item', item = 'battery-equipment', count = 1 } }
+			market.add_market_item { price = { { name = 'coin', count = 2000 }, { name = 'raw-fish', count = 10 } }, offer = { type = 'give-item', item = 'energy-shield-equipment', count = 1 } }
+			market.add_market_item { price = { { name = 'coin', count = 1000 }, { name = 'raw-fish', count = 10 } }, offer = { type = 'give-item', item = 'personal-roboport-equipment', count = 1 } }
+			market.add_market_item { price = { { name = 'coin', count = 8000 }, { name = 'raw-fish', count = 10 } }, offer = { type = 'give-item', item = 'battery-mk2-equipment', count = 1 } }
+			market.add_market_item { price = { { name = 'coin', count = 2000 }, { name = 'raw-fish', count = 10 } }, offer = { type = 'give-item', item = 'solar-panel-equipment', count = 5 } }
+			market.add_market_item { price = { { name = 'coin', count = 6000 }, { name = 'raw-fish', count = 10 } }, offer = { type = 'give-item', item = 'fusion-reactor-equipment', count = 1 } }
+			market.add_market_item { price = { { name = 'coin', count = 1000 }, { name = 'raw-fish', count = 10 } }, offer = { type = 'give-item', item = 'night-vision-equipment', count = 1 } }
+			market.add_market_item { price = { { name = 'coin', count = 5000 }, { name = 'raw-fish', count = 10 } }, offer = { type = 'give-item', item = 'energy-shield-mk2-equipment', count = 1 } }
+			market.add_market_item { price = { { name = 'coin', count = 4000 }, { name = 'raw-fish', count = 10 } }, offer = { type = 'give-item', item = 'personal-roboport-mk2-equipment', count = 1 } }
+			market.add_market_item { price = { { name = 'coin', count = 8000 }, { name = 'raw-fish', count = 10 } }, offer = { type = 'give-item', item = 'exoskeleton-equipment', count = 1 } }
+			market.add_market_item { price = { { name = 'coin', count = 10000 }, { name = 'raw-fish', count = 10 } }, offer = { type = 'give-item', item = 'personal-laser-defense-equipment', count = 1 } }
 		end
 		if game_completion_progress >= 2 then
-			market.add_market_item { price = { { 'coin', 30000 }, { 'raw-fish', 100 } }, offer = { type = 'give-item', item = 'power-armor-mk2', count = 1 } }
+			market.add_market_item { price = { { name = 'coin', count = 30000 }, { name = 'raw-fish', count = 100 } }, offer = { type = 'give-item', item = 'power-armor-mk2', count = 1 } }
 		end
 	end
 end

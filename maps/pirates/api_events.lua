@@ -1765,7 +1765,6 @@ function Public.event_on_chunk_generated(event)
 	end
 
 	if not terrain_fn then
-		log('[WARN]: no terrain function')
 		return
 	end
 

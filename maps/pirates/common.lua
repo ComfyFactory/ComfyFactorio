@@ -1730,7 +1730,7 @@ function Public.pick_random_price(tier, scale, tech_tier)
 
     local price = {}
     for _, item_stack in pairs(item_stacks) do
-        price[#price + 1] = { name = item_stack.name, amount = item_stack.count }
+        price[#price + 1] = { name = item_stack.name, count = item_stack.count }
     end
 
     return price
@@ -1849,7 +1849,7 @@ end
 
 function Public.replace_unwalkable_tiles(surface, position, width, height)
     local area = { left_top = { position.x - width / 2, position.y - height / 2 }, right_bottom = { position.x + width / 2 + 0.5, position.y + height / 2 + 0.5 } }
-    local existing = surface.find_tiles_filtered { area = area, collision_mask = 'water_tile' }
+    local existing = surface.find_tiles_filtered { area = area, collision_mask = 'water-tile' }
     if not existing then
         return
     end
