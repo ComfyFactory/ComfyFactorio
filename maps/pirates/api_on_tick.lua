@@ -1621,14 +1621,19 @@ function Public.check_for_cliff_explosives_in_hold_wooden_chests()
 				queued_chests_timers[i] = nil
 			else
 				local tick_tacks = { '*tick*', '*tick*', '*tack*', '*tak*', '*tik*', '*tok*' }
-				-- surface.create_entity(
-				-- 	{
-				-- 		name = 'flying-text',
-				-- 		position = chest.position,
-				-- 		text = tick_tacks[Math.random(#tick_tacks)],
-				-- 		color = { r = 0.75, g = 0.75, b = 0.75 }
-				-- 	}
-				-- )
+
+				for _, player in pairs(game.players) do
+					if player.surface_index == surface.index then
+						player.create_local_flying_text(
+							{
+								name = 'flying-text',
+								position = chest.position,
+								text = tick_tacks[Math.random(#tick_tacks)],
+								color = { r = 0.75, g = 0.75, b = 0.75 }
+							}
+						)
+					end
+				end
 			end
 		else
 			-- we probably don't want to have it in the queue anymore if it's invalid now, do we?

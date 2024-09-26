@@ -316,7 +316,7 @@ function Public.event_on_market_item_purchased(event)
 					local text1 = '[color=1,1,1]+' .. thisPurchaseData.offer_giveitem_count .. '[/color] [item=' .. thisPurchaseData.offer_giveitem_name .. ']'
 					local text2 = '[color=' .. flying_text_color.r .. ',' .. flying_text_color.g .. ',' .. flying_text_color.b .. '](' .. inv.get_item_count(thisPurchaseData.offer_giveitem_name) .. ')[/color]'
 
-					Common.flying_text(player, player.position, text1 .. '  [font=count-font]' .. text2 .. '[/font]')
+					Common.flying_text(player.surface, player.position, text1 .. '  [font=count-font]' .. text2 .. '[/font]')
 				else
 					local decay_param = Balance.barter_decay_parameter()
 					if thisPurchaseData.decay_type == 'fast_decay' then decay_param = Balance.barter_decay_parameter() ^ 3 end
@@ -326,7 +326,7 @@ function Public.event_on_market_item_purchased(event)
 					local text1 = '[color=1,1,1]+' .. thisPurchaseData.offer_giveitem_count .. '[/color] [item=' .. thisPurchaseData.offer_giveitem_name .. ']'
 					local text2 = '[color=' .. flying_text_color.r .. ',' .. flying_text_color.g .. ',' .. flying_text_color.b .. '](' .. inv.get_item_count(thisPurchaseData.offer_giveitem_name) .. ')[/color]'
 
-					Common.flying_text(player, player.position, text1 .. '  [font=count-font]' .. text2 .. '[/font]')
+					Common.flying_text(player.surface, player.position, text1 .. '  [font=count-font]' .. text2 .. '[/font]')
 
 					--update market trades:
 					thisPurchaseData.alloffers[offer_index].offer.count = Math.max(Math.floor(thisPurchaseData.alloffers[offer_index].offer.count * decay_param), 1)
