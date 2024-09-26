@@ -57,7 +57,7 @@ local function on_entity_damaged(event)
     if not surface.valid then return end
 
     if math_random(1, 5) == 1 then
-        for _, player in pairs(game.players) do
+        for _, player in pairs(game.connected_players) do
             if player.surface_index == event.cause.surface_index then
                 player.create_local_flying_text(
                     {

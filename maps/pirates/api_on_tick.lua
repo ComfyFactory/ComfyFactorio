@@ -1616,7 +1616,7 @@ function Public.check_for_cliff_explosives_in_hold_wooden_chests()
 			else
 				local tick_tacks = { '*tick*', '*tick*', '*tack*', '*tak*', '*tik*', '*tok*' }
 
-				for _, player in pairs(game.players) do
+				for _, player in pairs(game.connected_players) do
 					if player.surface_index == surface.index then
 						player.create_local_flying_text(
 							{

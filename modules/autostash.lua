@@ -93,7 +93,7 @@ local function create_floaty_text(surface, position, name, count)
 
     if not surface.valid then return end
 
-    for _, player in pairs(game.players) do
+    for _, player in pairs(game.connected_players) do
         if player.surface_index == surface.index then
             player.create_local_flying_text(
                 {

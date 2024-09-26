@@ -40,7 +40,7 @@ local function create_flying_text(surface, position, text)
         return
     end
 
-    for _, player in pairs(game.players) do
+    for _, player in pairs(game.connected_players) do
         if player.surface_index == surface.index then
             player.create_local_flying_text(
                 {
@@ -64,7 +64,7 @@ local function create_kaboom(force_name, surface, position, name)
     local target = position
     local speed = 0.5
     if name == 'defender-capsule' or name == 'destroyer-capsule' or name == 'distractor-capsule' then
-        for _, player in pairs(game.players) do
+        for _, player in pairs(game.connected_players) do
             if player.surface_index == surface.index then
                 player.create_local_flying_text(
                     {
