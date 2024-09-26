@@ -80,21 +80,6 @@ function Public.prevent_unbarreling_off_ship(tickinterval)
 	end
 end
 
--- local function remove_productivity_modules(surface, machines)
--- 	for _, machine in ipairs(machines) do
--- 		if machine and machine.valid then
--- 			local modules = machine.get_module_inventory()
--- 			if modules and modules.valid then
--- 				local productivity_modules = modules.get_contents()['productivity-module']
--- 				if productivity_modules and productivity_modules > 0 then
--- 					modules.remove { name = 'productivity-module', count = productivity_modules }
--- 					surface.spill_item_stack(machine.position, { name = 'productivity-module', count = productivity_modules }, true, nil, true)
--- 				end
--- 			end
--- 		end
--- 	end
--- end
-
 function Public.apply_restrictions_to_machines(tickinterval)
 	local memory = Memory.get_crew_memory()
 	local boat = memory.boat
@@ -296,9 +281,15 @@ function Public.ship_deplete_fuel(tickinterval)
 
 	local input_chests = boat.input_chests
 	local inv = input_chests[1].get_inventory(defines.inventory.chest)
+
 	local contents = inv.get_contents()
-	local item_type = 'coal'
-	local count = contents[item_type] or 0
+	local count = 0
+	for _, item in ipairs(contents) do
+		if item.name == 'coal' then
+			count = count + item.count
+		end
+	end
+
 	if count > 0 then
 		inv.remove { name = 'coal', count = count }
 	end
@@ -1412,6 +1403,9 @@ function Public.quest_progress_tick(tickinterval)
 	local destination = Common.current_destination()
 	local dynamic_data = destination.dynamic_data
 
+	local surface = game.surfaces[destination.surface_name]
+	if not (surface and surface.valid) then return end
+
 	if dynamic_data.quest_type then
 		if dynamic_data.quest_type == Quest.enum.TIME and (not dynamic_data.quest_complete) and dynamic_data.quest_progress > 0 and dynamic_data.quest_progressneeded ~= 1 then
 			dynamic_data.quest_progress = dynamic_data.quest_progress - tickinterval / 60
@@ -1420,14 +1414,14 @@ function Public.quest_progress_tick(tickinterval)
 		if dynamic_data.quest_type == Quest.enum.RESOURCEFLOW and (not dynamic_data.quest_complete) then
 			local force = memory.force
 			if not (force and force.valid and dynamic_data.quest_params) then return end
-			dynamic_data.quest_progress = force.item_production_statistics.get_flow_count { name = dynamic_data.quest_params.item, input = true, precision_index = defines.flow_precision_index.five_seconds, count = false }
+			dynamic_data.quest_progress = force.get_item_production_statistics(surface).get_flow_count { name = dynamic_data.quest_params.item, category = 'input', precision_index = defines.flow_precision_index.five_seconds, count = false }
 			Quest.try_resolve_quest()
 		end
 
 		if dynamic_data.quest_type == Quest.enum.RESOURCECOUNT and (not dynamic_data.quest_complete) then
 			local force = memory.force
 			if not (force and force.valid and dynamic_data.quest_params) then return end
-			dynamic_data.quest_progress = force.item_production_statistics.get_flow_count { name = dynamic_data.quest_params.item, input = true, precision_index = defines.flow_precision_index.one_thousand_hours, count = true } - dynamic_data.quest_params.initial_count
+			dynamic_data.quest_progress = force.get_item_production_statistics(surface).get_flow_count { name = dynamic_data.quest_params.item, category = 'input', precision_index = defines.flow_precision_index.one_thousand_hours, count = true } - dynamic_data.quest_params.initial_count
 			Quest.try_resolve_quest()
 		end
 	end

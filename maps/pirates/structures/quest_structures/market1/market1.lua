@@ -89,12 +89,12 @@ function Public.create_step2_entities()
 
 		-- Thinking of not having these offers available always (if it's bad design decision can always change it back)
 		if Math.random(4) == 1 then
-			quest_structure_data.market.add_market_item { price = { { 'pistol', 1 } }, offer = { type = 'give-item', item = 'coin', count = Balance.coin_sell_amount } }
+			quest_structure_data.market.add_market_item { price = { { name = 'pistol', count = 1 } }, offer = { type = 'give-item', item = 'coin', count = Balance.coin_sell_amount } }
 			how_many_coin_offers = how_many_coin_offers - 1
 		end
 
 		if Math.random(4) == 1 then
-			quest_structure_data.market.add_market_item { price = { { 'burner-mining-drill', 1 } }, offer = { type = 'give-item', item = 'iron-plate', count = 9 } }
+			quest_structure_data.market.add_market_item { price = { { name = 'burner-mining-drill', count = 1 } }, offer = { type = 'give-item', item = 'iron-plate', count = 9 } }
 			how_many_coin_offers = how_many_coin_offers - 1
 		end
 
@@ -104,7 +104,7 @@ function Public.create_step2_entities()
 		end
 
 		if destination.static_params.class_for_sale then
-			quest_structure_data.market.add_market_item { price = { { 'coin', Balance.class_cost(false) } }, offer = { type = "nothing", effect_description = { 'pirates.market_description_purchase_class', Classes.display_form(destination.static_params.class_for_sale) } } }
+			quest_structure_data.market.add_market_item { price = { { name = 'coin', count = Balance.class_cost(false) } }, offer = { type = "nothing", effect_description = { 'pirates.market_description_purchase_class', Classes.display_form(destination.static_params.class_for_sale) } } }
 
 			-- destination.dynamic_data.market_class_offer_rendering = rendering.draw_text{
 			-- 	text = 'Class available: ' .. Classes.display_form(destination.static_params.class_for_sale),

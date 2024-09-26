@@ -948,27 +948,21 @@ local function process_entity_on_boat_teleportable(memory, boat, newsurface, new
 	end
 
 	if wire_connections_matrix[p.x] and wire_connections_matrix[p.x][p.y] then
-		log(_inspect(wire_connections_matrix[p.x][p.y]))
 		for _, v2 in pairs(wire_connections_matrix[p.x][p.y]) do
-			log(_inspect(v2.pos))
 			local p3 = { x = v2.pos.x + vector.x, y = v2.pos.y + vector.y }
 			local e3s = newsurface.find_entities_filtered {
 				name = v2.name,
 				position = p3,
 				radius = 0.01,
 			}
-			log(#e3s)
 			if e3s and #e3s > 0 then
 				local e3 = e3s[1]
 				if e3 and e3.valid then
-					log(_inspect(e3.name))
 					local ee_connector = ee.get_wire_connector(v2.wire_connector_id, true)
 					local e3_connector = e3.get_wire_connector(v2.wire_connector_id, true)
 
 					if ee_connector and e3_connector and ee_connector.valid and e3_connector.valid then
-						log('connecting')
-						local succeeded = ee_connector.connect_to(e3_connector, false)
-						log(succeeded)
+						ee_connector.connect_to(e3_connector, false)
 					end
 				end
 			end

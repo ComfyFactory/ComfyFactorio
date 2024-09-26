@@ -346,14 +346,14 @@ function Public.give(player, stacks, spill_position, short_form, spill_surface, 
                     -- 		e.to_be_looted = true
                     -- 	end
                     -- end
-                    spill_surface.spill_item_stack(spill_position, { name = itemname, count = itemcount }, true)
+                    spill_surface.spill_item_stack { position = spill_position, stack = { name = itemname, count = itemcount }, enable_looted = true }
                 end
             else
                 -- local e = spill_surface.create_entity{name = 'item-on-ground', position = spill_position, stack = {name = itemname, count = itemcount}}
                 -- if e and e.valid then
                 -- 	e.to_be_looted = true
                 -- end
-                spill_surface.spill_item_stack(spill_position, { name = itemname, count = itemcount }, true)
+                spill_surface.spill_item_stack { position = spill_position, stack = { name = itemname, count = itemcount }, enable_looted = true }
             end
         end
 
@@ -406,9 +406,9 @@ function Public.give(player, stacks, spill_position, short_form, spill_surface, 
         if #stacks2 > 1 then
             text2 = '(' .. text2 .. ')'
         end
-        Public.flying_text(player.surface, flying_text_position, text1 .. ' [font=count-font]' .. text2 .. '[/font]')
+        Public.flying_text(spill_surface, flying_text_position, text1 .. ' [font=count-font]' .. text2 .. '[/font]')
     else
-        Public.flying_text(player.surface, flying_text_position, text1)
+        Public.flying_text(spill_surface, flying_text_position, text1)
     end
 end
 
@@ -654,7 +654,12 @@ function Public.update_boat_stored_resources()
             local contents = inv.get_contents()
 
             local item_type = CoreData.cost_items[i - 1].name
-            local count = contents[item_type] or 0
+            local count = 0
+            for _, item in ipairs(contents) do
+                if item.name == item_type then
+                    count = count + item.count
+                end
+            end
 
             boat.stored_resources[item_type] = count
         end

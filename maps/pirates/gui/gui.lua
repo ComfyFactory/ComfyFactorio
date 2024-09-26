@@ -544,8 +544,8 @@ function Public.process_etaframe_update(player, flow1, bools)
 
 				local eta_ticks = total + (memory.extra_time_at_sea or 0) - memory.loadingticks
 
-				flow2.etaframe_label_1.caption = { 'pirates.gui_etaframe_loading_for' }
-				flow2.etaframe_label_2.caption = Utils.standard_string_form_of_time_in_seconds(eta_ticks / 60)
+				flow2.etaframe_label_1.caption = { 'pirates.gui_etaframe_loading' }
+				flow2.etaframe_label_2.caption = 'for ' .. Utils.standard_string_form_of_time_in_seconds(eta_ticks / 60)
 			end
 		elseif bools.atsea_waiting_bool then
 			flow2.etaframe_label_1.visible = true
