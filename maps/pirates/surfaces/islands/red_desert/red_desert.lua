@@ -413,7 +413,7 @@ function Public.custom_biter_ai()
 		for _, unit in pairs(units_created) do
 			unit_group.add_member(unit)
 		end
-		memory.scripted_unit_groups[unit_group.group_number] = { ref = unit_group, script_type = 'burrowed' }
+		memory.scripted_unit_groups[unit_group.unique_id] = { ref = unit_group, script_type = 'burrowed' }
 
 		local target = { valid = true, position = { x = memory.boat.position.x - 60, y = memory.boat.position.y } or nil, name = 'boatarea' }
 

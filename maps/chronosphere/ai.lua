@@ -8,19 +8,19 @@ local Public = {}
 local random = math.random
 local floor = math.floor
 
-local normal_area = {left_top = {-480, -480}, right_bottom = {480, 480}}
+local normal_area = { left_top = { -480, -480 }, right_bottom = { 480, 480 } }
 local normal_sector = { --clockwise from left top, sudoku sizes, no center
-    [1] = {left_top = {-480, -480}, right_bottom = {-160, -160}},
-    [2] = {left_top = {-160, -480}, right_bottom = {160, -160}},
-    [3] = {left_top = {160, -480}, right_bottom = {480, -160}},
-    [4] = {left_top = {160, -160}, right_bottom = {480, 160}},
-    [5] = {left_top = {160, 160}, right_bottom = {480, 480}},
-    [6] = {left_top = {-160, 160}, right_bottom = {160, 480}},
-    [7] = {left_top = {-480, 160}, right_bottom = {-160, 480}},
-    [8] = {left_top = {-480, -160}, right_bottom = {-160, 160}}
+    [1] = { left_top = { -480, -480 }, right_bottom = { -160, -160 } },
+    [2] = { left_top = { -160, -480 }, right_bottom = { 160, -160 } },
+    [3] = { left_top = { 160, -480 }, right_bottom = { 480, -160 } },
+    [4] = { left_top = { 160, -160 }, right_bottom = { 480, 160 } },
+    [5] = { left_top = { 160, 160 }, right_bottom = { 480, 480 } },
+    [6] = { left_top = { -160, 160 }, right_bottom = { 160, 480 } },
+    [7] = { left_top = { -480, 160 }, right_bottom = { -160, 480 } },
+    [8] = { left_top = { -480, -160 }, right_bottom = { -160, 160 } }
 }
-local central_sector = {left_top = {-160, -160}, right_bottom = {160, 160}}
-local fish_area = {left_top = {-1100, -400}, right_bottom = {1100, 400}}
+local central_sector = { left_top = { -160, -160 }, right_bottom = { 160, 160 } }
+local fish_area = { left_top = { -1100, -400 }, right_bottom = { 1100, 400 } }
 
 -----------commands-----------
 
@@ -57,7 +57,7 @@ end
 
 local function attack_obstacles(surface, position)
     local commands = {}
-    local obstacles = surface.find_entities_filtered {position = position, radius = 25, type = {'simple-entity', 'tree', 'simple-entity-with-owner'}, limit = 100}
+    local obstacles = surface.find_entities_filtered { position = position, radius = 25, type = { 'simple-entity', 'tree', 'simple-entity-with-owner' }, limit = 100 }
     if obstacles then
         Rand.shuffle(obstacles)
         Rand.shuffle_distance(obstacles, position)
@@ -120,12 +120,12 @@ local function search_area_for_targets(surface, area)
         'centrifuge',
         'burner-inserter'
     }
-    return surface.find_entities_filtered {name = targets, area = area}
+    return surface.find_entities_filtered { name = targets, area = area }
 end
 
 local function generate_side_attack_target(surface, position, area)
     local areas = {
-        [1] = {left_top = {position.x - 40, position.y - 40}, right_bottom = {position.x + 40, position.y + 40}},
+        [1] = { left_top = { position.x - 40, position.y - 40 }, right_bottom = { position.x + 40, position.y + 40 } },
         [2] = area,
         [3] = central_sector
     }
@@ -152,14 +152,14 @@ end
 
 local function generate_main_attack_target()
     local objective = Chrono_table.get_table()
-    local targets = {objective.locomotive, objective.locomotive, objective.locomotive_cargo[1], objective.locomotive_cargo[2], objective.locomotive_cargo[3]}
+    local targets = { objective.locomotive, objective.locomotive, objective.locomotive_cargo[1], objective.locomotive_cargo[2], objective.locomotive_cargo[3] }
     return targets[random(1, #targets)]
 end
 
 local function generate_expansion_position(start_pos)
     local objective = Chrono_table.get_table()
     local target_pos = objective.locomotive.position
-    return {x = (start_pos.x * 0.90 + target_pos.x * 0.10), y = (start_pos.y * 0.90 + target_pos.y * 0.10)}
+    return { x = (start_pos.x * 0.90 + target_pos.x * 0.10), y = (start_pos.y * 0.90 + target_pos.y * 0.10) }
 end
 
 local function get_random_close_spawner(surface)
@@ -169,7 +169,7 @@ local function get_random_close_spawner(surface)
         area = fish_area
     end
 
-    local spawners = surface.find_entities_filtered({type = 'unit-spawner', force = 'enemy', area = area})
+    local spawners = surface.find_entities_filtered({ type = 'unit-spawner', force = 'enemy', area = area })
     if not spawners[1] then
         return false
     end
@@ -237,7 +237,7 @@ local function select_units_around_spawner(spawner, size)
         end
         if biter.force.name == 'enemy' and bitertable.active_biters[biter.unit_number] == nil then
             valid_biters[#valid_biters + 1] = biter
-            bitertable.active_biters[biter.unit_number] = {entity = biter, active_since = game.tick}
+            bitertable.active_biters[biter.unit_number] = { entity = biter, active_since = game.tick }
             unit_count = unit_count + 1
         end
     end
@@ -251,15 +251,15 @@ local function select_units_around_spawner(spawner, size)
                 break
             end
 
-            local biter = spawner.surface.create_entity({name = biter_name, force = 'enemy', position = position})
+            local biter = spawner.surface.create_entity({ name = biter_name, force = 'enemy', position = position })
             if bitertable.free_biters > 0 then
                 bitertable.free_biters = bitertable.free_biters - 1
             else
                 local local_pollution =
                     math.min(
-                    spawner.surface.get_pollution(spawner.position),
-                    400 * game.map_settings.pollution.enemy_attack_pollution_consumption_modifier * game.forces.enemy.evolution_factor
-                )
+                        spawner.surface.get_pollution(spawner.position),
+                        400 * game.map_settings.pollution.enemy_attack_pollution_consumption_modifier * game.forces.enemy.evolution_factor
+                    )
                 spawner.surface.pollute(spawner.position, -local_pollution)
                 game.pollution_statistics.on_flow('biter-spawner', -local_pollution)
                 if local_pollution < 1 then
@@ -267,7 +267,7 @@ local function select_units_around_spawner(spawner, size)
                 end
             end
             valid_biters[#valid_biters + 1] = biter
-            bitertable.active_biters[biter.unit_number] = {entity = biter, active_since = game.tick}
+            bitertable.active_biters[biter.unit_number] = { entity = biter, active_since = game.tick }
         end
     end
     return valid_biters
@@ -303,7 +303,7 @@ local function set_biter_raffle_table(surface)
     if objective.world.id == 7 then
         area = fish_area
     end
-    local biters = surface.find_entities_filtered({type = 'unit', force = 'enemy', area = area, limit = 100})
+    local biters = surface.find_entities_filtered({ type = 'unit', force = 'enemy', area = area, limit = 100 })
     if not biters[1] then
         return
     end
@@ -330,11 +330,11 @@ local function create_attack_group(surface, size)
     if not units then
         return nil
     end
-    local unit_group = surface.create_unit_group({position = position, force = 'enemy'})
+    local unit_group = surface.create_unit_group({ position = position, force = 'enemy' })
     for _, unit in pairs(units) do
         unit_group.add_member(unit)
     end
-    bitertable.unit_groups[unit_group.group_number] = unit_group
+    bitertable.unit_groups[unit_group.unique_id] = unit_group
     return unit_group, area
 end
 
@@ -346,7 +346,7 @@ local function colonize(group)
     local evo = group.force.evolution_factor
     local nests = random(1 + floor(evo * 20), 2 + floor(evo * 20) * 2)
     local commands = {}
-    local biters = surface.find_entities_filtered {position = group.position, radius = 30, name = Raffle.biters, force = 'enemy'}
+    local biters = surface.find_entities_filtered { position = group.position, radius = 30, name = Raffle.biters, force = 'enemy' }
     local goodbiters = {}
     if #biters > 1 then
         for i = 1, #biters, 1 do
@@ -375,9 +375,9 @@ local function colonize(group)
             --game.print("[gps=" .. pos.x .. "," .. pos.y .."," .. surface.name .. "]")
             success = true
             if random(1, 5) == 1 then
-                surface.create_entity({name = Raffle.worms[random(1 + floor(evo * 8), floor(1 + evo * 16))], position = pos, force = group.force})
+                surface.create_entity({ name = Raffle.worms[random(1 + floor(evo * 8), floor(1 + evo * 16))], position = pos, force = group.force })
             else
-                surface.create_entity({name = Raffle.spawners[random(1, #Raffle.spawners)], position = pos, force = group.force})
+                surface.create_entity({ name = Raffle.spawners[random(1, #Raffle.spawners)], position = pos, force = group.force })
             end
         else
             commands = {
@@ -468,14 +468,14 @@ local function prepare_biters()
 end
 
 function Public.perform_rogue_attack()
-  local objective = Chrono_table.get_table()
-	local surface = game.surfaces[objective.active_surface_index]
-	local group, area = create_attack_group(surface, 0.15)
-  if not group or not group.valid then return end
-  local target = generate_side_attack_target(surface, group.position, area)
-  if not target or not target.valid then return end
-  attack_check(group, target, false)
-  --if _DEBUG then game.print(game.tick ..": sending rogue attack") end
+    local objective = Chrono_table.get_table()
+    local surface = game.surfaces[objective.active_surface_index]
+    local group, area = create_attack_group(surface, 0.15)
+    if not group or not group.valid then return end
+    local target = generate_side_attack_target(surface, group.position, area)
+    if not target or not target.valid then return end
+    attack_check(group, target, false)
+    --if _DEBUG then game.print(game.tick ..": sending rogue attack") end
 end
 
 function Public.perform_main_attack()
