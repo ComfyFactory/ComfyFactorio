@@ -1025,7 +1025,7 @@ function Public.build_from_blueprint(bp_string, surface, pos, force, flipped)
 
     local direction = flipped and defines.direction.south or defines.direction.north
 
-    local entities = bp_entity.stack.build_blueprint { surface = surface, force = force, position = { x = pos.x, y = pos.y }, force_build = true, skip_fog_of_war = false, direction = direction }
+    local entities = bp_entity.stack.build_blueprint { surface = surface, force = force, position = { x = pos.x, y = pos.y }, build_mode = defines.build_mode.forced, skip_fog_of_war = false, direction = direction }
 
     bp_entity.destroy()
 

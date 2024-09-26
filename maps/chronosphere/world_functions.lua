@@ -223,7 +223,7 @@ function Public.build_blueprint(surface, position, id, force)
     local item = surface.create_entity { name = "item-on-ground", position = position, stack = { name = "blueprint", count = 1 } }
     local success = item.stack.import_stack(Blueprints[id])
     if success <= 0 then
-        local ghosts = item.stack.build_blueprint { surface = surface, force = force, position = position, force_build = true }
+        local ghosts = item.stack.build_blueprint { surface = surface, force = force, position = position, build_mode = defines.build_mode.forced }
         for _, ghost in pairs(ghosts) do
             ghost.silent_revive({ raise_revive = true })
         end
