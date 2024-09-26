@@ -12,7 +12,7 @@ local Hold = require 'maps.pirates.surfaces.hold'
 local Cabin = require 'maps.pirates.surfaces.cabin'
 local Utils = require 'maps.pirates.utils_local'
 local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
--- local _inspect = require 'utils.inspect'.inspect
+local _inspect = require 'utils.inspect'.inspect
 
 -- DEV NOTE: If making boat designs that have rails, make sure the boat is placed at odd co-ordinates before blueprinting.
 
@@ -824,7 +824,7 @@ local function process_entity_on_boat_unteleportable(memory, boat, newsurface, v
 end
 
 -- @TODO: Rocket silo that is prepared to launch the rocket needs to be cloned with clone_entities instead. See: https://forums.factorio.com/viewtopic.php?f=23&t=105073&p=580968
-local function process_entity_on_boat_teleportable(memory, boat, newsurface, newposition, vector, oldsurface_name, newsurface_name, electric_pole_neighbours_matrix, circuit_neighbours_matrix, e)
+local function process_entity_on_boat_teleportable(memory, boat, newsurface, newposition, vector, oldsurface_name, newsurface_name, wire_connections_matrix, e)
 	if oldsurface_name == newsurface_name then
 		e.teleport(vector.x, vector.y)
 		e.update_connections()
@@ -835,40 +835,26 @@ local function process_entity_on_boat_teleportable(memory, boat, newsurface, new
 	local p = Utils.deepcopy(e.position)
 	local p2 = { x = p.x + vector.x, y = p.y + vector.y }
 
-	if e.type == 'electric-pole' then
-		for k, v in pairs(e.neighbours or {}) do
-			if k == 'copper' then --red and green cases handled by circuit_neighbours_matrix
-				if not electric_pole_neighbours_matrix[k] then electric_pole_neighbours_matrix[k] = {} end
-				for _, v2 in pairs(v) do
-					if v2 and v2.valid and v2.position then
-						local v2p = v2.position
-						if not electric_pole_neighbours_matrix[k][v2p.x] then
-							electric_pole_neighbours_matrix[k][v2p.x] = {}
-						end
-						if not electric_pole_neighbours_matrix[k][v2p.x][v2p.y] then
-							electric_pole_neighbours_matrix[k][v2p.x][v2p.y] = {}
-						end
-						electric_pole_neighbours_matrix[k][v2p.x][v2p.y][#electric_pole_neighbours_matrix[k][v2p.x][v2p.y] + 1] = { name = e.name, pos = p }
-					end
-				end
-			end
-		end
-	end
+	local wire_connnectors = e.get_wire_connectors(false)
 
-	for _, v in pairs(e.circuit_connection_definitions or {}) do
-		local e2 = v.target_entity
-		local wire = v.wire
-		local source_circuit_id = v.source_circuit_id
-		local target_circuit_id = v.target_circuit_id
-		if e2 and e2.valid and e2.position and (wire == defines.wire_type.red or wire == defines.wire_type.green) then --observed an error "Expected source_wire_id for entities with more than one wire connection" in the .connect_neighbour() function called later, so putting the red/green wire check in to try and catch it
-			local e2p = e2.position
-			if not circuit_neighbours_matrix[e2p.x] then
-				circuit_neighbours_matrix[e2p.x] = {}
+	for _, v in pairs(wire_connnectors or {}) do
+		local wire = v.wire_type
+		local wire_connector_id = v.wire_connector_id
+		local connections = v.connections
+
+		for _, c in pairs(connections or {}) do
+			local c2 = c.target
+
+			if c2 and c2.valid and c2.owner and c2.owner.valid and c2.owner.position then
+				local e2p = c2.owner.position
+				if not wire_connections_matrix[e2p.x] then
+					wire_connections_matrix[e2p.x] = {}
+				end
+				if not wire_connections_matrix[e2p.x][e2p.y] then
+					wire_connections_matrix[e2p.x][e2p.y] = {}
+				end
+				wire_connections_matrix[e2p.x][e2p.y][#wire_connections_matrix[e2p.x][e2p.y] + 1] = { name = e.name, pos = p, wire = wire, wire_connector_id = wire_connector_id } --flip since we will read these backwards
 			end
-			if not circuit_neighbours_matrix[e2p.x][e2p.y] then
-				circuit_neighbours_matrix[e2p.x][e2p.y] = {}
-			end
-			circuit_neighbours_matrix[e2p.x][e2p.y][#circuit_neighbours_matrix[e2p.x][e2p.y] + 1] = { name = e.name, pos = p, wire = wire, source_circuit_id = target_circuit_id, target_circuit_id = source_circuit_id } --flip since we will read these backwards
 		end
 	end
 
@@ -884,13 +870,10 @@ local function process_entity_on_boat_teleportable(memory, boat, newsurface, new
 
 	if e == boat.upstairs_pole then
 		boat.upstairs_pole = ee
-		if boat.downstairs_poles and boat.downstairs_poles[1] then
-			-- Remove previous connection, before connecting it with the new clone to avoid sometimes having to remove wire connection because of limit
-			e.disconnect_neighbour(boat.downstairs_poles[1][1])
+		if boat.downstairs_poles and boat.downstairs_poles[1] and boat.downstairs_poles[1][1] then
 			Common.force_connect_poles(boat.upstairs_pole, boat.downstairs_poles[1][1])
 		end
 	end
-
 
 	local pet_biter_data = memory.pet_biters[e.unit_number]
 	if pet_biter_data then
@@ -964,44 +947,28 @@ local function process_entity_on_boat_teleportable(memory, boat, newsurface, new
 		end
 	end
 
-	if circuit_neighbours_matrix[p.x] and circuit_neighbours_matrix[p.x][p.y] then
-		for _, v2 in pairs(circuit_neighbours_matrix[p.x][p.y]) do
+	if wire_connections_matrix[p.x] and wire_connections_matrix[p.x][p.y] then
+		log(_inspect(wire_connections_matrix[p.x][p.y]))
+		for _, v2 in pairs(wire_connections_matrix[p.x][p.y]) do
+			log(_inspect(v2.pos))
 			local p3 = { x = v2.pos.x + vector.x, y = v2.pos.y + vector.y }
 			local e3s = newsurface.find_entities_filtered {
 				name = v2.name,
 				position = p3,
 				radius = 0.01,
 			}
+			log(#e3s)
 			if e3s and #e3s > 0 then
 				local e3 = e3s[1]
 				if e3 and e3.valid then
-					ee.connect_neighbour { wire = v2.wire, target_entity = e3, source_circuit_id = v2.source_circuit_id, target_circuit_id = v2.target_circuit_id }
-				end
-			end
-		end
-	end
+					log(_inspect(e3.name))
+					local ee_connector = ee.get_wire_connector(v2.wire_connector_id, true)
+					local e3_connector = e3.get_wire_connector(v2.wire_connector_id, true)
 
-	if ee.type == 'electric-pole' then
-		for k, v in pairs(electric_pole_neighbours_matrix or {}) do
-			if v[p.x] and v[p.x][p.y] then
-				for _, v2 in pairs(v[p.x][p.y]) do
-					local p3 = { x = v2.pos.x + vector.x, y = v2.pos.y + vector.y }
-					local e3s = newsurface.find_entities_filtered {
-						name = v2.name,
-						position = p3,
-						radius = 0.01,
-					}
-					if e3s and #e3s > 0 then
-						local e3 = e3s[1]
-						if e3 and e3.valid then
-							if k == 'copper' then
-								ee.connect_neighbour(e3)
-								-- elseif k == 'red' then
-								-- 	ee.connect_neighbour{wire = defines.wire_type.red, target_entity = e3}
-								-- elseif k == 'green' then
-								-- 	ee.connect_neighbour{wire = defines.wire_type.green, target_entity = e3}
-							end
-						end
+					if ee_connector and e3_connector and ee_connector.valid and e3_connector.valid then
+						log('connecting')
+						local succeeded = ee_connector.connect_to(e3_connector, false)
+						log(succeeded)
 					end
 				end
 			end
@@ -1010,7 +977,7 @@ local function process_entity_on_boat_teleportable(memory, boat, newsurface, new
 end
 
 
-local function process_entity_on_boat(memory, boat, newsurface, newposition, vector, players_just_offside, oldsurface_name, newsurface_name, unique_entities_list, electric_pole_neighbours_matrix, circuit_neighbours_matrix, e)
+local function process_entity_on_boat(memory, boat, newsurface, newposition, vector, players_just_offside, oldsurface_name, newsurface_name, unique_entities_list, wire_connections_matrix, e)
 	if e and e.valid and (not Utils.contains(unique_entities_list, e)) then
 		unique_entities_list[#unique_entities_list + 1] = e
 		local name = e.name
@@ -1032,7 +999,7 @@ local function process_entity_on_boat(memory, boat, newsurface, newposition, vec
 			elseif Utils.contains(CoreData.unteleportable_names, name) or (name == 'entity-ghost' and Utils.contains(CoreData.unteleportable_names, e.ghost_name)) then
 				process_entity_on_boat_unteleportable(memory, boat, newsurface, vector, players_just_offside, oldsurface_name, newsurface_name, e, name)
 			else
-				process_entity_on_boat_teleportable(memory, boat, newsurface, newposition, vector, oldsurface_name, newsurface_name, electric_pole_neighbours_matrix, circuit_neighbours_matrix, e)
+				process_entity_on_boat_teleportable(memory, boat, newsurface, newposition, vector, oldsurface_name, newsurface_name, wire_connections_matrix, e)
 			end
 		end
 	end
@@ -1152,7 +1119,6 @@ local function teleport_handle_renderings(boat, oldsurface_name, newsurface_name
 			boat.rendering_crewname_text.destroy()
 			boat.rendering_crewname_text = rendering.draw_text {
 				text = memory.name,
-				-- render_layer = '125', --does nothing
 				surface = newsurface,
 				target = p,
 				color = CoreData.colors.renderingtext_yellow,
@@ -1425,13 +1391,12 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 
 
 
-	local electric_pole_neighbours_matrix = {}
-	local circuit_neighbours_matrix = {}
+	local wire_connections_matrix = {}
 	-- local underground_belt_neighbours_matrix = {}
 
 	for i = 1, #entities_on_boat do
 		local e = entities_on_boat[i]
-		process_entity_on_boat(memory, boat, newsurface, newposition, vector, players_just_offside, oldsurface_name, newsurface_name, unique_entities_list, electric_pole_neighbours_matrix, circuit_neighbours_matrix, e)
+		process_entity_on_boat(memory, boat, newsurface, newposition, vector, players_just_offside, oldsurface_name, newsurface_name, unique_entities_list, wire_connections_matrix, e)
 	end
 
 
@@ -1485,7 +1450,7 @@ function Public.clear_fluid_from_ship_tanks(idx)
 	end
 end
 
--- Players can brick power by removing wire connections themselves (even between surfaces) with "shift + LMB" when clicking on pole
+-- At least before Factorio 2.0, players can brick power by removing wire connections themselves (even between surfaces) with "shift + LMB" when clicking on pole
 function Public.force_reconnect_boat_poles()
 	local memory = Memory.get_crew_memory()
 	local boat = memory.boat
@@ -1493,17 +1458,11 @@ function Public.force_reconnect_boat_poles()
 	if boat.downstairs_poles then
 		if boat.downstairs_poles[1] then
 			Common.force_connect_poles(boat.upstairs_pole, boat.downstairs_poles[1][1])
-
-			-- Optional connection
-			boat.downstairs_poles[1][1].connect_neighbour(boat.downstairs_poles[1][2])
 		end
 
 		for i = 2, memory.hold_surface_count do
 			if boat.downstairs_poles[i] then
 				Common.force_connect_poles(boat.downstairs_poles[i][1], boat.downstairs_poles[i - 1][2])
-
-				-- Optional connection
-				boat.downstairs_poles[i][1].connect_neighbour(boat.downstairs_poles[i][2])
 			end
 		end
 	end

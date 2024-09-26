@@ -81,7 +81,6 @@ function Public.set_off_from_starting_dock()
 	local p = Utils.psum { memory.boat.position, Boats.get_scope(memory.boat).Data.crewname_rendering_position }
 	memory.boat.rendering_crewname_text = rendering.draw_text {
 		text = memory.name,
-		-- render_layer = '125', --does nothing
 		surface = surface,
 		target = p,
 		color = CoreData.colors.renderingtext_yellow,

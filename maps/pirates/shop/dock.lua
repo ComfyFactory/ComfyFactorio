@@ -53,7 +53,6 @@ Public.market_permanent_offers = {
 	{ price = { { name = 'coin', count = 4200 } },                                                                            offer = { type = 'give-item', item = 'speed-module-2', count = 2 } },
 	{ price = { { name = 'coin', count = 3000 } },                                                                            offer = { type = 'give-item', item = 'explosives', count = 50 } },
 	{ price = { { name = 'coin', count = 6500 }, { name = 'steel-plate', count = 25 }, { name = 'explosives', count = 50 } }, offer = { type = 'give-item', item = 'land-mine', count = 100 } },
-	-- {price = {{'coin', 30000}}, offer = {type = 'give-item', item = 'artillery-targeting-remote', count = 1}},
 }
 
 -- cheap but one-off

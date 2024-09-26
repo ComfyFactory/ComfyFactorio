@@ -118,7 +118,7 @@ function Public.spawn_ghosts(destination, points_to_avoid)
 		ghost.ghostobject_rendering = rendering.draw_sprite {
 			surface = surface,
 			target = p,
-			sprite = 'utility/ghost_time_to_live_modifier_icon',
+			sprite = 'utility/create_ghost_on_entity_death_modifier_icon',
 			render_layer = '125',
 			x_scale = 1,
 			y_scale = 1,
@@ -292,7 +292,7 @@ function Public.spawn_silo_setup(points_to_avoid)
 			silo.rotatable = false
 			silo.operable = false
 			if i == 1 then
-				silo.auto_launch = true
+				-- silo.auto_launch = true
 				Common.new_healthbar(true, silo, Balance.silo_max_hp, nil, Balance.silo_max_hp, 0.6, -2, destination.dynamic_data)
 			else
 				silo.destructible = false

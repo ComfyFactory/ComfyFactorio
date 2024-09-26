@@ -72,13 +72,15 @@ function Public.initialise_cached_quest_structure(position, quest_structure_type
 			scale = 1.5,
 			font = 'default-game',
 			alignment = 'right',
+			text = '',
 		}
 		local rendering2 = rendering.draw_sprite {
 			sprite = 'item/' .. entry_price.name,
 			surface = surface,
 			target = { x = position.x + 3.5, y = position.y - 0.65 },
 			x_scale = 1.5,
-			y_scale = 1.5
+			y_scale = 1.5,
+			text = '',
 		}
 		local rendering3 = rendering.draw_text {
 			surface = surface,
@@ -140,6 +142,7 @@ function Public.initialise_cached_quest_structure(position, quest_structure_type
 			scale = 1.5,
 			font = 'default-game',
 			alignment = 'right',
+			text = '',
 		}
 		local rendering2 = rendering.draw_sprite {
 			sprite = 'item/' .. entry_price.name,

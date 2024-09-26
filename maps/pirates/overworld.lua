@@ -519,7 +519,7 @@ function Public.ensure_lane_generated_up_to(lane_yvalue, x)
 						if type(r) == 'table' and r.text_rendering and r.text_rendering.valid then
 							for _, price_data in ipairs(Upgrades.upgrades_data[dest.static_params.upgrade_for_sale].market_item.price) do
 								if price_data.name == rendering_name then
-									r.text_rendering.text = Utils.bignumber_abbrevform2(price_data[2])
+									r.text_rendering.text = Utils.bignumber_abbrevform2(price_data.count)
 									break
 								end
 							end

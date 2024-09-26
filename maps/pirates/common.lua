@@ -193,25 +193,21 @@ function Public.parrot_speak(force, message)
     Server.to_discord_embed_raw({ '', '[' .. memory.name .. '] ', { 'pirates.notify_parrot' }, ' ', message }, true)
 end
 
-function Public.flying_text(surface, position, text)
-    surface.create_entity(
-        {
-            name = 'flying-text',
-            position = { position.x - 0.7, position.y - 3.05 },
-            text = text
-        }
-    )
+function Public.flying_text(player, position, text)
+    player.create_local_flying_text {
+        name = 'flying-text',
+        position = { position.x - 0.7, position.y - 3.05 },
+        text = text
+    }
 end
 
-function Public.flying_text_small(surface, position, text) --differs just in the location of the text, more suitable for small things like '+'
-    surface.create_entity(
-        {
-            name = 'flying-text',
-            position = { position.x - 0.08, position.y - 1.5 },
-            -- position = {position.x - 0.06, position.y - 1.5},
-            text = text
-        }
-    )
+function Public.flying_text_small(player, position, text) --differs just in the location of the text, more suitable for small things like '+'
+    player.create_local_flying_text {
+        name = 'flying-text',
+        position = { position.x - 0.08, position.y - 1.5 },
+        -- position = {position.x - 0.06, position.y - 1.5},
+        text = text
+    }
 end
 
 function Public.processed_loot_data(raw_data)
@@ -405,9 +401,9 @@ function Public.give(player, stacks, spill_position, short_form, spill_surface, 
         if #stacks2 > 1 then
             text2 = '(' .. text2 .. ')'
         end
-        Public.flying_text(spill_surface, flying_text_position, text1 .. ' [font=count-font]' .. text2 .. '[/font]')
+        Public.flying_text(player, flying_text_position, text1 .. ' [font=count-font]' .. text2 .. '[/font]')
     else
-        Public.flying_text(spill_surface, flying_text_position, text1)
+        Public.flying_text(player, flying_text_position, text1)
     end
 end
 
@@ -728,7 +724,6 @@ function Public.new_healthbar(text, target_entity, max_health, optional_id, heal
                     text = '',
                     color = { 255, 255, 255 },
                     scale = 1.2 + size * 2,
-                    render_layer = 'light-effect',
                     target = target_entity,
                     target_offset = { 0, -3.6 - size * 0.6 + extra_offset },
                     surface = target_entity.surface,
@@ -1691,10 +1686,8 @@ function Public.get_item_blacklist(tier)
     -- blacklist['productivity-module-3'] = true
     -- blacklist['efficiency-module-3'] = true
     -- blacklist['space-science-pack'] = true
-    -- blacklist['rocket-control-unit'] = true
     blacklist['artillery-wagon'] = true
     blacklist['artillery-turret'] = true
-    blacklist['artillery-targeting-remote'] = true
     -- blacklist['uranium-cannon-shell'] = true
     -- blacklist['explosive-uranium-cannon-shell'] = true
     blacklist['satellite'] = true
@@ -1752,20 +1745,20 @@ function Public.get_random_dictionary_entry(t, key)
     end
 end
 
--- Used to connect multi-surface poles
+-- Used to connect multi-surface poles. NOTE: Now that Factorio 2.0 has defines.wire_origin.script, perhaps we don't need to worry about overflowing the number of connections anymore?
 function Public.force_connect_poles(pole1, pole2)
-    if not pole1 then
-        return
-    end
-    if not pole1.valid then
-        return
-    end
-    if not pole2 then
-        return
-    end
-    if not pole2.valid then
-        return
-    end
+    if not pole1 then return end
+    if not pole1.valid then return end
+    if not pole2 then return end
+    if not pole2.valid then return end
+
+    local pole1_connector = pole1.get_wire_connector(defines.wire_connector_id.pole_copper, true)
+    local pole2_connector = pole2.get_wire_connector(defines.wire_connector_id.pole_copper, true)
+
+    if not pole1_connector then return end
+    if not pole1_connector.valid then return end
+    if not pole2_connector then return end
+    if not pole2_connector.valid then return end
 
     -- force connections for testing (by placing many poles around the substations)
     -- for _, e in pairs(pole1.surface.find_entities_filtered{type="electric-pole", position = pole1.position, radius = 10}) do
@@ -1777,34 +1770,34 @@ function Public.force_connect_poles(pole1, pole2)
     -- end
 
     -- NOTE: "connect_neighbour" returns false when the entities are already connected as well
-    pole1.disconnect_neighbour(pole2)
-    local success = pole1.connect_neighbour(pole2)
+    pole1_connector.disconnect_from(pole2_connector)
+    local success = pole1_connector.connect_to(pole2_connector, false, defines.wire_origin.script)
     if success then
         return
     end
 
-    local pole1_neighbours = pole1.neighbours['copper']
-    local pole2_neighbours = pole2.neighbours['copper']
+    local pole1_connections = pole1_connector.connections
+    local pole2_connections = pole2_connector.connections
 
     -- try avoiding disconnecting more poles than needed
     local disconnect_from_pole1 = false
     local disconnect_from_pole2 = false
 
-    if #pole1_neighbours >= #pole2_neighbours then
+    if #pole1_connections >= #pole2_connections then
         disconnect_from_pole1 = true
     end
 
-    if #pole2_neighbours >= #pole1_neighbours then
+    if #pole2_connections >= #pole1_connections then
         disconnect_from_pole2 = true
     end
 
     if disconnect_from_pole1 then
         -- Prioritise disconnecting last connections as those are most likely redundant (at least for holds, although even then it's not always the case)
-        for i = #pole1_neighbours, 1, -1 do
-            local e = pole1_neighbours[i]
+        for i = #pole1_connections, 1, -1 do
+            local c = pole1_connections[i]
             -- only disconnect poles from same surface
-            if e and e.valid and e.surface.name == pole1.surface.name then
-                pole1.disconnect_neighbour(e)
+            if c and c.valid and c.owner and c.owner.valid and c.owner.surface.name == pole1.owner.surface.name then
+                pole1_connector.disconnect_from(c)
                 break
             end
         end
@@ -1812,17 +1805,17 @@ function Public.force_connect_poles(pole1, pole2)
 
     if disconnect_from_pole2 then
         -- Prioritise disconnecting last connections as those are most likely redundant (at least for holds, although even then it's not always the case)
-        for i = #pole2_neighbours, 1, -1 do
-            local e = pole2_neighbours[i]
+        for i = #pole2_connections, 1, -1 do
+            local c = pole2_connections[i]
             -- only disconnect poles from same surface
-            if e and e.valid and e.surface.name == pole2.surface.name then
-                pole2.disconnect_neighbour(e)
+            if c and c.valid and c.owner and c.owner.valid and c.owner.surface.name == pole2.owner.surface.name then
+                pole2_connector.disconnect_from(c)
                 break
             end
         end
     end
 
-    local success2 = pole1.connect_neighbour(pole2)
+    local success2 = pole1_connector.connect_to(pole2_connector, false, defines.wire_origin.script)
     if not success2 then
         -- This can happen if in future pole reach connection limit(5) with poles from other surfaces
         log("Error: power fix didn't work")
@@ -1849,7 +1842,7 @@ end
 
 function Public.replace_unwalkable_tiles(surface, position, width, height)
     local area = { left_top = { position.x - width / 2, position.y - height / 2 }, right_bottom = { position.x + width / 2 + 0.5, position.y + height / 2 + 0.5 } }
-    local existing = surface.find_tiles_filtered { area = area, collision_mask = 'water-tile' }
+    local existing = surface.find_tiles_filtered { area = area, collision_mask = 'water_tile' }
     if not existing then
         return
     end

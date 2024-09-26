@@ -171,7 +171,7 @@ function Public.try_main_attack()
 	local wave_size_multiplier = Public.wave_size_rng()
 
 	if wave_size_multiplier == 0 then
-		log('Attacks: ' .. 'Aborted by chance.')
+		log('Attacks: ' .. 'Not attempted (by chance).')
 		return nil
 	else
 		local group = Public.spawn_group_of_scripted_biters(2 / 3, 6, 350, wave_size_multiplier)
@@ -189,7 +189,7 @@ function Public.try_secondary_attack()
 	local wave_size_multiplier = Public.wave_size_rng()
 
 	if wave_size_multiplier == 0 then
-		log('Attacks: ' .. 'Aborted by chance.')
+		log('Attacks: ' .. 'Not attempted (by chance).')
 		return nil
 	else
 		local surface = game.surfaces[Common.current_destination().surface_name]
@@ -216,7 +216,7 @@ function Public.try_rogue_attack()
 	local wave_size_multiplier = Public.wave_size_rng()
 
 	if wave_size_multiplier == 0 then
-		log('Attacks: ' .. 'Aborted by chance.')
+		log('Attacks: ' .. 'Not attempted (by chance).')
 		return nil
 	else
 		local surface = game.surfaces[Common.current_destination().surface_name]
