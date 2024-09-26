@@ -960,7 +960,6 @@ local function player_mined_rock(event)
 		end
 	else
 		local c = event.buffer.get_contents()
-		table.sort(c, function (a, b) return a.name < b.name end)
 		local c2 = {}
 
 		if memory.overworldx >= 0 then --used to be only later levels
@@ -981,11 +980,11 @@ local function player_mined_rock(event)
 			end
 		end
 
-		for k, v in pairs(c) do
-			if k == 'coal' and #c2 <= 1 then --if oil, then no coal
-				c2[#c2 + 1] = { name = k, count = Math.ceil(v * (player.force.mining_drill_productivity_bonus + 1)), color = CoreData.colors.coal }
-			elseif k == 'stone' then
-				c2[#c2 + 1] = { name = k, count = Math.ceil(v * (player.force.mining_drill_productivity_bonus + 1)), color = CoreData.colors.stone }
+		for _, item in ipairs(c) do
+			if item.name == 'coal' and #c2 <= 1 then --if oil, then no coal
+				c2[#c2 + 1] = { name = item.name, count = Math.ceil(item.count * (player.force.mining_drill_productivity_bonus + 1)), color = CoreData.colors.coal }
+			elseif item.name == 'stone' then
+				c2[#c2 + 1] = { name = item.name, count = Math.ceil(item.count * (player.force.mining_drill_productivity_bonus + 1)), color = CoreData.colors.stone }
 			end
 		end
 		Common.give(player, c2, entity.position)

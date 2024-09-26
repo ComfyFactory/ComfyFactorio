@@ -37,7 +37,7 @@ Public.buried_treasure_loot_data_raw = {
 	{ 50,  0, 1, false, 'express-transport-belt',   8,   20 },
 	{ 35,  0, 1, false, 'express-underground-belt', 4,   4 },
 	{ 35,  0, 1, false, 'express-splitter',         4,   11 },
-	{ 50,  0, 1, false, 'stack-inserter',           4,   12 },
+	{ 50,  0, 1, false, 'bulk-inserter',            4,   12 },
 	{ 0.1, 0, 1, false, 'atomic-bomb',              1,   1 },
 	{ 1,   0, 1, false, 'nuclear-reactor',          1,   1 },
 }
@@ -89,8 +89,8 @@ Public.chest_loot_data_raw = {
 	{ 4,     -0.3, 0.3,  true,  'inserter',                         8,   20 },
 	{ 4,     0,    1,    true,  'fast-inserter',                    2,   12 },
 	{ 3,     0,    1,    false, 'long-handed-inserter',             4,   16 },
-	{ 3,     0,    0.5,  false, 'stack-inserter',                   1,   4 },
-	{ 3,     0.5,  1,    false, 'stack-inserter',                   5,   8 },
+	{ 3,     0,    0.5,  false, 'bulk-inserter',                    1,   4 },
+	{ 3,     0.5,  1,    false, 'bulk-inserter',                    5,   8 },
 
 	{ 40,    -0.5, 0.5,  true,  'firearm-magazine',                 10,  32 },
 	{ 60,    -1,   1,    true,  'piercing-rounds-magazine',         8,   16 },
@@ -400,7 +400,7 @@ end
 
 Public.maze_treasure_data_raw = {
 	{ 2,   -1,   1,   true,  'rocket',                           18,  24 },
-	{ 2,   -0.8, 0.8, false, 'stack-inserter',                   8,   10 },
+	{ 2,   -0.8, 0.8, false, 'bulk-inserter',                    8,   10 },
 	{ 2,   0,    1,   false, 'poison-capsule',                   22,  22 },
 	{ 2,   0,    1,   false, 'destroyer-capsule',                8,   8 },
 	{ 2,   0,    1,   false, 'slowdown-capsule',                 14,  14 },

@@ -236,17 +236,14 @@ function Public.tick_quest_structure_entry_price_check()
 
 		local entry_price = quest_structure_data.entry_price
 
-		for k, v in pairs(blue_contents) do
-			if quest_structure_data.state == 'covered' and k == entry_price.name then
-				quest_structure_data.completion_counter = quest_structure_data.completion_counter + v
+		for _, item in ipairs(blue_contents) do
+			if quest_structure_data.state == 'covered' and item.name == entry_price.name then
+				quest_structure_data.completion_counter = quest_structure_data.completion_counter + item.count
 			else
-				-- @FIX: power armor loses components, items lose health!
-				-- Clarification: putting items in quest structure input chests, "repairs" them. For ex.: inserting ammo restores full stack (giving slight amount of ammo for free). Inserting broken items, repairs them, etc.
-
-				red_inv.insert({ name = k, count = v });
+				red_inv.insert({ name = item.name, count = item.count, quality = item.quality });
 			end
 
-			blue_inv.remove({ name = k, count = v });
+			blue_inv.remove({ name = item.name, count = item.count, quality = item.quality });
 		end
 
 		if quest_structure_data.state == 'covered' then
@@ -295,12 +292,12 @@ function Public.tick_quest_structure_entry_price_check()
 
 			for i = 1, 3 do
 				local contents = blue_contents[i]
-				for k, v in pairs(contents) do
-					if k == entry_price.name then
-						available[i] = available[i] + v
+				for _, item in ipairs(contents) do
+					if item.name == entry_price.name then
+						available[i] = available[i] + item.count
 					else
-						blue_invs[i].remove({ name = k, count = v });
-						red_invs[i].insert({ name = k, count = v });
+						blue_invs[i].remove({ name = item.name, count = item.count });
+						red_invs[i].insert({ name = item.name, count = item.count, quality = item.quality });
 					end
 				end
 			end
@@ -363,13 +360,13 @@ function Public.tick_quest_structure_entry_price_check()
 
 			for i = 1, 3 do
 				local contents = blue_contents[i]
-				for k, v in pairs(contents) do
-					if k == entry_price.name then
-						blue_invs[i].remove({ name = k, count = v });
-						removed = removed + v
+				for _, item in ipairs(contents) do
+					if item.name == entry_price.name then
+						blue_invs[i].remove({ name = item.name, count = item.count });
+						removed = removed + item.count
 					else
-						blue_invs[i].remove({ name = k, count = v });
-						red_invs[i].insert({ name = k, count = v });
+						blue_invs[i].remove({ name = item.name, count = item.count });
+						red_invs[i].insert({ name = item.name, count = item.count, quality = item.quality });
 					end
 				end
 			end

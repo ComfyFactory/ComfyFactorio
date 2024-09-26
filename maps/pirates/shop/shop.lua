@@ -33,7 +33,7 @@ function Public.print_transaction(player, multiplier, offer_itemname, offer_item
 	local s3 = offer_itemcount * multiplier .. ' ' .. offer_itemname
 	if offer_itemname == 'coin' then type = 'sold' end
 	for i, p in pairs(price) do
-		local p2 = { name = p.name, amount = p.count }
+		local p2 = { name = p.name, count = p.count }
 		if p2.name == 'raw-fish' then p2.name = 'fish' end
 		if p2.name == 'coin' then
 			type = 'bought'
@@ -136,7 +136,7 @@ function Public.refund_items(player, price, price_multiplier, item_purchased_nam
 		local inserted = inv.insert { name = p.name, count = p.count * price_multiplier }
 		if inserted < p.count * price_multiplier then
 			-- Inventory is full, drop the remaining items on the ground
-			player.surface.spill_item_stack(player.position, { name = p.name, count = p.count * price_multiplier - inserted }, true, player.force, false)
+			player.surface.spill_item_stack { position = player.position, stack = { name = p.name, count = p.count * price_multiplier - inserted }, enable_looted = true }
 		end
 	end
 

@@ -523,7 +523,7 @@ function Public.weapon_damage_upgrade_price()
 	-- local steel_plate_cost = 100
 	local steel_plate_cost = 100 * (1 + 0.1 * (Common.overworldx() / 40))
 
-	return { { name = 'coin', amount = 2000 }, { name = 'steel-plate', amount = steel_plate_cost } } --NOTE: Coin cost should be different to other 'nothing' costs. See the use of this function in shop.lua.
+	return { { name = 'coin', count = 2000 }, { name = 'steel-plate', count = steel_plate_cost } } --NOTE: Coin cost should be different to other 'nothing' costs. See the use of this function in shop.lua.
 end
 
 Public.quest_structures_first_appear_at = 40

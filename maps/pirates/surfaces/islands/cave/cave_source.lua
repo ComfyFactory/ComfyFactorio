@@ -41,9 +41,9 @@ local function spawn_market(args, is_main)
         end
 
         if destination_data.static_params.class_for_sale then
-            offers[#offers + 1] = { price = { { 'coin', Balance.class_cost(true) } }, offer = { type = "nothing", effect_description = { 'pirates.market_description_purchase_class', Classes.display_form(destination_data.static_params.class_for_sale) } } }
+            offers[#offers + 1] = { price = { { name = 'coin', count = Balance.class_cost(true) } }, offer = { type = "nothing", effect_description = { 'pirates.market_description_purchase_class', Classes.display_form(destination_data.static_params.class_for_sale) } } }
         end
-        offers[#offers + 1] = { price = { { 'coin', 200 } }, offer = { type = 'give-item', item = 'small-lamp', count = 100 } }
+        offers[#offers + 1] = { price = { { name = 'coin', count = 200 } }, offer = { type = 'give-item', item = 'small-lamp', count = 100 } }
     else
         -- This doesn't really prevent markets spawning near each other, since markets aren't spawned immediately for a given chunk, but it helps a bit
         local cave_miner = destination_data.dynamic_data.cave_miner

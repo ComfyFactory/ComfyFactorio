@@ -171,6 +171,9 @@ function Public.initialise_resourcecount_quest()
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 
+	local surface = game.surfaces[destination.surface_name]
+	if not (surface and surface.valid) then return end
+
 	if not destination and destination.dynamic_data and destination.dynamic_data.rocketsilomaxhp then return end
 
 	destination.dynamic_data.quest_type = enum.RESOURCECOUNT
@@ -184,7 +187,7 @@ function Public.initialise_resourcecount_quest()
 
 	local force = memory.force
 	if force and force.valid then
-		destination.dynamic_data.quest_params.initial_count = force.item_production_statistics.get_flow_count { name = generated_production_quest.item, input = true, precision_index = defines.flow_precision_index.one_thousand_hours, count = true }
+		destination.dynamic_data.quest_params.initial_count = force.get_item_production_statistics(surface).get_flow_count { name = generated_production_quest.item, category = 'input', precision_index = defines.flow_precision_index.one_thousand_hours, count = true }
 	end
 
 	local progressneeded_before_rounding = generated_production_quest.base_rate * Balance.resource_quest_multiplier()

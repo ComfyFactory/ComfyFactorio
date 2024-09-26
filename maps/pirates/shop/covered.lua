@@ -43,7 +43,7 @@ Public.offers_default = {
 	{ price = { { name = 'coin', count = 1400 } }, offer = { type = 'give-item', item = 'gate', count = 25 } },
 	{ price = { { name = 'coin', count = 800 } },  offer = { type = 'give-item', item = 'storage-tank', count = 20 } },
 	{ price = { { name = 'coin', count = 600 } },  offer = { type = 'give-item', item = 'big-electric-pole', count = 15 } },
-	{ price = { { name = 'coin', count = 850 } },  offer = { type = 'give-item', item = 'stack-inserter', count = 7 } },
+	{ price = { { name = 'coin', count = 850 } },  offer = { type = 'give-item', item = 'bulk-inserter', count = 7 } },
 	{ price = { { name = 'coin', count = 900 } },  offer = { type = 'give-item', item = 'piercing-shotgun-shell', count = 15 } },
 	{ price = { { name = 'coin', count = 960 } },  offer = { type = 'give-item', item = 'flamethrower', count = 1 } },
 	{ price = { { name = 'coin', count = 980 } },  offer = { type = 'give-item', item = 'flamethrower', count = 1 } },
