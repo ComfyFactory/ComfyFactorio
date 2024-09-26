@@ -327,7 +327,7 @@ end
 ---Message to a specific player as warning
 ---@param player LuaPlayer
 ---@param duration number
----@param message string
+---@param message string|table
 ---@param color string|nil
 function Public.alert_player_warning(player, duration, message, color)
     Public.alert_player_template(
@@ -349,7 +349,7 @@ end
 ---Message to all players of a given force
 ---@param force LuaForce
 ---@param duration number
----@param message string
+---@param message string|table
 function Public.alert_force(force, duration, message)
     local players = force.connected_players
     for i = 1, #players do
