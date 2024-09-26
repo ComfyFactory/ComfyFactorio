@@ -194,7 +194,7 @@ function Public.parrot_speak(force, message)
 end
 
 function Public.flying_text(surface, position, text)
-    for _, player in pairs(game.players) do
+    for _, player in pairs(game.connected_players) do
         if player.surface_index == surface.index then
             player.create_local_flying_text {
                 position = { position.x - 0.7, position.y - 3.05 },
@@ -205,7 +205,7 @@ function Public.flying_text(surface, position, text)
 end
 
 function Public.flying_text_small(surface, position, text) --differs just in the location of the text, more suitable for small things like '+'
-    for _, player in pairs(game.players) do
+    for _, player in pairs(game.connected_players) do
         if player.surface_index == surface.index then
             player.create_local_flying_text {
                 position = { position.x - 0.08, position.y - 1.5 },
