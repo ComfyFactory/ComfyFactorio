@@ -90,17 +90,23 @@ local function create_floaty_text(surface, position, name, count)
     else
         this.floating_text_y_offsets[position.x .. '_' .. position.y] = 0
     end
-    surface.create_entity(
-        {
-            name = 'flying-text',
-            position = {
-                position.x,
-                position.y + this.floating_text_y_offsets[position.x .. '_' .. position.y]
-            },
-            text = { '', '-', count, ' ', prototypes.item[name].localised_name },
-            color = { r = 255, g = 255, b = 255 }
-        }
-    )
+
+    if not surface.valid then return end
+
+    for _, player in pairs(game.players) do
+        if player.surface_index == surface.index then
+            player.create_local_flying_text(
+                {
+                    position = {
+                        position.x,
+                        position.y + this.floating_text_y_offsets[position.x .. '_' .. position.y]
+                    },
+                    text = { '', '-', count, ' ', prototypes.item[name].localised_name },
+                    color = { r = 255, g = 255, b = 255 }
+                }
+            )
+        end
+    end
 end
 
 local function prepare_floaty_text(list, surface, position, name, count)

@@ -193,21 +193,26 @@ function Public.parrot_speak(force, message)
     Server.to_discord_embed_raw({ '', '[' .. memory.name .. '] ', { 'pirates.notify_parrot' }, ' ', message }, true)
 end
 
-function Public.flying_text(player, position, text)
-    player.create_local_flying_text {
-        name = 'flying-text',
-        position = { position.x - 0.7, position.y - 3.05 },
-        text = text
-    }
+function Public.flying_text(surface, position, text)
+    for _, player in pairs(game.players) do
+        if player.surface_index == surface.index then
+            player.create_local_flying_text {
+                position = { position.x - 0.7, position.y - 3.05 },
+                text = text
+            }
+        end
+    end
 end
 
-function Public.flying_text_small(player, position, text) --differs just in the location of the text, more suitable for small things like '+'
-    player.create_local_flying_text {
-        name = 'flying-text',
-        position = { position.x - 0.08, position.y - 1.5 },
-        -- position = {position.x - 0.06, position.y - 1.5},
-        text = text
-    }
+function Public.flying_text_small(surface, position, text) --differs just in the location of the text, more suitable for small things like '+'
+    for _, player in pairs(game.players) do
+        if player.surface_index == surface.index then
+            player.create_local_flying_text {
+                position = { position.x - 0.08, position.y - 1.5 },
+                text = text
+            }
+        end
+    end
 end
 
 function Public.processed_loot_data(raw_data)
@@ -401,9 +406,9 @@ function Public.give(player, stacks, spill_position, short_form, spill_surface, 
         if #stacks2 > 1 then
             text2 = '(' .. text2 .. ')'
         end
-        Public.flying_text(player, flying_text_position, text1 .. ' [font=count-font]' .. text2 .. '[/font]')
+        Public.flying_text(player.surface, flying_text_position, text1 .. ' [font=count-font]' .. text2 .. '[/font]')
     else
-        Public.flying_text(player, flying_text_position, text1)
+        Public.flying_text(player.surface, flying_text_position, text1)
     end
 end
 
