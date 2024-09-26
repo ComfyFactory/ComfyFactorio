@@ -300,9 +300,8 @@ function Public.create_cabin_surface()
 			{
 				color = { 60, 255, 124 },
 				scale = 1.6,
-				render_layer = 'light-effect',
 				target = e,
-				target_offset = { 0, -2.7 },
+				target_offset = { 0, -6 },
 				surface = e.surface,
 				alignment = 'center',
 				text = "Captain's Market"

@@ -348,13 +348,6 @@ function Public.toggle_window(player)
 	flow5.style.bottom_margin = 5
 
 	flow5.add({
-		name = 'blueprints_disabled_checkbox',
-		type = 'checkbox',
-		caption = { 'pirates.gui_runs_proposal_maker_blueprints_disabled' },
-		state = false,
-	})
-
-	flow5.add({
 		name = 'protected_checkbox',
 		type = 'checkbox',
 		caption = { 'pirates.gui_runs_proposal_maker_protected' },
@@ -368,6 +361,13 @@ function Public.toggle_window(player)
 		caption = { 'pirates.gui_runs_proposal_maker_private' },
 		state = false,
 		tooltip = { 'pirates.gui_runs_proposal_maker_private_tooltip' }
+	})
+
+	flow5.add({
+		name = 'blueprints_disabled_checkbox',
+		type = 'checkbox',
+		caption = { 'pirates.gui_runs_proposal_maker_blueprints_disabled' },
+		state = false,
 	})
 
 	flow6 = flow5.add({

@@ -2014,10 +2014,6 @@ local function event_on_built_entity(event)
 		memory.players_to_last_landmine_placement_tick[player.index] = game.tick
 	end
 
-	if entity.type == 'entity-ghost' and entity.force and entity.force.valid then
-		entity.time_to_live = 12 * 60 * 60
-	end
-
 	if memory.boat and memory.boat.surface_name and player.surface == game.surfaces[memory.boat.surface_name] and entity.valid and entity.position then
 		if (entity.type and (entity.type == 'underground-belt')) or (entity.name == 'entity-ghost' and entity.ghost_type and (entity.ghost_type == 'underground-belt')) then
 			if Boats.on_boat(memory.boat, entity.position) then

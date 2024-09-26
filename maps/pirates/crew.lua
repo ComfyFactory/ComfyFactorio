@@ -1068,7 +1068,6 @@ function Public.reset_crew_and_enemy_force(id)
 	-- crew_force.technologies['efficiency-module-2'].enabled = false
 	-- crew_force.technologies['efficiency-module-3'].enabled = false
 	-- crew_force.technologies['automation-3'].enabled = false
-	-- crew_force.technologies['rocket-control-unit'].enabled = false
 	-- crew_force.technologies['rocket-silo'].enabled = false
 	-- crew_force.technologies['space-scienkce-pack'].enabled = false
 	-- crew_force.technologies['mining-productivity-3'].enabled = false
