@@ -330,7 +330,7 @@ function Public.create_mail_delivery_biters() --these travel cross-map between b
 				for _, unit in pairs(units) do
 					unit_group.add_member(unit)
 				end
-				memory.scripted_unit_groups[unit_group.group_number] = { ref = unit_group, script_type = 'mail-delivery' }
+				memory.scripted_unit_groups[unit_group.unique_id] = { ref = unit_group, script_type = 'mail-delivery' }
 
 				Public.group_set_commands(unit_group, {
 					Public.move_to(s2.position),
@@ -378,7 +378,7 @@ function Public.spawn_group_of_scripted_biters(fraction_of_floating_pollution, m
 	for _, unit in pairs(new_units) do
 		unit_group.add_member(unit)
 	end
-	memory.scripted_unit_groups[unit_group.group_number] = { ref = unit_group, script_type = 'attacker' }
+	memory.scripted_unit_groups[unit_group.unique_id] = { ref = unit_group, script_type = 'attacker' }
 	return unit_group
 end
 
