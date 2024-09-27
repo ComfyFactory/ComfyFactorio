@@ -534,8 +534,8 @@ local function handle_damage_dealt_by_players(event)
     if event.final_health > 0 then
         if physical then
             -- QUARTERMASTER BUFFS
-            local nearby_players = player.surface.find_entities_filtered({
-                position = player.position,
+            local nearby_players = character.surface.find_entities_filtered({
+                position = character.position,
                 radius = Balance.quartermaster_range,
                 type = { "character" },
             })
@@ -647,8 +647,8 @@ local function handle_damage_dealt_by_players(event)
                 else
                     local surplus = (extra_damage_to_deal - event.entity.health) * 0.8
                     event.entity.die(character.force, character)
-                    local nearest = player.surface.find_nearest_enemy({
-                        position = player.position,
+                    local nearest = character.surface.find_nearest_enemy({
+                        position = character.position,
                         max_distance = 2,
                         force = player.force,
                     })
@@ -1463,14 +1463,7 @@ local function base_kill_rewards(event)
 
     -- revenge_target.player can be nil if player kills itself
     if revenge_target and revenge_target.player then
-        Common.give(
-            revenge_target.player,
-            stack,
-            revenge_target.player.position,
-            short_form,
-            entity.surface,
-            entity.position
-        )
+        Common.give(revenge_target.player, stack, nil, short_form, entity.surface, entity.position)
     else
         if event.cause and event.cause.valid and event.cause.position then
             Common.give(nil, stack, event.cause.position, short_form, entity.surface, entity.position)
@@ -1768,7 +1761,10 @@ local function event_on_player_joined_game(event)
         local spawnpoint = Common.lobby_spawnpoint
         local surface = game.surfaces[CoreData.lobby_surface_name]
 
-        player.teleport(surface.find_non_colliding_position("character", spawnpoint, 32, 0.5) or spawnpoint, surface)
+        player.character.teleport(
+            surface.find_non_colliding_position("character", spawnpoint, 32, 0.5) or spawnpoint,
+            surface
+        )
         Permissions.update_privileges(player)
 
         if not player.name then
@@ -1943,6 +1939,9 @@ local function on_player_changed_surface(event)
 end
 
 function Public.player_entered_vehicle(player, vehicle)
+    if not Common.validate_player_and_character(player) then
+        return
+    end
     if not vehicle then
         log("no vehicle")
         return
@@ -1951,17 +1950,21 @@ function Public.player_entered_vehicle(player, vehicle)
     -- if not vehicle.valid then log('vehicle invalid') return end
 
     local player_relative_pos =
-        { x = player.position.x - vehicle.position.x, y = player.position.y - vehicle.position.y }
+        { x = player.character.position.x - vehicle.position.x, y = player.character.position.y - vehicle.position.y }
 
     local memory = Memory.get_crew_memory()
 
     local player_boat_relative_pos
     if memory and memory.boat and memory.boat.position then
-        player_boat_relative_pos =
-            { x = player.position.x - memory.boat.position.x, y = player.position.y - memory.boat.position.y }
+        player_boat_relative_pos = {
+            x = player.character.position.x - memory.boat.position.x,
+            y = player.character.position.y - memory.boat.position.y,
+        }
     else
-        player_boat_relative_pos =
-            { x = player.position.x - vehicle.position.x, y = player.position.y - vehicle.position.y }
+        player_boat_relative_pos = {
+            x = player.character.position.x - vehicle.position.x,
+            y = player.character.position.y - vehicle.position.y,
+        }
     end
 
     local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(player.surface.name)
@@ -2519,7 +2522,7 @@ local function event_on_player_respawned(event)
         if Boats.is_boat_at_sea() then
             -- assuming sea is always default:
             local seasurface = game.surfaces[memory.sea_name]
-            player.teleport(memory.spawnpoint, seasurface)
+            player.character.teleport(memory.spawnpoint, seasurface)
         elseif boat and (boat.state == Boats.enum_state.LANDED or boat.state == Boats.enum_state.RETREATING) then
             if player.character and player.character.valid then
                 Task.set_timeout_in_ticks(360, boost_movement_speed_on_respawn, { player = player, crew_id = crew_id })

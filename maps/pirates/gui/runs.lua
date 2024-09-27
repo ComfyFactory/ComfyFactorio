@@ -919,7 +919,7 @@ function Public.click(event)
                         end
                     end
 
-                    Crew.initialise_crew(proposal, player.position)
+                    Crew.initialise_crew(proposal, player.character.position)
                     global_memory.crewproposals[k] = nil
                     Progression.set_off_from_starting_dock()
 

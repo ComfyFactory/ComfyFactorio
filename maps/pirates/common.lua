@@ -316,7 +316,9 @@ end
 function Public.give(player, stacks, spill_position, short_form, spill_surface, flying_text_position)
     -- stack elements of form {name = '', count = '', color = {r = , g = , b = }}
     -- to just spill on the ground, pass player and nill and give a position and surface directly
-    spill_position = spill_position or player.position
+    spill_position = spill_position
+        or (player.character and player.character.valid and player.character.position)
+        or player.position
     spill_surface = spill_surface or player.surface
     flying_text_position = flying_text_position or spill_position
 

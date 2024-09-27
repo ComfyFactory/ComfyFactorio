@@ -409,14 +409,12 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
                         position = { x = p2.x + 1, y = p2.y },
                         force = boat.force_name,
                         create_build_effect_smoke = false,
-                    }),
-                    surface.create_entity({
+                    }), surface.create_entity({
                         name = "stone-wall",
                         position = { x = p2.x, y = p2.y },
                         force = boat.force_name,
                         create_build_effect_smoke = false,
-                    }),
-                    surface.create_entity({
+                    }), surface.create_entity({
                         name = "stone-wall",
                         position = { x = p2.x - 1, y = p2.y },
                         force = boat.force_name,
@@ -791,6 +789,9 @@ function Public.collision_infront(boat)
 end
 
 function Public.on_boat(boat, pos)
+    if not pos then
+        return false
+    end
     for _, relative_area in pairs(Public[boat.type].Data.tile_areas) do
         local area = {
             { boat.position.x + relative_area[1][1], boat.position.y + relative_area[1][2] },
@@ -811,7 +812,7 @@ function Public.players_on_boat_count(boat)
             and player.surface.valid
             and boat.surface_name
             and player.surface.name == boat.surface_name
-            and Public.on_boat(boat, player.position)
+            and Public.on_boat(boat, player.character and player.character.valid and player.character.position or nil)
         then
             count = count + 1
         end
@@ -1229,12 +1230,7 @@ local function process_entity_on_boat(
                     e.teleport(vector.x, vector.y)
                 else
                     local p = { e.position.x + vector.x, e.position.y + vector.y }
-                    if e.player then --e.player being nil caused a bug once!
-                        e.player.teleport(
-                            newsurface.find_non_colliding_position("character", p, 1.2, 0.2) or p,
-                            newsurface
-                        )
-                    end
+                    e.teleport(newsurface.find_non_colliding_position("character", p, 1.2, 0.2) or p, newsurface)
                 end
             elseif
                 Utils.contains(CoreData.unteleportable_names, name)

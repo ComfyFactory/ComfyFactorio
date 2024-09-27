@@ -173,7 +173,8 @@ local function walkways_tick()
                     and player.surface == game.surfaces[destination.surface_name]
                     and player.character
                     and player.character.valid
-                    and game.surfaces[destination.surface_name].get_tile(player.position).name == "water-shallow"
+                    and game.surfaces[destination.surface_name].get_tile(player.character.position).name
+                        == "water-shallow"
                 then
                     player.character.damage(Balance.walkways_frozen_pool_damage, game.forces["environment"], "fire")
                     if not (player.character and player.character.valid) then

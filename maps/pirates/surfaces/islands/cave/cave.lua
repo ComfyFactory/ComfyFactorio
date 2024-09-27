@@ -41,14 +41,12 @@ function Public.reveal(surface, source_surface, position, brushsize)
 
     -- TODO: use radius search for "find_tiles_filtered" instead to avoid the check?
     for _, tile in
-        pairs(
-            source_surface.find_tiles_filtered({
-                area = {
-                    { position.x - brushsize, position.y - brushsize },
-                    { position.x + brushsize, position.y + brushsize },
-                },
-            })
-        )
+        pairs(source_surface.find_tiles_filtered({
+            area = {
+                { position.x - brushsize, position.y - brushsize },
+                { position.x + brushsize, position.y + brushsize },
+            },
+        }))
     do
         local tile_position = tile.position
         if
@@ -80,14 +78,12 @@ function Public.reveal(surface, source_surface, position, brushsize)
     source_surface.set_tiles(copied_tiles, false, false, false, false)
 
     for _, entity in
-        pairs(
-            source_surface.find_entities_filtered({
-                area = {
-                    { position.x - brushsize, position.y - brushsize },
-                    { position.x + brushsize, position.y + brushsize },
-                },
-            })
-        )
+        pairs(source_surface.find_entities_filtered({
+            area = {
+                { position.x - brushsize, position.y - brushsize },
+                { position.x + brushsize, position.y + brushsize },
+            },
+        }))
     do
         if entity.valid then
             local entity_position = { x = entity.position.x, y = entity.position.y }
@@ -258,10 +254,7 @@ local function on_player_changed_position(event)
 
     local player = game.players[event.player_index]
 
-    if not player.character then
-        return
-    end
-    if not player.character.valid then
+    if not Common.validate_player_and_character(player) then
         return
     end
 
@@ -286,7 +279,7 @@ local function on_player_changed_position(event)
     Public.reveal(
         player.surface,
         cave_miner.cave_surface,
-        { x = Math.floor(player.position.x), y = Math.floor(player.position.y) },
+        { x = Math.floor(player.character.position.x), y = Math.floor(player.character.position.y) },
         11
     )
 end
