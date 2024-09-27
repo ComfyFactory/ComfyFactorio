@@ -1,7 +1,6 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-
-local Data = require 'maps.pirates.structures.island_structures.mattisso.data'
+local Data = require("maps.pirates.structures.island_structures.mattisso.data")
 
 local Public = {}
 Public.refuel_station = {}
@@ -42,6 +41,5 @@ Public.small_radioactive_reactor = {}
 Public.small_radioactive_reactor.Data = Data.small_radioactive_reactor
 Public.uranium_miners = {}
 Public.uranium_miners.Data = Data.uranium_miners
-
 
 return Public

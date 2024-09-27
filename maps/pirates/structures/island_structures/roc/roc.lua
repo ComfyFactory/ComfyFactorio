@@ -1,7 +1,6 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-
-local Data = require 'maps.pirates.structures.island_structures.roc.data'
+local Data = require("maps.pirates.structures.island_structures.roc.data")
 
 local Public = {}
 Public.shelter1 = {}
@@ -33,7 +32,5 @@ Public.maze_belts_4 = {}
 Public.maze_belts_4.Data = Data.maze_belts_4
 Public.maze_treasure = {}
 Public.maze_treasure.Data = Data.maze_treasure
-
-
 
 return Public

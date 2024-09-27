@@ -1,18 +1,17 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-
-local Memory = require 'maps.pirates.memory'
-local Math = require 'maps.pirates.math'
-local Common = require 'maps.pirates.common'
-local IslandsCommon = require 'maps.pirates.surfaces.islands.common'
-local GetNoise = require 'utils.get_noise'
-local BoatData = require 'maps.pirates.structures.boats.sloop.data'
-local Balance = require 'maps.pirates.balance'
-local ShopCovered = require 'maps.pirates.shop.covered'
-local Classes = require 'maps.pirates.roles.classes'
+local Memory = require("maps.pirates.memory")
+local Math = require("maps.pirates.math")
+local Common = require("maps.pirates.common")
+local IslandsCommon = require("maps.pirates.surfaces.islands.common")
+local GetNoise = require("utils.get_noise")
+local BoatData = require("maps.pirates.structures.boats.sloop.data")
+local Balance = require("maps.pirates.balance")
+local ShopCovered = require("maps.pirates.shop.covered")
+local Classes = require("maps.pirates.roles.classes")
 
 local Public = {}
-Public.Data = require 'maps.pirates.surfaces.islands.cave.data'
+Public.Data = require("maps.pirates.surfaces.islands.cave.data")
 
 local math_random = Math.random
 
@@ -22,7 +21,9 @@ local function spawn_market(args, is_main)
     is_main = is_main or false
     local destination_data = Common.current_destination()
     --if not (destination_data and destination_data.dynamic_data and destination_data.dynamic_data.cave_miner) then return end
-    if not (destination_data and destination_data.dynamic_data) then return end
+    if not (destination_data and destination_data.dynamic_data) then
+        return
+    end
 
     local offers
     if is_main then
@@ -33,24 +34,39 @@ local function spawn_market(args, is_main)
                 price = Balance.weapon_damage_upgrade_price(),
                 offer = {
                     type = "nothing",
-                    effect_description = { 'pirates.market_description_purchase_attack_upgrade', Balance.weapon_damage_upgrade_percentage() }
-                }
+                    effect_description = {
+                        "pirates.market_description_purchase_attack_upgrade",
+                        Balance.weapon_damage_upgrade_percentage(),
+                    },
+                },
             }
 
             destination_data.dynamic_data.offered_weapon_damage_upgrade = true
         end
 
         if destination_data.static_params.class_for_sale then
-            offers[#offers + 1] = { price = { { name = 'coin', count = Balance.class_cost(true) } }, offer = { type = "nothing", effect_description = { 'pirates.market_description_purchase_class', Classes.display_form(destination_data.static_params.class_for_sale) } } }
+            offers[#offers + 1] = {
+                price = { { name = "coin", count = Balance.class_cost(true) } },
+                offer = {
+                    type = "nothing",
+                    effect_description = {
+                        "pirates.market_description_purchase_class",
+                        Classes.display_form(destination_data.static_params.class_for_sale),
+                    },
+                },
+            }
         end
-        offers[#offers + 1] = { price = { { name = 'coin', count = 200 } }, offer = { type = 'give-item', item = 'small-lamp', count = 100 } }
+        offers[#offers + 1] = {
+            price = { { name = "coin", count = 200 } },
+            offer = { type = "give-item", item = "small-lamp", count = 100 },
+        }
     else
         -- This doesn't really prevent markets spawning near each other, since markets aren't spawned immediately for a given chunk, but it helps a bit
         local cave_miner = destination_data.dynamic_data.cave_miner
         if not cave_miner then
             -- this can be nil if cave island is first and run is launched using proposal
             -- should probably investigate this some time
-            local message = 'ERROR: cave_miner is nil'
+            local message = "ERROR: cave_miner is nil"
             if _DEBUG then
                 game.print(message)
             else
@@ -60,17 +76,24 @@ local function spawn_market(args, is_main)
             return
         end
         local surface = cave_miner.cave_surface
-        if not surface then return end
+        if not surface then
+            return
+        end
 
         local r = 64
-        if surface.count_entities_filtered({ name = 'market', area = { { args.p.x - r, args.p.y - r }, { args.p.x + r, args.p.y + r } } }) > 0 then
+        if
+            surface.count_entities_filtered({
+                name = "market",
+                area = { { args.p.x - r, args.p.y - r }, { args.p.x + r, args.p.y + r } },
+            }) > 0
+        then
             return
         end
 
         offers = ShopCovered.market_generate_coin_offers(4)
     end
 
-    args.specials[#args.specials + 1] = { name = 'market', position = args.p, offers = offers }
+    args.specials[#args.specials + 1] = { name = "market", position = args.p, offers = offers }
 end
 
 local function place_rock(args)
@@ -85,9 +108,9 @@ local function place_spawner(args)
 
     local name
     if math_random(1, 2) == 1 then
-        name = 'biter-spawner'
+        name = "biter-spawner"
     else
-        name = 'spitter-spawner'
+        name = "spitter-spawner"
     end
     args.entities[#args.entities + 1] = { name = name, position = args.p, force = memory.enemy_force_name }
 end
@@ -105,19 +128,20 @@ function biomes.oasis(args, noise)
     local seed = args.seed
     local position = args.p
     if noise > 0.83 then
-        args.tiles[#args.tiles + 1] = { name = 'deepwater', position = args.p }
-        Public.Data.spawn_fish(args);
+        args.tiles[#args.tiles + 1] = { name = "deepwater", position = args.p }
+        Public.Data.spawn_fish(args)
         return
     end
 
-    local noise_decoratives = GetNoise('decoratives', position, seed + 50000)
-    args.tiles[#args.tiles + 1] = { name = 'grass-1', position = args.p }
+    local noise_decoratives = GetNoise("decoratives", position, seed + 50000)
+    args.tiles[#args.tiles + 1] = { name = "grass-1", position = args.p }
     if math_random(1, 16) == 1 and Math.abs(noise_decoratives) > 0.17 then
-        args.entities[#args.entities + 1] = { name = 'tree-04', position = args.p }
+        args.entities[#args.entities + 1] = { name = "tree-04", position = args.p }
     end
 
     if math_random(1, 64) == 1 then
-        args.entities[#args.entities + 1] = { name = 'crude-oil', position = args.p, amount = Balance.pick_default_oil_amount() * 2 }
+        args.entities[#args.entities + 1] =
+            { name = "crude-oil", position = args.p, amount = Balance.pick_default_oil_amount() * 2 }
     end
 
     if noise < 0.73 then
@@ -126,24 +150,24 @@ function biomes.oasis(args, noise)
 end
 
 function biomes.void(args)
-    args.tiles[#args.tiles + 1] = { name = 'out-of-map', position = args.p }
+    args.tiles[#args.tiles + 1] = { name = "out-of-map", position = args.p }
 end
 
 function biomes.pond_cave(args, noise)
     local seed = args.seed
     local position = args.p
-    local noise_2 = GetNoise('cm_ponds', position, seed)
+    local noise_2 = GetNoise("cm_ponds", position, seed)
 
     if Math.abs(noise_2) > 0.60 then
-        args.tiles[#args.tiles + 1] = { name = 'water', position = args.p }
-        Public.Data.spawn_fish(args);
+        args.tiles[#args.tiles + 1] = { name = "water", position = args.p }
+        Public.Data.spawn_fish(args)
         return
     end
 
-    args.tiles[#args.tiles + 1] = { name = 'dirt-7', position = args.p }
+    args.tiles[#args.tiles + 1] = { name = "dirt-7", position = args.p }
 
     if math_random(1, 512) == 1 then
-        args.specials[#args.specials + 1] = { name = 'chest', position = args.p }
+        args.specials[#args.specials + 1] = { name = "chest", position = args.p }
         return
     end
 
@@ -180,19 +204,19 @@ function biomes.spawn(args, square_distance)
 
     -- If coordinate iteration ever changes to xn instead of 0.5 + xn this will need to change
     if Math.abs(position.x - 0.5) < 0.1 and Math.abs(position.y - 0.5) < 0.1 then
-        args.tiles[#args.tiles + 1] = { name = 'dirt-7', position = args.p }
+        args.tiles[#args.tiles + 1] = { name = "dirt-7", position = args.p }
         spawn_market(args, true)
         return
     end
 
-    local noise = GetNoise('decoratives', position, seed)
+    local noise = GetNoise("decoratives", position, seed)
     if Math.abs(noise) > 0.60 and square_distance < 900 and square_distance > 10 then
-        args.tiles[#args.tiles + 1] = { name = 'water', position = args.p }
-        Public.Data.spawn_fish(args);
+        args.tiles[#args.tiles + 1] = { name = "water", position = args.p }
+        Public.Data.spawn_fish(args)
         return
     end
 
-    args.tiles[#args.tiles + 1] = { name = 'dirt-7', position = args.p }
+    args.tiles[#args.tiles + 1] = { name = "dirt-7", position = args.p }
 
     if square_distance > 100 then
         place_rock(args)
@@ -201,17 +225,17 @@ end
 
 function biomes.ocean(args, noise)
     if noise > 0.66 then
-        args.tiles[#args.tiles + 1] = { name = 'deepwater', position = args.p }
-        Public.Data.spawn_fish(args);
+        args.tiles[#args.tiles + 1] = { name = "deepwater", position = args.p }
+        Public.Data.spawn_fish(args)
         return
     end
     if noise > 0.63 then
-        args.tiles[#args.tiles + 1] = { name = 'water', position = args.p }
-        Public.Data.spawn_fish(args);
+        args.tiles[#args.tiles + 1] = { name = "water", position = args.p }
+        Public.Data.spawn_fish(args)
         return
     end
 
-    args.tiles[#args.tiles + 1] = { name = 'dirt-7', position = args.p }
+    args.tiles[#args.tiles + 1] = { name = "dirt-7", position = args.p }
 
     place_rock(args)
 end
@@ -220,8 +244,8 @@ function biomes.worm_desert(args, noise)
     local seed = args.seed
     local position = args.p
 
-    local i = Math.floor((GetNoise('decoratives', position, seed) * 8) % 3) + 1
-    args.tiles[#args.tiles + 1] = { name = 'sand-' .. i, position = args.p }
+    local i = Math.floor((GetNoise("decoratives", position, seed) * 8) % 3) + 1
+    args.tiles[#args.tiles + 1] = { name = "sand-" .. i, position = args.p }
 
     if noise > -0.65 then
         place_rock(args)
@@ -234,16 +258,16 @@ function biomes.worm_desert(args, noise)
     end
 
     if math_random(1, 32) == 1 then
-        local n = GetNoise('decoratives', position, seed + 10000)
+        local n = GetNoise("decoratives", position, seed + 10000)
         if n > 0.2 then
-            local trees = { 'dead-grey-trunk', 'dead-grey-trunk', 'dry-tree' }
+            local trees = { "dead-grey-trunk", "dead-grey-trunk", "dry-tree" }
             args.entities[#args.entities + 1] = { name = trees[math_random(1, 3)], position = args.p }
             return
         end
     end
 
     if math_random(1, 512) == 1 then
-        args.specials[#args.specials + 1] = { name = 'chest', position = args.p }
+        args.specials[#args.specials + 1] = { name = "chest", position = args.p }
     end
 end
 
@@ -251,34 +275,34 @@ function biomes.cave(args, square_distance)
     local seed = args.seed
     local position = args.p
 
-    local noise_cave_rivers1 = GetNoise('cave_rivers_2', position, seed + 100000)
+    local noise_cave_rivers1 = GetNoise("cave_rivers_2", position, seed + 100000)
     if Math.abs(noise_cave_rivers1) < 0.025 then
-        local noise_cave_rivers2 = GetNoise('cave_rivers_3', position, seed + 200000)
+        local noise_cave_rivers2 = GetNoise("cave_rivers_3", position, seed + 200000)
         if noise_cave_rivers2 > 0 then
-            args.tiles[#args.tiles + 1] = { name = 'water-shallow', position = args.p }
-            Public.Data.spawn_fish(args);
+            args.tiles[#args.tiles + 1] = { name = "water-shallow", position = args.p }
+            Public.Data.spawn_fish(args)
             return
         end
     end
 
-    local no_rocks_2 = GetNoise('no_rocks_2', position, seed)
+    local no_rocks_2 = GetNoise("no_rocks_2", position, seed)
     if no_rocks_2 > 0.7 then
         if no_rocks_2 > 0.73 then
             if math_random(1, 256) == 1 then
                 spawn_market(args)
             end
         end
-        args.tiles[#args.tiles + 1] = { name = 'dirt-' .. Math.floor(no_rocks_2 * 16) % 4 + 3, position = args.p }
+        args.tiles[#args.tiles + 1] = { name = "dirt-" .. Math.floor(no_rocks_2 * 16) % 4 + 3, position = args.p }
         return
     end
 
-    args.tiles[#args.tiles + 1] = { name = 'dirt-7', position = args.p }
+    args.tiles[#args.tiles + 1] = { name = "dirt-7", position = args.p }
 
     if Math.abs(no_rocks_2) < 0.05 then
         return
     end
 
-    local noise_rock = GetNoise('small_caves', position, seed)
+    local noise_rock = GetNoise("small_caves", position, seed)
 
     if noise_rock < 0.6 then
         local ring1_range = 10
@@ -292,8 +316,10 @@ function biomes.cave(args, square_distance)
         local ring2_end = (ring2_radius + ring2_range) * (ring2_radius + ring2_range)
 
         -- add nest obstacles in these rings on "main" wide cave roads
-        if (square_distance > ring1_start and square_distance < ring1_end) or
-            (square_distance > ring2_start and square_distance < ring2_end) then
+        if
+            (square_distance > ring1_start and square_distance < ring1_end)
+            or (square_distance > ring2_start and square_distance < ring2_end)
+        then
             if math_random(1, 32) == 1 then
                 if math_random(1, 3) == 1 then
                     place_worm(args)
@@ -304,7 +330,7 @@ function biomes.cave(args, square_distance)
             end
 
             if math_random(1, 512) == 1 then
-                args.specials[#args.specials + 1] = { name = 'chest', position = args.p }
+                args.specials[#args.specials + 1] = { name = "chest", position = args.p }
                 return
             end
 
@@ -315,7 +341,7 @@ function biomes.cave(args, square_distance)
         end
 
         if math_random(1, 1024) == 1 then
-            args.specials[#args.specials + 1] = { name = 'chest', position = args.p }
+            args.specials[#args.specials + 1] = { name = "chest", position = args.p }
             return
         end
 
@@ -347,7 +373,6 @@ local function pick_biome(args)
     local position = args.p
     local d = position.x ^ 2 + position.y ^ 2
 
-
     local boat_height = Math.max(BoatData.height, 15) -- even if boat height is smaller, we need to be at least 10+ just so formulas below play out nicely
     local spawn_radius = boat_height + 15
     local entrance_radius = boat_height + 45
@@ -368,19 +393,23 @@ local function pick_biome(args)
     -- Prevent cave expansion in west direction
     -- NOTE: although "river_width ^ 2 - entrance_radius ^ 2" should never be "< 0", it's a small safe check
     -- NOTE: the complex calculation here calculates wanted intersection of river and spawn area (or in other words line and circle intersection)
-    if position.x < 0 and -position.x + (river_width - Math.sqrt(Math.max(0, river_width ^ 2 - entrance_radius ^ 2))) > Math.abs(2 * position.y) then
+    if
+        position.x < 0
+        and -position.x + (river_width - Math.sqrt(Math.max(0, river_width ^ 2 - entrance_radius ^ 2)))
+            > Math.abs(2 * position.y)
+    then
         biomes.void(args)
         return
     end
 
     -- Actual cave generation below
-    local cm_ocean = GetNoise('cm_ocean', position, args.seed + 100000)
+    local cm_ocean = GetNoise("cm_ocean", position, args.seed + 100000)
     if cm_ocean > 0.6 then
         biomes.ocean(args, cm_ocean)
         return
     end
 
-    local noise = GetNoise('cave_miner_01', position, args.seed)
+    local noise = GetNoise("cave_miner_01", position, args.seed)
     local abs_noise = Math.abs(noise)
     if abs_noise < 0.075 then
         biomes.cave(args, d)
@@ -388,7 +417,7 @@ local function pick_biome(args)
     end
 
     if abs_noise > 0.25 then
-        noise = GetNoise('cave_rivers', position, args.seed)
+        noise = GetNoise("cave_rivers", position, args.seed)
         if noise > 0.72 then
             biomes.oasis(args, noise)
             return
@@ -405,7 +434,7 @@ local function pick_biome(args)
 
     -- make 4 times as much narrow caves
     local position2 = { x = position.x * 2, y = position.y * 2 }
-    noise = GetNoise('cave_miner_02', position2, args.seed)
+    noise = GetNoise("cave_miner_02", position2, args.seed)
     if Math.abs(noise) < 0.1 then
         biomes.cave(args, d)
         return
@@ -421,7 +450,7 @@ function Public.terrain(args)
     -- fallback case that should never happen
     if #args.tiles == tiles_placed then
         -- game.print('no tile was placed!')
-        args.tiles[#args.tiles + 1] = { name = 'dirt-7', position = args.p }
+        args.tiles[#args.tiles + 1] = { name = "dirt-7", position = args.p }
         return
     end
 end
@@ -435,6 +464,5 @@ end
 -- function Public.generate_silo_setup_position(points_to_avoid)
 
 -- end
-
 
 return Public
