@@ -349,18 +349,15 @@ function Public.destination_on_arrival(destination)
         name,
     }
     if not (#memory.destinationsvisited_indices and #memory.destinationsvisited_indices == 1) then --don't need to notify for the first island
-        Server.to_discord_embed_raw(
-            {
-                "",
-                (destination.static_params.discord_emoji or CoreData.comfy_emojis.hype)
-                    .. "["
-                    .. memory.name
-                    .. "] Approaching ",
-                name,
-                ", " .. memory.overworldx .. " leagues.",
-            },
-            true
-        )
+        Server.to_discord_embed_raw({
+            "",
+            (destination.static_params.discord_emoji or CoreData.comfy_emojis.hype)
+                .. "["
+                .. memory.name
+                .. "] Approaching ",
+            name,
+            ", " .. memory.overworldx .. " leagues.",
+        }, true)
     end
     -- if destination.static_params.name == 'Dock' then
     -- 	message = message .. ' ' .. 'New trades are available in the Captain\'s Store.'
@@ -810,11 +807,11 @@ function Public.clean_up(destination)
     -- handle players that were left on the island
     -- if there is more than one crew on a surface, this will need to be generalised
     for _, player in pairs(game.connected_players) do
-        if player.surface == oldsurface then
-            if player.character and player.character.valid then
+        if Common.validate_player_and_character(player) then
+            if player.character.surface == oldsurface then
                 player.character.die(memory.force)
+                player.teleport(memory.spawnpoint, seasurface)
             end
-            player.teleport(memory.spawnpoint, seasurface)
         end
     end
 
@@ -880,7 +877,11 @@ function Public.player_goto_crows_nest(player, player_relative_pos)
     local newpos2 = surface.find_non_colliding_position("character", newpos, 5, 0.2) or newpos
 
     if newpos2 then
-        player.teleport(newpos2, surface)
+        if player.character and player.character.valid then
+            player.character.teleport(newpos2, surface)
+        else
+            player.teleport(newpos2, surface)
+        end
     end
 
     -- player.minimap_enabled = false
@@ -911,7 +912,11 @@ function Public.player_exit_crows_nest(player, player_relative_pos)
     local newpos2 = surface.find_non_colliding_position("character", newpos, 10, 0.2) or newpos
 
     if newpos2 then
-        player.teleport(newpos2, surface)
+        if player.character and player.character.valid then
+            player.character.teleport(newpos2, surface)
+        else
+            player.teleport(newpos2, surface)
+        end
     end
 
     -- player.minimap_enabled = true
@@ -927,7 +932,11 @@ function Public.player_goto_hold(player, relative_pos, nth)
     local newpos2 = surface.find_non_colliding_position("character", newpos, 5, 0.2) or newpos
 
     if newpos2 then
-        player.teleport(newpos2, surface)
+        if player.character and player.character.valid then
+            player.character.teleport(newpos2, surface)
+        else
+            player.teleport(newpos2, surface)
+        end
     end
 end
 
@@ -950,7 +959,11 @@ function Public.player_exit_hold(player, relative_pos)
     local newpos2 = surface.find_non_colliding_position("character", newpos, 10, 0.2) or newpos
 
     if newpos2 then
-        player.teleport(newpos2, surface)
+        if player.character and player.character.valid then
+            player.character.teleport(newpos2, surface)
+        else
+            player.teleport(newpos2, surface)
+        end
     end
 end
 
@@ -964,7 +977,11 @@ function Public.player_goto_cabin(player, relative_pos)
     local newpos2 = surface.find_non_colliding_position("character", newpos, 5, 0.2) or newpos
 
     if newpos2 then
-        player.teleport(newpos2, surface)
+        if player.character and player.character.valid then
+            player.character.teleport(newpos2, surface)
+        else
+            player.teleport(newpos2, surface)
+        end
     end
 
     if (not memory.captain_cabin_hint_given) and Common.is_captain(player) then
@@ -1000,7 +1017,11 @@ function Public.player_exit_cabin(player, relative_pos)
     newpos = surface.find_non_colliding_position("character", newpos, 10, 0.2) or newpos
 
     if newpos then
-        player.teleport(newpos, surface)
+        if player.character and player.character.valid then
+            player.character.teleport(newpos, surface)
+        else
+            player.teleport(newpos, surface)
+        end
     end
 end
 

@@ -88,7 +88,10 @@ function Public.class_update_auxiliary_data(tick_interval)
             if data.shaman_charge < Balance.shaman_max_charge then
                 -- charge from accumulators
                 local power_need = Balance.shaman_max_charge - data.shaman_charge
-                local energy = discharge_accumulators(player.surface, player.position, memory.force, power_need)
+                local energy = 0
+                if player.character and player.character.valid then
+                    energy = discharge_accumulators(player.surface, player.character.position, memory.force, power_need)
+                end
                 data.shaman_charge = data.shaman_charge + energy
 
                 -- charge from sun pasively
@@ -322,7 +325,7 @@ function Public.update_character_properties(tick_interval)
                         or (type == Surfaces.enum.CROWSNEST)
                         or (
                             player.surface.name == memory.boat.surface_name
-                            and Boats.on_boat(memory.boat, player.position)
+                            and Boats.on_boat(memory.boat, player.character.position)
                         )
                     local hold_bool = (type == Surfaces.enum.HOLD)
 
@@ -395,13 +398,16 @@ function Public.class_rewards_tick(tick_interval)
                 or class == Classes.enum.BOATSWAIN
                 or class == Classes.enum.QUARTERMASTER
             )
-        then --watch out for this line! (why?)
+        then
             local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(player.surface.name)
             local type = surfacedata.type
             local on_ship_bool = (type == Surfaces.enum.HOLD)
                 or (type == Surfaces.enum.CABIN)
                 or (type == Surfaces.enum.CROWSNEST)
-                or (player.surface.name == memory.boat.surface_name and Boats.on_boat(memory.boat, player.position))
+                or (
+                    player.surface.name == memory.boat.surface_name
+                    and Boats.on_boat(memory.boat, player.character.position)
+                )
             local hold_bool = (type == Surfaces.enum.HOLD)
 
             if class == Classes.enum.DECKHAND and on_ship_bool and not hold_bool then
@@ -412,7 +418,7 @@ function Public.class_rewards_tick(tick_interval)
                 Classes.class_ore_grant(player, Balance.shoresman_ore_grant_multiplier)
             elseif class == Classes.enum.QUARTERMASTER then
                 local nearby_players = #player.surface.find_entities_filtered({
-                    position = player.position,
+                    position = player.character.position,
                     radius = Balance.quartermaster_range,
                     name = "character",
                 })

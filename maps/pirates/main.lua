@@ -114,6 +114,9 @@ local function on_init()
     local lobby = game.surfaces[CoreData.lobby_surface_name]
     game.forces.player.set_spawn_position(Common.lobby_spawnpoint, lobby)
 
+    game.forces.player.set_surface_hidden("piratedev1", true)
+    game.forces.player.set_surface_hidden("nauvis", true)
+
     game.create_force("environment")
     for id = 1, Common.starting_ships_count, 1 do
         game.create_force(Common.get_enemy_force_name(id))

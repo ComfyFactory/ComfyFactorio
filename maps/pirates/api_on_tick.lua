@@ -215,16 +215,17 @@ function Public.prevent_disembark(tick_interval)
         if not destination.dynamic_data.cant_disembark_players then
             destination.dynamic_data.cant_disembark_players = {}
         end
-        local ps = destination.dynamic_data.cant_disembark_players
+        local cant_disembark_players = destination.dynamic_data.cant_disembark_players
 
         for _, player in pairs(game.connected_players) do
             if
                 player.surface
                 and player.surface.valid
                 and player.surface.name == boat.surface_name
-                and Boats.on_boat(boat, player.position)
+                and Common.validate_player_and_character(player)
+                and Boats.on_boat(boat, player.character.position)
             then
-                ps[player.index] = true
+                cant_disembark_players[player.index] = true
             end
         end
 
@@ -233,9 +234,9 @@ function Public.prevent_disembark(tick_interval)
                 player.surface
                 and player.surface.valid
                 and player.surface.name == boat.surface_name
-                and ps[player.index]
-                and (not Boats.on_boat(boat, player.position))
-                and player.controller_type ~= defines.controllers.spectator
+                and Common.validate_player_and_character(player)
+                and cant_disembark_players[player.index]
+                and (not Boats.on_boat(boat, player.character.position))
             then
                 Common.notify_player_error(player, { "pirates.error_disembark" })
 
@@ -260,9 +261,9 @@ function Public.prevent_disembark(tick_interval)
 
                 local p = player.surface.find_non_colliding_position("character", memory.spawnpoint, 5, 0.1)
                 if p then
-                    player.teleport(p)
+                    player.character.teleport(p)
                 else
-                    player.teleport(memory.spawnpoint)
+                    player.character.teleport(memory.spawnpoint)
                 end
             end
         end
@@ -1596,7 +1597,8 @@ function Public.Kraken_Destroyed_Backup_check(tick_interval) -- a server became 
             end
 
             local but_none_are = some_spawners_should_be_alive
-                and #surface.find_entities_filtered({ name = "biter-spawner", force = memory.enemy_force_name }) == 0
+                and #surface.find_entities_filtered({ name = "biter-spawner", force = memory.enemy_force_name })
+                    == 0
             if but_none_are then
                 for i = 1, Kraken.kraken_slots do
                     if memory.active_sea_enemies.krakens[i] then

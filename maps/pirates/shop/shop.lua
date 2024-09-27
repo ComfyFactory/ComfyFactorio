@@ -157,24 +157,30 @@ function Public.refund_items(player, price, price_multiplier, item_purchased_nam
         local inserted = inv.insert({ name = p.name, count = p.count * price_multiplier })
         if inserted < p.count * price_multiplier then
             -- Inventory is full, drop the remaining items on the ground
-            player.surface.spill_item_stack({
-                position = player.position,
-                stack = { name = p.name, count = p.count * price_multiplier - inserted },
-                enable_looted = true,
-            })
+            if player.character and player.character.valid then
+                player.surface.spill_item_stack({
+                    position = player.character.position,
+                    stack = { name = p.name, count = p.count * price_multiplier - inserted },
+                    enable_looted = true,
+                })
+            end
         end
     end
 
     if item_purchased_name and item_purchased_count then
         local removed = inv.remove({ name = item_purchased_name, count = item_purchased_count })
         if removed < item_purchased_count then
-            local nearby_floor_items = player.surface.find_entities_filtered({
-                area = {
-                    { player.position.x - 20, player.position.y - 20 },
-                    { player.position.x + 20, player.position.y + 20 },
-                },
-                name = "item-on-ground",
-            })
+            local nearby_floor_items = {}
+            if player.character and player.character.valid then
+                nearby_floor_items = player.surface.find_entities_filtered({
+                    area = {
+                        { player.character.position.x - 20, player.character.position.y - 20 },
+                        { player.character.position.x + 20, player.character.position.y + 20 },
+                    },
+                    name = "item-on-ground",
+                })
+            end
+
             local whilesafety = 2000
             local i = 1
             while removed < item_purchased_count and i <= #nearby_floor_items and i < whilesafety do
@@ -272,14 +278,11 @@ function Public.event_on_market_item_purchased(event)
                     and thisPurchaseData.price[1].name == Balance.weapon_damage_upgrade_price()[1].name
 
                 if isDamageUpgrade then
-                    Common.notify_force_light(
-                        player.force,
-                        {
-                            "pirates.market_event_attack_upgrade_purchased",
-                            player.name,
-                            Balance.weapon_damage_upgrade_percentage(),
-                        }
-                    )
+                    Common.notify_force_light(player.force, {
+                        "pirates.market_event_attack_upgrade_purchased",
+                        player.name,
+                        Balance.weapon_damage_upgrade_percentage(),
+                    })
                     market.remove_market_item(offer_index)
 
                     Crew.buff_all_damage(Balance.weapon_damage_upgrade_percentage() / 100)
@@ -294,13 +297,10 @@ function Public.event_on_market_item_purchased(event)
                         market.remove_market_item(offer_index)
                     else -- if this happens, I believe there is something wrong with code
                         if force and force.valid then
-                            Common.notify_force_error(
-                                force,
-                                {
-                                    "pirates.class_purchase_error_prerequisite_class",
-                                    Classes.display_form(required_class),
-                                }
-                            )
+                            Common.notify_force_error(force, {
+                                "pirates.class_purchase_error_prerequisite_class",
+                                Classes.display_form(required_class),
+                            })
                         end
 
                         --refund
@@ -310,15 +310,12 @@ function Public.event_on_market_item_purchased(event)
                     end
                 end
             else
-                Common.notify_force_light(
-                    player.force,
-                    {
-                        "pirates.market_event_buy",
-                        player.name,
-                        thisPurchaseData.offer_giveitem_count .. " " .. thisPurchaseData.offer_giveitem_name,
-                        thisPurchaseData.price[1].count .. " " .. thisPurchaseData.price[1].name,
-                    }
-                )
+                Common.notify_force_light(player.force, {
+                    "pirates.market_event_buy",
+                    player.name,
+                    thisPurchaseData.offer_giveitem_count .. " " .. thisPurchaseData.offer_giveitem_name,
+                    thisPurchaseData.price[1].count .. " " .. thisPurchaseData.price[1].name,
+                })
 
                 market.remove_market_item(offer_index)
             end
@@ -428,7 +425,7 @@ function Public.event_on_market_item_purchased(event)
 
                     Common.flying_text(
                         player.surface,
-                        player.position,
+                        player.character and player.character.valid and player.character.position or player.position,
                         text1 .. "  [font=count-font]" .. text2 .. "[/font]"
                     )
                 else
@@ -458,7 +455,7 @@ function Public.event_on_market_item_purchased(event)
 
                     Common.flying_text(
                         player.surface,
-                        player.position,
+                        player.character and player.character.valid and player.character.position or player.position,
                         text1 .. "  [font=count-font]" .. text2 .. "[/font]"
                     )
 

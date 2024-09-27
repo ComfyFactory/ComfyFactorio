@@ -362,11 +362,11 @@ function Public.class_ore_grant(player, how_much)
     if Math.random(4) == 1 then
         -- Common.flying_text_small(player.surface, player.position, '[color=0.85,0.58,0.37]+' .. count .. '[/color]')
         -- Common.give_items_to_crew{{name = 'copper-ore', count = count}}
-        Common.give(player, { { name = "copper-ore", count = count } }, player.position)
+        Common.give(player, { { name = "copper-ore", count = count } })
     else
         -- Common.flying_text_small(player.surface, player.position, '[color=0.7,0.8,0.8]+' .. count .. '[/color]')
         -- Common.give_items_to_crew{{name = 'iron-ore', count = count}}
-        Common.give(player, { { name = "iron-ore", count = count } }, player.position)
+        Common.give(player, { { name = "iron-ore", count = count } })
     end
 end
 
@@ -380,16 +380,7 @@ local function class_on_player_used_capsule(event)
     end
 
     local player = game.players[event.player_index]
-    if not player then
-        return
-    end
-    if not player.valid then
-        return
-    end
-    if not player.character then
-        return
-    end
-    if not player.character.valid then
+    if not Common.validate_player_and_character(player) then
         return
     end
 
@@ -486,7 +477,7 @@ local function class_on_player_used_capsule(event)
         end
     elseif class == Public.enum.MEDIC then
         for _, member in pairs(Common.crew_get_crew_members()) do
-            if Math.distance(player.position, member.position) <= Balance.medic_heal_radius then
+            if Math.distance(player.character.position, member.position) <= Balance.medic_heal_radius then
                 if member.character then
                     local amount =
                         Math.ceil(member.character.prototype.max_health * Balance.medic_heal_percentage_amount)
@@ -496,7 +487,7 @@ local function class_on_player_used_capsule(event)
         end
     elseif class == Public.enum.DOCTOR then
         for _, member in pairs(Common.crew_get_crew_members()) do
-            if Math.distance(player.position, member.position) <= Balance.doctor_heal_radius then
+            if Math.distance(player.character.position, member.position) <= Balance.doctor_heal_radius then
                 if member.character then
                     local amount =
                         Math.ceil(member.character.prototype.max_health * Balance.doctor_heal_percentage_amount)
@@ -516,7 +507,7 @@ local function class_on_player_used_capsule(event)
                     end
 
                     local spawn_range = 2
-                    local pos = Math.vector_sum(player.position, Math.random_vec(spawn_range))
+                    local pos = Math.vector_sum(player.character.position, Math.random_vec(spawn_range))
                     local name = Common.get_random_unit_type(Math.clamp(0, 1, memory.evolution_factor))
                     local spawn_pos = player.surface.find_non_colliding_position(name, pos, spawn_range + 1, 0.5)
 

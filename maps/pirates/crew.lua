@@ -204,41 +204,35 @@ function Public.try_win()
         memory.game_won = true
         -- memory.crew_disband_tick = game.tick + 1200
 
-        Server.to_discord_embed_raw(
-            {
-                "",
-                CoreData.comfy_emojis.goldenobese
-                    .. "["
-                    .. memory.name
-                    .. "] Victory, on v"
-                    .. CoreData.version_string
-                    .. ", ",
-                CoreData.difficulty_options[memory.difficulty_option].text,
-                ", capacity "
-                    .. CoreData.capacity_options[memory.capacity_option].text3
-                    .. ". Playtime: "
-                    .. speedrun_time_str
-                    .. " since 1st island. Crewmembers: "
-                    .. Public.get_crewmembers_printable_string(),
-            },
-            true
-        )
+        Server.to_discord_embed_raw({
+            "",
+            CoreData.comfy_emojis.goldenobese
+                .. "["
+                .. memory.name
+                .. "] Victory, on v"
+                .. CoreData.version_string
+                .. ", ",
+            CoreData.difficulty_options[memory.difficulty_option].text,
+            ", capacity "
+                .. CoreData.capacity_options[memory.capacity_option].text3
+                .. ". Playtime: "
+                .. speedrun_time_str
+                .. " since 1st island. Crewmembers: "
+                .. Public.get_crewmembers_printable_string(),
+        }, true)
 
-        Common.notify_game(
+        Common.notify_game({
+            "",
+            "[" .. memory.name .. "] ",
             {
-                "",
-                "[" .. memory.name .. "] ",
-                {
-                    "pirates.victory",
-                    CoreData.version_string,
-                    CoreData.difficulty_options[memory.difficulty_option].text,
-                    CoreData.capacity_options[memory.capacity_option].text3,
-                    speedrun_time_str,
-                    Public.get_crewmembers_printable_string(),
-                },
+                "pirates.victory",
+                CoreData.version_string,
+                CoreData.difficulty_options[memory.difficulty_option].text,
+                CoreData.capacity_options[memory.capacity_option].text3,
+                speedrun_time_str,
+                Public.get_crewmembers_printable_string(),
             },
-            CoreData.colors.notify_victory
-        )
+        }, CoreData.colors.notify_victory)
 
         game.play_sound({ path = "utility/game_won", volume_modifier = 0.9 })
 
@@ -263,7 +257,9 @@ function Public.choose_crew_members()
                 crew_members_count < capacity
                 and not crew_members[player.index]
                 and player.surface.name == CoreData.lobby_surface_name
-                and Boats.on_boat(boat, player.position)
+                and player.character
+                and player.character.valid
+                and Boats.on_boat(boat, player.character.position)
             then
                 crew_members[player.index] = player
                 crew_members_count = crew_members_count + 1
@@ -415,8 +411,8 @@ function Public.leave_spectators(player, quiet)
 
     local chars = player.get_associated_characters()
     if #chars > 0 then
-        player.teleport(chars[1].position, surface)
         player.set_controller({ type = defines.controllers.character, character = chars[1] })
+        player.character.teleport(chars[1].position, surface)
     else
         player.set_controller({ type = defines.controllers.god })
         player.teleport(
@@ -496,7 +492,7 @@ function Public.join_crew(player, rejoin)
 
         Common.notify_lobby({ "pirates.lobby_to_crew_2", player.name, memory.name })
 
-        player.teleport(
+        player.character.teleport(
             surface.find_non_colliding_position("character", memory.spawnpoint, 32, 0.5) or memory.spawnpoint,
             surface
         )
@@ -511,7 +507,7 @@ function Public.join_crew(player, rejoin)
                     -- Edge case: if player left the game while he was on the boat, it could be that boat position
                     -- changed when he left the game vs when he came back.
                     if not (rejoin_data.on_boat and rejoin_data.on_island) then
-                        player.teleport(
+                        player.character.teleport(
                             rejoin_surface.find_non_colliding_position("character", rejoin_data.position, 32, 0.5)
                                 or memory.spawnpoint,
                             rejoin_surface
@@ -556,18 +552,15 @@ function Public.join_crew(player, rejoin)
     if memory.overworldx > 0 then
         local color = CoreData.difficulty_options[memory.difficulty_option].associated_color
 
-        Common.notify_player_announce(
-            player,
-            {
-                "pirates.personal_join_string_1",
-                memory.name,
-                CoreData.capacity_options[memory.capacity_option].text3,
-                color.r,
-                color.g,
-                color.b,
-                CoreData.difficulty_options[memory.difficulty_option].text,
-            }
-        )
+        Common.notify_player_announce(player, {
+            "pirates.personal_join_string_1",
+            memory.name,
+            CoreData.capacity_options[memory.capacity_option].text3,
+            color.r,
+            color.g,
+            color.b,
+            CoreData.difficulty_options[memory.difficulty_option].text,
+        })
     else
         Common.notify_player_announce(
             player,
@@ -986,17 +979,14 @@ function Public.initialise_crew(accepted_proposal, player_position)
     local message = { "pirates.crew_launch", accepted_proposal.name }
     Common.notify_game(message)
     -- Server.to_discord_embed_raw(CoreData.comfy_emojis.pogkot .. message .. ' Difficulty: ' .. CoreData.difficulty_options[memory.difficulty_option].text .. ', Capacity: ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '.')
-    Server.to_discord_embed_raw(
-        {
-            "",
-            CoreData.comfy_emojis.pogkot,
-            message,
-            " Capacity: ",
-            CoreData.capacity_options[memory.capacity_option].text3,
-            ".",
-        },
-        true
-    )
+    Server.to_discord_embed_raw({
+        "",
+        CoreData.comfy_emojis.pogkot,
+        message,
+        " Capacity: ",
+        CoreData.capacity_options[memory.capacity_option].text3,
+        ".",
+    }, true)
     game.surfaces[CoreData.lobby_surface_name].play_sound({ path = "utility/new_objective", volume_modifier = 0.75 })
 
     memory.boat = global_memory.lobby_boats[new_id]
@@ -1071,13 +1061,14 @@ function Public.summon_crew()
             and player.surface.valid
             and boat.surface_name
             and player.surface.name == boat.surface_name
-            and (not Boats.on_boat(boat, player.position))
+            and Common.validate_player_and_character(player)
+            and (not Boats.on_boat(boat, player.character.position))
         then
             local p = player.surface.find_non_colliding_position("character", memory.spawnpoint, 5, 0.1)
             if p then
-                player.teleport(p)
+                player.character.teleport(p)
             else
-                player.teleport(memory.spawnpoint)
+                player.character.teleport(memory.spawnpoint)
             end
             print = true
         end
@@ -1098,6 +1089,9 @@ function Public.reset_crew_and_enemy_force(id)
     enemy_force.reset()
     ancient_friendly_force.reset()
     ancient_enemy_force.reset()
+
+    crew_force.set_surface_hidden("piratedev1", true)
+    crew_force.set_surface_hidden("nauvis", true)
 
     ancient_enemy_force.set_turret_attack_modifier("gun-turret", 0.2)
 
