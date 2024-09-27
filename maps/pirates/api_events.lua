@@ -729,15 +729,13 @@ local function handle_maze_walls_damage_resistance(event)
     elseif event.damage_type.name and event.damage_type.name == "fire" then
         -- put out forest fires:
         for _, e2 in
-            pairs(
-                entity.surface.find_entities_filtered({
-                    area = {
-                        { entity.position.x - 4, entity.position.y - 4 },
-                        { entity.position.x + 4, entity.position.y + 4 },
-                    },
-                    name = "fire-flame-on-tree",
-                })
-            )
+            pairs(entity.surface.find_entities_filtered({
+                area = {
+                    { entity.position.x - 4, entity.position.y - 4 },
+                    { entity.position.x + 4, entity.position.y + 4 },
+                },
+                name = "fire-flame-on-tree",
+            }))
         do
             if e2.valid then
                 e2.destroy()
@@ -1669,17 +1667,14 @@ local function event_on_research_finished(event)
         -- using a localised string means we have to write this out (recall that "" signals concatenation)
         memory.force.print(
             { "", ">> ", { "pirates.research_notification", research.localised_name } },
-            CoreData.colors.notify_force_light
+            { color = CoreData.colors.notify_force_light }
         )
 
-        Server.to_discord_embed_raw(
-            {
-                "",
-                "[" .. memory.name .. "] ",
-                { "pirates.research_notification", prototypes.technology[research.name].localised_name },
-            },
-            true
-        )
+        Server.to_discord_embed_raw({
+            "",
+            "[" .. memory.name .. "] ",
+            { "pirates.research_notification", prototypes.technology[research.name].localised_name },
+        }, true)
     end
 
     for _, e in ipairs(research.effects) do
@@ -1725,7 +1720,7 @@ local function event_on_player_joined_game(event)
     --figure out if we should drop them back into a crew:
 
     if not Server.get_current_time() then -- don't run this on servers because I'd need to negotiate that with the rest of Comfy
-        player.print({ "pirates.thesixthroc_support_toast" }, { r = 1, g = 0.4, b = 0.9 })
+        player.print({ "pirates.thesixthroc_support_toast" }, { color = { r = 1, g = 0.4, b = 0.9 } })
     end
 
     if _DEBUG then
@@ -2453,13 +2448,13 @@ local function event_on_console_chat(event)
     if player.force.name == Common.lobby_force_name then
         for _, index in pairs(global_memory.crew_active_ids) do
             local recipient_force_name = global_memory.crew_memories[index].force_name
-            game.forces[recipient_force_name].print(message_prefix .. " [LOBBY]: " .. event.message, color)
+            game.forces[recipient_force_name].print(message_prefix .. " [LOBBY]: " .. event.message, { color = color })
         end
     else
         if memory.name then
             full_message = message_prefix .. " [" .. memory.name .. "]: " .. event.message
         end
-        game.forces.player.print(full_message, color)
+        game.forces.player.print(full_message, { color = color })
     end
 end
 

@@ -164,48 +164,48 @@ end
 
 function Public.notify_game(message, color_override)
     color_override = color_override or CoreData.colors.notify_game
-    game.print({ "", ">> ", message }, color_override)
+    game.print({ "", ">> ", message }, { color = color_override })
 end
 
 function Public.notify_lobby(message, color_override)
     color_override = color_override or CoreData.colors.notify_lobby
-    game.forces[Public.lobby_force_name].print({ "", ">> ", message }, color_override)
+    game.forces[Public.lobby_force_name].print({ "", ">> ", message }, { color = color_override })
 end
 
 function Public.notify_force(force, message, color_override)
     color_override = color_override or CoreData.colors.notify_force
-    force.print({ "", ">> ", message }, color_override)
+    force.print({ "", ">> ", message }, { color = color_override })
 end
 
 function Public.notify_force_light(force, message, color_override)
     color_override = color_override or CoreData.colors.notify_force_light
-    force.print({ "", ">> ", message }, color_override)
+    force.print({ "", ">> ", message }, { color = color_override })
 end
 
 function Public.notify_force_error(force, message, color_override)
     color_override = color_override or CoreData.colors.notify_error
-    force.print({ "", ">> ", message }, color_override)
+    force.print({ "", ">> ", message }, { color = color_override })
     force.play_sound({ path = "utility/cannot_build" })
 end
 
 function Public.notify_player_error(player, message, color_override)
     color_override = color_override or CoreData.colors.notify_error
-    player.print({ "", "## ", { "pirates.notify_whisper" }, " ", message }, color_override)
+    player.print({ "", "## ", { "pirates.notify_whisper" }, " ", message }, { color = color_override })
     player.play_sound({ path = "utility/cannot_build" })
 end
 
 function Public.notify_player_expected(player, message, color_override)
     color_override = color_override or CoreData.colors.notify_player_expected
-    player.print({ "", "## ", { "pirates.notify_whisper" }, " ", message }, color_override)
+    player.print({ "", "## ", { "pirates.notify_whisper" }, " ", message }, { color = color_override })
 end
 
 function Public.notify_player_announce(player, message, color_override)
     color_override = color_override or CoreData.colors.notify_player_announce
-    player.print({ "", "## ", { "pirates.notify_whisper" }, " ", message }, color_override)
+    player.print({ "", "## ", { "pirates.notify_whisper" }, " ", message }, { color = color_override })
 end
 
 function Public.parrot_speak(force, message)
-    force.print({ "", { "pirates.notify_parrot" }, " ", message }, CoreData.colors.parrot)
+    force.print({ "", { "pirates.notify_parrot" }, " ", message }, { color = CoreData.colors.parrot })
 
     local memory = Memory.get_crew_memory()
     Server.to_discord_embed_raw({ "", "[" .. memory.name .. "] ", { "pirates.notify_parrot" }, " ", message }, true)
