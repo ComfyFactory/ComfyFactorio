@@ -11,6 +11,8 @@ local Raffle = require 'maps.pirates.raffle'
 -- local CoreData = require 'maps.pirates.coredata'
 local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 local _inspect = require 'utils.inspect'.inspect
+local Hold = require 'maps.pirates.surfaces.hold'
+local Cabin = require 'maps.pirates.surfaces.cabin'
 
 
 local Public = {}
@@ -187,7 +189,21 @@ function Public.initialise_resourcecount_quest()
 
 	local force = memory.force
 	if force and force.valid then
-		destination.dynamic_data.quest_params.initial_count = force.get_item_production_statistics(surface).get_flow_count { name = generated_production_quest.item, category = 'input', precision_index = defines.flow_precision_index.one_thousand_hours, count = true }
+		local initial_total_count = force.get_item_production_statistics(surface).get_flow_count { name = generated_production_quest.item, category = 'input', precision_index = defines.flow_precision_index.one_thousand_hours, count = true }
+
+		for i = 1, memory.hold_surface_count do
+			local hold_surface = Hold.get_hold_surface(i)
+			if hold_surface and hold_surface.valid then
+				initial_total_count = initial_total_count + force.get_item_production_statistics(hold_surface).get_flow_count { name = generated_production_quest.item, category = 'input', precision_index = defines.flow_precision_index.one_thousand_hours, count = true }
+			end
+		end
+
+		local cabin_surface = Cabin.get_cabin_surface()
+		if cabin_surface and cabin_surface.valid then
+			initial_total_count = initial_total_count + force.get_item_production_statistics(cabin_surface).get_flow_count { name = generated_production_quest.item, category = 'input', precision_index = defines.flow_precision_index.one_thousand_hours, count = true }
+		end
+
+		destination.dynamic_data.quest_params.initial_count = initial_total_count
 	end
 
 	local progressneeded_before_rounding = generated_production_quest.base_rate * Balance.resource_quest_multiplier()
