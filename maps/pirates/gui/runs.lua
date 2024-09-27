@@ -235,27 +235,9 @@ function Public.toggle_window(player)
     })
 
     flow4 = flow3.add({
-        name = "join_spectators",
-        type = "button",
-        caption = { "pirates.gui_runs_ongoing_runs_spectate" },
-    })
-    flow4.style.minimal_width = 95
-    flow4.style.font = "default-bold"
-    flow4.style.font_color = { r = 0.10, g = 0.10, b = 0.10 }
-
-    flow4 = flow3.add({
         name = "join_crew",
         type = "button",
         caption = { "pirates.gui_runs_ongoing_runs_join_crew" },
-    })
-    flow4.style.minimal_width = 95
-    flow4.style.font = "default-bold"
-    flow4.style.font_color = { r = 0.10, g = 0.10, b = 0.10 }
-
-    flow4 = flow3.add({
-        name = "leave_spectators",
-        type = "button",
-        caption = { "pirates.gui_runs_ongoing_runs_return_to_lobby" },
     })
     flow4.style.minimal_width = 95
     flow4.style.font = "default-bold"
@@ -516,20 +498,14 @@ function Public.full_update(player)
         local selected_crew = selected_index ~= 0
             and global_memory.crew_memories[tonumber(ongoing_runs.body.ongoing_runs_listbox.get_item(selected_index)[2])]
 
-        if playercrew_status.leaving or playercrew_status.adventuring or playercrew_status.spectating then
+        if playercrew_status.leaving or playercrew_status.adventuring then
             selected_crew = false
         end
 
         local can_join = selected_crew and selected_crew.crewstatus == Crew.enum.ADVENTURING
 
-        ongoing_runs.body.helpful_tip.visible = not (
-            playercrew_status.leaving
-            or playercrew_status.adventuring
-            or playercrew_status.spectating
-        )
-        ongoing_runs.body.flow_buttons.visible = can_join or playercrew_status.spectating
-        ongoing_runs.body.flow_buttons.join_spectators.visible = can_join
-        ongoing_runs.body.flow_buttons.leave_spectators.visible = playercrew_status.spectating
+        ongoing_runs.body.helpful_tip.visible = not (playercrew_status.leaving or playercrew_status.adventuring)
+        ongoing_runs.body.flow_buttons.visible = can_join
         ongoing_runs.body.flow_buttons.join_crew.visible = can_join
             and selected_crew
             and not (
@@ -642,22 +618,6 @@ function Public.click(event)
 
     local global_memory = Memory.get_global_memory()
     -- local memory = Memory.get_crew_memory()
-
-    if eventname == "join_spectators" then
-        local listbox = flow.ongoing_runs.body.ongoing_runs_listbox
-
-        -- It was observed that "listbox.get_item(listbox.selected_index)" can produce "Index out of range error"
-        -- This is to prevent that error.
-        if listbox.selected_index >= 1 and listbox.selected_index <= #listbox.items then
-            Crew.join_spectators(player, tonumber(listbox.get_item(listbox.selected_index)[2]))
-        end
-        return
-    end
-
-    if eventname == "leave_spectators" then
-        Crew.leave_spectators(player)
-        return
-    end
 
     if eventname == "join_crew" then
         local listbox = flow.ongoing_runs.body.ongoing_runs_listbox

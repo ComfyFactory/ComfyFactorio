@@ -88,8 +88,6 @@ function Public.tag_text(player)
 
     if Common.is_id_valid(memory.id) and Common.is_captain(player) then
         tags[#tags + 1] = "Cap'n"
-    elseif player.controller_type == defines.controllers.spectator then
-        tags[#tags + 1] = "Spectating"
     elseif Common.is_officer(player.index) then
         tags[#tags + 1] = "Officer"
     end

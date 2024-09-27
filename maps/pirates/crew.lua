@@ -275,167 +275,6 @@ function Public.choose_crew_members()
     return crew_members
 end
 
-function Public.join_spectators(player, crewid)
-    if crewid == 0 then
-        return
-    end
-
-    Memory.set_working_id(crewid)
-    local memory = Memory.get_crew_memory()
-
-    local force = memory.force
-    if not (force and force.valid and Common.validate_player(player)) then
-        return
-    end
-
-    local surface = game.surfaces[CoreData.lobby_surface_name]
-
-    local adventuring = false
-    local spectating = false
-    if memory.crewstatus and memory.crewstatus == enum.ADVENTURING then
-        for _, playerindex in pairs(memory.crewplayerindices) do
-            if player.index == playerindex then
-                adventuring = true
-            end
-        end
-        for _, playerindex in pairs(memory.spectatorplayerindices) do
-            if player.index == playerindex then
-                spectating = true
-            end
-        end
-    end
-
-    if spectating then
-        return
-    end
-
-    if adventuring then
-        local char = player.character
-
-        if char and char.valid then
-            local p = char.position
-            -- local surface_name = char.surface.name
-            if p then
-                Common.notify_force(force, { "pirates.crew_to_spectator", player.name })
-                -- Server.to_discord_embed_raw(CoreData.comfy_emojis.feel .. '[' .. memory.name .. '] ' .. message)
-            end
-            -- if p then
-            -- 	Common.notify_force(force, message .. ' to become a spectator.' .. ' [gps=' .. Math.ceil(p.x) .. ',' .. Math.ceil(p.y) .. ',' .. surface_name ..']')
-            -- 	-- Server.to_discord_embed_raw(CoreData.comfy_emojis.feel .. '[' .. memory.name .. '] ' .. message)
-            -- end
-
-            local player_surface_type = SurfacesCommon.decode_surface_name(player.surface.name).type
-            local boat_surface_type = SurfacesCommon.decode_surface_name(memory.boat.surface_name).type
-
-            if not memory.temporarily_logged_off_player_data then
-                memory.temporarily_logged_off_player_data = {}
-            end
-
-            memory.temporarily_logged_off_player_data[player.index] = {
-                on_island = (player_surface_type == Surfaces.enum.ISLAND),
-                on_boat = (player_surface_type == boat_surface_type)
-                    and Boats.on_boat(memory.boat, player.character.position),
-                surface_name = player.surface.name,
-                position = player.character.position,
-                tick = game.tick,
-            }
-
-            Common.temporarily_store_logged_off_character_items(player)
-
-            char.die(memory.force_name)
-
-            player.set_controller({ type = defines.controllers.spectator })
-        else
-            Common.notify_force(force, { "pirates.crew_to_spectator", player.name })
-            -- Server.to_discord_embed_raw(CoreData.comfy_emojis.feel .. '[' .. memory.name .. '] ' .. message)
-            player.set_controller({ type = defines.controllers.spectator })
-        end
-
-        local c = surface.create_entity({
-            name = "character",
-            position = surface.find_non_colliding_position("character", Common.lobby_spawnpoint, 32, 0.5)
-                or Common.lobby_spawnpoint,
-            force = Common.lobby_force_name,
-        })
-
-        player.associate_character(c)
-
-        player.set_controller({ type = defines.controllers.spectator })
-
-        memory.crewplayerindices = Utils.ordered_table_with_values_removed(memory.crewplayerindices, player.index)
-
-        Roles.player_left_so_redestribute_roles(player)
-    else
-        local c = player.character
-        player.set_controller({ type = defines.controllers.spectator })
-        player.teleport(memory.spawnpoint, game.surfaces[memory.boat.surface_name])
-        player.force = force
-        player.associate_character(c)
-
-        Common.notify_force(force, { "pirates.lobby_to_spectator", player.name })
-        Common.notify_lobby({ "pirates.lobby_to_spectator_2", player.name, memory.name })
-    end
-
-    memory.spectatorplayerindices[#memory.spectatorplayerindices + 1] = player.index
-
-    if not _DEBUG then
-        memory.tempbanned_from_joining_data[player.index] = game.tick
-    end
-
-    if #Common.crew_get_crew_members() == 0 then
-        local exists_disband_tick = memory.crew_disband_tick and memory.crew_disband_tick > game.tick
-
-        if Common.autodisband_hours and not exists_disband_tick and Server.get_current_time() then
-            memory.crew_disband_tick = game.tick + Common.autodisband_hours * 60 * 60 * 60
-        end
-    end
-
-    if not memory.difficulty_votes then
-        memory.difficulty_votes = {}
-    end
-    memory.difficulty_votes[player.index] = nil
-end
-
-function Public.leave_spectators(player, quiet)
-    quiet = quiet or false
-    local memory = Memory.get_crew_memory()
-    local surface = game.surfaces[CoreData.lobby_surface_name]
-
-    if not Common.validate_player(player) then
-        return
-    end
-
-    if not quiet then
-        Common.notify_force(player.force, { "pirates.spectator_to_lobby", player.name })
-    end
-
-    local chars = player.get_associated_characters()
-    if #chars > 0 then
-        player.set_controller({ type = defines.controllers.character, character = chars[1] })
-        player.character.teleport(chars[1].position, surface)
-    else
-        player.set_controller({ type = defines.controllers.god })
-        player.teleport(
-            surface.find_non_colliding_position("character", Common.lobby_spawnpoint, 32, 0.5)
-                or Common.lobby_spawnpoint,
-            surface
-        )
-        player.create_character()
-    end
-
-    memory.spectatorplayerindices = Utils.ordered_table_with_values_removed(memory.spectatorplayerindices, player.index)
-
-    if #Common.crew_get_crew_members() == 0 then
-        local exists_disband_tick = memory.crew_disband_tick and memory.crew_disband_tick > game.tick
-
-        if Common.autodisband_hours and not exists_disband_tick and Server.get_current_time() then
-            memory.crew_disband_tick = game.tick + Common.autodisband_hours * 60 * 60 * 60
-        end
-    end
-
-    player.force = Common.lobby_force_name
-end
-
 function Public.join_crew(player, rejoin)
     local memory = Memory.get_crew_memory()
 
@@ -453,72 +292,41 @@ function Public.join_crew(player, rejoin)
         surface = game.surfaces[Common.current_destination().surface_name]
     end
 
-    -- local adventuring = false
-    local spectating = false
-    if memory.crewstatus == enum.ADVENTURING then
-        -- for _, playerindex in pairs(memory.crewplayerindices) do
-        -- 	if player.index == playerindex then adventuring = true end
-        -- end
-        for _, playerindex in pairs(memory.spectatorplayerindices) do
-            if player.index == playerindex then
-                spectating = true
-            end
-        end
-    end
-
-    if spectating then
-        local chars = player.get_associated_characters()
-        for _, char in pairs(chars) do
-            char.destroy()
-        end
-
-        player.teleport(
-            surface.find_non_colliding_position("character", memory.spawnpoint, 32, 0.5) or memory.spawnpoint,
-            surface
-        )
-
+    if not (player.character and player.character.valid) then
         player.set_controller({ type = defines.controllers.god })
         player.create_character()
+    end
 
-        memory.spectatorplayerindices =
-            Utils.ordered_table_with_values_removed(memory.spectatorplayerindices, player.index)
-    else
-        if not (player.character and player.character.valid) then
-            player.set_controller({ type = defines.controllers.god })
-            player.create_character()
-        end
+    player.force = memory.force
 
-        player.force = memory.force
+    Common.notify_lobby({ "pirates.lobby_to_crew_2", player.name, memory.name })
 
-        Common.notify_lobby({ "pirates.lobby_to_crew_2", player.name, memory.name })
+    player.character.teleport(
+        surface.find_non_colliding_position("character", memory.spawnpoint, 32, 0.5) or memory.spawnpoint,
+        surface
+    )
 
-        player.character.teleport(
-            surface.find_non_colliding_position("character", memory.spawnpoint, 32, 0.5) or memory.spawnpoint,
-            surface
-        )
+    if rejoin then
+        if memory.temporarily_logged_off_player_data[player.index] then
+            local rejoin_data = memory.temporarily_logged_off_player_data[player.index]
+            local rejoin_surface = game.surfaces[rejoin_data.surface_name]
 
-        if rejoin then
-            if memory.temporarily_logged_off_player_data[player.index] then
-                local rejoin_data = memory.temporarily_logged_off_player_data[player.index]
-                local rejoin_surface = game.surfaces[rejoin_data.surface_name]
-
-                -- If surface where player left the game still exists, place him there.
-                if rejoin_surface and rejoin_surface.valid then
-                    -- Edge case: if player left the game while he was on the boat, it could be that boat position
-                    -- changed when he left the game vs when he came back.
-                    if not (rejoin_data.on_boat and rejoin_data.on_island) then
-                        player.character.teleport(
-                            rejoin_surface.find_non_colliding_position("character", rejoin_data.position, 32, 0.5)
-                                or memory.spawnpoint,
-                            rejoin_surface
-                        )
-                    end
+            -- If surface where player left the game still exists, place him there.
+            if rejoin_surface and rejoin_surface.valid then
+                -- Edge case: if player left the game while he was on the boat, it could be that boat position
+                -- changed when he left the game vs when he came back.
+                if not (rejoin_data.on_boat and rejoin_data.on_island) then
+                    player.character.teleport(
+                        rejoin_surface.find_non_colliding_position("character", rejoin_data.position, 32, 0.5)
+                            or memory.spawnpoint,
+                        rejoin_surface
+                    )
                 end
-
-                Common.give_back_items_to_temporarily_logged_off_player(player)
-
-                memory.temporarily_logged_off_player_data[player.index] = nil
             end
+
+            Common.give_back_items_to_temporarily_logged_off_player(player)
+
+            memory.temporarily_logged_off_player_data[player.index] = nil
         end
     end
 
@@ -665,7 +473,7 @@ function Public.get_unaffiliated_players()
         local found = false
         for _, id in pairs(global_memory.crew_active_ids) do
             Memory.set_working_id(id)
-            for _, player2 in pairs(Common.crew_get_crew_members_and_spectators()) do
+            for _, player2 in pairs(Common.crew_get_crew_members()) do
                 if player == player2 then
                     found = true
                 end
@@ -689,8 +497,8 @@ function Public.plank(captain, player)
 
             Common.notify_force(player.force, { "pirates.plank", captain.name, player.name })
 
-            Public.join_spectators(player, memory.id)
-            memory.tempbanned_from_joining_data[player.index] = game.tick + 60 * 120
+            Public.leave_crew(player, true, true)
+            memory.tempbanned_from_joining_data[player.index] = game.tick + 60 * 60 * 5
             return true
         else
             Common.notify_player_error(player, { "pirates.plank_error_self" })
@@ -711,7 +519,7 @@ function Public.disband_crew(donotprint)
     end
 
     local id = memory.id
-    local players = Common.crew_get_crew_members_and_spectators()
+    local players = Common.crew_get_crew_members()
 
     for _, player in pairs(players) do
         if player.controller_type == defines.controllers.editor then
@@ -902,7 +710,6 @@ function Public.initialise_crew(accepted_proposal, player_position)
     memory.delayed_tasks = {}
     memory.buffered_tasks = {}
     memory.crewplayerindices = {}
-    memory.spectatorplayerindices = {}
     memory.tempbanned_from_joining_data = {}
     memory.destinations = {}
     -- memory.temporarily_logged_off_characters = {}

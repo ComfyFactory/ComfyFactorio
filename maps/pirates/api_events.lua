@@ -1761,10 +1761,7 @@ local function event_on_player_joined_game(event)
         local spawnpoint = Common.lobby_spawnpoint
         local surface = game.surfaces[CoreData.lobby_surface_name]
 
-        player.character.teleport(
-            surface.find_non_colliding_position("character", spawnpoint, 32, 0.5) or spawnpoint,
-            surface
-        )
+        player.teleport(surface.find_non_colliding_position("character", spawnpoint, 32, 0.5) or spawnpoint, surface)
         Permissions.update_privileges(player)
 
         if not player.name then
@@ -1880,12 +1877,6 @@ local function event_on_pre_player_left_game(event)
     for _, id in pairs(memory.crewplayerindices) do
         if player.index == id then
             Crew.leave_crew(player, false, true)
-            break
-        end
-    end
-    for _, id in pairs(memory.spectatorplayerindices) do
-        if player.index == id then
-            Crew.leave_spectators(player, true)
             break
         end
     end

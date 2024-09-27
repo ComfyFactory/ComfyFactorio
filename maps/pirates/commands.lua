@@ -565,7 +565,7 @@ commands.add_command("remove_classes", { "pirates.cmd_explain_dev" }, function(c
         memory.available_classes_pool = Classes.initial_class_pool()
         memory.class_entry_count = 0
 
-        local players = Common.crew_get_crew_members_and_spectators()
+        local players = Common.crew_get_crew_members()
 
         for _, player in pairs(players) do
             Gui.classes.full_update(player, true)
