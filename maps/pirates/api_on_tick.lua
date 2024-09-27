@@ -16,7 +16,7 @@ local Roles = require 'maps.pirates.roles.roles'
 local Progression = require 'maps.pirates.progression'
 local Crowsnest = require 'maps.pirates.surfaces.crowsnest'
 local Hold = require 'maps.pirates.surfaces.hold'
--- local Cabin = require 'maps.pirates.surfaces.cabin'
+local Cabin = require 'maps.pirates.surfaces.cabin'
 local Balance = require 'maps.pirates.balance'
 local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
@@ -1414,14 +1414,42 @@ function Public.quest_progress_tick(tickinterval)
 		if dynamic_data.quest_type == Quest.enum.RESOURCEFLOW and (not dynamic_data.quest_complete) then
 			local force = memory.force
 			if not (force and force.valid and dynamic_data.quest_params) then return end
-			dynamic_data.quest_progress = force.get_item_production_statistics(surface).get_flow_count { name = dynamic_data.quest_params.item, category = 'input', precision_index = defines.flow_precision_index.five_seconds, count = false }
-			Quest.try_resolve_quest()
-		end
 
-		if dynamic_data.quest_type == Quest.enum.RESOURCECOUNT and (not dynamic_data.quest_complete) then
+			local total_flow_count = force.get_item_production_statistics(surface).get_flow_count { name = dynamic_data.quest_params.item, category = 'input', precision_index = defines.flow_precision_index.five_seconds, count = false }
+
+			for i = 1, memory.hold_surface_count do
+				local hold_surface = Hold.get_hold_surface(i)
+				if hold_surface and hold_surface.valid then
+					total_flow_count = total_flow_count + force.get_item_production_statistics(hold_surface).get_flow_count { name = dynamic_data.quest_params.item, category = 'input', precision_index = defines.flow_precision_index.five_seconds, count = false }
+				end
+			end
+
+			local cabin_surface = Cabin.get_cabin_surface()
+			if cabin_surface and cabin_surface.valid then
+				total_flow_count = total_flow_count + force.get_item_production_statistics(cabin_surface).get_flow_count { name = dynamic_data.quest_params.item, category = 'input', precision_index = defines.flow_precision_index.five_seconds, count = false }
+			end
+
+			dynamic_data.quest_progress = total_flow_count
+			Quest.try_resolve_quest()
+		elseif dynamic_data.quest_type == Quest.enum.RESOURCECOUNT and (not dynamic_data.quest_complete) then
 			local force = memory.force
 			if not (force and force.valid and dynamic_data.quest_params) then return end
-			dynamic_data.quest_progress = force.get_item_production_statistics(surface).get_flow_count { name = dynamic_data.quest_params.item, category = 'input', precision_index = defines.flow_precision_index.one_thousand_hours, count = true } - dynamic_data.quest_params.initial_count
+
+			local total_count = force.get_item_production_statistics(surface).get_flow_count { name = dynamic_data.quest_params.item, category = 'input', precision_index = defines.flow_precision_index.one_thousand_hours, count = true }
+
+			for i = 1, memory.hold_surface_count do
+				local hold_surface = Hold.get_hold_surface(i)
+				if hold_surface and hold_surface.valid then
+					total_count = total_count + force.get_item_production_statistics(hold_surface).get_flow_count { name = dynamic_data.quest_params.item, category = 'input', precision_index = defines.flow_precision_index.one_thousand_hours, count = true }
+				end
+			end
+
+			local cabin_surface = Cabin.get_cabin_surface()
+			if cabin_surface and cabin_surface.valid then
+				total_count = total_count + force.get_item_production_statistics(cabin_surface).get_flow_count { name = dynamic_data.quest_params.item, category = 'input', precision_index = defines.flow_precision_index.one_thousand_hours, count = true }
+			end
+
+			dynamic_data.quest_progress = total_count - dynamic_data.quest_params.initial_count
 			Quest.try_resolve_quest()
 		end
 	end
