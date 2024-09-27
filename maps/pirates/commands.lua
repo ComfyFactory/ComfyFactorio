@@ -56,7 +56,7 @@ local function check_admin(cmd)
                 return true
             end
             if not player.admin then
-                p({ "pirates.cmd_error_not_admin" }, Color.fail)
+                p({ "pirates.cmd_error_not_admin" }, { color = Color.fail })
                 return false
             end
         else
@@ -76,7 +76,7 @@ local function check_captain(cmd)
                 return
             end
             if not (Permissions.player_privilege_level(player) >= Permissions.privilege_levels.CAPTAIN) then
-                p({ "pirates.cmd_error_not_captain" }, Color.fail)
+                p({ "pirates.cmd_error_not_captain" }, { color = Color.fail })
                 return false
             end
         else
@@ -98,7 +98,7 @@ local function check_captain_or_admin(cmd)
             if
                 not (player.admin or Permissions.player_privilege_level(player) >= Permissions.privilege_levels.CAPTAIN)
             then
-                p({ "pirates.cmd_error_not_captain" }, Color.fail)
+                p({ "pirates.cmd_error_not_captain" }, { color = Color.fail })
                 return false
             end
         else
@@ -142,7 +142,7 @@ end
 -- 		if player ~= nil then
 -- 			p = player.print
 -- 			if not (trusted[player.name] or player.admin) then
--- 				p('[ERROR] Only admins and trusted weebs are allowed to run this command!', Color.fail)
+-- 				p('[ERROR] Only admins and trusted weebs are allowed to run this command!', {color=Color.fail})
 -- 				return false
 -- 			end
 -- 		else
