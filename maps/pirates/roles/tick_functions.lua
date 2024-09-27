@@ -1,5 +1,5 @@
 --luacheck: ignore
---luacheck ignores because tickinterval arguments are a code templating choice...
+--luacheck ignores because tick_interval arguments are a code templating choice...
 
 local Memory = require 'maps.pirates.memory'
 local Structures = require 'maps.pirates.structures.structures'
@@ -39,7 +39,7 @@ local function discharge_accumulators(surface, position, force, power_needs)
 end
 
 -- NOTE: You can currently switch between classes shaman -> iron leg -> shaman, without losing your shaman charge, but I'm too lazy to fix.
-function Public.class_update_auxiliary_data(tickinterval)
+function Public.class_update_auxiliary_data(tick_interval)
 	local memory = Memory.get_crew_memory()
 	if not memory.classes_table then return end
 
@@ -89,7 +89,7 @@ function Public.class_update_auxiliary_data(tickinterval)
 				data.shaman_charge = data.shaman_charge + energy
 
 				-- charge from sun pasively
-				data.shaman_charge = data.shaman_charge + (1 - player.surface.daytime) * Balance.shaman_passive_charge * (tickinterval / 60)
+				data.shaman_charge = data.shaman_charge + (1 - player.surface.daytime) * Balance.shaman_passive_charge * (tick_interval / 60)
 				data.shaman_charge = Math.min(data.shaman_charge, Balance.shaman_max_charge)
 			end
 		end
@@ -102,7 +102,7 @@ function Public.class_update_auxiliary_data(tickinterval)
 	end
 end
 
-function Public.class_renderings(tickinterval)
+function Public.class_renderings(tick_interval)
 	local memory = Memory.get_crew_memory()
 	if not memory.classes_table then return end
 
@@ -255,7 +255,7 @@ function Public.class_renderings(tickinterval)
 	end
 end
 
-function Public.update_character_properties(tickinterval)
+function Public.update_character_properties(tick_interval)
 	local memory = Memory.get_crew_memory()
 
 	local crew = Common.crew_get_crew_members()
@@ -352,15 +352,15 @@ function Public.update_character_properties(tickinterval)
 	end
 end
 
-function Public.class_rewards_tick(tickinterval)
-	--assuming tickinterval = 7 seconds for now
+function Public.class_rewards_tick(tick_interval)
+	--assuming tick_interval = 7 seconds for now
 	local memory = Memory.get_crew_memory()
 	local crew = Common.crew_get_crew_members()
 
 	for _, player in pairs(crew) do
 		local class = Classes.get_class(player.index)
 		if Common.validate_player_and_character(player) and
-			game.tick % tickinterval == 0 and
+			game.tick % tick_interval == 0 and
 			class and
 			not Boats.is_boat_at_sea() and --it is possible to spend infinite time here, so don't give out freebies
 			(
@@ -392,7 +392,7 @@ function Public.class_rewards_tick(tickinterval)
 
 		-- Smoldering class is disabled
 		-- if memory.classes_table and memory.classes_table[player.index] then
-		-- 	if game.tick % tickinterval == 0 and Common.validate_player_and_character(player) then
+		-- 	if game.tick % tick_interval == 0 and Common.validate_player_and_character(player) then
 		-- 		if memory.classes_table[player.index] == Classes.enum.SMOLDERING then
 		-- 			local inv = player.get_inventory(defines.inventory.character_main)
 		-- 			if not (inv and inv.valid) then return end

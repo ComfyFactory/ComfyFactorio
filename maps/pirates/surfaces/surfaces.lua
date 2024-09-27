@@ -100,12 +100,12 @@ function Public.on_surface_generation(destination)
 
 		destination.dynamic_data.rocketsilomaxhp = Balance.silo_max_hp
 		destination.dynamic_data.rocketsilohp = Balance.silo_max_hp
-		destination.dynamic_data.rocketsilochargedbools = {}
-		destination.dynamic_data.rocketsiloenergyconsumed = 0
-		destination.dynamic_data.rocketsiloenergyconsumedwithinlasthalfsecond = 0
-		destination.dynamic_data.energychargedinsilosincelastcheck = 0
-		destination.dynamic_data.silocharged = false
-		destination.dynamic_data.rocketlaunched = false
+		destination.dynamic_data.rocket_silo_charged_bools = {}
+		destination.dynamic_data.rocket_silo_energy_consumed = 0
+		destination.dynamic_data.rocket_silo_energy_consumed_within_last_half_second = 0
+		destination.dynamic_data.energy_charged_in_silo_since_last_check = 0
+		destination.dynamic_data.silo_is_charged = false
+		destination.dynamic_data.rocket_launched = false
 
 		if subtype ~= IslandEnum.enum.STANDARD and subtype ~= IslandEnum.enum.STANDARD_VARIANT and subtype ~= IslandEnum.enum.RADIOACTIVE and subtype ~= IslandEnum.enum.RED_DESERT then
 			destination.dynamic_data.hidden_ore_remaining_abstract = Utils.deepcopy(destination.static_params.abstract_ore_amounts)
@@ -265,7 +265,7 @@ function Public.destination_on_arrival(destination)
 	memory.active_sea_enemies.krakens = {}
 
 	if destination.type == enum.ISLAND then
-		destination.dynamic_data.rocketsiloenergyneeded = Balance.silo_energy_needed_MJ() * 1000000
+		destination.dynamic_data.rocket_silo_energy_needed = Balance.silo_energy_needed_MJ() * 1000000
 
 		destination.dynamic_data.time_remaining = Balance.max_time_on_island_seconds(destination.subtype)
 

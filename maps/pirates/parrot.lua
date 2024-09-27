@@ -87,8 +87,8 @@ Public.framecounts = {
 -- 		destination.dynamic_data.parrot_gave_overstay_tip = true
 
 -- 		local spawners = surface.find_entities_filtered({type = 'unit-spawner', force = memory.enemy_force_name})
--- 		local spawnerscount = #spawners or 0
--- 		if spawnerscount > 0 then --check biter bases actually exist
+-- 		local spawners_count = #spawners or 0
+-- 		if spawners_count > 0 then --check biter bases actually exist
 -- 			Public.parrot_overstay_tip()
 -- 		end
 -- 	end

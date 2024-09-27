@@ -586,8 +586,8 @@ function Public.check_for_destination_collisions()
 			Surfaces.create_surface(destination_data)
 
 			local index = destination_data.destination_index
-			memory.loadingticks = 0
-			memory.mapbeingloadeddestination_index = index
+			memory.loading_ticks = 0
+			memory.map_being_loaded_destination_index = index
 			memory.currentdestination_index = index
 			memory.boat.state = Boats.enum_state.ATSEA_LOADING_MAP
 

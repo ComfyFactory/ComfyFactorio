@@ -56,7 +56,7 @@ function Public.silo_die()
 			if CoreData.rocket_silo_death_causes_loss then
 				-- Crew.lose_life()
 				Crew.try_lose({ 'pirates.loss_silo_destroyed' })
-			elseif (not destination.dynamic_data.rocketlaunched) then
+			elseif (not destination.dynamic_data.rocket_launched) then
 				if destination.static_params and destination.static_params.base_cost_to_undock and destination.static_params.base_cost_to_undock['launch_rocket'] == true then
 					Crew.try_lose({ 'pirates.loss_silo_destroyed_before_necessary_launch' })
 				else
@@ -1510,31 +1510,9 @@ local function event_on_player_joined_game(event)
 		-- end
 	end
 
-	global_memory.last_players_health[event.player_index] = player.character.health
-
-	-- 	player.teleport(surface.find_non_colliding_position('character', spawnpoint, 32, 0.5), surface)
-	-- 	-- for item, amount in pairs(Balance.starting_items_player) do
-	-- 	-- 	player.insert({name = item, count = amount})
-	-- 	-- end
-	-- end
-
-
-	-- if player.surface.name ~= Common.current_destination().surface_name and string.sub(player.surface.name, 1, 10) ~= 'crowsnest-' then -- add other adventuring surfaces here
-	-- 	player.character = nil
-	-- 	player.set_controller({type=defines.controllers.god})
-	-- 	player.create_character()
-	-- 	player.teleport(surface.find_non_colliding_position('character', memory.force.get_spawn_position(surface), 32, 0.5), surface)
-	-- 	for item, amount in pairs(starting_items_player) do
-	-- 		player.insert({name = item, count = amount})
-	-- 	end
-	-- end
-
-	-- local tile = surface.get_tile(player.position)
-	-- if tile.valid then
-	-- 	if tile.name == 'out-of-map' then
-	-- 		player.teleport(surface.find_non_colliding_position('character', memory.force.get_spawn_position(surface), 32, 0.5), surface)
-	-- 	end
-	-- end
+	if player.character and player.character.valid then
+		global_memory.last_players_health[event.player_index] = player.character.health
+	end
 end
 
 
@@ -1959,7 +1937,7 @@ local function event_on_rocket_launched(event)
 	local rocket_launch_coal_reward = Balance.rocket_launch_fuel_reward()
 	local rocket_launch_coin_reward = Balance.rocket_launch_coin_reward()
 
-	destination.dynamic_data.rocketlaunched = true
+	destination.dynamic_data.rocket_launched = true
 	if memory.stored_fuel then
 		memory.stored_fuel = memory.stored_fuel + rocket_launch_coal_reward
 		Common.give_items_to_crew({ { name = 'coin', count = rocket_launch_coin_reward } })
@@ -2041,48 +2019,38 @@ local function event_on_built_entity(event)
 end
 
 local function event_on_console_chat(event)
-	if not (event.message and event.player_index and game.players[event.player_index]) then return end
-
-	local global_memory = Memory.get_global_memory()
+	if not (event.message and event.player_index) then return end
 
 	local player = game.players[event.player_index]
+	if not (player and player.valid) then return end
+
+	local global_memory = Memory.get_global_memory()
 	local tag = player.tag or ''
 	local color = player.chat_color
-
-	-- if global.tournament_mode then
-	--     return
-	-- end
 
 	local crew_id = Common.get_id_from_force_name(player.force.name)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
 
-	-- NOTE: This check to see if player is in a crew is not reliable and can sometimes cause errors!
-	if player.force.name == Common.lobby_force_name then
-		local other_force_indices = global_memory.crew_active_ids
+	local message_prefix = player.name .. tag
+	local full_message = message_prefix .. ': ' .. event.message
 
-		for _, index in pairs(other_force_indices) do
+	if player.force.name == Common.lobby_force_name then
+		for _, index in pairs(global_memory.crew_active_ids) do
 			local recipient_force_name = global_memory.crew_memories[index].force_name
-			game.forces[recipient_force_name].print(player.name .. tag .. ' [LOBBY]: ' .. event.message, color)
+			game.forces[recipient_force_name].print(message_prefix .. ' [LOBBY]: ' .. event.message, color)
 		end
 	else
-		-- NOTE: For some reason memory.name(or player.name?) can be nil so need this check. It was observed it happened after crew died and resetted, then I said something in lobby before launching new run. That's the only recorded occurence so far.
-		if memory.name and player.name then
-			game.forces.player.print(player.name .. tag .. ' [' .. memory.name .. ']: ' .. event.message, color)
-		elseif player.name then
-			game.forces.player.print(player.name .. tag .. ': ' .. event.message, color)
-			log('Error (non-critical): memory.name is nil')
-		else
-			log('Error (non-critical): player.name is nil')
+		if memory.name then
+			full_message = message_prefix .. ' [' .. memory.name .. ']: ' .. event.message
 		end
+		game.forces.player.print(full_message, color)
 	end
 end
 
 local function event_on_market_item_purchased(event)
 	Shop.event_on_market_item_purchased(event)
 end
-
-
 
 local remove_boost_movement_speed_on_respawn =
 	Token.register(

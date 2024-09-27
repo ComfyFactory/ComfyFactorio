@@ -315,9 +315,9 @@ function Public.player_and_crew_state_bools(player)
 		atsea_victorious_bool = boat and boat.state == Boats.enum_state.ATSEA_VICTORIOUS
 		landed_bool = boat and boat.state == Boats.enum_state.LANDED
 		quest_bool = (dynamic_data.quest_type ~= nil) and onmap_bool
-		charged_bool = dynamic_data.silocharged
+		charged_bool = dynamic_data.silo_is_charged
 		silo_bool = dynamic_data.rocketsilos and onmap_bool and ((dynamic_data.rocketsilos[1] and dynamic_data.rocketsilos[1].valid) or charged_bool)
-		launched_bool = dynamic_data.rocketlaunched
+		launched_bool = dynamic_data.rocket_launched
 
 		cost_bool = destination.static_params.base_cost_to_undock and (not atsea_sailing_bool) and (not atsea_waiting_bool) and (not atsea_victorious_bool) and (not retreating_bool)
 		cost_includes_rocket_launch_bool = cost_bool and destination.static_params.base_cost_to_undock['launch_rocket']
@@ -326,7 +326,7 @@ function Public.player_and_crew_state_bools(player)
 	end
 
 	if boat then
-		atsea_loading_bool = boat.state == Boats.enum_state.ATSEA_LOADING_MAP and memory.loadingticks
+		atsea_loading_bool = boat.state == Boats.enum_state.ATSEA_LOADING_MAP and memory.loading_ticks
 
 		character_on_deck_bool = player.character and player.character.position and player.surface.name and player.surface.name == boat.surface_name
 
