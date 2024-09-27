@@ -101,7 +101,7 @@ function Public.place_dock_jetty_and_boats()
 		-- boat2.hold_input_belts = boat.hold_input_belts
 		-- boat2.hold_output_belts = boat.hold_output_belts
 
-		-- boat2.crowsneststeeringchests = boat.crowsneststeeringchests
+		-- boat2.crows_nest_steering_chests = boat.crows_nest_steering_chests
 		-- boat2.cannons = {}
 		-- boat2.speedticker1 = 0
 		-- boat2.speedticker2 = 1/3 * Common.boat_steps_at_a_time

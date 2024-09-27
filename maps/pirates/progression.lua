@@ -74,8 +74,8 @@ function Public.set_off_from_starting_dock()
 
 	Common.current_destination().type = Surfaces.enum.LOBBY
 
-	memory.mapbeingloadeddestination_index = 0 --This is a dummy value, overwritten later
-	memory.loadingticks = 0
+	memory.map_being_loaded_destination_index = 0 --This is a dummy value, overwritten later
+	memory.loading_ticks = 0
 
 	local surface = game.surfaces[CoreData.lobby_surface_name]
 	local p = Utils.psum { memory.boat.position, Boats.get_scope(memory.boat).Data.crewname_rendering_position }
@@ -166,7 +166,7 @@ function Public.go_from_starting_dock_to_first_destination()
 	Crowsnest.move_crowsnest(0, -24)
 
 
-	Public.progress_to_destination(memory.mapbeingloadeddestination_index)
+	Public.progress_to_destination(memory.map_being_loaded_destination_index)
 
 	-- local scope = Boats.get_scope(boat)
 	-- local boatwidth, boatheight = scope.Data.width, scope.Data.height
@@ -257,7 +257,7 @@ function Public.progress_to_destination(destination_index)
 	Crowsnest.paint_around_destination(destination_index, CoreData.overworld_presence_tile)
 
 
-	if memory.loadingticks then memory.loadingticks = -120 end
+	if memory.loading_ticks then memory.loading_ticks = -120 end
 
 	if old_type == Surfaces.enum.SEA then
 		game.delete_surface(oldsurface)
@@ -513,8 +513,8 @@ function Public.go_from_currentdestination_to_sea()
 	Common.set_evo(base_evo)
 	memory.dynamic_kraken_evo = 0
 
-	memory.loadingticks = nil
-	memory.mapbeingloadeddestination_index = nil
+	memory.loading_ticks = nil
+	memory.map_being_loaded_destination_index = nil
 
 	local d = destination.iconized_map_width + Crowsnest.platformwidth
 

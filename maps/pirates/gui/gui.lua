@@ -542,7 +542,7 @@ function Public.process_etaframe_update(player, flow1, bools)
 					total = Common.map_loading_ticks_atsea_maze
 				end
 
-				local eta_ticks = total + (memory.extra_time_at_sea or 0) - memory.loadingticks
+				local eta_ticks = total + (memory.extra_time_at_sea or 0) - memory.loading_ticks
 
 				flow2.etaframe_label_1.caption = { 'pirates.gui_etaframe_loading' }
 				flow2.etaframe_label_2.caption = 'for ' .. Utils.standard_string_form_of_time_in_seconds(eta_ticks / 60)
@@ -662,7 +662,7 @@ function Public.process_etaframe_update(player, flow1, bools)
 			end
 
 			if adjusted_costs['launch_rocket'] and cost_table['cost_launch_rocket'] then
-				if bools.atsea_loading_bool or (not dynamic_data.rocketlaunched) then
+				if bools.atsea_loading_bool or (not dynamic_data.rocket_launched) then
 					cost_table['cost_launch_rocket'].number = 1
 				else
 					cost_table['cost_launch_rocket'].number = 0
@@ -747,9 +747,9 @@ function Public.process_siloframe_and_questframe_updates(flowsilo, flowquest, bo
 				flow1.silo_progressbar.visible = true
 				flow1.silo_label_3.visible = false
 
-				local consumed = dynamic_data.rocketsiloenergyconsumed
-				local needed = dynamic_data.rocketsiloenergyneeded
-				local recent = (dynamic_data.rocketsiloenergyconsumedwithinlasthalfsecond * 2)
+				local consumed = dynamic_data.rocket_silo_energy_consumed
+				local needed = dynamic_data.rocket_silo_energy_needed
+				local recent = (dynamic_data.rocket_silo_energy_consumed_within_last_half_second * 2)
 
 				flow1.silo_progressbar.value = consumed / needed
 
@@ -1199,7 +1199,7 @@ local function on_gui_click(event)
 			end
 		elseif memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL then
 			if Permissions.player_privilege_level(player) >= Permissions.privilege_levels.CAPTAIN then
-				local destination_index = memory.mapbeingloadeddestination_index
+				local destination_index = memory.map_being_loaded_destination_index
 
 				Progression.progress_to_destination(destination_index)
 			end

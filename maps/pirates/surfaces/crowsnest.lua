@@ -360,13 +360,13 @@ function Public.crowsnest_surface_delayed_init()
 			e.destructible = false
 			e.minable = false
 			e.rotatable = false
-			if not memory.boat.crowsneststeeringchests then
-				memory.boat.crowsneststeeringchests = {}
+			if not memory.boat.crows_nest_steering_chests then
+				memory.boat.crows_nest_steering_chests = {}
 			end
 			if p.y < 0 then
-				memory.boat.crowsneststeeringchests.left = e
+				memory.boat.crows_nest_steering_chests.left = e
 			else
-				memory.boat.crowsneststeeringchests.right = e
+				memory.boat.crows_nest_steering_chests.right = e
 			end
 		end
 	end

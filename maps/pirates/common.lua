@@ -582,7 +582,7 @@ function Public.query_can_pay_cost_to_leave()
     local can_leave = true
     for name, count in pairs(adjusted_cost) do
         if name == 'launch_rocket' and count == true then
-            if not destination.dynamic_data.rocketlaunched then
+            if not destination.dynamic_data.rocket_launched then
                 can_leave = false
             end
         else

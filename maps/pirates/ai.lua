@@ -47,7 +47,7 @@ local side_attack_target_names = {
 
 --=== Tick Actions
 
-function Public.Tick_actions(tickinterval)
+function Public.Tick_actions(tick_interval)
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 
@@ -56,8 +56,8 @@ function Public.Tick_actions(tickinterval)
 
 	if (memory.game_lost) or (destination.dynamic_data.timeratlandingtime and destination.dynamic_data.timer < destination.dynamic_data.timeratlandingtime + Balance.grace_period_on_arriving_at_island_seconds) then return end
 
-	if game.tick % (tickinterval * 2) == 0 and memory.boat.state == Boats.enum_state.LANDED then
-		local extra_evo = 2 * tickinterval / 60 * Balance.evolution_per_second()
+	if game.tick % (tick_interval * 2) == 0 and memory.boat.state == Boats.enum_state.LANDED then
+		local extra_evo = 2 * tick_interval / 60 * Balance.evolution_per_second()
 		Common.increment_evo(extra_evo)
 		destination.dynamic_data.evolution_accrued_time = destination.dynamic_data.evolution_accrued_time + extra_evo
 	end
@@ -411,9 +411,9 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 		local initial_spawner_count = destination.dynamic_data.initial_spawner_count
 
 		if initial_spawner_count > 0 then
-			local spawnerscount = Common.spawner_count(surface)
-			if spawnerscount > 0 then
-				map_pollution_cost_multiplier = Math.max(initial_spawner_count / spawnerscount, 1)
+			local spawners_count = Common.spawner_count(surface)
+			if spawners_count > 0 then
+				map_pollution_cost_multiplier = Math.max(initial_spawner_count / spawners_count, 1)
 			else
 				map_pollution_cost_multiplier = 1000000
 			end
@@ -502,8 +502,8 @@ function Public.generate_main_attack_target()
 	local destination = Common.current_destination()
 	local target
 	local fractioncharged = 0
-	if (not destination.dynamic_data.rocketlaunched) and destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid and destination.dynamic_data.rocketsilos[1].destructible and destination.dynamic_data.rocketsiloenergyconsumed and destination.dynamic_data.rocketsiloenergyneeded and destination.dynamic_data.rocketsiloenergyneeded > 0 then
-		fractioncharged = destination.dynamic_data.rocketsiloenergyconsumed / destination.dynamic_data.rocketsiloenergyneeded
+	if (not destination.dynamic_data.rocket_launched) and destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid and destination.dynamic_data.rocketsilos[1].destructible and destination.dynamic_data.rocket_silo_energy_consumed and destination.dynamic_data.rocket_silo_energy_needed and destination.dynamic_data.rocket_silo_energy_needed > 0 then
+		fractioncharged = destination.dynamic_data.rocket_silo_energy_consumed / destination.dynamic_data.rocket_silo_energy_needed
 
 		if memory.overworldx > 40 * 22 then --chance of biters going directly to silo
 			fractioncharged = fractioncharged + 0.03

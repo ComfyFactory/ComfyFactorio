@@ -85,10 +85,10 @@ function Public.currentdestination_try_move_boat_steered()
 	if (destination and destination.dynamic_data and destination.dynamic_data.timer) and (destination.dynamic_data.timer < 1) then return end
 
 	if boat and boat.decksteeringchests then
-		local leftchest, rightchest = boat.decksteeringchests.left, boat.decksteeringchests.right
-		if leftchest and leftchest.valid and rightchest and rightchest.valid then
-			local inv_left = leftchest.get_inventory(defines.inventory.chest)
-			local inv_right = rightchest.get_inventory(defines.inventory.chest)
+		local left_chest, right_chest = boat.decksteeringchests.left, boat.decksteeringchests.right
+		if left_chest and left_chest.valid and right_chest and right_chest.valid then
+			local inv_left = left_chest.get_inventory(defines.inventory.chest)
+			local inv_right = right_chest.get_inventory(defines.inventory.chest)
 			local count_left = inv_left.get_item_count("rail-signal")
 			local count_right = inv_right.get_item_count("rail-signal")
 

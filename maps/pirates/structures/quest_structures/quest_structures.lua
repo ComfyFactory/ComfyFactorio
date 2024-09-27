@@ -216,7 +216,7 @@ end
 function Public.tick_quest_structure_entry_price_check()
 	if Common.activecrewcount() == 0 then return end
 
-	-- function Public.tick_quest_structure_entry_price_check(tickinterval)
+	-- function Public.tick_quest_structure_entry_price_check(tick_interval)
 	local memory = Memory.get_crew_memory()
 	if memory.game_lost then return end
 	local destination = Common.current_destination()

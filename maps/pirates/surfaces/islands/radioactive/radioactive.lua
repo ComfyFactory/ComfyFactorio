@@ -251,14 +251,14 @@ local function radioactive_tick()
 		local memory = Memory.get_crew_memory()
 		local destination = Common.current_destination()
 
-		local tickinterval = 60
+		local tick_interval = 60
 
 		if destination.subtype == IslandEnum.enum.RADIOACTIVE then
 			-- Stop increasing evo when boat left the island
 			local surface_name = memory.boat and memory.boat.surface_name
 			if surface_name ~= memory.sea_name then
 				-- faster evo (doesn't need difficulty scaling as higher difficulties have higher base evo):
-				local extra_evo = 0.22 * tickinterval / 60 / Balance.expected_time_on_island()
+				local extra_evo = 0.22 * tick_interval / 60 / Balance.expected_time_on_island()
 				Common.increment_evo(extra_evo)
 				if (not destination.dynamic_data.evolution_accrued_time) then
 					destination.dynamic_data.evolution_accrued_time = 0
@@ -271,7 +271,7 @@ local function radioactive_tick()
 				local pollution = 0
 				local timer = destination.dynamic_data.timer
 				if timer and timer > 15 then
-					pollution = 6 * (Common.difficulty_scale() ^ (1.1) * (memory.overworldx / 40) ^ (18 / 10) * (Balance.crew_scale()) ^ (1 / 5)) / 3600 * tickinterval * (1 + (Common.difficulty_scale() - 1) * 0.2 + 0.001 * timer)
+					pollution = 6 * (Common.difficulty_scale() ^ (1.1) * (memory.overworldx / 40) ^ (18 / 10) * (Balance.crew_scale()) ^ (1 / 5)) / 3600 * tick_interval * (1 + (Common.difficulty_scale() - 1) * 0.2 + 0.001 * timer)
 				end
 
 				local surface = game.surfaces[destination.surface_name]

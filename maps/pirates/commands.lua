@@ -592,7 +592,7 @@ if _DEBUG then
 			Memory.set_working_id(data.id)
 			local memory = Memory.get_crew_memory()
 
-			memory.loadingticks = 0
+			memory.loading_ticks = 0
 
 			-- local surface = game.surfaces[Common.current_destination().surface_name]
 			-- surface.request_to_generate_chunks({x = 0, y = 0}, 10)
@@ -610,12 +610,12 @@ if _DEBUG then
 
 			for i = 1, #memory.destinations do
 				if memory.destinations[i].overworld_position.x == 0 then
-					memory.mapbeingloadeddestination_index = i
+					memory.map_being_loaded_destination_index = i
 					break
 				end
 			end
 
-			memory.currentdestination_index = memory.mapbeingloadeddestination_index
+			memory.currentdestination_index = memory.map_being_loaded_destination_index
 			Surfaces.create_surface(Common.current_destination())
 			Task.set_timeout_in_ticks(60, go_2, { id = data.id })
 		end
@@ -699,7 +699,7 @@ if _DEBUG then
 					-- memory.boat = boat
 					-- boat.dockedposition = boat.position
 					-- boat.decksteeringchests = {}
-					-- boat.crowsneststeeringchests = {}
+					-- boat.crows_nest_steering_chests = {}
 
 					Task.set_timeout_in_ticks(120, go_1, { id = memory.id })
 				else

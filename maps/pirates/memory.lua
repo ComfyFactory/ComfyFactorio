@@ -60,7 +60,7 @@ function Public.fallthrough_crew_memory() --could make this a metatable, but met
 			stored_resources = {},
 			position = nil, --the far right edge of the boat
 			decksteeringchests = nil,
-			crowsneststeeringchests = nil,
+			crows_nest_steering_chests = nil,
 			cannons = nil,
 			EEI = nil,
 			EEIpower_production = nil,
