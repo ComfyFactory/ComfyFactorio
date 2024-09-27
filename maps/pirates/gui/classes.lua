@@ -228,10 +228,6 @@ function Public.full_update(player, force_refresh)
                 button.style.clicked_font_color = black
                 button.enabled = false
             end
-
-            if Common.is_spectator(player) then
-                button.enabled = false
-            end
         else
             log("Error: Non-existant label index, here some debug info.")
             log(_inspect(class_list_panel_table))

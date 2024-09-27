@@ -293,18 +293,10 @@ function Public.progress_to_destination(destination_index)
     memory.extra_time_at_sea = 0
 
     if old_type == Surfaces.enum.SEA or old_type == Surfaces.enum.CHANNEL or old_type == Surfaces.enum.DOCK then
-        -- move over anyone who was left behind, such as dead and spectating players
+        -- move over anyone who was left behind, such as dead players
         for _, player in pairs(game.connected_players) do
             if Common.validate_player_and_character(player) then
-                if type == Surfaces.enum.ISLAND and player.controller_type == defines.controllers.spectator then
-                    if player.surface == oldsurface then --avoid moving players in hold etc
-                        -- put them at a nice viewing position:
-                        player.character.teleport(
-                            { x = memory.spawnpoint.x + 120, y = memory.spawnpoint.y },
-                            newsurface
-                        )
-                    end
-                elseif player.surface == oldsurface then
+                if player.surface == oldsurface then
                     player.character.teleport(memory.spawnpoint, newsurface)
                 end
             end

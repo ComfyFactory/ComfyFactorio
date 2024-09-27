@@ -149,12 +149,7 @@ function Public.activecrewcount()
     local count = 0
     for _, id in pairs(memory.crewplayerindices) do
         local player = game.players[id]
-        if
-            player
-            and player.valid
-            and (not Utils.contains(global_memory.afk_player_indices, player.index))
-            and (not Utils.contains(memory.spectatorplayerindices, player.index))
-        then
+        if player and player.valid and (not Utils.contains(global_memory.afk_player_indices, player.index)) then
             count = count + 1
         end
     end
@@ -1010,52 +1005,6 @@ function Public.crew_get_crew_members()
         end
     end
     return playerlist
-end
-
-function Public.crew_get_crew_members_and_spectators()
-    local memory = Memory.get_crew_memory()
-    if not Public.is_id_valid(memory.id) then
-        return {}
-    end
-
-    local playerlist = {}
-    for _, id in pairs(memory.crewplayerindices) do
-        local player = game.players[id]
-        if player and player.valid then
-            playerlist[#playerlist + 1] = player
-        end
-    end
-    for _, id in pairs(memory.spectatorplayerindices) do
-        local player = game.players[id]
-        if player and player.valid then
-            playerlist[#playerlist + 1] = player
-        end
-    end
-    return playerlist
-end
-
-function Public.is_spectator(player)
-    local global_memory = Memory.get_global_memory()
-    local previous_id = global_memory.working_id
-
-    local player_crew_id = Public.get_id_from_force_name(player.force.name)
-    if not player_crew_id then
-        return false
-    end
-
-    Memory.set_working_id(player_crew_id)
-    local memory = Memory.get_crew_memory()
-
-    local spectating = false
-    for _, playerindex in pairs(memory.spectatorplayerindices) do
-        if player.index == playerindex then
-            spectating = true
-            break
-        end
-    end
-
-    Memory.set_working_id(previous_id)
-    return spectating
 end
 
 function Public.crew_get_nonafk_crew_members()

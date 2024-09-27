@@ -236,7 +236,6 @@ function Public.crew_overall_state_bools(player_index)
 
     local ret = {
         adventuring = false,
-        spectating = false,
         created_crew = false,
         proposing = false,
         sloops_full = false,
@@ -248,11 +247,6 @@ function Public.crew_overall_state_bools(player_index)
         for _, playerindex in pairs(memory.crewplayerindices) do
             if player_index == playerindex then
                 ret.adventuring = true
-            end
-        end
-        for _, playerindex in pairs(memory.spectatorplayerindices) do
-            if player_index == playerindex then
-                ret.spectating = true
             end
         end
     end

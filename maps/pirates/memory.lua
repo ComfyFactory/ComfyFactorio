@@ -45,7 +45,6 @@ function Public.fallthrough_crew_memory() --could make this a metatable, but met
         force_name = "player", -- should match Common.lobby_force_name
         boat = {},
         destinations = {},
-        spectatorplayerindices = {},
         crewplayerindices = {},
         --[[boat = {
 			type = nil,

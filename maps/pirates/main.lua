@@ -83,10 +83,6 @@ local function on_init()
 
     game.reset_time_played()
 
-    -- local spectator = game.create_force('spectator')
-    -- local spectator_permissions = game.permissions.create_group('spectator')
-    -- spectator_permissions.set_allows_action(defines.input_action.start_walking,false)
-
     Autostash.insert_into_furnace(true)
     -- Autostash.insert_into_wagon(true)
     Autostash.bottom_button(true)
