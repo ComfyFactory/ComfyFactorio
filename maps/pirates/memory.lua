@@ -1,17 +1,14 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-local Global = require 'utils.global'
+local Global = require("utils.global")
 -- local CoreData = require 'maps.pirates.coredata'
 local pirates_global_memory = {}
 local Public = {}
 
 -- register only this
-Global.register(
-    pirates_global_memory,
-    function (tbl)
-        pirates_global_memory = tbl
-    end
-)
+Global.register(pirates_global_memory, function(tbl)
+    pirates_global_memory = tbl
+end)
 
 function Public.global_reset_memory()
     for k, _ in pairs(pirates_global_memory) do
@@ -45,11 +42,11 @@ function Public.fallthrough_crew_memory() --could make this a metatable, but met
     return {
         id = 0,
         difficulty = 1,
-        force_name = 'player', -- should match Common.lobby_force_name
+        force_name = "player", -- should match Common.lobby_force_name
         boat = {},
         destinations = {},
         spectatorplayerindices = {},
-        crewplayerindices = {}
+        crewplayerindices = {},
         --[[boat = {
 			type = nil,
 			state = nil,
