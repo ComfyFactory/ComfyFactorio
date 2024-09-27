@@ -241,7 +241,20 @@ function Public.join_spectators(player, crewid)
 			-- 	-- Server.to_discord_embed_raw(CoreData.comfy_emojis.feel .. '[' .. memory.name .. '] ' .. message)
 			-- end
 
-			-- Common.send_important_items_from_player_to_crew(player, true)
+			local player_surface_type = SurfacesCommon.decode_surface_name(player.surface.name).type
+			local boat_surface_type = SurfacesCommon.decode_surface_name(memory.boat.surface_name).type
+
+			if not memory.temporarily_logged_off_player_data then memory.temporarily_logged_off_player_data = {} end
+
+			memory.temporarily_logged_off_player_data[player.index] = {
+				on_island = (player_surface_type == Surfaces.enum.ISLAND),
+				on_boat = (player_surface_type == boat_surface_type) and Boats.on_boat(memory.boat, player.character.position),
+				surface_name = player.surface.name,
+				position = player.character.position,
+				tick = game.tick
+			}
+
+			Common.temporarily_store_logged_off_character_items(player)
 
 			char.die(memory.force_name)
 
@@ -451,19 +464,17 @@ function Public.leave_crew(player, to_lobby, quiet)
 
 		-- @TODO: figure out why surface_name can be nil
 
-		if not to_lobby then
-			if not memory.temporarily_logged_off_player_data then memory.temporarily_logged_off_player_data = {} end
+		if not memory.temporarily_logged_off_player_data then memory.temporarily_logged_off_player_data = {} end
 
-			memory.temporarily_logged_off_player_data[player.index] = {
-				on_island = (player_surface_type == Surfaces.enum.ISLAND),
-				on_boat = (player_surface_type == boat_surface_type) and Boats.on_boat(memory.boat, player.character.position),
-				surface_name = player.surface.name,
-				position = player.character.position,
-				tick = game.tick
-			}
+		memory.temporarily_logged_off_player_data[player.index] = {
+			on_island = (player_surface_type == Surfaces.enum.ISLAND),
+			on_boat = (player_surface_type == boat_surface_type) and Boats.on_boat(memory.boat, player.character.position),
+			surface_name = player.surface.name,
+			position = player.character.position,
+			tick = game.tick
+		}
 
-			Common.temporarily_store_logged_off_character_items(player)
-		end
+		Common.temporarily_store_logged_off_character_items(player)
 
 		char.die(memory.force_name)
 

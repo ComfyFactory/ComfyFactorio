@@ -1410,7 +1410,7 @@ end
 function Public.temporarily_store_logged_off_character_items(player)
     local memory = Memory.get_crew_memory()
 
-    memory.temporarily_logged_off_characters_items[player.index] = game.create_inventory(150)
+    memory.temporarily_logged_off_characters_items[player.index] = game.create_inventory(2000)
     local temp_inv = memory.temporarily_logged_off_characters_items[player.index]
 
     local player_inv = {}

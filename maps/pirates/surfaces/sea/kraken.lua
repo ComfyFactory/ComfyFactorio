@@ -145,7 +145,8 @@ function Public.kraken_tick(crew_id, kraken_id, step, substep)
 		Public.kraken_move(kraken_id, kraken_data.position, substep % 4 + 1)
 
 		-- regen:
-		local healthbar = memory.healthbars and memory.healthbars[kraken_spawner_entity.unit_number]
+		local healthbar = memory.healthbars and kraken_spawner_entity and kraken_spawner_entity.valid
+			and memory.healthbars[kraken_spawner_entity.unit_number]
 		if healthbar then
 			local new_health = Math.min(healthbar.health + Balance.kraken_regen_scale, kraken_data.max_health)
 			healthbar.health = new_health
@@ -173,7 +174,7 @@ function Public.kraken_tick(crew_id, kraken_id, step, substep)
 		-- special ability: stop shooting, and summon some biters randomly around the spawner
 		if substep % 100 > 70 then
 			if substep % 5 == 0 then
-				if kraken_spawner_entity then
+				if kraken_spawner_entity and kraken_spawner_entity.valid then
 					for i = 1, summoned_biter_amount do
 						local name = Common.get_random_unit_type(memory.evolution_factor + Balance.kraken_static_evo)
 						local random_dir_vec = { x = Math.random_float_in_range(-1, 1), y = Math.random_float_in_range(-1, 1) }
