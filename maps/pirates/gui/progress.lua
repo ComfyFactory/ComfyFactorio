@@ -114,7 +114,7 @@ function Public.full_update(player)
     end
 
     flow.current_location.header.caption = { "pirates.gui_progress_current_location", name }
-    flow.distance_travelled.body.leagues.caption = { "pirates.gui_progress_leagues", memory.overworldx or 0 }
+    flow.distance_travelled.body.leagues.caption = { "pirates.gui_progress_leagues", tostring(memory.overworldx or 0) }
 
     -- local daynighttype
     -- if destination.static_params and destination.static_params.daynightcycletype then

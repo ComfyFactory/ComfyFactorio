@@ -535,7 +535,7 @@ function Public.full_update(player)
                         ) / 60
                     )
                 or 0
-            ongoing_runs.body.wait_to_join.caption = { "pirates.gui_runs_wait_to_join", wait_time }
+            ongoing_runs.body.wait_to_join.caption = { "pirates.gui_runs_wait_to_join", tostring(wait_time) }
         end
 
         ongoing_runs.body.leaving_prompt.visible = playercrew_status.leaving

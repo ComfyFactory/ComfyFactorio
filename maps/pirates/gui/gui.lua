@@ -993,7 +993,7 @@ function Public.update_gui(player)
     flow1 = pirates_flow.fuel_flow
     -- flow1 = pirates_flow.fuel_piratebutton_flow_1
 
-    local tooltip = { "pirates.fuel_tooltip", Math.floor(memory.stored_fuel or 0) }
+    local tooltip = { "pirates.fuel_tooltip", tostring(Math.floor(memory.stored_fuel or 0)) }
     flow1.tooltip = tooltip
     -- flow1.fuel_piratebutton.tooltip = {'pirates.fuel_tooltip', Math.floor(memory.stored_fuel or 0)}
 
@@ -1015,7 +1015,7 @@ function Public.update_gui(player)
     flow1 = pirates_flow.progress_piratebutton_frame.progress_piratebutton
 
     flow1.number = (memory.overworldx or 0)
-    flow1.tooltip = { "pirates.gui_progress_tooltip", memory.overworldx or 0, CoreData.victory_x }
+    flow1.tooltip = { "pirates.gui_progress_tooltip", tostring(memory.overworldx or 0), tostring(CoreData.victory_x) }
     -- pirates_flow.destination_piratebutton_frame.destination_piratebutton.number = memory.destinationsvisited_indices and #memory.destinationsvisited_indices or 0
 
     --== State-checking bools ==--
