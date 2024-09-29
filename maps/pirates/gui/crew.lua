@@ -254,7 +254,7 @@ function Public.toggle_window(player)
     flow3.style.minimal_width = 95
     flow3.style.font = "default-bold"
     flow3.style.font_color = { r = 0.10, g = 0.10, b = 0.10 }
-    flow3.tooltip = { "pirates.gui_crew_window_captains_actions_tax_tooltip", Common.coin_tax_percentage }
+    flow3.tooltip = { "pirates.gui_crew_window_captains_actions_tax_tooltip", tostring(Common.coin_tax_percentage) }
 
     flow2 = flow.add({
         name = "undock_tip",
@@ -362,7 +362,7 @@ function Public.full_update(player)
         end
         GuiCommon.update_listbox(flow.members.body.members_listbox, wrappedcrew)
 
-        flow.members.header.caption = { "pirates.gui_crew_window_crew_count", (#memory.crewplayerindices or 0) }
+        flow.members.header.caption = { "pirates.gui_crew_window_crew_count", tostring(#memory.crewplayerindices or 0) }
     end
 
     -- if flow.captain.body.capn_undock_normal.visible then

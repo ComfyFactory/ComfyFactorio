@@ -287,11 +287,11 @@ function Public.create_hold_surface(nth)
     else
         if nth == 2 then
             if memory.shiphold_rendering_1 then
-                memory.shiphold_rendering_1.text = { "pirates.surface_label_hold_nth", 1 }
+                memory.shiphold_rendering_1.text = { "pirates.surface_label_hold_nth", "1" }
             end
         end
         rendering.draw_text({
-            text = { "pirates.surface_label_hold_nth", nth },
+            text = { "pirates.surface_label_hold_nth", tostring(nth) },
             surface = surface,
             target = Public.Data.surfacename_rendering_pos,
             color = CoreData.colors.renderingtext_yellow,
@@ -402,16 +402,16 @@ function Public.nth_hold_connect_linked_belts(nth) --assumes both are in standar
                     { 7, 15 },
                     { 8, 16 },
                 }
-                for i, c in pairs(connections) do
+                for _, c in pairs(connections) do
                     local b1 = boat.hold_whitebelts[nth][c[1]]
                     local b2 = boat.hold_whitebelts[nth - 1][c[2]]
                     b1.connect_linked_belts(b2)
                 end
 
-                boat.hold_helper_renderings[nth][3].text = { "pirates.hold_connections_label_from", nth - 1 }
-                boat.hold_helper_renderings[nth - 1][3].text = { "pirates.hold_connections_label_to", nth }
-                boat.hold_helper_renderings[nth][4].text = { "pirates.hold_connections_label_from", nth - 1 }
-                boat.hold_helper_renderings[nth - 1][4].text = { "pirates.hold_connections_label_to", nth }
+                boat.hold_helper_renderings[nth][3].text = { "pirates.hold_connections_label_from", tostring(nth - 1) }
+                boat.hold_helper_renderings[nth - 1][3].text = { "pirates.hold_connections_label_to", tostring(nth) }
+                boat.hold_helper_renderings[nth][4].text = { "pirates.hold_connections_label_from", tostring(nth - 1) }
+                boat.hold_helper_renderings[nth - 1][4].text = { "pirates.hold_connections_label_to", tostring(nth) }
             else
                 connections = {
                     { 5, 5 },
@@ -425,10 +425,10 @@ function Public.nth_hold_connect_linked_belts(nth) --assumes both are in standar
                     b1.connect_linked_belts(b2)
                 end
 
-                boat.hold_helper_renderings[nth][3].text = { "pirates.hold_connections_label_from", nth - 1 }
-                boat.hold_helper_renderings[nth - 1][3].text = { "pirates.hold_connections_label_to", nth }
-                boat.hold_helper_renderings[nth][4].text = { "pirates.hold_connections_label_from", nth - 1 }
-                boat.hold_helper_renderings[nth - 1][4].text = { "pirates.hold_connections_label_to", nth }
+                boat.hold_helper_renderings[nth][3].text = { "pirates.hold_connections_label_from", tostring(nth - 1) }
+                boat.hold_helper_renderings[nth - 1][3].text = { "pirates.hold_connections_label_to", tostring(nth) }
+                boat.hold_helper_renderings[nth][4].text = { "pirates.hold_connections_label_from", tostring(nth - 1) }
+                boat.hold_helper_renderings[nth - 1][4].text = { "pirates.hold_connections_label_to", tostring(nth) }
             end
             connections = {
                 { 1, 9 },
@@ -442,10 +442,10 @@ function Public.nth_hold_connect_linked_belts(nth) --assumes both are in standar
                 b1.connect_linked_belts(b2)
             end
 
-            boat.hold_helper_renderings[nth][1].text = { "pirates.hold_connections_label_to", 1 }
-            boat.hold_helper_renderings[1][1].text = { "pirates.hold_connections_label_from", nth }
-            boat.hold_helper_renderings[nth][2].text = { "pirates.hold_connections_label_to", 1 }
-            boat.hold_helper_renderings[1][2].text = { "pirates.hold_connections_label_from", nth }
+            boat.hold_helper_renderings[nth][1].text = { "pirates.hold_connections_label_to", "1" }
+            boat.hold_helper_renderings[1][1].text = { "pirates.hold_connections_label_from", tostring(nth) }
+            boat.hold_helper_renderings[nth][2].text = { "pirates.hold_connections_label_to", "1" }
+            boat.hold_helper_renderings[1][2].text = { "pirates.hold_connections_label_from", tostring(nth) }
         else
             connections = {
                 { 1, 1 },
@@ -459,10 +459,10 @@ function Public.nth_hold_connect_linked_belts(nth) --assumes both are in standar
                 b1.connect_linked_belts(b2)
             end
 
-            boat.hold_helper_renderings[nth][1].text = { "pirates.hold_connections_label_from", nth - 1 }
-            boat.hold_helper_renderings[nth - 1][1].text = { "pirates.hold_connections_label_to", nth }
-            boat.hold_helper_renderings[nth][2].text = { "pirates.hold_connections_label_from", nth - 1 }
-            boat.hold_helper_renderings[nth - 1][2].text = { "pirates.hold_connections_label_to", nth }
+            boat.hold_helper_renderings[nth][1].text = { "pirates.hold_connections_label_from", tostring(nth - 1) }
+            boat.hold_helper_renderings[nth - 1][1].text = { "pirates.hold_connections_label_to", tostring(nth) }
+            boat.hold_helper_renderings[nth][2].text = { "pirates.hold_connections_label_from", tostring(nth - 1) }
+            boat.hold_helper_renderings[nth - 1][2].text = { "pirates.hold_connections_label_to", tostring(nth) }
 
             connections = {
                 { 5, 9 },
@@ -476,10 +476,10 @@ function Public.nth_hold_connect_linked_belts(nth) --assumes both are in standar
                 b1.connect_linked_belts(b2)
             end
 
-            boat.hold_helper_renderings[nth][3].text = { "pirates.hold_connections_label_to", 1 }
-            boat.hold_helper_renderings[1][1].text = { "pirates.hold_connections_label_from", nth }
-            boat.hold_helper_renderings[nth][4].text = { "pirates.hold_connections_label_to", 1 }
-            boat.hold_helper_renderings[1][2].text = { "pirates.hold_connections_label_from", nth }
+            boat.hold_helper_renderings[nth][3].text = { "pirates.hold_connections_label_to", "1" }
+            boat.hold_helper_renderings[1][1].text = { "pirates.hold_connections_label_from", tostring(nth) }
+            boat.hold_helper_renderings[nth][4].text = { "pirates.hold_connections_label_to", "1" }
+            boat.hold_helper_renderings[1][2].text = { "pirates.hold_connections_label_from", tostring(nth) }
         end
     end
 end
