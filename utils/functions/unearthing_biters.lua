@@ -92,7 +92,7 @@ local function unearthing_biters(surface, position, amount, relative_evolution)
         return
     end
 
-    local evolution = game.forces.enemy.evolution_factor
+    local evolution = game.forces['enemy'].get_evolution_factor(surface)
 
     if relative_evolution then
         evolution = relative_evolution
