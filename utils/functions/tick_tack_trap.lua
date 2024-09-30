@@ -3,6 +3,7 @@
 
 local Event = require 'utils.event'
 local Global = require 'utils.global'
+local FT = require 'utils.functions.flying_texts'
 
 local traps = {}
 
@@ -26,6 +27,11 @@ local kaboom_weights = {
     {name = 'explosive-cannon-projectile', chance = 5}
 }
 
+local colors = {
+    trap = {r = 0.75, g = 0.75, b = 0.75},
+    sentries = {r = 0.8, g = 0.0, b = 0.0},
+}
+
 local kabooms = {}
 for _, t in pairs(kaboom_weights) do
     for _ = 1, t.chance, 1 do
@@ -37,36 +43,27 @@ local function create_flying_text(surface, position, text)
     if not surface.valid then
         return
     end
-    surface.create_entity(
-        {
-            name = 'flying-text',
-            position = position,
-            text = text,
-            color = {r = 0.75, g = 0.75, b = 0.75}
-        }
-    )
+    FT.flying_text(nil, surface, position, text, colors.trap)
     if text == '...' then
         return
     end
     surface.play_sound({path = 'utility/armor_insert', position = position, volume_modifier = 0.75})
 end
 
-local function create_kaboom(surface, position, name)
+---Creates actual final effect
+---@param surface LuaSurface
+---@param position MapPosition
+---@param name EntityID
+---@param force LuaForce
+local function create_kaboom(surface, position, name, force)
     if not surface.valid then
         return
     end
     local target = position
     local speed = 0.5
     if name == 'defender-capsule' or name == 'destroyer-capsule' or name == 'distractor-capsule' then
-        surface.create_entity(
-            {
-                name = 'flying-text',
-                position = position,
-                text = '(((Sentries Engaging Target)))',
-                color = {r = 0.8, g = 0.0, b = 0.0}
-            }
-        )
-        local nearest_player_unit = surface.find_nearest_enemy({position = position, max_distance = 128, force = 'enemy'})
+        FT.flying_text(nil, surface, position, '(((Sentries Engaging Target)))', colors.sentries)
+        local nearest_player_unit = surface.find_nearest_enemy({position = position, max_distance = 128, force = force})
         if nearest_player_unit then
             target = nearest_player_unit.position
         end
@@ -76,14 +73,18 @@ local function create_kaboom(surface, position, name)
         {
             name = name,
             position = position,
-            force = 'enemy',
+            force = force,
             target = target,
             speed = speed
         }
     )
 end
 
-local function tick_tack_trap(surface, position)
+---Create Tick Tack Trap
+---@param surface LuaSurface 
+---@param position MapPosition
+---@param force LuaForce|nil #optional, if nil, uses enemy force
+local function tick_tack_trap(surface, position, force)
     if not surface then
         return
     end
@@ -98,6 +99,9 @@ local function tick_tack_trap(surface, position)
     end
     if not position.y then
         return
+    end
+    if not force or not force.valid then
+        force = game.forces.enemy
     end
     local tick_tack_count = math.random(5, 9)
     for t = 60, tick_tack_count * 60, 60 do
@@ -120,7 +124,7 @@ local function tick_tack_trap(surface, position)
             else
                 traps[tick][#traps[tick] + 1] = {
                     callback = 'create_kaboom',
-                    params = {surface, {x = position.x, y = position.y}, kabooms[math.random(1, #kabooms)]}
+                    params = {surface, {x = position.x, y = position.y}, kabooms[math.random(1, #kabooms)], force}
                 }
             end
         end
@@ -135,7 +139,7 @@ local function on_tick()
         local callback = token.callback
         local params = token.params
         if callback == 'create_kaboom' then
-            create_kaboom(params[1], params[2], params[3])
+            create_kaboom(params[1], params[2], params[3], params[4])
         elseif callback == 'create_flying_text' then
             create_flying_text(params[1], params[2], params[3])
         end
