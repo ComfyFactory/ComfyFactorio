@@ -142,8 +142,7 @@ local function unearthing_worm(surface, position, relative_evolution)
     if not position.y then
         return
     end
-
-    local evolution_index = math.ceil(game.forces.enemy.evolution_factor * 10)
+    local evolution_index = math.ceil(game.forces.enemy.get_evolution_factor(surface) * 10)
 
     if relative_evolution then
         evolution_index = math.ceil(relative_evolution * 10)
