@@ -18,7 +18,7 @@ Public.pi = math.pi
 Public.deg = math.deg
 Public.round = math.round
 
-function Public.clamp(min, max, number)
+function Public.clamp(number, min, max)
 	if number < min then
 		return min
 	elseif number > max then
