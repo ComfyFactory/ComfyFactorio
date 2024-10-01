@@ -1099,12 +1099,19 @@ function Public.default_map_gen_settings(width, height, seed)
 		['default_enable_all_autoplace_controls'] = true,
 		['autoplace_settings'] = {
 			['entity'] = { treat_missing_as_default = false },
-			['tile'] = { treat_missing_as_default = true },
-			['decorative'] = { treat_missing_as_default = true },
+			['tile'] = { treat_missing_as_default = false },
+			['decorative'] = prototypes.space_location.nauvis.map_gen_settings.autoplace_settings.decorative,
 		},
 		['peaceful_mode'] = true,
 		['property_expression_names'] = {},
 	}
+
+	-- TODO: Remove this code if Wube fixes this 'bug'
+	for _, decorative in pairs(prototypes.decorative) do
+		if not map_gen_settings.autoplace_settings.decorative.settings[decorative.name] then
+			map_gen_settings.autoplace_settings.decorative.settings[decorative.name] = { frequency = 'none' }
+		end
+	end
 
 	return map_gen_settings
 end

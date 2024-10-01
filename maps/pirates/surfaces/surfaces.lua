@@ -765,7 +765,16 @@ function Public.create_surface(destination)
 
 	--todo: put into static_params
 
-	mgs.autoplace_settings.decorative.treat_missing_as_default = destination.static_params.default_decoratives
+	if destination.static_params.decorative_settings ~= nil then
+		mgs.autoplace_settings.decorative = { settings = destination.static_params.decorative_settings }
+	end
+
+	-- TODO: Remove this code if Wube fixes this 'bug'
+	for _, decorative in pairs(prototypes.decorative) do
+		if not mgs.autoplace_settings.decorative.settings[decorative.name] then
+			mgs.autoplace_settings.decorative.settings[decorative.name] = { frequency = 'none' }
+		end
+	end
 
 	local surface = game.create_surface(surface_name, mgs)
 
