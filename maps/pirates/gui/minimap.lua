@@ -1,21 +1,20 @@
 ---@diagnostic disable: inject-field
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-
-local Memory = require 'maps.pirates.memory'
-local Common = require 'maps.pirates.common'
+local Memory = require('maps.pirates.memory')
+local Common = require('maps.pirates.common')
 -- local CoreData = require 'maps.pirates.coredata'
 -- local Utils = require 'maps.pirates.utils_local'
 -- local Math = require 'maps.pirates.math'
 -- local Balance = require 'maps.pirates.balance'
-local Surfaces = require 'maps.pirates.surfaces.surfaces'
+local Surfaces = require('maps.pirates.surfaces.surfaces')
 -- local Roles = require 'maps.pirates.roles.roles'
 -- local Crew = require 'maps.pirates.crew'
 -- local Progression = require 'maps.pirates.progression'
 -- local Structures = require 'maps.pirates.structures.structures'
-local _inspect = require 'utils.inspect'.inspect
+local _inspect = require('utils.inspect').inspect
 -- local Boats = require 'maps.pirates.structures.boats.boats'
-local GuiCommon = require 'maps.pirates.gui.common'
+local GuiCommon = require('maps.pirates.gui.common')
 local Public = {}
 
 local window_name = 'minimap'
@@ -58,13 +57,24 @@ function Public.toggle_window(player)
 		switch_state = 'left'
 	end
 
-	if not (memory.boat and memory.boat.position and memory.boat.surface_name) then return end
+	if not (memory.boat and memory.boat.position and memory.boat.surface_name) then
+		return
+	end
 
 	local position = memory.boat.position
 	local destination = Common.current_destination()
-	if (destination and destination.type and destination.type == Surfaces.enum.ISLAND and destination.static_params and destination.static_params.boat_starting_xposition) then
+	if
+		destination
+		and destination.type
+		and destination.type == Surfaces.enum.ISLAND
+		and destination.static_params
+		and destination.static_params.boat_starting_xposition
+	then
 		-- nicer viewing position:
-		position = { x = destination.static_params.boat_starting_xposition + 50, y = destination.static_params.boat_starting_yposition or 0 }
+		position = {
+			x = destination.static_params.boat_starting_xposition + 50,
+			y = destination.static_params.boat_starting_yposition or 0,
+		}
 	end
 	local zoom
 	if gui_memory and gui_memory[window_name] and gui_memory[window_name].zoom then
@@ -81,17 +91,14 @@ function Public.toggle_window(player)
 
 	local element = flow['camera']
 	if not element then
-		element =
-			flow.add(
-				{
-					type = 'camera',
-					name = 'camera',
-					position = position,
-					surface_index = game.surfaces[memory.boat.surface_name].index,
-					zoom = zoom,
-					tooltip = { 'pirates.gui_minimap_tooltip' }
-				}
-			)
+		element = flow.add({
+			type = 'camera',
+			name = 'camera',
+			position = position,
+			surface_index = game.surfaces[memory.boat.surface_name].index,
+			zoom = zoom,
+			tooltip = { 'pirates.gui_minimap_tooltip' },
+		})
 		element.style.margin = 1
 		element.style.minimal_height = size
 		element.style.minimal_width = size
@@ -100,17 +107,15 @@ function Public.toggle_window(player)
 	end
 
 	flow2 = GuiCommon.flow_add_close_button(flow, window_name .. '_piratebutton')
-	flow2.add(
-		{
-			type = 'switch',
-			name = 'switch_auto_map',
-			index = 1,
-			allow_none_state = false,
-			switch_state = switch_state,
-			left_label_caption = { 'pirates.gui_minimap_switch_left' },
-			right_label_caption = { 'pirates.gui_minimap_switch_right' },
-		}
-	)
+	flow2.add({
+		type = 'switch',
+		name = 'switch_auto_map',
+		index = 1,
+		allow_none_state = false,
+		switch_state = switch_state,
+		left_label_caption = { 'pirates.gui_minimap_switch_left' },
+		right_label_caption = { 'pirates.gui_minimap_switch_right' },
+	})
 end
 
 -- function Public.regular_update(player)
@@ -118,22 +123,37 @@ end
 -- end
 
 function Public.full_update(player)
-	if Public.regular_update then Public.regular_update(player) end
+	if Public.regular_update then
+		Public.regular_update(player)
+	end
 	local flow
 
 	local memory = Memory.get_crew_memory()
 	local boat = memory.boat
 
-	if not player.gui.screen[window_name .. '_piratewindow'] then return end
+	if not player.gui.screen[window_name .. '_piratewindow'] then
+		return
+	end
 	flow = player.gui.screen[window_name .. '_piratewindow']
 
 	local element = flow['camera']
 	if element then
 		local position = boat.position
 		local destination = Common.current_destination()
-		if (destination and destination.type and destination.type == Surfaces.enum.ISLAND and boat.surface_name and boat.surface_name == destination.surface_name and destination.static_params and destination.static_params.boat_starting_xposition) then
+		if
+			destination
+			and destination.type
+			and destination.type == Surfaces.enum.ISLAND
+			and boat.surface_name
+			and boat.surface_name == destination.surface_name
+			and destination.static_params
+			and destination.static_params.boat_starting_xposition
+		then
 			-- nicer viewing position:
-			position = { x = destination.static_params.boat_starting_xposition + 50, y = destination.static_params.boat_starting_yposition or 0 }
+			position = {
+				x = destination.static_params.boat_starting_xposition + 50,
+				y = destination.static_params.boat_starting_yposition or 0,
+			}
 		end
 
 		if position then
@@ -146,19 +166,27 @@ function Public.full_update(player)
 end
 
 function Public.click(event)
-	if not event.element then return end
-	if not event.element.valid then return end
+	if not event.element then
+		return
+	end
+	if not event.element.valid then
+		return
+	end
 
 	local player = game.players[event.element.player_index]
 
 	local eventname = event.element.name
 
-	if not player.gui.screen[window_name .. '_piratewindow'] then return end
+	if not player.gui.screen[window_name .. '_piratewindow'] then
+		return
+	end
 	-- local flow = player.gui.screen[window_name .. '_piratewindow']
 
 	-- local memory = Memory.get_crew_memory()
 
-	if eventname ~= 'camera' then return end
+	if eventname ~= 'camera' then
+		return
+	end
 
 	local zoom = default_zoom
 	local size = default_size
@@ -221,24 +249,30 @@ local function on_player_changed_surface(event)
 
 	local window = player.gui.screen[window_name .. '_piratewindow']
 
-	local from_hold_or_cabin_bool = string.sub(game.surfaces[event.surface_index].name, 9, 12) == 'Hold' or string.sub(game.surfaces[event.surface_index].name, 9, 13) == 'Cabin'
-	local to_hold_or_cabin_bool = string.sub(player.surface.name, 9, 12) == 'Hold' or string.sub(player.surface.name, 9, 13) == 'Cabin'
+	local from_hold_or_cabin_bool = string.sub(game.surfaces[event.surface_index].name, 9, 12) == 'Hold'
+		or string.sub(game.surfaces[event.surface_index].name, 9, 13) == 'Cabin'
+	local to_hold_or_cabin_bool = string.sub(player.surface.name, 9, 12) == 'Hold'
+		or string.sub(player.surface.name, 9, 13) == 'Cabin'
 
-	if from_hold_or_cabin_bool and (not to_hold_or_cabin_bool) then
+	if from_hold_or_cabin_bool and not to_hold_or_cabin_bool then
 		if window then
 			Public.toggle_window(player)
 		end
-	elseif to_hold_or_cabin_bool and (not from_hold_or_cabin_bool) then
+	elseif to_hold_or_cabin_bool and not from_hold_or_cabin_bool then
 		local global_memory = Memory.get_global_memory()
 		local gui_memory = global_memory.player_gui_memories[player.index]
 
-		if (gui_memory and gui_memory[window_name] and gui_memory[window_name].auto_map) or (not gui_memory) or (gui_memory and (not gui_memory[window_name])) then --if no gui memory exists for this, default to opening the minimap
+		if
+			(gui_memory and gui_memory[window_name] and gui_memory[window_name].auto_map)
+			or not gui_memory
+			or (gui_memory and not gui_memory[window_name])
+		then --if no gui memory exists for this, default to opening the minimap
 			Public.toggle_window(player)
 		end
 	end
 end
 
-local event = require 'utils.event'
+local event = require('utils.event')
 event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
 
 return Public

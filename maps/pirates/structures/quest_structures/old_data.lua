@@ -40,9 +40,9 @@ Public.covered1.walls = {
 	{ x = -8, y = -5 },
 	{ x = -8, y = -4 },
 	{ x = -8, y = -3 },
-	{ x = 8,  y = -5 },
-	{ x = 8,  y = -4 },
-	{ x = 8,  y = -3 },
+	{ x = 8, y = -5 },
+	{ x = 8, y = -4 },
+	{ x = 8, y = -3 },
 }
 
 Public.covered1b = {
@@ -72,8 +72,6 @@ Public.covered1b.wooden_chests = {
 	{ x = -4, y = 3 },
 	{ x = -5, y = 5 },
 }
-
-
 
 Public.covered2 = {
 	name = 'covered2',
@@ -111,8 +109,8 @@ Public.covered2 = {
 
 Public.covered2.red_chests = {
 	{ x = -1, y = 5 },
-	{ x = 0,  y = 5 },
-	{ x = 1,  y = 5 },
+	{ x = 0, y = 5 },
+	{ x = 1, y = 5 },
 }
 Public.covered2.blue_chest = { x = 0, y = 6 }
 Public.covered2.walls = {
@@ -120,10 +118,10 @@ Public.covered2.walls = {
 	{ x = -8, y = -3 },
 	{ x = -8, y = -2 },
 	{ x = -8, y = -1 },
-	{ x = 8,  y = -4 },
-	{ x = 8,  y = -3 },
-	{ x = 8,  y = -2 },
-	{ x = 8,  y = -1 },
+	{ x = 8, y = -4 },
+	{ x = 8, y = -3 },
+	{ x = 8, y = -2 },
+	{ x = 8, y = -1 },
 }
 
 Public.covered2b = {
@@ -151,8 +149,8 @@ Public.covered2b.market = { x = -4, y = -5 }
 Public.covered2b.wooden_chests = {
 	{ x = -7, y = -5 },
 	{ x = -6, y = -5 },
-	{ x = 6,  y = -5 },
-	{ x = 7,  y = -5 },
+	{ x = 6, y = -5 },
+	{ x = 7, y = -5 },
 }
 
 return Public

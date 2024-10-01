@@ -1,92 +1,234 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-
 -- local Memory = require 'maps.pirates.memory'
 -- local Roles = require 'maps.pirates.roles.roles'
 -- local CoreData = require 'maps.pirates.coredata'
-local Classes = require 'maps.pirates.roles.classes'
+local Classes = require('maps.pirates.roles.classes')
 -- local Crew = require 'maps.pirates.crew'
 -- local Boats = require 'maps.pirates.structures.boats.boats'
 -- local Dock = require 'maps.pirates.surfaces.dock'
-local Balance = require 'maps.pirates.balance'
-local Common = require 'maps.pirates.common'
-local Utils = require 'maps.pirates.utils_local'
-local Math = require 'maps.pirates.math'
-local Upgrades = require 'maps.pirates.shop.boat_upgrades'
-local _inspect = require 'utils.inspect'.inspect
+local Balance = require('maps.pirates.balance')
+local Common = require('maps.pirates.common')
+local Utils = require('maps.pirates.utils_local')
+local Math = require('maps.pirates.math')
+local Upgrades = require('maps.pirates.shop.boat_upgrades')
+local _inspect = require('utils.inspect').inspect
 
 -- local Upgrades = require 'maps.pirates.shop.boat_upgrades'
 
 local Public = {}
 
-
-
-
 Public.market_barters = {
-	{ price = { { name = 'iron-plate', count = 300 } },   offer = { type = 'give-item', item = 'copper-plate', count = 500 } },
-	{ price = { { name = 'copper-plate', count = 300 } }, offer = { type = 'give-item', item = 'iron-plate', count = 500 } },
+	{
+		price = { { name = 'iron-plate', count = 300 } },
+		offer = { type = 'give-item', item = 'copper-plate', count = 500 },
+	},
+	{
+		price = { { name = 'copper-plate', count = 300 } },
+		offer = { type = 'give-item', item = 'iron-plate', count = 500 },
+	},
 	--repeating these:
-	{ price = { { name = 'iron-plate', count = 300 } },   offer = { type = 'give-item', item = 'copper-plate', count = 500 } },
-	{ price = { { name = 'copper-plate', count = 300 } }, offer = { type = 'give-item', item = 'iron-plate', count = 500 } },
+	{
+		price = { { name = 'iron-plate', count = 300 } },
+		offer = { type = 'give-item', item = 'copper-plate', count = 500 },
+	},
+	{
+		price = { { name = 'copper-plate', count = 300 } },
+		offer = { type = 'give-item', item = 'iron-plate', count = 500 },
+	},
 
-	{ price = { { name = 'steel-plate', count = 40 } },   offer = { type = 'give-item', item = 'copper-plate', count = 500 } },
-	{ price = { { name = 'steel-plate', count = 40 } },   offer = { type = 'give-item', item = 'iron-plate', count = 500 } },
-	{ price = { { name = 'raw-fish', count = 80 } },      offer = { type = 'give-item', item = 'coal', count = 500 } },
-	{ price = { { name = 'raw-fish', count = 80 } },      offer = { type = 'give-item', item = 'iron-plate', count = 750 } },
-	{ price = { { name = 'raw-fish', count = 80 } },      offer = { type = 'give-item', item = 'copper-plate', count = 750 } },
-	{ price = { { name = 'raw-fish', count = 80 } },      offer = { type = 'give-item', item = 'steel-plate', count = 150 } },
-	{ price = { { name = 'wood', count = 200 } },         offer = { type = 'give-item', item = 'coin', count = 360 } },
-	{ price = { { name = 'wood', count = 150 } },         offer = { type = 'give-item', item = 'coal', count = 150 } },
-	{ price = { { name = 'stone-brick', count = 200 } },  offer = { type = 'give-item', item = 'iron-plate', count = 500 } },
-	{ price = { { name = 'stone-brick', count = 200 } },  offer = { type = 'give-item', item = 'copper-plate', count = 500 } },
-	{ price = { { name = 'stone-brick', count = 200 } },  offer = { type = 'give-item', item = 'steel-plate', count = 160 } },
+	{
+		price = { { name = 'steel-plate', count = 40 } },
+		offer = { type = 'give-item', item = 'copper-plate', count = 500 },
+	},
+	{
+		price = { { name = 'steel-plate', count = 40 } },
+		offer = { type = 'give-item', item = 'iron-plate', count = 500 },
+	},
+	{ price = { { name = 'raw-fish', count = 80 } }, offer = { type = 'give-item', item = 'coal', count = 500 } },
+	{
+		price = { { name = 'raw-fish', count = 80 } },
+		offer = { type = 'give-item', item = 'iron-plate', count = 750 },
+	},
+	{
+		price = { { name = 'raw-fish', count = 80 } },
+		offer = { type = 'give-item', item = 'copper-plate', count = 750 },
+	},
+	{
+		price = { { name = 'raw-fish', count = 80 } },
+		offer = { type = 'give-item', item = 'steel-plate', count = 150 },
+	},
+	{ price = { { name = 'wood', count = 200 } }, offer = { type = 'give-item', item = 'coin', count = 360 } },
+	{ price = { { name = 'wood', count = 150 } }, offer = { type = 'give-item', item = 'coal', count = 150 } },
+	{
+		price = { { name = 'stone-brick', count = 200 } },
+		offer = { type = 'give-item', item = 'iron-plate', count = 500 },
+	},
+	{
+		price = { { name = 'stone-brick', count = 200 } },
+		offer = { type = 'give-item', item = 'copper-plate', count = 500 },
+	},
+	{
+		price = { { name = 'stone-brick', count = 200 } },
+		offer = { type = 'give-item', item = 'steel-plate', count = 160 },
+	},
 }
 
 -- permanent means you can buy more than once (but only some items???)
 Public.market_permanent_offers = {
-	{ price = { { name = 'pistol', count = 1 } },                                                                             offer = { type = 'give-item', item = 'coin', count = Balance.coin_sell_amount } },
-	{ price = { { name = 'coin', count = 3600 } },                                                                            offer = { type = 'give-item', item = 'iron-ore', count = 800 } },
-	{ price = { { name = 'coin', count = 3600 } },                                                                            offer = { type = 'give-item', item = 'copper-ore', count = 800 } },
-	{ price = { { name = 'coin', count = 4200 } },                                                                            offer = { type = 'give-item', item = 'crude-oil-barrel', count = 100 } },
-	{ price = { { name = 'coin', count = 3600 } },                                                                            offer = { type = 'give-item', item = 'fast-loader', count = 1 } },
-	{ price = { { name = 'coin', count = 6200 } },                                                                            offer = { type = 'give-item', item = 'beacon', count = 2 } },
-	{ price = { { name = 'coin', count = 4200 } },                                                                            offer = { type = 'give-item', item = 'speed-module-2', count = 2 } },
-	{ price = { { name = 'coin', count = 3000 } },                                                                            offer = { type = 'give-item', item = 'explosives', count = 50 } },
-	{ price = { { name = 'coin', count = 6500 }, { name = 'steel-plate', count = 25 }, { name = 'explosives', count = 50 } }, offer = { type = 'give-item', item = 'land-mine', count = 100 } },
+	{
+		price = { { name = 'pistol', count = 1 } },
+		offer = { type = 'give-item', item = 'coin', count = Balance.coin_sell_amount },
+	},
+	{
+		price = { { name = 'coin', count = 3600 } },
+		offer = { type = 'give-item', item = 'iron-ore', count = 800 },
+	},
+	{
+		price = { { name = 'coin', count = 3600 } },
+		offer = { type = 'give-item', item = 'copper-ore', count = 800 },
+	},
+	{
+		price = { { name = 'coin', count = 4200 } },
+		offer = { type = 'give-item', item = 'crude-oil-barrel', count = 100 },
+	},
+	{
+		price = { { name = 'coin', count = 3600 } },
+		offer = { type = 'give-item', item = 'fast-loader', count = 1 },
+	},
+	{
+		price = { { name = 'coin', count = 6200 } },
+		offer = { type = 'give-item', item = 'beacon', count = 2 },
+	},
+	{
+		price = { { name = 'coin', count = 4200 } },
+		offer = { type = 'give-item', item = 'speed-module-2', count = 2 },
+	},
+	{
+		price = { { name = 'coin', count = 3000 } },
+		offer = { type = 'give-item', item = 'explosives', count = 50 },
+	},
+	{
+		price = {
+			{ name = 'coin', count = 6500 },
+			{ name = 'steel-plate', count = 25 },
+			{ name = 'explosives', count = 50 },
+		},
+		offer = { type = 'give-item', item = 'land-mine', count = 100 },
+	},
 }
 
 -- cheap but one-off
 Public.market_sales = {
-	{ price = { { name = 'coin', count = 3000 } },                                                     offer = { type = 'give-item', item = 'coal', count = 900 } },
-	{ price = { { name = 'coin', count = 3000 } },                                                     offer = { type = 'give-item', item = 'piercing-rounds-magazine', count = 75 } },
-	{ price = { { name = 'coin', count = 3000 } },                                                     offer = { type = 'give-item', item = 'uranium-rounds-magazine', count = 20 } },
-	{ price = { { name = 'coin', count = 3000 } },                                                     offer = { type = 'give-item', item = 'piercing-shotgun-shell', count = 50 } },
-	{ price = { { name = 'coin', count = 3000 } },                                                     offer = { type = 'give-item', item = 'raw-fish', count = 300 } },
-	{ price = { { name = 'coin', count = 3000 } },                                                     offer = { type = 'give-item', item = 'laser-turret', count = 1 } },
-	{ price = { { name = 'coin', count = 3000 } },                                                     offer = { type = 'give-item', item = 'vehicle-machine-gun', count = 2 } },
-	{ price = { { name = 'coin', count = 6000 } },                                                     offer = { type = 'give-item', item = 'modular-armor', count = 1 } },
-	{ price = { { name = 'coin', count = 3000 } },                                                     offer = { type = 'give-item', item = 'distractor-capsule', count = 20 } },
-	{ price = { { name = 'coin', count = 3000 } },                                                     offer = { type = 'give-item', item = 'poison-capsule', count = 20 } },
-	{ price = { { name = 'coin', count = 3000 } },                                                     offer = { type = 'give-item', item = 'slowdown-capsule', count = 20 } },
-	{ price = { { name = 'coin', count = 3000 } },                                                     offer = { type = 'give-item', item = 'coin', count = 6000 } },
-	{ price = { { name = 'coin', count = 3000 } },                                                     offer = { type = 'give-item', item = 'roboport', count = 1 } },
-	{ price = { { name = 'coin', count = 3000 } },                                                     offer = { type = 'give-item', item = 'construction-robot', count = 10 } },
-	{ price = { { name = 'coin', count = 3000 } },                                                     offer = { type = 'give-item', item = 'passive-provider-chest', count = 2 } },
-	{ price = { { name = 'coin', count = 3000 } },                                                     offer = { type = 'give-item', item = 'logistic-robot', count = 2 } },
-	{ price = { { name = 'transport-belt', count = 100 }, { name = 'coin', count = 800 } },            offer = { type = 'give-item', item = 'fast-transport-belt', count = 100 } },
-	{ price = { { name = 'fast-transport-belt', count = 100 }, { name = 'coin', count = 2500 } },      offer = { type = 'give-item', item = 'express-transport-belt', count = 100 } },
-	{ price = { { name = 'underground-belt', count = 10 }, { name = 'coin', count = 800 } },           offer = { type = 'give-item', item = 'fast-underground-belt', count = 10 } },
-	{ price = { { name = 'fast-underground-belt', count = 10 }, { name = 'coin', count = 2500 } },     offer = { type = 'give-item', item = 'express-underground-belt', count = 10 } },
-	{ price = { { name = 'splitter', count = 10 }, { name = 'coin', count = 800 } },                   offer = { type = 'give-item', item = 'fast-splitter', count = 10 } },
-	{ price = { { name = 'fast-splitter', count = 10 }, { name = 'coin', count = 2500 } },             offer = { type = 'give-item', item = 'express-splitter', count = 10 } },
-	{ price = { { name = 'pistol', count = 1 }, { name = 'coin', count = 300 } },                      offer = { type = 'give-item', item = 'submachine-gun', count = 1 } },
-	{ price = { { name = 'submachine-gun', count = 1 }, { name = 'coin', count = 1000 } },             offer = { type = 'give-item', item = 'vehicle-machine-gun', count = 1 } },
-	{ price = { { name = 'shotgun', count = 1 }, { name = 'coin', count = 3500 } },                    offer = { type = 'give-item', item = 'combat-shotgun', count = 1 } },
-	{ price = { { name = 'shotgun-shell', count = 100 }, { name = 'coin', count = 2000 } },            offer = { type = 'give-item', item = 'piercing-shotgun-shell', count = 100 } },
-	{ price = { { name = 'piercing-rounds-magazine', count = 100 }, { name = 'coin', count = 3500 } }, offer = { type = 'give-item', item = 'uranium-rounds-magazine', count = 100 } },
+	{
+		price = { { name = 'coin', count = 3000 } },
+		offer = { type = 'give-item', item = 'coal', count = 900 },
+	},
+	{
+		price = { { name = 'coin', count = 3000 } },
+		offer = { type = 'give-item', item = 'piercing-rounds-magazine', count = 75 },
+	},
+	{
+		price = { { name = 'coin', count = 3000 } },
+		offer = { type = 'give-item', item = 'uranium-rounds-magazine', count = 20 },
+	},
+	{
+		price = { { name = 'coin', count = 3000 } },
+		offer = { type = 'give-item', item = 'piercing-shotgun-shell', count = 50 },
+	},
+	{
+		price = { { name = 'coin', count = 3000 } },
+		offer = { type = 'give-item', item = 'raw-fish', count = 300 },
+	},
+	{
+		price = { { name = 'coin', count = 3000 } },
+		offer = { type = 'give-item', item = 'laser-turret', count = 1 },
+	},
+	{
+		price = { { name = 'coin', count = 3000 } },
+		offer = { type = 'give-item', item = 'vehicle-machine-gun', count = 2 },
+	},
+	{
+		price = { { name = 'coin', count = 6000 } },
+		offer = { type = 'give-item', item = 'modular-armor', count = 1 },
+	},
+	{
+		price = { { name = 'coin', count = 3000 } },
+		offer = { type = 'give-item', item = 'distractor-capsule', count = 20 },
+	},
+	{
+		price = { { name = 'coin', count = 3000 } },
+		offer = { type = 'give-item', item = 'poison-capsule', count = 20 },
+	},
+	{
+		price = { { name = 'coin', count = 3000 } },
+		offer = { type = 'give-item', item = 'slowdown-capsule', count = 20 },
+	},
+	{
+		price = { { name = 'coin', count = 3000 } },
+		offer = { type = 'give-item', item = 'coin', count = 6000 },
+	},
+	{
+		price = { { name = 'coin', count = 3000 } },
+		offer = { type = 'give-item', item = 'roboport', count = 1 },
+	},
+	{
+		price = { { name = 'coin', count = 3000 } },
+		offer = { type = 'give-item', item = 'construction-robot', count = 10 },
+	},
+	{
+		price = { { name = 'coin', count = 3000 } },
+		offer = { type = 'give-item', item = 'passive-provider-chest', count = 2 },
+	},
+	{
+		price = { { name = 'coin', count = 3000 } },
+		offer = { type = 'give-item', item = 'logistic-robot', count = 2 },
+	},
+	{
+		price = { { name = 'transport-belt', count = 100 }, { name = 'coin', count = 800 } },
+		offer = { type = 'give-item', item = 'fast-transport-belt', count = 100 },
+	},
+	{
+		price = { { name = 'fast-transport-belt', count = 100 }, { name = 'coin', count = 2500 } },
+		offer = { type = 'give-item', item = 'express-transport-belt', count = 100 },
+	},
+	{
+		price = { { name = 'underground-belt', count = 10 }, { name = 'coin', count = 800 } },
+		offer = { type = 'give-item', item = 'fast-underground-belt', count = 10 },
+	},
+	{
+		price = { { name = 'fast-underground-belt', count = 10 }, { name = 'coin', count = 2500 } },
+		offer = { type = 'give-item', item = 'express-underground-belt', count = 10 },
+	},
+	{
+		price = { { name = 'splitter', count = 10 }, { name = 'coin', count = 800 } },
+		offer = { type = 'give-item', item = 'fast-splitter', count = 10 },
+	},
+	{
+		price = { { name = 'fast-splitter', count = 10 }, { name = 'coin', count = 2500 } },
+		offer = { type = 'give-item', item = 'express-splitter', count = 10 },
+	},
+	{
+		price = { { name = 'pistol', count = 1 }, { name = 'coin', count = 300 } },
+		offer = { type = 'give-item', item = 'submachine-gun', count = 1 },
+	},
+	{
+		price = { { name = 'submachine-gun', count = 1 }, { name = 'coin', count = 1000 } },
+		offer = { type = 'give-item', item = 'vehicle-machine-gun', count = 1 },
+	},
+	{
+		price = { { name = 'shotgun', count = 1 }, { name = 'coin', count = 3500 } },
+		offer = { type = 'give-item', item = 'combat-shotgun', count = 1 },
+	},
+	{
+		price = { { name = 'shotgun-shell', count = 100 }, { name = 'coin', count = 2000 } },
+		offer = { type = 'give-item', item = 'piercing-shotgun-shell', count = 100 },
+	},
+	{
+		price = { { name = 'piercing-rounds-magazine', count = 100 }, { name = 'coin', count = 3500 } },
+		offer = { type = 'give-item', item = 'uranium-rounds-magazine', count = 100 },
+	},
 }
-
-
 
 -- function Public.dock_generate_offers(how_many_barters, how_many_sales)
 -- 	local ret = {}
@@ -123,20 +265,20 @@ Public.market_sales = {
 -- 		toaddcount = toaddcount - 1
 -- 	end
 
-
 --     return ret
 -- end
-
 
 function Public.create_dock_markets(surface, p)
 	-- local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 
-	if not (surface and p) then return end
+	if not (surface and p) then
+		return
+	end
 
 	local e
 
-	e = surface.create_entity { name = 'market', position = { x = p.x - 22, y = p.y - 1 }, force = 'environment' }
+	e = surface.create_entity({ name = 'market', position = { x = p.x - 22, y = p.y - 1 }, force = 'environment' })
 	if e and e.valid then
 		e.minable = false
 		e.rotatable = false
@@ -167,7 +309,7 @@ function Public.create_dock_markets(surface, p)
 		destination.dynamic_data.dock_captains_market = e
 	end
 
-	e = surface.create_entity { name = 'market', position = { x = p.x - 7, y = p.y }, force = 'environment' }
+	e = surface.create_entity({ name = 'market', position = { x = p.x - 7, y = p.y }, force = 'environment' })
 	if e and e.valid then
 		e.minable = false
 		e.rotatable = false
@@ -194,7 +336,7 @@ function Public.create_dock_markets(surface, p)
 		end
 	end
 
-	e = surface.create_entity { name = 'market', position = { x = p.x, y = p.y - 1 }, force = 'environment' }
+	e = surface.create_entity({ name = 'market', position = { x = p.x, y = p.y - 1 }, force = 'environment' })
 	if e and e.valid then
 		e.minable = false
 		e.rotatable = false
@@ -221,7 +363,16 @@ function Public.create_dock_markets(surface, p)
 
 		-- new class offerings:
 		if destination.static_params.class_for_sale then
-			e.add_market_item { price = { { name = 'coin', count = Balance.class_cost(true) } }, offer = { type = "nothing", effect_description = { 'pirates.market_description_purchase_class', Classes.display_form(destination.static_params.class_for_sale) } } }
+			e.add_market_item({
+				price = { { name = 'coin', count = Balance.class_cost(true) } },
+				offer = {
+					type = 'nothing',
+					effect_description = {
+						'pirates.market_description_purchase_class',
+						Classes.display_form(destination.static_params.class_for_sale),
+					},
+				},
+			})
 
 			-- destination.dynamic_data.market_class_offer_rendering = rendering.draw_text{
 			-- 	text = 'Class available: ' .. Classes.display_form(destination.static_params.class_for_sale),
@@ -235,7 +386,7 @@ function Public.create_dock_markets(surface, p)
 		end
 	end
 
-	e = surface.create_entity { name = 'market', position = { x = p.x + 7, y = p.y }, force = 'environment' }
+	e = surface.create_entity({ name = 'market', position = { x = p.x + 7, y = p.y }, force = 'environment' })
 	if e and e.valid then
 		e.minable = false
 		e.rotatable = false

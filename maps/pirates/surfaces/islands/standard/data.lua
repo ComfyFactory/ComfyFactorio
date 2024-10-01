@@ -1,6 +1,5 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-
 -- local Common = require 'maps.pirates.common'
 -- local Utils = require 'maps.pirates.utils_local'
 -- local Math = require 'maps.pirates.math'
@@ -39,7 +38,7 @@ Public.noiseparams = {
 		type = 'simplex_2d',
 		normalised = false,
 		params = {
-			{ wavelength = 0,   amplitude = rscale * 1 },
+			{ wavelength = 0, amplitude = rscale * 1 },
 			{ wavelength = 1.6, amplitude = rscale * 0.3 },
 		},
 	},
@@ -50,7 +49,7 @@ Public.noiseparams = {
 		params = {
 			-- {upperscale = 1000, amplitude = hscale * 200},
 			{ upperscale = 1600, amplitude = hscale * 1 },
-			{ upperscale = 80,   amplitude = hscale * 0.1 },
+			{ upperscale = 80, amplitude = hscale * 0.1 },
 		},
 	},
 
@@ -76,12 +75,9 @@ Public.noiseparams = {
 		normalised = true,
 		params = {
 			{ wavelength = 250, amplitude = 70 },
-			{ wavelength = 50,  amplitude = 20 },
+			{ wavelength = 50, amplitude = 20 },
 		},
 	},
 }
-
-
-
 
 return Public

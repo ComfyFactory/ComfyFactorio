@@ -18,7 +18,6 @@ Public.static_params_default = {
 	min_brightness = 0.08,
 }
 
-
 -- Here we set values somewhat higher, because getting all resources requires work and bit of luck (island needs enough rock)
 function Public.base_ores()
 	return {

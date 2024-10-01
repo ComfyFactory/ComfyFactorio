@@ -1,6 +1,6 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-local Math = require 'maps.pirates.math'
+local Math = require('maps.pirates.math')
 
 local Public = {}
 
@@ -19,7 +19,7 @@ function Public.raffle(values, weights) --arguments of the form {[a] = A, [b] = 
 	end
 
 	-- Fallback case
-	if (total_weight <= 0) then
+	if total_weight <= 0 then
 		local index = Math.random(1, table_size(values))
 		return values[index]
 	end
@@ -53,7 +53,7 @@ function Public.raffle2(table) --arguments of the form {v1 = w1, v2 = w2, ...}
 	end
 
 	-- Fallback case
-	if (total_weight <= 0) then
+	if total_weight <= 0 then
 		local index = Math.random(1, table_size(table))
 		for k, _ in pairs(table) do
 			if index == 1 then
@@ -121,13 +121,19 @@ function Public.LambdaRaffle(data, lambda, extraConditionParameter)
 					end
 				end
 			end
-		elseif (v.shape == 'density') then
-			if v.minLambda and v.maxLambda and v.maxLambda ~= v.minLambda and lambda >= v.minLambda and lambda <= v.maxLambda then
+		elseif v.shape == 'density' then
+			if
+				v.minLambda
+				and v.maxLambda
+				and v.maxLambda ~= v.minLambda
+				and lambda >= v.minLambda
+				and lambda <= v.maxLambda
+			then
 				if (not v.condition) or (extraConditionParameter and v.condition(extraConditionParameter)) then
 					raffle[k] = v.overallWeight / (v.maxLambda - v.minLambda)
 				end
 			end
-		elseif (v.shape == 'bump') then
+		elseif v.shape == 'bump' then
 			if v.minLambda and v.maxLambda and lambda >= v.minLambda and lambda <= v.maxLambda then
 				if (not v.condition) or (extraConditionParameter and v.condition(extraConditionParameter)) then
 					if v.minLambda == v.maxLambda and lambda == v.minLambda then

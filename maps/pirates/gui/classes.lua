@@ -1,14 +1,13 @@
 ---@diagnostic disable: inject-field
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-
-local Memory = require 'maps.pirates.memory'
-local Common = require 'maps.pirates.common'
-local Classes = require 'maps.pirates.roles.classes'
-local GuiCommon = require 'maps.pirates.gui.common'
+local Memory = require('maps.pirates.memory')
+local Common = require('maps.pirates.common')
+local Classes = require('maps.pirates.roles.classes')
+local GuiCommon = require('maps.pirates.gui.common')
 local Public = {}
 
-local _inspect = require 'utils.inspect'.inspect
+local _inspect = require('utils.inspect').inspect
 
 local window_name = 'classes'
 
@@ -18,19 +17,25 @@ widths['taken_by'] = 150
 widths['action_buttons'] = 100
 
 local function add_class_entry(player, class, taken_by_player_index, index)
-	if not player.gui.screen[window_name .. '_piratewindow'] then return end
+	if not player.gui.screen[window_name .. '_piratewindow'] then
+		return
+	end
 	local flow
 	flow = player.gui.screen[window_name .. '_piratewindow']
 
 	local class_list_panel_table = flow.scroll_pane.class_list_panel_table
-
 
 	-- Class label
 	local explanation = Classes.explanation(class, false)
 	local full_explanation
 
 	if Classes.class_purchase_requirement[class] then
-		full_explanation = { 'pirates.class_explanation_upgraded_class', Classes.display_form(class), Classes.display_form(Classes.class_purchase_requirement[class]), explanation }
+		full_explanation = {
+			'pirates.class_explanation_upgraded_class',
+			Classes.display_form(class),
+			Classes.display_form(Classes.class_purchase_requirement[class]),
+			explanation,
+		}
 	else
 		full_explanation = { 'pirates.class_explanation', Classes.display_form(class), explanation }
 	end
@@ -42,7 +47,6 @@ local function add_class_entry(player, class, taken_by_player_index, index)
 	})
 	available_class_label.style.minimal_width = widths['available_classes']
 	available_class_label.style.maximal_width = widths['available_classes']
-
 
 	-- Player label
 	local taken_by_player_name = taken_by_player_index and game.players[taken_by_player_index].name or ''
@@ -99,7 +103,9 @@ function Public.toggle_window(player)
 		return
 	end
 
-	if not Common.is_id_valid(memory.id) then return end
+	if not Common.is_id_valid(memory.id) then
+		return
+	end
 
 	flow = GuiCommon.new_window(player, window_name)
 	flow.caption = { 'pirates.gui_classes' }
@@ -143,21 +149,21 @@ function Public.toggle_window(player)
 	flow3.style.font_color = GuiCommon.section_header_font_color
 
 	-- List management
-	local scroll_pane = flow.add {
+	local scroll_pane = flow.add({
 		type = 'scroll-pane',
 		name = 'scroll_pane',
 		direction = 'vertical',
 		horizontal_scroll_policy = 'never',
-		vertical_scroll_policy = 'auto'
-	}
+		vertical_scroll_policy = 'auto',
+	})
 	scroll_pane.style.maximal_height = 500
 	scroll_pane.style.bottom_margin = 10
 
-	scroll_pane.add {
+	scroll_pane.add({
 		type = 'table',
 		name = 'class_list_panel_table',
-		column_count = 3
-	}
+		column_count = 3,
+	})
 
 	for i, class_entry in ipairs(memory.unlocked_classes) do
 		add_class_entry(player, class_entry.class, class_entry.taken_by, i)
@@ -176,7 +182,9 @@ function Public.full_update(player, force_refresh)
 		Public.toggle_window(player)
 	end
 
-	if not player.gui.screen[window_name .. '_piratewindow'] then return end
+	if not player.gui.screen[window_name .. '_piratewindow'] then
+		return
+	end
 	local flow = player.gui.screen[window_name .. '_piratewindow']
 
 	local memory = Memory.get_crew_memory()
@@ -220,10 +228,6 @@ function Public.full_update(player, force_refresh)
 				button.style.clicked_font_color = black
 				button.enabled = false
 			end
-
-			if Common.is_spectator(player) then
-				button.enabled = false
-			end
 		else
 			log('Error: Non-existant label index, here some debug info.')
 			log(_inspect(class_list_panel_table))
@@ -231,7 +235,6 @@ function Public.full_update(player, force_refresh)
 			log(memory.unlocked_classes)
 		end
 	end
-
 
 	-- If new entries were added since last update, add them to GUI
 	if memory.class_entry_count ~= #memory.unlocked_classes then
@@ -245,15 +248,25 @@ function Public.full_update(player, force_refresh)
 end
 
 function Public.click(event)
-	if not event.element then return end
-	if not event.element.valid then return end
+	if not event.element then
+		return
+	end
+	if not event.element.valid then
+		return
+	end
 
 	local player = game.players[event.element.player_index]
-	if not player.gui.screen[window_name .. '_piratewindow'] then return end
+	if not player.gui.screen[window_name .. '_piratewindow'] then
+		return
+	end
 
 	local tags = event.element.tags
-	if not tags then return end
-	if tags.type ~= 'pirates_' .. window_name then return end
+	if not tags then
+		return
+	end
+	if tags.type ~= 'pirates_' .. window_name then
+		return
+	end
 
 	local memory = Memory.get_crew_memory()
 

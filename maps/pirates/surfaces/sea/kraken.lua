@@ -1,19 +1,19 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-local Boats = require 'maps.pirates.structures.boats.boats'
+local Boats = require('maps.pirates.structures.boats.boats')
 
-local Memory = require 'maps.pirates.memory'
-local Math = require 'maps.pirates.math'
-local Balance = require 'maps.pirates.balance'
-local Common = require 'maps.pirates.common'
-local CoreData = require 'maps.pirates.coredata'
-local Utils = require 'maps.pirates.utils_local'
-local _inspect = require 'utils.inspect'.inspect
+local Memory = require('maps.pirates.memory')
+local Math = require('maps.pirates.math')
+local Balance = require('maps.pirates.balance')
+local Common = require('maps.pirates.common')
+local CoreData = require('maps.pirates.coredata')
+local Utils = require('maps.pirates.utils_local')
+local _inspect = require('utils.inspect').inspect
 -- local Structures = require 'maps.pirates.structures.structures'
-local Token = require 'utils.token'
-local Task = require 'utils.task'
+local Token = require('utils.token')
+local Task = require('utils.task')
 -- local SurfacesCommon = require 'maps.pirates.surfaces.common'
-local Effects = require 'maps.pirates.effects'
+local Effects = require('maps.pirates.effects')
 
 local Public = {}
 
@@ -24,31 +24,45 @@ local kraken_bps = {
 	[[0eNqd2tuOmzAQgOF38TWR8Nj4wKtUe5EmaIuUhSihh9Uq714IdtWLVpp/r1aRvh1mxgQYnA/z9fJ9uN7GaTH9h7lPx+thmQ+vt/G8ff5leuca8779eTRmPM3T3fRfVji+TsfLRpb362B6My7Dm2nMdHzbPv2c5/MwHU7fhvtitn+czsMayz5eGrOMl2EPcp3v4zLOUzmSfR7IhsefMOvhTrdhGdYQ/9HO6rTssSPSCelMtCDtWqSVPdkXVlqkE9LKKv2uEW6Rjkgri+xI2jt2BGeCbYs0iq1tSCA17tgTHAlGOWeCta0u2iKNMpGANOqfdtHjU3cEB4IjwVaQZrFRQwR1RLuQac/EIR2JFhRblN/fvGfCdCRaBGlllbYlJ2zREemEtLaFlbNctHfVypWXNmvJNaLogHRGWnsFr5xlrm66ZU0X1EVBd5/KA+OR8Yw4bIywUrUXjMod49rvqSOPQUVr73KVO8ZhMh3jgfHIeGI8I64+IR16BLAenQOerZJnq+TZKnm2Sp6tkmerxEbDylmpwkrVju4WzYdFe6QtC25h9I7xwHhkPDGeERe2psKSEZaM+gQr8yXSgrRjmbDgFkb3jHeMB8Yj44lx7QkT2RMhm6grd4x7xjvGA+ORce0yJTZzJLZMiTUysUYm1kj2xqFybSMza2RmubO3DtKSubNobeqVB8a1qaORWdi+jNjP5KLea7Fss4VN2CLkjUzRGWl1G9lMK2ymFYcKdahQNucVrh2vK1de7sSjQj0qlI1KhWuHQmHTiaAtI2F7RsIewgtXp452gorukGaZZKTVTWTPghI+00TtdCpoI0bQTkzRCemMtGWpqLvCnnYK1853lf+z1Jdm/wlF/9cPMhrzY7jdnwEkWR+zRO+Cz+sBH78BXJmyLg==]],
 	[[0eNqdmt2O2jAQRt/F19lVPPFfeJVqVbFgbSNBQJBti1Z59ybEqaoWtXN6hSKdDJ/HY/sbw4d5Pbzn86XrB7P5MNd+e34aTk9vl24/P383m6apzG3+GCvT7U791Ww+TWD31m8PMzLcztlsTDfko6lMvz3OT99Op33un3Zf8nUw84v9Pk+x7PhSmdwP3dDlJc794fa5fz++5ssEPI5QmfPpOr106osoG579XVb97Mex+iOOKOPUJcwc71GcRhmnkX8EcnRgc8RxTtfQHUqufkeXLxx/Rp4mZ3fJQzbz9z+EhcANgZ0OFg57HbxUaSCwVYZ2JPQCW4doJMQyJRHRSUd7kpIFjgRGMphoQUJEGTsQ2QHNTECDDEh2JLIjKr+IBrnQ4hGNlAhTosxJIglMaLUnlO6FFkF0g2jlntaSlLQoJQstNaK1J2RNdBdaK7zgWuV2OVRbRKu1FFwbXZCWhbY1wz3DA8O12ostsAwXhjcMdwz3DA8MjwxPDNdOk0ML1bG0M/9mmYGzzMFZZuEs83ArztKuPWFWnOVdWN6F5V1Y3rWOwXrSqFjknS0yzxa550K3iFbv7J5tpp4tU8+WqWfL1LNl6tkyZV3LirNpEjZNwqZJvQn4/1lIwjIj2swEcvlQaI9otRcIrNoDq/bAqj2wamfdq2Xt64qzOVWXQEQlENkWFlkNRFYDkdVAZDXAenvLmvsVTwxnk6qugYRqIKEzMrEzMrECS6wE2HWDZfcNKx4ZnhjO8t5o894iU4UuNAqtTiO70ii4dqBSE69Z6Ihoy4JrjcaKC8LVebHkcC90QLRluLZPWnHHcOU6EvSTi7DbmIKrpQuT3iDp7P6j4GrpDZPukHR2oSHsDkFYH77i2pGiTllYTyisJxTWtRVcmBh1HlG3IawfEObYC67eeiOSHtFeykyvMBcrzMVKQtITOkyZtRNm7QT5HfmL33mplj96bH7520hlvubL9f6+JOtiK9E1wbVTGz/+ALfE6PI=]],
 	[[0eNqdmctu4kAQRf+l10aiyv3kV0ZZMGBlLBEbgecRRfz7GOgezSZSnawipEP51u1HbuEP9/30czhfxmlxuw93nfbnzTJvXi/j8f75j9v1fefe739unRsP83R1u28rOL5O+9MdWd7Pg9u5cRneXOem/dv90+95Pg7T5vBjuC7u/sXpOKy15PbSuWU8Dc8i5/k6LuM8tSc9HiT+9q/M+rjDZViGtcRndEB0tNH+QXsCBwIjGUy0IiHKaidEZxsdiNmBmB2Qf5VOhNYe0ahJRV1a3Y7EwEh2a0QHMqK1icjtiNxODzoR2Npk+oIQ67LnB50JXAgsSIdVdSFCChJS0B4paGlkS3RX2iq84ioMVyMuTzFbhkeEK6tublWfYiCuDI8MTwwvCDcb2bNWWbYSFq6EpauGJ4Znhlt99+x4eLYjK94z3DM8MDwyPDE8I1yZM+b7+hmKekQXRJuPXmBbILAtENgWYJFYWCZueGY4812Z78p8V2akMiOVGanMSLUaGcnEJWhiEDQyVDohOiOaeWI+pZGdUjYbCRuOGs5sFOajMCPNOSayQBjZHRDZKU1sVdkw2HAoJjE8M9y6qpkdj8yMZBNnwyPDE8OtRhYWCAsLD4W1WtCq6hZl34YLwwPDrdrZWNvwwHAmRpkY66WnylpV1qp+RYz1Bm648eLQnvzTrrTZGDbVKptqK26dUBpuFeNJ9ql0QbS5UTYXKnsvoYFEwkpnRAsrbk0PiqKvouirLBEqS4QVt04nmshEUOmIaGHFhVWHjVrHMM1krlIWepSFHi3kBxBlqaThsLpneGC40Zi+xgxEK6KNtvSClMjnSl665+v33X8v8zv3a7hcH9/XLD4VTb6Pvqyb+fYX8FohZA==]],
-	[[0eNqV2dtq4zAQgOF30bUD0ehk+1WWXqSJ6BpSO8TeQyl599qxtOzFLsx/VQJf5NF0LI2UT/N6/ZFv92FcTP9p5vF0OyzT4e0+XLbPv03vXGM+tj+PxgznaZxN/22Fw9t4um5k+bhl05thye+mMePpffv0a5oueTycv+d5MdsXx0tex7KPl8YswzXvg9ymeViGaaxPej7IxsefYdbHne95yesQ/9ESdNo/NcKR4ESwRZpNUVDYoowkPLUnGI3cEtwRbFEc2lxHEkhEgexaPNLKsNMeyRHpRLQ27hZF0qKVYdfikFbG3e2RWKQj0SJIK2dpj3sownhEXJRpsZYFY1kwhXeIi7IUrbDYhcUuLHbHgincMx4Yj4wnxpU7hfUsM4U7xj3jgfHIeGIcJrJDXP02ebZweLREWtQvFK3dkyq3jLPQ1QUZWEEGVpCBFSTrvCpvGWf/VWGJFO3okTTGRQekI9IJ6RZpdTFGVoyRFWNkxci678phZli5CEuksEQKm6qwqcI3wx0Z166miS2+iS2+iRVwYgWcWAGzY1jlLeMd4sIyo72TsOxUWLll3DMeGIdTTYy3jHeIC8uM9tLBdqgL61gNsCN25YnxlnE2VW2vLEeSR2En+MoT4tq+vXLl+isWzZRdD1SeENdu2ZUrXyURVO3CbhMqT4hr3+vKtcE4NlV23i9c2/uIRxXmWejshF24tg8TdL0u6H5d2FFM2GFJ0IFGWCcurD2VRA5uRQek1a8d69gK1zbWwhqNwtWjs/20cO3oju1hju1hhcNgtCcUx3alwv89+kuz/7za//VjbWN+5vv8HEBa61Mnybvou3UZeXwB67xzTA==]]
+	[[0eNqV2dtq4zAQgOF30bUD0ehk+1WWXqSJ6BpSO8TeQyl599qxtOzFLsx/VQJf5NF0LI2UT/N6/ZFv92FcTP9p5vF0OyzT4e0+XLbPv03vXGM+tj+PxgznaZxN/22Fw9t4um5k+bhl05thye+mMePpffv0a5oueTycv+d5MdsXx0tex7KPl8YswzXvg9ymeViGaaxPej7IxsefYdbHne95yesQ/9ESdNo/NcKR4ESwRZpNUVDYoowkPLUnGI3cEtwRbFEc2lxHEkhEgexaPNLKsNMeyRHpRLQ27hZF0qKVYdfikFbG3e2RWKQj0SJIK2dpj3sownhEXJRpsZYFY1kwhXeIi7IUrbDYhcUuLHbHgincMx4Yj4wnxpU7hfUsM4U7xj3jgfHIeGIcJrJDXP02ebZweLREWtQvFK3dkyq3jLPQ1QUZWEEGVpCBFSTrvCpvGWf/VWGJFO3okTTGRQekI9IJ6RZpdTFGVoyRFWNkxci678phZli5CEuksEQKm6qwqcI3wx0Z166miS2+iS2+iRVwYgWcWAGzY1jlLeMd4sIyo72TsOxUWLll3DMeGIdTTYy3jHeIC8uM9tLBdqgL61gNsCN25YnxlnE2VW2vLEeSR2En+MoT4tq+vXLl+isWzZRdD1SeENdu2ZUrXyURVO3CbhMqT4hr3+vKtcE4NlV23i9c2/uIRxXmWejshF24tg8TdL0u6H5d2FFM2GFJ0IFGWCcurD2VRA5uRQek1a8d69gK1zbWwhqNwtWjs/20cO3oju1hju1hhcNgtCcUx3alwv89+kuz/7za//VjbWN+5vv8HEBa61Mnybvou3UZeXwB67xzTA==]],
 }
 
 Public.kraken_slots = 4
 local kraken_positions = {
-	[1] = { first = { x = -40.5, y = -59.5 }, second = { x = -15.5, y = -49.5 }, third = { x = -32.5, y = -39.5 }, final = { x = -24.5, y = -30.5 }, },
-	[2] = { first = { x = 28.5, y = -59.5 }, second = { x = 10.5, y = -49.5 }, third = { x = 30.5, y = -39.5 }, final = { x = 13.5, y = -30.5 }, },
-	[3] = { first = { x = -40.5, y = 59.5 }, second = { x = -15.5, y = 49.5 }, third = { x = -32.5, y = 39.5 }, final = { x = -24.5, y = 29.5 }, },
-	[4] = { first = { x = 28.5, y = 59.5 }, second = { x = 10.5, y = 49.5 }, third = { x = 30.5, y = 39.5 }, final = { x = 13.5, y = 29.5 }, },
+	[1] = {
+		first = { x = -40.5, y = -59.5 },
+		second = { x = -15.5, y = -49.5 },
+		third = { x = -32.5, y = -39.5 },
+		final = { x = -24.5, y = -30.5 },
+	},
+	[2] = {
+		first = { x = 28.5, y = -59.5 },
+		second = { x = 10.5, y = -49.5 },
+		third = { x = 30.5, y = -39.5 },
+		final = { x = 13.5, y = -30.5 },
+	},
+	[3] = {
+		first = { x = -40.5, y = 59.5 },
+		second = { x = -15.5, y = 49.5 },
+		third = { x = -32.5, y = 39.5 },
+		final = { x = -24.5, y = 29.5 },
+	},
+	[4] = {
+		first = { x = 28.5, y = 59.5 },
+		second = { x = 10.5, y = 49.5 },
+		third = { x = 30.5, y = 39.5 },
+		final = { x = 13.5, y = 29.5 },
+	},
 	-- [1] = {first = {x = 96.5, y = 0.5}, second = {x = 81.5, y = 5.5}, third = {x = 66.5, y = -4.5}, final = {x = 51.5, y = 0.5},}
 }
 
-local kraken_tick_token =
-	Token.register(
-		function (data)
-			Public.kraken_tick(data.crew_id, data.kraken_id, data.step, data.substep)
-		end
-	)
+local kraken_tick_token = Token.register(function(data)
+	Public.kraken_tick(data.crew_id, data.kraken_id, data.step, data.substep)
+end)
 
-local swimming_biters_tick_token =
-	Token.register(
-		function (data)
-			Public.swimming_biters_tick(data.crew_id, data.kraken_id)
-		end
-	)
+local swimming_biters_tick_token = Token.register(function(data)
+	Public.swimming_biters_tick(data.crew_id, data.kraken_id)
+end)
 
 function Public.get_active_kraken_count(crew_id)
 	local global_memory = Memory.get_global_memory()
@@ -65,15 +79,23 @@ end
 function Public.swimming_biters_tick(crew_id, kraken_id)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
-	if not Common.is_id_valid(memory.id) then return end --check if crew disbanded
-	if memory.game_lost then return end
+	if not Common.is_id_valid(memory.id) then
+		return
+	end --check if crew disbanded
+	if memory.game_lost then
+		return
+	end
 
-	if not Boats.is_boat_at_sea() then return end
+	if not Boats.is_boat_at_sea() then
+		return
+	end
 
 	local surface = game.surfaces[memory.sea_name]
-	local spawners_biters = surface.find_entities_filtered { force = memory.enemy_force_name }
+	local spawners_biters = surface.find_entities_filtered({ force = memory.enemy_force_name })
 
-	if Public.get_active_kraken_count(memory.id) == 0 and #spawners_biters == 0 then return end
+	if Public.get_active_kraken_count(memory.id) == 0 and #spawners_biters == 0 then
+		return
+	end
 
 	for _, biter in pairs(spawners_biters) do
 		if biter and biter.valid then
@@ -83,7 +105,8 @@ function Public.swimming_biters_tick(crew_id, kraken_id)
 					local target_pos = { x = 0, y = 0 }
 
 					-- choose closest boarding entrance on the ship
-					target_pos.x = biter_pos.x > 0 and Math.random_float_in_range(18, 11) or Math.random_float_in_range(-18, -11)
+					target_pos.x = biter_pos.x > 0 and Math.random_float_in_range(18, 11)
+						or Math.random_float_in_range(-18, -11)
 					target_pos.y = biter_pos.y > 0 and 12 or -12
 
 					local towards_target_vec = Math.vector_dir(biter_pos, target_pos)
@@ -101,10 +124,16 @@ end
 function Public.kraken_tick(crew_id, kraken_id, step, substep)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
-	if not Common.is_id_valid(memory.id) then return end --check if crew disbanded
-	if memory.game_lost then return end
+	if not Common.is_id_valid(memory.id) then
+		return
+	end --check if crew disbanded
+	if memory.game_lost then
+		return
+	end
 	local kraken_data = memory.active_sea_enemies.krakens[kraken_id]
-	if not kraken_data then return end --check if kraken died
+	if not kraken_data then
+		return
+	end --check if kraken died
 	local surface = game.surfaces[memory.sea_name]
 	local kraken_spawner_entity = kraken_data.spawner_entity
 
@@ -114,9 +143,17 @@ function Public.kraken_tick(crew_id, kraken_id, step, substep)
 		end
 		if substep < 32 then
 			Effects.kraken_effect_1(surface, kraken_data.position, substep / 32 * 6.283)
-			Task.set_timeout_in_ticks(1, kraken_tick_token, { crew_id = crew_id, kraken_id = kraken_id, step = 1, substep = substep + 1 })
+			Task.set_timeout_in_ticks(
+				1,
+				kraken_tick_token,
+				{ crew_id = crew_id, kraken_id = kraken_id, step = 1, substep = substep + 1 }
+			)
 		else
-			Task.set_timeout_in_ticks(1, kraken_tick_token, { crew_id = crew_id, kraken_id = kraken_id, step = 2, substep = 1 })
+			Task.set_timeout_in_ticks(
+				1,
+				kraken_tick_token,
+				{ crew_id = crew_id, kraken_id = kraken_id, step = 2, substep = 1 }
+			)
 		end
 	elseif step == 2 then
 		local p1 = kraken_positions[kraken_id].first
@@ -137,15 +174,25 @@ function Public.kraken_tick(crew_id, kraken_id, step, substep)
 			elseif substep <= 30 then
 				Public.kraken_move(kraken_id, Utils.interpolate(p3, p4, (substep - 25) / 5), substep % 4 + 1)
 			end
-			Task.set_timeout_in_ticks(15, kraken_tick_token, { crew_id = crew_id, kraken_id = kraken_id, step = 2, substep = substep + 1 })
+			Task.set_timeout_in_ticks(
+				15,
+				kraken_tick_token,
+				{ crew_id = crew_id, kraken_id = kraken_id, step = 2, substep = substep + 1 }
+			)
 		else
-			Task.set_timeout_in_ticks(6, kraken_tick_token, { crew_id = crew_id, kraken_id = kraken_id, step = 3, substep = 1 })
+			Task.set_timeout_in_ticks(
+				6,
+				kraken_tick_token,
+				{ crew_id = crew_id, kraken_id = kraken_id, step = 3, substep = 1 }
+			)
 		end
 	elseif step == 3 then
 		Public.kraken_move(kraken_id, kraken_data.position, substep % 4 + 1)
 
 		-- regen:
-		local healthbar = memory.healthbars and kraken_spawner_entity and kraken_spawner_entity.valid
+		local healthbar = memory.healthbars
+			and kraken_spawner_entity
+			and kraken_spawner_entity.valid
 			and memory.healthbars[kraken_spawner_entity.unit_number]
 		if healthbar then
 			local new_health = Math.min(healthbar.health + Balance.kraken_regen_scale, kraken_data.max_health)
@@ -177,11 +224,16 @@ function Public.kraken_tick(crew_id, kraken_id, step, substep)
 				if kraken_spawner_entity and kraken_spawner_entity.valid then
 					for i = 1, summoned_biter_amount do
 						local name = Common.get_random_unit_type(memory.evolution_factor + Balance.kraken_static_evo)
-						local random_dir_vec = { x = Math.random_float_in_range(-1, 1), y = Math.random_float_in_range(-1, 1) }
+						local random_dir_vec =
+							{ x = Math.random_float_in_range(-1, 1), y = Math.random_float_in_range(-1, 1) }
 						random_dir_vec = Math.vector_norm(random_dir_vec)
 						random_dir_vec = Math.vector_scale(random_dir_vec, Balance.kraken_biter_spawn_radius)
 						local spawn_pos = Math.vector_sum(kraken_spawner_entity.position, random_dir_vec)
-						local biter = surface.create_entity { name = name, position = spawn_pos, force = memory.enemy_force_name }
+						local biter = surface.create_entity({
+							name = name,
+							position = spawn_pos,
+							force = memory.enemy_force_name,
+						})
 						Common.try_make_biter_elite(biter)
 					end
 				end
@@ -190,12 +242,13 @@ function Public.kraken_tick(crew_id, kraken_id, step, substep)
 		elseif substep % firing_period == 0 then
 			local p_can_fire_at = {}
 			for _, player in pairs(crewmembers) do
-				local p = player.position
-				if player.surface == surface then -- and Public.on_boat(memory.boat, p)
-					p_can_fire_at[#p_can_fire_at + 1] = p
+				if Common.validate_player_and_character(player) then
+					local p = player.character.position
+					if player.surface == surface then -- and Public.on_boat(memory.boat, p)
+						p_can_fire_at[#p_can_fire_at + 1] = p
+					end
 				end
 			end
-
 
 			local spit_target_pos
 
@@ -208,16 +261,17 @@ function Public.kraken_tick(crew_id, kraken_id, step, substep)
 				spit_target_pos = { x = Math.random_float_in_range(-28, 21), y = Math.random_float_in_range(-9, 9) }
 			end
 
-			local stream = surface.create_entity {
+			local stream = surface.create_entity({
 				name = 'acid-stream-spitter-big',
 				position = kraken_data.position,
 				force = memory.enemy_force_name,
 				source = kraken_data.position,
 				target = spit_target_pos,
 				max_range = 500,
-				speed = 0.1
-			}
-			memory.kraken_stream_registrations[#memory.kraken_stream_registrations + 1] = { number = script.register_on_object_destroyed(stream), position = spit_target_pos }
+				speed = 0.1,
+			})
+			memory.kraken_stream_registrations[#memory.kraken_stream_registrations + 1] =
+				{ number = script.register_on_object_destroyed(stream), position = spit_target_pos }
 			Effects.kraken_effect_4(surface, kraken_data.position)
 		end
 
@@ -225,11 +279,23 @@ function Public.kraken_tick(crew_id, kraken_id, step, substep)
 			-- if substep % 70 == 69 then
 			-- 	Public.kraken_spawn_biters(kraken_id)
 			-- end
-			Task.set_timeout_in_ticks(5, kraken_tick_token, { crew_id = crew_id, kraken_id = kraken_id, step = 3, substep = substep + 1 })
+			Task.set_timeout_in_ticks(
+				5,
+				kraken_tick_token,
+				{ crew_id = crew_id, kraken_id = kraken_id, step = 3, substep = substep + 1 }
+			)
 		elseif substep % 50 > 30 then
-			Task.set_timeout_in_ticks(10, kraken_tick_token, { crew_id = crew_id, kraken_id = kraken_id, step = 3, substep = substep + 1 })
+			Task.set_timeout_in_ticks(
+				10,
+				kraken_tick_token,
+				{ crew_id = crew_id, kraken_id = kraken_id, step = 3, substep = substep + 1 }
+			)
 		else
-			Task.set_timeout_in_ticks(30, kraken_tick_token, { crew_id = crew_id, kraken_id = kraken_id, step = 3, substep = substep + 1 })
+			Task.set_timeout_in_ticks(
+				30,
+				kraken_tick_token,
+				{ crew_id = crew_id, kraken_id = kraken_id, step = 3, substep = substep + 1 }
+			)
 		end
 	end
 end
@@ -246,34 +312,46 @@ local function on_object_destroyed(event)
 			for j, r in pairs(memory.kraken_stream_registrations) do
 				if r.number == registration_number then
 					p = r.position
-					memory.kraken_stream_registrations = Utils.ordered_table_with_index_removed(memory.kraken_stream_registrations, j)
+					memory.kraken_stream_registrations =
+						Utils.ordered_table_with_index_removed(memory.kraken_stream_registrations, j)
 					break
 				end
 			end
 		end
-		if p then break end
+		if p then
+			break
+		end
 	end
 	if p then
 		local surface = game.surfaces[memory.sea_name]
-		if not (surface and surface.valid) then return end
+		if not (surface and surface.valid) then
+			return
+		end
 
-		local spits_here = surface.find_entities_filtered { position = p, radius = 0.5, name = 'acid-splash-fire-spitter-big' }
+		local spits_here =
+			surface.find_entities_filtered({ position = p, radius = 0.5, name = 'acid-splash-fire-spitter-big' })
 		if spits_here and #spits_here > 0 then
 			for _, s in pairs(spits_here) do
-				if s.valid then s.destroy() end
+				if s.valid then
+					s.destroy()
+				end
 			end
 		end
 
 		local p2 = surface.find_non_colliding_position('medium-biter', p, 10, 0.2)
-		if not p2 then return end
+		if not p2 then
+			return
+		end
 		local name = Common.get_random_unit_type(memory.evolution_factor + Balance.kraken_static_evo)
-		local biter = surface.create_entity { name = name, position = p2, force = memory.enemy_force_name }
+		local biter = surface.create_entity({ name = name, position = p2, force = memory.enemy_force_name })
 		Common.try_make_biter_elite(biter)
 		Effects.kraken_effect_2(surface, p2)
 
 		local evo_increase = Balance.kraken_evo_increase_per_shot()
 		if evo_increase > 0 then
-			if not memory.dynamic_kraken_evo then memory.dynamic_kraken_evo = 0 end
+			if not memory.dynamic_kraken_evo then
+				memory.dynamic_kraken_evo = 0
+			end
 			memory.dynamic_kraken_evo = memory.dynamic_kraken_evo + evo_increase
 			Common.increment_evo(evo_increase)
 		end
@@ -286,7 +364,9 @@ function Public.overall_kraken_tick()
 	if Public.get_active_kraken_count(memory.id) > 0 then
 		local evo_increase = Balance.kraken_evo_increase_per_second()
 		if evo_increase > 0 then
-			if not memory.dynamic_kraken_evo then memory.dynamic_kraken_evo = 0 end
+			if not memory.dynamic_kraken_evo then
+				memory.dynamic_kraken_evo = 0
+			end
 			memory.dynamic_kraken_evo = memory.dynamic_kraken_evo + evo_increase
 			Common.increment_evo(evo_increase)
 		end
@@ -296,11 +376,19 @@ end
 function Public.try_spawn_kraken()
 	local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[memory.sea_name]
-	if not (surface and surface.valid) then return end -- check sea still exists
+	if not (surface and surface.valid) then
+		return
+	end -- check sea still exists
 
-	if not memory.active_sea_enemies then memory.active_sea_enemies = {} end
-	if not memory.active_sea_enemies.krakens then memory.active_sea_enemies.krakens = {} end
-	if not memory.active_sea_enemies.kraken_count then memory.active_sea_enemies.kraken_count = 0 end
+	if not memory.active_sea_enemies then
+		memory.active_sea_enemies = {}
+	end
+	if not memory.active_sea_enemies.krakens then
+		memory.active_sea_enemies.krakens = {}
+	end
+	if not memory.active_sea_enemies.kraken_count then
+		memory.active_sea_enemies.kraken_count = 0
+	end
 
 	local possible_slots = {}
 	for i = 1, Public.kraken_slots do
@@ -322,7 +410,11 @@ function Public.try_spawn_kraken()
 		}
 		memory.active_sea_enemies.kraken_count = memory.active_sea_enemies.kraken_count + 1
 
-		Task.set_timeout_in_ticks(10, kraken_tick_token, { crew_id = memory.id, kraken_id = kraken_id, step = 1, substep = 1 })
+		Task.set_timeout_in_ticks(
+			10,
+			kraken_tick_token,
+			{ crew_id = memory.id, kraken_id = kraken_id, step = 1, substep = 1 }
+		)
 
 		-- creating multiple swim tick tokens, causes biters to swim faster
 		if Public.get_active_kraken_count(memory.id) == 1 then
@@ -334,7 +426,9 @@ end
 function Public.kraken_move(kraken_id, new_p, new_frame)
 	local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[memory.sea_name]
-	if not surface and surface.valid then return end -- check sea still exists
+	if not surface and surface.valid then
+		return
+	end -- check sea still exists
 	local kraken_data = memory.active_sea_enemies.krakens[kraken_id]
 
 	local kraken_tile = CoreData.kraken_tile
@@ -345,10 +439,16 @@ function Public.kraken_move(kraken_id, new_p, new_frame)
 	local new_p_2 = { x = Math.ceil(new_p.x), y = Math.ceil(new_p.y) }
 	local old_p_2 = { x = Math.ceil(old_p.x), y = Math.ceil(old_p.y) }
 
-	local new_tile_positions = Common.tile_positions_from_blueprint_arrayform(kraken_bps[new_frame], Utils.psum { new_p_2, { x = -16, y = -16 } })
+	local new_tile_positions = Common.tile_positions_from_blueprint_arrayform(
+		kraken_bps[new_frame],
+		Utils.psum({ new_p_2, { x = -16, y = -16 } })
+	)
 	local old_tile_positions = {}
 	if old_frame then
-		old_tile_positions = Common.tile_positions_from_blueprint_arrayform(kraken_bps[old_frame], Utils.psum { old_p_2, { x = -16, y = -16 } })
+		old_tile_positions = Common.tile_positions_from_blueprint_arrayform(
+			kraken_bps[old_frame],
+			Utils.psum({ old_p_2, { x = -16, y = -16 } })
+		)
 	end
 
 	local new_tile_positions2 = Utils.exclude_position_arrays(new_tile_positions, old_tile_positions)
@@ -364,8 +464,16 @@ function Public.kraken_move(kraken_id, new_p, new_frame)
 	if kraken_data.spawner_entity and kraken_data.spawner_entity.valid then
 		kraken_data.spawner_entity.teleport(new_p_2.x - old_p_2.x, new_p_2.y - old_p_2.y)
 	else
-		kraken_data.spawner_entity = surface.create_entity { name = 'biter-spawner', position = new_p_2, force = memory.enemy_force_name }
-		Common.new_healthbar(true, kraken_data.spawner_entity, kraken_data.max_health, kraken_id, kraken_data.max_health, 0.8)
+		kraken_data.spawner_entity =
+			surface.create_entity({ name = 'biter-spawner', position = new_p_2, force = memory.enemy_force_name })
+		Common.new_healthbar(
+			true,
+			kraken_data.spawner_entity,
+			kraken_data.max_health,
+			kraken_id,
+			kraken_data.max_health,
+			0.8
+		)
 	end
 
 	if old_frame then --cleanup old tiles
@@ -386,7 +494,9 @@ end
 function Public.kraken_die(kraken_id)
 	local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[memory.sea_name]
-	if not surface and surface.valid then return end -- check sea still exists
+	if not surface and surface.valid then
+		return
+	end -- check sea still exists
 	local kraken_data = memory.active_sea_enemies.krakens[kraken_id]
 
 	if kraken_data.spawner_entity and kraken_data.spawner_entity.valid then
@@ -397,7 +507,8 @@ function Public.kraken_die(kraken_id)
 	local tiles2 = {}
 	for x = -16, 16 do
 		for y = -16, 16 do
-			tiles2[#tiles2 + 1] = { name = 'deepwater', position = Utils.psum { kraken_data.position, { x = x, y = y } } }
+			tiles2[#tiles2 + 1] =
+				{ name = 'deepwater', position = Utils.psum({ kraken_data.position, { x = x, y = y } }) }
 		end
 	end
 	surface.set_tiles(tiles2, true, false)
@@ -413,13 +524,20 @@ function Public.kraken_die(kraken_id)
 	local reward_fuel = Balance.kraken_kill_reward_fuel()
 	memory.stored_fuel = memory.stored_fuel + reward_fuel
 
-	local message = { 'pirates.granted_3', { 'pirates.granted_kraken_kill' }, reward_items[1].count .. ' [item=coin]', reward_fuel .. ' [item=coal]', reward_items[2].count .. ' [item=utility-science-pack]' }
+	local message = {
+		'pirates.granted_3',
+		{ 'pirates.granted_kraken_kill' },
+		reward_items[1].count .. ' [item=coin]',
+		reward_fuel .. ' [item=coal]',
+		reward_items[2].count .. ' [item=utility-science-pack]',
+	}
 	Common.notify_force_light(memory.force, message)
 
-	memory.playtesting_stats.coins_gained_by_krakens = memory.playtesting_stats.coins_gained_by_krakens + reward_items[1].count
+	memory.playtesting_stats.coins_gained_by_krakens = memory.playtesting_stats.coins_gained_by_krakens
+		+ reward_items[1].count
 end
 
-local event = require 'utils.event'
+local event = require('utils.event')
 event.add(defines.events.on_object_destroyed, on_object_destroyed)
 
 return Public

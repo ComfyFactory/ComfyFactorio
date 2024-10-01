@@ -3,18 +3,17 @@
 -- local Session = require 'utils.datastore.session_data'
 -- local Antigrief = require 'utils.antigrief'
 -- local Balance = require 'maps.pirates.balance'
-local _inspect = require 'utils.inspect'.inspect
-local Memory = require 'maps.pirates.memory'
-local Math = require 'maps.pirates.math'
-local Common = require 'maps.pirates.common'
-local Utils = require 'maps.pirates.utils_local'
-local CoreData = require 'maps.pirates.coredata'
-local Server = require 'utils.server'
-local Classes = require 'maps.pirates.roles.classes'
-local Permissions = require 'maps.pirates.permissions'
+local _inspect = require('utils.inspect').inspect
+local Memory = require('maps.pirates.memory')
+local Math = require('maps.pirates.math')
+local Common = require('maps.pirates.common')
+local Utils = require('maps.pirates.utils_local')
+local CoreData = require('maps.pirates.coredata')
+local Server = require('utils.server')
+local Classes = require('maps.pirates.roles.classes')
+local Permissions = require('maps.pirates.permissions')
 
 local Public = {}
-
 
 --== Roles — General ==--
 
@@ -88,9 +87,7 @@ function Public.tag_text(player)
 	local tags = {}
 
 	if Common.is_id_valid(memory.id) and Common.is_captain(player) then
-		tags[#tags + 1] = 'Cap\'n'
-	elseif player.controller_type == defines.controllers.spectator then
-		tags[#tags + 1] = 'Spectating'
+		tags[#tags + 1] = "Cap'n"
 	elseif Common.is_officer(player.index) then
 		tags[#tags + 1] = 'Officer'
 	end
@@ -101,11 +98,15 @@ function Public.tag_text(player)
 	end
 
 	for i, t in ipairs(tags) do
-		if i > 1 then str = str .. ', ' end
+		if i > 1 then
+			str = str .. ', '
+		end
 		str = str .. t
 	end
 
-	if (str ~= '') then str = '[' .. str .. ']' end
+	if str ~= '' then
+		str = '[' .. str .. ']'
+	end
 
 	return str
 end
@@ -131,7 +132,12 @@ function Public.get_class_print_string(class, add_is_class_obstainable)
 			local explanation = Classes.explanation(class2, add_is_class_obstainable)
 
 			if Classes.class_purchase_requirement[class2] then
-				return { 'pirates.class_explanation_upgraded_class', Classes.display_form(class2), Classes.display_form(Classes.class_purchase_requirement[class2]), explanation }
+				return {
+					'pirates.class_explanation_upgraded_class',
+					Classes.display_form(class2),
+					Classes.display_form(Classes.class_purchase_requirement[class2]),
+					explanation,
+				}
 			else
 				return { 'pirates.class_explanation', Classes.display_form(class2), explanation }
 			end
@@ -201,7 +207,10 @@ function Public.player_confirm_captainhood(player)
 				local message = { 'pirates.roles_confirm_captain', player.name }
 
 				Common.notify_force(force, message)
-				Server.to_discord_embed_raw({ '', CoreData.comfy_emojis.derp .. '[' .. memory.name .. '] ', message }, true)
+				Server.to_discord_embed_raw(
+					{ '', CoreData.comfy_emojis.derp .. '[' .. memory.name .. '] ', message },
+					true
+				)
 			end
 
 			Public.make_captain(player)
@@ -212,7 +221,9 @@ function Public.player_confirm_captainhood(player)
 end
 
 function Public.player_left_so_redestribute_roles(player)
-	if not (player and player.index) then return end
+	if not (player and player.index) then
+		return
+	end
 
 	local memory = Memory.get_crew_memory()
 
@@ -278,7 +289,6 @@ function Public.resign_as_officer(player)
 	if Common.is_officer(player.index) then
 		memory.officers_table[player.index] = nil
 
-
 		local message = { 'pirates.roles_resign_officer', player.name }
 
 		Common.notify_force(force, message)
@@ -291,11 +301,12 @@ end
 function Public.captain_exists()
 	local memory = Memory.get_crew_memory()
 
-	if Common.is_id_valid(memory.id) and
-		memory.crewstatus == 'adventuring' and --@fixme: enum hacked
-		memory.playerindex_captain and
-		game.players[memory.playerindex_captain] and
-		Common.validate_player(game.players[memory.playerindex_captain])
+	if
+		Common.is_id_valid(memory.id)
+		and memory.crewstatus == 'adventuring' --@fixme: enum hacked
+		and memory.playerindex_captain
+		and game.players[memory.playerindex_captain]
+		and Common.validate_player(game.players[memory.playerindex_captain])
 	then
 		local crew_members = Common.crew_get_crew_members()
 		for _, player in pairs(crew_members) do
@@ -315,7 +326,7 @@ function Public.confirm_captain_exists(player_to_make_captain_otherwise)
 			Public.make_captain(player_to_make_captain_otherwise)
 			-- game.print('Auto-reassigning captain.')
 		else
-			log('Error: Couldn\'t make a captain.')
+			log("Error: Couldn't make a captain.")
 		end
 	end
 end
@@ -325,9 +336,9 @@ function Public.pass_captainhood(player, player_to_pass_to)
 	local memory = Memory.get_crew_memory()
 
 	local force = memory.force
-	if not (force and force.valid) then return end
-
-
+	if not (force and force.valid) then
+		return
+	end
 
 	local message = { 'pirates.roles_pass_captainhood', player.name, player_to_pass_to.name }
 
@@ -353,7 +364,10 @@ function Public.afk_player_tick(player)
 				local message = { 'pirates.roles_lose_captainhood_by_afk', player.name }
 
 				Common.notify_force(force, message)
-				Server.to_discord_embed_raw({ '', CoreData.comfy_emojis.loops .. '[' .. memory.name .. '] ', message }, true)
+				Server.to_discord_embed_raw(
+					{ '', CoreData.comfy_emojis.loops .. '[' .. memory.name .. '] ', message },
+					true
+				)
 			end
 
 			if memory.run_is_protected then
@@ -373,7 +387,9 @@ function Public.assign_captain_based_on_priorities(excluded_player_index)
 
 	local crew_members = memory.crewplayerindices
 
-	if not (crew_members and #crew_members > 0) then return end
+	if not (crew_members and #crew_members > 0) then
+		return
+	end
 
 	local only_found_afk_players = true
 	local best_priority_so_far = -1
@@ -417,7 +433,9 @@ function Public.assign_captain_based_on_priorities(excluded_player_index)
 	end
 
 	local force = memory.force
-	if not (force and force.valid) then return end
+	if not (force and force.valid) then
+		return
+	end
 
 	-- if all crew members afk (or if by some chance failed to pass captain), just give captain to first crew member
 	if not captain_index then
@@ -454,7 +472,9 @@ function Public.assign_captain_based_on_priorities(excluded_player_index)
 end
 
 function Public.captain_tax(captain_index)
-	if not captain_index then return end
+	if not captain_index then
+		return
+	end
 
 	local memory = Memory.get_crew_memory()
 	local any_taken = false
@@ -468,7 +488,9 @@ function Public.captain_tax(captain_index)
 
 	local crew_members = memory.crewplayerindices
 	local captain = game.players[captain_index]
-	if not (captain and crew_members) then return end
+	if not (captain and crew_members) then
+		return
+	end
 
 	local captain_inv = captain.get_inventory(defines.inventory.character_main)
 	if captain_inv and captain_inv.valid then
@@ -480,10 +502,12 @@ function Public.captain_tax(captain_index)
 					if inv and inv.valid then
 						for _, i in pairs(items_to_req) do
 							local amount = inv.get_item_count(i)
-							if i == 'coin' then amount = Math.floor(amount / 100 * Common.coin_tax_percentage) end
+							if i == 'coin' then
+								amount = Math.floor(amount / 100 * Common.coin_tax_percentage)
+							end
 							if amount and amount > 0 then
-								inv.remove { name = i, count = amount }
-								captain_inv.insert { name = i, count = amount }
+								inv.remove({ name = i, count = amount })
+								captain_inv.insert({ name = i, count = amount })
 								item_count_table[i] = item_count_table[i] + amount
 								any_taken = true
 							end
@@ -497,7 +521,7 @@ function Public.captain_tax(captain_index)
 								local cursor_stack_count = cursor_stack.count
 								if cursor_stack_count > 0 then
 									cursor_stack.count = 0
-									captain_inv.insert { name = i, count = cursor_stack_count }
+									captain_inv.insert({ name = i, count = cursor_stack_count })
 									item_count_table[i] = item_count_table[i] + cursor_stack_count
 									any_taken = true
 								end
@@ -525,7 +549,9 @@ function Public.captain_tax(captain_index)
 						end
 					end
 					local display_name = item
-					if display_name == 'coin' then display_name = 'doubloons' end
+					if display_name == 'coin' then
+						display_name = 'doubloons'
+					end
 					if count >= 1000 then
 						str[#str + 1] = Utils.bignumber_abbrevform2(count)
 						str[#str + 1] = ' '

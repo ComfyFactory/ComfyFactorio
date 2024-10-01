@@ -1,19 +1,19 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-local Session = require 'utils.datastore.session_data'
-local Antigrief = require 'utils.antigrief'
+local Session = require('utils.datastore.session_data')
+local Antigrief = require('utils.antigrief')
 -- local Balance = require 'maps.pirates.balance'
-local _inspect = require 'utils.inspect'.inspect
-local Memory = require 'maps.pirates.memory'
-local Common = require 'maps.pirates.common'
-local CoreData = require 'maps.pirates.coredata'
+local _inspect = require('utils.inspect').inspect
+local Memory = require('maps.pirates.memory')
+local Common = require('maps.pirates.common')
+local CoreData = require('maps.pirates.coredata')
 
 local Public = {}
 
 local privilege_levels = {
 	NORMAL = 1,
 	OFFICER = 2,
-	CAPTAIN = 3
+	CAPTAIN = 3,
 }
 Public.privilege_levels = privilege_levels
 
@@ -134,7 +134,7 @@ function Public.try_create_permissions_groups()
 		'cabin_bps_disabled',
 		'cabin_privileged_bps_disabled',
 		'plebs_bps_disabled',
-		'not_trusted_bps_disabled'
+		'not_trusted_bps_disabled',
 	}
 
 	for _, group_name in ipairs(blueprint_disabled_groups) do

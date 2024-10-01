@@ -1,11 +1,10 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-
 -- local Memory = require 'maps.pirates.memory'
 -- local Math = require 'maps.pirates.math'
 -- local Balance = require 'maps.pirates.balance'
 -- local Common = require 'maps.pirates.common'
-local CoreData = require 'maps.pirates.coredata'
+local CoreData = require('maps.pirates.coredata')
 -- local Utils = require 'maps.pirates.utils_local'
 -- local _inspect = require 'utils.inspect'.inspect
 
@@ -21,7 +20,6 @@ local enum = {
 	DOCK = 'Dock',
 }
 Public.enum = enum
-
 
 function Public.encode_surface_name(crewid, destination_index, type, subtype) -- crewid=0 is shared surfaces
 	local str
@@ -41,7 +39,7 @@ function Public.decode_surface_name(name)
 
 	local substring = string.sub(name, 9, -1)
 	local pull = {}
-	for a, b in string.gmatch(substring, "(%w+)-(%w+)") do
+	for a, b in string.gmatch(substring, '(%w+)-(%w+)') do
 		pull[1] = a
 		pull[2] = b
 	end

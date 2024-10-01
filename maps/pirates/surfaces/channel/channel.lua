@@ -1,6 +1,5 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-
 -- local Memory = require 'maps.pirates.memory'
 -- local Math = require 'maps.pirates.math'
 -- local Balance = require 'maps.pirates.balance'
@@ -8,14 +7,13 @@
 -- local Boats = require 'maps.pirates.structures.boats.boats'
 -- local Common = require 'maps.pirates.common'
 -- local Utils = require 'maps.pirates.utils_local'
-local _inspect = require 'utils.inspect'.inspect
-
+local _inspect = require('utils.inspect').inspect
 
 local Public = {}
-Public.Data = require 'maps.pirates.surfaces.channel.data'
+Public.Data = require('maps.pirates.surfaces.channel.data')
 
 Public.info = {
-	display_name = 'Channel'
+	display_name = 'Channel',
 }
 
 function Public.terrain(args)

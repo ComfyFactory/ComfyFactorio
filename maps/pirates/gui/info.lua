@@ -1,26 +1,21 @@
 ---@diagnostic disable: inject-field
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-
 -- local Memory = require 'maps.pirates.memory'
 -- local Common = require 'maps.pirates.common'
-local CoreData = require 'maps.pirates.coredata'
+local CoreData = require('maps.pirates.coredata')
 -- local Utils = require 'maps.pirates.utils_local'
 -- local Math = require 'maps.pirates.math'
 -- local Surfaces = require 'maps.pirates.surfaces.surfaces'
 -- local Lobby = require 'maps.pirates.surfaces.lobby'
-local _inspect = require 'utils.inspect'.inspect
+local _inspect = require('utils.inspect').inspect
 -- local Boats = require 'maps.pirates.structures.boats.boats'
-local GuiCommon = require 'maps.pirates.gui.common'
+local GuiCommon = require('maps.pirates.gui.common')
 local Public = {}
-
 
 local window_name = 'info'
 
-
 local width = 400
-
-
 
 function Public.toggle_window(player)
 	local flow, flow2, flow3, flow4
@@ -30,11 +25,11 @@ function Public.toggle_window(player)
 		return
 	end
 
-	flow = player.gui.screen.add {
+	flow = player.gui.screen.add({
 		type = 'tabbed-pane',
 		name = window_name .. '_piratewindow',
-		direction = 'vertical'
-	}
+		direction = 'vertical',
+	})
 	flow.location = { x = 90, y = 90 }
 	flow.selected_tab_index = 1
 
@@ -45,7 +40,7 @@ function Public.toggle_window(player)
 	flow2 = Public.flow_add_info_tab(flow, { 'pirates.gui_info_info' })
 
 	flow3 = flow2.parent.last_info_flow_1.last_info_flow_2
-	flow4 = flow3.add { type = "label", caption = { "pirates.softmod_info_body_1" } }
+	flow4 = flow3.add({ type = 'label', caption = { 'pirates.softmod_info_body_1' } })
 	flow4.style.font_color = GuiCommon.friendly_font_color
 	flow4.style.single_line = false
 	flow4.style.font = 'debug'
@@ -75,13 +70,13 @@ function Public.flow_add_info_sections(flow, sections_list)
 	for j = 1, #sections_list do
 		local i = sections_list[j]
 
-		flow2 = flow.add { type = "label", caption = { "pirates.softmod_info_" .. i .. "_1" } }
+		flow2 = flow.add({ type = 'label', caption = { 'pirates.softmod_info_' .. i .. '_1' } })
 		flow2.style.font_color = GuiCommon.friendly_font_color
 		flow2.style.single_line = false
 		flow2.style.font = 'default-semibold'
 		flow2.style.bottom_margin = -4
 
-		flow2 = flow.add { type = "label", caption = { "pirates.softmod_info_" .. i .. "_2" } }
+		flow2 = flow.add({ type = 'label', caption = { 'pirates.softmod_info_' .. i .. '_2' } })
 		flow2.style.font_color = GuiCommon.friendly_font_color
 		flow2.style.single_line = false
 		flow2.style.font = 'default'
@@ -93,7 +88,7 @@ end
 function Public.flow_add_info_tab(flow, tab_name)
 	local tab, contents, ret, flow3, flow4, flow5
 
-	tab = flow.add { type = 'tab', caption = tab_name }
+	tab = flow.add({ type = 'tab', caption = tab_name })
 	tab.style = 'frame_tab'
 
 	contents = flow.add({
@@ -124,12 +119,20 @@ function Public.flow_add_info_tab(flow, tab_name)
 	flow4.style.horizontally_stretchable = true
 	flow4.style.horizontal_align = 'center'
 
-	flow5 = flow4.add { type = "label", caption = { "", { "pirates.softmod_info_header_before_version_number" }, CoreData.version_string, { "pirates.softmod_info_header_after_version_number" } } }
+	flow5 = flow4.add({
+		type = 'label',
+		caption = {
+			'',
+			{ 'pirates.softmod_info_header_before_version_number' },
+			CoreData.version_string,
+			{ 'pirates.softmod_info_header_after_version_number' },
+		},
+	})
 	flow5.style.font_color = GuiCommon.friendly_font_color
 	flow5.style.font = 'heading-1'
 	flow5.style.bottom_margin = 2
 
-	flow5 = flow4.add { type = "label", caption = { "pirates.softmod_info_body_promote" } }
+	flow5 = flow4.add({ type = 'label', caption = { 'pirates.softmod_info_body_promote' } })
 	flow5.style.font_color = GuiCommon.friendly_font_color
 	flow5.style.single_line = false
 	flow5.style.font = 'default-small'
@@ -179,8 +182,12 @@ function Public.flow_add_info_tab(flow, tab_name)
 end
 
 function Public.click(event)
-	if not event.element then return end
-	if not event.element.valid then return end
+	if not event.element then
+		return
+	end
+	if not event.element.valid then
+		return
+	end
 
 	local player = game.players[event.element.player_index]
 	-- local name = 'info'
@@ -188,18 +195,30 @@ function Public.click(event)
 	local element = event.element
 	local eventtype = element.type
 
-	if not player.gui.screen[window_name .. '_piratewindow'] then return end
+	if not player.gui.screen[window_name .. '_piratewindow'] then
+		return
+	end
 
 	-- local memory = Memory.get_crew_memory()
 
-	if eventtype ~= 'tab' and (
-			element.name == (window_name .. '_piratewindow') or
-			(element.parent and element.parent.name == (window_name .. '_piratewindow')) or
-			(element.parent and element.parent.parent and element.parent.parent.name == (window_name .. '_piratewindow')) or
-			(element.parent and element.parent.parent and element.parent.parent.parent and element.parent.parent.parent.name == (window_name .. '_piratewindow')) or
-			(element.parent and element.parent.parent and element.parent.parent.parent and element.parent.parent.parent.parent and element.parent.parent.parent.parent.name == (window_name .. '_piratewindow')) or
-			(element.parent and element.parent.parent and element.parent.parent.parent and element.parent.parent.parent.parent and element.parent.parent.parent.parent.parent and element.parent.parent.parent.parent.parent.name == (window_name .. '_piratewindow'))
-		) then
+	if
+		eventtype ~= 'tab'
+		and (
+			element.name == (window_name .. '_piratewindow')
+			or (element.parent and element.parent.name == (window_name .. '_piratewindow'))
+			or (element.parent and element.parent.parent and element.parent.parent.name == (window_name .. '_piratewindow'))
+			or (element.parent and element.parent.parent and element.parent.parent.parent and element.parent.parent.parent.name == (window_name .. '_piratewindow'))
+			or (element.parent and element.parent.parent and element.parent.parent.parent and element.parent.parent.parent.parent and element.parent.parent.parent.parent.name == (window_name .. '_piratewindow'))
+			or (
+				element.parent
+				and element.parent.parent
+				and element.parent.parent.parent
+				and element.parent.parent.parent.parent
+				and element.parent.parent.parent.parent.parent
+				and element.parent.parent.parent.parent.parent.name == (window_name .. '_piratewindow')
+			)
+		)
+	then
 		Public.toggle_window(player)
 	end
 end
@@ -209,9 +228,13 @@ end
 -- end
 
 function Public.full_update(player)
-	if Public.regular_update then Public.regular_update(player) end
+	if Public.regular_update then
+		Public.regular_update(player)
+	end
 
-	if not player.gui.screen[window_name .. '_piratewindow'] then return end
+	if not player.gui.screen[window_name .. '_piratewindow'] then
+		return
+	end
 	local flow = player.gui.screen[window_name .. '_piratewindow']
 
 	local flow2 = flow

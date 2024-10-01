@@ -20,48 +20,47 @@ The scenario is quite complex, but there are ways to get started, even if you do
 	We record tiles and entities separately. For tiles, we use the factorio dev approved 'concrete trick', painting each tile type separately as concrete. The concrete BP will typically need an offset, since it doesn't remember the center of the entities BP — we configure this offset in the Lua rather than the BP itself, since it's easier to edit that way.
 ]]
 
-
 -- require 'modules.biters_yield_coins'
-require 'modules.biter_noms_you'
-require 'modules.no_deconstruction_of_neutral_entities'
-require 'utils.server'
-local _inspect = require 'utils.inspect'.inspect
+require('modules.biter_noms_you')
+require('modules.no_deconstruction_of_neutral_entities')
+require('utils.server')
+local _inspect = require('utils.inspect').inspect
 -- local Modifers = require 'player_modifiers'
-local BottomFrame = require 'utils.gui.bottom_frame'
-local Autostash = require 'modules.autostash'
-local Misc = require 'utils.commands.misc'
-local AntiGrief = require 'utils.antigrief'
-require 'modules.inserter_drops_pickup'
-local PiratesApiOnTick = require 'maps.pirates.api_on_tick'
-local ClassPiratesApiOnTick = require 'maps.pirates.roles.tick_functions'
-require 'maps.pirates.commands'
-require 'maps.pirates.math'
-local Memory = require 'maps.pirates.memory'
-require 'maps.pirates.gui.gui'
-local Common = require 'maps.pirates.common'
-local CoreData = require 'maps.pirates.coredata'
-require 'maps.pirates.utils_local'
-local Balance = require 'maps.pirates.balance'
-local Crew = require 'maps.pirates.crew'
-local Roles = require 'maps.pirates.roles.roles'
-local Structures = require 'maps.pirates.structures.structures'
-local Surfaces = require 'maps.pirates.surfaces.surfaces'
-local Kraken = require 'maps.pirates.surfaces.sea.kraken'
-local PiratesApiEvents = require 'maps.pirates.api_events'
-require 'maps.pirates.structures.boats.boats'
+local BottomFrame = require('utils.gui.bottom_frame')
+local Autostash = require('modules.autostash')
+local Misc = require('utils.commands.misc')
+local AntiGrief = require('utils.antigrief')
+require('modules.inserter_drops_pickup')
+local PiratesApiOnTick = require('maps.pirates.api_on_tick')
+local ClassPiratesApiOnTick = require('maps.pirates.roles.tick_functions')
+require('maps.pirates.commands')
+require('maps.pirates.math')
+local Memory = require('maps.pirates.memory')
+require('maps.pirates.gui.gui')
+local Common = require('maps.pirates.common')
+local CoreData = require('maps.pirates.coredata')
+require('maps.pirates.utils_local')
+local Balance = require('maps.pirates.balance')
+local Crew = require('maps.pirates.crew')
+local Roles = require('maps.pirates.roles.roles')
+local Structures = require('maps.pirates.structures.structures')
+local Surfaces = require('maps.pirates.surfaces.surfaces')
+local Kraken = require('maps.pirates.surfaces.sea.kraken')
+local PiratesApiEvents = require('maps.pirates.api_events')
+require('maps.pirates.structures.boats.boats')
 -- local Progression = require 'maps.pirates.progression'
-local QuestStructures = require 'maps.pirates.structures.quest_structures.quest_structures'
-local Ai = require 'maps.pirates.ai'
-require 'maps.pirates.ores'
-require 'maps.pirates.quest'
-require 'maps.pirates.parrot'
-require 'maps.pirates.shop.shop'
-require 'maps.pirates.shop.boat_upgrades'
-local Token = require 'utils.token'
-local Task = require 'utils.task'
-local Server = require 'utils.server'
+local QuestStructures = require('maps.pirates.structures.quest_structures.quest_structures')
+local Ai = require('maps.pirates.ai')
+require('maps.pirates.ores')
+require('maps.pirates.quest')
+require('maps.pirates.parrot')
+require('maps.pirates.shop.shop')
+require('maps.pirates.shop.boat_upgrades')
+local Token = require('utils.token')
+local Task = require('utils.task')
+local Server = require('utils.server')
 
-local Math = require 'maps.pirates.math'
+local Math = require('maps.pirates.math')
 
 -- require 'utils.profiler'
 
@@ -70,8 +69,8 @@ local Public = {}
 -- parrot sprites from https://elthen.itch.io/2d-pixel-art-parrot-sprites
 
 local jetty_delayed = Token.register(
--- function(data)
-	function ()
+	-- function(data)
+	function()
 		Surfaces.Lobby.place_lobby_jetty_and_boats()
 	end
 )
@@ -83,10 +82,6 @@ local function on_init()
 	AntiGrief.enable_capsule_cursor_warning(false)
 
 	game.reset_time_played()
-
-	-- local spectator = game.create_force('spectator')
-	-- local spectator_permissions = game.permissions.create_group('spectator')
-	-- spectator_permissions.set_allows_action(defines.input_action.start_walking,false)
 
 	Autostash.insert_into_furnace(true)
 	-- Autostash.insert_into_wagon(true)
@@ -115,6 +110,9 @@ local function on_init()
 	local lobby = game.surfaces[CoreData.lobby_surface_name]
 	game.forces.player.set_spawn_position(Common.lobby_spawnpoint, lobby)
 
+	game.forces.player.set_surface_hidden('piratedev1', true)
+	game.forces.player.set_surface_hidden('nauvis', true)
+
 	game.create_force('environment')
 	for id = 1, Common.starting_ships_count, 1 do
 		game.create_force(Common.get_enemy_force_name(id))
@@ -130,12 +128,8 @@ local function on_init()
 	Task.set_timeout_in_ticks(2, jetty_delayed, {})
 end
 
-local event = require 'utils.event'
+local event = require('utils.event')
 event.on_init(on_init)
-
-
-
-
 
 local function crew_tick()
 	local memory = Memory.get_crew_memory()
@@ -196,18 +190,28 @@ local function crew_tick()
 					end
 				end
 
-				if memory.captain_accrued_time_data and memory.playerindex_captain and memory.overworldx and memory.overworldx > 0 and memory.overworldx < CoreData.victory_x then --only count time in the 'main game'
+				if
+					memory.captain_accrued_time_data
+					and memory.playerindex_captain
+					and memory.overworldx
+					and memory.overworldx > 0
+					and memory.overworldx < CoreData.victory_x
+				then --only count time in the 'main game'
 					local player = game.players[memory.playerindex_captain]
 					if player and player.name then
-						if (not memory.captain_accrued_time_data[player.name]) then memory.captain_accrued_time_data[player.name] = 0 end
-						memory.captain_accrued_time_data[player.name] = memory.captain_accrued_time_data[player.name] + 1
+						if not memory.captain_accrued_time_data[player.name] then
+							memory.captain_accrued_time_data[player.name] = 0
+						end
+						memory.captain_accrued_time_data[player.name] = memory.captain_accrued_time_data[player.name]
+							+ 1
 					end
 				end
 
 				PiratesApiOnTick.update_time_remaining()
 
 				if destination.dynamic_data.disabled_wave_timer then
-					destination.dynamic_data.disabled_wave_timer = Math.max(0, destination.dynamic_data.disabled_wave_timer - 1)
+					destination.dynamic_data.disabled_wave_timer =
+						Math.max(0, destination.dynamic_data.disabled_wave_timer - 1)
 				end
 
 				if tick % 120 == 0 then
@@ -225,7 +229,6 @@ local function crew_tick()
 						PiratesApiOnTick.LOS_tick(240)
 					end
 				end
-
 
 				if tick % (60 * Balance.class_reward_tick_rate_in_seconds) == 0 then
 					ClassPiratesApiOnTick.class_rewards_tick(60 * Balance.class_reward_tick_rate_in_seconds)
@@ -282,7 +285,6 @@ local function crew_tick()
 	end
 end
 
-
 local function global_tick()
 	local global_memory = Memory.get_global_memory()
 	local tick = game.tick
@@ -310,7 +312,6 @@ end
 
 event.on_nth_tick(5, global_tick)
 
-
 local function instatick()
 	local global_memory = Memory.get_global_memory()
 	for _, id in pairs(global_memory.crew_active_ids) do
@@ -321,8 +322,6 @@ local function instatick()
 end
 
 event.on_nth_tick(1, instatick)
-
-
 
 ----- FOR BUGFIXING HARD CRASHES (segfaults) ------
 -- often, segfaults are due to an error during chunk generation (as of 1.1.0 or so, anyway.)
@@ -336,11 +335,11 @@ if not gMeta then
 	setmetatable(_ENV, gMeta)
 end
 
-gMeta.__newindex = function (_, n, v)
+gMeta.__newindex = function(_, n, v)
 	log('Desync warning: attempt to write to undeclared var ' .. n)
 	storage[n] = v
 end
-gMeta.__index = function (_, n)
+gMeta.__index = function(_, n)
 	return storage[n]
 end
 

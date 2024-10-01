@@ -1,6 +1,5 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-
 -- local Common = require 'maps.pirates.common'
 -- local Utils = require 'maps.pirates.utils_local'
 -- local Math = require 'maps.pirates.math'
@@ -36,7 +35,7 @@ Public.noiseparams = {
 		type = 'simplex_2d',
 		normalised = false,
 		params = {
-			{ wavelength = 0,   amplitude = rscale * 1.0 },
+			{ wavelength = 0, amplitude = rscale * 1.0 },
 			{ wavelength = 2.5, amplitude = rscale * 0.23 },
 		},
 	},
@@ -47,16 +46,16 @@ Public.noiseparams = {
 		params = {
 			-- shape:
 			{ wavelength = 1600, amplitude = hscale * 22 },
-			{ wavelength = 800,  amplitude = hscale * 18 },
-			{ wavelength = 400,  amplitude = hscale * 15 },
-			{ wavelength = 300,  amplitude = hscale * 11 },
-			{ wavelength = 200,  amplitude = hscale * 8 },
-			{ wavelength = 140,  amplitude = hscale * 6 },
-			{ wavelength = 100,  amplitude = hscale * 4 },
+			{ wavelength = 800, amplitude = hscale * 18 },
+			{ wavelength = 400, amplitude = hscale * 15 },
+			{ wavelength = 300, amplitude = hscale * 11 },
+			{ wavelength = 200, amplitude = hscale * 8 },
+			{ wavelength = 140, amplitude = hscale * 6 },
+			{ wavelength = 100, amplitude = hscale * 4 },
 			-- edges:
-			{ wavelength = 60,   amplitude = hscale * 2.5 },
-			{ wavelength = 30,   amplitude = hscale * 1.5 },
-			{ wavelength = 9,    amplitude = hscale * 0.5 }
+			{ wavelength = 60, amplitude = hscale * 2.5 },
+			{ wavelength = 30, amplitude = hscale * 1.5 },
+			{ wavelength = 9, amplitude = hscale * 0.5 },
 		},
 	},
 
@@ -65,8 +64,8 @@ Public.noiseparams = {
 		normalised = false,
 		params = {
 			{ wavelength = 300, amplitude = 15 / 100 },
-			{ wavelength = 65,  amplitude = 90 / 100 },
-			{ wavelength = 7,   amplitude = 5 / 100 },
+			{ wavelength = 65, amplitude = 90 / 100 },
+			{ wavelength = 7, amplitude = 5 / 100 },
 		},
 	},
 
@@ -75,8 +74,8 @@ Public.noiseparams = {
 		normalised = true,
 		params = {
 			{ wavelength = 100, amplitude = 80 },
-			{ wavelength = 50,  amplitude = 20 },
-			{ wavelength = 6,   amplitude = 20 },
+			{ wavelength = 50, amplitude = 20 },
+			{ wavelength = 6, amplitude = 20 },
 		},
 	},
 
@@ -85,10 +84,9 @@ Public.noiseparams = {
 		normalised = true,
 		params = {
 			{ wavelength = 250, amplitude = 70 },
-			{ wavelength = 50,  amplitude = 20 },
+			{ wavelength = 50, amplitude = 20 },
 		},
 	},
 }
-
 
 return Public

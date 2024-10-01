@@ -1,8 +1,7 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-
-local Math = require 'maps.pirates.math'
-local _inspect = require 'utils.inspect'.inspect
+local Math = require('maps.pirates.math')
+local _inspect = require('utils.inspect').inspect
 
 local Public = {}
 
@@ -71,16 +70,81 @@ Public.water_tile_names = { 'water', 'deepwater', 'water-green', 'deepwater-gree
 
 Public.edgemost_tile_names = { 'sand-1' }
 
-Public.tiles_that_conflict_with_resource_layer = { 'water', 'deepwater', 'water-green', 'deepwater-green', 'water-shallow', 'water-mud', 'out-of-map' }
+Public.tiles_that_conflict_with_resource_layer =
+	{ 'water', 'deepwater', 'water-green', 'deepwater-green', 'water-shallow', 'water-mud', 'out-of-map' }
 
-Public.tiles_that_conflict_with_resource_layer_extended = { 'water', 'deepwater', 'water-green', 'deepwater-green', 'water-shallow', 'water-mud', 'out-of-map', 'red-refined-concrete', 'brown-refined-concrete', 'orange-refined-concrete' }
+Public.tiles_that_conflict_with_resource_layer_extended = {
+	'water',
+	'deepwater',
+	'water-green',
+	'deepwater-green',
+	'water-shallow',
+	'water-mud',
+	'out-of-map',
+	'red-refined-concrete',
+	'brown-refined-concrete',
+	'orange-refined-concrete',
+}
 
-Public.noworm_tile_names = { 'red-refined-concrete', 'purple-refined-concrete', 'green-refined-concrete', 'orange-refined-concrete', 'brown-refined-concrete', 'lab-dark-2', 'sand-1', 'red-desert-3' }
+Public.noworm_tile_names = {
+	'red-refined-concrete',
+	'purple-refined-concrete',
+	'green-refined-concrete',
+	'orange-refined-concrete',
+	'brown-refined-concrete',
+	'lab-dark-2',
+	'sand-1',
+	'red-desert-3',
+}
 
-Public.worm_solid_tile_names = { 'black-refined-concrete', 'stone-path', 'concrete', 'refined-concrete', 'red-refined-concrete', 'purple-refined-concrete', 'brown-refined-concrete', 'lab-dark-2', 'sand-1', 'red-desert-3' }
+Public.worm_solid_tile_names = {
+	'black-refined-concrete',
+	'stone-path',
+	'concrete',
+	'refined-concrete',
+	'red-refined-concrete',
+	'purple-refined-concrete',
+	'brown-refined-concrete',
+	'lab-dark-2',
+	'sand-1',
+	'red-desert-3',
+}
 
-Public.unteleportable_names = { 'transport-belt', 'underground-belt', 'splitter', 'loader', 'fast-transport-belt', 'fast-underground-belt', 'fast-splitter', 'fast-loader', 'express-transport-belt', 'express-underground-belt', 'express-splitter', 'express-loader', 'pipe', 'pipe-to-ground', 'offshore-pump', 'chemical-plant', 'oil-refinery', 'flamethrower-turret', 'storage-tank', 'assembling-machine-2', 'assembling-machine-3', 'boiler', 'steam-engine', 'heat-exchanger', 'steam-turbine', 'pump', 'straight-rail', 'curved-rail', 'cargo-wagon', 'artillery-turret', 'electric-energy-interface', 'accumulator', 'linked-belt' }
-
+Public.unteleportable_names = {
+	'transport-belt',
+	'underground-belt',
+	'splitter',
+	'loader',
+	'fast-transport-belt',
+	'fast-underground-belt',
+	'fast-splitter',
+	'fast-loader',
+	'express-transport-belt',
+	'express-underground-belt',
+	'express-splitter',
+	'express-loader',
+	'pipe',
+	'pipe-to-ground',
+	'offshore-pump',
+	'chemical-plant',
+	'oil-refinery',
+	'flamethrower-turret',
+	'storage-tank',
+	'assembling-machine-2',
+	'assembling-machine-3',
+	'boiler',
+	'steam-engine',
+	'heat-exchanger',
+	'steam-turbine',
+	'pump',
+	'straight-rail',
+	'curved-rail',
+	'cargo-wagon',
+	'artillery-turret',
+	'electric-energy-interface',
+	'accumulator',
+	'linked-belt',
+}
 
 Public.comfy_emojis = {
 	-- monkas = '<:monkas:555120573752279056>', -- deprecated, all occurences replaced with despair
@@ -103,10 +167,10 @@ Public.comfy_emojis = {
 }
 
 Public.capacity_options = {
-	{ value = 2,   icon = 'virtual-signal/signal-2',     text = '2',    text2 = '/2',   text3 = '2' },
-	{ value = 4,   icon = 'virtual-signal/signal-4',     text = '4',    text2 = '/4',   text3 = '4' },
-	{ value = 8,   icon = 'virtual-signal/signal-8',     text = '8',    text2 = '/8',   text3 = '8' },
-	{ value = 24,  icon = 'virtual-signal/signal-blue',  text = '24',   text2 = '/24',  text3 = '24' },
+	{ value = 2, icon = 'virtual-signal/signal-2', text = '2', text2 = '/2', text3 = '2' },
+	{ value = 4, icon = 'virtual-signal/signal-4', text = '4', text2 = '/4', text3 = '4' },
+	{ value = 8, icon = 'virtual-signal/signal-8', text = '8', text2 = '/8', text3 = '8' },
+	{ value = 24, icon = 'virtual-signal/signal-blue', text = '24', text2 = '/24', text3 = '24' },
 	{ value = 999, icon = 'virtual-signal/signal-white', text = 'Inf.', text2 = '/inf', text3 = 'Inf' },
 	-- {value = 64, icon = 'item/storage-tank', text = '64'},
 }
@@ -118,25 +182,25 @@ Public.difficulty_options = {
 		value = 0.5,
 		icon = 'firearm-magazine',
 		text = { 'pirates.difficulty_easy' },
-		associated_color = { r = 50, g = 255, b = 50 }
+		associated_color = { r = 50, g = 255, b = 50 },
 	},
 	{
 		value = 1.0,
 		icon = 'piercing-rounds-magazine',
 		text = { 'pirates.difficulty_normal' },
-		associated_color = { r = 255, g = 255, b = 50 }
+		associated_color = { r = 255, g = 255, b = 50 },
 	},
 	{
 		value = 1.5,
 		icon = 'uranium-rounds-magazine',
 		text = { 'pirates.difficutly_hard' },
-		associated_color = { r = 255, g = 50, b = 50 }
+		associated_color = { r = 255, g = 50, b = 50 },
 	},
 	{
 		value = 2,
 		icon = 'atomic-bomb',
 		text = { 'pirates.difficulty_nightmare' },
-		associated_color = { r = 170, g = 60, b = 60 }
+		associated_color = { r = 170, g = 60, b = 60 },
 	},
 }
 
@@ -172,28 +236,53 @@ end
 -- }
 
 Public.daynightcycle_types = {
-	{ displayname = { 'pirates.daynightcycle_static' },      0 },
-	{ displayname = { 'pirates.daynightcycle_slowcyclic' },  ticksperday = 100000 },
-	{ displayname = { 'pirates.daynightcycle_cyclic' },      ticksperday = 80000 },
-	{ displayname = { 'pirates.daynightcycle_fastcyclic' },  ticksperday = 60000 },
+	{ displayname = { 'pirates.daynightcycle_static' }, 0 },
+	{ displayname = { 'pirates.daynightcycle_slowcyclic' }, ticksperday = 100000 },
+	{ displayname = { 'pirates.daynightcycle_cyclic' }, ticksperday = 80000 },
+	{ displayname = { 'pirates.daynightcycle_fastcyclic' }, ticksperday = 60000 },
 	{ displayname = { 'pirates.daynightcycle_rapidcyclic' }, ticksperday = 40000 },
 }
 
 Public.ore_types = {
-	{ name = 'iron-ore',    sprite_name = 'entity/iron-ore' },
-	{ name = 'copper-ore',  sprite_name = 'entity/copper-ore' },
-	{ name = 'coal',        sprite_name = 'entity/coal' },
-	{ name = 'stone',       sprite_name = 'entity/stone' },
+	{ name = 'iron-ore', sprite_name = 'entity/iron-ore' },
+	{ name = 'copper-ore', sprite_name = 'entity/copper-ore' },
+	{ name = 'coal', sprite_name = 'entity/coal' },
+	{ name = 'stone', sprite_name = 'entity/stone' },
 	{ name = 'uranium-ore', sprite_name = 'entity/uranium-ore' },
-	{ name = 'crude-oil',   sprite_name = 'entity/crude-oil' },
+	{ name = 'crude-oil', sprite_name = 'entity/crude-oil' },
 }
 
 Public.cost_items = {
-	{ name = 'electronic-circuit', display_name = 'Electronic circuit', sprite_name = 'item/electronic-circuit', color = { r = 0, g = 255, b = 0 } },
-	{ name = 'engine-unit',        display_name = 'Engine unit',        sprite_name = 'item/engine-unit',        color = { r = 255, g = 255, b = 0 } },
-	{ name = 'advanced-circuit',   display_name = 'Advanced circuit',   sprite_name = 'item/advanced-circuit',   color = { r = 0, g = 0, b = 255 } },
-	{ name = 'uranium-235',        display_name = 'Uranium-235',        sprite_name = 'item/uranium-235',        color = { r = 0, g = 255, b = 0 } },
-	{ name = 'flying-robot-frame', display_name = 'Flying robot frame', sprite_name = 'item/flying-robot-frame', color = { r = 0, g = 255, b = 255 } },
+	{
+		name = 'electronic-circuit',
+		display_name = 'Electronic circuit',
+		sprite_name = 'item/electronic-circuit',
+		color = { r = 0, g = 255, b = 0 },
+	},
+	{
+		name = 'engine-unit',
+		display_name = 'Engine unit',
+		sprite_name = 'item/engine-unit',
+		color = { r = 255, g = 255, b = 0 },
+	},
+	{
+		name = 'advanced-circuit',
+		display_name = 'Advanced circuit',
+		sprite_name = 'item/advanced-circuit',
+		color = { r = 0, g = 0, b = 255 },
+	},
+	{
+		name = 'uranium-235',
+		display_name = 'Uranium-235',
+		sprite_name = 'item/uranium-235',
+		color = { r = 0, g = 255, b = 0 },
+	},
+	{
+		name = 'flying-robot-frame',
+		display_name = 'Flying robot frame',
+		sprite_name = 'item/flying-robot-frame',
+		color = { r = 0, g = 255, b = 255 },
+	},
 	-- {name = 'rocket-fuel', display_name = 'Rocket Fuel', sprite_name = 'item/rocket-fuel', color={r=255,g=255,b=255}},
 	-- {name = 'fluid-wagon', display_name = 'Fluid Wagon', sprite_name = 'item/fluid-wagon', color={r=255,g=255,b=255}},
 }
@@ -214,7 +303,7 @@ Public.biterPollutionValues = {
 	['medium-biter'] = 20,
 	['medium-spitter'] = 9,
 	['small-biter'] = 4,
-	['small-spitter'] = 3
+	['small-spitter'] = 3,
 }
 -- base game:
 -- Public.biterPollutionValues = {
@@ -232,17 +321,15 @@ Public.biterPollutionValues = {
 
 Public.max_extra_seconds_at_sea = 8 * 60
 
-
-Public.loco_bp_1 = [[0eNqV0ttqwzAMBuB30bVTVufsVxljpKloBYkcbLdrCH73Oi6UMrxDLm3zf7KEFjgMF5wMsQO1APWaLaj3BSyduBvWOzdPCArI4QgCuBvX06B7PWpHVwQvgPiIN1B7L/4Mmo6Gl4j0HwKQHTnCR+F4mD/5Mh7QBDNVUsCkbYhoXusEJmsFzKCqAGtDgegej2/rj76J8il+aX1EzvozWpcwm10ZVbkrfcLJ/+u0vzvF07EuTOd0dlkc0k9NJpFyI1KnkGrrZJp0R/XWyUQnLEJcFfWykgKuaGxMyGZf1K2sC5nnTVl5fwdTR+VL]]
+Public.loco_bp_1 =
+	[[0eNqV0ttqwzAMBuB30bVTVufsVxljpKloBYkcbLdrCH73Oi6UMrxDLm3zf7KEFjgMF5wMsQO1APWaLaj3BSyduBvWOzdPCArI4QgCuBvX06B7PWpHVwQvgPiIN1B7L/4Mmo6Gl4j0HwKQHTnCR+F4mD/5Mh7QBDNVUsCkbYhoXusEJmsFzKCqAGtDgegej2/rj76J8il+aX1EzvozWpcwm10ZVbkrfcLJ/+u0vzvF07EuTOd0dlkc0k9NJpFyI1KnkGrrZJp0R/XWyUQnLEJcFfWykgKuaGxMyGZf1K2sC5nnTVl5fwdTR+VL]]
 
 function Public.Dock_iconized_map()
 	local tiles = {}
 
 	for x = -15.5, 3.5 do
 		for y = 19.5, 0.5, -1 do
-			if (y < 7 and y > 2 and x == -2.5)
-				or (y == 6.5 and x < 2 and x > -6)
-			then
+			if (y < 7 and y > 2 and x == -2.5) or (y == 6.5 and x < 2 and x > -6) then
 				tiles[#tiles + 1] = { name = Public.walkway_tile, position = { x = x, y = y } }
 			elseif y < 3 - Math.abs(x + 5) ^ 2 / 20 then --'island'
 				if y < 0.5 and x < -3 and x > -7 then

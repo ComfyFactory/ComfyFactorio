@@ -1,39 +1,41 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-
-local Memory = require 'maps.pirates.memory'
-local Math = require 'maps.pirates.math'
-local Balance = require 'maps.pirates.balance'
-local Common = require 'maps.pirates.common'
+local Memory = require('maps.pirates.memory')
+local Math = require('maps.pirates.math')
+local Balance = require('maps.pirates.balance')
+local Common = require('maps.pirates.common')
 -- local CoreData = require 'maps.pirates.coredata'
 -- local Utils = require 'maps.pirates.utils_local'
-local _inspect = require 'utils.inspect'.inspect
+local _inspect = require('utils.inspect').inspect
 --
 -- local SurfacesCommon = require 'maps.pirates.surfaces.common'
-local Raffle = require 'maps.pirates.raffle'
-local ShopCovered = require 'maps.pirates.shop.covered'
-local Classes = require 'maps.pirates.roles.classes'
-local Loot = require 'maps.pirates.loot'
-
+local Raffle = require('maps.pirates.raffle')
+local ShopCovered = require('maps.pirates.shop.covered')
+local Classes = require('maps.pirates.roles.classes')
+local Loot = require('maps.pirates.loot')
 
 local Public = {}
-Public.Data = require 'maps.pirates.structures.quest_structures.furnace1.data'
-
-
+Public.Data = require('maps.pirates.structures.quest_structures.furnace1.data')
 
 function Public.create_step1_entities()
 	local destination = Common.current_destination()
 	local surface = game.surfaces[destination.surface_name]
 
 	local quest_structure_data = destination.dynamic_data.quest_structure_data
-	if not quest_structure_data then return end
+	if not quest_structure_data then
+		return
+	end
 
 	local position = quest_structure_data.position
 	local hardcoded_data = Public.Data.step1
 
 	quest_structure_data.blue_chests = {}
 	for _, chest_position in pairs(hardcoded_data.blue_chests) do
-		local e = surface.create_entity { name = 'blue-chest', position = Math.vector_sum(position, chest_position), force = 'environment' }
+		local e = surface.create_entity({
+			name = 'blue-chest',
+			position = Math.vector_sum(position, chest_position),
+			force = 'environment',
+		})
 		if e and e.valid then
 			e.minable = false
 			e.rotatable = false
@@ -44,7 +46,11 @@ function Public.create_step1_entities()
 	end
 	quest_structure_data.red_chests = {}
 	for _, chest_position in pairs(hardcoded_data.red_chests) do
-		local e = surface.create_entity { name = 'red-chest', position = Math.vector_sum(position, chest_position), force = 'environment' }
+		local e = surface.create_entity({
+			name = 'red-chest',
+			position = Math.vector_sum(position, chest_position),
+			force = 'environment',
+		})
 		if e and e.valid then
 			e.minable = false
 			e.rotatable = false
@@ -55,7 +61,11 @@ function Public.create_step1_entities()
 	end
 	quest_structure_data.door_walls = {}
 	for _, p in pairs(hardcoded_data.walls) do
-		local e = surface.create_entity { name = 'stone-wall', position = Math.vector_sum(position, p), force = 'environment' }
+		local e = surface.create_entity({
+			name = 'stone-wall',
+			position = Math.vector_sum(position, p),
+			force = 'environment',
+		})
 		if e and e.valid then
 			e.minable = false
 			e.rotatable = false
@@ -72,39 +82,56 @@ function Public.create_step2_entities()
 	local surface = game.surfaces[destination.surface_name]
 
 	local quest_structure_data = destination.dynamic_data.quest_structure_data
-	if not quest_structure_data then return end
+	if not quest_structure_data then
+		return
+	end
 
 	local position = quest_structure_data.position
 	local hardcoded_data = Public.Data.step2
 
-	quest_structure_data.market = surface.create_entity { name = 'market', position = Math.vector_sum(position, hardcoded_data.market), force = memory.ancient_friendly_force_name }
+	quest_structure_data.market = surface.create_entity({
+		name = 'market',
+		position = Math.vector_sum(position, hardcoded_data.market),
+		force = memory.ancient_friendly_force_name,
+	})
 	if quest_structure_data.market and quest_structure_data.market.valid then
 		quest_structure_data.market.minable = false
 		quest_structure_data.market.rotatable = false
 		quest_structure_data.market.destructible = false
 
-		quest_structure_data.market.add_market_item {
+		quest_structure_data.market.add_market_item({
 			price = Balance.weapon_damage_upgrade_price(),
 			offer = {
-				type = "nothing",
-				effect_description = { 'pirates.market_description_purchase_attack_upgrade', Balance.weapon_damage_upgrade_percentage() }
-			}
-		}
+				type = 'nothing',
+				effect_description = {
+					'pirates.market_description_purchase_attack_upgrade',
+					Balance.weapon_damage_upgrade_percentage(),
+				},
+			},
+		})
 
 		-- quest_structure_data.market.add_market_item{price={{'pistol', 1}}, offer={type = 'give-item', item = 'coin', count = Balance.coin_sell_amount}}
 		-- quest_structure_data.market.add_market_item{price={{'burner-mining-drill', 1}}, offer={type = 'give-item', item = 'iron-plate', count = 9}}
 
 		local how_many_coin_offers = 5
-		if Balance.crew_scale() >= 1 then how_many_coin_offers = 6 end
+		if Balance.crew_scale() >= 1 then
+			how_many_coin_offers = 6
+		end
 
 		-- Thinking of not having these offers available always (if it's bad design decision can always change it back)
 		if Math.random(4) == 1 then
-			quest_structure_data.market.add_market_item { price = { { name = 'pistol', count = 1 } }, offer = { type = 'give-item', item = 'coin', count = Balance.coin_sell_amount } }
+			quest_structure_data.market.add_market_item({
+				price = { { name = 'pistol', count = 1 } },
+				offer = { type = 'give-item', item = 'coin', count = Balance.coin_sell_amount },
+			})
 			how_many_coin_offers = how_many_coin_offers - 1
 		end
 
 		if Math.random(4) == 1 then
-			quest_structure_data.market.add_market_item { price = { { name = 'burner-mining-drill', count = 1 } }, offer = { type = 'give-item', item = 'iron-plate', count = 9 } }
+			quest_structure_data.market.add_market_item({
+				price = { { name = 'burner-mining-drill', count = 1 } },
+				offer = { type = 'give-item', item = 'iron-plate', count = 9 },
+			})
 			how_many_coin_offers = how_many_coin_offers - 1
 		end
 
@@ -114,7 +141,16 @@ function Public.create_step2_entities()
 		end
 
 		if destination.static_params.class_for_sale then
-			quest_structure_data.market.add_market_item { price = { { name = 'coin', count = Balance.class_cost(false) } }, offer = { type = "nothing", effect_description = { 'pirates.market_description_purchase_class', Classes.display_form(destination.static_params.class_for_sale) } } }
+			quest_structure_data.market.add_market_item({
+				price = { { name = 'coin', count = Balance.class_cost(false) } },
+				offer = {
+					type = 'nothing',
+					effect_description = {
+						'pirates.market_description_purchase_class',
+						Classes.display_form(destination.static_params.class_for_sale),
+					},
+				},
+			})
 
 			-- destination.dynamic_data.market_class_offer_rendering = rendering.draw_text{
 			-- 	text = 'Class available: ' .. Classes.display_form(destination.static_params.class_for_sale),
@@ -137,7 +173,11 @@ function Public.create_step2_entities()
 
 	quest_structure_data.wooden_chests = {}
 	for k, p in ipairs(hardcoded_data.wooden_chests) do
-		local e = surface.create_entity { name = 'wooden-chest', position = Math.vector_sum(position, p), force = memory.ancient_friendly_force_name }
+		local e = surface.create_entity({
+			name = 'wooden-chest',
+			position = Math.vector_sum(position, p),
+			force = memory.ancient_friendly_force_name,
+		})
 		if e and e.valid then
 			e.minable = false
 			e.rotatable = false
@@ -341,7 +381,10 @@ function Public.entry_price()
 	return {
 		name = item,
 		count = Math.ceil(
-			(0.9 + 0.2 * Math.random()) * Public.entry_price_data_raw[item].base_amount * Balance.quest_furnace_entry_price_scale() / batchSize
+			(0.9 + 0.2 * Math.random())
+				* Public.entry_price_data_raw[item].base_amount
+				* Balance.quest_furnace_entry_price_scale()
+				/ batchSize
 		) * batchSize,
 		batchSize = batchSize,
 		batchRawMaterials = Public.entry_price_data_raw[item].batchRawMaterials,

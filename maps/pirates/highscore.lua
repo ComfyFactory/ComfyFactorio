@@ -1,21 +1,20 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-
 -- == This code is mostly a fork of the file from Mountain Fortress
 
-local Event = require 'utils.event'
-local Global = require 'utils.global'
-local Server = require 'utils.server'
-local Gui = require 'utils.gui'
-local Math = require 'maps.pirates.math'
-local Token = require 'utils.token'
-require 'utils.core'
-local _inspect = require 'utils.inspect'.inspect
-local SpamProtection = require 'utils.spam_protection'
+local Event = require('utils.event')
+local Global = require('utils.global')
+local Server = require('utils.server')
+local Gui = require('utils.gui')
+local Math = require('maps.pirates.math')
+local Token = require('utils.token')
+require('utils.core')
+local _inspect = require('utils.inspect').inspect
+local SpamProtection = require('utils.spam_protection')
 -- local Memory = require 'maps.pirates.memory'
-local Utils = require 'maps.pirates.utils_local'
-local CoreData = require 'maps.pirates.coredata'
-local Common = require 'maps.pirates.common'
+local Utils = require('maps.pirates.utils_local')
+local CoreData = require('maps.pirates.coredata')
+local Common = require('maps.pirates.common')
 
 local module_name = Gui.uid_name()
 -- local module_name = 'Highscore'
@@ -24,27 +23,23 @@ local score_key = 'pirate_ship_scores'
 local score_key_debug = 'pirate_ship_scores_debug'
 local score_key_modded = 'pirate_ship_scores_modded'
 
-
-
 local Public = {}
 local insert = table.insert
 local this = {
 	score_table = { player = {} },
-	sort_by = {}
+	sort_by = {},
 }
 
-Global.register(
-	this,
-	function (t)
-		this = t
-	end
-)
+Global.register(this, function(t)
+	this = t
+end)
 
 local function sort_list(method, column_name, score_list)
 	local comparators = {
-		['ascending'] = function (a, b)
+		['ascending'] = function(a, b)
 			if column_name == 'completion_time' then
-				return ((a[column_name] < b[column_name]) and not (a[column_name] == 0 and b[column_name] ~= 0)) or (a[column_name] ~= 0 and b[column_name] == 0) --put all 0s at the end
+				return ((a[column_name] < b[column_name]) and not (a[column_name] == 0 and b[column_name] ~= 0))
+					or (a[column_name] ~= 0 and b[column_name] == 0) --put all 0s at the end
 			elseif column_name == 'version' then
 				return Common.version_greater_than(b[column_name], a[column_name])
 			elseif type(a[column_name]) == 'string' then
@@ -54,9 +49,10 @@ local function sort_list(method, column_name, score_list)
 			end
 		end,
 		--nosort
-		['descending'] = function (a, b)
+		['descending'] = function(a, b)
 			if column_name == 'completion_time' then
-				return ((b[column_name] < a[column_name]) and not (a[column_name] == 0 and b[column_name] ~= 0)) or (a[column_name] ~= 0 and b[column_name] == 0) --put all 0s at the end
+				return ((b[column_name] < a[column_name]) and not (a[column_name] == 0 and b[column_name] ~= 0))
+					or (a[column_name] ~= 0 and b[column_name] == 0) --put all 0s at the end
 			elseif column_name == 'version' then
 				return Common.version_greater_than(a[column_name], b[column_name])
 			elseif type(a[column_name]) == 'string' then
@@ -64,14 +60,12 @@ local function sort_list(method, column_name, score_list)
 			elseif a[column_name] then
 				return a[column_name] > b[column_name]
 			end
-		end
+		end,
 	}
 	Utils.stable_sort(score_list, comparators[method])
 	-- table.sort(score_list, comparators[method])
 	return score_list
 end
-
-
 
 local function get_tables_of_scores_by_type(scores)
 	local completion_times = {}
@@ -116,7 +110,9 @@ local function get_tables_of_scores_by_type(scores)
 
 	local latest_version = 0
 	for _, v in pairs(versions) do
-		if Common.version_greater_than(v, latest_version) then latest_version = v end
+		if Common.version_greater_than(v, latest_version) then
+			latest_version = v
+		end
 	end
 
 	for _, score in pairs(scores) do
@@ -164,19 +160,38 @@ local function get_tables_of_scores_by_type(scores)
 	}
 end
 
-
 local function get_score_cuttofs(tables_of_scores_by_type)
-	local completion_times_cutoff = #tables_of_scores_by_type.completion_times > 8 and tables_of_scores_by_type.completion_times[8] or 9999999
-	local completion_times_mediump_latestv_cutoff = #tables_of_scores_by_type.completion_times_mediump_latestv > 4 and tables_of_scores_by_type.completion_times_mediump_latestv[4] or 9999999
-	local completion_times_hard_cutoff = #tables_of_scores_by_type.completion_times_hard > 4 and tables_of_scores_by_type.completion_times_hard[4] or 9999999
-	local completion_times_nightmare_cutoff = #tables_of_scores_by_type.completion_times_hard > 2 and tables_of_scores_by_type.completion_times_hard[2] or 9999999
-	local completion_times_latestv_cutoff = #tables_of_scores_by_type.completion_times_latestv > 8 and tables_of_scores_by_type.completion_times_latestv[8] or 9999999
+	local completion_times_cutoff = #tables_of_scores_by_type.completion_times > 8
+			and tables_of_scores_by_type.completion_times[8]
+		or 9999999
+	local completion_times_mediump_latestv_cutoff = #tables_of_scores_by_type.completion_times_mediump_latestv > 4
+			and tables_of_scores_by_type.completion_times_mediump_latestv[4]
+		or 9999999
+	local completion_times_hard_cutoff = #tables_of_scores_by_type.completion_times_hard > 4
+			and tables_of_scores_by_type.completion_times_hard[4]
+		or 9999999
+	local completion_times_nightmare_cutoff = #tables_of_scores_by_type.completion_times_hard > 2
+			and tables_of_scores_by_type.completion_times_hard[2]
+		or 9999999
+	local completion_times_latestv_cutoff = #tables_of_scores_by_type.completion_times_latestv > 8
+			and tables_of_scores_by_type.completion_times_latestv[8]
+		or 9999999
 
-	local leagues_travelled_cutoff = #tables_of_scores_by_type.leagues_travelled > 8 and tables_of_scores_by_type.leagues_travelled[-8] or 0
-	local leagues_travelled_mediump_latestv_cutoff = #tables_of_scores_by_type.leagues_travelled_mediump_latestv > 4 and tables_of_scores_by_type.leagues_travelled_mediump_latestv[-4] or 0
-	local leagues_travelled_hard_cutoff = #tables_of_scores_by_type.leagues_travelled_hard > 4 and tables_of_scores_by_type.leagues_travelled_hard[-4] or 0
-	local leagues_travelled_nightmare_cutoff = #tables_of_scores_by_type.leagues_travelled_hard > 2 and tables_of_scores_by_type.leagues_travelled_hard[-2] or 0
-	local leagues_travelled_latestv_cutoff = #tables_of_scores_by_type.leagues_travelled_latestv > 86 and tables_of_scores_by_type.leagues_travelled_latestv[-8] or 0
+	local leagues_travelled_cutoff = #tables_of_scores_by_type.leagues_travelled > 8
+			and tables_of_scores_by_type.leagues_travelled[-8]
+		or 0
+	local leagues_travelled_mediump_latestv_cutoff = #tables_of_scores_by_type.leagues_travelled_mediump_latestv > 4
+			and tables_of_scores_by_type.leagues_travelled_mediump_latestv[-4]
+		or 0
+	local leagues_travelled_hard_cutoff = #tables_of_scores_by_type.leagues_travelled_hard > 4
+			and tables_of_scores_by_type.leagues_travelled_hard[-4]
+		or 0
+	local leagues_travelled_nightmare_cutoff = #tables_of_scores_by_type.leagues_travelled_hard > 2
+			and tables_of_scores_by_type.leagues_travelled_hard[-2]
+		or 0
+	local leagues_travelled_latestv_cutoff = #tables_of_scores_by_type.leagues_travelled_latestv > 86
+			and tables_of_scores_by_type.leagues_travelled_latestv[-8]
+		or 0
 
 	return {
 		completion_times_cutoff = completion_times_cutoff,
@@ -206,29 +221,85 @@ local function saved_scores_trim(scores)
 	for secs_id, score in pairs(scores) do
 		local include = false
 
-		if cutoffs.completion_times_cutoff and score.completion_time and score.completion_time < cutoffs.completion_times_cutoff then
+		if
+			cutoffs.completion_times_cutoff
+			and score.completion_time
+			and score.completion_time < cutoffs.completion_times_cutoff
+		then
 			include = true
-		elseif cutoffs.completion_times_mediump_latestv_cutoff and score.completion_time and score.completion_time < cutoffs.completion_times_mediump_latestv_cutoff and type(score.version) == type(cutoffs.latest_version) and score.version == cutoffs.latest_version and score.difficulty >= 1 then
+		elseif
+			cutoffs.completion_times_mediump_latestv_cutoff
+			and score.completion_time
+			and score.completion_time < cutoffs.completion_times_mediump_latestv_cutoff
+			and type(score.version) == type(cutoffs.latest_version)
+			and score.version == cutoffs.latest_version
+			and score.difficulty >= 1
+		then
 			include = true
-		elseif cutoffs.completion_times_hard_cutoff and score.completion_time and score.completion_time < cutoffs.completion_times_hard_cutoff and score.difficulty > 1 then
+		elseif
+			cutoffs.completion_times_hard_cutoff
+			and score.completion_time
+			and score.completion_time < cutoffs.completion_times_hard_cutoff
+			and score.difficulty > 1
+		then
 			include = true
-		elseif cutoffs.completion_times_nightmare_cutoff and score.completion_time and score.completion_time < cutoffs.completion_times_nightmare_cutoff and score.difficulty > 2 then
+		elseif
+			cutoffs.completion_times_nightmare_cutoff
+			and score.completion_time
+			and score.completion_time < cutoffs.completion_times_nightmare_cutoff
+			and score.difficulty > 2
+		then
 			include = true
-		elseif cutoffs.completion_times_latestv_cutoff and score.completion_time and score.completion_time < cutoffs.completion_times_latestv_cutoff and type(score.version) == type(cutoffs.latest_version) and score.version == cutoffs.latest_version then
+		elseif
+			cutoffs.completion_times_latestv_cutoff
+			and score.completion_time
+			and score.completion_time < cutoffs.completion_times_latestv_cutoff
+			and type(score.version) == type(cutoffs.latest_version)
+			and score.version == cutoffs.latest_version
+		then
 			include = true
-		elseif cutoffs.leagues_travelled_cutoff and score.leagues_travelled and score.leagues_travelled > cutoffs.leagues_travelled_cutoff then
+		elseif
+			cutoffs.leagues_travelled_cutoff
+			and score.leagues_travelled
+			and score.leagues_travelled > cutoffs.leagues_travelled_cutoff
+		then
 			include = true
-		elseif cutoffs.leagues_travelled_mediump_latestv_cutoff and score.leagues_travelled and score.leagues_travelled > cutoffs.leagues_travelled_mediump_latestv_cutoff and type(score.version) == type(cutoffs.latest_version) and score.version == cutoffs.latest_version and score.difficulty >= 1 then
+		elseif
+			cutoffs.leagues_travelled_mediump_latestv_cutoff
+			and score.leagues_travelled
+			and score.leagues_travelled > cutoffs.leagues_travelled_mediump_latestv_cutoff
+			and type(score.version) == type(cutoffs.latest_version)
+			and score.version == cutoffs.latest_version
+			and score.difficulty >= 1
+		then
 			include = true
-		elseif cutoffs.leagues_travelled_hard_cutoff and score.leagues_travelled and score.leagues_travelled > cutoffs.leagues_travelled_hard_cutoff and score.difficulty > 1 then
+		elseif
+			cutoffs.leagues_travelled_hard_cutoff
+			and score.leagues_travelled
+			and score.leagues_travelled > cutoffs.leagues_travelled_hard_cutoff
+			and score.difficulty > 1
+		then
 			include = true
-		elseif cutoffs.leagues_travelled_nightmare_cutoff and score.leagues_travelled and score.leagues_travelled > cutoffs.leagues_travelled_nightmare_cutoff and score.difficulty > 2 then
+		elseif
+			cutoffs.leagues_travelled_nightmare_cutoff
+			and score.leagues_travelled
+			and score.leagues_travelled > cutoffs.leagues_travelled_nightmare_cutoff
+			and score.difficulty > 2
+		then
 			include = true
-		elseif cutoffs.leagues_travelled_latestv_cutoff and score.leagues_travelled and score.leagues_travelled > cutoffs.leagues_travelled_latestv_cutoff and type(score.version) == type(cutoffs.latest_version) and score.version == cutoffs.latest_version then
+		elseif
+			cutoffs.leagues_travelled_latestv_cutoff
+			and score.leagues_travelled
+			and score.leagues_travelled > cutoffs.leagues_travelled_latestv_cutoff
+			and type(score.version) == type(cutoffs.latest_version)
+			and score.version == cutoffs.latest_version
+		then
 			include = true
 		end
 
-		if not include then delete[#delete + 1] = secs_id end
+		if not include then
+			delete[#delete + 1] = secs_id
+		end
 	end
 	-- log(_inspect(delete))
 
@@ -239,12 +310,22 @@ local function saved_scores_trim(scores)
 	return scores
 end
 
-
-
-
-local function local_highscores_write_stats(crew_secs_id, name, captain_name, completion_time, leagues_travelled, version, difficulty, max_players)
-	if not this.score_table['player'] then this.score_table['player'] = {} end
-	if not this.score_table['player'].runs then this.score_table['player'].runs = {} end
+local function local_highscores_write_stats(
+	crew_secs_id,
+	name,
+	captain_name,
+	completion_time,
+	leagues_travelled,
+	version,
+	difficulty,
+	max_players
+)
+	if not this.score_table['player'] then
+		this.score_table['player'] = {}
+	end
+	if not this.score_table['player'].runs then
+		this.score_table['player'].runs = {}
+	end
 
 	local t = this.score_table['player']
 
@@ -269,7 +350,15 @@ local function local_highscores_write_stats(crew_secs_id, name, captain_name, co
 		-- end
 
 		if crew_secs_id then
-			t.runs[crew_secs_id] = { name = name, captain_name = captain_name, version = version, completion_time = completion_time, leagues_travelled = leagues_travelled, difficulty = difficulty, max_players = max_players }
+			t.runs[crew_secs_id] = {
+				name = name,
+				captain_name = captain_name,
+				version = version,
+				completion_time = completion_time,
+				leagues_travelled = leagues_travelled,
+				difficulty = difficulty,
+				max_players = max_players,
+			}
 
 			-- log(_inspect(t))
 
@@ -281,18 +370,14 @@ local function local_highscores_write_stats(crew_secs_id, name, captain_name, co
 	-- log(_inspect(t))
 end
 
+local load_in_scores = Token.register(function(data)
+	local value = data.value
+	if not this.score_table['player'] then
+		this.score_table['player'] = {}
+	end
 
-local load_in_scores =
-	Token.register(
-		function (data)
-			local value = data.value
-			if not this.score_table['player'] then
-				this.score_table['player'] = {}
-			end
-
-			this.score_table['player'] = value
-		end
-	)
+	this.score_table['player'] = value
+end)
 function Public.load_in_scores()
 	local secs = Server.get_current_time()
 	-- if secs then game.print('secs2: ' .. secs) else game.print('secs: false') end
@@ -323,13 +408,31 @@ function Public.overwrite_scores_specific()
 	return true
 end
 
-function Public.write_score(crew_secs_id, name, captain_name, completion_time, leagues_travelled, version, difficulty, max_players)
+function Public.write_score(
+	crew_secs_id,
+	name,
+	captain_name,
+	completion_time,
+	leagues_travelled,
+	version,
+	difficulty,
+	max_players
+)
 	local secs = Server.get_current_time()
 	-- if secs then game.print('secs1: ' .. secs) else game.print('secs: false') end
 	if not secs then
 		return
 	else
-		local_highscores_write_stats(crew_secs_id, name, captain_name, completion_time, leagues_travelled, version, difficulty, max_players)
+		local_highscores_write_stats(
+			crew_secs_id,
+			name,
+			captain_name,
+			completion_time,
+			leagues_travelled,
+			version,
+			difficulty,
+			max_players
+		)
 
 		if is_game_modded() then
 			Server.set_data(score_dataset, score_key_modded, this.score_table['player'])
@@ -349,7 +452,6 @@ local function on_init()
 	end
 end
 
-
 local sorting_symbol = { ascending = '▲', descending = '▼' }
 
 local function get_saved_scores_for_displaying()
@@ -358,18 +460,15 @@ local function get_saved_scores_for_displaying()
 
 	if score_data and score_data.runs then
 		for _, score in pairs(score_data.runs or {}) do
-			insert(
-				score_list,
-				{
-					name = score and score.name,
-					captain_name = score and score.captain_name,
-					completion_time = score and score.completion_time or 99999,
-					leagues_travelled = score and score.leagues_travelled or 0,
-					version = score and score.version or 0,
-					difficulty = score and score.difficulty or 0,
-					max_players = score and score.max_players or 0,
-				}
-			)
+			insert(score_list, {
+				name = score and score.name,
+				captain_name = score and score.captain_name,
+				completion_time = score and score.completion_time or 99999,
+				leagues_travelled = score and score.leagues_travelled or 0,
+				version = score and score.version or 0,
+				difficulty = score and score.difficulty or 0,
+				max_players = score and score.max_players or 0,
+			})
 		end
 	else
 		score_list[#score_list + 1] = {
@@ -415,17 +514,42 @@ local function score_gui(data)
 	-- line.style.bottom_margin = 8
 
 	-- Score per player
-	local t = frame.add { type = 'table', column_count = 7 }
+	local t = frame.add({ type = 'table', column_count = 7 })
 
 	-- Score headers
 	local headers = {
-		{ name = '_name',               caption = { 'pirates.highscore_heading_crew' } },
-		{ column = 'captain_name',      name = '_captain_name',                      caption = { 'pirates.highscore_heading_captain' },   tooltip = { 'pirates.highscore_heading_captain_tooltip' } },
-		{ column = 'completion_time',   name = '_completion_time',                   caption = { 'pirates.highscore_heading_completion' } },
-		{ column = 'leagues_travelled', name = '_leagues_travelled',                 caption = { 'pirates.highscore_heading_leagues' } },
-		{ column = 'version',           name = '_version',                           caption = { 'pirates.highscore_heading_version' } },
-		{ column = 'difficulty',        name = '_difficulty',                        caption = { 'pirates.highscore_heading_difficulty' } },
-		{ column = 'max_players',       name = '_max_players',                       caption = { 'pirates.highscore_heading_peak_players' } },
+		{ name = '_name', caption = { 'pirates.highscore_heading_crew' } },
+		{
+			column = 'captain_name',
+			name = '_captain_name',
+			caption = { 'pirates.highscore_heading_captain' },
+			tooltip = { 'pirates.highscore_heading_captain_tooltip' },
+		},
+		{
+			column = 'completion_time',
+			name = '_completion_time',
+			caption = { 'pirates.highscore_heading_completion' },
+		},
+		{
+			column = 'leagues_travelled',
+			name = '_leagues_travelled',
+			caption = { 'pirates.highscore_heading_leagues' },
+		},
+		{
+			column = 'version',
+			name = '_version',
+			caption = { 'pirates.highscore_heading_version' },
+		},
+		{
+			column = 'difficulty',
+			name = '_difficulty',
+			caption = { 'pirates.highscore_heading_difficulty' },
+		},
+		{
+			column = 'max_players',
+			name = '_max_players',
+			caption = { 'pirates.highscore_heading_peak_players' },
+		},
 	}
 
 	local sorting_pref = this.sort_by[player.index] or {}
@@ -441,13 +565,14 @@ local function score_gui(data)
 		end
 
 		-- Header
-		local label =
-			t.add {
-				type = 'label',
-				caption = cap,
-				name = header.name
-			}
-		if header.tooltip then label.tooltip = header.tooltip end
+		local label = t.add({
+			type = 'label',
+			caption = cap,
+			name = header.name,
+		})
+		if header.tooltip then
+			label.tooltip = header.tooltip
+		end
 		label.style.font = 'default-listbox'
 		label.style.font_color = { r = 0.98, g = 0.66, b = 0.22 } -- yellow
 		label.style.minimal_width = columnwidth
@@ -467,18 +592,15 @@ local function score_gui(data)
 	end
 
 	-- New pane for scores (while keeping headers at same position)
-	local scroll_pane =
-		frame.add(
-			{
-				type = 'scroll-pane',
-				name = 'score_scroll_pane',
-				direction = 'vertical',
-				horizontal_scroll_policy = 'never',
-				vertical_scroll_policy = 'auto'
-			}
-		)
+	local scroll_pane = frame.add({
+		type = 'scroll-pane',
+		name = 'score_scroll_pane',
+		direction = 'vertical',
+		horizontal_scroll_policy = 'never',
+		vertical_scroll_policy = 'auto',
+	})
 	scroll_pane.style.maximal_height = 400
-	t = scroll_pane.add { type = 'table', column_count = 7 }
+	t = scroll_pane.add({ type = 'table', column_count = 7 })
 
 	-- Score entries
 	for _, entry in pairs(score_list) do
@@ -503,10 +625,12 @@ local function score_gui(data)
 		local n = entry.completion_time > 0 and Utils.time_mediumform(entry.completion_time or 0) or 'N/A'
 		local l = entry.leagues_travelled > 0 and entry.leagues_travelled or '?'
 		local v = entry.version and entry.version or '?'
-		local d = entry.difficulty > 0 and CoreData.difficulty_options[CoreData.get_difficulty_option_from_value(entry.difficulty)].text or '?'
+		local d = entry.difficulty > 0
+				and CoreData.difficulty_options[CoreData.get_difficulty_option_from_value(entry.difficulty)].text
+			or '?'
 		local c = entry.max_players > 0 and entry.max_players or '?'
 		local line = {
-			{ caption = entry.name,               color = special_color },
+			{ caption = entry.name, color = special_color },
 			{ caption = entry.captain_name or '?' },
 			{ caption = tostring(n) },
 			{ caption = tostring(l) },
@@ -517,25 +641,28 @@ local function score_gui(data)
 		local default_color = { r = 0.9, g = 0.9, b = 0.9 }
 
 		for _, column in ipairs(line) do
-			local label =
-				t.add {
-					type = 'label',
-					caption = column.caption,
-					color = column.color or default_color,
-				}
+			local label = t.add({
+				type = 'label',
+				caption = column.caption,
+				color = column.color or default_color,
+			})
 			label.style.font = 'default'
 			label.style.minimal_width = columnwidth
 			label.style.maximal_width = columnwidth
 			label.style.horizontal_align = 'right'
 		end -- foreach column
-	end     -- foreach entry
+	end -- foreach entry
 end
 
 local score_gui_token = Token.register(score_gui)
 
 local function on_gui_click(event)
-	if not event.element then return end
-	if not event.element.valid then return end
+	if not event.element then
+		return
+	end
+	if not event.element.valid then
+		return
+	end
 
 	local player = game.get_player(event.element.player_index)
 
@@ -572,7 +699,9 @@ local function on_gui_click(event)
 		for i, sort in ipairs(sorting_pref) do
 			if sort.column == element_to_column[name] then
 				found_index = i
-				if sort.method == 'descending' and i == 1 then new_method = 'ascending' end
+				if sort.method == 'descending' and i == 1 then
+					new_method = 'ascending'
+				end
 			end
 		end
 		if found_index then
@@ -595,8 +724,14 @@ end
 
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
-	if player.index and this.sort_by and (not this.sort_by[player.index]) then
-		this.sort_by[player.index] = { { method = 'ascending', column = 'completion_time' }, { method = 'descending', column = 'leagues_travelled' }, { method = 'descending', column = 'version' }, { method = 'descending', column = 'difficulty' }, { method = 'ascending', column = 'captain_name' } }
+	if player.index and this.sort_by and not this.sort_by[player.index] then
+		this.sort_by[player.index] = {
+			{ method = 'ascending', column = 'completion_time' },
+			{ method = 'descending', column = 'leagues_travelled' },
+			{ method = 'descending', column = 'version' },
+			{ method = 'descending', column = 'difficulty' },
+			{ method = 'ascending', column = 'captain_name' },
+		}
 	end
 end
 
@@ -607,34 +742,34 @@ local function on_player_left_game(event)
 	end
 end
 
-Server.on_data_set_changed(
-	score_dataset,
-	function (data)
-		local key
-		if is_game_modded() then
-			key = score_key_modded
-		elseif _DEBUG then
-			key = score_key_debug
-		else
-			key = score_key
-		end
-		if data.key == key then
-			if data.value then
-				this.score_table['player'] = data.value
-			end
+Server.on_data_set_changed(score_dataset, function(data)
+	local key
+	if is_game_modded() then
+		key = score_key_modded
+	elseif _DEBUG then
+		key = score_key_debug
+	else
+		key = score_key
+	end
+	if data.key == key then
+		if data.value then
+			this.score_table['player'] = data.value
 		end
 	end
-)
+end)
 
-Gui.add_tab_to_gui({ name = module_name, caption = 'Highscore', id = score_gui_token, admin = false, only_server_sided = true })
+Gui.add_tab_to_gui({
+	name = module_name,
+	caption = 'Highscore',
+	id = score_gui_token,
+	admin = false,
+	only_server_sided = true,
+})
 
-Gui.on_click(
-	module_name,
-	function (event)
-		local player = event.player
-		Gui.reload_active_tab(player)
-	end
-)
+Gui.on_click(module_name, function(event)
+	local player = event.player
+	Gui.reload_active_tab(player)
+end)
 
 Event.on_init(on_init)
 Event.add(defines.events.on_player_left_game, on_player_left_game)

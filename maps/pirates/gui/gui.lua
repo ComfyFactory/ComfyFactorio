@@ -1,45 +1,45 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-local Memory = require 'maps.pirates.memory'
-local Math = require 'maps.pirates.math'
-local Common = require 'maps.pirates.common'
-local CoreData = require 'maps.pirates.coredata'
-local Utils = require 'maps.pirates.utils_local'
-local GuiEvo = require 'maps.pirates.gui.evo'
-local GuiProgress = require 'maps.pirates.gui.progress'
-local GuiRuns = require 'maps.pirates.gui.runs'
-local GuiCrew = require 'maps.pirates.gui.crew'
-local GuiClasses = require 'maps.pirates.gui.classes'
-local GuiMinimap = require 'maps.pirates.gui.minimap'
-local GuiInfo = require 'maps.pirates.gui.info'
-local Quest = require 'maps.pirates.quest'
-local Balance = require 'maps.pirates.balance'
-local _inspect = require 'utils.inspect'.inspect
-local GuiCommon = require 'maps.pirates.gui.common'
-local Boats = require 'maps.pirates.structures.boats.boats'
-local Hold = require 'maps.pirates.surfaces.hold'
-local Cabin = require 'maps.pirates.surfaces.cabin'
-local Crowsnest = require 'maps.pirates.surfaces.crowsnest'
-local Progression = require 'maps.pirates.progression'
-local Surfaces = require 'maps.pirates.surfaces.surfaces'
+local Memory = require('maps.pirates.memory')
+local Math = require('maps.pirates.math')
+local Common = require('maps.pirates.common')
+local CoreData = require('maps.pirates.coredata')
+local Utils = require('maps.pirates.utils_local')
+local GuiEvo = require('maps.pirates.gui.evo')
+local GuiProgress = require('maps.pirates.gui.progress')
+local GuiRuns = require('maps.pirates.gui.runs')
+local GuiCrew = require('maps.pirates.gui.crew')
+local GuiClasses = require('maps.pirates.gui.classes')
+local GuiMinimap = require('maps.pirates.gui.minimap')
+local GuiInfo = require('maps.pirates.gui.info')
+local Quest = require('maps.pirates.quest')
+local Balance = require('maps.pirates.balance')
+local _inspect = require('utils.inspect').inspect
+local GuiCommon = require('maps.pirates.gui.common')
+local Boats = require('maps.pirates.structures.boats.boats')
+local Hold = require('maps.pirates.surfaces.hold')
+local Cabin = require('maps.pirates.surfaces.cabin')
+local Crowsnest = require('maps.pirates.surfaces.crowsnest')
+local Progression = require('maps.pirates.progression')
+local Surfaces = require('maps.pirates.surfaces.surfaces')
 -- local Roles = require 'maps.pirates.roles.roles'
-local Permissions = require 'maps.pirates.permissions'
-local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
-local Kraken = require 'maps.pirates.surfaces.sea.kraken'
-local GuiWelcome = require 'maps.pirates.gui.welcome'
-local ComfyGui = require 'utils.gui'
+local Permissions = require('maps.pirates.permissions')
+local IslandEnum = require('maps.pirates.surfaces.islands.island_enum')
+local Kraken = require('maps.pirates.surfaces.sea.kraken')
+local GuiWelcome = require('maps.pirates.gui.welcome')
+local ComfyGui = require('utils.gui')
 ComfyGui.set_disabled_tab('Scoreboard', true)
 ComfyGui.set_disabled_tab('Groups', true)
 
 local Public = {}
 
-Public.progress = require 'maps.pirates.gui.progress'
-Public.runs = require 'maps.pirates.gui.runs'
-Public.crew = require 'maps.pirates.gui.crew'
-Public.classes = require 'maps.pirates.gui.classes'
-Public.minimap = require 'maps.pirates.gui.minimap'
-Public.info = require 'maps.pirates.gui.info'
-Public.color = require 'maps.pirates.gui.color'
+Public.progress = require('maps.pirates.gui.progress')
+Public.runs = require('maps.pirates.gui.runs')
+Public.crew = require('maps.pirates.gui.crew')
+Public.classes = require('maps.pirates.gui.classes')
+Public.minimap = require('maps.pirates.gui.minimap')
+Public.info = require('maps.pirates.gui.info')
+Public.color = require('maps.pirates.gui.color')
 
 local function create_gui(player)
 	local flow1, flow2, flow3, flow4
@@ -104,9 +104,6 @@ local function create_gui(player)
 	-- flow2.tooltip = "Coal/Officer's Shop\n\nThe captain and their officers are authorised to spend coal in the shop."
 	-- flow2.sprite = 'item/coal'
 
-
-
-
 	flow2 = flow1.add({
 		name = 'fuel_flow',
 		type = 'frame',
@@ -125,7 +122,7 @@ local function create_gui(player)
 	flow3 = flow2.add({
 		name = 'fuel_label_0',
 		type = 'label',
-		caption = ''
+		caption = '',
 	})
 	flow3.style.font = 'default-large-semibold'
 	flow3.style.font_color = GuiCommon.bold_font_color
@@ -134,7 +131,7 @@ local function create_gui(player)
 	flow3 = flow2.add({
 		name = 'fuel_label_1',
 		type = 'label',
-		caption = ''
+		caption = '',
 	})
 	flow3.style.font = 'default-large'
 	flow3.style.font_color = GuiCommon.default_font_color
@@ -148,14 +145,10 @@ local function create_gui(player)
 	flow3 = flow2.add({
 		name = 'fuel_label_2',
 		type = 'label',
-		caption = ''
+		caption = '',
 	})
 	flow3.style.font = 'default-large'
 	flow3.style.left_margin = 3
-
-
-
-
 
 	flow2 = GuiCommon.flow_add_floating_button(flow1, 'etaframe_piratebutton')
 	-- flow2.style.right_padding = -100
@@ -208,7 +201,6 @@ local function create_gui(player)
 	flow3.style.left_margin = -1
 	flow3.style.right_margin = -2 --to get to the end of the button frame
 
-
 	-- flow2 = flow1.add({
 	-- 	name = 'time_remaining_frame',
 	-- 	type = 'frame',
@@ -240,10 +232,6 @@ local function create_gui(player)
 	-- flow3.style.font_color = GuiCommon.default_font_color
 	-- flow3.tooltip = tooltip
 
-
-
-
-
 	-- flow3 = flow2.add({
 	-- 	name = 'rage_table',
 	-- 	type = 'table',
@@ -256,13 +244,6 @@ local function create_gui(player)
 	-- 	flow4.style.width = 18
 	-- 	flow4.style.height = 5
 	-- end
-
-
-
-
-
-
-
 
 	-- flow2 = flow1.add({
 	-- 	name = 'cost_frame',
@@ -301,13 +282,6 @@ local function create_gui(player)
 	-- 	flow4.visible = false
 	-- end
 	-- flow3.style.right_margin = -3
-
-
-
-
-
-
-
 
 	flow2 = flow1.add({
 		name = 'silo_frame',
@@ -362,15 +336,6 @@ local function create_gui(player)
 
 	-- old font color: {r=0.33, g=0.66, b=0.9}
 
-
-
-
-
-
-
-
-
-
 	flow2 = flow1.add({
 		name = 'quest_frame',
 		type = 'frame',
@@ -414,11 +379,6 @@ local function create_gui(player)
 	flow3.style.font = 'default-large'
 	flow3.style.font_color = Common.default_font_color
 
-
-
-
-
-
 	flow2 = flow1.add({
 		name = 'covering_line_frame',
 		type = 'frame',
@@ -439,28 +399,20 @@ local function create_gui(player)
 	flow3.style.minimal_width = 320
 	flow3.style.maximal_width = 320
 
-
-
-
-
 	--== SCREEN STUFF
 
 	-- spontaneous inside view of the hold:
-	flow1 =
-		player.gui.screen.add(
-			{
-				type = 'camera',
-				name = 'pirates_spontaneous_camera',
-				position = { x = 0, y = 0 },
-			}
-		)
+	flow1 = player.gui.screen.add({
+		type = 'camera',
+		name = 'pirates_spontaneous_camera',
+		position = { x = 0, y = 0 },
+	})
 	flow1.visible = false
 	flow1.style.margin = 8
 	-- flow2.style.minimal_height = 64
 	-- flow2.style.minimal_width = 64
 	-- flow2.style.maximal_height = 640
 	-- flow2.style.maximal_width = 640
-
 
 	-- flow2 = player.gui.screen.add({
 	-- 	name = 'pirates_undock_shortcut_button',
@@ -481,9 +433,10 @@ local function create_gui(player)
 	-- flow2.style.font_color = GuiCommon.default_font_color
 end
 
-
 function Public.process_etaframe_update(player, flow1, bools)
-	if not flow1 then return end
+	if not flow1 then
+		return
+	end
 
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
@@ -491,7 +444,15 @@ function Public.process_etaframe_update(player, flow1, bools)
 
 	local flow2
 
-	if bools.cost_bool or bools.atsea_loading_bool or bools.atsea_waiting_bool or bools.atsea_victorious_bool or bools.eta_bool or bools.retreating_bool or bools.leave_anytime_bool then
+	if
+		bools.cost_bool
+		or bools.atsea_loading_bool
+		or bools.atsea_waiting_bool
+		or bools.atsea_victorious_bool
+		or bools.eta_bool
+		or bools.retreating_bool
+		or bools.leave_anytime_bool
+	then
 		flow1.visible = true
 
 		---@type string|table
@@ -542,7 +503,7 @@ function Public.process_etaframe_update(player, flow1, bools)
 					total = Common.map_loading_ticks_atsea_maze
 				end
 
-				local eta_ticks = total + (memory.extra_time_at_sea or 0) - memory.loadingticks
+				local eta_ticks = total + (memory.extra_time_at_sea or 0) - memory.loading_ticks
 
 				flow2.etaframe_label_1.caption = { 'pirates.gui_etaframe_loading' }
 				flow2.etaframe_label_2.caption = 'for ' .. Utils.standard_string_form_of_time_in_seconds(eta_ticks / 60)
@@ -606,7 +567,7 @@ function Public.process_etaframe_update(player, flow1, bools)
 						tooltip = { 'pirates.resources_needed_tooltip_0a' }
 					end
 				end
-			elseif (not bools.eta_bool) then -- Shown when ship doesn't have auto undock timer
+			elseif not bools.eta_bool then -- Shown when ship doesn't have auto undock timer
 				flow2.etaframe_label_3.visible = false
 				flow2.etaframe_label_1.visible = true
 				flow2.etaframe_label_1.caption = { 'pirates.gui_etaframe_to_escape_store' }
@@ -628,12 +589,21 @@ function Public.process_etaframe_update(player, flow1, bools)
 				elseif destination.static_params.undock_cost_decreases == true then
 					flow2.etaframe_label_3.caption = { 'pirates.gui_etaframe_or_store' }
 
-					local adjusted_costs_resources_strings = Common.time_adjusted_departure_cost_resources_strings(memory)
+					local adjusted_costs_resources_strings =
+						Common.time_adjusted_departure_cost_resources_strings(memory)
 					if bools.cost_includes_rocket_launch_bool then
-						tooltip = { 'pirates.resources_needed_tooltip_2_rocketvariant', adjusted_costs_resources_strings[1], adjusted_costs_resources_strings[2] }
+						tooltip = {
+							'pirates.resources_needed_tooltip_2_rocketvariant',
+							adjusted_costs_resources_strings[1],
+							adjusted_costs_resources_strings[2],
+						}
 					else
 						--@Future reference: localisation handling
-						tooltip = { 'pirates.resources_needed_tooltip_2', adjusted_costs_resources_strings[1], adjusted_costs_resources_strings[2] }
+						tooltip = {
+							'pirates.resources_needed_tooltip_2',
+							adjusted_costs_resources_strings[1],
+							adjusted_costs_resources_strings[2],
+						}
 					end
 				else
 					if bools.cost_includes_rocket_launch_bool then
@@ -662,7 +632,7 @@ function Public.process_etaframe_update(player, flow1, bools)
 			end
 
 			if adjusted_costs['launch_rocket'] and cost_table['cost_launch_rocket'] then
-				if bools.atsea_loading_bool or (not dynamic_data.rocketlaunched) then
+				if bools.atsea_loading_bool or not dynamic_data.rocket_launched then
 					cost_table['cost_launch_rocket'].number = 1
 				else
 					cost_table['cost_launch_rocket'].number = 0
@@ -677,9 +647,22 @@ function Public.process_etaframe_update(player, flow1, bools)
 		flow1.etaframe_piratebutton.tooltip = tooltip
 		flow2.tooltip = tooltip
 
-		if bools.captain_bool and (not bools.retreating_bool) and (bools.leave_anytime_bool or bools.atsea_waiting_bool or bools.eta_bool or (bools.cost_bool and (not bools.atsea_loading_bool))) then
+		if
+			bools.captain_bool
+			and not bools.retreating_bool
+			and (
+				bools.leave_anytime_bool
+				or bools.atsea_waiting_bool
+				or bools.eta_bool
+				or (bools.cost_bool and not bools.atsea_loading_bool)
+			)
+		then
 			flow1.etaframe_piratebutton.mouse_button_filter = { 'left' }
-			if memory.undock_shortcut_are_you_sure_data and memory.undock_shortcut_are_you_sure_data[player.index] and memory.undock_shortcut_are_you_sure_data[player.index] > game.tick - 60 * 4 then
+			if
+				memory.undock_shortcut_are_you_sure_data
+				and memory.undock_shortcut_are_you_sure_data[player.index]
+				and memory.undock_shortcut_are_you_sure_data[player.index] > game.tick - 60 * 4
+			then
 				flow2.etaframe_label_1.visible = true
 				flow2.etaframe_label_1.caption = { 'pirates.gui_etaframe_undock_are_you_sure' }
 				flow2.etaframe_label_2.visible = false
@@ -720,7 +703,10 @@ function Public.process_siloframe_and_questframe_updates(flowsilo, flowquest, bo
 					local rocket_launch_coal_reward = Balance.rocket_launch_fuel_reward()
 					local rocket_launch_coin_reward = Balance.rocket_launch_coin_reward()
 
-					flow1.silo_label_3.caption = Math.floor(rocket_launch_coal_reward / 100) / 10 .. 'k[item=coal], ' .. Math.floor(rocket_launch_coin_reward / 100) / 10 .. 'k[item=coin]'
+					flow1.silo_label_3.caption = Math.floor(rocket_launch_coal_reward / 100) / 10
+						.. 'k[item=coal], '
+						.. Math.floor(rocket_launch_coin_reward / 100) / 10
+						.. 'k[item=coin]'
 
 					local tooltip = { 'pirates.gui_etaframe_launched_tooltip' }
 					flow1.tooltip = tooltip
@@ -747,13 +733,17 @@ function Public.process_siloframe_and_questframe_updates(flowsilo, flowquest, bo
 				flow1.silo_progressbar.visible = true
 				flow1.silo_label_3.visible = false
 
-				local consumed = dynamic_data.rocketsiloenergyconsumed
-				local needed = dynamic_data.rocketsiloenergyneeded
-				local recent = (dynamic_data.rocketsiloenergyconsumedwithinlasthalfsecond * 2)
+				local consumed = dynamic_data.rocket_silo_energy_consumed
+				local needed = dynamic_data.rocket_silo_energy_needed
+				local recent = (dynamic_data.rocket_silo_energy_consumed_within_last_half_second * 2)
 
 				flow1.silo_progressbar.value = consumed / needed
 
-				local tooltip = { 'pirates.gui_etaframe_charge_tooltip', string.format('%.1f', Math.floor(consumed / 100000000) / 10), string.format('%.1f', Math.floor(needed / 100000000) / 10) }
+				local tooltip = {
+					'pirates.gui_etaframe_charge_tooltip',
+					string.format('%.1f', Math.floor(consumed / 100000000) / 10),
+					string.format('%.1f', Math.floor(needed / 100000000) / 10),
+				}
 				flow1.tooltip = tooltip
 				flow1.silo_label_1.tooltip = tooltip
 				flow1.silo_label_2.tooltip = tooltip
@@ -762,7 +752,7 @@ function Public.process_siloframe_and_questframe_updates(flowsilo, flowquest, bo
 				if recent ~= 0 then
 					active_eta = (needed - consumed) / recent
 					flow1.silo_label_2.caption = Utils.standard_string_form_of_time_in_seconds(active_eta)
-					if active_eta < dynamic_data.time_remaining or (not bools.eta_bool) then
+					if active_eta < dynamic_data.time_remaining or not bools.eta_bool then
 						flow1.silo_label_2.style.font_color = GuiCommon.sufficient_font_color
 					else
 						flow1.silo_label_2.style.font_color = GuiCommon.insufficient_font_color
@@ -817,10 +807,13 @@ function Public.process_siloframe_and_questframe_updates(flowsilo, flowquest, bo
 					end
 
 					if quest_type == Quest.enum.TIME then
-						if tooltip == '' then tooltip = { 'pirates.gui_questframe_time' } end
+						if tooltip == '' then
+							tooltip = { 'pirates.gui_questframe_time' }
+						end
 
 						if quest_progress >= 0 then
-							flow1.quest_label_3.caption = string.format('%.0fm%.0fs', Math.floor(quest_progress / 60), quest_progress % 60)
+							flow1.quest_label_3.caption =
+								string.format('%.0fm%.0fs', Math.floor(quest_progress / 60), quest_progress % 60)
 							if active_eta then
 								if active_eta < quest_progress - 35 then --35 is roughly the number of seconds between charge and launch
 									flow1.quest_label_3.style.font_color = GuiCommon.sufficient_font_color
@@ -839,28 +832,56 @@ function Public.process_siloframe_and_questframe_updates(flowsilo, flowquest, bo
 							flow1.quest_label_3.style.font_color = GuiCommon.insufficient_font_color
 						end
 					elseif quest_type == Quest.enum.WORMS then
-						if tooltip == '' then tooltip = { 'pirates.gui_questframe_worms' } end
+						if tooltip == '' then
+							tooltip = { 'pirates.gui_questframe_worms' }
+						end
 					elseif quest_type == Quest.enum.FIND then
-						if tooltip == '' then tooltip = { 'pirates.gui_questframe_find' } end
+						if tooltip == '' then
+							tooltip = { 'pirates.gui_questframe_find' }
+						end
 					elseif quest_type == Quest.enum.RESOURCEFLOW then
-						if tooltip == '' then tooltip = { 'pirates.gui_questframe_resourceflow' } end
+						if tooltip == '' then
+							tooltip = { 'pirates.gui_questframe_resourceflow' }
+						end
 
 						-- out of date:
 						if quest_progressneeded / 60 % 1 == 0 then
-							flow1.quest_label_2.caption = string.format('%s %.1f/%.0f /s', '[item=' .. quest_params.item .. ']', quest_progress / 60, quest_progressneeded / 60)
+							flow1.quest_label_2.caption = string.format(
+								'%s %.1f/%.0f /s',
+								'[item=' .. quest_params.item .. ']',
+								quest_progress / 60,
+								quest_progressneeded / 60
+							)
 							flow1.quest_label_3.caption = string.format(' for %s', quest_reward.display_sprite)
 						else
-							flow1.quest_label_2.caption = string.format('%s %.1f/%.1f /s', '[item=' .. quest_params.item .. ']', quest_progress / 60, quest_progressneeded / 60)
+							flow1.quest_label_2.caption = string.format(
+								'%s %.1f/%.1f /s',
+								'[item=' .. quest_params.item .. ']',
+								quest_progress / 60,
+								quest_progressneeded / 60
+							)
 							flow1.quest_label_3.caption = string.format(' for %s', quest_reward.display_sprite)
 						end
 					elseif quest_type == Quest.enum.RESOURCECOUNT then
-						if tooltip == '' then tooltip = { 'pirates.gui_questframe_resourcecount' } end
+						if tooltip == '' then
+							tooltip = { 'pirates.gui_questframe_resourcecount' }
+						end
 
 						flow1.quest_label_2.caption = string.format('%s ', '[item=' .. quest_params.item .. ']')
 					elseif quest_type == Quest.enum.NODAMAGE then
-						if tooltip == '' then tooltip = { 'pirates.gui_questframe_nodamage' } end
+						if tooltip == '' then
+							tooltip = { 'pirates.gui_questframe_nodamage' }
+						end
 
-						if bools.approaching_bool or (dynamic_data.rocketsilos and dynamic_data.rocketsilos[1] and dynamic_data.rocketsilos[1].valid and dynamic_data.rocketsilohp == dynamic_data.rocketsilomaxhp) then
+						if
+							bools.approaching_bool
+							or (
+								dynamic_data.rocketsilos
+								and dynamic_data.rocketsilos[1]
+								and dynamic_data.rocketsilos[1].valid
+								and dynamic_data.rocketsilohp == dynamic_data.rocketsilomaxhp
+							)
+						then
 							flow1.quest_label_3.caption = { 'pirates.gui_questframe_ok' }
 							flow1.quest_label_3.style.font_color = GuiCommon.sufficient_font_color
 						else
@@ -868,9 +889,13 @@ function Public.process_siloframe_and_questframe_updates(flowsilo, flowquest, bo
 							flow1.quest_label_3.style.font_color = GuiCommon.insufficient_font_color
 						end
 					elseif quest_type == Quest.enum.FISH then
-						if tooltip == '' then tooltip = { 'pirates.gui_questframe_fish' } end
+						if tooltip == '' then
+							tooltip = { 'pirates.gui_questframe_fish' }
+						end
 					elseif quest_type == Quest.enum.COMPILATRON then
-						if tooltip == '' then tooltip = { 'pirates.gui_questframe_compilatron' } end
+						if tooltip == '' then
+							tooltip = { 'pirates.gui_questframe_compilatron' }
+						end
 					end
 				end
 
@@ -892,7 +917,6 @@ end
 
 -- Event.add(defines.events.on_player_joined_game, create_gui_2)
 
-
 function Public.update_gui(player)
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
@@ -901,8 +925,9 @@ function Public.update_gui(player)
 
 	local pirates_flow = player.gui.top
 
-	if not pirates_flow.info_piratebutton_frame then create_gui(player) end
-
+	if not pirates_flow.info_piratebutton_frame then
+		create_gui(player)
+	end
 
 	flow1 = pirates_flow.crew_piratebutton_frame.crew_piratebutton
 
@@ -930,13 +955,27 @@ function Public.update_gui(player)
 		end
 	end
 
-	if GuiEvo.full_update then GuiEvo.full_update(player) end
-	if GuiProgress.regular_update then GuiProgress.regular_update(player) end --moved to event
-	if GuiRuns.full_update then GuiRuns.full_update(player) end
-	if GuiCrew.full_update then GuiCrew.full_update(player) end
-	if GuiClasses.full_update then GuiClasses.full_update(player) end
-	if GuiMinimap.full_update then GuiMinimap.full_update(player) end
-	if GuiInfo.full_update then GuiInfo.full_update(player) end
+	if GuiEvo.full_update then
+		GuiEvo.full_update(player)
+	end
+	if GuiProgress.regular_update then
+		GuiProgress.regular_update(player)
+	end --moved to event
+	if GuiRuns.full_update then
+		GuiRuns.full_update(player)
+	end
+	if GuiCrew.full_update then
+		GuiCrew.full_update(player)
+	end
+	if GuiClasses.full_update then
+		GuiClasses.full_update(player)
+	end
+	if GuiMinimap.full_update then
+		GuiMinimap.full_update(player)
+	end
+	if GuiInfo.full_update then
+		GuiInfo.full_update(player)
+	end
 
 	-- local lives = memory.lives or 1
 	-- local button = pirates_flow.lives_piratebutton_frame.lives_piratebutton
@@ -954,17 +993,16 @@ function Public.update_gui(player)
 	flow1 = pirates_flow.fuel_flow
 	-- flow1 = pirates_flow.fuel_piratebutton_flow_1
 
-	local tooltip = { 'pirates.fuel_tooltip', Math.floor(memory.stored_fuel or 0) }
+	local tooltip = { 'pirates.fuel_tooltip', tostring(Math.floor(memory.stored_fuel or 0)) }
 	flow1.tooltip = tooltip
 	-- flow1.fuel_piratebutton.tooltip = {'pirates.fuel_tooltip', Math.floor(memory.stored_fuel or 0)}
-
 
 	flow2 = flow1
 	-- flow2 = flow1.fuel_piratebutton_flow_2
 
 	flow2.fuel_label_1.caption = Utils.bignumber_abbrevform(memory.stored_fuel or 0) .. '[item=coal]'
 	flow2.fuel_label_2.caption = Utils.negative_rate_abbrevform(memory.fuel_depletion_rate_memoized or 0)
-	local color_scale = Math.clamp(0, 1, (-(memory.fuel_depletion_rate_memoized or 0)) / 30)
+	local color_scale = Math.clamp(0, 1, -(memory.fuel_depletion_rate_memoized or 0) / 30)
 	flow2.fuel_label_2.style.font_color = {
 		r = GuiCommon.fuel_color_1.r * (1 - color_scale) + GuiCommon.fuel_color_2.r * color_scale,
 		g = GuiCommon.fuel_color_1.g * (1 - color_scale) + GuiCommon.fuel_color_2.g * color_scale,
@@ -974,23 +1012,18 @@ function Public.update_gui(player)
 	flow2.fuel_label_1.tooltip = tooltip
 	flow2.fuel_label_2.tooltip = tooltip
 
-
 	flow1 = pirates_flow.progress_piratebutton_frame.progress_piratebutton
 
 	flow1.number = (memory.overworldx or 0)
-	flow1.tooltip = { 'pirates.gui_progress_tooltip', memory.overworldx or 0, CoreData.victory_x }
+	flow1.tooltip = { 'pirates.gui_progress_tooltip', tostring(memory.overworldx or 0), tostring(CoreData.victory_x) }
 	-- pirates_flow.destination_piratebutton_frame.destination_piratebutton.number = memory.destinationsvisited_indices and #memory.destinationsvisited_indices or 0
-
 
 	--== State-checking bools ==--
 
 	-- this is nonsense to temporarily avoid function complexity for luacheck:
 	local bools = GuiCommon.player_and_crew_state_bools(player)
 
-
-
 	--== Update Gui ==--
-
 
 	flow1 = pirates_flow.fuel_flow
 	-- flow1 = pirates_flow.fuel_piratebutton_flow_1
@@ -1001,11 +1034,8 @@ function Public.update_gui(player)
 		flow1.visible = true
 	end
 
-
 	flow1 = pirates_flow.etaframe_piratebutton_flow_1
 	Public.process_etaframe_update(player, flow1, bools)
-
-
 
 	-- flow1 = pirates_flow.cost_frame
 	-- if flow1 then
@@ -1053,7 +1083,6 @@ function Public.update_gui(player)
 	-- 	end
 	-- end
 
-
 	-- flow1 = player.gui.screen.pirates_undock_shortcut_button
 
 	-- if flow1 then
@@ -1085,24 +1114,34 @@ function Public.update_gui(player)
 	-- 	end
 	-- end
 
-
-
 	local flowsilo = pirates_flow.silo_frame
 	local flowquest = pirates_flow.quest_frame
 	Public.process_siloframe_and_questframe_updates(flowsilo, flowquest, bools)
-
 
 	flow1 = pirates_flow.covering_line_frame
 
 	if flow1 then
 		-- if not bools.eta_bool and not bools.retreating_bool and not bools.quest_bool and not bools.silo_bool and not bools.atsea_loading_bool and not bools.leave_anytime_bool and not bools.cost_bool and not bools.approaching_dock_bool and not bools.leaving_dock_bool then
-		if not (bools.eta_bool or bools.retreating_bool or bools.quest_bool or bools.silo_bool or bools.atsea_loading_bool or bools.leave_anytime_bool or bools.cost_bool or bools.approaching_dock_bool or bools.leaving_dock_bool or bools.atsea_sailing_bool or bools.atsea_waiting_bool) then
+		if
+			not (
+				bools.eta_bool
+				or bools.retreating_bool
+				or bools.quest_bool
+				or bools.silo_bool
+				or bools.atsea_loading_bool
+				or bools.leave_anytime_bool
+				or bools.cost_bool
+				or bools.approaching_dock_bool
+				or bools.leaving_dock_bool
+				or bools.atsea_sailing_bool
+				or bools.atsea_waiting_bool
+			)
+		then
 			flow1.visible = true
 		else
 			flow1.visible = false
 		end
 	end
-
 
 	flow1 = pirates_flow.minimap_piratebutton_frame
 
@@ -1114,18 +1153,14 @@ function Public.update_gui(player)
 		end
 	end
 
-
 	flow1 = player.gui.screen.pirates_spontaneous_camera
 
 	if not flow1 then --comfy panel might possibly destroy this, so this puts it back
-		flow1 =
-			player.gui.screen.add(
-				{
-					type = 'camera',
-					name = 'pirates_spontaneous_camera',
-					position = { x = 0, y = 0 },
-				}
-			)
+		flow1 = player.gui.screen.add({
+			type = 'camera',
+			name = 'pirates_spontaneous_camera',
+			position = { x = 0, y = 0 },
+		})
 		flow1.visible = false
 		flow1.style.margin = 8
 	end
@@ -1162,9 +1197,20 @@ function Public.update_gui(player)
 			flow1.style.minimal_width = 312
 
 			local position = memory.boat.position
-			if (destination and destination.type and destination.type == Surfaces.enum.ISLAND and memory.boat.surface_name and memory.boat.surface_name == destination.surface_name and destination.static_params and destination.static_params.boat_starting_xposition) then
+			if
+				destination
+				and destination.type
+				and destination.type == Surfaces.enum.ISLAND
+				and memory.boat.surface_name
+				and memory.boat.surface_name == destination.surface_name
+				and destination.static_params
+				and destination.static_params.boat_starting_xposition
+			then
 				-- nicer viewing position:
-				position = { x = destination.static_params.boat_starting_xposition + 50, y = destination.static_params.boat_starting_yposition or 0 }
+				position = {
+					x = destination.static_params.boat_starting_xposition + 50,
+					y = destination.static_params.boat_starting_yposition or 0,
+				}
 			end
 			flow1.position = position
 		end
@@ -1173,9 +1219,15 @@ end
 
 -- ATTENTION: Giving same names to GUI elements can cause issues, because click events are dispatched to all GUI windows!
 local function on_gui_click(event)
-	if not event then return end
-	if not event.element then return end
-	if not event.element.valid then return end
+	if not event then
+		return
+	end
+	if not event.element then
+		return
+	end
+	if not event.element.valid then
+		return
+	end
 
 	local player = game.players[event.element.player_index]
 
@@ -1184,10 +1236,15 @@ local function on_gui_click(event)
 	local memory = Memory.get_crew_memory()
 
 	if event.element.name and event.element.name == 'etaframe_piratebutton' then
-		if (memory.boat.state == Boats.enum_state.DOCKED or memory.boat.state == Boats.enum_state.LANDED) then
+		if memory.boat.state == Boats.enum_state.DOCKED or memory.boat.state == Boats.enum_state.LANDED then
 			if Permissions.player_privilege_level(player) >= Permissions.privilege_levels.CAPTAIN then
-				if (not memory.undock_shortcut_are_you_sure_data) then memory.undock_shortcut_are_you_sure_data = {} end
-				if memory.undock_shortcut_are_you_sure_data[player.index] and memory.undock_shortcut_are_you_sure_data[player.index] > game.tick - 60 * 4 then
+				if not memory.undock_shortcut_are_you_sure_data then
+					memory.undock_shortcut_are_you_sure_data = {}
+				end
+				if
+					memory.undock_shortcut_are_you_sure_data[player.index]
+					and memory.undock_shortcut_are_you_sure_data[player.index] > game.tick - 60 * 4
+				then
 					if memory.boat.state == Boats.enum_state.DOCKED then
 						Progression.undock_from_dock(true)
 					elseif memory.boat.state == Boats.enum_state.LANDED then
@@ -1199,7 +1256,7 @@ local function on_gui_click(event)
 			end
 		elseif memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL then
 			if Permissions.player_privilege_level(player) >= Permissions.privilege_levels.CAPTAIN then
-				local destination_index = memory.mapbeingloadeddestination_index
+				local destination_index = memory.map_being_loaded_destination_index
 
 				Progression.progress_to_destination(destination_index)
 			end
@@ -1208,7 +1265,9 @@ local function on_gui_click(event)
 				memory.boat.state = Boats.enum_state.ATSEA_SAILING
 
 				local force = memory.force
-				if not (force and force.valid) then return end
+				if not (force and force.valid) then
+					return
+				end
 				if memory.victory_continue_message then
 					memory.victory_continue_message = false
 					Common.notify_force(force, { 'pirates.crew_continue_on_freeplay' }, CoreData.colors.notify_victory)
@@ -1225,17 +1284,31 @@ local function on_gui_click(event)
 		-- 	Public.fuel.toggle_window(player)
 		-- 	Public.fuel.full_update(player)
 	else
-		if GuiWelcome.handle_click then GuiWelcome.handle_click(event) end
-		if GuiRuns.click then GuiRuns.click(event) end
-		if GuiCrew.click then GuiCrew.click(event) end
-		if GuiClasses.click then GuiClasses.click(event) end
-		if GuiMinimap.click then GuiMinimap.click(event) end
-		if GuiInfo.click then GuiInfo.click(event) end
+		if GuiWelcome.handle_click then
+			GuiWelcome.handle_click(event)
+		end
+		if GuiRuns.click then
+			GuiRuns.click(event)
+		end
+		if GuiCrew.click then
+			GuiCrew.click(event)
+		end
+		if GuiClasses.click then
+			GuiClasses.click(event)
+		end
+		if GuiMinimap.click then
+			GuiMinimap.click(event)
+		end
+		if GuiInfo.click then
+			GuiInfo.click(event)
+		end
 	end
 end
 
 local function on_gui_location_changed(event)
-	if (not event and event.element and event.element.valid) then return end
+	if not event and event.element and event.element.valid then
+		return
+	end
 
 	if string.sub(event.element.name, -13, -1) and string.sub(event.element.name, -13, -1) == '_piratewindow' then
 		local name = string.sub(event.element.name, 1, -14)
@@ -1245,8 +1318,7 @@ local function on_gui_location_changed(event)
 	end
 end
 
-
-local event = require 'utils.event'
+local event = require('utils.event')
 event.add(defines.events.on_gui_click, on_gui_click)
 event.add(defines.events.on_gui_location_changed, on_gui_location_changed)
 

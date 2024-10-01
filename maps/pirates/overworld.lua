@@ -2,23 +2,23 @@
 
 local Public = {}
 
-local Memory = require 'maps.pirates.memory'
-local Math = require 'maps.pirates.math'
-local Balance = require 'maps.pirates.balance'
-local Common = require 'maps.pirates.common'
-local CoreData = require 'maps.pirates.coredata'
-local Utils = require 'maps.pirates.utils_local'
+local Memory = require('maps.pirates.memory')
+local Math = require('maps.pirates.math')
+local Balance = require('maps.pirates.balance')
+local Common = require('maps.pirates.common')
+local CoreData = require('maps.pirates.coredata')
+local Utils = require('maps.pirates.utils_local')
 -- local _inspect = require 'utils.inspect'.inspect
 -- local Server = require 'utils.server'
 
 -- local Structures = require 'maps.pirates.structures.structures'
-local Boats = require 'maps.pirates.structures.boats.boats'
-local Surfaces = require 'maps.pirates.surfaces.surfaces'
-local Crowsnest = require 'maps.pirates.surfaces.crowsnest'
-local Dock = require 'maps.pirates.surfaces.dock'
-local Islands = require 'maps.pirates.surfaces.islands.islands'
+local Boats = require('maps.pirates.structures.boats.boats')
+local Surfaces = require('maps.pirates.surfaces.surfaces')
+local Crowsnest = require('maps.pirates.surfaces.crowsnest')
+local Dock = require('maps.pirates.surfaces.dock')
+local Islands = require('maps.pirates.surfaces.islands.islands')
 -- local Sea = require 'maps.pirates.surfaces.sea.sea'
-local Crew = require 'maps.pirates.crew'
+local Crew = require('maps.pirates.crew')
 -- local Roles = require 'maps.pirates.roles.roles'
 -- local Classes = require 'maps.pirates.roles.classes'
 -- local Quest = require 'maps.pirates.quest'
@@ -26,12 +26,11 @@ local Crew = require 'maps.pirates.crew'
 -- local Hold = require 'maps.pirates.surfaces.hold'
 -- local Cabin = require 'maps.pirates.surfaces.cabin'
 -- local Shop = require 'maps.pirates.shop.shop'
-local Upgrades = require 'maps.pirates.shop.boat_upgrades'
-local Kraken = require 'maps.pirates.surfaces.sea.kraken'
-local Highscore = require 'maps.pirates.highscore'
+local Upgrades = require('maps.pirates.shop.boat_upgrades')
+local Kraken = require('maps.pirates.surfaces.sea.kraken')
+local Highscore = require('maps.pirates.highscore')
 
-local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
-
+local IslandEnum = require('maps.pirates.surfaces.islands.island_enum')
 
 local NIL = 'none'
 local DOCK = 'dock'
@@ -70,7 +69,7 @@ local destinationScheme = {
 	[15] = { DOCK, B, B },
 	[16] = { RADIOACTIVE, RADIOACTIVE, RADIOACTIVE },
 	[17] = { B, B, B },
-	[18] = { C, C, C },                   --first showing of robot frame cost
+	[18] = { C, C, C }, --first showing of robot frame cost
 	[19] = { DOCK, B, B },
 	[20] = { WALKWAYS, WALKWAYS, WALKWAYS }, --rocket launch cost begins
 	[21] = { SWAMP, RED_DESERT, STANDARD2 }, -- uniquely, this has a rocket launch cost, but still has an auto-undock timer
@@ -79,8 +78,6 @@ local destinationScheme = {
 	[24] = { MAZE, MAZE, MAZE }, -- current 'boss map'
 	[25] = { NIL, NIL, NIL },
 }
-
-
 
 function Public.generate_destination_type_and_subtype(overworld_position)
 	local macro_p = { x = overworld_position.x / 40, y = overworld_position.y / 24 }
@@ -261,8 +258,6 @@ for x = 1, 14 do
 	end
 end
 
-
-
 function Public.generate_overworld_destination(p)
 	-- be careful when calling any Balance functions that depend on overworldx — they will be evaluated when the island is chosen, not on arrival
 	local memory = Memory.get_crew_memory()
@@ -325,7 +320,9 @@ function Public.generate_overworld_destination(p)
 
 		static_params.radius_squared_modifier = (2 + 2 * Math.random())
 
-		if macro_p.x == 0 then static_params.radius_squared_modifier = 1.75 end
+		if macro_p.x == 0 then
+			static_params.radius_squared_modifier = 1.75
+		end
 
 		static_params.discord_emoji = scope.Data.discord_emoji
 
@@ -333,19 +330,21 @@ function Public.generate_overworld_destination(p)
 		static_params.starting_treasure_maps = Math.ceil((static_params.base_starting_treasure_maps or 0) * rng)
 		static_params.starting_wood = static_params.base_starting_wood or 1000
 		static_params.starting_wood = Math.ceil(static_params.starting_wood * Balance.game_resources_scale(p.x))
-		static_params.starting_rock_material = Math.ceil(static_params.base_starting_rock_material or 300) * Balance.game_resources_scale(p.x)
+		static_params.starting_rock_material = Math.ceil(static_params.base_starting_rock_material or 300)
+			* Balance.game_resources_scale(p.x)
 
 		rng = 0.5 + 1 * Math.random()
-		static_params.starting_treasure = Math.ceil((static_params.base_starting_treasure or 1000) * Balance.game_resources_scale(p.x) * rng)
+		static_params.starting_treasure =
+			Math.ceil((static_params.base_starting_treasure or 1000) * Balance.game_resources_scale(p.x) * rng)
 
 		static_params.name = scope.Data.display_names[Math.random(#scope.Data.display_names)]
 
-		local dest = Surfaces.initialise_destination {
+		local dest = Surfaces.initialise_destination({
 			static_params = static_params,
 			type = type,
 			subtype = subtype,
 			overworld_position = p,
-		}
+		})
 
 		Crowsnest.draw_destination(dest)
 	elseif type == Surfaces.enum.DOCK then
@@ -376,9 +375,9 @@ function Public.generate_overworld_destination(p)
 		-- NOTE: When DOCK frequency changes, this needs to change too (kinda bad design, but whatever)
 		-- NOTE: I couldn't manage to make upgrade overwriting to work so I made it here
 		-- TODO: Perhaps always have something special to sell (or remove the upgrade market if it has no offers?)
-		if macro_p.x % 16 == 15 and (not memory.rockets_for_sale) then
+		if macro_p.x % 16 == 15 and not memory.rockets_for_sale then
 			upgrade_for_sale = Upgrades.enum.ROCKETS_FOR_SALE
-		elseif macro_p.x % 16 == 3 and macro_p.x > 16 and (not memory.merchant_ships_unlocked) then
+		elseif macro_p.x % 16 == 3 and macro_p.x > 16 and not memory.merchant_ships_unlocked then
 			upgrade_for_sale = Upgrades.enum.UNLOCK_MERCHANTS
 		elseif (macro_p.x % 8) == 3 then
 			upgrade_for_sale = Upgrades.enum.UPGRADE_CANNONS
@@ -390,13 +389,13 @@ function Public.generate_overworld_destination(p)
 
 		static_params.name = Dock.Data.display_names[Math.random(#Dock.Data.display_names)]
 
-		local dest = Surfaces.initialise_destination {
+		local dest = Surfaces.initialise_destination({
 			static_params = static_params,
 			type = type,
 			subtype = subtype,
 			overworld_position = { x = p.x, y = -36 },
 			-- overworld_position = {x = p.x, y = 36},
-		}
+		})
 
 		Crowsnest.draw_destination(dest)
 
@@ -412,7 +411,7 @@ function Public.generate_overworld_destination(p)
 				dest.dynamic_data.crowsnest_renderings = {}
 			end
 
-			dest.dynamic_data.crowsnest_renderings.base_text_rendering = rendering.draw_text {
+			dest.dynamic_data.crowsnest_renderings.base_text_rendering = rendering.draw_text({
 				text = display_form,
 				surface = surface,
 				target = { x = x + 5.5, y = y + 2.5 },
@@ -421,7 +420,7 @@ function Public.generate_overworld_destination(p)
 				font = 'default-game',
 				alignment = 'right',
 				visible = false,
-			}
+			})
 
 			local i = 1
 			for _, price_data in ipairs(Upgrades.upgrades_data[dest.static_params.upgrade_for_sale].market_item.price) do
@@ -433,7 +432,7 @@ function Public.generate_overworld_destination(p)
 					sprite = 'item/' .. price_name
 				end
 				dest.dynamic_data.crowsnest_renderings[price_name] = {
-					text_rendering = rendering.draw_text {
+					text_rendering = rendering.draw_text({
 						text = Utils.bignumber_abbrevform2(price_count),
 						surface = surface,
 						target = { x = x + 6, y = y + 8.3 - i * 3.5 },
@@ -442,15 +441,15 @@ function Public.generate_overworld_destination(p)
 						font = 'default-game',
 						alignment = 'left',
 						visible = false,
-					},
-					sprite_rendering = rendering.draw_sprite {
+					}),
+					sprite_rendering = rendering.draw_sprite({
 						sprite = sprite,
 						surface = surface,
 						target = { x = x + 14.1, y = y + 10.8 - i * 3.5 },
 						x_scale = 4.5,
 						y_scale = 4.5,
 						visible = false,
-					}
+					}),
 				}
 				i = i + 1
 			end
@@ -487,7 +486,7 @@ function Public.generate_overworld_destination(p)
 		if random_indices then
 			for _, idx in ipairs(random_indices) do
 				local p_chosen = position_candidates[idx]
-				local p_kraken = Utils.psum { p_chosen, p }
+				local p_kraken = Utils.psum({ p_chosen, p })
 				Crowsnest.draw_kraken(p_kraken)
 				memory.overworld_krakens[#memory.overworld_krakens + 1] = p_kraken
 			end
@@ -513,11 +512,14 @@ function Public.ensure_lane_generated_up_to(lane_yvalue, x)
 			for _, dest in pairs(memory.destinations) do
 				if dest.static_params.upgrade_for_sale and dest.dynamic_data.crowsnest_renderings then
 					if dest.dynamic_data.crowsnest_renderings.base_text_rendering.valid then
-						dest.dynamic_data.crowsnest_renderings.base_text_rendering.text = { '', Upgrades.crowsnest_display_form[dest.static_params.upgrade_for_sale], ':' }
+						dest.dynamic_data.crowsnest_renderings.base_text_rendering.text =
+							{ '', Upgrades.crowsnest_display_form[dest.static_params.upgrade_for_sale], ':' }
 					end
 					for rendering_name, r in pairs(dest.dynamic_data.crowsnest_renderings) do
 						if type(r) == 'table' and r.text_rendering and r.text_rendering.valid then
-							for _, price_data in ipairs(Upgrades.upgrades_data[dest.static_params.upgrade_for_sale].market_item.price) do
+							for _, price_data in
+								ipairs(Upgrades.upgrades_data[dest.static_params.upgrade_for_sale].market_item.price)
+							do
 								if price_data.name == rendering_name then
 									r.text_rendering.text = Utils.bignumber_abbrevform2(price_data.count)
 									break
@@ -529,7 +531,7 @@ function Public.ensure_lane_generated_up_to(lane_yvalue, x)
 			end
 			Crowsnest.update_destination_renderings()
 		end
-		Public.generate_overworld_destination { x = highest_x, y = lane_yvalue }
+		Public.generate_overworld_destination({ x = highest_x, y = lane_yvalue })
 	end
 
 	memory['greatest_overworldx_generated_for_' .. lane_yvalue] = highest_x
@@ -541,10 +543,12 @@ function Public.is_position_free_to_move_to(p)
 	local ret = true
 
 	for _, destination_data in pairs(memory.destinations) do
-		if p.x >= destination_data.overworld_position.x + 1 and
-			p.x <= destination_data.overworld_position.x + destination_data.iconized_map_width + Crowsnest.platformwidth - 1 and
-			p.y >= destination_data.overworld_position.y - destination_data.iconized_map_width / 2 - Crowsnest.platformheight / 2 + 1 and
-			p.y <= destination_data.overworld_position.y + destination_data.iconized_map_width / 2 + Crowsnest.platformheight / 2 - 1
+		if
+			p.x >= destination_data.overworld_position.x + 1
+			and p.x <= destination_data.overworld_position.x + destination_data.iconized_map_width + Crowsnest.platformwidth - 1
+			and p.y >= destination_data.overworld_position.y - destination_data.iconized_map_width / 2 - Crowsnest.platformheight / 2 + 1
+			and p.y
+				<= destination_data.overworld_position.y + destination_data.iconized_map_width / 2 + Crowsnest.platformheight / 2 - 1
 		then
 			ret = false
 			break
@@ -561,7 +565,7 @@ function Public.check_for_kraken_collisions()
 		local relativex = Crowsnest.platformrightmostedge + k.x - memory.overworldx
 		local relativey = k.y - memory.overworldy
 
-		if (relativex <= 3.5 and relativex >= -3.5 and relativey >= -4 and relativey <= 4) then
+		if relativex <= 3.5 and relativex >= -3.5 and relativey >= -4 and relativey <= 4 then
 			Kraken.try_spawn_kraken()
 			memory.overworld_krakens = Utils.ordered_table_with_index_removed(memory.overworld_krakens, i)
 		end
@@ -578,7 +582,11 @@ function Public.check_for_destination_collisions()
 		local relativex = Crowsnest.platformrightmostedge + destination_data.overworld_position.x - memory.overworldx
 		local relativey = destination_data.overworld_position.y - memory.overworldy
 
-		if (relativex == 4 and relativey + destination_data.iconized_map_height / 2 >= -3.5 and relativey - destination_data.iconized_map_height / 2 <= 3.5) then
+		if
+			relativex == 4
+			and relativey + destination_data.iconized_map_height / 2 >= -3.5
+			and relativey - destination_data.iconized_map_height / 2 <= 3.5
+		then
 			--or (relativey - destination_data.iconized_map.height/2 == 5 and (relativex >= -3.5 or relativex <= 4.5)) or (relativey + destination_data.iconized_map.height/2 == -4 and (relativex >= -3.5 or relativex <= 4.5))
 
 			-- Surfaces.clean_up(Common.current_destination())
@@ -586,8 +594,8 @@ function Public.check_for_destination_collisions()
 			Surfaces.create_surface(destination_data)
 
 			local index = destination_data.destination_index
-			memory.loadingticks = 0
-			memory.mapbeingloadeddestination_index = index
+			memory.loading_ticks = 0
+			memory.map_being_loaded_destination_index = index
 			memory.currentdestination_index = index
 			memory.boat.state = Boats.enum_state.ATSEA_LOADING_MAP
 
@@ -630,8 +638,12 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 		-- Public.overwrite_a_dock_upgrade()
 	end
 
-	if not Public.is_position_free_to_move_to { x = memory.overworldx + vector.x, y = memory.overworldy + vector.y } then
-		if _DEBUG then log(string.format('can\'t move by ' .. vector.x .. ', ' .. vector.y)) end
+	if
+		not Public.is_position_free_to_move_to({ x = memory.overworldx + vector.x, y = memory.overworldy + vector.y })
+	then
+		if _DEBUG then
+			log(string.format("can't move by " .. vector.x .. ', ' .. vector.y))
+		end
 		return false
 	else
 		Crowsnest.move_crowsnest(vector.x, vector.y)
@@ -658,7 +670,8 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 			Balance.apply_crew_buffs_from_leagues(memory.force, memory.overworldx, memory.overworldx + vector.x)
 
 			-- add some evo: (this will get reset upon arriving at a destination anyway, so this is just relevant for sea monsters and the like:)
-			local extra_evo = Balance.base_evolution_leagues(memory.overworldx) - Balance.base_evolution_leagues(memory.overworldx - vector.x)
+			local extra_evo = Balance.base_evolution_leagues(memory.overworldx)
+				- Balance.base_evolution_leagues(memory.overworldx - vector.x)
 			Common.increment_evo(extra_evo)
 		end
 
@@ -675,7 +688,16 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 					modal_captain = name
 				end
 			end
-			Highscore.write_score(memory.secs_id, memory.name, modal_captain, memory.completion_time or 0, memory.overworldx, CoreData.version_string, memory.difficulty, memory.max_players_recorded or 0)
+			Highscore.write_score(
+				memory.secs_id,
+				memory.name,
+				modal_captain,
+				memory.completion_time or 0,
+				memory.overworldx,
+				CoreData.version_string,
+				memory.difficulty,
+				memory.max_players_recorded or 0
+			)
 		end
 
 		return true
@@ -699,18 +721,22 @@ function Public.overwrite_a_dock_upgrade()
 		-- else
 		local upgrade_to_overwrite_with
 
-		if not memory.dock_overwrite_variable then memory.dock_overwrite_variable = 1 end
+		if not memory.dock_overwrite_variable then
+			memory.dock_overwrite_variable = 1
+		end
 
 		local possible_overwrites = {}
-		if (not memory.merchant_ships_unlocked) then
+		if not memory.merchant_ships_unlocked then
 			possible_overwrites[#possible_overwrites + 1] = Upgrades.enum.UNLOCK_MERCHANTS
 		end
-		if (not memory.rockets_for_sale) then
+		if not memory.rockets_for_sale then
 			possible_overwrites[#possible_overwrites + 1] = Upgrades.enum.ROCKETS_FOR_SALE
 		end
 
 		if #possible_overwrites > 0 then
-			if memory.dock_overwrite_variable > #possible_overwrites then memory.dock_overwrite_variable = 1 end
+			if memory.dock_overwrite_variable > #possible_overwrites then
+				memory.dock_overwrite_variable = 1
+			end
 			upgrade_to_overwrite_with = possible_overwrites[memory.dock_overwrite_variable]
 
 			-- bump the variable up, but only if the list hasn't reduced in length. use a second variable to track this:
