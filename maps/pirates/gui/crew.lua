@@ -9,9 +9,9 @@ local GuiCommon = require('maps.pirates.gui.common')
 local CoreData = require('maps.pirates.coredata')
 local Server = require('utils.server')
 local Public = {}
-local Surfaces = require('maps.pirates.surfaces.surfaces')
-local SurfacesCommon = require('maps.pirates.surfaces.common')
-local Hold = require('maps.pirates.surfaces.hold')
+-- local Surfaces = require('maps.pirates.surfaces.surfaces')
+-- local SurfacesCommon = require('maps.pirates.surfaces.common')
+-- local Hold = require('maps.pirates.surfaces.hold')
 -- local Cabin = require 'maps.pirates.surfaces.cabin'
 local Permissions = require('maps.pirates.permissions')
 
