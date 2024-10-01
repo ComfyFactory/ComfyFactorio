@@ -9,10 +9,10 @@ local Common = require('maps.pirates.common')
 local _inspect = require('utils.inspect').inspect
 --
 -- local SurfacesCommon = require 'maps.pirates.surfaces.common'
-local Raffle = require('maps.pirates.raffle')
-local ShopCovered = require('maps.pirates.shop.covered')
-local Classes = require('maps.pirates.roles.classes')
-local Loot = require('maps.pirates.loot')
+local Raffle = require 'utils.math.raffle'
+local ShopCovered = require 'maps.pirates.shop.covered'
+local Classes = require 'maps.pirates.roles.classes'
+local Loot = require 'maps.pirates.loot'
 
 local Public = {}
 Public.Data = require('maps.pirates.structures.quest_structures.market1.data')
@@ -213,145 +213,145 @@ Public.entry_price_data_raw = {
 	-- choose things that are easy to make at outposts
 	-- if the prices are too high, players will accidentally throw too much in when they can't do it
 	['iron-stick'] = {
-		overallWeight = 1,
-		minLambda = 0,
-		maxLambda = 0.4,
+		overall_weight = 1,
+		min_param = 0,
+		max_param = 0.4,
 		shape = false,
 		base_amount = 1500,
 		raw_materials = { { name = 'iron-plate', count = 750 } },
 	},
 	['copper-cable'] = {
-		overallWeight = 0.85,
-		minLambda = 0,
-		maxLambda = 0.4,
+		overall_weight = 0.85,
+		min_param = 0,
+		max_param = 0.4,
 		shape = false,
 		base_amount = 1500,
 		raw_materials = { { name = 'copper-plate', count = 750 } },
 	},
 	['small-electric-pole'] = {
-		overallWeight = 1,
-		minLambda = 0,
-		maxLambda = 0.3,
+		overall_weight = 1,
+		min_param = 0,
+		max_param = 0.3,
 		shape = false,
 		base_amount = 450,
 		raw_materials = { { name = 'copper-plate', count = 900 } },
 	},
 	['assembling-machine-1'] = {
-		overallWeight = 1,
-		minLambda = 0.1,
-		maxLambda = 0.6,
+		overall_weight = 1,
+		min_param = 0.1,
+		max_param = 0.6,
 		shape = false,
 		base_amount = 80,
 		raw_materials = { { name = 'iron-plate', count = 1760 }, { name = 'copper-plate', count = 360 } },
 	},
 	['burner-mining-drill'] = {
-		overallWeight = 0.25,
-		minLambda = 0.1,
-		maxLambda = 0.4,
+		overall_weight = 0.25,
+		min_param = 0.1,
+		max_param = 0.4,
 		shape = false,
 		base_amount = 150,
 		raw_materials = { { name = 'iron-plate', count = 1350 } },
 	},
 	['burner-inserter'] = {
-		overallWeight = 0.75,
-		minLambda = 0,
-		maxLambda = 0.3,
+		overall_weight = 0.75,
+		min_param = 0,
+		max_param = 0.3,
 		shape = false,
 		base_amount = 300,
 		raw_materials = { { name = 'iron-plate', count = 900 } },
 	},
 	['small-lamp'] = {
-		overallWeight = 1,
-		minLambda = 0.05,
-		maxLambda = 0.4,
+		overall_weight = 1,
+		min_param = 0.05,
+		max_param = 0.4,
 		shape = false,
 		base_amount = 300,
 		raw_materials = { { name = 'iron-plate', count = 600 }, { name = 'copper-plate', count = 900 } },
 	},
 	['firearm-magazine'] = {
-		overallWeight = 1,
-		minLambda = 0,
-		maxLambda = 0.4,
+		overall_weight = 1,
+		min_param = 0,
+		max_param = 0.4,
 		shape = false,
 		base_amount = 700,
 		raw_materials = { { name = 'iron-plate', count = 2800 } },
 	},
 	['constant-combinator'] = {
-		overallWeight = 0.6,
-		minLambda = 0,
-		maxLambda = 0.4,
+		overall_weight = 0.6,
+		min_param = 0,
+		max_param = 0.4,
 		shape = false,
 		base_amount = 276,
 		raw_materials = { { name = 'iron-plate', count = 552 }, { name = 'copper-plate', count = 1518 } },
 	},
 	['stone-furnace'] = {
-		overallWeight = 1,
-		minLambda = 0,
-		maxLambda = 0.4,
+		overall_weight = 1,
+		min_param = 0,
+		max_param = 0.4,
 		shape = false,
 		base_amount = 250,
 		raw_materials = { { name = 'stone', count = 1250 } },
 	},
 	['wooden-chest'] = {
-		overallWeight = 0.5,
-		minLambda = 0,
-		maxLambda = 0.4,
+		overall_weight = 0.5,
+		min_param = 0,
+		max_param = 0.4,
 		shape = false,
 		base_amount = 400,
 		raw_materials = {},
 	},
 	['iron-chest'] = {
-		overallWeight = 0.5,
-		minLambda = 0.1,
-		maxLambda = 0.5,
+		overall_weight = 0.5,
+		min_param = 0.1,
+		max_param = 0.5,
 		shape = false,
 		base_amount = 250,
 		raw_materials = { { name = 'iron-plate', count = 2000 } },
 	},
 	['steel-chest'] = {
-		overallWeight = 0.5,
-		minLambda = 0.2,
-		maxLambda = 1,
+		overall_weight = 0.5,
+		min_param = 0.2,
+		max_param = 1,
 		shape = false,
 		base_amount = 125,
 		raw_materials = { { name = 'steel-plate', count = 1000 } },
 	},
 	['rail'] = {
-		overallWeight = 1,
-		minLambda = 0.2,
-		maxLambda = 1,
+		overall_weight = 1,
+		min_param = 0.2,
+		max_param = 1,
 		shape = false,
 		base_amount = 400,
 		raw_materials = { { name = 'iron-plate', count = 1100 } },
 	},
 	['plastic-bar'] = {
-		overallWeight = 1,
-		minLambda = 0.3,
-		maxLambda = 1,
+		overall_weight = 1,
+		min_param = 0.3,
+		max_param = 1,
 		shape = false,
 		base_amount = 400,
 		raw_materials = { { name = 'coal', count = 200 }, { name = 'petroleum-gas-barrel', count = 80 } },
 	},
 	['sulfur'] = {
-		overallWeight = 1,
-		minLambda = 0.3,
-		maxLambda = 1,
+		overall_weight = 1,
+		min_param = 0.3,
+		max_param = 1,
 		shape = false,
 		base_amount = 400,
 		raw_materials = { { name = 'petroleum-gas-barrel', count = 120 } },
 	},
 	['electronic-circuit'] = {
-		overallWeight = 1,
-		minLambda = 0.1,
-		maxLambda = 0.5,
+		overall_weight = 1,
+		min_param = 0.1,
+		max_param = 0.5,
 		shape = false,
 		base_amount = 700,
 		raw_materials = { { name = 'iron-plate', count = 700 }, { name = 'copper-plate', count = 1050 } },
 	},
 	['advanced-circuit'] = {
-		overallWeight = 1,
-		minLambda = 0.4,
-		maxLambda = 1,
+		overall_weight = 1,
+		min_param = 0.4,
+		max_param = 1,
 		shape = false,
 		base_amount = 180,
 		raw_materials = {
@@ -365,7 +365,7 @@ Public.entry_price_data_raw = {
 function Public.entry_price()
 	local lambda = Math.clamp(0, 1, Math.sloped(Common.difficulty_scale(), 0.4) * Common.game_completion_progress())
 
-	local item = Raffle.LambdaRaffle(Public.entry_price_data_raw, lambda)
+	local item = Raffle.raffle_with_parameter(lambda, Public.entry_price_data_raw)
 
 	if not item then
 		item = Common.get_random_dictionary_entry(Public.entry_price_data_raw, true)

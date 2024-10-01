@@ -1,5 +1,5 @@
 local Event = require 'utils.event'
-local simplex_noise = require 'utils.simplex_noise'.d2
+local simplex_noise = require 'utils.math.simplex_noise'.d2
 local ore_raffle = {
     'iron-ore',
     'iron-ore',

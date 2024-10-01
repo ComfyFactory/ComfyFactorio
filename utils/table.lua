@@ -1,6 +1,6 @@
 ---@diagnostic disable: undefined-field
 --luacheck: globals table
-local Stats = require 'utils.stats'
+local Stats = require 'utils.math.stats'
 local Utils = require 'utils.utils'
 local random = math.random
 local floor = math.floor

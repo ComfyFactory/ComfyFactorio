@@ -3,7 +3,7 @@
 
 local Event = require 'utils.event'
 local Global = require 'utils.global'
-local simplex_noise = require 'utils.simplex_noise'.d2
+local simplex_noise = require 'utils.math.simplex_noise'.d2
 local Core = require 'utils.core'
 local Server = require 'utils.server'
 local Map = require 'modules.map_info'

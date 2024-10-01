@@ -5,9 +5,9 @@ local Balance = require('maps.pirates.balance')
 local Common = require('maps.pirates.common')
 local CoreData = require('maps.pirates.coredata')
 -- local Utils = require 'maps.pirates.utils_local'
-local Math = require('maps.pirates.math')
-local Raffle = require('maps.pirates.raffle')
-local _inspect = require('utils.inspect').inspect
+local Math = require 'maps.pirates.math'
+local Raffle = require 'utils.math.raffle'
+local _inspect = require 'utils.inspect'.inspect
 
 -- local Structures = require 'maps.pirates.structures.structures'
 local Boats = require('maps.pirates.structures.boats.boats')

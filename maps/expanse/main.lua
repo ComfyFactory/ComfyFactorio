@@ -9,7 +9,7 @@ require 'modules.backpack_research'
 
 local Event = require 'utils.event'
 local Functions = require 'maps.expanse.functions'
-local GetNoise = require 'utils.get_noise'
+local GetNoise = require 'utils.math.get_noise'
 local Global = require 'utils.global'
 local Map_info = require 'modules.map_info'
 local Gui = require 'utils.gui'

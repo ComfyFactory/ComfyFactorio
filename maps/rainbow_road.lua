@@ -1,6 +1,6 @@
 --luacheck: ignore
 local event = require 'utils.event'
-local simplex_noise = require 'utils.simplex_noise'.d2
+local simplex_noise = require 'utils.math.simplex_noise'.d2
 local rainbow_colors = require 'utils.tools.rainbow_colors'
 local map_functions = require 'utils.tools.map_functions'
 require 'modules.satellite_score'

@@ -1,6 +1,6 @@
 --luacheck: ignore
 local math_random = math.random
-local simplex_noise = require 'utils.simplex_noise'.d2
+local simplex_noise = require 'utils.math.simplex_noise'.d2
 local NoiseVectors = require 'utils.functions.noise_vector_path'
 local Enemies = require 'maps.island_troopers.enemies'
 local ShoppingChests = require 'modules.shopping_chests'

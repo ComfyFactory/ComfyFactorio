@@ -4,7 +4,7 @@ require 'modules.thirst'
 
 local Map_info = require 'modules.map_info'
 
-local get_noise = require 'utils.get_noise'
+local get_noise = require 'utils.math.get_noise'
 local table_insert = table.insert
 local math_random = math.random
 local math_floor = math.floor

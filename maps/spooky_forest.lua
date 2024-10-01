@@ -21,7 +21,7 @@ require 'modules.hunger'
 local shapes = require 'utils.tools.shapes'
 local event = require 'utils.event'
 local map_functions = require 'utils.tools.map_functions'
-local simplex_noise = require 'utils.simplex_noise'
+local simplex_noise = require 'utils.math.simplex_noise'
 simplex_noise = simplex_noise.d2
 
 local math_random = math.random

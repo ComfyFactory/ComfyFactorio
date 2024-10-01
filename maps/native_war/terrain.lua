@@ -2,7 +2,7 @@
 local math_abs = math.abs
 local math_random = math.random
 local Map_functions = require 'utils.tools.map_functions'
-local simplex_noise = require 'utils.simplex_noise'.d2
+local simplex_noise = require 'utils.math.simplex_noise'.d2
 local Public = {}
 
 local hatchery_position = { x = 200, y = 0 }

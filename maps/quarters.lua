@@ -3,7 +3,7 @@ require 'modules.mineable_wreckage_yields_scrap'
 require 'modules.wave_defense.main'
 local Map = require 'modules.map_info'
 local WD = require 'modules.wave_defense.table'
-local simplex_noise = require 'utils.simplex_noise'.d2
+local simplex_noise = require 'utils.math.simplex_noise'.d2
 local spawn_size = 96
 local wall_thickness = 3
 local small_scraps = {

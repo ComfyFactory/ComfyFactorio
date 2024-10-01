@@ -2,7 +2,7 @@
 
 local Public = {}
 local LootRaffle = require "utils.functions.loot_raffle"
-local Get_noise = require "utils.get_noise"
+local Get_noise = require "utils.math.get_noise"
 
 local safe_zone_radius = 16
 
