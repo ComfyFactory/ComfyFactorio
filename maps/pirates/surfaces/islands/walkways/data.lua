@@ -15,7 +15,8 @@ Public.static_params_default = {
 	daynightcycletype = 4,
 	min_brightness = 0.05,
 	brightness_visual_weights = { 1, 1, 1 }, --almost pitch black
-	default_decoratives = false,
+	decorative_settings = prototypes.space_location.nauvis.map_gen_settings.autoplace_settings.decorative.settings,
+	-- decorative_settings = prototypes.space_location.vulcanus.map_gen_settings.autoplace_settings.decorative.settings,
 	base_starting_rock_material = 800,
 }
 
