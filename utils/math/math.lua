@@ -1,6 +1,6 @@
 local Public = {}
 
--- Using localized math functions is better for performance reasons:
+-- Importing localized math functions from this file has better performance than importing from the global scope:
 Public.random = math.random
 Public.randomseed = math.randomseed
 Public.sqrt = math.sqrt
