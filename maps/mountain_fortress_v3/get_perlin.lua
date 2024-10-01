@@ -1,5 +1,5 @@
 local Public = require 'maps.mountain_fortress_v3.table'
-local simplex_noise = require 'utils.simplex_noise'.d2
+local simplex_noise = require 'utils.math.simplex_noise'.d2
 
 --add or use noise templates from here
 local noises = {

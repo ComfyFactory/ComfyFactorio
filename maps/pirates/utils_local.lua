@@ -2,8 +2,8 @@
 
 local Math = require('maps.pirates.math')
 -- local _inspect = require 'utils.inspect'.inspect
-local simplex_noise = require('utils.simplex_noise').d2 --rms ~ 0.1925
--- local perlin_noise = require 'utils.perlin_noise'
+local simplex_noise = require('utils.math.simplex_noise').d2 --rms ~ 0.1925
+-- local perlin_noise = require 'utils.math.perlin_noise'
 -- local Memory = require 'maps.pirates.memory'
 -- local CoreData = require 'maps.pirates.coredata'
 local NoisePregen = require('maps.pirates.noise_pregen.noise_pregen')

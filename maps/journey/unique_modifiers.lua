@@ -1,5 +1,5 @@
 --luacheck: ignore 212/journey
-local Get_noise = require 'utils.get_noise'
+local Get_noise = require 'utils.math.get_noise'
 local BiterRaffle = require 'utils.functions.biter_raffle'
 local LootRaffle = require 'utils.functions.loot_raffle'
 local math_random = math.random

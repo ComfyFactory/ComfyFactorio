@@ -3,7 +3,7 @@ require 'modules.satellite_score'
 require 'modules.mineable_wreckage_yields_scrap'
 
 local LootRaffle = require 'utils.functions.loot_raffle'
-local Get_noise = require 'utils.get_noise'
+local Get_noise = require 'utils.math.get_noise'
 local math_random = math.random
 local math_floor = math.floor
 local math_abs = math.abs

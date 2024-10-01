@@ -1,7 +1,7 @@
 --luacheck: ignore
 --spaghettorio-- mewmew made this -- inspired by redlabel
 
-local simplex_noise = require 'utils.simplex_noise'
+local simplex_noise = require 'utils.math.simplex_noise'
 simplex_noise = simplex_noise.d2
 local event = require 'utils.event'
 

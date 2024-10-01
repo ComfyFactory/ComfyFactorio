@@ -13,7 +13,7 @@ SdABNhCuMsYIUyHfgdGB3mYrCRCCVC/EQOyG1IQPjwJs/Ywkv1oD
 sGMCGR/oImoOGCJBi6QhSlw4gUz3DXA8LzADuM5zHdgZAYxQKq+A
 MUgPEjihRgFoQUcmBkQAJi8BPc6XQMAy367Og==<<<
 ]]
-local get_noise = require 'utils.get_noise'
+local get_noise = require 'utils.math.get_noise'
 local math_random = math.random
 local math_floor = math.floor
 local math_abs = math.abs

@@ -2,7 +2,7 @@
 local Public = {}
 local math_random = math.random
 local Immersive_cargo_wagons = require 'modules.immersive_cargo_wagons.main'
-local GetNoise = require 'utils.get_noise'
+local GetNoise = require 'utils.math.get_noise'
 local LootRaffle = require 'utils.functions.loot_raffle'
 
 local wagon_raffle = { 'cargo-wagon', 'cargo-wagon', 'cargo-wagon', 'locomotive', 'fluid-wagon' }

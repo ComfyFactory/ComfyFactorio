@@ -3,7 +3,7 @@
 require 'modules.spawners_contain_biters'
 require 'modules.surrounded_by_worms'
 
-local simplex_noise = require 'utils.simplex_noise'
+local simplex_noise = require 'utils.math.simplex_noise'
 simplex_noise = simplex_noise.d2
 local Event = require 'utils.event'
 local table_insert = table.insert

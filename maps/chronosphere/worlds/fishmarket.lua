@@ -5,7 +5,7 @@ local Balance = require 'maps.chronosphere.balance'
 local Functions = require 'maps.chronosphere.world_functions'
 local Raffle = require 'maps.chronosphere.raffles'
 local Specials = require 'maps.chronosphere.terrain_specials'
-local simplex_noise = require 'utils.simplex_noise'.d2
+local simplex_noise = require 'utils.math.simplex_noise'.d2
 local Difficulty = require 'modules.difficulty_vote'
 
 local function roll_biters(p, biters, entities)

@@ -1,8 +1,8 @@
 local Event = require 'utils.event'
-local get_noise = require 'utils.get_noise'
+local get_noise = require 'utils.math.get_noise'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local Scrap = require 'maps.scrap_towny_ffa.scrap'
-local get_perlin = require 'utils.get_perlin'
+local get_perlin = require 'utils.math.get_perlin'
 
 local table_insert = table.insert
 local math_random = math.random

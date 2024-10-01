@@ -7,7 +7,7 @@ require 'modules.rocks_broken_paint_tiles'
 require 'cave_miner_kaboomsticks'
 
 local enable_fishbank_terminal = true
-local simplex_noise = require 'utils.simplex_noise'.d2
+local simplex_noise = require 'utils.math.simplex_noise'.d2
 local Event = require 'utils.event'
 local Module = require 'infinity_chest'
 local market_items = require 'cave_miner_market_items'

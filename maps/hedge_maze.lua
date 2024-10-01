@@ -8,7 +8,7 @@ require 'modules.spawners_contain_biters'
 
 local event = require 'utils.event'
 local map_functions = require 'utils.tools.map_functions'
-local simplex_noise = require 'utils.simplex_noise'.d2
+local simplex_noise = require 'utils.math.simplex_noise'.d2
 local math_random = math.random
 
 local labyrinth_cell_size = 16 --valid values are 2, 4, 8, 16, 32

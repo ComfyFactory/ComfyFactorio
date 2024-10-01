@@ -1,4 +1,4 @@
-local simplex_noise = require 'utils.simplex_noise'
+local simplex_noise = require 'utils.math.simplex_noise'
 local random = math.random
 
 local Public = {}

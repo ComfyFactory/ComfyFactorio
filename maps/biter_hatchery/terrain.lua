@@ -1,7 +1,7 @@
 --luacheck: ignore
 local math_abs = math.abs
 local math_random = math.random
-local GetNoise = require 'utils.get_noise'
+local GetNoise = require 'utils.math.get_noise'
 local Public = {}
 
 local hatchery_position = { x = 192, y = 0 }

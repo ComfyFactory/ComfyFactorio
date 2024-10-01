@@ -1,6 +1,6 @@
 local Public = {}
 
-local get_noise = require 'utils.get_noise'
+local get_noise = require 'utils.math.get_noise'
 local math_abs = math.abs
 local math_round = math.round
 
