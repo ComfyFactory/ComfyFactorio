@@ -2,7 +2,7 @@
 
 -- local Math = require 'maps.pirates.math'
 -- local Memory = require 'maps.pirates.memory'
-local _inspect = require("utils.inspect").inspect
+local _inspect = require('utils.inspect').inspect
 -- local Token = require 'utils.token'
 -- local CoreData = require 'maps.pirates.coredata'
 -- local Task = require 'utils.task'
@@ -12,26 +12,26 @@ local _inspect = require("utils.inspect").inspect
 
 local Public = {}
 local enum = {
-    IDLE_FLY = "idle_fly",
-    FLY = "fly",
-    TIP_FLYING_1 = "tip_flying_1",
-    TIP_FLYING_2 = "tip_flying_2",
-    TIP_LANDED_1 = "tip_landed_1",
-    TIP_LANDED_2 = "tip_landed_2",
-    TIP_SQUAWK = "tip_squawk",
+	IDLE_FLY = 'idle_fly',
+	FLY = 'fly',
+	TIP_FLYING_1 = 'tip_flying_1',
+	TIP_FLYING_2 = 'tip_flying_2',
+	TIP_LANDED_1 = 'tip_landed_1',
+	TIP_LANDED_2 = 'tip_landed_2',
+	TIP_SQUAWK = 'tip_squawk',
 }
 Public.enum = enum
 
 -- local parrot_tip_interval = 15*60
 
 Public.framecounts = {
-    idle_fly = 5,
-    fly = 8,
-    fly_right = 8,
-    squawk = 6,
-    freak = 2,
-    walk = 8,
-    chill = 1,
+	idle_fly = 5,
+	fly = 8,
+	fly_right = 8,
+	squawk = 6,
+	freak = 2,
+	walk = 8,
+	chill = 1,
 }
 
 -- local parrot_tips = {
