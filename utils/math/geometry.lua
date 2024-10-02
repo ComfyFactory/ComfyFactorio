@@ -40,6 +40,10 @@ function Public.vector_sum(...)
 	return result
 end
 
+function Public.vector_scaled(vec, scalar)
+	return { x = vec.x * scalar, y = vec.y * scalar }
+end
+
 function Public.vector_distance(vec1, vec2)
 	local vecx = vec2.x - vec1.x
 	local vecy = vec2.y - vec1.y
