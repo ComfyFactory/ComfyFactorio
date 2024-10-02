@@ -14,7 +14,6 @@ local Global = require 'utils.global'
 local Map_info = require 'modules.map_info'
 local Gui = require 'utils.gui'
 local format_number = require 'util'.format_number
-local Random = require 'maps.chronosphere.random'
 local Autostash = require 'modules.autostash'
 
 local expanse = {
@@ -125,7 +124,7 @@ local function reset()
     Functions.expand(expanse, { x = 0, y = 0 })
 
     for _, player in pairs(game.players) do
-        player.teleport(surface.find_non_colliding_position('character', { expanse.square_size * 0.5, expanse.square_size * 0.5 }, 8, 0.5), surface)
+        player.teleport(surface.find_non_colliding_position('character', { expanse.square_size * 0.5, expanse.square_size * 0.5 }, 8, 0.5) or {5, 5}, surface)
     end
 end
 
@@ -241,7 +240,7 @@ local function container_opened(event)
         game.print({ 'expanse.tile_unlock', colored_player_name, { 'expanse.gps', math.floor(expansion_position.x), math.floor(expansion_position.y), 'expanse' } })
         expanse.size = (expanse.size or 1) + 1
         if math.random(1, 4) == 1 then
-            if surface.count_tiles_filtered({ position = expansion_position, radius = 6, collision_mask = 'water_tile' }) > 40 then
+            if surface and surface.count_tiles_filtered({ position = expansion_position, radius = 6, collision_mask = 'water_tile' }) > 40 then
                 return
             end
             local render = rendering.draw_sprite {
@@ -424,7 +423,7 @@ local function create_main_frame(player)
     frame.add({ type = 'label', name = 'biters', caption = { 'expanse.stats_attack', #expanse.invasion_candidates, invasion_numbers.candidates, invasion_numbers.groups } })
     local scroll = frame.add({ type = 'scroll-pane', name = 'scroll_pane', horizontal_scroll_policy = 'never', vertical_scroll_policy = 'auto-and-reserve-space' })
     local frame_table = scroll.add({ type = 'table', name = 'resource_stats', column_count = 8 })
-    for name, count in Random.spairs(expanse.cost_stats, function (t, a, b) return t[a] > t[b] end) do
+    for name, count in table.spairs(expanse.cost_stats, function (t, a, b) return t[a] > t[b] end) do
         resource_stats(frame_table, name, count)
     end
 end

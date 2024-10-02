@@ -55,7 +55,7 @@ local function process_tile(p, seed, entities, treasure, factories)
                 if roll == 1 then
                     entities[#entities + 1] = {name = Raffle.spawners[random(1, #Raffle.spawners)], position = p, spawn_decorations = true}
                 elseif roll == 2 then
-                    local evo = game.forces['enemy'].evolution_factor
+                    local evo = game.forces.enemy.get_evolution_factor(game.get_surface(objective.active_surface_index))
                     entities[#entities + 1] = {name = Raffle.worms[random(1 + floor(evo * 8), floor(1 + evo * 16))], position = p, spawn_decorations = true}
                 elseif roll == 3 then
                     if random(1, 50) == 1 then

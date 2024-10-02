@@ -235,24 +235,24 @@ Public.dayspeed_weights = {
 }
 function Public.market_offers()
     return {
-        {price = {{'coin', 40}}, offer = {type = 'give-item', item = 'raw-fish'}},
-        {price = {{'coin', 40}}, offer = {type = 'give-item', item = 'wood', count = 50}},
-        {price = {{'coin', 100}}, offer = {type = 'give-item', item = 'iron-ore', count = 50}},
-        {price = {{'coin', 100}}, offer = {type = 'give-item', item = 'copper-ore', count = 50}},
-        {price = {{'coin', 100}}, offer = {type = 'give-item', item = 'stone', count = 50}}, -- needed?
-        {price = {{'coin', 100}}, offer = {type = 'give-item', item = 'coal', count = 50}},
-        {price = {{'coin', 400}}, offer = {type = 'give-item', item = 'uranium-ore', count = 50}},
-        {price = {{'coin', 50}, {'empty-barrel', 1}}, offer = {type = 'give-item', item = 'crude-oil-barrel', count = 1}},
-        {price = {{'coin', 500}, {'steel-plate', 20}, {'electronic-circuit', 20}}, offer = {type = 'give-item', item = 'loader', count = 1}},
+        {price = {{name = 'coin', count = 40}}, offer = {type = 'give-item', item = 'raw-fish'}},
+        {price = {{name = 'coin', count = 40}}, offer = {type = 'give-item', item = 'wood', count = 50}},
+        {price = {{name = 'coin', count = 100}}, offer = {type = 'give-item', item = 'iron-ore', count = 50}},
+        {price = {{name = 'coin', count = 100}}, offer = {type = 'give-item', item = 'copper-ore', count = 50}},
+        {price = {{name = 'coin', count = 100}}, offer = {type = 'give-item', item = 'stone', count = 50}}, -- needed?
+        {price = {{name = 'coin', count = 100}}, offer = {type = 'give-item', item = 'coal', count = 50}},
+        {price = {{name = 'coin', count = 400}}, offer = {type = 'give-item', item = 'uranium-ore', count = 50}},
+        {price = {{name = 'coin', count = 50}, {name = 'barrel', count = 1}}, offer = {type = 'give-item', item = 'crude-oil-barrel', count = 1}},
+        {price = {{name = 'coin', count = 500}, {name = 'steel-plate', count = 20}, {name = 'electronic-circuit', count = 20}}, offer = {type = 'give-item', item = 'loader', count = 1}},
         {
-            price = {{'coin', 1000}, {'steel-plate', 40}, {'advanced-circuit', 10}, {'loader', 1}},
+            price = {{name = 'coin', count = 1000}, {name = 'steel-plate', count = 40}, {name = 'advanced-circuit', count = 10}, {name = 'loader', count = 1}},
             offer = {type = 'give-item', item = 'fast-loader', count = 1}
         },
         {
-            price = {{'coin', 3000}, {'express-transport-belt', 10}, {'fast-loader', 1}},
+            price = {{name = 'coin', count = 3000}, {name = 'express-transport-belt', count = 10}, {name = 'fast-loader', count = 1}},
             offer = {type = 'give-item', item = 'express-loader', count = 1}
         },
-        {price = {{'coin', 2}, {'steel-plate', 1}, {'explosives', 10}}, offer = {type = 'give-item', item = 'land-mine', count = 1}}
+        {price = {{name = 'coin', count = 2}, {name = 'steel-plate', count = 1}, {name = 'explosives', count = 10}}, offer = {type = 'give-item', item = 'land-mine', count = 1}}
     }
 end
 function Public.initial_cargo_boxes()
@@ -262,7 +262,7 @@ function Public.initial_cargo_boxes()
         {name = 'coal', count = math_random(32, 64)},
         {name = 'iron-ore', count = math_random(32, 128)},
         {name = 'copper-ore', count = math_random(32, 128)},
-        {name = 'empty-barrel', count = math_random(16, 32)},
+        {name = 'barrel', count = math_random(16, 32)},
         {name = 'submachine-gun', count = 1},
         {name = 'submachine-gun', count = 1},
         {name = 'shotgun', count = 1},
@@ -324,7 +324,7 @@ function Public.scrap()
         ['processing-unit'] = {amount = 2, chance = 1},
         ['used-up-uranium-fuel-cell'] = {amount = 1, chance = 4},
         ['uranium-fuel-cell'] = {amount = 0.3, chance = 1},
-        ['rocket-control-unit'] = {amount = 0.3, chance = 1},
+        --['rocket-control-unit'] = {amount = 0.3, chance = 1},
         ['low-density-structure'] = {amount = 0.5, chance = 2},
         ['heat-pipe'] = {amount = 1, chance = 1},
         ['engine-unit'] = {amount = 3, chance = 3},
@@ -353,7 +353,7 @@ function Public.scrap()
         ['rocket-fuel'] = {amount = 0.3, chance = 8},
         ['grenade'] = {amount = 0.3, chance = 40},
         ['solid-fuel'] = {amount = 0.4, chance = 50},
-        ['empty-barrel'] = {amount = 0.1, chance = 50},
+        ['barrel'] = {amount = 0.1, chance = 50},
         ['crude-oil-barrel'] = {amount = 0.1, chance = 70},
         ['lubricant-barrel'] = {amount = 0.1, chance = 40},
         ['petroleum-gas-barrel'] = {amount = 0.1, chance = 60},
@@ -375,8 +375,8 @@ function Public.scrap()
             table.insert(second_raffle, {name = k, amount = t.amount})
         end
     end
-    Rand.shuffle(scrap_raffle)
-    Rand.shuffle(second_raffle)
+    table.shuffle_table(scrap_raffle)
+    table.shuffle_table(second_raffle)
 
     return {main = scrap_raffle, second = second_raffle}
 end

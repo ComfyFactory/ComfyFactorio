@@ -56,7 +56,7 @@ local function on_tick()
         local surface = game.surfaces[entry[3]]
         for _ = 1, 3, 1 do
             local vector = drop_vectors[math_random(1, size_of_drop_vectors)]
-            surface.spill_item_stack({ entry[1][1] + vector[1], entry[1][2] + vector[2] }, { name = drop_raffle[math_random(1, size_of_drop_raffle)], count = 1 }, true)
+            surface.spill_item_stack({position = { entry[1][1] + vector[1], entry[1][2] + vector[2] }, stack = { name = drop_raffle[math_random(1, size_of_drop_raffle)], count = 1 }, enable_looted = true})
             storage.biters_drop_ore[key][2] = storage.biters_drop_ore[key][2] - 1
             if storage.biters_drop_ore[key][2] <= 0 then
                 table_remove(storage.biters_drop_ore, key)
