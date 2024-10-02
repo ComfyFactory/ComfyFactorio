@@ -70,7 +70,7 @@ local function upperCase(str)
     return (str:gsub('^%l', string.upper))
 end
 
-function notify_season_over_to_discord()
+local function notify_season_over_to_discord()
     local server_name_matches = Server.check_server_name(scenario_name)
 
     local stateful = Public.get_stateful()
