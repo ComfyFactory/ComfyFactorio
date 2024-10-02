@@ -66,7 +66,11 @@ local buff_to_string = {
     ['xp_level'] = 'XP Level'
 }
 
-local function notify_season_over_to_discord()
+local function upperCase(str)
+    return (str:gsub('^%l', string.upper))
+end
+
+function notify_season_over_to_discord()
     local server_name_matches = Server.check_server_name(scenario_name)
 
     local stateful = Public.get_stateful()
@@ -77,7 +81,7 @@ local function notify_season_over_to_discord()
             if stateful.buffs_collected.starting_items then
                 buffs = buffs .. 'Starting items:\n'
                 for item_name, item_data in pairs(stateful.buffs_collected.starting_items) do
-                    buffs = buffs .. item_name .. ': ' .. item_data.count
+                    buffs = buffs .. upperCase(item_name) .. ': ' .. item_data.count
                     buffs = buffs .. '\n'
                 end
                 buffs = buffs .. '\n'
@@ -90,13 +94,21 @@ local function notify_season_over_to_discord()
                         if buff_data.count and buff_to_string[name] then
                             buffs = buffs .. buff_to_string[name] .. ': ' .. buff_data.count
                         else
-                            buffs = buffs .. name .. ': Active'
+                            buffs = buffs .. upperCase(name) .. ': Active'
                         end
                     else
                         if buff_data.count and buff_to_string[name] then
                             buffs = buffs .. buff_to_string[name] .. ': ' .. (buff_data.count * 100) .. '%'
+                        elseif type(buff_data) == 'table' then
+                            for _, t_data in pairs(buff_data) do
+                                if t_data and type(t_data) == 'table' then
+                                    buffs = buffs .. upperCase(t_data.name) .. ': Active'
+                                end
+                            end
+                        elseif buff_data.name then
+                            buffs = buffs .. upperCase(buff_data.name) .. ': Active'
                         else
-                            buffs = buffs .. name .. ': Active'
+                            buffs = buffs .. upperCase(name) .. ': Active'
                         end
                     end
                     buffs = buffs .. '\n'
@@ -120,6 +132,7 @@ local function notify_season_over_to_discord()
             inline = 'false'
         }
     }
+    log(serpent.block(text))
     if server_name_matches then
         Server.to_discord_named_parsed_embed(send_ping_to_channel, text)
     else

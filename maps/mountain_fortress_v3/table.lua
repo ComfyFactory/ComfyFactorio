@@ -265,7 +265,11 @@ function Public.reset_main_table()
         land_mine_cost = 2,
         car_health_upgrade_pool_cost = 100000,
         tile_when_mining_cost = random(45000, 70000),
-        redraw_mystical_chest_cost = 3000
+        redraw_mystical_chest_cost = 3000,
+        roboport_cost = random(750, 1500),
+        construction_bot_cost = random(150, 350),
+        logistic_chest_passive_provider_cost = random(400, 600)
+
     }
     this.collapse_grace = true
     this.corpse_removal_disabled = true
