@@ -31,8 +31,13 @@ function Public.vector_length(vec)
 	return Public.sqrt(vec.x * vec.x + vec.y * vec.y)
 end
 
-function Public.vector_sum(vec1, vec2)
-	return { x = vec1.x + vec2.x, y = vec1.y + vec2.y }
+function Public.vector_sum(...)
+	local result = { x = 0, y = 0 }
+	for _, vec in ipairs({ ... }) do
+		result.x = result.x + vec.x
+		result.y = result.y + vec.y
+	end
+	return result
 end
 
 function Public.vector_distance(vec1, vec2)
