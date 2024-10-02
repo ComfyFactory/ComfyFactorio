@@ -1,5 +1,6 @@
 --luacheck: ignore
-local event = require 'utils.event'
+local Event = require 'utils.event'
+local AI = require 'utils.functions.AI'
 local math_random = math.random
 local math_floor = math.floor
 storage.biter_command = {}
@@ -31,29 +32,9 @@ local worm_raffle = {
     'behemoth-worm-turret'
 }
 
-local function shuffle(tbl)
-    local size = #tbl
-    for i = size, 1, -1 do
-        local rand = math_random(size)
-        tbl[i], tbl[rand] = tbl[rand], tbl[i]
-    end
-    return tbl
-end
 
-local function is_closer(pos1, pos2, pos)
-    return ((pos1.x - pos.x) ^ 2 + (pos1.y - pos.y) ^ 2) < ((pos2.x - pos.x) ^ 2 + (pos2.y - pos.y) ^ 2)
-end
 
-local function shuffle_distance(tbl, position)
-    local size = #tbl
-    for i = size, 1, -1 do
-        local rand = math_random(size)
-        if is_closer(tbl[i].position, tbl[rand].position, position) and i > rand then
-            tbl[i], tbl[rand] = tbl[rand], tbl[i]
-        end
-    end
-    return tbl
-end
+
 
 local function get_evo(force)
     local evo = math_floor(game.forces['enemy'].evolution_factor * 20)
@@ -71,7 +52,7 @@ local function place_nest_near_unit_group(group)
         return false
     end
     local units = group.members
-    shuffle(units)
+    table.shuffle_table(units)
     for i = 1, 5, 1 do
         if not units[i].valid then
             return false
@@ -105,7 +86,7 @@ local function build_worm(group)
         return false
     end
     local units = group.members
-    shuffle(units)
+    table.shuffle_table(units)
     for i = 1, 5, 1 do
         if not units[i].valid then
             return false
@@ -142,15 +123,6 @@ end
 
 -----------commands-----------
 
-local function move_to(position, distraction)
-    local command = {
-        type = defines.command.go_to_location,
-        destination = position,
-        distraction = distraction,
-        pathfind_flags = { allow_destroy_friendly_entities = true }
-    }
-    return command
-end
 
 -- local function attackmaincommand(target)
 --   local wave_defense_table = WD.get_table()
@@ -164,34 +136,7 @@ end
 --   return command
 -- end
 
-local function attackareacommand(position)
-    local command = {
-        type = defines.command.attack_area,
-        destination = position,
-        radius = 25,
-        distraction = defines.distraction.by_enemy
-    }
-    return command
-end
 
-local function attackobstaclescommand(surface, position)
-    local commands = {}
-    local obstacles = surface.find_entities_filtered { position = position, radius = 20, type = { 'simple-entity', 'tree' }, limit = 100 }
-    if obstacles then
-        shuffle(obstacles)
-        shuffle_distance(obstacles, position)
-        for i = 1, #obstacles, 1 do
-            if obstacles[i].valid then
-                commands[#commands + 1] = {
-                    type = defines.command.attack,
-                    target = obstacles[i],
-                    distraction = defines.distraction.by_enemy
-                }
-            end
-        end
-    end
-    return commands
-end
 
 local function get_coords(group, source_player)
     local position
@@ -231,14 +176,14 @@ local function disband(group, source_player)
 end
 
 local function movetome(group, source_player)
-    group.set_command(move_to(source_player.position, defines.distraction.none))
+    group.set_command(AI.command_move_to(source_player.position, defines.distraction.none))
     flying_text(nil, 1, group.position, source_player)
 end
 
 local function movetoposition(group, source_player)
     local position = get_coords(group, source_player)
     if position then
-        group.set_command(move_to(position, defines.distraction.none))
+        group.set_command(AI.command_move_to(position, defines.distraction.none))
         flying_text(nil, 1, group.position, source_player)
     else
         flying_text(nil, 2, group.position, source_player)
@@ -246,14 +191,14 @@ local function movetoposition(group, source_player)
 end
 
 local function patroltome(group, source_player)
-    group.set_command(move_to(source_player.position, defines.distraction.by_enemy))
+    group.set_command(AI.command_move_to(source_player.position, defines.distraction.by_enemy))
     flying_text(nil, 1, group.position, source_player)
 end
 
 local function patroltoposition(group, source_player)
     local position = get_coords(group, source_player)
     if position then
-        group.set_command(move_to(position, defines.distraction.by_enemy))
+        group.set_command(AI.command_move_to(position, defines.distraction.by_enemy))
         flying_text(nil, 1, group.position, source_player)
     else
         flying_text(nil, 2, group.position, source_player)
@@ -288,11 +233,11 @@ end
 
 local function attackenemiesaround(group, source_player)
     flying_text(nil, 3, group.position, source_player)
-    group.set_command(attackareacommand(group.position))
+    group.set_command(AI.command_attack_area(group.position, 25))
 end
 
 local function attackobstaclesaround(group, source_player)
-    local commands = attackobstaclescommand(group.surface, group.position)
+    local commands = AI.command_attack_obstacles(group.surface, group.position)
     if #commands > 1 then
         group.set_command(
             {
@@ -309,12 +254,12 @@ local function attackobstaclesaround(group, source_player)
 end
 
 local function attackenemiesaroundme(group, source_player)
-    group.set_command(attackareacommand(source_player.position))
+    group.set_command(AI.command_attack_area(source_player.position, 25))
     flying_text(nil, 3, group.position, source_player)
 end
 
 local function attackobstaclesaroundme(group, source_player)
-    local commands = attackobstaclescommand(source_player.surface, source_player.position)
+    local commands = AI.command_attack_obstacles(source_player.surface, source_player.position)
     if #commands > 1 then
         group.set_command(
             {
@@ -708,7 +653,7 @@ local function on_unit_removed_from_group(event)
     end
 end
 
-event.add(defines.events.on_unit_removed_from_group, on_unit_removed_from_group)
-event.add(defines.events.on_unit_group_created, on_unit_group_created)
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
-event.add(defines.events.on_gui_click, on_gui_click)
+Event.add(defines.events.on_unit_removed_from_group, on_unit_removed_from_group)
+Event.add(defines.events.on_unit_group_created, on_unit_group_created)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_gui_click, on_gui_click)

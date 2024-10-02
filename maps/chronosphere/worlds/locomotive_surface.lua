@@ -3,6 +3,7 @@ local Chrono_table = require 'maps.chronosphere.table'
 local Factories = require 'maps.chronosphere.production'
 local Upgrades = require 'maps.chronosphere.upgrade_list'
 local List = require 'maps.chronosphere.production_list'
+local Functions = require 'maps.chronosphere.world_functions'
 local math_floor = math.floor
 local math_random = math.random
 
@@ -13,6 +14,13 @@ local function protect(entity, operable)
     entity.destructible = false
     entity.operable = operable
 end
+
+local function connect_entities(entity1, entity2, wire_type)
+    local wireconnector1 = entity1.get_wire_connector(wire_type, true)
+    local wireconnector2 = entity2.get_wire_connector(wire_type, true)
+    wireconnector1.connect_to(wireconnector2)
+end
+
 
 function Public.create_wagon_room()
     local objective = Chrono_table.get_table()
@@ -132,61 +140,79 @@ function Public.create_wagon_room()
     end
     surface.set_tiles(water_tiles)
 
-    local combinators = {}
-    for x = width * -0.5 - 6, width * -0.5 + 3, 1 do
-        for y = -250, -244, 2 do
-            combinators[#combinators + 1] = {name = 'arithmetic-combinator', position = {x, y}, force = 'player', create_build_effect_smoke = false}
-        end
-    end
-    local combimade = {}
-    for i = 1, #combinators, 1 do
-        combimade[i] = surface.create_entity(combinators[i])
-        protect(combimade[i], false)
+    Functions.build_blueprint(surface, {-38, -251}, 1, "player")
+    -- local combinators = {}
+    -- for x = width * -0.5 - 6, width * -0.5 + 3, 1 do
+    --     for y = -250, -244, 2 do
+    --         combinators[#combinators + 1] = {name = 'arithmetic-combinator', position = {x, y}, force = 'player', create_build_effect_smoke = false}
+    --     end
+    -- end
+    -- local combimade = {}
+    -- for i = 1, #combinators, 1 do
+    --     combimade[i] = surface.create_entity(combinators[i])
+    --     protect(combimade[i], false)
 
-        if i > 1 then
-            combimade[i].connect_neighbour({wire = defines.wire_type.green, target_entity = combimade[i - 1], source_circuit_id = 2, target_circuit_id = 1})
-            local rule = combimade[i].get_or_create_control_behavior()
-            rule.parameters = {first_signal = {type = 'virtual', name = 'signal-A'}, second_constant = 0, operation = '+', output_signal = {type = 'virtual', name = 'signal-A'}}
-        else
-            local rule2 = combimade[i].get_or_create_control_behavior()
-            rule2.parameters = {first_signal = {type = 'virtual', name = 'signal-A'}, second_constant = 0, operation = '+', output_signal = {type = 'virtual', name = 'signal-B'}}
-        end
-    end
-    local checker = surface.create_entity({name = 'decider-combinator', position = {x = width * -0.5 - 6, y = -242}, force = 'player', create_build_effect_smoke = false})
-    local rules3 = checker.get_or_create_control_behavior()
-    rules3.parameters = {
-        first_signal = {type = 'virtual', name = 'signal-A'},
-        second_signal = {type = 'virtual', name = 'signal-B'},
-        comparator = '>',
-        output_signal = {type = 'virtual', name = 'signal-C'},
-        copy_count_from_input = false
-    }
-    local combipower = surface.create_entity({name = 'substation', position = {x = width * -0.5 - 4, y = -242}, force = 'player', create_build_effect_smoke = false})
-    combipower.connect_neighbour({wire = defines.wire_type.green, target_entity = checker, target_circuit_id = 1})
-    combipower.connect_neighbour({wire = defines.wire_type.green, target_entity = combimade[#combimade], target_circuit_id = 1})
-    combimade[1].connect_neighbour({wire = defines.wire_type.green, target_entity = checker, source_circuit_id = 2, target_circuit_id = 1})
-    local speaker =
-        surface.create_entity(
-        {
-            name = 'programmable-speaker',
-            position = {x = width * -0.5 - 6, y = -241},
-            force = 'player',
-            create_build_effect_smoke = false,
-            parameters = {playback_volume = 0.6, playback_globally = true, allow_polyphony = false},
-            alert_parameters = {show_alert = true, show_on_map = true, icon_signal_id = {type = 'item', name = 'accumulator'}, alert_message = 'Train Is Charging!'}
-        }
-    )
-    speaker.connect_neighbour({wire = defines.wire_type.green, target_entity = checker, target_circuit_id = 2})
-    local rules4 = speaker.get_or_create_control_behavior()
-    rules4.circuit_condition = {condition = {first_signal = {type = 'virtual', name = 'signal-C'}, second_constant = 0, comparator = '>'}}
-    rules4.circuit_parameters = {signal_value_is_pitch = false, instrument_id = 8, note_id = 5}
-    local solar1 = surface.create_entity({name = 'solar-panel', position = {x = width * -0.5 - 2, y = -242}, force = 'player', create_build_effect_smoke = false})
-    local solar2 = surface.create_entity({name = 'solar-panel', position = {x = width * -0.5 + 1, y = -242}, force = 'player', create_build_effect_smoke = false})
-    protect(solar1, true)
-    protect(solar2, true)
-    protect(combipower, false)
-    protect(speaker, false)
-    protect(checker, false)
+    --     if i > 1 then
+    --         combimade[i].connect_neighbour({wire = defines.wire_type.green, target_entity = combimade[i - 1], source_circuit_id = 2, target_circuit_id = 1})
+    --         local rule = combimade[i].get_or_create_control_behavior()
+    --         rule.parameters = {first_signal = {type = 'virtual', name = 'signal-A'}, second_constant = 0, operation = '+', output_signal = {type = 'virtual', name = 'signal-A'}}
+    --     else
+    --         local rule2 = combimade[i].get_or_create_control_behavior()
+    --         rule2.parameters = {first_signal = {type = 'virtual', name = 'signal-A'}, second_constant = 0, operation = '+', output_signal = {type = 'virtual', name = 'signal-B'}}
+    --     end
+    -- end
+    -- local checker = surface.create_entity({name = 'decider-combinator', position = {x = width * -0.5 - 6, y = -242}, force = 'player', create_build_effect_smoke = false})
+    -- if not checker or not checker.valid then return end 
+    -- local rules3 = checker.get_control_behavior()
+    -- local dec_condition = {
+    --     first_signal = {type = 'virtual', name = 'signal-A'},
+    --     second_signal = {type = 'virtual', name = 'signal-B'},
+    --     comparator = '>',
+        
+    -- }
+    -- local dec_output = {
+    --     output_signal = {type = 'virtual', name = 'signal-C'},
+    --     copy_count_from_input = false
+    -- }
+    
+    -- rules3.set_condition(1, dec_condition)
+    -- rules3.set_output(1, dec_output)
+    -- rules3.parameters = {
+    --     first_signal = {type = 'virtual', name = 'signal-A'},
+    --     second_signal = {type = 'virtual', name = 'signal-B'},
+    --     comparator = '>',
+    --     output_signal = {type = 'virtual', name = 'signal-C'},
+    --     copy_count_from_input = false
+    -- }
+    -- local combipower = surface.create_entity({name = 'substation', position = {x = width * -0.5 - 4, y = -242}, force = 'player', create_build_effect_smoke = false})
+    -- connect_entities(combipower, checker, defines.wire_connector_id.circuit_green)
+
+    -- combipower.connect_neighbour({wire = defines.wire_type.green, target_entity = checker, target_circuit_id = 1})
+    -- combipower.get_wire_connector(defines.wire_connector_id.circuit_green, true).connect_to(checker.get_wire_connector(defines.wire_connector_id.circuit_green, true), false)
+    -- combipower.connect_neighbour({wire = defines.wire_type.green, target_entity = combimade[#combimade], target_circuit_id = 1})
+    -- combimade[1].connect_neighbour({wire = defines.wire_type.green, target_entity = checker, source_circuit_id = 2, target_circuit_id = 1})
+    -- local speaker =
+    --     surface.create_entity(
+    --     {
+    --         name = 'programmable-speaker',
+    --         position = {x = width * -0.5 - 6, y = -241},
+    --         force = 'player',
+    --         create_build_effect_smoke = false,
+    --         parameters = {playback_volume = 0.6, playback_globally = true, allow_polyphony = false},
+    --         alert_parameters = {show_alert = true, show_on_map = true, icon_signal_id = {type = 'item', name = 'accumulator'}, alert_message = 'Train Is Charging!'}
+    --     }
+    -- )
+    -- speaker.connect_neighbour({wire = defines.wire_type.green, target_entity = checker, target_circuit_id = 2})
+    -- local rules4 = speaker.get_or_create_control_behavior()
+    -- rules4.circuit_condition = {condition = {first_signal = {type = 'virtual', name = 'signal-C'}, second_constant = 0, comparator = '>'}}
+    -- rules4.circuit_parameters = {signal_value_is_pitch = false, instrument_id = 8, note_id = 5}
+    -- local solar1 = surface.create_entity({name = 'solar-panel', position = {x = width * -0.5 - 2, y = -242}, force = 'player', create_build_effect_smoke = false})
+    -- local solar2 = surface.create_entity({name = 'solar-panel', position = {x = width * -0.5 + 1, y = -242}, force = 'player', create_build_effect_smoke = false})
+    -- protect(solar1, true)
+    -- protect(solar2, true)
+    -- protect(combipower, false)
+    -- protect(speaker, false)
+    -- protect(checker, false)
 
     for k, x in pairs({-1, 0}) do
         for i = 1, 12, 1 do
@@ -196,24 +222,24 @@ function Public.create_wagon_room()
             protect(e, true)
             --e.link_id = 1000 + i + 12 * (k - 1)
             table.insert(objective.comfychests2, e)
-            table.insert(objective.comfychest_invs2, e.get_inventory(defines.inventory.chest))
+            table.insert(objective.comfychest_invs2, e and e.get_inventory(defines.inventory.chest))
         end
     end
 
     for i = 1, 9, 1 do
         local y = -0.7 * height + 18 + 9 + 18 * (math_floor((i - 1) / 3))
         local x = -0.5 * width + 5 + 9 + 18 * (i % 3)
-        local substation = surface.create_entity({name = 'substation', position = {x, y}, force = 'player', create_build_effect_smoke = false})
-        if i == 3 then
-            substation.disconnect_neighbour(combipower)
-            substation.connect_neighbour({wire = defines.wire_type.green, target_entity = combipower})
-        end
-        protect(substation, true)
+        -- local substation = surface.create_entity({name = 'substation', position = {x, y}, force = 'player', create_build_effect_smoke = false})
+        -- if i == 3 then
+        --     substation.disconnect_neighbour(combipower)
+        --     substation.connect_neighbour({wire = defines.wire_type.green, target_entity = combipower})
+        -- end
+        -- protect(substation, true)
         for j = 1, 4, 1 do
             local xx = x - 2 * j
             local acumulator = surface.create_entity({name = 'accumulator', position = {xx, y}, force = 'player', create_build_effect_smoke = false})
             if i == 3 and j == 1 then
-                acumulator.connect_neighbour({wire = defines.wire_type.green, target_entity = substation})
+                --acumulator.connect_neighbour({wire = defines.wire_type.green, target_entity = substation})
             end
             protect(acumulator, true)
             table.insert(objective.accumulators, acumulator)
@@ -234,8 +260,11 @@ function Public.create_wagon_room()
     rendering.draw_text {
         text = {'chronosphere.train_laser_battery'},
         surface = surface,
-        target = laser_battery,
-        target_offset = {0, -2.5},
+        target = {
+            entity = laser_battery,
+            offset = {0, -2.5},
+            position = laser_battery and laser_battery.position
+        },
         color = objective.locomotive.color,
         scale = 1.00,
         font = 'default-game',
@@ -251,7 +280,11 @@ function Public.create_wagon_room()
     rendering.draw_text {
         text = {'chronosphere.train_repair_chest'},
         surface = surface,
-        target = repairchest,
+        target = {
+            entity = repairchest,
+            offset = {0, -2.5},
+            position = repairchest and repairchest.position
+        },
         target_offset = {0, -2.5},
         color = objective.locomotive.color,
         scale = 1.00,
@@ -267,8 +300,11 @@ function Public.create_wagon_room()
         rendering.draw_sprite {
             sprite = upgrades[i].sprite,
             surface = surface,
-            target = e,
-            target_offset = {0, -1.3},
+            target = {
+                entity = e,
+                offset = {0, -1.3},
+                position = e and e.position
+            },
             font = 'default-game',
             visible = true
         }
@@ -277,7 +313,11 @@ function Public.create_wagon_room()
     rendering.draw_text {
         text = {'chronosphere.train_market'},
         surface = surface,
-        target = market,
+        target = {
+            entity = market,
+            offset = {0, -3.5},
+            position = market and market.position
+        },
         target_offset = {0, -3.5},
         color = objective.locomotive.color,
         scale = 1.00,
@@ -288,8 +328,11 @@ function Public.create_wagon_room()
     rendering.draw_text {
         text = {'chronosphere.train_upgrades'},
         surface = surface,
-        target = objective.upgradechest[8],
-        target_offset = {0, -3.5},
+        target = {
+            entity = objective.upgradechest[8],
+            offset = {0, -3.5},
+            position = objective.upgradechest[8].position
+        },
         color = objective.locomotive.color,
         scale = 1.00,
         font = 'default-game',
@@ -299,8 +342,11 @@ function Public.create_wagon_room()
     rendering.draw_text {
         text = {'chronosphere.train_upgrades_sub'},
         surface = surface,
-        target = objective.upgradechest[8],
-        target_offset = {0, -2.5},
+        target = {
+            entity = objective.upgradechest[8],
+            offset = {0, -2.5},
+            position = objective.upgradechest[8].position
+        },
         color = objective.locomotive.color,
         scale = 0.80,
         font = 'default-game',
@@ -309,6 +355,7 @@ function Public.create_wagon_room()
     }
 
     for _, offer in pairs(Balance.market_offers()) do
+        if not market or not market.valid then break end
         market.add_market_item(offer)
     end
 
@@ -324,6 +371,7 @@ function Public.create_wagon_room()
     objective.car_exits = {}
     for i = 1, 6, 1 do
         local e = surface.create_entity({name = 'car', position = car_pos[i], force = 'player', create_build_effect_smoke = false})
+        if not e or not e.valid then break end
         e.get_inventory(defines.inventory.fuel).insert({name = 'wood', count = 16})
         protect(e, false)
         objective.car_exits[i] = e
@@ -352,7 +400,9 @@ function Public.create_wagon_room()
             break
         end
         local e = surface.create_entity({name = 'wooden-chest', position = positions[i], force = 'player', create_build_effect_smoke = false})
+        if not e or not e.valid then break end
         local inventory = e.get_inventory(defines.inventory.chest)
+        if not inventory or not inventory.valid then break end
         inventory.insert({name = 'raw-fish', count = math_random(2, 5)})
         i = i + 1
     end
@@ -371,7 +421,9 @@ function Public.create_wagon_room()
             break
         end
         local e = surface.create_entity({name = 'wooden-chest', position = positions[i], force = 'player', create_build_effect_smoke = false})
+        if not e or not e.valid then break end
         local inventory = e.get_inventory(defines.inventory.chest)
+        if not inventory or not inventory.valid then break end
         inventory.insert(cargo_boxes[loot_i])
         i = i + 1
     end
@@ -389,6 +441,7 @@ function Public.create_wagon_room()
         e.rotatable = false
         Factories.register_train_assembler(e, key)
         if List[key].kind == 'assembler' or List[key].kind == 'fluid-assembler' then
+            if not e or not e.valid then break end
             e.set_recipe(List[key].recipe_override or List[key].name)
             e.recipe_locked = true
             e.direction = defines.direction.south

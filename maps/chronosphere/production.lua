@@ -1,10 +1,10 @@
 local Chrono_table = require 'maps.chronosphere.table'
-local Rand = require 'maps.chronosphere.random'
 local Balance = require 'maps.chronosphere.balance'
 local Difficulty = require 'modules.difficulty_vote'
 
 local Public = {}
 local List = require 'maps.chronosphere.production_list'
+local FT = require 'utils.functions.flying_texts'
 
 local function roll_assembler()
     local objective = Chrono_table.get_table()
@@ -15,7 +15,7 @@ local function roll_assembler()
             table.insert(choices.weights, item.weight)
         end
     end
-    return Rand.raffle(choices.types, choices.weights)
+    return table.get_random_weighted_t(choices.types, choices.weights)
 end
 
 function Public.calculate_factory_level(xp, whole_level)
@@ -53,13 +53,14 @@ local function produce(factory, train)
             factory.progress = factory.progress - (1 + multi) * List[id].base_time * 60
             local inserted = factory.entity.get_output_inventory().insert {name = List[id].name, count = 1 + multi}
             factory.produced = factory.produced + inserted
-            factory.entity.surface.pollute(factory.entity.position, inserted * pollution_coef)
+            local surface = factory.entity.surface
+            surface.pollute(factory.entity.position, inserted * pollution_coef)
             if train then
-                game.pollution_statistics.on_flow('cargo-wagon', inserted * pollution_coef)
-                game.forces.player.item_production_statistics.on_flow(List[id].name, inserted)
+                game.get_pollution_statistics(surface).on_flow('cargo-wagon', inserted * pollution_coef)
+                game.forces.player.get_item_production_statistics(surface).on_flow(List[id].name, inserted)
                 factory.entity.products_finished = factory.entity.products_finished + inserted
             else
-                game.pollution_statistics.on_flow('item-on-ground', inserted * pollution_coef)
+                game.get_pollution_statistics(surface).on_flow('item-on-ground', inserted * pollution_coef)
             end
         end
     end
@@ -82,17 +83,6 @@ local function levelup_train_factory(id)
   local xp = production.experience[id]
   local level = Public.calculate_factory_level(xp, true)
   production.train_assemblers[id].tier = level
-end
-
-local function flying_text(surface, position, text, color)
-    surface.create_entity(
-        {
-            name = 'flying-text',
-            position = {position.x, position.y - 0.5},
-            text = text,
-            color = color
-        }
-    )
 end
 
 function Public.produce_assemblers()
@@ -159,10 +149,10 @@ function Public.check_activity()
         local count = surface.count_entities_filtered {position = entity.position, radius = 10, force = 'player'}
         if count > 10 then
             factory.active = true
-            flying_text(surface, entity.position, 'Active', {r = 0, g = 0.98, b = 0})
+            FT.flying_text(nil, surface, entity.position, 'Active', {r = 0, g = 0.98, b = 0})
         else
             factory.active = false
-            flying_text(surface, entity.position, 'Not Active', {r = 0.98, g = 0, b = 0})
+            FT.flying_text(nil, surface, entity.position, 'Not Active', {r = 0.98, g = 0, b = 0})
         end
         ::continue::
     end

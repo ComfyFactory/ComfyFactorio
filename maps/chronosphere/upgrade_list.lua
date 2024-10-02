@@ -77,7 +77,7 @@ function Public.upgrade2(coin_scaling)
     local difficulty = Difficulty.get().difficulty_vote_value
     local upgrade = {
         name = {'chronosphere.upgrade_filter'},
-        sprite = 'recipe/effectivity-module',
+        sprite = 'recipe/efficiency-module',
         max_level = 9,
         type = 'train',
         enabled = true,
@@ -182,9 +182,9 @@ function Public.upgrade5(coin_scaling)
             item3 = {name = 'iron-chest', tt = 'entity-name', sprite = 'item/iron-chest', count = math_max(0, 250 - math_abs(objective.upgrades[5] - 1) * 250)},
             item4 = {name = 'steel-chest', tt = 'entity-name', sprite = 'item/steel-chest', count = math_max(0, 250 - math_abs(objective.upgrades[5] - 2) * 250)},
             item5 = {
-                name = 'logistic-chest-storage',
+                name = 'storage-chest',
                 tt = 'entity-name',
-                sprite = 'item/logistic-chest-storage',
+                sprite = 'item/storage-chest',
                 count = math_max(0, 250 - math_abs(objective.upgrades[5] - 3) * 250)
             }
         },
@@ -267,7 +267,7 @@ function Public.upgrade9(coin_scaling)
     local objective = Chrono_table.get_table()
     local upgrade = {
         name = {'chronosphere.upgrade_storage'},
-        sprite = 'item/logistic-chest-storage',
+        sprite = 'item/storage-chest',
         max_level = 4,
         type = 'train',
         enabled = true,
@@ -285,9 +285,9 @@ function Public.upgrade9(coin_scaling)
             item3 = {name = 'iron-chest', tt = 'entity-name', sprite = 'item/iron-chest', count = math_max(0, 250 - math_abs(objective.upgrades[9] - 1) * 250)},
             item4 = {name = 'steel-chest', tt = 'entity-name', sprite = 'item/steel-chest', count = math_max(0, 250 - math_abs(objective.upgrades[9] - 2) * 250)},
             item5 = {
-                name = 'logistic-chest-storage',
+                name = 'storage-chest',
                 tt = 'entity-name',
-                sprite = 'item/logistic-chest-storage',
+                sprite = 'item/storage-chest',
                 count = math_max(0, 250 - math_abs(objective.upgrades[9] - 3) * 250)
             }
         },
@@ -318,10 +318,10 @@ function Public.upgrade10(coin_scaling)
     return upgrade
 end
 
-function Public.upgrade11()
+function Public.upgrade11(_coin_scaling)
     local upgrade = {
         name = {'chronosphere.upgrade_fusion'},
-        sprite = 'recipe/fusion-reactor-equipment',
+        sprite = 'recipe/fission-reactor-equipment',
         max_level = 999,
         type = 'player',
         enabled = true,
@@ -340,7 +340,7 @@ function Public.upgrade11()
     return upgrade
 end
 
-function Public.upgrade12()
+function Public.upgrade12(_coin_scaling)
     local upgrade = {
         name = {'chronosphere.upgrade_mk2'},
         sprite = 'recipe/power-armor-mk2',
@@ -410,7 +410,7 @@ function Public.upgrade15(coin_scaling)
     local objective = Chrono_table.get_table()
     local upgrade = {
         name = {'chronosphere.upgrade_computer3'},
-        sprite = 'item/rocket-control-unit',
+        sprite = 'item/utility-science-pack',
         max_level = 10,
         type = 'quest',
         enabled = objective.upgrades[14] == 1,
@@ -420,7 +420,7 @@ function Public.upgrade15(coin_scaling)
         cost = {
             item1 = {name = 'coin', tt = 'item-name', sprite = 'item/coin', count = 2000 * coin_scaling},
             item2 = {name = 'low-density-structure', tt = 'item-name', sprite = 'item/low-density-structure', count = 100},
-            item3 = {name = 'rocket-control-unit', tt = 'item-name', sprite = 'item/rocket-control-unit', count = 100},
+            item3 = {name = 'utility-science-pack', tt = 'item-name', sprite = 'item/utility-science-pack', count = 100},
             item4 = {name = 'uranium-fuel-cell', tt = 'item-name', sprite = 'item/uranium-fuel-cell', count = 50}
         },
         virtual_cost = {
@@ -430,11 +430,11 @@ function Public.upgrade15(coin_scaling)
     return upgrade
 end
 
-function Public.upgrade16()
+function Public.upgrade16(_coin_scaling)
     local objective = Chrono_table.get_table()
     local upgrade = {
         name = {'chronosphere.upgrade_computer4'},
-        sprite = 'item/satellite',
+        sprite = 'item/space-science-pack',
         max_level = 1,
         type = 'quest',
         enabled = objective.upgrades[15] == 10,
@@ -443,7 +443,7 @@ function Public.upgrade16()
         jump_limit = 25,
         cost = {
             item1 = {name = 'rocket-silo', tt = 'entity-name', sprite = 'item/rocket-silo', count = 1},
-            item2 = {name = 'satellite', tt = 'item-name', sprite = 'item/satellite', count = 1},
+            item2 = {name = 'space-science-pack', tt = 'item-name', sprite = 'item/space-science-pack', count = 1},
             item3 = {name = 'spidertron', tt = 'entity-name', sprite = 'item/spidertron', count = 2}
         },
         virtual_cost = {
@@ -476,7 +476,7 @@ function Public.upgrade17(coin_scaling)
     return upgrade
 end
 
-function Public.upgrade18()
+function Public.upgrade18(_coin_scaling)
     local objective = Chrono_table.get_table()
     local upgrade = {
         name = {'chronosphere.upgrade_researchspeed'},
@@ -562,7 +562,7 @@ function Public.upgrade20(coin_scaling)
     return upgrade
 end
 
-function Public.upgrade21()
+function Public.upgrade21(_coin_scaling)
     local objective = Chrono_table.get_table()
     local difficulty = Difficulty.get().difficulty_vote_value
     local upgrade = {
@@ -634,8 +634,8 @@ function Public.upgrade23(coin_scaling)
             item2 = {name = 'artillery-turret', tt = 'entity-name', sprite = 'item/artillery-turret', count = 10},
             item3 = {name = 'military-science-pack', tt = 'item-name', sprite = 'item/military-science-pack', count = 1000},
             item4 = {name = 'atomic-bomb', tt = 'item-name', sprite = 'item/atomic-bomb', count = 20},
-            item5 = {name = 'rocket-control-unit', tt = 'item-name', sprite = 'item/rocket-control-unit', count = 50},
-            item6 = {name = 'satellite', tt = 'item-name', sprite = 'item/satellite', count = 1}
+            item5 = {name = 'utility-science-pack', tt = 'item-name', sprite = 'item/utility-science-pack', count = 50},
+            item6 = {name = 'space-science-pack', tt = 'item-name', sprite = 'item/space-science-pack', count = 1}
         },
         virtual_cost = {
             virtual1 = {type = 'tech', name = Public.tokens.tech.name, tt = 'chronosphere', sprite = Public.tokens.tech.sprite, count = 200}
@@ -644,7 +644,7 @@ function Public.upgrade23(coin_scaling)
     return upgrade
 end
 
-function Public.upgrade24()
+function Public.upgrade24(_coin_scaling)
     local objective = Chrono_table.get_table()
     local upgrade = {
         name = {'chronosphere.upgrade_nuclear_artillery_ammo'},
@@ -665,7 +665,7 @@ function Public.upgrade24()
     return upgrade
 end
 
-function Public.upgrade25()
+function Public.upgrade25(_coin_scaling)
     local objective = Chrono_table.get_table()
     local upgrade = {
         name = {'chronosphere.upgrade_poison_mastery'},

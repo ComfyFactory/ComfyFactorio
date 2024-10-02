@@ -40,8 +40,7 @@ local function create_gui(player)
     label.style.minimal_width = 10
     label.style.font_color = {r = 255, g = 200, b = 200}
 
-    local progressbar = frame.add({type = 'progressbar', name = 'progressbar', value = 0})
-    progressbar.style = 'achievement_progressbar'
+    local progressbar = frame.add({type = 'progressbar', name = 'progressbar', value = 0, style = 'achievement_progressbar'})
     progressbar.style.minimal_width = 96
     progressbar.style.maximal_width = 96
     progressbar.style.top_padding = 1
@@ -238,7 +237,7 @@ local function update_world_gui(player)
     local difficulty = Difficulty.get().difficulty_vote_value
     local overstay_jump = Balance.jumps_until_overstay_is_on(difficulty) or 3
     local world = objective.world
-    local evolution = game.forces['enemy'].evolution_factor
+    local evolution = game.forces['enemy'].get_evolution_factor(game.get_surface(objective.active_surface_index))
     local evo_color = {
         r = math_floor(255 * 1 * math_max(0, math_min(1, 1.2 - evolution * 2))),
         g = math_floor(255 * 1 * math_max(math_abs(0.5 - evolution * 1.5), 1 - evolution * 4)),
@@ -254,7 +253,7 @@ local function update_world_gui(player)
     frame['world_ores']['uranium-ore'].number = world.variant.u
     frame['world_ores']['oil'].number = world.variant.o
     frame['richness'].caption = {'chronosphere.gui_world_2', world.ores.name}
-    frame['world_biters'].caption = {'chronosphere.gui_world_3', math_floor(evolution * 100, 1)}
+    frame['world_biters'].caption = {'chronosphere.gui_world_3', math_floor(evolution * 100)}
     frame['world_biters'].style.font_color = evo_color
 
     frame['world_biters3'].caption = {'chronosphere.gui_world_4_1', objective.overstaycount * 2.5, objective.overstaycount * 10}
@@ -291,7 +290,7 @@ local function world_gui(player)
     end
     local objective = Chrono_table.get_table()
     local world = objective.world
-    local evolution = game.forces['enemy'].evolution_factor
+    local evolution = game.forces['enemy'].get_evolution_factor(game.get_surface(objective.active_surface_index))
     local frame = player.gui.screen.add {type = 'frame', name = 'gui_world', caption = {'chronosphere.gui_world_button'}, direction = 'vertical'}
     frame.location = {x = 650, y = 45}
     frame.style.minimal_height = 300
@@ -310,7 +309,7 @@ local function world_gui(player)
     frame.add({type = 'label', name = 'richness', caption = {'chronosphere.gui_world_2', world.ores.name}})
     frame.add({type = 'label', name = 'world_time', caption = {'chronosphere.gui_world_5', world.dayspeed.name}})
     frame.add({type = 'line'})
-    frame.add({type = 'label', name = 'world_biters', caption = {'chronosphere.gui_world_3', math_floor(evolution * 100, 1)}})
+    frame.add({type = 'label', name = 'world_biters', caption = {'chronosphere.gui_world_3', math_floor(evolution * 100)}})
     frame.add({type = 'label', name = 'world_biters2', caption = {'chronosphere.gui_world_4'}})
     frame.add({type = 'label', name = 'world_biters3', caption = {'chronosphere.gui_world_4_1', objective.overstaycount * 2.5, objective.overstaycount * 10}})
     frame.add({type = 'line'})

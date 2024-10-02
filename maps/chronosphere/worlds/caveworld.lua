@@ -66,7 +66,7 @@ local function process_tile(p, seed, tiles, entities, treasure, decoratives)
 
     if noise3 > -0.25 and noise3 < 0.25 then
         tiles[#tiles + 1] = {name = 'dirt-6', position = p}
-        local evo = game.forces['enemy'].evolution_factor
+        local evo = game.forces.enemy.get_evolution_factor(game.get_surface(objective.active_surface_index))
         local roll = random(1, 1000)
         if roll > 830 + tunnels then
             entities[#entities + 1] = {name = Raffle.rocks[random(1, #Raffle.rocks)], position = p}
