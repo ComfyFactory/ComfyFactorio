@@ -70,7 +70,7 @@ local function get_replacement_tile(surface, position)
         table.shuffle_table(vectors)
         for k, v in pairs(vectors) do
             local tile = surface.get_tile(position.x + v[1], position.y + v[2])
-            if not tile.collides_with('resource') then
+            if tile and tile.valid and not tile.collides_with('resource') then
                 return tile.name
             end
         end
@@ -97,7 +97,7 @@ function Public.replace_water(surface, left_top)
             local p = { x = left_top.x + x, y = left_top.y + y }
             local tile = surface.get_tile(p)
             if tile.hidden_tile then
-                surface.set_hidden_tile(p, get_replacement_tile(surface, p).name)
+                surface.set_hidden_tile(p, get_replacement_tile(surface, p))
             elseif tile.collides_with('resource') then
                 tiles[#tiles + 1] = { name = get_replacement_tile(surface, p), position = p }
             end
@@ -220,15 +220,16 @@ function Public.process_labyrinth_cell(pos, seed)
 end
 
 function Public.build_blueprint(surface, position, id, force)
-    local item = surface.create_entity { name = "item-on-ground", position = position, stack = { name = "blueprint", count = 1 } }
-    local success = item.stack.import_stack(Blueprints[id])
+    local nauvis = game.get_surface(1)
+    local item = nauvis and nauvis.create_entity { name = "item-on-ground", position = position, stack = { name = "blueprint", count = 1 } }
+    local success = item and item.stack.import_stack(Blueprints[id])
     if success <= 0 then
-        local ghosts = item.stack.build_blueprint { surface = surface, force = force, position = position, build_mode = defines.build_mode.forced }
+        local ghosts = item and item.stack.build_blueprint { surface = surface, force = force, position = position, build_mode = defines.build_mode.forced } or {}
         for _, ghost in pairs(ghosts) do
             ghost.silent_revive({ raise_revive = true })
         end
     end
-    if item.valid then item.destroy() end
+    if item and item.valid then item.destroy() end
 end
 
 return Public

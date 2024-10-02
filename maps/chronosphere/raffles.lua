@@ -12,27 +12,27 @@ Public.biters = {
 }
 
 Public.rocks = {
-    'sand-rock-big',
-    'sand-rock-big',
-    'rock-big',
-    'rock-big',
-    'rock-big',
-    'rock-big',
-    'rock-big',
-    'rock-big',
-    'rock-big',
-    'rock-huge'
+    'big-sand-rock',
+    'big-sand-rock',
+    'big-rock',
+    'big-rock',
+    'big-rock',
+    'big-rock',
+    'big-rock',
+    'big-rock',
+    'big-rock',
+    'huge-rock'
 }
 
 Public.rock_decoratives = {
-    'rock-medium',
-    'rock-small',
-    'rock-small',
-    'rock-tiny',
-    'rock-tiny',
-    'rock-tiny',
-    'sand-rock-medium',
-    'sand-rock-small'
+    'medium-rock',
+    'small-rock',
+    'small-rock',
+    'tiny-rock',
+    'tiny-rock',
+    'tiny-rock',
+    'medium-sand-rock',
+    'small-sand-rock'
 }
 
 Public.ores = {

@@ -9,7 +9,7 @@ local Chrono_table = require 'maps.chronosphere.table'
 local function process_tile(p, seed, tiles, entities, treasure)
     local objective = Chrono_table.get_table()
     local noise1 = Functions.get_noise('scrapyard', p, seed)
-    local evo = game.forces['enemy'].evolution_factor
+    local evo = game.forces.enemy.get_evolution_factor(game.get_surface(objective.active_surface_index))
     local handicap = max(0, 120 - objective.chronojumps * 20)
 
     if noise1 < -0.70 or noise1 > 0.70 then

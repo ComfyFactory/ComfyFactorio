@@ -34,7 +34,7 @@ function Public.on_player_mined_entity(event)
             Event_functions.trap(entity, false)
             Event_functions.choppy_loot(event)
         end
-    elseif entity.name == 'rock-huge' or entity.name == 'rock-big' or entity.name == 'sand-rock-big' then
+    elseif entity.name == 'huge-rock' or entity.name == 'big-rock' or entity.name == 'big-sand-rock' then
         if objective.world.id == 3 then --rocky worlds
             event.buffer.clear()
         -- elseif objective.world.id == 5 then --maze worlds
@@ -51,7 +51,7 @@ end
 function Public.pre_player_mined_item(event)
     local objective = Chrono_table.get_table()
     if objective.world.id == 3 then --rocky worlds
-        if event.entity.name == 'rock-huge' or event.entity.name == 'rock-big' or event.entity.name == 'sand-rock-big' then
+        if event.entity.name == 'huge-rock' or event.entity.name == 'big-rock' or event.entity.name == 'big-sand-rock' then
             Event_functions.trap(event.entity, false)
             event.entity.destroy()
             Event_functions.rocky_loot(event)
@@ -62,6 +62,7 @@ end
 function Public.on_pre_player_left_game(event)
     local playertable = Chrono_table.get_player_table()
     local player = game.get_player(event.player_index)
+    if not player or not player.valid then return end
     if player.controller_type == defines.controllers.editor then
         player.toggle_map_editor()
     end
@@ -74,6 +75,7 @@ function Public.on_player_joined_game(event)
     local objective = Chrono_table.get_table()
     local playertable = Chrono_table.get_player_table()
     local player = game.get_player(event.player_index)
+    if not player or not player.valid then return end
     if not playertable.flame_boots[event.player_index] then
         playertable.flame_boots[event.player_index] = {}
     end
@@ -85,7 +87,7 @@ function Public.on_player_joined_game(event)
     local surface = game.surfaces[objective.active_surface_index]
 
     if player.online_time == 0 then
-        player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 32, 0.5), surface)
+        player.teleport(surface.find_non_colliding_position('character', player.force.get_spawn_position(surface), 32, 0.5) or {0, 0}, surface)
         for item, amount in pairs(Balance.starting_items) do
             player.insert({name = item, count = amount})
         end
@@ -95,16 +97,16 @@ function Public.on_player_joined_game(event)
         player.character = nil
         player.set_controller({type = defines.controllers.god})
         player.create_character()
-        player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 32, 0.5), surface)
+        player.teleport(surface.find_non_colliding_position('character', player.force.get_spawn_position(surface), 32, 0.5) or {0, 0}, surface)
         for item, amount in pairs(Balance.starting_items) do
             player.insert({name = item, count = amount})
         end
     end
 
-    local tile = surface.get_tile(player.position)
+    local tile = surface.get_tile(player.position.x, player.position.y)
     if tile.valid then
         if tile.name == 'out-of-map' then
-            player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 32, 0.5), surface)
+            player.teleport(surface.find_non_colliding_position('character', player.force.get_spawn_position(surface), 32, 0.5) or {0, 0}, surface)
         end
     end
     Minimap.update_surface(player)
@@ -113,6 +115,7 @@ end
 
 function Public.on_player_changed_surface(event)
     local player = game.get_player(event.player_index)
+    if not player or not player.valid then return end
     Minimap.toggle_button(player)
     if not player.is_cursor_empty() then
         if player.cursor_stack and player.cursor_stack.valid_for_read then
@@ -134,9 +137,54 @@ function Public.on_player_changed_surface(event)
 
 end
 
+local function try_destroy_platform(entity, cause) 
+    local pos = entity.position
+    local surface = entity.surface
+    if surface.platform then return end
+    local asteroids = {
+        ['small-metallic-asteroid'] = {size = 1, amount = 1},
+        ['medium-metallic-asteroid'] = {size = 2, amount = 2},
+        ['big-metallic-asteroid'] = {size = 3, amount = 4},
+        ['huge-metallic-asteroid'] = {size = 6, amount = 6},
+        ['small-carbonic-asteroid'] = {size = 1, amount = 1},
+        ['medium-carbonic-asteroid'] = {size = 2, amount = 2},
+        ['big-carbonic-asteroid'] = {size = 3, amount = 4},
+        ['huge-carbonic-asteroid'] = {size = 6, amount = 6},
+        ['small-oxide-asteroid'] = {size = 1, amount = 1},
+        ['medium-oxide-asteroid'] = {size = 2, amount = 2},
+        ['big-oxide-asteroid'] = {size = 3, amount = 4},
+        ['huge-oxide-asteroid'] = {size = 6, amount = 6},
+        ['small-interstellar-asteroid'] = {size = 1, amount = 1},
+        ['medium-interstellar-asteroid'] = {size = 2, amount = 2},
+        ['big-interstellar-asteroid'] = {size = 3, amount = 4},
+        ['huge-interstellar-asteroid'] = {size = 6, amount = 6},
+    }
+    local stone = asteroids[entity.name]
+    if cause then
+        for i = stone.amount, 0, -1 do
+            --register some loot or something. Can't spawn chunks outside the actual space platform!       
+        end
+        return
+    end
+    local tiles = {}
+    local size = stone.size
+    for x = -size, size, 1 do
+        for y = -size, size, 1 do
+            local tile = entity.surface.get_tile(pos.x + x,pos.y + y)
+            if tile and tile.valid and tile.name == 'space-platform-foundation' then 
+                tiles[#tiles+1] = {position = {x = pos.x + x, y = pos.y + y}, name = 'empty-space'}
+            end
+        end
+    end
+    entity.surface.set_tiles(tiles)
+end
+
 function Public.on_entity_died(event)
     local objective = Chrono_table.get_table()
     local entity = event.entity
+    if entity.type == 'asteroid' then
+        try_destroy_platform(entity, event.cause)
+    end
     if entity.type == 'tree' and objective.world.id == 4 then --choppy planet
         if event.cause then
             if event.cause.valid then
@@ -248,9 +296,9 @@ function Public.on_built_entity(event)
         return
     end
     local objective = Chrono_table.get_table()
-    if entity.type == 'entity-ghost' then
+    --[[ if entity.type == 'entity-ghost' then
         entity.time_to_live = game.forces.player.ghost_time_to_live
-    end
+    end ]]
     if entity.name == 'spidertron' then
         if objective.world.id ~= 7 or entity.surface.name == 'cargo_wagon' then
             entity.destroy()
@@ -263,6 +311,7 @@ end
 
 function Public.on_pre_player_died(event)
     local player = game.get_player(event.player_index)
+    if not player or not player.valid then return end
     local surface = player.surface
     local poisons = surface.count_entities_filtered {position = player.position, radius = 10, name = 'poison-cloud'}
     if poisons > 0 then
@@ -277,7 +326,13 @@ end
 function Public.script_raised_revive(event)
 	local entity = event.entity
 	if not entity or not entity.valid then return end
-	if entity.force.name == "player" then return end
+	if entity.force.name == "player" then
+        entity.minable = false
+        entity.destructible = false
+        if entity.name == 'solar-panel' or entity.name == 'substation' then
+            entity.operable = false
+        end
+    end
 	if entity.force.name == "scrapyard" then
 		if entity.name == "gun-turret" then
             local objective = Chrono_table.get_table()

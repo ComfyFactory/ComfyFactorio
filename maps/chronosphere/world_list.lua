@@ -1,7 +1,6 @@
 local Chrono_table = require 'maps.chronosphere.table'
 local Balance = require 'maps.chronosphere.balance'
 local Difficulty = require 'modules.difficulty_vote'
-local Rand = require 'maps.chronosphere.random'
 local random = math.random
 local Public = {}
 local Worlds = {}
@@ -10,17 +9,18 @@ Worlds[1] = {
     world_id = 1,
     map = require 'maps.chronosphere.worlds.basic',
     variants = {
-        [1] = {id = 1, min = 1, weight = 1, name = {'chronosphere.map_1_1'}, fe = 6, cu = 1, c = 1, s = 1, u = 0, o = 1, biters = 16, moisture = -0.2, fa = 1},
-        [2] = {id = 2, min = 1, weight = 1, name = {'chronosphere.map_1_2'}, fe = 1, cu = 6, c = 1, s = 1, u = 0, o = 1, biters = 16, moisture = 0.2, fa = 1},
-        [3] = {id = 3, min = 2, weight = 1, name = {'chronosphere.map_1_3'}, fe = 1, cu = 1, c = 1, s = 6, u = 0, o = 1, biters = 16, moisture = -0.2, fa = 1},
-        [4] = {id = 4, min = 4, weight = 1, name = {'chronosphere.map_1_4'}, fe = 1, cu = 1, c = 1, s = 1, u = 0, o = 6, biters = 16, moisture = 0.1, fa = 1},
-        [5] = {id = 5, min = 6, weight = 1, name = {'chronosphere.map_1_5'}, fe = 1, cu = 1, c = 1, s = 1, u = 6, o = 1, biters = 16, moisture = -0.2, fa = 1},
-        [6] = {id = 6, min = 2, weight = 1, name = {'chronosphere.map_1_6'}, fe = 1, cu = 1, c = 6, s = 1, u = 0, o = 1, biters = 16, moisture = 0, fa = 1},
-        [7] = {id = 7, min = 4, weight = 1, name = {'chronosphere.map_1_7'}, fe = 2, cu = 2, c = 2, s = 2, u = 4, o = 3, biters = 40, moisture = 0.2, fa = 0},
-        [8] = {id = 8, min = 2, weight = 1, name = {'chronosphere.map_1_8'}, fe = 1, cu = 1, c = 1, s = 1, u = 0, o = 0, biters = 16, moisture = 0.1, fa = 4},
-        [9] = {id = 9, min = 1, weight = 1, name = {'chronosphere.map_1_9'}, fe = 2, cu = 2, c = 2, s = 2, u = 0, o = 2, biters = 10, moisture = 0, fa = 1},
-        [10] = {id = 10, min = 0, weight = 0, name = {'chronosphere.map_1_10'}, fe = 4, cu = 3, c = 4, s = 2, u = 0, o = 0, biters = 1, moisture = -0.3, fa = 0},
-        [11] = {id = 11, min = 6, weight = 1, name = {'chronosphere.map_1_11'}, fe = 3, cu = 3, c = 2, s = 3, u = 0, o = 0, biters = 6, moisture = -0.5, fa = 4}
+        [1] = {id = 1, min = 1, weight = 1, name = {'chronosphere.map_1_1'}, pl = 'nauvis', fe = 6, cu = 1, c = 1, s = 1, u = 0, o = 1, biters = 16, moisture = -0.2, fa = 1},
+        [2] = {id = 2, min = 1, weight = 1, name = {'chronosphere.map_1_2'}, pl = 'nauvis',fe = 1, cu = 6, c = 1, s = 1, u = 0, o = 1, biters = 16, moisture = 0.2, fa = 1},
+        [3] = {id = 3, min = 2, weight = 1, name = {'chronosphere.map_1_3'}, pl = 'nauvis',fe = 1, cu = 1, c = 1, s = 6, u = 0, o = 1, biters = 16, moisture = -0.2, fa = 1},
+        [4] = {id = 4, min = 4, weight = 1, name = {'chronosphere.map_1_4'}, pl = 'nauvis',fe = 1, cu = 1, c = 1, s = 1, u = 0, o = 6, biters = 16, moisture = 0.1, fa = 1},
+        [5] = {id = 5, min = 6, weight = 1, name = {'chronosphere.map_1_5'}, pl = 'nauvis',fe = 1, cu = 1, c = 1, s = 1, u = 6, o = 1, biters = 16, moisture = -0.2, fa = 1},
+        [6] = {id = 6, min = 2, weight = 1, name = {'chronosphere.map_1_6'}, pl = 'nauvis',fe = 1, cu = 1, c = 6, s = 1, u = 0, o = 1, biters = 16, moisture = 0, fa = 1},
+        [7] = {id = 7, min = 4, weight = 1, name = {'chronosphere.map_1_7'}, pl = 'nauvis',fe = 2, cu = 2, c = 2, s = 2, u = 4, o = 3, biters = 40, moisture = 0.2, fa = 0},
+        [8] = {id = 8, min = 2, weight = 1, name = {'chronosphere.map_1_8'}, pl = 'nauvis',fe = 1, cu = 1, c = 1, s = 1, u = 0, o = 0, biters = 16, moisture = 0.1, fa = 4},
+        [9] = {id = 9, min = 1, weight = 1, name = {'chronosphere.map_1_9'}, pl = 'nauvis',fe = 2, cu = 2, c = 2, s = 2, u = 0, o = 2, biters = 10, moisture = 0, fa = 1},
+        [10] = {id = 10, min = 0, weight = 0, name = {'chronosphere.map_1_10'}, pl = 'nauvis',fe = 4, cu = 3, c = 4, s = 2, u = 0, o = 0, biters = 1, moisture = -0.3, fa = 0},
+        [11] = {id = 11, min = 6, weight = 1, name = {'chronosphere.map_1_11'}, pl = 'nauvis',fe = 3, cu = 3, c = 2, s = 3, u = 0, o = 0, biters = 6, moisture = -0.5, fa = 4},
+        --[12] = {id = 12, min = 1, weight = 100, name = {'chronosphere.map_1_11'}, pl = 'vulcanus',fe = 3, cu = 3, c = 2, s = 3, u = 0, o = 0, biters = 0, moisture = -0.5, fa = 4}
     },
     modifiers = {},
     default_tile = 'grass-1'
@@ -173,10 +173,11 @@ end
 function Public.determine_world(optional_choice)
     local objective = Chrono_table.get_table()
     local difficulty = Difficulty.get().difficulty_vote_value
+    local SA = script.active_mods['space-travel']
     local chosen_id
     local chosen_variant_id
-    local ores = Rand.raffle(ore_richness_variants, Balance.ore_richness_weights(difficulty))
-    local dayspeed = Rand.raffle(time_speed_variants, time_speed_weights)
+    local ores = table.get_random_weighted_t(ore_richness_variants, Balance.ore_richness_weights(difficulty))
+    local dayspeed = table.get_random_weighted_t(time_speed_variants, time_speed_weights)
     local daytime = random(0, 100) / 100
     local special = special_world()
     if special.yes then
@@ -195,6 +196,7 @@ function Public.determine_world(optional_choice)
             id = chosen_id,
             variant = Worlds[chosen_id].variants[chosen_variant_id],
             default_tile = Worlds[chosen_id].default_tile or 'grass-1',
+            planet_name = SA and Worlds[chosen_id].variants[chosen_variant_id].pl or 'nauvis',
             ores = ores,
             dayspeed = dayspeed,
             daytime = daytime
@@ -217,7 +219,7 @@ function Public.determine_world(optional_choice)
     if Worlds[tonumber(optional_choice)] then
         chosen_id = tonumber(optional_choice)
     else
-        chosen_id = Rand.raffle(choices.types, choices.weights)
+        chosen_id = table.get_random_weighted_t(choices.types, choices.weights)
     end
     local variant_choices = {types = {}, weights = {}}
     for _, variant in pairs(Worlds[chosen_id].variants) do
@@ -230,7 +232,7 @@ function Public.determine_world(optional_choice)
         optional_choice = nil
         goto retry
     end
-    chosen_variant_id = Rand.raffle(variant_choices.types, variant_choices.weights)
+    chosen_variant_id = table.get_random_weighted_t(variant_choices.types, variant_choices.weights)
     local modifiers = get_modifiers(chosen_id)
     if modifiers.ores then
         ores = modifiers.ores
@@ -251,6 +253,7 @@ function Public.determine_world(optional_choice)
         id = chosen_id,
         variant = Worlds[chosen_id].variants[chosen_variant_id],
         default_tile = Worlds[chosen_id].default_tile,
+        planet_name = SA and Worlds[chosen_id].variants[chosen_variant_id].pl or 'nauvis',
         ores = ores,
         dayspeed = dayspeed,
         daytime = daytime

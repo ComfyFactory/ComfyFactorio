@@ -1,5 +1,4 @@
 local Chrono_table = require 'maps.chronosphere.table'
-local Rand = require 'maps.chronosphere.random'
 local Balance = require 'maps.chronosphere.balance'
 local Difficulty = require 'modules.difficulty_vote'
 local math_random = math.random
@@ -36,8 +35,8 @@ local function treasure_chest_loot(difficulty, world)
         {3, 0, 1, false, 'small-lamp', 8, 32},
         {2, 0, 1, false, 'electric-mining-drill', 2, 4},
         {3, 0, 1, false, 'long-handed-inserter', 4, 16},
-        {0.5, 0, 1, false, 'filter-inserter', 2, 12},
-        {0.2, 0, 1, false, 'stack-filter-inserter', 2, 6},
+        --{0.5, 0, 1, false, 'filter-inserter', 2, 12},
+        --{0.2, 0, 1, false, 'stack-filter-inserter', 2, 6},
         {0.2, 0, 1, false, 'slowdown-capsule', 2, 4},
         {0.2, 0, 1, false, 'destroyer-capsule', 2, 4},
         {0.2, 0, 1, false, 'defender-capsule', 2, 4},
@@ -47,7 +46,7 @@ local function treasure_chest_loot(difficulty, world)
         {1, 0.15, 1, false, 'pump', 1, 2},
         {2, 0.15, 1, false, 'pumpjack', 1, 3},
         {0.02, 0.15, 1, false, 'oil-refinery', 1, 2},
-        {3, 0, 1, false, 'effectivity-module', 1, 4},
+        {3, 0, 1, false, 'efficiency-module', 1, 4},
         {3, 0, 1, false, 'speed-module', 1, 4},
         {3, 0, 1, false, 'productivity-module', 1, 4},
         --shotgun meta:
@@ -149,7 +148,7 @@ local function treasure_chest_loot(difficulty, world)
         -- super late-game:
         --{9, 0.8, 1.2, false, "railgun-dart", 12, 20},
         {1, 0.9, 1.1, true, 'power-armor-mk2', 1, 1},
-        {1, 0.8, 1.2, true, 'fusion-reactor-equipment', 1, 1}
+        {1, 0.8, 1.2, true, 'fission-reactor-equipment', 1, 1}
 
         --{2, 0, 1, , "computer", 1, 1},
         --{1, 0.2, 1, , "railgun", 1, 1},
@@ -178,7 +177,7 @@ local function treasure_chest_loot(difficulty, world)
             {2, 0.2, 1.6, true, 'nuclear-reactor', 1, 1},
             {2, 0.2, 1, false, 'centrifuge', 1, 1},
             {1, 0.25, 1.75, true, 'nuclear-fuel', 1, 1},
-            {1, 0.5, 1.5, true, 'fusion-reactor-equipment', 1, 1},
+            {1, 0.5, 1.5, true, 'fission-reactor-equipment', 1, 1},
             {1, 0.5, 1.5, true, 'atomic-bomb', 1, 1}
         }
     end
@@ -186,14 +185,14 @@ local function treasure_chest_loot(difficulty, world)
     --[[
 	if world.id == 7 then --biterwrld
 		specialised_loot_raw = {
-			{4, 0, 1, false, "effectivity-module", 1, 4},
+			{4, 0, 1, false, "efficiency-module", 1, 4},
 			{4, 0, 1, false, "productivity-module", 1, 4},
 			{4, 0, 1, false, "speed-module", 1, 4},
 			{2, 0, 1, false, "beacon", 1, 1},
-			{0.5, 0, 1, false, "effectivity-module-2", 1, 4},
+			{0.5, 0, 1, false, "efficiency-module-2", 1, 4},
 			{0.5, 0, 1, false, "productivity-module-2", 1, 4},
 			{0.5, 0, 1, false, "speed-module-2", 1, 4},
-			{0.1, 0, 1, false, "effectivity-module-3", 1, 4},
+			{0.1, 0, 1, false, "efficiency-module-3", 1, 4},
 			{0.1, 0, 1, false, "productivity-module-3", 1, 4},
 			{0.1, 0, 1, false, "speed-module-3", 1, 4},
 
@@ -321,7 +320,7 @@ function Public.treasure_chest(surface, position, container_name)
     e.minable = false
     local inv = e.get_inventory(defines.inventory.chest)
     for _ = 1, math_random(2, 6), 1 do
-        local loot = Rand.raffle(loot_types, loot_weights)
+        local loot = table.get_random_weighted_t(loot_types, loot_weights)
         local difficulty_scaling = Balance.treasure_quantity_difficulty_scaling(difficulty)
         if objective.chronojumps == 0 then
             difficulty_scaling = 1

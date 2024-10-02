@@ -4,6 +4,7 @@ local math_random = math.random
 local Rand = require 'maps.chronosphere.random'
 local Balance = require 'maps.chronosphere.balance'
 local Difficulty = require 'modules.difficulty_vote'
+local FT = require 'utils.functions.flying_texts'
 local Public = {}
 
 local texts = {
@@ -294,6 +295,15 @@ local texts = {
     }
 }
 
+local function get_comfylatron_kind()
+    local SA = script.active_mods['space-travel']
+    if SA then
+        return 'small-strafer-pentapod'
+    else
+        return 'behemoth-biter'
+    end
+end
+
 local function set_comfy_speech_bubble(text)
     local objective = Chrono_table.get_table()
     if objective.comfybubble then
@@ -365,7 +375,7 @@ local function visit_player()
     end
     local player = players[math_random(1, #players)]
 
-    objective.comfylatron.set_command(
+    objective.comfylatron.commandable.set_command(
         {
             type = defines.command.go_to_location,
             destination_entity = player.character,
@@ -509,16 +519,16 @@ local function desync(event)
         )
     end
     local blocked = false
-    if not objective.comfylatron.surface.find_non_colliding_position('compilatron', objective.comfylatron.position, 0.5, 0.1) then
+    if not objective.comfylatron.surface.find_non_colliding_position(get_comfylatron_kind(), objective.comfylatron.position, 0.5, 0.1) then
         blocked = true
     end
     if not event or blocked or math_random(1, 5) == 1 then
         objective.comfylatron.surface.create_entity({name = 'medium-explosion', position = objective.comfylatron.position})
-        objective.comfylatron.surface.create_entity({name = 'flying-text', position = objective.comfylatron.position, text = 'desync', color = {r = 150, g = 0, b = 0}})
+        FT.flying_text(nil, objective.comfylatron.surface, objective.comfylatron.position, 'desync', {r = 150, g = 0, b = 0})
         objective.comfylatron.destroy()
         objective.comfylatron = nil
     else
-        objective.comfylatron.surface.create_entity({name = 'flying-text', position = objective.comfylatron.position, text = 'desync evaded', color = {r = 0, g = 150, b = 0}})
+        FT.flying_text(nil, objective.comfylatron.surface, objective.comfylatron.position, 'desync evaded', {r = 0, g = 150, b = 0})
         if event.cause then
             if event.cause.valid and event.cause.player then
                 game.print({'chronosphere.message_comfylatron_desync', event.cause.player.name}, {r = 200, g = 0, b = 0})
@@ -547,7 +557,8 @@ local function alone()
 end
 
 local analyze_blacklist = {
-    ['compilatron'] = true,
+    ['small-strafer-pentapod'] = true,
+    ['behemoth-biter'] = true,
     ['car'] = true,
     ['compi-speech-bubble'] = true,
     ['entity-ghost'] = true,
@@ -572,7 +583,7 @@ local function analyze_random_nearby_entity()
     if not entities[1] then
         return false
     end
-    entities = Rand.shuffle(entities)
+    table.shuffle_table(entities)
     local entity = false
     for _, e in pairs(entities) do
         if not analyze_blacklist[e.name] then
@@ -603,7 +614,7 @@ local function analyze_random_nearby_entity()
     set_comfy_speech_bubble(str)
 
     if not objective.comfylatron_greet_player_index then
-        objective.comfylatron.set_command(
+        objective.comfylatron.commandable.set_command(
             {
                 type = defines.command.go_to_location,
                 destination_entity = entity,
@@ -640,7 +651,7 @@ local function go_to_some_location()
             objective.comfylatron_greet_player_index = nil
             return false
         end
-        objective.comfylatron.set_command(
+        objective.comfylatron.commandable.set_command(
             {
                 type = defines.command.go_to_location,
                 destination_entity = player.character,
@@ -655,14 +666,14 @@ local function go_to_some_location()
         )
     else
         local p = {x = objective.comfylatron.position.x + (-96 + math_random(0, 192)), y = objective.comfylatron.position.y + (-96 + math_random(0, 192))}
-        local target = objective.comfylatron.surface.find_non_colliding_position('compilatron', p, 8, 1)
+        local target = objective.comfylatron.surface.find_non_colliding_position(get_comfylatron_kind(), p, 8, 1)
         if not target then
             return false
         end
         if not is_target_inside_habitat(target, objective.comfylatron.surface) then
             return false
         end
-        objective.comfylatron.set_command(
+        objective.comfylatron.commandable.set_command(
             {
                 type = defines.command.go_to_location,
                 destination = target,
@@ -707,7 +718,7 @@ local function spawn_comfylatron(surface_index, x, y)
     objective.comfylatron =
         surface.create_entity(
         {
-            name = 'compilatron',
+            name = get_comfylatron_kind(),
             position = {x, y + math_random(0, 256)},
             force = 'player',
             create_build_effect_smoke = false

@@ -132,7 +132,7 @@ function Public.reset_table()
     chronosphere.research_tokens.tech = 0
     chronosphere.research_tokens.ecology = 0
     chronosphere.research_tokens.weapons = 0
-    chronosphere.laser_battery = 0
+    chronosphere.laser_battery = nil
     chronosphere.last_artillery_event = 0
     chronosphere.poison_mastery_unlocked = 0
     chronosphere.gen_speed = 2

@@ -36,7 +36,7 @@ end
 local function upgrade_hp()
     local objective = Chrono_table.get_table()
     objective.max_health = 10000 + 2500 * objective.upgrades[1]
-    rendering.set_text(objective.health_text, 'HP: ' .. objective.health .. ' / ' .. objective.max_health)
+    objective.health_text.text = 'HP: ' .. objective.health .. ' / ' .. objective.max_health
 end
 
 local function spawn_accumulators()
@@ -90,14 +90,18 @@ local function upgrade_out()
     local positions = {{-16, -62}, {15, -62}, {-16, 66}, {15, 66}}
     for i = 1, 4, 1 do
         local e = game.surfaces['cargo_wagon'].create_entity({name = 'blue-chest', position = positions[i], force = 'player'})
+        if not e or not e.valid then break end
         e.destructible = false
         e.minable = false
         objective.outchests[i] = e
         rendering.draw_text {
             text = 'Output',
             surface = e.surface,
-            target = e,
-            target_offset = {0, -1.5},
+            target = {
+                entity = e,
+                offset = {0, -1.5},
+                position = e.position
+            },
             color = objective.locomotive.color,
             scale = 0.80,
             font = 'default-game',
