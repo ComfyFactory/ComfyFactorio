@@ -1,7 +1,9 @@
+local Math = require('utils.math.math')
+
 local Public = {}
 
 function Public.snap_to_grid(point)
-	return { x = Public.ceil(point.x), y = Public.ceil(point.x) }
+	return { x = Math.ceil(point.x), y = Math.ceil(point.y) }
 end
 
 -- Given an area marked by integer coordinates, returns an array of all the half-integer positions bounded by that area. Useful for constructing tiles.
@@ -28,7 +30,7 @@ end
 -- *** *** --
 
 function Public.vector_length(vec)
-	return Public.sqrt(vec.x * vec.x + vec.y * vec.y)
+	return Math.sqrt(vec.x * vec.x + vec.y * vec.y)
 end
 
 function Public.vector_sum(...)
@@ -47,14 +49,14 @@ end
 function Public.vector_distance(vec1, vec2)
 	local vecx = vec2.x - vec1.x
 	local vecy = vec2.y - vec1.y
-	return Public.sqrt(vecx * vecx + vecy * vecy)
+	return Math.sqrt(vecx * vecx + vecy * vecy)
 end
 
 -- normalises vector to unit vector (length 1)
 -- if vector length is 0, returns {x = 0, y = 1} vector
 function Public.vector_norm(vec)
 	local vec_copy = { x = vec.x, y = vec.y }
-	local vec_length = Public.sqrt(vec_copy.x ^ 2 + vec_copy.y ^ 2)
+	local vec_length = Public.vector_length(vec_copy)
 	if vec_length == 0 then
 		vec_copy.x = 0
 		vec_copy.y = 1
@@ -63,17 +65,6 @@ function Public.vector_norm(vec)
 		vec_copy.y = vec_copy.y / vec_length
 	end
 	return { x = vec_copy.x, y = vec_copy.y }
-end
-
--- Returns vector in random direction.
--- scalar: returned vector length. If nil, 1 will be chosen.
-function Public.random_vector(scalar)
-	scalar = scalar or 1
-	local random_angle = Public.random_float_in_range(0, 2 * Public.pi)
-	return {
-		x = Public.cos(random_angle) * scalar,
-		y = Public.sin(random_angle) * scalar,
-	}
 end
 
 return Public
