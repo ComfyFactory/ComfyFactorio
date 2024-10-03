@@ -16,7 +16,6 @@ Public.sin = math.sin
 Public.cos = math.cos
 Public.pi = math.pi
 Public.deg = math.deg
-Public.round = math.round
 
 function Public.clamp(number, min, max)
 	if number < min then
@@ -30,6 +29,15 @@ end
 
 function Public.sgn(number)
 	return number > 0 and 1 or (number == 0 and 0 or -1)
+end
+
+function Public.round(num, idp)
+	local mult = 10 ^ (idp or 0)
+	return math.floor(num * mult + 0.5) / mult
+end
+
+function math.round(num, idp)
+	return Public.round(num, idp)
 end
 
 return Public
