@@ -61,7 +61,7 @@ function is_loaded_bool(module)
 end
 
 function is_game_modded()
-    local active_mods = game.active_mods
+    local active_mods = script.active_mods
     local i = 0
     for _, _ in pairs(active_mods) do
         i = i + 1

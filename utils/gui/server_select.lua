@@ -16,7 +16,7 @@ local function get_instance()
     if server_instances and server_instances[id] then
         return server_instances[id]
     else
-        return { name = 'Offline', id = id, status = 'offline', version = game.active_mods.base }
+        return { name = 'Offline', id = id, status = 'offline', version = script.active_mods.base }
     end
 end
 
