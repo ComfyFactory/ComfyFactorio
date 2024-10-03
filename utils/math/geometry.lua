@@ -67,4 +67,9 @@ function Public.vector_norm(vec)
 	return { x = vec_copy.x, y = vec_copy.y }
 end
 
+--- Returns true if position is closer to pos1 than to pos2
+function Public.is_closer(position, pos1, pos2)
+	return Public.vector_distance(pos1, position) < Public.vector_distance(pos2, position)
+end
+
 return Public
