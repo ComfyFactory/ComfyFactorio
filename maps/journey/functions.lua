@@ -1,7 +1,7 @@
 --luacheck: ignore
 local Map_functions = require 'utils.tools.map_functions'
 local Server = require 'utils.server'
-local Get_noise = require 'utils.get_noise'
+local Get_noise = require 'utils.math.get_noise'
 local Autostash = require 'modules.autostash'
 local Misc = require 'utils.commands.misc'
 local BottomFrame = require 'utils.gui.bottom_frame'

@@ -3,7 +3,7 @@
 require 'modules.biter_evasion_hp_increaser'
 
 local Event = require 'utils.event'
-local simplex_noise = require 'utils.simplex_noise'.d2
+local simplex_noise = require 'utils.math.simplex_noise'.d2
 local gui_refreshrate = 900
 
 local evo_gains = {

@@ -12,7 +12,7 @@ require 'modules.rpg'
 local Hunger = require 'modules.hunger'
 
 local enable_fishbank_terminal = false
-local simplex_noise = require 'utils.simplex_noise'
+local simplex_noise = require 'utils.math.simplex_noise'
 local market_items = require 'maps.cave_miner_market_items'
 local math_random = math.random
 

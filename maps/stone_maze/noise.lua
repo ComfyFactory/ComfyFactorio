@@ -1,4 +1,4 @@
-local simplex_noise = require 'utils.simplex_noise'.d2
+local simplex_noise = require 'utils.math.simplex_noise'.d2
 
 local noises = {
     ['trees_01'] = {{modifier = 0.03, weight = 1}, {modifier = 0.05, weight = 0.3}, {modifier = 0.1, weight = 0.05}},

@@ -1,7 +1,7 @@
 local Chrono_table = require 'maps.chronosphere.table'
 local Raffle = require 'maps.chronosphere.raffles'
 local Public = {}
-local simplex_noise = require 'utils.simplex_noise'.d2
+local simplex_noise = require 'utils.math.simplex_noise'.d2
 local math_random = math.random
 local math_floor = math.floor
 local math_ceil = math.ceil

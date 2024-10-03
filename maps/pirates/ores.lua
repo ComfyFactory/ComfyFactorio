@@ -3,12 +3,12 @@
 local Balance = require('maps.pirates.balance')
 -- local Memory = require 'maps.pirates.memory'
 local Math = require('maps.pirates.math')
-local Raffle = require('maps.pirates.raffle')
+local Raffle = require 'utils.math.raffle'
 local CoreData = require('maps.pirates.coredata')
 local _inspect = require('utils.inspect').inspect
 local Common = require('maps.pirates.common')
 local Utils = require('maps.pirates.utils_local')
-local simplex_noise = require('utils.simplex_noise').d2
+local simplex_noise = require('utils.math.simplex_noise').d2
 --
 
 local Public = {}
@@ -42,7 +42,7 @@ function Public.try_give_ore(player, realp, source_name)
 			if Utils.length(choices_to_prioitise) > 0 then
 				choice = choices_to_prioitise[Math.random(Utils.length(choices_to_prioitise))]
 			else
-				choice = Raffle.raffle2(choices_possible)
+				choice = Raffle.raffle(choices_possible)
 			end
 
 			if not choice then
@@ -104,7 +104,7 @@ function Public.try_ore_spawn(surface, realp, source_name, density_bonus, from_t
 			if Utils.length(choices_to_prioitise) > 0 then
 				choice = choices_to_prioitise[Math.random(Utils.length(choices_to_prioitise))]
 			else
-				choice = Raffle.raffle2(choices_possible)
+				choice = Raffle.raffle(choices_possible)
 			end
 
 			local placed

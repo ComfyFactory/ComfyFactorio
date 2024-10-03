@@ -5,7 +5,7 @@ local event = require 'utils.event'
 local math_random = math.random
 local insert = table.insert
 local map_functions = require 'utils.tools.map_functions'
-local simplex_noise = require 'utils.simplex_noise'
+local simplex_noise = require 'utils.math.simplex_noise'
 local simplex_noise = simplex_noise.d2
 require 'maps.nightfall_map_intro'
 require 'modules.splice_double'

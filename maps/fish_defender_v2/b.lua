@@ -1,4 +1,4 @@
-local simplex_noise = require 'utils.simplex_noise'.d2
+local simplex_noise = require 'utils.math.simplex_noise'.d2
 -- local map_data = require 'maps.fish_defender_v2.fish_defender_layout'
 local map_data = require 'maps.fish_defender_v2.map'
 local Public = require 'maps.fish_defender_v2.table'

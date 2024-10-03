@@ -8,7 +8,7 @@ require 'modules.spawners_contain_biters'
 local event = require 'utils.event'
 local table_insert = table.insert
 local math_random = math.random
-local simplex_noise = require 'utils.simplex_noise'.d2
+local simplex_noise = require 'utils.math.simplex_noise'.d2
 
 local disabled_for_deconstruction = {
     ['fish'] = true,

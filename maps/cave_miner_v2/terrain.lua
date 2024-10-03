@@ -1,7 +1,7 @@
 --luacheck: ignore
 local Public = {}
 
-local GetNoise = require 'utils.get_noise'
+local GetNoise = require 'utils.math.get_noise'
 local Functions = require 'maps.cave_miner_v2.functions'
 local Market = require 'maps.cave_miner_v2.market'
 

@@ -1,5 +1,5 @@
 local Functions = require 'maps.dungeons.functions'
-local Get_noise = require 'utils.get_noise'
+local Get_noise = require 'utils.math.get_noise'
 
 local table_shuffle_table = table.shuffle_table
 local table_insert = table.insert

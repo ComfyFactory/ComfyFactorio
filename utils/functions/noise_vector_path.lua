@@ -1,6 +1,6 @@
 --draws lines modified by noise -- mewmew
 
-local simplex_noise = require 'utils.simplex_noise'.d2
+local simplex_noise = require 'utils.math.simplex_noise'.d2
 local Public = {}
 
 local function get_brush(size)

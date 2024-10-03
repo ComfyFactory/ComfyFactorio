@@ -1,4 +1,4 @@
-local simplex_noise = require 'utils.simplex_noise'.d2
+local simplex_noise = require 'utils.math.simplex_noise'.d2
 local map_data = require 'maps.crab_defender.map'
 
 local random = math.random

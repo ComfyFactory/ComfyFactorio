@@ -12,7 +12,7 @@ local difficulties_votes = {
     [7] = 1
 }
 
-local Get_noise = require 'utils.get_noise'
+local Get_noise = require 'utils.math.get_noise'
 local Immersive_cargo_wagons = require 'modules.immersive_cargo_wagons.main'
 local LootRaffle = require 'utils.functions.loot_raffle'
 

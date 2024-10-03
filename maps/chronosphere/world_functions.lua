@@ -1,5 +1,5 @@
 local Treasure = require 'maps.chronosphere.treasure'
-local Simplex_noise = require 'utils.simplex_noise'.d2
+local Simplex_noise = require 'utils.math.simplex_noise'.d2
 local Raffle = require 'maps.chronosphere.raffles'
 local Chrono_table = require 'maps.chronosphere.table'
 local Blueprints = require 'maps.chronosphere.worlds.blueprints'

@@ -19,7 +19,7 @@ local tick_tack_trap = require 'utils.functions.tick_tack_trap'
 local create_entity_chain = require 'utils.functions.create_entity_chain'
 local create_tile_chain = require 'utils.functions.create_tile_chain'
 
-local simplex_noise = require 'utils.simplex_noise'
+local simplex_noise = require 'utils.math.simplex_noise'
 simplex_noise = simplex_noise.d2
 local event = require 'utils.event'
 local table_insert = table.insert

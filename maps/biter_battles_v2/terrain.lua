@@ -10,8 +10,8 @@ local math_random = math.random
 local math_abs = math.abs
 local math_sqrt = math.sqrt
 
-local GetNoise = require 'utils.get_noise'
-local simplex_noise = require 'utils.simplex_noise'.d2
+local GetNoise = require 'utils.math.get_noise'
+local simplex_noise = require 'utils.math.simplex_noise'.d2
 local spawn_circle_size = 39
 local ores = { 'copper-ore', 'iron-ore', 'stone', 'coal' }
 local rocks = { 'big-sand-rock', 'big-sand-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'huge-rock' }

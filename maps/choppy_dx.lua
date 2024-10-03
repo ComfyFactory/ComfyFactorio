@@ -16,7 +16,7 @@ local unearthing_worm = require 'utils.functions.unearthing_worm'
 local unearthing_biters = require 'utils.functions.unearthing_biters'
 local tick_tack_trap = require 'utils.functions.tick_tack_trap'
 
-local simplex_noise = require 'utils.simplex_noise'.d2
+local simplex_noise = require 'utils.math.simplex_noise'.d2
 local Event = require 'utils.event'
 local math_random = math.random
 
