@@ -677,7 +677,7 @@ function Public.process_etaframe_update(player, flow1, bools)
 		flow1.etaframe_piratebutton.tooltip = tooltip
 		flow2.tooltip = tooltip
 
-		if bools.captain_bool and (not bools.retreating_bool) and (bools.leave_anytime_bool or bools.atsea_waiting_bool or bools.eta_bool or (bools.cost_bool and (not bools.atsea_loading_bool))) then
+		if bools.captain_bool and (not bools.retreating_bool) and (bools.leave_anytime_bool or bools.atsea_waiting_bool or bools.atsea_victorious_bool or bools.eta_bool or (bools.cost_bool and (not bools.atsea_loading_bool))) then
 			flow1.etaframe_piratebutton.mouse_button_filter = { 'left' }
 			if memory.undock_shortcut_are_you_sure_data and memory.undock_shortcut_are_you_sure_data[player.index] and memory.undock_shortcut_are_you_sure_data[player.index] > game.tick - 60 * 4 then
 				flow2.etaframe_label_1.visible = true
@@ -1096,7 +1096,7 @@ function Public.update_gui(player)
 
 	if flow1 then
 		-- if not bools.eta_bool and not bools.retreating_bool and not bools.quest_bool and not bools.silo_bool and not bools.atsea_loading_bool and not bools.leave_anytime_bool and not bools.cost_bool and not bools.approaching_dock_bool and not bools.leaving_dock_bool then
-		if not (bools.eta_bool or bools.retreating_bool or bools.quest_bool or bools.silo_bool or bools.atsea_loading_bool or bools.leave_anytime_bool or bools.cost_bool or bools.approaching_dock_bool or bools.leaving_dock_bool or bools.atsea_sailing_bool or bools.atsea_waiting_bool) then
+		if not (bools.eta_bool or bools.retreating_bool or bools.quest_bool or bools.silo_bool or bools.atsea_loading_bool or bools.leave_anytime_bool or bools.cost_bool or bools.approaching_dock_bool or bools.leaving_dock_bool or bools.atsea_sailing_bool or bools.atsea_waiting_bool or bools.atsea_victorious_bool) then
 			flow1.visible = true
 		else
 			flow1.visible = false
