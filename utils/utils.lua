@@ -1,55 +1,5 @@
 local Module = {}
 
----Returns cartesian distance between pos1 and pos2
----@param pos1 MapPosition|{x:double,y:double}
----@param pos2 MapPosition|{x:double,y:double}
----@return number
-function Module.distance(pos1, pos2)
-    local dx = pos2.x - pos1.x
-    local dy = pos2.y - pos1.y
-    return math.sqrt(dx * dx + dy * dy)
-end
-
----Returns true if position is closer to pos1 than to pos2
----@param pos1 MapPosition|{x:double,y:double}
----@param pos2 MapPosition|{x:double,y:double}
----@param position MapPosition|{x:double,y:double}
----@return boolean
-function Module.is_closer(position, pos1, pos2)
-    return Module.distance(pos1, position) < Module.distance(pos2, position)
-end
-
----Returns true if the position is inside the area
----@param position MapPosition|{x:double,y:double}|nil
----@param area BoundingBox|{left_top:MapPosition, right_bottom:MapPosition}
----@return boolean
-function Module.inside(position, area)
-    if not position then
-        return false
-    end
-
-    local lt = area.left_top
-    local rb = area.right_bottom
-
-    return position.x >= lt.x and position.y >= lt.y and position.x <= rb.x and position.y <= rb.y
-end
-
----rounds number (num) to certain number of decimal places (idp)
-function math.round(num, idp)
-    local mult = 10 ^ (idp or 0)
-    return math.floor(num * mult + 0.5) / mult
-end
-
-function math.clamp(num, min, max)
-    if num < min then
-        return min
-    elseif num > max then
-        return max
-    else
-        return num
-    end
-end
-
 function Module.print_except(msg, player)
     for _, p in pairs(game.players) do
         if p.connected and p ~= player then

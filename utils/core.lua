@@ -23,13 +23,6 @@ local ticks_to_hours = 1 / hours_to_ticks
 -- local vars
 local Public = {}
 
---- Measures distance between pos1 and pos2
-function Public.distance(pos1, pos2)
-    local dx = pos2.x - pos1.x
-    local dy = pos2.y - pos1.y
-    return sqrt(dx * dx + dy * dy)
-end
-
 --- Takes msg and prints it to all players except provided player
 -- @param msg <string|table> table if locale is used
 -- @param player <LuaPlayer> the player not to send the message to

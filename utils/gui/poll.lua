@@ -5,7 +5,7 @@ local Server = require 'utils.server'
 local session = require 'utils.datastore.session_data'
 local Config = require 'utils.gui.config'
 local SpamProtection = require 'utils.spam_protection'
-
+local Math = require 'utils.math.math'
 local Public = {}
 
 local insert = table.insert
@@ -274,7 +274,7 @@ local function update_poll_viewer(data)
     if #polls == 0 then
         poll_index = 0
     else
-        poll_index = math.clamp(poll_index, 1, #polls)
+        poll_index = Math.clamp(poll_index, 1, #polls)
     end
 
     data.poll_index = poll_index
