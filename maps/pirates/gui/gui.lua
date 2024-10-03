@@ -653,6 +653,7 @@ function Public.process_etaframe_update(player, flow1, bools)
 			and (
 				bools.leave_anytime_bool
 				or bools.atsea_waiting_bool
+				or bools.atsea_victorious_bool
 				or bools.eta_bool
 				or (bools.cost_bool and not bools.atsea_loading_bool)
 			)
@@ -1135,6 +1136,7 @@ function Public.update_gui(player)
 				or bools.leaving_dock_bool
 				or bools.atsea_sailing_bool
 				or bools.atsea_waiting_bool
+				or bools.atsea_victorious_bool
 			)
 		then
 			flow1.visible = true
