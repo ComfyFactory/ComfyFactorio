@@ -297,7 +297,7 @@ end
 function Public.danger_silo(entity)
     local objective = Chrono_table.get_table()
     if objective.world.id == 2 and objective.world.variant.id == 2 then
-        if objective.dangers and #objective.dangers > 1 then
+        if objective.dangers and #objective.dangers >= 1 then
             for i = 1, #objective.dangers, 1 do
                 if entity == objective.dangers[i].silo then
                     game.print({'chronosphere.message_silo', Balance.nukes_looted_per_silo(Difficulty.get().difficulty_vote_value)}, {r = 0.98, g = 0.66, b = 0.22})
