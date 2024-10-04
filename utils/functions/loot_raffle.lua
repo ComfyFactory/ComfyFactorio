@@ -1,3 +1,4 @@
+local Math = require 'utils.math.math'
 --[[
 roll(budget, max_slots, blacklist) returns a table with item-stacks
 budget		-	the total value of the item stacks combined
@@ -535,7 +536,7 @@ function Public.get_tech_blacklist(tier)
 
     local blacklist = {}
     local size_of_tech_tier_list = #tech_tier_list
-    tier = math.clamp(tier, 0, 1)
+    tier = Math.clamp(tier, 0, 1)
     local min_index = math_floor(size_of_tech_tier_list * tier) + 1
     for i = size_of_tech_tier_list, min_index, -1 do
         blacklist[tech_tier_list[i]] = true

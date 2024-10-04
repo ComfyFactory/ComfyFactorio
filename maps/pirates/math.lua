@@ -1,5 +1,7 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
+local Geometry = require 'utils.math.geometry'
+
 local Public = {}
 
 Public.random = math.random
@@ -164,18 +166,15 @@ function Public.shuffle(tbl)
     return tbl
 end
 
-local function is_closer(pos1, pos2, pos)
-    return ((pos1.x - pos.x) ^ 2 + (pos1.y - pos.y) ^ 2) < ((pos2.x - pos.x) ^ 2 + (pos2.y - pos.y) ^ 2)
-end
 function Public.shuffle_distancebiased(tbl, position)
-    local size = #tbl
-    for i = size, 1, -1 do
-        local rand = Public.random(i)
-        if is_closer(tbl[i].position, tbl[rand].position, position) and i > rand then
-            tbl[i], tbl[rand] = tbl[rand], tbl[i]
-        end
-    end
-    return tbl
+	local size = #tbl
+	for i = size, 1, -1 do
+		local rand = Public.random(i)
+		if Geometry.is_closer(position, tbl[i].position, tbl[rand].position) and i > rand then
+			tbl[i], tbl[rand] = tbl[rand], tbl[i]
+		end
+	end
+	return tbl
 end
 
 Public.points_in_m20t20_squared_sorted_by_distance_to_origin = {

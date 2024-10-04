@@ -1,7 +1,7 @@
 ---@diagnostic disable: undefined-field
 --luacheck: globals table
 local Stats = require 'utils.math.stats'
-local Utils = require 'utils.utils'
+local Geometry = require 'utils.math.geometry'
 local random = math.random
 local floor = math.floor
 local remove = table.remove
@@ -169,52 +169,6 @@ function table.get_random_weighted(weighted_table, item_index, weight_index)
     end
 end
 
-
----Returns one random value based on the supplied weights. Form {[a] = A, [b] = B, ...} and {[a] = a_weight, [b] = b_weight, ...} or just {a,b,c,...} and {1,2,1,...}.
----Both tables have to be the same size.
----@param values table
----@param weights table
----@return any
-function table.get_random_weighted_t(values, weights)
-    local total_weight = 0
-    for k, w in pairs(weights) do
-        assert(values[k], 'Weighted_raffle: A weight is missing value!')
-        if w > 0 then
-            -- negative weights treated as zero
-            total_weight = total_weight + w
-        end
-    end
-    assert(total_weight > 0, 'Total weight of weighted_raffle needs to be bigger than zero!')
-
-    local cumulative_probability = 0
-    local rng = random()
-    for k, v in pairs(values) do
-        assert(weights[k], 'Weighted_raffle: A value is missing weight!')
-        cumulative_probability = cumulative_probability + (weights[k] / total_weight)
-        if rng <= cumulative_probability then
-            return v
-        end
-    end
-end
-
-
----Returns a table with % chance values for each item of a weighted_table
----@param weighted_table table of tables with items and their weights
----@param weight_index number of the index of the weights, defaults to 2
----@return table
-function table.get_random_weighted_chances(weighted_table, weight_index)
-    local total_weight = 0
-    weight_index = weight_index or 2
-    for _, v in pairs(weighted_table) do
-        total_weight = total_weight + v[weight_index]
-    end
-    local chance_table = {}
-    for k, v in pairs(weighted_table) do
-        chance_table[k] = v[weight_index] / total_weight
-    end
-    return chance_table
-end
-
 ---Creates a fisher-yates shuffle of a sequential number-indexed table.
 ---Because this uses math.random, it cannot be used outside of events if no rng is supplied
 ---from: http://www.sdknews.com/cross-platform/corona/tutorial-how-to-shuffle-table-items
@@ -248,7 +202,7 @@ function table.shuffle_by_distance(tbl, position)
     local size = #tbl
     for i = size, 1, -1 do
         local rand = random(size)
-        if Utils.is_closer(pos(tbl[i]), pos(tbl[rand]), position) and i > rand then
+        if Geometry.is_closer(pos(tbl[i]), pos(tbl[rand]), position) and i > rand then
             tbl[i], tbl[rand] = tbl[rand], tbl[i]
         end
     end
