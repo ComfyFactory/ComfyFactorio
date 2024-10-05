@@ -530,11 +530,11 @@ local function get_items()
         static = true
     }
 
-    main_market_items['logistic-chest-passive-provider'] = {
+    main_market_items['logistic-chest-storage'] = {
         stack = 1,
         value = 'coin',
-        price = fixed_prices.logistic_chest_passive_provider_cost,
-        tooltip = ({ 'entity-name.logistic-chest-passive-provider' }),
+        price = fixed_prices.storage_chest_cost,
+        tooltip = ({ 'entity-name.logistic-chest-storage' }),
         upgrade = false,
         static = true
     }
