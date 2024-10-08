@@ -1,4 +1,4 @@
-local Math = require('maps.spaghetti_wars.math')
+local Math = require('utils.math.math')
 
 local Public = {}
 
