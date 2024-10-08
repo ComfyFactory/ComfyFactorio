@@ -1,6 +1,7 @@
 local Chrono_table = require 'maps.chronosphere.table'
 local Balance = require 'maps.chronosphere.balance'
 local Difficulty = require 'modules.difficulty_vote'
+local Raffle = require 'utils.math.raffle'
 
 local Public = {}
 local List = require 'maps.chronosphere.production_list'
@@ -15,7 +16,7 @@ local function roll_assembler()
             table.insert(choices.weights, item.weight)
         end
     end
-    return table.get_random_weighted_t(choices.types, choices.weights)
+    return Raffle.raffle(choices.types, choices.weights)
 end
 
 function Public.calculate_factory_level(xp, whole_level)

@@ -1,6 +1,7 @@
 local Chrono_table = require 'maps.chronosphere.table'
 local Balance = require 'maps.chronosphere.balance'
 local Difficulty = require 'modules.difficulty_vote'
+local Raffle = require 'utils.math.raffle'
 local random = math.random
 local Public = {}
 local Worlds = {}
@@ -176,8 +177,8 @@ function Public.determine_world(optional_choice)
     local SA = script.active_mods['space-travel']
     local chosen_id
     local chosen_variant_id
-    local ores = table.get_random_weighted_t(ore_richness_variants, Balance.ore_richness_weights(difficulty))
-    local dayspeed = table.get_random_weighted_t(time_speed_variants, time_speed_weights)
+    local ores = ore_richness_variants[Raffle.raffle(Balance.ore_richness_weights(difficulty))]
+    local dayspeed = time_speed_variants[Raffle.raffle(time_speed_weights)]
     local daytime = random(0, 100) / 100
     local special = special_world()
     if special.yes then
@@ -219,7 +220,7 @@ function Public.determine_world(optional_choice)
     if Worlds[tonumber(optional_choice)] then
         chosen_id = tonumber(optional_choice)
     else
-        chosen_id = table.get_random_weighted_t(choices.types, choices.weights)
+        chosen_id = Raffle.raffle(choices.types, choices.weights)
     end
     local variant_choices = {types = {}, weights = {}}
     for _, variant in pairs(Worlds[chosen_id].variants) do
@@ -232,7 +233,7 @@ function Public.determine_world(optional_choice)
         optional_choice = nil
         goto retry
     end
-    chosen_variant_id = table.get_random_weighted_t(variant_choices.types, variant_choices.weights)
+    chosen_variant_id = Raffle.raffle(variant_choices.types, variant_choices.weights)
     local modifiers = get_modifiers(chosen_id)
     if modifiers.ores then
         ores = modifiers.ores

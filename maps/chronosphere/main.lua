@@ -83,6 +83,7 @@ local function chronojump(choice)
     local scheduletable = Chrono_table.get_schedule_table()
     if objective.chronojumps == 0 then
         Difficulty.set_poll_closing_timeout(game.tick)
+        objective.warmup = false
     end
 
     if objective.game_lost then
