@@ -335,6 +335,7 @@ local function check_single_upgrade(index, coin_scaling)
     local objective = Chrono_table.get_table()
     local upgrade = Upgrades['upgrade' .. index](coin_scaling)
     if objective.upgradechest[index] and objective.upgradechest[index].valid then
+        if not upgrade.enabled then return end
         if index == 14 and (objective.upgrades[13] ~= 1 or objective.computermessage ~= 3) then
             return
         elseif index == 15 and (objective.upgrades[14] ~= 1 or objective.computermessage ~= 5) then

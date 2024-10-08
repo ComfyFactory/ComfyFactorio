@@ -1,5 +1,4 @@
 local Public = {}
-local Rand = require 'maps.chronosphere.random'
 local Chrono_table = require 'maps.chronosphere.table'
 
 local math_floor = math.floor

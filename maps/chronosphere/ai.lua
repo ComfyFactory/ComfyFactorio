@@ -1,7 +1,8 @@
 local Chrono_table = require 'maps.chronosphere.table'
 local Balance = require 'maps.chronosphere.balance'
 local Difficulty = require 'modules.difficulty_vote'
-local Raffle = require 'maps.chronosphere.raffles'
+local Raffle = require 'utils.math.raffle'
+local Raffles = require 'maps.chronosphere.raffles'
 local AI = require 'utils.functions.AI'
 local Public = {}
 
@@ -70,7 +71,7 @@ local function generate_side_attack_target(surface, position, area)
     for index, _ in pairs(entities) do
         weights[#weights + 1] = 1 + floor((#entities - index) / 2)
     end
-    return table.get_random_weighted_t(entities, weights)
+    return Raffle.raffle(entities, weights)
 end
 
 local function generate_main_attack_target()
@@ -102,7 +103,7 @@ local function get_random_close_spawner(surface)
     for index, _ in pairs(spawners) do
         weights[#weights + 1] = 1 + floor((#spawners - index) / 2)
     end
-    return table.get_random_weighted_t(spawners, weights), area
+    return Raffle.raffle(spawners, weights), area
 end
 
 local function is_biter_inactive(biter)
@@ -269,7 +270,7 @@ local function colonize(group)
     local evo = group.force.get_evolution_factor(surface)
     local nests = random(1 + floor(evo * 20), 2 + floor(evo * 20) * 2)
     local commands = {}
-    local biters = surface.find_entities_filtered { position = group.position, radius = 30, name = Raffle.biters, force = 'enemy' }
+    local biters = surface.find_entities_filtered { position = group.position, radius = 30, name = Raffles.biters, force = 'enemy' }
     local goodbiters = {}
     if #biters > 1 then
         for i = 1, #biters, 1 do
@@ -298,9 +299,9 @@ local function colonize(group)
             --game.print("[gps=" .. pos.x .. "," .. pos.y .."," .. surface.name .. "]")
             success = true
             if random(1, 5) == 1 then
-                surface.create_entity({ name = Raffle.worms[random(1 + floor(evo * 8), floor(1 + evo * 16))], position = pos, force = group.force })
+                surface.create_entity({ name = Raffles.worms[random(1 + floor(evo * 8), floor(1 + evo * 16))], position = pos, force = group.force })
             else
-                surface.create_entity({ name = Raffle.spawners[random(1, #Raffle.spawners)], position = pos, force = group.force })
+                surface.create_entity({ name = Raffles.spawners[random(1, #Raffles.spawners)], position = pos, force = group.force })
             end
         else
             commands = {

@@ -1,7 +1,6 @@
 local Chrono_table = require 'maps.chronosphere.table'
 local Event = require 'utils.event'
 local math_random = math.random
-local Rand = require 'maps.chronosphere.random'
 local Balance = require 'maps.chronosphere.balance'
 local Difficulty = require 'modules.difficulty_vote'
 local FT = require 'utils.functions.flying_texts'

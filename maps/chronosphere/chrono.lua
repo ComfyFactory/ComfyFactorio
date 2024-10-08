@@ -4,7 +4,6 @@ local Score = require 'utils.gui.score'
 local Difficulty = require 'modules.difficulty_vote'
 local Upgrades = require 'maps.chronosphere.upgrade_list'
 local List = require 'maps.chronosphere.production_list'
-local Rand = require 'maps.chronosphere.random'
 local Public = {}
 
 local Server = require 'utils.server'
@@ -69,7 +68,7 @@ function Public.restart_settings()
     local bitertable = Chrono_table.get_biter_table()
     local production = Chrono_table.get_production_table()
     Difficulty.reset_difficulty_poll()
-    Difficulty.set_poll_closing_timeout(game.tick + 120 * 60 * 60)
+    Difficulty.set_poll_closing_timeout(game.tick + 240 * 60 * 60)
     objective.max_health = Balance.Chronotrain_max_HP
     objective.health = Balance.Chronotrain_max_HP
     objective.poisontimeout = 0

@@ -289,7 +289,7 @@ end
 function Public.danger_silo(entity)
     local objective = Chrono_table.get_table()
     if objective.world.id == 2 and objective.world.variant.id == 2 then
-        if objective.dangers and #objective.dangers > 1 then
+        if objective.dangers and #objective.dangers >= 1 then
             for i = 1, #objective.dangers, 1 do
                 if entity == objective.dangers[i].silo then
                     game.print({'chronosphere.message_silo', Balance.nukes_looted_per_silo(Difficulty.get().difficulty_vote_value)}, {r = 0.98, g = 0.66, b = 0.22})
@@ -503,6 +503,7 @@ end
 
 function Public.nuclear_artillery(entity, cause)
     local objective = Chrono_table.get_table()
+    if objective.upgrades[23] ~= 1 then return end
     if objective.upgrades[24] > 0 and objective.last_artillery_event ~= game.tick then
         entity.surface.create_entity({name = 'atomic-rocket', position = entity.position, force = 'player', speed = 1, max_range = 100, target = entity, source = cause})
         objective.upgrades[24] = objective.upgrades[24] - 1
