@@ -21,8 +21,8 @@ function Public.raffle(arg1, arg2)
 		options = {}
 		weights_table = {}
 		for option, weight in pairs(arg1) do
-			arg1.insert(options, option)
-			arg1.insert(weights_table, weight)
+			table.insert(options, option)
+			table.insert(weights_table, weight)
 			if weight > 0 then
 				total_weight = total_weight + weight
 			end
