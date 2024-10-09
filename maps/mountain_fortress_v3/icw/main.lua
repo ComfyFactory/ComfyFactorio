@@ -173,7 +173,7 @@ Event.add(
     defines.events.on_built_entity,
     function (event)
         local icw = ICW.get()
-        return Functions.create_wagon(icw, event.created_entity)
+        return Functions.create_wagon(icw, event.entity)
     end
 )
 

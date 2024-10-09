@@ -4,7 +4,7 @@ local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 -- called whenever a player places an item
 local function on_built_entity(event)
     local this = ScenarioTable.get_table()
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity.valid then
         return
     end
@@ -64,7 +64,7 @@ end
 -- called whenever a robot places an item
 local function on_robot_built_entity(event)
     local this = ScenarioTable.get_table()
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity.valid then
         return
     end

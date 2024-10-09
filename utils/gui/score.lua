@@ -475,10 +475,10 @@ local function on_player_mined_entity(event)
 end
 
 local function on_built_entity(event)
-    if not event.created_entity.valid then
+    if not event.entity.valid then
         return
     end
-    if building_and_mining_blacklist[event.created_entity.type] then
+    if building_and_mining_blacklist[event.entity.type] then
         return
     end
     local player = game.players[event.player_index]

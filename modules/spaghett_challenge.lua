@@ -135,7 +135,7 @@ local function spaghett(surface, entity, inventory, player)
 end
 
 local function on_built_entity(event)
-    spaghett(event.created_entity.surface, event.created_entity, game.players[event.player_index].get_main_inventory(), game.players[event.player_index])
+    spaghett(event.entity.surface, event.entity, game.players[event.player_index].get_main_inventory(), game.players[event.player_index])
 end
 
 local function on_player_rotated_entity(event)
@@ -143,7 +143,7 @@ local function on_player_rotated_entity(event)
 end
 
 local function on_robot_built_entity(event)
-    spaghett(event.robot.surface, event.created_entity, event.robot.get_inventory(defines.inventory.robot_cargo))
+    spaghett(event.robot.surface, event.entity, event.robot.get_inventory(defines.inventory.robot_cargo))
 end
 
 local function on_player_created(event)

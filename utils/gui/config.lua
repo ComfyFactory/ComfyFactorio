@@ -52,11 +52,11 @@ local function spaghett_deny_building(event)
     if not spaghett.enabled then
         return
     end
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity.valid then
         return
     end
-    if not spaghett_entity_blacklist[event.created_entity.name] then
+    if not spaghett_entity_blacklist[event.entity.name] then
         return
     end
 
@@ -67,7 +67,7 @@ local function spaghett_deny_building(event)
         inventory.insert({ name = entity.name, count = 1 })
     end
 
-    event.created_entity.surface.create_entity(
+    event.entity.surface.create_entity(
         {
             name = 'flying-text',
             position = entity.position,

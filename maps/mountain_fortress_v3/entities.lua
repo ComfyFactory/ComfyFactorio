@@ -1476,7 +1476,7 @@ local function on_entity_spawned(event)
 end
 
 local function on_built_entity(event)
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity.valid then
         return
     end
@@ -1576,7 +1576,7 @@ local function on_built_entity(event)
 end
 
 local function on_robot_built_entity(event)
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity.valid then
         return
     end

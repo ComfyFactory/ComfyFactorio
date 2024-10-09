@@ -343,7 +343,7 @@ end
 
 function Public.found(event)
     local townytable = Table.get_table()
-    local entity = event.created_entity
+    local entity = event.entity
     if entity.force.index ~= 1 then
         return
     end

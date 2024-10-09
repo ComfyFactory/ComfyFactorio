@@ -108,7 +108,7 @@ local function is_town_market_nearby(entity)
 end
 
 function Public.prevent_isolation(event)
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity.valid then
         return
     end
@@ -118,7 +118,7 @@ function Public.prevent_isolation(event)
     if not entity_type_whitelist[entity.type] then
         return
     end
-    local surface = event.created_entity.surface
+    local surface = event.entity.surface
 
     if is_position_isolated(surface, entity.force, entity.position) then
         error_floaty(surface, entity.position, {'modules_towny.message_error_building'})
@@ -155,7 +155,7 @@ end
 local square_min_distance_to_spawn = 80 ^ 2
 
 function Public.restrictions(event)
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity.valid then
         return
     end
