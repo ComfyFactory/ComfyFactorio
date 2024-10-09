@@ -1604,10 +1604,10 @@ end
 --anti construction robot cheese
 local function on_robot_built_entity(event)
     if event.robot.force.name == 'north' then
-        if event.created_entity.position.y >= -1 * storage.horizontal_border_width / 2 then
-            local x = event.created_entity.position.x
-            local y = event.created_entity.position.y
-            event.created_entity.die('south')
+        if event.entity.position.y >= -1 * storage.horizontal_border_width / 2 then
+            local x = event.entity.position.x
+            local y = event.entity.position.y
+            event.entity.die('south')
             search_for_ghost = game.surfaces['surface'].find_entities({ { x, y }, { x + 1, y + 1 } })
             for _, e in pairs(search_for_ghost) do
                 if e.type == 'entity-ghost' then
@@ -1619,10 +1619,10 @@ local function on_robot_built_entity(event)
         end
     end
     if event.robot.force.name == 'south' then
-        if event.created_entity.position.y <= storage.horizontal_border_width / 2 then
-            local x = event.created_entity.position.x
-            local y = event.created_entity.position.y
-            event.created_entity.die('north')
+        if event.entity.position.y <= storage.horizontal_border_width / 2 then
+            local x = event.entity.position.x
+            local y = event.entity.position.y
+            event.entity.die('north')
             search_for_ghost = game.surfaces['surface'].find_entities({ { x, y }, { x + 1, y + 1 } })
             for _, e in pairs(search_for_ghost) do
                 if e.type == 'entity-ghost' then

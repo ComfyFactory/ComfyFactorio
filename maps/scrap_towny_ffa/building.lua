@@ -207,7 +207,7 @@ end
 
 local function prevent_entity_in_restricted_zone(event)
     local player_index = event.player_index or nil
-    local entity = event.created_entity
+    local entity = event.entity
     if entity == nil or not entity.valid then
         return
     end
@@ -265,7 +265,7 @@ end
 
 local function process_built_entities(event)
     local player_index = event.player_index
-    local entity = event.created_entity
+    local entity = event.entity
     if entity == nil or not entity.valid then
         return
     end

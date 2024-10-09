@@ -220,12 +220,12 @@ local type_whitelist = {
 }
 
 local function deny_building(event)
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity.valid then
         return
     end
 
-    if type_whitelist[event.created_entity.type] then
+    if type_whitelist[event.entity.type] then
         return
     end
 
@@ -240,7 +240,7 @@ local function deny_building(event)
         inventory.insert({ name = entity.name, count = 1 })
     end
 
-    event.created_entity.surface.create_entity(
+    event.entity.surface.create_entity(
         {
             name = 'flying-text',
             position = entity.position,

@@ -349,9 +349,9 @@ end
 
 local function on_built_entity(event)
     local player = game.players[event.player_index]
-    if event.created_entity.name == 'radar' then
-        local unit_number = event.created_entity.unit_number
-        local entity = event.created_entity
+    if event.entity.name == 'radar' then
+        local unit_number = event.entity.unit_number
+        local entity = event.entity
         storage.map_forces[player.force.name].radar[unit_number] = entity
     end
 end
@@ -525,19 +525,19 @@ local function on_robot_built_entity(event)
     if not robot_build_restriction[event.robot.force.name] then
         return
     end
-    if not robot_build_restriction[event.robot.force.name](event.created_entity.position.x, event.created_entity.position.y) then
-        if event.created_entity.name == 'radar' then
-            local unit_number = event.created_entity.unit_number
-            local entity = event.created_entity
+    if not robot_build_restriction[event.robot.force.name](event.entity.position.x, event.entity.position.y) then
+        if event.entity.name == 'radar' then
+            local unit_number = event.entity.unit_number
+            local entity = event.entity
             storage.map_forces[event.robot.force.name].radar[unit_number] = entity
         end
         return
     end
     local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
-    inventory.insert({ name = event.created_entity.name, count = 1 })
-    event.robot.surface.create_entity({ name = 'explosion', position = event.created_entity.position })
+    inventory.insert({ name = event.entity.name, count = 1 })
+    event.robot.surface.create_entity({ name = 'explosion', position = event.entity.position })
     game.print('Team ' .. event.robot.force.name .. "'s construction drone had an accident.", { r = 200, g = 50, b = 100 })
-    event.created_entity.destroy()
+    event.entity.destroy()
 end
 
 local function on_entity_damaged(event)

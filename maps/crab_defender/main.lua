@@ -1095,7 +1095,7 @@ local deny_buildings_tbl = {
 }
 
 local function deny_building(event)
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity.valid then
         return
     end
@@ -1110,7 +1110,7 @@ local function deny_building(event)
                     inventory.insert({ name = entity.name, count = 1 })
                 end
             end
-            event.created_entity.surface.create_entity(
+            event.entity.surface.create_entity(
                 {
                     name = 'flying-text',
                     position = entity.position,
@@ -1129,7 +1129,7 @@ end
 local on_built_entity = function (event)
     local get_score = Score.get_table().score_table
     local this = FDT.get()
-    local entity = event.created_entity
+    local entity = event.entity
 
     if not entity or not entity.valid then
         return
@@ -1188,7 +1188,7 @@ local on_built_entity = function (event)
 end
 
 local on_robot_built_entity = function (event)
-    local entity = event.created_entity
+    local entity = event.entity
     local surface = entity.surface
 
     if not surface or not surface.valid then

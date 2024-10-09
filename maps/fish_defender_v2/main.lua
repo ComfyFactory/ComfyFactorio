@@ -1094,7 +1094,7 @@ local function on_player_joined_game(event)
 end
 
 local function deny_building(event)
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity.valid then
         return
     end
@@ -1111,7 +1111,7 @@ local function deny_building(event)
             end
         end
 
-        event.created_entity.surface.create_entity(
+        event.entity.surface.create_entity(
             {
                 name = 'flying-text',
                 position = entity.position,
@@ -1132,7 +1132,7 @@ local function on_built_entity(event)
         return
     end
 
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity.valid then
         return
     end
@@ -1175,7 +1175,7 @@ local function on_built_entity(event)
 end
 
 local function on_robot_built_entity(event)
-    local entity = event.created_entity
+    local entity = event.entity
     if deny_building(event) then
         return
     end

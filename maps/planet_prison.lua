@@ -1710,7 +1710,7 @@ local function merchant_exploit_check(ent)
 end
 
 local function on_built_entity(e)
-    local ent = e.created_entity
+    local ent = e.entity
     if not ent or not ent.valid then
         return
     end

@@ -2359,7 +2359,7 @@ local function event_on_rocket_launched(event)
 end
 
 local function event_on_built_entity(event)
-	local entity = event.created_entity
+	local entity = event.entity
 	if not entity then
 		return
 	end

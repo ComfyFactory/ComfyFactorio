@@ -76,29 +76,29 @@ local function add_entity(entity)
 end
 
 local function on_built_entity(event)
-    if not event.created_entity then
+    if not event.entity then
         return
     end
-    if not event.created_entity.valid then
+    if not event.entity.valid then
         return
     end
-    if not side_target_types[event.created_entity.type] then
+    if not side_target_types[event.entity.type] then
         return
     end
-    add_entity(event.created_entity)
+    add_entity(event.entity)
 end
 
 local function on_robot_built_entity(event)
-    if not event.created_entity then
+    if not event.entity then
         return
     end
-    if not event.created_entity.valid then
+    if not event.entity.valid then
         return
     end
-    if not side_target_types[event.created_entity.type] then
+    if not side_target_types[event.entity.type] then
         return
     end
-    add_entity(event.created_entity)
+    add_entity(event.entity)
 end
 
 local event = require 'utils.event'

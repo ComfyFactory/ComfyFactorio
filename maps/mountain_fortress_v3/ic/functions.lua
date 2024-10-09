@@ -1237,7 +1237,7 @@ function Public.create_car_room(car)
 end
 
 function Public.create_car(event)
-    local ce = event.created_entity
+    local ce = event.entity
 
     local player = game.get_player(event.player_index)
 

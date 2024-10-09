@@ -1563,7 +1563,7 @@ end
 
 local function on_built_entity(event)
     local get_score = Score.get_table().score_table
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity.valid then
         return
     end
@@ -1605,7 +1605,7 @@ local function on_built_entity(event)
 end
 
 local function on_robot_built_entity(event)
-    local entity = event.created_entity
+    local entity = event.entity
     if storage.entity_limits[entity.name] then
         local surface = entity.surface
         if storage.entity_limits[entity.name].placed < storage.entity_limits[entity.name].limit then

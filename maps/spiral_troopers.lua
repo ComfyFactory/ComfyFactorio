@@ -574,14 +574,14 @@ end
 --local disabled_entities = {"gun-turret", "laser-turret", "flamethrower-turret"}
 local function on_built_entity(event)
     for _, e in pairs(disabled_entities) do
-        if e == event.created_entity.name then
+        if e == event.entity.name then
             local a = {
-                left_top = { x = event.created_entity.position.x - 31, y = event.created_entity.position.y - 31 },
-                right_bottom = { x = event.created_entity.position.x + 32, y = event.created_entity.position.y + 32 }
+                left_top = { x = event.entity.position.x - 31, y = event.entity.position.y - 31 },
+                right_bottom = { x = event.entity.position.x + 32, y = event.entity.position.y + 32 }
             }
-            local enemy_count = event.created_entity.surface.count_entities_filtered({ force = 'enemy', area = a, limit = 1 })
+            local enemy_count = event.entity.surface.count_entities_filtered({ force = 'enemy', area = a, limit = 1 })
             if enemy_count > 0 then
-                event.created_entity.active = false
+                event.entity.active = false
                 if event.player_index then
                     local player = game.players[event.player_index]
                     player.print('The turret seems to be malfunctioning near those creatures.', { r = 0.75, g = 0.0, b = 0.0 })

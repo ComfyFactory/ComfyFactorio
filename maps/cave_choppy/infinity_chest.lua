@@ -29,7 +29,7 @@ function Public.create_chest(surface, position, storage)
 end
 
 local function built_entity(event)
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity or not entity.valid or entity.name ~= 'infinity-chest' then
         return
     end

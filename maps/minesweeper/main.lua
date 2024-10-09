@@ -489,7 +489,7 @@ local function on_player_changed_position(event)
 end
 
 local function deny_building(event)
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity.valid then
         return
     end

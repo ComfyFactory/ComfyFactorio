@@ -52,7 +52,7 @@ local function on_robot_mined_entity(event)
 end
 
 local function on_built_entity(event)
-    local ce = event.created_entity
+    local ce = event.entity
 
     if not ce or not ce.valid then
         return

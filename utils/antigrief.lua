@@ -328,7 +328,7 @@ local function on_built_entity(event)
         return
     end
 
-    local created_entity = event.created_entity
+    local created_entity = event.entity
 
     if created_entity.type == 'entity-ghost' then
         local player = game.get_player(event.player_index)

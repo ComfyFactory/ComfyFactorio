@@ -386,7 +386,7 @@ function Public.enemy_players_nearby(town_center, max_radius)
 end
 
 local function found_town(event)
-    local entity = event.created_entity
+    local entity = event.entity
     -- is a valid entity placed?
     if entity == nil or not entity.valid then
         return
