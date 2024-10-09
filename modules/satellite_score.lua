@@ -3,6 +3,9 @@
 local Event = require 'utils.event'
 local Server = require 'utils.server'
 local Global = require 'utils.global'
+if script.active_mods['space-age'] then
+    error('Satellite Score Module can be used only while the Space Age mod is not enabled. (Most likely you try to run scenario not compatible with Space Age, try disabling it in Mods.)', 2)
+end
 
 local this = {}
 Global.register(
@@ -62,8 +65,7 @@ local function satellites_in_space_gui(player)
     if progress > 1 then
         progress = 1
     end
-    local progressbar = frame.add({ type = 'progressbar', value = progress })
-    progressbar.style = 'achievement_progressbar'
+    local progressbar = frame.add({ type = 'progressbar', value = progress, style = 'achievement_progressbar' })
     progressbar.style.minimal_width = 100
     progressbar.style.maximal_width = 100
     progressbar.style.height = 20
@@ -81,7 +83,7 @@ local function satellites_in_space_gui(player)
 end
 
 local function on_rocket_launched(event)
-    local rocket_inventory = event.rocket.get_inventory(defines.inventory.rocket)
+    local rocket_inventory = event.rocket.cargo_pod.get_inventory(defines.inventory.cargo_unit)
     local c = rocket_inventory.get_item_count('satellite')
     if c == 0 then
         return
@@ -174,4 +176,4 @@ end
 
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
-Event.add(defines.events.on_rocket_launched, on_rocket_launched)
+Event.add(defines.events.on_rocket_launch_ordered, on_rocket_launched)

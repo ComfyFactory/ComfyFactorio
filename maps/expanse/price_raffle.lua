@@ -50,15 +50,13 @@ local item_worths = {
     ['tank'] = 4096,
     ['logistic-robot'] = 256,
     ['construction-robot'] = 256,
-    ['logistic-chest-active-provider'] = 256,
-    ['logistic-chest-passive-provider'] = 256,
-    ['logistic-chest-storage'] = 256,
-    ['logistic-chest-buffer'] = 512,
-    ['logistic-chest-requester'] = 512,
+    ['active-provider-chest'] = 256,
+    ['passive-provider-chest'] = 256,
+    ['storage-chest'] = 256,
+    ['buffer-chest'] = 512,
+    ['requester-chest'] = 512,
     ['roboport'] = 2048,
     ['small-lamp'] = 16,
-    ['red-wire'] = 4,
-    ['green-wire'] = 4,
     ['arithmetic-combinator'] = 16,
     ['decider-combinator'] = 16,
     ['constant-combinator'] = 16,
@@ -177,7 +175,7 @@ local item_worths = {
     ['power-armor'] = 4096,
     ['power-armor-mk2'] = 32768,
     ['solar-panel-equipment'] = 256,
-    ['fusion-reactor-equipment'] = 8192,
+    ['fission-reactor-equipment'] = 8192,
     ['energy-shield-equipment'] = 512,
     ['energy-shield-mk2-equipment'] = 4096,
     ['battery-equipment'] = 128,
@@ -221,7 +219,7 @@ end
 
 function Public.roll_item_stack(remaining_budget, blacklist, value_blacklist)
     if remaining_budget <= 0 then
-        return
+        return false
     end
     local raffle_keys = get_raffle_keys()
     local item_name = false
@@ -259,9 +257,11 @@ local function roll_item_stacks(remaining_budget, max_slots, blacklist, value_bl
             break
         end
         local item_stack = Public.roll_item_stack(remaining_budget, blacklist, value_blacklist)
-        item_stack_set[i] = item_stack
-        remaining_budget = remaining_budget - item_stack.count * item_worths[item_stack.name]
-        item_stack_set_worth = item_stack_set_worth + item_stack.count * item_worths[item_stack.name]
+        if item_stack then
+            item_stack_set[i] = item_stack
+            remaining_budget = remaining_budget - item_stack.count * item_worths[item_stack.name]
+            item_stack_set_worth = item_stack_set_worth + item_stack.count * item_worths[item_stack.name]
+        end
     end
 
     return item_stack_set, item_stack_set_worth
@@ -269,10 +269,10 @@ end
 
 function Public.roll(budget, max_slots, blacklist, value_blacklist)
     if not budget then
-        return
+        return {}
     end
     if not max_slots then
-        return
+        return {}
     end
 
     local b, vb
@@ -289,7 +289,7 @@ function Public.roll(budget, max_slots, blacklist, value_blacklist)
 
     budget = math_floor(budget)
     if budget == 0 then
-        return
+        return {}
     end
 
     local final_stack_set
