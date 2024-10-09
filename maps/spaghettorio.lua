@@ -170,12 +170,12 @@ end
 local disabled_entities = { 'stone-furnace', 'electric-furnace', 'solar-panel' }
 local function on_built_entity(event)
     for _, e in pairs(disabled_entities) do
-        if e == event.created_entity.name then
+        if e == event.entity.name then
             if event.player_index then
                 local player = game.players[event.player_index]
-                player.insert({ name = event.created_entity.name, count = 1 })
+                player.insert({ name = event.entity.name, count = 1 })
             end
-            event.created_entity.destroy()
+            event.entity.destroy()
         end
     end
 end

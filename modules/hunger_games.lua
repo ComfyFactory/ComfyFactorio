@@ -505,7 +505,7 @@ end
 --[[
 local function on_built_entity(event)
     local get_score = Score.get_table().score_table
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity.valid then
         return
     end

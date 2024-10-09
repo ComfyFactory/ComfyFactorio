@@ -207,14 +207,14 @@ function Public.init_player(player)
 end
 
 function Public.no_turret_creep(event)
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity.valid then
         return
     end
-    if not no_turret_blacklist[event.created_entity.type] then
+    if not no_turret_blacklist[event.entity.type] then
         return
     end
-    local surface = event.created_entity.surface
+    local surface = event.entity.surface
     local spawners =
         surface.find_entities_filtered({ type = 'unit-spawner', area = { { entity.position.x - 70, entity.position.y - 70 }, { entity.position.x + 70, entity.position.y + 70 } } })
     if #spawners == 0 then

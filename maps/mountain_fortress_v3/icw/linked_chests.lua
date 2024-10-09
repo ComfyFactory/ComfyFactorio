@@ -622,7 +622,7 @@ local function on_built_entity(event, mode, bypass)
     if this.disable_normal_placement and not mode then
         return
     end
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity.valid then
         return
     end
@@ -702,7 +702,7 @@ local function built_entity_robot(event)
     if this.disable_normal_placement then
         return
     end
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity.valid then
         return
     end
@@ -781,7 +781,7 @@ local function built_entity_robot(event)
                     create_chest(entity)
                     return
                 else
-                    local created = event.created_entity
+                    local created = event.entity
                     if created and created.valid then
                         local inventory = robot.get_inventory(defines.inventory.robot_cargo)
                         inventory.insert({ name = created.name, count = 1 })
@@ -793,7 +793,7 @@ local function built_entity_robot(event)
         end
 
         if disable_link_chest_cheese_mode then
-            local created = event.created_entity
+            local created = event.entity
             if created and created.valid then
                 local inventory = robot.get_inventory(defines.inventory.robot_cargo)
                 inventory.insert({ name = created.name, count = 1 })
@@ -1227,7 +1227,7 @@ Gui.on_click(
 
                 player.remove_item({ name = 'coin', count = this.cost_to_convert })
                 player.opened = nil
-                event.created_entity = entity
+                event.entity = entity
                 event.entity = entity
                 event.player_index = player.index
                 AG.append_scenario_history(player, entity, player.name .. ' converted chest (' .. entity.unit_number .. ')')

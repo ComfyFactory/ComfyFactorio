@@ -86,7 +86,7 @@ local function validate_player(player)
 end
 
 local function built_entity(event)
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity.valid then
         return
     end
@@ -124,7 +124,7 @@ local function built_entity(event)
 end
 
 local function built_entity_robot(event)
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity.valid then
         return
     end

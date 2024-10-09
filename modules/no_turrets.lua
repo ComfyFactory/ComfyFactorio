@@ -16,11 +16,11 @@ local function destroy_turret(entity)
 end
 
 local function on_built_entity(event)
-    destroy_turret(event.created_entity)
+    destroy_turret(event.entity)
 end
 
 local function on_robot_built_entity(event)
-    destroy_turret(event.created_entity)
+    destroy_turret(event.entity)
 end
 
 local event = require 'utils.event'

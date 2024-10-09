@@ -282,7 +282,7 @@ function Public.mothership_message_queue(journey)
 end
 
 function Public.deny_building(event)
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity.valid then
         return
     end
@@ -297,7 +297,7 @@ function Public.deny_building(event)
 end
 
 function Public.register_built_silo(event, journey)
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity.valid then
         return
     end

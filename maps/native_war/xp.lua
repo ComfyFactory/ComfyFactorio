@@ -242,7 +242,7 @@ local function on_pre_player_mined_item(event)
 end
 
 local function on_built_entity(event)
-    local created_entity = event.created_entity
+    local created_entity = event.entity
     if not created_entity.valid then
         return
     end

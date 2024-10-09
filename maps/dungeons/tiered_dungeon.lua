@@ -612,7 +612,7 @@ end
 
 local function on_built_entity(event)
     local dungeontable = DungeonsTable.get_dungeontable()
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity or not entity.valid then
         return
     end

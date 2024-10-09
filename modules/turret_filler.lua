@@ -192,7 +192,7 @@ local function on_built_entity(event)
     if not turrettable.enabled then
         return
     end
-    local turret = event.created_entity
+    local turret = event.entity
     if not turret or not turret.valid then
         return
     end
@@ -210,7 +210,7 @@ local function on_robot_built_entity(event)
     if not turrettable.enabled then
         return
     end
-    local turret = event.created_entity
+    local turret = event.entity
     if not turret or not turret.valid then
         return
     end

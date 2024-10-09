@@ -1235,16 +1235,16 @@ local loaders = {
     ['express-loader'] = true
 }
 local function on_built_entity(event)
-    if not event.created_entity or not event.created_entity.valid then
+    if not event.entity or not event.entity.valid then
         return
     end
     local get_score = Score.get_table().score_table
-    local name = event.created_entity.name
+    local name = event.entity.name
     if inserters[name] then
-        local surface = event.created_entity.surface
+        local surface = event.entity.surface
         local a = {
-            left_top = { x = event.created_entity.position.x - 2, y = event.created_entity.position.y - 2 },
-            right_bottom = { x = event.created_entity.position.x + 2, y = event.created_entity.position.y + 2 }
+            left_top = { x = event.entity.position.x - 2, y = event.entity.position.y - 2 },
+            right_bottom = { x = event.entity.position.x + 2, y = event.entity.position.y + 2 }
         }
         local chest = surface.find_entities_filtered { area = a, name = 'infinity-chest', limit = 1 }
         if not chest[1] then
@@ -1273,14 +1273,14 @@ local function on_built_entity(event)
     end
 
     if loaders[name] then
-        local surface = event.created_entity.surface
+        local surface = event.entity.surface
         local a = {
-            left_top = { x = event.created_entity.position.x - 2, y = event.created_entity.position.y - 2 },
-            right_bottom = { x = event.created_entity.position.x + 2, y = event.created_entity.position.y + 2 }
+            left_top = { x = event.entity.position.x - 2, y = event.entity.position.y - 2 },
+            right_bottom = { x = event.entity.position.x + 2, y = event.entity.position.y + 2 }
         }
         local found = surface.find_entities_filtered { area = a, name = 'infinity-chest' }
         if found[1] then
-            event.created_entity.die('enemy')
+            event.entity.die('enemy')
             if event.player_index then
                 local player = game.players[event.player_index]
                 player.print('The mysterious chest noticed your greed and devoured your device.', { r = 0.75, g = 0.0, b = 0.0 })
@@ -1290,11 +1290,11 @@ local function on_built_entity(event)
     end
 
     if name == 'flamethrower-turret' or name == 'laser-turret' then
-        if event.created_entity.position.y < 0 then
+        if event.entity.position.y < 0 then
             if event.player_index then
                 local player = game.players[event.player_index]
                 player.insert({ name = name, count = 1 })
-                event.created_entity.destroy()
+                event.entity.destroy()
                 if get_score then
                     if get_score[player.force.name] then
                         if get_score[player.force.name].players[player.name] then
@@ -1307,7 +1307,7 @@ local function on_built_entity(event)
                 if event.robot then
                     local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
                     inventory.insert({ name = name, count = 1 })
-                    event.created_entity.destroy()
+                    event.entity.destroy()
                 end
             end
         end
@@ -1315,14 +1315,14 @@ local function on_built_entity(event)
     end
 
     if name == 'gun-turret' then
-        local surface = event.created_entity.surface
+        local surface = event.entity.surface
         local amount_of_enemy_structures =
             surface.count_entities_filtered(
                 {
                     name = { 'spitter-spawner', 'biter-spawner' },
                     area = {
-                        { event.created_entity.position.x - 18, event.created_entity.position.y - 18 },
-                        { event.created_entity.position.x + 18, event.created_entity.position.y + 18 }
+                        { event.entity.position.x - 18, event.entity.position.y - 18 },
+                        { event.entity.position.x + 18, event.entity.position.y + 18 }
                     },
                     force = 'enemy',
                     limit = 1
@@ -1332,7 +1332,7 @@ local function on_built_entity(event)
         if event.player_index and amount_of_enemy_structures > 0 then
             local player = game.players[event.player_index]
             player.insert({ name = name, count = 1 })
-            event.created_entity.destroy()
+            event.entity.destroy()
             player.print('Their nests aura seems to deny the placement of any close turrets.', { r = 0.75, g = 0.0, b = 0.0 })
             if get_score then
                 if get_score[player.force.name] then
@@ -1346,7 +1346,7 @@ local function on_built_entity(event)
         if event.robot and amount_of_enemy_structures > 0 then
             local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
             inventory.insert({ name = name, count = 1 })
-            event.created_entity.destroy()
+            event.entity.destroy()
         end
     end
 end

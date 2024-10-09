@@ -126,7 +126,7 @@ Public.matter_anomaly = {
         end
     end,
     on_robot_built_entity = function (event)
-        local entity = event.created_entity
+        local entity = event.entity
         if not entity.valid then
             return
         end
@@ -138,7 +138,7 @@ Public.matter_anomaly = {
         end
     end,
     on_built_entity = function (event)
-        local entity = event.created_entity
+        local entity = event.entity
         if not entity.valid then
             return
         end
@@ -227,7 +227,7 @@ Public.replicant_fauna = {
 
 Public.tarball = {
     on_robot_built_entity = function (event)
-        local entity = event.created_entity
+        local entity = event.entity
         if not entity.valid then
             return
         end
@@ -240,7 +240,7 @@ Public.tarball = {
         entity.minable = false
     end,
     on_built_entity = function (event)
-        local entity = event.created_entity
+        local entity = event.entity
         if not entity.valid then
             return
         end
@@ -368,7 +368,7 @@ Public.oceanic = {
         surface.clear(true)
     end,
     on_robot_built_entity = function (event)
-        local entity = event.created_entity
+        local entity = event.entity
         if not entity.valid then
             return
         end
@@ -380,7 +380,7 @@ Public.oceanic = {
         end
     end,
     on_built_entity = function (event)
-        local entity = event.created_entity
+        local entity = event.entity
         if not entity.valid then
             return
         end
@@ -564,7 +564,7 @@ Public.low_mass = {
 
 Public.dense_atmosphere = {
     on_robot_built_entity = function (event)
-        local entity = event.created_entity
+        local entity = event.entity
         if not entity.valid then
             return
         end
@@ -576,7 +576,7 @@ Public.dense_atmosphere = {
         end
     end,
     on_built_entity = function (event)
-        local entity = event.created_entity
+        local entity = event.entity
         if not entity.valid then
             return
         end
@@ -600,7 +600,7 @@ end
 
 Public.lazy_bastard = {
     on_robot_built_entity = function (event, journey)
-        local entity = event.created_entity
+        local entity = event.entity
         if not entity.valid then
             return
         end
@@ -612,7 +612,7 @@ Public.lazy_bastard = {
         end
     end,
     on_built_entity = function (event, journey)
-        local entity = event.created_entity
+        local entity = event.entity
         if not entity.valid then
             return
         end

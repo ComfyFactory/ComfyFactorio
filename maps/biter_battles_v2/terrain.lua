@@ -793,14 +793,14 @@ function Public.deny_construction_bots(event)
     if not robot_build_restriction[event.robot.force.name] then
         return
     end
-    if not robot_build_restriction[event.robot.force.name](event.created_entity.position.y) then
+    if not robot_build_restriction[event.robot.force.name](event.entity.position.y) then
         return
     end
     local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
-    inventory.insert({ name = event.created_entity.name, count = 1 })
-    event.robot.surface.create_entity({ name = 'explosion', position = event.created_entity.position })
+    inventory.insert({ name = event.entity.name, count = 1 })
+    event.robot.surface.create_entity({ name = 'explosion', position = event.entity.position })
     game.print('Team ' .. event.robot.force.name .. "'s construction drone had an accident.", { r = 200, g = 50, b = 100 })
-    event.created_entity.destroy()
+    event.entity.destroy()
 end
 
 return Public

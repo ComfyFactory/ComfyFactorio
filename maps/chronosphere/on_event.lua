@@ -291,7 +291,7 @@ function Public.on_entity_damaged(event)
 end
 
 function Public.on_built_entity(event)
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity or not entity.valid then
         return
     end

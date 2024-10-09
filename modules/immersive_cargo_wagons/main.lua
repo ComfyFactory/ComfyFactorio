@@ -57,13 +57,13 @@ local function on_robot_mined_entity(event)
 end
 
 local function on_built_entity(event)
-    local created_entity = event.created_entity
+    local created_entity = event.entity
     Functions.create_wagon(icw, created_entity)
     Functions.add_wagon_entity_count(icw, created_entity)
 end
 
 local function on_robot_built_entity(event)
-    local created_entity = event.created_entity
+    local created_entity = event.entity
     Functions.create_wagon(icw, created_entity)
     Functions.add_wagon_entity_count(icw, created_entity)
 end
