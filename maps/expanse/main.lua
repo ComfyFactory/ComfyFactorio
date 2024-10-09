@@ -15,6 +15,7 @@ local Map_info = require 'modules.map_info'
 local Gui = require 'utils.gui'
 local format_number = require 'util'.format_number
 local Autostash = require 'modules.autostash'
+local FT = require 'utils.functions.flying_texts'
 
 local expanse = {
     events = {
@@ -41,7 +42,7 @@ local function create_button(player)
                 {
                     type = 'sprite-button',
                     name = main_button_name,
-                    sprite = 'item/logistic-chest-requester',
+                    sprite = 'item/requester-chest',
                     tooltip = 'Show Expanse statistics!'
                 }
             )
@@ -236,6 +237,7 @@ local function container_opened(event)
     if expansion_position then
         local player = game.players[event.player_index]
         local surface = game.get_surface(player.surface.name)
+        if not surface or not surface.valid then return end
         local colored_player_name = { 'expanse.colored_text', player.color.r * 0.6 + 0.35, player.color.g * 0.6 + 0.35, player.color.b * 0.6 + 0.35, player.name }
         game.print({ 'expanse.tile_unlock', colored_player_name, { 'expanse.gps', math.floor(expansion_position.x), math.floor(expansion_position.y), 'expanse' } })
         expanse.size = (expanse.size or 1) + 1
@@ -284,8 +286,8 @@ local function uranium_mining(entity)
         local acid = tank.get_fluid_count('sulfuric-acid')
         if acid > 5 then
             tank.remove_fluid { name = 'sulfuric-acid', amount = 4 }
-            entity.surface.spill_item_stack(entity.position, { name = 'uranium-ore', count = 2 }, true, nil, true)
-            entity.surface.create_entity { name = 'flying-text', position = tank.position, text = '-4 [fluid=sulfuric-acid]', color = { r = 0.88, g = 0.02, b = 0.02 } }
+            entity.surface.spill_item_stack({position = entity.position, stack ={ name = 'uranium-ore', count = 2 }, enable_looted = true, allow_belts = true})
+            FT.flying_text(nil, entity.surface, tank.position, '-4 [fluid=sulfuric-acid]', { r = 0.88, g = 0.02, b = 0.02 })
         end
     end
 end
@@ -298,8 +300,8 @@ local function infini_rock(entity)
     local a = math.floor(expanse.square_size * 0.5)
     if entity.position.x == a + 4 and entity.position.y == a - 4 then
         entity.surface.create_entity({ name = 'big-rock', position = { a + 4, a - 4 } })
-        entity.surface.spill_item_stack(entity.position, { name = inf_ores[math.random(1, 4)], count = math.random(80, 160) }, true, nil, true)
-        entity.surface.spill_item_stack(entity.position, { name = 'stone', count = math.random(5, 15) }, true, nil, true)
+        entity.surface.spill_item_stack({position = entity.position, stack ={ name = inf_ores[math.random(1, 4)], count = math.random(80, 160) }, enable_looted = true, allow_belts = true})
+        entity.surface.spill_item_stack({position = entity.position, stack = { name = 'stone', count = math.random(5, 15) }, enable_looted = true, allow_belts = true})
         uranium_mining(entity)
     end
 end
@@ -327,7 +329,7 @@ local function on_player_joined_game(event)
     local player = game.players[event.player_index]
     if player.online_time == 0 then
         local surface = game.surfaces.expanse
-        player.teleport(surface.find_non_colliding_position('character', { expanse.square_size * 0.5, expanse.square_size * 0.5 }, 32, 0.5), surface)
+        player.teleport(surface.find_non_colliding_position('character', { expanse.square_size * 0.5, expanse.square_size * 0.5 }, 32, 0.5) or {0,0}, surface)
     end
     create_button(player)
 end
@@ -347,7 +349,7 @@ local function on_pre_player_left_game(event)
     local removed_count = inventory.remove({ name = 'coin', count = 999999 })
     if removed_count > 0 then
         for _ = 1, removed_count, 1 do
-            player.surface.spill_item_stack(player.position, { name = 'coin', count = 1 }, false, nil, false)
+            player.surface.spill_item_stack({position = player.position, stack = { name = 'coin', count = 1 }, enable_looted = false, allow_belts = false})
         end
         game.print({ 'expanse.tokens_dropped', player.name, { 'expanse.gps', math.floor(player.position.x), math.floor(player.position.y), player.surface.name } })
     end

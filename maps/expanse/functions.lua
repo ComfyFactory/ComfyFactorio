@@ -39,12 +39,12 @@ local function reward_tokens(expanse, entity)
     if chance > 0 then
         chance = math.floor(chance * 1000)
         if math.random(1, 1000) <= chance then
-            entity.surface.spill_item_stack(entity.position, { name = 'coin', count = 1 }, true, nil, false)
+            entity.surface.spill_item_stack({position = entity.position, stack = { name = 'coin', count = 1 }, enable_looted = true, allow_belts = false})
         end
     end
     if count > 0 then
         for _ = 1, count, 1 do
-            entity.surface.spill_item_stack(entity.position, { name = 'coin', count = 1 }, true, nil, false)
+            entity.surface.spill_item_stack({position = entity.position, stack = { name = 'coin', count = 1 }, enable_looted = true, allow_belts = false})
         end
     end
 end
@@ -102,7 +102,7 @@ local function get_left_top(expanse, position)
     local surface = game.surfaces.expanse
 
     for _, v in pairs(vectors) do
-        local tile = surface.get_tile({ position.x + v[1], position.y + v[2] })
+        local tile = surface.get_tile(position.x + v[1], position.y + v[2])
         if tile.name == 'out-of-map' then
             local left_top = tile.position
             left_top.x = left_top.x - left_top.x % expanse.square_size
@@ -129,7 +129,7 @@ local function is_container_position_valid(expanse, position)
     if
         game.surfaces.expanse.count_entities_filtered(
             {
-                name = 'logistic-chest-requester',
+                name = 'requester-chest',
                 force = 'neutral',
                 area = { { left_top.x - 1, left_top.y - 1 }, { left_top.x + expanse.square_size + 1, left_top.y + expanse.square_size + 1 } }
             }
@@ -146,33 +146,37 @@ local function create_costs_render(entity, name, offset)
         rendering.draw_sprite {
             sprite = 'virtual-signal/signal-grey',
             surface = entity.surface,
-            target = entity,
+            target = {
+                entity = entity,
+                offset = { offset, -1.5 }
+            },
             x_scale = 1.1,
             y_scale = 1.1,
             render_layer = '190',
-            target_offset = { offset, -1.5 },
             only_in_alt_mode = true
         }
     local id2 =
         rendering.draw_sprite {
             sprite = 'item/' .. name,
             surface = entity.surface,
-            target = entity,
+            target = {
+                entity = entity,
+                offset = { offset, -1.5 }
+            },
             x_scale = 0.75,
             y_scale = 0.75,
             render_layer = '191',
-            target_offset = { offset, -1.5 },
             only_in_alt_mode = true
         }
     return { id, id2 }
 end
 
 local function remove_one_render(container, key)
-    if rendering.is_valid(container.price[key].render[1]) then
-        rendering.destroy(container.price[key].render[1])
+    if container.price[key].render[1].valid then
+        container.price[key].render[1].destroy()
     end
-    if rendering.is_valid(container.price[key].render[2]) then
-        rendering.destroy(container.price[key].render[2])
+    if container.price[key].render[2].valid then
+        container.price[key].render[2].destroy()
     end
 end
 
@@ -183,7 +187,7 @@ local function remove_old_renders(container)
 end
 
 function Public.spawn_units(spawner)
-    local evolution = game.forces.enemy.evolution_factor
+    local evolution = game.forces.enemy.get_evolution_factor(spawner.surface)
     local position = spawner.position
     for i = 1, 4 + math.floor(8 * evolution), 1 do
         local biter_roll = BiterRaffle.roll('mixed', evolution)
@@ -197,7 +201,7 @@ function Public.get_item_tooltip(name)
 end
 
 function Public.invasion_numbers()
-    local evo = game.forces.enemy.evolution_factor
+    local evo = game.forces.enemy.get_evolution_factor(game.surfaces.expanse)
     return { candidates = 3 + math.floor(evo * 10), groups = 1 + math.floor(evo * 4) }
 end
 
@@ -228,7 +232,7 @@ function Public.invasion_trigger(event)
     local surface = event.surface
     local position = event.position
     local round = event.round
-    local evolution = game.forces.enemy.evolution_factor
+    local evolution = game.forces.enemy.get_evolution_factor(surface)
     local biters = {}
     for i = 1, 5 + math.floor(30 * evolution) + round * 5, 1 do
         local biter_roll = BiterRaffle.roll('mixed', evolution)
@@ -284,10 +288,10 @@ local function plan_invasion(expanse, invasion_numbers)
         for ii = 1, rounds, 1 do
             schedule_biters(expanse, surface, position, 120 + (ii - 1) * 300, ii)
         end
-        rendering.set_time_to_live(candidates[i].render, 122 * 60 + rounds * 300)
+        candidates[i].render.time_to_live = ( 122 * 60 + rounds * 300)
     end
     for j = invasion_numbers.groups + 1, #candidates, 1 do
-        rendering.set_time_to_live(candidates[j].render, 122 * 60)
+        candidates[j].render.time_to_live = ( 122 * 60)
     end
     expanse.invasion_candidates = {}
 end
@@ -336,7 +340,7 @@ function Public.expand(expanse, left_top)
 
     for _, position in pairs(positions) do
         if is_container_position_valid(expanse, position) then
-            local e = surface.create_entity({ name = 'logistic-chest-requester', position = position, force = 'neutral' })
+            local e = surface.create_entity({ name = 'requester-chest', position = position, force = 'neutral' })
             e.destructible = false
             e.minable = false
         end
@@ -352,9 +356,9 @@ function Public.expand(expanse, left_top)
         surface.create_entity({ name = 'crude-oil', position = { a - 4, a - 4 }, amount = 1500000 })
         Task.set_timeout_in_ticks(30, delay_infini_tree_token, { surface = surface, position = { a - 4, a + 4 } })
         surface.create_entity({ name = 'big-rock', position = { a + 4, a - 4 } })
-        surface.spill_item_stack({ a, a + 2 }, { name = 'coin', count = 1 }, false, nil, false)
-        surface.spill_item_stack({ a + 0.5, a + 2.5 }, { name = 'coin', count = 1 }, false, nil, false)
-        surface.spill_item_stack({ a - 0.5, a + 2.5 }, { name = 'coin', count = 1 }, false, nil, false)
+        surface.spill_item_stack({position = {a, a + 2}, stack = { name = 'coin', count = 1 }, enable_looted = false, allow_belts = false})
+        surface.spill_item_stack({position = { a + 0.5, a + 2.5 }, stack = { name = 'coin', count = 1 }, enable_looted = false, allow_belts = false})
+        surface.spill_item_stack({position = { a - 0.5, a + 2.5 }, stack = { name = 'coin', count = 1 }, enable_looted = false, allow_belts = false})
 
         for x = 0, square_size, 1 do
             for y = 0, square_size, 1 do
@@ -404,7 +408,7 @@ local function get_remaining_budget(container)
 end
 
 function Public.set_container(expanse, entity)
-    if entity.name ~= 'logistic-chest-requester' then
+    if entity.name ~= 'requester-chest' then
         return
     end
     if not expanse.containers[entity.unit_number] then
@@ -420,8 +424,7 @@ function Public.set_container(expanse, entity)
     local inventory = container.entity.get_inventory(defines.inventory.chest)
 
     if not inventory.is_empty() then
-        local contents = inventory.get_contents()
-        if contents['coin'] then
+        if inventory.get_item_count('coin') > 0 then
             local count_removed = inventory.remove({ name = 'coin', count = 1 })
             if count_removed > 0 then
                 expanse.cost_stats['coin'] = (expanse.cost_stats['coin'] or 0) + count_removed
@@ -432,7 +435,7 @@ function Public.set_container(expanse, entity)
                 game.print({ 'expanse.chest_reset', { 'expanse.gps', math.floor(entity.position.x), math.floor(entity.position.y), 'expanse' } })
             end
         end
-        if contents['infinity-chest'] then
+        if inventory.get_item_count('infinity-chest') > 0 then
             remove_old_renders(container)
             container.price = {}
         end
@@ -456,8 +459,11 @@ function Public.set_container(expanse, entity)
         local expansion_position = { x = expanse.containers[entity.unit_number].left_top.x + a, y = expanse.containers[entity.unit_number].left_top.y + a }
         expanse.containers[entity.unit_number] = nil
         if not inventory.is_empty() then
-            for name, count in pairs(inventory.get_contents()) do
-                entity.surface.spill_item_stack(entity.position, { name = name, count = count }, true, nil, false)
+            for index = 1, #inventory, 1 do
+                local slot = inventory[index]
+                if slot.valid_for_read then
+                    entity.surface.spill_item_stack({position = entity.position, stack = slot, enable_looted = true, allow_belts = false})
+                end
             end
         end
         reward_tokens(expanse, entity)
@@ -465,13 +471,21 @@ function Public.set_container(expanse, entity)
         entity.die()
         return expansion_position
     end
-
-    for slot = 1, 30, 1 do
-        entity.clear_request_slot(slot)
+    local logi = container.entity.get_logistic_point(0)
+    for i = 1, 256, 1 do
+        if logi.get_section(i) then
+            logi.remove_section(i)
+        end
     end
 
-    for slot, item_stack in pairs(container.price) do
-        container.entity.set_request_slot(item_stack, slot)
+    logi.add_section()
+    local section = logi.get_section(1)
+
+    for slot = 1, #container.price, 1 do
+        if #container.price >= slot then
+            local item = container.price[slot]
+            section.set_slot(slot, {value = item.name, min = item.count, import_from = 'nauvis'})
+        end
     end
 end
 
