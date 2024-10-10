@@ -32,7 +32,7 @@ function Public.ensure_sea_surface()
 		local height = Public.Data.height
 		local map_gen_settings = Common.default_map_gen_settings(width, height)
 
-		map_gen_settings.autoplace_settings.decorative.treat_missing_as_default = false
+		map_gen_settings.autoplace_settings.decorative = { treat_missing_as_default = false }
 
 		local surface = game.create_surface(seaname, map_gen_settings)
 		surface.freeze_daytime = true

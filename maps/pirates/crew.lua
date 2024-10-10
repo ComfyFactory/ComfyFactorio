@@ -306,29 +306,27 @@ function Public.join_crew(player, rejoin)
 		surface
 	)
 
+	local rejoin_data = memory.temporarily_logged_off_player_data[player.index]
+
 	if rejoin then
-		if memory.temporarily_logged_off_player_data[player.index] then
-			local rejoin_data = memory.temporarily_logged_off_player_data[player.index]
-			local rejoin_surface = game.surfaces[rejoin_data.surface_name]
+		local rejoin_surface = game.surfaces[rejoin_data.surface_name]
 
-			-- If surface where player left the game still exists, place him there.
-			if rejoin_surface and rejoin_surface.valid then
-				-- Edge case: if player left the game while he was on the boat, it could be that boat position
-				-- changed when he left the game vs when he came back.
-				if not (rejoin_data.on_boat and rejoin_data.on_island) then
-					player.character.teleport(
-						rejoin_surface.find_non_colliding_position('character', rejoin_data.position, 32, 0.5)
-							or memory.spawnpoint,
-						rejoin_surface
-					)
-				end
+		if rejoin_surface and rejoin_surface.valid then
+			-- Edge case: if player left the game while he was on the boat, it could be that boat position
+			-- changed when he left the game vs when he came back.
+			if not (rejoin_data.on_boat and rejoin_data.on_island) then
+				player.character.teleport(
+					rejoin_surface.find_non_colliding_position('character', rejoin_data.position, 32, 0.5)
+						or memory.spawnpoint,
+					rejoin_surface
+				)
 			end
-
-			Common.give_back_items_to_temporarily_logged_off_player(player)
-
-			memory.temporarily_logged_off_player_data[player.index] = nil
 		end
 	end
+
+	Common.give_back_items_to_temporarily_logged_off_player(player)
+
+	memory.temporarily_logged_off_player_data[player.index] = nil
 
 	Common.notify_force(player.force, { 'pirates.lobby_to_crew', player.name })
 	-- Server.to_discord_embed_raw(CoreData.comfy_emojis.yum1 .. '[' .. memory.name .. '] ' .. message)
@@ -418,9 +416,10 @@ function Public.leave_crew(player, to_lobby, quiet)
 			tick = game.tick,
 		}
 
+		-- This is preferred to leaving a corpse, because it's less burden on other players. (It may also be slightly preferred to sending the items to the crew immediately!
 		Common.temporarily_store_logged_off_character_items(player)
 
-		char.die(memory.force_name)
+		char.destroy()
 
 		-- else
 		-- 	if not quiet then

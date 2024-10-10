@@ -652,9 +652,10 @@ if _DEBUG then
 				local proposal = {
 					capacity_option = 3,
 					difficulty_option = 4,
-					-- mode_option = 'left',
 					name = 'AdminRun',
 					created_by_player = cmd.player_index,
+					run_is_protected = false,
+					run_is_private = false,
 				}
 
 				Crew.initialise_crew(proposal, player.position)
