@@ -165,7 +165,7 @@ function Public.create_cabin_surface()
 		local height = Public.Data.height
 		local map_gen_settings = Common.default_map_gen_settings(width, height)
 
-		map_gen_settings.autoplace_settings.decorative.treat_missing_as_default = false
+		map_gen_settings.autoplace_settings.decorative = { treat_missing_as_default = false }
 
 		local cabinname = Public.get_cabin_surface_name()
 
@@ -173,8 +173,6 @@ function Public.create_cabin_surface()
 		surface.freeze_daytime = true
 		surface.daytime = 0.3
 		surface.show_clouds = false
-
-		-- more here
 
 		Common.ensure_chunks_at(surface, { x = 0, y = 0 }, 3)
 

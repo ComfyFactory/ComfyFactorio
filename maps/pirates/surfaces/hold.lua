@@ -119,7 +119,7 @@ function Public.create_hold_surface(nth)
 	local height = Public.Data.height
 	local map_gen_settings = Common.default_map_gen_settings(width, height)
 
-	map_gen_settings.autoplace_settings.decorative.treat_missing_as_default = false
+	map_gen_settings.autoplace_settings.decorative = { treat_missing_as_default = false }
 
 	local holdname = Public.get_hold_surface_name(nth)
 

@@ -700,9 +700,9 @@ function Public.player_ammo_damage_modifiers() -- modifiers are fractional. bull
 		['flamethrower'] = -0.5,
 		['grenade'] = -0.05,
 		['landmine'] = 0,
-		['melee'] = 0, -- doesn't do anything apparently
+		['melee'] = 0, -- only affects alien melee
 		['rocket'] = 0,
-		['shotgun-shell'] = 0,
+		['shotgun-shell'] = 2,
 	}
 	return data
 end
@@ -728,7 +728,7 @@ function Public.player_gun_speed_modifiers()
 		['flamethrower'] = 0,
 		['grenade'] = -0.25,
 		['landmine'] = 0,
-		['melee'] = 0, -- doesn't do anything apparently
+		['melee'] = 0, -- only affects alien melee
 		['rocket'] = 0,
 		['shotgun-shell'] = 0,
 	}

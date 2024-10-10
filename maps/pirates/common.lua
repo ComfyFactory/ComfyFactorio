@@ -1,16 +1,16 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-local Math = require 'maps.pirates.math'
-local Raffle = require 'utils.math.raffle'
-local Server = require 'utils.server'
-local Utils = require 'maps.pirates.utils_local'
-local CoreData = require 'maps.pirates.coredata'
-local Memory = require 'maps.pirates.memory'
-local _inspect = require 'utils.inspect'.inspect
+local Math = require('maps.pirates.math')
+local Raffle = require('utils.math.raffle')
+local Server = require('utils.server')
+local Utils = require('maps.pirates.utils_local')
+local CoreData = require('maps.pirates.coredata')
+local Memory = require('maps.pirates.memory')
+local _inspect = require('utils.inspect').inspect
 
 -- local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 
-local LootRaffle = require 'utils.functions.loot_raffle'
+local LootRaffle = require('utils.functions.loot_raffle')
 -- local simplex_noise = require 'utils.math.simplex_noise'.d2
 -- local perlin_noise = require 'utils.math.perlin_noise'
 -- local Force_health_booster = require 'modules.force_health_booster'
@@ -1585,7 +1585,7 @@ function Public.give_back_items_to_temporarily_logged_off_player(player)
 
 	local temp_inv = memory.temporarily_logged_off_characters_items[player.index]
 
-	for i = 1, #temp_inv, 1 do
+	for i = #temp_inv, 1, -1 do -- descending order to make sure the inventory is large enough
 		if temp_inv and temp_inv[i].valid and temp_inv[i].valid_for_read then
 			player.insert(temp_inv[i])
 		end
