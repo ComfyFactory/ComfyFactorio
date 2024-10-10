@@ -839,7 +839,6 @@ function Public.buff_all_damage(amount)
 
 	local ammo_damage_modifiers = Balance.player_ammo_damage_modifiers()
 	local turret_attack_modifiers = Balance.player_turret_attack_modifiers()
-	local gun_speed_modifiers = Balance.player_gun_speed_modifiers()
 
 	for category, factor in pairs(ammo_damage_modifiers) do
 		local current_modifier = force.get_ammo_damage_modifier(category)
@@ -849,11 +848,6 @@ function Public.buff_all_damage(amount)
 	for category, factor in pairs(turret_attack_modifiers) do
 		local current_modifier = force.get_turret_attack_modifier(category)
 		force.set_turret_attack_modifier(category, current_modifier + amount * (1 + factor))
-	end
-
-	for category, factor in pairs(gun_speed_modifiers) do
-		local current_modifier = force.get_gun_speed_modifier(category)
-		force.set_gun_speed_modifier(category, current_modifier + amount * (1 + factor))
 	end
 end
 
