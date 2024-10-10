@@ -1,6 +1,6 @@
 local Public = {}
 
-Public.mothership_teleporter_position = { x = 0, y = 12 }
+Public.mothership_teleporter_position = { x = -3, y = 11 }
 Public.teleporter_tile = 'lab-dark-2'
 
 Public.mothership_radius = 48
@@ -180,7 +180,6 @@ Public.starter_goods_pool = {
         { 'accumulator',      8,  16 },
         { 'electric-furnace', 4,  8 },
         { 'solar-panel',      8,  16 },
-        { 'stack-inserter',   16, 32 },
         { 'bulk-inserter',    16, 32 },
         { 'steam-turbine',    4,  8 },
         { 'substation',       4,  8 },
@@ -188,8 +187,6 @@ Public.starter_goods_pool = {
         { 'oil-refinery',     1,  2 },
     },
     ['rare'] = {
-        { 'green-wire',                  256, 512 },
-        { 'red-wire',                    256, 512 },
         { 'heat-exchanger',              1,   2 },
         { 'heat-pipe',                   10,  20 },
         { 'uranium-fuel-cell',           4,   8 },
@@ -198,7 +195,7 @@ Public.starter_goods_pool = {
         { 'construction-robot',          16,  32 },
         { 'personal-roboport-equipment', 1,   1 },
         { 'solar-panel-equipment',       2,   4 },
-        { 'effectivity-module',          5,   10 },
+        { 'efficiency-module',          5,   10 },
     },
 }
 
