@@ -112,7 +112,7 @@ local function output_data(primary, secondary)
     secondary = type(secondary) == 'table' and '' or secondary
 
     if start_data and start_data.output then
-        local write = game.write_file
+        local write = helpers.write_file
         write(start_data.output, primary .. (secondary or '') .. newline, true, 0)
     else
         raw_print(primary .. (secondary or ''))
@@ -240,7 +240,7 @@ end
 -- @param  message<string> the content of the embed.
 function Public.to_discord_named_parsed_embed(channel_name, message)
     assert_non_empty_string_and_no_spaces(channel_name, 'channel_name')
-    local table_to_json = game.table_to_json
+    local table_to_json = helpers.table_to_json
 
     if not type(message) == 'table' then
         return
@@ -334,7 +334,7 @@ end
 --- Sends a embed message to the linked discord channel. The message is sanitized/parsed of markdown server side.
 -- @param  message<table> the content of the embed.
 function Public.to_discord_embed_parsed(message)
-    local table_to_json = game.table_to_json
+    local table_to_json = helpers.table_to_json
     if not type(message) == 'table' then
         return
     end
@@ -385,7 +385,7 @@ end
 -- @param  message<tbl> the content of the embed.
 -- @param  locale<boolean> if the message should be handled as localized.
 function Public.to_banned_embed(message, locale)
-    local table_to_json = game.table_to_json
+    local table_to_json = helpers.table_to_json
     if not type(message) == 'table' then
         return
     end
@@ -409,7 +409,7 @@ end
 -- @param  message<tbl> the content of the embed.
 -- @param  locale<boolean> if the message should be handled as localized.
 function Public.to_unbanned_embed(message, locale)
-    local table_to_json = game.table_to_json
+    local table_to_json = helpers.table_to_json
     if not type(message) == 'table' then
         return
     end
@@ -430,7 +430,7 @@ end
 -- @param  message<tbl> the content of the embed.
 -- @param  locale<boolean> if the message should be handled as localized.
 function Public.to_jailed_embed(message, locale)
-    local table_to_json = game.table_to_json
+    local table_to_json = helpers.table_to_json
     if not type(message) == 'table' then
         return
     end
@@ -455,7 +455,7 @@ end
 -- @param  message<tbl> the content of the embed.
 -- @param  locale<boolean> if the message should be handled as localized.
 function Public.to_jailed_named_embed(message, locale)
-    local table_to_json = game.table_to_json
+    local table_to_json = helpers.table_to_json
     if not type(message) == 'table' then
         return
     end
@@ -480,7 +480,7 @@ end
 -- @param  message<tbl> the content of the embed.
 -- @param  locale<boolean> if the message should be handled as localized.
 function Public.to_unjailed_embed(message, locale)
-    local table_to_json = game.table_to_json
+    local table_to_json = helpers.table_to_json
     if not type(message) == 'table' then
         return
     end
@@ -501,7 +501,7 @@ end
 -- @param  message<tbl> the content of the embed.
 -- @param  locale<boolean> if the message should be handled as localized.
 function Public.to_unjailed_named_embed(message, locale)
-    local table_to_json = game.table_to_json
+    local table_to_json = helpers.table_to_json
     if not type(message) == 'table' then
         return
     end
@@ -1129,7 +1129,7 @@ local statistics = {
     'get_entity_build_count_statistics'
 }
 function Public.export_stats()
-    local table_to_json = game.table_to_json
+    local table_to_json = helpers.table_to_json
     local stats = {
         game_tick = game.tick,
         player_count = #game.connected_players,
