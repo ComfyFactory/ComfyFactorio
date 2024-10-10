@@ -180,8 +180,8 @@ Public.mountainous = {
         local count = math_floor(math_sqrt(entity.position.x ^ 2 + entity.position.y ^ 2) * 0.05) + math_random(25, 75)
         local ore_amount = math_floor(count * 0.85)
         local stone_amount = math_floor(count * 0.15)
-        surface.spill_item_stack(entity.position, { name = ore, count = ore_amount }, true)
-        surface.spill_item_stack(entity.position, { name = 'stone', count = stone_amount }, true)
+        surface.spill_item_stack({position = entity.position, stack = { name = ore, count = ore_amount }, enable_looted = true})
+        surface.spill_item_stack({position = entity.position, stack = { name = 'stone', count = stone_amount }, enable_looted = true})
     end,
     on_chunk_generated = function (event, journey)
         local surface = event.surface
@@ -263,14 +263,14 @@ Public.tarball = {
                     target = event.area.left_top,
                     surface = event.surface,
                     tint = { r = 0.0, g = 0.0, b = 0.0, a = 0.45 },
-                    render_layer = 'ground'
+                    render_layer = 'ground-layer-1'
                 }
             )
         )
     end,
     clear = function (journey)
-        for _, id in pairs(journey.world_color_filters) do
-            rendering.destroy(id)
+        for _, color_filter in pairs(journey.world_color_filters) do
+            color_filter.destroy()
         end
         journey.world_color_filters = {}
     end
@@ -334,7 +334,7 @@ Public.wasteland = {
                 if math_random(1, 4) == 1 then
                     local slots = prototypes.entity[e.name].get_inventory_size(defines.inventory.chest)
                     local blacklist = LootRaffle.get_tech_blacklist(0.2)
-                    local item_stacks = LootRaffle.roll(math_random(16, 64), slots, blacklist)
+                    local item_stacks = LootRaffle.roll(math_random(16, 64), slots, blacklist) or {}
                     for _, item_stack in pairs(item_stacks) do
                         e.insert(item_stack)
                     end
@@ -411,7 +411,7 @@ Public.volcanic = {
                     target = event.area.left_top,
                     surface = event.surface,
                     tint = { r = 0.55, g = 0.0, b = 0.0, a = 0.25 },
-                    render_layer = 'ground'
+                    render_layer = 'ground-layer-1'
                 }
             )
         )
@@ -425,7 +425,7 @@ Public.volcanic = {
         if surface.index ~= 1 then
             return
         end
-        if solid_tiles[surface.get_tile(player.position).name] then
+        if solid_tiles[surface.get_tile(player.position.x, player.position.y).name] then
             return
         end
         surface.create_entity({ name = 'fire-flame', position = player.position })
@@ -434,7 +434,7 @@ Public.volcanic = {
         local surface = game.surfaces.nauvis
         surface.request_to_generate_chunks({ x = 0, y = 0 }, 3)
         surface.force_generate_chunk_requests()
-        surface.spill_item_stack({ 0, 0 }, { name = 'stone-brick', count = 4096 }, true)
+        surface.spill_item_stack({position = { 0, 0 }, stack = { name = 'stone-brick', count = 4096 }, enable_looted = true})
         for x = -24, 24, 1 do
             for y = -24, 24, 1 do
                 if math.sqrt(x ^ 2 + y ^ 2) < 24 then
@@ -444,8 +444,8 @@ Public.volcanic = {
         end
     end,
     clear = function (journey)
-        for _, id in pairs(journey.world_color_filters) do
-            rendering.destroy(id)
+        for _, color_filter in pairs(journey.world_color_filters) do
+            color_filter.destroy()
         end
         journey.world_color_filters = {}
     end
@@ -473,7 +473,7 @@ Public.infested = {
                     target = event.area.left_top,
                     surface = event.surface,
                     tint = { r = 0.8, g = 0.0, b = 0.8, a = 0.25 },
-                    render_layer = 'ground'
+                    render_layer = 'ground-layer-1'
                 }
             )
         )
@@ -484,8 +484,8 @@ Public.infested = {
         journey.world_specials['trees_frequency'] = 2
     end,
     clear = function (journey)
-        for _, id in pairs(journey.world_color_filters) do
-            rendering.destroy(id)
+        for _, color_filter in pairs(journey.world_color_filters) do
+            color_filter.destroy()
         end
         journey.world_color_filters = {}
     end,
