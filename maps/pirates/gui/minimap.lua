@@ -251,8 +251,8 @@ local function on_player_changed_surface(event)
 
 	local from_hold_or_cabin_bool = string.sub(game.surfaces[event.surface_index].name, 9, 12) == 'Hold'
 		or string.sub(game.surfaces[event.surface_index].name, 9, 13) == 'Cabin'
-	local to_hold_or_cabin_bool = string.sub(player.surface.name, 9, 12) == 'Hold'
-		or string.sub(player.surface.name, 9, 13) == 'Cabin'
+	local to_hold_or_cabin_bool = string.sub(player.character.surface.name, 9, 12) == 'Hold'
+		or string.sub(player.character.surface.name, 9, 13) == 'Cabin'
 
 	if from_hold_or_cabin_bool and not to_hold_or_cabin_bool then
 		if window then

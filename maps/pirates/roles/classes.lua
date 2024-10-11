@@ -451,7 +451,7 @@ local function class_on_player_used_capsule(event)
 		local chance = Balance.soldier_defender_summon_chance
 		if Math.random() < chance then
 			local random_vec = Math.random_vec(3)
-			local e = player.surface.create_entity({
+			local e = player.character.surface.create_entity({
 				name = 'defender',
 				position = Utils.psum({ player.character.position, random_vec }),
 				speed = 1.5,
@@ -465,7 +465,7 @@ local function class_on_player_used_capsule(event)
 		local chance = Balance.veteran_destroyer_summon_chance
 		if Math.random() < chance then
 			local random_vec = Math.random_vec(3)
-			local e = player.surface.create_entity({
+			local e = player.character.surface.create_entity({
 				name = 'destroyer',
 				position = Utils.psum({ player.character.position, random_vec }),
 				speed = 1.5,
@@ -496,7 +496,7 @@ local function class_on_player_used_capsule(event)
 			end
 		end
 	elseif class == Public.enum.SHAMAN then
-		local player_surface_type = SurfacesCommon.decode_surface_name(player.surface.name).type
+		local player_surface_type = SurfacesCommon.decode_surface_name(player.character.surface.name).type
 
 		if player_surface_type == SurfacesCommon.enum.ISLAND or player_surface_type == SurfacesCommon.enum.SEA then
 			local data = memory.class_auxiliary_data[player.index]
@@ -509,16 +509,20 @@ local function class_on_player_used_capsule(event)
 					local spawn_range = 2
 					local pos = Math.vector_sum(player.character.position, Math.random_vec(spawn_range))
 					local name = Common.get_random_unit_type(Math.clamp(0, 1, memory.evolution_factor))
-					local spawn_pos = player.surface.find_non_colliding_position(name, pos, spawn_range + 1, 0.5)
+					local spawn_pos =
+						player.character.surface.find_non_colliding_position(name, pos, spawn_range + 1, 0.5)
 
 					if spawn_pos then
-						local e =
-							player.surface.create_entity({ name = name, position = spawn_pos, force = memory.force })
+						local e = player.character.surface.create_entity({
+							name = name,
+							position = spawn_pos,
+							force = memory.force,
+						})
 						if e and e.valid then
 							data.shaman_charge = data.shaman_charge - Balance.shaman_energy_required_per_summon
 							rendering.draw_text({
 								text = '~' .. player.name .. "'s minion~",
-								surface = player.surface,
+								surface = player.character.surface,
 								target = e,
 								target_offset = { 0, -2.6 },
 								color = player.force.color,

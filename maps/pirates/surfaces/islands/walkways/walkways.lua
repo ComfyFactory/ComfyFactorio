@@ -170,9 +170,9 @@ local function walkways_tick()
 			for _, player in pairs(game.connected_players) do
 				if
 					player.force.name == memory.force_name
-					and player.surface == game.surfaces[destination.surface_name]
 					and player.character
 					and player.character.valid
+					and player.character.surface == game.surfaces[destination.surface_name]
 					and game.surfaces[destination.surface_name].get_tile(player.character.position).name
 						== 'water-shallow'
 				then

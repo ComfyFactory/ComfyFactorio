@@ -90,14 +90,22 @@ function Public.class_update_auxiliary_data(tick_interval)
 				local power_need = Balance.shaman_max_charge - data.shaman_charge
 				local energy = 0
 				if player.character and player.character.valid then
-					energy = discharge_accumulators(player.surface, player.character.position, memory.force, power_need)
-				end
-				data.shaman_charge = data.shaman_charge + energy
+					energy = discharge_accumulators(
+						player.character.surface,
+						player.character.position,
+						memory.force,
+						power_need
+					)
 
-				-- charge from sun pasively
-				data.shaman_charge = data.shaman_charge
-					+ (1 - player.surface.daytime) * Balance.shaman_passive_charge * (tick_interval / 60)
-				data.shaman_charge = Math.min(data.shaman_charge, Balance.shaman_max_charge)
+					data.shaman_charge = data.shaman_charge + energy
+
+					-- charge from sun pasively
+					data.shaman_charge = data.shaman_charge
+						+ (1 - player.character.surface.daytime)
+							* Balance.shaman_passive_charge
+							* (tick_interval / 60)
+					data.shaman_charge = Math.min(data.shaman_charge, Balance.shaman_max_charge)
+				end
 			end
 		end
 	end
@@ -146,7 +154,7 @@ function Public.class_renderings(tick_interval)
 					if class == Classes.enum.QUARTERMASTER then
 						class_renderings[player_index] = {
 							rendering = rendering.draw_circle({
-								surface = player.surface,
+								surface = player.character.surface,
 								target = player.character,
 								color = CoreData.colors.quartermaster_rendering,
 								filled = false,
@@ -158,7 +166,7 @@ function Public.class_renderings(tick_interval)
 					elseif class == Classes.enum.SAMURAI then
 						class_renderings[player_index] = {
 							rendering = rendering.draw_circle({
-								surface = player.surface,
+								surface = player.character.surface,
 								target = player.character,
 								color = CoreData.colors.toughness_rendering,
 								filled = false,
@@ -170,7 +178,7 @@ function Public.class_renderings(tick_interval)
 					elseif class == Classes.enum.HATAMOTO then
 						class_renderings[player_index] = {
 							rendering = rendering.draw_circle({
-								surface = player.surface,
+								surface = player.character.surface,
 								target = player.character,
 								color = CoreData.colors.toughness_rendering,
 								filled = false,
@@ -182,7 +190,7 @@ function Public.class_renderings(tick_interval)
 					elseif class == Classes.enum.IRON_LEG and data and data.iron_leg_active then
 						class_renderings[player_index] = {
 							rendering = rendering.draw_circle({
-								surface = player.surface,
+								surface = player.character.surface,
 								target = player.character,
 								color = CoreData.colors.toughness_rendering,
 								filled = false,
@@ -194,7 +202,7 @@ function Public.class_renderings(tick_interval)
 					elseif class == Classes.enum.MEDIC then
 						class_renderings[player_index] = {
 							rendering = rendering.draw_circle({
-								surface = player.surface,
+								surface = player.character.surface,
 								target = player.character,
 								color = CoreData.colors.healing_radius_rendering,
 								filled = false,
@@ -206,7 +214,7 @@ function Public.class_renderings(tick_interval)
 					elseif class == Classes.enum.DOCTOR then
 						class_renderings[player_index] = {
 							rendering = rendering.draw_circle({
-								surface = player.surface,
+								surface = player.character.surface,
 								target = player.character,
 								color = CoreData.colors.healing_radius_rendering,
 								filled = false,
@@ -220,7 +228,7 @@ function Public.class_renderings(tick_interval)
 						local radius = max_render_radius * (data.shaman_charge / Balance.shaman_max_charge)
 						class_renderings[player_index] = {
 							rendering = rendering.draw_circle({
-								surface = player.surface,
+								surface = player.character.surface,
 								target = player.character,
 								color = CoreData.colors.shaman_charge_rendering,
 								filled = true,
@@ -232,7 +240,7 @@ function Public.class_renderings(tick_interval)
 					elseif class == Classes.enum.LUMINOUS then
 						class_renderings[player_index] = {
 							rendering = rendering.draw_light({
-								surface = player.surface,
+								surface = player.character.surface,
 								target = player.character,
 								color = { r = 1, g = 1, b = 1 },
 								sprite = 'utility/light_medium',
@@ -318,13 +326,13 @@ function Public.update_character_properties(tick_interval)
 					or (class == Classes.enum.BOATSWAIN)
 					or (class == Classes.enum.SHORESMAN)
 				then
-					local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(player.surface.name)
+					local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(player.character.surface.name)
 					local type = surfacedata.type
 					local on_ship_bool = (type == Surfaces.enum.HOLD)
 						or (type == Surfaces.enum.CABIN)
 						or (type == Surfaces.enum.CROWSNEST)
 						or (
-							player.surface.name == memory.boat.surface_name
+							player.character.surface.name == memory.boat.surface_name
 							and Boats.on_boat(memory.boat, player.character.position)
 						)
 					local hold_bool = (type == Surfaces.enum.HOLD)
@@ -349,20 +357,21 @@ function Public.update_character_properties(tick_interval)
 
 			-- If they're a SAMURAI or HATAMOTO, and have a weapon equipped, unequip it:
 			if class == Classes.enum.SAMURAI or class == Classes.enum.HATAMOTO then
-				if not Common.validate_player(player) then
+				if not Common.validate_player_and_character(player) then
 					return
 				end
-				local main_gun_inv = player.get_inventory(defines.inventory.character_guns)[1]
+				local main_gun_inv = player.character.get_inventory(defines.inventory.character_guns)
 
-				if main_gun_inv.valid_for_read then
-					local main_inv = player.get_main_inventory()
+				if main_gun_inv and main_gun_inv[1] and main_gun_inv[1].valid_for_read then
+					local main_inv = player.character.get_main_inventory()
 
-					if main_inv.can_insert(main_gun_inv) then
-						main_inv.insert(main_gun_inv)
+					if main_inv.can_insert(main_gun_inv[1]) then
+						main_inv.insert(main_gun_inv[1])
 					else
-						main_gun_inv.drop()
+						player.character.surface.spill_item_stack(player.character.position, main_gun_inv[1])
 					end
-					main_gun_inv.clear()
+
+					main_gun_inv.remove(main_gun_inv[1])
 				end
 			end
 
@@ -399,13 +408,13 @@ function Public.class_rewards_tick(tick_interval)
 				or class == Classes.enum.QUARTERMASTER
 			)
 		then
-			local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(player.surface.name)
+			local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(player.character.surface.name)
 			local type = surfacedata.type
 			local on_ship_bool = (type == Surfaces.enum.HOLD)
 				or (type == Surfaces.enum.CABIN)
 				or (type == Surfaces.enum.CROWSNEST)
 				or (
-					player.surface.name == memory.boat.surface_name
+					player.character.surface.name == memory.boat.surface_name
 					and Boats.on_boat(memory.boat, player.character.position)
 				)
 			local hold_bool = (type == Surfaces.enum.HOLD)
@@ -417,7 +426,7 @@ function Public.class_rewards_tick(tick_interval)
 			elseif class == Classes.enum.SHORESMAN and not on_ship_bool then
 				Classes.class_ore_grant(player, Balance.shoresman_ore_grant_multiplier)
 			elseif class == Classes.enum.QUARTERMASTER then
-				local nearby_players = #player.surface.find_entities_filtered({
+				local nearby_players = #player.character.surface.find_entities_filtered({
 					position = player.character.position,
 					radius = Balance.quartermaster_range,
 					name = 'character',
@@ -433,7 +442,7 @@ function Public.class_rewards_tick(tick_interval)
 		-- if memory.classes_table and memory.classes_table[player.index] then
 		-- 	if game.tick % tick_interval == 0 and Common.validate_player_and_character(player) then
 		-- 		if memory.classes_table[player.index] == Classes.enum.SMOLDERING then
-		-- 			local inv = player.get_inventory(defines.inventory.character_main)
+		-- 			local inv = player.character.get_inventory(defines.inventory.character_main)
 		-- 			if not (inv and inv.valid) then return end
 		-- 			local max_coal = 50
 		-- 			-- local max_transfer = 1

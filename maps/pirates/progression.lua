@@ -296,7 +296,7 @@ function Public.progress_to_destination(destination_index)
 		-- move over anyone who was left behind, such as dead players
 		for _, player in pairs(game.connected_players) do
 			if Common.validate_player_and_character(player) then
-				if player.surface == oldsurface then
+				if player.character.surface == oldsurface then
 					player.character.teleport(memory.spawnpoint, newsurface)
 				end
 			end

@@ -808,11 +808,14 @@ function Public.players_on_boat_count(boat)
 	local count = 0
 	for _, player in pairs(game.connected_players) do
 		if
-			player.surface
-			and player.surface.valid
+			Common.validate_player_and_character(player)
+			and player.character
+			and player.character.valid
+			and player.character.surface
+			and player.character.surface.valid
 			and boat.surface_name
-			and player.surface.name == boat.surface_name
-			and Public.on_boat(boat, player.character and player.character.valid and player.character.position or nil)
+			and player.character.surface.name == boat.surface_name
+			and Public.on_boat(boat, player.character.position)
 		then
 			count = count + 1
 		end
@@ -1335,7 +1338,7 @@ local function teleport_handle_wake_tiles(
 		-- Side effect: if players happen to be on water tile during this tick and not too far from ship, they will be teleported to nearest non water tile.
 		if vector.x < 0 then
 			for _, player in pairs(Common.crew_get_crew_members()) do
-				if player.character and player.character.valid and player.surface.name == oldsurface_name then
+				if player.character and player.character.valid and player.character.surface.name == oldsurface_name then
 					-- @TODO: instead of checking 50 radius, check only smaller area around boat
 					if Math.distance(boat.position, player.character.position) < 50 then
 						local tile = oldsurface.get_tile(player.character.position.x, player.character.position.y)

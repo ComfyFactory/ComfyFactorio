@@ -256,9 +256,8 @@ function Public.choose_crew_members()
 			if
 				crew_members_count < capacity
 				and not crew_members[player.index]
-				and player.surface.name == CoreData.lobby_surface_name
-				and player.character
-				and player.character.valid
+				and Common.validate_player_and_character(player)
+				and player.character.surface.name == CoreData.lobby_surface_name
 				and Boats.on_boat(boat, player.character.position)
 			then
 				crew_members[player.index] = player
@@ -398,7 +397,7 @@ function Public.leave_crew(player, to_lobby, quiet)
 		-- 	-- Server.to_discord_embed_raw(CoreData.comfy_emojis.feel .. '[' .. memory.name .. '] ' .. message)
 		-- end
 
-		local player_surface_type = SurfacesCommon.decode_surface_name(player.surface.name).type
+		local player_surface_type = SurfacesCommon.decode_surface_name(player.character.surface.name).type
 		local boat_surface_type = SurfacesCommon.decode_surface_name(memory.boat.surface_name).type
 
 		-- @TODO: figure out why surface_name can be nil
@@ -411,7 +410,7 @@ function Public.leave_crew(player, to_lobby, quiet)
 			on_island = (player_surface_type == Surfaces.enum.ISLAND),
 			on_boat = (player_surface_type == boat_surface_type)
 				and Boats.on_boat(memory.boat, player.character.position),
-			surface_name = player.surface.name,
+			surface_name = player.character.surface.name,
 			position = player.character.position,
 			tick = game.tick,
 		}
@@ -857,14 +856,14 @@ function Public.summon_crew()
 	local print = false
 	for _, player in pairs(game.connected_players) do
 		if
-			player.surface
-			and player.surface.valid
+			Common.validate_player_and_character(player)
+			and player.character.surface
+			and player.character.surface.valid
 			and boat.surface_name
-			and player.surface.name == boat.surface_name
-			and Common.validate_player_and_character(player)
+			and player.character.surface.name == boat.surface_name
 			and (not Boats.on_boat(boat, player.character.position))
 		then
-			local p = player.surface.find_non_colliding_position('character', memory.spawnpoint, 5, 0.1)
+			local p = player.character.surface.find_non_colliding_position('character', memory.spawnpoint, 5, 0.1)
 			if p then
 				player.character.teleport(p)
 			else

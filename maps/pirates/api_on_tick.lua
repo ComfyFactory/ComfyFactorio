@@ -219,10 +219,10 @@ function Public.prevent_disembark(tick_interval)
 
 		for _, player in pairs(game.connected_players) do
 			if
-				player.surface
-				and player.surface.valid
-				and player.surface.name == boat.surface_name
-				and Common.validate_player_and_character(player)
+				Common.validate_player_and_character(player)
+				and player.character.surface
+				and player.character.surface.valid
+				and player.character.surface.name == boat.surface_name
 				and Boats.on_boat(boat, player.character.position)
 			then
 				cant_disembark_players[player.index] = true
@@ -231,10 +231,10 @@ function Public.prevent_disembark(tick_interval)
 
 		for _, player in pairs(game.connected_players) do
 			if
-				player.surface
-				and player.surface.valid
-				and player.surface.name == boat.surface_name
-				and Common.validate_player_and_character(player)
+				Common.validate_player_and_character(player)
+				and player.character.surface
+				and player.character.surface.valid
+				and player.character.surface.name == boat.surface_name
 				and cant_disembark_players[player.index]
 				and (not Boats.on_boat(boat, player.character.position))
 			then
@@ -259,7 +259,7 @@ function Public.prevent_disembark(tick_interval)
 					end
 				end
 
-				local p = player.surface.find_non_colliding_position('character', memory.spawnpoint, 5, 0.1)
+				local p = player.character.surface.find_non_colliding_position('character', memory.spawnpoint, 5, 0.1)
 				if p then
 					player.character.teleport(p)
 				else

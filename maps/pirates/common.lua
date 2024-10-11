@@ -314,8 +314,12 @@ function Public.give(player, stacks, spill_position, short_form, spill_surface, 
 	spill_position = spill_position
 		or (player.character and player.character.valid and player.character.position)
 		or player.position
-	spill_surface = spill_surface or player.surface
+	spill_surface = spill_surface or (player.character and player.character.valid and player.character.surface)
 	flying_text_position = flying_text_position or spill_position
+
+	if not (spill_surface and spill_surface.valid) then
+		return
+	end
 
 	local text1 = ''
 	local text2 = ''
@@ -325,13 +329,10 @@ function Public.give(player, stacks, spill_position, short_form, spill_surface, 
 		return a.name < b.name
 	end)
 
-	if not (spill_surface and spill_surface.valid) then
-		return
-	end
 	local inv
 
 	if player then
-		inv = player.get_inventory(defines.inventory.character_main)
+		inv = player.character.get_inventory(defines.inventory.character_main)
 		if not (inv and inv.valid) then
 			return
 		end
@@ -1504,12 +1505,16 @@ end
 
 -- Players complained that when "all_items" is false, the items dissapear (perhaps code sending items from dead character to cabin is wrong?).
 function Public.send_important_items_from_player_to_crew(player, all_items)
+	if not Public.validate_player_and_character(player) then
+		return
+	end
+
 	local player_inv = {}
-	player_inv[1] = game.players[player.index].get_inventory(defines.inventory.character_main)
-	player_inv[2] = game.players[player.index].get_inventory(defines.inventory.character_armor)
-	player_inv[3] = game.players[player.index].get_inventory(defines.inventory.character_guns)
-	player_inv[4] = game.players[player.index].get_inventory(defines.inventory.character_ammo)
-	player_inv[5] = game.players[player.index].get_inventory(defines.inventory.character_trash)
+	player_inv[1] = game.players[player.index].character.get_inventory(defines.inventory.character_main)
+	player_inv[2] = game.players[player.index].character.get_inventory(defines.inventory.character_armor)
+	player_inv[3] = game.players[player.index].character.get_inventory(defines.inventory.character_guns)
+	player_inv[4] = game.players[player.index].character.get_inventory(defines.inventory.character_ammo)
+	player_inv[5] = game.players[player.index].character.get_inventory(defines.inventory.character_trash)
 
 	local any = false
 
@@ -1558,11 +1563,11 @@ function Public.temporarily_store_logged_off_character_items(player)
 	local temp_inv = memory.temporarily_logged_off_characters_items[player.index]
 
 	local player_inv = {}
-	player_inv[1] = game.players[player.index].get_inventory(defines.inventory.character_main)
-	player_inv[2] = game.players[player.index].get_inventory(defines.inventory.character_armor)
-	player_inv[3] = game.players[player.index].get_inventory(defines.inventory.character_guns)
-	player_inv[4] = game.players[player.index].get_inventory(defines.inventory.character_ammo)
-	player_inv[5] = game.players[player.index].get_inventory(defines.inventory.character_trash)
+	player_inv[1] = game.players[player.index].character.get_inventory(defines.inventory.character_main)
+	player_inv[2] = game.players[player.index].character.get_inventory(defines.inventory.character_armor)
+	player_inv[3] = game.players[player.index].character.get_inventory(defines.inventory.character_guns)
+	player_inv[4] = game.players[player.index].character.get_inventory(defines.inventory.character_ammo)
+	player_inv[5] = game.players[player.index].character.get_inventory(defines.inventory.character_trash)
 
 	for ii = 1, 5, 1 do
 		if player_inv[ii].valid then
