@@ -112,7 +112,7 @@ Public.EEI_stages = { --multipliers
 function Public.scripted_biters_pollution_cost_multiplier()
 	local early_game_factor = 1 + 1.2 / ((1 + (Common.overworldx() / 40)) ^ (1.5 + Common.difficulty_scale())) -- the complicated factor makes the early-game easier; in particular the first island, but on easier difficulties the next few islands as well
 
-	local factor_accounting_for_new_damage_upgrades = 0.985 ^ (Common.overworldx() / 40)
+	local factor_accounting_for_new_damage_upgrades = 0.983 ^ (Common.overworldx() / 40)
 
 	return (1.1 / Math.sloped(Common.difficulty_scale(), 0.7))
 		* early_game_factor

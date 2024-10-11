@@ -311,7 +311,7 @@ Public.entry_price_data_raw = { -- choose things which make interesting minifact
 	},
 	['cluster-grenade'] = {
 		overall_weight = 2.5,
-		min_param = 0.6,
+		min_param = 0.9,
 		max_param = 2,
 		enabled = true,
 		base_amount = 120,

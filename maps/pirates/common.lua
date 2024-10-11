@@ -1562,6 +1562,7 @@ function Public.temporarily_store_logged_off_character_items(player)
 	memory.temporarily_logged_off_characters_items[player.index] = game.create_inventory(2000)
 	local temp_inv = memory.temporarily_logged_off_characters_items[player.index]
 
+
 	local player_inv = {}
 	player_inv[1] = game.players[player.index].character.get_inventory(defines.inventory.character_main)
 	player_inv[2] = game.players[player.index].character.get_inventory(defines.inventory.character_armor)
@@ -1578,6 +1579,30 @@ function Public.temporarily_store_logged_off_character_items(player)
 				end
 			end
 		end
+	end
+
+	-- Cancel any handcrafting:
+	local whilesafety = 5000
+	while
+	game.players[player.index].crafting_queue_size > 0
+		and whilesafety > 0
+	do
+		whilesafety = whilesafety - 1
+		game.players[player.index].cancel_crafting{
+			index = 1,
+			count = game.players[player.index].crafting_queue[1].count,
+		}
+
+        local inv = game.players[player.index].character.get_inventory(defines.inventory.character_main)
+    
+        if inv.valid then
+            for iii = 1, #inv, 1 do
+                if inv and inv[iii].valid and inv[iii].valid_for_read then
+                    Public.give_items_to_crew(inv[iii])
+                    inv[iii].clear()
+                end
+            end
+        end
 	end
 end
 

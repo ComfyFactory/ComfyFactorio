@@ -1123,6 +1123,16 @@ if _DEBUG then
 		end
 	end)
 
+	-- Fills the inventory
+	commands.add_command('fill', { 'pirates.cmd_explain_dev' }, function(cmd)
+		if check_admin(cmd) then
+			local player = game.players[cmd.player_index]
+
+			player.insert({ name = 'power-armor-mk2', count = 1 })
+			player.insert({ name = 'iron-plate', count = 10000 })
+		end
+	end)
+
 	commands.add_command('buff', 'buffs all damage by 10%', function(cmd)
 		if check_admin(cmd) then
 			local player = game.players[cmd.player_index]
