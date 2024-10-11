@@ -892,12 +892,21 @@ function Public.player_exit_cabin(player, relative_pos)
 		surface = game.surfaces[Common.current_destination().surface_name]
 	end
 
-	local carpos = Boats.get_scope(boat).Data.cabin_car
-	local newpos = { x = boat.position.x + carpos.x - relative_pos.x, y = boat.position.y + carpos.y + relative_pos.y }
+	local boat_data = Boats.get_scope(boat).Data
 
-	local newpos2 = surface.find_non_colliding_position('character', newpos, 10, 0.2) or newpos
+	local newpos = { x = boat.position.x, y = boat.position.y }
 
-	if newpos2 then player.teleport(newpos2, surface) end
+	if boat_data then -- After a game loss, Boats.get_scope(boat) has been observed to be nil. Not sure why.
+		local car_pos = boat_data.cabin_car
+
+		newpos = { x = newpos.x + car_pos.x - relative_pos.x, y = newpos.y + car_pos.y + relative_pos.y }
+
+		newpos = surface.find_non_colliding_position('character', newpos, 10, 0.2) or newpos
+	end
+
+	newpos = surface.find_non_colliding_position('character', newpos, 10, 0.2) or newpos
+
+	if newpos then player.teleport(newpos, surface) end
 end
 
 return Public
