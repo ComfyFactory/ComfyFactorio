@@ -294,13 +294,17 @@ function Public.player_and_crew_state_bools(player)
 
 	captain_bool = Common.is_captain(player)
 
-	in_crowsnest_bool = string.sub(player.surface.name, 9, 17) == 'Crowsnest'
-	in_hold_bool = string.sub(player.surface.name, 9, 12) == 'Hold'
-	in_cabin_bool = string.sub(player.surface.name, 9, 13) == 'Cabin'
+	in_crowsnest_bool = Common.validate_player_and_character(player)
+		and string.sub(player.character.surface.name, 9, 17) == 'Crowsnest'
+	in_hold_bool = Common.validate_player_and_character(player)
+		and string.sub(player.character.surface.name, 9, 12) == 'Hold'
+	in_cabin_bool = Common.validate_player_and_character(player)
+		and string.sub(player.character.surface.name, 9, 13) == 'Cabin'
 
 	onmap_bool = destination.surface_name
 		and (
-			player.surface.name == destination.surface_name
+			Common.validate_player_and_character(player)
+				and player.character.surface.name == destination.surface_name
 			or (
 				boat
 				and boat.surface_name == destination.surface_name
@@ -337,10 +341,11 @@ function Public.player_and_crew_state_bools(player)
 	if boat then
 		atsea_loading_bool = boat.state == Boats.enum_state.ATSEA_LOADING_MAP and memory.loading_ticks
 
-		character_on_deck_bool = player.character
+		character_on_deck_bool = Common.validate_player_and_character(player)
+			and player.character
 			and player.character.position
-			and player.surface.name
-			and player.surface.name == boat.surface_name
+			and player.character.surface.name
+			and player.character.surface.name == boat.surface_name
 
 		if character_on_deck_bool then
 			local BoatData = Boats.get_scope(boat).Data

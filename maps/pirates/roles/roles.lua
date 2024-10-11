@@ -492,13 +492,17 @@ function Public.captain_tax(captain_index)
 		return
 	end
 
-	local captain_inv = captain.get_inventory(defines.inventory.character_main)
+	if not Common.validate_player_and_character(captain) then
+		return
+	end
+
+	local captain_inv = captain.character.get_inventory(defines.inventory.character_main)
 	if captain_inv and captain_inv.valid then
 		for _, player_index in pairs(crew_members) do
 			if player_index ~= captain_index then
 				local player = game.players[player_index]
-				if player and player.valid and not (Common.is_officer(player.index)) then
-					local inv = player.get_inventory(defines.inventory.character_main)
+				if Common.validate_player_and_character(player) and not (Common.is_officer(player.index)) then
+					local inv = player.character.get_inventory(defines.inventory.character_main)
 					if inv and inv.valid then
 						for _, i in pairs(items_to_req) do
 							local amount = inv.get_item_count(i)

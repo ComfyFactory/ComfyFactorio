@@ -194,19 +194,19 @@ function Public.update_privileges(player)
 	local memory = Memory.get_crew_memory()
 	local bps_disabled_suffix = memory.run_has_blueprints_disabled and '_bps_disabled' or ''
 
-	if string.sub(player.surface.name, 9, 17) == 'Crowsnest' then
+	if string.sub(player.character.surface.name, 9, 17) == 'Crowsnest' then
 		if Public.player_privilege_level(player) >= Public.privilege_levels.OFFICER then
 			return add_player_to_permission_group(player, 'crowsnest_privileged' .. bps_disabled_suffix)
 		else
 			return add_player_to_permission_group(player, 'crowsnest' .. bps_disabled_suffix)
 		end
-	elseif string.sub(player.surface.name, 9, 13) == 'Cabin' then
+	elseif string.sub(player.character.surface.name, 9, 13) == 'Cabin' then
 		if Public.player_privilege_level(player) >= Public.privilege_levels.OFFICER then
 			return add_player_to_permission_group(player, 'cabin_privileged' .. bps_disabled_suffix)
 		else
 			return add_player_to_permission_group(player, 'cabin' .. bps_disabled_suffix)
 		end
-	elseif player.surface.name == CoreData.lobby_surface_name then
+	elseif player.character.surface.name == CoreData.lobby_surface_name then
 		return add_player_to_permission_group(player, 'lobby')
 	else
 		local session = Session.get_session_table()

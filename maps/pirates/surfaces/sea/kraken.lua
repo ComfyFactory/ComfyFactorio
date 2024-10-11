@@ -244,7 +244,7 @@ function Public.kraken_tick(crew_id, kraken_id, step, substep)
 			for _, player in pairs(crewmembers) do
 				if Common.validate_player_and_character(player) then
 					local p = player.character.position
-					if player.surface == surface then -- and Public.on_boat(memory.boat, p)
+					if player.character.surface == surface then -- and Public.on_boat(memory.boat, p)
 						p_can_fire_at[#p_can_fire_at + 1] = p
 					end
 				end

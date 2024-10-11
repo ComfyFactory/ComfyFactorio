@@ -418,8 +418,11 @@ local function handle_damage_to_players(event)
 				local chance = Balance.veteran_on_hit_slow_chance
 				if Math.random() <= chance then
 					-- only certain targets accept stickers
-					if Utils.contains(CoreData.enemy_units, event.cause.name) then
-						player.surface.create_entity({
+					if
+						Utils.contains(CoreData.enemy_units, event.cause.name)
+						and Common.validate_player_and_character(player)
+					then
+						player.character.surface.create_entity({
 							name = 'slowdown-sticker',
 							position = player.character.position,
 							speed = 1.5,
@@ -1264,7 +1267,8 @@ local function event_on_player_mined_entity(event)
 	end
 
 	local player = game.players[event.player_index]
-	if not player.valid then
+
+	if not Common.validate_player_and_character(player) then
 		return
 	end
 
@@ -1276,7 +1280,7 @@ local function event_on_player_mined_entity(event)
 	local crew_id = Common.get_id_from_force_name(player.force.name)
 	Memory.set_working_id(crew_id)
 
-	if player.surface.name == 'gulag' then
+	if player.character.surface.name == 'gulag' then
 		event.buffer.clear()
 		return
 	end
@@ -1959,7 +1963,7 @@ function Public.player_entered_vehicle(player, vehicle)
 		}
 	end
 
-	local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(player.surface.name)
+	local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(player.character.surface.name)
 
 	if vehicle.name == 'car' then
 		-- A way to make player driven vehicles work
@@ -2370,14 +2374,13 @@ local function event_on_built_entity(event)
 	if not event.player_index then
 		return
 	end
-	if not game.players[event.player_index] then
-		return
-	end
-	if not game.players[event.player_index].valid then
+
+	local player = game.players[event.player_index]
+
+	if not Common.validate_player_and_character(player) then
 		return
 	end
 
-	local player = game.players[event.player_index]
 	local crew_id = Common.get_id_from_force_name(player.force.name)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
@@ -2390,7 +2393,7 @@ local function event_on_built_entity(event)
 	if
 		memory.boat
 		and memory.boat.surface_name
-		and player.surface == game.surfaces[memory.boat.surface_name]
+		and player.character.surface == game.surfaces[memory.boat.surface_name]
 		and entity.valid
 		and entity.position
 	then
@@ -2507,24 +2510,26 @@ end)
 local function event_on_player_respawned(event)
 	local player = game.players[event.player_index]
 
+	if not Common.validate_player_and_character(player) then
+		return
+	end
+
 	local crew_id = Common.get_id_from_force_name(player.force.name)
 
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
 	local boat = memory.boat
 
-	if player.surface == game.surfaces[Common.current_destination().surface_name] then
+	if player.character.surface == game.surfaces[Common.current_destination().surface_name] then
 		if Boats.is_boat_at_sea() then
 			-- assuming sea is always default:
 			local seasurface = game.surfaces[memory.sea_name]
 			player.character.teleport(memory.spawnpoint, seasurface)
 		elseif boat and (boat.state == Boats.enum_state.LANDED or boat.state == Boats.enum_state.RETREATING) then
-			if player.character and player.character.valid then
-				Task.set_timeout_in_ticks(360, boost_movement_speed_on_respawn, { player = player, crew_id = crew_id })
+			Task.set_timeout_in_ticks(360, boost_movement_speed_on_respawn, { player = player, crew_id = crew_id })
 
-				local global_memory = Memory.get_global_memory()
-				global_memory.last_players_health[event.player_index] = player.character.health
-			end
+			local global_memory = Memory.get_global_memory()
+			global_memory.last_players_health[event.player_index] = player.character.health
 		end
 	end
 end

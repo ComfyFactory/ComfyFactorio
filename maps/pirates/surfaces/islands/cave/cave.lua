@@ -265,7 +265,7 @@ local function on_player_changed_position(event)
 	Memory.set_working_id(crew_id)
 
 	local destination_data = Common.current_destination()
-	if destination_data.surface_name ~= player.surface.name then
+	if destination_data.surface_name ~= player.character.surface.name then
 		return
 	end
 
@@ -277,7 +277,7 @@ local function on_player_changed_position(event)
 
 	-- TODO: make more reliable way to get island surface
 	Public.reveal(
-		player.surface,
+		player.character.surface,
 		cave_miner.cave_surface,
 		{ x = Math.floor(player.character.position.x), y = Math.floor(player.character.position.y) },
 		11

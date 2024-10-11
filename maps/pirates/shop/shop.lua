@@ -63,6 +63,11 @@ end
 local function purchaseData(market, player, offer_index)
 	--a proper rewriting of this function would directly check market entities against saved references to them in memory, but we haven't had time to rewrite it yet
 
+	if not Common.validate_player_and_character(player) then
+		-- should never happen
+		return {}
+	end
+
 	local destination = Common.current_destination()
 
 	local alloffers = market.get_market_items()
@@ -92,7 +97,7 @@ local function purchaseData(market, player, offer_index)
 	local special_purchase_bool = (offer_giveitem_name == 'rocket-launcher')
 	-- local special_purchase_bool = (offer_giveitem_name and (offer_giveitem_name == 'loader' or offer_giveitem_name == 'fast-loader' or offer_giveitem_name == 'express-loader' or offer_giveitem_name == 'rocket-launcher'))
 
-	local surface_name_decoded = SurfacesCommon.decode_surface_name(player.surface.name)
+	local surface_name_decoded = SurfacesCommon.decode_surface_name(player.character.surface.name)
 	local type = surface_name_decoded.type
 	local in_captains_cabin = type and type == SurfacesCommon.enum.CABIN
 	local dock_upgrades_market = destination.dynamic_data.dock_captains_market
@@ -148,7 +153,7 @@ local function purchaseData(market, player, offer_index)
 end
 
 function Public.refund_items(player, price, price_multiplier, item_purchased_name, item_purchased_count)
-	local inv = player.get_inventory(defines.inventory.character_main)
+	local inv = player.character.get_inventory(defines.inventory.character_main)
 	if not inv then
 		return
 	end
@@ -158,7 +163,7 @@ function Public.refund_items(player, price, price_multiplier, item_purchased_nam
 		if inserted < p.count * price_multiplier then
 			-- Inventory is full, drop the remaining items on the ground
 			if player.character and player.character.valid then
-				player.surface.spill_item_stack({
+				player.character.surface.spill_item_stack({
 					position = player.character.position,
 					stack = { name = p.name, count = p.count * price_multiplier - inserted },
 					enable_looted = true,
@@ -172,7 +177,7 @@ function Public.refund_items(player, price, price_multiplier, item_purchased_nam
 		if removed < item_purchased_count then
 			local nearby_floor_items = {}
 			if player.character and player.character.valid then
-				nearby_floor_items = player.surface.find_entities_filtered({
+				nearby_floor_items = player.character.surface.find_entities_filtered({
 					area = {
 						{ player.character.position.x - 20, player.character.position.y - 20 },
 						{ player.character.position.x + 20, player.character.position.y + 20 },
@@ -225,7 +230,11 @@ function Public.event_on_market_item_purchased(event)
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 
-	local inv = player.get_inventory(defines.inventory.character_main)
+	if not Common.validate_player_and_character(player) then
+		return
+	end
+
+	local inv = player.character.get_inventory(defines.inventory.character_main)
 
 	local thisPurchaseData = purchaseData(market, player, offer_index)
 
@@ -424,7 +433,7 @@ function Public.event_on_market_item_purchased(event)
 						.. ')[/color]'
 
 					Common.flying_text(
-						player.surface,
+						player.character and player.character.valid and player.character.surface or player.surface,
 						player.character and player.character.valid and player.character.position or player.position,
 						text1 .. '  [font=count-font]' .. text2 .. '[/font]'
 					)
@@ -454,7 +463,7 @@ function Public.event_on_market_item_purchased(event)
 						.. ')[/color]'
 
 					Common.flying_text(
-						player.surface,
+						player.character and player.character.valid and player.character.surface or player.surface,
 						player.character and player.character.valid and player.character.position or player.position,
 						text1 .. '  [font=count-font]' .. text2 .. '[/font]'
 					)
