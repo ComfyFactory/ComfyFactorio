@@ -1156,7 +1156,7 @@ function Public.reset_crew_and_enemy_force(id)
 
     -- crew_force.technologies['railway'].researched = true --needed for purple sci
 
-    -- crew_force.technologies['land-mine'].enabled = false
+    crew_force.technologies['land-mine'].enabled = false
     crew_force.technologies["landfill"].enabled = false
     crew_force.technologies["cliff-explosives"].enabled = false
 

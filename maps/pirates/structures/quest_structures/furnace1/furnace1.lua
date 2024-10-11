@@ -297,7 +297,7 @@ Public.entry_price_data_raw = { -- choose things which make interesting minifact
 	-- },
 	['cluster-grenade'] = {
 		overallWeight = 1,
-		minLambda = 0.6,
+		minLambda = 0.9,
 		maxLambda = 2,
 		shape = 'density',
 		enabled = true,
