@@ -514,7 +514,15 @@ function Public.process_etaframe_update(player, flow1, bools)
 
 			tooltip = { 'pirates.atsea_waiting_tooltip' }
 
-			flow2.etaframe_label_1.caption = { 'pirates.gui_etaframe_atsea_waiting' }
+			if
+				memory.proceed_are_you_sure_data
+				and memory.proceed_are_you_sure_data[player.index]
+				and memory.proceed_are_you_sure_data[player.index] > game.tick - 60 * 4
+			then
+				flow2.etaframe_label_1.caption = { 'pirates.gui_etaframe_atsea_waiting_are_you_sure' }
+			else
+				flow2.etaframe_label_1.caption = { 'pirates.gui_etaframe_atsea_waiting' }
+			end
 		elseif bools.atsea_victorious_bool then
 			flow2.etaframe_label_1.visible = true
 			flow2.etaframe_label_2.visible = false
@@ -1258,9 +1266,19 @@ local function on_gui_click(event)
 			end
 		elseif memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL then
 			if Permissions.player_privilege_level(player) >= Permissions.privilege_levels.CAPTAIN then
-				local destination_index = memory.map_being_loaded_destination_index
+				if not memory.proceed_are_you_sure_data then
+					memory.proceed_are_you_sure_data = {}
+				end
+				if
+					memory.proceed_are_you_sure_data[player.index]
+					and memory.proceed_are_you_sure_data[player.index] > game.tick - 60 * 4
+				then
+					local destination_index = memory.mapbeingloadeddestination_index
 
-				Progression.progress_to_destination(destination_index)
+					Progression.progress_to_destination(destination_index)
+				else
+					memory.proceed_are_you_sure_data[player.index] = game.tick
+				end
 			end
 		elseif memory.boat.state == Boats.enum_state.ATSEA_VICTORIOUS then
 			if Permissions.player_privilege_level(player) >= Permissions.privilege_levels.CAPTAIN then

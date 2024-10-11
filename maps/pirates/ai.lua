@@ -1013,7 +1013,7 @@ local function on_object_destroyed(event)
 	local biter_name
 	local surface_name
 	local memory
-	for i = 1, 3 do
+	for i = 1, Common.starting_ships_count do
 		Memory.set_working_id(i)
 		memory = Memory.get_crew_memory()
 		if memory.elite_biters_stream_registrations then
