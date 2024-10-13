@@ -1630,7 +1630,7 @@ local function event_on_entity_died(event)
 				memory.elite_biters_stream_registrations[#memory.elite_biters_stream_registrations + 1] = {
 					number = script.register_on_object_destroyed(stream),
 					position = target_pos,
-					biter_name = entity.name,
+					name = entity.name,
 					surface_name = surface.name, -- surface name is needed to know where biter died
 				}
 			end
