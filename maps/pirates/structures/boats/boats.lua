@@ -1597,14 +1597,34 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 	if oldsurface_name == newsurface_name then
 		sorting_f = function(a, b)
 			if
-				(a.name == 'straight-rail' or a.name == 'curved-rail')
-				and not (b.name == 'straight-rail' or b.name == 'curved-rail')
+				(
+					a.name == 'straight-rail'
+					or a.name == 'half-diagonal-rail'
+					or a.name == 'curved-rail-a'
+					or a.name == 'curved-rail-b'
+				)
+				and not (
+					b.name == 'straight-rail'
+					or b.name == 'curved-rail-a'
+					or b.name == 'curved-rail-b'
+					or b.name == 'half-diagonal-rail'
+				)
 			then
 				return true
 			end
 			if
-				(b.name == 'straight-rail' or b.name == 'curved-rail')
-				and not (a.name == 'straight-rail' or a.name == 'curved-rail')
+				(
+					b.name == 'straight-rail'
+					or b.name == 'curved-rail-a'
+					or b.name == 'curved-rail-b'
+					or b.name == 'half-diagonal-rail'
+				)
+				and not (
+					a.name == 'straight-rail'
+					or a.name == 'curved-rail-a'
+					or a.name == 'curved-rail-b'
+					or a.name == 'half-diagonal-rail'
+				)
 			then
 				return false
 			end
@@ -1691,7 +1711,7 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 		if
 			e
 			and e.valid
-			and (e.name == 'straight-rail' or e.name == 'curved-rail' or (e.name == 'entity-ghost' and (e.ghost_name == 'straight-rail' or e.ghost_name == 'curved-rail')))
+			and (e.name == 'straight-rail' or e.name == 'half-diagonal-rail' or e.name == 'curved-rail-a' or e.name == 'curved-rail-b' or (e.name == 'entity-ghost' and (e.ghost_name == 'straight-rail' or e.ghost_name == 'half-diagonal-rail' or e.ghost_name == 'curved-rail-a' or e.ghost_name == 'curved-rail-b')))
 			and (not Utils.contains(unique_entities_list, e))
 		then
 			unique_entities_list[#unique_entities_list + 1] = e
@@ -1759,8 +1779,18 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 			and e.valid
 			and (
 				e.name == 'straight-rail'
-				or e.name == 'curved-rail'
-				or (e.name == 'entity-ghost' and (e.ghost_name == 'straight-rail' or e.ghost_name == 'curved-rail'))
+				or e.name == 'half-diagonal-rail'
+				or e.name == 'curved-rail-a'
+				or e.name == 'curved-rail-b'
+				or (
+					e.name == 'entity-ghost'
+					and (
+						e.ghost_name == 'straight-rail'
+						or e.ghost_name == 'half-diagonal-rail'
+						or e.ghost_name == 'curved-rail-a'
+						or e.ghost_name == 'curved-rail-b'
+					)
+				)
 			)
 		then
 			e.destroy()

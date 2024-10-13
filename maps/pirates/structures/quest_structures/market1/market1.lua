@@ -9,10 +9,10 @@ local Common = require('maps.pirates.common')
 local _inspect = require('utils.inspect').inspect
 --
 -- local SurfacesCommon = require 'maps.pirates.surfaces.common'
-local Raffle = require 'utils.math.raffle'
-local ShopCovered = require 'maps.pirates.shop.covered'
-local Classes = require 'maps.pirates.roles.classes'
-local Loot = require 'maps.pirates.loot'
+local Raffle = require('utils.math.raffle')
+local ShopCovered = require('maps.pirates.shop.covered')
+local Classes = require('maps.pirates.roles.classes')
+local Loot = require('maps.pirates.loot')
 
 local Public = {}
 Public.Data = require('maps.pirates.structures.quest_structures.market1.data')
@@ -371,15 +371,22 @@ function Public.entry_price()
 		item = Common.get_random_dictionary_entry(Public.entry_price_data_raw, true)
 	end
 
-	local raw_materials = Public.entry_price_data_raw[item].raw_materials
+	local base_count = Public.entry_price_data_raw[item].base_amount
+
+	local factor = (0.9 + 0.2 * Math.random()) * Balance.quest_market_entry_price_scale()
+
+	local count = Math.ceil(base_count * factor)
+
+	local base_raw_materials = Public.entry_price_data_raw[item].raw_materials
+
+	local raw_materials = {}
+	for _, rm in pairs(base_raw_materials) do
+		raw_materials[#raw_materials + 1] = { name = rm.name, count = Math.ceil(rm.count * factor) }
+	end
 
 	return {
 		name = item,
-		count = Math.ceil(
-			(0.9 + 0.2 * Math.random())
-				* Public.entry_price_data_raw[item].base_amount
-				* Balance.quest_market_entry_price_scale()
-		),
+		count = count,
 		raw_materials = raw_materials,
 	}
 end
