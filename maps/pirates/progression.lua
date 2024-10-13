@@ -276,6 +276,8 @@ function Public.progress_to_destination(destination_index)
 				end
 			end
 		end
+
+		memory.elite_biters_stream_registrations = {}
 	end
 
 	memory.destinationsvisited_indices[#memory.destinationsvisited_indices + 1] = destination_index
