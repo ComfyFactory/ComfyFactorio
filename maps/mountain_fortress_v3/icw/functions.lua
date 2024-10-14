@@ -12,7 +12,7 @@ local deepcopy = table.deepcopy
 local random = math.random
 local sqrt = math.sqrt
 
-local scenario_name = Public.scenario_name
+local scenario_name = WPT.scenario_name
 local fallout_width = 64
 local fallout_debris = {}
 
