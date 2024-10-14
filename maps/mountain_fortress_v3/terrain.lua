@@ -2944,8 +2944,6 @@ end
 function Public.heavy_functions(data)
     local top_y = data.top_y
     local surface = data.surface
-    local map_name = 'mtn_v3'
-
     if string.sub(surface.name, 0, #scenario_name) ~= scenario_name then
         return
     end
@@ -3033,8 +3031,6 @@ Event.add(
     defines.events.on_chunk_generated,
     function (e)
         local surface = e.surface
-        local map_name = 'mtn_v3'
-
         if string.sub(surface.name, 0, #scenario_name) ~= scenario_name then
             return
         end

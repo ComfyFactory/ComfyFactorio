@@ -1094,8 +1094,6 @@ end
 function Public.on_player_or_robot_built_tile(event)
     local surface = game.surfaces[event.surface_index]
 
-    local map_name = 'mtn_v3'
-
     if string.sub(surface.name, 0, #scenario_name) == scenario_name then
         return
     end
