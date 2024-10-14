@@ -12,6 +12,7 @@ local deepcopy = table.deepcopy
 local random = math.random
 local sqrt = math.sqrt
 
+local scenario_name = Public.scenario_name
 local fallout_width = 64
 local fallout_debris = {}
 
@@ -571,7 +572,7 @@ function Public.create_room_surface(icw, unit_number)
     if game.surfaces[tostring(unit_number)] then
         return game.surfaces[tostring(unit_number)]
     end
-    local map_gen_settings = {
+    local map_gen_settings  = {
         ['width'] = 2,
         ['height'] = 2,
         ['water'] = 0,
@@ -584,9 +585,10 @@ function Public.create_room_surface(icw, unit_number)
             ['decorative'] = { treat_missing_as_default = false }
         }
     }
-    local surface = game.create_surface(tostring(unit_number), map_gen_settings)
-    surface.freeze_daytime = true
-    surface.daytime = 0.1
+    local surface           = game.create_surface(tostring(unit_number), map_gen_settings)
+    surface.no_enemies_mode = true
+    surface.freeze_daytime  = true
+    surface.daytime         = 0.1
     surface.request_to_generate_chunks({ 16, 16 }, 1)
     surface.force_generate_chunk_requests()
     exclude_surface(surface)
@@ -1094,7 +1096,7 @@ function Public.on_player_or_robot_built_tile(event)
 
     local map_name = 'mtn_v3'
 
-    if string.sub(surface.name, 0, #map_name) == map_name then
+    if string.sub(surface.name, 0, #scenario_name) == scenario_name then
         return
     end
 

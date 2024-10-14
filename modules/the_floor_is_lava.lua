@@ -30,12 +30,12 @@ end
 
 local function damage_entity(entity, player)
     if math.random(1, 5) == 1 then
-        entity.surface.create_entity({name = 'fire-flame', position = player.position})
+        entity.surface.create_entity({ name = 'fire-flame', position = player.position })
     end
-    entity.health = entity.health - entity.prototype.max_health / 75
+    entity.health = entity.health - entity.max_health / 75
     if entity.health <= 0 then
         if entity.name == 'character' then
-            game.print(player.name .. messages[math.random(1, #messages)], {r = 200, g = 0, b = 0})
+            game.print(player.name .. messages[math.random(1, #messages)], { r = 200, g = 0, b = 0 })
         end
         entity.die()
     end
@@ -74,7 +74,7 @@ local function on_player_joined_game(event)
     local player = game.players[event.player_index]
 
     if player.online_time == 0 then
-        player.insert({name = 'stone-brick', count = 64})
+        player.insert({ name = 'stone-brick', count = 64 })
     end
 end
 

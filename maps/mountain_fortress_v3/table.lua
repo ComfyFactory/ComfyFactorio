@@ -122,6 +122,7 @@ Public.pickaxe_upgrades = {
 
 function Public.reset_main_table()
     -- @start
+    this.space_age = has_space_age()
     -- these 3 are in case of stop/start/reloading the instance.
     this.soft_reset = true
     this.restart = false
@@ -268,8 +269,7 @@ function Public.reset_main_table()
         redraw_mystical_chest_cost = 3000,
         roboport_cost = random(750, 1500),
         construction_bot_cost = random(150, 350),
-        storage_chest_cost = random(400, 600)
-
+        chest_cost = random(400, 600)
     }
     this.collapse_grace = true
     this.corpse_removal_disabled = true

@@ -576,7 +576,7 @@ local function damage_entity_outside_of_fence(e)
         return
     end
 
-    e.health = e.health - math_random(math.floor(e.prototype.max_health * 0.05), math.floor(e.prototype.max_health * 0.1))
+    e.health = e.health - math_random(math.floor(e.max_health * 0.05), math.floor(e.max_health * 0.1))
     if e.health <= 0 then
         e.die('enemy')
     end

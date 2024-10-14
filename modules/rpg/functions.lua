@@ -54,8 +54,7 @@ local function create_healthbar(player, size)
             x_scale = size * 8,
             y_scale = size - 0.2,
             render_layer = 'light-effect',
-            target = player.character,
-            target_offset = { 0, -2.5 },
+            target = { entity = player.character, offset = { 0, -2.5 } },
             surface = player.surface
         }
     )
@@ -69,22 +68,21 @@ local function create_manabar(player, size)
             x_scale = size * 8,
             y_scale = size - 0.2,
             render_layer = 'light-effect',
-            target = player.character,
-            target_offset = { 0, -2.0 },
+            target = { entity = player.character, offset = { 0, -2.0 } },
             surface = player.surface
         }
     )
 end
 
-local function set_bar(min, max, id, mana)
+local function set_bar(min, max, render_object, mana)
     local m = min / max
-    if not rendering.is_valid(id) then
+    if not render_object or not render_object.valid then
         return
     end
-    local x_scale = rendering.get_y_scale(id) * 8
-    rendering.set_x_scale(id, x_scale * m)
+    local x_scale = render_object.y_scale * 8
+    render_object.x_scale = x_scale * m
     if not mana then
-        rendering.set_color(id, { math.floor(255 - 255 * m), math.floor(200 * m), 0 })
+        render_object.color = { math.floor(255 - 255 * m), math.floor(200 * m), 0 }
     end
 end
 
@@ -159,7 +157,7 @@ local function has_health_boost(entity, damage, final_damage_amount, cause)
             --Set entity health relative to health pool
             local max_health = health_pool[3].max_health
             local m = health_pool[1] / max_health
-            local final_health = round(entity.prototype.max_health * m)
+            local final_health = round(entity.max_health * m)
 
             health_pool[1] = round(health_pool[1] + final_damage_amount)
             health_pool[1] = round(health_pool[1] - damage)
@@ -212,7 +210,7 @@ local function set_health_boost(entity, damage, cause)
             --Set entity health relative to health pool
             local max_health = health_pool[3].max_health
             local m = health_pool[1] / max_health
-            local final_health = round(entity.prototype.max_health * m)
+            local final_health = round(entity.max_health * m)
 
             health_pool[1] = round(health_pool[1] - damage)
 
@@ -261,7 +259,7 @@ local repair_buildings =
                 elseif random(1, 8) == 1 then
                     rng = 0.4
                 end
-                local to_heal = entity.prototype.max_health * rng
+                local to_heal = entity.max_health * rng
                 if entity.health and to_heal then
                     entity.health = entity.health + to_heal
                 end
@@ -274,7 +272,7 @@ function Public.repair_aoe(player, position)
     local count = 0
     for i = 1, #entities do
         local e = entities[i]
-        if e.prototype.max_health ~= e.health then
+        if e.max_health ~= e.health then
             count = count + 1
             Task.set_timeout_in_ticks(10, repair_buildings, { entity = e })
         end
@@ -437,18 +435,14 @@ function Public.update_mana(player)
     if rpg_extra.enable_health_and_mana_bars then
         if rpg_t.show_bars then
             if player.character and player.character.valid then
-                if not rpg_t.mana_bar then
-                    rpg_t.mana_bar = create_manabar(player, 0.5)
-                elseif not rendering.is_valid(rpg_t.mana_bar) then
+                if not rpg_t.mana_bar or not rpg_t.mana_bar.valid then
                     rpg_t.mana_bar = create_manabar(player, 0.5)
                 end
                 set_bar(rpg_t.mana, rpg_t.mana_max, rpg_t.mana_bar, true)
             end
         else
-            if rpg_t.mana_bar then
-                if rendering.is_valid(rpg_t.mana_bar) then
-                    rendering.destroy(rpg_t.mana_bar)
-                end
+            if rpg_t.mana_bar and rpg_t.mana_bar.valid then
+                rpg_t.mana_bar.destroy()
             end
         end
     end
@@ -541,18 +535,14 @@ function Public.update_health(player)
 
     if rpg_extra.enable_health_and_mana_bars then
         if rpg_t.show_bars then
-            local max_life = math.floor(player.character.prototype.max_health + player.character_health_bonus + player.force.character_health_bonus)
-            if not rpg_t.health_bar then
-                rpg_t.health_bar = create_healthbar(player, 0.5)
-            elseif not rendering.is_valid(rpg_t.health_bar) then
+            local max_life = math.floor(player.character.max_health + player.character_health_bonus + player.force.character_health_bonus)
+            if not rpg_t.health_bar or not rpg_t.health_bar.valid then
                 rpg_t.health_bar = create_healthbar(player, 0.5)
             end
             set_bar(player.character.health, max_life, rpg_t.health_bar)
         else
-            if rpg_t.health_bar then
-                if rendering.is_valid(rpg_t.health_bar) then
-                    rendering.destroy(rpg_t.health_bar)
-                end
+            if rpg_t.health_bar and rpg_t.health_bar.valid then
+                rpg_t.health_bar.destroy()
             end
         end
     end
@@ -1370,8 +1360,8 @@ function Public.rpg_reset_player(player, one_time_reset)
         if not total then
             total = 0
         end
-        if rpg_t.text then
-            rendering.destroy(rpg_t.text)
+        if rpg_t.text and rpg_t.text.valid then
+            rpg_t.text.destroy()
             rpg_t.text = nil
         end
         local old_level = rpg_t.level

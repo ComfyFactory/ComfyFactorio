@@ -18,6 +18,7 @@ local scenario_name = Public.scenario_name
 local StatData = require 'utils.datastore.statistics'
 StatData.add_normalize('coins', 'Coins collected'):set_tooltip('The amount of coins the player has collected through mining/killed enemies.')
 
+
 local random = math.random
 local floor = math.floor
 local abs = math.abs
@@ -165,6 +166,7 @@ local function check_health()
     if locomotive_health <= 0 then
         Public.set('locomotive_health', 0)
     end
+
     local m = locomotive_health / locomotive_max_health
     if carriages then
         for i = 1, #carriages do
@@ -172,11 +174,10 @@ local function check_health()
             if not (entity and entity.valid) then
                 return
             end
-            local cargo_health = 600
             if entity.type == 'locomotive' then
-                entity.health = 1000 * m
+                entity.health = entity.max_health * m
             else
-                entity.health = cargo_health * m
+                entity.health = entity.max_health * m
             end
         end
     end
@@ -288,7 +289,7 @@ end
 
 local function is_protected(e)
     local map_name = 'mtn_v3'
-    if string.sub(e.surface.name, 0, #map_name) ~= map_name then
+    if string.sub(e.surface.name, 0, #scenario_name) ~= scenario_name then
         return true
     end
 
@@ -571,7 +572,7 @@ local mining_events = {
                 return
             end
 
-            Public.tick_tack_trap(entity.surface, entity.position)
+            Public.tick_tack_trap(entity)
             entity.destroy()
         end,
         2048,
@@ -737,7 +738,7 @@ local function on_player_mined_entity(event)
 
     local map_name = 'mtn_v3'
 
-    if string.sub(entity.surface.name, 0, #map_name) ~= map_name then
+    if string.sub(entity.surface.name, 0, #scenario_name) ~= scenario_name then
         return
     end
 
@@ -790,7 +791,7 @@ local function on_robot_mined_entity(event)
 
     local map_name = 'mtn_v3'
 
-    if string.sub(entity.surface.name, 0, #map_name) ~= map_name then
+    if string.sub(entity.surface.name, 0, #scenario_name) ~= scenario_name then
         return
     end
 
@@ -1010,7 +1011,7 @@ local function on_entity_died(event)
 
     local map_name = 'mtn_v3'
 
-    if string.sub(entity.surface.name, 0, #map_name) ~= map_name then
+    if string.sub(entity.surface.name, 0, #scenario_name) ~= scenario_name then
         return
     end
 
@@ -1057,7 +1058,7 @@ local function on_entity_died(event)
             return
         end
         if random(1, 512) == 1 then
-            Public.tick_tack_trap(entity.surface, entity.position)
+            Public.tick_tack_trap(entity)
             return
         end
     end
@@ -1102,7 +1103,7 @@ local function on_entity_died(event)
             return
         end
         if random(1, 512) == 1 then
-            Public.tick_tack_trap(entity.surface, entity.position)
+            Public.tick_tack_trap(entity)
             return
         end
         entity.destroy()
@@ -1433,7 +1434,7 @@ function Public.loco_died(invalid_locomotive)
         }
     )
 
-    surface.spill_item_stack(this.locomotive.position, { name = 'coin', count = 512 }, false)
+    surface.spill_item_stack(this.locomotive.position, { name = 'coin', count = 512, quality = 'normal' }, false)
     this.game_reset_tick = 5400
     for _, player in pairs(game.connected_players) do
         player.play_sound { path = 'utility/game_lost', volume_modifier = 0.75 }
@@ -1483,7 +1484,7 @@ local function on_built_entity(event)
 
     local map_name = 'mtn_v3'
 
-    if string.sub(entity.surface.name, 0, #map_name) ~= map_name then
+    if string.sub(entity.surface.name, 0, #scenario_name) ~= scenario_name then
         return
     end
 
@@ -1502,7 +1503,7 @@ local function on_built_entity(event)
                 }
             )
 
-            player.surface.spill_item_stack(position, { name = entity.name, count = 1, true })
+            player.surface.spill_item_stack(position, { name = entity.name, count = 1, true, quality = 'normal' }, false)
             entity.destroy()
             return
         end
@@ -1583,7 +1584,7 @@ local function on_robot_built_entity(event)
 
     local map_name = 'mtn_v3'
 
-    if string.sub(entity.surface.name, 0, #map_name) ~= map_name then
+    if string.sub(entity.surface.name, 0, #scenario_name) ~= scenario_name then
         return
     end
 
@@ -1680,7 +1681,7 @@ local on_player_or_robot_built_tile = function (event)
 
     local map_name = 'mtn_v3'
 
-    if string.sub(surface.name, 0, #map_name) ~= map_name then
+    if string.sub(surface.name, 0, #scenario_name) ~= scenario_name then
         return
     end
 

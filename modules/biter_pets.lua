@@ -60,10 +60,10 @@ local function find_unit(player, entity)
 end
 
 local function feed_pet(unit)
-    if unit.prototype.max_health == unit.health then
+    if unit.max_health == unit.health then
         return
     end
-    unit.health = unit.health + 8 + math.floor(unit.prototype.max_health * 0.05)
+    unit.health = unit.health + 8 + math.floor(unit.max_health * 0.05)
     feed_floaty_text(unit)
     floaty_hearts(unit, math_random(1, 2))
     return true
@@ -87,7 +87,7 @@ function Public.biter_pets_tame_unit(player, unit, forced)
         return false
     end
     if not forced then
-        if math_random(1, math.floor(unit.prototype.max_health * 0.01) + 1) ~= 1 then
+        if math_random(1, math.floor(unit.max_health * 0.01) + 1) ~= 1 then
             feed_floaty_text(unit)
             return true
         end

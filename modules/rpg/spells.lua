@@ -26,7 +26,7 @@ local repair_buildings =
                 elseif random(1, 8) == 1 then
                     rng = 0.4
                 end
-                local to_heal = entity.prototype.max_health * rng
+                local to_heal = entity.max_health * rng
                 if entity.health and to_heal then
                     entity.health = entity.health + to_heal
                 end
@@ -884,7 +884,7 @@ spells[#spells + 1] = {
             'support',
             range,
             function (entity)
-                if entity.prototype.max_health ~= entity.health then
+                if entity.max_health ~= entity.health then
                     if self.mana_cost < rpg_t.mana then
                         Task.set_timeout_in_ticks(10, repair_buildings, { entity = entity })
                         Public.remove_mana(player, self.mana_cost)

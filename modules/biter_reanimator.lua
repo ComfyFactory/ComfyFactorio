@@ -31,7 +31,7 @@ local function reanimate(entity)
     end
 
     local revived_entity = entity.clone({ position = entity.position, surface = entity.surface, force = entity.force })
-    revived_entity.health = revived_entity.prototype.max_health
+    revived_entity.health = revived_entity.max_health
     register_unit(revived_entity, extra_lifes - 1, unit_group)
 
     if unit_group then

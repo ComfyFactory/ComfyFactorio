@@ -313,7 +313,7 @@ local function analyze_random_nearby_entity()
         str = str .. ' health('
         str = str .. entity.health
         str = str .. '/'
-        str = str .. entity.prototype.max_health
+        str = str .. entity.max_health
         str = str .. ')'
     else
         local symbols = { '.', '!', '?' }

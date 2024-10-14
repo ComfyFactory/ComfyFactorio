@@ -12,7 +12,7 @@ local function on_entity_damaged(event)
     if event.entity.type ~= 'unit' then
         return
     end
-    if event.final_damage_amount > event.entity.prototype.max_health then
+    if event.final_damage_amount > event.entity.max_health then
         return
     end
     event.entity.health = event.entity.health + event.final_damage_amount

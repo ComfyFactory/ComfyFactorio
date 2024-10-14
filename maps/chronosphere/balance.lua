@@ -31,7 +31,7 @@ end
 ---- CHRONO/POLLUTION BALANCE ----
 
 function Public.factory_level(difficulty)
-  return math.floor(1000 * difficulty_sloped(difficulty, 1 / 3))
+    return math.floor(1000 * difficulty_sloped(difficulty, 1 / 3))
 end
 
 function Public.pollution_filter_upgrade_factor(upgrades2)
@@ -119,14 +119,14 @@ Public.Chronotrain_max_HP = 10000
 Public.Chronotrain_HP_repaired_per_pack = 150
 Public.Tech_price_multiplier = 0.6
 
-Public.starting_items = {['pistol'] = 1, ['firearm-magazine'] = 32, ['grenade'] = 4, ['raw-fish'] = 4, ['wood'] = 16}
+Public.starting_items = { ['pistol'] = 1, ['firearm-magazine'] = 32, ['grenade'] = 4, ['raw-fish'] = 4, ['wood'] = 16 }
 Public.wagon_starting_items = {
-    {name = 'firearm-magazine', count = 16},
-    {name = 'iron-plate', count = 16},
-    {name = 'wood', count = 16},
-    {name = 'burner-mining-drill', count = 8},
-    {name = 'grenade', count = 10},
-    {name = 'gun-turret', count = 2}
+    { name = 'firearm-magazine',    count = 16 },
+    { name = 'iron-plate',          count = 16 },
+    { name = 'wood',                count = 16 },
+    { name = 'burner-mining-drill', count = 8 },
+    { name = 'grenade',             count = 10 },
+    { name = 'gun-turret',          count = 2 }
 }
 
 function Public.jumps_until_overstay_is_on(difficulty) --both overstay penalties, and evoramp
@@ -201,19 +201,19 @@ Public.biome_weights = {
 function Public.ore_richness_weights(difficulty)
     local ores_weights
     if difficulty <= 0.25 then
-        ores_weights = {9, 10, 9, 4, 2, 0}
+        ores_weights = { 9, 10, 9, 4, 2, 0 }
     elseif difficulty <= 0.5 then
-        ores_weights = {5, 11, 12, 6, 2, 0}
+        ores_weights = { 5, 11, 12, 6, 2, 0 }
     elseif difficulty <= 0.75 then
-        ores_weights = {5, 9, 12, 7, 3, 0}
+        ores_weights = { 5, 9, 12, 7, 3, 0 }
     elseif difficulty <= 1 then
-        ores_weights = {4, 8, 12, 8, 4, 0}
+        ores_weights = { 4, 8, 12, 8, 4, 0 }
     elseif difficulty <= 1.5 then
-        ores_weights = {2, 5, 15, 9, 5, 0}
+        ores_weights = { 2, 5, 15, 9, 5, 0 }
     elseif difficulty <= 3 then
-        ores_weights = {1, 4, 12, 13, 6, 0}
+        ores_weights = { 1, 4, 12, 13, 6, 0 }
     elseif difficulty >= 5 then
-        ores_weights = {1, 2, 10, 17, 6, 0}
+        ores_weights = { 1, 2, 10, 17, 6, 0 }
     end
     return {
         vrich = ores_weights[1],
@@ -224,6 +224,7 @@ function Public.ore_richness_weights(difficulty)
         none = ores_weights[6]
     }
 end
+
 Public.dayspeed_weights = {
     static = 2,
     normal = 4,
@@ -234,62 +235,63 @@ Public.dayspeed_weights = {
 }
 function Public.market_offers()
     return {
-        {price = {{name = 'coin', count = 40}}, offer = {type = 'give-item', item = 'raw-fish'}},
-        {price = {{name = 'coin', count = 40}}, offer = {type = 'give-item', item = 'wood', count = 50}},
-        {price = {{name = 'coin', count = 100}}, offer = {type = 'give-item', item = 'iron-ore', count = 50}},
-        {price = {{name = 'coin', count = 100}}, offer = {type = 'give-item', item = 'copper-ore', count = 50}},
-        {price = {{name = 'coin', count = 100}}, offer = {type = 'give-item', item = 'stone', count = 50}}, -- needed?
-        {price = {{name = 'coin', count = 100}}, offer = {type = 'give-item', item = 'coal', count = 50}},
-        {price = {{name = 'coin', count = 400}}, offer = {type = 'give-item', item = 'uranium-ore', count = 50}},
-        {price = {{name = 'coin', count = 50}, {name = 'barrel', count = 1}}, offer = {type = 'give-item', item = 'crude-oil-barrel', count = 1}},
-        {price = {{name = 'coin', count = 500}, {name = 'steel-plate', count = 20}, {name = 'electronic-circuit', count = 20}}, offer = {type = 'give-item', item = 'loader', count = 1}},
+        { price = { { name = 'coin', count = 40 } },                                                                             offer = { type = 'give-item', item = 'raw-fish' } },
+        { price = { { name = 'coin', count = 40 } },                                                                             offer = { type = 'give-item', item = 'wood', count = 50 } },
+        { price = { { name = 'coin', count = 100 } },                                                                            offer = { type = 'give-item', item = 'iron-ore', count = 50 } },
+        { price = { { name = 'coin', count = 100 } },                                                                            offer = { type = 'give-item', item = 'copper-ore', count = 50 } },
+        { price = { { name = 'coin', count = 100 } },                                                                            offer = { type = 'give-item', item = 'stone', count = 50 } }, -- needed?
+        { price = { { name = 'coin', count = 100 } },                                                                            offer = { type = 'give-item', item = 'coal', count = 50 } },
+        { price = { { name = 'coin', count = 400 } },                                                                            offer = { type = 'give-item', item = 'uranium-ore', count = 50 } },
+        { price = { { name = 'coin', count = 50 }, { name = 'barrel', count = 1 } },                                             offer = { type = 'give-item', item = 'crude-oil-barrel', count = 1 } },
+        { price = { { name = 'coin', count = 500 }, { name = 'steel-plate', count = 20 }, { name = 'electronic-circuit', count = 20 } }, offer = { type = 'give-item', item = 'loader', count = 1 } },
         {
-            price = {{name = 'coin', count = 1000}, {name = 'steel-plate', count = 40}, {name = 'advanced-circuit', count = 10}, {name = 'loader', count = 1}},
-            offer = {type = 'give-item', item = 'fast-loader', count = 1}
+            price = { { name = 'coin', count = 1000 }, { name = 'steel-plate', count = 40 }, { name = 'advanced-circuit', count = 10 }, { name = 'loader', count = 1 } },
+            offer = { type = 'give-item', item = 'fast-loader', count = 1 }
         },
         {
-            price = {{name = 'coin', count = 3000}, {name = 'express-transport-belt', count = 10}, {name = 'fast-loader', count = 1}},
-            offer = {type = 'give-item', item = 'express-loader', count = 1}
+            price = { { name = 'coin', count = 3000 }, { name = 'express-transport-belt', count = 10 }, { name = 'fast-loader', count = 1 } },
+            offer = { type = 'give-item', item = 'express-loader', count = 1 }
         },
-        {price = {{name = 'coin', count = 2}, {name = 'steel-plate', count = 1}, {name = 'explosives', count = 10}}, offer = {type = 'give-item', item = 'land-mine', count = 1}}
+        { price = { { name = 'coin', count = 2 }, { name = 'steel-plate', count = 1 }, { name = 'explosives', count = 10 } }, offer = { type = 'give-item', item = 'land-mine', count = 1 } }
     }
 end
+
 function Public.initial_cargo_boxes()
     return {
-        {name = 'loader', count = 1},
-        {name = 'coal', count = math_random(32, 64)},
-        {name = 'coal', count = math_random(32, 64)},
-        {name = 'iron-ore', count = math_random(32, 128)},
-        {name = 'copper-ore', count = math_random(32, 128)},
-        {name = 'barrel', count = math_random(16, 32)},
-        {name = 'submachine-gun', count = 1},
-        {name = 'submachine-gun', count = 1},
-        {name = 'shotgun', count = 1},
-        {name = 'shotgun', count = 1},
-        {name = 'shotgun', count = 1},
-        {name = 'shotgun-shell', count = math_random(4, 5)},
-        {name = 'shotgun-shell', count = math_random(4, 5)},
-        {name = 'land-mine', count = math_random(6, 18)},
-        {name = 'grenade', count = math_random(2, 3)},
-        {name = 'grenade', count = math_random(2, 3)},
-        {name = 'grenade', count = math_random(2, 3)},
-        {name = 'iron-gear-wheel', count = math_random(7, 15)},
-        {name = 'iron-gear-wheel', count = math_random(7, 15)},
-        {name = 'iron-gear-wheel', count = math_random(7, 15)},
-        {name = 'iron-gear-wheel', count = math_random(7, 15)},
-        {name = 'iron-plate', count = math_random(15, 23)},
-        {name = 'iron-plate', count = math_random(15, 23)},
-        {name = 'iron-plate', count = math_random(15, 23)},
-        {name = 'iron-plate', count = math_random(15, 23)},
-        {name = 'copper-plate', count = math_random(15, 23)},
-        {name = 'copper-plate', count = math_random(15, 23)},
-        {name = 'copper-plate', count = math_random(15, 23)},
-        {name = 'copper-plate', count = math_random(15, 23)},
-        {name = 'firearm-magazine', count = math_random(10, 30)},
-        {name = 'firearm-magazine', count = math_random(10, 30)},
-        {name = 'firearm-magazine', count = math_random(10, 30)},
-        {name = 'rail', count = math_random(16, 24)},
-        {name = 'rail', count = math_random(16, 24)}
+        { name = 'loader',           count = 1 },
+        { name = 'coal',             count = math_random(32, 64) },
+        { name = 'coal',             count = math_random(32, 64) },
+        { name = 'iron-ore',         count = math_random(32, 128) },
+        { name = 'copper-ore',       count = math_random(32, 128) },
+        { name = 'barrel',           count = math_random(16, 32) },
+        { name = 'submachine-gun',   count = 1 },
+        { name = 'submachine-gun',   count = 1 },
+        { name = 'shotgun',          count = 1 },
+        { name = 'shotgun',          count = 1 },
+        { name = 'shotgun',          count = 1 },
+        { name = 'shotgun-shell',    count = math_random(4, 5) },
+        { name = 'shotgun-shell',    count = math_random(4, 5) },
+        { name = 'land-mine',        count = math_random(6, 18) },
+        { name = 'grenade',          count = math_random(2, 3) },
+        { name = 'grenade',          count = math_random(2, 3) },
+        { name = 'grenade',          count = math_random(2, 3) },
+        { name = 'iron-gear-wheel',  count = math_random(7, 15) },
+        { name = 'iron-gear-wheel',  count = math_random(7, 15) },
+        { name = 'iron-gear-wheel',  count = math_random(7, 15) },
+        { name = 'iron-gear-wheel',  count = math_random(7, 15) },
+        { name = 'iron-plate',       count = math_random(15, 23) },
+        { name = 'iron-plate',       count = math_random(15, 23) },
+        { name = 'iron-plate',       count = math_random(15, 23) },
+        { name = 'iron-plate',       count = math_random(15, 23) },
+        { name = 'copper-plate',     count = math_random(15, 23) },
+        { name = 'copper-plate',     count = math_random(15, 23) },
+        { name = 'copper-plate',     count = math_random(15, 23) },
+        { name = 'copper-plate',     count = math_random(15, 23) },
+        { name = 'firearm-magazine', count = math_random(10, 30) },
+        { name = 'firearm-magazine', count = math_random(10, 30) },
+        { name = 'firearm-magazine', count = math_random(10, 30) },
+        { name = 'rail',             count = math_random(16, 24) },
+        { name = 'rail',             count = math_random(16, 24) }
     }
 end
 
@@ -307,77 +309,77 @@ end
 
 function Public.scrap()
     local main_loot = {
-        ['iron-plate'] = {amount = 5, chance = 400},
-        ['iron-gear-wheel'] = {amount = 3, chance = 250},
-        ['iron-stick'] = {amount = 2, chance = 100},
-        ['copper-plate'] = {amount = 5, chance = 400},
-        ['copper-cable'] = {amount = 8, chance = 150},
-        ['electronic-circuit'] = {amount = 3, chance = 100},
-        ['steel-plate'] = {amount = 4, chance = 100},
-        ['pipe'] = {amount = 3, chance = 50},
-        ['pipe-to-ground'] = {amount = 1, chance = 10},
-        ['battery'] = {amount = 3, chance = 10},
-        ['explosives'] = {amount = 3, chance = 5},
-        ['advanced-circuit'] = {amount = 5, chance = 3},
-        ['plastic-bar'] = {amount = 5, chance = 6},
-        ['processing-unit'] = {amount = 2, chance = 1},
-        ['used-up-uranium-fuel-cell'] = {amount = 1, chance = 4},
-        ['uranium-fuel-cell'] = {amount = 0.3, chance = 1},
+        ['iron-plate'] = { amount = 5, chance = 400 },
+        ['iron-gear-wheel'] = { amount = 3, chance = 250 },
+        ['iron-stick'] = { amount = 2, chance = 100 },
+        ['copper-plate'] = { amount = 5, chance = 400 },
+        ['copper-cable'] = { amount = 8, chance = 150 },
+        ['electronic-circuit'] = { amount = 3, chance = 100 },
+        ['steel-plate'] = { amount = 4, chance = 100 },
+        ['pipe'] = { amount = 3, chance = 50 },
+        ['pipe-to-ground'] = { amount = 1, chance = 10 },
+        ['battery'] = { amount = 3, chance = 10 },
+        ['explosives'] = { amount = 3, chance = 5 },
+        ['advanced-circuit'] = { amount = 5, chance = 3 },
+        ['plastic-bar'] = { amount = 5, chance = 6 },
+        ['processing-unit'] = { amount = 2, chance = 1 },
+        ['depleted-uranium-fuel-cell'] = { amount = 1, chance = 4 },
+        ['uranium-fuel-cell'] = { amount = 0.3, chance = 1 },
         --['rocket-control-unit'] = {amount = 0.3, chance = 1},
-        ['low-density-structure'] = {amount = 0.5, chance = 2},
-        ['heat-pipe'] = {amount = 1, chance = 1},
-        ['engine-unit'] = {amount = 3, chance = 3},
-        ['electric-engine-unit'] = {amount = 2, chance = 2},
-        ['flying-robot-frame'] = {amount = 1, chance = 2},
-        ['logistic-robot'] = {amount = 0.3, chance = 1},
-        ['construction-robot'] = {amount = 0.3, chance = 1},
-        ['land-mine'] = {amount = 1, chance = 1},
-        ['rocket'] = {amount = 2, chance = 1},
-        ['explosive-rocket'] = {amount = 2, chance = 1},
-        ['defender-capsule'] = {amount = 2, chance = 1},
-        ['destroyer-capsule'] = {amount = 0.3, chance = 1},
-        ['distractor-capsule'] = {amount = 0.3, chance = 1}
+        ['low-density-structure'] = { amount = 0.5, chance = 2 },
+        ['heat-pipe'] = { amount = 1, chance = 1 },
+        ['engine-unit'] = { amount = 3, chance = 3 },
+        ['electric-engine-unit'] = { amount = 2, chance = 2 },
+        ['flying-robot-frame'] = { amount = 1, chance = 2 },
+        ['logistic-robot'] = { amount = 0.3, chance = 1 },
+        ['construction-robot'] = { amount = 0.3, chance = 1 },
+        ['land-mine'] = { amount = 1, chance = 1 },
+        ['rocket'] = { amount = 2, chance = 1 },
+        ['explosive-rocket'] = { amount = 2, chance = 1 },
+        ['defender-capsule'] = { amount = 2, chance = 1 },
+        ['destroyer-capsule'] = { amount = 0.3, chance = 1 },
+        ['distractor-capsule'] = { amount = 0.3, chance = 1 }
     }
     local second_loot = {
-        ['cannon-shell'] = {amount = 0.1, chance = 5},
-        ['explosive-cannon-shell'] = {amount = 0.1, chance = 4},
-        ['uranium-cannon-shell'] = {amount = 0.1, chance = 3},
-        ['explosive-uranium-cannon-shell'] = {amount = 0.1, chance = 2},
-        ['artillery-shell'] = {amount = 0.1, chance = 1},
-        ['cluster-grenade'] = {amount = 0.2, chance = 20},
-        ['firearm-magazine'] = {amount = 0.4, chance = 70},
-        ['piercing-rounds-magazine'] = {amount = 0.2, chance = 55},
-        ['uranium-rounds-magazine'] = {amount = 0.1, chance = 40},
-        ['nuclear-fuel'] = {amount = 0.1, chance = 3},
-        ['rocket-fuel'] = {amount = 0.3, chance = 8},
-        ['grenade'] = {amount = 0.3, chance = 40},
-        ['solid-fuel'] = {amount = 0.4, chance = 50},
-        ['barrel'] = {amount = 0.1, chance = 50},
-        ['crude-oil-barrel'] = {amount = 0.1, chance = 70},
-        ['lubricant-barrel'] = {amount = 0.1, chance = 40},
-        ['petroleum-gas-barrel'] = {amount = 0.1, chance = 60},
-        ['heavy-oil-barrel'] = {amount = 0.1, chance = 70},
-        ['light-oil-barrel'] = {amount = 0.1, chance = 70},
-        ['water-barrel'] = {amount = 0.1, chance = 40}
+        ['cannon-shell'] = { amount = 0.1, chance = 5 },
+        ['explosive-cannon-shell'] = { amount = 0.1, chance = 4 },
+        ['uranium-cannon-shell'] = { amount = 0.1, chance = 3 },
+        ['explosive-uranium-cannon-shell'] = { amount = 0.1, chance = 2 },
+        ['artillery-shell'] = { amount = 0.1, chance = 1 },
+        ['cluster-grenade'] = { amount = 0.2, chance = 20 },
+        ['firearm-magazine'] = { amount = 0.4, chance = 70 },
+        ['piercing-rounds-magazine'] = { amount = 0.2, chance = 55 },
+        ['uranium-rounds-magazine'] = { amount = 0.1, chance = 40 },
+        ['nuclear-fuel'] = { amount = 0.1, chance = 3 },
+        ['rocket-fuel'] = { amount = 0.3, chance = 8 },
+        ['grenade'] = { amount = 0.3, chance = 40 },
+        ['solid-fuel'] = { amount = 0.4, chance = 50 },
+        ['barrel'] = { amount = 0.1, chance = 50 },
+        ['crude-oil-barrel'] = { amount = 0.1, chance = 70 },
+        ['lubricant-barrel'] = { amount = 0.1, chance = 40 },
+        ['petroleum-gas-barrel'] = { amount = 0.1, chance = 60 },
+        ['heavy-oil-barrel'] = { amount = 0.1, chance = 70 },
+        ['light-oil-barrel'] = { amount = 0.1, chance = 70 },
+        ['water-barrel'] = { amount = 0.1, chance = 40 }
     }
 
     local scrap_raffle = {}
     for k, t in pairs(main_loot) do
         for _ = 1, t.chance, 1 do
-            table.insert(scrap_raffle, {name = k, amount = t.amount})
+            table.insert(scrap_raffle, { name = k, amount = t.amount })
         end
     end
 
     local second_raffle = {}
     for k, t in pairs(second_loot) do
         for _ = 1, t.chance, 1 do
-            table.insert(second_raffle, {name = k, amount = t.amount})
+            table.insert(second_raffle, { name = k, amount = t.amount })
         end
     end
     table.shuffle_table(scrap_raffle)
     table.shuffle_table(second_raffle)
 
-    return {main = scrap_raffle, second = second_raffle}
+    return { main = scrap_raffle, second = second_raffle }
 end
 
 return Public

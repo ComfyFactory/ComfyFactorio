@@ -302,8 +302,10 @@ function Public.reset_map()
     end
 
     game.speed = 1
-    surface.destroy_decoratives({ name = "brown-cup", invert = true })
-    surface.destroy_decoratives({ name = "small-sand-rock", invert = true })
+    if this.space_age then
+        surface.destroy_decoratives({ name = "brown-cup", invert = true })
+        surface.destroy_decoratives({ name = "small-sand-rock", invert = true })
+    end
 
     Task.set_queue_speed(16)
 

@@ -325,7 +325,7 @@ function Public.give(player, stacks, spill_position, short_form, spill_surface, 
 	local text2 = ''
 
 	local stacks2 = stacks
-	table.sort(stacks2, function(a, b)
+	table.sort(stacks2, function (a, b)
 		return a.name < b.name
 	end)
 
@@ -927,7 +927,7 @@ function Public.entity_damage_healthbar(entity, damage, location_override)
 	Public.update_healthbar_rendering(healthbar, new_health)
 
 	if entity and entity.valid then
-		entity.health = entity.prototype.max_health
+		entity.health = entity.max_health
 	end
 
 	if healthbar.health > healthbar.max_health then
@@ -1217,7 +1217,7 @@ function Public.add_tiles_from_blueprint(tilesTable, bp_string, tile_name, offse
 	if bp_tiles then
 		for _, tile in pairs(bp_tiles) do
 			tilesTable[#tilesTable + 1] =
-				{ name = tile_name, position = { x = tile.position.x + offset.x, y = tile.position.y + offset.y } }
+			{ name = tile_name, position = { x = tile.position.x + offset.x, y = tile.position.y + offset.y } }
 		end
 	end
 
@@ -1448,7 +1448,7 @@ end
 function Public.tileslist_add_area_offset(tiles_list_to_add_to, area, offset, tile_type)
 	for _, p in pairs(Public.orthog_positions_in_orthog_area(area)) do
 		tiles_list_to_add_to[#tiles_list_to_add_to + 1] =
-			{ name = tile_type, position = { x = offset.x + p.x, y = offset.y + p.y } }
+		{ name = tile_type, position = { x = offset.x + p.x, y = offset.y + p.y } }
 	end
 end
 
@@ -1782,7 +1782,7 @@ function Public.init_game_settings(technology_price_multiplier)
 
 	-- (0,2) for a symmetric search:
 	game.map_settings.path_finder.goal_pressure_ratio = -0.1 --small pressure for stupid paths
-	game.map_settings.path_finder.fwd2bwd_ratio = 2 -- on experiments I found that this value was symmetric, despite the vanilla game comments saying it is 1...
+	game.map_settings.path_finder.fwd2bwd_ratio = 2       -- on experiments I found that this value was symmetric, despite the vanilla game comments saying it is 1...
 	game.map_settings.max_failed_behavior_count = 2
 	game.map_settings.path_finder.max_work_done_per_tick = 20000
 	game.map_settings.path_finder.short_cache_min_algo_steps_to_cache = 100
@@ -2159,7 +2159,7 @@ function Public.try_make_biter_elite(entity)
 		health_multiplier = health_multiplier * 2 ^ ((Public.overworldx() - 1000) / 1000)
 	end
 
-	local max_hp = Math.ceil(entity.prototype.max_health * health_multiplier)
+	local max_hp = Math.ceil(entity.max_health * health_multiplier)
 	Public.new_healthbar(false, entity, max_hp, nil, max_hp, 0.4, -1)
 
 	local elite_biters = memory.elite_biters

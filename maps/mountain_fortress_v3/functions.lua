@@ -19,6 +19,7 @@ local BottomFrame = require 'utils.gui.bottom_frame'
 local Modifiers = require 'utils.player_modifiers'
 local Session = require 'utils.datastore.session_data'
 
+local scenario_name = Public.scenario_name
 local zone_settings = Public.zone_settings
 local remove_boost_movement_speed_on_respawn
 local de = defines.events
@@ -987,7 +988,7 @@ local function on_player_cursor_stack_changed(event)
 
     local blacklisted_spawn_items = {
         ['cut-paste-tool'] = true,
-        ['rts-tool'] = true,
+        ['spidertron-remote'] = true,
         ['artillery-targeting-remote'] = true,
     }
 
@@ -1630,7 +1631,7 @@ function Public.on_player_changed_position(event)
 
     local map_name = 'mtn_v3'
 
-    if string.sub(player.surface.name, 0, #map_name) ~= map_name then
+    if string.sub(player.surface.name, 0, #scenario_name) ~= scenario_name then
         return
     end
 
@@ -1711,8 +1712,10 @@ function Public.disable_tech()
     force.technologies['artillery-shell-range-1'].researched = false
     force.technologies['artillery-shell-speed-1'].enabled = false
     force.technologies['artillery-shell-speed-1'].researched = false
-    force.technologies['artillery-shell-damage-1'].enabled = false
-    force.technologies['artillery-shell-damage-1'].researched = false
+    if Public.get('space_age') then
+        force.technologies['artillery-shell-damage-1'].enabled = false
+        force.technologies['artillery-shell-damage-1'].researched = false
+    end
     force.technologies['lamp'].researched = true
     force.technologies['railway'].researched = true
     force.technologies['land-mine'].enabled = false

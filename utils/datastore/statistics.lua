@@ -42,32 +42,32 @@ local Public = {
 }
 
 local normalized_names = {
-    ['map_tags_made'] = {name = 'Map-tags created', tooltip = "Tags that you've created in minimap."},
-    ['chat_messages'] = {name = 'Messages', tooltip = 'Messages sent in chat.'},
-    ['commands_used'] = {name = 'Commands', tooltip = 'Commands used in console.'},
-    ['machines_built'] = {name = 'Entities built', tooltip = 'Entities built by the player.'},
-    ['items_picked_up'] = {name = 'Items picked-up', tooltip = 'Items picked-up by the player.'},
-    ['tiles_built'] = {name = 'Tiles placed', tooltip = 'Tiles placed by the player.'},
-    ['join_count'] = {name = 'Join count', tooltip = 'How many times the player has joined the game.'},
-    ['deaths'] = {name = 'Deaths', tooltip = 'How many times the player has died.'},
-    ['entities_repaired'] = {name = 'Entities repaired', tooltip = 'How many entities the player has repaired.'},
-    ['items_crafted'] = {name = 'Items crafted', tooltip = 'How many items the player has crafted.'},
-    ['capsules_used'] = {name = 'Capsules used', tooltip = 'How many capsules the player has used.'},
-    ['tiles_removed'] = {name = 'Tiles removed', tooltip = 'How many tiles the player has removed.'},
-    ['deconstructer_planner_used'] = {name = 'Decon planner used', tooltip = 'How many times the player has used the deconstruction planner.'},
-    ['maps_played'] = {name = 'Maps played', tooltip = 'How many maps the player has played.'},
-    ['afk_time'] = {name = 'Total AFK', tooltip = 'How long the player has been AFK.'},
-    ['distance_moved'] = {name = 'Distance travelled', tooltip = 'How far the player has travelled.\nIncluding standing still in looped belts.'},
-    ['damage_dealt'] = {name = 'Damage dealt', tooltip = 'How much damage the player has dealt.'},
-    ['enemies_killed'] = {name = 'Enemies killed', tooltip = 'How many enemies the player has killed.'},
-    ['friendly_killed'] = {name = 'Friendlies killed', tooltip = 'How many friendlies the player has killed.\n This includes entities such as buildings etc.'},
-    ['rockets_launched'] = {name = 'Rockets launched', tooltip = 'How many rockets the player has launched.'},
-    ['research_complete'] = {name = 'Research completed', tooltip = 'How many researches the player has completed.'},
-    ['force_mined_machines'] = {name = 'Mined friendly entities', tooltip = 'How many friendly entities the player has mined.'},
-    ['trees'] = {name = 'Trees chopped', tooltip = 'How many trees the player has chopped.'},
-    ['rocks'] = {name = 'Rocks mined', tooltip = 'How many rocks the player has mined.'},
-    ['resources'] = {name = 'Ores mined', tooltip = 'How many ores the player has mined.'},
-    ['kicked'] = {name = 'Kicked', tooltip = 'How many times the player has been kicked.'}
+    ['map_tags_made'] = { name = 'Map-tags created', tooltip = "Tags that you've created in minimap." },
+    ['chat_messages'] = { name = 'Messages', tooltip = 'Messages sent in chat.' },
+    ['commands_used'] = { name = 'Commands', tooltip = 'Commands used in console.' },
+    ['machines_built'] = { name = 'Entities built', tooltip = 'Entities built by the player.' },
+    ['items_picked_up'] = { name = 'Items picked-up', tooltip = 'Items picked-up by the player.' },
+    ['tiles_built'] = { name = 'Tiles placed', tooltip = 'Tiles placed by the player.' },
+    ['join_count'] = { name = 'Join count', tooltip = 'How many times the player has joined the game.' },
+    ['deaths'] = { name = 'Deaths', tooltip = 'How many times the player has died.' },
+    ['entities_repaired'] = { name = 'Entities repaired', tooltip = 'How many entities the player has repaired.' },
+    ['items_crafted'] = { name = 'Items crafted', tooltip = 'How many items the player has crafted.' },
+    ['capsules_used'] = { name = 'Capsules used', tooltip = 'How many capsules the player has used.' },
+    ['tiles_removed'] = { name = 'Tiles removed', tooltip = 'How many tiles the player has removed.' },
+    ['deconstructer_planner_used'] = { name = 'Decon planner used', tooltip = 'How many times the player has used the deconstruction planner.' },
+    ['maps_played'] = { name = 'Maps played', tooltip = 'How many maps the player has played.' },
+    ['afk_time'] = { name = 'Total AFK', tooltip = 'How long the player has been AFK.' },
+    ['distance_moved'] = { name = 'Distance travelled', tooltip = 'How far the player has travelled.\nIncluding standing still in looped belts.' },
+    ['damage_dealt'] = { name = 'Damage dealt', tooltip = 'How much damage the player has dealt.' },
+    ['enemies_killed'] = { name = 'Enemies killed', tooltip = 'How many enemies the player has killed.' },
+    ['friendly_killed'] = { name = 'Friendlies killed', tooltip = 'How many friendlies the player has killed.\n This includes entities such as buildings etc.' },
+    ['rockets_launched'] = { name = 'Rockets launched', tooltip = 'How many rockets the player has launched.' },
+    ['research_complete'] = { name = 'Research completed', tooltip = 'How many researches the player has completed.' },
+    ['force_mined_machines'] = { name = 'Mined friendly entities', tooltip = 'How many friendly entities the player has mined.' },
+    ['trees'] = { name = 'Trees chopped', tooltip = 'How many trees the player has chopped.' },
+    ['rocks'] = { name = 'Rocks mined', tooltip = 'How many rocks the player has mined.' },
+    ['resources'] = { name = 'Ores mined', tooltip = 'How many ores the player has mined.' },
+    ['kicked'] = { name = 'Kicked', tooltip = 'How many times the player has been kicked.' }
 }
 local statistics = {}
 
@@ -76,7 +76,7 @@ Global.register(
     {
         statistics = statistics
     },
-    function(tbl)
+    function (tbl)
         statistics = tbl.statistics
 
         for _, stat in pairs(statistics) do
@@ -86,7 +86,7 @@ Global.register(
 )
 
 -- Metatable for the statistics table
-Public.metatable = {__index = Public}
+Public.metatable = { __index = Public }
 
 -- Add a normalization entry to the normalized_names table
 function Public.add_normalize(name, normalize)
@@ -94,7 +94,7 @@ function Public.add_normalize(name, normalize)
         error('cannot call during runtime', 2)
     end
 
-    local mt = setmetatable({name = normalize}, Public.metatable)
+    local mt = setmetatable({ name = normalize }, Public.metatable)
 
     normalized_names[name] = mt
 
@@ -144,51 +144,51 @@ end
 
 local try_download_data_token =
     Token.register(
-    function(data)
-        local player_name = data.key
-        local player = game.get_player(player_name)
-        if not player or not player.valid then
-            return
-        end
-
-        local stats = data.value
-        if stats then
-            local s = setmetatable(stats, Public.metatable)
-            statistics[player.index] = s
-        else
-            get_data(player)
-        end
-    end
-)
-
-local try_upload_data_token =
-    Token.register(
-    function(data)
-        local player_name = data.key
-        if not player_name then
-            return
-        end
-        local stats = data.value
-        local player = game.get_player(player_name)
-        if not player or not player.valid then
-            return
-        end
-
-        if stats then
-            -- we don't want to clutter the database with players less than 10 minutes played.
-            if player.online_time <= settings.required_only_time_to_save_time then
+        function (data)
+            local player_name = data.key
+            local player = game.get_player(player_name)
+            if not player or not player.valid then
                 return
             end
 
-            set_data(statistics_dataset, player_name, get_data(player))
-        else
-            local d = get_data(player)
-            if player.online_time >= settings.required_only_time_to_save_time then
-                set_data(statistics_dataset, player_name, d)
+            local stats = data.value
+            if stats then
+                local s = setmetatable(stats, Public.metatable)
+                statistics[player.index] = s
+            else
+                get_data(player)
             end
         end
-    end
-)
+    )
+
+local try_upload_data_token =
+    Token.register(
+        function (data)
+            local player_name = data.key
+            if not player_name then
+                return
+            end
+            local stats = data.value
+            local player = game.get_player(player_name)
+            if not player or not player.valid then
+                return
+            end
+
+            if stats then
+                -- we don't want to clutter the database with players less than 10 minutes played.
+                if player.online_time <= settings.required_only_time_to_save_time then
+                    return
+                end
+
+                set_data(statistics_dataset, player_name, get_data(player))
+            else
+                local d = get_data(player)
+                if player.online_time >= settings.required_only_time_to_save_time then
+                    set_data(statistics_dataset, player_name, d)
+                end
+            end
+        end
+    )
 
 -- Increase a statistic by a delta value
 function Public:increase(name, delta)
@@ -254,16 +254,16 @@ end
 
 local nth_tick_token =
     Token.register(
-    function(event)
-        local player_index = event.player_index
-        local player = game.get_player(player_index)
-        if not player or not player.valid then
-            return
-        end
+        function (event)
+            local player_index = event.player_index
+            local player = game.get_player(player_index)
+            if not player or not player.valid then
+                return
+            end
 
-        get_data(player):save()
-    end
-)
+            get_data(player):save()
+        end
+    )
 
 --- Uploads each connected players play time to the dataset
 local function upload_data()
@@ -272,7 +272,7 @@ local function upload_data()
     for i = 1, #players do
         count = count + 10
         local player = players[i]
-        set_timeout_in_ticks(count, nth_tick_token, {player_index = player.index})
+        set_timeout_in_ticks(count, nth_tick_token, { player_index = player.index })
     end
 end
 
@@ -294,21 +294,21 @@ end
 
 Event.add(
     e.on_player_joined_game,
-    function(event)
+    function (event)
         get_data(event.player_index):try_get_data()
     end
 )
 
 Event.add(
     e.on_player_left_game,
-    function(event)
+    function (event)
         get_data(event.player_index):try_upload_data()
     end
 )
 
 Event.add(
     Public.events.on_player_removed,
-    function(event)
+    function (event)
         local player_index = event.player_index
         statistics[player_index] = nil
     end
@@ -316,7 +316,7 @@ Event.add(
 
 Event.add(
     e.on_player_removed,
-    function(event)
+    function (event)
         local player_index = event.player_index
         statistics[player_index] = nil
     end
@@ -326,7 +326,7 @@ Event.on_nth_tick(settings.nth_tick, upload_data)
 
 Server.on_data_set_changed(
     statistics_dataset,
-    function(data)
+    function (data)
         local player = game.get_player(data.key)
         if player and player.valid then
             local stats = data.value
@@ -367,12 +367,12 @@ end
 for stat_name, event_name in pairs(events) do
     Event.add(
         event_name,
-        function(event)
+        function (event)
             if not event.player_index then
                 return
             end
             local player = game.get_player(event.player_index)
-            if not player.valid or not player.connected then
+            if not player or not player.valid or not player.connected then
                 return
             end
             local data = get_data(event.player_index)
@@ -383,7 +383,7 @@ end
 
 Event.add(
     e.on_research_finished,
-    function(event)
+    function (event)
         local research = event.research
         if event.by_script or not research or not research.valid then
             return
@@ -401,7 +401,7 @@ Event.add(
 
 Event.add(
     e.on_rocket_launched,
-    function(event)
+    function (event)
         local silo = event.rocket_silo
         if not silo or not silo.valid then
             return
@@ -419,7 +419,7 @@ Event.add(
 
 Event.add(
     e.on_entity_died,
-    function(event)
+    function (event)
         local character = event.cause
         if not character or not character.valid or character.type ~= 'character' then
             return
@@ -443,13 +443,13 @@ Event.add(
 
 Event.add(
     e.on_entity_damaged,
-    function(event)
+    function (event)
         local character = event.cause
         if not character or not character.valid or character.type ~= 'character' then
             return
         end
         local player = character.player
-        if not player.valid or not player.connected then
+        if not player or not player.valid or not player.connected then
             return
         end
         local entity = event.entity
@@ -466,9 +466,9 @@ Event.add(
 
 Event.add(
     e.on_player_changed_position,
-    function(event)
+    function (event)
         local player = game.get_player(event.player_index)
-        if not player.valid or not player.connected or player.afk_time > settings.required_only_time_to_save_time then
+        if not player or not player.valid or not player.connected or player.afk_time > settings.required_only_time_to_save_time then
             return
         end
         local data = get_data(event.player_index)
@@ -478,7 +478,7 @@ Event.add(
 
 Event.on_nth_tick(
     3600,
-    function()
+    function ()
         if game.tick == 0 then
             return
         end
@@ -493,14 +493,14 @@ Event.on_nth_tick(
 
 Event.add(
     e.on_player_created,
-    function(event)
+    function (event)
         get_data(event.player_index):increase('maps_played')
     end
 )
 
 Event.add(
     e.on_player_kicked,
-    function(event)
+    function (event)
         get_data(event.player_index):increase('kicked')
     end
 )

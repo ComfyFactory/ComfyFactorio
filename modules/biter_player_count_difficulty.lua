@@ -28,7 +28,7 @@ local function on_entity_damaged(event)
     if math.random(1, 100) >= storage.connected_players then
         return
     end
-    if event.final_damage_amount > event.entity.prototype.max_health then
+    if event.final_damage_amount > event.entity.max_health then
         return
     end
     event.entity.health = event.entity.health + event.final_damage_amount

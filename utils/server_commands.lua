@@ -1,5 +1,5 @@
 local Poll = {
-    send_poll_result_to_discord = function()
+    send_poll_result_to_discord = function ()
     end
 }
 local Token = require 'utils.token'
@@ -71,5 +71,23 @@ function is_game_modded()
     end
     return false
 end
+
+local space_age_mods = {
+    ['space-age'] = true,
+    ['elevated-rails'] = true,
+    ['quality'] = true,
+
+}
+
+function has_space_age()
+    local active_mods = script.active_mods
+    for mod_name, _ in pairs(active_mods) do
+        if space_age_mods[mod_name] then
+            return true
+        end
+    end
+    return false
+end
+
 
 return ServerCommands

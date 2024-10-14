@@ -8,7 +8,7 @@ local concat = table.concat
 
 local Public = {}
 
-local ignore = {tokens = true}
+local ignore = { tokens = true }
 
 local header_name = Gui.uid_name()
 local left_panel_name = Gui.uid_name()
@@ -16,38 +16,38 @@ local right_panel_name = Gui.uid_name()
 local input_text_box_name = Gui.uid_name()
 local refresh_name = Gui.uid_name()
 
-Public.name = 'global'
+Public.name = 'Storage'
 
 function Public.show(container)
-    local main_flow = container.add {type = 'flow', direction = 'horizontal'}
+    local main_flow = container.add { type = 'flow', direction = 'horizontal' }
 
-    local left_panel = main_flow.add {type = 'scroll-pane', name = left_panel_name}
+    local left_panel = main_flow.add { type = 'scroll-pane', name = left_panel_name }
     local left_panel_style = left_panel.style
     left_panel_style.width = 400
 
-    for key, _ in pairs(global) do
+    for key, _ in pairs(storage) do
         if not ignore[key] then
-            local header = left_panel.add({type = 'flow'}).add {type = 'label', name = header_name, caption = tostring(key)}
+            local header = left_panel.add({ type = 'flow' }).add { type = 'label', name = header_name, caption = tostring(key) }
             Gui.set_data(header, key)
         end
     end
 
-    local right_flow = main_flow.add {type = 'flow', direction = 'vertical'}
+    local right_flow = main_flow.add { type = 'flow', direction = 'vertical' }
 
-    local right_top_flow = right_flow.add {type = 'flow', direction = 'horizontal'}
+    local right_top_flow = right_flow.add { type = 'flow', direction = 'horizontal' }
 
-    local input_text_box = right_top_flow.add {type = 'text-box', name = input_text_box_name}
+    local input_text_box = right_top_flow.add { type = 'text-box', name = input_text_box_name }
     local input_text_box_style = input_text_box.style
     input_text_box_style.horizontally_stretchable = true
     input_text_box_style.height = 32
     input_text_box_style.maximal_width = 1000
 
-    local refresh_button = right_top_flow.add {type = 'sprite-button', name = refresh_name, sprite = 'utility/reset', tooltip = 'Refresh'}
+    local refresh_button = right_top_flow.add { type = 'sprite-button', name = refresh_name, sprite = 'utility/reset', tooltip = 'Refresh' }
     local refresh_button_style = refresh_button.style
     refresh_button_style.width = 32
     refresh_button_style.height = 32
 
-    local right_panel = right_flow.add {type = 'text-box', name = right_panel_name}
+    local right_panel = right_flow.add { type = 'text-box', name = right_panel_name }
     right_panel.read_only = true
     right_panel.selectable = true
 
@@ -71,7 +71,7 @@ end
 
 Gui.on_click(
     header_name,
-    function(event)
+    function (event)
         local element = event.element
         local key = Gui.get_data(element)
 
@@ -92,7 +92,7 @@ Gui.on_click(
         element.style.font_color = Color.orange
         data.selected_header = element
 
-        input_text_box.text = concat {"global['", key, "']"}
+        input_text_box.text = concat { "global['", key, "']" }
         input_text_box.style.font_color = Color.black
 
         local content = dump(global[key]) or 'nil'
@@ -112,7 +112,7 @@ end
 
 Gui.on_text_changed(
     input_text_box_name,
-    function(event)
+    function (event)
         local element = event.element
         local data = Gui.get_data(element)
 
@@ -122,7 +122,7 @@ Gui.on_text_changed(
 
 Gui.on_click(
     refresh_name,
-    function(event)
+    function (event)
         local element = event.element
         local data = Gui.get_data(element)
         if not data then

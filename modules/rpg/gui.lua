@@ -319,7 +319,7 @@ local function draw_main_frame(player, location)
     add_gui_description(left_bottom_table, ({ 'rpg_gui.life_name' }), w1, ({ 'rpg_gui.life_tooltip' }))
     local health_gui = add_gui_stat(left_bottom_table, floor(player.character.health), w2, ({ 'rpg_gui.life_increase' }))
     data.health = health_gui
-    add_gui_stat(left_bottom_table, floor(player.character.prototype.max_health + player.character_health_bonus + player.force.character_health_bonus), w2, ({ 'rpg_gui.life_maximum' }))
+    add_gui_stat(left_bottom_table, floor(player.character.max_health + player.character_health_bonus + player.force.character_health_bonus), w2, ({ 'rpg_gui.life_maximum' }))
 
     local shield = 0
     local shield_max = 0
@@ -468,10 +468,7 @@ function Public.draw_level_text(player)
     end
 
     if rpg_t.text and rpg_t.text.valid then
-        local rend = rendering.get_object_by_id(rpg_t.text and rpg_t.text.id)
-        if rend and rend.valid then
-            rend.destroy()
-        end
+        rpg_t.text.destroy()
         rpg_t.text = nil
     end
 
@@ -480,12 +477,13 @@ function Public.draw_level_text(player)
         return
     end
 
+    if player.character.surface.index ~= player.surface.index then return end
+
     rpg_t.text =
         rendering.draw_text {
             text = 'lvl ' .. rpg_t.level,
             surface = player.surface,
-            target = player.character,
-            target_offset = { 0, -3.25 },
+            target = { entity = player.character, offset = { 0, -3.25 } },
             color = {
                 r = player.color.r * 0.6 + 0.25,
                 g = player.color.g * 0.6 + 0.25,

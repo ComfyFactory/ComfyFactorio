@@ -16,7 +16,7 @@ local input_text_box_name = Gui.uid_name()
 local filter_text_box_name = Gui.uid_name()
 local refresh_name = Gui.uid_name()
 
-Public.name = 'Global'
+Public.name = 'Tokens'
 
 function Public.show(container, filter)
     container.clear()

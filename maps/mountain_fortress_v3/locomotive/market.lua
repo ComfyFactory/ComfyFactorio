@@ -41,6 +41,7 @@ local function add_space(frame)
     add_style(frame.add { type = 'line', direction = 'horizontal' }, space)
 end
 
+
 local function get_items()
     local market_limits = Public.get('market_limits')
     local main_market_items = Public.get('main_market_items')
@@ -530,11 +531,11 @@ local function get_items()
         static = true
     }
 
-    main_market_items['logistic-chest-storage'] = {
+    main_market_items['storage-chest'] = {
         stack = 1,
         value = 'coin',
-        price = fixed_prices.storage_chest_cost,
-        tooltip = ({ 'entity-name.logistic-chest-storage' }),
+        price = fixed_prices.chest_cost,
+        tooltip = ({ 'entity-name.storage-chest' }),
         upgrade = false,
         static = true
     }
@@ -1111,17 +1112,17 @@ local function gui_click(event)
        ]]
         local m = this.locomotive_health / this.locomotive_max_health
 
+
         if this.carriages then
             for i = 1, #this.carriages do
                 local entity = this.carriages[i]
                 if not (entity and entity.valid) then
                     return
                 end
-                local cargo_health = 600
                 if entity.type == 'locomotive' then
-                    entity.health = 1000 * m
+                    entity.health = entity.max_health * m
                 else
-                    entity.health = cargo_health * m
+                    entity.health = entity.max_health * m
                 end
             end
         end
@@ -1515,8 +1516,7 @@ local function create_market(data, rebuild)
                 y_scale = scale,
                 tint = { random(60, 255), random(60, 255), random(60, 255) },
                 render_layer = 'selection-box',
-                target = this.market,
-                target_offset = { -0.7 + random(0, 140) * 0.01, y },
+                target = { entity = this.market, offset = { -0.7 + random(0, 140) * 0.01, y } },
                 surface = surface
             }
         )
@@ -1541,7 +1541,6 @@ local function create_market(data, rebuild)
             surface = surface,
             target = this.mystical_chest.entity,
             scale = 1.2,
-            target_offset = { 0, 0 },
             color = { r = 0.98, g = 0.66, b = 0.22 },
             alignment = 'center'
         }
@@ -1552,9 +1551,8 @@ local function create_market(data, rebuild)
     rendering.draw_text {
         text = 'Market',
         surface = surface,
-        target = this.market,
+        target = { entity = this.market, offset = { 0, -2 } },
         scale = 1.5,
-        target_offset = { 0, -2 },
         color = { r = 0.98, g = 0.66, b = 0.22 },
         alignment = 'center'
     }

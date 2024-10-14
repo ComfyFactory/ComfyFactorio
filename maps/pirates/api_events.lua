@@ -177,7 +177,7 @@ local function handle_damage_to_silo(event)
 					destination.dynamic_data.rocketsilohp = remaining_health
 				end
 			else
-				entity.health = entity.prototype.max_health
+				entity.health = entity.max_health
 			end
 		end
 	end
@@ -291,7 +291,7 @@ local function handle_damage_to_artillery(event)
 			event.entity.die()
 		end
 	else
-		event.entity.health = event.entity.prototype.max_health --nothing else should damage it
+		event.entity.health = event.entity.max_health --nothing else should damage it
 	end
 end
 
@@ -731,13 +731,13 @@ local function handle_maze_walls_damage_resistance(event)
 	elseif event.damage_type.name and event.damage_type.name == 'fire' then
 		-- put out forest fires:
 		for _, e2 in
-			pairs(entity.surface.find_entities_filtered({
-				area = {
-					{ entity.position.x - 4, entity.position.y - 4 },
-					{ entity.position.x + 4, entity.position.y + 4 },
-				},
-				name = 'fire-flame-on-tree',
-			}))
+		pairs(entity.surface.find_entities_filtered({
+			area = {
+				{ entity.position.x - 4, entity.position.y - 4 },
+				{ entity.position.x + 4, entity.position.y + 4 },
+			},
+			name = 'fire-flame-on-tree',
+		}))
 		do
 			if e2.valid then
 				e2.destroy()
@@ -1946,7 +1946,7 @@ function Public.player_entered_vehicle(player, vehicle)
 	-- if not vehicle.valid then log('vehicle invalid') return end
 
 	local player_relative_pos =
-		{ x = player.character.position.x - vehicle.position.x, y = player.character.position.y - vehicle.position.y }
+	{ x = player.character.position.x - vehicle.position.x, y = player.character.position.y - vehicle.position.y }
 
 	local memory = Memory.get_crew_memory()
 
@@ -2131,7 +2131,7 @@ function Public.event_on_chunk_generated(event)
 				})
 			else
 				tiles[#tiles + 1] =
-					{ name = 'out-of-map', position = Utils.psum({ p, { 1, terraingen_coordinates_offset } }) }
+				{ name = 'out-of-map', position = Utils.psum({ p, { 1, terraingen_coordinates_offset } }) }
 			end
 		end
 	end
@@ -2179,7 +2179,7 @@ function Public.event_on_chunk_generated(event)
 			if special.name == 'buried-treasure' then
 				if destination.dynamic_data.buried_treasure and crewid ~= 0 then
 					destination.dynamic_data.buried_treasure[#destination.dynamic_data.buried_treasure + 1] =
-						{ treasure = Loot.buried_treasure_loot(), position = special.position }
+					{ treasure = Loot.buried_treasure_loot(), position = special.position }
 				end
 			elseif special.name == 'chest' then
 				local e = surface.create_entity({
@@ -2253,7 +2253,7 @@ function Public.event_on_chunk_generated(event)
 
 			if special.components then
 				destination.dynamic_data.structures_waiting_to_be_placed[#destination.dynamic_data.structures_waiting_to_be_placed + 1] =
-					{ data = special, tick = game.tick }
+				{ data = special, tick = game.tick }
 			end
 		end
 
@@ -2463,7 +2463,7 @@ local function event_on_market_item_purchased(event)
 	Shop.event_on_market_item_purchased(event)
 end
 
-local remove_boost_movement_speed_on_respawn = Token.register(function(data)
+local remove_boost_movement_speed_on_respawn = Token.register(function (data)
 	local player = data.player
 	local crew_id = data.crew_id
 	if not (player and player.valid) then
@@ -2486,7 +2486,7 @@ local remove_boost_movement_speed_on_respawn = Token.register(function(data)
 	Common.notify_player_expected(player, { 'pirates.respawn_speed_bonus_removed' })
 end)
 
-local boost_movement_speed_on_respawn = Token.register(function(data)
+local boost_movement_speed_on_respawn = Token.register(function (data)
 	local player = data.player
 	local crew_id = data.crew_id
 	if not player or not player.valid then

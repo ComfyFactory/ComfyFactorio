@@ -1,6 +1,6 @@
 local Global = require 'utils.global'
-local surface_name = 'mtn_v3'
 local Public = require 'maps.mountain_fortress_v3.table'
+local surface_name = Public.scenario_name
 local zone_settings = Public.zone_settings
 
 local this = {
@@ -50,9 +50,11 @@ function Public.create_surface()
     mine['control-setting:moisture:frequency:multiplier'] = 1
 
     map_gen_settings.property_expression_names = mine
+    map_gen_settings.default_enable_all_autoplace_controls = false
 
     if not this.active_surface_index then
         this.active_surface_index = game.create_surface(surface_name, map_gen_settings).index
+        -- this.active_surface_index = game.planets['fulgora'].create_surface(surface_name, map_gen_settings).index
     else
         this.active_surface_index = Public.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings).index
     end

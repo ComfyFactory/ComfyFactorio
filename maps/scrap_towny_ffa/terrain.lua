@@ -101,7 +101,7 @@ local container_loot_chance = {
     { name = 'sulfuric-acid-barrel',   chance = 15 },
     --{name = "uranium-cannon-shell", chance = 1},
     { name = 'uranium-fuel-cell',      chance = 1 },
-    --{name = "used-up-uranium-fuel-cell", chance = 1},
+    --{name = "depleted-uranium-fuel-cell", chance = 1},
     { name = 'water-barrel',           chance = 10 }
 }
 
@@ -152,7 +152,7 @@ local container_loot_amounts = {
     ['sulfuric-acid-barrel'] = 3,
     --["uranium-cannon-shell"] = 2,
     ['uranium-fuel-cell'] = 0.3,
-    --["used-up-uranium-fuel-cell"] = 1,
+    --["depleted-uranium-fuel-cell"] = 1,
     ['water-barrel'] = 3
 }
 
