@@ -295,6 +295,10 @@ function Public.create_cabin_surface()
 				e2.rotatable = false
 				e2.operable = false
 			end
+
+			if e2.name == 'wooden-chest' then
+				e2.force = 'environment' -- Patch to stop the autostash helper from inserting items in these chests
+			end
 		end
 		-- local es2 = Common.build_from_blueprint(Public.Data.operable_entities_bp, surface, {x=5, y=-4}, boat.force_name)
 		-- for _, e2 in pairs(es2) do
