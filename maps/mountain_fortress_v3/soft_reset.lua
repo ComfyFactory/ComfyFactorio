@@ -20,6 +20,7 @@ local function reset_forces(new_surface, old_surface)
     end
 end
 
+---@param surface LuaSurface
 local function teleport_players(surface)
     local adjusted_zones = Public.get('adjusted_zones')
     local position
@@ -43,13 +44,15 @@ local function teleport_players(surface)
     end
 
     for _, player in pairs(game.connected_players) do
-        player.teleport(surface.find_non_colliding_position('character', position, 3, 0, 5), surface)
+        local pos = surface.find_non_colliding_position('character', position, 3, 0)
+        player.teleport({ x = pos.x, y = pos.y }, surface)
     end
 end
 
 local function clear_scheduler(scheduler)
     scheduler.operation = nil
     scheduler.surface = nil
+    scheduler.old_surface_name = nil
     scheduler.remove_surface = false
     scheduler.start_after = 0
 end
@@ -117,6 +120,11 @@ local function scheduled_surface_clearing()
         scheduler.start_after = tick + 100
     elseif operation == 'done' then
         game.print(mapkeeper .. ' Done clearing old surface.')
+        local new_surface_index = Public.get('active_surface_index')
+        local new_surface = game.get_surface(new_surface_index)
+        if new_surface and new_surface.valid then
+            new_surface.name = scheduler.old_surface_name
+        end
         clear_scheduler(scheduler)
     end
 end
@@ -184,6 +192,7 @@ function Public.add_schedule_to_delete_surface(remove_surface)
     local scheduler = Public.get('scheduler')
     scheduler.operation = 'warn'
     scheduler.surface = surface
+    scheduler.old_surface_name = surface.name
     scheduler.remove_surface = remove_surface or false
     scheduler.start_after = tick + 500
 end

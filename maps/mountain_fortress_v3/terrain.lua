@@ -7,11 +7,12 @@ local abs = math.abs
 local floor = math.floor
 local ceil = math.ceil
 
+local scenario_name = Public.scenario_name
 local zone_settings = Public.zone_settings
 local worm_level_modifier = 0.19
 local base_tile = 'grass-1'
 
-local start_ground_tiles = {
+local vanilla_start_ground_tiles = {
     'grass-1',
     'grass-1',
     'grass-2',
@@ -25,6 +26,25 @@ local start_ground_tiles = {
     'sand-3',
     'grass-4'
 }
+
+local start_ground_tiles = {
+    'volcanic-jagged-ground',
+    'volcanic-folds-warm',
+    'volcanic-soil-light',
+    'volcanic-smooth-stone-warm',
+    'volcanic-folds-warm',
+    'volcanic-jagged-ground',
+    'volcanic-soil-dark',
+    'volcanic-smooth-stone-warm',
+    'volcanic-soil-dark',
+    'volcanic-folds-warm',
+    'volcanic-soil-light',
+    'volcanic-smooth-stone-warm',
+}
+
+if not has_space_age() then
+    start_ground_tiles = vanilla_start_ground_tiles
+end
 
 local nuclear_tiles = {
     'nuclear-ground',
@@ -2926,7 +2946,7 @@ function Public.heavy_functions(data)
     local surface = data.surface
     local map_name = 'mtn_v3'
 
-    if string.sub(surface.name, 0, #map_name) ~= map_name then
+    if string.sub(surface.name, 0, #scenario_name) ~= scenario_name then
         return
     end
     local adjusted_zones = Public.get('adjusted_zones')
@@ -3015,7 +3035,7 @@ Event.add(
         local surface = e.surface
         local map_name = 'mtn_v3'
 
-        if string.sub(surface.name, 0, #map_name) ~= map_name then
+        if string.sub(surface.name, 0, #scenario_name) ~= scenario_name then
             return
         end
 

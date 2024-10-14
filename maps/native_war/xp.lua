@@ -235,10 +235,10 @@ local function on_pre_player_mined_item(event)
         return
     end
     if entity.force.name == 'neutral' then
-        gain_xp(player, 1.5 + event.entity.prototype.max_health * 0.0035)
+        gain_xp(player, 1.5 + event.entity.max_health * 0.0035)
         return
     end
-    gain_xp(player, 0.1 + event.entity.prototype.max_health * 0.0005)
+    gain_xp(player, 0.1 + event.entity.max_health * 0.0005)
 end
 
 local function on_built_entity(event)

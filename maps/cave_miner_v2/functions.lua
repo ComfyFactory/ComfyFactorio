@@ -491,7 +491,7 @@ Public.mining_events = {
             local position = entity.position
             local surface = entity.surface
             local entity = surface.create_entity({ name = cave_miner.buildings_raffle[math_random(1, #cave_miner.buildings_raffle)], position = position, force = 'player' })
-            entity.health = math_random(1, entity.prototype.max_health)
+            entity.health = math_random(1, entity.max_health)
             local player = game.players[player_index]
             game.print(Public.get_colored_name(player_index) .. ' discovered an abandoned building', Constants.chat_color)
         end,

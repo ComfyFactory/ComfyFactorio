@@ -340,7 +340,7 @@ local function draw_gui(player, forced)
 
     add_gui_description(tt, 'LIFE', w1)
     add_gui_stat(tt, math.floor(player.character.health), w2)
-    add_gui_stat(tt, math.floor(player.character.prototype.max_health + player.character_health_bonus + player.force.character_health_bonus), w2)
+    add_gui_stat(tt, math.floor(player.character.max_health + player.character_health_bonus + player.force.character_health_bonus), w2)
 
     local shield = 0
     local shield_max = 0
@@ -446,8 +446,8 @@ local function draw_level_text(player)
         return
     end
 
-    if rpg_t[player.index].text then
-        rendering.destroy(rpg_t[player.index].text)
+    if rpg_t[player.index].text and rpg_t[player.index].text.valid then
+        rpg_t[player.index].text.destroy()
         rpg_t[player.index].text = nil
     end
 
@@ -465,8 +465,7 @@ local function draw_level_text(player)
         rendering.draw_text {
             text = 'lvl ' .. rpg_t[player.index].level,
             surface = player.surface,
-            target = player.character,
-            target_offset = { 0, -3.25 },
+            target = { entity = player.character, offset = { 0, -3.25 } },
             color = {
                 r = player.color.r * 0.6 + 0.25,
                 g = player.color.g * 0.6 + 0.25,
@@ -967,7 +966,7 @@ local function on_pre_player_mined_item(event)
     if entity.type == 'resource' then
         xp_amount = 0.5 * distance_multiplier
     else
-        xp_amount = (1.5 + event.entity.prototype.max_health * 0.0035) * distance_multiplier
+        xp_amount = (1.5 + event.entity.max_health * 0.0035) * distance_multiplier
     end
 
     gain_xp(player, xp_amount)

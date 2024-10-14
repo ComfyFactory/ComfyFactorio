@@ -136,8 +136,7 @@ local function render_owner_text(renders, player, entity, new_owner)
             rendering.draw_text {
                 text = '## - ' .. new_owner.name .. "'s " .. ce_name .. ' - ##',
                 surface = entity.surface,
-                target = entity,
-                target_offset = { 0, -2.6 },
+                target = { entity = entity, offset = { 0, -2.6 } },
                 color = color,
                 scale = 1.05,
                 font = 'default-large-semibold',
@@ -149,8 +148,7 @@ local function render_owner_text(renders, player, entity, new_owner)
             rendering.draw_text {
                 text = '## - ' .. player.name .. "'s " .. ce_name .. ' - ##',
                 surface = entity.surface,
-                target = entity,
-                target_offset = { 0, -2.6 },
+                target = { entity = entity, offset = { 0, -2.6 } },
                 color = color,
                 scale = 1.05,
                 font = 'default-large-semibold',
@@ -1135,6 +1133,7 @@ function Public.create_room_surface(car)
         }
     }
     local surface = game.create_surface(car.surface_name, map_gen_settings)
+    surface.no_enemies_mode = true
     surface.freeze_daytime = true
     surface.daytime = 0.1
     surface.request_to_generate_chunks({ 16, 16 }, 1)

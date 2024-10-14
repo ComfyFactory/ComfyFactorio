@@ -583,7 +583,7 @@ local function on_entity_died(event)
         return
     end
     local revived_entity = entity.clone({ position = entity.position })
-    revived_entity.health = entity.prototype.max_health
+    revived_entity.health = entity.max_health
     entity.destroy()
 end
 

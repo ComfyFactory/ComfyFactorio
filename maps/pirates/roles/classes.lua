@@ -180,7 +180,7 @@ function Public.explanation(class, add_is_class_obtainable)
 
 	if add_is_class_obtainable then
 		full_explanation[#full_explanation + 1] = Public.class_is_obtainable(class)
-				and { '', ' ', { 'pirates.class_obtainable' } }
+			and { '', ' ', { 'pirates.class_obtainable' } }
 			or { '', ' ', { 'pirates.class_unobtainable' } }
 	end
 
@@ -480,7 +480,7 @@ local function class_on_player_used_capsule(event)
 			if Math.distance(player.character.position, member.position) <= Balance.medic_heal_radius then
 				if member.character then
 					local amount =
-						Math.ceil(member.character.prototype.max_health * Balance.medic_heal_percentage_amount)
+						Math.ceil(member.character.max_health * Balance.medic_heal_percentage_amount)
 					member.character.health = member.character.health + amount
 				end
 			end
@@ -490,7 +490,7 @@ local function class_on_player_used_capsule(event)
 			if Math.distance(player.character.position, member.position) <= Balance.doctor_heal_radius then
 				if member.character then
 					local amount =
-						Math.ceil(member.character.prototype.max_health * Balance.doctor_heal_percentage_amount)
+						Math.ceil(member.character.max_health * Balance.doctor_heal_percentage_amount)
 					member.character.health = member.character.health + amount
 				end
 			end
@@ -658,7 +658,7 @@ function Public.try_unlock_class(class_for_sale, player, force_unlock)
 
 				-- update GUI data
 				memory.unlocked_classes[#memory.unlocked_classes + 1] =
-					{ class = class_for_sale, taken_by = player.index }
+				{ class = class_for_sale, taken_by = player.index }
 			else
 				-- update GUI data
 				memory.unlocked_classes[#memory.unlocked_classes + 1] = { class = class_for_sale }

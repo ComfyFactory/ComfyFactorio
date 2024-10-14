@@ -37,8 +37,8 @@ function Public.on_player_mined_entity(event)
     elseif entity.name == 'huge-rock' or entity.name == 'big-rock' or entity.name == 'big-sand-rock' then
         if objective.world.id == 3 then --rocky worlds
             event.buffer.clear()
-        -- elseif objective.world.id == 5 then --maze worlds
-        --     --nothing
+            -- elseif objective.world.id == 5 then --maze worlds
+            --     --nothing
         else
             Ores.prospect_ores(entity, entity.surface, entity.position)
         end
@@ -67,7 +67,7 @@ function Public.on_pre_player_left_game(event)
         player.toggle_map_editor()
     end
     if player.character then
-        playertable.offline_players[#playertable.offline_players + 1] = {index = event.player_index, tick = game.tick}
+        playertable.offline_players[#playertable.offline_players + 1] = { index = event.player_index, tick = game.tick }
     end
 end
 
@@ -79,7 +79,7 @@ function Public.on_player_joined_game(event)
     if not playertable.flame_boots[event.player_index] then
         playertable.flame_boots[event.player_index] = {}
     end
-    playertable.flame_boots[event.player_index] = {fuel = 1}
+    playertable.flame_boots[event.player_index] = { fuel = 1 }
     if not playertable.flame_boots[event.player_index].steps then
         playertable.flame_boots[event.player_index].steps = {}
     end
@@ -87,26 +87,26 @@ function Public.on_player_joined_game(event)
     local surface = game.surfaces[objective.active_surface_index]
 
     if player.online_time == 0 then
-        player.teleport(surface.find_non_colliding_position('character', player.force.get_spawn_position(surface), 32, 0.5) or {0, 0}, surface)
+        player.teleport(surface.find_non_colliding_position('character', player.force.get_spawn_position(surface), 32, 0.5) or { 0, 0 }, surface)
         for item, amount in pairs(Balance.starting_items) do
-            player.insert({name = item, count = amount})
+            player.insert({ name = item, count = amount })
         end
     end
 
     if player.surface.index ~= objective.active_surface_index and player.surface.name ~= 'cargo_wagon' then
         player.character = nil
-        player.set_controller({type = defines.controllers.god})
+        player.set_controller({ type = defines.controllers.god })
         player.create_character()
-        player.teleport(surface.find_non_colliding_position('character', player.force.get_spawn_position(surface), 32, 0.5) or {0, 0}, surface)
+        player.teleport(surface.find_non_colliding_position('character', player.force.get_spawn_position(surface), 32, 0.5) or { 0, 0 }, surface)
         for item, amount in pairs(Balance.starting_items) do
-            player.insert({name = item, count = amount})
+            player.insert({ name = item, count = amount })
         end
     end
 
     local tile = surface.get_tile(player.position.x, player.position.y)
     if tile.valid then
         if tile.name == 'out-of-map' then
-            player.teleport(surface.find_non_colliding_position('character', player.force.get_spawn_position(surface), 32, 0.5) or {0, 0}, surface)
+            player.teleport(surface.find_non_colliding_position('character', player.force.get_spawn_position(surface), 32, 0.5) or { 0, 0 }, surface)
         end
     end
     Minimap.update_surface(player)
@@ -134,35 +134,34 @@ function Public.on_player_changed_surface(event)
             player.cursor_ghost = nil
         end
     end
-
 end
 
-local function try_destroy_platform(entity, cause) 
+local function try_destroy_platform(entity, cause)
     local pos = entity.position
     local surface = entity.surface
     if surface.platform then return end
     local asteroids = {
-        ['small-metallic-asteroid'] = {size = 1, amount = 1},
-        ['medium-metallic-asteroid'] = {size = 2, amount = 2},
-        ['big-metallic-asteroid'] = {size = 3, amount = 4},
-        ['huge-metallic-asteroid'] = {size = 6, amount = 6},
-        ['small-carbonic-asteroid'] = {size = 1, amount = 1},
-        ['medium-carbonic-asteroid'] = {size = 2, amount = 2},
-        ['big-carbonic-asteroid'] = {size = 3, amount = 4},
-        ['huge-carbonic-asteroid'] = {size = 6, amount = 6},
-        ['small-oxide-asteroid'] = {size = 1, amount = 1},
-        ['medium-oxide-asteroid'] = {size = 2, amount = 2},
-        ['big-oxide-asteroid'] = {size = 3, amount = 4},
-        ['huge-oxide-asteroid'] = {size = 6, amount = 6},
-        ['small-interstellar-asteroid'] = {size = 1, amount = 1},
-        ['medium-interstellar-asteroid'] = {size = 2, amount = 2},
-        ['big-interstellar-asteroid'] = {size = 3, amount = 4},
-        ['huge-interstellar-asteroid'] = {size = 6, amount = 6},
+        ['small-metallic-asteroid'] = { size = 1, amount = 1 },
+        ['medium-metallic-asteroid'] = { size = 2, amount = 2 },
+        ['big-metallic-asteroid'] = { size = 3, amount = 4 },
+        ['huge-metallic-asteroid'] = { size = 6, amount = 6 },
+        ['small-carbonic-asteroid'] = { size = 1, amount = 1 },
+        ['medium-carbonic-asteroid'] = { size = 2, amount = 2 },
+        ['big-carbonic-asteroid'] = { size = 3, amount = 4 },
+        ['huge-carbonic-asteroid'] = { size = 6, amount = 6 },
+        ['small-oxide-asteroid'] = { size = 1, amount = 1 },
+        ['medium-oxide-asteroid'] = { size = 2, amount = 2 },
+        ['big-oxide-asteroid'] = { size = 3, amount = 4 },
+        ['huge-oxide-asteroid'] = { size = 6, amount = 6 },
+        ['small-interstellar-asteroid'] = { size = 1, amount = 1 },
+        ['medium-interstellar-asteroid'] = { size = 2, amount = 2 },
+        ['big-interstellar-asteroid'] = { size = 3, amount = 4 },
+        ['huge-interstellar-asteroid'] = { size = 6, amount = 6 },
     }
     local stone = asteroids[entity.name]
     if cause then
         for i = stone.amount, 0, -1 do
-            --register some loot or something. Can't spawn chunks outside the actual space platform!       
+            --register some loot or something. Can't spawn chunks outside the actual space platform!
         end
         return
     end
@@ -170,9 +169,9 @@ local function try_destroy_platform(entity, cause)
     local size = stone.size
     for x = -size, size, 1 do
         for y = -size, size, 1 do
-            local tile = entity.surface.get_tile(pos.x + x,pos.y + y)
-            if tile and tile.valid and tile.name == 'space-platform-foundation' then 
-                tiles[#tiles+1] = {position = {x = pos.x + x, y = pos.y + y}, name = 'empty-space'}
+            local tile = entity.surface.get_tile(pos.x + x, pos.y + y)
+            if tile and tile.valid and tile.name == 'space-platform-foundation' then
+                tiles[#tiles + 1] = { position = { x = pos.x + x, y = pos.y + y }, name = 'empty-space' }
             end
         end
     end
@@ -303,8 +302,8 @@ function Public.on_built_entity(event)
         if objective.world.id ~= 7 or entity.surface.name == 'cargo_wagon' then
             entity.destroy()
             local player = game.players[event.player_index]
-            Alert.alert_player_warning(player, 8, {'chronosphere.spidertron_not_allowed'})
-            player.insert({name = 'spidertron', count = 1})
+            Alert.alert_player_warning(player, 8, { 'chronosphere.spidertron_not_allowed' })
+            player.insert({ name = 'spidertron', count = 1 })
         end
     end
 end
@@ -313,48 +312,48 @@ function Public.on_pre_player_died(event)
     local player = game.get_player(event.player_index)
     if not player or not player.valid then return end
     local surface = player.surface
-    local poisons = surface.count_entities_filtered {position = player.position, radius = 10, name = 'poison-cloud'}
+    local poisons = surface.count_entities_filtered { position = player.position, radius = 10, name = 'poison-cloud' }
     if poisons > 0 then
         local objective = Chrono_table.get_table()
         objective.poison_mastery_unlocked = objective.poison_mastery_unlocked + 1
         if objective.poison_mastery_unlocked == 10 then
-            game.print({'chronosphere.message_poison_mastery_unlock'}, {r = 0.98, g = 0.66, b = 0.22})
+            game.print({ 'chronosphere.message_poison_mastery_unlock' }, { r = 0.98, g = 0.66, b = 0.22 })
         end
     end
 end
 
 function Public.script_raised_revive(event)
-	local entity = event.entity
-	if not entity or not entity.valid then return end
-	if entity.force.name == "player" then
+    local entity = event.entity
+    if not entity or not entity.valid then return end
+    if entity.force.name == "player" then
         entity.minable = false
         entity.destructible = false
         if entity.name == 'solar-panel' or entity.name == 'substation' then
             entity.operable = false
         end
     end
-	if entity.force.name == "scrapyard" then
-		if entity.name == "gun-turret" then
+    if entity.force.name == "scrapyard" then
+        if entity.name == "gun-turret" then
             local objective = Chrono_table.get_table()
             if objective.chronojumps > 2 then
-                entity.insert({name = "uranium-rounds-magazine", count = 128})
+                entity.insert({ name = "uranium-rounds-magazine", count = 128 })
             else
-                entity.insert({name = "firearm-magazine", count = 12})
+                entity.insert({ name = "firearm-magazine", count = 12 })
             end
-		elseif entity.name == "artillery-turret" then
-			entity.insert({name = "artillery-shell", count = 30})
-		elseif entity.name == "accumulator" then
-			entity.energy = 5000000
-		elseif entity.name == "storage-tank" then
-			entity.insert_fluid({name = "light-oil", amount = 15000})
-		end
-	end
-	if entity.force.name == "neutral" then
-		if entity.is_entity_with_health then
-			entity.health = math.random(-10, entity.prototype.max_health)
-			if entity.health <= 0 then entity.die(entity.force) end
-		end
-	end
+        elseif entity.name == "artillery-turret" then
+            entity.insert({ name = "artillery-shell", count = 30 })
+        elseif entity.name == "accumulator" then
+            entity.energy = 5000000
+        elseif entity.name == "storage-tank" then
+            entity.insert_fluid({ name = "light-oil", amount = 15000 })
+        end
+    end
+    if entity.force.name == "neutral" then
+        if entity.is_entity_with_health then
+            entity.health = math.random(-10, entity.max_health)
+            if entity.health <= 0 then entity.die(entity.force) end
+        end
+    end
 end
 
 return Public

@@ -76,7 +76,7 @@ function Public.add_unit(unit, health_multiplier)
         health_multiplier = storage.biter_health_boost
     end
     storage.biter_health_boost_units[unit.unit_number] = {
-        math_floor(unit.prototype.max_health * health_multiplier),
+        math_floor(unit.max_health * health_multiplier),
         math_round(1 / health_multiplier, 5)
     }
     clean_table()
@@ -89,7 +89,7 @@ function Public.add_boss_unit(unit, health_multiplier, health_bar_size)
     if not health_bar_size then
         health_bar_size = 0.5
     end
-    local health = math_floor(unit.prototype.max_health * health_multiplier)
+    local health = math_floor(unit.max_health * health_multiplier)
     storage.biter_health_boost_units[unit.unit_number] = {
         health,
         math_round(1 / health_multiplier, 5),

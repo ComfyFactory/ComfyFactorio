@@ -1,0 +1,41 @@
+name: 'Auto-release'
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the develop branch
+on:
+  push:
+    branches: [develop]
+
+jobs:
+  auto-release:
+    name: 'Auto Release'
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Changelog
+        uses: scottbrenner/generate-changelog-action@master
+        id: Changelog
+        env:
+          REPO: ${{ github.repository }}
+      - id: next_version
+        uses: zwaldowski/semver-release-action@v2
+        with:
+          prefix: v
+          dry_run: true
+          bump: patch
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.next_version.outputs.version}}
+          release_name: Main Scenario
+          body: |
+            This is the main release of the stable version of Factorio.
+            Check out the [wiki](https://github.com/ComfyFactory/ComfyFactorio/wiki) for getting started.
+            ${{ steps.Changelog.outputs.changelog }}
+          draft: false
+          prerelease: false

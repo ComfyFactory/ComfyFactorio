@@ -13,6 +13,7 @@ local Core = require 'utils.core'
 local Task = require 'utils.task_token'
 
 local zone_settings = Public.zone_settings
+local scenario_name = Public.scenario_name
 
 local rpg_main_frame = RPG.main_frame_name
 local random = math.random
@@ -186,7 +187,7 @@ local function hurt_players_outside_of_aura()
     local map_name = 'mtn_v3'
     Core.iter_connected_players(
         function (player)
-            if sub(player.surface.name, 0, #map_name) == map_name then
+            if sub(player.surface.name, 0, #scenario_name) == scenario_name then
                 local position = player.position
                 local inside = ((position.x - loco.x) ^ 2 + (position.y - loco.y) ^ 2) < upgrades.locomotive_aura_radius ^ 2
                 if not inside then
@@ -197,7 +198,7 @@ local function hurt_players_outside_of_aura()
                         if random(1, 3) == 1 then
                             player.surface.create_entity({ name = 'medium-scorchmark', position = position, force = 'neutral' })
                         end
-                        local max_health = floor(player.character.prototype.max_health + player.character_health_bonus + player.force.character_health_bonus)
+                        local max_health = floor(player.character.max_health + player.character_health_bonus + player.force.character_health_bonus)
                         local vehicle = player.vehicle
                         if vehicle and vehicle.valid and non_valid_vehicles[vehicle.type] then
                             player.driving = false
@@ -458,6 +459,10 @@ local function set_locomotive_health()
         if health_text and health_text.valid then
             health_text.text = 'HP: ' .. round(locomotive_health) .. ' / ' .. round(locomotive_max_health)
         end
+
+
+
+
         local carriages = Public.get('carriages')
         if carriages then
             for i = 1, #carriages do
@@ -466,11 +471,10 @@ local function set_locomotive_health()
                     return
                 end
                 get_driver_action(entity)
-                local cargo_health = 600
                 if entity.type == 'locomotive' then
-                    entity.health = 1000 * m
+                    entity.health = entity.max_health * m
                 else
-                    entity.health = cargo_health * m
+                    entity.health = entity.max_health * m
                 end
             end
         end

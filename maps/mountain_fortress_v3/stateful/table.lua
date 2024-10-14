@@ -16,7 +16,6 @@ local RPG = require 'modules.rpg.table'
 local Beam = require 'modules.render_beam'
 local Discord = require 'utils.discord'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
-local scenario_name = Public.scenario_name
 
 local this = {
     enabled = false,
@@ -34,7 +33,9 @@ local dataset = 'scenario_settings'
 local dataset_key = 'mtn_v3'
 local dataset_key_dev = 'mtn_v3_dev'
 local dataset_key_previous = 'mtn_v3_previous'
+local dataset_key_previous_dev = 'mtn_v3_previous_dev'
 local send_ping_to_channel = Discord.channel_names.mtn_channel
+local scenario_name = Public.scenario_name
 
 Global.register(
     this,
@@ -297,17 +298,6 @@ local function get_random_buff(fetch_all, only_force)
             }
         },
         {
-            name = 'production',
-            discord = 'Production starting supplies - start with some furnaces and coal',
-            modifier = 'starting_items',
-            limit = 2,
-            add_per_buff = 1,
-            items = {
-                { name = 'stone-furnace', count = 4 },
-                { name = 'coal',          count = 100 }
-            }
-        },
-        {
             name = 'production_1',
             discord = 'Production starting supplies - start with some steel furnaces and solid fuel',
             modifier = 'starting_items',
@@ -566,7 +556,7 @@ local function on_pre_player_died(event)
         return
     end
 
-    if string.sub(surface.name, 0, #map_name) ~= map_name then
+    if string.sub(surface.name, 0, #scenario_name) ~= scenario_name then
         return
     end
 
@@ -1440,7 +1430,7 @@ function Public.save_settings_before_reset()
     if server_name_matches then
         Server.set_data(dataset, dataset_key_previous, settings)
     else
-        Server.set_data(dataset, dataset_key_previous, settings)
+        Server.set_data(dataset, dataset_key_previous_dev, settings)
     end
 end
 

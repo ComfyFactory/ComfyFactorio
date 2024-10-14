@@ -13,7 +13,7 @@ local math_round = math.round
 local fhb = {}
 Global.register(
     fhb,
-    function(tbl)
+    function (tbl)
         fhb = tbl
     end
 )
@@ -52,7 +52,7 @@ local function on_entity_damaged(event)
         return
     end
     if not boost[unit_number] then
-        boost[unit_number] = entity.prototype.max_health
+        boost[unit_number] = entity.max_health
     end
 
     local new_health = boost[unit_number] - event.final_damage_amount * boost.m

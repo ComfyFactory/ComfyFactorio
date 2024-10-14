@@ -137,24 +137,26 @@ function Public.locomotive_spawn(surface, position, reversed)
         extra_wagons = 0
     end
 
+    local quality = this.space_age and 'legendary' or 'normal'
+
     if reversed then
         position.y = position.y - (6 * extra_wagons)
         for y = -6, 6, 2 do
             surface.create_entity({ name = 'straight-rail', position = { position.x, position.y + y }, force = 'player', direction = 0 })
         end
-        this.locomotive = surface.create_entity({ name = 'locomotive', position = { position.x, position.y + -3 }, force = 'player', direction = defines.direction.south })
+        this.locomotive = surface.create_entity({ name = 'locomotive', position = { position.x, position.y + -3 }, force = 'player', direction = defines.direction.south, quality = quality })
         this.locomotive.get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 100 })
 
-        this.locomotive_cargo = surface.create_entity({ name = 'cargo-wagon', position = { position.x, position.y + 3 }, force = 'player', direction = defines.direction.south })
+        this.locomotive_cargo = surface.create_entity({ name = 'cargo-wagon', position = { position.x, position.y + 3 }, force = 'player', direction = defines.direction.south, quality = quality })
         this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'raw-fish', count = 8 })
     else
         for y = -6, 6, 2 do
             surface.create_entity({ name = 'straight-rail', position = { position.x, position.y + y }, force = 'player', direction = 0 })
         end
-        this.locomotive = surface.create_entity({ name = 'locomotive', position = { position.x, position.y + -3 }, force = 'player' })
+        this.locomotive = surface.create_entity({ name = 'locomotive', position = { position.x, position.y + -3 }, force = 'player', quality = quality })
         this.locomotive.get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 100 })
 
-        this.locomotive_cargo = surface.create_entity({ name = 'cargo-wagon', position = { position.x, position.y + 3 }, force = 'player' })
+        this.locomotive_cargo = surface.create_entity({ name = 'cargo-wagon', position = { position.x, position.y + 3 }, force = 'player', quality = quality })
         this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'raw-fish', count = 8 })
     end
 
@@ -207,8 +209,7 @@ function Public.locomotive_spawn(surface, position, reversed)
                 y_scale = scale,
                 tint = { random(60, 255), random(60, 255), random(60, 255) },
                 render_layer = 'selection-box',
-                target = this.locomotive_cargo,
-                target_offset = { -0.7 + random(0, 140) * 0.01, y },
+                target = { entity = this.locomotive_cargo, offset = { -0.7 + random(0, 140) * 0.01, y } },
                 surface = surface
             }
         )

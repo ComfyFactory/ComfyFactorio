@@ -143,6 +143,10 @@ local function notify_won_to_discord(buff)
     else
         Server.to_discord_embed_parsed(text)
     end
+
+    Alert.alert_all_players(100, 'Buff granted: ' .. buff.discord)
+    Alert.alert_all_players(100, 'Buff granted: ' .. buff.discord)
+    Alert.alert_all_players(100, 'Buff granted: ' .. buff.discord)
 end
 
 local function clear_all_frames()
@@ -917,7 +921,7 @@ local function update_data()
                         local objective = stateful.selected_objectives[objective_index]
                         local objective_name = objective.name
                         local callback = Task.get(objective.token)
-                        local _, _, objective_locale_right, _, objective_tooltip_right = callback()
+                        local _, _, objective_locale_right, _, objective_tooltip_right = callback(player)
                         if name == objective_name and frame and frame.valid then
                             frame.caption = objective_locale_right
                             frame.tooltip = objective_tooltip_right

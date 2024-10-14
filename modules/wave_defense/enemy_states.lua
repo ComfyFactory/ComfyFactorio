@@ -489,7 +489,7 @@ local function on_entity_damaged(event)
         return
     end
 
-    local max = entity.prototype.max_health
+    local max = entity.max_health
 
     if state.boss_unit then
         state:spawn_children()
@@ -704,7 +704,7 @@ function Public._esp:spawn_children()
         return
     end
 
-    local max = entity.prototype.max_health
+    local max = entity.max_health
 
     if entity.health <= max / 4 and not self.spawned_children then
         self.spawned_children = true

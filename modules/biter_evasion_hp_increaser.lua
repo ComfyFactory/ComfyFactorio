@@ -23,7 +23,7 @@ local function on_entity_damaged(event)
     if not types[event.entity.type] then
         return
     end
-    if event.final_damage_amount > event.entity.prototype.max_health * storage.biter_evasion_health_increase_factor then
+    if event.final_damage_amount > event.entity.max_health * storage.biter_evasion_health_increase_factor then
         return
     end
     if math.random(1, random_max) > get_evade_chance() then

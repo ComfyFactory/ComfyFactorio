@@ -31,7 +31,7 @@ end
     if not health_factor then
         return
     end
-    local health = math.floor(entity.prototype.max_health * health_factor)
+    local health = math.floor(entity.max_health * health_factor)
     if health == 0 then
         return
     end

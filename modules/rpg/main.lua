@@ -702,7 +702,7 @@ local function on_pre_player_mined_item(event)
     if entity.type == 'resource' then
         xp_amount = 0.9 * distance_multiplier
     else
-        xp_amount = (1.5 + entity.prototype.max_health * xp_modifier_when_mining) * distance_multiplier
+        xp_amount = (1.5 + entity.max_health * xp_modifier_when_mining) * distance_multiplier
     end
 
     if player.gui.screen[main_frame_name] then
@@ -869,8 +869,7 @@ local function tame_unit_effects(player, entity)
     rendering.draw_text {
         text = '~' .. player.name .. "'s pet~",
         surface = player.surface,
-        target = entity,
-        target_offset = { 0, -2.6 },
+        target = { entity = entity, offset = { 0, -2.6 } },
         color = {
             r = player.color.r * 0.6 + 0.25,
             g = player.color.g * 0.6 + 0.25,

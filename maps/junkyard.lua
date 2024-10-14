@@ -548,14 +548,14 @@ local function on_player_mined_entity(event)
         return
     end
     local positions = {}
-    local r = math.ceil(entity.prototype.max_health / 32)
+    local r = math.ceil(entity.max_health / 32)
     for x = r * -1, r, 1 do
         for y = r * -1, r, 1 do
             positions[#positions + 1] = { x = entity.position.x + x, y = entity.position.y + y }
         end
     end
     positions = shuffle(positions)
-    for i = 1, math.ceil(entity.prototype.max_health / 32), 1 do
+    for i = 1, math.ceil(entity.max_health / 32), 1 do
         if not positions[i] then
             return
         end

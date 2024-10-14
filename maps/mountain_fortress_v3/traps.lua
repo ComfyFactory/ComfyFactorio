@@ -24,35 +24,34 @@ for _, t in pairs(kaboom_weights) do
     end
 end
 
-local function create_flying_text(surface, position, text)
-    if not surface.valid then
+local function create_flying_text(entity, text)
+    if not entity or not entity.valid then return end
+    if not entity.surface.valid then
         return
     end
-    surface.create_entity(
+    entity.surface.create_entity(
         {
             name = 'compi-speech-bubble',
-            position = position,
+            position = entity.position,
             text = text,
-            source = position,
+            source = entity,
             lifetime = 30
         }
     )
 
-    surface.play_sound({ path = 'utility/armor_insert', position = position, volume_modifier = 0.75 })
+    entity.surface.play_sound({ path = 'utility/armor_insert', position = entity.position, volume_modifier = 0.75 })
 end
 
-local function create_kaboom(surface, position, name)
-    if not surface.valid then
-        return
-    end
+local function create_kaboom(entity, name)
+    if not entity or not entity.valid then return end
 
-    local target = position
+    local target = entity.position
     local speed = 0.5
     if name == 'coin' then
         local rng = random(1, 512)
         local chest = 'crash-site-chest-' .. random(1, 2)
 
-        local container = surface.create_entity({ name = chest, position = position, force = 'neutral' })
+        local container = entity.surface.create_entity({ name = chest, position = entity.position, force = 'neutral' })
         if container and container.health then
             container.insert({ name = 'coin', count = rng })
             container.health = random(1, container.health)
@@ -61,25 +60,25 @@ local function create_kaboom(surface, position, name)
     end
 
     if name == 'defender-capsule' or name == 'destroyer-capsule' or name == 'distractor-capsule' then
-        surface.create_entity(
+        entity.surface.create_entity(
             {
                 name = 'compi-speech-bubble',
-                position = position,
+                position = entity.position,
                 text = '(((Sentries Engaging Target)))',
-                source = position,
+                source = entity,
                 lifetime = 30
             }
         )
-        local nearest_player_unit = surface.find_nearest_enemy({ position = position, max_distance = 128, force = 'enemy' })
+        local nearest_player_unit = entity.surface.find_nearest_enemy({ position = entity.position, max_distance = 128, force = 'enemy' })
         if nearest_player_unit then
             target = nearest_player_unit.position
         end
         speed = 0.001
     end
-    surface.create_entity(
+    entity.surface.create_entity(
         {
             name = name,
-            position = position,
+            position = entity.position,
             force = 'enemy',
             target = target,
             speed = speed
@@ -87,22 +86,9 @@ local function create_kaboom(surface, position, name)
     )
 end
 
-function Public.tick_tack_trap(surface, position)
-    if not surface then
-        return
-    end
-    if not surface.valid then
-        return
-    end
-    if not position then
-        return
-    end
-    if not position.x then
-        return
-    end
-    if not position.y then
-        return
-    end
+function Public.tick_tack_trap(entity)
+    if not entity or not entity.valid then return end
+
     local traps = Public.get('traps')
     local tick_tack_count = random(5, 9)
     for t = 60, tick_tack_count * 60, 60 do
@@ -113,18 +99,18 @@ function Public.tick_tack_trap(surface, position)
         if t < tick_tack_count * 60 then
             traps[game.tick + t][#traps[game.tick + t] + 1] = {
                 callback = 'create_flying_text',
-                params = { surface, { x = position.x, y = position.y }, tick_tacks[random(1, #tick_tacks)] }
+                params = { entity = entity, message = tick_tacks[random(1, #tick_tacks)] }
             }
         else
             if random(1, 10) == 1 then
                 traps[game.tick + t][#traps[game.tick + t] + 1] = {
                     callback = 'create_flying_text',
-                    params = { surface, { x = position.x, y = position.y }, '( ͡° ͜ʖ ͡°)' }
+                    params = { entity = entity, message = '( ͡° ͜ʖ ͡°)' }
                 }
             else
                 traps[game.tick + t][#traps[game.tick + t] + 1] = {
                     callback = 'create_kaboom',
-                    params = { surface, { x = position.x, y = position.y }, kabooms[random(1, #kabooms)] }
+                    params = { entity = entity, explosion = kabooms[random(1, #kabooms)] }
                 }
             end
         end
@@ -140,9 +126,9 @@ local function on_tick()
         local callback = token.callback
         local params = token.params
         if callback == 'create_kaboom' then
-            create_kaboom(params[1], params[2], params[3])
+            create_kaboom(params.entity, params.explosion)
         elseif callback == 'create_flying_text' then
-            create_flying_text(params[1], params[2], params[3])
+            create_flying_text(params.entity, params.message)
         end
     end
     traps[game.tick] = nil

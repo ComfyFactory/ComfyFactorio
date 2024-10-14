@@ -273,8 +273,7 @@ local function wintery(ent, extra_lights)
                 minimum_darkness = 0,
                 oriented = false,
                 color = color,
-                target = e,
-                target_offset = { 0, -0.5 },
+                target = { entity = e, offset = { 0, -0.5 } },
                 surface = e.surface
             }
         )

@@ -39,12 +39,12 @@ local function reward_tokens(expanse, entity)
     if chance > 0 then
         chance = math.floor(chance * 1000)
         if math.random(1, 1000) <= chance then
-            entity.surface.spill_item_stack({position = entity.position, stack = { name = 'coin', count = 1 }, enable_looted = true, allow_belts = false})
+            entity.surface.spill_item_stack({ position = entity.position, stack = { name = 'coin', count = 1 }, enable_looted = true, allow_belts = false })
         end
     end
     if count > 0 then
         for _ = 1, count, 1 do
-            entity.surface.spill_item_stack({position = entity.position, stack = { name = 'coin', count = 1 }, enable_looted = true, allow_belts = false})
+            entity.surface.spill_item_stack({ position = entity.position, stack = { name = 'coin', count = 1 }, enable_looted = true, allow_belts = false })
         end
     end
 end
@@ -222,7 +222,7 @@ function Public.invasion_detonate(event)
     local entities_nearby = surface.find_entities_filtered { position = position, radius = 16 }
     for _, entity in pairs(entities_nearby) do
         if entity.valid and entity.is_entity_with_health then
-            entity.damage(entity.prototype.max_health * 0.75, 'enemy')
+            entity.damage(entity.max_health * 0.75, 'enemy')
         end
     end
     surface.create_entity({ name = 'nuke-explosion', position = position })
@@ -288,10 +288,10 @@ local function plan_invasion(expanse, invasion_numbers)
         for ii = 1, rounds, 1 do
             schedule_biters(expanse, surface, position, 120 + (ii - 1) * 300, ii)
         end
-        candidates[i].render.time_to_live = ( 122 * 60 + rounds * 300)
+        candidates[i].render.time_to_live = (122 * 60 + rounds * 300)
     end
     for j = invasion_numbers.groups + 1, #candidates, 1 do
-        candidates[j].render.time_to_live = ( 122 * 60)
+        candidates[j].render.time_to_live = (122 * 60)
     end
     expanse.invasion_candidates = {}
 end
@@ -356,9 +356,9 @@ function Public.expand(expanse, left_top)
         surface.create_entity({ name = 'crude-oil', position = { a - 4, a - 4 }, amount = 1500000 })
         Task.set_timeout_in_ticks(30, delay_infini_tree_token, { surface = surface, position = { a - 4, a + 4 } })
         surface.create_entity({ name = 'big-rock', position = { a + 4, a - 4 } })
-        surface.spill_item_stack({position = {a, a + 2}, stack = { name = 'coin', count = 1 }, enable_looted = false, allow_belts = false})
-        surface.spill_item_stack({position = { a + 0.5, a + 2.5 }, stack = { name = 'coin', count = 1 }, enable_looted = false, allow_belts = false})
-        surface.spill_item_stack({position = { a - 0.5, a + 2.5 }, stack = { name = 'coin', count = 1 }, enable_looted = false, allow_belts = false})
+        surface.spill_item_stack({ position = { a, a + 2 }, stack = { name = 'coin', count = 1 }, enable_looted = false, allow_belts = false })
+        surface.spill_item_stack({ position = { a + 0.5, a + 2.5 }, stack = { name = 'coin', count = 1 }, enable_looted = false, allow_belts = false })
+        surface.spill_item_stack({ position = { a - 0.5, a + 2.5 }, stack = { name = 'coin', count = 1 }, enable_looted = false, allow_belts = false })
 
         for x = 0, square_size, 1 do
             for y = 0, square_size, 1 do
@@ -462,7 +462,7 @@ function Public.set_container(expanse, entity)
             for index = 1, #inventory, 1 do
                 local slot = inventory[index]
                 if slot.valid_for_read then
-                    entity.surface.spill_item_stack({position = entity.position, stack = slot, enable_looted = true, allow_belts = false})
+                    entity.surface.spill_item_stack({ position = entity.position, stack = slot, enable_looted = true, allow_belts = false })
                 end
             end
         end
@@ -484,7 +484,7 @@ function Public.set_container(expanse, entity)
     for slot = 1, #container.price, 1 do
         if #container.price >= slot then
             local item = container.price[slot]
-            section.set_slot(slot, {value = item.name, min = item.count, import_from = 'nauvis'})
+            section.set_slot(slot, { value = item.name, min = item.count, import_from = 'nauvis' })
         end
     end
 end

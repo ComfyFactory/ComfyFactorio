@@ -310,13 +310,13 @@ local function set_comfy_speech_bubble(text)
     end
     objective.comfybubble =
         objective.comfylatron.surface.create_entity(
-        {
-            name = 'compi-speech-bubble',
-            position = objective.comfylatron.position,
-            source = objective.comfylatron,
-            text = text
-        }
-    )
+            {
+                name = 'compi-speech-bubble',
+                position = objective.comfylatron.position,
+                source = objective.comfylatron,
+                text = text
+            }
+        )
 end
 
 local function is_target_inside_habitat(pos, surface)
@@ -343,11 +343,11 @@ local function get_nearby_players()
     local objective = Chrono_table.get_table()
     local players =
         objective.comfylatron.surface.find_entities_filtered(
-        {
-            name = 'character',
-            area = {{objective.comfylatron.position.x - 9, objective.comfylatron.position.y - 9}, {objective.comfylatron.position.x + 9, objective.comfylatron.position.y + 9}}
-        }
-    )
+            {
+                name = 'character',
+                area = { { objective.comfylatron.position.x - 9, objective.comfylatron.position.y - 9 }, { objective.comfylatron.position.x + 9, objective.comfylatron.position.y + 9 } }
+            }
+        )
     if not players[1] then
         return false
     end
@@ -387,7 +387,7 @@ local function visit_player()
             }
         }
     )
-    local symbols = {'!', '!!', '..', '...', ' '}
+    local symbols = { '!', '!!', '..', '...', ' ' }
     local arg1 = symbols[math_random(1, #symbols)]
     local randomphrase = texts['approach_player'][math_random(1, #texts['approach_player'])]
     local str = string.format(randomphrase, arg1)
@@ -409,7 +409,7 @@ local function greet_player(nearby_characters)
     for _, c in pairs(nearby_characters) do
         if c.player.index == objective.comfylatron_greet_player_index then
             local arg1 = c.player.name
-            local symbols = {'.', '!', '.', '!', '?', '...', ' '}
+            local symbols = { '.', '!', '.', '!', '?', '...', ' ' }
             local arg2 = symbols[math_random(1, #symbols)]
             local randomphrase = texts['solo_greetings'][math_random(1, #texts['solo_greetings'])]
             local str = string.format(randomphrase, arg1, arg2)
@@ -437,7 +437,7 @@ local function talks(nearby_characters)
     if #nearby_characters == 1 then
         local c = nearby_characters[math_random(1, #nearby_characters)]
         local arg1 = c.player.name
-        local symbols = {'.', '!'}
+        local symbols = { '.', '!' }
         local arg2 = symbols[math_random(1, #symbols)]
         local randomphrase = texts['convo_starters'][math_random(1, #texts['convo_starters'])]
         str = str .. string.format(randomphrase, arg1, arg2)
@@ -461,9 +461,9 @@ local function talks(nearby_characters)
             str = str .. 'A new day, a new Chronotrain!'
         elseif
             objective.chronojumps >= Balance.jumps_until_overstay_is_on(Difficulty.get().difficulty_vote_value) + 3 and
-                objective.overstaycount > ((objective.chronojumps - Balance.jumps_until_overstay_is_on(Difficulty.get().difficulty_vote_value)) / 3) and
-                math_random(1, 30) == 1
-         then
+            objective.overstaycount > ((objective.chronojumps - Balance.jumps_until_overstay_is_on(Difficulty.get().difficulty_vote_value)) / 3) and
+            math_random(1, 30) == 1
+        then
             str = str .. "You're so relaxed!"
         elseif objective.world.ores.factor == 2.5 and math_random(1, 100) == 1 then
             str = str .. 'You know what else is very rich?'
@@ -473,13 +473,13 @@ local function talks(nearby_characters)
             local randomphrase2 = texts['old_talks'][math_random(1, #texts['old_talks'])]
             str = str .. randomphrase2
         else
-            local symbols2 = {'.', '!', '?', '..', ' '}
+            local symbols2 = { '.', '!', '?', '..', ' ' }
             local arg3 = symbols2[math_random(1, #symbols2)]
             local randomphrase2 = texts['new_talks_solo'][math_random(1, #texts['new_talks_solo'])]
             str = str .. string.format(randomphrase2, arg3)
         end
     else
-        local symbols = {'.', '!'}
+        local symbols = { '.', '!' }
         local arg1 = symbols[math_random(1, #symbols)]
         local randomphrase = texts['multiple_characters_convo_starters'][math_random(1, #texts['multiple_characters_convo_starters'])]
         str = str .. string.format(randomphrase, arg1)
@@ -487,7 +487,7 @@ local function talks(nearby_characters)
             local randomphrase2 = texts['old_talks'][math_random(1, #texts['old_talks'])]
             str = str .. randomphrase2
         else
-            local symbols2 = {'.', '!', '?', '..', ' '}
+            local symbols2 = { '.', '!', '?', '..', ' ' }
             local arg3 = symbols2[math_random(1, #symbols2)]
             local randomphrase2 = texts['new_talks_group'][math_random(1, #texts['new_talks_group'])]
             str = str .. string.format(randomphrase2, arg3)
@@ -513,7 +513,7 @@ local function desync(event)
                 frame_speed = 0.1,
                 vertical_speed = 0.1,
                 height = 0.1,
-                movement = {m2 - (math_random(0, m) * 0.01), m2 - (math_random(0, m) * 0.01)}
+                movement = { m2 - (math_random(0, m) * 0.01), m2 - (math_random(0, m) * 0.01) }
             }
         )
     end
@@ -522,15 +522,15 @@ local function desync(event)
         blocked = true
     end
     if not event or blocked or math_random(1, 5) == 1 then
-        objective.comfylatron.surface.create_entity({name = 'medium-explosion', position = objective.comfylatron.position})
-        FT.flying_text(nil, objective.comfylatron.surface, objective.comfylatron.position, 'desync', {r = 150, g = 0, b = 0})
+        objective.comfylatron.surface.create_entity({ name = 'medium-explosion', position = objective.comfylatron.position })
+        FT.flying_text(nil, objective.comfylatron.surface, objective.comfylatron.position, 'desync', { r = 150, g = 0, b = 0 })
         objective.comfylatron.destroy()
         objective.comfylatron = nil
     else
-        FT.flying_text(nil, objective.comfylatron.surface, objective.comfylatron.position, 'desync evaded', {r = 0, g = 150, b = 0})
+        FT.flying_text(nil, objective.comfylatron.surface, objective.comfylatron.position, 'desync evaded', { r = 0, g = 150, b = 0 })
         if event.cause then
             if event.cause.valid and event.cause.player then
-                game.print({'chronosphere.message_comfylatron_desync', event.cause.player.name}, {r = 200, g = 0, b = 0})
+                game.print({ 'chronosphere.message_comfylatron_desync', event.cause.player.name }, { r = 200, g = 0, b = 0 })
                 event.cause.die('player', objective.comfylatron)
             end
         end
@@ -575,10 +575,10 @@ local function analyze_random_nearby_entity()
 
     local entities =
         objective.comfylatron.surface.find_entities_filtered(
-        {
-            area = {{objective.comfylatron.position.x - 4, objective.comfylatron.position.y - 4}, {objective.comfylatron.position.x + 4, objective.comfylatron.position.y + 4}}
-        }
-    )
+            {
+                area = { { objective.comfylatron.position.x - 4, objective.comfylatron.position.y - 4 }, { objective.comfylatron.position.x + 4, objective.comfylatron.position.y + 4 } }
+            }
+        )
     if not entities[1] then
         return false
     end
@@ -600,12 +600,12 @@ local function analyze_random_nearby_entity()
         arg1 = arg1 .. ' health('
         arg1 = arg1 .. entity.health
         arg1 = arg1 .. '/'
-        arg1 = arg1 .. entity.prototype.max_health
+        arg1 = arg1 .. entity.max_health
         arg1 = arg1 .. ')'
         local randomphrase = texts['neutral_findings'][math_random(1, #texts['neutral_findings'])]
         str = string.format(randomphrase, arg1, arg2)
     else
-        local symbols = {'.', '!', '?', '?'}
+        local symbols = { '.', '!', '?', '?' }
         arg2 = symbols[math_random(1, 3)]
         local randomphrase = texts['neutral_findings'][math_random(1, #texts['neutral_findings'])]
         str = string.format(randomphrase, arg1, arg2)
@@ -664,7 +664,7 @@ local function go_to_some_location()
             }
         )
     else
-        local p = {x = objective.comfylatron.position.x + (-96 + math_random(0, 192)), y = objective.comfylatron.position.y + (-96 + math_random(0, 192))}
+        local p = { x = objective.comfylatron.position.x + (-96 + math_random(0, 192)), y = objective.comfylatron.position.y + (-96 + math_random(0, 192)) }
         local target = objective.comfylatron.surface.find_non_colliding_position(get_comfylatron_kind(), p, 8, 1)
         if not target then
             return false
@@ -687,7 +687,7 @@ local function go_to_some_location()
         )
     end
 
-    local symbols = {'!', '!!', '..', '...', ' '}
+    local symbols = { '!', '!!', '..', '...', ' ' }
     local arg1 = symbols[math_random(1, #symbols)]
     local randomphrase = texts['random_travel'][math_random(1, #texts['random_travel'])]
     local str = string.format(randomphrase, arg1)
@@ -710,19 +710,19 @@ local function spawn_comfylatron(surface_index, x, y)
     end
     if not objective.comfylatron_habitat then
         objective.comfylatron_habitat = {
-            left_top = {x = -32, y = -192},
-            right_bottom = {x = 32, y = -24} -- stops comfytron getting stuck in chests
+            left_top = { x = -32, y = -192 },
+            right_bottom = { x = 32, y = -24 } -- stops comfytron getting stuck in chests
         }
     end
     objective.comfylatron =
         surface.create_entity(
-        {
-            name = get_comfylatron_kind(),
-            position = {x, y + math_random(0, 256)},
-            force = 'player',
-            create_build_effect_smoke = false
-        }
-    )
+            {
+                name = get_comfylatron_kind(),
+                position = { x, y + math_random(0, 256) },
+                force = 'player',
+                create_build_effect_smoke = false
+            }
+        )
 end
 
 local function heartbeat()

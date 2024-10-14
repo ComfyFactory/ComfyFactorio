@@ -1393,7 +1393,7 @@ local function heal_rocks()
         if rock.last_damage + 300 < game.tick then
             if rock.entity.valid then
                 rock.entity.health = rock.entity.health + healing_amount[rock.entity.name]
-                if rock.entity.prototype.max_health == rock.entity.health then
+                if rock.entity.max_health == rock.entity.health then
                     storage.damaged_rocks[key] = nil
                 end
             else
