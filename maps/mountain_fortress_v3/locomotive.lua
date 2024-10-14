@@ -184,7 +184,6 @@ local function hurt_players_outside_of_aura()
 
     local upgrades = Public.get('upgrades')
 
-    local map_name = 'mtn_v3'
     Core.iter_connected_players(
         function (player)
             if sub(player.surface.name, 0, #scenario_name) == scenario_name then

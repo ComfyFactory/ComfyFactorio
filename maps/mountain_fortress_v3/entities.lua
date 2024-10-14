@@ -288,7 +288,6 @@ local function set_train_final_health(final_damage_amount, repair)
 end
 
 local function is_protected(e)
-    local map_name = 'mtn_v3'
     if string.sub(e.surface.name, 0, #scenario_name) ~= scenario_name then
         return true
     end
@@ -736,8 +735,6 @@ local function on_player_mined_entity(event)
     end
     local rpg_char = RPG.get_value_from_player(player.index)
 
-    local map_name = 'mtn_v3'
-
     if string.sub(entity.surface.name, 0, #scenario_name) ~= scenario_name then
         return
     end
@@ -788,8 +785,6 @@ local function on_robot_mined_entity(event)
     if not entity.valid then
         return
     end
-
-    local map_name = 'mtn_v3'
 
     if string.sub(entity.surface.name, 0, #scenario_name) ~= scenario_name then
         return
@@ -1008,8 +1003,6 @@ local function on_entity_died(event)
     local unit_number = entity.unit_number
 
     local cause = event.cause
-
-    local map_name = 'mtn_v3'
 
     if string.sub(entity.surface.name, 0, #scenario_name) ~= scenario_name then
         return
@@ -1482,8 +1475,6 @@ local function on_built_entity(event)
         return
     end
 
-    local map_name = 'mtn_v3'
-
     if string.sub(entity.surface.name, 0, #scenario_name) ~= scenario_name then
         return
     end
@@ -1582,8 +1573,6 @@ local function on_robot_built_entity(event)
         return
     end
 
-    local map_name = 'mtn_v3'
-
     if string.sub(entity.surface.name, 0, #scenario_name) ~= scenario_name then
         return
     end
@@ -1678,8 +1667,6 @@ end
 
 local on_player_or_robot_built_tile = function (event)
     local surface = game.surfaces[event.surface_index]
-
-    local map_name = 'mtn_v3'
 
     if string.sub(surface.name, 0, #scenario_name) ~= scenario_name then
         return

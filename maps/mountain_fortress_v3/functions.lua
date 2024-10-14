@@ -1629,8 +1629,6 @@ function Public.on_player_changed_position(event)
         return
     end
 
-    local map_name = 'mtn_v3'
-
     if string.sub(player.surface.name, 0, #scenario_name) ~= scenario_name then
         return
     end

@@ -549,8 +549,6 @@ local function on_pre_player_died(event)
 
     local surface = player.surface
 
-    local map_name = 'mtn_v3'
-
     local corpse_removal_disabled = Public.get('corpse_removal_disabled')
     if corpse_removal_disabled then
         return

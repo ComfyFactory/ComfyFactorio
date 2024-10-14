@@ -15,6 +15,7 @@ local random = math.random
 local sub = string.sub
 local sqrt = math.sqrt
 local zone_settings = Public.zone_settings
+local scenario_name = Public.scenario_name
 
 local clear_breach_text_and_render = function ()
     local beam1 = Public.get('zone1_beam1')
@@ -456,9 +457,8 @@ local function on_player_changed_position(event)
         return
     end
     local surface_name = player.surface.name
-    local map_name = 'mtn_v3'
 
-    if sub(surface_name, 0, #map_name) ~= map_name then
+    if sub(surface_name, 0, #scenario_name) ~= scenario_name then
         return
     end
 
