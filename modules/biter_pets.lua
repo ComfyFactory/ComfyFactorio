@@ -32,8 +32,10 @@ local function tame_unit_effects(player, entity)
     rendering.draw_text {
         text = '~' .. player.name .. "'s pet~",
         surface = player.surface,
-        target = entity,
-        target_offset = { 0, -2.6 },
+        target = {
+            entity = entity,
+            offset = { 0, -2.6 },
+        },
         color = {
             r = player.color.r * 0.6 + 0.25,
             g = player.color.g * 0.6 + 0.25,

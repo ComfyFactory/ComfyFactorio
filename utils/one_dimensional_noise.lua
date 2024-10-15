@@ -550,8 +550,10 @@ local function testnoise()
         rendering.draw_text {
             text = math.round(noise, 4),
             surface = surface,
-            target = entity,
-            target_offset = {0, 0},
+            target = {
+                entity = entity,
+                offset = {0, 0},
+            },
             color = {0, 255, 0},
             scale = 0.88,
             -- font = default,

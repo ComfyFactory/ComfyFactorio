@@ -54,7 +54,10 @@ local function create_healthbar(player, size)
             x_scale = size * 8,
             y_scale = size - 0.2,
             render_layer = 'light-effect',
-            target = { entity = player.character, offset = { 0, -2.5 } },
+            target = {
+                entity = player.character,
+                offset = { 0, -2.5 },
+            },
             surface = player.surface
         }
     )
@@ -68,7 +71,10 @@ local function create_manabar(player, size)
             x_scale = size * 8,
             y_scale = size - 0.2,
             render_layer = 'light-effect',
-            target = { entity = player.character, offset = { 0, -2.0 } },
+            target = {
+                entity = player.character,
+                offset = { 0, -2.0 },
+            },
             surface = player.surface
         }
     )
@@ -1278,8 +1284,10 @@ show_cooldown =
                     min_radius = 0.4,
                     start_angle = start_angle,
                     angle = fade * angle_multipler,
-                    target = player.character,
-                    target_offset = { x = 0, y = -2 },
+                    target = {
+                        entity = player.character,
+                        offset = { x = 0, y = -2 },
+                    },
                     surface = player.surface,
                     time_to_live = time_to_live
                 }

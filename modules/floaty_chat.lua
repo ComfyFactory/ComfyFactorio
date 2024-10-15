@@ -47,8 +47,10 @@ local function on_console_chat(event)
         rendering.draw_text {
             text = event.message,
             surface = player.surface,
-            target = player.character,
-            target_offset = { -0.05, y_offset },
+            target = {
+                entity = player.character,
+                offset = { -0.05, y_offset },
+            },
             color = {
                 r = player.color.r * 0.6 + 0.25,
                 g = player.color.g * 0.6 + 0.25,

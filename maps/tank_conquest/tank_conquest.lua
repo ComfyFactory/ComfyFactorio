@@ -1878,8 +1878,10 @@ function player_icon_add(player)
             rendering.draw_text(
                 {
                     text = storage.table_of_properties[player.force.name].icon,
-                    target = player.character,
-                    target_offset = { 0, -3.7 },
+                    target = {
+                        entity = player.character,
+                        offset = { 0, -3.7 },
+                    },
                     surface = player.surface,
                     color = table_of_colors.white,
                     scale = 2,
