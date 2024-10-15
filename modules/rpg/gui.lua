@@ -483,7 +483,10 @@ function Public.draw_level_text(player)
         rendering.draw_text {
             text = 'lvl ' .. rpg_t.level,
             surface = player.surface,
-            target = { entity = player.character, offset = { 0, -3.25 } },
+            target = {
+                entity = player.character,
+                offset = { 0, -3.25 },
+            },
             color = {
                 r = player.color.r * 0.6 + 0.25,
                 g = player.color.g * 0.6 + 0.25,

@@ -555,8 +555,10 @@ function Public.create_char(data)
         rendering.draw_text {
             text = player.name .. "'s drone #" .. index,
             surface = player.surface,
-            target = entity,
-            target_offset = { 0, -2.25 },
+            target = {
+                entity = entity,
+                offset = { 0, -2.25 },
+            },
             color = Color.orange,
             scale = 1.00,
             font = 'default-large-semibold',

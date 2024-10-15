@@ -57,8 +57,10 @@ local function create_boss_healthbar(entity, size)
             x_scale = size * 15,
             y_scale = size,
             render_layer = 'light-effect',
-            target = entity,
-            target_offset = { 0, -2.5 },
+            target = {
+                entity = entity,
+                offset = { 0, -2.5 },
+            },
             surface = entity.surface
         }
     )

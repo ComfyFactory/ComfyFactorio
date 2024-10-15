@@ -114,8 +114,10 @@ local function built_entity(event)
         rendering.draw_text {
             text = '♾',
             surface = entity.surface,
-            target = entity,
-            target_offset = { 0, -0.6 },
+            target = {
+                entity = entity,
+                offset = { 0, -0.6 },
+            },
             scale = 2,
             color = { r = 0, g = 0.6, b = 1 },
             alignment = 'center'
