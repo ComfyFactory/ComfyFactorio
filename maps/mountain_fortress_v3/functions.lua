@@ -420,7 +420,7 @@ local function do_replace_tiles_slowly()
         return
     end
 
-    for _ = 1, 300 do
+    for _ = 1, 1000 do
         local tile = table.remove(tiles_to_replace, #tiles_to_replace)
         if tile and tile.valid then
             surface.set_tiles({ { name = 'water-shallow', position = tile.position } }, true)
@@ -983,16 +983,16 @@ function Public.find_void_tiles_and_replace()
     local rp = Collapse.get_reverse_position()
 
     local area = {
-        left_top = { x = (-zone_settings.zone_width / 2) + 10, y = cp.y },
-        right_bottom = { x = (zone_settings.zone_width / 2) - 10, y = rp.y }
+        left_top = { x = (-zone_settings.zone_width / 2) + 10, y = -rp.y - 1000 },
+        right_bottom = { x = (zone_settings.zone_width / 2) - 10, y = cp.y }
     }
 
     local adjusted_zones = Public.get('adjusted_zones')
 
     if adjusted_zones.reversed then
         area = {
-            left_top = { x = ((zone_settings.zone_width / 2) + 10) * -1, y = rp.y },
-            right_bottom = { x = math.abs((-zone_settings.zone_width / 2) - 10), y = cp.y },
+            left_top = { x = ((zone_settings.zone_width / 2) + 10) * -1, y = cp.y },
+            right_bottom = { x = math.abs((-zone_settings.zone_width / 2) - 10), y = rp.y },
         }
     end
 

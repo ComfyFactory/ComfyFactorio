@@ -213,6 +213,7 @@ local function damage_area(cell)
     end
 
     local tile = surface.get_tile(cell.position)
+    if not tile or not tile.valid then return end
     if this.explosives.destructible_tiles[tile.name] then
         local key = pos_to_key(tile.position)
         if not this.explosives.tiles[key] then
