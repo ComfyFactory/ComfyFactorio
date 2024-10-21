@@ -1,6 +1,9 @@
 --[[
 Journey, launch a rocket in increasingly harder getting worlds. - MewMew
 ]]--
+if script.active_mods['space-age'] then
+    error('Journey Scenario is not compatible with the Space Age mod. Please disable the mod and try again', 2)
+end
 
 local Server = require 'utils.server'
 local Constants = require 'maps.journey.constants'

@@ -576,11 +576,11 @@ function Public.hard_reset(journey)
     journey.mothership_cargo = {}
     journey.mothership_cargo['uranium-fuel-cell'] = 10
     journey.mothership_cargo['satellite'] = 1
-    journey.mothership_cargo['nuclear-reactor'] = 60
+    journey.mothership_cargo['nuclear-reactor'] = 6
     journey.mothership_cargo_space = {
         ['satellite'] = 1,
         ['uranium-fuel-cell'] = 0,
-        ['nuclear-reactor'] = 60
+        ['nuclear-reactor'] = 6
     }
     journey.bonus_goods = {}
     journey.bonus_goods['loader'] = 3
@@ -1617,7 +1617,7 @@ function Public.deal_damage_to_beacon(journey, incoming_damage)
     if journey.beacon_objective_health <= 0 then
         table.insert(journey.mothership_messages, 'Beaming everyone up, triggerring emergency departure.')
         table.insert(journey.mothership_messages, '[img=item/nuclear-reactor] Emergency power plant burned down ;_;')
-        journey.mothership_cargo['nuclear-reactor'] = journey.mothership_cargo['nuclear-reactor'] - 30
+        journey.mothership_cargo['nuclear-reactor'] = journey.mothership_cargo['nuclear-reactor'] - 3
         if journey.mothership_cargo['nuclear-reactor'] < 0 then
             table.insert(journey.mothership_messages, 'Aborting, there is not enough emergency fuel. Shutting systems off...')
             for _ = 1, #journey.mothership_messages, 1 do
