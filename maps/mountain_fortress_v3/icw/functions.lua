@@ -209,8 +209,8 @@ local function teleport_char(position, destination_area, wagon)
         local player = e.player
         if player then
             position[player.index] = {
-                player.position.x,
-                player.position.y + (destination_area.left_top.y - wagon.area.left_top.y)
+                player.physical_position.x,
+                player.physical_position.y + (destination_area.left_top.y - wagon.area.left_top.y)
             }
             player.teleport({ 0, 0 }, game.surfaces.nauvis)
         end
@@ -671,7 +671,7 @@ function Public.create_wagon_room(icw, wagon)
     end
 
     if wagon.entity.type == 'cargo-wagon' then
-        Task.set_timeout_in_ticks(5, add_chests_to_wagon_token, { wagon = wagon, surface = surface })
+        Task.set_timeout_in_ticks(15, add_chests_to_wagon_token, { wagon = wagon, surface = surface })
     end
 end
 
@@ -819,7 +819,7 @@ function Public.use_cargo_wagon_door_with_entity(icw, player, door)
             return
         end
         local area = wagon.area
-        local x_vector = door.position.x - player.position.x
+        local x_vector = door.position.x - player.physical_position.x
         local position
         if x_vector > 0 then
             position = { area.left_top.x + 0.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5) }

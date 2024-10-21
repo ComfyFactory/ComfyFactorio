@@ -55,11 +55,19 @@ local scenario_name = Public.scenario_name
 local floor = math.floor
 local remove = table.remove
 local abs = math.abs
+local partial_reset
 RPG.disable_cooldowns_on_spells()
 Gui.mod_gui_button_enabled = true
 Gui.button_style = 'mod_gui_button'
 Gui.set_toggle_button(true)
 Gui.set_mod_gui_top_frame(true)
+
+local partial_reset_token =
+    Task.register(
+        function ()
+            partial_reset()
+        end
+    )
 
 local collapse_kill = {
     entities = {
@@ -116,21 +124,44 @@ local announce_new_map =
         end
     )
 
+
+partial_reset = function ()
+    local this = Public.get()
+    local surface = game.surfaces[this.active_surface_index]
+
+    if this.adjusted_zones.reversed then
+        Explosives.check_growth_below_void(false)
+        this.spawn_near_collapse.compare = abs(this.spawn_near_collapse.compare)
+        Collapse.set_position({ 0, -130 })
+        Collapse.set_direction('south')
+        Public.locomotive_spawn(surface, { x = -18, y = -25 }, this.adjusted_zones.reversed)
+    else
+        Explosives.check_growth_below_void(true)
+        this.spawn_near_collapse.compare = abs(this.spawn_near_collapse.compare) * -1
+        Collapse.set_position({ 0, 130 })
+        Collapse.set_direction('north')
+        Public.locomotive_spawn(surface, { x = -18, y = 25 }, this.adjusted_zones.reversed)
+    end
+
+    Public.render_train_hp()
+    Public.render_direction(surface, this.adjusted_zones.reversed)
+end
+
 function Public.reset_map()
+    rendering.clear()
+    local this = Public.get()
+    this.active_surface_index = Public.create_surface()
+
     game.forces.player.reset()
     Public.reset_main_table()
 
     Difficulty.show_gui(false)
 
-    local this = Public.get()
     local wave_defense_table = WD.get_table()
     Misc.reset()
     Misc.bottom_button(true)
 
     LinkedChests.reset()
-
-    this.active_surface_index = Public.create_surface()
-    this.old_surface_index = this.active_surface_index
 
     Public.stateful.clear_all_frames()
 
@@ -239,22 +270,6 @@ function Public.reset_map()
     this.locomotive_health = 10000
     this.locomotive_max_health = 10000
 
-    if this.adjusted_zones.reversed then
-        Explosives.check_growth_below_void(false)
-        this.spawn_near_collapse.compare = abs(this.spawn_near_collapse.compare)
-        Collapse.set_position({ 0, -130 })
-        Collapse.set_direction('south')
-        Public.locomotive_spawn(surface, { x = -18, y = -25 }, this.adjusted_zones.reversed)
-    else
-        Explosives.check_growth_below_void(true)
-        this.spawn_near_collapse.compare = abs(this.spawn_near_collapse.compare) * -1
-        Collapse.set_position({ 0, 130 })
-        Collapse.set_direction('north')
-        Public.locomotive_spawn(surface, { x = -18, y = 25 }, this.adjusted_zones.reversed)
-    end
-    Public.render_train_hp()
-    Public.render_direction(surface, this.adjusted_zones.reversed)
-
     WD.reset_wave_defense()
     wave_defense_table.surface_index = this.active_surface_index
     wave_defense_table.target = this.locomotive
@@ -285,7 +300,7 @@ function Public.reset_map()
 
     if this.adjusted_zones.reversed then
         if not surface.is_chunk_generated({ x = -20, y = -22 }) then
-            surface.request_to_generate_chunks({ x = -20, y = -22 }, 0.1)
+            surface.request_to_generate_chunks({ x = -20, y = -22 }, 1)
             surface.force_generate_chunk_requests()
         end
         game.forces.player.set_spawn_position({ x = -27, y = -25 }, surface)
@@ -293,13 +308,16 @@ function Public.reset_map()
         WD.enable_inverted(true)
     else
         if not surface.is_chunk_generated({ x = -20, y = 22 }) then
-            surface.request_to_generate_chunks({ x = -20, y = 22 }, 0.1)
+            surface.request_to_generate_chunks({ x = -20, y = 22 }, 1)
             surface.force_generate_chunk_requests()
         end
         game.forces.player.set_spawn_position({ x = -27, y = 25 }, surface)
         WD.set_spawn_position({ x = -16, y = 80 })
         WD.enable_inverted(false)
     end
+
+    Public.sr_reset_forces()
+    Public.sr_teleport_players()
 
     game.speed = 1
     if this.space_age then
@@ -344,10 +362,15 @@ function Public.reset_map()
     if not this.disable_startup_notification then
         Task.set_timeout_in_ticks(25, announce_new_map)
     end
+
+    Public.equip_players(nil, false)
+
+    Task.set_timeout_in_ticks(100, partial_reset_token, {})
 end
 
 local is_locomotive_valid = function ()
     local locomotive = Public.get('locomotive')
+    if game.ticks_played < 1000 then return end
     if not locomotive or not locomotive.valid then
         Public.set('game_lost', true)
         Public.loco_died(true)
@@ -558,6 +581,7 @@ local handle_changes = function ()
 end
 
 local nth_40_tick = function ()
+    if game.tick < 30 then return end
     local update_gui = Public.update_gui
     local players = game.connected_players
 
@@ -573,12 +597,14 @@ local nth_40_tick = function ()
 end
 
 local nth_250_tick = function ()
+    if game.tick < 500 then return end
     compare_collapse_and_train()
     collapse_after_wave_200()
     Public.set_spawn_position()
 end
 
 local nth_1000_tick = function ()
+    if game.tick < 500 then return end
     Public.set_difficulty()
     Public.is_creativity_mode_on()
 end
@@ -639,5 +665,12 @@ Event.add(
         end
     end
 )
+
+Event.on_init(function ()
+    local nauvis = game.surfaces.nauvis
+    nauvis.clear(true)
+    nauvis.request_to_generate_chunks({ 0, 0 }, 3)
+    nauvis.force_generate_chunk_requests()
+end)
 
 return Public

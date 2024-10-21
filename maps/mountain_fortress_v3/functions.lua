@@ -1487,7 +1487,7 @@ function Public.on_player_joined_game(event)
         end
     end
 
-    if player.surface.index ~= active_surface_index then
+    if player.online_time < 1 then
         local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
         if pos then
             player.teleport(pos, surface)
@@ -1496,7 +1496,7 @@ function Public.on_player_joined_game(event)
             player.teleport(pos, surface)
         end
     else
-        local p = { x = player.position.x, y = player.position.y }
+        local p = { x = player.physical_position.x, y = player.physical_position.y }
         local get_tile = surface.get_tile(p.x, p.y)
         if get_tile.valid and get_tile.name == 'out-of-map' then
             local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
@@ -1518,9 +1518,9 @@ function Public.on_player_joined_game(event)
     local adjusted_zones = Public.get('adjusted_zones')
     local distance_from_train
     if adjusted_zones.reversed then
-        distance_from_train = player.position.y < locomotive.position.y
+        distance_from_train = player.physical_position.y < locomotive.position.y
     else
-        distance_from_train = player.position.y > locomotive.position.y
+        distance_from_train = player.physical_position.y > locomotive.position.y
     end
 
     if distance_from_train then
@@ -1633,11 +1633,11 @@ function Public.on_player_changed_position(event)
         return
     end
 
-    local position = player.position
+    local position = player.physical_position
     local surface = game.surfaces[active_surface_index]
     local adjusted_zones = Public.get('adjusted_zones')
 
-    local p = { x = player.position.x, y = player.position.y }
+    local p = { x = player.physical_position.x, y = player.physical_position.y }
     local config_tile = Public.get('void_or_tile')
     if config_tile == 'lab-dark-2' then
         local get_tile = surface.get_tile(p.x, p.y)
@@ -1646,7 +1646,7 @@ function Public.on_player_changed_position(event)
                 if random(1, 2) == 1 then
                     show_text('This path is not for players!', p, surface, player)
                 end
-                player.surface.create_entity({ name = 'fire-flame', position = player.position })
+                player.surface.create_entity({ name = 'fire-flame', position = player.physical_position })
                 player.character.health = player.character.health - tile_damage
                 if player.character.health == 0 then
                     player.character.die()
@@ -1744,6 +1744,22 @@ function Public.on_research_finished(event)
 
     if research.name == 'toolbelt' then
         Public.set('toolbelt_researched_count', 10)
+    end
+
+    if script.feature_flags.quality then
+        local quality_list = Public.get('quality_list')
+        if research.name == 'quality-module' then
+            quality_list[#quality_list + 1] = 'uncommon'
+        end
+        if research.name == 'quality-module-2' then
+            quality_list[#quality_list + 1] = 'rare'
+        end
+        if research.name == 'epic-quality' then
+            quality_list[#quality_list + 1] = 'epic'
+        end
+        if research.name == 'legendary-quality' then
+            quality_list[#quality_list + 1] = 'legendary'
+        end
     end
 
     research.force.character_inventory_slots_bonus = (player.mining_drill_productivity_bonus * 50) + (Public.get('toolbelt_researched_count') or 0)

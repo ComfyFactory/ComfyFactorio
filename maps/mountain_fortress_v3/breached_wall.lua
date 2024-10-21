@@ -158,7 +158,7 @@ local spidertron_too_far =
 
 local check_distance_between_player_and_locomotive = function (player)
     local surface = player.surface
-    local position = player.position
+    local position = player.physical_position
     local locomotive = Public.get('locomotive')
     if not locomotive or not locomotive.valid then
         return
@@ -221,7 +221,7 @@ local check_distance_between_player_and_locomotive = function (player)
 end
 
 local compare_player_pos = function (player)
-    local p = player.position
+    local p = player.physical_position
     local index = player.index
     local adjusted_zones = Public.get('adjusted_zones')
     if not adjusted_zones.size then
@@ -263,7 +263,7 @@ local compare_player_and_train = function (player, entity)
 
     local car = ICF.get_car(entity.unit_number)
 
-    local position = player.position
+    local position = player.physical_position
     local locomotive = Public.get('locomotive')
     if not locomotive or not locomotive.valid then
         return
@@ -323,13 +323,13 @@ end
 
 local function distance(player)
     local index = player.index
-    local bonus = RPG.get_value_from_player(index, 'bonus')
+    local bonus = RPG.get_value_from_player(index, 'bonus') or 1
     local rpg_extra = RPG.get('rpg_extra')
     local breached_wall = Public.get('breached_wall')
     local bonus_xp_on_join = Public.get('bonus_xp_on_join')
     local enable_arties = Public.get('enable_arties')
 
-    local p = player.position
+    local p = player.physical_position
 
     local validate_spider = Public.get('validate_spider')
     if validate_spider[index] then
@@ -386,6 +386,7 @@ local function distance(player)
             Public.enemy_weapon_damage()
             local spidertron_unlocked_enabled = Public.get('spidertron_unlocked_enabled')
             if Public.get('breached_wall') >= Public.get('spidertron_unlocked_at_zone') and not spidertron_unlocked_enabled then
+                local get_player_data = Public.get_player_data(player)
                 Public.set('spidertron_unlocked_enabled', true)
                 local main_market_items = Public.get('main_market_items')
                 if not main_market_items['spidertron'] then
@@ -401,7 +402,7 @@ local function distance(player)
                     main_market_items['spidertron'] = {
                         stack = 1,
                         value = 'coin',
-                        price = rng,
+                        price = rng * (get_player_data and get_player_data.quality or 1),
                         tooltip = spider_tooltip,
                         upgrade = false,
                         static = true
@@ -462,11 +463,11 @@ local function on_player_changed_position(event)
         return
     end
 
-    if player.position.y > -100 and player.position.y < -100 then
+    if player.physical_position.y > -100 and player.physical_position.y < -100 then
         return
     end
 
-    if player.position.y > 100 and player.position.y < 100 then
+    if player.physical_position.y > 100 and player.physical_position.y < 100 then
         return
     end
 

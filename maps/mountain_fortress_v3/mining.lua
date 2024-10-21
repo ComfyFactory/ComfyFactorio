@@ -344,7 +344,7 @@ local function randomness(data)
     if data.script_character then
         create_particles(player.surface, particle, position, 16, { x = data.script_character.position.x, y = data.script_character.position.y })
     else
-        create_particles(player.surface, particle, position, 16, { x = player.position.x, y = player.position.y })
+        create_particles(player.surface, particle, position, 16, { x = player.physical_position.x, y = player.physical_position.y })
     end
 end
 
@@ -401,7 +401,7 @@ local function randomness_scrap(data)
     if data.script_character then
         create_particles(player.surface, particle, position, 64, { x = data.script_character.position.x, y = data.script_character.position.y })
     else
-        create_particles(player.surface, particle, position, 64, { x = player.position.x, y = player.position.y })
+        create_particles(player.surface, particle, position, 64, { x = player.physical_position.x, y = player.physical_position.y })
     end
 end
 

@@ -498,7 +498,7 @@ local unstuck_player_token =
             end
 
             local surface = player.surface
-            local position = surface.find_non_colliding_position('character', player.position, 32, 1)
+            local position = surface.find_non_colliding_position('character', player.physical_position, 32, 1)
             if not position then
                 return
             end
@@ -734,6 +734,7 @@ local function on_player_mined_entity(event)
         return
     end
     local rpg_char = RPG.get_value_from_player(player.index)
+    if not rpg_char then return end
 
     if string.sub(entity.surface.name, 0, #scenario_name) ~= scenario_name then
         return
@@ -1318,7 +1319,7 @@ function Public.unstuck_player(index)
     end
 
     local surface = player.surface
-    local position = surface.find_non_colliding_position('character', player.position, 32, 1)
+    local position = surface.find_non_colliding_position('character', player.physical_position, 32, 1)
     if not position then
         return
     end
@@ -1513,8 +1514,6 @@ local function on_built_entity(event)
     local upgrades = Public.get('upgrades')
 
     local upg = upgrades
-    local surface = entity.surface
-
     local built = {
         ['land-mine'] = upg.landmine.built,
         ['flamethrower-turret'] = upg.flame_turret.built

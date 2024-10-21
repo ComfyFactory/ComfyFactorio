@@ -145,23 +145,31 @@ function Public.locomotive_spawn(surface, position, reversed)
             surface.create_entity({ name = 'straight-rail', position = { position.x, position.y + y }, force = 'player', direction = 0 })
         end
         this.locomotive = surface.create_entity({ name = 'locomotive', position = { position.x, position.y + -3 }, force = 'player', direction = defines.direction.south, quality = quality })
-        this.locomotive.get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 100 })
+        if this.locomotive and this.locomotive.valid then
+            this.locomotive.get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 100 })
+        end
 
         this.locomotive_cargo = surface.create_entity({ name = 'cargo-wagon', position = { position.x, position.y + 3 }, force = 'player', direction = defines.direction.south, quality = quality })
-        this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'raw-fish', count = 8 })
+        if this.locomotive_cargo and this.locomotive_cargo.valid then
+            this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'raw-fish', count = 8 })
+        end
     else
         for y = -6, 6, 2 do
             surface.create_entity({ name = 'straight-rail', position = { position.x, position.y + y }, force = 'player', direction = 0 })
         end
         this.locomotive = surface.create_entity({ name = 'locomotive', position = { position.x, position.y + -3 }, force = 'player', quality = quality })
-        this.locomotive.get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 100 })
+        if this.locomotive and this.locomotive.valid then
+            this.locomotive.get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 100 })
+        end
 
         this.locomotive_cargo = surface.create_entity({ name = 'cargo-wagon', position = { position.x, position.y + 3 }, force = 'player', quality = quality })
-        this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'raw-fish', count = 8 })
+        if this.locomotive_cargo and this.locomotive_cargo.valid then
+            this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'raw-fish', count = 8 })
+        end
     end
 
     local winter_mode_locomotive = Public.wintery(this.locomotive, 5.5)
-    if not winter_mode_locomotive then
+    if not winter_mode_locomotive and this.locomotive and this.locomotive.valid then
         rendering.draw_light(
             {
                 sprite = 'utility/light_medium',
@@ -180,7 +188,7 @@ function Public.locomotive_spawn(surface, position, reversed)
 
     local winter_mode_cargo = Public.wintery(this.locomotive_cargo, 5.5)
 
-    if not winter_mode_cargo then
+    if not winter_mode_cargo and this.locomotive_cargo and this.locomotive_cargo.valid then
         rendering.draw_light(
             {
                 sprite = 'utility/light_medium',

@@ -4,6 +4,10 @@ local Server = require 'utils.server'
 local Event = require 'utils.event'
 local Task = require 'utils.task_token'
 
+local stateful_settings = {
+    reversed = false
+}
+
 local this = {
     players = {},
     traps = {},
@@ -12,12 +16,19 @@ local this = {
         surface = nil,
         operation = nil,
         next_operation = nil
+    },
+    adjusted_zones = {
+        scrap = {},
+        forest = {},
+        size = nil,
+        shuffled_zones = nil,
+        starting_zone = true,
+        reversed = stateful_settings.reversed,
+        disable_terrain = false
     }
 }
 
-local stateful_settings = {
-    reversed = false
-}
+
 local Public = {}
 local random = math.random
 local dataset = 'scenario_settings'
@@ -30,7 +41,7 @@ Public.events = {
     on_market_item_purchased = Event.generate_event_name('on_market_item_purchased')
 }
 
-local scenario_name = 'Mtn Fortress'
+local scenario_name = 'nauvis'
 Public.scenario_name = scenario_name
 
 Global.register(
@@ -335,6 +346,11 @@ function Public.reset_main_table()
     }
 
     this.wagons_in_the_wild = {}
+    this.player_market_settings = {}
+
+    this.quality_list = {
+        'normal',
+    }
 
     for k, _ in pairs(this.players) do
         this.players[k] = {}

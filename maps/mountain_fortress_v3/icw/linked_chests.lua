@@ -1412,7 +1412,7 @@ local function on_player_changed_position(event)
                 left_top = { x = position.x - 8, y = position.y - 8 },
                 right_bottom = { x = position.x + 8, y = position.y + 8 }
             }
-            if Math2D.bounding_box.contains_point(area, player.position) then
+            if Math2D.bounding_box.contains_point(area, player.physical_position) then
                 return
             end
 
