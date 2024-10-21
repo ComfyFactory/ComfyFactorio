@@ -4,7 +4,6 @@
 
 local Public = require 'maps.fish_defender_v2.core'
 local Gui = require 'utils.gui'
-require 'modules.rocket_launch_always_yields_science'
 require 'modules.launch_fish_to_win'
 require 'modules.biters_yield_coins'
 require 'modules.custom_death_messages'
@@ -1211,6 +1210,12 @@ local function on_robot_built_entity(event)
     end
 end
 
+local function on_rocket_launched(event)
+    local rocket_inventory = event.rocket.cargo_pod.get_inventory(defines.inventory.cargo_unit)
+    rocket_inventory.clear()
+    rocket_inventory.insert({ name = 'space-science-pack', count = 200 })
+end
+
 local function on_player_changed_position(event)
     local player = game.get_player(event.player_index)
     local active_surface_index = Public.get('active_surface_index')
@@ -1627,6 +1632,7 @@ end
 
 local on_init = Public.on_init
 
+Event.add(defines.events.on_rocket_launched, on_rocket_launched)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
 Event.add(defines.events.on_player_respawned, on_player_respawned)

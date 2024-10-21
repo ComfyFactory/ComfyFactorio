@@ -48,7 +48,7 @@ repeat_sound_token =
             if event.once then
                 player.play_sound { path = sound, volume_modifier = 1 }
                 if player.character ~= nil then
-                    player.character.surface.create_entity({ name = 'water-splash', position = player.position })
+                    player.character.surface.create_entity({ name = 'water-splash', position = player.physical_position })
                 end
                 return
             end
@@ -61,7 +61,7 @@ repeat_sound_token =
 
             player.play_sound { path = sound, volume_modifier = 1 }
             if player.character ~= nil then
-                player.character.surface.create_entity({ name = 'water-splash', position = player.position })
+                player.character.surface.create_entity({ name = 'water-splash', position = player.physical_position })
             end
             Task.set_timeout_in_ticks(30, repeat_sound_token, event)
         end
@@ -133,7 +133,7 @@ local function area_of_effect(player, position, state, radius, callback, find_en
     end
 
     local cs = player.surface
-    local cp = position or player.position
+    local cp = position or player.physical_position
 
     if radius and radius > 256 then
         radius = 256
@@ -1141,7 +1141,7 @@ spells[#spells + 1] = {
     callback = function (data)
         local player = data.player
         local surface = data.surface
-        local old_position = player.position
+        local old_position = player.physical_position
 
         Public.register_cooldown_for_spell(player)
 

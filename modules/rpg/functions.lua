@@ -339,7 +339,7 @@ function Public.get_last_spell_cast(player)
         return false
     end
 
-    local position = player.position
+    local position = player.physical_position
     local cast_radius = 1
     local cast_area = {
         left_top = { x = rpg_t.last_spell_cast.x - cast_radius, y = rpg_t.last_spell_cast.y - cast_radius },
@@ -709,7 +709,8 @@ function Public.update_tidal_wave()
                     local next_offset_y = cause_position.y + wave.direction[2] * (i + 1) - j * wave.direction[1]
                     local next_position = { next_offset_x, next_offset_y }
 
-                    surface.create_entity({ name = 'water-splash', position = position })
+                    surface.create_entity({ name = 'big-demolisher-fissure', position = position })
+                    -- surface.create_entity({ name = 'water-splash', position = position })
                     -- surface.create_trivial_smoke({name = 'poison-capsule-smoke', position = position})
                     local sound = 'utility/build_small'
                     wave_player.play_sound { path = sound, volume_modifier = 1 }
@@ -733,7 +734,8 @@ function Public.update_tidal_wave()
                     local next_offset_y = cause_position.y + wave.direction[2] * (i + 1) - j * wave.direction[1]
                     local next_position = { next_offset_x, next_offset_y }
                     -- surface.create_trivial_smoke({name = 'poison-capsule-smoke', position = position})
-                    surface.create_entity({ name = 'water-splash', position = position })
+                    -- surface.create_entity({ name = 'water-splash', position = position })
+                    surface.create_entity({ name = 'big-demolisher-fissure', position = position })
                     local sound = 'utility/build_small'
                     wave_player.play_sound { path = sound, volume_modifier = 1 }
 
@@ -820,7 +822,7 @@ function Public.update_player_stats(player)
 end
 
 function Public.level_up_effects(player)
-    local position = { x = player.position.x - 0.75, y = player.position.y - 1 }
+    local position = { x = player.physical_position.x - 0.75, y = player.physical_position.y - 1 }
     player.create_local_flying_text(
         {
             position = position,
@@ -850,7 +852,7 @@ function Public.level_up_effects(player)
 end
 
 function Public.cast_spell(player, failed)
-    local position = { x = player.position.x - 0.75, y = player.position.y - 1 }
+    local position = { x = player.physical_position.x - 0.75, y = player.physical_position.y - 1 }
     local b = 0.75
     if not failed then
         for _ = 1, 3, 1 do
@@ -890,7 +892,7 @@ function Public.cast_spell(player, failed)
 end
 
 function Public.xp_effects(player)
-    local position = { x = player.position.x - 0.75, y = player.position.y - 1 }
+    local position = { x = player.physical_position.x - 0.75, y = player.physical_position.y - 1 }
     player.create_local_flying_text(
         {
             position = position,
@@ -920,7 +922,7 @@ function Public.xp_effects(player)
 end
 
 function Public.boost_effects(player)
-    local position = { x = player.position.x - 0.75, y = player.position.y - 1 }
+    local position = { x = player.physical_position.x - 0.75, y = player.physical_position.y - 1 }
     local b = 0.75
     for _ = 1, 10, 1 do
         local p = {
@@ -1088,7 +1090,7 @@ function Public.get_heal_modifier_from_using_fish(player)
     local base_amount = 80
     local rng = random(base_amount, base_amount * rpg_extra.heal_modifier)
     local char = player.character
-    local position = player.position
+    local position = player.physical_position
     if char and char.valid then
         local health = player.character_health_bonus + 250
         local color
@@ -1507,6 +1509,9 @@ function Public.gain_xp(player, amount, added_to_pool, text)
     end
     local rpg_extra = Public.get('rpg_extra')
     local rpg_t = Public.get_value_from_player(player.index)
+    if not rpg_t then
+        return
+    end
 
     if Public.level_limit_exceeded(player) then
         add_to_global_pool(amount, false)
@@ -1520,7 +1525,7 @@ function Public.gain_xp(player, amount, added_to_pool, text)
 
     local text_to_draw
 
-    if rpg_t.capped then
+    if rpg_t and rpg_t.capped then
         rpg_t.capped = false
     end
 
@@ -1570,7 +1575,7 @@ function Public.gain_xp(player, amount, added_to_pool, text)
 
     player.create_local_flying_text {
         text = text_to_draw,
-        position = player.position,
+        position = player.physical_position,
         color = xp_floating_text_color,
         time_to_live = 340,
         speed = 2
@@ -1634,7 +1639,7 @@ local damage_player_over_time_token =
                 return
             end
             player.character.health = player.character.health - (player.character.health * 0.05)
-            player.character.surface.create_entity({ name = 'water-splash', position = player.position })
+            player.character.surface.create_entity({ name = 'water-splash', position = player.physical_position })
         end
     )
 

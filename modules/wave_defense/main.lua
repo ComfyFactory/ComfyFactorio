@@ -163,23 +163,21 @@ local function get_spawn_pos()
     local inverted = Public.get('inverted')
     if inverted then
         if initial_position.y - target.position.y < -10 then
-            initial_position = { x = initial_position.x, y = initial_position.y + 50 }
+            initial_position = { x = initial_position.x, y = initial_position.y }
         end
     else
         if initial_position.y - target.position.y > 10 then
-            initial_position = { x = initial_position.x, y = initial_position.y - 50 }
+            initial_position = { x = initial_position.x, y = initial_position.y }
         end
     end
 
     local located_position = find_initial_spot(surface, initial_position)
     local valid_position = surface.find_non_colliding_position('stone-furnace', located_position, 32, 1)
     local debug = Public.get('debug')
-    if debug then
-        if valid_position then
-            local x = valid_position.x
-            local y = valid_position.y
-            game.print('[gps=' .. x .. ',' .. y .. ',' .. surface.name .. ']')
-        end
+    if valid_position then
+        local x = valid_position.x
+        local y = valid_position.y
+        game.print('[gps=' .. x .. ',' .. y .. ',' .. surface.name .. ']')
     end
 
     if not valid_position then
@@ -1175,7 +1173,7 @@ local function spawn_unit_group(fs, only_bosses)
 
     local generated_units = Public.get('generated_units')
 
-    local unit_group = surface.create_unit_group({ position = spawn_position, force = force }) --[[@as UnitGroup]]
+    local unit_group = surface.create_unit_group({ position = spawn_position, force = force }) --[[@as LuaCommandable]]
 
     event_data.unit_group = unit_group
 
