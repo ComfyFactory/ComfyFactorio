@@ -230,6 +230,7 @@ local function do_place_buildings(data)
             then
                 e.create_build_effect_smoke = false
                 entity = surface.create_entity(e)
+                entity.custom_status = { diode = defines.entity_status_diode.green, label = 'Custom building that generates free resources.' }
                 if entity and entity.valid then
                     if e.direction then
                         entity.direction = e.direction

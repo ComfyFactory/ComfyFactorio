@@ -411,22 +411,6 @@ local function kick_players_out_of_vehicles(car)
     end
 end
 
-local function check_if_players_are_in_nauvis()
-    local allowed_surface = IC.get('allowed_surface')
-    for _, player in pairs(game.connected_players) do
-        local main_surface = game.surfaces[allowed_surface]
-        if player.surface.name == 'nauvis' then
-            local pos = main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0)
-            if pos then
-                player.teleport(pos, main_surface)
-            else
-                pos = game.forces.player.get_spawn_position(main_surface)
-                player.teleport(pos, main_surface)
-            end
-        end
-    end
-end
-
 local function exclude_surface(surface)
     for _, force in pairs(game.forces) do
         force.set_surface_hidden(surface, true)
@@ -442,7 +426,6 @@ local function kick_players_from_surface(car, owner_id)
     local surface = game.surfaces[surface_index]
     local allowed_surface = IC.get('allowed_surface')
     if not validate_entity(surface) then
-        check_if_players_are_in_nauvis()
         return log_err('Car surface was not valid.')
     end
     if not car.entity or not car.entity.valid then
@@ -460,7 +443,6 @@ local function kick_players_from_surface(car, owner_id)
                     ::continue::
                 end
             end
-            check_if_players_are_in_nauvis()
             return log_err('Car entity was not valid.')
         end
     end
@@ -479,7 +461,6 @@ local function kick_players_from_surface(car, owner_id)
             ::continue::
         end
     end
-    check_if_players_are_in_nauvis()
 end
 
 ---Kicks players out of the car surface.
@@ -808,7 +789,7 @@ function Public.save_car(event)
         local find_remove_car_args = {
             index = p.surface.index,
             types = types,
-            position = p.position
+            position = p.physical_position
         }
 
         Task.set_timeout_in_ticks(1, find_remove_car, find_remove_car_args)
@@ -1446,7 +1427,7 @@ function Public.use_door_with_entity(player, door)
         end
 
         local area = car.area
-        local x_vector = door.position.x - player.position.x
+        local x_vector = door.position.x - player.physical_position.x
         local position
         if x_vector > 0 then
             position = { area.left_top.x + 0.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5) }

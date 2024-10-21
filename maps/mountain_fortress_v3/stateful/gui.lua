@@ -69,7 +69,7 @@ local spread_particles_token =
             end
             local particle = event.particle
 
-            create_particles(player.surface, particle, player.position, 128)
+            create_particles(player.surface, particle, player.physical_position, 128)
         end
     )
 
@@ -194,7 +194,7 @@ local warn_player_sound_token =
 
             player.play_sound { path = 'utility/new_objective', volume_modifier = 0.75 }
 
-            create_particles(player.surface, particle, player.position, 128)
+            create_particles(player.surface, particle, player.physical_position, 128)
         end
     )
 

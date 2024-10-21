@@ -36,7 +36,7 @@ local function draw_charging_gui(player, activate_custom_buttons)
 end
 
 local function discharge_accumulators(surface, position, force, power_needs)
-    local accumulators = surface.find_entities_filtered {name = 'accumulator', force = force, position = position, radius = 13}
+    local accumulators = surface.find_entities_filtered { name = 'accumulator', force = force, position = position, radius = 13 }
     local power_drained = 0
     power_needs = power_needs * 1
     for _, accu in pairs(accumulators) do
@@ -75,7 +75,7 @@ local function charge(player)
         return player.print(module_name .. 'No valid armor to charge was found.', Color.warning)
     end
 
-    local ents = player.surface.find_entities_filtered {name = 'accumulator', force = player.force, position = player.position, radius = 13}
+    local ents = player.surface.find_entities_filtered { name = 'accumulator', force = player.force, position = player.physical_position, radius = 13 }
     if not ents or not next(ents) then
         return player.print(module_name .. 'No accumulators nearby.', Color.warning)
     end
@@ -85,7 +85,7 @@ local function charge(player)
         if piece.valid and piece.generator_power == 0 then
             local energy_needs = piece.max_energy - piece.energy
             if energy_needs > 0 then
-                local energy = discharge_accumulators(player.surface, player.position, player.force, energy_needs)
+                local energy = discharge_accumulators(player.surface, player.physical_position, player.force, energy_needs)
                 if energy > 0 then
                     if piece.energy + energy >= piece.max_energy then
                         piece.energy = piece.max_energy
@@ -123,7 +123,7 @@ end
 
 Gui.on_click(
     charging_station_name,
-    function(event)
+    function (event)
         local player = game.get_player(event.player_index)
         if not player or not player.valid then
             return
@@ -142,7 +142,7 @@ Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 
 Event.add(
     BottomFrame.events.bottom_quickbar_location_changed,
-    function(event)
+    function (event)
         local player_index = event.player_index
         if not player_index then
             return

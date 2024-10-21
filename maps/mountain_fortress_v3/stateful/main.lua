@@ -184,13 +184,12 @@ Event.add(
 )
 
 Event.add(
-    defines.events.on_rocket_launched,
+    defines.events.on_rocket_launch_ordered,
     function (event)
-        local rocket_inventory = event.rocket.get_inventory(defines.inventory.rocket)
+        local rocket_inventory = event.rocket.cargo_pod.get_inventory(defines.inventory.cargo_unit)
         local slot = rocket_inventory[1]
         if slot and slot.valid and slot.valid_for_read then
             local objectives = Public.get_stateful('objectives')
-
             local launch_item = objectives.launch_item
             if launch_item then
                 if slot.name ~= launch_item.name then

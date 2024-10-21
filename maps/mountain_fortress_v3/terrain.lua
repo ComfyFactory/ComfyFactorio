@@ -3036,7 +3036,7 @@ Event.add(
         end
 
         local adjusted_zones = Public.get('adjusted_zones')
-        if adjusted_zones.disable_terrain then
+        if adjusted_zones and adjusted_zones.disable_terrain then
             return
         end
 

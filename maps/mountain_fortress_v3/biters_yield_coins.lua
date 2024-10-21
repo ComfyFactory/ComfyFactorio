@@ -31,36 +31,44 @@ local entities_that_earn_coins = {
     ['flamethrower-turret'] = true
 }
 
+local function check_quality()
+    local quality_list = Public.get('quality_list')
+    local quality_level = random(1, #quality_list)
+    local quality = quality_list[quality_level]
+    return quality
+end
+
 --extra coins for "boss" biters from biter_health_booster.lua
 local function get_coin_count(entity)
     local coin_count = coin_yield[entity.name]
     if not coin_count then
         return
     end
+    local quality = check_quality()
     local biter_health_boost_units = BiterHealthBooster.get('biter_health_boost_units')
 
     if not biter_health_boost_units then
-        return coin_count
+        return coin_count, quality
     end
     local unit_number = entity.unit_number
     if not unit_number then
-        return coin_count
+        return coin_count, quality
     end
     if not biter_health_boost_units[unit_number] then
-        return coin_count
+        return coin_count, quality
     end
     if not biter_health_boost_units[unit_number][3] then
-        return coin_count
+        return coin_count, quality
     end
     if not biter_health_boost_units[unit_number][3].healthbar_id then -- only bosses
-        return coin_count
+        return coin_count, quality
     end
     local m = 1 / biter_health_boost_units[unit_number][2]
     coin_count = floor(coin_count * m)
     if coin_count < 1 then
         return 1
     end
-    return coin_count
+    return coin_count, quality
 end
 
 ---comment
@@ -78,7 +86,7 @@ local function on_entity_died(event)
 
     local cause = event.cause
 
-    local coin_count = get_coin_count(entity)
+    local coin_count, quality = get_coin_count(entity)
     if not coin_count then
         return
     end
@@ -124,13 +132,13 @@ local function on_entity_died(event)
                 end
                 if forest_zone then
                     if random(1, 12) == 1 then
-                        player.insert({ name = 'coin', count = coin_count })
+                        player.insert({ name = 'coin', count = coin_count, quality = quality })
                         if p then
                             StatData.get_data(p.index):increase('coins', coin_count)
                         end
                     end
                 else
-                    player.insert({ name = 'coin', count = coin_count })
+                    player.insert({ name = 'coin', count = coin_count, quality = quality })
                     if p then
                         StatData.get_data(p.index):increase('coins', coin_count)
                     end
@@ -139,7 +147,7 @@ local function on_entity_died(event)
         end
         if not Public.get('final_battle') then
             if entities_that_earn_coins[cause.name] then
-                event.entity.surface.spill_item_stack({ position = cause.position, stack = { name = 'coin', count = coin_count }, enable_looted = true })
+                event.entity.surface.spill_item_stack({ position = cause.position, stack = { name = 'coin', count = coin_count, quality = quality }, enable_looted = true })
                 reward_has_been_given = true
             end
         end
@@ -150,7 +158,7 @@ local function on_entity_died(event)
     end
 
     if reward_has_been_given == false then
-        event.entity.surface.spill_item_stack({ position = event.entity.position, stack = { name = 'coin', count = coin_count }, enable_looted = true })
+        event.entity.surface.spill_item_stack({ position = event.entity.position, stack = { name = 'coin', count = coin_count, quality = quality }, enable_looted = true })
     end
 end
 

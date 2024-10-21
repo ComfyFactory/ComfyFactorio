@@ -512,7 +512,7 @@ local search_corpse_token =
                 return
             end
 
-            local pos = player.position
+            local pos = player.physical_position
             local entities =
                 player.surface.find_entities_filtered {
                     area = { { pos.x - 0.5, pos.y - 0.5 }, { pos.x + 0.5, pos.y + 0.5 } },

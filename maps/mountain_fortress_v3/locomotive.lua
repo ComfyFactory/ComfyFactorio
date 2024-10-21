@@ -77,14 +77,14 @@ local function add_random_loot_to_main_market(rarity)
     end
 
     for _, v in pairs(items) do
-        local price = v.price[1][2] + random(1, 15) * rarity
-        local value = v.price[1][1]
+        local price = v.price[1].count + random(1, 15) * rarity
+        local value = v.price[1].name
         local stack = 1
         if v.offer.item == 'coin' then
-            price = v.price[1][2]
+            price = v.price[1].count
             stack = v.offer.count
             if not stack then
-                stack = v.price[1][2]
+                stack = v.price[1].count
             end
         end
 
@@ -101,7 +101,7 @@ local function add_random_loot_to_main_market(rarity)
 end
 
 local function death_effects(player)
-    local position = { x = player.position.x - 0.75, y = player.position.y - 1 }
+    local position = { x = player.physical_position.x - 0.75, y = player.physical_position.y - 1 }
     local b = 0.75
     for _ = 1, 5, 1 do
         local p = {
@@ -187,7 +187,7 @@ local function hurt_players_outside_of_aura()
     Core.iter_connected_players(
         function (player)
             if sub(player.surface.name, 0, #scenario_name) == scenario_name then
-                local position = player.position
+                local position = player.physical_position
                 local inside = ((position.x - loco.x) ^ 2 + (position.y - loco.y) ^ 2) < upgrades.locomotive_aura_radius ^ 2
                 if not inside then
                     local entity = player.character
@@ -262,7 +262,7 @@ local function give_passive_xp(data)
 
     Core.iter_connected_players(
         function (player)
-            local position = player.position
+            local position = player.physical_position
             local inside = ((position.x - loco.x) ^ 2 + (position.y - loco.y) ^ 2) < upgrades.locomotive_aura_radius ^ 2
             if player.afk_time < 200 and not RPG.get_last_spell_cast(player) then
                 if inside or player.surface.index == loco_surface.index then
@@ -279,7 +279,7 @@ local function give_passive_xp(data)
                     Modifiers.update_single_modifier(player, 'character_crafting_speed_modifier', 'aura', 1)
                     Modifiers.update_player_modifiers(player)
 
-                    local pos = player.position
+                    local pos = player.physical_position
                     RPG.gain_xp(player, 0.5 * (rpg[player.index].bonus + upgrades.xp_points))
 
                     player.create_local_flying_text {
@@ -291,7 +291,7 @@ local function give_passive_xp(data)
                     }
                     rpg[player.index].xp_since_last_floaty_text = 0
                     rpg[player.index].last_floaty_text = game.tick + visuals_delay
-                    RPG.set_last_spell_cast(player, player.position)
+                    RPG.set_last_spell_cast(player, player.physical_position)
                     if player.gui.screen[rpg_main_frame] then
                         local f = player.gui.screen[rpg_main_frame]
                         local d = Gui.get_data(f)
@@ -568,16 +568,6 @@ local function on_player_changed_surface(event)
         end
     end
 
-    if player.surface.name == 'nauvis' then
-        local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
-        if pos then
-            player.teleport(pos, surface)
-        else
-            pos = game.forces.player.get_spawn_position(surface)
-            player.teleport(pos, surface)
-        end
-    end
-
     local locomotive_surface = Public.get('loco_surface')
 
     if locomotive_surface and locomotive_surface.valid and player.surface.index == locomotive_surface.index then
@@ -587,32 +577,6 @@ local function on_player_changed_surface(event)
     elseif player.surface.index == surface.index then
         return Public.add_player_to_permission_group(player, 'main_surface')
     end
-end
-
-local function check_on_player_changed_surface()
-    local active_surface = Public.get('active_surface_index')
-    if not active_surface then
-        return
-    end
-
-    local surface = game.get_surface(active_surface)
-    if not surface or not surface.valid then
-        return
-    end
-
-    Core.iter_players(
-        function (player)
-            if player.surface.name == 'nauvis' then
-                local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
-                if pos then
-                    player.teleport(pos, surface)
-                else
-                    pos = game.forces.player.get_spawn_position(surface)
-                    player.teleport(pos, surface)
-                end
-            end
-        end
-    )
 end
 
 local function on_player_driving_changed_state(event)
@@ -863,7 +827,7 @@ local function tick()
     local ticker = game.tick
 
     if ticker % 30 == 0 then
-        check_on_player_changed_surface()
+        -- check_on_player_changed_surface()
         set_locomotive_health()
         validate_index()
         fish_tag()
