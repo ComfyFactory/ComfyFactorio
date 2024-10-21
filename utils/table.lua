@@ -189,7 +189,7 @@ function table.shuffle_table(t, rng)
     end
 end
 
----Shuffles a table of objects with a position, leaving objects closer to position to be earlier in the table (one time semi-sort) 
+---Shuffles a table of objects with a position, leaving objects closer to position to be earlier in the table (one time semi-sort)
 ---@param tbl table #table to shuffle, all elements in it have to be table objects that have position key
 ---@param position MapPosition|{x:double,y:double}
 function table.shuffle_by_distance(tbl, position)
@@ -215,19 +215,19 @@ end
 function table.spairs(t, order)
     -- collect the keys
     local keys = {}
-    for k in pairs(t) do keys[#keys+1] = k end
+    for k in pairs(t) do keys[#keys + 1] = k end
 
     -- if order function given, sort by it by passing the table and keys a, b,
     -- otherwise just sort the keys
     if order then
-        table.sort(keys, function(a,b) return order(t, a, b) end)
+        table.sort(keys, function (a, b) return order(t, a, b) end)
     else
         table.sort(keys)
     end
 
     -- return the iterator function
     local i = 0
-    return function()
+    return function ()
         i = i + 1
         if keys[i] then
             return keys[i], t[keys[i]]

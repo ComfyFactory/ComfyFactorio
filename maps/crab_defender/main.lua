@@ -597,6 +597,8 @@ local wake_up_the_biters = function (surface)
         FDT.set('spawned_biters', actual_biters)
     end
 
+    print('Waking up idle biters!')
+
     surface.set_multi_command(
         {
             command = {
@@ -1456,6 +1458,10 @@ local on_tick = function ()
                 end
             end
         end
+    end
+
+    if game.tick % 2000 == 0 then
+        wake_up_the_biters(surface)
     end
 
     if game.tick % this.wave_interval == this.wave_interval - 1 then

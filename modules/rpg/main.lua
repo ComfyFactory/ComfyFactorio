@@ -349,9 +349,11 @@ local function regen_health_player(players)
     for i = 1, #players do
         local player = players[i]
         local heal_per_tick = Public.get_heal_modifier(player)
-        if heal_per_tick <= 0 then
+        if heal_per_tick and heal_per_tick <= 0 then
             goto continue
         end
+
+        if not heal_per_tick then goto continue end
         heal_per_tick = round(heal_per_tick)
         if player and player.valid and not player.in_combat then
             if player.character and player.character.valid then
@@ -469,7 +471,7 @@ local function on_entity_damaged(event)
         return
     end
 
-    local position = p.position
+    local position = p.physical_position
 
     local area = {
         left_top = { x = position.x - 5, y = position.y - 5 },
@@ -687,6 +689,7 @@ local function on_pre_player_mined_item(event)
     end
 
     local rpg_t = Public.get_value_from_player(player.index)
+    if not rpg_t then return end
     if rpg_t.last_mined_entity_position.x == entity.position.x and rpg_t.last_mined_entity_position.y == entity.position.y then
         return
     end
@@ -961,7 +964,7 @@ local function on_player_used_capsule(event)
         return Public.cast_spell(player, true)
     end
 
-    if not Math2D.bounding_box.contains_point(area, player.position) then
+    if not Math2D.bounding_box.contains_point(area, player.physical_position) then
         Public.cast_spell(player, true)
         return
     end

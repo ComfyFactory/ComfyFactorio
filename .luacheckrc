@@ -244,7 +244,8 @@ stds.factorio_control = {
                 'mod_name',
                 'get_event_order',
                 'generate_event_name',
-                'register_on_entity_destroyed'
+                'register_on_entity_destroyed',
+                'active_mods'
             },
             other_fields = false
         },
@@ -479,6 +480,7 @@ stds.factorio_control = {
         -- Writing access is given to the mod-id field (for mod-wise saved data).
         -- (http://lua-api.factorio.com/latest/storage.html)
         'storage',
+        'helpers',
         -- @MOD@: Keep it organized, use this variable for anything that "NEEDS" to be global for some reason.
         'MOD'
     }
