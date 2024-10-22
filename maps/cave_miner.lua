@@ -293,7 +293,7 @@ local function treasure_chest(position, distance_to_center)
         { { name = 'inserter', count = math_random(8, 16) },                        weight = 3,  evolution_min = 0.0, evolution_max = 0.4 },
         { { name = 'long-handed-inserter', count = math_random(8, 16) },            weight = 3,  evolution_min = 0.0, evolution_max = 0.4 },
         { { name = 'fast-inserter', count = math_random(8, 16) },                   weight = 3,  evolution_min = 0.1, evolution_max = 1 },
-        { { name = 'bulk-inserter', count = math_random(4, 8) },            weight = 1,  evolution_min = 0.4, evolution_max = 1 },
+        { { name = 'bulk-inserter', count = math_random(4, 8) },                    weight = 1,  evolution_min = 0.4, evolution_max = 1 },
         { { name = 'stack-inserter', count = math_random(4, 8) },                   weight = 3,  evolution_min = 0.3, evolution_max = 1 },
         { { name = 'small-electric-pole', count = math_random(16, 24) },            weight = 3,  evolution_min = 0.0, evolution_max = 0.3 },
         { { name = 'medium-electric-pole', count = math_random(8, 16) },            weight = 3,  evolution_min = 0.2, evolution_max = 1 },
@@ -1345,8 +1345,7 @@ local function on_market_item_purchased(event)
         storage.fish_bank[player.name] = storage.fish_bank[player.name] - (fish_withdrawn + fee)
         player.print(fish_withdrawn .. ' Fish withdrawn from your account. Your balance is ' .. storage.fish_bank[player.name] .. '.', { r = 0.10, g = 0.75, b = 0.5 })
         player.print(bank_messages[math_random(1, #bank_messages)], { r = 0.77, g = 0.77, b = 0.77 })
-        player.create_local_flying_text({ text = tostring(fish_withdrawn .. ' Fish withdrawn'), position = player.position, color = { r = 0.10, g = 0.75, b = 0.5 })
-
+        player.create_local_flying_text({ text = tostring(fish_withdrawn .. ' Fish withdrawn'), position = player.position, color = { r = 0.10, g = 0.75, b = 0.5 } })
     end
 
     if offer_index == 3 then
