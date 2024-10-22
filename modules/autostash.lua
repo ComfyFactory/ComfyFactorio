@@ -40,6 +40,17 @@ local bps_blacklist = {
     ['blueprint'] = true
 }
 
+local get_filters = function (points)
+    for _, section in pairs(points.sections) do
+        for _, filter in pairs(section.filters) do
+            if filter.value and filter.value.name then
+                filters[#filters + 1] = filter
+            end
+        end
+    end
+    return filters
+end
+
 local on_init_token =
     Task.register(
         function ()
@@ -258,8 +269,8 @@ end
 local function check_if_valid_requests(chest)
     local requests = 0
     if chest.type == 'logistic-container' then
-        local lp = chest.get_logistic_point(defines.logistic_member_index.logistic_container)
-        local filters = LP.get_filters(lp)
+        local logistics = chest.get_logistic_point(defines.logistic_member_index.logistic_container)
+        local filters = get_filters(logistics)
         requests = #filters
     end
     return requests > 0
@@ -413,18 +424,15 @@ local function insert_into_wagon_filtered(stack, chests, name, floaty_text_list)
     for chestnr, chest in pairs(chests.chest) do
         if chest.type == 'logistic-container' then
             local chest_inventory = chests.inventory[chestnr]
-            for index = 1, chest.request_slot_count do
-                if chest_inventory.can_insert(stack) then
-                    if chest.get_request_slot(index) ~= nil then
-                        local n = chest.get_request_slot(index)
-                        if n and n.name == name then
-                            local inserted_count = chest_inventory.insert(stack)
-                            stack.count = stack.count - inserted_count
-                            prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, inserted_count)
-                            if stack.count <= 0 then
-                                return chestnr
-                            end
-                        end
+            local logistics = chest.get_logistic_point(defines.logistic_member_index.logistic_container)
+            local filters = get_filters(logistics)
+            for _, filter in pairs(filters) do
+                if filter.value.name == name then
+                    local inserted_count = chest_inventory.insert(stack)
+                    stack.count = stack.count - inserted_count
+                    prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, inserted_count)
+                    if stack.count <= 0 then
+                        return chestnr
                     end
                 end
             end
@@ -455,18 +463,15 @@ local function insert_item_into_chest(stack, chests, filtered_chests, name, floa
     for chestnr, chest in pairs(chests.chest) do
         if chest.type == 'logistic-container' then
             local chest_inventory = chests.inventory[chestnr]
-            for index = 1, chest.request_slot_count do
-                if chest_inventory.can_insert(stack) then
-                    if chest.get_request_slot(index) ~= nil then
-                        local n = chest.get_request_slot(index)
-                        if n and n.name == name then
-                            local inserted_count = chest_inventory.insert(stack)
-                            stack.count = stack.count - inserted_count
-                            prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, inserted_count)
-                            if stack.count <= 0 then
-                                return chestnr
-                            end
-                        end
+            local logistics = chest.get_logistic_point(defines.logistic_member_index.logistic_container)
+            local filters = get_filters(logistics)
+            for _, filter in pairs(filters) do
+                if filter.value.name == name then
+                    local inserted_count = chest_inventory.insert(stack)
+                    stack.count = stack.count - inserted_count
+                    prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, inserted_count)
+                    if stack.count <= 0 then
+                        return chestnr
                     end
                 end
             end
