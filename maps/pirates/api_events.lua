@@ -549,7 +549,7 @@ local function handle_damage_dealt_by_players(event)
 
 			-- @TODO: This should preferably be reworked, so that "event_on_entity_damaged()" could be simpler by just returning multiplier, although doing AoE is quite fun.
 			-- @TODO: "event.entity.health >= extra_damage_to_deal" is pointless when enemy has virtual healthbar
-			if extra_damage_to_deal > 0 then
+			if event.entity and event.entity.valid and extra_damage_to_deal > 0 then
 				if event.entity.health >= extra_damage_to_deal then
 					-- event.entity.damage(extra_damage_to_deal, character.force, 'impact', character) --using .damage rather than subtracting from health directly plays better with entities which use healthbars
 					Common.damage_hostile_entity(event.entity, extra_damage_to_deal)
@@ -1281,7 +1281,7 @@ local function spawner_died(event)
 			local extra_evo = Balance.evolution_per_nest_kill()
 			Common.increment_evo(extra_evo)
 
-			destination.dynamic_data.evolution_accrued_nests = destination.dynamic_data.evolution_accrued_nests + extra_evo
+			destination.dynamic_data.evolution_accrued_nests = (destination.dynamic_data.evolution_accrued_nests or 0) + extra_evo
 		end
 	end
 end
