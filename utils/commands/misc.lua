@@ -369,9 +369,9 @@ function Public.insert_all_items(player)
 
             local p_armor = player.get_inventory(5)[1].grid
             if p_armor and p_armor.valid then
-                p_armor.put({ name = 'fusion-reactor-equipment', quality = quality })
-                p_armor.put({ name = 'fusion-reactor-equipment', quality = quality })
-                p_armor.put({ name = 'fusion-reactor-equipment', quality = quality })
+                p_armor.put({ name = 'fission-reactor-equipment', quality = quality })
+                p_armor.put({ name = 'fission-reactor-equipment', quality = quality })
+                p_armor.put({ name = 'fission-reactor-equipment', quality = quality })
                 p_armor.put({ name = 'exoskeleton-equipment', quality = quality })
                 p_armor.put({ name = 'exoskeleton-equipment', quality = quality })
                 p_armor.put({ name = 'exoskeleton-equipment', quality = quality })
