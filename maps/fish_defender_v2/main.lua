@@ -1597,7 +1597,7 @@ local function on_tick()
         if tick % 180 == 0 then
             if surface then
                 game.forces.player.chart(surface, { { -160, -130 }, { 160, 179 } })
-                -- Public.set('wave_interval', Public.get_current_difficulty_wave_interval())
+                Public.set('wave_interval', Public.get_current_difficulty_wave_interval())
             end
         end
 
