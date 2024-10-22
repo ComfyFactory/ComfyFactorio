@@ -23,15 +23,6 @@ local scrap_entities_index = table.size(scrap_entities)
 
 local scrap_containers = {
     -- containers
-    { name = 'big-ship-wreck-1',                    size = 3 }, -- these are not mineable normally
-    { name = 'big-ship-wreck-1',                    size = 3 }, -- these are not mineable normally
-    { name = 'big-ship-wreck-1',                    size = 3 }, -- these are not mineable normally
-    { name = 'big-ship-wreck-2',                    size = 3 }, -- these are not mineable normally
-    { name = 'big-ship-wreck-2',                    size = 3 }, -- these are not mineable normally
-    { name = 'big-ship-wreck-2',                    size = 3 }, -- these are not mineable normally
-    { name = 'big-ship-wreck-3',                    size = 3 }, -- these are not mineable normally
-    { name = 'big-ship-wreck-3',                    size = 3 }, -- these are not mineable normally
-    { name = 'big-ship-wreck-3',                    size = 3 }, -- these are not mineable normally
     { name = 'crash-site-chest-1',                  size = 8 }, -- these do not have mining animation
     { name = 'crash-site-chest-2',                  size = 8 }, -- these do not have mining animation
     { name = 'crash-site-spaceship-wreck-medium-1', size = 1 }, -- these do not have mining animation

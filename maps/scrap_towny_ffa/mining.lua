@@ -10,9 +10,6 @@ local crash_site = {
     'crash-site-spaceship-wreck-small-5',
     'crash-site-spaceship-wreck-small-6',
     -- containers
-    'big-ship-wreck-1',
-    'big-ship-wreck-2',
-    'big-ship-wreck-3',
     'crash-site-chest-1',
     'crash-site-chest-2',
     'crash-site-spaceship-wreck-medium-1',

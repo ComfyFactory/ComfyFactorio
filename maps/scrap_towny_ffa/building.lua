@@ -23,7 +23,6 @@ local neutral_whitelist = {
     ['long-handed-inserter'] = true,
     ['raw-fish'] = true,
     ['bulk-inserter'] = true,
-    ['stack-inserter'] = true,
     ['steel-chest'] = true,
     ['tank'] = true,
     ['wooden-chest'] = true,
@@ -61,14 +60,15 @@ local function refund_item(event, item_name)
 end
 
 local function error_floaty(surface, position, msg)
-    surface.create_entity(
-        {
-            name = 'flying-text',
-            position = position,
-            text = msg,
-            color = { r = 0.77, g = 0.0, b = 0.0 }
-        }
-    )
+    for _, p in pairs(game.connected_players) do
+        if p.surface == surface then
+            p.create_local_flying_text({
+                position = position,
+                text = msg,
+                color = { r = 0.77, g = 0.0, b = 0.0 }
+            })
+        end
+    end
 end
 
 function Public.in_range(pos1, pos2, radius)
@@ -226,7 +226,7 @@ local function prevent_entity_in_restricted_zone(event)
     if error == true then
         if player_index ~= nil then
             local player = game.get_player(player_index)
-            player.play_sound({ path = 'utility/cannot_build', position = player.position, volume_modifier = 0.75 })
+            player.play_sound({ path = 'utility/cannot_build', position = player.physical_position, volume_modifier = 0.75 })
         end
         error_floaty(surface, position, 'Can not build in restricted zone!')
     end
@@ -256,7 +256,7 @@ local function prevent_landfill_in_restricted_zone(event)
     if fail == true then
         if player_index ~= nil then
             local player = game.get_player(player_index)
-            player.play_sound({ path = 'utility/cannot_build', position = player.position, volume_modifier = 0.75 })
+            player.play_sound({ path = 'utility/cannot_build', position = player.physical_position, volume_modifier = 0.75 })
         end
         error_floaty(surface, position, 'Can not build in restricted zone!')
     end
@@ -283,11 +283,11 @@ local function process_built_entities(event)
         force = player.force
         force_name = force.name
 
-        local is_another_character_near = Public.is_another_character_near(player.surface, player.position, force)
+        local is_another_character_near = Public.is_another_character_near(player.surface, player.physical_position, force)
         if is_another_character_near then
             entity.destroy()
 
-            player.play_sound({ path = 'utility/cannot_build', position = player.position, volume_modifier = 0.75 })
+            player.play_sound({ path = 'utility/cannot_build', position = player.physical_position, volume_modifier = 0.75 })
             error_floaty(surface, position, "Can't build near other characters!")
             if name ~= 'entity-ghost' then
                 if event.stack and event.stack.valid_for_read then
@@ -325,7 +325,7 @@ local function process_built_entities(event)
                     return
                 end
 
-                player.play_sound({ path = 'utility/cannot_build', position = player.position, volume_modifier = 0.75 })
+                player.play_sound({ path = 'utility/cannot_build', position = player.physical_position, volume_modifier = 0.75 })
             end
             error_floaty(surface, position, "Can't build near town!")
             if name ~= 'entity-ghost' then
@@ -384,7 +384,7 @@ local function prevent_tiles_near_towns(event)
     if fail == true then
         if player_index ~= nil then
             local player = game.get_player(player_index)
-            player.play_sound({ path = 'utility/cannot_build', position = player.position, volume_modifier = 0.75 })
+            player.play_sound({ path = 'utility/cannot_build', position = player.physical_position, volume_modifier = 0.75 })
         end
         error_floaty(surface, position, "Can't build near town!")
     end

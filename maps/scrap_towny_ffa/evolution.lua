@@ -194,7 +194,6 @@ local technology_weights = {
     ['speed-module-2'] = { biter = 1, spitter = 1, worm = 1 },
     ['speed-module-3'] = { biter = 1, spitter = 1, worm = 1 },
     ['spidertron'] = { biter = 1, spitter = 1, worm = 1 },
-    ['stack-inserter'] = { biter = 1, spitter = 1, worm = 1 },
     ['steel-axe'] = { biter = 1, spitter = 1, worm = 1 },
     ['steel-processing'] = { biter = 1, spitter = 1, worm = 1 },
     ['stone-wall'] = { biter = 1, spitter = 1, worm = 1 },

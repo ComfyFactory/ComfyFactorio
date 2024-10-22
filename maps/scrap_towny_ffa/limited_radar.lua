@@ -12,8 +12,7 @@ function Public.reset()
     if not map_surface or not map_surface.valid then
         return
     end
-    for index = 1, table.size(game.forces), 1 do
-        local force = game.forces[index]
+    for _, force in pairs(game.forces) do
         if force ~= nil then
             force.clear_chart(map_surface.name)
         end
@@ -21,7 +20,10 @@ function Public.reset()
 end
 
 local function add_force(id, force_name)
-    local forces = rendering.get_forces(id)
+    local render = rendering.get_all_objects()
+    if not render.forces then return end
+
+    local forces = render.forces[id]
     for _, force in ipairs(forces) do
         if force.name == force_name or force == force_name then
             return
@@ -32,7 +34,9 @@ local function add_force(id, force_name)
 end
 
 local function update_forces(id)
-    local forces = rendering.get_forces(id)
+    local render = rendering.get_all_objects()
+    if not render.forces then return end
+    local forces = render.forces[id]
     local new_forces = {}
     for _, force in ipairs(forces) do
         if force ~= nil and force.valid then
@@ -50,7 +54,7 @@ local function on_chunk_charted(event)
     end
     local force = event.force
     local area = event.area
-    local markets = surface.find_entities_filtered({area = area, name = 'market'})
+    local markets = surface.find_entities_filtered({ area = area, name = 'market' })
     for _, market in pairs(markets) do
         local force_name = market.force.name
         local town_center = this.town_centers[force_name]

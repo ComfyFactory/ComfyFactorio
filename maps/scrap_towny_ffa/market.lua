@@ -15,7 +15,7 @@ local upgrade_functions = {
         town_center.health = town_center.health + town_center.max_health
         town_center.max_health = town_center.max_health * 2
         Town_center.set_market_health(market, 0)
-        surface.play_sound({ path = 'utility/achievement_unlocked', position = player.position, volume_modifier = 1 })
+        surface.play_sound({ path = 'utility/achievement_unlocked', position = player.physical_position, volume_modifier = 1 })
         return true
     end,
     -- Upgrade Backpack
@@ -27,7 +27,7 @@ local upgrade_functions = {
             return false
         end
         force.character_inventory_slots_bonus = force.character_inventory_slots_bonus + 5
-        surface.play_sound({ path = 'utility/achievement_unlocked', position = player.position, volume_modifier = 1 })
+        surface.play_sound({ path = 'utility/achievement_unlocked', position = player.physical_position, volume_modifier = 1 })
         return true
     end,
     -- Upgrade Mining Productivity
@@ -40,7 +40,7 @@ local upgrade_functions = {
         end
         town_center.upgrades.mining_prod = town_center.upgrades.mining_prod + 1
         force.mining_drill_productivity_bonus = force.mining_drill_productivity_bonus + 0.1
-        surface.play_sound({ path = 'utility/achievement_unlocked', position = player.position, volume_modifier = 1 })
+        surface.play_sound({ path = 'utility/achievement_unlocked', position = player.physical_position, volume_modifier = 1 })
         return true
     end,
     -- Upgrade Pickaxe Speed
@@ -53,7 +53,7 @@ local upgrade_functions = {
         end
         town_center.upgrades.mining_speed = town_center.upgrades.mining_speed + 1
         force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.1
-        surface.play_sound({ path = 'utility/achievement_unlocked', position = player.position, volume_modifier = 1 })
+        surface.play_sound({ path = 'utility/achievement_unlocked', position = player.physical_position, volume_modifier = 1 })
         return true
     end,
     -- Upgrade Crafting Speed
@@ -66,7 +66,7 @@ local upgrade_functions = {
         end
         town_center.upgrades.crafting_speed = town_center.upgrades.crafting_speed + 1
         force.manual_crafting_speed_modifier = force.manual_crafting_speed_modifier + 0.1
-        surface.play_sound({ path = 'utility/achievement_unlocked', position = player.position, volume_modifier = 1 })
+        surface.play_sound({ path = 'utility/achievement_unlocked', position = player.physical_position, volume_modifier = 1 })
         return true
     end,
     -- Laser Turret Slot
@@ -74,7 +74,7 @@ local upgrade_functions = {
         local market = town_center.market
         local surface = market.surface
         town_center.upgrades.laser_turret.slots = town_center.upgrades.laser_turret.slots + 1
-        surface.play_sound({ path = 'utility/new_objective', position = player.position, volume_modifier = 1 })
+        surface.play_sound({ path = 'utility/new_objective', position = player.physical_position, volume_modifier = 1 })
         return true
     end,
     -- Set Spawn Point
@@ -85,7 +85,7 @@ local upgrade_functions = {
         local surface = market.surface
         local spawn_point = force.get_spawn_position(surface)
         this.spawn_point[player.index] = spawn_point
-        surface.play_sound({ path = 'utility/scenario_message', position = player.position, volume_modifier = 1 })
+        surface.play_sound({ path = 'utility/scenario_message', position = player.physical_position, volume_modifier = 1 })
         return false
     end
 }
@@ -107,32 +107,32 @@ local function set_offers(town_center)
     -- special offers
     local special_offers = {}
     if town_center.max_health < 50000 then
-        special_offers[1] = { { { 'coin', town_center.max_health * 0.1 } }, 'Upgrade Town Center Health' }
+        special_offers[1] = { { { name = 'coin', count = town_center.max_health * 0.1 } }, 'Upgrade Town Center Health' }
     else
         special_offers[1] = { {}, 'Maximum Health upgrades reached!' }
     end
     if force.character_inventory_slots_bonus + 5 <= 50 then
-        special_offers[2] = { { { 'coin', (force.character_inventory_slots_bonus / 5 + 1) * 50 } }, 'Upgrade Backpack +5 Slot' }
+        special_offers[2] = { { { name = 'coin', count = (force.character_inventory_slots_bonus / 5 + 1) * 50 } }, 'Upgrade Backpack +5 Slot' }
     else
         special_offers[2] = { {}, 'Maximum Backpack upgrades reached!' }
     end
     if town_center.upgrades.mining_prod + 1 <= 10 then
-        special_offers[3] = { { { 'coin', (town_center.upgrades.mining_prod + 1) * 1000 } }, 'Upgrade Mining Productivity +10% (Drills, Pumps, Scrap)' }
+        special_offers[3] = { { { name = 'coin', count = (town_center.upgrades.mining_prod + 1) * 1000 } }, 'Upgrade Mining Productivity +10% (Drills, Pumps, Scrap)' }
     else
         special_offers[3] = { {}, 'Maximum Productivity upgrades reached!' }
     end
     if town_center.upgrades.mining_speed + 1 <= 10 then
-        special_offers[4] = { { { 'coin', (town_center.upgrades.mining_speed + 1) * 400 } }, 'Upgrade Mining Speed +10%' }
+        special_offers[4] = { { { name = 'coin', count = (town_center.upgrades.mining_speed + 1) * 400 } }, 'Upgrade Mining Speed +10%' }
     else
         special_offers[4] = { {}, 'Maximum Mining Speed upgrades reached!' }
     end
     if town_center.upgrades.crafting_speed + 1 <= 10 then
-        special_offers[5] = { { { 'coin', (town_center.upgrades.crafting_speed + 1) * 400 } }, 'Upgrade Crafting Speed +10%' }
+        special_offers[5] = { { { name = 'coin', count = (town_center.upgrades.crafting_speed + 1) * 400 } }, 'Upgrade Crafting Speed +10%' }
     else
         special_offers[5] = { {}, 'Maximum Crafting Speed upgrades reached!' }
     end
     local laser_turret = 'Laser Turret Slot [#' .. tostring(town_center.upgrades.laser_turret.slots + 1) .. ']'
-    special_offers[6] = { { { 'coin', (town_center.upgrades.laser_turret.slots * 200) } }, laser_turret }
+    special_offers[6] = { { { name = 'coin', count = (town_center.upgrades.laser_turret.slots * 200) } }, laser_turret }
     local spawn_point = 'Set Spawn Point'
     special_offers[7] = { {}, spawn_point }
     for _, v in pairs(special_offers) do
@@ -140,31 +140,31 @@ local function set_offers(town_center)
     end
 
     -- item purchases
-    table_insert(market_items, { price = { { 'coin', 25 } }, offer = { type = 'give-item', item = 'raw-fish', count = 1 } })
-    table_insert(market_items, { price = { { 'coin', 6 } }, offer = { type = 'give-item', item = 'wood', count = 1 } })
-    table_insert(market_items, { price = { { 'coin', 1 } }, offer = { type = 'give-item', item = 'iron-ore', count = 6 } })
-    table_insert(market_items, { price = { { 'coin', 1 } }, offer = { type = 'give-item', item = 'copper-ore', count = 6 } })
-    table_insert(market_items, { price = { { 'coin', 1 } }, offer = { type = 'give-item', item = 'stone', count = 6 } })
-    table_insert(market_items, { price = { { 'coin', 1 } }, offer = { type = 'give-item', item = 'coal', count = 6 } })
-    table_insert(market_items, { price = { { 'coin', 1 } }, offer = { type = 'give-item', item = 'uranium-ore', count = 2 } })
-    table_insert(market_items, { price = { { 'coin', 1000 } }, offer = { type = 'give-item', item = 'laser-turret', count = 1 } })
-    table_insert(market_items, { price = { { 'coin', 300 } }, offer = { type = 'give-item', item = 'loader', count = 1 } })
-    table_insert(market_items, { price = { { 'coin', 600 } }, offer = { type = 'give-item', item = 'fast-loader', count = 1 } })
-    table_insert(market_items, { price = { { 'coin', 900 } }, offer = { type = 'give-item', item = 'express-loader', count = 1 } })
+    table_insert(market_items, { price = { { name = 'coin', count = 25 } }, offer = { type = 'give-item', item = 'raw-fish', count = 1 } })
+    table_insert(market_items, { price = { { name = 'coin', count = 6 } }, offer = { type = 'give-item', item = 'wood', count = 1 } })
+    table_insert(market_items, { price = { { name = 'coin', count = 1 } }, offer = { type = 'give-item', item = 'iron-ore', count = 6 } })
+    table_insert(market_items, { price = { { name = 'coin', count = 1 } }, offer = { type = 'give-item', item = 'copper-ore', count = 6 } })
+    table_insert(market_items, { price = { { name = 'coin', count = 1 } }, offer = { type = 'give-item', item = 'stone', count = 6 } })
+    table_insert(market_items, { price = { { name = 'coin', count = 1 } }, offer = { type = 'give-item', item = 'coal', count = 6 } })
+    table_insert(market_items, { price = { { name = 'coin', count = 1 } }, offer = { type = 'give-item', item = 'uranium-ore', count = 2 } })
+    table_insert(market_items, { price = { { name = 'coin', count = 1000 } }, offer = { type = 'give-item', item = 'laser-turret', count = 1 } })
+    table_insert(market_items, { price = { { name = 'coin', count = 300 } }, offer = { type = 'give-item', item = 'loader', count = 1 } })
+    table_insert(market_items, { price = { { name = 'coin', count = 600 } }, offer = { type = 'give-item', item = 'fast-loader', count = 1 } })
+    table_insert(market_items, { price = { { name = 'coin', count = 900 } }, offer = { type = 'give-item', item = 'express-loader', count = 1 } })
     -- item selling
-    table_insert(market_items, { price = { { 'raw-fish', 1 } }, offer = { type = 'give-item', item = 'coin', count = 15 } })
-    table_insert(market_items, { price = { { 'wood', 1 } }, offer = { type = 'give-item', item = 'coin', count = 3 } })
-    table_insert(market_items, { price = { { 'iron-ore', 7 } }, offer = { type = 'give-item', item = 'coin', count = 1 } })
-    table_insert(market_items, { price = { { 'copper-ore', 7 } }, offer = { type = 'give-item', item = 'coin', count = 1 } })
-    table_insert(market_items, { price = { { 'stone', 7 } }, offer = { type = 'give-item', item = 'coin', count = 1 } })
-    table_insert(market_items, { price = { { 'coal', 7 } }, offer = { type = 'give-item', item = 'coin', count = 1 } })
-    table_insert(market_items, { price = { { 'uranium-ore', 3 } }, offer = { type = 'give-item', item = 'coin', count = 1 } })
-    table_insert(market_items, { price = { { 'copper-cable', 12 } }, offer = { type = 'give-item', item = 'coin', count = 1 } })
-    table_insert(market_items, { price = { { 'iron-gear-wheel', 3 } }, offer = { type = 'give-item', item = 'coin', count = 1 } })
-    table_insert(market_items, { price = { { 'iron-stick', 12 } }, offer = { type = 'give-item', item = 'coin', count = 1 } })
-    table_insert(market_items, { price = { { 'barrel', 1 } }, offer = { type = 'give-item', item = 'coin', count = 1 } })
-    table_insert(market_items, { price = { { 'car', 1 } }, offer = { type = 'give-item', item = 'coin', count = 10 } })
-    table_insert(market_items, { price = { { 'tank', 1 } }, offer = { type = 'give-item', item = 'coin', count = 50 } })
+    table_insert(market_items, { price = { { name = 'raw-fish', count = 1 } }, offer = { type = 'give-item', item = 'coin', count = 15 } })
+    table_insert(market_items, { price = { { name = 'wood', count = 1 } }, offer = { type = 'give-item', item = 'coin', count = 3 } })
+    table_insert(market_items, { price = { { name = 'iron-ore', count = 7 } }, offer = { type = 'give-item', item = 'coin', count = 1 } })
+    table_insert(market_items, { price = { { name = 'copper-ore', count = 7 } }, offer = { type = 'give-item', item = 'coin', count = 1 } })
+    table_insert(market_items, { price = { { name = 'stone', count = 7 } }, offer = { type = 'give-item', item = 'coin', count = 1 } })
+    table_insert(market_items, { price = { { name = 'coal', count = 7 } }, offer = { type = 'give-item', item = 'coin', count = 1 } })
+    table_insert(market_items, { price = { { name = 'uranium-ore', count = 3 } }, offer = { type = 'give-item', item = 'coin', count = 1 } })
+    table_insert(market_items, { price = { { name = 'copper-cable', count = 12 } }, offer = { type = 'give-item', item = 'coin', count = 1 } })
+    table_insert(market_items, { price = { { name = 'iron-gear-wheel', count = 3 } }, offer = { type = 'give-item', item = 'coin', count = 1 } })
+    table_insert(market_items, { price = { { name = 'iron-stick', count = 12 } }, offer = { type = 'give-item', item = 'coin', count = 1 } })
+    table_insert(market_items, { price = { { name = 'barrel', count = 1 } }, offer = { type = 'give-item', item = 'coin', count = 1 } })
+    table_insert(market_items, { price = { { name = 'car', count = 1 } }, offer = { type = 'give-item', item = 'coin', count = 10 } })
+    table_insert(market_items, { price = { { name = 'tank', count = 1 } }, offer = { type = 'give-item', item = 'coin', count = 50 } })
 
     for _, item in pairs(market_items) do
         market.add_market_item(item)
@@ -194,14 +194,15 @@ local function refresh_offers(event)
     else
         if player.opened ~= nil then
             player.opened = nil
-            player.surface.create_entity(
-                {
-                    name = 'flying-text',
-                    position = { market.position.x - 1.75, market.position.y },
-                    text = 'Sorry, we are closed.',
-                    color = { r = 1, g = 0.68, b = 0.26 }
-                }
-            )
+            for _, p in pairs(game.connected_players) do
+                if p.surface == player.surface then
+                    p.create_local_flying_text({
+                        position = { market.position.x - 1.75, market.position.y },
+                        text = 'Sorry, we are closed.',
+                        color = { r = 0.77, g = 0.0, b = 0.0 }
+                    })
+                end
+            end
         end
     end
 end
@@ -282,7 +283,7 @@ local function max_stack_size(entity)
     if is_loader(entity) then
         return 1
     end
-    if (entity.name == 'stack-inserter' or entity.name == 'bulk-inserter') then
+    if (entity.type == 'inserter') then
         local override = entity.inserter_stack_size_override
         if override > 0 then
             return override
@@ -308,7 +309,6 @@ local function get_connected_entities(market)
         'inserter',
         'long-handed-inserter',
         'fast-inserter',
-        'stack-inserter',
         'bulk-inserter',
         'loader',
         'fast-loader',

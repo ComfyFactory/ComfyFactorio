@@ -16,14 +16,15 @@ local function on_built_entity(event)
     local town_center = this.town_centers[force.name]
     local surface = entity.surface
     if force.index == game.forces['player'].index or force.index == game.forces['rogue'].index or town_center == nil then
-        surface.create_entity(
-            {
-                name = 'flying-text',
-                position = entity.position,
-                text = 'You are not acclimated to this technology!',
-                color = { r = 0.77, g = 0.0, b = 0.0 }
-            }
-        )
+        for _, p in pairs(game.connected_players) do
+            if p.surface == surface then
+                p.create_local_flying_text({
+                    position = entity.position,
+                    text = 'You are not acclimated to this technology!',
+                    color = { r = 0.77, g = 0.0, b = 0.0 }
+                })
+            end
+        end
         player.insert({ name = 'laser-turret', count = 1 })
         entity.destroy()
         return
@@ -32,14 +33,15 @@ local function on_built_entity(event)
     local locations = town_center.upgrades.laser_turret.locations
 
     if locations >= slots then
-        surface.create_entity(
-            {
-                name = 'flying-text',
-                position = entity.position,
-                text = 'You do not have enough slots!',
-                color = { r = 0.77, g = 0.0, b = 0.0 }
-            }
-        )
+        for _, p in pairs(game.connected_players) do
+            if p.surface == surface then
+                p.create_local_flying_text({
+                    position = entity.position,
+                    text = 'You do not have enough slots!',
+                    color = { r = 0.77, g = 0.0, b = 0.0 }
+                })
+            end
+        end
         player.insert({ name = 'laser-turret', count = 1 })
         entity.destroy()
         return
@@ -51,14 +53,16 @@ local function on_built_entity(event)
     this.laser_turrets[key] = force.index
     locations = locations + 1
     town_center.upgrades.laser_turret.locations = locations
-    surface.create_entity(
-        {
-            name = 'flying-text',
-            position = entity.position,
-            text = 'Using ' .. locations .. '/' .. slots .. ' slots',
-            color = { r = 1.0, g = 1.0, b = 1.0 }
-        }
-    )
+
+    for _, p in pairs(game.connected_players) do
+        if p.surface == surface then
+            p.create_local_flying_text({
+                position = entity.position,
+                text = 'Using ' .. locations .. '/' .. slots .. ' slots',
+                color = { r = 1.0, g = 1.0, b = 1.0 }
+            })
+        end
+    end
 end
 
 -- called whenever a robot places an item
@@ -76,14 +80,15 @@ local function on_robot_built_entity(event)
     local town_center = this.town_centers[force.name]
     local surface = entity.surface
     if force.index == game.forces['player'].index or force.index == game.forces['rogue'].index or town_center == nil then
-        surface.create_entity(
-            {
-                name = 'flying-text',
-                position = entity.position,
-                text = 'Robot not acclimated to this technology!',
-                color = { r = 0.77, g = 0.0, b = 0.0 }
-            }
-        )
+        for _, p in pairs(game.connected_players) do
+            if p.surface == surface then
+                p.create_local_flying_text({
+                    position = entity.position,
+                    text = 'Robot not acclimated to this technology!',
+                    color = { r = 0.77, g = 0.0, b = 0.0 }
+                })
+            end
+        end
         robot.insert({ name = 'laser-turret', count = 1 })
         entity.destroy()
         return
@@ -91,14 +96,15 @@ local function on_robot_built_entity(event)
     local slots = town_center.upgrades.laser_turret.slots
     local locations = town_center.upgrades.laser_turret.locations
     if locations >= slots then
-        surface.create_entity(
-            {
-                name = 'flying-text',
-                position = entity.position,
-                text = 'Town does not have enough slots!',
-                color = { r = 0.77, g = 0.0, b = 0.0 }
-            }
-        )
+        for _, p in pairs(game.connected_players) do
+            if p.surface == surface then
+                p.create_local_flying_text({
+                    position = entity.position,
+                    text = 'Town does not have enough slots!',
+                    color = { r = 0.77, g = 0.0, b = 0.0 }
+                })
+            end
+        end
         robot.insert({ name = 'laser-turret', count = 1 })
         entity.destroy()
         return
@@ -110,18 +116,19 @@ local function on_robot_built_entity(event)
     this.laser_turrets[key] = force.index
     locations = locations + 1
     town_center.upgrades.laser_turret.locations = locations
-    surface.create_entity(
-        {
-            name = 'flying-text',
-            position = entity.position,
-            text = 'Using ' .. locations .. '/' .. slots .. ' slots',
-            color = { r = 1.0, g = 1.0, b = 1.0 }
-        }
-    )
+    for _, p in pairs(game.connected_players) do
+        if p.surface == surface then
+            p.create_local_flying_text({
+                position = entity.position,
+                text = 'Using ' .. locations .. '/' .. slots .. ' slots',
+                color = { r = 1.0, g = 1.0, b = 1.0 }
+            })
+        end
+    end
 end
 
 -- called whenever a laser-turret is removed from the map
-local function on_entity_destroyed(event)
+local function on_object_destroyed(event)
     local key = event.registration_number
     local this = ScenarioTable.get_table()
     if (this.laser_turrets == nil) then
@@ -149,4 +156,4 @@ end
 
 Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
-Event.add(defines.events.on_entity_destroyed, on_entity_destroyed)
+Event.add(defines.events.on_object_destroyed, on_object_destroyed)

@@ -124,7 +124,8 @@ local function on_player_mined_entity(event)
     local scrap = scrap_raffle[random(1, size_of_scrap_raffle)]
 
     local scrap_amount_modifier = 3
-    local amount_bonus = scrap_amount_modifier * (enemy.evolution_factor * 2) + (player.force.mining_drill_productivity_bonus * 2)
+    local evo = enemy.get_evolution_factor(entity.surface)
+    local amount_bonus = scrap_amount_modifier * (evo * 2) + (player.force.mining_drill_productivity_bonus * 2)
     local amount
     if entity_loot_amounts[scrap] <= 0 then
         amount = math.abs(entity_loot_amounts[scrap])
@@ -143,14 +144,15 @@ local function on_player_mined_entity(event)
         entity.surface.spill_item_stack(position, { name = scrap, count = amount_to_spill }, true)
     end
 
-    entity.surface.create_entity(
-        {
-            name = 'flying-text',
-            position = position,
-            text = '+' .. amount .. ' [img=item/' .. scrap .. ']',
-            color = { r = 0.98, g = 0.66, b = 0.22 }
-        }
-    )
+    for _, p in pairs(game.connected_players) do
+        if p.surface == entity.surface then
+            p.create_local_flying_text({
+                position = position,
+                text = '+' .. amount .. ' [img=item/' .. scrap .. ']',
+                color = { r = 0.98, g = 0.66, b = 0.22 }
+            })
+        end
+    end
 end
 
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)

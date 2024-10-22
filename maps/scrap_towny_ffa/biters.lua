@@ -5,8 +5,6 @@ local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local Public = {}
 local math_random = math.random
 local math_floor = math.floor
-local math_sqrt = math.sqrt
-local math_round = math.round
 local table_size = table.size
 local table_insert = table.insert
 local table_remove = table.remove
@@ -15,7 +13,7 @@ local table_shuffle = table.shuffle_table
 local tick_schedule = {}
 Global.register(
     tick_schedule,
-    function(t)
+    function (t)
         tick_schedule = t
     end
 )
@@ -23,35 +21,9 @@ Global.register(
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local Evolution = require 'maps.scrap_towny_ffa.evolution'
 
-local function get_commmands(target, group)
+local function get_commmands(target)
     local commands = {}
-    local group_position = {x = group.position.x, y = group.position.y}
-    local step_length = 128
 
-    local target_position = target.position
-    local distance_to_target = math_floor(math_sqrt((target_position.x - group_position.x) ^ 2 + (target_position.y - group_position.y) ^ 2))
-    local steps = math_floor((distance_to_target - 27) / step_length) + 1
-    local vector = {math_round((target_position.x - group_position.x) / steps, 3), math_round((target_position.y - group_position.y) / steps, 3)}
-
-    for _ = 1, steps, 1 do
-        group_position.x = group_position.x + vector[1]
-        group_position.y = group_position.y + vector[2]
-        local position = group.surface.find_non_colliding_position('small-biter', group_position, step_length, 2)
-        if position then
-            commands[#commands + 1] = {
-                type = defines.command.go_to_location,
-                destination = {x = position.x, y = position.y},
-                radius = 16,
-                distraction = defines.distraction.by_damage
-            }
-        end
-    end
-
-    commands[#commands + 1] = {
-        type = defines.command.attack,
-        target = target,
-        distraction = defines.distraction.by_damage
-    }
     commands[#commands + 1] = {
         type = defines.command.attack_area,
         destination = target.position,
@@ -61,6 +33,12 @@ local function get_commmands(target, group)
     commands[#commands + 1] = {
         type = defines.command.build_base,
         destination = target.position,
+        distraction = defines.distraction.by_damage
+    }
+
+    commands[#commands + 1] = {
+        type = defines.command.attack,
+        target = target,
         distraction = defines.distraction.by_damage
     }
 
@@ -199,7 +177,7 @@ function Public.swarm(town_center, radius)
         end
         tick_schedule[future][#tick_schedule[future] + 1] = {
             callback = 'swarm',
-            params = {tc, r}
+            params = { tc, r }
         }
         return
     end
@@ -248,7 +226,7 @@ function Public.swarm(town_center, radius)
     if not unit_group_position then
         return
     end
-    local unit_group = surface.create_unit_group({position = unit_group_position, force = units[1].force})
+    local unit_group = surface.create_unit_group({ position = unit_group_position, force = units[1].force })
 
     for key, unit in pairs(units) do
         if key > count2 then
@@ -261,16 +239,16 @@ function Public.swarm(town_center, radius)
         {
             type = defines.command.compound,
             structure_type = defines.compound_command.return_last,
-            commands = get_commmands(market, unit_group)
+            commands = get_commmands(market)
         }
     )
-    table_insert(this.swarms, {group = unit_group, timeout = game.tick + 36000})
+    table_insert(this.swarms, { group = unit_group, timeout = game.tick + 36000 })
 end
 
 local function on_unit_group_finished_gathering(event)
     local unit_group = event.group
     local position = unit_group.position
-    local entities = unit_group.surface.find_entities_filtered({position = position, radius = 256, name = 'market'})
+    local entities = unit_group.surface.find_entities_filtered({ position = position, radius = 256, name = 'market' })
     local target = entities[1]
     if target ~= nil then
         local force = target.force
@@ -288,7 +266,7 @@ local function on_unit_group_finished_gathering(event)
             {
                 type = defines.command.compound,
                 structure_type = defines.compound_command.return_last,
-                commands = get_commmands(target, unit_group)
+                commands = get_commmands(target)
             }
         )
     end
@@ -308,7 +286,7 @@ local function on_tick()
     tick_schedule[game.tick] = nil
 end
 
-local on_init = function()
+local on_init = function ()
     BiterHealthBooster.acid_nova(true)
     BiterHealthBooster.check_on_entity_died(true)
 end

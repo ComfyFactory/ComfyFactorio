@@ -11,10 +11,10 @@ local table_size = table.size
 local string_match = string.match
 local string_lower = string.lower
 local math_min = math.min
-local outlander_color = {150, 150, 150}
-local outlander_chat_color = {170, 170, 170}
-local rogue_color = {150, 150, 150}
-local rogue_chat_color = {170, 170, 170}
+local outlander_color = { 150, 150, 150 }
+local outlander_chat_color = { 170, 170, 170 }
+local rogue_color = { 150, 150, 150 }
+local rogue_chat_color = { 170, 170, 170 }
 local item_drop_radius = 1.65
 
 local destroy_wall_types = {
@@ -99,7 +99,7 @@ local function can_force_accept_member(force)
     update_member_limit(force)
 
     if #force.players >= this.member_limit then
-        game.print('>> Town ' .. force.name .. ' has too many settlers! Current limit: ' .. this.member_limit .. '.' .. ' The limit will increase once other towns have more settlers.', {255, 255, 0})
+        game.print('>> Town ' .. force.name .. ' has too many settlers! Current limit: ' .. this.member_limit .. '.' .. ' The limit will increase once other towns have more settlers.', { 255, 255, 0 })
         return false
     end
     return true
@@ -181,7 +181,7 @@ local function set_town_color(event)
         Public.set_player_color(player)
         return
     end
-    town_center.color = {player.color.r, player.color.g, player.color.b}
+    town_center.color = { player.color.r, player.color.g, player.color.b }
     rendering.set_color(town_center.town_caption, town_center.color)
     for _, p in pairs(force.players) do
         Public.set_player_color(p)
@@ -230,7 +230,7 @@ function Public.add_player_to_town(player, town_center)
     Public.set_player_color(player)
 
     update_member_limit(force)
-    game.print('>> The member limit for all towns is now: ' .. this.member_limit, {255, 255, 0})
+    game.print('>> The member limit for all towns is now: ' .. this.member_limit, { 255, 255, 0 })
 end
 
 -- given to player upon respawn
@@ -240,9 +240,9 @@ function Public.give_player_items(player)
         return
     end
     player.clear_items_inside()
-    player.insert({name = 'raw-fish', count = 3})
+    player.insert({ name = 'raw-fish', count = 3 })
     if player.force.name == 'rogue' or player.force.name == 'player' then
-        player.insert {name = 'stone-furnace', count = '1'}
+        player.insert { name = 'stone-furnace', count = '1' }
     end
 end
 
@@ -301,7 +301,7 @@ local function ally_outlander(player, target)
 
     -- don't handle if towns not yet enabled
     if not this.towns_enabled then
-        player.print('You must wait for more players to join!', {255, 255, 0})
+        player.print('You must wait for more players to join!', { 255, 255, 0 })
         return false
     end
     -- don't handle request if target is not a town
@@ -331,14 +331,14 @@ local function ally_outlander(player, target)
                     if not can_force_accept_member(target_force) then
                         return true
                     end
-                    game.print('>> ' .. player.name .. ' has settled in ' .. target_town_center.town_name, {255, 255, 0})
+                    game.print('>> ' .. player.name .. ' has settled in ' .. target_town_center.town_name, { 255, 255, 0 })
                     Public.add_player_to_town(player, target_town_center)
                     return true
                 end
             end
         end
 
-        game.print('>> ' .. player.name .. ' wants to settle in ' .. target_town_center.town_name, {255, 255, 0})
+        game.print('>> ' .. player.name .. ' wants to settle in ' .. target_town_center.town_name, { 255, 255, 0 })
         return true
     end
 
@@ -359,7 +359,7 @@ local function ally_outlander(player, target)
                     if not can_force_accept_member(player.force) then
                         return true
                     end
-                    game.print('>> ' .. player.name .. ' has accepted ' .. target_player.name .. ' into' .. target_town_center.town_name, {255, 255, 0})
+                    game.print('>> ' .. player.name .. ' has accepted ' .. target_player.name .. ' into' .. target_town_center.town_name, { 255, 255, 0 })
                     Public.add_player_to_town(target_player, this.town_centers[player.force.name])
                     return true
                 end
@@ -367,7 +367,7 @@ local function ally_outlander(player, target)
         end
 
         local target_town_center_player = this.town_centers[player.force.name]
-        game.print('>> ' .. player.name .. ' is inviting ' .. target_player.name .. ' into ' .. target_town_center_player.town_name, {255, 255, 0})
+        game.print('>> ' .. player.name .. ' is inviting ' .. target_player.name .. ' into ' .. target_town_center_player.town_name, { 255, 255, 0 })
         return true
     end
 end
@@ -389,10 +389,10 @@ local function ally_neighbour_towns(player, target)
     end
 
     requesting_force.set_friend(target_force, true)
-    game.print('>> Town ' .. requesting_force.name .. ' has set ' .. target_force.name .. ' as their friend!', {255, 255, 0})
+    game.print('>> Town ' .. requesting_force.name .. ' has set ' .. target_force.name .. ' as their friend!', { 255, 255, 0 })
 
     if target_force.get_friend(requesting_force) then
-        game.print('>> The towns ' .. requesting_force.name .. ' and ' .. target_force.name .. ' have formed an alliance!', {255, 255, 0})
+        game.print('>> The towns ' .. requesting_force.name .. ' and ' .. target_force.name .. ' have formed an alliance!', { 255, 255, 0 })
     end
 end
 
@@ -403,11 +403,11 @@ local function ally_town(player, item)
     end
     local position = item.position
     local surface = player.surface
-    local area = {{position.x - item_drop_radius, position.y - item_drop_radius}, {position.x + item_drop_radius, position.y + item_drop_radius}}
+    local area = { { position.x - item_drop_radius, position.y - item_drop_radius }, { position.x + item_drop_radius, position.y + item_drop_radius } }
     local requesting_force = player.force
     local target = false
 
-    for _, e in pairs(surface.find_entities_filtered({type = {'character', 'market'}, area = area})) do
+    for _, e in pairs(surface.find_entities_filtered({ type = { 'character', 'market' }, area = area })) do
         if e.force.name ~= requesting_force.name then
             target = e
             break
@@ -435,10 +435,10 @@ local function declare_war(player, item)
     local this = ScenarioTable.get_table()
     local position = item.position
     local surface = player.surface
-    local area = {{position.x - item_drop_radius, position.y - item_drop_radius}, {position.x + item_drop_radius, position.y + item_drop_radius}}
+    local area = { { position.x - item_drop_radius, position.y - item_drop_radius }, { position.x + item_drop_radius, position.y + item_drop_radius } }
 
     local requesting_force = player.force
-    local target = surface.find_entities_filtered({type = {'character', 'market'}, area = area})[1]
+    local target = surface.find_entities_filtered({ type = { 'character', 'market' }, area = area })[1]
 
     if not target then
         return
@@ -452,7 +452,7 @@ local function declare_war(player, item)
         if player.name ~= target.force.name then
             Public.set_player_to_outlander(player)
             local town_center = this.town_centers[target_force.name]
-            game.print('>> ' .. player.name .. ' has abandoned ' .. town_center.town_name, {255, 255, 0})
+            game.print('>> ' .. player.name .. ' has abandoned ' .. town_center.town_name, { 255, 255, 0 })
             this.requests[player.index] = nil
         end
         if player.name == target.force.name then
@@ -468,7 +468,7 @@ local function declare_war(player, item)
             end
             Public.set_player_to_outlander(target_player)
             local town_center = this.town_centers[player.force.name]
-            game.print('>> ' .. player.name .. ' has banished ' .. target_player.name .. ' from ' .. town_center.town_name, {255, 255, 0})
+            game.print('>> ' .. player.name .. ' has banished ' .. target_player.name .. ' from ' .. town_center.town_name, { 255, 255, 0 })
             this.requests[player.index] = nil
         end
         return
@@ -481,7 +481,7 @@ local function declare_war(player, item)
     requesting_force.set_friend(target_force, false)
     target_force.set_friend(requesting_force, false)
 
-    game.print('>> ' .. player.name .. ' has dropped the coal! Town ' .. target_force.name .. ' and ' .. requesting_force.name .. ' are now at war!', {255, 255, 0})
+    game.print('>> ' .. player.name .. ' has dropped the coal! Town ' .. target_force.name .. ' and ' .. requesting_force.name .. ' are now at war!', { 255, 255, 0 })
 end
 
 local function delete_chart_tag_for_all_forces(market)
@@ -493,7 +493,7 @@ local function delete_chart_tag_for_all_forces(market)
     local position = market.position
     local surface = market.surface
     for _, force in pairs(forces) do
-        local tags = force.find_chart_tags(surface, {{position.x - 0.1, position.y - 0.1}, {position.x + 0.1, position.y + 0.1}})
+        local tags = force.find_chart_tags(surface, { { position.x - 0.1, position.y - 0.1 }, { position.x + 0.1, position.y + 0.1 } })
         local tag = tags[1]
         if tag then
             if tag.icon.name == 'stone-furnace' then
@@ -511,11 +511,11 @@ function Public.add_chart_tag(town_center)
     local market = town_center.market
     local force = market.force
     local position = market.position
-    local tags = force.find_chart_tags(market.surface, {{position.x - 0.1, position.y - 0.1}, {position.x + 0.1, position.y + 0.1}})
+    local tags = force.find_chart_tags(market.surface, { { position.x - 0.1, position.y - 0.1 }, { position.x + 0.1, position.y + 0.1 } })
     if tags[1] then
         return
     end
-    force.add_chart_tag(market.surface, {icon = {type = 'item', name = 'stone-furnace'}, position = position, text = town_center.town_name})
+    force.add_chart_tag(market.surface, { icon = { type = 'item', name = 'stone-furnace' }, position = position, text = town_center.town_name })
 end
 
 function Public.update_town_chart_tags()
@@ -645,18 +645,16 @@ end
 --    force.technologies['artillery-shell-speed-1'].enabled = true
 --    force.recipes['artillery-turret'].enabled = false
 --    force.recipes['artillery-wagon'].enabled = false
---    force.recipes['artillery-targeting-remote'].enabled = false
 --    force.recipes['artillery-shell'].enabled = false
 --end
 
 local function disable_artillery(force, permission_group)
-    permission_group.set_allows_action(defines.input_action.use_artillery_remote, false)
+    permission_group.set_allows_action(defines.input_action.toggle_artillery_auto_targeting, false)
     force.technologies['artillery'].enabled = false
     force.technologies['artillery-shell-range-1'].enabled = false
     force.technologies['artillery-shell-speed-1'].enabled = false
     force.recipes['artillery-turret'].enabled = false
     force.recipes['artillery-wagon'].enabled = false
-    force.recipes['artillery-targeting-remote'].enabled = false
     force.recipes['artillery-shell'].enabled = false
 end
 
@@ -664,7 +662,6 @@ local function disable_spidertron(force, permission_group)
     permission_group.set_allows_action(defines.input_action.send_spidertron, false)
     force.technologies['spidertron'].enabled = false
     force.recipes['spidertron'].enabled = false
-    force.recipes['spidertron-remote'].enabled = false
 end
 
 local function disable_rockets(force)
@@ -700,10 +697,6 @@ local function disable_achievements(permission_group)
     permission_group.set_allows_action(defines.input_action.open_achievements_gui, false)
 end
 
-local function disable_tips_and_tricks(permission_group)
-    permission_group.set_allows_action(defines.input_action.open_tips_and_tricks_gui, false)
-end
-
 -- setup a team force
 function Public.add_new_force(force_name)
     local this = ScenarioTable.get_table()
@@ -724,7 +717,6 @@ function Public.add_new_force(force_name)
     disable_cluster_grenades(force)
     enable_radar(surface, force)
     disable_achievements(permission_group)
-    disable_tips_and_tricks(permission_group)
     -- friendly fire
     force.friendly_fire = true
     -- disable technologies
@@ -735,7 +727,7 @@ function Public.add_new_force(force_name)
     CombatBalance.init_player_weapon_damage(force)
     if (this.testing_mode == true) then
         local e_force = game.forces['enemy']
-        e_force.set_friend(force, true) -- team force should not be attacked by turrets
+        e_force.set_friend(force, true)     -- team force should not be attacked by turrets
         e_force.set_cease_fire(force, true) -- team force should not be attacked by units
         force.enable_all_prototypes()
         force.research_all_technologies()
@@ -765,7 +757,7 @@ local function kill_force(force_name, cause)
     local surface = market.surface
     local balance = town_center.coin_balance
     local town_name = town_center.town_name
-    surface.create_entity({name = 'big-artillery-explosion', position = position})
+    surface.create_entity({ name = 'big-artillery-explosion', position = position })
 
     local is_suicide = cause and force_name == cause.force.name
 
@@ -783,13 +775,13 @@ local function kill_force(force_name, cause)
         Public.set_player_color(player)
         Public.give_key(player.index)
     end
-    for _, e in pairs(surface.find_entities_filtered({force = force_name})) do
+    for _, e in pairs(surface.find_entities_filtered({ force = force_name })) do
         if e.valid then
             if destroy_military_types[e.type] then
-                surface.create_entity({name = 'big-artillery-explosion', position = position})
+                surface.create_entity({ name = 'big-artillery-explosion', position = position })
                 e.die()
             elseif destroy_robot_types[e.type] then
-                surface.create_entity({name = 'explosion', position = position})
+                surface.create_entity({ name = 'explosion', position = position })
                 e.die()
             elseif destroy_wall_types[e.type] then
                 e.die()
@@ -804,7 +796,7 @@ local function kill_force(force_name, cause)
         end
     end
     local r = 27
-    for _, e in pairs(surface.find_entities_filtered({area = {{position.x - r, position.y - r}, {position.x + r, position.y + r}}, force = 'neutral', type = 'resource'})) do
+    for _, e in pairs(surface.find_entities_filtered({ area = { { position.x - r, position.y - r }, { position.x + r, position.y + r } }, force = 'neutral', type = 'resource' })) do
         if e.name ~= 'crude-oil' then
             e.destroy()
         end
@@ -821,13 +813,13 @@ local function kill_force(force_name, cause)
     elseif cause == nil or not cause.valid or cause.force == nil then
         message = town_name .. ' has fallen to an unknown entity (DEBUG ID 0)!' -- TODO: remove after some testing
     elseif cause.force.name == 'player' or cause.force.name == 'rogue' then
-        local items = {name = 'coin', count = balance}
+        local items = { name = 'coin', count = balance }
         town_center.coin_balance = 0
         if balance > 0 then
             if cause.can_insert(items) then
                 cause.insert(items)
             else
-                local chest = surface.create_entity({name = 'steel-chest', position = position, force = 'neutral'})
+                local chest = surface.create_entity({ name = 'steel-chest', position = position, force = 'neutral' })
                 chest.insert(items)
             end
         end
@@ -861,7 +853,7 @@ local function kill_force(force_name, cause)
     end
 
     Server.to_discord_embed(message)
-    game.print('>> ' .. message, {255, 255, 0})
+    game.print('>> ' .. message, { 255, 255, 0 })
 end
 
 local function on_forces_merged()
@@ -871,7 +863,7 @@ local function on_forces_merged()
         return
     end
     -- Remove any ghosts that have been moved into neutral after a town is destroyed. This caused desyncs before.
-    for _, e in pairs(map_surface.find_entities_filtered({force = 'neutral', type = 'entity-ghost'})) do
+    for _, e in pairs(map_surface.find_entities_filtered({ force = 'neutral', type = 'entity-ghost' })) do
         if e.valid then
             e.destroy()
         end
@@ -914,9 +906,6 @@ local function setup_player_force()
     disable_cluster_grenades(force)
     disable_radar(surface, force)
     disable_achievements(permission_group)
-    disable_tips_and_tricks(permission_group)
-    -- disable research
-    force.disable_research()
     -- friendly fire
     force.friendly_fire = true
     -- disable recipes
@@ -955,9 +944,6 @@ local function setup_rogue_force()
     disable_cluster_grenades(force)
     disable_radar(surface, force)
     disable_achievements(permission_group)
-    disable_tips_and_tricks(permission_group)
-    -- disable research
-    force.disable_research()
     -- friendly fire
     force.friendly_fire = true
     -- disable recipes
@@ -977,15 +963,19 @@ end
 local function setup_enemy_force()
     local this = ScenarioTable.get_table()
     local e_force = game.forces['enemy']
-    e_force.evolution_factor = 1 -- this should never change since we are changing biter types on spawn
-    e_force.set_friend(game.forces.player, true) -- outlander force (player) should not be attacked by turrets
-    e_force.set_cease_fire(game.forces.player, true) -- outlander force (player) should not be attacked by units
+    local surface = game.get_surface(this.active_surface_index)
+    if not surface or not surface.valid then
+        return
+    end
+    e_force.set_evolution_factor(1, surface)               -- this should never change since we are changing biter types on spawn
+    e_force.set_friend(game.forces.player, true)           -- outlander force (player) should not be attacked by turrets
+    e_force.set_cease_fire(game.forces.player, true)       -- outlander force (player) should not be attacked by units
     if (this.testing_mode == true) then
-        e_force.set_friend(game.forces['rogue'], true) -- rogue force (rogue) should not be attacked by turrets
+        e_force.set_friend(game.forces['rogue'], true)     -- rogue force (rogue) should not be attacked by turrets
         e_force.set_cease_fire(game.forces['rogue'], true) -- rogue force (rogue) should not be attacked by units
     else
         -- note, these don't prevent an outlander or rogue from attacking a unit or spawner, we need to handle separately
-        e_force.set_friend(game.forces['rogue'], false) -- rogue force (rogue) should be attacked by turrets
+        e_force.set_friend(game.forces['rogue'], false)     -- rogue force (rogue) should be attacked by turrets
         e_force.set_cease_fire(game.forces['rogue'], false) -- rogue force (rogue) should be attacked by units
     end
 end
@@ -1110,7 +1100,7 @@ local function on_post_entity_died(event)
     if not surface or not surface.valid then
         return
     end
-    local entities = surface.find_entities_filtered({position = event.position, radius = 1})
+    local entities = surface.find_entities_filtered({ position = event.position, radius = 1 })
     for _, e in pairs(entities) do
         if e.type == 'character-corpse' then
             Public.remove_key(e.character_corpse_player_index)

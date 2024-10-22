@@ -82,7 +82,7 @@ local function is_position_near(area)
     local players = game.connected_players
     for i = 1, #players do
         local player = players[i]
-        if inside(player.position) then
+        if inside(player.physical_position) then
             status = true
         end
     end
@@ -140,8 +140,8 @@ local function find_valid_spawn_point(player, force_name, surface)
     -- is the point near any other players
     local r = 55
     local area = {
-        left_top = { x = player.position.x - r, y = player.position.y - r },
-        right_bottom = { x = player.position.x + r, y = player.position.y + r }
+        left_top = { x = player.physical_position.x - r, y = player.physical_position.y - r },
+        right_bottom = { x = player.physical_position.x + r, y = player.physical_position.y + r }
     }
 
     if not is_position_near(area) then

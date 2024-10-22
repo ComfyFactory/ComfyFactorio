@@ -23,7 +23,7 @@ local upgrade_functions = {
             this.buffs[player.index].character_inventory_slots_bonus = 0
         end
         this.buffs[player.index].character_inventory_slots_bonus = player.character.character_inventory_slots_bonus
-        surface.play_sound({ path = 'utility/achievement_unlocked', position = player.position, volume_modifier = 1 })
+        surface.play_sound({ path = 'utility/achievement_unlocked', position = player.physical_position, volume_modifier = 1 })
         return true
     end,
     -- Upgrade Pickaxe Speed
@@ -41,7 +41,7 @@ local upgrade_functions = {
             this.buffs[player.index].character_mining_speed_modifier = 0
         end
         this.buffs[player.index].character_mining_speed_modifier = player.character.character_mining_speed_modifier
-        surface.play_sound({ path = 'utility/achievement_unlocked', position = player.position, volume_modifier = 1 })
+        surface.play_sound({ path = 'utility/achievement_unlocked', position = player.physical_position, volume_modifier = 1 })
         return true
     end,
     -- Upgrade Crafting Speed
@@ -59,27 +59,28 @@ local upgrade_functions = {
             this.buffs[player.index].character_crafting_speed_modifier = 0
         end
         this.buffs[player.index].character_crafting_speed_modifier = player.character.character_crafting_speed_modifier
-        surface.play_sound({ path = 'utility/achievement_unlocked', position = player.position, volume_modifier = 1 })
+        surface.play_sound({ path = 'utility/achievement_unlocked', position = player.physical_position, volume_modifier = 1 })
         return true
     end,
     -- Set Spawn Point
     [4] = function (player)
         local this = ScenarioTable.get_table()
         local surface = player.surface
-        local position = player.position
+        local position = player.physical_position
         position = surface.find_non_colliding_position('character', position, 0, 0.25)
         if position ~= nil and player ~= nil then
             this.spawn_point[player.index] = { x = position.x, y = position.y }
-            surface.play_sound({ path = 'utility/scenario_message', position = player.position, volume_modifier = 1 })
+            surface.play_sound({ path = 'utility/scenario_message', position = player.physical_position, volume_modifier = 1 })
         else
-            surface.create_entity(
-                {
-                    name = 'flying-text',
-                    position = position,
-                    text = 'Could not find open space for spawnpoint!',
-                    color = { r = 0.77, g = 0.0, b = 0.0 }
-                }
-            )
+            for _, p in pairs(game.connected_players) do
+                if p.surface == surface then
+                    p.create_local_flying_text({
+                        position = position,
+                        text = 'Could not find open space for spawnpoint!',
+                        color = { r = 0.77, g = 0.0, b = 0.0 }
+                    })
+                end
+            end
         end
         return false
     end

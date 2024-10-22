@@ -52,12 +52,12 @@ local function spairs(t)
     end
     table.sort(
         keys,
-        function(a, b)
+        function (a, b)
             return t[b] < t[a]
         end
     )
     local i = 0
-    return function()
+    return function ()
         i = i + 1
         if keys[i] then
             return keys[i], t[keys[i]]
@@ -73,7 +73,7 @@ local function init_score_board(player)
     end
 
     local flow = mod_gui.get_frame_flow(player)
-    local frame = flow.add {type = 'frame', style = mod_gui.frame_style, caption = 'Town survival', direction = 'vertical'}
+    local frame = flow.add { type = 'frame', style = mod_gui.frame_style, caption = 'Town survival', direction = 'vertical' }
     frame.style.vertically_stretchable = false
     this.score_gui_frame[player.index] = frame
 end
@@ -92,26 +92,26 @@ local function update_score()
             if frame and frame.valid then
                 frame.clear()
 
-                local inner_frame = frame.add {type = 'frame', style = 'inside_shallow_frame', direction = 'vertical'}
+                local inner_frame = frame.add { type = 'frame', style = 'inside_shallow_frame', direction = 'vertical' }
 
-                local subheader = inner_frame.add {type = 'frame', style = 'subheader_frame'}
+                local subheader = inner_frame.add { type = 'frame', style = 'subheader_frame' }
                 subheader.style.horizontally_stretchable = true
                 subheader.style.vertical_align = 'center'
 
                 local days = this.required_time_to_win / 24
 
-                subheader.add {type = 'label', style = 'subheader_label', caption = {'', 'Survive for ' .. days .. ' days (' .. this.required_time_to_win .. 'h) to win!'}}
+                subheader.add { type = 'label', style = 'subheader_label', caption = { '', 'Survive for ' .. days .. ' days (' .. this.required_time_to_win .. 'h) to win!' } }
 
                 if not next(subheader.children) then
                     subheader.destroy()
                 end
 
-                local information_table = inner_frame.add {type = 'table', column_count = 3, style = 'bordered_table'}
+                local information_table = inner_frame.add { type = 'table', column_count = 3, style = 'bordered_table' }
                 information_table.style.margin = 4
                 information_table.style.column_alignments[3] = 'right'
 
-                for _, caption in pairs({'Rank', 'Town (players online/total)', 'Survival time'}) do
-                    local label = information_table.add {type = 'label', caption = caption}
+                for _, caption in pairs({ 'Rank', 'Town (players online/total)', 'Survival time' }) do
+                    local label = information_table.add { type = 'label', caption = caption }
                     label.style.font = 'default-bold'
                 end
 
@@ -126,21 +126,21 @@ local function update_score()
                 local rank = 1
 
                 for town_center, age in spairs(town_ages) do
-                    local position = information_table.add {type = 'label', caption = '#' .. rank}
+                    local position = information_table.add { type = 'label', caption = '#' .. rank }
                     if town_center == this.town_centers[player.force.name] then
                         position.style.font = 'default-semibold'
-                        position.style.font_color = {r = 1, g = 1}
+                        position.style.font_color = { r = 1, g = 1 }
                     end
                     local label =
                         information_table.add {
-                        type = 'label',
-                        caption = town_center.town_name .. ' (' .. #town_center.market.force.connected_players .. '/' .. #town_center.market.force.players .. ')'
-                    }
+                            type = 'label',
+                            caption = town_center.town_name .. ' (' .. #town_center.market.force.connected_players .. '/' .. #town_center.market.force.players .. ')'
+                        }
                     label.style.font = 'default-semibold'
                     label.style.font_color = town_center.color
                     local age_hours = age / 60 / 3600
                     local total_age = string.format('%.1f', age_hours)
-                    information_table.add {type = 'label', caption = total_age .. 'h'}
+                    information_table.add { type = 'label', caption = total_age .. 'h' }
 
                     rank = rank + 1
 
@@ -156,17 +156,17 @@ local function update_score()
                 end
 
                 -- Outlander section
-                information_table.add {type = 'label', caption = '-'}
+                information_table.add { type = 'label', caption = '-' }
                 local outlander_on = #game.forces['player'].connected_players + #game.forces['rogue'].connected_players
                 local outlander_total = #game.forces['player'].players + #game.forces['rogue'].players
 
                 local label =
                     information_table.add {
-                    type = 'label',
-                    caption = 'Outlanders' .. ' (' .. outlander_on .. '/' .. outlander_total .. ')'
-                }
-                label.style.font_color = {170, 170, 170}
-                information_table.add {type = 'label', caption = '-'}
+                        type = 'label',
+                        caption = 'Outlanders' .. ' (' .. outlander_on .. '/' .. outlander_total .. ')'
+                    }
+                label.style.font_color = { 170, 170, 170 }
+                information_table.add { type = 'label', caption = '-' }
             end
         end
     end
@@ -186,7 +186,6 @@ local function on_init()
     --log("on_init")
     game.enemy_has_vision_on_land_mines = false
     game.draw_resource_selection = true
-    game.disable_tutorial_triggers()
 
     MapDefaults.initialize()
     Limbo.initialize()
@@ -195,15 +194,15 @@ local function on_init()
 end
 
 local tick_actions = {
-    [60 * 0] = Radar.reset, -- each minute, at 00 seconds
-    [60 * 5] = Team.update_town_chart_tags, -- each minute, at 05 seconds
-    [60 * 10] = Team.set_all_player_colors, -- each minute, at 10 seconds
-    [60 * 15] = Fish.reproduce, -- each minute, at 15 seconds
+    [60 * 0] = Radar.reset,                      -- each minute, at 00 seconds
+    [60 * 5] = Team.update_town_chart_tags,      -- each minute, at 05 seconds
+    [60 * 10] = Team.set_all_player_colors,      -- each minute, at 10 seconds
+    [60 * 15] = Fish.reproduce,                  -- each minute, at 15 seconds
     [60 * 25] = Biters.unit_groups_start_moving, -- each minute, at 25 seconds
-    [60 * 30] = Radar.reset, -- each minute, at 30 seconds
-    [60 * 45] = Biters.validate_swarms, -- each minute, at 45 seconds
-    [60 * 50] = Biters.swarm, -- each minute, at 50 seconds
-    [60 * 55] = Pollution.market_scent -- each minute, at 55 seconds
+    [60 * 30] = Radar.reset,                     -- each minute, at 30 seconds
+    [60 * 45] = Biters.validate_swarms,          -- each minute, at 45 seconds
+    [60 * 50] = Biters.swarm,                    -- each minute, at 50 seconds
+    [60 * 55] = Pollution.market_scent           -- each minute, at 55 seconds
 }
 
 local function on_nth_tick(event)
@@ -226,7 +225,7 @@ local function ui_smell_evolution()
     for _, player in pairs(game.connected_players) do
         -- Only for non-townies
         if player.force.index == game.forces.player.index or player.force.index == game.forces['rogue'].index then
-            local e = Evolution.get_evolution(player.position)
+            local e = Evolution.get_evolution(player.physical_position)
             local extra
             if e < 0.1 then
                 extra = 'A good place to found a town. Build a furnace to get started.'
@@ -235,9 +234,9 @@ local function ui_smell_evolution()
             end
             player.create_local_flying_text(
                 {
-                    position = {x = player.position.x, y = player.position.y},
+                    position = { x = player.physical_position.x, y = player.physical_position.y },
                     text = 'You smell the evolution around here: ' .. string.format('%.0f', e * 100) .. '%. ' .. extra,
-                    color = {r = 1, g = 1, b = 1}
+                    color = { r = 1, g = 1, b = 1 }
                 }
             )
         end
@@ -251,7 +250,7 @@ Event.on_nth_tick(60, update_score)
 
 Server.on_scenario_changed(
     'Towny',
-    function(data)
+    function (data)
         local scenario = data.scenario
         if scenario == 'Towny' then
             handle_changes()
@@ -262,7 +261,7 @@ Server.on_scenario_changed(
 --Disable the comfy main gui since we got too many goodies there.
 Event.add(
     defines.events.on_gui_click,
-    function(event)
+    function (event)
         local element = event.element
         if not element or not element.valid then
             return
