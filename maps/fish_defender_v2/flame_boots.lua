@@ -28,13 +28,13 @@ local function on_player_changed_position(event)
     end
 
     if flame_boots[player.index].fuel < 0 then
-        player.print('Your flame boots have worn out.', {r = 0.22, g = 0.77, b = 0.44})
+        player.print('Your flame boots have worn out.', { r = 0.22, g = 0.77, b = 0.44 })
         flame_boots[player.index] = {}
         return
     end
 
     if flame_boots[player.index].fuel % 500 == 0 then
-        player.print('Fuel remaining: ' .. flame_boots[player.index].fuel, {r = 0.22, g = 0.77, b = 0.44})
+        player.print('Fuel remaining: ' .. flame_boots[player.index].fuel, { r = 0.22, g = 0.77, b = 0.44 })
     end
 
     if not flame_boots[player.index].step_history then
@@ -43,13 +43,13 @@ local function on_player_changed_position(event)
 
     local elements = #flame_boots[player.index].step_history
 
-    flame_boots[player.index].step_history[elements + 1] = {x = player.position.x, y = player.position.y}
+    flame_boots[player.index].step_history[elements + 1] = { x = player.physical_position.x, y = player.physical_position.y }
 
     if elements < 50 then
         return
     end
 
-    player.surface.create_entity({name = 'fire-flame', position = flame_boots[player.index].step_history[elements - 2]})
+    player.surface.create_entity({ name = 'fire-flame', position = flame_boots[player.index].step_history[elements - 2] })
 
     flame_boots[player.index].fuel = flame_boots[player.index].fuel - 1
 end

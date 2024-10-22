@@ -8,7 +8,7 @@ local Public = {}
 
 Global.register(
     this,
-    function(tbl)
+    function (tbl)
         this = tbl
     end
 )
@@ -44,16 +44,16 @@ function Public.reset_table()
     this.market_age = nil
     this.last_reset = game.tick
     this.wave_interval = 3600
-    this.wave_grace_period = game.tick + 72000
+    this.wave_grace_period = game.tick + 7200
     -- this.wave_grace_period = game.tick + 3600
     this.boss_biters = {}
     this.acid_lines_delay = {}
     this.entity_limits = {
-        ['ammo-turret'] = {placed = 1, limit = 6, str = 'gun turret', slot_price = 70},
-        ['electric-turret'] = {placed = 0, limit = 1, str = 'laser turret', slot_price = 300},
-        ['artillery-turret'] = {placed = 0, limit = 1, str = 'artillery turret', slot_price = 500},
-        ['fluid-turret'] = {placed = 0, limit = 0, str = 'flamethrower turret', slot_price = 50000},
-        ['land-mine'] = {placed = 0, limit = 1, str = 'mine', slot_price = 20}
+        ['ammo-turret'] = { placed = 1, limit = 6, str = 'gun turret', slot_price = 70 },
+        ['electric-turret'] = { placed = 0, limit = 1, str = 'laser turret', slot_price = 300 },
+        ['artillery-turret'] = { placed = 0, limit = 1, str = 'artillery turret', slot_price = 500 },
+        ['fluid-turret'] = { placed = 0, limit = 0, str = 'flamethrower turret', slot_price = 50000 },
+        ['land-mine'] = { placed = 0, limit = 1, str = 'mine', slot_price = 20 }
     }
     this.difficulties_votes = {
         [1] = {
@@ -88,24 +88,24 @@ function Public.reset_table()
         }
     }
     this.boss_waves = {
-        [50] = {{name = 'big-biter', count = 3}},
-        [100] = {{name = 'behemoth-biter', count = 1}},
-        [150] = {{name = 'behemoth-spitter', count = 4}, {name = 'big-spitter', count = 16}},
+        [50] = { { name = 'big-biter', count = 3 } },
+        [100] = { { name = 'behemoth-biter', count = 1 } },
+        [150] = { { name = 'behemoth-spitter', count = 4 }, { name = 'big-spitter', count = 16 } },
         [200] = {
-            {name = 'behemoth-biter', count = 4},
-            {name = 'behemoth-spitter', count = 2},
-            {name = 'big-biter', count = 32}
+            { name = 'behemoth-biter',   count = 4 },
+            { name = 'behemoth-spitter', count = 2 },
+            { name = 'big-biter',        count = 32 }
         },
         [250] = {
-            {name = 'behemoth-biter', count = 8},
-            {name = 'behemoth-spitter', count = 4},
-            {name = 'big-spitter', count = 32}
+            { name = 'behemoth-biter',   count = 8 },
+            { name = 'behemoth-spitter', count = 4 },
+            { name = 'big-spitter',      count = 32 }
         },
-        [300] = {{name = 'behemoth-biter', count = 16}, {name = 'behemoth-spitter', count = 8}}
+        [300] = { { name = 'behemoth-biter', count = 16 }, { name = 'behemoth-spitter', count = 8 } }
     }
     this.comfylatron_habitat = {
-        left_top = {x = -1500, y = -1500},
-        right_bottom = {x = -80, y = 1500}
+        left_top = { x = -1500, y = -1500 },
+        right_bottom = { x = -80, y = 1500 }
     }
     this.shotgun_shell_damage_modifier_old = {}
     this.fish_eye = false
@@ -167,7 +167,7 @@ function Public.get_current_difficulty_amount_modifier()
     end
 end
 
-local on_init = function()
+local on_init = function ()
     Public.reset_table()
 end
 

@@ -253,6 +253,13 @@ local function on_market_item_purchased()
 end
 
 local function get_biter_initial_pool()
+    local active_surface_index = Public.get('active_surface_index')
+
+    local surface = game.surfaces[active_surface_index]
+    if not surface or not surface.valid then
+        return
+    end
+    local evo = game.forces.enemy.get_evolution_factor(surface)
     local wave_count = Public.get('wave_count')
     local biter_pool
     if wave_count > 1750 then
@@ -286,14 +293,14 @@ local function get_biter_initial_pool()
         }
         return biter_pool
     end
-    if game.forces.enemy.evolution_factor < 0.1 then
+    if evo < 0.1 then
         biter_pool = {
             { name = 'small-biter',   threat = threat_values.small_biter,   weight = 3 },
             { name = 'small-spitter', threat = threat_values.small_spitter, weight = 1 }
         }
         return biter_pool
     end
-    if game.forces.enemy.evolution_factor < 0.2 then
+    if evo < 0.2 then
         biter_pool = {
             { name = 'small-biter',    threat = threat_values.small_biter,    weight = 10 },
             { name = 'medium-biter',   threat = threat_values.medium_biter,   weight = 2 },
@@ -302,7 +309,7 @@ local function get_biter_initial_pool()
         }
         return biter_pool
     end
-    if game.forces.enemy.evolution_factor < 0.3 then
+    if evo < 0.3 then
         biter_pool = {
             { name = 'small-biter',    threat = threat_values.small_biter,    weight = 18 },
             { name = 'medium-biter',   threat = threat_values.medium_biter,   weight = 6 },
@@ -312,7 +319,7 @@ local function get_biter_initial_pool()
         }
         return biter_pool
     end
-    if game.forces.enemy.evolution_factor < 0.4 then
+    if evo < 0.4 then
         biter_pool = {
             { name = 'small-biter',    threat = threat_values.small_biter,    weight = 2 },
             { name = 'medium-biter',   threat = threat_values.medium_biter,   weight = 8 },
@@ -323,7 +330,7 @@ local function get_biter_initial_pool()
         }
         return biter_pool
     end
-    if game.forces.enemy.evolution_factor < 0.5 then
+    if evo < 0.5 then
         biter_pool = {
             { name = 'small-biter',    threat = threat_values.small_biter,    weight = 2 },
             { name = 'medium-biter',   threat = threat_values.medium_biter,   weight = 4 },
@@ -334,7 +341,7 @@ local function get_biter_initial_pool()
         }
         return biter_pool
     end
-    if game.forces.enemy.evolution_factor < 0.6 then
+    if evo < 0.6 then
         biter_pool = {
             { name = 'medium-biter',   threat = threat_values.medium_biter,   weight = 4 },
             { name = 'big-biter',      threat = threat_values.big_biter,      weight = 8 },
@@ -343,7 +350,7 @@ local function get_biter_initial_pool()
         }
         return biter_pool
     end
-    if game.forces.enemy.evolution_factor < 0.7 then
+    if evo < 0.7 then
         biter_pool = {
             { name = 'behemoth-biter',   threat = threat_values.small_biter,    weight = 2 },
             { name = 'medium-biter',     threat = threat_values.medium_biter,   weight = 12 },
@@ -354,7 +361,7 @@ local function get_biter_initial_pool()
         }
         return biter_pool
     end
-    if game.forces.enemy.evolution_factor < 0.8 then
+    if evo < 0.8 then
         biter_pool = {
             { name = 'behemoth-biter',   threat = threat_values.small_biter,    weight = 2 },
             { name = 'medium-biter',     threat = threat_values.medium_biter,   weight = 4 },
@@ -365,7 +372,7 @@ local function get_biter_initial_pool()
         }
         return biter_pool
     end
-    if game.forces.enemy.evolution_factor <= 0.9 then
+    if evo <= 0.9 then
         biter_pool = {
             { name = 'big-biter',        threat = threat_values.big_biter,        weight = 12 },
             { name = 'behemoth-biter',   threat = threat_values.behemoth_biter,   weight = 2 },
@@ -374,7 +381,7 @@ local function get_biter_initial_pool()
         }
         return biter_pool
     end
-    if game.forces.enemy.evolution_factor <= 1 then
+    if evo <= 1 then
         biter_pool = {
             { name = 'big-biter',        threat = threat_values.big_biter,        weight = 4 },
             { name = 'behemoth-biter',   threat = threat_values.behemoth_biter,   weight = 2 },
@@ -483,17 +490,6 @@ local function send_unit_group(unit_group)
     if not (market and market.valid) then
         return
     end
-    for x = unit_group.position.x, market.position.x, -48 do
-        local destination = unit_group.surface.find_non_colliding_position('stone-wall', { x = x, y = unit_group.position.y }, 32, 4)
-        if destination then
-            commands[#commands + 1] = {
-                type = defines.command.attack_area,
-                destination = destination,
-                radius = 16,
-                distraction = defines.distraction.by_enemy
-            }
-        end
-    end
     commands[#commands + 1] = {
         type = defines.command.attack_area,
         destination = { x = market.position.x, y = unit_group.position.y },
@@ -509,7 +505,7 @@ local function send_unit_group(unit_group)
     unit_group.set_command(
         {
             type = defines.command.compound,
-            structure_type = defines.compound_command.logical_and,
+            structure_type = defines.compound_command.return_last,
             commands = commands
         }
     )
@@ -606,6 +602,7 @@ local function wake_up_the_biters(surface)
         end
     end
 
+
     surface.set_multi_command(
         {
             command = {
@@ -694,7 +691,8 @@ local function biter_attack_wave()
     if evolution > 1 then
         evolution = 1
     end
-    game.forces.enemy.evolution_factor = evolution
+
+    game.forces.enemy.set_evolution_factor(evolution, surface)
 
     local y_raffle = get_y_coord_raffle_table()
 
@@ -993,7 +991,7 @@ local function market_kill_visuals()
             end
         end
     end
-    surface.spill_item_stack(market.position, { name = 'raw-fish', count = 1024 }, true)
+    surface.spill_item_stack({ position = market.position, stack = { name = 'raw-fish', count = 1024, quality = 'normal' }, enable_looted = true })
 end
 
 local function on_entity_died(event)
@@ -1224,12 +1222,12 @@ local function on_player_changed_position(event)
         return
     end
 
-    if player.position.x >= 254 then
-        player.teleport({ player.position.x - 2, player.position.y }, surface)
+    if player.physical_position.x >= 254 then
+        player.teleport({ player.physical_position.x - 2, player.physical_position.y }, surface)
 
         if player.character then
             player.character.health = player.character.health - 25
-            player.character.surface.create_entity({ name = 'water-splash', position = player.position })
+            player.character.surface.create_entity({ name = 'water-splash', position = player.physical_position })
             if player.character.health <= 0 then
                 player.character.die('enemy')
             end
@@ -1438,6 +1436,8 @@ function Public.reset_game()
         ['enemy-base'] = { frequency = 'none', size = 'none', richness = 'none' }
     }
 
+    map_gen_settings.default_enable_all_autoplace_controls = false
+
     local active_surface_index = Public.get('active_surface_index')
 
     if not active_surface_index then
@@ -1598,7 +1598,7 @@ local function on_tick()
         if tick % 180 == 0 then
             if surface then
                 game.forces.player.chart(surface, { { -160, -130 }, { 160, 179 } })
-                Public.set('wave_interval', Public.get_current_difficulty_wave_interval())
+                -- Public.set('wave_interval', Public.get_current_difficulty_wave_interval())
             end
         end
 

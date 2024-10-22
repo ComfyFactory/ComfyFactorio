@@ -136,6 +136,8 @@ local function fish_in_space_gui(player)
     label.style.font_color = { r = 0.11, g = 0.8, b = 0.44 }
     frame.style.bottom_padding = -2
 
+    frame.style.minimal_height = 40
+
     local progress = storage.fish_in_space / storage.catplanet_goals[i + 1].goal
     if progress > 1 then
         progress = 1
@@ -180,12 +182,18 @@ local function fireworks(entity)
 end
 
 local function on_rocket_launched(event)
-    local rocket_inventory = event.rocket.get_inventory(defines.inventory.rocket)
-    local launched_fish_count = rocket_inventory.get_item_count('raw-fish')
-    if launched_fish_count == 0 then
-        return
+    local rocket_inventory = event.rocket.cargo_pod.get_inventory(defines.inventory.cargo_unit)
+    local slot = rocket_inventory[1]
+    if slot and slot.valid and slot.valid_for_read then
+        if slot.name ~= "raw-fish" then
+            return
+        end
     end
-    storage.fish_in_space = storage.fish_in_space + launched_fish_count
+
+    rocket_inventory.clear()
+    rocket_inventory.insert({ name = 'space-science-pack', count = 200 })
+
+    storage.fish_in_space = storage.fish_in_space + slot.count
 
     local i = get_rank()
 
@@ -282,4 +290,4 @@ Event.on_nth_tick(60, tick)
 Event.on_init(on_init)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
-Event.add(defines.events.on_rocket_launched, on_rocket_launched)
+Event.add(defines.events.on_rocket_launch_ordered, on_rocket_launched)
