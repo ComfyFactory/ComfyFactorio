@@ -1436,7 +1436,6 @@ function Public.reset_game()
         ['enemy-base'] = { frequency = 'none', size = 'none', richness = 'none' }
     }
 
-    map_gen_settings.default_enable_all_autoplace_controls = false
 
     local active_surface_index = Public.get('active_surface_index')
 

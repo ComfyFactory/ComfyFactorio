@@ -41,7 +41,7 @@ local function add_space(frame)
     add_style(frame.add { type = 'line', direction = 'horizontal' }, space)
 end
 
-function get_player_data(player, remove)
+local function get_player_data(player, remove)
     local storage_data = Public.get('player_market_settings')
     if not storage_data then
         Public.set('player_market_settings', {})

@@ -9,9 +9,9 @@ local Public = {}
 ---@param color Color|table
 function Public.flying_text(player, surface, position, text, color)
     if not player then
-        for _, player in pairs(game.connected_players) do
-            if player.surface == surface then
-                player.create_local_flying_text({
+        for _, p in pairs(game.connected_players) do
+            if p.surface == surface then
+                p.create_local_flying_text({
                     text = text,
                     position = position,
                     color = color
