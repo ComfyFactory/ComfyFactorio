@@ -1,14 +1,13 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-
-local Memory = require 'maps.pirates.memory'
+local Memory = require('maps.pirates.memory')
 -- local Math = require 'maps.pirates.math'
 -- local Balance = require 'maps.pirates.balance'
-local Common = require 'maps.pirates.common'
-local CoreData = require 'maps.pirates.coredata'
+local Common = require('maps.pirates.common')
+local CoreData = require('maps.pirates.coredata')
 -- local Utils = require 'maps.pirates.utils_local'
-local _inspect = require 'utils.inspect'.inspect
-local SurfacesCommon = require 'maps.pirates.surfaces.common'
+local _inspect = require('utils.inspect').inspect
+local SurfacesCommon = require('maps.pirates.surfaces.common')
 
 local Public = {}
 
@@ -32,10 +31,10 @@ Public.Data.cabin_whitebelts_lrtp_order = {
 	{ x = -6.5, y = -10.5, direction = defines.direction.north, type = 'input' },
 	{ x = -5.5, y = -10.5, direction = defines.direction.north, type = 'input' },
 	{ x = -4.5, y = -10.5, direction = defines.direction.north, type = 'input' },
-	{ x = -7.5, y = 10.5,  direction = defines.direction.south, type = 'output' },
-	{ x = -6.5, y = 10.5,  direction = defines.direction.south, type = 'output' },
-	{ x = -5.5, y = 10.5,  direction = defines.direction.south, type = 'output' },
-	{ x = -4.5, y = 10.5,  direction = defines.direction.south, type = 'output' },
+	{ x = -7.5, y = 10.5, direction = defines.direction.south, type = 'output' },
+	{ x = -6.5, y = 10.5, direction = defines.direction.south, type = 'output' },
+	{ x = -5.5, y = 10.5, direction = defines.direction.south, type = 'output' },
+	{ x = -4.5, y = 10.5, direction = defines.direction.south, type = 'output' },
 }
 
 Public.Data.car_pos = { x = 9, y = 0 }
@@ -43,29 +42,29 @@ Public.Data.car_pos = { x = 9, y = 0 }
 Public.Data.market_position = { x = 3.5, y = -0.5 }
 
 Public.Data.static_entities_bp =
-[[0eNqlmu9u2jAUxd8ln2HK9X/zKlM10RJ1kWiCkrAVVX33hVJtXcuJfcwnhEh+XF+fY8e596W63x+bw9B2U7V5qcZue1hP/fpxaHfn78/VRsKqOlUbZV5XVfvQd2O1+T5f2D522/35kul0aKpN1U7NU7Wquu3T+dvvvt813frhZzNO1fnGbtecWa+r5K3N82FoxnE9HvbtNDXDh9vV692qarqpndrmEsbbl9OP7vh0P1+5kesBrKpDP8439d37mOpv9m1Q8+frOaRPGJWJkWWMzsSoZYzJxOhljM3EmGWMy8TYZYzPxLhlTMjE+GVMzMSEZYzUmZyY4OTqWBJClmwlJ6QsuVqWhJglV82SkLPk6lkSgpZcRUtC0pKraUmIWgK5jCnAiSRHwHJYf1mcp2HbjYd+mNb3zX5hLQKRKaGJJkFUpPUQR5MclLN/Ot8OU7vfN8NpPR2HoVmS6Jy2ebfbtUPzcPnZXUNbVmcoRseCUNI8KTQDOKzwNeBEWl6yTNR1MRGMVfMWUAmiKjYVGrX+Qtz32938E9ynzf/6nV3w/pDXH6fD8fws+PVfTPa/+Bv+xZLGRll2JAfllt4tECiwIDQydrtw4Hm1JjkWcKTYc4ioiolorLrYxYhoiolo1LZ4+0YxumIiitEXr10oxkATbYLI7yruAzG5r1v29ADitEJywJxYxS4sCKRZEBqZIVeWADiW5HjAccXrCSL6YiIaayheT1CMsdhZ/rMP1LU3DHX+8wCg/n0eaDvwOOBYk4D0OvbcAZLqaI8gkGFBaGSsSQS9MXIkKAJOuTdgaOWbRMySciSlHAuk7Nl9A2XDs54AE+XpjQOBsk3hU0OjXQFJtC3AodmzthBwjPc3+ALFVu6LtyiTxvCsMa5g084ItDNAPgLrDDRXQbGTDg5rQbMgcHwMplw9KDZbrh6do57gWPXoEvV4dtJRPgILQnMV6VUMhBRremUFMUWhY0Ik2hvgmBBpb4CDS7zBGyi2G7xhc7wRaW/YAm9E2hsoH7Q30Fzx3rCoilfTKIdQbEVaAiLR7vCIpMtVDaMz5bLOOhRKbVldlxwLpWZf7+KU0BaBE0a/4cUo3iVofMK+5lWw2k2bJCJS+QteHJ0ur1VCpmGrlZDEljVw7lxJxfItsOSrTeFr4zhO2g04eWzFQ6FKu6LNIIgk5cV2yCyvDGImWyjHuaPNAGOiK+MYxdfG4fjY6rjSiBTIxjRMimRvGiTpmmxPwyQhO9QwSZFNapikyT41TDJkqxomsUs+Jjmy7w2TPNtohlGBbX7DqMg2m0FUdlFbko4xwjacYZRim+Awii5AXFB3q0v/7uZDI/Gq+tUM4+WZO4jxUXlrZt3W8/V/ACz9dUA=]]
+	[[0eNqlmu9u2jAUxd8ln2HK9X/zKlM10RJ1kWiCkrAVVX33hVJtXcuJfcwnhEh+XF+fY8e596W63x+bw9B2U7V5qcZue1hP/fpxaHfn78/VRsKqOlUbZV5XVfvQd2O1+T5f2D522/35kul0aKpN1U7NU7Wquu3T+dvvvt813frhZzNO1fnGbtecWa+r5K3N82FoxnE9HvbtNDXDh9vV692qarqpndrmEsbbl9OP7vh0P1+5kesBrKpDP8439d37mOpv9m1Q8+frOaRPGJWJkWWMzsSoZYzJxOhljM3EmGWMy8TYZYzPxLhlTMjE+GVMzMSEZYzUmZyY4OTqWBJClmwlJ6QsuVqWhJglV82SkLPk6lkSgpZcRUtC0pKraUmIWgK5jCnAiSRHwHJYf1mcp2HbjYd+mNb3zX5hLQKRKaGJJkFUpPUQR5MclLN/Ot8OU7vfN8NpPR2HoVmS6Jy2ebfbtUPzcPnZXUNbVmcoRseCUNI8KTQDOKzwNeBEWl6yTNR1MRGMVfMWUAmiKjYVGrX+Qtz32938E9ynzf/6nV3w/pDXH6fD8fws+PVfTPa/+Bv+xZLGRll2JAfllt4tECiwIDQydrtw4Hm1JjkWcKTYc4ioiolorLrYxYhoiolo1LZ4+0YxumIiitEXr10oxkATbYLI7yruAzG5r1v29ADitEJywJxYxS4sCKRZEBqZIVeWADiW5HjAccXrCSL6YiIaayheT1CMsdhZ/rMP1LU3DHX+8wCg/n0eaDvwOOBYk4D0OvbcAZLqaI8gkGFBaGSsSQS9MXIkKAJOuTdgaOWbRMySciSlHAuk7Nl9A2XDs54AE+XpjQOBsk3hU0OjXQFJtC3AodmzthBwjPc3+ALFVu6LtyiTxvCsMa5g084ItDNAPgLrDDRXQbGTDg5rQbMgcHwMplw9KDZbrh6do57gWPXoEvV4dtJRPgILQnMV6VUMhBRremUFMUWhY0Ik2hvgmBBpb4CDS7zBGyi2G7xhc7wRaW/YAm9E2hsoH7Q30Fzx3rCoilfTKIdQbEVaAiLR7vCIpMtVDaMz5bLOOhRKbVldlxwLpWZf7+KU0BaBE0a/4cUo3iVofMK+5lWw2k2bJCJS+QteHJ0ur1VCpmGrlZDEljVw7lxJxfItsOSrTeFr4zhO2g04eWzFQ6FKu6LNIIgk5cV2yCyvDGImWyjHuaPNAGOiK+MYxdfG4fjY6rjSiBTIxjRMimRvGiTpmmxPwyQhO9QwSZFNapikyT41TDJkqxomsUs+Jjmy7w2TPNtohlGBbX7DqMg2m0FUdlFbko4xwjacYZRim+Awii5AXFB3q0v/7uZDI/Gq+tUM4+WZO4jxUXlrZt3W8/V/ACz9dUA=]]
 
 -- Public.Data.operable_entities_bp = [[0eNqVkeFqwzAMhN9Fv51Ru8nS+lVKGWkjOkMiG0vZGkrefbZXRhljbX+Jg7vPJ/kCh2HCEB0J2AswdaESX52i67M+gzUrBXMa9aLAHT0x2F0yuhN1Q7bIHBAsOMERFFA3ZvXpfY9UHd+RBXKQekwsvai7UTyHiMwVh8GJYLyJm2WvAEmcOPyuUcT8RtN4SE6rfygsiMP1fQXBc8p4uq6kX1+aslSaS670C2MexLT/Y9ZPtmn/xtRPtimYdKhyVnvzvwo+MHJJmI2u261pm1qvm1XyfwG7QKjd]]
 
 Public.Data.cabin_splitters = {
-	{ x = -7, y = 9.5,  direction = defines.direction.north, type = 0 },
-	{ x = -6, y = 8.5,  direction = defines.direction.north, type = 0 },
-	{ x = -5, y = 7.5,  direction = defines.direction.north, type = 0 },
-	{ x = -4, y = 6.5,  direction = defines.direction.north, type = 0 },
-	{ x = -7, y = 7.5,  direction = defines.direction.north, type = 1 },
-	{ x = -6, y = 6.5,  direction = defines.direction.north, type = 1 },
-	{ x = -5, y = 5.5,  direction = defines.direction.north, type = 1 },
-	{ x = -4, y = 4.5,  direction = defines.direction.north, type = 1 },
-	{ x = -7, y = 5.5,  direction = defines.direction.north, type = 2 },
-	{ x = -6, y = 4.5,  direction = defines.direction.north, type = 2 },
-	{ x = -5, y = 3.5,  direction = defines.direction.north, type = 2 },
-	{ x = -4, y = 2.5,  direction = defines.direction.north, type = 2 },
-	{ x = -7, y = 3.5,  direction = defines.direction.north, type = 3 },
-	{ x = -6, y = 2.5,  direction = defines.direction.north, type = 3 },
-	{ x = -5, y = 1.5,  direction = defines.direction.north, type = 3 },
-	{ x = -4, y = 0.5,  direction = defines.direction.north, type = 3 },
-	{ x = -7, y = 1.5,  direction = defines.direction.north, type = 4 },
-	{ x = -6, y = 0.5,  direction = defines.direction.north, type = 4 },
+	{ x = -7, y = 9.5, direction = defines.direction.north, type = 0 },
+	{ x = -6, y = 8.5, direction = defines.direction.north, type = 0 },
+	{ x = -5, y = 7.5, direction = defines.direction.north, type = 0 },
+	{ x = -4, y = 6.5, direction = defines.direction.north, type = 0 },
+	{ x = -7, y = 7.5, direction = defines.direction.north, type = 1 },
+	{ x = -6, y = 6.5, direction = defines.direction.north, type = 1 },
+	{ x = -5, y = 5.5, direction = defines.direction.north, type = 1 },
+	{ x = -4, y = 4.5, direction = defines.direction.north, type = 1 },
+	{ x = -7, y = 5.5, direction = defines.direction.north, type = 2 },
+	{ x = -6, y = 4.5, direction = defines.direction.north, type = 2 },
+	{ x = -5, y = 3.5, direction = defines.direction.north, type = 2 },
+	{ x = -4, y = 2.5, direction = defines.direction.north, type = 2 },
+	{ x = -7, y = 3.5, direction = defines.direction.north, type = 3 },
+	{ x = -6, y = 2.5, direction = defines.direction.north, type = 3 },
+	{ x = -5, y = 1.5, direction = defines.direction.north, type = 3 },
+	{ x = -4, y = 0.5, direction = defines.direction.north, type = 3 },
+	{ x = -7, y = 1.5, direction = defines.direction.north, type = 4 },
+	{ x = -6, y = 0.5, direction = defines.direction.north, type = 4 },
 	{ x = -5, y = -0.5, direction = defines.direction.north, type = 4 },
 	{ x = -4, y = -1.5, direction = defines.direction.north, type = 4 },
 	{ x = -7, y = -0.5, direction = defines.direction.north, type = 5 },
@@ -107,36 +106,36 @@ Public.market_price_scale = 300
 Public.cabin_shop_data = {
 	{
 		-- Note: coin price for this offer changes based on difficulty.
-		price = { { 'coin', 4000 }, { 'coal', 20 }, { 'iron-plate', 20 } }, --should be inefficient on resources to merely buy arty to shoot nests
+		price = { { name = 'coin', count = 4000 }, { name = 'coal', count = 20 }, { name = 'iron-plate', count = 20 } }, --should be inefficient on resources to merely buy arty to shoot nests
 		offer = { type = 'give-item', item = 'artillery-shell', count = 5 },
 	},
 	{
-		price = { { 'coin', 2000 }, { 'electronic-circuit', 50 } },
+		price = { { name = 'coin', count = 2000 }, { name = 'electronic-circuit', count = 50 } },
 		offer = { type = 'give-item', item = 'rail-signal', count = 50 },
 	},
 	{
-		price = { { 'coin', 1000 }, { 'stone-brick', 50 } },
+		price = { { name = 'coin', count = 1000 }, { name = 'stone-brick', count = 50 } },
 		offer = { type = 'give-item', item = 'uranium-238', count = 10 },
 	},
 	{
-		price = { { 'coin', 1000 }, { 'explosives', 5 } },
+		price = { { name = 'coin', count = 1000 }, { name = 'explosives', count = 5 } },
 		offer = { type = 'give-item', item = 'cliff-explosives', count = 5 },
 	},
 	{
 		price = {}, -- price set later
-		offer = { type = 'nothing', effect_description = { 'pirates.market_description_upgrade_hold' } }
+		offer = { type = 'nothing', effect_description = { 'pirates.market_description_upgrade_hold' } },
 	},
 	{
 		price = {}, -- price set later
-		offer = { type = 'nothing', effect_description = { 'pirates.market_description_upgrade_power' } }
+		offer = { type = 'nothing', effect_description = { 'pirates.market_description_upgrade_power' } },
 	},
 	{
 		price = {}, -- price set later
-		offer = { type = 'nothing', effect_description = { 'pirates.market_description_random_class' } }
+		offer = { type = 'nothing', effect_description = { 'pirates.market_description_random_class' } },
 	},
 	{
-		price = { { 'coin', 100 }, { 'raw-fish', 1 } },
-		offer = { type = 'nothing', effect_description = { 'pirates.market_description_reroll_prices' } }
+		price = { { name = 'coin', count = 100 }, { name = 'raw-fish', count = 1 } },
+		offer = { type = 'nothing', effect_description = { 'pirates.market_description_reroll_prices' } },
 	},
 	--disabled now that we can wait after any destination:
 	-- {
@@ -152,7 +151,9 @@ end
 
 function Public.get_cabin_surface()
 	local name = Public.get_cabin_surface_name()
-	if name and game.surfaces[name] and game.surfaces[name].valid then return game.surfaces[Public.get_cabin_surface_name()] end
+	if name and game.surfaces[name] and game.surfaces[name].valid then
+		return game.surfaces[Public.get_cabin_surface_name()]
+	end
 end
 
 function Public.create_cabin_surface()
@@ -164,7 +165,7 @@ function Public.create_cabin_surface()
 		local height = Public.Data.height
 		local map_gen_settings = Common.default_map_gen_settings(width, height)
 
-		map_gen_settings.autoplace_settings.decorative.treat_missing_as_default = false
+		map_gen_settings.autoplace_settings.decorative = { treat_missing_as_default = false }
 
 		local cabinname = Public.get_cabin_surface_name()
 
@@ -173,14 +174,18 @@ function Public.create_cabin_surface()
 		surface.daytime = 0.3
 		surface.show_clouds = false
 
-		-- more here
-
 		Common.ensure_chunks_at(surface, { x = 0, y = 0 }, 3)
 
 		boat.cabin_whitebelts = {}
 		for _, b in ipairs(Public.Data.cabin_whitebelts_lrtp_order) do
 			local p = { x = b.x, y = b.y }
-			local e = surface.create_entity({ name = 'linked-belt', position = p, force = boat.force_name, create_build_effect_smoke = false, direction = b.direction })
+			local e = surface.create_entity({
+				name = 'linked-belt',
+				position = p,
+				force = boat.force_name,
+				create_build_effect_smoke = false,
+				direction = b.direction,
+			})
 			if e and e.valid then
 				e.destructible = false
 				e.minable = false
@@ -201,7 +206,7 @@ function Public.create_cabin_surface()
 				filter = 'coal'
 			elseif splitter.type <= 6 then
 				priority = 'right'
-				filter = game.item_prototypes[CoreData.cost_items[splitter.type].name]
+				filter = CoreData.cost_items[splitter.type].name
 			elseif splitter.type == 7 then
 				priority = 'left'
 			elseif splitter.type == 8 then
@@ -211,14 +216,24 @@ function Public.create_cabin_surface()
 				priority = 'left'
 				filter = 'landfill'
 			end
-			local e = surface.create_entity({ name = name, position = p, force = boat.force_name, create_build_effect_smoke = false, direction = splitter.direction })
+			local e = surface.create_entity({
+				name = name,
+				position = p,
+				force = boat.force_name,
+				create_build_effect_smoke = false,
+				direction = splitter.direction,
+			})
 			if e and e.valid then
 				e.destructible = false
 				e.minable = false
 				e.rotatable = false
 				e.operable = false
-				if filter then e.splitter_filter = filter end
-				if priority then e.splitter_output_priority = priority end
+				if filter then
+					e.splitter_filter = filter
+				end
+				if priority then
+					e.splitter_output_priority = priority
+				end
 				boat.cabin_splitters[#boat.cabin_splitters + 1] = e
 			end
 		end
@@ -226,7 +241,12 @@ function Public.create_cabin_surface()
 		boat.input_chests = {}
 		for i, b in ipairs(Public.Data.input_chests) do
 			local p = { x = b.x, y = b.y }
-			local e = surface.create_entity({ name = 'blue-chest', position = p, force = boat.force_name, create_build_effect_smoke = false })
+			local e = surface.create_entity({
+				name = 'blue-chest',
+				position = p,
+				force = boat.force_name,
+				create_build_effect_smoke = false,
+			})
 			if e and e.valid then
 				e.destructible = false
 				e.minable = false
@@ -237,7 +257,12 @@ function Public.create_cabin_surface()
 		end
 
 		local p = { x = Public.Data.output_chest.x, y = Public.Data.output_chest.y }
-		local e = surface.create_entity({ name = 'red-chest', position = p, force = boat.force_name, create_build_effect_smoke = false })
+		local e = surface.create_entity({
+			name = 'red-chest',
+			position = p,
+			force = boat.force_name,
+			create_build_effect_smoke = false,
+		})
 		if e and e.valid then
 			e.destructible = false
 			e.minable = false
@@ -247,7 +272,12 @@ function Public.create_cabin_surface()
 		end
 
 		p = { x = Public.Data.backup_output_chest.x, y = Public.Data.backup_output_chest.y }
-		e = surface.create_entity({ name = 'red-chest', position = p, force = boat.force_name, create_build_effect_smoke = false })
+		e = surface.create_entity({
+			name = 'red-chest',
+			position = p,
+			force = boat.force_name,
+			create_build_effect_smoke = false,
+		})
 		if e and e.valid then
 			e.destructible = false
 			e.minable = false
@@ -256,13 +286,18 @@ function Public.create_cabin_surface()
 			boat.backup_output_chest = e
 		end
 
-		local es = Common.build_from_blueprint(Public.Data.static_entities_bp, surface, { x = 0, y = 0 }, boat.force_name)
+		local es =
+			Common.build_from_blueprint(Public.Data.static_entities_bp, surface, { x = 0, y = 0 }, boat.force_name)
 		for _, e2 in pairs(es) do
 			if e2 and e2.valid then
 				e2.destructible = false
 				e2.minable = false
 				e2.rotatable = false
 				e2.operable = false
+			end
+
+			if e2.name == 'wooden-chest' then
+				e2.force = 'environment' -- Patch to stop the autostash helper from inserting items in these chests
 			end
 		end
 		-- local es2 = Common.build_from_blueprint(Public.Data.operable_entities_bp, surface, {x=5, y=-4}, boat.force_name)
@@ -273,7 +308,12 @@ function Public.create_cabin_surface()
 		-- 		e2.rotatable = false
 		-- 	end
 		-- end
-		e = surface.create_entity({ name = 'car', position = Public.Data.car_pos, force = boat.force_name, create_build_effect_smoke = false })
+		e = surface.create_entity({
+			name = 'car',
+			position = Public.Data.car_pos,
+			force = boat.force_name,
+			create_build_effect_smoke = false,
+		})
 		if e and e.valid then
 			e.get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 16 })
 			e.color = { 148, 106, 52 }
@@ -283,7 +323,12 @@ function Public.create_cabin_surface()
 			e.operable = false
 		end
 
-		e = surface.create_entity({ name = 'market', position = Public.Data.market_position, force = boat.force_name, create_build_effect_smoke = false })
+		e = surface.create_entity({
+			name = 'market',
+			position = Public.Data.market_position,
+			force = boat.force_name,
+			create_build_effect_smoke = false,
+		})
 		if e and e.valid then
 			e.destructible = false
 			e.minable = false
@@ -296,27 +341,25 @@ function Public.create_cabin_surface()
 
 		Public.update_captains_market_offers_based_on_difficulty(memory.difficulty_option)
 
-		rendering.draw_text(
-			{
-				color = { 60, 255, 124 },
-				scale = 1.6,
-				render_layer = 'light-effect',
-				target = e,
-				target_offset = { 0, -2.7 },
-				surface = e.surface,
-				alignment = 'center',
-				text = "Captain's Market"
-			})
+		rendering.draw_text({
+			color = { 60, 255, 124 },
+			scale = 1.6,
+			target = e,
+			target_offset = { 0, -6 },
+			surface = e.surface,
+			alignment = 'center',
+			text = "Captain's Market",
+		})
 
-		rendering.draw_text {
+		rendering.draw_text({
 			text = { 'pirates.surface_label_cabin' },
 			surface = surface,
 			target = Public.Data.surfacename_rendering_pos,
 			color = CoreData.colors.renderingtext_yellow,
 			scale = 3.5,
 			font = 'default-game',
-			alignment = 'center'
-		}
+			alignment = 'center',
+		})
 	end
 end
 
@@ -324,7 +367,13 @@ function Public.connect_up_linked_belts_to_deck() --assumes both are in standard
 	local memory = Memory.get_crew_memory()
 	local boat = memory.boat
 
-	if boat and boat.deck_whitebelts and #boat.deck_whitebelts > 0 and boat.cabin_whitebelts and #boat.cabin_whitebelts > 0 then
+	if
+		boat
+		and boat.deck_whitebelts
+		and #boat.deck_whitebelts > 0
+		and boat.cabin_whitebelts
+		and #boat.cabin_whitebelts > 0
+	then
 		local connections = {
 			{ 1, 9 },
 			{ 2, 10 },
@@ -392,7 +441,9 @@ end
 
 function Public.update_captains_market_offers_based_on_difficulty(difficulty_option)
 	local market = Public.get_captains_market()
-	if market == nil then return end
+	if market == nil then
+		return
+	end
 
 	local offers = market.get_market_items()
 	market.clear_market_items()
@@ -400,8 +451,8 @@ function Public.update_captains_market_offers_based_on_difficulty(difficulty_opt
 	for i, offer in pairs(offers) do
 		if i == enum.SLOT_ARTILLERY_SHELLS then
 			for _, price in pairs(offer.price) do
-				if price.name == "coin" then
-					price.amount = difficulty_option * 1000
+				if price.name == 'coin' then
+					price.count = difficulty_option * 1000
 				end
 			end
 		end

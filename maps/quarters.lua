@@ -3,7 +3,7 @@ require 'modules.mineable_wreckage_yields_scrap'
 require 'modules.wave_defense.main'
 local Map = require 'modules.map_info'
 local WD = require 'modules.wave_defense.table'
-local simplex_noise = require 'utils.simplex_noise'.d2
+local simplex_noise = require 'utils.math.simplex_noise'.d2
 local spawn_size = 96
 local wall_thickness = 3
 local small_scraps = {
@@ -62,7 +62,7 @@ end
 local function spawn_area(event)
     local left_top = event.area.left_top
 
-    for _, entity in pairs(event.surface.find_entities_filtered({area = event.area, force = 'neutral'})) do
+    for _, entity in pairs(event.surface.find_entities_filtered({ area = event.area, force = 'neutral' })) do
         entity.destroy()
     end
 
@@ -82,10 +82,10 @@ local function spawn_area(event)
 
     for x = 0, 31, 1 do
         for y = 0, 31, 1 do
-            local p = {x = left_top.x + x, y = left_top.y + y}
-            event.surface.set_tiles({{name = 'stone-path', position = p}})
+            local p = { x = left_top.x + x, y = left_top.y + y }
+            event.surface.set_tiles({ { name = 'stone-path', position = p } })
             if is_spawn_wall(p) then
-                event.surface.create_entity({name = 'stone-wall', position = p, force = 'player'})
+                event.surface.create_entity({ name = 'stone-wall', position = p, force = 'player' })
             else
                 if not ore then
                     if math.sqrt(p.x ^ 2 + p.y ^ 2) > 4 then
@@ -94,11 +94,11 @@ local function spawn_area(event)
                                 simplex_noise(p.x * 0.015, p.y * 0.015, game.surfaces[1].map_gen_settings.seed) +
                                 simplex_noise(p.x * 0.055, p.y * 0.055, game.surfaces[1].map_gen_settings.seed) * 0.5
                             if noise > 0.6 then
-                                event.surface.create_entity({name = small_scraps[math.random(1, #small_scraps)], position = p, force = 'neutral'})
+                                event.surface.create_entity({ name = small_scraps[math.random(1, #small_scraps)], position = p, force = 'neutral' })
                             end
                             if noise < -0.75 then
                                 if math.random(1, 16) == 1 then
-                                    event.surface.create_entity({name = 'rock-big', position = p, force = 'neutral'})
+                                    event.surface.create_entity({ name = 'big-rock', position = p, force = 'neutral' })
                                 end
                             end
                         end
@@ -109,10 +109,10 @@ local function spawn_area(event)
     end
 
     if left_top.x == -64 and left_top.y == -64 then
-        local wreck = event.surface.create_entity({name = 'crash-site-spaceship', position = {0, -6}, force = 'player'})
-        wreck.insert({name = 'submachine-gun', count = 3})
-        wreck.insert({name = 'firearm-magazine', count = 32})
-        wreck.insert({name = 'grenade', count = 8})
+        local wreck = event.surface.create_entity({ name = 'crash-site-spaceship', position = { 0, -6 }, force = 'player' })
+        wreck.insert({ name = 'submachine-gun', count = 3 })
+        wreck.insert({ name = 'firearm-magazine', count = 32 })
+        wreck.insert({ name = 'grenade', count = 8 })
     end
 
     if not ore then
@@ -120,8 +120,8 @@ local function spawn_area(event)
     end
     for x = 0, 31, 1 do
         for y = 0, 31, 1 do
-            local p = {x = left_top.x + x, y = left_top.y + y}
-            event.surface.create_entity({name = ore, position = p, amount = 1000})
+            local p = { x = left_top.x + x, y = left_top.y + y }
+            event.surface.create_entity({ name = ore, position = p, amount = 1000 })
         end
     end
 end
@@ -146,21 +146,21 @@ local function draw_borders(surface, left_top, area)
     if left_top.x == 0 or left_top.x == -32 then
         for x = 0, 31, 1 do
             for y = 0, 31, 1 do
-                local p = {left_top.x + x, left_top.y + y}
-                surface.set_tiles({{name = 'deepwater', position = p}})
+                local p = { left_top.x + x, left_top.y + y }
+                surface.set_tiles({ { name = 'deepwater', position = p } })
             end
         end
-        surface.destroy_decoratives({area = area})
+        surface.destroy_decoratives({ area = area })
     end
 
     if left_top.y == 0 or left_top.y == -32 then
         for x = 0, 31, 1 do
             for y = 0, 31, 1 do
-                local p = {left_top.x + x, left_top.y + y}
-                surface.set_tiles({{name = 'deepwater', position = p}})
+                local p = { left_top.x + x, left_top.y + y }
+                surface.set_tiles({ { name = 'deepwater', position = p } })
             end
         end
-        surface.destroy_decoratives({area = area})
+        surface.destroy_decoratives({ area = area })
     end
 end
 
@@ -205,7 +205,7 @@ local function on_chunk_generated(event)
         return
     end
 
-    game.forces.player.chart(surface, {{left_top.x, left_top.y}, {left_top.x + 31, left_top.y + 31}})
+    game.forces.player.chart(surface, { { left_top.x, left_top.y }, { left_top.x + 31, left_top.y + 31 } })
 end
 
 local function set_difficulty()
@@ -233,32 +233,32 @@ local function on_init()
     T.sub_caption = 'coal ++ iron ++ copper ++ stone'
     T.text =
         table.concat(
-        {
-            'Green energy ore may be found in the stone area.\n',
-            'Oil may be found in the coal area.\n',
-            '\n',
-            'Hold the door as long as possible.\n',
-            "Don't let them in!\n"
-        }
-    )
-    T.main_caption_color = {r = 0, g = 120, b = 0}
-    T.sub_caption_color = {r = 255, g = 0, b = 255}
-    for i, quarter in pairs({'coal', 'iron-ore', 'stone', 'copper-ore'}) do
+            {
+                'Green energy ore may be found in the stone area.\n',
+                'Oil may be found in the coal area.\n',
+                '\n',
+                'Hold the door as long as possible.\n',
+                "Don't let them in!\n"
+            }
+        )
+    T.main_caption_color = { r = 0, g = 120, b = 0 }
+    T.sub_caption_color = { r = 255, g = 0, b = 255 }
+    for i, quarter in pairs({ 'coal', 'iron-ore', 'stone', 'copper-ore' }) do
         local map_gen_settings = {}
         map_gen_settings.seed = math.random(1, 999999999)
         map_gen_settings.water = math.random(25, 50) * 0.01
         map_gen_settings.starting_area = 1.5
         map_gen_settings.terrain_segmentation = math.random(25, 50) * 0.1
-        map_gen_settings.cliff_settings = {cliff_elevation_interval = 0, cliff_elevation_0 = 0}
+        map_gen_settings.cliff_settings = { cliff_elevation_interval = 0, cliff_elevation_0 = 0 }
         map_gen_settings.autoplace_controls = {
-            ['coal'] = {frequency = 0, size = 0.5, richness = 0.5},
-            ['stone'] = {frequency = 0, size = 0.5, richness = 0.5},
-            ['copper-ore'] = {frequency = 0, size = 0.5, richness = 0.5},
-            ['iron-ore'] = {frequency = 0, size = 0.5, richness = 0.5},
-            ['uranium-ore'] = {frequency = 0, size = 1, richness = 1},
-            ['crude-oil'] = {frequency = 0, size = 1, richness = 1},
-            ['trees'] = {frequency = math.random(10, 50) * 0.1, size = math.random(5, 15) * 0.1, richness = math.random(1, 10) * 0.1},
-            ['enemy-base'] = {frequency = 2, size = 2, richness = 1}
+            ['coal'] = { frequency = 0, size = 0.5, richness = 0.5 },
+            ['stone'] = { frequency = 0, size = 0.5, richness = 0.5 },
+            ['copper-ore'] = { frequency = 0, size = 0.5, richness = 0.5 },
+            ['iron-ore'] = { frequency = 0, size = 0.5, richness = 0.5 },
+            ['uranium-ore'] = { frequency = 0, size = 1, richness = 1 },
+            ['crude-oil'] = { frequency = 0, size = 1, richness = 1 },
+            ['trees'] = { frequency = math.random(10, 50) * 0.1, size = math.random(5, 15) * 0.1, richness = math.random(1, 10) * 0.1 },
+            ['enemy-base'] = { frequency = 2, size = 2, richness = 1 }
         }
         map_gen_settings.autoplace_controls[quarter].frequency = 16
 
@@ -285,9 +285,9 @@ local function on_init()
 	local modifier_factor = 2
 
 	--default game setting values
-	global.enemy_evolution_destroy_factor = game.map_settings.enemy_evolution.destroy_factor * modifier_factor
-	global.enemy_evolution_time_factor = game.map_settings.enemy_evolution.time_factor * modifier_factor
-	global.enemy_evolution_pollution_factor = game.map_settings.enemy_evolution.pollution_factor * modifier_factor
+	storage.enemy_evolution_destroy_factor = game.map_settings.enemy_evolution.destroy_factor * modifier_factor
+	storage.enemy_evolution_time_factor = game.map_settings.enemy_evolution.time_factor * modifier_factor
+	storage.enemy_evolution_pollution_factor = game.map_settings.enemy_evolution.pollution_factor * modifier_factor
 	]]
 end
 

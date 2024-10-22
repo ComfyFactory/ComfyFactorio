@@ -67,7 +67,7 @@ function Public.uid_name()
     end
 
     local info = debug.getinfo(2, 'Sl')
-    local filepath = info.source:match('^.+/currently%-playing/(.+)$'):sub(1, -5)
+    local filepath = info.source:match('^@__level__/(.+)$'):sub(1, -5)
     local line = info.currentline
 
     local token = tostring(Token.uid())
@@ -287,9 +287,9 @@ function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_s
             name = close_main_frame_name,
             style = 'frame_action_button',
             mouse_button_filter = { 'left' },
-            sprite = 'utility/close_white',
-            hovered_sprite = 'utility/close_black',
-            clicked_sprite = 'utility/close_black',
+            sprite = 'utility/close',
+            hovered_sprite = 'utility/close_fat',
+            clicked_sprite = 'utility/close_fat',
             tooltip = 'Close',
             tags = {
                 action = 'close_main_frame_gui'
@@ -759,7 +759,7 @@ local function top_toggle_button(player)
             )
         if b then
             b.style.font_color = { 165, 165, 165 }
-            b.style.font = 'heading-3'
+            b.style.font = 'default-semibold'
             b.style.minimal_height = 36
             b.style.maximal_height = 36
             b.style.minimal_width = 15
@@ -1009,7 +1009,7 @@ Public.on_click(
                 main_frame.destroy()
             end
 
-            button.sprite = 'utility/expand_dots_white'
+            button.sprite = 'utility/expand_dots'
             button.tooltip = 'Click to show top buttons!'
         else
             if Public.get_mod_gui_top_frame() then

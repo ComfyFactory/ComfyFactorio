@@ -11,13 +11,13 @@ local function get_vector()
 
     x = x * 0.001
     y = y * 0.001
-    return {x, y}
+    return { x, y }
 end
 
 local function can_draw_branch(surface, chunk_position)
     for x = -3, 3, 1 do
         for y = -3, 3, 1 do
-            if not surface.is_chunk_generated({chunk_position[1] + x, chunk_position[2] + y}) then
+            if not surface.is_chunk_generated({ chunk_position[1] + x, chunk_position[2] + y }) then
                 return false
             end
         end
@@ -26,12 +26,12 @@ local function can_draw_branch(surface, chunk_position)
 end
 
 local function draw_branch(surface, key)
-    local position = global.tree_points[key][1]
-    local vector = global.tree_points[key][3]
-    local size = global.tree_points[key][4]
+    local position = storage.tree_points[key][1]
+    local vector = storage.tree_points[key][3]
+    local size = storage.tree_points[key][4]
 
-    if surface.count_tiles_filtered({name = 'green-refined-concrete', area = {{position.x - 32, position.y - 32}, {position.x + 32, position.y + 32}}}) > 960 then
-        table_remove(global.tree_points, key)
+    if surface.count_tiles_filtered({ name = 'green-refined-concrete', area = { { position.x - 32, position.y - 32 }, { position.x + 32, position.y + 32 } } }) > 960 then
+        table_remove(storage.tree_points, key)
         return
     end
 
@@ -39,36 +39,36 @@ local function draw_branch(surface, key)
 
     for i = #tiles - math_random(0, 3), #tiles, 1 do
         table_insert(
-            global.tree_points,
+            storage.tree_points,
             {
                 tiles[i].position,
-                {math_floor(tiles[i].position.x / 32), math_floor(tiles[i].position.y / 32)},
+                { math_floor(tiles[i].position.x / 32), math_floor(tiles[i].position.y / 32) },
                 get_vector(position),
                 math_random(8, 16)
             }
         )
     end
 
-    table_remove(global.tree_points, key)
+    table_remove(storage.tree_points, key)
 end
 
 local function on_init()
-    global.chunks_charted = {}
-    global.tree_points = {}
+    storage.chunks_charted = {}
+    storage.tree_points = {}
 
-    global.tree_points[1] = {{x = 0, y = 0}, {0, 0}, {0, -1}, 16}
+    storage.tree_points[1] = { { x = 0, y = 0 }, { 0, 0 }, { 0, -1 }, 16 }
     --position | chunk position | vector | size
 end
 
 local function tick()
     local surface = game.surfaces[1]
-    for key, point in pairs(global.tree_points) do
+    for key, point in pairs(storage.tree_points) do
         if can_draw_branch(surface, point[2]) then
             draw_branch(surface, key)
         end
     end
 
-    game.print(#global.tree_points)
+    game.print(#storage.tree_points)
 end
 
 local Event = require 'utils.event'

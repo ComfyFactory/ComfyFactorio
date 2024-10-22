@@ -41,7 +41,72 @@ local function add_space(frame)
     add_style(frame.add { type = 'line', direction = 'horizontal' }, space)
 end
 
-local function get_items()
+function get_player_data(player, remove)
+    local storage_data = Public.get('player_market_settings')
+    if not storage_data then
+        Public.set('player_market_settings', {})
+        storage_data = Public.get('player_market_settings')
+    end
+
+    local data = storage_data[player.name]
+    if remove and data then
+        storage_data[player.name] = nil
+        return
+    end
+
+    if not storage_data[player.name] then
+        storage_data[player.name] = {
+            quality = 1,
+        }
+    end
+
+    return storage_data[player.name]
+end
+
+local function get_player_quality(player)
+    if not player or not player.valid then
+        return 'normal'
+    end
+
+    local quality_list = Public.get('quality_list')
+
+    local player_data = get_player_data(player)
+    local quality = quality_list[player_data.quality]
+    return string.lower(quality)
+end
+
+local function get_player_quality_int(player)
+    if not player or not player.valid then
+        return 'normal'
+    end
+
+    local player_data = get_player_data(player)
+    return player_data.quality
+end
+
+local function get_item_count(player, name)
+    if not player or not player.valid then
+        return 0
+    end
+
+    local player_data = get_player_data(player)
+    local quality_list = Public.get('quality_list')
+    local quality = quality_list[player_data.quality]
+    local inventory = player.get_main_inventory()
+    return inventory.get_item_count({ name = name, quality = quality })
+end
+
+local function remove_item_count(player, name, count)
+    if not player or not player.valid then
+        return 0
+    end
+    local player_data = get_player_data(player)
+    local quality_list = Public.get('quality_list')
+    local quality = quality_list[player_data.quality]
+    player.remove_item({ name = name, count = count, quality = quality })
+end
+
+local function get_items(player)
     local market_limits = Public.get('market_limits')
     local main_market_items = Public.get('main_market_items')
     local flame_turret = Public.get('upgrades').flame_turret.bought
@@ -60,6 +125,8 @@ local function get_items()
     local upgraded_tile_when_mining_cost = fixed_prices.tile_when_mining_cost
 
     local pickaxe_upgrades = Public.pickaxe_upgrades
+
+    local quality_price = get_player_quality_int(player)
 
     local offer = pickaxe_upgrades[upgrades.pickaxe_tier]
 
@@ -530,14 +597,20 @@ local function get_items()
         static = true
     }
 
-    main_market_items['logistic-chest-storage'] = {
+    main_market_items['storage-chest'] = {
         stack = 1,
         value = 'coin',
-        price = fixed_prices.storage_chest_cost,
-        tooltip = ({ 'entity-name.logistic-chest-storage' }),
+        price = fixed_prices.chest_cost,
+        tooltip = ({ 'entity-name.storage-chest' }),
         upgrade = false,
         static = true
     }
+
+    for _, item in pairs(main_market_items) do
+        if item.static then
+            item.price = item.price * quality_price
+        end
+    end
 
     return main_market_items
 end
@@ -593,8 +666,7 @@ local function redraw_market_items(gui, player, search_text)
         gui.clear()
     end
 
-    local inventory = player.get_main_inventory()
-    local player_item_count
+    local player_item_count = 0
 
     if not (gui and gui.valid) then
         return
@@ -611,7 +683,9 @@ local function redraw_market_items(gui, player, search_text)
 
     local upgrade_table = gui.add({ type = 'table', column_count = 6 })
 
-    for item, data in pairs(get_items()) do
+    local quality = get_player_quality(player)
+
+    for item, data in pairs(get_items(player)) do
         if data.upgrade then
             if not search_text then
                 goto continue
@@ -628,7 +702,7 @@ local function redraw_market_items(gui, player, search_text)
             local frame = upgrade_table.add({ type = 'flow' })
             frame.style.vertical_align = 'bottom'
 
-            player_item_count = inventory.get_item_count(data.value)
+            player_item_count = get_item_count(player, data.value)
 
             local button =
                 frame.add(
@@ -647,7 +721,7 @@ local function redraw_market_items(gui, player, search_text)
                 frame.add(
                     {
                         type = 'label',
-                        caption = concat { '[item=', data.value, ']: ' } .. format_number(item_cost, true)
+                        caption = concat { '[item=', data.value, ',quality=' .. quality .. ']: ' } .. format_number(item_cost, true)
                     }
                 )
             label.style.font = 'default-bold'
@@ -670,7 +744,7 @@ local function redraw_market_items(gui, player, search_text)
     local slider_value = ceil(players[player.index].data.slider.slider_value)
     local items_table = gui.add({ type = 'table', column_count = 6 })
 
-    for item, data in pairs(get_items()) do
+    for item, data in pairs(get_items(player)) do
         if not data.upgrade then
             if not search_text then
                 goto continue
@@ -687,7 +761,7 @@ local function redraw_market_items(gui, player, search_text)
             local frame = items_table.add({ type = 'flow' })
             frame.style.vertical_align = 'bottom'
 
-            player_item_count = inventory.get_item_count(data.value)
+            player_item_count = get_item_count(player, data.value)
 
             local button =
                 frame.add(
@@ -720,7 +794,7 @@ local function redraw_market_items(gui, player, search_text)
                 frame.add(
                     {
                         type = 'label',
-                        caption = concat { '[item=', data.value, ']: ' } .. format_number(item_cost, true)
+                        caption = concat { '[item=', data.value, ',quality=' .. quality .. ']: ' } .. format_number(item_cost, true)
                     }
                 )
             label.style.font = 'default-bold'
@@ -739,8 +813,7 @@ local function redraw_coins_left(gui, player)
     end
 
     gui.clear()
-    local inventory = player.get_main_inventory()
-    local player_item_count = inventory.get_item_count('coin')
+    local player_item_count = get_item_count(player, 'coin')
 
     local coinsleft =
         gui.add(
@@ -870,8 +943,7 @@ local function gui_opened(event)
         return
     end
 
-    local inventory = player.get_main_inventory()
-    local player_item_count = inventory.get_item_count('coin')
+    local player_item_count = get_item_count(player, 'coin')
 
     local players = Public.get('players')
     if not players then
@@ -956,6 +1028,32 @@ local function gui_opened(event)
         }
     )
 
+    if script.feature_flags.quality then
+        if game.forces.player.technologies['quality-module'].researched then
+            local quality_list = Public.get('quality_list')
+            local bg_right = bottom_grid.add({ type = 'label', caption = ({ 'locomotive.quality_text' }) })
+            bg_right.style.font = 'default-bold'
+
+            local player_data = get_player_data(player)
+
+            local qual = {}
+            for _, quality in pairs(quality_list) do
+                qual[#qual + 1] = quality:gsub("^%l", string.upper)
+            end
+
+            local text_input_right =
+                bottom_grid.add(
+                    {
+                        name = 'quality',
+                        type = 'drop-down',
+                        items = qual,
+                        selected_index = player_data and player_data.quality or 1,
+                    }
+                )
+            text_input_right.style.maximal_height = 28
+        end
+    end
+
     players[player.index].data.search_text = search_text
     players[player.index].data.text_input = text_input
     players[player.index].data.slider = slider
@@ -1008,13 +1106,12 @@ local function gui_click(event)
     if not data then
         return
     end
-    local item = get_items()[name]
+    local item = get_items(player)[name]
     if not item then
         return
     end
 
-    local inventory = player.get_main_inventory()
-    local player_item_count = inventory.get_item_count(item.value)
+    local player_item_count = get_item_count(player, item.value)
     local slider_value = ceil(data.slider.slider_value)
     local cost = (item.price * slider_value)
     local item_count = item.stack * slider_value
@@ -1032,7 +1129,7 @@ local function gui_click(event)
             player.print(({ 'locomotive.limit_reached' }), { r = 0.98, g = 0.66, b = 0.22 })
             return
         end
-        player.remove_item({ name = item.value, count = item.price })
+        remove_item_count(player, item.value, item.price)
 
         player.insert({ name = name, count = item.stack })
 
@@ -1052,7 +1149,7 @@ local function gui_click(event)
     end
 
     if name == 'upgrade_pickaxe' then
-        player.remove_item({ name = item.value, count = item.price })
+        remove_item_count(player, item.value, item.price)
 
         Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
 
@@ -1086,7 +1183,7 @@ local function gui_click(event)
         return
     end
     if name == 'locomotive_max_health' then
-        player.remove_item({ name = item.value, count = item.price })
+        remove_item_count(player, item.value, item.price)
         local message = ({ 'locomotive.health_bought_info', shopkeeper, player.name, format_number(item.price, true) })
 
         Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
@@ -1111,24 +1208,26 @@ local function gui_click(event)
        ]]
         local m = this.locomotive_health / this.locomotive_max_health
 
+
         if this.carriages then
             for i = 1, #this.carriages do
                 local entity = this.carriages[i]
                 if not (entity and entity.valid) then
                     return
                 end
-                local cargo_health = 600
                 if entity.type == 'locomotive' then
-                    entity.health = 1000 * m
+                    entity.health = entity.max_health * m
                 else
-                    entity.health = cargo_health * m
+                    entity.health = entity.max_health * m
                 end
             end
         end
 
         this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + item.price
         this.upgrades.health_upgrades = this.upgrades.health_upgrades + item.stack
-        rendering.set_text(this.health_text, 'HP: ' .. round(this.locomotive_health) .. ' / ' .. round(this.locomotive_max_health))
+        if this.health_text and this.health_text.valid then
+            this.health_text.text = 'HP: ' .. round(this.locomotive_health) .. ' / ' .. round(this.locomotive_max_health)
+        end
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
@@ -1141,7 +1240,8 @@ local function gui_click(event)
             player.print(({ 'locomotive.limit_reached' }), { r = 0.98, g = 0.66, b = 0.22 })
             return
         end
-        player.remove_item({ name = item.value, count = item.price })
+        remove_item_count(player, item.value, item.price)
+
 
         Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
 
@@ -1157,8 +1257,8 @@ local function gui_click(event)
         this.upgrades.aura_upgrades = this.upgrades.aura_upgrades + item.stack
         this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + item.price
 
-        if this.circle then
-            rendering.destroy(this.circle)
+        if this.circle and this.circle.valid then
+            this.circle.destroy()
         end
         local difficulty_index = Difficulty.get('index')
 
@@ -1184,7 +1284,7 @@ local function gui_click(event)
     end
 
     if name == 'xp_points_boost' then
-        player.remove_item({ name = item.value, count = item.price })
+        remove_item_count(player, item.value, item.price)
         local message = ({ 'locomotive.xp_bought_info', shopkeeper, player.name, format_number(item.price, true) })
 
         Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
@@ -1206,7 +1306,7 @@ local function gui_click(event)
     end
 
     if name == 'redraw_mystical_chest' then
-        player.remove_item({ name = item.value, count = item.price })
+        remove_item_count(player, item.value, item.price)
         local message = ({ 'locomotive.mystical_bought_info', shopkeeper, player.name, format_number(item.price, true) })
 
         Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
@@ -1227,7 +1327,7 @@ local function gui_click(event)
     end
 
     if name == 'explosive_bullets' then
-        player.remove_item({ name = item.value, count = item.price })
+        remove_item_count(player, item.value, item.price)
         local message = ({
             'locomotive.explosive_bullet_bought_info',
             shopkeeper,
@@ -1253,7 +1353,7 @@ local function gui_click(event)
     end
 
     if name == 'car_health_upgrade_pool' then
-        player.remove_item({ name = item.value, count = item.price })
+        remove_item_count(player, item.value, item.price)
         local message = ({
             'locomotive.car_health_upgrade_pool_bought_info',
             shopkeeper,
@@ -1278,7 +1378,7 @@ local function gui_click(event)
     end
 
     if name == 'upgraded_tile_when_mining_cost' then
-        player.remove_item({ name = item.value, count = item.price })
+        remove_item_count(player, item.value, item.price)
         local message = ({
             'locomotive.tile_upgrade_bought_info',
             shopkeeper,
@@ -1303,7 +1403,7 @@ local function gui_click(event)
     end
 
     if name == 'flamethrower_turrets' then
-        player.remove_item({ name = item.value, count = item.price })
+        remove_item_count(player, item.value, item.price)
         Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
 
         if item.stack >= 1 then
@@ -1343,7 +1443,8 @@ local function gui_click(event)
         return
     end
     if name == 'land_mine' then
-        player.remove_item({ name = item.value, count = item.price })
+        remove_item_count(player, item.value, item.price)
+
 
         Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
 
@@ -1374,19 +1475,22 @@ local function gui_click(event)
         return
     end
 
+    local quality = get_player_quality(player)
+
     if player_item_count >= cost then
-        if player.can_insert({ name = name, count = item_count }) then
+        if player.can_insert({ name = name, count = item_count, quality = quality }) then
             player.play_sound({ path = 'entity-close/stone-furnace', volume_modifier = 0.65 })
-            local inserted_count = player.insert({ name = name, count = item_count })
+            local inserted_count = player.insert({ name = name, count = item_count, quality = quality })
             if inserted_count < item_count then
                 player.play_sound({ path = 'utility/cannot_build', volume_modifier = 0.65 })
                 player.print(({ 'locomotive.full_inventory', inserted_count, name }), { r = 0.98, g = 0.66, b = 0.22 })
                 player.print(({ 'locomotive.change_returned' }), { r = 0.98, g = 0.66, b = 0.22 })
-                player.insert({ name = name, count = inserted_count })
-                player.remove_item({ name = item.value, count = ceil(item.price * (inserted_count / item.stack)) })
+                player.insert({ name = name, count = inserted_count, quality = quality })
+                remove_item_count(player, item.value, ceil(item.price * (inserted_count / item.stack)))
+
                 Event.raise(Public.events.on_market_item_purchased, { cost = ceil(item.price * (inserted_count / item.stack)) })
             else
-                player.remove_item({ name = item.value, count = cost })
+                remove_item_count(player, item.value, cost)
                 Event.raise(Public.events.on_market_item_purchased, { cost = cost })
             end
             redraw_market_items(data.item_frame, player, data.search_text)
@@ -1421,6 +1525,26 @@ local function gui_closed(event)
     end
 end
 
+local function on_gui_selection_state_changed(event)
+    local name = event.element.name
+    local player = game.get_player(event.player_index)
+    local selected_index = event.element.selected_index
+    if name == 'quality' then
+        local player_data = get_player_data(player)
+        player_data.quality = selected_index
+    end
+
+    local players = Public.get('players')
+    if not players then
+        return
+    end
+    local data = players[player.index].data
+    if not data then
+        return
+    end
+    redraw_market_items(data.item_frame, player, data.search_text)
+end
+
 local function on_player_changed_position(event)
     local players = Public.get('players')
     if not players then
@@ -1444,7 +1568,7 @@ local function on_player_changed_position(event)
             left_top = { x = position.x - 10, y = position.y - 10 },
             right_bottom = { x = position.x + 10, y = position.y + 10 }
         }
-        if Math2D.bounding_box.contains_point(area, player.position) then
+        if Math2D.bounding_box.contains_point(area, player.physical_position) then
             return
         end
         if not data then
@@ -1513,8 +1637,7 @@ local function create_market(data, rebuild)
                 y_scale = scale,
                 tint = { random(60, 255), random(60, 255), random(60, 255) },
                 render_layer = 'selection-box',
-                target = this.market,
-                target_offset = { -0.7 + random(0, 140) * 0.01, y },
+                target = { entity = this.market, offset = { -0.7 + random(0, 140) * 0.01, y } },
                 surface = surface
             }
         )
@@ -1527,7 +1650,7 @@ local function create_market(data, rebuild)
         end
 
         this.mystical_chest = {
-            entity = surface.create_entity { name = 'logistic-chest-requester', position = { x = center_position.x, y = center_position.y + 2 }, force = 'neutral' }
+            entity = surface.create_entity { name = 'requester-chest', position = { x = center_position.x, y = center_position.y + 2 }, force = 'neutral' }
         }
         this.mystical_chest.entity.minable = false
         this.mystical_chest.entity.destructible = false
@@ -1539,7 +1662,6 @@ local function create_market(data, rebuild)
             surface = surface,
             target = this.mystical_chest.entity,
             scale = 1.2,
-            target_offset = { 0, 0 },
             color = { r = 0.98, g = 0.66, b = 0.22 },
             alignment = 'center'
         }
@@ -1550,9 +1672,8 @@ local function create_market(data, rebuild)
     rendering.draw_text {
         text = 'Market',
         surface = surface,
-        target = this.market,
+        target = { entity = this.market, offset = { 0, -2 } },
         scale = 1.5,
-        target_offset = { 0, -2 },
         color = { r = 0.98, g = 0.66, b = 0.22 },
         alignment = 'center'
     }
@@ -1564,15 +1685,15 @@ local function create_market(data, rebuild)
     for x = center_position.x - 5, center_position.x + 5, 1 do
         for y = center_position.y - 5, center_position.y + 5, 1 do
             if random(1, 2) == 1 then
-                loco_surface.spill_item_stack({ x + random(0, 9) * 0.1, y + random(0, 9) * 0.1 }, { name = 'raw-fish', count = 1 }, false)
+                loco_surface.spill_item_stack { position = { x = x + random(0, 9) * 0.1, y = y + random(0, 9) * 0.1 }, stack = { name = 'raw-fish', count = 1 } }
             end
-            loco_surface.set_tiles({ { name = 'blue-refined-concrete', position = { x, y } } }, true)
+            loco_surface.set_tiles({ { name = 'blue-refined-concrete', position = { x = x, y = y } } }, true)
         end
     end
     for x = center_position.x - 3, center_position.x + 3, 1 do
         for y = center_position.y - 3, center_position.y + 3, 1 do
             if random(1, 2) == 1 then
-                loco_surface.spill_item_stack({ x + random(0, 9) * 0.1, y + random(0, 9) * 0.1 }, { name = 'raw-fish', count = 1 }, false)
+                loco_surface.spill_item_stack { position = { x = x + random(0, 9) * 0.1, y = y + random(0, 9) * 0.1 }, stack = { name = 'raw-fish', count = 1 } }
             end
             loco_surface.set_tiles({ { name = 'cyan-refined-concrete', position = { x, y } } }, true)
         end
@@ -1591,6 +1712,9 @@ local function place_market()
 
     local icw_table = ICW.get_table()
     local unit_surface = locomotive.unit_number
+    if not icw_table.wagons[unit_surface] then
+        return
+    end
     local surface = game.surfaces[icw_table.wagons[unit_surface].surface.index]
     local market = Public.get('market')
 
@@ -1658,7 +1782,10 @@ Event.add(defines.events.on_gui_click, gui_click)
 Event.add(defines.events.on_gui_value_changed, slider_changed)
 Event.add(defines.events.on_gui_text_changed, text_changed)
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)
+Event.add(defines.events.on_gui_selection_state_changed, on_gui_selection_state_changed)
 Event.add(defines.events.on_gui_opened, gui_opened)
 Event.add(defines.events.on_gui_closed, gui_closed)
+
+Public.get_player_data = get_player_data
 
 return Public

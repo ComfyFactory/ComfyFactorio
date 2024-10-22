@@ -2,9 +2,9 @@
 local Event = require 'utils.event'
 
 local valid_entities = {
-    ['rock-big'] = true,
-    ['rock-huge'] = true,
-    ['sand-rock-big'] = true
+    ['big-rock'] = true,
+    ['huge-rock'] = true,
+    ['big-sand-rock'] = true
 }
 
 local replacement_tiles = {
@@ -17,19 +17,19 @@ local replacement_tiles = {
 }
 
 local coords = {
-    {x = 0, y = 0},
-    {x = -1, y = -1},
-    {x = 1, y = -1},
-    {x = 0, y = -1},
-    {x = -1, y = 0},
-    {x = -1, y = 1},
-    {x = 0, y = 1},
-    {x = 1, y = 1},
-    {x = 1, y = 0},
-    {x = 2, y = 0},
-    {x = -2, y = 0},
-    {x = 0, y = 2},
-    {x = 0, y = -2}
+    { x = 0,  y = 0 },
+    { x = -1, y = -1 },
+    { x = 1,  y = -1 },
+    { x = 0,  y = -1 },
+    { x = -1, y = 0 },
+    { x = -1, y = 1 },
+    { x = 0,  y = 1 },
+    { x = 1,  y = 1 },
+    { x = 1,  y = 0 },
+    { x = 2,  y = 0 },
+    { x = -2, y = 0 },
+    { x = 0,  y = 2 },
+    { x = 0,  y = -2 }
 }
 
 local function on_pre_player_mined_item(event)
@@ -42,11 +42,11 @@ local function on_pre_player_mined_item(event)
     for i = 1, #coords do
         local p = coords[i]
 
-        local pos = {x = entity.position.x + p.x, y = entity.position.y + p.y}
+        local pos = { x = entity.position.x + p.x, y = entity.position.y + p.y }
         local tile = entity.surface.get_tile(pos)
-        if not tile.collides_with('player-layer') then
+        if not tile.collides_with('player') then
             if replacement_tiles[tile.name] and math.random(1, 2) == 1 then
-                table.insert(tiles, {name = replacement_tiles[tile.name], position = pos})
+                table.insert(tiles, { name = replacement_tiles[tile.name], position = pos })
             end
         end
     end

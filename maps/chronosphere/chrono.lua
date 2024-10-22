@@ -4,29 +4,34 @@ local Score = require 'utils.gui.score'
 local Difficulty = require 'modules.difficulty_vote'
 local Upgrades = require 'maps.chronosphere.upgrade_list'
 local List = require 'maps.chronosphere.production_list'
-local Rand = require 'maps.chronosphere.random'
 local Public = {}
 
 local Server = require 'utils.server'
 local math_random = math.random
 local math_max = math.max
 
-function Public.get_map_gen_settings()
+function Public.get_map_gen_settings(planet_name)
     local seed = math_random(1, 1000000)
-    local map_gen_settings = {
-        ['seed'] = seed,
-        ['width'] = 960,
-        ['height'] = 960,
-        ['water'] = 0.1,
-        ['starting_area'] = 1,
-        ['cliff_settings'] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
-        ['default_enable_all_autoplace_controls'] = true,
-        ['autoplace_settings'] = {
-            ['entity'] = {treat_missing_as_default = false},
-            ['tile'] = {treat_missing_as_default = true},
-            ['decorative'] = {treat_missing_as_default = true}
-        }
-    }
+    local map_gen_settings = prototypes.space_location['nauvis'].map_gen_settings
+    -- if planet_name then
+    --     map_gen_settings = prototypes.space_location[planet_name].map_gen_settings
+    -- else
+    --     map_gen_settings = {
+    --         ['water'] = 0.1,
+    --         ['default_enable_all_autoplace_controls'] = true,
+    --         ['autoplace_settings'] = {
+    --             ['entity'] = {treat_missing_as_default = false},
+    --             ['tile'] = {treat_missing_as_default = true},
+    --             ['decorative'] = {treat_missing_as_default = true}
+    --         }
+    --     }
+    -- end
+    map_gen_settings.seed = seed
+    map_gen_settings.width = 960
+    map_gen_settings.height = 960
+    map_gen_settings.starting_area = 1
+    map_gen_settings.cliff_settings = {name = 'cliff', cliff_elevation_interval = 0, cliff_elevation_0 = 0, cliff_smoothing = 0.5, richness = 0}
+    map_gen_settings.default_enable_all_autoplace_controls = false
     return map_gen_settings
 end
 
@@ -63,7 +68,7 @@ function Public.restart_settings()
     local bitertable = Chrono_table.get_biter_table()
     local production = Chrono_table.get_production_table()
     Difficulty.reset_difficulty_poll()
-    Difficulty.set_poll_closing_timeout(game.tick + 120 * 60 * 60)
+    Difficulty.set_poll_closing_timeout(game.tick + 240 * 60 * 60)
     objective.max_health = Balance.Chronotrain_max_HP
     objective.health = Balance.Chronotrain_max_HP
     objective.poisontimeout = 0
@@ -115,9 +120,9 @@ function Public.restart_settings()
     for _, player in pairs(game.connected_players) do
         playertable.flame_boots[player.index] = {fuel = 1, steps = {}}
     end
-    global.friendly_fire_history = {}
-    global.landfill_history = {}
-    global.mining_history = {}
+    storage.friendly_fire_history = {}
+    storage.landfill_history = {}
+    storage.mining_history = {}
     get_score.score_table = {}
 
     game.difficulty_settings.technology_price_multiplier = Balance.Tech_price_multiplier
@@ -150,18 +155,18 @@ function Public.restart_settings()
     game.map_settings.path_finder.long_cache_size = 100
     game.map_settings.unit_group.max_gathering_unit_groups = 10
     game.forces.neutral.character_inventory_slots_bonus = 500
-    game.forces.enemy.evolution_factor = 0.0001
+    game.forces.enemy.set_evolution_factor(0.0001)
     game.forces.scrapyard.set_friend('enemy', true)
     game.forces.enemy.set_friend('scrapyard', true)
     game.forces.enemy.set_ammo_damage_modifier('rocket', -0.5)
     game.forces.player.technologies['land-mine'].enabled = false
     game.forces.player.technologies['landfill'].enabled = false
     game.forces.player.technologies['cliff-explosives'].enabled = false
-    game.forces.player.technologies['fusion-reactor-equipment'].enabled = false
+    game.forces.player.technologies['fission-reactor-equipment'].enabled = false
     game.forces.player.technologies['power-armor-mk2'].enabled = false
     game.forces.player.technologies['railway'].researched = true
     game.forces.player.recipes['pistol'].enabled = false
-    game.forces.player.ghost_time_to_live = 15 * 60 * 60
+    --game.forces.player.ghost_time_to_live = 15 * 60 * 60
 end
 
 function Public.set_difficulty_settings()
@@ -331,10 +336,11 @@ function Public.post_jump()
     local difficulty = Difficulty.get().difficulty_vote_value
 
     game.forces.enemy.reset_evolution()
+    local surface = game.get_surface(objective.active_surface_index)
     if objective.chronojumps + objective.overstaycount <= 40 and objective.world.id ~= 7 then
-        game.forces.enemy.evolution_factor = 0 + 0.025 * (objective.chronojumps + objective.overstaycount)
+        game.forces.enemy.set_evolution_factor(0 + 0.025 * (objective.chronojumps + objective.overstaycount), surface)
     else
-        game.forces.enemy.evolution_factor = 1
+        game.forces.enemy.set_evolution_factor(1, surface)
     end
     if objective.world.id == 7 then
         objective.locomotive_cargo[1].insert({name = 'space-science-pack', count = 1000})
@@ -367,7 +373,7 @@ function Public.post_jump()
     game.forces.enemy.set_ammo_damage_modifier('melee', 0.1 * objective.overstaycount)
     game.forces.enemy.set_ammo_damage_modifier('biological', 0.1 * objective.overstaycount)
     game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = Balance.defaultai_attack_pollution_consumption_modifier(difficulty)
-    game.map_settings.pollution.max_unit_group_size = Balance.max_new_attack_group_size(difficulty)
+    --game.map_settings.pollution.max_unit_group_size = Balance.max_new_attack_group_size(difficulty)
 
     if objective.chronojumps == 1 then
         if difficulty < 1 then
@@ -403,7 +409,7 @@ local function create_chunk_list(surface)
             chunks[#chunks + 1] = {pos = {x, y}, generated = surface.is_chunk_generated({x, y}), distance = math.sqrt(x * x + y * y)}
         end
     end
-    for k, v in Rand.spairs(
+    for k, v in table.spairs(
         chunks,
         function(t, a, b)
             return t[b].distance > t[a].distance

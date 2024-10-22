@@ -1,29 +1,6 @@
 local Module = {}
--- luacheck: ignore math
 
-Module.distance = function(pos1, pos2)
-    local dx = pos2.x - pos1.x
-    local dy = pos2.y - pos1.y
-    return math.sqrt(dx * dx + dy * dy)
-end
-
--- rounds number (num) to certain number of decimal places (idp)
-function math.round(num, idp)
-    local mult = 10 ^ (idp or 0)
-    return math.floor(num * mult + 0.5) / mult
-end
-
-function math.clamp(num, min, max)
-    if num < min then
-        return min
-    elseif num > max then
-        return max
-    else
-        return num
-    end
-end
-
-Module.print_except = function(msg, player)
+function Module.print_except(msg, player)
     for _, p in pairs(game.players) do
         if p.connected and p ~= player then
             p.print(msg)
@@ -31,7 +8,7 @@ Module.print_except = function(msg, player)
     end
 end
 
-Module.print_admins = function(msg)
+function Module.print_admins(msg)
     for _, p in pairs(game.players) do
         if p.connected and p.admin then
             p.print(msg)
@@ -39,14 +16,14 @@ Module.print_admins = function(msg)
     end
 end
 
-Module.get_actor = function()
+function Module.get_actor()
     if game.player then
         return game.player.name
     end
     return '<server>'
 end
 
-Module.cast_bool = function(var)
+function Module.cast_bool(var)
     if var then
         return true
     else
@@ -54,7 +31,7 @@ Module.cast_bool = function(var)
     end
 end
 
-Module.get_formatted_playtime = function(x)
+function Module.get_formatted_playtime(x)
     if x < 5184000 then
         local y = x / 216000
         y = tostring(y)
@@ -114,7 +91,7 @@ Module.get_formatted_playtime = function(x)
     end
 end
 
-Module.find_entities_by_last_user = function(player, surface, filters)
+function Module.find_entities_by_last_user(player, surface, filters)
     if type(player) == 'string' or not player then
         error("bad argument #1 to '" .. debug.getinfo(1, 'n').name .. "' (number or LuaPlayer expected, got " .. type(player) .. ')', 1)
         return
@@ -140,7 +117,7 @@ Module.find_entities_by_last_user = function(player, surface, filters)
     return entities
 end
 
-Module.ternary = function(c, t, f)
+function Module.ternary(c, t, f)
     if c then
         return t
     else
@@ -152,7 +129,7 @@ local minutes_to_ticks = 60 * 60
 local hours_to_ticks = 60 * 60 * 60
 local ticks_to_minutes = 1 / minutes_to_ticks
 local ticks_to_hours = 1 / hours_to_ticks
-Module.format_time = function(ticks)
+function Module.format_time(ticks)
     local result = {}
 
     local hours = math.floor(ticks * ticks_to_hours)
@@ -178,7 +155,7 @@ Module.format_time = function(ticks)
 end
 
 -- Convert date from 1999/01/01
-Module.convert_date = function(year, month, day)
+function Module.convert_date(year, month, day)
     year = tonumber(year)
     month = tonumber(month)
     day = tonumber(day)
@@ -199,21 +176,6 @@ Module.convert_date = function(year, month, day)
     end
     d = sub(month - 14, 12)
     return (day - 32075 + sub(1461 * (year + 4800 + d), 4) + sub(367 * (month - 2 - d * 12), 12) - sub(3 * sub(year + 4900 + d, 100), 4)) - 2415021
-end
-
---- Compares positions
----@param position table
----@param area table
----@return boolean
-function Module.inside(position, area)
-    if not position then
-        return false
-    end
-
-    local lt = area.left_top
-    local rb = area.right_bottom
-
-    return position.x >= lt.x and position.y >= lt.y and position.x <= rb.x and position.y <= rb.y
 end
 
 return Module

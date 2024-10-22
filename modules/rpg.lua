@@ -20,9 +20,9 @@ local Global = require 'utils.global'
 local Tabs = require 'utils.gui'
 local P = require 'utils.player_modifiers'
 local visuals_delay = 1800
-local level_up_floating_text_color = {0, 205, 0}
-local xp_floating_text_color = {157, 157, 157}
-local experience_levels = {0}
+local level_up_floating_text_color = { 0, 205, 0 }
+local xp_floating_text_color = { 157, 157, 157 }
+local experience_levels = { 0 }
 for a = 1, 9999, 1 do
     experience_levels[#experience_levels + 1] = experience_levels[#experience_levels] + a * 8
 end
@@ -49,8 +49,8 @@ local rpg_frame_icons = {
 }
 
 Global.register(
-    {rpg_t = rpg_t, rpg_frame_icons = rpg_frame_icons},
-    function(tbl)
+    { rpg_t = rpg_t, rpg_frame_icons = rpg_frame_icons },
+    function (tbl)
         rpg_t = tbl.rpg_t
         rpg_frame_icons = tbl.rpg_frame_icons
     end
@@ -97,14 +97,14 @@ local enemy_types = {
 }
 
 local function level_up_effects(player)
-    local position = {x = player.position.x - 0.75, y = player.position.y - 1}
-    player.surface.create_entity({name = 'flying-text', position = position, text = '+LVL ', color = level_up_floating_text_color})
+    local position = { x = player.position.x - 0.75, y = player.position.y - 1 }
+    player.create_local_flying_text { text = '+LVL', position = player.position, color = level_up_floating_text_color, time_to_live = 120 }
     local b = 0.75
     for a = 1, 5, 1 do
-        local p = {(position.x + 0.4) + (b * -1 + math_random(0, b * 20) * 0.1), position.y + (b * -1 + math_random(0, b * 20) * 0.1)}
-        player.surface.create_entity({name = 'flying-text', position = p, text = '✚', color = {255, math_random(0, 100), 0}})
+        local p = { (position.x + 0.4) + (b * -1 + math_random(0, b * 20) * 0.1), position.y + (b * -1 + math_random(0, b * 20) * 0.1) }
+        player.create_local_flying_text({ text = '✚', position = p, color = { 255, math_random(0, 100), 0 }, time_to_live = 120 })
     end
-    player.play_sound {path = 'utility/achievement_unlocked', volume_modifier = 0.40}
+    player.play_sound { path = 'utility/achievement_unlocked', volume_modifier = 0.40 }
 end
 
 local function get_melee_modifier(player)
@@ -130,8 +130,8 @@ local function draw_gui_char_button(player)
     if player.gui.top.rpg then
         return
     end
-    local b = player.gui.top.add({type = 'sprite-button', name = 'rpg', caption = 'CHAR'})
-    b.style.font_color = {165, 165, 165}
+    local b = player.gui.top.add({ type = 'sprite-button', name = 'rpg', caption = 'CHAR' })
+    b.style.font_color = { 165, 165, 165 }
     b.style.font = 'heading-1'
     b.style.minimal_height = 38
     b.style.minimal_width = 60
@@ -144,9 +144,9 @@ local function update_char_button(player)
         draw_gui_char_button(player)
     end
     if rpg_t[player.index].points_left > 0 then
-        player.gui.top.rpg.style.font_color = {245, 0, 0}
+        player.gui.top.rpg.style.font_color = { 245, 0, 0 }
     else
-        player.gui.top.rpg.style.font_color = {175, 175, 175}
+        player.gui.top.rpg.style.font_color = { 175, 175, 175 }
     end
 end
 
@@ -175,7 +175,7 @@ local function get_class(player)
     local average = (rpg_t[player.index].strength + rpg_t[player.index].magic + rpg_t[player.index].dexterity + rpg_t[player.index].vitality) / 4
     local high_attribute = 0
     local high_attribute_name = ''
-    for _, attribute in pairs({'strength', 'magic', 'dexterity', 'vitality'}) do
+    for _, attribute in pairs({ 'strength', 'magic', 'dexterity', 'vitality' }) do
         if rpg_t[player.index][attribute] > high_attribute then
             high_attribute = rpg_t[player.index][attribute]
             high_attribute_name = attribute
@@ -188,27 +188,27 @@ local function get_class(player)
 end
 
 local function add_gui_description(element, value, width)
-    local e = element.add({type = 'label', caption = value})
+    local e = element.add({ type = 'label', caption = value })
     e.style.single_line = false
     e.style.maximal_width = width
     e.style.minimal_width = width
     e.style.maximal_height = 40
     e.style.minimal_height = 38
     e.style.font = 'default-bold'
-    e.style.font_color = {175, 175, 200}
+    e.style.font_color = { 175, 175, 200 }
     e.style.horizontal_align = 'right'
     e.style.vertical_align = 'center'
     return e
 end
 
 local function add_gui_stat(element, value, width)
-    local e = element.add({type = 'sprite-button', caption = value})
+    local e = element.add({ type = 'sprite-button', caption = value })
     e.style.maximal_width = width
     e.style.minimal_width = width
     e.style.maximal_height = 38
     e.style.minimal_height = 38
     e.style.font = 'default-bold'
-    e.style.font_color = {222, 222, 222}
+    e.style.font_color = { 222, 222, 222 }
     e.style.horizontal_align = 'center'
     e.style.vertical_align = 'center'
     return e
@@ -220,13 +220,13 @@ local function add_gui_increase_stat(element, name, player, width)
     if rpg_t[player.index].points_left <= 0 then
         sprite = 'virtual-signal/signal-black'
     end
-    local e = element.add({type = 'sprite-button', name = name, caption = symbol, sprite = sprite})
+    local e = element.add({ type = 'sprite-button', name = name, caption = symbol, sprite = sprite })
     e.style.maximal_height = 38
     e.style.minimal_height = 38
     e.style.maximal_width = 38
     e.style.minimal_width = 38
     e.style.font = 'default-large-semibold'
-    e.style.font_color = {0, 0, 0}
+    e.style.font_color = { 0, 0, 0 }
     e.style.horizontal_align = 'center'
     e.style.vertical_align = 'center'
     e.style.padding = 0
@@ -237,7 +237,7 @@ local function add_gui_increase_stat(element, name, player, width)
 end
 
 local function add_separator(element, width)
-    local e = element.add({type = 'line'})
+    local e = element.add({ type = 'line' })
     e.style.maximal_width = width
     e.style.minimal_width = width
     e.style.minimal_height = 12
@@ -260,14 +260,14 @@ local function draw_gui(player, forced)
         return
     end
 
-    local frame = player.gui.left.add({type = 'frame', name = 'rpg', direction = 'vertical'})
+    local frame = player.gui.left.add({ type = 'frame', name = 'rpg', direction = 'vertical' })
     frame.style.maximal_width = 425
     frame.style.minimal_width = 425
     frame.style.margin = 6
 
     add_separator(frame, 400)
 
-    local t = frame.add({type = 'table', column_count = 2})
+    local t = frame.add({ type = 'table', column_count = 2 })
     local e = add_gui_stat(t, player.name, 200)
     e.style.font_color = player.chat_color
     e.style.font = 'default-large-bold'
@@ -276,7 +276,7 @@ local function draw_gui(player, forced)
 
     add_separator(frame, 400)
 
-    local t = frame.add({type = 'table', column_count = 4})
+    local t = frame.add({ type = 'table', column_count = 4 })
     t.style.cell_padding = 1
 
     add_gui_description(t, 'LEVEL', 80)
@@ -295,8 +295,8 @@ local function draw_gui(player, forced)
 
     add_separator(frame, 400)
 
-    local t = frame.add({type = 'table', column_count = 2})
-    local tt = t.add({type = 'table', column_count = 3})
+    local t = frame.add({ type = 'table', column_count = 2 })
+    local tt = t.add({ type = 'table', column_count = 3 })
     tt.style.cell_padding = 1
     local w1 = 85
     local w2 = 63
@@ -331,7 +331,7 @@ local function draw_gui(player, forced)
 
     add_gui_description(tt, 'POINTS TO\nDISTRIBUTE', w1)
     local e = add_gui_stat(tt, rpg_t[player.index].points_left, w2)
-    e.style.font_color = {200, 0, 0}
+    e.style.font_color = { 200, 0, 0 }
     add_gui_description(tt, ' ', w2)
 
     add_gui_description(tt, ' ', w1)
@@ -340,7 +340,7 @@ local function draw_gui(player, forced)
 
     add_gui_description(tt, 'LIFE', w1)
     add_gui_stat(tt, math.floor(player.character.health), w2)
-    add_gui_stat(tt, math.floor(player.character.prototype.max_health + player.character_health_bonus + player.force.character_health_bonus), w2)
+    add_gui_stat(tt, math.floor(player.character.max_health + player.character_health_bonus + player.force.character_health_bonus), w2)
 
     local shield = 0
     local shield_max = 0
@@ -355,7 +355,7 @@ local function draw_gui(player, forced)
     add_gui_stat(tt, shield, w2)
     add_gui_stat(tt, shield_max, w2)
 
-    local tt = t.add({type = 'table', column_count = 3})
+    local tt = t.add({ type = 'table', column_count = 3 })
     tt.style.cell_padding = 1
     local w0 = 2
     local w1 = 80
@@ -428,9 +428,9 @@ local function draw_gui(player, forced)
     add_gui_stat(tt, value, w2)
 
     add_separator(frame, 400)
-    local t = frame.add({type = 'table', column_count = 14})
+    local t = frame.add({ type = 'table', column_count = 14 })
     for i = 1, 14, 1 do
-        local e = t.add({type = 'sprite', sprite = rpg_frame_icons[i]})
+        local e = t.add({ type = 'sprite', sprite = rpg_frame_icons[i] })
         e.style.maximal_width = 24
         e.style.maximal_height = 24
         e.style.padding = 0
@@ -446,8 +446,8 @@ local function draw_level_text(player)
         return
     end
 
-    if rpg_t[player.index].text then
-        rendering.destroy(rpg_t[player.index].text)
+    if rpg_t[player.index].text and rpg_t[player.index].text.valid then
+        rpg_t[player.index].text.destroy()
         rpg_t[player.index].text = nil
     end
 
@@ -463,22 +463,24 @@ local function draw_level_text(player)
 
     rpg_t[player.index].text =
         rendering.draw_text {
-        text = 'lvl ' .. rpg_t[player.index].level,
-        surface = player.surface,
-        target = player.character,
-        target_offset = {0, -3.25},
-        color = {
-            r = player.color.r * 0.6 + 0.25,
-            g = player.color.g * 0.6 + 0.25,
-            b = player.color.b * 0.6 + 0.25,
-            a = 1
-        },
-        players = players,
-        scale = 1.00,
-        font = 'default-large-semibold',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
+            text = 'lvl ' .. rpg_t[player.index].level,
+            surface = player.surface,
+            target = {
+                entity = player.character,
+                offset = { 0, -3.25 },
+            },
+            color = {
+                r = player.color.r * 0.6 + 0.25,
+                g = player.color.g * 0.6 + 0.25,
+                b = player.color.b * 0.6 + 0.25,
+                a = 1
+            },
+            players = players,
+            scale = 1.00,
+            font = 'default-large-semibold',
+            alignment = 'center',
+            scale_with_zoom = false
+        }
 end
 
 local function level_up(player)
@@ -537,7 +539,7 @@ function Public.rpg_reset_player(player)
         player.gui.left.rpg.destroy()
     end
     if not player.character then
-        player.set_controller({type = defines.controllers.god})
+        player.set_controller({ type = defines.controllers.god })
         player.create_character()
     end
     rpg_t[player.index] = {
@@ -552,7 +554,7 @@ function Public.rpg_reset_player(player)
         xp_since_last_floaty_text = 0,
         rotated_entity_delay = 0,
         gui_refresh_delay = 0,
-        last_mined_entity_position = {x = 0, y = 0}
+        last_mined_entity_position = { x = 0, y = 0 }
     }
     draw_gui_char_button(player)
     draw_level_text(player)
@@ -644,22 +646,22 @@ local function train_type_cause(cause)
 end
 
 local get_cause_player = {
-    ['character'] = function(cause)
+    ['character'] = function (cause)
         if not cause.player then
             return
         end
-        return {cause.player}
+        return { cause.player }
     end,
-    ['combat-robot'] = function(cause)
+    ['combat-robot'] = function (cause)
         if not cause.last_user then
             return
         end
         if not game.players[cause.last_user.index] then
             return
         end
-        return {game.players[cause.last_user.index]}
+        return { game.players[cause.last_user.index] }
     end,
-    ['car'] = function(cause)
+    ['car'] = function (cause)
         local players = {}
         local driver = cause.get_driver()
         if driver then
@@ -723,13 +725,13 @@ local function on_entity_died(event)
     end
 
     --Grant modified XP for health boosted units
-    if global.biter_health_boost then
+    if storage.biter_health_boost then
         if enemy_types[event.entity.type] then
             for _, player in pairs(players) do
                 if xp_yield[event.entity.name] then
-                    gain_xp(player, xp_yield[event.entity.name] * global.biter_health_boost)
+                    gain_xp(player, xp_yield[event.entity.name] * storage.biter_health_boost)
                 else
-                    gain_xp(player, 0.5 * global.biter_health_boost)
+                    gain_xp(player, 0.5 * storage.biter_health_boost)
                 end
             end
             return
@@ -748,22 +750,22 @@ end
 
 --Melee damage modifier
 local function one_punch(character, target, damage)
-    local base_vector = {target.position.x - character.position.x, target.position.y - character.position.y}
+    local base_vector = { target.position.x - character.position.x, target.position.y - character.position.y }
 
-    local vector = {base_vector[1], base_vector[2]}
+    local vector = { base_vector[1], base_vector[2] }
     vector[1] = vector[1] * 1000
     vector[2] = vector[2] * 1000
 
     character.surface.create_entity(
         {
             name = 'flying-text',
-            position = {character.position.x + base_vector[1] * 0.5, character.position.y + base_vector[2] * 0.5},
+            position = { character.position.x + base_vector[1] * 0.5, character.position.y + base_vector[2] * 0.5 },
             text = 'ONE PUNCH',
-            color = {255, 0, 0}
+            color = { 255, 0, 0 }
         }
     )
-    character.surface.create_entity({name = 'blood-explosion-huge', position = target.position})
-    character.surface.create_entity({name = 'big-artillery-explosion', position = {target.position.x + vector[1] * 0.5, target.position.y + vector[2] * 0.5}})
+    character.surface.create_entity({ name = 'blood-explosion-huge', position = target.position })
+    character.surface.create_entity({ name = 'big-artillery-explosion', position = { target.position.x + vector[1] * 0.5, target.position.y + vector[2] * 0.5 } })
 
     if math.abs(vector[1]) > math.abs(vector[2]) then
         local d = math.abs(vector[1])
@@ -791,9 +793,9 @@ local function one_punch(character, target, damage)
     for i = 1, 16, 1 do
         for x = i * -1 * a, i * a, 1 do
             for y = i * -1 * a, i * a, 1 do
-                local p = {character.position.x + x + vector[1] * i, character.position.y + y + vector[2] * i}
-                character.surface.create_trivial_smoke({name = 'train-smoke', position = p})
-                for _, e in pairs(character.surface.find_entities({{p[1] - a, p[2] - a}, {p[1] + a, p[2] + a}})) do
+                local p = { character.position.x + x + vector[1] * i, character.position.y + y + vector[2] * i }
+                character.surface.create_trivial_smoke({ name = 'train-smoke', position = p })
+                for _, e in pairs(character.surface.find_entities({ { p[1] - a, p[2] - a }, { p[1] + a, p[2] + a } })) do
                     if e.valid then
                         if e.health then
                             if e.destructible and e.minable and e.force.index ~= 3 then
@@ -866,16 +868,16 @@ local function on_entity_damaged(event)
     --Floating messages and particle effects.
     if math_random(1, 7) == 1 then
         damage = damage * math_random(250, 350) * 0.01
-        event.cause.surface.create_entity({name = 'flying-text', position = event.entity.position, text = '‼' .. math.floor(damage), color = {255, 0, 0}})
-        event.cause.surface.create_entity({name = 'blood-explosion-huge', position = event.entity.position})
+        event.cause.player.create_local_flying_text({ text = '‼' .. math.floor(damage), position = event.entity.position, color = { 255, 0, 0 }, time_to_live = 90, speed = 2 })
+        event.cause.surface.create_entity({ name = 'blood-explosion-huge', position = event.entity.position })
     else
         damage = damage * math_random(100, 125) * 0.01
-        event.cause.player.create_local_flying_text({text = math.floor(damage), position = event.entity.position, color = {150, 150, 150}, time_to_live = 90, speed = 2})
+        event.cause.player.create_local_flying_text({ text = math.floor(damage), position = event.entity.position, color = { 150, 150, 150 }, time_to_live = 90, speed = 2 })
     end
 
     --Handle the custom health pool of the biter health booster, if it is used in the map.
-    if global.biter_health_boost then
-        local health_pool = global.biter_health_boost_units[event.entity.unit_number]
+    if storage.biter_health_boost then
+        local health_pool = storage.biter_health_boost_units[event.entity.unit_number]
         if health_pool then
             health_pool[1] = health_pool[1] + event.final_damage_amount
             health_pool[1] = health_pool[1] - damage
@@ -884,7 +886,7 @@ local function on_entity_damaged(event)
             event.entity.health = health_pool[1] * health_pool[2]
 
             if health_pool[1] <= 0 then
-                global.biter_health_boost_units[event.entity.unit_number] = nil
+                storage.biter_health_boost_units[event.entity.unit_number] = nil
                 event.entity.die(event.entity.force.name, event.cause)
             end
             return
@@ -967,7 +969,7 @@ local function on_pre_player_mined_item(event)
     if entity.type == 'resource' then
         xp_amount = 0.5 * distance_multiplier
     else
-        xp_amount = (1.5 + event.entity.prototype.max_health * 0.0035) * distance_multiplier
+        xp_amount = (1.5 + event.entity.max_health * 0.0035) * distance_multiplier
     end
 
     gain_xp(player, xp_amount)

@@ -17,7 +17,7 @@ local traps = {}
 
 Global.register(
     traps,
-    function(t)
+    function (t)
         traps = t
     end
 )
@@ -43,11 +43,11 @@ local food_values = {
 }
 
 local function get_border_cords(f)
-    local a = {{-1000, -1000}, {1000, -10}}
+    local a = { { -1000, -1000 }, { 1000, -10 } }
     if f == 'south' then
-        a = {{-1000, 10}, {1000, 1000}}
+        a = { { -1000, 10 }, { 1000, 1000 } }
     end
-    local entities = game.surfaces['surface'].find_entities_filtered {area = a, force = f}
+    local entities = game.surfaces['surface'].find_entities_filtered { area = a, force = f }
     if not entities then
         return
     end
@@ -69,17 +69,17 @@ local function get_border_cords(f)
             y_bot = e.position.y
         end
     end
-    global.force_area[f] = {}
-    global.force_area[f].x_top = x_top
-    global.force_area[f].y_top = y_top
-    global.force_area[f].x_bot = x_bot
-    global.force_area[f].y_bot = y_bot
+    storage.force_area[f] = {}
+    storage.force_area[f].x_top = x_top
+    storage.force_area[f].y_top = y_top
+    storage.force_area[f].x_bot = x_bot
+    storage.force_area[f].y_bot = y_bot
     --game.print(x_top .. " "  .. y_top .. " , ".. x_bot .. " " .. y_bot)
 end
 
 local function create_biter_battle_sprite_button(player)
     if player.gui.top.biter_battle_toggle_menu_button == nil then
-        local button = player.gui.top.add {name = 'biter_battle_toggle_menu_button', type = 'sprite-button', sprite = 'entity/behemoth-spitter'}
+        local button = player.gui.top.add { name = 'biter_battle_toggle_menu_button', type = 'sprite-button', sprite = 'entity/behemoth-spitter' }
         button.style.font = 'default-bold'
         button.style.minimal_height = 38
         button.style.minimal_width = 38
@@ -131,16 +131,16 @@ local function get_mvps(force)
             if score.players[p.name].mined_entities then
                 mined_entities = score.players[p.name].mined_entities
             end
-            table.insert(score_list, {name = p.name, killscore = killscore, deaths = deaths, built_entities = built_entities, mined_entities = mined_entities})
+            table.insert(score_list, { name = p.name, killscore = killscore, deaths = deaths, built_entities = built_entities, mined_entities = mined_entities })
         end
     end
     local mvp = {}
     score_list = get_sorted_list('killscore', score_list)
-    mvp.killscore = {name = score_list[1].name, score = score_list[1].killscore}
+    mvp.killscore = { name = score_list[1].name, score = score_list[1].killscore }
     score_list = get_sorted_list('deaths', score_list)
-    mvp.deaths = {name = score_list[1].name, score = score_list[1].deaths}
+    mvp.deaths = { name = score_list[1].name, score = score_list[1].deaths }
     score_list = get_sorted_list('built_entities', score_list)
-    mvp.built_entities = {name = score_list[1].name, score = score_list[1].built_entities}
+    mvp.built_entities = { name = score_list[1].name, score = score_list[1].built_entities }
     return mvp
 end
 
@@ -152,36 +152,36 @@ local function show_mvps(player)
     if player.gui.left['mvps'] then
         return
     end
-    local frame = player.gui.left.add({type = 'frame', name = 'mvps', direction = 'vertical'})
-    local l = frame.add({type = 'label', caption = 'MVPs - North:'})
+    local frame = player.gui.left.add({ type = 'frame', name = 'mvps', direction = 'vertical' })
+    local l = frame.add({ type = 'label', caption = 'MVPs - North:' })
     l.style.font = 'default-listbox'
-    l.style.font_color = {r = 0.55, g = 0.55, b = 0.99}
+    l.style.font_color = { r = 0.55, g = 0.55, b = 0.99 }
 
-    local t = frame.add({type = 'table', column_count = 2})
+    local t = frame.add({ type = 'table', column_count = 2 })
     local mvp = get_mvps('north')
     if mvp then
-        local l = t.add({type = 'label', caption = 'Defender >> '})
+        local l = t.add({ type = 'label', caption = 'Defender >> ' })
         l.style.font = 'default-listbox'
-        l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-        local l = t.add({type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score})
+        l.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
+        local l = t.add({ type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score })
         l.style.font = 'default-bold'
-        l.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+        l.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
-        local l = t.add({type = 'label', caption = 'Builder >> '})
+        local l = t.add({ type = 'label', caption = 'Builder >> ' })
         l.style.font = 'default-listbox'
-        l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-        local l = t.add({type = 'label', caption = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things'})
+        l.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
+        local l = t.add({ type = 'label', caption = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things' })
         l.style.font = 'default-bold'
-        l.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+        l.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
-        local l = t.add({type = 'label', caption = 'Deaths >> '})
+        local l = t.add({ type = 'label', caption = 'Deaths >> ' })
         l.style.font = 'default-listbox'
-        l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-        local l = t.add({type = 'label', caption = mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times'})
+        l.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
+        local l = t.add({ type = 'label', caption = mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times' })
         l.style.font = 'default-bold'
-        l.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+        l.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
-        if not global.results_sent_north then
+        if not storage.results_sent_north then
             local result = {}
             insert(result, 'NORTH: \\n')
             insert(result, 'MVP Defender: \\n')
@@ -194,39 +194,39 @@ local function show_mvps(player)
             insert(result, mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times')
             local message = table.concat(result)
             Server.to_discord_embed(message)
-            global.results_sent_north = true
+            storage.results_sent_north = true
         end
     end
 
-    local l = frame.add({type = 'label', caption = 'MVPs - South:'})
+    local l = frame.add({ type = 'label', caption = 'MVPs - South:' })
     l.style.font = 'default-listbox'
-    l.style.font_color = {r = 0.99, g = 0.33, b = 0.33}
+    l.style.font_color = { r = 0.99, g = 0.33, b = 0.33 }
 
-    local t = frame.add({type = 'table', column_count = 2})
+    local t = frame.add({ type = 'table', column_count = 2 })
     local mvp = get_mvps('south')
     if mvp then
-        local l = t.add({type = 'label', caption = 'Defender >> '})
+        local l = t.add({ type = 'label', caption = 'Defender >> ' })
         l.style.font = 'default-listbox'
-        l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-        local l = t.add({type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score})
+        l.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
+        local l = t.add({ type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score })
         l.style.font = 'default-bold'
-        l.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+        l.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
-        local l = t.add({type = 'label', caption = 'Builder >> '})
+        local l = t.add({ type = 'label', caption = 'Builder >> ' })
         l.style.font = 'default-listbox'
-        l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-        local l = t.add({type = 'label', caption = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things'})
+        l.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
+        local l = t.add({ type = 'label', caption = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things' })
         l.style.font = 'default-bold'
-        l.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+        l.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
-        local l = t.add({type = 'label', caption = 'Deaths >> '})
+        local l = t.add({ type = 'label', caption = 'Deaths >> ' })
         l.style.font = 'default-listbox'
-        l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-        local l = t.add({type = 'label', caption = mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times'})
+        l.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
+        local l = t.add({ type = 'label', caption = mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times' })
         l.style.font = 'default-bold'
-        l.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+        l.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
-        if not global.results_sent_south then
+        if not storage.results_sent_south then
             local result = {}
             insert(result, 'SOUTH: \\n')
             insert(result, 'MVP Defender: \\n')
@@ -239,17 +239,17 @@ local function show_mvps(player)
             insert(result, mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times')
             local message = table.concat(result)
             Server.to_discord_embed(message)
-            global.results_sent_south = true
+            storage.results_sent_south = true
         end
     end
 end
 
 local function create_biter_battle_menu(player)
-    if global.rocket_silo_destroyed then
-        local frame = player.gui.left.add {type = 'frame', name = 'victory_popup', direction = 'vertical'}
-        local l = frame.add {type = 'label', caption = global.rocket_silo_destroyed, single_line = false, name = 'victory_caption'}
+    if storage.rocket_silo_destroyed then
+        local frame = player.gui.left.add { type = 'frame', name = 'victory_popup', direction = 'vertical' }
+        local l = frame.add { type = 'label', caption = storage.rocket_silo_destroyed, single_line = false, name = 'victory_caption' }
         l.style.font = 'default-listbox'
-        l.style.font_color = {r = 0.98, g = 0.66, b = 0.22}
+        l.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
         l.style.top_padding = 10
         l.style.left_padding = 20
         l.style.right_padding = 20
@@ -262,10 +262,10 @@ local function create_biter_battle_menu(player)
         player.gui.left['biter_battle_menu'].destroy()
     end
 
-    local frame = player.gui.left.add {type = 'frame', name = 'biter_battle_menu', direction = 'vertical'}
+    local frame = player.gui.left.add { type = 'frame', name = 'biter_battle_menu', direction = 'vertical' }
 
     if player.force.name == 'north' or player.force.name == 'south' then
-        frame.add {type = 'table', name = 'biter_battle_table', column_count = 4}
+        frame.add { type = 'table', name = 'biter_battle_table', column_count = 4 }
         local t = frame.biter_battle_table
         local foods = {
             'automation-science-pack',
@@ -277,35 +277,35 @@ local function create_biter_battle_menu(player)
             'space-science-pack',
             'raw-fish'
         }
-        local food_tooltips = {'1 Calorie', '3 Calories', '12 Calories', '24 Calories', '80 Calories', '138 Calories', '420 Calories', 'Send spy'}
+        local food_tooltips = { '1 Calorie', '3 Calories', '12 Calories', '24 Calories', '80 Calories', '138 Calories', '420 Calories', 'Send spy' }
         local x = 1
         for _, f in pairs(foods) do
-            local s = t.add {type = 'sprite-button', name = f, sprite = 'item/' .. f}
-            s.tooltip = {'', food_tooltips[x]}
+            local s = t.add { type = 'sprite-button', name = f, sprite = 'item/' .. f }
+            s.tooltip = { '', food_tooltips[x] }
             x = x + 1
         end
     end
     if player.force.name == 'player' then
-        local b = frame.add {type = 'label', caption = 'Defend your team´s rocket silo!'}
+        local b = frame.add { type = 'label', caption = 'Defend your team´s rocket silo!' }
         b.style.font = 'default-bold'
-        b.style.font_color = {r = 0.98, g = 0.66, b = 0.22}
-        local b = frame.add {type = 'label', caption = 'Feed the enemy team´s biters to gain advantage!'}
+        b.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
+        local b = frame.add { type = 'label', caption = 'Feed the enemy team´s biters to gain advantage!' }
         b.style.font = 'default-bold'
-        b.style.font_color = {r = 0.98, g = 0.66, b = 0.22}
-        frame.add {type = 'label', caption = '-----------------------------------------------------------'}
+        b.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
+        frame.add { type = 'label', caption = '-----------------------------------------------------------' }
     end
 
-    local t = frame.add {type = 'table', column_count = 3}
-    local l = t.add {type = 'label', caption = 'Team North'}
+    local t = frame.add { type = 'table', column_count = 3 }
+    local l = t.add { type = 'label', caption = 'Team North' }
     l.style.font = 'default-bold'
-    l.style.font_color = {r = 0.55, g = 0.55, b = 0.99}
-    local l = t.add {type = 'label', caption = '  -  '}
-    local l = t.add {type = 'label', caption = #game.forces['north'].connected_players .. ' Players '}
-    l.style.font_color = {r = 0.22, g = 0.88, b = 0.22}
+    l.style.font_color = { r = 0.55, g = 0.55, b = 0.99 }
+    local l = t.add { type = 'label', caption = '  -  ' }
+    local l = t.add { type = 'label', caption = #game.forces['north'].connected_players .. ' Players ' }
+    l.style.font_color = { r = 0.22, g = 0.88, b = 0.22 }
 
     if player.force.name ~= 'player' then
-        if global.biter_battle_view_players[player.name] == true then
-            local t = frame.add {type = 'table', column_count = 4}
+        if storage.biter_battle_view_players[player.name] == true then
+            local t = frame.add { type = 'table', column_count = 4 }
             for _, p in pairs(game.forces.north.connected_players) do
                 local color = {}
                 color = p.color
@@ -313,38 +313,38 @@ local function create_biter_battle_menu(player)
                 color.g = color.g * 0.6 + 0.4
                 color.b = color.b * 0.6 + 0.4
                 color.a = 1
-                local l = t.add {type = 'label', caption = p.name}
+                local l = t.add { type = 'label', caption = p.name }
                 l.style.font_color = color
             end
         end
 
-        local t = frame.add {type = 'table', column_count = 4}
-        local l = t.add {type = 'label', caption = 'Nerf: '}
+        local t = frame.add { type = 'table', column_count = 4 }
+        local l = t.add { type = 'label', caption = 'Nerf: ' }
         l.style.minimal_width = 25
         l.tooltip = 'Damage nerf of the team.'
-        local l = t.add {type = 'label', caption = math.round(global.team_nerf['north'] * 100, 1) .. ' '}
+        local l = t.add { type = 'label', caption = math.round(storage.team_nerf['north'] * 100, 1) .. ' ' }
         l.style.minimal_width = 40
-        l.style.font_color = {r = 0.66, g = 0.66, b = 0.99}
+        l.style.font_color = { r = 0.66, g = 0.66, b = 0.99 }
         l.style.font = 'default-bold'
-        local l = t.add {type = 'label', caption = ' Biter Rage: '}
+        local l = t.add { type = 'label', caption = ' Biter Rage: ' }
         l.style.minimal_width = 25
         l.tooltip = 'Increases damage and the amount of angry biters.'
-        local l = t.add {type = 'label', caption = math.round(global.biter_rage['north'], 0)}
-        l.style.font_color = {r = 0.66, g = 0.66, b = 0.99}
+        local l = t.add { type = 'label', caption = math.round(storage.biter_rage['north'], 0) }
+        l.style.font_color = { r = 0.66, g = 0.66, b = 0.99 }
         l.style.font = 'default-bold'
         l.style.minimal_width = 25
     end
 
     if player.force.name == 'player' then
         local c = 'JOIN NORTH'
-        local font_color = {r = 0.55, g = 0.55, b = 0.99}
-        if global.game_lobby_active then
-            font_color = {r = 0.7, g = 0.7, b = 0.7}
+        local font_color = { r = 0.55, g = 0.55, b = 0.99 }
+        if storage.game_lobby_active then
+            font_color = { r = 0.7, g = 0.7, b = 0.7 }
             c = c .. ' (waiting for players...  '
-            c = c .. math.round((global.game_lobby_timeout - game.tick) / 60, 0)
+            c = c .. math.round((storage.game_lobby_timeout - game.tick) / 60, 0)
             c = c .. ')'
         end
-        local t = frame.add {type = 'table', column_count = 4}
+        local t = frame.add { type = 'table', column_count = 4 }
         for _, p in pairs(game.forces.north.connected_players) do
             local color = {}
             color = p.color
@@ -352,29 +352,29 @@ local function create_biter_battle_menu(player)
             color.g = color.g * 0.6 + 0.4
             color.b = color.b * 0.6 + 0.4
             color.a = 1
-            local l = t.add {type = 'label', caption = p.name}
+            local l = t.add { type = 'label', caption = p.name }
             l.style.font_color = color
         end
-        local b = frame.add {type = 'sprite-button', name = 'join_north_button', caption = c}
+        local b = frame.add { type = 'sprite-button', name = 'join_north_button', caption = c }
         b.style.font = 'default-large-bold'
         b.style.font_color = font_color
         b.style.minimal_width = 350
-        frame.add {type = 'label', caption = '-----------------------------------------------------------'}
+        frame.add { type = 'label', caption = '-----------------------------------------------------------' }
     else
-        frame.add {type = 'label', caption = '--------------------------'}
+        frame.add { type = 'label', caption = '--------------------------' }
     end
 
-    local t = frame.add {type = 'table', column_count = 3}
-    local l = t.add {type = 'label', caption = 'Team South'}
+    local t = frame.add { type = 'table', column_count = 3 }
+    local l = t.add { type = 'label', caption = 'Team South' }
     l.style.font = 'default-bold'
-    l.style.font_color = {r = 0.99, g = 0.33, b = 0.33}
-    local l = t.add {type = 'label', caption = '  -  '}
-    local l = t.add {type = 'label', caption = #game.forces['south'].connected_players .. ' Players '}
-    l.style.font_color = {r = 0.22, g = 0.88, b = 0.22}
+    l.style.font_color = { r = 0.99, g = 0.33, b = 0.33 }
+    local l = t.add { type = 'label', caption = '  -  ' }
+    local l = t.add { type = 'label', caption = #game.forces['south'].connected_players .. ' Players ' }
+    l.style.font_color = { r = 0.22, g = 0.88, b = 0.22 }
 
     if player.force.name ~= 'player' then
-        if global.biter_battle_view_players[player.name] == true then
-            local t = frame.add {type = 'table', column_count = 4}
+        if storage.biter_battle_view_players[player.name] == true then
+            local t = frame.add { type = 'table', column_count = 4 }
             for _, p in pairs(game.forces.south.connected_players) do
                 local color = {}
                 color = p.color
@@ -382,38 +382,38 @@ local function create_biter_battle_menu(player)
                 color.g = color.g * 0.6 + 0.4
                 color.b = color.b * 0.6 + 0.4
                 color.a = 1
-                local l = t.add {type = 'label', caption = p.name}
+                local l = t.add { type = 'label', caption = p.name }
                 l.style.font_color = color
             end
         end
 
-        local t = frame.add {type = 'table', column_count = 4}
-        local l = t.add {type = 'label', caption = 'Nerf: '}
+        local t = frame.add { type = 'table', column_count = 4 }
+        local l = t.add { type = 'label', caption = 'Nerf: ' }
         l.tooltip = 'Damage nerf of the team.'
         l.style.minimal_width = 25
-        local l = t.add {type = 'label', caption = math.round(global.team_nerf['south'] * 100, 1) .. ' '}
+        local l = t.add { type = 'label', caption = math.round(storage.team_nerf['south'] * 100, 1) .. ' ' }
         l.style.minimal_width = 40
-        l.style.font_color = {r = 0.99, g = 0.44, b = 0.44}
+        l.style.font_color = { r = 0.99, g = 0.44, b = 0.44 }
         l.style.font = 'default-bold'
-        local l = t.add {type = 'label', caption = ' Biter Rage: '}
+        local l = t.add { type = 'label', caption = ' Biter Rage: ' }
         l.style.minimal_width = 25
         l.tooltip = 'Increases damage and the amount of angry biters.'
-        local l = t.add {type = 'label', caption = math.round(global.biter_rage['south'], 0)}
-        l.style.font_color = {r = 0.99, g = 0.44, b = 0.44}
+        local l = t.add { type = 'label', caption = math.round(storage.biter_rage['south'], 0) }
+        l.style.font_color = { r = 0.99, g = 0.44, b = 0.44 }
         l.style.font = 'default-bold'
         l.style.minimal_width = 25
     end
 
     if player.force.name == 'player' then
         local c = 'JOIN SOUTH'
-        local font_color = {r = 0.99, g = 0.33, b = 0.33}
-        if global.game_lobby_active then
-            font_color = {r = 0.7, g = 0.7, b = 0.7}
+        local font_color = { r = 0.99, g = 0.33, b = 0.33 }
+        if storage.game_lobby_active then
+            font_color = { r = 0.7, g = 0.7, b = 0.7 }
             c = c .. ' (waiting for players...  '
-            c = c .. math.round((global.game_lobby_timeout - game.tick) / 60, 0)
+            c = c .. math.round((storage.game_lobby_timeout - game.tick) / 60, 0)
             c = c .. ')'
         end
-        local t = frame.add {type = 'table', column_count = 4}
+        local t = frame.add { type = 'table', column_count = 4 }
         for _, p in pairs(game.forces.south.connected_players) do
             local color = {}
             color = p.color
@@ -421,31 +421,31 @@ local function create_biter_battle_menu(player)
             color.g = color.g * 0.6 + 0.4
             color.b = color.b * 0.6 + 0.4
             color.a = 1
-            local l = t.add {type = 'label', caption = p.name}
+            local l = t.add { type = 'label', caption = p.name }
             l.style.font_color = color
         end
-        local b = frame.add {type = 'sprite-button', name = 'join_south_button', caption = c}
+        local b = frame.add { type = 'sprite-button', name = 'join_south_button', caption = c }
         b.style.font = 'default-large-bold'
         b.style.font_color = font_color
         b.style.minimal_width = 350
     end
 
-    if global.team_chosen[player.name] then
-        local t = frame.add {type = 'table', column_count = 2}
+    if storage.team_chosen[player.name] then
+        local t = frame.add { type = 'table', column_count = 2 }
         if player.force.name == 'spectator' then
-            local b = t.add {type = 'sprite-button', name = 'biter_battle_leave_spectate', caption = 'Join Team'}
+            local b = t.add { type = 'sprite-button', name = 'biter_battle_leave_spectate', caption = 'Join Team' }
         else
-            local b = t.add {type = 'sprite-button', name = 'biter_battle_spectate', caption = 'Spectate'}
+            local b = t.add { type = 'sprite-button', name = 'biter_battle_spectate', caption = 'Spectate' }
         end
 
-        if global.biter_battle_view_players[player.name] == true then
-            local b = t.add {type = 'sprite-button', name = 'biter_battle_hide_players', caption = 'Playerlist'}
+        if storage.biter_battle_view_players[player.name] == true then
+            local b = t.add { type = 'sprite-button', name = 'biter_battle_hide_players', caption = 'Playerlist' }
         else
-            local b = t.add {type = 'sprite-button', name = 'biter_battle_view_players', caption = 'Playerlist'}
+            local b = t.add { type = 'sprite-button', name = 'biter_battle_view_players', caption = 'Playerlist' }
         end
         for _, b in pairs(t.children) do
             b.style.font = 'default-bold'
-            b.style.font_color = {r = 0.98, g = 0.66, b = 0.22}
+            b.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
             b.style.top_padding = 1
             b.style.left_padding = 1
             b.style.right_padding = 1
@@ -474,32 +474,32 @@ local function join_team(player, team)
     end
 
     if team == 'north' or team == 'south' then
-        if #game.forces[team].connected_players > #game.forces[enemy_team].connected_players and global.team_chosen[player.name] == nil then
-            player.print('Team ' .. team .. ' has too many players currently.', {r = 0.98, g = 0.66, b = 0.22})
+        if #game.forces[team].connected_players > #game.forces[enemy_team].connected_players and storage.team_chosen[player.name] == nil then
+            player.print('Team ' .. team .. ' has too many players currently.', { r = 0.98, g = 0.66, b = 0.22 })
         else
             player.teleport(surface.find_non_colliding_position('character', game.forces[team].get_spawn_position(surface), 3, 1))
             player.force = game.forces[team]
-            if global.team_chosen[player.name] then
+            if storage.team_chosen[player.name] then
                 local p = game.permissions.get_group('Default')
                 p.add_player(player.name)
-                game.print('Team ' .. player.force.name .. ' player ' .. player.name .. ' is no longer spectating.', {r = 0.98, g = 0.66, b = 0.22})
+                game.print('Team ' .. player.force.name .. ' player ' .. player.name .. ' is no longer spectating.', { r = 0.98, g = 0.66, b = 0.22 })
             else
-                game.print(player.name .. ' has joined team ' .. player.force.name .. '!', {r = 0.98, g = 0.66, b = 0.22})
+                game.print(player.name .. ' has joined team ' .. player.force.name .. '!', { r = 0.98, g = 0.66, b = 0.22 })
                 local i = player.get_inventory(defines.inventory.character_main)
-                player.insert {name = 'pistol', count = 1}
-                player.insert {name = 'raw-fish', count = 3}
-                player.insert {name = 'firearm-magazine', count = 16}
-                player.insert {name = 'iron-gear-wheel', count = 4}
-                player.insert {name = 'iron-plate', count = 8}
-                global.team_chosen[player.name] = team
+                player.insert { name = 'pistol', count = 1 }
+                player.insert { name = 'raw-fish', count = 3 }
+                player.insert { name = 'firearm-magazine', count = 16 }
+                player.insert { name = 'iron-gear-wheel', count = 4 }
+                player.insert { name = 'iron-plate', count = 8 }
+                storage.team_chosen[player.name] = team
             end
         end
     end
 
     if team == 'spectator' then
-        player.teleport(surface.find_non_colliding_position('character', {0, 0}, 2, 1))
+        player.teleport(surface.find_non_colliding_position('character', { 0, 0 }, 2, 1))
         player.force = game.forces[team]
-        game.print(player.name .. ' is spectating.', {r = 0.98, g = 0.66, b = 0.22})
+        game.print(player.name .. ' is spectating.', { r = 0.98, g = 0.66, b = 0.22 })
         local permission_group = game.permissions.get_group('spectator')
         if not permission_group then
             permission_group = game.permissions.create_group('spectator')
@@ -517,7 +517,7 @@ local function join_team(player, team)
             permission_group.set_allows_action(defines.input_action.toggle_show_entity_info, true)
         end
         permission_group.add_player(player.name)
-        global.spectator_spam_protection[player.name] = game.tick
+        storage.spectator_spam_protection[player.name] = game.tick
     end
     refresh_gui()
 end
@@ -525,30 +525,30 @@ end
 local function reveal_team(f)
     local m = 32
     if f == 'north' then
-        game.forces['south'].chart(game.surfaces['surface'], {{x = global.force_area[f].x_top - m, y = global.force_area[f].y_top - m}, {x = global.force_area[f].x_bot + m, y = global.force_area[f].y_bot + m}})
+        game.forces['south'].chart(game.surfaces['surface'], { { x = storage.force_area[f].x_top - m, y = storage.force_area[f].y_top - m }, { x = storage.force_area[f].x_bot + m, y = storage.force_area[f].y_bot + m } })
     else
-        game.forces['north'].chart(game.surfaces['surface'], {{x = global.force_area[f].x_top - m, y = global.force_area[f].y_top - m}, {x = global.force_area[f].x_bot + m, y = global.force_area[f].y_bot + m}})
+        game.forces['north'].chart(game.surfaces['surface'], { { x = storage.force_area[f].x_top - m, y = storage.force_area[f].y_top - m }, { x = storage.force_area[f].x_bot + m, y = storage.force_area[f].y_bot + m } })
     end
 end
 
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
-    if not global.horizontal_border_width then
-        global.horizontal_border_width = 16
+    if not storage.horizontal_border_width then
+        storage.horizontal_border_width = 16
     end
-    if not global.biter_battles_init_done then
+    if not storage.biter_battles_init_done then
         local map_gen_settings = {}
         map_gen_settings.water = 'none'
         map_gen_settings.starting_area = '5'
-        map_gen_settings.cliff_settings = {cliff_elevation_interval = 12, cliff_elevation_0 = 32}
+        map_gen_settings.cliff_settings = { cliff_elevation_interval = 12, cliff_elevation_0 = 32 }
         map_gen_settings.autoplace_controls = {
-            ['coal'] = {frequency = '0.8', size = '1', richness = '0.3'},
-            ['stone'] = {frequency = '0.8', size = '1', richness = '0.3'},
-            ['copper-ore'] = {frequency = '0.8', size = '2', richness = '0.3'},
-            ['iron-ore'] = {frequency = '0.8', size = '2', richness = '0.3'},
-            ['crude-oil'] = {frequency = '0.8', size = '2', richness = '0.4'},
-            ['trees'] = {frequency = '0.8', size = '0.5', richness = '0.3'},
-            ['enemy-base'] = {frequency = '0.8', size = '1', richness = '0.4'}
+            ['coal'] = { frequency = '0.8', size = '1', richness = '0.3' },
+            ['stone'] = { frequency = '0.8', size = '1', richness = '0.3' },
+            ['copper-ore'] = { frequency = '0.8', size = '2', richness = '0.3' },
+            ['iron-ore'] = { frequency = '0.8', size = '2', richness = '0.3' },
+            ['crude-oil'] = { frequency = '0.8', size = '2', richness = '0.4' },
+            ['trees'] = { frequency = '0.8', size = '0.5', richness = '0.3' },
+            ['enemy-base'] = { frequency = '0.8', size = '1', richness = '0.4' }
         }
         game.create_surface('surface', map_gen_settings)
 
@@ -564,18 +564,18 @@ local function on_player_joined_game(event)
         game.create_force('south')
         game.create_force('spectator')
         --game.create_force("map_pregen")
-        global.game_lobby_active = true
-        global.game_lobby_timeout = 599940
-        global.biter_battle_view_players = {}
-        global.spectator_spam_protection = {}
-        global.force_area = {}
+        storage.game_lobby_active = true
+        storage.game_lobby_timeout = 599940
+        storage.biter_battle_view_players = {}
+        storage.spectator_spam_protection = {}
+        storage.force_area = {}
 
-        global.team_chosen = {}
-        global.team_nerf = {}
-        global.biter_rage = {}
-        global.spy_fish_timeout = {}
+        storage.team_chosen = {}
+        storage.team_nerf = {}
+        storage.biter_rage = {}
+        storage.spy_fish_timeout = {}
 
-        local force_names = {'north', 'south'}
+        local force_names = { 'north', 'south' }
         for _, name in pairs(force_names) do
             game.forces[name].technologies['artillery'].enabled = false
             game.forces[name].technologies['artillery-shell-range-1'].enabled = false
@@ -589,8 +589,8 @@ local function on_player_joined_game(event)
             game.forces[name].technologies['refined-flammables-7'].enabled = false
             game.forces[name].technologies['atomic-bomb'].enabled = false
 
-            global.team_nerf[name] = 0
-            global.biter_rage[name] = 0
+            storage.team_nerf[name] = 0
+            storage.biter_rage[name] = 0
 
             game.forces[name].set_turret_attack_modifier('flamethrower-turret', -0.5)
             --game.forces[name].set_ammo_damage_modifier("artillery-shell", -0.95)
@@ -605,36 +605,36 @@ local function on_player_joined_game(event)
         f.set_cease_fire('player', true)
         f.set_friend('spectator', true)
         f.share_chart = true
-        f.set_spawn_position({0, -26}, surface)
+        f.set_spawn_position({ 0, -26 }, surface)
         local f = game.forces['south']
         f.set_cease_fire('player', true)
         f.set_friend('spectator', true)
         f.share_chart = true
-        f.set_spawn_position({0, 26}, surface)
+        f.set_spawn_position({ 0, 26 }, surface)
         local f = game.forces['spectator']
-        f.set_spawn_position({0, 0}, surface)
+        f.set_spawn_position({ 0, 0 }, surface)
         f.set_friend('north', true)
         f.set_friend('south', true)
         local f = game.forces['player']
-        f.set_spawn_position({0, 0}, surface)
+        f.set_spawn_position({ 0, 0 }, surface)
 
-        global.biter_battles_init_done = true
+        storage.biter_battles_init_done = true
     end
-    if global.game_lobby_active then
+    if storage.game_lobby_active then
         if #game.connected_players > 1 then
-            global.game_lobby_timeout = game.tick + 7200
+            storage.game_lobby_timeout = game.tick + 7200
         end
     end
 
-    if player.online_time < 5 and game.surfaces['surface'].is_chunk_generated({0, 0}) then
-        player.teleport(game.surfaces['surface'].find_non_colliding_position('character', {0, 0}, 2, 1), 'surface')
+    if player.online_time < 5 and game.surfaces['surface'].is_chunk_generated({ 0, 0 }) then
+        player.teleport(game.surfaces['surface'].find_non_colliding_position('character', { 0, 0 }, 2, 1), 'surface')
     else
-        if not global.team_chosen[player.name] then
-            player.teleport({0, 0}, 'surface')
+        if not storage.team_chosen[player.name] then
+            player.teleport({ 0, 0 }, 'surface')
         end
     end
 
-    global.biter_battle_view_players[player.name] = false
+    storage.biter_battle_view_players[player.name] = false
     create_biter_battle_sprite_button(player)
     create_biter_battle_menu(player)
     refresh_gui()
@@ -645,8 +645,8 @@ local function on_player_created(event)
 end
 
 local function on_player_left_game(event)
-    if game.connected_players == 1 and global.game_lobby_active == true then
-        global.game_lobby_timeout = game.tick + 599940
+    if game.connected_players == 1 and storage.game_lobby_active == true then
+        storage.game_lobby_timeout = game.tick + 599940
     end
     refresh_gui()
 end
@@ -657,23 +657,23 @@ local function spy_fish(player)
     local owned_fishes = i2.get_item_count('raw-fish')
     owned_fishes = owned_fishes + i2.get_item_count('raw-fish')
     if owned_fishes == 0 then
-        player.print('You have no fish in your inventory.', {r = 0.98, g = 0.66, b = 0.22})
+        player.print('You have no fish in your inventory.', { r = 0.98, g = 0.66, b = 0.22 })
     else
-        local x = i2.remove({name = 'raw-fish', count = 1})
+        local x = i2.remove({ name = 'raw-fish', count = 1 })
         if x == 0 then
-            i2.remove({name = 'raw-fish', count = 1})
+            i2.remove({ name = 'raw-fish', count = 1 })
         end
         local enemy_team = 'south'
         if player.force.name == 'south' then
             enemy_team = 'north'
         end
-        if global.spy_fish_timeout[player.force.name] then
-            global.spy_fish_timeout[player.force.name] = global.spy_fish_timeout[player.force.name] + duration_per_unit
-            player.print(math.round((global.spy_fish_timeout[player.force.name] - game.tick) / 60, 0) .. ' seconds of enemy vision left.', {r = 0.98, g = 0.66, b = 0.22})
+        if storage.spy_fish_timeout[player.force.name] then
+            storage.spy_fish_timeout[player.force.name] = storage.spy_fish_timeout[player.force.name] + duration_per_unit
+            player.print(math.round((storage.spy_fish_timeout[player.force.name] - game.tick) / 60, 0) .. ' seconds of enemy vision left.', { r = 0.98, g = 0.66, b = 0.22 })
         else
             get_border_cords(enemy_team)
-            game.print(player.name .. ' sent a fish to spy on ' .. enemy_team .. ' team!', {r = 0.98, g = 0.66, b = 0.22})
-            global.spy_fish_timeout[player.force.name] = game.tick + duration_per_unit
+            game.print(player.name .. ' sent a fish to spy on ' .. enemy_team .. ' team!', { r = 0.98, g = 0.66, b = 0.22 })
+            storage.spy_fish_timeout[player.force.name] = game.tick + duration_per_unit
         end
     end
 end
@@ -704,7 +704,7 @@ local function feed_the_biters(food_type, player)
     if food_amount == 0 then
         local str = 'You have no ' .. food_names[food_type]
         str = str .. ' flask in your inventory.'
-        player.print(str, {r = 0.98, g = 0.66, b = 0.22})
+        player.print(str, { r = 0.98, g = 0.66, b = 0.22 })
     else
         if food_amount >= 20 then
             local str = player.name .. ' fed '
@@ -714,7 +714,7 @@ local function feed_the_biters(food_type, player)
             str = str .. ' juice to team '
             str = str .. enemy_team
             str = str .. '´s biters!'
-            game.print(str, {r = 0.98, g = 0.66, b = 0.22})
+            game.print(str, { r = 0.98, g = 0.66, b = 0.22 })
         else
             local str = 'You fed '
             str = str .. food_amount
@@ -725,7 +725,7 @@ local function feed_the_biters(food_type, player)
             str = str .. ' of '
             str = str .. food_names[food_type]
             str = str .. ' juice to the enemy team´s biters.'
-            player.print(str, {r = 0.98, g = 0.66, b = 0.22})
+            player.print(str, { r = 0.98, g = 0.66, b = 0.22 })
         end
     end
 
@@ -739,20 +739,20 @@ local function feed_the_biters(food_type, player)
         local rage_food_value = food_values[food_type] * 12500000 --10000000
         --biter rage calculation
         for x = 0, food_amount, 1 do
-            local rage_diminish_multiplier = 1 / (((global.biter_rage[enemy_team] ^ 2.9) + 8000) / 500)
-            global.biter_rage[enemy_team] = global.biter_rage[enemy_team] + (rage_food_value * rage_diminish_multiplier)
+            local rage_diminish_multiplier = 1 / (((storage.biter_rage[enemy_team] ^ 2.9) + 8000) / 500)
+            storage.biter_rage[enemy_team] = storage.biter_rage[enemy_team] + (rage_food_value * rage_diminish_multiplier)
         end
 
-        global.team_nerf[enemy_team] = global.team_nerf[enemy_team] + (nerf_gain * nerf_multiplier)
+        storage.team_nerf[enemy_team] = storage.team_nerf[enemy_team] + (nerf_gain * nerf_multiplier)
 
         local lowest_possible_modifier = -0.95
 
-        local ammo_types = {'grenade', 'bullet', 'artillery-shell', 'flamethrower', 'cannon-shell', 'shotgun-shell', 'rocket', 'electric', 'laser-turret'}
-        local ammo_modifier = {0.2, 0.8, 0, 0.8, 0.2, 0.2, 0.2, 0.2, 1.5}
-        local turret_types = {'flamethrower-turret', 'gun-turret'}
-        local turret_modifier = {1, 0.8}
-        local ammo_speed = {'bullet', 'cannon-shell', 'shotgun-shell', 'rocket', 'laser-turret'}
-        local ammo_speed_modifier = {0.3, 0.3, 0.3, 0.3, 0.3}
+        local ammo_types = { 'grenade', 'bullet', 'artillery-shell', 'flamethrower', 'cannon-shell', 'shotgun-shell', 'rocket', 'electric', 'laser-turret' }
+        local ammo_modifier = { 0.2, 0.8, 0, 0.8, 0.2, 0.2, 0.2, 0.2, 1.5 }
+        local turret_types = { 'flamethrower-turret', 'gun-turret' }
+        local turret_modifier = { 1, 0.8 }
+        local ammo_speed = { 'bullet', 'cannon-shell', 'shotgun-shell', 'rocket', 'laser-turret' }
+        local ammo_speed_modifier = { 0.3, 0.3, 0.3, 0.3, 0.3 }
 
         -------------
         local f = game.forces[enemy_team]
@@ -838,56 +838,56 @@ local function on_gui_click(event)
         if player.position.y < 100 and player.position.y > -100 and player.position.x < 100 and player.position.x > -100 then
             join_team(player, 'spectator')
         else
-            player.print('You are too far away from spawn to spectate.', {r = 0.98, g = 0.66, b = 0.22})
+            player.print('You are too far away from spawn to spectate.', { r = 0.98, g = 0.66, b = 0.22 })
         end
     end
-    if (name == 'biter_battle_leave_spectate') and game.tick - global.spectator_spam_protection[player.name] > 1800 then
-        join_team(player, global.team_chosen[player.name])
+    if (name == 'biter_battle_leave_spectate') and game.tick - storage.spectator_spam_protection[player.name] > 1800 then
+        join_team(player, storage.team_chosen[player.name])
     end
-    if (name == 'biter_battle_leave_spectate') and game.tick - global.spectator_spam_protection[player.name] < 1800 then
-        player.print('Not ready to return to your team yet. Please wait ' .. 30 - (math.round((game.tick - global.spectator_spam_protection[player.name]) / 60, 0)) .. ' seconds.', {r = 0.98, g = 0.66, b = 0.22})
+    if (name == 'biter_battle_leave_spectate') and game.tick - storage.spectator_spam_protection[player.name] < 1800 then
+        player.print('Not ready to return to your team yet. Please wait ' .. 30 - (math.round((game.tick - storage.spectator_spam_protection[player.name]) / 60, 0)) .. ' seconds.', { r = 0.98, g = 0.66, b = 0.22 })
     end
 
     if (name == 'biter_battle_hide_players') then
-        global.biter_battle_view_players[player.name] = false
+        storage.biter_battle_view_players[player.name] = false
         refresh_gui()
     end
     if (name == 'biter_battle_view_players') then
-        global.biter_battle_view_players[player.name] = true
+        storage.biter_battle_view_players[player.name] = true
         refresh_gui()
     end
 
-    if not global.terrain_init_done then
-        player.print('Waiting for spawn to generate.', {r = 0.98, g = 0.66, b = 0.22})
+    if not storage.terrain_init_done then
+        player.print('Waiting for spawn to generate.', { r = 0.98, g = 0.66, b = 0.22 })
         return
     end
 
-    if (name == 'join_north_button') and global.game_lobby_active == false then
+    if (name == 'join_north_button') and storage.game_lobby_active == false then
         join_team(player, 'north')
     end
-    if (name == 'join_south_button') and global.game_lobby_active == false then
+    if (name == 'join_south_button') and storage.game_lobby_active == false then
         join_team(player, 'south')
     end
-    if (name == 'join_north_button') and global.game_lobby_active == true then
-        player.print('Waiting for more players to join the game.', {r = 0.98, g = 0.66, b = 0.22})
+    if (name == 'join_north_button') and storage.game_lobby_active == true then
+        player.print('Waiting for more players to join the game.', { r = 0.98, g = 0.66, b = 0.22 })
     end
-    if (name == 'join_south_button') and global.game_lobby_active == true then
-        player.print('Waiting for more players to join the game.', {r = 0.98, g = 0.66, b = 0.22})
+    if (name == 'join_south_button') and storage.game_lobby_active == true then
+        player.print('Waiting for more players to join the game.', { r = 0.98, g = 0.66, b = 0.22 })
     end
-    if (name == 'join_north_button') and global.game_lobby_active == true and player.admin == true then
+    if (name == 'join_north_button') and storage.game_lobby_active == true and player.admin == true then
         join_team(player, 'north')
-        game.print('Lobby disabled, admin override.', {r = 0.98, g = 0.66, b = 0.22})
-        global.game_lobby_active = false
+        game.print('Lobby disabled, admin override.', { r = 0.98, g = 0.66, b = 0.22 })
+        storage.game_lobby_active = false
     end
-    if (name == 'join_south_button') and global.game_lobby_active == true and player.admin == true then
+    if (name == 'join_south_button') and storage.game_lobby_active == true and player.admin == true then
         join_team(player, 'south')
-        game.print('Lobby disabled, admin override.', {r = 0.98, g = 0.66, b = 0.22})
-        global.game_lobby_active = false
+        game.print('Lobby disabled, admin override.', { r = 0.98, g = 0.66, b = 0.22 })
+        storage.game_lobby_active = false
     end
 end
 
 local function create_fireworks_rocket(surface, position)
-    local particles = {'coal-particle', 'copper-ore-particle', 'iron-ore-particle', 'stone-particle'}
+    local particles = { 'coal-particle', 'copper-ore-particle', 'iron-ore-particle', 'stone-particle' }
     local particle = particles[math_random(1, #particles)]
     local m = math_random(16, 36)
     local m2 = m * 0.005
@@ -900,7 +900,7 @@ local function create_fireworks_rocket(surface, position)
                 frame_speed = 0.1,
                 vertical_speed = 0.1,
                 height = 0.1,
-                movement = {m2 - (math_random(0, m) * 0.01), m2 - (math_random(0, m) * 0.01)}
+                movement = { m2 - (math_random(0, m) * 0.01), m2 - (math_random(0, m) * 0.01) }
             }
         )
     end
@@ -908,20 +908,20 @@ local function create_fireworks_rocket(surface, position)
     if math_random(1, 16) ~= 1 then
         return
     end
-    surface.create_entity({name = 'explosion', position = position})
+    surface.create_entity({ name = 'explosion', position = position })
 end
 
 local function on_entity_died(event)
-    if not global.rocket_silo_destroyed then
-        if event.entity == global.rocket_silo['south'] or event.entity == global.rocket_silo['north'] then
-            if event.entity == global.rocket_silo['south'] then
-                global.rocket_silo_destroyed = 'North Team Won!'
+    if not storage.rocket_silo_destroyed then
+        if event.entity == storage.rocket_silo['south'] or event.entity == storage.rocket_silo['north'] then
+            if event.entity == storage.rocket_silo['south'] then
+                storage.rocket_silo_destroyed = 'North Team Won!'
             else
-                global.rocket_silo_destroyed = 'South Team Won!'
+                storage.rocket_silo_destroyed = 'South Team Won!'
             end
 
             for _, player in pairs(game.connected_players) do
-                player.play_sound {path = 'utility/game_won', volume_modifier = 1}
+                player.play_sound { path = 'utility/game_won', volume_modifier = 1 }
             end
 
             --fireworks
@@ -933,7 +933,7 @@ local function on_entity_died(event)
                 for x = 1, 4, 1 do
                     traps[game.tick + t][#traps[game.tick + t] + 1] = {
                         callback = 'create_fireworks_rocket',
-                        params = {event.entity.surface, {x = radius - math_random(0, radius * 2), y = radius - math_random(0, radius * 2)}}
+                        params = { event.entity.surface, { x = radius - math_random(0, radius * 2), y = radius - math_random(0, radius * 2) } }
                     }
                 end
                 t = t + 1
@@ -965,7 +965,7 @@ local function get_valid_biters(requested_amount, y_modifier, pos_x, pos_y, radi
     end
 
     for radius = radius_inc, 2000, radius_inc do
-        biters_found = surface.find_enemy_units({pos_x, pos_y}, radius, 'player')
+        biters_found = surface.find_enemy_units({ pos_x, pos_y }, radius, 'player')
         local x = 1
         if y_modifier == -1 then
             for _, biter in pairs(biters_found) do
@@ -1016,7 +1016,7 @@ local function biter_attack_silo(team, requested_amount, mode)
 
     if not mode then
         --local modes = {"spread", "ball", "line"}
-        local modes = {'spread', 'ball'}
+        local modes = { 'spread', 'ball' }
         mode = modes[math_random(1, #modes)]
     end
 
@@ -1044,14 +1044,14 @@ local function biter_attack_silo(team, requested_amount, mode)
 
         if math_random(1, 6) == 1 then
             for _, biter in pairs(biters_selected_for_attack) do
-                biter.set_command({type = defines.command.attack_area, destination = global.biter_attack_main_target[team], radius = 12, distraction = defines.distraction.by_anything})
+                biter.set_command({ type = defines.command.attack_area, destination = storage.biter_attack_main_target[team], radius = 12, distraction = defines.distraction.by_anything })
             end
         else
             for _, biter in pairs(biters_selected_for_attack) do
-                biter.set_command({type = defines.command.attack_area, destination = global.biter_attack_main_target[team], radius = 12, distraction = defines.distraction.by_enemy})
+                biter.set_command({ type = defines.command.attack_area, destination = storage.biter_attack_main_target[team], radius = 12, distraction = defines.distraction.by_enemy })
             end
         end
-        if global.biter_battles_debug then
+        if storage.biter_battles_debug then
             game.players[1].print(#valid_biters .. ' valid biters found.')
             game.players[1].print(#biters_selected_for_attack .. ' biter going for a spread attack')
         end
@@ -1080,15 +1080,15 @@ local function biter_attack_silo(team, requested_amount, mode)
 
 		if math_random(1,3) == 1 then
 			for _, biter in pairs(biters_selected_for_attack) do
-				biter.set_command({type=defines.command.attack_area, destination=global.biter_attack_main_target[team], radius=12, distraction=defines.distraction.by_anything})
+				biter.set_command({type=defines.command.attack_area, destination=storage.biter_attack_main_target[team], radius=12, distraction=defines.distraction.by_anything})
 			end
 		else
 			for _, biter in pairs(biters_selected_for_attack) do
-				biter.set_command({type=defines.command.attack_area, destination=global.biter_attack_main_target[team], radius=12, distraction=defines.distraction.by_enemy})
+				biter.set_command({type=defines.command.attack_area, destination=storage.biter_attack_main_target[team], radius=12, distraction=defines.distraction.by_enemy})
 			end
 		end
 
-		if global.biter_battles_debug then
+		if storage.biter_battles_debug then
 			game.players[1].print(#valid_biters .. " valid biters found.")
 			game.players[1].print(#biters_selected_for_attack .. " going for a line attack, table start = " .. array_start)
 		end
@@ -1109,9 +1109,9 @@ local function biter_attack_silo(team, requested_amount, mode)
             --- determine base height
             for pos_y = 0, 8192 * y_modifier, 32 * y_modifier do
                 if y_modifier == -1 then
-                    c = surface.count_entities_filtered {area = {{-1024, pos_y - 32}, {1024, pos_y}}, force = team}
+                    c = surface.count_entities_filtered { area = { { -1024, pos_y - 32 }, { 1024, pos_y } }, force = team }
                 else
-                    c = surface.count_entities_filtered {area = {{-1024, pos_y}, {1024, pos_y + 32}}, force = team}
+                    c = surface.count_entities_filtered { area = { { -1024, pos_y }, { 1024, pos_y + 32 } }, force = team }
                 end
                 if c <= tolerance then
                     additional_checks = additional_checks - 1
@@ -1143,7 +1143,7 @@ local function biter_attack_silo(team, requested_amount, mode)
                 --west attack
                 local additional_checks = additional_empty_space_checks
                 for x = 0, -8192, -32 do
-                    c = surface.count_entities_filtered {area = {{x - 32, gathering_point_y - 48}, {x, gathering_point_y + 48}}, force = team}
+                    c = surface.count_entities_filtered { area = { { x - 32, gathering_point_y - 48 }, { x, gathering_point_y + 48 } }, force = team }
                     if c <= tolerance then
                         additional_checks = additional_checks - 1
                         if additional_checks == 0 then
@@ -1160,7 +1160,7 @@ local function biter_attack_silo(team, requested_amount, mode)
                 --east attack
                 local additional_checks = additional_empty_space_checks
                 for x = 32, 8192, 32 do
-                    c = surface.count_entities_filtered {area = {{x - 32, gathering_point_y - 48}, {x, gathering_point_y + 48}}, force = team}
+                    c = surface.count_entities_filtered { area = { { x - 32, gathering_point_y - 48 }, { x, gathering_point_y + 48 } }, force = team }
                     if c <= tolerance then
                         additional_checks = additional_checks - 1
                         if additional_checks == 0 then
@@ -1181,9 +1181,9 @@ local function biter_attack_silo(team, requested_amount, mode)
             local width_east = 0
             for pos_x = 32, 4096, 32 do
                 if y_modifier == -1 then
-                    c = surface.count_entities_filtered {area = {{pos_x - 32, -2048}, {pos_x, 0}}, force = team}
+                    c = surface.count_entities_filtered { area = { { pos_x - 32, -2048 }, { pos_x, 0 } }, force = team }
                 else
-                    c = surface.count_entities_filtered {area = {{pos_x - 32, 0}, {pos_x, 2048}}, force = team}
+                    c = surface.count_entities_filtered { area = { { pos_x - 32, 0 }, { pos_x, 2048 } }, force = team }
                 end
                 if c <= tolerance then
                     additional_checks = additional_checks - 1
@@ -1200,9 +1200,9 @@ local function biter_attack_silo(team, requested_amount, mode)
             local width_west = 0
             for pos_x = 0, -4096, -32 do
                 if y_modifier == -1 then
-                    c = surface.count_entities_filtered {area = {{pos_x - 32, -2048}, {pos_x, 0}}, force = team}
+                    c = surface.count_entities_filtered { area = { { pos_x - 32, -2048 }, { pos_x, 0 } }, force = team }
                 else
-                    c = surface.count_entities_filtered {area = {{pos_x - 32, 0}, {pos_x, 2048}}, force = team}
+                    c = surface.count_entities_filtered { area = { { pos_x - 32, 0 }, { pos_x, 2048 } }, force = team }
                 end
                 if c <= tolerance then
                     additional_checks = additional_checks - 1
@@ -1226,7 +1226,7 @@ local function biter_attack_silo(team, requested_amount, mode)
             local c = 0
             local additional_checks = additional_empty_space_checks
             for pos_y = 0, 8192 * y_modifier, 32 * y_modifier do
-                c = surface.count_entities_filtered {area = {{gathering_point_x - 48, pos_y - 32}, {gathering_point_x + 48, pos_y}}, force = team}
+                c = surface.count_entities_filtered { area = { { gathering_point_x - 48, pos_y - 32 }, { gathering_point_x + 48, pos_y } }, force = team }
                 if c <= tolerance then
                     additional_checks = additional_checks - 1
                     if additional_checks == 0 then
@@ -1260,29 +1260,29 @@ local function biter_attack_silo(team, requested_amount, mode)
         --alternate attack if there is water
         local t =
             surface.count_tiles_filtered {
-            area = {{gathering_point_x - 8, gathering_point_y - 8}, {gathering_point_x + 8, gathering_point_y + 8}},
-            name = {'deepwater', 'water', 'water-green'}
-        }
+                area = { { gathering_point_x - 8, gathering_point_y - 8 }, { gathering_point_x + 8, gathering_point_y + 8 } },
+                name = { 'deepwater', 'water', 'water-green' }
+            }
         if t > 8 then
             if math_random(1, 6) ~= 1 then
                 for _, biter in pairs(biters_selected_for_attack) do
-                    biter.set_command({type = defines.command.attack_area, destination = global.biter_attack_main_target[team], radius = 12, distraction = defines.distraction.by_enemy})
+                    biter.set_command({ type = defines.command.attack_area, destination = storage.biter_attack_main_target[team], radius = 12, distraction = defines.distraction.by_enemy })
                 end
             else
                 for _, biter in pairs(biters_selected_for_attack) do
-                    biter.set_command({type = defines.command.attack_area, destination = global.biter_attack_main_target[team], radius = 12, distraction = defines.distraction.by_anything})
+                    biter.set_command({ type = defines.command.attack_area, destination = storage.biter_attack_main_target[team], radius = 12, distraction = defines.distraction.by_anything })
                 end
             end
-            if global.biter_battles_debug then
+            if storage.biter_battles_debug then
                 game.players[1].print('water found, doing alternate spread attack')
             end
         else
-            local biter_attack_group = surface.create_unit_group({position = {gathering_point_x, gathering_point_y}})
+            local biter_attack_group = surface.create_unit_group({ position = { gathering_point_x, gathering_point_y } })
             for _, biter in pairs(biters_selected_for_attack) do
                 biter_attack_group.add_member(biter)
             end
-            biter_attack_group.set_command({type = defines.command.attack_area, destination = global.biter_attack_main_target[team], radius = 12, distraction = defines.distraction.by_enemy})
-            if global.biter_battles_debug then
+            biter_attack_group.set_command({ type = defines.command.attack_area, destination = storage.biter_attack_main_target[team], radius = 12, distraction = defines.distraction.by_enemy })
+            if storage.biter_battles_debug then
                 game.players[1].print(#valid_biters .. ' valid biters found.')
                 game.players[1].print(#biters_selected_for_attack .. ' gathering at (x: ' .. gathering_point_x .. '  y: ' .. gathering_point_y .. ')')
             end
@@ -1292,7 +1292,7 @@ local function biter_attack_silo(team, requested_amount, mode)
 end
 
 local function clear_corpses()
-    for _, entity in pairs(game.surfaces['surface'].find_entities_filtered {type = 'corpse'}) do
+    for _, entity in pairs(game.surfaces['surface'].find_entities_filtered { type = 'corpse' }) do
         if math_random(1, 3) == 1 then
             entity.destroy()
         end
@@ -1300,14 +1300,14 @@ local function clear_corpses()
 end
 
 local function send_near_biter_to_silo()
-    if not global.rocket_silo then
+    if not storage.rocket_silo then
         return
     end
     game.surfaces['surface'].set_multi_command(
         {
             command = {
                 type = defines.command.attack,
-                target = global.rocket_silo['north'],
+                target = storage.rocket_silo['north'],
                 distraction = defines.distraction.none
             },
             unit_count = 8,
@@ -1320,7 +1320,7 @@ local function send_near_biter_to_silo()
         {
             command = {
                 type = defines.command.attack,
-                target = global.rocket_silo['south'],
+                target = storage.rocket_silo['south'],
                 distraction = defines.distraction.none
             },
             unit_count = 8,
@@ -1331,22 +1331,22 @@ local function send_near_biter_to_silo()
 end
 
 local function on_tick(event)
-    if global.rocket_silo_destroyed then
-        if not global.game_restart_timeout then
-            global.game_restart_timeout = 7200
+    if storage.rocket_silo_destroyed then
+        if not storage.game_restart_timeout then
+            storage.game_restart_timeout = 7200
         end
-        if not global.game_restart_timer_completed then
+        if not storage.game_restart_timer_completed then
             if game.tick % 900 == 0 then
-                if global.game_restart_timeout > 0 then
-                    game.print('Map will restart in ' .. math.ceil(global.game_restart_timeout / 60) .. ' seconds!', {r = 0.22, g = 0.88, b = 0.22})
+                if storage.game_restart_timeout > 0 then
+                    game.print('Map will restart in ' .. math.ceil(storage.game_restart_timeout / 60) .. ' seconds!', { r = 0.22, g = 0.88, b = 0.22 })
                 end
-                global.game_restart_timeout = global.game_restart_timeout - 900
+                storage.game_restart_timeout = storage.game_restart_timeout - 900
             end
-            if global.game_restart_timeout < 0 then
-                global.game_restart_timer_completed = true
-                game.print('Map is restarting!', {r = 0.22, g = 0.88, b = 0.22})
+            if storage.game_restart_timeout < 0 then
+                storage.game_restart_timer_completed = true
+                game.print('Map is restarting!', { r = 0.22, g = 0.88, b = 0.22 })
                 local message = 'Map is restarting! '
-                Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
+                Server.to_discord_bold(table.concat { '*** ', message, ' ***' })
                 Server.start_scenario('Biter_Battles')
             end
         end
@@ -1367,29 +1367,29 @@ local function on_tick(event)
 
     ::continue::
 
-    if global.spy_fish_timeout then
-        if global.spy_fish_timeout['south'] then
-            if (global.spy_fish_timeout['south'] - game.tick) % 300 == 0 then
+    if storage.spy_fish_timeout then
+        if storage.spy_fish_timeout['south'] then
+            if (storage.spy_fish_timeout['south'] - game.tick) % 300 == 0 then
                 reveal_team('north')
             end
-            if game.tick - global.spy_fish_timeout['south'] > 0 then
-                global.spy_fish_timeout['south'] = nil
+            if game.tick - storage.spy_fish_timeout['south'] > 0 then
+                storage.spy_fish_timeout['south'] = nil
             end
         end
-        if global.spy_fish_timeout['north'] then
-            if (global.spy_fish_timeout['north'] - game.tick) % 300 == 0 then
+        if storage.spy_fish_timeout['north'] then
+            if (storage.spy_fish_timeout['north'] - game.tick) % 300 == 0 then
                 reveal_team('south')
             end
-            if game.tick - global.spy_fish_timeout['north'] > 0 then
-                global.spy_fish_timeout['north'] = nil
+            if game.tick - storage.spy_fish_timeout['north'] > 0 then
+                storage.spy_fish_timeout['north'] = nil
             end
         end
     end
 
     if game.tick % 12600 == 6300 then
         clear_corpses()
-        if global.biter_rage['north'] >= 1 then
-            local c = math.round(global.biter_rage['north'], 0)
+        if storage.biter_rage['north'] >= 1 then
+            local c = math.round(storage.biter_rage['north'], 0)
             if c > 999 then
                 c = 999
             end
@@ -1400,8 +1400,8 @@ local function on_tick(event)
         return
     end
     if game.tick % 12600 == 0 then
-        if global.biter_rage['south'] >= 1 then
-            local c = math.round(global.biter_rage['south'], 0)
+        if storage.biter_rage['south'] >= 1 then
+            local c = math.round(storage.biter_rage['south'], 0)
             if c > 999 then
                 c = 999
             end
@@ -1412,27 +1412,27 @@ local function on_tick(event)
         return
     end
 
-    if global.game_lobby_active then
+    if storage.game_lobby_active then
         if game.tick % 60 == 0 then
-            if global.game_lobby_timeout - game.tick <= 0 then
-                global.game_lobby_active = false
+            if storage.game_lobby_timeout - game.tick <= 0 then
+                storage.game_lobby_active = false
             end
             refresh_gui()
         end
     end
     --[[
 	---creating a auto fire delay for south artillery---
-	if global.spawn_artillery["south"] then
+	if storage.spawn_artillery["south"] then
 		if game.tick % 300 == 0 then
-			local i = global.spawn_artillery["south"].get_inventory(defines.inventory.turret_ammo)
+			local i = storage.spawn_artillery["south"].get_inventory(defines.inventory.turret_ammo)
 			if i.get_item_count("artillery-shell") == 0 then
-				global.spawn_artillery["south"].active = false
-				global.spawn_artillery_south_activate = false
+				storage.spawn_artillery["south"].active = false
+				storage.spawn_artillery_south_activate = false
 			else
-				if global.spawn_artillery_south_activate == true then
-					global.spawn_artillery["south"].active = true
+				if storage.spawn_artillery_south_activate == true then
+					storage.spawn_artillery["south"].active = true
 				end
-				global.spawn_artillery_south_activate = true
+				storage.spawn_artillery_south_activate = true
 			end
 		end
 	end]]
@@ -1440,7 +1440,7 @@ local function on_tick(event)
 end
 
 local function on_chunk_generated(event)
-    if global.terrain_init_done then
+    if storage.terrain_init_done then
         return
     end
 
@@ -1450,15 +1450,15 @@ local function on_chunk_generated(event)
     end
 
     if event.area.left_top.x > 128 then
-        global.rocket_silo = {}
-        global.rocket_silo['north'] = surface.create_entity {name = 'rocket-silo', position = {0, (global.horizontal_border_width * 3.8) * -1}, force = 'north'}
-        global.rocket_silo['north'].minable = false
-        global.rocket_silo['south'] = surface.create_entity {name = 'rocket-silo', position = {0, global.horizontal_border_width * 3.8}, force = 'south'}
-        global.rocket_silo['south'].minable = false
+        storage.rocket_silo = {}
+        storage.rocket_silo['north'] = surface.create_entity { name = 'rocket-silo', position = { 0, (storage.horizontal_border_width * 3.8) * -1 }, force = 'north' }
+        storage.rocket_silo['north'].minable = false
+        storage.rocket_silo['south'] = surface.create_entity { name = 'rocket-silo', position = { 0, storage.horizontal_border_width * 3.8 }, force = 'south' }
+        storage.rocket_silo['south'].minable = false
 
-        global.biter_attack_main_target = {}
-        global.biter_attack_main_target['north'] = global.rocket_silo['north'].position
-        global.biter_attack_main_target['south'] = global.rocket_silo['south'].position
+        storage.biter_attack_main_target = {}
+        storage.biter_attack_main_target['north'] = storage.rocket_silo['north'].position
+        storage.biter_attack_main_target['south'] = storage.rocket_silo['south'].position
 
         biter_battles_terrain.clear_spawn_ores()
         biter_battles_terrain.generate_spawn_water_pond()
@@ -1484,22 +1484,22 @@ local function on_chunk_generated(event)
                 'dead-tree-desert',
                 'dry-hairy-tree',
                 'dry-tree',
-                'rock-big',
-                'rock-huge'
+                'big-rock',
+                'huge-rock'
             }
         )
-        --surface.regenerate_entity({"dead-dry-hairy-tree","dead-grey-trunk","dead-tree-desert","dry-hairy-tree","dry-tree","rock-big","rock-huge"})
-        local entities = surface.find_entities({{-10, -10}, {10, 10}})
+        --surface.regenerate_entity({"dead-dry-hairy-tree","dead-grey-trunk","dead-tree-desert","dry-hairy-tree","dry-tree","big-rock","huge-rock"})
+        local entities = surface.find_entities({ { -10, -10 }, { 10, 10 } })
         for _, e in pairs(entities) do
             if e.type == 'simple-entity' or e.type == 'resource' or e.type == 'tree' then
                 e.destroy()
             end
         end
-        surface.destroy_decoratives({area = {{-10, -10}, {10, 10}}})
+        surface.destroy_decoratives({ area = { { -10, -10 }, { 10, 10 } } })
 
-        game.print('Spawn generation done!', {r = 0.22, g = 0.99, b = 0.99})
+        game.print('Spawn generation done!', { r = 0.22, g = 0.99, b = 0.99 })
 
-        global.terrain_init_done = true
+        storage.terrain_init_done = true
     end
 end
 
@@ -1561,12 +1561,12 @@ local function on_entity_damaged(event)
     --Biter rage damage modifier
     if event.force.name == 'enemy' then
         if event.entity.force.name == 'north' then
-            local additional_damage = event.final_damage_amount * math.round((global.biter_rage['north'] / 3) / 100, 2)
+            local additional_damage = event.final_damage_amount * math.round((storage.biter_rage['north'] / 3) / 100, 2)
             event.entity.health = event.entity.health - additional_damage
             return
         end
         if event.entity.force.name == 'south' then
-            local additional_damage = event.final_damage_amount * math.round((global.biter_rage['south'] / 3) / 100, 2)
+            local additional_damage = event.final_damage_amount * math.round((storage.biter_rage['south'] / 3) / 100, 2)
             event.entity.health = event.entity.health - additional_damage
             return
         end
@@ -1578,15 +1578,15 @@ local function on_entity_damaged(event)
     end
 
     --Silo grief prevention
-    if event.entity == global.rocket_silo['north'] then
+    if event.entity == storage.rocket_silo['north'] then
         if event.force.name == 'north' then
-            global.rocket_silo['north'].health = global.rocket_silo['north'].health + event.final_damage_amount
+            storage.rocket_silo['north'].health = storage.rocket_silo['north'].health + event.final_damage_amount
             return
         end
     end
-    if event.entity == global.rocket_silo['south'] then
+    if event.entity == storage.rocket_silo['south'] then
         if event.force.name == 'south' then
-            global.rocket_silo['south'].health = global.rocket_silo['south'].health + event.final_damage_amount
+            storage.rocket_silo['south'].health = storage.rocket_silo['south'].health + event.final_damage_amount
             return
         end
     end
@@ -1604,33 +1604,33 @@ end
 --anti construction robot cheese
 local function on_robot_built_entity(event)
     if event.robot.force.name == 'north' then
-        if event.created_entity.position.y >= -1 * global.horizontal_border_width / 2 then
-            local x = event.created_entity.position.x
-            local y = event.created_entity.position.y
-            event.created_entity.die('south')
-            search_for_ghost = game.surfaces['surface'].find_entities({{x, y}, {x + 1, y + 1}})
+        if event.entity.position.y >= -1 * storage.horizontal_border_width / 2 then
+            local x = event.entity.position.x
+            local y = event.entity.position.y
+            event.entity.die('south')
+            search_for_ghost = game.surfaces['surface'].find_entities({ { x, y }, { x + 1, y + 1 } })
             for _, e in pairs(search_for_ghost) do
                 if e.type == 'entity-ghost' then
                     e.time_to_live = 1
                 end
             end
             event.robot.die('south')
-            game.print('Team north´s drone had an accident.', {r = 0.98, g = 0.66, b = 0.22})
+            game.print('Team north´s drone had an accident.', { r = 0.98, g = 0.66, b = 0.22 })
         end
     end
     if event.robot.force.name == 'south' then
-        if event.created_entity.position.y <= global.horizontal_border_width / 2 then
-            local x = event.created_entity.position.x
-            local y = event.created_entity.position.y
-            event.created_entity.die('north')
-            search_for_ghost = game.surfaces['surface'].find_entities({{x, y}, {x + 1, y + 1}})
+        if event.entity.position.y <= storage.horizontal_border_width / 2 then
+            local x = event.entity.position.x
+            local y = event.entity.position.y
+            event.entity.die('north')
+            search_for_ghost = game.surfaces['surface'].find_entities({ { x, y }, { x + 1, y + 1 } })
             for _, e in pairs(search_for_ghost) do
                 if e.type == 'entity-ghost' then
                     e.time_to_live = 1
                 end
             end
             event.robot.die('north')
-            game.print('Team south´s drone had an accident.', {r = 0.98, g = 0.66, b = 0.22})
+            game.print('Team south´s drone had an accident.', { r = 0.98, g = 0.66, b = 0.22 })
         end
     end
 end
@@ -1655,19 +1655,19 @@ local function on_rocket_launched(event)
     local str = 'A rocket launch scared the biters and triggered a huge attack on team '
     str = str .. team
     str = str .. '´s silo!!'
-    game.print(str, {r = 0.98, g = 0.01, b = 0.01})
+    game.print(str, { r = 0.98, g = 0.01, b = 0.01 })
 end
 
 local function on_player_built_tile(event)
     local placed_tiles = event.tiles
     local player = game.players[event.player_index]
     for _, t in pairs(placed_tiles) do
-        if t.old_tile.name == 'deepwater' and t.position.y <= global.horizontal_border_width * 2 and t.position.y >= global.horizontal_border_width * -1 * 2 then
+        if t.old_tile.name == 'deepwater' and t.position.y <= storage.horizontal_border_width * 2 and t.position.y >= storage.horizontal_border_width * -1 * 2 then
             local str = 'Team ' .. player.force.name
             str = str .. '´s landfill vanished into the depths of the marianna trench.'
-            game.print(str, {r = 0.98, g = 0.66, b = 0.22})
+            game.print(str, { r = 0.98, g = 0.66, b = 0.22 })
             local tiles = {}
-            table.insert(tiles, {name = 'deepwater', position = t.position})
+            table.insert(tiles, { name = 'deepwater', position = t.position })
             game.surfaces['surface'].set_tiles(tiles, true)
         end
     end
@@ -1676,12 +1676,12 @@ end
 local function on_robot_built_tile(event)
     local surface = event.robot.surface
     for _, t in pairs(event.tiles) do
-        if t.old_tile.name == 'deepwater' and t.position.y <= global.horizontal_border_width * 2 and t.position.y >= global.horizontal_border_width * -1 * 2 then
+        if t.old_tile.name == 'deepwater' and t.position.y <= storage.horizontal_border_width * 2 and t.position.y >= storage.horizontal_border_width * -1 * 2 then
             local str = 'Team ' .. event.robot.force.name
             str = str .. '´s landfill vanished into the depths of the marianna trench.'
-            game.print(str, {r = 0.98, g = 0.66, b = 0.22})
+            game.print(str, { r = 0.98, g = 0.66, b = 0.22 })
             local tiles = {}
-            table.insert(tiles, {name = 'deepwater', position = t.position})
+            table.insert(tiles, { name = 'deepwater', position = t.position })
             surface.set_tiles(tiles, true)
         end
     end

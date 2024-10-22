@@ -25,9 +25,8 @@ local item_worths = {
     ['inserter'] = 4,
     ['long-handed-inserter'] = 8,
     ['fast-inserter'] = 16,
-    ['filter-inserter'] = 32,
     ['stack-inserter'] = 128,
-    ['stack-filter-inserter'] = 160,
+    ['bulk-inserter'] = 160,
     ['small-electric-pole'] = 2,
     ['medium-electric-pole'] = 32,
     ['big-electric-pole'] = 64,
@@ -94,9 +93,9 @@ local item_worths = {
     ['speed-module'] = 128,
     ['speed-module-2'] = 512,
     ['speed-module-3'] = 2048,
-    ['effectivity-module'] = 128,
-    ['effectivity-module-2'] = 512,
-    ['effectivity-module-3'] = 2048,
+    ['efficiency-module'] = 128,
+    ['efficiency-module-2'] = 512,
+    ['efficiency-module-3'] = 2048,
     ['productivity-module'] = 128,
     ['productivity-module-2'] = 512,
     ['productivity-module-3'] = 2048,
@@ -120,7 +119,7 @@ local item_worths = {
     ['copper-cable'] = 1,
     ['iron-stick'] = 1,
     ['iron-gear-wheel'] = 2,
-    ['empty-barrel'] = 4,
+    ['barrel'] = 4,
     ['electronic-circuit'] = 4,
     ['advanced-circuit'] = 16,
     ['processing-unit'] = 128,
@@ -128,14 +127,13 @@ local item_worths = {
     ['electric-engine-unit'] = 64,
     ['flying-robot-frame'] = 128,
     ['satellite'] = 32768,
-    ['rocket-control-unit'] = 256,
     ['low-density-structure'] = 64,
     ['rocket-fuel'] = 256,
     ['nuclear-fuel'] = 1024,
     ['uranium-235'] = 1024,
     ['uranium-238'] = 32,
     ['uranium-fuel-cell'] = 128,
-    ['used-up-uranium-fuel-cell'] = 8,
+    ['depleted-uranium-fuel-cell'] = 8,
     ['automation-science-pack'] = 4,
     ['logistic-science-pack'] = 16,
     ['military-science-pack'] = 64,
@@ -231,7 +229,7 @@ local function roll_item_stack(entity, wave)
         end
     end
 
-    local stack_size = game.item_prototypes[item_name].stack_size
+    local stack_size = prototypes.item[item_name].stack_size
 
     local item_count = 1
 
@@ -244,9 +242,9 @@ local function roll_item_stack(entity, wave)
         end
     end
 
-    entity.surface.spill_item_stack(entity.position, {name = item_name, count = random(1, item_count)}, true)
+    entity.surface.spill_item_stack(entity.position, { name = item_name, count = random(1, item_count) }, true)
 
-    return {name = item_name, count = item_count}
+    return { name = item_name, count = item_count }
 end
 
 -- local Public = require 'modules.mobs_drop_loot' Public.drop_loot(game.get_player('Gerkiz'), 80)

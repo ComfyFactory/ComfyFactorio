@@ -10,13 +10,13 @@ local table_remove = table.remove
 
 local function get_commmands(target, group)
     local commands = {}
-    local group_position = {x = group.position.x, y = group.position.y}
+    local group_position = { x = group.position.x, y = group.position.y }
     local step_length = 128
 
     local target_position = target.position
     local distance_to_target = math_floor(math_sqrt((target_position.x - group_position.x) ^ 2 + (target_position.y - group_position.y) ^ 2))
     local steps = math_floor(distance_to_target / step_length) + 1
-    local vector = {math_round((target_position.x - group_position.x) / steps, 3), math_round((target_position.y - group_position.y) / steps, 3)}
+    local vector = { math_round((target_position.x - group_position.x) / steps, 3), math_round((target_position.y - group_position.y) / steps, 3) }
 
     for i = 1, steps, 1 do
         group_position.x = group_position.x + vector[1]
@@ -25,7 +25,7 @@ local function get_commmands(target, group)
         if position then
             commands[#commands + 1] = {
                 type = defines.command.attack_area,
-                destination = {x = position.x, y = position.y},
+                destination = { x = position.x, y = position.y },
                 radius = 16,
                 distraction = defines.distraction.by_anything
             }
@@ -53,7 +53,7 @@ local function roll_market()
     local town_centers = townytable.town_centers
 
     --Skip Towns that are too low in reserach for the current biter evolution.
-    local research_threshold = game.forces.enemy.evolution_factor * #game.technology_prototypes * 0.175
+    local research_threshold = game.forces.enemy.evolution_factor * #prototypes.technology * 0.175
 
     for k, town_center in pairs(town_centers) do
         if town_center.research_counter >= research_threshold then
@@ -77,7 +77,7 @@ local function roll_market()
 end
 
 local function get_random_close_spawner(surface, market)
-    local spawners = surface.find_entities_filtered({type = 'unit-spawner'})
+    local spawners = surface.find_entities_filtered({ type = 'unit-spawner' })
     if not spawners[1] then
         return false
     end
@@ -135,15 +135,15 @@ function Public.wipe_units_out_of_evo_range()
         units_to_wipe[#units_to_wipe + 1] = 'medium-spitter'
     end
     for k, surface in pairs(game.surfaces) do
-        for k2, unit in pairs(surface.find_entities_filtered({name = units_to_wipe, force = 'enemy'})) do
+        for k2, unit in pairs(surface.find_entities_filtered({ name = units_to_wipe, force = 'enemy' })) do
             unit.destroy()
         end
     end
 end
 
 function Public.clear_spawn_for_player(player)
-    local area = {{player.position.x - 64, player.position.y - 64}, {player.position.x + 64, player.position.y + 64}}
-    for _, e in pairs(player.surface.find_entities_filtered({force = 'enemy', type = {'unit-spawner', 'unit', 'turret'}, area = area})) do
+    local area = { { player.position.x - 64, player.position.y - 64 }, { player.position.x + 64, player.position.y + 64 } }
+    for _, e in pairs(player.surface.find_entities_filtered({ force = 'enemy', type = { 'unit-spawner', 'unit', 'turret' }, area = area })) do
         e.destroy()
     end
 end
@@ -187,7 +187,7 @@ function Public.swarm()
     if not unit_group_position then
         return
     end
-    local unit_group = surface.create_unit_group({position = unit_group_position, force = units[1].force})
+    local unit_group = surface.create_unit_group({ position = unit_group_position, force = units[1].force })
     local count = (town_center.research_counter * 1.5) + 4
     for key, unit in pairs(units) do
         if key > count then
@@ -202,7 +202,7 @@ function Public.swarm()
             commands = get_commmands(market, unit_group)
         }
     )
-    table_insert(townytable.swarms, {group = unit_group, timeout = game.tick + 36000})
+    table_insert(townytable.swarms, { group = unit_group, timeout = game.tick + 36000 })
 end
 
 function Public.set_evolution()
@@ -213,7 +213,7 @@ function Public.set_evolution()
         return
     end
 
-    local max_research_count = math_floor(#game.technology_prototypes * 0.30)
+    local max_research_count = math_floor(#prototypes.technology * 0.30)
 
     local evo = 0
     for _, town_center in pairs(townytable.town_centers) do

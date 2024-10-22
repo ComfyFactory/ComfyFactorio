@@ -5,9 +5,9 @@ local math_floor = math.floor
 local math_sqrt = math.sqrt
 
 local rock_yield = {
-    ['rock-big'] = 1,
-    ['rock-huge'] = 2,
-    ['sand-rock-big'] = 1
+    ['big-rock'] = 1,
+    ['huge-rock'] = 2,
+    ['big-sand-rock'] = 1
 }
 
 local particles = {
@@ -27,30 +27,30 @@ local particles = {
 local function get_chances()
     local chances = {}
 
-    if game.entity_prototypes['angels-ore1'] then
+    if prototypes.entity['angels-ore1'] then
         for i = 1, 6, 1 do
-            table.insert(chances, {'angels-ore' .. i, 1})
+            table.insert(chances, { 'angels-ore' .. i, 1 })
         end
-        table.insert(chances, {'coal', 2})
+        table.insert(chances, { 'coal', 2 })
         return chances
     end
 
-    table.insert(chances, {'iron-ore', 25})
-    table.insert(chances, {'copper-ore', 17})
-    table.insert(chances, {'coal', 13})
-    table.insert(chances, {'uranium-ore', 2})
+    table.insert(chances, { 'iron-ore', 25 })
+    table.insert(chances, { 'copper-ore', 17 })
+    table.insert(chances, { 'coal', 13 })
+    table.insert(chances, { 'uranium-ore', 2 })
 
     return chances
 end
 
 local function set_raffle()
-    global.rocks_yield_ore['raffle'] = {}
+    storage.rocks_yield_ore['raffle'] = {}
     for _, t in pairs(get_chances()) do
         for _ = 1, t[2], 1 do
-            table.insert(global.rocks_yield_ore['raffle'], t[1])
+            table.insert(storage.rocks_yield_ore['raffle'], t[1])
         end
     end
-    global.rocks_yield_ore['size_of_raffle'] = #global.rocks_yield_ore['raffle']
+    storage.rocks_yield_ore['size_of_raffle'] = #storage.rocks_yield_ore['raffle']
 end
 
 local function create_particles(surface, name, position, amount, cause_position)
@@ -85,9 +85,9 @@ end
 local function get_amount(entity)
     local distance_to_center = math_floor(math_sqrt(entity.position.x ^ 2 + entity.position.y ^ 2))
 
-    local amount = global.rocks_yield_ore_base_amount + (distance_to_center * global.rocks_yield_ore_distance_modifier)
-    if amount > global.rocks_yield_ore_maximum_amount then
-        amount = global.rocks_yield_ore_maximum_amount
+    local amount = storage.rocks_yield_ore_base_amount + (distance_to_center * storage.rocks_yield_ore_distance_modifier)
+    if amount > storage.rocks_yield_ore_maximum_amount then
+        amount = storage.rocks_yield_ore_maximum_amount
     end
 
     local m = (70 + math_random(0, 60)) * 0.01
@@ -111,47 +111,47 @@ local function on_player_mined_entity(event)
 
     event.buffer.clear()
 
-    local ore = global.rocks_yield_ore['raffle'][math_random(1, global.rocks_yield_ore['size_of_raffle'])]
+    local ore = storage.rocks_yield_ore['raffle'][math_random(1, storage.rocks_yield_ore['size_of_raffle'])]
     local player = game.players[event.player_index]
 
     local count = get_amount(entity)
     count = math_floor(count * (1 + player.force.mining_drill_productivity_bonus))
 
-    global.rocks_yield_ore['ores_mined'] = global.rocks_yield_ore['ores_mined'] + count
-    global.rocks_yield_ore['rocks_broken'] = global.rocks_yield_ore['rocks_broken'] + 1
+    storage.rocks_yield_ore['ores_mined'] = storage.rocks_yield_ore['ores_mined'] + count
+    storage.rocks_yield_ore['rocks_broken'] = storage.rocks_yield_ore['rocks_broken'] + 1
 
-    local position = {x = entity.position.x, y = entity.position.y}
+    local position = { x = entity.position.x, y = entity.position.y }
 
     local ore_amount = math_floor(count * 0.85) + 1
     local stone_amount = math_floor(count * 0.15) + 1
 
-    player.surface.create_entity({name = 'flying-text', position = position, text = '+' .. ore_amount .. ' [img=item/' .. ore .. ']', color = {r = 200, g = 160, b = 30}})
-    create_particles(player.surface, particles[ore], position, 64, {x = player.position.x, y = player.position.y})
+    player.surface.create_entity({ name = 'flying-text', position = position, text = '+' .. ore_amount .. ' [img=item/' .. ore .. ']', color = { r = 200, g = 160, b = 30 } })
+    create_particles(player.surface, particles[ore], position, 64, { x = player.position.x, y = player.position.y })
 
     entity.destroy()
 
     if ore_amount > max_spill then
-        player.surface.spill_item_stack(position, {name = ore, count = max_spill}, true)
+        player.surface.spill_item_stack(position, { name = ore, count = max_spill }, true)
         ore_amount = ore_amount - max_spill
-        local inserted_count = player.insert({name = ore, count = ore_amount})
+        local inserted_count = player.insert({ name = ore, count = ore_amount })
         ore_amount = ore_amount - inserted_count
         if ore_amount > 0 then
-            player.surface.spill_item_stack(position, {name = ore, count = ore_amount}, true)
+            player.surface.spill_item_stack(position, { name = ore, count = ore_amount }, true)
         end
     else
-        player.surface.spill_item_stack(position, {name = ore, count = ore_amount}, true)
+        player.surface.spill_item_stack(position, { name = ore, count = ore_amount }, true)
     end
 
     if stone_amount > max_spill then
-        player.surface.spill_item_stack(position, {name = 'stone', count = max_spill}, true)
+        player.surface.spill_item_stack(position, { name = 'stone', count = max_spill }, true)
         stone_amount = stone_amount - max_spill
-        local inserted_count = player.insert({name = 'stone', count = stone_amount})
+        local inserted_count = player.insert({ name = 'stone', count = stone_amount })
         stone_amount = stone_amount - inserted_count
         if stone_amount > 0 then
-            player.surface.spill_item_stack(position, {name = 'stone', count = stone_amount}, true)
+            player.surface.spill_item_stack(position, { name = 'stone', count = stone_amount }, true)
         end
     else
-        player.surface.spill_item_stack(position, {name = 'stone', count = stone_amount}, true)
+        player.surface.spill_item_stack(position, { name = 'stone', count = stone_amount }, true)
     end
 end
 
@@ -165,8 +165,8 @@ local function on_entity_died(event)
     end
 
     local surface = entity.surface
-    local ore = global.rocks_yield_ore['raffle'][math_random(1, global.rocks_yield_ore['size_of_raffle'])]
-    local pos = {entity.position.x, entity.position.y}
+    local ore = storage.rocks_yield_ore['raffle'][math_random(1, storage.rocks_yield_ore['size_of_raffle'])]
+    local pos = { entity.position.x, entity.position.y }
     create_particles(surface, particles[ore], pos, 16, false)
 
     if event.cause then
@@ -181,30 +181,30 @@ local function on_entity_died(event)
     entity.destroy()
 
     local count = math_random(6, 9)
-    global.rocks_yield_ore['ores_mined'] = global.rocks_yield_ore['ores_mined'] + count
-    surface.spill_item_stack(pos, {name = ore, count = count}, true)
+    storage.rocks_yield_ore['ores_mined'] = storage.rocks_yield_ore['ores_mined'] + count
+    surface.spill_item_stack(pos, { name = ore, count = count }, true)
 
     count = math_random(1, 3)
-    global.rocks_yield_ore['ores_mined'] = global.rocks_yield_ore['ores_mined'] + count
-    surface.spill_item_stack(pos, {name = 'stone', count = math_random(1, 3)}, true)
+    storage.rocks_yield_ore['ores_mined'] = storage.rocks_yield_ore['ores_mined'] + count
+    surface.spill_item_stack(pos, { name = 'stone', count = math_random(1, 3) }, true)
 
-    global.rocks_yield_ore['rocks_broken'] = global.rocks_yield_ore['rocks_broken'] + 1
+    storage.rocks_yield_ore['rocks_broken'] = storage.rocks_yield_ore['rocks_broken'] + 1
 end
 
 local function on_init()
-    global.rocks_yield_ore = {}
-    global.rocks_yield_ore['rocks_broken'] = 0
-    global.rocks_yield_ore['ores_mined'] = 0
+    storage.rocks_yield_ore = {}
+    storage.rocks_yield_ore['rocks_broken'] = 0
+    storage.rocks_yield_ore['ores_mined'] = 0
     set_raffle()
 
-    if not global.rocks_yield_ore_distance_modifier then
-        global.rocks_yield_ore_distance_modifier = 0.25
+    if not storage.rocks_yield_ore_distance_modifier then
+        storage.rocks_yield_ore_distance_modifier = 0.25
     end
-    if not global.rocks_yield_ore_base_amount then
-        global.rocks_yield_ore_base_amount = 35
+    if not storage.rocks_yield_ore_base_amount then
+        storage.rocks_yield_ore_base_amount = 35
     end
-    if not global.rocks_yield_ore_maximum_amount then
-        global.rocks_yield_ore_maximum_amount = 150
+    if not storage.rocks_yield_ore_maximum_amount then
+        storage.rocks_yield_ore_maximum_amount = 150
     end
 end
 

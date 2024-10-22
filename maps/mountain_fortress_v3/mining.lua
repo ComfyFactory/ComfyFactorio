@@ -22,7 +22,7 @@ local mining_chance_weights = {
     { name = 'pipe',                           chance = 100 },
     { name = 'iron-stick',                     chance = 50 },
     { name = 'battery',                        chance = 20 },
-    { name = 'empty-barrel',                   chance = 10 },
+    { name = 'barrel',                         chance = 10 },
     { name = 'crude-oil-barrel',               chance = 30 },
     { name = 'lubricant-barrel',               chance = 20 },
     { name = 'petroleum-gas-barrel',           chance = 15 },
@@ -38,10 +38,9 @@ local mining_chance_weights = {
     { name = 'pipe-to-ground',                 chance = 10 },
     { name = 'plastic-bar',                    chance = 5 },
     { name = 'processing-unit',                chance = 2 },
-    { name = 'used-up-uranium-fuel-cell',      chance = 1 },
+    { name = 'depleted-uranium-fuel-cell',     chance = 1 },
     { name = 'uranium-fuel-cell',              chance = 1 },
     { name = 'rocket-fuel',                    chance = 3 },
-    { name = 'rocket-control-unit',            chance = 1 },
     { name = 'low-density-structure',          chance = 1 },
     { name = 'heat-pipe',                      chance = 1 },
     { name = 'engine-unit',                    chance = 4 },
@@ -73,7 +72,7 @@ local scrap_yield_amounts = {
     ['steel-plate'] = 4,
     ['pipe'] = 8,
     ['solid-fuel'] = 4,
-    ['empty-barrel'] = 3,
+    ['barrel'] = 3,
     ['crude-oil-barrel'] = 3,
     ['lubricant-barrel'] = 3,
     ['petroleum-gas-barrel'] = 3,
@@ -88,10 +87,9 @@ local scrap_yield_amounts = {
     ['pipe-to-ground'] = 1,
     ['plastic-bar'] = 4,
     ['processing-unit'] = 1,
-    ['used-up-uranium-fuel-cell'] = 1,
+    ['depleted-uranium-fuel-cell'] = 1,
     ['uranium-fuel-cell'] = 0.3,
     ['rocket-fuel'] = 0.3,
-    ['rocket-control-unit'] = 0.3,
     ['low-density-structure'] = 0.3,
     ['heat-pipe'] = 1,
     ['green-wire'] = 8,
@@ -116,9 +114,9 @@ local scrap_yield_amounts = {
 }
 
 local valid_rocks = {
-    ['sand-rock-big'] = true,
-    ['rock-big'] = true,
-    ['rock-huge'] = true
+    ['big-sand-rock'] = true,
+    ['big-rock'] = true,
+    ['huge-rock'] = true
 }
 
 local valid_trees = {
@@ -146,9 +144,9 @@ local valid_scrap = {
 }
 
 local rock_yield = {
-    ['rock-big'] = 1,
-    ['rock-huge'] = 2,
-    ['sand-rock-big'] = 1
+    ['big-rock'] = 1,
+    ['huge-rock'] = 2,
+    ['big-sand-rock'] = 1
 }
 
 local particles = {
@@ -305,12 +303,12 @@ local function randomness(data)
 
     local position = { x = entity.position.x, y = entity.position.y }
 
-    player.surface.create_entity(
+    player.create_local_flying_text(
         {
-            name = 'flying-text',
             position = position,
             text = '+' .. harvest_amount .. '  [img=item/' .. harvest .. ']',
-            color = { r = 200, g = 160, b = 30 }
+            time_to_live = 300,
+            speed = 100
         }
     )
 
@@ -346,7 +344,7 @@ local function randomness(data)
     if data.script_character then
         create_particles(player.surface, particle, position, 16, { x = data.script_character.position.x, y = data.script_character.position.y })
     else
-        create_particles(player.surface, particle, position, 16, { x = player.position.x, y = player.position.y })
+        create_particles(player.surface, particle, position, 16, { x = player.physical_position.x, y = player.physical_position.y })
     end
 end
 
@@ -363,12 +361,12 @@ local function randomness_scrap(data)
 
     local position = { x = entity.position.x, y = entity.position.y }
 
-    player.surface.create_entity(
+    player.create_local_flying_text(
         {
-            name = 'flying-text',
             position = position,
             text = '+' .. harvest_amount .. '  [img=item/' .. harvest .. ']',
-            color = { r = 200, g = 160, b = 30 }
+            time_to_live = 300,
+            speed = 100
         }
     )
 
@@ -403,7 +401,7 @@ local function randomness_scrap(data)
     if data.script_character then
         create_particles(player.surface, particle, position, 64, { x = data.script_character.position.x, y = data.script_character.position.y })
     else
-        create_particles(player.surface, particle, position, 64, { x = player.position.x, y = player.position.y })
+        create_particles(player.surface, particle, position, 64, { x = player.physical_position.x, y = player.physical_position.y })
     end
 end
 

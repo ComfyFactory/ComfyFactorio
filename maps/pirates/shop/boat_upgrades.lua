@@ -1,19 +1,18 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-
-local Memory = require 'maps.pirates.memory'
+local Memory = require('maps.pirates.memory')
 -- local Roles = require 'maps.pirates.roles.roles'
 -- local Balance = require 'maps.pirates.balance'
-local Common = require 'maps.pirates.common'
+local Common = require('maps.pirates.common')
 -- local Utils = require 'maps.pirates.utils_local'
 -- local Math = require 'maps.pirates.math'
 -- local Loot = require 'maps.pirates.loot'
-local _inspect = require 'utils.inspect'.inspect
+local _inspect = require('utils.inspect').inspect
 
 -- local Structures = require 'maps.pirates.structures.structures'
 -- local Surfaces = require 'maps.pirates.surfaces.surfaces'
-local Boats = require 'maps.pirates.structures.boats.boats'
-local Hold = require 'maps.pirates.surfaces.hold'
+local Boats = require('maps.pirates.structures.boats.boats')
+local Hold = require('maps.pirates.surfaces.hold')
 
 local Public = {}
 
@@ -53,12 +52,12 @@ Public.upgrades_data = {
 	[enum.MORE_POWER] = {
 		market_item = {
 			price = {
-				{ 'coin', 7000 },
-				{ 'coal', 500 }
+				{ name = 'coin', count = 7000 },
+				{ name = 'coal', count = 500 },
 			},
 			offer = {
 				type = 'nothing',
-				effect_description = { 'pirates.market_description_upgrade_power' }
+				effect_description = { 'pirates.market_description_upgrade_power' },
 			},
 		},
 		tooltip = { 'pirates.market_description_upgrade_power' },
@@ -67,12 +66,12 @@ Public.upgrades_data = {
 	[enum.EXTRA_HOLD] = {
 		market_item = {
 			price = {
-				{ 'coin', 7000 },
-				{ 'coal', 500 }
+				{ name = 'coin', count = 7000 },
+				{ name = 'coal', count = 500 },
 			},
 			offer = {
 				type = 'nothing',
-				effect_description = { 'pirates.market_description_upgrade_hold' }
+				effect_description = { 'pirates.market_description_upgrade_hold' },
 			},
 		},
 		tooltip = { 'pirates.market_description_upgrade_hold' },
@@ -81,12 +80,12 @@ Public.upgrades_data = {
 	[enum.UNLOCK_MERCHANTS] = {
 		market_item = {
 			price = {
-				{ 'coin', 14000 },
-				{ 'coal', 1000 }
+				{ name = 'coin', count = 14000 },
+				{ name = 'coal', count = 1000 },
 			},
 			offer = {
 				type = 'nothing',
-				effect_description = { 'pirates.market_description_upgrade_merchants' }
+				effect_description = { 'pirates.market_description_upgrade_merchants' },
 			},
 		},
 		tooltip = { 'pirates.market_description_upgrade_merchants' },
@@ -95,12 +94,12 @@ Public.upgrades_data = {
 	[enum.ROCKETS_FOR_SALE] = {
 		market_item = {
 			price = {
-				{ 'coin', 21000 },
-				{ 'coal', 1000 }
+				{ name = 'coin', count = 21000 },
+				{ name = 'coal', count = 1000 },
 			},
 			offer = {
 				type = 'nothing',
-				effect_description = { 'pirates.market_description_upgrade_rockets' }
+				effect_description = { 'pirates.market_description_upgrade_rockets' },
 			},
 		},
 		tooltip = { 'pirates.market_description_upgrade_rockets' },
@@ -109,13 +108,13 @@ Public.upgrades_data = {
 	[enum.UPGRADE_CANNONS] = {
 		market_item = {
 			price = {
-				{ 'repair-pack', 20 },
-				{ 'coin',        5000 },
-				{ 'coal',        800 }
+				{ name = 'repair-pack', count = 20 },
+				{ name = 'coin', count = 5000 },
+				{ name = 'coal', count = 800 },
 			},
 			offer = {
 				type = 'nothing',
-				effect_description = { 'pirates.market_description_upgrade_turrets' }
+				effect_description = { 'pirates.market_description_upgrade_turrets' },
 			},
 		},
 		tooltip = { 'pirates.market_description_upgrade_turrets' },

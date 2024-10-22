@@ -80,7 +80,7 @@ local function show_score(data)
                         tooltip = column.tooltip,
                         color = column.color or default_color
                     }
-                l.style.font = 'heading-3'
+                l.style.font = 'default-semibold'
                 l.style.minimal_width = 175
                 l.style.maximal_width = 175
                 l.style.horizontal_align = 'left'

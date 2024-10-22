@@ -5,7 +5,7 @@ local Global = {
     filepath = {}
 }
 
-global.tokens = {}
+storage.tokens = {}
 
 local concat = table.concat
 
@@ -14,13 +14,13 @@ local concat = table.concat
 ---@param filepath string
 ---@return string
 local function validate_entry(filepath)
-    if global.tokens[filepath] then
-        if not global.tokens[filepath].token_index then
-            global.tokens[filepath].token_index = 1
+    if storage.tokens[filepath] then
+        if not storage.tokens[filepath].token_index then
+            storage.tokens[filepath].token_index = 1
         else
-            global.tokens[filepath].token_index = global.tokens[filepath].token_index + 1
+            storage.tokens[filepath].token_index = storage.tokens[filepath].token_index + 1
         end
-        local index = global.tokens[filepath].token_index
+        local index = storage.tokens[filepath].token_index
         filepath = filepath .. '_' .. index
     end
     return filepath
@@ -31,14 +31,14 @@ end
 ---@return integer
 ---@return string
 function Global.set_global(tbl)
-    local filepath = debug.getinfo(3, 'S').source:match('^.+/currently%-playing/(.+)$'):sub(1, -5):gsub('/', '_')
+    local filepath = debug.getinfo(3, 'S').source:match('^@__level__/(.+)$'):sub(1, -5):gsub('/', '_')
     filepath = validate_entry(filepath)
 
     Global.index = Global.index + 1
     Global.filepath[filepath] = Global.index
-    Global.names[filepath] = concat {Global.filepath[filepath], ' - ', filepath}
+    Global.names[filepath] = concat { Global.filepath[filepath], ' - ', filepath }
 
-    global.tokens[filepath] = tbl
+    storage.tokens[filepath] = tbl
 
     return Global.index, filepath
 end
@@ -47,8 +47,8 @@ end
 ---@param token number|string
 ---@return any|nil
 function Global.get_global(token)
-    if global.tokens[token] then
-        return global.tokens[token]
+    if storage.tokens[token] then
+        return storage.tokens[token]
     end
 end
 
@@ -56,8 +56,8 @@ function Global.register(tbl, callback)
     local token, filepath = Global.set_global(tbl)
 
     Event.on_load(
-        function()
-            if global.tokens[token] then
+        function ()
+            if storage.tokens[token] then
                 callback(Global.get_global(token))
             else
                 callback(Global.get_global(filepath))
@@ -72,15 +72,15 @@ function Global.register_init(tbl, init_handler, callback)
     local token, filepath = Global.set_global(tbl)
 
     Event.on_init(
-        function()
+        function ()
             init_handler(tbl)
             callback(tbl)
         end
     )
 
     Event.on_load(
-        function()
-            if global.tokens[token] then
+        function ()
+            if storage.tokens[token] then
                 callback(Global.get_global(token))
             else
                 callback(Global.get_global(filepath))

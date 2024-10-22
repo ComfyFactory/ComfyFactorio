@@ -2,7 +2,7 @@
 local Public = {}
 local P = require 'utils.player_modifiers'
 
-local starve_messages = {' ran out of foodstamps.', ' starved.', ' should not have skipped breakfast today.'}
+local starve_messages = { ' ran out of foodstamps.', ' starved.', ' should not have skipped breakfast today.' }
 
 local overfeed_messages = {
     ' ate too much and exploded.',
@@ -43,10 +43,10 @@ end
 
 local player_hunger_color_list = {}
 for x = 1, 50, 1 do
-    player_hunger_color_list[x] = {r = 0.5 + x * 0.01, g = x * 0.01, b = x * 0.005}
-    player_hunger_color_list[50 + x] = {r = 1 - x * 0.02, g = 0.5 + x * 0.01, b = 0.25}
-    player_hunger_color_list[100 + x] = {r = 0 + x * 0.02, g = 1 - x * 0.01, b = 0.25}
-    player_hunger_color_list[150 + x] = {r = 1 - x * 0.01, g = 0.5 - x * 0.01, b = 0.25 - x * 0.005}
+    player_hunger_color_list[x] = { r = 0.5 + x * 0.01, g = x * 0.01, b = x * 0.005 }
+    player_hunger_color_list[50 + x] = { r = 1 - x * 0.02, g = 0.5 + x * 0.01, b = 0.25 }
+    player_hunger_color_list[100 + x] = { r = 0 + x * 0.02, g = 1 - x * 0.01, b = 0.25 }
+    player_hunger_color_list[150 + x] = { r = 1 - x * 0.01, g = 0.5 - x * 0.01, b = 0.25 - x * 0.005 }
 end
 
 local player_hunger_buff = {}
@@ -81,7 +81,7 @@ local function create_hunger_gui(player)
     if player.gui.top['hunger_frame'] then
         player.gui.top['hunger_frame'].destroy()
     end
-    local element = player.gui.top.add {type = 'sprite-button', name = 'hunger_frame', caption = ' '}
+    local element = player.gui.top.add { type = 'sprite-button', name = 'hunger_frame', caption = ' ' }
     element.style.font = 'default-bold'
     element.style.minimal_height = 38
     element.style.minimal_width = 128
@@ -96,11 +96,11 @@ local function update_hunger_gui(player)
     if not player.gui.top['hunger_frame'] then
         create_hunger_gui(player)
     end
-    local str = tostring(global.player_hunger[player.name])
+    local str = tostring(storage.player_hunger[player.name])
     str = str .. '% '
-    str = str .. player_hunger_stages[global.player_hunger[player.name]]
+    str = str .. player_hunger_stages[storage.player_hunger[player.name]]
     player.gui.top['hunger_frame'].caption = str
-    player.gui.top['hunger_frame'].style.font_color = player_hunger_color_list[global.player_hunger[player.name]]
+    player.gui.top['hunger_frame'].style.font_color = player_hunger_color_list[storage.player_hunger[player.name]]
 end
 
 function Public.hunger_update(player, food_value)
@@ -111,36 +111,36 @@ function Public.hunger_update(player, food_value)
         return
     end
 
-    local past_hunger = global.player_hunger[player.name]
-    global.player_hunger[player.name] = global.player_hunger[player.name] + food_value
-    if global.player_hunger[player.name] > 200 then
-        global.player_hunger[player.name] = 200
+    local past_hunger = storage.player_hunger[player.name]
+    storage.player_hunger[player.name] = storage.player_hunger[player.name] + food_value
+    if storage.player_hunger[player.name] > 200 then
+        storage.player_hunger[player.name] = 200
     end
 
-    if past_hunger == 200 and global.player_hunger[player.name] + food_value > 200 then
-        global.player_hunger[player.name] = player_hunger_spawn_value
-        player.surface.create_entity({name = 'big-artillery-explosion', position = player.character.position})
+    if past_hunger == 200 and storage.player_hunger[player.name] + food_value > 200 then
+        storage.player_hunger[player.name] = player_hunger_spawn_value
+        player.surface.create_entity({ name = 'big-artillery-explosion', position = player.character.position })
         player.character.die('player')
-        game.print(player.name .. overfeed_messages[math.random(1, #overfeed_messages)], {r = 0.75, g = 0.0, b = 0.0})
+        game.print(player.name .. overfeed_messages[math.random(1, #overfeed_messages)], { r = 0.75, g = 0.0, b = 0.0 })
     end
 
-    if global.player_hunger[player.name] < 1 then
-        global.player_hunger[player.name] = player_hunger_spawn_value
+    if storage.player_hunger[player.name] < 1 then
+        storage.player_hunger[player.name] = player_hunger_spawn_value
         player.character.die('player')
-        game.print(player.name .. starve_messages[math.random(1, #starve_messages)], {r = 0.75, g = 0.0, b = 0.0})
+        game.print(player.name .. starve_messages[math.random(1, #starve_messages)], { r = 0.75, g = 0.0, b = 0.0 })
     end
 
     if player.character then
-        if player_hunger_stages[global.player_hunger[player.name]] ~= player_hunger_stages[past_hunger] then
-            local print_message = 'You are ' .. player_hunger_stages[global.player_hunger[player.name]] .. '.'
-            if player_hunger_stages[global.player_hunger[player.name]] == 'Obese' then
-                print_message = 'You have become ' .. player_hunger_stages[global.player_hunger[player.name]] .. '.'
+        if player_hunger_stages[storage.player_hunger[player.name]] ~= player_hunger_stages[past_hunger] then
+            local print_message = 'You are ' .. player_hunger_stages[storage.player_hunger[player.name]] .. '.'
+            if player_hunger_stages[storage.player_hunger[player.name]] == 'Obese' then
+                print_message = 'You have become ' .. player_hunger_stages[storage.player_hunger[player.name]] .. '.'
             end
-            if player_hunger_stages[global.player_hunger[player.name]] == 'Starving' then
+            if player_hunger_stages[storage.player_hunger[player.name]] == 'Starving' then
                 print_message = 'You are starving!'
-                game.print(player.name .. ' is starving!', player_hunger_color_list[global.player_hunger[player.name]])
+                game.print(player.name .. ' is starving!', player_hunger_color_list[storage.player_hunger[player.name]])
             end
-            player.print(print_message, player_hunger_color_list[global.player_hunger[player.name]])
+            player.print(print_message, player_hunger_color_list[storage.player_hunger[player.name]])
         end
     end
 
@@ -148,12 +148,12 @@ function Public.hunger_update(player, food_value)
         return
     end
 
-    if player_hunger_buff[global.player_hunger[player.name]] < 0 then
-        P.update_single_modifier(player, 'character_running_speed_modifier', 'hunger', player_hunger_buff[global.player_hunger[player.name]] * 0.75)
+    if player_hunger_buff[storage.player_hunger[player.name]] < 0 then
+        P.update_single_modifier(player, 'character_running_speed_modifier', 'hunger', player_hunger_buff[storage.player_hunger[player.name]] * 0.75)
     else
-        P.update_single_modifier(player, 'character_running_speed_modifier', 'hunger', player_hunger_buff[global.player_hunger[player.name]] * 0.15)
+        P.update_single_modifier(player, 'character_running_speed_modifier', 'hunger', player_hunger_buff[storage.player_hunger[player.name]] * 0.15)
     end
-    P.update_single_modifier(player, 'character_mining_speed_modifier', 'hunger', player_hunger_buff[global.player_hunger[player.name]])
+    P.update_single_modifier(player, 'character_mining_speed_modifier', 'hunger', player_hunger_buff[storage.player_hunger[player.name]])
     P.update_player_modifiers(player)
 
     update_hunger_gui(player)
@@ -161,11 +161,11 @@ end
 
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
-    if not global.player_hunger then
-        global.player_hunger = {}
+    if not storage.player_hunger then
+        storage.player_hunger = {}
     end
     if player.online_time == 0 then
-        global.player_hunger[player.name] = player_hunger_spawn_value
+        storage.player_hunger[player.name] = player_hunger_spawn_value
         Public.hunger_update(player, 0)
     end
     update_hunger_gui(player)
@@ -174,17 +174,17 @@ end
 local function on_player_used_capsule(event)
     if event.item.name == 'raw-fish' then
         local player = game.players[event.player_index]
-        if player.character.health < player.character.prototype.max_health + player.character_health_bonus + player.force.character_health_bonus then
+        if player.character.health < player.character.max_health + player.character_health_bonus + player.force.character_health_bonus then
             return
         end
         Public.hunger_update(player, player_hunger_fish_food_value)
-        player.play_sound {path = 'utility/armor_insert', volume_modifier = 0.9}
+        player.play_sound { path = 'utility/armor_insert', volume_modifier = 0.9 }
     end
 end
 
 local function on_player_respawned(event)
     local player = game.players[event.player_index]
-    global.player_hunger[player.name] = player_hunger_spawn_value
+    storage.player_hunger[player.name] = player_hunger_spawn_value
     Public.hunger_update(player, 0)
 end
 

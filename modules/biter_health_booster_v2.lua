@@ -53,7 +53,7 @@ local acid_lines = {
 for x = radius * -1, radius, 1 do
     for y = radius * -1, radius, 1 do
         if sqrt(x ^ 2 + y ^ 2) <= radius then
-            targets[#targets + 1] = {x = x, y = y}
+            targets[#targets + 1] = { x = x, y = y }
         end
     end
 end
@@ -73,17 +73,17 @@ local projectiles = {
 
 Global.register(
     this,
-    function(t)
+    function (t)
         this = t
     end
 )
 
 local filters = {
-    {filter = 'name', name = 'unit'},
-    {filter = 'name', name = 'turret'},
-    {filter = 'name', name = 'ammo-turret'},
-    {filter = 'name', name = 'electric-turret'},
-    {filter = 'name', name = 'unit-spawner'}
+    { filter = 'name', name = 'unit' },
+    { filter = 'name', name = 'turret' },
+    { filter = 'name', name = 'ammo-turret' },
+    { filter = 'name', name = 'electric-turret' },
+    { filter = 'name', name = 'unit-spawner' }
 }
 
 local entity_types = {
@@ -96,15 +96,15 @@ local entity_types = {
 
 local remove_unit_token =
     Token.register(
-    function(data)
-        local unit_number = data.unit_number
-        if not unit_number then
-            return
-        end
+        function (data)
+            local unit_number = data.unit_number
+            if not unit_number then
+                return
+            end
 
-        this.biter_health_boost_units[unit_number] = nil
-    end
-)
+            this.biter_health_boost_units[unit_number] = nil
+        end
+    )
 
 local function loaded_biters(event)
     local cause = event.cause
@@ -120,7 +120,7 @@ local function loaded_biters(event)
         end
     end
     if not position then
-        position = {entity.position.x + (-20 + random(0, 40)), entity.position.y + (-20 + random(0, 40))}
+        position = { entity.position.x + (-20 + random(0, 40)), entity.position.y + (-20 + random(0, 40)) }
     end
 
     entity.surface.create_entity(
@@ -145,7 +145,7 @@ local function acid_nova(event)
                 position = event.entity.position,
                 force = event.entity.force.name,
                 source = event.entity.position,
-                target = {x = event.entity.position.x + targets[i].x, y = event.entity.position.y + targets[i].y},
+                target = { x = event.entity.position.x + targets[i].x, y = event.entity.position.y + targets[i].y },
                 max_range = radius,
                 speed = 0.001
             }
@@ -155,9 +155,9 @@ end
 
 local function create_entity_radius(surface, name, source, target)
     local distance = sqrt((source.x - target.x) ^ 2 + (source.y - target.y) ^ 2)
-    local modifier = {(target.x - source.x) / distance, (target.y - source.y) / distance}
+    local modifier = { (target.x - source.x) / distance, (target.y - source.y) / distance }
 
-    local position = {source.x, source.y}
+    local position = { source.x, source.y }
 
     for _ = 1, distance * 1.5, 1 do
         if random(1, 2) ~= 1 then
@@ -173,7 +173,7 @@ local function create_entity_radius(surface, name, source, target)
                 }
             )
         end
-        position = {position[1] + modifier[1], position[2] + modifier[2]}
+        position = { position[1] + modifier[1], position[2] + modifier[2] }
     end
 end
 
@@ -196,7 +196,7 @@ local function clean_table()
     for name, enabled in pairs(this.active_surfaces) do
         local surface = game.surfaces[name]
         if surface and surface.valid and enabled then
-            for _, unit in pairs(surface.find_entities_filtered({type = validTypes})) do
+            for _, unit in pairs(surface.find_entities_filtered({ type = validTypes })) do
                 units_to_delete[unit.unit_number] = nil
             end
         end
@@ -207,7 +207,7 @@ local function clean_table()
         return
     end
 
-    for _, unit in pairs(surface.find_entities_filtered({type = validTypes})) do
+    for _, unit in pairs(surface.find_entities_filtered({ type = validTypes })) do
         units_to_delete[unit.unit_number] = nil
     end
 
@@ -229,12 +229,14 @@ local function create_boss_healthbar(entity, size)
     return rendering.draw_sprite(
         {
             sprite = 'virtual-signal/signal-white',
-            tint = {0, 200, 0},
+            tint = { 0, 200, 0 },
             x_scale = size * 15,
             y_scale = size,
             render_layer = 'light-effect',
-            target = entity,
-            target_offset = {0, -2.5},
+            target = {
+                entity = entity,
+                offset = { 0, -2.25 },
+            },
             surface = entity.surface
         }
     )
@@ -247,7 +249,7 @@ local function set_boss_healthbar(health, max_health, healthbar_id)
     end
     local x_scale = rendering.get_y_scale(healthbar_id) * 15
     rendering.set_x_scale(healthbar_id, x_scale * m)
-    rendering.set_color(healthbar_id, {floor(255 - 255 * m), floor(200 * m), 0})
+    rendering.set_color(healthbar_id, { floor(255 - 255 * m), floor(200 * m), 0 })
 end
 
 local function extra_projectiles(cause, target)
@@ -306,7 +308,7 @@ local function on_entity_damaged(event)
                             if stickers[i].name == 'stun-sticker' then
                                 stickers[i].destroy()
                                 if random(1, 2) == 1 then
-                                    local slow = surface.create_entity {name = 'slowdown-sticker', position = biter.position, target = biter}
+                                    local slow = surface.create_entity { name = 'slowdown-sticker', position = biter.position, target = biter }
                                     slow.time_to_live = 200
                                 end
                                 break
@@ -345,7 +347,7 @@ local function on_entity_damaged(event)
     --Set entity health relative to health pool
     local max_health = health_pool[3].max_health
     local m = health_pool[1] / max_health
-    local final_health = round(biter.prototype.max_health * m)
+    local final_health = round(biter.max_health * m)
     biter.health = final_health
 
     --Proceed to kill entity if health is 0
@@ -385,7 +387,7 @@ local function on_entity_died(event)
     local wave_count = WD.get_wave()
 
     if health_pool then
-        Task.set_timeout_in_ticks(30, remove_unit_token, {unit_number = unit_number})
+        Task.set_timeout_in_ticks(30, remove_unit_token, { unit_number = unit_number })
         if health_pool[3] and health_pool[3].healthbar_id then
             if this.enable_boss_loot then
                 if random(1, 128) == 1 then
@@ -457,12 +459,12 @@ function Public.add_unit(unit, health_multiplier)
     if not health_multiplier then
         health_multiplier = this.biter_health_boost
     end
-    local health = floor(unit.prototype.max_health * health_multiplier)
+    local health = floor(unit.max_health * health_multiplier)
     local xp_modifier = round(1 / health_multiplier, 5)
     this.biter_health_boost_units[unit.unit_number] = {
         health,
         xp_modifier,
-        {max_health = health}
+        { max_health = health }
     }
 
     check_clear_table()
@@ -480,11 +482,11 @@ function Public.add_boss_unit(unit, health_multiplier, health_bar_size)
         health_bar_size = 0.5
     end
     local xp_modifier = round(1 / health_multiplier, 5)
-    local health = floor(unit.prototype.max_health * health_multiplier)
+    local health = floor(unit.max_health * health_multiplier)
     this.biter_health_boost_units[unit.unit_number] = {
         health,
         xp_modifier,
-        {max_health = health, healthbar_id = create_boss_healthbar(unit, health_bar_size)}
+        { max_health = health, healthbar_id = create_boss_healthbar(unit, health_bar_size) }
     }
 
     check_clear_table()
@@ -566,7 +568,7 @@ function Public.enable_randomize_stun_and_slowdown_sticker(boolean)
 end
 
 Event.on_init(
-    function()
+    function ()
         Public.reset_table()
     end
 )

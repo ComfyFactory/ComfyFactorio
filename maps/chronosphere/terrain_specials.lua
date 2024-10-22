@@ -22,8 +22,11 @@ function Public.danger_event(surface, left_top)
         rendering.draw_text {
         text = 'Nuclear silo',
         surface = surface,
-        target = pole,
-        target_offset = {5, -2.5},
+        target = {
+            entity = pole,
+            offset = {5, -2.5},
+            position = pole.position
+        },
         color = {r = 0.98, g = 0, b = 0},
         scale = 1.00,
         font = 'default-game',
@@ -35,17 +38,20 @@ function Public.danger_event(surface, left_top)
         rendering.draw_text {
         text = ' ',
         surface = surface,
-        target = pole,
-        target_offset = {5, -1.5},
+        target = {
+            entity = pole,
+            offset = {5, -1.5},
+            position = pole.position
+        },
         color = {r = 0.98, g = 0, b = 0},
         scale = 1.00,
         font = 'default-game',
         alignment = 'center',
         scale_with_zoom = false
     }
-    silo.get_module_inventory().insert('effectivity-module-3')
+    silo.get_module_inventory().insert('efficiency-module-3')
     silo.rocket_parts = 100
-    --silo.get_module_inventory().insert("effectivity-module-3")
+    --silo.get_module_inventory().insert("efficiency-module-3")
     local combinator =
         surface.create_entity({name = 'constant-combinator', position = {x = left_top.x + 11, y = left_top.y + 10}, force = 'player', create_build_effect_smoke = false})
     local speaker =
@@ -59,7 +65,7 @@ function Public.danger_event(surface, left_top)
             alert_parameters = {show_alert = true, show_on_map = true, icon_signal_id = {type = 'item', name = 'atomic-bomb'}, alert_message = 'Nuclear missile silo detected!'}
         }
     )
-    combinator.connect_neighbour({wire = defines.wire_type.green, target_entity = speaker})
+    combinator.get_wire_connector(defines.wire_connector_id.circuit_green, true).connect_to(speaker.get_wire_connector(defines.wire_connector_id.circuit_green, true), false)
     local rules = combinator.get_or_create_control_behavior()
     local rules2 = speaker.get_or_create_control_behavior()
     rules.set_signal(1, {signal = {type = 'virtual', name = 'signal-A'}, count = 1})
@@ -100,8 +106,11 @@ function Public.fish_market(surface, left_top)
     rendering.draw_text {
         text = 'Fish Market',
         surface = surface,
-        target = market,
-        target_offset = {0, -2.5},
+        target = {
+            entity = market,
+            offset = {0, -2.5},
+            position = market.position
+        },
         color = objective.locomotive.color,
         scale = 1.00,
         font = 'default-game',
@@ -116,8 +125,11 @@ function Public.fish_market(surface, left_top)
     rendering.draw_text {
         text = 'Deposit fish here',
         surface = surface,
-        target = fishchest,
-        target_offset = {0, -2.5},
+        target = {
+            entity = fishchest,
+            offset = {0, -2.5},
+            position = fishchest.position
+        },
         color = objective.locomotive.color,
         scale = 0.75,
         font = 'default-game',

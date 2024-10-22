@@ -6,8 +6,8 @@ local math_random = math.random
 local math_sqrt = math.sqrt
 local math_floor = math.floor
 
-local trees = {'dead-dry-hairy-tree', 'dead-grey-trunk', 'dead-tree-desert', 'dry-hairy-tree', 'dry-tree'}
-local ores = {'stone', 'stone', 'coal'}
+local trees = { 'dead-dry-hairy-tree', 'dead-grey-trunk', 'dead-tree-desert', 'dry-hairy-tree', 'dry-tree' }
+local ores = { 'stone', 'stone', 'coal' }
 local size_of_trees = #trees
 
 local function add_enemy_units(surface, room)
@@ -26,32 +26,32 @@ end
 local function red_desert(surface, room)
     local dungeontable = DungeonsTable.get_dungeontable()
     for _, tile in pairs(room.path_tiles) do
-        surface.set_tiles({{name = 'red-desert-0', position = tile.position}}, true)
+        surface.set_tiles({ { name = 'red-desert-0', position = tile.position } }, true)
     end
 
     if #room.room_tiles > 1 then
         table_shuffle_table(room.room_tiles)
     end
     for key, tile in pairs(room.room_tiles) do
-        surface.set_tiles({{name = 'dry-dirt', position = tile.position}}, true)
+        surface.set_tiles({ { name = 'dry-dirt', position = tile.position } }, true)
         if math_random(1, 32) == 1 then
-            surface.create_entity({name = ores[math_random(1, #ores)], position = tile.position, amount = Functions.get_common_resource_amount(surface.index)})
+            surface.create_entity({ name = ores[math_random(1, #ores)], position = tile.position, amount = Functions.get_common_resource_amount(surface.index) })
         else
-            if math_random(1, 4) == 1 and surface.can_place_entity({name = trees[math_random(1, size_of_trees)], position = tile.position}) then
-                surface.create_entity({name = trees[math_random(1, size_of_trees)], position = tile.position})
+            if math_random(1, 4) == 1 and surface.can_place_entity({ name = trees[math_random(1, size_of_trees)], position = tile.position }) then
+                surface.create_entity({ name = trees[math_random(1, size_of_trees)], position = tile.position })
             end
         end
         if key % 16 == 0 and math_random(1, 32) == 1 then
             Functions.set_spawner_tier(
-                surface.create_entity({name = Functions.roll_spawner_name(), position = tile.position, force = dungeontable.enemy_forces[surface.index]}),
+                surface.create_entity({ name = Functions.roll_spawner_name(), position = tile.position, force = dungeontable.enemy_forces[surface.index] }),
                 surface.index
             )
         end
         if math_random(1, 256) == 1 then
-            surface.create_entity({name = Functions.roll_worm_name(surface.index), position = tile.position, force = dungeontable.enemy_forces[surface.index]})
+            surface.create_entity({ name = Functions.roll_worm_name(surface.index), position = tile.position, force = dungeontable.enemy_forces[surface.index] })
         end
         if math_random(1, 32) == 1 then
-            surface.create_entity({name = 'rock-huge', position = tile.position})
+            surface.create_entity({ name = 'huge-rock', position = tile.position })
         end
     end
 
@@ -62,10 +62,10 @@ local function red_desert(surface, room)
             local r = math_floor(math_sqrt(#room.room_tiles) * 0.15) + 1
             for x = r * -1, r, 1 do
                 for y = r * -1, r, 1 do
-                    local p = {room.center.x + x, room.center.y + y}
-                    surface.set_tiles({{name = 'water', position = p}})
+                    local p = { room.center.x + x, room.center.y + y }
+                    surface.set_tiles({ { name = 'water', position = p } })
                     if math_random(1, 8) == 1 then
-                        surface.create_entity({name = 'fish', position = p})
+                        surface.create_entity({ name = 'fish', position = p })
                     end
                 end
             end
@@ -76,7 +76,7 @@ local function red_desert(surface, room)
         table_shuffle_table(room.room_border_tiles)
     end
     for key, tile in pairs(room.room_border_tiles) do
-        surface.set_tiles({{name = 'red-desert-1', position = tile.position}}, true)
+        surface.set_tiles({ { name = 'red-desert-1', position = tile.position } }, true)
     end
 
     for key, tile in pairs(room.room_border_tiles) do
@@ -84,15 +84,15 @@ local function red_desert(surface, room)
             Functions.place_border_rock(surface, tile.position)
         else
             if math_random(1, 3) > 1 then
-                surface.create_entity({name = 'rock-huge', position = tile.position})
+                surface.create_entity({ name = 'huge-rock', position = tile.position })
             end
         end
     end
 
     if room.entrance_tile then
         local p = room.entrance_tile.position
-        local area = {{p.x - 0.5, p.y - 0.5}, {p.x + 0.5, p.y + 0.5}}
-        for _, entity in pairs(surface.find_entities_filtered({area = area})) do
+        local area = { { p.x - 0.5, p.y - 0.5 }, { p.x + 0.5, p.y + 0.5 } }
+        for _, entity in pairs(surface.find_entities_filtered({ area = area })) do
             entity.destroy()
         end
     end

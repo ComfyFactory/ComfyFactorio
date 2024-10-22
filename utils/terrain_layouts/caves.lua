@@ -21,18 +21,18 @@ require 'modules.rocks_heal_over_time'
 require 'modules.rocks_yield_ore_veins'
 require 'modules.no_deconstruction_of_neutral_entities'
 
-local get_noise = require 'utils.get_noise'
+local get_noise = require 'utils.math.get_noise'
 local Player_modifiers = require 'utils.player_modifiers'
 local math_random = math.random
 local math_floor = math.floor
 local math_abs = math.abs
 
-local rock_raffle = {'sand-rock-big', 'sand-rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-huge'}
+local rock_raffle = { 'big-sand-rock', 'big-sand-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'huge-rock' }
 local size_of_rock_raffle = #rock_raffle
 
 local function place_entity(surface, position)
     if math_random(1, 3) ~= 1 then
-        surface.create_entity({name = rock_raffle[math_random(1, size_of_rock_raffle)], position = position, force = 'neutral'})
+        surface.create_entity({ name = rock_raffle[math_random(1, size_of_rock_raffle)], position = position, force = 'neutral' })
     end
 end
 
@@ -52,16 +52,16 @@ local function is_scrap_area(noise)
 end
 
 local function move_away_things(surface, area)
-    for _, e in pairs(surface.find_entities_filtered({type = {'unit-spawner', 'turret', 'unit', 'tree'}, area = area})) do
+    for _, e in pairs(surface.find_entities_filtered({ type = { 'unit-spawner', 'turret', 'unit', 'tree' }, area = area })) do
         local position = surface.find_non_colliding_position(e.name, e.position, 128, 4)
         if position then
-            surface.create_entity({name = e.name, position = position, force = 'enemy'})
+            surface.create_entity({ name = e.name, position = position, force = 'enemy' })
             e.destroy()
         end
     end
 end
 
-local vectors = {{0, 0}, {1, 0}, {-1, 0}, {0, 1}, {0, -1}}
+local vectors = { { 0, 0 }, { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } }
 
 local function on_player_mined_entity(event)
     local entity = event.entity
@@ -73,13 +73,13 @@ local function on_player_mined_entity(event)
     end
     local surface = entity.surface
     for _, v in pairs(vectors) do
-        local position = {entity.position.x + v[1], entity.position.y + v[2]}
-        if not surface.get_tile(position).collides_with('resource-layer') then
-            surface.set_tiles({{name = 'landfill', position = position}}, true)
+        local position = { entity.position.x + v[1], entity.position.y + v[2] }
+        if not surface.get_tile(position).collides_with('resource') then
+            surface.set_tiles({ { name = 'landfill', position = position } }, true)
         end
     end
     if event.player_index then
-        game.players[event.player_index].insert({name = 'coin', count = 1})
+        game.players[event.player_index].insert({ name = 'coin', count = 1 })
     end
 end
 
@@ -101,11 +101,11 @@ local function on_chunk_generated(event)
     local noise
     for x = 0, 31, 1 do
         for y = 0, 31, 1 do
-            position = {x = left_top_x + x, y = left_top_y + y}
-            if not get_tile(position).collides_with('resource-layer') then
+            position = { x = left_top_x + x, y = left_top_y + y }
+            if not get_tile(position).collides_with('resource') then
                 noise = get_noise('scrapyard', position, seed)
                 if is_scrap_area(noise) then
-                    set_tiles({{name = 'dirt-' .. math_floor(math_abs(noise) * 12) % 4 + 3, position = position}}, true)
+                    set_tiles({ { name = 'dirt-' .. math_floor(math_abs(noise) * 12) % 4 + 3, position = position } }, true)
                     place_entity(surface, position)
                 end
             end
@@ -122,9 +122,9 @@ local function on_player_joined_game(event)
 end
 
 local function on_init()
-    global.rocks_yield_ore_maximum_amount = 999
-    global.rocks_yield_ore_base_amount = 100
-    global.rocks_yield_ore_distance_modifier = 0.025
+    storage.rocks_yield_ore_maximum_amount = 999
+    storage.rocks_yield_ore_base_amount = 100
+    storage.rocks_yield_ore_distance_modifier = 0.025
 end
 
 local Event = require 'utils.event'

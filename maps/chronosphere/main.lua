@@ -43,10 +43,11 @@ local function reset_map()
     Worlds.determine_world(nil)
     local world = objective.world
     if not objective.active_surface_index then
-        objective.active_surface_index = game.create_surface('chronosphere', Chrono.get_map_gen_settings()).index
+        objective.active_surface_index = game.create_surface('chronosphere', Chrono.get_map_gen_settings(world.planet_name)).index
+        --/c game.create_surface("pizza", prototypes.space_location["gleba"].map_gen_settings)
     else
         game.forces.player.set_spawn_position({12, 10}, game.surfaces[objective.active_surface_index])
-        objective.active_surface_index = Reset.soft_reset_map(game.surfaces[objective.active_surface_index], Chrono.get_map_gen_settings(), Balance.starting_items).index
+        objective.active_surface_index = Reset.soft_reset_map(game.surfaces[objective.active_surface_index], Chrono.get_map_gen_settings(world.planet_name), Balance.starting_items).index
     end
 
     local surface = game.surfaces[objective.active_surface_index]
@@ -82,6 +83,7 @@ local function chronojump(choice)
     local scheduletable = Chrono_table.get_schedule_table()
     if objective.chronojumps == 0 then
         Difficulty.set_poll_closing_timeout(game.tick)
+        objective.warmup = false
     end
 
     if objective.game_lost then
@@ -110,7 +112,8 @@ local function chronojump(choice)
         end
     end
     scheduletable.lab_cells = {}
-    objective.active_surface_index = game.create_surface('chronosphere' .. objective.chronojumps, Chrono.get_map_gen_settings()).index
+    Worlds.determine_world(nil)
+    objective.active_surface_index = game.create_surface('chronosphere' .. objective.chronojumps, Chrono.get_map_gen_settings(objective.world.planet_name)).index
     local surface = game.surfaces[objective.active_surface_index]
 
     generate_overworld(surface, choice)

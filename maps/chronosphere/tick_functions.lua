@@ -79,8 +79,9 @@ function Public.train_pollution(source, interior_pollution)
     elseif source == 'wagons' then
         pollution = interior_pollution * Balance.machine_pollution_transfer_from_inside_factor(difficulty, objective.upgrades[2])
     end
-    game.surfaces[objective.active_surface_index].pollute(pos, pollution)
-    game.pollution_statistics.on_flow(stat_target, pollution - interior_pollution)
+    local surface = game.surfaces[objective.active_surface_index]
+    surface.pollute(pos, pollution)
+    game.get_pollution_statistics(surface).on_flow(stat_target, pollution - interior_pollution)
 end
 
 function Public.transfer_pollution()
@@ -101,12 +102,12 @@ function Public.ramp_evolution()
         objective.passivetimer * objective.passive_chronocharge_rate > objective.chronochargesneeded * 0.50 and
             objective.chronojumps >= Balance.jumps_until_overstay_is_on(Difficulty.get().difficulty_vote_value)
      then
-        local evolution = game.forces.enemy.evolution_factor
+        local evolution = game.forces.enemy.get_evolution_factor(game.get_surface(objective.active_surface_index))
         evolution = evolution * Balance.evoramp50_multiplier_per_10s(difficulty)
         if evolution > 1 then
             evolution = 1
         end
-        game.forces.enemy.evolution_factor = evolution
+        game.forces.enemy.set_evolution_factor(evolution, game.get_surface(objective.active_surface_index))
     end
 end
 
@@ -327,7 +328,7 @@ function Public.dangertimer()
                         objective.dangers[i].silo.launch_rocket()
                         objective.dangers[i].silo.rocket_parts = 100
                     end
-                    rendering.set_text(objective.dangers[i].timer, math_floor(timer / 60) .. ' min, ' .. timer % 60 .. ' s')
+                    objective.dangers[i].timer.text = math_floor(timer / 60) .. ' min, ' .. timer % 60 .. ' s'
                 end
             end
         end
@@ -372,7 +373,7 @@ function Public.offline_players()
                     player_inv[4] = game.players[players[i].index].get_inventory(defines.inventory.character_ammo)
                     player_inv[5] = game.players[players[i].index].get_inventory(defines.inventory.character_trash)
                     local e = surface.create_entity({name = 'character', position = game.forces.player.get_spawn_position(surface), force = 'neutral'})
-                    local inv = e.get_inventory(defines.inventory.character_main)
+                    local inv = e and e.get_inventory(defines.inventory.character_main)
                     for ii = 1, 5, 1 do
                         if player_inv[ii].valid then
                             for iii = 1, #player_inv[ii], 1 do
@@ -384,14 +385,18 @@ function Public.offline_players()
                     end
                     if #items > 0 then
                         for item = 1, #items, 1 do
-                            if items[item].valid then
+                            if items[item].valid and inv and inv.valid then
                                 inv.insert(items[item])
                             end
                         end
                         game.print({'chronosphere.message_accident'}, {r = 0.98, g = 0.66, b = 0.22})
-                        e.die('neutral')
+                        if e and e.valid then
+                            e.die('neutral')
+                        end
                     else
-                        e.destroy()
+                        if e and e.valid then
+                            e.destroy()
+                        end
                     end
 
                     for ii = 1, 5, 1 do
@@ -512,7 +517,7 @@ function Public.giftmas_lights()
         [4] = {r = 63, g = 49, b = 255, a = 1}, --modrá
     }
     for _ = 1, 5, 1 do
-        rendering.set_color(lights[math_random(1, nr)], colors[math_random(1, 4)])
+        lights[math_random(1, nr)].color = colors[math_random(1, 4)]
     end
 end
 

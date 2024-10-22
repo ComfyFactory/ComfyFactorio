@@ -163,23 +163,21 @@ local function get_spawn_pos()
     local inverted = Public.get('inverted')
     if inverted then
         if initial_position.y - target.position.y < -10 then
-            initial_position = { x = initial_position.x, y = initial_position.y + 50 }
+            initial_position = { x = initial_position.x, y = initial_position.y }
         end
     else
         if initial_position.y - target.position.y > 10 then
-            initial_position = { x = initial_position.x, y = initial_position.y - 50 }
+            initial_position = { x = initial_position.x, y = initial_position.y }
         end
     end
 
     local located_position = find_initial_spot(surface, initial_position)
     local valid_position = surface.find_non_colliding_position('stone-furnace', located_position, 32, 1)
     local debug = Public.get('debug')
-    if debug then
-        if valid_position then
-            local x = valid_position.x
-            local y = valid_position.y
-            game.print('[gps=' .. x .. ',' .. y .. ',' .. surface.name .. ']')
-        end
+    if valid_position then
+        local x = valid_position.x
+        local y = valid_position.y
+        game.print('[gps=' .. x .. ',' .. y .. ',' .. surface.name .. ']')
     end
 
     if not valid_position then
@@ -397,11 +395,13 @@ local function set_enemy_evolution()
 
     BiterHealthBooster.set('biter_health_boost', biter_health_boost)
 
-    if enemy.evolution_factor == 1 and evolution_factor == 1 then
+    local surface_index = Public.get('surface_index')
+
+    if enemy.get_evolution_factor(surface_index) == 1 and evolution_factor == 1 then
         return
     end
 
-    enemy.evolution_factor = evolution_factor
+    enemy.set_evolution_factor(evolution_factor, surface_index)
 
     raise(Public.events.on_evolution_factor_changed, { evolution_factor = evolution_factor })
 end
@@ -812,22 +812,22 @@ local function reform_group(group)
             new_group.add_member(biter)
         end
         Public.debug_print('Creating new unit group, because old one was stuck.')
-        generated_units.unit_groups[new_group.group_number] = new_group
+        generated_units.unit_groups[new_group.unique_id] = new_group
         local unit_groups_size = Public.get('unit_groups_size')
         Public.set('unit_groups_size', unit_groups_size + 1)
 
         return new_group
     else
         Public.debug_print('Destroying stuck group.')
-        if generated_units.unit_groups[group.group_number] then
-            if generated_units.unit_group_last_command[group.group_number] then
-                generated_units.unit_group_last_command[group.group_number] = nil
+        if generated_units.unit_groups[group.unique_id] then
+            if generated_units.unit_group_last_command[group.unique_id] then
+                generated_units.unit_group_last_command[group.unique_id] = nil
             end
             local positions = generated_units.unit_group_pos.positions
-            if positions[group.group_number] then
-                positions[group.group_number] = nil
+            if positions[group.unique_id] then
+                positions[group.unique_id] = nil
             end
-            table.remove(generated_units.unit_groups, group.group_number)
+            table.remove(generated_units.unit_groups, group.unique_id)
             local unit_groups_size = Public.get('unit_groups_size')
             Public.set('unit_groups_size', unit_groups_size - 1)
         end
@@ -970,12 +970,12 @@ local function command_to_main_target(group, bypass)
     local generated_units = Public.get('generated_units')
     local unit_group_command_delay = Public.get('unit_group_command_delay')
     if not bypass then
-        if not generated_units.unit_group_last_command[group.group_number] then
-            generated_units.unit_group_last_command[group.group_number] = game.tick - (unit_group_command_delay + 1)
+        if not generated_units.unit_group_last_command[group.unique_id] then
+            generated_units.unit_group_last_command[group.unique_id] = game.tick - (unit_group_command_delay + 1)
         end
 
-        if generated_units.unit_group_last_command[group.group_number] then
-            if generated_units.unit_group_last_command[group.group_number] + unit_group_command_delay > game.tick then
+        if generated_units.unit_group_last_command[group.unique_id] then
+            if generated_units.unit_group_last_command[group.unique_id] + unit_group_command_delay > game.tick then
                 return
             end
         end
@@ -987,7 +987,7 @@ local function command_to_main_target(group, bypass)
     end
 
     local tile = group.surface.get_tile(group.position)
-    if tile.valid and tile.collides_with('player-layer') then
+    if tile.valid and tile.collides_with('player') then
         group = reform_group(group)
     end
     if not valid(group) then
@@ -1013,25 +1013,25 @@ local function command_to_main_target(group, bypass)
     )
     Public.debug_print('get_main_command - sent commands')
     if valid(group) then
-        generated_units.unit_group_last_command[group.group_number] = game.tick
+        generated_units.unit_group_last_command[group.unique_id] = game.tick
     end
 end
 
 local function command_to_side_target(group)
     local generated_units = Public.get('generated_units')
     local unit_group_command_delay = Public.get('unit_group_command_delay')
-    if not generated_units.unit_group_last_command[group.group_number] then
-        generated_units.unit_group_last_command[group.group_number] = game.tick - (unit_group_command_delay + 1)
+    if not generated_units.unit_group_last_command[group.unique_id] then
+        generated_units.unit_group_last_command[group.unique_id] = game.tick - (unit_group_command_delay + 1)
     end
 
-    if generated_units.unit_group_last_command[group.group_number] then
-        if generated_units.unit_group_last_command[group.group_number] + unit_group_command_delay > game.tick then
+    if generated_units.unit_group_last_command[group.unique_id] then
+        if generated_units.unit_group_last_command[group.unique_id] + unit_group_command_delay > game.tick then
             return
         end
     end
 
     local tile = group.surface.get_tile(group.position)
-    if tile.valid and tile.collides_with('player-layer') then
+    if tile.valid and tile.collides_with('player') then
         group = reform_group(group)
     end
 
@@ -1048,7 +1048,7 @@ local function command_to_side_target(group)
         }
     )
 
-    generated_units.unit_group_last_command[group.group_number] = game.tick
+    generated_units.unit_group_last_command[group.unique_id] = game.tick
 end
 
 local function give_side_commands_to_group()
@@ -1173,12 +1173,12 @@ local function spawn_unit_group(fs, only_bosses)
 
     local generated_units = Public.get('generated_units')
 
-    local unit_group = surface.create_unit_group({ position = spawn_position, force = force })
+    local unit_group = surface.create_unit_group({ position = spawn_position, force = force }) --[[@as LuaCommandable]]
 
     event_data.unit_group = unit_group
 
     generated_units.unit_group_pos.index = generated_units.unit_group_pos.index + 1
-    generated_units.unit_group_pos.positions[unit_group.group_number] = { position = unit_group.position, index = 0 }
+    generated_units.unit_group_pos.positions[unit_group.unique_id] = { position = unit_group.position, index = 0 }
     local average_unit_group_size = Public.get('average_unit_group_size')
     local unit_settings = Public.get('unit_settings')
     event_data.unit_settings = unit_settings
@@ -1246,7 +1246,7 @@ local function spawn_unit_group(fs, only_bosses)
         end
     end
 
-    generated_units.unit_groups[unit_group.group_number] = unit_group
+    generated_units.unit_groups[unit_group.unique_id] = unit_group
     local unit_groups_size = Public.get('unit_groups_size')
     Public.set('unit_groups_size', unit_groups_size + 1)
     if random(1, 2) == 1 then
@@ -1290,7 +1290,7 @@ local function spawn_unit_group_simple(fs)
 
 
     generated_units.unit_group_pos.index = generated_units.unit_group_pos.index + 1
-    generated_units.unit_group_pos.positions[unit_group.group_number] = { position = unit_group.position, index = 0 }
+    generated_units.unit_group_pos.positions[unit_group.unique_id] = { position = unit_group.position, index = 0 }
     local unit_settings = Public.get('unit_settings')
 
 
@@ -1318,7 +1318,7 @@ local function spawn_unit_group_simple(fs)
         return
     end
 
-    generated_units.unit_groups[unit_group.group_number] = unit_group
+    generated_units.unit_groups[unit_group.unique_id] = unit_group
     local unit_groups_size = Public.get('unit_groups_size')
     Public.set('unit_groups_size', unit_groups_size + 1)
     if random(1, 2) == 1 then
@@ -1345,17 +1345,17 @@ local function check_group_positions()
             if group.state == defines.group_state.finished then
                 return command_to_main_target(group, true)
             end
-            if ugp[group.group_number] then
-                local success = is_position_near(group.position, ugp[group.group_number].position)
+            if ugp[group.unique_id] then
+                local success = is_position_near(group.position, ugp[group.unique_id].position)
                 if success then
-                    ugp[group.group_number].index = ugp[group.group_number].index + 1
-                    if ugp[group.group_number].index >= 2 then
+                    ugp[group.unique_id].index = ugp[group.unique_id].index + 1
+                    if ugp[group.unique_id].index >= 2 then
                         command_to_main_target(group, true)
                         fill_tiles(group, 30)
                         remove_rocks(group)
                         remove_trees(group)
-                        if valid(group) and ugp[group.group_number].index >= 4 then
-                            generated_units.unit_group_pos.positions[group.group_number] = nil
+                        if valid(group) and ugp[group.unique_id].index >= 4 then
+                            generated_units.unit_group_pos.positions[group.unique_id] = nil
                             reform_group(group)
                         end
                     end

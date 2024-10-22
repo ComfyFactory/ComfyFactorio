@@ -1,23 +1,20 @@
 ---@diagnostic disable: inject-field
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-
-local Memory = require 'maps.pirates.memory'
-local Common = require 'maps.pirates.common'
+local Memory = require('maps.pirates.memory')
+local Common = require('maps.pirates.common')
 -- local CoreData = require 'maps.pirates.coredata'
 -- local Utils = require 'maps.pirates.utils_local'
-local Math = require 'maps.pirates.math'
-local _inspect = require 'utils.inspect'.inspect
-local Crew = require 'maps.pirates.crew'
+local Math = require('maps.pirates.math')
+local _inspect = require('utils.inspect').inspect
+local Crew = require('maps.pirates.crew')
 -- local Progression = require 'maps.pirates.progression'
 -- local Structures = require 'maps.pirates.structures.structures'
 -- local Shop = require 'maps.pirates.shop.shop'
-local Boats = require 'maps.pirates.structures.boats.boats'
-local Surfaces = require 'maps.pirates.surfaces.surfaces'
-
+local Boats = require('maps.pirates.structures.boats.boats')
+local Surfaces = require('maps.pirates.surfaces.surfaces')
 
 local Public = {}
-
 
 Public.bold_font_color = { 255, 230, 192 }
 Public.default_font_color = { 1, 1, 1 }
@@ -35,8 +32,6 @@ Public.rage_font_color_1 = { r = 1, g = 1, b = 1 }
 Public.rage_font_color_2 = { r = 1, g = 0.5, b = 0.1 }
 Public.rage_font_color_3 = { r = 1, g = 0.1, b = 0.05 }
 
-
-
 Public.default_window_positions = {
 	runs = { x = 10, y = 48 },
 	crew = { x = 40, y = 48 },
@@ -51,11 +46,11 @@ function Public.new_window(player, name)
 	local gui_memory = global_memory.player_gui_memories[player.index]
 	local flow
 
-	flow = player.gui.screen.add {
+	flow = player.gui.screen.add({
 		type = 'frame',
 		name = name .. '_piratewindow',
-		direction = 'vertical'
-	}
+		direction = 'vertical',
+	})
 
 	if gui_memory and gui_memory[name] and gui_memory[name].position then
 		flow.location = gui_memory[name].position
@@ -169,7 +164,7 @@ function Public.flow_add_section(flow, name, caption)
 	flow3 = flow2.add({
 		type = 'label',
 		name = 'header',
-		caption = caption
+		caption = caption,
 	})
 	flow3.style.font = 'heading-2'
 	flow3.style.font_color = Public.section_header_font_color
@@ -196,7 +191,7 @@ function Public.flow_add_subpanel(flow, name)
 		type = 'frame',
 		direction = 'vertical',
 	})
-	flow2.style = 'subpanel_frame'
+	flow2.style = 'tabbed_pane_frame'
 	flow2.style.natural_width = 100
 	flow2.style.top_padding = -2
 	flow2.style.top_margin = -8
@@ -213,10 +208,10 @@ function Public.flow_add_close_button(flow, close_button_name)
 		direction = 'vertical',
 	})
 
-	flow3 = flow2.add { type = "flow", name = 'hflow', direction = "horizontal" }
+	flow3 = flow2.add({ type = 'flow', name = 'hflow', direction = 'horizontal' })
 	flow3.style.vertical_align = 'center'
 
-	flow4 = flow3.add { type = "flow", name = 'spacing', direction = "horizontal" }
+	flow4 = flow3.add({ type = 'flow', name = 'spacing', direction = 'horizontal' })
 	flow4.style.horizontally_stretchable = true
 
 	flow4 = flow3.add({
@@ -241,7 +236,6 @@ function Public.crew_overall_state_bools(player_index)
 
 	local ret = {
 		adventuring = false,
-		spectating = false,
 		created_crew = false,
 		proposing = false,
 		sloops_full = false,
@@ -251,16 +245,17 @@ function Public.crew_overall_state_bools(player_index)
 	}
 	if memory.crewstatus == Crew.enum.ADVENTURING then
 		for _, playerindex in pairs(memory.crewplayerindices) do
-			if player_index == playerindex then ret.adventuring = true end
-		end
-		for _, playerindex in pairs(memory.spectatorplayerindices) do
-			if player_index == playerindex then ret.spectating = true end
+			if player_index == playerindex then
+				ret.adventuring = true
+			end
 		end
 	end
 	if memory.crewstatus == nil then
 		for _, crewid in pairs(global_memory.crew_active_ids) do
 			if global_memory.crew_memories[crewid].crewstatus == Crew.enum.LEAVING_INITIAL_DOCK then
-				if global_memory.crew_memories[crewid].original_proposal.created_by_player == player_index then ret.leaving = true end
+				if global_memory.crew_memories[crewid].original_proposal.created_by_player == player_index then
+					ret.leaving = true
+				end
 			end
 		end
 		for _, proposal in pairs(global_memory.crewproposals) do
@@ -276,7 +271,9 @@ function Public.crew_overall_state_bools(player_index)
 				end
 			end
 
-			if player_index == proposal.created_by_player then ret.created_crew = true end
+			if player_index == proposal.created_by_player then
+				ret.created_crew = true
+			end
 		end
 	end
 
@@ -297,13 +294,23 @@ function Public.player_and_crew_state_bools(player)
 
 	captain_bool = Common.is_captain(player)
 
-	in_crowsnest_bool = string.sub(player.surface.name, 9, 17) == 'Crowsnest'
-	in_hold_bool = string.sub(player.surface.name, 9, 12) == 'Hold'
-	in_cabin_bool = string.sub(player.surface.name, 9, 13) == 'Cabin'
+	in_crowsnest_bool = Common.validate_player_and_character(player)
+		and string.sub(player.character.surface.name, 9, 17) == 'Crowsnest'
+	in_hold_bool = Common.validate_player_and_character(player)
+		and string.sub(player.character.surface.name, 9, 12) == 'Hold'
+	in_cabin_bool = Common.validate_player_and_character(player)
+		and string.sub(player.character.surface.name, 9, 13) == 'Cabin'
 
-	onmap_bool = destination.surface_name and (player.surface.name == destination.surface_name or (
-		boat and boat.surface_name == destination.surface_name and (in_crowsnest_bool or in_hold_bool or in_cabin_bool)
-	))
+	onmap_bool = destination.surface_name
+		and (
+			Common.validate_player_and_character(player)
+				and player.character.surface.name == destination.surface_name
+			or (
+				boat
+				and boat.surface_name == destination.surface_name
+				and (in_crowsnest_bool or in_hold_bool or in_cabin_bool)
+			)
+		)
 
 	if destination then
 		eta_bool = dynamic_data.time_remaining and dynamic_data.time_remaining > 0 and onmap_bool
@@ -315,29 +322,48 @@ function Public.player_and_crew_state_bools(player)
 		atsea_victorious_bool = boat and boat.state == Boats.enum_state.ATSEA_VICTORIOUS
 		landed_bool = boat and boat.state == Boats.enum_state.LANDED
 		quest_bool = (dynamic_data.quest_type ~= nil) and onmap_bool
-		charged_bool = dynamic_data.silocharged
-		silo_bool = dynamic_data.rocketsilos and onmap_bool and ((dynamic_data.rocketsilos[1] and dynamic_data.rocketsilos[1].valid) or charged_bool)
-		launched_bool = dynamic_data.rocketlaunched
+		charged_bool = dynamic_data.silo_is_charged
+		silo_bool = dynamic_data.rocketsilos
+			and onmap_bool
+			and ((dynamic_data.rocketsilos[1] and dynamic_data.rocketsilos[1].valid) or charged_bool)
+		launched_bool = dynamic_data.rocket_launched
 
-		cost_bool = destination.static_params.base_cost_to_undock and (not atsea_sailing_bool) and (not atsea_waiting_bool) and (not atsea_victorious_bool) and (not retreating_bool)
+		cost_bool = destination.static_params.base_cost_to_undock
+			and not atsea_sailing_bool
+			and not atsea_waiting_bool
+			and not atsea_victorious_bool
+			and not retreating_bool
 		cost_includes_rocket_launch_bool = cost_bool and destination.static_params.base_cost_to_undock['launch_rocket']
 
 		leave_anytime_bool = (landed_bool and not (eta_bool or cost_bool))
 	end
 
 	if boat then
-		atsea_loading_bool = boat.state == Boats.enum_state.ATSEA_LOADING_MAP and memory.loadingticks
+		atsea_loading_bool = boat.state == Boats.enum_state.ATSEA_LOADING_MAP and memory.loading_ticks
 
-		character_on_deck_bool = player.character and player.character.position and player.surface.name and player.surface.name == boat.surface_name
+		character_on_deck_bool = Common.validate_player_and_character(player)
+			and player.character
+			and player.character.position
+			and player.character.surface.name
+			and player.character.surface.name == boat.surface_name
 
 		if character_on_deck_bool then
 			local BoatData = Boats.get_scope(boat).Data
 
-			on_deck_standing_near_loco_bool = Math.distance(player.character.position, Math.vector_sum(boat.position, BoatData.loco_pos)) < 2.5
+			on_deck_standing_near_loco_bool = Math.distance(
+				player.character.position,
+				Math.vector_sum(boat.position, BoatData.loco_pos)
+			) < 2.5
 
-			on_deck_standing_near_cabin_bool = Math.distance(player.character.position, Math.vector_sum(boat.position, BoatData.cabin_car)) < 2.0
+			on_deck_standing_near_cabin_bool = Math.distance(
+				player.character.position,
+				Math.vector_sum(boat.position, BoatData.cabin_car)
+			) < 2.0
 
-			on_deck_standing_near_crowsnest_bool = Math.distance(player.character.position, Math.vector_sum(boat.position, BoatData.crowsnest_center)) < 2.5
+			on_deck_standing_near_crowsnest_bool = Math.distance(
+				player.character.position,
+				Math.vector_sum(boat.position, BoatData.crowsnest_center)
+			) < 2.5
 		end
 
 		approaching_dock_bool = destination.type == Surfaces.enum.DOCK and boat.state == Boats.enum_state.APPROACHING
@@ -370,7 +396,7 @@ function Public.player_and_crew_state_bools(player)
 		cost_includes_rocket_launch_bool = cost_includes_rocket_launch_bool,
 		approaching_dock_bool = approaching_dock_bool,
 		leaving_dock_bool = leaving_dock_bool,
-		leave_anytime_bool = leave_anytime_bool
+		leave_anytime_bool = leave_anytime_bool,
 	}
 
 	-- memory.player_and_crew_state_bools_memoized = {ret = ret, tick = game.tick}

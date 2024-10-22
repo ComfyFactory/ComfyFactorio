@@ -7,7 +7,7 @@ Public.display_names = { { 'pirates.location_displayname_cave_1' } }
 Public.terraingen_frame_width = 640
 Public.terraingen_frame_height = 640
 Public.static_params_default = {
-	default_decoratives = true,
+	decorative_settings = prototypes.space_location.nauvis.map_gen_settings.autoplace_settings.decorative.settings,
 	base_starting_treasure = 1000,
 	base_starting_rock_material = 800,
 	base_starting_wood = 1200,
@@ -17,7 +17,6 @@ Public.static_params_default = {
 	brightness_visual_weights = { 0.92, 0.92, 0.92 },
 	min_brightness = 0.08,
 }
-
 
 -- Here we set values somewhat higher, because getting all resources requires work and bit of luck (island needs enough rock)
 function Public.base_ores()

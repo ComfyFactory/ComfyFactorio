@@ -1,10 +1,6 @@
 local Public = {}
 
 local scrapable = {
-    -- simple entity
-    ['small-ship-wreck'] = true,
-    ['medium-ship-wreck'] = true,
-    -- simple entity with owner
     ['crash-site-spaceship-wreck-small-1'] = true,
     ['crash-site-spaceship-wreck-small-2'] = true,
     ['crash-site-spaceship-wreck-small-3'] = true,

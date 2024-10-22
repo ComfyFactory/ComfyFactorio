@@ -1,7 +1,7 @@
 local Chrono_table = require 'maps.chronosphere.table'
-local Rand = require 'maps.chronosphere.random'
 local Balance = require 'maps.chronosphere.balance'
 local Difficulty = require 'modules.difficulty_vote'
+local Raffle = require 'utils.math.raffle'
 local math_random = math.random
 local math_abs = math.abs
 local math_max = math.max
@@ -36,8 +36,6 @@ local function treasure_chest_loot(difficulty, world)
         {3, 0, 1, false, 'small-lamp', 8, 32},
         {2, 0, 1, false, 'electric-mining-drill', 2, 4},
         {3, 0, 1, false, 'long-handed-inserter', 4, 16},
-        {0.5, 0, 1, false, 'filter-inserter', 2, 12},
-        {0.2, 0, 1, false, 'stack-filter-inserter', 2, 6},
         {0.2, 0, 1, false, 'slowdown-capsule', 2, 4},
         {0.2, 0, 1, false, 'destroyer-capsule', 2, 4},
         {0.2, 0, 1, false, 'defender-capsule', 2, 4},
@@ -47,7 +45,7 @@ local function treasure_chest_loot(difficulty, world)
         {1, 0.15, 1, false, 'pump', 1, 2},
         {2, 0.15, 1, false, 'pumpjack', 1, 3},
         {0.02, 0.15, 1, false, 'oil-refinery', 1, 2},
-        {3, 0, 1, false, 'effectivity-module', 1, 4},
+        {3, 0, 1, false, 'efficiency-module', 1, 4},
         {3, 0, 1, false, 'speed-module', 1, 4},
         {3, 0, 1, false, 'productivity-module', 1, 4},
         --shotgun meta:
@@ -77,7 +75,6 @@ local function treasure_chest_loot(difficulty, world)
         {4, 0.4, 1.5, true, 'utility-science-pack', 16, 32},
         {10, 0.5, 1.5, true, 'space-science-pack', 16, 32},
         --early-game:
-        --{3, -0.1, 0.2, false, "railgun-dart", 2, 4},
         {3, -0.1, 0.1, true, 'wooden-chest', 8, 40},
         {5, -0.1, 0.1, true, 'burner-inserter', 8, 20},
         {1, -0.2, 0.2, true, 'offshore-pump', 1, 3},
@@ -97,7 +94,6 @@ local function treasure_chest_loot(difficulty, world)
         {1, -0.3, 0.3, true, 'assembling-machine-1', 2, 4},
         {5, -0.8, 0.8, true, 'transport-belt', 15, 120},
         --mid-game:
-        --{6, 0.2, 0.5, false, "railgun-dart", 4, 8},
         {5, -0.2, 0.7, true, 'pipe', 30, 50},
         {1, -0.2, 0.7, true, 'pipe-to-ground', 4, 8},
         {5, -0.2, 0.7, true, 'iron-gear-wheel', 40, 160},
@@ -120,7 +116,6 @@ local function treasure_chest_loot(difficulty, world)
         {8, 0, 1, true, 'steel-chest', 8, 16},
         {3, 0.2, 1, true, 'chemical-plant', 1, 3},
         --late-game:
-        --{9, 0.5, 0.8, false, "railgun-dart", 8, 16},
         {3, 0, 1.2, true, 'rocket-launcher', 1, 1},
         {5, 0, 1.2, true, 'rocket', 16, 32},
         {3, 0, 1.2, true, 'land-mine', 16, 32},
@@ -147,12 +142,9 @@ local function treasure_chest_loot(difficulty, world)
         {4, 0.4, 1.6, true, 'processing-unit', 30, 200},
         {2, 0.6, 1.4, true, 'roboport', 1, 1},
         -- super late-game:
-        --{9, 0.8, 1.2, false, "railgun-dart", 12, 20},
         {1, 0.9, 1.1, true, 'power-armor-mk2', 1, 1},
-        {1, 0.8, 1.2, true, 'fusion-reactor-equipment', 1, 1}
+        {1, 0.8, 1.2, true, 'fission-reactor-equipment', 1, 1}
 
-        --{2, 0, 1, , "computer", 1, 1},
-        --{1, 0.2, 1, , "railgun", 1, 1},
         --{1, 0.9, 1, , "personal-roboport-mk2-equipment", 1, 1},
     }
     local specialised_loot_raw = {}
@@ -178,7 +170,7 @@ local function treasure_chest_loot(difficulty, world)
             {2, 0.2, 1.6, true, 'nuclear-reactor', 1, 1},
             {2, 0.2, 1, false, 'centrifuge', 1, 1},
             {1, 0.25, 1.75, true, 'nuclear-fuel', 1, 1},
-            {1, 0.5, 1.5, true, 'fusion-reactor-equipment', 1, 1},
+            {1, 0.5, 1.5, true, 'fission-reactor-equipment', 1, 1},
             {1, 0.5, 1.5, true, 'atomic-bomb', 1, 1}
         }
     end
@@ -186,14 +178,14 @@ local function treasure_chest_loot(difficulty, world)
     --[[
 	if world.id == 7 then --biterwrld
 		specialised_loot_raw = {
-			{4, 0, 1, false, "effectivity-module", 1, 4},
+			{4, 0, 1, false, "efficiency-module", 1, 4},
 			{4, 0, 1, false, "productivity-module", 1, 4},
 			{4, 0, 1, false, "speed-module", 1, 4},
 			{2, 0, 1, false, "beacon", 1, 1},
-			{0.5, 0, 1, false, "effectivity-module-2", 1, 4},
+			{0.5, 0, 1, false, "efficiency-module-2", 1, 4},
 			{0.5, 0, 1, false, "productivity-module-2", 1, 4},
 			{0.5, 0, 1, false, "speed-module-2", 1, 4},
-			{0.1, 0, 1, false, "effectivity-module-3", 1, 4},
+			{0.1, 0, 1, false, "efficiency-module-3", 1, 4},
 			{0.1, 0, 1, false, "productivity-module-3", 1, 4},
 			{0.1, 0, 1, false, "speed-module-3", 1, 4},
 
@@ -321,7 +313,7 @@ function Public.treasure_chest(surface, position, container_name)
     e.minable = false
     local inv = e.get_inventory(defines.inventory.chest)
     for _ = 1, math_random(2, 6), 1 do
-        local loot = Rand.raffle(loot_types, loot_weights)
+        local loot = Raffle.raffle(loot_types, loot_weights)
         local difficulty_scaling = Balance.treasure_quantity_difficulty_scaling(difficulty)
         if objective.chronojumps == 0 then
             difficulty_scaling = 1

@@ -5,43 +5,43 @@ local insert = table.insert
 local random = math.random
 
 local entity_loot_chance = {
-    {name = 'advanced-circuit', chance = 150},
-    {name = 'battery', chance = 150},
-    {name = 'cannon-shell', chance = 50},
-    {name = 'copper-cable', chance = 5000},
-    {name = 'copper-plate', chance = 2500},
-    {name = 'crude-oil-barrel', chance = 500},
-    {name = 'defender-capsule', chance = 100},
-    {name = 'destroyer-capsule', chance = 20},
-    {name = 'distractor-capsule', chance = 40},
-    {name = 'electric-engine-unit', chance = 20},
-    {name = 'electronic-circuit', chance = 1500},
-    {name = 'empty-barrel', chance = 100},
-    {name = 'engine-unit', chance = 50},
-    {name = 'explosive-cannon-shell', chance = 50},
-    {name = 'explosives', chance = 50},
-    {name = 'grenade', chance = 100},
-    {name = 'heavy-oil-barrel', chance = 200},
-    {name = 'iron-gear-wheel', chance = 5000},
-    {name = 'iron-plate', chance = 5000},
-    {name = 'iron-stick', chance = 500},
-    {name = 'land-mine', chance = 30},
-    {name = 'light-oil-barrel', chance = 200},
-    {name = 'lubricant-barrel', chance = 200},
-    {name = 'nuclear-fuel', chance = 20},
-    {name = 'petroleum-gas-barrel', chance = 300},
-    {name = 'pipe', chance = 1000},
-    {name = 'pipe-to-ground', chance = 100},
-    {name = 'plastic-bar', chance = 50},
-    {name = 'processing-unit', chance = 20},
-    {name = 'rocket-fuel', chance = 50},
-    {name = 'solid-fuel', chance = 1000},
-    {name = 'steel-plate', chance = 1500},
-    {name = 'sulfuric-acid-barrel', chance = 150},
-    {name = 'uranium-fuel-cell', chance = 10},
-    {name = 'water-barrel', chance = 100},
-    {name = 'tank', chance = 1},
-    {name = 'car', chance = 5}
+    { name = 'advanced-circuit',       chance = 150 },
+    { name = 'battery',                chance = 150 },
+    { name = 'cannon-shell',           chance = 50 },
+    { name = 'copper-cable',           chance = 5000 },
+    { name = 'copper-plate',           chance = 2500 },
+    { name = 'crude-oil-barrel',       chance = 500 },
+    { name = 'defender-capsule',       chance = 100 },
+    { name = 'destroyer-capsule',      chance = 20 },
+    { name = 'distractor-capsule',     chance = 40 },
+    { name = 'electric-engine-unit',   chance = 20 },
+    { name = 'electronic-circuit',     chance = 1500 },
+    { name = 'barrel',                 chance = 100 },
+    { name = 'engine-unit',            chance = 50 },
+    { name = 'explosive-cannon-shell', chance = 50 },
+    { name = 'explosives',             chance = 50 },
+    { name = 'grenade',                chance = 100 },
+    { name = 'heavy-oil-barrel',       chance = 200 },
+    { name = 'iron-gear-wheel',        chance = 5000 },
+    { name = 'iron-plate',             chance = 5000 },
+    { name = 'iron-stick',             chance = 500 },
+    { name = 'land-mine',              chance = 30 },
+    { name = 'light-oil-barrel',       chance = 200 },
+    { name = 'lubricant-barrel',       chance = 200 },
+    { name = 'nuclear-fuel',           chance = 20 },
+    { name = 'petroleum-gas-barrel',   chance = 300 },
+    { name = 'pipe',                   chance = 1000 },
+    { name = 'pipe-to-ground',         chance = 100 },
+    { name = 'plastic-bar',            chance = 50 },
+    { name = 'processing-unit',        chance = 20 },
+    { name = 'rocket-fuel',            chance = 50 },
+    { name = 'solid-fuel',             chance = 1000 },
+    { name = 'steel-plate',            chance = 1500 },
+    { name = 'sulfuric-acid-barrel',   chance = 150 },
+    { name = 'uranium-fuel-cell',      chance = 10 },
+    { name = 'water-barrel',           chance = 100 },
+    { name = 'tank',                   chance = 1 },
+    { name = 'car',                    chance = 5 }
 }
 
 -- positive numbers can scale, 0 is disabled, and negative numbers are fixed absolute values
@@ -57,7 +57,7 @@ local entity_loot_amounts = {
     ['distractor-capsule'] = 0.3,
     ['electric-engine-unit'] = 2,
     ['electronic-circuit'] = 8,
-    ['empty-barrel'] = 3,
+    ['barrel'] = 3,
     ['engine-unit'] = 2,
     ['explosive-cannon-shell'] = 1,
     ['explosives'] = 4,
@@ -136,11 +136,11 @@ local function on_player_mined_entity(event)
         amount = random(r1, r2)
     end
 
-    local inserted_count = player.insert({name = scrap, count = amount})
+    local inserted_count = player.insert({ name = scrap, count = amount })
 
     if inserted_count ~= amount then
         local amount_to_spill = amount - inserted_count
-        entity.surface.spill_item_stack(position, {name = scrap, count = amount_to_spill}, true)
+        entity.surface.spill_item_stack(position, { name = scrap, count = amount_to_spill }, true)
     end
 
     entity.surface.create_entity(
@@ -148,7 +148,7 @@ local function on_player_mined_entity(event)
             name = 'flying-text',
             position = position,
             text = '+' .. amount .. ' [img=item/' .. scrap .. ']',
-            color = {r = 0.98, g = 0.66, b = 0.22}
+            color = { r = 0.98, g = 0.66, b = 0.22 }
         }
     )
 end

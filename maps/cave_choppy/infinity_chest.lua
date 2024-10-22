@@ -12,8 +12,8 @@ local chests = {}
 local chests_next = {}
 
 Global.register(
-    {chests = chests, chests_next = chests_next},
-    function(tbl)
+    { chests = chests, chests_next = chests_next },
+    function (tbl)
         chests = tbl.chests
         chests_next = tbl.chests_next
     end
@@ -23,24 +23,24 @@ local chest_gui_frame_name = Gui.uid_name()
 local chest_content_table_name = Gui.uid_name()
 
 function Public.create_chest(surface, position, storage)
-    local entity = surface.create_entity {name = 'infinity-chest', position = position, force = 'neutral'}
-    chests[entity.unit_number] = {entity = entity, storage = storage}
+    local entity = surface.create_entity { name = 'infinity-chest', position = position, force = 'neutral' }
+    chests[entity.unit_number] = { entity = entity, storage = storage }
     return entity
 end
 
 local function built_entity(event)
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity or not entity.valid or entity.name ~= 'infinity-chest' then
         return
     end
 
     entity.active = false
 
-    chests[entity.unit_number] = {entity = entity, storage = {}}
+    chests[entity.unit_number] = { entity = entity, storage = {} }
 end
 
 local function get_stack_size(name)
-    local proto = game.item_prototypes[name]
+    local proto = prototypes.item[name]
     if not proto then
         log('item prototype ' .. name .. ' not found')
         return 1
@@ -60,7 +60,7 @@ local function do_item(name, count, inv, storage)
     local new_amount = 0
 
     if diff > 0 then
-        inv.remove({name = name, count = diff})
+        inv.remove({ name = name, count = diff })
         local prev = storage[name] or 0
         new_amount = prev + diff
     elseif diff < 0 then
@@ -70,7 +70,7 @@ local function do_item(name, count, inv, storage)
         end
 
         diff = math.min(prev, -diff)
-        local inserted = inv.insert({name = name, count = diff})
+        local inserted = inv.insert({ name = name, count = diff })
         new_amount = prev - inserted
     end
 
@@ -119,7 +119,7 @@ local function create_chest_gui_content(frame, player, chest)
     if grid then
         grid.clear()
     else
-        grid = frame.add {type = 'table', name = chest_content_table_name, column_count = 10, style = 'slot_table'}
+        grid = frame.add { type = 'table', name = chest_content_table_name, column_count = 10, style = 'slot_table' }
     end
 
     for name, count in pairs(storage) do
@@ -153,36 +153,36 @@ end
 local chest_gui_content_callback
 chest_gui_content_callback =
     Token.register(
-    function(data)
-        local player = data.player
+        function (data)
+            local player = data.player
 
-        if not player or not player.valid then
-            return
+            if not player or not player.valid then
+                return
+            end
+
+            local opened = data.opened
+            if not opened or not opened.valid then
+                return
+            end
+
+            local entity = data.chest.entity
+            if not entity.valid then
+                player.opened = nil
+                opened.destroy()
+                return
+            end
+
+            if not player.connected then
+                player.opened = nil
+                opened.destroy()
+                return
+            end
+
+            create_chest_gui_content(opened, player, data.chest)
+
+            Task.set_timeout_in_ticks(60, chest_gui_content_callback, data)
         end
-
-        local opened = data.opened
-        if not opened or not opened.valid then
-            return
-        end
-
-        local entity = data.chest.entity
-        if not entity.valid then
-            player.opened = nil
-            opened.destroy()
-            return
-        end
-
-        if not player.connected then
-            player.opened = nil
-            opened.destroy()
-            return
-        end
-
-        create_chest_gui_content(opened, player, data.chest)
-
-        Task.set_timeout_in_ticks(60, chest_gui_content_callback, data)
-    end
-)
+    )
 
 local function gui_opened(event)
     if not event.gui_type == defines.gui_type.entity then
@@ -207,27 +207,27 @@ local function gui_opened(event)
 
     local frame =
         player.gui.center.add {
-        type = 'frame',
-        name = chest_gui_frame_name,
-        caption = 'Infinite Storage Chest',
-        direction = 'vertical'
-    }
+            type = 'frame',
+            name = chest_gui_frame_name,
+            caption = 'Infinite Storage Chest',
+            direction = 'vertical'
+        }
 
     local text =
         frame.add {
-        type = 'label',
-        caption = format(
-            'This chest stores unlimited quantity of items (up to 48 different item types).\nThe chest is best used with an inserter to add / remove items.\nIf the chest is mined or destroyed the items are lost.'
-        )
-    }
+            type = 'label',
+            caption = format(
+                'This chest stores unlimited quantity of items (up to 48 different item types).\nThe chest is best used with an inserter to add / remove items.\nIf the chest is mined or destroyed the items are lost.'
+            )
+        }
     text.style.single_line = false
 
-    local content_header = frame.add {type = 'label', caption = 'Content'}
+    local content_header = frame.add { type = 'label', caption = 'Content' }
     content_header.style.font = 'default-listbox'
 
     create_chest_gui_content(frame, player, chest)
 
-    Task.set_timeout_in_ticks(60, chest_gui_content_callback, {player = player, chest = chest, opened = frame})
+    Task.set_timeout_in_ticks(60, chest_gui_content_callback, { player = player, chest = chest, opened = frame })
 end
 
 Event.add(defines.events.on_built_entity, built_entity)
@@ -237,7 +237,7 @@ Event.add(defines.events.on_gui_opened, gui_opened)
 
 Event.add(
     defines.events.on_player_died,
-    function(event)
+    function (event)
         local player = game.get_player(event.player_index or 0)
 
         if not player or not player.valid then
@@ -257,7 +257,7 @@ Event.add(
 
 Gui.on_custom_close(
     chest_gui_frame_name,
-    function(event)
+    function (event)
         event.element.destroy()
     end
 )

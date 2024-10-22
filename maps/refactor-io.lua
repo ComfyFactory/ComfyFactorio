@@ -6,11 +6,11 @@ require 'modules.spawners_contain_biters'
 require 'modules.no_blueprint_library'
 require 'modules.map_info'
 
-global.map_info = {}
-global.map_info.main_caption = 'Refactor-io'
-global.map_info.sub_caption = ''
-global.map_info.text =
-    [[
+storage.map_info = {}
+storage.map_info.main_caption = 'Refactor-io'
+storage.map_info.sub_caption = ''
+storage.map_info.text =
+[[
 	Hello visitor.
 
 	You cannot mine things.
@@ -28,22 +28,22 @@ local function on_player_joined_game(event)
     local surface = game.surfaces['refactor-io']
 
     if player.online_time == 0 then
-        local non_colliding_position = surface.find_non_colliding_position('character', {0, 0}, 96, 1)
+        local non_colliding_position = surface.find_non_colliding_position('character', { 0, 0 }, 96, 1)
         player.teleport(non_colliding_position, surface)
-        player.insert {name = 'iron-plate', count = 32}
-        player.insert {name = 'iron-gear-wheel', count = 16}
-        player.insert {name = 'wood', count = 100}
-        player.insert {name = 'stone', count = 50}
-        player.insert {name = 'pistol', count = 1}
-        player.insert {name = 'firearm-magazine', count = 16}
+        player.insert { name = 'iron-plate', count = 32 }
+        player.insert { name = 'iron-gear-wheel', count = 16 }
+        player.insert { name = 'wood', count = 100 }
+        player.insert { name = 'stone', count = 50 }
+        player.insert { name = 'pistol', count = 1 }
+        player.insert { name = 'firearm-magazine', count = 16 }
     end
 end
 
 -- players always spawn with railgun
 local function on_player_respawned(event)
     local player = game.players[event.player_index]
-    player.insert {name = 'railgun', count = 1}
-    player.insert {name = 'wood', count = 25}
+    player.insert { name = 'railgun', count = 1 }
+    player.insert { name = 'wood', count = 25 }
 end
 
 -- decon planner doesn't work
@@ -82,7 +82,7 @@ local function on_entity_died(event)
         return
     end
     if event.entity.type == 'unit-spawner' or event.entity.type == 'turret' then
-        event.entity.surface.spill_item_stack({event.entity.position.x, event.entity.position.y + 2}, {name = 'railgun-dart', count = math.random(0, 3)}, false)
+        event.entity.surface.spill_item_stack({ event.entity.position.x, event.entity.position.y + 2 }, { name = 'railgun-dart', count = math.random(0, 3) }, false)
     end
 end
 
@@ -95,22 +95,22 @@ local function on_init()
     map_gen_settings.water = 1.25
     map_gen_settings.starting_area = 1.5
     map_gen_settings.terrain_segmentation = 3.5
-    map_gen_settings.cliff_settings = {cliff_elevation_interval = 6, cliff_elevation_0 = 6}
+    map_gen_settings.cliff_settings = { cliff_elevation_interval = 6, cliff_elevation_0 = 6 }
     map_gen_settings.autoplace_controls = {
-        ['coal'] = {frequency = 3, size = 0.75, richness = 0.75},
-        ['stone'] = {frequency = 3, size = 0.75, richness = 0.75},
-        ['copper-ore'] = {frequency = 3.5, size = 0.95, richness = 0.85},
-        ['iron-ore'] = {frequency = 3.5, size = 0.95, richness = 0.85},
-        ['uranium-ore'] = {frequency = 3.5, size = 0.95, richness = 0.85},
-        ['crude-oil'] = {frequency = 3, size = 0.85, richness = 1},
-        ['trees'] = {frequency = 2.5, size = 0.85, richness = 1},
-        ['enemy-base'] = {frequency = 8, size = 1.5, richness = 1}
+        ['coal'] = { frequency = 3, size = 0.75, richness = 0.75 },
+        ['stone'] = { frequency = 3, size = 0.75, richness = 0.75 },
+        ['copper-ore'] = { frequency = 3.5, size = 0.95, richness = 0.85 },
+        ['iron-ore'] = { frequency = 3.5, size = 0.95, richness = 0.85 },
+        ['uranium-ore'] = { frequency = 3.5, size = 0.95, richness = 0.85 },
+        ['crude-oil'] = { frequency = 3, size = 0.85, richness = 1 },
+        ['trees'] = { frequency = 2.5, size = 0.85, richness = 1 },
+        ['enemy-base'] = { frequency = 8, size = 1.5, richness = 1 }
     }
     local surface = game.create_surface('refactor-io', map_gen_settings)
-    surface.request_to_generate_chunks({0, 0}, 5)
+    surface.request_to_generate_chunks({ 0, 0 }, 5)
     surface.force_generate_chunk_requests()
 
-    game.forces.player.set_spawn_position(surface.find_non_colliding_position('character', {0, 0}, 96, 1), surface)
+    game.forces.player.set_spawn_position(surface.find_non_colliding_position('character', { 0, 0 }, 96, 1), surface)
 end
 
 local event = require 'utils.event'

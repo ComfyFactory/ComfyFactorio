@@ -18,6 +18,7 @@ local scenario_name = Public.scenario_name
 local StatData = require 'utils.datastore.statistics'
 StatData.add_normalize('coins', 'Coins collected'):set_tooltip('The amount of coins the player has collected through mining/killed enemies.')
 
+
 local random = math.random
 local floor = math.floor
 local abs = math.abs
@@ -48,15 +49,15 @@ local chests = {
 local size_chests = #chests
 
 local treasure_chest_messages = {
-    ({'entity.treasure_1'}),
-    ({'entity.treasure_2'}),
-    ({'entity.treasure_3'})
+    ({ 'entity.treasure_1' }),
+    ({ 'entity.treasure_2' }),
+    ({ 'entity.treasure_3' })
 }
 
 local rare_treasure_chest_messages = {
-    ({'entity.treasure_rare_1'}),
-    ({'entity.treasure_rare_2'}),
-    ({'entity.treasure_rare_3'})
+    ({ 'entity.treasure_rare_1' }),
+    ({ 'entity.treasure_rare_2' }),
+    ({ 'entity.treasure_rare_3' })
 }
 
 local disabled_threats = {
@@ -65,10 +66,10 @@ local disabled_threats = {
 }
 
 local defeated_messages = {
-    ({'entity.defeated_1'}),
-    ({'entity.defeated_2'}),
-    ({'entity.defeated_3'}),
-    ({'entity.defeated_4'})
+    ({ 'entity.defeated_1' }),
+    ({ 'entity.defeated_2' }),
+    ({ 'entity.defeated_3' }),
+    ({ 'entity.defeated_4' })
 }
 
 local protect_types = {
@@ -83,30 +84,30 @@ local protect_types = {
 
 local reset_game =
     Task.register(
-    function(data)
-        local this = data.this
-        if this.soft_reset then
-            Public.set_scores()
-            this.game_reset_tick = nil
-            Public.reset_map()
-            return
+        function (data)
+            local this = data.this
+            if this.soft_reset then
+                Public.set_scores()
+                this.game_reset_tick = nil
+                Public.reset_map()
+                return
+            end
+            if this.restart then
+                Public.set_scores()
+                local message = ({ 'entity.reset_game' })
+                Server.to_discord_bold(message, true)
+                Server.start_scenario('Mountain_Fortress_v3')
+                return
+            end
+            if this.shutdown then
+                Public.set_scores()
+                local message = ({ 'entity.shutdown_game' })
+                Server.to_discord_bold(message, true)
+                Server.stop_scenario()
+                return
+            end
         end
-        if this.restart then
-            Public.set_scores()
-            local message = ({'entity.reset_game'})
-            Server.to_discord_bold(message, true)
-            Server.start_scenario('Mountain_Fortress_v3')
-            return
-        end
-        if this.shutdown then
-            Public.set_scores()
-            local message = ({'entity.shutdown_game'})
-            Server.to_discord_bold(message, true)
-            Server.stop_scenario()
-            return
-        end
-    end
-)
+    )
 
 local function get_random_weighted(player, weighted_table, item_index, weight_index)
     local total_weight = 0
@@ -165,6 +166,7 @@ local function check_health()
     if locomotive_health <= 0 then
         Public.set('locomotive_health', 0)
     end
+
     local m = locomotive_health / locomotive_max_health
     if carriages then
         for i = 1, #carriages do
@@ -172,11 +174,10 @@ local function check_health()
             if not (entity and entity.valid) then
                 return
             end
-            local cargo_health = 600
             if entity.type == 'locomotive' then
-                entity.health = 1000 * m
+                entity.health = entity.max_health * m
             else
-                entity.health = cargo_health * m
+                entity.health = entity.max_health * m
             end
         end
     end
@@ -233,7 +234,7 @@ local function set_train_final_health(final_damage_amount, repair)
                 local p = {
                     position = locomotive.position
                 }
-                local msg = ({'entity.train_taking_damage'})
+                local msg = ({ 'entity.train_taking_damage' })
                 Alert.alert_all_players_location(p, msg)
                 Public.set().poison_deployed = true
             end
@@ -250,7 +251,7 @@ local function set_train_final_health(final_damage_amount, repair)
                 local p = {
                     position = locomotive.position
                 }
-                local msg = ({'entity.train_taking_damage'})
+                local msg = ({ 'entity.train_taking_damage' })
                 Alert.alert_all_players_location(p, msg)
                 Public.set().robotics_deployed = true
             end
@@ -281,12 +282,13 @@ local function set_train_final_health(final_damage_amount, repair)
 
     local health_text = Public.get('health_text')
 
-    rendering.set_text(health_text, 'HP: ' .. round(locomotive_health) .. ' / ' .. round(locomotive_max_health))
+    if health_text and health_text.valid then
+        health_text.text = 'HP: ' .. round(locomotive_health) .. ' / ' .. round(locomotive_max_health)
+    end
 end
 
 local function is_protected(e)
-    local map_name = 'mtn_v3'
-    if string.sub(e.surface.name, 0, #map_name) ~= map_name then
+    if string.sub(e.surface.name, 0, #scenario_name) ~= scenario_name then
         return true
     end
 
@@ -388,7 +390,7 @@ local function biters_chew_rocks_faster(data)
     entity.health = entity.health - final_damage_amount * 7
 end
 
-local projectiles = {'grenade', 'explosive-rocket', 'grenade', 'explosive-rocket', 'explosive-cannon-projectile'}
+local projectiles = { 'grenade', 'explosive-rocket', 'grenade', 'explosive-rocket', 'explosive-cannon-projectile' }
 
 local function angry_tree(entity, cause, player)
     if entity.type ~= 'tree' then
@@ -411,21 +413,21 @@ local function angry_tree(entity, cause, player)
         end
     end
     if not position then
-        position = {entity.position.x + (-20 + random(0, 40)), entity.position.y + (-20 + random(0, 40))}
+        position = { entity.position.x + (-20 + random(0, 40)), entity.position.y + (-20 + random(0, 40)) }
     end
     if player then
         local forest_zone = RPG.get_value_from_player(player.index, 'forest_zone')
         if forest_zone and random(1, 32) == 1 then
             local cbl = Public.refill_turret_callback
-            local data = {callback_data = Public.piercing_rounds_magazine_ammo}
+            local data = { callback_data = Public.piercing_rounds_magazine_ammo }
             local e =
                 entity.surface.create_entity(
-                {
-                    name = 'gun-turret',
-                    position = entity.position,
-                    force = 'enemy'
-                }
-            )
+                    {
+                        name = 'gun-turret',
+                        position = entity.position,
+                        force = 'enemy'
+                    }
+                )
             if e.can_insert(Public.piercing_rounds_magazine_ammo) then
                 e.insert(Public.piercing_rounds_magazine_ammo)
             end
@@ -461,11 +463,11 @@ local function give_coin(player)
 
     if coin_amount >= 1 then
         if coin_override then
-            player.insert({name = 'coin', count = coin_override})
+            player.insert({ name = 'coin', count = coin_override })
             StatData.get_data(player):increase('coins', coin_override)
         else
             ---@diagnostic disable-next-line: param-type-mismatch
-            player.insert({name = 'coin', count = random(1, coin_amount)})
+            player.insert({ name = 'coin', count = random(1, coin_amount) })
 
             StatData.get_data(player):increase('coins', coin_amount)
         end
@@ -474,57 +476,57 @@ end
 
 local immunity_spawner =
     Task.register(
-    function(data)
-        local entity = data.entity
-        if not entity or not entity.valid then
-            return
+        function (data)
+            local entity = data.entity
+            if not entity or not entity.valid then
+                return
+            end
+            entity.destructible = true
         end
-        entity.destructible = true
-    end
-)
+    )
 
 local unstuck_player_token =
     Task.register(
-    function(data)
-        local index = data.index
-        if not index then
-            return
-        end
-        local player = game.get_player(index)
-        if not player or not player.valid then
-            return
-        end
+        function (data)
+            local index = data.index
+            if not index then
+                return
+            end
+            local player = game.get_player(index)
+            if not player or not player.valid then
+                return
+            end
 
-        local surface = player.surface
-        local position = surface.find_non_colliding_position('character', player.position, 32, 1)
-        if not position then
-            return
+            local surface = player.surface
+            local position = surface.find_non_colliding_position('character', player.physical_position, 32, 1)
+            if not position then
+                return
+            end
+            player.teleport(position, surface)
         end
-        player.teleport(position, surface)
-    end
-)
+    )
 
 local mining_events = {
     {
-        function()
+        function ()
         end,
         300000,
         'Nothing #1'
     },
     {
-        function()
+        function ()
         end,
         16384,
         'Nothing #2'
     },
     {
-        function()
+        function ()
         end,
         4096,
         'Nothing #3'
     },
     {
-        function(entity)
+        function (entity)
             if Public.is_around_train(entity) then
                 entity.destroy()
                 return
@@ -537,7 +539,7 @@ local mining_events = {
         'Angry Biter #1'
     },
     {
-        function(entity)
+        function (entity)
             if Public.is_around_train(entity) then
                 entity.destroy()
                 return
@@ -550,7 +552,7 @@ local mining_events = {
         'Angry Biter #2'
     },
     {
-        function(entity)
+        function (entity)
             if Public.is_around_train(entity) then
                 entity.destroy()
                 return
@@ -563,20 +565,20 @@ local mining_events = {
         'Angry Worm #1'
     },
     {
-        function(entity)
+        function (entity)
             if Public.is_around_train(entity) then
                 entity.destroy()
                 return
             end
 
-            Public.tick_tack_trap(entity.surface, entity.position)
+            Public.tick_tack_trap(entity)
             entity.destroy()
         end,
         2048,
         'Dangerous Trap #1'
     },
     {
-        function(entity, index)
+        function (entity, index)
             if Public.is_around_train(entity) then
                 entity.destroy()
                 return
@@ -593,137 +595,114 @@ local mining_events = {
         'Angry Tree #1'
     },
     {
-        function(entity, index)
+        function (entity, index)
             local player = game.get_player(index)
             hidden_treasure(player, entity)
-            Task.set_timeout_in_ticks(5, unstuck_player_token, {index = index})
+            Task.set_timeout_in_ticks(5, unstuck_player_token, { index = index })
         end,
         1024,
         'Treasure Tier #1'
     },
     {
-        function(entity, index)
+        function (entity, index)
             local player = game.get_player(index)
             hidden_treasure(player, entity)
-            Task.set_timeout_in_ticks(5, unstuck_player_token, {index = index})
+            Task.set_timeout_in_ticks(5, unstuck_player_token, { index = index })
         end,
         512,
         'Treasure Tier #2'
     },
     {
-        function(entity, index)
+        function (entity, index)
             local player = game.get_player(index)
             hidden_treasure(player, entity)
-            Task.set_timeout_in_ticks(5, unstuck_player_token, {index = index})
+            Task.set_timeout_in_ticks(5, unstuck_player_token, { index = index })
         end,
         256,
         'Treasure Tier #3'
     },
     {
-        function(entity, index)
+        function (entity, index)
             local player = game.get_player(index)
             hidden_treasure(player, entity)
-            Task.set_timeout_in_ticks(5, unstuck_player_token, {index = index})
+            Task.set_timeout_in_ticks(5, unstuck_player_token, { index = index })
         end,
         128,
         'Treasure Tier #4'
     },
     {
-        function(entity, index)
+        function (entity, index)
             local player = game.get_player(index)
             hidden_treasure(player, entity)
-            Task.set_timeout_in_ticks(5, unstuck_player_token, {index = index})
+            Task.set_timeout_in_ticks(5, unstuck_player_token, { index = index })
         end,
         64,
         'Treasure Tier #5'
     },
     {
-        function(entity, index)
+        function (entity, index)
             local player = game.get_player(index)
             hidden_treasure(player, entity)
-            Task.set_timeout_in_ticks(5, unstuck_player_token, {index = index})
+            Task.set_timeout_in_ticks(5, unstuck_player_token, { index = index })
         end,
         32,
         'Treasure Tier #6'
     },
     {
-        function(entity, index)
+        function (entity, index)
             local player = game.get_player(index)
             hidden_treasure(player, entity)
-            Task.set_timeout_in_ticks(5, unstuck_player_token, {index = index})
+            Task.set_timeout_in_ticks(5, unstuck_player_token, { index = index })
         end,
         16,
         'Treasure Tier #7'
     },
     {
-        function(entity, index)
+        function (entity, index)
             if Public.is_around_train(entity) then
                 entity.destroy()
                 return
             end
 
-            local ent_to_create = {'biter-spawner', 'spitter-spawner'}
+            local ent_to_create = { 'biter-spawner', 'spitter-spawner' }
 
             local position = entity.position
             local surface = entity.surface
-            local e = surface.create_entity({name = ent_to_create[random(1, #ent_to_create)], position = position, force = 'enemy'})
+            local e = surface.create_entity({ name = ent_to_create[random(1, #ent_to_create)], position = position, force = 'enemy' })
 
             e.destructible = false
-            Task.set_timeout_in_ticks(300, immunity_spawner, {entity = e})
-            Task.set_timeout_in_ticks(5, unstuck_player_token, {index = index})
+            Task.set_timeout_in_ticks(300, immunity_spawner, { entity = e })
+            Task.set_timeout_in_ticks(5, unstuck_player_token, { index = index })
         end,
         512,
         'Nest #1'
     },
     {
-        function(entity, index)
+        function (entity, index)
             if Public.is_around_train(entity) then
                 entity.destroy()
                 return
             end
 
-            local ent_to_create = {'biter-spawner', 'spitter-spawner'}
+            local ent_to_create = { 'biter-spawner', 'spitter-spawner' }
 
             local position = entity.position
             local surface = entity.surface
-            local e = surface.create_entity({name = ent_to_create[random(1, #ent_to_create)], position = position, force = 'enemy'})
+            local e = surface.create_entity({ name = ent_to_create[random(1, #ent_to_create)], position = position, force = 'enemy' })
 
             e.destructible = false
-            Task.set_timeout_in_ticks(300, immunity_spawner, {entity = e})
-            Task.set_timeout_in_ticks(5, unstuck_player_token, {index = index})
+            Task.set_timeout_in_ticks(300, immunity_spawner, { entity = e })
+            Task.set_timeout_in_ticks(5, unstuck_player_token, { index = index })
         end,
         512,
         'Nest #2'
     },
     {
-        function(entity)
-            local position = entity.position
-            local surface = entity.surface
-            surface.create_entity({name = 'compilatron', position = position, force = 'player'})
-        end,
-        64,
-        'Friendly Compilatron #1'
-    },
-    {
-        function(entity)
-            if Public.is_around_train(entity) then
-                entity.destroy()
-                return
-            end
-
-            local position = entity.position
-            local surface = entity.surface
-            surface.create_entity({name = 'compilatron', position = position, force = 'enemy'})
-        end,
-        128,
-        'Enemy Compilatron #1'
-    },
-    {
-        function(entity)
+        function (entity)
             local chest = 'crash-site-chest-' .. random(1, 2)
-            local container = entity.surface.create_entity({name = chest, position = entity.position, force = 'neutral'})
+            local container = entity.surface.create_entity({ name = chest, position = entity.position, force = 'neutral' })
             if container and container.health then
-                container.insert({name = 'vehicle-machine-gun', count = 1})
+                container.insert({ name = 'vehicle-machine-gun', count = 1 })
                 container.health = random(1, container.health)
             end
         end,
@@ -731,13 +710,13 @@ local mining_events = {
         'VSMG #1'
     },
     {
-        function(entity, index)
+        function (entity, index)
             local position = entity.position
             local surface = entity.surface
-            surface.create_entity({name = 'car', position = position, force = 'player'})
-            Task.set_timeout_in_ticks(5, unstuck_player_token, {index = index})
+            surface.create_entity({ name = 'car', position = position, force = 'player' })
+            Task.set_timeout_in_ticks(5, unstuck_player_token, { index = index })
             local player = game.players[index]
-            local msg = ({'entity.found_car', player.name})
+            local msg = ({ 'entity.found_car', player.name })
             Alert.alert_player(player, 15, msg)
         end,
         32,
@@ -755,10 +734,9 @@ local function on_player_mined_entity(event)
         return
     end
     local rpg_char = RPG.get_value_from_player(player.index)
+    if not rpg_char then return end
 
-    local map_name = 'mtn_v3'
-
-    if string.sub(entity.surface.name, 0, #map_name) ~= map_name then
+    if string.sub(entity.surface.name, 0, #scenario_name) ~= scenario_name then
         return
     end
 
@@ -791,9 +769,9 @@ local function on_player_mined_entity(event)
         if rpg_char.stone_path then
             local upgrades = Public.get('upgrades')
             if not upgrades.has_upgraded_tile_when_mining then
-                entity.surface.set_tiles({{name = 'stone-path', position = entity.position}}, true)
+                entity.surface.set_tiles({ { name = 'stone-path', position = entity.position } }, true)
             else
-                entity.surface.set_tiles({{name = 'black-refined-concrete', position = entity.position}}, true)
+                entity.surface.set_tiles({ { name = 'black-refined-concrete', position = entity.position } }, true)
             end
         end
 
@@ -809,9 +787,7 @@ local function on_robot_mined_entity(event)
         return
     end
 
-    local map_name = 'mtn_v3'
-
-    if string.sub(entity.surface.name, 0, #map_name) ~= map_name then
+    if string.sub(entity.surface.name, 0, #scenario_name) ~= scenario_name then
         return
     end
 
@@ -841,20 +817,21 @@ local function get_damage(data)
 end
 
 local function kaboom(entity, target, damage)
-    local base_vector = {target.position.x - entity.position.x, target.position.y - entity.position.y}
+    local base_vector = { target.position.x - entity.position.x, target.position.y - entity.position.y }
 
-    local vector = {base_vector[1], base_vector[2]}
+    local vector = { base_vector[1], base_vector[2] }
     vector[1] = vector[1] * 512
     vector[2] = vector[2] * 256
 
-    local msg = {'TASTY', 'MUNCH', 'SNACK_TIME', 'OVER 9000!'}
+    local msg = { 'TASTY', 'MUNCH', 'SNACK_TIME', 'OVER 9000!' }
 
     entity.surface.create_entity(
         {
-            name = 'flying-text',
-            position = {entity.position.x + base_vector[1] * 0.5, entity.position.y + base_vector[2] * 0.5},
+            name = 'compi-speech-bubble',
+            position = { entity.position.x + base_vector[1] * 0.5, entity.position.y + base_vector[2] * 0.5 },
             text = msg[random(1, #msg)],
-            color = {255, 0, 0}
+            source = entity,
+            lifetime = 30
         }
     )
 
@@ -884,9 +861,9 @@ local function kaboom(entity, target, damage)
     for i = 1, 8, 1 do
         for x = i * -1 * a, i * a, 1 do
             for y = i * -1 * a, i * a, 1 do
-                local p = {entity.position.x + x + vector[1] * i, entity.position.y + y + vector[2] * i}
-                entity.surface.create_trivial_smoke({name = 'fire-smoke', position = p})
-                for _, e in pairs(entity.surface.find_entities({{p[1] - a, p[2] - a}, {p[1] + a, p[2] + a}})) do
+                local p = { entity.position.x + x + vector[1] * i, entity.position.y + y + vector[2] * i }
+                entity.surface.create_trivial_smoke({ name = 'fire-smoke', position = p })
+                for _, e in pairs(entity.surface.find_entities({ { p[1] - a, p[2] - a }, { p[1] + a, p[2] + a } })) do
                     if e.valid then
                         if e.health then
                             if e.destructible and e.minable then
@@ -1028,9 +1005,7 @@ local function on_entity_died(event)
 
     local cause = event.cause
 
-    local map_name = 'mtn_v3'
-
-    if string.sub(entity.surface.name, 0, #map_name) ~= map_name then
+    if string.sub(entity.surface.name, 0, #scenario_name) ~= scenario_name then
         return
     end
 
@@ -1077,7 +1052,7 @@ local function on_entity_died(event)
             return
         end
         if random(1, 512) == 1 then
-            Public.tick_tack_trap(entity.surface, entity.position)
+            Public.tick_tack_trap(entity)
             return
         end
     end
@@ -1087,8 +1062,8 @@ local function on_entity_died(event)
             entity.surface.find_entities_filtered(
                 {
                     area = {
-                        {entity.position.x - 4, entity.position.y - 4},
-                        {entity.position.x + 4, entity.position.y + 4}
+                        { entity.position.x - 4, entity.position.y - 4 },
+                        { entity.position.x + 4, entity.position.y + 4 }
                     },
                     name = 'fire-flame-on-tree'
                 }
@@ -1122,7 +1097,7 @@ local function on_entity_died(event)
             return
         end
         if random(1, 512) == 1 then
-            Public.tick_tack_trap(entity.surface, entity.position)
+            Public.tick_tack_trap(entity)
             return
         end
         entity.destroy()
@@ -1167,16 +1142,16 @@ local function get_mvps(force)
             if score.players[p.name].mined_entities then
                 mined_entities = score.players[p.name].mined_entities
             end
-            table.insert(score_list, {name = p.name, killscore = killscore, built_entities = built_entities, mined_entities = mined_entities})
+            table.insert(score_list, { name = p.name, killscore = killscore, built_entities = built_entities, mined_entities = mined_entities })
         end
     end
     local mvp = {}
     score_list = get_sorted_list('killscore', score_list)
-    mvp.killscore = {name = score_list[1].name, score = score_list[1].killscore}
+    mvp.killscore = { name = score_list[1].name, score = score_list[1].killscore }
     score_list = get_sorted_list('mined_entities', score_list)
-    mvp.mined_entities = {name = score_list[1].name, score = score_list[1].mined_entities}
+    mvp.mined_entities = { name = score_list[1].name, score = score_list[1].mined_entities }
     score_list = get_sorted_list('built_entities', score_list)
-    mvp.built_entities = {name = score_list[1].name, score = score_list[1].built_entities}
+    mvp.built_entities = { name = score_list[1].name, score = score_list[1].built_entities }
     return mvp
 end
 
@@ -1189,41 +1164,41 @@ local function show_mvps(player)
     if player.gui.left['mvps'] then
         return
     end
-    local frame = player.gui.left.add({type = 'frame', name = 'mvps', direction = 'vertical'})
-    local l = frame.add({type = 'label', caption = 'MVPs:'})
+    local frame = player.gui.left.add({ type = 'frame', name = 'mvps', direction = 'vertical' })
+    local l = frame.add({ type = 'label', caption = 'MVPs:' })
     l.style.font = 'default-listbox'
-    l.style.font_color = {r = 0.55, g = 0.55, b = 0.99}
+    l.style.font_color = { r = 0.55, g = 0.55, b = 0.99 }
 
-    local t = frame.add({type = 'table', column_count = 2})
+    local t = frame.add({ type = 'table', column_count = 2 })
     local mvp = get_mvps('player')
     if mvp then
-        local wave_defense = t.add({type = 'label', caption = 'Highest Wave >> '})
+        local wave_defense = t.add({ type = 'label', caption = 'Highest Wave >> ' })
         wave_defense.style.font = 'default-listbox'
-        wave_defense.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-        local wave_defense_text = t.add({type = 'label', caption = 'This rounds highest wave was: ' .. wave_defense_table.wave_number})
+        wave_defense.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
+        local wave_defense_text = t.add({ type = 'label', caption = 'This rounds highest wave was: ' .. wave_defense_table.wave_number })
         wave_defense_text.style.font = 'default-bold'
-        wave_defense_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+        wave_defense_text.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
-        local fighter_label = t.add({type = 'label', caption = 'Fighter >> '})
+        local fighter_label = t.add({ type = 'label', caption = 'Fighter >> ' })
         fighter_label.style.font = 'default-listbox'
-        fighter_label.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-        local fighter_label_text = t.add({type = 'label', caption = mvp.killscore.name .. ' with a killing score of ' .. mvp.killscore.score .. ' kills!'})
+        fighter_label.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
+        local fighter_label_text = t.add({ type = 'label', caption = mvp.killscore.name .. ' with a killing score of ' .. mvp.killscore.score .. ' kills!' })
         fighter_label_text.style.font = 'default-bold'
-        fighter_label_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+        fighter_label_text.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
-        local builder_label = t.add({type = 'label', caption = 'Builder >> '})
+        local builder_label = t.add({ type = 'label', caption = 'Builder >> ' })
         builder_label.style.font = 'default-listbox'
-        builder_label.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-        local builder_label_text = t.add({type = 'label', caption = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things!'})
+        builder_label.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
+        local builder_label_text = t.add({ type = 'label', caption = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things!' })
         builder_label_text.style.font = 'default-bold'
-        builder_label_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+        builder_label_text.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
-        local miners_label = t.add({type = 'label', caption = 'Miners >> '})
+        local miners_label = t.add({ type = 'label', caption = 'Miners >> ' })
         miners_label.style.font = 'default-listbox'
-        miners_label.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-        local miners_label_text = t.add({type = 'label', caption = mvp.mined_entities.name .. ' mined a total of  ' .. mvp.mined_entities.score .. ' entities!'})
+        miners_label.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
+        local miners_label_text = t.add({ type = 'label', caption = mvp.mined_entities.name .. ' mined a total of  ' .. mvp.mined_entities.score .. ' entities!' })
         miners_label_text.style.font = 'default-bold'
-        miners_label_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+        miners_label_text.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
         local sent_to_discord = Public.get('sent_to_discord')
         local server_name_matches = Server.check_server_name(scenario_name)
@@ -1344,7 +1319,7 @@ function Public.unstuck_player(index)
     end
 
     local surface = player.surface
-    local position = surface.find_non_colliding_position('character', player.position, 32, 1)
+    local position = surface.find_non_colliding_position('character', player.physical_position, 32, 1)
     if not position then
         return
     end
@@ -1376,7 +1351,7 @@ function Public.loco_died(invalid_locomotive)
     Collapse.start_now(false)
 
     for _, player in pairs(game.connected_players) do
-        player.play_sound {path = 'utility/game_lost', volume_modifier = 0.75}
+        player.play_sound { path = 'utility/game_lost', volume_modifier = 0.75 }
         show_mvps(player)
     end
 
@@ -1387,7 +1362,7 @@ function Public.loco_died(invalid_locomotive)
         if this.locomotive and this.locomotive.valid then
             data.position = this.locomotive.position
         else
-            data.position = {x = 0, y = 0}
+            data.position = { x = 0, y = 0 }
         end
 
         local msg = defeated_messages[random(1, #defeated_messages)]
@@ -1407,13 +1382,13 @@ function Public.loco_died(invalid_locomotive)
             return
         end
         if this.restart then
-            game.print(({'entity.notify_restart'}), {r = 0.22, g = 0.88, b = 0.22})
+            game.print(({ 'entity.notify_restart' }), { r = 0.22, g = 0.88, b = 0.22 })
             Task.set_timeout_in_ticks(600, reset_game, params)
             this.announced_message = true
             return
         end
         if this.shutdown then
-            game.print(({'entity.notify_shutdown'}), {r = 0.22, g = 0.88, b = 0.22})
+            game.print(({ 'entity.notify_shutdown' }), { r = 0.22, g = 0.88, b = 0.22 })
             Task.set_timeout_in_ticks(600, reset_game, params)
             this.announced_message = true
             return
@@ -1425,8 +1400,10 @@ function Public.loco_died(invalid_locomotive)
     local this = Public.get()
 
     this.locomotive_health = 0
-    this.locomotive.color = {0.49, 0, 255, 1}
-    rendering.set_text(this.health_text, 'HP: ' .. round(this.locomotive_health) .. ' / ' .. round(this.locomotive_max_health))
+    this.locomotive.color = { 0.49, 0, 255, 1 }
+    if this.health_text and this.health_text.valid then
+        this.health_text.text = 'HP: ' .. round(this.locomotive_health) .. ' / ' .. round(this.locomotive_max_health)
+    end
     wave_defense_table.game_lost = true
     wave_defense_table.target = nil
     local msg = defeated_messages[random(1, #defeated_messages)]
@@ -1438,7 +1415,7 @@ function Public.loco_died(invalid_locomotive)
     game.forces.enemy.set_friend('player', true)
     game.forces.player.set_friend('enemy', true)
 
-    local fake_shooter = surface.create_entity({name = 'character', position = this.locomotive.position, force = 'enemy'})
+    local fake_shooter = surface.create_entity({ name = 'character', position = this.locomotive.position, force = 'enemy' })
     surface.create_entity(
         {
             name = 'atomic-rocket',
@@ -1451,10 +1428,10 @@ function Public.loco_died(invalid_locomotive)
         }
     )
 
-    surface.spill_item_stack(this.locomotive.position, {name = 'coin', count = 512}, false)
+    surface.spill_item_stack(this.locomotive.position, { name = 'coin', count = 512, quality = 'normal' }, false)
     this.game_reset_tick = 5400
     for _, player in pairs(game.connected_players) do
-        player.play_sound {path = 'utility/game_lost', volume_modifier = 0.75}
+        player.play_sound { path = 'utility/game_lost', volume_modifier = 0.75 }
         show_mvps(player)
     end
 end
@@ -1486,7 +1463,7 @@ local function on_entity_spawned(event)
     if enemy_spawners.spawners[unit_number].count >= 100 then
         local entity = enemy_spawners.spawners[unit_number].entity
         if entity and entity.valid then
-            surface.create_entity({name = 'explosion', position = position})
+            surface.create_entity({ name = 'explosion', position = position })
             entity.destroy()
             enemy_spawners.spawners[unit_number] = nil
         end
@@ -1494,14 +1471,12 @@ local function on_entity_spawned(event)
 end
 
 local function on_built_entity(event)
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity.valid then
         return
     end
 
-    local map_name = 'mtn_v3'
-
-    if string.sub(entity.surface.name, 0, #map_name) ~= map_name then
+    if string.sub(entity.surface.name, 0, #scenario_name) ~= scenario_name then
         return
     end
 
@@ -1509,17 +1484,18 @@ local function on_built_entity(event)
     local player = game.get_player(event.player_index)
 
     if entity.name == 'radar' then
-        if entity.surface.count_entities_filtered({type = 'radar', position = position, radius = 64}) > 1 then
-            player.surface.create_entity(
+        if entity.surface.count_entities_filtered({ type = 'radar', position = position, radius = 64 }) > 1 then
+            player.create_local_flying_text(
                 {
-                    name = 'flying-text',
                     position = entity.position,
-                    text = ({'entity.radar_limit'}),
-                    color = {255, 0, 0}
+                    text = ({ 'entity.radar_limit' }),
+                    color = { 255, 0, 0 },
+                    time_to_live = 300,
+                    speed = 100
                 }
             )
 
-            player.surface.spill_item_stack(position, {name = entity.name, count = 1, true})
+            player.surface.spill_item_stack(position, { name = entity.name, count = 1, true, quality = 'normal' }, false)
             entity.destroy()
             return
         end
@@ -1538,8 +1514,6 @@ local function on_built_entity(event)
     local upgrades = Public.get('upgrades')
 
     local upg = upgrades
-    local surface = entity.surface
-
     local built = {
         ['land-mine'] = upg.landmine.built,
         ['flamethrower-turret'] = upg.flame_turret.built
@@ -1563,59 +1537,60 @@ local function on_built_entity(event)
             upgrades.unit_number[name][entity] = entity
             upgrades.showed_text = false
 
-            surface.create_entity(
+            player.create_local_flying_text(
                 {
-                    name = 'flying-text',
                     position = entity.position,
                     text = upgrades[name].built .. ' / ' .. limit[entity.name] .. ' ' .. entity.name,
-                    color = {r = 0.82, g = 0.11, b = 0.11}
+                    color = { r = 0.82, g = 0.11, b = 0.11 },
+                    time_to_live = 300,
+                    speed = 100
                 }
             )
         else
             if not upgrades.showed_text then
-                surface.create_entity(
+                player.create_local_flying_text(
                     {
-                        name = 'flying-text',
                         position = entity.position,
-                        text = ({'entity.entity_limit_reached', entity.name}),
-                        color = {r = 0.82, g = 0.11, b = 0.11}
+                        text = ({ 'entity.entity_limit_reached', entity.name }),
+                        color = { r = 0.82, g = 0.11, b = 0.11 },
+                        time_to_live = 300,
+                        speed = 100
                     }
                 )
 
                 upgrades.showed_text = true
             end
-            player.insert({name = entity.name, count = 1})
+            player.insert({ name = entity.name, count = 1 })
             entity.destroy()
         end
     end
 end
 
 local function on_robot_built_entity(event)
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity.valid then
         return
     end
 
-    local map_name = 'mtn_v3'
-
-    if string.sub(entity.surface.name, 0, #map_name) ~= map_name then
+    if string.sub(entity.surface.name, 0, #scenario_name) ~= scenario_name then
         return
     end
 
     local position = entity.position
 
     if entity.name == 'radar' then
-        if entity.surface.count_entities_filtered({type = 'radar', position = position, radius = 64}) > 1 then
+        if entity.surface.count_entities_filtered({ type = 'radar', position = position, radius = 64 }) > 1 then
             entity.surface.create_entity(
                 {
-                    name = 'flying-text',
+                    name = 'compi-speech-bubble',
                     position = entity.position,
-                    text = ({'entity.radar_limit'}),
-                    color = {255, 0, 0}
+                    text = ({ 'entity.radar_limit' }),
+                    source = entity,
+                    lifetime = 30
                 }
             )
 
-            entity.surface.spill_item_stack(position, {name = entity.name, count = 1, true})
+            entity.surface.spill_item_stack(position, { name = entity.name, count = 1, true })
             entity.destroy()
             return
         end
@@ -1661,38 +1636,38 @@ local function on_robot_built_entity(event)
 
             surface.create_entity(
                 {
-                    name = 'flying-text',
+                    name = 'compi-speech-bubble',
                     position = entity.position,
                     text = upgrades[name].built .. ' / ' .. limit[entity.name] .. ' ' .. entity.name,
-                    color = {r = 0.82, g = 0.11, b = 0.11}
+                    source = entity,
+                    lifetime = 30
                 }
             )
         else
             if not upgrades.showed_text then
                 surface.create_entity(
                     {
-                        name = 'flying-text',
+                        name = 'compi-speech-bubble',
                         position = entity.position,
-                        text = ({'entity.entity_limit_reached', entity.name}),
-                        color = {r = 0.82, g = 0.11, b = 0.11}
+                        text = ({ 'entity.entity_limit_reached', entity.name }),
+                        source = entity,
+                        lifetime = 30
                     }
                 )
 
                 upgrades.showed_text = true
             end
             local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
-            inventory.insert({name = entity.name, count = 1})
+            inventory.insert({ name = entity.name, count = 1 })
             entity.destroy()
         end
     end
 end
 
-local on_player_or_robot_built_tile = function(event)
+local on_player_or_robot_built_tile = function (event)
     local surface = game.surfaces[event.surface_index]
 
-    local map_name = 'mtn_v3'
-
-    if string.sub(surface.name, 0, #map_name) ~= map_name then
+    if string.sub(surface.name, 0, #scenario_name) ~= scenario_name then
         return
     end
 
@@ -1703,26 +1678,26 @@ local on_player_or_robot_built_tile = function(event)
     for _, v in pairs(tiles) do
         local old_tile = v.old_tile
         if old_tile.name == 'black-refined-concrete' then
-            surface.set_tiles({{name = 'black-refined-concrete', position = v.position}}, true)
+            surface.set_tiles({ { name = 'black-refined-concrete', position = v.position } }, true)
         end
         if old_tile.name == 'blue-refined-concrete' then
-            surface.set_tiles({{name = 'blue-refined-concrete', position = v.position}}, true)
+            surface.set_tiles({ { name = 'blue-refined-concrete', position = v.position } }, true)
         end
         if old_tile.name == 'cyan-refined-concrete' then
-            surface.set_tiles({{name = 'cyan-refined-concrete', position = v.position}}, true)
+            surface.set_tiles({ { name = 'cyan-refined-concrete', position = v.position } }, true)
         end
         if old_tile.name == 'hazard-concrete-right' then
-            surface.set_tiles({{name = 'hazard-concrete-right', position = v.position}}, true)
+            surface.set_tiles({ { name = 'hazard-concrete-right', position = v.position } }, true)
         end
         if old_tile.name == 'lab-dark-2' then
-            surface.set_tiles({{name = 'lab-dark-2', position = v.position}}, true)
+            surface.set_tiles({ { name = 'lab-dark-2', position = v.position } }, true)
         end
     end
 end
 
 Public.get_random_weighted = get_random_weighted
 
-Event.add_event_filter(defines.events.on_entity_damaged, {filter = 'final-damage-amount', comparison = '>', value = 0})
+Event.add_event_filter(defines.events.on_entity_damaged, { filter = 'final-damage-amount', comparison = '>', value = 0 })
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.add(defines.events.on_entity_spawned, on_entity_spawned)
 Event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)

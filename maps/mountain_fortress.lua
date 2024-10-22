@@ -19,31 +19,31 @@ local event = require 'utils.event'
 local math_random = math.random
 local insert = table.insert
 local map_functions = require 'utils.tools.map_functions'
-local simplex_noise = require 'utils.simplex_noise'
+local simplex_noise = require 'utils.math.simplex_noise'
 local simplex_noise = simplex_noise.d2
 
-local spawn_point = {x = 0, y = 2}
+local spawn_point = { x = 0, y = 2 }
 
 local disabled_for_deconstruction = {
     ['fish'] = true,
-    ['rock-huge'] = true,
-    ['rock-big'] = true,
-    ['sand-rock-big'] = true
+    ['huge-rock'] = true,
+    ['big-rock'] = true,
+    ['big-sand-rock'] = true
 }
 local worm_raffle_table = {
-    [1] = {'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'small-worm-turret'},
-    [2] = {'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'medium-worm-turret'},
-    [3] = {'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'medium-worm-turret', 'medium-worm-turret'},
-    [4] = {'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'medium-worm-turret', 'medium-worm-turret', 'medium-worm-turret'},
-    [5] = {'small-worm-turret', 'small-worm-turret', 'medium-worm-turret', 'medium-worm-turret', 'medium-worm-turret', 'big-worm-turret'},
-    [6] = {'small-worm-turret', 'medium-worm-turret', 'medium-worm-turret', 'medium-worm-turret', 'medium-worm-turret', 'big-worm-turret'},
-    [7] = {'medium-worm-turret', 'medium-worm-turret', 'medium-worm-turret', 'medium-worm-turret', 'big-worm-turret', 'big-worm-turret'},
-    [8] = {'medium-worm-turret', 'medium-worm-turret', 'medium-worm-turret', 'big-worm-turret', 'big-worm-turret', 'big-worm-turret'},
-    [9] = {'medium-worm-turret', 'medium-worm-turret', 'big-worm-turret', 'big-worm-turret', 'big-worm-turret', 'big-worm-turret'},
-    [10] = {'medium-worm-turret', 'big-worm-turret', 'big-worm-turret', 'big-worm-turret', 'big-worm-turret', 'big-worm-turret'}
+    [1] = { 'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'small-worm-turret' },
+    [2] = { 'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'medium-worm-turret' },
+    [3] = { 'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'medium-worm-turret', 'medium-worm-turret' },
+    [4] = { 'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'medium-worm-turret', 'medium-worm-turret', 'medium-worm-turret' },
+    [5] = { 'small-worm-turret', 'small-worm-turret', 'medium-worm-turret', 'medium-worm-turret', 'medium-worm-turret', 'big-worm-turret' },
+    [6] = { 'small-worm-turret', 'medium-worm-turret', 'medium-worm-turret', 'medium-worm-turret', 'medium-worm-turret', 'big-worm-turret' },
+    [7] = { 'medium-worm-turret', 'medium-worm-turret', 'medium-worm-turret', 'medium-worm-turret', 'big-worm-turret', 'big-worm-turret' },
+    [8] = { 'medium-worm-turret', 'medium-worm-turret', 'medium-worm-turret', 'big-worm-turret', 'big-worm-turret', 'big-worm-turret' },
+    [9] = { 'medium-worm-turret', 'medium-worm-turret', 'big-worm-turret', 'big-worm-turret', 'big-worm-turret', 'big-worm-turret' },
+    [10] = { 'medium-worm-turret', 'big-worm-turret', 'big-worm-turret', 'big-worm-turret', 'big-worm-turret', 'big-worm-turret' }
 }
-local rock_raffle = {'sand-rock-big', 'sand-rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-huge'}
-local nest_raffle = {'biter-spawner', 'biter-spawner', 'biter-spawner', 'spitter-spawner'}
+local rock_raffle = { 'big-sand-rock', 'big-sand-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'huge-rock' }
+local nest_raffle = { 'biter-spawner', 'biter-spawner', 'biter-spawner', 'spitter-spawner' }
 
 local function shuffle(tbl)
     local size = #tbl
@@ -56,44 +56,44 @@ end
 
 local function secret_shop(pos, surface)
     local secret_market_items = {
-        {price = {{'coin', math_random(8, 16)}}, offer = {type = 'give-item', item = 'grenade'}},
-        {price = {{'coin', math_random(25, 50)}}, offer = {type = 'give-item', item = 'cluster-grenade'}},
-        {price = {{'coin', math_random(5, 10)}}, offer = {type = 'give-item', item = 'defender-capsule'}},
-        {price = {{'coin', math_random(25, 50)}}, offer = {type = 'give-item', item = 'distractor-capsule'}},
-        {price = {{'coin', math_random(35, 70)}}, offer = {type = 'give-item', item = 'destroyer-capsule'}},
+        { price = { { 'coin', math_random(8, 16) } },        offer = { type = 'give-item', item = 'grenade' } },
+        { price = { { 'coin', math_random(25, 50) } },       offer = { type = 'give-item', item = 'cluster-grenade' } },
+        { price = { { 'coin', math_random(5, 10) } },        offer = { type = 'give-item', item = 'defender-capsule' } },
+        { price = { { 'coin', math_random(25, 50) } },       offer = { type = 'give-item', item = 'distractor-capsule' } },
+        { price = { { 'coin', math_random(35, 70) } },       offer = { type = 'give-item', item = 'destroyer-capsule' } },
         --{price = {{"coin", math_random(60,120)}}, offer = {type = 'give-item', item = 'cliff-explosives'}},
-        {price = {{'coin', math_random(250, 350)}}, offer = {type = 'give-item', item = 'belt-immunity-equipment'}},
-        {price = {{'coin', math_random(30, 60)}}, offer = {type = 'give-item', item = 'construction-robot'}},
-        {price = {{'coin', math_random(100, 200)}}, offer = {type = 'give-item', item = 'loader'}},
-        {price = {{'coin', math_random(200, 300)}}, offer = {type = 'give-item', item = 'fast-loader'}},
-        {price = {{'coin', math_random(300, 500)}}, offer = {type = 'give-item', item = 'express-loader'}},
-        {price = {{'coin', math_random(100, 200)}}, offer = {type = 'give-item', item = 'locomotive'}},
-        {price = {{'coin', math_random(75, 150)}}, offer = {type = 'give-item', item = 'cargo-wagon'}},
-        {price = {{'coin', math_random(2, 3)}}, offer = {type = 'give-item', item = 'rail'}},
+        { price = { { 'coin', math_random(250, 350) } },     offer = { type = 'give-item', item = 'belt-immunity-equipment' } },
+        { price = { { 'coin', math_random(30, 60) } },       offer = { type = 'give-item', item = 'construction-robot' } },
+        { price = { { 'coin', math_random(100, 200) } },     offer = { type = 'give-item', item = 'loader' } },
+        { price = { { 'coin', math_random(200, 300) } },     offer = { type = 'give-item', item = 'fast-loader' } },
+        { price = { { 'coin', math_random(300, 500) } },     offer = { type = 'give-item', item = 'express-loader' } },
+        { price = { { 'coin', math_random(100, 200) } },     offer = { type = 'give-item', item = 'locomotive' } },
+        { price = { { 'coin', math_random(75, 150) } },      offer = { type = 'give-item', item = 'cargo-wagon' } },
+        { price = { { 'coin', math_random(2, 3) } },         offer = { type = 'give-item', item = 'rail' } },
         --{price = {{"coin", math_random(20,40)}}, offer = {type = 'give-item', item = 'train-stop'}},
-        {price = {{'coin', math_random(4, 12)}}, offer = {type = 'give-item', item = 'small-lamp'}},
-        {price = {{'coin', math_random(80, 160)}}, offer = {type = 'give-item', item = 'car'}},
-        {price = {{'coin', math_random(300, 600)}}, offer = {type = 'give-item', item = 'electric-furnace'}},
+        { price = { { 'coin', math_random(4, 12) } },        offer = { type = 'give-item', item = 'small-lamp' } },
+        { price = { { 'coin', math_random(80, 160) } },      offer = { type = 'give-item', item = 'car' } },
+        { price = { { 'coin', math_random(300, 600) } },     offer = { type = 'give-item', item = 'electric-furnace' } },
         --{price = {{"coin", math_random(300,600)}}, offer = {type = 'give-item', item = "assembling-machine-3"}},
-        {price = {{'coin', math_random(80, 160)}}, offer = {type = 'give-item', item = 'effectivity-module'}},
-        {price = {{'coin', math_random(80, 160)}}, offer = {type = 'give-item', item = 'productivity-module'}},
-        {price = {{'coin', math_random(80, 160)}}, offer = {type = 'give-item', item = 'speed-module'}},
-        {price = {{'coin', math_random(5, 10)}}, offer = {type = 'give-item', item = 'wood', count = 50}},
-        {price = {{'coin', math_random(5, 10)}}, offer = {type = 'give-item', item = 'iron-ore', count = 50}},
-        {price = {{'coin', math_random(5, 10)}}, offer = {type = 'give-item', item = 'copper-ore', count = 50}},
-        {price = {{'coin', math_random(5, 10)}}, offer = {type = 'give-item', item = 'stone', count = 50}},
-        {price = {{'coin', math_random(5, 10)}}, offer = {type = 'give-item', item = 'coal', count = 50}},
-        {price = {{'coin', math_random(8, 16)}}, offer = {type = 'give-item', item = 'uranium-ore', count = 50}},
-        {price = {{'wood', math_random(10, 12)}}, offer = {type = 'give-item', item = 'coin'}},
-        {price = {{'iron-ore', math_random(10, 12)}}, offer = {type = 'give-item', item = 'coin'}},
-        {price = {{'copper-ore', math_random(10, 12)}}, offer = {type = 'give-item', item = 'coin'}},
-        {price = {{'stone', math_random(10, 12)}}, offer = {type = 'give-item', item = 'coin'}},
-        {price = {{'coal', math_random(10, 12)}}, offer = {type = 'give-item', item = 'coin'}},
-        {price = {{'uranium-ore', math_random(8, 10)}}, offer = {type = 'give-item', item = 'coin'}}
+        { price = { { 'coin', math_random(80, 160) } },      offer = { type = 'give-item', item = 'efficiency-module' } },
+        { price = { { 'coin', math_random(80, 160) } },      offer = { type = 'give-item', item = 'productivity-module' } },
+        { price = { { 'coin', math_random(80, 160) } },      offer = { type = 'give-item', item = 'speed-module' } },
+        { price = { { 'coin', math_random(5, 10) } },        offer = { type = 'give-item', item = 'wood', count = 50 } },
+        { price = { { 'coin', math_random(5, 10) } },        offer = { type = 'give-item', item = 'iron-ore', count = 50 } },
+        { price = { { 'coin', math_random(5, 10) } },        offer = { type = 'give-item', item = 'copper-ore', count = 50 } },
+        { price = { { 'coin', math_random(5, 10) } },        offer = { type = 'give-item', item = 'stone', count = 50 } },
+        { price = { { 'coin', math_random(5, 10) } },        offer = { type = 'give-item', item = 'coal', count = 50 } },
+        { price = { { 'coin', math_random(8, 16) } },        offer = { type = 'give-item', item = 'uranium-ore', count = 50 } },
+        { price = { { 'wood', math_random(10, 12) } },       offer = { type = 'give-item', item = 'coin' } },
+        { price = { { 'iron-ore', math_random(10, 12) } },   offer = { type = 'give-item', item = 'coin' } },
+        { price = { { 'copper-ore', math_random(10, 12) } }, offer = { type = 'give-item', item = 'coin' } },
+        { price = { { 'stone', math_random(10, 12) } },      offer = { type = 'give-item', item = 'coin' } },
+        { price = { { 'coal', math_random(10, 12) } },       offer = { type = 'give-item', item = 'coin' } },
+        { price = { { 'uranium-ore', math_random(8, 10) } }, offer = { type = 'give-item', item = 'coin' } }
     }
     secret_market_items = shuffle(secret_market_items)
 
-    local market = surface.create_entity {name = 'market', position = pos}
+    local market = surface.create_entity { name = 'market', position = pos }
     market.destructible = false
 
     for i = 1, math.random(6, 8), 1 do
@@ -104,20 +104,20 @@ end
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
 
-    if not global.surface_init_done then
+    if not storage.surface_init_done then
         local map_gen_settings = {}
         map_gen_settings.water = 'none'
         map_gen_settings.height = 960
-        map_gen_settings.cliff_settings = {cliff_elevation_interval = 4, cliff_elevation_0 = 4}
+        map_gen_settings.cliff_settings = { cliff_elevation_interval = 4, cliff_elevation_0 = 4 }
         map_gen_settings.autoplace_controls = {
-            ['coal'] = {frequency = 'none', size = 'none', richness = 'none'},
-            ['stone'] = {frequency = 'none', size = 'none', richness = 'none'},
-            ['copper-ore'] = {frequency = 'none', size = 'none', richness = 'none'},
-            ['iron-ore'] = {frequency = 'none', size = 'none', richness = 'none'},
-            ['uranium-ore'] = {frequency = 'none', size = 'none', richness = 'none'},
-            ['crude-oil'] = {frequency = 'none', size = 'none', richness = 'none'},
-            ['trees'] = {frequency = '2', size = '1', richness = 0.2},
-            ['enemy-base'] = {frequency = 'none', size = 'none', richness = 'none'}
+            ['coal'] = { frequency = 'none', size = 'none', richness = 'none' },
+            ['stone'] = { frequency = 'none', size = 'none', richness = 'none' },
+            ['copper-ore'] = { frequency = 'none', size = 'none', richness = 'none' },
+            ['iron-ore'] = { frequency = 'none', size = 'none', richness = 'none' },
+            ['uranium-ore'] = { frequency = 'none', size = 'none', richness = 'none' },
+            ['crude-oil'] = { frequency = 'none', size = 'none', richness = 'none' },
+            ['trees'] = { frequency = '2', size = '1', richness = 0.2 },
+            ['enemy-base'] = { frequency = 'none', size = 'none', richness = 'none' }
             --["grass"] = {frequency = "none", size = "none", richness = "none"},
             --["sand"] = {frequency = "none", size = "none", richness = "none"},
             --["desert"] = {frequency = "none", size = "none", richness = "none"},
@@ -127,19 +127,19 @@ local function on_player_joined_game(event)
         local surface = game.surfaces['mountain_fortress']
 
         local radius = 160
-        game.forces.player.chart(surface, {{x = -1 * radius, y = -1 * radius}, {x = radius, y = radius}})
+        game.forces.player.chart(surface, { { x = -1 * radius, y = -1 * radius }, { x = radius, y = radius } })
 
         game.map_settings.pollution.enabled = true
         game.map_settings.enemy_expansion.enabled = true
 
         --default game setting values
-        global.enemy_evolution_destroy_factor = game.map_settings.enemy_evolution.destroy_factor
-        global.enemy_evolution_time_factor = game.map_settings.enemy_evolution.time_factor
-        global.enemy_evolution_pollution_factor = game.map_settings.enemy_evolution.pollution_factor
+        storage.enemy_evolution_destroy_factor = game.map_settings.enemy_evolution.destroy_factor
+        storage.enemy_evolution_time_factor = game.map_settings.enemy_evolution.time_factor
+        storage.enemy_evolution_pollution_factor = game.map_settings.enemy_evolution.pollution_factor
 
-        game.map_settings.enemy_evolution.destroy_factor = global.enemy_evolution_destroy_factor * difficulty_factor
-        game.map_settings.enemy_evolution.time_factor = global.enemy_evolution_time_factor * difficulty_factor
-        game.map_settings.enemy_evolution.pollution_factor = global.enemy_evolution_pollution_factor * difficulty_factor
+        game.map_settings.enemy_evolution.destroy_factor = storage.enemy_evolution_destroy_factor * difficulty_factor
+        game.map_settings.enemy_evolution.time_factor = storage.enemy_evolution_time_factor * difficulty_factor
+        game.map_settings.enemy_evolution.pollution_factor = storage.enemy_evolution_pollution_factor * difficulty_factor
 
         game.map_settings.enemy_expansion.max_expansion_distance = 15
         game.map_settings.enemy_expansion.settler_group_min_size = 8
@@ -150,19 +150,19 @@ local function on_player_joined_game(event)
         surface.ticks_per_day = surface.ticks_per_day * 2
         game.forces.player.technologies['steel-axe'].researched = true
 
-        global.surface_init_done = true
+        storage.surface_init_done = true
     end
 
     if player.online_time < 1 then
-        player.insert({name = 'pistol', count = 1})
+        player.insert({ name = 'pistol', count = 1 })
         --	player.insert({name = "iron-axe", count = 1})
-        player.insert({name = 'raw-fish', count = 3})
-        player.insert({name = 'firearm-magazine', count = 16})
-        player.insert({name = 'iron-plate', count = 32})
+        player.insert({ name = 'raw-fish', count = 3 })
+        player.insert({ name = 'firearm-magazine', count = 16 })
+        player.insert({ name = 'iron-plate', count = 32 })
     end
 
     local surface = game.surfaces['mountain_fortress']
-    if player.online_time < 2 and surface.is_chunk_generated({0, 0}) then
+    if player.online_time < 2 and surface.is_chunk_generated({ 0, 0 }) then
         player.teleport(surface.find_non_colliding_position('character', spawn_point, 50, 1), 'mountain_fortress')
     else
         if player.online_time < 2 then
@@ -188,16 +188,16 @@ local function generate_north_chunk(area, surface)
     local left_top = area.left_top
     local tile_positions = {}
 
-    for _, e in pairs(surface.find_entities_filtered({area = area, type = 'tree'})) do
+    for _, e in pairs(surface.find_entities_filtered({ area = area, type = 'tree' })) do
         e.destroy()
     end
 
     local tiles_to_set = {}
     for x = 0, 31, 1 do
         for y = 0, 31, 1 do
-            local pos = {x = left_top.x + x, y = left_top.y + y}
+            local pos = { x = left_top.x + x, y = left_top.y + y }
             tile_positions[#tile_positions + 1] = pos
-            insert(tiles_to_set, {name = 'dirt-7', position = pos})
+            insert(tiles_to_set, { name = 'dirt-7', position = pos })
         end
     end
     surface.set_tiles(tiles_to_set, true)
@@ -208,19 +208,19 @@ local function generate_north_chunk(area, surface)
     local rock_amount = math.ceil(#tile_positions * 0.75)
     tile_positions = shuffle(tile_positions)
     for _, pos in pairs(tile_positions) do
-        surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = pos})
+        surface.create_entity({ name = rock_raffle[math_random(1, #rock_raffle)], position = pos })
         rock_amount = rock_amount - 1
         if rock_amount < 1 then
             break
         end
     end
 
-    local waters = {'water-green', 'deepwater-green'}
+    local waters = { 'water-green', 'deepwater-green' }
     if math_random(1, 8) == 1 then
         local pos = tile_positions[math_random(1, #tile_positions)]
         map_functions.draw_noise_tile_circle(pos, waters[math_random(1, #waters)], surface, math_random(2, 8))
         for x = 1, math_random(2, 7), 1 do
-            surface.create_entity({name = 'fish', position = pos})
+            surface.create_entity({ name = 'fish', position = pos })
         end
     end
 
@@ -239,23 +239,23 @@ local function generate_north_chunk(area, surface)
     end
 
     local decorative_names = {}
-    for k, v in pairs(game.decorative_prototypes) do
+    for k, v in pairs(prototypes.decorative) do
         if v.autoplace_specification then
             decorative_names[#decorative_names + 1] = k
         end
     end
-    surface.regenerate_decorative(decorative_names, {{x = math.floor(left_top.x / 32), y = math.floor(left_top.y / 32)}})
+    surface.regenerate_decorative(decorative_names, { { x = math.floor(left_top.x / 32), y = math.floor(left_top.y / 32) } })
 end
 
 local function generate_south_chunk(event, surface)
     local left_top = event.area.left_top
 
     if left_top.y > 32 then
-        for _, e in pairs(surface.find_entities_filtered({area = event.area})) do
+        for _, e in pairs(surface.find_entities_filtered({ area = event.area })) do
             e.destroy()
         end
     else
-        for _, e in pairs(surface.find_entities_filtered({area = event.area, type = 'cliff'})) do
+        for _, e in pairs(surface.find_entities_filtered({ area = event.area, type = 'cliff' })) do
             e.destroy()
         end
     end
@@ -284,8 +284,8 @@ local function generate_south_chunk(event, surface)
     local tile_positions = {}
     for x = 0, 31, 1 do
         for y = 0, 31, 1 do
-            local pos = {x = left_top.x + x, y = left_top.y + y}
-            if not surface.get_tile(pos).collides_with('player-layer') then
+            local pos = { x = left_top.x + x, y = left_top.y + y }
+            if not surface.get_tile(pos).collides_with('player') then
                 tile_positions[#tile_positions + 1] = pos
             end
         end
@@ -296,8 +296,8 @@ local function generate_south_chunk(event, surface)
 
     tile_positions = shuffle(tile_positions)
     for _, pos in pairs(tile_positions) do
-        if surface.can_place_entity({name = 'biter-spawner', position = pos, force = 'enemy'}) then
-            surface.create_entity({name = nest_raffle[math_random(1, #nest_raffle)], position = pos, force = 'enemy'})
+        if surface.can_place_entity({ name = 'biter-spawner', position = pos, force = 'enemy' }) then
+            surface.create_entity({ name = nest_raffle[math_random(1, #nest_raffle)], position = pos, force = 'enemy' })
             nests_amount = nests_amount - 1
             if nests_amount < 1 then
                 break
@@ -307,8 +307,8 @@ local function generate_south_chunk(event, surface)
 
     tile_positions = shuffle(tile_positions)
     for _, pos in pairs(tile_positions) do
-        if surface.can_place_entity({name = 'big-worm-turret', position = pos, force = 'enemy'}) then
-            surface.create_entity({name = worm_raffle[math_random(1, #worm_raffle)], position = pos, force = 'enemy'})
+        if surface.can_place_entity({ name = 'big-worm-turret', position = pos, force = 'enemy' }) then
+            surface.create_entity({ name = worm_raffle[math_random(1, #worm_raffle)], position = pos, force = 'enemy' })
             worm_amount = worm_amount - 1
             if worm_amount < 1 then
                 break
@@ -318,18 +318,18 @@ local function generate_south_chunk(event, surface)
 end
 
 local function on_chunk_charted(event)
-    if not global.chunks_charted then
-        global.chunks_charted = {}
+    if not storage.chunks_charted then
+        storage.chunks_charted = {}
     end
     local surface = game.surfaces[event.surface_index]
     local position = event.position
-    if global.chunks_charted[tostring(position.x) .. tostring(position.y)] then
+    if storage.chunks_charted[tostring(position.x) .. tostring(position.y)] then
         return
     end
-    global.chunks_charted[tostring(position.x) .. tostring(position.y)] = true
+    storage.chunks_charted[tostring(position.x) .. tostring(position.y)] = true
     local area = {
-        left_top = {x = position.x * 32, y = position.y * 32},
-        right_bottom = {x = position.x * 32 + 31, y = position.y * 32 + 31}
+        left_top = { x = position.x * 32, y = position.y * 32 },
+        right_bottom = { x = position.x * 32 + 31, y = position.y * 32 + 31 }
     }
 
     if position.y * 32 < 64 then
@@ -339,15 +339,15 @@ local function on_chunk_charted(event)
     if math_random(1, 3) ~= 1 then
         return
     end
-    map_functions.draw_rainbow_patch({x = position.x * 32 + math_random(1, 32), y = position.y * 32 + math_random(1, 32)}, surface, math_random(10, 18), 500 * position.y)
+    map_functions.draw_rainbow_patch({ x = position.x * 32 + math_random(1, 32), y = position.y * 32 + math_random(1, 32) }, surface, math_random(10, 18), 500 * position.y)
     game.forces.player.chart(surface, area)
 end
 
 local function replace_spawn_water(surface)
-    if global.spawn_water_replaced then
+    if storage.spawn_water_replaced then
         return
     end
-    if not surface.is_chunk_generated({5, 5}) then
+    if not surface.is_chunk_generated({ 5, 5 }) then
         return
     end
     local tilename = 'grass-1'
@@ -364,12 +364,12 @@ local function replace_spawn_water(surface)
         for y = -128, 128, 1 do
             local tile = surface.get_tile(x, y)
             if tile.name == 'water' or tile.name == 'deepwater' then
-                insert(tiles, {name = tilename, position = {x = tile.position.x, y = tile.position.y}})
+                insert(tiles, { name = tilename, position = { x = tile.position.x, y = tile.position.y } })
             end
         end
     end
     surface.set_tiles(tiles, true)
-    global.spawn_water_replaced = true
+    storage.spawn_water_replaced = true
 end
 
 local function on_chunk_generated(event)
@@ -391,29 +391,29 @@ local function on_chunk_generated(event)
         return
     end
 
-    for _, e in pairs(surface.find_entities_filtered({area = event.area, type = 'cliff'})) do
+    for _, e in pairs(surface.find_entities_filtered({ area = event.area, type = 'cliff' })) do
         e.destroy()
     end
 
-    local trees = {'dead-grey-trunk', 'dead-grey-trunk', 'dry-tree'}
+    local trees = { 'dead-grey-trunk', 'dead-grey-trunk', 'dry-tree' }
     for x = 0, 31, 1 do
         for y = 5, 31, 1 do
-            local pos = {x = left_top.x + x, y = left_top.y + y}
+            local pos = { x = left_top.x + x, y = left_top.y + y }
             if math_random(1, math.ceil(y + y) + 64) == 1 then
-                surface.create_entity({name = trees[math_random(1, #trees)], position = pos})
+                surface.create_entity({ name = trees[math_random(1, #trees)], position = pos })
             end
         end
     end
 
     for x = 0, 31, 1 do
         for y = 0, 31, 1 do
-            local pos = {x = left_top.x + x, y = left_top.y + y}
+            local pos = { x = left_top.x + x, y = left_top.y + y }
 
             if math_random(1, y + 2) == 1 then
                 surface.create_decoratives {
                     check_collision = false,
                     decoratives = {
-                        {name = 'rock-medium', position = pos, amount = math_random(1, 1 + math.ceil(20 - y / 2))}
+                        { name = 'medium-rock', position = pos, amount = math_random(1, 1 + math.ceil(20 - y / 2)) }
                     }
                 }
             end
@@ -421,7 +421,7 @@ local function on_chunk_generated(event)
                 surface.create_decoratives {
                     check_collision = false,
                     decoratives = {
-                        {name = 'rock-small', position = pos, amount = math_random(1, 1 + math.ceil(20 - y / 2))}
+                        { name = 'small-rock', position = pos, amount = math_random(1, 1 + math.ceil(20 - y / 2)) }
                     }
                 }
             end
@@ -429,7 +429,7 @@ local function on_chunk_generated(event)
                 surface.create_decoratives {
                     check_collision = false,
                     decoratives = {
-                        {name = 'rock-tiny', position = pos, amount = math_random(1, 1 + math.ceil(20 - y / 2))}
+                        { name = 'tiny-rock', position = pos, amount = math_random(1, 1 + math.ceil(20 - y / 2)) }
                     }
                 }
             end
@@ -441,7 +441,7 @@ local function on_chunk_generated(event)
 				surface.set_tiles({{name = "dirt-7", position = pos}}, true)
 			end]]
             if math_random(1, math.ceil(y + y) + 2) == 1 then
-                surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = pos})
+                surface.create_entity({ name = rock_raffle[math_random(1, #rock_raffle)], position = pos })
             end
         end
     end
@@ -452,12 +452,12 @@ local function on_chunk_generated(event)
     if left_top.x ~= 96 then
         return
     end
-    for _, e in pairs(surface.find_entities_filtered({area = {{spawn_point.x - 0.5, spawn_point.y - 0.5}, {spawn_point.x + 0.5, spawn_point.y + 0.5}}})) do
+    for _, e in pairs(surface.find_entities_filtered({ area = { { spawn_point.x - 0.5, spawn_point.y - 0.5 }, { spawn_point.x + 0.5, spawn_point.y + 0.5 } } })) do
         if e.force.name ~= 'player' then
             e.destroy()
         end
     end
-    for _, e in pairs(surface.find_entities_filtered({area = {{spawn_point.x - 40, spawn_point.y - 40}, {spawn_point.x + 40, spawn_point.y + 40}}, force = 'enemy'})) do
+    for _, e in pairs(surface.find_entities_filtered({ area = { { spawn_point.x - 40, spawn_point.y - 40 }, { spawn_point.x + 40, spawn_point.y + 40 } }, force = 'enemy' })) do
         e.destroy()
     end
 end

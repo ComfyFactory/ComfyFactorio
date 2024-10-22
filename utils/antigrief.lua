@@ -57,7 +57,7 @@ local this = {
     decon_surface_blacklist = 'nauvis',
     players_warn_when_decon = {},
     players_warn_on_long_texts = {},
-    on_cancelled_deconstruction = {tick = 0, count = 0},
+    on_cancelled_deconstruction = { tick = 0, count = 0 },
     limit = 2000,
     admin_button_validation = {}
 }
@@ -92,28 +92,28 @@ local chests = {
 -- Clears the player from players_warn_when_decon tbl.
 local clear_player_decon_warnings =
     Token.register(
-    function(event)
-        local player_index = event.player_index
-        if this.players_warn_when_decon[player_index] then
-            this.players_warn_when_decon[player_index] = nil
+        function (event)
+            local player_index = event.player_index
+            if this.players_warn_when_decon[player_index] then
+                this.players_warn_when_decon[player_index] = nil
+            end
         end
-    end
-)
+    )
 
 -- Clears the player from players_warn_on_long_texts tbl.
 local clear_players_warn_on_long_texts =
     Token.register(
-    function(event)
-        local player_index = event.player_index
-        if this.players_warn_on_long_texts[player_index] then
-            this.players_warn_on_long_texts[player_index] = nil
+        function (event)
+            local player_index = event.player_index
+            if this.players_warn_on_long_texts[player_index] then
+                this.players_warn_on_long_texts[player_index] = nil
+            end
         end
-    end
-)
+    )
 
 Global.register(
     this,
-    function(t)
+    function (t)
         this = t
     end
 )
@@ -171,7 +171,7 @@ local function damage_player(player, kill, print_to_all)
             return
         end
         player.character.health = player.character.health - random(50, 100)
-        player.character.surface.create_entity({name = 'water-splash', position = player.position})
+        player.character.surface.create_entity({ name = 'water-splash', position = player.position })
         local messages = {
             'Ouch.. That hurt! Better be careful now.',
             'Just a fleshwound.',
@@ -235,7 +235,7 @@ local function on_marked_for_deconstruction(event)
     end
     if playtime < this.required_playtime then
         event.entity.cancel_deconstruction(game.get_player(event.player_index).force.name)
-        player.print('You have not grown accustomed to this technology yet.', {r = 0.22, g = 0.99, b = 0.99})
+        player.print('You have not grown accustomed to this technology yet.', { r = 0.22, g = 0.99, b = 0.99 })
     end
 end
 
@@ -262,7 +262,7 @@ local function on_player_ammo_inventory_changed(event)
     end
     if playtime < this.required_playtime then
         if this.enable_capsule_cursor_warning then
-            local nukes = player.remove_item({name = 'atomic-bomb', count = 1000})
+            local nukes = player.remove_item({ name = 'atomic-bomb', count = 1000 })
             if nukes > 0 then
                 Utils.action_warning('[Nuke]', player.name .. ' tried to equip nukes but was not trusted.')
                 damage_player(player)
@@ -328,7 +328,7 @@ local function on_built_entity(event)
         return
     end
 
-    local created_entity = event.created_entity
+    local created_entity = event.entity
 
     if created_entity.type == 'entity-ghost' then
         local player = game.get_player(event.player_index)
@@ -350,7 +350,7 @@ local function on_built_entity(event)
 
         if playtime < this.required_playtime then
             created_entity.destroy()
-            player.print('You have not grown accustomed to this technology yet.', {r = 0.22, g = 0.99, b = 0.99})
+            player.print('You have not grown accustomed to this technology yet.', { r = 0.22, g = 0.99, b = 0.99 })
         end
     end
 end
@@ -382,11 +382,11 @@ local function on_player_used_capsule(event)
     if ammo_names[name] then
         local msg
         if this.enable_capsule_warning then
-            if surface.count_entities_filtered({force = 'enemy', area = {{x - 10, y - 10}, {x + 10, y + 10}}, limit = 1}) > 0 then
+            if surface.count_entities_filtered({ force = 'enemy', area = { { x - 10, y - 10 }, { x + 10, y + 10 } }, limit = 1 }) > 0 then
                 return
             end
             local count = 0
-            local entities = player.surface.find_entities_filtered {force = player.force, area = {{x - 5, y - 5}, {x + 5, y + 5}}}
+            local entities = player.surface.find_entities_filtered { force = player.force, area = { { x - 5, y - 5 }, { x + 5, y + 5 } } }
 
             for i = 1, #entities do
                 local e = entities[i]
@@ -784,7 +784,7 @@ local function on_console_chat(event)
         if this.enable_jail_on_long_texts and not player.admin then
             if not this.players_warn_on_long_texts[player.index] then
                 this.players_warn_on_long_texts[player.index] = 1
-                Task.set_timeout_in_ticks(108000, clear_players_warn_on_long_texts, {player_index = player.index})
+                Task.set_timeout_in_ticks(108000, clear_players_warn_on_long_texts, { player_index = player.index })
             end
             local warnings = this.players_warn_on_long_texts[player.index]
             if warnings then
@@ -840,7 +840,7 @@ local function on_player_cursor_stack_changed(event)
     if playtime < this.required_playtime then
         if this.enable_capsule_cursor_warning then
             if ammo_names[name] then
-                local item_to_remove = player.remove_item({name = name, count = 1000})
+                local item_to_remove = player.remove_item({ name = name, count = 1000 })
                 if item_to_remove > 0 then
                     Utils.action_warning('[Capsule]', player.name .. ' equipped ' .. name .. ' but was not trusted.')
                     damage_player(player)
@@ -901,13 +901,11 @@ local function on_init()
     end
     local branch_version = '0.18.35'
     local is_branch_18 = sub(branch_version, 3, 4)
-    local get_active_version = sub(game.active_mods.base, 3, 4)
+    local get_active_version = sub(script.active_mods.base, 3, 4)
     local default = game.permissions.get_group('Default')
 
-    game.forces.player.research_queue_enabled = true
-
     is_branch_18 = is_branch_18 .. sub(branch_version, 6, 7)
-    get_active_version = get_active_version .. sub(game.active_mods.base, 6, 7)
+    get_active_version = get_active_version .. sub(script.active_mods.base, 6, 7)
     if get_active_version >= is_branch_18 then
         default.set_allows_action(defines.input_action.flush_opened_entity_fluid, false)
         default.set_allows_action(defines.input_action.flush_opened_entity_specific_fluid, false)
@@ -918,7 +916,7 @@ local function on_permission_group_added(event)
     if not this.enabled then
         return
     end
-    local player = game.get_player(event.player_index)
+    local player = event.player_index and game.get_player(event.player_index)
     if not player or not player.valid then
         return
     end
@@ -934,7 +932,7 @@ local function on_permission_group_deleted(event)
     if not this.enabled then
         return
     end
-    local player = game.get_player(event.player_index)
+    local player = event.player_index and game.get_player(event.player_index)
     if not player or not player.valid then
         return
     end
@@ -964,7 +962,7 @@ local function on_player_deconstructed_area(event)
     end
 
     local area = event.area
-    local count = surface.count_entities_filtered({area = area, type = 'resource', invert = true})
+    local count = surface.count_entities_filtered({ area = area, type = 'resource', invert = true })
     local max_count = 0
     local is_trusted = Session.get_trusted_player(player)
     if is_trusted then
@@ -972,7 +970,7 @@ local function on_player_deconstructed_area(event)
     end
 
     if next(this.filtered_types_on_decon) then
-        local filtered_count = surface.count_entities_filtered({area = area, type = this.filtered_types_on_decon})
+        local filtered_count = surface.count_entities_filtered({ area = area, type = this.filtered_types_on_decon })
         if filtered_count and filtered_count > 0 then
             surface.cancel_deconstruct_area {
                 area = area,
@@ -1022,7 +1020,7 @@ local function on_player_deconstructed_area(event)
             if not this.players_warn_when_decon[player.index] then
                 this.players_warn_when_decon[player.index] = 1
                 local r = random(7200, 18000)
-                Task.set_timeout_in_ticks(r, clear_player_decon_warnings, {player_index = player.index})
+                Task.set_timeout_in_ticks(r, clear_player_decon_warnings, { player_index = player.index })
             end
             local warnings = this.players_warn_when_decon[player.index]
             if warnings then
@@ -1085,7 +1083,8 @@ local function on_permission_group_edited(event)
     if not this.enabled then
         return
     end
-    local player = game.get_player(event.player_index)
+
+    local player = event.player_index and game.get_player(event.player_index)
     if not player or not player.valid then
         return
     end
@@ -1117,7 +1116,7 @@ local function on_permission_string_imported(event)
     if not this.enabled then
         return
     end
-    local player = game.get_player(event.player_index)
+    local player = event.player_index and game.get_player(event.player_index)
     if not player or not player.valid then
         return
     end

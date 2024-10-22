@@ -1,9 +1,8 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-
 -- local Math = require 'maps.pirates.math'
 -- local Memory = require 'maps.pirates.memory'
-local _inspect = require 'utils.inspect'.inspect
+local _inspect = require('utils.inspect').inspect
 -- local Token = require 'utils.token'
 -- local CoreData = require 'maps.pirates.coredata'
 -- local Task = require 'utils.task'
@@ -71,8 +70,6 @@ Public.framecounts = {
 -- 	Common.parrot_speak(crew_force, tip)
 -- end
 
-
-
 -- if we're using custom sprites, we have access to this dynamic parrot that flies around:
 
 -- function Public.parrot_tick()
@@ -87,8 +84,8 @@ Public.framecounts = {
 -- 		destination.dynamic_data.parrot_gave_overstay_tip = true
 
 -- 		local spawners = surface.find_entities_filtered({type = 'unit-spawner', force = memory.enemy_force_name})
--- 		local spawnerscount = #spawners or 0
--- 		if spawnerscount > 0 then --check biter bases actually exist
+-- 		local spawners_count = #spawners or 0
+-- 		if spawners_count > 0 then --check biter bases actually exist
 -- 			Public.parrot_overstay_tip()
 -- 		end
 -- 	end

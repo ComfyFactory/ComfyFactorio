@@ -7,7 +7,7 @@ local Settings = require 'maps.native_war.settings'
 local button_science_name = {}
 for _, nbw in pairs(Settings.nb_of_waves) do
     for k, sp in pairs(Settings.science_pack) do
-        table.insert(button_science_name, {sp = k, spc = sp.short, button_name = sp.short .. '_' .. nbw, nbw = nbw})
+        table.insert(button_science_name, { sp = k, spc = sp.short, button_name = sp.short .. '_' .. nbw, nbw = nbw })
     end
 end
 
@@ -22,30 +22,30 @@ local function create_new_gui_for_market(player, market)
     local player_white_science_pack = player_inventory.get_item_count('space-science-pack')
 
     local root = player.gui.screen
-    local frame = root.add({type = 'frame', name = 'market_frame', caption = 'Market', direction = 'vertical'})
+    local frame = root.add({ type = 'frame', name = 'market_frame', caption = 'Market', direction = 'vertical' })
     frame.style.font = 'default'
-    frame.style.font_color = {r = 0.3, g = 0.65, b = 0.3}
+    frame.style.font_color = { r = 0.3, g = 0.65, b = 0.3 }
     frame.style.horizontal_align = 'center'
-    frame.add({type = 'label', caption = 'Buy waves of biter/spitter'})
-    local line = frame.add({type = 'line', direction = 'horizontal'})
-    local table = frame.add({type = 'table', column_count = 5, draw_horizontal_lines = true, draw_vertical_lines = true})
-    local case = table.add({type = 'sprite', sprite = 'file/graphics/vide.png'})
+    frame.add({ type = 'label', caption = 'Buy waves of biter/spitter' })
+    local line = frame.add({ type = 'line', direction = 'horizontal' })
+    local table = frame.add({ type = 'table', column_count = 5, draw_horizontal_lines = true, draw_vertical_lines = true })
+    local case = table.add({ type = 'sprite', sprite = 'file/graphics/vide.png' })
     case.style.horizontal_align = 'center'
     case.style.right_padding = 30
     case.style.left_padding = 30
-    local case = table.add({type = 'sprite', sprite = 'entity/small-biter'})
+    local case = table.add({ type = 'sprite', sprite = 'entity/small-biter' })
     case.style.horizontal_align = 'center'
     case.style.right_padding = 30
     case.style.left_padding = 30
-    local case = table.add({type = 'sprite', sprite = 'entity/medium-biter'})
+    local case = table.add({ type = 'sprite', sprite = 'entity/medium-biter' })
     case.style.horizontal_align = 'center'
     case.style.right_padding = 30
     case.style.left_padding = 30
-    local case = table.add({type = 'sprite', sprite = 'entity/big-biter'})
+    local case = table.add({ type = 'sprite', sprite = 'entity/big-biter' })
     case.style.horizontal_align = 'center'
     case.style.right_padding = 30
     case.style.left_padding = 30
-    local case = table.add({type = 'sprite', sprite = 'entity/behemoth-biter'})
+    local case = table.add({ type = 'sprite', sprite = 'entity/behemoth-biter' })
     case.style.horizontal_align = 'center'
     case.style.right_padding = 30
     case.style.left_padding = 30
@@ -58,9 +58,9 @@ local function create_new_gui_for_market(player, market)
         else
             text_wave = wave_nb .. ' waves'
         end
-        local case = table.add({type = 'label', caption = text_wave})
+        local case = table.add({ type = 'label', caption = text_wave })
         case.style.right_padding = 30
-        local case = table.add({type = 'flow', direction = 'horizontal'})
+        local case = table.add({ type = 'flow', direction = 'horizontal' })
         case.add(
             {
                 type = 'sprite-button',
@@ -82,7 +82,7 @@ local function create_new_gui_for_market(player, market)
         )
         case.style.right_padding = 12
         case.style.left_padding = 12
-        local case = table.add({type = 'flow', direction = 'horizontal'})
+        local case = table.add({ type = 'flow', direction = 'horizontal' })
         case.add(
             {
                 type = 'sprite-button',
@@ -95,7 +95,7 @@ local function create_new_gui_for_market(player, market)
         )
         case.style.left_padding = 30
         case.style.right_padding = 30
-        local case = table.add({type = 'flow', direction = 'horizontal'})
+        local case = table.add({ type = 'flow', direction = 'horizontal' })
         case.add(
             {
                 type = 'sprite-button',
@@ -108,7 +108,7 @@ local function create_new_gui_for_market(player, market)
         )
         case.style.left_padding = 30
         case.style.right_padding = 30
-        local case = table.add({type = 'flow', direction = 'horizontal'})
+        local case = table.add({ type = 'flow', direction = 'horizontal' })
         case.add(
             {
                 type = 'sprite-button',
@@ -133,27 +133,27 @@ local function create_new_gui_for_market(player, market)
         case.style.left_padding = 12
     end
 
-    local line = frame.add({type = 'line', direction = 'horizontal'})
-    frame.add({type = 'label', caption = 'Buy/ugrade worm turret'})
+    local line = frame.add({ type = 'line', direction = 'horizontal' })
+    frame.add({ type = 'label', caption = 'Buy/ugrade worm turret' })
 
-    local table = frame.add({type = 'table', column_count = 5, draw_horizontal_lines = true, draw_vertical_lines = true})
-    local case = table.add({type = 'sprite', sprite = 'file/graphics/vide.png'})
+    local table = frame.add({ type = 'table', column_count = 5, draw_horizontal_lines = true, draw_vertical_lines = true })
+    local case = table.add({ type = 'sprite', sprite = 'file/graphics/vide.png' })
     case.style.horizontal_align = 'center'
     case.style.right_padding = 30
     case.style.left_padding = 30
-    local case = table.add({type = 'sprite', sprite = 'entity/small-worm-turret'})
+    local case = table.add({ type = 'sprite', sprite = 'entity/small-worm-turret' })
     case.style.horizontal_align = 'center'
     case.style.right_padding = 30
     case.style.left_padding = 30
-    local case = table.add({type = 'sprite', sprite = 'entity/medium-worm-turret'})
+    local case = table.add({ type = 'sprite', sprite = 'entity/medium-worm-turret' })
     case.style.horizontal_align = 'center'
     case.style.right_padding = 30
     case.style.left_padding = 30
-    local case = table.add({type = 'sprite', sprite = 'entity/big-worm-turret'})
+    local case = table.add({ type = 'sprite', sprite = 'entity/big-worm-turret' })
     case.style.horizontal_align = 'center'
     case.style.right_padding = 30
     case.style.left_padding = 30
-    local case = table.add({type = 'sprite', sprite = 'entity/behemoth-worm-turret'})
+    local case = table.add({ type = 'sprite', sprite = 'entity/behemoth-worm-turret' })
     case.style.horizontal_align = 'center'
     case.style.right_padding = 30
     case.style.left_padding = 30
@@ -165,9 +165,9 @@ local function create_new_gui_for_market(player, market)
         else
             turret = 'turret'
         end
-        local case = table.add({type = 'label', caption = dist})
+        local case = table.add({ type = 'label', caption = dist })
         case.style.right_padding = 30
-        local case = table.add({type = 'flow', direction = 'horizontal'})
+        local case = table.add({ type = 'flow', direction = 'horizontal' })
         case.add(
             {
                 type = 'sprite-button',
@@ -189,7 +189,7 @@ local function create_new_gui_for_market(player, market)
         )
         case.style.right_padding = 12
         case.style.left_padding = 12
-        local case = table.add({type = 'flow', direction = 'horizontal'})
+        local case = table.add({ type = 'flow', direction = 'horizontal' })
         case.add(
             {
                 type = 'sprite-button',
@@ -202,7 +202,7 @@ local function create_new_gui_for_market(player, market)
         )
         case.style.left_padding = 30
         case.style.right_padding = 30
-        local case = table.add({type = 'flow', direction = 'horizontal'})
+        local case = table.add({ type = 'flow', direction = 'horizontal' })
         case.add(
             {
                 type = 'sprite-button',
@@ -215,7 +215,7 @@ local function create_new_gui_for_market(player, market)
         )
         case.style.left_padding = 30
         case.style.right_padding = 30
-        local case = table.add({type = 'flow', direction = 'horizontal'})
+        local case = table.add({ type = 'flow', direction = 'horizontal' })
         case.add(
             {
                 type = 'sprite-button',
@@ -239,26 +239,26 @@ local function create_new_gui_for_market(player, market)
         case.style.left_padding = 12
     end
 
-    local line = frame.add({type = 'line', direction = 'horizontal'})
-    frame.add({type = 'label', caption = 'Upgrade biter'})
-    local table = frame.add({type = 'table', column_count = 5, draw_horizontal_lines = true, draw_vertical_lines = true})
-    local case = table.add({type = 'sprite', sprite = 'file/graphics/vide.png'})
+    local line = frame.add({ type = 'line', direction = 'horizontal' })
+    frame.add({ type = 'label', caption = 'Upgrade biter' })
+    local table = frame.add({ type = 'table', column_count = 5, draw_horizontal_lines = true, draw_vertical_lines = true })
+    local case = table.add({ type = 'sprite', sprite = 'file/graphics/vide.png' })
     case.style.horizontal_align = 'center'
     case.style.right_padding = 30
     case.style.left_padding = 30
-    local case = table.add({type = 'sprite', sprite = 'file/graphics/Splash.png'})
+    local case = table.add({ type = 'sprite', sprite = 'file/graphics/Splash.png' })
     case.style.horizontal_align = 'center'
     case.style.right_padding = 30
     case.style.left_padding = 30
-    local case = table.add({type = 'sprite', sprite = 'file/graphics/resist.png'})
+    local case = table.add({ type = 'sprite', sprite = 'file/graphics/resist.png' })
     case.style.horizontal_align = 'center'
     case.style.right_padding = 30
     case.style.left_padding = 30
-    local case = table.add({type = 'sprite', sprite = 'file/graphics/griffe.png'})
+    local case = table.add({ type = 'sprite', sprite = 'file/graphics/griffe.png' })
     case.style.horizontal_align = 'center'
     case.style.right_padding = 30
     case.style.left_padding = 30
-    local case = table.add({type = 'sprite', sprite = 'file/graphics/life.png'})
+    local case = table.add({ type = 'sprite', sprite = 'file/graphics/life.png' })
     case.style.horizontal_align = 'center'
     case.style.right_padding = 30
     case.style.left_padding = 30
@@ -266,25 +266,25 @@ local function create_new_gui_for_market(player, market)
     local xp_t = XP.get_table()
     local xp_available = xp_t[player.index].xp
 
-    local case = table.add({type = 'flow', direction = 'vertical'})
-    case.add({type = 'label', caption = 'Available XP :'})
-    case.add({type = 'label', caption = math.floor(xp_available)})
-    local case = table.add({type = 'flow', direction = 'horizontal'})
-    local b = case.add({type = 'button', name = 'xp_splash', caption = '10 XP', tooltip = 'Increase spitters splash damage.\nPrice: 10 XP.'})
+    local case = table.add({ type = 'flow', direction = 'vertical' })
+    case.add({ type = 'label', caption = 'Available XP :' })
+    case.add({ type = 'label', caption = math.floor(xp_available) })
+    local case = table.add({ type = 'flow', direction = 'horizontal' })
+    local b = case.add({ type = 'button', name = 'xp_splash', caption = '10 XP', tooltip = 'Increase spitters splash damage.\nPrice: 10 XP.' })
     b.style.minimal_width = 50
     case.style.top_padding = 5
     case.style.left_padding = 20
-    local case = table.add({type = 'flow', direction = 'horizontal'})
-    local b = case.add({type = 'button', name = 'xp_resistance', caption = '10 XP', tooltip = 'Increase resistance of all your biter/spitter.\nPrice: 10 XP.'})
+    local case = table.add({ type = 'flow', direction = 'horizontal' })
+    local b = case.add({ type = 'button', name = 'xp_resistance', caption = '10 XP', tooltip = 'Increase resistance of all your biter/spitter.\nPrice: 10 XP.' })
     b.style.minimal_width = 50
     case.style.top_padding = 5
     case.style.left_padding = 20
-    local case = table.add({type = 'flow', direction = 'horizontal'})
-    local b = case.add({type = 'button', name = 'xp_damage', caption = '10 XP', tooltip = 'Increase biter melee damage.\nPrice: 10 XP.'})
+    local case = table.add({ type = 'flow', direction = 'horizontal' })
+    local b = case.add({ type = 'button', name = 'xp_damage', caption = '10 XP', tooltip = 'Increase biter melee damage.\nPrice: 10 XP.' })
     b.style.minimal_width = 50
     case.style.top_padding = 5
     case.style.left_padding = 20
-    local case = table.add({type = 'flow', direction = 'horizontal'})
+    local case = table.add({ type = 'flow', direction = 'horizontal' })
     case.add(
         {
             type = 'sprite-button',
@@ -297,8 +297,8 @@ local function create_new_gui_for_market(player, market)
     case.style.left_padding = 30
     case.style.right_padding = 30
 
-    local line = frame.add({type = 'line', direction = 'horizontal'})
-    frame.add({type = 'button', name = 'cancel_market', caption = 'Close'})
+    local line = frame.add({ type = 'line', direction = 'horizontal' })
+    frame.add({ type = 'button', name = 'cancel_market', caption = 'Close' })
 end
 
 local function on_gui_opened(event)
@@ -345,10 +345,10 @@ local function on_gui_click(event)
         player.gui.screen['market_frame'].destroy()
         local surface = game.surfaces['native_war']
         if player.force.name == 'west' then
-            local market = surface.find_entities_filtered {position = {-197, 0}, radius = 5, type = 'market'}
+            local market = surface.find_entities_filtered { position = { -197, 0 }, radius = 5, type = 'market' }
             market[1].operable = true
         elseif player.force.name == 'east' then
-            local market = surface.find_entities_filtered {position = {197, 0}, radius = 5, type = 'market'}
+            local market = surface.find_entities_filtered { position = { 197, 0 }, radius = 5, type = 'market' }
             market[1].operable = true
         end
         return
@@ -374,25 +374,25 @@ local function on_gui_click(event)
     local amount = 10
     if event.element.name == 'xp_splash' and xp_available >= amount then
         XP.lost_xp(player, amount)
-        global.map_forces[player.force.name].modifier.splash = global.map_forces[player.force.name].modifier.splash + 0.001
+        storage.map_forces[player.force.name].modifier.splash = storage.map_forces[player.force.name].modifier.splash + 0.001
         player.gui.screen['market_frame'].destroy()
         create_new_gui_for_market(player, event.entity)
     end
     if event.element.name == 'xp_damage' and xp_available >= amount then
         XP.lost_xp(player, amount)
-        global.map_forces[player.force.name].modifier.damage = global.map_forces[player.force.name].modifier.damage + 0.001
+        storage.map_forces[player.force.name].modifier.damage = storage.map_forces[player.force.name].modifier.damage + 0.001
         player.gui.screen['market_frame'].destroy()
         create_new_gui_for_market(player, event.entity)
     end
     if event.element.name == 'xp_resistance' and xp_available >= amount then
         XP.lost_xp(player, amount)
-        global.map_forces[player.force.name].modifier.resistance = global.map_forces[player.force.name].modifier.resistance - 0.001
+        storage.map_forces[player.force.name].modifier.resistance = storage.map_forces[player.force.name].modifier.resistance - 0.001
         player.gui.screen['market_frame'].destroy()
         create_new_gui_for_market(player, event.entity)
     end
     if event.element.name == 'add_life' and player_inventory.get_item_count('space-science-pack') >= 1000 then
         XP.buy_extra_life(player.force.name)
-        player.remove_item({name = 'space-science-pack', count = 1000})
+        player.remove_item({ name = 'space-science-pack', count = 1000 })
         player.gui.screen['market_frame'].destroy()
         create_new_gui_for_market(player, event.entity)
     end
@@ -404,7 +404,7 @@ local function on_gui_click(event)
                 if player_inventory.get_item_count(button.sp) < Settings.wave_price[button.sp].price then
                     break
                 end
-                player.remove_item({name = button.sp, count = Settings.wave_price[button.sp].price})
+                player.remove_item({ name = button.sp, count = Settings.wave_price[button.sp].price })
                 Team.on_buy_wave('native_war', player.force.name, button.spc)
                 count = count + 1
             end
@@ -435,7 +435,7 @@ local function on_gui_click(event)
                             Settings.upgrade_turret_price[button.sp].price,
                             button.sp
                         )
-                     then
+                    then
                         player.gui.screen['market_frame'].destroy()
                         create_new_gui_for_market(player, event.entity)
                         break
@@ -457,7 +457,7 @@ local function on_gui_click(event)
                             button.sp,
                             button.type_worm .. '-worm-turret'
                         )
-                     then
+                    then
                         player.gui.screen['market_frame'].destroy()
                         create_new_gui_for_market(player, event.entity)
                         break

@@ -35,7 +35,7 @@ local function on_entity_damaged(event)
     end
 
     if event.cause.unit_number then
-        if global.boss_biters[event.cause.unit_number] then
+        if storage.boss_biters[event.cause.unit_number] then
             boss_biter.damaged_entity(event)
         end
     end
@@ -47,12 +47,12 @@ local function on_entity_damaged(event)
     if enhance_railgun(event) then
         return
     end
-    if global.explosive_bullets_unlocked then
+    if storage.explosive_bullets_unlocked then
         if explosive_bullets(event) then
             return
         end
     end
-    if global.bouncy_shells_unlocked then
+    if storage.bouncy_shells_unlocked then
         if bouncy_shells(event) then
             return
         end

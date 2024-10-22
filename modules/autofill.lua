@@ -392,7 +392,7 @@ local function on_entity_built(event)
         return
     end
 
-    local ce = event.created_entity
+    local ce = event.entity
     if not (ce and ce.valid) then
         return
     end

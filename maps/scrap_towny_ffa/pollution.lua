@@ -21,8 +21,6 @@ local pollution_index = {
     ['biter-spawner'] = {min = 0.5, max = 2.5},
     ['spitter-spawner'] = {min = 0.5, max = 2.5},
     ['mineable-wreckage'] = {min = 0.1, max = 0.1},
-    ['small-ship-wreck'] = {min = 0.1, max = 0.1},
-    ['medium-ship-wreck'] = {min = 0.1, max = 0.1},
     ['crash-site-spaceship-wreck-small-1'] = {min = 0.1, max = 0.1},
     ['crash-site-spaceship-wreck-small-2'] = {min = 0.1, max = 0.1},
     ['crash-site-spaceship-wreck-small-3'] = {min = 0.1, max = 0.1},

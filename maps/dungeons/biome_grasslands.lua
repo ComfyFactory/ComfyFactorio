@@ -1,5 +1,5 @@
 local Functions = require 'maps.dungeons.functions'
-local Get_noise = require 'utils.get_noise'
+local Get_noise = require 'utils.math.get_noise'
 local DungeonsTable = require 'maps.dungeons.table'
 
 local table_shuffle_table = table.shuffle_table
@@ -7,21 +7,21 @@ local math_random = math.random
 local math_abs = math.abs
 local math_floor = math.floor
 
-local decoratives = {'green-asterisk', 'green-bush-mini', 'green-carpet-grass', 'green-hairy-grass', 'green-small-grass'}
-local ores = {'iron-ore', 'iron-ore', 'coal'}
-local trees = {'tree-01', 'tree-02', 'tree-04', 'tree-05', 'tree-06', 'tree-07', 'tree-08'}
+local decoratives = { 'green-asterisk', 'green-bush-mini', 'green-carpet-grass', 'green-hairy-grass', 'green-small-grass' }
+local ores = { 'iron-ore', 'iron-ore', 'coal' }
+local trees = { 'tree-01', 'tree-02', 'tree-04', 'tree-05', 'tree-06', 'tree-07', 'tree-08' }
 local size_of_trees = #trees
 
 local function draw_deco(surface, position, decorative_name, seed)
     if surface.get_tile(position).name == 'water' then
         return
     end
-    if surface.count_entities_filtered({type = 'resource', position = position}) > 0 then
+    if surface.count_entities_filtered({ type = 'resource', position = position }) > 0 then
         return
     end
     local noise = Get_noise('decoratives', position, seed)
     if math_abs(noise) > 0.28 then
-        surface.create_decoratives {check_collision = false, decoratives = {{name = decorative_name, position = position, amount = math.floor(math.abs(noise * 3)) + 1}}}
+        surface.create_decoratives { check_collision = false, decoratives = { { name = decorative_name, position = position, amount = math.floor(math.abs(noise * 3)) + 1 } } }
     end
 end
 
@@ -55,7 +55,7 @@ end
 local function grasslands(surface, room)
     local dungeontable = DungeonsTable.get_dungeontable()
     for _, tile in pairs(room.path_tiles) do
-        surface.set_tiles({{name = 'grass-1', position = tile.position}}, true)
+        surface.set_tiles({ { name = 'grass-1', position = tile.position } }, true)
     end
 
     if not room.room_tiles[1] then
@@ -68,25 +68,25 @@ local function grasslands(surface, room)
 
     table_shuffle_table(room.room_tiles)
     for key, tile in pairs(room.room_tiles) do
-        surface.set_tiles({{name = 'grass-2', position = tile.position}}, true)
+        surface.set_tiles({ { name = 'grass-2', position = tile.position } }, true)
         if math_random(1, 16) == 1 and Get_noise('n3', tile.position, seed) > 0.1 then
-            surface.create_entity({name = ores[math_random(1, #ores)], position = tile.position, amount = Functions.get_common_resource_amount(surface.index)})
+            surface.create_entity({ name = ores[math_random(1, #ores)], position = tile.position, amount = Functions.get_common_resource_amount(surface.index) })
         else
             if math_random(1, math_random(2, 20)) == 1 and math_abs(Get_noise('decoratives', tile.position, seed + 100000)) > 0.2 then
-                surface.create_entity({name = tree_name, position = tile.position})
+                surface.create_entity({ name = tree_name, position = tile.position })
             end
         end
         if key % 128 == 1 and math_random(1, 3) == 1 then
             Functions.set_spawner_tier(
-                surface.create_entity({name = Functions.roll_spawner_name(), position = tile.position, force = dungeontable.enemy_forces[surface.index]}),
+                surface.create_entity({ name = Functions.roll_spawner_name(), position = tile.position, force = dungeontable.enemy_forces[surface.index] }),
                 surface.index
             )
         end
         if math_random(1, 320) == 1 then
-            surface.create_entity({name = Functions.roll_worm_name(surface.index), position = tile.position, force = dungeontable.enemy_forces[surface.index]})
+            surface.create_entity({ name = Functions.roll_worm_name(surface.index), position = tile.position, force = dungeontable.enemy_forces[surface.index] })
         end
         if math_random(1, 1024) == 1 then
-            surface.create_entity({name = 'rock-huge', position = tile.position})
+            surface.create_entity({ name = 'huge-rock', position = tile.position })
         end
     end
 
@@ -97,10 +97,10 @@ local function grasslands(surface, room)
         local r = math_random(1, r_max)
         for x = r * -1, r, 1 do
             for y = r * -1, r, 1 do
-                local p = {room.center.x + x, room.center.y + y}
-                surface.set_tiles({{name = 'water', position = p}})
+                local p = { room.center.x + x, room.center.y + y }
+                surface.set_tiles({ { name = 'water', position = p } })
                 if math_random(1, 8) == 1 then
-                    surface.create_entity({name = 'fish', position = p})
+                    surface.create_entity({ name = 'fish', position = p })
                 end
             end
         end
@@ -108,7 +108,7 @@ local function grasslands(surface, room)
 
     table_shuffle_table(room.room_border_tiles)
     for key, tile in pairs(room.room_border_tiles) do
-        surface.set_tiles({{name = 'grass-3', position = tile.position}}, true)
+        surface.set_tiles({ { name = 'grass-3', position = tile.position } }, true)
     end
 
     for key, tile in pairs(room.room_border_tiles) do

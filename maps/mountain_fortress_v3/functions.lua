@@ -19,6 +19,7 @@ local BottomFrame = require 'utils.gui.bottom_frame'
 local Modifiers = require 'utils.player_modifiers'
 local Session = require 'utils.datastore.session_data'
 
+local scenario_name = Public.scenario_name
 local zone_settings = Public.zone_settings
 local remove_boost_movement_speed_on_respawn
 local de = defines.events
@@ -129,12 +130,14 @@ local function debug_str(msg)
     print('Mtn: ' .. msg)
 end
 
-local function show_text(msg, pos, color, surface)
-    if color == nil then
-        surface.create_entity({ name = 'flying-text', position = pos, text = msg })
-    else
-        surface.create_entity({ name = 'flying-text', position = pos, text = msg, color = color })
-    end
+local function show_text(msg, pos, surface, player)
+    surface.create_entity({
+        name = 'compi-speech-bubble',
+        position = pos,
+        text = msg,
+        source = player.character,
+        lifetime = 30
+    })
 end
 
 local function fast_remove(tbl, index)
@@ -437,8 +440,8 @@ local function do_season_fix()
 
     local current_season = Public.get('current_season')
 
-    if current_season then
-        rendering.destroy(current_season)
+    if current_season and current_season.valid then
+        current_season.destroy()
     end
 
     Public.set(
@@ -959,6 +962,46 @@ local function on_wave_created(event)
     end
 end
 
+local function on_player_cursor_stack_changed(event)
+    local player = game.get_player(event.player_index)
+    if not player or not player.valid then
+        return
+    end
+
+    if player.admin then
+        return
+    end
+
+    local item = player.cursor_stack
+
+    if not item then
+        return
+    end
+
+    if not item.valid_for_read then
+        return
+    end
+
+    local name = item.name
+
+    local pm = player.permission_group.name
+
+    local blacklisted_spawn_items = {
+        ['cut-paste-tool'] = true,
+        ['spidertron-remote'] = true,
+        ['artillery-targeting-remote'] = true,
+    }
+
+    if pm == 'Default' or pm == 'limited' or pm == 'jail' or pm == 'not_trusted' or pm == 'near_locomotive' or pm == 'main_surface' then
+        if blacklisted_spawn_items[name] then
+            player.print('You are not allowed to use this item.', Color.warning)
+            player.cursor_stack.clear()
+            return
+        end
+        return
+    end
+end
+
 function Public.find_rocks_and_slowly_remove()
     local active_surface_index = Public.get('active_surface_index')
     local surface = game.get_surface(active_surface_index)
@@ -1444,8 +1487,8 @@ function Public.on_player_joined_game(event)
         end
     end
 
-    if player.surface.index ~= active_surface_index then
-        local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
+    if player.online_time < 1 then
+        local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
         if pos then
             player.teleport(pos, surface)
         else
@@ -1453,10 +1496,10 @@ function Public.on_player_joined_game(event)
             player.teleport(pos, surface)
         end
     else
-        local p = { x = player.position.x, y = player.position.y }
-        local get_tile = surface.get_tile(p)
+        local p = { x = player.physical_position.x, y = player.physical_position.y }
+        local get_tile = surface.get_tile(p.x, p.y)
         if get_tile.valid and get_tile.name == 'out-of-map' then
-            local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
+            local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
             if pos then
                 player.teleport(pos, surface)
             else
@@ -1475,13 +1518,13 @@ function Public.on_player_joined_game(event)
     local adjusted_zones = Public.get('adjusted_zones')
     local distance_from_train
     if adjusted_zones.reversed then
-        distance_from_train = player.position.y < locomotive.position.y
+        distance_from_train = player.physical_position.y < locomotive.position.y
     else
-        distance_from_train = player.position.y > locomotive.position.y
+        distance_from_train = player.physical_position.y > locomotive.position.y
     end
 
     if distance_from_train then
-        local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
+        local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
         if pos then
             player.teleport(pos, surface)
         else
@@ -1586,26 +1629,24 @@ function Public.on_player_changed_position(event)
         return
     end
 
-    local map_name = 'mtn_v3'
-
-    if string.sub(player.surface.name, 0, #map_name) ~= map_name then
+    if string.sub(player.surface.name, 0, #scenario_name) ~= scenario_name then
         return
     end
 
-    local position = player.position
+    local position = player.physical_position
     local surface = game.surfaces[active_surface_index]
     local adjusted_zones = Public.get('adjusted_zones')
 
-    local p = { x = player.position.x, y = player.position.y }
+    local p = { x = player.physical_position.x, y = player.physical_position.y }
     local config_tile = Public.get('void_or_tile')
     if config_tile == 'lab-dark-2' then
-        local get_tile = surface.get_tile(p)
+        local get_tile = surface.get_tile(p.x, p.y)
         if get_tile.valid and get_tile.name == 'lab-dark-2' then
             if random(1, 2) == 1 then
                 if random(1, 2) == 1 then
-                    show_text('This path is not for players!', p, { r = 0.98, g = 0.66, b = 0.22 }, surface)
+                    show_text('This path is not for players!', p, surface, player)
                 end
-                player.surface.create_entity({ name = 'fire-flame', position = player.position })
+                player.surface.create_entity({ name = 'fire-flame', position = player.physical_position })
                 player.character.health = player.character.health - tile_damage
                 if player.character.health == 0 then
                     player.character.die()
@@ -1651,12 +1692,9 @@ local disable_recipes = function (force)
     force.recipes['artillery-wagon'].enabled = false
     force.recipes['artillery-turret'].enabled = false
     force.recipes['artillery-shell'].enabled = false
-    force.recipes['artillery-targeting-remote'].enabled = false
     force.recipes['locomotive'].enabled = false
     force.recipes['pistol'].enabled = false
-    force.recipes['spidertron-remote'].enabled = false
     force.recipes['discharge-defense-equipment'].enabled = false
-    force.recipes['discharge-defense-remote'].enabled = false
 end
 
 function Public.disable_tech()
@@ -1672,7 +1710,11 @@ function Public.disable_tech()
     force.technologies['artillery-shell-range-1'].researched = false
     force.technologies['artillery-shell-speed-1'].enabled = false
     force.technologies['artillery-shell-speed-1'].researched = false
-    force.technologies['optics'].researched = true
+    if Public.get('space_age') then
+        force.technologies['artillery-shell-damage-1'].enabled = false
+        force.technologies['artillery-shell-damage-1'].researched = false
+    end
+    force.technologies['lamp'].researched = true
     force.technologies['railway'].researched = true
     force.technologies['land-mine'].enabled = false
     force.technologies['fluid-wagon'].enabled = false
@@ -1702,6 +1744,22 @@ function Public.on_research_finished(event)
 
     if research.name == 'toolbelt' then
         Public.set('toolbelt_researched_count', 10)
+    end
+
+    if script.feature_flags.quality then
+        local quality_list = Public.get('quality_list')
+        if research.name == 'quality-module' then
+            quality_list[#quality_list + 1] = 'uncommon'
+        end
+        if research.name == 'quality-module-2' then
+            quality_list[#quality_list + 1] = 'rare'
+        end
+        if research.name == 'epic-quality' then
+            quality_list[#quality_list + 1] = 'epic'
+        end
+        if research.name == 'legendary-quality' then
+            quality_list[#quality_list + 1] = 'legendary'
+        end
     end
 
     research.force.character_inventory_slots_bonus = (player.mining_drill_productivity_bonus * 50) + (Public.get('toolbelt_researched_count') or 0)
@@ -1770,7 +1828,7 @@ function Public.set_player_to_god(player)
     end
 
     if string.sub(player.surface.name, 0, #surface.name) == surface.name then
-        local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
+        local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
         if pos then
             player.teleport(pos, surface)
         else
@@ -1778,7 +1836,7 @@ function Public.set_player_to_god(player)
             player.teleport(pos, surface)
         end
     else
-        local pos = player.surface.find_non_colliding_position('character', { 0, 0 }, 3, 0, 5)
+        local pos = player.surface.find_non_colliding_position('character', { 0, 0 }, 3, 0)
         if pos then
             player.teleport(pos, player.surface)
         else
@@ -1826,7 +1884,7 @@ function Public.set_player_to_spectator(player)
 
     player.character = nil
     player.spectator = true
-    player.tag = '[img=utility/ghost_time_to_live_modifier_icon]'
+    player.tag = '[img=utility/create_ghost_on_entity_death_modifier_icon]'
     player.set_controller({ type = defines.controllers.spectator })
     game.print('[color=blue][Spectate][/color] ' .. player.name .. ' is now spectating.')
     Server.to_discord_bold(table.concat { '*** ', '[Spectate] ' .. player.name .. ' is now spectating.', ' ***' })
@@ -1941,6 +1999,7 @@ Event.add(de.on_player_changed_position, on_player_changed_position)
 Event.add(de.on_player_respawned, on_player_respawned)
 Event.add(de.on_player_driving_changed_state, on_player_driving_changed_state)
 Event.add(de.on_pre_player_toggled_map_editor, on_pre_player_toggled_map_editor)
+Event.add(de.on_player_cursor_stack_changed, on_player_cursor_stack_changed)
 Event.on_nth_tick(10, tick)
 Event.add(WD.events.on_wave_created, on_wave_created)
 

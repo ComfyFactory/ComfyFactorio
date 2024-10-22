@@ -450,12 +450,14 @@ local function on_evolution_factor_changed(event)
 
     local forces = game.forces
 
-    if forces.aggressors.evolution_factor == 1 and evolution_factor == 1 then
+    local surface_index = Public.get('surface_index')
+
+    if forces.aggressors.get_evolution_factor(surface_index) == 1 and evolution_factor == 1 then
         return
     end
 
-    forces.aggressors.evolution_factor = evolution_factor
-    forces.aggressors_frenzy.evolution_factor = evolution_factor
+    forces.aggressors.set_evolution_factor(evolution_factor, surface_index)
+    forces.aggressors_frenzy.set_evolution_factor(evolution_factor, surface_index)
 end
 
 local function on_entity_died(event)
@@ -487,7 +489,7 @@ local function on_entity_damaged(event)
         return
     end
 
-    local max = entity.prototype.max_health
+    local max = entity.max_health
 
     if state.boss_unit then
         state:spawn_children()
@@ -702,7 +704,7 @@ function Public._esp:spawn_children()
         return
     end
 
-    local max = entity.prototype.max_health
+    local max = entity.max_health
 
     if entity.health <= max / 4 and not self.spawned_children then
         self.spawned_children = true

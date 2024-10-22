@@ -137,29 +137,39 @@ function Public.locomotive_spawn(surface, position, reversed)
         extra_wagons = 0
     end
 
+    local quality = this.space_age and 'legendary' or 'normal'
+
     if reversed then
         position.y = position.y - (6 * extra_wagons)
         for y = -6, 6, 2 do
             surface.create_entity({ name = 'straight-rail', position = { position.x, position.y + y }, force = 'player', direction = 0 })
         end
-        this.locomotive = surface.create_entity({ name = 'locomotive', position = { position.x, position.y + -3 }, force = 'player', direction = defines.direction.south })
-        this.locomotive.get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 100 })
+        this.locomotive = surface.create_entity({ name = 'locomotive', position = { position.x, position.y + -3 }, force = 'player', direction = defines.direction.south, quality = quality })
+        if this.locomotive and this.locomotive.valid then
+            this.locomotive.get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 100 })
+        end
 
-        this.locomotive_cargo = surface.create_entity({ name = 'cargo-wagon', position = { position.x, position.y + 3 }, force = 'player', direction = defines.direction.south })
-        this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'raw-fish', count = 8 })
+        this.locomotive_cargo = surface.create_entity({ name = 'cargo-wagon', position = { position.x, position.y + 3 }, force = 'player', direction = defines.direction.south, quality = quality })
+        if this.locomotive_cargo and this.locomotive_cargo.valid then
+            this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'raw-fish', count = 8 })
+        end
     else
         for y = -6, 6, 2 do
             surface.create_entity({ name = 'straight-rail', position = { position.x, position.y + y }, force = 'player', direction = 0 })
         end
-        this.locomotive = surface.create_entity({ name = 'locomotive', position = { position.x, position.y + -3 }, force = 'player' })
-        this.locomotive.get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 100 })
+        this.locomotive = surface.create_entity({ name = 'locomotive', position = { position.x, position.y + -3 }, force = 'player', quality = quality })
+        if this.locomotive and this.locomotive.valid then
+            this.locomotive.get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 100 })
+        end
 
-        this.locomotive_cargo = surface.create_entity({ name = 'cargo-wagon', position = { position.x, position.y + 3 }, force = 'player' })
-        this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'raw-fish', count = 8 })
+        this.locomotive_cargo = surface.create_entity({ name = 'cargo-wagon', position = { position.x, position.y + 3 }, force = 'player', quality = quality })
+        if this.locomotive_cargo and this.locomotive_cargo.valid then
+            this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'raw-fish', count = 8 })
+        end
     end
 
     local winter_mode_locomotive = Public.wintery(this.locomotive, 5.5)
-    if not winter_mode_locomotive then
+    if not winter_mode_locomotive and this.locomotive and this.locomotive.valid then
         rendering.draw_light(
             {
                 sprite = 'utility/light_medium',
@@ -178,7 +188,7 @@ function Public.locomotive_spawn(surface, position, reversed)
 
     local winter_mode_cargo = Public.wintery(this.locomotive_cargo, 5.5)
 
-    if not winter_mode_cargo then
+    if not winter_mode_cargo and this.locomotive_cargo and this.locomotive_cargo.valid then
         rendering.draw_light(
             {
                 sprite = 'utility/light_medium',
@@ -195,11 +205,7 @@ function Public.locomotive_spawn(surface, position, reversed)
         )
     end
 
-    local s = 'entity/compilatron'
-
-    if random(1, 10) == 1 then
-        s = 'entity/character-corpse'
-    end
+    local s = 'entity/character-corpse'
 
     for y = -1, 0, 0.05 do
         local scale = random(50, 100) * 0.01
@@ -211,8 +217,7 @@ function Public.locomotive_spawn(surface, position, reversed)
                 y_scale = scale,
                 tint = { random(60, 255), random(60, 255), random(60, 255) },
                 render_layer = 'selection-box',
-                target = this.locomotive_cargo,
-                target_offset = { -0.7 + random(0, 140) * 0.01, y },
+                target = { entity = this.locomotive_cargo, offset = { -0.7 + random(0, 140) * 0.01, y } },
                 surface = surface
             }
         )

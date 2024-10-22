@@ -1,6 +1,11 @@
 local Event = require 'utils.event'
 local math_random = math.random
 
+if script.active_mods['base'] > "1.2" then
+    error('Compilatron requires Factorio 1.1 or older since it\'s removed in 1.2')
+    return
+end
+
 local function shuffle(tbl)
     local size = #tbl
     for i = size, 1, -1 do
@@ -94,31 +99,31 @@ local texts = {
 }
 
 local function set_comfy_speech_bubble(text)
-    if global.comfybubble then
-        global.comfybubble.destroy()
+    if storage.comfybubble then
+        storage.comfybubble.destroy()
     end
-    global.comfybubble =
-        global.comfylatron.surface.create_entity(
-        {
-            name = 'compi-speech-bubble',
-            position = global.comfylatron.position,
-            source = global.comfylatron,
-            text = text
-        }
-    )
+    storage.comfybubble =
+        storage.comfylatron.surface.create_entity(
+            {
+                name = 'compi-speech-bubble',
+                position = storage.comfylatron.position,
+                source = storage.comfylatron,
+                text = text
+            }
+        )
 end
 
 local function is_target_inside_habitat(pos)
-    if pos.x < global.comfylatron_habitat.left_top.x then
+    if pos.x < storage.comfylatron_habitat.left_top.x then
         return false
     end
-    if pos.x > global.comfylatron_habitat.right_bottom.x then
+    if pos.x > storage.comfylatron_habitat.right_bottom.x then
         return false
     end
-    if pos.y < global.comfylatron_habitat.left_top.y then
+    if pos.y < storage.comfylatron_habitat.left_top.y then
         return false
     end
-    if pos.y > global.comfylatron_habitat.right_bottom.y then
+    if pos.y > storage.comfylatron_habitat.right_bottom.y then
         return false
     end
     return true
@@ -126,12 +131,12 @@ end
 
 local function get_nearby_players()
     local players =
-        global.comfylatron.surface.find_entities_filtered(
-        {
-            name = 'character',
-            area = {{global.comfylatron.position.x - 9, global.comfylatron.position.y - 9}, {global.comfylatron.position.x + 9, global.comfylatron.position.y + 9}}
-        }
-    )
+        storage.comfylatron.surface.find_entities_filtered(
+            {
+                name = 'character',
+                area = { { storage.comfylatron.position.x - 9, storage.comfylatron.position.y - 9 }, { storage.comfylatron.position.x + 9, storage.comfylatron.position.y + 9 } }
+            }
+        )
     if not players[1] then
         return false
     end
@@ -139,10 +144,10 @@ local function get_nearby_players()
 end
 
 local function visit_player()
-    if global.comfylatron_last_player_visit > game.tick then
+    if storage.comfylatron_last_player_visit > game.tick then
         return false
     end
-    global.comfylatron_last_player_visit = game.tick + math_random(7200, 10800)
+    storage.comfylatron_last_player_visit = game.tick + math_random(7200, 10800)
 
     local players = {}
     for _, p in pairs(game.connected_players) do
@@ -157,7 +162,7 @@ local function visit_player()
     end
     local player = players[math_random(1, #players)]
 
-    global.comfylatron.set_command(
+    storage.comfylatron.set_command(
         {
             type = defines.command.go_to_location,
             destination_entity = player.character,
@@ -171,11 +176,11 @@ local function visit_player()
         }
     )
     local str = texts['travelings'][math_random(1, #texts['travelings'])]
-    local symbols = {'', '!', '!', '!!', '..'}
+    local symbols = { '', '!', '!', '!!', '..' }
     str = str .. symbols[math_random(1, #symbols)]
     set_comfy_speech_bubble(str)
 
-    global.comfylatron_greet_player_index = player.index
+    storage.comfylatron_greet_player_index = player.index
 
     return true
 end
@@ -184,17 +189,17 @@ local function greet_player(nearby_characters)
     if not nearby_characters then
         return false
     end
-    if not global.comfylatron_greet_player_index then
+    if not storage.comfylatron_greet_player_index then
         return false
     end
     for _, c in pairs(nearby_characters) do
-        if c.player.index == global.comfylatron_greet_player_index then
+        if c.player.index == storage.comfylatron_greet_player_index then
             local str = texts['greetings'][math_random(1, #texts['greetings'])] .. ' '
             str = str .. c.player.name
-            local symbols = {'. ', '! ', '. ', '! ', '? ', '... '}
+            local symbols = { '. ', '! ', '. ', '! ', '? ', '... ' }
             str = str .. symbols[math_random(1, 6)]
             set_comfy_speech_bubble(str)
-            global.comfylatron_greet_player_index = false
+            storage.comfylatron_greet_player_index = false
             return true
         end
     end
@@ -206,8 +211,8 @@ local function talks(nearby_characters)
         return false
     end
     if math_random(1, 3) == 1 then
-        if global.comfybubble then
-            global.comfybubble.destroy()
+        if storage.comfybubble then
+            storage.comfybubble.destroy()
             return false
         end
     end
@@ -215,11 +220,11 @@ local function talks(nearby_characters)
     if #nearby_characters == 1 then
         local c = nearby_characters[math_random(1, #nearby_characters)]
         str = c.player.name
-        local symbols = {'. ', '! ', '. ', '! ', '? '}
+        local symbols = { '. ', '! ', '. ', '! ', '? ' }
         str = str .. symbols[math_random(1, #symbols)]
     else
         str = texts['multiple_characters_greetings'][math_random(1, #texts['multiple_characters_greetings'])]
-        local symbols = {'. ', '! '}
+        local symbols = { '. ', '! ' }
         str = str .. symbols[math_random(1, #symbols)]
     end
 
@@ -229,33 +234,33 @@ local function talks(nearby_characters)
 end
 
 local function desync()
-    if global.comfybubble then
-        global.comfybubble.destroy()
+    if storage.comfybubble then
+        storage.comfybubble.destroy()
     end
     local m = 12
     local m2 = m * 0.005
     for i = 1, 32, 1 do
-        global.comfylatron.surface.create_particle(
+        storage.comfylatron.surface.create_particle(
             {
                 name = 'iron-ore-particle',
-                position = global.comfylatron.position,
+                position = storage.comfylatron.position,
                 frame_speed = 0.1,
                 vertical_speed = 0.1,
                 height = 0.1,
-                movement = {m2 - (math.random(0, m) * 0.01), m2 - (math.random(0, m) * 0.01)}
+                movement = { m2 - (math.random(0, m) * 0.01), m2 - (math.random(0, m) * 0.01) }
             }
         )
     end
-    global.comfylatron.surface.create_entity({name = 'medium-explosion', position = global.comfylatron.position})
-    global.comfylatron.surface.create_entity({name = 'flying-text', position = global.comfylatron.position, text = 'desync', color = {r = 150, g = 0, b = 0}})
-    global.comfylatron.destroy()
-    global.comfylatron = nil
+    storage.comfylatron.surface.create_entity({ name = 'medium-explosion', position = storage.comfylatron.position })
+    storage.comfylatron.surface.create_entity({ name = 'flying-text', position = storage.comfylatron.position, text = 'desync', color = { r = 150, g = 0, b = 0 } })
+    storage.comfylatron.destroy()
+    storage.comfylatron = nil
 end
 
 local function alone()
     if math_random(1, 3) == 1 then
-        if global.comfybubble then
-            global.comfybubble.destroy()
+        if storage.comfybubble then
+            storage.comfybubble.destroy()
             return true
         end
     end
@@ -281,11 +286,11 @@ local function analyze_random_nearby_entity()
     end
 
     local entities =
-        global.comfylatron.surface.find_entities_filtered(
-        {
-            area = {{global.comfylatron.position.x - 4, global.comfylatron.position.y - 4}, {global.comfylatron.position.x + 4, global.comfylatron.position.y + 4}}
-        }
-    )
+        storage.comfylatron.surface.find_entities_filtered(
+            {
+                area = { { storage.comfylatron.position.x - 4, storage.comfylatron.position.y - 4 }, { storage.comfylatron.position.x + 4, storage.comfylatron.position.y + 4 } }
+            }
+        )
     if not entities[1] then
         return false
     end
@@ -308,16 +313,16 @@ local function analyze_random_nearby_entity()
         str = str .. ' health('
         str = str .. entity.health
         str = str .. '/'
-        str = str .. entity.prototype.max_health
+        str = str .. entity.max_health
         str = str .. ')'
     else
-        local symbols = {'.', '!', '?'}
+        local symbols = { '.', '!', '?' }
         str = str .. symbols[math_random(1, 3)]
     end
     set_comfy_speech_bubble(str)
 
-    if not global.comfylatron_greet_player_index then
-        global.comfylatron.set_command(
+    if not storage.comfylatron_greet_player_index then
+        storage.comfylatron.set_command(
             {
                 type = defines.command.go_to_location,
                 destination_entity = entity,
@@ -339,21 +344,21 @@ local function go_to_some_location()
         return false
     end
 
-    if global.comfylatron_greet_player_index then
-        local player = game.players[global.comfylatron_greet_player_index]
+    if storage.comfylatron_greet_player_index then
+        local player = game.players[storage.comfylatron_greet_player_index]
         if not player.character then
-            global.comfylatron_greet_player_index = nil
+            storage.comfylatron_greet_player_index = nil
             return false
         end
         if not player.character.valid then
-            global.comfylatron_greet_player_index = nil
+            storage.comfylatron_greet_player_index = nil
             return false
         end
         if not is_target_inside_habitat(player.position) then
-            global.comfylatron_greet_player_index = nil
+            storage.comfylatron_greet_player_index = nil
             return false
         end
-        global.comfylatron.set_command(
+        storage.comfylatron.set_command(
             {
                 type = defines.command.go_to_location,
                 destination_entity = player.character,
@@ -367,15 +372,15 @@ local function go_to_some_location()
             }
         )
     else
-        local p = {x = global.comfylatron.position.x + (-96 + math_random(0, 192)), y = global.comfylatron.position.y + (-96 + math_random(0, 192))}
-        local target = global.comfylatron.surface.find_non_colliding_position('compilatron', p, 8, 1)
+        local p = { x = storage.comfylatron.position.x + (-96 + math_random(0, 192)), y = storage.comfylatron.position.y + (-96 + math_random(0, 192)) }
+        local target = storage.comfylatron.surface.find_non_colliding_position('compilatron', p, 8, 1)
         if not target then
             return false
         end
         if not is_target_inside_habitat(target) then
             return false
         end
-        global.comfylatron.set_command(
+        storage.comfylatron.set_command(
             {
                 type = defines.command.go_to_location,
                 destination = target,
@@ -391,7 +396,7 @@ local function go_to_some_location()
     end
 
     local str = texts['travelings'][math_random(1, #texts['travelings'])]
-    local symbols = {'', '!', '!', '!!', '..'}
+    local symbols = { '', '!', '!', '!!', '..' }
     str = str .. symbols[math_random(1, #symbols)]
     set_comfy_speech_bubble(str)
 
@@ -399,24 +404,24 @@ local function go_to_some_location()
 end
 
 local function spawn_comfylatron()
-    if global.comfylatron_disabled then
+    if storage.comfylatron_disabled then
         return false
     end
     if math_random(1, 2) == 1 then
         return false
     end
-    if global.comfylatron then
-        if global.comfylatron.valid then
-            global.comfylatron.die('enemy')
+    if storage.comfylatron then
+        if storage.comfylatron.valid then
+            storage.comfylatron.die('enemy')
         end
     end
-    if not global.comfylatron_last_player_visit then
-        global.comfylatron_last_player_visit = 0
+    if not storage.comfylatron_last_player_visit then
+        storage.comfylatron_last_player_visit = 0
     end
-    if not global.comfylatron_habitat then
-        global.comfylatron_habitat = {
-            left_top = {x = -512, y = -512},
-            right_bottom = {x = 512, y = 512}
+    if not storage.comfylatron_habitat then
+        storage.comfylatron_habitat = {
+            left_top = { x = -512, y = -512 },
+            right_bottom = { x = 512, y = 512 }
         }
     end
 
@@ -437,35 +442,35 @@ local function spawn_comfylatron()
     if not position then
         return false
     end
-    global.comfylatron =
+    storage.comfylatron =
         player.surface.create_entity(
-        {
-            name = 'compilatron',
-            position = position,
-            force = 'neutral'
-        }
-    )
+            {
+                name = 'compilatron',
+                position = position,
+                force = 'neutral'
+            }
+        )
     for x = -3, 3, 1 do
         for y = -3, 3, 1 do
             if math_random(1, 3) == 1 then
-                player.surface.create_trivial_smoke({name = 'smoke-fast', position = {position.x + (x * 0.35), position.y + (y * 0.35)}})
+                player.surface.create_trivial_smoke({ name = 'smoke-fast', position = { position.x + (x * 0.35), position.y + (y * 0.35) } })
             end
             if math_random(1, 5) == 1 then
-                player.surface.create_trivial_smoke({name = 'train-smoke', position = {position.x + (x * 0.35), position.y + (y * 0.35)}})
+                player.surface.create_trivial_smoke({ name = 'train-smoke', position = { position.x + (x * 0.35), position.y + (y * 0.35) } })
             end
         end
     end
 end
 
 local function heartbeat()
-    if not global.comfylatron then
+    if not storage.comfylatron then
         if math_random(1, 4) == 1 then
             spawn_comfylatron()
         end
         return
     end
-    if not global.comfylatron.valid then
-        global.comfylatron = nil
+    if not storage.comfylatron.valid then
+        storage.comfylatron = nil
         return
     end
     if visit_player() then
@@ -490,13 +495,13 @@ local function heartbeat()
 end
 
 local function on_entity_damaged(event)
-    if not global.comfylatron then
+    if not storage.comfylatron then
         return
     end
     if not event.entity.valid then
         return
     end
-    if event.entity ~= global.comfylatron then
+    if event.entity ~= storage.comfylatron then
         return
     end
     desync()

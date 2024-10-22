@@ -8,7 +8,7 @@ local traps = {}
 
 Global.register(
     traps,
-    function(t)
+    function (t)
         traps = t
     end
 )
@@ -16,12 +16,12 @@ Global.register(
 local function teleport_player(surface, source_player, position)
     local materializing_characters =
         source_player.surface.find_entities_filtered(
-        {
-            name = 'character',
-            area = {{position.x - 1, position.y - 1}, {position.x + 1, position.y + 1}},
-            force = 'neutral'
-        }
-    )
+            {
+                name = 'character',
+                area = { { position.x - 1, position.y - 1 }, { position.x + 1, position.y + 1 } },
+                force = 'neutral'
+            }
+        )
     for _, e in pairs(materializing_characters) do
         if e.valid then
             e.destroy()
@@ -31,12 +31,12 @@ local function teleport_player(surface, source_player, position)
     if not source_player.character then
         return
     end
-    surface.create_entity({name = 'character-corpse', position = source_player.position, force = source_player.force.name})
+    surface.create_entity({ name = 'character-corpse', position = source_player.position, force = source_player.force.name })
     source_player.teleport(position, surface)
     if source_player.character.health < 25 then
         source_player.character.health = 250
     end
-    global.team_teleport_delay[source_player.name] = game.tick + 18000
+    storage.team_teleport_delay[source_player.name] = game.tick + 18000
 end
 
 local function fix_player_position(source_player, original_position)
@@ -54,15 +54,15 @@ local function teleport_effects(surface, position)
     surface.create_entity(
         {
             name = 'railgun-beam',
-            position = {x = position.x, y = position.y},
-            target = {x = x, y = position.y - math.random(6, 13)}
+            position = { x = position.x, y = position.y },
+            target = { x = x, y = position.y - math.random(6, 13) }
         }
     )
     for y = 0, 1, 1 do
         surface.create_entity(
             {
                 name = 'water-splash',
-                position = {x = position.x, y = position.y + y}
+                position = { x = position.x, y = position.y + y }
             }
         )
     end
@@ -78,13 +78,13 @@ local function teleport_effects(surface, position)
         )
     end
     if math.random(1, 32) == 1 then
-        surface.create_entity({name = 'blood-explosion-huge', position = position})
+        surface.create_entity({ name = 'blood-explosion-huge', position = position })
     end
     if math.random(1, 16) == 1 then
-        surface.create_entity({name = 'blood-explosion-big', position = position})
+        surface.create_entity({ name = 'blood-explosion-big', position = position })
     end
     if math.random(1, 8) == 1 then
-        surface.create_entity({name = 'blood-explosion-small', position = position})
+        surface.create_entity({ name = 'blood-explosion-small', position = position })
     end
 end
 
@@ -119,20 +119,20 @@ local function sync_health_and_direction(player, materializing_character)
 end
 
 local function teleport(source_player, target_player)
-    source_player.teleport({x = math.floor(source_player.position.x), y = math.floor(source_player.position.y)})
+    source_player.teleport({ x = math.floor(source_player.position.x), y = math.floor(source_player.position.y) })
     local target_position = target_player.surface.find_non_colliding_position('character', target_player.position, 128, 1)
     if not target_position then
-        target_position = {x = target_player.position.x, y = target_player.position.y}
+        target_position = { x = target_player.position.x, y = target_player.position.y }
     end
     local materializing_character =
         target_player.surface.create_entity(
-        {
-            name = 'character',
-            position = target_position,
-            force = 'neutral',
-            direction = source_player.character.direction
-        }
-    )
+            {
+                name = 'character',
+                position = target_position,
+                force = 'neutral',
+                direction = source_player.character.direction
+            }
+        )
     materializing_character.destructible = false
     materializing_character.color = source_player.color
     materializing_character.damage(1, 'player')
@@ -147,16 +147,16 @@ local function teleport(source_player, target_player)
         if t % a == 0 then
             traps[game.tick + t][#traps[game.tick + t] + 1] = {
                 callback = 'teleport_effects',
-                params = {source_player.surface, {x = source_player.position.x, y = source_player.position.y}}
+                params = { source_player.surface, { x = source_player.position.x, y = source_player.position.y } }
             }
             traps[game.tick + t][#traps[game.tick + t] + 1] = {
                 callback = 'teleport_effects',
-                params = {source_player.surface, target_position}
+                params = { source_player.surface, target_position }
             }
 
             traps[game.tick + t][#traps[game.tick + t] + 1] = {
                 callback = 'sync_health_and_direction',
-                params = {source_player, materializing_character}
+                params = { source_player, materializing_character }
             }
 
             a = a - 0.5
@@ -168,14 +168,14 @@ local function teleport(source_player, target_player)
         if t % 2 == 0 then
             traps[game.tick + t][#traps[game.tick + t] + 1] = {
                 callback = 'fix_player_position',
-                params = {source_player, {x = source_player.position.x, y = source_player.position.y}}
+                params = { source_player, { x = source_player.position.x, y = source_player.position.y } }
             }
         end
 
         if t == 780 then
             traps[game.tick + t][#traps[game.tick + t] + 1] = {
                 callback = 'teleport_player',
-                params = {target_player.surface, source_player, target_position}
+                params = { target_player.surface, source_player, target_position }
             }
         end
     end
@@ -186,7 +186,7 @@ local function get_sorted_player_table(requesting_player)
     for _, player in pairs(game.connected_players) do
         if player.name ~= requesting_player.name and player.force == requesting_player.force then
             local distance = math.ceil(math.sqrt((player.position.x - requesting_player.position.x) ^ 2 + (player.position.y - requesting_player.position.y) ^ 2) * 10) * 0.1
-            table.insert(t, {name = player.name, distance = distance})
+            table.insert(t, { name = player.name, distance = distance })
         end
     end
     for i = 1, #t, 1 do
@@ -205,8 +205,8 @@ local function create_gui_toggle_button(player)
     if player.gui.top['team_teleport_button'] then
         return
     end
-    local b = player.gui.top.add({type = 'sprite-button', name = 'team_teleport_button', caption = 'TP', tooltip = 'Teleport to a Team Member'})
-    b.style.font_color = {r = 0.55, g = 0.22, b = 0.77}
+    local b = player.gui.top.add({ type = 'sprite-button', name = 'team_teleport_button', caption = 'TP', tooltip = 'Teleport to a Team Member' })
+    b.style.font_color = { r = 0.55, g = 0.22, b = 0.77 }
     b.style.font = 'heading-1'
     b.style.minimal_height = 38
     b.style.minimal_width = 38
@@ -220,28 +220,28 @@ local function create_teleport_gui(player)
     if player.gui.center['team_teleport'] then
         player.gui.center['team_teleport'].destroy()
     end
-    local frame = player.gui.center.add({type = 'frame', name = 'team_teleport', caption = '<< Teleport to player >>'})
-    frame.style.font_color = {r = 0.55, g = 0.22, b = 0.77}
+    local frame = player.gui.center.add({ type = 'frame', name = 'team_teleport', caption = '<< Teleport to player >>' })
+    frame.style.font_color = { r = 0.55, g = 0.22, b = 0.77 }
     frame.style.font = 'heading-1'
 
     local scroll_pane =
         frame.add(
-        {
-            type = 'scroll-pane',
-            name = 'scroll_pane',
-            direction = 'vertical',
-            horizontal_scroll_policy = 'never',
-            vertical_scroll_policy = 'auto'
-        }
-    )
+            {
+                type = 'scroll-pane',
+                name = 'scroll_pane',
+                direction = 'vertical',
+                horizontal_scroll_policy = 'never',
+                vertical_scroll_policy = 'auto'
+            }
+        )
     scroll_pane.style.maximal_height = 320
     scroll_pane.style.minimal_height = 320
 
-    local t = scroll_pane.add({type = 'table', column_count = 3, name = 'team_teleport_table'})
+    local t = scroll_pane.add({ type = 'table', column_count = 3, name = 'team_teleport_table' })
     local player_table = get_sorted_player_table(player)
 
     for _, k in pairs(player_table) do
-        local l = t.add({type = 'button', name = k.name, caption = k.name})
+        local l = t.add({ type = 'button', name = k.name, caption = k.name })
         l.style.font_color = {
             r = game.players[k.name].color.r * 0.5,
             g = game.players[k.name].color.g * 0.5,
@@ -250,11 +250,11 @@ local function create_teleport_gui(player)
         l.style.font = 'heading-2'
         l.style.minimal_width = 120
 
-        l = t.add({type = 'label', caption = '       Distance: '})
+        l = t.add({ type = 'label', caption = '       Distance: ' })
         l.style.font = 'heading-2'
 
-        l = t.add({type = 'label', caption = tostring(k.distance)})
-        l.style.font_color = {r = 0.66, g = 0.66, b = 0.99}
+        l = t.add({ type = 'label', caption = tostring(k.distance) })
+        l.style.font_color = { r = 0.66, g = 0.66, b = 0.99 }
         l.style.font = 'heading-2'
         l.style.minimal_width = 100
     end
@@ -298,8 +298,8 @@ local function on_gui_click(event)
     if player.character.driving then
         return
     end
-    if game.tick - global.team_teleport_delay[player.name] < 0 then
-        local recovery_time = math.ceil(math.abs(game.tick - global.team_teleport_delay[player.name]) / 3600)
+    if game.tick - storage.team_teleport_delay[player.name] < 0 then
+        local recovery_time = math.ceil(math.abs(game.tick - storage.team_teleport_delay[player.name]) / 3600)
         if recovery_time == 1 then
             player.print('You need one more minute to recover from the last teleport.')
         else
@@ -307,7 +307,7 @@ local function on_gui_click(event)
         end
         return
     end
-    global.team_teleport_delay[player.name] = game.tick + 900
+    storage.team_teleport_delay[player.name] = game.tick + 900
     teleport(player, game.players[name])
     player.gui.center['team_teleport'].destroy()
 end
@@ -323,11 +323,11 @@ end
 
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
-    if not global.team_teleport_delay then
-        global.team_teleport_delay = {}
+    if not storage.team_teleport_delay then
+        storage.team_teleport_delay = {}
     end
-    if not global.team_teleport_delay[player.name] then
-        global.team_teleport_delay[player.name] = 0
+    if not storage.team_teleport_delay[player.name] then
+        storage.team_teleport_delay[player.name] = 0
     end
     create_gui_toggle_button(player)
     refresh_gui()

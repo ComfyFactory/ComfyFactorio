@@ -115,8 +115,9 @@ end
 local function alert_to(player, duration, sound, volume)
     local frame_holder = player.gui.left.add({ type = 'flow' })
 
-    local frame = frame_holder.add({ type = 'frame', name = alert_frame_name, direction = 'vertical', style = 'captionless_frame' })
+    local frame = frame_holder.add({ type = 'frame', name = alert_frame_name, direction = 'vertical' })
     frame.style.width = 300
+    frame.style.padding = 3
 
     local container = frame.add({ type = 'flow', name = alert_container_name, direction = 'horizontal' })
     container.style.horizontally_stretchable = true
@@ -326,7 +327,7 @@ end
 ---Message to a specific player as warning
 ---@param player LuaPlayer
 ---@param duration number
----@param message string
+---@param message string|table
 ---@param color string|nil
 function Public.alert_player_warning(player, duration, message, color)
     Public.alert_player_template(
@@ -348,7 +349,7 @@ end
 ---Message to all players of a given force
 ---@param force LuaForce
 ---@param duration number
----@param message string
+---@param message string|table
 function Public.alert_force(force, duration, message)
     local players = force.connected_players
     for i = 1, #players do

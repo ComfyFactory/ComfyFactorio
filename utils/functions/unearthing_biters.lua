@@ -35,7 +35,7 @@ local function create_particles(surface, position, amount)
     end
 end
 
-local function spawn_biter(surface, position, evolution)
+local function spawn_biter(surface, position, evolution, force)
     if not surface.valid then
         return
     end
@@ -69,13 +69,19 @@ local function spawn_biter(surface, position, evolution)
             if not p then
                 return
             end
-            surface.create_entity({name = biter_name, position = p, force = 'enemy'})
+            surface.create_entity({name = biter_name, position = p, force = force})
             return
         end
     end
 end
 
-local function unearthing_biters(surface, position, amount, relative_evolution)
+---Creates unearthing biters
+---@param surface LuaSurface
+---@param position MapPosition
+---@param amount number
+---@param relative_evolution number|nil #if supplied, overwrites the evolution_factor of this force
+---@param force LuaForce|nil #optional, if nil, uses enemy force
+local function unearthing_biters(surface, position, amount, relative_evolution, force)
     if not surface then
         return
     end
@@ -91,8 +97,11 @@ local function unearthing_biters(surface, position, amount, relative_evolution)
     if not position.y then
         return
     end
+    if not force or not force.valid then
+        force = game.forces.enemy
+    end
 
-    local evolution = game.forces.enemy.evolution_factor
+    local evolution = force.get_evolution_factor(surface)
 
     if relative_evolution then
         evolution = relative_evolution
@@ -115,7 +124,7 @@ local function unearthing_biters(surface, position, amount, relative_evolution)
             if t % 40 == 36 then
                 traps[tick][#traps[tick] + 1] = {
                     callback = 'spawn_biter',
-                    params = {surface, {x = position.x, y = position.y}, evolution, relative_evolution}
+                    params = {surface, {x = position.x, y = position.y}, evolution, force}
                 }
             end
         end
@@ -132,7 +141,7 @@ local function on_tick()
         if callback == 'create_particles' then
             create_particles(params[1], params[2], params[3])
         elseif callback == 'spawn_biter' then
-            spawn_biter(params[1], params[2], params[3])
+            spawn_biter(params[1], params[2], params[3], params[4])
         end
     end
     traps[game.tick] = nil

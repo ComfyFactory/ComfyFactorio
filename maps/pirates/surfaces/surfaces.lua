@@ -1,47 +1,43 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-
-local Memory = require 'maps.pirates.memory'
-local Math = require 'maps.pirates.math'
-local Balance = require 'maps.pirates.balance'
-local Common = require 'maps.pirates.common'
-local CoreData = require 'maps.pirates.coredata'
-local Utils = require 'maps.pirates.utils_local'
-local _inspect = require 'utils.inspect'.inspect
-local Boats = require 'maps.pirates.structures.boats.boats'
+local Memory = require('maps.pirates.memory')
+local Math = require('maps.pirates.math')
+local Balance = require('maps.pirates.balance')
+local Common = require('maps.pirates.common')
+local CoreData = require('maps.pirates.coredata')
+local Utils = require('maps.pirates.utils_local')
+local _inspect = require('utils.inspect').inspect
+local Boats = require('maps.pirates.structures.boats.boats')
 -- local Lobby = require 'maps.pirates.surfaces.lobby'
 -- local Dock = require 'maps.pirates.surfaces.dock'
-local Hold = require 'maps.pirates.surfaces.hold'
-local Cabin = require 'maps.pirates.surfaces.cabin'
+local Hold = require('maps.pirates.surfaces.hold')
+local Cabin = require('maps.pirates.surfaces.cabin')
 -- local Sea = require 'maps.pirates.surfaces.sea.sea'
-local Islands = require 'maps.pirates.surfaces.islands.islands'
-local Crowsnest = require 'maps.pirates.surfaces.crowsnest'
-local Quest = require 'maps.pirates.quest'
+local Islands = require('maps.pirates.surfaces.islands.islands')
+local Crowsnest = require('maps.pirates.surfaces.crowsnest')
+local Quest = require('maps.pirates.quest')
 -- local Parrot = require 'maps.pirates.parrot'
-local ShopMerchants = require 'maps.pirates.shop.merchants'
-local SurfacesCommon = require 'maps.pirates.surfaces.common'
+local ShopMerchants = require('maps.pirates.shop.merchants')
+local SurfacesCommon = require('maps.pirates.surfaces.common')
 -- local Roles = require 'maps.pirates.roles.roles'
-local Classes = require 'maps.pirates.roles.classes'
-local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
+local Classes = require('maps.pirates.roles.classes')
+local IslandEnum = require('maps.pirates.surfaces.islands.island_enum')
 
-local Server = require 'utils.server'
+local Server = require('utils.server')
 
 local Public = {}
 local enum = SurfacesCommon.enum
 Public.enum = enum
 
-Public[enum.SEA] = require 'maps.pirates.surfaces.sea.sea'
-Public[enum.ISLAND] = require 'maps.pirates.surfaces.islands.islands'
-Public[enum.DOCK] = require 'maps.pirates.surfaces.dock'
-Public[enum.CROWSNEST] = require 'maps.pirates.surfaces.crowsnest'
-Public[enum.LOBBY] = require 'maps.pirates.surfaces.lobby'
-Public[enum.HOLD] = require 'maps.pirates.surfaces.hold'
-Public[enum.CABIN] = require 'maps.pirates.surfaces.cabin'
-Public[enum.CHANNEL] = require 'maps.pirates.surfaces.channel.channel'
-Public['SurfacesCommon'] = require 'maps.pirates.surfaces.common'
-
-
-
+Public[enum.SEA] = require('maps.pirates.surfaces.sea.sea')
+Public[enum.ISLAND] = require('maps.pirates.surfaces.islands.islands')
+Public[enum.DOCK] = require('maps.pirates.surfaces.dock')
+Public[enum.CROWSNEST] = require('maps.pirates.surfaces.crowsnest')
+Public[enum.LOBBY] = require('maps.pirates.surfaces.lobby')
+Public[enum.HOLD] = require('maps.pirates.surfaces.hold')
+Public[enum.CABIN] = require('maps.pirates.surfaces.cabin')
+Public[enum.CHANNEL] = require('maps.pirates.surfaces.channel.channel')
+Public['SurfacesCommon'] = require('maps.pirates.surfaces.common')
 
 function Public.initialise_destination(o)
 	o = o or {}
@@ -60,7 +56,8 @@ function Public.initialise_destination(o)
 	o.seed = o.seed or Math.random(1, 10000000)
 	o.iconized_map = o.iconized_map or {}
 	o.boat_extra_distance_from_shore = o.boat_extra_distance_from_shore or 0
-	o.surface_name = o.surface_name or SurfacesCommon.encode_surface_name(memory.id, o.destination_index, o.type, o.subtype)
+	o.surface_name = o.surface_name
+		or SurfacesCommon.encode_surface_name(memory.id, o.destination_index, o.type, o.subtype)
 
 	o.dynamic_data.other_map_generation_data = o.dynamic_data.other_map_generation_data or {}
 
@@ -100,15 +97,21 @@ function Public.on_surface_generation(destination)
 
 		destination.dynamic_data.rocketsilomaxhp = Balance.silo_max_hp
 		destination.dynamic_data.rocketsilohp = Balance.silo_max_hp
-		destination.dynamic_data.rocketsilochargedbools = {}
-		destination.dynamic_data.rocketsiloenergyconsumed = 0
-		destination.dynamic_data.rocketsiloenergyconsumedwithinlasthalfsecond = 0
-		destination.dynamic_data.energychargedinsilosincelastcheck = 0
-		destination.dynamic_data.silocharged = false
-		destination.dynamic_data.rocketlaunched = false
+		destination.dynamic_data.rocket_silo_charged_bools = {}
+		destination.dynamic_data.rocket_silo_energy_consumed = 0
+		destination.dynamic_data.rocket_silo_energy_consumed_within_last_half_second = 0
+		destination.dynamic_data.energy_charged_in_silo_since_last_check = 0
+		destination.dynamic_data.silo_is_charged = false
+		destination.dynamic_data.rocket_launched = false
 
-		if subtype ~= IslandEnum.enum.STANDARD and subtype ~= IslandEnum.enum.STANDARD_VARIANT and subtype ~= IslandEnum.enum.RADIOACTIVE and subtype ~= IslandEnum.enum.RED_DESERT then
-			destination.dynamic_data.hidden_ore_remaining_abstract = Utils.deepcopy(destination.static_params.abstract_ore_amounts)
+		if
+			subtype ~= IslandEnum.enum.STANDARD
+			and subtype ~= IslandEnum.enum.STANDARD_VARIANT
+			and subtype ~= IslandEnum.enum.RADIOACTIVE
+			and subtype ~= IslandEnum.enum.RED_DESERT
+		then
+			destination.dynamic_data.hidden_ore_remaining_abstract =
+				Utils.deepcopy(destination.static_params.abstract_ore_amounts)
 		end
 
 		if subtype == IslandEnum.enum.CAVE then
@@ -134,7 +137,15 @@ function Public.destination_on_collide(destination)
 	local memory = Memory.get_crew_memory()
 
 	local name = destination.static_params.name and destination.static_params.name or 'NameNotFound'
-	local message = { '', '[' .. memory.name .. '] ', { 'pirates.loading_destination', memory.destinationsvisited_indices and (#memory.destinationsvisited_indices + 1) or 0, name } } --notify the whole server
+	local message = {
+		'',
+		'[' .. memory.name .. '] ',
+		{
+			'pirates.loading_destination',
+			memory.destinationsvisited_indices and (#memory.destinationsvisited_indices + 1) or 0,
+			name,
+		},
+	} --notify the whole server
 	Common.notify_game(message)
 
 	if destination.type ~= Public.enum.DOCK then
@@ -188,7 +199,6 @@ function Public.destination_on_collide(destination)
 					max_evo = 0.91 + (memory.overworldx / 40 - 12) * 0.25 / 100
 				end
 			end
-
 
 			-- if memory.overworldx > 200 then
 			-- 	scheduled_raft_raids = {}
@@ -261,15 +271,21 @@ function Public.destination_on_arrival(destination)
 	memory.floating_pollution = 0
 
 	-- catching a fallthrough error I've observed
-	if not memory.active_sea_enemies then memory.active_sea_enemies = {} end
+	if not memory.active_sea_enemies then
+		memory.active_sea_enemies = {}
+	end
 	memory.active_sea_enemies.krakens = {}
 
 	if destination.type == enum.ISLAND then
-		destination.dynamic_data.rocketsiloenergyneeded = Balance.silo_energy_needed_MJ() * 1000000
+		destination.dynamic_data.rocket_silo_energy_needed = Balance.silo_energy_needed_MJ() * 1000000
 
 		destination.dynamic_data.time_remaining = Balance.max_time_on_island_seconds(destination.subtype)
 
-		if destination.subtype ~= IslandEnum.enum.FIRST and destination.subtype ~= IslandEnum.enum.RADIOACTIVE and destination.destination_index ~= 2 then
+		if
+			destination.subtype ~= IslandEnum.enum.FIRST
+			and destination.subtype ~= IslandEnum.enum.RADIOACTIVE
+			and destination.destination_index ~= 2
+		then
 			-- if not destination.overworld_position.x ~= Common.first_cost_to_leave_macrox * 40 then
 			if destination.subtype == IslandEnum.enum.CAVE then
 				Quest.initialise_random_cave_island_quest()
@@ -327,9 +343,21 @@ function Public.destination_on_arrival(destination)
 	end
 
 	local name = destination.static_params.name and destination.static_params.name or 'NameNotFound'
-	local message = { 'pirates.approaching_destination', memory.destinationsvisited_indices and #memory.destinationsvisited_indices or 0, name }
+	local message = {
+		'pirates.approaching_destination',
+		memory.destinationsvisited_indices and #memory.destinationsvisited_indices or 0,
+		name,
+	}
 	if not (#memory.destinationsvisited_indices and #memory.destinationsvisited_indices == 1) then --don't need to notify for the first island
-		Server.to_discord_embed_raw({ '', (destination.static_params.discord_emoji or CoreData.comfy_emojis.hype) .. '[' .. memory.name .. '] Approaching ', name, ', ' .. memory.overworldx .. ' leagues.' }, true)
+		Server.to_discord_embed_raw({
+			'',
+			(destination.static_params.discord_emoji or CoreData.comfy_emojis.hype)
+				.. '['
+				.. memory.name
+				.. '] Approaching ',
+			name,
+			', ' .. memory.overworldx .. ' leagues.',
+		}, true)
 	end
 	-- if destination.static_params.name == 'Dock' then
 	-- 	message = message .. ' ' .. 'New trades are available in the Captain\'s Store.'
@@ -354,7 +382,12 @@ function Public.destination_on_arrival(destination)
 			end
 		end
 
-		if (memory.overworldx >= Balance.quest_structures_first_appear_at and destination.subtype ~= IslandEnum.enum.RADIOACTIVE) or _DEBUG then
+		if
+			(
+				memory.overworldx >= Balance.quest_structures_first_appear_at
+				and destination.subtype ~= IslandEnum.enum.RADIOACTIVE
+			) or _DEBUG
+		then
 			local class_for_sale = Classes.generate_class_for_sale()
 			destination.static_params.class_for_sale = class_for_sale
 		end
@@ -378,7 +411,12 @@ function Public.destination_on_arrival(destination)
 
 		Islands.spawn_ores_on_arrival(destination, points_to_avoid)
 
-		if (memory.overworldx >= Balance.quest_structures_first_appear_at and destination.subtype ~= IslandEnum.enum.RADIOACTIVE) or _DEBUG then
+		if
+			(
+				memory.overworldx >= Balance.quest_structures_first_appear_at
+				and destination.subtype ~= IslandEnum.enum.RADIOACTIVE
+			) or _DEBUG
+		then
 			local covered = Islands.spawn_quest_structure(destination, points_to_avoid)
 			if covered then
 				points_to_avoid[#points_to_avoid + 1] = { x = covered.x, y = covered.y, r = 25 }
@@ -438,7 +476,7 @@ function Public.destination_on_crewboat_hits_shore(destination)
 				local direction = m.direction
 				local position = m.position
 				m.destroy()
-				surface.create_entity { name = 'electric-mining-drill', direction = direction, position = position }
+				surface.create_entity({ name = 'electric-mining-drill', direction = direction, position = position })
 			end
 
 			Common.parrot_speak(memory.force, { 'pirates.parrot_radioactive_tip_2' })
@@ -452,9 +490,9 @@ function Public.destination_on_crewboat_hits_shore(destination)
 			ShopMerchants.generate_merchant_trades(destination.dynamic_data.merchant_market)
 		end
 
-
-		if CoreData.get_difficulty_option_from_value(memory.difficulty) >= 3 and
-			destination.subtype ~= IslandEnum.enum.FIRST
+		if
+			CoreData.get_difficulty_option_from_value(memory.difficulty) >= 3
+			and destination.subtype ~= IslandEnum.enum.FIRST
 		then
 			local surface = game.surfaces[destination.surface_name]
 			local spawner = Common.get_random_valid_spawner(surface)
@@ -488,7 +526,8 @@ function Public.generate_detailed_island_data(destination)
 	local entitymap = {}
 	local tiles = {}
 	local tiles2 = {}
-	local leftboundary, rightboundary, topboundary, bottomboundary = chunks_horizontal / 2 + 1, -chunks_horizontal / 2 - 1, chunks_vertical / 2 + 1, -chunks_vertical / 2 - 1 -- reversed, because we'll iterate
+	local leftboundary, rightboundary, topboundary, bottomboundary =
+		chunks_horizontal / 2 + 1, -chunks_horizontal / 2 - 1, chunks_vertical / 2 + 1, -chunks_vertical / 2 - 1 -- reversed, because we'll iterate
 
 	-- local subtype = destination.subtype
 
@@ -508,7 +547,7 @@ function Public.generate_detailed_island_data(destination)
 					local p2 = { x = chunk_frameposition_topleft.x + x2, y = chunk_frameposition_topleft.y + y2 }
 
 					local tiles3, entities3 = {}, {}
-					terrain_fn {
+					terrain_fn({
 						p = p2,
 						noise_generator = noise_generator,
 						static_params = destination.static_params,
@@ -519,7 +558,7 @@ function Public.generate_detailed_island_data(destination)
 						seed = destination.seed,
 						iconized_generation = true,
 						overworldx = destination.overworld_position.x,
-					}
+					})
 					local tile = tiles3[1]
 					if modalcounts[tile.name] then
 						modalcounts[tile.name] = modalcounts[tile.name] + 1
@@ -527,7 +566,13 @@ function Public.generate_detailed_island_data(destination)
 						modalcounts[tile.name] = 1
 					end
 
-					if y2 == 16 and x2 == 16 and #entities3 > 0 and entities3[1] and entities3[1].visible_on_overworld then
+					if
+						y2 == 16
+						and x2 == 16
+						and #entities3 > 0
+						and entities3[1]
+						and entities3[1].visible_on_overworld
+					then
 						entitymap[macroposition] = entities3[1].name
 					end
 				end
@@ -540,20 +585,31 @@ function Public.generate_detailed_island_data(destination)
 			end
 			tiles[#tiles + 1] = { name = modaltile, position = macroposition }
 
-			if (not Utils.contains(CoreData.water_tile_names, modaltile)) then
-				leftboundary, rightboundary, topboundary, bottomboundary = Math.min(leftboundary, x), Math.max(rightboundary, x + 1), Math.min(topboundary, y), Math.max(bottomboundary, y + 1)
+			if not Utils.contains(CoreData.water_tile_names, modaltile) then
+				leftboundary, rightboundary, topboundary, bottomboundary =
+					Math.min(leftboundary, x),
+					Math.max(rightboundary, x + 1),
+					Math.min(topboundary, y),
+					Math.max(bottomboundary, y + 1)
 			end
 		end
 	end
 
-	leftboundary, rightboundary, topboundary, bottomboundary = leftboundary - 1, rightboundary + 1, topboundary - 1, bottomboundary + 1 --push out by one step to get some water
+	leftboundary, rightboundary, topboundary, bottomboundary =
+		leftboundary - 1, rightboundary + 1, topboundary - 1, bottomboundary + 1 --push out by one step to get some water
 
 	-- construct image, and record where entities can be placed:
 	local positions_free_to_hold_resources = {}
 	for _, tile in pairs(tiles) do
 		local x = tile.position.x
 		local y = tile.position.y
-		if tile.name ~= 'water' and x >= leftboundary and x <= rightboundary and y >= topboundary and y <= bottomboundary then --nil represents water
+		if
+			tile.name ~= 'water'
+			and x >= leftboundary
+			and x <= rightboundary
+			and y >= topboundary
+			and y <= bottomboundary
+		then --nil represents water
 			--arrange image so that {0,0} is on the centre of the left edge:
 			local p = { x = x - leftboundary, y = y - (topboundary + bottomboundary) / 2 }
 			if (topboundary + bottomboundary) / 2 % 1 ~= 0 then
@@ -562,12 +618,12 @@ function Public.generate_detailed_island_data(destination)
 
 			tiles2[#tiles2 + 1] = { name = tile.name, position = p }
 
-			if (not Utils.contains(CoreData.tiles_that_conflict_with_resource_layer, tile.name)) then
+			if not Utils.contains(CoreData.tiles_that_conflict_with_resource_layer, tile.name) then
 				local ename = entitymap[tile.position]
 				if ename then
 					entities[#entities + 1] = { name = ename, position = p }
 				else
-					if (p.x + 2) % 4 <= 2 and (p.y) % 4 <= 2 then --for the ingame minimap, the ore texture checker only colors these squares
+					if (p.x + 2) % 4 <= 2 and p.y % 4 <= 2 then --for the ingame minimap, the ore texture checker only colors these squares
 						local nearby_es = {
 							entitymap[{ x = tile.position.x + 1, y = tile.position.y }],
 							entitymap[{ x = tile.position.x - 1, y = tile.position.y }],
@@ -621,7 +677,7 @@ function Public.generate_detailed_island_data(destination)
 			local x = leftboundary * 32 + 16 + xstep
 			local y = (topboundary * 32 + bottomboundary * 32) / 2 + ystep
 			local tiles3 = {}
-			terrain_fn {
+			terrain_fn({
 				p = { x = x, y = y },
 				noise_generator = noise_generator,
 				static_params = destination.static_params,
@@ -632,9 +688,9 @@ function Public.generate_detailed_island_data(destination)
 				seed = destination.seed,
 				iconized_generation = true,
 				overworldx = destination.overworld_position.x,
-			}
+			})
 			local tile = tiles3[1]
-			if (not Utils.contains(CoreData.water_tile_names, tile.name)) then
+			if not Utils.contains(CoreData.water_tile_names, tile.name) then
 				xcorrection = Math.max(xcorrection, xstep + Math.abs(ystep))
 				break
 			end
@@ -646,9 +702,17 @@ function Public.generate_detailed_island_data(destination)
 	iconwidth = iconwidth > 0 and iconwidth or 0 --make them 0 if negative
 	iconheight = iconheight > 0 and iconheight or 0
 
-	local extension_to_left = Math.ceil(Common.boat_default_starting_distance_from_shore + boat_extra_distance_from_shore + Common.mapedge_distance_from_boat_starting_position - xcorrection)
+	local extension_to_left = Math.ceil(
+		Common.boat_default_starting_distance_from_shore
+			+ boat_extra_distance_from_shore
+			+ Common.mapedge_distance_from_boat_starting_position
+			- xcorrection
+	)
 
-	local terraingen_coordinates_offset = { x = (leftboundary * 32 + rightboundary * 32) / 2 - extension_to_left / 2, y = (topboundary * 32 + bottomboundary * 32) / 2 }
+	local terraingen_coordinates_offset = {
+		x = (leftboundary * 32 + rightboundary * 32) / 2 - extension_to_left / 2,
+		y = (topboundary * 32 + bottomboundary * 32) / 2,
+	}
 	local width = rightboundary * 32 - leftboundary * 32 + extension_to_left
 	local height = bottomboundary * 32 - topboundary * 32
 
@@ -659,9 +723,8 @@ function Public.generate_detailed_island_data(destination)
 	-- -- must ceil this, because if it's a half integer big things will teleport badly:
 	-- local boat_starting_xposition = Math.ceil(- width/2 + Common.mapedge_distance_from_boat_starting_position)
 	-- worse, must make this even due to rails:
-	local boat_starting_xposition = 2 * Math.ceil(
-		(-width / 2 + Common.mapedge_distance_from_boat_starting_position) / 2
-	)
+	local boat_starting_xposition = 2
+		* Math.ceil((-width / 2 + Common.mapedge_distance_from_boat_starting_position) / 2)
 
 	destination.static_params.terraingen_coordinates_offset = terraingen_coordinates_offset
 	destination.static_params.width = width
@@ -681,7 +744,9 @@ end
 
 function Public.create_surface(destination)
 	local surface_name = destination.surface_name
-	if game.surfaces[surface_name] then return end
+	if game.surfaces[surface_name] then
+		return
+	end
 
 	-- maybe can set width and height to be 0 here? if so, will need to change references to map_gen_settings.width elsewhere in code
 	-- local mgs = Utils.deepcopy(Common.default_map_gen_settings(
@@ -690,15 +755,26 @@ function Public.create_surface(destination)
 	-- 	self.seed or Math.random(1, 1000000)
 	-- ))
 
-	local mgs = Utils.deepcopy(Common.default_map_gen_settings(
-		Math.max(0, destination.static_params.width) or 128,
-		Math.max(0, destination.static_params.height) or 128,
-		destination.seed or Math.random(1, 1000000)
-	))
+	local mgs = Utils.deepcopy(
+		Common.default_map_gen_settings(
+			Math.max(0, destination.static_params.width) or 128,
+			Math.max(0, destination.static_params.height) or 128,
+			destination.seed or Math.random(1, 1000000)
+		)
+	)
 
 	--todo: put into static_params
 
-	mgs.autoplace_settings.decorative.treat_missing_as_default = destination.static_params.default_decoratives
+	if destination.static_params.decorative_settings ~= nil then
+		mgs.autoplace_settings.decorative = { settings = destination.static_params.decorative_settings }
+	end
+
+	-- TODO: Remove this code if Wube fixes this 'bug'
+	for _, decorative in pairs(prototypes.decorative) do
+		if not mgs.autoplace_settings.decorative.settings[decorative.name] then
+			mgs.autoplace_settings.decorative.settings[decorative.name] = { frequency = 'none' }
+		end
+	end
 
 	local surface = game.create_surface(surface_name, mgs)
 
@@ -728,7 +804,9 @@ function Public.clean_up(destination)
 
 	local oldsurface = game.surfaces[destination.surface_name]
 
-	if not (oldsurface and oldsurface.valid) then return end
+	if not (oldsurface and oldsurface.valid) then
+		return
+	end
 
 	-- assuming sea is always default subtype:
 	local seasurface = game.surfaces[memory.sea_name]
@@ -738,9 +816,11 @@ function Public.clean_up(destination)
 	-- handle players that were left on the island
 	-- if there is more than one crew on a surface, this will need to be generalised
 	for _, player in pairs(game.connected_players) do
-		if (player.surface == oldsurface) then
-			if player.character and player.character.valid then player.character.die(memory.force) end
-			player.teleport(memory.spawnpoint, seasurface)
+		if Common.validate_player_and_character(player) then
+			if player.character.surface == oldsurface then
+				player.character.die(memory.force)
+				player.teleport(memory.spawnpoint, seasurface)
+			end
 		end
 	end
 
@@ -786,7 +866,6 @@ end
 -- 	-- Crowsnest.update_surface(tiles, entities)
 -- end
 
-
 function Public.player_goto_crows_nest(player, player_relative_pos)
 	local memory = Memory.get_crew_memory()
 
@@ -799,11 +878,20 @@ function Public.player_goto_crows_nest(player, player_relative_pos)
 		carpos = { x = 3.29687, y = 0 }
 	end
 
-	local newpos = { x = memory.overworldx + carpos.x - player_relative_pos.x, y = memory.overworldy + carpos.y + player_relative_pos.y }
+	local newpos = {
+		x = memory.overworldx + carpos.x - player_relative_pos.x,
+		y = memory.overworldy + carpos.y + player_relative_pos.y,
+	}
 
 	local newpos2 = surface.find_non_colliding_position('character', newpos, 5, 0.2) or newpos
 
-	if newpos2 then player.teleport(newpos2, surface) end
+	if newpos2 then
+		if player.character and player.character.valid then
+			player.character.teleport(newpos2, surface)
+		else
+			player.teleport(newpos2, surface)
+		end
+	end
 
 	-- player.minimap_enabled = false
 end
@@ -813,7 +901,8 @@ function Public.player_exit_crows_nest(player, player_relative_pos)
 	local surface
 
 	if Boats.is_boat_at_sea() then
-		surface = game.surfaces[SurfacesCommon.encode_surface_name(memory.id, 0, Public.enum.SEA, Public.Sea.enum.DEFAULT)]
+		surface =
+			game.surfaces[SurfacesCommon.encode_surface_name(memory.id, 0, Public.enum.SEA, Public.Sea.enum.DEFAULT)]
 	else
 		surface = game.surfaces[Common.current_destination().surface_name]
 	end
@@ -824,11 +913,20 @@ function Public.player_exit_crows_nest(player, player_relative_pos)
 	else
 		carpos = Boats.get_scope(memory.boat).Data.entercrowsnest_cars.left
 	end
-	local newpos = { x = memory.boat.position.x + carpos.x - player_relative_pos.x, y = memory.boat.position.y + carpos.y + player_relative_pos.y }
+	local newpos = {
+		x = memory.boat.position.x + carpos.x - player_relative_pos.x,
+		y = memory.boat.position.y + carpos.y + player_relative_pos.y,
+	}
 
 	local newpos2 = surface.find_non_colliding_position('character', newpos, 10, 0.2) or newpos
 
-	if newpos2 then player.teleport(newpos2, surface) end
+	if newpos2 then
+		if player.character and player.character.valid then
+			player.character.teleport(newpos2, surface)
+		else
+			player.teleport(newpos2, surface)
+		end
+	end
 
 	-- player.minimap_enabled = true
 end
@@ -842,7 +940,13 @@ function Public.player_goto_hold(player, relative_pos, nth)
 
 	local newpos2 = surface.find_non_colliding_position('character', newpos, 5, 0.2) or newpos
 
-	if newpos2 then player.teleport(newpos2, surface) end
+	if newpos2 then
+		if player.character and player.character.valid then
+			player.character.teleport(newpos2, surface)
+		else
+			player.teleport(newpos2, surface)
+		end
+	end
 end
 
 function Public.player_exit_hold(player, relative_pos)
@@ -851,17 +955,25 @@ function Public.player_exit_hold(player, relative_pos)
 	local surface
 
 	if Boats.is_boat_at_sea() then
-		surface = game.surfaces[SurfacesCommon.encode_surface_name(memory.id, 0, Public.enum.SEA, Public.Sea.enum.DEFAULT)]
+		surface =
+			game.surfaces[SurfacesCommon.encode_surface_name(memory.id, 0, Public.enum.SEA, Public.Sea.enum.DEFAULT)]
 	else
 		surface = game.surfaces[Common.current_destination().surface_name]
 	end
 
 	local locopos = Boats.get_scope(boat).Data.loco_pos
-	local newpos = { x = boat.position.x + locopos.x + relative_pos.x, y = boat.position.y + locopos.y + relative_pos.y }
+	local newpos =
+		{ x = boat.position.x + locopos.x + relative_pos.x, y = boat.position.y + locopos.y + relative_pos.y }
 
 	local newpos2 = surface.find_non_colliding_position('character', newpos, 10, 0.2) or newpos
 
-	if newpos2 then player.teleport(newpos2, surface) end
+	if newpos2 then
+		if player.character and player.character.valid then
+			player.character.teleport(newpos2, surface)
+		else
+			player.teleport(newpos2, surface)
+		end
+	end
 end
 
 function Public.player_goto_cabin(player, relative_pos)
@@ -873,7 +985,13 @@ function Public.player_goto_cabin(player, relative_pos)
 
 	local newpos2 = surface.find_non_colliding_position('character', newpos, 5, 0.2) or newpos
 
-	if newpos2 then player.teleport(newpos2, surface) end
+	if newpos2 then
+		if player.character and player.character.valid then
+			player.character.teleport(newpos2, surface)
+		else
+			player.teleport(newpos2, surface)
+		end
+	end
 
 	if (not memory.captain_cabin_hint_given) and Common.is_captain(player) then
 		memory.captain_cabin_hint_given = true
@@ -887,17 +1005,33 @@ function Public.player_exit_cabin(player, relative_pos)
 	local surface
 
 	if Boats.is_boat_at_sea() then
-		surface = game.surfaces[SurfacesCommon.encode_surface_name(memory.id, 0, Public.enum.SEA, Public.Sea.enum.DEFAULT)]
+		surface =
+			game.surfaces[SurfacesCommon.encode_surface_name(memory.id, 0, Public.enum.SEA, Public.Sea.enum.DEFAULT)]
 	else
 		surface = game.surfaces[Common.current_destination().surface_name]
 	end
 
-	local carpos = Boats.get_scope(boat).Data.cabin_car
-	local newpos = { x = boat.position.x + carpos.x - relative_pos.x, y = boat.position.y + carpos.y + relative_pos.y }
+	local boat_data = Boats.get_scope(boat).Data
 
-	local newpos2 = surface.find_non_colliding_position('character', newpos, 10, 0.2) or newpos
+	local newpos = { x = boat.position.x, y = boat.position.y }
 
-	if newpos2 then player.teleport(newpos2, surface) end
+	if boat_data then -- After a game loss, Boats.get_scope(boat) has been observed to be nil. Not sure why.
+		local car_pos = boat_data.cabin_car
+
+		newpos = { x = newpos.x + car_pos.x - relative_pos.x, y = newpos.y + car_pos.y + relative_pos.y }
+
+		newpos = surface.find_non_colliding_position('character', newpos, 10, 0.2) or newpos
+	end
+
+	newpos = surface.find_non_colliding_position('character', newpos, 10, 0.2) or newpos
+
+	if newpos then
+		if player.character and player.character.valid then
+			player.character.teleport(newpos, surface)
+		else
+			player.teleport(newpos, surface)
+		end
+	end
 end
 
 return Public

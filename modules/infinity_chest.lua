@@ -23,7 +23,7 @@ Public.storage = {}
 
 Global.register(
     this,
-    function(tbl)
+    function (tbl)
         this = tbl
     end
 )
@@ -33,8 +33,8 @@ function Public.get_table()
 end
 
 function Public.create_chest(surface, position, storage)
-    local entity = surface.create_entity {name = 'infinity-chest', position = position, force = 'player'}
-    this.inf_chests[entity.unit_number] = {entity = entity, storage = storage}
+    local entity = surface.create_entity { name = 'infinity-chest', position = position, force = 'player' }
+    this.inf_chests[entity.unit_number] = { entity = entity, storage = storage }
     return entity
 end
 
@@ -86,7 +86,7 @@ local function validate_player(player)
 end
 
 local function built_entity(event)
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity.valid then
         return
     end
@@ -114,17 +114,19 @@ local function built_entity(event)
         rendering.draw_text {
             text = '♾',
             surface = entity.surface,
-            target = entity,
-            target_offset = {0, -0.6},
+            target = {
+                entity = entity,
+                offset = { 0, -0.6 },
+            },
             scale = 2,
-            color = {r = 0, g = 0.6, b = 1},
+            color = { r = 0, g = 0.6, b = 1 },
             alignment = 'center'
         }
     end
 end
 
 local function built_entity_robot(event)
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity.valid then
         return
     end
@@ -135,7 +137,7 @@ local function built_entity_robot(event)
 end
 
 local function item(item_name, item_count, inv, unit_number)
-    local item_stack = game.item_prototypes[item_name].stack_size
+    local item_stack = prototypes.item[item_name].stack_size
     local diff = item_count - item_stack
 
     if not this.inf_storage[unit_number] then
@@ -151,7 +153,7 @@ local function item(item_name, item_count, inv, unit_number)
     end
     if diff > 0 then
         if not storage[item_name] then
-            local count = inv.remove({name = item_name, count = diff})
+            local count = inv.remove({ name = item_name, count = diff })
             this.inf_storage[unit_number][item_name] = count
         else
             if this.inf_storage[unit_number][item_name] >= this.limits[unit_number] then
@@ -159,13 +161,13 @@ local function item(item_name, item_count, inv, unit_number)
                 if mode == 1 then
                     this.inf_mode[unit_number] = 3
                 end
-                if inv.can_insert({name = item_name, count = item_stack}) then
-                    local count = inv.insert({name = item_name, count = item_stack})
+                if inv.can_insert({ name = item_name, count = item_stack }) then
+                    local count = inv.insert({ name = item_name, count = item_stack })
                     this.inf_storage[unit_number][item_name] = storage[item_name] - count
                 end
                 return
             end
-            local count = inv.remove({name = item_name, count = diff})
+            local count = inv.remove({ name = item_name, count = diff })
             this.inf_storage[unit_number][item_name] = storage[item_name] + count
         end
     elseif diff < 0 then
@@ -173,10 +175,10 @@ local function item(item_name, item_count, inv, unit_number)
             return
         end
         if storage[item_name] > (diff * -1) then
-            local inserted = inv.insert({name = item_name, count = (diff * -1)})
+            local inserted = inv.insert({ name = item_name, count = (diff * -1) })
             this.inf_storage[unit_number][item_name] = storage[item_name] - inserted
         else
-            inv.insert({name = item_name, count = storage[item_name]})
+            inv.insert({ name = item_name, count = storage[item_name] })
             this.inf_storage[unit_number][item_name] = nil
         end
     end
@@ -359,60 +361,60 @@ local function gui_opened(event)
     local player = game.players[event.player_index]
     local frame =
         player.gui.center.add {
-        type = 'frame',
-        caption = 'Unlimited Chest',
-        direction = 'vertical',
-        name = entity.unit_number
-    }
-    local controls = frame.add {type = 'flow', direction = 'horizontal'}
-    local items = frame.add {type = 'flow', direction = 'vertical'}
+            type = 'frame',
+            caption = 'Unlimited Chest',
+            direction = 'vertical',
+            name = entity.unit_number
+        }
+    local controls = frame.add { type = 'flow', direction = 'horizontal' }
+    local items = frame.add { type = 'flow', direction = 'vertical' }
 
     local mode = this.inf_mode[entity.unit_number]
     local selected = mode and mode or 1
-    local tbl = controls.add {type = 'table', column_count = 1}
+    local tbl = controls.add { type = 'table', column_count = 1 }
 
     local limit_tooltip = '[color=yellow]Limit Info:[/color]\nThis is only usable if you intend to use this chest for one item.'
 
     local mode_tooltip =
-        '[color=yellow]Mode Info:[/color]\nEnabled: will active the chest and allow for insertions.\nDisabled: will deactivate the chest and let´s the player utilize the GUI to retrieve items.\nLimited: will deactivate the chest as per limit.'
+    '[color=yellow]Mode Info:[/color]\nEnabled: will active the chest and allow for insertions.\nDisabled: will deactivate the chest and let´s the player utilize the GUI to retrieve items.\nLimited: will deactivate the chest as per limit.'
 
     local btn =
         tbl.add {
-        type = 'sprite-button',
-        tooltip = '[color=blue]Info![/color]\nThis chest stores unlimited quantity of items (up to 48 different item types).\nThe chest is best used with an inserter to add / remove items.\nThe chest is mineable if state is disabled.\nContent is kept when mined.\n[color=yellow]Limit:[/color]\nThis is only usable if you intend to use this chest for one item.',
-        sprite = 'utility/questionmark'
-    }
+            type = 'sprite-button',
+            tooltip = '[color=blue]Info![/color]\nThis chest stores unlimited quantity of items (up to 48 different item types).\nThe chest is best used with an inserter to add / remove items.\nThe chest is mineable if state is disabled.\nContent is kept when mined.\n[color=yellow]Limit:[/color]\nThis is only usable if you intend to use this chest for one item.',
+            sprite = 'utility/questionmark'
+        }
     btn.style.height = 20
     btn.style.width = 20
     btn.enabled = false
     btn.focus()
 
-    local tbl_2 = tbl.add {type = 'table', column_count = 4}
+    local tbl_2 = tbl.add { type = 'table', column_count = 4 }
 
-    tbl_2.add {type = 'label', caption = 'Mode: ', tooltip = mode_tooltip}
+    tbl_2.add { type = 'label', caption = 'Mode: ', tooltip = mode_tooltip }
     local drop_down
     if player.admin and this.editor[player.name] then
         drop_down =
             tbl_2.add {
-            type = 'drop-down',
-            items = {'Enabled', 'Disabled', 'Limited', 'Editor'},
-            selected_index = selected,
-            name = entity.unit_number,
-            tooltip = mode_tooltip
-        }
+                type = 'drop-down',
+                items = { 'Enabled', 'Disabled', 'Limited', 'Editor' },
+                selected_index = selected,
+                name = entity.unit_number,
+                tooltip = mode_tooltip
+            }
     else
         drop_down =
             tbl_2.add {
-            type = 'drop-down',
-            items = {'Enabled', 'Disabled', 'Limited'},
-            selected_index = selected,
-            name = entity.unit_number,
-            tooltip = mode_tooltip
-        }
+                type = 'drop-down',
+                items = { 'Enabled', 'Disabled', 'Limited' },
+                selected_index = selected,
+                name = entity.unit_number,
+                tooltip = mode_tooltip
+            }
     end
 
-    tbl_2.add({type = 'label', caption = ' Limit: ', tooltip = limit_tooltip})
-    local text_field = tbl_2.add({type = 'textfield', text = this.limits[entity.unit_number]})
+    tbl_2.add({ type = 'label', caption = ' Limit: ', tooltip = limit_tooltip })
+    local text_field = tbl_2.add({ type = 'textfield', text = this.limits[entity.unit_number] })
     text_field.style.width = 80
     text_field.numeric = true
     text_field.tooltip = limit_tooltip
@@ -448,7 +450,7 @@ local function update_gui()
         end
         frame.clear()
 
-        local tbl = frame.add {type = 'table', column_count = 10, name = 'infinity_chest_inventory'}
+        local tbl = frame.add { type = 'table', column_count = 10, name = 'infinity_chest_inventory' }
         local total = 0
         local items = {}
 
@@ -490,23 +492,23 @@ local function update_gui()
             if mode == 1 or mode == 3 then
                 btn =
                     tbl.add {
-                    type = 'sprite-button',
-                    sprite = 'item/' .. item_name,
-                    style = 'slot_button',
-                    number = item_count,
-                    name = item_name,
-                    tooltip = 'Withdrawal is possible when state is disabled!'
-                }
+                        type = 'sprite-button',
+                        sprite = 'item/' .. item_name,
+                        style = 'slot_button',
+                        number = item_count,
+                        name = item_name,
+                        tooltip = 'Withdrawal is possible when state is disabled!'
+                    }
                 btn.enabled = false
             elseif mode == 2 or mode == 4 then
                 btn =
                     tbl.add {
-                    type = 'sprite-button',
-                    sprite = 'item/' .. item_name,
-                    style = 'slot_button',
-                    number = item_count,
-                    name = item_name
-                }
+                        type = 'sprite-button',
+                        sprite = 'item/' .. item_name,
+                        style = 'slot_button',
+                        number = item_count,
+                        name = item_name
+                    }
                 btn.enabled = true
             end
         end
@@ -514,10 +516,10 @@ local function update_gui()
         while total < 48 do
             local btns
             if mode == 1 or mode == 2 or mode == 3 then
-                btns = tbl.add {type = 'sprite-button', style = 'slot_button'}
+                btns = tbl.add { type = 'sprite-button', style = 'slot_button' }
                 btns.enabled = false
             elseif mode == 4 then
-                btns = tbl.add {type = 'choose-elem-button', style = 'slot_button', elem_type = 'item'}
+                btns = tbl.add { type = 'choose-elem-button', style = 'slot_button', elem_type = 'item' }
                 btns.enabled = true
             end
 
@@ -628,7 +630,7 @@ local function gui_click(event)
         if not count then
             return
         end
-        local inserted = player.insert {name = name, count = count}
+        local inserted = player.insert { name = name, count = count }
         if not inserted then
             return
         end
@@ -639,7 +641,7 @@ local function gui_click(event)
         end
     elseif shift then
         local count = storage[name]
-        local stack = game.item_prototypes[name].stack_size
+        local stack = prototypes.item[name].stack_size
         if not count then
             return
         end
@@ -647,10 +649,10 @@ local function gui_click(event)
             return
         end
         if count > stack then
-            local inserted = player.insert {name = name, count = stack}
+            local inserted = player.insert { name = name, count = stack }
             storage[name] = storage[name] - inserted
         else
-            player.insert {name = name, count = count}
+            player.insert { name = name, count = count }
             storage[name] = nil
         end
     else
@@ -658,7 +660,7 @@ local function gui_click(event)
             return
         end
         storage[name] = storage[name] - 1
-        player.insert {name = name, count = 1}
+        player.insert { name = name, count = 1 }
         if storage[name] <= 0 then
             storage[name] = nil
         end

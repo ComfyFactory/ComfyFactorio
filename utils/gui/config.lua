@@ -24,15 +24,15 @@ local this = {
 
 Global.register(
     this,
-    function(tbl)
+    function (tbl)
         this = tbl
     end
 )
 
 local spaghett_entity_blacklist = {
-    ['logistic-chest-requester'] = true,
-    ['logistic-chest-buffer'] = true,
-    ['logistic-chest-active-provider'] = true
+    ['requester-chest'] = true,
+    ['buffer-chest'] = true,
+    ['active-chest-provider'] = true
 }
 
 local function get_actor(event, prefix, msg, admins_only)
@@ -52,27 +52,27 @@ local function spaghett_deny_building(event)
     if not spaghett.enabled then
         return
     end
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity.valid then
         return
     end
-    if not spaghett_entity_blacklist[event.created_entity.name] then
+    if not spaghett_entity_blacklist[event.entity.name] then
         return
     end
 
     if event.player_index then
-        game.get_player(event.player_index).insert({name = entity.name, count = 1})
+        game.get_player(event.player_index).insert({ name = entity.name, count = 1 })
     else
         local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
-        inventory.insert({name = entity.name, count = 1})
+        inventory.insert({ name = entity.name, count = 1 })
     end
 
-    event.created_entity.surface.create_entity(
+    event.entity.surface.create_entity(
         {
             name = 'flying-text',
             position = entity.position,
             text = 'Spaghett Mode Active!',
-            color = {r = 0.98, g = 0.66, b = 0.22}
+            color = { r = 0.98, g = 0.66, b = 0.22 }
         }
     )
 
@@ -119,14 +119,14 @@ local function trust_connected_players()
 end
 
 local functions = {
-    ['spectator_switch'] = function(event)
+    ['spectator_switch'] = function (event)
         if event.element.switch_state == 'left' then
             game.get_player(event.player_index).spectator = true
         else
             game.get_player(event.player_index).spectator = false
         end
     end,
-    ['blueprint_requesting'] = function(event)
+    ['blueprint_requesting'] = function (event)
         local BPRequests = is_loaded('modules.blueprint_requesting')
         local Module = BPRequests.get()
         if not Module[event.player_index] then
@@ -138,7 +138,7 @@ local functions = {
             Module[event.player_index].disabled = true
         end
     end,
-    ['top_location'] = function(event)
+    ['top_location'] = function (event)
         local player = game.get_player(event.player_index)
         local data = BottomFrame.get_player_data(player)
         if data and data.state and not data.top then
@@ -147,7 +147,7 @@ local functions = {
             BottomFrame.set_top(player, false)
         end
     end,
-    ['bottom_location'] = function(event)
+    ['bottom_location'] = function (event)
         local player = game.get_player(event.player_index)
         if event.element.switch_state == 'left' then
             BottomFrame.set_location(player, 'bottom_left')
@@ -155,7 +155,7 @@ local functions = {
             BottomFrame.set_location(player, 'bottom_right')
         end
     end,
-    ['middle_location'] = function(event)
+    ['middle_location'] = function (event)
         local player = game.get_player(event.player_index)
         local data = BottomFrame.get_player_data(player)
         if event.element.switch_state == 'left' then
@@ -171,7 +171,7 @@ local functions = {
 
         BottomFrame.set_location(player, data.bottom_state)
     end,
-    ['portable_button'] = function(event)
+    ['portable_button'] = function (event)
         local player = game.get_player(event.player_index)
         local data = BottomFrame.get_player_data(player)
         if event.element.switch_state == 'left' then
@@ -188,14 +188,14 @@ local functions = {
 
         BottomFrame.set_location(player, data.bottom_state)
     end,
-    ['auto_hotbar_switch'] = function(event)
+    ['auto_hotbar_switch'] = function (event)
         if event.element.switch_state == 'left' then
-            global.auto_hotbar_enabled[event.player_index] = true
+            storage.auto_hotbar_enabled[event.player_index] = true
         else
-            global.auto_hotbar_enabled[event.player_index] = false
+            storage.auto_hotbar_enabled[event.player_index] = false
         end
     end,
-    ['blueprint_toggle'] = function(event)
+    ['blueprint_toggle'] = function (event)
         if event.element.switch_state == 'left' then
             game.permissions.get_group('Default').set_allows_action(defines.input_action.open_blueprint_library_gui, true)
             game.permissions.get_group('Default').set_allows_action(defines.input_action.import_blueprint_string, true)
@@ -206,7 +206,7 @@ local functions = {
             get_actor(event, '[Blueprints]', 'has disabled blueprints!')
         end
     end,
-    ['vacant_toggle'] = function(event)
+    ['vacant_toggle'] = function (event)
         local vacant = is_loaded('modules.clear_vacant_players')
         if not vacant then
             log('Error: toggle related to clear_vacant_players was activated, but the module does not seem to be loaded.')
@@ -224,7 +224,7 @@ local functions = {
         vacant.set_enabled(is_toggled)
         get_actor(event, '[Clear Vacant Players]', message, true)
     end,
-    ['spaghett_toggle'] = function(event)
+    ['spaghett_toggle'] = function (event)
         if event.element.switch_state == 'left' then
             this.gui_config.spaghett.enabled = true
             get_actor(event, '[Spaghett]', 'has enabled spaghett mode!')
@@ -234,29 +234,29 @@ local functions = {
         end
         spaghett()
     end,
-    ['bb_team_balancing_toggle'] = function(event)
+    ['bb_team_balancing_toggle'] = function (event)
         if event.element.switch_state == 'left' then
-            global.bb_settings.team_balancing = true
+            storage.bb_settings.team_balancing = true
             game.print('Team balancing has been enabled!')
         else
-            global.bb_settings.team_balancing = false
+            storage.bb_settings.team_balancing = false
             game.print('Team balancing has been disabled!')
         end
     end,
-    ['bb_only_admins_vote'] = function(event)
+    ['bb_only_admins_vote'] = function (event)
         if event.element.switch_state == 'left' then
-            global.bb_settings.only_admins_vote = true
-            global.difficulty_player_votes = {}
+            storage.bb_settings.only_admins_vote = true
+            storage.difficulty_player_votes = {}
             game.print('Admin-only difficulty voting has been enabled!')
         else
-            global.bb_settings.only_admins_vote = false
+            storage.bb_settings.only_admins_vote = false
             game.print('Admin-only difficulty voting has been disabled!')
         end
     end
 }
 
 local poll_function = {
-    ['poll_trusted_toggle'] = function(event)
+    ['poll_trusted_toggle'] = function (event)
         if event.element.switch_state == 'left' then
             this.gui_config.poll_trusted = true
             get_actor(event, '[Poll Mode]', 'has disabled non-trusted people to do polls.')
@@ -265,7 +265,7 @@ local poll_function = {
             get_actor(event, '[Poll Mode]', 'has allowed non-trusted people to do polls.')
         end
     end,
-    ['poll_no_notify_toggle'] = function(event)
+    ['poll_no_notify_toggle'] = function (event)
         local poll = is_loaded('utils.gui.poll')
         local poll_table = poll.get_no_notify_players()
         if event.element.switch_state == 'left' then
@@ -277,7 +277,7 @@ local poll_function = {
 }
 
 local antigrief_functions = {
-    ['disable_antigrief'] = function(event)
+    ['disable_antigrief'] = function (event)
         local AG = Antigrief.get()
         if event.element.switch_state == 'left' then
             AG.enabled = true
@@ -291,7 +291,7 @@ local antigrief_functions = {
 }
 
 local fortress_functions = {
-    ['disable_fullness'] = function(event)
+    ['disable_fullness'] = function (event)
         local Fullness = is_loaded('modules.check_fullness')
         local Module = Fullness.get()
         if event.element.switch_state == 'left' then
@@ -302,7 +302,7 @@ local fortress_functions = {
             get_actor(event, '[Fullness]', 'has disabled the inventory fullness function.')
         end
     end,
-    ['offline_players'] = function(event)
+    ['offline_players'] = function (event)
         local WPT = is_loaded('maps.mountain_fortress_v3.table')
         local Module = WPT.get()
         if event.element.switch_state == 'left' then
@@ -313,7 +313,7 @@ local fortress_functions = {
             get_actor(event, '[Offline Players]', 'has disabled the offline player function.')
         end
     end,
-    ['collapse_grace'] = function(event)
+    ['collapse_grace'] = function (event)
         local WPT = is_loaded('maps.mountain_fortress_v3.table')
         local Module = WPT.get()
         if event.element.switch_state == 'left' then
@@ -324,7 +324,7 @@ local fortress_functions = {
             get_actor(event, '[Collapse]', 'has disabled the collapse function. You must breach the first zone for collapse to occur!')
         end
     end,
-    ['spill_items_to_surface'] = function(event)
+    ['spill_items_to_surface'] = function (event)
         local WPT = is_loaded('maps.mountain_fortress_v3.table')
         local Module = WPT.get()
         if event.element.switch_state == 'left' then
@@ -335,7 +335,7 @@ local fortress_functions = {
             get_actor(event, '[Item Spill]', 'has disabled the item spillage function. Ores no longer drop to surface when mining.')
         end
     end,
-    ['void_or_tile'] = function(event)
+    ['void_or_tile'] = function (event)
         local WPT = is_loaded('maps.mountain_fortress_v3.table')
         local Module = WPT.get()
         if event.element.switch_state == 'left' then
@@ -346,7 +346,7 @@ local fortress_functions = {
             get_actor(event, '[Void]', 'has changes the tiles of the zones to: dark-tiles (flammable tiles)')
         end
     end,
-    ['trusted_only_car_tanks'] = function(event)
+    ['trusted_only_car_tanks'] = function (event)
         local WPT = is_loaded('maps.mountain_fortress_v3.table')
         local Module = WPT.get()
         if event.element.switch_state == 'left' then
@@ -357,7 +357,7 @@ local fortress_functions = {
             get_actor(event, '[Market]', 'has changed so everybody can buy car/tanks.', true)
         end
     end,
-    ['allow_decon'] = function(event)
+    ['allow_decon'] = function (event)
         local WPT = is_loaded('maps.mountain_fortress_v3.table')
         if event.element.switch_state == 'left' then
             local limited_group = game.permissions.get_group('limited')
@@ -375,7 +375,7 @@ local fortress_functions = {
             get_actor(event, '[Decon]', 'has disabled decon on car/tanks/trains.', true)
         end
     end,
-    ['allow_decon_main_surface'] = function(event)
+    ['allow_decon_main_surface'] = function (event)
         local WPT = is_loaded('maps.mountain_fortress_v3.table')
         if event.element.switch_state == 'left' then
             local near_locomotive_group = game.permissions.get_group('near_locomotive')
@@ -409,7 +409,7 @@ local fortress_functions = {
             get_actor(event, '[Decon]', 'has disabled decon on main surface.', true)
         end
     end,
-    ['christmas_mode'] = function(event)
+    ['christmas_mode'] = function (event)
         local WPT = is_loaded('maps.mountain_fortress_v3.table')
         if event.element.switch_state == 'left' then
             WPT.set('winter_mode', true)
@@ -419,7 +419,7 @@ local fortress_functions = {
             get_actor(event, '[WinteryMode]', 'has disabled wintery mode.', true)
         end
     end,
-    ['disable_terrain'] = function(event)
+    ['disable_terrain'] = function (event)
         local WPT = is_loaded('maps.mountain_fortress_v3.table')
         local adjusted_zones = WPT.get('adjusted_zones')
         if event.element.switch_state == 'left' then
@@ -431,7 +431,7 @@ local fortress_functions = {
             get_actor(event, '[TerrainGen]', 'has disabled terrain gen.', true)
         end
     end,
-    ['toggle_trusted_collapse'] = function(event)
+    ['toggle_trusted_collapse'] = function (event)
         local WPT = is_loaded('maps.mountain_fortress_v3.table')
         if event.element.switch_state == 'left' then
             WPT.set('block_non_trusted_trigger_collapse', true)
@@ -444,9 +444,9 @@ local fortress_functions = {
 }
 
 local pirates_functions = {
-    ['toggle_disband'] = function(event)
+    ['toggle_disband'] = function (event)
         local players = game.players
-        local Memory = global.tokens.maps_pirates_memory
+        local Memory = storage.tokens.maps_pirates_memory
         if event.element.switch_state == 'left' then
             Memory.disband_crews = true
             for _, player in pairs(players) do
@@ -470,32 +470,32 @@ local pirates_functions = {
 }
 
 local function add_switch(element, switch_state, name, description_main, description)
-    local t = element.add({type = 'table', column_count = 5})
-    local on_label = t.add({type = 'label', caption = 'ON'})
+    local t = element.add({ type = 'table', column_count = 5 })
+    local on_label = t.add({ type = 'label', caption = 'ON' })
     on_label.style.padding = 0
     on_label.style.left_padding = 10
-    on_label.style.font_color = {0.77, 0.77, 0.77}
-    local switch = t.add({type = 'switch', name = name})
+    on_label.style.font_color = { 0.77, 0.77, 0.77 }
+    local switch = t.add({ type = 'switch', name = name })
     switch.switch_state = switch_state
     switch.style.padding = 0
     switch.style.margin = 0
-    local off_label = t.add({type = 'label', caption = 'OFF'})
+    local off_label = t.add({ type = 'label', caption = 'OFF' })
     off_label.style.padding = 0
-    off_label.style.font_color = {0.70, 0.70, 0.70}
+    off_label.style.font_color = { 0.70, 0.70, 0.70 }
 
-    local desc_main_label = t.add({type = 'label', caption = description_main})
+    local desc_main_label = t.add({ type = 'label', caption = description_main })
     desc_main_label.style.padding = 2
     desc_main_label.style.left_padding = 10
     desc_main_label.style.minimal_width = 120
     desc_main_label.style.font = 'heading-2'
-    desc_main_label.style.font_color = {0.88, 0.88, 0.99}
+    desc_main_label.style.font_color = { 0.88, 0.88, 0.99 }
 
-    local desc_label = t.add({type = 'label', caption = description})
+    local desc_label = t.add({ type = 'label', caption = description })
     desc_label.style.padding = 2
     desc_label.style.left_padding = 10
     desc_label.style.single_line = false
-    desc_label.style.font = 'heading-3'
-    desc_label.style.font_color = {0.85, 0.85, 0.85}
+    desc_label.style.font = 'default-semibold'
+    desc_label.style.font_color = { 0.85, 0.85, 0.85 }
 
     return switch
 end
@@ -513,9 +513,9 @@ local function build_config_gui(data)
 
     local scroll_pane =
         frame.add {
-        type = 'scroll-pane',
-        horizontal_scroll_policy = 'never'
-    }
+            type = 'scroll-pane',
+            horizontal_scroll_policy = 'never'
+        }
     local scroll_style = scroll_pane.style
     scroll_style.vertically_squashable = true
     scroll_style.minimal_height = 350
@@ -524,31 +524,31 @@ local function build_config_gui(data)
     scroll_style.right_padding = 2
     scroll_style.top_padding = 2
 
-    label = scroll_pane.add({type = 'label', caption = 'Player Settings'})
+    label = scroll_pane.add({ type = 'label', caption = 'Player Settings' })
     label.style.font = 'default-bold'
     label.style.padding = 0
     label.style.left_padding = 10
     label.style.horizontal_align = 'left'
     label.style.vertical_align = 'bottom'
-    label.style.font_color = {0.55, 0.55, 0.99}
+    label.style.font_color = { 0.55, 0.55, 0.99 }
 
-    scroll_pane.add({type = 'line'})
+    scroll_pane.add({ type = 'line' })
 
     switch_state = 'right'
     if player.spectator then
         switch_state = 'left'
     end
-    add_switch(scroll_pane, switch_state, 'spectator_switch', {'gui.spectator_mode'}, {'gui-description.spectator_mode'})
+    add_switch(scroll_pane, switch_state, 'spectator_switch', { 'gui.spectator_mode' }, { 'gui-description.spectator_mode' })
 
-    scroll_pane.add({type = 'line'})
+    scroll_pane.add({ type = 'line' })
 
-    if global.auto_hotbar_enabled then
+    if storage.auto_hotbar_enabled then
         switch_state = 'right'
-        if global.auto_hotbar_enabled[player.index] then
+        if storage.auto_hotbar_enabled[player.index] then
             switch_state = 'left'
         end
         add_switch(scroll_pane, switch_state, 'auto_hotbar_switch', 'AutoHotbar', 'Automatically fills your hotbar with placeable items.')
-        scroll_pane.add({type = 'line'})
+        scroll_pane.add({ type = 'line' })
     end
 
     local poll = is_loaded('utils.gui.poll')
@@ -558,8 +558,8 @@ local function build_config_gui(data)
         if not poll_table[player.index] then
             switch_state = 'left'
         end
-        add_switch(scroll_pane, switch_state, 'poll_no_notify_toggle', {'gui.notify_on_polls'}, {'gui-description.notify_on_polls'})
-        scroll_pane.add({type = 'line'})
+        add_switch(scroll_pane, switch_state, 'poll_no_notify_toggle', { 'gui.notify_on_polls' }, { 'gui-description.notify_on_polls' })
+        scroll_pane.add({ type = 'line' })
     end
 
     local BPRequests = is_loaded('modules.blueprint_requesting')
@@ -569,12 +569,12 @@ local function build_config_gui(data)
         if Module[player.index] and Module[player.index].disabled then
             switch_state = 'right'
         end
-        add_switch(scroll_pane, switch_state, 'blueprint_requesting', {'modules.blueprint_requesting'}, {'modules.blueprint_requesting_desc'})
-        scroll_pane.add({type = 'line'})
+        add_switch(scroll_pane, switch_state, 'blueprint_requesting', { 'modules.blueprint_requesting' }, { 'modules.blueprint_requesting_desc' })
+        scroll_pane.add({ type = 'line' })
     end
 
     if BottomFrame.is_custom_buttons_enabled() then
-        label = scroll_pane.add({type = 'label', caption = 'Bottom Buttons Settings'})
+        label = scroll_pane.add({ type = 'label', caption = 'Bottom Buttons Settings' })
         label.style.font = 'default-bold'
         label.style.padding = 0
         label.style.left_padding = 10
@@ -585,7 +585,7 @@ local function build_config_gui(data)
 
         local autostash = is_loaded('modules.autostash')
         if autostash then
-            scroll_pane.add({type = 'line'})
+            scroll_pane.add({ type = 'line' })
 
             switch_state = 'right'
             local bottom_frame = BottomFrame.get_player_data(player)
@@ -594,7 +594,7 @@ local function build_config_gui(data)
             end
             add_switch(scroll_pane, switch_state, 'top_location', 'Position - top', 'Toggle to select if you want the bottom buttons at the top or the bottom.')
         end
-        scroll_pane.add({type = 'line'})
+        scroll_pane.add({ type = 'line' })
 
         switch_state = 'right'
         local bottom_frame = BottomFrame.get_player_data(player)
@@ -603,7 +603,7 @@ local function build_config_gui(data)
         end
         add_switch(scroll_pane, switch_state, 'bottom_location', 'Position - bottom', 'Toggle to select if you want the bottom button on the left side or the right side.')
 
-        scroll_pane.add({type = 'line'})
+        scroll_pane.add({ type = 'line' })
 
         switch_state = 'right'
         if bottom_frame and bottom_frame.above then
@@ -611,27 +611,27 @@ local function build_config_gui(data)
         end
         add_switch(scroll_pane, switch_state, 'middle_location', 'Position - middle', 'Toggle to select if you want the bottom button above the quickbar or the side of the quickbar.')
 
-        scroll_pane.add({type = 'line'})
+        scroll_pane.add({ type = 'line' })
 
         switch_state = 'right'
         if bottom_frame and bottom_frame.portable then
             switch_state = 'left'
         end
         add_switch(scroll_pane, switch_state, 'portable_button', 'Position - portable', 'Toggle to select if you want the bottom button to be portable or not.')
-        scroll_pane.add({type = 'line'})
+        scroll_pane.add({ type = 'line' })
     end
 
     if admin then
-        label = scroll_pane.add({type = 'label', caption = 'Admin Settings'})
+        label = scroll_pane.add({ type = 'label', caption = 'Admin Settings' })
         label.style.font = 'default-bold'
         label.style.padding = 0
         label.style.left_padding = 10
         label.style.top_padding = 10
         label.style.horizontal_align = 'left'
         label.style.vertical_align = 'bottom'
-        label.style.font_color = {0.77, 0.11, 0.11}
+        label.style.font_color = { 0.77, 0.11, 0.11 }
 
-        scroll_pane.add({type = 'line'})
+        scroll_pane.add({ type = 'line' })
 
         switch_state = 'right'
         if game.permissions.get_group('Default').allows_action(defines.input_action.open_blueprint_library_gui) then
@@ -639,7 +639,7 @@ local function build_config_gui(data)
         end
         add_switch(scroll_pane, switch_state, 'blueprint_toggle', 'Blueprint Library', 'Toggles the usage of blueprint strings and the library.')
 
-        scroll_pane.add({type = 'line'})
+        scroll_pane.add({ type = 'line' })
 
         local vacant = is_loaded('modules.clear_vacant_players')
         if vacant then
@@ -649,17 +649,17 @@ local function build_config_gui(data)
             end
             add_switch(scroll_pane, switch_state, 'vacant_toggle', 'Clear Vacant Players', 'Toggles offline players dropping their inventories on spawn.')
 
-            scroll_pane.add({type = 'line'})
+            scroll_pane.add({ type = 'line' })
         end
 
         switch_state = 'right'
         if this.gui_config.spaghett.enabled then
             switch_state = 'left'
         end
-        add_switch(scroll_pane, switch_state, 'spaghett_toggle', {'gui.spaghett_mode'}, {'gui-description.spaghett_mode'})
+        add_switch(scroll_pane, switch_state, 'spaghett_toggle', { 'gui.spaghett_mode' }, { 'gui-description.spaghett_mode' })
 
         if poll then
-            scroll_pane.add({type = 'line'})
+            scroll_pane.add({ type = 'line' })
             switch_state = 'right'
             if this.gui_config.poll_trusted then
                 switch_state = 'left'
@@ -667,9 +667,9 @@ local function build_config_gui(data)
             add_switch(scroll_pane, switch_state, 'poll_trusted_toggle', 'Poll mode', 'Disables non-trusted plebs to create polls.')
         end
 
-        scroll_pane.add({type = 'line'})
+        scroll_pane.add({ type = 'line' })
 
-        label = scroll_pane.add({type = 'label', caption = 'Antigrief Settings'})
+        label = scroll_pane.add({ type = 'label', caption = 'Antigrief Settings' })
         label.style.font = 'default-bold'
         label.style.padding = 0
         label.style.left_padding = 10
@@ -683,10 +683,10 @@ local function build_config_gui(data)
             switch_state = 'left'
         end
         add_switch(scroll_pane, switch_state, 'disable_antigrief', 'Antigrief', 'Toggle antigrief function.')
-        scroll_pane.add({type = 'line'})
+        scroll_pane.add({ type = 'line' })
 
         if is_loaded('maps.biter_battles_v2.main') then
-            label = scroll_pane.add({type = 'label', caption = 'Biter Battles Settings'})
+            label = scroll_pane.add({ type = 'label', caption = 'Biter Battles Settings' })
             label.style.font = 'default-bold'
             label.style.padding = 0
             label.style.left_padding = 10
@@ -695,10 +695,10 @@ local function build_config_gui(data)
             label.style.vertical_align = 'bottom'
             label.style.font_color = Color.green
 
-            scroll_pane.add({type = 'line'})
+            scroll_pane.add({ type = 'line' })
 
             local team_balancing_state = 'right'
-            if global.bb_settings.team_balancing then
+            if storage.bb_settings.team_balancing then
                 team_balancing_state = 'left'
             end
             local switch = add_switch(scroll_pane, team_balancing_state, 'bb_team_balancing_toggle', 'Team Balancing', 'Players can only join a team that has less or equal players than the opposing.')
@@ -706,10 +706,10 @@ local function build_config_gui(data)
                 switch.ignored_by_interaction = true
             end
 
-            scroll_pane.add({type = 'line'})
+            scroll_pane.add({ type = 'line' })
 
             local only_admins_vote_state = 'right'
-            if global.bb_settings.only_admins_vote then
+            if storage.bb_settings.only_admins_vote then
                 only_admins_vote_state = 'left'
             end
             local only_admins_vote_switch = add_switch(scroll_pane, only_admins_vote_state, 'bb_only_admins_vote', 'Admin Vote', 'Only admins can vote for map difficulty. Clears all currently existing votes.')
@@ -717,11 +717,11 @@ local function build_config_gui(data)
                 only_admins_vote_switch.ignored_by_interaction = true
             end
 
-            scroll_pane.add({type = 'line'})
+            scroll_pane.add({ type = 'line' })
         end
 
         if is_loaded('maps.mountain_fortress_v3.main') then
-            label = scroll_pane.add({type = 'label', caption = 'Mountain Fortress Settings'})
+            label = scroll_pane.add({ type = 'label', caption = 'Mountain Fortress Settings' })
             label.style.font = 'default-bold'
             label.style.padding = 0
             label.style.left_padding = 10
@@ -738,7 +738,7 @@ local function build_config_gui(data)
             end
             add_switch(scroll_pane, switch_state, 'disable_fullness', 'Inventory Fullness', 'On = Enables inventory fullness.\nOff = Disables inventory fullness.')
 
-            scroll_pane.add({type = 'line'})
+            scroll_pane.add({ type = 'line' })
 
             local WPT = is_loaded('maps.mountain_fortress_v3.table')
             local Module = WPT.get()
@@ -748,7 +748,7 @@ local function build_config_gui(data)
             end
             add_switch(scroll_pane, switch_state, 'offline_players', 'Offline Players', 'On = Enables offline player inventory drop.\nOff = Disables offline player inventory drop.')
 
-            scroll_pane.add({type = 'line'})
+            scroll_pane.add({ type = 'line' })
 
             switch_state = 'right'
             if Module.collapse_grace then
@@ -756,67 +756,67 @@ local function build_config_gui(data)
             end
             add_switch(scroll_pane, switch_state, 'collapse_grace', 'Collapse', 'On = Enables collapse after wave 100.\nOff = Disables collapse - you must breach the first zone for collapse to occur.')
 
-            scroll_pane.add({type = 'line'})
+            scroll_pane.add({ type = 'line' })
 
             switch_state = 'right'
             if Module.spill_items_to_surface then
                 switch_state = 'left'
             end
             add_switch(scroll_pane, switch_state, 'spill_items_to_surface', 'Spill Ores', 'On = Enables ore spillage to surface when mining.\nOff = Disables ore spillage to surface when mining.')
-            scroll_pane.add({type = 'line'})
+            scroll_pane.add({ type = 'line' })
 
             switch_state = 'right'
             if Module.void_or_tile then
                 switch_state = 'left'
             end
             add_switch(scroll_pane, switch_state, 'void_or_tile', 'Void Tiles', 'On = Changes the tiles to out-of-map.\nOff = Changes the tiles to lab-dark-2')
-            scroll_pane.add({type = 'line'})
+            scroll_pane.add({ type = 'line' })
 
             switch_state = 'right'
             if Module.trusted_only_car_tanks then
                 switch_state = 'left'
             end
             add_switch(scroll_pane, switch_state, 'trusted_only_car_tanks', 'Market Purchase', 'On = Allows only trusted people to buy car/tanks.\nOff = Allows everyone to buy car/tanks.')
-            scroll_pane.add({type = 'line'})
+            scroll_pane.add({ type = 'line' })
 
             switch_state = 'right'
             if Module.allow_decon then
                 switch_state = 'left'
             end
             add_switch(scroll_pane, switch_state, 'allow_decon', 'Deconstruct IC', 'On = Allows decon on car/tanks/trains.\nOff = Disables decon on car/tanks/trains.')
-            scroll_pane.add({type = 'line'})
+            scroll_pane.add({ type = 'line' })
 
             switch_state = 'right'
             if Module.allow_decon_main_surface then
                 switch_state = 'left'
             end
             add_switch(scroll_pane, switch_state, 'allow_decon_main_surface', 'Deconstruct Surface', 'On = Allows decon on main surface.\nOff = Disables decon on main surface.')
-            scroll_pane.add({type = 'line'})
+            scroll_pane.add({ type = 'line' })
 
             switch_state = 'right'
             if Module.christmas_mode then
                 switch_state = 'left'
             end
             add_switch(scroll_pane, switch_state, 'christmas_mode', 'Wintery Mode', 'On = Enables wintery mode.\nOff = Disables wintery mode.')
-            scroll_pane.add({type = 'line'})
+            scroll_pane.add({ type = 'line' })
 
             switch_state = 'right'
             if not Module.adjusted_zones.disable_terrain then
                 switch_state = 'left'
             end
             add_switch(scroll_pane, switch_state, 'disable_terrain', 'Disable Terrain', 'On = Enable terrain gen.\nOff = Disables terrain gen.')
-            scroll_pane.add({type = 'line'})
+            scroll_pane.add({ type = 'line' })
 
             switch_state = 'right'
             if Module.block_non_trusted_trigger_collapse then
                 switch_state = 'left'
             end
             add_switch(scroll_pane, switch_state, 'toggle_trusted_collapse', 'Non-trusted Collapse', 'On = Allow non-trusted to trigger collapse.\nOff = Disallow non-trusted to trigger collapse.')
-            scroll_pane.add({type = 'line'})
+            scroll_pane.add({ type = 'line' })
         end
 
-        if global.tokens.maps_pirates_memory then
-            label = scroll_pane.add({type = 'label', caption = 'Pirates Settings'})
+        if storage.tokens.maps_pirates_memory then
+            label = scroll_pane.add({ type = 'label', caption = 'Pirates Settings' })
             label.style.font = 'default-bold'
             label.style.padding = 0
             label.style.left_padding = 10
@@ -825,7 +825,7 @@ local function build_config_gui(data)
             label.style.vertical_align = 'bottom'
             label.style.font_color = Color.green
 
-            local Memory = global.tokens.maps_pirates_memory
+            local Memory = storage.tokens.maps_pirates_memory
             switch_state = 'right'
             if Memory.disband_crews then
                 switch_state = 'left'
@@ -908,11 +908,11 @@ local function on_robot_built_entity(event)
     spaghett_deny_building(event)
 end
 
-Gui.add_tab_to_gui({name = module_name, caption = 'Config', id = build_config_gui_token, admin = false})
+Gui.add_tab_to_gui({ name = module_name, caption = 'Config', id = build_config_gui_token, admin = false })
 
 Gui.on_click(
     module_name,
-    function(event)
+    function (event)
         local player = event.player
         Gui.reload_active_tab(player)
     end

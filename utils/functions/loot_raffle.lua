@@ -1,3 +1,4 @@
+local Math = require 'utils.math.math'
 --[[
 roll(budget, max_slots, blacklist) returns a table with item-stacks
 budget		-	the total value of the item stacks combined
@@ -31,9 +32,8 @@ local item_worths = {
     ['inserter'] = 4,
     ['long-handed-inserter'] = 8,
     ['fast-inserter'] = 16,
-    ['filter-inserter'] = 32,
     ['stack-inserter'] = 128,
-    ['stack-filter-inserter'] = 160,
+    ['bulk-inserter'] = 160,
     ['small-electric-pole'] = 2,
     ['medium-electric-pole'] = 32,
     ['big-electric-pole'] = 64,
@@ -53,11 +53,11 @@ local item_worths = {
     ['tank'] = 4096,
     ['logistic-robot'] = 256,
     ['construction-robot'] = 256,
-    ['logistic-chest-active-provider'] = 256,
-    ['logistic-chest-passive-provider'] = 256,
-    ['logistic-chest-storage'] = 256,
-    ['logistic-chest-buffer'] = 512,
-    ['logistic-chest-requester'] = 512,
+    ['active-provider-chest'] = 256,
+    ['passive-provider-chest'] = 256,
+    ['storage-chest'] = 256,
+    ['buffer-chest'] = 512,
+    ['requester-chest'] = 512,
     ['roboport'] = 2048,
     ['small-lamp'] = 4,
     ['red-wire'] = 4,
@@ -100,9 +100,9 @@ local item_worths = {
     ['speed-module'] = 128,
     ['speed-module-2'] = 512,
     ['speed-module-3'] = 2048,
-    ['effectivity-module'] = 128,
-    ['effectivity-module-2'] = 512,
-    ['effectivity-module-3'] = 2048,
+    ['efficiency-module'] = 128,
+    ['efficiency-module-2'] = 512,
+    ['efficiency-module-3'] = 2048,
     ['productivity-module'] = 128,
     ['productivity-module-2'] = 512,
     ['productivity-module-3'] = 2048,
@@ -126,7 +126,7 @@ local item_worths = {
     ['copper-cable'] = 1,
     ['iron-stick'] = 1,
     ['iron-gear-wheel'] = 2,
-    ['empty-barrel'] = 4,
+    ['barrel'] = 4,
     ['electronic-circuit'] = 4,
     ['advanced-circuit'] = 16,
     ['processing-unit'] = 128,
@@ -134,14 +134,13 @@ local item_worths = {
     ['electric-engine-unit'] = 64,
     ['flying-robot-frame'] = 128,
     ['satellite'] = 32768,
-    ['rocket-control-unit'] = 256,
     ['low-density-structure'] = 64,
     ['rocket-fuel'] = 256,
     ['nuclear-fuel'] = 1024,
     ['uranium-235'] = 1024,
     ['uranium-238'] = 32,
     ['uranium-fuel-cell'] = 128,
-    ['used-up-uranium-fuel-cell'] = 8,
+    ['depleted-uranium-fuel-cell'] = 8,
     ['automation-science-pack'] = 4,
     ['logistic-science-pack'] = 16,
     ['military-science-pack'] = 64,
@@ -184,7 +183,7 @@ local item_worths = {
     ['power-armor'] = 2048,
     ['power-armor-mk2'] = 32768,
     ['solar-panel-equipment'] = 256,
-    ['fusion-reactor-equipment'] = 15000,
+    ['fission-reactor-equipment'] = 15000,
     ['energy-shield-equipment'] = 128,
     ['energy-shield-mk2-equipment'] = 2048,
     ['battery-equipment'] = 96,
@@ -239,7 +238,6 @@ local tech_tier_list = {
     'assembling-machine-1',
     'long-handed-inserter',
     'fast-inserter',
-    'filter-inserter',
     'underground-belt',
     'splitter',
     'loader',
@@ -288,14 +286,14 @@ local tech_tier_list = {
     'rail-signal',
     'rail-chain-signal',
     'stack-inserter',
-    'stack-filter-inserter',
+    'bulk-inserter',
     'pumpjack',
     'oil-refinery',
     'chemical-plant',
     'solid-fuel',
     'storage-tank',
     'pump',
-    'empty-barrel',
+    'barrel',
     'water-barrel',
     'crude-oil-barrel',
     'land-mine',
@@ -321,7 +319,7 @@ local tech_tier_list = {
     'solar-panel-equipment',
     'speed-module',
     'productivity-module',
-    'effectivity-module',
+    'efficiency-module',
     'cliff-explosives',
     'processing-unit',
     'electric-engine-unit',
@@ -359,7 +357,7 @@ local tech_tier_list = {
     'steam-turbine',
     'centrifuge',
     'uranium-fuel-cell',
-    'used-up-uranium-fuel-cell',
+    'depleted-uranium-fuel-cell',
     'uranium-235',
     'uranium-238',
     'power-armor',
@@ -368,7 +366,7 @@ local tech_tier_list = {
     'battery-mk2-equipment',
     'speed-module-2',
     'productivity-module-2',
-    'effectivity-module-2',
+    'efficiency-module-2',
     'low-density-structure',
     'rocket-fuel',
     'assembling-machine-3',
@@ -388,10 +386,9 @@ local tech_tier_list = {
     'discharge-defense-remote',
     'speed-module-3',
     'productivity-module-3',
-    'effectivity-module-3',
+    'efficiency-module-3',
     'space-science-pack',
     'beacon',
-    'rocket-control-unit',
     'fusion-reactor-equipment',
     'artillery-wagon',
     'artillery-turret',
@@ -458,7 +455,8 @@ function Public.roll_item_stack(remaining_budget, blacklist)
         end
     end
 
-    local stack_size = game.item_prototypes[item_name].stack_size
+    local stack_size = prototypes.item[item_name] and prototypes.item[item_name].stack_size and prototypes.item[item_name].stack_size
+    if not stack_size then stack_size = 1 end
 
     local item_count = 1
 
@@ -471,7 +469,7 @@ function Public.roll_item_stack(remaining_budget, blacklist)
         end
     end
 
-    return {name = item_name, count = item_count}
+    return { name = item_name, count = item_count }
 end
 
 local function roll_item_stacks(remaining_budget, max_slots, blacklist)
@@ -538,7 +536,7 @@ function Public.get_tech_blacklist(tier)
 
     local blacklist = {}
     local size_of_tech_tier_list = #tech_tier_list
-    tier = math.clamp(tier, 0, 1)
+    tier = Math.clamp(tier, 0, 1)
     local min_index = math_floor(size_of_tech_tier_list * tier) + 1
     for i = size_of_tech_tier_list, min_index, -1 do
         blacklist[tech_tier_list[i]] = true

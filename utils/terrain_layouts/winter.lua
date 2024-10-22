@@ -13,8 +13,10 @@ local function add_light(e)
             minimum_darkness = 0,
             oriented = false,
             color = color,
-            target = e,
-            target_offset = {0, -0.5},
+            target = {
+                entity = e,
+                offset = {0, -0.5},
+            },
             surface = e.surface
         }
     )

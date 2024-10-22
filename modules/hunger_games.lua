@@ -9,12 +9,12 @@ require 'modules.dynamic_player_spawn'
 --require "maps.modules.hunger_games_balance"
 
 local Event = require 'utils.event'
-local message_color = {r = 0.98, g = 0.66, b = 0.22}
+local message_color = { r = 0.98, g = 0.66, b = 0.22 }
 
 local function anarchy_gui_button(player)
     if not player.gui.top['anarchy_group_button'] then
-        local b = player.gui.top.add({type = 'button', name = 'anarchy_group_button', caption = '[Group]', tooltip = 'Join / Create a group'})
-        b.style.font_color = {r = 0.77, g = 0.77, b = 0.77}
+        local b = player.gui.top.add({ type = 'button', name = 'anarchy_group_button', caption = '[Group]', tooltip = 'Join / Create a group' })
+        b.style.font_color = { r = 0.77, g = 0.77, b = 0.77 }
         b.style.font = 'default-bold'
         b.style.minimal_height = 38
         b.style.minimal_width = 38
@@ -37,26 +37,26 @@ local function anarchy_gui(player)
         player.gui.left['anarchy_group_frame'].destroy()
     end
 
-    local frame = player.gui.left.add({type = 'frame', name = 'anarchy_group_frame', direction = 'vertical'})
+    local frame = player.gui.left.add({ type = 'frame', name = 'anarchy_group_frame', direction = 'vertical' })
     frame.style.minimal_height = total_height
 
-    local t = frame.add({type = 'table', column_count = 5})
+    local t = frame.add({ type = 'table', column_count = 5 })
     local headings = {
-        {'Title', group_name_width},
-        {'Description', description_width},
-        {'Members', members_width * member_columns},
-        {'', actions_width * 2 - 30}
+        { 'Title',       group_name_width },
+        { 'Description', description_width },
+        { 'Members',     members_width * member_columns },
+        { '',            actions_width * 2 - 30 }
     }
     for _, h in pairs(headings) do
-        local l = t.add({type = 'label', caption = h[1]})
-        l.style.font_color = {r = 0.98, g = 0.66, b = 0.22}
+        local l = t.add({ type = 'label', caption = h[1] })
+        l.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
         l.style.font = 'default-listbox'
         l.style.top_padding = 6
         l.style.minimal_height = 40
         l.style.minimal_width = h[2]
         l.style.maximal_width = h[2]
     end
-    local b = t.add {type = 'button', caption = 'X', name = 'close_alliance_group_frame', align = 'right'}
+    local b = t.add { type = 'button', caption = 'X', name = 'close_alliance_group_frame', align = 'right' }
     b.style.font = 'default'
     b.style.minimal_height = 30
     b.style.minimal_width = 30
@@ -66,19 +66,19 @@ local function anarchy_gui(player)
     b.style.bottom_padding = 2
 
     local scroll_pane =
-        frame.add({type = 'scroll-pane', name = 'scroll_pane', direction = 'vertical', horizontal_scroll_policy = 'never', vertical_scroll_policy = 'auto'})
+        frame.add({ type = 'scroll-pane', name = 'scroll_pane', direction = 'vertical', horizontal_scroll_policy = 'never', vertical_scroll_policy = 'auto' })
     scroll_pane.style.maximal_height = total_height - 50
     scroll_pane.style.minimal_height = total_height - 50
 
-    t = scroll_pane.add({type = 'table', name = 'groups_table', column_count = 4})
+    t = scroll_pane.add({ type = 'table', name = 'groups_table', column_count = 4 })
     for _, h in pairs(headings) do
-        local l = t.add({type = 'label', caption = ''})
+        local l = t.add({ type = 'label', caption = '' })
         l.style.minimal_width = h[2]
         l.style.maximal_width = h[2]
     end
 
-    for _, group in pairs(global.alliance_groups) do
-        local l = t.add({type = 'label', caption = group.name})
+    for _, group in pairs(storage.alliance_groups) do
+        local l = t.add({ type = 'label', caption = group.name })
         l.style.font = 'default-bold'
         l.style.top_padding = 16
         l.style.bottom_padding = 16
@@ -87,20 +87,20 @@ local function anarchy_gui(player)
         l.style.font_color = group.color
         l.style.single_line = false
 
-        l = t.add({type = 'label', caption = group.description})
+        l = t.add({ type = 'label', caption = group.description })
         l.style.top_padding = 16
         l.style.bottom_padding = 16
         l.style.minimal_width = description_width
         l.style.maximal_width = description_width
-        l.style.font_color = {r = 0.90, g = 0.90, b = 0.90}
+        l.style.font_color = { r = 0.90, g = 0.90, b = 0.90 }
         l.style.single_line = false
 
-        local tt = t.add({type = 'table', column_count = member_columns})
+        local tt = t.add({ type = 'table', column_count = member_columns })
         for _, member in pairs(group.members) do
             local p = game.players[member]
             if p.connected then
-                l = tt.add({type = 'label', caption = tostring(p.name)})
-                local color = {r = p.color.r * 0.6 + 0.4, g = p.color.g * 0.6 + 0.4, b = p.color.b * 0.6 + 0.4, a = 1}
+                l = tt.add({ type = 'label', caption = tostring(p.name) })
+                local color = { r = p.color.r * 0.6 + 0.4, g = p.color.g * 0.6 + 0.4, b = p.color.b * 0.6 + 0.4, a = 1 }
                 l.style.font_color = color
                 l.style.maximal_width = members_width * 2
             end
@@ -109,37 +109,37 @@ local function anarchy_gui(player)
         for _, member in pairs(group.members) do
             local p = game.players[member]
             if not p.connected then
-                l = tt.add({type = 'label', caption = tostring(p.name)})
-                local color = {r = 0.59, g = 0.59, b = 0.59, a = 1}
+                l = tt.add({ type = 'label', caption = tostring(p.name) })
+                local color = { r = 0.59, g = 0.59, b = 0.59, a = 1 }
                 l.style.font_color = color
                 l.style.maximal_width = members_width * 2
             end
         end
 
-        tt = t.add({type = 'table', name = group.name, column_count = 1})
+        tt = t.add({ type = 'table', name = group.name, column_count = 1 })
 
         if not group.members[player.name] then
-            b = tt.add({type = 'button', caption = 'Join'})
+            b = tt.add({ type = 'button', caption = 'Join' })
             b.style.font = 'default-bold'
             b.style.minimal_width = actions_width
             b.style.maximal_width = actions_width
         end
 
         if group.members[player.name] then
-            b = tt.add({type = 'button', caption = 'Leave'})
+            b = tt.add({ type = 'button', caption = 'Leave' })
             b.style.font = 'default-bold'
             b.style.minimal_width = actions_width
             b.style.maximal_width = actions_width
         end
     end
 
-    local frame2 = frame.add({type = 'frame', name = 'frame2'})
-    t = frame2.add({type = 'table', name = 'group_table', column_count = 3})
-    local textfield = t.add({type = 'textfield', name = 'new_group_name', text = 'Name'})
+    local frame2 = frame.add({ type = 'frame', name = 'frame2' })
+    t = frame2.add({ type = 'table', name = 'group_table', column_count = 3 })
+    local textfield = t.add({ type = 'textfield', name = 'new_group_name', text = 'Name' })
     textfield.style.minimal_width = group_name_width
-    textfield = t.add({type = 'textfield', name = 'new_group_description', text = 'Description'})
+    textfield = t.add({ type = 'textfield', name = 'new_group_description', text = 'Description' })
     textfield.style.minimal_width = description_width + members_width * member_columns
-    b = t.add({type = 'button', name = 'create_new_group', caption = 'Create'})
+    b = t.add({ type = 'button', name = 'create_new_group', caption = 'Create' })
     b.style.minimal_width = actions_width * 2 - 12
     b.style.font = 'default-bold'
 end
@@ -169,27 +169,27 @@ local function destroy_request_guis(player)
 end
 
 local function request_alliance(group, requesting_player)
-    if not global.alliance_groups[group] then
+    if not storage.alliance_groups[group] then
         return
     end
-    global.spam_protection[tostring(requesting_player.name)] = game.tick + 900
+    storage.spam_protection[tostring(requesting_player.name)] = game.tick + 900
 
     destroy_request_guis(requesting_player)
 
-    for _, member in pairs(global.alliance_groups[group].members) do
+    for _, member in pairs(storage.alliance_groups[group].members) do
         local player = game.players[member]
         local frame =
             player.gui.center.add(
-            {
-                type = 'frame',
-                caption = tostring(requesting_player.name) .. ' wants to join your group "' .. group .. '"',
-                name = 'alliance_request_' .. tostring(requesting_player.name)
-            }
-        )
-        frame.add({type = 'label', caption = '', name = group})
-        frame.add({type = 'label', caption = '', name = requesting_player.index})
-        frame.add({type = 'button', caption = 'Accept'})
-        frame.add({type = 'button', caption = 'Deny'})
+                {
+                    type = 'frame',
+                    caption = tostring(requesting_player.name) .. ' wants to join your group "' .. group .. '"',
+                    name = 'alliance_request_' .. tostring(requesting_player.name)
+                }
+            )
+        frame.add({ type = 'label', caption = '', name = group })
+        frame.add({ type = 'label', caption = '', name = requesting_player.index })
+        frame.add({ type = 'button', caption = 'Accept' })
+        frame.add({ type = 'button', caption = 'Deny' })
     end
 end
 
@@ -199,7 +199,7 @@ local function refresh_alliances()
         players_to_process[player.index] = true
     end
 
-    for _, group in pairs(global.alliance_groups) do
+    for _, group in pairs(storage.alliance_groups) do
         local i = 0
         for _, member in pairs(group.members) do
             local player = game.players[member]
@@ -212,8 +212,8 @@ local function refresh_alliances()
             i = i + 1
         end
         if i == 0 then
-            game.print('Group "' .. group.name .. '" has been abandoned!!', {r = 0.90, g = 0.0, b = 0.0})
-            global.alliance_groups[group.name] = nil
+            game.print('Group "' .. group.name .. '" has been abandoned!!', { r = 0.90, g = 0.0, b = 0.0 })
+            storage.alliance_groups[group.name] = nil
             --game.merge_forces(game.forces[group.name], game.forces.spectator)
             game.merge_forces(game.forces[group.name], game.forces.player)
         end
@@ -242,48 +242,48 @@ local function new_group(frame, player)
         new_group_name = tostring(new_group_name)
 
         if new_group_name == 'spectator' or new_group_name == 'player' then
-            player.print('Invalid group name.', {r = 0.90, g = 0.0, b = 0.0})
+            player.print('Invalid group name.', { r = 0.90, g = 0.0, b = 0.0 })
             return
         end
 
         if #game.forces > 60 then
-            player.print('There are too many existing groups.', {r = 0.90, g = 0.0, b = 0.0})
+            player.print('There are too many existing groups.', { r = 0.90, g = 0.0, b = 0.0 })
             return
         end
 
         if player.tag ~= '' then
-            player.print('You are already in a group.', {r = 0.90, g = 0.0, b = 0.0})
+            player.print('You are already in a group.', { r = 0.90, g = 0.0, b = 0.0 })
             return
         end
 
         if string.len(new_group_name) > 32 then
-            player.print('Group name is too long. 32 characters maximum.', {r = 0.90, g = 0.0, b = 0.0})
+            player.print('Group name is too long. 32 characters maximum.', { r = 0.90, g = 0.0, b = 0.0 })
             return
         end
 
         if string.len(new_group_description) > 128 then
-            player.print('Description is too long. 128 characters maximum.', {r = 0.90, g = 0.0, b = 0.0})
+            player.print('Description is too long. 128 characters maximum.', { r = 0.90, g = 0.0, b = 0.0 })
             return
         end
 
-        if global.alliance_groups[new_group_name] then
-            player.print('This groupname already exists.', {r = 0.90, g = 0.0, b = 0.0})
+        if storage.alliance_groups[new_group_name] then
+            player.print('This groupname already exists.', { r = 0.90, g = 0.0, b = 0.0 })
             return
         end
 
         local color = player.color
-        color = {r = color.r * 0.6 + 0.4, g = color.g * 0.6 + 0.4, b = color.b * 0.6 + 0.4, a = 1}
+        color = { r = color.r * 0.6 + 0.4, g = color.g * 0.6 + 0.4, b = color.b * 0.6 + 0.4, a = 1 }
 
-        global.alliance_groups[new_group_name] = {
+        storage.alliance_groups[new_group_name] = {
             name = new_group_name,
             color = color,
             description = new_group_description,
-            members = {[tostring(player.name)] = player.index}
+            members = { [tostring(player.name)] = player.index }
         }
-        color = {r = player.color.r * 0.7 + 0.3, g = player.color.g * 0.7 + 0.3, b = player.color.b * 0.7 + 0.3, a = 1}
+        color = { r = player.color.r * 0.7 + 0.3, g = player.color.g * 0.7 + 0.3, b = player.color.b * 0.7 + 0.3, a = 1 }
         game.print(tostring(player.name) .. ' has founded a new group!', color)
-        game.print('>> ' .. new_group_name, {r = 0.98, g = 0.66, b = 0.22})
-        game.print(new_group_description, {r = 0.85, g = 0.85, b = 0.85})
+        game.print('>> ' .. new_group_name, { r = 0.98, g = 0.66, b = 0.22 })
+        game.print(new_group_description, { r = 0.85, g = 0.85, b = 0.85 })
 
         frame.frame2.group_table.new_group_name.text = 'Name'
         frame.frame2.group_table.new_group_description.text = 'Description'
@@ -332,11 +332,11 @@ local function on_gui_click(event)
         if requesting_player.tag then
             if requesting_player.tag ~= '' then
                 local requesting_player_group = string.sub(requesting_player.tag, 2, string.len(requesting_player.tag) - 1)
-                global.alliance_groups[requesting_player_group].members[tostring(requesting_player.name)] = nil
+                storage.alliance_groups[requesting_player_group].members[tostring(requesting_player.name)] = nil
             end
         end
 
-        global.alliance_groups[group].members[requesting_player.name] = requesting_player.index
+        storage.alliance_groups[group].members[requesting_player.name] = requesting_player.index
         game.print(tostring(requesting_player.name) .. ' has been accepted into group "' .. group .. '"', message_color)
 
         refresh_alliances()
@@ -355,7 +355,7 @@ local function on_gui_click(event)
 
         game.print(tostring(requesting_player.name) .. ' has been rejected to join group "' .. group .. '"', message_color)
 
-        for _, member in pairs(global.alliance_groups[group].members) do
+        for _, member in pairs(storage.alliance_groups[group].members) do
             local p = game.players[member]
             if p.gui.center['alliance_request_' .. tostring(requesting_player.name)] then
                 p.gui.center['alliance_request_' .. tostring(requesting_player.name)].destroy()
@@ -377,10 +377,10 @@ local function on_gui_click(event)
     if p then
         if p.name == 'groups_table' then
             if event.element.type == 'button' and event.element.caption == 'Join' then
-                if global.spam_protection[tostring(player.name)] > game.tick then
+                if storage.spam_protection[tostring(player.name)] > game.tick then
                     player.print(
                         'Please wait ' ..
-                            math.ceil((global.spam_protection[tostring(player.name)] - game.tick) / 60) .. ' seconds before sending another request.',
+                        math.ceil((storage.spam_protection[tostring(player.name)] - game.tick) / 60) .. ' seconds before sending another request.',
                         message_color
                     )
                     return
@@ -392,7 +392,7 @@ local function on_gui_click(event)
 
             if event.element.type == 'button' and event.element.caption == 'Leave' then
                 destroy_request_guis(player)
-                global.alliance_groups[event.element.parent.name].members[tostring(player.name)] = nil
+                storage.alliance_groups[event.element.parent.name].members[tostring(player.name)] = nil
                 game.print(tostring(player.name) .. ' has left group "' .. event.element.parent.name .. '"', message_color)
                 refresh_alliances()
                 return
@@ -415,14 +415,14 @@ end
 
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
-    if not global.alliance_groups then
-        global.alliance_groups = {}
+    if not storage.alliance_groups then
+        storage.alliance_groups = {}
     end
-    if not global.spam_protection then
-        global.spam_protection = {}
+    if not storage.spam_protection then
+        storage.spam_protection = {}
     end
-    if not global.spam_protection[tostring(player.name)] then
-        global.spam_protection[tostring(player.name)] = game.tick
+    if not storage.spam_protection[tostring(player.name)] then
+        storage.spam_protection[tostring(player.name)] = game.tick
     end
     if not game.forces['spectator'] then
         game.create_force('spectator')
@@ -500,12 +500,12 @@ end
 
 local function on_player_respawned(event)
     local player = game.players[event.player_index]
-    player.insert {name = 'iron-plate', count = 8}
+    player.insert { name = 'iron-plate', count = 8 }
 end
 --[[
 local function on_built_entity(event)
     local get_score = Score.get_table().score_table
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity.valid then
         return
     end

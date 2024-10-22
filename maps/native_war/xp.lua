@@ -2,16 +2,16 @@
 local math_random = math.random
 local Global = require 'utils.global'
 local visuals_delay = 1800
-local level_up_floating_text_color = {0, 205, 0}
-local xp_floating_text_color = {157, 157, 157}
-local experience_levels = {0}
+local level_up_floating_text_color = { 0, 205, 0 }
+local xp_floating_text_color = { 157, 157, 157 }
+local experience_levels = { 0 }
 
 local xp_t = {}
 local last_built_entities = {}
 
 Global.register(
-    {xp_t = xp_t},
-    function(tbl)
+    { xp_t = xp_t },
+    function (tbl)
         xp_t = tbl.xp_t
         last_built_entities = tbl.last_built_entities
     end
@@ -22,9 +22,11 @@ local Public = {}
 function Public.get_table()
     return xp_t
 end
+
 function Public.lost_xp(player, amount)
     xp_t[player.index].xp = xp_t[player.index].xp - amount
 end
+
 local xp_yield = {
     ['behemoth-biter'] = 16,
     ['behemoth-spitter'] = 16,
@@ -66,7 +68,7 @@ local function gain_xp(player, amount)
 end
 function Public.xp_reset_player(player)
     if not player.character then
-        player.set_controller({type = defines.controllers.god})
+        player.set_controller({ type = defines.controllers.god })
         player.create_character()
     end
     xp_t[player.index] = {
@@ -75,7 +77,7 @@ function Public.xp_reset_player(player)
         last_floaty_text = visuals_delay,
         xp_since_last_floaty_text = 0,
         rotated_entity_delay = 0,
-        last_mined_entity_position = {x = 0, y = 0}
+        last_mined_entity_position = { x = 0, y = 0 }
     }
 end
 
@@ -130,13 +132,13 @@ local function on_entity_died(event)
     end
 
     --Grant modified XP for health boosted units
-    if global.biter_health_boost then
+    if storage.biter_health_boost then
         if event.entity.type == 'unit' then
             for _, player in pairs(players) do
                 if xp_yield[event.entity.name] then
-                    gain_xp(player, xp_yield[event.entity.name] * global.biter_health_boost)
+                    gain_xp(player, xp_yield[event.entity.name] * storage.biter_health_boost)
                 else
-                    gain_xp(player, 0.5 * global.biter_health_boost)
+                    gain_xp(player, 0.5 * storage.biter_health_boost)
                 end
             end
             return
@@ -233,14 +235,14 @@ local function on_pre_player_mined_item(event)
         return
     end
     if entity.force.name == 'neutral' then
-        gain_xp(player, 1.5 + event.entity.prototype.max_health * 0.0035)
+        gain_xp(player, 1.5 + event.entity.max_health * 0.0035)
         return
     end
-    gain_xp(player, 0.1 + event.entity.prototype.max_health * 0.0005)
+    gain_xp(player, 0.1 + event.entity.max_health * 0.0005)
 end
 
 local function on_built_entity(event)
-    local created_entity = event.created_entity
+    local created_entity = event.entity
     if not created_entity.valid then
         return
     end

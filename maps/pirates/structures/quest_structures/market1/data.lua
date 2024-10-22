@@ -34,9 +34,9 @@ Public.step1.walls = {
 	{ x = -5, y = -4 },
 	{ x = -5, y = -3 },
 	{ x = -5, y = -2 },
-	{ x = 5,  y = -4 },
-	{ x = 5,  y = -3 },
-	{ x = 5,  y = -2 },
+	{ x = 5, y = -4 },
+	{ x = 5, y = -3 },
+	{ x = 5, y = -2 },
 }
 
 Public.step2 = {
@@ -63,7 +63,7 @@ Public.step2 = {
 Public.step2.market = { x = 3, y = -6 }
 Public.step2.steel_chest = { x = 4, y = 1 }
 Public.step2.wooden_chests = {
-	{ x = 0,  y = -5 },
+	{ x = 0, y = -5 },
 	{ x = -4, y = -1 },
 	{ x = -4, y = 3 },
 }

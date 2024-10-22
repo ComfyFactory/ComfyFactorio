@@ -1,7 +1,7 @@
 --luacheck: ignore
 -- Mountain digger fortress, protect the cargo wagon! -- by MewMew
 
-global.offline_loot = true
+storage.offline_loot = true
 local darkness = false
 
 require 'utils.functions.soft_reset'
@@ -39,7 +39,7 @@ local math_floor = math.floor
 
 local Public = {}
 
-local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16, ['wood'] = 16, ['explosives'] = 32}
+local starting_items = { ['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16, ['wood'] = 16, ['explosives'] = 32 }
 local treasure_chest_messages = {
     "You notice an old crate within the rubble. It's filled with treasure!",
     "You find a chest underneath the broken rocks. It's filled with goodies!",
@@ -51,15 +51,15 @@ local function game_over()
     local wave_defense_table = WD.get_table()
     wave_defense_table.game_lost = true
     wave_defense_table.target = nil
-    global.game_reset_tick = game.tick + 1800
+    storage.game_reset_tick = game.tick + 1800
     for _, player in pairs(game.connected_players) do
-        player.play_sound {path = 'utility/game_lost', volume_modifier = 0.80}
+        player.play_sound { path = 'utility/game_lost', volume_modifier = 0.80 }
         Gui.call_existing_tab(player, 'Map Scores')
     end
 end
 
 local function set_scores()
-    local fish_wagon = global.locomotive_cargo
+    local fish_wagon = storage.locomotive_cargo
     if not fish_wagon then
         return
     end
@@ -114,47 +114,47 @@ function Public.reset_map()
         end
     end
     local wave_defense_table = WD.get_table()
-    global.chunk_queue = {}
-    global.offline_players = {}
+    storage.chunk_queue = {}
+    storage.offline_players = {}
 
     local map_gen_settings = {
         ['seed'] = math_random(1, 1000000),
         ['width'] = level_depth,
         ['water'] = 0.1,
         ['starting_area'] = 1,
-        ['cliff_settings'] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
+        ['cliff_settings'] = { cliff_elevation_interval = 0, cliff_elevation_0 = 0 },
         ['default_enable_all_autoplace_controls'] = true,
         ['autoplace_settings'] = {
-            ['entity'] = {treat_missing_as_default = false},
-            ['tile'] = {treat_missing_as_default = true},
-            ['decorative'] = {treat_missing_as_default = true}
+            ['entity'] = { treat_missing_as_default = false },
+            ['tile'] = { treat_missing_as_default = true },
+            ['decorative'] = { treat_missing_as_default = true }
         }
     }
 
-    if not global.active_surface_index then
-        global.active_surface_index = game.create_surface('mountain_fortress', map_gen_settings).index
+    if not storage.active_surface_index then
+        storage.active_surface_index = game.create_surface('mountain_fortress', map_gen_settings).index
     else
-        game.forces.player.set_spawn_position({-2, 16}, game.surfaces[global.active_surface_index])
-        global.active_surface_index = Reset.soft_reset_map(game.surfaces[global.active_surface_index], map_gen_settings, starting_items).index
+        game.forces.player.set_spawn_position({ -2, 16 }, game.surfaces[storage.active_surface_index])
+        storage.active_surface_index = Reset.soft_reset_map(game.surfaces[storage.active_surface_index], map_gen_settings, starting_items).index
     end
 
-    local surface = game.surfaces[global.active_surface_index]
+    local surface = game.surfaces[storage.active_surface_index]
 
-    Explosives.set_surface_whitelist({[surface.name] = true})
+    Explosives.set_surface_whitelist({ [surface.name] = true })
 
     if darkness then
         surface.min_brightness = 0.10
-        surface.brightness_visual_weights = {0.90, 0.90, 0.90}
+        surface.brightness_visual_weights = { 0.90, 0.90, 0.90 }
         surface.daytime = 0.42
         surface.freeze_daytime = true
         surface.solar_power_multiplier = 999
     end
 
-    surface.request_to_generate_chunks({0, 0}, 2)
+    surface.request_to_generate_chunks({ 0, 0 }, 2)
     surface.force_generate_chunk_requests()
 
     for x = -768 + 32, 768 - 32, 32 do
-        surface.request_to_generate_chunks({x, 96}, 1)
+        surface.request_to_generate_chunks({ x, 96 }, 1)
         surface.force_generate_chunk_requests()
     end
 
@@ -175,15 +175,15 @@ function Public.reset_map()
     game.forces.player.technologies['railway'].researched = true
     disable_recipes()
 
-    game.forces.player.set_spawn_position({-2, 16}, surface)
+    game.forces.player.set_spawn_position({ -2, 16 }, surface)
     game.forces.enemy.set_ammo_damage_modifier('bullet', 1)
     game.forces.enemy.set_turret_attack_modifier('gun-turret', 1)
 
-    Locomotive.locomotive_spawn(surface, {x = 0, y = 16})
+    Locomotive.locomotive_spawn(surface, { x = 0, y = 16 })
 
     WD.reset_wave_defense()
-    wave_defense_table.surface_index = global.active_surface_index
-    wave_defense_table.target = global.locomotive_cargo
+    wave_defense_table.surface_index = storage.active_surface_index
+    wave_defense_table.target = storage.locomotive_cargo
     wave_defense_table.nest_building_density = 32
     wave_defense_table.game_lost = false
     game.reset_time_played()
@@ -193,7 +193,7 @@ function Public.reset_map()
     Collapse.set_amount(1)
     Collapse.set_max_line_size(level_depth)
     Collapse.set_surface_index(surface.index)
-    Collapse.set_position({0, 130})
+    Collapse.set_position({ 0, 130 })
     Collapse.set_direction('north')
 
     RPG.rpg_reset_all_players()
@@ -262,9 +262,9 @@ local function hidden_biter(entity)
     for _ = 1, count, 1 do
         local unit
         if math_random(1, 3) == 1 then
-            unit = surface.create_entity({name = BiterRolls.wave_defense_roll_spitter_name(), position = position})
+            unit = surface.create_entity({ name = BiterRolls.wave_defense_roll_spitter_name(), position = position })
         else
-            unit = surface.create_entity({name = BiterRolls.wave_defense_roll_biter_name(), position = position})
+            unit = surface.create_entity({ name = BiterRolls.wave_defense_roll_biter_name(), position = position })
         end
 
         if math_random(1, 128) == 1 then
@@ -275,7 +275,7 @@ end
 
 local function hidden_worm(entity)
     BiterRolls.wave_defense_set_worm_raffle(math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2) * 0.20)
-    entity.surface.create_entity({name = BiterRolls.wave_defense_roll_worm_name(), position = entity.position})
+    entity.surface.create_entity({ name = BiterRolls.wave_defense_roll_worm_name(), position = entity.position })
 end
 
 local function hidden_biter_pet(event)
@@ -285,9 +285,9 @@ local function hidden_biter_pet(event)
     BiterRolls.wave_defense_set_unit_raffle(math.sqrt(event.entity.position.x ^ 2 + event.entity.position.y ^ 2) * 0.25)
     local unit
     if math_random(1, 3) == 1 then
-        unit = event.entity.surface.create_entity({name = BiterRolls.wave_defense_roll_spitter_name(), position = event.entity.position})
+        unit = event.entity.surface.create_entity({ name = BiterRolls.wave_defense_roll_spitter_name(), position = event.entity.position })
     else
-        unit = event.entity.surface.create_entity({name = BiterRolls.wave_defense_roll_biter_name(), position = event.entity.position})
+        unit = event.entity.surface.create_entity({ name = BiterRolls.wave_defense_roll_biter_name(), position = event.entity.position })
     end
     Pets.biter_pets_tame_unit(game.players[event.player_index], unit, true)
 end
@@ -296,11 +296,11 @@ local function hidden_treasure(event)
     if math_random(1, 320) ~= 1 then
         return
     end
-    game.players[event.player_index].print(treasure_chest_messages[math_random(1, #treasure_chest_messages)], {r = 0.98, g = 0.66, b = 0.22})
+    game.players[event.player_index].print(treasure_chest_messages[math_random(1, #treasure_chest_messages)], { r = 0.98, g = 0.66, b = 0.22 })
     Treasure(event.entity.surface, event.entity.position, 'wooden-chest')
 end
 
-local projectiles = {'grenade', 'explosive-rocket', 'grenade', 'explosive-rocket', 'explosive-cannon-projectile'}
+local projectiles = { 'grenade', 'explosive-rocket', 'grenade', 'explosive-rocket', 'explosive-cannon-projectile' }
 local function angry_tree(entity, cause)
     if entity.type ~= 'tree' then
         return
@@ -324,7 +324,7 @@ local function angry_tree(entity, cause)
         end
     end
     if not position then
-        position = {entity.position.x + (-20 + math_random(0, 40)), entity.position.y + (-20 + math_random(0, 40))}
+        position = { entity.position.x + (-20 + math_random(0, 40)), entity.position.y + (-20 + math_random(0, 40)) }
     end
 
     entity.surface.create_entity(
@@ -341,7 +341,7 @@ local function angry_tree(entity, cause)
 end
 
 local function give_coin(player)
-    player.insert({name = 'coin', count = 1})
+    player.insert({ name = 'coin', count = 1 })
 end
 
 local function on_player_mined_entity(event)
@@ -376,7 +376,7 @@ local function on_pre_player_left_game(event)
         player.toggle_map_editor()
     end
     if player.character then
-        global.offline_players[#global.offline_players + 1] = {index = event.player_index, tick = game.tick}
+        storage.offline_players[#storage.offline_players + 1] = { index = event.player_index, tick = game.tick }
     end
 end
 
@@ -384,10 +384,10 @@ local function on_entity_died(event)
     if not event.entity.valid then
         return
     end
-    if event.entity == global.locomotive_cargo then
+    if event.entity == storage.locomotive_cargo then
         set_scores()
         game_over()
-        event.entity.surface.spill_item_stack(event.entity.position, {name = 'raw-fish', count = 512}, false)
+        event.entity.surface.spill_item_stack(event.entity.position, { name = 'raw-fish', count = 512 }, false)
         return
     end
 
@@ -433,7 +433,7 @@ end
 local function on_research_finished(event)
     disable_recipes()
     event.research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 50 -- +5 Slots / level
-    local mining_speed_bonus = game.forces.player.mining_drill_productivity_bonus * 5 -- +50% speed / level
+    local mining_speed_bonus = game.forces.player.mining_drill_productivity_bonus * 5                              -- +50% speed / level
     if event.research.force.technologies['steel-axe'].researched then
         mining_speed_bonus = mining_speed_bonus + 0.5
     end -- +50% speed for steel-axe research
@@ -445,23 +445,23 @@ local function on_player_joined_game(event)
 
     set_difficulty()
 
-    local surface = game.surfaces[global.active_surface_index]
+    local surface = game.surfaces[storage.active_surface_index]
 
     if player.online_time == 0 then
         player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 32, 0.5), surface)
         for item, amount in pairs(starting_items) do
-            player.insert({name = item, count = amount})
+            player.insert({ name = item, count = amount })
         end
     end
 
     local icw = Immersive_cargo_wagons.get_table()
-    if player.surface.index ~= global.active_surface_index and not icw.trains[tonumber(player.surface.name)] then
+    if player.surface.index ~= storage.active_surface_index and not icw.trains[tonumber(player.surface.name)] then
         player.character = nil
-        player.set_controller({type = defines.controllers.god})
+        player.set_controller({ type = defines.controllers.god })
         player.create_character()
         player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 32, 0.5), surface)
         for item, amount in pairs(starting_items) do
-            player.insert({name = item, count = amount})
+            player.insert({ name = item, count = amount })
         end
     end
 
@@ -482,8 +482,8 @@ end
 
 local function offline_players()
     local current_tick = game.tick
-    local players = global.offline_players
-    local surface = game.surfaces[global.active_surface_index]
+    local players = storage.offline_players
+    local surface = game.surfaces[storage.active_surface_index]
     if #players > 0 then
         --log("nonzero offline players")
         local later = {}
@@ -501,7 +501,7 @@ local function offline_players()
                     player_inv[3] = game.players[players[i].index].get_inventory(defines.inventory.character_guns)
                     player_inv[4] = game.players[players[i].index].get_inventory(defines.inventory.character_ammo)
                     player_inv[5] = game.players[players[i].index].get_inventory(defines.inventory.character_trash)
-                    local e = surface.create_entity({name = 'character', position = game.forces.player.get_spawn_position(surface), force = 'neutral'})
+                    local e = surface.create_entity({ name = 'character', position = game.forces.player.get_spawn_position(surface), force = 'neutral' })
                     local inv = e.get_inventory(defines.inventory.character_main)
                     for ii = 1, 5, 1 do
                         if player_inv[ii].valid then
@@ -518,7 +518,7 @@ local function offline_players()
                                 inv.insert(items[item])
                             end
                         end
-                        game.print({'chronosphere.message_accident'}, {r = 0.98, g = 0.66, b = 0.22})
+                        game.print({ 'chronosphere.message_accident' }, { r = 0.98, g = 0.66, b = 0.22 })
                         e.die('neutral')
                     else
                         e.destroy()
@@ -541,7 +541,7 @@ local function offline_players()
                 players[#players + 1] = later[i]
             end
         end
-        global.offline_players = players
+        storage.offline_players = players
     end
 end
 
@@ -549,23 +549,23 @@ local function tick()
     local tick = game.tick
     if tick % 30 == 0 then
         if tick % 1800 == 0 then
-            if not Locomotive.set_player_spawn_and_refill_fish() and not global.game_reset_tick then
+            if not Locomotive.set_player_spawn_and_refill_fish() and not storage.game_reset_tick then
                 game_over()
             end
-            local surface = game.surfaces[global.active_surface_index]
+            local surface = game.surfaces[storage.active_surface_index]
             local position = surface.find_non_colliding_position('stone-furnace', Collapse.get_position(), 128, 1)
             if position then
                 local wave_defense_table = WD.get_table()
                 wave_defense_table.spawn_position = position
             end
-            if global.offline_loot then
+            if storage.offline_loot then
                 offline_players()
             end
             set_scores()
         end
-        if global.game_reset_tick then
-            if global.game_reset_tick < tick then
-                global.game_reset_tick = nil
+        if storage.game_reset_tick then
+            if storage.game_reset_tick < tick then
+                storage.game_reset_tick = nil
                 require 'maps.mountain_fortress_v2.main'.reset_map()
             end
             return
@@ -577,11 +577,11 @@ end
 local function on_init()
     local T = Map.Pop_info()
     T.localised_category = 'mountain_fortress'
-    T.main_caption_color = {r = 150, g = 150, b = 0}
-    T.sub_caption_color = {r = 0, g = 150, b = 0}
-    global.rocks_yield_ore_maximum_amount = 500
-    global.rocks_yield_ore_base_amount = 40
-    global.rocks_yield_ore_distance_modifier = 0.020
+    T.main_caption_color = { r = 150, g = 150, b = 0 }
+    T.sub_caption_color = { r = 0, g = 150, b = 0 }
+    storage.rocks_yield_ore_maximum_amount = 500
+    storage.rocks_yield_ore_base_amount = 40
+    storage.rocks_yield_ore_distance_modifier = 0.020
 
     Explosives.set_destructible_tile('out-of-map', 1500)
     Explosives.set_destructible_tile('water', 1000)

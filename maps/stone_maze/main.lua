@@ -24,9 +24,9 @@ local math_random = math.random
 
 local disabled_for_deconstruction = {
     ['fish'] = true,
-    ['rock-huge'] = true,
-    ['rock-big'] = true,
-    ['sand-rock-big'] = true,
+    ['huge-rock'] = true,
+    ['big-rock'] = true,
+    ['big-sand-rock'] = true,
     ['mineable-wreckage'] = true
 }
 
@@ -39,7 +39,7 @@ map_functions = require 'utils.tools.map_functions'
 grid_size = 24
 --manual_mining_speed_modifier = 1
 main_ground_tile = 'dirt-3'
-rock_raffle = {'rock-huge', 'rock-big', 'rock-big', 'rock-big'}
+rock_raffle = { 'huge-rock', 'big-rock', 'big-rock', 'big-rock' }
 tree_raffle = {
     'tree-01',
     'tree-02',
@@ -76,7 +76,7 @@ local function draw_depth_gui()
         if player.gui.top.evolution_gui then
             player.gui.top.evolution_gui.destroy()
         end
-        local element = player.gui.top.add({type = 'sprite-button', name = 'evolution_gui', caption = 'Depth: ' .. global.maze_depth, tooltip = 'Delve deep and face increased dangers.'})
+        local element = player.gui.top.add({ type = 'sprite-button', name = 'evolution_gui', caption = 'Depth: ' .. storage.maze_depth, tooltip = 'Delve deep and face increased dangers.' })
         local style = element.style
         style.minimal_height = 38
         style.maximal_height = 38
@@ -85,25 +85,25 @@ local function draw_depth_gui()
         style.left_padding = 4
         style.right_padding = 4
         style.bottom_padding = 2
-        style.font_color = {r = 125, g = 75, b = 25}
+        style.font_color = { r = 125, g = 75, b = 25 }
         style.font = 'default-large-bold'
     end
 end
 
 local function increase_depth()
-    global.maze_depth = global.maze_depth + 1
-    global.biter_evasion_health_increase_factor = 1 + (global.maze_depth * 0.0025)
+    storage.maze_depth = storage.maze_depth + 1
+    storage.biter_evasion_health_increase_factor = 1 + (storage.maze_depth * 0.0025)
     draw_depth_gui()
 
-    global.enemy_appearances[2].chance = global.enemy_appearances[2].chance + 0.2
-    if global.maze_depth > 250 then
-        global.enemy_appearances[3].chance = global.enemy_appearances[3].chance + 0.5
+    storage.enemy_appearances[2].chance = storage.enemy_appearances[2].chance + 0.2
+    if storage.maze_depth > 250 then
+        storage.enemy_appearances[3].chance = storage.enemy_appearances[3].chance + 0.5
     end
-    if global.maze_depth > 500 then
-        global.enemy_appearances[4].chance = global.enemy_appearances[4].chance + 1
+    if storage.maze_depth > 500 then
+        storage.enemy_appearances[4].chance = storage.enemy_appearances[4].chance + 1
     end
 
-    local evo = global.maze_depth * 0.001
+    local evo = storage.maze_depth * 0.001
     if evo > 1 then
         evo = 1
     end
@@ -126,18 +126,18 @@ local cells = {
     ['2x2'] = {
         size_x = 2,
         size_y = 2,
-        ['0_-1'] = {{-1, -1}, {0, -1}},
-        ['0_1'] = {{0, 0}, {-1, 0}},
-        ['-1_0'] = {{-1, -1}, {-1, 0}},
-        ['1_0'] = {{0, 0}, {0, -1}}
+        ['0_-1'] = { { -1, -1 }, { 0, -1 } },
+        ['0_1'] = { { 0, 0 }, { -1, 0 } },
+        ['-1_0'] = { { -1, -1 }, { -1, 0 } },
+        ['1_0'] = { { 0, 0 }, { 0, -1 } }
     },
     ['3x3'] = {
         size_x = 3,
         size_y = 3,
-        ['0_-1'] = {{-2, -2}, {-1, -2}, {0, -2}},
-        ['0_1'] = {{0, 0}, {-1, 0}, {-2, 0}},
-        ['-1_0'] = {{-2, -2}, {-2, -1}, {-2, 0}},
-        ['1_0'] = {{0, 0}, {0, -1}, {0, -2}}
+        ['0_-1'] = { { -2, -2 }, { -1, -2 }, { 0, -2 } },
+        ['0_1'] = { { 0, 0 }, { -1, 0 }, { -2, 0 } },
+        ['-1_0'] = { { -2, -2 }, { -2, -1 }, { -2, 0 } },
+        ['1_0'] = { { 0, 0 }, { 0, -1 }, { 0, -2 } }
     }
 }
 
@@ -146,21 +146,21 @@ local cells_1x1 = {
     --["0_1"] = {core = {{0, 0}}, border = {{-1, 0}, {1, 0}, {1, 1}, {-1, 1}, {0, 1}}},
     --["-1_0"] = {core = {{0, 0}}, border = {{-1, 0}, {-1, -1}, {-1, 1}, {0, -1}, {0, 1}}},
     --["1_0"] = {core = {{0, 0}}, border = {{1, 0}, {1, 1}, {1, -1}, {0, -1}, {0, 1}}}
-    ['0_-1'] = {{0, 0}, {-1, 0}, {1, 0}, {-1, -1}, {1, -1}},
-    ['0_1'] = {{0, 0}, {-1, 0}, {1, 0}, {1, 1}, {-1, 1}},
-    ['-1_0'] = {{0, 0}, {-1, -1}, {-1, 1}, {0, -1}, {0, 1}},
-    ['1_0'] = {{0, 0}, {1, 1}, {1, -1}, {0, -1}, {0, 1}}
+    ['0_-1'] = { { 0, 0 }, { -1, 0 }, { 1, 0 }, { -1, -1 }, { 1, -1 } },
+    ['0_1'] = { { 0, 0 }, { -1, 0 }, { 1, 0 }, { 1, 1 }, { -1, 1 } },
+    ['-1_0'] = { { 0, 0 }, { -1, -1 }, { -1, 1 }, { 0, -1 }, { 0, 1 } },
+    ['1_0'] = { { 0, 0 }, { 1, 1 }, { 1, -1 }, { 0, -1 }, { 0, 1 } }
 }
 
 local function init_cell(cell_position)
-    if global.maze_cells[coord_to_string(cell_position)] then
+    if storage.maze_cells[coord_to_string(cell_position)] then
         return
     end
-    if not global.maze_cells[coord_to_string(cell_position)] then
-        global.maze_cells[coord_to_string(cell_position)] = {}
+    if not storage.maze_cells[coord_to_string(cell_position)] then
+        storage.maze_cells[coord_to_string(cell_position)] = {}
     end
-    global.maze_cells[coord_to_string(cell_position)].visited = false
-    global.maze_cells[coord_to_string(cell_position)].occupied = false
+    storage.maze_cells[coord_to_string(cell_position)].visited = false
+    storage.maze_cells[coord_to_string(cell_position)].occupied = false
 end
 
 local function get_chunk_position(position)
@@ -185,47 +185,47 @@ local function regenerate_decoratives(surface, position)
     if not chunk then
         return
     end
-    surface.destroy_decoratives({area = {{chunk.x * 32, chunk.y * 32}, {chunk.x * 32 + 32, chunk.y * 32 + 32}}})
+    surface.destroy_decoratives({ area = { { chunk.x * 32, chunk.y * 32 }, { chunk.x * 32 + 32, chunk.y * 32 + 32 } } })
     local decorative_names = {}
-    for k, v in pairs(game.decorative_prototypes) do
+    for k, v in pairs(prototypes.decorative) do
         if v.autoplace_specification then
             decorative_names[#decorative_names + 1] = k
         end
     end
-    surface.regenerate_decorative(decorative_names, {chunk})
+    surface.regenerate_decorative(decorative_names, { chunk })
 end
 
 local function set_cell_tiles(surface, cell_position, tile_name)
-    local left_top = {x = cell_position.x * grid_size, y = cell_position.y * grid_size}
+    local left_top = { x = cell_position.x * grid_size, y = cell_position.y * grid_size }
     for x = 0, grid_size - 1, 1 do
         for y = 0, grid_size - 1, 1 do
-            local pos = {left_top.x + x, left_top.y + y}
-            surface.set_tiles({{name = tile_name, position = pos}}, true)
+            local pos = { left_top.x + x, left_top.y + y }
+            surface.set_tiles({ { name = tile_name, position = pos } }, true)
         end
     end
     regenerate_decoratives(surface, left_top)
 end
 
 local function set_visted_cell_tiles(surface, cell_position)
-    local left_top = {x = cell_position.x * grid_size, y = cell_position.y * grid_size}
+    local left_top = { x = cell_position.x * grid_size, y = cell_position.y * grid_size }
 
     local remnants = {}
-    for _, e in pairs(surface.find_entities_filtered({type = 'corpse', area = {{left_top.x, left_top.y}, {left_top.x + grid_size, left_top.y + grid_size}}})) do
-        remnants[#remnants + 1] = {name = e.name, position = e.position, direction = e.direction}
+    for _, e in pairs(surface.find_entities_filtered({ type = 'corpse', area = { { left_top.x, left_top.y }, { left_top.x + grid_size, left_top.y + grid_size } } })) do
+        remnants[#remnants + 1] = { name = e.name, position = e.position, direction = e.direction }
     end
 
     for x = 0, grid_size - 1, 1 do
         for y = 0, grid_size - 1, 1 do
-            local pos = {left_top.x + x, left_top.y + y}
+            local pos = { left_top.x + x, left_top.y + y }
             local tile_name = surface.get_tile(pos).name
             if visited_tile_translation[tile_name] then
-                surface.set_tiles({{name = visited_tile_translation[tile_name], position = pos}}, true)
+                surface.set_tiles({ { name = visited_tile_translation[tile_name], position = pos } }, true)
             end
         end
     end
 
     for _, e in pairs(remnants) do
-        surface.create_entity({name = e.name, position = e.position, direction = e.direction})
+        surface.create_entity({ name = e.name, position = e.position, direction = e.direction })
     end
 
     regenerate_decoratives(surface, left_top)
@@ -241,13 +241,13 @@ local function can_multicell_expand(cell_position, direction, cell_type)
     for i = 1, #left_top_index, 1 do
         local left_top = cells[cell_type][coord_to_string(direction)][left_top_index[i]]
         local failures = 0
-        local cell_left_top = {x = cell_position.x + left_top[1], y = cell_position.y + left_top[2]}
+        local cell_left_top = { x = cell_position.x + left_top[1], y = cell_position.y + left_top[2] }
 
         for x = -1, cells[cell_type].size_x, 1 do
             for y = -1, cells[cell_type].size_y, 1 do
-                local p = {x = cell_left_top.x + x, y = cell_left_top.y + y}
-                if global.maze_cells[coord_to_string(p)] then
-                    if global.maze_cells[coord_to_string(p)].occupied then
+                local p = { x = cell_left_top.x + x, y = cell_left_top.y + y }
+                if storage.maze_cells[coord_to_string(p)] then
+                    if storage.maze_cells[coord_to_string(p)].occupied then
                         failures = failures + 1
                     end
                 end
@@ -263,9 +263,9 @@ end
 
 local function can_1x1_expand(cell_position, direction)
     for _, v in pairs(cells_1x1[coord_to_string(direction)]) do
-        local p = {x = cell_position.x + v[1], y = cell_position.y + v[2]}
-        if global.maze_cells[coord_to_string(p)] then
-            if global.maze_cells[coord_to_string(p)].occupied then
+        local p = { x = cell_position.x + v[1], y = cell_position.y + v[2] }
+        if storage.maze_cells[coord_to_string(p)] then
+            if storage.maze_cells[coord_to_string(p)].occupied then
                 return false
             end
         end
@@ -293,11 +293,11 @@ local function set_cell(surface, cell_position, direction)
 
             for x = 0, cells[multi_cell_type].size_x - 1, 1 do
                 for y = 0, cells[multi_cell_type].size_y - 1, 1 do
-                    local p = {x = cell_left_top.x + x, y = cell_left_top.y + y}
+                    local p = { x = cell_left_top.x + x, y = cell_left_top.y + y }
                     set_cell_tiles(surface, p, main_ground_tile)
 
                     init_cell(p)
-                    global.maze_cells[coord_to_string(p)].occupied = true
+                    storage.maze_cells[coord_to_string(p)].occupied = true
 
                     increase_depth()
                 end
@@ -319,20 +319,20 @@ local function set_cell(surface, cell_position, direction)
         rooms_1x1[math_random(1, #rooms_1x1)](surface, cell_position, direction)
 
         init_cell(cell_position)
-        global.maze_cells[coord_to_string(cell_position)].occupied = true
+        storage.maze_cells[coord_to_string(cell_position)].occupied = true
 
         increase_depth()
     end
 end
 
 local function set_cells(surface, cell_position)
-    local directions = {{-1, 0}, {1, 0}, {0, 1}, {0, -1}}
+    local directions = { { -1, 0 }, { 1, 0 }, { 0, 1 }, { 0, -1 } }
     table.shuffle_table(directions)
 
     cells_to_open = math.random(1, 2)
 
     for _, d in pairs(directions) do
-        local p = {x = cell_position.x + d[1], y = cell_position.y + d[2]}
+        local p = { x = cell_position.x + d[1], y = cell_position.y + d[2] }
         set_cell(surface, p, d)
     end
 end
@@ -359,20 +359,20 @@ local function on_player_changed_position(event)
         return
     end
 
-    local cell_position = {x = cell_x, y = cell_y}
+    local cell_position = { x = cell_x, y = cell_y }
 
     init_cell(cell_position)
 
-    if global.maze_cells[coord_to_string(cell_position)].visited then
+    if storage.maze_cells[coord_to_string(cell_position)].visited then
         return
     end
-    if not global.maze_cells[coord_to_string(cell_position)].occupied then
+    if not storage.maze_cells[coord_to_string(cell_position)].occupied then
         return
     end
 
     set_cells(surface, cell_position)
 
-    global.maze_cells[coord_to_string(cell_position)].visited = true
+    storage.maze_cells[coord_to_string(cell_position)].visited = true
     set_visted_cell_tiles(surface, cell_position)
 end
 
@@ -388,23 +388,23 @@ local function on_chunk_generated(event)
                 if x < grid_size and y < grid_size then
                     tile_name = 'stone-path'
                 end
-                local p = {x = left_top.x + x, y = left_top.y + y}
-                surface.set_tiles({{name = tile_name, position = p}}, true)
+                local p = { x = left_top.x + x, y = left_top.y + y }
+                surface.set_tiles({ { name = tile_name, position = p } }, true)
             end
         end
-        for _, e in pairs(surface.find_entities_filtered({force = 'neutral'})) do
+        for _, e in pairs(surface.find_entities_filtered({ force = 'neutral' })) do
             e.destroy()
         end
-        spawn_market(surface, {x = math.random(4, grid_size - 4), y = math.random(4, grid_size - 4)})
-        init_cell({0, 0})
-        global.maze_cells[coord_to_string({0, 0})].occupied = true
+        spawn_market(surface, { x = math.random(4, grid_size - 4), y = math.random(4, grid_size - 4) })
+        init_cell({ 0, 0 })
+        storage.maze_cells[coord_to_string({ 0, 0 })].occupied = true
         return
     end
 
     for x = 0, 31, 1 do
         for y = 0, 31, 1 do
-            local p = {x = left_top.x + x, y = left_top.y + y}
-            surface.set_tiles({{name = 'out-of-map', position = p}}, true)
+            local p = { x = left_top.x + x, y = left_top.y + y }
+            surface.set_tiles({ { name = 'out-of-map', position = p } }, true)
         end
     end
 end
@@ -412,8 +412,8 @@ end
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
     if player.online_time == 0 then
-        player.insert {name = 'pistol', count = 1}
-        player.insert {name = 'firearm-magazine', count = 64}
+        player.insert { name = 'pistol', count = 1 }
+        player.insert { name = 'firearm-magazine', count = 64 }
     end
     draw_depth_gui()
 end
@@ -433,16 +433,16 @@ local function on_marked_for_deconstruction(event)
 end
 
 local function on_init(event)
-    global.maze_cells = {}
-    global.maze_depth = 0
-    global.enemy_appearances = {
-        {biter = 'small-biter', spitter = 'small-spitter', worm = 'small-worm-turret', ammo = 'firearm-magazine', chance = 100},
-        {biter = 'medium-biter', spitter = 'medium-spitter', worm = 'medium-worm-turret', ammo = 'piercing-rounds-magazine', chance = 0},
-        {biter = 'big-biter', spitter = 'big-spitter', worm = 'big-worm-turret', ammo = 'uranium-rounds-magazine', chance = 0},
-        {biter = 'behemoth-biter', spitter = 'behemoth-spitter', worm = 'behemoth-worm-turret', ammo = 'uranium-rounds-magazine', chance = 0}
+    storage.maze_cells = {}
+    storage.maze_depth = 0
+    storage.enemy_appearances = {
+        { biter = 'small-biter',    spitter = 'small-spitter',    worm = 'small-worm-turret',    ammo = 'firearm-magazine',         chance = 100 },
+        { biter = 'medium-biter',   spitter = 'medium-spitter',   worm = 'medium-worm-turret',   ammo = 'piercing-rounds-magazine', chance = 0 },
+        { biter = 'big-biter',      spitter = 'big-spitter',      worm = 'big-worm-turret',      ammo = 'uranium-rounds-magazine',  chance = 0 },
+        { biter = 'behemoth-biter', spitter = 'behemoth-spitter', worm = 'behemoth-worm-turret', ammo = 'uranium-rounds-magazine',  chance = 0 }
     }
 
-    game.forces['player'].set_spawn_position({x = 2, y = 2}, game.surfaces.nauvis)
+    game.forces['player'].set_spawn_position({ x = 2, y = 2 }, game.surfaces.nauvis)
     --game.forces["player"].manual_mining_speed_modifier = manual_mining_speed_modifier
 
     game.map_settings.enemy_evolution.time_factor = 0

@@ -1,5 +1,5 @@
 local function deny_building(event)
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity.valid then
         return
     end

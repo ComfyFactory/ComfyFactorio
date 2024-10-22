@@ -1,8 +1,9 @@
 --[[
 Journey, launch a rocket in increasingly harder getting worlds. - MewMew
 ]]--
-
-require 'modules.rocket_launch_always_yields_science'
+if script.active_mods['space-age'] then
+    error('Journey Scenario is not compatible with the Space Age mod. Please disable the mod and try again', 2)
+end
 
 local Server = require 'utils.server'
 local Constants = require 'maps.journey.constants'
@@ -157,7 +158,7 @@ local function on_entity_damaged(event)
 	if event.force and event.force.name == 'enemy' then
 		Functions.deal_damage_to_beacon(journey, event.final_damage_amount)
 	end
-	entity.health = 200
+	entity.health = 1000
 end
 
 local function on_entity_died(event)
@@ -166,7 +167,7 @@ local function on_entity_died(event)
 end
 
 local function on_rocket_launched(event)
-	local rocket_inventory = event.rocket.get_inventory(defines.inventory.rocket)
+	local rocket_inventory = event.rocket.cargo_pod.get_inventory(defines.inventory.cargo_unit)
 	local slot = rocket_inventory[1]
 	if slot and slot.valid and slot.valid_for_read then
 		if journey.mothership_cargo[slot.name] then
@@ -185,6 +186,8 @@ local function on_rocket_launched(event)
             end
 		end
 	end
+	rocket_inventory.clear()
+	rocket_inventory.insert({name = 'space-science-pack', count = 200})
 	Functions.draw_gui(journey)
 end
 
@@ -242,7 +245,7 @@ local function on_init()
     T.main_caption_color = {r = 100, g = 20, b = 255}
     T.sub_caption_color = {r = 100, g = 100, b = 100}
 
-	game.permissions.get_group('Default').set_allows_action(defines.input_action.set_auto_launch_rocket, false)
+	game.permissions.get_group('Default').set_allows_action(defines.input_action.set_rocket_silo_send_to_orbit_automated_mode, false)
     Vacants.init(1, true)
 	Functions.hard_reset(journey)
 end
@@ -269,7 +272,7 @@ commands.add_command(
 		local s, player = cmd_handler()
 		if s then
 			Functions.hard_reset(journey)
-			game.print(player.name .. ' has reset the map.')
+			game.print(player and player.name or 'Server' .. ' has reset the map.')
 		end
 	end
 )
@@ -341,7 +344,7 @@ Event.add(defines.events.on_chunk_generated, on_chunk_generated)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_left_game, on_player_left_game)
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)
-Event.add(defines.events.on_rocket_launched, on_rocket_launched)
+Event.add(defines.events.on_rocket_launch_ordered, on_rocket_launched)
 Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_robot_mined_entity, on_robot_mined_entity)

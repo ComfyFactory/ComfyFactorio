@@ -1,19 +1,17 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-
-local Memory = require 'maps.pirates.memory'
+local Memory = require('maps.pirates.memory')
 -- local Balance = require 'maps.pirates.balance'
-local Common = require 'maps.pirates.common'
-local CoreData = require 'maps.pirates.coredata'
-local Utils = require 'maps.pirates.utils_local'
+local Common = require('maps.pirates.common')
+local CoreData = require('maps.pirates.coredata')
+local Utils = require('maps.pirates.utils_local')
 -- local Math = require 'maps.pirates.math'
 
+local _inspect = require('utils.inspect').inspect
+local Token = require('utils.token')
+local Task = require('utils.task')
 
-local _inspect = require 'utils.inspect'.inspect
-local Token = require 'utils.token'
-local Task = require 'utils.task'
-
-local SurfacesCommon = require 'maps.pirates.surfaces.common'
+local SurfacesCommon = require('maps.pirates.surfaces.common')
 
 -- This file is logically a bit of a mess, because we changed from islands moving to the crowsnest platform moving.
 
@@ -36,23 +34,23 @@ Public.Data.chestspos = {
 	{ x = -2.5, y = -3.5 },
 	{ x = -1.5, y = -3.5 },
 	{ x = -0.5, y = -3.5 },
-	{ x = 1.5,  y = -3.5 },
-	{ x = 2.5,  y = -3.5 },
-	{ x = 3.5,  y = -3.5 },
+	{ x = 1.5, y = -3.5 },
+	{ x = 2.5, y = -3.5 },
+	{ x = 3.5, y = -3.5 },
 	{ x = -2.5, y = 3.5 },
 	{ x = -1.5, y = 3.5 },
 	{ x = -0.5, y = 3.5 },
-	{ x = 1.5,  y = 3.5 },
-	{ x = 2.5,  y = 3.5 },
-	{ x = 3.5,  y = 3.5 },
+	{ x = 1.5, y = 3.5 },
+	{ x = 2.5, y = 3.5 },
+	{ x = 3.5, y = 3.5 },
 	{ x = -2.5, y = -2.5 },
 	{ x = -2.5, y = -1.5 },
 	{ x = -2.5, y = 1.5 },
 	{ x = -2.5, y = 2.5 },
-	{ x = 3.5,  y = -2.5 },
-	{ x = 3.5,  y = -1.5 },
-	{ x = 3.5,  y = 1.5 },
-	{ x = 3.5,  y = 2.5 },
+	{ x = 3.5, y = -2.5 },
+	{ x = 3.5, y = -1.5 },
+	{ x = 3.5, y = 1.5 },
+	{ x = 3.5, y = 2.5 },
 }
 
 Public.Data.surfacename_rendering_pos = { x = 0.5, y = -6.1 }
@@ -73,18 +71,22 @@ function Public.move_crowsnest(vectorx, vectory)
 	local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[Public.crowsnest_surface_name()]
 
-	local old_area = { { memory.overworldx - 2.5, memory.overworldy - 3.5 }, { memory.overworldx + 3.5, memory.overworldy + 3.5 } }
+	local old_area =
+		{ { memory.overworldx - 2.5, memory.overworldy - 3.5 }, { memory.overworldx + 3.5, memory.overworldy + 3.5 } }
 
 	memory.overworldx = memory.overworldx + vectorx
 	memory.overworldy = memory.overworldy + vectory
 
-	local new_area = { { memory.overworldx - 2.5, memory.overworldy - 3.5 }, { memory.overworldx + 3.5, memory.overworldy + 3.5 } }
+	local new_area =
+		{ { memory.overworldx - 2.5, memory.overworldy - 3.5 }, { memory.overworldx + 3.5, memory.overworldy + 3.5 } }
 
 	local new_floor_positions = {}
 	local tiles1 = {}
 	for y = new_area[1][2], new_area[2][2], 1 do
 		for x = new_area[1][1], new_area[2][1], 1 do
-			if not new_floor_positions[x] then new_floor_positions[x] = {} end
+			if not new_floor_positions[x] then
+				new_floor_positions[x] = {}
+			end
 			new_floor_positions[x][y] = true
 			tiles1[#tiles1 + 1] = { name = CoreData.static_boat_floor, position = { x = x, y = y } }
 		end
@@ -92,7 +94,7 @@ function Public.move_crowsnest(vectorx, vectory)
 
 	surface.set_tiles(tiles1, true, true, true)
 
-	local entities_to_teleport = surface.find_entities_filtered { area = old_area }
+	local entities_to_teleport = surface.find_entities_filtered({ area = old_area })
 	for _, e in pairs(entities_to_teleport) do
 		e.teleport(vectorx, vectory)
 	end
@@ -109,13 +111,16 @@ function Public.move_crowsnest(vectorx, vectory)
 	surface.set_tiles(tiles2, true, true, true)
 
 	if memory.crowsnest_surfacename_rendering then
-		local p = rendering.get_target(memory.crowsnest_surfacename_rendering).position
-		rendering.set_target(memory.crowsnest_surfacename_rendering, { x = p.x + vectorx, y = p.y + vectory })
+		local p = memory.crowsnest_surfacename_rendering.target.position
+		memory.crowsnest_surfacename_rendering.target = { x = p.x + vectorx, y = p.y + vectory }
 	end
 
 	if vectorx ~= 0 then
 		local crew_force = memory.force
-		local area = { { memory.overworldx, -Public.Data.height / 2 }, { memory.overworldx + Public.Data.chartingdistance, Public.Data.height / 2 } }
+		local area = {
+			{ memory.overworldx, -Public.Data.height / 2 },
+			{ memory.overworldx + Public.Data.chartingdistance, Public.Data.height / 2 },
+		}
 		-- crew_force.clear_chart(surface)
 		crew_force.chart(surface, area)
 	end
@@ -125,33 +130,36 @@ function Public.update_destination_renderings()
 	local memory = Memory.get_crew_memory()
 	for _, dest in pairs(memory.destinations) do
 		if dest.dynamic_data.crowsnest_renderings then
-			if dest.overworld_position.x <= memory.overworldx + Public.Data.chartingdistance and dest.overworld_position.x >= memory.overworldx - Public.Data.chartingdistance then
+			if
+				dest.overworld_position.x <= memory.overworldx + Public.Data.chartingdistance
+				and dest.overworld_position.x >= memory.overworldx - Public.Data.chartingdistance
+			then
 				for _, r in pairs(dest.dynamic_data.crowsnest_renderings) do
 					if type(r) == 'table' then
-						if rendering.is_valid(r.text_rendering) then
-							rendering.set_visible(r.text_rendering, true)
+						if r.text_rendering.valid then
+							r.text_rendering.visible = true
 						end
-						if rendering.is_valid(r.sprite_rendering) then
-							rendering.set_visible(r.sprite_rendering, true)
+						if r.sprite_rendering.valid then
+							r.sprite_rendering.visible = true
 						end
 					else
-						if rendering.is_valid(r) then
-							rendering.set_visible(r, true)
+						if r.valid then
+							r.visible = true
 						end
 					end
 				end
 			else
 				for _, r in pairs(dest.dynamic_data.crowsnest_renderings) do
 					if type(r) == 'table' then
-						if rendering.is_valid(r.text_rendering) then
-							rendering.set_visible(r.text_rendering, false)
+						if r.text_rendering.valid then
+							r.text_rendering.visible = false
 						end
-						if rendering.is_valid(r.sprite_rendering) then
-							rendering.set_visible(r.sprite_rendering, false)
+						if r.sprite_rendering.valid then
+							r.sprite_rendering.visible = false
 						end
 					else
-						if rendering.is_valid(r) then
-							rendering.set_visible(r, false)
+						if r.valid then
+							r.visible = false
 						end
 					end
 				end
@@ -164,7 +172,12 @@ function Public.draw_kraken(p)
 	-- local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[Public.crowsnest_surface_name()]
 
-	surface.set_tiles({ { name = CoreData.kraken_tile, position = { x = Public.platformrightmostedge + p.x, y = p.y } } }, true, true, true)
+	surface.set_tiles(
+		{ { name = CoreData.kraken_tile, position = { x = Public.platformrightmostedge + p.x, y = p.y } } },
+		true,
+		true,
+		true
+	)
 end
 
 function Public.draw_destination(destination)
@@ -177,7 +190,9 @@ function Public.draw_destination(destination)
 
 	local iconized_map = SurfacesCommon.fetch_iconized_map(destination)
 
-	if not iconized_map then iconized_map = destination.iconized_map end
+	if not iconized_map then
+		iconized_map = destination.iconized_map
+	end
 
 	local x = Public.platformrightmostedge + destination.overworld_position.x
 	local y = destination.overworld_position.y
@@ -193,8 +208,12 @@ function Public.draw_destination(destination)
 	for _, e in pairs(iconized_map.entities) do
 		local e2 = Utils.deepcopy(e)
 		e2.position = { x = x + e.position.x, y = y + e.position.y }
-		if e2.source then e2.source = { x = e2.source.x + x, y = e2.source.y + y } end
-		if e2.target then e2.target = { x = e2.target.x + x, y = e2.target.y + y } end
+		if e2.source then
+			e2.source = { x = e2.source.x + x, y = e2.source.y + y }
+		end
+		if e2.target then
+			e2.target = { x = e2.target.x + x, y = e2.target.y + y }
+		end
 		surface.create_entity(e2)
 	end
 
@@ -203,7 +222,7 @@ function Public.draw_destination(destination)
 end
 
 function Public.draw_extra_bits()
-	Public.draw_destination {
+	Public.draw_destination({
 		type = 'finish line',
 		seed = 0,
 		overworld_position = { x = CoreData.victory_x, y = 0 },
@@ -212,18 +231,28 @@ function Public.draw_extra_bits()
 		iconized_map = {
 			tiles = {},
 			entities = {
-				{ name = 'electric-beam', position = { x = 0, y = 0 }, source = { x = 0, y = -37 }, target = { x = 0, y = 37 } },
-				{ name = 'electric-beam', position = { x = 0, y = 0 }, source = { x = 0, y = -37 }, target = { x = 0, y = 37 } },
+				{
+					name = 'electric-beam',
+					position = { x = 0, y = 0 },
+					source = { x = 0, y = -37 },
+					target = { x = 0, y = 37 },
+				},
+				{
+					name = 'electric-beam',
+					position = { x = 0, y = 0 },
+					source = { x = 0, y = -37 },
+					target = { x = 0, y = 37 },
+				},
 			},
 		},
 		iconized_map_width = 2,
 		iconized_map_height = 2,
-	}
+	})
 
-	Public.draw_destination {
+	Public.draw_destination({
 		type = 'Lobby',
 		overworld_position = { x = -14, y = 0 },
-	}
+	})
 end
 
 function Public.create_crowsnest_surface()
@@ -241,15 +270,15 @@ function Public.create_crowsnest_surface()
 	Public.paint_crowsnest_background_tiles()
 	-- end
 
-	memory.crowsnest_surfacename_rendering = rendering.draw_text {
+	memory.crowsnest_surfacename_rendering = rendering.draw_text({
 		text = { 'pirates.surface_label_crowsnest' },
 		surface = surface,
 		target = Public.Data.surfacename_rendering_pos,
 		color = CoreData.colors.renderingtext_yellow,
 		scale = 2.5,
 		font = 'default-game',
-		alignment = 'center'
-	}
+		alignment = 'center',
+	})
 end
 
 function Public.paint_water_between_overworld_positions(overworldx1, overworldx2)
@@ -281,7 +310,12 @@ function Public.paint_crowsnest_background_tiles()
 		for x = -(Public.Data.visibilitywidth + 32 - 1) / 2, (Public.Data.visibilitywidth + 32 - 1) / 2, 1 do
 			if x <= 3.5 and x >= -2.5 and y <= 3.5 and y >= -3.5 then
 				tiles[#tiles + 1] = { name = CoreData.static_boat_floor, position = { x = x, y = y } }
-			elseif x >= -(Public.Data.visibilitywidth - 1) / 2 and x <= (Public.Data.visibilitywidth - 1) / 2 and y >= -(Public.Data.height - 1) / 2 and y <= (Public.Data.height - 1) / 2 then
+			elseif
+				x >= -(Public.Data.visibilitywidth - 1) / 2
+				and x <= (Public.Data.visibilitywidth - 1) / 2
+				and y >= -(Public.Data.height - 1) / 2
+				and y <= (Public.Data.height - 1) / 2
+			then
 				tiles[#tiles + 1] = { name = 'deepwater', position = { x = x, y = y } }
 			else
 				tiles[#tiles + 1] = { name = 'out-of-map', position = { x = x, y = y } }
@@ -300,13 +334,19 @@ function Public.upgrade_chests(new_chest) --the fast replace doesn't work well o
 
 	for _, p in pairs(ps) do
 		local p2 = { x = p.x + memory.overworldx, y = p.y + memory.overworldy }
-		local es = surface.find_entities_filtered { name = 'wooden-chest', position = p2, radius = 0.05 }
+		local es = surface.find_entities_filtered({ name = 'wooden-chest', position = p2, radius = 0.05 })
 		if es and #es == 1 then
 			es[1].minable = true
 			es[1].destructible = true
 			es[1].rotatable = true
 			-- es[1].operable = true
-			local e2 = surface.create_entity { name = new_chest, position = es[1].position, fast_replace = true, spill = false, force = boat.force_name }
+			local e2 = surface.create_entity({
+				name = new_chest,
+				position = es[1].position,
+				fast_replace = true,
+				spill = false,
+				force = boat.force_name,
+			})
 			e2.minable = false
 			e2.destructible = false
 			e2.rotatable = false
@@ -316,26 +356,28 @@ function Public.upgrade_chests(new_chest) --the fast replace doesn't work well o
 end
 
 -- just for debug purposes, might need to fire this again
-local crowsnest_delayed = Token.register(
-	function (data)
-		Memory.set_working_id(data.crew_id)
-		if not Common.is_id_valid(data.crew_id) then return end --check if crew disbanded
-		Public.crowsnest_surface_delayed_init()
-	end
-)
+local crowsnest_delayed = Token.register(function(data)
+	Memory.set_working_id(data.crew_id)
+	if not Common.is_id_valid(data.crew_id) then
+		return
+	end --check if crew disbanded
+	Public.crowsnest_surface_delayed_init()
+end)
 
 function Public.crowsnest_surface_delayed_init()
 	local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[Public.crowsnest_surface_name()]
 	local force = memory.force
 
-	if _DEBUG and (not (surface and surface.valid)) then
-		game.print('/go issue: crowsnest_surface_delayed_init called when crowsnest surface wasn\'t valid. This happens due to a difficult-to-handle race condition in concurrent delayed events in the /go shortcut. Firing event again...')
+	if _DEBUG and not (surface and surface.valid) then
+		game.print(
+			"/go issue: crowsnest_surface_delayed_init called when crowsnest surface wasn't valid. This happens due to a difficult-to-handle race condition in concurrent delayed events in the /go shortcut. Firing event again..."
+		)
 		Task.set_timeout_in_ticks(5, crowsnest_delayed, { crew_id = memory.id })
 		return
 	end
 
-	surface.destroy_decoratives { area = { { -3, -4 }, { 4, 4 } } }
+	surface.destroy_decoratives({ area = { { -3, -4 }, { 4, 4 } } })
 
 	local chestspos = Public.Data.chestspos
 	local steerchestspos = {
@@ -343,11 +385,16 @@ function Public.crowsnest_surface_delayed_init()
 		{ x = 0.5, y = 3.5 },
 	}
 	local carspos = {
-		{ x = 3.3,  y = 0 },
+		{ x = 3.3, y = 0 },
 		{ x = -2.3, y = 0 },
 	}
 	for _, p in pairs(chestspos) do
-		local e = surface.create_entity({ name = 'wooden-chest', position = p, force = force, create_build_effect_smoke = false })
+		local e = surface.create_entity({
+			name = 'wooden-chest',
+			position = p,
+			force = force,
+			create_build_effect_smoke = false,
+		})
 		if e and e.valid then
 			e.destructible = false
 			e.minable = false
@@ -355,23 +402,29 @@ function Public.crowsnest_surface_delayed_init()
 		end
 	end
 	for _, p in pairs(steerchestspos) do
-		local e = surface.create_entity({ name = 'blue-chest', position = p, force = force, create_build_effect_smoke = false })
+		local e = surface.create_entity({
+			name = 'blue-chest',
+			position = p,
+			force = force,
+			create_build_effect_smoke = false,
+		})
 		if e and e.valid then
 			e.destructible = false
 			e.minable = false
 			e.rotatable = false
-			if not memory.boat.crowsneststeeringchests then
-				memory.boat.crowsneststeeringchests = {}
+			if not memory.boat.crows_nest_steering_chests then
+				memory.boat.crows_nest_steering_chests = {}
 			end
 			if p.y < 0 then
-				memory.boat.crowsneststeeringchests.left = e
+				memory.boat.crows_nest_steering_chests.left = e
 			else
-				memory.boat.crowsneststeeringchests.right = e
+				memory.boat.crows_nest_steering_chests.right = e
 			end
 		end
 	end
 	for _, p in pairs(carspos) do
-		local e = surface.create_entity({ name = 'car', position = p, force = force, create_build_effect_smoke = false })
+		local e =
+			surface.create_entity({ name = 'car', position = p, force = force, create_build_effect_smoke = false })
 		if e and e.valid then
 			e.get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 16 })
 			e.destructible = false
@@ -393,12 +446,25 @@ function Public.paint_around_destination(id, tile_name)
 	local tiles = {}
 	if type == SurfacesCommon.enum.ISLAND then
 		for x = memory.overworldx + Public.platformrightmostedge + 0.5, memory.overworldx + Public.platformrightmostedge + destination_data.iconized_map_width - 0.5 do
-			tiles[#tiles + 1] = { name = tile_name, position = { x = x, y = memory.overworldy + destination_data.iconized_map_height / 2 - 0.5 } }
-			tiles[#tiles + 1] = { name = tile_name, position = { x = x, y = memory.overworldy - destination_data.iconized_map_height / 2 + 0.5 } }
+			tiles[#tiles + 1] = {
+				name = tile_name,
+				position = { x = x, y = memory.overworldy + destination_data.iconized_map_height / 2 - 0.5 },
+			}
+			tiles[#tiles + 1] = {
+				name = tile_name,
+				position = { x = x, y = memory.overworldy - destination_data.iconized_map_height / 2 + 0.5 },
+			}
 		end
 		for y = memory.overworldy + -destination_data.iconized_map_height / 2 + 1.5, memory.overworldy + destination_data.iconized_map_height / 2 - 1.5 do
-			tiles[#tiles + 1] = { name = tile_name, position = { x = memory.overworldx + Public.platformrightmostedge + 0.5, y = y } }
-			tiles[#tiles + 1] = { name = tile_name, position = { x = memory.overworldx + Public.platformrightmostedge + destination_data.iconized_map_width - 0.5, y = y } }
+			tiles[#tiles + 1] =
+				{ name = tile_name, position = { x = memory.overworldx + Public.platformrightmostedge + 0.5, y = y } }
+			tiles[#tiles + 1] = {
+				name = tile_name,
+				position = {
+					x = memory.overworldx + Public.platformrightmostedge + destination_data.iconized_map_width - 0.5,
+					y = y,
+				},
+			}
 		end
 	end
 

@@ -2,6 +2,40 @@ local Event = require 'utils.event'
 local Public = require 'maps.mountain_fortress_v3.table'
 
 local random = math.random
+local biters
+
+if has_space_age() then
+    biters = {
+        'small-biter',
+        'medium-biter',
+        'big-biter',
+        'behemoth-biter',
+        'small-spitter',
+        'medium-spitter',
+        'big-spitter',
+        'behemoth-spitter',
+        'small-wriggler-pentapod',
+        'medium-wriggler-pentapod',
+        'big-wriggler-pentapod',
+        'small-strafer-pentapod',
+        'medium-strafer-pentapod',
+        'big-strafer-pentapod',
+        'small-stomper-pentapod',
+        'medium-stomper-pentapod',
+        'big-stomper-pentapod',
+    }
+else
+    biters = {
+        'small-biter',
+        'medium-biter',
+        'big-biter',
+        'behemoth-biter',
+        'small-spitter',
+        'medium-spitter',
+        'big-spitter',
+        'behemoth-spitter',
+    }
+end
 
 local function shoo(event)
     local icw_locomotive = Public.get('icw_locomotive')
@@ -74,17 +108,7 @@ function Public.spawn_biter()
     end
 
     local position = loco_surface.find_non_colliding_position('market', center_position, 128, 0.5)
-    local biters = {
-        'small-biter',
-        'medium-biter',
-        'big-biter',
-        'behemoth-biter',
-        'small-spitter',
-        'medium-spitter',
-        'big-spitter',
-        'behemoth-spitter',
-        'compilatron'
-    }
+
 
     local size_of = #biters
 
@@ -94,22 +118,20 @@ function Public.spawn_biter()
 
     local chosen_ent = biters[random(1, size_of)]
 
-    this.locomotive_biter = loco_surface.create_entity({name = chosen_ent, position = position, force = 'player', create_build_effect_smoke = false})
+    this.locomotive_biter = loco_surface.create_entity({ name = chosen_ent, position = position, force = 'player', create_build_effect_smoke = false })
 
     rendering.draw_text {
-        text = ({'locomotive.shoo'}),
+        text = ({ 'locomotive.shoo' }),
         surface = this.locomotive_biter.surface,
-        target = this.locomotive_biter,
-        target_offset = {0, -3.5},
+        target = { entity = this.locomotive_biter, offset = { 0, -3.5 } },
         scale = 1.05,
         font = 'heading-2',
-        color = {r = 175, g = 75, b = 255},
+        color = { r = 175, g = 75, b = 255 },
         alignment = 'center',
         scale_with_zoom = false
     }
 
     this.locomotive_biter.ai_settings.allow_destroy_when_commands_fail = false
-    this.locomotive_biter.ai_settings.allow_try_return_to_spawner = false
 end
 
 local function on_console_chat(event)

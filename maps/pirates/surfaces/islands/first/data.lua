@@ -1,6 +1,5 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-
 -- local Common = require 'maps.pirates.common'
 -- local Utils = require 'maps.pirates.utils_local'
 -- local Math = require 'maps.pirates.math'
@@ -13,10 +12,10 @@ Public.terraingen_frame_width = 325
 Public.terraingen_frame_height = 325
 Public.static_params_default = {
 	starting_time_of_day = 0,
+	decorative_settings = prototypes.space_location.nauvis.map_gen_settings.autoplace_settings.decorative.settings,
 	daynightcycletype = 1,
 	boat_extra_distance_from_shore = 0,
 	-- boat_extra_distance_from_shore = 0.1 * Common.boat_default_starting_distance_from_shore,
-	default_decoratives = true,
 	base_starting_treasure = 2000,
 	base_starting_rock_material = 800,
 	base_starting_wood = 2400,
@@ -67,7 +66,5 @@ Public.noiseparams = {
 		},
 	},
 }
-
-
 
 return Public

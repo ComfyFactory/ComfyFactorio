@@ -1,18 +1,16 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-
-local Memory = require 'maps.pirates.memory'
-local Common = require 'maps.pirates.common'
-local CoreData = require 'maps.pirates.coredata'
+local Memory = require('maps.pirates.memory')
+local Common = require('maps.pirates.common')
+local CoreData = require('maps.pirates.coredata')
 -- local Utils = require 'maps.pirates.utils_local'
 -- local Math = require 'maps.pirates.math'
-local Surfaces = require 'maps.pirates.surfaces.surfaces'
-local Lobby = require 'maps.pirates.surfaces.lobby'
-local _inspect = require 'utils.inspect'.inspect
+local Surfaces = require('maps.pirates.surfaces.surfaces')
+local Lobby = require('maps.pirates.surfaces.lobby')
+local _inspect = require('utils.inspect').inspect
 -- local Boats = require 'maps.pirates.structures.boats.boats'
-local GuiCommon = require 'maps.pirates.gui.common'
+local GuiCommon = require('maps.pirates.gui.common')
 local Public = {}
-
 
 local window_name = 'progress'
 
@@ -72,7 +70,6 @@ function Public.toggle_window(player)
 	flow3 = flow2.add({ type = 'label', name = 'daynight', caption = '' })
 	flow3.style.top_margin = -3
 
-
 	-- flow2 = GuiCommon.flow_add_section(flow, 'departure_items', 'Resources needed for departure:')
 
 	-- flow3.style.bottom_margin = -2
@@ -91,8 +88,12 @@ end
 -- end
 
 function Public.full_update(player)
-	if Public.regular_update then Public.regular_update(player) end
-	if not player.gui.screen[window_name .. '_piratewindow'] then return end
+	if Public.regular_update then
+		Public.regular_update(player)
+	end
+	if not player.gui.screen[window_name .. '_piratewindow'] then
+		return
+	end
 	local flow = player.gui.screen[window_name .. '_piratewindow']
 
 	local memory = Memory.get_crew_memory()
@@ -105,13 +106,15 @@ function Public.full_update(player)
 
 	local name
 	if scope then
-		name = (destination and destination.static_params and destination.static_params.name) and destination.static_params.name or scope.Data.display_name
+		name = (destination and destination.static_params and destination.static_params.name)
+				and destination.static_params.name
+			or scope.Data.display_name
 	else
 		name = Lobby.Data.display_name
 	end
 
 	flow.current_location.header.caption = { 'pirates.gui_progress_current_location', name }
-	flow.distance_travelled.body.leagues.caption = { 'pirates.gui_progress_leagues', memory.overworldx or 0 }
+	flow.distance_travelled.body.leagues.caption = { 'pirates.gui_progress_leagues', tostring(memory.overworldx or 0) }
 
 	-- local daynighttype
 	-- if destination.static_params and destination.static_params.daynightcycletype then
@@ -146,8 +149,8 @@ function Public.full_update(player)
 	-- 	flow.current_location.body.daynight.visible = false
 	-- end
 	local daynightcycletype = destination.static_params.daynightcycletype or 1
-	flow.current_location.body.daynight.caption = { 'pirates.gui_progress_time_of_day', CoreData.daynightcycle_types[daynightcycletype].displayname }
-
+	flow.current_location.body.daynight.caption =
+		{ 'pirates.gui_progress_time_of_day', CoreData.daynightcycle_types[daynightcycletype].displayname }
 
 	-- local ores
 	-- -- if destination.static_params and destination.static_params.abstract_ore_amounts then ores = destination.static_params.abstract_ore_amounts end

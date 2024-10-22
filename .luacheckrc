@@ -61,6 +61,7 @@ globals = {
     'is_loaded',
     'is_loaded_bool',
     'is_game_modded',
+    'has_space_age',
     'require'
 }
 max_line_length = LINE_LENGTH
@@ -243,7 +244,8 @@ stds.factorio_control = {
                 'mod_name',
                 'get_event_order',
                 'generate_event_name',
-                'register_on_entity_destroyed'
+                'register_on_entity_destroyed',
+                'active_mods'
             },
             other_fields = false
         },
@@ -387,7 +389,7 @@ stds.factorio_control = {
                 'json_to_table',
                 'kick_player',
                 'merge_forces',
-                'pollution_statistics',
+                'get_pollution_statistics',
                 'mute_player',
                 'play_sound',
                 'print',
@@ -449,13 +451,36 @@ stds.factorio_control = {
                 tile_prototypes = { read_only = true, other_fields = true },
                 virtual_signal_prototypes = { read_only = true, other_fields = true }
             }
+        },
+        prototypes = {
+            other_fields = false,
+            read_only = false,
+            fields = {
+                style             = { read_only = true, other_fields = true },
+                entity            = { read_only = true, other_fields = true },
+                item              = { read_only = true, other_fields = true },
+                fluid             = { read_only = true, other_fields = true },
+                tile              = { read_only = true, other_fields = true },
+                equipment         = { read_only = true, other_fields = true },
+                damage            = { read_only = true, other_fields = true },
+                virtual_signal    = { read_only = true, other_fields = true },
+                equipment_grid    = { read_only = true, other_fields = true },
+                recipe            = { read_only = true, other_fields = true },
+                technology        = { read_only = true, other_fields = true },
+                decorative        = { read_only = true, other_fields = true },
+                particle          = { read_only = true, other_fields = true },
+                autoplace_control = { read_only = true, other_fields = true },
+                quality           = { read_only = true, other_fields = true },
+
+            }
         }
     },
     globals = {
         -- @global@: The global dictionary, useful for storing data persistent across a save-load cycle.
         -- Writing access is given to the mod-id field (for mod-wise saved data).
-        -- (http://lua-api.factorio.com/latest/Global.html)
-        'global',
+        -- (http://lua-api.factorio.com/latest/storage.html)
+        'storage',
+        'helpers',
         -- @MOD@: Keep it organized, use this variable for anything that "NEEDS" to be global for some reason.
         'MOD'
     }

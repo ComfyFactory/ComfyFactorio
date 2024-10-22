@@ -1,6 +1,6 @@
 --luacheck: ignore
 local event = require 'utils.event'
-local simplex_noise = require 'utils.simplex_noise'.d2
+local simplex_noise = require 'utils.math.simplex_noise'.d2
 require 'modules.satellite_score'
 require 'modules.biter_noms_you'
 require 'modules.dangerous_goods'
@@ -53,12 +53,12 @@ local function process_tile(surface, pos)
     end
 
     local tile = surface.get_tile(pos)
-    if tile.collides_with('player-layer') then
+    if tile.collides_with('player') then
         return
     end
 
-    if surface.can_place_entity({name = 'wooden-chest', position = pos, force = 'neutral'}) then
-        local e = surface.create_entity({name = 'wooden-chest', position = pos, force = 'neutral'})
+    if surface.can_place_entity({ name = 'wooden-chest', position = pos, force = 'neutral' }) then
+        local e = surface.create_entity({ name = 'wooden-chest', position = pos, force = 'neutral' })
 
         if math_abs(noise_2) > 0.76 or math_random(1, 32) == 1 then
             local budget = math_sqrt(pos.x ^ 2 + pos.y ^ 2) + 1
@@ -73,7 +73,7 @@ end
 local function get_spawn_position()
     for y = 0, 1024, 1 do
         for x = 0, 1024, 1 do
-            local pos = {x = x, y = y}
+            local pos = { x = x, y = y }
             local noise = get_noise(1, pos)
             if noise < 0.08 and noise > -0.08 then
                 return pos
@@ -87,7 +87,7 @@ local function on_chunk_generated(event)
     local left_top = event.area.left_top
     for x = 0.5, 31.5, 1 do
         for y = 0.5, 31.5, 1 do
-            local pos = {x = left_top.x + x, y = left_top.y + y}
+            local pos = { x = left_top.x + x, y = left_top.y + y }
             process_tile(surface, pos)
         end
     end
@@ -96,11 +96,11 @@ end
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
     if player.online_time == 0 then
-        player.insert {name = 'pistol', count = 1}
-        player.insert {name = 'firearm-magazine', count = 16}
-        player.insert {name = 'iron-plate', count = 100}
-        player.insert {name = 'copper-plate', count = 50}
-        player.insert {name = 'car', count = 1}
+        player.insert { name = 'pistol', count = 1 }
+        player.insert { name = 'firearm-magazine', count = 16 }
+        player.insert { name = 'iron-plate', count = 100 }
+        player.insert { name = 'copper-plate', count = 50 }
+        player.insert { name = 'car', count = 1 }
     end
 end
 

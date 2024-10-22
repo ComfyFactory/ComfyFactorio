@@ -49,13 +49,13 @@ end
 
 local function on_built_entity(event)
     Functions.no_turret_creep(event)
-    Functions.add_target_entity(event.created_entity)
+    Functions.add_target_entity(event.entity)
 end
 
 local function on_robot_built_entity(event)
     Functions.no_turret_creep(event)
     Terrain.deny_construction_bots(event)
-    Functions.add_target_entity(event.created_entity)
+    Functions.add_target_entity(event.entity)
 end
 
 local function on_entity_died(event)
@@ -75,7 +75,7 @@ end
 local tick_minute_functions = {
     [300 * 1] = Ai.raise_evo,
     [300 * 2] = Ai.destroy_inactive_biters,
-    [300 * 3 + 30 * 0] = Ai.pre_main_attack, -- setup for main_attack
+    [300 * 3 + 30 * 0] = Ai.pre_main_attack,     -- setup for main_attack
     [300 * 3 + 30 * 1] = Ai.perform_main_attack, -- call perform_main_attack 7 times on different ticks
     [300 * 3 + 30 * 2] = Ai.perform_main_attack, -- some of these might do nothing (if there are no wave left)
     [300 * 3 + 30 * 3] = Ai.perform_main_attack,
@@ -94,8 +94,8 @@ local function on_tick()
     local tick = game.tick
 
     if tick % 60 == 0 then
-        global.bb_threat['north_biters'] = global.bb_threat['north_biters'] + global.bb_threat_income['north_biters']
-        global.bb_threat['south_biters'] = global.bb_threat['south_biters'] + global.bb_threat_income['south_biters']
+        storage.bb_threat['north_biters'] = storage.bb_threat['north_biters'] + storage.bb_threat_income['north_biters']
+        storage.bb_threat['south_biters'] = storage.bb_threat['south_biters'] + storage.bb_threat_income['south_biters']
     end
 
     if tick % 180 == 0 then
@@ -105,7 +105,7 @@ local function on_tick()
     if tick % 300 == 0 then
         Gui.spy_fish()
 
-        if global.bb_game_won_by_team then
+        if storage.bb_game_won_by_team then
             Game_over.reveal_map()
             Game_over.server_restart()
             return
@@ -166,9 +166,9 @@ Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 Event.add(defines.events.on_tick, on_tick)
 Event.on_init(on_init)
 
-Event.add_event_filter(defines.events.on_entity_damaged, {filter = 'type', type = 'unit'})
-Event.add_event_filter(defines.events.on_entity_damaged, {filter = 'type', type = 'unit-spawner'})
-Event.add_event_filter(defines.events.on_entity_damaged, {filter = 'type', type = 'turret'})
+Event.add_event_filter(defines.events.on_entity_damaged, { filter = 'type', type = 'unit' })
+Event.add_event_filter(defines.events.on_entity_damaged, { filter = 'type', type = 'unit-spawner' })
+Event.add_event_filter(defines.events.on_entity_damaged, { filter = 'type', type = 'turret' })
 
 require 'maps.biter_battles_v2.spec_spy'
 require 'maps.biter_battles_v2.difficulty_vote'

@@ -1,6 +1,5 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-
 -- local Common = require 'maps.pirates.common'
 -- local Utils = require 'maps.pirates.utils_local'
 -- local Math = require 'maps.pirates.math'
@@ -20,7 +19,8 @@ Public.static_params_default = {
 	base_starting_rock_material = 1200,
 	base_starting_wood = 800,
 	base_starting_treasure_maps = 1,
-	default_decoratives = false,
+	decorative_settings = prototypes.space_location.nauvis.map_gen_settings.autoplace_settings.decorative.settings,
+	-- decorative_settings = prototypes.space_location.fulgora.map_gen_settings.autoplace_settings.decorative.settings,
 }
 
 function Public.base_ores() --here, just for the gui:
@@ -39,7 +39,7 @@ Public.noiseparams = {
 		type = 'simplex_2d',
 		normalised = false,
 		params = {
-			{ wavelength = 0,   amplitude = rscale * 1 },
+			{ wavelength = 0, amplitude = rscale * 1 },
 			{ wavelength = 2.5, amplitude = rscale * 0.12 },
 		},
 	},
@@ -50,7 +50,7 @@ Public.noiseparams = {
 		params = {
 			-- {upperscale = 1000, amplitude = hscale * 200},
 			{ upperscale = 1600, amplitude = hscale * 1 },
-			{ upperscale = 80,   amplitude = hscale * 0.1 },
+			{ upperscale = 80, amplitude = hscale * 0.1 },
 		},
 	},
 
@@ -79,7 +79,5 @@ Public.noiseparams = {
 		},
 	},
 }
-
-
 
 return Public

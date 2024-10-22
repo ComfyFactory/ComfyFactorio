@@ -48,24 +48,26 @@ local whitelist = {
 }
 
 local function on_entity_damaged(event)
-    if not event.cause then
-        return
-    end
-    if not event.cause.valid then
-        return
-    end
-    if not whitelist[event.cause.name] then
-        return
-    end
+    if not event.cause then return end
+    if not event.cause.valid then return end
+
+    if not whitelist[event.cause.name] then return end
+
+    local surface = event.cause.surface
+    if not surface.valid then return end
+
     if math_random(1, 5) == 1 then
-        event.cause.surface.create_entity(
-            {
-                name = 'flying-text',
-                position = event.cause.position,
-                text = strings[math_random(1, size_of_strings)],
-                color = {r = math_random(130, 170), g = math_random(130, 170), b = 130}
-            }
-        )
+        for _, player in pairs(game.connected_players) do
+            if player.surface_index == event.cause.surface_index then
+                player.create_local_flying_text(
+                    {
+                        position = event.cause.position,
+                        text = strings[math_random(1, size_of_strings)],
+                        color = { r = math_random(130, 170), g = math_random(130, 170), b = 130 }
+                    }
+                )
+            end
+        end
     end
 end
 

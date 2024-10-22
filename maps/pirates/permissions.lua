@@ -1,19 +1,19 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-local Session = require 'utils.datastore.session_data'
-local Antigrief = require 'utils.antigrief'
+local Session = require('utils.datastore.session_data')
+local Antigrief = require('utils.antigrief')
 -- local Balance = require 'maps.pirates.balance'
-local _inspect = require 'utils.inspect'.inspect
-local Memory = require 'maps.pirates.memory'
-local Common = require 'maps.pirates.common'
-local CoreData = require 'maps.pirates.coredata'
+local _inspect = require('utils.inspect').inspect
+local Memory = require('maps.pirates.memory')
+local Common = require('maps.pirates.common')
+local CoreData = require('maps.pirates.coredata')
 
 local Public = {}
 
 local privilege_levels = {
 	NORMAL = 1,
 	OFFICER = 2,
-	CAPTAIN = 3
+	CAPTAIN = 3,
 }
 Public.privilege_levels = privilege_levels
 
@@ -50,8 +50,6 @@ local function set_restricted_permissions(group)
 	group.set_allows_action(defines.input_action.build_terrain, false)
 	group.set_allows_action(defines.input_action.begin_mining, false)
 	group.set_allows_action(defines.input_action.begin_mining_terrain, false)
-	group.set_allows_action(defines.input_action.activate_copy, false)
-	group.set_allows_action(defines.input_action.activate_cut, false)
 	group.set_allows_action(defines.input_action.activate_paste, false)
 	group.set_allows_action(defines.input_action.upgrade, false)
 	group.set_allows_action(defines.input_action.deconstruct, false)
@@ -136,7 +134,7 @@ function Public.try_create_permissions_groups()
 		'cabin_bps_disabled',
 		'cabin_privileged_bps_disabled',
 		'plebs_bps_disabled',
-		'not_trusted_bps_disabled'
+		'not_trusted_bps_disabled',
 	}
 
 	for _, group_name in ipairs(blueprint_disabled_groups) do
@@ -165,9 +163,11 @@ local function add_player_to_permission_group(player, group_override)
 
 	local gulag = game.permissions.get_group('gulag')
 	local tbl = gulag and gulag.players
-	for i = 1, #tbl do
-		if tbl[i].index == player.index then
-			return
+	if tbl then
+		for i = 1, #tbl do
+			if tbl[i].index == player.index then
+				return
+			end
 		end
 	end
 
@@ -194,19 +194,19 @@ function Public.update_privileges(player)
 	local memory = Memory.get_crew_memory()
 	local bps_disabled_suffix = memory.run_has_blueprints_disabled and '_bps_disabled' or ''
 
-	if string.sub(player.surface.name, 9, 17) == 'Crowsnest' then
+	if string.sub(player.character.surface.name, 9, 17) == 'Crowsnest' then
 		if Public.player_privilege_level(player) >= Public.privilege_levels.OFFICER then
 			return add_player_to_permission_group(player, 'crowsnest_privileged' .. bps_disabled_suffix)
 		else
 			return add_player_to_permission_group(player, 'crowsnest' .. bps_disabled_suffix)
 		end
-	elseif string.sub(player.surface.name, 9, 13) == 'Cabin' then
+	elseif string.sub(player.character.surface.name, 9, 13) == 'Cabin' then
 		if Public.player_privilege_level(player) >= Public.privilege_levels.OFFICER then
 			return add_player_to_permission_group(player, 'cabin_privileged' .. bps_disabled_suffix)
 		else
 			return add_player_to_permission_group(player, 'cabin' .. bps_disabled_suffix)
 		end
-	elseif player.surface.name == CoreData.lobby_surface_name then
+	elseif player.character.surface.name == CoreData.lobby_surface_name then
 		return add_player_to_permission_group(player, 'lobby')
 	else
 		local session = Session.get_session_table()

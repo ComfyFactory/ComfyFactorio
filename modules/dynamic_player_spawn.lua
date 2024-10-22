@@ -5,11 +5,11 @@ local Event = require 'utils.event'
 local valid_types = {'boiler', 'furnace', 'generator', 'offshore-pump', 'lab', 'assembling-machine'}
 
 local function on_built_entity(event)
-    if not event.created_entity.valid then
+    if not event.entity.valid then
         return
     end
     local player = game.players[event.player_index]
-    local area = {{event.created_entity.position.x - 12, event.created_entity.position.y - 12}, {event.created_entity.position.x + 12, event.created_entity.position.y + 12}}
+    local area = {{event.entity.position.x - 12, event.entity.position.y - 12}, {event.entity.position.x + 12, event.entity.position.y + 12}}
     if player.surface.count_entities_filtered({area = area, force = player.force, type = valid_types}) > 12 then
         player.force.set_spawn_position(player.position, player.surface)
     end

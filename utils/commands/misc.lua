@@ -348,14 +348,16 @@ local on_player_joined_game = function (player)
     Public.insert_all_items(player)
 end
 
+local quality = has_space_age() and 'legendary' or 'normal'
+
 function Public.insert_all_items(player)
     if this.creative_enabled and not this.players[player.index] then
         if player.character ~= nil then
             if player.get_inventory(defines.inventory.character_armor) then
                 player.get_inventory(defines.inventory.character_armor).clear()
             end
-            player.insert { name = 'power-armor-mk2', count = 1 }
-            Modifiers.update_single_modifier(player, 'character_inventory_slots_bonus', 'creative', #game.item_prototypes)
+            player.insert { name = 'power-armor-mk2', count = 1, quality = quality }
+            Modifiers.update_single_modifier(player, 'character_inventory_slots_bonus', 'creative', #prototypes.item)
             Modifiers.update_single_modifier(player, 'character_mining_speed_modifier', 'creative', 150)
             Modifiers.update_single_modifier(player, 'character_health_bonus', 'creative', 2000)
             Modifiers.update_single_modifier(player, 'character_crafting_speed_modifier', 'creative', 150)
@@ -367,28 +369,28 @@ function Public.insert_all_items(player)
 
             local p_armor = player.get_inventory(5)[1].grid
             if p_armor and p_armor.valid then
-                p_armor.put({ name = 'fusion-reactor-equipment' })
-                p_armor.put({ name = 'fusion-reactor-equipment' })
-                p_armor.put({ name = 'fusion-reactor-equipment' })
-                p_armor.put({ name = 'exoskeleton-equipment' })
-                p_armor.put({ name = 'exoskeleton-equipment' })
-                p_armor.put({ name = 'exoskeleton-equipment' })
-                p_armor.put({ name = 'energy-shield-mk2-equipment' })
-                p_armor.put({ name = 'energy-shield-mk2-equipment' })
-                p_armor.put({ name = 'energy-shield-mk2-equipment' })
-                p_armor.put({ name = 'energy-shield-mk2-equipment' })
-                p_armor.put({ name = 'personal-roboport-mk2-equipment' })
-                p_armor.put({ name = 'night-vision-equipment' })
-                p_armor.put({ name = 'battery-mk2-equipment' })
-                p_armor.put({ name = 'battery-mk2-equipment' })
+                p_armor.put({ name = 'fusion-reactor-equipment', quality = quality })
+                p_armor.put({ name = 'fusion-reactor-equipment', quality = quality })
+                p_armor.put({ name = 'fusion-reactor-equipment', quality = quality })
+                p_armor.put({ name = 'exoskeleton-equipment', quality = quality })
+                p_armor.put({ name = 'exoskeleton-equipment', quality = quality })
+                p_armor.put({ name = 'exoskeleton-equipment', quality = quality })
+                p_armor.put({ name = 'energy-shield-mk2-equipment', quality = quality })
+                p_armor.put({ name = 'energy-shield-mk2-equipment', quality = quality })
+                p_armor.put({ name = 'energy-shield-mk2-equipment', quality = quality })
+                p_armor.put({ name = 'energy-shield-mk2-equipment', quality = quality })
+                p_armor.put({ name = 'personal-roboport-mk2-equipment', quality = quality })
+                p_armor.put({ name = 'night-vision-equipment', quality = quality })
+                p_armor.put({ name = 'battery-mk2-equipment', quality = quality })
+                p_armor.put({ name = 'battery-mk2-equipment', quality = quality })
             end
-            local item = game.item_prototypes
+            local item = prototypes.item
             local i = 0
             for _k, _v in pairs(item) do
                 i = i + 1
                 if _k and _v.type ~= 'mining-tool' then
                     player.character_inventory_slots_bonus = Modifiers.get_single_modifier(player, 'character_inventory_slots_bonus', 'creative')
-                    player.insert { name = _k, count = _v.stack_size }
+                    player.insert { name = _k, count = _v.stack_size, quality = quality }
                     player.print('[CREATIVE] Inserted all base items.', Color.success)
                 end
             end
@@ -426,7 +428,7 @@ local function create_clear_corpse_frame(player, bottom_frame_data)
             )
         if button then
             button.style.font_color = { 165, 165, 165 }
-            button.style.font = 'heading-3'
+            button.style.font = 'default-semibold'
             button.style.minimal_height = 36
             button.style.maximal_height = 36
             button.style.minimal_width = 40

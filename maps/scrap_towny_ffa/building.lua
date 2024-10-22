@@ -7,7 +7,7 @@ local math_floor = math.floor
 local table_insert = table.insert
 local table_size = table.size
 
-local town_zoning_entity_types = {'wall', 'gate', 'electric-pole', 'ammo-turret', 'electric-turret', 'fluid-turret'}
+local town_zoning_entity_types = { 'wall', 'gate', 'electric-pole', 'ammo-turret', 'electric-turret', 'fluid-turret' }
 
 -- these should be allowed to place inside any base by anyone as neutral
 local neutral_whitelist = {
@@ -17,13 +17,12 @@ local neutral_whitelist = {
     ['express-loader'] = true,
     ['fast-inserter'] = true,
     ['fast-loader'] = true,
-    ['filter-inserter'] = true,
     ['inserter'] = true,
     ['iron-chest'] = true,
     ['loader'] = true,
     ['long-handed-inserter'] = true,
     ['raw-fish'] = true,
-    ['stack-filter-inserter'] = true,
+    ['bulk-inserter'] = true,
     ['stack-inserter'] = true,
     ['steel-chest'] = true,
     ['tank'] = true,
@@ -47,7 +46,7 @@ local function refund_item(event, item_name)
     if event.player_index then
         local player = game.get_player(event.player_index)
         if player and player.valid then
-            player.insert({name = item_name, count = 1})
+            player.insert({ name = item_name, count = 1 })
             return
         end
     end
@@ -56,7 +55,7 @@ local function refund_item(event, item_name)
     local robot = event.robot
     if robot and robot.valid then
         local inventory = robot.get_inventory(defines.inventory.robot_cargo)
-        inventory.insert({name = item_name, count = 1})
+        inventory.insert({ name = item_name, count = 1 })
         return
     end
 end
@@ -67,7 +66,7 @@ local function error_floaty(surface, position, msg)
             name = 'flying-text',
             position = position,
             text = msg,
-            color = {r = 0.77, g = 0.0, b = 0.0}
+            color = { r = 0.77, g = 0.0, b = 0.0 }
         }
     )
 end
@@ -119,7 +118,7 @@ function Public.is_another_character_near(surface, position, force)
         return
     end
 
-    local ents = surface.find_entities_filtered {position = position, radius = 15, type = 'character'}
+    local ents = surface.find_entities_filtered { position = position, radius = 15, type = 'character' }
     if ents and #ents >= 1 then
         for _, ent in pairs(ents) do
             if ent and ent.valid then
@@ -180,7 +179,7 @@ function Public.near_another_town(force_name, position, surface, radius)
                     limit = 1
                 }
             ) > 0
-         then
+        then
             return true
         end
     end
@@ -208,7 +207,7 @@ end
 
 local function prevent_entity_in_restricted_zone(event)
     local player_index = event.player_index or nil
-    local entity = event.created_entity
+    local entity = event.entity
     if entity == nil or not entity.valid then
         return
     end
@@ -227,7 +226,7 @@ local function prevent_entity_in_restricted_zone(event)
     if error == true then
         if player_index ~= nil then
             local player = game.get_player(player_index)
-            player.play_sound({path = 'utility/cannot_build', position = player.position, volume_modifier = 0.75})
+            player.play_sound({ path = 'utility/cannot_build', position = player.position, volume_modifier = 0.75 })
         end
         error_floaty(surface, position, 'Can not build in restricted zone!')
     end
@@ -251,13 +250,13 @@ local function prevent_landfill_in_restricted_zone(event)
         position = t.position
         if Public.in_restricted_zone(surface, position) then
             fail = true
-            surface.set_tiles({{name = old_tile.name, position = position}}, true)
+            surface.set_tiles({ { name = old_tile.name, position = position } }, true)
         end
     end
     if fail == true then
         if player_index ~= nil then
             local player = game.get_player(player_index)
-            player.play_sound({path = 'utility/cannot_build', position = player.position, volume_modifier = 0.75})
+            player.play_sound({ path = 'utility/cannot_build', position = player.position, volume_modifier = 0.75 })
         end
         error_floaty(surface, position, 'Can not build in restricted zone!')
     end
@@ -266,7 +265,7 @@ end
 
 local function process_built_entities(event)
     local player_index = event.player_index
-    local entity = event.created_entity
+    local entity = event.entity
     if entity == nil or not entity.valid then
         return
     end
@@ -288,7 +287,7 @@ local function process_built_entities(event)
         if is_another_character_near then
             entity.destroy()
 
-            player.play_sound({path = 'utility/cannot_build', position = player.position, volume_modifier = 0.75})
+            player.play_sound({ path = 'utility/cannot_build', position = player.position, volume_modifier = 0.75 })
             error_floaty(surface, position, "Can't build near other characters!")
             if name ~= 'entity-ghost' then
                 if event.stack and event.stack.valid_for_read then
@@ -326,7 +325,7 @@ local function process_built_entities(event)
                     return
                 end
 
-                player.play_sound({path = 'utility/cannot_build', position = player.position, volume_modifier = 0.75})
+                player.play_sound({ path = 'utility/cannot_build', position = player.position, volume_modifier = 0.75 })
             end
             error_floaty(surface, position, "Can't build near town!")
             if name ~= 'entity-ghost' then
@@ -379,13 +378,13 @@ local function prevent_tiles_near_towns(event)
         position = t.position
         if Public.near_another_town(force_name, position, surface, 32) == true then
             fail = true
-            surface.set_tiles({{name = old_tile.name, position = position}}, true)
+            surface.set_tiles({ { name = old_tile.name, position = position } }, true)
         end
     end
     if fail == true then
         if player_index ~= nil then
             local player = game.get_player(player_index)
-            player.play_sound({path = 'utility/cannot_build', position = player.position, volume_modifier = 0.75})
+            player.play_sound({ path = 'utility/cannot_build', position = player.position, volume_modifier = 0.75 })
         end
         error_floaty(surface, position, "Can't build near town!")
     end

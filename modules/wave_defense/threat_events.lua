@@ -73,7 +73,7 @@ local place_nest_near_unit_group = function ()
     local disable_spawn_near_target = Public.get('disable_spawn_near_target')
 
     local generated_units = Public.get('generated_units')
-    local group = generated_units.unit_groups[random_group.group_number]
+    local group = generated_units.unit_groups[random_groupunique_id]
     if not group then
         return
     end
@@ -234,7 +234,7 @@ function Public.build_worm()
         return
     end
     local generated_units = Public.get('generated_units')
-    local group = generated_units.unit_groups[random_group.group_number]
+    local group = generated_units.unit_groups[random_groupunique_id]
     if not group then
         return
     end

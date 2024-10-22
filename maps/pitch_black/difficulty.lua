@@ -27,15 +27,15 @@ function Public.set_daytime_difficulty(surface)
 end
 
 function Public.set_biter_difficulty()
-    local daytime = global.daytime
+    local daytime = storage.daytime
 
     local daytime_extra_life_modifier = (-0.30 + daytime) * 2
     if daytime_extra_life_modifier < 0 then
         daytime_extra_life_modifier = 0
     end
 
-    local extra_lifes = global.map_score * 0.0001 * daytime + daytime_extra_life_modifier
-    global.biter_reanimator.forces[2] = extra_lifes
+    local extra_lifes = storage.map_score * 0.0001 * daytime + daytime_extra_life_modifier
+    storage.biter_reanimator.forces[2] = extra_lifes
 end
 
 function Public.add_score(entity)
@@ -43,7 +43,7 @@ function Public.add_score(entity)
     if not value then
         return
     end
-    global.map_score = global.map_score + value
+    storage.map_score = storage.map_score + value
 end
 
 function Public.fleeing_biteys(entity, cause)
@@ -64,14 +64,14 @@ function Public.fleeing_biteys(entity, cause)
 
     local unit_groups = {}
     local position = entity.position
-    local units = surface.find_entities_filtered({type = 'unit', force = 'enemy', area = {{position.x - 16, position.y - 16}, {position.x + 16, position.y + 16}}})
+    local units = surface.find_entities_filtered({ type = 'unit', force = 'enemy', area = { { position.x - 16, position.y - 16 }, { position.x + 16, position.y + 16 } } })
 
     for _, unit in pairs(units) do
         local unit_group = unit.unit_group
         if unit_group then
             if unit_group.valid then
-                if not unit_groups[unit_group.group_number] then
-                    unit_groups[unit_group.group_number] = unit_group
+                if not unit_groups[unit_groupunique_id] then
+                    unit_groups[unit_groupunique_id] = unit_group
                 end
             end
         else

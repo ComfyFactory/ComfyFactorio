@@ -1,30 +1,34 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-
 -- local Memory = require 'maps.pirates.memory'
-local Math = require 'maps.pirates.math'
+local Math = require('maps.pirates.math')
 -- local Balance = require 'maps.pirates.balance'
 -- local Structures = require 'maps.pirates.structures.structures'
 -- local Common = require 'maps.pirates.common'
 -- local Utils = require 'maps.pirates.utils_local'
-local _inspect = require 'utils.inspect'.inspect
-local Ores = require 'maps.pirates.ores'
-local IslandsCommon = require 'maps.pirates.surfaces.islands.common'
-local Hunt = require 'maps.pirates.surfaces.islands.hunt'
+local _inspect = require('utils.inspect').inspect
+local Ores = require('maps.pirates.ores')
+local IslandsCommon = require('maps.pirates.surfaces.islands.common')
+local Hunt = require('maps.pirates.surfaces.islands.hunt')
 
 local Public = {}
-Public.Data = require 'maps.pirates.surfaces.islands.first.data'
-
+Public.Data = require('maps.pirates.surfaces.islands.first.data')
 
 function Public.noises(args)
 	local ret = {}
 
 	ret.height = IslandsCommon.island_height_1(args)
 	ret.forest = args.noise_generator.forest
-	ret.forest_abs = function (p) return Math.abs(ret.forest(p)) end
-	ret.forest_abs_suppressed = function (p) return ret.forest_abs(p) - 1 * Math.slopefromto(ret.height(p), 0.35, 0.1) end
+	ret.forest_abs = function(p)
+		return Math.abs(ret.forest(p))
+	end
+	ret.forest_abs_suppressed = function(p)
+		return ret.forest_abs(p) - 1 * Math.slopefromto(ret.height(p), 0.35, 0.1)
+	end
 	ret.rock = args.noise_generator.rock
-	ret.rock_abs = function (p) return Math.abs(ret.rock(p)) end
+	ret.rock_abs = function(p)
+		return Math.abs(ret.rock(p))
+	end
 	ret.farness = IslandsCommon.island_farness_1(args) --isn't available on the iconized pass, only on actual generation; check args.iconized_generation before you use this
 	return ret
 end
@@ -33,8 +37,9 @@ function Public.terrain(args)
 	local noises = Public.noises(args)
 	local p = args.p
 
-
-	if IslandsCommon.place_water_tile(args) then return end
+	if IslandsCommon.place_water_tile(args) then
+		return
+	end
 
 	if noises.height(p) < 0 then
 		args.tiles[#args.tiles + 1] = { name = 'water', position = args.p }
@@ -65,11 +70,20 @@ function Public.terrain(args)
 			else
 				local treedensity = 0.4 * Math.slopefromto(noises.forest_abs_suppressed(p), 0.6, 0.85)
 				if noises.forest(p) > 0.87 then
-					if Math.random(1, 100) < treedensity * 100 then args.entities[#args.entities + 1] = { name = 'tree-01', position = args.p, visible_on_overworld = true } end
+					if Math.random(1, 100) < treedensity * 100 then
+						args.entities[#args.entities + 1] =
+							{ name = 'tree-01', position = args.p, visible_on_overworld = true }
+					end
 				elseif noises.forest(p) < -1.4 then
-					if Math.random(1, 100) < treedensity * 100 then args.entities[#args.entities + 1] = { name = 'tree-03', position = args.p, visible_on_overworld = true } end
+					if Math.random(1, 100) < treedensity * 100 then
+						args.entities[#args.entities + 1] =
+							{ name = 'tree-03', position = args.p, visible_on_overworld = true }
+					end
 				else
-					if Math.random(1, 100) < treedensity * 100 then args.entities[#args.entities + 1] = { name = 'tree-02', position = args.p, visible_on_overworld = true } end
+					if Math.random(1, 100) < treedensity * 100 then
+						args.entities[#args.entities + 1] =
+							{ name = 'tree-02', position = args.p, visible_on_overworld = true }
+					end
 				end
 			end
 		end
@@ -82,19 +96,24 @@ function Public.terrain(args)
 			if rockrng < rockdensity then
 				args.entities[#args.entities + 1] = IslandsCommon.random_rock_1(args.p)
 			elseif rockrng < rockdensity * 1.5 then
-				args.decoratives[#args.decoratives + 1] = { name = 'rock-medium', position = args.p }
+				args.decoratives[#args.decoratives + 1] = { name = 'medium-rock', position = args.p }
 			elseif rockrng < rockdensity * 2 then
-				args.decoratives[#args.decoratives + 1] = { name = 'rock-small', position = args.p }
+				args.decoratives[#args.decoratives + 1] = { name = 'small-rock', position = args.p }
 			elseif rockrng < rockdensity * 2.5 then
-				args.decoratives[#args.decoratives + 1] = { name = 'rock-tiny', position = args.p }
+				args.decoratives[#args.decoratives + 1] = { name = 'tiny-rock', position = args.p }
 			end
 		end
 	end
 end
 
 function Public.chunk_structures(args)
-	local spec = function (p)
-		local noises = Public.noises { p = p, noise_generator = args.noise_generator, static_params = args.static_params, seed = args.seed }
+	local spec = function(p)
+		local noises = Public.noises({
+			p = p,
+			noise_generator = args.noise_generator,
+			static_params = args.static_params,
+			seed = args.seed,
+		})
 
 		return {
 			placeable = noises.farness(p) > 0.4,

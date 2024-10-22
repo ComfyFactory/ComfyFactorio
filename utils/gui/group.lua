@@ -13,23 +13,23 @@ local this = {
     player_group = {},
     join_spam_protection = {},
     tag_groups = {
-        ['Miner'] = {name = 'Miner', founder = 'script', description = '[img=item/electric-mining-drill]', static = true},
-        ['Smeltery'] = {name = 'Smeltery', founder = 'script', description = '[img=item/stone-furnace]', static = true},
-        ['Power'] = {name = 'Power', founder = 'script', description = '[img=item/big-electric-pole]', static = true},
-        ['Production'] = {name = 'Production', founder = 'script', description = '[img=item/assembling-machine-1]', static = true},
-        ['Science'] = {name = 'Science', founder = 'script', description = '[img=item/chemical-science-pack]', static = true},
-        ['Trainman'] = {name = 'Trainman', founder = 'script', description = '[img=item/locomotive]', static = true},
-        ['Oil processing'] = {name = 'Oil Processing', founder = 'script', description = '[img=fluid/crude-oil]', static = true},
-        ['Trooper'] = {name = 'Trooper', founder = 'script', description = '[img=item/submachine-gun]', static = true},
-        ['Fortifications'] = {name = 'Fortifications', founder = 'script', description = '[img=item/stone-wall]', static = true},
-        ['Support'] = {name = 'Support', founder = 'script', description = '[img=item/repair-pack]', static = true}
+        ['Miner'] = { name = 'Miner', founder = 'script', description = '[img=item/electric-mining-drill]', static = true },
+        ['Smeltery'] = { name = 'Smeltery', founder = 'script', description = '[img=item/stone-furnace]', static = true },
+        ['Power'] = { name = 'Power', founder = 'script', description = '[img=item/big-electric-pole]', static = true },
+        ['Production'] = { name = 'Production', founder = 'script', description = '[img=item/assembling-machine-1]', static = true },
+        ['Science'] = { name = 'Science', founder = 'script', description = '[img=item/chemical-science-pack]', static = true },
+        ['Trainman'] = { name = 'Trainman', founder = 'script', description = '[img=item/locomotive]', static = true },
+        ['Oil processing'] = { name = 'Oil Processing', founder = 'script', description = '[img=fluid/crude-oil]', static = true },
+        ['Trooper'] = { name = 'Trooper', founder = 'script', description = '[img=item/submachine-gun]', static = true },
+        ['Fortifications'] = { name = 'Fortifications', founder = 'script', description = '[img=item/stone-wall]', static = true },
+        ['Support'] = { name = 'Support', founder = 'script', description = '[img=item/repair-pack]', static = true }
     },
     alphanumeric = true
 }
 
 Global.register(
     this,
-    function(t)
+    function (t)
         this = t
     end
 )
@@ -48,17 +48,17 @@ local function build_group_gui(data)
 
     frame.clear()
 
-    local t = frame.add({type = 'table', column_count = 5})
+    local t = frame.add({ type = 'table', column_count = 5 })
 
     local headings = {
-        {{'gui.title'}, group_name_width},
-        {{'gui.description'}, description_width},
-        {{'gui.members'}, members_width * member_columns},
-        {'', actions_width}
+        { { 'gui.title' },     group_name_width },
+        { { 'gui.description' }, description_width },
+        { { 'gui.members' },   members_width * member_columns },
+        { '',                  actions_width }
     }
     for _, h in pairs(headings) do
-        local l = t.add({type = 'label', caption = h[1]})
-        l.style.font_color = {r = 0.98, g = 0.66, b = 0.22}
+        local l = t.add({ type = 'label', caption = h[1] })
+        l.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
         l.style.font = 'heading-2'
         l.style.top_padding = 6
         l.style.minimal_height = 40
@@ -69,60 +69,60 @@ local function build_group_gui(data)
 
     local scroll_pane =
         frame.add(
-        {
-            type = 'scroll-pane',
-            name = 'scroll_pane',
-            direction = 'vertical',
-            horizontal_scroll_policy = 'never',
-            vertical_scroll_policy = 'auto'
-        }
-    )
+            {
+                type = 'scroll-pane',
+                name = 'scroll_pane',
+                direction = 'vertical',
+                horizontal_scroll_policy = 'never',
+                vertical_scroll_policy = 'auto'
+            }
+        )
     scroll_pane.style.maximal_height = total_height - 50
     scroll_pane.style.minimal_height = total_height - 50
 
-    t = scroll_pane.add({type = 'table', name = 'groups_table', column_count = 4})
+    t = scroll_pane.add({ type = 'table', name = 'groups_table', column_count = 4 })
     for _, h in pairs(headings) do
-        local l = t.add({type = 'label', caption = ''})
+        local l = t.add({ type = 'label', caption = '' })
         l.style.minimal_width = h[2]
         l.style.maximal_width = h[2]
     end
 
     for _, group in pairs(this.tag_groups) do
         if (group.name and group.founder and group.description) then
-            local l = t.add({type = 'label', caption = group.name})
+            local l = t.add({ type = 'label', caption = group.name })
             l.style.top_padding = 16
             l.style.bottom_padding = 16
             l.style.minimal_width = group_name_width
             l.style.maximal_width = group_name_width
-            l.style.font = 'heading-3'
+            l.style.font = 'default-semibold'
             l.style.horizontal_align = 'center'
             local color
             if game.players[group.founder] and game.players[group.founder].color then
                 color = game.players[group.founder].color
             else
-                color = {r = 0.90, g = 0.90, b = 0.90}
+                color = { r = 0.90, g = 0.90, b = 0.90 }
             end
-            color = {r = color.r * 0.6 + 0.4, g = color.g * 0.6 + 0.4, b = color.b * 0.6 + 0.4, a = 1}
+            color = { r = color.r * 0.6 + 0.4, g = color.g * 0.6 + 0.4, b = color.b * 0.6 + 0.4, a = 1 }
             l.style.font_color = color
             l.style.single_line = false
-            l = t.add({type = 'label', caption = group.description})
+            l = t.add({ type = 'label', caption = group.description })
             l.style.top_padding = 16
             l.style.bottom_padding = 16
             l.style.minimal_width = description_width
             l.style.maximal_width = description_width
-            l.style.font_color = {r = 0.90, g = 0.90, b = 0.90}
+            l.style.font_color = { r = 0.90, g = 0.90, b = 0.90 }
             l.style.single_line = false
-            l.style.font = 'heading-3'
+            l.style.font = 'default-semibold'
             l.style.horizontal_align = 'center'
 
-            local tt = t.add({type = 'table', column_count = 2})
-            local flow = tt.add({type = 'flow'})
+            local tt = t.add({ type = 'table', column_count = 2 })
+            local flow = tt.add({ type = 'flow' })
             flow.style.left_padding = 65
-            local ttt = tt.add({type = 'table', column_count = member_columns})
+            local ttt = tt.add({ type = 'table', column_count = member_columns })
             ttt.style.minimal_width = members_width * 2 - 25
             for _, p in pairs(game.connected_players) do
                 if group.name == this.player_group[p.name] then
-                    l = ttt.add({type = 'label', caption = p.name})
+                    l = ttt.add({ type = 'label', caption = p.name })
                     color = {
                         r = p.color.r * 0.6 + 0.4,
                         g = p.color.g * 0.6 + 0.4,
@@ -132,46 +132,46 @@ local function build_group_gui(data)
                     l.style.font_color = color
                     l.style.maximal_width = members_width * 2 - 60
                     l.style.single_line = false
-                    l.style.font = 'heading-3'
+                    l.style.font = 'default-semibold'
                     l.style.horizontal_align = 'center'
                 end
             end
 
-            tt = t.add({type = 'table', name = group.name, column_count = 1})
+            tt = t.add({ type = 'table', name = group.name, column_count = 1 })
             if group.name ~= this.player_group[player.name] then
-                local b = tt.add({type = 'button', caption = {'gui.join'}})
+                local b = tt.add({ type = 'button', caption = { 'gui.join' } })
                 b.style.font = 'default-bold'
                 b.style.minimal_width = actions_width
                 b.style.maximal_width = actions_width
             else
-                local b = tt.add({type = 'button', caption = {'gui.leave'}})
+                local b = tt.add({ type = 'button', caption = { 'gui.leave' } })
                 b.style.font = 'default-bold'
                 b.style.minimal_width = actions_width
                 b.style.maximal_width = actions_width
             end
             if (player.admin == true or group.founder == player.name) and not group.static then
-                local b = tt.add({type = 'button', caption = {'gui.delete'}})
+                local b = tt.add({ type = 'button', caption = { 'gui.delete' } })
                 b.style.font = 'default-bold'
                 b.style.minimal_width = actions_width
                 b.style.maximal_width = actions_width
             else
-                local b = tt.add({type = 'button', caption = {'gui.delete'}})
+                local b = tt.add({ type = 'button', caption = { 'gui.delete' } })
                 b.enabled = false
                 b.style.font = 'default-bold'
                 b.style.minimal_width = actions_width
                 b.style.maximal_width = actions_width
             end
-            tt.add {type = 'line'}
+            tt.add { type = 'line' }
         end
     end
 
-    local frame2 = frame.add({type = 'frame', name = 'frame2'})
-    t = frame2.add({type = 'table', name = 'group_table', column_count = 4})
-    local textfield = t.add({type = 'textfield', name = 'new_group_name', text = 'Name'})
+    local frame2 = frame.add({ type = 'frame', name = 'frame2' })
+    t = frame2.add({ type = 'table', name = 'group_table', column_count = 4 })
+    local textfield = t.add({ type = 'textfield', name = 'new_group_name', text = 'Name' })
     textfield.style.minimal_width = 200
-    textfield = t.add({type = 'textfield', name = 'new_group_description', text = 'Description'})
+    textfield = t.add({ type = 'textfield', name = 'new_group_description', text = 'Description' })
     textfield.style.minimal_width = 400
-    local b = t.add({type = 'button', name = 'create_new_group', caption = {'gui.create'}})
+    local b = t.add({ type = 'button', name = 'create_new_group', caption = { 'gui.create' } })
     b.style.minimal_width = 150
     b.style.font = 'default-bold'
 end
@@ -196,7 +196,7 @@ local function refresh_gui()
                     new_group_description = ''
                 end
 
-                local data = {player = player, frame = frame}
+                local data = { player = player, frame = frame }
                 build_group_gui(data)
 
                 frame = Gui.get_player_active_frame(player)
@@ -283,23 +283,23 @@ local function on_gui_click(event)
         if new_group_name ~= '' and new_group_name ~= 'Name' and new_group_description ~= 'Description' then
             if this.alphanumeric then
                 if alphanumeric(new_group_name) then
-                    player.print('Group name is not valid.', {r = 0.90, g = 0.0, b = 0.0})
+                    player.print('Group name is not valid.', { r = 0.90, g = 0.0, b = 0.0 })
                     return
                 end
 
                 if alphanumeric(new_group_description) then
-                    player.print('Group description is not valid.', {r = 0.90, g = 0.0, b = 0.0})
+                    player.print('Group description is not valid.', { r = 0.90, g = 0.0, b = 0.0 })
                     return
                 end
             end
 
             if string.len(new_group_name) > 64 then
-                player.print('Group name is too long. 64 characters maximum.', {r = 0.90, g = 0.0, b = 0.0})
+                player.print('Group name is too long. 64 characters maximum.', { r = 0.90, g = 0.0, b = 0.0 })
                 return
             end
 
             if string.len(new_group_description) > 128 then
-                player.print('Description is too long. 128 characters maximum.', {r = 0.90, g = 0.0, b = 0.0})
+                player.print('Description is too long. 128 characters maximum.', { r = 0.90, g = 0.0, b = 0.0 })
                 return
             end
 
@@ -315,8 +315,8 @@ local function on_gui_click(event)
                 a = 1
             }
             game.print(player.name .. ' has founded a new group!', color)
-            game.print('>> ' .. new_group_name, {r = 0.98, g = 0.66, b = 0.22})
-            game.print(new_group_description, {r = 0.85, g = 0.85, b = 0.85})
+            game.print('>> ' .. new_group_name, { r = 0.98, g = 0.66, b = 0.22 })
+            game.print(new_group_description, { r = 0.85, g = 0.85, b = 0.85 })
 
             frame.frame2.group_table.new_group_name.text = 'Name'
             frame.frame2.group_table.new_group_description.text = 'Description'
@@ -411,11 +411,11 @@ function Public.reset_groups()
     end
 end
 
-Gui.add_tab_to_gui({name = module_name, caption = 'Groups', id = build_group_gui_token, admin = false})
+Gui.add_tab_to_gui({ name = module_name, caption = 'Groups', id = build_group_gui_token, admin = false })
 
 Gui.on_click(
     module_name,
-    function(event)
+    function (event)
         local player = event.player
         Gui.reload_active_tab(player)
     end

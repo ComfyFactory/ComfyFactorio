@@ -36,10 +36,10 @@ local function connect_power_pole(entity, wagon_area_left_top_y)
     local surface = entity.surface
     local max_wire_distance = entity.prototype.max_wire_distance
     local area = {
-        {entity.position.x - max_wire_distance, entity.position.y - max_wire_distance},
-        {entity.position.x + max_wire_distance, entity.position.y - 1}
+        { entity.position.x - max_wire_distance, entity.position.y - max_wire_distance },
+        { entity.position.x + max_wire_distance, entity.position.y - 1 }
     }
-    for _, pole in pairs(surface.find_entities_filtered({area = area, name = entity.name})) do
+    for _, pole in pairs(surface.find_entities_filtered({ area = area, name = entity.name })) do
         if pole.position.y < wagon_area_left_top_y then
             entity.connect_neighbour(pole)
             return
@@ -74,9 +74,9 @@ local function equal_fluid(source_tank, target_tank)
         return
     end
 
-    local inserted_amount = target_tank.insert_fluid({name = source_fluid.name, amount = amount, temperature = source_fluid.temperature})
+    local inserted_amount = target_tank.insert_fluid({ name = source_fluid.name, amount = amount, temperature = source_fluid.temperature })
     if inserted_amount > 0 then
-        source_tank.remove_fluid({name = source_fluid.name, amount = inserted_amount})
+        source_tank.remove_fluid({ name = source_fluid.name, amount = inserted_amount })
     end
 end
 
@@ -88,7 +88,7 @@ end
 
 local function input_filtered(wagon_inventory, chest, chest_inventory, free_slots)
     local request_stacks = {}
-    local prototypes = game.item_prototypes
+    local prototypes = prototypes.item
     for slot_index = 1, 4, 1 do
         local stack = chest.get_request_slot(slot_index)
         if stack then
@@ -213,17 +213,17 @@ local function construct_wagon_doors(icw, wagon)
     local area = wagon.area
     local surface = wagon.surface
 
-    for _, x in pairs({area.left_top.x - 0.55, area.right_bottom.x + 0.55}) do
+    for _, x in pairs({ area.left_top.x - 0.55, area.right_bottom.x + 0.55 }) do
         local e =
             surface.create_entity(
-            {
-                name = 'car',
-                position = {x, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)},
-                force = 'neutral',
-                create_build_effect_smoke = false
-            }
-        )
-        e.get_inventory(defines.inventory.fuel).insert({name = 'wood', count = 1})
+                {
+                    name = 'car',
+                    position = { x, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5) },
+                    force = 'neutral',
+                    create_build_effect_smoke = false
+                }
+            )
+        e.get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 1 })
         e.destructible = false
         e.minable = false
         e.operable = false
@@ -262,7 +262,7 @@ function Public.kill_wagon(icw, entity)
     local surface = wagon.surface
     kick_players_out_of_vehicles(wagon)
     kill_wagon_doors(icw, wagon)
-    for _, e in pairs(surface.find_entities_filtered({area = wagon.area})) do
+    for _, e in pairs(surface.find_entities_filtered({ area = wagon.area })) do
         if e.name == 'character' and e.player then
             local p = wagon.entity.surface.find_non_colliding_position('character', wagon.entity.position, 128, 0.5)
             if p then
@@ -275,8 +275,8 @@ function Public.kill_wagon(icw, entity)
             e.die()
         end
     end
-    for _, tile in pairs(surface.find_tiles_filtered({area = wagon.area})) do
-        surface.set_tiles({{name = 'out-of-map', position = tile.position}}, true)
+    for _, tile in pairs(surface.find_tiles_filtered({ area = wagon.area })) do
+        surface.set_tiles({ { name = 'out-of-map', position = tile.position } }, true)
     end
     wagon.entity.force.chart(surface, wagon.area)
     icw.wagons[entity.unit_number] = nil
@@ -292,21 +292,21 @@ function Public.create_room_surface(icw, unit_number)
         ['height'] = 2,
         ['water'] = 0,
         ['starting_area'] = 1,
-        ['cliff_settings'] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
+        ['cliff_settings'] = { cliff_elevation_interval = 0, cliff_elevation_0 = 0 },
         ['default_enable_all_autoplace_controls'] = true,
         ['autoplace_settings'] = {
-            ['entity'] = {treat_missing_as_default = false},
-            ['tile'] = {treat_missing_as_default = true},
-            ['decorative'] = {treat_missing_as_default = false}
+            ['entity'] = { treat_missing_as_default = false },
+            ['tile'] = { treat_missing_as_default = true },
+            ['decorative'] = { treat_missing_as_default = false }
         }
     }
     local surface = game.create_surface(tostring(unit_number), map_gen_settings)
     surface.freeze_daytime = true
     surface.daytime = 0.1
-    surface.request_to_generate_chunks({16, 16}, 2)
+    surface.request_to_generate_chunks({ 16, 16 }, 2)
     surface.force_generate_chunk_requests()
-    for _, tile in pairs(surface.find_tiles_filtered({area = {{-2, -2}, {2, 2}}})) do
-        surface.set_tiles({{name = 'out-of-map', position = tile.position}}, true)
+    for _, tile in pairs(surface.find_tiles_filtered({ area = { { -2, -2 }, { 2, 2 } } })) do
+        surface.set_tiles({ { name = 'out-of-map', position = tile.position } }, true)
     end
     table_insert(icw.surfaces, surface)
     return surface
@@ -323,20 +323,20 @@ function Public.create_wagon_room(icw, wagon)
 
     local tiles = {}
     for x = -3, 2, 1 do
-        table_insert(tiles, {name = 'hazard-concrete-right', position = {x, area.left_top.y}})
-        table_insert(tiles, {name = 'hazard-concrete-right', position = {x, area.right_bottom.y - 1}})
+        table_insert(tiles, { name = 'hazard-concrete-right', position = { x, area.left_top.y } })
+        table_insert(tiles, { name = 'hazard-concrete-right', position = { x, area.right_bottom.y - 1 } })
     end
     for x = area.left_top.x, area.right_bottom.x - 1, 1 do
         for y = area.left_top.y + 2, area.right_bottom.y - 3, 1 do
-            table_insert(tiles, {name = main_tile_name, position = {x, y}})
+            table_insert(tiles, { name = main_tile_name, position = { x, y } })
         end
     end
     for x = -3, 2, 1 do
         for y = 1, 3, 1 do
-            table_insert(tiles, {name = main_tile_name, position = {x, y}})
+            table_insert(tiles, { name = main_tile_name, position = { x, y } })
         end
         for y = area.right_bottom.y - 4, area.right_bottom.y - 2, 1 do
-            table_insert(tiles, {name = main_tile_name, position = {x, y}})
+            table_insert(tiles, { name = main_tile_name, position = { x, y } })
         end
     end
 
@@ -346,13 +346,13 @@ function Public.create_wagon_room(icw, wagon)
         local r2 = math_random(1, 2)
         for x = math_random(1, 2) * -1, math_random(1, 2), 1 do
             for y = r1, r2, 1 do
-                table_insert(vectors, {x, y})
+                table_insert(vectors, { x, y })
             end
         end
-        local position = {x = area.left_top.x + (area.right_bottom.x - area.left_top.x) * 0.5, y = area.left_top.y + (area.right_bottom.y - area.left_top.y) * 0.5}
-        position = {x = position.x + (-4 + math_random(0, 8)), y = position.y + (-6 + math_random(0, 12))}
+        local position = { x = area.left_top.x + (area.right_bottom.x - area.left_top.x) * 0.5, y = area.left_top.y + (area.right_bottom.y - area.left_top.y) * 0.5 }
+        position = { x = position.x + (-4 + math_random(0, 8)), y = position.y + (-6 + math_random(0, 12)) }
         for _, v in pairs(vectors) do
-            table_insert(tiles, {name = 'water', position = {position.x + v[1], position.y + v[2]}})
+            table_insert(tiles, { name = 'water', position = { position.x + v[1], position.y + v[2] } })
         end
     end
 
@@ -363,57 +363,57 @@ function Public.create_wagon_room(icw, wagon)
     if wagon.entity.type == 'fluid-wagon' then
         local height = area.right_bottom.y - area.left_top.y
         local positions = {
-            {area.right_bottom.x, area.left_top.y + height * 0.25},
-            {area.right_bottom.x, area.left_top.y + height * 0.75},
-            {area.left_top.x - 1, area.left_top.y + height * 0.25},
-            {area.left_top.x - 1, area.left_top.y + height * 0.75}
+            { area.right_bottom.x, area.left_top.y + height * 0.25 },
+            { area.right_bottom.x, area.left_top.y + height * 0.75 },
+            { area.left_top.x - 1, area.left_top.y + height * 0.25 },
+            { area.left_top.x - 1, area.left_top.y + height * 0.75 }
         }
         table.shuffle_table(positions)
         local e =
             surface.create_entity(
-            {
-                name = 'storage-tank',
-                position = positions[1],
-                force = 'neutral',
-                create_build_effect_smoke = false
-            }
-        )
+                {
+                    name = 'storage-tank',
+                    position = positions[1],
+                    force = 'neutral',
+                    create_build_effect_smoke = false
+                }
+            )
         e.destructible = false
         e.minable = false
-        wagon.transfer_entities = {e}
+        wagon.transfer_entities = { e }
         return
     end
 
     if wagon.entity.type == 'cargo-wagon' then
-        local vectors = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}}
+        local vectors = { { 0, -1 }, { 0, 1 }, { -1, 0 }, { 1, 0 } }
         local v = vectors[math_random(1, 4)]
-        local position = {math_random(area.left_top.x + 2, area.right_bottom.x - 3), math_random(area.left_top.y + 5, area.right_bottom.y - 6)}
+        local position = { math_random(area.left_top.x + 2, area.right_bottom.x - 3), math_random(area.left_top.y + 5, area.right_bottom.y - 6) }
 
         local e =
             surface.create_entity(
-            {
-                name = 'logistic-chest-requester',
-                position = position,
-                force = 'neutral',
-                create_build_effect_smoke = false
-            }
-        )
+                {
+                    name = 'logistic-chest-requester',
+                    position = position,
+                    force = 'neutral',
+                    create_build_effect_smoke = false
+                }
+            )
         e.destructible = false
         e.minable = false
 
         e2 =
             surface.create_entity(
-            {
-                name = 'logistic-chest-passive-provider',
-                position = {position[1] + v[1], position[2] + v[2]},
-                force = 'neutral',
-                create_build_effect_smoke = false
-            }
-        )
+                {
+                    name = 'logistic-chest-passive-provider',
+                    position = { position[1] + v[1], position[2] + v[2] },
+                    force = 'neutral',
+                    create_build_effect_smoke = false
+                }
+            )
         e2.destructible = false
         e2.minable = false
 
-        wagon.transfer_entities = {e, e2}
+        wagon.transfer_entities = { e, e2 }
         return
     end
 end
@@ -432,7 +432,7 @@ function Public.create_wagon(icw, created_entity, delay_surface)
 
     icw.wagons[created_entity.unit_number] = {
         entity = created_entity,
-        area = {left_top = {x = wagon_area.left_top.x, y = wagon_area.left_top.y}, right_bottom = {x = wagon_area.right_bottom.x, y = wagon_area.right_bottom.y}},
+        area = { left_top = { x = wagon_area.left_top.x, y = wagon_area.left_top.y }, right_bottom = { x = wagon_area.right_bottom.x, y = wagon_area.right_bottom.y } },
         doors = {},
         entity_count = 0
     }
@@ -499,12 +499,12 @@ function Public.use_cargo_wagon_door(icw, player, door)
     end
 
     player_data.fallback_surface = wagon.entity.surface.index
-    player_data.fallback_position = {wagon.entity.position.x, wagon.entity.position.y}
+    player_data.fallback_position = { wagon.entity.position.x, wagon.entity.position.y }
 
     if wagon.entity.surface.name ~= player.surface.name then
         local surface = wagon.entity.surface
         local x_vector = (door.position.x / math.abs(door.position.x)) * 2
-        local position = {wagon.entity.position.x + x_vector, wagon.entity.position.y}
+        local position = { wagon.entity.position.x + x_vector, wagon.entity.position.y }
         local position = surface.find_non_colliding_position('character', position, 128, 0.5)
         if not position then
             return
@@ -520,9 +520,9 @@ function Public.use_cargo_wagon_door(icw, player, door)
         local x_vector = door.position.x - player.position.x
         local position
         if x_vector > 0 then
-            position = {area.left_top.x + 0.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)}
+            position = { area.left_top.x + 0.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5) }
         else
-            position = {area.right_bottom.x - 0.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)}
+            position = { area.right_bottom.x - 0.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5) }
         end
         local p = surface.find_non_colliding_position('character', position, 128, 0.5)
         if p then
@@ -542,8 +542,8 @@ local function move_room_to_train(icw, train, wagon)
     table_insert(train.wagons, wagon.entity.unit_number)
 
     local destination_area = {
-        left_top = {x = wagon.area.left_top.x, y = train.top_y},
-        right_bottom = {x = wagon.area.right_bottom.x, y = train.top_y + (wagon.area.right_bottom.y - wagon.area.left_top.y)}
+        left_top = { x = wagon.area.left_top.x, y = train.top_y },
+        right_bottom = { x = wagon.area.right_bottom.x, y = train.top_y + (wagon.area.right_bottom.y - wagon.area.left_top.y) }
     }
 
     train.top_y = destination_area.right_bottom.y
@@ -554,11 +554,11 @@ local function move_room_to_train(icw, train, wagon)
 
     kick_players_out_of_vehicles(wagon)
     local player_positions = {}
-    for _, e in pairs(wagon.surface.find_entities_filtered({name = 'character', area = wagon.area})) do
+    for _, e in pairs(wagon.surface.find_entities_filtered({ name = 'character', area = wagon.area })) do
         local player = e.player
         if player then
-            player_positions[player.index] = {player.position.x, player.position.y + (destination_area.left_top.y - wagon.area.left_top.y)}
-            player.teleport({0, 0}, game.surfaces.nauvis)
+            player_positions[player.index] = { player.position.x, player.position.y + (destination_area.left_top.y - wagon.area.left_top.y) }
+            player.teleport({ 0, 0 }, game.surfaces.nauvis)
         end
     end
 
@@ -583,8 +583,8 @@ local function move_room_to_train(icw, train, wagon)
         player.teleport(position, train.surface)
     end
 
-    for _, tile in pairs(wagon.surface.find_tiles_filtered({area = wagon.area})) do
-        wagon.surface.set_tiles({{name = 'out-of-map', position = tile.position}}, true)
+    for _, tile in pairs(wagon.surface.find_tiles_filtered({ area = wagon.area })) do
+        wagon.surface.set_tiles({ { name = 'out-of-map', position = tile.position } }, true)
     end
     wagon.entity.force.chart(wagon.surface, wagon.area)
 
@@ -594,11 +594,11 @@ local function move_room_to_train(icw, train, wagon)
     construct_wagon_doors(icw, wagon)
 
     local left_top_y = wagon.area.left_top.y
-    for _, e in pairs(wagon.surface.find_entities_filtered({type = 'electric-pole', area = wagon.area})) do
+    for _, e in pairs(wagon.surface.find_entities_filtered({ type = 'electric-pole', area = wagon.area })) do
         connect_power_pole(e, left_top_y)
     end
 
-    for _, e in pairs(wagon.surface.find_entities_filtered({area = wagon.area, force = 'neutral'})) do
+    for _, e in pairs(wagon.surface.find_entities_filtered({ area = wagon.area, force = 'neutral' })) do
         if transfer_functions[e.name] then
             table_insert(wagon.transfer_entities, e)
         end
@@ -612,7 +612,7 @@ function Public.construct_train(icw, carriages)
         return
     end
 
-    local train = {surface = Public.create_room_surface(icw, unit_number), wagons = {}, top_y = 0}
+    local train = { surface = Public.create_room_surface(icw, unit_number), wagons = {}, top_y = 0 }
     icw.trains[unit_number] = train
 
     for k, carriage in pairs(carriages) do
@@ -656,15 +656,15 @@ function Public.draw_minimap(icw, player, surface, position)
         local player_data = get_player_data(icw, player)
         element =
             player.gui.left.add(
-            {
-                type = 'camera',
-                name = 'icw_map',
-                position = position,
-                surface_index = surface.index,
-                zoom = player_data.zoom,
-                tooltip = 'LMB: Increase zoom level.\nRMB: Decrease zoom level.\nMMB: Toggle camera size.'
-            }
-        )
+                {
+                    type = 'camera',
+                    name = 'icw_map',
+                    position = position,
+                    surface_index = surface.index,
+                    zoom = player_data.zoom,
+                    tooltip = 'LMB: Increase zoom level.\nRMB: Decrease zoom level.\nMMB: Toggle camera size.'
+                }
+            )
         element.style.margin = 1
         element.style.minimal_height = player_data.map_size
         element.style.minimal_width = player_data.map_size

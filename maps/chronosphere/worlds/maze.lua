@@ -42,7 +42,7 @@ local function path_tile(p, tiles, entities, treasure, things)
         end
     else
         if random(1, 150) == 1 and Functions.distance(p.x, p.y) > 200 then
-            local evo = game.forces['enemy'].evolution_factor
+            local evo = game.forces['enemy'].get_evolution_factor(game.get_surface(objective.active_surface_index))
             entities[#entities + 1] = {name = Raffle.worms[random(1 + floor(evo * 8), floor(1 + evo * 16))], position = p, spawn_decorations = true}
         end
     end

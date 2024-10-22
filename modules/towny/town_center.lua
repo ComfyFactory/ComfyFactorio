@@ -343,7 +343,7 @@ end
 
 function Public.found(event)
     local townytable = Table.get_table()
-    local entity = event.created_entity
+    local entity = event.entity
     if entity.force.index ~= 1 then
         return
     end
@@ -400,8 +400,10 @@ function Public.found(event)
         rendering.draw_text {
         text = 'HP: ' .. town_center.health .. ' / ' .. town_center.max_health,
         surface = surface,
-        target = town_center.market,
-        target_offset = {0, -2.5},
+        target = {
+            entity = town_center.market,
+            offset = {0, -2.5},
+        },
         color = {200, 200, 200},
         scale = 1.00,
         font = 'default-game',
@@ -413,8 +415,10 @@ function Public.found(event)
         rendering.draw_text {
         text = player.name .. "'s Town",
         surface = surface,
-        target = town_center.market,
-        target_offset = {0, -3.25},
+        target = {
+            entity = town_center.market,
+            offset = {0, -3.25},
+        },
         color = town_center.color,
         scale = 1.30,
         font = 'default-game',

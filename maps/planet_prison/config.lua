@@ -305,55 +305,55 @@ Public.raid_costs = {
 Public.wreck_loot = {
     ['iron-plate'] = {
         rare = 0.1,
-        count = {20, 40}
+        count = { 20, 40 }
     },
     ['copper-plate'] = {
         rare = 0.1,
-        count = {10, 30}
+        count = { 10, 30 }
     },
-    ['empty-barrel'] = {
+    ['barrel'] = {
         rare = 0.4,
-        count = {1, 1}
+        count = { 1, 1 }
     },
     ['copper-cable'] = {
         rare = 0.5,
-        count = {5, 20}
+        count = { 5, 20 }
     },
     ['electronic-circuit'] = {
         rare = 0.6,
-        count = {5, 20}
+        count = { 5, 20 }
     },
     ['firearm-magazine'] = {
         rare = 0.4,
-        count = {1, 2}
+        count = { 1, 2 }
     },
     ['steel-plate'] = {
         rare = 0.8,
-        count = {1, 5}
+        count = { 1, 5 }
     },
     ['explosives'] = {
         rare = 0.85,
-        count = {1, 5}
+        count = { 1, 5 }
     },
     ['advanced-circuit'] = {
         rare = 0.9,
-        count = {1, 5}
+        count = { 1, 5 }
     },
     ['processing-unit'] = {
         rare = 0.95,
-        count = {1, 2}
+        count = { 1, 2 }
     },
     ['electric-engine-unit'] = {
         rare = 0.95,
-        count = {1, 1}
+        count = { 1, 1 }
     },
     ['battery'] = {
         rare = 0.95,
-        count = {1, 2}
+        count = { 1, 2 }
     },
     ['piercing-rounds-magazine'] = {
         rare = 0.99,
-        count = {1, 2}
+        count = { 1, 2 }
     }
 }
 
@@ -745,7 +745,7 @@ Public.merchant_offer = {
         },
         offer = {
             type = 'unlock-recipe',
-            recipe = 'filter-inserter'
+            recipe = 'bulk-inserter'
         }
     },
     {
@@ -771,13 +771,13 @@ Public.merchant_offer = {
         },
         offer = {
             type = 'unlock-recipe',
-            recipe = 'stack-filter-inserter'
+            recipe = 'bulk-inserter'
         }
     }
 }
 
 Public.manual =
-    [[
+[[
 [font=heading-1]Planet Prison (1.1.0) - Manual[/font]
 [font=default-bold]You did naughty things and was sent to this planet with a one way ticket. Once an industrial site, turned into non-hospitable planet due to pollution and war. Among other inmates, there are still bandits scavenging through the junk looking for rare items.
 

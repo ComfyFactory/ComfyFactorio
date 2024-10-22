@@ -13,6 +13,7 @@ local Core = require 'utils.core'
 local Task = require 'utils.task_token'
 
 local zone_settings = Public.zone_settings
+local scenario_name = Public.scenario_name
 
 local rpg_main_frame = RPG.main_frame_name
 local random = math.random
@@ -67,7 +68,7 @@ local function add_random_loot_to_main_market(rarity)
         return false
     end
 
-    local types = game.item_prototypes
+    local types = prototypes.item
 
     for k, v in pairs(main_market_items) do
         if not v.static then
@@ -76,14 +77,14 @@ local function add_random_loot_to_main_market(rarity)
     end
 
     for _, v in pairs(items) do
-        local price = v.price[1][2] + random(1, 15) * rarity
-        local value = v.price[1][1]
+        local price = v.price[1].count + random(1, 15) * rarity
+        local value = v.price[1].name
         local stack = 1
         if v.offer.item == 'coin' then
-            price = v.price[1][2]
+            price = v.price[1].count
             stack = v.offer.count
             if not stack then
-                stack = v.price[1][2]
+                stack = v.price[1].count
             end
         end
 
@@ -100,14 +101,22 @@ local function add_random_loot_to_main_market(rarity)
 end
 
 local function death_effects(player)
-    local position = { x = player.position.x - 0.75, y = player.position.y - 1 }
+    local position = { x = player.physical_position.x - 0.75, y = player.physical_position.y - 1 }
     local b = 0.75
     for _ = 1, 5, 1 do
         local p = {
             (position.x + 0.4) + (b * -1 + math.random(0, b * 20) * 0.1),
             position.y + (b * -1 + math.random(0, b * 20) * 0.1)
         }
-        player.surface.create_entity({ name = 'flying-text', position = p, text = '☠️', color = { 255, math.random(0, 100), 0 } })
+
+        player.create_local_flying_text(
+            {
+                position = p,
+                text = '☠️',
+                time_to_live = 300,
+                speed = 100
+            }
+        )
     end
     player.play_sound { path = 'utility/axe_fighting', volume_modifier = 0.9 }
 end
@@ -175,11 +184,10 @@ local function hurt_players_outside_of_aura()
 
     local upgrades = Public.get('upgrades')
 
-    local map_name = 'mtn_v3'
     Core.iter_connected_players(
         function (player)
-            if sub(player.surface.name, 0, #map_name) == map_name then
-                local position = player.position
+            if sub(player.surface.name, 0, #scenario_name) == scenario_name then
+                local position = player.physical_position
                 local inside = ((position.x - loco.x) ^ 2 + (position.y - loco.y) ^ 2) < upgrades.locomotive_aura_radius ^ 2
                 if not inside then
                     local entity = player.character
@@ -189,7 +197,7 @@ local function hurt_players_outside_of_aura()
                         if random(1, 3) == 1 then
                             player.surface.create_entity({ name = 'medium-scorchmark', position = position, force = 'neutral' })
                         end
-                        local max_health = floor(player.character.prototype.max_health + player.character_health_bonus + player.force.character_health_bonus)
+                        local max_health = floor(player.character.max_health + player.character_health_bonus + player.force.character_health_bonus)
                         local vehicle = player.vehicle
                         if vehicle and vehicle.valid and non_valid_vehicles[vehicle.type] then
                             player.driving = false
@@ -254,7 +262,7 @@ local function give_passive_xp(data)
 
     Core.iter_connected_players(
         function (player)
-            local position = player.position
+            local position = player.physical_position
             local inside = ((position.x - loco.x) ^ 2 + (position.y - loco.y) ^ 2) < upgrades.locomotive_aura_radius ^ 2
             if player.afk_time < 200 and not RPG.get_last_spell_cast(player) then
                 if inside or player.surface.index == loco_surface.index then
@@ -271,7 +279,7 @@ local function give_passive_xp(data)
                     Modifiers.update_single_modifier(player, 'character_crafting_speed_modifier', 'aura', 1)
                     Modifiers.update_player_modifiers(player)
 
-                    local pos = player.position
+                    local pos = player.physical_position
                     RPG.gain_xp(player, 0.5 * (rpg[player.index].bonus + upgrades.xp_points))
 
                     player.create_local_flying_text {
@@ -283,7 +291,7 @@ local function give_passive_xp(data)
                     }
                     rpg[player.index].xp_since_last_floaty_text = 0
                     rpg[player.index].last_floaty_text = game.tick + visuals_delay
-                    RPG.set_last_spell_cast(player, player.position)
+                    RPG.set_last_spell_cast(player, player.physical_position)
                     if player.gui.screen[rpg_main_frame] then
                         local f = player.gui.screen[rpg_main_frame]
                         local d = Gui.get_data(f)
@@ -446,7 +454,14 @@ local function set_locomotive_health()
         if locomotive_health > locomotive_max_health then
             Public.set('locomotive_health', locomotive_max_health)
         end
-        rendering.set_text(Public.get('health_text'), 'HP: ' .. round(locomotive_health) .. ' / ' .. round(locomotive_max_health))
+        local health_text = Public.get('health_text')
+        if health_text and health_text.valid then
+            health_text.text = 'HP: ' .. round(locomotive_health) .. ' / ' .. round(locomotive_max_health)
+        end
+
+
+
+
         local carriages = Public.get('carriages')
         if carriages then
             for i = 1, #carriages do
@@ -455,11 +470,10 @@ local function set_locomotive_health()
                     return
                 end
                 get_driver_action(entity)
-                local cargo_health = 600
                 if entity.type == 'locomotive' then
-                    entity.health = 1000 * m
+                    entity.health = entity.max_health * m
                 else
-                    entity.health = cargo_health * m
+                    entity.health = entity.max_health * m
                 end
             end
         end
@@ -483,6 +497,9 @@ local function validate_index()
 
     local icw_table = ICW.get_table()
     local icw_locomotive = Public.get('icw_locomotive')
+    if not icw_locomotive or not icw_locomotive.valid then
+        return
+    end
     local loco_surface = icw_locomotive.surface
     local unit_surface = locomotive.unit_number
     local locomotive_surface = game.surfaces[icw_table.wagons[unit_surface].surface.index]
@@ -551,16 +568,6 @@ local function on_player_changed_surface(event)
         end
     end
 
-    if player.surface.name == 'nauvis' then
-        local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
-        if pos then
-            player.teleport(pos, surface)
-        else
-            pos = game.forces.player.get_spawn_position(surface)
-            player.teleport(pos, surface)
-        end
-    end
-
     local locomotive_surface = Public.get('loco_surface')
 
     if locomotive_surface and locomotive_surface.valid and player.surface.index == locomotive_surface.index then
@@ -570,32 +577,6 @@ local function on_player_changed_surface(event)
     elseif player.surface.index == surface.index then
         return Public.add_player_to_permission_group(player, 'main_surface')
     end
-end
-
-local function check_on_player_changed_surface()
-    local active_surface = Public.get('active_surface_index')
-    if not active_surface then
-        return
-    end
-
-    local surface = game.get_surface(active_surface)
-    if not surface or not surface.valid then
-        return
-    end
-
-    Core.iter_players(
-        function (player)
-            if player.surface.name == 'nauvis' then
-                local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
-                if pos then
-                    player.teleport(pos, surface)
-                else
-                    pos = game.forces.player.get_spawn_position(surface)
-                    player.teleport(pos, surface)
-                end
-            end
-        end
-    )
 end
 
 local function on_player_driving_changed_state(event)
@@ -753,16 +734,20 @@ function Public.render_train_hp()
 
     local locomotive_health = Public.get('locomotive_health')
     local locomotive_max_health = Public.get('locomotive_max_health')
-    local locomotive = Public.get('locomotive')
     local upgrades = Public.get('upgrades')
+    local locomotive = Public.get('locomotive')
     if not locomotive or not locomotive.valid then
+        return
+    end
+    local locomotive_cargo = Public.get('locomotive_cargo')
+    if not locomotive_cargo or not locomotive_cargo.valid then
         return
     end
 
     local health_text = Public.get('health_text')
 
-    if health_text then
-        rendering.destroy(health_text)
+    if health_text and health_text.valid then
+        health_text.destroy()
     end
 
     Public.set(
@@ -771,7 +756,6 @@ function Public.render_train_hp()
             text = 'HP: ' .. locomotive_health .. ' / ' .. locomotive_max_health,
             surface = surface,
             target = locomotive,
-            target_offset = { 0, -4.5 },
             color = locomotive.color,
             scale = 1.40,
             font = 'default-game',
@@ -785,8 +769,7 @@ function Public.render_train_hp()
         rendering.draw_text {
             text = 'Comfy Choo Choo',
             surface = surface,
-            target = locomotive,
-            target_offset = { 0, -6.25 },
+            target = locomotive_cargo,
             color = locomotive.color,
             scale = 1.80,
             font = 'default-game',
@@ -821,6 +804,9 @@ function Public.transfer_pollution()
     end
 
     local icw_locomotive = Public.get('icw_locomotive')
+    if not icw_locomotive or not icw_locomotive.valid then
+        return
+    end
     local surface = icw_locomotive.surface
     if not surface or not surface.valid then
         return
@@ -830,7 +816,7 @@ function Public.transfer_pollution()
 
     local pollution = surface.get_total_pollution() * (3 / (4 / 3 + 1)) * Difficulty.get().value
     active_surface.pollute(locomotive.position, pollution)
-    game.pollution_statistics.on_flow('locomotive', pollution - total_interior_pollution)
+    game.get_pollution_statistics(surface).on_flow('locomotive', pollution - total_interior_pollution)
     surface.clear_pollution()
 end
 
@@ -841,7 +827,7 @@ local function tick()
     local ticker = game.tick
 
     if ticker % 30 == 0 then
-        check_on_player_changed_surface()
+        -- check_on_player_changed_surface()
         set_locomotive_health()
         validate_index()
         fish_tag()

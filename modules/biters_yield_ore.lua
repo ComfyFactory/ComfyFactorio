@@ -29,7 +29,7 @@ local size_of_drop_raffle = #drop_raffle
 local drop_vectors = {}
 for x = -2, 2, 0.1 do
     for y = -2, 2, 0.1 do
-        table_insert(drop_vectors, {x, y})
+        table_insert(drop_vectors, { x, y })
     end
 end
 local size_of_drop_vectors = #drop_vectors
@@ -52,14 +52,14 @@ local drop_values = {
 }
 
 local function on_tick()
-    for key, entry in pairs(global.biters_drop_ore) do
+    for key, entry in pairs(storage.biters_drop_ore) do
         local surface = game.surfaces[entry[3]]
         for _ = 1, 3, 1 do
             local vector = drop_vectors[math_random(1, size_of_drop_vectors)]
-            surface.spill_item_stack({entry[1][1] + vector[1], entry[1][2] + vector[2]}, {name = drop_raffle[math_random(1, size_of_drop_raffle)], count = 1}, true)
-            global.biters_drop_ore[key][2] = global.biters_drop_ore[key][2] - 1
-            if global.biters_drop_ore[key][2] <= 0 then
-                table_remove(global.biters_drop_ore, key)
+            surface.spill_item_stack({position = { entry[1][1] + vector[1], entry[1][2] + vector[2] }, stack = { name = drop_raffle[math_random(1, size_of_drop_raffle)], count = 1 }, enable_looted = true})
+            storage.biters_drop_ore[key][2] = storage.biters_drop_ore[key][2] - 1
+            if storage.biters_drop_ore[key][2] <= 0 then
+                table_remove(storage.biters_drop_ore, key)
                 break
             end
         end
@@ -71,11 +71,11 @@ local function on_entity_died(event)
     if not drop_values[entity.name] then
         return
     end
-    table_insert(global.biters_drop_ore, {{entity.position.x, entity.position.y}, drop_values[entity.name], entity.surface.index})
+    table_insert(storage.biters_drop_ore, { { entity.position.x, entity.position.y }, drop_values[entity.name], entity.surface.index })
 end
 
 local function on_init()
-    global.biters_drop_ore = {}
+    storage.biters_drop_ore = {}
 end
 
 local Event = require 'utils.event'

@@ -35,7 +35,7 @@ local function create_particles(surface, position, amount)
     end
 end
 
-local function spawn_worm(surface, position, evolution_index)
+local function spawn_worm(surface, position, evolution_index, force)
     if not surface.valid then
         return
     end
@@ -123,10 +123,15 @@ local function spawn_worm(surface, position, evolution_index)
     }
     local raffle = worm_raffle_table[evolution_index]
     local worm_name = raffle[math.random(1, #raffle)]
-    surface.create_entity({name = worm_name, position = position})
+    surface.create_entity({name = worm_name, position = position, force = force})
 end
 
-local function unearthing_worm(surface, position, relative_evolution)
+---Creates unearthing worms
+---@param surface LuaSurface
+---@param position MapPosition
+---@param relative_evolution number|nil #if supplied, overwrites the evolution_factor of this force
+---@param force LuaForce|nil #optional, if nil, uses enemy force
+local function unearthing_worm(surface, position, relative_evolution, force)
     if not surface then
         return
     end
@@ -142,8 +147,10 @@ local function unearthing_worm(surface, position, relative_evolution)
     if not position.y then
         return
     end
-
-    local evolution_index = math.ceil(game.forces.enemy.evolution_factor * 10)
+    if not force or not force.valid then
+        force = game.forces.enemy
+    end
+    local evolution_index = math.ceil(force.get_evolution_factor(surface) * 10)
 
     if relative_evolution then
         evolution_index = math.ceil(relative_evolution * 10)
@@ -166,7 +173,7 @@ local function unearthing_worm(surface, position, relative_evolution)
         if t == 340 then
             traps[tick][#traps[tick] + 1] = {
                 callback = 'spawn_worm',
-                params = {surface, {x = position.x, y = position.y}, evolution_index}
+                params = {surface, {x = position.x, y = position.y}, evolution_index, force}
             }
         end
     end
@@ -182,7 +189,7 @@ local function on_tick()
         if callback == 'create_particles' then
             create_particles(params[1], params[2], params[3])
         elseif callback == 'spawn_worm' then
-            spawn_worm(params[1], params[2], params[3])
+            spawn_worm(params[1], params[2], params[3], params[4])
         end
     end
     traps[game.tick] = nil

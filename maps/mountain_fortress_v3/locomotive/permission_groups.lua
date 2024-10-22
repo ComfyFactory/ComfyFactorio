@@ -33,7 +33,6 @@ function Public.add_player_to_permission_group(player, group, forced)
     local allow_decon = Public.get('allow_decon')
     local allow_decon_main_surface = Public.get('allow_decon_main_surface')
 
-    default_group.set_allows_action(defines.input_action.activate_cut, false)
     if allow_decon_main_surface then
         default_group.set_allows_action(defines.input_action.deconstruct, true)
     else
@@ -56,7 +55,6 @@ function Public.add_player_to_permission_group(player, group, forced)
         else
             limited_group.set_allows_action(defines.input_action.deconstruct, false)
         end
-        limited_group.set_allows_action(defines.input_action.activate_cut, false)
     end
 
     if not game.permissions.get_group('near_locomotive') then
@@ -71,7 +69,6 @@ function Public.add_player_to_permission_group(player, group, forced)
         else
             near_locomotive_group.set_allows_action(defines.input_action.deconstruct, false)
         end
-        near_locomotive_group.set_allows_action(defines.input_action.activate_cut, false)
     end
 
     if not game.permissions.get_group('main_surface') then
@@ -84,7 +81,6 @@ function Public.add_player_to_permission_group(player, group, forced)
         else
             main_surface_group.set_allows_action(defines.input_action.deconstruct, false)
         end
-        main_surface_group.set_allows_action(defines.input_action.activate_cut, false)
     end
 
     if not game.permissions.get_group('not_trusted') then
@@ -115,7 +111,6 @@ function Public.add_player_to_permission_group(player, group, forced)
         not_trusted.set_allows_action(defines.input_action.set_trains_limit, false)
         not_trusted.set_allows_action(defines.input_action.set_train_stopped, false)
         not_trusted.set_allows_action(defines.input_action.deconstruct, false)
-        not_trusted.set_allows_action(defines.input_action.activate_cut, false)
     end
 
     if not AG.enabled then

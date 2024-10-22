@@ -1,30 +1,34 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-
 -- local Memory = require 'maps.pirates.memory'
-local Math = require 'maps.pirates.math'
+local Math = require('maps.pirates.math')
 -- local Balance = require 'maps.pirates.balance'
 -- local Structures = require 'maps.pirates.structures.structures'
 -- local Common = require 'maps.pirates.common'
 -- local Utils = require 'maps.pirates.utils_local'
-local _inspect = require 'utils.inspect'.inspect
-local Ores = require 'maps.pirates.ores'
-local IslandsCommon = require 'maps.pirates.surfaces.islands.common'
-local Hunt = require 'maps.pirates.surfaces.islands.hunt'
+local _inspect = require('utils.inspect').inspect
+local Ores = require('maps.pirates.ores')
+local IslandsCommon = require('maps.pirates.surfaces.islands.common')
+local Hunt = require('maps.pirates.surfaces.islands.hunt')
 
 local Public = {}
-Public.Data = require 'maps.pirates.surfaces.islands.horseshoe.data'
-
+Public.Data = require('maps.pirates.surfaces.islands.horseshoe.data')
 
 function Public.noises(args)
 	local ret = {}
 
 	ret.height = IslandsCommon.island_height_horseshoe(args)
 	ret.forest = args.noise_generator.forest
-	ret.forest_abs = function (p) return Math.abs(ret.forest(p)) end
-	ret.forest_abs_suppressed = function (p) return ret.forest_abs(p) - 2 * Math.slopefromto(ret.height(p), 0.2, 0.12) end
+	ret.forest_abs = function(p)
+		return Math.abs(ret.forest(p))
+	end
+	ret.forest_abs_suppressed = function(p)
+		return ret.forest_abs(p) - 2 * Math.slopefromto(ret.height(p), 0.2, 0.12)
+	end
 	ret.rock = args.noise_generator.rock
-	ret.rock_abs = function (p) return Math.abs(ret.rock(p)) end
+	ret.rock_abs = function(p)
+		return Math.abs(ret.rock(p))
+	end
 	ret.mood = args.noise_generator.mood
 	ret.farness = IslandsCommon.island_farness_horseshoe(args) --isn't available on the iconized pass, only on actual generation; check args.iconized_generation before you use this
 	return ret
@@ -34,8 +38,9 @@ function Public.terrain(args)
 	local noises = Public.noises(args)
 	local p = args.p
 
-
-	if IslandsCommon.place_water_tile(args) then return end
+	if IslandsCommon.place_water_tile(args) then
+		return
+	end
 
 	if noises.height(p) < 0 then
 		args.tiles[#args.tiles + 1] = { name = 'water', position = args.p }
@@ -44,7 +49,12 @@ function Public.terrain(args)
 
 	if noises.height(p) < 0.05 then
 		args.tiles[#args.tiles + 1] = { name = 'sand-1', position = args.p }
-		if (not args.iconized_generation) and noises.farness(p) > 0.02 and noises.farness(p) < 0.6 and Math.random(500) == 1 then
+		if
+			not args.iconized_generation
+			and noises.farness(p) > 0.02
+			and noises.farness(p) < 0.6
+			and Math.random(500) == 1
+		then
 			args.specials[#args.specials + 1] = { name = 'buried-treasure', position = args.p }
 		end
 	elseif noises.height(p) < 0.12 then
@@ -72,29 +82,36 @@ function Public.terrain(args)
 			local treedensity
 			if forest_noise > 0 then
 				treedensity = 0.5 * Math.slopefromto(noises.forest_abs_suppressed(p), 0.58, 0.75)
-				if Math.random(1, 100) < treedensity * 100 then args.entities[#args.entities + 1] = { name = 'tree-06', position = args.p, visible_on_overworld = true } end
+				if Math.random(1, 100) < treedensity * 100 then
+					args.entities[#args.entities + 1] =
+						{ name = 'tree-06', position = args.p, visible_on_overworld = true }
+				end
 			elseif noises.forest_abs_suppressed(p) > 0.68 then
 				treedensity = 0.5 * Math.slopefromto(forest_noise, -0.7, -0.75)
-				if Math.random(1, 100) < treedensity * 100 then args.entities[#args.entities + 1] = { name = 'tree-08-brown', position = args.p, visible_on_overworld = true } end
+				if Math.random(1, 100) < treedensity * 100 then
+					args.entities[#args.entities + 1] =
+						{ name = 'tree-08-brown', position = args.p, visible_on_overworld = true }
+				end
 			end
 		end
 	end
-
 
 	if noises.forest_abs_suppressed(p) < 0.45 then
 		if noises.height(p) > 0.05 then
 			if noises.rock_abs(p) > 0.15 then
 				local rockdensity = 1 / 500 * Math.slopefromto(noises.rock_abs(p), 0.15, 0.5)
-				if noises.height(p) < 0.12 then rockdensity = rockdensity * 3 end
+				if noises.height(p) < 0.12 then
+					rockdensity = rockdensity * 3
+				end
 				local rockrng = Math.random()
 				if rockrng < rockdensity then
 					args.entities[#args.entities + 1] = IslandsCommon.random_rock_1(args.p)
 				elseif rockrng < rockdensity * 1.5 then
-					args.decoratives[#args.decoratives + 1] = { name = 'rock-medium', position = args.p }
+					args.decoratives[#args.decoratives + 1] = { name = 'medium-rock', position = args.p }
 				elseif rockrng < rockdensity * 2 then
-					args.decoratives[#args.decoratives + 1] = { name = 'rock-small', position = args.p }
+					args.decoratives[#args.decoratives + 1] = { name = 'small-rock', position = args.p }
 				elseif rockrng < rockdensity * 2.5 then
-					args.decoratives[#args.decoratives + 1] = { name = 'rock-tiny', position = args.p }
+					args.decoratives[#args.decoratives + 1] = { name = 'tiny-rock', position = args.p }
 				end
 			end
 		end
@@ -108,14 +125,22 @@ function Public.terrain(args)
 end
 
 function Public.chunk_structures(args)
-	local spec = function (p)
-		local noises = Public.noises { p = p, noise_generator = args.noise_generator, static_params = args.static_params, seed = args.seed }
+	local spec = function(p)
+		local noises = Public.noises({
+			p = p,
+			noise_generator = args.noise_generator,
+			static_params = args.static_params,
+			seed = args.seed,
+		})
 
 		return {
 			placeable = noises.farness(p) > 0.36,
 			-- spawners_indestructible = false,
 			spawners_indestructible = noises.farness(p) > 0.8,
-			density_perchunk = 9 * Math.slopefromto(noises.mood(p), 0.12, -0.18) * Math.slopefromto(noises.farness(p), 0.36, 1) * args.biter_base_density_scale,
+			density_perchunk = 9
+				* Math.slopefromto(noises.mood(p), 0.12, -0.18)
+				* Math.slopefromto(noises.farness(p), 0.36, 1)
+				* args.biter_base_density_scale,
 		}
 	end
 
@@ -123,14 +148,21 @@ function Public.chunk_structures(args)
 
 	-- Make testing easier by spawning special structures on 2nd island
 	if _DEBUG then
-		local spec2 = function (p)
-			local noises = Public.noises { p = p, noise_generator = args.noise_generator, static_params = args.static_params, seed = args.seed }
+		local spec2 = function(p)
+			local noises = Public.noises({
+				p = p,
+				noise_generator = args.noise_generator,
+				static_params = args.static_params,
+				seed = args.seed,
+			})
 
 			return {
 				-- placeable = noises.height(p) >= 0 and noises.forest_abs_suppressed(p) < 0.3 + Math.max(0, 0.2 - noises.height(p)),
 				placeable_strict = noises.height(p) >= 0.05,
 				placeable_optional = noises.forest_abs_suppressed(p) < 0.3 + Math.max(0, 0.2 - noises.height(p)),
-				chanceper4chunks = 0.4 * Math.slopefromto(noises.farness(p), 0.1, 0.4) * Math.slopefromto(noises.mood(p), 0, 0.25),
+				chanceper4chunks = 0.4
+					* Math.slopefromto(noises.farness(p), 0.1, 0.4)
+					* Math.slopefromto(noises.mood(p), 0, 0.25),
 			}
 		end
 		IslandsCommon.assorted_structures_1(args, spec2)

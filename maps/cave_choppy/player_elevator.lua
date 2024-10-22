@@ -30,9 +30,9 @@ Global.register(
         chests = chests,
         inventories = inventories
     },
-    function(global)
-        chests = global.chests
-        inventories = global.inventories
+    function (global)
+        chests = storage.chests
+        inventories = storage.inventories
     end
 )
 
@@ -40,8 +40,8 @@ Global.register(
     {
         cooldowns = cooldowns
     },
-    function(global)
-        cooldowns = global.cooldowns
+    function (global)
+        cooldowns = storage.cooldowns
     end
 )
 
@@ -59,51 +59,35 @@ local function check_player_ports()
 
         if player.surface.find_entity('player-port', player.position) then
             if cooldowns[player.name] > game.tick then
-                player.play_sound {path = 'utility/armor_insert', volume_modifier = 1}
+                player.play_sound { path = 'utility/armor_insert', volume_modifier = 1 }
                 if math.random(1, 3) == 1 then
                     player.surface.create_entity(
                         {
                             name = 'flying-text',
                             position = player.position,
                             text = math.ceil((cooldowns[tostring(player.name)] - game.tick) / 60),
-                            color = {r = math.random(130, 170), g = math.random(130, 170), b = 130}
+                            color = { r = math.random(130, 170), g = math.random(130, 170), b = 130 }
                         }
                     )
                 end
                 goto continue
             end
             local surface_name = player.surface.name == 'cave_miner' and 'choppy' or 'cave_miner'
-            local pos = surface_name == 'cave_miner' and global.surface_cave_elevator.position or {1, -4}
+            local pos = surface_name == 'cave_miner' and storage.surface_cave_elevator.position or { 1, -4 }
             local safe_pos = game.surfaces[surface_name].find_non_colliding_position('character', pos, 20, 1)
             if safe_pos then
                 player.teleport(safe_pos, surface_name)
             else
-                player.teleport({0, -3}, surface_name)
+                player.teleport({ 0, -3 }, surface_name)
             end
             cooldowns[player.name] = game.tick + 900
         end
-        --
-        --[[
-    if cooldowns[player.name] > game.tick then
-    local text = rendering.draw_text{
-      text = "Cooldown:" .. math.ceil((cooldowns[player.name] - game.tick)/60) .. " seconds",
-      surface = "choppy",
-      target = global.surface_choppy_elevator,
-      target_offset = {0, 5},
-      color = { r=0.98, g=0.66, b=0.22},
-      alignment = "center"
-    }
-    else
-      rendering.destroy(text)
-    end
-    if math.random(1, 2) == 1 then
-    rendering.destroy(text)
-]] ::continue::
+        ::continue::
     end
 end
 
 local function built_entity(event)
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity or not entity.valid then
         return
     end
@@ -118,11 +102,11 @@ end
 
 local function tick()
     if not chests['cave_miner'] then
-        chests['cave_miner'] = global.surface_cave_chest
+        chests['cave_miner'] = storage.surface_cave_chest
     end
 
     if not chests['choppy'] then
-        chests['choppy'] = global.surface_choppy_chest
+        chests['choppy'] = storage.surface_choppy_chest
     end
 
     local cave = chests['cave_miner']
@@ -144,22 +128,22 @@ local function tick()
         local count2 = oi[item] or 0
         local diff = count - count2
         if diff > 1 then
-            local count2 = oiv.insert {name = item, count = math.floor(diff / 2)}
+            local count2 = oiv.insert { name = item, count = math.floor(diff / 2) }
             if count2 > 0 then
-                civ.remove {name = item, count = count2}
+                civ.remove { name = item, count = count2 }
             end
         elseif diff < -1 then
-            local count2 = civ.insert {name = item, count = math.floor(-diff / 2)}
+            local count2 = civ.insert { name = item, count = math.floor(-diff / 2) }
             if count2 > 0 then
-                oiv.remove {name = item, count = count2}
+                oiv.remove { name = item, count = count2 }
             end
         end
     end
     for item, count in pairs(oi) do
         if count > 1 and not ci[item] then
-            local count2 = civ.insert {name = item, count = math.floor(count / 2)}
+            local count2 = civ.insert { name = item, count = math.floor(count / 2) }
             if count2 > 0 then
-                oiv.remove {name = item, count = count2}
+                oiv.remove { name = item, count = count2 }
             end
         end
     end

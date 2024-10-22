@@ -1,17 +1,18 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-local Memory = require 'maps.pirates.memory'
+local Memory = require('maps.pirates.memory')
 -- local Roles = require 'maps.pirates.roles.roles'
-local Balance = require 'maps.pirates.balance'
-local Common = require 'maps.pirates.common'
+local Balance = require('maps.pirates.balance')
+local Common = require('maps.pirates.common')
 -- local Utils = require 'maps.pirates.utils_local'
 local Math = require 'maps.pirates.math'
-local Raffle = require 'maps.pirates.raffle'
+local Raffle = require 'utils.math.raffle'
 -- local Loot = require 'maps.pirates.loot'
 -- local CoreData = require 'maps.pirates.coredata'
-local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
-local _inspect = require 'utils.inspect'.inspect
-
+local IslandEnum = require('maps.pirates.surfaces.islands.island_enum')
+local _inspect = require('utils.inspect').inspect
+local Hold = require('maps.pirates.surfaces.hold')
+local Cabin = require('maps.pirates.surfaces.cabin')
 
 local Public = {}
 
@@ -38,8 +39,6 @@ Public.quest_icons = {
 	[enum.COMPILATRON] = '[entity=compilatron]',
 }
 
-
-
 -- @TODO remake into a loot-style table:
 
 function Public.quest_reward()
@@ -48,19 +47,61 @@ function Public.quest_reward()
 	local rng = Math.random()
 
 	if rng <= 0.3 then
-		ret = { name = 'iron-plate', count = Math.ceil(2000 * multiplier), display_sprite = '[item=iron-plate]', display_amount = string.format('%.1fk', 2 * multiplier), chat_name = '[item=iron-plate]' }
+		ret = {
+			name = 'iron-plate',
+			count = Math.ceil(2000 * multiplier),
+			display_sprite = '[item=iron-plate]',
+			display_amount = string.format('%.1fk', 2 * multiplier),
+			chat_name = '[item=iron-plate]',
+		}
 	elseif rng <= 0.5 then
-		ret = { name = 'copper-plate', count = Math.ceil(2000 * multiplier), display_sprite = '[item=copper-plate]', display_amount = string.format('%.1fk', 2 * multiplier), chat_name = '[item=copper-plate]' }
+		ret = {
+			name = 'copper-plate',
+			count = Math.ceil(2000 * multiplier),
+			display_sprite = '[item=copper-plate]',
+			display_amount = string.format('%.1fk', 2 * multiplier),
+			chat_name = '[item=copper-plate]',
+		}
 	elseif rng <= 0.6 then
-		ret = { name = 'steel-plate', count = Math.ceil(380 * multiplier), display_sprite = '[item=steel-plate]', display_amount = string.format('%.0f', 380 * multiplier), chat_name = '[item=steel-plate]' }
+		ret = {
+			name = 'steel-plate',
+			count = Math.ceil(380 * multiplier),
+			display_sprite = '[item=steel-plate]',
+			display_amount = string.format('%.0f', 380 * multiplier),
+			chat_name = '[item=steel-plate]',
+		}
 	elseif rng <= 0.7 then
-		ret = { name = 'raw-fish', count = Math.ceil(420 * (multiplier ^ (1 / 2))), display_sprite = '[item=raw-fish]', display_amount = string.format('%.0f', 420 * (multiplier ^ (1 / 2))), chat_name = '[item=raw-fish]' }
+		ret = {
+			name = 'raw-fish',
+			count = Math.ceil(420 * (multiplier ^ (1 / 2))),
+			display_sprite = '[item=raw-fish]',
+			display_amount = string.format('%.0f', 420 * (multiplier ^ (1 / 2))),
+			chat_name = '[item=raw-fish]',
+		}
 	elseif rng <= 0.85 then
-		ret = { name = 'piercing-rounds-magazine', count = Math.ceil(250 * multiplier), display_sprite = '[item=piercing-rounds-magazine]', display_amount = string.format('%.0f', Math.ceil(250 * multiplier)), chat_name = '[item=piercing-rounds-magazine]' }
+		ret = {
+			name = 'piercing-rounds-magazine',
+			count = Math.ceil(250 * multiplier),
+			display_sprite = '[item=piercing-rounds-magazine]',
+			display_amount = string.format('%.0f', Math.ceil(250 * multiplier)),
+			chat_name = '[item=piercing-rounds-magazine]',
+		}
 	elseif rng <= 0.94 then
-		ret = { name = 'solid-fuel', count = Math.ceil(450 * multiplier), display_sprite = '[item=solid-fuel]', display_amount = string.format('%.0f', Math.ceil(450 * multiplier)), chat_name = '[item=solid-fuel]' }
+		ret = {
+			name = 'solid-fuel',
+			count = Math.ceil(450 * multiplier),
+			display_sprite = '[item=solid-fuel]',
+			display_amount = string.format('%.0f', Math.ceil(450 * multiplier)),
+			chat_name = '[item=solid-fuel]',
+		}
 	else
-		ret = { name = 'modular-armor', count = 1, display_sprite = '[item=modular-armor]', display_amount = '1', chat_name = '[item=modular-armor]' }
+		ret = {
+			name = 'modular-armor',
+			count = 1,
+			display_sprite = '[item=modular-armor]',
+			display_amount = '1',
+			chat_name = '[item=modular-armor]',
+		}
 	end
 
 	return ret
@@ -113,7 +154,11 @@ end
 function Public.initialise_find_quest()
 	local destination = Common.current_destination()
 
-	if destination.subtype == IslandEnum.enum.STANDARD or destination.subtype == IslandEnum.enum.RADIOACTIVE or destination.subtype == IslandEnum.enum.STANDARD_VARIANT then
+	if
+		destination.subtype == IslandEnum.enum.STANDARD
+		or destination.subtype == IslandEnum.enum.RADIOACTIVE
+		or destination.subtype == IslandEnum.enum.STANDARD_VARIANT
+	then
 		destination.dynamic_data.quest_type = enum.FIND
 		destination.dynamic_data.quest_reward = Public.quest_reward()
 		destination.dynamic_data.quest_progress = 0
@@ -134,7 +179,9 @@ function Public.initialise_nodamage_quest()
 	local destination = Common.current_destination()
 
 	-- @FIXME: this if check looks ill-formed when destination is nil
-	if not destination and destination.dynamic_data and destination.dynamic_data.rocketsilomaxhp then return false end
+	if not destination and destination.dynamic_data and destination.dynamic_data.rocketsilomaxhp then
+		return false
+	end
 
 	destination.dynamic_data.quest_type = enum.NODAMAGE
 	destination.dynamic_data.quest_reward = Public.quest_reward()
@@ -166,25 +213,64 @@ end
 -- 	return true
 -- end
 
-
 function Public.initialise_resourcecount_quest()
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 
-	if not destination and destination.dynamic_data and destination.dynamic_data.rocketsilomaxhp then return end
+	local surface = game.surfaces[destination.surface_name]
+	if not (surface and surface.valid) then
+		return
+	end
+
+	if not destination and destination.dynamic_data and destination.dynamic_data.rocketsilomaxhp then
+		return
+	end
 
 	destination.dynamic_data.quest_type = enum.RESOURCECOUNT
 	destination.dynamic_data.quest_reward = Public.quest_reward()
 	destination.dynamic_data.quest_progress = 0
 
 	local generated_production_quest = Public.generate_resourcecount_quest()
-	if not generated_production_quest then return false end
+	if not generated_production_quest then
+		return false
+	end
 
 	destination.dynamic_data.quest_params = { item = generated_production_quest.item }
 
 	local force = memory.force
 	if force and force.valid then
-		destination.dynamic_data.quest_params.initial_count = force.item_production_statistics.get_flow_count { name = generated_production_quest.item, input = true, precision_index = defines.flow_precision_index.one_thousand_hours, count = true }
+		local initial_total_count = force.get_item_production_statistics(surface).get_flow_count({
+			name = generated_production_quest.item,
+			category = 'input',
+			precision_index = defines.flow_precision_index.one_thousand_hours,
+			count = true,
+		})
+
+		for i = 1, memory.hold_surface_count do
+			local hold_surface = Hold.get_hold_surface(i)
+			if hold_surface and hold_surface.valid then
+				initial_total_count = initial_total_count
+					+ force.get_item_production_statistics(hold_surface).get_flow_count({
+						name = generated_production_quest.item,
+						category = 'input',
+						precision_index = defines.flow_precision_index.one_thousand_hours,
+						count = true,
+					})
+			end
+		end
+
+		local cabin_surface = Cabin.get_cabin_surface()
+		if cabin_surface and cabin_surface.valid then
+			initial_total_count = initial_total_count
+				+ force.get_item_production_statistics(cabin_surface).get_flow_count({
+					name = generated_production_quest.item,
+					category = 'input',
+					precision_index = defines.flow_precision_index.one_thousand_hours,
+					count = true,
+				})
+		end
+
+		destination.dynamic_data.quest_params.initial_count = initial_total_count
 	end
 
 	local progressneeded_before_rounding = generated_production_quest.base_rate * Balance.resource_quest_multiplier()
@@ -197,21 +283,23 @@ end
 function Public.initialise_worms_quest()
 	local destination = Common.current_destination()
 
-	if not (destination.surface_name and game.surfaces[destination.surface_name]) then return false end
+	if not (destination.surface_name and game.surfaces[destination.surface_name]) then
+		return false
+	end
 
 	local surface = game.surfaces[destination.surface_name]
 
-	local worms = surface.find_entities_filtered { type = 'turret' }
+	local worms = surface.find_entities_filtered({ type = 'turret' })
 
 	local count = 0
 	for i = 1, #worms do
 		local w = worms[i]
-		if w.destructible then count = count + 1 end
+		if w.destructible then
+			count = count + 1
+		end
 	end
 
-	local needed = Math.ceil(
-		15 * Math.slopefromto(count, 0, 20) + 12 * Math.slopefromto(count, 20, 80)
-	)
+	local needed = Math.ceil(15 * Math.slopefromto(count, 0, 20) + 12 * Math.slopefromto(count, 20, 80))
 
 	if destination.subtype == IslandEnum.enum.RED_DESERT then
 		needed = Math.random(20, 30)
@@ -247,7 +335,9 @@ end
 function Public.initialise_fish_quest()
 	local destination = Common.current_destination()
 
-	if not destination and destination.dynamic_data then return false end
+	if not destination and destination.dynamic_data then
+		return false
+	end
 
 	destination.dynamic_data.quest_type = enum.FISH
 	destination.dynamic_data.quest_reward = Public.quest_reward()
@@ -261,7 +351,9 @@ end
 function Public.initialise_compilatron_quest()
 	local destination = Common.current_destination()
 
-	if not destination and destination.dynamic_data then return false end
+	if not destination and destination.dynamic_data then
+		return false
+	end
 
 	destination.dynamic_data.quest_type = enum.COMPILATRON
 	destination.dynamic_data.quest_reward = Public.quest_reward()
@@ -275,10 +367,22 @@ function Public.try_resolve_quest()
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 
-	if destination.dynamic_data.quest_type and destination.dynamic_data.quest_progress and destination.dynamic_data.quest_progressneeded and destination.dynamic_data.quest_progress >= destination.dynamic_data.quest_progressneeded and (not destination.dynamic_data.quest_complete) then
+	if
+		destination.dynamic_data.quest_type
+		and destination.dynamic_data.quest_progress
+		and destination.dynamic_data.quest_progressneeded
+		and destination.dynamic_data.quest_progress >= destination.dynamic_data.quest_progressneeded
+		and not destination.dynamic_data.quest_complete
+	then
 		local force = memory.force
-		if not (force and force.valid) then return end
-		Common.notify_force_light(force, { 'pirates.granted_1', { 'pirates.granted_quest_complete' }, destination.dynamic_data.quest_reward.display_amount .. destination.dynamic_data.quest_reward.chat_name })
+		if not (force and force.valid) then
+			return
+		end
+		Common.notify_force_light(force, {
+			'pirates.granted_1',
+			{ 'pirates.granted_quest_complete' },
+			destination.dynamic_data.quest_reward.display_amount .. destination.dynamic_data.quest_reward.chat_name,
+		})
 
 		local name = destination.dynamic_data.quest_reward.name
 		local count = destination.dynamic_data.quest_reward.count
@@ -290,22 +394,30 @@ function Public.try_resolve_quest()
 		destination.dynamic_data.quest_complete = true
 
 		local boat = memory.boat
-		if not boat then return end
+		if not boat then
+			return
+		end
 		local surface_name = boat.surface_name
-		if not surface_name then return end
+		if not surface_name then
+			return
+		end
 		local surface = game.surfaces[surface_name]
-		if not (surface and surface.valid) then return end
+		if not (surface and surface.valid) then
+			return
+		end
 		local chest = boat.output_chest
-		if not chest and chest.valid then return end
+		if not chest and chest.valid then
+			return
+		end
 
 		local inventory = chest.get_inventory(defines.inventory.chest)
-		local inserted = inventory.insert { name = name, count = count }
+		local inserted = inventory.insert({ name = name, count = count })
 
 		if inserted < count then
 			local chest2 = boat.backup_output_chest
 			if chest2 and chest2.valid then
 				local inventory2 = chest2.get_inventory(defines.inventory.chest)
-				local inserted2 = inventory2.insert { name = name, count = count - inserted }
+				local inserted2 = inventory2.insert({ name = name, count = count - inserted })
 				if (inserted + inserted2) < count then
 					Common.notify_force(force, { 'pirates.error_cabin_full' })
 				end
@@ -372,26 +484,22 @@ end
 -- 	return Raffle.raffle(v, w)
 -- end
 
-
-
-
-
 Public.resourcecount_quest_data_raw = {
-	{ 1.1,  0,    1,   false, 'iron-gear-wheel',       2400 },
-	{ 0.5,  0,    1,   false, 'electronic-circuit',    1400 },
-	{ 1.1,  0,    1,   false, 'transport-belt',        1600 },
-	{ 0.8,  0,    1,   false, 'repair-pack',           350 },
+	{ 1.1, 0, 1, false, 'iron-gear-wheel', 2400 },
+	{ 0.5, 0, 1, false, 'electronic-circuit', 1400 },
+	{ 1.1, 0, 1, false, 'transport-belt', 1600 },
+	{ 0.8, 0, 1, false, 'repair-pack', 350 },
 	-- {0.1, 0, 1, false, 'red-wire', 500},
-	{ 0.4,  0,    1,   false, 'empty-barrel',          200 },
-	{ 0.7,  0,    0.5, false, 'underground-belt',      200 },
-	{ 0.7,  0,    0.5, false, 'splitter',              150 },
-	{ 0.35, 0.2,  1,   false, 'fast-splitter',         60 },
-	{ 0.35, 0.2,  1,   false, 'fast-underground-belt', 75 },
-	{ 0.7,  0.3,  1,   false, 'big-electric-pole',     100 },
-	{ 0.3,  0.61, 1,   false, 'advanced-circuit',      350 },
-	{ 1,    0,    1,   false, 'shotgun-shell',         600 },
-	{ 1,    0.9,  1,   false, 'processing-unit',       40 },
-	{ 0.6,  0.8,  1,   false, 'electric-engine-unit',  1 * 6 },
+	{ 0.4, 0, 1, false, 'barrel', 200 },
+	{ 0.7, 0, 0.5, false, 'underground-belt', 200 },
+	{ 0.7, 0, 0.5, false, 'splitter', 150 },
+	{ 0.35, 0.2, 1, false, 'fast-splitter', 60 },
+	{ 0.35, 0.2, 1, false, 'fast-underground-belt', 75 },
+	{ 0.7, 0.3, 1, false, 'big-electric-pole', 100 },
+	{ 0.3, 0.61, 1, false, 'advanced-circuit', 350 },
+	{ 1, 0, 1, false, 'shotgun-shell', 600 },
+	{ 1, 0.9, 1, false, 'processing-unit', 40 },
+	{ 0.6, 0.8, 1, false, 'electric-engine-unit', 1 * 6 },
 }
 
 function Public.resourcecount_quest_data()
@@ -421,13 +529,26 @@ function Public.generate_resourcecount_quest()
 		table.insert(v, { item = data[i].item, base_rate = data[i].base_rate })
 
 		local destination = Common.current_destination()
-		if not (destination and destination.subtype and data[i].map_subtype and data[i].map_subtype == destination.subtype) then
+		if
+			not (
+				destination
+				and destination.subtype
+				and data[i].map_subtype
+				and data[i].map_subtype == destination.subtype
+			)
+		then
 			if data[i].scaling then -- scale down weights away from the midpoint 'peak' (without changing the mean)
 				local midpoint = (data[i].game_completion_progress_max + data[i].game_completion_progress_min) / 2
 				local difference = (data[i].game_completion_progress_max - data[i].game_completion_progress_min)
-				table.insert(w, data[i].weight * Math.max(0, 1 - (Math.abs(game_completion_progress - midpoint) / (difference / 2))))
+				table.insert(
+					w,
+					data[i].weight * Math.max(0, 1 - (Math.abs(game_completion_progress - midpoint) / (difference / 2)))
+				)
 			else -- no scaling
-				if data[i].game_completion_progress_min <= game_completion_progress and data[i].game_completion_progress_max >= game_completion_progress then
+				if
+					data[i].game_completion_progress_min <= game_completion_progress
+					and data[i].game_completion_progress_max >= game_completion_progress
+				then
 					table.insert(w, data[i].weight)
 				else
 					table.insert(w, 0)

@@ -32,15 +32,15 @@ local landfill_drops = {
 local tile_coords = {}
 for x = 0, 31, 1 do
     for y = 0, 31, 1 do
-        tile_coords[#tile_coords + 1] = {x, y}
+        tile_coords[#tile_coords + 1] = { x, y }
     end
 end
 
 local function north_side(surface, left_top)
     for x = 0.5, 31.5, 1 do
         for y = 0.5, 31.5, 1 do
-            local pos = {x = left_top.x + x, y = left_top.y + y}
-            surface.set_tiles({{name = 'water-shallow', position = pos}})
+            local pos = { x = left_top.x + x, y = left_top.y + y }
+            surface.set_tiles({ { name = 'water-shallow', position = pos } })
         end
     end
 
@@ -50,12 +50,12 @@ local function north_side(surface, left_top)
 
     for _ = 1, math_random(3, 5), 1 do
         local coord_modifier = tile_coords[math_random(1, #tile_coords)]
-        local pos = {left_top.x + coord_modifier[1], left_top.y + coord_modifier[2]}
+        local pos = { left_top.x + coord_modifier[1], left_top.y + coord_modifier[2] }
         local name = 'biter-spawner'
         if math_random(1, 4) == 1 then
             name = 'spitter-spawner'
         end
-        surface.create_entity({name = name, position = pos, force = 'enemy'})
+        surface.create_entity({ name = name, position = pos, force = 'enemy' })
     end
 end
 
@@ -63,14 +63,14 @@ local function south_side(surface, left_top)
     if left_top.y < 32 then
         for x = 0.5, 31.5, 1 do
             for y = 0.5, 31.5, 1 do
-                local pos = {x = left_top.x + x, y = left_top.y + y}
-                surface.set_tiles({{name = 'sand-1', position = pos}})
+                local pos = { x = left_top.x + x, y = left_top.y + y }
+                surface.set_tiles({ { name = 'sand-1', position = pos } })
                 if math_random(1, 1024) == 1 then
-                    local crate = surface.create_entity({name = 'wooden-chest', position = pos, force = 'neutral'})
+                    local crate = surface.create_entity({ name = 'wooden-chest', position = pos, force = 'neutral' })
                     if math_random(1, 12) == 1 then
-                        crate.insert({name = 'grenade', count = math_random(2, 5)})
+                        crate.insert({ name = 'grenade', count = math_random(2, 5) })
                     else
-                        crate.insert({name = 'firearm-magazine', count = math_random(32, 96)})
+                        crate.insert({ name = 'firearm-magazine', count = math_random(32, 96) })
                     end
                 else
                     --if left_top.x > 160 or left_top.x < -160 then
@@ -82,10 +82,10 @@ local function south_side(surface, left_top)
                     --	end
                     --end
                     if math_random(1, 256) == 1 then
-                        surface.create_entity({name = 'tree-02', position = pos})
+                        surface.create_entity({ name = 'tree-02', position = pos })
                     else
                         if math_random(1, 512) == 1 then
-                            surface.create_entity({name = 'rock-huge', position = pos})
+                            surface.create_entity({ name = 'huge-rock', position = pos })
                         end
                     end
                 end
@@ -95,14 +95,14 @@ local function south_side(surface, left_top)
     end
     for x = 0.5, 31.5, 1 do
         for y = 0.5, 31.5, 1 do
-            local pos = {x = left_top.x + x, y = left_top.y + y}
+            local pos = { x = left_top.x + x, y = left_top.y + y }
             --local noise = get_noise("sands", pos)
             --if noise < 0.1 and noise > -0.1 then
             --	surface.set_tiles({{name = "sand-1", position = pos}})
             --else
-            surface.set_tiles({{name = 'water', position = pos}})
+            surface.set_tiles({ { name = 'water', position = pos } })
             if math_random(1, 256) == 1 then
-                surface.create_entity({name = 'fish', position = pos})
+                surface.create_entity({ name = 'fish', position = pos })
             end
             --end
         end
@@ -113,7 +113,7 @@ local function on_chunk_generated(event)
     local surface = event.surface
 
     if surface.index == 1 then
-        for _, e in pairs(surface.find_entities_filtered({force = 'enemy'})) do
+        for _, e in pairs(surface.find_entities_filtered({ force = 'enemy' })) do
             e.destroy()
         end
         return
@@ -121,7 +121,7 @@ local function on_chunk_generated(event)
 
     local left_top = event.area.left_top
 
-    surface.destroy_decoratives({area = event.area})
+    surface.destroy_decoratives({ area = event.area })
 
     if left_top.y < 0 then
         north_side(surface, left_top)
@@ -139,16 +139,16 @@ local function init_surface()
     local map_gen_settings = {}
     map_gen_settings.water = '0'
     map_gen_settings.starting_area = '1'
-    map_gen_settings.cliff_settings = {cliff_elevation_interval = 40, cliff_elevation_0 = 40}
+    map_gen_settings.cliff_settings = { cliff_elevation_interval = 40, cliff_elevation_0 = 40 }
     map_gen_settings.autoplace_controls = {
-        ['coal'] = {frequency = '0', size = '0', richness = '0'},
-        ['stone'] = {frequency = '0', size = '0', richness = '0'},
-        ['iron-ore'] = {frequency = '0', size = '0', richness = '0'},
-        ['copper-ore'] = {frequency = '0', size = '0', richness = '0'},
-        ['uranium-ore'] = {frequency = '0', size = '0', richness = '0'},
-        ['crude-oil'] = {frequency = '0', size = '0', richness = '0'},
-        ['trees'] = {frequency = '0', size = '0', richness = '0'},
-        ['enemy-base'] = {frequency = '0', size = '0', richness = '0'}
+        ['coal'] = { frequency = '0', size = '0', richness = '0' },
+        ['stone'] = { frequency = '0', size = '0', richness = '0' },
+        ['iron-ore'] = { frequency = '0', size = '0', richness = '0' },
+        ['copper-ore'] = { frequency = '0', size = '0', richness = '0' },
+        ['uranium-ore'] = { frequency = '0', size = '0', richness = '0' },
+        ['crude-oil'] = { frequency = '0', size = '0', richness = '0' },
+        ['trees'] = { frequency = '0', size = '0', richness = '0' },
+        ['enemy-base'] = { frequency = '0', size = '0', richness = '0' }
     }
 
     game.map_settings.pollution.enabled = true
@@ -160,16 +160,16 @@ local function init_surface()
     game.map_settings.enemy_expansion.max_expansion_cooldown = 7200
 
     local surface = game.create_surface('blue_beach', map_gen_settings)
-    surface.request_to_generate_chunks({x = 0, y = 0}, 1)
+    surface.request_to_generate_chunks({ x = 0, y = 0 }, 1)
     surface.force_generate_chunk_requests()
     surface.daytime = 0.7
     surface.ticks_per_day = surface.ticks_per_day * 1.5
     surface.min_brightness = 0.1
 
-    game.forces['player'].set_spawn_position({0, 16}, game.surfaces['blue_beach'])
+    game.forces['player'].set_spawn_position({ 0, 16 }, game.surfaces['blue_beach'])
     game.forces['player'].technologies['landfill'].enabled = false
 
-    global.average_worm_amount_per_chunk = 4
+    storage.average_worm_amount_per_chunk = 4
 
     wave_defense_table.surface_index = surface.index
 
@@ -190,39 +190,39 @@ local function on_player_joined_game(event)
     if player.online_time == 0 then
         local spawn = game.forces['player'].get_spawn_position(game.surfaces['blue_beach'])
         player.teleport(surface.find_non_colliding_position('character', spawn, 3, 0.5), 'blue_beach')
-        player.insert({name = 'raw-fish', count = 3})
-        player.insert({name = 'iron-plate', count = 128})
-        player.insert({name = 'iron-gear-wheel', count = 64})
-        player.insert({name = 'copper-plate', count = 128})
-        player.insert({name = 'copper-cable', count = 64})
-        player.insert({name = 'pistol', count = 1})
-        player.insert({name = 'firearm-magazine', count = 32})
-        player.insert({name = 'shotgun', count = 1})
-        player.insert({name = 'shotgun-shell', count = 16})
-        player.insert({name = 'light-armor', count = 1})
+        player.insert({ name = 'raw-fish', count = 3 })
+        player.insert({ name = 'iron-plate', count = 128 })
+        player.insert({ name = 'iron-gear-wheel', count = 64 })
+        player.insert({ name = 'copper-plate', count = 128 })
+        player.insert({ name = 'copper-cable', count = 64 })
+        player.insert({ name = 'pistol', count = 1 })
+        player.insert({ name = 'firearm-magazine', count = 32 })
+        player.insert({ name = 'shotgun', count = 1 })
+        player.insert({ name = 'shotgun-shell', count = 16 })
+        player.insert({ name = 'light-armor', count = 1 })
     end
 end
 
 local sand_coords = {
-    {x = 0, y = 1},
-    {x = -1, y = 0},
-    {x = 1, y = 0},
-    {x = 0, y = -1},
-    {x = 1, y = 1},
-    {x = -1, y = -1},
-    {x = -1, y = 1},
-    {x = 1, y = -1},
-    {x = 0, y = 2},
-    {x = -2, y = 0},
-    {x = 2, y = 0},
-    {x = 0, y = -2}
+    { x = 0,  y = 1 },
+    { x = -1, y = 0 },
+    { x = 1,  y = 0 },
+    { x = 0,  y = -1 },
+    { x = 1,  y = 1 },
+    { x = -1, y = -1 },
+    { x = -1, y = 1 },
+    { x = 1,  y = -1 },
+    { x = 0,  y = 2 },
+    { x = -2, y = 0 },
+    { x = 2,  y = 0 },
+    { x = 0,  y = -2 }
 }
 
 local function make_sand(surface, position)
     for _, coord_modifier in pairs(sand_coords) do
-        local pos = {position.x + coord_modifier.x, position.y + coord_modifier.y}
+        local pos = { position.x + coord_modifier.x, position.y + coord_modifier.y }
         if surface.get_tile(pos).name == 'water' then
-            surface.set_tiles({{name = 'sand-1', position = pos}}, true)
+            surface.set_tiles({ { name = 'sand-1', position = pos } }, true)
             return
         end
     end
@@ -233,7 +233,7 @@ local function on_entity_died(event)
         return
     end
     if landfill_drops[event.entity.name] then
-        event.entity.surface.spill_item_stack(event.entity.position, {name = 'landfill', count = landfill_drops[event.entity.name] * 2}, true)
+        event.entity.surface.spill_item_stack(event.entity.position, { name = 'landfill', count = landfill_drops[event.entity.name] * 2 }, true)
     end
     if event.entity.type ~= 'unit' then
         return

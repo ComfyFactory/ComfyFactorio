@@ -18,53 +18,58 @@ local function create_gui(player)
     if Gui.get_mod_gui_top_frame() then
         frame =
             Gui.add_mod_button(
-            player,
-            {
-                type = 'frame',
-                name = 'wave_defense',
-                style = 'finished_game_subheader_frame'
-            }
-        )
+                player,
+                {
+                    type = 'frame',
+                    name = 'wave_defense',
+                }
+            )
         frame.style.maximal_height = 36
     else
-        frame = player.gui.top.add({type = 'frame', name = 'wave_defense', style = 'finished_game_subheader_frame'})
+        frame = player.gui.top.add({ type = 'frame', name = 'wave_defense' })
         frame.style.maximal_height = 38
     end
 
-    local label = frame.add({type = 'label', caption = ' ', name = 'label'})
-    label.style.font_color = {r = 0.88, g = 0.88, b = 0.88}
-    label.style.font = 'default-bold'
-    label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+    frame.style.top_padding = 6
+    frame.style.right_padding = 12
+    frame.style.bottom_padding = 5
+    frame.style.left_padding = 12
 
-    local wave_number_label = frame.add({type = 'label', caption = ' ', name = 'wave_number'})
-    wave_number_label.style.font_color = {r = 0.88, g = 0.88, b = 0.88}
+    local label = frame.add({ type = 'label', caption = ' ', name = 'label' })
+    label.style.font_color = { r = 0.88, g = 0.88, b = 0.88 }
+    label.style.font = 'default-bold'
+    label.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
+
+    local wave_number_label = frame.add({ type = 'label', caption = ' ', name = 'wave_number' })
+    wave_number_label.style.font_color = { r = 0.88, g = 0.88, b = 0.88 }
     wave_number_label.style.font = 'default-bold'
     wave_number_label.style.right_padding = 4
-    wave_number_label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+    wave_number_label.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
-    local progressbar = frame.add({type = 'progressbar', name = 'progressbar', value = 0})
+    local progressbar = frame.add({ type = 'progressbar', name = 'progressbar', value = 0 })
     progressbar.style = 'achievement_progressbar' ---@class LuaGuiElementStyle
     progressbar.style.minimal_width = 96
     progressbar.style.maximal_width = 96
     progressbar.style.padding = -1
     progressbar.style.top_padding = 1
+    progressbar.style.height = 20
 
-    local line = frame.add({type = 'line', direction = 'vertical'})
+    local line = frame.add({ type = 'line', direction = 'vertical' })
     line.style.left_padding = 4
     line.style.right_padding = 4
 
-    local threat_label = frame.add({type = 'label', caption = ' ', name = 'threat', tooltip = {'wave_defense.tooltip_1'}})
+    local threat_label = frame.add({ type = 'label', caption = ' ', name = 'threat', tooltip = { 'wave_defense.tooltip_1' } })
     threat_label.style.font = 'default-bold'
     threat_label.style.left_padding = 4
-    threat_label.style.font_color = {r = 150, g = 0, b = 255}
+    threat_label.style.font_color = { r = 150, g = 0, b = 255 }
 
-    local threat_value_label = frame.add({type = 'label', caption = ' ', name = 'threat_value', tooltip = {'wave_defense.tooltip_1'}})
+    local threat_value_label = frame.add({ type = 'label', caption = ' ', name = 'threat_value', tooltip = { 'wave_defense.tooltip_1' } })
     threat_value_label.style.font = 'default-bold'
     threat_value_label.style.right_padding = 1
     threat_value_label.style.minimal_width = 10
-    threat_value_label.style.font_color = {r = 150, g = 0, b = 255}
+    threat_value_label.style.font_color = { r = 150, g = 0, b = 255 }
 
-    local threat_gains_label = frame.add({type = 'label', caption = ' ', name = 'threat_gains', tooltip = {'wave_defense.tooltip_2'}})
+    local threat_gains_label = frame.add({ type = 'label', caption = ' ', name = 'threat_gains', tooltip = { 'wave_defense.tooltip_2' } })
     threat_gains_label.style.font = 'default'
     threat_gains_label.style.left_padding = 1
     threat_gains_label.style.right_padding = 1
@@ -112,11 +117,11 @@ function Public.update_gui(player)
     local threat = Public.get('threat')
     local enable_threat_log = Public.get('enable_threat_log')
 
-    gui.label.caption = {'wave_defense.gui_2'}
+    gui.label.caption = { 'wave_defense.gui_2' }
     if not paused then
         gui.wave_number.caption = wave_number
         if wave_number == 0 then
-            gui.label.caption = {'wave_defense.gui_1'}
+            gui.label.caption = { 'wave_defense.gui_1' }
             gui.wave_number.caption = floor((next_wave - game.tick) / 60) + 1 .. 's'
         end
         gui.label.tooltip = 'Next pause will occur in: ' .. floor((Public.get('next_pause_interval') - game.tick) / 60 / 60) + 1 .. ' minute(s)'
@@ -130,7 +135,7 @@ function Public.update_gui(player)
         end
         gui.progressbar.value = value
     else
-        gui.label.caption = {'wave_defense.gui_4'}
+        gui.label.caption = { 'wave_defense.gui_4' }
         gui.label.tooltip = 'Wave: ' .. wave_number
         local pause_for = floor((paused_waves_for - game.tick) / 60) + 1
         if pause_for < 0 then
@@ -150,8 +155,8 @@ function Public.update_gui(player)
         return
     end
 
-    gui.threat.caption = {'wave_defense.gui_3'}
-    gui.threat.tooltip = {'wave_defense.tooltip_1', biter_health_boost * 100, max_active_biters}
+    gui.threat.caption = { 'wave_defense.gui_3' }
+    gui.threat.tooltip = { 'wave_defense.tooltip_1', biter_health_boost * 100, max_active_biters }
     ---@diagnostic disable-next-line: param-type-mismatch
     gui.threat_value.caption = floor(threat)
     gui.threat_value.tooltip = {
@@ -174,14 +179,14 @@ function Public.update_gui(player)
             if g < 0 then
                 g = 0
             end
-            gui.threat_gains.style.font_color = {255, g, 0}
+            gui.threat_gains.style.font_color = { 255, g, 0 }
         else
             gui.threat_gains.caption = ' (' .. gain .. ')'
             local r = 255 - floor(math.abs(gain) / d)
             if r < 0 then
                 r = 0
             end
-            gui.threat_gains.style.font_color = {r, 255, 0}
+            gui.threat_gains.style.font_color = { r, 255, 0 }
         end
     end
 end

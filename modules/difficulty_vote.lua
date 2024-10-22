@@ -7,50 +7,50 @@ local this = {
         [1] = {
             name = 'Peaceful',
             value = 0.25,
-            color = {r = 0.00, g = 0.45, b = 0.00},
-            print_color = {r = 0.00, g = 0.8, b = 0.00},
+            color = { r = 0.00, g = 0.45, b = 0.00 },
+            print_color = { r = 0.00, g = 0.8, b = 0.00 },
             enabled = true
         },
         [2] = {
             name = 'Piece of cake',
             value = 0.5,
-            color = {r = 0.00, g = 0.35, b = 0.00},
-            print_color = {r = 0.00, g = 0.6, b = 0.00},
+            color = { r = 0.00, g = 0.35, b = 0.00 },
+            print_color = { r = 0.00, g = 0.6, b = 0.00 },
             enabled = true
         },
         [3] = {
             name = 'Easy',
             value = 0.75,
-            color = {r = 0.00, g = 0.25, b = 0.00},
-            print_color = {r = 0.00, g = 0.4, b = 0.00},
+            color = { r = 0.00, g = 0.25, b = 0.00 },
+            print_color = { r = 0.00, g = 0.4, b = 0.00 },
             enabled = true
         },
         [4] = {
             name = 'Normal',
             value = 1,
-            color = {r = 0.00, g = 0.00, b = 0.25},
-            print_color = {r = 0.0, g = 0.0, b = 0.5},
+            color = { r = 0.00, g = 0.00, b = 0.25 },
+            print_color = { r = 0.0, g = 0.0, b = 0.5 },
             enabled = true
         },
         [5] = {
             name = 'Hard',
             value = 1.5,
-            color = {r = 0.25, g = 0.00, b = 0.00},
-            print_color = {r = 0.4, g = 0.0, b = 0.00},
+            color = { r = 0.25, g = 0.00, b = 0.00 },
+            print_color = { r = 0.4, g = 0.0, b = 0.00 },
             enabled = true
         },
         [6] = {
             name = 'Nightmare',
             value = 3,
-            color = {r = 0.35, g = 0.00, b = 0.00},
-            print_color = {r = 0.6, g = 0.0, b = 0.00},
+            color = { r = 0.35, g = 0.00, b = 0.00 },
+            print_color = { r = 0.6, g = 0.0, b = 0.00 },
             enabled = true
         },
         [7] = {
             name = 'Impossible',
             value = 5,
-            color = {r = 0.45, g = 0.00, b = 0.00},
-            print_color = {r = 0.8, g = 0.0, b = 0.00},
+            color = { r = 0.45, g = 0.00, b = 0.00 },
+            print_color = { r = 0.8, g = 0.0, b = 0.00 },
             enabled = true
         }
     },
@@ -69,7 +69,7 @@ local this = {
     difficulty_player_votes = {},
     gui_width = 108,
     name = 'Easy',
-    print_color = {r = 0.00, g = 0.4, b = 0.00},
+    print_color = { r = 0.00, g = 0.4, b = 0.00 },
     button_tooltip = nil
 }
 
@@ -77,7 +77,7 @@ local Public = {}
 
 Global.register(
     this,
-    function(t)
+    function (t)
         this = t
     end
 )
@@ -113,7 +113,7 @@ function Public.get_difficulty_vote_index()
 end
 
 function Public.difficulty_gui()
-    local tooltip = {'modules.difficulty_vote_gui_tooltip', this.name}
+    local tooltip = { 'modules.difficulty_vote_gui_tooltip', this.name }
 
     for _, player in pairs(game.connected_players) do
         if player.gui.top['difficulty_gui'] then
@@ -123,11 +123,11 @@ function Public.difficulty_gui()
         else
             local b =
                 player.gui.top.add {
-                type = 'button',
-                caption = this.name,
-                tooltip = tooltip,
-                name = 'difficulty_gui'
-            }
+                    type = 'button',
+                    caption = this.name,
+                    tooltip = tooltip,
+                    name = 'difficulty_gui'
+                }
             b.style.font = 'heading-2'
             b.style.font_color = this.print_color
             b.style.minimal_height = 38
@@ -144,9 +144,9 @@ local function poll_difficulty(player)
     if game.tick > this.difficulty_poll_closing_timeout then
         if player.online_time ~= 0 then
             local t = math.abs(math.floor((this.difficulty_poll_closing_timeout - game.tick) / 3600))
-            local str = {'modules.difficulty_vote_closed1ago', t}
+            local str = { 'modules.difficulty_vote_closed1ago', t }
             if t > 1 then
-                str = {'modules.difficulty_vote_closed2ago', t}
+                str = { 'modules.difficulty_vote_closed2ago', t }
             end
             player.print(str)
         end
@@ -155,14 +155,14 @@ local function poll_difficulty(player)
 
     local frame =
         player.gui.screen.add {
-        type = 'frame',
-        caption = {'modules.difficulty_vote_vote'},
-        name = 'difficulty_poll',
-        direction = 'vertical'
-    }
+            type = 'frame',
+            caption = { 'modules.difficulty_vote_vote' },
+            name = 'difficulty_poll',
+            direction = 'vertical'
+        }
     frame.force_auto_center()
     for i = 1, #this.difficulties, 1 do
-        local b = frame.add({type = 'button', name = tostring(i), caption = this.difficulties[i].name})
+        local b = frame.add({ type = 'button', name = tostring(i), caption = this.difficulties[i].name })
         b.style.font_color = this.difficulties[i].color
         b.style.font = 'heading-2'
         b.style.minimal_width = 160
@@ -171,17 +171,17 @@ local function poll_difficulty(player)
             b.visible = false
         end
     end
-    frame.add({type = 'label', caption = '- - - - - - - - - - - - - - - - - -'})
+    frame.add({ type = 'label', caption = '- - - - - - - - - - - - - - - - - -' })
     local b =
         frame.add(
-        {
-            type = 'button',
-            name = 'close',
-            caption = {'modules.difficulty_vote_close_button', math.floor((this.difficulty_poll_closing_timeout - game.tick) / 3600)}
-        }
-    )
-    b.style.font_color = {r = 0.66, g = 0.0, b = 0.66}
-    b.style.font = 'heading-3'
+            {
+                type = 'button',
+                name = 'close',
+                caption = { 'modules.difficulty_vote_close_button', math.floor((this.difficulty_poll_closing_timeout - game.tick) / 3600) }
+            }
+        )
+    b.style.font_color = { r = 0.66, g = 0.0, b = 0.66 }
+    b.style.font = 'default-semibold'
     b.style.minimal_width = 96
 end
 
@@ -198,7 +198,7 @@ local function set_difficulty()
     a = a / vote_count
     local new_index = math.round(a, 0)
     if this.difficulty_vote_index ~= new_index then
-        local message = {'modules.difficulty_vote_diff_change', this.difficulties[new_index].name}
+        local message = { 'modules.difficulty_vote_diff_change', this.difficulties[new_index].name }
         game.print(message, this.difficulties[new_index].print_color)
         Server.to_discord_embed(message, true)
     end
@@ -225,7 +225,7 @@ function Public.reset_difficulty_poll(tbl)
         this.difficulty_vote_value = 1
         this.difficulty_vote_index = 1
         this.name = 'Easy'
-        this.print_color = {r = 0.00, g = 0.4, b = 0.00}
+        this.print_color = { r = 0.00, g = 0.4, b = 0.00 }
         this.difficulty_player_votes = {}
         this.difficulty_poll_closing_timeout = game.tick + 54000
         for _, p in pairs(game.connected_players) do
@@ -295,7 +295,7 @@ local function on_gui_click(event)
         return
     end
     local i = tonumber(event.element.name)
-    game.print({'modules.difficulty_vote_message', player.name, this.difficulties[i].name}, this.difficulties[i].print_color)
+    game.print({ 'modules.difficulty_vote_message', player.name, this.difficulties[i].name }, this.difficulties[i].print_color)
     this.difficulty_player_votes[player.name] = i
     set_difficulty()
     Public.difficulty_gui()

@@ -18,7 +18,7 @@ local math_random = math.random
 local hatchery = {}
 Global.register(
     hatchery,
-    function(tbl)
+    function (tbl)
         hatchery = tbl
     end
 )
@@ -41,7 +41,7 @@ for x = 0, worm_turret_spawn_radius, 1 do
     for y = worm_turret_spawn_radius * -1, worm_turret_spawn_radius, 1 do
         local d = math.sqrt(x ^ 2 + y ^ 2)
         if d <= worm_turret_spawn_radius and d > 3 then
-            table.insert(worm_turret_vectors.west, {x, y})
+            table.insert(worm_turret_vectors.west, { x, y })
         end
     end
 end
@@ -50,13 +50,13 @@ for x = worm_turret_spawn_radius * -1, 0, 1 do
     for y = worm_turret_spawn_radius * -1, worm_turret_spawn_radius, 1 do
         local d = math.sqrt(x ^ 2 + y ^ 2)
         if d <= worm_turret_spawn_radius and d > 3 then
-            table.insert(worm_turret_vectors.east, {x, y})
+            table.insert(worm_turret_vectors.east, { x, y })
         end
     end
 end
 
 local function spawn_worm_turret(surface, force_name)
-    local r_max = surface.count_entities_filtered({type = 'turret', force = force_name}) + 1
+    local r_max = surface.count_entities_filtered({ type = 'turret', force = force_name }) + 1
     if r_max > 256 then
         return
     end
@@ -66,27 +66,27 @@ local function spawn_worm_turret(surface, force_name)
     local vectors = worm_turret_vectors[force_name]
     local vector = vectors[math_random(1, #vectors)]
     local worm = 'small-worm-turret'
-    local position = {x = global.map_forces[force_name].hatchery.position.x, y = global.map_forces[force_name].hatchery.position.y}
+    local position = { x = storage.map_forces[force_name].hatchery.position.x, y = storage.map_forces[force_name].hatchery.position.y }
     position.x = position.x + vector[1]
     position.y = position.y + vector[2]
     position = surface.find_non_colliding_position('biter-spawner', position, 16, 1)
     if not position then
         return
     end
-    surface.create_entity({name = worm, position = position, force = force_name})
-    surface.create_entity({name = 'blood-explosion-huge', position = position})
-    surface.create_decoratives {check_collision = false, decoratives = {{name = 'enemy-decal', position = position, amount = 1}}}
+    surface.create_entity({ name = worm, position = position, force = force_name })
+    surface.create_entity({ name = 'blood-explosion-huge', position = position })
+    surface.create_decoratives { check_collision = false, decoratives = { { name = 'enemy-decal', position = position, amount = 1 } } }
 end
 
 local function spawn_units(belt, food_item, removed_item_count)
     local count_per_flask = unit_raffle[food_item][2]
     local raffle = unit_raffle[food_item][1]
-    local team = global.map_forces[belt.force.name]
+    local team = storage.map_forces[belt.force.name]
     team.unit_health_boost = team.unit_health_boost + (health_boost_food_values[food_item] * removed_item_count)
     for _ = 1, removed_item_count, 1 do
         for _ = 1, count_per_flask, 1 do
             local name = raffle[math_random(1, #raffle)]
-            local unit = belt.surface.create_entity({name = name, position = belt.position, force = belt.force})
+            local unit = belt.surface.create_entity({ name = name, position = belt.position, force = belt.force })
             unit.ai_settings.allow_destroy_when_commands_fail = false
             unit.ai_settings.allow_try_return_to_spawner = false
             Unit_health_booster.add_unit(unit, team.unit_health_boost)
@@ -102,24 +102,24 @@ end
 local function get_belts(spawner)
     local belts =
         spawner.surface.find_entities_filtered(
-        {
-            type = 'transport-belt',
-            area = {{spawner.position.x - 5, spawner.position.y - 3}, {spawner.position.x + 4, spawner.position.y + 3}},
-            force = spawner.force
-        }
-    )
+            {
+                type = 'transport-belt',
+                area = { { spawner.position.x - 5, spawner.position.y - 3 }, { spawner.position.x + 4, spawner.position.y + 3 } },
+                force = spawner.force
+            }
+        )
     return belts
 end
 
-local nom_msg = {'munch', 'munch', 'yum', 'nom'}
+local nom_msg = { 'munch', 'munch', 'yum', 'nom' }
 
 local function feed_floaty_text(entity)
-    entity.surface.create_entity({name = 'flying-text', position = entity.position, text = nom_msg[math_random(1, 4)], color = {math_random(50, 100), 0, 255}})
-    local position = {x = entity.position.x - 0.75, y = entity.position.y - 1}
+    entity.surface.create_entity({ name = 'flying-text', position = entity.position, text = nom_msg[math_random(1, 4)], color = { math_random(50, 100), 0, 255 } })
+    local position = { x = entity.position.x - 0.75, y = entity.position.y - 1 }
     local b = 1.35
     for _ = 1, math_random(0, 2), 1 do
-        local p = {(position.x + 0.4) + (b * -1 + math_random(0, b * 20) * 0.1), position.y + (b * -1 + math_random(0, b * 20) * 0.1)}
-        entity.surface.create_entity({name = 'flying-text', position = p, text = '♥', color = {math_random(150, 255), 0, 255}})
+        local p = { (position.x + 0.4) + (b * -1 + math_random(0, b * 20) * 0.1), position.y + (b * -1 + math_random(0, b * 20) * 0.1) }
+        entity.surface.create_entity({ name = 'flying-text', position = p, text = '♥', color = { math_random(150, 255), 0, 255 } })
     end
 end
 
@@ -127,10 +127,10 @@ local function eat_food_from_belt(belt)
     for i = 1, 2, 1 do
         local line = belt.get_transport_line(i)
         for food_item, _ in pairs(unit_raffle) do
-            if global.map_forces[belt.force.name].unit_count > global.map_forces[belt.force.name].max_unit_count then
+            if storage.map_forces[belt.force.name].unit_count > storage.map_forces[belt.force.name].max_unit_count then
                 return
             end
-            local removed_item_count = line.remove_item({name = food_item, count = 8})
+            local removed_item_count = line.remove_item({ name = food_item, count = 8 })
             if removed_item_count > 0 then
                 feed_floaty_text(belt)
                 spawn_units(belt, food_item, removed_item_count)
@@ -140,7 +140,7 @@ local function eat_food_from_belt(belt)
 end
 
 local function nom()
-    for _, force in pairs(global.map_forces) do
+    for _, force in pairs(storage.map_forces) do
         if not force.hatchery then
             return
         end
@@ -158,7 +158,7 @@ end
 local function get_units(force_name)
     local units = {}
     local count = 1
-    for _, unit in pairs(global.map_forces[force_name].units) do
+    for _, unit in pairs(storage.map_forces[force_name].units) do
         if unit.valid and not unit.unit_group then
             if math_random(1, 3) ~= 1 then
                 units[count] = unit
@@ -176,20 +176,20 @@ local function alert_bubble(force_name, entity)
         force_name = 'west'
     end
     for _, player in pairs(game.forces[force_name].connected_players) do
-        player.add_custom_alert(entity, {type = 'item', name = 'tank'}, 'Incoming enemy units!', true)
+        player.add_custom_alert(entity, { type = 'item', name = 'tank' }, 'Incoming enemy units!', true)
     end
 end
 
 local function send_unit_groups()
     local surface = game.surfaces.nauvis
-    for key, force in pairs(global.map_forces) do
+    for key, force in pairs(storage.map_forces) do
         local units = get_units(key)
         if #units > 0 then
             alert_bubble(key, units[1])
             local vectors = worm_turret_vectors[key]
             local vector = vectors[math_random(1, #vectors)]
-            local position = {x = force.hatchery.position.x + vector[1], y = force.hatchery.position.y + vector[2]}
-            local unit_group = surface.create_unit_group({position = position, force = key})
+            local position = { x = force.hatchery.position.x + vector[1], y = force.hatchery.position.y + vector[2] }
+            local unit_group = surface.create_unit_group({ position = position, force = key })
             for _, unit in pairs(units) do
                 unit_group.add_member(unit)
             end
@@ -206,7 +206,7 @@ local function send_unit_groups()
                     commands = {
                         {
                             type = defines.command.attack_area,
-                            destination = {x = force.target.position.x, y = force.target.position.y},
+                            destination = { x = force.target.position.x, y = force.target.position.y },
                             radius = 6,
                             distraction = defines.distraction.by_anything
                         },
@@ -243,7 +243,7 @@ local function on_player_changed_position(event)
         if player.character.driving then
             player.character.driving = false
         end
-        player.teleport({player.position.x + border_teleport[player.force.name], player.position.y}, game.surfaces.nauvis)
+        player.teleport({ player.position.x + border_teleport[player.force.name], player.position.y }, game.surfaces.nauvis)
     end
 end
 
@@ -252,12 +252,12 @@ local function on_entity_died(event)
     if not entity.valid then
         return
     end
-    if global.game_reset_tick then
+    if storage.game_reset_tick then
         return
     end
 
     if entity.type == 'unit' then
-        local team = global.map_forces[entity.force.name]
+        local team = storage.map_forces[entity.force.name]
         team.unit_count = team.unit_count - 1
         team.units[entity.unit_number] = nil
         return
@@ -268,42 +268,42 @@ local function on_entity_died(event)
     end
 
     if entity.force.name == 'east' then
-        game.print('East lost their Hatchery.', {100, 100, 100})
-        game.forces.east.play_sound {path = 'utility/game_lost', volume_modifier = 0.85}
+        game.print('East lost their Hatchery.', { 100, 100, 100 })
+        game.forces.east.play_sound { path = 'utility/game_lost', volume_modifier = 0.85 }
 
         local message = '>>>> WEST TEAM HAS WON THE GAME!!! <<<<'
-        Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
-        game.print(message, {250, 120, 0})
+        Server.to_discord_bold(table.concat { '*** ', message, ' ***' })
+        game.print(message, { 250, 120, 0 })
 
-        game.forces.west.play_sound {path = 'utility/game_won', volume_modifier = 0.85}
+        game.forces.west.play_sound { path = 'utility/game_won', volume_modifier = 0.85 }
 
         for _, player in pairs(game.forces.west.connected_players) do
-            if global.map_forces.east.player_count > 0 then
+            if storage.map_forces.east.player_count > 0 then
                 Map_score.set_score(player, Map_score.get_score(player) + 1)
             end
         end
     else
-        game.print('West lost their Hatchery.', {100, 100, 100})
-        game.forces.west.play_sound {path = 'utility/game_lost', volume_modifier = 0.85}
+        game.print('West lost their Hatchery.', { 100, 100, 100 })
+        game.forces.west.play_sound { path = 'utility/game_lost', volume_modifier = 0.85 }
 
         local message = '>>>> EAST TEAM HAS WON THE GAME!!! <<<<'
-        Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
-        game.print(message, {250, 120, 0})
+        Server.to_discord_bold(table.concat { '*** ', message, ' ***' })
+        game.print(message, { 250, 120, 0 })
 
-        game.forces.east.play_sound {path = 'utility/game_won', volume_modifier = 0.85}
+        game.forces.east.play_sound { path = 'utility/game_won', volume_modifier = 0.85 }
 
         for _, player in pairs(game.forces.east.connected_players) do
-            if global.map_forces.west.player_count > 0 then
+            if storage.map_forces.west.player_count > 0 then
                 Map_score.set_score(player, Map_score.get_score(player) + 1)
             end
         end
     end
 
-    game.print('Map rerolling in 2 minutes.', {150, 150, 150})
+    game.print('Map rerolling in 2 minutes.', { 150, 150, 150 })
 
-    game.forces.spectator.play_sound {path = 'utility/game_won', volume_modifier = 0.85}
+    game.forces.spectator.play_sound { path = 'utility/game_won', volume_modifier = 0.85 }
 
-    global.game_reset_tick = game.tick + 7200
+    storage.game_reset_tick = game.tick + 7200
 
     for _, player in pairs(game.connected_players) do
         for _, child in pairs(player.gui.left.children) do
@@ -312,7 +312,7 @@ local function on_entity_died(event)
         CoreGui.call_existing_tab(player, 'Map Scores')
     end
 
-    for _, e in pairs(entity.surface.find_entities_filtered({type = 'unit'})) do
+    for _, e in pairs(entity.surface.find_entities_filtered({ type = 'unit' })) do
         e.active = false
     end
 end
@@ -330,7 +330,7 @@ local function on_player_joined_game(event)
         end
         player.character = nil
         player.spectator = true
-        player.set_controller({type = defines.controllers.spectator})
+        player.set_controller({ type = defines.controllers.spectator })
         if hatchery.gamestate == 'game_in_progress' or hatchery.gamestate == 'rejoin_question' then
             Team.assign_force_to_player(player)
             Team.add_player_to_team(player)
@@ -341,12 +341,12 @@ end
 
 --Construction Robot Restriction
 local robot_build_restriction = {
-    ['east'] = function(x)
+    ['east'] = function (x)
         if x < 0 then
             return true
         end
     end,
-    ['west'] = function(x)
+    ['west'] = function (x)
         if x > 0 then
             return true
         end
@@ -357,14 +357,14 @@ local function on_robot_built_entity(event)
     if not robot_build_restriction[event.robot.force.name] then
         return
     end
-    if not robot_build_restriction[event.robot.force.name](event.created_entity.position.x) then
+    if not robot_build_restriction[event.robot.force.name](event.entity.position.x) then
         return
     end
     local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
-    inventory.insert({name = event.created_entity.name, count = 1})
-    event.robot.surface.create_entity({name = 'explosion', position = event.created_entity.position})
-    game.print('Team ' .. event.robot.force.name .. "'s construction drone had an accident.", {r = 200, g = 50, b = 100})
-    event.created_entity.destroy()
+    inventory.insert({ name = event.entity.name, count = 1 })
+    event.robot.surface.create_entity({ name = 'explosion', position = event.entity.position })
+    game.print('Team ' .. event.robot.force.name .. "'s construction drone had an accident.", { r = 200, g = 50, b = 100 })
+    event.entity.destroy()
 end
 
 local function on_entity_damaged(event)
@@ -416,20 +416,20 @@ local function game_in_progress(hatchery)
         local surface = game.surfaces.nauvis
         local west = game.forces.west
         local east = game.forces.east
-        local area = {{-320, -161}, {319, 160}}
+        local area = { { -320, -161 }, { 319, 160 } }
         west.chart(surface, area)
         east.chart(surface, area)
         local r = 64
         for _, player in pairs(west.connected_players) do
-            east.chart(surface, {{player.position.x - r, player.position.y - r}, {player.position.x + r, player.position.y + r}})
+            east.chart(surface, { { player.position.x - r, player.position.y - r }, { player.position.x + r, player.position.y + r } })
         end
         for _, player in pairs(east.connected_players) do
-            west.chart(surface, {{player.position.x - r, player.position.y - r}, {player.position.x + r, player.position.y + r}})
+            west.chart(surface, { { player.position.x - r, player.position.y - r }, { player.position.x + r, player.position.y + r } })
         end
     end
-    if global.game_reset_tick then
-        if global.game_reset_tick < game_tick then
-            global.game_reset_tick = nil
+    if storage.game_reset_tick then
+        if storage.game_reset_tick < game_tick then
+            storage.game_reset_tick = nil
             hatchery.gamestate = 'init'
         end
         return
@@ -461,12 +461,12 @@ local function on_chunk_generated(event)
     end
 
     if left_top.x < 0 and not no_mirror_states[hatchery.gamestate] then
-        table.insert(hatchery.mirror_queue, {{left_top.x, left_top.y}, 1})
+        table.insert(hatchery.mirror_queue, { { left_top.x, left_top.y }, 1 })
         Terrain.out_of_map(surface, left_top)
         return
     end
 
-    surface.request_to_generate_chunks({x = ((left_top.x * -1) - 32) + 16, y = left_top.y + 16}, 0)
+    surface.request_to_generate_chunks({ x = ((left_top.x * -1) - 32) + 16, y = left_top.y + 16 }, 0)
     Terrain.out_of_map_area(surface, left_top)
     Terrain.combat_area(event)
 end
@@ -503,7 +503,7 @@ local function on_init()
     game.map_settings.enemy_evolution.time_factor = 0
     game.map_settings.enemy_expansion.enabled = false
     game.map_settings.pollution.enabled = false
-    global.map_forces = {
+    storage.map_forces = {
         ['west'] = {},
         ['east'] = {}
     }
@@ -513,22 +513,22 @@ local function on_init()
     T.sub_caption = '*nibble nibble nom nom*'
     T.text =
         table.concat(
-        {
-            'Defeat the enemy teams nest.\n',
-            'Feed your hatchery science flasks to breed biters!\n',
-            'They will soon after swarm to the opposing teams nest!\n',
-            '\n',
-            'Lay transport belts to your hatchery and they will happily nom the science juice off the conveyor.\n',
-            'Higher tier flasks will breed stronger biters!\n',
-            '\n',
-            'Player turrets are disabled.\n',
-            'Feeding may spawn friendly worm turrets.\n',
-            'The center river may not be crossed.\n',
-            'Construction robots may not build over the river.\n'
-        }
-    )
-    T.main_caption_color = {r = 150, g = 0, b = 255}
-    T.sub_caption_color = {r = 0, g = 250, b = 150}
+            {
+                'Defeat the enemy teams nest.\n',
+                'Feed your hatchery science flasks to breed biters!\n',
+                'They will soon after swarm to the opposing teams nest!\n',
+                '\n',
+                'Lay transport belts to your hatchery and they will happily nom the science juice off the conveyor.\n',
+                'Higher tier flasks will breed stronger biters!\n',
+                '\n',
+                'Player turrets are disabled.\n',
+                'Feeding may spawn friendly worm turrets.\n',
+                'The center river may not be crossed.\n',
+                'Construction robots may not build over the river.\n'
+            }
+        )
+    T.main_caption_color = { r = 150, g = 0, b = 255 }
+    T.sub_caption_color = { r = 0, g = 250, b = 150 }
 
     Team.create_forces()
     Team.reset_forces()

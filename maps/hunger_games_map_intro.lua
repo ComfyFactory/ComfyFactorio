@@ -19,22 +19,22 @@ local function create_map_intro(player)
     if player.gui.left['map_intro_frame'] then
         player.gui.left['map_intro_frame'].destroy()
     end
-    local frame = player.gui.left.add {type = 'frame', name = 'map_intro_frame', direction = 'vertical'}
-    local t = frame.add {type = 'table', column_count = 1}
+    local frame = player.gui.left.add { type = 'frame', name = 'map_intro_frame', direction = 'vertical' }
+    local t = frame.add { type = 'table', column_count = 1 }
 
-    local tt = t.add {type = 'table', column_count = 3}
-    local l = tt.add {type = 'label', caption = main_caption}
+    local tt = t.add { type = 'table', column_count = 3 }
+    local l = tt.add { type = 'label', caption = main_caption }
     l.style.font = 'heading-1'
-    l.style.font_color = {r = 35, g = 130, b = 60}
+    l.style.font_color = { r = 35, g = 130, b = 60 }
     l.style.top_padding = 6
     l.style.bottom_padding = 6
 
-    local l = tt.add {type = 'label', caption = sub_caption}
+    local l = tt.add { type = 'label', caption = sub_caption }
     l.style.font = 'heading-2'
-    l.style.font_color = {r = 0.75, g = 0.75, b = 0.2}
+    l.style.font_color = { r = 0.75, g = 0.75, b = 0.2 }
     l.style.minimal_width = 280
 
-    local b = tt.add {type = 'button', caption = 'X', name = 'close_map_intro_frame'}
+    local b = tt.add { type = 'button', caption = 'X', name = 'close_map_intro_frame' }
     b.style.font = 'heading-1'
     b.style.minimal_height = 30
     b.style.minimal_width = 30
@@ -43,11 +43,11 @@ local function create_map_intro(player)
     b.style.right_padding = 4
     b.style.bottom_padding = 2
 
-    local frame = frame.add {type = 'frame'}
-    local l = frame.add {type = 'label', caption = info}
+    local frame = frame.add { type = 'frame' }
+    local l = frame.add { type = 'label', caption = info }
     l.style.single_line = false
-    l.style.font = 'heading-3'
-    l.style.font_color = {r = 0.95, g = 0.95, b = 0.95}
+    l.style.font = 'default-semibold'
+    l.style.font_color = { r = 0.95, g = 0.95, b = 0.95 }
     l.style.minimal_width = 500
 end
 

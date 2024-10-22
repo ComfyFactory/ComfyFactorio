@@ -4,7 +4,7 @@ local Event = require 'utils.event'
 local this = {}
 Global.register(
     this,
-    function(tbl)
+    function (tbl)
         this = tbl
     end
 )
@@ -28,7 +28,7 @@ function Public.reset()
     for k, _ in pairs(this) do
         this[k] = nil
     end
-    this.debug_mode = false
+    this.debug_mode = true
     this.restore_on_theft = false
     this.doors = {}
     this.cars = {}
@@ -51,10 +51,10 @@ function Public.reset()
         ['spider-vehicle'] = true
     }
     this.car_areas = {
-        ['car'] = {left_top = {x = -20, y = 0}, right_bottom = {x = 20, y = 20}},
-        ['tank'] = {left_top = {x = -30, y = 0}, right_bottom = {x = 30, y = 40}},
-        ['spidertron'] = {left_top = {x = -40, y = 0}, right_bottom = {x = 40, y = 60}},
-        ['spider-vehicle'] = {left_top = {x = -40, y = 0}, right_bottom = {x = 40, y = 60}}
+        ['car'] = { left_top = { x = -20, y = 0 }, right_bottom = { x = 20, y = 20 } },
+        ['tank'] = { left_top = { x = -30, y = 0 }, right_bottom = { x = 30, y = 40 } },
+        ['spidertron'] = { left_top = { x = -40, y = 0 }, right_bottom = { x = 40, y = 60 } },
+        ['spider-vehicle'] = { left_top = { x = -40, y = 0 }, right_bottom = { x = 40, y = 60 } }
     }
 end
 

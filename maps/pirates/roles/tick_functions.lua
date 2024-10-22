@@ -1,22 +1,23 @@
 --luacheck: ignore
---luacheck ignores because tickinterval arguments are a code templating choice...
+--luacheck ignores because tick_interval arguments are a code templating choice...
 
-local Memory = require 'maps.pirates.memory'
-local Structures = require 'maps.pirates.structures.structures'
-local Boats = require 'maps.pirates.structures.boats.boats'
-local Surfaces = require 'maps.pirates.surfaces.surfaces'
-local Classes = require 'maps.pirates.roles.classes'
-local Balance = require 'maps.pirates.balance'
-local Common = require 'maps.pirates.common'
-local CoreData = require 'maps.pirates.coredata'
-local Math = require 'maps.pirates.math'
-local _inspect = require 'utils.inspect'.inspect
+local Memory = require('maps.pirates.memory')
+local Structures = require('maps.pirates.structures.structures')
+local Boats = require('maps.pirates.structures.boats.boats')
+local Surfaces = require('maps.pirates.surfaces.surfaces')
+local Classes = require('maps.pirates.roles.classes')
+local Balance = require('maps.pirates.balance')
+local Common = require('maps.pirates.common')
+local CoreData = require('maps.pirates.coredata')
+local Math = require('maps.pirates.math')
+local _inspect = require('utils.inspect').inspect
 
 local Public = {}
 
 -- Copied from modules
 local function discharge_accumulators(surface, position, force, power_needs)
-	local accumulators = surface.find_entities_filtered { name = 'accumulator', force = force, position = position, radius = 13 }
+	local accumulators =
+		surface.find_entities_filtered({ name = 'accumulator', force = force, position = position, radius = 13 })
 	local power_drained = 0
 	power_needs = power_needs
 	for _, accu in pairs(accumulators) do
@@ -39,9 +40,11 @@ local function discharge_accumulators(surface, position, force, power_needs)
 end
 
 -- NOTE: You can currently switch between classes shaman -> iron leg -> shaman, without losing your shaman charge, but I'm too lazy to fix.
-function Public.class_update_auxiliary_data(tickinterval)
+function Public.class_update_auxiliary_data(tick_interval)
 	local memory = Memory.get_crew_memory()
-	if not memory.classes_table then return end
+	if not memory.classes_table then
+		return
+	end
 
 	local class_auxiliary_data = memory.class_auxiliary_data
 
@@ -52,7 +55,7 @@ function Public.class_update_auxiliary_data(tickinterval)
 	for _, player in pairs(crew) do
 		local player_index = player.index
 		if Classes.get_class(player_index) == Classes.enum.IRON_LEG then
-			if (not class_auxiliary_data[player_index]) then
+			if not class_auxiliary_data[player_index] then
 				class_auxiliary_data[player_index] = {}
 			end
 
@@ -74,7 +77,7 @@ function Public.class_update_auxiliary_data(tickinterval)
 				data.iron_leg_active = false
 			end
 		elseif Classes.get_class(player_index) == Classes.enum.SHAMAN then
-			if (not class_auxiliary_data[player_index]) then
+			if not class_auxiliary_data[player_index] then
 				class_auxiliary_data[player_index] = {}
 				class_auxiliary_data[player_index].shaman_charge = 0
 			end
@@ -85,12 +88,24 @@ function Public.class_update_auxiliary_data(tickinterval)
 			if data.shaman_charge < Balance.shaman_max_charge then
 				-- charge from accumulators
 				local power_need = Balance.shaman_max_charge - data.shaman_charge
-				local energy = discharge_accumulators(player.surface, player.position, memory.force, power_need)
-				data.shaman_charge = data.shaman_charge + energy
+				local energy = 0
+				if player.character and player.character.valid then
+					energy = discharge_accumulators(
+						player.character.surface,
+						player.character.position,
+						memory.force,
+						power_need
+					)
 
-				-- charge from sun pasively
-				data.shaman_charge = data.shaman_charge + (1 - player.surface.daytime) * Balance.shaman_passive_charge * (tickinterval / 60)
-				data.shaman_charge = Math.min(data.shaman_charge, Balance.shaman_max_charge)
+					data.shaman_charge = data.shaman_charge + energy
+
+					-- charge from sun pasively
+					data.shaman_charge = data.shaman_charge
+						+ (1 - player.character.surface.daytime)
+							* Balance.shaman_passive_charge
+							* (tick_interval / 60)
+					data.shaman_charge = Math.min(data.shaman_charge, Balance.shaman_max_charge)
+				end
 			end
 		end
 	end
@@ -102,9 +117,11 @@ function Public.class_update_auxiliary_data(tickinterval)
 	end
 end
 
-function Public.class_renderings(tickinterval)
+function Public.class_renderings(tick_interval)
 	local memory = Memory.get_crew_memory()
-	if not memory.classes_table then return end
+	if not memory.classes_table then
+		return
+	end
 
 	local class_renderings = memory.class_renderings
 
@@ -116,7 +133,9 @@ function Public.class_renderings(tickinterval)
 		local player_index = player.index
 		local class = Classes.get_class(player_index)
 		if class then
-			if not class_renderings[player_index] then class_renderings[player_index] = {} end
+			if not class_renderings[player_index] then
+				class_renderings[player_index] = {}
+			end
 			local rendering_data = class_renderings[player_index]
 			local r = rendering_data.rendering
 			local c = rendering_data.class
@@ -125,103 +144,103 @@ function Public.class_renderings(tickinterval)
 			-- if Common.validate_player_and_character(player) and (c ~= Classes.enum.IRON_LEG or (memory.class_auxiliary_data[player_index] and memory.class_auxiliary_data[player_index].iron_leg_active)) then
 			if Common.validate_player_and_character(player) then
 				if class == c then
-					if r and rendering.is_valid(r) then
-						rendering.set_target(r, player.character)
+					if r and r.valid then
+						r.target = player.character
 					end
 				else
-					if r and rendering.is_valid(r) then
-						rendering.destroy(r)
+					if r and r.valid then
+						r.destroy()
 					end
 					if class == Classes.enum.QUARTERMASTER then
 						class_renderings[player_index] = {
-							rendering = rendering.draw_circle {
-								surface = player.surface,
+							rendering = rendering.draw_circle({
+								surface = player.character.surface,
 								target = player.character,
 								color = CoreData.colors.quartermaster_rendering,
 								filled = false,
 								radius = Balance.quartermaster_range,
 								only_in_alt_mode = true,
 								draw_on_ground = true,
-							}
+							}),
 						}
 					elseif class == Classes.enum.SAMURAI then
 						class_renderings[player_index] = {
-							rendering = rendering.draw_circle {
-								surface = player.surface,
+							rendering = rendering.draw_circle({
+								surface = player.character.surface,
 								target = player.character,
 								color = CoreData.colors.toughness_rendering,
 								filled = false,
 								radius = 1 - Balance.samurai_damage_taken_multiplier,
 								only_in_alt_mode = false,
 								draw_on_ground = true,
-							}
+							}),
 						}
 					elseif class == Classes.enum.HATAMOTO then
 						class_renderings[player_index] = {
-							rendering = rendering.draw_circle {
-								surface = player.surface,
+							rendering = rendering.draw_circle({
+								surface = player.character.surface,
 								target = player.character,
 								color = CoreData.colors.toughness_rendering,
 								filled = false,
 								radius = 1 - Balance.hatamoto_damage_taken_multiplier,
 								only_in_alt_mode = false,
 								draw_on_ground = true,
-							}
+							}),
 						}
 					elseif class == Classes.enum.IRON_LEG and data and data.iron_leg_active then
 						class_renderings[player_index] = {
-							rendering = rendering.draw_circle {
-								surface = player.surface,
+							rendering = rendering.draw_circle({
+								surface = player.character.surface,
 								target = player.character,
 								color = CoreData.colors.toughness_rendering,
 								filled = false,
 								radius = 1 - Balance.iron_leg_damage_taken_multiplier,
 								only_in_alt_mode = false,
 								draw_on_ground = true,
-							}
+							}),
 						}
 					elseif class == Classes.enum.MEDIC then
 						class_renderings[player_index] = {
-							rendering = rendering.draw_circle {
-								surface = player.surface,
+							rendering = rendering.draw_circle({
+								surface = player.character.surface,
 								target = player.character,
 								color = CoreData.colors.healing_radius_rendering,
 								filled = false,
 								radius = Balance.medic_heal_radius,
 								only_in_alt_mode = true,
 								draw_on_ground = true,
-							}
+							}),
 						}
 					elseif class == Classes.enum.DOCTOR then
 						class_renderings[player_index] = {
-							rendering = rendering.draw_circle {
-								surface = player.surface,
+							rendering = rendering.draw_circle({
+								surface = player.character.surface,
 								target = player.character,
 								color = CoreData.colors.healing_radius_rendering,
 								filled = false,
 								radius = Balance.doctor_heal_radius,
 								only_in_alt_mode = true,
 								draw_on_ground = true,
-							}
+							}),
 						}
 					elseif class == Classes.enum.SHAMAN and data and data.shaman_charge and data.shaman_charge > 0 then
 						local max_render_radius = 3
 						local radius = max_render_radius * (data.shaman_charge / Balance.shaman_max_charge)
 						class_renderings[player_index] = {
-							rendering = rendering.draw_circle {
-								surface = player.surface,
+							rendering = rendering.draw_circle({
+								surface = player.character.surface,
 								target = player.character,
 								color = CoreData.colors.shaman_charge_rendering,
 								filled = true,
 								radius = radius,
 								only_in_alt_mode = false,
 								draw_on_ground = true,
-							}
+							}),
 						}
 					elseif class == Classes.enum.LUMINOUS then
 						class_renderings[player_index] = {
 							rendering = rendering.draw_light({
-								surface = player.surface,
+								surface = player.character.surface,
 								target = player.character,
 								color = { r = 1, g = 1, b = 1 },
 								sprite = 'utility/light_medium',
@@ -230,14 +249,14 @@ function Public.class_renderings(tickinterval)
 								minimum_darkness = 0,
 								oriented = true,
 								visible = true,
-								only_in_alt_mode = false
-							})
+								only_in_alt_mode = false,
+							}),
 						}
 					end
 				end
 			else
 				if r then
-					rendering.destroy(r)
+					r.destroy()
 				end
 				class_renderings[player_index] = nil
 			end
@@ -247,15 +266,15 @@ function Public.class_renderings(tickinterval)
 	for k, data in pairs(class_renderings) do
 		if not processed_players[k] then
 			local r = data.rendering
-			if r and rendering.is_valid(r) then
-				rendering.destroy(r)
+			if r and r.valid then
+				r.destroy()
 			end
 			class_renderings[k] = nil
 		end
 	end
 end
 
-function Public.update_character_properties(tickinterval)
+function Public.update_character_properties(tick_interval)
 	local memory = Memory.get_crew_memory()
 
 	local crew = Common.crew_get_crew_members()
@@ -272,7 +291,12 @@ function Public.update_character_properties(tickinterval)
 				speed_boost = speed_boost * Balance.respawn_speed_boost
 			end
 
-			if memory.players_to_last_landmine_placement_tick and memory.players_to_last_landmine_placement_tick[player_index] and game.tick < memory.players_to_last_landmine_placement_tick[player_index] + Balance.landmine_speed_nerf_seconds * 60 then
+			if
+				memory.players_to_last_landmine_placement_tick
+				and memory.players_to_last_landmine_placement_tick[player_index]
+				and game.tick
+					< memory.players_to_last_landmine_placement_tick[player_index] + Balance.landmine_speed_nerf_seconds * 60
+			then
 				speed_boost = speed_boost * (1 - Balance.landmine_speed_nerf)
 			end
 
@@ -297,14 +321,24 @@ function Public.update_character_properties(tickinterval)
 
 				if class == Classes.enum.SCOUT then
 					speed_boost = speed_boost * Balance.scout_extra_speed
-				elseif (class == Classes.enum.DECKHAND) or (class == Classes.enum.BOATSWAIN) or (class == Classes.enum.SHORESMAN) then
-					local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(player.surface.name)
+				elseif
+					(class == Classes.enum.DECKHAND)
+					or (class == Classes.enum.BOATSWAIN)
+					or (class == Classes.enum.SHORESMAN)
+				then
+					local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(player.character.surface.name)
 					local type = surfacedata.type
-					local on_ship_bool = (type == Surfaces.enum.HOLD) or (type == Surfaces.enum.CABIN) or (type == Surfaces.enum.CROWSNEST) or (player.surface.name == memory.boat.surface_name and Boats.on_boat(memory.boat, player.position))
+					local on_ship_bool = (type == Surfaces.enum.HOLD)
+						or (type == Surfaces.enum.CABIN)
+						or (type == Surfaces.enum.CROWSNEST)
+						or (
+							player.character.surface.name == memory.boat.surface_name
+							and Boats.on_boat(memory.boat, player.character.position)
+						)
 					local hold_bool = (type == Surfaces.enum.HOLD)
 
 					if class == Classes.enum.DECKHAND then
-						if on_ship_bool and (not hold_bool) then
+						if on_ship_bool and not hold_bool then
 							speed_boost = speed_boost * Balance.deckhand_extra_speed
 						end
 					elseif class == Classes.enum.BOATSWAIN then
@@ -323,18 +357,21 @@ function Public.update_character_properties(tickinterval)
 
 			-- If they're a SAMURAI or HATAMOTO, and have a weapon equipped, unequip it:
 			if class == Classes.enum.SAMURAI or class == Classes.enum.HATAMOTO then
-				if not Common.validate_player(player) then return end
-				local main_gun_inv = player.get_inventory(defines.inventory.character_guns)[1]
+				if not Common.validate_player_and_character(player) then
+					return
+				end
+				local main_gun_inv = player.character.get_inventory(defines.inventory.character_guns)
 
-				if main_gun_inv.valid_for_read then
-					local main_inv = player.get_main_inventory()
+				if main_gun_inv and main_gun_inv[1] and main_gun_inv[1].valid_for_read then
+					local main_inv = player.character.get_main_inventory()
 
-					if main_inv.can_insert(main_gun_inv) then
-						main_inv.insert(main_gun_inv)
+					if main_inv.can_insert(main_gun_inv[1]) then
+						main_inv.insert(main_gun_inv[1])
 					else
-						main_gun_inv.drop()
+						player.character.surface.spill_item_stack(player.character.position, main_gun_inv[1])
 					end
-					main_gun_inv.clear()
+
+					main_gun_inv.remove(main_gun_inv[1])
 				end
 			end
 
@@ -352,37 +389,48 @@ function Public.update_character_properties(tickinterval)
 	end
 end
 
-function Public.class_rewards_tick(tickinterval)
-	--assuming tickinterval = 7 seconds for now
+function Public.class_rewards_tick(tick_interval)
+	--assuming tick_interval = 7 seconds for now
 	local memory = Memory.get_crew_memory()
 	local crew = Common.crew_get_crew_members()
 
 	for _, player in pairs(crew) do
 		local class = Classes.get_class(player.index)
-		if Common.validate_player_and_character(player) and
-			game.tick % tickinterval == 0 and
-			class and
-			not Boats.is_boat_at_sea() and --it is possible to spend infinite time here, so don't give out freebies
-			(
-				class == Classes.enum.DECKHAND or
-				class == Classes.enum.SHORESMAN or
-				class == Classes.enum.BOATSWAIN or
-				class == Classes.enum.QUARTERMASTER
+		if
+			Common.validate_player_and_character(player)
+			and game.tick % tick_interval == 0
+			and class
+			and not Boats.is_boat_at_sea() --it is possible to spend infinite time here, so don't give out freebies
+			and (
+				class == Classes.enum.DECKHAND
+				or class == Classes.enum.SHORESMAN
+				or class == Classes.enum.BOATSWAIN
+				or class == Classes.enum.QUARTERMASTER
 			)
-		then --watch out for this line! (why?)
-			local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(player.surface.name)
+		then
+			local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(player.character.surface.name)
 			local type = surfacedata.type
-			local on_ship_bool = (type == Surfaces.enum.HOLD) or (type == Surfaces.enum.CABIN) or (type == Surfaces.enum.CROWSNEST) or (player.surface.name == memory.boat.surface_name and Boats.on_boat(memory.boat, player.position))
+			local on_ship_bool = (type == Surfaces.enum.HOLD)
+				or (type == Surfaces.enum.CABIN)
+				or (type == Surfaces.enum.CROWSNEST)
+				or (
+					player.character.surface.name == memory.boat.surface_name
+					and Boats.on_boat(memory.boat, player.character.position)
+				)
 			local hold_bool = (type == Surfaces.enum.HOLD)
 
-			if class == Classes.enum.DECKHAND and on_ship_bool and (not hold_bool) then
+			if class == Classes.enum.DECKHAND and on_ship_bool and not hold_bool then
 				Classes.class_ore_grant(player, Balance.deckhand_ore_grant_multiplier)
 			elseif class == Classes.enum.BOATSWAIN and hold_bool then
 				Classes.class_ore_grant(player, Balance.boatswain_ore_grant_multiplier)
-			elseif class == Classes.enum.SHORESMAN and (not on_ship_bool) then
+			elseif class == Classes.enum.SHORESMAN and not on_ship_bool then
 				Classes.class_ore_grant(player, Balance.shoresman_ore_grant_multiplier)
 			elseif class == Classes.enum.QUARTERMASTER then
-				local nearby_players = #player.surface.find_entities_filtered { position = player.position, radius = Balance.quartermaster_range, name = 'character' }
+				local nearby_players = #player.character.surface.find_entities_filtered({
+					position = player.character.position,
+					radius = Balance.quartermaster_range,
+					name = 'character',
+				})
 
 				if nearby_players > 1 then
 					Classes.class_ore_grant(player, nearby_players - 1)
@@ -392,9 +440,9 @@ function Public.class_rewards_tick(tickinterval)
 
 		-- Smoldering class is disabled
 		-- if memory.classes_table and memory.classes_table[player.index] then
-		-- 	if game.tick % tickinterval == 0 and Common.validate_player_and_character(player) then
+		-- 	if game.tick % tick_interval == 0 and Common.validate_player_and_character(player) then
 		-- 		if memory.classes_table[player.index] == Classes.enum.SMOLDERING then
-		-- 			local inv = player.get_inventory(defines.inventory.character_main)
+		-- 			local inv = player.character.get_inventory(defines.inventory.character_main)
 		-- 			if not (inv and inv.valid) then return end
 		-- 			local max_coal = 50
 		-- 			-- local max_transfer = 1

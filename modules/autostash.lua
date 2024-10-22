@@ -90,17 +90,23 @@ local function create_floaty_text(surface, position, name, count)
     else
         this.floating_text_y_offsets[position.x .. '_' .. position.y] = 0
     end
-    surface.create_entity(
-        {
-            name = 'flying-text',
-            position = {
-                position.x,
-                position.y + this.floating_text_y_offsets[position.x .. '_' .. position.y]
-            },
-            text = { '', '-', count, ' ', game.item_prototypes[name].localised_name },
-            color = { r = 255, g = 255, b = 255 }
-        }
-    )
+
+    if not surface.valid then return end
+
+    for _, player in pairs(game.connected_players) do
+        if player.surface_index == surface.index then
+            player.create_local_flying_text(
+                {
+                    position = {
+                        position.x,
+                        position.y + this.floating_text_y_offsets[position.x .. '_' .. position.y]
+                    },
+                    text = { '', '-', count, ' ', prototypes.item[name].localised_name },
+                    color = { r = 255, g = 255, b = 255 }
+                }
+            )
+        end
+    end
 end
 
 local function prepare_floaty_text(list, surface, position, name, count)
@@ -247,6 +253,16 @@ local function get_nearby_chests(player, a, furnace, wagon)
         inventories[size_of_chests] = entity.get_inventory(inventory_type)
     end
     return { chest = chests, inventory = inventories }
+end
+
+local function check_if_valid_requests(chest)
+    local requests = 0
+    if chest.type == 'logistic-container' then
+        local lp = chest.get_logistic_point(defines.logistic_member_index.logistic_container)
+        local filters = LP.get_filters(lp)
+        requests = #filters
+    end
+    return requests > 0
 end
 
 local function insert_to_furnace(player_inventory, chests, name, count, floaty_text_list)
@@ -460,7 +476,7 @@ local function insert_item_into_chest(stack, chests, filtered_chests, name, floa
     --Attempt to store in chests that already have the same item.
     for chestnr, chest in pairs(chests.chest) do
         if container[chest.type] then
-            if chest.request_slot_count and chest.request_slot_count > 0 then
+            if check_if_valid_requests(chest) then
                 goto continue
             end
             local chest_inventory = chests.inventory[chestnr]
@@ -481,7 +497,7 @@ local function insert_item_into_chest(stack, chests, filtered_chests, name, floa
     --Attempt to store in empty chests.
     for chestnr, chest in pairs(filtered_chests.chest) do
         if container[chest.type] then
-            if chest.request_slot_count and chest.request_slot_count > 0 then
+            if check_if_valid_requests(chest) then
                 goto continue
             end
             local chest_inventory = filtered_chests.inventory[chestnr]
@@ -501,13 +517,13 @@ local function insert_item_into_chest(stack, chests, filtered_chests, name, floa
         end
     end
 
-    local item_prototypes = game.item_prototypes
+    local item_prototypes = prototypes.item
 
     --Attempt to store in chests with same item subgroup.
-    local item_subgroup = game.item_prototypes[name].subgroup.name
+    local item_subgroup = prototypes.item[name].subgroup.name
     if item_subgroup then
         for chestnr, chest in pairs(filtered_chests.chest) do
-            if chest.request_slot_count and chest.request_slot_count > 0 then
+            if check_if_valid_requests(chest) then
                 goto continue
             end
             if container[chest.type] then
@@ -537,7 +553,7 @@ local function insert_item_into_chest(stack, chests, filtered_chests, name, floa
     --Attempt to store in mixed chests.
     for chestnr, chest in pairs(filtered_chests.chest) do
         if container[chest.type] then
-            if chest.request_slot_count and chest.request_slot_count > 0 then
+            if check_if_valid_requests(chest) then
                 goto continue
             end
             local chest_inventory = filtered_chests.inventory[chestnr]
@@ -570,6 +586,7 @@ local function auto_stash(player, event)
         return
     end
     local inventory = player.get_main_inventory()
+    if not inventory then return end
     if inventory.is_empty() then
         player.print(module_name .. 'Inventory is empty.', Color.warning)
         return
@@ -693,7 +710,7 @@ local function create_gui_button(player, bottom_frame_data)
             )
         if button then
             button.style.font_color = { 165, 165, 165 }
-            button.style.font = 'heading-3'
+            button.style.font = 'default-semibold'
             button.style.minimal_height = 36
             button.style.maximal_height = 36
             button.style.minimal_width = 40
@@ -735,8 +752,8 @@ local function do_whitelist()
         return
     end
     Task.delay(on_init_token, {})
-    local resources = game.entity_prototypes
-    local items = game.item_prototypes
+    local resources = prototypes.entity
+    local items = prototypes.item
     this.whitelist = {}
     for k, _ in pairs(resources) do
         if resources[k] and resources[k].type == 'resource' and resources[k].mineable_properties then

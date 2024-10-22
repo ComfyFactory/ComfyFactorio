@@ -1,19 +1,17 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-
-local Math = require 'maps.pirates.math'
+local Math = require('maps.pirates.math')
 -- local _inspect = require 'utils.inspect'.inspect
-local simplex_noise = require 'utils.simplex_noise'.d2 --rms ~ 0.1925
--- local perlin_noise = require 'utils.perlin_noise'
+local simplex_noise = require('utils.math.simplex_noise').d2 --rms ~ 0.1925
+-- local perlin_noise = require 'utils.math.perlin_noise'
 -- local Memory = require 'maps.pirates.memory'
 -- local CoreData = require 'maps.pirates.coredata'
-local NoisePregen = require 'maps.pirates.noise_pregen.noise_pregen'
+local NoisePregen = require('maps.pirates.noise_pregen.noise_pregen')
 
 local Public = {}
 
 -- Lua 5.2 compatibility
 -- local unpack = unpack or table.unpack
-
 
 function Public.rgb_from_hsv(h, s, v)
 	-- 0 ≤ H < 360, 0 ≤ S ≤ 1 and 0 ≤ V ≤ 1
@@ -50,7 +48,9 @@ function Public.rgb_from_hsv(h, s, v)
 end
 
 function Public.stable_sort(list, comp) --sorts but preserves ordering of equals
-	comp = comp or function (a, b) return a < b end
+	comp = comp or function(a, b)
+		return a < b
+	end
 
 	local num = 0
 	for k, _ in ipairs(list) do
@@ -99,7 +99,9 @@ function Public.interpolate(vector1, vector2, param)
 end
 
 function Public.contains(table, element)
-	if not table then return false end
+	if not table then
+		return false
+	end
 	for _, value in pairs(table) do
 		if value == element then
 			return true
@@ -113,7 +115,7 @@ function Public.snap_coordinates_for_rails(p)
 end
 
 function Public.spritepath_to_richtext(spritepath)
-	return '[' .. spritepath:gsub("/", "=") .. ']'
+	return '[' .. spritepath:gsub('/', '=') .. ']'
 end
 
 function Public.nonrepeating_join_dict(t1, t2)
@@ -161,7 +163,9 @@ function Public.exclude_position_arrays(a, b_exclude)
 	for x, xtab in pairs(a) do
 		for y, _ in pairs(xtab) do
 			if not (b_exclude[x] and b_exclude[x][y]) then
-				if not a2[x] then a2[x] = {} end
+				if not a2[x] then
+					a2[x] = {}
+				end
 				a2[x][y] = true
 			end
 		end
@@ -172,7 +176,9 @@ end
 function Public.unordered_table_with_values_removed(tbl, val)
 	local to_keep = {}
 	for k, v in pairs(tbl) do
-		if v ~= val then to_keep[k] = v end
+		if v ~= val then
+			to_keep[k] = v
+		end
 	end
 	return to_keep
 end
@@ -274,9 +280,20 @@ function Public.time_longform(seconds)
 	elseif seconds2 < 60 * 60 - 1 then
 		str2 = string.format('%.0f mins, %.0f seconds', Math.floor(Math.ceil(seconds2) / 60), Math.ceil(seconds2) % 60)
 	elseif seconds2 < 60 * 60 * 24 - 1 then
-		str2 = string.format('%.0f hours, %.0f mins, %.0f seconds', Math.floor(Math.ceil(seconds2) / (60 * 60)), Math.floor(Math.ceil(seconds2) / 60) % 60, Math.ceil(seconds2) % 60)
+		str2 = string.format(
+			'%.0f hours, %.0f mins, %.0f seconds',
+			Math.floor(Math.ceil(seconds2) / (60 * 60)),
+			Math.floor(Math.ceil(seconds2) / 60) % 60,
+			Math.ceil(seconds2) % 60
+		)
 	else
-		str2 = string.format('%.0f days, %.0f hours, %.0f mins, %.0f seconds', Math.floor(Math.ceil(seconds2) / (24 * 60 * 60)), Math.floor(Math.ceil(seconds2) / (60 * 60)) % 24, Math.floor(Math.ceil(seconds2) / 60) % 60, Math.ceil(seconds2) % 60)
+		str2 = string.format(
+			'%.0f days, %.0f hours, %.0f mins, %.0f seconds',
+			Math.floor(Math.ceil(seconds2) / (24 * 60 * 60)),
+			Math.floor(Math.ceil(seconds2) / (60 * 60)) % 24,
+			Math.floor(Math.ceil(seconds2) / 60) % 60,
+			Math.ceil(seconds2) % 60
+		)
 	end
 	return str1 .. str2
 end
@@ -297,17 +314,32 @@ function Public.time_mediumform(seconds)
 	elseif seconds3 < 60 * 60 - 1 then
 		str2 = string.format('%.0fm%.0fs', Math.floor(seconds3 / 60), seconds3 % 60)
 	elseif seconds3 < 60 * 60 * 24 - 1 then
-		str2 = string.format('%.0fh%.0fm%.0fs', Math.floor(seconds3 / (60 * 60)), Math.floor(seconds3 / 60) % 60, seconds3 % 60)
+		str2 = string.format(
+			'%.0fh%.0fm%.0fs',
+			Math.floor(seconds3 / (60 * 60)),
+			Math.floor(seconds3 / 60) % 60,
+			seconds3 % 60
+		)
 	else
-		str2 = string.format('%.0fd%.0fh%.0fm%.0fs', Math.floor(seconds3 / (24 * 60 * 60)), Math.floor(seconds3 / (60 * 60)) % 24, Math.floor(seconds3 / 60) % 60, seconds3 % 60)
+		str2 = string.format(
+			'%.0fd%.0fh%.0fm%.0fs',
+			Math.floor(seconds3 / (24 * 60 * 60)),
+			Math.floor(seconds3 / (60 * 60)) % 24,
+			Math.floor(seconds3 / 60) % 60,
+			seconds3 % 60
+		)
 	end
 	return str1 .. str2
 end
 
 function Public.deepcopy(obj) --doesn't copy metatables
-	if type(obj) ~= 'table' then return obj end
+	if type(obj) ~= 'table' then
+		return obj
+	end
 	local res = {}
-	for k, v in pairs(obj) do res[Public.deepcopy(k)] = Public.deepcopy(v) end
+	for k, v in pairs(obj) do
+		res[Public.deepcopy(k)] = Public.deepcopy(v)
+	end
 	return res
 end
 
@@ -380,7 +412,7 @@ end
 function Public.noise_field_simplex_2d(noise_data, seed, normalised)
 	normalised = normalised or false
 
-	local f = function (position)
+	local f = function(position)
 		local noise, _seed, weight_sum = 0, seed, 0
 		for i = 1, #noise_data do
 			local n = noise_data[i]
@@ -390,10 +422,14 @@ function Public.noise_field_simplex_2d(noise_data, seed, normalised)
 				_seed = _seed + 12345 --some deficiencies
 			end
 
-			if normalised then weight_sum = weight_sum + n.amplitude end
+			if normalised then
+				weight_sum = weight_sum + n.amplitude
+			end
 			noise = noise + toadd
 		end
-		if normalised then noise = noise / weight_sum end
+		if normalised then
+			noise = noise / weight_sum
+		end
 		return noise
 	end
 	return f
@@ -407,7 +443,7 @@ function Public.hardcoded_noise_field_decompress(fieldtype, noise_data, seed, no
 	local hardcoded_wordlength = NoisePregen[fieldtype].wordlength
 	local factor = NoisePregen[fieldtype].factor
 
-	local f = function (position)
+	local f = function(position)
 		local noise, weight_sum, _seed = 0, 0, seed
 		for i = 1, #noise_data do
 			local n = noise_data[i]
@@ -445,18 +481,30 @@ function Public.hardcoded_noise_field_decompress(fieldtype, noise_data, seed, no
 				local str01 = NoisePregen[fieldtype].Data:sub(strindex01, strindex01 + (hardcoded_wordlength - 1))
 				local noise00, noise10, noise01 = 0, 0, 0
 				for j = 0, hardcoded_wordlength - 1 do
-					noise00 = noise00 + NoisePregen.dec[str00:sub(hardcoded_wordlength - j, hardcoded_wordlength - j)] * (NoisePregen.encoding_length ^ j)
-					noise10 = noise10 + NoisePregen.dec[str10:sub(hardcoded_wordlength - j, hardcoded_wordlength - j)] * (NoisePregen.encoding_length ^ j)
-					noise01 = noise01 + NoisePregen.dec[str01:sub(hardcoded_wordlength - j, hardcoded_wordlength - j)] * (NoisePregen.encoding_length ^ j)
+					noise00 = noise00
+						+ NoisePregen.dec[str00:sub(hardcoded_wordlength - j, hardcoded_wordlength - j)]
+							* (NoisePregen.encoding_length ^ j)
+					noise10 = noise10
+						+ NoisePregen.dec[str10:sub(hardcoded_wordlength - j, hardcoded_wordlength - j)]
+							* (NoisePregen.encoding_length ^ j)
+					noise01 = noise01
+						+ NoisePregen.dec[str01:sub(hardcoded_wordlength - j, hardcoded_wordlength - j)]
+							* (NoisePregen.encoding_length ^ j)
 				end
 
-				if noise00 % 2 == 1 then noise00 = -noise00 end
+				if noise00 % 2 == 1 then
+					noise00 = -noise00
+				end
 				noise00 = noise00 / (NoisePregen.encoding_length ^ (hardcoded_wordlength - 1))
 
-				if noise10 % 2 == 1 then noise10 = -noise10 end
+				if noise10 % 2 == 1 then
+					noise10 = -noise10
+				end
 				noise10 = noise10 / (NoisePregen.encoding_length ^ (hardcoded_wordlength - 1))
 
-				if noise01 % 2 == 1 then noise01 = -noise01 end
+				if noise01 % 2 == 1 then
+					noise01 = -noise01
+				end
 				noise01 = noise01 / (NoisePregen.encoding_length ^ (hardcoded_wordlength - 1))
 
 				-- local hardnoise00 = tonumber(strsub00:sub(2,6))/10000
@@ -469,16 +517,22 @@ function Public.hardcoded_noise_field_decompress(fieldtype, noise_data, seed, no
 				-- log(_inspect{topleftnoiseindex, topleftnoiseindex2, relativeindex00, relativeindex10, relativeindex01})
 				-- log(_inspect{strindex00, strindex10, strindex01, hardnoise1, hardnoise2, hardnoise3})
 
-				local interpolatedhardnoise = noise00 + x2remainder * (noise10 - noise00) + y2remainder * (noise01 - noise00)
+				local interpolatedhardnoise = noise00
+					+ x2remainder * (noise10 - noise00)
+					+ y2remainder * (noise01 - noise00)
 
 				toadd = toadd * factor * tonumber(interpolatedhardnoise)
 				_seed = _seed + 12345
 			end
 
-			if normalised then weight_sum = weight_sum + n.amplitude end
+			if normalised then
+				weight_sum = weight_sum + n.amplitude
+			end
 			noise = noise + toadd
 		end
-		if normalised then noise = noise / weight_sum end
+		if normalised then
+			noise = noise / weight_sum
+		end
 		return noise
 	end
 	return f
@@ -492,7 +546,7 @@ function Public.hardcoded_noise_field(fieldtype, noise_data, seed, normalised)
 	local hardcoded_wordlength = NoisePregen[fieldtype].wordlength
 	local factor = NoisePregen[fieldtype].factor
 
-	local f = function (position)
+	local f = function(position)
 		local noise, weight_sum, _seed = 0, 0, seed
 		for i = 1, #noise_data do
 			local n = noise_data[i]
@@ -532,25 +586,37 @@ function Public.hardcoded_noise_field(fieldtype, noise_data, seed, normalised)
 				local str01 = NoisePregen[fieldtype].Data:sub(strindex01, strindex01 + (hardcoded_wordlength - 1))
 
 				local noise00 = tonumber(str00:sub(2, 6)) / 10000
-				if str00:sub(1, 1) == '-' then noise00 = -noise00 end
+				if str00:sub(1, 1) == '-' then
+					noise00 = -noise00
+				end
 				local noise10 = tonumber(str10:sub(2, 6)) / 10000
-				if str10:sub(1, 1) == '-' then noise10 = -noise10 end
+				if str10:sub(1, 1) == '-' then
+					noise10 = -noise10
+				end
 				local noise01 = tonumber(str01:sub(2, 6)) / 10000
-				if str01:sub(1, 1) == '-' then noise01 = -noise01 end
+				if str01:sub(1, 1) == '-' then
+					noise01 = -noise01
+				end
 
 				-- log(_inspect{topleftnoiseindex, topleftnoiseindex2, relativeindex00, relativeindex10, relativeindex01})
 				-- log(_inspect{strindex00, strindex10, strindex01, hardnoise1, hardnoise2, hardnoise3})
 
-				local interpolatedhardnoise = noise00 + x2remainder * (noise10 - noise00) + y2remainder * (noise01 - noise00)
+				local interpolatedhardnoise = noise00
+					+ x2remainder * (noise10 - noise00)
+					+ y2remainder * (noise01 - noise00)
 
 				toadd = toadd * factor * tonumber(interpolatedhardnoise)
 				_seed = _seed + 12345 --some deficiencies
 			end
 
-			if normalised then weight_sum = weight_sum + n.amplitude end
+			if normalised then
+				weight_sum = weight_sum + n.amplitude
+			end
 			noise = noise + toadd
 		end
-		if normalised then noise = noise / weight_sum end
+		if normalised then
+			noise = noise / weight_sum
+		end
 		return noise
 	end
 	return f
@@ -591,7 +657,9 @@ local function cache_get(cache, params)
 	local node = cache
 	for i = 1, #params do
 		node = node.children and node.children[params[i]]
-		if not node then return nil end
+		if not node then
+			return nil
+		end
 	end
 	return node.results
 end
@@ -607,8 +675,6 @@ local function cache_put(cache, params, results)
 	end
 	node.results = results
 end
-
-
 
 -- The following functions were adapted from https://github.com/kikito/memoize.lua/blob/master/memoize.lua, under the MIT License:
 -- [[
@@ -634,7 +700,9 @@ end
 
 local function is_callable(f)
 	local tf = type(f)
-	if tf == 'function' then return true end
+	if tf == 'function' then
+		return true
+	end
 	if tf == 'table' then
 		local mt = getmetatable(f)
 		return type(mt) == 'table' and is_callable(mt.__call)
@@ -649,12 +717,12 @@ function Public.memoize(f, cache)
 	cache = cache or {}
 
 	if not is_callable(f) then
-		log(string.format(
-			"Only functions and callable tables are memoizable. Received %s (a %s)",
-			tostring(f), type(f)))
+		log(
+			string.format('Only functions and callable tables are memoizable. Received %s (a %s)', tostring(f), type(f))
+		)
 	end
 
-	return function (...)
+	return function(...)
 		local params = { ... }
 
 		local results = cache_get(cache, params)

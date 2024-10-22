@@ -1,6 +1,6 @@
 --made by Hanakocz
 --charge your armor equipment from nearby accumulators!
---change global.charging_station_multiplier if you want different conversion rate than 1:1.
+--change storage.charging_station_multiplier if you want different conversion rate than 1:1.
 local Event = require 'utils.event'
 local SpamProtection = require 'utils.spam_protection'
 local Gui = require 'utils.gui'
@@ -10,16 +10,16 @@ local function draw_charging_gui()
         if not player.gui.top.charging_station then
             local b =
                 player.gui.top.add(
-                {
-                    type = 'sprite-button',
-                    name = 'charging_station',
-                    sprite = 'item/battery-mk2-equipment',
-                    tooltip = {
-                        'modules.charging_station_tooltip'
-                    },
-                    style = Gui.button_style
-                }
-            )
+                    {
+                        type = 'sprite-button',
+                        name = 'charging_station',
+                        sprite = 'item/battery-mk2-equipment',
+                        tooltip = {
+                            'modules.charging_station_tooltip'
+                        },
+                        style = Gui.button_style
+                    }
+                )
             b.style.minimal_height = 38
             b.style.maximal_height = 38
         end
@@ -27,9 +27,9 @@ local function draw_charging_gui()
 end
 
 local function discharge_accumulators(surface, position, force, power_needs)
-    local accumulators = surface.find_entities_filtered {name = 'accumulator', force = force, position = position, radius = 13}
+    local accumulators = surface.find_entities_filtered { name = 'accumulator', force = force, position = position, radius = 13 }
     local power_drained = 0
-    power_needs = power_needs * global.charging_station_multiplier
+    power_needs = power_needs * storage.charging_station_multiplier
     for _, accu in pairs(accumulators) do
         if accu.valid then
             if accu.energy > 3000000 and power_needs > 0 then
@@ -46,7 +46,7 @@ local function discharge_accumulators(surface, position, force, power_needs)
             end
         end
     end
-    return power_drained / global.charging_station_multiplier
+    return power_drained / storage.charging_station_multiplier
 end
 
 local function charge(player)
@@ -109,7 +109,7 @@ local function on_gui_click(event)
 end
 
 local function on_init()
-    global.charging_station_multiplier = 1
+    storage.charging_station_multiplier = 1
 end
 
 Event.on_init(on_init)

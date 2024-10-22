@@ -39,8 +39,8 @@ local function on_init()
     surface.freeze_daytime = true
     surface.min_brightness = 0
 
-    global.daytime = 0
-    global.map_score = 0
+    storage.daytime = 0
+    storage.map_score = 0
 end
 
 local Event = require 'utils.event'

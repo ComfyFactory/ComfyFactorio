@@ -4,7 +4,7 @@ local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 -- called whenever a player places an item
 local function on_built_entity(event)
     local this = ScenarioTable.get_table()
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity.valid then
         return
     end
@@ -21,10 +21,10 @@ local function on_built_entity(event)
                 name = 'flying-text',
                 position = entity.position,
                 text = 'You are not acclimated to this technology!',
-                color = {r = 0.77, g = 0.0, b = 0.0}
+                color = { r = 0.77, g = 0.0, b = 0.0 }
             }
         )
-        player.insert({name = 'laser-turret', count = 1})
+        player.insert({ name = 'laser-turret', count = 1 })
         entity.destroy()
         return
     end
@@ -37,10 +37,10 @@ local function on_built_entity(event)
                 name = 'flying-text',
                 position = entity.position,
                 text = 'You do not have enough slots!',
-                color = {r = 0.77, g = 0.0, b = 0.0}
+                color = { r = 0.77, g = 0.0, b = 0.0 }
             }
         )
-        player.insert({name = 'laser-turret', count = 1})
+        player.insert({ name = 'laser-turret', count = 1 })
         entity.destroy()
         return
     end
@@ -56,7 +56,7 @@ local function on_built_entity(event)
             name = 'flying-text',
             position = entity.position,
             text = 'Using ' .. locations .. '/' .. slots .. ' slots',
-            color = {r = 1.0, g = 1.0, b = 1.0}
+            color = { r = 1.0, g = 1.0, b = 1.0 }
         }
     )
 end
@@ -64,7 +64,7 @@ end
 -- called whenever a robot places an item
 local function on_robot_built_entity(event)
     local this = ScenarioTable.get_table()
-    local entity = event.created_entity
+    local entity = event.entity
     if not entity.valid then
         return
     end
@@ -81,10 +81,10 @@ local function on_robot_built_entity(event)
                 name = 'flying-text',
                 position = entity.position,
                 text = 'Robot not acclimated to this technology!',
-                color = {r = 0.77, g = 0.0, b = 0.0}
+                color = { r = 0.77, g = 0.0, b = 0.0 }
             }
         )
-        robot.insert({name = 'laser-turret', count = 1})
+        robot.insert({ name = 'laser-turret', count = 1 })
         entity.destroy()
         return
     end
@@ -96,10 +96,10 @@ local function on_robot_built_entity(event)
                 name = 'flying-text',
                 position = entity.position,
                 text = 'Town does not have enough slots!',
-                color = {r = 0.77, g = 0.0, b = 0.0}
+                color = { r = 0.77, g = 0.0, b = 0.0 }
             }
         )
-        robot.insert({name = 'laser-turret', count = 1})
+        robot.insert({ name = 'laser-turret', count = 1 })
         entity.destroy()
         return
     end
@@ -115,7 +115,7 @@ local function on_robot_built_entity(event)
             name = 'flying-text',
             position = entity.position,
             text = 'Using ' .. locations .. '/' .. slots .. ' slots',
-            color = {r = 1.0, g = 1.0, b = 1.0}
+            color = { r = 1.0, g = 1.0, b = 1.0 }
         }
     )
 end

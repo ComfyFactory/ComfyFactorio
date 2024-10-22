@@ -1,12 +1,11 @@
 ---@diagnostic disable: inject-field
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-
 -- local Memory = require 'maps.pirates.memory'
 -- local Utils = require 'maps.pirates.utils_local'
 -- local Math = require 'maps.pirates.math'
-local GuiCommon = require 'maps.pirates.gui.common'
-local PlayerColors = require 'maps.pirates.player_colors'
+local GuiCommon = require('maps.pirates.gui.common')
+local PlayerColors = require('maps.pirates.player_colors')
 local Public = {}
 
 local window_name = 'color'
@@ -33,7 +32,6 @@ function Public.toggle_window(player)
 	-- end
 	-- log(label)
 
-
 	flow2 = flow.add({
 		name = 'colors',
 		type = 'text-box',
@@ -53,7 +51,9 @@ end
 -- end
 
 function Public.full_update(player)
-	if Public.regular_update then Public.regular_update(player) end
+	if Public.regular_update then
+		Public.regular_update(player)
+	end
 end
 
 -- function Public.click(event)

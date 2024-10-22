@@ -15,6 +15,7 @@ local random = math.random
 local sub = string.sub
 local sqrt = math.sqrt
 local zone_settings = Public.zone_settings
+local scenario_name = Public.scenario_name
 
 local clear_breach_text_and_render = function ()
     local beam1 = Public.get('zone1_beam1')
@@ -30,16 +31,16 @@ local clear_breach_text_and_render = function ()
         beam3.destroy()
     end
     local zone1_text1 = Public.get('zone1_text1')
-    if zone1_text1 then
-        rendering.set_text(zone1_text1, 'Collapse has begun!')
+    if zone1_text1.valid then
+        Public.get('zone1_text1').text = 'Collapse has begun!'
     end
     local zone1_text2 = Public.get('zone1_text2')
-    if zone1_text2 then
-        rendering.set_text(zone1_text2, 'Collapse has begun!')
+    if zone1_text2.valid then
+        zone1_text2.text = 'Collapse has begun!'
     end
     local zone1_text3 = Public.get('zone1_text3')
-    if zone1_text3 then
-        rendering.set_text(zone1_text3, 'Collapse has begun!')
+    if zone1_text3.valid then
+        zone1_text3.text = 'Collapse has begun!'
     end
 end
 
@@ -157,7 +158,7 @@ local spidertron_too_far =
 
 local check_distance_between_player_and_locomotive = function (player)
     local surface = player.surface
-    local position = player.position
+    local position = player.physical_position
     local locomotive = Public.get('locomotive')
     if not locomotive or not locomotive.valid then
         return
@@ -220,7 +221,7 @@ local check_distance_between_player_and_locomotive = function (player)
 end
 
 local compare_player_pos = function (player)
-    local p = player.position
+    local p = player.physical_position
     local index = player.index
     local adjusted_zones = Public.get('adjusted_zones')
     if not adjusted_zones.size then
@@ -262,7 +263,7 @@ local compare_player_and_train = function (player, entity)
 
     local car = ICF.get_car(entity.unit_number)
 
-    local position = player.position
+    local position = player.physical_position
     local locomotive = Public.get('locomotive')
     if not locomotive or not locomotive.valid then
         return
@@ -279,28 +280,29 @@ local compare_player_and_train = function (player, entity)
     local locomotive_distance_too_far = c_y - t_y > spidertron_warning_position
     local spidertron_warning_position_pre_warning = spidertron_warning_position - 100
     local locomotive_distance_too_far_pre_warning = c_y - t_y > spidertron_warning_position_pre_warning
-    local surface = player.surface
 
     local color = Color.yellow
     if locomotive_distance_too_far_pre_warning and not locomotive_distance_too_far then
         local msg = 'Warning! You are getting too far away from the train!'
-        surface.create_entity(
+        player.create_local_flying_text(
             {
-                name = 'flying-text',
                 position = position,
                 text = msg,
-                color = color
+                color = color,
+                time_to_live = 300,
+                speed = 100
             }
         )
         player.print(msg, color)
     elseif locomotive_distance_too_far then
         local msg = 'Warning! You are too far away from the train! TURN BACK!'
-        surface.create_entity(
+        player.create_local_flying_text(
             {
-                name = 'flying-text',
                 position = position,
                 text = msg,
-                color = color
+                color = color,
+                time_to_live = 300,
+                speed = 100
             }
         )
         player.print(msg, color)
@@ -321,13 +323,13 @@ end
 
 local function distance(player)
     local index = player.index
-    local bonus = RPG.get_value_from_player(index, 'bonus')
+    local bonus = RPG.get_value_from_player(index, 'bonus') or 1
     local rpg_extra = RPG.get('rpg_extra')
     local breached_wall = Public.get('breached_wall')
     local bonus_xp_on_join = Public.get('bonus_xp_on_join')
     local enable_arties = Public.get('enable_arties')
 
-    local p = player.position
+    local p = player.physical_position
 
     local validate_spider = Public.get('validate_spider')
     if validate_spider[index] then
@@ -384,6 +386,7 @@ local function distance(player)
             Public.enemy_weapon_damage()
             local spidertron_unlocked_enabled = Public.get('spidertron_unlocked_enabled')
             if Public.get('breached_wall') >= Public.get('spidertron_unlocked_at_zone') and not spidertron_unlocked_enabled then
+                local get_player_data = Public.get_player_data(player)
                 Public.set('spidertron_unlocked_enabled', true)
                 local main_market_items = Public.get('main_market_items')
                 if not main_market_items['spidertron'] then
@@ -399,7 +402,7 @@ local function distance(player)
                     main_market_items['spidertron'] = {
                         stack = 1,
                         value = 'coin',
-                        price = rng,
+                        price = rng * (get_player_data and get_player_data.quality or 1),
                         tooltip = spider_tooltip,
                         upgrade = false,
                         static = true
@@ -455,17 +458,16 @@ local function on_player_changed_position(event)
         return
     end
     local surface_name = player.surface.name
-    local map_name = 'mtn_v3'
 
-    if sub(surface_name, 0, #map_name) ~= map_name then
+    if sub(surface_name, 0, #scenario_name) ~= scenario_name then
         return
     end
 
-    if player.position.y > -100 and player.position.y < -100 then
+    if player.physical_position.y > -100 and player.physical_position.y < -100 then
         return
     end
 
-    if player.position.y > 100 and player.position.y < 100 then
+    if player.physical_position.y > 100 and player.physical_position.y < 100 then
         return
     end
 

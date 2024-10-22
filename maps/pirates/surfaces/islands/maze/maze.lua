@@ -1,21 +1,19 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-
 -- local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
-local Raffle = require 'maps.pirates.raffle'
+local Raffle = require 'utils.math.raffle'
 -- local Balance = require 'maps.pirates.balance'
-local Structures = require 'maps.pirates.structures.structures'
+local Structures = require('maps.pirates.structures.structures')
 -- local Common = require 'maps.pirates.common'
 -- local Utils = require 'maps.pirates.utils_local'
-local _inspect = require 'utils.inspect'.inspect
+local _inspect = require('utils.inspect').inspect
 -- local Ores = require 'maps.pirates.ores'
-local IslandsCommon = require 'maps.pirates.surfaces.islands.common'
-local Hunt = require 'maps.pirates.surfaces.islands.hunt'
+local IslandsCommon = require('maps.pirates.surfaces.islands.common')
+local Hunt = require('maps.pirates.surfaces.islands.hunt')
 
 local Public = {}
-Public.Data = require 'maps.pirates.surfaces.islands.maze.data'
-
+Public.Data = require('maps.pirates.surfaces.islands.maze.data')
 
 function Public.noises(args)
 	local ret = {}
@@ -40,16 +38,32 @@ end
 local maze_scale = 24
 
 local steps_orthogonal = {
-	{ x = 0,           y = -maze_scale },
+	{ x = 0, y = -maze_scale },
 	{ x = -maze_scale, y = 0 },
-	{ x = maze_scale,  y = 0 },
-	{ x = 0,           y = maze_scale }
+	{ x = maze_scale, y = 0 },
+	{ x = 0, y = maze_scale },
 }
 local steps_diagonal = {
-	{ diagonal = { x = -maze_scale, y = maze_scale }, connection_1 = { x = -maze_scale, y = 0 }, connection_2 = { x = 0, y = maze_scale } },
-	{ diagonal = { x = maze_scale, y = -maze_scale }, connection_1 = { x = maze_scale, y = 0 }, connection_2 = { x = 0, y = -maze_scale } },
-	{ diagonal = { x = maze_scale, y = maze_scale }, connection_1 = { x = maze_scale, y = 0 }, connection_2 = { x = 0, y = maze_scale } },
-	{ diagonal = { x = -maze_scale, y = -maze_scale }, connection_1 = { x = -maze_scale, y = 0 }, connection_2 = { x = 0, y = -maze_scale } }
+	{
+		diagonal = { x = -maze_scale, y = maze_scale },
+		connection_1 = { x = -maze_scale, y = 0 },
+		connection_2 = { x = 0, y = maze_scale },
+	},
+	{
+		diagonal = { x = maze_scale, y = -maze_scale },
+		connection_1 = { x = maze_scale, y = 0 },
+		connection_2 = { x = 0, y = -maze_scale },
+	},
+	{
+		diagonal = { x = maze_scale, y = maze_scale },
+		connection_1 = { x = maze_scale, y = 0 },
+		connection_2 = { x = 0, y = maze_scale },
+	},
+	{
+		diagonal = { x = -maze_scale, y = -maze_scale },
+		connection_1 = { x = -maze_scale, y = 0 },
+		connection_2 = { x = 0, y = -maze_scale },
+	},
 }
 
 local function get_path_connections_count(lab_cells, p)
@@ -65,7 +79,8 @@ end
 local function labyrinth_determine_walkable_cell(args)
 	-- local noises = Public.noises(args)
 	-- local mazenoise = noises.maze()
-	local reduced_p = { x = args.true_p.x - (args.true_p.x % maze_scale), y = args.true_p.y - (args.true_p.y % maze_scale) }
+	local reduced_p =
+		{ x = args.true_p.x - (args.true_p.x % maze_scale), y = args.true_p.y - (args.true_p.y % maze_scale) }
 
 	if not args.other_map_generation_data.labyrinth_cells then
 		args.other_map_generation_data.labyrinth_cells = {}
@@ -81,9 +96,17 @@ local function labyrinth_determine_walkable_cell(args)
 		lab_cells[tostring(reduced_p.x) .. '_' .. tostring(reduced_p.y)] = false
 
 		for _, modifier in pairs(steps_diagonal) do
-			if lab_cells[tostring(reduced_p.x + modifier.diagonal.x) .. '_' .. tostring(reduced_p.y + modifier.diagonal.y)] then
-				local connection_1 = lab_cells[tostring(reduced_p.x + modifier.connection_1.x) .. '_' .. tostring(reduced_p.y + modifier.connection_1.y)]
-				local connection_2 = lab_cells[tostring(reduced_p.x + modifier.connection_2.x) .. '_' .. tostring(reduced_p.y + modifier.connection_2.y)]
+			if
+				lab_cells[tostring(reduced_p.x + modifier.diagonal.x) .. '_' .. tostring(
+					reduced_p.y + modifier.diagonal.y
+				)]
+			then
+				local connection_1 = lab_cells[tostring(reduced_p.x + modifier.connection_1.x) .. '_' .. tostring(
+					reduced_p.y + modifier.connection_1.y
+				)]
+				local connection_2 = lab_cells[tostring(reduced_p.x + modifier.connection_2.x) .. '_' .. tostring(
+					reduced_p.y + modifier.connection_2.y
+				)]
 				if not connection_1 and not connection_2 then
 					return false --sensible corners
 				end
@@ -91,10 +114,15 @@ local function labyrinth_determine_walkable_cell(args)
 		end
 
 		local max_connections = 2
-		if Math.random(4) == 1 then max_connections = 3 end
+		if Math.random(4) == 1 then
+			max_connections = 3
+		end
 
 		for _, m in pairs(steps_orthogonal) do
-			if get_path_connections_count(lab_cells, { x = reduced_p.x + m.x, y = reduced_p.y + m.y }) >= max_connections then
+			if
+				get_path_connections_count(lab_cells, { x = reduced_p.x + m.x, y = reduced_p.y + m.y })
+				>= max_connections
+			then
 				return false
 			end
 		end
@@ -151,7 +179,8 @@ local free_labyrinth_cell_raffle = {
 }
 
 local function free_labyrinth_cell_type(args)
-	local reduced_p = { x = args.true_p.x - (args.true_p.x % maze_scale), y = args.true_p.y - (args.true_p.y % maze_scale) }
+	local reduced_p =
+		{ x = args.true_p.x - (args.true_p.x % maze_scale), y = args.true_p.y - (args.true_p.y % maze_scale) }
 
 	if not args.other_map_generation_data.free_labyrinth_cell_types then
 		args.other_map_generation_data.free_labyrinth_cell_types = {}
@@ -164,7 +193,7 @@ local function free_labyrinth_cell_type(args)
 	end
 
 	if not type then
-		type = Raffle.raffle2(free_labyrinth_cell_raffle)
+		type = Raffle.raffle(free_labyrinth_cell_raffle)
 		cell_types[tostring(reduced_p.x) .. '_' .. tostring(reduced_p.y)] = type
 	end
 
@@ -181,7 +210,12 @@ local function free_labyrinth_cell_contents(args)
 
 	local type = free_labyrinth_cell_type(args)
 
-	if relative_p.x >= maze_scale / 2 - 0.5 and relative_p.x < maze_scale / 2 + 0.5 and relative_p.y >= maze_scale / 2 - 0.5 and relative_p.y < maze_scale / 2 + 0.5 then --should fire just once, and only if the center is included
+	if
+		relative_p.x >= maze_scale / 2 - 0.5
+		and relative_p.x < maze_scale / 2 + 0.5
+		and relative_p.y >= maze_scale / 2 - 0.5
+		and relative_p.y < maze_scale / 2 + 0.5
+	then --should fire just once, and only if the center is included
 		-- terrain_entity_at_relative_position(args, {name = 'lab', rel_p = {x = 15, y = 15}, force = memory.ancient_friendly_force})
 		if type == 'empty' then
 			return nil
@@ -191,15 +225,13 @@ local function free_labyrinth_cell_contents(args)
 	end
 end
 
-
-
-
-
 function Public.terrain(args)
 	local noises = Public.noises(args)
 	local p = args.p
 
-	if IslandsCommon.place_water_tile(args) then return end
+	if IslandsCommon.place_water_tile(args) then
+		return
+	end
 
 	if noises.height(p) < 0 then
 		args.tiles[#args.tiles + 1] = { name = 'water', position = args.p }
@@ -237,8 +269,13 @@ function Public.terrain(args)
 end
 
 function Public.chunk_structures(args)
-	local spec = function (p)
-		local noises = Public.noises { p = p, noise_generator = args.noise_generator, static_params = args.static_params, seed = args.seed }
+	local spec = function(p)
+		local noises = Public.noises({
+			p = p,
+			noise_generator = args.noise_generator,
+			static_params = args.static_params,
+			seed = args.seed,
+		})
 
 		return {
 			placeable = noises.farness(p) > 0.66,
@@ -254,7 +291,6 @@ end
 -- function Public.break_rock(surface, p, entity_name)
 -- 	-- return Ores.try_ore_spawn(surface, p, entity_name)
 -- end
-
 
 function Public.generate_silo_setup_position(points_to_avoid)
 	return Hunt.silo_setup_position(points_to_avoid)

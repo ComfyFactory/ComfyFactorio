@@ -8,7 +8,7 @@ require 'modules.no_deconstruction_of_neutral_entities'
 require 'modules.biters_yield_coins'
 require 'modules.rocks_yield_ore'
 require 'modules.surrounded_by_worms'
-global.average_worm_amount_per_chunk = 1.5
+storage.average_worm_amount_per_chunk = 1.5
 require 'modules.biters_attack_moving_players'
 require 'modules.market_friendly_fire_protection'
 require 'modules.trees_grow'
@@ -82,38 +82,38 @@ local function create_particles(surface, name, position, amount, cause_position)
 end
 
 local function spawn_market(surface, position)
-    local market = surface.create_entity({name = 'market', position = position, force = 'neutral'})
+    local market = surface.create_entity({ name = 'market', position = position, force = 'neutral' })
     --market.destructible = false
-    market.add_market_item({price = {{'coin', 1}}, offer = {type = 'give-item', item = 'wood', count = 50}})
-    market.add_market_item({price = {{'coin', 3}}, offer = {type = 'give-item', item = 'iron-ore', count = 50}})
-    market.add_market_item({price = {{'coin', 3}}, offer = {type = 'give-item', item = 'copper-ore', count = 50}})
-    market.add_market_item({price = {{'coin', 3}}, offer = {type = 'give-item', item = 'stone', count = 50}})
-    market.add_market_item({price = {{'coin', 3}}, offer = {type = 'give-item', item = 'coal', count = 50}})
-    market.add_market_item({price = {{'coin', 5}}, offer = {type = 'give-item', item = 'uranium-ore', count = 50}})
+    market.add_market_item({ price = { { 'coin', 1 } }, offer = { type = 'give-item', item = 'wood', count = 50 } })
+    market.add_market_item({ price = { { 'coin', 3 } }, offer = { type = 'give-item', item = 'iron-ore', count = 50 } })
+    market.add_market_item({ price = { { 'coin', 3 } }, offer = { type = 'give-item', item = 'copper-ore', count = 50 } })
+    market.add_market_item({ price = { { 'coin', 3 } }, offer = { type = 'give-item', item = 'stone', count = 50 } })
+    market.add_market_item({ price = { { 'coin', 3 } }, offer = { type = 'give-item', item = 'coal', count = 50 } })
+    market.add_market_item({ price = { { 'coin', 5 } }, offer = { type = 'give-item', item = 'uranium-ore', count = 50 } })
 
-    market.add_market_item({price = {{'coin', 2}}, offer = {type = 'give-item', item = 'raw-fish', count = 1}})
-    market.add_market_item({price = {{'coin', 8}}, offer = {type = 'give-item', item = 'grenade', count = 1}})
-    market.add_market_item({price = {{'coin', 1}}, offer = {type = 'give-item', item = 'firearm-magazine', count = 1}})
-    market.add_market_item({price = {{'coin', 16}}, offer = {type = 'give-item', item = 'submachine-gun', count = 1}})
-    market.add_market_item({price = {{'coin', 32}}, offer = {type = 'give-item', item = 'car', count = 1}})
+    market.add_market_item({ price = { { 'coin', 2 } }, offer = { type = 'give-item', item = 'raw-fish', count = 1 } })
+    market.add_market_item({ price = { { 'coin', 8 } }, offer = { type = 'give-item', item = 'grenade', count = 1 } })
+    market.add_market_item({ price = { { 'coin', 1 } }, offer = { type = 'give-item', item = 'firearm-magazine', count = 1 } })
+    market.add_market_item({ price = { { 'coin', 16 } }, offer = { type = 'give-item', item = 'submachine-gun', count = 1 } })
+    market.add_market_item({ price = { { 'coin', 32 } }, offer = { type = 'give-item', item = 'car', count = 1 } })
     return market
 end
 
 local caption_style = {
-    {'font', 'default-bold'},
-    {'font_color', {r = 0.63, g = 0.63, b = 0.63}},
-    {'top_padding', 2},
-    {'left_padding', 0},
-    {'right_padding', 0},
-    {'minimal_width', 0}
+    { 'font',          'default-bold' },
+    { 'font_color',    { r = 0.63, g = 0.63, b = 0.63 } },
+    { 'top_padding',   2 },
+    { 'left_padding',  0 },
+    { 'right_padding', 0 },
+    { 'minimal_width', 0 }
 }
 local stat_number_style = {
-    {'font', 'default-bold'},
-    {'font_color', {r = 0.77, g = 0.77, b = 0.77}},
-    {'top_padding', 2},
-    {'left_padding', 0},
-    {'right_padding', 0},
-    {'minimal_width', 0}
+    { 'font',          'default-bold' },
+    { 'font_color',    { r = 0.77, g = 0.77, b = 0.77 } },
+    { 'top_padding',   2 },
+    { 'left_padding',  0 },
+    { 'right_padding', 0 },
+    { 'minimal_width', 0 }
 }
 local function tree_gui()
     for _, player in pairs(game.connected_players) do
@@ -122,13 +122,13 @@ local function tree_gui()
         end
         local b =
             player.gui.top.add {
-            type = 'button',
-            caption = '[img=entity.tree-04] : ' .. global.trees_defeated,
-            tooltip = 'Trees defeated',
-            name = 'trees_defeated'
-        }
+                type = 'button',
+                caption = '[img=entity.tree-04] : ' .. storage.trees_defeated,
+                tooltip = 'Trees defeated',
+                name = 'trees_defeated'
+            }
         b.style.font = 'heading-1'
-        b.style.font_color = {r = 0.00, g = 0.33, b = 0.00}
+        b.style.font_color = { r = 0.00, g = 0.33, b = 0.00 }
         b.style.minimal_height = 38
     end
 end
@@ -143,33 +143,33 @@ local function get_surface_settings()
         cliff_elevation_0 = math_random(4, 48)
     }
     map_gen_settings.autoplace_controls = {
-        ['coal'] = {frequency = '2', size = '1', richness = '1'},
-        ['stone'] = {frequency = '2', size = '1', richness = '1'},
-        ['copper-ore'] = {frequency = '2', size = '1', richness = '1'},
-        ['iron-ore'] = {frequency = '2.5', size = '1.1', richness = '1'},
-        ['uranium-ore'] = {frequency = '2', size = '1', richness = '1'},
-        ['crude-oil'] = {frequency = '3', size = '1', richness = '1.5'},
-        ['trees'] = {frequency = '2', size = '1', richness = '0.75'},
-        ['enemy-base'] = {frequency = '4', size = '1.25', richness = '1'}
+        ['coal'] = { frequency = '2', size = '1', richness = '1' },
+        ['stone'] = { frequency = '2', size = '1', richness = '1' },
+        ['copper-ore'] = { frequency = '2', size = '1', richness = '1' },
+        ['iron-ore'] = { frequency = '2.5', size = '1.1', richness = '1' },
+        ['uranium-ore'] = { frequency = '2', size = '1', richness = '1' },
+        ['crude-oil'] = { frequency = '3', size = '1', richness = '1.5' },
+        ['trees'] = { frequency = '2', size = '1', richness = '0.75' },
+        ['enemy-base'] = { frequency = '4', size = '1.25', richness = '1' }
     }
     return map_gen_settings
 end
 
 function reset_map()
-    global.trees_grow_chunk_next_visit = {}
-    global.trees_grow_chunk_raffle = {}
-    global.trees_grow_chunk_position = {}
-    global.trees_grow_chunks_charted = {}
-    global.trees_grow_chunks_charted_counter = 0
+    storage.trees_grow_chunk_next_visit = {}
+    storage.trees_grow_chunk_raffle = {}
+    storage.trees_grow_chunk_position = {}
+    storage.trees_grow_chunks_charted = {}
+    storage.trees_grow_chunks_charted_counter = 0
 
-    global.current_surface = Reset.soft_reset_map(global.current_surface, get_surface_settings(), starting_items)
+    storage.current_surface = Reset.soft_reset_map(storage.current_surface, get_surface_settings(), starting_items)
 
     Difficulty.reset_difficulty_poll()
 
-    global.trees_defeated = 0
+    storage.trees_defeated = 0
     tree_gui()
 
-    global.market = spawn_market(global.current_surface, {x = 0, y = -8})
+    storage.market = spawn_market(storage.current_surface, { x = 0, y = -8 })
 
     game.map_settings.enemy_evolution.time_factor = difficulties_votes_evo[4]
 end
@@ -178,21 +178,21 @@ local function on_player_joined_game(event)
     local player = game.players[event.player_index]
     if player.online_time == 0 then
         for item, amount in pairs(starting_items) do
-            player.insert({name = item, count = amount})
+            player.insert({ name = item, count = amount })
         end
     end
 
-    if global.current_surface then
-        if player.surface.name ~= global.current_surface.name then
-            local pos = global.current_surface.find_non_colliding_position('character', {x = 0, y = 0}, 16, 0.5)
-            player.teleport(pos, global.current_surface)
+    if storage.current_surface then
+        if player.surface.name ~= storage.current_surface.name then
+            local pos = storage.current_surface.find_non_colliding_position('character', { x = 0, y = 0 }, 16, 0.5)
+            player.teleport(pos, storage.current_surface)
         end
     end
 
-    if not global.market and game.tick == 0 then
-        global.current_surface = game.create_surface('overgrowth', get_surface_settings())
-        game.forces['player'].set_spawn_position({x = 0, y = 0}, global.current_surface)
-        player.teleport({0, 0}, global.current_surface)
+    if not storage.market and game.tick == 0 then
+        storage.current_surface = game.create_surface('overgrowth', get_surface_settings())
+        game.forces['player'].set_spawn_position({ x = 0, y = 0 }, storage.current_surface)
+        player.teleport({ 0, 0 }, storage.current_surface)
         reset_map()
     end
 
@@ -220,14 +220,14 @@ local function on_player_mined_entity(event)
         return
     end
 
-    global.trees_defeated = global.trees_defeated + 1
+    storage.trees_defeated = storage.trees_defeated + 1
     tree_gui()
 
     trap(entity)
 
     if event.player_index then
         create_particles(entity.surface, 'wooden-particle', entity.position, 128, game.players[event.player_index].position)
-        game.players[event.player_index].insert({name = 'coin', count = 1})
+        game.players[event.player_index].insert({ name = 'coin', count = 1 })
         return
     end
 
@@ -239,17 +239,17 @@ local function on_player_mined_entity(event)
         end
     end
 
-    entity.surface.spill_item_stack(entity.position, {name = 'coin', count = 1}, true)
+    entity.surface.spill_item_stack(entity.position, { name = 'coin', count = 1 }, true)
 end
 
 local function on_entity_died(event)
     on_player_mined_entity(event)
-    if event.entity == global.market then
-        global.map_reset_timeout = game.tick + 900
-        game.print('The market has been overrun.', {r = 1, g = 0, b = 0})
+    if event.entity == storage.market then
+        storage.map_reset_timeout = game.tick + 900
+        game.print('The market has been overrun.', { r = 1, g = 0, b = 0 })
         kaboom(event.entity.surface, event.entity.position, 'explosive-cannon-projectile', 24, 12)
         kaboom(event.entity.surface, event.entity.position, 'explosive-uranium-cannon-projectile', 24, 12)
-        global.market = nil
+        storage.market = nil
     end
 end
 
@@ -261,11 +261,11 @@ local function attack_market()
         c = tbl.difficulty_vote_index * 2
         game.map_settings.enemy_evolution.time_factor = difficulties_votes_evo[tbl.difficulty_vote_index]
     end
-    global.current_surface.set_multi_command(
+    storage.current_surface.set_multi_command(
         {
             command = {
                 type = defines.command.attack,
-                target = global.market,
+                target = storage.market,
                 distraction = defines.distraction.by_enemy
             },
             unit_count = math_random(c, c * 2),
@@ -273,11 +273,11 @@ local function attack_market()
             unit_search_distance = 1024
         }
     )
-    global.current_surface.set_multi_command(
+    storage.current_surface.set_multi_command(
         {
             command = {
                 type = defines.command.attack,
-                target = global.market,
+                target = storage.market,
                 distraction = defines.distraction.none
             },
             unit_count = math_random(1, c),
@@ -288,20 +288,20 @@ local function attack_market()
 end
 
 local function tick()
-    if global.market then
+    if storage.market then
         if math_random(1, 60) == 1 then
             attack_market()
         end
         return
     end
-    if not global.map_reset_timeout then
+    if not storage.map_reset_timeout then
         return
     end
-    if game.tick < global.map_reset_timeout then
+    if game.tick < storage.map_reset_timeout then
         return
     end
     reset_map()
-    global.map_reset_timeout = nil
+    storage.map_reset_timeout = nil
 end
 
 event.on_nth_tick(60, tick)

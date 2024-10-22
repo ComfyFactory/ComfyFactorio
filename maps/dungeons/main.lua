@@ -9,7 +9,7 @@ require 'modules.rpg'
 local BiterHealthBooster = require 'modules.biter_health_booster'
 local BiterRaffle = require 'utils.functions.biter_raffle'
 local Functions = require 'maps.dungeons.functions'
-local Get_noise = require 'utils.get_noise'
+local Get_noise = require 'utils.math.get_noise'
 local DungeonsTable = require 'maps.dungeons.table'
 
 local Biomes = {}
@@ -86,15 +86,15 @@ local function draw_depth_gui()
         if player.gui.top.dungeon_depth then
             player.gui.top.dungeon_depth.destroy()
         end
-        if surface.name == 'gulag' then
+        if surface.name == 'Gulag' then
             return
         end
-        local element = player.gui.top.add({type = 'sprite-button', name = 'dungeon_depth'})
-        element.caption = {'dungeons.depth', dungeontable.depth[surface.index]}
+        local element = player.gui.top.add({ type = 'sprite-button', name = 'dungeon_depth' })
+        element.caption = { 'dungeons.depth', dungeontable.depth[surface.index] }
         element.tooltip = {
             'dungeons.depth_tooltip',
             Functions.get_dungeon_evolution_factor(surface.index) * 100,
-            global.biter_health_boost * 100,
+            storage.biter_health_boost * 100,
             math_round(game.forces.enemy.get_ammo_damage_modifier('melee') * 100 + 100, 1)
         }
 
@@ -106,7 +106,7 @@ local function draw_depth_gui()
         style.left_padding = 4
         style.right_padding = 4
         style.bottom_padding = 2
-        style.font_color = {r = 0, g = 0, b = 0}
+        style.font_color = { r = 0, g = 0, b = 0 }
         style.font = 'default-large-bold'
     end
 end
@@ -132,7 +132,7 @@ local function expand(surface, position)
     force.evolution_factor = evo
 
     if evo > 1 then
-        global.biter_health_boost = 2 + ((evo - 1) * 2)
+        storage.biter_health_boost = 2 + ((evo - 1) * 2)
         local damage_mod = (evo - 1) * 0.35
         force.set_ammo_damage_modifier('melee', damage_mod)
         force.set_ammo_damage_modifier('biological', damage_mod)
@@ -140,10 +140,10 @@ local function expand(surface, position)
         force.set_ammo_damage_modifier('flamethrower', damage_mod)
         force.set_ammo_damage_modifier('laser', damage_mod)
     else
-        global.biter_health_boost = 1 + evo
+        storage.biter_health_boost = 1 + evo
     end
 
-    global.biter_health_boost = math_round(global.biter_health_boost, 2)
+    storage.biter_health_boost = math_round(storage.biter_health_boost, 2)
 
     draw_depth_gui()
 end
@@ -154,15 +154,15 @@ local function init_player(player)
         player.character.destroy()
     end
 
-    player.set_controller({type = defines.controllers.god})
+    player.set_controller({ type = defines.controllers.god })
     player.create_character()
 
     local surface = game.surfaces['dungeons']
-    player.teleport(surface.find_non_colliding_position('character', {0, 0}, 50, 0.5), surface)
-    player.insert({name = 'raw-fish', count = 8})
+    player.teleport(surface.find_non_colliding_position('character', { 0, 0 }, 50, 0.5), surface)
+    player.insert({ name = 'raw-fish', count = 8 })
     player.set_quick_bar_slot(1, 'raw-fish')
-    player.insert({name = 'pistol', count = 1})
-    player.insert({name = 'firearm-magazine', count = 16})
+    player.insert({ name = 'pistol', count = 1 })
+    player.insert({ name = 'firearm-magazine', count = 16 })
 end
 
 local function on_entity_spawned(event)
@@ -182,20 +182,20 @@ local function on_entity_spawned(event)
         local non_colliding_position = surface.find_non_colliding_position(name, unit.position, 16, 1)
         local bonus_unit
         if non_colliding_position then
-            bonus_unit = surface.create_entity({name = name, position = non_colliding_position, force = 'enemy'})
+            bonus_unit = surface.create_entity({ name = name, position = non_colliding_position, force = 'enemy' })
         else
-            bonus_unit = surface.create_entity({name = name, position = unit.position, force = 'enemy'})
+            bonus_unit = surface.create_entity({ name = name, position = unit.position, force = 'enemy' })
         end
         bonus_unit.ai_settings.allow_try_return_to_spawner = true
         bonus_unit.ai_settings.allow_destroy_when_commands_fail = true
 
         if math_random(1, 256) == 1 then
-            BiterHealthBooster.add_boss_unit(bonus_unit, global.biter_health_boost * 8, 0.25)
+            BiterHealthBooster.add_boss_unit(bonus_unit, storage.biter_health_boost * 8, 0.25)
         end
     end
 
     if math_random(1, 256) == 1 then
-        BiterHealthBooster.add_boss_unit(unit, global.biter_health_boost * 8, 0.25)
+        BiterHealthBooster.add_boss_unit(unit, storage.biter_health_boost * 8, 0.25)
     end
 end
 
@@ -211,8 +211,8 @@ local function on_chunk_generated(event)
     local i = 1
     for x = 0, 31, 1 do
         for y = 0, 31, 1 do
-            local position = {x = left_top.x + x, y = left_top.y + y}
-            tiles[i] = {name = 'out-of-map', position = position}
+            local position = { x = left_top.x + x, y = left_top.y + y }
+            tiles[i] = { name = 'out-of-map', position = position }
             i = i + 1
         end
     end
@@ -227,22 +227,22 @@ local function on_chunk_generated(event)
         local c = 0.0035 + a * 0.0035
         local d = c * 0.5
         local seed = nauvis_seed + b
-        if math_abs(Get_noise('dungeon_sewer', {x = left_top.x + 16, y = left_top.y + 16}, seed)) < 0.12 then
+        if math_abs(Get_noise('dungeon_sewer', { x = left_top.x + 16, y = left_top.y + 16 }, seed)) < 0.12 then
             for x = 0, 31, 1 do
                 for y = 0, 31, 1 do
-                    local position = {x = left_top.x + x, y = left_top.y + y}
+                    local position = { x = left_top.x + x, y = left_top.y + y }
                     local noise = math_abs(Get_noise('dungeon_sewer', position, seed))
                     if noise < c then
                         local tile_name = surface.get_tile(position).name
                         if noise > d and tile_name ~= 'deepwater-green' then
-                            set_tiles({{name = 'water-green', position = position}}, true)
+                            set_tiles({ { name = 'water-green', position = position } }, true)
                             if math_random(1, 320) == 1 and noise > c - 0.001 then
                                 table_insert(rock_positions, position)
                             end
                         else
-                            set_tiles({{name = 'deepwater-green', position = position}}, true)
+                            set_tiles({ { name = 'deepwater-green', position = position } }, true)
                             if math_random(1, 64) == 1 then
-                                surface.create_entity({name = 'fish', position = position})
+                                surface.create_entity({ name = 'fish', position = position })
                             end
                         end
                     end
@@ -260,7 +260,7 @@ local function on_chunk_generated(event)
         for _, p in pairs(game.connected_players) do
             init_player(p)
         end
-        game.forces.player.chart(surface, {{-256, -256}, {256, 256}})
+        game.forces.player.chart(surface, { { -256, -256 }, { 256, 256 } })
     end
 end
 
@@ -312,7 +312,7 @@ local function on_entity_damaged(event)
     if math_random(1, 256) == 1 then
         return
     end
-    if entity.name ~= 'rock-big' then
+    if entity.name ~= 'big-rock' then
         return
     end
     entity.health = entity.health + event.final_damage_amount
@@ -326,7 +326,7 @@ local function on_player_mined_entity(event)
     if entity.type == 'simple-entity' then
         Functions.mining_events(entity)
     end
-    if entity.name ~= 'rock-big' then
+    if entity.name ~= 'big-rock' then
         return
     end
     expand(entity.surface, entity.position)
@@ -340,7 +340,7 @@ local function on_entity_died(event)
     if entity.type == 'unit-spawner' then
         spawner_death(entity)
     end
-    if entity.name ~= 'rock-big' then
+    if entity.name ~= 'big-rock' then
         return
     end
     expand(entity.surface, entity.position)
@@ -355,17 +355,17 @@ local function on_init()
     local map_gen_settings = {
         ['water'] = 0,
         ['starting_area'] = 1,
-        ['cliff_settings'] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
+        ['cliff_settings'] = { cliff_elevation_interval = 0, cliff_elevation_0 = 0 },
         ['default_enable_all_autoplace_controls'] = false,
         ['autoplace_settings'] = {
-            ['entity'] = {treat_missing_as_default = false},
-            ['tile'] = {treat_missing_as_default = false},
-            ['decorative'] = {treat_missing_as_default = false}
+            ['entity'] = { treat_missing_as_default = false },
+            ['tile'] = { treat_missing_as_default = false },
+            ['decorative'] = { treat_missing_as_default = false }
         }
     }
     local surface = game.create_surface('dungeons', map_gen_settings)
 
-    surface.request_to_generate_chunks({0, 0}, 8)
+    surface.request_to_generate_chunks({ 0, 0 }, 8)
     surface.force_generate_chunk_requests()
     surface.daytime = 0.30
 
@@ -375,7 +375,7 @@ local function on_init()
     map_gen_settings.width = 3
     surface.map_gen_settings = map_gen_settings
     for chunk in surface.get_chunks() do
-        surface.delete_chunk({chunk.x, chunk.y})
+        surface.delete_chunk({ chunk.x, chunk.y })
     end
 
     game.forces.player.manual_mining_speed_modifier = 0.5
@@ -396,13 +396,13 @@ local function on_init()
     dungeontable.depth[game.surfaces['dungeons'].index] = 0
     dungeontable.enemy_forces[game.surfaces['dungeons'].index] = game.forces.enemy
 
-    global.rocks_yield_ore_base_amount = 100
-    global.rocks_yield_ore_distance_modifier = 0.001
+    storage.rocks_yield_ore_base_amount = 100
+    storage.rocks_yield_ore_distance_modifier = 0.001
 
     local T = MapInfo.Pop_info()
     T.localised_category = 'dungeons'
-    T.main_caption_color = {r = 0, g = 0, b = 0}
-    T.sub_caption_color = {r = 150, g = 0, b = 20}
+    T.main_caption_color = { r = 0, g = 0, b = 0 }
+    T.sub_caption_color = { r = 150, g = 0, b = 20 }
 end
 --[[
 local function on_tick()
@@ -410,7 +410,7 @@ local function on_tick()
 
 	local surface = game.surfaces["dungeons"]
 
-	local entities = surface.find_entities_filtered({name = "rock-big"})
+	local entities = surface.find_entities_filtered({name = "big-rock"})
 	if not entities[1] then return end
 
 	local entity = entities[math_random(1, #entities)]

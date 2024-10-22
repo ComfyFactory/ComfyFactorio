@@ -1,14 +1,13 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-
-local Common = require 'maps.pirates.common'
-local Balance = require 'maps.pirates.balance'
+local Common = require('maps.pirates.common')
+local Balance = require('maps.pirates.balance')
 -- local Utils = require 'maps.pirates.utils_local'
 -- local Math = require 'maps.pirates.math'
-local _inspect = require 'utils.inspect'.inspect
-local Boats = require 'maps.pirates.structures.boats.boats'
-local Memory = require 'maps.pirates.memory'
-local Kraken = require 'maps.pirates.surfaces.sea.kraken'
+local _inspect = require('utils.inspect').inspect
+local Boats = require('maps.pirates.structures.boats.boats')
+local Memory = require('maps.pirates.memory')
+local Kraken = require('maps.pirates.surfaces.sea.kraken')
 local Public = {}
 
 -- local GuiCommon = require 'maps.pirates.gui.common'
@@ -45,14 +44,14 @@ local Public = {}
 -- 	return last_match
 -- end
 
-
-
 -- function Public.regular_update(player)
 
 -- end
 
 function Public.full_update(player)
-	if Public.regular_update then Public.regular_update(player) end
+	if Public.regular_update then
+		Public.regular_update(player)
+	end
 
 	local memory = Memory.get_crew_memory()
 	local pirates_flow = player.gui.top
@@ -107,7 +106,12 @@ function Public.full_update(player)
 				evolution_silo = destination.dynamic_data.evolution_accrued_silo
 				evolution_sandwurms = destination.dynamic_data.evolution_accrued_sandwurms
 			end
-			evolution_total = (evolution_leagues or 0) + (evolution_time or 0) + (evolution_nests or 0) + (evolution_silo or 0) + (evolution_sandwurms or 0) + (evolution_kraken or 0)
+			evolution_total = (evolution_leagues or 0)
+				+ (evolution_time or 0)
+				+ (evolution_nests or 0)
+				+ (evolution_silo or 0)
+				+ (evolution_sandwurms or 0)
+				+ (evolution_kraken or 0)
 		end
 
 		---@type (string|table)[]
@@ -120,11 +124,13 @@ function Public.full_update(player)
 		for _, type in ipairs(types) do
 			if type == 'leagues' then
 				if evolution_leagues then
-					str[#str + 1] = { '', '\n', { 'pirates.gui_evo_tooltip_2', string.format('%.2f', evolution_leagues) } }
+					str[#str + 1] =
+						{ '', '\n', { 'pirates.gui_evo_tooltip_2', string.format('%.2f', evolution_leagues) } }
 				end
 			elseif type == 'kraken' then
 				if evolution_kraken then
-					str[#str + 1] = { '', '\n', { 'pirates.gui_evo_tooltip_3', string.format('%.2f', evolution_kraken) } }
+					str[#str + 1] =
+						{ '', '\n', { 'pirates.gui_evo_tooltip_3', string.format('%.2f', evolution_kraken) } }
 				end
 			elseif type == 'time' then
 				if evolution_time then
@@ -136,11 +142,13 @@ function Public.full_update(player)
 				end
 			elseif type == 'nests' then
 				if evolution_nests then
-					str[#str + 1] = { '', '\n', { 'pirates.gui_evo_tooltip_6', string.format('%.2f', evolution_nests) } }
+					str[#str + 1] =
+						{ '', '\n', { 'pirates.gui_evo_tooltip_6', string.format('%.2f', evolution_nests) } }
 				end
 			elseif type == 'sandwurms' then
 				if evolution_sandwurms then
-					str[#str + 1] = { '', '\n', { 'pirates.gui_evo_tooltip_7', string.format('%.2f', evolution_sandwurms) } }
+					str[#str + 1] =
+						{ '', '\n', { 'pirates.gui_evo_tooltip_7', string.format('%.2f', evolution_sandwurms) } }
 				end
 			end
 		end
