@@ -40,17 +40,6 @@ local bps_blacklist = {
     ['blueprint'] = true
 }
 
-local get_filters = function (points)
-    for _, section in pairs(points.sections) do
-        for _, filter in pairs(section.filters) do
-            if filter.value and filter.value.name then
-                filters[#filters + 1] = filter
-            end
-        end
-    end
-    return filters
-end
-
 local on_init_token =
     Task.register(
         function ()
@@ -267,13 +256,28 @@ local function get_nearby_chests(player, a, furnace, wagon)
 end
 
 local function check_if_valid_requests(chest)
-    local requests = 0
-    if chest.type == 'logistic-container' then
-        local logistics = chest.get_logistic_point(defines.logistic_member_index.logistic_container)
-        local filters = get_filters(logistics)
-        requests = #filters
+    if not chest or not chest.valid then
+        return false
     end
-    return requests > 0
+
+    if chest.type == 'logistic-container' then
+        local filters = {}
+
+        local get_filters = function (points)
+            for _, section in pairs(points.sections) do
+                for _, filter in pairs(section.filters) do
+                    if filter and filter.value and filter.value.name then
+                        filters[#filters + 1] = filter
+                    end
+                end
+            end
+        end
+
+        local logistics = chest.get_logistic_point(defines.logistic_member_index.logistic_container)
+        local count = get_filters(logistics)
+        return #count > 0
+    end
+    return false
 end
 
 local function insert_to_furnace(player_inventory, chests, name, count, floaty_text_list)
