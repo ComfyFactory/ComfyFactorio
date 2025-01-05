@@ -35,11 +35,7 @@ local messages = {
 }
 
 local function validate_entity(entity)
-    if not (entity and entity.valid) then
-        return false
-    end
-
-    if type(entity) == 'boolean' then
+    if not entity or not entity.valid then
         return false
     end
 
@@ -54,17 +50,17 @@ local function get_car_by_unit_number(unit_number)
     return cars[unit_number]
 end
 
----Returns the car from the surface_name.
----@param surface_name any
----@return table|nil
-local function get_car_by_surface_name(surface_name)
+---Returns the car from the matching surface.
+---@param surface_index any
+---@return boolean
+local function get_car_by_surface(surface_index)
     local cars = IC.get('cars')
     for _, car in pairs(cars) do
-        if car.surface_name == surface_name then
-            return car
+        if car.surface == surface_index then
+            return true
         end
     end
-    return nil
+    return false
 end
 
 local function log_err(err)
@@ -244,7 +240,7 @@ end
 local function get_player_entity(player)
     local cars = IC.get('cars')
     for _, car in pairs(cars) do
-        if car.owner == player.name and type(car.entity) == 'boolean' then
+        if car.owner == player.name and car.saved then
             return car, true
         elseif car.owner == player.name then
             return car, false
@@ -292,6 +288,7 @@ local function replace_entity(cars, entity, index)
             cars[unit_number] = c
             cars[unit_number].entity = entity
             cars[unit_number].saved_entity = nil
+            cars[unit_number].saved = false
             cars[unit_number].transfer_entities = car.transfer_entities
             cars[unit_number].health_pool = {
                 enabled = upgrades.has_upgraded_health_pool or false,
@@ -319,7 +316,7 @@ local function replace_surface(surfaces, entity, index)
     if not validate_entity(entity) then
         return
     end
-    for k, surface_index in pairs(surfaces) do
+    for car_to_surface_index, surface_index in pairs(surfaces) do
         local surface = game.surfaces[surface_index]
         local unit_number = entity.unit_number
         if validate_entity(surface) then
@@ -327,7 +324,7 @@ local function replace_surface(surfaces, entity, index)
                 local car = get_car_by_unit_number(unit_number)
                 surface.name = car.surface_name
                 surfaces[unit_number] = surface.index
-                surfaces[k] = nil
+                surfaces[car_to_surface_index] = nil
             end
         end
     end
@@ -401,7 +398,8 @@ local function save_surface(entity, player)
     local saved_surfaces = IC.get('saved_surfaces')
     local car = cars[entity.unit_number]
 
-    car.entity = false
+    car.entity = nil
+    car.saved = true
     car.saved_entity = entity.unit_number
 
     saved_surfaces[player.name] = { saved_entity = entity.unit_number, name = entity.name }
@@ -426,9 +424,8 @@ end
 
 ---Kicks players out of the car surface.
 ---@param car any
----@param owner_id any
 ---@return nil
-local function kick_players_from_surface(car, owner_id)
+local function kick_players_from_surface(car)
     local surface_index = car.surface
     local surface = game.surfaces[surface_index]
     local allowed_surface = IC.get('allowed_surface')
@@ -440,32 +437,24 @@ local function kick_players_from_surface(car, owner_id)
         if validate_entity(main_surface) then
             for _, e in pairs(surface.find_entities_filtered({ area = car.area })) do
                 if validate_entity(e) and e.name == 'character' and e.player then
-                    if owner_id and owner_id == e.player.name then
-                        goto continue
-                    end
                     local p = main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0)
                     if p then
                         e.player.teleport(p, main_surface)
                     end
-                    ::continue::
                 end
             end
             return log_err('Car entity was not valid.')
         end
     end
 
-    for _, e in pairs(surface.find_entities_filtered({ area = car.area })) do
+    for _, e in pairs(surface.find_entities_filtered({ name = 'character' })) do
         if validate_entity(e) and e.name == 'character' and e.player then
-            if owner_id and owner_id == e.player.name then
-                goto continue
-            end
             local p = car.entity.surface.find_non_colliding_position('character', car.entity.position, 128, 0.5)
             if p then
                 e.player.teleport(p, car.entity.surface)
             else
                 e.player.teleport(car.entity.position, car.entity.surface)
             end
-            ::continue::
         end
     end
 end
@@ -509,10 +498,6 @@ local function kick_player_from_surface(player, target)
     end
 
     local car = get_owner_car_object(player)
-
-    if not validate_entity(car) then
-        return
-    end
 
     if not validate_entity(car.entity) then
         return
@@ -709,7 +694,7 @@ local function construct_doors(car)
         e.minable_flag = false
         e.operable = false
         e.get_inventory(defines.inventory.fuel).insert({ name = 'coal', count = 1 })
-        if type(car.entity) == 'boolean' then
+        if car.saved then
             return
         end
         doors[e.unit_number] = car.entity.unit_number
@@ -977,6 +962,10 @@ function Public.kill_car(entity)
 
     local surface_index = car.surface
     local surface = game.surfaces[surface_index]
+    if not surface or not surface.valid then
+        log('[IC] Car surface was not valid upon trying to delete.')
+        return
+    end
     kill_doors(car)
     for _, tile in pairs(surface.find_tiles_filtered({ area = car.area })) do
         surface.set_tiles({ { name = out_of_map_tile, position = tile.position } }, true)
@@ -1168,6 +1157,7 @@ function Public.create_car_room(car)
         area = car_areas[entity_type]
     end
 
+
     for x = area.left_top.x, area.right_bottom.x - 1, 1 do
         for y = area.left_top.y + 2, area.right_bottom.y - 3, 1 do
             tiles[#tiles + 1] = { name = main_tile_name, position = { x, y } }
@@ -1288,10 +1278,6 @@ function Public.create_car(event)
         return
     end
 
-    if type(ce) == 'boolean' then
-        return
-    end
-
     local saved_surface = restore_surface(player, ce)
     if saved_surface then
         return
@@ -1339,37 +1325,64 @@ function Public.remove_invalid_cars()
     local cars = IC.get('cars')
     local doors = IC.get('doors')
     local surfaces = IC.get('surfaces')
-    for k, car in pairs(cars) do
-        if type(car.entity) ~= 'boolean' then
+    for car_index, car in pairs(cars) do
+        if car and not car.saved then
             if not validate_entity(car.entity) then
-                cars[k] = nil
-                for key, value in pairs(doors) do
-                    if k == value then
+                cars[car_index] = nil
+                for key, door_to_car_index in pairs(doors) do
+                    if car_index == door_to_car_index then
                         doors[key] = nil
                     end
                 end
                 kick_players_from_surface(car)
+                log('IC::remove_invalid_cars -> car.entity was not valid for car_index: ' .. car_index)
             else
-                local owner = game.get_player(car.owner) and game.get_player(car.owner) or false
-                if (not (owner and owner.connected) or JailData.get_is_jailed(owner.name)) and not car.schedule_enable_mining then
-                    car.schedule_enable_mining = true
-                    Task.set_timeout_in_ticks(30, enable_car_to_be_mined, { entity = car.entity, owner_name = owner.name })
-                end
-                if owner and owner.connected then
-                    car.schedule_enable_mining = nil
+                local owner = game.get_player(car.owner)
+                if owner and owner.valid then
+                    if JailData.get_is_jailed(owner.name) and not car.schedule_enable_mining then
+                        car.schedule_enable_mining = true
+                        Task.set_timeout_in_ticks(30, enable_car_to_be_mined, { entity = car.entity, owner_name = owner.name })
+                    end
+
+                    if not owner.connected and not car.schedule_enable_mining then
+                        car.schedule_enable_mining = true
+                        Task.set_timeout_in_ticks(30, enable_car_to_be_mined, { entity = car.entity, owner_name = owner.name })
+                    end
+
+                    if owner.connected and car.schedule_enable_mining then
+                        car.schedule_enable_mining = nil
+                    end
+                else
+                    if not car.schedule_enable_mining then
+                        Task.set_timeout_in_ticks(30, enable_car_to_be_mined, { entity = car.entity, owner_name = owner.name })
+                        cars[car_index] = nil
+                        if cars[car_index] then
+                            log('IC::remove_invalid_cars -> car will be deleted since no valid owner was found for car index: ' .. car_index)
+                            cars[car_index] = nil
+                        end
+                    end
                 end
             end
         end
+    end
 
-        for surface_key, index in pairs(surfaces) do
-            local surface = game.surfaces[index]
-            if not validate_entity(surface) then
-                return
-            end
-            if not get_car_by_surface_name(car.surface_name) then
+    for car_to_surface_index, surface_index in pairs(surfaces) do
+        local surface = game.surfaces[surface_index]
+        if surface and surface.valid then
+            local valid_surface = get_car_by_surface(surface.index)
+            if not valid_surface then
                 game.delete_surface(surface)
-                surfaces[surface_key] = nil
+                surfaces[car_to_surface_index] = nil
+                log('IC::remove_invalid_cars -> surface was valid and will be deleted since no car entry for car_to_surface_index: ' .. car_to_surface_index)
             end
+        else
+            if cars[car_to_surface_index] then
+                log('IC::remove_invalid_cars -> car will be deleted since no valid surface was found for car_to_surface_index: ' .. car_to_surface_index)
+                cars[car_to_surface_index] = nil
+            end
+
+            log('IC::remove_invalid_cars -> surface was not valid upon trying to delete for car_to_surface_index: ' .. car_to_surface_index)
+            surfaces[car_to_surface_index] = nil
         end
     end
 end

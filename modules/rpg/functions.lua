@@ -71,7 +71,7 @@ local function create_healthbar(player, size)
                 entity = player.character,
                 offset = { 0, -2.5 },
             },
-            surface = player.surface
+            surface = player.physical_surface
         }
     )
 end
@@ -88,7 +88,7 @@ local function create_manabar(player, size)
                 entity = player.character,
                 offset = { 0, -2.0 },
             },
-            surface = player.surface
+            surface = player.physical_surface
         }
     )
 end

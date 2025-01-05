@@ -490,6 +490,7 @@ end
 
 local function build_config_gui(data)
     local player = data.player
+    if not player then return end
     local frame = data.frame
 
     local AG = Antigrief.get()

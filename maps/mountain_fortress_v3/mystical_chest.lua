@@ -1,3 +1,4 @@
+local Server = require 'utils.server'
 local Color = require 'utils.color_presets'
 local Event = require 'utils.event'
 local Public = require 'maps.mountain_fortress_v3.table'
@@ -247,6 +248,7 @@ local mc_random_rewards = {
             RPG.add_to_global_pool(rng)
             local message = ({ 'locomotive.xp_bonus', player.name })
             Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
+            Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted xp bonus for the whole team!', ' ***' })
             return true
         end),
         512
@@ -279,6 +281,7 @@ local mc_random_rewards = {
             end
             local message = ({ 'locomotive.coin_bonus', p.name })
             Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
+            Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. p.name .. ' has granted coinsies for the whole team!', ' ***' })
             return true
         end),
         512
@@ -306,6 +309,7 @@ local mc_random_rewards = {
             force.character_running_speed_modifier = force.character_running_speed_modifier + speed
             local message = ({ 'locomotive.movement_bonus', player.name })
             Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
+            Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted movement speed bonus for the whole team!', ' ***' })
             return true
         end),
         512
@@ -328,6 +332,7 @@ local mc_random_rewards = {
             force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 1
             local message = ({ 'locomotive.mining_bonus', player.name })
             Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
+            Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted mining speed bonus for the whole team!', ' ***' })
             return true
         end),
         512
@@ -350,6 +355,7 @@ local mc_random_rewards = {
             force.manual_crafting_speed_modifier = force.manual_crafting_speed_modifier + 2
             local message = ({ 'locomotive.crafting_bonus', player.name })
             Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
+            Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted crafting speed bonus for the whole team!', ' ***' })
             return true
         end),
         256

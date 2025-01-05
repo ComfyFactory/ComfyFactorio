@@ -166,11 +166,12 @@ local get_cause_player = {
     ['car'] = function (cause)
         local players = {}
         local driver = cause.get_driver()
-        if driver then
-            if driver.player then
-                players[#players + 1] = driver.player
-            end
+        if driver and driver.valid and driver.is_player() then
+            players[#players + 1] = driver
+        else
+            players[#players + 1] = driver.player
         end
+
         local passenger = cause.get_passenger()
         if passenger then
             if passenger.player then

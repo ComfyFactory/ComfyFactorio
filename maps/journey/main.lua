@@ -14,6 +14,7 @@ local Global = require 'utils.global'
 local Token = require 'utils.token'
 local Event = require 'utils.event'
 local Vacants = require 'modules.clear_vacant_players'
+local Robolimits = require 'modules.robot_limits'
 
 local journey = {
 	announce_capsules = true
@@ -189,9 +190,11 @@ local function on_rocket_launched(event)
 	rocket_inventory.clear()
 	rocket_inventory.insert({name = 'space-science-pack', count = 200})
 	local force = event.rocket.force
-	force.technologies['space-science-pack'].researched = true
-	force.print('[technology=space-science-pack] researched.')
-	force.play_sound({path = 'utility/research_completed'})
+	if force.technologies['space-science-pack'].researched == false then
+		force.technologies['space-science-pack'].researched = true
+		force.print('[technology=space-science-pack] researched.')
+		force.play_sound({path = 'utility/research_completed'})
+	end
 	Functions.draw_gui(journey)
 end
 
@@ -251,6 +254,9 @@ local function on_init()
 
 	game.permissions.get_group('Default').set_allows_action(defines.input_action.set_rocket_silo_send_to_orbit_automated_mode, false)
     Vacants.init(1, true)
+	Robolimits.set_construction_robot_limit(1000)
+	Robolimits.set_logistic_robot_limit(1000)
+	Robolimits.set_roboport_limit(100)
 	Functions.hard_reset(journey)
 end
 

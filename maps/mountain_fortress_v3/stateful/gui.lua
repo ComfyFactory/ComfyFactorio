@@ -507,6 +507,7 @@ local function boss_frame(player, alert)
 
     local stateful = Public.get_stateful()
     local collection = stateful.collection
+    if not collection then return end
 
     local frame = player.gui.screen.add { type = 'frame', name = boss_frame_name, caption = { 'stateful.win_conditions' }, direction = 'vertical' }
     if not alert then
@@ -574,7 +575,7 @@ local function boss_frame(player, alert)
         local objective_tbl = frame.add { type = 'table', column_count = 2 }
         objective_tbl.style.horizontally_stretchable = true
 
-        if collection.gather_time <= 0 then
+        if collection.gather_time and collection.gather_time <= 0 then
             local survive_for_left_flow = objective_tbl.add({ type = 'flow' })
             survive_for_left_flow.style.horizontal_align = 'left'
             survive_for_left_flow.style.horizontally_stretchable = true

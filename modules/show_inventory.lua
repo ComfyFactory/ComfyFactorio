@@ -122,12 +122,6 @@ local function validate_player(player)
     if not player.valid then
         return false
     end
-    if not player.character then
-        return false
-    end
-    if not player.connected then
-        return false
-    end
     if not game.get_player(player.index) then
         return false
     end
@@ -181,6 +175,13 @@ end
 local function redraw_inventory(gui, source, target, caption, panel_type)
     gui.clear()
 
+    if not panel_type then
+        if gui and gui.valid then
+            gui.destroy()
+        end
+        return
+    end
+
     local items_table = gui.add({ type = 'table', column_count = 11 })
     local types = prototypes.item
 
@@ -208,13 +209,13 @@ local function redraw_inventory(gui, source, target, caption, panel_type)
                         sprite = 'item/' .. name,
                         number = count,
                         name = name,
-                        tooltip = {'', (quality.name == 'normal' and '' or {'', quality.localised_name, ' '}), types[name].localised_name},
+                        tooltip = { '', (quality.name == 'normal' and '' or { '', quality.localised_name, ' ' }), types[name].localised_name },
                         style = 'slot_button'
                     }
                 )
             button.enabled = false
             if quality.name ~= 'normal' then
-                local qual_button = button.add({type = 'sprite-button', sprite = 'quality/' .. quality.name, style = 'transparent_slot'})
+                local qual_button = button.add({ type = 'sprite-button', sprite = 'quality/' .. quality.name, style = 'transparent_slot' })
                 qual_button.style.top_padding = 18
                 qual_button.style.right_padding = 18
             end
@@ -231,13 +232,13 @@ local function redraw_inventory(gui, source, target, caption, panel_type)
                                     sprite = 'item/' .. item.name,
                                     number = item.count,
                                     name = item.name .. item.quality,
-                                    tooltip = {'', (item.quality == 'normal' and '' or {'', prototypes.quality[item.quality].localised_name, ' '}), types[item.name].localised_name},
+                                    tooltip = { '', (item.quality == 'normal' and '' or { '', prototypes.quality[item.quality].localised_name, ' ' }), types[item.name].localised_name },
                                     style = 'slot_button'
                                 }
                             )
                         armor_gui.enabled = false
                         if item.quality ~= 'normal' then
-                            local qualgrid_button = armor_gui.add({type = 'sprite-button', sprite = 'quality/' .. quality.name, style = 'transparent_slot'})
+                            local qualgrid_button = armor_gui.add({ type = 'sprite-button', sprite = 'quality/' .. quality.name, style = 'transparent_slot' })
                             qualgrid_button.style.top_padding = 18
                             qualgrid_button.style.right_padding = 18
                         end
@@ -473,7 +474,7 @@ function Public.show_inventory(player, target_player)
         open_inventory(player, target_player)
         return true
     else
-        player.print('[Inventory] Please type a name of a player who is connected.', Color.warning)
+        player.print('[Inventory] Please type a valid player name.', Color.warning)
         return false
     end
 end

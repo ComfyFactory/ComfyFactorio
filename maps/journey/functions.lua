@@ -1444,7 +1444,12 @@ function Public.dispatch_goods(journey)
 
     if journey.dispatch_beacon_position then
         local good = goods_to_dispatch[journey.dispatch_key]
-        surface.spill_item_stack({ position = journey.dispatch_beacon_position, stack = { name = good[1], count = good[2] }, enable_looted = true, allow_belts = false })
+        local pod = surface.create_entity({name = 'cargo-pod-container', position = journey.dispatch_beacon_position, force = game.forces.player})
+        if pod and pod.valid then
+            pod.insert({name = good[1], count = good[2]})
+        else
+            surface.spill_item_stack({ position = journey.dispatch_beacon_position, stack = { name = good[1], count = good[2] }, enable_looted = true, allow_belts = false })
+        end
         table.remove(journey.goods_to_dispatch, journey.dispatch_key)
         journey.dispatch_beacon = nil
         journey.dispatch_beacon_position = nil

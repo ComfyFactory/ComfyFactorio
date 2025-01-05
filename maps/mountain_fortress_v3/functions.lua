@@ -2400,6 +2400,8 @@ function Public.on_player_joined_game(event)
         end
     end
 
+
+
     if player.online_time < 1 then
         if not players[player.index] then
             players[player.index] = {}
@@ -2444,6 +2446,8 @@ function Public.on_player_joined_game(event)
         end
     end
 
+
+
     local locomotive = Public.get('locomotive')
 
     if not locomotive or not locomotive.valid then
@@ -2459,6 +2463,16 @@ function Public.on_player_joined_game(event)
     end
 
     if distance_from_train then
+        local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
+        if pos then
+            player.teleport(pos, surface)
+        else
+            pos = game.forces.player.get_spawn_position(surface)
+            player.teleport(pos, surface)
+        end
+    end
+
+    if player.surface.name == 'nauvis' or player.surface.index == '1' then
         local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
         if pos then
             player.teleport(pos, surface)
@@ -2549,6 +2563,31 @@ function Public.on_pre_player_toggled_map_editor(event)
 
     player.toggle_map_editor()
     Task.set_timeout_in_ticks(5, exit_editor_mode_token, { player_index = player.index })
+end
+
+function Public.on_player_changed_surface(event)
+    local player = game.get_player(event.player_index)
+    if not player or not player.valid then
+        return
+    end
+
+    local surface_index = event.surface_index
+    if not surface_index then
+        log('No surface index found - old one was removed.')
+    end
+
+    local active_surface_index = Public.get('active_surface_index')
+    local surface = game.surfaces[active_surface_index or 'fortress']
+
+    if player.surface.name == 'nauvis' or player.surface.index == '1' then
+        local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
+        if pos then
+            player.teleport(pos, surface)
+        else
+            pos = game.forces.player.get_spawn_position(surface)
+            player.teleport(pos, surface)
+        end
+    end
 end
 
 function Public.on_player_changed_position(event)
@@ -2976,6 +3015,7 @@ local on_player_changed_position = Public.on_player_changed_position
 local on_player_respawned = Public.on_player_respawned
 local on_player_driving_changed_state = Public.on_player_driving_changed_state
 local on_pre_player_toggled_map_editor = Public.on_pre_player_toggled_map_editor
+local on_player_changed_surface = Public.on_player_changed_surface
 
 Event.add(de.on_player_joined_game, on_player_joined_game)
 Event.add(de.on_player_left_game, on_player_left_game)
@@ -2984,6 +3024,7 @@ Event.add(de.on_player_changed_position, on_player_changed_position)
 Event.add(de.on_player_respawned, on_player_respawned)
 Event.add(de.on_player_driving_changed_state, on_player_driving_changed_state)
 Event.add(de.on_pre_player_toggled_map_editor, on_pre_player_toggled_map_editor)
+Event.add(de.on_player_changed_surface, on_player_changed_surface)
 Event.add(de.on_player_cursor_stack_changed, on_player_cursor_stack_changed)
 Event.add(de.on_chart_tag_added, on_chart_tag_added)
 Event.add(de.on_marked_for_deconstruction, on_marked_for_deconstruction)

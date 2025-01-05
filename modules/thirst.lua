@@ -14,7 +14,8 @@ local this = {
         gleba = 0.6,
         vulcanus = 3,
         aquilo = 0.8,
-        fulgora = 1.5
+        fulgora = 1.5,
+        platform = 0
     }
 }
 
@@ -69,7 +70,7 @@ local function update_hydration_meter(player)
 end
 
 local function local_modifier(surface)
-    local planet_name = surface.planet and surface.planet.name or 'custom'
+    local planet_name = (surface.platform and 'platform') or (surface.planet and surface.planet.name) or 'custom'
     local modifier = this.planet_thirstiness[planet_name] or this.planet_thirstiness['custom']
     return modifier
 end
