@@ -20,6 +20,7 @@ local inv_tick_duration_step = 1 / tick_duration_step
 
 local polls = {}
 local polls_counter = { 0 }
+local running_polls = {}
 local no_notify_players = {}
 local player_poll_index = {}
 local player_create_poll_data = {}
@@ -28,6 +29,7 @@ Global.register(
     {
         polls = polls,
         polls_counter = polls_counter,
+        running_polls = running_polls,
         no_notify_players = no_notify_players,
         player_poll_index = player_poll_index,
         player_create_poll_data = player_create_poll_data
@@ -35,6 +37,7 @@ Global.register(
     function (tbl)
         polls = tbl.polls
         polls_counter = tbl.polls_counter
+        running_polls = tbl.running_polls
         no_notify_players = tbl.no_notify_players
         player_poll_index = tbl.player_poll_index
         player_create_poll_data = tbl.player_create_poll_data
@@ -102,7 +105,6 @@ local function do_remaining_time(poll, remaining_time_label)
     local ticks = end_tick - game.tick
     if ticks < 0 then
         remaining_time_label.caption = 'Poll Finished.'
-        polls.running = false
         return false
     else
         local time = math.ceil(ticks / 60)
@@ -203,7 +205,7 @@ local function redraw_poll_viewer_content(data)
     local poll_enabled = do_remaining_time(poll, remaining_time_label)
 
     local question_flow = poll_viewer_content.add { type = 'table', column_count = 2 }
-    if player.admin then
+    if player.admin and not poll.created_by_script then
         local edit_button =
             question_flow.add {
                 type = 'sprite-button',
@@ -691,8 +693,7 @@ local function create_poll(event)
     }
 
     insert(polls, poll_data)
-
-    polls.running = true
+    insert(running_polls, poll_data)
 
     show_new_poll(poll_data)
     send_poll_result_to_discord(poll_data)
@@ -807,11 +808,18 @@ local function player_joined(event)
     end
 end
 
-local function tick()
-    if not polls.running then
-        return
+local function poll_complete(poll)
+    local end_tick = poll.end_tick
+    if end_tick == -1 then
+        return false
     end
-    for _, p in pairs(game.players) do
+
+    local ticks = end_tick - game.tick
+    return ticks < 0
+end
+
+local function tick()
+    for _, p in pairs(game.connected_players) do
         local frame = p.gui.left[main_frame_name]
         if frame and frame.valid then
             local data = Gui.get_data(frame)
@@ -834,6 +842,20 @@ local function tick()
                     if not element.valid then
                         player_create_poll_data[player_index] = nil
                     end
+                end
+            end
+        end
+    end
+    for i = #running_polls, 1, -1 do
+        local poll = running_polls[i]
+        if poll_complete(poll) then
+            table.remove(running_polls, i)
+            send_poll_result_to_discord(poll)
+
+            local message = table.concat { 'Poll finished: Poll #', poll.id, ': ', poll.question }
+            for _, p in pairs(game.connected_players) do
+                if not no_notify_players[p.index] then
+                    p.print(message)
                 end
             end
         end
@@ -1066,6 +1088,7 @@ Gui.on_click(
         for i, p in pairs(polls) do
             if p == poll then
                 table.remove(polls, i)
+                table.remove_element(running_polls, p)
                 removed_index = i
                 break
             end
@@ -1189,7 +1212,10 @@ Gui.on_click(
 
         if not poll_index then
             insert(polls, poll)
+            insert(running_polls, poll)
             poll_index = #polls
+        elseif not table.contains(running_polls, poll) then
+            insert(running_polls, poll)
         end
 
         local message = table.concat { player.name, ' has edited Poll #', poll.id, ': ', poll.question }
@@ -1339,6 +1365,14 @@ function Public.validate(data)
     return true
 end
 
+--[[ local d = {
+    question = 'What is your favorite color?',
+    answers = { 'Red', 'Green', 'Blue' },
+    duration = 5
+}
+
+local Poll = require 'utils.gui.poll' Poll.poll(d) ]]
+
 function Public.poll(data)
     local suc, error = Public.validate(data)
     if not suc then
@@ -1369,7 +1403,7 @@ function Public.poll(data)
 
     local id = poll_id()
 
-    local name = ''
+    local name = nil
     if game.player and game.player.valid then
         name = game.player.name
     end
@@ -1382,11 +1416,14 @@ function Public.poll(data)
         start_tick = start_tick,
         end_tick = end_tick,
         duration = duration,
-        created_by = name or { name = '<server>', valid = true },
+        created_by = name or '<server>',
+        created_by_script = true,
         edited_by = {}
     }
 
     insert(polls, poll_data)
+    insert(running_polls, poll_data)
+
 
     show_new_poll(poll_data)
     send_poll_result_to_discord(poll_data)
@@ -1404,18 +1441,25 @@ function Public.poll_result(id)
             local result = { 'Question: ', poll_data.question, ' Answers: ' }
             local answers = poll_data.answers
             local answers_count = #answers
+            local winning_answer = nil
+
             for i, a in pairs(answers) do
                 insert(result, '( [')
                 insert(result, a.voted_count)
                 insert(result, '] - ')
                 insert(result, a.text)
                 insert(result, ' )')
+
+                if not winning_answer or a.voted_count > winning_answer.voted_count then
+                    winning_answer = a
+                end
+
                 if i ~= answers_count then
                     insert(result, ', ')
                 end
             end
 
-            return table.concat(result)
+            return table.concat(result), winning_answer
         end
     end
 
@@ -1437,6 +1481,18 @@ function Public.send_poll_result_to_discord(id)
 
     local message = table.concat { 'poll #', id, ' not found' }
     Server.to_discord_embed(message)
+end
+
+function Public.poll_complete(id)
+    if type(id) ~= 'number' then
+        return 'poll-id must be a number'
+    end
+
+    for _, poll_data in pairs(polls) do
+        if poll_data.id == id then
+            return poll_complete(poll_data)
+        end
+    end
 end
 
 Public.main_button_name = main_button_name

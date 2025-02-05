@@ -86,6 +86,7 @@ local discord_named_embed_parsed_tag = '[DISCORD-NAMED-EMBED-PARSED]'
 local discord_named_embed_raw_tag = '[DISCORD-NAMED-EMBED-RAW]'
 local start_scenario_tag = '[START-SCENARIO]'
 local stop_scenario_tag = '[STOP-SCENARIO]'
+local init_tag = '[INIT-GAME]'
 local ping_tag = '[PING]'
 local data_set_tag = '[DATA-SET]'
 local ban_get_tag = '[BAN-GET]'
@@ -171,6 +172,32 @@ end
 --      Trigger some sort of automated restart whenever the game ends.
 -- end)
 Public.events = { on_server_started = Event.generate_event_name('on_server_started'), on_changes_detected = Event.generate_event_name('on_changes_detected') }
+
+-- Starts a new game with the given scenario. Note that this will stop the current game and reset it.
+---@param scenario_data string|table
+---@return nil
+function Public.start_server(scenario_data)
+    if not scenario_data then
+        return error('start_server - scenario_data must be provided.', 2)
+    end
+
+    if type(scenario_data) == 'string' then
+        scenario_data = { type = 'scenario', name = scenario_data }
+    elseif type(scenario_data) == 'table' then
+        if not scenario_data.type then
+            return error('start_server - scenario_data must have a type.', 2)
+        end
+        if not scenario_data.name then
+            return error('start_server - scenario_data must have a name.', 2)
+        end
+    else
+        return error('start_server - scenario_data must be a string or table.', 2)
+    end
+
+    local json = helpers.table_to_json(scenario_data)
+
+    output_data(init_tag .. json)
+end
 
 --- Sends a message to the linked discord channel. The message is sanitized of markdown server side.
 -- @param  message<string> message to send.

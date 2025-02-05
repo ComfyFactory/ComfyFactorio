@@ -136,7 +136,7 @@ local on_player_joined_game = function (event)
 end
 
 local on_player_created = function (event)
-    if this.enabled then
+    if not this.enabled then
         return
     end
 

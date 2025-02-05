@@ -952,7 +952,7 @@ local function get_random_research_recipe()
     local research_level_list = {
         'laser-weapons-damage-7',
         'stronger-explosives-7',
-        'mining-productivity-3',
+        'mining-productivity-4',
         'worker-robots-speed-6',
         'follower-robot-count-5'
     }

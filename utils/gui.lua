@@ -176,6 +176,10 @@ function Public.get_data(element)
         return
     end
 
+    if not element.index then
+        return end
+
+
     local player_index = element.player_index
 
     local values = data[player_index]
@@ -1034,8 +1038,7 @@ Public.on_click(
     end
 )
 
-Event.add(
-    defines.events.on_gui_click,
+Event.add(defines.events.on_gui_click,
     function (event)
         local element = event.element
         if not element or not element.valid then
