@@ -1,3 +1,4 @@
+--luacheck: ignore 143
 local Gui = require 'utils.gui'
 local Global = require 'utils.global'
 local Event = require 'utils.event'
@@ -9,6 +10,8 @@ local Math = require 'utils.math.math'
 local Public = {}
 
 local insert = table.insert
+local contains = table.contains
+local remove_element = table.remove_element
 
 local default_poll_duration = 300 * 60 -- in ticks
 local duration_max = 3600              -- in seconds
@@ -1088,7 +1091,7 @@ Gui.on_click(
         for i, p in pairs(polls) do
             if p == poll then
                 table.remove(polls, i)
-                table.remove_element(running_polls, p)
+                remove_element(running_polls, p)
                 removed_index = i
                 break
             end
@@ -1214,7 +1217,8 @@ Gui.on_click(
             insert(polls, poll)
             insert(running_polls, poll)
             poll_index = #polls
-        elseif not table.contains(running_polls, poll) then
+            ---@diagnostic disable-next-line: undefined-global
+        elseif not contains(running_polls, poll) then
             insert(running_polls, poll)
         end
 

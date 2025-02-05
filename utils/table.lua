@@ -80,6 +80,7 @@ local index_of = table.index_of
 ---@param t table
 ---@param e any #table element
 ---@return boolean #boolean indicating success
+---@diagnostic disable-next-line: duplicate-set-field access-global-from-locals
 function table.contains(t, e)
     return index_of(t, e) and true or false
 end
