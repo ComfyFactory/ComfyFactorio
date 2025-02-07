@@ -34,7 +34,6 @@ function Public.blueprint(surface)
         local tiles = {}
         local ghosts = item.stack.build_blueprint { surface = surface, force = 'player', position = position, build_mode = defines.build_mode.forced }
         for _, ghost in pairs(ghosts) do
-            log(serpent.block(ghost.ghost_type))
             if ghost.ghost_type == 'tile' then
                 table.insert(tiles, { name = ghost.ghost_name, position = ghost.position })
                 ghost.destroy()
