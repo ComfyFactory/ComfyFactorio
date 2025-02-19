@@ -67,7 +67,7 @@ function Public.is_spamming(player, value_to_compare, text)
     end
 
     if this.debug_spam then
-        log(serpent.block(debug.traceback()))
+        log(debug.traceback())
     end
 
     local tick = game.tick
