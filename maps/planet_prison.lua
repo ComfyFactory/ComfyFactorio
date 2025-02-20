@@ -17,13 +17,18 @@ local ClaimsFunctions = require 'maps.planet_prison.mod.claims'
 local MapConfig = require 'maps.planet_prison.config'
 local Token = require 'utils.token'
 local Color = require 'utils.color_presets'
+local PlayerList = require 'utils.gui.player_list'
+PlayerList.settings.disable_camera_for_non_admins = true
 -- require 'modules.thirst'
+local minable_wreckage_enabled = script.active_mods['MineableWreckage'] or false
 
-local this = {
+local this =
+{
     entities_cache = nil,
     active_surface = nil,
     last_friend = nil,
-    remove_offline_players = {
+    remove_offline_players =
+    {
         players = {},
         time = 216000, -- 1h
         enabled = true
@@ -43,45 +48,42 @@ Global.register(
     end
 )
 
-this.maps = {
+this.maps =
+{
     {
         name = 'flooded-metropolia',
         height = 2000,
         width = 2000,
         water = 1,
         terrain_segmentation = 8,
-        property_expression_names = {
+        property_expression_names =
+        {
             moisture = 0,
             temperature = 30.
         },
-        cliff_settings = {
+        cliff_settings =
+        {
             richness = 0
         },
         starting_area = 'none',
-        autoplace_controls = {
-            ['iron-ore'] = {
-                frequency = 0
-            },
-            ['copper-ore'] = {
-                frequency = 0
-            },
-            ['uranium-ore'] = {
-                frequency = 0
-            },
-            ['stone'] = {
-                frequency = 0
-            },
-            ['coal'] = {
-                frequency = 0
-            },
-            ['crude-oil'] = {
+        autoplace_controls =
+        {
+            ['coal'] = { frequency = 0, size = 0, richness = 0 },
+            ['stone'] = { frequency = 0, size = 0, richness = 0 },
+            ['copper-ore'] = { frequency = 0, size = 0, richness = 0 },
+            ['iron-ore'] = { frequency = 0, size = 0, richness = 0 },
+            ['uranium-ore'] = { frequency = 0, size = 0, richness = 0 },
+            ['crude-oil'] =
+            {
                 frequency = 1000,
                 size = 1
             },
-            ['trees'] = {
+            ['trees'] =
+            {
                 frequency = 4
             },
-            ['enemy-base'] = {
+            ['enemy-base'] =
+            {
                 frequency = 0
             }
         }
@@ -92,38 +94,34 @@ this.maps = {
         width = 2500,
         water = 1,
         terrain_segmentation = 6,
-        property_expression_names = {
+        property_expression_names =
+        {
             moisture = 0,
             temperature = 25.
         },
-        cliff_settings = {
+        cliff_settings =
+        {
             richness = 0
         },
         starting_area = 'none',
-        autoplace_controls = {
-            ['iron-ore'] = {
-                frequency = 0
-            },
-            ['copper-ore'] = {
-                frequency = 0
-            },
-            ['uranium-ore'] = {
-                frequency = 0
-            },
-            ['stone'] = {
-                frequency = 0
-            },
-            ['coal'] = {
-                frequency = 0
-            },
-            ['crude-oil'] = {
+        autoplace_controls =
+        {
+            ['coal'] = { frequency = 0, size = 0, richness = 0 },
+            ['stone'] = { frequency = 0, size = 0, richness = 0 },
+            ['copper-ore'] = { frequency = 0, size = 0, richness = 0 },
+            ['iron-ore'] = { frequency = 0, size = 0, richness = 0 },
+            ['uranium-ore'] = { frequency = 0, size = 0, richness = 0 },
+            ['crude-oil'] =
+            {
                 frequency = 900,
                 size = 1
             },
-            ['trees'] = {
+            ['trees'] =
+            {
                 frequency = 4
             },
-            ['enemy-base'] = {
+            ['enemy-base'] =
+            {
                 frequency = 0
             }
         }
@@ -131,7 +129,8 @@ this.maps = {
 }
 
 local function assign_perks(player)
-    this.perks[player.name] = {
+    this.perks[player.name] =
+    {
         flashlight_enable = true,
         minimap = false,
         chat_global = true
@@ -141,7 +140,8 @@ end
 
 local assign_camouflage = function (ent, common)
     local shade = common.rand_range(20, 200)
-    ent.color = {
+    ent.color =
+    {
         r = shade,
         g = shade,
         b = shade
@@ -187,11 +187,13 @@ local fetch_common =
         end
     )
 
-local industrial_zone_layers = {
+local industrial_zone_layers =
+{
     {
         type = 'LuaTile',
         name = 'concrete',
-        objects = {
+        objects =
+        {
             'concrete'
         },
         elevation = 0.3,
@@ -202,7 +204,8 @@ local industrial_zone_layers = {
     {
         type = 'LuaTile',
         name = 'stones',
-        objects = {
+        objects =
+        {
             'stone-path'
         },
         elevation = 0.2,
@@ -213,7 +216,8 @@ local industrial_zone_layers = {
     {
         type = 'LuaTile',
         name = 'shallows',
-        objects = {
+        objects =
+        {
             'water-shallow'
         },
         elevation = 0.7,
@@ -224,7 +228,8 @@ local industrial_zone_layers = {
     {
         type = 'LuaEntity',
         name = 'scrap',
-        objects = {
+        objects =
+        {
             'crash-site-spaceship-wreck-small-1',
             'crash-site-spaceship-wreck-small-2',
             'crash-site-spaceship-wreck-small-3',
@@ -240,7 +245,8 @@ local industrial_zone_layers = {
     {
         type = 'LuaEntity',
         name = 'walls',
-        objects = {
+        objects =
+        {
             'stone-wall'
         },
         elevation = 0.5,
@@ -251,7 +257,8 @@ local industrial_zone_layers = {
     {
         type = 'LuaEntity',
         name = 'hostile',
-        objects = {
+        objects =
+        {
             'character',
             'gun-turret'
         },
@@ -263,7 +270,8 @@ local industrial_zone_layers = {
     {
         type = 'LuaEntity',
         name = 'structures',
-        objects = {
+        objects =
+        {
             'big-electric-pole',
             'medium-electric-pole'
         },
@@ -274,11 +282,17 @@ local industrial_zone_layers = {
     }
 }
 
-local industrial_zone_layers_modded = {
+if minable_wreckage_enabled then
+    industrial_zone_layers[4].objects = { 'mineable-wreckage' }
+end
+
+local industrial_zone_layers_modded =
+{
     {
         type = 'LuaTile',
         name = 'concrete',
-        objects = {
+        objects =
+        {
             'concrete'
         },
         elevation = 0.3,
@@ -289,7 +303,8 @@ local industrial_zone_layers_modded = {
     {
         type = 'LuaTile',
         name = 'stones',
-        objects = {
+        objects =
+        {
             'stone-path'
         },
         elevation = 0.2,
@@ -300,7 +315,8 @@ local industrial_zone_layers_modded = {
     {
         type = 'LuaTile',
         name = 'shallows',
-        objects = {
+        objects =
+        {
             'water-shallow'
         },
         elevation = 0.7,
@@ -311,7 +327,8 @@ local industrial_zone_layers_modded = {
     {
         type = 'LuaEntity',
         name = 'scrap',
-        objects = {
+        objects =
+        {
             'mineable-wreckage'
         },
         elevation = 0.5,
@@ -322,7 +339,8 @@ local industrial_zone_layers_modded = {
     {
         type = 'LuaEntity',
         name = 'walls',
-        objects = {
+        objects =
+        {
             'stone-wall'
         },
         elevation = 0.5,
@@ -333,7 +351,8 @@ local industrial_zone_layers_modded = {
     {
         type = 'LuaEntity',
         name = 'hostile',
-        objects = {
+        objects =
+        {
             'character',
             'gun-turret'
         },
@@ -345,7 +364,8 @@ local industrial_zone_layers_modded = {
     {
         type = 'LuaEntity',
         name = 'structures',
-        objects = {
+        objects =
+        {
             'big-electric-pole',
             'medium-electric-pole'
         },
@@ -356,11 +376,13 @@ local industrial_zone_layers_modded = {
     }
 }
 
-local swampy_rivers_layers = {
+local swampy_rivers_layers =
+{
     {
         type = 'LuaTile',
         name = 'speedy_tiles',
-        objects = {
+        objects =
+        {
             'black-refined-concrete'
         },
         elevation = 0.3,
@@ -371,7 +393,8 @@ local swampy_rivers_layers = {
     {
         type = 'LuaTile',
         name = 'nuclear',
-        objects = {
+        objects =
+        {
             'nuclear-ground'
         },
         elevation = 0.2,
@@ -382,7 +405,8 @@ local swampy_rivers_layers = {
     {
         type = 'LuaTile',
         name = 'shallows',
-        objects = {
+        objects =
+        {
             'water-shallow'
         },
         elevation = 0.7,
@@ -393,7 +417,8 @@ local swampy_rivers_layers = {
     {
         type = 'LuaEntity',
         name = 'rocky',
-        objects = {
+        objects =
+        {
             'big-sand-rock',
             'big-rock',
             'huge-rock'
@@ -406,7 +431,8 @@ local swampy_rivers_layers = {
     {
         type = 'LuaEntity',
         name = 'walls',
-        objects = {
+        objects =
+        {
             'stone-wall'
         },
         elevation = 0.5,
@@ -417,7 +443,8 @@ local swampy_rivers_layers = {
     {
         type = 'LuaEntity',
         name = 'hostile',
-        objects = {
+        objects =
+        {
             'character',
             'gun-turret'
         },
@@ -429,7 +456,8 @@ local swampy_rivers_layers = {
     {
         type = 'LuaEntity',
         name = 'structures',
-        objects = {
+        objects =
+        {
             'big-electric-pole',
             'medium-electric-pole'
         },
@@ -440,12 +468,14 @@ local swampy_rivers_layers = {
     }
 }
 
-this.presets = {
+this.presets =
+{
     ['flooded-metropolia'] = industrial_zone_layers,
     ['swampy-rivers'] = swampy_rivers_layers
 }
 
-this.presets_modded = {
+this.presets_modded =
+{
     ['flooded-metropolia'] = industrial_zone_layers_modded,
     ['swampy-rivers'] = swampy_rivers_layers
 }
@@ -456,7 +486,7 @@ end
 
 local function find_force(name)
     for _, f in pairs(game.forces) do
-        if f.name == name then
+        if f.name == string.gsub(name, '_custom', '') then
             return f
         end
     end
@@ -478,8 +508,10 @@ local init_player_ship_bp =
         end
     )
 
-this.events = {
-    merchant = {
+this.events =
+{
+    merchant =
+    {
         alive = false,
         moving = false,
         spawn_tick = 0,
@@ -509,11 +541,13 @@ local init_merchant_bp =
 local function create_orbit_group()
     local orbit = game.permissions.create_group('orbit')
     for _, perm in pairs(MapConfig.permission_orbit) do
+        ---@diagnostic disable-next-line: param-type-mismatch
         orbit.set_allows_action(perm, false)
     end
 end
 
-this.bp = {
+this.bp =
+{
     player_ship = require('planet_prison.bp.player_ship'),
     merchant = require('planet_prison.bp.merchant')
 }
@@ -523,14 +557,10 @@ local function init_game()
     ClaimsFunctions.init(MapConfig.claim_markers, MapConfig.claim_max_distance)
 
     local map = pick_map()
-    local preset
-    if is_game_modded() then
-        preset = this.presets_modded[map.name]
-    else
-        preset = this.presets[map.name]
-    end
+    local preset = this.presets[map.name]
     local surface = game.create_surface('arena', map)
-    surface.brightness_visual_weights = {
+    surface.brightness_visual_weights =
+    {
         1 / 0.85,
         1 / 0.85,
         1 / 0.85
@@ -548,7 +578,6 @@ local function init_game()
     game.map_settings.pollution.enabled = false
     game.map_settings.enemy_evolution.enabled = false
     game.difficulty_settings.technology_price_multiplier = 0.3
-    game.difficulty_settings.research_queue_setting = 'always'
 
     LayersFunctions.set_collision_mask({ 'water_tile' })
 
@@ -592,7 +621,7 @@ local explode_ship_update =
                 end
             end
 
-            rendering.set_text(id, time)
+            id.text = time
             return true
         end
     )
@@ -613,7 +642,8 @@ local explode_ship =
                     goto continue
                 end
 
-                local explosion = {
+                local explosion =
+                {
                     name = 'massive-explosion',
                     position = ent.position
                 }
@@ -625,12 +655,15 @@ local explode_ship =
             local bb = Blueprints.reference_get_bounding_box(ship)
             LayersFunctions.remove_excluding_bounding_box(bb)
             Blueprints.destroy_reference(surface, ship)
-            rendering.get_object_by_id(id).destroy()
+            if id and id.valid then
+                id.destroy()
+            end
         end
     )
 
 local function do_spawn_point(player)
-    local point = {
+    local point =
+    {
         x = CommonFunctions.get_axis(player.position, 'x'),
         y = CommonFunctions.get_axis(player.position, 'y') - 2
     }
@@ -638,15 +671,18 @@ local function do_spawn_point(player)
     LayersFunctions.push_excluding_bounding_box(instance.bb)
     local time_left = MapConfig.self_explode
 
-    local object = {
+    local object =
+    {
         text = CommonFunctions.get_time(time_left),
         surface = player.surface,
-        color = {
+        color =
+        {
             r = 255,
             g = 20,
             b = 20
         },
-        target = {
+        target =
+        {
             x = point.x - 2,
             y = point.y - 3
         },
@@ -665,12 +701,13 @@ end
 local function get_non_obstructed_position(s, radius)
     local chunk
 
-    for i = 1, 32 do
+    for _ = 1, 32 do
         chunk = s.get_random_chunk()
         chunk.x = chunk.x * 32
         chunk.y = chunk.y * 32
 
-        local search_info = {
+        local search_info =
+        {
             position = chunk,
             radius = radius
         }
@@ -682,7 +719,8 @@ local function get_non_obstructed_position(s, radius)
             end
         end
 
-        search_info = {
+        search_info =
+        {
             position = chunk,
             radius = radius,
             force = { 'neutral', 'enemy' },
@@ -703,7 +741,8 @@ local function draw_normal_gui(player)
     local button
     local merchant = this.events.merchant
     if merchant.alive then
-        button = {
+        button =
+        {
             type = 'button',
             name = 'merchant_find',
             caption = 'Merchant'
@@ -711,7 +750,8 @@ local function draw_normal_gui(player)
         player.gui.left.add(button)
     end
 
-    button = {
+    button =
+    {
         type = 'button',
         name = 'flashlight_toggle',
         caption = 'Toggle flashlight'
@@ -729,14 +769,16 @@ local function draw_common_gui(player)
         chat_type = 'NAP chat'
     end
 
-    local button = {
+    local button =
+    {
         type = 'button',
         name = 'manual_toggle',
         caption = 'Manual'
     }
     player.gui.left.add(button)
 
-    button = {
+    button =
+    {
         type = 'button',
         name = 'chat_toggle',
         caption = chat_type
@@ -745,7 +787,8 @@ local function draw_common_gui(player)
 end
 
 local function draw_orbit_gui(player)
-    local button = {
+    local button =
+    {
         type = 'button',
         name = 'annihilate',
         caption = 'Annihilate'
@@ -804,13 +847,16 @@ local function annihilate(caller)
                 coeff = 1
             end
 
-            local query = {
+            local query =
+            {
                 name = 'atomic-rocket',
-                position = {
+                position =
+                {
                     player.position.x - 100,
                     player.position.y - 100
                 },
-                target = {
+                target =
+                {
                     player.position.x + (8 * i * coeff),
                     player.position.y + (8 * i * coeff)
                 },
@@ -871,7 +917,8 @@ local function on_gui_click(e)
             return
         end
 
-        local text_box = {
+        local text_box =
+        {
             type = 'text-box',
             text = MapConfig.manual,
             name = 'manual_toggle_frame'
@@ -903,17 +950,17 @@ local function init_player(p)
 
     this.perks[p.name] = nil
     p.teleport(position, 'arena')
-    --p.name = get_random_name() --player name is read only
-    local pf = game.forces[p.name]
+    local player_force = p.name .. '_custom'
+    local pf = game.forces[player_force]
     if not pf then
-        p.force = game.create_force(p.name)
-    else
-        p.force = pf
+        game.create_force(player_force)
     end
+    p.force = player_force
     p.force.set_friend('neutral', true)
     p.force.set_friend('player', false)
     p.force.share_chart = false
-    this.perks[p.name] = {
+    this.perks[p.name] =
+    {
         flashlight_enable = true,
         minimap = false,
         chat_global = true,
@@ -978,6 +1025,19 @@ local function on_player_joined_game(e)
     if this.perks and this.perks[p.name] and this.perks[p.name].init then
         return
     end
+    if #game.forces > 62 then
+        p.print('>> Too many players on the server. Please wait for a slot to open up.', Color.error)
+        p.teleport({ 0, 0 }, 'arena')
+        local s = p.surface
+        local position = get_non_obstructed_position(s, 10)
+        p.teleport(position, 'arena')
+        if p.character ~= nil then
+            p.character.destroy()
+        end
+        p.set_controller({ type = defines.controllers.spectator })
+        return
+    end
+
     init_player(p)
 end
 
@@ -991,7 +1051,8 @@ local function _remove_merchant_bp(surf)
     local bb = Blueprints.reference_get_bounding_box(refs[1])
     LayersFunctions.remove_excluding_bounding_box(bb)
     Blueprints.destroy_references(surf, 'merchant')
-    this.events.merchant.position = {
+    this.events.merchant.position =
+    {
         x = 0,
         y = 0
     }
@@ -1050,7 +1111,8 @@ local function _get_outer_points(surf, x, y, deps)
     local inner = deps.inner
     local points = deps.points
 
-    local point = {
+    local point =
+    {
         x = x,
         y = y
     }
@@ -1068,9 +1130,11 @@ local function _get_outer_points(surf, x, y, deps)
 end
 
 local function _calculate_attack_costs(surf, bb)
-    local query = {
+    local query =
+    {
         area = bb,
-        force = {
+        force =
+        {
             'enemy',
             'neutral',
             'player'
@@ -1120,7 +1184,8 @@ local function _create_npc_group(claim, surf)
     CommonFunctions.enlarge_bounding_box(outer, 10)
 
     local points = {}
-    local deps = {
+    local deps =
+    {
         points = points,
         inner = inner
     }
@@ -1132,7 +1197,8 @@ local function _create_npc_group(claim, surf)
             goto continue
         end
 
-        local query = {
+        local query =
+        {
             name = 'character',
             position = point
         }
@@ -1140,7 +1206,8 @@ local function _create_npc_group(claim, surf)
         local agent = surf.create_entity(query)
         local stash = {}
         for attr, value in pairs(info.gear[(i % #info.gear) + 1]) do
-            local prop = {
+            local prop =
+            {
                 name = value
             }
 
@@ -1182,7 +1249,8 @@ local function populate_raid_event(surf)
             end
 
             status = true
-            group = {
+            group =
+            {
                 agents = _create_npc_group(claim, surf),
                 objects = claim
             }
@@ -1206,7 +1274,8 @@ local function on_pre_player_left_game(event)
     local player = game.players[event.player_index]
     local ticker = game.tick
     if player.character then
-        offline_players.players[#offline_players.players + 1] = {
+        offline_players.players[#offline_players.players + 1] =
+        {
             index = event.player_index,
             name = player.name,
             tick = ticker
@@ -1237,8 +1306,8 @@ local function remove_offline_players()
                             ClaimsFunctions.on_player_died(player)
                             ClaimsFunctions.clear_player_base(player)
 
-                            if game.forces[player.name] then
-                                game.merge_forces(player.name, 'neutral')
+                            if game.forces[player.name .. '_custom'] then
+                                game.merge_forces(player.name .. '_custom', 'neutral')
                             end
                             Session.clear_player(player)
                             game.remove_offline_players({ player })
@@ -1376,7 +1445,8 @@ local function on_chunk_generated(e)
     LayersFunctions.push_chunk(e.position)
 end
 
-local valid_ents = {
+local valid_ents =
+{
     ['crash-site-spaceship-wreck-small-1'] = true,
     ['crash-site-spaceship-wreck-small-2'] = true,
     ['crash-site-spaceship-wreck-small-3'] = true,
@@ -1406,7 +1476,8 @@ local function mined_wreckage(e)
     for name, attrs in pairs(MapConfig.wreck_loot) do
         local prob = attrs.rare * 100
         if prob < chance then
-            local cand = {
+            local cand =
+            {
                 name = name,
                 count = CommonFunctions.rand_range(attrs.count[1], attrs.count[2])
             }
@@ -1445,8 +1516,8 @@ local function on_player_died(e)
     ClaimsFunctions.on_player_died(p)
     ClaimsFunctions.clear_player_base(p)
 
-    if game.forces[p.name] then
-        game.merge_forces(p.name, 'neutral')
+    if game.forces[p.name .. '_custom'] then
+        game.merge_forces(p.name .. '_custom', 'neutral')
     end
     p.force = 'player'
     if p.connected then
@@ -1585,13 +1656,16 @@ local function on_entity_damaged(e)
         local particles = 45 * hp
         local coeff = CommonFunctions.rand_range(-20, 20) / 100.0
         for i = 1, particles do
-            local blood = {
+            local blood =
+            {
                 name = 'blood-particle',
-                position = {
+                position =
+                {
                     x = ent.position.x,
                     y = ent.position.y
                 },
-                movement = {
+                movement =
+                {
                     (CommonFunctions.rand_range(-20, 20) / 100.0) + coeff,
                     (CommonFunctions.rand_range(-20, 20) / 100.0) + coeff
                 },
@@ -1615,7 +1689,8 @@ local function merchant_death(e)
     end
 
     local s = ent.surface
-    local explosion = {
+    local explosion =
+    {
         name = 'massive-explosion',
         position = ent.position
     }
@@ -1635,7 +1710,8 @@ local function merchant_death(e)
     return true
 end
 
-local coin_drops = {
+local coin_drops =
+{
     ['character'] = true,
     ['gun-turret'] = true
 }
@@ -1658,7 +1734,8 @@ local function character_death(e)
         return false
     end
 
-    local explosion = {
+    local explosion =
+    {
         name = 'blood-explosion-big',
         position = ent.position
     }
@@ -1696,7 +1773,8 @@ local function merchant_exploit_check(ent)
     local bp_ent = Blueprints.reference_get_entities(refs[1])[1]
     local surf = bp_ent.surface
 
-    local query = {
+    local query =
+    {
         type = 'electric-pole',
         position = bp_ent.position,
         radius = 18
@@ -1799,7 +1877,7 @@ local function on_console_chat(e)
         for _, f in pairs(game.forces) do
             if p.force.get_cease_fire(f) then
                 local peer = f.players[1]
-                if peer.name ~= p.name then
+                if peer.name ~= string.gsub(p.name, '_custom', '') then
                     local perks = this.perks[peer.name]
                     if not perks then
                         perks = assign_perks(peer)
@@ -1821,7 +1899,8 @@ local function on_research_finished(e)
         return
     end
 
-    local reward = {
+    local reward =
+    {
         name = 'coin',
         count = ceil(r.research_unit_count * 3)
     }

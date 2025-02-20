@@ -2,7 +2,8 @@ local CommonFunctions = require 'utils.common'
 local Global = require 'utils.global'
 local Token = require 'utils.token'
 
-local this = {
+local this =
+{
     _bps = {}
 }
 
@@ -12,7 +13,7 @@ local remove = table.remove
 
 Global.register(
     this,
-    function(tbl)
+    function (tbl)
         this = tbl
     end
 )
@@ -22,9 +23,10 @@ push_blueprint - Pushes blueprint into a list.
 @param name - Handle of a blueprint.
 @param bp - Blueprint in JSON format.
 --]]
-Public.push_blueprint = function(name, bp)
-    local entry = {
-        bp = game.json_to_table(bp).blueprint,
+Public.push_blueprint = function (name, bp)
+    local entry =
+    {
+        bp = helpers.json_to_table(bp).blueprint,
         hook = nil,
         refs = {}
     }
@@ -36,7 +38,7 @@ set_blueprint_hook - Set callback to a blueprint.
 @param name - Handle of a blueprint
 @param hook - Callback that will be called after blueprint is placed.
 --]]
-Public.set_blueprint_hook = function(name, hook)
+Public.set_blueprint_hook = function (name, hook)
     if name == nil then
         log('bp.set_blueprint_hook: name is nil')
         return
@@ -56,29 +58,10 @@ Public.set_blueprint_hook = function(name, hook)
 end
 
 --[[
-get_references - Get all references of the blueprint on the map.
-@param name - Blueprint handle.
---]]
-Public.get_references = function(name)
-    if name == nil then
-        log('bp.get_references: name is nil')
-        return {}
-    end
-
-    local object = this._bps[name]
-    if object == nil then
-        log('bp.get_references: unrecognized blueprint')
-        return {}
-    end
-
-    return object.refs
-end
-
---[[
 get_references - Gets opaque object representing bp references.
 @param name - Blueprint handle.
 --]]
-Public.get_references = function(name)
+Public.get_references = function (name)
     if name == nil then
         log('bp.get_references: name is nil')
         return
@@ -97,7 +80,7 @@ end
 reference_get_bounding_box - Return bounding box from the reference.
 @param reference - Valid reference object fetched from get_references.
 --]]
-Public.reference_get_bounding_box = function(reference)
+Public.reference_get_bounding_box = function (reference)
     return reference.bb
 end
 
@@ -105,7 +88,7 @@ end
 reference_get_entities - Return references to entities.
 @param reference - Valid reference object fetched from get_references.
 --]]
-Public.reference_get_entities = function(reference)
+Public.reference_get_entities = function (reference)
     return reference.entities
 end
 
@@ -113,7 +96,7 @@ end
 reference_get_timestamp - Return timestamp of a reference
 @param reference - Valid reference object fetched from get_references.
 --]]
-Public.reference_get_timestamp = function(reference)
+Public.reference_get_timestamp = function (reference)
     return reference.timestamp
 end
 
@@ -126,7 +109,7 @@ meet the query rules.
 unlinked.
 @return An array of unlinked references.
 --]]
-Public.unlink_references_filtered = function(name, query)
+Public.unlink_references_filtered = function (name, query)
     if name == nil then
         log('bp.get_references: name is nil')
         return
@@ -164,7 +147,7 @@ meet the query rules.
 @param query.timestamp - If reference is older that submitted timestamp, it will be
 removed.
 --]]
-Public.destroy_references_filtered = function(surf, name, query)
+Public.destroy_references_filtered = function (surf, name, query)
     if name == nil then
         log('bp.get_references: name is nil')
         return
@@ -208,11 +191,11 @@ destroy_references - Destroys all references of blueprint on the map
 @param surf - Surface on which blueprints are placed.
 @param name - Blueprint handle.
 --]]
-Public.destroy_references = function(surf, name)
+Public.destroy_references = function (surf, name)
     Public.destroy_references_filtered(surf, name, {})
 end
 
-local _bp_destroy_reference = function(surf, ref)
+local _bp_destroy_reference = function (surf, ref)
     for _, ent in pairs(ref.entities) do
         if ent.valid then
             ent.destroy()
@@ -238,7 +221,7 @@ destroy_reference - Destroys reference of a blueprint at given surface.
 @param surf - Surface on which blueprints are placed.
 @param reference - Any valid reference.
 --]]
-Public.destroy_reference = function(surf, reference)
+Public.destroy_reference = function (surf, reference)
     for _, meta in pairs(this._bps) do
         for i = 1, #meta.refs do
             local ref = meta.refs[i]
@@ -256,9 +239,11 @@ local function _build_tiles(surf, point, tiles)
 
     local get_axis = CommonFunctions.get_axis
     for _, tile in pairs(tiles) do
-        local _tile = {
+        local _tile =
+        {
             name = tile.name,
-            position = {
+            position =
+            {
                 x = get_axis(tile.position, 'x') + get_axis(point, 'x'),
                 y = get_axis(tile.position, 'y') + get_axis(point, 'y')
             }
@@ -275,8 +260,10 @@ local function _build_entities(surf, point, entities, hook, player)
 
     local get_axis = CommonFunctions.get_axis
     for _, ent in pairs(entities) do
-        local ent_info = {
-            position = {
+        local ent_info =
+        {
+            position =
+            {
                 x = get_axis(ent.position, 'x') + get_axis(point, 'x'),
                 y = get_axis(ent.position, 'y') + get_axis(point, 'y')
             },
@@ -289,7 +276,7 @@ local function _build_entities(surf, point, entities, hook, player)
         end
 
         if ent.fill then
-            e.insert({name = ent.fill.name, count = ent.fill.count})
+            e.insert({ name = ent.fill.name, count = ent.fill.count })
         end
 
         if ent.revoke_minable then
@@ -303,7 +290,7 @@ local function _build_entities(surf, point, entities, hook, player)
         if hook then
             local token = Token.get(hook)
             if token then
-                local data = {player = player, entity = e}
+                local data = { player = player, entity = e }
                 token(data)
             end
         end
@@ -322,7 +309,7 @@ build - Place blueprint at given point.
 @param point - Position at which place blueprint.
 @param args - If hook was set, this will be argument passed.
 --]]
-Public.build = function(surf, name, point, args)
+Public.build = function (surf, name, point, args)
     if surf == nil then
         log('bp.build: surf is nil')
         return
@@ -339,7 +326,8 @@ Public.build = function(surf, name, point, args)
         return
     end
 
-    local instance = {
+    local instance =
+    {
         entities = {},
         tiles = {},
         bb = nil,
@@ -352,7 +340,8 @@ Public.build = function(surf, name, point, args)
         local bb = CommonFunctions.create_bounding_box_by_points(instance.tiles)
         insert(bbs, bb)
 
-        local query = {
+        local query =
+        {
             name = 'character',
             area = bb,
             invert = true
@@ -370,7 +359,8 @@ Public.build = function(surf, name, point, args)
         local bb = CommonFunctions.create_bounding_box_by_points(instance.entities)
         insert(bbs, bb)
 
-        local query = {
+        local query =
+        {
             name = 'character',
             area = bb,
             invert = true
