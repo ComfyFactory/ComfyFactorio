@@ -18,8 +18,8 @@ local MapConfig = require 'maps.planet_prison.config'
 local Token = require 'utils.token'
 local Color = require 'utils.color_presets'
 local PlayerList = require 'utils.gui.player_list'
-local PlayerShip = require('planet_prison.bp.player_ship')
-local Merchant = require('planet_prison.bp.merchant')
+local PlayerShip = require 'planet_prison.bp.player_ship'
+local Merchant = require 'planet_prison.bp.merchant'
 PlayerList.settings.disable_camera_for_non_admins = true
 -- require 'modules.thirst'
 local minable_wreckage_enabled = script.active_mods['MineableWreckage'] or false
