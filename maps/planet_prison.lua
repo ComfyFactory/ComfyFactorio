@@ -1566,14 +1566,14 @@ local function on_player_dropped_item(e)
             return
         end
 
-        if p.force.get_cease_fire(peer.name) then
+        if p.force.get_cease_fire(peer.name .. '_custom') then
             p.print(string.format("You're in the NAP with %s already", peer.name))
             return
         end
 
         if this.last_friend[peer.name] == p.name then
-            p.force.set_cease_fire(peer.name, true)
-            p.force.set_friend(peer.name, true)
+            p.force.set_cease_fire(peer.name .. '_custom', true)
+            p.force.set_friend(peer.name .. '_custom', true)
             peer.force.set_cease_fire(p.name, true)
             peer.force.set_friend(p.name, true)
             p.print(string.format('The NAP was formed with %s', peer.name))
@@ -1611,13 +1611,13 @@ local function on_player_dropped_item(e)
             return
         end
 
-        if not p.force.get_cease_fire(peer.name) then
+        if not p.force.get_cease_fire(peer.name .. '_custom') then
             p.print(string.format("You don't have the NAP with %s", p.name))
             return
         end
 
-        p.force.set_cease_fire(peer.name, false)
-        p.force.set_friend(peer.name, false)
+        p.force.set_cease_fire(peer.name .. '_custom', false)
+        p.force.set_friend(peer.name .. '_custom', false)
         peer.force.set_cease_fire(p.name, false)
         peer.force.set_friend(p.name, false)
 

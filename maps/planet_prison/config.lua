@@ -456,6 +456,7 @@ Public.technologies =
     ['follower-robot-count-6'] = false,
     ['follower-robot-count-7'] = false,
     ['tank'] = false,
+    ['spidertron'] = false,
     ['uranium-ammo'] = false,
     ['uranium-processing'] = false,
     ['atomic-bomb'] = false
