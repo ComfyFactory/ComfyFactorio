@@ -916,6 +916,13 @@ local function on_player_used_capsule_custom(event)
         return
     end
 
+    if Public.get_x_position() then
+        local x = Public.get_x_position()
+        if player.physical_position.x > x then
+            return
+        end
+    end
+
     local rpg_t = Public.get_value_from_player(player.index)
 
     if not rpg_t.enable_entity_spawn then
