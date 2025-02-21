@@ -506,7 +506,9 @@ local init_merchant_bp =
                 shuffle(offers)
 
                 for i = 1, math.min(5, #offers) do
-                    offers[i].price.count = math.random(offers[i].price.count, offers[i].price.count * 2)
+                    if offers[i] and offers[i].price[1] then
+                        offers[i].price[1].count = math.random(offers[i].price[1].count, offers[i].price[1].count * 2)
+                    end
                     entity.add_market_item(offers[i])
                 end
             end
