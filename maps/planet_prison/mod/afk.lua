@@ -5,9 +5,9 @@ on_inactive_players - Performs operation on inactive players from the game
 if they exceed time.
 @param time - Maximum time a player can be inactive.
 --]]
-Public.on_inactive_players = function(time)
+Public.on_inactive_players = function (time)
     if not time then
-        time = 5
+        time = 60
     end
 
     for _, p in pairs(game.connected_players) do

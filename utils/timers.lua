@@ -1,13 +1,14 @@
 local Global = require 'utils.global'
 local Token = require 'utils.token'
 
-local this = {
+local this =
+{
     timers = {}
 }
 
 Global.register(
     this,
-    function(tbl)
+    function (tbl)
         this = tbl
     end
 )
@@ -19,9 +20,10 @@ set_timer - Sets a timer.
 @param time_left - Time time_left on the timer in ticks.
 @param hook - Action executed after timer is elapsed.
 --]]
-Public.set_timer = function(time_left, hook)
-    local id = game.tick
-    local entry = {
+Public.set_timer = function (time_left, hook)
+    local id = #this.timers + 1
+    local entry =
+    {
         time_left = time_left,
         hook_finish = hook,
         hook_update = nil,
@@ -40,7 +42,7 @@ timers is updated.
 @param id - Id of the timer.
 @param hook - Hook that will be executed per update.
 --]]
-Public.set_timer_on_update = function(id, hook)
+Public.set_timer_on_update = function (id, hook)
     this.timers[id].hook_update = hook
 end
 
@@ -49,7 +51,7 @@ set_timer_dependency - Adds dependency into user callback.
 @param id - Id of the timer,
 @param deps - Dependency of timer to add.
 --]]
-Public.set_timer_dependency = function(id, deps)
+Public.set_timer_dependency = function (id, deps)
     this.timers[id].deps = deps
 end
 
@@ -57,7 +59,7 @@ end
 set_timer_start - Sets the timer to run.
 @param id - Id of a timer.
 --]]
-Public.set_timer_start = function(id)
+Public.set_timer_start = function (id)
     this.timers[id].running = true
     this.timers[id].last_update = game.tick
 end
@@ -66,14 +68,14 @@ end
 kill_timer - Effectivly kills the timer.
 @param id - Timer id.
 --]]
-Public.kill_timer = function(id)
+Public.kill_timer = function (id)
     this.timers[id] = nil
 end
 
 --[[
 do_job - Execute timer logic within a tick.
 --]]
-Public.do_job = function()
+Public.do_job = function ()
     for id, entry in pairs(this.timers) do
         if entry.running == false then
             goto continue

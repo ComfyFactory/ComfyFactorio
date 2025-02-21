@@ -4,7 +4,6 @@
 local Global = require 'utils.global'
 local Session = require 'utils.datastore.session_data'
 local Event = require 'utils.event'
-local Freeplay = require 'utils.freeplay'
 local Server = require 'utils.server'
 local MapFuntions = require 'utils.tools.map_functions'
 local CommonFunctions = require 'utils.common'
@@ -20,19 +19,25 @@ local Color = require 'utils.color_presets'
 local PlayerList = require 'utils.gui.player_list'
 local PlayerShip = require 'maps.planet_prison.bp.player_ship'
 local Merchant = require 'maps.planet_prison.bp.merchant'
+local Reset = require 'utils.functions.soft_reset'
+local Commands = require 'utils.commands'
+local Discord = require 'utils.discord_handler'
+local init_player
+
 PlayerList.settings.disable_camera_for_non_admins = true
 -- require 'modules.thirst'
 local minable_wreckage_enabled = script.active_mods['MineableWreckage'] or false
 
 local this =
 {
-    entities_cache = nil,
     active_surface = nil,
     last_friend = nil,
     remove_offline_players =
     {
         players = {},
-        time = 216000, -- 1h
+        -- time = 216000, -- 1h
+        -- time = 5184000, -- 24h
+        time = 1728000, -- 8h
         enabled = true
     }
 }
@@ -130,6 +135,20 @@ this.maps =
     }
 }
 
+local function exclude_surface(surface, state)
+    for _, force in pairs(game.forces) do
+        force.set_surface_hidden(surface, state or true)
+    end
+end
+
+local function get_arena_map()
+    local active_surface_index = this.active_surface_index
+    if not active_surface_index then
+        return game.surfaces.arena
+    end
+    return game.surfaces[active_surface_index]
+end
+
 local function assign_perks(player)
     this.perks[player.name] =
     {
@@ -151,6 +170,25 @@ local assign_camouflage = function (ent, common)
     ent.disable_flashlight()
 end
 
+local function shuffle(tbl)
+    for i = #tbl, 2, -1 do
+        local j = math.random(i)
+        tbl[i], tbl[j] = tbl[j], tbl[i]
+    end
+end
+
+local delay_move_player_token =
+    Token.register(
+        function (event)
+            local player_index = event.player_index
+            local player = game.get_player(player_index)
+            if not player or not player.valid then
+                return
+            end
+            init_player(player)
+        end
+    )
+
 local set_noise_hostile_hook =
     Token.register(
         function (data)
@@ -162,15 +200,32 @@ local set_noise_hostile_hook =
             if ent.name == 'character' then
                 assign_camouflage(ent, CommonFunctions)
 
-                if CommonFunctions.rand_range(1, 5) == 1 then
+                if CommonFunctions.rand_range(1, 25) == 1 then
+                    ent.insert({ name = 'submachine-gun', count = 1 })
+                    ent.insert({ name = 'firearm-magazine', count = 20 })
+                elseif CommonFunctions.rand_range(1, 5) == 1 then
                     ent.insert({ name = 'shotgun', count = 1 })
                     ent.insert({ name = 'shotgun-shell', count = 20 })
                 else
                     ent.insert({ name = 'pistol', count = 1 })
                     ent.insert({ name = 'firearm-magazine', count = 20 })
                 end
+
+                if CommonFunctions.rand_range(1, 800) == 1 then
+                    ent.insert({ name = 'modular-armor', count = 1 })
+                elseif CommonFunctions.rand_range(1, 400) == 1 then
+                    ent.insert({ name = 'heavy-armor', count = 1 })
+                else
+                    ent.insert({ name = 'light-armor', count = 1 })
+                end
             else
-                ent.insert({ name = 'firearm-magazine', count = 200 })
+                if CommonFunctions.rand_range(1, 500) == 1 then
+                    ent.insert({ name = 'uranium-rounds-magazine', count = 200 })
+                elseif CommonFunctions.rand_range(1, 250) == 1 then
+                    ent.insert({ name = 'piercing-rounds-magazine', count = 200 })
+                else
+                    ent.insert({ name = 'firearm-magazine', count = 200 })
+                end
             end
         end
     )
@@ -288,96 +343,6 @@ if minable_wreckage_enabled then
     industrial_zone_layers[4].objects = { 'mineable-wreckage' }
 end
 
-local industrial_zone_layers_modded =
-{
-    {
-        type = 'LuaTile',
-        name = 'concrete',
-        objects =
-        {
-            'concrete'
-        },
-        elevation = 0.3,
-        resolution = 0.2,
-        hook = nil,
-        deps = nil
-    },
-    {
-        type = 'LuaTile',
-        name = 'stones',
-        objects =
-        {
-            'stone-path'
-        },
-        elevation = 0.2,
-        resolution = 0.4,
-        hook = nil,
-        deps = nil
-    },
-    {
-        type = 'LuaTile',
-        name = 'shallows',
-        objects =
-        {
-            'water-shallow'
-        },
-        elevation = 0.7,
-        resolution = 0.01,
-        hook = nil,
-        deps = nil
-    },
-    {
-        type = 'LuaEntity',
-        name = 'scrap',
-        objects =
-        {
-            'mineable-wreckage'
-        },
-        elevation = 0.5,
-        resolution = 0.1,
-        hook = set_neutral_to_entity,
-        deps = nil
-    },
-    {
-        type = 'LuaEntity',
-        name = 'walls',
-        objects =
-        {
-            'stone-wall'
-        },
-        elevation = 0.5,
-        resolution = 0.09,
-        hook = set_neutral_to_entity,
-        deps = nil
-    },
-    {
-        type = 'LuaEntity',
-        name = 'hostile',
-        objects =
-        {
-            'character',
-            'gun-turret'
-        },
-        elevation = 0.92,
-        resolution = 0.99,
-        hook = set_noise_hostile_hook,
-        deps = fetch_common
-    },
-    {
-        type = 'LuaEntity',
-        name = 'structures',
-        objects =
-        {
-            'big-electric-pole',
-            'medium-electric-pole'
-        },
-        elevation = 0.9,
-        resolution = 0.9,
-        hook = set_neutral_to_entity,
-        deps = nil
-    }
-}
-
 local swampy_rivers_layers =
 {
     {
@@ -472,14 +437,14 @@ local swampy_rivers_layers =
 
 this.presets =
 {
-    ['flooded-metropolia'] = industrial_zone_layers,
-    ['swampy-rivers'] = swampy_rivers_layers
-}
-
-this.presets_modded =
-{
-    ['flooded-metropolia'] = industrial_zone_layers_modded,
-    ['swampy-rivers'] = swampy_rivers_layers
+    industrial_zone_layers,
+    swampy_rivers_layers,
+    industrial_zone_layers,
+    swampy_rivers_layers,
+    industrial_zone_layers,
+    swampy_rivers_layers,
+    industrial_zone_layers,
+    swampy_rivers_layers
 }
 
 local function pick_map()
@@ -503,8 +468,11 @@ local init_player_ship_bp =
             local entity = data.entity
             entity.force = player.force
             if entity.name == 'crash-site-chest-1' then
-                for _, stack in pairs(MapConfig.player_ship_loot) do
-                    entity.insert(stack)
+                local offers = this.events.player_loot
+                shuffle(offers)
+
+                for i = 1, math.min(5, #offers) do
+                    entity.insert(offers[i])
                 end
             end
         end
@@ -520,7 +488,8 @@ this.events =
         embark_tick = 0,
         position = { x = 0, y = 0 },
         offer = MapConfig.merchant_offer
-    }
+    },
+    player_loot = MapConfig.player_ship_loot,
 }
 
 local init_merchant_bp =
@@ -533,8 +502,12 @@ local init_merchant_bp =
             if entity.name ~= 'market' then
                 entity.operable = false
             else
-                for _, entry in pairs(this.events.merchant.offer) do
-                    entity.add_market_item(entry)
+                local offers = this.events.merchant.offer
+                shuffle(offers)
+
+                for i = 1, math.min(5, #offers) do
+                    offers[i].price.count = math.random(offers[i].price.count, offers[i].price.count * 2)
+                    entity.add_market_item(offers[i])
                 end
             end
         end
@@ -553,14 +526,33 @@ this.bp =
     player_ship = PlayerShip,
     merchant = Merchant
 }
+
+local function get_player_force(player, clean)
+    if clean then return player.name end
+    return player.name .. '_custom'
+end
+
 local function init_game()
-    Freeplay.set('disabled', true)
+    Commands.restore_states()
+    Blueprints.push_blueprint('player_ship', this.bp.player_ship)
+    Blueprints.set_blueprint_hook('player_ship', init_player_ship_bp)
+    Blueprints.push_blueprint('merchant', this.bp.merchant)
+    Blueprints.set_blueprint_hook('merchant', init_merchant_bp)
     LayersFunctions.init()
     ClaimsFunctions.init(MapConfig.claim_markers, MapConfig.claim_max_distance)
 
+
     local map = pick_map()
-    local preset = this.presets[map.name]
-    local surface = game.create_surface('arena', map)
+    local preset = this.presets[CommonFunctions.rand_range(1, #this.presets)]
+    local surface
+
+    if not this.active_surface_index then
+        surface = game.create_surface('arena', map)
+    else
+        surface = Reset.soft_reset_map(game.surfaces[this.active_surface_index], map, {}, true)
+    end
+    exclude_surface(surface)
+    this.active_surface_index = surface.index
     surface.brightness_visual_weights =
     {
         1 / 0.85,
@@ -575,6 +567,19 @@ local function init_game()
     this.events.raid_init = false
     this.events.annihilation = false
     this.events.reset_time = nil
+    this.hard_restart = false
+    this.announced_message = false
+    this.annihilate_gui_button = false
+    this.last_friend = {}
+    this.last_friend_initiated = {}
+    this.remove_offline_players =
+    {
+        players = {},
+        -- time = 216000, -- 1h
+        -- time = 5184000, -- 24h
+        time = 1728000, -- 8h
+        enabled = true
+    }
 
     create_orbit_group()
     game.map_settings.pollution.enabled = false
@@ -604,10 +609,26 @@ local function init_game()
         end
     end
 
-    Blueprints.push_blueprint('player_ship', this.bp.player_ship)
-    Blueprints.set_blueprint_hook('player_ship', init_player_ship_bp)
-    Blueprints.push_blueprint('merchant', this.bp.merchant)
-    Blueprints.set_blueprint_hook('merchant', init_merchant_bp)
+    local default_group = game.permissions.get_group('Default')
+    for _, perm in pairs(MapConfig.permission_non_gps) do
+        ---@diagnostic disable-next-line: param-type-mismatch
+        default_group.set_allows_action(perm, false)
+    end
+
+    local time = 10
+    for _, player in pairs(game.connected_players) do
+        player.spectator = false
+        if player.character == nil then
+            player.set_controller({ type = defines.controllers.god })
+            player.create_character()
+            player.character.active = false
+        end
+
+        local timer = Timers.set_timer(time, delay_move_player_token)
+        time = time + 20
+        Timers.set_timer_dependency(timer, { player_index = player.index })
+        Timers.set_timer_start(timer)
+    end
 end
 
 local explode_ship_update =
@@ -721,15 +742,27 @@ local function get_non_obstructed_position(s, radius)
             end
         end
 
-        search_info =
+        local force_search_info =
         {
             position = chunk,
             radius = radius,
             force = { 'neutral', 'enemy' },
             invert = true
         }
-        local ents = s.find_entities_filtered(search_info)
+        local ents = s.find_entities_filtered(force_search_info)
         if not ents or #ents == 0 then
+            break
+        end
+
+        local char_search_info =
+        {
+            position = chunk,
+            radius = radius,
+            name = { 'character' },
+        }
+
+        local chars = s.find_entities_filtered(char_search_info)
+        if not chars or #chars == 0 then
             break
         end
 
@@ -795,6 +828,12 @@ local function draw_orbit_gui(player)
         name = 'annihilate',
         caption = 'Annihilate'
     }
+    if not this.annihilate_gui_button then
+        this.annihilate_gui_button = true
+        for _ = 1, 5 do
+            player.print('>> You are in orbit. Use the button to annihilate the planet.', { color = Color.warning, skip = defines.print_skip.never })
+        end
+    end
     player.gui.left.add(button)
 end
 
@@ -830,7 +869,18 @@ local function on_tick_reset()
         return
     end
 
-    Server.start_scenario('planet_prison')
+    if game.tick < 200 then return end
+
+    if this.hard_restart and not this.announced_message then
+        local message = 'Soft-reset is disabled! Server will restart from scenario to load new changes.'
+        game.print(message)
+        Server.to_discord_bold(table.concat { '*** ', message, ' ***' })
+        Server.start_scenario('Planet_Prison')
+        this.announced_message = true
+        return
+    end
+
+    init_game()
     this.events.reset_time = nil
 end
 
@@ -871,6 +921,7 @@ local function annihilate(caller)
         ::continue::
     end
 
+    game.print('>> Game will reset shortly.')
     this.events.reset_time = game.tick + (60 * 15)
 end
 
@@ -926,7 +977,7 @@ local function on_gui_click(e)
             name = 'manual_toggle_frame'
         }
         text_box = p.gui.center.add(text_box)
-        text_box.style.minimal_width = 512
+        text_box.style.minimal_width = 600
         text_box.read_only = true
         text_box.word_wrap = true
     elseif elem.name == 'manual_toggle_frame' then
@@ -945,19 +996,36 @@ local function on_gui_click(e)
     end
 end
 
-local function init_player(p)
-    p.teleport({ 0, 0 }, 'arena')
-    local s = p.surface
-    local position = get_non_obstructed_position(s, 10)
+init_player = function (p, non_tp)
+    local surface = get_arena_map()
 
+    if #game.forces > 62 then
+        p.print('>> Too many players on the server. Please wait for a slot to open up.', Color.error)
+        p.teleport({ 0, 0 }, surface.name)
+        local s = p.surface
+        local position = get_non_obstructed_position(s, 10)
+        p.teleport(position, surface.name)
+        if p.character ~= nil then
+            p.character.destroy()
+        end
+        p.set_controller({ type = defines.controllers.spectator })
+        return
+    end
+
+    if not non_tp then
+        p.teleport({ 0, 0 }, surface.name)
+        local s = p.surface
+        local position = get_non_obstructed_position(s, 15)
+        p.teleport(position, surface.name)
+    end
     this.perks[p.name] = nil
-    p.teleport(position, 'arena')
-    local player_force = p.name .. '_custom'
+    local player_force = get_player_force(p)
     local pf = game.forces[player_force]
     if not pf then
         game.create_force(player_force)
     end
     p.force = player_force
+
     p.force.set_friend('neutral', true)
     p.force.set_friend('player', false)
     p.force.share_chart = false
@@ -995,8 +1063,16 @@ local function init_player(p)
     end
 
     p.minimap_enabled = false
+    p.force.set_surface_hidden(surface, true)
+    p.force.set_surface_hidden('Gulag', true)
+    p.force.set_surface_hidden('nauvis', true)
+    local default_group = game.permissions.get_group('Default')
+    default_group.add_player(p)
+    p.character.active = true
     redraw_gui(p)
-    do_spawn_point(p)
+    if not non_tp then
+        do_spawn_point(p)
+    end
 end
 
 local function player_reconnected(connected)
@@ -1007,13 +1083,16 @@ local function player_reconnected(connected)
     if not offline_players.enabled then
         return
     end
-    if #offline_players.players > 0 then
-        for i = 1, #offline_players.players do
-            if offline_players.players[i] then
-                local player = game.get_player(offline_players.players[i].index)
-                if player and player.valid and player.index == connected.index then
-                    offline_players.players[i] = nil
-                end
+    if not next(offline_players.players) then
+        return
+    end
+
+    for index, saved_player in pairs(offline_players.players) do
+        if saved_player and saved_player.index then
+            local player = game.get_player(saved_player.index)
+            if player and player.valid and player.index == connected.index then
+                table.remove(offline_players.players, index)
+                break
             end
         end
     end
@@ -1024,19 +1103,7 @@ local function on_player_joined_game(e)
     player_reconnected(p)
     redraw_gui(p)
 
-    if this.perks and this.perks[p.name] and this.perks[p.name].init then
-        return
-    end
-    if #game.forces > 62 then
-        p.print('>> Too many players on the server. Please wait for a slot to open up.', Color.error)
-        p.teleport({ 0, 0 }, 'arena')
-        local s = p.surface
-        local position = get_non_obstructed_position(s, 10)
-        p.teleport(position, 'arena')
-        if p.character ~= nil then
-            p.character.destroy()
-        end
-        p.set_controller({ type = defines.controllers.spectator })
+    if this.perks and this.perks[p.name] and this.perks[p.name].init and not this.perks[p.name].merged then
         return
     end
 
@@ -1092,6 +1159,12 @@ local function embark_merchant(s)
 
     s.print('>> Merchant is moving to new location')
     _remove_merchant_bp(s)
+    for _, player in pairs(game.players) do
+        redraw_gui(player)
+    end
+end
+
+local function redraw_gui_connected()
     for _, player in pairs(game.players) do
         redraw_gui(player)
     end
@@ -1275,12 +1348,18 @@ local function on_pre_player_left_game(event)
     end
     local player = game.players[event.player_index]
     local ticker = game.tick
+
     if player.character then
+        local tick_until_removal = this.remove_offline_players.time
+        if player.online_time < 216000 then
+            tick_until_removal = 54000 -- Clear players after 15 minutes when they have less than 1 hour of playtime
+        end
+
         offline_players.players[#offline_players.players + 1] =
         {
             index = event.player_index,
             name = player.name,
-            tick = ticker
+            tick = ticker + tick_until_removal
         }
     end
 end
@@ -1294,26 +1373,34 @@ local function remove_offline_players()
         return
     end
     if #offline_players.players > 0 then
-        for i = 1, #offline_players.players, 1 do
-            if offline_players.players[i] then
-                local player = game.get_player(offline_players.players[i].index)
+        for index, saved_player in pairs(offline_players.players) do
+            if saved_player and saved_player.index then
+                local player = game.get_player(saved_player.index)
                 if player and player.valid then
                     if player.connected then
-                        offline_players.players[i] = nil
+                        offline_players.players[index] = nil
                     else
-                        if offline_players.players[i].tick < game.tick - offline_players.time then
+                        if game.tick > saved_player.tick then
                             if this.perks and this.perks[player.name] then
                                 this.perks[player.name] = nil
                             end
+
+                            if #player.force.players > 1 and #player.force.connected_players > 0 then
+                                saved_player.tick = game.tick + offline_players.time
+                                break
+                            end
+
                             ClaimsFunctions.on_player_died(player)
                             ClaimsFunctions.clear_player_base(player)
 
-                            if game.forces[player.name .. '_custom'] then
-                                game.merge_forces(player.name .. '_custom', 'neutral')
+                            local player_force = get_player_force(player)
+
+                            if game.forces[player_force] then
+                                game.merge_forces(player_force, 'neutral')
                             end
                             Session.clear_player(player)
                             game.remove_offline_players({ player })
-                            offline_players.players[i] = nil
+                            table.remove(offline_players.players, index)
                         end
                     end
                 end
@@ -1425,7 +1512,7 @@ local function on_tick()
 end
 
 local function make_ore_patch(e)
-    if CommonFunctions.rand_range(1, 30) ~= 1 then
+    if CommonFunctions.rand_range(1, 60) ~= 1 then
         return
     end
 
@@ -1439,7 +1526,8 @@ local function make_ore_patch(e)
 end
 
 local function on_chunk_generated(e)
-    if e.surface.name ~= 'arena' then
+    local surface = get_arena_map()
+    if e.surface.name ~= surface.name then
         return
     end
 
@@ -1517,9 +1605,10 @@ local function on_player_died(e)
     local p = game.players[index]
     ClaimsFunctions.on_player_died(p)
     ClaimsFunctions.clear_player_base(p)
+    local player_force = get_player_force(p)
 
-    if game.forces[p.name .. '_custom'] then
-        game.merge_forces(p.name .. '_custom', 'neutral')
+    if game.forces[player_force] then
+        game.merge_forces(player_force, 'neutral')
     end
     p.force = 'player'
     if p.connected then
@@ -1535,11 +1624,9 @@ local function on_player_respawned(e)
 end
 
 local function on_player_dropped_item(e)
-    if not this.last_friend then
-        this.last_friend = {}
-    end
-
     local p = game.players[e.player_index]
+    local player_force = get_player_force(p)
+
     local ent = e.entity
     if ent.stack.name == 'raw-fish' then
         local ent_list =
@@ -1566,26 +1653,38 @@ local function on_player_dropped_item(e)
             return
         end
 
-        if p.force.get_cease_fire(peer.name .. '_custom') then
-            p.print(string.format("You're in the NAP with %s already", peer.name))
+        local peer_force = get_player_force(peer)
+
+
+        if game.forces[peer_force] and p.force.get_cease_fire(peer_force) then
+            p.print(string.format(">> You're in the NAP with %s already", peer.name), Color.warning)
             return
         end
 
         if this.last_friend[peer.name] == p.name then
-            p.force.set_cease_fire(peer.name .. '_custom', true)
-            p.force.set_friend(peer.name .. '_custom', true)
-            peer.force.set_cease_fire(p.name, true)
-            peer.force.set_friend(p.name, true)
-            p.print(string.format('The NAP was formed with %s', peer.name))
-            peer.print(string.format('The NAP was formed with %s', p.name))
+            p.print(string.format('>> The NAP was formed with %s', peer.name), Color.success)
+            peer.print(string.format('>> The NAP was formed with %s', p.name), Color.success)
+
+            if this.last_friend_initiated[peer.name] then
+                if game.forces[player_force] then
+                    game.merge_forces(player_force, peer_force)
+                    this.perks[p.name].merged = true
+                    p.print(string.format('>> You merged forces with %s', peer.name), Color.success)
+                    peer.print(string.format('>> %s merged forces with your force!', p.name), Color.success)
+                    this.last_friend_initiated[peer.name] = nil
+                end
+            end
+
+
             this.last_friend[p.name] = ''
             this.last_friend[peer.name] = ''
             return
         end
 
         this.last_friend[p.name] = peer.name
-        p.print(string.format('You want to form the NAP with %s', peer.name))
-        peer.print(string.format('The %s wants to form NAP with you', p.name))
+        this.last_friend_initiated[p.name] = true
+        p.print(string.format('>> You want to form the NAP with %s', peer.name), Color.warning)
+        peer.print(string.format('>> %s wants to form NAP with you', p.name), Color.warning)
     elseif ent.stack.name == 'coal' then
         local ent_list =
             p.surface.find_entities_filtered(
@@ -1611,20 +1710,24 @@ local function on_player_dropped_item(e)
             return
         end
 
-        if not p.force.get_cease_fire(peer.name .. '_custom') then
-            p.print(string.format("You don't have the NAP with %s", p.name))
+        local peer_force = get_player_force(peer)
+
+        if game.forces[peer_force] and p.force.name ~= peer_force and not p.force.get_cease_fire(peer_force) then
+            p.print(string.format(">> You don't have the NAP with %s", p.name), Color.warning)
             return
         end
 
-        p.force.set_cease_fire(peer.name .. '_custom', false)
-        p.force.set_friend(peer.name .. '_custom', false)
-        peer.force.set_cease_fire(p.name, false)
-        peer.force.set_friend(p.name, false)
+        local clean_force_name = string.gsub(p.force.name, '_custom', '')
+        if clean_force_name == peer.name then
+            init_player(p, true)
+        else
+            init_player(peer, true)
+        end
 
         this.last_friend[p.name] = ''
         this.last_friend[peer.name] = ''
-        p.print(string.format("You're no longer in the NAP with %s", peer.name))
-        peer.print(string.format("You're no longer in the NAP with %s", p.name))
+        p.print(string.format(">> You're no longer in the NAP with %s", peer.name), Color.warning)
+        peer.print(string.format(">> You're no longer in the NAP with %s", p.name), Color.warning)
     end
 end
 
@@ -1657,7 +1760,7 @@ local function on_entity_damaged(e)
         local hp = 1.0 - ent.get_health_ratio()
         local particles = 45 * hp
         local coeff = CommonFunctions.rand_range(-20, 20) / 100.0
-        for i = 1, particles do
+        for _ = 1, particles do
             local blood =
             {
                 name = 'blood-particle',
@@ -1725,7 +1828,7 @@ local function hostile_death(e)
         return false
     end
 
-    loot.insert({ name = 'coin', count = random(30, 70) })
+    loot.insert({ name = 'coin', count = random(10, 30) })
 
     return true
 end
@@ -1811,6 +1914,8 @@ local function on_market_item_purchased(e)
     if o.effect_description == 'Construct a GPS receiver' then
         perks.minimap = true
         p.minimap_enabled = true
+        p.print('You bought the GPS receiver!', Color.success)
+        p.print('(unlocked minimap)', Color.success)
     end
 end
 
@@ -1879,7 +1984,8 @@ local function on_console_chat(e)
         for _, f in pairs(game.forces) do
             if p.force.get_cease_fire(f) then
                 local peer = f.players[1]
-                if peer.name ~= string.gsub(p.name, '_custom', '') then
+                local player_force = get_player_force(p, true)
+                if peer.name ~= player_force then
                     local perks = this.perks[peer.name]
                     if not perks then
                         perks = assign_perks(peer)
@@ -1919,7 +2025,7 @@ local function move_to_orbit(player)
     player.character = nil
     char.destroy()
 
-    game.merge_forces(player.name, 'neutral')
+    game.merge_forces(get_player_force(player), 'neutral')
     player.spectator = true
     redraw_gui(player)
 
@@ -1935,20 +2041,27 @@ local function on_marked_for_deconstruction(event)
     end
 end
 
-local function on_rocket_launched(e)
+local function on_rocket_launch_ordered(e)
     local surf = game.get_surface(this.active_surface)
     if not surf or not surf.valid then
         return
     end
 
-    local pid = e.player_index
-    surf.print('>> The rocket was launched')
-    if pid == nil then
-        surf.print('>> Nobody escaped by it')
-    else
-        local player = game.players[pid]
-        surf.print(string.format('>> The %s was able to escape', player.name))
-        move_to_orbit(player)
+    local entity = e.rocket and e.rocket and e.rocket.valid and e.rocket
+    surf.print('>> The rocket was launched', Color.warning)
+
+    local rocket_inventory = e.rocket.cargo_pod.get_inventory(defines.inventory.cargo_unit)
+    local slot = rocket_inventory[1]
+    if slot and slot.valid and slot.valid_for_read then
+        if slot.name == 'satellite' then
+            local force = entity.force
+            surf.print(string.format('>> %s has won this round!', string.gsub(force.name, '_custom', '')), Color.warning)
+            Server.to_discord_embed(string.gsub(force.name, '_custom', '') .. ' has launched the rocket and won the game!')
+
+            for _, player in pairs(force.connected_players) do
+                move_to_orbit(player)
+            end
+        end
     end
 end
 
@@ -1976,6 +2089,42 @@ Event.add(defines.events.on_console_chat, on_console_chat)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_tick, on_tick)
 Event.add(defines.events.on_tick, on_tick_reset)
-Event.add(defines.events.on_rocket_launched, on_rocket_launched)
+Event.on_nth_tick(500, redraw_gui_connected)
+Event.add(defines.events.on_rocket_launch_ordered, on_rocket_launch_ordered)
+
+Commands.new('reset_game', 'Usable only for admins - controls the scenario!')
+    :require_admin()
+    :require_validation()
+    :callback(
+        function (player)
+            game.print(player.name .. ', has reset the game!',
+                { r = 0.98, g = 0.66, b = 0.22 })
+            Discord.send_notification_raw('Planet Prison', player.name .. ' has reset the game!')
+            init_game()
+        end
+    )
+
+Commands.new('hard_reset_game', 'Usable only for admins - controls the scenario!')
+    :require_admin()
+    :require_validation()
+    :callback(
+        function (player)
+            this.hard_restart = true
+            Discord.send_notification_raw('Planet Prison', player.name .. ' has hard reset the game!')
+            local message = 'Soft-reset is disabled! Server will restart from scenario to load new changes.'
+            game.print(message)
+            Server.to_discord_bold(table.concat { '*** ', message, ' ***' })
+            Server.start_scenario('Planet_Prison')
+        end
+    )
+Server.on_scenario_changed(
+    'Planet_Prison',
+    function (data)
+        local scenario = data.scenario
+        if scenario == 'Planet_Prison' then
+            this.hard_restart = true
+        end
+    end
+)
 
 return Public
