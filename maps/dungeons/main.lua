@@ -129,7 +129,7 @@ local function expand(surface, position)
     local evo = Functions.get_dungeon_evolution_factor(surface.index)
 
     local force = game.forces.enemy
-    force.evolution_factor = evo
+    force.set_evolution_factor(evo, surface)
 
     if evo > 1 then
         storage.biter_health_boost = 2 + ((evo - 1) * 2)
