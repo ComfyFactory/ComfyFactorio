@@ -208,7 +208,7 @@ local function clear_robots(new_surface)
     end
 end
 
-function Public.soft_reset_map(old_surface, map_gen_settings, player_starting_items, small_force_chunk)
+function Public.soft_reset_map(old_surface, map_gen_settings, player_starting_items, small_force_chunk, delay)
     if not this.original_surface_name then
         this.original_surface_name = old_surface.name
     end
@@ -218,6 +218,10 @@ function Public.soft_reset_map(old_surface, map_gen_settings, player_starting_it
     if not small_force_chunk then
         new_surface.request_to_generate_chunks({ 0, 0 }, 1)
         new_surface.force_generate_chunk_requests()
+    end
+
+    if not delay then
+        teleport_players(new_surface, small_force_chunk)
     end
 
     reset_forces(new_surface, old_surface)
@@ -254,7 +258,10 @@ function Public.soft_reset_map(old_surface, map_gen_settings, player_starting_it
 
     game.print(message, { r = 0.98, g = 0.66, b = 0.22 })
     Server.to_discord_embed(message, true)
-    teleport_players(new_surface, small_force_chunk)
+
+    if delay then
+        teleport_players(new_surface, small_force_chunk)
+    end
 
     return new_surface
 end

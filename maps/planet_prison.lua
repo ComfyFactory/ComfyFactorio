@@ -551,7 +551,7 @@ local function init_game()
     if not this.active_surface_index then
         surface = game.create_surface('arena', map)
     else
-        surface = Reset.soft_reset_map(game.surfaces[this.active_surface_index], map, {}, true)
+        surface = Reset.soft_reset_map(game.surfaces[this.active_surface_index], map, {}, true, true)
     end
     exclude_surface(surface)
     this.active_surface_index = surface.index
