@@ -1329,6 +1329,12 @@ local function on_rocket_launched(event)
     local rocket_inventory = event.rocket.cargo_pod.get_inventory(defines.inventory.cargo_unit)
     rocket_inventory.clear()
     rocket_inventory.insert({ name = 'space-science-pack', count = 200 })
+    local force = event.rocket.force
+	if force.technologies['space-science-pack'].researched == false then
+		force.technologies['space-science-pack'].researched = true
+		force.print('[technology=space-science-pack] researched.')
+		force.play_sound({path = 'utility/research_completed'})
+    end
 end
 
 local function on_player_changed_position(event)
