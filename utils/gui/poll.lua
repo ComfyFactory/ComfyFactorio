@@ -14,8 +14,8 @@ local contains = table.contains
 local remove_element = table.remove_element
 
 local default_poll_duration = 300 * 60 -- in ticks
-local duration_max = 3600              -- in seconds
-local duration_step = 15               -- in seconds
+local duration_max = 3600 -- in seconds
+local duration_step = 15 -- in seconds
 
 local duration_slider_max = duration_max / duration_step
 local tick_duration_step = duration_step * 60
@@ -210,7 +210,8 @@ local function redraw_poll_viewer_content(data)
     local question_flow = poll_viewer_content.add { type = 'table', column_count = 2 }
     if player.admin and not poll.created_by_script then
         local edit_button =
-            question_flow.add {
+            question_flow.add
+            {
                 type = 'sprite-button',
                 name = poll_view_edit_name,
                 sprite = 'utility/rename_icon',
@@ -238,7 +239,8 @@ local function redraw_poll_viewer_content(data)
     for i, a in pairs(answers) do
         local vote_button_flow = grid.add { type = 'flow' }
         local vote_button =
-            vote_button_flow.add {
+            vote_button_flow.add
+            {
                 type = 'button',
                 name = poll_view_vote_name,
                 caption = a.voted_count,
@@ -323,7 +325,8 @@ local function draw_main_frame(_, player)
 
     local poll_index = player_poll_index[player.index] or #polls
 
-    local data = {
+    local data =
+    {
         back_button = back_button,
         forward_button = forward_button,
         poll_index_label = poll_index_label,
@@ -354,7 +357,8 @@ local function draw_main_frame(_, player)
         apply_button_style(create_poll_button)
     else
         local create_poll_button =
-            right_flow.add {
+            right_flow.add
+            {
                 type = 'button',
                 caption = 'Create Poll',
                 enabled = false,
@@ -432,7 +436,8 @@ local function redraw_create_poll_content(data)
     grid.clear()
 
     grid.add { type = 'flow' }
-    grid.add {
+    grid.add
+    {
         type = 'label',
         caption = 'Duration:',
         tooltip = 'Pro tip: Use mouse wheel or arrow keys for more fine control.'
@@ -440,7 +445,8 @@ local function redraw_create_poll_content(data)
 
     local duration_flow = grid.add { type = 'flow', direction = 'horizontal' }
     local duration_slider =
-        duration_flow.add {
+        duration_flow.add
+        {
             type = 'slider',
             name = create_poll_duration_name,
             minimum_value = 0,
@@ -473,7 +479,8 @@ local function redraw_create_poll_content(data)
         local delete_button
         if edit_mode or count ~= 1 then
             delete_button =
-                delete_flow.add {
+                delete_flow.add
+                {
                     type = 'sprite-button',
                     name = create_poll_delete_answer_name,
                     sprite = 'utility/trash',
@@ -488,7 +495,8 @@ local function redraw_create_poll_content(data)
 
         local label_flow = grid.add { type = 'flow' }
         local label =
-            label_flow.add {
+            label_flow.add
+            {
                 type = 'label',
                 name = create_poll_label_name,
                 caption = table.concat { 'Answer #', count, ':' }
@@ -555,7 +563,8 @@ local function draw_create_poll_frame(parent, player, previous_data)
 
     local grid = scroll_pane.add { type = 'table', column_count = 3 }
 
-    local data = {
+    local data =
+    {
         frame = frame,
         grid = grid,
         question = question,
@@ -570,7 +579,8 @@ local function draw_create_poll_frame(parent, player, previous_data)
     redraw_create_poll_content(data)
 
     local add_answer_button =
-        scroll_pane.add {
+        scroll_pane.add
+        {
             type = 'button',
             name = create_poll_add_answer_name,
             caption = 'Add Answer'
@@ -683,7 +693,8 @@ local function create_poll(event)
         name = event.player.name
     end
 
-    local poll_data = {
+    local poll_data =
+    {
         id = poll_id(),
         question = question,
         answers = answers,
@@ -799,7 +810,8 @@ local function player_joined(event)
             end
         else
             local b =
-                player.gui.top.add {
+                player.gui.top.add
+                {
                     type = 'sprite-button',
                     name = main_button_name,
                     sprite = 'item/programmable-speaker',
@@ -849,6 +861,11 @@ local function tick()
             end
         end
     end
+
+    if not running_polls or not next(running_polls) then
+        return
+    end
+
     for i = #running_polls, 1, -1 do
         local poll = running_polls[i]
         if poll_complete(poll) then
@@ -1412,7 +1429,8 @@ function Public.poll(data)
         name = game.player.name
     end
 
-    local poll_data = {
+    local poll_data =
+    {
         id = id,
         question = data.question,
         answers = answers,
