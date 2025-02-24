@@ -79,7 +79,10 @@ function Public.update_player_modifiers(player)
             else
                 if modifiers[k] == 'character_inventory_slots_bonus' and not this.creative_enabled then
                     local inv = player.get_inventory(defines.inventory.character_main)
-                    if inv and #inv > this.rpg_inventory_slot_limit + 80 then
+                    if inv and #inv > this.rpg_inventory_slot_limit then
+                        if player.controller_type == defines.controllers.remote then
+                            break -- Moving this outside the loop would probably break something other, at least this catches the decrease of inventory size
+                        end
                         player[modifier] = this.rpg_inventory_slot_limit
                     else
                         player[modifier] = round(sum_value, 4)
