@@ -1160,6 +1160,12 @@ local function on_entity_died(event)
         Public.set('market_age', game.tick - last_reset)
         Public.set('game_has_ended', true)
         is_game_lost()
+
+        local surface = event.entity.surface
+        for _, entity in pairs(surface.find_entities_filtered { type = { 'logistic-robot', 'construction-robot', 'roboport' } }) do
+            entity.destroy()
+        end
+
         local date = Server.get_start_time()
         game.server_save('Final_Fish_Defender_v2_' .. tostring(date))
         return
@@ -1330,10 +1336,10 @@ local function on_rocket_launched(event)
     rocket_inventory.clear()
     rocket_inventory.insert({ name = 'space-science-pack', count = 200 })
     local force = event.rocket.force
-	if force.technologies['space-science-pack'].researched == false then
-		force.technologies['space-science-pack'].researched = true
-		force.print('[technology=space-science-pack] researched.')
-		force.play_sound({path = 'utility/research_completed'})
+    if force.technologies['space-science-pack'].researched == false then
+        force.technologies['space-science-pack'].researched = true
+        force.print('[technology=space-science-pack] researched.')
+        force.play_sound({ path = 'utility/research_completed' })
     end
 end
 
