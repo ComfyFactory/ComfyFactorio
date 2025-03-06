@@ -18,6 +18,7 @@ local Poll = require 'utils.gui.poll'
 local Score = require 'utils.gui.score'
 local AntiGrief = require 'utils.antigrief'
 local Core = require 'utils.core'
+local RobotLimits = require 'modules.robot_limits'
 local format_number = require 'util'.format_number
 local random = math.random
 local insert = table.insert
@@ -1716,7 +1717,7 @@ end
 
 function Public.on_init()
     Public.reset_game()
-
+    RobotLimits.enable(false)
     local T = Map.Pop_info()
     T.localised_category = 'fish_defender'
     T.main_caption_color = { r = 0.11, g = 0.8, b = 0.44 }
