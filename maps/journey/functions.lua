@@ -506,7 +506,7 @@ function Public.restart_server(journey)
         log('Can force restart only during world selection stages')
         return
     end
-    game.print({ 'journey.cmd_server_restarting' }, { r = 255, g = 255, b = 0 })
+    game.print({ 'journey.cmd_server_restarting' }, { color = { r = 255, g = 255, b = 0 }})
     Public.export_journey(journey, true)
     Server.start_scenario('Journey')
     return
@@ -514,7 +514,7 @@ end
 
 function Public.hard_reset(journey)
     if journey.restart_from_scenario then
-        game.print({ 'journey.cmd_server_restarting' }, { r = 255, g = 255, b = 0 })
+        game.print({ 'journey.cmd_server_restarting' }, { color = { r = 255, g = 255, b = 0 }})
         Public.export_journey(journey, false)
         Server.start_scenario('Journey')
         return

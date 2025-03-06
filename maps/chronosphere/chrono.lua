@@ -28,6 +28,9 @@ function Public.get_map_gen_settings(_)
     -- end
     map_gen_settings.autoplace_settings.entity = {treat_missing_as_default = true}
     map_gen_settings.autoplace_controls['water'] = {frequency = 1, richness = 1, size = 0.1}
+    map_gen_settings.autoplace_controls['rocks'] = nil
+    map_gen_settings.autoplace_controls['trees'] = nil
+    map_gen_settings.autoplace_controls['enemy-base'] = nil
     map_gen_settings.seed = seed
     map_gen_settings.width = 960
     map_gen_settings.height = 960
@@ -260,28 +263,28 @@ function Public.process_jump()
     objective.giftmas_delivered = 0
     objective.jump_countdown_start_time = -1
     objective.dangertimer = 1200
-    game.print({ 'chronosphere.message_jump', objective.chronojumps }, { r = 0.98, g = 0.66, b = 0.22 })
+    game.print({ 'chronosphere.message_jump', objective.chronojumps }, { color = { r = 0.98, g = 0.66, b = 0.22 }})
     Server.to_discord_embed({ 'chronosphere.message_jump', objective.chronojumps }, true)
 
     if objective.chronojumps == Balance.jumps_until_overstay_is_on(Difficulty.get().difficulty_vote_value) then
-        game.print({ 'chronosphere.message_evolve' }, { r = 0.98, g = 0.36, b = 0.22 })
+        game.print({ 'chronosphere.message_evolve' }, { color = { r = 0.98, g = 0.36, b = 0.22 }})
     elseif objective.chronojumps == 7 then
-        game.print({ 'chronosphere.message_quest_research' }, { r = 0.98, g = 0.36, b = 0.22 })
+        game.print({ 'chronosphere.message_quest_research' }, { color = { r = 0.98, g = 0.36, b = 0.22 }})
     elseif objective.chronojumps >= 15 and objective.computermessage == 0 then
-        game.print({ 'chronosphere.message_quest1' }, { r = 0.98, g = 0.36, b = 0.22 })
+        game.print({ 'chronosphere.message_quest1' }, { color = { r = 0.98, g = 0.36, b = 0.22 }})
         objective.computermessage = 1
         game.play_sound { path = 'utility/new_objective', volume_modifier = 0.85 }
     elseif objective.chronojumps >= 20 and objective.computermessage == 2 then
-        game.print({ 'chronosphere.message_quest3' }, { r = 0.98, g = 0.36, b = 0.22 })
+        game.print({ 'chronosphere.message_quest3' }, { color = { r = 0.98, g = 0.36, b = 0.22 }})
         objective.computermessage = 3
         game.play_sound { path = 'utility/new_objective', volume_modifier = 0.85 }
     elseif objective.chronojumps >= 25 and objective.computermessage == 4 then
-        game.print({ 'chronosphere.message_quest5' }, { r = 0.98, g = 0.36, b = 0.22 })
+        game.print({ 'chronosphere.message_quest5' }, { color = { r = 0.98, g = 0.36, b = 0.22 }})
         objective.computermessage = 5
         game.play_sound { path = 'utility/new_objective', volume_modifier = 0.85 }
     end
     if (objective.passivetimer - 180) * objective.passive_chronocharge_rate > objective.chronochargesneeded * 0.75 and objective.chronojumps >= Balance.jumps_until_overstay_is_on(Difficulty.get().difficulty_vote_value) then
-        game.print({ 'chronosphere.message_overstay' }, { r = 0.98, g = 0.36, b = 0.22 })
+        game.print({ 'chronosphere.message_overstay' }, { color = { r = 0.98, g = 0.36, b = 0.22 }})
     end
     if objective.world.id == 2 and objective.world.variant.id == 2 then
         check_nuke_silos()
@@ -348,7 +351,7 @@ function Public.post_jump()
         objective.locomotive_cargo[1].insert({ name = 'space-science-pack', count = 1000 })
         if objective.looted_nukes > 0 then
             objective.locomotive_cargo[1].insert({ name = 'atomic-bomb', count = objective.looted_nukes })
-            game.print({ 'chronosphere.message_fishmarket3' }, { r = 0.98, g = 0.66, b = 0.22 })
+            game.print({ 'chronosphere.message_fishmarket3' }, { color = { r = 0.98, g = 0.66, b = 0.22 }})
         end
         objective.chronochargesneeded = 200000000
     elseif objective.world.id == 2 and objective.world.variant.id == 2 then
@@ -390,15 +393,15 @@ end
 function Public.message_on_arrival()
     local objective = Chrono_table.get_table()
     local world = objective.world
-    game.print({ 'chronosphere.map_jump', world.variant.name, world.ores.name, world.dayspeed.name }, { r = 0.98, g = 0.66, b = 0.22 })
+    game.print({ 'chronosphere.map_jump', world.variant.name, world.ores.name, world.dayspeed.name }, { color = { r = 0.98, g = 0.66, b = 0.22 }})
     Server.to_discord_embed({ 'chronosphere.map_jump', world.variant.name, world.ores.name, world.dayspeed.name }, true)
     if world.id == 4 then
-        game.print({ 'chronosphere.message_choppy' }, { r = 0.98, g = 0.66, b = 0.22 })
+        game.print({ 'chronosphere.message_choppy' }, { color = { r = 0.98, g = 0.66, b = 0.22 }})
     elseif world.id == 1 and world.variant.id == 11 then
         game.print({ 'chronosphere.message_lava' }, { r = 0.98, g = 0.66, b = 0.22 })
     elseif world.id == 7 then
-        game.print({ 'chronosphere.message_fishmarket1' }, { r = 0.98, g = 0.66, b = 0.22 })
-        game.print({ 'chronosphere.message_fishmarket2' }, { r = 0.98, g = 0.66, b = 0.22 })
+        game.print({ 'chronosphere.message_fishmarket1' }, { color = { r = 0.98, g = 0.66, b = 0.22 }})
+        game.print({ 'chronosphere.message_fishmarket2' }, { color = { r = 0.98, g = 0.66, b = 0.22 }})
     end
 end
 

@@ -292,7 +292,7 @@ function Public.danger_silo(entity)
         if objective.dangers and #objective.dangers >= 1 then
             for i = 1, #objective.dangers, 1 do
                 if entity == objective.dangers[i].silo then
-                    game.print({ 'chronosphere.message_silo', Balance.nukes_looted_per_silo(Difficulty.get().difficulty_vote_value) }, { r = 0.98, g = 0.66, b = 0.22 })
+                    game.print({ 'chronosphere.message_silo', Balance.nukes_looted_per_silo(Difficulty.get().difficulty_vote_value) }, { color = { r = 0.98, g = 0.66, b = 0.22 }})
                     objective.dangers[i].destroyed = true
                     objective.dangers[i].silo = nil
                     objective.dangers[i].speaker.destroy()
@@ -444,7 +444,7 @@ end
 function Public.initiate_jump_countdown()
     local objective = Chrono_table.get_table()
     objective.jump_countdown_start_time = objective.passivetimer
-    game.print({ 'chronosphere.message_jump180' }, { r = 0.98, g = 0.66, b = 0.22 })
+    game.print({ 'chronosphere.message_jump180' }, { color = { r = 0.98, g = 0.66, b = 0.22 }})
 end
 
 function Public.render_train_hp()

@@ -6,37 +6,37 @@ local function scenario(p, parameter)
     local objective = Chrono_table.get_table()
     if parameter == 'resetmap' then
         if objective.restart_confirm == 'resetmap' then
-            game.print({'chronosphere.cmd_game_restarting'}, Color.warning)
+            game.print({'chronosphere.cmd_game_restarting'}, { color = Color.warning })
             objective.game_lost = true
             script.raise_event(Chrono_table.events['reset_map'], {})
             return
         else
-            p({'chronosphere.cmd_reset_map_confirm'}, Color.warning)
+            p({'chronosphere.cmd_reset_map_confirm'}, { color = Color.warning })
             objective.restart_confirm = 'resetmap'
             return
         end
     elseif parameter == 'hardreset' then
         if objective.restart_hard then
-            p({'chronosphere.cmd_hardreset_disabled'}, Color.success)
+            p({'chronosphere.cmd_hardreset_disabled'}, { color = Color.success })
             objective.restart_hard = false
             return
         else
-            p({'chronosphere.cmd_hardreset_enabled'}, Color.success)
+            p({'chronosphere.cmd_hardreset_enabled'}, { color = Color.success })
             objective.restart_hard = true
             return
         end
     elseif parameter == 'hardresetnow' then
         if objective.restart_confirm == 'hardreset' then
-            game.print({'chronosphere.cmd_server_restarting'}, Color.warning)
+            game.print({'chronosphere.cmd_server_restarting'}, { color = Color.warning })
             Server.start_scenario('Chronosphere')
             return
         else
-            p({'chronosphere.cmd_hardreset_confirm'}, Color.warning)
+            p({'chronosphere.cmd_hardreset_confirm'}, { color = Color.warning })
             objective.restart_confirm = 'hardreset'
             return
         end
     else
-        p({'chronosphere.command_scenario'}, Color.info)
+        p({'chronosphere.command_scenario'}, { color = Color.info })
         objective.restart_confirm = nil
     end
 end

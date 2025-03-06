@@ -14,18 +14,18 @@ local function check_win()
                 local removed_fish = inv.remove({name = 'raw-fish', count = countfish})
                 objective.mainscore = objective.mainscore + removed_fish
                 if enemies > 0 then
-                    game.print({'chronosphere.message_not_won_yet', enemies}, {r = 0.98, g = 0.66, b = 0.22})
+                    game.print({'chronosphere.message_not_won_yet', enemies}, { color = { r = 0.98, g = 0.66, b = 0.22 }})
                 else
                     if not objective.game_reset_tick then
                         objective.game_reset_tick = game.tick + 18000
                         objective.game_won = true
                         objective.chronocharges = 200000000 - 300
                         game.play_sound {path = 'utility/game_won', volume_modifier = 0.85}
-                        game.print({'chronosphere.message_game_won1'}, {r = 0.98, g = 0.66, b = 0.22})
-                        game.print({'chronosphere.message_game_won3'}, {r = 0, g = 0.98, b = 0})
+                        game.print({'chronosphere.message_game_won1'}, { color = { r = 0.98, g = 0.66, b = 0.22 }})
+                        game.print({'chronosphere.message_game_won3'}, { color = { r = 0, g = 0.98, b = 0 }})
                         Server.to_discord_embed({'chronosphere.message_game_won1'}, true)
                     else
-                        game.print({'chronosphere.message_fish_added', objective.mainscore}, {r = 0.02, g = 0.86, b = 0.02})
+                        game.print({'chronosphere.message_fish_added', objective.mainscore}, { color = { r = 0.02, g = 0.86, b = 0.02 }})
                     end
                 end
             end
@@ -308,7 +308,7 @@ local function process_upgrade(index)
         objective.computermessage = 4
     elseif index == 15 then
         if objective.upgrades[15] == 10 then
-            game.print({'chronosphere.message_quest6'}, {r = 0.98, g = 0.66, b = 0.22})
+            game.print({'chronosphere.message_quest6'}, { color = { r = 0.98, g = 0.66, b = 0.22 }})
         end
     elseif index == 16 then
         refund_spidertrons()
@@ -371,7 +371,7 @@ local function check_single_upgrade(index, coin_scaling)
             objective.research_tokens[token.type] = objective.research_tokens[token.type] - token.count
         end
         objective.upgrades[index] = objective.upgrades[index] + 1
-        game.print(upgrade.message, {r = 0.98, g = 0.66, b = 0.22})
+        game.print(upgrade.message, { color = { r = 0.98, g = 0.66, b = 0.22 }})
         process_upgrade(index)
     end
 end
@@ -410,7 +410,7 @@ function Public.trigger_poison()
         objective.poisontimeout = 120
         local objs = {objective.locomotive, objective.locomotive_cargo[1], objective.locomotive_cargo[2], objective.locomotive_cargo[3]}
         local surface = objective.surface
-        game.print({'chronosphere.message_poison_defense'}, {r = 0.98, g = 0.66, b = 0.22})
+        game.print({'chronosphere.message_poison_defense'}, { color = { r = 0.98, g = 0.66, b = 0.22 }})
         Server.to_discord_embed({'chronosphere.message_poison_defense'}, true)
         for i = 1, 4, 1 do
             surface.create_entity({name = 'poison-capsule', position = objs[i].position, force = 'player', target = objs[i], speed = 1})
