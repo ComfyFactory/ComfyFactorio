@@ -119,6 +119,7 @@ local function upgrade_out_signals()
     local positions = {{-14, -62}, {13, -62}, {-14, 66}, {13, 66}}
     for i = 1, 4, 1 do
         local e = game.surfaces['cargo_wagon'].create_entity({name = 'constant-combinator', position = positions[i], force = 'player'})
+        e.combinator_description = 'Automatically generated signals based on items in the train wagon'
         e.destructible = false
         e.minable = false
         objective.outcombinators[i] = e

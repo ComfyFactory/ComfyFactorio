@@ -61,15 +61,15 @@ function Public.danger_event(surface, left_top)
             position = {x = left_top.x + 11, y = left_top.y + 11},
             force = 'player',
             create_build_effect_smoke = false,
-            parameters = {playback_volume = 0.6, playback_globally = true, allow_polyphony = false},
+            parameters = {playback_volume = 0.6, playback_mode = 'global', allow_polyphony = false},
             alert_parameters = {show_alert = true, show_on_map = true, icon_signal_id = {type = 'item', name = 'atomic-bomb'}, alert_message = 'Nuclear missile silo detected!'}
         }
     )
     combinator.get_wire_connector(defines.wire_connector_id.circuit_green, true).connect_to(speaker.get_wire_connector(defines.wire_connector_id.circuit_green, true), false)
     local rules = combinator.get_or_create_control_behavior()
     local rules2 = speaker.get_or_create_control_behavior()
-    rules.set_signal(1, {signal = {type = 'virtual', name = 'signal-A'}, count = 1})
-    rules2.circuit_condition = {condition = {first_signal = {type = 'virtual', name = 'signal-A'}, second_constant = 0, comparator = '>'}}
+    rules.get_section(1).set_slot(1, {value = {type = 'virtual', name = 'signal-A', comparator = '=', quality = 'normal'}, min = 1})
+    rules2.circuit_condition = {first_signal = {type = 'virtual', name = 'signal-A'}, second_constant = 0, comparator = '>'}
     rules2.circuit_parameters = {signal_value_is_pitch = false, instrument_id = 0, note_id = 6}
     local solar = surface.create_entity({name = 'solar-panel', position = {x = left_top.x + 14, y = left_top.y + 10}, force = 'scrapyard', create_build_effect_smoke = false})
     local acu = surface.create_entity({name = 'accumulator', position = {x = left_top.x + 14, y = left_top.y + 8}, force = 'scrapyard', create_build_effect_smoke = false})

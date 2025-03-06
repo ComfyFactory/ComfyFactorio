@@ -320,13 +320,13 @@ end
 
 function Public.upgrade11()
     local upgrade = {
-        name = { 'chronosphere.upgrade_fusion' },
+        name = { 'chronosphere.upgrade_fission' },
         sprite = 'recipe/fission-reactor-equipment',
         max_level = 999,
         type = 'player',
         enabled = true,
-        message = { 'chronosphere.upgrade_fusion_message' },
-        tooltip = { 'chronosphere.upgrade_fusion_tooltip' },
+        message = { 'chronosphere.upgrade_fission_message' },
+        tooltip = { 'chronosphere.upgrade_fission_tooltip' },
         jump_limit = 24,
         cost = {
             item1 = { name = 'low-density-structure', tt = 'item-name', sprite = 'item/low-density-structure', count = 70 },
