@@ -3,6 +3,7 @@ local Balance = require 'maps.chronosphere.balance'
 local Difficulty = require 'modules.difficulty_vote'
 local MFunctions = require 'maps.chronosphere.world_functions'
 local Server = require 'utils.server'
+local FT = require 'utils.functions.flying_texts'
 local Public = {}
 
 local math_random = math.random
@@ -474,14 +475,7 @@ function Public.laser_defense()
     end
     for i = 1, math.min(objective.upgrades[22], #enemies), 1 do
         if objective.laser_battery.energy < 110000 then
-            surface.create_entity(
-                {
-                    name = 'flying-text',
-                    position = objective.locomotive.position,
-                    text = 'Laser: Low Power',
-                    color = {r = 0.98, g = 0, b = 0}
-                }
-            )
+            FT.flying_text(nil, surface, objective.locomotive.position, 'Laser: Low Power', {r = 0.98, g = 0, b = 0})
             break
         end
         local enemy = enemies[i]
