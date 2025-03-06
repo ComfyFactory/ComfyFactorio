@@ -26,11 +26,13 @@ function Public.get_map_gen_settings(_)
     --         }
     --     }
     -- end
+    map_gen_settings.autoplace_settings.entity = {treat_missing_as_default = true}
+    map_gen_settings.autoplace_controls['water'] = {frequency = 1, richness = 1, size = 0.1}
     map_gen_settings.seed = seed
     map_gen_settings.width = 960
     map_gen_settings.height = 960
     map_gen_settings.starting_area = 1
-    map_gen_settings.cliff_settings = { name = 'cliff', cliff_elevation_interval = 0, cliff_elevation_0 = 0, cliff_smoothing = 0.5, richness = 0 }
+    map_gen_settings.cliff_settings = { control = 'nauvis_cliff', name = 'cliff', cliff_elevation_interval = 0, cliff_elevation_0 = 0, cliff_smoothing = 0.5, richness = 0 }
     map_gen_settings.default_enable_all_autoplace_controls = false
     return map_gen_settings
 end
@@ -377,7 +379,7 @@ function Public.post_jump()
 
     if objective.chronojumps == 1 then
         if difficulty < 1 then
-            game.forces.player.technologies['fusion-reactor-equipment'].enabled = true
+            game.forces.player.technologies['fission-reactor-equipment'].enabled = true
             game.forces.player.technologies['power-armor-mk2'].enabled = true
         end
     end
@@ -444,7 +446,7 @@ function Public.setup_world(surface)
     local moisture = world.variant.moisture
     if moisture ~= 0 then
         local mgs = surface.map_gen_settings
-        mgs.property_expression_names['control-setting:moisture:bias'] = moisture
+        mgs.property_expression_names['control:moisture:bias'] = moisture
         surface.map_gen_settings = mgs
     end
     if world.id == 1 and world.variant.id == 11 then --lava planet

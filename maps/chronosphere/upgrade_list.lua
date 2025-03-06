@@ -456,7 +456,7 @@ end
 function Public.upgrade17(coin_scaling)
     local objective = Chrono_table.get_table()
     local upgrade = {
-        name = { 'chronosphere.upgrade_nukeshied' },
+        name = { 'chronosphere.upgrade_nukeshield' },
         sprite = 'item/rocket',
         max_level = 1,
         type = 'quest',

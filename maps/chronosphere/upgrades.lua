@@ -77,6 +77,8 @@ local function upgrade_water()
     local positions = {{28, 66}, {28, -62}, {-29, 66}, {-29, -62}}
     for i = 1, 4, 1 do
         local e = game.surfaces['cargo_wagon'].create_entity({name = 'offshore-pump', position = positions[i], force = 'player'})
+        if not e then return end
+        e.fluidbox.set_filter(1, {name = 'water'})
         e.destructible = false
         e.minable = false
     end
@@ -158,11 +160,11 @@ local function upgrade_storage()
                 }
             elseif objective.upgrades[9] == 4 then
                 chests[#chests + 1] = {
-                    entity = {name = 'logistic-chest-storage', position = {x = positions.x[1], y = positions.y[ii] + i}, force = 'player', fast_replace = true, spill = false},
+                    entity = {name = 'storage-chest', position = {x = positions.x[1], y = positions.y[ii] + i}, force = 'player', fast_replace = true, spill = false},
                     old = 'steel'
                 }
                 chests[#chests + 1] = {
-                    entity = {name = 'logistic-chest-storage', position = {x = positions.x[2], y = positions.y[ii] + i}, force = 'player', fast_replace = true, spill = false},
+                    entity = {name = 'storage-chest', position = {x = positions.x[2], y = positions.y[ii] + i}, force = 'player', fast_replace = true, spill = false},
                     old = 'steel'
                 }
             end

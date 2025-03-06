@@ -49,7 +49,7 @@ local function reward_ores(amount, mined_loot, surface, player, entity)
         end
         if amount > 0 then
             if amount < 5 then
-                surface.spill_item_stack(entity.position, { name = mined_loot, count = amount }, true)
+                surface.spill_item_stack({position = entity.position, stack = { name = mined_loot, count = amount }, enable_looted = true})
             else
                 local e = surface.create_entity { name = 'item-on-ground', position = entity.position, stack = { name = mined_loot, count = amount } }
                 if e and e.valid then
