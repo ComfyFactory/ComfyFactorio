@@ -165,19 +165,15 @@ local function transfer_signals(index, inventory)
     if not objective.outcombinators then
         return
     end
-    local counts = inventory.get_contents()
+    local items = inventory.get_contents()
     local combi = objective.outcombinators[index].get_or_create_control_behavior()
-    local i = 1
-    for name, count in pairs(counts) do
-        if i > 20 then
-            break
-        end
-        combi.set_signal(i, {signal = {type = 'item', name = name}, count = count})
-        i = i + 1
+    for _, section in pairs(combi.sections) do
+        combi.remove_section(section.index)
     end
-    if i < 20 then
-        for j = i, 20, 1 do
-            combi.set_signal(j, nil)
+    local section = combi.add_section()
+    if #items > 0 then
+        for i = 1, #items, 1 do
+            section.set_slot(i, {value = {type = 'item', name = items[i].name, quality = items[i].quality}, min = items[i].count, max = items[i].count})
         end
     end
 end

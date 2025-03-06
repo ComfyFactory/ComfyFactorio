@@ -123,7 +123,7 @@ local function treasure_chest_loot(difficulty, world)
         {1, 0.2, 1.2, true, 'battery', 50, 150},
         {5, 0.2, 1.8, true, 'explosive-rocket', 16, 32},
         {4, 0.2, 1.4, true, 'advanced-circuit', 30, 200},
-        {3, 0.2, 1.8, true, 'stack-inserter', 4, 8},
+        {3, 0.2, 1.8, true, 'bulk-inserter', 4, 8},
         {3, 0.2, 1.4, true, 'big-electric-pole', 4, 8},
         {2, 0.3, 1, true, 'rocket-fuel', 4, 10},
         {5, 0.4, 0.7, true, 'cannon-shell', 16, 32},
