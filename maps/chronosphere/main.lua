@@ -23,6 +23,7 @@ local Reset = require 'utils.functions.soft_reset'
 local Tick_functions = require 'maps.chronosphere.tick_functions'
 local Upgrades = require 'maps.chronosphere.upgrades'
 local Worlds = require 'maps.chronosphere.world_list'
+local RobotLimits = require 'modules.robot_limits'
 require 'maps.chronosphere.config_tab'
 require 'maps.chronosphere.commands'
 
@@ -279,6 +280,7 @@ local function on_init()
     mgs.height = 16
     game.surfaces['nauvis'].map_gen_settings = mgs
     game.surfaces['nauvis'].clear()
+    RobotLimits.enable(false)
     reset_map()
 end
 
