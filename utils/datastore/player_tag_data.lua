@@ -76,6 +76,7 @@ Commands.new('remove-tag', 'Removes your custom tag.')
     :callback(
         function (player)
             set_data(tag_dataset, player.name, nil)
+            player.tag = ''
             player.print('Your tag has been removed.')
         end
     )
