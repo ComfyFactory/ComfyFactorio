@@ -3,6 +3,7 @@ local Balance = require 'maps.chronosphere.balance'
 local Difficulty = require 'modules.difficulty_vote'
 local MFunctions = require 'maps.chronosphere.world_functions'
 local Server = require 'utils.server'
+local FT = require 'utils.functions.flying_texts'
 local Public = {}
 
 local math_random = math.random
@@ -18,13 +19,13 @@ function Public.realtime_events()
 
     if objective.world.id == 2 and objective.world.variant.id == 2 then
         if objective.passivetimer == 10 then
-            game.print({'chronosphere.message_danger1'}, {r = 0.98, g = 0.66, b = 0.22})
-            game.print({'chronosphere.message_danger2'}, {r = 0.98, g = 0.66, b = 0.22})
+            game.print({'chronosphere.message_danger1'}, { color = { r = 0.98, g = 0.66, b = 0.22 }})
+            game.print({'chronosphere.message_danger2'}, { color = { r = 0.98, g = 0.66, b = 0.22 }})
         elseif objective.passivetimer == 25 then
-            game.print({'chronosphere.message_danger3'}, {r = 0.98, g = 0, b = 0})
+            game.print({'chronosphere.message_danger3'}, { color = { r = 0.98, g = 0, b = 0 }})
         elseif objective.passivetimer == 30 then
-            game.print({'chronosphere.message_danger4'}, {r = 0.98, g = 0, b = 0})
-            game.print({'chronosphere.message_danger5'}, {r = 0.98, g = 0.66, b = 0.22})
+            game.print({'chronosphere.message_danger4'}, { color = { r = 0.98, g = 0, b = 0 }})
+            game.print({'chronosphere.message_danger5'}, { color = { r = 0.98, g = 0.66, b = 0.22 }})
         end
     end
 
@@ -32,7 +33,7 @@ function Public.realtime_events()
         objective.jump_countdown_start_time == -1 and objective.passivetimer == math_floor(objective.chronochargesneeded * 0.50 / objective.passive_chronocharge_rate) and
             objective.chronojumps >= Balance.jumps_until_overstay_is_on(Difficulty.get().difficulty_vote_value)
      then
-        game.print({'chronosphere.message_rampup50'}, {r = 0.98, g = 0.66, b = 0.22})
+        game.print({'chronosphere.message_rampup50'}, { color = { r = 0.98, g = 0.66, b = 0.22 }})
     end
 
     if objective.game_lost then
@@ -40,11 +41,11 @@ function Public.realtime_events()
     end
     if objective.jump_countdown_start_time ~= -1 then
         if objective.passivetimer == objective.jump_countdown_start_time + 180 - 60 then
-            game.print({'chronosphere.message_jump60'}, {r = 0.98, g = 0.66, b = 0.22})
+            game.print({'chronosphere.message_jump60'}, { color = { r = 0.98, g = 0.66, b = 0.22 }})
         elseif objective.passivetimer == objective.jump_countdown_start_time + 180 - 30 then
-            game.print({'chronosphere.message_jump30'}, {r = 0.98, g = 0.66, b = 0.22})
+            game.print({'chronosphere.message_jump30'}, { color = { r = 0.98, g = 0.66, b = 0.22 }})
         elseif objective.passivetimer >= objective.jump_countdown_start_time + 180 - 10 and objective.jump_countdown_start_time + 180 - objective.passivetimer > 0 then
-            game.print({'chronosphere.message_jump10', objective.jump_countdown_start_time + 180 - objective.passivetimer}, {r = 0.98, g = 0.66, b = 0.22})
+            game.print({'chronosphere.message_jump10', objective.jump_countdown_start_time + 180 - objective.passivetimer}, { color = { r = 0.98, g = 0.66, b = 0.22 }})
         end
     end
 end
@@ -298,12 +299,12 @@ local function launch_nukes()
                         source = fake_shooter
                     }
                 )
-                game.print({'chronosphere.message_nuke'}, {r = 0.98, g = 0, b = 0})
+                game.print({'chronosphere.message_nuke'}, { color = { r = 0.98, g = 0, b = 0 }})
                 nukes_launched = nukes_launched + 1
             end
         end
         if max_range == 100 and nukes_launched > 0 then
-            game.print({'chronosphere.message_nuke_intercepted'}, {r = 0, g = 0.98, b = 0})
+            game.print({'chronosphere.message_nuke_intercepted'}, { color = { r = 0, g = 0.98, b = 0 }})
             objective.upgrades[17] = 0
         end
     end
@@ -385,7 +386,7 @@ function Public.offline_players()
                                 inv.insert(items[item])
                             end
                         end
-                        game.print({'chronosphere.message_accident'}, {r = 0.98, g = 0.66, b = 0.22})
+                        game.print({'chronosphere.message_accident'}, { color = { r = 0.98, g = 0.66, b = 0.22 }})
                         if e and e.valid then
                             e.die('neutral')
                         end
@@ -474,14 +475,7 @@ function Public.laser_defense()
     end
     for i = 1, math.min(objective.upgrades[22], #enemies), 1 do
         if objective.laser_battery.energy < 110000 then
-            surface.create_entity(
-                {
-                    name = 'flying-text',
-                    position = objective.locomotive.position,
-                    text = 'Laser: Low Power',
-                    color = {r = 0.98, g = 0, b = 0}
-                }
-            )
+            FT.flying_text(nil, surface, objective.locomotive.position, 'Laser: Low Power', {r = 0.98, g = 0, b = 0})
             break
         end
         local enemy = enemies[i]
@@ -496,7 +490,7 @@ end
 function Public.message_game_won()
     local objective = Chrono_table.get_table()
     objective.game_lost = true
-    game.print({'chronosphere.message_game_won2', objective.mainscore}, {r = 0.98, g = 0.66, b = 0.22})
+    game.print({'chronosphere.message_game_won2', objective.mainscore}, { color = { r = 0.98, g = 0.66, b = 0.22 }})
     Server.to_discord_embed({'chronosphere.message_game_won2', objective.mainscore}, true)
 end
 
@@ -538,7 +532,7 @@ function Public.giftmas_spawn()
         }
         MFunctions.spawn_treasures(surface, treasures)
         objective.giftmas_delivered = objective.giftmas_delivered + 1
-        game.print({'chronosphere.message_giftmas_spawned', pos.x, pos.y, surface.name}, {r = 0.98, g = 0.66, b = 0.22})
+        game.print({'chronosphere.message_giftmas_spawned', pos.x, pos.y, surface.name}, { color = { r = 0.98, g = 0.66, b = 0.22 }})
     end
 end
 

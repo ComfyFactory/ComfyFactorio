@@ -317,7 +317,7 @@ function Public.on_pre_player_died(event)
         local objective = Chrono_table.get_table()
         objective.poison_mastery_unlocked = objective.poison_mastery_unlocked + 1
         if objective.poison_mastery_unlocked == 10 then
-            game.print({ 'chronosphere.message_poison_mastery_unlock' }, { r = 0.98, g = 0.66, b = 0.22 })
+            game.print({ 'chronosphere.message_poison_mastery_unlock' }, { color = { r = 0.98, g = 0.66, b = 0.22 }})
         end
     end
 end

@@ -247,7 +247,7 @@ function Public.determine_world(optional_choice)
     if objective.upgrades[13] == 1 and ores == ore_richness_variants['vpoor'] then
         ores = ore_richness_variants['poor']
     end
-    if objective.upgrades[14] == 1 and (ore_richness_variants['vpoor'] or ore_richness_variants['poor']) then
+    if objective.upgrades[14] == 1 and (ores == ore_richness_variants['vpoor'] or ores == ore_richness_variants['poor']) then
         ores = ore_richness_variants['normal']
     end
     objective.world = {
