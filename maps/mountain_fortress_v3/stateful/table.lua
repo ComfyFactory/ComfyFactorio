@@ -17,7 +17,8 @@ local Beam = require 'modules.render_beam'
 local Discord = require 'utils.discord'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 
-local this = {
+local this =
+{
     enabled = false,
     rounds_survived = 0,
     current_streak = 0,
@@ -49,7 +50,8 @@ Global.register(
 
 local damage_types = { 'physical', 'explosion', 'laser' }
 
-local buff_to_string = {
+local buff_to_string =
+{
     ['starting_items'] = 'Starting items',
     ['character_running_speed_modifier'] = 'Movement',
     ['manual_mining_speed_modifier'] = 'Mining',
@@ -121,16 +123,19 @@ local function notify_season_over_to_discord()
         end
     end
 
-    local text = {
+    local text =
+    {
         title = 'Season: ' .. stateful.season .. ' is over!',
         description = 'Game statistics from the season is below',
         color = 'success',
-        field1 = {
+        field1 =
+        {
             text1 = 'Rounds survived:',
             text2 = stateful.rounds_survived,
             inline = 'false'
         },
-        field2 = {
+        field2 =
+        {
             text1 = 'Buffs granted:',
             text2 = buffs,
             inline = 'false'
@@ -144,7 +149,8 @@ local function notify_season_over_to_discord()
 end
 
 local function get_random_buff(fetch_all, only_force)
-    local buffs = {
+    local buffs =
+    {
         {
             name = 'character_running_speed_modifier',
             discord = 'Running speed modifier - run faster!',
@@ -243,7 +249,8 @@ local function get_random_buff(fetch_all, only_force)
             modifier = 'starting_items',
             limit = 200,
             add_per_buff = 50,
-            items = {
+            items =
+            {
                 { name = 'sulfur', count = 50 }
             }
         },
@@ -253,7 +260,8 @@ local function get_random_buff(fetch_all, only_force)
             modifier = 'starting_items',
             limit = 200,
             add_per_buff = 50,
-            items = {
+            items =
+            {
                 { name = 'plastic-bar', count = 100 }
             }
         },
@@ -263,8 +271,9 @@ local function get_random_buff(fetch_all, only_force)
             modifier = 'starting_items',
             limit = 1000,
             add_per_buff = 100,
-            items = {
-                { name = 'iron-plate',   count = 100 },
+            items =
+            {
+                { name = 'iron-plate', count = 100 },
                 { name = 'copper-plate', count = 100 }
             }
         },
@@ -274,8 +283,9 @@ local function get_random_buff(fetch_all, only_force)
             modifier = 'starting_items',
             limit = 1000,
             add_per_buff = 200,
-            items = {
-                { name = 'iron-plate',   count = 200 },
+            items =
+            {
+                { name = 'iron-plate', count = 200 },
                 { name = 'copper-plate', count = 200 }
             }
         },
@@ -285,8 +295,9 @@ local function get_random_buff(fetch_all, only_force)
             modifier = 'starting_items',
             limit = 1000,
             add_per_buff = 400,
-            items = {
-                { name = 'iron-plate',   count = 400 },
+            items =
+            {
+                { name = 'iron-plate', count = 400 },
                 { name = 'copper-plate', count = 400 }
             }
         },
@@ -296,9 +307,10 @@ local function get_random_buff(fetch_all, only_force)
             modifier = 'starting_items',
             limit = 1,
             add_per_buff = 1,
-            items = {
+            items =
+            {
                 { name = 'rocket-launcher', count = 1 },
-                { name = 'rocket',          count = 100 }
+                { name = 'rocket', count = 100 }
             }
         },
         {
@@ -307,8 +319,9 @@ local function get_random_buff(fetch_all, only_force)
             modifier = 'starting_items',
             limit = 1,
             add_per_buff = 1,
-            items = {
-                { name = 'modular-armor',         count = 1 },
+            items =
+            {
+                { name = 'modular-armor', count = 1 },
                 { name = 'solar-panel-equipment', count = 2 }
             }
         },
@@ -318,9 +331,10 @@ local function get_random_buff(fetch_all, only_force)
             modifier = 'starting_items',
             limit = 2,
             add_per_buff = 1,
-            items = {
+            items =
+            {
                 { name = 'steel-furnace', count = 4 },
-                { name = 'solid-fuel',    count = 100 }
+                { name = 'solid-fuel', count = 100 }
             }
         },
         {
@@ -329,7 +343,8 @@ local function get_random_buff(fetch_all, only_force)
             modifier = 'starting_items',
             limit = 25,
             add_per_buff = 2,
-            items = {
+            items =
+            {
                 { name = 'assembling-machine-2', count = 2 }
             }
         },
@@ -339,7 +354,8 @@ local function get_random_buff(fetch_all, only_force)
             modifier = 'starting_items',
             limit = 25,
             add_per_buff = 2,
-            items = {
+            items =
+            {
                 { name = 'assembling-machine-3', count = 2 }
             }
         },
@@ -349,7 +365,8 @@ local function get_random_buff(fetch_all, only_force)
             modifier = 'starting_items',
             limit = 20,
             add_per_buff = 2,
-            items = {
+            items =
+            {
                 { name = 'repair-pack', count = 5 }
             }
         },
@@ -365,7 +382,8 @@ local function get_random_buff(fetch_all, only_force)
             modifier = 'starting_items',
             limit = 40,
             add_per_buff = 20,
-            items = {
+            items =
+            {
                 { name = 'crude-oil-barrel', count = 20 }
             }
         },
@@ -375,7 +393,8 @@ local function get_random_buff(fetch_all, only_force)
             modifier = 'starting_items',
             limit = 200,
             add_per_buff = 100,
-            items = {
+            items =
+            {
                 { name = 'steel-plate', count = 100 }
             }
         },
@@ -385,7 +404,8 @@ local function get_random_buff(fetch_all, only_force)
             modifier = 'starting_items',
             limit = 200,
             add_per_buff = 10,
-            items = {
+            items =
+            {
                 { name = 'automation-science-pack', count = 10 }
             }
         },
@@ -395,7 +415,8 @@ local function get_random_buff(fetch_all, only_force)
             modifier = 'starting_items',
             limit = 4,
             add_per_buff = 1,
-            items = {
+            items =
+            {
                 { name = 'personal-roboport-equipment', count = 1 }
             }
         },
@@ -405,7 +426,8 @@ local function get_random_buff(fetch_all, only_force)
             modifier = 'tech',
             limit = 1,
             add_per_buff = 1,
-            techs = {
+            techs =
+            {
                 { name = 'power-armor', count = 1 }
             }
         },
@@ -415,7 +437,8 @@ local function get_random_buff(fetch_all, only_force)
             modifier = 'tech',
             limit = 1,
             add_per_buff = 1,
-            techs = {
+            techs =
+            {
                 { name = 'steel-axe', count = 1 }
             }
         },
@@ -425,7 +448,8 @@ local function get_random_buff(fetch_all, only_force)
             modifier = 'tech',
             limit = 1,
             add_per_buff = 1,
-            techs = {
+            techs =
+            {
                 { name = 'military-2', count = 1 }
             }
         },
@@ -562,7 +586,8 @@ local search_corpse_token =
 
             local pos = player.physical_position
             local entities =
-                player.surface.find_entities_filtered {
+                player.surface.find_entities_filtered
+                {
                     area = { { pos.x - 0.5, pos.y - 0.5 }, { pos.x + 0.5, pos.y + 0.5 } },
                     name = 'character-corpse'
                 }
@@ -653,9 +678,10 @@ local killed_enemies_type_token =
                 return true, { 'stateful.enemies_killed_type', this.objectives.killed_enemies_type.damage_type }, { 'stateful.done', format_number(expected, true), format_number(expected, true) }, { 'stateful.generic_tooltip' }, { 'stateful.tooltip_completed' }
             end
 
-            return false, { 'stateful.enemies_killed_type', this.objectives.killed_enemies_type.damage_type }, { 'stateful.not_done', format_number(actual, true), format_number(expected, true) }, { 'stateful.generic_tooltip' }, {
-                'stateful.tooltip_not_completed'
-            }
+            return false, { 'stateful.enemies_killed_type', this.objectives.killed_enemies_type.damage_type }, { 'stateful.not_done', format_number(actual, true), format_number(expected, true) }, { 'stateful.generic_tooltip' },
+                {
+                    'stateful.tooltip_not_completed'
+                }
         end
     )
 
@@ -668,9 +694,10 @@ local handcrafted_items_token =
                 return true, { 'stateful.crafted_items', this.objectives.handcrafted_items.name }, { 'stateful.done', format_number(expected, true), format_number(expected, true) }, { 'stateful.generic_tooltip' }, { 'stateful.tooltip_completed' }
             end
 
-            return false, { 'stateful.crafted_items', this.objectives.handcrafted_items.name }, { 'stateful.not_done', format_number(actual, true), format_number(expected, true) }, { 'stateful.generic_tooltip' }, {
-                'stateful.tooltip_not_completed'
-            }
+            return false, { 'stateful.crafted_items', this.objectives.handcrafted_items.name }, { 'stateful.not_done', format_number(actual, true), format_number(expected, true) }, { 'stateful.generic_tooltip' },
+                {
+                    'stateful.tooltip_not_completed'
+                }
         end
     )
 
@@ -683,9 +710,10 @@ local handcrafted_items_any_token =
                 return true, { 'stateful.crafted_items', this.objectives.handcrafted_items_any.name }, { 'stateful.done', format_number(expected, true), format_number(expected, true) }, { 'stateful.generic_tooltip' }, { 'stateful.tooltip_completed' }
             end
 
-            return false, { 'stateful.crafted_items', this.objectives.handcrafted_items_any.name }, { 'stateful.not_done', format_number(actual, true), format_number(expected, true) }, { 'stateful.generic_tooltip' }, {
-                'stateful.tooltip_not_completed'
-            }
+            return false, { 'stateful.crafted_items', this.objectives.handcrafted_items_any.name }, { 'stateful.not_done', format_number(actual, true), format_number(expected, true) }, { 'stateful.generic_tooltip' },
+                {
+                    'stateful.tooltip_not_completed'
+                }
         end
     )
 
@@ -698,9 +726,10 @@ local launch_item_token =
                 return true, { 'stateful.launch_item', this.objectives.launch_item.name }, { 'stateful.done', format_number(expected, true), format_number(expected, true) }, { 'stateful.generic_tooltip' }, { 'stateful.tooltip_completed' }
             end
 
-            return false, { 'stateful.launch_item', this.objectives.launch_item.name }, { 'stateful.not_done', format_number(actual, true), format_number(expected, true) }, { 'stateful.generic_tooltip' }, {
-                'stateful.tooltip_not_completed'
-            }
+            return false, { 'stateful.launch_item', this.objectives.launch_item.name }, { 'stateful.not_done', format_number(actual, true), format_number(expected, true) }, { 'stateful.generic_tooltip' },
+                {
+                    'stateful.tooltip_not_completed'
+                }
         end
     )
 
@@ -713,9 +742,10 @@ local cast_spell_token =
                 return true, { 'stateful.cast_spell', this.objectives.cast_spell.name }, { 'stateful.done', format_number(expected, true), format_number(expected, true) }, { 'stateful.generic_tooltip' }, { 'stateful.tooltip_completed' }
             end
 
-            return false, { 'stateful.cast_spell', this.objectives.cast_spell.name }, { 'stateful.not_done', format_number(actual, true), format_number(expected, true) }, { 'stateful.generic_tooltip' }, {
-                'stateful.tooltip_not_completed'
-            }
+            return false, { 'stateful.cast_spell', this.objectives.cast_spell.name }, { 'stateful.not_done', format_number(actual, true), format_number(expected, true) }, { 'stateful.generic_tooltip' },
+                {
+                    'stateful.tooltip_not_completed'
+                }
         end
     )
 
@@ -728,9 +758,10 @@ local cast_spell_any_token =
                 return true, { 'stateful.cast_spell', this.objectives.cast_spell_any.name }, { 'stateful.done', format_number(expected, true), format_number(expected, true) }, { 'stateful.generic_tooltip' }, { 'stateful.tooltip_completed' }
             end
 
-            return false, { 'stateful.cast_spell', this.objectives.cast_spell_any.name }, { 'stateful.not_done', format_number(actual, true), format_number(expected, true) }, { 'stateful.generic_tooltip' }, {
-                'stateful.tooltip_not_completed'
-            }
+            return false, { 'stateful.cast_spell', this.objectives.cast_spell_any.name }, { 'stateful.not_done', format_number(actual, true), format_number(expected, true) }, { 'stateful.generic_tooltip' },
+                {
+                    'stateful.tooltip_not_completed'
+                }
         end
     )
 
@@ -802,45 +833,48 @@ local function scale_lin(setting, limit, factor)
 end
 
 local function get_random_items()
-    local items = {
-        { 'advanced-circuit',               scale(225000, 9000000) },
-        { 'copper-cable',                   scale(3000000, 120000000) },
-        { 'copper-plate',                   scale(1500000, 60000000) },
-        { 'electric-engine-unit',           scale(10000, 400000) },
-        { 'electronic-circuit',             scale(1000000, 40000000) },
-        { 'engine-unit',                    scale(20000, 800000) },
-        { 'explosives',                     scale(150000, 6000000) },
-        { 'iron-gear-wheel',                scale(150000, 6000000) },
-        { 'iron-plate',                     scale(2000000, 80000000) },
-        { 'iron-stick',                     scale(75000, 3000000) },
-        { 'processing-unit',                scale(40000, 1600000) },
-        { 'steel-plate',                    scale(200000, 8000000) },
-        { 'rocket',                         scale(25000, 1000000) },
-        { 'explosive-rocket',               scale(25000, 1000000) },
-        { 'slowdown-capsule',               scale(10000, 400000) },
-        { 'laser-turret',                   scale(3000, 120000) },
-        { 'stone-wall',                     scale(20000, 800000) },
-        { 'accumulator',                    scale(5000, 200000) },
-        { 'refined-concrete',               scale(15000, 600000) },
-        { 'uranium-rounds-magazine',        scale(4000, 160000) },
+    local items =
+    {
+        { 'advanced-circuit', scale(225000, 9000000) },
+        { 'copper-cable', scale(3000000, 120000000) },
+        { 'copper-plate', scale(1500000, 60000000) },
+        { 'electric-engine-unit', scale(10000, 400000) },
+        { 'electronic-circuit', scale(1000000, 40000000) },
+        { 'engine-unit', scale(20000, 800000) },
+        { 'explosives', scale(150000, 6000000) },
+        { 'iron-gear-wheel', scale(150000, 6000000) },
+        { 'iron-plate', scale(2000000, 80000000) },
+        { 'iron-stick', scale(75000, 3000000) },
+        { 'processing-unit', scale(40000, 1600000) },
+        { 'steel-plate', scale(200000, 8000000) },
+        { 'rocket', scale(25000, 1000000) },
+        { 'explosive-rocket', scale(25000, 1000000) },
+        { 'slowdown-capsule', scale(10000, 400000) },
+        { 'laser-turret', scale(3000, 120000) },
+        { 'stone-wall', scale(20000, 800000) },
+        { 'accumulator', scale(5000, 200000) },
+        { 'refined-concrete', scale(15000, 600000) },
+        { 'uranium-rounds-magazine', scale(4000, 160000) },
         { 'explosive-uranium-cannon-shell', scale(3000, 120000) },
-        { 'distractor-capsule',             scale(1500, 60000) },
-        { 'cluster-grenade',                scale(4000, 160000) },
-        { 'small-lamp',                     scale(5000, 200000) },
-        { 'uranium-fuel-cell',              scale(2500, 100000) }
+        { 'distractor-capsule', scale(1500, 60000) },
+        { 'cluster-grenade', scale(4000, 160000) },
+        { 'small-lamp', scale(5000, 200000) },
+        { 'uranium-fuel-cell', scale(2500, 100000) }
     }
 
     shuffle(items)
     shuffle(items)
 
-    local container = {
+    local container =
+    {
         [1] = { name = items[1][1], count = items[1][2] },
         [2] = { name = items[2][1], count = items[2][2] },
         [3] = { name = items[3][1], count = items[3][2] }
     }
 
     if this.test_mode then
-        container = {
+        container =
+        {
             [1] = { name = items[1].products[1].name, count = 1 },
             [2] = { name = items[2].products[1].name, count = 1 },
             [3] = { name = items[3].products[1].name, count = 1 }
@@ -851,16 +885,17 @@ local function get_random_items()
 end
 
 local function get_random_item()
-    local items = {
-        { 'efficiency-module',     scale(1000, 400000) },
-        { 'productivity-module',   scale(10000, 400000) },
-        { 'speed-module',          scale(10000, 400000) },
-        { 'efficiency-module-2',   scale(200, 100000) },
+    local items =
+    {
+        { 'efficiency-module', scale(1000, 400000) },
+        { 'productivity-module', scale(10000, 400000) },
+        { 'speed-module', scale(10000, 400000) },
+        { 'efficiency-module-2', scale(200, 100000) },
         { 'productivity-module-2', scale(1000, 100000) },
-        { 'speed-module-2',        scale(1000, 100000) },
-        { 'efficiency-module-3',   scale(50, 30000) },
+        { 'speed-module-2', scale(1000, 100000) },
+        { 'efficiency-module-3', scale(50, 30000) },
         { 'productivity-module-3', scale(500, 30000) },
-        { 'speed-module-3',        scale(500, 30000) }
+        { 'speed-module-3', scale(500, 30000) }
     }
 
     shuffle(items)
@@ -872,41 +907,42 @@ local function get_random_item()
 end
 
 local function get_random_handcrafted_item()
-    local items = {
-        { 'advanced-circuit',               scale(2000, 500000) },
-        { 'copper-cable',                   scale(10000, 500000) },
-        { 'electronic-circuit',             scale(5000, 1000000) },
-        { 'iron-gear-wheel',                scale(50000, 1000000) },
-        { 'iron-stick',                     scale(75000, 3000000) },
-        { 'rocket',                         scale(5000, 1000000) },
-        { 'explosive-rocket',               scale(5000, 1000000) },
-        { 'slowdown-capsule',               scale(2500, 400000) },
-        { 'laser-turret',                   scale(1500, 20000) },
-        { 'stone-wall',                     scale(5000, 800000) },
-        { 'accumulator',                    scale(1000, 200000) },
-        { 'uranium-rounds-magazine',        scale(1000, 60000) },
+    local items =
+    {
+        { 'advanced-circuit', scale(2000, 500000) },
+        { 'copper-cable', scale(10000, 500000) },
+        { 'electronic-circuit', scale(5000, 1000000) },
+        { 'iron-gear-wheel', scale(50000, 1000000) },
+        { 'iron-stick', scale(75000, 3000000) },
+        { 'rocket', scale(5000, 1000000) },
+        { 'explosive-rocket', scale(5000, 1000000) },
+        { 'slowdown-capsule', scale(2500, 400000) },
+        { 'laser-turret', scale(1500, 20000) },
+        { 'stone-wall', scale(5000, 800000) },
+        { 'accumulator', scale(1000, 200000) },
+        { 'uranium-rounds-magazine', scale(1000, 60000) },
         { 'explosive-uranium-cannon-shell', scale(1000, 10000) },
-        { 'distractor-capsule',             scale(1500, 60000) },
-        { 'grenade',                        scale(5000, 200000) },
-        { 'cluster-grenade',                scale(1000, 100000) },
-        { 'small-lamp',                     scale(2500, 200000) },
-        { 'rail',                           scale(5000, 100000) },
-        { 'small-electric-pole',            scale(5000, 100000) },
-        { 'medium-electric-pole',           scale(3500, 80000) },
-        { 'big-electric-pole',              scale(2000, 50000) },
-        { 'transport-belt',                 scale(10000, 100000) },
-        { 'fast-transport-belt',            scale(3000, 50000) },
-        { 'repair-pack',                    scale(10000, 100000) },
-        { 'splitter',                       scale(10000, 100000) },
-        { 'fast-splitter',                  scale(3000, 50000) },
-        { 'inserter',                       scale(3000, 50000) },
-        { 'firearm-magazine',               scale(10000, 200000) },
-        { 'piercing-rounds-magazine',       scale(5000, 100000) },
-        { 'pipe',                           scale(10000, 100000) },
-        { 'pipe-to-ground',                 scale(3000, 50000) },
-        { 'efficiency-module',              scale(100, 50000) },
-        { 'productivity-module',            scale(100, 50000) },
-        { 'speed-module',                   scale(100, 50000) }
+        { 'distractor-capsule', scale(1500, 60000) },
+        { 'grenade', scale(5000, 200000) },
+        { 'cluster-grenade', scale(1000, 100000) },
+        { 'small-lamp', scale(2500, 200000) },
+        { 'rail', scale(5000, 100000) },
+        { 'small-electric-pole', scale(5000, 100000) },
+        { 'medium-electric-pole', scale(3500, 80000) },
+        { 'big-electric-pole', scale(2000, 50000) },
+        { 'transport-belt', scale(10000, 100000) },
+        { 'fast-transport-belt', scale(3000, 50000) },
+        { 'repair-pack', scale(10000, 100000) },
+        { 'splitter', scale(10000, 100000) },
+        { 'fast-splitter', scale(3000, 50000) },
+        { 'inserter', scale(3000, 50000) },
+        { 'firearm-magazine', scale(10000, 200000) },
+        { 'piercing-rounds-magazine', scale(5000, 100000) },
+        { 'pipe', scale(10000, 100000) },
+        { 'pipe-to-ground', scale(3000, 50000) },
+        { 'efficiency-module', scale(100, 50000) },
+        { 'productivity-module', scale(100, 50000) },
+        { 'speed-module', scale(100, 50000) }
     }
 
     shuffle(items)
@@ -918,25 +954,26 @@ local function get_random_handcrafted_item()
 end
 
 local function get_random_spell()
-    local items = {
-        { 'small-biter',             scale(100, 2500) },
-        { 'small-spitter',           scale(100, 2500) },
-        { 'medium-biter',            scale(100, 2500) },
-        { 'medium-spitter',          scale(100, 2500) },
-        { 'shotgun-shell',           scale(100, 2500) },
-        { 'grenade',                 scale(100, 2500) },
-        { 'cluster-grenade',         scale(100, 2500) },
-        { 'cannon-shell',            scale(100, 2500) },
-        { 'explosive-cannon-shell',  scale(100, 2500) },
-        { 'uranium-cannon-shell',    scale(100, 2500) },
-        { 'rocket',                  scale(100, 2500) },
+    local items =
+    {
+        { 'small-biter', scale(100, 2500) },
+        { 'small-spitter', scale(100, 2500) },
+        { 'medium-biter', scale(100, 2500) },
+        { 'medium-spitter', scale(100, 2500) },
+        { 'shotgun-shell', scale(100, 2500) },
+        { 'grenade', scale(100, 2500) },
+        { 'cluster-grenade', scale(100, 2500) },
+        { 'cannon-shell', scale(100, 2500) },
+        { 'explosive-cannon-shell', scale(100, 2500) },
+        { 'uranium-cannon-shell', scale(100, 2500) },
+        { 'rocket', scale(100, 2500) },
         { 'acid-stream-spitter-big', scale(100, 2500) },
-        { 'explosives',              scale(100, 2500) },
-        { 'distractor-capsule',      scale(100, 2500) },
-        { 'defender-capsule',        scale(100, 2500) },
-        { 'destroyer-capsule',       scale(100, 2500) },
-        { 'warp-gate',               scale(100, 2500) },
-        { 'haste',                   scale(100, 2500) }
+        { 'explosives', scale(100, 2500) },
+        { 'distractor-capsule', scale(100, 2500) },
+        { 'defender-capsule', scale(100, 2500) },
+        { 'destroyer-capsule', scale(100, 2500) },
+        { 'warp-gate', scale(100, 2500) },
+        { 'haste', scale(100, 2500) }
     }
 
     shuffle(items)
@@ -949,7 +986,8 @@ end
 
 local function get_random_research_recipe()
     -- scale(10, 20)
-    local research_level_list = {
+    local research_level_list =
+    {
         'laser-weapons-damage-7',
         'stronger-explosives-7',
         'mining-productivity-4',
@@ -967,7 +1005,8 @@ local function get_random_research_recipe()
 end
 
 local function get_random_objectives()
-    local items = {
+    local items =
+    {
         {
             name = 'single_item',
             token = empty_token,
@@ -1036,14 +1075,16 @@ local function get_random_objectives()
     shuffle(items)
 
     if _DEBUG then
-        items[#items + 1] = {
+        items[#items + 1] =
+        {
             name = 'supplies',
             token = empty_token
         }
         return items
     end
 
-    return {
+    return
+    {
         {
             name = 'supplies',
             token = empty_token
@@ -1122,7 +1163,8 @@ local function apply_buffs()
                         force[buff_name] = force[buff_name] + buff.state
 
                         if not this.buffs_collected[buff_name] then
-                            this.buffs_collected[buff_name] = {
+                            this.buffs_collected[buff_name] =
+                            {
                                 name = 'Extra Reach',
                                 count = buff.state,
                                 discord = buff.discord,
@@ -1137,7 +1179,8 @@ local function apply_buffs()
                     force[buff.name] = force[buff.name] + buff.state
 
                     if not this.buffs_collected[buff.name] then
-                        this.buffs_collected[buff.name] = {
+                        this.buffs_collected[buff.name] =
+                        {
                             count = buff.state,
                             discord = buff.discord,
                             force = true
@@ -1155,7 +1198,8 @@ local function apply_buffs()
                     end
 
                     if not this.buffs_collected['locomotive'] then
-                        this.buffs_collected['locomotive'] = {
+                        this.buffs_collected['locomotive'] =
+                        {
                             name = 'Extra Wagons',
                             count = buff.state,
                             discord = buff.discord
@@ -1176,7 +1220,8 @@ local function apply_buffs()
                     limit_types[buff.name] = true
                     Public.set('all_the_fish', true)
                     if not this.buffs_collected['fish'] then
-                        this.buffs_collected['fish'] = {
+                        this.buffs_collected['fish'] =
+                        {
                             name = 'A thousand fishes',
                             discord = buff.discord
                         }
@@ -1197,19 +1242,26 @@ local function apply_buffs()
                             end
 
                             if not techs[tech.name] then
-                                techs[tech.name] = {
+                                techs[tech.name] =
+                                {
                                     name = buff.name
                                 }
                             end
 
                             if not this.buffs_collected['techs'][tech.name] then
-                                this.buffs_collected['techs'][tech.name] = {
+                                this.buffs_collected['techs'][tech.name] =
+                                {
                                     name = tech.name,
                                     buff_type = buff.name,
                                     discord = buff.discord
                                 }
                             end
-                            force.technologies[tech.name].researched = true
+
+                            if not this.delayed_tech then
+                                this.delayed_tech = {}
+                            end
+
+                            this.delayed_tech[tech.name] = tech
                         end
                     end
                 end
@@ -1222,7 +1274,8 @@ local function apply_buffs()
                             rpg_extra.difficulty = rpg_extra.difficulty + buff.state
                         end
                         if not this.buffs_collected['xp_bonus'] then
-                            this.buffs_collected['xp_bonus'] = {
+                            this.buffs_collected['xp_bonus'] =
+                            {
                                 name = 'XP Bonus',
                                 count = buff.state,
                                 discord = buff.discord
@@ -1238,7 +1291,8 @@ local function apply_buffs()
                             rpg_extra.grant_xp_level = rpg_extra.grant_xp_level + buff.state
                         end
                         if not this.buffs_collected['xp_level'] then
-                            this.buffs_collected['xp_level'] = {
+                            this.buffs_collected['xp_level'] =
+                            {
                                 name = 'XP Level Bonus',
                                 count = buff.state,
                                 discord = buff.discord
@@ -1268,7 +1322,8 @@ local function apply_buffs()
                                 starting_items[item.name].item_limit = starting_items[item.name].item_limit and starting_items[item.name].item_limit + buff.add_per_buff or buff.add_per_buff
                                 starting_items[item.name].buff_type = buff.name
                             else
-                                starting_items[item.name] = {
+                                starting_items[item.name] =
+                                {
                                     buff_type = buff.name,
                                     count = item.count,
                                     item_limit = buff.add_per_buff
@@ -1278,7 +1333,8 @@ local function apply_buffs()
                                 this.buffs_collected['starting_items'][item.name].count = this.buffs_collected['starting_items'][item.name].count + item.count
                                 this.buffs_collected['starting_items'][item.name].buff_type = buff.name
                             else
-                                this.buffs_collected['starting_items'][item.name] = {
+                                this.buffs_collected['starting_items'][item.name] =
+                                {
                                     buff_type = buff.name,
                                     count = item.count,
                                     discord = buff.discord
@@ -1373,7 +1429,8 @@ local apply_settings_token =
             end
 
             if not settings then
-                settings = {
+                settings =
+                {
                     rounds_survived = 0,
                     current_date = tonumber(current_time),
                     season = 1
@@ -1456,6 +1513,23 @@ local function grant_non_limit_reached_buff()
     return all_buffs[1]
 end
 
+-- Activates delayed techs
+function Public.activate_delayed_techs(force)
+    local techs = this.delayed_tech
+    if not techs then
+        return
+    end
+    if not next(techs) then
+        return
+    end
+    for tech_name, tech_data in pairs(techs) do
+        if tech_data then
+            force.technologies[tech_name].researched = true
+            this.delayed_tech[tech_name] = nil
+        end
+    end
+end
+
 -- local Alert = require 'utils.alert'
 -- local Stateful = require 'maps.mountain_fortress_v3.stateful.table'
 -- local buff = Stateful.save_settings()
@@ -1468,7 +1542,8 @@ function Public.save_settings()
 
     this.current_streak = this.current_streak + 1
 
-    local settings = {
+    local settings =
+    {
         objectives_time_spent = this.objectives_time_spent,
         rounds_survived = this.rounds_survived,
         season = this.season,
@@ -1492,7 +1567,8 @@ function Public.save_settings()
 end
 
 function Public.save_settings_before_reset()
-    local settings = {
+    local settings =
+    {
         rounds_survived = this.rounds_survived,
         season = this.season,
         test_mode = this.test_mode,
@@ -1528,38 +1604,45 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
     end
 
     if this.test_mode then
-        this.objectives = {
+        this.objectives =
+        {
             randomized_zone = 2,
             randomized_wave = 2,
             supplies = get_random_items(),
             single_item = get_random_item(),
             killed_enemies = 10,
-            killed_enemies_type = {
+            killed_enemies_type =
+            {
                 actual = 0,
                 expected = 10,
                 damage_type = damage_types[random(1, #damage_types)]
             },
-            handcrafted_items = {
+            handcrafted_items =
+            {
                 actual = 0,
                 expected = 10,
                 name = 'rail'
             },
-            handcrafted_items_any = {
+            handcrafted_items_any =
+            {
                 actual = 0,
                 expected = 10,
                 name = 'Any'
             },
-            cast_spell = {
+            cast_spell =
+            {
                 actual = 0,
                 expected = 10,
                 name = 'pipe'
             },
-            cast_spell_any = {
+            cast_spell_any =
+            {
                 actual = 0,
                 expected = 10,
                 name = 'Any'
             },
-            launch_item = {
+            launch_item =
+            {
                 actual = 0,
                 expected = 10,
                 name = 'raw-fish'
@@ -1596,7 +1679,8 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
             this.objectives.killed_enemies = scale(25000, 400000, 1.035)
         end
         if not this.objectives.killed_enemies_type or (this.objectives_completed ~= nil and this.objectives_completed.killed_enemies_type) then
-            this.objectives.killed_enemies_type = {
+            this.objectives.killed_enemies_type =
+            {
                 actual = 0,
                 expected = scale(10000, 400000, 1.035),
                 damage_type = damage_types[random(1, #damage_types)]
@@ -1604,14 +1688,16 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
         end
         if not this.objectives.handcrafted_items or (this.objectives_completed ~= nil and this.objectives_completed.handcrafted_items) then
             local item = get_random_handcrafted_item()
-            this.objectives.handcrafted_items = {
+            this.objectives.handcrafted_items =
+            {
                 actual = 0,
                 expected = item.count,
                 name = item.name
             }
         end
         if not this.objectives.handcrafted_items_any or (this.objectives_completed ~= nil and this.objectives_completed.handcrafted_items_any) then
-            this.objectives.handcrafted_items_any = {
+            this.objectives.handcrafted_items_any =
+            {
                 actual = 0,
                 expected = scale(50000, 4000000),
                 name = 'Any'
@@ -1619,21 +1705,24 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
         end
         if not this.objectives.cast_spell or (this.objectives_completed ~= nil and this.objectives_completed.cast_spell) then
             local item = get_random_spell()
-            this.objectives.cast_spell = {
+            this.objectives.cast_spell =
+            {
                 actual = 0,
                 expected = item.count,
                 name = item.name
             }
         end
         if not this.objectives.cast_spell_any or (this.objectives_completed ~= nil and this.objectives_completed.cast_spell_any) then
-            this.objectives.cast_spell_any = {
+            this.objectives.cast_spell_any =
+            {
                 actual = 0,
                 expected = scale(100, 1000),
                 name = 'Any'
             }
         end
         if not this.objectives.launch_item or (this.objectives_completed ~= nil and this.objectives_completed.launch_item) then
-            this.objectives.launch_item = {
+            this.objectives.launch_item =
+            {
                 actual = 0,
                 expected = scale(1, 500),
                 name = 'raw-fish'
@@ -1643,7 +1732,8 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
             this.objectives.research_level_selection = get_random_research_recipe()
         end
         if not this.objectives.locomotive_market_coins_spent or (this.objectives_completed ~= nil and this.objectives_completed.locomotive_market_coins_spent) then
-            this.objectives.locomotive_market_coins_spent = {
+            this.objectives.locomotive_market_coins_spent =
+            {
                 spent = 0,
                 required = scale(50000)
             }
@@ -1683,23 +1773,24 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
         this.previous_objectives_time_spent[#this.previous_objectives_time_spent + 1] = this.objectives_time_spent
     end
 
-    this.stateful_spawn_points = {
-        { { x = -205, y = -37 },  { x = 195, y = 37 } },
+    this.stateful_spawn_points =
+    {
+        { { x = -205, y = -37 }, { x = 195, y = 37 } },
         { { x = -205, y = -112 }, { x = 195, y = 112 } },
         { { x = -205, y = -146 }, { x = 195, y = 146 } },
         { { x = -205, y = -112 }, { x = 195, y = 112 } },
-        { { x = -205, y = -72 },  { x = 195, y = 72 } },
+        { { x = -205, y = -72 }, { x = 195, y = 72 } },
         { { x = -205, y = -146 }, { x = 195, y = 146 } },
-        { { x = -205, y = -37 },  { x = 195, y = 37 } },
-        { { x = -205, y = -5 },   { x = 195, y = 5 } },
-        { { x = -205, y = -23 },  { x = 195, y = 23 } },
-        { { x = -205, y = -5 },   { x = 195, y = 5 } },
-        { { x = -205, y = -72 },  { x = 195, y = 72 } },
-        { { x = -205, y = -23 },  { x = 195, y = 23 } },
-        { { x = -205, y = -54 },  { x = 195, y = 54 } },
-        { { x = -205, y = -80 },  { x = 195, y = 80 } },
-        { { x = -205, y = -54 },  { x = 195, y = 54 } },
-        { { x = -205, y = -80 },  { x = 195, y = 80 } },
+        { { x = -205, y = -37 }, { x = 195, y = 37 } },
+        { { x = -205, y = -5 }, { x = 195, y = 5 } },
+        { { x = -205, y = -23 }, { x = 195, y = 23 } },
+        { { x = -205, y = -5 }, { x = 195, y = 5 } },
+        { { x = -205, y = -72 }, { x = 195, y = 72 } },
+        { { x = -205, y = -23 }, { x = 195, y = 23 } },
+        { { x = -205, y = -54 }, { x = 195, y = 54 } },
+        { { x = -205, y = -80 }, { x = 195, y = 80 } },
+        { { x = -205, y = -54 }, { x = 195, y = 54 } },
+        { { x = -205, y = -80 }, { x = 195, y = 80 } },
         { { x = -205, y = -103 }, { x = 195, y = 103 } },
         { { x = -205, y = -150 }, { x = 195, y = 150 } },
         { { x = -205, y = -103 }, { x = 195, y = 103 } },
@@ -1709,7 +1800,8 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
     this.objectives_time_spent = {}
     this.objectives_completed_count = 0
 
-    this.collection = {
+    this.collection =
+    {
         clear_rocks = nil,
         survive_for = nil,
         survive_for_timer = nil,
@@ -1729,7 +1821,8 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
 
     Public.set('coin_amount', Diff.index)
 
-    local t = {
+    local t =
+    {
         ['randomized_zone'] = this.objectives.randomized_zone,
         ['randomized_wave'] = this.objectives.randomized_wave
     }
@@ -2033,5 +2126,42 @@ Public.apply_startup_settings = apply_startup_settings
 Public.scale = scale
 Public.on_pre_player_died = on_pre_player_died
 Public.on_market_item_purchased = on_market_item_purchased
+
+Event.on_init(
+    function ()
+        local cbl = Task.get(apply_settings_token)
+        local data =
+        {
+            rounds_survived = 11,
+            season = 4,
+            test_mode = false,
+            buffs =
+            {
+                {
+                    name = 'steel_axe_unlocked',
+                    discord = 'Equipement tech - start with steel axe tech unlocked.',
+                    modifier = 'tech',
+                    limit = 1,
+                    add_per_buff = 1,
+                    techs =
+                    {
+                        { name = 'steel-axe', count = 1 }
+                    }
+                },
+            },
+            current_date = 2711187954
+        }
+
+        this.buffs = data.buffs
+        this.rounds_survived = data.rounds_survived
+        this.season = data.season
+
+        local settings =
+        {
+            value = data
+        }
+        cbl(settings)
+    end
+)
 
 return Public
