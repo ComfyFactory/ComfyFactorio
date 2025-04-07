@@ -49,7 +49,8 @@ local collapse_message =
         function (data)
             local pos = data.position
             local message = ({ 'breached_wall.collapse_start' })
-            local collapse_position = {
+            local collapse_position =
+            {
                 position = pos
             }
             Alert.alert_all_players_location(collapse_position, message)
@@ -395,7 +396,8 @@ local function distance(player)
                     else
                         rng = random(70000, 120000)
                     end
-                    main_market_items['spidertron'] = {
+                    main_market_items['spidertron'] =
+                    {
                         stack = 1,
                         value = 'coin',
                         price = rng * (get_player_data and get_player_data.quality or 1),
@@ -407,7 +409,8 @@ local function distance(player)
                 end
             end
 
-            local data = {
+            local data =
+            {
                 player = player,
                 breached_wall = breached_wall
             }
@@ -423,7 +426,8 @@ local function distance(player)
             clear_breach_text_and_render()
             Public.set('collapse_started', true)
             Collapse.start_now(true)
-            local data = {
+            local data =
+            {
                 position = Collapse.get_position()
             }
             Task.set_timeout_in_ticks(550, collapse_message, data)
@@ -453,6 +457,10 @@ local function on_player_changed_position(event)
 
     local player = game.get_player(event.player_index)
     if not player or not player.valid then
+        return
+    end
+
+    if player.controller_type == defines.controllers.editor then
         return
     end
 

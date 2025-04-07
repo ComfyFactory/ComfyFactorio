@@ -85,8 +85,22 @@ function Public.wave_defense_set_unit_raffle(level)
     end
 end
 
-function Public.wave_defense_roll_worm_name()
+function Public.wave_defense_roll_worm_name(exclude)
     local worm_raffle = Public.get('worm_raffle') --[[@as table]]
+
+    if exclude then
+        local copied_raffle = {}
+        for k, v in pairs(worm_raffle) do
+            if not string.find(k, exclude, 1, true) then
+                copied_raffle[k] = v
+            end
+        end
+        if next(copied_raffle) then
+            worm_raffle = copied_raffle
+        end
+    end
+
+
     local max_chance = 0
     for _, v in pairs(worm_raffle) do
         max_chance = max_chance + v
