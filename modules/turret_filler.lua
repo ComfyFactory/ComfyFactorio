@@ -1,5 +1,6 @@
 local Event = require 'utils.event'
 local Global = require 'utils.global'
+local FT = require 'utils.functions.flying_texts'
 
 local turrettable = {
     players = {},
@@ -125,17 +126,6 @@ local function on_gui_click(event)
     end
 end
 
-local function flying_text(surface, position, text, color)
-    surface.create_entity(
-        {
-            name = 'flying-text',
-            position = {position.x, position.y - 0.5},
-            text = text,
-            color = color
-        }
-    )
-end
-
 local function on_gui_value_changed(event)
     local slider = event.element
     if not slider or not slider.valid then
@@ -184,7 +174,7 @@ local function transfer_ammo(player, turret)
         local inserted = turret.insert({name = item, count = math.min(count, turrettable.players[player.index].amount)})
         player.remove_item({name = item, count = inserted})
         local text = '-' .. inserted .. ' [item=' .. item .. ']'
-        flying_text(turret.surface, turret.position, text, {r = 0.8, g = 0.2, b = 0.2})
+        FT.flying_text(player, turret.surface, turret.position, text, {r = 0.8, g = 0.2, b = 0.2})
     end
 end
 

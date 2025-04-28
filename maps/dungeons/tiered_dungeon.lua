@@ -207,7 +207,7 @@ local function expand(surface, position)
     local evo = Functions.get_dungeon_evolution_factor(surface.index)
 
     local force = dungeontable.enemy_forces[surface.index]
-    force.evolution_factor = evo
+    force.set_evolution_factor(evo, surface)
 
     if evo > 1 then
         forceshp[force.index] = 3 + ((evo - 1) * 4)
@@ -548,7 +548,7 @@ local function descend(player, button, shift)
         player.print({ 'dungeons_tiered.max_depth' })
         return
     end
-    if player.position.x ^ 2 + player.position.y ^ 2 > 400 then
+    if player.physical_position.x ^ 2 + player.physical_position.y ^ 2 > 400 then
         player.print({ 'dungeons_tiered.only_on_spawn' })
         return
     end
@@ -595,7 +595,7 @@ local function ascend(player, button, shift)
         player.print({ 'dungeons_tiered.min_depth' })
         return
     end
-    if player.position.x ^ 2 + player.position.y ^ 2 > 400 then
+    if player.physical_position.x ^ 2 + player.physical_position.y ^ 2 > 400 then
         player.print({ 'dungeons_tiered.only_on_spawn' })
         return
     end
@@ -710,15 +710,23 @@ local function transfer_signals(surface_index)
     if surface_index > dungeontable.original_surface_index then
         local inputs = dungeontable.transport_poles_inputs[surface_index - 1]
         local outputs = dungeontable.transport_poles_outputs[surface_index]
+        local signaltypes = {defines.wire_connector_id.circuit_green, defines.wire_connector_id.circuit_red}
         for i = 1, 2, 1 do
             if inputs[i].valid and outputs[i].valid then
-                local signals = inputs[i].get_merged_signals(defines.circuit_connector_id.electric_pole)
                 local combi = outputs[i].get_or_create_control_behavior()
-                for ii = 1, 15, 1 do
-                    if signals and signals[ii] then
-                        combi.set_signal(ii, signals[ii])
-                    else
-                        combi.set_signal(ii, nil)
+                for _, section in pairs(combi.sections) do
+                    combi.remove_section(section.index)
+                end
+                local section = combi.add_section()
+                local signals = inputs[i].get_signals(signaltypes[1], signaltypes[2]) or {}
+                if #signals > 0 then
+                    for ii = 1, #signals, 1 do
+                        --game.print(serpent.block(signals[ii]))
+                        if signals and signals[ii] then
+                            section.set_slot(ii, {value = {type = 'item', name = signals[ii].signal.name, quality = 'normal'}, min = signals[ii].count, max = signals[ii].count})
+                        else
+                            section.set_slot(ii, nil)
+                        end
                     end
                 end
             end
@@ -787,7 +795,7 @@ local function on_init()
     game.forces.player.technologies['land-mine'].enabled = false
     game.forces.player.technologies['landfill'].enabled = false
     game.forces.player.technologies['cliff-explosives'].enabled = false
-    Research.Init(dungeontable)
+    Research.Init()
     Autostash.insert_into_furnace(true)
     Autostash.insert_into_wagon(false)
     Autostash.bottom_button(true)

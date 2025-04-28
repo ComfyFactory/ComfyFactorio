@@ -146,7 +146,7 @@ local function add_switch(element, switch_state, name, description_main, descrip
     label.style.padding = 2
     label.style.left_padding = 10
     label.style.single_line = false
-    label.style.font = 'heading-3'
+    label.style.font = 'default-semibold'
     label.style.font_color = {0.85, 0.85, 0.85}
 end
 

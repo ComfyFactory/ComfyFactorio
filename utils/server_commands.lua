@@ -76,20 +76,9 @@ function is_game_modded()
     return false
 end
 
-local space_age_mods = {
-    ['space-age'] = true,
-    ['elevated-rails'] = true,
-    ['quality'] = true,
-
-}
-
 function has_space_age()
-    local active_mods = script.active_mods
-    for mod_name, _ in pairs(active_mods) do
-        if space_age_mods[mod_name] then
-            return true
-        end
-    end
+    local active_mods = script.active_mods['space-age'] ~= nil
+    if active_mods then return true end
     return false
 end
 

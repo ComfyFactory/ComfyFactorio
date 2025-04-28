@@ -23,6 +23,7 @@ local Reset = require 'utils.functions.soft_reset'
 local Tick_functions = require 'maps.chronosphere.tick_functions'
 local Upgrades = require 'maps.chronosphere.upgrades'
 local Worlds = require 'maps.chronosphere.world_list'
+local RobotLimits = require 'modules.robot_limits'
 require 'maps.chronosphere.config_tab'
 require 'maps.chronosphere.commands'
 
@@ -35,7 +36,7 @@ end
 local function reset_map()
     local objective = Chrono_table.get_table()
     if objective.restart_hard then
-        game.print({'chronosphere.cmd_server_restarting'}, {r = 255, g = 255, b = 0})
+        game.print({'chronosphere.cmd_server_restarting'}, { color = { r = 255, g = 255, b = 0 }})
         Server.start_scenario('Chronosphere')
         return
     end
@@ -66,7 +67,7 @@ local function reset_map()
     Locomotive.create_wagon_room()
     Event_functions.mining_buffs(nil)
     if objective.game_won then
-        game.print({'chronosphere.message_game_won_restart'}, {r = 0.98, g = 0.66, b = 0.22})
+        game.print({'chronosphere.message_game_won_restart'}, { color = { r = 0.98, g = 0.66, b = 0.22 }})
     end
     Minimap.update_surface()
     objective.game_lost = false
@@ -279,6 +280,7 @@ local function on_init()
     mgs.height = 16
     game.surfaces['nauvis'].map_gen_settings = mgs
     game.surfaces['nauvis'].clear()
+    RobotLimits.enable(false)
     reset_map()
 end
 

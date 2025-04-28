@@ -530,7 +530,7 @@ local function desync(event)
         FT.flying_text(nil, objective.comfylatron.surface, objective.comfylatron.position, 'desync evaded', { r = 0, g = 150, b = 0 })
         if event.cause then
             if event.cause.valid and event.cause.player then
-                game.print({ 'chronosphere.message_comfylatron_desync', event.cause.player.name }, { r = 200, g = 0, b = 0 })
+                game.print({ 'chronosphere.message_comfylatron_desync', event.cause.player.name }, { color = { r = 200, g = 0, b = 0 }})
                 event.cause.die('player', objective.comfylatron)
             end
         end

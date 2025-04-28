@@ -194,6 +194,9 @@ local function on_rocket_launched(event)
 		force.technologies['space-science-pack'].researched = true
 		force.print('[technology=space-science-pack] researched.')
 		force.play_sound({path = 'utility/research_completed'})
+		table.insert(journey.goods_to_dispatch, { 'loader', 3 })
+		table.insert(journey.mothership_messages, 'I am sending you some loaders. Use them to load the rocket silos with all needed items.')
+		journey.game_state = 'dispatch_goods'
 	end
 	Functions.draw_gui(journey)
 end

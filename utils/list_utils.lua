@@ -1,3 +1,4 @@
+---@diagnostic disable: duplicate-set-field
 --luacheck: ignore
 local function assert_argument_valid(a, arg_type)
     arg_type = arg_type or 'table'
@@ -6,7 +7,7 @@ local function assert_argument_valid(a, arg_type)
     end
 end
 
-table.remove_element = function(t, element)
+table.remove_element = function (t, element)
     assert_argument_valid(t)
     for k, v in pairs(t) do
         if v == element then
@@ -16,7 +17,7 @@ table.remove_element = function(t, element)
     end
 end
 
-table.add_all = function(t1, t2)
+table.add_all = function (t1, t2)
     assert_argument_valid(t1)
     assert_argument_valid(t2)
     for k, v in pairs(t2) do
@@ -28,7 +29,7 @@ table.add_all = function(t1, t2)
     end
 end
 
-table.size = function(t)
+table.size = function (t)
     assert_argument_valid(t)
     local size = 0
     for _, _ in pairs(t) do
@@ -37,7 +38,7 @@ table.size = function(t)
     return size
 end
 
-table.index_of = function(t, e)
+table.index_of = function (t, e)
     assert_argument_valid(t)
     local i = 1
     for _, v in pairs(t) do
@@ -49,12 +50,12 @@ table.index_of = function(t, e)
     return -1
 end
 
-table.contains = function(t, e)
+table.contains = function (t, e)
     assert_argument_valid(t)
     return table.index_of(t, e) > -1
 end
 
-table.set = function(t, index, element)
+table.set = function (t, index, element)
     assert_argument_valid(t)
     assert_argument_valid(index, 'number')
     local i = 1
@@ -68,7 +69,7 @@ table.set = function(t, index, element)
     error('Index out of bounds', 2)
 end
 
-table.get = function(t, index)
+table.get = function (t, index)
     assert_argument_valid(t)
     assert_argument_valid(index, 'number')
     local i = 1
@@ -97,7 +98,7 @@ end
     game.print("value found at index: " .. index)
   end
 ]]
-table.binary_search = function(t, target)
+table.binary_search = function (t, target)
     --For some reason bit32.bnot doesn't return negative numbers so I'm using ~x = -1 - x instead.
     assert_argument_valid(t)
     assert_argument_valid(target, 'number')

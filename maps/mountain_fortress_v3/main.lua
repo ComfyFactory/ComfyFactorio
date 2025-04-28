@@ -569,6 +569,8 @@ function Public.to_fortress(current_task)
     local starting_items = Public.get_func('starting_items')
     Public.equip_players(starting_items, false)
 
+    Public.stateful.activate_delayed_techs(game.forces.player)
+
     current_task.message = 'Moved players back to fortress!'
     current_task.done = true
 end

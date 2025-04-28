@@ -14,7 +14,13 @@ local Utils = require 'utils.utils'
 local Core = require 'utils.core'
 local Inventory = require 'modules.show_inventory'
 
-local Public = {}
+local Public =
+{
+    settings =
+    {
+        disable_camera_for_non_admins = false
+    }
+}
 
 local module_name = Gui.uid_name()
 local locate_player_frame_name = Gui.uid_name()
@@ -26,8 +32,10 @@ local get_formatted_playtime = Utils.get_formatted_playtime
 local get_comparator = Vars.get_comparator
 local tag = 'Players'
 
-local this = {
-    player_list = {
+local this =
+{
+    player_list =
+    {
         last_poke_tick = {},
         pokes = {},
         sorting_method = {}
@@ -54,7 +62,8 @@ local function get_header(tbl, name)
     end
 end
 
-local header_modifier = {
+local header_modifier =
+{
     ['username_asc'] = function (tbl)
         local setting = get_header(tbl, 'username')
         setting.name = setting.name .. '[color=yellow]' .. symbol_asc .. '[/color]'
@@ -228,7 +237,8 @@ local function player_list_show(data)
 
     -- List management
     local player_list_panel_table =
-        frame.add {
+        frame.add
+        {
             type = 'scroll-pane',
             name = 'scroll_pane',
             direction = 'vertical',
@@ -272,6 +282,10 @@ Gui.on_click(
             if not target or not target.valid then
                 return
             end
+            if Public.settings.disable_camera_for_non_admins and not player.admin then
+                return
+            end
+
             Where.create_mini_camera_gui(player, target)
         elseif defines.mouse_button_type.right then
             local is_spamming = SpamProtection.is_spamming(player, nil, 'PlayerList Show Inventory')

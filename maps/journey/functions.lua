@@ -27,7 +27,7 @@ local function clear_selectors(journey)
 end
 
 local function protect(entity, operable)
-    entity.minable = false
+    entity.minable_flag = false
     entity.destructible = false
     entity.operable = operable
 end
@@ -62,7 +62,7 @@ local function place_teleporter(journey, surface, position, build_beacon)
         local beacon = surface.create_entity({ name = 'cargo-landing-pad', position = { x = position.x + 3, y = position.y + 2 }, force = 'player' })
         journey.beacon_objective_health = 10000
         beacon.operable = true
-        beacon.minable = false
+        beacon.minable_flag = false
         beacon.active = true
         rendering.draw_text {
             text = { 'journey.teleporter' },
@@ -235,7 +235,7 @@ local function delete_nauvis_chunks(journey)
             table.insert(journey.nauvis_chunk_positions, { chunk.x, chunk.y })
         end
         journey.size_of_nauvis_chunk_positions = #journey.nauvis_chunk_positions
-        for _, e in pairs(surface.find_entities_filtered { type = 'radar' }) do
+        for _, e in pairs(surface.find_entities_filtered { type = {'radar', 'roboport', 'spider-vehicle'} }) do
             e.destroy()
         end
         for _, player in pairs(game.players) do
@@ -506,7 +506,7 @@ function Public.restart_server(journey)
         log('Can force restart only during world selection stages')
         return
     end
-    game.print({ 'journey.cmd_server_restarting' }, { r = 255, g = 255, b = 0 })
+    game.print({ 'journey.cmd_server_restarting' }, { color = { r = 255, g = 255, b = 0 }})
     Public.export_journey(journey, true)
     Server.start_scenario('Journey')
     return
@@ -514,7 +514,7 @@ end
 
 function Public.hard_reset(journey)
     if journey.restart_from_scenario then
-        game.print({ 'journey.cmd_server_restarting' }, { r = 255, g = 255, b = 0 })
+        game.print({ 'journey.cmd_server_restarting' }, { color = { r = 255, g = 255, b = 0 }})
         Public.export_journey(journey, false)
         Server.start_scenario('Journey')
         return
@@ -526,6 +526,7 @@ function Public.hard_reset(journey)
     Autostash.bottom_button(true)
     Misc.bottom_button(true)
     if game.surfaces.mothership and game.surfaces.mothership.valid then
+        game.surfaces.mothership.destroy_global_electric_network()
         game.delete_surface(game.surfaces.mothership)
     end
 
@@ -608,6 +609,7 @@ function Public.create_mothership(journey)
     local surface = game.create_surface('mothership', Constants.mothership_gen_settings)
     surface.request_to_generate_chunks({ x = 0, y = 0 }, 6)
     surface.force_generate_chunk_requests()
+    surface.create_global_electric_network()
     surface.freeze_daytime = true
     journey.game_state = 'draw_mothership'
 end
@@ -694,7 +696,7 @@ function Public.draw_mothership(journey)
             only_in_alt_mode = false
         }
 
-    for k, item_name in pairs({ 'arithmetic-combinator', 'constant-combinator', 'decider-combinator', 'selector-combinator', 'display-panel', 'programmable-speaker', 'small-lamp', 'substation', 'pipe', 'gate', 'stone-wall', 'transport-belt' }) do
+    for k, item_name in pairs({ 'arithmetic-combinator', 'constant-combinator', 'decider-combinator', 'selector-combinator', 'display-panel', 'programmable-speaker', 'small-lamp', 'pipe', 'gate', 'stone-wall', 'transport-belt' }) do
         local chest = surface.create_entity({ name = 'infinity-chest', position = { -7 + k, Constants.mothership_radius - 3 }, force = 'player' })
         if not chest or not chest.valid then break end
         chest.set_infinity_container_filter(1, { name = item_name, count = prototypes.item[item_name].stack_size, index = 1 })
@@ -707,8 +709,6 @@ function Public.draw_mothership(journey)
     for m = -1, 1, 2 do
         local inter = surface.create_entity({ name = 'electric-energy-interface', position = { 11 * m, Constants.mothership_radius - 4 }, force = 'player' })
         protect(inter, true)
-        local sub = surface.create_entity({ name = 'substation', position = { 9 * m, Constants.mothership_radius - 4 }, force = 'player' })
-        protect(sub, true)
     end
 
     for m = -1, 1, 2 do
@@ -1445,10 +1445,15 @@ function Public.dispatch_goods(journey)
     if journey.dispatch_beacon_position then
         local good = goods_to_dispatch[journey.dispatch_key]
         local pod = surface.create_entity({name = 'cargo-pod-container', position = journey.dispatch_beacon_position, force = game.forces.player})
+        local itemcount = good[2]
         if pod and pod.valid then
-            pod.insert({name = good[1], count = good[2]})
-        else
-            surface.spill_item_stack({ position = journey.dispatch_beacon_position, stack = { name = good[1], count = good[2] }, enable_looted = true, allow_belts = false })
+            local inserted = pod.insert({name = good[1], count = itemcount})
+            if inserted > 0 then
+                itemcount = itemcount - inserted
+            end
+        end
+        if itemcount > 0 then
+            surface.spill_item_stack({ position = journey.dispatch_beacon_position, stack = { name = good[1], count = itemcount }, enable_looted = true, allow_belts = false })
         end
         table.remove(journey.goods_to_dispatch, journey.dispatch_key)
         journey.dispatch_beacon = nil
@@ -1469,7 +1474,7 @@ function Public.dispatch_goods(journey)
     end
 
     journey.dispatch_beacon = surface.create_entity({ name = 'stone-wall', position = position, force = 'neutral' })
-    journey.dispatch_beacon.minable = false
+    journey.dispatch_beacon.minable_flag = false
     journey.dispatch_beacon_position = { x = position.x, y = position.y }
     journey.dispatch_key = Math.random(1, size_of_goods_to_dispatch)
 
@@ -1570,10 +1575,10 @@ function Public.mothership_waiting_for_players(journey)
 end
 
 function Public.teleporters(journey, player)
-    if not player.character then
+    if not player.character or not player.character.valid then
         return
     end
-    if not player.character.valid then
+    if player.character.vehicle then
         return
     end
     local surface = player.physical_surface

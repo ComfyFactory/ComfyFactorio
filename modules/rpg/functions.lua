@@ -1298,8 +1298,14 @@ show_cooldown_progressbar =
             end
 
             local rpg_t = Public.get_value_from_player(player.index)
+            if not rpg_t then
+                return
+            end
 
             local active_spell = Public.get_spell_by_name(rpg_t, rpg_t.dropdown_select_name)
+            if not active_spell then
+                return
+            end
             if event.name ~= active_spell.entityName then
                 Task.set_timeout_in_ticks(update_rate_progressbar, show_cooldown_progressbar, event)
                 return

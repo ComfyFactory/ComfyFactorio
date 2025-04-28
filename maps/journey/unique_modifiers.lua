@@ -239,7 +239,7 @@ Public.tarball = {
         if tarball_minable[entity.type] then
             return
         end
-        entity.minable = false
+        entity.minable_flag = false
     end,
     on_built_entity = function (event)
         local entity = event.entity
@@ -252,7 +252,7 @@ Public.tarball = {
         if tarball_minable[entity.type] then
             return
         end
-        entity.minable = false
+        entity.minable_flag = false
     end,
     on_chunk_generated = function (event, journey)
         table.insert(
@@ -402,7 +402,7 @@ Public.volcanic = {
     end,
     on_player_changed_position = function (event)
         local player = game.players[event.player_index]
-        if player.driving then
+        if player.driving or player.controller_type == defines.controllers.remote then
             return
         end
         local surface = player.surface

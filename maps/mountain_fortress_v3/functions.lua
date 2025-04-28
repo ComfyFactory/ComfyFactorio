@@ -2371,7 +2371,7 @@ local function on_marked_for_deconstruction(event)
 
     if player.controller_type == defines.controllers.remote then
         entity.cancel_deconstruction(player.force, player)
-        player.print("You cannot deconstruct while in remove view!", { r = 1, g = 0.5, b = 0.5 })
+        player.print("You cannot deconstruct while in remote view!", { r = 1, g = 0.5, b = 0.5 })
     end
 end
 
@@ -2649,7 +2649,9 @@ function Public.on_player_changed_position(event)
 
     if adjusted_zones.reversed then
         if position.y < -74 then
-            player.teleport({ position.x, position.y + 1 }, surface)
+            if player.character ~= nil then
+                player.character.teleport({ position.x, position.y + 1 }, surface)
+            end
             player.print(({ 'main.forcefield' }), { r = 0.98, g = 0.66, b = 0.22 })
             if player.character then
                 player.character.health = player.character.health - 5
@@ -2661,7 +2663,9 @@ function Public.on_player_changed_position(event)
         end
     else
         if position.y >= 74 then
-            player.teleport({ position.x, position.y - 1 }, surface)
+            if player.character ~= nil then
+                player.character.teleport({ position.x, position.y - 1 }, surface)
+            end
             player.print(({ 'main.forcefield' }), { r = 0.98, g = 0.66, b = 0.22 })
             if player.character then
                 player.character.health = player.character.health - 5

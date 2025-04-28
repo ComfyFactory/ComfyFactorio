@@ -1,5 +1,7 @@
 --mineable-wreckage yields scrap -- by mewmew
 
+local FT = require 'utils.functions.flying_texts'
+
 local mining_chance_weights = {
     { name = 'iron-plate',                     chance = 1000 },
     { name = 'iron-gear-wheel',                chance = 750 },
@@ -129,7 +131,7 @@ local function on_player_mined_entity(event)
 
     local scrap = scrap_raffle[math.random(1, size_of_scrap_raffle)]
 
-    local amount_bonus = (game.forces.enemy.evolution_factor * 2) + (game.forces.player.mining_drill_productivity_bonus * 2)
+    local amount_bonus = (game.forces.enemy.get_evolution_factor(entity.surface) * 2) + (game.forces.player.mining_drill_productivity_bonus * 2)
     local r1 = math.ceil(scrap_yield_amounts[scrap] * (0.3 + (amount_bonus * 0.3)))
     local r2 = math.ceil(scrap_yield_amounts[scrap] * (1.7 + (amount_bonus * 1.7)))
     local amount = math.random(r1, r2)
@@ -142,14 +144,8 @@ local function on_player_mined_entity(event)
         entity.surface.spill_item_stack(entity.position, { name = scrap, count = amount_to_spill }, true)
     end
 
-    entity.surface.create_entity(
-        {
-            name = 'flying-text',
-            position = entity.position,
-            text = '+' .. amount .. ' [img=item/' .. scrap .. ']',
-            color = { r = 0.98, g = 0.66, b = 0.22 }
-        }
-    )
+    local text = '+' .. amount .. ' [img=item/' .. scrap .. ']'
+    FT.flying_text(nil, entity.surface, entity.position, text, { r = 0.98, g = 0.66, b = 0.22 })
 end
 
 local Event = require 'utils.event'

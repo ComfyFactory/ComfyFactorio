@@ -148,6 +148,7 @@ local function spawn_boss(arena, biter, level)
     pos.x = pos.x - 6 + math_random(0, 12)
     pos.y = pos.y - 6 + math_random(0, 12)
     local boss = surface.create_entity({name = biter, position = pos, force = force})
+    if not boss then return end
     boss.ai_settings.allow_try_return_to_spawner = false
     arenatable.active_boss[arena] = boss
     rendering.draw_text {
@@ -208,8 +209,8 @@ end
 local function teleport_player_in(arena, player)
     local arenatable = DungeonsTable.get_arenatable()
     local surface = game.surfaces['dungeons_floor_arena']
-    arenatable.previous_position[arena].position = player.position
-    arenatable.previous_position[arena].surface = player.surface
+    arenatable.previous_position[arena].position = player.physical_position
+    arenatable.previous_position[arena].surface = player.physical_surface
     arenatable.timer[arena] = game.tick
     local rpg = RPG.get('rpg_t')
     rpg[player.index].aoe_punch = false
@@ -498,8 +499,8 @@ local function on_init()
     arena.set_allows_action(defines.input_action.delete_permission_group, false)
     arena.set_allows_action(defines.input_action.add_permission_group, false)
     arena.set_allows_action(defines.input_action.activate_paste, false)
-    arena.set_allows_action(defines.input_action.activate_cut, false)
-    arena.set_allows_action(defines.input_action.activate_copy, false)
+    --arena.set_allows_action(defines.input_action.activate_cut, false)
+    --arena.set_allows_action(defines.input_action.activate_copy, false)
     arena.set_allows_action(defines.input_action.alternative_copy, false)
     arena.set_allows_action(defines.input_action.begin_mining, false)
     arena.set_allows_action(defines.input_action.begin_mining_terrain, false)

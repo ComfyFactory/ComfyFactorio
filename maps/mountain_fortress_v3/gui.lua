@@ -491,6 +491,7 @@ local function on_gui_click(event)
         end
         if get_top_frame(player) then
             local info = get_top_frame(player)
+            local info_button = get_top_frame_custom(player, main_button_name)
             local wd = get_top_frame_custom(player, 'wave_defense')
             local diff = get_top_frame_custom(player, Difficulty.top_button_name)
 
@@ -502,6 +503,9 @@ local function on_gui_click(event)
                     diff.visible = false
                 end
                 info.visible = false
+                if info_button then
+                    info_button.sprite = 'utility/expand'
+                end
                 return
             elseif wd and not wd.visible then
                 for _, child in pairs(player.gui.left.children) do
@@ -525,6 +529,9 @@ local function on_gui_click(event)
                     diff.visible = true
                 end
                 info.visible = true
+                if info_button then
+                    info_button.sprite = 'utility/collapse'
+                end
                 return
             end
         else

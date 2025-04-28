@@ -2,6 +2,7 @@ local Global = require 'utils.global'
 local Event = require 'utils.event'
 local BottomFrame = require 'utils.gui.bottom_frame'
 local Task = require 'utils.task_token'
+local Public = {}
 
 if script.active_mods["space-age"] then
     require 'utils.freeplay.space_age_finish'
@@ -9,9 +10,8 @@ else
     require 'utils.freeplay.silo_script'
 end
 
-local Public = {}
-
-local this = {
+local this =
+{
     created_items = {},
     respawn_items = {},
     enabled = true,
@@ -67,7 +67,8 @@ local toggle_screen_for_player_token =
     )
 
 local created_items = function ()
-    return {
+    return
+    {
         ['iron-plate'] = 8,
         ['wood'] = 1,
         ['pistol'] = 1,
@@ -78,7 +79,8 @@ local created_items = function ()
 end
 
 local respawn_items = function ()
-    return {
+    return
+    {
         ['pistol'] = 1,
         ['firearm-magazine'] = 10
     }
@@ -89,13 +91,15 @@ local ship_parts = function ()
 end
 
 local ship_items = function ()
-    return {
+    return
+    {
         ['firearm-magazine'] = 8
     }
 end
 
 local debris_items = function ()
-    return {
+    return
+    {
         ['iron-plate'] = 8
     }
 end
@@ -112,7 +116,7 @@ local init_ending_info = function ()
     local is_space_age = script.active_mods["space-age"]
     local info =
     {
-        image_path = is_space_age and "victory-space-age.png" or "victory.png",
+        image_path = is_space_age and "utils/files/victory-space-age.png" or "utils/files/victory.png",
         title = { "gui-game-finished.victory" },
         message = is_space_age and { "victory-message-space-age" } or { "victory-message" },
         bullet_points =
@@ -136,7 +140,7 @@ local on_player_joined_game = function (event)
 end
 
 local on_player_created = function (event)
-    if this.enabled then
+    if not this.enabled then
         return
     end
 
@@ -261,7 +265,8 @@ local on_cutscene_cancelled = function (event)
     player.zoom = 1.5
 end
 
-local freeplay_interface = {
+local freeplay_interface =
+{
     get_created_items = function ()
         return this.created_items
     end,

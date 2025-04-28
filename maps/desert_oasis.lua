@@ -438,6 +438,8 @@ local function deny_building(event)
             if type_whitelist[entity.ghost_name] then
                 return
             end
+        else
+            return
         end
     end
 
@@ -531,6 +533,9 @@ local function on_player_changed_position(event)
         return
     end
     if player.vehicle then
+        return
+    end
+    if script.active_mods['space-age'] and player.cargo_pod then
         return
     end
 

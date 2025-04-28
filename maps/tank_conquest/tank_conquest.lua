@@ -45,7 +45,8 @@ storage.table_of_drawings = {}
 
 storage.table_of_delays = {}
 
-local table_of_colors = {
+local table_of_colors =
+{
     squad = { r = 75, g = 155, b = 45 },
     team = { r = 65, g = 120, b = 200 },
     enemy = { r = 190, g = 55, b = 50 },
@@ -54,46 +55,48 @@ local table_of_colors = {
     white = { r = 255, g = 255, b = 255 }
 }
 
-local table_of_loots = {
-    { name = 'iron-ore',                       count = 50 },
-    { name = 'copper-ore',                     count = 50 },
-    { name = 'stone',                          count = 50 },
-    { name = 'coal',                           count = 50 },
-    { name = 'defender-capsule',               count = 10 },
-    { name = 'land-mine',                      count = 20 },
-    { name = 'gun-turret',                     count = 5 },
-    { name = 'piercing-rounds-magazine',       count = 50 },
-    { name = 'uranium-rounds-magazine',        count = 10 },
-    { name = 'combat-shotgun',                 count = 1 },
-    { name = 'shotgun-shell',                  count = 20 },
-    { name = 'piercing-shotgun-shell',         count = 20 },
-    { name = 'flamethrower',                   count = 1 },
-    { name = 'flamethrower-ammo',              count = 20 },
-    { name = 'rocket-launcher',                count = 1 },
-    { name = 'rocket',                         count = 20 },
-    { name = 'explosive-rocket',               count = 10 },
-    { name = 'atomic-bomb',                    count = 1 },
-    { name = 'grenade',                        count = 20 },
-    { name = 'cluster-grenade',                count = 10 },
-    { name = 'cannon-shell',                   count = 20 },
-    { name = 'explosive-cannon-shell',         count = 10 },
-    { name = 'uranium-cannon-shell',           count = 5 },
+local table_of_loots =
+{
+    { name = 'iron-ore', count = 50 },
+    { name = 'copper-ore', count = 50 },
+    { name = 'stone', count = 50 },
+    { name = 'coal', count = 50 },
+    { name = 'defender-capsule', count = 10 },
+    { name = 'land-mine', count = 20 },
+    { name = 'gun-turret', count = 5 },
+    { name = 'piercing-rounds-magazine', count = 50 },
+    { name = 'uranium-rounds-magazine', count = 10 },
+    { name = 'combat-shotgun', count = 1 },
+    { name = 'shotgun-shell', count = 20 },
+    { name = 'piercing-shotgun-shell', count = 20 },
+    { name = 'flamethrower', count = 1 },
+    { name = 'flamethrower-ammo', count = 20 },
+    { name = 'rocket-launcher', count = 1 },
+    { name = 'rocket', count = 20 },
+    { name = 'explosive-rocket', count = 10 },
+    { name = 'atomic-bomb', count = 1 },
+    { name = 'grenade', count = 20 },
+    { name = 'cluster-grenade', count = 10 },
+    { name = 'cannon-shell', count = 20 },
+    { name = 'explosive-cannon-shell', count = 10 },
+    { name = 'uranium-cannon-shell', count = 5 },
     { name = 'explosive-uranium-cannon-shell', count = 5 },
-    { name = 'modular-armor',                  count = 1 },
-    { name = 'power-armor',                    count = 1 },
-    { name = 'power-armor-mk2',                count = 1 },
-    { name = 'exoskeleton-equipment',          count = 1 },
-    { name = 'battery-mk2-equipment',          count = 1 },
-    { name = 'energy-shield-equipment',        count = 1 },
-    { name = 'fusion-reactor-equipment',       count = 1 },
-    { name = 'solid-fuel',                     count = 20 },
-    { name = 'rocket-fuel',                    count = 10 },
-    { name = 'nuclear-fuel',                   count = 1 },
-    { name = 'gate',                           count = 10 },
-    { name = 'stone-wall',                     count = 20 }
+    { name = 'modular-armor', count = 1 },
+    { name = 'power-armor', count = 1 },
+    { name = 'power-armor-mk2', count = 1 },
+    { name = 'exoskeleton-equipment', count = 1 },
+    { name = 'battery-mk2-equipment', count = 1 },
+    { name = 'energy-shield-equipment', count = 1 },
+    { name = 'fusion-reactor-equipment', count = 1 },
+    { name = 'solid-fuel', count = 20 },
+    { name = 'rocket-fuel', count = 10 },
+    { name = 'nuclear-fuel', count = 1 },
+    { name = 'gate', count = 10 },
+    { name = 'stone-wall', count = 20 }
 }
 
-local table_of_slots = {
+local table_of_slots =
+{
     'stone-wall',
     'gun-turret',
     'wood',
@@ -269,7 +272,8 @@ local function initialize_forces()
         spectator.set_allows_action(defines.input_action[action_name], false)
     end
 
-    local table_of_definitions = {
+    local table_of_definitions =
+    {
         defines.input_action.write_to_console,
         defines.input_action.gui_click,
         defines.input_action.gui_selection_state_changed,
@@ -354,7 +358,8 @@ function initialize_surface()
 
     map_gen_settings.cliff_settings = { name = 'cliff', cliff_elevation_0 = 0, cliff_elevation_interval = 0 }
 
-    map_gen_settings.autoplace_controls = {
+    map_gen_settings.autoplace_controls =
+    {
         ['trees'] = { frequency = 'normal', size = 'normal', richness = 'normal' },
         ['coal'] = { frequency = 'very-high', size = 'very-low', richness = 'normal' },
         ['stone'] = { frequency = 'very-high', size = 'very-low', richness = 'normal' },
@@ -817,7 +822,7 @@ end
 function create_a_base(force_name, base_position)
     local surface = game.surfaces.tank_conquest
 
-    local table_of_items = game.json_to_table(blueprint_poi_base_json)
+    local table_of_items = helpers.json_to_table(blueprint_poi_base_json)
 
     for _, tile in pairs(table_of_items.blueprint.tiles) do
         tile.position = { x = tile.position.x + base_position.x, y = tile.position.y + base_position.y + 10 }
@@ -906,7 +911,7 @@ function create_a_spot(spot_name, spot_position, spot_blueprint)
 
     local table_of_entities = {}
 
-    local table_of_items = game.json_to_table(spot_blueprint)
+    local table_of_items = helpers.json_to_table(spot_blueprint)
 
     for _, tile in pairs(table_of_items.blueprint.tiles) do
         tile.position = { x = tile.position.x + spot.position.x - 1, y = tile.position.y + spot.position.y - 1 }
@@ -958,7 +963,7 @@ end
 function create_a_point_of_interest(poi_blueprint, poi_position)
     local surface = game.surfaces.tank_conquest
 
-    local table_of_items = game.json_to_table(poi_blueprint)
+    local table_of_items = helpers.json_to_table(poi_blueprint)
 
     for _, tile in pairs(table_of_items.blueprint.tiles) do
         tile.position = { x = tile.position.x + poi_position.x, y = tile.position.y + poi_position.y }
@@ -1878,7 +1883,8 @@ function player_icon_add(player)
             rendering.draw_text(
                 {
                     text = storage.table_of_properties[player.force.name].icon,
-                    target = {
+                    target =
+                    {
                         entity = player.character,
                         offset = { 0, -3.7 },
                     },

@@ -6,7 +6,8 @@ local Global = require 'utils.global'
 
 local round = math.round
 
-local this = {
+local this =
+{
     modifiers = {},
     disabled_modifier = {},
     rpg_inventory_slot_limit = 320 -- huge inventory lags the server, this fixes it
@@ -14,7 +15,7 @@ local this = {
 
 Global.register(
     this,
-    function(t)
+    function (t)
         this = t
     end
 )
@@ -40,7 +41,8 @@ function Public.set(key, value)
     end
 end
 
-local modifiers = {
+local modifiers =
+{
     [1] = 'character_build_distance_bonus',
     [2] = 'character_crafting_speed_modifier',
     [3] = 'character_health_bonus',
@@ -77,8 +79,11 @@ function Public.update_player_modifiers(player)
             else
                 if modifiers[k] == 'character_inventory_slots_bonus' and not this.creative_enabled then
                     local inv = player.get_inventory(defines.inventory.character_main)
-                    if inv and #inv > this.rpg_inventory_slot_limit + 80 then
-                        player[modifier] = this.rpg_inventory_slot_limit - 20
+                    if inv and #inv > this.rpg_inventory_slot_limit then
+                        if player.controller_type == defines.controllers.remote then
+                            break -- Moving this outside the loop would probably break something other, at least this catches the decrease of inventory size
+                        end
+                        player[modifier] = this.rpg_inventory_slot_limit
                     else
                         player[modifier] = round(sum_value, 4)
                     end

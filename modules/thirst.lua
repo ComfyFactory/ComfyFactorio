@@ -87,7 +87,7 @@ local function sip(player)
     end
     local water_tiles = player.surface.count_tiles_filtered({
         name = { 'water', 'deepwater', 'water-mud', 'water-shallow' },
-        area = { { player.position.x - 1, player.position.y - 1 }, { player.position.x + 1, player.position.y + 1 } }
+        area = { { player.physical_position.x - 1, player.physical_position.y - 1 }, { player.physical_position.x + 1, player.physical_position.y + 1 } }
     })
     if water_tiles > 0 then
         this.hydration[player.index] = this.hydration[player.index] + 200

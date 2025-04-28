@@ -2,7 +2,7 @@ local Event = require 'utils.event'
 local Global = require 'utils.global'
 
 local state = {}
-Global.register(state, function(s) state = s end)
+Global.register(state, function (s) state = s end)
 
 local function create_gui_button(player)
    if player.gui.top.melee_mode then
@@ -10,11 +10,12 @@ local function create_gui_button(player)
    end
    local tooltip = 'Melee/Ranged mode toggle. Guns and ammo will stay in inventory in melee mode and be restored in ranged mode'
    local b = player.gui.top.add({
-	 type = 'sprite-button',
-	 sprite = 'item/pistol',
-	 name = 'melee_mode',
-	 tooltip = tooltip})
-   b.style.font_color = {r = 0.11, g = 0.8, b = 0.44}
+      type = 'sprite-button',
+      sprite = 'item/pistol',
+      name = 'melee_mode',
+      tooltip = tooltip
+   })
+   b.style.font_color = { r = 0.11, g = 0.8, b = 0.44 }
    b.style.font = 'heading-1'
    b.style.minimal_height = 40
    b.style.maximal_width = 40
@@ -36,13 +37,13 @@ local function move_to_main(player, from, to)
    for i = 1, #from do
       local c = from[i]
       if c.valid_for_read then
-	 if to.can_insert(c) then
-	    local amt = to.insert(c)
-	    ret[#ret + 1] = { name=c.name, count=amt }
-	    c.count = c.count - amt
-	 else
-	    player.print('Unable to move ' .. c.name .. ' to main inventory')
-	 end
+         if to.can_insert(c) then
+            local amt = to.insert(c)
+            ret[#ret + 1] = { name = c.name, count = amt }
+            c.count = c.count - amt
+         else
+            player.print('Unable to move ' .. c.name .. ' to main inventory')
+         end
       end
    end
    return ret
@@ -69,10 +70,10 @@ local function try_move_from_main(main, to, what)
    for i = 1, #what do
       local amt_out = main.remove(what[i])
       if amt_out > 0 then
-	 local amt_in = to.insert({name = what[i].name, count = amt_out})
-	 if amt_in < amt_out then
-	    main.insert({name = what[i].name, count = amt_out - amt_in})
-	 end
+         local amt_in = to.insert({ name = what[i].name, count = amt_out })
+         if amt_in < amt_out then
+            main.insert({ name = what[i].name, count = amt_out - amt_in })
+         end
       end
    end
 end
@@ -108,17 +109,17 @@ local function on_gui_click(event)
    local mm = player.gui.top.melee_mode
    if mm.sprite == 'item/pistol' then
       if change_to_melee(player) then
-	 player.print('Switching to melee mode, ammo and weapons will stay in main inventory')
-	 mm.sprite = 'item/dummy-steel-axe'
+         player.print('Switching to melee mode, ammo and weapons will stay in main inventory')
+         mm.sprite = 'technology/steel-axe'
       else
-	 player.print('Unable to switch to melee mode. Are you dead?')
+         player.print('Unable to switch to melee mode. Are you dead?')
       end
    else
       if change_to_ranged(player) then
-	 player.print('Switching to ranged mode, trying to restore previous guns and ammo')
-	 mm.sprite = 'item/pistol'
+         player.print('Switching to ranged mode, trying to restore previous guns and ammo')
+         mm.sprite = 'item/pistol'
       else
-	 player.print('Unable to switch to ranged mode. Are you dead?')
+         player.print('Unable to switch to ranged mode. Are you dead?')
       end
    end
 end
@@ -127,7 +128,7 @@ local function moved_to_string(tbl)
    local ret = ''
    for i = 1, #tbl do
       if ret ~= '' then
-	 ret = ret .. ', '
+         ret = ret .. ', '
       end
       ret = ret .. tbl[i].count .. ' ' .. tbl[i].name
    end
@@ -144,7 +145,7 @@ local function player_inventory_changed(player_index, inv_id, name)
    if #moved > 0 then
       player.print('In melee mode, moved ' .. moved_to_string(moved) .. ' to main inventory')
    end
-   if not inv.is_empty() then
+   if not inv or not inv.is_empty() then
       player.print('WARNING: in melee mode, unable to empty ' .. name .. ' to main inventory')
    end
 end
@@ -161,4 +162,3 @@ Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_player_ammo_inventory_changed, on_player_ammo_inventory_changed)
 Event.add(defines.events.on_player_gun_inventory_changed, on_player_gun_inventory_changed)
-

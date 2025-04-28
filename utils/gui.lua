@@ -10,13 +10,15 @@ local tostring = tostring
 local next = next
 
 local Public = {}
-Public.events = {
+Public.events =
+{
     on_gui_removal = Event.generate_event_name('on_gui_removal'),
     on_gui_closed_main_frame = Event.generate_event_name('on_gui_closed_main_frame')
 }
 
 -- local to this file
-local local_settings = {
+local local_settings =
+{
     toggle_button = false
 }
 local main_gui_tabs = {}
@@ -26,7 +28,8 @@ local concat = table.concat
 local names = {}
 -- global
 local data = {}
-local settings = {
+local settings =
+{
     mod_gui_top_frame = false,
     disabled_tabs = {},
     disable_clear_invalid_data = true
@@ -176,6 +179,11 @@ function Public.get_data(element)
         return
     end
 
+    if not element.index then
+        return
+    end
+
+
     local player_index = element.player_index
 
     local values = data[player_index]
@@ -212,7 +220,7 @@ end
 
 -- Adds a gui that is alike the factorio native gui.
 function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_settings_button_name,
-                                            close_main_frame_name, name, info, inside_table_count)
+    close_main_frame_name, name, info, inside_table_count)
     if not align then
         return
     end
@@ -236,7 +244,8 @@ function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_s
         titlebar.drag_target = main_frame
     end
 
-    titlebar.add {
+    titlebar.add
+    {
         type = 'label',
         name = 'main_label',
         style = 'frame_title',
@@ -251,7 +260,8 @@ function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_s
 
     if set_settings_button_name then
         if not info then
-            titlebar.add {
+            titlebar.add
+            {
                 type = 'sprite-button',
                 name = set_settings_button_name,
                 style = 'frame_action_button',
@@ -260,12 +270,14 @@ function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_s
                 hovered_sprite = Public.settings_black_icon,
                 clicked_sprite = Public.settings_black_icon,
                 tooltip = 'Settings',
-                tags = {
+                tags =
+                {
                     action = 'open_settings_gui'
                 }
             }
         else
-            titlebar.add {
+            titlebar.add
+            {
                 type = 'sprite-button',
                 name = set_settings_button_name,
                 style = 'frame_action_button',
@@ -274,7 +286,8 @@ function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_s
                 hovered_sprite = Public.info_icon,
                 clicked_sprite = Public.info_icon,
                 tooltip = 'Info',
-                tags = {
+                tags =
+                {
                     action = 'open_settings_gui'
                 }
             }
@@ -284,7 +297,8 @@ function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_s
     local close_button
 
     if close_main_frame_name then
-        close_button = titlebar.add {
+        close_button = titlebar.add
+        {
             type = 'sprite-button',
             name = close_main_frame_name,
             style = 'frame_action_button',
@@ -293,14 +307,16 @@ function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_s
             hovered_sprite = 'utility/close_fat',
             clicked_sprite = 'utility/close_fat',
             tooltip = 'Close',
-            tags = {
+            tags =
+            {
                 action = 'close_main_frame_gui'
             }
         }
     end
 
     local inside_frame =
-        main_frame.add {
+        main_frame.add
+        {
             type = 'table',
             column_count = 1 or inside_table_count,
             name = 'inside_frame'
@@ -707,7 +723,8 @@ function Public.reload_active_tab(player, forced)
     end
     local callback = Token.get(id)
 
-    local d = {
+    local d =
+    {
         player = player,
         frame = main_tab
     }
@@ -729,7 +746,8 @@ local function top_button(player)
         if player.gui.top[main_button_name] then
             return
         end
-        local button = player.gui.top.add({
+        local button = player.gui.top.add(
+        {
             type = 'sprite-button',
             name = main_button_name,
             sprite = 'item/raw-fish',
@@ -1034,8 +1052,7 @@ Public.on_click(
     end
 )
 
-Event.add(
-    defines.events.on_gui_click,
+Event.add(defines.events.on_gui_click,
     function (event)
         local element = event.element
         if not element or not element.valid then

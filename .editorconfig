@@ -27,6 +27,10 @@ end_of_line = auto
 #  none/ comma / semicolon / only_kv_colon
 table_separator_style = none
 
+continuous_assign_statement_align_to_equal_sign = true
+# see document for detail
+continuous_assign_table_field_align_to_equal_sign = true
+
 #optional keep/never/always/smart
 trailing_table_separator = keep
 
@@ -97,22 +101,22 @@ space_around_assign_operator = true
 
 align_call_args = false
 
-align_function_params = true
+align_function_params = false
 
-align_continuous_assign_statement = true
+align_continuous_assign_statement = false
 
-align_continuous_rect_table_field = true
+align_continuous_rect_table_field = false
 
 align_continuous_line_space = 2
 
 align_if_branch = false
 
 # option none / always / contain_curly/
-align_array_table = true
+align_array_table = false
 
 align_continuous_similar_call_args = false
 
-align_continuous_inline_comment = true
+align_continuous_inline_comment = false
 # option none / always / only_call_stmt
 align_chain_expr = none
 
@@ -158,7 +162,7 @@ break_all_list_when_line_exceed = false
 
 auto_collapse_lines = false
 
-break_before_braces = false
+break_before_braces = true
 
 # [preference]
 ignore_space_after_colon = false

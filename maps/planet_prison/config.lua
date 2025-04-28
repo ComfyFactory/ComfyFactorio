@@ -1,6 +1,7 @@
 local Public = {}
 
-Public.player_ship_loot = {
+Public.player_ship_loot =
+{
     {
         name = 'piercing-rounds-magazine',
         count = 35
@@ -35,7 +36,14 @@ Public.player_ship_loot = {
     }
 }
 
-Public.permission_orbit = {
+Public.permission_non_gps =
+{
+    defines.input_action.remote_view_surface,
+    defines.input_action.remote_view_entity
+}
+
+Public.permission_orbit =
+{
     defines.input_action.activate_copy,
     defines.input_action.activate_cut,
     defines.input_action.activate_paste,
@@ -204,26 +212,32 @@ Public.permission_orbit = {
     defines.input_action.upgrade_opened_blueprint,
     defines.input_action.use_artillery_remote,
     defines.input_action.use_item,
-    defines.input_action.wire_dragging
+    defines.input_action.wire_dragging,
+    defines.input_action.remote_view_surface,
+    defines.input_action.remote_view_entity
 }
 
 Public.self_explode = 60 * 60 * 10 -- time until main shipwreck explosion
-Public.claim_markers = {
+Public.claim_markers =
+{
     'gun-turret',
     'laser-turret',
     'stone-wall'
 }
 Public.claim_max_distance = 15
-Public.base_costs = {
+Public.base_costs =
+{
     ['gun-turret'] = 1,
     ['laser-turret'] = 5,
     ['stone-wall'] = 0.1
 }
-Public.raid_costs = {
+Public.raid_costs =
+{
     {
         cost = 1,
         chance = 300,
-        gear = {
+        gear =
+        {
             {
                 weap = 'shotgun',
                 ammo = 'shotgun-shell',
@@ -239,7 +253,8 @@ Public.raid_costs = {
     {
         cost = 15,
         chance = 150,
-        gear = {
+        gear =
+        {
             {
                 weap = 'shotgun',
                 ammo = 'shotgun-shell',
@@ -255,7 +270,8 @@ Public.raid_costs = {
     {
         cost = 30,
         chance = 100,
-        gear = {
+        gear =
+        {
             {
                 weap = 'shotgun',
                 ammo = 'shotgun-shell',
@@ -271,7 +287,8 @@ Public.raid_costs = {
     {
         cost = 40,
         chance = 100,
-        gear = {
+        gear =
+        {
             {
                 weap = 'shotgun',
                 ammo = 'shotgun-shell',
@@ -287,7 +304,8 @@ Public.raid_costs = {
     {
         cost = 70,
         chance = 100,
-        gear = {
+        gear =
+        {
             {
                 weap = 'shotgun',
                 ammo = 'piercing-shotgun-shell',
@@ -302,62 +320,77 @@ Public.raid_costs = {
     }
 }
 
-Public.wreck_loot = {
-    ['iron-plate'] = {
+Public.wreck_loot =
+{
+    ['iron-plate'] =
+    {
         rare = 0.1,
         count = { 20, 40 }
     },
-    ['copper-plate'] = {
+    ['copper-plate'] =
+    {
         rare = 0.1,
         count = { 10, 30 }
     },
-    ['barrel'] = {
+    ['barrel'] =
+    {
         rare = 0.4,
         count = { 1, 1 }
     },
-    ['copper-cable'] = {
+    ['copper-cable'] =
+    {
         rare = 0.5,
         count = { 5, 20 }
     },
-    ['electronic-circuit'] = {
+    ['electronic-circuit'] =
+    {
         rare = 0.6,
         count = { 5, 20 }
     },
-    ['firearm-magazine'] = {
+    ['firearm-magazine'] =
+    {
         rare = 0.4,
         count = { 1, 2 }
     },
-    ['steel-plate'] = {
+    ['steel-plate'] =
+    {
         rare = 0.8,
         count = { 1, 5 }
     },
-    ['explosives'] = {
+    ['explosives'] =
+    {
         rare = 0.85,
         count = { 1, 5 }
     },
-    ['advanced-circuit'] = {
+    ['advanced-circuit'] =
+    {
         rare = 0.9,
         count = { 1, 5 }
     },
-    ['processing-unit'] = {
+    ['processing-unit'] =
+    {
         rare = 0.95,
         count = { 1, 2 }
     },
-    ['electric-engine-unit'] = {
+    ['electric-engine-unit'] =
+    {
         rare = 0.95,
         count = { 1, 1 }
     },
-    ['battery'] = {
+    ['battery'] =
+    {
         rare = 0.95,
         count = { 1, 2 }
     },
-    ['piercing-rounds-magazine'] = {
+    ['piercing-rounds-magazine'] =
+    {
         rare = 0.99,
         count = { 1, 2 }
     }
 }
 
-Public.technologies = {
+Public.technologies =
+{
     ['military'] = true,
     ['artillery'] = false,
     ['artillery-shell-range-1'] = false,
@@ -374,7 +407,7 @@ Public.technologies = {
     ['exoskeleton-equipment'] = false,
     ['explosive-rocketry'] = false,
     ['flamethrower'] = false,
-    ['fusion-reactor-equipment'] = false,
+    ['fission-reactor-equipment'] = false,
     ['kovarex-enrichment-process'] = false,
     ['land-mine'] = false,
     ['logistics-3'] = false,
@@ -431,376 +464,398 @@ Public.technologies = {
     ['follower-robot-count-6'] = false,
     ['follower-robot-count-7'] = false,
     ['tank'] = false,
+    ['spidertron'] = false,
     ['uranium-ammo'] = false,
     ['uranium-processing'] = false,
     ['atomic-bomb'] = false
 }
 
-Public.merchant_offer = {
+Public.merchant_offer =
+{
     {
-        price = {
+        price =
+        {
             {
-                type = 'item',
                 name = 'iron-plate',
-                amount = 10
+                count = 10
             },
             {
-                type = 'item',
                 name = 'advanced-circuit',
-                amount = 2
+                count = 2
             },
             {
-                type = 'item',
                 name = 'battery',
-                amount = 2
+                count = 2
             },
             {
-                type = 'item',
                 name = 'small-lamp',
-                amount = 2
+                count = 2
             },
             {
-                type = 'item',
                 name = 'copper-cable',
-                amount = 5
+                count = 5
             },
             {
-                type = 'item',
                 name = 'steel-plate',
-                amount = 1
+                count = 1
             }
         },
-        offer = {
+        offer =
+        {
             type = 'nothing',
-            effect_description = 'Construct a GPS receiver'
+            effect_description = 'Construct a GPS receiver',
+            count = 1
         }
     },
     {
-        price = {
+        price =
+        {
             {
-                type = 'item',
                 name = 'coin',
-                amount = 100
+                count = 100
             }
         },
-        offer = {
+        offer =
+        {
             type = 'give-item',
-            item = 'heavy-armor'
+            item = 'heavy-armor',
+            count = 1
         }
     },
     {
-        price = {
+        price =
+        {
             {
-                type = 'item',
                 name = 'coin',
-                amount = 500
+                count = 500
             }
         },
-        offer = {
+        offer =
+        {
             type = 'give-item',
-            item = 'modular-armor'
+            item = 'modular-armor',
+            count = 1
         }
     },
     {
-        price = {
+        price =
+        {
             {
-                type = 'item',
                 name = 'coin',
-                amount = 12000
+                count = 12000
             }
         },
-        offer = {
+        offer =
+        {
             type = 'give-item',
-            item = 'power-armor'
+            item = 'power-armor',
+            count = 1
         }
     },
     {
-        price = {
+        price =
+        {
             {
-                type = 'item',
                 name = 'coin',
-                amount = 100
+                count = 100
             }
         },
-        offer = {
+        offer =
+        {
             type = 'give-item',
-            item = 'night-vision-equipment'
+            item = 'night-vision-equipment',
+            count = 1
         }
     },
     {
-        price = {
+        price =
+        {
             {
-                type = 'item',
                 name = 'coin',
-                amount = 70
+                count = 70
             }
         },
-        offer = {
+        offer =
+        {
             type = 'give-item',
-            item = 'battery-equipment'
+            item = 'battery-equipment',
+            count = 1
         }
     },
     {
-        price = {
+        price =
+        {
             {
-                type = 'item',
                 name = 'coin',
-                amount = 700
+                count = 700
             }
         },
-        offer = {
+        offer =
+        {
             type = 'give-item',
-            item = 'battery-mk2-equipment'
+            item = 'battery-mk2-equipment',
+            count = 1
         }
     },
     {
-        price = {
+        price =
+        {
             {
-                type = 'item',
                 name = 'coin',
-                amount = 1200
+                count = 1200
             }
         },
-        offer = {
+        offer =
+        {
             type = 'give-item',
-            item = 'exoskeleton-equipment'
+            item = 'exoskeleton-equipment',
+            count = 1
         }
     },
     {
-        price = {
+        price =
+        {
             {
-                type = 'item',
                 name = 'coin',
-                amount = 2500
+                count = 2500
             }
         },
-        offer = {
+        offer =
+        {
             type = 'give-item',
-            item = 'fusion-reactor-equipment'
+            item = 'fission-reactor-equipment',
+            count = 1
         }
     },
     {
-        price = {
+        price =
+        {
             {
-                type = 'item',
                 name = 'coin',
-                amount = 200
+                count = 200
             }
         },
-        offer = {
+        offer =
+        {
             type = 'give-item',
-            item = 'personal-roboport-equipment'
+            item = 'personal-roboport-equipment',
+            count = 1
         }
     },
     {
-        price = {
+        price =
+        {
             {
-                type = 'item',
                 name = 'coin',
-                amount = 400
+                count = 400
             }
         },
-        offer = {
+        offer =
+        {
             type = 'give-item',
-            item = 'personal-roboport-mk2-equipment'
+            item = 'personal-roboport-mk2-equipment',
+            count = 1
         }
     },
     {
-        price = {
+        price =
+        {
             {
-                type = 'item',
                 name = 'coin',
-                amount = 90
+                count = 90
             }
         },
-        offer = {
+        offer =
+        {
             type = 'give-item',
-            item = 'solar-panel-equipment'
+            item = 'solar-panel-equipment',
+            count = 1
         }
     },
     {
-        price = {
+        price =
+        {
             {
-                type = 'item',
                 name = 'coin',
-                amount = 300
+                count = 300
             }
         },
-        offer = {
+        offer =
+        {
             type = 'give-item',
-            item = 'energy-shield-equipment'
+            item = 'energy-shield-equipment',
+            count = 1
         }
     },
     {
-        price = {
+        price =
+        {
             {
-                type = 'item',
                 name = 'coin',
-                amount = 2000
+                count = 2000
             }
         },
-        offer = {
+        offer =
+        {
             type = 'give-item',
-            item = 'energy-shield-mk2-equipment'
+            item = 'energy-shield-mk2-equipment',
+            count = 1
         }
     },
     {
-        price = {
+        price =
+        {
             {
-                type = 'item',
                 name = 'coin',
-                amount = 50
+                count = 50
             }
         },
-        offer = {
+        offer =
+        {
             type = 'give-item',
-            item = 'flamethrower-ammo'
+            item = 'flamethrower-ammo',
+            count = 1
         }
     },
     {
-        price = {
+        price =
+        {
             {
-                type = 'item',
                 name = 'coin',
-                amount = 1
+                count = 1
             }
         },
-        offer = {
+        offer =
+        {
             type = 'give-item',
-            item = 'firearm-magazine'
+            item = 'firearm-magazine',
+            count = 1
         }
     },
     {
-        price = {
+        price =
+        {
             {
-                type = 'item',
                 name = 'coin',
-                amount = 5
+                count = 5
             }
         },
-        offer = {
+        offer =
+        {
             type = 'give-item',
-            item = 'piercing-rounds-magazine'
+            item = 'piercing-rounds-magazine',
+            count = 1
         }
     },
     {
-        price = {
+        price =
+        {
             {
-                type = 'item',
                 name = 'coin',
-                amount = 1000
+                count = 1000
             }
         },
-        offer = {
+        offer =
+        {
             type = 'unlock-recipe',
-            recipe = 'flamethrower'
+            recipe = 'flamethrower',
+            count = 1
         }
     },
     {
-        price = {
+        price =
+        {
             {
-                type = 'item',
                 name = 'coin',
-                amount = 50
+                count = 50
             }
         },
-        offer = {
+        offer =
+        {
             type = 'give-item',
-            item = 'defender-capsule'
+            item = 'defender-capsule',
+            count = 1
         }
     },
     {
-        price = {
+        price =
+        {
             {
-                type = 'item',
                 name = 'coin',
-                amount = 200
+                count = 200
             }
         },
-        offer = {
+        offer =
+        {
             type = 'give-item',
-            item = 'distractor-capsule'
+            item = 'distractor-capsule',
+            count = 1
         }
     },
     {
-        price = {
+        price =
+        {
             {
-                type = 'item',
                 name = 'coin',
-                amount = 250
+                count = 250
             }
         },
-        offer = {
+        offer =
+        {
             type = 'give-item',
-            item = 'destroyer-capsule'
+            item = 'destroyer-capsule',
+            count = 1
         }
     },
     {
-        price = {
+        price =
+        {
             {
-                type = 'item',
                 name = 'coin',
-                amount = 70
+                count = 150
             }
         },
-        offer = {
+        offer =
+        {
             type = 'unlock-recipe',
-            recipe = 'bulk-inserter'
+            recipe = 'bulk-inserter',
+            count = 1
         }
     },
-    {
-        price = {
-            {
-                type = 'item',
-                name = 'coin',
-                amount = 100
-            }
-        },
-        offer = {
-            type = 'unlock-recipe',
-            recipe = 'bulk-inserter'
-        }
-    },
-    {
-        price = {
-            {
-                type = 'item',
-                name = 'coin',
-                amount = 170
-            }
-        },
-        offer = {
-            type = 'unlock-recipe',
-            recipe = 'bulk-inserter'
-        }
-    }
 }
 
 Public.manual =
 [[
-[font=heading-1]Planet Prison (1.1.0) - Manual[/font]
+[font=heading-1]Planet Prison (1.1.1) - Manual[/font]
 [font=default-bold]You did naughty things and was sent to this planet with a one way ticket. Once an industrial site, turned into non-hospitable planet due to pollution and war. Among other inmates, there are still bandits scavenging through the junk looking for rare items.
 
 This is an ultimate survival scenario with very hostile environment.
 - You die, you lose everything.
-- You leave, you lose everything if you don't reconnect within 5 minutes.
+- You leave, you lose everything if you don't reconnect within 15 minutes (8 hours if played for more than 1 hour).
 - Technology cost is 10x lower.
 - The merchant is a gateway to PvP.
-- Flee by a rocket is a win. (Put a car into a rocket and enter the rocket).
+- Flee by a rocket is a win. (Put a satellite into a rocket and launch the rocket).
 - The light is your best friend.
 [/font]
 [font=heading-1]NAP contractors (A non-aggression pact)[/font]
-[font=default-bold]Grab a raw fish [img=item/raw-fish] and drop it on someone with [virtual-signal=signal-Z] button (in default setting). This way you request an inmate to get in NAP with you.[/font]
-[font=default-bold]Grab a coal piece [img=item/coal] and drop it on someone with [virtual-signal=signal-Z] button (in default setting). This way you discard NAP with an inname.[/font]
+[font=default-bold]Grab a [img=item/raw-fish] and drop it on someone with [virtual-signal=signal-Z] button. Allows to form an alliance.[/font]
+[font=default-bold]Grab a [img=item/coal] and drop it on someone with [virtual-signal=signal-Z] button. Allows to go rogue again.[/font]
 
 [font=heading-1]Starter base[/font]
 [font=default-bold]The starter base will automatically deconstruct itself if you pick something up or if the time reaches it's limit.[/font]
 
+[font=heading-1]Minimap[/font]
+[font=default-bold]Main map is disabled. Minimap can be unlocked via market if the merchant has the offer.[/font]
+
 [font=heading-1]Coins[/font]
 [font=default-bold]Coins [img=item/coin] are the main medium that you use in the market. You obtain them by researching stuff and pvp activites.[/font]
 
+[font=heading-1]Resets[/font]
+[font=default-bold]The map automatically resets upon launch a rocket. Hard reset each friday at 18:00 CEST.[/font]
+
 [font=heading-1]Other[/font]
-[font=default-bold]If you find any bugs/balancing issues, report it to getcomfy.eu/discord at #opendev. Thanks for playing this map.[/font]
+[font=default-bold]If you find any bugs/balancing issues, report it to [color=acid]getcomfy.eu/discord[/color] at #opendev.
+Thanks for playing this map.[/font]
 ]]
 
 return Public
