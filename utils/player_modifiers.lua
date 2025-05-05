@@ -10,7 +10,7 @@ local this =
 {
     modifiers = {},
     disabled_modifier = {},
-    rpg_inventory_slot_limit = 320 -- huge inventory lags the server, this fixes it
+    rpg_inventory_slot_limit = 240 -- huge inventory lags the server, this fixes it
 }
 
 Global.register(
@@ -57,6 +57,21 @@ local modifiers =
     [12] = 'character_running_speed_modifier'
 }
 
+local function check_inventory_size_limit(player, modifier, value)
+    if not player or not player.valid then
+        return
+    end
+
+    if player.character ~= nil then
+        local total = player.character.character_inventory_slots_bonus + player.force.character_inventory_slots_bonus
+        if total >= this.rpg_inventory_slot_limit then
+            player[modifier] = this.rpg_inventory_slot_limit
+        else
+            player[modifier] = round(value, 4)
+        end
+    end
+end
+
 function Public.update_player_modifiers(player)
     local player_modifiers = this.modifiers[player.index]
     if not player_modifiers then
@@ -78,15 +93,7 @@ function Public.update_player_modifiers(player)
                 player[modifier] = 0
             else
                 if modifiers[k] == 'character_inventory_slots_bonus' and not this.creative_enabled then
-                    local inv = player.get_inventory(defines.inventory.character_main)
-                    if inv and #inv > this.rpg_inventory_slot_limit then
-                        if player.controller_type == defines.controllers.remote then
-                            break -- Moving this outside the loop would probably break something other, at least this catches the decrease of inventory size
-                        end
-                        player[modifier] = this.rpg_inventory_slot_limit
-                    else
-                        player[modifier] = round(sum_value, 4)
-                    end
+                    check_inventory_size_limit(player, modifier, sum_value)
                 else
                     player[modifier] = round(sum_value, 4)
                 end
@@ -107,15 +114,13 @@ function Public.update_single_modifier(player, modifier, category, value)
         if modifiers[k] == modifier and player_modifiers[k] then
             if category then
                 if value then
-                    player_modifiers[k][category] = value
+                    if modifiers[k] == 'character_inventory_slots_bonus' and not this.creative_enabled then
+                        check_inventory_size_limit(player, modifier, value)
+                    else
+                        player_modifiers[k][category] = value
+                    end
                 else
                     player_modifiers[k][category] = nil
-                end
-
-                if not this.creative_enabled then
-                    if category == 'rpg' and modifiers[k] == 'character_inventory_slots_bonus' and player_modifiers[k][category] >= this.rpg_inventory_slot_limit then
-                        player_modifiers[k][category] = this.rpg_inventory_slot_limit - player.force.character_inventory_slots_bonus
-                    end
                 end
             else
                 player_modifiers[k] = value
