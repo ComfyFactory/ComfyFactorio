@@ -1400,11 +1400,11 @@ local function apply_startup_settings(settings)
         game.print(message)
         Server.to_discord_embed(message_discord, true)
 
-        -- game.print(({ 'entity.notify_shutdown' }), { r = 0.22, g = 0.88, b = 0.22 })
-        -- local notify_shutdown = ({ 'entity.shutdown_game' })
-        -- Server.to_discord_bold(notify_shutdown, true)
+        game.print(({ 'entity.notify_shutdown' }), { r = 0.22, g = 0.88, b = 0.22 })
+        local notify_shutdown = ({ 'entity.shutdown_game' })
+        Server.to_discord_bold(notify_shutdown, true)
 
-        -- Server.stop_scenario()
+        Server.stop_scenario()
 
         if server_name_matches then
             if Public.is_modded then
@@ -2126,42 +2126,5 @@ Public.apply_startup_settings = apply_startup_settings
 Public.scale = scale
 Public.on_pre_player_died = on_pre_player_died
 Public.on_market_item_purchased = on_market_item_purchased
-
-Event.on_init(
-    function ()
-        local cbl = Task.get(apply_settings_token)
-        local data =
-        {
-            rounds_survived = 11,
-            season = 4,
-            test_mode = false,
-            buffs =
-            {
-                {
-                    name = 'steel_axe_unlocked',
-                    discord = 'Equipement tech - start with steel axe tech unlocked.',
-                    modifier = 'tech',
-                    limit = 1,
-                    add_per_buff = 1,
-                    techs =
-                    {
-                        { name = 'steel-axe', count = 1 }
-                    }
-                },
-            },
-            current_date = 2711187954
-        }
-
-        this.buffs = data.buffs
-        this.rounds_survived = data.rounds_survived
-        this.season = data.season
-
-        local settings =
-        {
-            value = data
-        }
-        cbl(settings)
-    end
-)
 
 return Public
