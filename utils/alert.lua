@@ -11,6 +11,7 @@ local next = next
 
 local Public = {}
 
+local settings = {}
 local active_alerts = {}
 local id_counter = { 0 }
 local alert_zoom_to_pos = Gui.uid_name()
@@ -18,10 +19,11 @@ local alert_zoom_to_pos = Gui.uid_name()
 local on_tick
 
 Global.register(
-    { active_alerts = active_alerts, id_counter = id_counter },
+    { active_alerts = active_alerts, id_counter = id_counter, settings = settings },
     function (tbl)
         active_alerts = tbl.active_alerts
         id_counter = tbl.id_counter
+        settings = tbl.settings
     end
 )
 
@@ -169,16 +171,27 @@ local function zoom_to_pos(event)
     local data = Gui.get_data(element)
     if not data then return end
 
+
+    if settings.custom_zoom_to_pos then
+        local callback = Task.get(settings.custom_zoom_to_pos)
+        if callback then
+            event.data = data or nil
+            callback(event)
+            return
+        end
+    end
+
     if player.controller_type == defines.controllers.remote then
         return
     end
 
-    player.set_controller({
-        type = defines.controllers.remote,
-        position = data.position,
-        surface = player.surface,
-        zoom = 4
-    })
+    player.set_controller(
+        {
+            type = defines.controllers.remote,
+            position = data.position,
+            surface = player.surface,
+            zoom = 4
+        })
 end
 
 local close_alert = Public.close_alert
@@ -288,7 +301,8 @@ function Public.alert_all_players_location(player, message, color, duration)
         length,
         function (container)
             local sprite =
-                container.add {
+                container.add
+                {
                     type = 'sprite-button',
                     name = alert_zoom_to_pos,
                     sprite = 'utility/search_icon',
@@ -298,7 +312,8 @@ function Public.alert_all_players_location(player, message, color, duration)
             Gui.set_data(sprite, player.position)
 
             local label =
-                container.add {
+                container.add
+                {
                     type = 'label',
                     name = Public.close_alert_name,
                     caption = message
@@ -320,7 +335,8 @@ function Public.alert_player(player, duration, message, color, sprite, volume)
         player,
         duration,
         function (container)
-            container.add {
+            container.add
+            {
                 type = 'sprite-button',
                 sprite = sprite or 'achievement/you-are-doing-it-right',
                 style = 'slot_button'
@@ -344,7 +360,8 @@ function Public.alert_player_warning(player, duration, message, color)
         player,
         duration,
         function (container)
-            container.add {
+            container.add
+            {
                 type = 'sprite-button',
                 sprite = 'achievement/golem',
                 style = 'slot_button'
@@ -378,6 +395,12 @@ function Public.alert_all_players(duration, message, color, sprite, volume)
         local player = players[i]
         Public.alert_player(player, duration, message, color, sprite, volume)
     end
+end
+
+---Adds a custom zoom to pos callback
+---@param token_id integer
+function Public.add_custom_zoom_to_pos(token_id)
+    settings.custom_zoom_to_pos = token_id or nil
 end
 
 Commands.new('notify_all_players', 'Usable only for admins - sends an alert message to all players!')

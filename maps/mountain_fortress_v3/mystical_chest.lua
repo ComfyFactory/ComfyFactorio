@@ -130,7 +130,6 @@ local function init_price_check(locomotive)
         return
     end
     local adjusted_zones = Public.get('adjusted_zones')
-
     local zone = floor((abs(locomotive.position.y / zone_settings.zone_depth)) % adjusted_zones.size) + 1
 
     local roll = 48 + abs(locomotive.position.y) * 1.75

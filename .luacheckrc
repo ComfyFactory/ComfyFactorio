@@ -474,6 +474,7 @@ stds.factorio_control =
                 noise_layer_prototypes = { read_only = true, other_fields = true },
                 permissions = { read_only = true, other_fields = true },
                 player = { read_only = true, other_fields = true },
+                planets = { read_only = true, other_fields = true },
                 players = { read_only = true, other_fields = true },
                 recipe_prototypes = { read_only = true, other_fields = true },
                 speed = { read_only = false, other_fields = false },

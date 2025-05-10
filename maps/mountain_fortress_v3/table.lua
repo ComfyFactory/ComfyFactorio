@@ -6,7 +6,28 @@ local Task = require 'utils.task_token'
 
 local stateful_settings =
 {
-    reversed = false
+    reversed = false,
+    current_planet = 'fortress'
+}
+
+local planets =
+{
+    ['fortress'] = true,
+    ['fulgora'] = true,
+    ['aquilo'] = true,
+    ['gleba'] = true,
+    ['vulcanus'] = true,
+    ['nauvis'] = true
+}
+
+local all_planets =
+{
+    'fortress',
+    'fulgora',
+    'aquilo',
+    'gleba',
+    'vulcanus',
+    'nauvis'
 }
 
 local this =
@@ -35,7 +56,7 @@ local this =
         forest = {},
         size = nil,
         shuffled_zones = nil,
-        starting_zone = true,
+        starting_zone = false,
         reversed = stateful_settings.reversed,
         disable_terrain = false
     }
@@ -58,12 +79,11 @@ Public.events =
 
 local init_name = 'Init'
 Public.init_name = init_name
-local scenario_name = 'fortress'
-Public.scenario_name = scenario_name
 local discord_name = 'Mtn Fortress'
 Public.discord_name = discord_name
 
 Public.is_modded = script.active_mods['MtnFortressAddons'] or false
+Public.is_modded_pt2 = script.active_mods['MtnFortressAddonsPt2'] or false
 
 Global.register(
     this,
@@ -184,7 +204,6 @@ function Public.reset_main_table()
     this.locomotive_position = nil
     this.locomotive_health = 10000
     this.locomotive_max_health = 10000
-    this.extra_wagons = 0
     this.toolbelt_researched_count = 0
     this.all_the_fish = false
     this.reverse_collapse_warning = false
@@ -300,6 +319,7 @@ function Public.reset_main_table()
         normal = 48
     }
     this.coin_amount = 1
+    this.default_surface = true
     this.difficulty_set = false
     this.bonus_xp_on_join = 250
     this.main_market_items = {}
@@ -444,6 +464,14 @@ function Public.get_stateful_settings(key)
     end
 end
 
+function Public.get_planet()
+    return stateful_settings.current_planet
+end
+
+function Public.get_planets()
+    return planets
+end
+
 function Public.set(key, value)
     if key and (value or value == false) then
         this[key] = value
@@ -490,6 +518,14 @@ end
 function Public.save_stateful_settings()
     local server_name_matches = Server.check_server_name(Public.discord_name)
 
+    if stateful_settings.previous_planet then
+        if planets[stateful_settings.previous_planet] then
+            stateful_settings.previous_planet = planets[stateful_settings.current_planet]
+        end
+    else
+        stateful_settings.previous_planet = stateful_settings.current_planet
+    end
+
     if server_name_matches then
         Server.set_data(dataset, dataset_key, stateful_settings)
     else
@@ -512,6 +548,12 @@ local apply_settings_token =
             else
                 for k, v in pairs(settings) do
                     stateful_settings[k] = v
+                end
+            end
+
+            if Public.is_modded_pt2 then
+                if not stateful_settings.previous_planet then
+                    stateful_settings.current_planet = all_planets[random(1, #all_planets)]
                 end
             end
 

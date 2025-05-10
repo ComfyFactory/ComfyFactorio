@@ -45,6 +45,7 @@ local Beam = require 'modules.render_beam'
 local Commands = require 'utils.commands'
 local RobotLimits = require 'modules.robot_limits'
 
+
 local send_ping_to_channel = Discord.channel_names.mtn_channel
 local role_to_mention = Discord.role_mentions.mtn_fortress
 local mapkeeper = '[color=blue]Mapkeeper:[/color]'
@@ -378,6 +379,29 @@ local nth_1000_tick = function ()
     Public.is_creativity_mode_on()
 end
 
+function Public.move_players(current_task)
+    local surface = game.get_surface(current_task.surface_name)
+    if not surface or not surface.valid then
+        return
+    end
+
+    for _, player in pairs(game.players) do
+        local pos = surface.find_non_colliding_position("character", { x = 0, y = 0 }, 3, 0)
+        if pos then
+            player.teleport(pos, surface)
+        else
+            player.teleport({ x = 0, y = 0 }, surface)
+        end
+        player.clear_items_inside()
+    end
+    local starting_planet = Public.get_planet()
+    current_task.message = 'Moved players to initial surface!'
+    current_task.delay = game.tick + 50
+    current_task.state_id = 1
+    current_task.starting_planet = starting_planet
+    current_task.state = 'pre_init_task'
+end
+
 function Public.pre_init_task(current_task)
     local this = Public.get()
     game.speed = 1
@@ -450,133 +474,13 @@ function Public.pre_init_task(current_task)
         Public.set_xp_yield()
     end
     RPG.set_extra('modded_hotkeys', true)
+    RPG.set_x_position(700)
     Public.clear_all_chart_tags()
     Explosives.disable(false)
 
     current_task.message = 'Pre init done!'
     current_task.state = 'init_stateful'
-end
-
-function Public.post_init_task(current_task)
-    Public.stateful.increase_enemy_damage_and_health()
-
-    current_task.message = 'Post init done!'
-    current_task.state = 'create_locomotive'
-end
-
-function Public.create_locomotive(current_task)
-    if Public.get('disable_startup_notification') then return end
-    local adjusted_zones = Public.get('adjusted_zones')
-    local spawn_near_collapse = Public.get('spawn_near_collapse')
-    local surface_index = Public.get('active_surface_index')
-    local surface = game.surfaces[surface_index]
-    if not surface or not surface.valid then return end
-
-    if adjusted_zones.reversed then
-        Explosives.check_growth_below_void(false)
-        spawn_near_collapse.compare = abs(spawn_near_collapse.compare)
-        Collapse.set_position({ 0, -130 })
-        Collapse.set_direction('south')
-        Public.locomotive_spawn(surface, { x = -18, y = -25 }, adjusted_zones.reversed)
-    else
-        Explosives.check_growth_below_void(true)
-        spawn_near_collapse.compare = abs(spawn_near_collapse.compare) * -1
-        Collapse.set_position({ 0, 130 })
-        Collapse.set_direction('north')
-        Public.locomotive_spawn(surface, { x = -18, y = 25 }, adjusted_zones.reversed)
-    end
-
-    Public.render_train_hp()
-    Public.render_direction(surface, adjusted_zones.reversed)
-
-    local locomotive = Public.get('locomotive')
-    if locomotive and locomotive.valid then
-        WD.set_main_target(locomotive)
-    end
-
-    current_task.message = 'Created locomotive!'
-    current_task.delay = game.tick + 60
-    current_task.state = 'announce_new_map'
-end
-
-function Public.announce_new_map(current_task)
-    if Public.get('disable_startup_notification') then return end
-    local server_name = Server.check_server_name(Public.discord_name)
-    if server_name then
-        Server.to_discord_named_raw(send_ping_to_channel, role_to_mention .. ' ** Mtn Fortress was just reset! **')
-    end
-    current_task.message = 'Announced new map!'
-    current_task.state = 'to_fortress'
-    current_task.surface_name = 'fortress'
-    current_task.delay = game.tick + 200
-end
-
-function Public.move_players(current_task)
-    local surface = game.get_surface(current_task.surface_name)
-    if not surface or not surface.valid then
-        return
-    end
-
-    for _, player in pairs(game.players) do
-        local pos = surface.find_non_colliding_position("character", { x = 0, y = 0 }, 3, 0)
-        if pos then
-            player.teleport(pos, surface)
-        else
-            player.teleport({ x = 0, y = 0 }, surface)
-        end
-        player.clear_items_inside()
-    end
-    current_task.message = 'Moved players to initial surface!'
-    current_task.delay = game.tick + 200
-    current_task.state = 'pre_init_task'
-end
-
-function Public.to_fortress(current_task)
-    local surface = game.get_surface(current_task.surface_name)
-    if not surface or not surface.valid then
-        return
-    end
-    local adjusted_zones = Public.get('adjusted_zones')
-    local position
-
-    WD.set('game_lost', false)
-
-    if adjusted_zones.reversed then
-        game.forces.player.set_spawn_position({ -27, -25 }, surface)
-        position = game.forces.player.get_spawn_position(surface)
-
-        if not position then
-            game.forces.player.set_spawn_position({ -27, -25 }, surface)
-            position = game.forces.player.get_spawn_position(surface)
-        end
-    else
-        game.forces.player.set_spawn_position({ -27, 25 }, surface)
-        position = game.forces.player.get_spawn_position(surface)
-
-        if not position then
-            game.forces.player.set_spawn_position({ -27, 25 }, surface)
-            position = game.forces.player.get_spawn_position(surface)
-        end
-    end
-
-    for _, player in pairs(game.connected_players) do
-        local pos = surface.find_non_colliding_position('character', position, 3, 0)
-        if pos then
-            player.teleport({ x = pos.x, y = pos.y }, surface)
-        else
-            player.teleport({ x = position.x, y = position.y }, surface)
-        end
-        Public.add_player_to_permission_group(player, 'near_locomotive', true)
-    end
-
-    RPG.rpg_reset_all_players()
-    local starting_items = Public.get_func('starting_items')
-    Public.equip_players(starting_items, false)
-
-    Public.stateful.activate_delayed_techs(game.forces.player)
-
-    current_task.message = 'Moved players back to fortress!'
-    current_task.done = true
+    current_task.state_id = 2
 end
 
 function Public.init_stateful(current_task)
@@ -593,10 +497,26 @@ function Public.init_stateful(current_task)
 
     current_task.message = 'Initialized stateful!'
     current_task.state = 'clear_fortress'
+    current_task.state_id = 3
+end
+
+function Public.clear_fortress(current_task)
+    local surface = game.surfaces[current_task.starting_planet]
+    if surface then
+        surface.clear()
+        surface.request_to_generate_chunks({ x = -20, y = -22 }, 1)
+        surface.force_generate_chunk_requests()
+    end
+
+
+    current_task.state = 'create_custom_fortress_surface'
+    current_task.delay = game.tick + 50
+    current_task.message = 'Cleared fortress!'
+    current_task.state_id = 4
 end
 
 function Public.create_custom_fortress_surface(current_task)
-    local fortress = game.surfaces['fortress']
+    local fortress = game.surfaces[current_task.starting_planet]
     if fortress then
         fortress.clear()
     end
@@ -605,24 +525,14 @@ function Public.create_custom_fortress_surface(current_task)
 
     WD.set('surface_index', active_surface_index)
     current_task.message = 'Created custom fortress surface!'
-    current_task.delay = game.tick + 300
+    current_task.delay = game.tick + 100
     current_task.state = 'reset_map'
-end
-
-function Public.clear_fortress(current_task)
-    local surface = game.surfaces['fortress']
-    surface.clear()
-
-    surface.request_to_generate_chunks({ x = -20, y = -22 }, 1)
-    surface.force_generate_chunk_requests()
-
-    current_task.state = 'create_custom_fortress_surface'
-    current_task.delay = game.tick + 50
-    current_task.message = 'Cleared fortress!'
+    current_task.state_id = 5
 end
 
 function Public.reset_map(current_task)
     local this = Public.get()
+    local force = game.forces.player
 
     Misc.reset()
 
@@ -632,6 +542,8 @@ function Public.reset_map(current_task)
     Public.reset_buried_biters()
     Poll.reset()
     ICW.reset()
+    this.default_surface = true
+    ICW.set('default_surface', this.default_surface)
     IC.reset()
     IC.allowed_surface(game.surfaces[this.active_surface_index].name)
     game.reset_time_played()
@@ -649,6 +561,18 @@ function Public.reset_map(current_task)
 
     if this.winter_mode then
         surface.daytime = 0.45
+    end
+
+    if surface.name == 'fulgora' then
+        force.technologies['planet-discovery-fulgora'].researched = true
+    elseif surface.name == 'vulcanus' then
+        force.technologies['planet-discovery-vulcanus'].researched = true
+    elseif surface.name == 'gleba' then
+        force.technologies['planet-discovery-gleba'].researched = true
+    elseif surface.name == 'aquilo' then
+        force.technologies['planet-discovery-aquilo'].researched = true
+    elseif surface.name == 'fortress' then
+        surface.ignore_surface_conditions = true
     end
 
     -- surface.brightness_visual_weights = {0.7, 0.7, 0.7}
@@ -754,6 +678,114 @@ function Public.reset_map(current_task)
     current_task.message = 'Reset map done!'
     current_task.delay = game.tick + 60
     current_task.state = 'post_init_task'
+    current_task.state_id = 6
+end
+
+function Public.post_init_task(current_task)
+    Public.stateful.increase_enemy_damage_and_health()
+
+    current_task.message = 'Post init done!'
+    current_task.state = 'create_locomotive'
+    current_task.state_id = 7
+end
+
+function Public.create_locomotive(current_task)
+    if Public.get('disable_startup_notification') then return end
+    local adjusted_zones = Public.get('adjusted_zones')
+    local spawn_near_collapse = Public.get('spawn_near_collapse')
+    local surface_index = Public.get('active_surface_index')
+    local surface = game.surfaces[surface_index]
+    if not surface or not surface.valid then return end
+
+    if adjusted_zones.reversed then
+        Explosives.check_growth_below_void(false)
+        spawn_near_collapse.compare = abs(spawn_near_collapse.compare)
+        Collapse.set_position({ 0, -130 })
+        Collapse.set_direction('south')
+        Public.locomotive_spawn(surface, { x = -18, y = -25 }, adjusted_zones.reversed)
+    else
+        Explosives.check_growth_below_void(true)
+        spawn_near_collapse.compare = abs(spawn_near_collapse.compare) * -1
+        Collapse.set_position({ 0, 130 })
+        Collapse.set_direction('north')
+        Public.locomotive_spawn(surface, { x = -18, y = 25 }, adjusted_zones.reversed)
+    end
+
+    Public.render_train_hp()
+    Public.render_direction(surface, adjusted_zones.reversed)
+
+    local locomotive = Public.get('locomotive')
+    if locomotive and locomotive.valid then
+        WD.set_main_target(locomotive)
+    end
+
+    current_task.message = 'Created locomotive!'
+    current_task.delay = game.tick + 60
+    current_task.state = 'announce_new_map'
+    current_task.state_id = 8
+end
+
+function Public.announce_new_map(current_task)
+    if Public.get('disable_startup_notification') then return end
+    local server_name = Server.check_server_name(Public.discord_name)
+    if server_name then
+        Server.to_discord_named_raw(send_ping_to_channel, role_to_mention .. ' ** Mtn Fortress was just reset! **')
+    end
+    local starting_planet = Public.get_planet()
+    current_task.message = 'Announced new map!'
+    current_task.state = 'to_fortress'
+    current_task.surface_name = starting_planet
+    current_task.delay = game.tick + 50
+    current_task.state_id = 9
+end
+
+function Public.to_fortress(current_task)
+    local surface = game.get_surface(current_task.surface_name)
+    if not surface or not surface.valid then
+        return
+    end
+    local adjusted_zones = Public.get('adjusted_zones')
+    local position
+
+    WD.set('game_lost', false)
+
+    if adjusted_zones.reversed then
+        game.forces.player.set_spawn_position({ -27, -25 }, surface)
+        position = game.forces.player.get_spawn_position(surface)
+
+        if not position then
+            game.forces.player.set_spawn_position({ -27, -25 }, surface)
+            position = game.forces.player.get_spawn_position(surface)
+        end
+    else
+        game.forces.player.set_spawn_position({ -27, 25 }, surface)
+        position = game.forces.player.get_spawn_position(surface)
+
+        if not position then
+            game.forces.player.set_spawn_position({ -27, 25 }, surface)
+            position = game.forces.player.get_spawn_position(surface)
+        end
+    end
+
+    for _, player in pairs(game.connected_players) do
+        local pos = surface.find_non_colliding_position('character', position, 3, 0)
+        if pos then
+            player.teleport({ x = pos.x, y = pos.y }, surface)
+        else
+            player.teleport({ x = position.x, y = position.y }, surface)
+        end
+        Public.add_player_to_permission_group(player, 'near_locomotive', true)
+    end
+
+    RPG.rpg_reset_all_players()
+    local starting_items = Public.get_func('starting_items')
+    Public.equip_players(starting_items, false)
+
+    Public.stateful.activate_delayed_techs(game.forces.player)
+
+    current_task.message = 'Moved players back to fortress!'
+    current_task.state_id = 10
+    current_task.done = true
 end
 
 function Public.init_mtn()

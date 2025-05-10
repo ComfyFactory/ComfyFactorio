@@ -25,7 +25,8 @@ local ceil = math.ceil
 
 local shopkeeper = '[color=blue]Shopkeeper:[/color]\n'
 
-local space = {
+local space =
+{
     minimal_height = 10,
     top_padding = 0,
     bottom_padding = 0
@@ -60,7 +61,8 @@ local function add_mystical_chest(surface)
         if not this.mystical_chest_price then
             Public.add_mystical_chest()
         end
-        rendering.draw_text {
+        rendering.draw_text
+        {
             text = 'Mystical chest',
             surface = surface,
             target = this.mystical_chest,
@@ -85,7 +87,8 @@ local function get_player_data(player, remove)
     end
 
     if not storage_data[player.name] then
-        storage_data[player.name] = {
+        storage_data[player.name] =
+        {
             quality = 1,
         }
     end
@@ -160,7 +163,8 @@ local function get_items(player)
     local offer = pickaxe_upgrades[upgrades.pickaxe_tier]
 
     if upgrades.pickaxe_tier >= market_limits.pickaxe_tier_limit then
-        main_market_items['upgrade_pickaxe'] = {
+        main_market_items['upgrade_pickaxe'] =
+        {
             stack = 1,
             value = 'coin',
             price = pickaxe_cost,
@@ -171,7 +175,8 @@ local function get_items(player)
             static = true
         }
     else
-        main_market_items['upgrade_pickaxe'] = {
+        main_market_items['upgrade_pickaxe'] =
+        {
             stack = 1,
             value = 'coin',
             price = pickaxe_cost,
@@ -184,7 +189,8 @@ local function get_items(player)
     end
 
     if upgrades.health_upgrades >= market_limits.health_upgrades_limit then
-        main_market_items['locomotive_max_health'] = {
+        main_market_items['locomotive_max_health'] =
+        {
             stack = 1,
             value = 'coin',
             price = health_cost,
@@ -195,7 +201,8 @@ local function get_items(player)
             static = true
         }
     else
-        main_market_items['locomotive_max_health'] = {
+        main_market_items['locomotive_max_health'] =
+        {
             stack = 1,
             value = 'coin',
             price = health_cost,
@@ -208,7 +215,8 @@ local function get_items(player)
     end
 
     if upgrades.locomotive_aura_radius == market_limits.aura_limit then
-        main_market_items['locomotive_aura_radius'] = {
+        main_market_items['locomotive_aura_radius'] =
+        {
             stack = 1,
             value = 'coin',
             price = aura_cost,
@@ -219,7 +227,8 @@ local function get_items(player)
             static = true
         }
     else
-        main_market_items['locomotive_aura_radius'] = {
+        main_market_items['locomotive_aura_radius'] =
+        {
             stack = 1,
             value = 'coin',
             price = aura_cost,
@@ -232,7 +241,8 @@ local function get_items(player)
     end
 
     if upgrades.has_upgraded_health_pool then
-        main_market_items['car_health_upgrade_pool'] = {
+        main_market_items['car_health_upgrade_pool'] =
+        {
             stack = 1,
             value = 'coin',
             price = car_health_upgrade_pool,
@@ -243,7 +253,8 @@ local function get_items(player)
             static = true
         }
     else
-        main_market_items['car_health_upgrade_pool'] = {
+        main_market_items['car_health_upgrade_pool'] =
+        {
             stack = 1,
             value = 'coin',
             price = car_health_upgrade_pool,
@@ -256,7 +267,8 @@ local function get_items(player)
     end
 
     if upgrades.has_upgraded_tile_when_mining then
-        main_market_items['upgraded_tile_when_mining_cost'] = {
+        main_market_items['upgraded_tile_when_mining_cost'] =
+        {
             stack = 1,
             value = 'coin',
             price = upgraded_tile_when_mining_cost,
@@ -267,7 +279,8 @@ local function get_items(player)
             static = true
         }
     else
-        main_market_items['upgraded_tile_when_mining_cost'] = {
+        main_market_items['upgraded_tile_when_mining_cost'] =
+        {
             stack = 1,
             value = 'coin',
             price = upgraded_tile_when_mining_cost,
@@ -280,7 +293,8 @@ local function get_items(player)
     end
 
     if upgrades.xp_points_upgrade == market_limits.xp_points_limit then
-        main_market_items['xp_points_boost'] = {
+        main_market_items['xp_points_boost'] =
+        {
             stack = 1,
             value = 'coin',
             price = xp_point_boost_cost,
@@ -291,7 +305,8 @@ local function get_items(player)
             static = true
         }
     else
-        main_market_items['xp_points_boost'] = {
+        main_market_items['xp_points_boost'] =
+        {
             stack = 1,
             value = 'coin',
             price = xp_point_boost_cost,
@@ -304,7 +319,8 @@ local function get_items(player)
     end
 
     if upgrades.explosive_bullets_purchased then
-        main_market_items['explosive_bullets'] = {
+        main_market_items['explosive_bullets'] =
+        {
             stack = 1,
             value = 'coin',
             price = explosive_bullets_cost,
@@ -315,7 +331,8 @@ local function get_items(player)
             static = true
         }
     else
-        main_market_items['explosive_bullets'] = {
+        main_market_items['explosive_bullets'] =
+        {
             stack = 1,
             value = 'coin',
             price = explosive_bullets_cost,
@@ -327,7 +344,8 @@ local function get_items(player)
         }
     end
 
-    main_market_items['flamethrower_turrets'] = {
+    main_market_items['flamethrower_turrets'] =
+    {
         stack = 1,
         value = 'coin',
         price = flamethrower_turrets_cost,
@@ -337,7 +355,8 @@ local function get_items(player)
         upgrade = true,
         static = true
     }
-    main_market_items['land_mine'] = {
+    main_market_items['land_mine'] =
+    {
         stack = 1,
         value = 'coin',
         price = land_mine_cost,
@@ -349,7 +368,8 @@ local function get_items(player)
     }
 
     if game.forces.player.technologies['logistics'].researched then
-        main_market_items['loader'] = {
+        main_market_items['loader'] =
+        {
             stack = 1,
             value = 'coin',
             price = 128,
@@ -359,7 +379,8 @@ local function get_items(player)
         }
     end
     if game.forces.player.technologies['logistics-2'].researched then
-        main_market_items['fast-loader'] = {
+        main_market_items['fast-loader'] =
+        {
             stack = 1,
             value = 'coin',
             price = 256,
@@ -369,7 +390,8 @@ local function get_items(player)
         }
     end
     if game.forces.player.technologies['logistics-3'].researched then
-        main_market_items['express-loader'] = {
+        main_market_items['express-loader'] =
+        {
             stack = 1,
             value = 'coin',
             price = 512,
@@ -378,7 +400,19 @@ local function get_items(player)
             static = true
         }
     end
-    main_market_items['linked-chest'] = {
+    if game.forces.player.technologies['turbo-transport-belt'] and game.forces.player.technologies['turbo-transport-belt'].researched then
+        main_market_items['turbo-loader'] =
+        {
+            stack = 1,
+            value = 'coin',
+            price = 1024,
+            tooltip = ({ 'entity-name.turbo-loader' }),
+            upgrade = false,
+            static = true
+        }
+    end
+    main_market_items['linked-chest'] =
+    {
         stack = 1,
         value = 'coin',
         price = 500,
@@ -387,7 +421,8 @@ local function get_items(player)
         static = true
     }
 
-    main_market_items['small-lamp'] = {
+    main_market_items['small-lamp'] =
+    {
         stack = 1,
         value = 'coin',
         price = 5,
@@ -397,7 +432,8 @@ local function get_items(player)
     }
 
     if game.forces.player.technologies['discharge-defense-equipment'].researched then
-        main_market_items['discharge-defense-equipment'] = {
+        main_market_items['discharge-defense-equipment'] =
+        {
             stack = 1,
             value = 'coin',
             price = 9216,
@@ -405,7 +441,8 @@ local function get_items(player)
             upgrade = false,
             static = false
         }
-        main_market_items['discharge-defense-remote'] = {
+        main_market_items['discharge-defense-remote'] =
+        {
             stack = 1,
             value = 'coin',
             price = 1024,
@@ -416,7 +453,8 @@ local function get_items(player)
     end
 
     if game.forces.player.technologies['artillery'].researched then
-        main_market_items['artillery-turret'] = {
+        main_market_items['artillery-turret'] =
+        {
             stack = 1,
             value = 'coin',
             price = 9216,
@@ -424,7 +462,8 @@ local function get_items(player)
             upgrade = false,
             static = false
         }
-        main_market_items['artillery-shell'] = {
+        main_market_items['artillery-shell'] =
+        {
             stack = 1,
             value = 'coin',
             price = 1024,
@@ -434,7 +473,8 @@ local function get_items(player)
         }
     end
 
-    main_market_items['wood'] = {
+    main_market_items['wood'] =
+    {
         stack = 50,
         value = 'coin',
         price = 12,
@@ -442,7 +482,8 @@ local function get_items(player)
         upgrade = false,
         static = false
     }
-    main_market_items['iron-ore'] = {
+    main_market_items['iron-ore'] =
+    {
         stack = 50,
         value = 'coin',
         price = 12,
@@ -450,7 +491,8 @@ local function get_items(player)
         upgrade = false,
         static = false
     }
-    main_market_items['copper-ore'] = {
+    main_market_items['copper-ore'] =
+    {
         stack = 50,
         value = 'coin',
         price = 12,
@@ -458,7 +500,8 @@ local function get_items(player)
         upgrade = false,
         static = false
     }
-    main_market_items['stone'] = {
+    main_market_items['stone'] =
+    {
         stack = 50,
         value = 'coin',
         price = 12,
@@ -466,7 +509,8 @@ local function get_items(player)
         upgrade = false,
         static = false
     }
-    main_market_items['coal'] = {
+    main_market_items['coal'] =
+    {
         stack = 50,
         value = 'coin',
         price = 12,
@@ -474,7 +518,8 @@ local function get_items(player)
         upgrade = false,
         static = false
     }
-    main_market_items['uranium-ore'] = {
+    main_market_items['uranium-ore'] =
+    {
         stack = 50,
         value = 'coin',
         price = 12,
@@ -482,7 +527,8 @@ local function get_items(player)
         upgrade = false,
         static = false
     }
-    main_market_items['land-mine'] = {
+    main_market_items['land-mine'] =
+    {
         stack = 1,
         value = 'coin',
         price = 10,
@@ -492,7 +538,8 @@ local function get_items(player)
     }
 
     if Public.is_modded then
-        main_market_items['raw-fish'] = {
+        main_market_items['raw-fish'] =
+        {
             stack = 1,
             value = 'coin',
             price = 20,
@@ -501,7 +548,8 @@ local function get_items(player)
             static = false
         }
     else
-        main_market_items['raw-fish'] = {
+        main_market_items['raw-fish'] =
+        {
             stack = 1,
             value = 'coin',
             price = 4,
@@ -510,7 +558,8 @@ local function get_items(player)
             static = false
         }
     end
-    main_market_items['firearm-magazine'] = {
+    main_market_items['firearm-magazine'] =
+    {
         stack = 1,
         value = 'coin',
         price = 5,
@@ -518,7 +567,8 @@ local function get_items(player)
         upgrade = false,
         static = false
     }
-    main_market_items['crude-oil-barrel'] = {
+    main_market_items['crude-oil-barrel'] =
+    {
         stack = 1,
         value = 'coin',
         price = 8,
@@ -527,7 +577,8 @@ local function get_items(player)
         static = false
     }
     if upgrades.burner_generator.bought >= upgrades.burner_generator.limit then
-        main_market_items['burner-generator'] = {
+        main_market_items['burner-generator'] =
+        {
             stack = 1,
             value = 'coin',
             price = 300,
@@ -537,7 +588,8 @@ local function get_items(player)
             static = true
         }
     else
-        main_market_items['burner-generator'] = {
+        main_market_items['burner-generator'] =
+        {
             stack = 1,
             value = 'coin',
             price = 300,
@@ -547,7 +599,8 @@ local function get_items(player)
         }
     end
 
-    main_market_items['car'] = {
+    main_market_items['car'] =
+    {
         stack = 1,
         value = 'coin',
         price = 4500,
@@ -556,7 +609,8 @@ local function get_items(player)
         static = true
     }
 
-    main_market_items['tank'] = {
+    main_market_items['tank'] =
+    {
         stack = 1,
         value = 'coin',
         price = 12000,
@@ -567,7 +621,8 @@ local function get_items(player)
     local wave_number = WD.get_wave()
 
     if wave_number >= 650 then
-        main_market_items['tank-cannon'] = {
+        main_market_items['tank-cannon'] =
+        {
             stack = 1,
             value = 'coin',
             price = 25000,
@@ -577,7 +632,8 @@ local function get_items(player)
             enabled = true
         }
     else
-        main_market_items['tank-cannon'] = {
+        main_market_items['tank-cannon'] =
+        {
             stack = 1,
             value = 'coin',
             price = 25000,
@@ -588,7 +644,8 @@ local function get_items(player)
         }
     end
     if wave_number >= 100 then
-        main_market_items['vehicle-machine-gun'] = {
+        main_market_items['vehicle-machine-gun'] =
+        {
             stack = 1,
             value = 'coin',
             price = 500,
@@ -598,7 +655,8 @@ local function get_items(player)
             enabled = true
         }
     else
-        main_market_items['vehicle-machine-gun'] = {
+        main_market_items['vehicle-machine-gun'] =
+        {
             stack = 1,
             value = 'coin',
             price = 500,
@@ -609,7 +667,8 @@ local function get_items(player)
         }
     end
 
-    main_market_items['roboport'] = {
+    main_market_items['roboport'] =
+    {
         stack = 1,
         value = 'coin',
         price = fixed_prices.roboport_cost,
@@ -618,7 +677,8 @@ local function get_items(player)
         static = true
     }
 
-    main_market_items['construction-robot'] = {
+    main_market_items['construction-robot'] =
+    {
         stack = 1,
         value = 'coin',
         price = fixed_prices.construction_bot_cost,
@@ -627,7 +687,8 @@ local function get_items(player)
         static = true
     }
 
-    main_market_items['storage-chest'] = {
+    main_market_items['storage-chest'] =
+    {
         stack = 1,
         value = 'coin',
         price = fixed_prices.chest_cost,
@@ -1012,7 +1073,8 @@ local function gui_opened(event)
     add_space(inside_table)
 
     local pane =
-        inside_table.add {
+        inside_table.add
+        {
             type = 'scroll-pane',
             direction = 'vertical',
             vertical_scroll_policy = 'always',
@@ -1193,16 +1255,18 @@ local function gui_click(event)
         local pickaxe_upgrades = Public.pickaxe_upgrades
         local offer = pickaxe_upgrades[this.upgrades.pickaxe_tier]
 
-        local message = ({
-            'locomotive.pickaxe_bought_info',
-            shopkeeper,
-            player.name,
-            offer,
-            format_number(item.price, true)
-        })
+        local message = (
+            {
+                'locomotive.pickaxe_bought_info',
+                shopkeeper,
+                player.name,
+                offer,
+                format_number(item.price, true)
+            })
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
-            table.concat {
+            table.concat
+            {
                 player.name .. ' has upgraded the teams pickaxe to tier ' .. this.upgrades.pickaxe_tier .. ' for ' .. format_number(item.price, true) .. ' coins.'
             }
         )
@@ -1225,7 +1289,8 @@ local function gui_click(event)
 
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
-            table.concat {
+            table.concat
+            {
                 player.name .. ' has upgraded the train health for ' .. format_number(item.price, true) .. ' coins.'
             }
         )
@@ -1284,7 +1349,8 @@ local function gui_click(event)
 
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
-            table.concat {
+            table.concat
+            {
                 player.name .. ' has upgraded the train aura radius for ' .. format_number(item.price, true) .. ' coins.'
             }
         )
@@ -1303,7 +1369,8 @@ local function gui_click(event)
         end
 
         this.circle =
-            rendering.draw_circle {
+            rendering.draw_circle
+            {
                 surface = game.surfaces[this.active_surface_index],
                 target = this.locomotive,
                 color = this.locomotive.color,
@@ -1326,7 +1393,8 @@ local function gui_click(event)
 
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
-            table.concat {
+            table.concat
+            {
                 player.name .. ' has upgraded the train aura XP modifier for ' .. format_number(item.price) .. ' coins.'
             }
         )
@@ -1342,18 +1410,20 @@ local function gui_click(event)
 
     if name == 'explosive_bullets' then
         remove_item_count(player, item.value, item.price)
-        local message = ({
-            'locomotive.explosive_bullet_bought_info',
-            shopkeeper,
-            player.name,
-            format_number(item.price, true)
-        })
+        local message = (
+            {
+                'locomotive.explosive_bullet_bought_info',
+                shopkeeper,
+                player.name,
+                format_number(item.price, true)
+            })
 
         Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
 
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
-            table.concat {
+            table.concat
+            {
                 player.name .. ' has bought the explosive bullet modifier for ' .. format_number(item.price) .. ' coins.'
             }
         )
@@ -1368,18 +1438,20 @@ local function gui_click(event)
 
     if name == 'car_health_upgrade_pool' then
         remove_item_count(player, item.value, item.price)
-        local message = ({
-            'locomotive.car_health_upgrade_pool_bought_info',
-            shopkeeper,
-            player.name,
-            format_number(item.price, true)
-        })
+        local message = (
+            {
+                'locomotive.car_health_upgrade_pool_bought_info',
+                shopkeeper,
+                player.name,
+                format_number(item.price, true)
+            })
 
         Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
 
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
-            table.concat {
+            table.concat
+            {
                 player.name .. ' has bought the global car health modifier for ' .. format_number(item.price) .. ' coins.'
             }
         )
@@ -1393,18 +1465,20 @@ local function gui_click(event)
 
     if name == 'upgraded_tile_when_mining_cost' then
         remove_item_count(player, item.value, item.price)
-        local message = ({
-            'locomotive.tile_upgrade_bought_info',
-            shopkeeper,
-            player.name,
-            format_number(item.price, true)
-        })
+        local message = (
+            {
+                'locomotive.tile_upgrade_bought_info',
+                shopkeeper,
+                player.name,
+                format_number(item.price, true)
+            })
 
         Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
 
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
-            table.concat {
+            table.concat
+            {
                 player.name .. ' the global tile replacement from stone-path to concrete-tile for ' .. format_number(item.price) .. ' coins.'
             }
         )
@@ -1421,29 +1495,33 @@ local function gui_click(event)
         Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
 
         if item.stack >= 1 then
-            local message = ({
-                'locomotive.one_flamethrower_bought_info',
-                shopkeeper,
-                player.name,
-                format_number(item.price, true)
-            })
+            local message = (
+                {
+                    'locomotive.one_flamethrower_bought_info',
+                    shopkeeper,
+                    player.name,
+                    format_number(item.price, true)
+                })
             Alert.alert_all_players(5, message)
             Server.to_discord_bold(
-                table.concat {
+                table.concat
+                {
                     player.name .. ' has bought a flamethrower-turret slot for ' .. format_number(item.price, true) .. ' coins.'
                 }
             )
         else
-            local message = ({
-                'locomotive.multiple_flamethrower_bought_info',
-                shopkeeper,
-                player.name,
-                item.stack,
-                format_number(item.price, true)
-            })
+            local message = (
+                {
+                    'locomotive.multiple_flamethrower_bought_info',
+                    shopkeeper,
+                    player.name,
+                    item.stack,
+                    format_number(item.price, true)
+                })
             Alert.alert_all_players(5, message)
             Server.to_discord_bold(
-                table.concat {
+                table.concat
+                {
                     player.name .. ' has bought ' .. item.stack .. ' flamethrower-turret slots for ' .. format_number(item.price, true) .. ' coins.'
                 }
             )
@@ -1463,18 +1541,20 @@ local function gui_click(event)
         Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
 
         if item.stack >= 1 and this.upgrades.landmine.bought % 10 == 0 then
-            local message = ({
-                'locomotive.landmine_bought_info',
-                shopkeeper,
-                player.name,
-                format_number(item.price, true)
-            })
+            local message = (
+                {
+                    'locomotive.landmine_bought_info',
+                    shopkeeper,
+                    player.name,
+                    format_number(item.price, true)
+                })
 
             Alert.alert_all_players(3, message)
 
             if item.price >= 1000 then
                 Server.to_discord_bold(
-                    table.concat {
+                    table.concat
+                    {
                         player.name .. ' has bought ' .. item.stack .. ' landmine slots for ' .. format_number(item.price, true) .. ' coins.'
                     }
                 )
@@ -1578,6 +1658,12 @@ local function on_player_changed_position(event)
     end
     local data = players[player.index].data
 
+    local position = player.physical_position
+
+    if (position.x < Public.zone_settings.zone_width / 2 and position.x >= -Public.zone_settings.zone_width / 2) then
+        return
+    end
+
     local market = Public.get('market')
 
     if not (market and market.valid) then
@@ -1585,10 +1671,11 @@ local function on_player_changed_position(event)
     end
 
     if data and data.frame and data.frame.valid then
-        local position = market.position
-        local area = {
-            left_top = { x = position.x - 10, y = position.y - 10 },
-            right_bottom = { x = position.x + 10, y = position.y + 10 }
+        local pos = market.position
+        local area =
+        {
+            left_top = { x = pos.x - 10, y = pos.y - 10 },
+            right_bottom = { x = pos.x + 10, y = pos.y + 10 }
         }
         if Math2D.bounding_box.contains_point(area, player.physical_position) then
             return
@@ -1612,20 +1699,7 @@ local function create_market(data, rebuild)
         return
     end
 
-    if rebuild then
-        local radius = 512
-        local area = { { x = -radius, y = -radius }, { x = radius, y = radius } }
-        for _, entity in pairs(surface.find_entities_filtered { area = area, name = 'market' }) do
-            entity.destroy()
-        end
-        for _, entity in pairs(surface.find_entities_filtered { area = area, type = 'item-entity', name = 'item-on-ground' }) do
-            entity.destroy()
-        end
-        for _, entity in pairs(surface.find_entities_filtered { area = area, type = 'unit' }) do
-            entity.destroy()
-        end
-        this.market = nil
-    end
+
 
     local locomotive = this.icw_locomotive
     if not locomotive then
@@ -1638,10 +1712,26 @@ local function create_market(data, rebuild)
         return
     end
 
-    local center_position = {
+    local center_position =
+    {
         x = locomotive.area.left_top.x + (locomotive.area.right_bottom.x - locomotive.area.left_top.x) * 0.5,
         y = locomotive.area.left_top.y + (locomotive.area.right_bottom.y - locomotive.area.left_top.y) * 0.5
     }
+
+    if rebuild then
+        local radius = 512
+        local area = { { x = center_position.x - radius, y = center_position.y - radius }, { x = center_position.x + radius, y = center_position.y + radius } }
+        for _, entity in pairs(surface.find_entities_filtered { area = area, name = 'market' }) do
+            entity.destroy()
+        end
+        for _, entity in pairs(surface.find_entities_filtered { area = area, type = 'item-entity', name = 'item-on-ground' }) do
+            entity.destroy()
+        end
+        for _, entity in pairs(surface.find_entities_filtered { area = area, type = 'unit' }) do
+            entity.destroy()
+        end
+        this.market = nil
+    end
 
     if not this.icw_area then
         this.icw_area = center_position
@@ -1649,11 +1739,16 @@ local function create_market(data, rebuild)
 
     this.market = surface.create_entity { name = 'market', position = center_position, force = 'player' }
 
+    local sprite = 'item/coin'
+    if Public.is_modded_pt2 then
+        sprite = 'item/tungsten-carbide'
+    end
+
     for y = -1, 0, 0.05 do
         local scale = random(50, 100) * 0.01
         rendering.draw_sprite(
             {
-                sprite = 'item/coin',
+                sprite = sprite,
                 orientation = random(0, 100) * 0.01,
                 x_scale = scale,
                 y_scale = scale,
@@ -1669,7 +1764,8 @@ local function create_market(data, rebuild)
 
     Public.wintery(this.market, 5.5)
 
-    rendering.draw_text {
+    rendering.draw_text
+    {
         text = 'Market',
         surface = surface,
         target = { entity = this.market, offset = { 0, -2 } },
@@ -1718,7 +1814,8 @@ local function place_market()
     local surface = game.surfaces[icw_table.wagons[unit_surface].surface.index]
     local market = Public.get('market')
 
-    local data = {
+    local data =
+    {
         surface = surface
     }
     if not market then

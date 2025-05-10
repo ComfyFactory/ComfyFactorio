@@ -97,7 +97,7 @@ local set_loco_cargo =
             local p = {}
 
             local rad = 16 ^ 2
-            for x = -15, 15, 1 do
+            for x = -15 + 500, 15 + 500, 1 do
                 for y = 0, 67, 1 do
                     local va = floor((0 - x) ^ 2 + (53 - y) ^ 2)
                     if ((va < rad - 50) and (va > rad - 100)) then
@@ -132,24 +132,31 @@ local set_loco_cargo =
 function Public.locomotive_spawn(surface, position, reversed)
     local this = Public.get()
     local extra_wagons = Public.get_stateful('extra_wagons')
+    local quality_trains = Public.get_stateful('quality_trains')
 
     if not extra_wagons then
         extra_wagons = 0
     end
 
-    local quality = this.space_age and 'legendary' or 'normal'
+    if not quality_trains then
+        quality_trains = {
+            ['locomotive'] = 'normal',
+            ['cargo_wagon'] = 'normal',
+            ['fluid_wagon'] = 'normal'
+        }
+    end
 
     if reversed then
         position.y = position.y - (6 * extra_wagons)
         for y = -6, 6, 2 do
             surface.create_entity({ name = 'straight-rail', position = { position.x, position.y + y }, force = 'player', direction = 0 })
         end
-        this.locomotive = surface.create_entity({ name = 'locomotive', position = { position.x, position.y + -3 }, force = 'player', direction = defines.direction.south, quality = quality })
+        this.locomotive = surface.create_entity({ name = 'locomotive', position = { position.x, position.y + -3 }, force = 'player', direction = defines.direction.south, quality = quality_trains.locomotive })
         if this.locomotive and this.locomotive.valid then
             this.locomotive.get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 100 })
         end
 
-        this.locomotive_cargo = surface.create_entity({ name = 'cargo-wagon', position = { position.x, position.y + 3 }, force = 'player', direction = defines.direction.south, quality = quality })
+        this.locomotive_cargo = surface.create_entity({ name = 'cargo-wagon', position = { position.x, position.y + 3 }, force = 'player', direction = defines.direction.south, quality = quality_trains.cargo_wagon })
         if this.locomotive_cargo and this.locomotive_cargo.valid then
             this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'raw-fish', count = 8 })
         end
@@ -157,12 +164,12 @@ function Public.locomotive_spawn(surface, position, reversed)
         for y = -6, 6, 2 do
             surface.create_entity({ name = 'straight-rail', position = { position.x, position.y + y }, force = 'player', direction = 0 })
         end
-        this.locomotive = surface.create_entity({ name = 'locomotive', position = { position.x, position.y + -3 }, force = 'player', quality = quality })
+        this.locomotive = surface.create_entity({ name = 'locomotive', position = { position.x, position.y + -3 }, force = 'player', quality = quality_trains.locomotive })
         if this.locomotive and this.locomotive.valid then
             this.locomotive.get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 100 })
         end
 
-        this.locomotive_cargo = surface.create_entity({ name = 'cargo-wagon', position = { position.x, position.y + 3 }, force = 'player', quality = quality })
+        this.locomotive_cargo = surface.create_entity({ name = 'cargo-wagon', position = { position.x, position.y + 3 }, force = 'player', quality = quality_trains.cargo_wagon })
         if this.locomotive_cargo and this.locomotive_cargo.valid then
             this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'raw-fish', count = 8 })
         end

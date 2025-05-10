@@ -1,5 +1,6 @@
 local Event = require 'utils.event'
 local Public = require 'maps.mountain_fortress_v3.table'
+local ICW = require 'maps.mountain_fortress_v3.icw.table'
 local Color = require 'utils.color_presets'
 local RPG = require 'modules.rpg.main'
 local IC_Gui = require 'maps.mountain_fortress_v3.ic.gui'
@@ -301,6 +302,7 @@ local function changed_surface(player)
     local rpg_frame = RPG.main_frame_name
     local rpg_settings = RPG.settings_frame_name
     local main = Public.get('locomotive')
+    if not main or not main.valid then return end
     local icw_locomotive = Public.get('icw_locomotive')
     if not icw_locomotive then
         return
@@ -342,7 +344,7 @@ local function changed_surface(player)
         return
     end
 
-    if player.physical_surface == main.surface then
+    if (player.physical_surface == main.surface and player.physical_position.x > 700) then
         local minimap = player.gui.left.icw_main_frame
         if main_toggle_button and not main_toggle_button.visible then
             main_toggle_button.visible = true
@@ -382,7 +384,7 @@ local function changed_surface(player)
             info.sprite = 'utility/expand'
             info.visible = true
         end
-    elseif player.physical_surface == wagon_surface then
+    elseif (player.physical_surface == wagon_surface or player.physical_position.x < 700) then
         if main_toggle_button and main_toggle_button.visible then
             main_toggle_button.visible = false
         end
@@ -478,7 +480,7 @@ local function on_gui_click(event)
         if not player.physical_surface or not player.physical_surface.valid then
             return
         end
-        if player.physical_surface ~= locomotive.surface then
+        if (player.physical_surface ~= locomotive.surface or player.physical_position.x > 700) then
             local minimap = player.gui.left.icw_main_frame
             if minimap and minimap.visible then
                 minimap.visible = false
@@ -548,6 +550,8 @@ local function on_player_changed_surface(event)
     if not validate_player(player) then
         return
     end
+    local surface = game.get_surface(event.surface_index)
+    if surface.name == 'Init' then return end
     changed_surface(player)
 end
 
@@ -679,6 +683,7 @@ Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(Public.events.reset_map, enable_guis)
+Event.add(ICW.events.on_player_used_door, on_player_changed_surface)
 
 Gui.on_click(
     spectate_button_name,

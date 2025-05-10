@@ -13,7 +13,6 @@ local Core = require 'utils.core'
 local Task = require 'utils.task_token'
 
 local zone_settings = Public.zone_settings
-local scenario_name = Public.scenario_name
 
 local rpg_main_frame = RPG.main_frame_name
 local random = math.random
@@ -181,10 +180,11 @@ local function hurt_players_outside_of_aura()
     local loco = locomotive.position
 
     local upgrades = Public.get('upgrades')
+    local starting_planet = Public.get_planet()
 
     Core.iter_connected_players(
         function (player)
-            if sub(player.physical_surface.name, 0, #scenario_name) == scenario_name then
+            if sub(player.physical_surface.name, 0, #starting_planet) == starting_planet then
                 local position = player.physical_position
                 local inside = ((position.x - loco.x) ^ 2 + (position.y - loco.y) ^ 2) < upgrades.locomotive_aura_radius ^ 2
                 if not inside then
@@ -251,6 +251,7 @@ local function give_passive_xp(data)
         return
     end
     local upgrades = Public.get('upgrades')
+    local default_surface = Public.get('default_surface')
     local locomotive = Public.get('locomotive')
     if not locomotive or not locomotive.valid then
         return
@@ -263,8 +264,8 @@ local function give_passive_xp(data)
             local position = player.physical_position
             local inside = ((position.x - loco.x) ^ 2 + (position.y - loco.y) ^ 2) < upgrades.locomotive_aura_radius ^ 2
             if player.afk_time < 200 and not RPG.get_last_spell_cast(player) then
-                if inside or player.physical_surface.index == loco_surface.index then
-                    if player.physical_surface.index == loco_surface.index then
+                if inside or (player.physical_surface.index == loco_surface.index and not default_surface or position.x > 700) then
+                    if (player.physical_surface.index == loco_surface.index and not default_surface) then
                         Public.add_player_to_permission_group(player, 'limited')
                     elseif ICFunctions.get_player_surface(player) then
                         Public.add_player_to_permission_group(player, 'limited')
@@ -307,7 +308,7 @@ local function give_passive_xp(data)
                         end
                     end
                 end
-            elseif player.afk_time > 1800 and player.character and player.physical_surface.index == loco_surface.index and player.get_requester_point() then
+            elseif player.afk_time > 1800 and player.character and (player.physical_surface.index == loco_surface.index or player.physical_position.x > 700) and player.get_requester_point() then
                 player.get_requester_point().enabled = false
             end
             ::pre_exit::
@@ -481,6 +482,13 @@ local function set_locomotive_health()
         return
     end
 
+    -- locomotive.surface.create_entity(
+    --     {
+    --         name = 'big-demolisher-ash-cloud',
+    --         position = locomotive.position,
+    --     }
+    -- )
+
     Public.set('locomotive_position', locomotive.position)
 
     if locomotive_health <= 0 then
@@ -578,7 +586,7 @@ local function on_player_changed_surface(event)
 
     local locomotive_surface = Public.get('loco_surface')
 
-    if locomotive_surface and locomotive_surface.valid and player.physical_surface.index == locomotive_surface.index then
+    if locomotive_surface and locomotive_surface.valid and (player.physical_surface.index == locomotive_surface.index or player.physical_position.x > 700) then
         return Public.add_player_to_permission_group(player, 'limited')
     elseif ICFunctions.get_player_surface(player) then
         return Public.add_player_to_permission_group(player, 'limited')

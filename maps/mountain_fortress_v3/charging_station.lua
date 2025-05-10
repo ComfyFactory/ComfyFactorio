@@ -80,7 +80,7 @@ local function charge(player)
         return player.print(warn, { color = Color.warning })
     end
 
-    local ents = player.physical_surface.find_entities_filtered { name = 'accumulator', force = player.force, position = player.physical_position, radius = 13 }
+    local ents = player.physical_surface.find_entities_filtered { type = 'accumulator', force = player.force, position = player.physical_position, radius = 13 }
     if not ents or not next(ents) then
         return player.print(module_name .. 'No accumulators nearby.', { color = Color.warning })
     end
@@ -101,6 +101,8 @@ local function charge(player)
             end
         end
     end
+
+    player.play_sound({ path = 'utility/armor_insert', position = player.position, volume_modifier = 1 })
 end
 
 local function on_player_joined_game(event)

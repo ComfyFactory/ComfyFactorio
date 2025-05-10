@@ -8,8 +8,8 @@ local floor = math.floor
 local ceil = math.ceil
 
 local is_modded = Public.is_modded
+local is_modded_pt2 = Public.is_modded_pt2
 
-local scenario_name = Public.scenario_name
 local zone_settings = Public.zone_settings
 local worm_level_modifier = 0.19
 local base_tile = 'grass-1'
@@ -44,6 +44,38 @@ local start_ground_tiles =
     'volcanic-folds-warm',
     'volcanic-soil-light',
     'volcanic-smooth-stone-warm',
+}
+
+local start_fulgora_tiles =
+{
+    'fulgoran-machinery',
+    'fulgoran-conduit',
+    'fulgoran-machinery',
+    'fulgoran-paving',
+    'fulgoran-walls',
+    'fulgoran-machinery',
+    'fulgoran-conduit',
+    'fulgoran-walls',
+    'fulgoran-conduit',
+    'fulgoran-walls',
+    'fulgoran-paving',
+    'fulgoran-walls',
+}
+
+local start_aquilo_tiles =
+{
+    'snow-flat',
+    'snow-lumpy',
+    'snow-crests',
+    'snow-flat',
+    'snow-crests',
+    'snow-patchy',
+    'snow-lumpy',
+    'snow-crests',
+    'snow-flat',
+    'snow-patchy',
+    'snow-lumpy',
+    'snow-patchy',
 }
 
 if not has_space_age() then
@@ -112,7 +144,38 @@ if is_modded then
     }
 end
 
+if is_modded_pt2 then
+    rock_raffle =
+    {
+        'huge-rock-crisp-stra-1',
+        'big-rock-crisp-stra-1',
+        'huge-rock-crisp-stra-2',
+        'big-rock-crisp-stra-2',
+        'huge-rock-crisp-stra-3',
+        'big-rock-crisp-stra-3',
+        'huge-rock-crisp-volc-1',
+        'big-rock-crisp-volc-1',
+    }
+end
 local size_of_rock_raffle = #rock_raffle
+
+local aquilo_rock_raffle =
+{
+    'lithium-iceberg-big',
+    'lithium-iceberg-huge',
+    'lithium-iceberg-big',
+    'lithium-iceberg-huge',
+}
+local size_of_aquilo_rock_raffle = #aquilo_rock_raffle
+
+local gleba_rock_raffle =
+{
+    'lithium-iceberg-big',
+    'lithium-iceberg-huge',
+    'lithium-iceberg-big',
+    'lithium-iceberg-huge',
+}
+local size_of_gleba_rock_raffle = #gleba_rock_raffle
 
 local tree_raffle =
 {
@@ -122,6 +185,17 @@ local tree_raffle =
     'tree-04',
     'tree-08-brown'
 }
+if is_modded_pt2 then
+    tree_raffle =
+    {
+        'stingfrond',
+        'teflilly',
+        'boompuff',
+        'sunnycomb',
+        'stingfrond',
+    }
+end
+
 local size_of_tree_raffle = #tree_raffle
 
 local scrap_entities =
@@ -443,7 +517,7 @@ local function place_wagon(data, adjusted_zones)
     end
 
     for _, tile in pairs(location) do
-        tiles[#tiles + 1] = { name = base_tile, position = tile.position }
+        tiles[#tiles + 1] = { name = adjusted_zones.starting_tile, position = tile.position }
         if tile.position.y % 1 == 0 and tile.position.x % 1 == 0 then
             entities[#entities + 1] =
             {
@@ -494,7 +568,7 @@ local function spawn_turret(entities, p, probability)
     }
 end
 
-local function wall(p, data)
+local function wall(p, data, adjusted_zones)
     local tiles = data.tiles
     local entities = data.entities
     local surface = data.surface
@@ -532,7 +606,7 @@ local function wall(p, data)
             tiles[#tiles + 1] = { name = nuclear_tiles[index], position = p }
 
             if random(1, 4) ~= 1 then
-                entities[#entities + 1] = { name = rock_raffle[random(1, #rock_raffle)], position = p }
+                entities[#entities + 1] = { name = adjusted_zones.rock_raffle[random(1, adjusted_zones.size_of)], position = p }
                 if random(1, 26) == 1 then
                     entities[#entities + 1] =
                     {
@@ -574,7 +648,6 @@ local function wall(p, data)
                             force = 'neutral',
                             callback = stone_wall
                         }
-                        local adjusted_zones = Public.get('adjusted_zones')
 
                         if not alert_zone_1 and data.y >= -zone_settings.zone_depth then
                             local x_min = -zone_settings.zone_width / 2
@@ -822,7 +895,7 @@ local function zone_14(x, y, data, _, adjusted_zones)
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] =
             {
-                name = Biters.wave_defense_roll_worm_name('fire'),
+                name = Biters.wave_defense_roll_worm_name(),
                 position = p,
                 force = 'enemy',
                 note = true
@@ -889,7 +962,7 @@ local function zone_13(x, y, data, _, adjusted_zones)
             treasure[#treasure + 1] = { position = p, chest = 'wooden-chest' }
         end
         if random(1, 2) == 1 then
-            entities[#entities + 1] = { name = rock_raffle[random(1, size_of_rock_raffle)], position = p }
+            entities[#entities + 1] = { name = adjusted_zones.rock_raffle[random(1, adjusted_zones.size_of)], position = p }
         end
         return
     end
@@ -936,7 +1009,7 @@ local function zone_13(x, y, data, _, adjusted_zones)
                 treasure[#treasure + 1] = { position = p, chest = 'wooden-chest' }
             end
             if random(1, 2) == 1 then
-                entities[#entities + 1] = { name = rock_raffle[random(1, size_of_rock_raffle)], position = p }
+                entities[#entities + 1] = { name = adjusted_zones.rock_raffle[random(1, adjusted_zones.size_of)], position = p }
             end
             return
         end
@@ -970,7 +1043,7 @@ local function zone_12(x, y, data, void_or_lab, adjusted_zones)
             entities[#entities + 1] = { name = 'tree-0' .. random(1, 9), position = p }
         else
             if random(1, 2) == 1 then
-                entities[#entities + 1] = { name = rock_raffle[random(1, size_of_rock_raffle)], position = p }
+                entities[#entities + 1] = { name = adjusted_zones.rock_raffle[random(1, adjusted_zones.size_of)], position = p }
             end
         end
         if random(1, 48) == 1 then
@@ -995,7 +1068,7 @@ local function zone_12(x, y, data, void_or_lab, adjusted_zones)
         if noise_1 > -0.14 and noise_1 < 0.14 then
             tiles[#tiles + 1] = { name = 'dirt-7', position = p }
             if random(1, 2) == 1 then
-                entities[#entities + 1] = { name = rock_raffle[random(1, size_of_rock_raffle)], position = p }
+                entities[#entities + 1] = { name = adjusted_zones.rock_raffle[random(1, adjusted_zones.size_of)], position = p }
             end
             if random(1, 256) == 1 then
                 treasure[#treasure + 1] = { position = p, chest = 'wooden-chest' }
@@ -1066,11 +1139,18 @@ local function zone_11(x, y, data, _, adjusted_zones)
         return
     end
 
+    if adjusted_zones.starting_planet == 'fulgora' then
+        if noise_1 < -0.5 then
+            entities[#entities + 1] = { name = 'scrap', position = p, amount = abs(p.y) + 1 * 3 }
+            return
+        end
+    end
+
     if noise_1 > -0.30 and noise_1 < 0.30 then
         if noise_1 > -0.14 and noise_1 < 0.14 then
             tiles[#tiles + 1] = { name = 'dirt-7', position = p }
             if random(1, 2) == 1 then
-                entities[#entities + 1] = { name = rock_raffle[random(1, size_of_rock_raffle)], position = p }
+                entities[#entities + 1] = { name = adjusted_zones.rock_raffle[random(1, adjusted_zones.size_of)], position = p }
             end
             if random(1, 256) == 1 then
                 treasure[#treasure + 1] = { position = p, chest = 'wooden-chest' }
@@ -1165,7 +1245,7 @@ local function zone_10(x, y, data, _, adjusted_zones)
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] =
             {
-                name = Biters.wave_defense_roll_worm_name('fire'),
+                name = Biters.wave_defense_roll_worm_name(),
                 position = p,
                 force = 'enemy',
                 note = true
@@ -1183,7 +1263,7 @@ local function zone_10(x, y, data, _, adjusted_zones)
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] =
             {
-                name = Biters.wave_defense_roll_worm_name('fire'),
+                name = Biters.wave_defense_roll_worm_name(),
                 position = p,
                 force = 'enemy',
                 note = true
@@ -1202,7 +1282,7 @@ local function zone_10(x, y, data, _, adjusted_zones)
                 Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
                 entities[#entities + 1] =
                 {
-                    name = Biters.wave_defense_roll_worm_name('fire'),
+                    name = Biters.wave_defense_roll_worm_name(),
                     position = p,
                     force = 'enemy',
                     note = true
@@ -1225,7 +1305,7 @@ local function zone_10(x, y, data, _, adjusted_zones)
                 Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
                 entities[#entities + 1] =
                 {
-                    name = Biters.wave_defense_roll_worm_name('fire'),
+                    name = Biters.wave_defense_roll_worm_name(),
                     position = p,
                     force = 'enemy',
                     note = true
@@ -1265,7 +1345,7 @@ local function zone_9(x, y, data, _, adjusted_zones)
         tiles[#tiles + 1] = { name = 'dirt-7', position = p }
         local no_rocks_2 = Public.get_noise('no_rocks_2', p, seed)
         if random(1, 2) == 1 and no_rocks_2 > -0.5 then
-            entities[#entities + 1] = { name = rock_raffle[random(1, size_of_rock_raffle)], position = p }
+            entities[#entities + 1] = { name = adjusted_zones.rock_raffle[random(1, adjusted_zones.size_of)], position = p }
         end
         if random(1, 1024) == 1 then
             treasure[#treasure + 1] = { position = p, chest = 'wooden-chest' }
@@ -1363,7 +1443,7 @@ local function zone_scrap_2(x, y, data, void_or_lab, adjusted_zones)
         tiles[#tiles + 1] = { name = 'dirt-7', position = p }
         if scrapyard_modified < -0.55 or scrapyard_modified > 0.55 then
             if random(1, 2) == 1 then
-                entities[#entities + 1] = { name = rock_raffle[random(1, size_of_rock_raffle)], position = p }
+                entities[#entities + 1] = { name = adjusted_zones.rock_raffle[random(1, adjusted_zones.size_of)], position = p }
             end
             return
         end
@@ -1439,7 +1519,7 @@ local function zone_scrap_2(x, y, data, void_or_lab, adjusted_zones)
         if floor(large_caves * 10) % 4 < 3 then
             tiles[#tiles + 1] = { name = 'dirt-7', position = p }
             if random(1, 2) == 1 then
-                entities[#entities + 1] = { name = rock_raffle[random(1, size_of_rock_raffle)], position = p }
+                entities[#entities + 1] = { name = adjusted_zones.rock_raffle[random(1, adjusted_zones.size_of)], position = p }
             end
             if random(1, 2048) == 1 then
                 treasure[#treasure + 1] = { position = p, chest = 'wooden-chest' }
@@ -1452,7 +1532,7 @@ local function zone_scrap_2(x, y, data, void_or_lab, adjusted_zones)
         entities[#entities + 1] = { name = 'crude-oil', position = p, amount = get_oil_amount(p) }
     end
 
-    tiles[#tiles + 1] = { name = base_tile, position = p }
+    tiles[#tiles + 1] = { name = adjusted_zones.starting_tile, position = p }
     if random(1, 256) == 1 then
         entities[#entities + 1] = { name = 'land-mine', position = p, force = 'enemy' }
     end
@@ -1500,7 +1580,7 @@ local function zone_scrap_1(x, y, data, void_or_lab, adjusted_zones)
         tiles[#tiles + 1] = { name = 'dirt-7', position = p }
         if scrapyard < -0.55 or scrapyard > 0.55 then
             if random(1, 2) == 1 then
-                entities[#entities + 1] = { name = rock_raffle[random(1, size_of_rock_raffle)], position = p }
+                entities[#entities + 1] = { name = adjusted_zones.rock_raffle[random(1, adjusted_zones.size_of)], position = p }
             end
             return
         end
@@ -1576,7 +1656,7 @@ local function zone_scrap_1(x, y, data, void_or_lab, adjusted_zones)
         if floor(large_caves * 10) % 4 < 3 then
             tiles[#tiles + 1] = { name = 'dirt-7', position = p }
             if random(1, 2) == 1 then
-                entities[#entities + 1] = { name = rock_raffle[random(1, size_of_rock_raffle)], position = p }
+                entities[#entities + 1] = { name = adjusted_zones.rock_raffle[random(1, adjusted_zones.size_of)], position = p }
             end
             if random(1, 2048) == 1 then
                 treasure[#treasure + 1] = { position = p, chest = 'wooden-chest' }
@@ -1705,7 +1785,7 @@ local function zone_7(x, y, data, void_or_lab, adjusted_zones)
 
     tiles[#tiles + 1] = { name = 'dirt-7', position = p }
     if random(1, 100) > 15 then
-        entities[#entities + 1] = { name = rock_raffle[random(1, size_of_rock_raffle)], position = p }
+        entities[#entities + 1] = { name = adjusted_zones.rock_raffle[random(1, adjusted_zones.size_of)], position = p }
     end
     if random(1, 256) == 1 then
         treasure[#treasure + 1] = { position = p, chest = 'wooden-chest' }
@@ -1759,7 +1839,7 @@ local function zone_forest_2(x, y, data, void_or_lab, adjusted_zones)
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] =
             {
-                name = Biters.wave_defense_roll_worm_name('fire'),
+                name = Biters.wave_defense_roll_worm_name(),
                 position = p,
                 force = 'enemy',
                 note = true
@@ -1781,7 +1861,7 @@ local function zone_forest_2(x, y, data, void_or_lab, adjusted_zones)
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] =
             {
-                name = Biters.wave_defense_roll_worm_name('fire'),
+                name = Biters.wave_defense_roll_worm_name(),
                 position = p,
                 force = 'enemy',
                 note = true
@@ -1798,7 +1878,7 @@ local function zone_forest_2(x, y, data, void_or_lab, adjusted_zones)
                     Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
                     entities[#entities + 1] =
                     {
-                        name = Biters.wave_defense_roll_worm_name('fire'),
+                        name = Biters.wave_defense_roll_worm_name(),
                         position = p,
                         force = 'enemy',
                         note = true
@@ -1821,7 +1901,7 @@ local function zone_forest_2(x, y, data, void_or_lab, adjusted_zones)
                     Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
                     entities[#entities + 1] =
                     {
-                        name = Biters.wave_defense_roll_worm_name('fire'),
+                        name = Biters.wave_defense_roll_worm_name(),
                         position = p,
                         force = 'enemy',
                         note = true
@@ -1870,7 +1950,7 @@ local function zone_5(x, y, data, void_or_lab, adjusted_zones)
             treasure[#treasure + 1] = { position = p, chest = 'wooden-chest' }
         end
         if random(1, 2) == 1 then
-            entities[#entities + 1] = { name = rock_raffle[random(1, size_of_rock_raffle)], position = p }
+            entities[#entities + 1] = { name = adjusted_zones.rock_raffle[random(1, adjusted_zones.size_of)], position = p }
         end
         return
     end
@@ -1938,7 +2018,7 @@ local function zone_5(x, y, data, void_or_lab, adjusted_zones)
             end
 
             if random(1, 2) == 1 then
-                entities[#entities + 1] = { name = rock_raffle[random(1, size_of_rock_raffle)], position = p }
+                entities[#entities + 1] = { name = adjusted_zones.rock_raffle[random(1, adjusted_zones.size_of)], position = p }
             end
         end
     end
@@ -2002,7 +2082,7 @@ local function zone_4(x, y, data, void_or_lab, adjusted_zones)
     if abs(noise_large_caves) > 0.475 then
         tiles[#tiles + 1] = { name = 'dirt-7', position = p }
         if random(1, 2) == 1 then
-            entities[#entities + 1] = { name = rock_raffle[random(1, size_of_rock_raffle)], position = p }
+            entities[#entities + 1] = { name = adjusted_zones.rock_raffle[random(1, adjusted_zones.size_of)], position = p }
         end
         if random(1, 2048) == 1 then
             treasure[#treasure + 1] = { position = p, chest = 'wooden-chest' }
@@ -2026,7 +2106,7 @@ local function zone_4(x, y, data, void_or_lab, adjusted_zones)
     if small_caves > -0.15 and small_caves < 0.15 then
         tiles[#tiles + 1] = { name = 'dirt-7', position = p }
         if random(1, 2) == 1 then
-            entities[#entities + 1] = { name = rock_raffle[random(1, size_of_rock_raffle)], position = p }
+            entities[#entities + 1] = { name = adjusted_zones.rock_raffle[random(1, adjusted_zones.size_of)], position = p }
         end
         if random(1, 1024) == 1 then
             treasure[#treasure + 1] = { position = p, chest = 'wooden-chest' }
@@ -2071,7 +2151,7 @@ local function zone_4(x, y, data, void_or_lab, adjusted_zones)
 
         tiles[#tiles + 1] = { name = 'dirt-7', position = p }
         if random(1, 100) > 30 then
-            entities[#entities + 1] = { name = rock_raffle[random(1, size_of_rock_raffle)], position = p }
+            entities[#entities + 1] = { name = adjusted_zones.rock_raffle[random(1, adjusted_zones.size_of)], position = p }
         end
         return
     end
@@ -2118,7 +2198,7 @@ local function zone_3(x, y, data, void_or_lab, adjusted_zones)
     if noise_cave_ponds < -0.77 then
         if noise_cave_ponds > -0.79 then
             tiles[#tiles + 1] = { name = 'dirt-7', position = p }
-            entities[#entities + 1] = { name = rock_raffle[random(1, size_of_rock_raffle)], position = p }
+            entities[#entities + 1] = { name = adjusted_zones.rock_raffle[random(1, adjusted_zones.size_of)], position = p }
         else
             tiles[#tiles + 1] = { name = 'grass-' .. floor(noise_cave_ponds * 32) % 3 + 1, position = p }
             if random(1, 32) == 1 then
@@ -2235,7 +2315,7 @@ local function zone_3(x, y, data, void_or_lab, adjusted_zones)
         end
         tiles[#tiles + 1] = { name = 'dirt-7', position = p }
         if random(1, 100) > 30 then
-            entities[#entities + 1] = { name = rock_raffle[random(1, size_of_rock_raffle)], position = p }
+            entities[#entities + 1] = { name = adjusted_zones.rock_raffle[random(1, adjusted_zones.size_of)], position = p }
         end
         return
     end
@@ -2385,7 +2465,7 @@ local function zone_2(x, y, data, void_or_lab, adjusted_zones)
         end
         tiles[#tiles + 1] = { name = 'grass-' .. random(1, 4), position = p }
         if random(1, 100) > 25 then
-            entities[#entities + 1] = { name = rock_raffle[random(1, size_of_rock_raffle)], position = p }
+            entities[#entities + 1] = { name = adjusted_zones.rock_raffle[random(1, adjusted_zones.size_of)], position = p }
         end
         return
     end
@@ -2417,7 +2497,7 @@ local function zone_forest_1(x, y, data, void_or_lab, adjusted_zones)
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] =
             {
-                name = Biters.wave_defense_roll_worm_name('fire'),
+                name = Biters.wave_defense_roll_worm_name(),
                 position = p,
                 force = 'enemy',
                 note = true
@@ -2493,7 +2573,7 @@ local function zone_forest_1(x, y, data, void_or_lab, adjusted_zones)
                     Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
                     entities[#entities + 1] =
                     {
-                        name = Biters.wave_defense_roll_worm_name('fire'),
+                        name = Biters.wave_defense_roll_worm_name(),
                         position = p,
                         force = 'enemy',
                         note = true
@@ -2518,7 +2598,7 @@ local function zone_forest_1(x, y, data, void_or_lab, adjusted_zones)
         if success then
             return
         end
-        tiles[#tiles + 1] = { name = base_tile, position = p }
+        tiles[#tiles + 1] = { name = adjusted_zones.starting_tile, position = p }
         if random(1, 32) == 1 then
             entities[#entities + 1] = { name = 'tree-0' .. random(1, 9), position = p }
         end
@@ -2539,7 +2619,7 @@ local function zone_forest_1(x, y, data, void_or_lab, adjusted_zones)
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] =
             {
-                name = Biters.wave_defense_roll_worm_name('fire'),
+                name = Biters.wave_defense_roll_worm_name(),
                 position = p,
                 force = 'enemy',
                 note = true
@@ -2562,7 +2642,7 @@ local function zone_forest_1(x, y, data, void_or_lab, adjusted_zones)
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] =
             {
-                name = Biters.wave_defense_roll_worm_name('fire'),
+                name = Biters.wave_defense_roll_worm_name(),
                 position = p,
                 force = 'enemy',
                 note = true
@@ -2599,7 +2679,7 @@ local function zone_1(x, y, data, void_or_lab, adjusted_zones)
         if random(1, 32) == 1 then
             Public.spawn_random_buildings(buildings, p)
         end
-        if random(1, 32) == 1 then
+        if random(1, 256) == 1 then
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] =
             {
@@ -2613,12 +2693,12 @@ local function zone_1(x, y, data, void_or_lab, adjusted_zones)
     end
 
     --Chasms
-    if noise_cave_ponds < 0.110 and noise_cave_ponds > -0.112 then
-        if small_caves > 0.5 then
+    if noise_cave_ponds < 0.100 and noise_cave_ponds > -0.112 then
+        if small_caves > 0.4 then
             tiles[#tiles + 1] = { name = void_or_lab, position = p }
             return
         end
-        if small_caves < -0.5 then
+        if small_caves < -0.4 then
             tiles[#tiles + 1] = { name = void_or_lab, position = p }
             return
         end
@@ -2704,7 +2784,7 @@ local function zone_1(x, y, data, void_or_lab, adjusted_zones)
         if success then
             return
         end
-        tiles[#tiles + 1] = { name = base_tile, position = p }
+        tiles[#tiles + 1] = { name = adjusted_zones.starting_tile, position = p }
         if random(1, 32) == 1 then
             entities[#entities + 1] = { name = 'tree-0' .. random(1, 9), position = p }
         end
@@ -2722,7 +2802,7 @@ local function zone_1(x, y, data, void_or_lab, adjusted_zones)
     if random_tiles > 0.095 then
         if random_tiles > 0.6 then
             if random(1, 100) > 42 then
-                tiles[#tiles + 1] = { name = base_tile, position = p }
+                tiles[#tiles + 1] = { name = adjusted_zones.starting_tile, position = p }
             end
         else
             if random(1, 100) > 42 then
@@ -2734,7 +2814,7 @@ local function zone_1(x, y, data, void_or_lab, adjusted_zones)
     if random_tiles < -0.095 then
         if random_tiles < -0.6 then
             if random(1, 100) > 42 then
-                tiles[#tiles + 1] = { name = base_tile, position = p }
+                tiles[#tiles + 1] = { name = adjusted_zones.starting_tile, position = p }
             end
         else
             if random(1, 100) > 42 then
@@ -2743,148 +2823,119 @@ local function zone_1(x, y, data, void_or_lab, adjusted_zones)
         end
     end
     if random(1, 100) > 25 then
-        entities[#entities + 1] = { name = rock_raffle[random(1, size_of_rock_raffle)], position = p }
+        entities[#entities + 1] = { name = adjusted_zones.rock_raffle[random(1, adjusted_zones.size_of)], position = p }
     end
 end
 
-local function starting_zone(x, y, data, void_or_lab, adjusted_zones)
+local function fulgora_callback(x, y, data)
     local p = { x = x, y = y }
-    local seed = data.seed + 30000
-    local buildings = data.buildings
-    local tiles = data.tiles
+    local seed = data.seed + 10000
     local entities = data.entities
-    local markets = data.markets
-    local treasure = data.treasure
-
-    local small_caves = Public.get_noise('dungeons', p, seed + seed)
     local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed + seed)
-    local smol_areas = Public.get_noise('smol_areas', p, seed + seed)
-    local no_rocks_2 = Public.get_noise('no_rocks_2', p, seed + seed)
-    local cave_rivers = Public.get_noise('cave_rivers', p, seed)
-    local no_rocks = Public.get_noise('no_rocks', p, seed)
 
-    if smol_areas < 0.07 and smol_areas > -0.03 then
-        tiles[#tiles + 1] = { name = void_or_lab, position = p }
-        if random(1, 32) == 1 then
-            Public.spawn_random_buildings(buildings, p)
-        end
-        if random(1, 256) == 1 then
-            Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
-            entities[#entities + 1] =
-            {
-                name = Biters.wave_defense_roll_worm_name(),
-                position = p,
-                force = 'enemy'
-            }
-        end
-        return
-    end
-
-    --Chasms
-    if noise_cave_ponds < 0.12 and noise_cave_ponds > -0.08 then
-        if small_caves > 0.45 then
-            tiles[#tiles + 1] = { name = void_or_lab, position = p }
-            return
-        end
-        if small_caves < -0.45 then
-            tiles[#tiles + 1] = { name = void_or_lab, position = p }
-            return
-        end
-    end
-
-    --Water Ponds
     if noise_cave_ponds > 0.65 then
-        if noise_cave_ponds > 0.75 then
-            tiles[#tiles + 1] = { name = 'blue-refined-concrete', position = p }
-            if random(1, 4) == 1 then
-                markets[#markets + 1] = p
-            end
-            if random(1, 4) == 1 then
-                entities[#entities + 1] = { name = tree_raffle[random(1, size_of_tree_raffle)], position = p }
-            end
+        if noise_cave_ponds > 0.80 then
             return
         end
-        tiles[#tiles + 1] = { name = 'deepwater', position = p }
         if random(1, 16) == 1 then
-            entities[#entities + 1] = { name = 'fish', position = p }
-        end
-        return
-    end
-
-    --Rivers
-    if cave_rivers < 0.05 and cave_rivers > -0.05 then
-        if noise_cave_ponds > 0.15 then
-            tiles[#tiles + 1] = { name = 'water-shallow', position = p }
-            if random(1, 64) == 1 then
-                entities[#entities + 1] = { name = 'fish', position = p }
-            end
+            entities[#entities + 1] = { name = 'fulgoran-ruin-small', position = p }
             return
         end
-    end
-
-    if noise_cave_ponds > 0.68 then
-        if noise_cave_ponds > 0.55 then
-            if cave_rivers > -0.35 then
-                tiles[#tiles + 1] = { name = 'refined-hazard-concrete-right', position = p }
-            end
+        if random(1, 32) == 1 then
+            entities[#entities + 1] = { name = 'fulgoran-ruin-medium', position = p }
+            return
         end
         if random(1, 64) == 1 then
-            entities[#entities + 1] = { name = tree_raffle[random(1, size_of_tree_raffle)], position = p }
+            entities[#entities + 1] = { name = 'fulgoran-ruin-huge', position = p }
+            return
         end
         return
     end
+end
 
-    --Worm oil Zones
-    if no_rocks < 0.04 and no_rocks > -0.22 then
-        if small_caves > 0.1 then
-            tiles[#tiles + 1] = { name = 'nuclear-ground', position = p }
-            if random(1, 250) == 1 then
-                entities[#entities + 1] = { name = 'crude-oil', position = p, amount = get_oil_amount(p) }
-            end
-            if random(1, 96) == 1 then
-                Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
-                entities[#entities + 1] =
-                {
-                    name = Biters.wave_defense_roll_worm_name(),
-                    position = p,
-                    force = 'enemy'
-                }
-            end
+local function vulcanus_callback(x, y, data)
+    local p = { x = x, y = y }
+    local seed = data.seed + 10000
+    local entities = data.entities
+    local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed + seed)
 
-            if random(1, 1024) == 1 then
-                treasure[#treasure + 1] = { position = p, chest = 'iron-chest' }
-            end
-            if random(1, 64) == 1 then
-                entities[#entities + 1] = { name = 'tree-0' .. random(1, 9), position = p }
-            end
+    if noise_cave_ponds > 0.65 then
+        if noise_cave_ponds > 0.80 then
             return
         end
-    end
-
-    --Main Rock Terrain
-    if no_rocks_2 > 0.35 and no_rocks_2 < 0.55 then
-        local success = place_wagon(data, adjusted_zones)
-        if success then
+        if random(1, 16) == 1 then
+            entities[#entities + 1] = { name = 'fulgoran-ruin-small', position = p }
             return
         end
-        tiles[#tiles + 1] = { name = base_tile, position = p }
-        if random(1, 18) == 1 then
-            entities[#entities + 1] = { name = 'tree-0' .. random(1, 9), position = p }
+        if random(1, 32) == 1 then
+            entities[#entities + 1] = { name = 'fulgoran-ruin-medium', position = p }
+            return
         end
-
-        if random(1, 512) == 1 then
-            treasure[#treasure + 1] = { position = p, chest = 'iron-chest' }
+        if random(1, 64) == 1 then
+            entities[#entities + 1] = { name = 'fulgoran-ruin-huge', position = p }
+            return
         end
         return
     end
+end
 
-    if random(1, 2048) == 1 then
-        treasure[#treasure + 1] = { position = p, chest = 'iron-chest' }
+local function gleba_callback(x, y, data)
+    local p = { x = x, y = y }
+    local seed = data.seed + 10000
+    local entities = data.entities
+    local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed + seed)
+
+    if noise_cave_ponds > 0.65 then
+        if noise_cave_ponds > 0.80 then
+            return
+        end
+        if random(1, 16) == 1 then
+            entities[#entities + 1] = { name = 'fulgoran-ruin-small', position = p }
+            return
+        end
+        if random(1, 32) == 1 then
+            entities[#entities + 1] = { name = 'fulgoran-ruin-medium', position = p }
+            return
+        end
+        if random(1, 64) == 1 then
+            entities[#entities + 1] = { name = 'fulgoran-ruin-huge', position = p }
+            return
+        end
+        return
     end
-    tiles[#tiles + 1] = { name = base_tile, position = p }
-    if random(1, 100) > 25 then
-        entities[#entities + 1] = { name = rock_raffle[random(1, size_of_rock_raffle)], position = p }
+end
+
+local function aquilo_callback(x, y, data)
+    local p = { x = x, y = y }
+    local seed = data.seed + 10000
+    local entities = data.entities
+    local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed + seed)
+
+    if noise_cave_ponds > 0.65 then
+        if noise_cave_ponds > 0.80 then
+            return
+        end
+        if random(1, 16) == 1 then
+            entities[#entities + 1] = { name = 'fulgoran-ruin-small', position = p }
+            return
+        end
+        if random(1, 32) == 1 then
+            entities[#entities + 1] = { name = 'fulgoran-ruin-medium', position = p }
+            return
+        end
+        if random(1, 64) == 1 then
+            entities[#entities + 1] = { name = 'fulgoran-ruin-huge', position = p }
+            return
+        end
+        return
     end
+end
+
+local function fortress_callback(x, y, data)
+    if x then return end
+    if y then return end
+    if data then return end
+    -- empty
 end
 
 local zones =
@@ -2907,6 +2958,15 @@ local zones =
     zone_14 = { fn = zone_14, weight = 100, tags = { 'forest_4' } }
 }
 
+local planets =
+{
+    fulgora = fulgora_callback,
+    vulcanus = vulcanus_callback,
+    gleba = gleba_callback,
+    aquilo = aquilo_callback,
+    fortress = fortress_callback
+}
+
 local function shuffle_terrains(adjusted_zones, new_zone)
     if not adjusted_zones.shuffled_terrains then
         shuffle(adjusted_zones.shuffled_zones)
@@ -2920,7 +2980,7 @@ local function shuffle_terrains(adjusted_zones, new_zone)
 end
 
 local function is_out_of_map(p)
-    if p.x < 480 and p.x >= -480 then
+    if p.x < Public.zone_settings.zone_width / 2 and p.x >= -Public.zone_settings.zone_width / 2 then
         return
     end
     return true
@@ -2974,13 +3034,14 @@ local function process_bits(p, data, adjusted_zones)
 
     local generate_zone
     if adjusted_zones.starting_zone and depth then
-        generate_zone = starting_zone
+        generate_zone = zone_1
     else
         generate_zone = zones[adjusted_zones.shuffled_zones[index]].fn
         if not generate_zone then
             generate_zone = zones[adjusted_zones.shuffled_zones[adjusted_zones.size]].fn
         end
     end
+
 
     data.current_zone = index
 
@@ -2992,11 +3053,38 @@ local function process_bits(p, data, adjusted_zones)
         adjusted_zones.scrap[index] = true
     end
 
+    local starting_planet = Public.get_planet()
     local void_or_tile = Public.get('void_or_tile')
+
+    adjusted_zones.starting_planet = starting_planet
+    local planet_callback = planets[adjusted_zones.starting_planet]
+
+    if starting_planet == 'fulgora' then
+        adjusted_zones.starting_tile = 'oil-ocean-shallow'
+        adjusted_zones.rock_raffle = rock_raffle
+        adjusted_zones.size_of = size_of_rock_raffle
+    elseif starting_planet == 'vulcanus' then
+        adjusted_zones.rock_raffle = rock_raffle
+        adjusted_zones.size_of = size_of_rock_raffle
+        adjusted_zones.starting_tile = 'fulgoran-machinery'
+    elseif starting_planet == 'gleba' then
+        adjusted_zones.starting_tile = 'fulgoran-machinery'
+        adjusted_zones.rock_raffle = gleba_rock_raffle
+        adjusted_zones.size_of = size_of_gleba_rock_raffle
+    elseif starting_planet == 'aquilo' then
+        adjusted_zones.starting_tile = 'snow-crests'
+        adjusted_zones.rock_raffle = aquilo_rock_raffle
+        adjusted_zones.size_of = size_of_aquilo_rock_raffle
+    else
+        adjusted_zones.starting_tile = base_tile
+        adjusted_zones.rock_raffle = rock_raffle
+        adjusted_zones.size_of = size_of_rock_raffle
+    end
 
     local x = p.x
     local y = p.y
 
+    planet_callback(x, y, data)
     generate_zone(x, y, data, void_or_tile, adjusted_zones)
 end
 
@@ -3039,9 +3127,18 @@ local function border_chunk(p, data)
     local noise = Public.get_noise('dungeon_sewer', pos, data.seed)
     local index = floor(noise * 32) % 11 + 1
     local tile = surface.get_tile(pos)
+    local starting_planet = Public.get_planet()
     if tile and tile.valid and tile.name ~= 'black-refined-concrete' then
-        tiles[#tiles + 1] = { name = start_ground_tiles[index], position = pos }
+        if starting_planet == 'fulgora' then
+            tiles[#tiles + 1] = { name = start_fulgora_tiles[index], position = pos }
+        elseif starting_planet == 'aquilo' then
+            tiles[#tiles + 1] = { name = start_aquilo_tiles[index], position = pos }
+        else
+            tiles[#tiles + 1] = { name = start_ground_tiles[index], position = pos }
+        end
     end
+
+
 
     local scrap_mineable_entities, scrap_mineable_entities_index = get_scrap_mineable_entities()
 
@@ -3054,7 +3151,6 @@ local function border_chunk(p, data)
                 force = 'neutral'
             }
         end
-
 
         for _, decorative in pairs(dec_tbl) do
             if random(1, abs(pos.y) + 3) == 1 then
@@ -3122,13 +3218,17 @@ end
 function Public.heavy_functions(data)
     local top_y = data.top_y
     local surface = data.surface
-    if string.sub(surface.name, 0, #scenario_name) ~= scenario_name then
+    local starting_planet = Public.get_planet()
+    if string.sub(surface.name, 0, #starting_planet) ~= starting_planet then
         return
     end
     local adjusted_zones = Public.get('adjusted_zones')
     data.reversed = adjusted_zones.reversed
 
     local p = data.position
+    if is_out_of_map(p) then
+        return out_of_map(p, data)
+    end
 
     local pre_final_battle = Public.get('pre_final_battle')
     if pre_final_battle then
@@ -3150,7 +3250,7 @@ function Public.heavy_functions(data)
     if data.reversed then
         if top_y % zone_settings.zone_depth == 0 and top_y > 0 then
             Public.set('left_top', data.left_top)
-            return wall(p, data)
+            return wall(p, data, adjusted_zones)
         end
 
         if top_y > -0 then
@@ -3171,7 +3271,7 @@ function Public.heavy_functions(data)
     else
         if top_y % zone_settings.zone_depth == 0 and top_y < 0 then
             Public.set('left_top', data.left_top)
-            return wall(p, data)
+            return wall(p, data, adjusted_zones)
         end
         if top_y < 0 then
             return process_bits(p, data, adjusted_zones)
@@ -3209,7 +3309,8 @@ Event.add(
     defines.events.on_chunk_generated,
     function (e)
         local surface = e.surface
-        if string.sub(surface.name, 0, #scenario_name) ~= scenario_name then
+        local starting_planet = Public.get_planet()
+        if string.sub(surface.name, 0, #starting_planet) ~= starting_planet then
             return
         end
 
@@ -3238,6 +3339,17 @@ Event.add(
             surface.set_tiles(tiles, false)
             return
         end
+
+        local tiles = {}
+        for x = 0, 31, 1 do
+            for y = 0, 31, 1 do
+                local position = { x = left_top.x + x, y = left_top.y + y }
+                if is_out_of_map(position) then
+                    tiles[#tiles + 1] = { name = 'out-of-map', position = position }
+                end
+            end
+        end
+        surface.set_tiles(tiles, true)
 
         local winter_mode = Public.get('winter_mode')
         if winter_mode then
@@ -3269,14 +3381,14 @@ Event.add(
                 game.forces.player.chart(surface, { { left_top.x, left_top.y }, { left_top.x + 31, left_top.y + 31 } })
             end
 
-            local tiles = {}
+            local oom_tiles = {}
 
             if left_top.y > 32 then
                 for k, v in pairs(loading_chunk_vectors) do
-                    tiles[k] = { name = out_of_map_tile, position = { left_top.x + v[1], left_top.y + v[2] } }
+                    oom_tiles[k] = { name = out_of_map_tile, position = { left_top.x + v[1], left_top.y + v[2] } }
                 end
             end
-            surface.set_tiles(tiles, false)
+            surface.set_tiles(oom_tiles, false)
         else
             if left_top.y == -128 and left_top.x == -128 then
                 local locomotive = Public.get('locomotive')
@@ -3292,14 +3404,14 @@ Event.add(
                 game.forces.player.chart(surface, { { left_top.x, left_top.y }, { left_top.x + 31, left_top.y + 31 } })
             end
 
-            local tiles = {}
+            local oom_tiles = {}
 
             if math.abs(left_top.y) > 128 then
                 for k, v in pairs(loading_chunk_vectors) do
-                    tiles[k] = { name = out_of_map_tile, position = { left_top.x + v[1], left_top.y + v[2] } }
+                    oom_tiles[k] = { name = out_of_map_tile, position = { left_top.x + v[1], left_top.y + v[2] } }
                 end
             end
-            surface.set_tiles(tiles, false)
+            surface.set_tiles(oom_tiles, false)
         end
     end
 )

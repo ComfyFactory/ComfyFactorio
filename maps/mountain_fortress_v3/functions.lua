@@ -22,8 +22,6 @@ local ICMinimap = require 'maps.mountain_fortress_v3.ic.minimap'
 local Score = require 'utils.gui.score'
 local Gui = require 'utils.gui'
 
-
-local scenario_name = Public.scenario_name
 local zone_settings = Public.zone_settings
 local remove_boost_movement_speed_on_respawn
 local de = defines.events
@@ -65,6 +63,13 @@ local this =
             count = 32
         }
     }
+}
+
+local disabled_ents =
+{
+    ['rail-support'] = true,
+    ['rail-ramp'] = true,
+    ['railgun-turret'] = true,
 }
 
 local exit_editor_mode_token =
@@ -149,11 +154,16 @@ local function debug_str(msg)
 end
 
 local function draw_notice_frame(player)
+    if not this.show_wip then
+        return
+    end
+
     local main_frame, inside_table = Gui.add_main_frame_with_toolbar(player, 'screen', notice_frame_name, nil, close_notice_frame_name, 'Notice', true, 2)
 
     if not main_frame or not inside_table then
         return
     end
+
 
     local main_frame_style = main_frame.style
     main_frame_style.width = 600
@@ -287,8 +297,8 @@ local function do_magic_crafters()
             end
 
             if fcount > 0 then
-                if entity.get_output_inventory().can_insert({ name = data.item, count = fcount }) then
-                    entity.get_output_inventory().insert { name = data.item, count = fcount }
+                if entity.get_output_inventory().can_insert({ name = data.item, count = fcount, quality = data.quality }) then
+                    entity.get_output_inventory().insert { name = data.item, count = fcount, quality = data.quality }
                     entity.products_finished = entity.products_finished + fcount
                     data.last_tick = round(tick - (count - fcount) / rate)
                 end
@@ -339,6 +349,7 @@ local function do_magic_fluid_crafters()
 
                 local fb_data = entity.get_fluid(fluidbox_index) or { name = data.item, amount = 0 }
                 fb_data.amount = fb_data.amount + fcount
+                fb_data.quality = data.quality
                 entity.set_fluid(fluidbox_index, fb_data)
 
                 entity.products_finished = entity.products_finished + fcount
@@ -490,6 +501,32 @@ local function do_replace_tiles_slowly()
     end
 end
 
+
+local function do_custom_surface_funcs()
+    local active_surface_index = Public.get('active_surface_index')
+    if not active_surface_index then return end
+    local surface = game.get_surface(active_surface_index)
+    if not (surface and surface.valid) then
+        return
+    end
+
+    if not Public.is_modded_pt2 then
+        return
+    end
+
+    if surface.name == 'fortress' then
+        local entities = surface.find_entities_filtered { name = artillery_target_entities, force = 'player' }
+        if #entities == 0 then
+            return
+        end
+
+        local entity = entities[random(#entities)]
+        if entity and entity.valid then
+            surface.create_entity({ name = 'lightning', position = entity.position, force = 'enemy' })
+        end
+    end
+end
+
 local function do_season_fix()
     local active_surface_index = Public.get('active_surface_index')
     local surface = game.surfaces[active_surface_index]
@@ -570,6 +607,7 @@ local set_unit_raffle_token =
                 WD.set(
                     'biter_raffle',
                     {
+                        ['small-wriggler-pentapod'] = round(2500 - level * 1.75, 6),
                         ['mtn-addon-small-piercing-biter-t1'] = round(2500 - level * 1.75, 6),
                         ['mtn-addon-small-acid-biter-t1'] = round(2500 - level * 1.75, 6),
                         ['mtn-addon-small-explosive-biter-t1'] = round(2500 - level * 1.75, 6),
@@ -618,6 +656,7 @@ local set_unit_raffle_token =
                     spitter_raffle['mtn-addon-small-fire-spitter-t3'] = round(1500 - level * 1.75, 6)
                 end
                 if level > 250 then
+                    biter_raffle['medium-wriggler-pentapod'] = round(250 - (level - 250), 6)
                     biter_raffle['mtn-addon-medium-piercing-biter-t1'] = round(250 - (level - 250), 6)
                     biter_raffle['mtn-addon-medium-acid-biter-t1'] = round(250 - (level - 250), 6)
                     biter_raffle['mtn-addon-medium-explosive-biter-t1'] = round(250 - (level - 250), 6)
@@ -658,6 +697,7 @@ local set_unit_raffle_token =
                 end
 
                 if level > 500 then
+                    biter_raffle['big-wriggler-pentapod'] = round(500 - (level - 500) * 2, 6)
                     biter_raffle['mtn-addon-big-piercing-biter-t1'] = round(500 - (level - 500) * 2, 6)
                     biter_raffle['mtn-addon-big-acid-biter-t1'] = round(500 - (level - 500) * 2, 6)
                     biter_raffle['mtn-addon-big-explosive-biter-t1'] = round(500 - (level - 500) * 2, 6)
@@ -880,7 +920,7 @@ local function do_artillery_turrets_targets()
     end
 end
 
-local function add_magic_crafter_output(entity, output, distance)
+local function add_magic_crafter_output(entity, output, distance, quality)
     local magic_fluid_crafters = this.magic_fluid_crafters
     local magic_crafters = this.magic_crafters
     local rate = output.min_rate + output.distance_factor * distance
@@ -889,6 +929,7 @@ local function add_magic_crafter_output(entity, output, distance)
     local data =
     {
         entity = entity,
+        quality = quality,
         last_tick = game.tick,
         base_rate = round(rate, 8),
         rate = round(rate, 8),
@@ -912,6 +953,7 @@ local function tick()
     do_clear_enemy_spawners()
     do_clear_rocks_slowly()
     do_replace_tiles_slowly()
+    do_custom_surface_funcs()
 end
 
 Public.deactivate_callback =
@@ -1090,14 +1132,18 @@ Public.magic_item_crafting_callback =
                 end
             end
 
+            local quality_buildings = Public.get_stateful('quality_buildings')
+            local quality = quality_buildings or 'normal'
+
             local recipe = callback_data.recipe
             if recipe then
-                entity.set_recipe(recipe)
+                entity.set_recipe(recipe, quality)
             else
                 local furance_item = callback_data.furance_item
                 if furance_item then
+                    local item_stack = { name = furance_item, count = 1, quality = quality }
                     local inv = entity.get_inventory(defines.inventory.furnace_result)
-                    inv.insert(furance_item)
+                    inv.insert(item_stack)
                 end
             end
 
@@ -1107,11 +1153,11 @@ Public.magic_item_crafting_callback =
 
             local output = callback_data.output
             if #output == 0 then
-                add_magic_crafter_output(entity, output, distance)
+                add_magic_crafter_output(entity, output, distance, quality)
             else
                 for i = 1, #output do
                     local o = output[i]
-                    add_magic_crafter_output(entity, o, distance)
+                    add_magic_crafter_output(entity, o, distance, quality)
                 end
             end
 
@@ -1168,14 +1214,18 @@ Public.magic_item_crafting_callback_weighted =
                 end
             end
 
+            local quality_buildings = Public.get_stateful('quality_buildings')
+            local quality = quality_buildings or 'normal'
+
             local recipe = stack.recipe
             if recipe then
-                entity.set_recipe(recipe)
+                entity.set_recipe(recipe, quality)
             else
                 local furance_item = stack.furance_item
                 if furance_item then
+                    local item_stack = { name = furance_item, count = 1, quality = quality }
                     local inv = entity.get_inventory(defines.inventory.furnace_result)
-                    inv.insert(furance_item)
+                    inv.insert(item_stack)
                 end
             end
 
@@ -1184,11 +1234,11 @@ Public.magic_item_crafting_callback_weighted =
 
             local output = stack.output
             if #output == 0 then
-                add_magic_crafter_output(entity, output, distance)
+                add_magic_crafter_output(entity, output, distance, quality)
             else
                 for o_i = 1, #output do
                     local o = output[o_i]
-                    add_magic_crafter_output(entity, o, distance)
+                    add_magic_crafter_output(entity, o, distance, quality)
                 end
             end
 
@@ -1430,6 +1480,9 @@ function Public.set_xp_yield()
             ['big-spitter'] = 8,
             ['medium-biter'] = 4,
             ['medium-spitter'] = 4,
+            ['small-wriggler-pentapod'] = 1,
+            ['medium-wriggler-pentapod'] = 4,
+            ['big-wriggler-pentapod'] = 8,
             ['small-biter'] = 1,
             ['small-spitter'] = 1,
             ['small-worm-turret'] = 16,
@@ -1599,6 +1652,9 @@ function Public.set_threat_values()
             ['behemoth-worm-turret'] = 128,
 
             -- custom biters/spitters
+            ['small-wriggler-pentapod'] = 1,
+            ['medium-wriggler-pentapod'] = 4,
+            ['big-wriggler-pentapod'] = 16,
             ['mtn-addon-small-piercing-biter-t1'] = 2,
             ['mtn-addon-small-piercing-biter-t2'] = 3,
             ['mtn-addon-small-piercing-biter-t3'] = 4,
@@ -1752,6 +1808,9 @@ function Public.set_threat_values()
         ['medium-spitter'] = 0.75,
         ['big-spitter'] = 0.5,
         ['behemoth-spitter'] = 0.25,
+        ['small-wriggler-pentapod'] = 1,
+        ['medium-wriggler-pentapod'] = 0.75,
+        ['big-wriggler-pentapod'] = 0.5,
         ['mtn-addon-small-piercing-biter-t1'] = 0.50,
         ['mtn-addon-small-piercing-biter-t2'] = 0.50,
         ['mtn-addon-small-piercing-biter-t3'] = 0.50,
@@ -2121,6 +2180,10 @@ function Public.render_direction(surface, reversed)
         text = 'Welcome to Wintery Mountain Fortress v3!'
     end
 
+    if Public.get('space_age') then
+        text = 'Welcome to Mountain Fortress v3 - Space Age!'
+    end
+
     Public.set(
         'current_season',
         rendering.draw_text
@@ -2412,12 +2475,12 @@ end
 function Public.on_player_joined_game(event)
     local players = Public.get('players')
     local player = game.players[event.player_index]
-
+    local starting_planet = Public.get_planet()
 
     Difficulty.clear_top_frame(player)
     Modifiers.update_player_modifiers(player)
     local active_surface_index = Public.get('active_surface_index')
-    local surface = game.surfaces[active_surface_index or 'fortress']
+    local surface = game.surfaces[active_surface_index or starting_planet]
 
     local current_task = Public.get('current_task')
     if not current_task.done then
@@ -2604,13 +2667,22 @@ function Public.on_player_changed_surface(event)
         return
     end
 
+    local force = game.forces.player
+    if force.technologies['rocket-silo'].researched then
+        return
+    end
+
     local surface_index = event.surface_index
     if not surface_index then
         log('No surface index found - old one was removed.')
     end
 
+    local starting_planet = Public.get_planet()
+
     local active_surface_index = Public.get('active_surface_index')
-    local surface = game.surfaces[active_surface_index or 'fortress']
+    local surface = game.surfaces[active_surface_index or starting_planet]
+
+
 
     if player.surface.name == 'nauvis' or player.surface.index == '1' then
         local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
@@ -2620,6 +2692,60 @@ function Public.on_player_changed_surface(event)
             pos = game.forces.player.get_spawn_position(surface)
             player.teleport(pos, surface)
         end
+    end
+end
+
+function Public.hinder_buildings_on_planet(event)
+    local entity = event.entity
+    if not entity or not entity.valid then
+        return
+    end
+
+    local starting_planet = Public.get_planet()
+
+    if string.sub(entity.surface.name, 0, #starting_planet) == Public.init_name then
+        entity.destroy()
+        return
+    end
+
+    if string.sub(entity.surface.name, 0, #starting_planet) ~= starting_planet then
+        return
+    end
+
+    local position = entity.position
+
+    if disabled_ents[entity.name] then
+        if event.player_index then
+            local player = game.get_player(event.player_index)
+            if player and player.valid then
+                player.create_local_flying_text(
+                    {
+                        position = entity.position,
+                        text = (entity.name .. ' cannot be built on the main surface.'),
+                        color = { 255, 0, 0 },
+                    }
+                )
+
+                player.physical_surface.spill_item_stack({ position = position, stack = { name = entity.name, count = 1, quality = 'normal' } })
+            end
+        else
+            local robot = event.robot
+            if robot and robot.valid then
+                robot.surface.create_entity(
+                    {
+                        name = 'compi-speech-bubble',
+                        position = entity.position,
+                        text = (entity.name .. ' cannot be built on the main surface.'),
+                        source = robot,
+                        lifetime = 200
+                    }
+                )
+                robot.surface.spill_item_stack({ position = entity.position, stack = { name = entity.name, count = 1 } })
+            end
+        end
+
+        entity.destroy()
+        return
     end
 end
 
@@ -2633,30 +2759,21 @@ function Public.on_player_changed_position(event)
         return
     end
 
-    if player.controller_type == defines.controllers.remote then
-        local loco_surface = Public.get('loco_surface')
-        if not loco_surface or not loco_surface.valid then
-            return
-        end
-        if player.character ~= nil and player.character.surface.index == loco_surface.index and player.surface.index == loco_surface.index then
-            local map_gen = loco_surface.map_gen_settings
-            if player.position.y > map_gen.height then player.set_controller { type = 1, character = player.character } end
-            if player.position.y < (-map_gen.height / 2) then player.set_controller { type = 1, character = player.character } end
-            if player.position.x > map_gen.width then player.set_controller { type = 1, character = player.character } end
-            if player.position.x < -map_gen.width then player.set_controller { type = 1, character = player.character } end
-        end
+    local position = player.physical_position
+
+    if not (position.x < Public.zone_settings.zone_width / 2 and position.x >= -Public.zone_settings.zone_width / 2) then
         return
     end
 
     if player.controller_type == defines.controllers.spectator then
         return
     end
+    local starting_planet = Public.get_planet()
 
-    if string.sub(player.physical_surface.name, 0, #scenario_name) ~= scenario_name then
+    if string.sub(player.physical_surface.name, 0, #starting_planet) ~= starting_planet then
         return
     end
 
-    local position = player.physical_position
     local surface = game.surfaces[active_surface_index]
     local adjusted_zones = Public.get('adjusted_zones')
 
@@ -2681,7 +2798,7 @@ function Public.on_player_changed_position(event)
     end
 
     if adjusted_zones.reversed then
-        if position.y < -74 then
+        if position.y < -74 and (position.x < Public.zone_settings.zone_width / 2 and position.x >= -Public.zone_settings.zone_width / 2) then
             if player.character ~= nil then
                 player.character.teleport({ position.x, position.y + 1 }, surface)
             end
@@ -2695,7 +2812,7 @@ function Public.on_player_changed_position(event)
             end
         end
     else
-        if position.y >= 74 then
+        if position.y >= 74 and (position.x < Public.zone_settings.zone_width / 2 and position.x >= -Public.zone_settings.zone_width / 2) then
             if player.character ~= nil then
                 player.character.teleport({ position.x, position.y - 1 }, surface)
             end
@@ -2737,9 +2854,13 @@ function Public.disable_tech()
     force.technologies['artillery-shell-range-1'].researched = false
     force.technologies['artillery-shell-speed-1'].enabled = false
     force.technologies['artillery-shell-speed-1'].researched = false
-    if Public.get('space_age') then
+    if Public.get('spaces_age') then
         force.technologies['artillery-shell-damage-1'].enabled = false
         force.technologies['artillery-shell-damage-1'].researched = false
+        force.technologies['elevated-rail'].enabled = false
+        force.technologies['elevated-rail'].researched = false
+        force.technologies['rail-support-foundations'].enabled = false
+        force.technologies['rail-support-foundations'].researched = false
     end
     force.technologies['lamp'].researched = true
     force.technologies['railway'].researched = true
@@ -2771,6 +2892,12 @@ function Public.on_research_finished(event)
 
     if research.name == 'toolbelt' then
         Public.set('toolbelt_researched_count', 10)
+    end
+
+    if research.name == 'rocket-silo' then
+        for _, f in pairs(game.forces) do
+            f.set_surface_hidden(game.surfaces.nauvis, false)
+        end
     end
 
     if script.active_mods.quality then
@@ -2966,7 +3093,9 @@ function Public.equip_players(starting_items, recreate)
                 player.set_controller({ type = defines.controllers.god })
                 player.create_character()
             end
-            player.character.destructible = true
+            if player.character ~= nil then
+                player.character.destructible = true
+            end
             Modifiers.update_player_modifiers(player)
             if not recreate then
                 starting_items = starting_items or this.starting_items
@@ -3078,6 +3207,7 @@ local on_player_joined_game = Public.on_player_joined_game
 local on_player_left_game = Public.on_player_left_game
 local on_research_finished = Public.on_research_finished
 local on_player_changed_position = Public.on_player_changed_position
+local hinder_buildings_on_planet = Public.hinder_buildings_on_planet
 local on_player_respawned = Public.on_player_respawned
 local on_player_driving_changed_state = Public.on_player_driving_changed_state
 local on_pre_player_toggled_map_editor = Public.on_pre_player_toggled_map_editor
@@ -3088,6 +3218,8 @@ Event.add(de.on_player_joined_game, on_player_joined_game)
 Event.add(de.on_player_left_game, on_player_left_game)
 Event.add(de.on_research_finished, on_research_finished)
 Event.add(de.on_player_changed_position, on_player_changed_position)
+Event.add(de.on_built_entity, hinder_buildings_on_planet)
+Event.add(de.on_robot_built_entity, hinder_buildings_on_planet)
 Event.add(de.on_player_respawned, on_player_respawned)
 Event.add(de.on_player_driving_changed_state, on_player_driving_changed_state)
 Event.add(de.on_pre_player_toggled_map_editor, on_pre_player_toggled_map_editor)
