@@ -27,7 +27,8 @@ local count_label_name = Gui.uid_name()
 local rows_per_page = 500
 local create_admin_panel
 
-local this = {
+local this =
+{
     player_data = {}
 }
 
@@ -50,7 +51,8 @@ local function get_player_data(player, remove)
     end
 
     if not this.player_data[player.name] then
-        this.player_data[player.name] = {
+        this.player_data[player.name] =
+        {
             selected_history_index = nil,
             filter_player = nil,
             show_all_players = nil,
@@ -202,7 +204,8 @@ local function free(player, source_player)
     clear_validation_action(source_player.name, 'free')
 end
 
-local bring_player_messages = {
+local bring_player_messages =
+{
     'Come here my friend!',
     'Papers, please.',
     'What are you up to?'
@@ -231,7 +234,8 @@ local function bring_player(player, source_player)
     end
 end
 
-local go_to_player_messages = {
+local go_to_player_messages =
+{
     'Papers, please.',
     'What are you up to?'
 }
@@ -267,7 +271,8 @@ local function spank(player, source_player)
     end
 end
 
-local damage_messages = {
+local damage_messages =
+{
     ' recieved a love letter from ',
     ' recieved a strange package from '
 }
@@ -285,7 +290,8 @@ local function damage(player, source_player)
     end
 end
 
-local kill_messages = {
+local kill_messages =
+{
     ' did not obey the law.',
     ' should not have triggered the admins.',
     ' did not respect authority.',
@@ -309,7 +315,8 @@ local function kill(player, source_player)
     end
 end
 
-local enemy_messages = {
+local enemy_messages =
+{
     'Shoot on sight!',
     'Wanted dead or alive!'
 }
@@ -500,7 +507,8 @@ end
 
 local function search_text_locally(history, player_data, callback)
     local antigrief = AntiGrief.get()
-    local history_index = {
+    local history_index =
+    {
         ['Capsule History'] = antigrief.capsule_history,
         ['Message History'] = antigrief.message_history,
         ['Friendly Fire History'] = antigrief.friendly_fire_history,
@@ -670,12 +678,14 @@ local function create_pagination_buttons(player_data, frame, table_count)
     end
 
     local button_flow =
-        frame.add {
+        frame.add
+        {
             type = 'flow',
             direction = 'horizontal'
         }
     local prev_button =
-        button_flow.add {
+        button_flow.add
+        {
             type = 'button',
             name = prev_button_name,
             caption = '◀️',
@@ -686,7 +696,8 @@ local function create_pagination_buttons(player_data, frame, table_count)
     prev_button.tooltip = 'Previous page\nHolding [color=yellow]shift[/color] while pressing LMB/RMB will jump to the first page.'
 
     local count_label =
-        button_flow.add {
+        button_flow.add
+        {
             type = 'label',
             name = count_label_name,
             caption = current_page .. '/' .. last_page
@@ -695,7 +706,8 @@ local function create_pagination_buttons(player_data, frame, table_count)
     player_data.count_label = count_label
 
     local next_button =
-        button_flow.add {
+        button_flow.add
+        {
             type = 'button',
             name = next_button_name,
             caption = '▶️',
@@ -755,7 +767,8 @@ create_admin_panel = function (data)
     drop_down.style.left_padding = 12
 
     local t = frame.add({ type = 'table', column_count = 4 })
-    local buttons = {
+    local buttons =
+    {
         t.add(
             {
                 type = 'button',
@@ -835,7 +848,8 @@ create_admin_panel = function (data)
 
     frame.add({ type = 'label', caption = 'Global Actions:' })
     local actionTable = frame.add({ type = 'table', column_count = 4 })
-    local bottomButtons = {
+    local bottomButtons =
+    {
         actionTable.add(
             {
                 type = 'button',
@@ -940,7 +954,8 @@ create_admin_panel = function (data)
     search_text.text = player_data.search_text or ''
     search_text.style.width = 140
     local btn =
-        search_table.add {
+        search_table.add
+        {
             type = 'sprite-button',
             tooltip = '[color=blue]Info![/color]\nSearching does not filter the amount of pages shown.\nThis is a limitation in the Factorio engine.\nIterating over the whole table would lag the game.\nSo when searching, you will still see the same amount of pages.\nAnd the results will be "janky".',
             sprite = 'utility/questionmark'
@@ -965,7 +980,8 @@ create_admin_panel = function (data)
     drop_down_2.style.right_padding = 12
     drop_down_2.style.left_padding = 12
 
-    local history_index = {
+    local history_index =
+    {
         ['Capsule History'] = antigrief.capsule_history,
         ['Message History'] = antigrief.message_history,
         ['Friendly Fire History'] = antigrief.friendly_fire_history,
@@ -990,7 +1006,8 @@ end
 
 local create_admin_panel_token = Token.register(create_admin_panel)
 
-local admin_functions = {
+local admin_functions =
+{
     ['jail'] = jail,
     ['mute'] = mute,
     ['free'] = free,
@@ -1003,7 +1020,8 @@ local admin_functions = {
     ['go_to_player'] = go_to_player
 }
 
-local admin_global_functions = {
+local admin_global_functions =
+{
     ['turn_off_global_speakers'] = turn_off_global_speakers,
     ['delete_all_blueprints'] = delete_all_blueprints,
     ['pause_game_tick'] = pause_game_tick,
@@ -1217,13 +1235,14 @@ Gui.on_click(
     module_name,
     function (event)
         local player = event.player
-        Gui.reload_active_tab(player)
+        Gui.reload_active_tab(player, nil, 'Admin')
     end
 )
 
 function Public.contains_text(history, search_text, target_player_name)
     local antigrief = AntiGrief.get()
-    local history_index = {
+    local history_index =
+    {
         ['Capsule History'] = antigrief.capsule_history,
         ['Message History'] = antigrief.message_history,
         ['Friendly Fire History'] = antigrief.friendly_fire_history,

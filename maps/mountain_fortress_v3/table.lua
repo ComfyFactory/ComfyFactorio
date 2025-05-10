@@ -4,28 +4,33 @@ local Server = require 'utils.server'
 local Event = require 'utils.event'
 local Task = require 'utils.task_token'
 
-local stateful_settings = {
+local stateful_settings =
+{
     reversed = false
 }
 
-local this = {
+local this =
+{
     players = {},
     traps = {},
-    scheduler = {
+    scheduler =
+    {
         start_after = 0,
         surface = nil,
         operation = nil,
         next_operation = nil
     },
     -- new initializer for scenario management because the old one sucked hard
-    current_task = {
+    current_task =
+    {
         state = 'move_players',
         surface_name = 'Init',
         default_task = 'move_players',
         show_messages = true,
         step = 1
     },
-    adjusted_zones = {
+    adjusted_zones =
+    {
         scrap = {},
         forest = {},
         size = nil,
@@ -43,7 +48,8 @@ local dataset = 'scenario_settings'
 local dataset_key = 'mtn_v3_table'
 local dataset_key_dev = 'mtn_v3_table_dev'
 
-Public.events = {
+Public.events =
+{
     reset_map = Event.generate_event_name('reset_map'),
     on_entity_mined = Event.generate_event_name('on_entity_mined'),
     on_market_item_purchased = Event.generate_event_name('on_market_item_purchased'),
@@ -73,18 +79,21 @@ Global.register(
     end
 )
 
-Public.zone_settings = {
+Public.zone_settings =
+{
     zone_depth = 704,
     zone_width = 510
 }
 
-Public.valid_enemy_forces = {
+Public.valid_enemy_forces =
+{
     ['enemy'] = true,
     ['aggressors'] = true,
     ['aggressors_frenzy'] = true
 }
 
-Public.pickaxe_upgrades = {
+Public.pickaxe_upgrades =
+{
     'Wood',
     'Plastic',
     'Bone',
@@ -162,10 +171,12 @@ function Public.reset_main_table()
     this.breach_wall_warning = false
     this.icw_locomotive = nil
     this.game_lost = false
-    this.charts = {
+    this.charts =
+    {
         tags = {}
     }
-    this.statistics = {
+    this.statistics =
+    {
         surfaces_produced = {}
     }
     this.death_mode = false
@@ -177,24 +188,28 @@ function Public.reset_main_table()
     this.toolbelt_researched_count = 0
     this.all_the_fish = false
     this.reverse_collapse_warning = false
-    this.gap_between_zones = {
+    this.gap_between_zones =
+    {
         set = false,
         gap = 900,
         neg_gap = 500,
         highest_pos = 0
     }
-    this.gap_between_locomotive = {
+    this.gap_between_locomotive =
+    {
         hinders = {},
         gap = 900,
-        neg_gap = 3520,          -- earlier 2112 (3 zones, whereas 704 is one zone)
+        neg_gap = 3520, -- earlier 2112 (3 zones, whereas 704 is one zone)
         neg_gap_collapse = 5520, -- earlier 2112 (3 zones, whereas 704 is one zone)
         highest_pos = nil
     }
     this.force_chunk = false
     this.bw = false
-    this.debug_vars = {
+    this.debug_vars =
+    {
         enabled = true,
-        vars = {
+        vars =
+        {
             mining_chance = {}
         }
     }
@@ -202,7 +217,7 @@ function Public.reset_main_table()
     this.block_non_trusted_opening_trains = true
     this.block_non_trusted_trigger_collapse = true
     this.allow_decon_main_surface = true
-    this.spectate_button_disable = true
+    this.spectate_button_disable = false
     this.flamethrower_damage = {}
     this.mined_scrap = 0
     this.print_tech_to_discord = true
@@ -213,29 +228,35 @@ function Public.reset_main_table()
     --!grief prevention
     this.enable_arties = 6 -- default to callback 6
     --!snip
-    this.enemy_spawners = {
+    this.enemy_spawners =
+    {
         spawners = {},
         enabled = false
     }
     this.poison_deployed = false
     this.robotics_deployed = false
-    this.upgrades = {
+    this.upgrades =
+    {
         showed_text = false,
-        burner_generator = {
+        burner_generator =
+        {
             limit = 100,
             bought = 0
         },
-        landmine = {
+        landmine =
+        {
             limit = 25,
             bought = 0,
             built = 0
         },
-        flame_turret = {
+        flame_turret =
+        {
             limit = 6,
             bought = 0,
             built = 0
         },
-        unit_number = {
+        unit_number =
+        {
             landmine = {},
             flame_turret = {}
         },
@@ -251,7 +272,8 @@ function Public.reset_main_table()
         health_upgrades = 0,
         pickaxe_tier = 1
     }
-    this.orbital_strikes = {
+    this.orbital_strikes =
+    {
         enabled = true
     }
     this.pickaxe_speed_per_purchase = 0.09
@@ -259,18 +281,21 @@ function Public.reset_main_table()
     this.pre_final_battle = false
     this.final_battle = false
     this.disable_link_chest_cheese_mode = true
-    this.left_top = {
+    this.left_top =
+    {
         x = 0,
         y = 0
     }
-    this.biters = {
+    this.biters =
+    {
         amount = 0,
         limit = 512
     }
     this.traps = {}
     this.munch_time = true
     this.magic_requirement = 50
-    this.loot_stats = {
+    this.loot_stats =
+    {
         rare = 48,
         normal = 48
     }
@@ -280,19 +305,22 @@ function Public.reset_main_table()
     this.main_market_items = {}
     this.spill_items_to_surface = false
     this.spectate = {}
-    this.placed_trains_in_zone = {
+    this.placed_trains_in_zone =
+    {
         limit = 1,
         randomized = false,
         zones = {}
     }
-    this.market_limits = {
+    this.market_limits =
+    {
         chests_outside_limit = 8,
         aura_limit = 100, -- limited to save UPS
         pickaxe_tier_limit = 59,
         health_upgrades_limit = 100,
         xp_points_limit = 40
     }
-    this.marked_fixed_prices = {
+    this.marked_fixed_prices =
+    {
         chests_outside_cost = 3000,
         health_cost = 14000,
         pickaxe_cost = 3000,
@@ -315,7 +343,8 @@ function Public.reset_main_table()
     this.collapse_amount = false
     this.collapse_speed = false
     this.y_value_position = 20
-    this.spawn_near_collapse = {
+    this.spawn_near_collapse =
+    {
         active = true,
         total_pos = 35,
         compare = -150,
@@ -335,7 +364,8 @@ function Public.reset_main_table()
     this.winter_mode = false
     this.sent_to_discord = false
     this.random_seed = random(100000000, 1000000000)
-    this.difficulty = {
+    this.difficulty =
+    {
         multiply = 0.25,
         highest = 10,
         lowest = 4
@@ -351,12 +381,14 @@ function Public.reset_main_table()
     this.check_if_threat_below_zero = true
     this.rocks_to_remove = nil
     this.tiles_to_replace = nil
-    this.mc_rewards = {
+    this.mc_rewards =
+    {
         current = {},
         temp_boosts = {}
     }
 
-    this.adjusted_zones = {
+    this.adjusted_zones =
+    {
         scrap = {},
         forest = {},
         size = nil,
@@ -365,10 +397,11 @@ function Public.reset_main_table()
         reversed = stateful_settings.reversed,
         disable_terrain = false
     }
-    this.alert_zone_1 = false             -- alert the players
+    this.alert_zone_1 = false -- alert the players
     this.radars_reveal_new_chunks = false -- allows for the player to explore the map instead,
 
-    this.mining_utils = {
+    this.mining_utils =
+    {
         rocks_yield_ore_maximum_amount = 500,
         type_modifier = 1,
         rocks_yield_ore_base_amount = 40,
@@ -378,7 +411,8 @@ function Public.reset_main_table()
     this.wagons_in_the_wild = {}
     this.player_market_settings = {}
 
-    this.quality_list = {
+    this.quality_list =
+    {
         'normal',
     }
 

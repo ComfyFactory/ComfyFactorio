@@ -9,7 +9,8 @@ local Token = require 'utils.token'
 local format_number = require 'util'.format_number
 
 local Public = {}
-local this = {
+local this =
+{
     score_table = {},
     sort_by = {}
 }
@@ -24,7 +25,8 @@ Global.register(
 )
 
 local sorting_symbol = { ascending = '▲', descending = '▼' }
-local building_and_mining_blacklist = {
+local building_and_mining_blacklist =
+{
     ['tile-ghost'] = true,
     ['entity-ghost'] = true,
     ['item-entity'] = true
@@ -35,7 +37,8 @@ function Public.get_table()
 end
 
 function Public.reset_tbl()
-    this.score_table['player'] = {
+    this.score_table['player'] =
+    {
         players = {}
     }
 end
@@ -50,7 +53,8 @@ function Public.init_player_table(player, reset)
     local tbl_force = this.score_table[player.force.name]
 
     if reset then
-        tbl_force.players[player.name] = {
+        tbl_force.players[player.name] =
+        {
             built_entities = 0,
             deaths = 0,
             killscore = 0,
@@ -70,7 +74,8 @@ function Public.init_player_table(player, reset)
     if not player.name then return end
 
     if not tbl_force.players[player.name] then
-        tbl_force.players[player.name] = {
+        tbl_force.players[player.name] =
+        {
             built_entities = 0,
             deaths = 0,
             killscore = 0,
@@ -103,7 +108,8 @@ local function get_score_list(force)
 end
 
 local function get_sorted_list(method, column_name, score_list)
-    local comparators = {
+    local comparators =
+    {
         ['ascending'] = function (a, b)
             return a[column_name] < b[column_name]
         end,
@@ -115,7 +121,8 @@ local function get_sorted_list(method, column_name, score_list)
     return score_list
 end
 
-local biters = {
+local biters =
+{
     'small-biter',
     'medium-biter',
     'big-biter',
@@ -178,13 +185,14 @@ local function show_score(data)
     local t = frame.add { type = 'table', column_count = 6 }
 
     -- Score headers
-    local headers = {
-        { name = 'score_player',     caption = 'Player' },
-        { column = 'killscore',      name = 'score_killscore',      caption = 'Killscore' },
-        { column = 'deaths',         name = 'score_deaths',         caption = 'Deaths' },
+    local headers =
+    {
+        { name = 'score_player', caption = 'Player' },
+        { column = 'killscore', name = 'score_killscore', caption = 'Killscore' },
+        { column = 'deaths', name = 'score_deaths', caption = 'Deaths' },
         { column = 'built_entities', name = 'score_built_entities', caption = 'Built structures' },
         { column = 'mined_entities', name = 'score_mined_entities', caption = 'Mined entities' },
-        { column = 'crafted_items',  name = 'score_crafted_items',  caption = 'Crafted Items' }
+        { column = 'crafted_items', name = 'score_crafted_items', caption = 'Crafted Items' }
     }
 
     local sorting_pref = this.sort_by[player.name]
@@ -199,7 +207,8 @@ local function show_score(data)
 
         -- Header
         local label =
-            t.add {
+            t.add
+            {
                 type = 'label',
                 caption = cap,
                 name = header.name
@@ -234,14 +243,16 @@ local function show_score(data)
     -- Score entries
     for _, entry in pairs(score_list) do
         local p = game.players[entry.name or ''] or { color = { r = 0.6, g = 0.6, b = 0.6 } }
-        local special_color = {
+        local special_color =
+        {
             r = p.color.r * 0.6 + 0.4,
             g = p.color.g * 0.6 + 0.4,
             b = p.color.b * 0.6 + 0.4,
             a = 1
         }
-        local lines = {
-            { caption = entry.name,                                         color = special_color },
+        local lines =
+        {
+            { caption = entry.name, color = special_color },
             { caption = format_number(tonumber(entry.killscore), true) },
             { caption = format_number(tonumber(entry.deaths), true) },
             { caption = format_number(tonumber(entry.built_entities), true) },
@@ -252,7 +263,8 @@ local function show_score(data)
 
         for _, column in ipairs(lines) do
             local label =
-                column_table.add {
+                column_table.add
+                {
                     type = 'label',
                     caption = column.caption,
                     color = column.color or default_color
@@ -262,7 +274,7 @@ local function show_score(data)
             label.style.maximal_width = 125
             label.style.horizontal_align = 'center'
         end -- foreach column
-    end     -- foreach entry
+    end -- foreach entry
 end
 
 local show_score_token = Token.register(show_score)
@@ -304,7 +316,8 @@ local function on_gui_click(event)
     end
 
     -- Handles click on a score header
-    local element_to_column = {
+    local element_to_column =
+    {
         ['score_killscore'] = 'killscore',
         ['score_deaths'] = 'deaths',
         ['score_built_entities'] = 'built_entities',
@@ -335,7 +348,8 @@ local function on_rocket_launched()
     refresh_score_full()
 end
 
-local entity_score_values = {
+local entity_score_values =
+{
     ['behemoth-biter'] = 100,
     ['behemoth-spitter'] = 100,
     ['behemoth-worm-turret'] = 300,
@@ -366,7 +380,8 @@ local function train_type_cause(event)
     return players
 end
 
-local kill_causes = {
+local kill_causes =
+{
     ['character'] = function (event)
         if not event.cause.player then
             return
@@ -500,7 +515,7 @@ Gui.on_click(
     module_name,
     function (event)
         local player = event.player
-        Gui.reload_active_tab(player)
+        Gui.reload_active_tab(player, nil, 'Scoreboard')
     end
 )
 

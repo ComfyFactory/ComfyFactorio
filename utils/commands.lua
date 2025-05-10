@@ -26,12 +26,14 @@ local Server = require 'utils.server'
 ---@field validate_activated boolean
 ---@field command_activated boolean
 
-local this = {
+local this =
+{
     commands = {}
 }
 local trace = debug.traceback
 
-local output = {
+local output =
+{
     backend_is_required = 'No backend is currently available. Please try again later.',
     server_is_required = 'This command requires to be run from the server.',
     admin_is_required = 'This command requires admin permissions to run.',
@@ -49,7 +51,8 @@ local output = {
     command_is_inactive = 'This command is already inactive.'
 }
 
-local check_boolean = {
+local check_boolean =
+{
     ['true'] = true,
     ['false'] = true
 }
@@ -116,7 +119,8 @@ local function execute(event)
     if event.player_index and event.player_index > 0 then
         player = game.get_player(event.player_index)
     else
-        player = {
+        player =
+        {
             name = '<server>',
             position = { x = 0, y = 0 },
             surface = game.get_surface('nauvis'),
@@ -257,9 +261,6 @@ local function execute(event)
             local param = conv(parameters[index])
             if param_data.as_type == 'player' and param ~= nil then
                 local player_name = param
-                if type(player_name) ~= 'string' then
-                    return reject('Inputted value is not of type string. Valid values are: "string"')
-                end
                 local player_data = game.get_player(player_name) --[[@type LuaPlayer]]
                 if not player_data then
                     return reject('Player was not found.')
@@ -281,9 +282,6 @@ local function execute(event)
             end
             if param_data.as_type == 'player-online' and param ~= nil then
                 local player_name = param
-                if type(player_name) ~= 'string' then
-                    return reject('Inputted value is not of type string. Valid values are: "string"')
-                end
                 local player_data = game.get_player(player_name) --[[@type LuaPlayer]]
                 if not player_data or not player_data.valid then
                     return reject('Player was not found.')
@@ -296,9 +294,6 @@ local function execute(event)
             end
             if param_data.as_type == 'player-admin' and param ~= nil then
                 local player_name = param
-                if type(player_name) ~= 'string' then
-                    return reject('Inputted value is not of type string. Valid values are: "string"')
-                end
                 local player_data = game.get_player(player_name) --[[@type LuaPlayer]]
                 if not player_data or not player_data.valid then
                     return reject('Player was not found.')
@@ -311,9 +306,6 @@ local function execute(event)
             end
             if param_data.as_type == 'server' and param ~= nil then
                 local player_name = param
-                if type(player_name) ~= 'string' then
-                    return reject('Inputted value is not of type string. Valid values are: "string"')
-                end
                 local player_data = game.get_player(player_name) --[[@type LuaPlayer]]
                 if player_data and player_data.valid then
                     return reject('Not running from server.')
@@ -583,7 +575,8 @@ function Public:callback(func)
     end
 end
 
-local directions = {
+local directions =
+{
     [0] = 'defines.direction.north',
     [1] = 'defines.direction.northnortheast',
     [2] = 'defines.direction.northeast',

@@ -147,7 +147,8 @@ local function train_type_cause(cause)
     return players
 end
 
-local get_cause_player = {
+local get_cause_player =
+{
     ['character'] = function (cause)
         if not cause.player then
             return
@@ -471,7 +472,8 @@ local function on_entity_damaged(event)
 
     local position = p.physical_position
 
-    local area = {
+    local area =
+    {
         left_top = { x = position.x - 5, y = position.y - 5 },
         right_bottom = { x = position.x + 5, y = position.y + 5 }
     }
@@ -609,6 +611,10 @@ local function on_player_rotated_entity(event)
     end
 
     local rpg_t = Public.get_value_from_player(player.index)
+    if not rpg_t then
+        return
+    end
+
     if rpg_t.rotated_entity_delay > game.tick then
         return
     end
@@ -639,7 +645,8 @@ local function on_player_changed_position(event)
     Public.gain_xp(player, 1.0)
 end
 
-local building_and_mining_blacklist = {
+local building_and_mining_blacklist =
+{
     ['tile-ghost'] = true,
     ['entity-ghost'] = true,
     ['item-entity'] = true,
@@ -763,7 +770,8 @@ local function on_player_crafted_item(event)
             local d = random(0, 2999)
             local item_dupe = d < chance
             if item_dupe and final_xp < 6 then
-                local reward = {
+                local reward =
+                {
                     name = item.name,
                     count = 1
                 }
@@ -859,7 +867,8 @@ local function floaty_hearts(entity, c)
     local position = { x = entity.position.x - 0.75, y = entity.position.y - 1 }
     local b = 1.35
     for _ = 1, c, 1 do
-        local p = {
+        local p =
+        {
             (position.x + 0.4) + (b * -1 + random(0, b * 20) * 0.1),
             position.y + (b * -1 + random(0, b * 20) * 0.1)
         }
@@ -870,14 +879,17 @@ end
 local function tame_unit_effects(player, entity)
     floaty_hearts(entity, 7)
 
-    rendering.draw_text {
+    rendering.draw_text
+    {
         text = '~' .. player.name .. "'s pet~",
         surface = player.surface,
-        target = {
+        target =
+        {
             entity = entity,
             offset = { 0, -2.6 },
         },
-        color = {
+        color =
+        {
             r = player.color.r * 0.6 + 0.25,
             g = player.color.g * 0.6 + 0.25,
             b = player.color.b * 0.6 + 0.25,
@@ -951,7 +963,8 @@ local function on_player_used_capsule_custom(event)
     end
 
     local radius = 15
-    local area = {
+    local area =
+    {
         left_top = { x = position.x - radius, y = position.y - radius },
         right_bottom = { x = position.x + radius, y = position.y + radius }
     }
@@ -995,7 +1008,8 @@ local function on_player_used_capsule_custom(event)
         force = 'player'
     end
 
-    local data = {
+    local data =
+    {
         self = spell,
         player = player,
         damage_entity = damage_entity,
@@ -1009,7 +1023,8 @@ local function on_player_used_capsule_custom(event)
         rpg_t = rpg_t
     }
 
-    local funcs = {
+    local funcs =
+    {
         remove_mana = Public.remove_mana,
         damage_player_over_time = Public.damage_player_over_time,
         cast_spell = Public.cast_spell
@@ -1128,7 +1143,8 @@ local function on_player_used_capsule(event)
     end
 
     local radius = 15
-    local area = {
+    local area =
+    {
         left_top = { x = position.x - radius, y = position.y - radius },
         right_bottom = { x = position.x + radius, y = position.y + radius }
     }
@@ -1172,7 +1188,8 @@ local function on_player_used_capsule(event)
         force = 'player'
     end
 
-    local data = {
+    local data =
+    {
         self = spell,
         player = player,
         damage_entity = damage_entity,
@@ -1186,7 +1203,8 @@ local function on_player_used_capsule(event)
         rpg_t = rpg_t
     }
 
-    local funcs = {
+    local funcs =
+    {
         remove_mana = Public.remove_mana,
         damage_player_over_time = Public.damage_player_over_time,
         cast_spell = Public.cast_spell

@@ -2749,7 +2749,7 @@ end
 
 local function starting_zone(x, y, data, void_or_lab, adjusted_zones)
     local p = { x = x, y = y }
-    local seed = data.seed + 10000
+    local seed = data.seed + 30000
     local buildings = data.buildings
     local tiles = data.tiles
     local entities = data.entities
@@ -2768,7 +2768,7 @@ local function starting_zone(x, y, data, void_or_lab, adjusted_zones)
         if random(1, 32) == 1 then
             Public.spawn_random_buildings(buildings, p)
         end
-        if random(1, 128) == 1 then
+        if random(1, 256) == 1 then
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] =
             {

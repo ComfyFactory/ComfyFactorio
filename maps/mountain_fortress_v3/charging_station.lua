@@ -19,7 +19,8 @@ local function draw_charging_gui(player, activate_custom_buttons)
                 type = 'sprite-button',
                 name = charging_station_name,
                 sprite = 'item/battery-mk2-equipment',
-                tooltip = {
+                tooltip =
+                {
                     'modules.charging_station_tooltip'
                 },
                 style = Gui.button_style
@@ -36,7 +37,7 @@ local function draw_charging_gui(player, activate_custom_buttons)
 end
 
 local function discharge_accumulators(surface, position, force, power_needs)
-    local accumulators = surface.find_entities_filtered { name = 'accumulator', force = force, position = position, radius = 13 }
+    local accumulators = surface.find_entities_filtered { type = 'accumulator', force = force, position = position, radius = 13 }
     local power_drained = 0
     power_needs = power_needs * 1
     for _, accu in pairs(accumulators) do
@@ -59,6 +60,7 @@ local function discharge_accumulators(surface, position, force, power_needs)
 end
 
 local function charge(player)
+    local warn = module_name .. 'No valid armor to charge was found.'
     if not player.character then
         return player.print(module_name .. 'It seems that you are not in the realm of living.', { color = Color.warning })
     end
@@ -67,15 +69,15 @@ local function charge(player)
     end
     local armor_inventory = player.get_inventory(defines.inventory.character_armor)
     if not armor_inventory.valid then
-        return player.print(module_name .. 'No valid armor to charge was found.', { color = Color.warning })
+        return player.print(warn, { color = Color.warning })
     end
     local armor = armor_inventory[1]
     if not armor.valid_for_read then
-        return player.print(module_name .. 'No valid armor to charge was found.', { color = Color.warning })
+        return player.print(warn, { color = Color.warning })
     end
     local grid = armor.grid
     if not grid or not grid.valid then
-        return player.print(module_name .. 'No valid armor to charge was found.', { color = Color.warning })
+        return player.print(warn, { color = Color.warning })
     end
 
     local ents = player.physical_surface.find_entities_filtered { name = 'accumulator', force = player.force, position = player.physical_position, radius = 13 }
@@ -115,7 +117,8 @@ local function on_player_joined_game(event)
             {
                 player = player,
                 element_name = charging_station_name,
-                tooltip = {
+                tooltip =
+                {
                     'modules.charging_station_tooltip'
                 },
                 sprite = 'item/battery-mk2-equipment'

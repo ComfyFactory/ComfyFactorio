@@ -58,8 +58,10 @@ Gui.button_style = 'mod_gui_button'
 Gui.set_toggle_button(true)
 Gui.set_mod_gui_top_frame(true)
 
-local collapse_kill = {
-    entities = {
+local collapse_kill =
+{
+    entities =
+    {
         ['laser-turret'] = true,
         ['flamethrower-turret'] = true,
         ['gun-turret'] = true,
@@ -196,7 +198,8 @@ local collapse_message =
         function (data)
             local pos = data.position
             local message = data.message
-            local collapse_position = {
+            local collapse_position =
+            {
                 position = pos
             }
             Alert.alert_all_players_location(collapse_position, message)
@@ -304,7 +307,8 @@ local collapse_after_wave_200 = function ()
 
     if wave_number >= 200 and not Collapse.has_collapse_started() then
         Collapse.start_now(true)
-        local data = {
+        local data =
+        {
             position = Collapse.get_position()
         }
         data.message = ({ 'breached_wall.collapse_start' })
@@ -581,11 +585,11 @@ function Public.init_stateful(current_task)
     Public.stateful.reset_stateful(false, true)
     Public.stateful.apply_startup_settings()
 
-    if Public.is_modded then
-        for _, player in pairs(game.connected_players) do
-            Public.on_player_created({ player_index = player.index })
-        end
-    end
+    -- if Public.is_modded then
+    --     for _, player in pairs(game.connected_players) do
+    --         Public.on_player_created({ player_index = player.index })
+    --     end
+    -- end
 
     current_task.message = 'Initialized stateful!'
     current_task.state = 'clear_fortress'
@@ -806,7 +810,8 @@ function Public.init_mtn()
 
     Public.create_landing_surface()
 
-    local tooltip = {
+    local tooltip =
+    {
         [1] = ({ 'main.diff_tooltip', '500', '50%', '15%', '15%', '1', '12', '50', '10000', '100%', '15', '10' }),
         [2] = ({ 'main.diff_tooltip', '300', '25%', '10%', '10%', '2', '10', '50', '7000', '75%', '8', '8' }),
         [3] = ({ 'main.diff_tooltip', '50', '0%', '0%', '0%', '4', '3', '10', '5000', '50%', '5', '6' })

@@ -3,6 +3,7 @@
 
 local Event = require 'utils.event'
 local Global = require 'utils.global'
+local Core = require 'utils.core'
 
 local round = math.round
 
@@ -57,21 +58,6 @@ local modifiers =
     [12] = 'character_running_speed_modifier'
 }
 
-local function check_inventory_size_limit(player, modifier, value)
-    if not player or not player.valid then
-        return
-    end
-
-    if player.character ~= nil then
-        local total = player.character.character_inventory_slots_bonus + player.force.character_inventory_slots_bonus
-        if total >= this.rpg_inventory_slot_limit then
-            player[modifier] = this.rpg_inventory_slot_limit
-        else
-            player[modifier] = round(value, 4)
-        end
-    end
-end
-
 function Public.update_player_modifiers(player)
     local player_modifiers = this.modifiers[player.index]
     if not player_modifiers then
@@ -92,11 +78,7 @@ function Public.update_player_modifiers(player)
             if disabled_modifiers and disabled_modifiers[k] then
                 player[modifier] = 0
             else
-                if modifiers[k] == 'character_inventory_slots_bonus' and not this.creative_enabled then
-                    check_inventory_size_limit(player, modifier, sum_value)
-                else
-                    player[modifier] = round(sum_value, 4)
-                end
+                player[modifier] = round(sum_value, 4)
             end
         end
     end
@@ -104,26 +86,26 @@ end
 
 function Public.update_single_modifier(player, modifier, category, value)
     local player_modifiers = this.modifiers[player.index]
-    if not player_modifiers then
+    if not player_modifiers or not modifier then
         return
     end
-    if not modifier then
-        return
-    end
-    for k, _ in pairs(player_modifiers) do
-        if modifiers[k] == modifier and player_modifiers[k] then
+
+    for key, _ in pairs(player_modifiers) do
+        if modifiers[key] == modifier and player_modifiers[key] then
+            local current_modifier = player_modifiers[key]
+
             if category then
                 if value then
-                    if modifiers[k] == 'character_inventory_slots_bonus' and not this.creative_enabled then
-                        check_inventory_size_limit(player, modifier, value)
+                    if modifiers[key] == 'character_inventory_slots_bonus' and not this.creative_enabled then
+                        current_modifier[category] = math.min(value, this.rpg_inventory_slot_limit)
                     else
-                        player_modifiers[k][category] = value
+                        current_modifier[category] = value
                     end
                 else
-                    player_modifiers[k][category] = nil
+                    current_modifier[category] = nil
                 end
             else
-                player_modifiers[k] = value
+                player_modifiers[key] = value
             end
         end
     end
@@ -234,5 +216,11 @@ end
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_respawned, on_player_respawned)
 Event.add(defines.events.on_player_removed, on_player_removed)
+
+Event.on_nth_tick(60, function ()
+    Core.iter_connected_players(function (player)
+        Public.update_player_modifiers(player)
+    end)
+end)
 
 return Public
