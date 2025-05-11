@@ -59,6 +59,54 @@ Gui.button_style = 'mod_gui_button'
 Gui.set_toggle_button(true)
 Gui.set_mod_gui_top_frame(true)
 
+local fishy_callback_token =
+    Task.register(
+        function (event)
+            local entity = event.entity
+            if not entity or not entity.valid then
+                return
+            end
+            if entity.type ~= 'item-entity' then
+                return
+            end
+            local fishy_baits = Public.get('fishy_baits')
+            if entity.stack and entity.stack.name == 'cooked-fish' then
+                local fish_nom_cooldown = WD.get('fish_nom_cooldown') or 0
+                local fish_alert_cooldown = WD.get('fish_alert_cooldown') or 0
+
+                if game.tick >= fish_nom_cooldown then
+                    WD.set('fish_nom_cooldown', game.tick + 400)
+                    local threat = WD.get('threat')
+                    WD.set('threat', threat + 100)
+                    fishy_baits['cooked_fish'] = fishy_baits['cooked_fish'] and fishy_baits['cooked_fish'] + 1 or 1
+
+                    if game.tick >= fish_alert_cooldown then
+                        WD.set('fish_alert_cooldown', game.tick + 4000)
+                        local msg = 'The biters feast on the cooked fish near collapse! Threat increased by 100!'
+                        Alert.alert_all_players(60, msg)
+                    end
+                end
+            end
+            if entity.stack and entity.stack.name == 'grilled-fish' then
+                local fish_nom_cooldown = WD.get('fish_nom_cooldown') or 0
+                local fish_alert_cooldown = WD.get('fish_alert_cooldown') or 0
+
+                if game.tick >= fish_nom_cooldown then
+                    WD.set('fish_nom_cooldown', game.tick + 400)
+                    local threat = WD.get('threat')
+                    WD.set('threat', threat + 200)
+                    fishy_baits['grilled_fish'] = fishy_baits['grilled_fish'] and fishy_baits['grilled_fish'] + 1 or 1
+
+                    if game.tick >= fish_alert_cooldown then
+                        WD.set('fish_alert_cooldown', game.tick + 4000)
+                        local msg = 'The biters feast on the grilled fish near collapse! Threat increased by 200!'
+                        Alert.alert_all_players(60, msg)
+                    end
+                end
+            end
+        end
+    )
+
 local collapse_kill =
 {
     entities =
@@ -77,6 +125,7 @@ local collapse_kill =
         ['furnace'] = true,
         ['steel-chest'] = true
     },
+    callback = fishy_callback_token,
     enabled = true
 }
 
@@ -836,7 +885,6 @@ function Public.init_mtn()
     AntiGrief.set_limit_per_table(2000)
     PL.show_roles_in_list(true)
     PL.rpg_enabled(true)
-    Collapse.set_kill_entities(false)
     Collapse.set_kill_specific_entities(collapse_kill)
 
     Public.create_landing_surface()

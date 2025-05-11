@@ -1422,10 +1422,6 @@ local function on_player_cursor_stack_changed(event)
         return
     end
 
-    if player.admin then
-        return
-    end
-
     local item = player.cursor_stack
 
     if not item then
@@ -1438,21 +1434,15 @@ local function on_player_cursor_stack_changed(event)
 
     local name = item.name
 
-    local pm = player.permission_group.name
-
     local blacklisted_spawn_items =
     {
-        ['cut-paste-tool'] = true,
         ['spidertron-remote'] = true,
         ['artillery-targeting-remote'] = true,
     }
 
-    if pm == 'Default' or pm == 'limited' or pm == 'jail' or pm == 'not_trusted' or pm == 'near_locomotive' or pm == 'main_surface' then
-        if blacklisted_spawn_items[name] then
-            player.print('You are not allowed to use this item.', { color = Color.warning })
-            player.cursor_stack.clear()
-            return
-        end
+    if blacklisted_spawn_items[name] then
+        player.print('You are not allowed to use this item.', { color = Color.warning })
+        player.cursor_stack.clear()
         return
     end
 end

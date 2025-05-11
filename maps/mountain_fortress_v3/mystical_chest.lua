@@ -16,7 +16,42 @@ local abs = math.abs
 
 local modifier_cooldown = 108000 -- 30 minutes
 
-local item_worths = {
+local techs_to_research =
+{
+    'automation-science-pack',
+    'logistic-science-pack',
+    'military-science-pack',
+    'chemical-science-pack',
+    'production-science-pack',
+    'utility-science-pack',
+    'space-science-pack'
+}
+
+local ammo_to_research =
+{
+    'firearm-magazine',
+    'piercing-rounds-magazine',
+    'uranium-rounds-magazine',
+    'shotgun-shell',
+    'piercing-shotgun-shell',
+    'cannon-shell',
+    'explosive-cannon-shell',
+    'uranium-cannon-shell',
+    'explosive-uranium-cannon-shell',
+    'rocket',
+    'explosive-rocket',
+    'flamethrower-ammo',
+    'grenade',
+    'cluster-grenade',
+    'poison-capsule',
+    'slowdown-capsule',
+    'defender-capsule',
+    'distractor-capsule',
+    'destroyer-capsule'
+}
+
+local item_worths =
+{
     ['water-barrel'] = 4,
     ['copper-cable'] = 1,
     ['iron-stick'] = 1,
@@ -228,7 +263,8 @@ local restore_movement_speed_token =
         end
     )
 
-local mc_random_rewards = {
+local mc_random_rewards =
+{
     {
         name = 'XP',
         str = 'xp',
@@ -237,8 +273,11 @@ local mc_random_rewards = {
         func = (function (player, zone)
             local mc_rewards = Public.get('mc_rewards')
             if mc_rewards.temp_boosts.xp then
-                return false, '[Rewards] XP bonus is already applied and is on cooldown. Please choose another reward.'
+                return false, '[Rewards] XP bonus is already applied and is currently on cooldown. Please choose another reward.'
             end
+            local mystical_rewards = Public.get('mystical_rewards')
+            mystical_rewards.xp_bonus = mystical_rewards.xp_bonus and mystical_rewards.xp_bonus + 1 or 1
+
             mc_rewards.temp_boosts.xp = true
             Task.set_timeout_in_ticks(modifier_cooldown, restore_modifier_token, { modifier = 'xp' })
             local rng = random(2048, 10240)
@@ -253,6 +292,78 @@ local mc_random_rewards = {
         512
     },
     {
+        name = 'Science glory',
+        str = 'science',
+        color = { r = 0.00, g = 0.45, b = 0.00 },
+        tooltip = 'Selecting this will grant all of the researched tech in the mystical chest!',
+        func = (function (player, _)
+            local mc_rewards = Public.get('mc_rewards')
+            if mc_rewards.temp_boosts.science then
+                return false, '[Rewards] Science bonus is already applied and is currently on cooldown. Please choose another reward.'
+            end
+            mc_rewards.temp_boosts.science = true
+            Task.set_timeout_in_ticks(modifier_cooldown, restore_modifier_token, { modifier = 'science' })
+
+
+            local mystical_chest = Public.get('mystical_chest')
+            if not (mystical_chest and mystical_chest.valid) then
+                return
+            end
+
+            local mystical_rewards = Public.get('mystical_rewards')
+            mystical_rewards.science_bonus = mystical_rewards.science_bonus and mystical_rewards.science_bonus + 1 or 1
+
+            local techs = game.forces.player.technologies
+
+            for _, tech in pairs(techs_to_research) do
+                if techs[tech] and techs[tech].researched then
+                    mystical_chest.insert({ name = tech, count = random(200, 1500) })
+                end
+            end
+
+            Alert.alert_all_players(15, 'Science for all! Check out the mystical chest!', nil, 'achievement/tech-maniac')
+            Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted science bonus to the team!', ' ***' })
+            return true
+        end),
+        512
+    },
+    {
+        name = 'Ammo for all',
+        str = 'ammo',
+        color = { r = 0.00, g = 0.45, b = 0.00 },
+        tooltip = 'Selecting this will grant all of the researched tech in the mystical chest!',
+        func = (function (player, _)
+            local mc_rewards = Public.get('mc_rewards')
+            if mc_rewards.temp_boosts.ammo then
+                return false, '[Rewards] Ammo bonus is already applied and is currently on cooldown. Please choose another reward.'
+            end
+            mc_rewards.temp_boosts.ammo = true
+            Task.set_timeout_in_ticks(modifier_cooldown, restore_modifier_token, { modifier = 'ammo' })
+
+
+            local mystical_chest = Public.get('mystical_chest')
+            if not (mystical_chest and mystical_chest.valid) then
+                return
+            end
+
+            local mystical_rewards = Public.get('mystical_rewards')
+            mystical_rewards.ammo_bonus = mystical_rewards.ammo_bonus and mystical_rewards.ammo_bonus + 1 or 1
+
+            local techs = game.forces.player.technologies
+
+            for _, tech in pairs(ammo_to_research) do
+                if techs[tech] and techs[tech].researched then
+                    mystical_chest.insert({ name = tech, count = random(200, 400) })
+                end
+            end
+
+            Alert.alert_all_players(15, 'Ammo for all! Check out the mystical chest!', nil, 'achievement/tech-maniac')
+            Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted ammo bonus to the team!', ' ***' })
+            return true
+        end),
+        512
+    },
+    {
         name = 'Coins',
         str = 'coins',
         color = { r = 0.00, g = 0.35, b = 0.00 },
@@ -260,8 +371,11 @@ local mc_random_rewards = {
         func = (function (p, zone)
             local mc_rewards = Public.get('mc_rewards')
             if mc_rewards.temp_boosts.coins then
-                return false, '[Rewards] Coin bonus is already applied and is on cooldown. Please choose another reward.'
+                return false, '[Rewards] Coin bonus is already applied and is currently on cooldown. Please choose another reward.'
             end
+
+            local mystical_rewards = Public.get('mystical_rewards')
+            mystical_rewards.coins_bonus = mystical_rewards.coins_bonus and mystical_rewards.coins_bonus + 1 or 1
 
             mc_rewards.temp_boosts.coins = true
             Task.set_timeout_in_ticks(modifier_cooldown, restore_modifier_token, { modifier = 'coins' })
@@ -297,6 +411,9 @@ local mc_random_rewards = {
                 return false, '[Rewards] Movement bonus is already applied. Please choose another reward.'
             end
 
+            local mystical_rewards = Public.get('mystical_rewards')
+            mystical_rewards.movement_speed = mystical_rewards.movement_speed and mystical_rewards.movement_speed + 1 or 1
+
             mc_rewards.temp_boosts.movement = true
 
             Task.set_timeout_in_ticks(54000, restore_movement_speed_token, { speed = force.character_running_speed_modifier })
@@ -325,6 +442,9 @@ local mc_random_rewards = {
                 return false, '[Rewards] Mining bonus is already applied. Please choose another reward.'
             end
 
+            local mystical_rewards = Public.get('mystical_rewards')
+            mystical_rewards.mining_speed = mystical_rewards.mining_speed and mystical_rewards.mining_speed + 1 or 1
+
             mc_rewards.temp_boosts.mining = true
 
             Task.set_timeout_in_ticks(54000, restore_mining_speed_token)
@@ -347,6 +467,9 @@ local mc_random_rewards = {
             if mc_rewards.temp_boosts.crafting then
                 return false, '[Rewards] Crafting bonus is already applied. Please choose another reward.'
             end
+
+            local mystical_rewards = Public.get('mystical_rewards')
+            mystical_rewards.crafting_speed = mystical_rewards.crafting_speed and mystical_rewards.crafting_speed + 1 or 1
 
             mc_rewards.temp_boosts.crafting = true
 
@@ -378,7 +501,8 @@ local function mystical_chest_reward(player)
     for i = 1, 3 do
         local d, key = get_random_weighted(mc_random_rewards)
         if not mc_rewards.current[key] and not mc_rewards.temp_boosts[d.str] then
-            mc_rewards.current[key] = {
+            mc_rewards.current[key] =
+            {
                 id = i,
                 name = d.name
             }

@@ -36,7 +36,6 @@ function Public.create_surface()
         {
             ['entity'] = { treat_missing_as_default = false },
             ['tile'] = { treat_missing_as_default = false },
-            ['decorative'] = { treat_missing_as_default = false }
         },
         property_expression_names =
         {
@@ -45,6 +44,12 @@ function Public.create_surface()
             ['tile:deep-water:probability'] = -10000
         }
     }
+
+    if Public.is_modded_pt2 then
+        map_gen_settings.autoplace_settings.decorative = { treat_missing_as_default = false }
+    else
+        map_gen_settings.autoplace_settings.decorative = prototypes.space_location.nauvis.map_gen_settings.autoplace_settings.decorative
+    end
 
     local mine = {}
     mine['control-setting:moisture:bias'] = 0.33

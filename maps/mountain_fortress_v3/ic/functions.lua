@@ -5,15 +5,12 @@ local Core = require 'utils.core'
 local JailData = require 'utils.datastore.jail_data'
 local IC = require 'maps.mountain_fortress_v3.ic.table'
 local WPT = require 'maps.mountain_fortress_v3.table'
-local RPG = require 'modules.rpg.main'
 local OfflinePlayers = require 'modules.clear_vacant_players'
 local Event = require 'utils.event'
 local Server = require 'utils.server'
 
 local Public = {}
 local main_tile_name = 'black-refined-concrete'
-local round = math.round
-local floor = math.floor
 local module_tag = '[color=blue]Comfylatron:[/color] '
 
 local is_modded = script.active_mods['MtnFortressAddons'] or false
@@ -321,9 +318,7 @@ local function get_saved_entity(entity, index)
 end
 
 local function replace_entity(cars, entity, index)
-    local upgrades = WPT.get('upgrades')
     local unit_number = entity.unit_number
-    local health = floor(2000 * entity.health * 0.002)
     for k, car in pairs(cars) do
         if car.saved_entity == index.saved_entity then
             local c = car
@@ -332,11 +327,6 @@ local function replace_entity(cars, entity, index)
             cars[unit_number].saved_entity = nil
             cars[unit_number].saved = false
             cars[unit_number].transfer_entities = car.transfer_entities
-            cars[unit_number].health_pool = {
-                enabled = upgrades.has_upgraded_health_pool or false,
-                health = health,
-                max = health
-            }
             cars[k] = nil
         end
     end
@@ -1286,7 +1276,6 @@ function Public.create_car(event)
     end
 
     local renders = IC.get('renders')
-    local upgrades = WPT.get('upgrades')
 
     local car, mined = get_player_entity(player)
 
@@ -1327,19 +1316,12 @@ function Public.create_car(event)
         areas = car_areas[ce.type]
     end
 
-    local health = floor(2000 * ce.health * 0.002)
-
     local quality_area = get_quality_area(areas, ce.quality.name)
 
     cars[un] = {
         entity = ce,
         area = quality_area,
         doors = {},
-        health_pool = {
-            enabled = upgrades.has_upgraded_health_pool or false,
-            health = health,
-            max = health
-        },
         owner = player.name,
         owner_name = player.name,
         name = ce.name,
@@ -1582,31 +1564,6 @@ function Public.on_player_respawned(player)
     end
 end
 
-function Public.check_entity_healths()
-    local cars = IC.get('cars')
-    if not next(cars) then
-        return
-    end
-
-    local health_types = {
-        ['car'] = 450,
-        ['tank'] = 2000,
-        ['spidertron'] = 3000
-    }
-
-    for _, car in pairs(cars) do
-        local m = car.health_pool.health / car.health_pool.max
-
-        if car.health_pool.health > car.health_pool.max then
-            car.health_pool.health = car.health_pool.max
-        end
-
-        if (car.entity and car.entity.valid) then
-            car.entity.health = health_types[car.entity.name] * m
-        end
-    end
-end
-
 function Public.get_car(unit_number)
     local cars = IC.get('cars')
     if not next(cars) then
@@ -1616,59 +1573,6 @@ function Public.get_car(unit_number)
     return cars[unit_number] or nil
 end
 
-function Public.set_damage_health(data)
-    local entity = data.entity
-    local final_damage_amount = data.final_damage_amount
-    local car = data.car
-
-    if final_damage_amount == 0 then
-        return
-    end
-
-    local health_types = {
-        ['car'] = 450,
-        ['tank'] = 2000,
-        ['spidertron'] = 3000
-    }
-
-    car.health_pool.health = round(car.health_pool.health - final_damage_amount)
-
-    if car.health_pool.health <= 0 then
-        entity.die()
-        return
-    end
-
-    local m = car.health_pool.health / car.health_pool.max
-
-    entity.health = health_types[entity.name] * m
-end
-
-function Public.set_repair_health(data)
-    local entity = data.entity
-    local car = data.car
-    local player = data.player
-
-    local repair_speed = RPG.get_magicka(player)
-    if repair_speed <= 0 then
-        repair_speed = 5
-    end
-
-    local health_types = {
-        ['car'] = 450,
-        ['tank'] = 2000,
-        ['spidertron'] = 3000
-    }
-
-    car.health_pool.health = round(car.health_pool.health + repair_speed)
-
-    local m = car.health_pool.health / car.health_pool.max
-
-    if car.health_pool.health > car.health_pool.max then
-        car.health_pool.health = car.health_pool.max
-    end
-
-    entity.health = health_types[entity.name] * m
-end
 
 Public.get_trusted_system = get_trusted_system
 Public.does_player_table_exist = does_player_table_exist

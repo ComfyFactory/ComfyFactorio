@@ -6,7 +6,6 @@ local WD = require 'modules.wave_defense.table'
 local Alert = require 'utils.alert'
 local Task = require 'utils.task_token'
 local Color = require 'utils.color_presets'
-local ICF = require 'maps.mountain_fortress_v3.ic.functions'
 local Session = require 'utils.datastore.session_data'
 
 local floor = math.floor
@@ -261,8 +260,6 @@ local compare_player_and_train = function (player, entity)
         return
     end
 
-    local car = ICF.get_car(entity.unit_number)
-
     local position = player.physical_position
     local locomotive = Public.get('locomotive')
     if not locomotive or not locomotive.valid then
@@ -303,10 +300,6 @@ local compare_player_and_train = function (player, entity)
         )
         player.print(msg, { color = color })
         if entity.health then
-            if car and car.health_pool and car.health_pool.health then
-                car.health_pool.health = car.health_pool.health - 500
-            end
-
             entity.health = entity.health - 500
             if entity.health <= 0 then
                 entity.die('enemy')

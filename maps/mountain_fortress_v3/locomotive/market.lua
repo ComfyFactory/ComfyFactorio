@@ -153,7 +153,6 @@ local function get_items(player)
     local explosive_bullets_cost = round(fixed_prices.explosive_bullets_cost)
     local flamethrower_turrets_cost = round(fixed_prices.flamethrower_turrets_cost * (1 + flame_turret))
     local land_mine_cost = round(fixed_prices.land_mine_cost * (1 + upgrades.landmine.bought))
-    local car_health_upgrade_pool = fixed_prices.car_health_upgrade_pool_cost
     local upgraded_tile_when_mining_cost = fixed_prices.tile_when_mining_cost
 
     local pickaxe_upgrades = Public.pickaxe_upgrades
@@ -234,32 +233,6 @@ local function get_items(player)
             price = aura_cost,
             tooltip = ({ 'main_market.locomotive_aura_radius', upgrades.aura_upgrades, upgrades.aura_upgrades_max }),
             sprite = 'achievement/tech-maniac',
-            enabled = true,
-            upgrade = true,
-            static = true
-        }
-    end
-
-    if upgrades.has_upgraded_health_pool then
-        main_market_items['car_health_upgrade_pool'] =
-        {
-            stack = 1,
-            value = 'coin',
-            price = car_health_upgrade_pool,
-            tooltip = ({ 'main_market.sold_out' }),
-            sprite = 'achievement/iron-throne-1',
-            enabled = false,
-            upgrade = true,
-            static = true
-        }
-    else
-        main_market_items['car_health_upgrade_pool'] =
-        {
-            stack = 1,
-            value = 'coin',
-            price = car_health_upgrade_pool,
-            tooltip = ({ 'main_market.global_car_health_modifier' }),
-            sprite = 'achievement/iron-throne-1',
             enabled = true,
             upgrade = true,
             static = true
@@ -1429,33 +1402,6 @@ local function gui_click(event)
         )
         RPG.enable_explosive_bullets(true)
         this.upgrades.explosive_bullets_purchased = true
-
-        redraw_market_items(data.item_frame, player, data.search_text)
-        redraw_coins_left(data.coins_left, player)
-
-        return
-    end
-
-    if name == 'car_health_upgrade_pool' then
-        remove_item_count(player, item.value, item.price)
-        local message = (
-            {
-                'locomotive.car_health_upgrade_pool_bought_info',
-                shopkeeper,
-                player.name,
-                format_number(item.price, true)
-            })
-
-        Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
-
-        Alert.alert_all_players(5, message)
-        Server.to_discord_bold(
-            table.concat
-            {
-                player.name .. ' has bought the global car health modifier for ' .. format_number(item.price) .. ' coins.'
-            }
-        )
-        this.upgrades.has_upgraded_health_pool = true
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)

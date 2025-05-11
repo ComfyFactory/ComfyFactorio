@@ -196,7 +196,6 @@ Event.add(
         return Functions.create_wagon(icw, event.entity)
     end
 )
-
 Event.add(defines.events.on_player_warp_entered, function (event)
     local icw = ICW.get()
     local player = game.players[event.player_index]
