@@ -50,7 +50,6 @@ Commands.new('save-tag', 'Sets your custom tag that is persistent.')
     :require_backend()
     :callback(
         function (player, tag)
-            log(serpent.block(tag))
             if alphanumeric(tag) then
                 player.print('Tag is not valid.')
                 return false
