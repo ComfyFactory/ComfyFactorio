@@ -51,6 +51,19 @@ local output =
     command_is_inactive = 'This command is already inactive.'
 }
 
+local validate_types =
+{
+    ['string'] = true,
+    ['number'] = true,
+    ['integer'] = true,
+    ['boolean'] = true,
+    ['player'] = true,
+    ['player-online'] = true,
+    ['player-admin'] = true,
+    ['server'] = true,
+    ['surface'] = true
+}
+
 local check_boolean =
 {
     ['true'] = true,
@@ -487,6 +500,10 @@ end
 ---@param as_type? type|string
 ---@return MetaCommand
 function Public:add_parameter(name, optional, as_type)
+    if not validate_types[as_type] then
+        error('Invalid type: ' .. as_type .. ' for parameter: ' .. name, 2)
+    end
+
     if self.parameters[name] then
         error('Parameter: ' .. name .. ' already exists for command: ' .. self.name, 2)
     end

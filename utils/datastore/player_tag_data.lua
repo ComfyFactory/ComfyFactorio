@@ -46,10 +46,11 @@ function Public.fetch(key)
 end
 
 Commands.new('save-tag', 'Sets your custom tag that is persistent.')
-    :add_parameter('tag', false, 'The tag you want to set.')
+    :add_parameter('tag', false, 'string')
     :require_backend()
     :callback(
         function (player, tag)
+            log(serpent.block(tag))
             if alphanumeric(tag) then
                 player.print('Tag is not valid.')
                 return false

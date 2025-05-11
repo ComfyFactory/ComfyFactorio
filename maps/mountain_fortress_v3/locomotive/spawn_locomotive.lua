@@ -7,64 +7,65 @@ local random = math.random
 local floor = math.floor
 
 local function initial_cargo_boxes()
-    return {
-        { name = 'loader',                  count = 1 },
-        { name = 'stone-furnace',           count = 2 },
-        { name = 'coal',                    count = random(32, 64) },
-        { name = 'coal',                    count = random(32, 64) },
-        { name = 'loader',                  count = 1 },
-        { name = 'iron-ore',                count = random(32, 128) },
-        { name = 'copper-ore',              count = random(32, 128) },
-        { name = 'submachine-gun',          count = 1 },
-        { name = 'loader',                  count = 1 },
-        { name = 'submachine-gun',          count = 1 },
-        { name = 'submachine-gun',          count = 1 },
-        { name = 'stone-furnace',           count = 2 },
-        { name = 'submachine-gun',          count = 1 },
-        { name = 'submachine-gun',          count = 1 },
-        { name = 'loader',                  count = 1 },
-        { name = 'submachine-gun',          count = 1 },
+    return
+    {
+        { name = 'loader', count = 1 },
+        { name = 'stone-furnace', count = 2 },
+        { name = 'coal', count = random(32, 64) },
+        { name = 'coal', count = random(32, 64) },
+        { name = 'loader', count = 1 },
+        { name = 'iron-ore', count = random(32, 128) },
+        { name = 'copper-ore', count = random(32, 128) },
+        { name = 'submachine-gun', count = 1 },
+        { name = 'loader', count = 1 },
+        { name = 'submachine-gun', count = 1 },
+        { name = 'submachine-gun', count = 1 },
+        { name = 'stone-furnace', count = 2 },
+        { name = 'submachine-gun', count = 1 },
+        { name = 'submachine-gun', count = 1 },
+        { name = 'loader', count = 1 },
+        { name = 'submachine-gun', count = 1 },
         { name = 'automation-science-pack', count = random(4, 32) },
-        { name = 'submachine-gun',          count = 1 },
-        { name = 'stone-wall',              count = random(4, 32) },
-        { name = 'shotgun',                 count = 1 },
-        { name = 'shotgun',                 count = 1 },
-        { name = 'shotgun',                 count = 1 },
-        { name = 'stone-wall',              count = random(4, 32) },
-        { name = 'gun-turret',              count = 1 },
-        { name = 'gun-turret',              count = 1 },
-        { name = 'gun-turret',              count = 1 },
-        { name = 'gun-turret',              count = 1 },
-        { name = 'stone-wall',              count = random(4, 32) },
-        { name = 'shotgun-shell',           count = random(4, 5) },
-        { name = 'shotgun-shell',           count = random(4, 5) },
-        { name = 'shotgun-shell',           count = random(4, 5) },
-        { name = 'gun-turret',              count = 1 },
-        { name = 'land-mine',               count = random(6, 18) },
-        { name = 'grenade',                 count = random(2, 7) },
-        { name = 'grenade',                 count = random(2, 8) },
-        { name = 'gun-turret',              count = 1 },
-        { name = 'grenade',                 count = random(2, 7) },
-        { name = 'light-armor',             count = random(2, 4) },
-        { name = 'iron-gear-wheel',         count = random(7, 15) },
-        { name = 'iron-gear-wheel',         count = random(7, 15) },
-        { name = 'gun-turret',              count = 1 },
-        { name = 'iron-gear-wheel',         count = random(7, 15) },
-        { name = 'iron-gear-wheel',         count = random(7, 15) },
-        { name = 'iron-plate',              count = random(15, 23) },
-        { name = 'iron-plate',              count = random(15, 23) },
-        { name = 'iron-plate',              count = random(15, 23) },
-        { name = 'iron-plate',              count = random(15, 23) },
-        { name = 'copper-plate',            count = random(15, 23) },
-        { name = 'copper-plate',            count = random(15, 23) },
-        { name = 'copper-plate',            count = random(15, 23) },
-        { name = 'copper-plate',            count = random(15, 23) },
-        { name = 'firearm-magazine',        count = random(10, 56) },
-        { name = 'firearm-magazine',        count = random(10, 56) },
-        { name = 'firearm-magazine',        count = random(10, 56) },
-        { name = 'firearm-magazine',        count = random(10, 56) },
-        { name = 'rail',                    count = random(16, 24) },
-        { name = 'rail',                    count = random(16, 24) }
+        { name = 'submachine-gun', count = 1 },
+        { name = 'stone-wall', count = random(4, 32) },
+        { name = 'shotgun', count = 1 },
+        { name = 'shotgun', count = 1 },
+        { name = 'shotgun', count = 1 },
+        { name = 'stone-wall', count = random(4, 32) },
+        { name = 'gun-turret', count = 1 },
+        { name = 'gun-turret', count = 1 },
+        { name = 'gun-turret', count = 1 },
+        { name = 'gun-turret', count = 1 },
+        { name = 'stone-wall', count = random(4, 32) },
+        { name = 'shotgun-shell', count = random(4, 5) },
+        { name = 'shotgun-shell', count = random(4, 5) },
+        { name = 'shotgun-shell', count = random(4, 5) },
+        { name = 'gun-turret', count = 1 },
+        { name = 'land-mine', count = random(6, 18) },
+        { name = 'grenade', count = random(2, 7) },
+        { name = 'grenade', count = random(2, 8) },
+        { name = 'gun-turret', count = 1 },
+        { name = 'grenade', count = random(2, 7) },
+        { name = 'light-armor', count = random(2, 4) },
+        { name = 'iron-gear-wheel', count = random(7, 15) },
+        { name = 'iron-gear-wheel', count = random(7, 15) },
+        { name = 'gun-turret', count = 1 },
+        { name = 'iron-gear-wheel', count = random(7, 15) },
+        { name = 'iron-gear-wheel', count = random(7, 15) },
+        { name = 'iron-plate', count = random(15, 23) },
+        { name = 'iron-plate', count = random(15, 23) },
+        { name = 'iron-plate', count = random(15, 23) },
+        { name = 'iron-plate', count = random(15, 23) },
+        { name = 'copper-plate', count = random(15, 23) },
+        { name = 'copper-plate', count = random(15, 23) },
+        { name = 'copper-plate', count = random(15, 23) },
+        { name = 'copper-plate', count = random(15, 23) },
+        { name = 'firearm-magazine', count = random(10, 56) },
+        { name = 'firearm-magazine', count = random(10, 56) },
+        { name = 'firearm-magazine', count = random(10, 56) },
+        { name = 'firearm-magazine', count = random(10, 56) },
+        { name = 'rail', count = random(16, 24) },
+        { name = 'rail', count = random(16, 24) }
     }
 end
 
@@ -92,15 +93,25 @@ local set_loco_cargo =
                 return
             end
 
+            local locomotive = data.locomotive
+
             local cargo_boxes = initial_cargo_boxes()
 
             local p = {}
 
             local rad = 16 ^ 2
-            for x = -15 + 500, 15 + 500, 1 do
-                for y = 0, 67, 1 do
-                    local va = floor((0 - x) ^ 2 + (53 - y) ^ 2)
-                    if ((va < rad - 50) and (va > rad - 100)) then
+            local center_x = locomotive.chunk_position.x
+            local center_y = locomotive.chunk_position.y + 50
+            local rad_min = rad - 100
+            local rad_max = rad - 50
+
+            for x = locomotive.chunk_position.x - 15, locomotive.chunk_position.x + 15 do
+                for y = locomotive.chunk_position.y, locomotive.chunk_position.y + 67 do
+                    local dx = x - center_x
+                    local dy = y - center_y
+                    local distance_squared = dx * dx + dy * dy
+
+                    if distance_squared > rad_min and distance_squared < rad_max then
                         if random(1, 3) == 1 then
                             p[#p + 1] = { x = x, y = y }
                         end
@@ -139,7 +150,8 @@ function Public.locomotive_spawn(surface, position, reversed)
     end
 
     if not quality_trains then
-        quality_trains = {
+        quality_trains =
+        {
             ['locomotive'] = 'normal',
             ['cargo_wagon'] = 'normal',
             ['fluid_wagon'] = 'normal'
@@ -244,8 +256,10 @@ function Public.locomotive_spawn(surface, position, reversed)
     ICW.register_wagon(this.locomotive_cargo)
     this.icw_locomotive = locomotive
 
-    local data = {
-        surface = locomotive.surface
+    local data =
+    {
+        surface = locomotive.surface,
+        locomotive = locomotive,
     }
 
     if extra_wagons and extra_wagons > 0 then

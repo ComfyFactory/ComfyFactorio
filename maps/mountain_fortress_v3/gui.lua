@@ -4,12 +4,14 @@ local ICW = require 'maps.mountain_fortress_v3.icw.table'
 local Color = require 'utils.color_presets'
 local RPG = require 'modules.rpg.main'
 local IC_Gui = require 'maps.mountain_fortress_v3.ic.gui'
+local IC = require 'maps.mountain_fortress_v3.ic.functions'
 local IC_Minimap = require 'maps.mountain_fortress_v3.ic.minimap'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 local Gui = require 'utils.gui'
 local SpamProtection = require 'utils.spam_protection'
 local Polls = require 'utils.gui.poll'
 local BottomFrame = require 'utils.gui.bottom_frame'
+local Core = require 'utils.core'
 
 local format_number = require 'util'.format_number
 
@@ -130,7 +132,8 @@ local function spectate_button(player)
         end
     else
         local b =
-            player.gui.top.add {
+            player.gui.top.add
+            {
                 type = 'sprite-button',
                 name = spectate_button_name,
                 sprite = 'utility/create_ghost_on_entity_death_modifier_icon',
@@ -325,6 +328,10 @@ local function changed_surface(player)
     local spell_gui_frame_name = RPG.spell_gui_frame_name
     local spell_cast_buttons = player.gui.screen[spell_gui_frame_name]
 
+    if IC.get_player_surface(player) then
+        goto no_gui
+    end
+
     if info then
         info.tooltip = ({ 'gui.info_tooltip' })
         info.sprite = 'utility/expand'
@@ -344,7 +351,7 @@ local function changed_surface(player)
         return
     end
 
-    if (player.physical_surface == main.surface and player.physical_position.x > 700) then
+    if (player.physical_surface == main.surface and player.physical_position.x < 700) then
         local minimap = player.gui.left.icw_main_frame
         if main_toggle_button and not main_toggle_button.visible then
             main_toggle_button.visible = true
@@ -384,7 +391,8 @@ local function changed_surface(player)
             info.sprite = 'utility/expand'
             info.visible = true
         end
-    elseif (player.physical_surface == wagon_surface or player.physical_position.x < 700) then
+        return
+    elseif (player.physical_surface == wagon_surface or player.physical_position.x > 700) then
         if main_toggle_button and main_toggle_button.visible then
             main_toggle_button.visible = false
         end
@@ -424,7 +432,7 @@ local function changed_surface(player)
         if info then
             info.tooltip = ({ 'gui.hide_minimap' })
             info.sprite = 'utility/map'
-            info.visible = true
+            info.visible = false
         end
         if get_top_frame(player) then
             if frame then
@@ -432,22 +440,25 @@ local function changed_surface(player)
                 return
             end
         end
-    else
-        if main_toggle_button and main_toggle_button.visible then
-            main_toggle_button.visible = false
-        end
-        if poll_b then
-            poll_b.visible = false
-        end
-        if rpg_b then
-            rpg_b.visible = false
-        end
-        if spectate then
-            spectate.visible = false
-        end
-        if info and info.visible then
-            info.visible = false
-        end
+        return
+    end
+
+    ::no_gui::
+
+    if main_toggle_button and main_toggle_button.visible then
+        main_toggle_button.visible = false
+    end
+    if poll_b then
+        poll_b.visible = false
+    end
+    if rpg_b then
+        rpg_b.visible = false
+    end
+    if spectate then
+        spectate.visible = false
+    end
+    if info and info.visible then
+        info.visible = false
     end
 end
 
@@ -718,5 +729,11 @@ Gui.on_click(
 )
 
 Public.changed_surface = changed_surface
+
+Event.on_nth_tick(10, function ()
+    Core.iter_connected_players(function (player)
+        changed_surface(player)
+    end)
+end)
 
 return Public
