@@ -5,15 +5,12 @@ local Core = require 'utils.core'
 local JailData = require 'utils.datastore.jail_data'
 local IC = require 'maps.mountain_fortress_v3.ic.table'
 local WPT = require 'maps.mountain_fortress_v3.table'
-local RPG = require 'modules.rpg.main'
 local OfflinePlayers = require 'modules.clear_vacant_players'
 local Event = require 'utils.event'
 local Server = require 'utils.server'
 
 local Public = {}
 local main_tile_name = 'black-refined-concrete'
-local round = math.round
-local floor = math.floor
 local module_tag = '[color=blue]Comfylatron:[/color] '
 
 local is_modded = script.active_mods['MtnFortressAddons'] or false
@@ -32,6 +29,20 @@ local messages = {
     ' vehicle was a tasty biter treat.',
     ' vehicle lost their flux capacitator.',
     ' vehicle met a squishy end.'
+}
+
+local valid_combinations = {
+    ["car"] = { ["car"] = true, ["tank"] = true, ["spidertron"] = true },
+    ["tank"] = { ["tank"] = true, ["spidertron"] = true },
+    ["spidertron"] = { ["spidertron"] = true }
+}
+
+local valid_quality_combinations = {
+    ["normal"] = { ["uncommon"] = true, ["rare"] = true, ["epic"] = true, ["legendary"] = true },
+    ["uncommon"] = { ["rare"] = true, ["epic"] = true, ["legendary"] = true },
+    ["rare"] = { ["epic"] = true, ["legendary"] = true },
+    ["epic"] = { ["legendary"] = true },
+    ["legendary"] = {}
 }
 
 local function validate_entity(entity)
@@ -176,6 +187,39 @@ local function kill_doors(car)
     end
 end
 
+local function get_quality_area(area, quality)
+    local lt_quality_x = 0
+    local lt_quality_y = 0
+    local rb_quality_x = 0
+    local rb_quality_y = 0
+    if quality == 'uncommon' then
+        lt_quality_x = -5
+        rb_quality_y = 5
+    end
+    if quality == 'rare' then
+        lt_quality_x = -10
+        rb_quality_y = 10
+    end
+    if quality == 'epic' then
+        lt_quality_x = -15
+        rb_quality_y = 15
+    end
+    if quality == 'legendary' then
+        lt_quality_x = -20
+        rb_quality_y = 20
+    end
+
+    local quality_area = { left_top = { x = lt_quality_x, y = lt_quality_y }, right_bottom = { x = rb_quality_x, y = rb_quality_y } }
+
+    local temp_area = table.deepcopy(area)
+    temp_area.left_top.x = temp_area.left_top.x + quality_area.left_top.x
+    temp_area.left_top.y = temp_area.left_top.y
+    temp_area.right_bottom.x = temp_area.right_bottom.x + quality_area.right_bottom.x
+    temp_area.right_bottom.y = temp_area.right_bottom.y + quality_area.right_bottom.y
+
+    return temp_area
+end
+
 
 ---Returns the car object of the player.
 ---@param player any
@@ -265,23 +309,16 @@ local function get_owner_car_name(player)
 end
 
 local function get_saved_entity(entity, index)
-    if index and index.name ~= entity.name then
-        local msg =
-            table.concat(
-                {
-                    'The built entity is not the same as the saved one. ',
-                    'Saved entity is: ' .. upperCase(index.name) .. ' - Built entity is: ' .. upperCase(entity.name) .. '. '
-                }
-            )
+    if index and (index.name ~= entity.name or index.quality ~= entity.quality.name) then
+        local msg = string.format('The built entity is not the same as the saved one. Saved entity is: %s (%s). Built entity is: %s (%s)'
+        , upperCase(index.name), upperCase(index.quality), upperCase(entity.name), upperCase(entity.quality.name))
         return false, msg
     end
     return true
 end
 
 local function replace_entity(cars, entity, index)
-    local upgrades = WPT.get('upgrades')
     local unit_number = entity.unit_number
-    local health = floor(2000 * entity.health * 0.002)
     for k, car in pairs(cars) do
         if car.saved_entity == index.saved_entity then
             local c = car
@@ -290,11 +327,6 @@ local function replace_entity(cars, entity, index)
             cars[unit_number].saved_entity = nil
             cars[unit_number].saved = false
             cars[unit_number].transfer_entities = car.transfer_entities
-            cars[unit_number].health_pool = {
-                enabled = upgrades.has_upgraded_health_pool or false,
-                health = health,
-                max = health
-            }
             cars[k] = nil
         end
     end
@@ -358,7 +390,9 @@ local function set_new_area(car)
     local new_area = car_areas
     local name = car.name
     local apply_area = new_area[name]
-    car.area = apply_area
+    local quality_area = get_quality_area(apply_area, car.quality)
+
+    car.area = quality_area
 end
 
 local function upgrade_surface(player, entity)
@@ -379,6 +413,7 @@ local function upgrade_surface(player, entity)
         elseif ce.name == 'tank' then
             car.name = 'tank'
         end
+        car.quality = ce.quality.name
         set_new_area(car)
         remove_logistics(car)
         replace_entity(cars, ce, index)
@@ -401,8 +436,9 @@ local function save_surface(entity, player)
     car.entity = nil
     car.saved = true
     car.saved_entity = entity.unit_number
+    car.quality = entity.quality.name or 'normal'
 
-    saved_surfaces[player.name] = { saved_entity = entity.unit_number, name = entity.name }
+    saved_surfaces[player.name] = { saved_entity = entity.unit_number, name = entity.name, quality = entity.quality.name }
 end
 
 local function kick_players_out_of_vehicles(car)
@@ -818,7 +854,7 @@ function Public.save_car(event)
         }
         Task.set_timeout_in_ticks(10, remove_car, params)
         if restore_on_theft then
-            local e = player.physical_surface.create_entity({ name = car.name, position = position, force = player.force, create_build_effect_smoke = false })
+            local e = player.physical_surface.create_entity({ name = car.name, position = position, force = player.force, create_build_effect_smoke = false, quality = car.quality or 'normal' })
             e.health = health
             restore_surface(p, e)
         elseif p.can_insert({ name = car.name, count = 1 }) then
@@ -1147,29 +1183,17 @@ end
 function Public.create_car_room(car)
     local surface_index = car.surface
     local surface = game.surfaces[surface_index]
-    local car_areas = IC.get('car_areas')
-    local entity_name = car.name
-    local entity_type = car.type
-    local area = car_areas[entity_name]
     local tiles = {}
 
-    if not area then
-        area = car_areas[entity_type]
-    end
-
-
-    for x = area.left_top.x, area.right_bottom.x - 1, 1 do
-        for y = area.left_top.y + 2, area.right_bottom.y - 3, 1 do
-            tiles[#tiles + 1] = { name = main_tile_name, position = { x, y } }
-        end
-    end
-    for x = -3, 2, 1 do
-        for y = area.right_bottom.y - 4, area.right_bottom.y - 2, 1 do
+    local car_area = car.area
+    for x = car_area.left_top.x, car_area.right_bottom.x - 1, 1 do
+        for y = car_area.left_top.y + 2, car_area.right_bottom.y - 3, 1 do
             tiles[#tiles + 1] = { name = main_tile_name, position = { x, y } }
         end
     end
 
-    for x = area.left_top.x, area.right_bottom.x - 1, 1 do
+
+    for x = car_area.left_top.x, car_area.right_bottom.x - 1, 1 do
         for y = -0, 1, 1 do
             tiles[#tiles + 1] = { name = 'water', position = { x, y } }
         end
@@ -1182,7 +1206,7 @@ function Public.create_car_room(car)
         local player_data = get_persistent_player_data(p)
         if not player_data.placed_fish then
             local fishes = {}
-            for x = area.left_top.x, area.right_bottom.x - 1, 1 do
+            for x = car_area.left_top.x, car_area.right_bottom.x - 1, 1 do
                 for y = -0, 1, 1 do
                     fishes[#fishes + 1] = { name = 'fish', position = { x, y } }
                 end
@@ -1197,14 +1221,14 @@ function Public.create_car_room(car)
 
     construct_doors(car)
     local mgs = surface.map_gen_settings
-    mgs.width = area.right_bottom.x * 2
-    mgs.height = area.right_bottom.y * 2
+    mgs.width = car_area.right_bottom.x * 2
+    mgs.height = car_area.right_bottom.y * 2
     surface.map_gen_settings = mgs
 
     local lx, ly, rx, ry = 4, 1, 5, 1
 
-    local position1 = { area.left_top.x + lx, area.left_top.y + ly }
-    local position2 = { area.right_bottom.x - rx, area.left_top.y + ry }
+    local position1 = { car_area.left_top.x + lx, car_area.left_top.y + ly }
+    local position2 = { car_area.right_bottom.x - rx, car_area.left_top.y + ry }
 
     local e1 =
         surface.create_entity(
@@ -1252,9 +1276,10 @@ function Public.create_car(event)
     end
 
     local renders = IC.get('renders')
-    local upgrades = WPT.get('upgrades')
 
     local car, mined = get_player_entity(player)
+
+    local default_surface = WPT.get('default_surface')
 
     if car then
         if entity_type[car.name] and not mined then
@@ -1262,13 +1287,14 @@ function Public.create_car(event)
         end
     end
 
-    if string.sub(ce.surface.name, 0, #map_name) ~= map_name then
+    if string.sub(ce.surface.name, 0, #map_name) ~= map_name or (default_surface and ce.position.x > 800) then
         return player.print(module_tag .. 'Multi-surface is not supported at the moment.', { color = Color.warning })
     end
 
     local storage = get_trusted_system(player)
+    local owner_car = get_owner_car_name(player)
 
-    if get_owner_car_name(player) == 'car' and ce.name == 'tank' or get_owner_car_name(player) == 'car' and ce.name == 'spidertron' or get_owner_car_name(player) == 'tank' and ce.name == 'spidertron' then
+    if owner_car and valid_combinations[owner_car] and valid_combinations[owner_car][ce.name] and valid_quality_combinations[car.quality] and valid_quality_combinations[car.quality][ce.quality.name] then
         if storage.auto_upgrade and storage.auto_upgrade == 'right' then
             return
         end
@@ -1285,29 +1311,22 @@ function Public.create_car(event)
 
     local car_areas = IC.get('car_areas')
     local cars = IC.get('cars')
-    local car_area = car_areas[ce.name]
-    if not car_area then
-        car_area = car_areas[ce.type]
+    local areas = car_areas[ce.name]
+    if not areas then
+        areas = car_areas[ce.type]
     end
 
-    local health = floor(2000 * ce.health * 0.002)
+    local quality_area = get_quality_area(areas, ce.quality.name)
 
     cars[un] = {
         entity = ce,
-        area = {
-            left_top = { x = car_area.left_top.x, y = car_area.left_top.y },
-            right_bottom = { x = car_area.right_bottom.x, y = car_area.right_bottom.y }
-        },
+        area = quality_area,
         doors = {},
-        health_pool = {
-            enabled = upgrades.has_upgraded_health_pool or false,
-            health = health,
-            max = health
-        },
         owner = player.name,
         owner_name = player.name,
         name = ce.name,
         type = ce.type,
+        quality = ce.quality.name,
         unit_number = ce.unit_number,
         surface_name = player.name .. '_' .. ce.type .. '_' .. un
     }
@@ -1545,31 +1564,6 @@ function Public.on_player_respawned(player)
     end
 end
 
-function Public.check_entity_healths()
-    local cars = IC.get('cars')
-    if not next(cars) then
-        return
-    end
-
-    local health_types = {
-        ['car'] = 450,
-        ['tank'] = 2000,
-        ['spidertron'] = 3000
-    }
-
-    for _, car in pairs(cars) do
-        local m = car.health_pool.health / car.health_pool.max
-
-        if car.health_pool.health > car.health_pool.max then
-            car.health_pool.health = car.health_pool.max
-        end
-
-        if (car.entity and car.entity.valid) then
-            car.entity.health = health_types[car.entity.name] * m
-        end
-    end
-end
-
 function Public.get_car(unit_number)
     local cars = IC.get('cars')
     if not next(cars) then
@@ -1579,59 +1573,6 @@ function Public.get_car(unit_number)
     return cars[unit_number] or nil
 end
 
-function Public.set_damage_health(data)
-    local entity = data.entity
-    local final_damage_amount = data.final_damage_amount
-    local car = data.car
-
-    if final_damage_amount == 0 then
-        return
-    end
-
-    local health_types = {
-        ['car'] = 450,
-        ['tank'] = 2000,
-        ['spidertron'] = 3000
-    }
-
-    car.health_pool.health = round(car.health_pool.health - final_damage_amount)
-
-    if car.health_pool.health <= 0 then
-        entity.die()
-        return
-    end
-
-    local m = car.health_pool.health / car.health_pool.max
-
-    entity.health = health_types[entity.name] * m
-end
-
-function Public.set_repair_health(data)
-    local entity = data.entity
-    local car = data.car
-    local player = data.player
-
-    local repair_speed = RPG.get_magicka(player)
-    if repair_speed <= 0 then
-        repair_speed = 5
-    end
-
-    local health_types = {
-        ['car'] = 450,
-        ['tank'] = 2000,
-        ['spidertron'] = 3000
-    }
-
-    car.health_pool.health = round(car.health_pool.health + repair_speed)
-
-    local m = car.health_pool.health / car.health_pool.max
-
-    if car.health_pool.health > car.health_pool.max then
-        car.health_pool.health = car.health_pool.max
-    end
-
-    entity.health = health_types[entity.name] * m
-end
 
 Public.get_trusted_system = get_trusted_system
 Public.does_player_table_exist = does_player_table_exist

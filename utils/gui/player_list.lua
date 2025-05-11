@@ -380,7 +380,7 @@ Gui.on_click(
     module_name,
     function (event)
         local player = event.player
-        Gui.reload_active_tab(player)
+        Gui.reload_active_tab(player, nil, tag)
     end
 )
 

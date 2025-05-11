@@ -1,7 +1,7 @@
 local Public = require 'modules.rpg.table'
 local Gui = require 'utils.gui'
 local P = require 'utils.player_modifiers'
-local Session = require 'utils.datastore.session_data'
+-- local Session = require 'utils.datastore.session_data'
 
 local settings_frame_name = Public.settings_frame_name
 local close_settings_tooltip_frame = Public.close_settings_tooltip_frame
@@ -19,7 +19,8 @@ local cooldown_indicator_name = Public.cooldown_indicator_name
 
 local settings_level = Public.gui_settings_levels
 
-local comparators = {
+local comparators =
+{
     ['levels'] = function (a, b)
         return a.level < b.level
     end
@@ -273,7 +274,7 @@ function Public.extra_settings(player)
     if not rpg_t then
         return
     end
-    local trusted = Session.get_trusted_table()
+    -- local trusted = Session.get_trusted_table()
 
     local main_frame, inside_table = Gui.add_main_frame_with_toolbar(player, 'screen', settings_frame_name, settings_tooltip_name, nil, 'RPG Settings', true)
     if not main_frame then
@@ -358,11 +359,11 @@ function Public.extra_settings(player)
     local reset_gui_input = create_input_element(reset_input, 'boolean', false)
 
     if not rpg_t.reset then
-        if not trusted[player.name] then
-            reset_gui_input.enabled = false
-            reset_gui_input.tooltip = ({ 'rpg_settings.not_trusted' })
-            goto continue
-        end
+        -- if not trusted[player.name] then
+        --     reset_gui_input.enabled = false
+        --     reset_gui_input.tooltip = ({ 'rpg_settings.not_trusted' })
+        --     goto continue
+        -- end
         if rpg_t.level < settings_level['reset_text_label'] then
             reset_gui_input.enabled = false
             reset_gui_input.tooltip = ({ 'rpg_settings.low_level', 50 })
@@ -378,7 +379,7 @@ function Public.extra_settings(player)
     end
     data.reset_gui_input = reset_gui_input
 
-    ::continue::
+    -- ::continue::
 
     data.character_build_distance_bonus = create_bonus_label(player, setting_grid, ({ 'rpg_settings.build_dist_label' }), ({ 'rpg_settings.build_dist_tooltip' }), 'character_build_distance_bonus')
     data.character_crafting_speed_modifier = create_bonus_label(player, setting_grid, ({ 'rpg_settings.craft_speed_label' }), ({ 'rpg_settings.craft_speed_tooltip' }), 'character_crafting_speed_modifier')
@@ -580,13 +581,13 @@ function Public.extra_settings(player)
         end
         enable_entity_gui_input = create_input_element(entity_input, 'boolean', entity_mod)
 
-        if not trusted[player.name] then
-            enable_entity_gui_input.enabled = false
-            enable_entity_gui_input.tooltip = ({ 'rpg_settings.not_trusted' })
-        else
-            enable_entity_gui_input.enabled = true
-            enable_entity_gui_input.tooltip = ({ 'rpg_settings.tooltip_check' })
-        end
+        -- if not trusted[player.name] then
+        --     enable_entity_gui_input.enabled = false
+        --     enable_entity_gui_input.tooltip = ({ 'rpg_settings.not_trusted' })
+        -- else
+        enable_entity_gui_input.enabled = true
+        enable_entity_gui_input.tooltip = ({ 'rpg_settings.tooltip_check' })
+        -- end
 
         local conjure_label =
             mana_grid.add(

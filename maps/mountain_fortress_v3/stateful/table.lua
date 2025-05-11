@@ -39,7 +39,6 @@ local dataset_key_previous = 'mtn_v3_previous'
 local dataset_key_modded_previous = 'mtn_v3_modded_previous'
 local dataset_key_previous_dev = 'mtn_v3_previous_dev'
 local send_ping_to_channel = Discord.channel_names.mtn_channel
-local scenario_name = Public.scenario_name
 
 Global.register(
     this,
@@ -374,6 +373,96 @@ local function get_random_buff(fetch_all, only_force)
             name = 'extra_wagons',
             discord = 'Extra wagon at start',
             modifier = 'locomotive',
+            limit = 4,
+            state = 1
+        },
+        {
+            name = 'quality_locomotive',
+            discord = 'Grants uncommon locomotive at start',
+            modifier = 'locomotive',
+            limit = 1,
+            quality = 'uncommon',
+            state = 1
+        },
+        {
+            name = 'quality_cargo_wagon',
+            discord = 'Grants uncommon cargo-wagon at start',
+            modifier = 'cargo-wagon',
+            limit = 1,
+            quality = 'uncommon',
+            state = 1
+        },
+        {
+            name = 'quality_locomotive',
+            discord = 'Grants rare locomotive at start',
+            modifier = 'locomotive',
+            limit = 1,
+            quality = 'rare',
+            state = 1
+        },
+        {
+            name = 'quality_cargo_wagon',
+            discord = 'Grants rare cargo-wagon at start',
+            modifier = 'cargo-wagon',
+            limit = 1,
+            quality = 'rare',
+            state = 1
+        },
+        {
+            name = 'quality_locomotive',
+            discord = 'Grants epic locomotive at start',
+            limit = 1,
+            quality = 'epic',
+            state = 1
+        },
+        {
+            name = 'quality_cargo_wagon',
+            discord = 'Grants epic cargo-wagon at start',
+            modifier = 'cargo-wagon',
+            limit = 1,
+            quality = 'epic',
+            state = 1
+        },
+        {
+            name = 'quality_locomotive',
+            discord = 'Grants legendary locomotive at start',
+            limit = 1,
+            quality = 'legendary',
+            state = 1
+        },
+        {
+            name = 'quality_cargo_wagon',
+            discord = 'Grants legendary cargo-wagon at start',
+            limit = 1,
+            quality = 'legendary',
+            state = 1
+        },
+        {
+            name = 'quality_buildings',
+            discord = 'Grants uncommon quality of buildings generating free loot!',
+            limit = 1,
+            quality = 'uncommon',
+            state = 1
+        },
+        {
+            name = 'quality_buildings',
+            discord = 'Grants rare quality of buildings generating free loot!',
+            limit = 1,
+            quality = 'rare',
+            state = 1
+        },
+        {
+            name = 'quality_buildings',
+            discord = 'Grants epic quality of buildings generating free loot!',
+            limit = 1,
+            quality = 'epic',
+            state = 1
+        },
+        {
+            name = 'quality_buildings',
+            discord = 'Grants legendary quality of buildings generating free loot!',
+            limit = 1,
+            quality = 'legendary',
             state = 1
         },
         {
@@ -499,8 +588,9 @@ local function get_item_produced_count(_, item_name)
     local statistics = Public.get('statistics')
 
     local loco_surface = Public.get('loco_surface')
+    local starting_planet = Public.get_planet()
 
-    local production = force.get_item_production_statistics('fortress').input_counts[item_name]
+    local production = force.get_item_production_statistics(starting_planet).input_counts[item_name]
     if not production then
         production = 0
     end
@@ -542,9 +632,10 @@ end
 
 local function get_entity_mined_count(_, item_name)
     local force = game.forces.player
+    local starting_planet = Public.get_planet()
 
     local count = 0
-    for name, entity_count in pairs(force.get_entity_build_count_statistics('fortress').output_counts) do
+    for name, entity_count in pairs(force.get_entity_build_count_statistics(starting_planet).output_counts) do
         if name:find(item_name) then
             count = count + entity_count
         end
@@ -555,9 +646,10 @@ end
 
 local function get_killed_enemies_count(primary, secondary)
     local force = game.forces.player
+    local starting_planet = Public.get_planet()
 
     local count = 0
-    for name, entity_count in pairs(force.get_kill_count_statistics('fortress').input_counts) do
+    for name, entity_count in pairs(force.get_kill_count_statistics(starting_planet).input_counts) do
         if name:find(primary) or name:find(secondary) then
             count = count + entity_count
         end
@@ -627,7 +719,9 @@ local function on_pre_player_died(event)
         return
     end
 
-    if string.sub(surface.name, 0, #scenario_name) ~= scenario_name then
+    local starting_planet = Public.get_planet()
+
+    if string.sub(surface.name, 0, #starting_planet) ~= starting_planet then
         return
     end
 
@@ -995,6 +1089,17 @@ local function get_random_research_recipe()
         'follower-robot-count-5'
     }
 
+    if Public.get('space_age') then
+        research_level_list =
+        {
+            'laser-weapons-damage-7',
+            'stronger-explosives-7',
+            'mining-productivity-3',
+            'worker-robots-speed-7',
+            'follower-robot-count-5'
+        }
+    end
+
     shuffle(research_level_list)
 
     if this.test_mode then
@@ -1098,6 +1203,13 @@ end
 local function clear_all_stats()
     this.buffs_collected = {}
     this.extra_wagons = 0
+    this.quality_trains =
+    {
+        ['locomotive'] = 'normal',
+        ['cargo-wagon'] = 'normal',
+        ['fluid-wagon'] = 'normal'
+    }
+    this.quality_buildings = 'normal'
     local rpg_extra = RPG.get('rpg_extra')
     rpg_extra.difficulty = 0
     rpg_extra.grant_xp_level = 0
@@ -1215,6 +1327,34 @@ local function apply_buffs()
                     if this.extra_wagons > 4 then
                         this.extra_wagons = 4
                     end
+                end
+                if buff.name == 'quality_locomotive' then
+                    this.quality_trains.locomotive = buff.quality
+
+                    this.buffs_collected['quality_locomotive'] =
+                    {
+                        name = 'Quality locomotives (' .. buff.quality .. ')!',
+                        discord = buff.discord
+                    }
+                end
+                if buff.name == 'quality_cargo_wagon' then
+                    this.quality_trains.locomotive = buff.quality
+
+                    this.buffs_collected['quality_cargo_wagon'] =
+                    {
+                        name = 'Quality cargo-wagon (' .. buff.quality .. ')!',
+                        discord = buff.discord
+                    }
+                end
+                if buff.name == 'quality_buildings' then
+                    this.quality_trains.locomotive = buff.quality
+
+                    this.buffs_collected['quality_buildings'] =
+                    {
+                        name = 'Quality buildings (' .. buff.quality .. ')!',
+                        discord = buff.discord
+                    }
+                    this.quality_buildings = buff.quality
                 end
                 if buff.modifier == 'fish' then
                     limit_types[buff.name] = true
@@ -1593,6 +1733,13 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
 
     this.final_battle = false
     this.extra_wagons = 0
+    this.quality_trains =
+    {
+        ['locomotive'] = 'normal',
+        ['cargo-wagon'] = 'normal',
+        ['fluid-wagon'] = 'normal'
+    }
+    this.quality_buildings = 'normal'
     if clear_buffs then
         this.buffs_collected = {}
     end
@@ -2126,5 +2273,42 @@ Public.apply_startup_settings = apply_startup_settings
 Public.scale = scale
 Public.on_pre_player_died = on_pre_player_died
 Public.on_market_item_purchased = on_market_item_purchased
+
+Event.on_init(
+    function ()
+        local cbl = Task.get(apply_settings_token)
+        local data =
+        {
+            rounds_survived = 11,
+            season = 4,
+            test_mode = false,
+            buffs =
+            {
+                {
+                    name = 'steel_axe_unlocked',
+                    discord = 'Equipement tech - start with steel axe tech unlocked.',
+                    modifier = 'tech',
+                    limit = 1,
+                    add_per_buff = 1,
+                    techs =
+                    {
+                        { name = 'steel-axe', count = 1 }
+                    }
+                },
+            },
+            current_date = 2711187954
+        }
+
+        this.buffs = data.buffs
+        this.rounds_survived = data.rounds_survived
+        this.season = data.season
+
+        local settings =
+        {
+            value = data
+        }
+        cbl(settings)
+    end
+)
 
 return Public

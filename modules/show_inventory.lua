@@ -7,7 +7,8 @@ local Event = require 'utils.event'
 local Gui = require 'utils.gui'
 local Commands = require 'utils.commands'
 
-local this = {
+local this =
+{
     data = {},
     module_disabled = false
 }
@@ -22,7 +23,8 @@ Global.register(
 
 local main_frame_name = Gui.uid_name()
 
-local space = {
+local space =
+{
     minimal_height = 10,
     top_padding = 0,
     bottom_padding = 0
@@ -152,7 +154,8 @@ local function close_player_inventory(player)
 end
 
 local function get_inventory_type(player, inventory_type)
-    local target_types = {
+    local target_types =
+    {
         ['Main'] = function ()
             return unpack_inventory(player.get_main_inventory())
         end,
@@ -202,6 +205,13 @@ local function redraw_inventory(gui, source, target, caption, panel_type)
             local flow = items_table.add({ type = 'flow' })
             flow.style.vertical_align = 'bottom'
 
+            local tooltip
+            if quality and quality.name and types and types[name] and types[name].localised_name then
+                tooltip = { '', (quality.name == 'normal' and '' or { '', quality.localised_name, ' ' }), types[name].localised_name }
+            else
+                tooltip = name
+            end
+
             local button =
                 flow.add(
                     {
@@ -209,7 +219,7 @@ local function redraw_inventory(gui, source, target, caption, panel_type)
                         sprite = 'item/' .. name,
                         number = count,
                         name = name,
-                        tooltip = { '', (quality.name == 'normal' and '' or { '', quality.localised_name, ' ' }), types[name].localised_name },
+                        tooltip = tooltip,
                         style = 'slot_button'
                     }
                 )
@@ -225,6 +235,12 @@ local function redraw_inventory(gui, source, target, caption, panel_type)
                     local p_armor = target.get_inventory(5)[1].grid.get_contents()
                     local grid_flow = items_table.add({ type = 'table', column_count = 10 })
                     for _, item in pairs(p_armor) do
+                        local item_tooltip
+                        if item.quality and prototypes.quality and prototypes.quality[item.quality] and types and types[item.name] then
+                            item_tooltip = { '', (item.quality == 'normal' and '' or { '', prototypes.quality[item.quality].localised_name, ' ' }), types[item.name].localised_name }
+                        else
+                            item_tooltip = item.name
+                        end
                         local armor_gui =
                             grid_flow.add(
                                 {
@@ -232,7 +248,7 @@ local function redraw_inventory(gui, source, target, caption, panel_type)
                                     sprite = 'item/' .. item.name,
                                     number = item.count,
                                     name = item.name .. item.quality,
-                                    tooltip = { '', (item.quality == 'normal' and '' or { '', prototypes.quality[item.quality].localised_name, ' ' }), types[item.name].localised_name },
+                                    tooltip = item_tooltip,
                                     style = 'slot_button'
                                 }
                             )
@@ -254,7 +270,8 @@ local function add_inventory(panel, source, target, caption, panel_type)
     data.panel_type = data.panel_type or {}
     local pane_name = panel.add({ type = 'tab', caption = caption, name = caption })
     local scroll_pane =
-        panel.add {
+        panel.add
+        {
             type = 'scroll-pane',
             name = caption .. 'tab',
             direction = 'vertical',
@@ -331,7 +348,8 @@ local function open_inventory(source, target)
     local ammo = unpack_inventory(target.get_inventory(defines.inventory.character_ammo))
     local trash = unpack_inventory(target.get_inventory(defines.inventory.character_trash))
 
-    local types = {
+    local types =
+    {
         ['Main'] = main,
         ['Armor'] = armor,
         ['Guns'] = guns,
@@ -359,7 +377,8 @@ local function on_gui_click(event)
         return
     end
 
-    local types = {
+    local types =
+    {
         ['Main'] = true,
         ['Armor'] = true,
         ['Guns'] = true,

@@ -10,7 +10,8 @@ local Public = {}
 
 local module_name = Gui.uid_name()
 
-local ignored_stats = {
+local ignored_stats =
+{
     ['name'] = true,
     ['tick'] = true
 }
@@ -31,7 +32,8 @@ local function show_score(data)
     end
 
     local label =
-        t.add {
+        t.add
+        {
             type = 'label',
             caption = tooltip
         }
@@ -66,7 +68,8 @@ local function show_score(data)
             if stat and type(stat) == 'number' then
                 c = format_number(stat, true)
             end
-            local lines = {
+            local lines =
+            {
                 { caption = normalized_names[name] and normalized_names[name].name or name, tooltip = normalized_names[name].tooltip or '' },
                 { caption = c }
             }
@@ -74,7 +77,8 @@ local function show_score(data)
 
             for _, column in ipairs(lines) do
                 local l =
-                    column_table.add {
+                    column_table.add
+                    {
                         type = 'label',
                         caption = column.caption,
                         tooltip = column.tooltip,
@@ -97,7 +101,7 @@ Gui.on_click(
     module_name,
     function (event)
         local player = event.player
-        Gui.reload_active_tab(player)
+        Gui.reload_active_tab(player, nil, 'Statistics')
     end
 )
 

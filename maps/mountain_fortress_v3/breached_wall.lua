@@ -6,7 +6,6 @@ local WD = require 'modules.wave_defense.table'
 local Alert = require 'utils.alert'
 local Task = require 'utils.task_token'
 local Color = require 'utils.color_presets'
-local ICF = require 'maps.mountain_fortress_v3.ic.functions'
 local Session = require 'utils.datastore.session_data'
 
 local floor = math.floor
@@ -15,7 +14,6 @@ local random = math.random
 local sub = string.sub
 local sqrt = math.sqrt
 local zone_settings = Public.zone_settings
-local scenario_name = Public.scenario_name
 
 local clear_breach_text_and_render = function ()
     local beam1 = Public.get('zone1_beam1')
@@ -262,8 +260,6 @@ local compare_player_and_train = function (player, entity)
         return
     end
 
-    local car = ICF.get_car(entity.unit_number)
-
     local position = player.physical_position
     local locomotive = Public.get('locomotive')
     if not locomotive or not locomotive.valid then
@@ -304,10 +300,6 @@ local compare_player_and_train = function (player, entity)
         )
         player.print(msg, { color = color })
         if entity.health then
-            if car and car.health_pool and car.health_pool.health then
-                car.health_pool.health = car.health_pool.health - 500
-            end
-
             entity.health = entity.health - 500
             if entity.health <= 0 then
                 entity.die('enemy')
@@ -359,6 +351,7 @@ local function distance(player)
     local breach_max = zone_settings.zone_depth * breached_wall
     local breach_max_times = distance_to_center >= breach_max
     local max_times = distance_to_center >= max
+
     if max_times then
         if block_non_trusted_trigger_collapse and not Session.get_trusted_player(player) and not collapse_started then
             if breach_wall_warning_teleport(player, true) then
@@ -473,15 +466,21 @@ local function on_player_changed_position(event)
     end
     local surface_name = player.physical_surface.name
 
-    if sub(surface_name, 0, #scenario_name) ~= scenario_name then
+    if sub(surface_name, 0, #current_task.starting_planet) ~= current_task.starting_planet then
         return
     end
 
-    if player.physical_position.y > -100 and player.physical_position.y < -100 then
+    local position = player.physical_position
+
+    if not (position.x < Public.zone_settings.zone_width / 2 and position.x >= -Public.zone_settings.zone_width / 2) then
         return
     end
 
-    if player.physical_position.y > 100 and player.physical_position.y < 100 then
+    if position.y > -100 and position.y < -100 then
+        return
+    end
+
+    if position.y > 100 and position.y < 100 then
         return
     end
 

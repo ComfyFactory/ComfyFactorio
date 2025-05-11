@@ -51,6 +51,9 @@ function Public.add_player_to_permission_group(player, group, forced)
         limited_group.set_allows_action(defines.input_action.deconstruct, false)
     end
 
+    local spectator = game.permissions.get_group('spectator') or game.permissions.create_group('spectator')
+    spectator.set_allows_action(defines.input_action.open_gui, false)
+
     local init_island = game.permissions.get_group('init_island') or game.permissions.create_group('init_island')
     init_island.set_allows_action(defines.input_action.cancel_craft, false)
     init_island.set_allows_action(defines.input_action.drop_item, false)
@@ -196,6 +199,8 @@ function Public.add_player_to_permission_group(player, group, forced)
     else
         if group == 'limited' then
             limited_group.add_player(player)
+        elseif group == 'spectator' then
+            spectator.add_player(player)
         elseif group == 'main_surface' then
             main_surface_group.add_player(player)
         elseif group == 'init_island' then

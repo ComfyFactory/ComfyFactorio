@@ -15,7 +15,8 @@ local regen_decoratives = false
 local generate_map = Public.heavy_functions
 
 local winter_mode = false
-local wintery_type = {
+local wintery_type =
+{
     ['simple-entity'] = true,
     ['tree'] = true,
     ['fish'] = true,
@@ -142,7 +143,8 @@ local function do_place_treasure(data)
             e.chest = 'iron-chest'
         end
         if
-            surface.count_entities_filtered {
+            surface.count_entities_filtered
+            {
                 area = { { e.position.x - 2, e.position.y - 2 }, { e.position.x + 2, e.position.y + 2 } },
                 name = 'market',
                 limit = 1
@@ -168,7 +170,8 @@ local function do_place_markets(data)
 
     local pos = markets[random(1, #markets)]
     if
-        surface.count_entities_filtered {
+        surface.count_entities_filtered
+        {
             area = { { pos.x - 96, pos.y - 96 }, { pos.x + 96, pos.y + 96 } },
             name = 'market',
             limit = 1
@@ -216,18 +219,21 @@ local function do_place_buildings(data)
     if not surface or not surface.valid then
         return
     end
+    local quality = Public.get_stateful_settings('quality_buildings') or 'normal'
     local entity
     local callback
     for _, e in ipairs(data.buildings) do
         if e.e_type then
             local p = e.position
             if
-                surface.count_entities_filtered {
+                surface.count_entities_filtered
+                {
                     area = { { p.x - 32, p.y - 32 }, { p.x + 32, p.y + 32 } },
                     type = e.e_type,
                     limit = 1
                 } == 0
             then
+                e.quality = quality
                 e.create_build_effect_smoke = false
                 entity = surface.create_entity(e)
                 entity.custom_status = { diode = defines.entity_status_diode.green, label = 'Custom building that generates free resources.' }
@@ -295,6 +301,15 @@ local function wintery(ent, extra_lights)
     end
     return true
 end
+local function do_place_rocks(data)
+    local surface = data.surface
+    if not surface or not surface.valid then
+        return
+    end
+    for _, e in pairs(data.rocks) do
+        surface.create_entity(e)
+    end
+end
 
 local function do_place_entities(data)
     local surface = data.surface
@@ -303,7 +318,7 @@ local function do_place_entities(data)
     end
     local entity
     local callback
-    for _, e in ipairs(data.entities) do
+    for _, e in pairs(data.entities) do
         if e.collision then
             if surface.can_place_entity(e) then
                 e.create_build_effect_smoke = false
@@ -396,7 +411,7 @@ local function run_chart_update(data)
         game.forces.player.chart(
             surface,
             {
-                { data.top_x,     data.top_y },
+                { data.top_x, data.top_y },
                 { data.top_x + 1, data.top_y + 1 }
             }
         )
@@ -458,26 +473,30 @@ local function map_gen_action(data)
         data.y = 35
         return true
     elseif state == 35 then
-        do_place_entities(data)
+        do_place_rocks(data)
         data.y = 36
         return true
     elseif state == 36 then
-        do_place_buildings(data)
+        do_place_entities(data)
         data.y = 37
         return true
     elseif state == 37 then
-        do_place_markets(data)
+        do_place_buildings(data)
         data.y = 38
         return true
     elseif state == 38 then
-        do_place_treasure(data)
+        do_place_markets(data)
         data.y = 39
         return true
     elseif state == 39 then
-        do_place_decoratives(data)
+        do_place_treasure(data)
         data.y = 40
         return true
     elseif state == 40 then
+        do_place_decoratives(data)
+        data.y = 41
+        return true
+    elseif state == 41 then
         run_chart_update(data)
         return false
     end
@@ -506,7 +525,8 @@ local function schedule_chunk(event)
 
     local area = event.area
 
-    local data = {
+    local data =
+    {
         yv = -0,
         xv = 0,
         y = 0,
@@ -518,6 +538,7 @@ local function schedule_chunk(event)
         tiles = {},
         hidden_tiles = {},
         entities = {},
+        rocks = {},
         buildings = {},
         decoratives = {},
         markets = {},
@@ -548,7 +569,8 @@ local function force_do_chunk(event)
 
     local area = event.area
 
-    local data = {
+    local data =
+    {
         yv = -0,
         xv = 0,
         area = area,
@@ -558,6 +580,7 @@ local function force_do_chunk(event)
         tiles = {},
         hidden_tiles = {},
         entities = {},
+        rocks = {},
         buildings = {},
         decoratives = {},
         markets = {},
@@ -574,6 +597,7 @@ local function force_do_chunk(event)
 
     do_place_tiles(data)
     do_place_hidden_tiles(data)
+    do_place_rocks(data)
     do_place_entities(data)
     do_place_buildings(data)
     do_place_decoratives(data)

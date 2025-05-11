@@ -210,7 +210,8 @@ stds.factorio =
                     fields =
                     {
                         'compare',
-                        'deepcopy'
+                        'deepcopy',
+                        'deep_copy'
                     }
                 }
             }
@@ -220,7 +221,8 @@ stds.factorio =
             fields =
             {
                 'compare',
-                'deepcopy'
+                'deepcopy',
+                'deep_copy'
             }
         }
     }
@@ -474,6 +476,7 @@ stds.factorio_control =
                 noise_layer_prototypes = { read_only = true, other_fields = true },
                 permissions = { read_only = true, other_fields = true },
                 player = { read_only = true, other_fields = true },
+                planets = { read_only = true, other_fields = true },
                 players = { read_only = true, other_fields = true },
                 recipe_prototypes = { read_only = true, other_fields = true },
                 speed = { read_only = false, other_fields = false },
@@ -1684,6 +1687,7 @@ stds.factorio_defines =
                 {
                     fields =
                     {
+                        'on_player_warp_entered',
                         'mtn-shift-autostash-all',
                         'mtn-shift-autostash-ores',
                         'mtn-shift-autostash-furnaces',

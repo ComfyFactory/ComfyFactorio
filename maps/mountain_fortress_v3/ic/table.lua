@@ -1,5 +1,6 @@
 local Global = require 'utils.global'
 local Event = require 'utils.event'
+local WPT = require 'maps.mountain_fortress_v3.table'
 
 local this = {}
 Global.register(
@@ -17,8 +18,9 @@ local Public = {
 }
 
 function Public.reset()
+    local starting_planet = WPT.get_planet()
     if this.surfaces then
-        for k, index in pairs(this.surfaces) do
+        for _, index in pairs(this.surfaces) do
             local surface = game.surfaces[index]
             if surface and surface.valid then
                 game.delete_surface(surface)
@@ -36,7 +38,7 @@ function Public.reset()
     this.renders = {}
     this.saved_surfaces = {}
     this.surfaces_deleted_by_button = {}
-    this.allowed_surface = 'fortress'
+    this.allowed_surface = starting_planet
     this.trust_system = {}
     this.players = {}
     this.players_persistent = {}

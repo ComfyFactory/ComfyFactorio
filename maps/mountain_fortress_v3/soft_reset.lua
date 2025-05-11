@@ -5,7 +5,8 @@ local Event = require 'utils.event'
 local mapkeeper = '[color=blue]Mapkeeper:[/color]'
 
 local function reset_forces()
-    local surface = game.get_surface('fortress')
+    local starting_planet = Public.get_planet()
+    local surface = game.get_surface(starting_planet)
     if not surface or not surface.valid then
         return
     end
@@ -21,7 +22,8 @@ local function reset_forces()
 end
 
 local function teleport_players()
-    local surface = game.get_surface('fortress')
+    local starting_planet = Public.get_planet()
+    local surface = game.get_surface(starting_planet)
     if not surface or not surface.valid then
         return
     end
@@ -141,18 +143,18 @@ function Public.soft_reset_map(old_surface)
     end
     this.soft_reset_counter = this.soft_reset_counter + 1
 
-    local fortress = game.surfaces.fortress
-    fortress.clear(true)
-    -- fortress.request_to_generate_chunks({ 0, 0 }, 1)
-    -- fortress.force_generate_chunk_requests()
+    local surface = old_surface or game.surfaces.fortress
+    surface.clear(true)
+    -- surface.request_to_generate_chunks({ 0, 0 }, 1)
+    -- surface.force_generate_chunk_requests()
 
     local radius = 512
     local area = { { x = -radius, y = -radius }, { x = radius, y = radius } }
-    for _, entity in pairs(fortress.find_entities_filtered { area = area, type = 'logistic-robot' }) do
+    for _, entity in pairs(surface.find_entities_filtered { area = area, type = 'logistic-robot' }) do
         entity.destroy()
     end
 
-    for _, entity in pairs(fortress.find_entities_filtered { area = area, type = 'construction-robot' }) do
+    for _, entity in pairs(surface.find_entities_filtered { area = area, type = 'construction-robot' }) do
         entity.destroy()
     end
 
@@ -173,7 +175,7 @@ function Public.soft_reset_map(old_surface)
     game.print(message, { r = 0.98, g = 0.66, b = 0.22 })
     Server.to_discord_embed(message_to_discord)
 
-    return fortress
+    return surface
 end
 
 Event.on_nth_tick(10, scheduled_surface_clearing)

@@ -14,7 +14,6 @@ local Diff = require 'modules.difficulty_vote_by_amount'
 local format_number = require 'util'.format_number
 local RPG_Progression = require 'utils.datastore.rpg_data'
 local WD = require 'modules.wave_defense.table'
-local scenario_name = Public.scenario_name
 local StatData = require 'utils.datastore.statistics'
 StatData.add_normalize('coins', 'Coins collected'):set_tooltip('The amount of coins the player has collected through mining/killed enemies.')
 
@@ -274,7 +273,8 @@ local function set_train_final_health(final_damage_amount, repair)
 end
 
 local function is_protected(e)
-    if string.sub(e.surface.name, 0, #scenario_name) ~= scenario_name then
+    local starting_planet = Public.get_planet()
+    if string.sub(e.surface.name, 0, #starting_planet) ~= starting_planet then
         return true
     end
 
@@ -699,7 +699,19 @@ local mining_events = {
         function (entity, index)
             local position = entity.position
             local surface = entity.surface
-            surface.create_entity({ name = 'car', position = position, force = 'player' })
+
+            local quality = 'normal'
+            if random(1, 256) == 1 then
+                quality = 'uncommon'
+            elseif random(1, 512) == 1 then
+                quality = 'rare'
+            elseif random(1, 1024) == 1 then
+                quality = 'epic'
+            elseif random(1, 2048) == 1 then
+                quality = 'legendary'
+            end
+
+            surface.create_entity({ name = 'car', position = position, force = 'player', quality = quality })
             Task.set_timeout_in_ticks(5, unstuck_player_token, { index = index })
             local player = game.players[index]
             local msg = ({ 'entity.found_car', player.name })
@@ -727,7 +739,9 @@ local function on_player_mined_entity(event)
     local rpg_char = RPG.get_value_from_player(player.index)
     if not rpg_char then return end
 
-    if string.sub(entity.surface.name, 0, #scenario_name) ~= scenario_name then
+    local starting_planet = Public.get_planet()
+
+    if string.sub(entity.surface.name, 0, #starting_planet) ~= starting_planet then
         return
     end
 
@@ -783,7 +797,8 @@ local function on_robot_mined_entity(event)
         return
     end
 
-    if string.sub(entity.surface.name, 0, #scenario_name) ~= scenario_name then
+    local starting_planet = Public.get_planet()
+    if string.sub(entity.surface.name, 0, #starting_planet) ~= starting_planet then
         return
     end
 
@@ -1000,8 +1015,9 @@ local function on_entity_died(event)
     local unit_number = entity.unit_number
 
     local cause = event.cause
+    local starting_planet = Public.get_planet()
 
-    if string.sub(entity.surface.name, 0, #scenario_name) ~= scenario_name then
+    if string.sub(entity.surface.name, 0, #starting_planet) ~= starting_planet then
         return
     end
 
@@ -1282,6 +1298,7 @@ local function show_mvps(player)
                 },
                 field4 = {
                     text1 = 'Threat:',
+                    ---@diagnostic disable-next-line: param-type-mismatch
                     text2 = format_number(threat, true),
                     inline = 'false'
                 },
@@ -1461,12 +1478,14 @@ local function on_built_entity(event)
         return
     end
 
-    if string.sub(entity.surface.name, 0, #scenario_name) == Public.init_name then
+    local starting_planet = Public.get_planet()
+
+    if string.sub(entity.surface.name, 0, #starting_planet) == Public.init_name then
         entity.destroy()
         return
     end
 
-    if string.sub(entity.surface.name, 0, #scenario_name) ~= scenario_name then
+    if string.sub(entity.surface.name, 0, #starting_planet) ~= starting_planet then
         return
     end
 
@@ -1556,8 +1575,8 @@ local function on_robot_built_entity(event)
     if not entity.valid then
         return
     end
-
-    if string.sub(entity.surface.name, 0, #scenario_name) ~= scenario_name then
+    local starting_planet = Public.get_planet()
+    if string.sub(entity.surface.name, 0, #starting_planet) ~= starting_planet then
         return
     end
 
@@ -1651,8 +1670,8 @@ end
 
 local on_player_or_robot_built_tile = function (event)
     local surface = game.surfaces[event.surface_index]
-
-    if string.sub(surface.name, 0, #scenario_name) ~= scenario_name then
+    local starting_planet = Public.get_planet()
+    if string.sub(surface.name, 0, #starting_planet) ~= starting_planet then
         return
     end
 

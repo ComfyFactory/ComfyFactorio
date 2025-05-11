@@ -4,6 +4,7 @@ local Global = require 'utils.global'
 local StatData = require 'utils.datastore.statistics'
 StatData.add_normalize('ore_veins', 'Ore veins located'):set_tooltip('Amount of ore veins located by the player.')
 
+local is_modded_pt2 = Public.is_modded_pt2
 local random = math.random
 
 local this = {
@@ -44,6 +45,17 @@ local function get_chances()
     table.insert(chances, { 'stone', 8 })
     table.insert(chances, { 'uranium-ore', 3 })
 
+    local starting_planet = Public.get_planet()
+    if is_modded_pt2 then
+        if starting_planet == 'fulgora' then
+            table.insert(chances, { 'scrap', 30 })
+        end
+        if starting_planet == 'vulcanus' then
+            table.insert(chances, { 'tungsten-ore', 30 })
+            table.insert(chances, { 'calcite', 22 })
+        end
+    end
+
     return chances
 end
 
@@ -56,6 +68,17 @@ local function set_raffle()
     end
 
     this.mixed_ores = { 'iron-ore', 'copper-ore', 'stone', 'coal' }
+
+    local starting_planet = Public.get_planet()
+    if is_modded_pt2 then
+        if starting_planet == 'fulgora' then
+            table.insert(this.mixed_ores, 'scrap')
+        end
+        if starting_planet == 'vulcanus' then
+            table.insert(this.mixed_ores, 'tungsten-ore')
+            table.insert(this.mixed_ores, 'calcite')
+        end
+    end
 end
 
 local function get_amount(position)

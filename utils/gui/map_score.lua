@@ -88,14 +88,16 @@ function Public.get_score(player)
 end
 
 function Public.reset_score()
-    storage.custom_highscore = {
+    storage.custom_highscore =
+    {
         description = 'Won rounds:',
         score_list = {}
     }
 end
 
 local function on_init()
-    storage.custom_highscore = {
+    storage.custom_highscore =
+    {
         description = 'Won rounds:',
         score_list = {}
     }
@@ -107,7 +109,7 @@ Gui.on_click(
     module_name,
     function (event)
         local player = event.player
-        Gui.reload_active_tab(player)
+        Gui.reload_active_tab(player, nil, 'Map Scores')
     end
 )
 
