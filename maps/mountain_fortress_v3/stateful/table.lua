@@ -35,9 +35,11 @@ local dataset = 'scenario_settings'
 local dataset_key = 'mtn_v3'
 local dataset_key_modded = 'mtn_v3_modded'
 local dataset_key_dev = 'mtn_v3_dev'
+local dataset_key_dev_modded = 'mtn_v3_dev_modded'
 local dataset_key_previous = 'mtn_v3_previous'
 local dataset_key_modded_previous = 'mtn_v3_modded_previous'
 local dataset_key_previous_dev = 'mtn_v3_previous_dev'
+local dataset_key_modded_previous_dev = 'mtn_v3_previous_dev'
 local send_ping_to_channel = Discord.channel_names.mtn_channel
 
 Global.register(
@@ -1553,7 +1555,11 @@ local function apply_startup_settings(settings)
                 Server.set_data(dataset, dataset_key, settings)
             end
         else
-            Server.set_data(dataset, dataset_key_dev, settings)
+            if Public.is_modded then
+                Server.set_data(dataset, dataset_key_dev_modded, settings)
+            else
+                Server.set_data(dataset, dataset_key_dev, settings)
+            end
         end
     end
 end
@@ -1582,7 +1588,11 @@ local apply_settings_token =
                         Server.set_data(dataset, dataset_key, settings)
                     end
                 else
-                    Server.set_data(dataset, dataset_key_dev, settings)
+                    if Public.is_modded then
+                        Server.set_data(dataset, dataset_key_dev_modded, settings)
+                    else
+                        Server.set_data(dataset, dataset_key_dev, settings)
+                    end
                 end
                 return
             end
@@ -1700,7 +1710,11 @@ function Public.save_settings()
             Server.set_data(dataset, dataset_key, settings)
         end
     else
-        Server.set_data(dataset, dataset_key_dev, settings)
+        if Public.is_modded then
+            Server.set_data(dataset, dataset_key_dev_modded, settings)
+        else
+            Server.set_data(dataset, dataset_key_dev, settings)
+        end
     end
 
     return granted_buff
@@ -1724,7 +1738,11 @@ function Public.save_settings_before_reset()
             Server.set_data(dataset, dataset_key_previous, settings)
         end
     else
-        Server.set_data(dataset, dataset_key_previous_dev, settings)
+        if Public.is_modded then
+            Server.set_data(dataset, dataset_key_modded_previous_dev, settings)
+        else
+            Server.set_data(dataset, dataset_key_previous_dev, settings)
+        end
     end
 end
 
@@ -2163,7 +2181,11 @@ function Public.stateful_on_server_started()
             Server.try_get_data(dataset, dataset_key, apply_settings_token)
         end
     else
-        Server.try_get_data(dataset, dataset_key_dev, apply_settings_token)
+        if Public.is_modded then
+            Server.try_get_data(dataset, dataset_key_dev_modded, apply_settings_token)
+        else
+            Server.try_get_data(dataset, dataset_key_dev, apply_settings_token)
+        end
         this.test_mode = true
     end
 end
@@ -2186,7 +2208,11 @@ Event.add(
                 Server.try_get_data(dataset, dataset_key, apply_settings_token)
             end
         else
-            Server.try_get_data(dataset, dataset_key_dev, apply_settings_token)
+            if Public.is_modded then
+                Server.try_get_data(dataset, dataset_key_dev_modded, apply_settings_token)
+            else
+                Server.try_get_data(dataset, dataset_key_dev, apply_settings_token)
+            end
             this.test_mode = true
         end
     end
