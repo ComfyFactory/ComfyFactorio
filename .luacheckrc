@@ -210,7 +210,8 @@ stds.factorio =
                     fields =
                     {
                         'compare',
-                        'deepcopy'
+                        'deepcopy',
+                        'deep_copy'
                     }
                 }
             }
@@ -220,7 +221,8 @@ stds.factorio =
             fields =
             {
                 'compare',
-                'deepcopy'
+                'deepcopy',
+                'deep_copy'
             }
         }
     }
@@ -1685,6 +1687,7 @@ stds.factorio_defines =
                 {
                     fields =
                     {
+                        'on_player_warp_entered',
                         'mtn-shift-autostash-all',
                         'mtn-shift-autostash-ores',
                         'mtn-shift-autostash-furnaces',

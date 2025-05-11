@@ -542,7 +542,6 @@ function Public.reset_map(current_task)
     Public.reset_buried_biters()
     Poll.reset()
     ICW.reset()
-    this.default_surface = true
     ICW.set('default_surface', this.default_surface)
     IC.reset()
     IC.allowed_surface(game.surfaces[this.active_surface_index].name)

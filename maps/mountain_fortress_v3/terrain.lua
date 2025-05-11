@@ -168,14 +168,8 @@ local aquilo_rock_raffle =
 }
 local size_of_aquilo_rock_raffle = #aquilo_rock_raffle
 
-local gleba_rock_raffle =
-{
-    'lithium-iceberg-big',
-    'lithium-iceberg-huge',
-    'lithium-iceberg-big',
-    'lithium-iceberg-huge',
-}
-local size_of_gleba_rock_raffle = #gleba_rock_raffle
+local gleba_rock_raffle = rock_raffle
+local size_of_gleba_rock_raffle = #rock_raffle
 
 local tree_raffle =
 {

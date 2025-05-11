@@ -197,4 +197,14 @@ Event.add(
     end
 )
 
+Event.add(defines.events.on_player_warp_entered, function (event)
+    local icw = ICW.get()
+    local player = game.players[event.player_index]
+    if player.controller_type == defines.controllers.remote then
+        return
+    end
+
+    Functions.use_cargo_wagon_door_with_entity(icw, player, event.entity)
+end)
+
 return Public

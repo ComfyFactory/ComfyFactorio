@@ -9,7 +9,7 @@ local SpamProtection = require 'utils.spam_protection'
 local Core = require 'utils.core'
 local LinkedChests = require 'maps.mountain_fortress_v3.icw.linked_chests'
 
-local deepcopy = table.deepcopy
+local deep_copy = table.deep_copy
 local random = math.random
 local sqrt = math.sqrt
 
@@ -67,7 +67,7 @@ local function get_offset(icw, surface, offset)
         y = 0
     }
 
-    Task.set_timeout_in_ticks(60, chunk_reveal_token, { surface_index = surface.index })
+    Task.set_timeout_in_ticks(10, chunk_reveal_token, { surface_index = surface.index })
 
     for _, tile in pairs(surface.find_tiles_filtered({ area = { { position.x - 2, -2 }, { position.x + 2, 2 } } })) do
         surface.set_tiles({ { name = out_of_map_tile, position = tile.position } }, true)
@@ -162,22 +162,19 @@ local function carriages_not_saved(icw, carriages)
     end
 
     for index, saved_train in pairs(icw.carriages) do
-        if has_wagon_id(carriages, saved_train.id) then -- Match train by first carriage ID
+        if has_wagon_id(carriages, saved_train.id) then
             local saved_wagons = saved_train.carriages
 
-            -- Ensure the saved train has the same number of wagons
             if #saved_wagons ~= #carriages then
                 return true, index
             end
 
-            -- Check if all unit numbers match
             for i, wagon in ipairs(carriages) do
                 if not saved_wagons[i] or saved_wagons[i].unit_number ~= wagon.unit_number then
                     return true, index
                 end
             end
 
-            -- If all checks pass, the train is unchanged
             return false
         end
     end
@@ -210,7 +207,7 @@ local function get_saved_carriages(icw, carriages)
     end
 
     for _, data in pairs(icw.carriages) do
-        if has_wagon_id(carriages, data.id) then -- Match by parent Id
+        if has_wagon_id(carriages, data.id) then
             return data
         end
     end
@@ -402,7 +399,7 @@ function Public.hazardous_debris()
 
     if final_battle then
         for _ = 1, 16 * speed, 1 do
-            local position = deepcopy(fallout_debris[random(1, size_of_debris)])
+            local position = deep_copy(fallout_debris[random(1, size_of_debris)])
             position[1] = position[1] + wagon.chunk_position.x
             local p = { x = position[1], y = position[2] }
             local get_tile = surface.get_tile(p)
@@ -412,7 +409,7 @@ function Public.hazardous_debris()
         end
 
         for _ = 1, 6 * speed, 1 do
-            local position = deepcopy(fallout_debris[random(1, size_of_debris)])
+            local position = deep_copy(fallout_debris[random(1, size_of_debris)])
             position[1] = position[1] + wagon.chunk_position.x
             local p = { x = position[1], y = position[2] }
             local get_tile = surface.get_tile(p)
@@ -422,7 +419,7 @@ function Public.hazardous_debris()
         end
 
         for _ = 1, 4 * speed, 1 do
-            local position = deepcopy(fallout_debris[random(1, size_of_debris)])
+            local position = deep_copy(fallout_debris[random(1, size_of_debris)])
             position[1] = position[1] + wagon.chunk_position.x
             local p = { x = position[1], y = position[2] }
             local get_tile = surface.get_tile(p)
@@ -440,7 +437,7 @@ function Public.hazardous_debris()
         end
 
         for _ = 1, 6 * speed, 1 do
-            local position = deepcopy(fallout_debris[random(1, size_of_debris)])
+            local position = deep_copy(fallout_debris[random(1, size_of_debris)])
             position[1] = position[1] + wagon.chunk_position.x
             local p = { x = position[1], y = position[2] }
             local get_tile = surface.get_tile(p)
@@ -458,7 +455,7 @@ function Public.hazardous_debris()
         end
     else
         for _ = 1, 16 * speed, 1 do
-            local position = deepcopy(fallout_debris[random(1, size_of_debris)])
+            local position = deep_copy(fallout_debris[random(1, size_of_debris)])
             position[1] = position[1] + wagon.chunk_position.x
             local p = { x = position[1], y = position[2] }
             local get_tile = surface.get_tile(p)
@@ -468,7 +465,7 @@ function Public.hazardous_debris()
         end
 
         for _ = 1, 6 * speed, 1 do
-            local position = deepcopy(fallout_debris[random(1, size_of_debris)])
+            local position = deep_copy(fallout_debris[random(1, size_of_debris)])
             position[1] = position[1] + wagon.chunk_position.x
             local p = { x = position[1], y = position[2] }
             local get_tile = surface.get_tile(p)
@@ -478,7 +475,7 @@ function Public.hazardous_debris()
         end
 
         for _ = 1, 4 * speed, 1 do
-            local position = deepcopy(fallout_debris[random(1, size_of_debris)])
+            local position = deep_copy(fallout_debris[random(1, size_of_debris)])
             position[1] = position[1] + wagon.chunk_position.x
             local p = { x = position[1], y = position[2] }
             local get_tile = surface.get_tile(p)
@@ -496,7 +493,7 @@ function Public.hazardous_debris()
         end
 
         for _ = 1, 6 * speed, 1 do
-            local position = deepcopy(fallout_debris[random(1, size_of_debris)])
+            local position = deep_copy(fallout_debris[random(1, size_of_debris)])
             position[1] = position[1] + wagon.chunk_position.x
             local p = { x = position[1], y = position[2] }
             local get_tile = surface.get_tile(p)
@@ -573,16 +570,22 @@ local function construct_wagon_doors(icw, wagon)
     for _, x in pairs({ area.left_top.x - 1.5, area.right_bottom.x + 1.5 }) do
         local p = { x = x, y = area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5) }
         if (p.x - area.left_top.x) < 0 then
+            surface.set_tiles({ { name = main_tile_name, position = { x = p.x + 1, y = p.y } } }, true)
+            surface.set_tiles({ { name = main_tile_name, position = { x = p.x + 1, y = p.y - 1 } } }, true)
+            surface.set_tiles({ { name = main_tile_name, position = { x = p.x, y = p.y - 1 } } }, true)
             surface.set_tiles({ { name = main_tile_name, position = { x = p.x, y = p.y } } }, true)
         else
+            surface.set_tiles({ { name = main_tile_name, position = { x = p.x - 1, y = p.y - 1 } } }, true)
+            surface.set_tiles({ { name = main_tile_name, position = { x = p.x - 1, y = p.y } } }, true)
+            surface.set_tiles({ { name = main_tile_name, position = { x = p.x, y = p.y - 1 } } }, true)
             surface.set_tiles({ { name = main_tile_name, position = { x = p.x, y = p.y } } }, true)
         end
         local e
         if (x - area.left_top.x) < 0 then
             e = surface.create_entity(
                 {
-                    name = 'car',
-                    position = { x, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5) },
+                    name = 'warp',
+                    position = { x - 0.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5) },
                     force = 'neutral',
                     create_build_effect_smoke = false,
                     direction = defines.direction.west
@@ -591,7 +594,7 @@ local function construct_wagon_doors(icw, wagon)
         else
             e = surface.create_entity(
                 {
-                    name = 'car',
+                    name = 'warp',
                     position = { x, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5) },
                     force = 'neutral',
                     create_build_effect_smoke = false,
@@ -602,7 +605,6 @@ local function construct_wagon_doors(icw, wagon)
         e.destructible = false
         e.minable_flag = false
         e.operable = false
-        e.get_inventory(defines.inventory.fuel).insert({ name = 'coal', count = 1 })
         icw.doors[e.unit_number] = wagon.entity.unit_number
         wagon.doors[#wagon.doors + 1] = e
     end
@@ -861,7 +863,7 @@ function Public.create_wagon_room(icw, wagon)
     end
 end
 
-function Public.create_wagon(icw, created_entity, delay_surface)
+function Public.create_wagon(icw, created_entity)
     if not validate_entity(created_entity) then
         return
     end
@@ -903,10 +905,8 @@ function Public.create_wagon(icw, created_entity, delay_surface)
     local wagon = icw.wagons[created_entity.unit_number]
     icw.offsets = icw.offsets + 500
 
-    if not delay_surface then
-        wagon.surface = Public.create_room_surface(icw, created_entity.unit_number)
-        Public.create_wagon_room(icw, icw.wagons[created_entity.unit_number])
-    end
+    wagon.surface = Public.create_room_surface(icw, created_entity.unit_number)
+    Public.create_wagon_room(icw, icw.wagons[created_entity.unit_number])
 
     Public.request_reconstruction()
     return wagon
@@ -938,7 +938,7 @@ function Public.migrate_wagon(icw, source, target)
             unit_data.surface.name = tostring(target_wagon)
             unit_data.entity = target
             unit_data.migrated = true
-            icw.wagons[target_wagon] = deepcopy(unit_data)
+            icw.wagons[target_wagon] = deep_copy(unit_data)
         end
     end
 
@@ -947,13 +947,6 @@ end
 
 function Public.use_cargo_wagon_door_with_entity(icw, player, door)
     local player_data = get_player_data(icw, player)
-    if player_data.state then
-        player_data.state = player_data.state - 1
-        if player_data.state == 0 then
-            player_data.state = nil
-        end
-        return
-    end
 
     if not door then
         return
@@ -986,14 +979,24 @@ function Public.use_cargo_wagon_door_with_entity(icw, player, door)
 
     Event.raise(ICW.events.on_player_used_door, { player_index = player.index, surface_index = player.physical_surface.index })
 
+    if player.driving and door.type == 'locomotive' then
+        player_data.pos = player.physical_position.x
+        return
+    end
+
+
     if icw.default_surface then
         if player.physical_position.x < 800 then
             local surface = wagon.surface
             if not (surface and surface.valid) then
                 return
             end
+
             local area = wagon.area
-            local x_vector = door.position.x - player.physical_position.x
+
+            local pos = player_data and player_data.pos or player.physical_position.x
+
+            local x_vector = door.position.x - pos
             local position
             if x_vector > 0 then
                 position = { area.left_top.x + 0.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5) }
@@ -1008,13 +1011,17 @@ function Public.use_cargo_wagon_door_with_entity(icw, player, door)
                 player.teleport(position)
             end
             player_data.surface = surface.index
+            player_data.pos = nil
         else
             local surface = wagon.entity.surface
             if not (surface and surface.valid) then
                 return
             end
-            local x_vector = (door.position.x / math.abs(door.position.x)) * 2
-            local position = { wagon.entity.position.x + x_vector, wagon.entity.position.y }
+
+            local door_position = door.position.x - wagon.chunk_position.x
+            local teleport_position = door_position < 0 and -2 or 2
+
+            local position = { wagon.entity.position.x + teleport_position, wagon.entity.position.y }
             local surface_position = surface.find_non_colliding_position('character', position, 128, 0.5)
             if not position then
                 return
@@ -1029,15 +1036,8 @@ function Public.use_cargo_wagon_door_with_entity(icw, player, door)
                 return
             end
             player.character.driving = false
-            if wagon.entity.type == 'locomotive' then
-                player.teleport(surface_position, surface)
-                player_data.state = 1
-                player.driving = true
-                Public.kill_minimap(player)
-            else
-                player.teleport(surface_position, surface)
-                Public.kill_minimap(player)
-            end
+            player.teleport(surface_position, surface)
+            Public.kill_minimap(player)
             player_data.surface = surface.index
         end
     else
@@ -1064,7 +1064,7 @@ function Public.use_cargo_wagon_door_with_entity(icw, player, door)
             if wagon.entity.type == 'locomotive' then
                 player.teleport(surface_position, surface)
                 player_data.state = 2
-                player.driving = true
+                player.driving = false
                 Public.kill_minimap(player)
             else
                 player.teleport(surface_position, surface)
@@ -1164,8 +1164,6 @@ local function move_room_to_train(icw, train, wagon, carriages)
     wagon.transfer_entities = {}
     construct_wagon_doors(icw, wagon)
 
-
-
     local left_top_y = wagon.area.left_top.y
     for _, e in pairs(wagon.surface.find_entities_filtered({ type = 'electric-pole', area = wagon.area })) do
         connect_power_pole(e, left_top_y)
@@ -1205,30 +1203,8 @@ local function move_room_to_train(icw, train, wagon, carriages)
     end
 end
 
-function Public.construct_train(icw, locomotive, carriages)
+function Public.construct_train(icw, carriages)
     local old_carriages = carriages
-    for i, carriage in pairs(carriages) do
-        if carriage == locomotive then
-            local adjusted_zones = WPT.get('adjusted_zones')
-
-            local stock
-            if adjusted_zones.reversed then
-                stock = locomotive.get_connected_rolling_stock(defines.rail_direction.back)
-            else
-                stock = locomotive.get_connected_rolling_stock(defines.rail_direction.front)
-            end
-            if stock ~= carriages[i - 1] then
-                local n = 1
-                local m = #carriages
-                while (n < m) do
-                    carriages[n], carriages[m] = carriages[m], carriages[n]
-                    n = n + 1
-                    m = m - 1
-                end
-                break
-            end
-        end
-    end
     local unit_number = carriages[1].unit_number
 
     if icw.trains[unit_number] then
@@ -1240,8 +1216,6 @@ function Public.construct_train(icw, locomotive, carriages)
 
     local carriages_s
 
-
-
     local wagon = icw.wagons[unit_number]
     if wagon and wagon.new_chunk_position then
         carriages_s = get_saved_carriages(icw, old_carriages)
@@ -1251,7 +1225,9 @@ function Public.construct_train(icw, locomotive, carriages)
     end
 
     for _, carriage in pairs(carriages) do
-        move_room_to_train(icw, train, icw.wagons[carriage.unit_number], carriages_s)
+        local carriage_wagon = icw.wagons[carriage.unit_number]
+        move_room_to_train(icw, train, carriage_wagon, carriages_s)
+        carriage_wagon.chunk_position.x = wagon.chunk_position.x
     end
 end
 
@@ -1303,19 +1279,41 @@ function Public.reconstruct_all_trains(reset_carriages)
 
         local carriages = wagon.entity.train.carriages
 
+        for i, carriage in pairs(carriages) do
+            if carriage == locomotive then
+                local adjusted_zones = WPT.get('adjusted_zones')
+
+                local stock
+                if adjusted_zones.reversed then
+                    stock = locomotive.get_connected_rolling_stock(defines.rail_direction.back)
+                else
+                    stock = locomotive.get_connected_rolling_stock(defines.rail_direction.front)
+                end
+                if stock ~= carriages[i - 1] then
+                    local n = 1
+                    local m = #carriages
+                    while (n < m) do
+                        carriages[n], carriages[m] = carriages[m], carriages[n]
+                        n = n + 1
+                        m = m - 1
+                    end
+                    break
+                end
+            end
+        end
+
         if #carriages > 1 then
             if icw.default_surface then
+                local new_wagon = icw.wagons[carriages[1].unit_number]
+                if not new_wagon then
+                    error('Wagon not found while creating wagon snake: ' .. carriages[1].unit_number)
+                    break
+                end
                 local not_carriage, carriage_index = carriages_not_saved(icw, carriages)
                 if not_carriage then
-                    local entity_area = areas[wagon.entity.type]
+                    local entity_area = areas[new_wagon.entity.type]
                     if not entity_area then
                         goto continue
-                    end
-
-                    if not icw.unique_id then
-                        icw.unique_id = 1
-                    else
-                        icw.unique_id = icw.unique_id + 1
                     end
 
                     local cr = {}
@@ -1324,23 +1322,22 @@ function Public.reconstruct_all_trains(reset_carriages)
                         cr[c] = { unit_number = carriage.unit_number }
                         c = c + 1
                     end
-                    local new_position = get_offset(icw, wagon.surface, icw.offsets)
 
-                    local first_locomotive = carriages[1].unit_number
+                    local new_position = get_offset(icw, new_wagon.surface, icw.offsets)
 
                     local destination_area =
                     {
-                        left_top = { x = entity_area.left_top.x + new_position.x, y = wagon.area.left_top.y },
-                        right_bottom = { x = entity_area.right_bottom.x + new_position.x, y = wagon.area.right_bottom.y }
+                        left_top = { x = entity_area.left_top.x + new_position.x, y = new_wagon.area.left_top.y },
+                        right_bottom = { x = entity_area.right_bottom.x + new_position.x, y = new_wagon.area.right_bottom.y }
                     }
 
                     if carriage_index then
-                        icw.carriages[carriage_index] = { id = first_locomotive, carriages = cr, new_area = destination_area }
+                        icw.carriages[carriage_index] = { id = carriages[1].unit_number, carriages = cr, new_area = destination_area, position = new_position }
                     else
-                        icw.carriages[#icw.carriages + 1] = { id = first_locomotive, carriages = cr, new_area = destination_area }
+                        icw.carriages[#icw.carriages + 1] = { id = carriages[1].unit_number, carriages = cr, new_area = destination_area, position = new_position }
                     end
 
-                    wagon.new_chunk_position = new_position
+                    new_wagon.new_chunk_position = new_position
                     icw.offsets = icw.offsets + 500
                     ::continue::
                 end
@@ -1358,7 +1355,7 @@ function Public.reconstruct_all_trains(reset_carriages)
             end
 
             if #carriages > 1 then
-                Public.construct_train(icw, locomotive, carriages)
+                Public.construct_train(icw, carriages)
             end
         end
     end

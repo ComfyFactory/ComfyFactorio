@@ -604,17 +604,30 @@ local set_unit_raffle_token =
                     end
                 end
             else
-                WD.set(
-                    'biter_raffle',
-                    {
-                        ['small-wriggler-pentapod'] = round(2500 - level * 1.75, 6),
-                        ['mtn-addon-small-piercing-biter-t1'] = round(2500 - level * 1.75, 6),
-                        ['mtn-addon-small-acid-biter-t1'] = round(2500 - level * 1.75, 6),
-                        ['mtn-addon-small-explosive-biter-t1'] = round(2500 - level * 1.75, 6),
-                        ['mtn-addon-small-poison-biter-t1'] = round(2500 - level * 1.75, 6),
-                        ['mtn-addon-small-fire-biter-t1'] = round(2500 - level * 1.75, 6),
-                    }
-                )
+                if Public.is_modded_pt2 then
+                    WD.set(
+                        'biter_raffle',
+                        {
+                            ['small-wriggler-pentapod'] = round(2500 - level * 1.75, 6),
+                            ['mtn-addon-small-piercing-biter-t1'] = round(2500 - level * 1.75, 6),
+                            ['mtn-addon-small-acid-biter-t1'] = round(2500 - level * 1.75, 6),
+                            ['mtn-addon-small-explosive-biter-t1'] = round(2500 - level * 1.75, 6),
+                            ['mtn-addon-small-poison-biter-t1'] = round(2500 - level * 1.75, 6),
+                            ['mtn-addon-small-fire-biter-t1'] = round(2500 - level * 1.75, 6),
+                        }
+                    )
+                else
+                    WD.set(
+                        'biter_raffle',
+                        {
+                            ['mtn-addon-small-piercing-biter-t1'] = round(2500 - level * 1.75, 6),
+                            ['mtn-addon-small-acid-biter-t1'] = round(2500 - level * 1.75, 6),
+                            ['mtn-addon-small-explosive-biter-t1'] = round(2500 - level * 1.75, 6),
+                            ['mtn-addon-small-poison-biter-t1'] = round(2500 - level * 1.75, 6),
+                            ['mtn-addon-small-fire-biter-t1'] = round(2500 - level * 1.75, 6),
+                        }
+                    )
+                end
                 WD.set(
                     'spitter_raffle',
                     {
@@ -656,7 +669,9 @@ local set_unit_raffle_token =
                     spitter_raffle['mtn-addon-small-fire-spitter-t3'] = round(1500 - level * 1.75, 6)
                 end
                 if level > 250 then
-                    biter_raffle['medium-wriggler-pentapod'] = round(250 - (level - 250), 6)
+                    if Public.is_modded_pt2 then
+                        biter_raffle['medium-wriggler-pentapod'] = round(250 - (level - 250), 6)
+                    end
                     biter_raffle['mtn-addon-medium-piercing-biter-t1'] = round(250 - (level - 250), 6)
                     biter_raffle['mtn-addon-medium-acid-biter-t1'] = round(250 - (level - 250), 6)
                     biter_raffle['mtn-addon-medium-explosive-biter-t1'] = round(250 - (level - 250), 6)
@@ -697,7 +712,9 @@ local set_unit_raffle_token =
                 end
 
                 if level > 500 then
-                    biter_raffle['big-wriggler-pentapod'] = round(500 - (level - 500) * 2, 6)
+                    if Public.is_modded_pt2 then
+                        biter_raffle['big-wriggler-pentapod'] = round(500 - (level - 500) * 2, 6)
+                    end
                     biter_raffle['mtn-addon-big-piercing-biter-t1'] = round(500 - (level - 500) * 2, 6)
                     biter_raffle['mtn-addon-big-acid-biter-t1'] = round(500 - (level - 500) * 2, 6)
                     biter_raffle['mtn-addon-big-explosive-biter-t1'] = round(500 - (level - 500) * 2, 6)
@@ -2971,6 +2988,11 @@ function Public.set_player_to_god(player)
         return false
     end
 
+    local old_group = game.permissions.get_group(spectate[player.index].old_group)
+    if old_group then
+        old_group.add_player(player)
+    end
+
     spectate[player.index] = nil
 
     player.set_controller({ type = defines.controllers.god })
@@ -3038,6 +3060,13 @@ function Public.set_player_to_spectator(player)
         player.character.die()
     end
 
+    spectate[player.index].old_group = player.permission_group.name
+
+    local spectate_group = game.permissions.get_group('spectator')
+    if spectate_group then
+        spectate_group.add_player(player)
+    end
+
     player.character = nil
     player.spectator = true
     player.tag = '[img=utility/create_ghost_on_entity_death_modifier_icon]'
@@ -3049,6 +3078,8 @@ function Public.set_player_to_spectator(player)
         spectate[player.index].verify = true
         spectate[player.index].delay = game.tick + 3600
     end
+
+
     return true
 end
 

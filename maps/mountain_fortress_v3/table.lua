@@ -177,6 +177,7 @@ Public.pickaxe_upgrades =
 
 function Public.reset_main_table()
     -- @start
+    this.default_surface = false
     this.space_age = script.active_mods['space-age'] or false
     this.modded = script.active_mods['MtnFortressAddons'] or false
     -- these 3 are in case of stop/start/reloading the instance.

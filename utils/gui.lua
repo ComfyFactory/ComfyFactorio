@@ -703,7 +703,7 @@ local function get_player_active_tab(player)
     return panel.tabs[index].tab, panel.tabs[index].content
 end
 
-function Public.reload_active_tab(player, forced)
+function Public.reload_active_tab(player, forced, tab_name)
     local is_spamming = SpamProtection.is_spamming(player, nil, 'Reload active tab')
     if is_spamming and not forced then
         return
@@ -713,7 +713,7 @@ function Public.reload_active_tab(player, forced)
     if not frame then
         return
     end
-    local tab = main_gui_tabs[frame.caption]
+    local tab = main_gui_tabs[frame.caption] or tab_name
     if not tab then
         return
     end
