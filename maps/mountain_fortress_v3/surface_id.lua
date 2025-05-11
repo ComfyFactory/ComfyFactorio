@@ -1,3 +1,3 @@
-local surface_name = 'gleba'
+local surface_name = 'fortress'
 
 return surface_name
