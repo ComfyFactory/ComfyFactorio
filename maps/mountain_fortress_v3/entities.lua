@@ -32,7 +32,8 @@ local send_ping_to_channel = Discord.channel_names.mtn_channel
 -- local send_ping_to_channel = Discord.channel_names.bot_quarters
 -- local role_to_mention = Discord.role_mentions.test_role
 
-local chests = {
+local chests =
+{
     'wooden-chest',
     'iron-chest',
     'steel-chest',
@@ -45,7 +46,8 @@ local chests = {
     'crash-site-spaceship-wreck-medium-3'
 }
 
-local valid_forces = {
+local valid_forces =
+{
     [2] = true,
     [4] = true,
     [5] = true
@@ -53,31 +55,36 @@ local valid_forces = {
 
 local size_chests = #chests
 
-local treasure_chest_messages = {
+local treasure_chest_messages =
+{
     ({ 'entity.treasure_1' }),
     ({ 'entity.treasure_2' }),
     ({ 'entity.treasure_3' })
 }
 
-local rare_treasure_chest_messages = {
+local rare_treasure_chest_messages =
+{
     ({ 'entity.treasure_rare_1' }),
     ({ 'entity.treasure_rare_2' }),
     ({ 'entity.treasure_rare_3' })
 }
 
-local disabled_threats = {
+local disabled_threats =
+{
     ['entity-ghost'] = true,
     ['raw-fish'] = true
 }
 
-local defeated_messages = {
+local defeated_messages =
+{
     ({ 'entity.defeated_1' }),
     ({ 'entity.defeated_2' }),
     ({ 'entity.defeated_3' }),
     ({ 'entity.defeated_4' })
 }
 
-local protect_types = {
+local protect_types =
+{
     ['cargo-wagon'] = true,
     ['artillery-wagon'] = true,
     ['fluid-wagon'] = true,
@@ -126,12 +133,14 @@ local function on_entity_removed(data)
     local entity = data.entity
     local upgrades = Public.get('upgrades')
 
-    local built = {
+    local built =
+    {
         ['land-mine'] = upgrades.landmine.built,
         ['flamethrower-turret'] = upgrades.flame_turret.built
     }
 
-    local validator = {
+    local validator =
+    {
         ['land-mine'] = 'landmine',
         ['flamethrower-turret'] = 'flame_turret'
     }
@@ -218,7 +227,8 @@ local function set_train_final_health(final_damage_amount, repair)
                     end
                 end
 
-                local p = {
+                local p =
+                {
                     position = locomotive.position
                 }
                 local msg = ({ 'entity.train_taking_damage' })
@@ -235,7 +245,8 @@ local function set_train_final_health(final_damage_amount, repair)
                         Public.enable_robotic_defense(entity.position)
                     end
                 end
-                local p = {
+                local p =
+                {
                     position = locomotive.position
                 }
                 local msg = ({ 'entity.train_taking_damage' })
@@ -295,6 +306,8 @@ local function protect_entities(data)
         return
     end
 
+
+
     local check_heavy_damage = Public.get('check_heavy_damage')
 
     if check_heavy_damage then
@@ -304,6 +317,11 @@ local function protect_entities(data)
     end
 
     if entity.force.index ~= 1 then
+        return
+    end
+
+    if entity.position.x > 1000 then
+        entity.health = entity.health + dmg
         return
     end
 
@@ -492,7 +510,8 @@ local unstuck_player_token =
         end
     )
 
-local mining_events = {
+local mining_events =
+{
     {
         function ()
         end,
@@ -745,7 +764,8 @@ local function on_player_mined_entity(event)
         return
     end
 
-    local d = {
+    local d =
+    {
         entity = entity
     }
 
@@ -802,7 +822,8 @@ local function on_robot_mined_entity(event)
         return
     end
 
-    local d = {
+    local d =
+    {
         entity = entity
     }
 
@@ -940,7 +961,8 @@ local function on_entity_damaged(event)
     local munch_time = Public.get('munch_time')
     local final_battle = Public.get('final_battle')
 
-    local data = {
+    local data =
+    {
         cause = cause,
         entity = entity,
         final_damage_amount = final_damage_amount,
@@ -1021,7 +1043,8 @@ local function on_entity_died(event)
         return
     end
 
-    local d = {
+    local d =
+    {
         entity = entity
     }
 
@@ -1073,7 +1096,8 @@ local function on_entity_died(event)
         for _, e in pairs(
             entity.surface.find_entities_filtered(
                 {
-                    area = {
+                    area =
+                    {
                         { entity.position.x - 4, entity.position.y - 4 },
                         { entity.position.x + 4, entity.position.y + 4 }
                     },
@@ -1223,32 +1247,37 @@ local function show_mvps(player)
         local server_name_matches = Server.check_server_name(Public.discord_name)
 
         if not sent_to_discord and server_name_matches then
-            local message = {
+            local message =
+            {
                 title = 'Game over',
                 description = 'Player statistics is below',
                 color = 'failure',
-                field1 = {
+                field1 =
+                {
                     text1 = 'Highest Wave:',
                     text2 = wave_defense_table.wave_number,
                     inline = 'false'
                 }
             }
             if mvp.killscore then
-                message.field2 = {
+                message.field2 =
+                {
                     text1 = 'MVP Fighter:',
                     text2 = mvp.killscore.name .. ' with a killing score of ' .. mvp.killscore.score .. ' kills!',
                     inline = 'false'
                 }
             end
             if mvp.built_entities then
-                message.field3 = {
+                message.field3 =
+                {
                     text1 = 'MVP Builder:',
                     text2 = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things!',
                     inline = 'false'
                 }
             end
             if mvp.mined_entities then
-                message.field4 = {
+                message.field4 =
+                {
                     text1 = 'MVP Miners:',
                     text2 = mvp.mined_entities.name .. ' mined a total of ' .. mvp.mined_entities.score .. ' entities!',
                     inline = 'false'
@@ -1277,47 +1306,56 @@ local function show_mvps(player)
             end
             local date = Server.get_start_time()
             game.server_save('Final_Mtn_v3_' .. tostring(date) .. '_wave' .. tostring(wave))
-            local text = {
+            local text =
+            {
                 title = 'Game over!',
                 description = 'Game statistics from the game is below',
                 color = 'failure',
-                field1 = {
+                field1 =
+                {
                     text1 = 'Time played:',
                     text2 = time_played,
                     inline = 'false'
                 },
-                field2 = {
+                field2 =
+                {
                     text1 = 'Highest wave:',
                     text2 = wave,
                     inline = 'false'
                 },
-                field3 = {
+                field3 =
+                {
                     text1 = 'Total connected players:',
                     text2 = total_players,
                     inline = 'false'
                 },
-                field4 = {
+                field4 =
+                {
                     text1 = 'Threat:',
                     ---@diagnostic disable-next-line: param-type-mismatch
                     text2 = format_number(threat, true),
                     inline = 'false'
                 },
-                field5 = {
+                field5 =
+                {
                     text1 = 'Pickaxe Upgrade:',
                     text2 = pick_tier .. ' (' .. upgrades.pickaxe_tier .. ')',
                     inline = 'false'
                 },
-                field6 = {
+                field6 =
+                {
                     text1 = 'Collapse Speed:',
                     text2 = collapse_speed,
                     inline = 'false'
                 },
-                field7 = {
+                field7 =
+                {
                     text1 = 'Collapse Amount:',
                     text2 = collapse_amount,
                     inline = 'false'
                 },
-                field8 = {
+                field8 =
+                {
                     text1 = 'Connected players:',
                     text2 = total_connected_players,
                     inline = 'false'
@@ -1404,7 +1442,8 @@ function Public.loco_died()
 
     local p = this.locomotive_position or { x = 0, y = 0 }
 
-    local pos = {
+    local pos =
+    {
         position = p,
     }
     Alert.alert_all_players_location(pos, msg)
@@ -1452,7 +1491,8 @@ local function on_entity_spawned(event)
     local unit_number = spawner.unit_number
     local position = spawner.position
     if not enemy_spawners.spawners[unit_number] then
-        enemy_spawners.spawners[unit_number] = {
+        enemy_spawners.spawners[unit_number] =
+        {
             entity = spawner,
             count = 0
         }
@@ -1509,7 +1549,8 @@ local function on_built_entity(event)
         end
     end
 
-    local valid_drills = {
+    local valid_drills =
+    {
         ['burner-mining-drill'] = true,
         ['electric-mining-drill'] = true
     }
@@ -1522,17 +1563,20 @@ local function on_built_entity(event)
     local upgrades = Public.get('upgrades')
 
     local upg = upgrades
-    local built = {
+    local built =
+    {
         ['land-mine'] = upg.landmine.built,
         ['flamethrower-turret'] = upg.flame_turret.built
     }
 
-    local limit = {
+    local limit =
+    {
         ['land-mine'] = upg.landmine.limit,
         ['flamethrower-turret'] = upg.flame_turret.limit
     }
 
-    local validator = {
+    local validator =
+    {
         ['land-mine'] = 'landmine',
         ['flamethrower-turret'] = 'flame_turret'
     }
@@ -1600,7 +1644,8 @@ local function on_robot_built_entity(event)
         end
     end
 
-    local valid_drills = {
+    local valid_drills =
+    {
         ['burner-mining-drill'] = true,
         ['electric-mining-drill'] = true
     }
@@ -1615,17 +1660,20 @@ local function on_robot_built_entity(event)
     local upg = upgrades
     local surface = entity.surface
 
-    local built = {
+    local built =
+    {
         ['land-mine'] = upg.landmine.built,
         ['flamethrower-turret'] = upg.flame_turret.built
     }
 
-    local limit = {
+    local limit =
+    {
         ['land-mine'] = upg.landmine.limit,
         ['flamethrower-turret'] = upg.flame_turret.limit
     }
 
-    local validator = {
+    local validator =
+    {
         ['land-mine'] = 'landmine',
         ['flamethrower-turret'] = 'flame_turret'
     }
