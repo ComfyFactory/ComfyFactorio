@@ -4,7 +4,6 @@ local Task = require 'utils.task_token'
 local MapFunctions = require 'utils.tools.map_functions'
 local Event = require 'utils.event'
 local random = math.random
-local floor = math.floor
 
 local function initial_cargo_boxes()
     return
