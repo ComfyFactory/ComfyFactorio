@@ -15,11 +15,13 @@ local logistics_dataset_modded = 'logistics_modded'
 local set_data = Server.set_data
 local try_get_data = Server.try_get_data
 
-local this = {
+local this =
+{
     logistics = {}
 }
 
-local ignored_items = {
+local ignored_items =
+{
     ['blueprint'] = true,
     ['blueprint-book'] = true,
     ['deconstruction-planner'] = true,
@@ -48,14 +50,15 @@ local function apply_logistic_network(player, saved_data)
         return
     end
     if player.get_requester_point() then
-        if saved_data[1] and saved_data[1].name then
+        if saved_data[1] and (saved_data[1].name or not saved_data[1].group) then
             local old_section = player.get_requester_point().get_section(1)
             if old_section then
                 old_section.group = 'Migrated from old format'
                 old_section.active = true
                 for i, slot in pairs(saved_data) do
-                    if slot and slot.name and check_if_item_exists(slot.name) then
-                        local item_stack = { min = slot.min, max = slot.max, value = { comparator = "=", name = slot.name, quality = "normal", type = slot.type or nil } }
+                    if slot and (slot.name or slot) and check_if_item_exists(slot.name or slot) then
+                        local item = prototypes.item[slot.name or slot]
+                        local item_stack = { min = slot.min or 1, max = slot.max or 1, value = { comparator = "=", name = slot.name or slot, quality = "normal", type = slot.type or item.type or nil } }
                         pcall(old_section.set_slot, i, item_stack)
                     end
                 end
@@ -67,6 +70,10 @@ local function apply_logistic_network(player, saved_data)
 
                 if section and new_section then
                     local slots = section.slots
+                    if not slots or not section.group then
+                        Server.output_data('[ERROR] Invalid data format for section ' .. index .. ' for player ' .. player.name)
+                        return false
+                    end
                     new_section.group = section.group
                     new_section.active = section.active
                     if slots and type(slots) == 'table' then

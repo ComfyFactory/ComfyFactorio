@@ -328,7 +328,7 @@ local function changed_surface(player)
     local spell_gui_frame_name = RPG.spell_gui_frame_name
     local spell_cast_buttons = player.gui.screen[spell_gui_frame_name]
 
-    if IC.get_player_surface(player) then
+    if IC.get_player_surface(player) or main_toggle_button and main_toggle_button.sprite == 'utility/expand_dots' then
         goto no_gui
     end
 
@@ -446,7 +446,7 @@ local function changed_surface(player)
     ::no_gui::
 
     if main_toggle_button and main_toggle_button.visible then
-        main_toggle_button.visible = false
+        main_toggle_button.visible = true
     end
     if poll_b then
         poll_b.visible = false

@@ -170,7 +170,9 @@ local get_cause_player =
         if driver and driver.valid and driver.is_player() then
             players[#players + 1] = driver
         else
-            players[#players + 1] = driver.player
+            if driver then
+                players[#players + 1] = driver.player
+            end
         end
 
         local passenger = cause.get_passenger()

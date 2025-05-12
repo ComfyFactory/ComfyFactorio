@@ -11,7 +11,7 @@ local valid_groups = {
     ['init_island'] = true,
     ['main_surface'] = true,
     ['near_locomotive'] = true,
-    ['not_trusted'] = true
+    ['not_trusted'] = true,
 }
 
 function Public.add_player_to_permission_group(player, group, forced)
@@ -29,7 +29,7 @@ function Public.add_player_to_permission_group(player, group, forced)
         return
     end
 
-    if not valid_groups[string.lower(player.permission_group.name)] then
+    if not valid_groups[string.lower(player.permission_group.name)] and not forced then
         return
     end
 
