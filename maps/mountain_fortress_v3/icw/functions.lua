@@ -282,6 +282,9 @@ local function kick_players_from_surface(wagon)
     end
 end
 
+
+-- This function broke whenever a player tried to connect a wagon - sent them straight to the void and instantly killed them.
+--[[
 local function kick_players_out_of_vehicles(wagon)
     for _, player in pairs(game.connected_players) do
         local character = player.character
@@ -292,6 +295,7 @@ local function kick_players_out_of_vehicles(wagon)
         end
     end
 end
+]]
 
 local function teleport_char(position, destination_area, wagon)
     for _, e in pairs(wagon.surface.find_entities_filtered({ name = 'character', area = wagon.area })) do
@@ -685,7 +689,7 @@ function Public.kill_wagon(icw, entity)
 
     local surface = wagon.surface
     kick_players_from_surface(wagon)
-    kick_players_out_of_vehicles(wagon)
+    -- kick_players_out_of_vehicles(wagon)
     kill_wagon_doors(icw, wagon)
     for _, tile in pairs(surface.find_tiles_filtered({ area = wagon.area })) do
         surface.set_tiles({ { name = out_of_map_tile, position = tile.position } }, true)
@@ -1143,7 +1147,7 @@ move_room_to_train = function (icw, train, wagon, carriages)
     end
 
     kick_players_from_surface(wagon)
-    kick_players_out_of_vehicles(wagon)
+    -- kick_players_out_of_vehicles(wagon)
     local player_positions = {}
     teleport_char(player_positions, destination_area, wagon)
 
