@@ -1168,7 +1168,7 @@ local function on_player_unmuted(event)
 end
 
 --- This is used for the RPG module, when casting capsules.
----@param player userdata
+---@param player LuaPlayer
 ---@param position table
 ---@param msg string
 function Public.insert_into_capsule_history(player, position, msg)

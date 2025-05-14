@@ -12,6 +12,7 @@ local LinkedChests = require 'maps.mountain_fortress_v3.icw.linked_chests'
 local deep_copy = table.deep_copy
 local random = math.random
 local sqrt = math.sqrt
+local move_room_to_train
 
 local out_of_map_tile = 'out-of-map'
 
@@ -19,6 +20,22 @@ local fallout_width = 64
 local fallout_debris = {}
 local chunk_reveal_token
 local reconstruct_all_trains
+
+local construct_train_token =
+    Task.register(
+        function (event)
+            local icw = event.icw
+            local carriage = event.carriage
+            local train = event.train
+            local chunk_position = event.chunk_position
+            local saved_carriages = event.saved_carriages
+
+            local carriage_wagon = icw.wagons[carriage.unit_number]
+
+            move_room_to_train(icw, train, carriage_wagon, saved_carriages)
+            carriage_wagon.chunk_position.x = chunk_position.x
+        end
+        , 999)
 
 chunk_reveal_token =
     Task.register(
@@ -1095,7 +1112,7 @@ function Public.use_cargo_wagon_door_with_entity(icw, player, door)
     end
 end
 
-local function move_room_to_train(icw, train, wagon, carriages)
+move_room_to_train = function (icw, train, wagon, carriages)
     if not wagon then
         return
     end
@@ -1143,6 +1160,13 @@ local function move_room_to_train(icw, train, wagon, carriages)
             expand_map = false
         }
     )
+
+    if icw.default_surface then
+        local entities = train.surface.find_entities_filtered { area = wagon.area, name = { 'logistic-robot', 'construction-robot' } }
+        for _, entity in pairs(entities) do
+            entity.destroy()
+        end
+    end
 
     for player_index, position in pairs(player_positions) do
         local player = game.players[player_index]
@@ -1214,20 +1238,20 @@ function Public.construct_train(icw, carriages)
     local train = { surface = Public.create_room_surface(icw, unit_number), wagons = {}, top_y = 0 }
     icw.trains[unit_number] = train
 
-    local carriages_s
+    local saved_carriages
 
     local wagon = icw.wagons[unit_number]
     if wagon and wagon.new_chunk_position then
-        carriages_s = get_saved_carriages(icw, old_carriages)
+        saved_carriages = get_saved_carriages(icw, old_carriages)
         wagon.chunk_position = wagon.new_chunk_position
         wagon.new_chunk_position = nil
-        move_room_to_train(icw, train, wagon, carriages_s)
+        -- move_room_to_train(icw, train, wagon, saved_carriages)
     end
 
+    local timeout = 5
     for _, carriage in pairs(carriages) do
-        local carriage_wagon = icw.wagons[carriage.unit_number]
-        move_room_to_train(icw, train, carriage_wagon, carriages_s)
-        carriage_wagon.chunk_position.x = wagon.chunk_position.x
+        Task.set_timeout_in_ticks(timeout, construct_train_token, { icw = icw, carriage = carriage, train = train, chunk_position = wagon.chunk_position, saved_carriages = saved_carriages })
+        timeout = timeout + 5
     end
 end
 
@@ -1237,17 +1261,12 @@ function Public.clear_old_area(wagon)
         return
     end
 
-    for _, tile in pairs(wagon.surface.find_tiles_filtered({ area = wagon.area })) do
-        wagon.surface.set_tiles({ { name = out_of_map_tile, position = tile.position } }, true)
-    end
+    local old_area = deep_copy(area)
+    old_area.left_top.x = old_area.left_top.x - 10.5
+    old_area.right_bottom.x = old_area.right_bottom.x + 10.5
 
-    for _, x in pairs({ wagon.area.left_top.x - 1.5, wagon.area.right_bottom.x + 1.5 }) do
-        local p = { x = x, y = wagon.area.left_top.y + ((wagon.area.right_bottom.y - wagon.area.left_top.y) * 0.5) }
-        if p.x < 0 then
-            wagon.surface.set_tiles({ { name = out_of_map_tile, position = { x = p.x, y = p.y } } }, true)
-        else
-            wagon.surface.set_tiles({ { name = out_of_map_tile, position = { x = p.x, y = p.y } } }, true)
-        end
+    for _, tile in pairs(wagon.surface.find_tiles_filtered({ area = old_area })) do
+        wagon.surface.set_tiles({ { name = out_of_map_tile, position = tile.position } }, true)
     end
 end
 
@@ -1302,6 +1321,8 @@ function Public.reconstruct_all_trains(reset_carriages)
             end
         end
 
+        local to_construct_ids = {}
+
         if #carriages > 1 then
             if icw.default_surface then
                 local new_wagon = icw.wagons[carriages[1].unit_number]
@@ -1339,6 +1360,7 @@ function Public.reconstruct_all_trains(reset_carriages)
 
                     new_wagon.new_chunk_position = new_position
                     icw.offsets = icw.offsets + 500
+                    to_construct_ids[carriages[1].unit_number] = true
                     ::continue::
                 end
             end
@@ -1354,7 +1376,7 @@ function Public.reconstruct_all_trains(reset_carriages)
                 end
             end
 
-            if #carriages > 1 then
+            if next(to_construct_ids) then
                 Public.construct_train(icw, carriages)
             end
         end

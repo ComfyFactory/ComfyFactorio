@@ -31,6 +31,7 @@ local this =
 local random = math.random
 local round = math.round
 local floor = math.floor
+local deep_copy = table.deep_copy
 local dataset = 'scenario_settings'
 local dataset_key = 'mtn_v3'
 local dataset_key_modded = 'mtn_v3_modded'
@@ -384,6 +385,7 @@ local function get_random_buff(fetch_all, only_force)
             modifier = 'locomotive',
             limit = 1,
             quality = 'uncommon',
+            dlc = true,
             state = 1
         },
         {
@@ -392,6 +394,7 @@ local function get_random_buff(fetch_all, only_force)
             modifier = 'cargo-wagon',
             limit = 1,
             quality = 'uncommon',
+            dlc = true,
             state = 1
         },
         {
@@ -400,6 +403,7 @@ local function get_random_buff(fetch_all, only_force)
             modifier = 'locomotive',
             limit = 1,
             quality = 'rare',
+            dlc = true,
             state = 1
         },
         {
@@ -408,6 +412,7 @@ local function get_random_buff(fetch_all, only_force)
             modifier = 'cargo-wagon',
             limit = 1,
             quality = 'rare',
+            dlc = true,
             state = 1
         },
         {
@@ -415,6 +420,7 @@ local function get_random_buff(fetch_all, only_force)
             discord = 'Grants epic locomotive at start',
             limit = 1,
             quality = 'epic',
+            dlc = true,
             state = 1
         },
         {
@@ -423,6 +429,7 @@ local function get_random_buff(fetch_all, only_force)
             modifier = 'cargo-wagon',
             limit = 1,
             quality = 'epic',
+            dlc = true,
             state = 1
         },
         {
@@ -430,6 +437,7 @@ local function get_random_buff(fetch_all, only_force)
             discord = 'Grants legendary locomotive at start',
             limit = 1,
             quality = 'legendary',
+            dlc = true,
             state = 1
         },
         {
@@ -437,6 +445,7 @@ local function get_random_buff(fetch_all, only_force)
             discord = 'Grants legendary cargo-wagon at start',
             limit = 1,
             quality = 'legendary',
+            dlc = true,
             state = 1
         },
         {
@@ -444,6 +453,7 @@ local function get_random_buff(fetch_all, only_force)
             discord = 'Grants uncommon quality of buildings generating free loot!',
             limit = 1,
             quality = 'uncommon',
+            dlc = true,
             state = 1
         },
         {
@@ -451,6 +461,7 @@ local function get_random_buff(fetch_all, only_force)
             discord = 'Grants rare quality of buildings generating free loot!',
             limit = 1,
             quality = 'rare',
+            dlc = true,
             state = 1
         },
         {
@@ -458,6 +469,7 @@ local function get_random_buff(fetch_all, only_force)
             discord = 'Grants epic quality of buildings generating free loot!',
             limit = 1,
             quality = 'epic',
+            dlc = true,
             state = 1
         },
         {
@@ -465,6 +477,7 @@ local function get_random_buff(fetch_all, only_force)
             discord = 'Grants legendary quality of buildings generating free loot!',
             limit = 1,
             quality = 'legendary',
+            dlc = true,
             state = 1
         },
         {
@@ -1223,6 +1236,10 @@ local function migrate_buffs()
     for _, data in pairs(state_buffs) do
         for index, buff in pairs(this.buffs) do
             if data.name == buff.name then
+                if not Public.is_modded_pt2 and data.dlc then
+                    this.buffs[index] = nil
+                    break
+                end
                 if data.add_per_buff then
                     buff.add_per_buff = data.add_per_buff
                 end
@@ -1550,15 +1567,15 @@ local function apply_startup_settings(settings)
 
         if server_name_matches then
             if Public.is_modded then
-                Server.set_data(dataset, dataset_key_modded, settings)
+                Server.set_data(dataset, dataset_key_modded, deep_copy(settings))
             else
-                Server.set_data(dataset, dataset_key, settings)
+                Server.set_data(dataset, dataset_key, deep_copy(settings))
             end
         else
             if Public.is_modded then
-                Server.set_data(dataset, dataset_key_dev_modded, settings)
+                Server.set_data(dataset, dataset_key_dev_modded, deep_copy(settings))
             else
-                Server.set_data(dataset, dataset_key_dev, settings)
+                Server.set_data(dataset, dataset_key_dev, deep_copy(settings))
             end
         end
     end
@@ -1583,15 +1600,15 @@ local apply_settings_token =
                 }
                 if server_name_matches then
                     if Public.is_modded then
-                        Server.set_data(dataset, dataset_key_modded, settings)
+                        Server.set_data(dataset, dataset_key_modded, deep_copy(settings))
                     else
-                        Server.set_data(dataset, dataset_key, settings)
+                        Server.set_data(dataset, dataset_key, deep_copy(settings))
                     end
                 else
                     if Public.is_modded then
-                        Server.set_data(dataset, dataset_key_dev_modded, settings)
+                        Server.set_data(dataset, dataset_key_dev_modded, deep_copy(settings))
                     else
-                        Server.set_data(dataset, dataset_key_dev, settings)
+                        Server.set_data(dataset, dataset_key_dev, deep_copy(settings))
                     end
                 end
                 return
@@ -1630,6 +1647,11 @@ local function grant_non_limit_reached_buff()
     local limit_types = Public.get_func('limit_types')
 
     for index, data in pairs(all_buffs) do
+        if not Public.is_modded_pt2 and data.dlc then
+            this.buffs[index] = nil
+            break
+        end
+
         for _, item_data in pairs(starting_items) do
             if item_data.buff_type == data.name and item_data.item_limit and data.limit and item_data.item_limit >= data.limit then
                 all_buffs[index] = nil
@@ -1705,15 +1727,15 @@ function Public.save_settings()
     local server_name_matches = Server.check_server_name(Public.discord_name)
     if server_name_matches then
         if Public.is_modded then
-            Server.set_data(dataset, dataset_key_modded, settings)
+            Server.set_data(dataset, dataset_key_modded, deep_copy(settings))
         else
-            Server.set_data(dataset, dataset_key, settings)
+            Server.set_data(dataset, dataset_key, deep_copy(settings))
         end
     else
         if Public.is_modded then
-            Server.set_data(dataset, dataset_key_dev_modded, settings)
+            Server.set_data(dataset, dataset_key_dev_modded, deep_copy(settings))
         else
-            Server.set_data(dataset, dataset_key_dev, settings)
+            Server.set_data(dataset, dataset_key_dev, deep_copy(settings))
         end
     end
 
@@ -1733,15 +1755,15 @@ function Public.save_settings_before_reset()
     local server_name_matches = Server.check_server_name(Public.discord_name)
     if server_name_matches then
         if Public.is_modded then
-            Server.set_data(dataset, dataset_key_modded_previous, settings)
+            Server.set_data(dataset, dataset_key_modded_previous, deep_copy(settings))
         else
-            Server.set_data(dataset, dataset_key_previous, settings)
+            Server.set_data(dataset, dataset_key_previous, deep_copy(settings))
         end
     else
         if Public.is_modded then
-            Server.set_data(dataset, dataset_key_modded_previous_dev, settings)
+            Server.set_data(dataset, dataset_key_modded_previous_dev, deep_copy(settings))
         else
-            Server.set_data(dataset, dataset_key_previous_dev, settings)
+            Server.set_data(dataset, dataset_key_previous_dev, deep_copy(settings))
         end
     end
 end
