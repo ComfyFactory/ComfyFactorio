@@ -380,107 +380,6 @@ local function get_random_buff(fetch_all, only_force)
             state = 1
         },
         {
-            name = 'quality_locomotive',
-            discord = 'Grants uncommon locomotive at start',
-            modifier = 'locomotive',
-            limit = 1,
-            quality = 'uncommon',
-            dlc = true,
-            state = 1
-        },
-        {
-            name = 'quality_cargo_wagon',
-            discord = 'Grants uncommon cargo-wagon at start',
-            modifier = 'cargo-wagon',
-            limit = 1,
-            quality = 'uncommon',
-            dlc = true,
-            state = 1
-        },
-        {
-            name = 'quality_locomotive',
-            discord = 'Grants rare locomotive at start',
-            modifier = 'locomotive',
-            limit = 1,
-            quality = 'rare',
-            dlc = true,
-            state = 1
-        },
-        {
-            name = 'quality_cargo_wagon',
-            discord = 'Grants rare cargo-wagon at start',
-            modifier = 'cargo-wagon',
-            limit = 1,
-            quality = 'rare',
-            dlc = true,
-            state = 1
-        },
-        {
-            name = 'quality_locomotive',
-            discord = 'Grants epic locomotive at start',
-            limit = 1,
-            quality = 'epic',
-            dlc = true,
-            state = 1
-        },
-        {
-            name = 'quality_cargo_wagon',
-            discord = 'Grants epic cargo-wagon at start',
-            modifier = 'cargo-wagon',
-            limit = 1,
-            quality = 'epic',
-            dlc = true,
-            state = 1
-        },
-        {
-            name = 'quality_locomotive',
-            discord = 'Grants legendary locomotive at start',
-            limit = 1,
-            quality = 'legendary',
-            dlc = true,
-            state = 1
-        },
-        {
-            name = 'quality_cargo_wagon',
-            discord = 'Grants legendary cargo-wagon at start',
-            limit = 1,
-            quality = 'legendary',
-            dlc = true,
-            state = 1
-        },
-        {
-            name = 'quality_buildings',
-            discord = 'Grants uncommon quality of buildings generating free loot!',
-            limit = 1,
-            quality = 'uncommon',
-            dlc = true,
-            state = 1
-        },
-        {
-            name = 'quality_buildings',
-            discord = 'Grants rare quality of buildings generating free loot!',
-            limit = 1,
-            quality = 'rare',
-            dlc = true,
-            state = 1
-        },
-        {
-            name = 'quality_buildings',
-            discord = 'Grants epic quality of buildings generating free loot!',
-            limit = 1,
-            quality = 'epic',
-            dlc = true,
-            state = 1
-        },
-        {
-            name = 'quality_buildings',
-            discord = 'Grants legendary quality of buildings generating free loot!',
-            limit = 1,
-            quality = 'legendary',
-            dlc = true,
-            state = 1
-        },
-        {
             name = 'american_oil',
             discord = 'Oil tech - start with some crude oil barrels',
             modifier = 'starting_items',
@@ -565,6 +464,122 @@ local function get_random_buff(fetch_all, only_force)
             add_per_buff = 1
         }
     }
+
+    if Public.is_modded_pt2 then
+        buffs[#buffs + 1] =
+        {
+            name = 'quality_locomotive',
+            discord = 'Grants uncommon locomotive at start',
+            modifier = 'locomotive',
+            limit = 1,
+            quality = 'uncommon',
+            dlc = true,
+            state = 1
+        }
+        buffs[#buffs + 1] =
+        {
+            name = 'quality_cargo_wagon',
+            discord = 'Grants uncommon cargo-wagon at start',
+            modifier = 'cargo-wagon',
+            limit = 1,
+            quality = 'uncommon',
+            dlc = true,
+            state = 1
+        }
+        buffs[#buffs + 1] =
+        {
+            name = 'quality_locomotive',
+            discord = 'Grants rare locomotive at start',
+            modifier = 'locomotive',
+            limit = 1,
+            quality = 'rare',
+            dlc = true,
+            state = 1
+        }
+        buffs[#buffs + 1] =
+        {
+            name = 'quality_cargo_wagon',
+            discord = 'Grants rare cargo-wagon at start',
+            modifier = 'cargo-wagon',
+            limit = 1,
+            quality = 'rare',
+            dlc = true,
+            state = 1
+        }
+        buffs[#buffs + 1] =
+        {
+            name = 'quality_locomotive',
+            discord = 'Grants epic locomotive at start',
+            limit = 1,
+            quality = 'epic',
+            dlc = true,
+            state = 1
+        }
+        buffs[#buffs + 1] =
+        {
+            name = 'quality_cargo_wagon',
+            discord = 'Grants epic cargo-wagon at start',
+            modifier = 'cargo-wagon',
+            limit = 1,
+            quality = 'epic',
+            dlc = true,
+            state = 1
+        }
+        buffs[#buffs + 1] =
+        {
+            name = 'quality_locomotive',
+            discord = 'Grants legendary locomotive at start',
+            limit = 1,
+            quality = 'legendary',
+            dlc = true,
+            state = 1
+        }
+        buffs[#buffs + 1] =
+        {
+            name = 'quality_cargo_wagon',
+            discord = 'Grants legendary cargo-wagon at start',
+            limit = 1,
+            quality = 'legendary',
+            dlc = true,
+            state = 1
+        }
+        buffs[#buffs + 1] =
+        {
+            name = 'quality_buildings',
+            discord = 'Grants uncommon quality of buildings generating free loot!',
+            limit = 1,
+            quality = 'uncommon',
+            dlc = true,
+            state = 1
+        }
+        buffs[#buffs + 1] =
+        {
+            name = 'quality_buildings',
+            discord = 'Grants rare quality of buildings generating free loot!',
+            limit = 1,
+            quality = 'rare',
+            dlc = true,
+            state = 1
+        }
+        buffs[#buffs + 1] =
+        {
+            name = 'quality_buildings',
+            discord = 'Grants epic quality of buildings generating free loot!',
+            limit = 1,
+            quality = 'epic',
+            dlc = true,
+            state = 1
+        }
+        buffs[#buffs + 1] =
+        {
+            name = 'quality_buildings',
+            discord = 'Grants legendary quality of buildings generating free loot!',
+            limit = 1,
+            quality = 'legendary',
+            dlc = true,
+            state = 1
+        }
+    end
 
     if only_force then
         local force_buffs = {}
@@ -1648,7 +1663,7 @@ local function grant_non_limit_reached_buff()
 
     for index, data in pairs(all_buffs) do
         if not Public.is_modded_pt2 and data.dlc then
-            this.buffs[index] = nil
+            all_buffs[index] = nil
             break
         end
 
