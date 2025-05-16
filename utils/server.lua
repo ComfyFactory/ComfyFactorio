@@ -106,20 +106,34 @@ local antigrief_tag = '[ANTIGRIEF-LOG]'
 Public.raw_print = raw_print
 
 local function output_data(primary, secondary)
+    assert(primary, 'output_data - primary must be provided')
+
+    if type(primary) ~= 'string' then
+        primary = tostring(primary)
+    end
+
+    assert(primary:len() > 0, 'output_data - primary must be a non-empty string')
+
+    if type(secondary) == 'boolean' then
+        secondary = tostring(secondary)
+    end
+
+    -- Convert table-type secondaries
+    if type(secondary) == 'table' then
+        secondary = helpers.table_to_json(secondary)
+    end
+
+    local output = primary .. (secondary or '')
     local secs = server_time.secs
-    if secs == nil then
-        return raw_print(primary .. (secondary or ''))
+
+    if not secs or not start_data or not start_data.output then
+        return raw_print(output)
     end
 
-    secondary = type(secondary) == 'table' and '' or secondary
-
-    if start_data and start_data.output then
-        local write = helpers.write_file
-        write(start_data.output, primary .. (secondary or '') .. newline, true, 0)
-    else
-        raw_print(primary .. (secondary or ''))
-    end
+    -- Write to file if start_data.output is defined
+    helpers.write_file(start_data.output, output .. newline, true, 0)
 end
+
 
 local function assert_non_empty_string_and_no_spaces(str, argument_name)
     if type(str) ~= 'string' then
