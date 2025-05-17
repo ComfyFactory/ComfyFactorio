@@ -315,6 +315,7 @@ local function changed_surface(player)
     local main_toggle_button = get_top_frame_custom(player, main_toggle_button_name)
     local info = get_top_frame_custom(player, main_button_name)
     local wd = get_top_frame_custom(player, 'wave_defense')
+    local info_expanded = get_top_frame_custom(player, main_frame_name)
     local spectate = get_top_frame_custom(player, spectate_button_name)
     local minimap_button = get_top_frame_custom(player, 'minimap_button')
     local rpg_b = get_top_frame_custom(player, rpg_button)
@@ -374,9 +375,7 @@ local function changed_surface(player)
         if diff and not diff.visible then
             diff.visible = true
         end
-        if wd and not wd.visible then
-            wd.visible = true
-        end
+
         if spectate and not spectate.visible then
             spectate.visible = true
         end
@@ -387,10 +386,15 @@ local function changed_surface(player)
             charging_frame.enabled = true
         end
         if info then
+            if not (wd and wd.visible) or not (info_expanded and info_expanded.visible) then
+                info.sprite = 'utility/expand'
+            else
+                info.sprite = 'utility/collapse'
+            end
             info.tooltip = ({ 'gui.info_tooltip' })
-            info.sprite = 'utility/expand'
             info.visible = true
         end
+
         return
     elseif (player.physical_surface == wagon_surface or player.physical_position.x > 700) then
         if main_toggle_button and main_toggle_button.visible then
@@ -434,6 +438,9 @@ local function changed_surface(player)
             info.sprite = 'utility/map'
             info.visible = false
         end
+        if info_expanded and info_expanded.visible then
+            info_expanded.visible = false
+        end
         if get_top_frame(player) then
             if frame then
                 frame.visible = false
@@ -459,6 +466,12 @@ local function changed_surface(player)
     end
     if info and info.visible then
         info.visible = false
+    end
+    if info_expanded and info_expanded.visible then
+        info_expanded.visible = false
+    end
+    if wd and wd.visible then
+        wd.visible = false
     end
 end
 

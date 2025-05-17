@@ -1336,8 +1336,7 @@ local function apply_buffs()
                     end
                 end
                 if buff.modifier == 'locomotive' then
-                    local extra_wagons = Public.get('extra_wagons')
-                    if not extra_wagons then
+                    if not this.extra_wagons then
                         this.extra_wagons = buff.state
                     else
                         this.extra_wagons = this.extra_wagons + buff.state
@@ -1351,15 +1350,15 @@ local function apply_buffs()
                             discord = buff.discord
                         }
                     else
-                        if this.extra_wagons > 4 then
+                        if this.extra_wagons > 5 then
                             this.buffs_collected['locomotive'].count = this.extra_wagons
                         else
                             this.buffs_collected['locomotive'].count = this.extra_wagons + buff.state
                         end
                     end
 
-                    if this.extra_wagons > 4 then
-                        this.extra_wagons = 4
+                    if this.extra_wagons > 5 then
+                        this.extra_wagons = 5
                     end
                 end
                 if buff.name == 'quality_locomotive' then
@@ -1523,6 +1522,7 @@ local function apply_buffs()
         this.total_buffs = total_buffs
     end
     log('Applied all buffs.')
+    log('Total wagons this round: ' .. this.extra_wagons)
 end
 
 local function apply_startup_settings(settings)
@@ -2337,41 +2337,60 @@ Public.scale = scale
 Public.on_pre_player_died = on_pre_player_died
 Public.on_market_item_purchased = on_market_item_purchased
 
-Event.on_init(
-    function ()
-        local cbl = Task.get(apply_settings_token)
-        local data =
-        {
-            rounds_survived = 11,
-            season = 4,
-            test_mode = false,
-            buffs =
+if _DEBUG then
+    Event.on_init(
+        function ()
+            local cbl = Task.get(apply_settings_token)
+            local data =
             {
+                rounds_survived = 11,
+                season = 4,
+                test_mode = false,
+                buffs =
                 {
-                    name = 'steel_axe_unlocked',
-                    discord = 'Equipement tech - start with steel axe tech unlocked.',
-                    modifier = 'tech',
-                    limit = 1,
-                    add_per_buff = 1,
-                    techs =
                     {
-                        { name = 'steel-axe', count = 1 }
-                    }
+                        name = 'extra_wagons',
+                        discord = 'Extra wagon at start',
+                        modifier = 'locomotive',
+                        limit = 4,
+                        state = 1
+                    },
+                    {
+                        name = 'extra_wagons',
+                        discord = 'Extra wagon at start',
+                        modifier = 'locomotive',
+                        limit = 4,
+                        state = 1
+                    },
+                    {
+                        name = 'extra_wagons',
+                        discord = 'Extra wagon at start',
+                        modifier = 'locomotive',
+                        limit = 4,
+                        state = 1
+                    },
+                    {
+                        name = 'extra_wagons',
+                        discord = 'Extra wagon at start',
+                        modifier = 'locomotive',
+                        limit = 4,
+                        state = 1
+                    },
                 },
-            },
-            current_date = 2711187954
-        }
+                current_date = 2711187954
+            }
 
-        this.buffs = data.buffs
-        this.rounds_survived = data.rounds_survived
-        this.season = data.season
+            this.buffs = data.buffs
+            this.rounds_survived = data.rounds_survived
+            this.season = data.season
 
-        local settings =
-        {
-            value = data
-        }
-        cbl(settings)
-    end
-)
+            local settings =
+            {
+                value = data
+            }
+            cbl(settings)
+        end
+    )
+end
 
 return Public
