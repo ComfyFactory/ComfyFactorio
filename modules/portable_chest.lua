@@ -6,7 +6,8 @@ local m_gui = require 'mod-gui'
 local mod = m_gui.get_button_flow
 local SpamProtection = require 'utils.spam_protection'
 
-local this = {
+local this =
+{
     inf_chests = {},
     inf_storage = {},
     inf_gui = {},
@@ -19,7 +20,8 @@ local this = {
     stack_size = {}
 }
 
-local ore_names = {
+local ore_names =
+{
     ['coal'] = true,
     ['stone'] = true,
     ['iron-ore'] = true,
@@ -166,7 +168,8 @@ local function draw_main_frame(player, target, chest_id)
     end
     local p = target or player
     local frame =
-        player.gui.screen.add {
+        player.gui.screen.add
+        {
             type = 'frame',
             caption = p.name .. '´s private portable stash',
             direction = 'vertical',
@@ -181,7 +184,8 @@ local function draw_main_frame(player, target, chest_id)
 
     local tbl = controls.add { type = 'table', column_count = 1 }
     local btn =
-        tbl.add {
+        tbl.add
+        {
             type = 'sprite-button',
             tooltip = '[color=blue]Info![/color]\nYou can easily remove an item by left/right-clicking it.\n\nItems selected in the table below will remove all stacks except one from the player inventory.\nIf the stack-size is bigger in the personal stash than the players inventory stack then the players inventory will automatically refill from the personal stash.\n\n[color=red]Usage[/color]\nPressing the following keys will do the following actions:\nCTRL: Retrieves all stacks from clicked item\nSHIFT:Retrieves a stack from clicked item.\nStack-Size slider will always ensure that you have <x> amounts of stacks in your inventory.\n\n[color=red]Deleting[/color]\nDelete Mode: Will delete the clicked item instantly.',
             sprite = 'utility/questionmark'
@@ -203,7 +207,8 @@ local function draw_main_frame(player, target, chest_id)
     end
 
     local text =
-        tbl.add {
+        tbl.add
+        {
             type = 'label',
             caption = format('Stores unlimited quantity of items (up to ' .. amount_and_types .. ' types).\nRead the tooltip by hovering the question-mark above!')
         }
@@ -247,7 +252,8 @@ local function draw_main_frame(player, target, chest_id)
             this.viewing_player[player.index] = nil
         end
     end
-    this.inf_gui[player.index] = {
+    this.inf_gui[player.index] =
+    {
         item_frame = items,
         frame = frame,
         updated = false,
@@ -301,7 +307,8 @@ local function update_gui()
         local btn
         for item_name, item_count in pairs(items) do
             btn =
-                tbl.add {
+                tbl.add
+                {
                     type = 'sprite-button',
                     sprite = 'item/' .. item_name,
                     style = 'slot_button',
@@ -486,14 +493,14 @@ local function on_gui_elem_changed(event)
 
     if this.ores_only then
         if not ore_names[name] then
-            player.print('You can only stash ores and wood.', Color.warning)
+            player.print('You can only stash ores and wood.', { color = Color.warning })
             goto update
         end
     end
 
     if this.allow_barrels then
         if string.match(name, 'barrel') then
-            player.print('You can´t stash barrels.', Color.warning)
+            player.print('You can´t stash barrels.', { color = Color.warning })
             goto update
         end
     end
@@ -517,7 +524,8 @@ local function on_player_joined_game(event)
     end
     local chest_id = Gui.uid()
     if not this.player_chests[player.index] then
-        this.player_chests[player.index] = {
+        this.player_chests[player.index] =
+        {
             chest_id = chest_id
         }
     end
@@ -652,7 +660,7 @@ commands.add_command(
         local target_player = game.players[cmd.parameter]
 
         if target_player == player then
-            return player.print('Cannot open self.', Color.warning)
+            return player.print('Cannot open self.', { color = Color.warning })
         end
 
         if target_player.admin then
@@ -666,7 +674,7 @@ commands.add_command(
             end
             draw_main_frame(player, target_player, chest_id)
         else
-            player.print('Please type a valid player name.', Color.warning)
+            player.print('Please type a valid player name.', { color = Color.warning })
         end
     end
 )

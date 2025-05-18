@@ -72,12 +72,13 @@ local function get_players(player, frame, all)
 
     local selected_index = #tbl
 
-    local f = frame.add({
-        type = 'drop-down',
-        name = transfer_player_select_name,
-        items = tbl,
-        selected_index = selected_index
-    })
+    local f = frame.add(
+        {
+            type = 'drop-down',
+            name = transfer_player_select_name,
+            items = tbl,
+            selected_index = selected_index
+        })
     return f
 end
 
@@ -276,11 +277,12 @@ local function draw_destroy_surface_name(frame)
     local right_flow = bottom_flow.add({ type = 'flow' })
     right_flow.style.horizontal_align = 'right'
 
-    local save_button = right_flow.add({
-        type = 'button',
-        name = save_destroy_surface_button_name,
-        caption = ({ 'ic.save' })
-    })
+    local save_button = right_flow.add(
+        {
+            type = 'button',
+            name = save_destroy_surface_button_name,
+            caption = ({ 'ic.save' })
+        })
     save_button.style = 'confirm_button' ---@class GuiButtonStyle
     save_button.style.maximal_width = 100
 
@@ -386,16 +388,18 @@ local function draw_main_frame(player)
     local player_list = Functions.get_trusted_system(player)
 
     local add_player_frame = inside_table.add({ type = 'button', caption = ({ 'ic.add_player' }), name = add_player_name })
-    local transfer_car_frame = inside_table.add({
-        type = 'button',
-        caption = ({ 'ic.transfer_car' }),
-        name = transfer_car_name
-    })
-    local destroy_surface_frame = inside_table.add({
-        type = 'button',
-        caption = ({ 'ic.destroy_surface' }),
-        name = destroy_surface_name
-    })
+    local transfer_car_frame = inside_table.add(
+        {
+            type = 'button',
+            caption = ({ 'ic.transfer_car' }),
+            name = transfer_car_name
+        })
+    local destroy_surface_frame = inside_table.add(
+        {
+            type = 'button',
+            caption = ({ 'ic.destroy_surface' }),
+            name = destroy_surface_name
+        })
     local allow_anyone_to_enter =
         inside_table.add(
             {
@@ -432,7 +436,8 @@ local function draw_main_frame(player)
         )
 
     local player_table =
-        inside_table.add {
+        inside_table.add
+        {
             type = 'table',
             column_count = 4,
             draw_horizontal_lines = true,
@@ -488,7 +493,8 @@ local function draw_main_frame(player)
     operations_label.style.minimal_width = 75
     operations_label.style.horizontal_align = 'center'
 
-    local data = {
+    local data =
+    {
         player_table = player_table,
         add_player_frame = add_player_frame,
         transfer_car_frame = transfer_car_frame,
@@ -762,12 +768,12 @@ Gui.on_click(
             if player_list.notify_on_driver_change == 'right' then
                 player_list.notify_on_driver_change = 'left'
                 player.print('[IC] You will now be notified whenever someone not trusted tries to drive your car!',
-                    Color.success)
+                    { color = Color.success })
             else
                 player_list.notify_on_driver_change = 'right'
                 player.print(
                     '[IC] No notifications will be sent to you when someone not trusted tries to drive your car.',
-                    Color.warning)
+                    { color = Color.warning })
             end
 
             if player.gui.screen[main_frame_name] then
@@ -812,7 +818,7 @@ Gui.on_click(
 
                 if not player_list.players[name] then
                     player.print('[IC] ' .. name .. ' was added to your vehicle.', { color = Color.info })
-                    player_to_add.print(player.name .. ' added you to their vehicle. You may now enter it.', Color.info)
+                    player_to_add.print(player.name .. ' added you to their vehicle. You may now enter it.', { color = Color.info })
                     increment(player_list.players, name)
                 else
                     return player.print('[IC] Target player is already trusted.', { color = Color.warning })
@@ -872,7 +878,7 @@ Gui.on_click(
                 else
                     player.print('[IC] You have successfully transferred your car to ' .. name, { color = Color.success })
                     player_to_add.print('[IC] You have become the rightfully owner of ' .. player.name .. "'s car!",
-                        Color.success)
+                        { color = Color.success })
                 end
 
                 remove_main_frame(event.element)
@@ -920,7 +926,8 @@ Gui.on_click(
 
         local misc_settings = ICT.get('misc_settings')
         if not misc_settings[player.name] then
-            misc_settings[player.name] = {
+            misc_settings[player.name] =
+            {
                 first_warning = true
             }
 
@@ -933,7 +940,7 @@ Gui.on_click(
             misc_settings[player.name].final_warning = true
             player.print(
                 '[IC] WARNING! WARNING WARNING! Pressing the save button ONE MORE TIME will DELETE your surface. This action is irreversible!',
-                Color.red)
+                { color = Color.warning })
             Task.set_timeout_in_ticks(600, clear_misc_settings, { player_name = player.name })
             return
         end
@@ -949,14 +956,14 @@ Gui.on_click(
                 local position = entity.position
                 local suc, count = Functions.kill_car_but_save_surface(entity)
                 if suc then
-                    game.print('[IC] ' .. player.name .. ' has destroyed their surface!', Color.warning)
+                    game.print('[IC] ' .. player.name .. ' has destroyed their surface!', { color = Color.warning })
                     Discord.send_notification_raw(discord_name,
                         player.name ..
                         ' deleted their vehicle surface at x = ' .. position.x .. ' y = ' .. position.y .. '.')
                 else
                     player.print(
                         '[IC] Entities are still on the surface. Please remove any entities and retry this operation. Found ' ..
-                        count .. ' entities!', Color.warning)
+                        count .. ' entities!', { color = Color.warning })
                 end
             end
 

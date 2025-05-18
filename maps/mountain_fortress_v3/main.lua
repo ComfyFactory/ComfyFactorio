@@ -195,7 +195,7 @@ local has_the_game_ended = function ()
                     cause_msg = 'soft-reset'
                 end
 
-                game.print(({ 'main.reset_in', cause_msg, this.game_reset_tick / 60 }), { r = 0.22, g = 0.88, b = 0.22 })
+                game.print(({ 'main.reset_in', cause_msg, this.game_reset_tick / 60 }), { color = { r = 0.22, g = 0.88, b = 0.22 } })
             end
 
             if this.soft_reset and this.game_reset_tick == 0 then
@@ -208,7 +208,7 @@ local has_the_game_ended = function ()
             if this.restart and this.game_reset_tick == 0 then
                 if not this.announced_message then
                     Public.set_scores()
-                    game.print(({ 'entity.notify_restart' }), { r = 0.22, g = 0.88, b = 0.22 })
+                    game.print(({ 'entity.notify_restart' }), { color = { r = 0.22, g = 0.88, b = 0.22 } })
                     local message = 'Soft-reset is disabled! Server will restart from scenario to load new changes.'
                     Server.to_discord_bold(table.concat { '*** ', message, ' ***' })
                     Server.start_scenario('Mountain_Fortress_v3')
@@ -219,7 +219,7 @@ local has_the_game_ended = function ()
             if this.shutdown and this.game_reset_tick == 0 then
                 if not this.announced_message then
                     Public.set_scores()
-                    game.print(({ 'entity.notify_shutdown' }), { r = 0.22, g = 0.88, b = 0.22 })
+                    game.print(({ 'entity.notify_shutdown' }), { color = { r = 0.22, g = 0.88, b = 0.22 } })
                     local message = 'Soft-reset is disabled! Server will shutdown. Most likely because of updates.'
                     Server.to_discord_bold(table.concat { '*** ', message, ' ***' })
                     Server.stop_scenario()

@@ -21,7 +21,8 @@ local round = math.round
 local sub = string.sub
 local playtime_required_to_drive_train = 108000 --30 minutes
 
-local clear_items_upon_surface_entry = {
+local clear_items_upon_surface_entry =
+{
     ['entity-ghost'] = true,
     ['small-electric-pole'] = true,
     ['medium-electric-pole'] = true,
@@ -29,18 +30,21 @@ local clear_items_upon_surface_entry = {
     ['substation'] = true
 }
 
-local valid_armors = {
+local valid_armors =
+{
     ['modular-armor'] = true,
     ['power-armor'] = true,
     ['power-armor-mk2'] = true
 }
 
-local non_valid_vehicles = {
+local non_valid_vehicles =
+{
     ['car'] = true,
     ['spider-vehicle'] = true
 }
 
-local denied_train_types = {
+local denied_train_types =
+{
     ['locomotive'] = true,
     ['cargo-wagon'] = true,
     ['artillery-wagon'] = true
@@ -88,7 +92,8 @@ local function add_random_loot_to_main_market(rarity)
         end
 
         if not main_market_items[v.offer.item] then
-            main_market_items[v.offer.item] = {
+            main_market_items[v.offer.item] =
+            {
                 stack = stack,
                 value = value,
                 price = price,
@@ -103,7 +108,8 @@ local function death_effects(player)
     local position = { x = player.physical_position.x - 0.75, y = player.physical_position.y - 1 }
     local b = 0.75
     for _ = 1, 5, 1 do
-        local p = {
+        local p =
+        {
             (position.x + 0.4) + (b * -1 + math.random(0, b * 20) * 0.1),
             position.y + (b * -1 + math.random(0, b * 20) * 0.1)
         }
@@ -118,7 +124,8 @@ local function death_effects(player)
     player.play_sound { path = 'utility/axe_fighting', volume_modifier = 0.9 }
 end
 
-local messages = {
+local messages =
+{
     ' likes to play in magma.',
     ' got melted.',
     ' tried to swim in lava.',
@@ -202,7 +209,7 @@ local function hurt_players_outside_of_aura()
                         end
                         if death_mode then
                             if entity.name == 'character' then
-                                game.print(player.name .. messages[random(1, #messages)], { r = 200, g = 0, b = 0 })
+                                game.print(player.name .. messages[random(1, #messages)], { color = { r = 200, g = 0, b = 0 } })
                             end
                             if entity.valid then
                                 entity.die()
@@ -230,7 +237,7 @@ local function hurt_players_outside_of_aura()
                             if entity.valid then
                                 if entity.health - damage <= 0 then
                                     if entity.name == 'character' then
-                                        game.print(player.name .. messages[random(1, #messages)], { r = 200, g = 0, b = 0 })
+                                        game.print(player.name .. messages[random(1, #messages)], { color = { r = 200, g = 0, b = 0 } })
                                     end
                                 end
                             end
@@ -281,7 +288,8 @@ local function give_passive_xp(data)
                     local pos = player.physical_position
                     RPG.gain_xp(player, 0.5 * (rpg[player.index].bonus + upgrades.xp_points))
 
-                    player.create_local_flying_text {
+                    player.create_local_flying_text
+                    {
                         text = '+' .. '',
                         position = { x = pos.x, y = pos.y - 2 },
                         color = xp_floating_text_color,
@@ -668,7 +676,8 @@ function Public.boost_players_around_train()
     local unit_surface = locomotive.unit_number
     local locomotive_surface = game.surfaces[icw_table.wagons[unit_surface].surface.index]
 
-    local data = {
+    local data =
+    {
         surface = surface,
         locomotive_surface = locomotive_surface,
         rpg = rpg
@@ -705,7 +714,8 @@ function Public.is_around_train(entity)
     local surface = game.surfaces[active_surface_index]
     local upgrades = Public.get('upgrades')
 
-    local data = {
+    local data =
+    {
         locomotive = locomotive,
         surface = surface,
         entity = entity,
@@ -736,7 +746,8 @@ function Public.is_inside_zone(entity)
 
     local surface = game.surfaces[active_surface_index]
 
-    local data = {
+    local data =
+    {
         locomotive = locomotive,
         surface = surface,
         entity = entity
@@ -770,7 +781,8 @@ function Public.render_train_hp()
 
     Public.set(
         'health_text',
-        rendering.draw_text {
+        rendering.draw_text
+        {
             text = 'HP: ' .. locomotive_health .. ' / ' .. locomotive_max_health,
             surface = surface,
             target = locomotive,
@@ -784,7 +796,8 @@ function Public.render_train_hp()
 
     Public.set(
         'caption',
-        rendering.draw_text {
+        rendering.draw_text
+        {
             text = 'Comfy Choo Choo',
             surface = surface,
             target = locomotive_cargo,
@@ -798,7 +811,8 @@ function Public.render_train_hp()
 
     Public.set(
         'circle',
-        rendering.draw_circle {
+        rendering.draw_circle
+        {
             surface = surface,
             target = locomotive,
             color = locomotive.color,

@@ -549,7 +549,7 @@ local function kick_player_from_surface(player, target)
                 else
                     target.teleport(main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0), main_surface)
                 end
-                target.print('You were kicked out of ' .. player.name .. ' vehicle.', Color.warning)
+                target.print('You were kicked out of ' .. player.name .. ' vehicle.', { color = Color.warning })
             end
         end
     end

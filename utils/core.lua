@@ -28,7 +28,7 @@ local Public = {}
 -- @param color <table> the color to use for the message, defaults to white
 function Public.print_except(msg, player, color)
     if not color then
-        color = Color.white
+        color = { color = Color.white }
     end
 
     for _, p in pairs(game.connected_players) do
@@ -346,7 +346,7 @@ end
 -- @param msg <string> The message to print
 -- @param warning_prefixes <string> The name of the module/warning
 function Public.action_warning(warning_prefixes, msg)
-    game.print(prefix .. msg, Color.yellow)
+    game.print(prefix .. msg, { color = Color.yellow })
     msg = format('%s %s', warning_prefixes, msg)
     print(msg)
     Server.to_discord_bold(msg)
@@ -357,7 +357,7 @@ end
 function Public.action_notify_admins(msg)
     for _, p in pairs(game.connected_players) do
         if p.admin then
-            p.print(msg, Color.yellow)
+            p.print(msg, { color = Color.yellow })
         end
     end
     print(msg)
@@ -367,7 +367,7 @@ end
 -- @param msg <string> The message to print
 -- @param warning_prefixes <string> The name of the module/warning
 function Public.action_warning_embed(warning_prefixes, msg)
-    game.print(prefix .. msg, Color.yellow)
+    game.print(prefix .. msg, { color = Color.yellow })
     msg = format('%s %s', warning_prefixes, msg)
     print(msg)
     Server.to_discord_embed(msg)
@@ -387,7 +387,7 @@ end
 -- @param warning_prefixes <string> The name of the module/warning
 -- @param player <LuaPlayer> the player not to send the message to
 function Public.silent_action_warning(warning_prefixes, msg, player)
-    Public.print_except(prefix .. msg, player, Color.yellow)
+    Public.print_except(prefix .. msg, player, { color = Color.yellow })
     msg = format('%s %s', warning_prefixes, msg)
     print(msg)
     Server.to_discord_bold(msg)

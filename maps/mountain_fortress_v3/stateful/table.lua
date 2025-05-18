@@ -1574,7 +1574,7 @@ local function apply_startup_settings(settings)
         game.print(message)
         Server.to_discord_embed(message_discord, true)
 
-        game.print(({ 'entity.notify_shutdown' }), { r = 0.22, g = 0.88, b = 0.22 })
+        game.print(({ 'entity.notify_shutdown' }), { color = { r = 0.22, g = 0.88, b = 0.22 } })
         local notify_shutdown = ({ 'entity.shutdown_game' })
         Server.to_discord_bold(notify_shutdown, true)
 

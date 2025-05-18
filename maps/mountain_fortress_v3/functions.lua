@@ -21,6 +21,7 @@ local Session = require 'utils.datastore.session_data'
 local ICMinimap = require 'maps.mountain_fortress_v3.ic.minimap'
 local Score = require 'utils.gui.score'
 local Gui = require 'utils.gui'
+local FunctionColor = { r = 0.98, g = 0.66, b = 0.22 }
 
 local zone_settings = Public.zone_settings
 local remove_boost_movement_speed_on_respawn
@@ -2216,7 +2217,7 @@ function Public.render_direction(surface, reversed)
                 text = text .. '\nRun: ' .. counter,
                 surface = surface,
                 target = { -0, 10 },
-                color = { r = 0.98, g = 0.66, b = 0.22 },
+                color = FunctionColor,
                 scale = 3,
                 font = 'heading-1',
                 alignment = 'center',
@@ -2228,7 +2229,7 @@ function Public.render_direction(surface, reversed)
                 text = text,
                 surface = surface,
                 target = { -0, 10 },
-                color = { r = 0.98, g = 0.66, b = 0.22 },
+                color = FunctionColor,
                 scale = 3,
                 font = 'heading-1',
                 alignment = 'center',
@@ -2248,7 +2249,7 @@ function Public.render_direction(surface, reversed)
                     text = '▲',
                     surface = surface,
                     target = { -0, -20 - inc },
-                    color = { r = 0.98, g = 0.66, b = 0.22 },
+                    color = FunctionColor,
                     scale = 3,
                     font = 'heading-1',
                     alignment = 'center',
@@ -2261,7 +2262,7 @@ function Public.render_direction(surface, reversed)
                 text = 'Biters will attack this area.',
                 surface = surface,
                 target = { -0, -70 },
-                color = { r = 0.98, g = 0.66, b = 0.22 },
+                color = FunctionColor,
                 scale = 3,
                 font = 'heading-1',
                 alignment = 'center',
@@ -2277,7 +2278,7 @@ function Public.render_direction(surface, reversed)
                     text = '▼',
                     surface = surface,
                     target = { -0, 20 + inc },
-                    color = { r = 0.98, g = 0.66, b = 0.22 },
+                    color = FunctionColor,
                     scale = 3,
                     font = 'heading-1',
                     alignment = 'center',
@@ -2290,7 +2291,7 @@ function Public.render_direction(surface, reversed)
                 text = 'Biters will attack this area.',
                 surface = surface,
                 target = { -0, 70 },
-                color = { r = 0.98, g = 0.66, b = 0.22 },
+                color = FunctionColor,
                 scale = 3,
                 font = 'heading-1',
                 alignment = 'center',
@@ -2798,7 +2799,7 @@ function Public.on_player_changed_position(event)
                 if player.character.health == 0 then
                     player.character.die()
                     local message = ({ 'main.death_message_' .. random(1, 7), player.name })
-                    game.print(message, { r = 0.98, g = 0.66, b = 0.22 })
+                    game.print(message, { color = FunctionColor })
                 end
             end
         end
@@ -2809,7 +2810,7 @@ function Public.on_player_changed_position(event)
             if player.character ~= nil then
                 player.character.teleport({ position.x, position.y + 1 }, surface)
             end
-            player.print(({ 'main.forcefield' }), { r = 0.98, g = 0.66, b = 0.22 })
+            player.print(({ 'main.forcefield' }), { color = FunctionColor })
             if player.character then
                 player.character.health = player.character.health - 5
                 player.character.surface.create_entity({ name = 'water-splash', position = position })
@@ -2823,7 +2824,7 @@ function Public.on_player_changed_position(event)
             if player.character ~= nil then
                 player.character.teleport({ position.x, position.y - 1 }, surface)
             end
-            player.print(({ 'main.forcefield' }), { r = 0.98, g = 0.66, b = 0.22 })
+            player.print(({ 'main.forcefield' }), { color = FunctionColor })
             if player.character then
                 player.character.health = player.character.health - 5
                 player.character.surface.create_entity({ name = 'water-splash', position = position })

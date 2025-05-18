@@ -23,7 +23,8 @@ local floor = math.floor
 local random = math.random
 local abs = math.abs
 
-local this = {
+local this =
+{
     enabled = true,
     max_count_decon = 1500,
     landfill_history = {},
@@ -62,7 +63,8 @@ local this = {
     admin_button_validation = {}
 }
 
-local ammo_names = {
+local ammo_names =
+{
     ['artillery-targeting-remote'] = true,
     ['poison-capsule'] = true,
     ['cluster-grenade'] = true,
@@ -72,7 +74,8 @@ local ammo_names = {
     ['rocket'] = true
 }
 
-local chests = {
+local chests =
+{
     ['container'] = true,
     ['logistic-container'] = true
 }
@@ -154,13 +157,14 @@ local function damage_player(player, kill, print_to_all)
         if kill then
             player.character.die('enemy')
             if print_to_all then
-                game.print(player.name .. msg, Color.yellow)
+                game.print(player.name .. msg, { color = Color.yellow })
             end
             return
         end
         player.character.health = player.character.health - random(50, 100)
         player.character.surface.create_entity({ name = 'water-splash', position = player.position })
-        local messages = {
+        local messages =
+        {
             'Ouch.. That hurt! Better be careful now.',
             'Just a fleshwound.',
             'Better keep those hands to yourself or you might loose them.'
@@ -168,7 +172,7 @@ local function damage_player(player, kill, print_to_all)
         player.print(messages[random(1, #messages)], { color = Color.yellow })
         if player.character.health <= 0 then
             player.character.die('enemy')
-            game.print(player.name .. msg, Color.yellow)
+            game.print(player.name .. msg, { color = Color.yellow })
             return
         end
     end
@@ -699,7 +703,8 @@ local function on_console_command(event)
         return
     end
 
-    local valid_commands = {
+    local valid_commands =
+    {
         ['r'] = true,
         ['whisper'] = true
     }
@@ -957,7 +962,8 @@ local function on_player_deconstructed_area(event)
     if next(this.filtered_types_on_decon) then
         local filtered_count = surface.count_entities_filtered({ area = area, type = this.filtered_types_on_decon })
         if filtered_count and filtered_count > 0 then
-            surface.cancel_deconstruct_area {
+            surface.cancel_deconstruct_area
+            {
                 area = area,
                 force = player.force
             }
@@ -965,7 +971,8 @@ local function on_player_deconstructed_area(event)
     end
 
     if count and count >= max_count then
-        surface.cancel_deconstruct_area {
+        surface.cancel_deconstruct_area
+        {
             area = area,
             force = player.force
         }
@@ -1134,11 +1141,13 @@ local function on_player_muted(event)
 
     local player = game.get_player(event.player_index)
 
-    local message = {
+    local message =
+    {
         title = 'Muted :mute:',
         description = 'A player was muted.',
         color = 'failure',
-        field1 = {
+        field1 =
+        {
             text1 = 'Player:',
             text2 = player.name,
             inline = 'false'
@@ -1154,11 +1163,13 @@ local function on_player_unmuted(event)
 
     local player = game.get_player(event.player_index)
 
-    local message = {
+    local message =
+    {
         title = 'Unmuted :speaker:',
         description = 'A player was unmuted.',
         color = 'success',
-        field1 = {
+        field1 =
+        {
             text1 = 'Player:',
             text2 = player.name,
             inline = 'false'

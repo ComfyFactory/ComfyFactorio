@@ -43,7 +43,7 @@ if (debug.sethook) then
             if player ~= nil then
                 if not player.admin then
                     local p = player.print
-                    p('[ERROR] Only admins are allowed to run this command!', Color.fail)
+                    p('[ERROR] Only admins are allowed to run this command!', { color = Color.fail })
                     return
                 else
                     if allowed[player.name] then
@@ -61,7 +61,7 @@ if (debug.sethook) then
             if player ~= nil then
                 if not player.admin then
                     local p = player.print
-                    p('[ERROR] Only admins are allowed to run this command!', Color.fail)
+                    p('[ERROR] Only admins are allowed to run this command!', { color = Color.fail })
                     return
                 else
                     if allowed[player.name] then

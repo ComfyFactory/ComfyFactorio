@@ -49,7 +49,7 @@ local function check_burden(event)
     Modifier.update_single_modifier(player, 'character_mining_speed_modifier', 'randomness', 0.3 - fullness)
     Modifier.update_player_modifiers(player)
     if fullness >= 0.9 and fullness <= 0.901 then
-        player.print('Maybe you should drop some of that inventory to lessen the burden.', Color.red)
+        player.print('Maybe you should drop some of that inventory to lessen the burden.', { color = Color.red })
     end
 end
 

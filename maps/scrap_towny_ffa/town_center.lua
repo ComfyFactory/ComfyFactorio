@@ -585,12 +585,12 @@ local function rename_town(cmd)
     end
     local force = player.force
     if force.name == 'player' or force.name == 'rogue' then
-        player.print('You are not member of a town!', Color.fail)
+        player.print('You are not member of a town!', { color = Color.fail })
         return
     end
     local name = cmd.parameter
     if name == nil then
-        player.print('Must specify new town name!', Color.fail)
+        player.print('Must specify new town name!', { color = Color.fail })
         return
     end
     local this = ScenarioTable.get_table()

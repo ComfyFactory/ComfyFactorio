@@ -833,7 +833,7 @@ local function draw_orbit_gui(player)
     if not this.annihilate_gui_button then
         this.annihilate_gui_button = true
         for _ = 1, 5 do
-            player.print('>> You are in orbit. Use the button to annihilate the planet.', { color = Color.warning, skip = defines.print_skip.never })
+            player.print('>> You are in orbit. Use the button to annihilate the planet.', { color = Color.warning })
         end
     end
     player.gui.left.add(button)
@@ -943,24 +943,24 @@ local function on_gui_click(e)
         if perks.chat_global then
             elem.caption = 'NAP chat'
             perks.chat_global = false
-            p.print('Global chat is disabled.', Color.success)
+            p.print('Global chat is disabled.', { color = Color.success })
         else
             elem.caption = 'Global chat'
             perks.chat_global = true
-            p.print('Global chat is enabled.', Color.success)
+            p.print('Global chat is enabled.', { color = Color.success })
         end
     elseif elem.name == 'flashlight_toggle' then
         if perks.flashlight_enable then
             perks.flashlight_enable = false
             if p.character and p.character.valid then
                 p.character.disable_flashlight()
-                p.print('Flashlight is disabled.', Color.success)
+                p.print('Flashlight is disabled.', { color = Color.success })
             end
         else
             perks.flashlight_enable = true
             if p.character and p.character.valid then
                 p.character.enable_flashlight()
-                p.print('Flashlight is enabled.', Color.success)
+                p.print('Flashlight is enabled.', { color = Color.success })
             end
         end
     elseif elem.name == 'merchant_find' then
@@ -1002,7 +1002,7 @@ init_player = function (p, non_tp)
     local surface = get_arena_map()
 
     if #game.forces > 62 then
-        p.print('>> Too many players on the server. Please wait for a slot to open up.', Color.error)
+        p.print('>> Too many players on the server. Please wait for a slot to open up.', { color = Color.fail })
         p.teleport({ 0, 0 }, surface.name)
         local s = p.surface
         local position = get_non_obstructed_position(s, 10)
@@ -1659,20 +1659,20 @@ local function on_player_dropped_item(e)
 
 
         if game.forces[peer_force] and p.force.get_cease_fire(peer_force) then
-            p.print(string.format(">> You're in the NAP with %s already", peer.name), Color.warning)
+            p.print(string.format(">> You're in the NAP with %s already", peer.name), { color = Color.warning })
             return
         end
 
         if this.last_friend[peer.name] == p.name then
-            p.print(string.format('>> The NAP was formed with %s', peer.name), Color.success)
-            peer.print(string.format('>> The NAP was formed with %s', p.name), Color.success)
+            p.print(string.format('>> The NAP was formed with %s', peer.name), { color = Color.success })
+            peer.print(string.format('>> The NAP was formed with %s', p.name), { color = Color.success })
 
             if this.last_friend_initiated[peer.name] then
                 if game.forces[player_force] then
                     game.merge_forces(player_force, peer_force)
                     this.perks[p.name].merged = true
-                    p.print(string.format('>> You merged forces with %s', peer.name), Color.success)
-                    peer.print(string.format('>> %s merged forces with your force!', p.name), Color.success)
+                    p.print(string.format('>> You merged forces with %s', peer.name), { color = Color.success })
+                    peer.print(string.format('>> %s merged forces with your force!', p.name), { color = Color.success })
                     this.last_friend_initiated[peer.name] = nil
                 end
             end
@@ -1685,8 +1685,8 @@ local function on_player_dropped_item(e)
 
         this.last_friend[p.name] = peer.name
         this.last_friend_initiated[p.name] = true
-        p.print(string.format('>> You want to form the NAP with %s', peer.name), Color.warning)
-        peer.print(string.format('>> %s wants to form NAP with you', p.name), Color.warning)
+        p.print(string.format('>> You want to form the NAP with %s', peer.name), { color = Color.warning })
+        peer.print(string.format('>> %s wants to form NAP with you', p.name), { color = Color.warning })
     elseif ent.stack.name == 'coal' then
         local ent_list =
             p.surface.find_entities_filtered(
@@ -1715,7 +1715,7 @@ local function on_player_dropped_item(e)
         local peer_force = get_player_force(peer)
 
         if game.forces[peer_force] and p.force.name ~= peer_force and not p.force.get_cease_fire(peer_force) then
-            p.print(string.format(">> You don't have the NAP with %s", p.name), Color.warning)
+            p.print(string.format(">> You don't have the NAP with %s", p.name), { color = Color.warning })
             return
         end
 
@@ -1728,8 +1728,8 @@ local function on_player_dropped_item(e)
 
         this.last_friend[p.name] = ''
         this.last_friend[peer.name] = ''
-        p.print(string.format(">> You're no longer in the NAP with %s", peer.name), Color.warning)
-        peer.print(string.format(">> You're no longer in the NAP with %s", p.name), Color.warning)
+        p.print(string.format(">> You're no longer in the NAP with %s", peer.name), { color = Color.warning })
+        peer.print(string.format(">> You're no longer in the NAP with %s", p.name), { color = Color.warning })
     end
 end
 
@@ -1916,8 +1916,8 @@ local function on_market_item_purchased(e)
     if o.effect_description == 'Construct a GPS receiver' then
         perks.minimap = true
         p.minimap_enabled = true
-        p.print('You bought the GPS receiver!', Color.success)
-        p.print('(unlocked minimap)', Color.success)
+        p.print('You bought the GPS receiver!', { color = Color.success })
+        p.print('(unlocked minimap)', { color = Color.success })
     end
 end
 
@@ -2050,14 +2050,14 @@ local function on_rocket_launch_ordered(e)
     end
 
     local entity = e.rocket and e.rocket and e.rocket.valid and e.rocket
-    surf.print('>> The rocket was launched', Color.warning)
+    surf.print('>> The rocket was launched', { color = Color.warning })
 
     local rocket_inventory = e.rocket.cargo_pod.get_inventory(defines.inventory.cargo_unit)
     local slot = rocket_inventory[1]
     if slot and slot.valid and slot.valid_for_read then
         if slot.name == 'satellite' then
             local force = entity.force
-            surf.print(string.format('>> %s has won this round!', string.gsub(force.name, '_custom', '')), Color.warning)
+            surf.print(string.format('>> %s has won this round!', string.gsub(force.name, '_custom', '')), { color = Color.warning })
             Server.to_discord_embed(string.gsub(force.name, '_custom', '') .. ' has launched the rocket and won the game!')
 
             for _, player in pairs(force.connected_players) do

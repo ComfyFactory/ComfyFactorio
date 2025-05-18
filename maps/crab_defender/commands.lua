@@ -8,7 +8,7 @@ local mapkeeper = '[color=blue]Mapkeeper:[/color]'
 commands.add_command(
     'scenario',
     'Usable only for admins - controls the scenario!',
-    function(cmd)
+    function (cmd)
         local p
         local player = game.player
 
@@ -83,9 +83,9 @@ commands.add_command(
         elseif param == 'reset' then
             this.reset_are_you_sure = nil
             if player and player.valid then
-                game.print(mapkeeper .. ' ' .. player.name .. ', has reset the game!', {r = 0.98, g = 0.66, b = 0.22})
+                game.print(mapkeeper .. ' ' .. player.name .. ', has reset the game!', { r = 0.98, g = 0.66, b = 0.22 })
             else
-                game.print(mapkeeper .. ' server, has reset the game!', {r = 0.98, g = 0.66, b = 0.22})
+                game.print(mapkeeper .. ' server, has reset the game!', { r = 0.98, g = 0.66, b = 0.22 })
             end
             reset_map()
             p('[WARNING] Game has been reset!')
@@ -97,7 +97,7 @@ commands.add_command(
 commands.add_command(
     'set_queue_speed',
     'Usable only for admins - sets the queue speed of this map!',
-    function(cmd)
+    function (cmd)
         local p
         local player = game.player
         local param = tonumber(cmd.parameter)
@@ -106,7 +106,7 @@ commands.add_command(
             if player ~= nil then
                 p = player.print
                 if not player.admin then
-                    p("[ERROR] You're not admin!", Color.fail)
+                    p("[ERROR] You're not admin!", { color = Color.fail })
                     return
                 end
                 if not param then
@@ -126,7 +126,7 @@ commands.add_command(
 commands.add_command(
     'get_queue_speed',
     'Usable only for admins - gets the queue speed of this map!',
-    function()
+    function ()
         local p
         local player = game.player
 
@@ -134,7 +134,7 @@ commands.add_command(
             if player ~= nil then
                 p = player.print
                 if not player.admin then
-                    p("[ERROR] You're not admin!", Color.fail)
+                    p("[ERROR] You're not admin!", { color = Color.fail })
                     return
                 end
                 p(Task.get_queue_speed())
