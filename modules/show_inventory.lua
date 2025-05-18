@@ -22,6 +22,7 @@ Global.register(
 )
 
 local main_frame_name = Gui.uid_name()
+local close_main_frame_name = Gui.uid_name()
 
 local space =
 {
@@ -194,9 +195,6 @@ local function redraw_inventory(gui, source, target, caption, panel_type)
         return
     end
 
-    local inventory_gui = screen[main_frame_name]
-    inventory_gui.caption = 'Inventory of ' .. target.name
-
     for i = 1, #panel_type do
         if panel_type[i] and panel_type[i].valid_for_read then
             local name = panel_type[i].name
@@ -310,15 +308,7 @@ local function open_inventory(source, target)
         close_player_inventory(source)
     end
 
-    local frame =
-        screen.add(
-            {
-                type = 'frame',
-                caption = 'Inventory',
-                direction = 'vertical',
-                name = main_frame_name
-            }
-        )
+    local frame = Gui.add_main_frame_with_toolbar(source, 'screen', main_frame_name, nil, close_main_frame_name, 'Inventory of ' .. target.name)
 
     if not (frame and frame.valid) then
         return
@@ -411,6 +401,12 @@ local function on_gui_click(event)
             return false
         end
 
+        if viewingPlayer.controller_type == defines.controllers.remote then
+            player.print('[Inventory] This player is currently in remote-view and has no character association. Please try again later.', { color = Color.warning })
+            close_player_inventory(player)
+            return
+        end
+
         local frame = Public.get_active_frame(player)
 
         if frame then
@@ -442,6 +438,11 @@ local function update_gui(event)
 
     local frame = Public.get_active_frame(source_player)
     if frame and frame.valid then
+        if player.controller_type == defines.controllers.remote then
+            source_player.print('[Inventory] ' .. player.name .. ' switched to remote-view. We cannot track inventory changes.')
+            close_player_inventory(source_player)
+            return
+        end
         local callback = get_inventory_type(player, source_data.last_tab)
         if frame.name == source_data.last_tab .. 'tab' then
             redraw_inventory(frame, source_player, player, source_data.last_tab, callback)
@@ -461,14 +462,14 @@ Commands.new('inventory', 'Open another players inventory')
                 local valid, opened = player_opened(player)
                 if valid then
                     if target.index == opened then
-                        player.print('You are already viewing this players inventory.', Color.warning)
+                        player.print('You are already viewing this players inventory.', { color = Color.warning })
                         return false
                     end
                 end
 
                 open_inventory(player, target)
             else
-                player.print('[Inventory] Please type a name of a player who is connected.', Color.warning)
+                player.print('[Inventory] Please type a name of a player who is connected.', { color = Color.warning })
             end
         end
     )
@@ -484,7 +485,7 @@ function Public.show_inventory(player, target_player)
     local valid, opened = player_opened(player)
     if valid then
         if target_player.index == opened then
-            player.print('You are already viewing this players inventory.', Color.warning)
+            player.print('You are already viewing this players inventory.', { color = Color.warning })
             return false
         end
     end
@@ -493,16 +494,37 @@ function Public.show_inventory(player, target_player)
         open_inventory(player, target_player)
         return true
     else
-        player.print('[Inventory] Please type a valid player name.', Color.warning)
+        player.print('[Inventory] Please type a valid player name.', { color = Color.warning })
         return false
     end
 end
 
 function Public.get_active_frame(player)
-    if not player.gui.screen[main_frame_name] then
+    if not (player and player.valid) then
         return false
     end
-    return player.gui.screen[main_frame_name].tabbed_pane.tabs[player.gui.screen[main_frame_name].tabbed_pane.selected_tab_index].content
+
+    local screen = player.gui.screen
+    local frame = screen[main_frame_name]
+
+    if not frame or not frame.valid then
+        return false
+    end
+
+    local tabbed_pane = frame.tabbed_pane
+
+    if not tabbed_pane or not tabbed_pane.valid or not tabbed_pane.tabs or not tabbed_pane.selected_tab_index then
+        return false
+    end
+
+    local selected_tab_index = tabbed_pane.selected_tab_index
+    local selected_tab = tabbed_pane.tabs[selected_tab_index]
+
+    if not selected_tab or not selected_tab.content or not selected_tab.content.valid then
+        return false
+    end
+
+    return selected_tab.content
 end
 
 function Public.get(key)
@@ -521,6 +543,18 @@ end
 
 Gui.on_custom_close(
     main_frame_name,
+    function (event)
+        local player = game.get_player(event.player_index)
+        if not player or not this.data[player.index] then
+            return
+        end
+
+        close_player_inventory(player)
+    end
+)
+
+Gui.on_click(
+    close_main_frame_name,
     function (event)
         local player = game.get_player(event.player_index)
         if not player or not this.data[player.index] then

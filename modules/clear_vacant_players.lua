@@ -71,6 +71,18 @@ local zoom_to_pos_token =
                 time_to_wait = 10,
             }
 
+            if not cutscene_1 or not cutscene_2 then
+                return
+            end
+
+            if not cutscene_1.position or not cutscene_2.position then
+                return
+            end
+
+            if not player.position or not player.surface then
+                return
+            end
+
             player.set_controller(
                 {
                     type = defines.controllers.cutscene,
