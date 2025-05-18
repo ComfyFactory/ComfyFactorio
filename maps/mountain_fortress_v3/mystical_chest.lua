@@ -6,6 +6,7 @@ local RPG = require 'modules.rpg.main'
 local Alert = require 'utils.alert'
 local Task = require 'utils.task_token'
 local StatData = require 'utils.datastore.statistics'
+local Commands = require 'utils.commands'
 
 local zone_settings = Public.zone_settings
 local shuffle = table.shuffle_table
@@ -29,25 +30,25 @@ local techs_to_research =
 
 local ammo_to_research =
 {
-    'firearm-magazine',
-    'piercing-rounds-magazine',
-    'uranium-rounds-magazine',
-    'shotgun-shell',
-    'piercing-shotgun-shell',
-    'cannon-shell',
-    'explosive-cannon-shell',
-    'uranium-cannon-shell',
-    'explosive-uranium-cannon-shell',
-    'rocket',
-    'explosive-rocket',
-    'flamethrower-ammo',
-    'grenade',
-    'cluster-grenade',
-    'poison-capsule',
-    'slowdown-capsule',
-    'defender-capsule',
-    'distractor-capsule',
-    'destroyer-capsule'
+    ['firearm-magazine'] = { tech = 'automation' },
+    ['piercing-rounds-magazine'] = { tech = 'military-2' },
+    ['uranium-rounds-magazine'] = { tech = 'uranium-ammo' },
+    ['shotgun-shell'] = { tech = 'military' },
+    ['piercing-shotgun-shell'] = { tech = 'military-4' },
+    ['cannon-shell'] = { tech = 'military' },
+    ['explosive-cannon-shell'] = { tech = 'military-3' },
+    ['uranium-cannon-shell'] = { tech = 'uranium-ammo' },
+    ['explosive-uranium-cannon-shell'] = { tech = 'military-3' },
+    ['rocket'] = { tech = 'rocketry' },
+    ['explosive-rocket'] = { tech = 'explosive-rocketry' },
+    ['flamethrower-ammo'] = { tech = 'flamethrower' },
+    ['grenade'] = { tech = 'military-2' },
+    ['cluster-grenade'] = { tech = 'military-4' },
+    ['poison-capsule'] = { tech = 'military-3' },
+    ['slowdown-capsule'] = { tech = 'military-3' },
+    ['defender-capsule'] = { tech = 'military-3' },
+    ['distractor-capsule'] = { tech = 'military-4' },
+    ['destroyer-capsule'] = { tech = 'military-4' }
 }
 
 local item_worths =
@@ -351,9 +352,9 @@ local mc_random_rewards =
 
             local techs = game.forces.player.technologies
 
-            for _, tech in pairs(ammo_to_research) do
-                if techs[tech] and techs[tech].researched then
-                    mystical_chest.insert({ name = tech, count = random(200, 400) })
+            for name, tech in pairs(ammo_to_research) do
+                if techs[tech.tech] and techs[tech.tech].researched then
+                    mystical_chest.insert({ name = name, count = random(200, 400) })
                 end
             end
 
@@ -737,5 +738,17 @@ Public.init_price_check = init_price_check
 Event.add(defines.events.on_gui_opened, on_gui_opened)
 Event.add(defines.events.on_gui_closed, on_gui_closed)
 Event.add(defines.events.on_gui_click, on_gui_click)
+
+if _DEBUG then
+    Commands.new('mtn_mystical_reward', 'Brings up the mystical chest reward system')
+        :require_admin()
+        :require_validation()
+        :callback(
+            function (player, _)
+                if player and player.valid then
+                    mystical_chest_reward(player)
+                end
+            end)
+end
 
 return Public
