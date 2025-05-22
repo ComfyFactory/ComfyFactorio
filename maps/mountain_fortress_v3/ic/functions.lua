@@ -20,7 +20,8 @@ if is_modded then
     out_of_map_tile = 'void-tile'
 end
 
-local messages = {
+local messages =
+{
     ' vehicle was nibbled to death.',
     ' vehicle should not have played with the biters.',
     ' vehicle is biter scrap.',
@@ -31,18 +32,20 @@ local messages = {
     ' vehicle met a squishy end.'
 }
 
-local valid_combinations = {
+local valid_combinations =
+{
     ["car"] = { ["car"] = true, ["tank"] = true, ["spidertron"] = true },
     ["tank"] = { ["tank"] = true, ["spidertron"] = true },
     ["spidertron"] = { ["spidertron"] = true }
 }
 
-local valid_quality_combinations = {
-    ["normal"] = { ["uncommon"] = true, ["rare"] = true, ["epic"] = true, ["legendary"] = true },
-    ["uncommon"] = { ["rare"] = true, ["epic"] = true, ["legendary"] = true },
-    ["rare"] = { ["epic"] = true, ["legendary"] = true },
-    ["epic"] = { ["legendary"] = true },
-    ["legendary"] = {}
+local valid_quality_combinations =
+{
+    ["normal"] = { ["normal"] = true, ["uncommon"] = true, ["rare"] = true, ["epic"] = true, ["legendary"] = true },
+    ["uncommon"] = { ["uncommon"] = true, ["rare"] = true, ["epic"] = true, ["legendary"] = true },
+    ["rare"] = { ["rare"] = true, ["epic"] = true, ["legendary"] = true },
+    ["epic"] = { ["epic"] = true, ["legendary"] = true },
+    ["legendary"] = { ["legendary"] = true }
 }
 
 local function validate_entity(entity)
@@ -91,7 +94,8 @@ local enable_car_to_be_mined =
             if entity and entity.valid then
                 entity.minable_flag = true
                 local msg = owner_name .. "'s vehicle is now minable!"
-                local p = {
+                local p =
+                {
                     position = entity.position
                 }
                 Alert.alert_all_players_location(p, msg, nil, 30)
@@ -102,8 +106,10 @@ local enable_car_to_be_mined =
 local function get_trusted_system(player)
     local trust_system = IC.get('trust_system')
     if not trust_system[player.name] then
-        trust_system[player.name] = {
-            players = {
+        trust_system[player.name] =
+        {
+            players =
+            {
                 [player.name] = { trusted = true, drive = true }
             },
             allow_anyone = 'left',
@@ -129,7 +135,8 @@ local function upperCase(str)
 end
 
 local function render_owner_text(renders, player, entity, new_owner)
-    local color = {
+    local color =
+    {
         r = player.color.r * 0.6 + 0.25,
         g = player.color.g * 0.6 + 0.25,
         b = player.color.b * 0.6 + 0.25,
@@ -147,7 +154,8 @@ local function render_owner_text(renders, player, entity, new_owner)
 
     if new_owner then
         renders[new_owner.name] =
-            rendering.draw_text {
+            rendering.draw_text
+            {
                 text = '## - ' .. new_owner.name .. "'s " .. ce_name .. ' - ##',
                 surface = entity.surface,
                 target = { entity = entity, offset = { 0, -2.6 } },
@@ -159,7 +167,8 @@ local function render_owner_text(renders, player, entity, new_owner)
             }
     else
         renders[player.name] =
-            rendering.draw_text {
+            rendering.draw_text
+            {
                 text = '## - ' .. player.name .. "'s " .. ce_name .. ' - ##',
                 surface = entity.surface,
                 target = { entity = entity, offset = { 0, -2.6 } },
@@ -687,7 +696,8 @@ local function output_cargo(car, passive_chest)
     ::continue::
 end
 
-local transfer_functions = {
+local transfer_functions =
+{
     ['requester-chest'] = input_cargo,
     ['passive-provider-chest'] = output_cargo
 }
@@ -749,7 +759,8 @@ local function get_player_data(player)
         fallback = 1
     end
 
-    players[player.name] = {
+    players[player.name] =
+    {
         surface = 1,
         fallback_surface = tonumber(fallback),
         notified = false
@@ -834,7 +845,8 @@ function Public.save_car(event)
             return
         end
 
-        local find_remove_car_args = {
+        local find_remove_car_args =
+        {
             index = p.surface.index,
             types = types,
             position = p.physical_position
@@ -848,7 +860,8 @@ function Public.save_car(event)
         save_surface(entity, p)
         game.print(module_tag .. player.name .. ' has looted ' .. p.name .. '´s car.')
         player.print(module_tag .. 'This car was not yours to keep.', { color = Color.warning })
-        local params = {
+        local params =
+        {
             player = player,
             car = car
         }
@@ -1152,14 +1165,16 @@ function Public.create_room_surface(car)
         return game.surfaces[car.surface_name].index
     end
 
-    local map_gen_settings = {
+    local map_gen_settings =
+    {
         ['width'] = 2,
         ['height'] = 2,
         ['water'] = 0,
         ['starting_area'] = 1,
         ['cliff_settings'] = { cliff_elevation_interval = 0, cliff_elevation_0 = 0 },
         ['default_enable_all_autoplace_controls'] = true,
-        ['autoplace_settings'] = {
+        ['autoplace_settings'] =
+        {
             ['entity'] = { treat_missing_as_default = false },
             ['tile'] = { treat_missing_as_default = true },
             ['decorative'] = { treat_missing_as_default = false }
@@ -1318,7 +1333,8 @@ function Public.create_car(event)
 
     local quality_area = get_quality_area(areas, ce.quality.name)
 
-    cars[un] = {
+    cars[un] =
+    {
         entity = ce,
         area = quality_area,
         doors = {},
@@ -1572,7 +1588,6 @@ function Public.get_car(unit_number)
 
     return cars[unit_number] or nil
 end
-
 
 Public.get_trusted_system = get_trusted_system
 Public.does_player_table_exist = does_player_table_exist
