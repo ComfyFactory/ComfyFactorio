@@ -49,15 +49,13 @@ local on_init_token =
         function ()
             local tooltip
             if this.insert_into_furnace and this.insert_into_wagon then
-                tooltip =
-                'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.\nCTRL+RMB: Fill nearby furnaces.\nSHIFT+LMB: Everything onto filtered slots to wagon/chests.\nSHIFT+RMB: Only ores to wagon'
+                tooltip = { "modules_auto_stash.furnace_and_wagon_tooltip" }
             elseif this.insert_into_furnace then
-                tooltip = 'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.\nCTRL+RMB: Fill nearby furnaces.'
+                tooltip =  { "modules_auto_stash.furnace_tooltip" }
             elseif this.insert_into_wagon then
-                tooltip =
-                'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.\nSHIFT+LMB: Everything onto filtered slots to wagon/chests.\nSHIFT+RMB: Only ores to wagon'
+                tooltip = { "modules_auto_stash.wagon_tooltip" }
             else
-                tooltip = 'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.'
+                tooltip =  { "modules_auto_stash.other_tooltip" }
             end
 
             this.tooltip = tooltip
@@ -592,7 +590,7 @@ local function auto_stash(player, event)
     local inventory = player.get_main_inventory()
     if not inventory then return end
     if inventory.is_empty() then
-        player.print(module_name .. 'Inventory is empty.', { color = Color.warning })
+        player.print({ "modules_auto_stash.empty_inventory", module_name }, { color = Color.warning })
         return
     end
 
@@ -613,7 +611,7 @@ local function auto_stash(player, event)
     end
 
     if not chests.chest or not chests.chest[1] then
-        player.print(module_name .. 'No valid nearby containers found.', { color = Color.warning })
+        player.print({ "modules_auto_stash.no_chest_found", module_name }, { color = Color.warning })
         return
     end
 

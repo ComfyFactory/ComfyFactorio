@@ -26,7 +26,7 @@ local experience_levels = { 0 }
 for a = 1, 9999, 1 do
     experience_levels[#experience_levels + 1] = experience_levels[#experience_levels] + a * 8
 end
-local gain_info_tooltip = 'XP gain from mining, moving, crafting, repairing and combat.'
+local gain_info_tooltip = ({'rpg_gui.gain_info_tooltip'})
 
 local rpg_t = {}
 local rpg_frame_icons = {
@@ -63,11 +63,11 @@ function Public.get_table()
 end
 
 local classes = {
-    ['engineer'] = 'ENGINEER',
-    ['strength'] = 'MINER',
-    ['magic'] = 'SORCERER',
-    ['dexterity'] = 'ROGUE',
-    ['vitality'] = 'TANK'
+    ['engineer'] = { "rpg_gui.role_engineer" },
+    ['strength'] = { "rpg_gui.role_strength" },
+    ['magic'] = { "rpg_gui.role_magic" },
+    ['dexterity'] = { "rpg_gui.role_dexterity" },
+    ['vitality'] = { "rpg_gui.role_vitality" },
 }
 
 local xp_yield = {
@@ -231,7 +231,7 @@ local function add_gui_increase_stat(element, name, player, width)
     e.style.vertical_align = 'center'
     e.style.padding = 0
     e.style.margin = 0
-    e.tooltip = 'Rightclick to allocate 5 points.'
+    e.tooltip = ({ 'rpg_gui.allocate_info', 5 })
 
     return e
 end
@@ -279,17 +279,17 @@ local function draw_gui(player, forced)
     local t = frame.add({ type = 'table', column_count = 4 })
     t.style.cell_padding = 1
 
-    add_gui_description(t, 'LEVEL', 80)
+    add_gui_description(t, ({'rpg_gui.level_name'}), 80)
     add_gui_stat(t, rpg_t[player.index].level, 80)
 
-    add_gui_description(t, 'EXPERIENCE', 100)
+    add_gui_description(t, ({'rpg_gui.experience_name'}), 100)
     local e = add_gui_stat(t, math.floor(rpg_t[player.index].xp), 125)
     e.tooltip = gain_info_tooltip
 
     add_gui_description(t, ' ', 75)
     add_gui_description(t, ' ', 75)
 
-    add_gui_description(t, 'NEXT LEVEL', 100)
+    add_gui_description(t, ({'rpg_gui.next_level_name'}), 100)
     local e = add_gui_stat(t, experience_levels[rpg_t[player.index].level + 1], 125)
     e.tooltip = gain_info_tooltip
 
@@ -301,35 +301,35 @@ local function draw_gui(player, forced)
     local w1 = 85
     local w2 = 63
 
-    local tip = 'Increases inventory slots and mining speed.\nIncreases melee damage.'
-    local e = add_gui_description(tt, 'STRENGTH', w1)
+    local tip = { 'rpg_gui.strength_tooltip_2' }
+    local e = add_gui_description(tt, { 'rpg_gui.strength_name' }, w1)
     e.tooltip = tip
     local e = add_gui_stat(tt, rpg_t[player.index].strength, w2)
     e.tooltip = tip
     add_gui_increase_stat(tt, 'strength', player)
 
-    local tip = 'Increases reach distance.'
-    local e = add_gui_description(tt, 'MAGIC', w1)
+    local tip = { 'rpg_gui.magic_tooltip_2' }
+    local e = add_gui_description(tt, { 'rpg_gui.magic_name' }, w1)
     e.tooltip = tip
     local e = add_gui_stat(tt, rpg_t[player.index].magic, w2)
     e.tooltip = tip
     add_gui_increase_stat(tt, 'magic', player)
 
-    local tip = 'Increases running and crafting speed.'
-    local e = add_gui_description(tt, 'DEXTERITY', w1)
+    local tip = { 'rpg_gui.dexterity_tooltip_2' }
+    local e = add_gui_description(tt, { 'rpg_gui.dexterity_name' }, w1)
     e.tooltip = tip
     local e = add_gui_stat(tt, rpg_t[player.index].dexterity, w2)
     e.tooltip = tip
     add_gui_increase_stat(tt, 'dexterity', player)
 
-    local tip = 'Increases health.\nIncreases melee life on-hit.'
-    local e = add_gui_description(tt, 'VITALITY', w1)
+    local tip = { 'rpg_gui.vitality_tooltip_2' }
+    local e = add_gui_description(tt, { 'rpg_gui.vitality_name' }, w1)
     e.tooltip = tip
     local e = add_gui_stat(tt, rpg_t[player.index].vitality, w2)
     e.tooltip = tip
     add_gui_increase_stat(tt, 'vitality', player)
 
-    add_gui_description(tt, 'POINTS TO\nDISTRIBUTE', w1)
+    add_gui_description(tt, { 'rpg_gui.points_to_dist' }, w1)
     local e = add_gui_stat(tt, rpg_t[player.index].points_left, w2)
     e.style.font_color = { 200, 0, 0 }
     add_gui_description(tt, ' ', w2)
@@ -338,7 +338,7 @@ local function draw_gui(player, forced)
     add_gui_description(tt, ' ', w2)
     add_gui_description(tt, ' ', w2)
 
-    add_gui_description(tt, 'LIFE', w1)
+    add_gui_description(tt, { 'rpg_gui.life_name' }, w1)
     add_gui_stat(tt, math.floor(player.character.health), w2)
     add_gui_stat(tt, math.floor(player.character.max_health + player.character_health_bonus + player.force.character_health_bonus), w2)
 
@@ -351,7 +351,7 @@ local function draw_gui(player, forced)
             shield_max = math.floor(i[1].grid.max_shield)
         end
     end
-    add_gui_description(tt, 'SHIELD', w1)
+    add_gui_description(tt, { 'rpg_gui.shield_name' }, w1)
     add_gui_stat(tt, shield, w2)
     add_gui_stat(tt, shield_max, w2)
 
@@ -362,17 +362,17 @@ local function draw_gui(player, forced)
     local w2 = 80
 
     add_gui_description(tt, ' ', w0)
-    add_gui_description(tt, 'MINING\nSPEED', w1)
+    add_gui_description(tt, { 'rpg_gui.mining_name' }, w1)
     local value = (player.force.manual_mining_speed_modifier + player.character_mining_speed_modifier + 1) * 100 .. '%'
     add_gui_stat(tt, value, w2)
 
     add_gui_description(tt, ' ', w0)
-    add_gui_description(tt, 'SLOT\nBONUS', w1)
+    add_gui_description(tt, { 'rpg_gui.slot_name' }, w1)
     local value = '+ ' .. player.force.character_inventory_slots_bonus + player.character_inventory_slots_bonus
     add_gui_stat(tt, value, w2)
 
     add_gui_description(tt, ' ', w0)
-    add_gui_description(tt, 'MELEE\nDAMAGE', w1)
+    add_gui_description(tt, { 'rpg_gui.melee_name' }, w1)
     local value = 100 * (1 + get_melee_modifier(player)) .. '%'
     local e = add_gui_stat(tt, value, w2)
     e.tooltip = 'Life on-hit: ' .. get_life_on_hit(player) .. '\nOne punch chance: ' .. get_one_punch_chance(player) .. '%'
@@ -385,15 +385,17 @@ local function draw_gui(player, forced)
     e.style.maximal_height = 10
 
     local value = '+ ' .. (player.force.character_reach_distance_bonus + player.character_reach_distance_bonus)
-    local tooltip = ''
-    tooltip = tooltip .. 'Reach distance bonus: ' .. player.character_reach_distance_bonus
-    tooltip = tooltip .. '\nBuild distance bonus: ' .. player.character_build_distance_bonus
-    tooltip = tooltip .. '\nItem drop distance bonus: ' .. player.character_item_drop_distance_bonus
-    tooltip = tooltip .. '\nLoot pickup distance bonus: ' .. player.character_loot_pickup_distance_bonus
-    tooltip = tooltip .. '\nItem pickup distance bonus: ' .. player.character_item_pickup_distance_bonus
-    tooltip = tooltip .. '\nResource reach distance bonus: ' .. player.character_resource_reach_distance_bonus
+    local tooltip = ({
+        'rpg_gui.bonus_tooltip',
+        player.character_reach_distance_bonus,
+        player.character_build_distance_bonus,
+        player.character_item_drop_distance_bonus,
+        player.character_loot_pickup_distance_bonus,
+        player.character_item_pickup_distance_bonus,
+        player.character_resource_reach_distance_bonus
+    })
     add_gui_description(tt, ' ', w0)
-    local e = add_gui_description(tt, 'REACH\nDISTANCE', w1)
+    local e = add_gui_description(tt, { 'rpg_gui.reach_distance' }, w1)
     e.tooltip = tooltip
     local e = add_gui_stat(tt, value, w2)
     e.tooltip = tooltip
@@ -406,12 +408,12 @@ local function draw_gui(player, forced)
     e.style.maximal_height = 10
 
     add_gui_description(tt, ' ', w0)
-    add_gui_description(tt, 'CRAFTING\nSPEED', w1)
+    add_gui_description(tt, { 'rpg_gui.crafting_speed' }, w1)
     local value = (player.force.manual_crafting_speed_modifier + player.character_crafting_speed_modifier + 1) * 100 .. '%'
     add_gui_stat(tt, value, w2)
 
     add_gui_description(tt, ' ', w0)
-    add_gui_description(tt, 'RUNNING\nSPEED', w1)
+    add_gui_description(tt, { 'rpg_gui.running_speed' }, w1)
     local value = (player.force.character_running_speed_modifier + player.character_running_speed_modifier + 1) * 100 .. '%'
     add_gui_stat(tt, value, w2)
 
@@ -423,7 +425,7 @@ local function draw_gui(player, forced)
     e.style.maximal_height = 10
 
     add_gui_description(tt, ' ', w0)
-    add_gui_description(tt, 'HEALTH\nBONUS', w1)
+    add_gui_description(tt, { 'rpg_gui.health_bonus_name' }, w1)
     local value = '+ ' .. (player.force.character_health_bonus + player.character_health_bonus)
     add_gui_stat(tt, value, w2)
 
