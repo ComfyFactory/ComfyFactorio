@@ -31,7 +31,7 @@ function Public.reset()
     this.doors = {}
     this.wagons = {}
     this.speed = 0.1
-    this.offsets = 500
+    this.offsets = 480
     this.default_surface = false
     this.final_battle = false
     this.hazardous_debris = true
