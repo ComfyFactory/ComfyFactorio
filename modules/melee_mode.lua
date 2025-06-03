@@ -146,7 +146,7 @@ local function player_inventory_changed(player_index, inv_id, name)
       player.print({ "melee_mode.move_to_main_inventory", moved_to_string(moved) })
    end
    if not inv or not inv.is_empty() then
-       player.print({ "melee_mode.move_to_main_inventory_failed", moved_to_string(moved) })
+       player.print({ "melee_mode.move_to_main_inventory_failed", name })
    end
 end
 
