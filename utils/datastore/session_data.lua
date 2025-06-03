@@ -203,12 +203,12 @@ function Public.get_and_print_to_player(player, target_player)
     local p = player.print
 
     if not target_player then
-        p('[ERROR] No player was provided.', Color.fail)
+        p('[ERROR] No player was provided.', { color = Color.fail })
         return
     end
 
     if not player.admin then
-        p("[ERROR] You're not admin.", Color.fail)
+        p("[ERROR] You're not admin.", { color = Color.fail })
         return
     end
 

@@ -7,7 +7,8 @@ local Event = require 'utils.event'
 local Gui = require 'utils.gui'
 local Commands = require 'utils.commands'
 
-local this = {
+local this =
+{
     data = {},
     module_disabled = false
 }
@@ -21,8 +22,10 @@ Global.register(
 )
 
 local main_frame_name = Gui.uid_name()
+local close_main_frame_name = Gui.uid_name()
 
-local space = {
+local space =
+{
     minimal_height = 10,
     top_padding = 0,
     bottom_padding = 0
@@ -152,7 +155,8 @@ local function close_player_inventory(player)
 end
 
 local function get_inventory_type(player, inventory_type)
-    local target_types = {
+    local target_types =
+    {
         ['Main'] = function ()
             return unpack_inventory(player.get_main_inventory())
         end,
@@ -191,9 +195,6 @@ local function redraw_inventory(gui, source, target, caption, panel_type)
         return
     end
 
-    local inventory_gui = screen[main_frame_name]
-    inventory_gui.caption = 'Inventory of ' .. target.name
-
     for i = 1, #panel_type do
         if panel_type[i] and panel_type[i].valid_for_read then
             local name = panel_type[i].name
@@ -202,6 +203,13 @@ local function redraw_inventory(gui, source, target, caption, panel_type)
             local flow = items_table.add({ type = 'flow' })
             flow.style.vertical_align = 'bottom'
 
+            local tooltip
+            if quality and quality.name and types and types[name] and types[name].localised_name then
+                tooltip = { '', (quality.name == 'normal' and '' or { '', quality.localised_name, ' ' }), types[name].localised_name }
+            else
+                tooltip = name
+            end
+
             local button =
                 flow.add(
                     {
@@ -209,7 +217,7 @@ local function redraw_inventory(gui, source, target, caption, panel_type)
                         sprite = 'item/' .. name,
                         number = count,
                         name = name,
-                        tooltip = { '', (quality.name == 'normal' and '' or { '', quality.localised_name, ' ' }), types[name].localised_name },
+                        tooltip = tooltip,
                         style = 'slot_button'
                     }
                 )
@@ -225,6 +233,12 @@ local function redraw_inventory(gui, source, target, caption, panel_type)
                     local p_armor = target.get_inventory(5)[1].grid.get_contents()
                     local grid_flow = items_table.add({ type = 'table', column_count = 10 })
                     for _, item in pairs(p_armor) do
+                        local item_tooltip
+                        if item.quality and prototypes.quality and prototypes.quality[item.quality] and types and types[item.name] then
+                            item_tooltip = { '', (item.quality == 'normal' and '' or { '', prototypes.quality[item.quality].localised_name, ' ' }), types[item.name].localised_name }
+                        else
+                            item_tooltip = item.name
+                        end
                         local armor_gui =
                             grid_flow.add(
                                 {
@@ -232,7 +246,7 @@ local function redraw_inventory(gui, source, target, caption, panel_type)
                                     sprite = 'item/' .. item.name,
                                     number = item.count,
                                     name = item.name .. item.quality,
-                                    tooltip = { '', (item.quality == 'normal' and '' or { '', prototypes.quality[item.quality].localised_name, ' ' }), types[item.name].localised_name },
+                                    tooltip = item_tooltip,
                                     style = 'slot_button'
                                 }
                             )
@@ -254,7 +268,8 @@ local function add_inventory(panel, source, target, caption, panel_type)
     data.panel_type = data.panel_type or {}
     local pane_name = panel.add({ type = 'tab', caption = caption, name = caption })
     local scroll_pane =
-        panel.add {
+        panel.add
+        {
             type = 'scroll-pane',
             name = caption .. 'tab',
             direction = 'vertical',
@@ -293,15 +308,7 @@ local function open_inventory(source, target)
         close_player_inventory(source)
     end
 
-    local frame =
-        screen.add(
-            {
-                type = 'frame',
-                caption = 'Inventory',
-                direction = 'vertical',
-                name = main_frame_name
-            }
-        )
+    local frame = Gui.add_main_frame_with_toolbar(source, 'screen', main_frame_name, nil, close_main_frame_name, 'Inventory of ' .. target.name)
 
     if not (frame and frame.valid) then
         return
@@ -331,7 +338,8 @@ local function open_inventory(source, target)
     local ammo = unpack_inventory(target.get_inventory(defines.inventory.character_ammo))
     local trash = unpack_inventory(target.get_inventory(defines.inventory.character_trash))
 
-    local types = {
+    local types =
+    {
         ['Main'] = main,
         ['Armor'] = armor,
         ['Guns'] = guns,
@@ -359,7 +367,8 @@ local function on_gui_click(event)
         return
     end
 
-    local types = {
+    local types =
+    {
         ['Main'] = true,
         ['Armor'] = true,
         ['Guns'] = true,
@@ -390,6 +399,12 @@ local function on_gui_click(event)
         local viewingPlayer = get_target_player(target)
         if not viewingPlayer then
             return false
+        end
+
+        if viewingPlayer.controller_type == defines.controllers.remote then
+            player.print('[Inventory] This player is currently in remote-view and has no character association. Please try again later.', { color = Color.warning })
+            close_player_inventory(player)
+            return
         end
 
         local frame = Public.get_active_frame(player)
@@ -423,6 +438,11 @@ local function update_gui(event)
 
     local frame = Public.get_active_frame(source_player)
     if frame and frame.valid then
+        if player.controller_type == defines.controllers.remote then
+            source_player.print('[Inventory] ' .. player.name .. ' switched to remote-view. We cannot track inventory changes.')
+            close_player_inventory(source_player)
+            return
+        end
         local callback = get_inventory_type(player, source_data.last_tab)
         if frame.name == source_data.last_tab .. 'tab' then
             redraw_inventory(frame, source_player, player, source_data.last_tab, callback)
@@ -442,14 +462,14 @@ Commands.new('inventory', 'Open another players inventory')
                 local valid, opened = player_opened(player)
                 if valid then
                     if target.index == opened then
-                        player.print('You are already viewing this players inventory.', Color.warning)
+                        player.print('You are already viewing this players inventory.', { color = Color.warning })
                         return false
                     end
                 end
 
                 open_inventory(player, target)
             else
-                player.print('[Inventory] Please type a name of a player who is connected.', Color.warning)
+                player.print('[Inventory] Please type a name of a player who is connected.', { color = Color.warning })
             end
         end
     )
@@ -465,7 +485,7 @@ function Public.show_inventory(player, target_player)
     local valid, opened = player_opened(player)
     if valid then
         if target_player.index == opened then
-            player.print('You are already viewing this players inventory.', Color.warning)
+            player.print('You are already viewing this players inventory.', { color = Color.warning })
             return false
         end
     end
@@ -474,16 +494,37 @@ function Public.show_inventory(player, target_player)
         open_inventory(player, target_player)
         return true
     else
-        player.print('[Inventory] Please type a valid player name.', Color.warning)
+        player.print('[Inventory] Please type a valid player name.', { color = Color.warning })
         return false
     end
 end
 
 function Public.get_active_frame(player)
-    if not player.gui.screen[main_frame_name] then
+    if not (player and player.valid) then
         return false
     end
-    return player.gui.screen[main_frame_name].tabbed_pane.tabs[player.gui.screen[main_frame_name].tabbed_pane.selected_tab_index].content
+
+    local screen = player.gui.screen
+    local frame = screen[main_frame_name]
+
+    if not frame or not frame.valid then
+        return false
+    end
+
+    local tabbed_pane = frame.tabbed_pane
+
+    if not tabbed_pane or not tabbed_pane.valid or not tabbed_pane.tabs or not tabbed_pane.selected_tab_index then
+        return false
+    end
+
+    local selected_tab_index = tabbed_pane.selected_tab_index
+    local selected_tab = tabbed_pane.tabs[selected_tab_index]
+
+    if not selected_tab or not selected_tab.content or not selected_tab.content.valid then
+        return false
+    end
+
+    return selected_tab.content
 end
 
 function Public.get(key)
@@ -502,6 +543,18 @@ end
 
 Gui.on_custom_close(
     main_frame_name,
+    function (event)
+        local player = game.get_player(event.player_index)
+        if not player or not this.data[player.index] then
+            return
+        end
+
+        close_player_inventory(player)
+    end
+)
+
+Gui.on_click(
+    close_main_frame_name,
     function (event)
         local player = game.get_player(event.player_index)
         if not player or not this.data[player.index] then

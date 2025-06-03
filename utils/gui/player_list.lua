@@ -13,6 +13,7 @@ local Vars = require 'utils.player_list_vars'
 local Utils = require 'utils.utils'
 local Core = require 'utils.core'
 local Inventory = require 'modules.show_inventory'
+local Color = require 'utils.color_presets'
 
 local Public =
 {
@@ -297,6 +298,10 @@ Gui.on_click(
             if not target or not target.valid then
                 return
             end
+            if target.controller_type == defines.controllers.remote then
+                player.print('[Inventory] This player is currently in remote-view and has no character association. Please try again later.', { color = Color.warning })
+                return
+            end
             Inventory.show_inventory(player, target)
         end
     end
@@ -380,7 +385,7 @@ Gui.on_click(
     module_name,
     function (event)
         local player = event.player
-        Gui.reload_active_tab(player)
+        Gui.reload_active_tab(player, nil, tag)
     end
 )
 

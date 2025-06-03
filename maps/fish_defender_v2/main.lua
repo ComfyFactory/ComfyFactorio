@@ -1167,6 +1167,10 @@ local function on_entity_died(event)
             entity.destroy()
         end
 
+        for _, entity in pairs(surface.find_entities_filtered { type = { 'transport-belt', 'underground-belt' } }) do
+            entity.destroy()
+        end
+
         local date = Server.get_start_time()
         game.server_save('Final_Fish_Defender_v2_' .. tostring(date))
         return
@@ -1437,6 +1441,7 @@ local function has_the_game_ended()
                 Public.reset_game()
                 return
             end
+
             local announced_message = Public.get('announced_message')
             if restart and game_restart_timer == 0 then
                 if not announced_message then

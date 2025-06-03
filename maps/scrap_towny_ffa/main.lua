@@ -132,7 +132,8 @@ local function update_score()
                         position.style.font_color = { r = 1, g = 1 }
                     end
                     local label =
-                        information_table.add {
+                        information_table.add
+                        {
                             type = 'label',
                             caption = town_center.town_name .. ' (' .. #town_center.market.force.connected_players .. '/' .. #town_center.market.force.players .. ')'
                         }
@@ -145,7 +146,8 @@ local function update_score()
                     rank = rank + 1
 
                     if tonumber(total_age) >= this.required_time_to_win then
-                        this.winner = {
+                        this.winner =
+                        {
                             name = town_center.town_name,
                             research_counter = town_center.research_counter,
                             upgrades = town_center.upgrades,
@@ -161,7 +163,8 @@ local function update_score()
                 local outlander_total = #game.forces['player'].players + #game.forces['rogue'].players
 
                 local label =
-                    information_table.add {
+                    information_table.add
+                    {
                         type = 'label',
                         caption = 'Outlanders' .. ' (' .. outlander_on .. '/' .. outlander_total .. ')'
                     }
@@ -193,16 +196,17 @@ local function on_init()
     Team.initialize()
 end
 
-local tick_actions = {
-    [60 * 0] = Radar.reset,                      -- each minute, at 00 seconds
-    [60 * 5] = Team.update_town_chart_tags,      -- each minute, at 05 seconds
-    [60 * 10] = Team.set_all_player_colors,      -- each minute, at 10 seconds
-    [60 * 15] = Fish.reproduce,                  -- each minute, at 15 seconds
+local tick_actions =
+{
+    [60 * 0] = Radar.reset, -- each minute, at 00 seconds
+    [60 * 5] = Team.update_town_chart_tags, -- each minute, at 05 seconds
+    [60 * 10] = Team.set_all_player_colors, -- each minute, at 10 seconds
+    [60 * 15] = Fish.reproduce, -- each minute, at 15 seconds
     [60 * 25] = Biters.unit_groups_start_moving, -- each minute, at 25 seconds
-    [60 * 30] = Radar.reset,                     -- each minute, at 30 seconds
-    [60 * 45] = Biters.validate_swarms,          -- each minute, at 45 seconds
-    [60 * 50] = Biters.swarm,                    -- each minute, at 50 seconds
-    [60 * 55] = Pollution.market_scent           -- each minute, at 55 seconds
+    [60 * 30] = Radar.reset, -- each minute, at 30 seconds
+    [60 * 45] = Biters.validate_swarms, -- each minute, at 45 seconds
+    [60 * 50] = Biters.swarm, -- each minute, at 50 seconds
+    [60 * 55] = Pollution.market_scent -- each minute, at 55 seconds
 }
 
 local function on_nth_tick(event)
@@ -277,7 +281,7 @@ Event.add(
                 if player.gui.left[main_frame_name] and player.gui.left[main_frame_name].valid then
                     player.gui.left[main_frame_name].destroy()
                 end
-                return player.print('Comfy panel is disabled in this scenario.', Color.fail)
+                return player.print('Comfy panel is disabled in this scenario.', { color = Color.fail })
             end
         end
     end

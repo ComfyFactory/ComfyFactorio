@@ -14,7 +14,8 @@ local auto_stash_button_name = Gui.uid_name()
 local floor = math.floor
 local module_name = '[color=blue][Autostash][/color] '
 
-local this = {
+local this =
+{
     floating_text_y_offsets = {},
     whitelist = {},
     insert_to_neutral_chests = false,
@@ -26,7 +27,8 @@ local this = {
     enabled = true
 }
 
-local Public = {
+local Public =
+{
 }
 
 Global.register(
@@ -36,7 +38,8 @@ Global.register(
     end
 )
 
-local bps_blacklist = {
+local bps_blacklist =
+{
     ['blueprint-book'] = true,
     ['blueprint'] = true
 }
@@ -98,7 +101,8 @@ local function create_floaty_text(surface, position, name, count)
         if player.surface_index == surface.index then
             player.create_local_flying_text(
                 {
-                    position = {
+                    position =
+                    {
                         position.x,
                         position.y + this.floating_text_y_offsets[position.x .. '_' .. position.y]
                     },
@@ -435,7 +439,8 @@ local function insert_into_wagon_filtered(stack, chests, name, floaty_text_list)
 end
 
 local function insert_item_into_chest(stack, chests, filtered_chests, name, floaty_text_list, previous_insert)
-    local container = {
+    local container =
+    {
         ['container'] = true,
         ['logistic-container'] = true,
         ['linked-container'] = true
@@ -577,17 +582,17 @@ local function auto_stash(player, event)
     local ctrl = event.control
     local shift = event.shift
     if not player.character then
-        player.print(module_name .. 'It seems that you are not in the realm of the living.', Color.warning)
+        player.print(module_name .. 'It seems that you are not in the realm of the living.', { color = Color.warning })
         return
     end
     if not player.character.valid then
-        player.print(module_name .. 'It seems that you are not in the realm of the living.', Color.warning)
+        player.print(module_name .. 'It seems that you are not in the realm of the living.', { color = Color.warning })
         return
     end
     local inventory = player.get_main_inventory()
     if not inventory then return end
     if inventory.is_empty() then
-        player.print(module_name .. 'Inventory is empty.', Color.warning)
+        player.print(module_name .. 'Inventory is empty.', { color = Color.warning })
         return
     end
 
@@ -608,7 +613,7 @@ local function auto_stash(player, event)
     end
 
     if not chests.chest or not chests.chest[1] then
-        player.print(module_name .. 'No valid nearby containers found.', Color.warning)
+        player.print(module_name .. 'No valid nearby containers found.', { color = Color.warning })
         return
     end
 
@@ -630,7 +635,8 @@ local function auto_stash(player, event)
         end
     end
 
-    local furnace_list = {
+    local furnace_list =
+    {
         ['coal'] = 0,
         ['iron-ore'] = 0,
         ['copper-ore'] = 0,
@@ -651,7 +657,7 @@ local function auto_stash(player, event)
                         furnace_list[name] = (furnace_list[name] or 0) + inventory[i].count
                     end
                 end
-            elseif shift and this.insert_into_wagon then          -- insert into wagon
+            elseif shift and this.insert_into_wagon then -- insert into wagon
                 if button == defines.mouse_button_type.right then -- insert all ores into wagon
                     if is_resource then
                         full_insert = { full = insert_into_wagon(inventory[i], chests, name, floaty_text_list), name = name }

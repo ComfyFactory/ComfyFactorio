@@ -31,15 +31,17 @@ local this =
 local random = math.random
 local round = math.round
 local floor = math.floor
+local deep_copy = table.deep_copy
 local dataset = 'scenario_settings'
 local dataset_key = 'mtn_v3'
 local dataset_key_modded = 'mtn_v3_modded'
 local dataset_key_dev = 'mtn_v3_dev'
+local dataset_key_dev_modded = 'mtn_v3_dev_modded'
 local dataset_key_previous = 'mtn_v3_previous'
 local dataset_key_modded_previous = 'mtn_v3_modded_previous'
 local dataset_key_previous_dev = 'mtn_v3_previous_dev'
+local dataset_key_modded_previous_dev = 'mtn_v3_previous_dev'
 local send_ping_to_channel = Discord.channel_names.mtn_channel
-local scenario_name = Public.scenario_name
 
 Global.register(
     this,
@@ -374,6 +376,7 @@ local function get_random_buff(fetch_all, only_force)
             name = 'extra_wagons',
             discord = 'Extra wagon at start',
             modifier = 'locomotive',
+            limit = 4,
             state = 1
         },
         {
@@ -462,6 +465,122 @@ local function get_random_buff(fetch_all, only_force)
         }
     }
 
+    if Public.is_modded_pt2 then
+        buffs[#buffs + 1] =
+        {
+            name = 'quality_locomotive',
+            discord = 'Grants uncommon locomotive at start',
+            modifier = 'locomotive',
+            limit = 1,
+            quality = 'uncommon',
+            dlc = true,
+            state = 1
+        }
+        buffs[#buffs + 1] =
+        {
+            name = 'quality_cargo_wagon',
+            discord = 'Grants uncommon cargo-wagon at start',
+            modifier = 'cargo-wagon',
+            limit = 1,
+            quality = 'uncommon',
+            dlc = true,
+            state = 1
+        }
+        buffs[#buffs + 1] =
+        {
+            name = 'quality_locomotive',
+            discord = 'Grants rare locomotive at start',
+            modifier = 'locomotive',
+            limit = 1,
+            quality = 'rare',
+            dlc = true,
+            state = 1
+        }
+        buffs[#buffs + 1] =
+        {
+            name = 'quality_cargo_wagon',
+            discord = 'Grants rare cargo-wagon at start',
+            modifier = 'cargo-wagon',
+            limit = 1,
+            quality = 'rare',
+            dlc = true,
+            state = 1
+        }
+        buffs[#buffs + 1] =
+        {
+            name = 'quality_locomotive',
+            discord = 'Grants epic locomotive at start',
+            limit = 1,
+            quality = 'epic',
+            dlc = true,
+            state = 1
+        }
+        buffs[#buffs + 1] =
+        {
+            name = 'quality_cargo_wagon',
+            discord = 'Grants epic cargo-wagon at start',
+            modifier = 'cargo-wagon',
+            limit = 1,
+            quality = 'epic',
+            dlc = true,
+            state = 1
+        }
+        buffs[#buffs + 1] =
+        {
+            name = 'quality_locomotive',
+            discord = 'Grants legendary locomotive at start',
+            limit = 1,
+            quality = 'legendary',
+            dlc = true,
+            state = 1
+        }
+        buffs[#buffs + 1] =
+        {
+            name = 'quality_cargo_wagon',
+            discord = 'Grants legendary cargo-wagon at start',
+            limit = 1,
+            quality = 'legendary',
+            dlc = true,
+            state = 1
+        }
+        buffs[#buffs + 1] =
+        {
+            name = 'quality_buildings',
+            discord = 'Grants uncommon quality of buildings generating free loot!',
+            limit = 1,
+            quality = 'uncommon',
+            dlc = true,
+            state = 1
+        }
+        buffs[#buffs + 1] =
+        {
+            name = 'quality_buildings',
+            discord = 'Grants rare quality of buildings generating free loot!',
+            limit = 1,
+            quality = 'rare',
+            dlc = true,
+            state = 1
+        }
+        buffs[#buffs + 1] =
+        {
+            name = 'quality_buildings',
+            discord = 'Grants epic quality of buildings generating free loot!',
+            limit = 1,
+            quality = 'epic',
+            dlc = true,
+            state = 1
+        }
+        buffs[#buffs + 1] =
+        {
+            name = 'quality_buildings',
+            discord = 'Grants legendary quality of buildings generating free loot!',
+            limit = 1,
+            quality = 'legendary',
+            dlc = true,
+            state = 1
+        }
+    end
+
     if only_force then
         local force_buffs = {}
         for _, buff in pairs(buffs) do
@@ -499,8 +618,9 @@ local function get_item_produced_count(_, item_name)
     local statistics = Public.get('statistics')
 
     local loco_surface = Public.get('loco_surface')
+    local starting_planet = Public.get_planet()
 
-    local production = force.get_item_production_statistics('fortress').input_counts[item_name]
+    local production = force.get_item_production_statistics(starting_planet).input_counts[item_name]
     if not production then
         production = 0
     end
@@ -542,9 +662,10 @@ end
 
 local function get_entity_mined_count(_, item_name)
     local force = game.forces.player
+    local starting_planet = Public.get_planet()
 
     local count = 0
-    for name, entity_count in pairs(force.get_entity_build_count_statistics('fortress').output_counts) do
+    for name, entity_count in pairs(force.get_entity_build_count_statistics(starting_planet).output_counts) do
         if name:find(item_name) then
             count = count + entity_count
         end
@@ -555,9 +676,10 @@ end
 
 local function get_killed_enemies_count(primary, secondary)
     local force = game.forces.player
+    local starting_planet = Public.get_planet()
 
     local count = 0
-    for name, entity_count in pairs(force.get_kill_count_statistics('fortress').input_counts) do
+    for name, entity_count in pairs(force.get_kill_count_statistics(starting_planet).input_counts) do
         if name:find(primary) or name:find(secondary) then
             count = count + entity_count
         end
@@ -627,7 +749,9 @@ local function on_pre_player_died(event)
         return
     end
 
-    if string.sub(surface.name, 0, #scenario_name) ~= scenario_name then
+    local starting_planet = Public.get_planet()
+
+    if string.sub(surface.name, 0, #starting_planet) ~= starting_planet then
         return
     end
 
@@ -995,6 +1119,17 @@ local function get_random_research_recipe()
         'follower-robot-count-5'
     }
 
+    if Public.get('space_age') then
+        research_level_list =
+        {
+            'laser-weapons-damage-7',
+            'stronger-explosives-7',
+            'mining-productivity-3',
+            'worker-robots-speed-7',
+            'follower-robot-count-5'
+        }
+    end
+
     shuffle(research_level_list)
 
     if this.test_mode then
@@ -1098,6 +1233,13 @@ end
 local function clear_all_stats()
     this.buffs_collected = {}
     this.extra_wagons = 0
+    this.quality_trains =
+    {
+        ['locomotive'] = 'normal',
+        ['cargo-wagon'] = 'normal',
+        ['fluid-wagon'] = 'normal'
+    }
+    this.quality_buildings = 'normal'
     local rpg_extra = RPG.get('rpg_extra')
     rpg_extra.difficulty = 0
     rpg_extra.grant_xp_level = 0
@@ -1109,6 +1251,10 @@ local function migrate_buffs()
     for _, data in pairs(state_buffs) do
         for index, buff in pairs(this.buffs) do
             if data.name == buff.name then
+                if not Public.is_modded_pt2 and data.dlc then
+                    this.buffs[index] = nil
+                    break
+                end
                 if data.add_per_buff then
                     buff.add_per_buff = data.add_per_buff
                 end
@@ -1190,8 +1336,7 @@ local function apply_buffs()
                     end
                 end
                 if buff.modifier == 'locomotive' then
-                    local extra_wagons = Public.get('extra_wagons')
-                    if not extra_wagons then
+                    if not this.extra_wagons then
                         this.extra_wagons = buff.state
                     else
                         this.extra_wagons = this.extra_wagons + buff.state
@@ -1205,16 +1350,44 @@ local function apply_buffs()
                             discord = buff.discord
                         }
                     else
-                        if this.extra_wagons > 4 then
+                        if this.extra_wagons > 5 then
                             this.buffs_collected['locomotive'].count = this.extra_wagons
                         else
                             this.buffs_collected['locomotive'].count = this.extra_wagons + buff.state
                         end
                     end
 
-                    if this.extra_wagons > 4 then
-                        this.extra_wagons = 4
+                    if this.extra_wagons > 5 then
+                        this.extra_wagons = 5
                     end
+                end
+                if buff.name == 'quality_locomotive' then
+                    this.quality_trains.locomotive = buff.quality
+
+                    this.buffs_collected['quality_locomotive'] =
+                    {
+                        name = 'Quality locomotives (' .. buff.quality .. ')!',
+                        discord = buff.discord
+                    }
+                end
+                if buff.name == 'quality_cargo_wagon' then
+                    this.quality_trains.locomotive = buff.quality
+
+                    this.buffs_collected['quality_cargo_wagon'] =
+                    {
+                        name = 'Quality cargo-wagon (' .. buff.quality .. ')!',
+                        discord = buff.discord
+                    }
+                end
+                if buff.name == 'quality_buildings' then
+                    this.quality_trains.locomotive = buff.quality
+
+                    this.buffs_collected['quality_buildings'] =
+                    {
+                        name = 'Quality buildings (' .. buff.quality .. ')!',
+                        discord = buff.discord
+                    }
+                    this.quality_buildings = buff.quality
                 end
                 if buff.modifier == 'fish' then
                     limit_types[buff.name] = true
@@ -1349,6 +1522,7 @@ local function apply_buffs()
         this.total_buffs = total_buffs
     end
     log('Applied all buffs.')
+    log('Total wagons this round: ' .. this.extra_wagons)
 end
 
 local function apply_startup_settings(settings)
@@ -1400,20 +1574,24 @@ local function apply_startup_settings(settings)
         game.print(message)
         Server.to_discord_embed(message_discord, true)
 
-        -- game.print(({ 'entity.notify_shutdown' }), { r = 0.22, g = 0.88, b = 0.22 })
-        -- local notify_shutdown = ({ 'entity.shutdown_game' })
-        -- Server.to_discord_bold(notify_shutdown, true)
+        game.print(({ 'entity.notify_shutdown' }), { color = { r = 0.22, g = 0.88, b = 0.22 } })
+        local notify_shutdown = ({ 'entity.shutdown_game' })
+        Server.to_discord_bold(notify_shutdown, true)
 
-        -- Server.stop_scenario()
+        Server.stop_scenario()
 
         if server_name_matches then
             if Public.is_modded then
-                Server.set_data(dataset, dataset_key_modded, settings)
+                Server.set_data(dataset, dataset_key_modded, deep_copy(settings))
             else
-                Server.set_data(dataset, dataset_key, settings)
+                Server.set_data(dataset, dataset_key, deep_copy(settings))
             end
         else
-            Server.set_data(dataset, dataset_key_dev, settings)
+            if Public.is_modded then
+                Server.set_data(dataset, dataset_key_dev_modded, deep_copy(settings))
+            else
+                Server.set_data(dataset, dataset_key_dev, deep_copy(settings))
+            end
         end
     end
 end
@@ -1437,12 +1615,16 @@ local apply_settings_token =
                 }
                 if server_name_matches then
                     if Public.is_modded then
-                        Server.set_data(dataset, dataset_key_modded, settings)
+                        Server.set_data(dataset, dataset_key_modded, deep_copy(settings))
                     else
-                        Server.set_data(dataset, dataset_key, settings)
+                        Server.set_data(dataset, dataset_key, deep_copy(settings))
                     end
                 else
-                    Server.set_data(dataset, dataset_key_dev, settings)
+                    if Public.is_modded then
+                        Server.set_data(dataset, dataset_key_dev_modded, deep_copy(settings))
+                    else
+                        Server.set_data(dataset, dataset_key_dev, deep_copy(settings))
+                    end
                 end
                 return
             end
@@ -1480,6 +1662,11 @@ local function grant_non_limit_reached_buff()
     local limit_types = Public.get_func('limit_types')
 
     for index, data in pairs(all_buffs) do
+        if not Public.is_modded_pt2 and data.dlc then
+            all_buffs[index] = nil
+            break
+        end
+
         for _, item_data in pairs(starting_items) do
             if item_data.buff_type == data.name and item_data.item_limit and data.limit and item_data.item_limit >= data.limit then
                 all_buffs[index] = nil
@@ -1555,12 +1742,16 @@ function Public.save_settings()
     local server_name_matches = Server.check_server_name(Public.discord_name)
     if server_name_matches then
         if Public.is_modded then
-            Server.set_data(dataset, dataset_key_modded, settings)
+            Server.set_data(dataset, dataset_key_modded, deep_copy(settings))
         else
-            Server.set_data(dataset, dataset_key, settings)
+            Server.set_data(dataset, dataset_key, deep_copy(settings))
         end
     else
-        Server.set_data(dataset, dataset_key_dev, settings)
+        if Public.is_modded then
+            Server.set_data(dataset, dataset_key_dev_modded, deep_copy(settings))
+        else
+            Server.set_data(dataset, dataset_key_dev, deep_copy(settings))
+        end
     end
 
     return granted_buff
@@ -1579,12 +1770,16 @@ function Public.save_settings_before_reset()
     local server_name_matches = Server.check_server_name(Public.discord_name)
     if server_name_matches then
         if Public.is_modded then
-            Server.set_data(dataset, dataset_key_modded_previous, settings)
+            Server.set_data(dataset, dataset_key_modded_previous, deep_copy(settings))
         else
-            Server.set_data(dataset, dataset_key_previous, settings)
+            Server.set_data(dataset, dataset_key_previous, deep_copy(settings))
         end
     else
-        Server.set_data(dataset, dataset_key_previous_dev, settings)
+        if Public.is_modded then
+            Server.set_data(dataset, dataset_key_modded_previous_dev, deep_copy(settings))
+        else
+            Server.set_data(dataset, dataset_key_previous_dev, deep_copy(settings))
+        end
     end
 end
 
@@ -1593,6 +1788,13 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
 
     this.final_battle = false
     this.extra_wagons = 0
+    this.quality_trains =
+    {
+        ['locomotive'] = 'normal',
+        ['cargo-wagon'] = 'normal',
+        ['fluid-wagon'] = 'normal'
+    }
+    this.quality_buildings = 'normal'
     if clear_buffs then
         this.buffs_collected = {}
     end
@@ -2016,7 +2218,11 @@ function Public.stateful_on_server_started()
             Server.try_get_data(dataset, dataset_key, apply_settings_token)
         end
     else
-        Server.try_get_data(dataset, dataset_key_dev, apply_settings_token)
+        if Public.is_modded then
+            Server.try_get_data(dataset, dataset_key_dev_modded, apply_settings_token)
+        else
+            Server.try_get_data(dataset, dataset_key_dev, apply_settings_token)
+        end
         this.test_mode = true
     end
 end
@@ -2039,7 +2245,11 @@ Event.add(
                 Server.try_get_data(dataset, dataset_key, apply_settings_token)
             end
         else
-            Server.try_get_data(dataset, dataset_key_dev, apply_settings_token)
+            if Public.is_modded then
+                Server.try_get_data(dataset, dataset_key_dev_modded, apply_settings_token)
+            else
+                Server.try_get_data(dataset, dataset_key_dev, apply_settings_token)
+            end
             this.test_mode = true
         end
     end
@@ -2127,41 +2337,60 @@ Public.scale = scale
 Public.on_pre_player_died = on_pre_player_died
 Public.on_market_item_purchased = on_market_item_purchased
 
-Event.on_init(
-    function ()
-        local cbl = Task.get(apply_settings_token)
-        local data =
-        {
-            rounds_survived = 11,
-            season = 4,
-            test_mode = false,
-            buffs =
+if _DEBUG then
+    Event.on_init(
+        function ()
+            local cbl = Task.get(apply_settings_token)
+            local data =
             {
+                rounds_survived = 11,
+                season = 4,
+                test_mode = false,
+                buffs =
                 {
-                    name = 'steel_axe_unlocked',
-                    discord = 'Equipement tech - start with steel axe tech unlocked.',
-                    modifier = 'tech',
-                    limit = 1,
-                    add_per_buff = 1,
-                    techs =
                     {
-                        { name = 'steel-axe', count = 1 }
-                    }
+                        name = 'extra_wagons',
+                        discord = 'Extra wagon at start',
+                        modifier = 'locomotive',
+                        limit = 4,
+                        state = 1
+                    },
+                    {
+                        name = 'extra_wagons',
+                        discord = 'Extra wagon at start',
+                        modifier = 'locomotive',
+                        limit = 4,
+                        state = 1
+                    },
+                    {
+                        name = 'extra_wagons',
+                        discord = 'Extra wagon at start',
+                        modifier = 'locomotive',
+                        limit = 4,
+                        state = 1
+                    },
+                    {
+                        name = 'extra_wagons',
+                        discord = 'Extra wagon at start',
+                        modifier = 'locomotive',
+                        limit = 4,
+                        state = 1
+                    },
                 },
-            },
-            current_date = 2711187954
-        }
+                current_date = 2711187954
+            }
 
-        this.buffs = data.buffs
-        this.rounds_survived = data.rounds_survived
-        this.season = data.season
+            this.buffs = data.buffs
+            this.rounds_survived = data.rounds_survived
+            this.season = data.season
 
-        local settings =
-        {
-            value = data
-        }
-        cbl(settings)
-    end
-)
+            local settings =
+            {
+                value = data
+            }
+            cbl(settings)
+        end
+    )
+end
 
 return Public

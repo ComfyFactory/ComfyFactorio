@@ -257,6 +257,6 @@ Tabs.on_click(
     module_name,
     function (event)
         local player = event.player
-        Tabs.reload_active_tab(player)
+        Tabs.reload_active_tab(player, nil, 'MutagenLog')
     end
 )

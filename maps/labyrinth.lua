@@ -18,7 +18,7 @@ local BottomFrame = require 'utils.gui.bottom_frame'
 local this = {
     settings = {
         labyrinth_size = 1,
-        surface_index = nil,
+        surface_index = 1,
         check_landfill = true
     }
 }
@@ -51,7 +51,7 @@ local function create_labyrinth_difficulty_gui(player)
     if not this.settings.labyrinth_size then
         return
     end
-    local str = tostring(math.ceil((this.settings.labyrinth_size / labyrinth_difficulty_curve) * 100, 0)) .. '%'
+    local str = tostring(math.ceil((this.settings.labyrinth_size / labyrinth_difficulty_curve) * 100)) .. '%'
     local b = player.gui.top.add({ type = 'button', name = 'labyrinth_difficulty', caption = 'Difficulty: ' .. str })
     b.style.minimal_height = 38
     b.style.minimal_width = 38
@@ -74,8 +74,8 @@ end
 
 local function get_entity_chunk_position(entity_position)
     local chunk_position = {}
-    entity_position.x = math.floor(entity_position.x, 0)
-    entity_position.y = math.floor(entity_position.y, 0)
+    entity_position.x = math.floor(entity_position.x)
+    entity_position.y = math.floor(entity_position.y)
     for x = 0, 31, 1 do
         if (entity_position.x - x) % 32 == 0 then
             chunk_position.x = (entity_position.x - x) / 32
@@ -155,7 +155,7 @@ local function init_map()
         ['trees'] = { frequency = 'none', size = 'none', richness = 'none' },
         ['enemy-base'] = { frequency = 'none', size = 'none', richness = 'none' }
     }
-    if not this.settings.surface_index then
+    if not this.settings.surface_index or this.settings.surface_index == 1 then
         this.settings.surface_index = game.create_surface('labyrinth', map_gen_settings).index
     else
         this.settings.surface_index = SoftReset.soft_reset_map(game.surfaces[this.settings.surface_index], map_gen_settings, starting_items, true).index
@@ -164,6 +164,7 @@ local function init_map()
     this.settings.labyrinth_size = 1
 
     local surface = game.get_surface(this.settings.surface_index)
+    if not surface or not surface.valid then return end
 
     game.map_settings.pollution.pollution_restored_per_tree_damage = 0
     game.forces['player'].set_spawn_position({ 16, 0 }, surface)
@@ -310,15 +311,15 @@ local function grow_cell(chunk_position, surface) -- luacheck: ignore
     if evolution > 1 then
         evolution = 1
     end
-    game.forces.enemy.evolution_factor = evolution
+    game.forces.enemy.set_evolution_factor(evolution)
     for _, player in pairs(game.connected_players) do
         create_labyrinth_difficulty_gui(player)
     end
 
-    for x = 1, math_random(1, #valid_chunks), 1 do
-        local chunk_position = valid_chunks[x] --luacheck: ignore
-        local left_top_x = chunk_position.x * 32
-        local left_top_y = chunk_position.y * 32
+    for xx = 1, math_random(1, #valid_chunks), 1 do
+        local chunk_pos = valid_chunks[xx]
+        local left_top_x = chunk_pos.x * 32
+        local left_top_y = chunk_pos.y * 32
         local tile_to_insert
         local tiles = {}
         local entities_to_place = {
@@ -341,7 +342,7 @@ local function grow_cell(chunk_position, surface) -- luacheck: ignore
 
         local unique_room
         if this.settings.labyrinth_size > 12 and math_random(1, 50) == 1 then
-            layout = nil
+            layout = 'none'
             enemies = nil
             unique_room = unique_room_raffle[math_random(1, #unique_room_raffle)]
         else
@@ -456,7 +457,7 @@ local function grow_cell(chunk_position, surface) -- luacheck: ignore
             if not enemies then
                 break
             end
-            for x = 0, 31, 1 do --luacheck: ignore
+            for x = 0, 31, 1 do
                 for y = 0, 31, 1 do
                     local pos = { x = left_top_x + x, y = left_top_y + y }
                     if enemies == 'spawners' then
@@ -522,7 +523,7 @@ local function grow_cell(chunk_position, surface) -- luacheck: ignore
             placed_enemies = #entities_to_place.biters * 0.35 + #entities_to_place.spitters * 0.35 + #entities_to_place.enemy_buildings * 2 + #entities_to_place.worms * 3 + #entities_to_place.gun_turrets * 3 + #entities_to_place.allied_entities
         end
 
-        for x = 0, 31, 1 do --luacheck: ignore
+        for x = 0, 31, 1 do
             for y = 0, 31, 1 do
                 local pos = { x = left_top_x + x, y = left_top_y + y }
                 tile_to_insert = 'dirt-5'
@@ -560,7 +561,7 @@ local function grow_cell(chunk_position, surface) -- luacheck: ignore
                     end
                     local room = unique_rooms[unique_room]
                     for _, e in pairs(room.entities) do
-                        if math.floor(e.position.x, 0) == x and math.floor(e.position.y, 0) == y then
+                        if math.floor(e.position.x) == x and math.floor(e.position.y) == y then
                             if e.name == 'small-biter' or e.name == 'medium-biter' or e.name == 'big-biter' or e.name == 'behemoth-biter' then
                                 table.insert(entities_to_place.biters, { left_top_x + e.position.x, left_top_y + e.position.y })
                                 break
@@ -574,7 +575,7 @@ local function grow_cell(chunk_position, surface) -- luacheck: ignore
                         end
                     end
                     for _, t in pairs(room.tiles) do
-                        if math.floor(t.position.x, 0) == x and math.floor(t.position.y, 0) == y then
+                        if math.floor(t.position.x) == x and math.floor(t.position.y) == y then
                             tile_to_insert = t.name
                             break
                         end
@@ -591,7 +592,7 @@ local function grow_cell(chunk_position, surface) -- luacheck: ignore
                 decorative_names[#decorative_names + 1] = k
             end
         end
-        surface.regenerate_decorative(decorative_names, { chunk_position })
+        surface.regenerate_decorative(decorative_names, { chunk_pos })
 
         if unique_room == 'railway_roundabout' then
             local e = surface.create_entity { name = 'big-ship-wreck-1', position = { left_top_x + 16, left_top_y + 22 }, force = 'player' }
@@ -629,7 +630,7 @@ local function grow_cell(chunk_position, surface) -- luacheck: ignore
         end
 
         for _, p in pairs(entities_to_place.worms) do
-            local ev = math.ceil(game.forces.enemy.evolution_factor * 10, 0)
+            local ev = math.ceil(game.forces.enemy.get_evolution_factor() * 10)
             local raffle = worm_raffle[ev]
             local n = raffle[math.random(1, #raffle)]
             if surface.can_place_entity({ name = n, position = p }) then
@@ -640,7 +641,7 @@ local function grow_cell(chunk_position, surface) -- luacheck: ignore
         local threat_amount = this.settings.labyrinth_size * 4
 
         for _, p in pairs(entities_to_place.biters) do
-            local ev = math.ceil(game.forces.enemy.evolution_factor * 10, 0)
+            local ev = math.ceil(game.forces.enemy.get_evolution_factor() * 10)
             local raffle = biter_raffle[ev]
             local n = raffle[math.random(1, #raffle)]
             if threat_values[n] then
@@ -655,7 +656,7 @@ local function grow_cell(chunk_position, surface) -- luacheck: ignore
         end
 
         for _, p in pairs(entities_to_place.spitters) do
-            local ev = math.ceil(game.forces.enemy.evolution_factor * 10, 0)
+            local ev = math.ceil(game.forces.enemy.get_evolution_factor() * 10)
             local raffle = spitter_raffle[ev]
             local n = raffle[math.random(1, #raffle)]
             if threat_values[n] then
@@ -745,7 +746,7 @@ local function treasure_chest(position, surface)
         { { name = 'energy-shield-equipment', count = math_random(1, 2) },          weight = 2,  evolution_min = 0.3, evolution_max = 0.8 },
         { { name = 'energy-shield-mk2-equipment', count = 1 },                      weight = 2,  evolution_min = 0.7, evolution_max = 1 },
         { { name = 'exoskeleton-equipment', count = 1 },                            weight = 1,  evolution_min = 0.3, evolution_max = 1 },
-        { { name = 'fusion-reactor-equipment', count = 1 },                         weight = 1,  evolution_min = 0.5, evolution_max = 1 },
+        { { name = 'fission-reactor-equipment', count = 1 },                         weight = 1,  evolution_min = 0.5, evolution_max = 1 },
         { { name = 'night-vision-equipment', count = 1 },                           weight = 1,  evolution_min = 0.3, evolution_max = 0.8 },
         { { name = 'personal-laser-defense-equipment', count = 1 },                 weight = 2,  evolution_min = 0.4, evolution_max = 1 },
         { { name = 'exoskeleton-equipment', count = 1 },                            weight = 1,  evolution_min = 0.3, evolution_max = 1 },
@@ -760,7 +761,7 @@ local function treasure_chest(position, surface)
         { { name = 'explosives', count = math_random(25, 50) },                     weight = 1,  evolution_min = 0.2, evolution_max = 0.6 },
         { { name = 'lubricant-barrel', count = math_random(4, 10) },                weight = 1,  evolution_min = 0.3, evolution_max = 0.5 },
         { { name = 'rocket-fuel', count = math_random(4, 10) },                     weight = 2,  evolution_min = 0.3, evolution_max = 0.7 },
-        { { name = 'player-port', count = 1 },                                      weight = 1,  evolution_min = 0.2, evolution_max = 1 },
+        { { name = 'rocket-part', count = 1 },                                      weight = 1,  evolution_min = 0.2, evolution_max = 1 },
         { { name = 'steel-plate', count = math_random(50, 100) },                   weight = 2,  evolution_min = 0.1, evolution_max = 0.3 },
         { { name = 'nuclear-fuel', count = 1 },                                     weight = 2,  evolution_min = 0.7, evolution_max = 1 },
         { { name = 'burner-inserter', count = math_random(8, 16) },                 weight = 3,  evolution_min = 0.0, evolution_max = 0.1 },
@@ -835,7 +836,8 @@ local function treasure_chest(position, surface)
     }
     for _, t in pairs(chest_loot) do
         for _ = 1, t.weight, 1 do
-            if t.evolution_min <= game.forces.enemy.evolution_factor and t.evolution_max >= game.forces.enemy.evolution_factor then
+            local evo = game.forces.enemy.get_evolution_factor()
+            if t.evolution_min <= evo and t.evolution_max >= evo then
                 table.insert(chest_raffle, t[1])
             end
         end
@@ -1013,6 +1015,7 @@ local function on_player_built_tile(event)
     end
 
     local player = game.get_player(event.player_index)
+    if not player then return end
     local tiles = event.tiles
     restrict_landfill(player.surface, tiles)
 end
@@ -1024,7 +1027,7 @@ local function on_entity_died(event)
     end
     local name = entity.name
     local position = entity.position
-    local evolution = game.forces.enemy.evolution_factor
+    local evolution = game.forces.enemy.get_evolution_factor()
     local surface = entity.surface
     for _, fragment in pairs(biter_fragmentation) do
         if name == fragment[1] then
@@ -1039,7 +1042,7 @@ local function on_entity_died(event)
     end
 
     if name == 'biter-spawner' or name == 'spitter-spawner' then
-        local e = math.ceil(evolution * 10, 0)
+        local e = math.ceil(evolution * 10)
         for _, t in pairs(biter_building_inhabitants[e]) do
             for _ = 1, math.random(t[2], t[3]), 1 do
                 local p = surface.find_non_colliding_position(t[1], position, 6, 1)
@@ -1055,7 +1058,7 @@ local function on_entity_died(event)
             local evolution_drop_modifier = (0.1 - evolution) * 10
             if evolution_drop_modifier > 0 then
                 local amount = math.ceil(math.random(entity_drop_amount[name].low, entity_drop_amount[name].high) * evolution_drop_modifier)
-                surface.spill_item_stack(position, { name = ore_spill_raffle[math.random(1, #ore_spill_raffle)], count = amount }, true)
+                surface.spill_item_stack({position = position, stack = { name = ore_spill_raffle[math.random(1, #ore_spill_raffle)], count = amount }, enable_looted = true})
             end
         end
         return
@@ -1203,7 +1206,7 @@ local function on_player_joined_game(event)
     end
 
     if player.online_time < 5 and surface.is_chunk_generated({ 0, 0 }) then
-        player.teleport(surface.find_non_colliding_position('character', { 16, 0 }, 2, 1), surface.name)
+        player.teleport(surface.find_non_colliding_position('character', { 16, 0 }, 2, 1) or {0, 0}, surface.name)
     else
         if player.online_time < 5 then
             player.teleport({ 16, 0 }, surface.name)
@@ -1381,7 +1384,7 @@ local function on_tick()
         local area = { { -10000, -10000 }, { 10000, 0 } }
         local biters = surface.find_entities_filtered({ type = 'unit', force = 'enemy', area = area })
         for _, biter in pairs(biters) do
-            biter.set_command({ type = defines.command.attack_area, destination = { x = 16, y = 16 }, radius = 15, distraction = defines.distraction.by_anything })
+            biter.commandable.set_command({ type = defines.command.attack_area, destination = { x = 16, y = 16 }, radius = 15, distraction = defines.distraction.by_anything })
         end
         if #biters > 0 then
             game.print(attack_messages[math.random(1, #attack_messages)], { r = 0.75, g = 0, b = 0 })

@@ -31,7 +31,8 @@ local spawn_biters_token
 
 local Public = {}
 
-local starting_items = {
+local starting_items =
+{
     ['pistol'] = 1,
     ['firearm-magazine'] = 16,
     ['raw-fish'] = 3,
@@ -79,7 +80,8 @@ function Public.reset_game()
     map_gen_settings.water = 0.10
     map_gen_settings.terrain_segmentation = 3
     map_gen_settings.cliff_settings = { cliff_elevation_interval = 32, cliff_elevation_0 = 32 }
-    map_gen_settings.autoplace_controls = {
+    map_gen_settings.autoplace_controls =
+    {
         ['coal'] = { frequency = 4, size = 1.5, richness = 2 },
         ['stone'] = { frequency = 4, size = 1.5, richness = 2 },
         ['copper-ore'] = { frequency = 4, size = 1.5, richness = 2 },
@@ -89,9 +91,12 @@ function Public.reset_game()
         ['trees'] = { frequency = 2, size = 1, richness = 1 },
         ['enemy-base'] = { frequency = 'none', size = 'none', richness = 'none' }
     }
-    map_gen_settings.autoplace_settings = {
-        ['tile'] = {
-            settings = {
+    map_gen_settings.autoplace_settings =
+    {
+        ['tile'] =
+        {
+            settings =
+            {
                 ['deepwater'] = { frequency = 1, size = 0, richness = 1 },
                 ['deepwater-green'] = { frequency = 1, size = 0, richness = 1 },
                 ['water'] = { frequency = 1, size = 0, richness = 1 },
@@ -209,12 +214,14 @@ local show_fd_stats = function (player)
     end
 
     local frame =
-        player.gui.left.add {
+        player.gui.left.add
+        {
             type = 'frame',
             name = gui_id
         }
     local table =
-        frame.add {
+        frame.add
+        {
             type = 'table',
             name = table_id,
             column_count = 2
@@ -232,7 +239,8 @@ local show_fd_stats = function (player)
         local limit = v.limit
         local entry = { name, placed .. '/' .. limit }
         for _, value_entry in pairs(entry) do
-            table.add {
+            table.add
+            {
                 type = 'label',
                 caption = value_entry
             }
@@ -254,7 +262,8 @@ local add_fd_stats_button = function (player)
         player.gui.top[button_id].destroy()
     end
 
-    player.gui.top.add {
+    player.gui.top.add
+    {
         type = 'sprite-button',
         name = button_id,
         sprite = 'item/submachine-gun'
@@ -281,7 +290,8 @@ local on_market_item_purchased = function ()
     update_fd_stats()
 end
 
-local threat_values = {
+local threat_values =
+{
     ['small_biter'] = 1,
     ['medium_biter'] = 3,
     ['big_biter'] = 5,
@@ -296,129 +306,143 @@ local get_biter_initial_pool = function ()
     local this = FDT.get()
     local biter_pool
     if this.wave_count > 1750 then
-        biter_pool = {
-            { name = 'behemoth-biter',   threat = threat_values.behemoth_biter,   weight = 2 },
+        biter_pool =
+        {
+            { name = 'behemoth-biter', threat = threat_values.behemoth_biter, weight = 2 },
             { name = 'behemoth-spitter', threat = threat_values.behemoth_spitter, weight = 1 }
         }
         return biter_pool
     end
     if this.wave_count > 1500 then
-        biter_pool = {
-            { name = 'big-biter',        threat = threat_values.big_biter,        weight = 1 },
-            { name = 'behemoth-biter',   threat = threat_values.behemoth_biter,   weight = 2 },
+        biter_pool =
+        {
+            { name = 'big-biter', threat = threat_values.big_biter, weight = 1 },
+            { name = 'behemoth-biter', threat = threat_values.behemoth_biter, weight = 2 },
             { name = 'behemoth-spitter', threat = threat_values.behemoth_spitter, weight = 1 }
         }
         return biter_pool
     end
     if this.wave_count > 1250 then
-        biter_pool = {
-            { name = 'big-biter',        threat = threat_values.big_biter,        weight = 2 },
-            { name = 'behemoth-biter',   threat = threat_values.behemoth_biter,   weight = 2 },
+        biter_pool =
+        {
+            { name = 'big-biter', threat = threat_values.big_biter, weight = 2 },
+            { name = 'behemoth-biter', threat = threat_values.behemoth_biter, weight = 2 },
             { name = 'behemoth-spitter', threat = threat_values.behemoth_spitter, weight = 1 }
         }
         return biter_pool
     end
     if this.wave_count > 1000 then
-        biter_pool = {
-            { name = 'big-biter',        threat = threat_values.big_biter,        weight = 3 },
-            { name = 'behemoth-biter',   threat = threat_values.behemoth_biter,   weight = 2 },
+        biter_pool =
+        {
+            { name = 'big-biter', threat = threat_values.big_biter, weight = 3 },
+            { name = 'behemoth-biter', threat = threat_values.behemoth_biter, weight = 2 },
             { name = 'behemoth-spitter', threat = threat_values.behemoth_spitter, weight = 1 }
         }
         return biter_pool
     end
     if game.forces.enemy.evolution_factor < 0.1 then
-        biter_pool = {
-            { name = 'small-biter',   threat = threat_values.small_biter,   weight = 3 },
+        biter_pool =
+        {
+            { name = 'small-biter', threat = threat_values.small_biter, weight = 3 },
             { name = 'small-spitter', threat = threat_values.small_spitter, weight = 1 }
         }
         return biter_pool
     end
     if game.forces.enemy.evolution_factor < 0.2 then
-        biter_pool = {
-            { name = 'small-biter',    threat = threat_values.small_biter,    weight = 10 },
-            { name = 'medium-biter',   threat = threat_values.medium_biter,   weight = 2 },
-            { name = 'small-spitter',  threat = threat_values.small_spitter,  weight = 5 },
+        biter_pool =
+        {
+            { name = 'small-biter', threat = threat_values.small_biter, weight = 10 },
+            { name = 'medium-biter', threat = threat_values.medium_biter, weight = 2 },
+            { name = 'small-spitter', threat = threat_values.small_spitter, weight = 5 },
             { name = 'medium-spitter', threat = threat_values.medium_spitter, weight = 1 }
         }
         return biter_pool
     end
     if game.forces.enemy.evolution_factor < 0.3 then
-        biter_pool = {
-            { name = 'small-biter',    threat = threat_values.small_biter,    weight = 18 },
-            { name = 'medium-biter',   threat = threat_values.medium_biter,   weight = 6 },
-            { name = 'small-spitter',  threat = threat_values.small_spitter,  weight = 8 },
+        biter_pool =
+        {
+            { name = 'small-biter', threat = threat_values.small_biter, weight = 18 },
+            { name = 'medium-biter', threat = threat_values.medium_biter, weight = 6 },
+            { name = 'small-spitter', threat = threat_values.small_spitter, weight = 8 },
             { name = 'medium-spitter', threat = threat_values.medium_spitter, weight = 3 },
-            { name = 'big-biter',      threat = threat_values.big_biter,      weight = 1 }
+            { name = 'big-biter', threat = threat_values.big_biter, weight = 1 }
         }
         return biter_pool
     end
     if game.forces.enemy.evolution_factor < 0.4 then
-        biter_pool = {
-            { name = 'small-biter',    threat = threat_values.small_biter,    weight = 2 },
-            { name = 'medium-biter',   threat = threat_values.medium_biter,   weight = 8 },
-            { name = 'big-biter',      threat = threat_values.big_biter,      weight = 2 },
-            { name = 'small-spitter',  threat = threat_values.small_spitter,  weight = 1 },
+        biter_pool =
+        {
+            { name = 'small-biter', threat = threat_values.small_biter, weight = 2 },
+            { name = 'medium-biter', threat = threat_values.medium_biter, weight = 8 },
+            { name = 'big-biter', threat = threat_values.big_biter, weight = 2 },
+            { name = 'small-spitter', threat = threat_values.small_spitter, weight = 1 },
             { name = 'medium-spitter', threat = threat_values.medium_spitter, weight = 4 },
-            { name = 'big-spitter',    threat = threat_values.big_spitter,    weight = 1 }
+            { name = 'big-spitter', threat = threat_values.big_spitter, weight = 1 }
         }
         return biter_pool
     end
     if game.forces.enemy.evolution_factor < 0.5 then
-        biter_pool = {
-            { name = 'small-biter',    threat = threat_values.small_biter,    weight = 2 },
-            { name = 'medium-biter',   threat = threat_values.medium_biter,   weight = 4 },
-            { name = 'big-biter',      threat = threat_values.big_biter,      weight = 8 },
-            { name = 'small-spitter',  threat = threat_values.small_spitter,  weight = 1 },
+        biter_pool =
+        {
+            { name = 'small-biter', threat = threat_values.small_biter, weight = 2 },
+            { name = 'medium-biter', threat = threat_values.medium_biter, weight = 4 },
+            { name = 'big-biter', threat = threat_values.big_biter, weight = 8 },
+            { name = 'small-spitter', threat = threat_values.small_spitter, weight = 1 },
             { name = 'medium-spitter', threat = threat_values.medium_spitter, weight = 2 },
-            { name = 'big-spitter',    threat = threat_values.big_spitter,    weight = 4 }
+            { name = 'big-spitter', threat = threat_values.big_spitter, weight = 4 }
         }
         return biter_pool
     end
     if game.forces.enemy.evolution_factor < 0.6 then
-        biter_pool = {
-            { name = 'medium-biter',   threat = threat_values.medium_biter,   weight = 4 },
-            { name = 'big-biter',      threat = threat_values.big_biter,      weight = 8 },
+        biter_pool =
+        {
+            { name = 'medium-biter', threat = threat_values.medium_biter, weight = 4 },
+            { name = 'big-biter', threat = threat_values.big_biter, weight = 8 },
             { name = 'medium-spitter', threat = threat_values.medium_spitter, weight = 2 },
-            { name = 'big-spitter',    threat = threat_values.big_spitter,    weight = 4 }
+            { name = 'big-spitter', threat = threat_values.big_spitter, weight = 4 }
         }
         return biter_pool
     end
     if game.forces.enemy.evolution_factor < 0.7 then
-        biter_pool = {
-            { name = 'behemoth-biter',   threat = threat_values.small_biter,    weight = 2 },
-            { name = 'medium-biter',     threat = threat_values.medium_biter,   weight = 12 },
-            { name = 'big-biter',        threat = threat_values.big_biter,      weight = 20 },
-            { name = 'behemoth-spitter', threat = threat_values.small_spitter,  weight = 1 },
-            { name = 'medium-spitter',   threat = threat_values.medium_spitter, weight = 6 },
-            { name = 'big-spitter',      threat = threat_values.big_spitter,    weight = 10 }
+        biter_pool =
+        {
+            { name = 'behemoth-biter', threat = threat_values.small_biter, weight = 2 },
+            { name = 'medium-biter', threat = threat_values.medium_biter, weight = 12 },
+            { name = 'big-biter', threat = threat_values.big_biter, weight = 20 },
+            { name = 'behemoth-spitter', threat = threat_values.small_spitter, weight = 1 },
+            { name = 'medium-spitter', threat = threat_values.medium_spitter, weight = 6 },
+            { name = 'big-spitter', threat = threat_values.big_spitter, weight = 10 }
         }
         return biter_pool
     end
     if game.forces.enemy.evolution_factor < 0.8 then
-        biter_pool = {
-            { name = 'behemoth-biter',   threat = threat_values.small_biter,    weight = 2 },
-            { name = 'medium-biter',     threat = threat_values.medium_biter,   weight = 4 },
-            { name = 'big-biter',        threat = threat_values.big_biter,      weight = 10 },
-            { name = 'behemoth-spitter', threat = threat_values.small_spitter,  weight = 1 },
-            { name = 'medium-spitter',   threat = threat_values.medium_spitter, weight = 2 },
-            { name = 'big-spitter',      threat = threat_values.big_spitter,    weight = 5 }
+        biter_pool =
+        {
+            { name = 'behemoth-biter', threat = threat_values.small_biter, weight = 2 },
+            { name = 'medium-biter', threat = threat_values.medium_biter, weight = 4 },
+            { name = 'big-biter', threat = threat_values.big_biter, weight = 10 },
+            { name = 'behemoth-spitter', threat = threat_values.small_spitter, weight = 1 },
+            { name = 'medium-spitter', threat = threat_values.medium_spitter, weight = 2 },
+            { name = 'big-spitter', threat = threat_values.big_spitter, weight = 5 }
         }
         return biter_pool
     end
     if game.forces.enemy.evolution_factor <= 0.9 then
-        biter_pool = {
-            { name = 'big-biter',        threat = threat_values.big_biter,        weight = 12 },
-            { name = 'behemoth-biter',   threat = threat_values.behemoth_biter,   weight = 2 },
-            { name = 'big-spitter',      threat = threat_values.big_spitter,      weight = 6 },
+        biter_pool =
+        {
+            { name = 'big-biter', threat = threat_values.big_biter, weight = 12 },
+            { name = 'behemoth-biter', threat = threat_values.behemoth_biter, weight = 2 },
+            { name = 'big-spitter', threat = threat_values.big_spitter, weight = 6 },
             { name = 'behemoth-spitter', threat = threat_values.behemoth_spitter, weight = 1 }
         }
         return biter_pool
     end
     if game.forces.enemy.evolution_factor <= 1 then
-        biter_pool = {
-            { name = 'big-biter',        threat = threat_values.big_biter,        weight = 4 },
-            { name = 'behemoth-biter',   threat = threat_values.behemoth_biter,   weight = 2 },
-            { name = 'big-spitter',      threat = threat_values.big_spitter,      weight = 2 },
+        biter_pool =
+        {
+            { name = 'big-biter', threat = threat_values.big_biter, weight = 4 },
+            { name = 'behemoth-biter', threat = threat_values.behemoth_biter, weight = 2 },
+            { name = 'big-spitter', threat = threat_values.big_spitter, weight = 2 },
             { name = 'behemoth-spitter', threat = threat_values.behemoth_spitter, weight = 1 }
         }
         return biter_pool
@@ -494,12 +518,13 @@ local get_x_coord_raffle_table = function ()
     return t
 end
 
-local attack_group_count_thresholds = {
-    { 0,    1 },
-    { 50,   2 },
-    { 100,  3 },
-    { 150,  4 },
-    { 200,  5 },
+local attack_group_count_thresholds =
+{
+    { 0, 1 },
+    { 50, 2 },
+    { 100, 3 },
+    { 150, 4 },
+    { 200, 5 },
     { 1000, 6 },
     { 2000, 7 },
     { 3000, 8 }
@@ -523,13 +548,15 @@ local send_unit_group = function (unit_group)
         return
     end
 
-    commands[#commands + 1] = {
+    commands[#commands + 1] =
+    {
         type = defines.command.attack_area,
         destination = { x = market.position.x, y = market.position.y },
         radius = 256,
         distraction = defines.distraction.by_anything
     }
-    commands[#commands + 1] = {
+    commands[#commands + 1] =
+    {
         type = defines.command.attack,
         target = market,
         distraction = defines.distraction.by_anything
@@ -558,8 +585,9 @@ local spawn_boss_units = function (surface)
         if amount > 1000 then
             amount = 1000
         end
-        this.boss_waves[this.wave_count] = {
-            { name = 'behemoth-biter',   count = floor(amount / 20) },
+        this.boss_waves[this.wave_count] =
+        {
+            { name = 'behemoth-biter', count = floor(amount / 20) },
             { name = 'behemoth-spitter', count = floor(amount / 40) }
         }
     end
@@ -601,7 +629,8 @@ local wake_up_the_biters = function (surface)
 
     surface.set_multi_command(
         {
-            command = {
+            command =
+            {
                 type = defines.command.attack,
                 target = market,
                 distraction = defines.distraction.none
@@ -665,8 +694,8 @@ local biter_attack_wave = function ()
 
     if this.spawned_biters > biter_count_limit then
         wake_up_the_biters(surface)
-        game.print('Max biter count reached, waking up idle biters!', Color.warning)
-        game.print('Wave number will not increase.', Color.warning)
+        game.print('Max biter count reached, waking up idle biters!', { color = Color.warning })
+        game.print('Wave number will not increase.', { color = Color.warning })
         return
     end
 
@@ -966,22 +995,26 @@ local market_kill_visuals = function ()
     surface.spill_item_stack(this.market.position, { name = 'raw-fish', count = 1024 }, true)
 end
 
-local biter_splash_damage = {
-    ['medium-biter'] = {
+local biter_splash_damage =
+{
+    ['medium-biter'] =
+    {
         visuals = { 'blood-explosion-big', 'big-explosion' },
         radius = 1.5,
         damage_min = 50,
         damage_max = 100,
         chance = 32
     },
-    ['big-biter'] = {
+    ['big-biter'] =
+    {
         visuals = { 'blood-explosion-huge', 'ground-explosion' },
         radius = 2,
         damage_min = 75,
         damage_max = 150,
         chance = 48
     },
-    ['behemoth-biter'] = {
+    ['behemoth-biter'] =
+    {
         visuals = { 'blood-explosion-huge', 'big-artillery-explosion' },
         radius = 2.5,
         damage_min = 100,
@@ -1091,7 +1124,8 @@ local on_player_joined_game = function (event)
     end
 end
 
-local deny_buildings_tbl = {
+local deny_buildings_tbl =
+{
     ['radar'] = true,
     ['roboport'] = true
 }
@@ -1286,7 +1320,8 @@ local on_player_or_robot_built_tile = function (event)
     if not tiles then
         return
     end
-    local area = {
+    local area =
+    {
         left_top = { x = -944, y = -800 },
         right_bottom = { x = 944, y = 90 }
     }

@@ -3,13 +3,16 @@ local tick_frequency = 200
 local Global = require 'utils.global'
 local Alert = require 'utils.alert'
 local Event = require 'utils.event'
+local Task = require 'utils.task_token'
 
-local this = {
-    settings = {
+local this =
+{
+    settings =
+    {
         is_enabled = false,
         offline_players_surface_removal = false,
-        active_surface_index = nil,      -- needs to be set else this will fail
-        required_online_time = 18000,    -- nearest prime to 5 minutes in ticks
+        active_surface_index = nil, -- needs to be set else this will fail
+        required_online_time = 18000, -- nearest prime to 5 minutes in ticks
         clear_player_after_tick = 108000 -- nearest prime to 30 minutes in ticks
     },
     offline_players = {}
@@ -25,6 +28,71 @@ Global.register(
 local Public = { events = { remove_surface = Event.generate_event_name('remove_surface') } }
 local remove = table.remove
 local insert = table.insert
+
+local zoom_to_pos_token =
+    Task.register(
+        function (event)
+            local player_index = event.player_index
+            local player = game.get_player(player_index)
+            if not player or not player.valid then
+                return
+            end
+
+            local data = event.data
+            if not data then
+                return
+            end
+
+            if player.controller_type == defines.controllers.remote or player.controller_type == defines.controllers.cutscene then
+                return
+            end
+
+            local corpse
+            local corpses = player.surface.find_entities_filtered({ position = data.position, type = 'character-corpse' })
+            if corpses and corpses[1] then
+                corpse = corpses[1]
+            end
+
+            local cutscene_1 =
+            {
+                position = data.position,
+                target = corpse,
+                zoom = 4,
+                transition_time = 200,
+                time_to_wait = 200,
+            }
+
+            local cutscene_2 =
+            {
+                position = player.physical_position,
+                target = corpse,
+                zoom = 1,
+                transition_time = 200,
+                time_to_wait = 10,
+            }
+
+            if not cutscene_1 or not cutscene_2 then
+                return
+            end
+
+            if not cutscene_1.position or not cutscene_2.position then
+                return
+            end
+
+            if not player.position or not player.surface then
+                return
+            end
+
+            player.set_controller(
+                {
+                    type = defines.controllers.cutscene,
+                    waypoints = { cutscene_1, cutscene_2 },
+                    start_position = player.position,
+                    surface = player.surface,
+                    start_zoom = 1
+                })
+        end
+    )
 
 function Public.dump_expired_players()
     if not this.settings.is_enabled then
@@ -114,10 +182,11 @@ function Public.dump_expired_players()
                                 end
 
                                 local message = ({ 'main.cleaner', name })
-                                local data = {
+                                local data =
+                                {
                                     position = pos
                                 }
-                                Alert.alert_all_players_location(data, message, nil, 20)
+                                Alert.alert_all_players_location(data, message, nil, 40)
 
                                 e.die('neutral')
                             else
@@ -213,5 +282,10 @@ Event.add(
         end
     end
 )
+
+Event.on_init(
+    function ()
+        Alert.add_custom_zoom_to_pos(zoom_to_pos_token)
+    end)
 
 return Public

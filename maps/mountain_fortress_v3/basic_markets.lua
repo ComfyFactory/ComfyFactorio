@@ -144,6 +144,7 @@ local random = math.random
 local floor = math.floor
 
 local blacklist = {
+    ['atomic-bomb'] = true,
     ['cargo-wagon'] = true,
     ['locomotive'] = true,
     ['artillery-wagon'] = true,

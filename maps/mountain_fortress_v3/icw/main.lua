@@ -8,6 +8,7 @@ local Public = {}
 Public.reset = ICW.reset
 Public.get_table = ICW.get
 Public.get = ICW.get
+Public.set = ICW.set
 
 local function on_entity_died(event)
     local entity = event.entity
@@ -195,5 +196,14 @@ Event.add(
         return Functions.create_wagon(icw, event.entity)
     end
 )
+Event.add(defines.events.on_player_warp_entered, function (event)
+    local icw = ICW.get()
+    local player = game.players[event.player_index]
+    if player.controller_type == defines.controllers.remote then
+        return
+    end
+
+    Functions.use_cargo_wagon_door_with_entity(icw, player, event.entity)
+end)
 
 return Public

@@ -206,7 +206,7 @@ Commands.new('refresh', 'Reloads game script')
     :add_alias('reload')
     :callback(
         function (player)
-            game.print('Reloading game script...', Color.warning)
+            game.print('Reloading game script...', { color = Color.warning })
             Server.to_discord_bold(player.name .. ' is reloading the game script.')
             Discord.send_notification_raw(nil, player.name .. ' is reloading the game script.')
             game.reload_script()
@@ -223,7 +223,7 @@ Commands.new('spaghetti', 'Toggle between disabling bots.')
         function (player, args)
             local force = player.force
             if args == 'true' then
-                game.print('The world has been spaghettified!', Color.success)
+                game.print('The world has been spaghettified!', { color = Color.success })
                 force.technologies['logistic-system'].enabled = false
                 force.technologies['construction-robotics'].enabled = false
                 force.technologies['logistic-robotics'].enabled = false
@@ -242,7 +242,7 @@ Commands.new('spaghetti', 'Toggle between disabling bots.')
                 this.spaghetti_enabled = true
                 return true
             elseif args == 'false' then
-                game.print('The world is no longer spaghett!', Color.yellow)
+                game.print('The world is no longer spaghett!', { color = Color.yellow })
                 force.technologies['logistic-system'].enabled = true
                 force.technologies['construction-robotics'].enabled = true
                 force.technologies['logistic-robotics'].enabled = true
@@ -381,7 +381,7 @@ Commands.new('creative', 'Enables creative_mode.')
         function (player, args)
             local force = player.force
             if args == 'true' then
-                game.print('[CREATIVE] ' .. player.name .. ' has activated creative-mode!', Color.warning)
+                game.print('[CREATIVE] ' .. player.name .. ' has activated creative-mode!', { color = Color.warning })
                 Server.to_discord_bold(table.concat { '[Creative] ' .. player.name .. ' has activated creative-mode!' })
 
                 Modifiers.set('creative_enabled', true)
@@ -396,7 +396,7 @@ Commands.new('creative', 'Enables creative_mode.')
                     end
                 end
             elseif args == 'false' then
-                game.print('[CREATIVE] ' .. player.name .. ' has deactivated creative-mode!', Color.warning)
+                game.print('[CREATIVE] ' .. player.name .. ' has deactivated creative-mode!', { color = Color.warning })
                 Server.to_discord_bold(table.concat { '[Creative] ' .. player.name .. ' has deactivated creative-mode!' })
 
                 Modifiers.set('creative_enabled', false)
@@ -442,7 +442,7 @@ Commands.new('delete_uncharted_chunks', 'Deletes all chunks that are not charted
             end
 
             local message = player.name .. ' deleted ' .. count .. ' uncharted chunks!'
-            game.print(message, Color.warning)
+            game.print(message, { color = Color.warning })
             Server.to_discord_bold(table.concat { message })
         end
     )
@@ -465,7 +465,7 @@ local function clear_corpses(cmd)
     local p = player.print
     if not trusted[player.name] then
         if not player.admin then
-            p('[ERROR] Only admins and trusted weebs are allowed to run this command!', Color.fail)
+            p('[ERROR] Only admins and trusted weebs are allowed to run this command!', { color = Color.fail })
             return
         end
     end

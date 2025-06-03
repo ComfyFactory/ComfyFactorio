@@ -1,11 +1,10 @@
 local Global = require 'utils.global'
 local Public = require 'maps.mountain_fortress_v3.table'
-local surface_name = Public.scenario_name
 local zone_settings = Public.zone_settings
 
-local this = {
+local this =
+{
     active_surface_index = nil,
-    surface_name = surface_name
 }
 
 Global.register(
@@ -15,41 +14,42 @@ Global.register(
     end
 )
 
-local function exclude_surface(surface)
+local function exclude_surface(surface, state)
     for _, force in pairs(game.forces) do
-        force.set_surface_hidden(surface, true)
+        force.set_surface_hidden(surface, state or true)
     end
 end
 
+
 function Public.create_surface()
-    local map_gen_settings = {
+    exclude_surface(game.surfaces.nauvis)
+
+    local map_gen_settings =
+    {
         ['seed'] = math.random(10000, 99999),
         ['width'] = zone_settings.zone_width,
         ['water'] = 0.001,
         ['starting_area'] = 1,
         ['cliff_settings'] = { cliff_elevation_interval = 0, cliff_elevation_0 = 0 },
         ['default_enable_all_autoplace_controls'] = false,
-        ['autoplace_settings'] = {
+        ['autoplace_settings'] =
+        {
             ['entity'] = { treat_missing_as_default = false },
-            ['tile'] = {
-                settings = {
-                    ['deepwater'] = { frequency = 1, size = 0, richness = 1 },
-                    ['deepwater-green'] = { frequency = 1, size = 0, richness = 1 },
-                    ['water'] = { frequency = 1, size = 0, richness = 1 },
-                    ['water-green'] = { frequency = 1, size = 0, richness = 1 },
-                    ['water-mud'] = { frequency = 1, size = 0, richness = 1 },
-                    ['water-shallow'] = { frequency = 1, size = 0, richness = 1 }
-                },
-                treat_missing_as_default = true
-            },
-            ['decorative'] = { treat_missing_as_default = false }
+            ['tile'] = { treat_missing_as_default = false },
         },
-        property_expression_names = {
+        property_expression_names =
+        {
             cliffiness = 0,
             ['tile:water:probability'] = -10000,
             ['tile:deep-water:probability'] = -10000
         }
     }
+
+    if Public.is_modded_pt2 then
+        map_gen_settings.autoplace_settings.decorative = { treat_missing_as_default = false }
+    else
+        map_gen_settings.autoplace_settings.decorative = prototypes.space_location.nauvis.map_gen_settings.autoplace_settings.decorative
+    end
 
     local mine = {}
     mine['control-setting:moisture:bias'] = 0.33
@@ -58,16 +58,36 @@ function Public.create_surface()
     map_gen_settings.property_expression_names = mine
     map_gen_settings.default_enable_all_autoplace_controls = false
 
+    local starting_planet = Public.get_planet()
+    local planets = Public.get_planets()
 
-    if not this.active_surface_index then
-        this.active_surface_index = game.surfaces.fortress.index
-        -- this.active_surface_index = game.planets['fulgora'].create_surface(surface_name, map_gen_settings).index
+    if Public.is_modded then
+        if not this.active_surface_index then
+            this.active_surface_index = game.planets[starting_planet].create_surface().index
+        else
+            this.active_surface_index = Public.soft_reset_map(game.surfaces[starting_planet], map_gen_settings).index
+        end
     else
-        this.active_surface_index = Public.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings).index
+        if not this.active_surface_index then
+            this.active_surface_index = game.surfaces.fortress.index
+        else
+            this.active_surface_index = Public.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings).index
+        end
     end
 
-    game.surfaces.fortress.map_gen_settings = map_gen_settings
+    game.surfaces[starting_planet].map_gen_settings = map_gen_settings
 
+    if has_space_age() then
+        for planet, _ in pairs(planets) do
+            if planet ~= 'nauvis' then
+                game.planets[planet].create_surface()
+            end
+            local old_settings = game.surfaces[planet].map_gen_settings
+            old_settings.seed = map_gen_settings.seed
+            old_settings.width = map_gen_settings.width
+            game.surfaces[planet].map_gen_settings = old_settings
+        end
+    end
 
     -- this.soft_reset_counter = Public.get_reset_counter()
 
@@ -75,8 +95,14 @@ function Public.create_surface()
 end
 
 function Public.create_landing_surface()
-    local map_gen_settings = {
-        autoplace_controls = {
+    if game.surfaces['Init'] then
+        return
+    end
+
+    local map_gen_settings =
+    {
+        autoplace_controls =
+        {
             ['coal'] = { frequency = 25, size = 3, richness = 3 },
             ['stone'] = { frequency = 25, size = 3, richness = 3 },
             ['copper-ore'] = { frequency = 25, size = 3, richness = 3 },
@@ -129,7 +155,8 @@ function Public.create_landing_surface()
         e.minable_flag = false
     end
 
-    rendering.draw_text {
+    rendering.draw_text
+    {
         text = '♦ Landing zone ♦',
         surface = surface,
         target = { 0, -50 },
@@ -146,11 +173,6 @@ end
 --- Returns the surface index.
 function Public.get_active_surface()
     return this.active_surface
-end
-
---- Returns the surface name.
-function Public.get_surface_name()
-    return this.surface_name
 end
 
 --- Returns the amount of times the server has soft restarted.

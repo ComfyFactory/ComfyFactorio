@@ -9,10 +9,12 @@ local Color = require 'utils.color_presets'
 
 local module_name = Gui.uid_name()
 
-local this = {
+local this =
+{
     player_group = {},
     join_spam_protection = {},
-    tag_groups = {
+    tag_groups =
+    {
         ['Miner'] = { name = 'Miner', founder = 'script', description = '[img=item/electric-mining-drill]', static = true },
         ['Smeltery'] = { name = 'Smeltery', founder = 'script', description = '[img=item/stone-furnace]', static = true },
         ['Power'] = { name = 'Power', founder = 'script', description = '[img=item/big-electric-pole]', static = true },
@@ -50,11 +52,12 @@ local function build_group_gui(data)
 
     local t = frame.add({ type = 'table', column_count = 5 })
 
-    local headings = {
-        { { 'gui.title' },       group_name_width },
+    local headings =
+    {
+        { { 'gui.title' }, group_name_width },
         { { 'gui.description' }, description_width },
-        { { 'gui.members' },     members_width * member_columns },
-        { '',                    actions_width }
+        { { 'gui.members' }, members_width * member_columns },
+        { '', actions_width }
     }
     for _, h in pairs(headings) do
         local l = t.add({ type = 'label', caption = h[1] })
@@ -123,7 +126,8 @@ local function build_group_gui(data)
             for _, p in pairs(game.connected_players) do
                 if group.name == this.player_group[p.name] then
                     l = ttt.add({ type = 'label', caption = p.name })
-                    color = {
+                    color =
+                    {
                         r = p.color.r * 0.6 + 0.4,
                         g = p.color.g * 0.6 + 0.4,
                         b = p.color.b * 0.6 + 0.4,
@@ -303,12 +307,14 @@ local function on_gui_click(event)
                 return
             end
 
-            this.tag_groups[new_group_name] = {
+            this.tag_groups[new_group_name] =
+            {
                 name = new_group_name,
                 description = new_group_description,
                 founder = player.name
             }
-            local color = {
+            local color =
+            {
                 r = player.color.r * 0.7 + 0.3,
                 g = player.color.g * 0.7 + 0.3,
                 b = player.color.b * 0.7 + 0.3,
@@ -345,7 +351,8 @@ local function on_gui_click(event)
                 str = str .. ']'
                 player.tag = str
                 if game.tick - this.join_spam_protection[player.name] > 600 then
-                    local color = {
+                    local color =
+                    {
                         r = player.color.r * 0.7 + 0.3,
                         g = player.color.g * 0.7 + 0.3,
                         b = player.color.b * 0.7 + 0.3,
@@ -417,7 +424,7 @@ Gui.on_click(
     module_name,
     function (event)
         local player = event.player
-        Gui.reload_active_tab(player)
+        Gui.reload_active_tab(player, nil, 'Groups')
     end
 )
 

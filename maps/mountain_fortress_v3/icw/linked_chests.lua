@@ -108,20 +108,24 @@ local function create_message(player, action, source_position, destination_posit
         return
     end
 
-    local data = {
+    local data =
+    {
         title = 'Mountain_fortress_v3',
         description = 'Linked chests action was triggered.',
-        field1 = {
+        field1 =
+        {
             text1 = player.name,
             text2 = action
         },
-        field2 = {
+        field2 =
+        {
             text1 = 'Source position:',
             text2 = '{x = ' .. source_position.x .. ', y = ' .. source_position.y .. '}'
         }
     }
     if destination_position then
-        data.field3 = {
+        data.field3 =
+        {
             text1 = 'Destination position:',
             text2 = '{x = ' .. destination_position.x .. ', y = ' .. destination_position.y .. '}'
         }
@@ -136,12 +140,14 @@ local function draw_convert_chest_button(parent, entity)
         Gui.destroy(frame)
     end
 
-    local anchor = {
+    local anchor =
+    {
         gui = defines.relative_gui_type.container_gui,
         position = defines.relative_gui_position.right
     }
     frame =
-        parent.add {
+        parent.add
+        {
             type = 'frame',
             name = chest_converter_frame_for_player_name,
             anchor = anchor,
@@ -149,7 +155,8 @@ local function draw_convert_chest_button(parent, entity)
         }
 
     local button =
-        frame.add {
+        frame.add
+        {
             type = 'sprite-button',
             sprite = 'item/' .. entity.name,
             name = convert_chest_to_linked,
@@ -235,7 +242,7 @@ local function fetch_share(text)
     return false
 end
 
-local function create_chest(entity, name, mode)
+local function create_chest(entity, name, mode, icw)
     entity.active = false
     entity.destructible = false
     local unit_number = entity.unit_number
@@ -248,12 +255,15 @@ local function create_chest(entity, name, mode)
     end
 
     if not does_exists(unit_number) then
-        local container = {
+        local container =
+        {
             chest = entity,
             unit_number = unit_number,
             mode = 2,
+            icw = icw or false,
             link_id = entity.link_id,
-            share = {
+            share =
+            {
                 name = name or entity.unit_number
             }
         }
@@ -378,7 +388,7 @@ local function get_all_chests(unit_number)
     end
     local containers = this.main_containers
     for check_unit_number, container in pairs(containers) do
-        if container.chest and container.chest.valid and container.share.name ~= '' and container.share.name ~= container.unit_number and container.chest.surface.index == loco_surface.index then
+        if container.chest and container.chest.valid and container.share.name ~= '' and container.share.name ~= container.unit_number and (container.chest.surface.index == loco_surface.index or container.chest.position.x > 700) then
             if check_unit_number ~= unit_number then
                 insert(t, container)
             end
@@ -476,7 +486,8 @@ local function refresh_main_frame(data)
                 local link_chest_label = linker.add({ type = 'label', caption = 'Link with chest:\n', tooltip = linker_tooltip })
                 link_chest_label.style.font = 'heading-2'
                 local chest_scroll_pane =
-                    linker.add {
+                    linker.add
+                    {
                         type = 'scroll-pane',
                         vertical_scroll_policy = 'auto',
                         horizontal_scroll_policy = 'never'
@@ -512,7 +523,8 @@ local function refresh_main_frame(data)
                             added_total = added_total + 1
                             added_total_row = added_total_row + 1
                             local chestitem =
-                                flowlinker.add {
+                                flowlinker.add
+                                {
                                     type = 'sprite-button',
                                     name = item_name_frame_name,
                                     style = 'slot_button',
@@ -598,7 +610,8 @@ local function gui_opened(event)
     local volatile_tbl = controls2.add { type = 'table', column_count = 1 }
 
     local btn =
-        btntbl.add {
+        btntbl.add
+        {
             type = 'sprite-button',
             tooltip = '[color=blue]Info![/color]\nChest ID: ' .. unit_number .. '\n\nFor a smoother link:\nSHIFT + RMB on the source entity\nSHIFT + LMB on the destination entity.\n\nTo mine a linked chest, disconnect the link first.',
             sprite = Gui.info_icon
@@ -608,7 +621,8 @@ local function gui_opened(event)
     btn.enabled = false
     btn.focus()
 
-    this.linked_gui[player.name] = {
+    this.linked_gui[player.name] =
+    {
         item_frame = items,
         frame = frame,
         volatile_tbl = volatile_tbl,
@@ -865,7 +879,8 @@ local function update_gui()
                 tbl[container.requested_item].number = item_count
             else
                 btn =
-                    tbl.add {
+                    tbl.add
+                    {
                         type = 'sprite-button',
                         sprite = 'item/' .. item_name,
                         style = 'slot_button',
@@ -933,7 +948,7 @@ local function on_gui_checked_state_changed(event)
 
     if element.name == 'disconnect_state' then
         container.chest.link_id = uid_counter()
-        AG.append_scenario_history(player, container.chest, player.name .. ' disconnected link from chest (' .. container.unit_number .. ') to chest (' .. container.linked_to or 'unknown' .. ')')
+        AG.append_scenario_history(player, container.chest, player.name .. ' disconnected link from chest (' .. container.unit_number .. ') to chest (' .. (container.linked_to and container.linked_to or 'UNKNOWN') .. ')')
         local destination_chest = fetch_container(container.linked_to)
         if destination_chest then
             create_message(player, 'Disconnected link', container.chest.position, destination_chest.chest.position)
@@ -1118,7 +1133,7 @@ local function on_entity_settings_pasted(event)
     player.print(module_name .. 'Successfully pasted settings.', { color = Color.success })
 end
 
-function Public.add(surface, position, force, name, mode)
+function Public.add(surface, position, force, name, icw)
     if not surface or not surface.valid then
         return
     end
@@ -1128,9 +1143,9 @@ function Public.add(surface, position, force, name, mode)
         return
     end
 
-    mode = mode or 1
+    local mode = 1
 
-    create_chest(entity, name, mode)
+    create_chest(entity, name, mode, icw)
     return entity
 end
 
@@ -1176,7 +1191,7 @@ Event.on_nth_tick(
         for index, container in pairs(containers) do
             if container then
                 if container.chest and container.chest.valid then
-                    if container.chest.surface.index == active_surface_index then
+                    if container.chest.surface.index == active_surface_index and not container.icw then
                         if not WPT.locomotive.is_around_train(container.chest) then
                             container.chest.minable_flag = true
                             container.chest.link_id = 99999
@@ -1185,7 +1200,7 @@ Event.on_nth_tick(
                             goto continue
                         end
                     end
-                    if container.chest.link_id == 99999 then
+                    if container.chest.link_id == 99999 and not container.icw then
                         container.chest.minable_flag = true
                         container.chest.get_inventory(defines.inventory.chest).set_bar(1)
                         remove_chest(container.unit_number)
@@ -1436,12 +1451,21 @@ local function on_player_changed_position(event)
         return
     end
 
+    local position = player.physical_position
+
+    local zone_settings = WPT.zone_settings
+
+    if (position.x < zone_settings.zone_width / 2 and position.x >= -zone_settings.zone_width / 2) then
+        return
+    end
+
     if data and data.frame and data.frame.valid then
         if data.entity and data.entity.valid then
-            local position = data.entity.position
-            local area = {
-                left_top = { x = position.x - 8, y = position.y - 8 },
-                right_bottom = { x = position.x + 8, y = position.y + 8 }
+            local pos = data.entity.position
+            local area =
+            {
+                left_top = { x = pos.x - 8, y = pos.y - 8 },
+                right_bottom = { x = pos.x + 8, y = pos.y + 8 }
             }
             if Math2D.bounding_box.contains_point(area, player.physical_position) then
                 return
@@ -1510,7 +1534,8 @@ function Public.reset()
     end
     this.main_containers = {}
     this.linked_gui = {}
-    this.valid_chests = {
+    this.valid_chests =
+    {
         ['linked-chest'] = true
     }
     this.enabled = true
