@@ -924,7 +924,7 @@ function Public.create_wagon(icw, created_entity)
         doors = {}
     }
     local wagon = icw.wagons[created_entity.unit_number]
-    icw.offsets = icw.offsets + 500
+    icw.offsets = icw.offsets + 480
 
     wagon.surface = Public.create_room_surface(icw, created_entity.unit_number)
     Public.create_wagon_room(icw, icw.wagons[created_entity.unit_number])
@@ -1363,7 +1363,7 @@ function Public.reconstruct_all_trains(reset_carriages)
                     end
 
                     new_wagon.new_chunk_position = new_position
-                    icw.offsets = icw.offsets + 500
+                    icw.offsets = icw.offsets + 480
                     to_construct_ids[carriages[1].unit_number] = true
                     ::continue::
                 end
