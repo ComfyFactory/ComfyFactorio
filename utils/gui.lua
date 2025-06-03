@@ -30,7 +30,7 @@ local names = {}
 local data = {}
 local settings =
 {
-    mod_gui_top_frame = false,
+    mod_gui_top_frame = true,
     disabled_tabs = {},
     disable_clear_invalid_data = true
 }
@@ -298,20 +298,20 @@ function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_s
 
     if close_main_frame_name then
         close_button = titlebar.add
-        {
-            type = 'sprite-button',
-            name = close_main_frame_name,
-            style = 'frame_action_button',
-            mouse_button_filter = { 'left' },
-            sprite = 'utility/close',
-            hovered_sprite = 'utility/close_fat',
-            clicked_sprite = 'utility/close_fat',
-            tooltip = 'Close',
-            tags =
             {
-                action = 'close_main_frame_gui'
+                type = 'sprite-button',
+                name = close_main_frame_name,
+                style = 'frame_action_button',
+                mouse_button_filter = { 'left' },
+                sprite = 'utility/close',
+                hovered_sprite = 'utility/close_fat',
+                clicked_sprite = 'utility/close_fat',
+                tooltip = 'Close',
+                tags =
+                {
+                    action = 'close_main_frame_gui'
+                }
             }
-        }
     end
 
     local inside_frame =
@@ -703,7 +703,7 @@ local function get_player_active_tab(player)
     return panel.tabs[index].tab, panel.tabs[index].content
 end
 
-function Public.reload_active_tab(player, forced)
+function Public.reload_active_tab(player, forced, tab_name)
     local is_spamming = SpamProtection.is_spamming(player, nil, 'Reload active tab')
     if is_spamming and not forced then
         return
@@ -713,7 +713,7 @@ function Public.reload_active_tab(player, forced)
     if not frame then
         return
     end
-    local tab = main_gui_tabs[frame.caption]
+    local tab = main_gui_tabs[frame.caption] or tab_name
     if not tab then
         return
     end
@@ -747,12 +747,12 @@ local function top_button(player)
             return
         end
         local button = player.gui.top.add(
-        {
-            type = 'sprite-button',
-            name = main_button_name,
-            sprite = 'item/raw-fish',
-            style = Public.button_style
-        })
+            {
+                type = 'sprite-button',
+                name = main_button_name,
+                sprite = 'item/raw-fish',
+                style = Public.button_style
+            })
         button.style.minimal_height = 38
         button.style.maximal_height = 38
         button.style.minimal_width = 40
@@ -820,28 +820,23 @@ local function draw_main_frame(player)
     local tabbed_pane = inside_frame.add({ type = 'tabbed-pane', name = 'tabbed_pane' })
     for name, callback in pairs(tabs) do
         if not settings.disabled_tabs[name] then
+            local show = false
             local secs = Server.get_current_time()
+
             if callback.only_server_sided then
-                if secs then
-                    local tab = tabbed_pane.add({ type = 'tab', caption = name, name = callback.name })
-                    local name_frame = tabbed_pane.add({ type = 'frame', name = name, direction = 'vertical' })
-                    tabbed_pane.add_tab(tab, name_frame)
-                end
+                if secs then show = true end
             elseif callback.admin == true then
-                if player.admin then
-                    if not secs then
-                        local tab = tabbed_pane.add({ type = 'tab', caption = name, name = callback.name })
-                        local name_frame = tabbed_pane.add({ type = 'frame', name = name, direction = 'vertical' })
-                        tabbed_pane.add_tab(tab, name_frame)
-                    elseif secs and admins[player.name] then
-                        local tab = tabbed_pane.add({ type = 'tab', caption = name, name = callback.name })
-                        local name_frame = tabbed_pane.add({ type = 'frame', name = name, direction = 'vertical' })
-                        tabbed_pane.add_tab(tab, name_frame)
-                    end
+                if player.admin and (not secs or (secs and admins[player.name])) then
+                    show = true
                 end
             else
-                local tab = tabbed_pane.add({ type = 'tab', caption = name, name = callback.name })
-                local name_frame = tabbed_pane.add({ type = 'frame', name = name, direction = 'vertical' })
+                show = true
+            end
+
+            if show then
+                local tab = tabbed_pane.add({ type = 'tab', caption = name, name = callback.name, style = 'slightly_smaller_tab' })
+                local name_frame = tabbed_pane.add({ type = 'frame', name = name, direction = 'vertical', style = 'mod_gui_inside_deep_frame' })
+                name_frame.style.padding = 8
                 tabbed_pane.add_tab(tab, name_frame)
             end
         end

@@ -52,7 +52,7 @@ local function cmd_handler(cmd)
         else
             p = player.print
             if not player.admin then
-                p({'chronosphere.cmd_not_admin'}, Color.fail)
+                p({'chronosphere.cmd_not_admin'}, { color = Color.fail })
                 return
             end
         end

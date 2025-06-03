@@ -8,7 +8,8 @@ local spells = {}
 local random = math.random
 local floor = math.floor
 
-local states = {
+local states =
+{
     ['attack'] = 'fire-smoke',
     ['support'] = 'poison-capsule-smoke'
 }
@@ -87,12 +88,15 @@ local x_marks_the_spot_token =
     )
 
 local function get_area(pos, dist)
-    local area = {
-        left_top = {
+    local area =
+    {
+        left_top =
+        {
             x = pos.x - dist,
             y = pos.y - dist
         },
-        right_bottom = {
+        right_bottom =
+        {
             x = pos.x + dist,
             y = pos.y + dist
         }
@@ -100,7 +104,8 @@ local function get_area(pos, dist)
     return area
 end
 
-local levels = {
+local levels =
+{
     [150] = { length = 26, max_spread = 6 },
     [250] = { length = 27, max_spread = 6 },
     [350] = { length = 28, max_spread = 7 },
@@ -215,7 +220,8 @@ local function create_projectiles(data)
                 break
             end
 
-            local damage_area = {
+            local damage_area =
+            {
                 left_top = { x = position.x - 2, y = position.y - 2 },
                 right_bottom = { x = position.x + 2, y = position.y + 2 }
             }
@@ -229,7 +235,8 @@ local function create_projectiles(data)
             end
         end
     else
-        local damage_area = {
+        local damage_area =
+        {
             left_top = { x = position.x - 2, y = position.y - 2 },
             right_bottom = { x = position.x + 2, y = position.y + 2 }
         }
@@ -341,7 +348,8 @@ local function insert_onto(data)
     return true
 end
 
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'entity-name.stone-wall' },
     entityName = 'stone-wall',
     level = 1,
@@ -356,7 +364,8 @@ spells[#spells + 1] = {
         return create_entity(data)
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'entity-name.wooden-chest' },
     entityName = 'wooden-chest',
     level = 1,
@@ -371,7 +380,8 @@ spells[#spells + 1] = {
         return create_entity(data)
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'entity-name.iron-chest' },
     entityName = 'iron-chest',
     level = 1,
@@ -386,7 +396,8 @@ spells[#spells + 1] = {
         return create_entity(data)
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'entity-name.steel-chest' },
     entityName = 'steel-chest',
     level = 30,
@@ -401,7 +412,8 @@ spells[#spells + 1] = {
         return create_entity(data)
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'entity-name.transport-belt' },
     entityName = 'transport-belt',
     level = 1,
@@ -416,7 +428,8 @@ spells[#spells + 1] = {
         return create_entity(data)
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'entity-name.fast-transport-belt' },
     entityName = 'fast-transport-belt',
     level = 10,
@@ -431,7 +444,8 @@ spells[#spells + 1] = {
         return create_entity(data)
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'entity-name.express-transport-belt' },
     entityName = 'express-transport-belt',
     level = 20,
@@ -446,7 +460,8 @@ spells[#spells + 1] = {
         return create_entity(data)
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'entity-name.underground-belt' },
     entityName = 'underground-belt',
     level = 1,
@@ -461,7 +476,8 @@ spells[#spells + 1] = {
         return create_entity(data)
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'entity-name.fast-underground-belt' },
     entityName = 'fast-underground-belt',
     level = 10,
@@ -476,7 +492,8 @@ spells[#spells + 1] = {
         return create_entity(data)
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'entity-name.express-underground-belt' },
     entityName = 'express-underground-belt',
     level = 20,
@@ -491,7 +508,8 @@ spells[#spells + 1] = {
         return create_entity(data)
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'entity-name.pipe' },
     entityName = 'pipe',
     level = 1,
@@ -506,7 +524,8 @@ spells[#spells + 1] = {
         return create_entity(data)
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'entity-name.pipe-to-ground' },
     entityName = 'pipe-to-ground',
     level = 1,
@@ -521,7 +540,8 @@ spells[#spells + 1] = {
         return create_entity(data)
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'entity-name.tree' },
     entityName = 'tree-05',
     level = 20,
@@ -536,7 +556,8 @@ spells[#spells + 1] = {
         return create_entity(data)
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'entity-name.big-sand-rock' },
     entityName = 'big-sand-rock',
     level = 60,
@@ -551,7 +572,8 @@ spells[#spells + 1] = {
         return create_entity(data)
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'entity-name.small-biter' },
     entityName = 'small-biter',
     level = 30,
@@ -566,7 +588,8 @@ spells[#spells + 1] = {
         return create_entity(data)
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'entity-name.small-spitter' },
     entityName = 'small-spitter',
     level = 30,
@@ -581,7 +604,8 @@ spells[#spells + 1] = {
         return create_entity(data)
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'entity-name.medium-biter' },
     entityName = 'medium-biter',
     level = 60,
@@ -596,7 +620,8 @@ spells[#spells + 1] = {
         return create_entity(data)
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'entity-name.medium-spitter' },
     entityName = 'medium-spitter',
     level = 60,
@@ -611,7 +636,8 @@ spells[#spells + 1] = {
         return create_entity(data)
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'entity-name.biter-spawner' },
     entityName = 'biter-spawner',
     level = 100,
@@ -627,7 +653,8 @@ spells[#spells + 1] = {
         return create_entity(data)
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'entity-name.spitter-spawner' },
     entityName = 'spitter-spawner',
     level = 100,
@@ -644,7 +671,8 @@ spells[#spells + 1] = {
     end
 }
 
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'item-name.shotgun-shell' },
     entityName = 'shotgun-shell',
     target = true,
@@ -663,7 +691,8 @@ spells[#spells + 1] = {
         return create_projectiles(data)
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'item-name.grenade' },
     entityName = 'grenade',
     target = true,
@@ -683,7 +712,8 @@ spells[#spells + 1] = {
     end
 }
 if _DEBUG then
-    spells[#spells + 1] = {
+    spells[#spells + 1] =
+    {
         name = 'Kewl Nade',
         entityName = 'cluster-grenade',
         target = true,
@@ -706,7 +736,8 @@ if _DEBUG then
         end
     }
 end
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'item-name.cluster-grenade' },
     entityName = 'cluster-grenade',
     target = true,
@@ -725,7 +756,8 @@ spells[#spells + 1] = {
         return create_projectiles(data)
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'item-name.cannon-shell' },
     entityName = 'cannon-shell',
     target = true,
@@ -744,7 +776,8 @@ spells[#spells + 1] = {
         return create_projectiles(data)
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'item-name.explosive-cannon-shell' },
     entityName = 'explosive-cannon-shell',
     target = true,
@@ -765,7 +798,8 @@ spells[#spells + 1] = {
         return create_projectiles(data)
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'item-name.uranium-cannon-shell' },
     entityName = 'uranium-cannon-shell',
     target = true,
@@ -787,7 +821,8 @@ spells[#spells + 1] = {
         return create_projectiles(data)
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'item-name.rocket' },
     entityName = 'rocket',
     range = 240,
@@ -807,7 +842,8 @@ spells[#spells + 1] = {
         return create_projectiles(data)
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'spells.pointy_explosives' },
     entityName = 'pointy_explosives',
     target = true,
@@ -830,7 +866,8 @@ spells[#spells + 1] = {
         local position = data.position
 
         local entities =
-            player.surface.find_entities_filtered {
+            player.surface.find_entities_filtered
+            {
                 force = player.force,
                 type = 'container',
                 area = { { position.x - 1, position.y - 1 }, { position.x + 1, position.y + 1 } }
@@ -841,17 +878,24 @@ spells[#spells + 1] = {
             local e = entities[i]
             detonate_chest = e
         end
+
+        Public.register_cooldown_for_spell(data.player)
+
         if detonate_chest and detonate_chest.valid then
             local success = Explosives.detonate_chest(detonate_chest)
             if success then
                 Public.remove_mana(player, self.mana_cost)
+                Public.cast_spell(player)
+                return true
             end
-            Public.cast_spell(player)
-            return true
+
+            Public.cast_spell(player, true)
+            return false
         end
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'spells.repair_aoe' },
     entityName = 'repair_aoe',
     target = true,
@@ -899,7 +943,8 @@ spells[#spells + 1] = {
         return true
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'spells.acid_stream' },
     entityName = 'acid-stream-spitter-big',
     target = true,
@@ -940,7 +985,8 @@ spells[#spells + 1] = {
         return true
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'spells.tank' },
     entityName = 'tank',
     amount = 1,
@@ -957,7 +1003,8 @@ spells[#spells + 1] = {
         return create_entity(data)
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'spells.spidertron' },
     entityName = 'spidertron',
     amount = 1,
@@ -975,7 +1022,8 @@ spells[#spells + 1] = {
         return create_entity(data)
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'spells.raw_fish' },
     entityName = 'raw-fish',
     target = false,
@@ -998,7 +1046,8 @@ spells[#spells + 1] = {
         return insert_onto(data)
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'spells.dynamites' },
     entityName = 'explosives',
     target = false,
@@ -1022,7 +1071,8 @@ spells[#spells + 1] = {
         return insert_onto(data)
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'spells.distractor' },
     entityName = 'distractor-capsule',
     target = true,
@@ -1045,7 +1095,8 @@ spells[#spells + 1] = {
     end
 }
 
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'spells.defender' },
     entityName = 'defender-capsule',
     target = true,
@@ -1067,7 +1118,8 @@ spells[#spells + 1] = {
         return create_projectiles(data)
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'spells.destroyer' },
     entityName = 'destroyer-capsule',
     target = true,
@@ -1089,7 +1141,8 @@ spells[#spells + 1] = {
         return create_projectiles(data)
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'spells.warp' },
     entityName = 'warp-gate',
     target = true,
@@ -1124,7 +1177,8 @@ spells[#spells + 1] = {
     end
 }
 
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'spells.mark_spot' },
     entityName = 'mark-spot',
     target = true,
@@ -1161,7 +1215,8 @@ spells[#spells + 1] = {
     end
 }
 
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'spells.tidal_wave' },
     entityName = 'tidal-wave',
     target = true,
@@ -1197,7 +1252,8 @@ spells[#spells + 1] = {
         return true
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'spells.charge' },
     entityName = 'haste',
     target = false,
@@ -1229,7 +1285,8 @@ spells[#spells + 1] = {
         return true
     end
 }
-spells[#spells + 1] = {
+spells[#spells + 1] =
+{
     name = { 'spells.eternal_blades' },
     entityName = 'eternal_blades',
     target = false,
@@ -1296,7 +1353,8 @@ spells[#spells + 1] = {
     end
 }
 
-local drone_enemy = {
+local drone_enemy =
+{
     name = { 'spells.drone_enemy' },
     entityName = 'drone_enemy',
     target = false,
@@ -1328,7 +1386,8 @@ local drone_enemy = {
 
 spells[#spells + 1] = drone_enemy
 
-local drone_mine = {
+local drone_mine =
+{
     name = { 'spells.drone_mine' },
     entityName = 'drone_mine',
     target = false,
@@ -1369,7 +1428,8 @@ spells[#spells + 1] = drone_mine
 --     end
 -- end
 
-Public.projectile_types = {
+Public.projectile_types =
+{
     ['explosives'] = { name = 'grenade', count = 0.5, max_range = 32, tick_speed = 1 },
     ['distractor-capsule'] = { name = 'distractor-capsule', count = 1, max_range = 32, tick_speed = 1 },
     ['defender-capsule'] = { name = 'defender-capsule', count = 1, max_range = 32, tick_speed = 1 },
@@ -1380,7 +1440,8 @@ Public.projectile_types = {
     ['artillery-shell'] = { name = 'artillery-projectile', count = 1, max_range = 60, tick_speed = 3 },
     ['cannon-shell'] = { name = 'cannon-projectile', count = 1, max_range = 60, tick_speed = 1 },
     ['explosive-cannon-shell'] = { name = 'explosive-cannon-projectile', count = 1, max_range = 60, tick_speed = 1 },
-    ['explosive-uranium-cannon-shell'] = {
+    ['explosive-uranium-cannon-shell'] =
+    {
         name = 'explosive-uranium-cannon-projectile',
         count = 1,
         max_range = 60,
@@ -1395,7 +1456,8 @@ Public.projectile_types = {
     ['petroleum-gas-barrel'] = { name = 'flamethrower-fire-stream', count = 4, max_range = 24, tick_speed = 1 },
     ['light-oil-barrel'] = { name = 'flamethrower-fire-stream', count = 4, max_range = 24, tick_speed = 1 },
     ['heavy-oil-barrel'] = { name = 'flamethrower-fire-stream', count = 4, max_range = 24, tick_speed = 1 },
-    ['acid-stream-spitter-big'] = {
+    ['acid-stream-spitter-big'] =
+    {
         name = 'acid-stream-spitter-big',
         count = 3,
         max_range = 16,

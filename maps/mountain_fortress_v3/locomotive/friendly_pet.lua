@@ -58,7 +58,7 @@ local function shoo(event)
     local player = game.players[event.player_index]
 
     if player and player.valid then
-        if player.physical_surface.index ~= loco_surface.index then
+        if (player.physical_surface.index ~= loco_surface.index or player.physical_position.x < 700) then
             return
         end
     end

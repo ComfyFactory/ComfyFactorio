@@ -29,7 +29,8 @@ local Public = {}
 local server_time = { secs = nil, tick = 0 }
 local server_ups = { ups = 60 }
 local start_data = { server_id = nil, server_name = nil, start_time = nil }
-local instances = {
+local instances =
+{
     data = {}
 }
 local admins = {}
@@ -105,20 +106,34 @@ local antigrief_tag = '[ANTIGRIEF-LOG]'
 Public.raw_print = raw_print
 
 local function output_data(primary, secondary)
+    assert(primary, 'output_data - primary must be provided')
+
+    if type(primary) ~= 'string' then
+        primary = tostring(primary)
+    end
+
+    assert(primary:len() > 0, 'output_data - primary must be a non-empty string')
+
+    if type(secondary) == 'boolean' then
+        secondary = tostring(secondary)
+    end
+
+    -- Convert table-type secondaries
+    if type(secondary) == 'table' then
+        secondary = helpers.table_to_json(secondary)
+    end
+
+    local output = primary .. (secondary or '')
     local secs = server_time.secs
-    if secs == nil then
-        return raw_print(primary .. (secondary or ''))
+
+    if not secs or not start_data or not start_data.output then
+        return raw_print(output)
     end
 
-    secondary = type(secondary) == 'table' and '' or secondary
-
-    if start_data and start_data.output then
-        local write = helpers.write_file
-        write(start_data.output, primary .. (secondary or '') .. newline, true, 0)
-    else
-        raw_print(primary .. (secondary or ''))
-    end
+    -- Write to file if start_data.output is defined
+    helpers.write_file(start_data.output, output .. newline, true, 0)
 end
+
 
 local function assert_non_empty_string_and_no_spaces(str, argument_name)
     if type(str) ~= 'string' then
@@ -146,7 +161,8 @@ local function get_online_admins()
 end
 
 local function build_embed_data()
-    local d = {
+    local d =
+    {
         time = Public.format_time(game.ticks_played),
         onlinePlayers = #game.connected_players,
         totalPlayers = #game.players,
@@ -1149,7 +1165,8 @@ local function escape(str)
     return str:gsub('\\', '\\\\'):gsub('"', '\\"')
 end
 
-local statistics = {
+local statistics =
+{
     'get_item_production_statistics',
     'get_fluid_production_statistics',
     'get_kill_count_statistics',
@@ -1157,11 +1174,13 @@ local statistics = {
 }
 function Public.export_stats()
     local table_to_json = helpers.table_to_json
-    local stats = {
+    local stats =
+    {
         game_tick = game.tick,
         player_count = #game.connected_players,
         rockets_launched = {},
-        game_flow_statistics = {
+        game_flow_statistics =
+        {
             pollution_statistics = {}
         },
         force_flow_statistics = {}
@@ -1169,7 +1188,8 @@ function Public.export_stats()
     for _, force in pairs(game.forces) do
         local flow_statistics = {}
         for _, surface in pairs(game.surfaces) do
-            stats.game_flow_statistics.pollution_statistics[surface.name] = {
+            stats.game_flow_statistics.pollution_statistics[surface.name] =
+            {
                 input = game.get_pollution_statistics(surface).input_counts,
                 output = game.get_pollution_statistics(surface).output_counts
 
@@ -1177,7 +1197,8 @@ function Public.export_stats()
             for _, statName in pairs(statistics) do
                 if not flow_statistics[statName] then flow_statistics[statName] = {} end
                 local surface_stats = flow_statistics[statName]
-                surface_stats[surface.name] = {
+                surface_stats[surface.name] =
+                {
                     input = force[statName](surface).input_counts,
                     output = force[statName](surface).output_counts
                 }
@@ -1411,7 +1432,8 @@ function Public.convertFromEpoch(epoch)
 
     local year, month, day = date(unixTime)
 
-    return {
+    return
+    {
         year = year,
         month = month < 10 and '0' .. month or month,
         day = day < 10 and '0' .. day or day,
@@ -1597,7 +1619,8 @@ Event.add(
     end
 )
 
-local leave_reason_map = {
+local leave_reason_map =
+{
     [defines.disconnect_reason.quit] = '',
     [defines.disconnect_reason.dropped] = ' (Dropped)',
     [defines.disconnect_reason.reconnect] = ' (Reconnect)',

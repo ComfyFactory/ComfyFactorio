@@ -184,7 +184,7 @@ local function random_color(cmd)
     end
     local force = player.force
     if force.name == 'player' or force.name == 'rogue' then
-        player.print('You are not member of a town!', Color.fail)
+        player.print('You are not member of a town!', { color = Color.fail })
         return
     end
     local this = ScenarioTable.get_table()

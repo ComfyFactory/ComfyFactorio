@@ -13,9 +13,12 @@ local module_name = Gui.uid_name()
 
 local Public = {}
 
-local this = {
-    gui_config = {
-        spaghett = {
+local this =
+{
+    gui_config =
+    {
+        spaghett =
+        {
             undo = {}
         },
         poll_trusted = false
@@ -29,7 +32,8 @@ Global.register(
     end
 )
 
-local spaghett_entity_blacklist = {
+local spaghett_entity_blacklist =
+{
     ['requester-chest'] = true,
     ['buffer-chest'] = true,
     ['active-chest-provider'] = true
@@ -118,7 +122,8 @@ local function trust_connected_players()
     end
 end
 
-local functions = {
+local functions =
+{
     ['spectator_switch'] = function (event)
         if event.element.switch_state == 'left' then
             game.get_player(event.player_index).spectator = true
@@ -243,7 +248,8 @@ local functions = {
     end
 }
 
-local poll_function = {
+local poll_function =
+{
     ['poll_trusted_toggle'] = function (event)
         if event.element.switch_state == 'left' then
             this.gui_config.poll_trusted = true
@@ -264,7 +270,8 @@ local poll_function = {
     end
 }
 
-local antigrief_functions = {
+local antigrief_functions =
+{
     ['disable_antigrief'] = function (event)
         local AG = Antigrief.get()
         if event.element.switch_state == 'left' then
@@ -278,7 +285,8 @@ local antigrief_functions = {
     end
 }
 
-local fortress_functions = {
+local fortress_functions =
+{
     ['disable_fullness'] = function (event)
         local Fullness = is_loaded('modules.check_fullness')
         local Module = Fullness.get()
@@ -431,7 +439,8 @@ local fortress_functions = {
     end
 }
 
-local pirates_functions = {
+local pirates_functions =
+{
     ['toggle_disband'] = function (event)
         local players = game.players
         local Memory = storage.tokens.maps_pirates_memory
@@ -501,7 +510,8 @@ local function build_config_gui(data)
     frame.clear()
 
     local scroll_pane =
-        frame.add {
+        frame.add
+        {
             type = 'scroll-pane',
             horizontal_scroll_policy = 'never'
         }
@@ -892,7 +902,7 @@ Gui.on_click(
     module_name,
     function (event)
         local player = event.player
-        Gui.reload_active_tab(player)
+        Gui.reload_active_tab(player, nil, 'Config')
     end
 )
 

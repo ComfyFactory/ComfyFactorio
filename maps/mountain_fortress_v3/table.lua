@@ -4,33 +4,59 @@ local Server = require 'utils.server'
 local Event = require 'utils.event'
 local Task = require 'utils.task_token'
 
-local stateful_settings = {
-    reversed = false
+local stateful_settings =
+{
+    reversed = false,
+    current_planet = 'fortress'
 }
 
-local this = {
+local planets =
+{
+    ['fortress'] = true,
+    ['fulgora'] = true,
+    ['aquilo'] = true,
+    ['gleba'] = true,
+    ['vulcanus'] = true,
+    ['nauvis'] = true
+}
+
+local all_planets =
+{
+    'fortress',
+    'fulgora',
+    'aquilo',
+    'gleba',
+    'vulcanus',
+    'nauvis'
+}
+
+local this =
+{
     players = {},
     traps = {},
-    scheduler = {
+    scheduler =
+    {
         start_after = 0,
         surface = nil,
         operation = nil,
         next_operation = nil
     },
     -- new initializer for scenario management because the old one sucked hard
-    current_task = {
+    current_task =
+    {
         state = 'move_players',
         surface_name = 'Init',
         default_task = 'move_players',
         show_messages = true,
         step = 1
     },
-    adjusted_zones = {
+    adjusted_zones =
+    {
         scrap = {},
         forest = {},
         size = nil,
         shuffled_zones = nil,
-        starting_zone = true,
+        starting_zone = false,
         reversed = stateful_settings.reversed,
         disable_terrain = false
     }
@@ -43,7 +69,8 @@ local dataset = 'scenario_settings'
 local dataset_key = 'mtn_v3_table'
 local dataset_key_dev = 'mtn_v3_table_dev'
 
-Public.events = {
+Public.events =
+{
     reset_map = Event.generate_event_name('reset_map'),
     on_entity_mined = Event.generate_event_name('on_entity_mined'),
     on_market_item_purchased = Event.generate_event_name('on_market_item_purchased'),
@@ -52,12 +79,11 @@ Public.events = {
 
 local init_name = 'Init'
 Public.init_name = init_name
-local scenario_name = 'fortress'
-Public.scenario_name = scenario_name
 local discord_name = 'Mtn Fortress'
 Public.discord_name = discord_name
 
 Public.is_modded = script.active_mods['MtnFortressAddons'] or false
+Public.is_modded_pt2 = script.active_mods['MtnFortressAddonsPt2'] or false
 
 Global.register(
     this,
@@ -73,18 +99,21 @@ Global.register(
     end
 )
 
-Public.zone_settings = {
+Public.zone_settings =
+{
     zone_depth = 704,
     zone_width = 510
 }
 
-Public.valid_enemy_forces = {
+Public.valid_enemy_forces =
+{
     ['enemy'] = true,
     ['aggressors'] = true,
     ['aggressors_frenzy'] = true
 }
 
-Public.pickaxe_upgrades = {
+Public.pickaxe_upgrades =
+{
     'Wood',
     'Plastic',
     'Bone',
@@ -148,6 +177,7 @@ Public.pickaxe_upgrades = {
 
 function Public.reset_main_table()
     -- @start
+    this.default_surface = false
     this.space_age = script.active_mods['space-age'] or false
     this.modded = script.active_mods['MtnFortressAddons'] or false
     -- these 3 are in case of stop/start/reloading the instance.
@@ -162,10 +192,12 @@ function Public.reset_main_table()
     this.breach_wall_warning = false
     this.icw_locomotive = nil
     this.game_lost = false
-    this.charts = {
+    this.charts =
+    {
         tags = {}
     }
-    this.statistics = {
+    this.statistics =
+    {
         surfaces_produced = {}
     }
     this.death_mode = false
@@ -173,28 +205,31 @@ function Public.reset_main_table()
     this.locomotive_position = nil
     this.locomotive_health = 10000
     this.locomotive_max_health = 10000
-    this.extra_wagons = 0
     this.toolbelt_researched_count = 0
     this.all_the_fish = false
     this.reverse_collapse_warning = false
-    this.gap_between_zones = {
+    this.gap_between_zones =
+    {
         set = false,
         gap = 900,
         neg_gap = 500,
         highest_pos = 0
     }
-    this.gap_between_locomotive = {
+    this.gap_between_locomotive =
+    {
         hinders = {},
         gap = 900,
-        neg_gap = 3520,          -- earlier 2112 (3 zones, whereas 704 is one zone)
+        neg_gap = 3520, -- earlier 2112 (3 zones, whereas 704 is one zone)
         neg_gap_collapse = 5520, -- earlier 2112 (3 zones, whereas 704 is one zone)
         highest_pos = nil
     }
     this.force_chunk = false
     this.bw = false
-    this.debug_vars = {
+    this.debug_vars =
+    {
         enabled = true,
-        vars = {
+        vars =
+        {
             mining_chance = {}
         }
     }
@@ -202,7 +237,7 @@ function Public.reset_main_table()
     this.block_non_trusted_opening_trains = true
     this.block_non_trusted_trigger_collapse = true
     this.allow_decon_main_surface = true
-    this.spectate_button_disable = true
+    this.spectate_button_disable = false
     this.flamethrower_damage = {}
     this.mined_scrap = 0
     this.print_tech_to_discord = true
@@ -213,33 +248,38 @@ function Public.reset_main_table()
     --!grief prevention
     this.enable_arties = 6 -- default to callback 6
     --!snip
-    this.enemy_spawners = {
+    this.enemy_spawners =
+    {
         spawners = {},
         enabled = false
     }
     this.poison_deployed = false
     this.robotics_deployed = false
-    this.upgrades = {
+    this.upgrades =
+    {
         showed_text = false,
-        burner_generator = {
+        burner_generator =
+        {
             limit = 100,
             bought = 0
         },
-        landmine = {
+        landmine =
+        {
             limit = 25,
             bought = 0,
             built = 0
         },
-        flame_turret = {
+        flame_turret =
+        {
             limit = 6,
             bought = 0,
             built = 0
         },
-        unit_number = {
+        unit_number =
+        {
             landmine = {},
             flame_turret = {}
         },
-        has_upgraded_health_pool = false,
         has_upgraded_tile_when_mining = false,
         explosive_bullets_purchased = false,
         xp_points_upgrade = 0,
@@ -251,7 +291,8 @@ function Public.reset_main_table()
         health_upgrades = 0,
         pickaxe_tier = 1
     }
-    this.orbital_strikes = {
+    this.orbital_strikes =
+    {
         enabled = true
     }
     this.pickaxe_speed_per_purchase = 0.09
@@ -259,40 +300,47 @@ function Public.reset_main_table()
     this.pre_final_battle = false
     this.final_battle = false
     this.disable_link_chest_cheese_mode = true
-    this.left_top = {
+    this.left_top =
+    {
         x = 0,
         y = 0
     }
-    this.biters = {
+    this.biters =
+    {
         amount = 0,
         limit = 512
     }
     this.traps = {}
     this.munch_time = true
     this.magic_requirement = 50
-    this.loot_stats = {
+    this.loot_stats =
+    {
         rare = 48,
         normal = 48
     }
     this.coin_amount = 1
+    this.default_surface = true
     this.difficulty_set = false
     this.bonus_xp_on_join = 250
     this.main_market_items = {}
     this.spill_items_to_surface = false
     this.spectate = {}
-    this.placed_trains_in_zone = {
+    this.placed_trains_in_zone =
+    {
         limit = 1,
         randomized = false,
         zones = {}
     }
-    this.market_limits = {
+    this.market_limits =
+    {
         chests_outside_limit = 8,
         aura_limit = 100, -- limited to save UPS
         pickaxe_tier_limit = 59,
         health_upgrades_limit = 100,
         xp_points_limit = 40
     }
-    this.marked_fixed_prices = {
+    this.marked_fixed_prices =
+    {
         chests_outside_cost = 3000,
         health_cost = 14000,
         pickaxe_cost = 3000,
@@ -301,7 +349,6 @@ function Public.reset_main_table()
         explosive_bullets_cost = 10000,
         flamethrower_turrets_cost = 3000,
         land_mine_cost = 2,
-        car_health_upgrade_pool_cost = 100000,
         tile_when_mining_cost = random(45000, 70000),
         roboport_cost = random(750, 1500),
         construction_bot_cost = random(150, 350),
@@ -315,7 +362,8 @@ function Public.reset_main_table()
     this.collapse_amount = false
     this.collapse_speed = false
     this.y_value_position = 20
-    this.spawn_near_collapse = {
+    this.spawn_near_collapse =
+    {
         active = true,
         total_pos = 35,
         compare = -150,
@@ -335,7 +383,8 @@ function Public.reset_main_table()
     this.winter_mode = false
     this.sent_to_discord = false
     this.random_seed = random(100000000, 1000000000)
-    this.difficulty = {
+    this.difficulty =
+    {
         multiply = 0.25,
         highest = 10,
         lowest = 4
@@ -351,12 +400,17 @@ function Public.reset_main_table()
     this.check_if_threat_below_zero = true
     this.rocks_to_remove = nil
     this.tiles_to_replace = nil
-    this.mc_rewards = {
+    this.mc_rewards =
+    {
         current = {},
         temp_boosts = {}
     }
 
-    this.adjusted_zones = {
+    this.fishy_baits = {}
+    this.mystical_rewards = {}
+
+    this.adjusted_zones =
+    {
         scrap = {},
         forest = {},
         size = nil,
@@ -365,10 +419,11 @@ function Public.reset_main_table()
         reversed = stateful_settings.reversed,
         disable_terrain = false
     }
-    this.alert_zone_1 = false             -- alert the players
+    this.alert_zone_1 = false -- alert the players
     this.radars_reveal_new_chunks = false -- allows for the player to explore the map instead,
 
-    this.mining_utils = {
+    this.mining_utils =
+    {
         rocks_yield_ore_maximum_amount = 500,
         type_modifier = 1,
         rocks_yield_ore_base_amount = 40,
@@ -378,7 +433,8 @@ function Public.reset_main_table()
     this.wagons_in_the_wild = {}
     this.player_market_settings = {}
 
-    this.quality_list = {
+    this.quality_list =
+    {
         'normal',
     }
 
@@ -408,6 +464,14 @@ function Public.get_stateful_settings(key)
     else
         return stateful_settings
     end
+end
+
+function Public.get_planet()
+    return stateful_settings.current_planet
+end
+
+function Public.get_planets()
+    return planets
 end
 
 function Public.set(key, value)
@@ -456,6 +520,14 @@ end
 function Public.save_stateful_settings()
     local server_name_matches = Server.check_server_name(Public.discord_name)
 
+    if stateful_settings.previous_planet then
+        if planets[stateful_settings.previous_planet] then
+            stateful_settings.previous_planet = planets[stateful_settings.current_planet]
+        end
+    else
+        stateful_settings.previous_planet = stateful_settings.current_planet
+    end
+
     if server_name_matches then
         Server.set_data(dataset, dataset_key, stateful_settings)
     else
@@ -478,6 +550,12 @@ local apply_settings_token =
             else
                 for k, v in pairs(settings) do
                     stateful_settings[k] = v
+                end
+            end
+
+            if Public.is_modded_pt2 then
+                if not stateful_settings.previous_planet then
+                    stateful_settings.current_planet = all_planets[random(1, #all_planets)]
                 end
             end
 

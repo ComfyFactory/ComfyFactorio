@@ -6,6 +6,8 @@ local WD = require 'modules.wave_defense.table'
 local Discord = require 'utils.discord_handler'
 local Commands = require 'utils.commands'
 local mapkeeper = '[color=blue]Mapkeeper:[/color]'
+local CommandColor = { r = 0.98, g = 0.66, b = 0.22 }
+
 
 local gather_time_token =
     Task.register(
@@ -78,10 +80,10 @@ Commands.new('scenario', 'Usable only for admins - controls the scenario!')
                 this.reset_are_you_sure = nil
                 if player and player.valid then
                     game.print(mapkeeper .. ' ' .. player.name .. ', has reset the game!',
-                        { r = 0.98, g = 0.66, b = 0.22 })
+                        { color = CommandColor })
                     Discord.send_notification_raw(Public.discord_name, player.name .. ' has reset the game!')
                 else
-                    game.print(mapkeeper .. ' server, has reset the game!', { r = 0.98, g = 0.66, b = 0.22 })
+                    game.print(mapkeeper .. ' server, has reset the game!', { color = CommandColor })
                     Discord.send_notification_raw(Public.discord_name, 'Server has reset the game!')
                 end
                 Public.set_task('move_players', 'Init')
@@ -114,7 +116,7 @@ Commands.new('mtn_complete_quests', 'Usable only for admins - completes all the 
             if args then
                 Task.set_timeout_in_ticks(50, gather_time_token, {})
             end
-            game.print(mapkeeper .. player.name .. ', has forced completed all quests!', { r = 0.98, g = 0.66, b = 0.22 })
+            game.print(mapkeeper .. player.name .. ', has forced completed all quests!', { color = CommandColor })
             player.print('Quests completed.')
         end
     )
@@ -129,7 +131,7 @@ Commands.new('mtn_reverse_map', 'Usable only for admins - reverses the map!')
             Discord.send_notification_raw(Public.discord_name, player.name .. ' reversed the map.')
             Public.set_task('move_players', 'Init')
             game.print(mapkeeper .. player.name .. ', has reverse the map and reset the game!',
-                { r = 0.98, g = 0.66, b = 0.22 })
+                { color = CommandColor })
             player.print('Map reversed.')
         end
     )
@@ -144,12 +146,12 @@ Commands.new('mtn_disable_biters', 'Usable only for admins - disables wave defen
             if not tbl.game_lost then
                 Discord.send_notification_raw(Public.discord_name, player.name .. ' disabled the wave defense module.')
                 game.print(mapkeeper .. ' ' .. player.name .. ', has disabled the wave_defense module!',
-                    { r = 0.98, g = 0.66, b = 0.22 })
+                    { color = CommandColor })
                 tbl.game_lost = true
             else
                 Discord.send_notification_raw(Public.discord_name, player.name .. ' enabled the wave defense module.')
                 game.print(mapkeeper .. ' ' .. player.name .. ', has enabled the wave_defense module!',
-                    { r = 0.98, g = 0.66, b = 0.22 })
+                    { color = CommandColor })
                 tbl.game_lost = false
             end
         end
@@ -166,12 +168,12 @@ Commands.new('mtn_toggle_orbital_strikes',
             if this.orbital_strikes.enabled then
                 Discord.send_notification_raw(Public.discord_name, player.name .. ' disabled the orbital strike module.')
                 game.print(mapkeeper .. ' ' .. player.name .. ', has disabled the orbital_strikes module!',
-                    { r = 0.98, g = 0.66, b = 0.22 })
+                    { color = CommandColor })
                 this.orbital_strikes.enabled = false
             else
                 Discord.send_notification_raw(Public.discord_name, player.name .. ' enabled the orbital strike module.')
                 game.print(mapkeeper .. ' ' .. player.name .. ', has enabled the orbital_strikes module!',
-                    { r = 0.98, g = 0.66, b = 0.22 })
+                    { color = CommandColor })
                 this.orbital_strikes.enabled = true
             end
         end
@@ -194,12 +196,12 @@ Commands.new('mtn_disable_collapse', 'Usable only for admins - toggles the colla
             if not Collapse.has_collapse_started() then
                 Collapse.start_now(true, false)
                 Discord.send_notification_raw(Public.discord_name, player.name .. ' has enabled collapse.')
-                game.print(mapkeeper .. ' ' .. player.name .. ', has enabled collapse!', { r = 0.98, g = 0.66, b = 0.22 })
+                game.print(mapkeeper .. ' ' .. player.name .. ', has enabled collapse!', { color = CommandColor })
             else
                 Collapse.start_now(false, true)
                 Discord.send_notification_raw(Public.discord_name, player.name .. ' has disabled collapse.')
                 game.print(mapkeeper .. ' ' .. player.name .. ', has disabled collapse!',
-                    { r = 0.98, g = 0.66, b = 0.22 })
+                    { color = CommandColor })
             end
         end
     )

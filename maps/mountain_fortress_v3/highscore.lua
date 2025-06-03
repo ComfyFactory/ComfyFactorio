@@ -17,7 +17,8 @@ local try_get_data = Server.try_get_data
 
 local insert = table.insert
 local random = math.random
-local this = {
+local this =
+{
     score_table = {},
     sort_by = {}
 }
@@ -29,7 +30,8 @@ Global.register(
     end
 )
 
-local biters = {
+local biters =
+{
     'small-biter',
     'medium-biter',
     'big-biter',
@@ -139,7 +141,8 @@ local function contains(tbl, key, string, rtn)
 end
 
 local function sort_list(method, column_name, score_list)
-    local comparators = {
+    local comparators =
+    {
         ['ascending'] = function (a, b)
             return a[column_name] < b[column_name]
         end,
@@ -461,7 +464,8 @@ local function get_score_list()
     remove_non_top_10(whitelisted_score_tbl, score_force.players)
     local score_list = {}
     if not score_force then
-        score_list[#score_list + 1] = {
+        score_list[#score_list + 1] =
+        {
             name = 'Nothing here yet',
             killscore = 0,
             built_entities = 0,
@@ -574,9 +578,10 @@ local function show_score(data)
     local t = frame.add { type = 'table', column_count = 4 }
 
     -- Score headers
-    local headers = {
-        { name = 'score_player',     caption = 'Player' },
-        { column = 'killscore',      name = 'score_killscore',      caption = 'Killscore' },
+    local headers =
+    {
+        { name = 'score_player', caption = 'Player' },
+        { column = 'killscore', name = 'score_killscore', caption = 'Killscore' },
         { column = 'built_entities', name = 'score_built_entities', caption = 'Built structures' },
         { column = 'mined_entities', name = 'score_mined_entities', caption = 'Mined entities' }
     }
@@ -593,7 +598,8 @@ local function show_score(data)
 
         -- Header
         local label =
-            t.add {
+            t.add
+            {
                 type = 'label',
                 caption = cap,
                 name = header.name
@@ -638,7 +644,8 @@ local function show_score(data)
                 p = { color = { r = random(1, 255), g = random(1, 255), b = random(1, 255) } }
             end
         end
-        local special_color = {
+        local special_color =
+        {
             r = p.color.r * 0.6 + 0.4,
             g = p.color.g * 0.6 + 0.4,
             b = p.color.b * 0.6 + 0.4,
@@ -649,7 +656,8 @@ local function show_score(data)
         local b = entry.built_entities > 0 and entry.built_entities or ''
         local m = entry.mined_entities > 0 and entry.mined_entities or ''
 
-        line = {
+        line =
+        {
             { caption = entry.name, color = special_color },
             { caption = tostring(k) },
             { caption = tostring(b) },
@@ -659,7 +667,8 @@ local function show_score(data)
 
         for _, column in ipairs(line) do
             local label =
-                t.add {
+                t.add
+                {
                     type = 'label',
                     caption = column.caption,
                     color = column.color or default_color
@@ -669,7 +678,7 @@ local function show_score(data)
             label.style.maximal_width = 150
             label.style.horizontal_align = 'right'
         end -- foreach column
-    end     -- foreach entry
+    end -- foreach entry
 end
 
 local show_score_token = Task.register(show_score)
@@ -701,7 +710,8 @@ local function on_gui_click(event)
     local name = event.element.name
 
     -- Handles click on a score header
-    local element_to_column = {
+    local element_to_column =
+    {
         ['score_killscore'] = 'killscore',
         ['score_built_entities'] = 'built_entities',
         ['score_mined_entities'] = 'mined_entities'
@@ -751,7 +761,7 @@ Gui.on_click(
     module_name,
     function (event)
         local player = event.player
-        Gui.reload_active_tab(player)
+        Gui.reload_active_tab(player, nil, 'Highscore')
     end
 )
 

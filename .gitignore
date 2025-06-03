@@ -10,3 +10,7 @@ stylua.toml
 .DS_Store
 
 todo/
+
+# Ignore tests
+tmp.lua
+*.txt

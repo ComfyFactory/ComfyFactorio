@@ -1,11 +1,13 @@
 local Event = require 'utils.event'
 local Global = require 'utils.global'
+local Task = require 'utils.task_token'
 local Public = {}
 
 local math_floor = math.floor
 local table_shuffle_table = table.shuffle_table
 
-local this = {
+local this =
+{
     debug = false,
     disabled = false,
     reverse_disabled = false
@@ -17,14 +19,16 @@ Global.register(
     end
 )
 
-local direction_reverse = {
+local direction_reverse =
+{
     ['north'] = 'south',
     ['south'] = 'north',
     ['west'] = 'east',
     ['east'] = 'west'
 }
 
-local directions = {
+local directions =
+{
     ['north'] = function (position, reverse)
         local surface_index = this.surface_index
         if not surface_index then
@@ -192,6 +196,23 @@ local function set_reverse_collapse_tiles(surface)
     force.chart(surface, chart_area)
 end
 
+local function custom_callback(entity)
+    if this.specific_entities and this.specific_entities.callback then
+        local callback_token = this.specific_entities.callback
+        local callback = Task.get(callback_token)
+        if not entity or not entity.valid then
+            return -- entity is invalid, don't continue
+        end
+
+        local event =
+        {
+            entity = entity
+        }
+
+        callback(event)
+    end
+end
+
 local function progress()
     if not this.start_now then
         this.tiles = nil
@@ -231,18 +252,11 @@ local function progress()
             local position = { tile.position.x + 0.5, tile.position.y + 0.5 }
             local entities = this.specific_entities.entities
             for _, e in pairs(surface.find_entities_filtered({ area = { { position[1] - 4, position[2] - 2 }, { position[1] + 4, position[2] + 2 } } })) do
+                custom_callback(e)
                 if entities[e.name] and e.valid and e.health then
                     e.die()
                 elseif e.valid then
                     e.destroy()
-                end
-            end
-        end
-        if this.kill then
-            local position = { tile.position.x + 0.5, tile.position.y + 0.5 }
-            for _, e in pairs(surface.find_entities_filtered({ area = { { position[1] - 4, position[2] - 2 }, { position[1] + 4, position[2] + 2 } } })) do
-                if e.valid and e.health then
-                    e.die()
                 end
             end
         end
@@ -288,18 +302,11 @@ local function progress_reverse()
             local position = { tile.position.x + 0.5, tile.position.y + 0.5 }
             local entities = this.specific_entities.entities
             for _, e in pairs(surface.find_entities_filtered({ area = { { position[1] - 4, position[2] - 2 }, { position[1] + 4, position[2] + 2 } } })) do
+                custom_callback(e)
                 if entities[e.name] and e.valid and e.health then
                     e.die()
                 elseif e.valid then
                     e.destroy()
-                end
-            end
-        end
-        if this.kill then
-            local position = { tile.position.x + 0.5, tile.position.y + 0.5 }
-            for _, e in pairs(surface.find_entities_filtered({ area = { { position[1] - 4, position[2] - 2 }, { position[1] + 4, position[2] + 2 } } })) do
-                if e.valid and e.health then
-                    e.die()
                 end
             end
         end
@@ -495,15 +502,12 @@ function Public.set_max_line_size(size, force)
     this.max_line_size_force = force or false
 end
 
-function Public.set_kill_entities(a)
-    this.kill = a
-end
-
 function Public.set_kill_specific_entities(tbl)
     if tbl then
         this.specific_entities = tbl
     else
-        this.specific_entities = {
+        this.specific_entities =
+        {
             enabled = false
         }
     end
@@ -514,7 +518,6 @@ local function on_init()
     Public.set_position({ 0, 32 })
     Public.set_max_line_size(256)
     Public.set_direction('north')
-    Public.set_kill_entities(true)
     Public.set_kill_specific_entities()
     this.tiles = nil
     this.reverse_tiles = nil

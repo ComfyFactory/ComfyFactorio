@@ -2,21 +2,25 @@ local Color = require 'utils.color_presets'
 local Event = require 'utils.event'
 local Global = require 'utils.global'
 
-local this = {
+local this =
+{
     refill_turrets = {},
-    refill_chests = {index = 1, placed = 0},
+    refill_chests = { index = 1, placed = 0 },
     full_turrets = {},
-    valid_chest = {
-        ['iron-chest'] = {valid = true, limit = 4}
+    valid_chest =
+    {
+        ['iron-chest'] = { valid = true, limit = 4 }
     },
-    valid_turrets = {
+    valid_turrets =
+    {
         ['gun-turret'] = true,
         ['artillery-turret'] = true
     },
-    valid_ammo = {
-        ['firearm-magazine'] = {valid = true, priority = 1},
-        ['piercing-rounds-magazine'] = {valid = true, priority = 2},
-        ['uranium-rounds-magazine'] = {valid = true, priority = 3}
+    valid_ammo =
+    {
+        ['firearm-magazine'] = { valid = true, priority = 1 },
+        ['piercing-rounds-magazine'] = { valid = true, priority = 2 },
+        ['uranium-rounds-magazine'] = { valid = true, priority = 3 }
     },
     message_limit = {},
     player_settings = {},
@@ -25,7 +29,7 @@ local this = {
 
 Global.register(
     this,
-    function(t)
+    function (t)
         this = t
     end
 )
@@ -68,7 +72,8 @@ local function get_player_data(player, remove_user_data)
         end
     end
     if not this.player_settings[player.index] then
-        this.player_settings[player.index] = {
+        this.player_settings[player.index] =
+        {
             placed = 0,
             chests = {},
             turrets = {},
@@ -216,11 +221,11 @@ local function remove_ammo(chest, entity_turret)
 
     for item, count in pairs(contents) do
         if count >= 1 then
-            local t = {name = item, count = count}
+            local t = { name = item, count = count }
             if chest.can_insert(t) then
                 local c = chest.insert(t)
                 current_ammo = item
-                turret.remove({name = item, count = c})
+                turret.remove({ name = item, count = c })
                 return current_ammo
             end
         end
@@ -245,10 +250,10 @@ local function refill(entity_turret, entity_chest)
             if ammo_count and ammo_count >= 10 then
                 goto continue
             end
-            local t = {name = item, count = 1}
+            local t = { name = item, count = 1 }
             local c = turret_inv.insert(t)
             if (c > 0) then
-                chest.remove({name = item, count = c})
+                chest.remove({ name = item, count = c })
             end
 
             ::continue::
@@ -319,9 +324,9 @@ end
 
 local function show_text(msg, pos, color, surface)
     if color == nil then
-        surface.create_entity({name = 'flying-text', position = pos, text = msg})
+        surface.create_entity({ name = 'flying-text', position = pos, text = msg })
     else
-        surface.create_entity({name = 'flying-text', position = pos, text = msg, color = color})
+        surface.create_entity({ name = 'flying-text', position = pos, text = msg, color = color })
     end
 end
 
@@ -342,7 +347,7 @@ end
 local function move_multiple(source, destination, stack, amount)
     local ret = 0
     for _, itemName in pairs(stack) do
-        ret = move_items(source, destination, {name = itemName, count = amount})
+        ret = move_items(source, destination, { name = itemName, count = amount })
         if (ret > 0) then
             return ret
         end
@@ -356,7 +361,7 @@ local function auto_insert_into_turret(player, turret)
         return
     end
 
-    local ret = move_multiple(inventory, turret, {'artillery-shell', 'uranium-rounds-magazine', 'piercing-rounds-magazine', 'firearm-magazine'}, autofill_amount)
+    local ret = move_multiple(inventory, turret, { 'artillery-shell', 'uranium-rounds-magazine', 'piercing-rounds-magazine', 'firearm-magazine' }, autofill_amount)
 
     if (ret > 1) then
         show_text('[Autofill] Inserted ' .. ret .. '!', turret.position, Color.info, player.surface)
@@ -374,15 +379,15 @@ local function auto_insert_into_vehicle(player, vehicle)
     end
 
     if ((vehicle.name == 'car') or (vehicle.name == 'tank') or (vehicle.name == 'locomotive')) then
-        move_multiple(inventory, vehicle, {'nuclear-fuel', 'rocket-fuel', 'solid-fuel', 'coal', 'wood'}, 50)
+        move_multiple(inventory, vehicle, { 'nuclear-fuel', 'rocket-fuel', 'solid-fuel', 'coal', 'wood' }, 50)
     end
 
     if ((vehicle.name == 'car') or (vehicle.name == 'tank')) then
-        move_multiple(inventory, vehicle, {'uranium-rounds-magazine', 'piercing-rounds-magazine', 'firearm-magazine'}, autofill_amount)
+        move_multiple(inventory, vehicle, { 'uranium-rounds-magazine', 'piercing-rounds-magazine', 'firearm-magazine' }, autofill_amount)
     end
 
     if (vehicle.name == 'tank') then
-        move_multiple(inventory, vehicle, {'explosive-uranium-cannon-shell', 'uranium-cannon-shell', 'explosive-cannon-shell', 'cannon-shell'}, autofill_amount)
+        move_multiple(inventory, vehicle, { 'explosive-uranium-cannon-shell', 'uranium-cannon-shell', 'explosive-cannon-shell', 'cannon-shell' }, autofill_amount)
     end
 end
 
@@ -407,7 +412,7 @@ local function on_entity_built(event)
             else
                 if not this.message_limit[player.index] then
                     this.message_limit[player.index] = true
-                    player.print('[Autofill] Chest limit reached.', Color.warning)
+                    player.print('[Autofill] Chest limit reached.', { color = Color.warning })
                 end
             end
         else
@@ -420,7 +425,7 @@ local function on_entity_built(event)
             else
                 if not this.message_limit[player.index] then
                     this.message_limit[player.index] = true
-                    player.print('[Autofill] Chest limit reached.', Color.warning)
+                    player.print('[Autofill] Chest limit reached.', { color = Color.warning })
                 end
             end
         end
@@ -490,7 +495,7 @@ local function on_tick()
     do_refill_turrets()
 end
 
-Public.refill_turret_callback = function(player, turret)
+Public.refill_turret_callback = function (player, turret)
     if this.globally_enabled then
         local refill_turrets = this.refill_turrets
         if turret and turret.valid then
@@ -505,7 +510,7 @@ Public.refill_turret_callback = function(player, turret)
     end
 end
 
-Public.add_chest_to_refill_callback = function(player, entity)
+Public.add_chest_to_refill_callback = function (player, entity)
     if entity and entity.valid then
         if this.globally_enabled then
             local refill_chests = this.refill_chests
@@ -521,19 +526,20 @@ Public.add_chest_to_refill_callback = function(player, entity)
             player_data.placed = chest_placed + 1
         end
 
-        rendering.draw_text {
+        rendering.draw_text
+        {
             text = '⚙',
             surface = entity.surface,
             target = entity,
-            target_offset = {0, -0.5},
+            target_offset = { 0, -0.5 },
             scale = 1.5,
-            color = {r = 0, g = 0.6, b = 1},
+            color = { r = 0, g = 0.6, b = 1 },
             alignment = 'center'
         }
     end
 end
 
-Public.globally_enabled = function(value)
+Public.globally_enabled = function (value)
     if value then
         this.globally_enabled = value
     else

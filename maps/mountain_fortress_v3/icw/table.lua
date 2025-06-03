@@ -1,4 +1,5 @@
 local Global = require 'utils.global'
+local Event = require 'utils.event'
 
 local this = {}
 Global.register(
@@ -8,10 +9,13 @@ Global.register(
     end
 )
 
-local Public = {}
-
-local discord_name = 'Mtn Fortress'
-Public.discord_name = discord_name
+local Public =
+{
+    events =
+    {
+        on_player_used_door = Event.generate_event_name('on_player_used_door'),
+    }
+}
 
 function Public.reset()
     if this.surfaces then
@@ -27,21 +31,27 @@ function Public.reset()
     this.doors = {}
     this.wagons = {}
     this.speed = 0.1
+    this.offsets = 480
+    this.default_surface = false
     this.final_battle = false
     this.hazardous_debris = true
     this.current_wagon_index = nil
     this.trains = {}
+    this.carriages = {}
+    this.carriages_id = 1
     this.players = {}
     this.surfaces = {}
     this.multiple_chests = true
-    this.wagon_types = {
+    this.wagon_types =
+    {
         ['cargo-wagon'] = true,
         ['artillery-wagon'] = true,
         ['fluid-wagon'] = true,
         ['locomotive'] = true
     }
 
-    this.wagon_areas = {
+    this.wagon_areas =
+    {
         ['cargo-wagon'] = { left_top = { x = -40, y = 0 }, right_bottom = { x = 40, y = 100 } },
         ['artillery-wagon'] = { left_top = { x = -40, y = 0 }, right_bottom = { x = 40, y = 100 } },
         ['fluid-wagon'] = { left_top = { x = -40, y = 0 }, right_bottom = { x = 40, y = 100 } },

@@ -1,5 +1,5 @@
 local Event = require 'utils.event'
-local key_item = 'player-port'
+local key_item = 'rocket-part'
 local blacklisted_tiles = { 'out-of-map', 'water', 'deepwater', 'water-green', 'lab-white', 'lab-dark-1' }
 local teleporter_names = {
     'Stuedrik',
@@ -128,7 +128,7 @@ local function gui_spawn_new_teleporter(player)
     b.style.right_padding = 12
     b.style.bottom_padding = 6
     b.style.font = 'default-listbox'
-    b.style.font_color = { r = 0.35, g = 0.5, b = 1 }
+    b.style.font_color = { r = 0.25, g = 0.25, b = 1 }
 end
 
 local function gui_teleporter(player, visited_teleporter_index)
@@ -170,13 +170,13 @@ local function gui_teleporter(player, visited_teleporter_index)
 
     for x = #storage.teleporters, 1, -1 do
         local surface = game.surfaces[storage.teleporters[x].surface]
-        local tile = surface.get_tile(storage.teleporters[x].position)
+        local tile = surface.get_tile(storage.teleporters[x].position.x, storage.teleporters[x].position.y)
         if x ~= visited_teleporter_index and tile.name == 'lab-white' then
             t = scroll_pane.add({ type = 'table', column_count = 2 })
 
             local b = t.add({ type = 'button', caption = '> ' .. storage.teleporters[x].name .. ' <', name = 'teleporter_' .. x })
             b.style.minimal_width = 250
-            b.style.font_color = { r = 0.35, g = 0.5, b = 1 }
+            b.style.font_color = { r = 0.25, g = 0.25, b = 1 }
             b.style.font = 'default-listbox'
             b.style.top_padding = 7
             b.style.bottom_padding = 7
@@ -212,8 +212,7 @@ local function gui_teleporter(player, visited_teleporter_index)
                         type = 'label',
                         caption = tostring(
                             math.ceil(
-                                math.sqrt((storage.teleporters[x].position.x - player.position.x) ^ 2 + (storage.teleporters[x].position.y - player.position.y) ^ 2),
-                                0
+                                math.sqrt((storage.teleporters[x].position.x - player.physical_position.x) ^ 2 + (storage.teleporters[x].position.y - player.physical_position.y) ^ 2)
                             )
                         ) .. ' Units'
                     }
@@ -240,7 +239,7 @@ local function spawn_teleporter(player)
         storage.teleporters = {}
     end
     local surface = player.surface
-    local pos = { x = math.floor(player.position.x, 0), y = math.floor(player.position.y, 0) }
+    local pos = { x = math.floor(player.physical_position.x), y = math.floor(player.physical_position.y) }
     local a = {
         left_top = { x = pos.x - 3, y = pos.y - 3 },
         right_bottom = { x = pos.x + 3, y = pos.y + 3 }
@@ -271,6 +270,7 @@ local function spawn_teleporter(player)
         }
         surface.set_tiles(tiles, true)
         game.print(player.name .. ' has deployed a Teleporter!', { r = 0.35, g = 0.5, b = 1 })
+        game.forces.player.add_chart_tag(surface, {position = {x = pos.x, y = pos.y - 1}, icon = {type = 'item', name = 'rocket-part'}, text =  str .. ' ' .. str2})
     end
 end
 
@@ -295,8 +295,8 @@ local function on_player_changed_position(event)
     end
     --if game.tick % 2 == 1 then return end
     local a = {
-        left_top = { x = player.position.x - 1, y = player.position.y - 1 },
-        right_bottom = { x = player.position.x + 1, y = player.position.y + 1 }
+        left_top = { x = player.physical_position.x - 1, y = player.physical_position.y - 1 },
+        right_bottom = { x = player.physical_position.x + 1, y = player.physical_position.y + 1 }
     }
     local tile = player.surface.find_tiles_filtered { area = a, name = 'lab-white', limit = 1 }
     if not tile[1] then
@@ -348,8 +348,8 @@ local function on_gui_click(event)
             p.play_sound { path = 'utility/armor_insert', volume_modifier = 1, position = storage.teleporters[visited_teleporter_index].position }
             p.play_sound { path = 'utility/armor_insert', volume_modifier = 1, position = storage.teleporters[index].position }
         end
-        surface.create_entity({ name = 'water-splash', position = player.position })
-        surface.create_entity({ name = 'blood-explosion-big', position = player.position })
+        surface.create_entity({ name = 'water-splash', position = player.physical_position })
+        surface.create_entity({ name = 'blood-explosion-big', position = player.physical_position })
         local p = surface.find_non_colliding_position('character', storage.teleporters[index].position, 2, 0.5)
         if p then
             player.teleport(p, storage.teleporters[index].surface)
