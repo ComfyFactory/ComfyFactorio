@@ -29,3 +29,4 @@ A factorio scenario.
 ### Factorio Version
 
 - We always try to use the latest stable branch, meaning - if you want to play our maps then you need to be on the stable branch.
+- Latest version of scenario for Factorio 1.1: [Release 375](https://github.com/ComfyFactory/ComfyFactorio/releases/tag/1.0.375)
