@@ -39,7 +39,7 @@ local function move_to_main(player, from, to)
       if c.valid_for_read then
          if to.can_insert(c) then
             local amt = to.insert(c)
-            ret[#ret + 1] = { name = c.name, count = amt }
+            ret[#ret + 1] = { name = c.name, count = amt, quality = c.quality }
             c.count = c.count - amt
          else
             player.print('Unable to move ' .. c.name .. ' to main inventory')
@@ -70,9 +70,9 @@ local function try_move_from_main(main, to, what)
    for i = 1, #what do
       local amt_out = main.remove(what[i])
       if amt_out > 0 then
-         local amt_in = to.insert({ name = what[i].name, count = amt_out })
+         local amt_in = to.insert({ name = what[i].name, count = amt_out, quality = what[i].quality })
          if amt_in < amt_out then
-            main.insert({ name = what[i].name, count = amt_out - amt_in })
+            main.insert({ name = what[i].name, count = amt_out - amt_in, quality = what[i].quality })
          end
       end
    end
