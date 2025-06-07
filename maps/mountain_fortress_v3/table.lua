@@ -389,7 +389,7 @@ function Public.reset_main_table()
         highest = 10,
         lowest = 4
     }
-    this.mining_bonus_till_wave = 300
+    this.mining_bonus_till_wave = 100
     this.mining_bonus = 0
     this.disable_mining_boost = false
     this.market_announce = game.tick + 1200

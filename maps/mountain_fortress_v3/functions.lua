@@ -972,6 +972,7 @@ local function tick()
     do_clear_rocks_slowly()
     do_replace_tiles_slowly()
     do_custom_surface_funcs()
+    Public.set_difficulty()
 end
 
 Public.deactivate_callback =
@@ -2050,6 +2051,9 @@ function Public.set_difficulty()
     local collapse_amount = Public.get('collapse_amount')
     local collapse_speed = Public.get('collapse_speed')
     local difficulty = Public.get('difficulty')
+    if not difficulty then
+        return
+    end
     local mining_bonus_till_wave = Public.get('mining_bonus_till_wave')
     local mining_bonus = Public.get('mining_bonus')
     local disable_mining_boost = Public.get('disable_mining_boost')
@@ -2152,28 +2156,43 @@ function Public.set_difficulty()
 
     if player_count >= 1 and not disable_mining_boost then
         local force = game.forces.player
+
         if wave_number < mining_bonus_till_wave then
-            -- the mining speed of the players will increase drastically since RPG is also loaded.
-            -- additional mining speed comes from steel axe research: 100%, and difficulty settings: too young to die 50%, hurt me plenty 25%
-            force.manual_mining_speed_modifier = force.manual_mining_speed_modifier - mining_bonus
             if player_count <= 5 then
-                mining_bonus = 3 -- set a static 300% bonus if there are <= 5 players.
-            elseif player_count >= 6 and player_count <= 10 then
-                mining_bonus = 1 -- set a static 100% bonus if there are <= 10 players.
-            elseif player_count >= 11 then
-                mining_bonus = 0 -- back to 0% with more than 11 players
-            end
-            if mining_bonus < 0 then
+                mining_bonus = 3
+            elseif player_count <= 10 then
+                mining_bonus = 1
+            else
                 mining_bonus = 0
+            end
+        end
+
+        local previous_mining_bonus = Public.get('previous_mining_bonus') or 0
+
+        force.manual_mining_speed_modifier = force.manual_mining_speed_modifier - previous_mining_bonus
+
+        if force.manual_mining_speed_modifier < 0 then
+            force.manual_mining_speed_modifier = 0
+        end
+
+        -- If mining bonuses are still enabled (wave number check)
+        if wave_number < mining_bonus_till_wave then
+            -- Apply new bonus if changed
+            if mining_bonus ~= previous_mining_bonus then
+                print('Mining bonus changed from ' .. previous_mining_bonus .. ' to ' .. mining_bonus)
             end
 
             force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + mining_bonus
-            Public.set('mining_bonus', mining_bonus) -- Setting mining_bonus globally so it remembers how much to reduce
+            Public.set('previous_mining_bonus', mining_bonus)
+            Public.set('mining_bonus', mining_bonus)
         else
-            force.manual_mining_speed_modifier = force.manual_mining_speed_modifier - mining_bonus
+            print('Mining bonus is disabled, as the wave number is ' .. wave_number .. ' and mining_bonus_till_wave is ' .. mining_bonus_till_wave)
+            print('Force manual mining speed modifier is now: ' .. force.manual_mining_speed_modifier)
             Public.set('disable_mining_boost', true)
+            Public.set('previous_mining_bonus', 0)
         end
 
+        -- Final clamp
         if force.manual_mining_speed_modifier < 0 then
             force.manual_mining_speed_modifier = 0
         end
