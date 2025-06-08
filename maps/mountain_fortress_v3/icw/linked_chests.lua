@@ -378,22 +378,70 @@ local function on_pre_player_mined_item(event)
 end
 
 --- Iterates all chests.
----@param unit_number any
 ---@return table
-local function get_all_chests(unit_number)
+local function fetch_carriages_chests()
     local t = {}
     local loco_surface = WPT.get('loco_surface')
     if not loco_surface then
         return t
     end
-    local containers = this.main_containers
-    for check_unit_number, container in pairs(containers) do
-        if container.chest and container.chest.valid and container.share.name ~= '' and container.share.name ~= container.unit_number and (container.chest.surface.index == loco_surface.index or container.chest.position.x > 700) then
-            if check_unit_number ~= unit_number then
-                insert(t, container)
+
+    local locomotive = WPT.get('locomotive')
+    if not locomotive or not locomotive.valid then
+        return t
+    end
+    local carriages = locomotive.train.carriages
+    if not carriages or #carriages == 0 then
+        return t
+    end
+
+    local adjusted_zones = WPT.get('adjusted_zones')
+
+
+
+    for index, unit in pairs(carriages) do
+        if unit and unit.valid then
+            local matched = false
+
+            local chests = {}
+
+            for i = 1, 16 do
+                local chest_name = 'wagon_' .. unit.unit_number .. '_' .. i
+                local _, _, container = fetch_share(chest_name)
+                if container and container.chest and container.chest.valid then
+                    matched = true
+                    insert(chests, container)
+                end
+            end
+
+            if matched then
+                t[#t + 1] =
+                {
+                    index = index,
+                    name = unit.name,
+                    chests = chests,
+                }
+            else
+                t[#t + 1] =
+                {
+                    index = index,
+                    name = unit.name,
+                    chests = {}
+                }
             end
         end
     end
+
+    if adjusted_zones.reversed then
+        local reversed = {}
+        for i = #t, 1, -1 do
+            t[i].index = #reversed + 1
+            reversed[#reversed + 1] = t[i]
+        end
+
+        t = reversed
+    end
+
     return t
 end
 
@@ -447,10 +495,10 @@ local function refresh_main_frame(data)
         if container then
             local disconnect = volatile_tbl.add { type = 'table', column_count = 2, name = 'disconnect' }
             local linker = volatile_tbl.add { type = 'table', column_count = 1, name = 'linker' }
-            local chests = get_all_chests(unit_number)
+            local get_all_linked_containers = fetch_carriages_chests()
             local linked_container = fetch_container(container.linked_to)
 
-            if not next(chests) then
+            if not next(get_all_linked_containers) then
                 local link_label = linker.add({ type = 'label', caption = 'No chests found. ' })
                 link_label.style.font = 'heading-2'
                 local link_info_label = linker.add({ type = 'label', caption = 'A chest needs an unique share name.' })
@@ -500,63 +548,76 @@ local function refresh_main_frame(data)
                 chest_scroll_style.right_padding = 2
                 chest_scroll_style.top_padding = 2
 
-                if not chest_scroll_pane.first_wagon then
-                    local carriage_label = chest_scroll_pane.add { type = 'label', caption = 'Carriage no. 1', name = 'first_wagon', alignment = 'center' }
+                for c = 1, #get_all_linked_containers do
+                    local carriage_container = get_all_linked_containers[c]
+
+                    local carriage_label = chest_scroll_pane.add
+                        {
+                            type = 'label',
+                            caption = 'Carriage no. ' .. carriage_container.index .. (carriage_container.name and ' (' .. carriage_container.name .. ')' or ''),
+                            alignment = 'center'
+                        }
                     carriage_label.style.minimal_width = 400
                     carriage_label.style.horizontal_align = 'center'
-                    chest_scroll_pane.add { type = 'line' }
-                end
 
-                local chestlinker = chest_scroll_pane.add { type = 'table', column_count = 9 }
+                    local chests = carriage_container.chests or {}
+                    local total_chests = #chests
 
-                local added_count = 0
-                local added_total = 0
-                local added_total_row = 0
-                local carriage_length = 1
-                for i = 1, #chests do
-                    if chests then
-                        local source_chest = chests[i]
-                        if type(source_chest) ~= 'string' and source_chest.share.name ~= '' and source_chest.share.name ~= source_chest.chest.unit_number then
-                            local flowlinker = chestlinker.add { type = 'flow' }
+                    local chest_index = 1
+                    while chest_index <= total_chests do
+                        local chest_linker_table = chest_scroll_pane.add { type = 'table', column_count = 9 }
 
-                            added_count = added_count + 1
-                            added_total = added_total + 1
-                            added_total_row = added_total_row + 1
-                            local chestitem =
-                                flowlinker.add
-                                {
-                                    type = 'sprite-button',
-                                    name = item_name_frame_name,
-                                    style = 'slot_button',
-                                    sprite = 'item/' .. source_chest.chest.name,
-                                    tooltip = 'Chest: [color=yellow]' .. source_chest.share.name .. '[/color]\nRight click to show on map.'
-                                }
-                            if added_count == 4 and added_total ~= 8 then
-                                added_count = 0
-                                local splitspace = chestlinker.add { type = 'flow' }
-                                splitspace.style.width = 40
-                            end
-                            if added_total == 8 then
-                                added_total = 0
-                                added_count = 0
-                            end
-                            if added_total_row == 16 and i < #chests then
-                                carriage_length = carriage_length + 1
-                                added_total_row = 0
-                                if not chest_scroll_pane[tostring(i)] then
-                                    local carriage_label = chest_scroll_pane.add { type = 'label', caption = 'Carriage no. ' .. carriage_length, name = chest_scroll_pane[tostring(i)], alignment = 'center' }
-                                    carriage_label.style.minimal_width = 400
-                                    carriage_label.style.horizontal_align = 'center'
+                        local left_start = math.min(chest_index + 3, total_chests)
+                        for i = left_start, chest_index, -1 do
+                            if i <= total_chests then
+                                local source_chest = chests[i]
+                                local chest_linker_flow = chest_linker_table.add { type = 'flow' }
+                                chest_linker_flow.style.horizontal_align = 'center'
+                                local chest_item_gui = chest_linker_flow.add
+                                    {
+                                        type = 'sprite-button',
+                                        name = item_name_frame_name,
+                                        style = 'slot_button',
+                                        sprite = 'item/' .. source_chest.chest.name,
+                                        tooltip = 'Chest: [color=yellow]' .. source_chest.share.name .. '[/color]\nRight click to show on map.'
+                                    }
+                                if not trusted_player then
+                                    chest_item_gui.enabled = false
+                                    chest_item_gui.tooltip = '[Antigrief] You have not grown accustomed to this technology yet.'
                                 end
-                                chest_scroll_pane.add { type = 'line' }
-                                chestlinker = chest_scroll_pane.add { type = 'table', column_count = 9 }
+                                Gui.set_data(chest_item_gui, { name = nil, unit_number = unit_number, share = source_chest.share.name })
                             end
-                            if not trusted_player then
-                                chestitem.enabled = false
-                                chestitem.tooltip = '[Antigrief] You have not grown accustomed to this technology yet.'
-                            end
-                            Gui.set_data(chestitem, { name = nil, unit_number = unit_number, share = source_chest.share.name })
                         end
+                        chest_index = chest_index + 4
+
+                        local chest_linker_split_flow = chest_linker_table.add { type = 'flow' }
+                        chest_linker_split_flow.style.width = 40
+
+                        for _ = 1, 4 do
+                            if chest_index <= total_chests then
+                                local source_chest = chests[chest_index]
+                                local chest_linker_flow = chest_linker_table.add { type = 'flow' }
+                                chest_linker_flow.style.horizontal_align = 'center'
+                                local chest_item_gui = chest_linker_flow.add
+                                    {
+                                        type = 'sprite-button',
+                                        name = item_name_frame_name,
+                                        style = 'slot_button',
+                                        sprite = 'item/' .. source_chest.chest.name,
+                                        tooltip = 'Chest: [color=yellow]' .. source_chest.share.name .. '[/color]\nRight click to show on map.'
+                                    }
+                                if not trusted_player then
+                                    chest_item_gui.enabled = false
+                                    chest_item_gui.tooltip = '[Antigrief] You have not grown accustomed to this technology yet.'
+                                end
+                                Gui.set_data(chest_item_gui, { name = nil, unit_number = unit_number, share = source_chest.share.name })
+                                chest_index = chest_index + 1
+                            end
+                        end
+                    end
+
+                    if c < #get_all_linked_containers then
+                        chest_scroll_pane.add { type = 'line' }
                     end
                 end
             end
@@ -927,22 +988,26 @@ local function on_gui_checked_state_changed(event)
         return
     end
     if not element.valid then
+        print('Linked chests: Invalid element for gui checked state changed.')
         return
     end
 
     local pGui = this.linked_gui[player.name]
     if not pGui then
+        print('Linked chests: No gui data for player ' .. player.name .. ' for gui checked state changed.')
         return
     end
 
     local entity = pGui.entity
     if not (entity and entity.valid) then
+        print('Linked chests: Invalid entity for gui checked state changed.')
         return
     end
 
     local unit_number = entity.unit_number
     local container = fetch_container(unit_number)
     if not container then
+        print('Linked chests: No container found for unit number ' .. unit_number .. ' for gui checked state changed.')
         return
     end
 

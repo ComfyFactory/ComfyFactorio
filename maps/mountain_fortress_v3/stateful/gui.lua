@@ -640,7 +640,6 @@ main_frame = function (player)
     local stateful = Public.get_stateful()
     local breached_wall = Public.get('breached_wall')
     breached_wall = breached_wall - 1
-    local wave_number = WD.get('wave_number')
 
     local frame = player.gui.screen.add { type = 'frame', name = main_frame_name, caption = { 'stateful.win_conditions' }, direction = 'vertical', tooltip = { 'stateful.win_conditions_tooltip' } }
     if Gui.get_mod_gui_top_frame() then
@@ -811,7 +810,6 @@ local function update_data()
     end
 
     breached_wall = breached_wall - 1
-    local wave_number = WD.get('wave_number')
     local collection = stateful.collection
 
     for i = 1, #players do
@@ -986,7 +984,6 @@ local function update_raw()
     if not breached_wall then
         return
     end
-    local wave_number = WD.get('wave_number')
     local collection = stateful.collection
     local tick = game.tick
 
