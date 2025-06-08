@@ -71,11 +71,11 @@ Public.enemy_types = {
 }
 
 Public.classes = {
-    ['engineer'] = 'ENGINEER',
-    ['strength'] = 'MINER',
-    ['magicka'] = 'SCIENTIST',
-    ['dexterity'] = 'BEASTMASTER',
-    ['vitality'] = 'SOLDIER'
+    ['engineer'] = { "rpg_gui.role_engineer" },
+    ['strength'] = { "rpg_gui.role_strength" },
+    ['magicka'] = { "rpg_gui.role_magic" },
+    ['dexterity'] = { "rpg_gui.role_dexterity" },
+    ['vitality'] = { "rpg_gui.role_vitality" },
 }
 
 Public.auto_allocate_nodes = {
