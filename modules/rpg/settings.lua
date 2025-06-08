@@ -594,7 +594,7 @@ function Public.extra_settings(player)
                 {
                     type = 'label',
                     caption = ({ 'rpg_settings.magic_spell' }),
-                    tooltip = 'Check the info button at upper right for more information\nOnly spells that you can cast are listed here.'
+                    tooltip = { 'rpg_settings.magic_spell_tooltip' }
                 }
             )
 

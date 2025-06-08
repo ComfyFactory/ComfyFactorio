@@ -625,28 +625,9 @@ local function on_init()
     minesweeper.triggered_mines = 0
 
     local T = Map.Pop_info()
-    T.main_caption = 'Minesweeper'
-    T.sub_caption = ''
-    T.text =
-        table.concat(
-            {
-                'Mechanical lifeforms once dominated this world.\n',
-                'They have left long ago, leaving an inhabitable wasteland.\n',
-                'It also seems riddled with buried explosives.\n\n',
-                'Mark mines with your stone furnace.\n',
-                'Marked mines are save to walk on.\n',
-                'When enough mines in an area are marked,\n',
-                'they will disarm and yield rewards!\n',
-                'Faulty marking may trigger surrounding mines!!\n\n',
-                'As you move away from spawn,\n',
-                'mine density and radius required to disarm will increase.\n',
-                'Crates will contain more loot and ore will have higher yield.\n\n',
-                'The paint for the numerics does not work very well with the dirt.\n',
-                'Laying some stone bricks or better may help.\n'
-            }
-        )
-    T.main_caption_color = { r = 255, g = 125, b = 55 }
-    T.sub_caption_color = { r = 0, g = 250, b = 150 }
+    T.localised_category = 'minesweeper'
+    T.main_caption_color = {r = 255, g = 125, b = 55}
+    T.sub_caption_color = {r = 0, g = 250, b = 150}
 end
 
 local Event = require 'utils.event'
