@@ -939,7 +939,7 @@ Gui.on_click(
         if not misc_settings[player.name].final_warning then
             misc_settings[player.name].final_warning = true
             player.print(
-                '[IC] WARNING! WARNING WARNING! Pressing the save button ONE MORE TIME will DELETE your surface. This action is irreversible!',
+                '[IC] WARNING! WARNING! WARNING! Pressing the save button ONE MORE TIME will DELETE your surface. This action is irreversible!',
                 { color = Color.warning })
             Task.set_timeout_in_ticks(600, clear_misc_settings, { player_name = player.name })
             return
@@ -960,6 +960,7 @@ Gui.on_click(
                     Discord.send_notification_raw(discord_name,
                         player.name ..
                         ' deleted their vehicle surface at x = ' .. position.x .. ' y = ' .. position.y .. '.')
+                    misc_settings[player.name] = nil
                 else
                     player.print(
                         '[IC] Entities are still on the surface. Please remove any entities and retry this operation. Found ' ..

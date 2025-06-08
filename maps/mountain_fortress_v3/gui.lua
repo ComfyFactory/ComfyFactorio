@@ -11,7 +11,7 @@ local Gui = require 'utils.gui'
 local SpamProtection = require 'utils.spam_protection'
 local Polls = require 'utils.gui.poll'
 local BottomFrame = require 'utils.gui.bottom_frame'
-local Core = require 'utils.core'
+local Task = require 'utils.task_token'
 
 local format_number = require 'util'.format_number
 
@@ -19,6 +19,14 @@ local main_button_name = Gui.uid_name()
 local spectate_button_name = Gui.uid_name()
 local main_frame_name = Gui.uid_name()
 local floor = math.floor
+local on_player_changed_surface
+
+local on_player_changed_surface_token =
+    Task.register(
+        function (event)
+            on_player_changed_surface(event)
+        end
+    )
 
 local function validate_entity(entity)
     if not (entity and entity.valid) then
@@ -26,6 +34,24 @@ local function validate_entity(entity)
     end
 
     return true
+end
+
+local function get_player_gui_settings(player)
+    local player_gui_settings = Public.get('player_gui_settings')
+    if not player_gui_settings[player.index] then
+        player_gui_settings[player.index] =
+        {
+            info_button = true,
+            wd = true,
+            info_detailed = true
+        }
+    end
+    return player_gui_settings[player.index]
+end
+
+local function remove_player_gui_settings(player_index)
+    local player_gui_settings = Public.get('player_gui_settings')
+    player_gui_settings[player_index] = nil
 end
 
 local function get_top_frame(player)
@@ -313,9 +339,9 @@ local function changed_surface(player)
 
     local wagon_surface = icw_locomotive.surface
     local main_toggle_button = get_top_frame_custom(player, main_toggle_button_name)
-    local info = get_top_frame_custom(player, main_button_name)
+    local info_button = get_top_frame_custom(player, main_button_name)
     local wd = get_top_frame_custom(player, 'wave_defense')
-    local info_expanded = get_top_frame_custom(player, main_frame_name)
+    local info_detailed = get_top_frame_custom(player, main_frame_name)
     local spectate = get_top_frame_custom(player, spectate_button_name)
     local minimap_button = get_top_frame_custom(player, 'minimap_button')
     local rpg_b = get_top_frame_custom(player, rpg_button)
@@ -329,13 +355,15 @@ local function changed_surface(player)
     local spell_gui_frame_name = RPG.spell_gui_frame_name
     local spell_cast_buttons = player.gui.screen[spell_gui_frame_name]
 
+    local gui_data = get_player_gui_settings(player)
+
     if IC.get_player_surface(player) or main_toggle_button and main_toggle_button.sprite == 'utility/expand_dots' then
         goto no_gui
     end
 
-    if info then
-        info.tooltip = ({ 'gui.info_tooltip' })
-        info.sprite = 'utility/expand'
+    if info_button then
+        info_button.tooltip = ({ 'gui.info_tooltip' })
+        info_button.sprite = 'utility/expand'
     end
 
     if not main then
@@ -376,6 +404,10 @@ local function changed_surface(player)
             diff.visible = true
         end
 
+        if wd then
+            wd.visible = gui_data.wd
+        end
+
         if spectate and not spectate.visible then
             spectate.visible = true
         end
@@ -385,14 +417,17 @@ local function changed_surface(player)
         if charging_frame and not charging_frame.enabled then
             charging_frame.enabled = true
         end
-        if info then
-            if not (wd and wd.visible) or not (info_expanded and info_expanded.visible) then
-                info.sprite = 'utility/expand'
+        if info_button then
+            info_button.tooltip = ({ 'gui.info_tooltip' })
+            info_button.visible = true
+            wd.visible = gui_data.wd or gui_data.info_detailed
+            info_detailed.visible = gui_data.info_detailed
+
+            if not (wd and wd.visible) or not (info_detailed and info_detailed.visible) then
+                info_button.sprite = 'utility/expand'
             else
-                info.sprite = 'utility/collapse'
+                info_button.sprite = 'utility/collapse'
             end
-            info.tooltip = ({ 'gui.info_tooltip' })
-            info.visible = true
         end
 
         return
@@ -433,13 +468,13 @@ local function changed_surface(player)
         if charging_frame and charging_frame.enabled then
             charging_frame.enabled = false
         end
-        if info then
-            info.tooltip = ({ 'gui.hide_minimap' })
-            info.sprite = 'utility/map'
-            info.visible = false
+        if info_button then
+            info_button.tooltip = ({ 'gui.hide_minimap' })
+            info_button.sprite = 'utility/map'
+            info_button.visible = false
         end
-        if info_expanded and info_expanded.visible then
-            info_expanded.visible = false
+        if info_detailed and info_detailed.visible then
+            info_detailed.visible = false
         end
         if get_top_frame(player) then
             if frame then
@@ -453,7 +488,7 @@ local function changed_surface(player)
     ::no_gui::
 
     if main_toggle_button and main_toggle_button.visible then
-        main_toggle_button.visible = true
+        main_toggle_button.visible = false
     end
     if poll_b then
         poll_b.visible = false
@@ -464,11 +499,11 @@ local function changed_surface(player)
     if spectate then
         spectate.visible = false
     end
-    if info and info.visible then
-        info.visible = false
+    if info_button and info_button.visible then
+        info_button.visible = false
     end
-    if info_expanded and info_expanded.visible then
-        info_expanded.visible = false
+    if info_detailed and info_detailed.visible then
+        info_detailed.visible = false
     end
     if wd and wd.visible then
         wd.visible = false
@@ -504,6 +539,8 @@ local function on_gui_click(event)
         if not player.physical_surface or not player.physical_surface.valid then
             return
         end
+        local gui_data = get_player_gui_settings(player)
+
         if (player.physical_surface ~= locomotive.surface or player.physical_position.x > 700) then
             local minimap = player.gui.left.icw_main_frame
             if minimap and minimap.visible then
@@ -516,19 +553,21 @@ local function on_gui_click(event)
             return
         end
         if get_top_frame(player) then
-            local info = get_top_frame(player)
+            local info_detailed = get_top_frame(player)
             local info_button = get_top_frame_custom(player, main_button_name)
             local wd = get_top_frame_custom(player, 'wave_defense')
             local diff = get_top_frame_custom(player, Difficulty.top_button_name)
 
-            if info and info.visible then
+            if info_detailed and info_detailed.visible then
                 if wd then
                     wd.visible = false
+                    gui_data.wd = false
                 end
                 if diff then
                     diff.visible = false
                 end
-                info.visible = false
+                info_detailed.visible = false
+                gui_data.info_detailed = false
                 if info_button then
                     info_button.sprite = 'utility/expand'
                 end
@@ -539,22 +578,25 @@ local function on_gui_click(event)
                 end
                 if wd then
                     wd.visible = true
+                    gui_data.wd = true
                 end
                 if diff then
                     diff.visible = true
                 end
                 return
-            elseif info and not info.visible then
+            elseif info_detailed and not info_detailed.visible then
                 for _, child in pairs(player.gui.left.children) do
                     child.destroy()
                 end
                 if wd then
                     wd.visible = true
+                    gui_data.wd = true
                 end
                 if diff then
                     diff.visible = true
                 end
-                info.visible = true
+                info_detailed.visible = true
+                gui_data.info_detailed = true
                 if info_button then
                     info_button.sprite = 'utility/collapse'
                 end
@@ -569,12 +611,12 @@ local function on_gui_click(event)
     end
 end
 
-local function on_player_changed_surface(event)
+on_player_changed_surface = function (event)
     local player = game.players[event.player_index]
     if not validate_player(player) then
         return
     end
-    local surface = game.get_surface(event.surface_index)
+    local surface = game.get_surface(event.surface_index or player.surface.index)
     if surface.name == 'Init' then return end
     changed_surface(player)
 end
@@ -707,7 +749,19 @@ Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(Public.events.reset_map, enable_guis)
-Event.add(ICW.events.on_player_used_door, on_player_changed_surface)
+Event.add(ICW.events.on_player_used_door, function (event)
+    Task.set_timeout_in_ticks(2, on_player_changed_surface_token, event)
+end)
+Event.add(defines.events.on_player_driving_changed_state, function (event)
+    Task.set_timeout_in_ticks(2, on_player_changed_surface_token, event)
+end)
+
+Event.add(defines.events.on_player_removed, function (event)
+    if not event.player_index then
+        return
+    end
+    remove_player_gui_settings(event.player_index)
+end)
 
 Gui.on_click(
     spectate_button_name,
@@ -743,10 +797,10 @@ Gui.on_click(
 
 Public.changed_surface = changed_surface
 
-Event.on_nth_tick(10, function ()
-    Core.iter_connected_players(function (player)
-        changed_surface(player)
-    end)
-end)
+-- Event.on_nth_tick(10, function ()
+--     Core.iter_connected_players(function (player)
+--         changed_surface(player)
+--     end)
+-- end)
 
 return Public

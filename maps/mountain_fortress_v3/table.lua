@@ -432,6 +432,7 @@ function Public.reset_main_table()
 
     this.wagons_in_the_wild = {}
     this.player_market_settings = {}
+    this.player_gui_settings = {}
 
     this.quality_list =
     {
