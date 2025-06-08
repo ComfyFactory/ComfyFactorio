@@ -1310,13 +1310,12 @@ function Public.create_car(event)
     local owner_car = get_owner_car_name(player)
 
     if owner_car and valid_combinations[owner_car] and valid_combinations[owner_car][ce.name] and valid_quality_combinations[car.quality] and valid_quality_combinations[car.quality][ce.quality.name] then
-        if storage.auto_upgrade and storage.auto_upgrade == 'right' then
+        if storage.auto_upgrade and storage.auto_upgrade == 'left' then
+            upgrade_surface(player, ce)
+            render_owner_text(renders, player, ce)
+            player.print(module_tag .. 'Your car-surface has been upgraded!', { color = Color.success })
             return
         end
-        upgrade_surface(player, ce)
-        render_owner_text(renders, player, ce)
-        player.print(module_tag .. 'Your car-surface has been upgraded!', { color = Color.success })
-        return
     end
 
     local saved_surface = restore_surface(player, ce)

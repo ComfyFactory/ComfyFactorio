@@ -49,6 +49,15 @@ Commands.new('wd_debug_module', 'Usable only for admins - controls wave defense 
                 return true
             end
 
+            if action == 'next_100' then
+                for _ = 1, 100 do
+                    Public.set_next_wave()
+                end
+                Public.spawn_unit_group({ true }, true)
+                player.print(module_name .. ' wave spawned!')
+                return true
+            end
+
             if action == 'next_1500' then
                 for _ = 1, 1500 do
                     Public.set_next_wave()
