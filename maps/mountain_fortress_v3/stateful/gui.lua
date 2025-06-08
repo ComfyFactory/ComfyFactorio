@@ -781,23 +781,6 @@ main_frame = function (player)
             data.randomized_zone_label = zone_right_flow.add({ type = 'label', caption = breached_wall .. '/' .. stateful.objectives.randomized_zone .. ' [img=utility/not_available]', tooltip = { 'stateful.tooltip_not_completed' } })
         end
 
-        -- new frame
-        local wave_left_flow = objective_tbl.add({ type = 'flow' })
-        wave_left_flow.style.horizontal_align = 'left'
-        wave_left_flow.style.horizontally_stretchable = true
-
-        wave_left_flow.add({ type = 'label', caption = { 'stateful.wave' }, tooltip = { 'stateful.wave_tooltip' } })
-        frame.add({ type = 'line', direction = 'vertical' })
-        local wave_right_flow = objective_tbl.add({ type = 'flow' })
-        wave_right_flow.style.horizontal_align = 'right'
-        wave_right_flow.style.horizontally_stretchable = true
-
-        if wave_number >= stateful.objectives.randomized_wave then
-            data.randomized_wave_label = wave_right_flow.add({ type = 'label', caption = wave_number .. '/' .. stateful.objectives.randomized_wave .. ' [img=utility/check_mark_green]', tooltip = { 'stateful.tooltip_completed' } })
-        else
-            data.randomized_wave_label = wave_right_flow.add({ type = 'label', caption = wave_number .. '/' .. stateful.objectives.randomized_wave .. ' [img=utility/not_available]', tooltip = { 'stateful.tooltip_not_completed' } })
-        end
-
         --dynamic conditions
         data.random_objectives = {}
 
@@ -855,15 +838,6 @@ local function update_data()
                     data.randomized_zone_label.tooltip = { 'stateful.tooltip_completed' }
                 else
                     data.randomized_zone_label.caption = breached_wall .. '/' .. stateful.objectives.randomized_zone .. ' [img=utility/not_available]'
-                end
-            end
-
-            if data.randomized_wave_label and data.randomized_wave_label.valid and stateful.objectives.randomized_wave then
-                if wave_number >= stateful.objectives.randomized_wave then
-                    data.randomized_wave_label.caption = wave_number .. '/' .. stateful.objectives.randomized_wave .. ' [img=utility/check_mark_green]'
-                    data.randomized_wave_label.tooltip = { 'stateful.tooltip_completed' }
-                else
-                    data.randomized_wave_label.caption = wave_number .. '/' .. stateful.objectives.randomized_wave .. ' [img=utility/not_available]'
                 end
             end
 
@@ -1032,20 +1006,6 @@ local function update_raw()
                 play_achievement_unlocked()
                 Alert.alert_all_players(100, 'Objective: [color=blue]Breach zone[/color] has been completed!')
                 Server.to_discord_embed('Objective: **Breach zone** has been completed!')
-                stateful.objectives_completed_count = stateful.objectives_completed_count + 1
-            end
-        end
-    end
-
-    if stateful.objectives.randomized_wave then
-        if wave_number >= stateful.objectives.randomized_wave then
-            if not stateful.objectives_completed.randomized_wave then
-                stateful.objectives_completed.randomized_wave = true
-                stateful.objectives_time_spent.randomized_wave = tick
-
-                play_achievement_unlocked()
-                Alert.alert_all_players(100, 'Objective: [color=blue]Wave survival[/color] has been completed!')
-                Server.to_discord_embed('Objective: **Wave survival** has been completed!')
                 stateful.objectives_completed_count = stateful.objectives_completed_count + 1
             end
         end

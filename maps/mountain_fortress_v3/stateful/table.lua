@@ -1799,7 +1799,7 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
         this.buffs_collected = {}
     end
     this.enemies_boosted = false
-    this.tasks_required_to_win = 6
+    this.tasks_required_to_win = 5
 
     if not this.previous_objectives_time_spent then
         this.previous_objectives_time_spent = {}
@@ -1809,7 +1809,6 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
         this.objectives =
         {
             randomized_zone = 2,
-            randomized_wave = 2,
             supplies = get_random_items(),
             single_item = get_random_item(),
             killed_enemies = 10,
@@ -1867,9 +1866,6 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
 
         if not this.objectives.randomized_zone or (this.objectives_completed ~= nil and this.objectives_completed.randomized_zone) then
             this.objectives.randomized_zone = scale(4, 15, 1.013)
-        end
-        if not this.objectives.randomized_wave or (this.objectives_completed ~= nil and this.objectives_completed.randomized_wave) then
-            this.objectives.randomized_wave = scale(200, 1000)
         end
         if not this.objectives.supplies or (this.objectives_completed ~= nil and this.objectives_completed.supplies) then
             this.objectives.supplies = get_random_items()
@@ -2025,8 +2021,7 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
 
     local t =
     {
-        ['randomized_zone'] = this.objectives.randomized_zone,
-        ['randomized_wave'] = this.objectives.randomized_wave
+        ['randomized_zone'] = this.objectives.randomized_zone
     }
     for index = 1, #this.selected_objectives do
         local objective = this.selected_objectives[index]
