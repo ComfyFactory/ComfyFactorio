@@ -421,7 +421,10 @@ local function changed_surface(player)
             info_button.tooltip = ({ 'gui.info_tooltip' })
             info_button.visible = true
             wd.visible = gui_data.wd or gui_data.info_detailed
-            info_detailed.visible = gui_data.info_detailed
+
+            if info_detailed then
+                info_detailed.visible = gui_data.info_detailed
+            end
 
             if not (wd and wd.visible) or not (info_detailed and info_detailed.visible) then
                 info_button.sprite = 'utility/expand'
