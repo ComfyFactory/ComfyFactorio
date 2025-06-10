@@ -1,9 +1,11 @@
 -- one table to rule them all!
 local Global = require 'utils.global'
+local Task = require 'utils.task_token'
 local Event = require 'utils.event'
 local Gui = require 'utils.gui'
 
-local this = {
+local this =
+{
     rpg_extra = {},
     rpg_t = {}
 }
@@ -35,7 +37,8 @@ Global.register(
 )
 
 local Public = {}
-Public.events = {
+Public.events =
+{
     on_spell_cast_success = Event.generate_event_name('on_spell_cast_success'),
     on_spell_cast_failure = Event.generate_event_name('on_spell_cast_failure')
 }
@@ -47,14 +50,16 @@ for a = 1, 4999, 1 do -- max level
     Public.experience_levels[#Public.experience_levels + 1] = Public.experience_levels[#Public.experience_levels] + a * 8
 end
 
-Public.gui_settings_levels = {
+Public.gui_settings_levels =
+{
     ['reset_text_label'] = 50,
     ['stone_path_label'] = 20,
     ['aoe_punch_label'] = 30,
     ['explosive_bullets_label'] = 50
 }
 
-Public.die_cause = {
+Public.die_cause =
+{
     ['ammo-turret'] = true,
     ['electric-turret'] = true,
     ['fluid-turret'] = true
@@ -64,13 +69,15 @@ Public.nth_tick = 18001
 Public.visuals_delay = 1800
 Public.xp_floating_text_color = { 157, 157, 157 }
 
-Public.enemy_types = {
+Public.enemy_types =
+{
     ['unit'] = true,
     ['unit-spawner'] = true,
     ['turret'] = true
 }
 
-Public.classes = {
+Public.classes =
+{
     ['engineer'] = { "rpg_gui.role_engineer" },
     ['strength'] = { "rpg_gui.role_strength" },
     ['magicka'] = { "rpg_gui.role_magic" },
@@ -78,7 +85,8 @@ Public.classes = {
     ['vitality'] = { "rpg_gui.role_vitality" },
 }
 
-Public.auto_allocate_nodes = {
+Public.auto_allocate_nodes =
+{
     { 'allocations.deactivated' },
     { 'allocations.str' },
     { 'allocations.mag' },
@@ -86,7 +94,8 @@ Public.auto_allocate_nodes = {
     { 'allocations.vit' }
 }
 
-Public.auto_allocate_nodes_func = {
+Public.auto_allocate_nodes_func =
+{
     'Deactivated',
     'Strength',
     'Magicka',
@@ -124,7 +133,8 @@ function Public.reset_table(migrate)
     this.rpg_extra.check_x_position = nil
     this.rpg_extra.enable_aoe_punch_globally = false
     this.rpg_extra.disable_get_heal_modifier_from_using_fish = false
-    this.rpg_extra.tweaked_crafting_items = {
+    this.rpg_extra.tweaked_crafting_items =
+    {
         ['stone-furnace'] = true,
         ['wooden-chest'] = true,
         ['copper-cable'] = true,
@@ -136,7 +146,8 @@ function Public.reset_table(migrate)
     if not migrate then
         this.rpg_t = {}
     end
-    this.rpg_extra.rpg_xp_yield = {
+    this.rpg_extra.rpg_xp_yield =
+    {
         ['behemoth-biter'] = 16,
         ['behemoth-spitter'] = 16,
         ['behemoth-worm-turret'] = 64,
@@ -503,7 +514,8 @@ function Public.migrate_new_rpg_tbl(player)
         rpg_t.points_to_distribute = nil
 
         rpg_t.aoe_punch = false
-        rpg_t.auto_toggle_features = {
+        rpg_t.auto_toggle_features =
+        {
             aoe_punch = false,
             stone_path = false
         }
@@ -516,6 +528,28 @@ function Public.migrate_new_rpg_tbl(player)
         if child.caption and child.caption[1] == 'rpg_settings.spell_name' then
             child.destroy()
         end
+    end
+end
+
+-- Sets the callback function for x_marks_the_spot
+---@param token number
+---@return number|nil
+function Public.set_x_marks_the_spot_custom_callback(token)
+    if token then
+        this.rpg_extra.x_marks_the_spot_custom_callback = token
+    else
+        return error('No token given.', 2)
+    end
+
+    return this.rpg_extra.x_marks_the_spot_custom_callback
+end
+
+--- Gets the callback function for x_marks_the_spot
+--- @return function|nil
+function Public.get_x_marks_the_spot_custom_callback()
+    local token = Task.get(this.rpg_extra.x_marks_the_spot_custom_callback)
+    if token then
+        return token
     end
 end
 

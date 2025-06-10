@@ -2754,7 +2754,7 @@ local function zone_1(x, y, data, void_or_lab, adjusted_zones)
         if small_caves > 0.081 then
             tiles[#tiles + 1] = { name = 'brown-refined-concrete', position = p }
             if random(1, 250) == 1 then
-                entities[#entities + 1] = { name = 'crude-oil', position = p, amount = get_oil_amount(p) }
+                entities[#entities + 1] = { name = 'crude-oil', position = p, amount = get_oil_amount(p) * 2 }
             end
             if random(1, 96) == 1 then
                 Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
@@ -3099,7 +3099,7 @@ local function border_chunk(p, data)
 
     game.forces.player.chart(surface, { { p.x - 32, p.y - 32 }, { p.x + 32, p.y + 32 } })
 
-    local noise = Public.get_noise('dungeon_sewer', pos, data.seed)
+    local noise = Public.get_noise('cave_rivers_2', pos, data.seed)
     local index = floor(noise * 32) % 11 + 1
     local tile = surface.get_tile(pos)
     local starting_planet = Public.get_planet()

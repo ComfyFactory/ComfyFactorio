@@ -47,7 +47,7 @@ local this =
         state = 'move_players',
         surface_name = 'Init',
         default_task = 'move_players',
-        show_messages = true,
+        show_messages = false   ,
         step = 1
     },
     adjusted_zones =

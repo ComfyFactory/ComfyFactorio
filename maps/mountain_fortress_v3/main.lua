@@ -393,8 +393,6 @@ local scenario_manager = function ()
         Public[old_task](current_task)
         if current_task.message and current_task.show_messages then
             game.print(mapkeeper .. ' ' .. current_task.message)
-        else
-            game.print(mapkeeper .. ' Generating map... Current task: ' .. current_task.step)
         end
     end
 end
@@ -490,6 +488,8 @@ function Public.pre_init_task(current_task)
     WD.set_track_bosses_only(true)
     WD.set_pause_waves_custom_callback(Public.pause_waves_custom_callback_token)
     WD.set_threat_event_custom_callback(Public.check_if_spawning_near_train_custom_callback)
+
+    RPG.set_x_marks_the_spot_custom_callback(Public.x_marks_the_spot_custom_callback_token)
 
     WD.set('nest_building_density', 32)
     WD.set('spawn_position', { x = 0, y = 84 })

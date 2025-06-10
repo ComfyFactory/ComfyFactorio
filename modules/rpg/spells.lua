@@ -84,6 +84,10 @@ local x_marks_the_spot_token =
 
             player.teleport(old_position, old_surface_index)
             Task.set_timeout_in_ticks(5, repeat_sound_token, { player_index = player.index, sound = 'utility/new_objective', once = true })
+            local callback = Public.get_x_marks_the_spot_custom_callback()
+            if callback then
+                callback({ player_index = player.index })
+            end
         end
     )
 

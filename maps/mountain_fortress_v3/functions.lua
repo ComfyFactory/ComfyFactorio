@@ -232,6 +232,18 @@ local pause_waves_custom_callback_token =
         end
     )
 
+local x_marks_the_spot_custom_callback_token =
+    Task.register(
+        function (event)
+            local player = game.get_player(event.player_index)
+            if not player or not player.valid then
+                return
+            end
+
+            Public.changed_surface(player)
+        end
+    )
+
 local function do_refill_turrets()
     local refill_turrets = this.refill_turrets
     local index = refill_turrets.index
@@ -3100,6 +3112,7 @@ Public.light_oil_ammo = { name = 'light-oil', amount = 100 }
 Public.artillery_shell_ammo = { name = 'artillery-shell', count = 15 }
 Public.laser_turrent_power_source = { buffer_size = 2400000, power_production = 40000 }
 Public.pause_waves_custom_callback_token = pause_waves_custom_callback_token
+Public.x_marks_the_spot_custom_callback_token = x_marks_the_spot_custom_callback_token
 
 function Public.get_func(key)
     if key then
