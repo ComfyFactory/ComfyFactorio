@@ -49,7 +49,8 @@ local function create_particles(surface, name, position, amount, cause_position)
                 frame_speed = 1,
                 vertical_speed = 0.130,
                 height = 0,
-                movement = {
+                movement =
+                {
                     (m2 - (random(0, m) * 0.01)) + d1,
                     (m2 - (random(0, m) * 0.01)) + d2
                 }
@@ -97,46 +98,55 @@ local function notify_won_to_discord(buff)
     local upgrades = Public.get('upgrades')
     local pick_tier = pickaxe_upgrades[upgrades.pickaxe_tier]
 
-    local text = {
+    local text =
+    {
         title = 'Game won!',
         description = 'Game statistics from the game is below',
         color = 'success',
-        field1 = {
+        field1 =
+        {
             text1 = 'Time played:',
             text2 = time_played,
             inline = 'false'
         },
-        field2 = {
+        field2 =
+        {
             text1 = 'Rounds survived:',
             text2 = stateful.rounds_survived,
             inline = 'false'
         },
-        field3 = {
+        field3 =
+        {
             text1 = 'Current winning streak:',
             text2 = stateful.current_streak,
             inline = 'false'
         },
-        field4 = {
+        field4 =
+        {
             text1 = 'Wave:',
             text2 = format_number(wave, true),
             inline = 'false'
         },
-        field5 = {
+        field5 =
+        {
             text1 = 'Total connected players:',
             text2 = total_players,
             inline = 'false'
         },
-        field6 = {
+        field6 =
+        {
             text1 = 'Pickaxe Upgrade:',
             text2 = pick_tier .. ' (' .. upgrades.pickaxe_tier .. ')',
             inline = 'false'
         },
-        field7 = {
+        field7 =
+        {
             text1 = 'Connected players:',
             text2 = total_connected_players,
             inline = 'false'
         },
-        field8 = {
+        field8 =
+        {
             text1 = 'Buff granted:',
             text2 = buff.discord,
             inline = 'false'
@@ -847,7 +857,7 @@ local function update_data()
                         local frame = data.supply[index]
                         if frame and frame.valid then
                             local supplies_data = supplies[index]
-                            local count = Stateful.get_item_produced_count(player, supplies_data.name)
+                            local count = Stateful.get_item_produced_count(supplies_data.name)
                             if count then
                                 if not supplies_data.total then
                                     supplies_data.total = supplies_data.count
@@ -880,7 +890,7 @@ local function update_data()
                 local single_item = stateful.objectives.single_item
                 if single_item then
                     local frame = data.single_item
-                    local count = Stateful.get_item_produced_count(player, single_item.name)
+                    local count = Stateful.get_item_produced_count(single_item.name)
                     if count then
                         if not single_item.total then
                             single_item.total = single_item.count
@@ -990,7 +1000,8 @@ local function update_raw()
     local active_surface_index = Public.get('active_surface_index')
     local surface = game.get_surface(active_surface_index)
 
-    local player = {
+    local player =
+    {
         surface = surface
     }
 
@@ -1012,7 +1023,7 @@ local function update_raw()
         local items_done = 0
         for index = 1, #stateful.objectives.supplies do
             local supplies_data = stateful.objectives.supplies[index]
-            local count = Stateful.get_item_produced_count(player, supplies_data.name)
+            local count = Stateful.get_item_produced_count(supplies_data.name)
             if count then
                 if not supplies_data.total then
                     supplies_data.total = supplies_data.count
@@ -1042,7 +1053,7 @@ local function update_raw()
     end
 
     if stateful.objectives.single_item then
-        local count = Stateful.get_item_produced_count(player, stateful.objectives.single_item.name)
+        local count = Stateful.get_item_produced_count(stateful.objectives.single_item.name)
         if count then
             if not stateful.objectives.single_item.total then
                 stateful.objectives.single_item.total = stateful.objectives.single_item.count

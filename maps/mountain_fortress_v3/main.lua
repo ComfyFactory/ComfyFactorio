@@ -648,7 +648,6 @@ function Public.reset_map(current_task)
 
     Public.init_enemy_weapon_damage()
 
-    game.forces.player.manual_mining_speed_modifier = 0
     game.forces.player.set_ammo_damage_modifier('artillery-shell', -0.95)
     game.forces.player.worker_robots_battery_modifier = 4
     game.forces.player.worker_robots_storage_bonus = 15

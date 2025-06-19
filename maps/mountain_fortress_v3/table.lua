@@ -47,7 +47,7 @@ local this =
         state = 'move_players',
         surface_name = 'Init',
         default_task = 'move_players',
-        show_messages = false   ,
+        show_messages = false,
         step = 1
     },
     adjusted_zones =
@@ -389,7 +389,7 @@ function Public.reset_main_table()
         highest = 10,
         lowest = 4
     }
-    this.mining_bonus_till_wave = 100
+    this.mining_bonus_till_wave = 200 -- changed from 100 to 200
     this.mining_bonus = 0
     this.disable_mining_boost = false
     this.market_announce = game.tick + 1200
