@@ -349,7 +349,7 @@ local function changed_surface(player)
 
     local gui_data = get_player_gui_settings(player)
 
-    if IC.get_player_surface(player) or main_toggle_button and main_toggle_button.sprite == 'utility/expand_dots' then
+    if main_toggle_button and main_toggle_button.sprite == 'utility/expand_dots' then
         goto no_gui
     end
 
@@ -480,13 +480,55 @@ local function changed_surface(player)
             end
         end
         return
+    elseif IC.get_player_surface(player) then
+        if main_toggle_button and main_toggle_button.visible then
+            main_toggle_button.visible = false
+        end
+        if wd then
+            wd.visible = false
+        end
+        if spectate then
+            spectate.visible = false
+        end
+        if minimap_button and not minimap_button.visible then
+            minimap_button.visible = false
+        end
+        if rpg_b then
+            rpg_b.visible = false
+        end
+        if poll_b then
+            poll_b.visible = false
+        end
+        if spell_cast_buttons and spell_cast_buttons.visible then
+            spell_cast_buttons.visible = false
+        end
+        if rpg_f then
+            rpg_f.destroy()
+        end
+        if rpg_s then
+            rpg_s.destroy()
+        end
+        if diff then
+            diff.visible = false
+        end
+        if charging then
+            charging.visible = false
+        end
+        if charging_frame and charging_frame.enabled then
+            charging_frame.enabled = false
+        end
+        if info_button and info_button.visible then
+            info_button.visible = false
+        end
+        if info_detailed and info_detailed.visible then
+            info_detailed.visible = false
+        end
+
+        return
     end
 
     ::no_gui::
 
-    if main_toggle_button and main_toggle_button.visible then
-        main_toggle_button.visible = false
-    end
     if poll_b then
         poll_b.visible = false
     end
