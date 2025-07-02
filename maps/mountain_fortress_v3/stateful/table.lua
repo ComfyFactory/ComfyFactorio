@@ -613,19 +613,20 @@ local function get_random_buff(fetch_all, only_force)
     return buffs[1]
 end
 
-local function get_item_produced_count(_, item_name)
+local function get_item_produced_count(item_name)
     local force = game.forces.player
     local statistics = Public.get('statistics')
+    local default_surface = Public.get('default_surface')
 
-    local loco_surface = Public.get('loco_surface')
     local starting_planet = Public.get_planet()
-
     local production = force.get_item_production_statistics(starting_planet).input_counts[item_name]
     if not production then
         production = 0
     end
 
-    if not loco_surface or not loco_surface.valid then
+    local loco_surface = Public.get('loco_surface')
+
+    if not (loco_surface and loco_surface.valid) or default_surface then
         return production
     end
 

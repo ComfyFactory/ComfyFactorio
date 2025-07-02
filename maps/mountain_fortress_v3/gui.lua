@@ -1,6 +1,5 @@
 local Event = require 'utils.event'
 local Public = require 'maps.mountain_fortress_v3.table'
-local ICW = require 'maps.mountain_fortress_v3.icw.table'
 local Color = require 'utils.color_presets'
 local RPG = require 'modules.rpg.main'
 local IC_Gui = require 'maps.mountain_fortress_v3.ic.gui'
@@ -11,7 +10,7 @@ local Gui = require 'utils.gui'
 local SpamProtection = require 'utils.spam_protection'
 local Polls = require 'utils.gui.poll'
 local BottomFrame = require 'utils.gui.bottom_frame'
-local Task = require 'utils.task_token'
+local Core = require 'utils.core'
 
 local format_number = require 'util'.format_number
 
@@ -20,13 +19,6 @@ local spectate_button_name = Gui.uid_name()
 local main_frame_name = Gui.uid_name()
 local floor = math.floor
 local on_player_changed_surface
-
-local on_player_changed_surface_token =
-    Task.register(
-        function (event)
-            on_player_changed_surface(event)
-        end
-    )
 
 local function validate_entity(entity)
     if not (entity and entity.valid) then
@@ -357,7 +349,7 @@ local function changed_surface(player)
 
     local gui_data = get_player_gui_settings(player)
 
-    if IC.get_player_surface(player) or main_toggle_button and main_toggle_button.sprite == 'utility/expand_dots' then
+    if main_toggle_button and main_toggle_button.sprite == 'utility/expand_dots' then
         goto no_gui
     end
 
@@ -488,13 +480,55 @@ local function changed_surface(player)
             end
         end
         return
+    elseif IC.get_player_surface(player) then
+        if main_toggle_button and main_toggle_button.visible then
+            main_toggle_button.visible = false
+        end
+        if wd then
+            wd.visible = false
+        end
+        if spectate then
+            spectate.visible = false
+        end
+        if minimap_button and not minimap_button.visible then
+            minimap_button.visible = false
+        end
+        if rpg_b then
+            rpg_b.visible = false
+        end
+        if poll_b then
+            poll_b.visible = false
+        end
+        if spell_cast_buttons and spell_cast_buttons.visible then
+            spell_cast_buttons.visible = false
+        end
+        if rpg_f then
+            rpg_f.destroy()
+        end
+        if rpg_s then
+            rpg_s.destroy()
+        end
+        if diff then
+            diff.visible = false
+        end
+        if charging then
+            charging.visible = false
+        end
+        if charging_frame and charging_frame.enabled then
+            charging_frame.enabled = false
+        end
+        if info_button and info_button.visible then
+            info_button.visible = false
+        end
+        if info_detailed and info_detailed.visible then
+            info_detailed.visible = false
+        end
+
+        return
     end
 
     ::no_gui::
 
-    if main_toggle_button and main_toggle_button.visible then
-        main_toggle_button.visible = false
-    end
     if poll_b then
         poll_b.visible = false
     end
@@ -754,12 +788,6 @@ Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(Public.events.reset_map, enable_guis)
-Event.add(ICW.events.on_player_used_door, function (event)
-    Task.set_timeout_in_ticks(2, on_player_changed_surface_token, event)
-end)
-Event.add(defines.events.on_player_driving_changed_state, function (event)
-    Task.set_timeout_in_ticks(2, on_player_changed_surface_token, event)
-end)
 
 Event.add(defines.events.on_player_removed, function (event)
     if not event.player_index then
@@ -802,10 +830,10 @@ Gui.on_click(
 
 Public.changed_surface = changed_surface
 
--- Event.on_nth_tick(10, function ()
---     Core.iter_connected_players(function (player)
---         changed_surface(player)
---     end)
--- end)
+Event.on_nth_tick(10, function ()
+    Core.iter_connected_players(function (player)
+        changed_surface(player)
+    end)
+end)
 
 return Public
