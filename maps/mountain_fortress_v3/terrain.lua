@@ -246,40 +246,112 @@ local callback =
     [6] = { callback = Public.refill_artillery_turret_callback, data = Public.artillery_shell_ammo }
 }
 
-local turret_list =
-{
-    [1] = { name = 'gun-turret', callback = callback[1] },
-    [2] = { name = 'gun-turret', callback = callback[2] },
-    [3] = { name = 'gun-turret', callback = callback[3] },
-    [4] = { name = 'gun-turret', callback = callback[4] },
-    [5] = { name = 'flamethrower-turret', callback = callback[5] },
-    [6] = { name = 'artillery-turret', callback = callback[6] }
-}
+local turret_list = {}
 
-if is_modded then
-    turret_list = {}
-    turret_list[#turret_list + 1] = { name = 'mtn-addon-gun-turret-1', callback = callback[1] }
-    turret_list[#turret_list + 1] = { name = 'mtn-addon-gun-turret-2', callback = callback[2] }
-    turret_list[#turret_list + 1] = { name = 'mtn-addon-gun-turret-3', callback = callback[3] }
-    turret_list[#turret_list + 1] = { name = 'mtn-addon-gun-turret-4', callback = callback[4] }
-    turret_list[#turret_list + 1] = { name = 'mtn-addon-gun-turret-5', callback = callback[4] }
-    turret_list[#turret_list + 1] = { name = 'mtn-addon-gun-turret-6', callback = callback[4] }
-    turret_list[#turret_list + 1] = { name = 'mtn-addon-gun-turret-7', callback = callback[4] }
-    turret_list[#turret_list + 1] = { name = 'mtn-addon-gun-turret-8', callback = callback[4] }
-    turret_list[#turret_list + 1] = { name = 'mtn-addon-gun-turret-9', callback = callback[4] }
-    turret_list[#turret_list + 1] = { name = 'mtn-addon-laser-turret-1', callback = nil }
-    turret_list[#turret_list + 1] = { name = 'mtn-addon-laser-turret-2', callback = nil }
-    turret_list[#turret_list + 1] = { name = 'mtn-addon-laser-turret-3', callback = nil }
-    turret_list[#turret_list + 1] = { name = 'mtn-addon-laser-turret-4', callback = nil }
-    turret_list[#turret_list + 1] = { name = 'mtn-addon-laser-turret-5', callback = nil }
-    turret_list[#turret_list + 1] = { name = 'mtn-addon-laser-turret-6', callback = nil }
-    turret_list[#turret_list + 1] = { name = 'mtn-addon-laser-turret-7', callback = nil }
-    turret_list[#turret_list + 1] = { name = 'mtn-addon-laser-turret-8', callback = nil }
-    turret_list[#turret_list + 1] = { name = 'mtn-addon-laser-turret-9', callback = nil }
-    turret_list[#turret_list + 1] = { name = 'flamethrower-turret', callback = callback[5] }
-    turret_list[#turret_list + 1] = { name = 'artillery-turret', callback = callback[6] }
+local function make_weights(zones)
+    local weights = {}
+    for _, entry in ipairs(zones) do
+        weights[entry.zone] = { cb = callback[entry.cb], prob = entry.prob }
+    end
+    return weights
 end
 
+local function get_gun_weights(unlock_zone)
+    local weights = {}
+    local probs = { 100, 90, 70, 50, 30, 10 }
+    for zone = unlock_zone, #probs do
+        weights[#weights + 1] =
+        {
+            zone = zone,
+            cb = math.min(zone, 4),
+            prob = probs[zone]
+        }
+    end
+    return weights
+end
+
+local function get_laser_weights(unlock_zone)
+    local weights = {}
+    local probs = { [2] = 10, [3] = 30, [4] = 50, [5] = 70, [6] = 90 }
+    for zone = unlock_zone, 6 do
+        if probs[zone] then
+            weights[#weights + 1] =
+            {
+                zone = zone,
+                cb = nil,
+                prob = probs[zone]
+            }
+        end
+    end
+    return weights
+end
+
+if is_modded then
+    for i = 1, 5 do
+        turret_list[#turret_list + 1] =
+        {
+            name = "mtn-addon-gun-turret-" .. i,
+            weights = make_weights(get_gun_weights(i))
+        }
+    end
+
+    for i = 1, 9 do
+        turret_list[#turret_list + 1] =
+        {
+            name = "mtn-addon-laser-turret-" .. i,
+            weights = make_weights(get_laser_weights(i))
+        }
+    end
+else
+    turret_list =
+    {
+        {
+            name = "gun-turret",
+            weights = make_weights(
+                {
+                    { zone = 1, cb = 1, prob = 100 },
+                    { zone = 2, cb = 2, prob = 90 },
+                    { zone = 3, cb = 3, prob = 70 },
+                    { zone = 4, cb = 4, prob = 50 },
+                })
+        }
+    }
+end
+
+table.insert(turret_list,
+    {
+        name = "flamethrower-turret",
+        weights = make_weights(
+            {
+                { zone = 0, cb = 5, prob = 0 },
+                { zone = 1, cb = 5, prob = 0 },
+                { zone = 2, cb = 5, prob = 20 },
+                { zone = 3, cb = 5, prob = 25 },
+                { zone = 4, cb = 5, prob = 30 },
+                { zone = 5, cb = 5, prob = 40 },
+                { zone = 6, cb = 5, prob = 60 },
+                { zone = 7, cb = 5, prob = 90 },
+            })
+    })
+
+table.insert(turret_list,
+    {
+        name = "artillery-turret",
+        weights = make_weights(
+            {
+                { zone = 0, cb = 6, prob = 0 },
+                { zone = 1, cb = 6, prob = 0 },
+                { zone = 2, cb = 6, prob = 0 },
+                { zone = 3, cb = 6, prob = 0 },
+                { zone = 4, cb = 6, prob = 0 },
+                { zone = 5, cb = 6, prob = 0 },
+                { zone = 6, cb = 6, prob = 0 },
+                { zone = 7, cb = 6, prob = 20 },
+                { zone = 8, cb = 6, prob = 30 },
+                { zone = 9, cb = 6, prob = 60 },
+                { zone = 10, cb = 6, prob = 100 },
+            })
+    })
 
 local function get_scrap_mineable_entities(p)
     local default_entities =
@@ -325,6 +397,46 @@ local function get_scrap_mineable_entities(p)
     end
 
     return default_entities, #default_entities
+end
+
+local function get_closest_weight(weights, zone)
+    local closest = nil
+    for z, _ in pairs(weights) do
+        if z <= zone and (not closest or z > closest) then
+            closest = z
+        end
+    end
+    return closest
+end
+
+local function get_weighted_turret(zone)
+    local weighted_pool = {}
+
+    for _, turret in ipairs(turret_list) do
+        local fallback_zone = get_closest_weight(turret.weights, zone)
+        if fallback_zone then
+            local entry = turret.weights[fallback_zone]
+            if entry and entry.prob > 0 then
+                for _ = 1, entry.prob do
+                    table.insert(weighted_pool,
+                        {
+                            name = turret.name,
+                            callback = entry.cb
+                        })
+                end
+            end
+        end
+    end
+
+    if #weighted_pool == 0 then
+        return
+        {
+            name = turret_list[1].name,
+            callback = turret_list[1] and turret_list[1].weights and turret_list[1].weights[1] and turret_list[1].weights[1].cb or nil
+        }
+    end
+
+    return weighted_pool[math.random(#weighted_pool)]
 end
 
 local function shuffle(tbl)
@@ -557,12 +669,14 @@ local function spawn_turret(entities, p, probability)
         direction = defines.direction.south
     end
 
+    local turret = get_weighted_turret(probability)
+
     entities[#entities + 1] =
     {
-        name = turret_list[probability].name,
+        name = turret.name,
         position = p,
         force = 'enemy',
-        callback = turret_list[probability].callback,
+        callback = turret.callback or nil,
         direction = direction,
         collision = true,
         note = true
