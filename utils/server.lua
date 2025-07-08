@@ -286,14 +286,14 @@ function Public.to_discord_named_parsed_embed(channel_name, message)
     local table_to_json = helpers.table_to_json
 
     if not type(message) == 'table' then
-        return
+        return error('to_discord_named_parsed_embed - message must be a table', 2)
     end
 
     if not message.title then
-        return
+        return error('to_discord_named_parsed_embed - message must have a title', 2)
     end
     if not message.description then
-        return
+        return error('to_discord_named_parsed_embed - message must have a description', 2)
     end
 
     message.channelName = channel_name
@@ -379,14 +379,14 @@ end
 function Public.to_discord_embed_parsed(message)
     local table_to_json = helpers.table_to_json
     if not type(message) == 'table' then
-        return
+        return error('to_discord_embed_parsed - message must be a table', 2)
     end
 
     if not message.title then
-        return
+        return error('to_discord_embed_parsed - message must have a title', 2)
     end
     if not message.description then
-        return
+        return error('to_discord_embed_parsed - message must have a description', 2)
     end
     output_data(discord_embed_parsed_tag .. table_to_json(message))
 end

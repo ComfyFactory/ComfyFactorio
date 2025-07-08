@@ -42,6 +42,7 @@ local dataset_key_modded_previous = 'mtn_v3_modded_previous'
 local dataset_key_previous_dev = 'mtn_v3_previous_dev'
 local dataset_key_modded_previous_dev = 'mtn_v3_previous_dev'
 local send_ping_to_channel = Discord.channel_names.mtn_channel
+local apply_buffs
 
 Global.register(
     this,
@@ -83,6 +84,9 @@ local function notify_season_over_to_discord()
 
     local stateful = Public.get_stateful()
 
+    if not stateful.buffs_collected then
+        apply_buffs()
+    end
     local buffs = ''
     if stateful.buffs and next(stateful.buffs) then
         if stateful.buffs_collected and next(stateful.buffs_collected) then
@@ -148,6 +152,8 @@ local function notify_season_over_to_discord()
     else
         Server.to_discord_embed_parsed(text)
     end
+
+    stateful.buffs_collected = {}
 end
 
 local function get_random_buff(fetch_all, only_force)
@@ -1284,7 +1290,7 @@ local function migrate_buffs()
     end
 end
 
-local function apply_buffs()
+apply_buffs = function ()
     local starting_items = Public.get_func('starting_items')
     local techs = Public.get_func('techs')
     local limit_types = Public.get_func('limit_types')
@@ -1548,10 +1554,8 @@ local function apply_startup_settings(settings)
     end
     local stored_date_raw = Server.get_current_date(false, true, stored_date)
     local converted_stored_date = round(Utils.convert_date(stored_date_raw.year, stored_date_raw.month, stored_date_raw.day))
-
     local time_to_reset = (current_date - converted_stored_date)
     this.time_to_reset = this.reset_after - time_to_reset
-
     if time_to_reset and time_to_reset >= this.reset_after then
         Public.save_settings_before_reset()
         Public.set_season_scores()
@@ -1575,12 +1579,6 @@ local function apply_startup_settings(settings)
         game.print(message)
         Server.to_discord_embed(message_discord, true)
 
-        game.print(({ 'entity.notify_shutdown' }), { color = { r = 0.22, g = 0.88, b = 0.22 } })
-        local notify_shutdown = ({ 'entity.shutdown_game' })
-        Server.to_discord_bold(notify_shutdown, true)
-
-        Server.stop_scenario()
-
         if server_name_matches then
             if Public.is_modded then
                 Server.set_data(dataset, dataset_key_modded, deep_copy(settings))
@@ -1593,6 +1591,20 @@ local function apply_startup_settings(settings)
             else
                 Server.set_data(dataset, dataset_key_dev, deep_copy(settings))
             end
+        end
+
+        if not settings.disable_shutdown then
+            game.print(({ 'entity.notify_shutdown' }), { color = { r = 0.22, g = 0.88, b = 0.22 } })
+            local notify_shutdown = ({ 'entity.shutdown_game' })
+            Server.to_discord_bold(notify_shutdown, true)
+            Server.stop_scenario()
+        end
+
+        if settings.restart_scenario then
+            game.print(({ 'entity.notify_restart' }), { color = { r = 0.22, g = 0.88, b = 0.22 } })
+            local notify_restart = ({ 'entity.notify_restart' })
+            Server.to_discord_bold(notify_restart, true)
+            Server.start_scenario("Mountain_Fortress_v3")
         end
     end
 end
@@ -2332,61 +2344,5 @@ Public.apply_startup_settings = apply_startup_settings
 Public.scale = scale
 Public.on_pre_player_died = on_pre_player_died
 Public.on_market_item_purchased = on_market_item_purchased
-
-if _DEBUG then
-    Event.on_init(
-        function ()
-            local cbl = Task.get(apply_settings_token)
-            local data =
-            {
-                rounds_survived = 11,
-                season = 4,
-                test_mode = false,
-                buffs =
-                {
-                    {
-                        name = 'extra_wagons',
-                        discord = 'Extra wagon at start',
-                        modifier = 'locomotive',
-                        limit = 4,
-                        state = 1
-                    },
-                    {
-                        name = 'extra_wagons',
-                        discord = 'Extra wagon at start',
-                        modifier = 'locomotive',
-                        limit = 4,
-                        state = 1
-                    },
-                    {
-                        name = 'extra_wagons',
-                        discord = 'Extra wagon at start',
-                        modifier = 'locomotive',
-                        limit = 4,
-                        state = 1
-                    },
-                    {
-                        name = 'extra_wagons',
-                        discord = 'Extra wagon at start',
-                        modifier = 'locomotive',
-                        limit = 4,
-                        state = 1
-                    },
-                },
-                current_date = 2711187954
-            }
-
-            this.buffs = data.buffs
-            this.rounds_survived = data.rounds_survived
-            this.season = data.season
-
-            local settings =
-            {
-                value = data
-            }
-            cbl(settings)
-        end
-    )
-end
 
 return Public
