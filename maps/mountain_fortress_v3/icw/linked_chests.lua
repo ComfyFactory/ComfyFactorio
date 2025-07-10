@@ -1243,6 +1243,45 @@ Event.on_nth_tick(
     end
 )
 
+Event.on_nth_tick(500,
+    function ()
+        local active_surface_index = WPT.get('active_surface_index')
+        if not active_surface_index then
+            return
+        end
+
+        local containers = this.main_containers
+        if not containers or not next(containers) then
+            return
+        end
+
+        if not this.invalid_containers then
+            this.invalid_containers = {}
+        end
+
+        local surface = game.get_surface(active_surface_index)
+        if surface and surface.valid then
+            local linked_chests = surface.find_entities_filtered
+                {
+                    name = 'linked-chest',
+                }
+            if linked_chests and #linked_chests > 0 then
+                for _, chest in pairs(linked_chests) do
+                    if chest and chest.valid and not containers[chest.unit_number] and not WPT.locomotive.is_around_train(chest) then
+                        if not this.invalid_containers[chest.unit_number] or chest.get_inventory(defines.inventory.chest).get_bar() == 17 then
+                            this.invalid_containers[chest.unit_number] = true
+                            print(module_name .. 'Found a container that was not linked, disabling it: ' .. chest.unit_number)
+                            print(module_name .. 'Chest name: ' .. chest.name)
+                            print(module_name .. 'Chest position: ' .. serpent.line(chest.position))
+                            chest.get_inventory(defines.inventory.chest).set_bar(1)
+                        end
+                    end
+                end
+            end
+        end
+    end
+)
+
 Event.on_nth_tick(
     120,
     function ()
@@ -1598,6 +1637,7 @@ function Public.reset()
         Public.pre_reset()
     end
     this.main_containers = {}
+    this.invalid_containers = {}
     this.linked_gui = {}
     this.valid_chests =
     {
