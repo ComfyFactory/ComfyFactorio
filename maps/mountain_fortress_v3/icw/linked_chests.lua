@@ -1268,7 +1268,7 @@ Event.on_nth_tick(500,
             if linked_chests and #linked_chests > 0 then
                 for _, chest in pairs(linked_chests) do
                     if chest and chest.valid and not containers[chest.unit_number] and not WPT.locomotive.is_around_train(chest) then
-                        if not this.invalid_containers[chest.unit_number] or chest.get_inventory(defines.inventory.chest).get_bar() == 17 then
+                        if not this.invalid_containers[chest.unit_number] or chest.get_inventory(defines.inventory.chest).get_bar() ~= 1 then
                             this.invalid_containers[chest.unit_number] = true
                             print(module_name .. 'Found a container that was not linked, disabling it: ' .. chest.unit_number)
                             print(module_name .. 'Chest name: ' .. chest.name)
