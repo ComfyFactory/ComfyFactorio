@@ -494,10 +494,21 @@ function Public:require_playtime(playtime)
     return self
 end
 
+---@alias ParamName
+---| '"string"'
+---| '"number"'
+---| '"integer"'
+---| '"boolean"'
+---| '"player"'
+---| '"player-online"'
+---| '"player-admin"'
+---| '"server"'
+---| '"surface"'
+
 --- Adds a parameter to the command.
 ---@param name string
 ---@param optional boolean
----@param as_type? type|string
+---@param as_type? ParamName
 ---@return MetaCommand
 function Public:add_parameter(name, optional, as_type)
     if not validate_types[as_type] then

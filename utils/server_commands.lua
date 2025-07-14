@@ -41,6 +41,7 @@ ServerCommands.set_start_data = Server.set_start_data
 ServerCommands.set_instances = Server.set_instances
 ServerCommands.query_online_players = Server.query_online_players
 ServerCommands.ban_handler = Server.ban_handler
+ServerCommands.pause_game = Server.pause_game
 
 function is_loaded(module)
     if not module then return end

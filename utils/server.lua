@@ -29,6 +29,7 @@ local Public = {}
 local server_time = { secs = nil, tick = 0 }
 local server_ups = { ups = 60 }
 local start_data = { server_id = nil, server_name = nil, start_time = nil }
+local runtime_data = { is_game_paused = nil, paused_tick = nil, unpaused_tick = nil }
 local instances =
 {
     data = {}
@@ -45,6 +46,7 @@ Global.register(
         server_ups = server_ups,
         start_data = start_data,
         requests = requests,
+        runtime_data = runtime_data,
         instances = instances,
         admins = admins
     },
@@ -53,6 +55,7 @@ Global.register(
         server_ups = tbl.server_ups
         start_data = tbl.start_data
         requests = tbl.requests
+        runtime_data = tbl.runtime_data
         instances = tbl.instances
         admins = tbl.admins
     end
@@ -102,6 +105,7 @@ local query_players_tag = '[QUERY-PLAYERS]'
 local player_join_tag = '[PLAYER-JOIN]'
 local player_leave_tag = '[PLAYER-LEAVE]'
 local antigrief_tag = '[ANTIGRIEF-LOG]'
+local halt_pause_tag = '[HALT-PAUSE]'
 
 Public.raw_print = raw_print
 
@@ -753,6 +757,13 @@ local function log_antigrief_data(category, action)
     output_data(message)
 end
 
+local function log_halt_pause(player_name)
+    player_name = double_escape(player_name)
+
+    local message = concat { halt_pause_tag, '{', 'initiated_by:"', player_name, '"}' }
+    output_data(message)
+end
+
 local cancelable_callback_token =
     Token.register(
         function (data)
@@ -1117,6 +1128,9 @@ Public.raise_scenario_changed = scenario_changed
 -- Tracks antigrief and sends them to a specific log channel.
 Public.log_antigrief_data = log_antigrief_data
 
+-- Tells the backend to resume the instance if it's paused.
+Public.log_halt_pause = log_halt_pause
+
 --- Called by the web server to determine which data_sets are being tracked.
 function Public.get_tracked_data_sets()
     local message = { data_tracked_tag, '[' }
@@ -1234,6 +1248,11 @@ end
 -- @return string
 function Public.get_server_name()
     return start_data.server_name or nil
+end
+
+--- Gets the server's paused state. False if nil.
+function Public.get_paused_state()
+    return runtime_data.is_game_paused or false
 end
 
 --- Gets the server's name and matches it against a string.
@@ -1555,6 +1574,18 @@ function Public.ban_handler(event)
 
     if cmd == 'ban' then
         Public.set_data(jailed_data_set, target, nil) -- this is added here since we don't want to clutter the jail dataset.
+    end
+end
+
+function Public.pause_game(status)
+    if not status then
+        game.tick_paused = false
+        runtime_data.is_game_paused = false
+        runtime_data.unpaused_tick = game.tick
+    else
+        game.tick_paused = true
+        runtime_data.is_game_paused = true
+        runtime_data.paused_tick = game.tick
     end
 end
 
