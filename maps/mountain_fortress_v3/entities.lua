@@ -673,11 +673,20 @@ local mining_events =
 
             local position = entity.position
             local surface = entity.surface
-            local e = surface.create_entity({ name = ent_to_create[random(1, #ent_to_create)], position = position, force = 'enemy' })
+            local spawner_name = ent_to_create[random(1, #ent_to_create)]
+            if
+                surface.count_entities_filtered
+                {
+                    area = { { position.x - 30, position.y - 30 }, { position.x + 30, position.y + 30 } },
+                    name = spawner_name,
+                } <= 2
+            then
+                local e = surface.create_entity({ name = spawner_name, position = position, force = 'enemy' })
 
-            e.destructible = false
-            Task.set_timeout_in_ticks(300, immunity_spawner, { entity = e })
-            Task.set_timeout_in_ticks(5, unstuck_player_token, { index = index })
+                e.destructible = false
+                Task.set_timeout_in_ticks(300, immunity_spawner, { entity = e })
+                Task.set_timeout_in_ticks(5, unstuck_player_token, { index = index })
+            end
         end,
         512,
         'Nest #1'
@@ -693,11 +702,20 @@ local mining_events =
 
             local position = entity.position
             local surface = entity.surface
-            local e = surface.create_entity({ name = ent_to_create[random(1, #ent_to_create)], position = position, force = 'enemy' })
+            local spawner_name = ent_to_create[random(1, #ent_to_create)]
+            if
+                surface.count_entities_filtered
+                {
+                    area = { { position.x - 30, position.y - 30 }, { position.x + 30, position.y + 30 } },
+                    name = spawner_name,
+                } <= 2
+            then
+                local e = surface.create_entity({ name = spawner_name, position = position, force = 'enemy' })
 
-            e.destructible = false
-            Task.set_timeout_in_ticks(300, immunity_spawner, { entity = e })
-            Task.set_timeout_in_ticks(5, unstuck_player_token, { index = index })
+                e.destructible = false
+                Task.set_timeout_in_ticks(300, immunity_spawner, { entity = e })
+                Task.set_timeout_in_ticks(5, unstuck_player_token, { index = index })
+            end
         end,
         512,
         'Nest #2'
