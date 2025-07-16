@@ -73,6 +73,71 @@ local disabled_ents =
     ['railgun-turret'] = true,
 }
 
+local fishy_callback_token =
+    Task.register(
+        function (event)
+            local entity = event.entity
+            if not entity or not entity.valid then
+                return
+            end
+            if entity.type ~= 'item-entity' then
+                return
+            end
+            local fishy_baits = Public.get('fishy_baits')
+            if entity.stack and entity.stack.name == 'cooked-fish' then
+                local fish_nom_cooldown = WD.get('fish_nom_cooldown') or 0
+                local fish_alert_cooldown = WD.get('fish_alert_cooldown') or 0
+
+                if game.tick >= fish_nom_cooldown then
+                    WD.set('fish_nom_cooldown', game.tick + 400)
+                    local threat = WD.get('threat')
+                    WD.set('threat', threat + 100)
+                    fishy_baits['cooked_fish'] = fishy_baits['cooked_fish'] and fishy_baits['cooked_fish'] + 1 or 1
+
+                    if game.tick >= fish_alert_cooldown then
+                        WD.set('fish_alert_cooldown', game.tick + 4000)
+                        local msg = 'The biters feast on the cooked fish near collapse! Threat increased by 100!'
+                        Alert.alert_all_players(60, msg)
+                    end
+                end
+            end
+            if entity.stack and entity.stack.name == 'grilled-fish' then
+                local fish_nom_cooldown = WD.get('fish_nom_cooldown') or 0
+                local fish_alert_cooldown = WD.get('fish_alert_cooldown') or 0
+
+                if game.tick >= fish_nom_cooldown then
+                    WD.set('fish_nom_cooldown', game.tick + 400)
+                    local threat = WD.get('threat')
+                    WD.set('threat', threat + 200)
+                    fishy_baits['grilled_fish'] = fishy_baits['grilled_fish'] and fishy_baits['grilled_fish'] + 1 or 1
+
+                    if game.tick >= fish_alert_cooldown then
+                        WD.set('fish_alert_cooldown', game.tick + 4000)
+                        local msg = 'The biters feast on the grilled fish near collapse! Threat increased by 200!'
+                        Alert.alert_all_players(60, msg)
+                    end
+                end
+            end
+        end
+    )
+
+local surface_validation_token =
+    Task.register(
+        function (event)
+            local player_index = event.player_index
+            local player = game.get_player(player_index)
+            if not player or not player.valid then
+                return
+            end
+
+            if (player.physical_position.x < 700) then
+                return true
+            elseif (player.physical_position.x > 700) then
+                return false
+            end
+        end
+    )
+
 local exit_editor_mode_token =
     Task.register(
         function (event)
@@ -2342,8 +2407,8 @@ function Public.boost_difficulty()
     local force = game.forces.player
 
     force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.5
-    force.character_running_speed_modifier = 0.15
-    force.manual_crafting_speed_modifier = 0.15
+    force.character_running_speed_modifier = force.character_running_speed_modifier + 0.15
+    force.manual_crafting_speed_modifier = force.manual_crafting_speed_modifier + 0.15
     Public.set('coin_amount', 1)
     Public.set('upgrades').flame_turret.limit = 12
     Public.set('upgrades').landmine.limit = 50
@@ -3113,6 +3178,8 @@ Public.artillery_shell_ammo = { name = 'artillery-shell', count = 15 }
 Public.laser_turrent_power_source = { buffer_size = 2400000, power_production = 40000 }
 Public.pause_waves_custom_callback_token = pause_waves_custom_callback_token
 Public.x_marks_the_spot_custom_callback_token = x_marks_the_spot_custom_callback_token
+Public.fishy_callback_token = fishy_callback_token
+Public.surface_validation_token = surface_validation_token
 
 function Public.get_func(key)
     if key then

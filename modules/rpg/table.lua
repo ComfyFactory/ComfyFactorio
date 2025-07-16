@@ -531,6 +531,28 @@ function Public.migrate_new_rpg_tbl(player)
     end
 end
 
+-- Sets the callback function for surface_validation_token
+---@param token number
+---@return number|nil
+function Public.set_surface_validation_token(token)
+    if token then
+        this.rpg_extra.surface_validation_token = token
+    else
+        return error('No token given.', 2)
+    end
+
+    return this.rpg_extra.surface_validation_token
+end
+
+--- Gets the callback function for surface_validation_token
+--- @return function|nil
+function Public.get_surface_validation_token()
+    local token = Task.get(this.rpg_extra.surface_validation_token)
+    if token then
+        return token
+    end
+end
+
 -- Sets the callback function for x_marks_the_spot
 ---@param token number
 ---@return number|nil

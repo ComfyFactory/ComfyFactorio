@@ -30,6 +30,7 @@ function Token.register(var, sarg)
     return counter
 end
 
+--- @return function|nil
 function Token.get(token_id)
     return tokens[token_id]
 end

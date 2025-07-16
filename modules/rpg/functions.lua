@@ -67,7 +67,8 @@ local function create_healthbar(player, size)
             x_scale = size * 8,
             y_scale = size - 0.2,
             render_layer = 'light-effect',
-            target = {
+            target =
+            {
                 entity = player.character,
                 offset = { 0, -2.5 },
             },
@@ -84,7 +85,8 @@ local function create_manabar(player, size)
             x_scale = size * 8,
             y_scale = size - 0.2,
             render_layer = 'light-effect',
-            target = {
+            target =
+            {
                 entity = player.character,
                 offset = { 0, -2.0 },
             },
@@ -354,7 +356,8 @@ function Public.get_last_spell_cast(player)
 
     local position = player.physical_position
     local cast_radius = 1
-    local cast_area = {
+    local cast_area =
+    {
         left_top = { x = rpg_t.last_spell_cast.x - cast_radius, y = rpg_t.last_spell_cast.y - cast_radius },
         right_bottom = { x = rpg_t.last_spell_cast.x + cast_radius, y = rpg_t.last_spell_cast.y + cast_radius }
     }
@@ -680,7 +683,8 @@ function Public.add_tidal_wave(cause, ent_position, shape, length, max_spread)
         return
     end
 
-    local wave = {
+    local wave =
+    {
         cause = cause,
         start_position = cause.position,
         direction = { ent_position.x - cause.position.x, ent_position.y - cause.position.y },
@@ -790,7 +794,8 @@ function Public.level_limit_exceeded(player, value)
         return false
     end
 
-    local limits = {
+    local limits =
+    {
         [1] = 30,
         [2] = 50,
         [3] = 70,
@@ -858,7 +863,8 @@ function Public.level_up_effects(player)
     )
     local b = 0.75
     for _ = 1, 5, 1 do
-        local p = {
+        local p =
+        {
             (position.x + 0.4) + (b * -1 + random(0, b * 20) * 0.1),
             position.y + (b * -1 + random(0, b * 20) * 0.1)
         }
@@ -878,7 +884,8 @@ function Public.cast_spell(player, failed)
     local b = 0.75
     if not failed then
         for _ = 1, 3, 1 do
-            local p = {
+            local p =
+            {
                 (position.x + 0.4) + (b * -1 + random(0, b * 20) * 0.1),
                 position.y + (b * -1 + random(0, b * 20) * 0.1)
             }
@@ -893,7 +900,8 @@ function Public.cast_spell(player, failed)
         player.play_sound { path = 'utility/scenario_message', volume_modifier = 1 }
     else
         for _ = 1, 3, 1 do
-            local p = {
+            local p =
+            {
                 (position.x + 0.4) + (b * -1 + random(0, b * 20) * 0.1),
                 position.y + (b * -1 + random(0, b * 20) * 0.1)
             }
@@ -920,7 +928,8 @@ function Public.xp_effects(player)
     )
     local b = 0.75
     for _ = 1, 5, 1 do
-        local p = {
+        local p =
+        {
             (position.x + 0.4) + (b * -1 + random(0, b * 20) * 0.1),
             position.y + (b * -1 + random(0, b * 20) * 0.1)
         }
@@ -940,7 +949,8 @@ function Public.boost_effects(player)
     local position = { x = player.physical_position.x - 0.75, y = player.physical_position.y - 1 }
     local b = 0.75
     for _ = 1, 10, 1 do
-        local p = {
+        local p =
+        {
             (position.x + 0.4) + (b * -1 + random(0, b * 20) * 0.1),
             position.y + (b * -1 + random(0, b * 20) * 0.1)
         }
@@ -1350,7 +1360,8 @@ show_cooldown =
                     min_radius = 0.4,
                     start_angle = start_angle,
                     angle = fade * angle_multipler,
-                    target = {
+                    target =
+                    {
                         entity = player.character,
                         offset = { x = 0, y = -2 },
                     },
@@ -1395,6 +1406,16 @@ end
 -- Checks if the player is on the correct surface.
 function Public.check_is_surface_valid(player)
     local is_surface_valid = false
+
+    local callback = Public.get_surface_validation_token()
+    if callback ~= nil then
+        local stat = callback({ player_index = player.index })
+        if stat then
+            return true
+        else
+            return false
+        end
+    end
 
     local surface_name = Public.get('rpg_extra').surface_name
     if type(surface_name) == 'table' then
@@ -1477,7 +1498,8 @@ function Public.rpg_reset_player(player, one_time_reset)
                     show_bars = false,
                     stone_path = false,
                     aoe_punch = false,
-                    auto_toggle_features = {
+                    auto_toggle_features =
+                    {
                         stone_path = false,
                         aoe_punch = false
                     }
@@ -1526,7 +1548,8 @@ function Public.rpg_reset_player(player, one_time_reset)
                     show_bars = false,
                     stone_path = false,
                     aoe_punch = false,
-                    auto_toggle_features = {
+                    auto_toggle_features =
+                    {
                         stone_path = false,
                         aoe_punch = false
                     }
@@ -1634,7 +1657,8 @@ function Public.gain_xp(player, amount, added_to_pool, text)
         text_to_draw = '+' .. math.floor(rpg_t.xp_since_last_floaty_text) .. ' xp'
     end
 
-    player.create_local_flying_text {
+    player.create_local_flying_text
+    {
         text = text_to_draw,
         position = player.physical_position,
         color = xp_floating_text_color,

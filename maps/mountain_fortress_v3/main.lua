@@ -45,7 +45,6 @@ local Beam = require 'modules.render_beam'
 local Commands = require 'utils.commands'
 local RobotLimits = require 'modules.robot_limits'
 
-
 local send_ping_to_channel = Discord.channel_names.mtn_channel
 local role_to_mention = Discord.role_mentions.mtn_fortress
 local mapkeeper = '[color=blue]Mapkeeper:[/color]'
@@ -58,54 +57,6 @@ Gui.mod_gui_button_enabled = true
 Gui.button_style = 'mod_gui_button'
 Gui.set_toggle_button(true)
 Gui.set_mod_gui_top_frame(true)
-
-local fishy_callback_token =
-    Task.register(
-        function (event)
-            local entity = event.entity
-            if not entity or not entity.valid then
-                return
-            end
-            if entity.type ~= 'item-entity' then
-                return
-            end
-            local fishy_baits = Public.get('fishy_baits')
-            if entity.stack and entity.stack.name == 'cooked-fish' then
-                local fish_nom_cooldown = WD.get('fish_nom_cooldown') or 0
-                local fish_alert_cooldown = WD.get('fish_alert_cooldown') or 0
-
-                if game.tick >= fish_nom_cooldown then
-                    WD.set('fish_nom_cooldown', game.tick + 400)
-                    local threat = WD.get('threat')
-                    WD.set('threat', threat + 100)
-                    fishy_baits['cooked_fish'] = fishy_baits['cooked_fish'] and fishy_baits['cooked_fish'] + 1 or 1
-
-                    if game.tick >= fish_alert_cooldown then
-                        WD.set('fish_alert_cooldown', game.tick + 4000)
-                        local msg = 'The biters feast on the cooked fish near collapse! Threat increased by 100!'
-                        Alert.alert_all_players(60, msg)
-                    end
-                end
-            end
-            if entity.stack and entity.stack.name == 'grilled-fish' then
-                local fish_nom_cooldown = WD.get('fish_nom_cooldown') or 0
-                local fish_alert_cooldown = WD.get('fish_alert_cooldown') or 0
-
-                if game.tick >= fish_nom_cooldown then
-                    WD.set('fish_nom_cooldown', game.tick + 400)
-                    local threat = WD.get('threat')
-                    WD.set('threat', threat + 200)
-                    fishy_baits['grilled_fish'] = fishy_baits['grilled_fish'] and fishy_baits['grilled_fish'] + 1 or 1
-
-                    if game.tick >= fish_alert_cooldown then
-                        WD.set('fish_alert_cooldown', game.tick + 4000)
-                        local msg = 'The biters feast on the grilled fish near collapse! Threat increased by 200!'
-                        Alert.alert_all_players(60, msg)
-                    end
-                end
-            end
-        end
-    )
 
 local collapse_kill =
 {
@@ -125,7 +76,7 @@ local collapse_kill =
         ['furnace'] = true,
         ['steel-chest'] = true
     },
-    callback = fishy_callback_token,
+    callback = Public.fishy_callback_token,
     enabled = true
 }
 
@@ -472,6 +423,11 @@ function Public.pre_init_task(current_task)
         end
     end
 
+    local force = game.forces.player
+    force.manual_mining_speed_modifier = 0
+    force.character_running_speed_modifier = 0
+    force.manual_crafting_speed_modifier = 0
+
     WD.reset_wave_defense()
     WD.alert_boss_wave(true)
     WD.enable_side_target(false)
@@ -526,6 +482,8 @@ function Public.pre_init_task(current_task)
     RPG.set_x_position(700)
     Public.clear_all_chart_tags()
     Explosives.disable(false)
+
+    RPG.set_surface_validation_token(Public.surface_validation_token)
 
     current_task.message = 'Pre init done!'
     current_task.state = 'init_stateful'
@@ -648,9 +606,9 @@ function Public.reset_map(current_task)
 
     Public.init_enemy_weapon_damage()
 
-    game.forces.player.set_ammo_damage_modifier('artillery-shell', -0.95)
-    game.forces.player.worker_robots_battery_modifier = 4
-    game.forces.player.worker_robots_storage_bonus = 15
+    force.set_ammo_damage_modifier('artillery-shell', -0.95)
+    force.worker_robots_battery_modifier = 4
+    force.worker_robots_storage_bonus = 15
 
 
 
