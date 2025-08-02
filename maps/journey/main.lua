@@ -285,7 +285,7 @@ commands.add_command(
 		local s, player = cmd_handler()
 		if s then
 			Functions.hard_reset(journey)
-			game.print(player and player.name or 'Server' .. ' has reset the map.')
+			game.print((player and player.name or 'Server') .. ' has reset the map.')
 		end
 	end
 )

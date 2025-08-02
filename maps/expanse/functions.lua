@@ -1,5 +1,6 @@
 local Price_raffle = require 'maps.expanse.price_raffle'
 local BiterRaffle = require 'utils.functions.biter_raffle'
+local SpaceMissions = require 'maps.expanse.space_missions'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Public = {}
@@ -20,6 +21,14 @@ local price_modifiers = {
     ['water-shallow'] = -6
 }
 
+local qualities = {
+    ['normal'] = 0,
+    ['uncommon'] = 1,
+    ['rare'] = 2,
+    ['epic'] = 3,
+    ['legendary'] = 5
+}
+
 --- Some mods like to destroy the infini tree.
 --- So we solve it by delaying the creation.
 local delay_infini_tree_token =
@@ -28,7 +37,8 @@ local delay_infini_tree_token =
             local surface = event.surface
             local position = event.position
 
-            surface.create_entity({ name = 'tree-0' .. math.random(1, 9), position = position })
+            local newtree = surface.create_entity({ name = 'tree-0' .. math.random(1, 9), position = position })
+            event.expanse.tree = script.register_on_object_destroyed(newtree)
         end
     )
 
@@ -71,7 +81,7 @@ local function get_cell_value(expanse, left_top)
     end
 
     local distance = math.sqrt(left_top.x ^ 2 + left_top.y ^ 2)
-    value = value * ((distance ^ 1.1) * expanse.price_distance_modifier)
+    value = value * ((distance ^ 1.15) * expanse.price_distance_modifier)
     local ore_modifier = distance * (expanse.price_distance_modifier / 20)
     if ore_modifier > expanse.max_ore_price_modifier then
         ore_modifier = expanse.max_ore_price_modifier
@@ -99,7 +109,7 @@ local function get_left_top(expanse, position)
     local vectors = { { -1, 0 }, { 1, 0 }, { 0, 1 }, { 0, -1 } }
     table.shuffle_table(vectors)
 
-    local surface = game.surfaces.expanse
+    local surface = game.surfaces[expanse.active_surface_index]
 
     for _, v in pairs(vectors) do
         local tile = surface.get_tile(position.x + v[1], position.y + v[2])
@@ -127,7 +137,7 @@ local function is_container_position_valid(expanse, position)
     end
 
     if
-        game.surfaces.expanse.count_entities_filtered(
+        game.surfaces[expanse.active_surface_index].count_entities_filtered(
             {
                 name = 'requester-chest',
                 force = 'neutral',
@@ -141,34 +151,46 @@ local function is_container_position_valid(expanse, position)
     return true
 end
 
-local function create_costs_render(entity, name, offset)
-    local id =
-        rendering.draw_sprite {
-            sprite = 'virtual-signal/signal-grey',
-            surface = entity.surface,
-            target = {
-                entity = entity,
-                offset = { offset, -1.5 }
-            },
-            x_scale = 1.1,
-            y_scale = 1.1,
-            render_layer = '190',
-            only_in_alt_mode = true
-        }
-    local id2 =
-        rendering.draw_sprite {
-            sprite = 'item/' .. name,
-            surface = entity.surface,
-            target = {
-                entity = entity,
-                offset = { offset, -1.5 }
-            },
-            x_scale = 0.75,
-            y_scale = 0.75,
-            render_layer = '191',
-            only_in_alt_mode = true
-        }
-    return { id, id2 }
+local function create_costs_render(entity, name, offset, quality)
+    local id = rendering.draw_sprite {
+        sprite = 'virtual-signal/signal-grey',
+        surface = entity.surface,
+        target = {
+            entity = entity,
+            offset = { offset, -1.5 }
+        },
+        x_scale = 1.1,
+        y_scale = 1.1,
+        render_layer = '190',
+        only_in_alt_mode = true
+    }
+    local id2 = rendering.draw_sprite {
+        sprite = 'item/' .. name,
+        surface = entity.surface,
+        target = {
+            entity = entity,
+            offset = { offset, -1.5 }
+        },
+        x_scale = 0.75,
+        y_scale = 0.75,
+        render_layer = '191',
+        only_in_alt_mode = true
+    }
+    local Q = script.active_mods['quality']
+    local id3 = rendering.draw_sprite {
+        sprite = 'quality/' .. quality,
+        surface = entity.surface,
+        target = {
+            entity = entity,
+            offset = { offset - 0.25, -1.25 }
+        },
+        x_scale = 0.25,
+        y_scale = 0.25,
+        render_layer = Q and '192' or '189',
+        only_in_alt_mode = true
+    }
+
+    return { id, id2, id3}
 end
 
 local function remove_one_render(container, key)
@@ -177,6 +199,9 @@ local function remove_one_render(container, key)
     end
     if container.price[key].render[2].valid then
         container.price[key].render[2].destroy()
+    end
+    if container.price[key].render[3].valid then
+        container.price[key].render[3].destroy()
     end
 end
 
@@ -196,12 +221,17 @@ function Public.spawn_units(spawner)
     end
 end
 
-function Public.get_item_tooltip(name)
-    return { 'expanse.stats_item_tooltip', prototypes.item[name].localised_name, Price_raffle.get_item_worth(name) }
+function Public.get_item_tooltip(name, quality, include_value)
+    local value = include_value and Price_raffle.get_item_worth(name, qualities[quality]) or ''
+    local desc = include_value and 'expanse.stats_item_tooltip' or 'expanse.stats_item_tooltip_nv'
+    if quality == 'normal' then
+        return { desc, prototypes.item[name].localised_name, '', value }
+    end
+    return { desc, prototypes.item[name].localised_name, {'expanse.stats_quality', prototypes.quality[quality].localised_name or ''}, value }
 end
 
-function Public.invasion_numbers()
-    local evo = game.forces.enemy.get_evolution_factor(game.surfaces.expanse)
+function Public.invasion_numbers(expanse)
+    local evo = game.forces.enemy.get_evolution_factor(game.surfaces[expanse.active_surface_index])
     return { candidates = 3 + math.floor(evo * 10), groups = 1 + math.floor(evo * 4) }
 end
 
@@ -297,25 +327,68 @@ local function plan_invasion(expanse, invasion_numbers)
 end
 
 function Public.check_invasion(expanse)
-    local invasion_numbers = Public.invasion_numbers()
+    local invasion_numbers = Public.invasion_numbers(expanse)
     if #expanse.invasion_candidates >= invasion_numbers.candidates then
         plan_invasion(expanse, invasion_numbers)
     end
 end
 
+local function calculate_tier(expanse, left_top, _cell_value)
+    local distances = {
+        30,
+        60,
+        90,
+        150,
+        210,
+        300
+    }
+    local tier = 5
+    local distance = math.sqrt(left_top.x ^ 2 + left_top.y ^ 2)
+    for i = 1, #distances - 1, 1 do
+        if distance < distances[i] then
+            tier = i
+            break
+        end
+    end
+    if script.active_mods['space-age'] then
+        local biomes = {
+            6, --vulcanus
+            7, --fulgora
+            8, --gleba
+            9, --aquilo
+        }
+        if distance > distances[5] and distance < distances[6] then
+            if left_top.x >= 0 and left_top.y >= 0 then
+                tier = biomes[(expanse.biome_offset + 1) % 4 + 1]
+            elseif left_top.x >= 0 and left_top.y < 0 then
+                tier = biomes[(expanse.biome_offset + 2) % 4 + 1]
+            elseif left_top.x < 0 and left_top.y >= 0 then
+                tier = biomes[(expanse.biome_offset + 3) % 4 + 1]
+            elseif left_top.x < 0 and left_top.y < 0 then
+                tier = biomes[(expanse.biome_offset + 4) % 4 + 1]
+            end
+        elseif distance >= distances[6] then
+            tier = 10
+        end
+    end
+    --game.print('distance: ' .. distance .. ', tier: ' .. tier .. ', value: ' .. _cell_value)
+    return tier
+end
+
 function Public.expand(expanse, left_top)
     expanse.grid[tostring(left_top.x .. '_' .. left_top.y)] = true
+    local tier = calculate_tier(expanse, left_top, 0)
 
     local source_surface = game.surfaces[expanse.source_surface]
     if not source_surface then
         return
     end
-    source_surface.request_to_generate_chunks(left_top, 3)
+    source_surface.request_to_generate_chunks(left_top, 2)
     source_surface.force_generate_chunk_requests()
 
     local square_size = expanse.square_size
     local area = { { left_top.x, left_top.y }, { left_top.x + square_size, left_top.y + square_size } }
-    local surface = game.surfaces.expanse
+    local surface = game.surfaces[expanse.active_surface_index]
 
     source_surface.clone_area(
         {
@@ -323,8 +396,8 @@ function Public.expand(expanse, left_top)
             destination_area = area,
             destination_surface = surface,
             clone_tiles = true,
-            clone_entities = true,
-            clone_decoratives = true,
+            clone_entities = game.tick ~= expanse.reset_tick,
+            clone_decoratives = game.tick ~= expanse.reset_tick and (tier < 6 or tier > 9),
             clear_destination_entities = false,
             clear_destination_decoratives = true,
             expand_map = true
@@ -346,7 +419,12 @@ function Public.expand(expanse, left_top)
         end
     end
 
-    if game.tick == 0 then
+    SpaceMissions.convert_tiles(surface, left_top, tier, square_size)
+    SpaceMissions.convert_entities(surface, left_top, tier, square_size)
+    SpaceMissions.convert_decoratives(surface, left_top, tier, square_size)
+    SpaceMissions.place_special_tiered_object(expanse, tier, surface, left_top)
+
+    if game.tick == expanse.reset_tick then
         local a = math.floor(expanse.square_size * 0.5)
         for x = 1, 3, 1 do
             for y = 1, 3, 1 do
@@ -354,7 +432,7 @@ function Public.expand(expanse, left_top)
             end
         end
         surface.create_entity({ name = 'crude-oil', position = { a - 4, a - 4 }, amount = 1500000 })
-        Task.set_timeout_in_ticks(30, delay_infini_tree_token, { surface = surface, position = { a - 4, a + 4 } })
+        Task.set_timeout_in_ticks(30, delay_infini_tree_token, { surface = surface, position = { a - 4, a + 4 }, expanse = expanse })
         surface.create_entity({ name = 'big-rock', position = { a + 4, a - 4 } })
         surface.spill_item_stack({ position = { a, a + 2 }, stack = { name = 'coin', count = 1 }, enable_looted = false, allow_belts = false })
         surface.spill_item_stack({ position = { a + 0.5, a + 2.5 }, stack = { name = 'coin', count = 1 }, enable_looted = false, allow_belts = false })
@@ -370,29 +448,51 @@ function Public.expand(expanse, left_top)
     end
 end
 
+local function get_tier_locker(tier)
+    local SA =  script.active_mods['space-age']
+    local lockers = {
+        [5] = 'space-science-pack',
+        [6] = SA and 'metallurgic-science-pack' or nil,
+        [7] = SA and 'electromagnetic-science-pack' or nil,
+        [8] = SA and 'agricultural-science-pack' or nil,
+        [9] = SA and 'cryogenic-science-pack' or nil,
+        [10] = SA and 'promethium-science-pack' or nil
+    }
+    return lockers[tier]
+end
+
 local function init_container(expanse, entity, budget)
     local left_top = get_left_top(expanse, entity.position)
     if not left_top then
         return
     end
     local cell_value = budget or get_cell_value(expanse, left_top)
+    local tier = calculate_tier(expanse, left_top, cell_value)
     local item_stacks = {}
+    local locker = get_tier_locker(tier)
+    if locker then
+        item_stacks[locker] = {['normal'] = 1}
+    end
     local roll_count = 3
     for _ = 1, roll_count, 1 do
-        for _, stack in pairs(Price_raffle.roll(math.floor(cell_value / roll_count), 3, nil, math.max(4, cell_value / (roll_count * 6)))) do
+        for _, stack in pairs(Price_raffle.roll(math.floor(cell_value / roll_count), 3, tier, nil)) do
             if not item_stacks[stack.name] then
-                item_stacks[stack.name] = stack.count
+                item_stacks[stack.name] = {[stack.quality] = stack.count}
+            elseif not item_stacks[stack.name][stack.quality] then
+                item_stacks[stack.name][stack.quality] = stack.count
             else
-                item_stacks[stack.name] = item_stacks[stack.name] + stack.count
+                item_stacks[stack.name][stack.quality] = item_stacks[stack.name][stack.quality] + stack.count
             end
         end
     end
 
     local price = {}
     local offset = -3
-    for k, v in pairs(item_stacks) do
-        table.insert(price, { name = k, count = v, render = create_costs_render(entity, k, offset) })
-        offset = offset + 1
+    for name, stack in pairs(item_stacks) do
+        for quality, count in pairs(stack) do
+            table.insert(price, { name = name, count = count, quality = quality, render = create_costs_render(entity, name, offset, quality) })
+            offset = offset + 1
+        end
     end
 
     local containers = expanse.containers
@@ -402,9 +502,17 @@ end
 local function get_remaining_budget(container)
     local budget = 0
     for _, item_stack in pairs(container.price) do
-        budget = budget + (item_stack.count * Price_raffle.get_item_worth(item_stack.name))
+        budget = budget + (item_stack.count * Price_raffle.get_item_worth(item_stack.name, qualities[item_stack.quality]))
     end
     return budget
+end
+
+function Public.make_key(name, quality)
+    return name .. '|' .. quality
+end
+
+function Public.split_key(key)
+    return string.match(key, '^(.-)|(.+)$')
 end
 
 function Public.set_container(expanse, entity)
@@ -427,15 +535,15 @@ function Public.set_container(expanse, entity)
         if inventory.get_item_count('coin') > 0 then
             local count_removed = inventory.remove({ name = 'coin', count = 1 })
             if count_removed > 0 then
-                expanse.cost_stats['coin'] = (expanse.cost_stats['coin'] or 0) + count_removed
-                script.raise_event(expanse.events.gui_update, { item = 'coin' })
+                expanse.cost_stats[Public.make_key('coin', 'normal')] = (expanse.cost_stats[Public.make_key('coin', 'normal')] or 0) + count_removed
+                script.raise_event(expanse.events.gui_update, { item = 'coin', quality = 'normal' })
                 remove_old_renders(container)
                 init_container(expanse, entity, get_remaining_budget(container))
                 container = expanse.containers[entity.unit_number]
-                game.print({ 'expanse.chest_reset', { 'expanse.gps', math.floor(entity.position.x), math.floor(entity.position.y), 'expanse' } })
+                game.print({ 'expanse.chest_reset', { 'expanse.gps', math.floor(entity.position.x), math.floor(entity.position.y), game.surfaces[expanse.active_surface_index].name } })
             end
         end
-        if inventory.get_item_count('infinity-chest') > 0 then
+        if _DEBUG and inventory.get_item_count('infinity-chest') > 0 then
             remove_old_renders(container)
             container.price = {}
         end
@@ -443,10 +551,11 @@ function Public.set_container(expanse, entity)
 
     for key, item_stack in pairs(container.price) do
         local name = item_stack.name
-        local count_removed = inventory.remove({ name = name, count = item_stack.count })
+        local quality = item_stack.quality
+        local count_removed = inventory.remove({ name = name, count = item_stack.count, quality = item_stack.quality})
         container.price[key].count = container.price[key].count - count_removed
-        expanse.cost_stats[name] = (expanse.cost_stats[name] or 0) + count_removed
-        script.raise_event(expanse.events.gui_update, { item = name })
+        expanse.cost_stats[Public.make_key(name, quality)] = (expanse.cost_stats[Public.make_key(name, quality)] or 0) + count_removed
+        script.raise_event(expanse.events.gui_update, { item = name, quality = quality})
         if container.price[key].count <= 0 then
             remove_one_render(container, key)
             table.remove(container.price, key)
@@ -484,7 +593,7 @@ function Public.set_container(expanse, entity)
     for slot = 1, #container.price, 1 do
         if #container.price >= slot then
             local item = container.price[slot]
-            section.set_slot(slot, { value = item.name, min = item.count, import_from = 'nauvis' })
+            section.set_slot(slot, { value = {name = item.name, quality = item.quality, comparator = '='}, min = item.count, import_from = 'nauvis' })
         end
     end
 end
