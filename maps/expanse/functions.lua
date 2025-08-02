@@ -333,7 +333,7 @@ function Public.check_invasion(expanse)
     end
 end
 
-local function calculate_tier(expanse, left_top, _cell_value)
+local function calculate_tier(expanse, left_top, cell_value)
     local distances = {
         30,
         60,
@@ -371,7 +371,9 @@ local function calculate_tier(expanse, left_top, _cell_value)
             tier = 10
         end
     end
-    --game.print('distance: ' .. distance .. ', tier: ' .. tier .. ', value: ' .. _cell_value)
+    if _DEBUG then
+        game.print('distance: ' .. distance .. ', tier: ' .. tier .. ', value: ' .. cell_value)
+    end
     return tier
 end
 

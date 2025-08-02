@@ -26,7 +26,7 @@ local function get_item_worths(level, specific_only)
             ['burner-inserter'] = 3, -- 1x1 + 1x2
             ['stone-brick'] = 2,
             ['stone-furnace'] = 4,
-            ['burner-mining-drill'] = 14, -- 3x1 + 3x2 + 1x4            
+            ['burner-mining-drill'] = 14, -- 3x1 + 3x2 + 1x4
             ['firearm-magazine'] = 4, -- 4x1
             ['light-armor'] = 40, -- 40x1
             ['copper-cable'] = 1, -- 1x1 / 2
@@ -152,7 +152,7 @@ local function get_item_worths(level, specific_only)
             ['substation'] = 240, --5x30 + 6x1 +10x6
             ['electric-furnace'] = 260, --10x6 + 5x30 + 10x2
             ['low-density-structure'] = 80, --20x1 + 2x6 + 5x8
-            ['processing-unit'] = 160, --20x4 + 2x30 
+            ['processing-unit'] = 160, --20x4 + 2x30
             ['rocket-fuel'] = 180,
             ['power-armor'] = 7500, --40x160 + 40x6 + 20x30
             ['exoskeleton-equipment'] = 2800, --20x6 + 10x160 + 30x30
@@ -185,8 +185,8 @@ local function get_item_worths(level, specific_only)
             --production science tier
             ['production-science-pack'] = 240, -- 30x8 + 1x260 + 1x180 / 3
             ['beacon'] = 800, --10x6 + 10x1 + 20x4 + 20x30
-            ['express-transport-belt'] = 45, --10x2 + 1x14 + 
-            ['express-splitter'] = 460, --10x2 + 10x30 + 1x100 
+            ['express-transport-belt'] = 45, --10x2 + 1x14
+            ['express-splitter'] = 460, --10x2 + 10x30 + 1x100
             ['express-underground-belt'] = 160, --80x2 + 2x64  / 2
             ['assembling-machine-3'] = 950,--2x70 + 4x180
             ['speed-module-3'] = not SA and 9000 or nil, --5x30 + 5x160 + 4x1800
@@ -286,7 +286,7 @@ local function get_item_worths(level, specific_only)
                 ['electromagnetic-plant'] = 11000, --50x6 + 50x160 + 150x8 + 50x10
                 ['superconductor'] = 12, --1x1 + 1x8 + 1x8 + 5 /2
                 ['supercapacitor'] = 75, --1x14 + 4x4 + 2x8 + 2x12
-                ['electromagnetic-science-pack'] = 200, --1x75 + 1x75 + 
+                ['electromagnetic-science-pack'] = 200, --1x75 + 1x75
                 ['lightning-collector'] = 800, --8x75 + 1x75 + 1x75 + 80
                 ['quality-module-3'] = 9000,
                 ['battery-mk3-equipment'] = 23500, --10x75 + 5x4400
@@ -409,7 +409,7 @@ function Public.get_item_worth(name, quality_level)
     return math.ceil((get_item_worths()[name] or 0) * (1 + quality_level / 5))
 end
 
-function roll_quality(tier, remaining_budget)
+local function roll_quality(tier, remaining_budget)
     if not script.active_mods['quality'] then
         return 'normal', 0
     end
