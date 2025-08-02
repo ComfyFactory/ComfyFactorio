@@ -162,8 +162,7 @@ local function fish_in_space_gui(player)
     if progress > 1 then
         progress = 1
     end
-    local progressbar = frame.add({ type = 'progressbar', value = progress })
-    progressbar.style = 'achievement_progressbar'
+    local progressbar = frame.add({ type = 'progressbar', value = progress, style = 'achievement_progressbar' })
     progressbar.style.minimal_width = 96
     progressbar.style.maximal_width = 96
     progressbar.style.padding = -1
@@ -202,7 +201,7 @@ local function fireworks(entity)
 end
 
 local function on_rocket_launched(event)
-    local rocket_inventory = event.rocket.get_inventory(defines.inventory.rocket)
+    local rocket_inventory = event.rocket.cargo_pod.get_inventory(defines.inventory.cargo_unit)
     local launched_fish_count = rocket_inventory.get_item_count('raw-fish')
     if launched_fish_count == 0 then
         return
