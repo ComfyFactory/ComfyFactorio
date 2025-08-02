@@ -677,7 +677,7 @@ local mining_events =
             if
                 surface.count_entities_filtered
                 {
-                    area = { { position.x - 30, position.y - 30 }, { position.x + 30, position.y + 30 } },
+                    area = { { position.x - 40, position.y - 40 }, { position.x + 40, position.y + 40 } },
                     name = spawner_name,
                 } <= 2
             then
@@ -706,7 +706,7 @@ local mining_events =
             if
                 surface.count_entities_filtered
                 {
-                    area = { { position.x - 30, position.y - 30 }, { position.x + 30, position.y + 30 } },
+                    area = { { position.x - 40, position.y - 40 }, { position.x + 40, position.y + 40 } },
                     name = spawner_name,
                 } <= 2
             then

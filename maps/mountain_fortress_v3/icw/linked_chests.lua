@@ -1313,6 +1313,7 @@ Event.on_nth_tick(
 
                     if container.mode == 1 then
                         container.chest.minable_flag = false
+                        container.chest.get_inventory(defines.inventory.chest).set_bar()
                     end
                 end
                 if not container.chest or not container.chest.valid then

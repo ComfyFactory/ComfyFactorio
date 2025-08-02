@@ -727,19 +727,31 @@ local function construct_doors(car)
             surface.set_tiles({ { name = main_tile_name, position = { x = p.x, y = p.y - 0.5 } } }, true)
             surface.set_tiles({ { name = main_tile_name, position = { x = p.x - 1, y = p.y - 0.5 } } }, true)
         end
-        local e =
-            surface.create_entity(
+        local e
+        if (x - area.left_top.x) < 0 then
+            e = surface.create_entity(
                 {
-                    name = 'car',
-                    position = { x, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5) },
+                    name = 'warp',
+                    position = { x - 0.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5) },
                     force = 'neutral',
-                    create_build_effect_smoke = false
+                    create_build_effect_smoke = false,
+                    direction = defines.direction.west
                 }
             )
+        else
+            e = surface.create_entity(
+                {
+                    name = 'warp',
+                    position = { x, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5) },
+                    force = 'neutral',
+                    create_build_effect_smoke = false,
+                    direction = defines.direction.east
+                }
+            )
+        end
         e.destructible = false
         e.minable_flag = false
         e.operable = false
-        e.get_inventory(defines.inventory.fuel).insert({ name = 'coal', count = 1 })
         if car.saved then
             return
         end
@@ -1187,7 +1199,13 @@ function Public.create_room_surface(car)
     surface.request_to_generate_chunks({ 16, 16 }, 1)
     surface.force_generate_chunk_requests()
     exclude_surface(surface)
-    for _, tile in pairs(surface.find_tiles_filtered({ area = { { -2, -2 }, { 2, 2 } } })) do
+    for _, tile in pairs(surface.find_tiles_filtered({ area = { { -20, -2 }, { 20, 2 } } })) do
+        surface.set_tiles({ { name = out_of_map_tile, position = tile.position } }, true)
+    end
+    for _, tile in pairs(surface.find_tiles_filtered({ area = { { -21, -1 }, { -21, 4 } } })) do
+        surface.set_tiles({ { name = out_of_map_tile, position = tile.position } }, true)
+    end
+    for _, tile in pairs(surface.find_tiles_filtered({ area = { { 20, -1 }, { 20, 4 } } })) do
         surface.set_tiles({ { name = out_of_map_tile, position = tile.position } }, true)
     end
     local surfaces = IC.get('surfaces')
