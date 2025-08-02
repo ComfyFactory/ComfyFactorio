@@ -1461,6 +1461,17 @@ stds.factorio_defines =
                         'never'
                     }
                 },
+                cargo_destination =
+                {
+                    fields =
+                    {
+                        'invalid',
+                        'orbit',
+                        'station',
+                        'surface',
+                        'space_platform'
+                    }
+                },
                 circuit_condition_index =
                 {
                     fields =
@@ -2376,6 +2387,42 @@ stds.factorio_defines =
                     {
                         acceleration = { fields = { 'reversing', 'accelerating', 'nothing', 'braking' } },
                         direction = { fields = { 'left', 'straight', 'right' } }
+                    }
+                },
+                robot_order_type =
+                {
+                    fields =
+                    {
+                        'construct',
+                        'pickup',
+                        'deliver',
+                        'repair',
+                        'deconstruct',
+                        'deliver_items',
+                        'upgrade',
+                        'explode_cliff',
+                        'pickup_items'
+                    }
+                },
+                rocket_silo_status =
+                {
+                    fields =
+                    {
+                        'building_rocket',
+                        'create_rocket',
+                        'lights_blinking_open',
+                        'doors_opening',
+                        'doors_opened',
+                        'rocket_rising',
+                        'arms_advance',
+                        'rocket_ready',
+                        'launch_starting',
+                        'engine_starting',
+                        'arms_retract',
+                        'rocket_flying',
+                        'lights_blinking_close',
+                        'doors_closing',
+                        'launch_started'
                     }
                 },
                 shooting = { fields = { 'shooting_selected', 'not_shooting', 'shooting_enemies' } },

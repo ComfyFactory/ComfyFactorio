@@ -382,7 +382,7 @@ local function tier9_object(_expanse, surface, left_top, repeats) --aquilo
     return false
 end
 
-local function tier10_object(expanse, surface, left_top, repeats) --finale
+local function tier10_object(expanse, surface, left_top) --finale
     local position = surface.find_non_colliding_position_in_box('rocket-silo', {{left_top.x, left_top.y}, {left_top.x + 15, left_top.y + 15}}, 1, false)
     if position then
         local silo = surface.create_entity({name = 'rocket-silo', position = position, force = game.forces.player})
@@ -415,7 +415,7 @@ function Public.place_special_tiered_object(expanse, tier, surface, left_top)
             success = tiers[tier](expanse, surface, left_top, repeats)
         elseif tier == 10 then
             if expanse.tiered_specials[tier].specials == 1 and math.random(1, 25) == 1 then
-                success = tiers[10](expanse, surface, left_top, repeats)
+                success = tiers[10](expanse, surface, left_top)
             else
                 success = tiers[math.random(6, 9)](expanse, surface, left_top, repeats)
             end
@@ -692,7 +692,10 @@ function Public.convert_decoratives(surface, left_top, tier, cell_size)
         }
 
     elseif SA and tier == 9 then
-
+        list = {
+            ['enemy-decal'] = 'aquilo-ice-decal-blue',
+            ['enemy-decal-transparent'] = 'aquilo-snowy-decal'
+        }
     end
     local names = {}
     for name, _ in pairs(list) do
