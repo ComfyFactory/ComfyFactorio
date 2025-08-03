@@ -426,12 +426,12 @@ local function roll_quality(tier, remaining_budget)
         [10] = 5
     }
     local thresholds = {
-        { threshold = 9000, level = 5, quality = 'legendary' },
-        { threshold = 8000, level = 3, quality = 'epic' },
-        { threshold = 7000, level = 2, quality = 'rare' },
-        { threshold = 6000, level = 1, quality = 'uncommon' }
+        { threshold = 12000, level = 5, quality = 'legendary' },
+        { threshold = 10000, level = 3, quality = 'epic' },
+        { threshold = 9000, level = 2, quality = 'rare' },
+        { threshold = 8000, level = 1, quality = 'uncommon' }
     }
-    local roll = math.random(1,10000 + math.ceil(math.min(0, remaining_budget/100)))
+    local roll = math.random(1, 10000 + math.ceil(math.min(0, remaining_budget / 10)))
 
     local tier_level = levels[tier] or 0
 
@@ -464,7 +464,7 @@ function Public.roll_item_stack(remaining_budget, tier, blacklist)
     for _, index in pairs(raffle_keys) do
         item_name = item_names[tier][index]
         item_quality, quality_level = roll_quality(tier, remaining_budget)
-        item_worth = math.ceil(item_worths[item_name] * (1 + quality_level / 5))
+        item_worth = math.ceil(item_worths[item_name] * (1 + quality_level / 2))
         if not blacklist[item_name] and item_worth <= remaining_budget then
             break
         end
