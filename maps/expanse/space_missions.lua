@@ -80,7 +80,7 @@ function Public.launch_rockets(expanse)
                 weight = weight + itemweight * slot.count
             end
         end
-        if silo.rocket_silo_status == defines.rocket_silo_status.rocket_ready and weight >= 999999 then
+        if silo.rocket_silo_status == defines.rocket_silo_status.rocket_ready and weight >= 999500 then
             local station = SA and expanse.space_platform.hub or expanse.nonspace_pad
             silo.launch_rocket({type = defines.cargo_destination.station, station = station})
         end
@@ -122,7 +122,7 @@ local function tier3_object(_expanse, surface, left_top, repeats)
         local entities = {}
         for x = -1, 1, 1 do
             for y = -1, 1, 1 do
-                entities[#entities + 1] = {name = 'uranium-ore', position = {x = position.x + x, y = position.y + y}, amount = 1500}
+                entities[#entities + 1] = {name = 'uranium-ore', position = {x = position.x + x, y = position.y + y}, amount = 2500}
             end
         end
         for _, entity in pairs(entities) do
@@ -397,7 +397,7 @@ local function tier10_object(expanse, surface, left_top) --finale
     return false
 end
 
-function Public.place_special_tiered_object(expanse, tier, surface, left_top)
+function Public.place_special_tiered_object(expanse, tier, surface, left_top, custom_tier)
     local success
     local repeats = expanse.tiered_specials[tier].tiles
     if expanse.tiered_specials[tier].unlocks > 0 then
@@ -414,10 +414,10 @@ function Public.place_special_tiered_object(expanse, tier, surface, left_top)
         if tier > 2 and tier < 10 then
             success = tiers[tier](expanse, surface, left_top, repeats)
         elseif tier == 10 then
-            if expanse.tiered_specials[tier].specials == 1 and math.random(1, 25) == 1 then
+            if custom_tier == 10 then
                 success = tiers[10](expanse, surface, left_top)
             else
-                success = tiers[math.random(6, 9)](expanse, surface, left_top, repeats)
+                success = tiers[custom_tier](expanse, surface, left_top, repeats)
             end
         end
     end
@@ -567,6 +567,7 @@ function Public.convert_entities(surface, left_top, tier, cell_size)
             ['dead-dry-hairy-tree'] = 'ashland-lichen-tree-flaming',
             ['dry-hairy-tree'] = 'ashland-lichen-tree-flaming',
             ['dead-tree-desert'] = 'ashland-lichen-tree-flaming',
+            ['dry-tree'] = 'ashland-lichen-tree-flaming',
             ['stone'] = 'calcite',
             ['copper-ore'] = 'coal',
             ['iron-ore'] = 'tungsten-ore'
@@ -733,6 +734,7 @@ local function upgrade_mission_level(expanse, tier)
             for tech, progress in pairs(reward) do
                 if progress + techs[tech].saved_progress >= 1 then
                     techs[tech].researched = true
+                    game.forces.player.print({'technology-researched', '[technology=' .. tech .. ']'})
                 else
                     techs[tech].saved_progress = techs[tech].saved_progress + progress
                 end

@@ -42,6 +42,7 @@ Global.register(
 local main_button_name = Gui.uid_name()
 local missions_button_name = Gui.uid_name()
 local main_frame_name = Gui.uid_name()
+local close_main_frame_button_name = Gui.uid_name()
 local missions_frame_name = Gui.uid_name()
 local close_missions_button_name = Gui.uid_name()
 
@@ -156,6 +157,7 @@ local function reset()
     expanse.space_production = {}
     expanse.cargo_pods = {}
     expanse.invasion_candidates = {}
+    expanse.lightning_tiles = {}
     expanse.schedule = {}
     expanse.size = 1
     expanse.reset_tick = 0
@@ -166,7 +168,7 @@ local function reset()
     expanse.tiered_specials = {
         [1] = {unlocks = 0, tiles = 0},
         [2] = {unlocks = 0, tiles = 0},
-        [3] = {unlocks = 1, tiles = 0}, --uranium guaranteed
+        [3] = {unlocks = 4, tiles = 0}, --uranium guaranteed
         [4] = {unlocks = 2, tiles = 0}, --landing pad and silo
         [5] = {unlocks = SA and 5 or 1, tiles = 0}, --silos
         [6] = {unlocks = 80, tiles = 0}, --vulcanus
@@ -220,6 +222,12 @@ local function reset()
 
     surface.request_to_generate_chunks({ x = 0, y = 0 }, 4)
     surface.force_generate_chunk_requests()
+    local techs = game.forces.player.technologies
+    techs['atomic-bomb'].enabled = false
+    for _, tech in pairs(MissionData.locked_techs) do
+        techs[tech].enabled = false
+        techs[tech].visible_when_disabled = true
+    end
 
     for _, player in pairs(game.players) do
         player.teleport({ -4, -4 }, source_surface)
@@ -264,9 +272,9 @@ local function on_resource_depleted(event)
     local ore = event.entity
     if ore and ore.valid then
         local distance = math.sqrt(ore.position.x ^ 2 + ore.position.y ^ 2)
-        if ore.name == 'stone' and distance > 150 then
+        if ore.name == 'stone' and distance > 100 then
             if math.random(1, 4) == 1 then
-                ore.surface.create_entity({ name = 'uranium-ore', position = ore.position, amount = 20 + math.floor(distance / 2) })
+                ore.surface.create_entity({ name = 'uranium-ore', position = ore.position, amount = 200 + math.floor(distance) * math.random(1, 3) })
             end
         end
     end
@@ -395,7 +403,7 @@ local function uranium_mining(entity)
         local acid = tank.get_fluid_count('sulfuric-acid')
         if acid > 5 then
             tank.remove_fluid { name = 'sulfuric-acid', amount = 4 }
-            entity.surface.spill_item_stack({position = entity.position, stack ={ name = 'uranium-ore', count = 2 }, enable_looted = true, allow_belts = true})
+            entity.surface.spill_item_stack({position = entity.position, stack ={ name = 'uranium-ore', count = 4 }, enable_looted = true, allow_belts = true})
             FT.flying_text(nil, entity.surface, tank.position, '-4 [fluid=sulfuric-acid]', { r = 0.88, g = 0.02, b = 0.02 })
         end
     end
@@ -407,18 +415,19 @@ local function infini_rock(entity)
     end
     local techs = game.forces.player.technologies
     local inf_ores = {
-        ['iron-ore'] = 4,
-        ['copper-ore'] = 2,
-        ['coal'] = 2,
-        ['stone'] = 1,
-        ['scrap'] = (SA and techs['recycling'].researched) and 1 or nil,
-        ['tungsten-ore'] = (SA and techs['foundry'].researched) and 1 or nil,
+        ['iron-ore'] = 16,
+        ['copper-ore'] = 8,
+        ['coal'] = 8,
+        ['stone'] = 3,
+        ['scrap'] = (SA and techs['recycling'].researched) and 4 or nil,
+        ['tungsten-ore'] = (SA and techs['foundry'].researched) and 2 or nil,
         ['calcite'] = (SA and techs['foundry'].researched) and 1 or nil
     }
     local a = math.floor(expanse.square_size * 0.5)
     if entity.position.x == a + 4 and entity.position.y == a - 4 then
         local newrock = entity.surface.create_entity({ name = 'big-rock', position = { a + 4, a - 4 } })
-        entity.surface.spill_item_stack({position = entity.position, stack ={ name = Raffle.raffle(inf_ores), count = math.random(80, 160) }, enable_looted = true, allow_belts = true})
+        local roll = Raffle.raffle(inf_ores)
+        entity.surface.spill_item_stack({position = entity.position, stack = { name = roll, count = math.random(80, 160) }, enable_looted = true, allow_belts = true})
         uranium_mining(entity)
         if newrock then
         expanse.rock = script.register_on_object_destroyed(newrock)
@@ -542,12 +551,6 @@ local function on_init()
     game.map_settings.enemy_evolution.destroy_factor = 0.003   --default game: 0.002
     game.map_settings.enemy_evolution.pollution_factor = 6e-07 --default game: 9e-07
     game.map_settings.enemy_evolution.time_factor = 2e-06      --default game: 4e-06
-    local techs = game.forces.player.technologies
-    techs['atomic-bomb'].enabled = false
-    for _, tech in pairs(MissionData.locked_techs) do
-        techs[tech].enabled = false
-        techs[tech].visible_when_disabled = true
-    end
 
     --Settings for cave miner
     --[[
@@ -598,13 +601,15 @@ local function resource_stats(parent, name, quality, count)
 end
 
 local function create_main_frame(player)
-    local frame = player.gui.screen.add({ type = 'frame', name = main_frame_name, caption = { 'expanse.stats_gui' }, direction = 'vertical' })
+    local frame, inside_frame = Gui.add_main_frame_with_toolbar(player, 'screen', main_frame_name, false, close_main_frame_button_name, { 'expanse.stats_gui' })
+    --local frame = player.gui.screen.add({ type = 'frame', name = main_frame_name, caption = { 'expanse.stats_gui' }, direction = 'vertical' })
+    if not frame or not inside_frame then return end
     frame.location = { x = 10, y = 50 }
     frame.style.maximal_height = 600
     local invasion_numbers = Functions.invasion_numbers(expanse)
-    frame.add({ type = 'label', name = 'size', caption = { 'expanse.stats_size', expanse.size or 1 } })
-    frame.add({ type = 'label', name = 'biters', caption = { 'expanse.stats_attack', #expanse.invasion_candidates, invasion_numbers.candidates, invasion_numbers.groups } })
-    local scroll = frame.add({ type = 'scroll-pane', name = 'scroll_pane', horizontal_scroll_policy = 'never', vertical_scroll_policy = 'auto-and-reserve-space' })
+    inside_frame.add({ type = 'label', name = 'size', caption = { 'expanse.stats_size', expanse.size or 1 } })
+    inside_frame.add({ type = 'label', name = 'biters', caption = { 'expanse.stats_attack', #expanse.invasion_candidates, invasion_numbers.candidates, invasion_numbers.groups } })
+    local scroll = inside_frame.add({ type = 'scroll-pane', name = 'scroll_pane', horizontal_scroll_policy = 'never', vertical_scroll_policy = 'auto-and-reserve-space' })
 
     local frame_table = scroll.add({ type = 'table', name = 'resource_stats', column_count = 8 })
     frame_table.style.horizontally_stretchable = true
@@ -618,7 +623,7 @@ end
 local function update_resource_gui(event)
     for _, player in pairs(game.connected_players) do
         if player.gui.screen[main_frame_name] then
-            local frame = player.gui.screen[main_frame_name]
+            local frame = player.gui.screen[main_frame_name]['inside_frame']
             local invasion_numbers = Functions.invasion_numbers(expanse)
             frame['size'].caption = { 'expanse.stats_size', expanse.size or 1 }
             frame['biters'].caption = { 'expanse.stats_attack', #expanse.invasion_candidates, invasion_numbers.candidates, invasion_numbers.groups }
@@ -709,7 +714,16 @@ local function create_missions_frame(player, location, selected_tab_index)
         mission_table.add({ type = 'sprite-button', name = 'tier' .. i, sprite = 'virtual-signal/signal-' .. (i < 10 and i or 0), tooltip = {'expanse.missions_tier', i, level}, enabled = false })
         mission_table.add({ type = 'label', name = 'mission_label' .. i, caption = {'expanse.missions_tier', i, level} })
         mission_table.add({ type = 'sprite-button', name = 'mission_unlock' .. i, sprite = 'virtual-signal/signal-info', enabled = false})
-        mission_table.add({ type = 'label', name = 'mission_unlock_label' .. i, caption = {'expanse.missions_reqs', req, {'technology-name.' .. req}} })
+
+        local lore_table = mission_table.add({ type = 'table', name = 'lore_table' .. i, column_count = 2})
+        lore_table.add({ type = 'sprite-button', name = 'lore-unlock' .. i, sprite = 'virtual-signal/signal-unlock', enabled = false})
+        lore_table.add({ type = 'label', name = 'lore-' .. i .. '-u', caption = {'expanse.missions_reqs', req, {'technology-name.' .. req}} })
+        -- for s = 0, level, 1 do
+        --     local sprite = (s == level) and 'virtual-signal/signal-hourglass' or 'virtual-signal/signal-check'
+        --     lore_table.add({ type = 'sprite-button', name = 'lore-' .. i .. '-' .. s, sprite = sprite, enabled = false})
+        --     lore_table.add({ type = 'label', name = 'lore-label-' .. i .. '-' .. s, caption = {'expanse-lore.m' .. i .. '-' .. s}})
+        -- end
+
         mission_table.add({ type = 'sprite-button', name = 'dummy' .. i, sprite = 'item/rocket-part', enabled = false, tooltip = {'expanse.missions_mission'} })
         local tier_table = mission_table.add({ type = 'table', name = 'mission_reqs' .. i, column_count = 10 })
         mission_table.add({ type = 'sprite-button', name = 'reward' .. i, sprite = 'virtual-signal/signal-output', enabled = false, tooltip = {'expanse.missions_reward'}})
@@ -750,7 +764,7 @@ local function on_gui_click(event)
     local name = element.name
     local player = game.players[event.player_index]
 
-    if name == main_button_name then
+    if name == main_button_name or name == close_main_frame_button_name then
         if player.gui.screen[main_frame_name] then
             player.gui.screen[main_frame_name].destroy()
         else
@@ -772,7 +786,7 @@ local function on_research_finished(event)
     local research = event.research
     local force = research.force
     local banned_items = {
-        ['cargo-landing-pad'] = true,
+        ['cargo-landing-pad'] = (expanse.landing_pad and expanse.landing_pad.valid) and true or false,
         ['rocket-silo'] = true,
         ['atomic-bomb'] = true
     }
