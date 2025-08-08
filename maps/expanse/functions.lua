@@ -380,6 +380,10 @@ end
 function Public.expand(expanse, left_top)
     expanse.grid[tostring(left_top.x .. '_' .. left_top.y)] = true
     local tier = calculate_tier(expanse, left_top, 0)
+    local square_size = expanse.square_size
+    -- if tier == 7 then
+    --     expanse.lightning_tiles[#expanse.lightning_tiles + 1] = {x = left_top.x + square_size / 2, y = left_top.y + square_size / 2}
+    -- end
 
     local source_surface = game.surfaces[expanse.source_surface]
     if not source_surface then
@@ -388,7 +392,6 @@ function Public.expand(expanse, left_top)
     source_surface.request_to_generate_chunks(left_top, 2)
     source_surface.force_generate_chunk_requests()
 
-    local square_size = expanse.square_size
     local area = { { left_top.x, left_top.y }, { left_top.x + square_size, left_top.y + square_size } }
     local surface = game.surfaces[expanse.active_surface_index]
 
@@ -420,11 +423,17 @@ function Public.expand(expanse, left_top)
             e.minable = false
         end
     end
+    local custom_tier = tier
+    if tier == 10 then
+        if expanse.tiered_specials[tier].specials == 0 or math.random(1, 25) ~= 1 then
+            custom_tier = math.random(6, 9)
+        end
+    end
 
-    SpaceMissions.convert_tiles(surface, left_top, tier, square_size)
-    SpaceMissions.convert_entities(surface, left_top, tier, square_size)
-    SpaceMissions.convert_decoratives(surface, left_top, tier, square_size)
-    SpaceMissions.place_special_tiered_object(expanse, tier, surface, left_top)
+    SpaceMissions.convert_tiles(surface, left_top, custom_tier, square_size)
+    SpaceMissions.convert_entities(surface, left_top, custom_tier, square_size)
+    SpaceMissions.convert_decoratives(surface, left_top, custom_tier, square_size)
+    SpaceMissions.place_special_tiered_object(expanse, tier, surface, left_top, custom_tier)
 
     if game.tick == expanse.reset_tick then
         local a = math.floor(expanse.square_size * 0.5)

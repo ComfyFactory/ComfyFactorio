@@ -431,7 +431,7 @@ local function roll_quality(tier, remaining_budget)
         { threshold = 9000, level = 2, quality = 'rare' },
         { threshold = 8000, level = 1, quality = 'uncommon' }
     }
-    local roll = math.random(1, 10000 + math.ceil(math.min(0, remaining_budget / 10)))
+    local roll = math.random(1, 10000 + math.ceil(remaining_budget / 10))
 
     local tier_level = levels[tier] or 0
 
