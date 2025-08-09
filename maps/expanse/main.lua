@@ -786,7 +786,7 @@ local function on_research_finished(event)
     local research = event.research
     local force = research.force
     local banned_items = {
-        ['cargo-landing-pad'] = (expanse.landing_pad and expanse.landing_pad.valid) and true or false,
+        ['cargo-landing-pad'] = (not expanse.landing_pad or not expanse.landing_pad.valid) and true or false,
         ['rocket-silo'] = true,
         ['atomic-bomb'] = true
     }
