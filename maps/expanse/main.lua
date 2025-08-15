@@ -20,6 +20,7 @@ local Autostash = require 'modules.autostash'
 local FT = require 'utils.functions.flying_texts'
 local Raffle = require 'utils.math.raffle'
 local Reset = require 'utils.functions.soft_reset'
+local Server = require 'utils.server'
 
 local expanse = {
     events = {
@@ -138,6 +139,14 @@ local function set_nauvis()
 end
 
 local function reset()
+    game.difficulty_settings.spoil_time_modifier = 1
+    local enemy = game.forces.enemy
+    enemy.set_gun_speed_modifier('rocket', 2)
+    enemy.set_gun_speed_modifier('bullet', 2)
+    enemy.set_gun_speed_modifier('beam', 2)
+    enemy.set_ammo_damage_modifier('rocket', 2)
+    enemy.set_ammo_damage_modifier('bullet', 2)
+    enemy.set_ammo_damage_modifier('beam', 2)
     expanse.grid = {}
     expanse.containers = {}
     expanse.cost_stats = {}
@@ -204,10 +213,15 @@ local function reset()
     if not expanse.active_surface_index then
         expanse.active_surface_index = game.create_surface('expanse', map_gen_settings).index
     else
+        if expanse.restart_from_scenario then
+            Server.start_scenario('Expanse')
+            return
+        end
         game.forces.player.set_spawn_position({8, 8}, game.surfaces[expanse.active_surface_index])
         expanse.active_surface_index = Reset.soft_reset_map(game.surfaces[expanse.active_surface_index], map_gen_settings, {}).index
         expanse.reset_tick = game.tick
     end
+    expanse.restart_from_scenario = false
     local surface = game.surfaces[expanse.active_surface_index]
     surface.ignore_surface_conditions = true
 
@@ -486,6 +500,17 @@ local function infini_resource2(event)
     elseif event.registration_number == expanse.rock then
         local a = math.floor(expanse.square_size * 0.5)
         infini_rock({type = 'simple-entity', position = {x = a + 4, y = a - 4 }, surface = game.surfaces[expanse.active_surface_index]})
+    end
+end
+
+local function on_entity_damaged(event)
+    local entity = event.entity
+    if not entity or not entity.valid then return end
+    if entity.type == 'reactor' then
+        if entity.temperature > 800 then
+            --we deny reactors to stay over 900 degrees, so there cannnot be nuclear meltdown that would damage the tiles uncontrollably
+            entity.temperature = 800
+        end
     end
 end
 
@@ -819,7 +844,7 @@ local function on_cargo_pod_finished_ascending(event)
     end
 end
 
-local function cmd_handler()
+local function cmd_handler(admin_required)
 	local player = game.player
 	local p
 	if not (player and player.valid) then
@@ -827,7 +852,7 @@ local function cmd_handler()
 	else
 		p = player.print
 	end
-	if player and not player.admin then
+	if player and admin_required and not player.admin then
 		p('You are not an admin!')
 		return false, nil, p
 	end
@@ -838,10 +863,33 @@ commands.add_command(
     'expanse-reset',
     'Fully resets the expanse map.',
     function()
-		local s, player = cmd_handler()
+		local s, player = cmd_handler(true)
 		if s then
 			map_reset()
 			game.print((player and player.name or 'Server') .. ' has reset the map.')
+		end
+	end
+)
+
+commands.add_command(
+    'chest-value',
+    'Shows value of the chest nearby',
+    function()
+        local s, player = cmd_handler(false)
+        if s and player and player.valid then
+            Functions.chest_value(expanse, player)
+        end
+    end
+)
+
+commands.add_command(
+	'expanse-update',
+	'Restarts the server with newest version of Expanse scenario code during next map reset',
+	function()
+		local s, _, p = cmd_handler()
+		if s then
+			expanse.restart_from_scenario = not expanse.restart_from_scenario
+			p('Expanse marking for full restart with updates on next reset was switched to ' .. tostring(expanse.restart_from_scenario))
 		end
 	end
 )
@@ -863,6 +911,7 @@ Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(defines.events.on_rocket_launch_ordered, on_rocket_launch_ordered)
 Event.add(defines.events.on_cargo_pod_finished_ascending, on_cargo_pod_finished_ascending)
 Event.add(defines.events.on_object_destroyed, infini_resource2)
+Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.add(expanse.events.gui_update, update_resource_gui)
 Event.add(expanse.events.mission_gui_update, update_mission_gui)
 Event.add(expanse.events.invasion_warn, Functions.invasion_warn)

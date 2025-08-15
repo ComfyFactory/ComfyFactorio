@@ -789,7 +789,26 @@ Public.costs = {
             ['railgun-ammo|normal'] = 100,
         },
         [11] = {
-
+            ['raw-fish|legendary'] = 10,
+            ['spidertron|legendary'] = 4,
+            ['mech-armor|legendary'] = 4,
+            ['fusion-power-cell|legendary'] = 50,
+            ['captive-biter-spawner|legendary'] = 5,
+            ['coin|normal'] = 50,
+            ['promethium-science-pack|legendary'] = 200,
+            ['electromagnetic-science-pack|legendary'] = 200,
+            ['agricultural-science-pack|legendary'] = 200,
+            ['cryogenic-science-pack|legendary'] = 200,
+            ['metallurgic-science-pack|legendary'] = 200,
+            ['space-science-pack|legendary'] = 200,
+            ['utility-science-pack|legendary'] = 200,
+            ['production-science-pack|legendary'] = 200,
+            ['chemical-science-pack|legendary'] = 200,
+            ['military-science-pack|legendary'] = 200,
+            ['logistic-science-pack|legendary'] = 200,
+            ['automation-science-pack|legendary'] = 200,
+            ['uranium-fuel-cell|legendary'] = 10,
+            ['tree-seed|legendary'] = 10,
         },
         [12] = {
             ['rocket-part|legendary'] = 1
@@ -1139,6 +1158,9 @@ Public.rewards = {
                 ['yumako|normal'] = 2,
                 ['jellynut|normal'] = 2,
                 ['pentapod-egg|normal'] = 1,
+            },
+            ['script'] = {
+                ['spoiling'] = 0.05
             }
         },
         [5] = {
@@ -1155,6 +1177,9 @@ Public.rewards = {
                 ['yumako|normal'] = 2,
                 ['jellynut|normal'] = 2,
                 ['pentapod-egg|normal'] = 1,
+            },
+            ['script'] = {
+                ['spoiling'] = 0.05
             }
         },
         [7] = {
@@ -1171,6 +1196,9 @@ Public.rewards = {
                 ['yumako|normal'] = 2,
                 ['jellynut|normal'] = 2,
                 ['pentapod-egg|normal'] = 1,
+            },
+            ['script'] = {
+                ['spoiling'] = 0.05
             }
         },
         [9] = {
@@ -1187,6 +1215,9 @@ Public.rewards = {
                 ['yumako|normal'] = 2,
                 ['jellynut|normal'] = 2,
                 ['pentapod-egg|normal'] = 1,
+            },
+            ['script'] = {
+                ['spoiling'] = 0.05
             }
         },
         [11] = {
