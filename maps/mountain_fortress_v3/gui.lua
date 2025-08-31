@@ -22,6 +22,7 @@ local spectate_main_frame_name = Gui.uid_name()
 local spectate_ready_to_button_name = Gui.uid_name()
 local spectate_close_button_name = Gui.uid_name()
 local spectate_surface_picker_name = Gui.uid_name()
+local mystical_chest_button_name = Gui.uid_name()
 
 local floor = math.floor
 local on_player_changed_surface
@@ -382,7 +383,7 @@ local function create_main_frame(player)
     line.style.left_padding = 4
     line.style.right_padding = 4
 
-    label = frame.add({ type = 'label', caption = ' ', name = 'mystical_chest' })
+    label = frame.add({ type = 'label', caption = ' ', name = mystical_chest_button_name })
     label.style.font_color = { r = 0.88, g = 0.88, b = 0.88 }
     label.style.font = 'default-bold'
     label.style.right_padding = 4
@@ -929,11 +930,13 @@ function Public.update_gui(player)
             items_tooltip = items_tooltip:sub(1, -2)
         end
 
-        gui.mystical_chest.caption = ' [img=item.requester-chest]: ' .. items_completed .. '/' .. items_needed
-        gui.mystical_chest.tooltip = items_tooltip
+        log(serpent.block(items_tooltip))
+
+        gui[mystical_chest_button_name].caption = ' [img=item.requester-chest]: ' .. items_completed .. '/' .. items_needed
+        gui[mystical_chest_button_name].tooltip = items_tooltip
     else
-        gui.mystical_chest.caption = ' [img=item.requester-chest]: 0/0'
-        gui.mystical_chest.tooltip = ({ 'gui.mystical_chest' })
+        gui[mystical_chest_button_name].caption = ' [img=item.requester-chest]: 0/0'
+        gui[mystical_chest_button_name].tooltip = ({ 'gui.mystical_chest' })
     end
 end
 
@@ -968,6 +971,94 @@ Gui.on_click(
         end
 
         create_spectate_main_frame(player)
+    end
+)
+
+Gui.on_click(
+    mystical_chest_button_name,
+    function (event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Mtn v3 Mystical Chest Button')
+        if is_spamming then
+            return
+        end
+
+        local player = event.player
+        if not player or not player.valid then
+            return
+        end
+
+        local mystical_chest = Public.get('mystical_chest')
+        if mystical_chest then
+            local prices = Public.get('mystical_chest_price')
+
+            local player_inv = player.get_inventory(defines.inventory.character_main)
+            local can_complete = false
+
+            for _, item in pairs(prices) do
+                local player_count = player_inv.get_item_count(item.value.name)
+                if player_count > 0 then
+                    can_complete = true
+                    break
+                end
+            end
+            if not can_complete then
+                player.print('[Mystical Chest] You need at least some of the required items to complete the mystical chest.', { color = Color.warning })
+                return
+            end
+
+            local locomotive = Public.get('locomotive')
+            if not locomotive then
+                return
+            end
+            if not locomotive.valid then
+                return
+            end
+
+            local keys_to_remove = {}
+
+            for key, item in pairs(prices) do
+                local player_count = player_inv.get_item_count(item.value.name)
+                if player_count > 0 and item.min > 0 then
+                    local consume_amount = math.min(player_count, item.min)
+                    player_inv.remove({ name = item.value.name, count = consume_amount })
+                    item.min = item.min - consume_amount
+
+                    if item.min > 0 then
+                        player.print('[Mystical Chest] Consumed ' .. consume_amount .. ' ' .. item.value.name .. '. Still need ' .. item.min .. ' more.', { color = Color.info })
+                    else
+                        player.print('[Mystical Chest] Consumed ' .. consume_amount .. ' ' .. item.value.name .. '. Requirement fulfilled!', { color = Color.success })
+                        table.insert(keys_to_remove, key)
+                    end
+                elseif item.min <= 0 then
+                    table.insert(keys_to_remove, key)
+                end
+            end
+
+            for i = #keys_to_remove, 1, -1 do
+                local key = keys_to_remove[i]
+                if prices[key] then
+                    local item_name = prices[key].value.name
+                    table.remove(prices, key)
+                    player.print('[Mystical Chest] ' .. item_name .. ' requirement fulfilled!', { color = Color.success })
+                end
+            end
+
+            local all_complete = true
+            for _, item in pairs(prices) do
+                if item.min > 0 then
+                    all_complete = false
+                    break
+                end
+            end
+
+            if all_complete then
+                Public.init_price_check(locomotive)
+                Public.mystical_chest_reward(player)
+                local mystical_chest_completed = Public.get('mystical_chest_completed')
+                Public.set('mystical_chest_completed', mystical_chest_completed + 1)
+            end
+            Public.update_gui(player)
+        end
     end
 )
 

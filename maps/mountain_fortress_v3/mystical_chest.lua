@@ -191,10 +191,7 @@ local function init_price_check(locomotive)
     end
 
     Public.set('mystical_chest_price', price)
-
-    if not Public.get('mystical_chest_price_init') then
-        Public.set('mystical_chest_price_init', deep_copy(price))
-    end
+    Public.set('mystical_chest_price_init', deep_copy(price))
 end
 
 local function roll_item_stacks(remaining_budget, max_slots, blacklist)
@@ -831,10 +828,12 @@ function Public.is_active_boost(modifier)
 end
 
 Public.init_price_check = init_price_check
+Public.mystical_chest_reward = mystical_chest_reward
 
 Event.add(defines.events.on_gui_opened, on_gui_opened)
 Event.add(defines.events.on_gui_closed, on_gui_closed)
 Event.add(defines.events.on_gui_click, on_gui_click)
+
 
 if _DEBUG then
     Commands.new('mtn_mystical_reward', 'Brings up the mystical chest reward system')

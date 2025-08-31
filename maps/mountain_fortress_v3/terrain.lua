@@ -3903,14 +3903,19 @@ local function border_chunk(p, data)
 
     local game_decoratives = prototypes.decorative
     local dec_tbl = {}
-    local taken = 0
 
+    local shuffled_decoratives = {}
     for _, decorative in pairs(game_decoratives) do
-        taken = taken + 1
-        dec_tbl[#dec_tbl + 1] = decorative.name
-        if taken > 4 then
-            break
-        end
+        table.insert(shuffled_decoratives, decorative)
+    end
+
+    for i = #shuffled_decoratives, 2, -1 do
+        local j = math.random(i)
+        shuffled_decoratives[i], shuffled_decoratives[j] = shuffled_decoratives[j], shuffled_decoratives[i]
+    end
+
+    for i = 1, math.min(4, #shuffled_decoratives) do
+        dec_tbl[#dec_tbl + 1] = shuffled_decoratives[i].name
     end
 
     local pos = p
