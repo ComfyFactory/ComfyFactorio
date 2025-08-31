@@ -243,7 +243,7 @@ Public.costs = {
             ['assembling-machine-3|normal'] = 40,
             ['steel-plate|normal'] = 1600,
             ['processing-unit|normal'] = 900,
-            ['electric-engine|normal'] = 200,
+            ['electric-engine-unit|normal'] = 200,
             ['low-density-structure|normal'] = 600,
         },
         [13] = {
@@ -701,7 +701,7 @@ Public.costs = {
             ['stone-wall|normal'] = 400,
             ['pipe|normal'] = 300,
             ['pipe-to-ground|normal'] = 200,
-            ['reactor|normal'] = 2,
+            ['nuclear-reactor|normal'] = 2,
             ['heat-exchanger|normal'] = 12,
             ['steam-turbine|normal'] = 20,
             ['rocket-turret|normal'] = 20,
@@ -789,7 +789,26 @@ Public.costs = {
             ['railgun-ammo|normal'] = 100,
         },
         [11] = {
-
+            ['raw-fish|legendary'] = 10,
+            ['spidertron|legendary'] = 4,
+            ['mech-armor|legendary'] = 4,
+            ['fusion-power-cell|legendary'] = 50,
+            ['captive-biter-spawner|legendary'] = 5,
+            ['coin|normal'] = 50,
+            ['promethium-science-pack|legendary'] = 200,
+            ['electromagnetic-science-pack|legendary'] = 200,
+            ['agricultural-science-pack|legendary'] = 200,
+            ['cryogenic-science-pack|legendary'] = 200,
+            ['metallurgic-science-pack|legendary'] = 200,
+            ['space-science-pack|legendary'] = 200,
+            ['utility-science-pack|legendary'] = 200,
+            ['production-science-pack|legendary'] = 200,
+            ['chemical-science-pack|legendary'] = 200,
+            ['military-science-pack|legendary'] = 200,
+            ['logistic-science-pack|legendary'] = 200,
+            ['automation-science-pack|legendary'] = 200,
+            ['uranium-fuel-cell|legendary'] = 10,
+            ['tree-seed|legendary'] = 10,
         },
         [12] = {
             ['rocket-part|legendary'] = 1
@@ -813,62 +832,47 @@ Public.rewards = {
                 ['space-science-pack'] = 1
             },
             ['production'] = {
-                ['space-science-pack|normal'] = 10,
-                ['ice|normal'] = 5,
-                ['carbon|normal'] = 5,
-                ['iron-plate|normal'] = 10
+                ['metallic-asteroid-chunk|normal'] = 1,
+                ['carbonic-asteroid-chunk|normal'] = 1,
+                ['oxide-asteroid-chunk|normal'] = 1,
+            },
+            ['once'] = {
+                ['space-science-pack|normal'] = 200,
             }
         },
         [3] = {
             ['production'] = {
-                ['space-science-pack|normal'] = 10,
-                ['ice|normal'] = 5,
-                ['carbon|normal'] = 5,
-                ['iron-plate|normal'] = 10
+                ['metallic-asteroid-chunk|normal'] = 1,
+                ['carbonic-asteroid-chunk|normal'] = 1,
+                ['oxide-asteroid-chunk|normal'] = 1,
             }
         },
         [4] = {
             ['production'] = {
-                ['space-science-pack|normal'] = 10,
-                ['ice|normal'] = 5,
-                ['carbon|normal'] = 5,
-                ['iron-plate|normal'] = 10
+                ['metallic-asteroid-chunk|normal'] = 2,
+                ['carbonic-asteroid-chunk|normal'] = 2,
+                ['oxide-asteroid-chunk|normal'] = 2,
             }
         },
         [5] = {
             ['production'] = {
-                ['space-science-pack|normal'] = 20,
-                ['ice|normal'] = 10,
-                ['carbon|normal'] = 10,
-                ['iron-plate|normal'] = 20,
-                ['copper-plate|normal'] = 20,
-                ['sulfur|normal'] = 5,
-                ['coal|normal'] = 5,
-                ['calcite|normal'] = 5,
+                ['metallic-asteroid-chunk|normal'] = 2,
+                ['carbonic-asteroid-chunk|normal'] = 2,
+                ['oxide-asteroid-chunk|normal'] = 2,
             }
         },
         [6] = {
             ['production'] = {
-                ['space-science-pack|normal'] = 20,
-                ['ice|normal'] = 10,
-                ['carbon|normal'] = 10,
-                ['iron-plate|normal'] = 20,
-                ['copper-plate|normal'] = 20,
-                ['sulfur|normal'] = 5,
-                ['coal|normal'] = 5,
-                ['calcite|normal'] = 5,
+                ['metallic-asteroid-chunk|normal'] = 3,
+                ['carbonic-asteroid-chunk|normal'] = 3,
+                ['oxide-asteroid-chunk|normal'] = 3,
             }
         },
         [7] = {
             ['production'] = {
-                ['space-science-pack|normal'] = 20,
-                ['ice|normal'] = 10,
-                ['carbon|normal'] = 10,
-                ['iron-plate|normal'] = 20,
-                ['copper-plate|normal'] = 20,
-                ['sulfur|normal'] = 5,
-                ['coal|normal'] = 5,
-                ['calcite|normal'] = 5,
+                ['metallic-asteroid-chunk|normal'] = 6,
+                ['carbonic-asteroid-chunk|normal'] = 6,
+                ['oxide-asteroid-chunk|normal'] = 6,
             }
         },
         [8] = {
@@ -920,10 +924,10 @@ Public.rewards = {
                 ['recycling'] = 1
             },
             ['production'] = {
-                ['scrap|normal'] = 10
+                ['scrap|normal'] = 100
             },
             ['once'] = {
-                ['scrap|normal'] = 1000,
+                ['scrap|normal'] = 2000,
                 ['holmium-ore|normal'] = 50,
             }
         },
@@ -937,10 +941,10 @@ Public.rewards = {
                 ['agriculture'] = 1,
             },
             ['production'] = {
-                ['spoilage|normal'] = 10
+                ['spoilage|normal'] = 100
             },
             ['once'] = {
-                ['spoilage|normal'] = 100
+                ['spoilage|normal'] = 1000
             }
 
         },
@@ -950,8 +954,8 @@ Public.rewards = {
                 ['yumako'] = 1
             },
             ['production'] = {
-                ['yumako|normal'] = 1,
-                ['jellynut|normal'] = 1,
+                ['yumako|normal'] = 4,
+                ['jellynut|normal'] = 4,
                 ['pentapod-egg|normal'] = 1,
             }
         },
@@ -1018,7 +1022,7 @@ Public.rewards = {
 
             },
             ['once'] = {
-                ['tungsten-ore|normal'] = 500,
+                ['tungsten-ore|normal'] = 2500,
             }
         },
         [5] = {
@@ -1077,47 +1081,47 @@ Public.rewards = {
         },
         [2] = {
             ['production'] = {
-                ['scrap|normal'] = 25,
+                ['scrap|normal'] = 50,
             }
         },
         [3] = {
             ['production'] = {
-                ['scrap|normal'] = 25,
+                ['scrap|normal'] = 50,
             }
         },
         [4] = {
             ['production'] = {
-                ['scrap|normal'] = 25,
+                ['scrap|normal'] = 75,
             }
         },
         [5] = {
             ['production'] = {
-                ['scrap|normal'] = 25,
+                ['scrap|normal'] = 75,
             }
         },
         [6] = {
             ['production'] = {
-                ['scrap|normal'] = 25,
+                ['scrap|normal'] = 100,
             }
         },
         [7] = {
             ['production'] = {
-                ['scrap|normal'] = 25,
+                ['scrap|normal'] = 100,
             }
         },
         [8] = {
             ['production'] = {
-                ['scrap|normal'] = 25,
+                ['scrap|normal'] = 100,
             }
         },
         [9] = {
             ['production'] = {
-                ['scrap|normal'] = 25,
+                ['scrap|normal'] = 100,
             }
         },
         [10] = {
             ['production'] = {
-                ['scrap|normal'] = 25,
+                ['scrap|normal'] = 100,
             }
         },
         [11] = {
@@ -1134,65 +1138,86 @@ Public.rewards = {
         },
         [2] = {
             ['production'] = {
-                ['yumako|normal'] = 1,
-                ['jellynut|normal'] = 1,
+                ['spoilage|normal'] = 100,
+                ['yumako|normal'] = 2,
+                ['jellynut|normal'] = 2,
                 ['pentapod-egg|normal'] = 1,
             }
         },
         [3] = {
             ['production'] = {
-                ['yumako|normal'] = 1,
-                ['jellynut|normal'] = 1,
+                ['spoilage|normal'] = 100,
+                ['yumako|normal'] = 2,
+                ['jellynut|normal'] = 2,
                 ['pentapod-egg|normal'] = 1,
             }
         },
         [4] = {
             ['production'] = {
-                ['yumako|normal'] = 1,
-                ['jellynut|normal'] = 1,
+                ['spoilage|normal'] = 100,
+                ['yumako|normal'] = 2,
+                ['jellynut|normal'] = 2,
                 ['pentapod-egg|normal'] = 1,
+            },
+            ['script'] = {
+                ['spoiling'] = 0.05
             }
         },
         [5] = {
             ['production'] = {
-                ['yumako|normal'] = 1,
-                ['jellynut|normal'] = 1,
+                ['spoilage|normal'] = 100,
+                ['yumako|normal'] = 2,
+                ['jellynut|normal'] = 2,
                 ['pentapod-egg|normal'] = 1,
             }
         },
         [6] = {
             ['production'] = {
-                ['yumako|normal'] = 1,
-                ['jellynut|normal'] = 1,
+                ['spoilage|normal'] = 100,
+                ['yumako|normal'] = 2,
+                ['jellynut|normal'] = 2,
                 ['pentapod-egg|normal'] = 1,
+            },
+            ['script'] = {
+                ['spoiling'] = 0.05
             }
         },
         [7] = {
             ['production'] = {
-                ['yumako|normal'] = 1,
-                ['jellynut|normal'] = 1,
+                ['spoilage|normal'] = 100,
+                ['yumako|normal'] = 2,
+                ['jellynut|normal'] = 2,
                 ['pentapod-egg|normal'] = 1,
             }
         },
         [8] = {
             ['production'] = {
-                ['yumako|normal'] = 1,
-                ['jellynut|normal'] = 1,
+                ['spoilage|normal'] = 100,
+                ['yumako|normal'] = 2,
+                ['jellynut|normal'] = 2,
                 ['pentapod-egg|normal'] = 1,
+            },
+            ['script'] = {
+                ['spoiling'] = 0.05
             }
         },
         [9] = {
             ['production'] = {
-                ['yumako|normal'] = 1,
-                ['jellynut|normal'] = 1,
+                ['spoilage|normal'] = 100,
+                ['yumako|normal'] = 2,
+                ['jellynut|normal'] = 2,
                 ['pentapod-egg|normal'] = 1,
             }
         },
         [10] = {
             ['production'] = {
-                ['yumako|normal'] = 1,
-                ['jellynut|normal'] = 1,
+                ['spoilage|normal'] = 100,
+                ['yumako|normal'] = 2,
+                ['jellynut|normal'] = 2,
                 ['pentapod-egg|normal'] = 1,
+            },
+            ['script'] = {
+                ['spoiling'] = 0.05
             }
         },
         [11] = {

@@ -282,25 +282,25 @@ local function get_item_worths(level, specific_only)
                 --fulgora
                 ['lightning-rod'] = 75, --8x6 + 12x1 + 4x2
                 ['recycler'] = 1400, --20x6 + 40x2 + 6x160 + 20x4
-                ['holmium-plate'] = 8,
-                ['electromagnetic-plant'] = 11000, --50x6 + 50x160 + 150x8 + 50x10
-                ['superconductor'] = 12, --1x1 + 1x8 + 1x8 + 5 /2
-                ['supercapacitor'] = 75, --1x14 + 4x4 + 2x8 + 2x12
-                ['electromagnetic-science-pack'] = 200, --1x75 + 1x75
-                ['lightning-collector'] = 800, --8x75 + 1x75 + 1x75 + 80
+                ['holmium-plate'] = 64,
+                ['electromagnetic-plant'] = 24000, --50x6 + 50x160 + 150x64 + 50x10
+                ['superconductor'] = 40, --1x1 + 1x8 + 1x64 + 5 /2
+                ['supercapacitor'] = 240, --1x14 + 4x4 + 2x64 + 2x40
+                ['electromagnetic-science-pack'] = 350, --1x75 + 1x240
+                ['lightning-collector'] = 2200, --8x240 + 1x75 + 1x75 + 80
                 ['quality-module-3'] = 9000,
-                ['battery-mk3-equipment'] = 23500, --10x75 + 5x4400
-                ['personal-roboport-mk2-equipment'] = 16000, --50x160 + 50x12 + 5x1250
+                ['battery-mk3-equipment'] = 25000, --10x240 + 5x4400
+                ['personal-roboport-mk2-equipment'] = 16200, --50x160 + 50x40 + 5x1250
                 ['energy-shield-mk2-equipment'] = 3600,
                 ['teslagun'] = 550, --30x8 + 10x8 + 10x12 + 100
-                ['tesla-turret'] = 4200, --10x160 + 50x12 + 10x75 + 1x550 + 500
-                ['tesla-ammo'] = 100, --1x8 +1x75 + 10
-                ['mech-armor'] = 135000, --100x160 + 200x8 + 50x12 + 50x75 + 1x110000
+                ['tesla-turret'] = 7200, --10x160 + 50x40 + 10x240 + 1x550 + 500
+                ['tesla-ammo'] = 260, --1x8 +1x240 + 10
+                ['mech-armor'] = 155000, --100x160 + 200x64 + 50x40 + 50x240 + 1x110000
             },
             [8] = {
                 --gleba
                 ['spoilage'] = 1,
-                ['nutrients'] = 2,
+                ['nutrients'] = 4,
                 ['agricultural-tower'] = 140, --10x6 + 3x4 + 1x25 +20x1
                 ['heating-tower'] = 620, --20x4 + 2x8 + 5x100
                 ['jelly'] = 3,
@@ -337,19 +337,19 @@ local function get_item_worths(level, specific_only)
                 ['ice-platform'] = 250,
                 ['lithium'] = 15,
                 ['lithium-plate'] = 16,
-                ['cryogenic-plant'] = 4500, --20x160 + 20x12 + 20x16 +40x10
+                ['cryogenic-plant'] = 4800, --20x160 + 20x40 + 20x16 +40x10
                 ['fluoroketone-hot-barrel'] = 50,
                 ['fluoroketone-cold-barrel'] = 50,
                 ['cryogenic-science-pack'] = 25, --3x2 + 1x16 + 6
-                ['quantum-processor'] = 300, --1x160 + 1x8 + 1x12 + 1x40 +2x16 +10
-                ['railgun'] = 7000, --10x8 + 10x12 + 20x300 + 10
-                ['railgun-turret'] = 34000, --30x8 + 50x12 + 20x40 + 100x300 + 100
+                ['quantum-processor'] = 320, --1x160 + 1x8 + 1x40 + 1x40 +2x16 +10
+                ['railgun'] = 7200, --10x8 + 10x40 + 20x300 + 10
+                ['railgun-turret'] = 36000, --30x8 + 50x40 + 20x40 + 100x300 + 100
                 ['railgun-ammo'] = 60, --5x6 + 2x4 + 10x1
                 ['foundation'] = 350, --20 + 4x8 + 4x40 + 4x16 + 20
-                ['fusion-reactor'] = 85000, --200x8 + 200x12 + 250x300
-                ['fusion-generator'] = 18000, -- 100x8 + 100x12 + 50x300
-                ['fusion-power-cell'] = 50,
-                ['fusion-reactor-equipment'] = 125000, --250x8 + 25x75 + 100x40 + 250x300 + 10x50 + 1x38000
+                ['fusion-reactor'] = 85000, --200x8 + 200x40 + 250x300
+                ['fusion-generator'] = 22000, -- 100x8 + 100x40 + 50x300
+                ['fusion-power-cell'] = 100,
+                ['fusion-reactor-equipment'] = 130000, --250x8 + 25x240 + 100x40 + 250x300 + 10x50 + 1x38000
                 ['captive-biter-spawner'] = 18000,
             },
             [10] = {
@@ -426,12 +426,12 @@ local function roll_quality(tier, remaining_budget)
         [10] = 5
     }
     local thresholds = {
-        { threshold = 9000, level = 5, quality = 'legendary' },
-        { threshold = 8000, level = 3, quality = 'epic' },
-        { threshold = 7000, level = 2, quality = 'rare' },
-        { threshold = 6000, level = 1, quality = 'uncommon' }
+        { threshold = 11000, level = 5, quality = 'legendary' },
+        { threshold = 10000, level = 3, quality = 'epic' },
+        { threshold = 9000, level = 2, quality = 'rare' },
+        { threshold = 8000, level = 1, quality = 'uncommon' }
     }
-    local roll = math.random(1,10000 + math.ceil(math.min(0, remaining_budget/100)))
+    local roll = math.random(1, 10000 + math.ceil(remaining_budget / 10))
 
     local tier_level = levels[tier] or 0
 
@@ -464,7 +464,7 @@ function Public.roll_item_stack(remaining_budget, tier, blacklist)
     for _, index in pairs(raffle_keys) do
         item_name = item_names[tier][index]
         item_quality, quality_level = roll_quality(tier, remaining_budget)
-        item_worth = math.ceil(item_worths[item_name] * (1 + quality_level / 5))
+        item_worth = math.ceil(item_worths[item_name] * (1 + quality_level / 2))
         if not blacklist[item_name] and item_worth <= remaining_budget then
             break
         end

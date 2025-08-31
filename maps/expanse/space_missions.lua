@@ -2,6 +2,7 @@ local Public = {}
 local SA = script.active_mods['space-age']
 local Raffle = require 'utils.math.raffle'
 local MissionData = require 'maps.expanse.mission_data'
+local Server = require 'utils.server'
 
 function Public.init_space(expanse)
 
@@ -80,7 +81,7 @@ function Public.launch_rockets(expanse)
                 weight = weight + itemweight * slot.count
             end
         end
-        if silo.rocket_silo_status == defines.rocket_silo_status.rocket_ready and weight >= 999999 then
+        if silo.rocket_silo_status == defines.rocket_silo_status.rocket_ready and weight >= 999500 then
             local station = SA and expanse.space_platform.hub or expanse.nonspace_pad
             silo.launch_rocket({type = defines.cargo_destination.station, station = station})
         end
@@ -122,7 +123,7 @@ local function tier3_object(_expanse, surface, left_top, repeats)
         local entities = {}
         for x = -1, 1, 1 do
             for y = -1, 1, 1 do
-                entities[#entities + 1] = {name = 'uranium-ore', position = {x = position.x + x, y = position.y + y}, amount = 1500}
+                entities[#entities + 1] = {name = 'uranium-ore', position = {x = position.x + x, y = position.y + y}, amount = 2500}
             end
         end
         for _, entity in pairs(entities) do
@@ -213,8 +214,9 @@ local function tier6_object(_expanse, surface, left_top, repeats) --vulcanus
                 end
             end
         end
-        game.print('Generated ' .. roll .. ' at [gps=' .. position.x .. ',' .. position.y .. ',' .. surface.name .. ']')
-
+        if _DEBUG then
+            game.print('Generated ' .. roll .. ' at [gps=' .. position.x .. ',' .. position.y .. ',' .. surface.name .. ']')
+        end
         return true
     end
     return false
@@ -289,7 +291,7 @@ local function tier8_object(_expanse, surface, left_top, repeats) --gleba
                 end
             end
             surface.set_tiles(tiles)
-            local tree = roll == 'natural-yumako-soil' and 'yumako-tree' or 'jellynut-tree'
+            local tree = roll == 'natural-yumako-soil' and 'yumako-tree' or 'jellystem'
             for _ = 1, 8, 1 do
                 local pos = surface.find_non_colliding_position_in_box(tree, {{left_top.x, left_top.y}, {left_top.x + 15, left_top.y + 15}}, 1, false)
                 if pos then
@@ -397,7 +399,7 @@ local function tier10_object(expanse, surface, left_top) --finale
     return false
 end
 
-function Public.place_special_tiered_object(expanse, tier, surface, left_top)
+function Public.place_special_tiered_object(expanse, tier, surface, left_top, custom_tier)
     local success
     local repeats = expanse.tiered_specials[tier].tiles
     if expanse.tiered_specials[tier].unlocks > 0 then
@@ -414,10 +416,10 @@ function Public.place_special_tiered_object(expanse, tier, surface, left_top)
         if tier > 2 and tier < 10 then
             success = tiers[tier](expanse, surface, left_top, repeats)
         elseif tier == 10 then
-            if expanse.tiered_specials[tier].specials == 1 and math.random(1, 25) == 1 then
+            if custom_tier == 10 then
                 success = tiers[10](expanse, surface, left_top)
             else
-                success = tiers[math.random(6, 9)](expanse, surface, left_top, repeats)
+                success = tiers[custom_tier](expanse, surface, left_top, repeats)
             end
         end
     end
@@ -567,6 +569,7 @@ function Public.convert_entities(surface, left_top, tier, cell_size)
             ['dead-dry-hairy-tree'] = 'ashland-lichen-tree-flaming',
             ['dry-hairy-tree'] = 'ashland-lichen-tree-flaming',
             ['dead-tree-desert'] = 'ashland-lichen-tree-flaming',
+            ['dry-tree'] = 'ashland-lichen-tree-flaming',
             ['stone'] = 'calcite',
             ['copper-ore'] = 'coal',
             ['iron-ore'] = 'tungsten-ore'
@@ -597,6 +600,11 @@ function Public.convert_entities(surface, left_top, tier, cell_size)
             ['copper-ore'] = 'scrap',
             ['iron-ore'] = 'scrap',
             ['coal'] = 'scrap',
+            ['spitter-spawner'] = 'rocket-turret',
+            ['biter-spawner'] = 'rocket-turret',
+            ['small-biter'] = 'defender',
+            ['small-spitter'] = 'destroyer',
+            ['small-worm-turret'] = 'gun-turret'
 
         }
     elseif SA and tier == 8 then --gleba
@@ -660,13 +668,24 @@ function Public.convert_entities(surface, left_top, tier, cell_size)
     for name, _ in pairs(list) do
         names[#names+1] = name
     end
-    local old_entities = surface.find_entities_filtered({name = names, area = {{left_top.x, left_top.y}, {left_top.x + cell_size, left_top.y + cell_size}}})
+    local old_entities = surface.find_entities_filtered({name = names, area = {{left_top.x - 1, left_top.y - 1}, {left_top.x + cell_size + 1, left_top.y + cell_size + 1}}})
     for _, entity in pairs(old_entities) do
         if entity and entity.valid and list[entity.name] then
             if entity.type == 'resource' then
                 surface.create_entity({name = list[entity.name], position = entity.position, amount = entity.amount})
             else
-                surface.create_entity({name = list[entity.name], position = entity.position})
+                local new_entity = surface.create_entity({name = list[entity.name], position = entity.position})
+                if new_entity.name == 'gun-turret' then
+                    new_entity.insert({name = 'uranium-rounds-magazine', count = 100})
+                elseif new_entity.name == 'rocket-turret' then
+                    new_entity.insert({name = 'rocket', count = 100})
+                elseif new_entity.type == 'combat-robot' then
+                    new_entity.time_to_live = 10 * 60 * 60
+                    local e = surface.find_entities_filtered{force = {'enemy', 'neutral'}, position = new_entity.position, radius = 10, limit = 1, type = {'ammo-turret', 'simple-entity', 'logistic-container'}}
+                    if e and e[1] then
+                        new_entity.combat_robot_owner = e[1]
+                    end
+                end
             end
             entity.destroy()
         end
@@ -701,7 +720,7 @@ function Public.convert_decoratives(surface, left_top, tier, cell_size)
     for name, _ in pairs(list) do
         names[#names+1] = name
     end
-    local old_decorations = surface.find_decoratives_filtered({name = names, area = {{left_top.x, left_top.y}, {left_top.x + cell_size, left_top.y + cell_size}}})
+    local old_decorations = surface.find_decoratives_filtered({name = names, area = {{left_top.x - 2, left_top.y - 2}, {left_top.x + cell_size + 2, left_top.y + cell_size + 2}}})
     local decoratives = {}
     for _, deco in pairs(old_decorations) do
         if deco and deco.valid and list[deco.name] then
@@ -733,6 +752,8 @@ local function upgrade_mission_level(expanse, tier)
             for tech, progress in pairs(reward) do
                 if progress + techs[tech].saved_progress >= 1 then
                     techs[tech].researched = true
+                    game.forces.player.print({'technology-researched', '[technology=' .. tech .. ']'})
+                    game.forces.player.play_sound({path = 'utility/research_completed'})
                 else
                     techs[tech].saved_progress = techs[tech].saved_progress + progress
                 end
@@ -753,14 +774,18 @@ local function upgrade_mission_level(expanse, tier)
                 script.raise_event(expanse.events.victory, {})
             elseif reward['new-ship'] then
                 game.print({'expanse.script-new-ship', reward['new-ship']})
+            elseif reward['spoiling'] then
+                game.difficulty_settings.spoil_time_modifier = game.difficulty_settings.spoil_time_modifier + reward['spoiling']
             end
         end
     end
     expanse.missions[tier].level = math.min(expanse.missions[tier].level + 1, maxlevel)
     if expanse.missions[tier].level == maxlevel then
         game.print({'expanse.missions_maxlevel', tier})
+        Server.to_discord_embed({'expanse.missions_maxlevel', tier}, true)
     else
         game.print({'expanse.missions_levelup', tier, expanse.missions[tier].level})
+        Server.to_discord_embed({'expanse.missions_levelup', tier, expanse.missions[tier].level}, true)
     end
     expanse.missions[tier].delivered = {}
     script.raise_event(expanse.events.mission_gui_update, { tier = tier })

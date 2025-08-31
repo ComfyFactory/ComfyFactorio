@@ -333,7 +333,7 @@ function Public.check_invasion(expanse)
     end
 end
 
-local function calculate_tier(expanse, left_top, cell_value)
+local function calculate_tier(expanse, left_top)
     local distances = {
         30,
         60,
@@ -371,15 +371,16 @@ local function calculate_tier(expanse, left_top, cell_value)
             tier = 10
         end
     end
-    if _DEBUG then
-        game.print('distance: ' .. distance .. ', tier: ' .. tier .. ', value: ' .. cell_value)
-    end
-    return tier
+    return tier, distance
 end
 
 function Public.expand(expanse, left_top)
     expanse.grid[tostring(left_top.x .. '_' .. left_top.y)] = true
-    local tier = calculate_tier(expanse, left_top, 0)
+    local tier = calculate_tier(expanse, left_top)
+    local square_size = expanse.square_size
+    -- if tier == 7 then
+    --     expanse.lightning_tiles[#expanse.lightning_tiles + 1] = {x = left_top.x + square_size / 2, y = left_top.y + square_size / 2}
+    -- end
 
     local source_surface = game.surfaces[expanse.source_surface]
     if not source_surface then
@@ -388,7 +389,6 @@ function Public.expand(expanse, left_top)
     source_surface.request_to_generate_chunks(left_top, 2)
     source_surface.force_generate_chunk_requests()
 
-    local square_size = expanse.square_size
     local area = { { left_top.x, left_top.y }, { left_top.x + square_size, left_top.y + square_size } }
     local surface = game.surfaces[expanse.active_surface_index]
 
@@ -420,11 +420,17 @@ function Public.expand(expanse, left_top)
             e.minable = false
         end
     end
+    local custom_tier = tier
+    if tier == 10 then
+        if expanse.tiered_specials[tier].specials == 0 or math.random(1, 20) ~= 1 then
+            custom_tier = math.random(6, 9)
+        end
+    end
 
-    SpaceMissions.convert_tiles(surface, left_top, tier, square_size)
-    SpaceMissions.convert_entities(surface, left_top, tier, square_size)
-    SpaceMissions.convert_decoratives(surface, left_top, tier, square_size)
-    SpaceMissions.place_special_tiered_object(expanse, tier, surface, left_top)
+    SpaceMissions.convert_tiles(surface, left_top, custom_tier, square_size)
+    SpaceMissions.convert_entities(surface, left_top, custom_tier, square_size)
+    SpaceMissions.convert_decoratives(surface, left_top, custom_tier, square_size)
+    SpaceMissions.place_special_tiered_object(expanse, tier, surface, left_top, custom_tier)
 
     if game.tick == expanse.reset_tick then
         local a = math.floor(expanse.square_size * 0.5)
@@ -468,12 +474,24 @@ local function init_container(expanse, entity, budget)
     if not left_top then
         return
     end
-    local cell_value = budget or get_cell_value(expanse, left_top)
-    local tier = calculate_tier(expanse, left_top, cell_value)
+    local tier_multi = {
+        [1] = 1,
+        [2] = 1,
+        [3] = 1.5,
+        [4] = 1.5,
+        [5] = 2,
+        [6] = 1,
+        [7] = 1,
+        [8] = 1,
+        [9] = 1,
+        [10] = 3
+    }
+    local tier, distance = calculate_tier(expanse, left_top)
+    local cell_value = budget or get_cell_value(expanse, left_top) * tier_multi[tier]
     local item_stacks = {}
     local locker = get_tier_locker(tier)
     if locker then
-        item_stacks[locker] = {['normal'] = 1}
+        item_stacks[locker] = {['normal'] = 10}
     end
     local roll_count = 3
     for _ = 1, roll_count, 1 do
@@ -496,7 +514,9 @@ local function init_container(expanse, entity, budget)
             offset = offset + 1
         end
     end
-
+    if _DEBUG then
+        game.print('distance: ' .. distance .. ', tier: ' .. tier .. ', value: ' .. cell_value)
+    end
     local containers = expanse.containers
     containers[entity.unit_number] = { entity = entity, left_top = left_top, price = price }
 end
@@ -532,6 +552,7 @@ function Public.set_container(expanse, entity)
     end
 
     local inventory = container.entity.get_inventory(defines.inventory.chest)
+    local trash_inventory = container.entity.get_inventory(defines.inventory.logistic_container_trash)
 
     if not inventory.is_empty() then
         if inventory.get_item_count('coin') > 0 then
@@ -569,11 +590,13 @@ function Public.set_container(expanse, entity)
         local a = math.floor(expanse.square_size * 0.5)
         local expansion_position = { x = expanse.containers[entity.unit_number].left_top.x + a, y = expanse.containers[entity.unit_number].left_top.y + a }
         expanse.containers[entity.unit_number] = nil
-        if not inventory.is_empty() then
-            for index = 1, #inventory, 1 do
-                local slot = inventory[index]
-                if slot.valid_for_read then
-                    entity.surface.spill_item_stack({ position = entity.position, stack = slot, enable_looted = true, allow_belts = false })
+        for _, inv in pairs({inventory, trash_inventory}) do
+            if not inv.is_empty() then
+                for index = 1, #inv, 1 do
+                    local slot = inv[index]
+                    if slot.valid_for_read then
+                        entity.surface.spill_item_stack({ position = entity.position, stack = slot, enable_looted = true, allow_belts = false })
+                    end
                 end
             end
         end
@@ -597,6 +620,17 @@ function Public.set_container(expanse, entity)
             local item = container.price[slot]
             section.set_slot(slot, { value = {name = item.name, quality = item.quality, comparator = '='}, min = item.count, import_from = 'nauvis' })
         end
+    end
+end
+
+function Public.chest_value(expanse, player)
+    if not player or not player.valid then return end
+    local position = player.position
+    local chests = player.surface.find_entities_filtered({ name = 'requester-chest', force = 'neutral', position = position, radius = 10})
+    for _, chest in pairs(chests) do
+        local container = expanse.containers[chest.unit_number]
+        local value = container and get_remaining_budget(container) or 0
+        player.print({'expanse.chest_value', value, {'expanse.gps', chest.position.x, chest.position.y, chest.surface.name}})
     end
 end
 
