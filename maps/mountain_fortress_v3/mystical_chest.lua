@@ -11,6 +11,7 @@ local Commands = require 'utils.commands'
 local zone_settings = Public.zone_settings
 local shuffle = table.shuffle_table
 local random = math.random
+local deep_copy = table.deep_copy
 local floor = math.floor
 local insert = table.insert
 local abs = math.abs
@@ -190,6 +191,10 @@ local function init_price_check(locomotive)
     end
 
     Public.set('mystical_chest_price', price)
+
+    if not Public.get('mystical_chest_price_init') then
+        Public.set('mystical_chest_price_init', deep_copy(price))
+    end
 end
 
 local function roll_item_stacks(remaining_budget, max_slots, blacklist)
@@ -247,6 +252,23 @@ local restore_modifier_token =
             end
 
             mc_rewards.temp_boosts[modifier] = false
+            local message = ({ 'locomotive.restore_bonus_end', modifier })
+            Alert.alert_all_players(10, message, nil, 'achievement/tech-maniac')
+        end
+    )
+
+local restore_active_modifier_token =
+    Task.register(
+        function (event)
+            local mc_rewards = Public.get('mc_rewards')
+            local modifier = event.modifier
+            if not modifier then
+                return
+            end
+
+            mc_rewards.active_boosts[modifier] = false
+            local message = ({ 'locomotive.bonus_bonus_end', modifier })
+            Alert.alert_all_players(10, message, nil, 'achievement/tech-maniac')
         end
     )
 
@@ -332,7 +354,7 @@ local mc_random_rewards =
         name = 'Ammo for all',
         str = 'ammo',
         color = { r = 0.00, g = 0.45, b = 0.00 },
-        tooltip = 'Selecting this will grant all of the researched tech in the mystical chest!',
+        tooltip = 'Selecting this will grant ammo to the team!',
         func = (function (player, _)
             local mc_rewards = Public.get('mc_rewards')
             if mc_rewards.temp_boosts.ammo then
@@ -360,6 +382,66 @@ local mc_random_rewards =
 
             Alert.alert_all_players(15, 'Ammo for all! Check out the mystical chest!', nil, 'achievement/tech-maniac')
             Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted ammo bonus to the team!', ' ***' })
+            return true
+        end),
+        512
+    },
+    {
+        name = 'Lucky Looter',
+        str = 'lucky',
+        color = { r = 0.00, g = 0.45, b = 0.00 },
+        tooltip = 'Selecting this will grant a higher chance of finding better loot!',
+        func = (function (player, _)
+            local mc_rewards = Public.get('mc_rewards')
+            if mc_rewards.temp_boosts.lucky then
+                return false, '[Rewards] Lucky bonus is already applied and is currently on cooldown. Please choose another reward.'
+            end
+            mc_rewards.temp_boosts.lucky = true
+            mc_rewards.active_boosts.lucky = true
+            Task.set_timeout_in_ticks(modifier_cooldown, restore_modifier_token, { modifier = 'lucky' })
+            Task.set_timeout_in_ticks(54000, restore_active_modifier_token, { modifier = 'lucky' })
+
+
+            local mystical_chest = Public.get('mystical_chest')
+            if not (mystical_chest and mystical_chest.valid) then
+                return
+            end
+
+            local mystical_rewards = Public.get('mystical_rewards')
+            mystical_rewards.lucky_bonus = mystical_rewards.lucky_bonus and mystical_rewards.lucky_bonus + 1 or 1
+
+            Alert.alert_all_players(15, 'Lucky Looter! Bonus magicka for all!', nil, 'achievement/tech-maniac')
+            Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted lucky loot bonus to the team!', ' ***' })
+            return true
+        end),
+        512
+    },
+    {
+        name = 'Oil Barrels',
+        str = 'oil',
+        color = { r = 0.00, g = 0.45, b = 0.00 },
+        tooltip = 'Selecting this will grant oil to the team!',
+        func = (function (player, _)
+            local mc_rewards = Public.get('mc_rewards')
+            if mc_rewards.temp_boosts.oil then
+                return false, '[Rewards] Oil bonus is already applied and is currently on cooldown. Please choose another reward.'
+            end
+            mc_rewards.temp_boosts.oil = true
+            Task.set_timeout_in_ticks(modifier_cooldown, restore_modifier_token, { modifier = 'oil' })
+
+
+            local mystical_chest = Public.get('mystical_chest')
+            if not (mystical_chest and mystical_chest.valid) then
+                return
+            end
+
+            local mystical_rewards = Public.get('mystical_rewards')
+            mystical_rewards.oil_bonus = mystical_rewards.oil_bonus and mystical_rewards.oil_bonus + 1 or 1
+
+            mystical_chest.insert({ name = 'crude-oil-barrel', count = random(200, 480) })
+
+            Alert.alert_all_players(15, 'Oil for all! Check out the mystical chest!', nil, 'achievement/tech-maniac')
+            Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted oil bonus to the team!', ' ***' })
             return true
         end),
         512
@@ -731,6 +813,21 @@ function Public.add_mystical_chest(player)
             entity.get_requester_point().get_section(1).set_slot(slot, item_stack)
         end
     end
+end
+
+function Public.get_active_boosts()
+    local mc_rewards = Public.get('mc_rewards')
+    return mc_rewards.active_boosts
+end
+
+function Public.get_temp_boosts()
+    local mc_rewards = Public.get('mc_rewards')
+    return mc_rewards.temp_boosts
+end
+
+function Public.is_active_boost(modifier)
+    local mc_rewards = Public.get('mc_rewards')
+    return mc_rewards.active_boosts[modifier]
 end
 
 Public.init_price_check = init_price_check

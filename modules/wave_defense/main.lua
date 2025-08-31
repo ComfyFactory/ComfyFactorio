@@ -142,7 +142,8 @@ local function fill_tiles(entity, size)
     local surface = entity.surface
     local radius = size or 10
     local pos = entity.position
-    local t = {
+    local t =
+    {
         'water',
         'water-green',
         'water-mud',
@@ -404,7 +405,7 @@ local function set_enemy_evolution()
     local wave_number = Public.get('wave_number')
     local generated_units = Public.get('generated_units')
     local threat = Public.get('threat')
-    local evolution_factor = wave_number * 0.001
+    local evolution_factor = wave_number * 0.0012
     local enemy = game.forces.enemy
 
     local biter_health_boost = 1
@@ -488,8 +489,8 @@ local function get_active_unit_groups_count()
     return count
 end
 
-local function spawn_biter(surface, position, force_spawn, is_boss_biter, unit_settings, final_battle)
-    if not force_spawn then
+local function spawn_biter(surface, position, fs, is_boss_biter, unit_settings, only_spitters)
+    if not (fs and fs.bypass) then
         if not is_boss_biter then
             if not can_units_spawn() then
                 return false
@@ -497,14 +498,28 @@ local function spawn_biter(surface, position, force_spawn, is_boss_biter, unit_s
         end
     end
 
+    local final_battle = Public.get('final_battle')
+
     local boosted_health = BiterHealthBooster.get('biter_health_boost')
     local threat_values = Public.get('threat_values')
 
     local name
-    if random(1, 100) > 73 then
-        name = Public.wave_defense_roll_spitter_name()
+
+    if (fs and fs.random_bosses) then
+        name = Public.wave_defense_roll_boss_name()
+        if not name then
+            if only_spitters or random(1, 100) > 73 then
+                name = Public.wave_defense_roll_spitter_name()
+            else
+                name = Public.wave_defense_roll_biter_name()
+            end
+        end
     else
-        name = Public.wave_defense_roll_biter_name()
+        if only_spitters or random(1, 100) > 73 then
+            name = Public.wave_defense_roll_spitter_name()
+        else
+            name = Public.wave_defense_roll_biter_name()
+        end
     end
 
     local old_position = position
@@ -793,7 +808,8 @@ local function set_next_wave()
         local spawn_position = get_spawn_pos()
         if alert_boss_wave then
             local msg = 'Boss Wave: ' .. wave_number
-            local pos = {
+            local pos =
+            {
                 position = spawn_position
             }
             Alert.alert_all_players_location(pos, msg, { r = 0.8, g = 0.1, b = 0.1 })
@@ -887,7 +903,8 @@ local function get_side_targets(group)
     for _ = 1, steps, 1 do
         local old_position = group_position
         local obstacles =
-            group.surface.find_entities_filtered {
+            group.surface.find_entities_filtered
+            {
                 position = old_position,
                 radius = step_length * 2,
                 type = search_side_targets,
@@ -896,7 +913,8 @@ local function get_side_targets(group)
         if obstacles then
             for v = 1, #obstacles, 1 do
                 if obstacles[v].valid then
-                    commands[#commands + 1] = {
+                    commands[#commands + 1] =
+                    {
                         type = defines.command.attack,
                         destination = obstacles[v].position,
                         distraction = defines.distraction.by_anything
@@ -905,7 +923,8 @@ local function get_side_targets(group)
             end
         end
 
-        commands[#commands + 1] = {
+        commands[#commands + 1] =
+        {
             type = defines.command.attack,
             target = side_target,
             distraction = defines.distraction.by_anything
@@ -932,7 +951,8 @@ local function get_main_command(group)
     local target_position = target.position
     local distance_to_target = floor(sqrt((target_position.x - group_position.x) ^ 2 + (target_position.y - group_position.y) ^ 2))
     local steps = floor(distance_to_target / step_length) + 1
-    local vector = {
+    local vector =
+    {
         round((target_position.x - group_position.x) / steps, 3),
         round((target_position.y - group_position.y) / steps, 3)
     }
@@ -947,7 +967,8 @@ local function get_main_command(group)
             group_position.x = group_position.x + vector[1]
             group_position.y = group_position.y + vector[2]
             local obstacles =
-                group.surface.find_entities_filtered {
+                group.surface.find_entities_filtered
+                {
                     position = old_position,
                     radius = step_length / 2,
                     type = { 'simple-entity', 'tree' },
@@ -957,7 +978,8 @@ local function get_main_command(group)
                 shuffle_distance(obstacles, old_position)
                 for ii = 1, #obstacles, 1 do
                     if obstacles[ii].valid then
-                        commands[#commands + 1] = {
+                        commands[#commands + 1] =
+                        {
                             type = defines.command.attack,
                             target = obstacles[ii],
                             distraction = defines.distraction.by_anything
@@ -967,7 +989,8 @@ local function get_main_command(group)
             end
             local position = group.surface.find_non_colliding_position('behemoth-biter', group_position, step_length, 1)
             if position then
-                commands[#commands + 1] = {
+                commands[#commands + 1] =
+                {
                     type = defines.command.attack_area,
                     destination = { x = position.x, y = position.y },
                     radius = 16,
@@ -977,14 +1000,16 @@ local function get_main_command(group)
         end
     end
 
-    commands[#commands + 1] = {
+    commands[#commands + 1] =
+    {
         type = defines.command.attack_area,
         destination = { x = target_position.x, y = target_position.y },
         radius = 8,
         distraction = defines.distraction.by_anything
     }
 
-    commands[#commands + 1] = {
+    commands[#commands + 1] =
+    {
         type = defines.command.attack,
         target = target,
         distraction = defines.distraction.by_anything
@@ -1156,7 +1181,6 @@ local function spawn_unit_group(fs, only_bosses)
     end
     local surface_index = Public.get('surface_index')
     local remove_entities = Public.get('remove_entities')
-    local final_battle = Public.get('final_battle')
 
     local surface = game.surfaces[surface_index]
     set_group_spawn_position(surface)
@@ -1176,7 +1200,8 @@ local function spawn_unit_group(fs, only_bosses)
     end
 
     local radius = 10
-    local area = {
+    local area =
+    {
         left_top = { spawn_position.x - radius, spawn_position.y - radius },
         right_bottom = { spawn_position.x + radius, spawn_position.y + radius }
     }
@@ -1250,8 +1275,16 @@ local function spawn_unit_group(fs, only_bosses)
                 count = 4
             end
             event_data.spawn_count = count
+            local only_spitters = random(1, 2) == 1
+            if only_spitters then
+                es_settings.only_spitters = true
+            end
+            if es_settings.wave_number ~= wave_number then
+                es_settings.only_spitters = nil
+            end
+            es_settings.wave_number = wave_number
             for _ = 1, count, 1 do
-                local biter = spawn_biter(surface, spawn_position, fs, true, unit_settings)
+                local biter = spawn_biter(surface, spawn_position, fs, true, unit_settings, es_settings.only_spitters)
                 if not biter then
                     Public.debug_print('spawn_unit_group - No biter was found?')
                     break
@@ -1272,7 +1305,7 @@ local function spawn_unit_group(fs, only_bosses)
         local count = fs.scale or 1
         event_data.spawn_count = count
         for _ = 1, count, 1 do
-            local biter = spawn_biter(surface, spawn_position, fs, true, unit_settings, final_battle)
+            local biter = spawn_biter(surface, spawn_position, fs, true, unit_settings)
             if not biter then
                 Public.debug_print('spawn_unit_group - No biter was found?')
                 break
@@ -1302,7 +1335,6 @@ local function spawn_unit_group_simple(fs)
     end
 
     local surface_index = Public.get('surface_index')
-    local final_battle = Public.get('final_battle')
 
     local surface = game.surfaces[surface_index]
     local spawn_position = Public.get('spawn_position')
@@ -1341,7 +1373,7 @@ local function spawn_unit_group_simple(fs)
     local s = 0
     for i = 1, count, 1 do
         local is_boss = i % 4 == 0
-        local biter = spawn_biter(surface, spawn_position, fs and fs.bypass, is_boss, unit_settings, final_battle)
+        local biter = spawn_biter(surface, spawn_position, fs, is_boss, unit_settings)
         if biter then
             s = s + 1
             unit_group.add_member(biter)
@@ -1423,7 +1455,8 @@ if is_loaded_bool('maps.mountain_fortress_v3.table') then
     local Core = require 'maps.mountain_fortress_v3.core'
 
     check_if_near_target = function (position)
-        local entity = {
+        local entity =
+        {
             valid = true,
             position = position
         }
@@ -1442,7 +1475,8 @@ else
     end
 end
 
-local tick_tasks = {
+local tick_tasks =
+{
     [30] = set_main_target,
     [60] = set_enemy_evolution,
     [90] = check_group_positions,
@@ -1452,7 +1486,8 @@ local tick_tasks = {
     [210] = Public.build_nest
 }
 
-local tick_tasks_t2 = {
+local tick_tasks_t2 =
+{
     [1200] = give_side_commands_to_group,
     [3600] = time_out_biters,
     [7200] = refresh_active_unit_threat
@@ -1464,6 +1499,18 @@ Event.on_nth_tick(
     30,
     function ()
         local tick = game.tick
+
+        local t = tick % 300
+        local t2 = tick % 18000
+
+        if tick_tasks[t] then
+            tick_tasks[t]()
+        end
+
+        if tick_tasks_t2[t2] then
+            tick_tasks_t2[t2]()
+        end
+
         local game_lost = Public.get('game_lost')
         if game_lost then
             return
@@ -1495,16 +1542,7 @@ Event.on_nth_tick(
             set_next_wave()
         end
 
-        local t = tick % 300
-        local t2 = tick % 18000
 
-        if tick_tasks[t] then
-            tick_tasks[t]()
-        end
-
-        if tick_tasks_t2[t2] then
-            tick_tasks_t2[t2]()
-        end
 
         local players = game.connected_players
         for _, player in pairs(players) do

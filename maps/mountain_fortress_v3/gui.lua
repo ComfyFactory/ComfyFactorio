@@ -15,8 +15,14 @@ local Core = require 'utils.core'
 local format_number = require 'util'.format_number
 
 local main_button_name = Gui.uid_name()
-local spectate_button_name = Gui.uid_name()
 local main_frame_name = Gui.uid_name()
+
+local spectate_button_name = Gui.uid_name()
+local spectate_main_frame_name = Gui.uid_name()
+local spectate_ready_to_button_name = Gui.uid_name()
+local spectate_close_button_name = Gui.uid_name()
+local spectate_surface_picker_name = Gui.uid_name()
+
 local floor = math.floor
 local on_player_changed_surface
 
@@ -128,6 +134,9 @@ local function spectate_button(player)
         return
     end
 
+    local tooltip = 'Spectate!\nThis will kill your character.'
+    local sprite = 'utility/create_ghost_on_entity_death_modifier_icon'
+
     if Gui.get_mod_gui_top_frame() then
         local b =
             Gui.add_mod_button(
@@ -135,8 +144,8 @@ local function spectate_button(player)
                 {
                     type = 'sprite-button',
                     name = spectate_button_name,
-                    sprite = 'utility/create_ghost_on_entity_death_modifier_icon',
-                    tooltip = 'Spectate!\nThis will kill your character.',
+                    sprite = sprite,
+                    tooltip = tooltip,
                     style = Gui.button_style
                 }
             )
@@ -154,13 +163,114 @@ local function spectate_button(player)
             {
                 type = 'sprite-button',
                 name = spectate_button_name,
-                sprite = 'utility/create_ghost_on_entity_death_modifier_icon',
-                tooltip = 'Spectate!\nThis will kill your character.',
+                sprite = sprite,
+                tooltip = tooltip,
                 style = Gui.button_style
             }
 
         b.style.maximal_height = 38
     end
+end
+
+local function spacer(frame)
+    local flow = frame.add({ type = 'flow' })
+    flow.style.minimal_height = 2
+end
+
+local function add_line(frame)
+    frame.add({ type = 'line', direction = 'vertical' })
+end
+
+local function create_spectate_main_frame(player, redraw)
+    local main_player_frame = player.gui.screen[spectate_main_frame_name]
+    if main_player_frame then
+        Gui.remove_data_recursively(main_player_frame)
+        main_player_frame.destroy()
+        if not redraw then
+            return
+        end
+    end
+
+    local data = {}
+
+    local frame = player.gui.screen.add { type = 'frame', name = spectate_main_frame_name, caption = { 'spectate.title' }, direction = 'vertical' }
+    if Gui.get_mod_gui_top_frame() then
+        frame.location = { x = 0, y = 67 }
+    else
+        frame.location = { x = 1, y = 45 }
+    end
+    frame.style.maximal_height = 700
+    frame.style.minimal_width = 300
+    frame.style.maximal_width = 400
+    local spectate_table = frame.add { type = 'table', column_count = 2 }
+    spectate_table.style.horizontally_stretchable = true
+
+    local spectate_left_flow = spectate_table.add({ type = 'flow' })
+    spectate_left_flow.style.horizontal_align = 'left'
+    spectate_left_flow.style.horizontally_stretchable = true
+
+    if player.character ~= nil then
+        spectate_left_flow.add({ type = 'label', caption = { 'spectate.ready-to-spectate' }, tooltip = { 'spectate.ready-to-spectate-tooltip' } })
+        spectate_left_flow.style.font = 'heading-1'
+    else
+        spectate_left_flow.add({ type = 'label', caption = { 'spectate.ready-to-play' }, tooltip = { 'spectate.ready-to-play-tooltip' } })
+        spectate_left_flow.style.font = 'heading-1'
+    end
+
+    add_line(frame)
+
+    local spectate_right_flow = spectate_table.add({ type = 'flow' })
+    spectate_right_flow.style.horizontal_align = 'right'
+    spectate_right_flow.style.horizontally_stretchable = true
+
+    if player.character ~= nil then
+        data.spectate_hold_button = spectate_right_flow.add({ type = 'button', name = spectate_ready_to_button_name, caption = { 'spectate.spectate-button' }, tooltip = { 'spectate.spectate-button-tooltip' } })
+    else
+        local spectate = Public.get('spectate')
+
+        if spectate and spectate[player.index] and spectate[player.index].delay and spectate[player.index].delay > game.tick then
+            local cooldown = floor((spectate[player.index].delay - game.tick) / 60) + 1 .. ' seconds!'
+            data.spectate_hold_button = spectate_right_flow.add({ type = 'button', enabled = false, name = spectate_ready_to_button_name, caption = cooldown, tooltip = { 'spectate.hold-button-tooltip', cooldown } })
+        else
+            data.spectate_hold_button = spectate_right_flow.add({ type = 'button', name = spectate_ready_to_button_name, caption = { 'spectate.play-button' }, tooltip = { 'spectate.play-button-tooltip' } })
+        end
+    end
+
+    if player.character == nil then
+        spacer(frame)
+
+        local spectate_surface_picker_table = frame.add { type = 'table', column_count = 2 }
+        spectate_surface_picker_table.style.horizontally_stretchable = true
+
+        local surface_picker_left_flow = spectate_surface_picker_table.add({ type = 'flow' })
+        surface_picker_left_flow.style.horizontal_align = 'left'
+        surface_picker_left_flow.style.horizontally_stretchable = true
+
+        surface_picker_left_flow.add({ type = 'label', caption = { 'spectate.surface_picker' }, tooltip = { 'spectate.surface_picker_tooltip' } })
+        add_line(frame)
+        local surface_picker_right_flow = spectate_surface_picker_table.add({ type = 'flow' })
+        surface_picker_right_flow.style.horizontal_align = 'right'
+        surface_picker_right_flow.style.horizontally_stretchable = true
+
+        local surfaces = {}
+        for _, surface in pairs(game.surfaces) do
+            if surface.name ~= 'nauvis' then
+                table.insert(surfaces, surface.name)
+            end
+        end
+
+        data.surface_picker_label = surface_picker_right_flow.add({ name = spectate_surface_picker_name, type = 'drop-down', items = surfaces, selected_index = 1 })
+        spacer(frame)
+    end
+
+    -- warn players
+    spacer(frame)
+    add_line(frame)
+    spacer(frame)
+
+    local close = frame.add({ type = 'button', name = spectate_close_button_name, caption = 'Close' })
+    close.style.horizontally_stretchable = true
+    Gui.set_data(frame, data)
 end
 
 local function create_main_frame(player)
@@ -264,6 +374,15 @@ local function create_main_frame(player)
     line.style.right_padding = 4
 
     label = frame.add({ type = 'label', caption = ' ', name = 'defense_enabled' })
+    label.style.font_color = { r = 0.88, g = 0.88, b = 0.88 }
+    label.style.font = 'default-bold'
+    label.style.right_padding = 4
+
+    line = frame.add({ type = 'line', direction = 'vertical' })
+    line.style.left_padding = 4
+    line.style.right_padding = 4
+
+    label = frame.add({ type = 'label', caption = ' ', name = 'mystical_chest' })
     label.style.font_color = { r = 0.88, g = 0.88, b = 0.88 }
     label.style.font = 'default-bold'
     label.style.right_padding = 4
@@ -535,9 +654,6 @@ local function changed_surface(player)
     if rpg_b then
         rpg_b.visible = false
     end
-    if spectate then
-        spectate.visible = false
-    end
     if info_button and info_button.visible then
         info_button.visible = false
     end
@@ -782,6 +898,43 @@ function Public.update_gui(player)
         gui.defense_enabled.caption = ' [img=item.destroyer-capsule]: Standby'
         gui.defense_enabled.tooltip = ({ 'gui.robotics_standby' })
     end
+
+    local mystical_chest = Public.get('mystical_chest')
+    if mystical_chest then
+        local prices = Public.get('mystical_chest_price')
+        local mystical_chest_price_init = Public.get('mystical_chest_price_init')
+
+        local items_tooltip = ''
+        local items_needed = 0
+        local items_completed = 0
+
+        -- Count total items originally needed
+        for _, _ in pairs(mystical_chest_price_init) do
+            items_needed = items_needed + 1
+        end
+
+        -- Count remaining items still needed
+        local remaining_items = 0
+        for _, item in pairs(prices) do
+            remaining_items = remaining_items + 1
+            items_tooltip = items_tooltip .. 'Item: [img=item.' .. item.value.name .. '] (' .. item.value.name .. ')\nNeeded: ' .. item.min .. '\n\n'
+        end
+
+        -- Calculate completed items: total needed - remaining needed
+        items_completed = items_needed - remaining_items
+
+        -- Clean up tooltip (remove extra newlines at the end)
+        if items_tooltip ~= '' then
+            items_tooltip = items_tooltip:sub(1, -2)
+            items_tooltip = items_tooltip:sub(1, -2)
+        end
+
+        gui.mystical_chest.caption = ' [img=item.requester-chest]: ' .. items_completed .. '/' .. items_needed
+        gui.mystical_chest.tooltip = items_tooltip
+    else
+        gui.mystical_chest.caption = ' [img=item.requester-chest]: 0/0'
+        gui.mystical_chest.tooltip = ({ 'gui.mystical_chest' })
+    end
 end
 
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
@@ -814,16 +967,93 @@ Gui.on_click(
             return
         end
 
+        create_spectate_main_frame(player)
+    end
+)
+
+Gui.on_click(
+    spectate_ready_to_button_name,
+    function (event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Mtn v3 Spectate Ready Button')
+        if is_spamming then
+            return
+        end
+
+        local player = event.player
+        if not player or not player.valid then
+            return
+        end
+
+        if Public.get('spectate_button_disable') then
+            player.print('Spectate button is disabled until a bug has been fixed in the base game.', { color = Color.yellow })
+            return
+        end
+
         if player.character and player.character.valid then
             local success = Public.set_player_to_spectator(player)
             if success then
+                create_spectate_main_frame(player, true)
                 hide_all_gui(player)
             end
         else
             local success = Public.set_player_to_god(player)
             if success then
+                create_spectate_main_frame(player, true)
                 show_all_gui(player)
             end
+        end
+    end
+)
+
+Gui.on_selection_state_changed(
+    spectate_surface_picker_name,
+    function (event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Mtn v3 Spectate Surface Picker')
+        if is_spamming then
+            return
+        end
+
+        local player = event.player
+        if not player or not player.valid then
+            return
+        end
+
+        local surface_picker = event.element
+        if not surface_picker or not surface_picker.valid then
+            return
+        end
+
+        local surface_name = surface_picker.items[surface_picker.selected_index]
+        if not surface_name then
+            return
+        end
+
+        player.teleport({ x = 0, y = 0 }, surface_name)
+    end
+)
+
+Gui.on_click(
+    spectate_close_button_name,
+    function (event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Mtn v3 Spectate Close Button')
+        if is_spamming then
+            return
+        end
+
+        local player = event.player
+        if not player or not player.valid then
+            return
+        end
+
+        if Public.get('spectate_button_disable') then
+            player.print('Spectate button is disabled until a bug has been fixed in the base game.', { color = Color.yellow })
+            return
+        end
+
+        local main_player_frame = player.gui.screen[spectate_main_frame_name]
+        if main_player_frame then
+            Gui.remove_data_recursively(main_player_frame)
+            main_player_frame.destroy()
         end
     end
 )
@@ -831,8 +1061,32 @@ Gui.on_click(
 Public.changed_surface = changed_surface
 
 Event.on_nth_tick(10, function ()
+    local spectate = Public.get('spectate')
     Core.iter_connected_players(function (player)
         changed_surface(player)
+
+
+        local f = player.gui.screen[spectate_main_frame_name]
+        local data = Gui.get_data(f)
+
+        if spectate and spectate[player.index] and spectate[player.index].delay and spectate[player.index].delay > game.tick then
+            local cooldown = floor((spectate[player.index].delay - game.tick) / 60) + 1 .. ' seconds!'
+            if data and data.spectate_hold_button and data.spectate_hold_button.valid then
+                data.spectate_hold_button.caption = cooldown
+                data.spectate_hold_button.tooltip = { 'spectate.hold-button-tooltip', cooldown }
+            end
+        else
+            if data and data.spectate_hold_button and data.spectate_hold_button.valid then
+                data.spectate_hold_button.enabled = true
+                if player.character ~= nil then
+                    data.spectate_hold_button.caption = { 'spectate.spectate-button' }
+                    data.spectate_hold_button.tooltip = { 'spectate.spectate-button-tooltip' }
+                else
+                    data.spectate_hold_button.caption = { 'spectate.play-button' }
+                    data.spectate_hold_button.tooltip = { 'spectate.play-button-tooltip' }
+                end
+            end
+        end
     end)
 end)
 

@@ -22,8 +22,10 @@ local this =
     enabled = false,
     rounds_survived = 0,
     current_streak = 0,
+    best_streak = 0,
     season = 1,
     buffs = {},
+    permanent_buffs = {},
     reset_after = 60,
     time_to_reset = 60
 }
@@ -43,6 +45,7 @@ local dataset_key_previous_dev = 'mtn_v3_previous_dev'
 local dataset_key_modded_previous_dev = 'mtn_v3_previous_dev'
 local send_ping_to_channel = Discord.channel_names.mtn_channel
 local apply_buffs
+local apply_permanent_buffs
 
 Global.register(
     this,
@@ -75,17 +78,34 @@ local buff_to_string =
     ['xp_level'] = 'XP Level'
 }
 
+local shutdown_scenario_token =
+    Task.register(
+        function ()
+            Server.stop_scenario()
+        end
+    )
+
+local start_scenario_token =
+    Task.register(
+        function ()
+            Server.start_scenario('Mountain_Fortress_v3')
+        end
+    )
+
 local function upperCase(str)
     return (str:gsub('^%l', string.upper))
 end
 
-local function notify_season_over_to_discord()
+local function notify_season_over_to_discord(perm_buff)
     local server_name_matches = Server.check_server_name(Public.discord_name)
 
     local stateful = Public.get_stateful()
 
     if not stateful.buffs_collected then
         apply_buffs()
+    end
+    if not stateful.permanent_buffs_collected then
+        apply_permanent_buffs()
     end
     local buffs = ''
     if stateful.buffs and next(stateful.buffs) then
@@ -106,7 +126,7 @@ local function notify_season_over_to_discord()
                         if buff_data.count and buff_to_string[name] then
                             buffs = buffs .. buff_to_string[name] .. ': ' .. buff_data.count
                         else
-                            buffs = buffs .. upperCase(name) .. ': Active'
+                            buffs = buffs .. upperCase(name) .. ': Active' .. '\n'
                         end
                     else
                         if buff_data.count and buff_to_string[name] then
@@ -114,13 +134,13 @@ local function notify_season_over_to_discord()
                         elseif type(buff_data) == 'table' then
                             for _, t_data in pairs(buff_data) do
                                 if t_data and type(t_data) == 'table' then
-                                    buffs = buffs .. upperCase(t_data.name) .. ': Active'
+                                    buffs = buffs .. upperCase(t_data.name) .. ': Active' .. '\n'
                                 end
                             end
                         elseif buff_data.name then
-                            buffs = buffs .. upperCase(buff_data.name) .. ': Active'
+                            buffs = buffs .. upperCase(buff_data.name) .. ': Active' .. '\n'
                         else
-                            buffs = buffs .. upperCase(name) .. ': Active'
+                            buffs = buffs .. upperCase(name) .. ': Active' .. '\n'
                         end
                     end
                     buffs = buffs .. '\n'
@@ -142,8 +162,20 @@ local function notify_season_over_to_discord()
         },
         field2 =
         {
+            text1 = 'Best win streak:',
+            text2 = stateful.best_streak or 'None',
+            inline = 'false'
+        },
+        field3 =
+        {
             text1 = 'Buffs granted:',
             text2 = buffs,
+            inline = 'false'
+        },
+        field4 =
+        {
+            text1 = 'Permanent buffs granted:',
+            text2 = perm_buff.discord,
             inline = 'false'
         }
     }
@@ -154,6 +186,7 @@ local function notify_season_over_to_discord()
     end
 
     stateful.buffs_collected = {}
+    stateful.permanent_buffs_collected = {}
 end
 
 local function get_random_buff(fetch_all, only_force)
@@ -162,6 +195,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'character_running_speed_modifier',
             discord = 'Running speed modifier - run faster!',
+            tooltip = 'Selecting this buff will grant the team 5% increased running speed!',
+            poll_name = 'Running speed',
             modifier = 'force',
             per_force = true,
             state = 0.05
@@ -169,6 +204,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'manual_mining_speed_modifier',
             discord = 'Mining speed modifier - mine faster!',
+            tooltip = 'Selecting this buff will grant the team 15% increased mining speed!',
+            poll_name = 'Mining speed',
             modifier = 'force',
             per_force = true,
             state = 0.15
@@ -176,6 +213,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'laboratory_speed_modifier',
             discord = 'Laboratory speed modifier - labs work faster!',
+            tooltip = 'Selecting this buff will grant the team 15% increased laboratory speed!',
+            poll_name = 'Laboratory speed',
             modifier = 'force',
             per_force = true,
             state = 0.15
@@ -183,6 +222,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'laboratory_productivity_bonus',
             discord = 'Laboratory productivity bonus - labs dupe things!',
+            tooltip = 'Selecting this buff will grant the team 15% increased laboratory productivity!',
+            poll_name = 'Laboratory productivity',
             modifier = 'force',
             per_force = true,
             state = 0.15
@@ -190,6 +231,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'worker_robots_storage_bonus',
             discord = 'Robot storage bonus - robots carry more!',
+            tooltip = 'Selecting this buff will grant the team 100% increased robot storage!',
+            poll_name = 'Robot storage',
             modifier = 'force',
             per_force = true,
             state = 1
@@ -197,6 +240,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'worker_robots_battery_modifier',
             discord = 'Robot battery bonus - robots work longer!',
+            tooltip = 'Selecting this buff will grant the team 100% increased robot battery!',
+            poll_name = 'Robot battery',
             modifier = 'force',
             per_force = true,
             state = 1
@@ -204,6 +249,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'worker_robots_speed_modifier',
             discord = 'Robot speed modifier - robots move faster!',
+            tooltip = 'Selecting this buff will grant the team 50% increased robot speed!',
+            poll_name = 'Robot speed',
             modifier = 'force',
             per_force = true,
             state = 0.5
@@ -211,6 +258,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'mining_drill_productivity_bonus',
             discord = 'Drill productivity bonus - drills work faster!',
+            tooltip = 'Selecting this buff will grant the team 50% increased drill productivity!',
+            poll_name = 'Drill productivity',
             modifier = 'force',
             per_force = true,
             state = 0.5
@@ -218,6 +267,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'character_health_bonus',
             discord = 'Character health bonus - more health!',
+            tooltip = 'Selecting this buff will grant the team 250 flat increased character health!',
+            poll_name = 'Character health',
             modifier = 'force',
             per_force = true,
             state = 250
@@ -225,6 +276,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'distance',
             discord = 'RPG reach distance bonus - reach further!',
+            tooltip = 'Selecting this buff will grant the team 5% increased reach distance!',
+            poll_name = 'RPG reach distance',
             modifier = 'rpg_distance',
             per_force = true,
             modifiers = { 'character_resource_reach_distance_bonus', 'character_item_pickup_distance_bonus', 'character_loot_pickup_distance_bonus', 'character_reach_distance_bonus' },
@@ -233,6 +286,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'manual_crafting_speed_modifier',
             discord = 'Crafting speed modifier - craft faster!',
+            tooltip = 'Selecting this buff will grant the team 12% increased crafting speed!',
+            poll_name = 'Crafting speed',
             modifier = 'force',
             per_force = true,
             state = 0.12
@@ -240,6 +295,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'xp_bonus',
             discord = 'RPG XP point bonus - more XP points from kills etc.',
+            tooltip = 'Selecting this buff will grant the team 12% increased XP points from kills etc.',
+            poll_name = 'RPG XP point',
             modifier = 'rpg',
             per_force = true,
             state = 0.12
@@ -247,6 +304,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'xp_level',
             discord = 'RPG XP level bonus - start with more XP levels',
+            tooltip = 'Selecting this buff will grant the team 20 more XP levels!',
+            poll_name = 'RPG XP level',
             modifier = 'rpg',
             per_force = true,
             state = 20
@@ -254,6 +313,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'chemicals_s',
             discord = 'Starting items supplies - start with some sulfur',
+            tooltip = 'Selecting this buff will grant the team 50 sulfur at start!',
+            poll_name = 'Starting items (sulfur)',
             modifier = 'starting_items',
             limit = 200,
             add_per_buff = 50,
@@ -265,6 +326,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'chemicals_p',
             discord = 'Starting items supplies - start with some plastic bar',
+            tooltip = 'Selecting this buff will grant the team 100 plastic bar at start!',
+            poll_name = 'Starting items (plastic bar)',
             modifier = 'starting_items',
             limit = 200,
             add_per_buff = 50,
@@ -276,6 +339,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'supplies',
             discord = 'Starting items supplies - start with some copper and iron plates',
+            tooltip = 'Selecting this buff will grant the team 100 copper and iron plates at start!',
+            poll_name = 'Starting items (copper and iron plates)',
             modifier = 'starting_items',
             limit = 1000,
             add_per_buff = 100,
@@ -288,6 +353,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'supplies_1',
             discord = 'Starting items supplies - start with more copper and iron plates',
+            tooltip = 'Selecting this buff will grant the team 200 copper and iron plates at start!',
+            poll_name = 'Starting items (more copper and iron plates)',
             modifier = 'starting_items',
             limit = 1000,
             add_per_buff = 200,
@@ -300,6 +367,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'supplies_2',
             discord = 'Starting items supplies - start with even more copper and iron plates',
+            tooltip = 'Selecting this buff will grant the team 400 copper and iron plates at start!',
+            poll_name = 'Starting items (even more copper and iron plates)',
             modifier = 'starting_items',
             limit = 1000,
             add_per_buff = 400,
@@ -312,6 +381,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'defense_3',
             discord = 'Defense starting supplies - start with more turrets and ammo',
+            tooltip = 'Selecting this buff will grant the team 1 rocket launcher and 100 rockets at start!',
+            poll_name = 'Starting items (more turrets and ammo)',
             modifier = 'starting_items',
             limit = 1,
             add_per_buff = 1,
@@ -324,6 +395,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'armor',
             discord = 'Armor starting supplies - start with some armor and solar panels',
+            tooltip = 'Selecting this buff will grant the team 1 modular armor and 2 solar panel equipment at start!',
+            poll_name = 'Starting items (armor and solar panels)',
             modifier = 'starting_items',
             limit = 1,
             add_per_buff = 1,
@@ -336,6 +409,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'production_1',
             discord = 'Production starting supplies - start with some steel furnaces and solid fuel',
+            tooltip = 'Selecting this buff will grant the team 4 steel furnaces and 100 solid fuel at start!',
+            poll_name = 'Starting items (steel furnaces and solid fuel)',
             modifier = 'starting_items',
             limit = 2,
             add_per_buff = 1,
@@ -348,6 +423,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'fast_startup_1',
             discord = 'Assembling starting supplies - start with some assembling machines T2',
+            tooltip = 'Selecting this buff will grant the team 2 assembling machines T2 at start!',
+            poll_name = 'Starting items (assembling machines T2)',
             modifier = 'starting_items',
             limit = 25,
             add_per_buff = 2,
@@ -359,6 +436,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'fast_startup_2',
             discord = 'Assembling starting supplies - start with some assembling machines T3',
+            tooltip = 'Selecting this buff will grant the team 2 assembling machines T3 at start!',
+            poll_name = 'Starting items (assembling machines T3)',
             modifier = 'starting_items',
             limit = 25,
             add_per_buff = 2,
@@ -370,6 +449,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'heal-thy-buildings',
             discord = 'Repair starting supplies - start with some repair packs',
+            tooltip = 'Selecting this buff will grant the team 5 repair packs at start!',
+            poll_name = 'Starting items (repair packs)',
             modifier = 'starting_items',
             limit = 20,
             add_per_buff = 2,
@@ -381,6 +462,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'extra_wagons',
             discord = 'Extra wagon at start',
+            tooltip = 'Selecting this buff will grant the team 1 extra wagon at start!',
+            poll_name = 'Starting items (extra wagon)',
             modifier = 'locomotive',
             limit = 4,
             state = 1
@@ -388,6 +471,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'american_oil',
             discord = 'Oil tech - start with some crude oil barrels',
+            tooltip = 'Selecting this buff will grant the team 20 crude oil barrels at start!',
+            poll_name = 'Starting items (crude oil barrels)',
             modifier = 'starting_items',
             limit = 40,
             add_per_buff = 20,
@@ -399,6 +484,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'steel_plates',
             discord = 'Steel tech - start with some steel plates',
+            tooltip = 'Selecting this buff will grant the team 100 steel plates at start!',
+            poll_name = 'Starting items (steel plates)',
             modifier = 'starting_items',
             limit = 200,
             add_per_buff = 100,
@@ -410,6 +497,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'red_science',
             discord = 'Science tech - start with some red science packs',
+            tooltip = 'Selecting this buff will grant the team 10 red science packs at start!',
+            poll_name = 'Starting items (red science packs)',
             modifier = 'starting_items',
             limit = 200,
             add_per_buff = 10,
@@ -421,6 +510,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'roboport_equipement',
             discord = 'Equipement tech - start with a personal roboport',
+            tooltip = 'Selecting this buff will grant the team 1 personal roboport equipment at start!',
+            poll_name = 'Starting items (personal roboport)',
             modifier = 'starting_items',
             limit = 4,
             add_per_buff = 1,
@@ -432,6 +523,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'mk1_tech_unlocked',
             discord = 'Equipement tech - start with power armor tech unlocked.',
+            tooltip = 'Selecting this buff will grant the team power armor tech unlocked at start!',
+            poll_name = 'Tech unlock (power armor)',
             modifier = 'tech',
             limit = 1,
             add_per_buff = 1,
@@ -443,6 +536,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'steel_axe_unlocked',
             discord = 'Equipement tech - start with steel axe tech unlocked.',
+            tooltip = 'Selecting this buff will grant the team steel axe tech unlocked at start!',
+            poll_name = 'Tech unlock (steel axe)',
             modifier = 'tech',
             limit = 1,
             add_per_buff = 1,
@@ -454,6 +549,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'military_2_unlocked',
             discord = 'Equipement tech - start with military 2 tech unlocked.',
+            tooltip = 'Selecting this buff will grant the team military 2 tech unlocked at start!',
+            poll_name = 'Tech unlock (military 2)',
             modifier = 'tech',
             limit = 1,
             add_per_buff = 1,
@@ -465,6 +562,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'all_the_fish',
             discord = 'Wagon is full of fish!',
+            tooltip = 'Selecting this buff will grant the team 1 wagon full of fish at start!',
+            poll_name = 'Fishes',
             modifier = 'fish',
             limit = 1,
             add_per_buff = 1
@@ -476,6 +575,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'quality_locomotive',
             discord = 'Grants uncommon locomotive at start',
+            tooltip = 'Selecting this buff will grant the team 1 uncommon locomotive at start!',
+            poll_name = 'Starting items (uncommon)',
             modifier = 'locomotive',
             limit = 1,
             quality = 'uncommon',
@@ -486,6 +587,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'quality_cargo_wagon',
             discord = 'Grants uncommon cargo-wagon at start',
+            tooltip = 'Selecting this buff will grant the team 1 uncommon cargo-wagon at start!',
+            poll_name = 'Starting items (uncommon)',
             modifier = 'cargo-wagon',
             limit = 1,
             quality = 'uncommon',
@@ -496,6 +599,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'quality_locomotive',
             discord = 'Grants rare locomotive at start',
+            tooltip = 'Selecting this buff will grant the team 1 rare locomotive at start!',
+            poll_name = 'Starting items (rare)',
             modifier = 'locomotive',
             limit = 1,
             quality = 'rare',
@@ -506,6 +611,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'quality_cargo_wagon',
             discord = 'Grants rare cargo-wagon at start',
+            tooltip = 'Selecting this buff will grant the team 1 rare cargo-wagon at start!',
+            poll_name = 'Starting items (rare)',
             modifier = 'cargo-wagon',
             limit = 1,
             quality = 'rare',
@@ -516,6 +623,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'quality_locomotive',
             discord = 'Grants epic locomotive at start',
+            tooltip = 'Selecting this buff will grant the team 1 epic locomotive at start!',
+            poll_name = 'Starting items (epic)',
             limit = 1,
             quality = 'epic',
             dlc = true,
@@ -525,6 +634,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'quality_cargo_wagon',
             discord = 'Grants epic cargo-wagon at start',
+            tooltip = 'Selecting this buff will grant the team 1 epic cargo-wagon at start!',
+            poll_name = 'Starting items (epic)',
             modifier = 'cargo-wagon',
             limit = 1,
             quality = 'epic',
@@ -535,6 +646,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'quality_locomotive',
             discord = 'Grants legendary locomotive at start',
+            tooltip = 'Selecting this buff will grant the team 1 legendary locomotive at start!',
+            poll_name = 'Starting items (legendary)',
             limit = 1,
             quality = 'legendary',
             dlc = true,
@@ -544,6 +657,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'quality_cargo_wagon',
             discord = 'Grants legendary cargo-wagon at start',
+            tooltip = 'Selecting this buff will grant the team 1 legendary cargo-wagon at start!',
+            poll_name = 'Starting items (legendary)',
             limit = 1,
             quality = 'legendary',
             dlc = true,
@@ -553,6 +668,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'quality_buildings',
             discord = 'Grants uncommon quality of buildings generating free loot!',
+            tooltip = 'Selecting this buff will grant the team 1 uncommon quality of buildings generating free loot!',
+            poll_name = 'Starting items (uncommon)',
             limit = 1,
             quality = 'uncommon',
             dlc = true,
@@ -562,6 +679,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'quality_buildings',
             discord = 'Grants rare quality of buildings generating free loot!',
+            tooltip = 'Selecting this buff will grant the team 1 rare quality of buildings generating free loot!',
+            poll_name = 'Starting items (rare)',
             limit = 1,
             quality = 'rare',
             dlc = true,
@@ -571,6 +690,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'quality_buildings',
             discord = 'Grants epic quality of buildings generating free loot!',
+            tooltip = 'Selecting this buff will grant the team 1 epic quality of buildings generating free loot!',
+            poll_name = 'Starting items (epic)',
             limit = 1,
             quality = 'epic',
             dlc = true,
@@ -580,6 +701,8 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'quality_buildings',
             discord = 'Grants legendary quality of buildings generating free loot!',
+            tooltip = 'Selecting this buff will grant the team 1 legendary quality of buildings generating free loot!',
+            poll_name = 'Starting items (legendary)',
             limit = 1,
             quality = 'legendary',
             dlc = true,
@@ -1239,6 +1362,7 @@ end
 
 local function clear_all_stats()
     this.buffs_collected = {}
+    this.permanent_buffs_collected = {}
     this.extra_wagons = 0
     this.quality_trains =
     {
@@ -1252,14 +1376,14 @@ local function clear_all_stats()
     rpg_extra.grant_xp_level = 0
 end
 
-local function migrate_buffs()
+local function migrate_buffs_generic(buffs_table)
     local state_buffs = get_random_buff(true)
 
     for _, data in pairs(state_buffs) do
-        for index, buff in pairs(this.buffs) do
+        for index, buff in pairs(buffs_table) do
             if data.name == buff.name then
                 if not Public.is_modded_pt2 and data.dlc then
-                    this.buffs[index] = nil
+                    buffs_table[index] = nil
                     break
                 end
                 if data.add_per_buff then
@@ -1283,28 +1407,37 @@ local function migrate_buffs()
                 end
 
                 if buff.items == 0 then
-                    this.buffs[index] = nil
+                    buffs_table[index] = nil
                 end
             end
         end
     end
 end
 
-apply_buffs = function ()
+local function migrate_buffs()
+    migrate_buffs_generic(this.buffs)
+end
+
+local function migrate_permanent_buffs()
+    migrate_buffs_generic(this.permanent_buffs)
+end
+
+local function apply_buffs_generic(buffs_table, collected_table, is_permanent)
     local starting_items = Public.get_func('starting_items')
     local techs = Public.get_func('techs')
     local limit_types = Public.get_func('limit_types')
 
-    if this.buffs and next(this.buffs) then
+    if buffs_table and next(buffs_table) then
         local total_buffs = 0
-        if not this.buffs_collected then
-            this.buffs_collected = {}
+
+        if is_permanent then
+            migrate_permanent_buffs()
+        else
+            migrate_buffs()
         end
 
-        migrate_buffs()
-
         local force = game.forces.player
-        for _, buff in pairs(this.buffs) do
+        for _, buff in pairs(buffs_table) do
             if buff then
                 total_buffs = total_buffs + 1
                 if buff.modifier == 'rpg_distance' then
@@ -1315,8 +1448,8 @@ apply_buffs = function ()
 
                         force[buff_name] = force[buff_name] + buff.state
 
-                        if not this.buffs_collected[buff_name] then
-                            this.buffs_collected[buff_name] =
+                        if not collected_table[buff_name] then
+                            collected_table[buff_name] =
                             {
                                 name = 'Extra Reach',
                                 count = buff.state,
@@ -1324,22 +1457,22 @@ apply_buffs = function ()
                                 force = true
                             }
                         else
-                            this.buffs_collected[buff_name].count = this.buffs_collected[buff_name].count + buff.state
+                            collected_table[buff_name].count = collected_table[buff_name].count + buff.state
                         end
                     end
                 end
                 if buff.modifier == 'force' then
                     force[buff.name] = force[buff.name] + buff.state
 
-                    if not this.buffs_collected[buff.name] then
-                        this.buffs_collected[buff.name] =
+                    if not collected_table[buff.name] then
+                        collected_table[buff.name] =
                         {
                             count = buff.state,
                             discord = buff.discord,
                             force = true
                         }
                     else
-                        this.buffs_collected[buff.name].count = this.buffs_collected[buff.name].count + buff.state
+                        collected_table[buff.name].count = collected_table[buff.name].count + buff.state
                     end
                 end
                 if buff.modifier == 'locomotive' then
@@ -1349,8 +1482,8 @@ apply_buffs = function ()
                         this.extra_wagons = this.extra_wagons + buff.state
                     end
 
-                    if not this.buffs_collected['locomotive'] then
-                        this.buffs_collected['locomotive'] =
+                    if not collected_table['locomotive'] then
+                        collected_table['locomotive'] =
                         {
                             name = 'Extra Wagons',
                             count = buff.state,
@@ -1358,9 +1491,9 @@ apply_buffs = function ()
                         }
                     else
                         if this.extra_wagons > 5 then
-                            this.buffs_collected['locomotive'].count = this.extra_wagons
+                            collected_table['locomotive'].count = this.extra_wagons
                         else
-                            this.buffs_collected['locomotive'].count = this.extra_wagons + buff.state
+                            collected_table['locomotive'].count = this.extra_wagons + buff.state
                         end
                     end
 
@@ -1371,7 +1504,7 @@ apply_buffs = function ()
                 if buff.name == 'quality_locomotive' then
                     this.quality_trains.locomotive = buff.quality
 
-                    this.buffs_collected['quality_locomotive'] =
+                    collected_table['quality_locomotive'] =
                     {
                         name = 'Quality locomotives (' .. buff.quality .. ')!',
                         discord = buff.discord
@@ -1380,7 +1513,7 @@ apply_buffs = function ()
                 if buff.name == 'quality_cargo_wagon' then
                     this.quality_trains.locomotive = buff.quality
 
-                    this.buffs_collected['quality_cargo_wagon'] =
+                    collected_table['quality_cargo_wagon'] =
                     {
                         name = 'Quality cargo-wagon (' .. buff.quality .. ')!',
                         discord = buff.discord
@@ -1389,7 +1522,7 @@ apply_buffs = function ()
                 if buff.name == 'quality_buildings' then
                     this.quality_trains.locomotive = buff.quality
 
-                    this.buffs_collected['quality_buildings'] =
+                    collected_table['quality_buildings'] =
                     {
                         name = 'Quality buildings (' .. buff.quality .. ')!',
                         discord = buff.discord
@@ -1399,8 +1532,8 @@ apply_buffs = function ()
                 if buff.modifier == 'fish' then
                     limit_types[buff.name] = true
                     Public.set('all_the_fish', true)
-                    if not this.buffs_collected['fish'] then
-                        this.buffs_collected['fish'] =
+                    if not collected_table['fish'] then
+                        collected_table['fish'] =
                         {
                             name = 'A thousand fishes',
                             discord = buff.discord
@@ -1408,8 +1541,8 @@ apply_buffs = function ()
                     end
                 end
                 if buff.modifier == 'tech' then
-                    if not this.buffs_collected['techs'] then
-                        this.buffs_collected['techs'] = {}
+                    if not collected_table['techs'] then
+                        collected_table['techs'] = {}
                     end
                     if type(buff.techs) ~= 'table' then
                         goto cont
@@ -1428,8 +1561,8 @@ apply_buffs = function ()
                                 }
                             end
 
-                            if not this.buffs_collected['techs'][tech.name] then
-                                this.buffs_collected['techs'][tech.name] =
+                            if not collected_table['techs'][tech.name] then
+                                collected_table['techs'][tech.name] =
                                 {
                                     name = tech.name,
                                     buff_type = buff.name,
@@ -1453,15 +1586,15 @@ apply_buffs = function ()
                         else
                             rpg_extra.difficulty = rpg_extra.difficulty + buff.state
                         end
-                        if not this.buffs_collected['xp_bonus'] then
-                            this.buffs_collected['xp_bonus'] =
+                        if not collected_table['xp_bonus'] then
+                            collected_table['xp_bonus'] =
                             {
                                 name = 'XP Bonus',
                                 count = buff.state,
                                 discord = buff.discord
                             }
                         else
-                            this.buffs_collected['xp_bonus'].count = this.buffs_collected['xp_bonus'].count + buff.state
+                            collected_table['xp_bonus'].count = collected_table['xp_bonus'].count + buff.state
                         end
                     end
                     if buff.name == 'xp_level' then
@@ -1470,21 +1603,21 @@ apply_buffs = function ()
                         else
                             rpg_extra.grant_xp_level = rpg_extra.grant_xp_level + buff.state
                         end
-                        if not this.buffs_collected['xp_level'] then
-                            this.buffs_collected['xp_level'] =
+                        if not collected_table['xp_level'] then
+                            collected_table['xp_level'] =
                             {
                                 name = 'XP Level Bonus',
                                 count = buff.state,
                                 discord = buff.discord
                             }
                         else
-                            this.buffs_collected['xp_level'].count = this.buffs_collected['xp_level'].count + buff.state
+                            collected_table['xp_level'].count = collected_table['xp_level'].count + buff.state
                         end
                     end
                 end
                 if buff.modifier == 'starting_items' then
-                    if not this.buffs_collected['starting_items'] then
-                        this.buffs_collected['starting_items'] = {}
+                    if not collected_table['starting_items'] then
+                        collected_table['starting_items'] = {}
                     end
                     if type(buff.items) ~= 'table' then
                         goto cont
@@ -1509,11 +1642,11 @@ apply_buffs = function ()
                                     item_limit = buff.add_per_buff
                                 }
                             end
-                            if this.buffs_collected['starting_items'][item.name] then
-                                this.buffs_collected['starting_items'][item.name].count = this.buffs_collected['starting_items'][item.name].count + item.count
-                                this.buffs_collected['starting_items'][item.name].buff_type = buff.name
+                            if collected_table['starting_items'][item.name] then
+                                collected_table['starting_items'][item.name].count = collected_table['starting_items'][item.name].count + item.count
+                                collected_table['starting_items'][item.name].buff_type = buff.name
                             else
-                                this.buffs_collected['starting_items'][item.name] =
+                                collected_table['starting_items'][item.name] =
                                 {
                                     buff_type = buff.name,
                                     count = item.count,
@@ -1527,146 +1660,21 @@ apply_buffs = function ()
             ::cont::
         end
         this.total_buffs = total_buffs
-    end
-    log('Applied all buffs.')
-    log('Total wagons this round: ' .. this.extra_wagons)
-end
-
-local function apply_startup_settings(settings)
-    local current_date = Server.get_current_date(false, true)
-    if not current_date then
-        return
-    end
-
-    local current_time = Server.get_current_time()
-    if not current_time then
-        return
-    end
-
-    current_date = round(Utils.convert_date(current_date.year, current_date.month, current_date.day))
-
-    local server_name_matches = Server.check_server_name(Public.discord_name)
-
-    settings = settings or {}
-    local stored_date = this.current_date
-    if not stored_date then
-        return
-    end
-    local stored_date_raw = Server.get_current_date(false, true, stored_date)
-    local converted_stored_date = round(Utils.convert_date(stored_date_raw.year, stored_date_raw.month, stored_date_raw.day))
-    local time_to_reset = (current_date - converted_stored_date)
-    this.time_to_reset = this.reset_after - time_to_reset
-    if time_to_reset and time_to_reset >= this.reset_after then
-        Public.save_settings_before_reset()
-        Public.set_season_scores()
-
-        local s = this.season or 1
-        game.server_save('Season_' .. s .. '_Mtn_v3_' .. tostring(current_time))
-        notify_season_over_to_discord()
-        settings.current_date = current_time
-        settings.test_mode = false
-        settings.rounds_survived = 0
-        settings.buffs = {}
-        this.buffs = {}
-        this.buffs_collected = {}
-        this.rounds_survived = 0
-        this.season = this.season + 1
-        this.current_date = current_time
-        settings.season = this.season
-        this.time_to_reset = this.reset_after
-        local message = ({ 'stateful.reset' })
-        local message_discord = ({ 'stateful.reset_discord' })
-        game.print(message)
-        Server.to_discord_embed(message_discord, true)
-
-        if server_name_matches then
-            if Public.is_modded then
-                Server.set_data(dataset, dataset_key_modded, deep_copy(settings))
-            else
-                Server.set_data(dataset, dataset_key, deep_copy(settings))
-            end
-        else
-            if Public.is_modded then
-                Server.set_data(dataset, dataset_key_dev_modded, deep_copy(settings))
-            else
-                Server.set_data(dataset, dataset_key_dev, deep_copy(settings))
-            end
-        end
-
-        if not settings.disable_shutdown then
-            game.print(({ 'entity.notify_shutdown' }), { color = { r = 0.22, g = 0.88, b = 0.22 } })
-            local notify_shutdown = ({ 'entity.shutdown_game' })
-            Server.to_discord_bold(notify_shutdown, true)
-            Server.stop_scenario()
-        end
-
-        if settings.restart_scenario then
-            game.print(({ 'entity.notify_restart' }), { color = { r = 0.22, g = 0.88, b = 0.22 } })
-            local notify_restart = ({ 'entity.notify_restart' })
-            Server.to_discord_bold(notify_restart, true)
-            Server.start_scenario("Mountain_Fortress_v3")
-        end
+        local log_message = is_permanent and 'Applied all permanent buffs.' .. ' Total buffs: ' .. total_buffs or 'Applied all buffs.' .. ' Total buffs: ' .. total_buffs
+        log(log_message)
+        log('Total wagons this round: ' .. this.extra_wagons)
     end
 end
 
-local apply_settings_token =
-    Task.register(
-        function (data)
-            local server_name_matches = Server.check_server_name(Public.discord_name)
-            local settings = data and data.value or nil
-            local current_time = Server.get_current_time()
-            if not current_time then
-                return
-            end
+apply_buffs = function ()
+    this.buffs_collected = this.buffs_collected or {}
+    apply_buffs_generic(this.buffs, this.buffs_collected, false)
+end
 
-            if not settings then
-                settings =
-                {
-                    rounds_survived = 0,
-                    current_date = tonumber(current_time),
-                    season = 1
-                }
-                if server_name_matches then
-                    if Public.is_modded then
-                        Server.set_data(dataset, dataset_key_modded, deep_copy(settings))
-                    else
-                        Server.set_data(dataset, dataset_key, deep_copy(settings))
-                    end
-                else
-                    if Public.is_modded then
-                        Server.set_data(dataset, dataset_key_dev_modded, deep_copy(settings))
-                    else
-                        Server.set_data(dataset, dataset_key_dev, deep_copy(settings))
-                    end
-                end
-                return
-            end
-
-            if not settings.current_date then
-                settings.current_date = tonumber(current_time)
-            end
-
-            if not settings.season then
-                settings.season = 1
-            end
-
-            this.current_date = settings.current_date
-            this.buffs = settings.buffs
-
-
-            this.rounds_survived = settings.rounds_survived
-            this.season = settings.season
-
-            apply_startup_settings(settings)
-            local current_season = Public.get('current_season')
-            if current_season and current_season.valid then
-                ---@diagnostic disable-next-line: param-type-mismatch
-                current_season.text = 'Season: ' .. this.season
-            end
-
-            this.objectives = {}
-        end
-    )
+apply_permanent_buffs = function ()
+    this.permanent_buffs_collected = this.permanent_buffs_collected or {}
+    apply_buffs_generic(this.permanent_buffs, this.permanent_buffs_collected, true)
+end
 
 local function grant_non_limit_reached_buff()
     local all_buffs = get_random_buff(true)
@@ -1713,6 +1721,153 @@ local function grant_non_limit_reached_buff()
     return all_buffs[1]
 end
 
+local function apply_startup_settings(settings)
+    local current_date = Server.get_current_date(false, true)
+    if not current_date then
+        return
+    end
+
+    local current_time = Server.get_current_time()
+    if not current_time then
+        return
+    end
+
+    current_date = round(Utils.convert_date(current_date.year, current_date.month, current_date.day))
+
+    local server_name_matches = Server.check_server_name(Public.discord_name)
+
+    settings = settings or {}
+    local stored_date = this.current_date
+    if not stored_date then
+        return
+    end
+    local stored_date_raw = Server.get_current_date(false, true, stored_date)
+    local converted_stored_date = round(Utils.convert_date(stored_date_raw.year, stored_date_raw.month, stored_date_raw.day))
+    local time_to_reset = (current_date - converted_stored_date)
+    this.time_to_reset = this.reset_after - time_to_reset
+    if time_to_reset and time_to_reset >= this.reset_after then
+        local perm_buff = grant_non_limit_reached_buff()
+        this.permanent_buffs[#this.permanent_buffs + 1] = perm_buff
+        Public.save_settings_before_reset()
+        Public.set_season_scores()
+
+        local s = this.season or 1
+        game.server_save('Season_' .. s .. '_Mtn_v3_' .. tostring(current_time))
+        notify_season_over_to_discord(perm_buff)
+        settings.current_date = current_time
+        settings.test_mode = false
+        settings.rounds_survived = 0
+        settings.buffs = {}
+        this.buffs = {}
+        this.buffs_collected = {}
+        this.permanent_buffs_collected = {}
+        this.rounds_survived = 0
+        settings.permanent_buffs = this.permanent_buffs
+        this.season = this.season + 1
+        this.current_streak = 0
+        this.best_streak = 0
+        this.current_date = current_time
+        settings.season = this.season
+        this.time_to_reset = this.reset_after
+        local message = ({ 'stateful.reset' })
+        local message_discord = ({ 'stateful.reset_discord' })
+        game.print(message)
+        Server.to_discord_embed(message_discord, true)
+
+        if server_name_matches then
+            if Public.is_modded then
+                Server.set_data(dataset, dataset_key_modded, deep_copy(settings))
+            else
+                Server.set_data(dataset, dataset_key, deep_copy(settings))
+            end
+        else
+            if Public.is_modded then
+                Server.set_data(dataset, dataset_key_dev_modded, deep_copy(settings))
+            else
+                Server.set_data(dataset, dataset_key_dev, deep_copy(settings))
+            end
+        end
+
+        if not settings.disable_shutdown then
+            game.print(({ 'entity.notify_shutdown' }), { color = { r = 0.22, g = 0.88, b = 0.22 } })
+            local notify_shutdown = ({ 'entity.shutdown_game' })
+            Server.to_discord_bold(notify_shutdown, true)
+            Task.set_timeout_in_ticks(10, shutdown_scenario_token)
+        end
+
+        if settings.restart_scenario then
+            game.print(({ 'entity.notify_restart' }), { color = { r = 0.22, g = 0.88, b = 0.22 } })
+            local notify_restart = ({ 'entity.notify_restart' })
+            Server.to_discord_bold(notify_restart, true)
+            Task.set_timeout_in_ticks(10, start_scenario_token)
+        end
+    end
+end
+
+local apply_settings_token =
+    Task.register(
+        function (data)
+            local server_name_matches = Server.check_server_name(Public.discord_name)
+            local settings = data and data.value or nil
+            local current_time = Server.get_current_time()
+            if not current_time then
+                return
+            end
+
+            if not settings then
+                settings =
+                {
+                    rounds_survived = 0,
+                    current_date = tonumber(current_time),
+                    season = 1
+                }
+                if server_name_matches then
+                    if Public.is_modded then
+                        Server.set_data(dataset, dataset_key_modded, deep_copy(settings))
+                    else
+                        Server.set_data(dataset, dataset_key, deep_copy(settings))
+                    end
+                else
+                    if Public.is_modded then
+                        Server.set_data(dataset, dataset_key_dev_modded, deep_copy(settings))
+                    else
+                        Server.set_data(dataset, dataset_key_dev, deep_copy(settings))
+                    end
+                end
+                return
+            end
+
+            if not settings.current_date then
+                settings.current_date = tonumber(current_time)
+            end
+
+            if not settings.season then
+                settings.season = 1
+            end
+
+            if not settings.best_streak then
+                settings.best_streak = 0
+            end
+
+            this.current_date = settings.current_date
+            this.buffs = settings.buffs or {}
+            this.permanent_buffs = settings.permanent_buffs or {}
+
+            this.rounds_survived = settings.rounds_survived
+            this.season = settings.season
+            this.best_streak = settings.best_streak
+
+            apply_startup_settings(settings)
+            local current_season = Public.get('current_season')
+            if current_season and current_season.valid then
+                ---@diagnostic disable-next-line: param-type-mismatch
+                current_season.text = 'Season: ' .. this.season
+            end
+
+            this.objectives = {}
+        end
+    )
+
 -- Activates delayed techs
 function Public.activate_delayed_techs(force)
     local techs = this.delayed_tech
@@ -1736,11 +1891,9 @@ end
 -- Alert.alert_all_players(100, 'Buff granted from previous run: ' .. buff.discord)
 -- Alert.alert_all_players(100, 'Buff granted from previous run: ' .. buff.discord)
 -- Alert.alert_all_players(100, 'Buff granted from previous run: ' .. buff.discord)
-function Public.save_settings()
-    local granted_buff = grant_non_limit_reached_buff()
+function Public.save_settings(buff)
+    local granted_buff = buff or grant_non_limit_reached_buff()
     this.buffs[#this.buffs + 1] = granted_buff
-
-    this.current_streak = this.current_streak + 1
 
     local settings =
     {
@@ -1749,8 +1902,15 @@ function Public.save_settings()
         season = this.season,
         test_mode = this.test_mode,
         buffs = this.buffs,
+        permanent_buffs = this.permanent_buffs,
         current_date = this.current_date
     }
+
+    if this.current_streak > this.best_streak then
+        this.best_streak = this.current_streak
+        settings.best_streak = this.best_streak
+        log('New best win streak: ' .. this.best_streak)
+    end
 
     local server_name_matches = Server.check_server_name(Public.discord_name)
     if server_name_matches then
@@ -1777,8 +1937,13 @@ function Public.save_settings_before_reset()
         season = this.season,
         test_mode = this.test_mode,
         buffs = this.buffs,
-        current_date = this.current_date
+        permanent_buffs = this.permanent_buffs,
     }
+    if this.current_streak > this.best_streak then
+        this.best_streak = this.current_streak
+        settings.best_streak = this.best_streak
+        log('New best win streak: ' .. this.best_streak)
+    end
 
     local server_name_matches = Server.check_server_name(Public.discord_name)
     if server_name_matches then
@@ -1794,6 +1959,8 @@ function Public.save_settings_before_reset()
             Server.set_data(dataset, dataset_key_previous_dev, deep_copy(settings))
         end
     end
+
+    return perm_buff
 end
 
 function Public.reset_stateful(refresh_gui, clear_buffs)
@@ -1810,6 +1977,7 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
     this.quality_buildings = 'normal'
     if clear_buffs then
         this.buffs_collected = {}
+        this.permanent_buffs_collected = {}
     end
     this.enemies_boosted = false
     this.tasks_required_to_win = 5
@@ -2047,6 +2215,7 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
     clear_all_stats()
 
     apply_buffs()
+    apply_permanent_buffs()
     if refresh_gui then
         Public.refresh_frames()
     end
@@ -2083,22 +2252,6 @@ function Public.move_all_players()
             end
         end
     )
-
-    if _DEBUG then
-        Core.iter_fake_connected_players(
-            storage.characters,
-            function (player)
-                local pos = surface.find_non_colliding_position('character', locomotive.position, 32, 1)
-
-                if pos then
-                    player.teleport(pos, surface)
-                else
-                    player.teleport(locomotive.position, surface)
-                    Public.unstuck_player(player.index)
-                end
-            end
-        )
-    end
 end
 
 function Public.set_final_battle()
@@ -2274,6 +2427,9 @@ Server.on_data_set_changed(
             if settings.season ~= nil then
                 this.season = settings.season
             end
+            if settings.best_streak ~= nil then
+                this.best_streak = settings.best_streak
+            end
             if settings.test_mode ~= nil then
                 this.test_mode = settings.test_mode
             end
@@ -2298,11 +2454,17 @@ Server.on_data_set_changed(
             if settings.season ~= nil then
                 this.season = settings.season
             end
+            if settings.best_streak ~= nil then
+                this.best_streak = settings.best_streak
+            end
             if settings.test_mode ~= nil then
                 this.test_mode = settings.test_mode
             end
             if settings.buffs ~= nil then
                 this.buffs = settings.buffs
+            end
+            if settings.permanent_buffs ~= nil then
+                this.permanent_buffs = settings.permanent_buffs
             end
             if settings.current_date ~= nil then
                 this.current_date = settings.current_date
@@ -2322,11 +2484,17 @@ Server.on_data_set_changed(
             if settings.season ~= nil then
                 this.season = settings.season
             end
+            if settings.best_streak ~= nil then
+                this.best_streak = settings.best_streak
+            end
             if settings.test_mode ~= nil then
                 this.test_mode = settings.test_mode
             end
             if settings.buffs ~= nil then
                 this.buffs = settings.buffs
+            end
+            if settings.permanent_buffs ~= nil then
+                this.permanent_buffs = settings.permanent_buffs
             end
             if settings.current_date ~= nil then
                 this.current_date = settings.current_date
@@ -2344,5 +2512,421 @@ Public.apply_startup_settings = apply_startup_settings
 Public.scale = scale
 Public.on_pre_player_died = on_pre_player_died
 Public.on_market_item_purchased = on_market_item_purchased
+Public.grant_non_limit_reached_buff = grant_non_limit_reached_buff
+Public.apply_buffs = apply_buffs
+Public.apply_permanent_buffs = apply_permanent_buffs
+
+if _DEBUG then
+    Event.on_init(
+        function ()
+            local cbl = Task.get(apply_settings_token)
+            storage.tokens.utils_server.server_time.secs = 1187954
+            local data =
+            {
+                rounds_survived = 75,
+                season = 10,
+                test_mode = false,
+                permanent_buffs =
+                {
+                    {
+                        name = 'xp_level',
+                        discord = 'RPG XP level bonus - start with more XP levels',
+                        tooltip = 'Selecting this buff will grant the team 20 more XP levels!',
+                        poll_name = 'RPG XP level',
+                        modifier = 'rpg',
+                        per_force = true,
+                        state = 20
+                    }
+                },
+                buffs =
+                {
+                    {
+                        name = 'character_running_speed_modifier',
+                        discord = 'Running speed modifier - run faster!',
+                        tooltip = 'Selecting this buff will grant the team 5% increased running speed!',
+                        poll_name = 'Running speed',
+                        modifier = 'force',
+                        per_force = true,
+                        state = 0.05
+                    },
+                    {
+                        name = 'manual_mining_speed_modifier',
+                        discord = 'Mining speed modifier - mine faster!',
+                        tooltip = 'Selecting this buff will grant the team 15% increased mining speed!',
+                        poll_name = 'Mining speed',
+                        modifier = 'force',
+                        per_force = true,
+                        state = 0.15
+                    },
+                    {
+                        name = 'laboratory_speed_modifier',
+                        discord = 'Laboratory speed modifier - labs work faster!',
+                        tooltip = 'Selecting this buff will grant the team 15% increased laboratory speed!',
+                        poll_name = 'Laboratory speed',
+                        modifier = 'force',
+                        per_force = true,
+                        state = 0.15
+                    },
+                    {
+                        name = 'laboratory_productivity_bonus',
+                        discord = 'Laboratory productivity bonus - labs dupe things!',
+                        tooltip = 'Selecting this buff will grant the team 15% increased laboratory productivity!',
+                        poll_name = 'Laboratory productivity',
+                        modifier = 'force',
+                        per_force = true,
+                        state = 0.15
+                    },
+                    {
+                        name = 'worker_robots_storage_bonus',
+                        discord = 'Robot storage bonus - robots carry more!',
+                        tooltip = 'Selecting this buff will grant the team 100% increased robot storage!',
+                        poll_name = 'Robot storage',
+                        modifier = 'force',
+                        per_force = true,
+                        state = 1
+                    },
+                    {
+                        name = 'worker_robots_battery_modifier',
+                        discord = 'Robot battery bonus - robots work longer!',
+                        tooltip = 'Selecting this buff will grant the team 100% increased robot battery!',
+                        poll_name = 'Robot battery',
+                        modifier = 'force',
+                        per_force = true,
+                        state = 1
+                    },
+                    {
+                        name = 'worker_robots_speed_modifier',
+                        discord = 'Robot speed modifier - robots move faster!',
+                        tooltip = 'Selecting this buff will grant the team 50% increased robot speed!',
+                        poll_name = 'Robot speed',
+                        modifier = 'force',
+                        per_force = true,
+                        state = 0.5
+                    },
+                    {
+                        name = 'mining_drill_productivity_bonus',
+                        discord = 'Drill productivity bonus - drills work faster!',
+                        tooltip = 'Selecting this buff will grant the team 50% increased drill productivity!',
+                        poll_name = 'Drill productivity',
+                        modifier = 'force',
+                        per_force = true,
+                        state = 0.5
+                    },
+                    {
+                        name = 'character_health_bonus',
+                        discord = 'Character health bonus - more health!',
+                        tooltip = 'Selecting this buff will grant the team 250 flat increased character health!',
+                        poll_name = 'Character health',
+                        modifier = 'force',
+                        per_force = true,
+                        state = 250
+                    },
+                    {
+                        name = 'distance',
+                        discord = 'RPG reach distance bonus - reach further!',
+                        tooltip = 'Selecting this buff will grant the team 5% increased reach distance!',
+                        poll_name = 'RPG reach distance',
+                        modifier = 'rpg_distance',
+                        per_force = true,
+                        modifiers = { 'character_resource_reach_distance_bonus', 'character_item_pickup_distance_bonus', 'character_loot_pickup_distance_bonus', 'character_reach_distance_bonus' },
+                        state = 0.05
+                    },
+                    {
+                        name = 'manual_crafting_speed_modifier',
+                        discord = 'Crafting speed modifier - craft faster!',
+                        tooltip = 'Selecting this buff will grant the team 12% increased crafting speed!',
+                        poll_name = 'Crafting speed',
+                        modifier = 'force',
+                        per_force = true,
+                        state = 0.12
+                    },
+                    {
+                        name = 'xp_bonus',
+                        discord = 'RPG XP point bonus - more XP points from kills etc.',
+                        tooltip = 'Selecting this buff will grant the team 12% increased XP points from kills etc.',
+                        poll_name = 'RPG XP point',
+                        modifier = 'rpg',
+                        per_force = true,
+                        state = 0.12
+                    },
+                    {
+                        name = 'xp_level',
+                        discord = 'RPG XP level bonus - start with more XP levels',
+                        tooltip = 'Selecting this buff will grant the team 20 more XP levels!',
+                        poll_name = 'RPG XP level',
+                        modifier = 'rpg',
+                        per_force = true,
+                        state = 20
+                    },
+                    {
+                        name = 'chemicals_s',
+                        discord = 'Starting items supplies - start with some sulfur',
+                        tooltip = 'Selecting this buff will grant the team 50 sulfur at start!',
+                        poll_name = 'Starting items (sulfur)',
+                        modifier = 'starting_items',
+                        limit = 200,
+                        add_per_buff = 50,
+                        items =
+                        {
+                            { name = 'sulfur', count = 50 }
+                        }
+                    },
+                    {
+                        name = 'chemicals_p',
+                        discord = 'Starting items supplies - start with some plastic bar',
+                        tooltip = 'Selecting this buff will grant the team 100 plastic bar at start!',
+                        poll_name = 'Starting items (plastic bar)',
+                        modifier = 'starting_items',
+                        limit = 200,
+                        add_per_buff = 50,
+                        items =
+                        {
+                            { name = 'plastic-bar', count = 100 }
+                        }
+                    },
+                    {
+                        name = 'supplies',
+                        discord = 'Starting items supplies - start with some copper and iron plates',
+                        tooltip = 'Selecting this buff will grant the team 100 copper and iron plates at start!',
+                        poll_name = 'Starting items (copper and iron plates)',
+                        modifier = 'starting_items',
+                        limit = 1000,
+                        add_per_buff = 100,
+                        items =
+                        {
+                            { name = 'iron-plate', count = 100 },
+                            { name = 'copper-plate', count = 100 }
+                        }
+                    },
+                    {
+                        name = 'supplies_1',
+                        discord = 'Starting items supplies - start with more copper and iron plates',
+                        tooltip = 'Selecting this buff will grant the team 200 copper and iron plates at start!',
+                        poll_name = 'Starting items (more copper and iron plates)',
+                        modifier = 'starting_items',
+                        limit = 1000,
+                        add_per_buff = 200,
+                        items =
+                        {
+                            { name = 'iron-plate', count = 200 },
+                            { name = 'copper-plate', count = 200 }
+                        }
+                    },
+                    {
+                        name = 'supplies_2',
+                        discord = 'Starting items supplies - start with even more copper and iron plates',
+                        tooltip = 'Selecting this buff will grant the team 400 copper and iron plates at start!',
+                        poll_name = 'Starting items (even more copper and iron plates)',
+                        modifier = 'starting_items',
+                        limit = 1000,
+                        add_per_buff = 400,
+                        items =
+                        {
+                            { name = 'iron-plate', count = 400 },
+                            { name = 'copper-plate', count = 400 }
+                        }
+                    },
+                    {
+                        name = 'defense_3',
+                        discord = 'Defense starting supplies - start with more turrets and ammo',
+                        tooltip = 'Selecting this buff will grant the team 1 rocket launcher and 100 rockets at start!',
+                        poll_name = 'Starting items (more turrets and ammo)',
+                        modifier = 'starting_items',
+                        limit = 1,
+                        add_per_buff = 1,
+                        items =
+                        {
+                            { name = 'rocket-launcher', count = 1 },
+                            { name = 'rocket', count = 100 }
+                        }
+                    },
+                    {
+                        name = 'armor',
+                        discord = 'Armor starting supplies - start with some armor and solar panels',
+                        tooltip = 'Selecting this buff will grant the team 1 modular armor and 2 solar panel equipment at start!',
+                        poll_name = 'Starting items (armor and solar panels)',
+                        modifier = 'starting_items',
+                        limit = 1,
+                        add_per_buff = 1,
+                        items =
+                        {
+                            { name = 'modular-armor', count = 1 },
+                            { name = 'solar-panel-equipment', count = 2 }
+                        }
+                    },
+                    {
+                        name = 'production_1',
+                        discord = 'Production starting supplies - start with some steel furnaces and solid fuel',
+                        tooltip = 'Selecting this buff will grant the team 4 steel furnaces and 100 solid fuel at start!',
+                        poll_name = 'Starting items (steel furnaces and solid fuel)',
+                        modifier = 'starting_items',
+                        limit = 2,
+                        add_per_buff = 1,
+                        items =
+                        {
+                            { name = 'steel-furnace', count = 4 },
+                            { name = 'solid-fuel', count = 100 }
+                        }
+                    },
+                    {
+                        name = 'fast_startup_1',
+                        discord = 'Assembling starting supplies - start with some assembling machines T2',
+                        tooltip = 'Selecting this buff will grant the team 2 assembling machines T2 at start!',
+                        poll_name = 'Starting items (assembling machines T2)',
+                        modifier = 'starting_items',
+                        limit = 25,
+                        add_per_buff = 2,
+                        items =
+                        {
+                            { name = 'assembling-machine-2', count = 2 }
+                        }
+                    },
+                    {
+                        name = 'fast_startup_2',
+                        discord = 'Assembling starting supplies - start with some assembling machines T3',
+                        tooltip = 'Selecting this buff will grant the team 2 assembling machines T3 at start!',
+                        poll_name = 'Starting items (assembling machines T3)',
+                        modifier = 'starting_items',
+                        limit = 25,
+                        add_per_buff = 2,
+                        items =
+                        {
+                            { name = 'assembling-machine-3', count = 2 }
+                        }
+                    },
+                    {
+                        name = 'heal-thy-buildings',
+                        discord = 'Repair starting supplies - start with some repair packs',
+                        tooltip = 'Selecting this buff will grant the team 5 repair packs at start!',
+                        poll_name = 'Starting items (repair packs)',
+                        modifier = 'starting_items',
+                        limit = 20,
+                        add_per_buff = 2,
+                        items =
+                        {
+                            { name = 'repair-pack', count = 5 }
+                        }
+                    },
+                    {
+                        name = 'extra_wagons',
+                        discord = 'Extra wagon at start',
+                        tooltip = 'Selecting this buff will grant the team 1 extra wagon at start!',
+                        poll_name = 'Starting items (extra wagon)',
+                        modifier = 'locomotive',
+                        limit = 4,
+                        state = 1
+                    },
+                    {
+                        name = 'american_oil',
+                        discord = 'Oil tech - start with some crude oil barrels',
+                        tooltip = 'Selecting this buff will grant the team 20 crude oil barrels at start!',
+                        poll_name = 'Starting items (crude oil barrels)',
+                        modifier = 'starting_items',
+                        limit = 40,
+                        add_per_buff = 20,
+                        items =
+                        {
+                            { name = 'crude-oil-barrel', count = 20 }
+                        }
+                    },
+                    {
+                        name = 'steel_plates',
+                        discord = 'Steel tech - start with some steel plates',
+                        tooltip = 'Selecting this buff will grant the team 100 steel plates at start!',
+                        poll_name = 'Starting items (steel plates)',
+                        modifier = 'starting_items',
+                        limit = 200,
+                        add_per_buff = 100,
+                        items =
+                        {
+                            { name = 'steel-plate', count = 100 }
+                        }
+                    },
+                    {
+                        name = 'red_science',
+                        discord = 'Science tech - start with some red science packs',
+                        tooltip = 'Selecting this buff will grant the team 10 red science packs at start!',
+                        poll_name = 'Starting items (red science packs)',
+                        modifier = 'starting_items',
+                        limit = 200,
+                        add_per_buff = 10,
+                        items =
+                        {
+                            { name = 'automation-science-pack', count = 10 }
+                        }
+                    },
+                    {
+                        name = 'roboport_equipement',
+                        discord = 'Equipement tech - start with a personal roboport',
+                        tooltip = 'Selecting this buff will grant the team 1 personal roboport equipment at start!',
+                        poll_name = 'Starting items (personal roboport)',
+                        modifier = 'starting_items',
+                        limit = 4,
+                        add_per_buff = 1,
+                        items =
+                        {
+                            { name = 'personal-roboport-equipment', count = 1 }
+                        }
+                    },
+                    {
+                        name = 'mk1_tech_unlocked',
+                        discord = 'Equipement tech - start with power armor tech unlocked.',
+                        tooltip = 'Selecting this buff will grant the team power armor tech unlocked at start!',
+                        poll_name = 'Tech unlock (power armor)',
+                        modifier = 'tech',
+                        limit = 1,
+                        add_per_buff = 1,
+                        techs =
+                        {
+                            { name = 'power-armor', count = 1 }
+                        }
+                    },
+                    {
+                        name = 'steel_axe_unlocked',
+                        discord = 'Equipement tech - start with steel axe tech unlocked.',
+                        tooltip = 'Selecting this buff will grant the team steel axe tech unlocked at start!',
+                        poll_name = 'Tech unlock (steel axe)',
+                        modifier = 'tech',
+                        limit = 1,
+                        add_per_buff = 1,
+                        techs =
+                        {
+                            { name = 'steel-axe', count = 1 }
+                        }
+                    },
+                    {
+                        name = 'military_2_unlocked',
+                        discord = 'Equipement tech - start with military 2 tech unlocked.',
+                        tooltip = 'Selecting this buff will grant the team military 2 tech unlocked at start!',
+                        poll_name = 'Tech unlock (military 2)',
+                        modifier = 'tech',
+                        limit = 1,
+                        add_per_buff = 1,
+                        techs =
+                        {
+                            { name = 'military-2', count = 1 }
+                        }
+                    },
+                    {
+                        name = 'all_the_fish',
+                        discord = 'Wagon is full of fish!',
+                        tooltip = 'Selecting this buff will grant the team 1 wagon full of fish at start!',
+                        poll_name = 'Fishes',
+                        modifier = 'fish',
+                        limit = 1,
+                        add_per_buff = 1
+                    }
+                },
+                current_date = 1811187954
+            }
+            local settings =
+            {
+                value = data
+            }
+            cbl(settings)
+        end
+    )
+end
+
 
 return Public

@@ -1324,9 +1324,10 @@ local function show_mvps(player)
             end
             local date = Server.get_start_time()
             game.server_save('Final_Mtn_v3_' .. tostring(date) .. '_wave' .. tostring(wave))
+            local stateful = Public.get_stateful()
             local text =
             {
-                title = 'Game over!',
+                title = 'Game lost!',
                 description = 'Game statistics from the game is below',
                 color = 'failure',
                 field1 =
@@ -1337,42 +1338,60 @@ local function show_mvps(player)
                 },
                 field2 =
                 {
-                    text1 = 'Highest wave:',
-                    text2 = wave,
+                    text1 = 'Season:',
+                    text2 = stateful.season,
                     inline = 'false'
                 },
                 field3 =
+                {
+                    text1 = 'Rounds survived:',
+                    text2 = stateful.rounds_survived,
+                    inline = 'false'
+                },
+                field4 =
+                {
+                    text1 = 'Best winning streak:',
+                    text2 = stateful.best_streak,
+                    inline = 'false'
+                },
+                field5 =
+                {
+                    text1 = 'Highest wave:',
+                    text2 = format_number(wave, true),
+                    inline = 'false'
+                },
+                field6 =
                 {
                     text1 = 'Total connected players:',
                     text2 = total_players,
                     inline = 'false'
                 },
-                field4 =
+                field7 =
                 {
                     text1 = 'Threat:',
                     ---@diagnostic disable-next-line: param-type-mismatch
                     text2 = format_number(threat, true),
                     inline = 'false'
                 },
-                field5 =
+                field8 =
                 {
                     text1 = 'Pickaxe Upgrade:',
                     text2 = pick_tier .. ' (' .. upgrades.pickaxe_tier .. ')',
                     inline = 'false'
                 },
-                field6 =
+                field9 =
                 {
                     text1 = 'Collapse Speed:',
                     text2 = collapse_speed,
                     inline = 'false'
                 },
-                field7 =
+                field10 =
                 {
                     text1 = 'Collapse Amount:',
                     text2 = collapse_amount,
                     inline = 'false'
                 },
-                field8 =
+                field11 =
                 {
                     text1 = 'Connected players:',
                     text2 = total_connected_players,
@@ -1394,7 +1413,6 @@ end
 
 function Public.game_is_over()
     Public.set('game_lost', true)
-    Public.set_stateful('current_streak', 0)
     Public.loco_died()
 end
 
@@ -1446,6 +1464,8 @@ function Public.loco_died()
         player.play_sound { path = 'utility/game_lost', volume_modifier = 0.75 }
         show_mvps(player)
     end
+
+    Public.set_stateful('current_streak', 0)
 
     local this = Public.get()
 
@@ -1507,26 +1527,12 @@ local function on_entity_spawned(event)
     end
 
     local unit_number = spawner.unit_number
-    local position = spawner.position
     if not enemy_spawners.spawners[unit_number] then
         enemy_spawners.spawners[unit_number] =
         {
             entity = spawner,
             count = 0
         }
-    end
-
-    local surface = spawner.surface
-
-    enemy_spawners.spawners[unit_number].count = enemy_spawners.spawners[unit_number].count + 1
-
-    if enemy_spawners.spawners[unit_number].count >= 100 then
-        local entity = enemy_spawners.spawners[unit_number].entity
-        if entity and entity.valid then
-            surface.create_entity({ name = 'explosion', position = position })
-            entity.destroy()
-            enemy_spawners.spawners[unit_number] = nil
-        end
     end
 end
 

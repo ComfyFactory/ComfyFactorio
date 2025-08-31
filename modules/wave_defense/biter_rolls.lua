@@ -18,6 +18,22 @@ function Public.wave_defense_roll_biter_name()
     end
 end
 
+function Public.wave_defense_roll_boss_name()
+    local boss_raffle = Public.get('boss_raffle') --[[@as table]]
+    local max_chance = 0
+    for _, v in pairs(boss_raffle) do
+        max_chance = max_chance + v
+    end
+    local r = math.random(0, math.floor(max_chance))
+    local current_chance = 0
+    for k, v in pairs(boss_raffle) do
+        current_chance = current_chance + v
+        if r <= current_chance then
+            return k
+        end
+    end
+end
+
 function Public.wave_defense_roll_spitter_name()
     local spitter_raffle = Public.get('spitter_raffle') --[[@as table]]
     local max_chance = 0
@@ -60,17 +76,30 @@ function Public.wave_defense_set_unit_raffle(level)
             }
         )
 
+        Public.set(
+            'boss_raffle',
+            {
+                ['behemoth-biter'] = round(1000 - level * 1.75, 6),
+                ['behemoth-spitter'] = round(level, 6),
+            }
+        )
+
         local biter_raffle = Public.get('biter_raffle') --[[@as table]]
         local spitter_raffle = Public.get('spitter_raffle') --[[@as table]]
+        local boss_raffle = Public.get('boss_raffle') --[[@as table]]
         if level > 500 then
             biter_raffle['medium-biter'] = round(500 - (level - 500), 6)
             spitter_raffle['medium-spitter'] = round(500 - (level - 500), 6)
             biter_raffle['big-biter'] = round((level - 500) * 2, 6)
             spitter_raffle['big-spitter'] = round((level - 500) * 2, 6)
+            boss_raffle['behemoth-biter'] = round((level - 500) * 2, 6)
+            boss_raffle['behemoth-spitter'] = round((level - 500) * 2, 6)
         end
         if level > 800 then
             biter_raffle['behemoth-biter'] = round((level - 800) * 2.75, 6)
             spitter_raffle['behemoth-spitter'] = round((level - 800) * 2.75, 6)
+            boss_raffle['behemoth-biter'] = round((level - 800) * 2.75, 6)
+            boss_raffle['behemoth-spitter'] = round((level - 800) * 2.75, 6)
         end
         for k, _ in pairs(biter_raffle) do
             if biter_raffle[k] < 0 then
@@ -80,6 +109,11 @@ function Public.wave_defense_set_unit_raffle(level)
         for k, _ in pairs(spitter_raffle) do
             if spitter_raffle[k] < 0 then
                 spitter_raffle[k] = 0
+            end
+        end
+        for k, _ in pairs(boss_raffle) do
+            if boss_raffle[k] < 0 then
+                boss_raffle[k] = 0
             end
         end
     end

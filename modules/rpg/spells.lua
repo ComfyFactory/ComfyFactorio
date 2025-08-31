@@ -438,7 +438,7 @@ spells[#spells + 1] =
     entityName = 'fast-transport-belt',
     level = 10,
     type = 'item',
-    mana_cost = 50,
+    mana_cost = 100,
     cooldown = 70,
     aoe = true,
     enabled = true,
@@ -454,7 +454,7 @@ spells[#spells + 1] =
     entityName = 'express-transport-belt',
     level = 20,
     type = 'item',
-    mana_cost = 80,
+    mana_cost = 125,
     cooldown = 70,
     aoe = true,
     enabled = true,
@@ -486,7 +486,7 @@ spells[#spells + 1] =
     entityName = 'fast-underground-belt',
     level = 10,
     type = 'item',
-    mana_cost = 50,
+    mana_cost = 100,
     cooldown = 70,
     aoe = true,
     enabled = true,
@@ -502,7 +502,7 @@ spells[#spells + 1] =
     entityName = 'express-underground-belt',
     level = 20,
     type = 'item',
-    mana_cost = 80,
+    mana_cost = 125,
     cooldown = 70,
     aoe = true,
     enabled = true,
@@ -708,6 +708,7 @@ spells[#spells + 1] =
     mana_cost = 100,
     cooldown = 150,
     enabled = true,
+    enforce_cooldown = true,
     log_spell = true,
     sprite = 'recipe/grenade',
     tooltip = 'Spawns a nade where the mouse cursor is at',
@@ -752,6 +753,7 @@ spells[#spells + 1] =
     type = 'item',
     mana_cost = 225,
     cooldown = 200,
+    enforce_cooldown = true,
     enabled = true,
     log_spell = true,
     sprite = 'recipe/cluster-grenade',
@@ -1055,7 +1057,7 @@ spells[#spells + 1] =
     name = { 'spells.dynamites' },
     entityName = 'explosives',
     target = false,
-    amount = 3,
+    amount = 5,
     aoe = true,
     capsule = true,
     damage = false,
@@ -1073,6 +1075,28 @@ spells[#spells + 1] =
         Public.register_cooldown_for_spell(data.player)
 
         return insert_onto(data)
+    end
+}
+spells[#spells + 1] =
+{
+    name = { 'entity-name.land-mine' },
+    entityName = 'land-mine',
+    target = true,
+    amount = 1,
+    damage = true,
+    force = 'player',
+    level = 20,
+    type = 'item',
+    mana_cost = 75,
+    enforce_cooldown = true,
+    cooldown = 120,
+    enabled = true,
+    log_spell = true,
+    sprite = 'recipe/land-mine',
+    tooltip = 'Spawns a land-mine where the mouse cursor is at',
+    callback = function (data)
+        Public.register_cooldown_for_spell(data.player)
+        return create_projectiles(data)
     end
 }
 spells[#spells + 1] =
@@ -1363,7 +1387,7 @@ local drone_enemy =
     entityName = 'drone_enemy',
     target = false,
     force = 'player',
-    level = 200,
+    level = 150,
     type = 'special',
     mana_cost = 1000,
     cooldown = 18000,
@@ -1396,7 +1420,7 @@ local drone_mine =
     entityName = 'drone_mine',
     target = false,
     force = 'player',
-    level = 200,
+    level = 150,
     type = 'special',
     mana_cost = 1000,
     cooldown = 18000,

@@ -7,6 +7,7 @@ local Alert = require 'utils.alert'
 local Task = require 'utils.task_token'
 local Color = require 'utils.color_presets'
 local Session = require 'utils.datastore.session_data'
+local Modifiers = require 'utils.player_modifiers'
 
 local floor = math.floor
 local abs = math.abs
@@ -41,6 +42,35 @@ local clear_breach_text_and_render = function ()
         zone1_text3.text = 'Collapse has begun!'
     end
 end
+
+local damage_indicator_token =
+    Task.register(
+        function (event)
+            local player_index = event.player_index
+            local player = game.get_player(player_index)
+            if not player or not player.valid then
+                return
+            end
+
+            log(serpent.block('damage_indicator_token'))
+            if player.character then
+                player.character.surface.create_entity({ name = 'water-splash', position = player.character.position })
+            end
+            return true
+        end, true
+    )
+
+local increase_movement_speed_token =
+    Task.register(
+        function (event)
+            local player_index = event.player_index
+            local player = game.get_player(player_index)
+            if not player or not player.valid then
+                return
+            end
+            Modifiers.remove_single_modifier(player, 'character_running_speed_modifier', 'breached_wall')
+        end, true
+    )
 
 local collapse_message =
     Task.register(
@@ -146,6 +176,48 @@ local breach_wall_warning_teleport = function (player, check_trusted)
     return true
 end
 
+local breach_wall_enforced = function (player)
+    if not player or not player.valid then
+        return
+    end
+
+    local wave_number = WD.get('wave_number')
+    if wave_number >= 200 then
+        return false
+    end
+
+    local surface = player.physical_surface
+    local position = player.physical_position
+    local locomotive = Public.get('locomotive')
+    if not locomotive or not locomotive.valid then
+        return
+    end
+
+    local adjusted_zones = Public.get('adjusted_zones')
+
+    local message = ({ 'breached_wall.warning_teleport_enforced', player.name })
+    Alert.alert_all_players(40, message)
+    if adjusted_zones.reversed then
+        player.teleport({ position.x, position.y - 10 }, surface)
+    else
+        player.teleport({ position.x, position.y + 10 }, surface)
+    end
+    Modifiers.update_single_modifier(player, 'character_running_speed_modifier', 'breached_wall', -0.85)
+    Task.set_duration_task(15, 200, damage_indicator_token, { player_index = player.index })
+    if player.driving then
+        player.driving = false
+    end
+    if player.character then
+        player.character.health = player.character.health - (player.character.max_health * 0.50)
+        player.character.surface.create_entity({ name = 'water-splash', position = position })
+        if player.character.health <= 0 then
+            player.character.die('enemy')
+        end
+    end
+    Task.set_timeout_in_ticks(200, increase_movement_speed_token, { player_index = player.index })
+    return true
+end
+
 local spidertron_too_far =
     Task.register(
         function (data)
@@ -163,7 +235,6 @@ local check_distance_between_player_and_locomotive = function (player)
         return
     end
 
-    -- local collapse_position = Collapse.get_position()
     local adjusted_zones = Public.get('adjusted_zones')
 
     local gap_between_locomotive = Public.get('gap_between_locomotive')
@@ -175,10 +246,8 @@ local check_distance_between_player_and_locomotive = function (player)
         return
     end
     local t_y = abs(gap_between_locomotive.highest_pos.y)
-    -- local c_y = abs(collapse_position.y)
 
     local locomotive_distance_too_far = p_y - t_y > gap_between_locomotive.neg_gap
-    -- local collapse_distance_too_far = p_y - c_y > gap_between_locomotive.neg_gap_collapse
 
     if locomotive_distance_too_far then
         if adjusted_zones.reversed then
@@ -192,30 +261,33 @@ local check_distance_between_player_and_locomotive = function (player)
             player.driving = false
         end
         if player.character then
-            player.character.health = player.character.health - 5
+            player.character.health = player.character.health - (player.character.max_health * 0.15)
             player.character.surface.create_entity({ name = 'water-splash', position = position })
             if player.character.health <= 0 then
                 player.character.die('enemy')
             end
         end
-        -- elseif collapse_distance_too_far then
-        --     if adjusted_zones.reversed then
-        --         player.teleport({position.x, t_y + gap_between_locomotive.neg_gap_collapse - 4}, surface)
-        --     else
-        --         player.teleport({position.x, (t_y + gap_between_locomotive.neg_gap_collapse - 4) * -1}, surface)
-        --     end
+    end
+end
 
-        --     player.print(({'breached_wall.hinder_collapse'}), {color = Color.warning})
-        --     if player.driving then
-        --         player.driving = false
-        --     end
-        --     if player.character then
-        --         player.character.health = player.character.health - 5
-        --         player.character.surface.create_entity({name = 'water-splash', position = position})
-        --         if player.character.health <= 0 then
-        --             player.character.die('enemy')
-        --         end
-        --     end
+local check_tiles = function (player)
+    local p = player.physical_position
+    local tile = player.physical_surface.get_tile(p.x, p.y)
+    if tile and tile.name == 'red-refined-concrete' then
+        local rpg_t = RPG.get_value_from_player(player.index)
+        if rpg_t and rpg_t.volcanic_zone then
+            if random(1, 32) == 1 then
+                Public.buried_enemies.buried_biter(player.physical_surface, p)
+            end
+        end
+    end
+    if tile and tile.name == 'hazard-concrete-right' then
+        local rpg_t = RPG.get_value_from_player(player.index)
+        if rpg_t and rpg_t.tech_zone then
+            if random(1, 32) == 1 then
+                Public.buried_enemies.buried_tech(player.physical_surface, p)
+            end
+        end
     end
 end
 
@@ -247,6 +319,46 @@ local compare_player_pos = function (player)
     else
         if rpg_t and rpg_t.forest_zone then
             rpg_t.forest_zone = false
+        end
+    end
+
+    if adjusted_zones.crystal[zone] then
+        if rpg_t and not rpg_t.crystal_zone then
+            rpg_t.crystal_zone = true
+        end
+    else
+        if rpg_t and rpg_t.crystal_zone then
+            rpg_t.crystal_zone = false
+        end
+    end
+
+    if adjusted_zones.frostbite[zone] then
+        if rpg_t and not rpg_t.frostbite_zone then
+            rpg_t.frostbite_zone = true
+        end
+    else
+        if rpg_t and rpg_t.frostbite_zone then
+            rpg_t.frostbite_zone = false
+        end
+    end
+
+    if adjusted_zones.volcanic[zone] then
+        if rpg_t and not rpg_t.volcanic_zone then
+            rpg_t.volcanic_zone = true
+        end
+    else
+        if rpg_t and rpg_t.volcanic_zone then
+            rpg_t.volcanic_zone = false
+        end
+    end
+
+    if adjusted_zones.tech[zone] then
+        if rpg_t and not rpg_t.tech_zone then
+            rpg_t.tech_zone = true
+        end
+    else
+        if rpg_t and rpg_t.tech_zone then
+            rpg_t.tech_zone = false
         end
     end
 end
@@ -331,6 +443,8 @@ local function distance(player)
 
     compare_player_pos(player)
 
+    check_tiles(player)
+
     local distance_to_center = floor(sqrt(p.y ^ 2))
     local adjusted_zones = Public.get('adjusted_zones')
     if adjusted_zones.reversed then
@@ -338,7 +452,7 @@ local function distance(player)
             return
         end
     else
-        if distance_to_center < zone_settings.zone_depth * bonus - 10 then
+        if distance_to_center < zone_settings.zone_depth * bonus - 20 then
             return
         end
     end
@@ -353,15 +467,24 @@ local function distance(player)
     local max_times = distance_to_center >= max
 
     if max_times then
-        if block_non_trusted_trigger_collapse and not Session.get_trusted_player(player) and not collapse_started then
-            if breach_wall_warning_teleport(player, true) then
+        local wave_number = WD.get('wave_number')
+        local enforce_wave_200_before_collapse = Public.get('enforce_wave_200_before_collapse')
+        if enforce_wave_200_before_collapse then
+            if wave_number < 200 then
+                breach_wall_enforced(player)
                 return
             end
-        end
-        if not breach_wall_warning then
-            Public.set('breach_wall_warning', true)
-            breach_wall_warning_teleport(player)
-            return
+        else
+            if block_non_trusted_trigger_collapse and not Session.get_trusted_player(player) and not collapse_started then
+                if breach_wall_warning_teleport(player, true) then
+                    return
+                end
+            end
+            if not breach_wall_warning then
+                Public.set('breach_wall_warning', true)
+                breach_wall_warning_teleport(player)
+                return
+            end
         end
         if breach_max_times then
             local placed_trains_in_zone = Public.get('placed_trains_in_zone')
@@ -485,10 +608,6 @@ local function on_player_changed_position(event)
     end
 
     check_distance_between_player_and_locomotive(player)
-
-    if random(1, 3) ~= 1 then
-        return
-    end
 
     distance(player)
 end

@@ -11,9 +11,17 @@ local CommandColor = { r = 0.98, g = 0.66, b = 0.22 }
 
 local gather_time_token =
     Task.register(
-        function ()
+        function (event)
             local stateful = Public.get_stateful()
-            stateful.collection.gather_time_timer = 0
+            if event.instant_win then
+                stateful.objectives_completed_count = stateful.tasks_required_to_win
+                stateful.collection.gather_time_timer = 0
+                stateful.collection.gather_time = 0
+                stateful.collection.survive_for = 0
+                stateful.collection.survive_for_timer = 0
+            else
+                stateful.collection.gather_time_timer = 0
+            end
         end
     )
 
@@ -108,15 +116,20 @@ Commands.new('mtn_complete_quests', 'Usable only for admins - completes all the 
     :require_admin()
     :require_validation()
     :add_parameter('no_grace', true, 'boolean')
+    :add_parameter('instant_win', true, 'boolean')
     :callback(
-        function (player, args)
+        function (player, no_grace, instant_win)
             Discord.send_notification_raw(Public.discord_name, player.name .. ' completed all the quest via command.')
             local stateful = Public.get_stateful()
-            stateful.objectives_completed_count = 6
-            if args then
-                Task.set_timeout_in_ticks(50, gather_time_token, {})
+            stateful.objectives_completed_count = stateful.tasks_required_to_win
+            if no_grace and not instant_win then
+                Task.set_timeout_in_ticks(20, gather_time_token, {})
+                game.print(mapkeeper .. player.name .. ', has forced completed all quests with no grace period!', { color = CommandColor })
+            elseif instant_win then
+                Task.set_timeout_in_ticks(100, gather_time_token, { instant_win = true })
+                Task.set_timeout_in_ticks(120, gather_time_token, { instant_win = true })
+                game.print(mapkeeper .. player.name .. ', has forced completed all quests with instant win!', { color = CommandColor })
             end
-            game.print(mapkeeper .. player.name .. ', has forced completed all quests!', { color = CommandColor })
             player.print('Quests completed.')
         end
     )
@@ -156,6 +169,46 @@ Commands.new('mtn_disable_biters', 'Usable only for admins - disables wave defen
             end
         end
     )
+
+Commands.new('mtn_toggle_darkness', 'Usable only for admins - toggles the darkness!')
+    :require_admin()
+    :require_validation()
+    :callback(
+        function (player)
+            local darkness = Public.get_stateful_settings('darkness')
+            local active_surface_index = Public.get('active_surface_index')
+            local surface = game.surfaces[active_surface_index]
+            if not surface then
+                return
+            end
+            if darkness then
+                Public.set_stateful_settings('darkness', false)
+                game.print('Darkness is now disabled!')
+                Discord.send_notification_raw(Public.discord_name, player.name .. ' disabled surface darkness.')
+                surface.brightness_visual_weights = { a = 1, b = 0, g = 0, r = 0 }
+            else
+                Public.set_stateful_settings('darkness', true)
+                game.print('Darkness is now enabled!')
+                Discord.send_notification_raw(Public.discord_name, player.name .. ' enabled surface darkness.')
+                surface.brightness_visual_weights = { a = 1, b = 0.7, g = 0.7, r = 0.7 }
+            end
+        end
+    )
+
+Commands.new('mtn_grant_permanent_buff', 'Usable only for admins - grants a permanent buff!')
+    :require_admin()
+    :require_validation('Warning: This command gets logged to discord so please use it wisely!')
+    :callback(
+        function (player)
+            local buff = Public.grant_non_limit_reached_buff()
+            local stateful = Public.get_stateful()
+            stateful.permanent_buffs[#stateful.permanent_buffs + 1] = buff
+            Discord.send_notification_raw(Public.discord_name, player.name .. ' granted the team a permanent buff: ' .. buff.discord)
+            game.print(mapkeeper .. ' ' .. player.name .. ', has granted the permanent buff: ' .. buff.discord .. '!', { color = CommandColor })
+            Public.apply_permanent_buffs()
+        end
+    )
+
 
 Commands.new('mtn_toggle_orbital_strikes',
     'Usable only for admins - toggles orbital strikes!')

@@ -68,6 +68,7 @@ function Public.reset_wave_defense()
     this.active_biter_threat = 0
     this.average_unit_group_size = 16
     this.biter_raffle = {}
+    this.boss_raffle = {}
     this.debug = false
     this.inverted = false
     this.debug_health = false

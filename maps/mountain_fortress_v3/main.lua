@@ -446,6 +446,10 @@ function Public.pre_init_task(current_task)
     WD.set_threat_event_custom_callback(Public.check_if_spawning_near_train_custom_callback)
 
     RPG.set_x_marks_the_spot_custom_callback(Public.x_marks_the_spot_custom_callback_token)
+    RPG.set_magicka_custom_callback(Public.magicka_custom_callback_token)
+    -- RPG.set_strength_custom_callback(Public.strength_custom_callback_token)
+    -- RPG.set_dexterity_custom_callback(Public.dexterity_custom_callback_token)
+    -- RPG.set_vitality_custom_callback(Public.vitality_custom_callback_token)
 
     WD.set('nest_building_density', 32)
     WD.set('spawn_position', { x = 0, y = 84 })
@@ -581,7 +585,7 @@ function Public.reset_map(current_task)
         surface.ignore_surface_conditions = true
     end
 
-    -- surface.brightness_visual_weights = {0.7, 0.7, 0.7}
+    -- surface.brightness_visual_weights = { 0.7, 0.7, 0.7 }
 
     JailData.set_valid_surface(tostring(surface.name))
     JailData.reset_vote_table()

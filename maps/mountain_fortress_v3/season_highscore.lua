@@ -52,7 +52,7 @@ local function write_additional_stats(key)
 
     local season = Public.get_stateful('season')
     local rounds_survived = Public.get_stateful('rounds_survived')
-    local total_buffs = Public.get_stateful('total_buffs')
+    local best_streak = Public.get_stateful('best_streak')
     local previous_raw_date = Public.get_stateful('current_date')
 
     local previous_date = Server.get_current_date(true, false, previous_raw_date)
@@ -61,27 +61,52 @@ local function write_additional_stats(key)
         return
     end
 
+    if not season then
+        log('Missing season data, cannot write stats')
+        return
+    end
+
+    if not rounds_survived then
+        log('Missing rounds survived data, cannot write stats')
+        return
+    end
+
+    if #this.seasons < 2 then
+        log('Not enough seasons to write stats, minimum of 2 seasons is required')
+        log('Current season: ' .. season)
+        log('Backend data has not been updated yet')
+        log(serpent.block(this.seasons))
+        return
+    end
+
     this.seasons[#this.seasons + 1] =
     {
         season_index = season,
         rounds_survived = rounds_survived,
-        buffs_granted = total_buffs,
+        best_streak = best_streak or 'N/A',
+        buffs_granted = rounds_survived,
         started = previous_date,
         ended = current_date
     }
 
     if key then
         set_data(score_dataset, key, this.seasons)
+        log('Season stats written to server')
     else
-        log('Failed to write additional stats.')
+        log('No key provided for season stats, data not saved')
     end
 end
 
 local get_scores =
     Task.register(
         function (data)
-            local value = data.value
-            this.seasons = value
+            if data and data.value and type(data.value) == 'table' then
+                this.seasons = data.value
+                log('Season scores loaded successfully')
+            else
+                log('Invalid season data received from server')
+                this.seasons = {}
+            end
         end
     )
 
@@ -117,7 +142,8 @@ end
 local function on_init()
     local secs = Server.get_current_time()
     if not secs then
-        write_additional_stats()
+        write_additional_stats(score_key_dev)
+        log('Server time unavailable, using dev key for season data')
         return
     end
 end
@@ -132,6 +158,7 @@ local function get_score_list()
         {
             season_index = 'N/A',
             rounds_survived = 'N/A',
+            best_streak = 'N/A',
             buffs_granted = 'N/A',
             started = 'N/A',
             ended = 'N/A'
@@ -145,6 +172,7 @@ local function get_score_list()
             {
                 season_index = data.season_index,
                 rounds_survived = data.rounds_survived,
+                best_streak = data.best_streak or 'N/A',
                 buffs_granted = data.buffs_granted,
                 started = data.started,
                 ended = data.ended
@@ -166,13 +194,14 @@ local function show_score(data)
     sFlow.vertical_align = 'center'
 
     -- Score per player
-    local t = frame.add { type = 'table', column_count = 5 }
+    local t = frame.add { type = 'table', column_count = 6 }
 
     -- Score headers
     local headers =
     {
         { column = 'season_index', name = 'season_index', caption = 'Season', tooltip = 'Season index.' },
         { column = 'rounds_survived', name = 'rounds_survived', caption = 'Rounds survived', tooltip = 'Rounds survived in the season.' },
+        { column = 'best_streak', name = 'best_streak', caption = 'Best Streak', tooltip = 'Best streak of rounds survived.' },
         { column = 'buffs_granted', name = 'buffs_granted', caption = 'Buffs granted', tooltip = 'Buffs granted to players which is gained each round won.' },
         { column = 'started', name = 'started', caption = 'Start date', tooltip = 'Start date of the season.' },
         { column = 'ended', name = 'ended', caption = 'Stop date', tooltip = 'Stop date of the season.' }
@@ -222,7 +251,7 @@ local function show_score(data)
     scroll_pane.style.maximal_height = 400
     scroll_pane.style.minimal_width = 700
 
-    t = scroll_pane.add { type = 'table', column_count = 5 }
+    t = scroll_pane.add { type = 'table', column_count = 6 }
 
     -- Score entries
     local i = 0
@@ -233,6 +262,7 @@ local function show_score(data)
         {
             { caption = score_data.season_index },
             { caption = score_data.rounds_survived },
+            { caption = score_data.best_streak or 'N/A' },
             { caption = score_data.buffs_granted },
             { caption = score_data.started },
             { caption = score_data.ended }
@@ -288,6 +318,7 @@ local function on_gui_click(event)
     {
         ['season_index'] = 'season_index',
         ['rounds_survived'] = 'rounds_survived',
+        ['best_streak'] = 'best_streak',
         ['buffs_granted'] = 'buffs_granted',
         ['started'] = 'started',
         ['ended'] = 'ended'

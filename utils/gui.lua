@@ -8,6 +8,7 @@ local SpamProtection = require 'utils.spam_protection'
 local insert = table.insert
 local tostring = tostring
 local next = next
+local gui_prefix = 'comfy_'
 
 local Public = {}
 Public.events =
@@ -636,13 +637,15 @@ end
 function Public.clear_all_center_frames(player)
     for _, child in pairs(player.gui.center.children) do
         remove_data_recursively(child)
-        child.destroy()
+        if child.name:find(gui_prefix) then
+            child.destroy()
+        end
     end
 end
 
 function Public.clear_all_screen_frames(player)
     for _, child in pairs(player.gui.screen.children) do
-        if not screen_elements[child.name] then
+        if not screen_elements[child.name] and child.name:find(gui_prefix) then
             remove_data_recursively(child)
             child.destroy()
         end
@@ -652,18 +655,22 @@ end
 function Public.clear_all_active_frames(player)
     Event.raise(Public.events.on_gui_closed_main_frame, { player_index = player.index })
     for _, child in pairs(player.gui.left.children) do
-        remove_data_recursively(child)
-        child.destroy()
+        if child.name:find(gui_prefix) then
+            remove_data_recursively(child)
+            child.destroy()
+        end
     end
     for _, child in pairs(player.gui.screen.children) do
-        if not screen_elements[child.name] then
+        if not screen_elements[child.name] and child.name:find(gui_prefix) then
             remove_data_recursively(child)
             child.destroy()
         end
     end
     for _, child in pairs(player.gui.center.children) do
-        remove_data_recursively(child)
-        child.destroy()
+        if child.name:find(gui_prefix) then
+            remove_data_recursively(child)
+            child.destroy()
+        end
     end
 end
 

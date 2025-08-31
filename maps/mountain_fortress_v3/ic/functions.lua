@@ -34,18 +34,18 @@ local messages =
 
 local valid_combinations =
 {
-    ["car"] = { ["car"] = true, ["tank"] = true, ["spidertron"] = true },
-    ["tank"] = { ["tank"] = true, ["spidertron"] = true },
-    ["spidertron"] = { ["spidertron"] = true }
+    ["car"] = { ["tank"] = true, ["spidertron"] = true },
+    ["tank"] = { ["spidertron"] = true },
+    ["spidertron"] = {}
 }
 
 local valid_quality_combinations =
 {
-    ["normal"] = { ["normal"] = true, ["uncommon"] = true, ["rare"] = true, ["epic"] = true, ["legendary"] = true },
-    ["uncommon"] = { ["uncommon"] = true, ["rare"] = true, ["epic"] = true, ["legendary"] = true },
-    ["rare"] = { ["rare"] = true, ["epic"] = true, ["legendary"] = true },
-    ["epic"] = { ["epic"] = true, ["legendary"] = true },
-    ["legendary"] = { ["legendary"] = true }
+    ["normal"] = { ["uncommon"] = true, ["rare"] = true, ["epic"] = true, ["legendary"] = true },
+    ["uncommon"] = { ["rare"] = true, ["epic"] = true, ["legendary"] = true },
+    ["rare"] = { ["epic"] = true, ["legendary"] = true },
+    ["epic"] = { ["legendary"] = true },
+    ["legendary"] = {}
 }
 
 local function validate_entity(entity)
@@ -1327,7 +1327,7 @@ function Public.create_car(event)
     local storage = get_trusted_system(player)
     local owner_car = get_owner_car_name(player)
 
-    if owner_car and valid_combinations[owner_car] and valid_combinations[owner_car][ce.name] and valid_quality_combinations[car.quality] and valid_quality_combinations[car.quality][ce.quality.name] then
+    if owner_car and (valid_combinations[owner_car] and valid_combinations[owner_car][ce.name] or valid_quality_combinations[car.quality] and valid_quality_combinations[car.quality][ce.quality.name]) then
         if storage.auto_upgrade and storage.auto_upgrade == 'left' then
             upgrade_surface(player, ce)
             render_owner_text(renders, player, ce)

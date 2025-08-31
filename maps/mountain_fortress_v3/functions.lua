@@ -21,6 +21,7 @@ local Session = require 'utils.datastore.session_data'
 local ICMinimap = require 'maps.mountain_fortress_v3.ic.minimap'
 local Score = require 'utils.gui.score'
 local Gui = require 'utils.gui'
+local AntiGrief = require 'utils.antigrief'
 local FunctionColor = { r = 0.98, g = 0.66, b = 0.22 }
 
 local zone_settings = Public.zone_settings
@@ -106,7 +107,7 @@ local fishy_callback_token =
                 local fish_alert_cooldown = WD.get('fish_alert_cooldown') or 0
 
                 if game.tick >= fish_nom_cooldown then
-                    WD.set('fish_nom_cooldown', game.tick + 400)
+                    WD.set('fish_nom_cooldown', game.tick + 50) -- 50 ticks = 2.5 seconds, decreased from 400 ticks = 20 seconds
                     local threat = WD.get('threat')
                     WD.set('threat', threat + 200)
                     fishy_baits['grilled_fish'] = fishy_baits['grilled_fish'] and fishy_baits['grilled_fish'] + 1 or 1
@@ -293,6 +294,38 @@ local pause_waves_custom_callback_token =
                 Collapse.start_now(event.start, not event.start)
                 local status_str = event.start and 'is active once again!' or 'has stopped!'
                 Alert.alert_all_players(30, 'Collapse ' .. status_str, nil, 'achievement/tech-maniac', 0.6)
+            end
+        end
+    )
+
+local magicka_custom_callback_token =
+    Task.register(
+        function (event)
+            local player = event.player
+            if not player or not player.valid then
+                return
+            end
+
+            local mc_rewards = Public.get('mc_rewards')
+
+            local rpg_t = event.rpg_t
+            if not rpg_t then
+                return
+            end
+
+            if mc_rewards.active_boosts.lucky then
+                if not rpg_t.previous_magicka then
+                    rpg_t.previous_magicka = rpg_t.magicka
+                    rpg_t.magicka = 100
+                end
+            else
+                if rpg_t.previous_magicka then
+                    rpg_t.magicka = rpg_t.magicka - 100
+                    if rpg_t.magicka < 10 then
+                        rpg_t.magicka = 10
+                    end
+                    rpg_t.previous_magicka = nil
+                end
             end
         end
     )
@@ -527,7 +560,7 @@ end
 
 local function do_clear_enemy_spawners()
     local tick = game.tick
-    if tick % 1000 ~= 0 then
+    if tick % 500 ~= 0 then
         return
     end
 
@@ -537,7 +570,16 @@ local function do_clear_enemy_spawners()
     end
 
     for unit_number, spawner in pairs(enemy_spawners.spawners) do
-        if not spawner.entity or not spawner.entity.valid then
+        local entity = spawner.entity
+
+        if entity and entity.valid then
+            entity.health = entity.health - 1
+            entity.surface.create_entity({ name = 'blood-explosion-small', position = entity.position })
+            if entity.health <= 1 then
+                entity.die('enemy')
+                enemy_spawners.spawners[unit_number] = nil
+            end
+        else
             enemy_spawners.spawners[unit_number] = nil
         end
     end
@@ -716,8 +758,25 @@ local set_unit_raffle_token =
                         ['mtn-addon-small-fire-spitter-t1'] = round(2500 - level * 1.75, 6),
                     }
                 )
+                WD.set(
+                    'boss_raffle',
+                    {
+                        ['mtn-addon-medium-piercing-spitter-t1'] = round(level, 6),
+                        ['mtn-addon-medium-acid-spitter-t1'] = round(level, 6),
+                        ['mtn-addon-medium-explosive-spitter-t1'] = round(level, 6),
+                        ['mtn-addon-medium-poison-spitter-t1'] = round(level, 6),
+                        ['mtn-addon-medium-fire-spitter-t1'] = round(level, 6),
+
+                        ['mtn-addon-medium-piercing-biter-t1'] = round(level, 6),
+                        ['mtn-addon-medium-acid-biter-t1'] = round(level, 6),
+                        ['mtn-addon-medium-explosive-biter-t1'] = round(level, 6),
+                        ['mtn-addon-medium-poison-biter-t1'] = round(level, 6),
+                        ['mtn-addon-medium-fire-biter-t1'] = round(level, 6),
+                    }
+                )
                 local biter_raffle = WD.get('biter_raffle') --[[@as table]]
                 local spitter_raffle = WD.get('spitter_raffle') --[[@as table]]
+                local boss_raffle = WD.get('boss_raffle') --[[@as table]]
 
                 if level > 100 then
                     biter_raffle['mtn-addon-small-piercing-biter-t2'] = round(2000 - level * 1.75, 6)
@@ -730,6 +789,18 @@ local set_unit_raffle_token =
                     spitter_raffle['mtn-addon-small-explosive-spitter-t2'] = round(2000 - level * 1.75, 6)
                     spitter_raffle['mtn-addon-small-poison-spitter-t2'] = round(2000 - level * 1.75, 6)
                     spitter_raffle['mtn-addon-small-fire-spitter-t2'] = round(2000 - level * 1.75, 6)
+
+                    boss_raffle['mtn-addon-medium-piercing-spitter-t2'] = round(2000 - (level - 1.50), 6)
+                    boss_raffle['mtn-addon-medium-acid-spitter-t2'] = round(2000 - (level - 1.50), 6)
+                    boss_raffle['mtn-addon-medium-explosive-spitter-t2'] = round(2000 - (level - 1.50), 6)
+                    boss_raffle['mtn-addon-medium-poison-spitter-t2'] = round(2000 - (level - 1.50), 6)
+                    boss_raffle['mtn-addon-medium-fire-spitter-t2'] = round(2000 - (level - 1.50), 6)
+
+                    boss_raffle['mtn-addon-medium-piercing-biter-t2'] = round(2000 - (level - 1.50), 6)
+                    boss_raffle['mtn-addon-medium-acid-biter-t2'] = round(2000 - (level - 1.50), 6)
+                    boss_raffle['mtn-addon-medium-explosive-biter-t2'] = round(2000 - (level - 1.50), 6)
+                    boss_raffle['mtn-addon-medium-poison-biter-t2'] = round(2000 - (level - 1.50), 6)
+                    boss_raffle['mtn-addon-medium-fire-biter-t2'] = round(2000 - (level - 1.50), 6)
                 end
 
                 if level > 200 then
@@ -739,12 +810,23 @@ local set_unit_raffle_token =
                     biter_raffle['mtn-addon-small-poison-biter-t3'] = round(1500 - level * 1.75, 6)
                     biter_raffle['mtn-addon-small-fire-biter-t3'] = round(1500 - level * 1.75, 6)
 
-
                     spitter_raffle['mtn-addon-small-piercing-spitter-t3'] = round(1500 - level * 1.75, 6)
                     spitter_raffle['mtn-addon-small-acid-spitter-t3'] = round(1500 - level * 1.75, 6)
                     spitter_raffle['mtn-addon-small-explosive-spitter-t3'] = round(1500 - level * 1.75, 6)
                     spitter_raffle['mtn-addon-small-poison-spitter-t3'] = round(1500 - level * 1.75, 6)
                     spitter_raffle['mtn-addon-small-fire-spitter-t3'] = round(1500 - level * 1.75, 6)
+
+                    boss_raffle['mtn-addon-medium-piercing-spitter-t3'] = round(1500 - (level - 1.50), 6)
+                    boss_raffle['mtn-addon-medium-acid-spitter-t3'] = round(1500 - (level - 1.50), 6)
+                    boss_raffle['mtn-addon-medium-explosive-spitter-t3'] = round(1500 - (level - 1.50), 6)
+                    boss_raffle['mtn-addon-medium-poison-spitter-t3'] = round(1500 - (level - 1.50), 6)
+                    boss_raffle['mtn-addon-medium-fire-spitter-t3'] = round(1500 - (level - 1.50), 6)
+
+                    boss_raffle['mtn-addon-medium-piercing-biter-t3'] = round(1500 - (level - 1.50), 6)
+                    boss_raffle['mtn-addon-medium-acid-biter-t3'] = round(1500 - (level - 1.50), 6)
+                    boss_raffle['mtn-addon-medium-explosive-biter-t3'] = round(1500 - (level - 1.50), 6)
+                    boss_raffle['mtn-addon-medium-poison-biter-t3'] = round(1500 - (level - 1.50), 6)
+                    boss_raffle['mtn-addon-medium-fire-biter-t3'] = round(1500 - (level - 1.50), 6)
                 end
                 if level > 250 then
                     if Public.is_modded_pt2 then
@@ -774,6 +856,18 @@ local set_unit_raffle_token =
                     spitter_raffle['mtn-addon-medium-explosive-spitter-t2'] = round(300 - (level - 300), 6)
                     spitter_raffle['mtn-addon-medium-poison-spitter-t2'] = round(300 - (level - 300), 6)
                     spitter_raffle['mtn-addon-medium-fire-spitter-t2'] = round(300 - (level - 300), 6)
+
+                    boss_raffle['mtn-addon-big-piercing-spitter-t1'] = round(300 - (level - 300), 6)
+                    boss_raffle['mtn-addon-big-acid-spitter-t1'] = round(300 - (level - 300), 6)
+                    boss_raffle['mtn-addon-big-explosive-spitter-t1'] = round(300 - (level - 300), 6)
+                    boss_raffle['mtn-addon-big-poison-spitter-t1'] = round(300 - (level - 300), 6)
+                    boss_raffle['mtn-addon-big-fire-spitter-t1'] = round(300 - (level - 300), 6)
+
+                    boss_raffle['mtn-addon-big-piercing-biter-t1'] = round(300 - (level - 300), 6)
+                    boss_raffle['mtn-addon-big-acid-biter-t1'] = round(300 - (level - 300), 6)
+                    boss_raffle['mtn-addon-big-explosive-biter-t1'] = round(300 - (level - 300), 6)
+                    boss_raffle['mtn-addon-big-poison-biter-t1'] = round(300 - (level - 300), 6)
+                    boss_raffle['mtn-addon-big-fire-biter-t1'] = round(300 - (level - 300), 6)
                 end
                 if level > 350 then
                     biter_raffle['mtn-addon-medium-piercing-biter-t3'] = round(350 - (level - 350), 6)
@@ -787,6 +881,32 @@ local set_unit_raffle_token =
                     spitter_raffle['mtn-addon-medium-explosive-spitter-t3'] = round(350 - (level - 350), 6)
                     spitter_raffle['mtn-addon-medium-poison-spitter-t3'] = round(350 - (level - 350), 6)
                     spitter_raffle['mtn-addon-medium-fire-spitter-t3'] = round(350 - (level - 350), 6)
+
+                    boss_raffle['mtn-addon-big-piercing-spitter-t2'] = round(350 - (level - 350), 6)
+                    boss_raffle['mtn-addon-big-acid-spitter-t2'] = round(350 - (level - 350), 6)
+                    boss_raffle['mtn-addon-big-explosive-spitter-t2'] = round(350 - (level - 350), 6)
+                    boss_raffle['mtn-addon-big-poison-spitter-t2'] = round(350 - (level - 350), 6)
+                    boss_raffle['mtn-addon-big-fire-spitter-t2'] = round(350 - (level - 350), 6)
+
+                    boss_raffle['mtn-addon-big-piercing-biter-t2'] = round(350 - (level - 350), 6)
+                    boss_raffle['mtn-addon-big-acid-biter-t2'] = round(350 - (level - 350), 6)
+                    boss_raffle['mtn-addon-big-explosive-biter-t2'] = round(350 - (level - 350), 6)
+                    boss_raffle['mtn-addon-big-poison-biter-t2'] = round(350 - (level - 350), 6)
+                    boss_raffle['mtn-addon-big-fire-biter-t2'] = round(350 - (level - 350), 6)
+                end
+
+                if level > 400 then
+                    boss_raffle['mtn-addon-big-piercing-spitter-t3'] = round(400 - (level - 400), 6)
+                    boss_raffle['mtn-addon-big-acid-spitter-t3'] = round(400 - (level - 400), 6)
+                    boss_raffle['mtn-addon-big-explosive-spitter-t3'] = round(400 - (level - 400), 6)
+                    boss_raffle['mtn-addon-big-poison-spitter-t3'] = round(400 - (level - 400), 6)
+                    boss_raffle['mtn-addon-big-fire-spitter-t3'] = round(400 - (level - 400), 6)
+
+                    boss_raffle['mtn-addon-big-piercing-biter-t3'] = round(400 - (level - 400), 6)
+                    boss_raffle['mtn-addon-big-acid-biter-t3'] = round(400 - (level - 400), 6)
+                    boss_raffle['mtn-addon-big-explosive-biter-t3'] = round(400 - (level - 400), 6)
+                    boss_raffle['mtn-addon-big-poison-biter-t3'] = round(400 - (level - 400), 6)
+                    boss_raffle['mtn-addon-big-fire-biter-t3'] = round(400 - (level - 400), 6)
                 end
 
                 if level > 500 then
@@ -804,6 +924,18 @@ local set_unit_raffle_token =
                     spitter_raffle['mtn-addon-big-explosive-spitter-t1'] = round(500 - (level - 500) * 2, 6)
                     spitter_raffle['mtn-addon-big-poison-spitter-t1'] = round(500 - (level - 500) * 2, 6)
                     spitter_raffle['mtn-addon-big-fire-spitter-t1'] = round(500 - (level - 500) * 2, 6)
+
+                    boss_raffle['mtn-addon-behemoth-piercing-spitter-t1'] = round(500 - (level - 500) * 2, 6)
+                    boss_raffle['mtn-addon-behemoth-acid-spitter-t1'] = round(500 - (level - 500) * 2, 6)
+                    boss_raffle['mtn-addon-behemoth-explosive-spitter-t1'] = round(500 - (level - 500) * 2, 6)
+                    boss_raffle['mtn-addon-behemoth-poison-spitter-t1'] = round(500 - (level - 500) * 2, 6)
+                    boss_raffle['mtn-addon-behemoth-fire-spitter-t1'] = round(500 - (level - 500) * 2, 6)
+
+                    boss_raffle['mtn-addon-behemoth-piercing-biter-t1'] = round(500 - (level - 500) * 2, 6)
+                    boss_raffle['mtn-addon-behemoth-acid-biter-t1'] = round(500 - (level - 500) * 2, 6)
+                    boss_raffle['mtn-addon-behemoth-explosive-biter-t1'] = round(500 - (level - 500) * 2, 6)
+                    boss_raffle['mtn-addon-behemoth-poison-biter-t1'] = round(500 - (level - 500) * 2, 6)
+                    boss_raffle['mtn-addon-behemoth-fire-biter-t1'] = round(500 - (level - 500) * 2, 6)
                 end
                 if level > 550 then
                     biter_raffle['mtn-addon-big-piercing-biter-t2'] = round(550 - (level - 550) * 2, 6)
@@ -817,6 +949,18 @@ local set_unit_raffle_token =
                     spitter_raffle['mtn-addon-big-explosive-spitter-t2'] = round(550 - (level - 550) * 2, 6)
                     spitter_raffle['mtn-addon-big-poison-spitter-t2'] = round(550 - (level - 550) * 2, 6)
                     spitter_raffle['mtn-addon-big-fire-spitter-t2'] = round(550 - (level - 550) * 2, 6)
+
+                    boss_raffle['mtn-addon-behemoth-piercing-spitter-t2'] = round(550 - (level - 550) * 2, 6)
+                    boss_raffle['mtn-addon-behemoth-acid-spitter-t2'] = round(550 - (level - 550) * 2, 6)
+                    boss_raffle['mtn-addon-behemoth-explosive-spitter-t2'] = round(550 - (level - 550) * 2, 6)
+                    boss_raffle['mtn-addon-behemoth-poison-spitter-t2'] = round(550 - (level - 550) * 2, 6)
+                    boss_raffle['mtn-addon-behemoth-fire-spitter-t2'] = round(550 - (level - 550) * 2, 6)
+
+                    boss_raffle['mtn-addon-behemoth-piercing-biter-t2'] = round(550 - (level - 550) * 2, 6)
+                    boss_raffle['mtn-addon-behemoth-acid-biter-t2'] = round(550 - (level - 550) * 2, 6)
+                    boss_raffle['mtn-addon-behemoth-explosive-biter-t2'] = round(550 - (level - 550) * 2, 6)
+                    boss_raffle['mtn-addon-behemoth-poison-biter-t2'] = round(550 - (level - 550) * 2, 6)
+                    boss_raffle['mtn-addon-behemoth-fire-biter-t2'] = round(550 - (level - 550) * 2, 6)
                 end
 
                 if level > 600 then
@@ -831,6 +975,18 @@ local set_unit_raffle_token =
                     spitter_raffle['mtn-addon-big-explosive-spitter-t3'] = round(600 - (level - 600) * 2, 6)
                     spitter_raffle['mtn-addon-big-poison-spitter-t3'] = round(600 - (level - 600) * 2, 6)
                     spitter_raffle['mtn-addon-big-fire-spitter-t3'] = round(600 - (level - 600) * 2, 6)
+
+                    boss_raffle['mtn-addon-behemoth-piercing-spitter-t3'] = round(600 - (level - 600) * 2, 6)
+                    boss_raffle['mtn-addon-behemoth-acid-spitter-t3'] = round(600 - (level - 600) * 2, 6)
+                    boss_raffle['mtn-addon-behemoth-explosive-spitter-t3'] = round(600 - (level - 600) * 2, 6)
+                    boss_raffle['mtn-addon-behemoth-poison-spitter-t3'] = round(600 - (level - 600) * 2, 6)
+                    boss_raffle['mtn-addon-behemoth-fire-spitter-t3'] = round(600 - (level - 600) * 2, 6)
+
+                    boss_raffle['mtn-addon-behemoth-piercing-biter-t3'] = round(600 - (level - 600) * 2, 6)
+                    boss_raffle['mtn-addon-behemoth-acid-biter-t3'] = round(600 - (level - 600) * 2, 6)
+                    boss_raffle['mtn-addon-behemoth-explosive-biter-t3'] = round(600 - (level - 600) * 2, 6)
+                    boss_raffle['mtn-addon-behemoth-poison-biter-t3'] = round(600 - (level - 600) * 2, 6)
+                    boss_raffle['mtn-addon-behemoth-fire-biter-t3'] = round(600 - (level - 600) * 2, 6)
                 end
 
                 if level > 800 then
@@ -845,6 +1001,18 @@ local set_unit_raffle_token =
                     spitter_raffle['mtn-addon-behemoth-explosive-spitter-t1'] = round((level - 800) * 2.75, 6)
                     spitter_raffle['mtn-addon-behemoth-poison-spitter-t1'] = round((level - 800) * 2.75, 6)
                     spitter_raffle['mtn-addon-behemoth-fire-spitter-t1'] = round((level - 800) * 2.75, 6)
+
+                    boss_raffle['mtn-addon-boss-piercing-biter-t1'] = round((level - 800) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-acid-biter-t1'] = round((level - 800) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-explosive-biter-t1'] = round((level - 800) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-poison-biter-t1'] = round((level - 800) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-fire-biter-t1'] = round((level - 800) * 2.75, 6)
+
+                    boss_raffle['mtn-addon-boss-piercing-spitter-t1'] = round((level - 800) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-acid-spitter-t1'] = round((level - 800) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-explosive-spitter-t1'] = round((level - 800) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-poison-spitter-t1'] = round((level - 800) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-fire-spitter-t1'] = round((level - 800) * 2.75, 6)
                 end
                 if level > 900 then
                     biter_raffle['mtn-addon-behemoth-piercing-biter-t2'] = round((level - 900) * 2.75, 6)
@@ -858,6 +1026,18 @@ local set_unit_raffle_token =
                     spitter_raffle['mtn-addon-behemoth-explosive-spitter-t2'] = round((level - 900) * 2.75, 6)
                     spitter_raffle['mtn-addon-behemoth-poison-spitter-t2'] = round((level - 900) * 2.75, 6)
                     spitter_raffle['mtn-addon-behemoth-fire-spitter-t2'] = round((level - 900) * 2.75, 6)
+
+                    boss_raffle['mtn-addon-boss-piercing-biter-t2'] = round((level - 900) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-acid-biter-t2'] = round((level - 900) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-explosive-biter-t2'] = round((level - 900) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-poison-biter-t2'] = round((level - 900) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-fire-biter-t2'] = round((level - 900) * 2.75, 6)
+
+                    boss_raffle['mtn-addon-boss-piercing-spitter-t2'] = round((level - 900) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-acid-spitter-t2'] = round((level - 900) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-explosive-spitter-t2'] = round((level - 900) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-poison-spitter-t2'] = round((level - 900) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-fire-spitter-t2'] = round((level - 900) * 2.75, 6)
                 end
 
                 if level > 1000 then
@@ -872,6 +1052,18 @@ local set_unit_raffle_token =
                     spitter_raffle['mtn-addon-behemoth-explosive-spitter-t3'] = round((level - 1000) * 2.75, 6)
                     spitter_raffle['mtn-addon-behemoth-poison-spitter-t3'] = round((level - 1000) * 2.75, 6)
                     spitter_raffle['mtn-addon-behemoth-fire-spitter-t3'] = round((level - 1000) * 2.75, 6)
+
+                    boss_raffle['mtn-addon-boss-piercing-biter-t3'] = round((level - 1000) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-acid-biter-t3'] = round((level - 1000) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-explosive-biter-t3'] = round((level - 1000) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-poison-biter-t3'] = round((level - 1000) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-fire-biter-t3'] = round((level - 1000) * 2.75, 6)
+
+                    boss_raffle['mtn-addon-boss-piercing-spitter-t3'] = round((level - 1000) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-acid-spitter-t3'] = round((level - 1000) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-explosive-spitter-t3'] = round((level - 1000) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-poison-spitter-t3'] = round((level - 1000) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-fire-spitter-t3'] = round((level - 1000) * 2.75, 6)
                 end
 
 
@@ -883,6 +1075,12 @@ local set_unit_raffle_token =
                 for k, _ in pairs(spitter_raffle) do
                     if spitter_raffle[k] < 0 then
                         spitter_raffle[k] = 0
+                    end
+                end
+
+                for k, _ in pairs(boss_raffle) do
+                    if boss_raffle[k] < 0 then
+                        boss_raffle[k] = 0
                     end
                 end
             end
@@ -1115,6 +1313,28 @@ Public.disable_minable_and_ICW_callback =
         end
     )
 
+Public.remove_colliding_entities_callback =
+    Task.register(
+        function (data)
+            local entity = data.entity
+
+            if not (entity and entity.valid) then
+                return
+            end
+
+            local surface = entity.surface
+            local position = entity.position
+            local radius = data.radius or 6
+
+            local entities = surface.find_entities_filtered { position = position, radius = radius, type = data.type or 'simple-entity' }
+            for _, e in pairs(entities) do
+                if e ~= entity and e.valid then
+                    e.destroy()
+                end
+            end
+        end
+    )
+
 Public.disable_destructible_callback =
     Task.register(
         function (entity)
@@ -1238,7 +1458,7 @@ Public.magic_item_crafting_callback =
                 local furance_item = callback_data.furance_item
                 if furance_item then
                     local item_stack = { name = furance_item, count = 1, quality = quality }
-                    local inv = entity.get_inventory(defines.inventory.furnace_result)
+                    local inv = entity.get_inventory(defines.inventory.crafter_output)
                     inv.insert(item_stack)
                 end
             end
@@ -1320,7 +1540,7 @@ Public.magic_item_crafting_callback_weighted =
                 local furance_item = stack.furance_item
                 if furance_item then
                     local item_stack = { name = furance_item, count = 1, quality = quality }
-                    local inv = entity.get_inventory(defines.inventory.furnace_result)
+                    local inv = entity.get_inventory(defines.inventory.crafter_output)
                     inv.insert(item_stack)
                 end
             end
@@ -1427,7 +1647,7 @@ remove_boost_movement_speed_on_respawn =
             Modifiers.update_player_modifiers(player)
 
             if not Public.is_task_done() then return end
-            player.print('Movement speed bonus removed!', { color = Color.info })
+            player.print('[color=yellow][Temporary Boost][/color] Movement speed bonus removed!', { color = Color.info })
             local rpg_t = RPG.get_value_from_player(player.index)
             if not rpg_t then
                 return
@@ -1463,7 +1683,7 @@ local boost_movement_speed_on_respawn =
             Modifiers.update_player_modifiers(player)
 
             Task.set_timeout_in_ticks(800, remove_boost_movement_speed_on_respawn, { player = player })
-            player.print('Movement speed bonus applied! Be quick and fetch your corpse!', { color = Color.info })
+            player.print('[color=yellow][Temporary Boost][/color] Movement speed bonus applied! Be quick and fetch your corpse!', { color = Color.info })
         end
     )
 
@@ -3090,22 +3310,14 @@ function Public.set_player_to_god(player)
         return false
     end
 
-    if string.sub(player.physical_surface.name, 0, #surface.name) == surface.name then
-        local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
-        if pos then
-            player.teleport(pos, surface)
-        else
-            pos = game.forces.player.get_spawn_position(surface)
-            player.teleport(pos, surface)
-        end
+    local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
+    if pos then
+        player.teleport(pos, surface)
     else
-        local pos = player.physical_surface.find_non_colliding_position('character', { 0, 0 }, 3, 0)
-        if pos then
-            player.teleport(pos, player.physical_surface)
-        else
-            player.teleport({ pos }, player.physical_surface)
-        end
+        pos = game.forces.player.get_spawn_position(surface)
+        player.teleport(pos, surface)
     end
+
 
     Event.raise(
         BottomFrame.events.bottom_quickbar_respawn_raise,
@@ -3178,6 +3390,7 @@ Public.artillery_shell_ammo = { name = 'artillery-shell', count = 15 }
 Public.laser_turrent_power_source = { buffer_size = 2400000, power_production = 40000 }
 Public.pause_waves_custom_callback_token = pause_waves_custom_callback_token
 Public.x_marks_the_spot_custom_callback_token = x_marks_the_spot_custom_callback_token
+Public.magicka_custom_callback_token = magicka_custom_callback_token
 Public.fishy_callback_token = fishy_callback_token
 Public.surface_validation_token = surface_validation_token
 

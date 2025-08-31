@@ -1101,6 +1101,10 @@ function Public.get_heal_modifier(player)
     if not rpg_t then
         return false
     end
+    local callback = Public.get_vitality_custom_callback()
+    if callback then
+        callback({ player = player, rpg_t = rpg_t })
+    end
     return (rpg_t.vitality - 10) * 0.06
 end
 
@@ -1184,6 +1188,10 @@ end
 function Public.get_mana_modifier(player)
     local rpg_t = Public.get_value_from_player(player.index)
     if not rpg_t then return end
+    local callback = Public.get_magicka_custom_callback()
+    if callback then
+        callback({ player = player, rpg_t = rpg_t })
+    end
     if rpg_t.level <= 40 then
         return (rpg_t.magicka - 10) * 0.02000
     elseif rpg_t.level <= 80 then
@@ -1195,11 +1203,19 @@ end
 
 function Public.get_life_on_hit(player)
     local rpg_t = Public.get_value_from_player(player.index)
+    local callback = Public.get_vitality_custom_callback()
+    if callback then
+        callback({ player = player, rpg_t = rpg_t })
+    end
     return (rpg_t.vitality - 10) * 0.4
 end
 
 function Public.get_aoe_punch_chance(player)
     local rpg_t = Public.get_value_from_player(player.index)
+    local callback = Public.get_strength_custom_callback()
+    if callback then
+        callback({ player = player, rpg_t = rpg_t })
+    end
     if rpg_t.strength < 100 then
         return 0
     end
@@ -1212,6 +1228,10 @@ end
 
 function Public.get_crafting_bonus_chance(player)
     local rpg_t = Public.get_value_from_player(player.index)
+    local callback = Public.get_dexterity_custom_callback()
+    if callback then
+        callback({ player = player, rpg_t = rpg_t })
+    end
     if rpg_t.dexterity < 100 then
         return 0
     end
@@ -1231,6 +1251,10 @@ end
 
 function Public.get_magicka(player)
     local rpg_t = Public.get_value_from_player(player.index)
+    local callback = Public.get_magicka_custom_callback()
+    if callback then
+        callback({ player = player, rpg_t = rpg_t })
+    end
     return (rpg_t.magicka - 10) * 0.080
 end
 
@@ -1444,118 +1468,88 @@ function Public.rpg_reset_player(player, one_time_reset)
         player.set_controller({ type = defines.controllers.god })
         player.create_character()
     end
+
     local rpg_t = Public.get_value_from_player(player.index)
     local rpg_extra = Public.get('rpg_extra')
+
+    local old_values = {}
     if one_time_reset then
-        local total = rpg_t.total
-        if not total then
-            total = 0
-        end
+        old_values =
+        {
+            total = rpg_t.total or 0,
+            level = rpg_t.level,
+            points_left = rpg_t.points_left,
+            xp = rpg_t.xp,
+            health_bar = rpg_t.health_bar,
+            mana_bar = rpg_t.mana_bar
+        }
+
         if rpg_t.text and rpg_t.text.valid then
             rpg_t.text.destroy()
             rpg_t.text = nil
         end
-        local old_level = rpg_t.level
-        local old_points_left = rpg_t.points_left
-        local old_xp = rpg_t.xp
-        rpg_t =
-            Public.set_new_player_tbl(
-                player.index,
-                {
-                    level = 1,
-                    xp = 0,
-                    strength = 10,
-                    magicka = 10,
-                    dexterity = 10,
-                    vitality = 10,
-                    mana = 0,
-                    mana_max = 0,
-                    cooldowns = {},
-                    dropdown_select_index = 1,
-                    dropdown_select_name = Public.all_spells[1].name[1],
-                    dropdown_select_index_1 = 1,
-                    dropdown_select_name_1 = Public.all_spells[1].name[1],
-                    dropdown_select_index_2 = 2,
-                    dropdown_select_name_2 = Public.all_spells[2].name[1],
-                    dropdown_select_index_3 = 3,
-                    dropdown_select_name_3 = Public.all_spells[3].name[1],
-                    allocate_index = 1,
-                    amount = 0,
-                    explosive_bullets = false,
-                    enable_entity_spawn = false,
-                    health_bar = rpg_t.health_bar,
-                    mana_bar = rpg_t.mana_bar,
-                    points_left = 0,
-                    last_floaty_text = visuals_delay,
-                    xp_since_last_floaty_text = 0,
-                    reset = true,
-                    capped = false,
-                    bonus = rpg_extra.breached_walls or 1,
-                    rotated_entity_delay = 0,
-                    repaired_entity_delay = 0,
-                    last_mined_entity_position = { x = 0, y = 0 },
-                    last_spell_cast = { x = 0, y = 0 },
-                    show_bars = false,
-                    stone_path = false,
-                    aoe_punch = false,
-                    auto_toggle_features =
-                    {
-                        stone_path = false,
-                        aoe_punch = false
-                    }
-                }
-            )
-        rpg_t.points_left = old_points_left + total
-        rpg_t.xp = round(old_xp)
-        rpg_t.level = old_level
-    else
-        rpg_t =
-            Public.set_new_player_tbl(
-                player.index,
-                {
-                    level = 1,
-                    xp = 0,
-                    strength = 10,
-                    magicka = 10,
-                    dexterity = 10,
-                    vitality = 10,
-                    mana = 0,
-                    mana_max = 0,
-                    cooldowns = {},
-                    dropdown_select_index = 1,
-                    dropdown_select_name = Public.all_spells[1].name[1],
-                    dropdown_select_index_1 = 1,
-                    dropdown_select_name_1 = Public.all_spells[1].name[1],
-                    dropdown_select_index_2 = 2,
-                    dropdown_select_name_2 = Public.all_spells[2].name[1],
-                    dropdown_select_index_3 = 3,
-                    dropdown_select_name_3 = Public.all_spells[3].name[1],
-                    allocate_index = 1,
-                    amount = 0,
-                    explosive_bullets = false,
-                    enable_entity_spawn = false,
-                    points_left = 0,
-                    last_floaty_text = visuals_delay,
-                    xp_since_last_floaty_text = 0,
-                    reset = false,
-                    capped = false,
-                    total = 0,
-                    bonus = 1,
-                    rotated_entity_delay = 0,
-                    repaired_entity_delay = 0,
-                    last_mined_entity_position = { x = 0, y = 0 },
-                    last_spell_cast = { x = 0, y = 0 },
-                    show_bars = false,
-                    stone_path = false,
-                    aoe_punch = false,
-                    auto_toggle_features =
-                    {
-                        stone_path = false,
-                        aoe_punch = false
-                    }
-                }
-            )
+    end
 
+    local base_reset_values =
+    {
+        level = 1,
+        xp = 0,
+        strength = 10,
+        magicka = 10,
+        dexterity = 10,
+        vitality = 10,
+        mana = 0,
+        mana_max = 0,
+        cooldowns = {},
+        dropdown_select_index = 1,
+        dropdown_select_name = Public.all_spells[1].name[1],
+        dropdown_select_index_1 = 1,
+        dropdown_select_name_1 = Public.all_spells[1].name[1],
+        dropdown_select_index_2 = 2,
+        dropdown_select_name_2 = Public.all_spells[2].name[1],
+        dropdown_select_index_3 = 3,
+        dropdown_select_name_3 = Public.all_spells[3].name[1],
+        allocate_index = 1,
+        amount = 0,
+        explosive_bullets = false,
+        enable_entity_spawn = false,
+        last_floaty_text = visuals_delay,
+        xp_since_last_floaty_text = 0,
+        reset = one_time_reset,
+        capped = false,
+        rotated_entity_delay = 0,
+        repaired_entity_delay = 0,
+        last_mined_entity_position = { x = 0, y = 0 },
+        last_spell_cast = { x = 0, y = 0 },
+        show_bars = false,
+        show_level_text = true,
+        stone_path = false,
+        aoe_punch = false,
+        auto_toggle_features =
+        {
+            stone_path = false,
+            aoe_punch = false
+        }
+    }
+
+    if one_time_reset then
+        base_reset_values.health_bar = old_values.health_bar
+        base_reset_values.mana_bar = old_values.mana_bar
+        base_reset_values.points_left = 0
+        base_reset_values.bonus = rpg_extra.breached_walls or 1
+    else
+        base_reset_values.points_left = 0
+        base_reset_values.total = 0
+        base_reset_values.bonus = 1
+    end
+
+    rpg_t = Public.set_new_player_tbl(player.index, base_reset_values)
+
+    if one_time_reset then
+        rpg_t.points_left = old_values.points_left + old_values.total
+        rpg_t.xp = round(old_values.xp)
+        rpg_t.level = old_values.level
+    else
         if rpg_t and rpg_extra.grant_xp_level and not rpg_t.granted_xp_level then
             rpg_t.granted_xp_level = true
             local to_grant = Public.experience_levels[rpg_t.level + rpg_extra.grant_xp_level]
@@ -1564,7 +1558,6 @@ function Public.rpg_reset_player(player, one_time_reset)
     end
 
     Modifiers.reset_player_modifiers(player)
-
     Public.draw_gui_char_button(player)
     Public.draw_level_text(player)
     Task.set_timeout_in_ticks(5, create_level_text_token, { player_index = player.index })
@@ -1591,6 +1584,7 @@ function Public.gain_xp(player, amount, added_to_pool, text)
     if not Public.validate_player(player) then
         return
     end
+
     local rpg_extra = Public.get('rpg_extra')
     local rpg_t = Public.get_value_from_player(player.index)
     if not rpg_t then
@@ -1607,27 +1601,29 @@ function Public.gain_xp(player, amount, added_to_pool, text)
         return
     end
 
-    local text_to_draw
-
-    if rpg_t and rpg_t.capped then
+    if rpg_t.capped then
         rpg_t.capped = false
     end
+
+    local final_amount = amount
 
     if not added_to_pool then
         Public.debug_log('RPG - ' .. player.name .. ' got org xp: ' .. amount)
         local fee = amount - add_to_global_pool(amount, true)
         Public.debug_log('RPG - ' .. player.name .. ' got fee: ' .. fee)
-        amount = round(amount, 3) - fee
+        final_amount = round(amount, 3) - fee
+
         if rpg_extra.difficulty then
-            amount = amount + rpg_extra.difficulty
+            final_amount = final_amount + rpg_extra.difficulty
         end
-        Public.debug_log('RPG - ' .. player.name .. ' got after fee: ' .. amount)
+
+        Public.debug_log('RPG - ' .. player.name .. ' got after fee: ' .. final_amount)
     else
         Public.debug_log('RPG - ' .. player.name .. ' got org xp: ' .. amount)
     end
 
-    rpg_t.xp = round(rpg_t.xp + amount, 3)
-    rpg_t.xp_since_last_floaty_text = round(rpg_t.xp_since_last_floaty_text + amount)
+    rpg_t.xp = round(rpg_t.xp + final_amount, 3)
+    rpg_t.xp_since_last_floaty_text = round(rpg_t.xp_since_last_floaty_text + final_amount)
 
     if not experience_levels[rpg_t.level + 1] then
         return
@@ -1651,18 +1647,19 @@ function Public.gain_xp(player, amount, added_to_pool, text)
         end
     end
 
+    local text_to_draw
     if text then
-        text_to_draw = '+' .. math.floor(amount) .. ' xp'
+        text_to_draw = '+' .. math.floor(final_amount) .. ' xp'
     else
         text_to_draw = '+' .. math.floor(rpg_t.xp_since_last_floaty_text) .. ' xp'
     end
 
-    player.create_local_flying_text
-    {
-        text = text_to_draw,
-        position = player.physical_position,
-        color = xp_floating_text_color,
-    }
+    player.create_local_flying_text(
+        {
+            text = text_to_draw,
+            position = player.physical_position,
+            color = xp_floating_text_color,
+        })
 
     rpg_t.xp_since_last_floaty_text = 0
     rpg_t.last_floaty_text = game.tick + visuals_delay

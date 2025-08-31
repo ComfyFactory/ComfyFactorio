@@ -457,6 +457,9 @@ local sorting_symbol = { ascending = '▲', descending = '▼' }
 
 local function get_score_list()
     local score_force = this.score_table['player']
+    if not score_force then
+        return
+    end
     local whitelisted_score_tbl = {}
     sort_and_whitelist(whitelisted_score_tbl, 'killscore', score_force.players)
     sort_and_whitelist(whitelisted_score_tbl, 'mined_entities', score_force.players)
@@ -491,6 +494,9 @@ end
 
 local function add_global_stats(frame)
     local score = this.score_table['player']
+    if not score then
+        return
+    end
 
     local t = frame.add { type = 'table', column_count = 6 }
 
@@ -612,6 +618,9 @@ local function show_score(data)
 
     -- Score list
     local score_list = get_score_list()
+    if not score_list then
+        return
+    end
 
     score_list = sort_list(sorting_pref.method, sorting_pref.column, score_list)
 

@@ -337,6 +337,25 @@ function Public.extra_settings(player)
             health_bar_label.caption = ({ 'rpg_settings.health_only_text_label' })
         end
     end
+    local level_text_label =
+        setting_grid.add(
+            {
+                type = 'label',
+                caption = ({ 'rpg_settings.level_text_label' })
+            }
+        )
+
+    local style = level_text_label.style
+    style.horizontally_stretchable = true
+    style.height = 35
+    style.vertical_align = 'center'
+
+    local level_text_input = setting_grid.add({ type = 'flow' })
+    local input_style = level_text_input.style
+    input_style.height = 35
+    input_style.vertical_align = 'center'
+    local level_text_gui_input = create_input_element(level_text_input, 'boolean', rpg_t.show_level_text)
+    level_text_gui_input.tooltip = ({ 'rpg_settings.tooltip_check' })
 
     local reset_label =
         setting_grid.add(
@@ -722,6 +741,8 @@ function Public.extra_settings(player)
     if rpg_extra.enable_auto_allocate then
         data.auto_allocate_gui_input = auto_allocate_gui_input
     end
+
+    data.level_text_gui_input = level_text_gui_input
 
     local bottom_flow = main_frame.add({ type = 'flow', direction = 'horizontal' })
 

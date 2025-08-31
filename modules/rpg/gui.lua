@@ -235,7 +235,8 @@ local function draw_main_frame(player, location)
     local rpg_t = Public.get_value_from_player(player.index)
 
     local scroll_pane =
-        inside_frame.add {
+        inside_frame.add
+        {
             type = 'scroll-pane',
             vertical_scroll_policy = 'never',
             horizontal_scroll_policy = 'never'
@@ -386,12 +387,13 @@ local function draw_main_frame(player, location)
     local melee_damage_value = round(100 * (1 + Public.get_melee_modifier(player))) .. '%'
     local melee_damage_tooltip
     if rpg_extra.enable_aoe_punch then
-        melee_damage_tooltip = ({
-            'rpg_gui.aoe_punch_chance',
-            Public.get_life_on_hit(player),
-            Public.get_aoe_punch_chance(player),
-            Public.get_extra_following_robots(player)
-        })
+        melee_damage_tooltip = (
+            {
+                'rpg_gui.aoe_punch_chance',
+                Public.get_life_on_hit(player),
+                Public.get_aoe_punch_chance(player),
+                Public.get_extra_following_robots(player)
+            })
     else
         melee_damage_tooltip = ({ 'rpg_gui.aoe_punch_disabled' })
     end
@@ -402,16 +404,17 @@ local function draw_main_frame(player, location)
     add_gui_description(right_bottom_table, '', w0, '', nil, 5)
 
     local reach_distance_value = '+ ' .. (player.force.character_reach_distance_bonus + player.character_reach_distance_bonus)
-    local reach_bonus_tooltip = ({
-        'rpg_gui.bonus_tooltip',
-        player.character_reach_distance_bonus,
-        player.character_build_distance_bonus,
-        player.character_item_drop_distance_bonus,
-        player.character_loot_pickup_distance_bonus,
-        player.character_item_pickup_distance_bonus,
-        player.character_resource_reach_distance_bonus,
-        Public.get_magicka(player)
-    })
+    local reach_bonus_tooltip = (
+        {
+            'rpg_gui.bonus_tooltip',
+            player.character_reach_distance_bonus,
+            player.character_build_distance_bonus,
+            player.character_item_drop_distance_bonus,
+            player.character_loot_pickup_distance_bonus,
+            player.character_item_pickup_distance_bonus,
+            player.character_resource_reach_distance_bonus,
+            Public.get_magicka(player)
+        })
 
     add_gui_description(right_bottom_table, ' ', w0)
     add_gui_description(right_bottom_table, ({ 'rpg_gui.reach_distance' }), w1)
@@ -442,10 +445,11 @@ local function draw_main_frame(player, location)
     if rpg_extra.enable_mana then
         add_gui_description(right_bottom_table, ({ 'rpg_gui.mana_bonus' }), w1)
         local mana_bonus_value = '+ ' .. (floor(Public.get_mana_modifier(player) * 10) / 10)
-        local mana_bonus_tooltip = ({
-            'rpg_gui.mana_regen_bonus',
-            (floor(Public.get_mana_modifier(player) * 10) / 10)
-        })
+        local mana_bonus_tooltip = (
+            {
+                'rpg_gui.mana_regen_bonus',
+                (floor(Public.get_mana_modifier(player) * 10) / 10)
+            })
         add_gui_stat(right_bottom_table, mana_bonus_value, w2, mana_bonus_tooltip)
     end
 
@@ -468,6 +472,14 @@ function Public.draw_level_text(player)
         return
     end
 
+    if not rpg_t.show_level_text then
+        if rpg_t.text and rpg_t.text.valid then
+            rpg_t.text.destroy()
+            rpg_t.text = nil
+        end
+        return
+    end
+
     if rpg_t.text and rpg_t.text.valid then
         rpg_t.text.destroy()
         rpg_t.text = nil
@@ -481,14 +493,17 @@ function Public.draw_level_text(player)
     if player.character.surface.index ~= player.surface.index then return end
 
     rpg_t.text =
-        rendering.draw_text {
+        rendering.draw_text
+        {
             text = 'lvl ' .. rpg_t.level,
             surface = player.surface,
-            target = {
+            target =
+            {
                 entity = player.character,
                 offset = { 0, -3.25 },
             },
-            color = {
+            color =
+            {
                 r = player.color.r * 0.6 + 0.25,
                 g = player.color.g * 0.6 + 0.25,
                 b = player.color.b * 0.6 + 0.25,
@@ -611,6 +626,7 @@ Gui.on_click(
         local stone_path_gui_input = data.stone_path_gui_input
         local aoe_punch_gui_input = data.aoe_punch_gui_input
         local auto_allocate_gui_input = data.auto_allocate_gui_input
+        local level_text_gui_input = data.level_text_gui_input
 
         local character_build_distance_bonus = data.character_build_distance_bonus
         local character_crafting_speed_modifier = data.character_crafting_speed_modifier
@@ -763,6 +779,15 @@ Gui.on_click(
                 end
             end
 
+            if level_text_gui_input and level_text_gui_input.valid then
+                if not level_text_gui_input.state then
+                    rpg_t.show_level_text = false
+                    Public.draw_level_text(player)
+                elseif level_text_gui_input.state then
+                    rpg_t.show_level_text = true
+                    Public.draw_level_text(player)
+                end
+            end
             remove_target_frame(frame)
 
             if player.gui.screen[main_frame_name] then

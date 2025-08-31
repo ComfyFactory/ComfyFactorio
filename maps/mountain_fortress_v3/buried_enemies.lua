@@ -112,6 +112,63 @@ local function spawn_biters(data)
     return true
 end
 
+local function spawn_tech(data)
+    local surface = data.surface
+    if not (surface and surface.valid) then
+        return false
+    end
+    local position = data.position
+
+    local max_biters = Public.get('biters')
+
+    if max_biters.amount >= max_biters.limit then
+        return false
+    end
+
+    if not position then
+        position = surface.find_non_colliding_position('small-biter', position, 10, 1)
+        if not position then
+            return false
+        end
+    end
+
+    local rand_tech = {
+        'defender',
+        'destroyer',
+        'distractor'
+    }
+
+    local unit_to_create
+
+    if random(1, 3) == 1 then
+        unit_to_create = rand_tech[random(1, #rand_tech)]
+    else
+        unit_to_create = rand_tech[random(1, #rand_tech)]
+    end
+
+    if not unit_to_create then
+        print('spawn_tech - unit_to_create was nil?')
+        return
+    end
+
+    local modified_unit_health = WD.get('modified_unit_health')
+    local modified_boss_unit_health = WD.get('modified_boss_unit_health')
+
+    local unit = surface.create_entity({ name = unit_to_create, position = position, force = data.force or 'enemy' })
+    max_biters.amount = max_biters.amount + 1
+
+    if random(1, 30) == 1 then
+        BiterHealthBooster.add_boss_unit(unit, modified_boss_unit_health.current_value, 0.38)
+    else
+        local final_health = round(modified_unit_health.current_value * 0.5, 3)
+        if final_health < 1 then
+            final_health = 1
+        end
+        BiterHealthBooster.add_unit(unit, final_health)
+    end
+    return true
+end
+
 local function spawn_worms(data)
     local modified_unit_health = WD.get('modified_unit_health')
     local modified_boss_unit_health = WD.get('modified_boss_unit_health')
@@ -199,6 +256,54 @@ function Public.buried_biter(surface, position, count, force)
     end
 end
 
+function Public.buried_tech(surface, position, count, force)
+    if not (surface and surface.valid) then
+        return
+    end
+    if not position then
+        return
+    end
+    if not position.x then
+        return
+    end
+    if not position.y then
+        return
+    end
+
+    if not count then
+        count = 1
+    end
+
+    for t = 1, 60, 1 do
+        if not this[game.tick + t] then
+            this[game.tick + t] = {}
+        end
+
+        this[game.tick + t][#this[game.tick + t] + 1] = {
+            callback = 'create_particles',
+            data = { surface = surface, position = { x = position.x, y = position.y }, amount = math.ceil(t * 0.05) }
+        }
+
+        if t == 60 then
+            if count == 1 then
+                this[game.tick + t][#this[game.tick + t] + 1] = {
+                    callback = 'spawn_tech',
+                    data = { surface = surface, position = { x = position.x, y = position.y }, count = count or 1, force = force or 'enemy' }
+                }
+            else
+                local tick = 2
+                for _ = 1, count do
+                    this[game.tick + t][#this[game.tick + t] + 1 + tick] = {
+                        callback = 'spawn_tech',
+                        data = { surface = surface, position = { x = position.x, y = position.y }, count = count or 1, force = force or 'enemy' }
+                    }
+                    tick = tick + 2
+                end
+            end
+        end
+    end
+end
+
 function Public.buried_worm(surface, position)
     if not (surface and surface.valid) then
         return
@@ -235,7 +340,8 @@ end
 local callbacks = {
     ['create_particles'] = create_particles,
     ['spawn_biters'] = spawn_biters,
-    ['spawn_worms'] = spawn_worms
+    ['spawn_worms'] = spawn_worms,
+    ['spawn_tech'] = spawn_tech
 }
 
 local function on_tick()

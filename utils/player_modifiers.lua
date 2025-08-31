@@ -111,6 +111,24 @@ function Public.update_single_modifier(player, modifier, category, value)
     end
 end
 
+function Public.remove_single_modifier(player, modifier, category)
+    local player_modifiers = this.modifiers[player.index]
+    if not player_modifiers or not modifier then
+        return
+    end
+
+    for key, _ in pairs(player_modifiers) do
+        if modifiers[key] == modifier and player_modifiers[key] then
+            local current_modifier = player_modifiers[key]
+            if category then
+                if current_modifier[category] then
+                    current_modifier[category] = nil
+                end
+            end
+        end
+    end
+end
+
 function Public.disable_single_modifier(player, modifier, value)
     local disabled_modifiers = this.disabled_modifier[player.index]
     if not disabled_modifiers then

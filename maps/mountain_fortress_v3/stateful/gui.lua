@@ -13,6 +13,7 @@ local LinkedChests = require 'maps.mountain_fortress_v3.icw.linked_chests'
 local Discord = require 'utils.discord'
 local format_number = require 'util'.format_number
 local Explosives = require 'modules.explosives'
+local StatefulFunctions = require 'maps.mountain_fortress_v3.stateful.functions'
 
 local zone_settings = Public.zone_settings
 local send_ping_to_channel = Discord.channel_names.mtn_channel
@@ -23,6 +24,9 @@ local close_button = Gui.uid_name()
 local close_buffs_window_name = Gui.uid_name()
 local buffs_window_name = Gui.uid_name()
 local on_click_buff_name = Gui.uid_name()
+local on_click_permanent_buff_name = Gui.uid_name()
+local close_permanent_buffs_window_name = Gui.uid_name()
+local permanent_buff_window_name = Gui.uid_name()
 local random = math.random
 local floor = math.floor
 local main_frame
@@ -88,6 +92,9 @@ local function notify_won_to_discord(buff)
     local stateful = Public.get_stateful()
 
     local wave = WD.get_wave()
+    local threat = WD.get('threat')
+    local collapse_speed = Collapse.get_speed()
+    local collapse_amount = Collapse.get_amount()
     local date = Server.get_start_time()
     game.server_save('Complete_Mtn_v3_' .. tostring(date) .. '_wave' .. tostring(wave))
 
@@ -111,41 +118,65 @@ local function notify_won_to_discord(buff)
         },
         field2 =
         {
+            text1 = 'Current season:',
+            text2 = stateful.season,
+            inline = 'false'
+        },
+        field3 =
+        {
             text1 = 'Rounds survived:',
             text2 = stateful.rounds_survived,
             inline = 'false'
         },
-        field3 =
+        field4 =
         {
             text1 = 'Current winning streak:',
             text2 = stateful.current_streak,
             inline = 'false'
         },
-        field4 =
+        field5 =
         {
-            text1 = 'Wave:',
+            text1 = 'Highest wave:',
             text2 = format_number(wave, true),
             inline = 'false'
         },
-        field5 =
+        field6 =
         {
             text1 = 'Total connected players:',
             text2 = total_players,
             inline = 'false'
         },
-        field6 =
+        field7 =
+        {
+            text1 = 'Threat:',
+            text2 = format_number(threat, true),
+            inline = 'false'
+        },
+        field8 =
         {
             text1 = 'Pickaxe Upgrade:',
             text2 = pick_tier .. ' (' .. upgrades.pickaxe_tier .. ')',
             inline = 'false'
         },
-        field7 =
+        field9 =
+        {
+            text1 = 'Collapse Speed:',
+            text2 = collapse_speed,
+            inline = 'false'
+        },
+        field10 =
+        {
+            text1 = 'Collapse Amount:',
+            text2 = collapse_amount,
+            inline = 'false'
+        },
+        field11 =
         {
             text1 = 'Connected players:',
             text2 = total_connected_players,
             inline = 'false'
         },
-        field8 =
+        field12 =
         {
             text1 = 'Buff granted:',
             text2 = buff.discord,
@@ -501,6 +532,120 @@ local function buff_window(player)
     player.opened = buff_frame_name
 end
 
+local function permanent_buff_window(player)
+    local permanent_buff_window_name, inside_table = Gui.add_main_frame_with_toolbar(player, 'center', permanent_buff_window_name, nil, close_permanent_buffs_window_name, 'Permanent Buffs')
+    if not permanent_buff_window_name then
+        return
+    end
+    if not inside_table then
+        return
+    end
+
+    local stateful = Public.get_stateful()
+
+    local inside_table_style = inside_table.style
+    inside_table_style.width = 530
+
+    local info_text = inside_table.add({ type = 'label', caption = 'All the buffs that have been gathered throughout the seasons!' })
+    local info_text_style = info_text.style
+    info_text_style.font = 'heading-2'
+    info_text_style.padding = 0
+    info_text_style.left_padding = 10
+    info_text_style.horizontal_align = 'left'
+    info_text_style.vertical_align = 'bottom'
+    info_text_style.font_color = { 0.55, 0.55, 0.99 }
+
+    local info_extra_text = inside_table.add({ type = 'label', caption = 'These buffs are permanent and will remain throughout the seasons.' })
+    local info_extra_text_style = info_extra_text.style
+    info_extra_text_style.font = 'heading-2'
+    info_extra_text_style.padding = 0
+    info_extra_text_style.left_padding = 10
+    info_extra_text_style.horizontal_align = 'left'
+    info_extra_text_style.vertical_align = 'bottom'
+    info_extra_text_style.font_color = { 0.55, 0.55, 0.99 }
+
+    local buff_pane = inside_table.add({ type = 'scroll-pane' })
+    local ns = buff_pane.style
+    ns.vertically_squashable = true
+    ns.bottom_padding = 5
+    ns.left_padding = 5
+    ns.right_padding = 5
+    ns.top_padding = 5
+
+    buff_pane.add({ type = 'line' })
+
+    local starting_items_label = buff_pane.add({ type = 'label', caption = 'Starting items' })
+    local starting_items_label_style = starting_items_label.style
+    starting_items_label_style.font = 'default-semibold'
+    starting_items_label_style.padding = 0
+    starting_items_label_style.horizontal_align = 'left'
+    starting_items_label_style.font_color = { 0.55, 0.55, 0.99 }
+
+    local starting_grid = buff_pane.add({ type = 'table', column_count = 8 })
+
+    buff_pane.add({ type = 'line' })
+
+    local force_label = buff_pane.add({ type = 'label', caption = 'Force Buffs' })
+    local force_label_style = force_label.style
+    force_label_style.font = 'default-semibold'
+    force_label_style.padding = 0
+    force_label_style.horizontal_align = 'left'
+    force_label_style.font_color = { 0.55, 0.55, 0.99 }
+    local force_grid = buff_pane.add({ type = 'table', column_count = 2 })
+
+    buff_pane.add({ type = 'line' })
+
+    local custom_label = buff_pane.add({ type = 'label', caption = 'Custom Buffs' })
+    local custom_label_style = custom_label.style
+    custom_label_style.font = 'default-semibold'
+    custom_label_style.padding = 0
+    custom_label_style.horizontal_align = 'left'
+    custom_label_style.font_color = { 0.55, 0.55, 0.99 }
+    local custom_grid = buff_pane.add({ type = 'table', column_count = 2 })
+
+    if stateful.permanent_buffs and next(stateful.permanent_buffs) then
+        if stateful.permanent_buffs_collected and next(stateful.permanent_buffs_collected) then
+            if stateful.permanent_buffs_collected.starting_items then
+                for item_name, item_data in pairs(stateful.permanent_buffs_collected.starting_items) do
+                    local text = '[font=default-large] [item=' .. item_name .. '][/font]' .. ': [font=default-bold]' .. item_data.count .. '[/font]'
+                    create_input_element(starting_grid, 'label', text, nil, nil, item_data.discord, 30)
+                end
+            end
+
+            for name, buff_data in pairs(stateful.permanent_buffs_collected) do
+                if type(buff_data.amount) ~= 'table' and buff_data.force then
+                    local c = buff_data.count
+                    local text
+                    if name == 'xp_level' or name == 'xp_bonus' or name == 'character_health_bonus' then
+                        text = '[font=default-bold]' .. Stateful.buff_to_string[name] .. ': ' .. c .. '[/font]'
+                    else
+                        text = '[font=default-bold]' .. Stateful.buff_to_string[name] .. ': ' .. (c * 100) .. '%[/font]'
+                    end
+
+                    create_input_element(force_grid, 'label', text, nil, nil, buff_data.discord)
+                end
+
+                if name ~= 'starting_items' and not buff_data.force then
+                    if buff_data.name then
+                        local text_to_place = buff_data.count or 'Unlocked'
+                        local text = '[font=default-bold]' .. buff_data.name .. ': ' .. text_to_place .. ' [/font]'
+                        create_input_element(custom_grid, 'label', text, nil, nil, buff_data.discord)
+                    else
+                        for _, buff in pairs(buff_data) do
+                            local text_to_place = buff.count or 'Unlocked'
+                            local text = '[font=default-bold]' .. pretty_format(buff.name) .. ': ' .. text_to_place .. ' [/font]'
+                            create_input_element(custom_grid, 'label', text, nil, nil, buff.discord)
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    player.opened = permanent_buff_window_name
+end
+
+
 local function boss_frame(player, alert)
     local main_winning_frame = player.gui.screen[main_frame_name]
     if main_winning_frame then
@@ -729,6 +874,30 @@ main_frame = function (player)
 
         local buff_label = buff_left_flow.add({ type = 'label', caption = { 'stateful.buffs' }, tooltip = { 'stateful.buff_tooltip' } })
         buff_label.style.single_line = false
+        frame.add({ type = 'line', direction = 'vertical' })
+
+        spacer(frame)
+
+        frame.add({ type = 'line' })
+    end
+
+    spacer(frame)
+    if stateful.permanent_buffs and next(stateful.permanent_buffs) then
+        local permanent_buff_tbl = frame.add { type = 'table', column_count = 2 }
+        permanent_buff_tbl.style.horizontally_stretchable = true
+
+        local permanent_buff_left_flow = permanent_buff_tbl.add({ type = 'flow' })
+        permanent_buff_left_flow.style.horizontal_align = 'left'
+        permanent_buff_left_flow.style.horizontally_stretchable = true
+
+        local permanent_buff_right_flow = permanent_buff_tbl.add({ type = 'flow' })
+        permanent_buff_right_flow.style.horizontal_align = 'right'
+        permanent_buff_right_flow.style.horizontally_stretchable = true
+
+        permanent_buff_right_flow.add({ name = on_click_permanent_buff_name, type = 'label', caption = '[img=utility/center]', tooltip = { 'stateful.permanent_buff_tooltip_click' } })
+
+        local permanent_buff_label = permanent_buff_left_flow.add({ type = 'label', caption = { 'stateful.permanent_buffs' }, tooltip = { 'stateful.permanent_buff_tooltip' } })
+        permanent_buff_label.style.single_line = false
         frame.add({ type = 'line', direction = 'vertical' })
 
         spacer(frame)
@@ -1132,6 +1301,21 @@ local function update_raw()
                     Public.set_stateful_settings('reversed', true)
                 end
 
+                local darkness = Public.get_stateful_settings('darkness')
+                if darkness then
+                    Public.set_stateful_settings('darkness', false)
+                    print('Darkness is now disabled')
+                    surface.brightness_visual_weights = { a = 1, b = 0, g = 0, r = 0 }
+                    local message = '[color=yellow]Darkness[/color] The nights seem to be lighter!'
+                    Alert.alert_all_players(100, message)
+                else
+                    print('Darkness is now enabled')
+                    surface.brightness_visual_weights = { a = 1, b = 0.7, g = 0.7, r = 0.7 }
+                    Public.set_stateful_settings('darkness', true)
+                    local message = '[color=yellow]Darkness[/color] The nights seem to be darker!'
+                    Alert.alert_all_players(100, message)
+                end
+
                 game.forces.enemy.set_friend('player', true)
                 game.forces.aggressors.set_friend('player', true)
                 game.forces.aggressors_frenzy.set_friend('player', true)
@@ -1148,14 +1332,34 @@ local function update_raw()
                 WD.nuke_wave_gui()
                 Server.to_discord_embed('Game won!')
                 stateful.rounds_survived = stateful.rounds_survived + 1
+                stateful.current_streak = stateful.current_streak + 1
                 stateful.selected_objectives = nil
-                local buff = Stateful.save_settings()
-                notify_won_to_discord(buff)
-                local locomotive = Public.get('locomotive')
-                if locomotive and locomotive.valid then
-                    locomotive.surface.spill_item_stack({ position = locomotive.position, stack = { name = 'coin', count = 512, quality = 'normal' } })
+                local buff_selection = Public.get('buff_selection')
+                if buff_selection then
+                    if buff_selection.votes_enabled then
+                        buff_selection.voting_started = true
+                        local buffs = {}
+                        for _ = 1, 3 do
+                            local b = Stateful.grant_non_limit_reached_buff()
+                            table.insert(buffs, b)
+                        end
+                        StatefulFunctions.init_buff_selection(buffs)
+
+                        Core.iter_connected_players(function (player)
+                            if player and player.valid then
+                                StatefulFunctions.buff_main_frame(player)
+                            end
+                        end)
+                    else
+                        local buff = Stateful.save_settings()
+                        notify_won_to_discord(buff)
+                        local locomotive = Public.get('locomotive')
+                        if locomotive and locomotive.valid then
+                            locomotive.surface.spill_item_stack({ position = locomotive.position, stack = { name = 'coin', count = 512, quality = 'normal' } })
+                        end
+                        Public.set('game_reset_tick', 5400)
+                    end
                 end
-                Public.set('game_reset_tick', 5400)
                 return
             end
         end
@@ -1315,6 +1519,27 @@ Gui.on_click(
     end
 )
 
+Gui.on_click(
+    close_permanent_buffs_window_name,
+    function (event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Permanent Buff Close Button')
+        if is_spamming then
+            return
+        end
+        local player = event.player
+        local center = player.gui.center
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        local frame_buff = center[permanent_buff_window_name]
+        if frame_buff and frame_buff.valid then
+            Gui.remove_data_recursively(frame_buff)
+            frame_buff.destroy()
+        end
+    end
+)
+
 Gui.on_custom_close(
     buffs_window_name,
     function (event)
@@ -1329,6 +1554,27 @@ Gui.on_custom_close(
         end
 
         local frame_buff = center[buffs_window_name]
+        if frame_buff and frame_buff.valid then
+            Gui.remove_data_recursively(frame_buff)
+            frame_buff.destroy()
+        end
+    end
+)
+
+Gui.on_custom_close(
+    permanent_buff_window_name,
+    function (event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Permanent Buff Custom Close')
+        if is_spamming then
+            return
+        end
+        local player = event.player
+        local center = player.gui.center
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        local frame_buff = center[permanent_buff_window_name]
         if frame_buff and frame_buff.valid then
             Gui.remove_data_recursively(frame_buff)
             frame_buff.destroy()
@@ -1355,6 +1601,29 @@ Gui.on_click(
             frame_buff.destroy()
         else
             buff_window(player)
+        end
+    end
+)
+
+Gui.on_click(
+    on_click_permanent_buff_name,
+    function (event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Permanent Buff Open Button')
+        if is_spamming then
+            return
+        end
+        local player = event.player
+        local center = player.gui.center
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        local frame_buff = center[permanent_buff_window_name]
+        if frame_buff and frame_buff.valid then
+            Gui.remove_data_recursively(frame_buff)
+            frame_buff.destroy()
+        else
+            permanent_buff_window(player)
         end
     end
 )

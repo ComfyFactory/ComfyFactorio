@@ -30,9 +30,11 @@ local function comparator(a, b)
     return a.time < b.time
 end
 
+local duration_tasks = PriorityQueue.new(comparator)
 local callbacks = PriorityQueue.new(comparator)
 local task_queue = Queue.new()
-local primitives = {
+local primitives =
+{
     next_async_callback_time = -1,
     total_task_weight = 0,
     task_queue_speed = 1,
@@ -40,13 +42,15 @@ local primitives = {
 }
 
 Global.register(
-    { callbacks = callbacks, task_queue = task_queue, primitives = primitives },
+    { duration_tasks = duration_tasks, callbacks = callbacks, task_queue = task_queue, primitives = primitives },
     function (tbl)
+        duration_tasks = tbl.duration_tasks
         callbacks = tbl.callbacks
         task_queue = tbl.task_queue
         primitives = tbl.primitives
 
         PriorityQueue.load(callbacks, comparator)
+        PriorityQueue.load(duration_tasks, comparator)
     end
 )
 
@@ -91,8 +95,8 @@ local function on_tick()
     for _ = 1, get_task_per_tick(tick) do
         local task = Queue_peek(task_queue)
         if task ~= nil then
-            -- result is error if not success else result is a boolean for if the task should stay in the queue.
-            local success, result = xpcall(Token_get(task.func_token), handler_error, task.params)
+            local func = Token_get(task.func_token)
+            local success, result = xpcall(func, handler_error, task.params)
             if not success then
                 if _DEBUG then
                     error(result)
@@ -110,9 +114,19 @@ local function on_tick()
 
     local callback = PriorityQueue_peek(callbacks)
     while callback ~= nil and tick >= callback.time do
-        xpcall(Token_get(callback.func_token), handler_error, callback.params)
+        local func = Token_get(callback.func_token)
+        xpcall(func, handler_error, callback.params)
         PriorityQueue_pop(callbacks)
         callback = PriorityQueue_peek(callbacks)
+    end
+
+    local duration_task = PriorityQueue_peek(duration_tasks)
+    if duration_task ~= nil then
+        local func = Token_get(duration_task.func_token)
+        xpcall(func, handler_error, duration_task.params)
+        if tick >= duration_task.duration_ticks then
+            PriorityQueue_pop(duration_tasks)
+        end
     end
 end
 
@@ -128,6 +142,26 @@ function Task.set_timeout_in_ticks(ticks, func_token, params)
     local time = game.tick + ticks
     local callback = { time = time, func_token = func_token, params = params }
     PriorityQueue_push(callbacks, callback)
+end
+
+--- Creates a task that runs every tick for a specified duration
+-- @param func_token <number> a token for a function stored via the token system
+-- @param duration_ticks <number> how many ticks the task should run for
+-- @param params <any> the argument to send to the tokened function
+function Task.set_duration_task(start_tick, duration_ticks, func_token, params)
+    if not game then
+        error('cannot call when game is not available', 2)
+    end
+
+    local callback =
+    {
+        func_token = func_token,
+        params = params,
+        start_tick = game.tick + start_tick,
+        duration_ticks = game.tick + duration_ticks + start_tick
+    }
+
+    PriorityQueue_push(duration_tasks, callback)
 end
 
 --- Allows you to set a timer (in ticks) after which the tokened function will be run with params given as an argument

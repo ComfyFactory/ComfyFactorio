@@ -575,6 +575,91 @@ function Public.get_x_marks_the_spot_custom_callback()
     end
 end
 
+-- Sets the callback function for magicka_custom_callback
+---@param token number
+---@return number|nil
+function Public.set_magicka_custom_callback(token)
+    if token then
+        this.rpg_extra.magicka_custom_callback = token
+    else
+        return error('No token given.', 2)
+    end
+
+    return this.rpg_extra.magicka_custom_callback
+end
+
+-- Sets the callback function for magicka_custom_callback
+---@return function|nil
+function Public.get_magicka_custom_callback()
+    local token = Task.get(this.rpg_extra.magicka_custom_callback)
+    if token then
+        return token
+    end
+end
+
+-- Sets the callback function for strength_custom_callback
+---@param token number
+---@return number|nil
+function Public.set_strength_custom_callback(token)
+    if token then
+        this.rpg_extra.strength_custom_callback = token
+    else
+        return error('No token given.', 2)
+    end
+end
+
+-- Sets the callback function for strength_custom_callback
+---@return function|nil
+function Public.get_strength_custom_callback()
+    local token = Task.get(this.rpg_extra.strength_custom_callback)
+    if token then
+        return token
+    end
+end
+
+-- Sets the callback function for dexterity_custom_callback
+
+---@param token number
+---@return number|nil
+function Public.set_dexterity_custom_callback(token)
+    if token then
+        this.rpg_extra.dexterity_custom_callback = token
+    else
+        return error('No token given.', 2)
+    end
+end
+
+-- Sets the callback function for dexterity_custom_callback
+---@return function|nil
+function Public.get_dexterity_custom_callback()
+    local token = Task.get(this.rpg_extra.dexterity_custom_callback)
+    if token then
+        return token
+    end
+end
+
+-- Sets the callback function for vitality_custom_callback
+---@param token number
+---@return number|nil
+function Public.set_vitality_custom_callback(token)
+    if token then
+        this.rpg_extra.vitality_custom_callback = token
+    else
+        return error('No token given.', 2)
+    end
+end
+
+-- Sets the callback function for vitality_custom_callback
+---@return function|nil
+function Public.get_vitality_custom_callback()
+    local token = Task.get(this.rpg_extra.vitality_custom_callback)
+    if token then
+        return token
+    end
+end
+
+
+
 function Public.migrate_to_new_version()
     -- Public.reset_table(true)
     if this.rpg_spells then

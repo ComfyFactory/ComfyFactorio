@@ -42,6 +42,33 @@ local function get_position(data)
     data.position = { x = (data.top_x + data.xv), y = (data.top_y + data.yv) }
 end
 
+local function execute_callback_data(data, entity)
+    local callback
+    if data.callback then
+        local c = data.callback.callback
+        if c then
+            local d = { callback_data = data.callback.data }
+            if not d then
+                callback = Task.get(c)
+                callback(entity)
+            else
+                callback = Task.get(c)
+                callback(entity, d)
+            end
+        end
+        local dc = data.callback.delayed_callback
+        if dc then
+            local delayed_data =
+            {
+                entity = entity,
+                radius = 6,
+                type = { 'simple-entity', 'tree' }
+            }
+            Task.set_timeout_in_ticks(200, dc, delayed_data)
+        end
+    end
+end
+
 local function do_tile_inner(tiles, tile, pos)
     if type(tile) == 'string' then
         tiles[#tiles + 1] = { name = tile, position = pos }
@@ -221,7 +248,6 @@ local function do_place_buildings(data)
     end
     local quality = Public.get_stateful_settings('quality_buildings') or 'normal'
     local entity
-    local callback
     for _, e in ipairs(data.buildings) do
         if e.e_type then
             local p = e.position
@@ -244,19 +270,7 @@ local function do_place_buildings(data)
                     if e.force then
                         entity.force = e.force
                     end
-                    if e.callback then
-                        local c = e.callback.callback
-                        if c then
-                            local d = { callback_data = e.callback.data }
-                            if not d then
-                                callback = Task.get(c)
-                                callback(entity)
-                            else
-                                callback = Task.get(c)
-                                callback(entity, d)
-                            end
-                        end
-                    end
+                    execute_callback_data(e, entity)
                 end
             end
         end
@@ -317,7 +331,6 @@ local function do_place_entities(data)
         return
     end
     local entity
-    local callback
     for _, e in pairs(data.entities) do
         if e.collision then
             if surface.can_place_entity(e) then
@@ -342,20 +355,7 @@ local function do_place_entities(data)
                     if e.amount then
                         entity.amount = e.amount
                     end
-                    if e.callback then
-                        local c = e.callback.callback
-                        if not c then
-                            return
-                        end
-                        local d = { callback_data = e.callback.data }
-                        if not d then
-                            callback = Task.get(c)
-                            callback(entity)
-                        else
-                            callback = Task.get(c)
-                            callback(entity, d)
-                        end
-                    end
+                    execute_callback_data(e, entity)
                 end
             end
         else
@@ -381,19 +381,7 @@ local function do_place_entities(data)
                 if e.amount then
                     entity.amount = e.amount
                 end
-                if e.callback then
-                    local c = e.callback.callback
-                    if c then
-                        local d = { callback_data = e.callback.data }
-                        if not d then
-                            callback = Task.get(c)
-                            callback(entity)
-                        else
-                            callback = Task.get(c)
-                            callback(entity, d)
-                        end
-                    end
-                end
+                execute_callback_data(e, entity)
             end
         end
     end

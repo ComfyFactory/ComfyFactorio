@@ -9,6 +9,7 @@ Public.register = Token.register
 Public.get = Token.get
 
 Public.set_timeout_in_ticks = Task.set_timeout_in_ticks
+Public.set_duration_task = Task.set_duration_task
 Public.set_timeout_in_ticks_text = Task.set_timeout_in_ticks_text
 Public.set_timeout = Task.set_timeout
 Public.queue_task = Task.queue_task

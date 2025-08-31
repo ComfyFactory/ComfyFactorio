@@ -7,7 +7,8 @@ local Task = require 'utils.task_token'
 local stateful_settings =
 {
     reversed = false,
-    current_planet = 'fortress'
+    current_planet = 'fortress',
+    darkness = false
 }
 
 local planets =
@@ -54,6 +55,10 @@ local this =
     {
         scrap = {},
         forest = {},
+        crystal = {},
+        frostbite = {},
+        volcanic = {},
+        tech = {},
         size = nil,
         shuffled_zones = nil,
         starting_zone = false,
@@ -101,8 +106,8 @@ Global.register(
 
 Public.zone_settings =
 {
-    zone_depth = 704,
-    zone_width = 510
+    zone_depth = 800,
+    zone_width = 620
 }
 
 Public.valid_enemy_forces =
@@ -175,6 +180,9 @@ Public.pickaxe_upgrades =
     'Luminite'
 }
 
+Public.locomotive_warning_blueprint = [[
+0eNqNU1tu2zAQvMt+U4GfSa2rBAFBSWt5Eb5AUk5VQwfoQXqxnqRLOqFbxGirL2ofM7PD5QU6PaEPZBO0F6De2Qjt8wUijVbpHLPKILSAGvsUqG/QYhjnhjswHFWPsAggO+BXaNfLiwC0iRLhFab8zNJOpsPABeIDLhMlZVPTO9ORVckFEOBd5F5nMy/jNbvVw17A/H5iIm5LwWnZ4UmdiXu4MLIwKrp/PzP5TdWyLOKTmE0V44MbgzJGdRqb6FG94j0128N/qOkp9BMlybmhdh8pxCRvnqbZF0+LIKg6EjH/eHIxwRW9WATtKv8Yr0KxqYWf33+UgneqnDDI13G1oLDIs+KLlRSlp9SfoD0qHVFATM5Lr9VMdpTRTXaINUfMFybDqiQNhdW6hOX8yAbCnzwZpFP9qzw7PWX5fLk1ZtyQBxq163hiAUpr9ya907M/OTtXymuvfDdS4yC7ufpUapbcjOHTlCfGK4nbaDnkrDTK19i11WCMasyC4N4ibOsFRMNCm7rqrBf/vgdr3oM7iDvx72dzB/fLByoP3U3HIwb24lu2dlW//MTeKJT39bwWa7ER6xeOUULDfLfnzOayVwV+/7g57A6H/dN2v909bZblF9amX4U=]]
+
 function Public.reset_main_table()
     -- @start
     this.default_surface = false
@@ -219,8 +227,8 @@ function Public.reset_main_table()
     {
         hinders = {},
         gap = 900,
-        neg_gap = 3520, -- earlier 2112 (3 zones, whereas 704 is one zone)
-        neg_gap_collapse = 5520, -- earlier 2112 (3 zones, whereas 704 is one zone)
+        neg_gap = 4928, -- earlier 2112 (3 zones, whereas 704 is one zone)
+        neg_gap_collapse = 5520, -- earlier 2112 (3 zones, whereas 704 is one zone) -- not in used
         highest_pos = nil
     }
     this.force_chunk = false
@@ -251,7 +259,7 @@ function Public.reset_main_table()
     this.enemy_spawners =
     {
         spawners = {},
-        enabled = false
+        enabled = true
     }
     this.poison_deployed = false
     this.robotics_deployed = false
@@ -403,7 +411,8 @@ function Public.reset_main_table()
     this.mc_rewards =
     {
         current = {},
-        temp_boosts = {}
+        temp_boosts = {},
+        active_boosts = {}
     }
 
     this.fishy_baits = {}
@@ -413,6 +422,10 @@ function Public.reset_main_table()
     {
         scrap = {},
         forest = {},
+        crystal = {},
+        frostbite = {},
+        volcanic = {},
+        tech = {},
         size = nil,
         shuffled_zones = nil,
         starting_zone = true,
@@ -438,6 +451,20 @@ function Public.reset_main_table()
     {
         'normal',
     }
+
+    this.buff_selection =
+    {
+        closing_timeout = 54000,
+        buffs = {},
+        tooltip = {},
+        index = 1,
+        all_votes = {},
+        votes_enabled = true,
+        voting_started = false,
+        voting_closed = false
+    }
+
+    this.enforce_wave_200_before_collapse = true
 
     for k, _ in pairs(this.players) do
         this.players[k] = {}
