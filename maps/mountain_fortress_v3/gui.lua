@@ -907,7 +907,6 @@ function Public.update_gui(player)
 
         local items_tooltip = ''
         local items_needed = 0
-        local items_completed = 0
 
         -- Count total items originally needed
         for _, _ in pairs(mystical_chest_price_init) do
@@ -922,15 +921,13 @@ function Public.update_gui(player)
         end
 
         -- Calculate completed items: total needed - remaining needed
-        items_completed = items_needed - remaining_items
+        local items_completed = items_needed - remaining_items
 
         -- Clean up tooltip (remove extra newlines at the end)
         if items_tooltip ~= '' then
             items_tooltip = items_tooltip:sub(1, -2)
             items_tooltip = items_tooltip:sub(1, -2)
         end
-
-        log(serpent.block(items_tooltip))
 
         gui[mystical_chest_button_name].caption = ' [img=item.requester-chest]: ' .. items_completed .. '/' .. items_needed
         gui[mystical_chest_button_name].tooltip = items_tooltip

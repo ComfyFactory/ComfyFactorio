@@ -1,6 +1,6 @@
 local Public = require 'maps.mountain_fortress_v3.table'
 local Session = require 'utils.datastore.session_data'
-
+local Server = require 'utils.server'
 local Antigrief = require 'utils.antigrief'
 
 local required_playtime = 5184000 -- 24 hours
@@ -145,7 +145,7 @@ function Public.add_player_to_permission_group(player, group, forced)
 
     if not AG.enabled then
         default_group.add_player(player)
-        log('Antigrief is not enabled. Default group added to player.')
+        Server.output_script_data('Antigrief is not enabled. Default group added to player.')
         return
     end
 

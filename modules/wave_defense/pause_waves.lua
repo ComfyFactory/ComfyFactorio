@@ -291,7 +291,7 @@ Commands.new('wave_defense_pause_waves', 'Usable only for admins - pauses the wa
                 return false
             end
 
-            print('[Wave Defense] ' .. player.name .. ' paused wave defense.')
+            Server.output_script_data('[Wave Defense] ' .. player.name .. ' paused wave defense.')
 
             Public.toggle_pause_wave()
         end
@@ -307,7 +307,7 @@ Commands.new('wave_defense_force_pause_waves', 'Usable only for admins - pauses 
                 return false
             end
 
-            print('[Wave Defense] ' .. player.name .. ' paused wave defense.')
+            Server.output_script_data('[Wave Defense] ' .. player.name .. ' paused wave defense.')
 
             Public.toggle_pause_wave_without_votes()
         end

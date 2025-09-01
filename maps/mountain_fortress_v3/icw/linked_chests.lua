@@ -10,6 +10,7 @@ local Session = require 'utils.datastore.session_data'
 local AG = require 'utils.antigrief'
 local Core = require 'utils.core'
 local Discord = require 'utils.discord_handler'
+local Server = require 'utils.server'
 
 local this = {}
 
@@ -988,26 +989,26 @@ local function on_gui_checked_state_changed(event)
         return
     end
     if not element.valid then
-        print('Linked chests: Invalid element for gui checked state changed.')
+        Server.output_script_data('Linked chests: Invalid element for gui checked state changed.')
         return
     end
 
     local pGui = this.linked_gui[player.name]
     if not pGui then
-        print('Linked chests: No gui data for player ' .. player.name .. ' for gui checked state changed.')
+        Server.output_script_data('Linked chests: No gui data for player ' .. player.name .. ' for gui checked state changed.')
         return
     end
 
     local entity = pGui.entity
     if not (entity and entity.valid) then
-        print('Linked chests: Invalid entity for gui checked state changed.')
+        Server.output_script_data('Linked chests: Invalid entity for gui checked state changed.')
         return
     end
 
     local unit_number = entity.unit_number
     local container = fetch_container(unit_number)
     if not container then
-        print('Linked chests: No container found for unit number ' .. unit_number .. ' for gui checked state changed.')
+        Server.output_script_data('Linked chests: No container found for unit number ' .. unit_number .. ' for gui checked state changed.')
         return
     end
 
@@ -1270,9 +1271,9 @@ Event.on_nth_tick(500,
                     if chest and chest.valid and not containers[chest.unit_number] and not WPT.locomotive.is_around_train(chest) then
                         if not this.invalid_containers[chest.unit_number] or chest.get_inventory(defines.inventory.chest).get_bar() ~= 1 then
                             this.invalid_containers[chest.unit_number] = true
-                            print(module_name .. 'Found a container that was not linked, disabling it: ' .. chest.unit_number)
-                            print(module_name .. 'Chest name: ' .. chest.name)
-                            print(module_name .. 'Chest position: ' .. serpent.line(chest.position))
+                            Server.output_script_data(module_name .. 'Found a container that was not linked, disabling it: ' .. chest.unit_number)
+                            Server.output_script_data(module_name .. 'Chest name: ' .. chest.name)
+                            Server.output_script_data(module_name .. 'Chest position: ' .. serpent.line(chest.position))
                             chest.get_inventory(defines.inventory.chest).set_bar(1)
                         end
                     end

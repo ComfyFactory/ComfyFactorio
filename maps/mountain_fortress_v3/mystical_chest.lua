@@ -264,8 +264,18 @@ local restore_active_modifier_token =
             end
 
             mc_rewards.active_boosts[modifier] = false
-            local message = ({ 'locomotive.bonus_bonus_end', modifier })
+            local message = ({ 'locomotive.bonus_bonus_end', modifier:gsub("_", " ") })
             Alert.alert_all_players(10, message, nil, 'achievement/tech-maniac')
+
+            if modifier == 'coins' then
+                Public.set('coin_amount', Public.get('coin_amount_previous'))
+            end
+            if modifier == 'prototype_data_disk' then
+                Public.set('prototype_data_disk_bonus', false)
+            end
+            if modifier == 'lab_overclock' then
+                game.forces.player.laboratory_speed_modifier = game.forces.player.laboratory_speed_modifier - 1
+            end
         end
     )
 
@@ -314,7 +324,7 @@ local mc_random_rewards =
     {
         name = 'Science glory',
         str = 'science',
-        color = { r = 0.00, g = 0.45, b = 0.00 },
+        color = { r = 0.00, g = 0.80, b = 0.00 },
         tooltip = 'Selecting this will grant all of the researched tech in the mystical chest!',
         func = (function (player, _)
             local mc_rewards = Public.get('mc_rewards')
@@ -337,7 +347,11 @@ local mc_random_rewards =
 
             for _, tech in pairs(techs_to_research) do
                 if techs[tech] and techs[tech].researched then
-                    mystical_chest.insert({ name = tech, count = random(200, 1500) })
+                    if mystical_chest.can_insert({ name = tech, count = random(200, 1500) }) then
+                        mystical_chest.insert({ name = tech, count = random(200, 1500) })
+                    else
+                        mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = tech, count = random(200, 1500) }, enable_looted = true })
+                    end
                 end
             end
 
@@ -345,12 +359,12 @@ local mc_random_rewards =
             Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted science bonus to the team!', ' ***' })
             return true
         end),
-        512
+        1024
     },
     {
         name = 'Ammo for all',
         str = 'ammo',
-        color = { r = 0.00, g = 0.45, b = 0.00 },
+        color = { r = 0.00, g = 0.35, b = 0.20 },
         tooltip = 'Selecting this will grant ammo to the team!',
         func = (function (player, _)
             local mc_rewards = Public.get('mc_rewards')
@@ -373,7 +387,11 @@ local mc_random_rewards =
 
             for name, tech in pairs(ammo_to_research) do
                 if techs[tech.tech] and techs[tech.tech].researched then
-                    mystical_chest.insert({ name = name, count = random(200, 400) })
+                    if mystical_chest.can_insert({ name = name, count = random(200, 400) }) then
+                        mystical_chest.insert({ name = name, count = random(200, 400) })
+                    else
+                        mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = name, count = random(200, 400) }, enable_looted = true })
+                    end
                 end
             end
 
@@ -384,9 +402,248 @@ local mc_random_rewards =
         512
     },
     {
+        name = 'Market reroll',
+        str = 'market_reroll',
+        color = { r = 0.20, g = 0.35, b = 0.35 },
+        tooltip = 'Selecting this will reroll the market items!',
+        func = (function (player, _)
+            local mc_rewards = Public.get('mc_rewards')
+            if mc_rewards.temp_boosts.market_reroll then
+                return false, '[Rewards] Market reroll bonus is already applied and is currently on cooldown. Please choose another reward.'
+            end
+            mc_rewards.temp_boosts.market_reroll = true
+            mc_rewards.active_boosts.market_reroll = true
+            Task.set_timeout_in_ticks(modifier_cooldown, restore_modifier_token, { modifier = 'market_reroll' })
+
+            Public.set('market_reroll_bonus', Public.get('market_reroll_bonus') and Public.get('market_reroll_bonus') + 1 or 1)
+
+            local mystical_chest = Public.get('mystical_chest')
+            if not (mystical_chest and mystical_chest.valid) then
+                return
+            end
+
+
+            local active_surface_index = Public.get('active_surface_index')
+            local surface = game.get_surface(active_surface_index)
+            if not (surface and surface.valid) then
+                return
+            end
+
+            local markets = surface.find_entities_filtered({ name = 'market', })
+            if #markets > 0 then
+                for _, mrk in pairs(markets) do
+                    if mrk and mrk.valid then
+                        Public.reroll_market(mrk, abs(mrk.position.y) * 0.004)
+                    end
+                end
+            end
+
+            local mystical_rewards = Public.get('mystical_rewards')
+            mystical_rewards.market_reroll_bonus = mystical_rewards.market_reroll_bonus and mystical_rewards.market_reroll_bonus + 1 or 1
+
+            Alert.alert_all_players(15, 'Market reroll! All markets in the main surface have been rerolled!', nil, 'achievement/tech-maniac')
+            Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted market reroll bonus to the team!', ' ***' })
+            return true
+        end),
+        512
+    },
+    {
+        name = 'Coin overclock',
+        str = 'coins',
+        color = { r = 0.20, g = 0.35, b = 0.00 },
+        tooltip = 'Selecting this will grant a higher chance of finding extra coins when killing biters!',
+        func = (function (player, _)
+            local mc_rewards = Public.get('mc_rewards')
+            if mc_rewards.temp_boosts.coins then
+                return false, '[Rewards] Coins bonus is already applied and is currently on cooldown. Please choose another reward.'
+            end
+            mc_rewards.temp_boosts.coins = true
+            mc_rewards.active_boosts.coins = true
+            Task.set_timeout_in_ticks(modifier_cooldown, restore_modifier_token, { modifier = 'coins' })
+            Task.set_timeout_in_ticks(54000, restore_active_modifier_token, { modifier = 'coins' })
+            Public.set('coin_amount_previous', Public.get('coin_amount'))
+            Public.set('coin_amount', 3)
+
+            local mystical_chest = Public.get('mystical_chest')
+            if not (mystical_chest and mystical_chest.valid) then
+                return
+            end
+
+            local mystical_rewards = Public.get('mystical_rewards')
+            mystical_rewards.coins_bonus = mystical_rewards.coins_bonus and mystical_rewards.coins_bonus + 1 or 1
+
+            Alert.alert_all_players(15, 'Coins overclock! Get extra coins when killing biters!', nil, 'achievement/tech-maniac')
+            Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted coins overclock bonus to the team!', ' ***' })
+            return true
+        end),
+        1024
+    },
+    {
+        name = 'Tactical bacon',
+        str = 'tactical_bacon',
+        color = { r = 0.00, g = 0.35, b = 0.20 },
+        tooltip = 'Selecting this will grant the team some defensive items!',
+        func = (function (player, _)
+            local mc_rewards = Public.get('mc_rewards')
+            if mc_rewards.temp_boosts.tactical_bacon then
+                return false, '[Rewards] Tactical Bacon bonus is already applied and is currently on cooldown. Please choose another reward.'
+            end
+            mc_rewards.temp_boosts.tactical_bacon = true
+            mc_rewards.active_boosts.tactical_bacon = true
+            Task.set_timeout_in_ticks(modifier_cooldown, restore_modifier_token, { modifier = 'tactical_bacon' })
+
+            local mystical_chest = Public.get('mystical_chest')
+            if not (mystical_chest and mystical_chest.valid) then
+                return
+            end
+
+            if mystical_chest.can_insert({ name = 'stone-wall', count = random(100, 240) }) then
+                mystical_chest.insert({ name = 'stone-wall', count = random(100, 240) })
+            else
+                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'stone-wall', count = random(100, 240) }, enable_looted = true })
+            end
+
+            if mystical_chest.can_insert({ name = 'gate', count = random(100, 240) }) then
+                mystical_chest.insert({ name = 'gate', count = random(100, 240) })
+            else
+                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'gate', count = random(100, 240) }, enable_looted = true })
+            end
+
+            if mystical_chest.can_insert({ name = 'repair-pack', count = random(100, 240) }) then
+                mystical_chest.insert({ name = 'repair-pack', count = random(100, 240) })
+            else
+                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'repair-pack', count = random(100, 240) }, enable_looted = true })
+            end
+
+            if mystical_chest.can_insert({ name = 'gun-turret', count = random(20, 100) }) then
+                mystical_chest.insert({ name = 'gun-turret', count = random(20, 100) })
+            else
+                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'gun-turret', count = random(20, 100) }, enable_looted = true })
+            end
+
+            if mystical_chest.can_insert({ name = 'laser-turret', count = random(20, 100) }) then
+                mystical_chest.insert({ name = 'laser-turret', count = random(20, 100) })
+            else
+                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'laser-turret', count = random(20, 100) }, enable_looted = true })
+            end
+
+            if mystical_chest.can_insert({ name = 'flamethrower-turret', count = random(20, 40) }) then
+                mystical_chest.insert({ name = 'flamethrower-turret', count = random(20, 40) })
+            else
+                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'flamethrower-turret', count = random(20, 40) }, enable_looted = true })
+            end
+
+            if mystical_chest.can_insert({ name = 'firearm-magazine', count = random(400, 800) }) then
+                mystical_chest.insert({ name = 'firearm-magazine', count = random(400, 800) })
+            else
+                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'firearm-magazine', count = random(400, 800) }, enable_looted = true })
+            end
+
+            if mystical_chest.can_insert({ name = 'shotgun-shell', count = random(400, 800) }) then
+                mystical_chest.insert({ name = 'shotgun-shell', count = random(400, 800) })
+            else
+                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'shotgun-shell', count = random(400, 800) }, enable_looted = true })
+            end
+
+            if mystical_chest.can_insert({ name = 'piercing-shotgun-shell', count = random(400, 800) }) then
+                mystical_chest.insert({ name = 'piercing-shotgun-shell', count = random(400, 800) })
+            else
+                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'piercing-shotgun-shell', count = random(400, 800) }, enable_looted = true })
+            end
+
+            if mystical_chest.can_insert({ name = 'combat-shotgun', count = random(10, 20) }) then
+                mystical_chest.insert({ name = 'combat-shotgun', count = random(10, 20) })
+            else
+                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'combat-shotgun', count = random(10, 20) }, enable_looted = true })
+            end
+
+            if mystical_chest.can_insert({ name = 'submachine-gun', count = random(10, 20) }) then
+                mystical_chest.insert({ name = 'submachine-gun', count = random(10, 20) })
+            else
+                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'submachine-gun', count = random(10, 20) }, enable_looted = true })
+            end
+
+            if mystical_chest.can_insert({ name = 'piercing-rounds-magazine', count = random(400, 800) }) then
+                mystical_chest.insert({ name = 'piercing-rounds-magazine', count = random(400, 800) })
+            else
+                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'piercing-rounds-magazine', count = random(400, 800) }, enable_looted = true })
+            end
+
+            local mystical_rewards = Public.get('mystical_rewards')
+            mystical_rewards.tactical_bacon_bonus = mystical_rewards.tactical_bacon_bonus and mystical_rewards.tactical_bacon_bonus + 1 or 1
+
+            Alert.alert_all_players(15, 'Tactical Bacon! Get extra defensive items - check out the mystical chest!', nil, 'achievement/tech-maniac')
+            Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted tactical bacon bonus to the team!', ' ***' })
+            return true
+        end),
+        512
+    },
+    {
+        name = 'Lab Overclock',
+        str = 'lab_overclock',
+        color = { r = 0.20, g = 0.35, b = 0.20 },
+        tooltip = 'Selecting this will make labs research techs faster!',
+        func = (function (player, _)
+            local mc_rewards = Public.get('mc_rewards')
+            if mc_rewards.temp_boosts.lab_overclock then
+                return false, '[Rewards] Lab Overclock bonus is already applied and is currently on cooldown. Please choose another reward.'
+            end
+            mc_rewards.temp_boosts.lab_overclock = true
+            mc_rewards.active_boosts.lab_overclock = true
+            Task.set_timeout_in_ticks(modifier_cooldown, restore_modifier_token, { modifier = 'lab_overclock' })
+            Task.set_timeout_in_ticks(54000, restore_active_modifier_token, { modifier = 'lab_overclock' })
+
+            game.forces.player.laboratory_speed_modifier = game.forces.player.laboratory_speed_modifier + 1
+
+            local mystical_chest = Public.get('mystical_chest')
+            if not (mystical_chest and mystical_chest.valid) then
+                return
+            end
+
+            local mystical_rewards = Public.get('mystical_rewards')
+            mystical_rewards.lab_overclock_bonus = mystical_rewards.lab_overclock_bonus and mystical_rewards.lab_overclock_bonus + 1 or 1
+
+            Alert.alert_all_players(15, 'Lab Overclock! Get extra lab research techs faster!', nil, 'achievement/tech-maniac')
+            Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted lab overclock bonus to the team!', ' ***' })
+            return true
+        end),
+        512
+    },
+    {
+        name = 'Prototype Data Disk',
+        str = 'prototype_data_disk',
+        color = { r = 0.20, g = 0.35, b = 0.60 },
+        tooltip = 'Selecting this will make market items more cheaper!',
+        func = (function (player, _)
+            local mc_rewards = Public.get('mc_rewards')
+            if mc_rewards.temp_boosts.prototype_data_disk then
+                return false, '[Rewards] Prototype Data Disk bonus is already applied and is currently on cooldown. Please choose another reward.'
+            end
+            mc_rewards.temp_boosts.prototype_data_disk = true
+            mc_rewards.active_boosts.prototype_data_disk = true
+            Task.set_timeout_in_ticks(modifier_cooldown, restore_modifier_token, { modifier = 'prototype_data_disk' })
+            Task.set_timeout_in_ticks(54000, restore_active_modifier_token, { modifier = 'prototype_data_disk' })
+
+            Public.set('prototype_data_disk_bonus', (random(50, 90) / 100))
+
+            local mystical_chest = Public.get('mystical_chest')
+            if not (mystical_chest and mystical_chest.valid) then
+                return
+            end
+
+            local mystical_rewards = Public.get('mystical_rewards')
+            mystical_rewards.prototype_data_disk_bonus = mystical_rewards.prototype_data_disk_bonus and mystical_rewards.prototype_data_disk_bonus + 1 or 1
+
+            Alert.alert_all_players(15, 'Prototype Data Disk! Get extra market items more cheaper!', nil, 'achievement/tech-maniac')
+            Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted prototype data disk bonus to the team!', ' ***' })
+            return true
+        end),
+        1024
+    },
+    {
         name = 'Lucky Looter',
         str = 'lucky',
-        color = { r = 0.00, g = 0.45, b = 0.00 },
+        color = { r = 0.20, g = 0.35, b = 0.40 },
         tooltip = 'Selecting this will grant a higher chance of finding better loot!',
         func = (function (player, _)
             local mc_rewards = Public.get('mc_rewards')
@@ -411,12 +668,12 @@ local mc_random_rewards =
             Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted lucky loot bonus to the team!', ' ***' })
             return true
         end),
-        512
+        1024
     },
     {
         name = 'Oil Barrels',
         str = 'oil',
-        color = { r = 0.00, g = 0.45, b = 0.00 },
+        color = { r = 0.20, g = 0.75, b = 0.40 },
         tooltip = 'Selecting this will grant oil to the team!',
         func = (function (player, _)
             local mc_rewards = Public.get('mc_rewards')
@@ -435,7 +692,11 @@ local mc_random_rewards =
             local mystical_rewards = Public.get('mystical_rewards')
             mystical_rewards.oil_bonus = mystical_rewards.oil_bonus and mystical_rewards.oil_bonus + 1 or 1
 
-            mystical_chest.insert({ name = 'crude-oil-barrel', count = random(200, 480) })
+            if mystical_chest.can_insert({ name = 'crude-oil-barrel', count = random(200, 480) }) then
+                mystical_chest.insert({ name = 'crude-oil-barrel', count = random(200, 480) })
+            else
+                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'crude-oil-barrel', count = random(200, 480) }, enable_looted = true })
+            end
 
             Alert.alert_all_players(15, 'Oil for all! Check out the mystical chest!', nil, 'achievement/tech-maniac')
             Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted oil bonus to the team!', ' ***' })

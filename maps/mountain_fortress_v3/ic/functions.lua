@@ -81,7 +81,7 @@ local function log_err(err)
     local debug_mode = IC.get('debug_mode')
     if debug_mode then
         if type(err) == 'string' then
-            log('IC: ' .. err)
+            Server.output_script_data('IC: ' .. err)
         end
     end
 end
@@ -1024,7 +1024,7 @@ function Public.kill_car(entity)
     local surface_index = car.surface
     local surface = game.surfaces[surface_index]
     if not surface or not surface.valid then
-        log('[IC] Car surface was not valid upon trying to delete.')
+        Server.output_script_data('[IC] Car surface was not valid upon trying to delete.')
         return
     end
     kill_doors(car)
@@ -1387,7 +1387,7 @@ function Public.remove_invalid_cars()
                     end
                 end
                 kick_players_from_surface(car)
-                log('IC::remove_invalid_cars -> car.entity was not valid for car_index: ' .. car_index)
+                Server.output_script_data('IC::remove_invalid_cars -> car.entity was not valid for car_index: ' .. car_index)
             else
                 local owner = game.get_player(car.owner)
                 if owner and owner.valid then
@@ -1409,7 +1409,7 @@ function Public.remove_invalid_cars()
                         Task.set_timeout_in_ticks(30, enable_car_to_be_mined, { entity = car.entity, owner_name = owner.name })
                         cars[car_index] = nil
                         if cars[car_index] then
-                            log('IC::remove_invalid_cars -> car will be deleted since no valid owner was found for car index: ' .. car_index)
+                            Server.output_script_data('IC::remove_invalid_cars -> car will be deleted since no valid owner was found for car index: ' .. car_index)
                             cars[car_index] = nil
                         end
                     end
@@ -1425,15 +1425,15 @@ function Public.remove_invalid_cars()
             if not valid_surface then
                 game.delete_surface(surface)
                 surfaces[car_to_surface_index] = nil
-                log('IC::remove_invalid_cars -> surface was valid and will be deleted since no car entry for car_to_surface_index: ' .. car_to_surface_index)
+                Server.output_script_data('IC::remove_invalid_cars -> surface was valid and will be deleted since no car entry for car_to_surface_index: ' .. car_to_surface_index)
             end
         else
             if cars[car_to_surface_index] then
-                log('IC::remove_invalid_cars -> car will be deleted since no valid surface was found for car_to_surface_index: ' .. car_to_surface_index)
+                Server.output_script_data('IC::remove_invalid_cars -> car will be deleted since no valid surface was found for car_to_surface_index: ' .. car_to_surface_index)
                 cars[car_to_surface_index] = nil
             end
 
-            log('IC::remove_invalid_cars -> surface was not valid upon trying to delete for car_to_surface_index: ' .. car_to_surface_index)
+            Server.output_script_data('IC::remove_invalid_cars -> surface was not valid upon trying to delete for car_to_surface_index: ' .. car_to_surface_index)
             surfaces[car_to_surface_index] = nil
         end
     end

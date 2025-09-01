@@ -15,10 +15,11 @@ local LinkedChests = require 'maps.mountain_fortress_v3.icw.linked_chests'
 local format_number = require 'util'.format_number
 
 local concat = table.concat
-
+local floor = math.floor
 local main_frame_name = Gui.uid_name()
 local close_market_gui_name = Gui.uid_name()
 local random = math.random
+
 local round = math.round
 
 local ceil = math.ceil
@@ -145,6 +146,7 @@ local function get_items(player)
     local flame_turret = Public.get('upgrades').flame_turret.bought
     local upgrades = Public.get('upgrades')
     local fixed_prices = Public.get('marked_fixed_prices')
+    local market_rpg_purchased = Public.get('market_rpg_purchased')
 
     local health_cost = round(fixed_prices.health_cost * (1 + upgrades.health_upgrades))
     local pickaxe_cost = round(fixed_prices.pickaxe_cost * (0.1 + upgrades.pickaxe_tier / 2))
@@ -670,6 +672,38 @@ local function get_items(player)
         static = true
     }
 
+    if not market_rpg_purchased[player.index] then
+        market_rpg_purchased[player.index] = 0
+    end
+
+    if market_rpg_purchased[player.index] >= market_limits.rpg_reset_skills_limit then
+        main_market_items['rpg_reset_skills'] =
+        {
+            stack = 1,
+            value = 'coin',
+            price = fixed_prices.rpg_reset_skills_cost,
+            tooltip = ({ 'main_market.sold_out' }),
+            sprite = 'achievement/minions',
+            upgrade = false,
+            player_upgrade = true,
+            static = true,
+            enabled = false
+        }
+    else
+        main_market_items['rpg_reset_skills'] =
+        {
+            stack = 1,
+            value = 'coin',
+            price = fixed_prices.rpg_reset_skills_cost,
+            sprite = 'achievement/minions',
+            tooltip = ({ 'main_market.rpg_reset_skills', market_rpg_purchased[player.index], market_limits.rpg_reset_skills_limit }),
+            upgrade = false,
+            player_upgrade = true,
+            static = true
+        }
+    end
+
+
     for _, item in pairs(main_market_items) do
         if item.static then
             item.price = item.price * quality_price
@@ -749,7 +783,9 @@ local function redraw_market_items(gui, player, search_text)
 
     local quality = get_player_quality(player)
 
-    for item, data in pairs(get_items(player)) do
+    local prototype_data_disk_bonus = Public.get('prototype_data_disk_bonus')
+    local player_items = get_items(player)
+    for item, data in pairs(player_items) do
         if data.upgrade then
             if not search_text then
                 goto continue
@@ -762,6 +798,10 @@ local function redraw_market_items(gui, player, search_text)
             end
             local item_count = data.stack
             local item_cost = data.price
+
+            if prototype_data_disk_bonus then
+                item_cost = item_cost * prototype_data_disk_bonus
+            end
 
             local frame = upgrade_table.add({ type = 'flow' })
             frame.style.vertical_align = 'bottom'
@@ -785,7 +825,7 @@ local function redraw_market_items(gui, player, search_text)
                 frame.add(
                     {
                         type = 'label',
-                        caption = concat { '[item=', data.value, ',quality=' .. quality .. ']: ' } .. format_number(item_cost, true)
+                        caption = concat { '[item=', data.value, ',quality=' .. quality .. ']: ' } .. format_number(floor(item_cost), true)
                     }
                 )
             label.style.font = 'default-bold'
@@ -796,6 +836,7 @@ local function redraw_market_items(gui, player, search_text)
             ::continue::
         end
     end
+
     local items_label =
         gui.add(
             {
@@ -808,7 +849,7 @@ local function redraw_market_items(gui, player, search_text)
     local slider_value = ceil(players[player.index].data.slider.slider_value)
     local items_table = gui.add({ type = 'table', column_count = 6 })
 
-    for item, data in pairs(get_items(player)) do
+    for item, data in pairs(player_items) do
         if not data.upgrade then
             if not search_text then
                 goto continue
@@ -821,6 +862,10 @@ local function redraw_market_items(gui, player, search_text)
             end
             local item_count = data.stack * slider_value
             local item_cost = data.price * slider_value
+
+            if prototype_data_disk_bonus then
+                item_cost = item_cost * prototype_data_disk_bonus
+            end
 
             local frame = items_table.add({ type = 'flow' })
             frame.style.vertical_align = 'bottom'
@@ -858,7 +903,70 @@ local function redraw_market_items(gui, player, search_text)
                 frame.add(
                     {
                         type = 'label',
-                        caption = concat { '[item=', data.value, ',quality=' .. quality .. ']: ' } .. format_number(item_cost, true)
+                        caption = concat { '[item=', data.value, ',quality=' .. quality .. ']: ' } .. format_number(floor(item_cost), true)
+                    }
+                )
+            label.style.font = 'default-bold'
+
+            if player_item_count < item_cost then
+                button.enabled = false
+            end
+            ::continue::
+        end
+    end
+
+    local player_upgrades_label =
+        gui.add(
+            {
+                type = 'label',
+                caption = ({ 'locomotive.player_upgrades' })
+            }
+        )
+    player_upgrades_label.style.font = 'heading-2'
+
+    local player_upgrades_table = gui.add({ type = 'table', column_count = 6 })
+
+    for item, data in pairs(player_items) do
+        if data.player_upgrade then
+            if not search_text then
+                goto continue
+            end
+            if not search_text.text then
+                goto continue
+            end
+            if not string.lower(item:gsub('-', ' ')):find(search_text.text) then
+                goto continue
+            end
+            local item_cost = data.price
+
+            if prototype_data_disk_bonus then
+                item_cost = item_cost * prototype_data_disk_bonus
+            end
+
+            local frame = player_upgrades_table.add({ type = 'flow' })
+            frame.style.vertical_align = 'bottom'
+
+            player_item_count = get_item_count(player, data.value)
+
+            local button =
+                frame.add(
+                    {
+                        type = 'sprite-button',
+                        ---@diagnostic disable-next-line: ambiguity-1
+                        sprite = data.sprite or 'item/' .. item,
+                        number = 1,
+                        name = item,
+                        tooltip = data.tooltip,
+                        style = 'slot_button',
+                        enabled = data.enabled
+                    }
+                )
+
+            local label =
+                frame.add(
+                    {
+                        type = 'label',
+                        caption = concat { '[item=', data.value, ',quality=' .. quality .. ']: ' } .. format_number(floor(item_cost), true)
                     }
                 )
             label.style.font = 'default-bold'
@@ -1181,9 +1289,15 @@ local function gui_click(event)
         return
     end
 
+    local price = item.price
+    local prototype_data_disk_bonus = Public.get('prototype_data_disk_bonus')
+    if prototype_data_disk_bonus then
+        price = price * prototype_data_disk_bonus
+    end
+
     local player_item_count = get_item_count(player, item.value)
     local slider_value = ceil(data.slider.slider_value)
-    local cost = (item.price * slider_value)
+    local cost = (price * slider_value)
     local item_count = item.stack * slider_value
 
     local this = Public.get()
@@ -1199,11 +1313,11 @@ local function gui_click(event)
             player.print(({ 'locomotive.limit_reached' }), { r = 0.98, g = 0.66, b = 0.22 })
             return
         end
-        remove_item_count(player, item.value, item.price)
+        remove_item_count(player, item.value, price)
 
         player.insert({ name = name, count = item.stack })
 
-        Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
+        Event.raise(Public.events.on_market_item_purchased, { cost = price })
 
         if item.stack > this.upgrades.burner_generator.limit then
             item.stack = this.upgrades.burner_generator.limit
@@ -1211,7 +1325,7 @@ local function gui_click(event)
 
         this.upgrades.burner_generator.bought = this.upgrades.burner_generator.bought + item.stack
 
-        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + item.price
+        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + price
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
 
@@ -1219,9 +1333,9 @@ local function gui_click(event)
     end
 
     if name == 'upgrade_pickaxe' then
-        remove_item_count(player, item.value, item.price)
+        remove_item_count(player, item.value, price)
 
-        Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
+        Event.raise(Public.events.on_market_item_purchased, { cost = price })
 
         this.upgrades.pickaxe_tier = this.upgrades.pickaxe_tier + item.stack
 
@@ -1234,20 +1348,20 @@ local function gui_click(event)
                 shopkeeper,
                 player.name,
                 offer,
-                format_number(item.price, true)
+                format_number(price, true)
             })
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat
             {
-                player.name .. ' has upgraded the teams pickaxe to tier ' .. this.upgrades.pickaxe_tier .. ' for ' .. format_number(item.price, true) .. ' coins.'
+                player.name .. ' has upgraded the teams pickaxe to tier ' .. this.upgrades.pickaxe_tier .. ' for ' .. format_number(price, true) .. ' coins.'
             }
         )
 
         local force = game.forces.player
 
         force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + this.pickaxe_speed_per_purchase
-        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + item.price
+        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + price
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
@@ -1255,16 +1369,16 @@ local function gui_click(event)
         return
     end
     if name == 'locomotive_max_health' then
-        remove_item_count(player, item.value, item.price)
-        local message = ({ 'locomotive.health_bought_info', shopkeeper, player.name, format_number(item.price, true) })
+        remove_item_count(player, item.value, price)
+        local message = ({ 'locomotive.health_bought_info', shopkeeper, player.name, format_number(price, true) })
 
-        Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
+        Event.raise(Public.events.on_market_item_purchased, { cost = price })
 
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat
             {
-                player.name .. ' has upgraded the train health for ' .. format_number(item.price, true) .. ' coins.'
+                player.name .. ' has upgraded the train health for ' .. format_number(price, true) .. ' coins.'
             }
         )
 
@@ -1296,7 +1410,7 @@ local function gui_click(event)
             end
         end
 
-        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + item.price
+        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + price
         this.upgrades.health_upgrades = this.upgrades.health_upgrades + item.stack
         if this.health_text and this.health_text.valid then
             this.health_text.text = 'HP: ' .. round(this.locomotive_health) .. ' / ' .. round(this.locomotive_max_health)
@@ -1313,23 +1427,23 @@ local function gui_click(event)
             player.print(({ 'locomotive.limit_reached' }), { r = 0.98, g = 0.66, b = 0.22 })
             return
         end
-        remove_item_count(player, item.value, item.price)
+        remove_item_count(player, item.value, price)
 
 
-        Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
+        Event.raise(Public.events.on_market_item_purchased, { cost = price })
 
-        local message = ({ 'locomotive.aura_bought_info', shopkeeper, player.name, format_number(item.price, true) })
+        local message = ({ 'locomotive.aura_bought_info', shopkeeper, player.name, format_number(price, true) })
 
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat
             {
-                player.name .. ' has upgraded the train aura radius for ' .. format_number(item.price, true) .. ' coins.'
+                player.name .. ' has upgraded the train aura radius for ' .. format_number(price, true) .. ' coins.'
             }
         )
         this.upgrades.locomotive_aura_radius = this.upgrades.locomotive_aura_radius + 5
         this.upgrades.aura_upgrades = this.upgrades.aura_upgrades + item.stack
-        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + item.price
+        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + price
 
         if this.circle and this.circle.valid then
             this.circle.destroy()
@@ -1359,21 +1473,21 @@ local function gui_click(event)
     end
 
     if name == 'xp_points_boost' then
-        remove_item_count(player, item.value, item.price)
-        local message = ({ 'locomotive.xp_bought_info', shopkeeper, player.name, format_number(item.price, true) })
+        remove_item_count(player, item.value, price)
+        local message = ({ 'locomotive.xp_bought_info', shopkeeper, player.name, format_number(price, true) })
 
-        Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
+        Event.raise(Public.events.on_market_item_purchased, { cost = price })
 
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat
             {
-                player.name .. ' has upgraded the train aura XP modifier for ' .. format_number(item.price) .. ' coins.'
+                player.name .. ' has upgraded the train aura XP modifier for ' .. format_number(price) .. ' coins.'
             }
         )
         this.upgrades.xp_points = this.upgrades.xp_points + 0.5
         this.upgrades.xp_points_upgrade = this.upgrades.xp_points_upgrade + item.stack
-        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + item.price
+        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + price
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
@@ -1382,22 +1496,22 @@ local function gui_click(event)
     end
 
     if name == 'explosive_bullets' then
-        remove_item_count(player, item.value, item.price)
+        remove_item_count(player, item.value, price)
         local message = (
             {
                 'locomotive.explosive_bullet_bought_info',
                 shopkeeper,
                 player.name,
-                format_number(item.price, true)
+                format_number(price, true)
             })
 
-        Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
+        Event.raise(Public.events.on_market_item_purchased, { cost = price })
 
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat
             {
-                player.name .. ' has bought the explosive bullet modifier for ' .. format_number(item.price) .. ' coins.'
+                player.name .. ' has bought the explosive bullet modifier for ' .. format_number(price) .. ' coins.'
             }
         )
         RPG.enable_explosive_bullets(true)
@@ -1410,22 +1524,22 @@ local function gui_click(event)
     end
 
     if name == 'upgraded_tile_when_mining_cost' then
-        remove_item_count(player, item.value, item.price)
+        remove_item_count(player, item.value, price)
         local message = (
             {
                 'locomotive.tile_upgrade_bought_info',
                 shopkeeper,
                 player.name,
-                format_number(item.price, true)
+                format_number(price, true)
             })
 
-        Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
+        Event.raise(Public.events.on_market_item_purchased, { cost = price })
 
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat
             {
-                player.name .. ' the global tile replacement from stone-path to concrete-tile for ' .. format_number(item.price) .. ' coins.'
+                player.name .. ' the global tile replacement from stone-path to concrete-tile for ' .. format_number(price) .. ' coins.'
             }
         )
         this.upgrades.has_upgraded_tile_when_mining = true
@@ -1437,8 +1551,8 @@ local function gui_click(event)
     end
 
     if name == 'flamethrower_turrets' then
-        remove_item_count(player, item.value, item.price)
-        Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
+        remove_item_count(player, item.value, price)
+        Event.raise(Public.events.on_market_item_purchased, { cost = price })
 
         if item.stack >= 1 then
             local message = (
@@ -1446,13 +1560,13 @@ local function gui_click(event)
                     'locomotive.one_flamethrower_bought_info',
                     shopkeeper,
                     player.name,
-                    format_number(item.price, true)
+                    format_number(price, true)
                 })
             Alert.alert_all_players(5, message)
             Server.to_discord_bold(
                 table.concat
                 {
-                    player.name .. ' has bought a flamethrower-turret slot for ' .. format_number(item.price, true) .. ' coins.'
+                    player.name .. ' has bought a flamethrower-turret slot for ' .. format_number(price, true) .. ' coins.'
                 }
             )
         else
@@ -1462,13 +1576,13 @@ local function gui_click(event)
                     shopkeeper,
                     player.name,
                     item.stack,
-                    format_number(item.price, true)
+                    format_number(price, true)
                 })
             Alert.alert_all_players(5, message)
             Server.to_discord_bold(
                 table.concat
                 {
-                    player.name .. ' has bought ' .. item.stack .. ' flamethrower-turret slots for ' .. format_number(item.price, true) .. ' coins.'
+                    player.name .. ' has bought ' .. item.stack .. ' flamethrower-turret slots for ' .. format_number(price, true) .. ' coins.'
                 }
             )
         end
@@ -1481,10 +1595,10 @@ local function gui_click(event)
         return
     end
     if name == 'land_mine' then
-        remove_item_count(player, item.value, item.price)
+        remove_item_count(player, item.value, price)
 
 
-        Event.raise(Public.events.on_market_item_purchased, { cost = item.price })
+        Event.raise(Public.events.on_market_item_purchased, { cost = price })
 
         if item.stack >= 1 and this.upgrades.landmine.bought % 10 == 0 then
             local message = (
@@ -1492,16 +1606,16 @@ local function gui_click(event)
                     'locomotive.landmine_bought_info',
                     shopkeeper,
                     player.name,
-                    format_number(item.price, true)
+                    format_number(price, true)
                 })
 
             Alert.alert_all_players(3, message)
 
-            if item.price >= 1000 then
+            if price >= 1000 then
                 Server.to_discord_bold(
                     table.concat
                     {
-                        player.name .. ' has bought ' .. item.stack .. ' landmine slots for ' .. format_number(item.price, true) .. ' coins.'
+                        player.name .. ' has bought ' .. item.stack .. ' landmine slots for ' .. format_number(price, true) .. ' coins.'
                     }
                 )
             end
@@ -1510,6 +1624,43 @@ local function gui_click(event)
         this.upgrades.landmine.limit = this.upgrades.landmine.limit + item.stack
         this.upgrades.landmine.bought = this.upgrades.landmine.bought + item.stack
 
+        redraw_market_items(data.item_frame, player, data.search_text)
+        redraw_coins_left(data.coins_left, player)
+        return
+    end
+
+    if name == 'rpg_reset_skills' then
+        local rpg_t = RPG.get_value_from_player(player.index)
+        if not rpg_t then
+            return
+        end
+        if not rpg_t.reset then
+            player.print(({ 'locomotive.rpg_reset_skill_not_used' }), { color = { r = 0.98, g = 0.66, b = 0.22 } })
+            return
+        end
+
+        local market_rpg_purchased = Public.get('market_rpg_purchased')
+        local market_limits = Public.get('market_limits')
+        if market_rpg_purchased[player.index] >= market_limits.rpg_reset_skills_limit then
+            player.print(({ 'locomotive.rpg_reset_skills_limit_reached' }), { color = { r = 0.98, g = 0.66, b = 0.22 } })
+            return
+        end
+        market_rpg_purchased[player.index] = market_rpg_purchased[player.index] + 1
+
+        remove_item_count(player, item.value, price)
+        local message = ({ 'locomotive.rpg_reset_skills_bought_info', shopkeeper, player.name, format_number(price, true) })
+        Alert.alert_all_players(5, message)
+        Server.to_discord_bold(
+            table.concat
+            {
+                player.name .. ' has bought the RPG reset skills for ' .. format_number(price, true) .. ' coins.'
+            }
+        )
+
+
+        rpg_t.reset = false
+
+        this.upgrades.rpg_reset_skills_purchased = this.upgrades.rpg_reset_skills_purchased + 1
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
         return
@@ -1526,9 +1677,9 @@ local function gui_click(event)
                 player.print(({ 'locomotive.full_inventory', inserted_count, name }), { r = 0.98, g = 0.66, b = 0.22 })
                 player.print(({ 'locomotive.change_returned' }), { r = 0.98, g = 0.66, b = 0.22 })
                 player.insert({ name = name, count = inserted_count, quality = quality })
-                remove_item_count(player, item.value, ceil(item.price * (inserted_count / item.stack)))
+                remove_item_count(player, item.value, ceil(price * (inserted_count / item.stack)))
 
-                Event.raise(Public.events.on_market_item_purchased, { cost = ceil(item.price * (inserted_count / item.stack)) })
+                Event.raise(Public.events.on_market_item_purchased, { cost = ceil(price * (inserted_count / item.stack)) })
             else
                 remove_item_count(player, item.value, cost)
                 Event.raise(Public.events.on_market_item_purchased, { cost = cost })

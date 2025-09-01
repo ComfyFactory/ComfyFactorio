@@ -762,9 +762,14 @@ Gui.on_click(
 
             if reset_gui_input and reset_gui_input.valid and reset_gui_input.state then
                 if not rpg_t.reset then
-                    rpg_t.allocate_index = 1
-                    rpg_t.reset = true
-                    Public.rpg_reset_player(player, true)
+                    local success = Public.rpg_reset_player(player, true)
+                    if not success then
+                        player.print(({ 'rpg_settings.reset_error' }))
+                    else
+                        rpg_t.allocate_index = 1
+                        rpg_t.reset = true
+                        player.print(({ 'rpg_settings.reset_success' }))
+                    end
                 end
             end
             if health_bar_gui_input and health_bar_gui_input.valid then

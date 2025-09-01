@@ -51,8 +51,6 @@ local damage_indicator_token =
             if not player or not player.valid then
                 return
             end
-
-            log(serpent.block('damage_indicator_token'))
             if player.character then
                 player.character.surface.create_entity({ name = 'water-splash', position = player.character.position })
             end

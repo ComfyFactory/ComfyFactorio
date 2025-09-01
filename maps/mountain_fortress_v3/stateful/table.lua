@@ -745,49 +745,53 @@ end
 local function get_item_produced_count(item_name)
     local force = game.forces.player
     local statistics = Public.get('statistics')
-    local default_surface = Public.get('default_surface')
 
-    local starting_planet = Public.get_planet()
-    local production = force.get_item_production_statistics(starting_planet).input_counts[item_name]
-    if not production then
-        production = 0
+    if not statistics.surface_production then
+        statistics.surface_production = {}
     end
 
-    local loco_surface = Public.get('loco_surface')
-
-    if not (loco_surface and loco_surface.valid) or default_surface then
-        return production
+    if not statistics.surface_production[item_name] then
+        statistics.surface_production[item_name] = {}
     end
 
-    if not statistics.surfaces_produced then
-        statistics.surfaces_produced = {}
+    local total_production = 0
+
+    for surface_name, _ in pairs(statistics.surface_production[item_name]) do
+        local surface_exists = game.get_surface(surface_name) and game.get_surface(surface_name).valid
+        if not surface_exists then
+            statistics.surface_production[item_name][surface_name] = nil
+        end
     end
 
-    if not statistics.surfaces_produced[loco_surface.name] then
-        statistics.surfaces_produced[loco_surface.name] = {}
-    end
+    for _, surface in pairs(game.surfaces) do
+        if surface.valid then
+            local surface_name = surface.name
+            local current_production = force.get_item_production_statistics(surface_name).input_counts[item_name] or 0
 
-    local loco_production = force.get_item_production_statistics(loco_surface.name).input_counts[item_name]
-    if not loco_production then
-        loco_production = 0
-    end
-    if not statistics.surfaces_produced[loco_surface.name][item_name] then
-        statistics.surfaces_produced[loco_surface.name][item_name] = loco_production
-    else
-        statistics.surfaces_produced[loco_surface.name][item_name] = statistics.surfaces_produced[loco_surface.name][item_name] + (loco_production - statistics.surfaces_produced[loco_surface.name][item_name])
-    end
-
-    local item_count = 0
-
-    for _, data in pairs(statistics.surfaces_produced) do
-        for name, count in pairs(data) do
-            if name == item_name then
-                item_count = item_count + count
+            if not statistics.surface_production[item_name][surface_name] then
+                statistics.surface_production[item_name][surface_name] = current_production
+            else
+                local previous_production = statistics.surface_production[item_name][surface_name]
+                local production_difference = current_production - previous_production
+                if production_difference > 0 then
+                    total_production = total_production + production_difference
+                end
+                statistics.surface_production[item_name][surface_name] = current_production
             end
         end
     end
 
-    return production + item_count
+    if not statistics.running_total then
+        statistics.running_total = {}
+    end
+
+    if not statistics.running_total[item_name] then
+        statistics.running_total[item_name] = 0
+    end
+
+    statistics.running_total[item_name] = statistics.running_total[item_name] + total_production
+
+    return statistics.running_total[item_name]
 end
 
 local function get_entity_mined_count(_, item_name)
@@ -1661,8 +1665,8 @@ local function apply_buffs_generic(buffs_table, collected_table, is_permanent)
         end
         this.total_buffs = total_buffs
         local log_message = is_permanent and 'Applied all permanent buffs.' .. ' Total buffs: ' .. total_buffs or 'Applied all buffs.' .. ' Total buffs: ' .. total_buffs
-        log(log_message)
-        log('Total wagons this round: ' .. this.extra_wagons)
+        Server.output_script_data(log_message)
+        Server.output_script_data('Total wagons this round: ' .. this.extra_wagons)
     end
 end
 
@@ -1909,7 +1913,7 @@ function Public.save_settings(buff)
     if this.current_streak > this.best_streak then
         this.best_streak = this.current_streak
         settings.best_streak = this.best_streak
-        log('New best win streak: ' .. this.best_streak)
+        Server.output_script_data('New best win streak: ' .. this.best_streak)
     end
 
     local server_name_matches = Server.check_server_name(Public.discord_name)
@@ -1942,7 +1946,7 @@ function Public.save_settings_before_reset()
     if this.current_streak > this.best_streak then
         this.best_streak = this.current_streak
         settings.best_streak = this.best_streak
-        log('New best win streak: ' .. this.best_streak)
+        Server.output_script_data('New best win streak: ' .. this.best_streak)
     end
 
     local server_name_matches = Server.check_server_name(Public.discord_name)
@@ -1959,8 +1963,6 @@ function Public.save_settings_before_reset()
             Server.set_data(dataset, dataset_key_previous_dev, deep_copy(settings))
         end
     end
-
-    return perm_buff
 end
 
 function Public.reset_stateful(refresh_gui, clear_buffs)

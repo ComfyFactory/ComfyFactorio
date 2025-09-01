@@ -84,7 +84,10 @@ local print_stats = function (target)
     output = output .. '[color=green]Strength:[/color] ' .. strength .. '\n'
     output = output .. '[color=green]Magic:[/color] ' .. magicka .. '\n'
     output = output .. '[color=green]Dexterity:[/color] ' .. dexterity .. '\n'
-    output = output .. '[color=green]Vitality:[/color] ' .. vitality
+    output = output .. '[color=green]Vitality:[/color] ' .. vitality .. '\n'
+    output = output .. '[color=green]Points Left:[/color] ' .. rpg_t.points_left .. '\n'
+    output = output .. '[color=green]Total:[/color] ' .. rpg_t.total .. '\n'
+    output = output .. '[color=green]RPG Reset Purchased:[/color] ' .. tostring(rpg_t and (rpg_t.reset == nil or rpg_t.reset == false) and 'No' or 'Yes') .. '\n'
 
     return output
 end
@@ -93,7 +96,8 @@ Commands.new('stats', 'Check what stats a user has!')
     :add_parameter('player', false, 'player')
     :callback(
         function (player, target)
-            local data = {
+            local data =
+            {
                 player = player,
                 target = target
             }
@@ -166,7 +170,8 @@ if _DEBUG then
         )
 end
 
-local RPG_Interface = {
+local RPG_Interface =
+{
     rpg_reset_player = function (player_name)
         if player_name then
             local player = game.get_player(player_name)

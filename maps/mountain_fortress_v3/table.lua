@@ -297,7 +297,8 @@ function Public.reset_main_table()
         train_upgrade_contribution = 0,
         xp_points = 0,
         health_upgrades = 0,
-        pickaxe_tier = 1
+        pickaxe_tier = 1,
+        rpg_reset_skills_purchased = 0
     }
     this.orbital_strikes =
     {
@@ -345,7 +346,8 @@ function Public.reset_main_table()
         aura_limit = 100, -- limited to save UPS
         pickaxe_tier_limit = 59,
         health_upgrades_limit = 100,
-        xp_points_limit = 40
+        xp_points_limit = 40,
+        rpg_reset_skills_limit = 3
     }
     this.marked_fixed_prices =
     {
@@ -360,8 +362,10 @@ function Public.reset_main_table()
         tile_when_mining_cost = random(45000, 70000),
         roboport_cost = random(750, 1500),
         construction_bot_cost = random(150, 350),
-        chest_cost = random(400, 600)
+        chest_cost = random(400, 600),
+        rpg_reset_skills_cost = random(50000, 100000)
     }
+    this.market_rpg_purchased = {}
     this.mystical_chest_price = nil
     this.collapse_grace = true
     this.corpse_removal_disabled = true
@@ -390,6 +394,8 @@ function Public.reset_main_table()
     this.check_afk_players = true
     this.winter_mode = false
     this.sent_to_discord = false
+    this.send_mvp_to_discord = false
+    this.decoratives_generated = nil
     this.random_seed = random(100000000, 1000000000)
     this.difficulty =
     {

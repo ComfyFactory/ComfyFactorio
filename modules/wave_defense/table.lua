@@ -3,7 +3,6 @@ local Core = require 'utils.core'
 local Gui = require 'utils.gui'
 local Event = require 'utils.event'
 local Server = require 'utils.server'
-local log = Server.output_data
 
 local this = {
     pause_waves_custom_callback = nil,
@@ -201,14 +200,14 @@ function Public.debug_print(msg)
     if not this.debug then
         return
     end
-    log('WaveDefense: ' .. msg)
+    Server.output_script_data('WaveDefense: ' .. msg)
 end
 
 function Public.debug_print_health(msg)
     if not this.debug then
         return
     end
-    log('[HEALTHBOOSTER]: ' .. msg)
+    Server.output_script_data('[HEALTHBOOSTER]: ' .. msg)
 end
 
 --- This gets values from our table

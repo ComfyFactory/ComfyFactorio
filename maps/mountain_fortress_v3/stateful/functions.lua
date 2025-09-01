@@ -311,6 +311,11 @@ Event.on_nth_tick(60, function ()
 		Server.to_discord_embed(str)
 		buff_selection.voting_closed = true
 		Public.set('game_reset_tick', 5400)
+		Public.notify_won_to_discord(buff.raw)
+		local locomotive = Public.get('locomotive')
+		if locomotive and locomotive.valid then
+			locomotive.surface.spill_item_stack({ position = locomotive.position, stack = { name = 'coin', count = 512, quality = 'normal' } })
+		end
 
 		Stateful.save_settings(buff.raw)
 

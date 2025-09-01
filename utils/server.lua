@@ -106,6 +106,7 @@ local player_join_tag = '[PLAYER-JOIN]'
 local player_leave_tag = '[PLAYER-LEAVE]'
 local antigrief_tag = '[ANTIGRIEF-LOG]'
 local halt_pause_tag = '[HALT-PAUSE]'
+local script_output_tag = '[SCRIPT-OUTPUT]'
 
 Public.raw_print = raw_print
 
@@ -1721,5 +1722,8 @@ Event.add(
 
 Public.build_embed_data = build_embed_data
 Public.output_data = output_data
+Public.output_script_data = function (message)
+    output_data(script_output_tag .. ' ' .. message)
+end
 
 return Public

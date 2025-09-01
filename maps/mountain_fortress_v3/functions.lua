@@ -21,7 +21,6 @@ local Session = require 'utils.datastore.session_data'
 local ICMinimap = require 'maps.mountain_fortress_v3.ic.minimap'
 local Score = require 'utils.gui.score'
 local Gui = require 'utils.gui'
-local AntiGrief = require 'utils.antigrief'
 local FunctionColor = { r = 0.98, g = 0.66, b = 0.22 }
 
 local zone_settings = Public.zone_settings
@@ -217,7 +216,7 @@ local function debug_str(msg)
     if not debug then
         return
     end
-    print('Mtn: ' .. msg)
+    Server.output_script_data('Mtn: ' .. msg)
 end
 
 local function draw_notice_frame(player)
@@ -2476,15 +2475,15 @@ function Public.set_difficulty()
         if wave_number < mining_bonus_till_wave then
             -- Apply new bonus if changed
             if mining_bonus ~= previous_mining_bonus then
-                print('Mining bonus changed from ' .. previous_mining_bonus .. ' to ' .. mining_bonus)
+                Server.output_script_data('Mining bonus changed from ' .. previous_mining_bonus .. ' to ' .. mining_bonus)
             end
 
             force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + mining_bonus
             Public.set('previous_mining_bonus', mining_bonus)
             Public.set('mining_bonus', mining_bonus)
         else
-            print('Mining bonus is disabled, as the wave number is ' .. wave_number .. ' and mining_bonus_till_wave is ' .. mining_bonus_till_wave)
-            print('Force manual mining speed modifier is now: ' .. force.manual_mining_speed_modifier)
+            Server.output_script_data('Mining bonus is disabled, as the wave number is ' .. wave_number .. ' and mining_bonus_till_wave is ' .. mining_bonus_till_wave)
+            Server.output_script_data('Force manual mining speed modifier is now: ' .. force.manual_mining_speed_modifier)
             Public.set('disable_mining_boost', true)
             Public.set('previous_mining_bonus', 0)
         end
@@ -2998,7 +2997,7 @@ function Public.on_player_changed_surface(event)
 
     local surface_index = event.surface_index
     if not surface_index then
-        log('No surface index found - old one was removed.')
+        Server.output_script_data('No surface index found - old one was removed.')
     end
 
     local starting_planet = Public.get_planet()

@@ -116,9 +116,9 @@ local function internal_error(has_run, name, message)
     if not has_run then
         handle_error('Action has been logged!', 'utility/cannot_build')
         if type(message) == 'string' then
-            Server.output_data('[ERROR] Command failed to run: ' .. name .. ' - ' .. message)
+            Server.output_script_data('[ERROR] Command failed to run: ' .. name .. ' - ' .. message)
         else
-            Server.output_data('[ERROR] Command failed to run: ' .. name)
+            Server.output_script_data('[ERROR] Command failed to run: ' .. name)
         end
     end
     return not has_run
@@ -138,7 +138,7 @@ local function execute(event)
             position = { x = 0, y = 0 },
             surface = game.get_surface('nauvis'),
             force = game.forces.player,
-            print = Server.output_data
+            print = Server.output_script_data
         }
     end
 

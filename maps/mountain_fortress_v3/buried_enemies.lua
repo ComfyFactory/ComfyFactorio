@@ -3,6 +3,7 @@ local Public = require 'maps.mountain_fortress_v3.table'
 local Global = require 'utils.global'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local WD = require 'modules.wave_defense.table'
+local Server = require 'utils.server'
 
 local this = {}
 
@@ -88,7 +89,7 @@ local function spawn_biters(data)
     end
 
     if not unit_to_create then
-        print('buried_enemies - unit_to_create was nil?')
+        Server.output_script_data('buried_enemies - unit_to_create was nil?')
         return
     end
 
@@ -147,7 +148,7 @@ local function spawn_tech(data)
     end
 
     if not unit_to_create then
-        print('spawn_tech - unit_to_create was nil?')
+        Server.output_script_data('spawn_tech - unit_to_create was nil?')
         return
     end
 

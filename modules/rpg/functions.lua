@@ -7,6 +7,7 @@ local Modifiers = require 'utils.player_modifiers'
 local Token = require 'utils.token'
 local Alert = require 'utils.alert'
 local Math2D = require 'math2d'
+local Server = require 'utils.server'
 
 local level_up_floating_text_color = { 0, 205, 0 }
 local visuals_delay = Public.visuals_delay
@@ -146,9 +147,7 @@ local function level_up(player)
         local index = names[node]:lower()
         rpg_t[index] = rpg_t[index] + distribute_points_gain
         rpg_t.points_left = rpg_t.points_left - distribute_points_gain
-        if not rpg_t.reset then
-            rpg_t.total = rpg_t.total + distribute_points_gain
-        end
+        rpg_t.total = rpg_t.total + distribute_points_gain
         Public.update_player_stats(player)
     else
         Public.update_char_button(player)
@@ -1470,6 +1469,12 @@ function Public.rpg_reset_player(player, one_time_reset)
     end
 
     local rpg_t = Public.get_value_from_player(player.index)
+
+    if one_time_reset and rpg_t and rpg_t.points_left > 0 then
+        Server.output_script_data('RPG - ' .. player.name .. ' has points left on one time reset.')
+        return false
+    end
+
     local rpg_extra = Public.get('rpg_extra')
 
     local old_values = {}
@@ -1547,6 +1552,7 @@ function Public.rpg_reset_player(player, one_time_reset)
 
     if one_time_reset then
         rpg_t.points_left = old_values.points_left + old_values.total
+        rpg_t.total = old_values.total
         rpg_t.xp = round(old_values.xp)
         rpg_t.level = old_values.level
     else
@@ -1563,6 +1569,7 @@ function Public.rpg_reset_player(player, one_time_reset)
     Task.set_timeout_in_ticks(5, create_level_text_token, { player_index = player.index })
     Public.update_char_button(player)
     Public.update_player_stats(player)
+    return true
 end
 
 function Public.rpg_reset_all_players()

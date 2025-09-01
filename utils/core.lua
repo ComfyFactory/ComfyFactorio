@@ -158,7 +158,7 @@ function Public.output_message(value, color, player)
         player.play_sound { path = 'utility/scenario_message' }
         player.print(message, color)
     else
-        Server.output_data(message)
+        Server.output_script_data(message)
     end
 end
 

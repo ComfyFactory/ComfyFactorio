@@ -320,7 +320,7 @@ end
 local handle_changes = function ()
     Public.set('restart', true)
     Public.set('soft_reset', false)
-    print('Received new changes from backend.')
+    Server.output_script_data('Received new changes from backend.')
 end
 
 local scenario_manager = function ()

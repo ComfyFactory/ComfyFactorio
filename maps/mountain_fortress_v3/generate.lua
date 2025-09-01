@@ -191,6 +191,8 @@ local function do_place_markets(data)
         return
     end
 
+    local force = game.forces.player
+
     if #markets == 0 then
         return
     end
@@ -206,6 +208,14 @@ local function do_place_markets(data)
     then
         local market = Public.mountain_market(surface, pos, abs(pos.y) * 0.004)
         market.destructible = false
+        force.add_chart_tag(
+            surface,
+            {
+                icon = { type = 'entity', name = 'market' },
+                position = market.position,
+                text = ' '
+            }
+        )
     end
 end
 
@@ -247,6 +257,7 @@ local function do_place_buildings(data)
         return
     end
     local quality = Public.get_stateful_settings('quality_buildings') or 'normal'
+    -- local force = game.forces.player
     local entity
     for _, e in ipairs(data.buildings) do
         if e.e_type then
@@ -264,6 +275,14 @@ local function do_place_buildings(data)
                 entity = surface.create_entity(e)
                 entity.custom_status = { diode = defines.entity_status_diode.green, label = 'Custom building that generates free resources.' }
                 if entity and entity.valid then
+                    -- force.add_chart_tag(
+                    --     surface,
+                    --     {
+                    --         icon = { type = 'entity', name = entity.name },
+                    --         position = entity.position,
+                    --         text = ' '
+                    --     }
+                    -- )
                     if e.direction then
                         entity.direction = e.direction
                     end

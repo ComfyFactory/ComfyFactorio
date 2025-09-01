@@ -1210,7 +1210,7 @@ local function get_mvps(force)
     return mvp
 end
 
-local function show_mvps(player)
+local function show_mvps_ingame(player, mvp)
     local get_score = Score.get_table().score_table
     local wave_defense_table = WD.get_table()
     if not get_score then
@@ -1225,7 +1225,6 @@ local function show_mvps(player)
     l.style.font_color = { r = 0.55, g = 0.55, b = 0.99 }
 
     local t = frame.add({ type = 'table', column_count = 2 })
-    local mvp = get_mvps('player')
     if mvp then
         local wave_defense = t.add({ type = 'label', caption = 'Highest Wave >> ' })
         wave_defense.style.font = 'default-listbox'
@@ -1260,49 +1259,78 @@ local function show_mvps(player)
             miners_label_text.style.font = 'default-bold'
             miners_label_text.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
         end
+    end
+end
 
+local function save_game_before_end()
+    local wave = WD.get_wave()
+    local date = Server.get_start_time()
+    game.server_save('Final_Mtn_v3_' .. tostring(date) .. '_wave' .. tostring(wave))
+end
+
+local function check_rpg_progression()
+    if Public.get('prestige_system_enabled') then
+        RPG_Progression.save_all_players()
+    end
+end
+
+local function post_mvp_to_discord(mvp)
+    if not mvp then
+        mvp = get_mvps('player')
+    end
+
+    if mvp then
+        local server_name_matches = Server.check_server_name(Public.discord_name)
+        local message =
+        {
+            title = 'MVPs',
+            description = 'Player statistics is below',
+            color = 'success',
+        }
+        if mvp.killscore then
+            message.field1 =
+            {
+                text1 = 'MVP Fighter:',
+                text2 = mvp.killscore.name .. ' with a killing score of ' .. mvp.killscore.score .. ' kills!',
+                inline = 'false'
+            }
+        end
+        if mvp.built_entities then
+            message.field2 =
+            {
+                text1 = 'MVP Builder:',
+                text2 = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things!',
+                inline = 'false'
+            }
+        end
+        if mvp.mined_entities then
+            message.field3 =
+            {
+                text1 = 'MVP Miners:',
+                text2 = mvp.mined_entities.name .. ' mined a total of ' .. mvp.mined_entities.score .. ' entities!',
+                inline = 'false'
+            }
+        end
+
+        local wave = WD.get_wave()
+        if wave >= 100 then
+            if server_name_matches then
+                Server.to_discord_named_parsed_embed(send_ping_to_channel, message)
+            else
+                Server.to_discord_embed_parsed(message)
+            end
+        else
+            Server.output_script_data('Wave is less than 100, not sending MVPs to discord.')
+        end
+    end
+end
+
+local function notify_game_lost_to_discord(mvp)
+    if mvp then
         local sent_to_discord = Public.get('sent_to_discord')
         local server_name_matches = Server.check_server_name(Public.discord_name)
 
-        if not sent_to_discord and server_name_matches then
-            local message =
-            {
-                title = 'Game over',
-                description = 'Player statistics is below',
-                color = 'failure',
-                field1 =
-                {
-                    text1 = 'Highest Wave:',
-                    text2 = wave_defense_table.wave_number,
-                    inline = 'false'
-                }
-            }
-            if mvp.killscore then
-                message.field2 =
-                {
-                    text1 = 'MVP Fighter:',
-                    text2 = mvp.killscore.name .. ' with a killing score of ' .. mvp.killscore.score .. ' kills!',
-                    inline = 'false'
-                }
-            end
-            if mvp.built_entities then
-                message.field3 =
-                {
-                    text1 = 'MVP Builder:',
-                    text2 = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things!',
-                    inline = 'false'
-                }
-            end
-            if mvp.mined_entities then
-                message.field4 =
-                {
-                    text1 = 'MVP Miners:',
-                    text2 = mvp.mined_entities.name .. ' mined a total of ' .. mvp.mined_entities.score .. ' entities!',
-                    inline = 'false'
-                }
-            end
-
-            Server.to_discord_embed_parsed(message)
+        if not sent_to_discord then
             local wave = WD.get_wave()
             local threat = WD.get('threat')
             local collapse_speed = Collapse.get_speed()
@@ -1319,11 +1347,6 @@ local function show_mvps(player)
             local upgrades = Public.get('upgrades')
             local pick_tier = pickaxe_upgrades[upgrades.pickaxe_tier]
 
-            if Public.get('prestige_system_enabled') then
-                RPG_Progression.save_all_players()
-            end
-            local date = Server.get_start_time()
-            game.server_save('Final_Mtn_v3_' .. tostring(date) .. '_wave' .. tostring(wave))
             local stateful = Public.get_stateful()
             local text =
             {
@@ -1411,6 +1434,7 @@ local function show_mvps(player)
     end
 end
 
+
 function Public.game_is_over()
     Public.set('game_lost', true)
     Public.loco_died()
@@ -1460,11 +1484,6 @@ function Public.loco_died()
 
     Collapse.start_now(false, true)
 
-    for _, player in pairs(game.connected_players) do
-        player.play_sound { path = 'utility/game_lost', volume_modifier = 0.75 }
-        show_mvps(player)
-    end
-
     Public.set_stateful('current_streak', 0)
 
     local this = Public.get()
@@ -1508,10 +1527,18 @@ function Public.loco_died()
 
     surface.spill_item_stack({ position = p, stack = { name = 'coin', count = 512, quality = 'normal' } })
     this.game_reset_tick = 5400
-    for _, player in pairs(game.connected_players) do
+    local mvp = get_mvps('player')
+
+    save_game_before_end()
+    check_rpg_progression()
+    notify_game_lost_to_discord(mvp)
+    post_mvp_to_discord(mvp)
+
+    Core.iter_connected_players(function (player)
         player.play_sound { path = 'utility/game_lost', volume_modifier = 0.75 }
-        show_mvps(player)
-    end
+        show_mvps_ingame(player, mvp)
+    end)
+
     Public.set('notified_game_over', true)
 end
 
@@ -1772,6 +1799,7 @@ local on_player_or_robot_built_tile = function (event)
 end
 
 Public.get_random_weighted = get_random_weighted
+Public.post_mvp_to_discord = post_mvp_to_discord
 
 Event.add_event_filter(defines.events.on_entity_damaged, { filter = 'final-damage-amount', comparison = '>', value = 0 })
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)

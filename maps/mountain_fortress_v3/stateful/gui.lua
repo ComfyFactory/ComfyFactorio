@@ -189,6 +189,8 @@ local function notify_won_to_discord(buff)
         Server.to_discord_embed_parsed(text)
     end
 
+    Public.post_mvp_to_discord()
+
     Alert.alert_all_players(100, 'Buff granted: ' .. buff.discord)
     Alert.alert_all_players(100, 'Buff granted: ' .. buff.discord)
     Alert.alert_all_players(100, 'Buff granted: ' .. buff.discord)
@@ -533,8 +535,8 @@ local function buff_window(player)
 end
 
 local function permanent_buff_window(player)
-    local permanent_buff_window_name, inside_table = Gui.add_main_frame_with_toolbar(player, 'center', permanent_buff_window_name, nil, close_permanent_buffs_window_name, 'Permanent Buffs')
-    if not permanent_buff_window_name then
+    local main_player_frame, inside_table = Gui.add_main_frame_with_toolbar(player, 'center', permanent_buff_window_name, nil, close_permanent_buffs_window_name, 'Permanent Buffs')
+    if not main_player_frame then
         return
     end
     if not inside_table then
@@ -642,7 +644,7 @@ local function permanent_buff_window(player)
         end
     end
 
-    player.opened = permanent_buff_window_name
+    player.opened = main_player_frame
 end
 
 
@@ -1304,15 +1306,15 @@ local function update_raw()
                 local darkness = Public.get_stateful_settings('darkness')
                 if darkness then
                     Public.set_stateful_settings('darkness', false)
-                    print('Darkness is now disabled')
+                    Server.output_script_data('Darkness is now disabled')
                     surface.brightness_visual_weights = { a = 1, b = 0, g = 0, r = 0 }
-                    local message = '[color=yellow]Darkness[/color] The nights seem to be lighter!'
+                    local message = '[color=yellow]Darkness:[/color] The nights seem to be lighter!'
                     Alert.alert_all_players(100, message)
                 else
-                    print('Darkness is now enabled')
+                    Server.output_script_data('Darkness is now enabled')
                     surface.brightness_visual_weights = { a = 1, b = 0.7, g = 0.7, r = 0.7 }
                     Public.set_stateful_settings('darkness', true)
-                    local message = '[color=yellow]Darkness[/color] The nights seem to be darker!'
+                    local message = '[color=yellow]Darkness:[/color] The nights seem to be darker!'
                     Alert.alert_all_players(100, message)
                 end
 
@@ -1345,9 +1347,9 @@ local function update_raw()
                         end
                         StatefulFunctions.init_buff_selection(buffs)
 
-                        Core.iter_connected_players(function (player)
-                            if player and player.valid then
-                                StatefulFunctions.buff_main_frame(player)
+                        Core.iter_connected_players(function (p)
+                            if p and p.valid then
+                                StatefulFunctions.buff_main_frame(p)
                             end
                         end)
                     else
@@ -1629,11 +1631,12 @@ Gui.on_click(
 )
 
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
-Event.on_nth_tick(30, update_data)
-Event.on_nth_tick(30, update_raw)
+Event.on_nth_tick(100, update_data)
+Event.on_nth_tick(90, update_raw)
 
 Public.boss_frame = boss_frame
 Public.clear_all_frames = clear_all_frames
+Public.notify_won_to_discord = notify_won_to_discord
 Stateful.refresh_frames = refresh_frames
 
 return Public

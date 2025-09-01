@@ -5,6 +5,7 @@ local Task = require 'utils.task_token'
 local Public = require 'modules.wave_defense.table'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 local Beams = require 'modules.render_beam'
+local Server = require 'utils.server'
 
 local de = defines.events
 local ev = Public.events
@@ -923,12 +924,12 @@ function Public._esp:check_unit_group()
     end
 
     if not self.group or not self.group.valid then
-        log('EnemyStates::CheckUnitGroup - Unit group is invalid')
+        Server.output_script_data('EnemyStates::CheckUnitGroup - Unit group is invalid')
         return false
     end
 
     if self.entity.force.index ~= self.group.force.index then
-        log('EnemyStates::CheckUnitGroup - Unit group force is not the same as the entity force')
+        Server.output_script_data('EnemyStates::CheckUnitGroup - Unit group force is not the same as the entity force')
         return false
     end
 

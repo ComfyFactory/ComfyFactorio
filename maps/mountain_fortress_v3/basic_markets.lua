@@ -1,9 +1,12 @@
 local Global = require 'utils.global'
 local Public = require 'maps.mountain_fortress_v3.table'
 
-local this = {
-    market_settings = {
-        ['weapons'] = {
+local this =
+{
+    market_settings =
+    {
+        ['weapons'] =
+        {
             ['pistol'] = { value = 10, rarity = 1 },
             ['submachine-gun'] = { value = 50, rarity = 2 },
             ['shotgun'] = { value = 40, rarity = 2 },
@@ -12,7 +15,8 @@ local this = {
             ['flamethrower'] = { value = 750, rarity = 6 },
             ['land-mine'] = { value = 3, rarity = 5 }
         },
-        ['ammo'] = {
+        ['ammo'] =
+        {
             ['firearm-magazine'] = { value = 3, rarity = 1 },
             ['piercing-rounds-magazine'] = { value = 6, rarity = 4 },
             ['uranium-rounds-magazine'] = { value = 20, rarity = 8 },
@@ -29,7 +33,8 @@ local this = {
             ['flamethrower-ammo'] = { value = 20, rarity = 6 },
             ['explosives'] = { value = 3, rarity = 1 }
         },
-        ['caspules'] = {
+        ['caspules'] =
+        {
             ['grenade'] = { value = 16, rarity = 2 },
             ['cluster-grenade'] = { value = 64, rarity = 5 },
             ['poison-capsule'] = { value = 32, rarity = 6 },
@@ -40,14 +45,16 @@ local this = {
             ['artillery-targeting-remote'] = { value = 1024, rarity = 7 },
             ['raw-fish'] = { value = 6, rarity = 1 }
         },
-        ['armor'] = {
+        ['armor'] =
+        {
             ['light-armor'] = { value = 25, rarity = 1 },
             ['heavy-armor'] = { value = 250, rarity = 4 },
             ['modular-armor'] = { value = 750, rarity = 5 },
             ['power-armor'] = { value = 2500, rarity = 6 },
             ['power-armor-mk2'] = { value = 20000, rarity = 10 }
         },
-        ['equipment'] = {
+        ['equipment'] =
+        {
             ['solar-panel-equipment'] = { value = 240, rarity = 3 },
             ['fission-reactor-equipment'] = { value = 9000, rarity = 7 },
             ['energy-shield-equipment'] = { value = 400, rarity = 6 },
@@ -62,7 +69,8 @@ local this = {
             ['personal-roboport-mk2-equipment'] = { value = 5000, rarity = 8 },
             ['night-vision-equipment'] = { value = 250, rarity = 1 }
         },
-        ['defense'] = {
+        ['defense'] =
+        {
             ['stone-wall'] = { value = 4, rarity = 1 },
             ['gate'] = { value = 8, rarity = 1 },
             ['repair-pack'] = { value = 8, rarity = 1 },
@@ -72,7 +80,8 @@ local this = {
             ['artillery-turret'] = { value = 9216, rarity = 8 },
             ['rocket-silo'] = { value = 64000, rarity = 10 }
         },
-        ['logistic'] = {
+        ['logistic'] =
+        {
             ['wooden-chest'] = { value = 3, rarity = 1 },
             ['iron-chest'] = { value = 10, rarity = 2 },
             ['steel-chest'] = { value = 24, rarity = 3 },
@@ -110,7 +119,8 @@ local this = {
             ['requester-chest'] = { value = 128, rarity = 7 },
             ['roboport'] = { value = 4096, rarity = 8 }
         },
-        ['vehicles'] = {
+        ['vehicles'] =
+        {
             ['rail'] = { value = 4, rarity = 1 },
             ['train-stop'] = { value = 32, rarity = 3 },
             ['rail-signal'] = { value = 8, rarity = 5 },
@@ -122,7 +132,8 @@ local this = {
             ['car'] = { value = 80, rarity = 1 },
             ['tank'] = { value = 1800, rarity = 5 }
         },
-        ['wire'] = {
+        ['wire'] =
+        {
             ['small-lamp'] = { value = 4, rarity = 1 },
             ['arithmetic-combinator'] = { value = 16, rarity = 1 },
             ['decider-combinator'] = { value = 16, rarity = 1 },
@@ -143,7 +154,8 @@ Global.register(
 local random = math.random
 local floor = math.floor
 
-local blacklist = {
+local blacklist =
+{
     ['atomic-bomb'] = true,
     ['cargo-wagon'] = true,
     ['locomotive'] = true,
@@ -165,33 +177,35 @@ local function get_types()
 end
 
 local function get_resource_market_sells()
-    local sells = {
+    local sells =
+    {
         { price = { { name = 'coin', count = random(5, 10) } }, offer = { type = 'give-item', item = 'wood', count = 50 } },
         { price = { { name = 'coin', count = random(5, 10) } }, offer = { type = 'give-item', item = 'iron-ore', count = 50 } },
         { price = { { name = 'coin', count = random(5, 10) } }, offer = { type = 'give-item', item = 'copper-ore', count = 50 } },
         { price = { { name = 'coin', count = random(5, 10) } }, offer = { type = 'give-item', item = 'stone', count = 50 } },
         { price = { { name = 'coin', count = random(5, 10) } }, offer = { type = 'give-item', item = 'coal', count = 50 } },
         { price = { { name = 'coin', count = random(8, 16) } }, offer = { type = 'give-item', item = 'uranium-ore', count = 50 } },
-        { price = { { name = 'coin', count = random(2, 4) } },  offer = { type = 'give-item', item = 'crude-oil-barrel', count = 1 } }
+        { price = { { name = 'coin', count = random(2, 4) } }, offer = { type = 'give-item', item = 'crude-oil-barrel', count = 1 } }
     }
     table.shuffle_table(sells)
     return sells
 end
 
 local function get_resource_market_buys()
-    local buys = {
-        { price = { { name = 'wood', count = random(10, 12) } },       offer = { type = 'give-item', item = 'coin' } },
-        { price = { { name = 'iron-ore', count = random(10, 12) } },   offer = { type = 'give-item', item = 'coin' } },
+    local buys =
+    {
+        { price = { { name = 'wood', count = random(10, 12) } }, offer = { type = 'give-item', item = 'coin' } },
+        { price = { { name = 'iron-ore', count = random(10, 12) } }, offer = { type = 'give-item', item = 'coin' } },
         { price = { { name = 'copper-ore', count = random(10, 12) } }, offer = { type = 'give-item', item = 'coin' } },
-        { price = { { name = 'stone', count = random(10, 12) } },      offer = { type = 'give-item', item = 'coin' } },
-        { price = { { name = 'coal', count = random(10, 12) } },       offer = { type = 'give-item', item = 'coin' } },
+        { price = { { name = 'stone', count = random(10, 12) } }, offer = { type = 'give-item', item = 'coin' } },
+        { price = { { name = 'coal', count = random(10, 12) } }, offer = { type = 'give-item', item = 'coin' } },
         { price = { { name = 'uranium-ore', count = random(8, 10) } }, offer = { type = 'give-item', item = 'coin' } },
-        { price = { { name = 'water-barrel', count = 1 } },            offer = { type = 'give-item', item = 'coin', count = random(1, 2) } },
-        { price = { { name = 'lubricant-barrel', count = 1 } },        offer = { type = 'give-item', item = 'coin', count = random(3, 6) } },
-        { price = { { name = 'sulfuric-acid-barrel', count = 1 } },    offer = { type = 'give-item', item = 'coin', count = random(4, 8) } },
-        { price = { { name = 'light-oil-barrel', count = 1 } },        offer = { type = 'give-item', item = 'coin', count = random(2, 4) } },
-        { price = { { name = 'heavy-oil-barrel', count = 1 } },        offer = { type = 'give-item', item = 'coin', count = random(2, 4) } },
-        { price = { { name = 'petroleum-gas-barrel', count = 1 } },    offer = { type = 'give-item', item = 'coin', count = random(3, 5) } }
+        { price = { { name = 'water-barrel', count = 1 } }, offer = { type = 'give-item', item = 'coin', count = random(1, 2) } },
+        { price = { { name = 'lubricant-barrel', count = 1 } }, offer = { type = 'give-item', item = 'coin', count = random(3, 6) } },
+        { price = { { name = 'sulfuric-acid-barrel', count = 1 } }, offer = { type = 'give-item', item = 'coin', count = random(4, 8) } },
+        { price = { { name = 'light-oil-barrel', count = 1 } }, offer = { type = 'give-item', item = 'coin', count = random(2, 4) } },
+        { price = { { name = 'heavy-oil-barrel', count = 1 } }, offer = { type = 'give-item', item = 'coin', count = random(2, 4) } },
+        { price = { { name = 'petroleum-gas-barrel', count = 1 } }, offer = { type = 'give-item', item = 'coin', count = random(3, 5) } }
     }
     table.shuffle_table(buys)
     return buys
@@ -281,6 +295,44 @@ function Public.mountain_market(surface, position, rarity, buy)
         table.shuffle_table(items)
     end
     local mrk = surface.create_entity({ name = 'market', position = position, force = 'neutral', create_build_effect_smoke = false })
+
+    for i = 1, random(5, 10), 1 do
+        local item = items[i]
+        if not item then
+            break
+        end
+        if not blacklist[item.offer.item] then
+            mrk.add_market_item(items[i])
+        end
+    end
+
+    local sells = get_resource_market_sells()
+    for i = 1, random(1, 3), 1 do
+        mrk.add_market_item(sells[i])
+    end
+
+    if buy then
+        local buys = get_resource_market_buys()
+        for i = 1, random(1, 3), 1 do
+            mrk.add_market_item(buys[i])
+        end
+    end
+
+    return mrk
+end
+
+function Public.reroll_market(mrk, rarity, buy)
+    local types = get_types()
+    table.shuffle_table(types)
+    local items = get_market_item_list(rarity)
+    if not items then
+        return
+    end
+    if #items > 0 then
+        table.shuffle_table(items)
+    end
+
+    mrk.clear_market_items()
 
     for i = 1, random(5, 10), 1 do
         local item = items[i]

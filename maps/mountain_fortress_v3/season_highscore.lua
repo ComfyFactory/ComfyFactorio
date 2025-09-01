@@ -46,7 +46,7 @@ end
 local function write_additional_stats(key)
     local current_date = Server.get_current_date(true)
     if current_date == nil then
-        log('Failed to get current date.')
+        Server.output_script_data('Failed to get current date.')
         return
     end
 
@@ -57,25 +57,25 @@ local function write_additional_stats(key)
 
     local previous_date = Server.get_current_date(true, false, previous_raw_date)
     if previous_date == nil then
-        log('Failed to get previous date.')
+        Server.output_script_data('Failed to get previous date.')
         return
     end
 
     if not season then
-        log('Missing season data, cannot write stats')
+        Server.output_script_data('Missing season data, cannot write stats')
         return
     end
 
     if not rounds_survived then
-        log('Missing rounds survived data, cannot write stats')
+        Server.output_script_data('Missing rounds survived data, cannot write stats')
         return
     end
 
     if #this.seasons < 2 then
-        log('Not enough seasons to write stats, minimum of 2 seasons is required')
-        log('Current season: ' .. season)
-        log('Backend data has not been updated yet')
-        log(serpent.block(this.seasons))
+        Server.output_script_data('Not enough seasons to write stats, minimum of 2 seasons is required')
+        Server.output_script_data('Current season: ' .. season)
+        Server.output_script_data('Backend data has not been updated yet')
+        Server.output_script_data(serpent.block(this.seasons))
         return
     end
 
@@ -91,9 +91,9 @@ local function write_additional_stats(key)
 
     if key then
         set_data(score_dataset, key, this.seasons)
-        log('Season stats written to server')
+        Server.output_script_data('Season stats written to server')
     else
-        log('No key provided for season stats, data not saved')
+        Server.output_script_data('No key provided for season stats, data not saved')
     end
 end
 
@@ -102,9 +102,9 @@ local get_scores =
         function (data)
             if data and data.value and type(data.value) == 'table' then
                 this.seasons = data.value
-                log('Season scores loaded successfully')
+                Server.output_script_data('Season scores loaded successfully')
             else
-                log('Invalid season data received from server')
+                Server.output_script_data('Invalid season data received from server')
                 this.seasons = {}
             end
         end
@@ -143,7 +143,7 @@ local function on_init()
     local secs = Server.get_current_time()
     if not secs then
         write_additional_stats(score_key_dev)
-        log('Server time unavailable, using dev key for season data')
+        Server.output_script_data('Server time unavailable, using dev key for season data')
         return
     end
 end

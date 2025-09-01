@@ -3,6 +3,7 @@ local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local Task = require 'utils.task_token'
 local MapFunctions = require 'utils.tools.map_functions'
 local Event = require 'utils.event'
+local Server = require 'utils.server'
 local random = math.random
 
 local function initial_cargo_boxes()
@@ -248,7 +249,7 @@ function Public.locomotive_spawn(surface, position, reversed)
 
     local locomotive = ICW.register_wagon(this.locomotive)
     if not locomotive then
-        print('Failed to register locomotive')
+        Server.output_script_data('Failed to register locomotive')
         return
     end
 
@@ -303,7 +304,7 @@ Event.add(Public.events.on_locomotive_cargo_missing, function ()
 
     local wagons = ICW.get('wagons')
     if wagons[locomotive_cargo.unit_number] then
-        log('Locomotive cargo missing, setting new cargo')
+        Server.output_script_data('Locomotive cargo missing, setting new cargo')
         Public.set('icw_locomotive', wagons[locomotive_cargo.unit_number])
     end
 end)

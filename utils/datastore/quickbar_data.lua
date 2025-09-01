@@ -71,7 +71,7 @@ local function apply_logistic_network(player, saved_data)
                 if section and new_section then
                     local slots = section.slots
                     if not slots or not section.group then
-                        Server.output_data('[ERROR] Invalid data format for section ' .. index .. ' for player ' .. player.name)
+                        Server.output_script_data('[ERROR] Invalid data format for section ' .. index .. ' for player ' .. player.name)
                         return false
                     end
                     new_section.group = section.group

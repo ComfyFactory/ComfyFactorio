@@ -1262,11 +1262,21 @@ local function zone_volcanic_1(x, y, data, void_or_lab, adjusted_zones)
         return
     end
 
-    if noise_1 < -0.72 then
-        entities[#entities + 1] = { name = 'iron-ore', position = p, amount = abs(p.y) + 1 * 3 }
-        entities[#entities + 1] = { name = 'copper-ore', position = p, amount = abs(p.y) + 1 * 3 }
-        entities[#entities + 1] = { name = 'coal', position = p, amount = abs(p.y) + 1 * 3 }
-        entities[#entities + 1] = { name = 'stone', position = p, amount = abs(p.y) + 1 * 3 }
+    local iron_noise = Public.get_noise('ore', p, seed + 5000)
+    if iron_noise > 0.75 then
+        entities[#entities + 1] = { name = 'iron-ore', position = p, amount = 1000 + abs(iron_noise * 1000) }
+    end
+    local copper_noise = Public.get_noise('ore', p, seed + 10000)
+    if copper_noise > 0.75 then
+        entities[#entities + 1] = { name = 'copper-ore', position = p, amount = 1000 + abs(copper_noise * 1000) }
+    end
+    local coal_noise = Public.get_noise('ore', p, seed + 15000)
+    if coal_noise > 0.75 then
+        entities[#entities + 1] = { name = 'coal', position = p, amount = 1000 + abs(coal_noise * 1000) }
+    end
+    local stone_noise = Public.get_noise('ore', p, seed + 20000)
+    if stone_noise > 0.75 then
+        entities[#entities + 1] = { name = 'stone', position = p, amount = 1000 + abs(stone_noise * 1000) }
     end
 
     tiles[#tiles + 1] = { name = 'red-refined-concrete', position = p }
@@ -3801,7 +3811,7 @@ local function init_terrain(adjusted_zones)
     for i = 1, size do
         local next = next_provider()
         generated_zones[i] = next
-        -- print(next)
+        -- Server.output_script_data(next)
     end
 
     adjusted_zones.size = size
@@ -3895,28 +3905,11 @@ local function process_bits(p, data, adjusted_zones)
     generate_zone(x, y, data, void_or_tile, adjusted_zones)
 end
 
-local function border_chunk(p, data)
+local function border_chunk(p, data, dec_tbl)
     local entities = data.entities
     local decoratives = data.decoratives
     local tiles = data.tiles
     local surface = data.surface
-
-    local game_decoratives = prototypes.decorative
-    local dec_tbl = {}
-
-    local shuffled_decoratives = {}
-    for _, decorative in pairs(game_decoratives) do
-        table.insert(shuffled_decoratives, decorative)
-    end
-
-    for i = #shuffled_decoratives, 2, -1 do
-        local j = math.random(i)
-        shuffled_decoratives[i], shuffled_decoratives[j] = shuffled_decoratives[j], shuffled_decoratives[i]
-    end
-
-    for i = 1, math.min(4, #shuffled_decoratives) do
-        dec_tbl[#dec_tbl + 1] = shuffled_decoratives[i].name
-    end
 
     local pos = p
 
@@ -3970,7 +3963,7 @@ local function border_chunk(p, data)
                 {
                     name = decorative,
                     position = pos,
-                    amount = random(1, 32)
+                    amount = 1
                 }
             end
         end
@@ -4027,6 +4020,34 @@ local function out_of_map(p, data)
     tiles[#tiles + 1] = { name = out_of_map_tile, position = p }
 end
 
+local function get_decoratives()
+    local decoratives_generated = Public.get('decoratives_generated')
+    if decoratives_generated then
+        return decoratives_generated
+    end
+
+    local game_decoratives = prototypes.decorative
+    local dec_tbl = {}
+    local names = {}
+
+    for _, decorative in pairs(game_decoratives) do
+        names[#names + 1] = decorative.name
+    end
+
+    local taken = {}
+    while #dec_tbl < 3 and #names > 0 do
+        local idx = math.random(#names)
+        local name = names[idx]
+        if not taken[name] then
+            table.insert(dec_tbl, name)
+            taken[name] = true
+        end
+    end
+
+    Public.set('decoratives_generated', dec_tbl)
+    return dec_tbl
+end
+
 function Public.heavy_functions(data)
     local top_y = data.top_y
     local surface = data.surface
@@ -4041,6 +4062,8 @@ function Public.heavy_functions(data)
     if is_out_of_map(p) then
         return out_of_map(p, data)
     end
+
+    local dec_tbl = get_decoratives()
 
     local pre_final_battle = Public.get('pre_final_battle')
     if pre_final_battle then
@@ -4078,7 +4101,7 @@ function Public.heavy_functions(data)
         end
 
         if top_y <= -0 then
-            return border_chunk(p, data)
+            return border_chunk(p, data, dec_tbl)
         end
     else
         if top_y % zone_settings.zone_depth == 0 and top_y < 0 then
@@ -4098,7 +4121,7 @@ function Public.heavy_functions(data)
         end
 
         if top_y >= 0 then
-            return border_chunk(p, data)
+            return border_chunk(p, data, dec_tbl)
         end
     end
 end
