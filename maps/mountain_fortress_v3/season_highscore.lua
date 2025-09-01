@@ -139,15 +139,6 @@ function Public.set_season_scores()
     end
 end
 
-local function on_init()
-    local secs = Server.get_current_time()
-    if not secs then
-        write_additional_stats(score_key_dev)
-        Server.output_script_data('Server time unavailable, using dev key for season data')
-        return
-    end
-end
-
 local sorting_symbol = { ascending = '▲', descending = '▼' }
 
 local function get_score_list()
@@ -379,7 +370,6 @@ Gui.on_click(
     end
 )
 
-Event.on_init(on_init)
 Event.add(defines.events.on_player_left_game, on_player_left_game)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_gui_click, on_gui_click)
