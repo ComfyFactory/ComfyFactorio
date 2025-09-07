@@ -159,6 +159,16 @@ if is_modded_pt2 then
 end
 local size_of_rock_raffle = #rock_raffle
 
+local snowy_rock_raffle =
+{
+    'huge-rock-snowy',
+    'big-rock-snowy',
+    'big-sand-rock-snowy',
+}
+
+local size_of_snowy_rock_raffle = #snowy_rock_raffle
+
+
 local aquilo_rock_raffle =
 {
     'lithium-iceberg-big',
@@ -1403,7 +1413,7 @@ local function zone_tech_1(x, y, data, void_or_lab, adjusted_zones)
     end
 end
 
-local function zone_frostbite_1(x, y, data, void_or_lab, adjusted_zones)
+local function zone_frostbite_1(x, y, data, void_or_lab)
     local p = { x = x, y = y }
     local seed = data.seed
     local buildings = data.buildings
@@ -1513,7 +1523,7 @@ local function zone_frostbite_1(x, y, data, void_or_lab, adjusted_zones)
     if maze_noise > -0.35 and maze_noise < 0.35 then
         local no_rocks_2 = Public.get_noise('no_rocks_2', p, seed)
         if random(1, 2) == 1 and no_rocks_2 > -0.5 then
-            entities[#entities + 1] = { name = adjusted_zones.rock_raffle[random(1, adjusted_zones.size_of)], position = p }
+            entities[#entities + 1] = { name = snowy_rock_raffle[random(1, size_of_snowy_rock_raffle)], position = p }
         end
         if random(1, 1024) == 1 then
             treasure[#treasure + 1] = { position = p, chest = 'wooden-chest' }
@@ -1530,7 +1540,7 @@ local function zone_frostbite_1(x, y, data, void_or_lab, adjusted_zones)
         end
     end
 
-    tiles[#tiles + 1] = { name = 'snow-tile', position = p }
+    tiles[#tiles + 1] = { name = 'ice-tile', position = p }
     if random(1, 128) == 1 then
         entities[#entities + 1] = { name = 'tree-0' .. random(1, 9), position = p }
     end
@@ -1590,6 +1600,15 @@ local function zone_frostbite_2(x, y, data, void_or_lab)
                 entities[#entities + 1] = { name = tree_raffle[random(1, size_of_tree_raffle)], position = p }
             end
             return
+        elseif noise_cave_ponds > 0.850 then
+            tiles[#tiles + 1] = { name = 'ice-tile', position = p }
+            if random(1, 4) == 1 then
+                markets[#markets + 1] = p
+            end
+            if random(1, 4) == 1 then
+                entities[#entities + 1] = { name = tree_raffle[random(1, size_of_tree_raffle)], position = p }
+            end
+            return
         end
         tiles[#tiles + 1] = { name = 'deepwater', position = p }
         if random(1, 16) == 1 then
@@ -1609,7 +1628,11 @@ local function zone_frostbite_2(x, y, data, void_or_lab)
     end
 
     if noise_cave_ponds > 0.74 then
-        tiles[#tiles + 1] = { name = 'snow-tile', position = p }
+        if noise_cave_ponds > 0.850 then
+            tiles[#tiles + 1] = { name = 'ice-tile', position = p }
+        else
+            tiles[#tiles + 1] = { name = 'snow-tile', position = p }
+        end
         if cave_rivers < -0.502 then
             tiles[#tiles + 1] = { name = 'refined-hazard-concrete-right', position = p }
         end
@@ -1644,6 +1667,10 @@ local function zone_frostbite_2(x, y, data, void_or_lab)
     local maze_p = { x = floor(p.x - p.x % 10), y = floor(p.y - p.y % 10) }
     local maze_noise = Public.get_noise('no_rocks_2', maze_p, seed)
     if maze_noise > -0.35 and maze_noise < 0.35 then
+        local no_rocks_2 = Public.get_noise('no_rocks_2', p, seed)
+        if random(1, 2) == 1 and no_rocks_2 > -0.5 then
+            entities[#entities + 1] = { name = snowy_rock_raffle[random(1, size_of_snowy_rock_raffle)], position = p }
+        end
         if random(1, 1024) == 1 then
             treasure[#treasure + 1] = { position = p, chest = 'wooden-chest' }
         end
@@ -1660,7 +1687,11 @@ local function zone_frostbite_2(x, y, data, void_or_lab)
     end
 
     -- Default frostbite terrain
-    tiles[#tiles + 1] = { name = 'snow-tile', position = p }
+    if noise_cave_ponds > 0.75 then
+        tiles[#tiles + 1] = { name = 'ice-tile', position = p }
+    else
+        tiles[#tiles + 1] = { name = 'snow-tile', position = p }
+    end
     if random(1, 128) == 1 then
         entities[#entities + 1] = { name = 'tree-0' .. random(1, 9), position = p }
     end

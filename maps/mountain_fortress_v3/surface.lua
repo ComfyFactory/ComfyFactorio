@@ -1,4 +1,5 @@
 local Global = require 'utils.global'
+local Event = require 'utils.event'
 local Public = require 'maps.mountain_fortress_v3.table'
 local zone_settings = Public.zone_settings
 
@@ -7,12 +8,21 @@ local this =
     active_surface_index = nil,
 }
 
+local insert = table.insert
+
 Global.register(
     this,
     function (tbl)
         this = tbl
     end
 )
+
+local valid_surfaces =
+{
+    ['Gulag'] = true,
+    ['Init'] = true,
+}
+
 
 local function exclude_surface(surface, state)
     for _, force in pairs(game.forces) do
@@ -179,5 +189,27 @@ end
 function Public.get_reset_counter()
     return this.soft_reset_counter
 end
+
+Event.add(defines.events.on_chunk_generated, function (event)
+    local surface = event.surface
+    if not valid_surfaces[surface.name] then
+        return
+    end
+
+    local left_top = event.area.left_top
+    local tiles = {}
+
+    for x = 0, 31, 1 do
+        for y = 0, 31, 1 do
+            local pos = { x = left_top.x + x, y = left_top.y + y }
+            if surface.get_tile(pos).name == 'void-tile' or surface.get_tile(pos).name == 'out-of-map' then
+                break
+            end
+
+            insert(tiles, { name = 'ice-tile', position = pos })
+        end
+    end
+    surface.set_tiles(tiles, true)
+end)
 
 return Public
