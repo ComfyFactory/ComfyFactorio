@@ -3,11 +3,40 @@ local Global = require 'utils.global'
 local SpamProtection = require 'utils.spam_protection'
 local BottomFrame = require 'utils.gui.bottom_frame'
 local Gui = require 'utils.gui'
+local Task = require 'utils.task_token'
 
 local melee_mode_name = Gui.uid_name()
 
 local state = {}
 Global.register(state, function (s) state = s end)
+
+local delay_add_inner_frame_token =
+    Task.register(
+       function (event)
+          local player_index = event.player_index
+          local player = game.get_player(player_index)
+          if not player or not player.valid then
+             return
+          end
+
+          local activate_custom_buttons = BottomFrame.get('activate_custom_buttons')
+
+          if activate_custom_buttons then
+             BottomFrame.add_inner_frame(
+                {
+                   player = player,
+                   element_name = melee_mode_name,
+                   tooltip =
+                   {
+                      'modules_melee.tooltip'
+                   },
+                   sprite = 'item/pistol',
+                   section_override = 1
+                }
+             )
+          end
+       end
+    )
 
 local function create_gui_button(player)
    if player.gui.top[melee_mode_name] then
@@ -35,20 +64,10 @@ local function on_player_joined_game(event)
    local activate_custom_buttons = BottomFrame.get('activate_custom_buttons')
    local player = game.get_player(event.player_index)
 
-   if activate_custom_buttons then
-      BottomFrame.add_inner_frame(
-         {
-            player = player,
-            element_name = melee_mode_name,
-            tooltip =
-            {
-               'modules_melee.tooltip'
-            },
-            sprite = 'item/pistol'
-         }
-      )
-   else
+   if not activate_custom_buttons then
       create_gui_button(player)
+   else
+      Task.set_timeout_in_ticks(5, delay_add_inner_frame_token, { player_index = event.player_index })
    end
 end
 

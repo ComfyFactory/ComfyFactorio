@@ -1531,8 +1531,11 @@ function Public.loco_died()
 
     save_game_before_end()
     check_rpg_progression()
-    notify_game_lost_to_discord(mvp)
-    post_mvp_to_discord(mvp)
+
+    if not Public.get('game_won') then
+        notify_game_lost_to_discord(mvp)
+        post_mvp_to_discord(mvp)
+    end
 
     Core.iter_connected_players(function (player)
         player.play_sound { path = 'utility/game_lost', volume_modifier = 0.75 }

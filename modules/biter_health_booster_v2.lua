@@ -358,7 +358,7 @@ local function on_entity_damaged(event)
     if cause then
         if cause.valid then
             Event.raise(Public.events.custom_on_entity_died, event)
-            event.entity.die(cause.force, cause)
+            biter.die(cause.force, cause)
             return
         end
     end

@@ -11,6 +11,8 @@ local AG = require 'utils.antigrief'
 local Core = require 'utils.core'
 local Discord = require 'utils.discord_handler'
 local Server = require 'utils.server'
+local Collapse = require 'modules.collapse'
+local zone_settings = WPT.zone_settings
 
 local this = {}
 
@@ -1244,7 +1246,7 @@ Event.on_nth_tick(
     end
 )
 
-Event.on_nth_tick(500,
+Event.on_nth_tick(10000,
     function ()
         local active_surface_index = WPT.get('active_surface_index')
         if not active_surface_index then
@@ -1256,14 +1258,32 @@ Event.on_nth_tick(500,
             return
         end
 
+        Server.output_script_data(module_name .. 'Checking linked chests - this will stutter the server a bit.')
+
         if not this.invalid_containers then
             this.invalid_containers = {}
+        end
+
+        local adjusted_zones = WPT.get('adjusted_zones')
+        local collapse_position = Collapse.get_position()
+        local breached_wall = WPT.get('breached_wall')
+
+        local reverse_position = zone_settings.zone_depth * (breached_wall + 1)
+        local reversed = WPT.get_stateful_settings('reversed')
+        if not reversed then
+            reverse_position = reverse_position * -1
+        end
+
+        local area = { { -320, collapse_position.y }, { 320, reverse_position } }
+        if adjusted_zones.reversed then
+            area = { { -320, collapse_position.y }, { 320, reverse_position } }
         end
 
         local surface = game.get_surface(active_surface_index)
         if surface and surface.valid then
             local linked_chests = surface.find_entities_filtered
                 {
+                    area = area,
                     name = 'linked-chest',
                 }
             if linked_chests and #linked_chests > 0 then

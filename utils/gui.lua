@@ -1,7 +1,6 @@
 local Token = require 'utils.token'
 local Event = require 'utils.event'
 local Global = require 'utils.global'
-local mod_gui = require('__core__/lualib/mod-gui')
 local Server = require 'utils.server'
 local SpamProtection = require 'utils.spam_protection'
 
@@ -112,6 +111,17 @@ local function validate_frame_and_destroy(align, frame)
         remove_data_recursively(frame)
         get_frame.destroy()
     end
+end
+
+local function get_button_flow(player)
+    local gui = player.gui.top
+
+    if gui.mod_gui_button_flow then
+        return gui.mod_gui_button_flow
+    end
+
+    local frame = gui.mod_gui_top_frame or gui.add { type = "frame", name = "mod_gui_top_frame", direction = "horizontal", style = "slot_window_frame" }
+    return frame.mod_gui_inner_frame or frame.add { type = "frame", name = "mod_gui_inner_frame", style = "mod_gui_inside_deep_frame" }
 end
 
 -- Associates data with the LuaGuiElement. If data is nil then removes the data
@@ -541,11 +551,11 @@ end
 ---@param player LuaPlayer
 ---@param frame userdata|table
 function Public.add_mod_button(player, frame)
-    if Public.get_button_flow(player)[frame.name] and Public.get_button_flow(player)[frame.name].valid then
-        return Public.get_button_flow(player)[frame.name]
+    if get_button_flow(player)[frame.name] and get_button_flow(player)[frame.name].valid then
+        return get_button_flow(player)[frame.name]
     end
 
-    return Public.get_button_flow(player).add(frame)
+    return get_button_flow(player).add(frame)
 end
 
 ---@param state boolean
@@ -906,8 +916,8 @@ function Public.call_existing_tab(player, name)
     end
 end
 
-Public.get_button_flow = mod_gui.get_button_flow
-Public.mod_button = mod_gui.get_button_flow
+Public.get_button_flow = get_button_flow
+Public.mod_button = get_button_flow
 
 -- Register a handler for the on_gui_checked_state_changed event for LuaGuiElements with element_name.
 -- Can only have one handler per element name.

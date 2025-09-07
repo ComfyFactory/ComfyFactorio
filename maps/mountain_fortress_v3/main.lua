@@ -10,6 +10,7 @@ require 'modules.no_deconstruction_of_neutral_entities'
 require 'modules.spawners_contain_biters'
 require 'maps.mountain_fortress_v3.ic.main'
 require 'modules.wave_defense.main'
+require 'modules.melee_mode'
 
 local Event = require 'utils.event'
 local Gui = require 'utils.gui'

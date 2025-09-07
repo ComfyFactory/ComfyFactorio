@@ -1236,19 +1236,6 @@ local function add_magic_crafter_output(entity, output, distance, quality)
     end
 end
 
-local function tick()
-    do_refill_turrets()
-    do_magic_crafters()
-    do_magic_fluid_crafters()
-    do_artillery_turrets_targets()
-    do_beams_away()
-    do_clear_enemy_spawners()
-    do_clear_rocks_slowly()
-    do_replace_tiles_slowly()
-    do_custom_surface_funcs()
-    Public.set_difficulty()
-end
-
 Public.deactivate_callback =
     Task.register(
         function (entity)
@@ -3561,7 +3548,16 @@ Event.add(de.on_player_cursor_stack_changed, on_player_cursor_stack_changed)
 Event.add(de.on_chart_tag_added, on_chart_tag_added)
 Event.add(de.on_marked_for_deconstruction, on_marked_for_deconstruction)
 Event.add(de.on_player_clicked_gps_tag, on_player_clicked_gps_tag)
-Event.on_nth_tick(10, tick)
+Event.on_nth_tick(10, do_refill_turrets)
+Event.on_nth_tick(10, do_magic_crafters)
+Event.on_nth_tick(10, do_magic_fluid_crafters)
+Event.on_nth_tick(60, do_artillery_turrets_targets)
+Event.on_nth_tick(25, do_beams_away)
+Event.on_nth_tick(30, do_clear_enemy_spawners)
+Event.on_nth_tick(35, do_clear_rocks_slowly)
+Event.on_nth_tick(35, do_replace_tiles_slowly)
+Event.on_nth_tick(60, do_custom_surface_funcs)
+Event.on_nth_tick(60, Public.set_difficulty)
 Event.add(WD.events.on_wave_created, on_wave_created)
 Event.add(WD.events.on_primary_target_missing, on_primary_target_missing)
 

@@ -1512,7 +1512,7 @@ local tick_tasks =
     [150] = log_threat,
     [180] = Public.build_worm,
     [210] = Public.build_nest,
-    [600] = set_multi_command,
+    [1600] = set_multi_command,
 }
 
 local tick_tasks_t2 =
@@ -1524,7 +1524,7 @@ local tick_tasks_t2 =
 
 Public.spawn_unit_group = spawn_unit_group
 
-Event.add(defines.events.on_tick,
+Event.on_nth_tick(30,
     function ()
         local tick = game.tick
 

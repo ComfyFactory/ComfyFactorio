@@ -91,6 +91,8 @@ local function notify_won_to_discord(buff)
 
     local stateful = Public.get_stateful()
 
+    Public.set('game_won', true)
+
     local wave = WD.get_wave()
     local threat = WD.get('threat')
     local collapse_speed = Collapse.get_speed()
@@ -104,6 +106,7 @@ local function notify_won_to_discord(buff)
     local pickaxe_upgrades = Public.pickaxe_upgrades
     local upgrades = Public.get('upgrades')
     local pick_tier = pickaxe_upgrades[upgrades.pickaxe_tier]
+
 
     local text =
     {

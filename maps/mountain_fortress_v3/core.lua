@@ -31,6 +31,5 @@ Public.permission_groups = require 'maps.mountain_fortress_v3.locomotive.permiss
 Public.spawn_locomotive = require 'maps.mountain_fortress_v3.locomotive.spawn_locomotive'
 Public.charging_station = require 'maps.mountain_fortress_v3.charging_station'
 
-require 'modules.melee_mode'
 
 return Public

@@ -470,6 +470,8 @@ function Public.reset_main_table()
         voting_closed = false
     }
 
+    this.game_won = false
+
     this.enforce_wave_200_before_collapse = true
 
     for k, _ in pairs(this.players) do
