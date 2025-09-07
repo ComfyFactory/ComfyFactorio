@@ -131,11 +131,14 @@ function Public.update_gui(player)
         gui.label.tooltip = 'Next pause will occur in: ' .. floor((Public.get('next_pause_interval') - game.tick) / 60 / 60) + 1 .. ' minute(s)'
         gui.wave_number.tooltip = 'Next pause will occur in: ' .. floor((Public.get('next_pause_interval') - game.tick) / 60 / 60) + 1 .. ' minute(s)'
         local interval = next_wave - last_wave
-        local value = 1 - (next_wave - game.tick) / interval
-        if value < 0 then
-            value = 0
-        elseif value > 1 then
-            value = 1
+        local value = 0
+        if interval > 0 then
+            value = 1 - (next_wave - game.tick) / interval
+            if value < 0 then
+                value = 0
+            elseif value > 1 then
+                value = 1
+            end
         end
         gui.progressbar.value = value
     else
@@ -149,11 +152,14 @@ function Public.update_gui(player)
         gui.wave_number.tooltip = 'Wave: ' .. wave_number
 
         local interval = paused_waves_for - last_pause
-        local value = 1 - (paused_waves_for - game.tick) / interval
-        if value < 0 then
-            value = 0
-        elseif value > 1 then
-            value = 1
+        local value = 0
+        if interval > 0 then
+            value = 1 - (paused_waves_for - game.tick) / interval
+            if value < 0 then
+                value = 0
+            elseif value > 1 then
+                value = 1
+            end
         end
         gui.progressbar.value = value
         return

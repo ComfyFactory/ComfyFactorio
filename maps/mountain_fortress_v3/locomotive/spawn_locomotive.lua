@@ -6,6 +6,19 @@ local Event = require 'utils.event'
 local Server = require 'utils.server'
 local random = math.random
 
+local random_tiles =
+{
+    'black-refined-concrete',
+    'refined-concrete',
+    'refined-hazard-concrete-left',
+    'refined-hazard-concrete-right',
+    'brown-refined-concrete',
+    'blue-refined-concrete',
+    'red-refined-concrete',
+    'yellow-refined-concrete',
+    'concrete',
+}
+
 local function initial_cargo_boxes()
     return
     {
@@ -81,7 +94,7 @@ local place_tiles_token =
                 return
             end
 
-            MapFunctions.draw_noise_tile_circle(position, 'black-refined-concrete', surface, 22)
+            MapFunctions.draw_noise_tile_circle(position, random_tiles[random(1, #random_tiles)], surface, 22)
         end
     )
 
@@ -290,8 +303,8 @@ function Public.locomotive_spawn(surface, position, reversed)
         this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'raw-fish', count = 999999 })
     end
 
-    Task.set_timeout_in_ticks(15, place_tiles_token, { surface = surface, position = position })
     Task.set_timeout_in_ticks(50, set_loco_cargo, data)
+    Task.set_timeout_in_ticks(300, place_tiles_token, { surface = surface, position = position })
 
     game.forces.player.set_spawn_position({ this.locomotive.position.x - 5, this.locomotive.position.y }, locomotive.surface)
 end

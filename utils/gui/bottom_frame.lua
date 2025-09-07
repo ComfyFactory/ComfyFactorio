@@ -3,7 +3,8 @@ local Global = require 'utils.global'
 local Gui = require 'utils.gui'
 local Task = require 'utils.task_token'
 
-local this = {
+local this =
+{
     players = {},
     storage = {},
     activate_custom_buttons = false,
@@ -21,8 +22,10 @@ Global.register(
 -- @table events
 -- @field bottom_quickbar_respawn_raise The event triggered when the bottom quickbar is respawned or raised.
 -- @field bottom_quickbar_location_changed The event triggered when the location of the bottom quickbar is changed.
-local Public = {
-    events = {
+local Public =
+{
+    events =
+    {
         bottom_quickbar_respawn_raise = Event.generate_event_name('bottom_quickbar_respawn_raise'),
         bottom_quickbar_location_changed = Event.generate_event_name('bottom_quickbar_location_changed')
     }
@@ -35,7 +38,8 @@ local get_player_data
 
 local main_frame_name = Gui.uid_name()
 
-local sections = {
+local sections =
+{
     [1] = 1,
     [2] = 1,
     [3] = 2,
@@ -81,7 +85,8 @@ get_player_data = function (player, remove_user_data)
         return
     end
     if not this.players[player.index] then
-        this.players[player.index] = {
+        this.players[player.index] =
+        {
             state = 'bottom_right',
             section = {},
             direction = 'vertical',
@@ -130,7 +135,8 @@ local function refresh_inner_frames(player)
                 end
 
                 section_row_index[row_selection] =
-                    section_row_index.inner_frame.add {
+                    section_row_index.inner_frame.add
+                    {
                         type = 'sprite-button',
                         sprite = row_selection_data.sprite,
                         name = row_selection_data.name,
@@ -208,7 +214,8 @@ local function add_inner_frame(data)
     end
 
     local storage_data_section = storage_data[player_data.row_index]
-    storage_data_section[player_data.row_selection] = {
+    storage_data_section[player_data.row_selection] =
+    {
         name = element_name,
         sprite = sprite,
         tooltip = tooltip
@@ -218,6 +225,23 @@ local function add_inner_frame(data)
     player_data.row_selection_added = player_data.row_selection_added + 1
     player_data.row_selection = player_data.row_selection > 2 and 1 or player_data.row_selection
     Task.priority_delay(2, refresh_inner_frames_token, { player_index = player.index })
+end
+
+local function get_frame_by_element_name(player, element_name)
+    local player_data, storage_data = get_player_data(player)
+    if not player_data or not storage_data or not player_data.frame or not player_data.frame.valid then
+        return
+    end
+
+    for _, row_index_data in pairs(storage_data) do
+        if row_index_data and type(row_index_data) == 'table' then
+            for _, row_selection_data in pairs(row_index_data) do
+                if row_selection_data and row_selection_data.name == element_name then
+                    return row_selection_data
+                end
+            end
+        end
+    end
 end
 
 destroy_frame = function (player)
@@ -244,7 +268,8 @@ local function create_frame(player, alignment, location, data)
     alignment = alignment or 'vertical'
 
     frame =
-        player.gui.screen.add {
+        player.gui.screen.add
+        {
             type = 'frame',
             name = main_frame_name,
             direction = alignment
@@ -265,7 +290,8 @@ local function create_frame(player, alignment, location, data)
     end
 
     local inner_frame =
-        frame.add {
+        frame.add
+        {
             type = 'frame',
             direction = alignment
         }
@@ -305,13 +331,15 @@ set_location = function (player, state)
 
     if state == 'bottom_left' then
         if data.above then
-            location = {
+            location =
+            {
                 x = (resolution.width / 2) - ((259) * scale),
                 y = (resolution.height - (-12 + (40 * 5) * scale))
             }
             alignment = 'horizontal'
         else
-            location = {
+            location =
+            {
                 -- x = (resolution.width / 2) - ((54 + 528 - 44) * scale),
                 x = (resolution.width / 2) - ((455 + (data.row_index * 40)) * scale),
                 y = (resolution.height - (96 * scale))
@@ -320,21 +348,24 @@ set_location = function (player, state)
         data.bottom_state = 'bottom_left'
     elseif state == 'bottom_right' then
         if data.above then
-            location = {
+            location =
+            {
                 -- x = (resolution.width / 2) - ((-262 - (40 * t[data.row_index])) * scale),
                 x = (resolution.width / 2) - ((-460 + (data.row_index * 40)) * scale),
                 y = (resolution.height - (-12 + (40 * 5) * scale))
             }
             alignment = 'horizontal'
         else
-            location = {
+            location =
+            {
                 x = (resolution.width / 2) - ((54 + -689) * scale),
                 y = (resolution.height - (96 * scale))
             }
         end
         data.bottom_state = 'bottom_right'
     else
-        location = {
+        location =
+        {
             x = (resolution.width / 2) - ((54 + -528) * scale),
             y = (resolution.height - (96 * scale))
         }
@@ -577,12 +608,14 @@ Event.add(
 )
 
 Public.main_frame_name = main_frame_name
+Public.refresh_inner_frames = refresh_inner_frames
 Public.get_player_data = get_player_data
 Public.remove_player = remove_player
 Public.set_location = set_location
 Public.get_location = get_location
 Public.set_top = set_top
 Public.add_inner_frame = add_inner_frame
+Public.get_frame_by_element_name = get_frame_by_element_name
 Gui.screen_to_bypass(main_frame_name)
 
 return Public

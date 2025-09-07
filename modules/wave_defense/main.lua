@@ -754,6 +754,34 @@ local function increase_unit_group_size()
     end
 end
 
+local function set_multi_command()
+    local surface_index = Public.get('surface_index')
+    local surface = game.get_surface(surface_index)
+    if not surface or not surface.valid then
+        return
+    end
+
+    local target = Public.get('target')
+    if not valid(target) then
+        Event.raise(Public.events.on_primary_target_missing)
+        return
+    end
+
+    surface.set_multi_command(
+        {
+            command =
+            {
+                type = defines.command.attack,
+                target = target,
+                distraction = defines.distraction.none
+            },
+            unit_count = 256,
+            force = 'aggressors',
+            unit_search_distance = 1024
+        }
+    )
+end
+
 local function increase_max_active_unit_groups()
     local _increase_max_active_unit_groups = Public.get('increase_max_active_unit_groups')
     if not _increase_max_active_unit_groups then
@@ -1483,7 +1511,8 @@ local tick_tasks =
     [120] = give_main_command_to_group,
     [150] = log_threat,
     [180] = Public.build_worm,
-    [210] = Public.build_nest
+    [210] = Public.build_nest,
+    [600] = set_multi_command,
 }
 
 local tick_tasks_t2 =
@@ -1495,8 +1524,7 @@ local tick_tasks_t2 =
 
 Public.spawn_unit_group = spawn_unit_group
 
-Event.on_nth_tick(
-    30,
+Event.add(defines.events.on_tick,
     function ()
         local tick = game.tick
 
