@@ -300,22 +300,33 @@ local pause_waves_custom_callback_token =
 local magicka_custom_callback_token =
     Task.register(
         function (event)
+            if not event then
+                return
+            end
+
             local player = event.player
             if not player or not player.valid then
                 return
             end
 
             local mc_rewards = Public.get('mc_rewards')
+            if not mc_rewards or not mc_rewards.active_boosts then
+                return
+            end
 
             local rpg_t = event.rpg_t
             if not rpg_t then
                 return
             end
 
+            if rpg_t.magicka < 10 then
+                rpg_t.magicka = 10
+            end
+
             if mc_rewards.active_boosts.lucky then
                 if not rpg_t.previous_magicka then
                     rpg_t.previous_magicka = rpg_t.magicka
-                    rpg_t.magicka = 100
+                    rpg_t.magicka = rpg_t.magicka + 100
                 end
             else
                 if rpg_t.previous_magicka then

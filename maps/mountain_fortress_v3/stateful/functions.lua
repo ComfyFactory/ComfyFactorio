@@ -241,15 +241,8 @@ function Public.init_buff_selection(buffs)
 			return
 		end
 
-		if #game.connected_players >= 15 then
-			buff_selection.closing_timeout = game.tick + 27000
-		elseif #game.connected_players >= 10 then
-			buff_selection.closing_timeout = game.tick + 21000
-		elseif #game.connected_players >= 5 then
-			buff_selection.closing_timeout = game.tick + 18000
-		else
-			buff_selection.closing_timeout = game.tick + 5000
-		end
+
+		buff_selection.closing_timeout = game.tick + 10800 -- 3 minutes
 
 
 		buff_selection.buffs[#buff_selection.buffs + 1] =

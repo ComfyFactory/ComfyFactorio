@@ -1532,6 +1532,8 @@ function Public.loco_died()
     save_game_before_end()
     check_rpg_progression()
 
+    Public.set_stateful('current_streak', 0)
+
     if not Public.get('game_won') then
         notify_game_lost_to_discord(mvp)
         post_mvp_to_discord(mvp)

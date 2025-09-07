@@ -1860,6 +1860,7 @@ local apply_settings_token =
             this.rounds_survived = settings.rounds_survived
             this.season = settings.season
             this.best_streak = settings.best_streak
+            this.current_streak = settings.current_streak
 
             apply_startup_settings(settings)
             local current_season = Public.get('current_season')
@@ -1913,6 +1914,7 @@ function Public.save_settings(buff)
     if this.current_streak > this.best_streak then
         this.best_streak = this.current_streak
         settings.best_streak = this.best_streak
+        settings.current_streak = this.current_streak
         Server.output_script_data('New best win streak: ' .. this.best_streak)
     end
 
@@ -1946,6 +1948,7 @@ function Public.save_settings_before_reset()
     if this.current_streak > this.best_streak then
         this.best_streak = this.current_streak
         settings.best_streak = this.best_streak
+        settings.current_streak = this.current_streak
         Server.output_script_data('New best win streak: ' .. this.best_streak)
     end
 
