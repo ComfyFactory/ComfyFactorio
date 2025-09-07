@@ -97,9 +97,12 @@ local function create_manabar(player, size)
 end
 
 local function set_bar(min, max, render_object, mana)
-    local m = min / max
     if not render_object or not render_object.valid then
         return
+    end
+    local m = 0
+    if max > 0 then
+        m = min / max
     end
     local x_scale = render_object.y_scale * 8
     render_object.x_scale = x_scale * m
