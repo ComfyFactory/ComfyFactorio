@@ -1579,9 +1579,9 @@ local function on_player_changed_position(event)
 
     local position = player.physical_position
 
-    local zone_settings = WPT.zone_settings
+    local zs = WPT.zone_settings
 
-    if (position.x < zone_settings.zone_width / 2 and position.x >= -zone_settings.zone_width / 2) then
+    if (position.x < zs.zone_width / 2 and position.x >= -zs.zone_width / 2) then
         return
     end
 
