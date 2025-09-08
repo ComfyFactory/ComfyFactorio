@@ -115,22 +115,24 @@ local function create_message(player, action, source_position, destination_posit
     {
         title = 'Mountain_fortress_v3',
         description = 'Linked chests action was triggered.',
-        field1 =
+        fields =
         {
-            text1 = player.name,
-            text2 = action
+            {
+                title = player.name,
+                description = action
+            },
+            {
+                title = 'Source position:',
+                description = '{x = ' .. source_position.x .. ', y = ' .. source_position.y .. '}'
+            }
         },
-        field2 =
-        {
-            text1 = 'Source position:',
-            text2 = '{x = ' .. source_position.x .. ', y = ' .. source_position.y .. '}'
-        }
+
     }
     if destination_position then
-        data.field3 =
+        data.fields[#data.fields + 1] =
         {
-            text1 = 'Destination position:',
-            text2 = '{x = ' .. destination_position.x .. ', y = ' .. destination_position.y .. '}'
+            title = 'Destination position:',
+            description = '{x = ' .. destination_position.x .. ', y = ' .. destination_position.y .. '}'
         }
     end
 

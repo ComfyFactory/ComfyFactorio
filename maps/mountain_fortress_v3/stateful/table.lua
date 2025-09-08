@@ -154,30 +154,30 @@ local function notify_season_over_to_discord(perm_buff)
         title = 'Season: ' .. stateful.season .. ' is over!',
         description = 'Game statistics from the season is below',
         color = 'success',
-        field1 =
+        fields =
         {
-            text1 = 'Rounds survived:',
-            text2 = stateful.rounds_survived,
-            inline = 'false'
-        },
-        field2 =
-        {
-            text1 = 'Best win streak:',
-            text2 = stateful.best_streak or 'None',
-            inline = 'false'
-        },
-        field3 =
-        {
-            text1 = 'Buffs granted:',
-            text2 = buffs,
-            inline = 'false'
-        },
-        field4 =
-        {
-            text1 = 'Permanent buffs granted:',
-            text2 = perm_buff.discord,
-            inline = 'false'
+            {
+                title = 'Rounds survived:',
+                description = stateful.rounds_survived,
+                inline = 'false'
+            },
+            {
+                title = 'Best win streak:',
+                description = stateful.best_streak or 'None',
+                inline = 'false'
+            },
+            {
+                title = 'Buffs granted:',
+                description = buffs,
+                inline = 'false'
+            },
+            {
+                title = 'Permanent buffs granted:',
+                description = perm_buff.discord,
+                inline = 'false'
+            }
         }
+
     }
     if server_name_matches then
         Server.to_discord_named_parsed_embed(send_ping_to_channel, text)

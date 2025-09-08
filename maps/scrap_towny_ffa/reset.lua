@@ -22,7 +22,7 @@ local function on_rocket_launched(event)
     local rocket = event.rocket
     local tick = event.tick
     local force_index = rocket.force.index
-    table_insert(this.rocket_launches, {force_index = force_index, tick = tick})
+    table_insert(this.rocket_launches, { force_index = force_index, tick = tick })
 end
 
 local function get_victorious_force()
@@ -67,13 +67,13 @@ local function do_soft_reset()
         return
     end
     if get_victorious_force() then
-        surface.play_sound({path = 'utility/game_won', volume_modifier = 1})
+        surface.play_sound({ path = 'utility/game_won', volume_modifier = 1 })
     else
-        surface.play_sound({path = 'utility/game_lost', volume_modifier = 1})
+        surface.play_sound({ path = 'utility/game_lost', volume_modifier = 1 })
     end
 
     for _, player in pairs(game.players) do
-        player.teleport({0, 0}, game.surfaces['limbo'])
+        player.teleport({ 0, 0 }, game.surfaces['limbo'])
     end
     Nauvis.initialize()
     Team.initialize()
@@ -93,7 +93,7 @@ local function do_soft_reset()
     end
 
     Alert.alert_all_players(5, 'The world has been reset!', Color.white, 'restart_required', 1.0)
-    game.print('The world has been reset!', {r = 0.22, g = 0.88, b = 0.22})
+    game.print('The world has been reset!', { r = 0.22, g = 0.88, b = 0.22 })
 
     Server.to_discord_embed('*** The world has been reset! ***')
 end
@@ -119,7 +119,7 @@ local function has_the_game_ended()
                     cause_msg = 'soft-reset'
                 end
 
-                game.print(({'main.reset_in', cause_msg, this.game_reset_tick / 60}), {r = 0.22, g = 0.88, b = 0.22})
+                game.print(({ 'main.reset_in', cause_msg, this.game_reset_tick / 60 }), { r = 0.22, g = 0.88, b = 0.22 })
             end
 
             if this.soft_reset and this.game_reset_tick == 0 then
@@ -129,9 +129,9 @@ local function has_the_game_ended()
 
             if this.restart and this.game_reset_tick == 0 then
                 if not this.announced_message then
-                    game.print(({'entity.notify_restart'}), {r = 0.22, g = 0.88, b = 0.22})
+                    game.print(({ 'entity.notify_restart' }), { r = 0.22, g = 0.88, b = 0.22 })
                     local message = 'Soft-reset is disabled! Server will restart from scenario to load new changes.'
-                    Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
+                    Server.to_discord_bold(table.concat { '*** ', message, ' ***' })
                     Server.start_scenario('Towny')
                     this.announced_message = true
                     return
@@ -139,9 +139,9 @@ local function has_the_game_ended()
             end
             if this.shutdown and this.game_reset_tick == 0 then
                 if not this.announced_message then
-                    game.print(({'entity.notify_shutdown'}), {r = 0.22, g = 0.88, b = 0.22})
+                    game.print(({ 'entity.notify_shutdown' }), { r = 0.22, g = 0.88, b = 0.22 })
                     local message = 'Soft-reset is disabled! Server will shutdown. Most likely because of updates.'
-                    Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
+                    Server.to_discord_bold(table.concat { '*** ', message, ' ***' })
                     Server.stop_scenario()
                     this.announced_message = true
                     return
@@ -182,85 +182,90 @@ function Public.show_mvps(player)
     if player.gui.left['mvps'] then
         return
     end
-    local frame = player.gui.left.add({type = 'frame', name = 'mvps', direction = 'vertical'})
-    local l = frame.add({type = 'label', caption = 'MVPs:'})
+    local frame = player.gui.left.add({ type = 'frame', name = 'mvps', direction = 'vertical' })
+    local l = frame.add({ type = 'label', caption = 'MVPs:' })
     l.style.font = 'default-listbox'
-    l.style.font_color = {r = 0.55, g = 0.55, b = 0.99}
+    l.style.font_color = { r = 0.55, g = 0.55, b = 0.99 }
 
-    local t = frame.add({type = 'table', column_count = 2})
+    local t = frame.add({ type = 'table', column_count = 2 })
     local this = ScenarioTable.get()
     if this.winner then
-        local town_won = t.add({type = 'label', caption = 'Town won >> '})
+        local town_won = t.add({ type = 'label', caption = 'Town won >> ' })
         town_won.style.font = 'default-listbox'
-        town_won.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-        local town_won_text = t.add({type = 'label', caption = this.winner.name})
+        town_won.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
+        local town_won_text = t.add({ type = 'label', caption = this.winner.name })
         town_won_text.style.font = 'default-bold'
-        town_won_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+        town_won_text.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
-        local town_researched = t.add({type = 'label', caption = 'Town researched >> '})
+        local town_researched = t.add({ type = 'label', caption = 'Town researched >> ' })
         town_researched.style.font = 'default-listbox'
-        town_researched.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-        local town_researched_text = t.add({type = 'label', caption = this.winner.research_counter .. ' techs!'})
+        town_researched.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
+        local town_researched_text = t.add({ type = 'label', caption = this.winner.research_counter .. ' techs!' })
         town_researched_text.style.font = 'default-bold'
-        town_researched_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+        town_researched_text.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
-        local town_upgrades = t.add({type = 'label', caption = 'Town upgrades >> '})
+        local town_upgrades = t.add({ type = 'label', caption = 'Town upgrades >> ' })
         town_upgrades.style.font = 'default-listbox'
-        town_upgrades.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-        local town_upgrades_text = t.add({type = 'label', caption = 'Crafting speed: ' .. this.winner.upgrades.crafting_speed .. '\nMining speed: ' .. this.winner.upgrades.mining_speed})
+        town_upgrades.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
+        local town_upgrades_text = t.add({ type = 'label', caption = 'Crafting speed: ' .. this.winner.upgrades.crafting_speed .. '\nMining speed: ' .. this.winner.upgrades.mining_speed })
         town_upgrades_text.style.font = 'default-bold'
-        town_upgrades_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+        town_upgrades_text.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
-        local town_health = t.add({type = 'label', caption = 'Town health >> '})
+        local town_health = t.add({ type = 'label', caption = 'Town health >> ' })
         town_health.style.font = 'default-listbox'
-        town_health.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-        local town_health_text = t.add({type = 'label', caption = this.winner.health .. 'hp left!'})
+        town_health.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
+        local town_health_text = t.add({ type = 'label', caption = this.winner.health .. 'hp left!' })
         town_health_text.style.font = 'default-bold'
-        town_health_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+        town_health_text.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
-        local town_coins = t.add({type = 'label', caption = 'Town coins >> '})
+        local town_coins = t.add({ type = 'label', caption = 'Town coins >> ' })
         town_coins.style.font = 'default-listbox'
-        town_coins.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-        local town_coins_text = t.add({type = 'label', caption = this.winner.coin_balance .. ' coins stashed!'})
+        town_coins.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
+        local town_coins_text = t.add({ type = 'label', caption = this.winner.coin_balance .. ' coins stashed!' })
         town_coins_text.style.font = 'default-bold'
-        town_coins_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+        town_coins_text.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
         if not this.game_won then
             this.game_won = true
             this.game_reset_tick = 5400
             Alert.alert_all_players(900, 'Winner winner chicken dinner!\n[color=red]' .. this.winner.name .. '[/color] has won the game!', nil, 'restart_required', 1.0)
             for _, p in pairs(game.connected_players) do
-                p.play_sound {path = 'utility/game_won', volume_modifier = 0.75}
+                p.play_sound { path = 'utility/game_won', volume_modifier = 0.75 }
             end
-            local message = {
+            local message =
+            {
                 title = 'Game over',
                 description = 'Town statistics is below',
                 color = 'success',
-                field1 = {
-                    text1 = 'Town won:',
-                    text2 = this.winner.name,
-                    inline = 'false'
-                },
-                field2 = {
-                    text1 = 'Town researched:',
-                    text2 = this.winner.research_counter .. ' techs!',
-                    inline = 'false'
-                },
-                field3 = {
-                    text1 = 'Town upgrades:',
-                    text2 = 'Crafting speed:' .. this.winner.upgrades.crafting_speed .. '\nMining speed:' .. this.winner.upgrades.mining_speed,
-                    inline = 'false'
-                },
-                field4 = {
-                    text1 = 'Town health:',
-                    text2 = this.winner.health .. 'hp left!',
-                    inline = 'false'
-                },
-                field5 = {
-                    text1 = 'Town coins:',
-                    text2 = this.winner.coin_balance .. ' coins stashed!',
-                    inline = 'false'
+                fields =
+                {
+                    {
+                        title = 'Town won:',
+                        description = this.winner.name,
+                        inline = 'false'
+                    },
+                    {
+                        title = 'Town researched:',
+                        description = this.winner.research_counter .. ' techs!',
+                        inline = 'false'
+                    },
+                    {
+                        title = 'Town upgrades:',
+                        description = 'Crafting speed:' .. this.winner.upgrades.crafting_speed .. '\nMining speed:' .. this.winner.upgrades.mining_speed,
+                        inline = 'false'
+                    },
+                    {
+                        title = 'Town health:',
+                        description = this.winner.health .. 'hp left!',
+                        inline = 'false'
+                    },
+                    {
+                        title = 'Town coins:',
+                        description = this.winner.coin_balance .. ' coins stashed!',
+                        inline = 'false'
+                    }
                 }
+
             }
             Server.to_discord_embed_parsed(message)
             this.sent_to_discord = true
@@ -271,7 +276,7 @@ end
 commands.add_command(
     'scenario',
     'Usable only for admins - controls the scenario!',
-    function(cmd)
+    function (cmd)
         local p
         local player = game.player
 
@@ -343,9 +348,9 @@ commands.add_command(
         elseif param == 'reset' then
             this.reset_are_you_sure = nil
             if player and player.valid then
-                game.print(mapkeeper .. ' ' .. player.name .. ', has reset the game!', {r = 0.98, g = 0.66, b = 0.22})
+                game.print(mapkeeper .. ' ' .. player.name .. ', has reset the game!', { r = 0.98, g = 0.66, b = 0.22 })
             else
-                game.print(mapkeeper .. ' server, has reset the game!', {r = 0.98, g = 0.66, b = 0.22})
+                game.print(mapkeeper .. ' server, has reset the game!', { r = 0.98, g = 0.66, b = 0.22 })
             end
             do_soft_reset()
             p('[WARNING] Game has been reset!')

@@ -404,7 +404,21 @@ local function delete_all_blueprints(player)
         game.print(counter .. ' blueprints have been cleared!', { r = 0.98, g = 0.66, b = 0.22 })
     end
     local server_name = Server.get_server_name() or 'CommandHandler'
-    Discord.send_notification_raw(server_name, player.name .. ' cleared all the blueprints on the map.')
+    Discord.send_notification(
+        {
+            title = "Blueprints cleared",
+            description = player.name .. ' cleared all the blueprints on the map.',
+            color = "success",
+            fields =
+            {
+                {
+                    title = "Server",
+                    description = server_name,
+                    inline = "false"
+                }
+            }
+        }
+    )
     admin_only_message(player.name .. ' has cleared all blueprints.')
     clear_validation_action(player.name, 'delete_all_blueprints')
 end
@@ -419,7 +433,21 @@ local function pause_game_tick(player)
     game.tick_paused = not paused
     game.print('Game has been ' .. paused_str .. ' by ' .. player.name, { r = 0.98, g = 0.66, b = 0.22 })
     local server_name = Server.get_server_name() or 'CommandHandler'
-    Discord.send_notification_raw(server_name, player.name .. ' ' .. paused_str .. ' the game.')
+    Discord.send_notification(
+        {
+            title = "Game " .. paused_str,
+            description = player.name .. ' ' .. paused_str .. ' the game.',
+            color = "success",
+            fields =
+            {
+                {
+                    title = "Server",
+                    description = server_name,
+                    inline = "false"
+                }
+            }
+        }
+    )
     clear_validation_action(player.name, 'pause_game_tick')
 end
 

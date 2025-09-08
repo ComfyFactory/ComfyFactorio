@@ -1,8 +1,10 @@
 --- Resources for use in interacting with discord.
-return {
+return
+{
     --- The names of the discord channels that can be referenced by name.
     -- See features.server.to_discord_named
-    channel_names = {
+    channel_names =
+    {
         mtn_channel = 'mount-fortress',
         scenario_notifications = 'scenario-notifications',
         bb_channel = 'biter_battles',
@@ -14,7 +16,8 @@ return {
     },
     --- The strings that mention the discord role.
     -- Has to be used with features.server.to_discord_raw variants else the mention is sanitized server side.
-    role_mentions = {
+    role_mentions =
+    {
         test_role = '<@&821767672642797649>',
         mtn_fortress = '<@&821485320133410846>',
         fish_defender = '<@&821485656576360538>',

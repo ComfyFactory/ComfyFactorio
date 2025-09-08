@@ -1146,14 +1146,16 @@ local function on_player_muted(event)
         title = 'Muted :mute:',
         description = 'A player was muted.',
         color = 'failure',
-        field1 =
+        fields =
         {
-            text1 = 'Player:',
-            text2 = player.name,
-            inline = 'false'
+            {
+                title = 'Player:',
+                description = player.name,
+                inline = 'false'
+            }
         }
     }
-    Discord.send_notification_obj(message)
+    Discord.send_notification(message)
 end
 
 local function on_player_unmuted(event)
@@ -1168,14 +1170,16 @@ local function on_player_unmuted(event)
         title = 'Unmuted :speaker:',
         description = 'A player was unmuted.',
         color = 'success',
-        field1 =
+        fields =
         {
-            text1 = 'Player:',
-            text2 = player.name,
-            inline = 'false'
+            {
+                title = 'Player:',
+                description = player.name,
+                inline = 'false'
+            }
         }
     }
-    Discord.send_notification_obj(message)
+    Discord.send_notification(message)
 end
 
 --- This is used for the RPG module, when casting capsules.

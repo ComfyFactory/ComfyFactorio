@@ -47,7 +47,20 @@ Commands.new('scenario', 'Usable only for admins - controls the scenario!')
                     this.reset_are_you_sure = nil
                     this.restart = false
                     this.soft_reset = true
-                    Discord.send_notification_raw(Public.discord_name, player.name .. ' has enabled soft-reset!')
+                    Discord.send_notification(
+                        {
+                            title = "Soft-reset enabled",
+                            description = player.name .. ' has enabled soft-reset!',
+                            color = "info",
+                            fields =
+                            {
+                                {
+                                    title = "Server",
+                                    description = Public.discord_name,
+                                    inline = "false"
+                                }
+                            }
+                        })
                     player.print('Soft-reset is enabled.')
                 else
                     this.reset_are_you_sure = nil
@@ -56,21 +69,59 @@ Commands.new('scenario', 'Usable only for admins - controls the scenario!')
                     if this.shutdown then
                         this.shutdown = false
                     end
-                    Discord.send_notification_raw(Public.discord_name, player.name .. ' has disabled soft-reset! Restart will happen from scenario.')
+                    Discord.send_notification(
+                        {
+                            title = "Soft-reset disabled",
+                            description = player.name .. ' has disabled soft-reset! Restart will happen from scenario.',
+                            color = "warning",
+                            fields =
+                            {
+                                {
+                                    title = "Server",
+                                    description = Public.discord_name,
+                                    inline = "false"
+                                }
+                            }
+                        })
                     player.print('Soft-reset is disabled! Server will restart from scenario to load new changes.')
                 end
             elseif action == 'restartnow' then
                 this.reset_are_you_sure = nil
                 Server.start_scenario('Mountain_Fortress_v3')
-                Discord.send_notification_raw(Public.discord_name, player.name .. ' restarted the scenario.')
+                Discord.send_notification(
+                    {
+                        title = "Scenario restarted",
+                        description = player.name .. ' restarted the scenario.',
+                        color = "success",
+                        fields =
+                        {
+                            {
+                                title = "Server",
+                                description = Public.discord_name,
+                                inline = "false"
+                            }
+                        }
+                    })
                 player.print('Restarted the scenario.')
             elseif action == 'shutdown' then
                 if this.shutdown then
                     this.reset_are_you_sure = nil
                     this.shutdown = false
                     this.soft_reset = true
-                    Discord.send_notification_raw(Public.discord_name,
-                        player.name .. ' has enabled soft-reset. Server will NOT shutdown!')
+                    Discord.send_notification(
+                        {
+                            title = "Soft-reset enabled",
+                            description = player.name .. ' has enabled soft-reset. Server will NOT shutdown!',
+                            color = "success",
+                            fields =
+                            {
+                                {
+                                    title = "Server",
+                                    description = Public.discord_name,
+                                    inline = "false"
+                                }
+                            }
+                        })
 
                     player.print('Soft-reset is enabled.')
                 else
@@ -81,7 +132,20 @@ Commands.new('scenario', 'Usable only for admins - controls the scenario!')
                         this.restart = false
                     end
 
-                    Discord.send_notification_raw(Public.discord_name, player.name .. ' has disabled soft-reset. Server will shutdown!')
+                    Discord.send_notification(
+                        {
+                            title = "Soft-reset disabled",
+                            description = player.name .. ' has disabled soft-reset. Server will shutdown!',
+                            color = "warning",
+                            fields =
+                            {
+                                {
+                                    title = "Server",
+                                    description = Public.discord_name,
+                                    inline = "false"
+                                }
+                            }
+                        })
                     player.print('Soft-reset is disabled! Server will shutdown.')
                 end
             elseif action == 'reset' then
@@ -89,10 +153,36 @@ Commands.new('scenario', 'Usable only for admins - controls the scenario!')
                 if player and player.valid then
                     game.print(mapkeeper .. ' ' .. player.name .. ', has reset the game!',
                         { color = CommandColor })
-                    Discord.send_notification_raw(Public.discord_name, player.name .. ' has reset the game!')
+                    Discord.send_notification(
+                        {
+                            title = "Game reset",
+                            description = player.name .. ' has reset the game!',
+                            color = "success",
+                            fields =
+                            {
+                                {
+                                    title = "Server",
+                                    description = Public.discord_name,
+                                    inline = "false"
+                                }
+                            }
+                        })
                 else
                     game.print(mapkeeper .. ' server, has reset the game!', { color = CommandColor })
-                    Discord.send_notification_raw(Public.discord_name, 'Server has reset the game!')
+                    Discord.send_notification(
+                        {
+                            title = "Game reset",
+                            description = 'Server has reset the game!',
+                            color = "success",
+                            fields =
+                            {
+                                {
+                                    title = "Server",
+                                    description = Public.discord_name,
+                                    inline = "false"
+                                }
+                            }
+                        })
                 end
                 Public.set_task('move_players', 'Init')
                 player.print('Game has been reset!')
@@ -107,7 +197,20 @@ Commands.new('mtn_set_queue_speed', 'Usable only for admins - sets the queue spe
     :callback(
         function (player, speed)
             Task.set_queue_speed(speed)
-            Discord.send_notification_raw(Public.discord_name, player.name .. ' set the queue speed to: ' .. speed)
+            Discord.send_notification(
+                {
+                    title = "Queue speed set",
+                    description = player.name .. ' set the queue speed to: ' .. speed,
+                    color = "success",
+                    fields =
+                    {
+                        {
+                            title = "Server",
+                            description = Public.discord_name,
+                            inline = "false"
+                        }
+                    }
+                })
             player.print('Queue speed set to: ' .. speed)
         end
     )
@@ -119,7 +222,20 @@ Commands.new('mtn_complete_quests', 'Usable only for admins - completes all the 
     :add_parameter('instant_win', true, 'boolean')
     :callback(
         function (player, no_grace, instant_win)
-            Discord.send_notification_raw(Public.discord_name, player.name .. ' completed all the quest via command.')
+            Discord.send_notification(
+                {
+                    title = "Quests completed",
+                    description = player.name .. ' completed all the quest via command.',
+                    color = "success",
+                    fields =
+                    {
+                        {
+                            title = "Server",
+                            description = Public.discord_name,
+                            inline = "false"
+                        }
+                    }
+                })
             local stateful = Public.get_stateful()
             stateful.objectives_completed_count = stateful.tasks_required_to_win
             if no_grace and not instant_win then
@@ -141,7 +257,20 @@ Commands.new('mtn_reverse_map', 'Usable only for admins - reverses the map!')
         function (player)
             local reversed = Public.get_stateful_settings('reversed')
             Public.set_stateful_settings('reversed', not reversed)
-            Discord.send_notification_raw(Public.discord_name, player.name .. ' reversed the map.')
+            Discord.send_notification(
+                {
+                    title = "Map reversed",
+                    description = player.name .. ' reversed the map.',
+                    color = "success",
+                    fields =
+                    {
+                        {
+                            title = "Server",
+                            description = Public.discord_name,
+                            inline = "false"
+                        }
+                    }
+                })
             Public.set_task('move_players', 'Init')
             game.print(mapkeeper .. player.name .. ', has reverse the map and reset the game!',
                 { color = CommandColor })
@@ -157,12 +286,38 @@ Commands.new('mtn_disable_biters', 'Usable only for admins - disables wave defen
             local tbl = WD.get()
 
             if not tbl.game_lost then
-                Discord.send_notification_raw(Public.discord_name, player.name .. ' disabled the wave defense module.')
+                Discord.send_notification(
+                    {
+                        title = "Wave defense disabled",
+                        description = player.name .. ' disabled the wave defense module.',
+                        color = "success",
+                        fields =
+                        {
+                            {
+                                title = "Server",
+                                description = Public.discord_name,
+                                inline = "false"
+                            }
+                        }
+                    })
                 game.print(mapkeeper .. ' ' .. player.name .. ', has disabled the wave_defense module!',
                     { color = CommandColor })
                 tbl.game_lost = true
             else
-                Discord.send_notification_raw(Public.discord_name, player.name .. ' enabled the wave defense module.')
+                Discord.send_notification(
+                    {
+                        title = "Wave defense enabled",
+                        description = player.name .. ' enabled the wave defense module.',
+                        color = "success",
+                        fields =
+                        {
+                            {
+                                title = "Server",
+                                description = Public.discord_name,
+                                inline = "false"
+                            }
+                        }
+                    })
                 game.print(mapkeeper .. ' ' .. player.name .. ', has enabled the wave_defense module!',
                     { color = CommandColor })
                 tbl.game_lost = false
@@ -184,12 +339,38 @@ Commands.new('mtn_toggle_darkness', 'Usable only for admins - toggles the darkne
             if darkness then
                 Public.set_stateful_settings('darkness', false)
                 game.print('Darkness is now disabled!')
-                Discord.send_notification_raw(Public.discord_name, player.name .. ' disabled surface darkness.')
+                Discord.send_notification(
+                    {
+                        title = "Surface darkness disabled",
+                        description = player.name .. ' disabled surface darkness.',
+                        color = "success",
+                        fields =
+                        {
+                            {
+                                title = "Server",
+                                description = Public.discord_name,
+                                inline = "false"
+                            }
+                        }
+                    })
                 surface.brightness_visual_weights = { a = 1, b = 0, g = 0, r = 0 }
             else
                 Public.set_stateful_settings('darkness', true)
                 game.print('Darkness is now enabled!')
-                Discord.send_notification_raw(Public.discord_name, player.name .. ' enabled surface darkness.')
+                Discord.send_notification(
+                    {
+                        title = "Surface darkness enabled",
+                        description = player.name .. ' enabled surface darkness.',
+                        color = "success",
+                        fields =
+                        {
+                            {
+                                title = "Server",
+                                description = Public.discord_name,
+                                inline = "false"
+                            }
+                        }
+                    })
                 surface.brightness_visual_weights = { a = 1, b = 0.7, g = 0.7, r = 0.7 }
             end
         end
@@ -203,7 +384,20 @@ Commands.new('mtn_grant_permanent_buff', 'Usable only for admins - grants a perm
             local buff = Public.grant_non_limit_reached_buff()
             local stateful = Public.get_stateful()
             stateful.permanent_buffs[#stateful.permanent_buffs + 1] = buff
-            Discord.send_notification_raw(Public.discord_name, player.name .. ' granted the team a permanent buff: ' .. buff.discord)
+            Discord.send_notification(
+                {
+                    title = "Permanent buff granted",
+                    description = player.name .. ' granted the team a permanent buff: ' .. buff.discord,
+                    color = "success",
+                    fields =
+                    {
+                        {
+                            title = "Server",
+                            description = Public.discord_name,
+                            inline = "false"
+                        }
+                    }
+                })
             game.print(mapkeeper .. ' ' .. player.name .. ', has granted the permanent buff: ' .. buff.discord .. '!', { color = CommandColor })
             Public.apply_permanent_buffs()
         end
@@ -219,12 +413,38 @@ Commands.new('mtn_toggle_orbital_strikes',
             local this = Public.get()
 
             if this.orbital_strikes.enabled then
-                Discord.send_notification_raw(Public.discord_name, player.name .. ' disabled the orbital strike module.')
+                Discord.send_notification(
+                    {
+                        title = "Orbital strikes disabled",
+                        description = player.name .. ' disabled the orbital strike module.',
+                        color = "success",
+                        fields =
+                        {
+                            {
+                                title = "Server",
+                                description = Public.discord_name,
+                                inline = "false"
+                            }
+                        }
+                    })
                 game.print(mapkeeper .. ' ' .. player.name .. ', has disabled the orbital_strikes module!',
                     { color = CommandColor })
                 this.orbital_strikes.enabled = false
             else
-                Discord.send_notification_raw(Public.discord_name, player.name .. ' enabled the orbital strike module.')
+                Discord.send_notification(
+                    {
+                        title = "Orbital strikes enabled",
+                        description = player.name .. ' enabled the orbital strike module.',
+                        color = "success",
+                        fields =
+                        {
+                            {
+                                title = "Server",
+                                description = Public.discord_name,
+                                inline = "false"
+                            }
+                        }
+                    })
                 game.print(mapkeeper .. ' ' .. player.name .. ', has enabled the orbital_strikes module!',
                     { color = CommandColor })
                 this.orbital_strikes.enabled = true
@@ -248,11 +468,37 @@ Commands.new('mtn_disable_collapse', 'Usable only for admins - toggles the colla
         function (player)
             if not Collapse.has_collapse_started() then
                 Collapse.start_now(true, false)
-                Discord.send_notification_raw(Public.discord_name, player.name .. ' has enabled collapse.')
+                Discord.send_notification(
+                    {
+                        title = "Collapse enabled",
+                        description = player.name .. ' has enabled collapse.',
+                        color = "success",
+                        fields =
+                        {
+                            {
+                                title = "Server",
+                                description = Public.discord_name,
+                                inline = "false"
+                            }
+                        }
+                    })
                 game.print(mapkeeper .. ' ' .. player.name .. ', has enabled collapse!', { color = CommandColor })
             else
                 Collapse.start_now(false, true)
-                Discord.send_notification_raw(Public.discord_name, player.name .. ' has disabled collapse.')
+                Discord.send_notification(
+                    {
+                        title = "Collapse disabled",
+                        description = player.name .. ' has disabled collapse.',
+                        color = "success",
+                        fields =
+                        {
+                            {
+                                title = "Server",
+                                description = Public.discord_name,
+                                inline = "false"
+                            }
+                        }
+                    })
                 game.print(mapkeeper .. ' ' .. player.name .. ', has disabled collapse!',
                     { color = CommandColor })
             end

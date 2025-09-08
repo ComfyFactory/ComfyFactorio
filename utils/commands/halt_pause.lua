@@ -12,7 +12,23 @@ Commands.new('halt_pause', 'Resumes the game if the backend has paused it.')
 			return false
 		end
 
-		Discord.send_notification_raw(nil, player.name .. ' has triggered to unpause the game!')
+		local server_name = Server.get_server_name() or 'CommandHandler'
+
+		Discord.send_notification(
+			{
+				title = "Game unpaused from backend",
+				description = player.name .. ' has triggered to unpause the game from the backend!',
+				color = "success",
+				fields =
+				{
+					{
+						title = "Server",
+						description = server_name,
+						inline = "false"
+					}
+				}
+			}
+		)
 		Server.log_halt_pause(player.name)
 		player.print('[Handler] Game will shortly be unpaused. Please wait a moment for the game to resume.')
 		return true

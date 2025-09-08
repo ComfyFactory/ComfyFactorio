@@ -14,9 +14,11 @@ local abs = math.abs
 local floor = math.floor
 local set_timeout_in_ticks = Task.set_timeout_in_ticks
 
-local this = {
+local this =
+{
     states = {},
-    settings = {
+    settings =
+    {
         frenzy_length = 3600,
         frenzy_burst_length = 160,
         update_rate = 120,
@@ -40,7 +42,8 @@ Global.register(
     end
 )
 
-local projectiles = {
+local projectiles =
+{
     'slowdown-capsule',
     'defender-capsule',
     'slowdown-capsule',
@@ -55,7 +58,8 @@ local projectiles = {
     'grenade'
 }
 
-local tiers = {
+local tiers =
+{
     ['small-biter'] = 'medium-biter',
     ['medium-biter'] = 'big-biter',
     ['big-biter'] = 'behemoth-biter',
@@ -66,7 +70,8 @@ local tiers = {
     ['behemoth-spitter'] = 'behemoth-spitter'
 }
 
-local tier_damage = {
+local tier_damage =
+{
     ['small-biter'] = { min = 25, max = 50 },
     ['medium-biter'] = { min = 50, max = 100 },
     ['big-biter'] = { min = 75, max = 150 },
@@ -77,14 +82,16 @@ local tier_damage = {
     ['behemoth-spitter'] = { min = 100, max = 200 }
 }
 
-local commands = {
+local commands =
+{
     ['flee'] = 'attack',
     ['goto'] = 'attack_area',
     ['attack'] = 'flee',
     ['attack_area'] = 'goto',
 }
 
-local pf_flags = {
+local pf_flags =
+{
     allow_destroy_friendly_entities = true,
     allow_paths_through_own_entities = true,
     cache = true,
@@ -99,6 +106,10 @@ work_token =
     Task.register(
         function (event)
             if not event then
+                return
+            end
+
+            if not this.settings.enabled then
                 return
             end
 
@@ -285,12 +296,15 @@ local function area_of_effect(entity, radius, callback, find_entities)
     end
 
     local function get_area(pos, dist)
-        local area = {
-            left_top = {
+        local area =
+        {
+            left_top =
+            {
                 x = pos.x - dist,
                 y = pos.y - dist
             },
-            right_bottom = {
+            right_bottom =
+            {
                 x = pos.x + dist,
                 y = pos.y + dist
             }
@@ -384,7 +398,8 @@ local function on_unit_group_created(event)
 
     for _, entity in pairs(unit_group.members) do
         if not Public.get_unit(entity.unit_number) then
-            local data = {
+            local data =
+            {
                 entity = entity,
             }
             local state = Public.new(data)
@@ -428,7 +443,8 @@ local function on_entity_created(event)
     local state = Public.get_unit(entity.unit_number)
 
     if not state then
-        local data = {
+        local data =
+        {
             entity = entity
         }
 
@@ -567,7 +583,8 @@ function Public.enemy_weapon_damage(force)
 
     local e = game.forces[force]
 
-    local data = {
+    local data =
+    {
         ['artillery-shell'] = 0.05,
         ['biological'] = 0.06,
         ['beam'] = 0.08,
@@ -621,6 +638,8 @@ function Public.check_states()
     end
     this.settings.spawned_units = c
 end
+
+local check_states = Public.check_states
 
 -- Gets a boss unit
 ---@return integer
@@ -807,7 +826,8 @@ function Public._esp:aoe_attack()
 
     local position = { x = entity.position.x + (-10 + random(0, 20)), y = entity.position.y + (-10 + random(0, 20)) }
 
-    local target = {
+    local target =
+    {
         valid = true,
         position = position
     }
@@ -857,7 +877,8 @@ function Public._esp:find_targets()
     local step_length = unit_group_command_step_length
 
     local obstacles =
-        entity.surface.find_entities_filtered {
+        entity.surface.find_entities_filtered
+        {
             position = entity.position,
             radius = step_length / 2,
             type = { 'simple-entity', 'tree' },
@@ -868,7 +889,8 @@ function Public._esp:find_targets()
         self.commands = self.commands or {}
         for ii = 1, #obstacles, 1 do
             if obstacles[ii].valid then
-                self.commands[#self.commands + 1] = {
+                self.commands[#self.commands + 1] =
+                {
                     type = defines.command.attack,
                     target = obstacles[ii],
                     distraction = defines.distraction.by_anything
@@ -1001,7 +1023,8 @@ function Public._esp:go_to_location_command()
 
     local group_commands = {}
 
-    group_commands[#group_commands + 1] = {
+    group_commands[#group_commands + 1] =
+    {
         type = defines.command.go_to_location,
         pathfind_flags = pf_flags,
         destination = unit.position,
@@ -1033,14 +1056,16 @@ function Public._esp:attack_command()
 
     local group_commands = {}
 
-    group_commands[#group_commands + 1] = {
+    group_commands[#group_commands + 1] =
+    {
         type = defines.command.go_to_location,
         pathfind_flags = pf_flags,
         destination = unit.position,
         distraction = defines.distraction.by_enemy
     }
 
-    group_commands[#group_commands + 1] = {
+    group_commands[#group_commands + 1] =
+    {
         type = defines.command.attack,
         target = unit
     }
@@ -1066,14 +1091,16 @@ function Public._esp:attack_area_command()
 
     local group_commands = {}
 
-    group_commands[#group_commands + 1] = {
+    group_commands[#group_commands + 1] =
+    {
         type = defines.command.go_to_location,
         pathfind_flags = pf_flags,
         destination = unit.position,
         distraction = defines.distraction.by_enemy
     }
 
-    group_commands[#group_commands + 1] = {
+    group_commands[#group_commands + 1] =
+    {
         type = defines.command.attack_area,
         destination = { x = unit.position.x, y = unit.position.y },
         radius = 30,
@@ -1101,12 +1128,14 @@ function Public._esp:flee_command()
 
     local group_commands = {}
 
-    group_commands[#group_commands + 1] = {
+    group_commands[#group_commands + 1] =
+    {
         type = defines.command.flee,
         from = unit,
     }
 
-    group_commands[#group_commands + 1] = {
+    group_commands[#group_commands + 1] =
+    {
         type = defines.command.flee,
         from = unit,
     }
@@ -1194,7 +1223,7 @@ Event.add(ev.on_entity_created, on_entity_created)
 Event.add(ev.on_target_aquired, on_target_aquired)
 Event.add(ev.on_evolution_factor_changed, on_evolution_factor_changed)
 Event.add(ev.on_game_reset, on_init)
-Event.on_nth_tick(100, Public.check_states)
+Event.on_nth_tick(100, check_states)
 
 --- This gets values from our table
 -- @param key <string>
@@ -1226,19 +1255,21 @@ function Public.set_es(key, value)
 end
 
 ---@param value boolean
-function Public.set_module_status(value)
-    on_init()
-    this.settings.enabled = value or false
-end
-
----@param value boolean
 function Public.set_track_bosses_only(value)
+    Server.output_script_data('Enemy States track bosses only is now: ' .. tostring(value))
     this.settings.track_bosses_only = value or false
 end
 
 ---@param value integer|number
 function Public.set_es_unit_limit(value)
+    Server.output_script_data('Enemy States unit limit is now: ' .. tostring(value))
     this.settings.unit_limit = value or 300
+end
+
+---@param value boolean
+function Public.set_es_enabled(value)
+    Server.output_script_data('Enemy States is now: ' .. tostring(value))
+    this.settings.enabled = value or false
 end
 
 Public.has_unit_limit_reached = has_unit_limit_reached

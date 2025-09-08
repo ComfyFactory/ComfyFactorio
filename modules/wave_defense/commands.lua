@@ -16,7 +16,7 @@ Commands.new('wd_debug_module', 'Usable only for admins - controls wave defense 
             end
 
             if action == 'toggle_es' then
-                Public.set_module_status(state or false)
+                Public.set_es_enabled(state or false)
                 player.print(module_name .. ' ES has been toggled!')
                 return true
             end

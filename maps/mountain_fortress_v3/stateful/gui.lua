@@ -91,8 +91,6 @@ local function notify_won_to_discord(buff)
 
     local stateful = Public.get_stateful()
 
-    Public.set('game_won', true)
-
     local wave = WD.get_wave()
     local threat = WD.get('threat')
     local collapse_speed = Collapse.get_speed()
@@ -113,77 +111,68 @@ local function notify_won_to_discord(buff)
         title = 'Game won!',
         description = 'Game statistics from the game is below',
         color = 'success',
-        field1 =
+        fields =
         {
-            text1 = 'Time played:',
-            text2 = time_played,
-            inline = 'false'
-        },
-        field2 =
-        {
-            text1 = 'Current season:',
-            text2 = stateful.season,
-            inline = 'false'
-        },
-        field3 =
-        {
-            text1 = 'Rounds survived:',
-            text2 = stateful.rounds_survived,
-            inline = 'false'
-        },
-        field4 =
-        {
-            text1 = 'Current winning streak:',
-            text2 = stateful.current_streak,
-            inline = 'false'
-        },
-        field5 =
-        {
-            text1 = 'Highest wave:',
-            text2 = format_number(wave, true),
-            inline = 'false'
-        },
-        field6 =
-        {
-            text1 = 'Total connected players:',
-            text2 = total_players,
-            inline = 'false'
-        },
-        field7 =
-        {
-            text1 = 'Threat:',
-            text2 = format_number(threat, true),
-            inline = 'false'
-        },
-        field8 =
-        {
-            text1 = 'Pickaxe Upgrade:',
-            text2 = pick_tier .. ' (' .. upgrades.pickaxe_tier .. ')',
-            inline = 'false'
-        },
-        field9 =
-        {
-            text1 = 'Collapse Speed:',
-            text2 = collapse_speed,
-            inline = 'false'
-        },
-        field10 =
-        {
-            text1 = 'Collapse Amount:',
-            text2 = collapse_amount,
-            inline = 'false'
-        },
-        field11 =
-        {
-            text1 = 'Connected players:',
-            text2 = total_connected_players,
-            inline = 'false'
-        },
-        field12 =
-        {
-            text1 = 'Buff granted:',
-            text2 = buff.discord,
-            inline = 'false'
+            {
+                title = 'Time played:',
+                description = time_played,
+                inline = 'false'
+            },
+            {
+                title = 'Current season:',
+                description = stateful.season,
+                inline = 'false'
+            },
+            {
+                title = 'Rounds survived:',
+                description = stateful.rounds_survived,
+                inline = 'false'
+            },
+            {
+                title = 'Current winning streak:',
+                description = stateful.current_streak,
+                inline = 'false'
+            },
+            {
+                title = 'Highest wave:',
+                description = format_number(wave, true),
+                inline = 'false'
+            },
+            {
+                title = 'Total connected players:',
+                description = total_players,
+                inline = 'false'
+            },
+            {
+                title = 'Threat:',
+                description = format_number(threat, true),
+                inline = 'false'
+            },
+            {
+                title = 'Pickaxe Upgrade:',
+                description = pick_tier .. ' (' .. upgrades.pickaxe_tier .. ')',
+                inline = 'false'
+            },
+            {
+                title = 'Collapse Speed:',
+                description = collapse_speed,
+                inline = 'false'
+            },
+            {
+                title = 'Collapse Amount:',
+                description = collapse_amount,
+                inline = 'false'
+            },
+            {
+                title = 'Connected players:',
+                description = total_connected_players,
+                inline = 'false'
+            },
+            {
+                title = 'Buff granted:',
+                description = buff.discord,
+                inline = 'false'
+            }
         }
     }
     if server_name_matches then
@@ -1337,8 +1326,14 @@ local function update_raw()
                 WD.nuke_wave_gui()
                 Server.to_discord_embed('Game won!')
                 stateful.rounds_survived = stateful.rounds_survived + 1
-                stateful.current_streak = stateful.current_streak + 1
+                stateful.current_streak = (stateful.current_streak and stateful.current_streak + 1) or 1
                 stateful.selected_objectives = nil
+
+                Public.set('game_won', true)
+                WD.set_es_enabled(false)
+
+                game.forces.player.friendly_fire = false
+
                 local buff_selection = Public.get('buff_selection')
                 if buff_selection then
                     if buff_selection.votes_enabled then

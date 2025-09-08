@@ -3517,7 +3517,7 @@ local function zone_1(x, y, data, void_or_lab, adjusted_zones)
     local smol_areas = Public.get_noise('smol_areas', p, seed + 3992)
     local no_rocks_2 = Public.get_noise('no_rocks_2', p, seed + 1922)
     local cave_rivers = Public.get_noise('cave_rivers', p, seed)
-    local no_rocks = Public.get_noise('dungeon_sewer', p, seed)
+    local no_rocks = Public.get_noise('dungeon_sewer', p, seed + seed)
 
     if smol_areas < 0.055 and smol_areas > -0.025 then
         entities[#entities + 1] = { name = rock_raffle[random(1, size_of_rock_raffle)], position = p }
@@ -3591,8 +3591,8 @@ local function zone_1(x, y, data, void_or_lab, adjusted_zones)
     end
 
     --Worm oil Zones
-    if no_rocks < 0.035 and no_rocks > -0.145 then
-        if small_caves > 0.081 then
+    if no_rocks < 0.12 and no_rocks > -0.12 then
+        if small_caves > 0.30 then
             tiles[#tiles + 1] = { name = 'brown-refined-concrete', position = p }
             if random(1, 250) == 1 then
                 entities[#entities + 1] = { name = 'crude-oil', position = p, amount = get_oil_amount(p) * 2 }
@@ -4247,14 +4247,14 @@ Event.add(
                 game.forces.player.chart(surface, { { left_top.x, left_top.y }, { left_top.x + 31, left_top.y + 31 } })
             end
 
-            local oom_tiles = {}
+            -- local oom_tiles = {}
 
-            if left_top.y > 32 then
-                for k, v in pairs(loading_chunk_vectors) do
-                    oom_tiles[k] = { name = out_of_map_tile, position = { left_top.x + v[1], left_top.y + v[2] } }
-                end
-            end
-            surface.set_tiles(oom_tiles, false)
+            -- if left_top.y > 32 then
+            --     for k, v in pairs(loading_chunk_vectors) do
+            --         oom_tiles[k] = { name = out_of_map_tile, position = { left_top.x + v[1], left_top.y + v[2] } }
+            --     end
+            -- end
+            -- surface.set_tiles(oom_tiles, false)
         else
             if left_top.y == -128 and left_top.x == -128 then
                 local locomotive = Public.get('locomotive')
@@ -4270,14 +4270,14 @@ Event.add(
                 game.forces.player.chart(surface, { { left_top.x, left_top.y }, { left_top.x + 31, left_top.y + 31 } })
             end
 
-            local oom_tiles = {}
+            -- local oom_tiles = {}
 
-            if math.abs(left_top.y) > 128 then
-                for k, v in pairs(loading_chunk_vectors) do
-                    oom_tiles[k] = { name = out_of_map_tile, position = { left_top.x + v[1], left_top.y + v[2] } }
-                end
-            end
-            surface.set_tiles(oom_tiles, false)
+            -- if math.abs(left_top.y) > 128 then
+            --     for k, v in pairs(loading_chunk_vectors) do
+            --         oom_tiles[k] = { name = out_of_map_tile, position = { left_top.x + v[1], left_top.y + v[2] } }
+            --     end
+            -- end
+            -- surface.set_tiles(oom_tiles, false)
         end
     end
 )

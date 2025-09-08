@@ -279,10 +279,13 @@ local compare_collapse_and_train = function ()
 
     local distance = result > gap_between_zones.gap
     if not distance then
+        Collapse.set_force_mode(false)
         Public.set_difficulty()
     else
+        Collapse.set_force_mode(false)
         Collapse.set_speed(1)
         Collapse.set_amount(10)
+        Collapse.set_force_mode(true)
     end
 end
 
@@ -428,6 +431,7 @@ function Public.pre_init_task(current_task)
     force.manual_mining_speed_modifier = 0
     force.character_running_speed_modifier = 0
     force.manual_crafting_speed_modifier = 0
+    force.friendly_fire = true
 
     WD.reset_wave_defense()
     WD.alert_boss_wave(true)
@@ -445,6 +449,7 @@ function Public.pre_init_task(current_task)
     WD.set_track_bosses_only(true)
     WD.set_pause_waves_custom_callback(Public.pause_waves_custom_callback_token)
     WD.set_threat_event_custom_callback(Public.check_if_spawning_near_train_custom_callback)
+    WD.set_es_enabled(true)
 
     RPG.set_x_marks_the_spot_custom_callback(Public.x_marks_the_spot_custom_callback_token)
     RPG.set_magicka_custom_callback(Public.magicka_custom_callback_token)
@@ -604,6 +609,7 @@ function Public.reset_map(current_task)
     Collapse.set_max_line_size(620, true)
     Collapse.set_speed(8)
     Collapse.set_amount(1)
+    Collapse.set_force_mode(false)
     Collapse.set_surface_index(surface.index)
     Collapse.start_now(false)
 

@@ -10,7 +10,21 @@ Commands.new('icw_reconnect_train', 'Usable only for admins - reconnects all tra
 	:callback(
 		function (player)
 			local suc = ICW_Func.reconstruct_all_trains(true)
-			Discord.send_notification_raw(Public.discord_name, player.name .. ' is reconnecting all trains via icw module.')
+			Discord.send_notification(
+				{
+					title = "Trains reconnected",
+					description = player.name .. ' is reconnecting all trains via icw module.',
+					color = "success",
+					fields =
+					{
+						{
+							title = "Server",
+							description = Public.discord_name,
+							inline = "false"
+						}
+					}
+				}
+			)
 			if suc then
 				player.print(mapkeeper .. 'All trains have been reconnected!')
 			else

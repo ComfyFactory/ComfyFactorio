@@ -382,7 +382,15 @@ function Public.set_reverse_direction()
     this.direction = direction_reverse[this.direction]
 end
 
+function Public.set_force_mode(force_mode)
+    this.force_mode = force_mode
+end
+
 function Public.set_speed(speed)
+    if this.force_mode then
+        return
+    end
+
     if not speed then
         print_debug(8)
         return
@@ -395,6 +403,10 @@ function Public.set_speed(speed)
 end
 
 function Public.set_amount(amount)
+    if this.force_mode then
+        return
+    end
+
     if not amount then
         print_debug(9)
         return
@@ -522,6 +534,7 @@ local function on_init()
     this.tiles = nil
     this.reverse_tiles = nil
     this.speed = 1
+    this.force_mode = false
     this.disabled = false
     this.reverse_disabled = false
     this.reverse_start_now = false

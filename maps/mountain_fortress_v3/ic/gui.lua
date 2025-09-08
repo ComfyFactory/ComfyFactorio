@@ -957,9 +957,22 @@ Gui.on_click(
                 local suc, count = Functions.kill_car_but_save_surface(entity)
                 if suc then
                     game.print('[IC] ' .. player.name .. ' has destroyed their surface!', { color = Color.warning })
-                    Discord.send_notification_raw(discord_name,
-                        player.name ..
-                        ' deleted their vehicle surface at x = ' .. position.x .. ' y = ' .. position.y .. '.')
+                    Discord.send_notification(
+                        {
+                            title = "Surface destroyed",
+                            description = player.name .. ' has destroyed their surface at x = ' .. position.x .. ' y = ' .. position.y .. '.',
+                            color = "warning",
+                            fields =
+                            {
+                                {
+                                    title = "Server",
+                                    description = discord_name,
+                                    inline = "false"
+                                }
+                            }
+                        }
+                    )
+
                     misc_settings[player.name] = nil
                 else
                     player.print(

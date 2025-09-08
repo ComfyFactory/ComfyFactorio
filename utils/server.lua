@@ -288,12 +288,10 @@ end
 -- @param  message<string> the content of the embed.
 function Public.to_discord_named_parsed_embed(channel_name, message)
     assert_non_empty_string_and_no_spaces(channel_name, 'channel_name')
-    local table_to_json = helpers.table_to_json
 
-    if not type(message) == 'table' then
+    if type(message) ~= "table" then
         return error('to_discord_named_parsed_embed - message must be a table', 2)
     end
-
     if not message.title then
         return error('to_discord_named_parsed_embed - message must have a title', 2)
     end
@@ -301,9 +299,10 @@ function Public.to_discord_named_parsed_embed(channel_name, message)
         return error('to_discord_named_parsed_embed - message must have a description', 2)
     end
 
-    message.channelName = channel_name
+    local payload = table.deep_copy(message)
+    payload.channelName = channel_name
 
-    output_data(discord_named_embed_parsed_tag, table_to_json(message))
+    output_data(discord_named_embed_parsed_tag, helpers.table_to_json(payload))
 end
 
 --- Sends an embed message to the named discord channel. The message is not sanitized of markdown.

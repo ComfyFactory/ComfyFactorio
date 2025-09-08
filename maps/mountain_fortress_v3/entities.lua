@@ -1286,28 +1286,29 @@ local function post_mvp_to_discord(mvp)
             title = 'MVPs',
             description = 'Player statistics is below',
             color = 'success',
+            fields = {}
         }
         if mvp.killscore then
-            message.field1 =
+            message.fields[#message.fields + 1] =
             {
-                text1 = 'MVP Fighter:',
-                text2 = mvp.killscore.name .. ' with a killing score of ' .. mvp.killscore.score .. ' kills!',
+                title = 'MVP Fighter:',
+                description = mvp.killscore.name .. ' with a killing score of ' .. mvp.killscore.score .. ' kills!',
                 inline = 'false'
             }
         end
         if mvp.built_entities then
-            message.field2 =
+            message.fields[#message.fields + 1] =
             {
-                text1 = 'MVP Builder:',
-                text2 = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things!',
+                title = 'MVP Builder:',
+                description = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things!',
                 inline = 'false'
             }
         end
         if mvp.mined_entities then
-            message.field3 =
+            message.fields[#message.fields + 1] =
             {
-                text1 = 'MVP Miners:',
-                text2 = mvp.mined_entities.name .. ' mined a total of ' .. mvp.mined_entities.score .. ' entities!',
+                title = 'MVP Miners:',
+                description = mvp.mined_entities.name .. ' mined a total of ' .. mvp.mined_entities.score .. ' entities!',
                 inline = 'false'
             }
         end
@@ -1353,72 +1354,65 @@ local function notify_game_lost_to_discord(mvp)
                 title = 'Game lost!',
                 description = 'Game statistics from the game is below',
                 color = 'failure',
-                field1 =
+                fields =
                 {
-                    text1 = 'Time played:',
-                    text2 = time_played,
-                    inline = 'false'
-                },
-                field2 =
-                {
-                    text1 = 'Season:',
-                    text2 = stateful.season,
-                    inline = 'false'
-                },
-                field3 =
-                {
-                    text1 = 'Rounds survived:',
-                    text2 = stateful.rounds_survived,
-                    inline = 'false'
-                },
-                field4 =
-                {
-                    text1 = 'Best winning streak:',
-                    text2 = stateful.best_streak,
-                    inline = 'false'
-                },
-                field5 =
-                {
-                    text1 = 'Highest wave:',
-                    text2 = format_number(wave, true),
-                    inline = 'false'
-                },
-                field6 =
-                {
-                    text1 = 'Total connected players:',
-                    text2 = total_players,
-                    inline = 'false'
-                },
-                field7 =
-                {
-                    text1 = 'Threat:',
-                    ---@diagnostic disable-next-line: param-type-mismatch
-                    text2 = format_number(threat, true),
-                    inline = 'false'
-                },
-                field8 =
-                {
-                    text1 = 'Pickaxe Upgrade:',
-                    text2 = pick_tier .. ' (' .. upgrades.pickaxe_tier .. ')',
-                    inline = 'false'
-                },
-                field9 =
-                {
-                    text1 = 'Collapse Speed:',
-                    text2 = collapse_speed,
-                    inline = 'false'
-                },
-                field10 =
-                {
-                    text1 = 'Collapse Amount:',
-                    text2 = collapse_amount,
-                    inline = 'false'
-                },
-                field11 =
-                {
-                    text1 = 'Connected players:',
-                    text2 = total_connected_players,
-                    inline = 'false'
+
+                    {
+                        title = 'Time played:',
+                        description = time_played,
+                        inline = 'false'
+                    },
+                    {
+                        title = 'Season:',
+                        description = stateful.season,
+                        inline = 'false'
+                    },
+                    {
+                        title = 'Rounds survived:',
+                        description = stateful.rounds_survived,
+                        inline = 'false'
+                    },
+                    {
+                        title = 'Best winning streak:',
+                        description = stateful.best_streak,
+                        inline = 'false'
+                    },
+                    {
+                        title = 'Highest wave:',
+                        description = format_number(wave, true),
+                        inline = 'false'
+                    },
+                    {
+                        title = 'Total connected players:',
+                        description = total_players,
+                        inline = 'false'
+                    },
+                    {
+                        title = 'Threat:',
+                        ---@descriptioniagnostic disable-next-line: param-type-mismatch
+                        text2 = format_number(threat, true),
+                        inline = 'false'
+                    },
+                    {
+                        title = 'Pickaxe Upgrade:',
+                        description = pick_tier .. ' (' .. upgrades.pickaxe_tier .. ')',
+                        inline = 'false'
+                    },
+                    {
+                        title = 'Collapse Speed:',
+                        description = collapse_speed,
+                        inline = 'false'
+                    },
+                    {
+                        title = 'Collapse Amount:',
+                        description = collapse_amount,
+                        inline = 'false'
+                    },
+                    {
+                        title = 'Connected players:',
+                        description = total_connected_players,
+                        inline = 'false'
+                    }
                 }
             }
             if server_name_matches then

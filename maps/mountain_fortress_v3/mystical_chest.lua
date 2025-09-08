@@ -405,7 +405,7 @@ local mc_random_rewards =
         name = 'Market reroll',
         str = 'market_reroll',
         color = { r = 0.20, g = 0.35, b = 0.35 },
-        tooltip = 'Selecting this will reroll the market items!',
+        tooltip = 'Selecting this will reroll all the market items in the map!',
         func = (function (player, _)
             local mc_rewards = Public.get('mc_rewards')
             if mc_rewards.temp_boosts.market_reroll then
