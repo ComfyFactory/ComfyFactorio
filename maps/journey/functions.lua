@@ -64,10 +64,12 @@ local function place_teleporter(journey, surface, position, build_beacon)
         beacon.operable = true
         beacon.minable_flag = false
         beacon.active = true
-        rendering.draw_text {
+        rendering.draw_text
+        {
             text = { 'journey.teleporter' },
             surface = surface,
-            target = {
+            target =
+            {
                 entity = beacon,
                 offset = { 0, -1.5 },
                 position = beacon.position
@@ -79,10 +81,12 @@ local function place_teleporter(journey, surface, position, build_beacon)
             scale_with_zoom = false
         }
         local hp =
-            rendering.draw_text {
+            rendering.draw_text
+            {
                 text = { 'journey.beacon_hp', journey.beacon_objective_health },
                 surface = surface,
-                target = {
+                target =
+                {
                     entity = beacon,
                     offset = { 0, -1.0 },
                     position = beacon.position
@@ -235,7 +239,7 @@ local function delete_nauvis_chunks(journey)
             table.insert(journey.nauvis_chunk_positions, { chunk.x, chunk.y })
         end
         journey.size_of_nauvis_chunk_positions = #journey.nauvis_chunk_positions
-        for _, e in pairs(surface.find_entities_filtered { type = {'radar', 'roboport', 'spider-vehicle'} }) do
+        for _, e in pairs(surface.find_entities_filtered { type = { 'radar', 'roboport', 'spider-vehicle' } }) do
             e.destroy()
         end
         for _, player in pairs(game.players) do
@@ -458,7 +462,8 @@ function Public.on_mothership_chunk_generated(event)
 end
 
 function Public.export_journey(journey, import_flag)
-    local data = {
+    local data =
+    {
         world_number = journey.world_number,
         world_modifiers = journey.world_modifiers,
         bonus_goods = journey.bonus_goods,
@@ -506,7 +511,7 @@ function Public.restart_server(journey)
         log('Can force restart only during world selection stages')
         return
     end
-    game.print({ 'journey.cmd_server_restarting' }, { color = { r = 255, g = 255, b = 0 }})
+    game.print({ 'journey.cmd_server_restarting' }, { color = { r = 255, g = 255, b = 0 } })
     Public.export_journey(journey, true)
     Server.start_scenario('Journey')
     return
@@ -514,7 +519,7 @@ end
 
 function Public.hard_reset(journey)
     if journey.restart_from_scenario then
-        game.print({ 'journey.cmd_server_restarting' }, { color = { r = 255, g = 255, b = 0 }})
+        game.print({ 'journey.cmd_server_restarting' }, { color = { r = 255, g = 255, b = 0 } })
         Public.export_journey(journey, false)
         Server.start_scenario('Journey')
         return
@@ -541,11 +546,11 @@ function Public.hard_reset(journey)
     game.map_settings.pollution.min_to_diffuse = 75
     game.map_settings.pollution.expected_max_per_chunk = 300
 
-    game.map_settings.enemy_expansion.max_expansion_distance = 5                 --default 7
-    game.map_settings.enemy_expansion.friendly_base_influence_radius = 1         --default 2
-    game.map_settings.enemy_expansion.enemy_building_influence_radius = 5        --default 2
-    game.map_settings.enemy_expansion.building_coefficient = 0.02                --default 0.1
-    game.map_settings.enemy_expansion.neighbouring_chunk_coefficient = 0.25      --defualt 0.5
+    game.map_settings.enemy_expansion.max_expansion_distance = 5 --default 7
+    game.map_settings.enemy_expansion.friendly_base_influence_radius = 1 --default 2
+    game.map_settings.enemy_expansion.enemy_building_influence_radius = 5 --default 2
+    game.map_settings.enemy_expansion.building_coefficient = 0.02 --default 0.1
+    game.map_settings.enemy_expansion.neighbouring_chunk_coefficient = 0.25 --defualt 0.5
     game.map_settings.enemy_expansion.neighbouring_base_chunk_coefficient = 0.25 --default 0.4
 
     local surface = game.surfaces[1]
@@ -576,7 +581,8 @@ function Public.hard_reset(journey)
     journey.mothership_cargo['uranium-fuel-cell'] = 10
     journey.mothership_cargo['satellite'] = 1
     journey.mothership_cargo['nuclear-reactor'] = 6
-    journey.mothership_cargo_space = {
+    journey.mothership_cargo_space =
+    {
         ['satellite'] = 1,
         ['uranium-fuel-cell'] = 0,
         ['nuclear-reactor'] = 6
@@ -649,7 +655,8 @@ function Public.draw_mothership(journey)
         journey.world_selectors[k].rectangles = {}
         local position = area.left_top
         local rectangle =
-            rendering.draw_rectangle {
+            rendering.draw_rectangle
+            {
                 width = 1,
                 filled = true,
                 surface = surface,
@@ -661,7 +668,8 @@ function Public.draw_mothership(journey)
             }
         table.insert(journey.world_selectors[k].rectangles, rectangle)
         journey.world_selectors[k].border =
-            rendering.draw_rectangle {
+            rendering.draw_rectangle
+            {
                 width = 8,
                 filled = false,
                 surface = surface,
@@ -674,7 +682,8 @@ function Public.draw_mothership(journey)
     end
 
     journey.reroll_selector.rectangle =
-        rendering.draw_rectangle {
+        rendering.draw_rectangle
+        {
             width = 8,
             filled = true,
             surface = surface,
@@ -685,7 +694,8 @@ function Public.draw_mothership(journey)
             only_in_alt_mode = false
         }
     journey.reroll_selector.border =
-        rendering.draw_rectangle {
+        rendering.draw_rectangle
+        {
             width = 8,
             filled = false,
             surface = surface,
@@ -864,8 +874,10 @@ end
 function Public.set_world_selectors(journey)
     local surface = game.surfaces.mothership
     local x = Constants.reroll_selector_area.left_top.x + 3.2
-    journey.reroll_selector.texts = {
-        rendering.draw_text {
+    journey.reroll_selector.texts =
+    {
+        rendering.draw_text
+        {
             text = journey.mothership_cargo.satellite .. ' x ',
             surface = surface,
             target = { x, Constants.reroll_selector_area.left_top.y - 1.5 },
@@ -875,7 +887,8 @@ function Public.set_world_selectors(journey)
             alignment = 'center',
             scale_with_zoom = false
         },
-        rendering.draw_sprite {
+        rendering.draw_sprite
+        {
             sprite = 'item/satellite',
             surface = surface,
             y_scale = 1.5,
@@ -962,7 +975,8 @@ function Public.set_world_selectors(journey)
 
         table.insert(
             texts,
-            rendering.draw_text {
+            rendering.draw_text
+            {
                 text = Constants.unique_world_traits[world_selector.world_trait].name,
                 surface = surface,
                 target = { position.x + Constants.world_selector_width * 0.5, position.y + y_modifier },
@@ -992,7 +1006,8 @@ function Public.set_world_selectors(journey)
 
             table.insert(
                 texts,
-                rendering.draw_text {
+                rendering.draw_text
+                {
                     text = text,
                     surface = surface,
                     target = { position.x + Constants.world_selector_width * 0.5, position.y + y_modifier },
@@ -1008,7 +1023,8 @@ function Public.set_world_selectors(journey)
         y_modifier = y_modifier + 0.85
         table.insert(
             texts,
-            rendering.draw_text {
+            rendering.draw_text
+            {
                 text = 'Fuel requirement +' .. world_selector.fuel_requirement,
                 surface = surface,
                 target = { position.x + Constants.world_selector_width * 0.5, position.y + y_modifier },
@@ -1021,7 +1037,8 @@ function Public.set_world_selectors(journey)
         )
         table.insert(
             texts,
-            rendering.draw_sprite {
+            rendering.draw_sprite
+            {
                 sprite = 'item/uranium-fuel-cell',
                 surface = surface,
                 target = { position.x + Constants.world_selector_width * 0.5 + 3.7, position.y + y_modifier + 0.5 }
@@ -1033,7 +1050,8 @@ function Public.set_world_selectors(journey)
 
         for _, good in pairs(world_selector.bonus_goods) do
             local render_id =
-                rendering.draw_text {
+                rendering.draw_text
+                {
                     text = '+' .. good[2],
                     surface = surface,
                     target = { position.x + x_modifier, position.y + y_modifier },
@@ -1054,7 +1072,8 @@ function Public.set_world_selectors(journey)
             end
 
             local another_render_id =
-                rendering.draw_sprite {
+                rendering.draw_sprite
+                {
                     sprite = 'item/' .. good[1],
                     surface = surface,
                     target = { position.x + x_modifier, position.y + 0.5 + y_modifier }
@@ -1345,34 +1364,38 @@ function Public.notify_discord(journey)
     for _, cap in pairs(journey.world_selectors[journey.selected_world].bonus_goods) do
         capsules = capsules .. cap[2] .. 'x ' .. cap[1] .. '\n'
     end
-    local message = {
+    local message =
+    {
         title = 'World advanced',
         description = 'Arriving at target destination!',
         color = 'warning',
-        field1 = {
-            text1 = 'World level:',
-            text2 = caption,
-            inline = 'true'
-        },
-        field2 = {
-            text1 = 'World description:',
-            text2 = Constants.unique_world_traits[journey.world_trait].desc,
-            inline = 'true'
-        },
-        field3 = {
-            text1 = 'Satellites in mothership cargo:',
-            text2 = journey.mothership_cargo['satellite'] .. ' / ' .. journey.mothership_cargo_space['satellite'],
-            inline = 'false'
-        },
-        field4 = {
-            text1 = 'Modifiers changed:',
-            text2 = modifier_message,
-            inline = 'false'
-        },
-        field5 = {
-            text1 = 'Capsules gained:',
-            text2 = capsules,
-            inline = 'false'
+        fields =
+        {
+            {
+                title = 'World level:',
+                description = caption,
+                inline = 'true'
+            },
+            {
+                title = 'World description:',
+                description = Constants.unique_world_traits[journey.world_trait].desc,
+                inline = 'true'
+            },
+            {
+                title = 'Satellites in mothership cargo:',
+                description = journey.mothership_cargo['satellite'] .. ' / ' .. journey.mothership_cargo_space['satellite'],
+                inline = 'false'
+            },
+            {
+                title = 'Modifiers changed:',
+                description = modifier_message,
+                inline = 'false'
+            },
+            {
+                title = 'Capsules gained:',
+                description = capsules,
+                inline = 'false'
+            }
         }
     }
     Server.to_discord_embed_parsed(message)
@@ -1444,10 +1467,10 @@ function Public.dispatch_goods(journey)
 
     if journey.dispatch_beacon_position then
         local good = goods_to_dispatch[journey.dispatch_key]
-        local pod = surface.create_entity({name = 'cargo-pod-container', position = journey.dispatch_beacon_position, force = game.forces.player})
+        local pod = surface.create_entity({ name = 'cargo-pod-container', position = journey.dispatch_beacon_position, force = game.forces.player })
         local itemcount = good[2]
         if pod and pod.valid then
-            local inserted = pod.insert({name = good[1], count = itemcount})
+            local inserted = pod.insert({ name = good[1], count = itemcount })
             if inserted > 0 then
                 itemcount = itemcount - inserted
             end
