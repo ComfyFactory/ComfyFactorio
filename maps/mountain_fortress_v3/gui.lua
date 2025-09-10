@@ -989,6 +989,9 @@ Gui.on_click(
             local prices = Public.get('mystical_chest_price')
 
             local player_inv = player.get_inventory(defines.inventory.character_main)
+            if not player_inv then
+                return
+            end
             local can_complete = false
 
             for _, item in pairs(prices) do
