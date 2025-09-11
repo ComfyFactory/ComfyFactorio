@@ -17,3 +17,4 @@ tmp.lua
 
 # Ignore IDEA
 .idea
+maps/mountain_fortress_v3/stateful/_stateful_debug.lua

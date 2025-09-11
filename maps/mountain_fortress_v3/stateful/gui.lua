@@ -421,6 +421,83 @@ local function objective_frames(player, stateful, player_frame, objective, data)
     data.random_objectives[#data.random_objectives + 1] = { name = objective_name, frame = objective_locale_right_label }
 end
 
+local function render_buff_collection(parent_pane, buffs_source, buffs_collected_source)
+    local function create_section_header(parent, caption)
+        local label = parent.add({ type = 'label', caption = caption })
+        local style = label.style
+        style.font = 'default-semibold'
+        style.padding = 0
+        style.horizontal_align = 'left'
+        style.font_color = { 0.55, 0.55, 0.99 }
+        return label
+    end
+
+    local function format_force_buff_text(name, count)
+        local display_name = Stateful.buff_to_string[name] or name
+        local flat_value_buffs = { xp_level = true, xp_bonus = true, character_health_bonus = true }
+
+        if flat_value_buffs[name] then
+            return '[font=default-bold]' .. display_name .. ': ' .. count .. '[/font]'
+        else
+            return '[font=default-bold]' .. display_name .. ': ' .. (count * 100) .. '%[/font]'
+        end
+    end
+
+    local function format_starting_item_text(item_name, count)
+        return '[font=default-large] [item=' .. item_name .. '][/font]: [font=default-bold]' .. count .. '[/font]'
+    end
+
+    local function format_custom_buff_text(name, count)
+        local text_to_place = count or 'Unlocked'
+        return '[font=default-bold]' .. name .. ': ' .. text_to_place .. '[/font]'
+    end
+
+    create_section_header(parent_pane, 'Starting items')
+    local starting_grid = parent_pane.add({ type = 'table', column_count = 8 })
+    parent_pane.add({ type = 'line' })
+
+    create_section_header(parent_pane, 'Force Buffs')
+    local force_grid = parent_pane.add({ type = 'table', column_count = 2 })
+    parent_pane.add({ type = 'line' })
+
+    create_section_header(parent_pane, 'Custom Buffs')
+    local custom_grid = parent_pane.add({ type = 'table', column_count = 2 })
+
+    if not (buffs_source and next(buffs_source) and buffs_collected_source and next(buffs_collected_source)) then
+        return
+    end
+
+    if buffs_collected_source.starting_items then
+        for item_name, item_data in pairs(buffs_collected_source.starting_items) do
+            local text = format_starting_item_text(item_name, item_data.count)
+            create_input_element(starting_grid, 'label', text, nil, nil, item_data.discord, 30)
+        end
+    end
+
+    for name, buff_data in pairs(buffs_collected_source) do
+        if name == 'starting_items' then
+            goto continue
+        end
+
+        if type(buff_data.amount) ~= 'table' and buff_data.force then
+            local text = format_force_buff_text(name, buff_data.count)
+            create_input_element(force_grid, 'label', text, nil, nil, buff_data.discord)
+        elseif not buff_data.force then
+            if buff_data.name then
+                local text = format_custom_buff_text(buff_data.name, buff_data.count)
+                create_input_element(custom_grid, 'label', text, nil, nil, buff_data.discord)
+            else
+                for _, buff in pairs(buff_data) do
+                    local text = format_custom_buff_text(pretty_format(buff.name), buff.count)
+                    create_input_element(custom_grid, 'label', text, nil, nil, buff.discord)
+                end
+            end
+        end
+
+        ::continue::
+    end
+end
+
 local function buff_window(player)
     local buff_frame_name, inside_table = Gui.add_main_frame_with_toolbar(player, 'center', buffs_window_name, nil, close_buffs_window_name, 'Buffs gathered')
     if not buff_frame_name then
@@ -452,76 +529,7 @@ local function buff_window(player)
     ns.right_padding = 5
     ns.top_padding = 5
 
-    buff_pane.add({ type = 'line' })
-
-    local starting_items_label = buff_pane.add({ type = 'label', caption = 'Starting items' })
-    local starting_items_label_style = starting_items_label.style
-    starting_items_label_style.font = 'default-semibold'
-    starting_items_label_style.padding = 0
-    starting_items_label_style.horizontal_align = 'left'
-    starting_items_label_style.font_color = { 0.55, 0.55, 0.99 }
-
-    local starting_grid = buff_pane.add({ type = 'table', column_count = 8 })
-
-    buff_pane.add({ type = 'line' })
-
-    local force_label = buff_pane.add({ type = 'label', caption = 'Force Buffs' })
-    local force_label_style = force_label.style
-    force_label_style.font = 'default-semibold'
-    force_label_style.padding = 0
-    force_label_style.horizontal_align = 'left'
-    force_label_style.font_color = { 0.55, 0.55, 0.99 }
-    local force_grid = buff_pane.add({ type = 'table', column_count = 2 })
-
-    buff_pane.add({ type = 'line' })
-
-    local custom_label = buff_pane.add({ type = 'label', caption = 'Custom Buffs' })
-    local custom_label_style = custom_label.style
-    custom_label_style.font = 'default-semibold'
-    custom_label_style.padding = 0
-    custom_label_style.horizontal_align = 'left'
-    custom_label_style.font_color = { 0.55, 0.55, 0.99 }
-    local custom_grid = buff_pane.add({ type = 'table', column_count = 2 })
-
-    if stateful.buffs and next(stateful.buffs) then
-        if stateful.buffs_collected and next(stateful.buffs_collected) then
-            if stateful.buffs_collected.starting_items then
-                for item_name, item_data in pairs(stateful.buffs_collected.starting_items) do
-                    -- local text = pretty_format(item_name) .. ': [font=font-bold]' .. item_data.count
-                    local text = '[font=default-large] [item=' .. item_name .. '][/font]' .. ': [font=default-bold]' .. item_data.count .. '[/font]'
-                    create_input_element(starting_grid, 'label', text, nil, nil, item_data.discord, 30)
-                end
-            end
-
-            for name, buff_data in pairs(stateful.buffs_collected) do
-                if type(buff_data.amount) ~= 'table' and buff_data.force then
-                    local c = buff_data.count
-                    local text
-                    if name == 'xp_level' or name == 'xp_bonus' or name == 'character_health_bonus' then
-                        text = '[font=default-bold]' .. Stateful.buff_to_string[name] .. ': ' .. c .. '[/font]'
-                    else
-                        text = '[font=default-bold]' .. Stateful.buff_to_string[name] .. ': ' .. (c * 100) .. '%[/font]'
-                    end
-
-                    create_input_element(force_grid, 'label', text, nil, nil, buff_data.discord)
-                end
-
-                if name ~= 'starting_items' and not buff_data.force then
-                    if buff_data.name then
-                        local text_to_place = buff_data.count or 'Unlocked'
-                        local text = '[font=default-bold]' .. buff_data.name .. ': ' .. text_to_place .. ' [/font]'
-                        create_input_element(custom_grid, 'label', text, nil, nil, buff_data.discord)
-                    else
-                        for _, buff in pairs(buff_data) do
-                            local text_to_place = buff.count or 'Unlocked'
-                            local text = '[font=default-bold]' .. pretty_format(buff.name) .. ': ' .. text_to_place .. ' [/font]'
-                            create_input_element(custom_grid, 'label', text, nil, nil, buff.discord)
-                        end
-                    end
-                end
-            end
-        end
-    end
+    render_buff_collection(buff_pane, stateful.buffs, stateful.buffs_collected)
 
     player.opened = buff_frame_name
 end
@@ -566,75 +574,7 @@ local function permanent_buff_window(player)
     ns.right_padding = 5
     ns.top_padding = 5
 
-    buff_pane.add({ type = 'line' })
-
-    local starting_items_label = buff_pane.add({ type = 'label', caption = 'Starting items' })
-    local starting_items_label_style = starting_items_label.style
-    starting_items_label_style.font = 'default-semibold'
-    starting_items_label_style.padding = 0
-    starting_items_label_style.horizontal_align = 'left'
-    starting_items_label_style.font_color = { 0.55, 0.55, 0.99 }
-
-    local starting_grid = buff_pane.add({ type = 'table', column_count = 8 })
-
-    buff_pane.add({ type = 'line' })
-
-    local force_label = buff_pane.add({ type = 'label', caption = 'Force Buffs' })
-    local force_label_style = force_label.style
-    force_label_style.font = 'default-semibold'
-    force_label_style.padding = 0
-    force_label_style.horizontal_align = 'left'
-    force_label_style.font_color = { 0.55, 0.55, 0.99 }
-    local force_grid = buff_pane.add({ type = 'table', column_count = 2 })
-
-    buff_pane.add({ type = 'line' })
-
-    local custom_label = buff_pane.add({ type = 'label', caption = 'Custom Buffs' })
-    local custom_label_style = custom_label.style
-    custom_label_style.font = 'default-semibold'
-    custom_label_style.padding = 0
-    custom_label_style.horizontal_align = 'left'
-    custom_label_style.font_color = { 0.55, 0.55, 0.99 }
-    local custom_grid = buff_pane.add({ type = 'table', column_count = 2 })
-
-    if stateful.permanent_buffs and next(stateful.permanent_buffs) then
-        if stateful.permanent_buffs_collected and next(stateful.permanent_buffs_collected) then
-            if stateful.permanent_buffs_collected.starting_items then
-                for item_name, item_data in pairs(stateful.permanent_buffs_collected.starting_items) do
-                    local text = '[font=default-large] [item=' .. item_name .. '][/font]' .. ': [font=default-bold]' .. item_data.count .. '[/font]'
-                    create_input_element(starting_grid, 'label', text, nil, nil, item_data.discord, 30)
-                end
-            end
-
-            for name, buff_data in pairs(stateful.permanent_buffs_collected) do
-                if type(buff_data.amount) ~= 'table' and buff_data.force then
-                    local c = buff_data.count
-                    local text
-                    if name == 'xp_level' or name == 'xp_bonus' or name == 'character_health_bonus' then
-                        text = '[font=default-bold]' .. Stateful.buff_to_string[name] .. ': ' .. c .. '[/font]'
-                    else
-                        text = '[font=default-bold]' .. Stateful.buff_to_string[name] .. ': ' .. (c * 100) .. '%[/font]'
-                    end
-
-                    create_input_element(force_grid, 'label', text, nil, nil, buff_data.discord)
-                end
-
-                if name ~= 'starting_items' and not buff_data.force then
-                    if buff_data.name then
-                        local text_to_place = buff_data.count or 'Unlocked'
-                        local text = '[font=default-bold]' .. buff_data.name .. ': ' .. text_to_place .. ' [/font]'
-                        create_input_element(custom_grid, 'label', text, nil, nil, buff_data.discord)
-                    else
-                        for _, buff in pairs(buff_data) do
-                            local text_to_place = buff.count or 'Unlocked'
-                            local text = '[font=default-bold]' .. pretty_format(buff.name) .. ': ' .. text_to_place .. ' [/font]'
-                            create_input_element(custom_grid, 'label', text, nil, nil, buff.discord)
-                        end
-                    end
-                end
-            end
-        end
-    end
+    render_buff_collection(buff_pane, stateful.permanent_buffs, stateful.permanent_buffs_collected)
 
     player.opened = main_player_frame
 end

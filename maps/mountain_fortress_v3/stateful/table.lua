@@ -199,6 +199,7 @@ local function get_random_buff(fetch_all, only_force)
             poll_name = 'Running speed',
             modifier = 'force',
             per_force = true,
+            limit = 25,
             state = 0.05
         },
         {
@@ -208,6 +209,7 @@ local function get_random_buff(fetch_all, only_force)
             poll_name = 'Mining speed',
             modifier = 'force',
             per_force = true,
+            limit = 25,
             state = 0.15
         },
         {
@@ -217,6 +219,7 @@ local function get_random_buff(fetch_all, only_force)
             poll_name = 'Laboratory speed',
             modifier = 'force',
             per_force = true,
+            limit = 30,
             state = 0.15
         },
         {
@@ -226,6 +229,7 @@ local function get_random_buff(fetch_all, only_force)
             poll_name = 'Laboratory productivity',
             modifier = 'force',
             per_force = true,
+            limit = 30,
             state = 0.15
         },
         {
@@ -235,6 +239,7 @@ local function get_random_buff(fetch_all, only_force)
             poll_name = 'Robot storage',
             modifier = 'force',
             per_force = true,
+            limit = 30,
             state = 1
         },
         {
@@ -244,6 +249,7 @@ local function get_random_buff(fetch_all, only_force)
             poll_name = 'Robot battery',
             modifier = 'force',
             per_force = true,
+            limit = 30,
             state = 1
         },
         {
@@ -253,6 +259,7 @@ local function get_random_buff(fetch_all, only_force)
             poll_name = 'Robot speed',
             modifier = 'force',
             per_force = true,
+            limit = 30,
             state = 0.5
         },
         {
@@ -262,6 +269,7 @@ local function get_random_buff(fetch_all, only_force)
             poll_name = 'Drill productivity',
             modifier = 'force',
             per_force = true,
+            limit = 30,
             state = 0.5
         },
         {
@@ -271,6 +279,7 @@ local function get_random_buff(fetch_all, only_force)
             poll_name = 'Character health',
             modifier = 'force',
             per_force = true,
+            limit = 50,
             state = 250
         },
         {
@@ -281,6 +290,7 @@ local function get_random_buff(fetch_all, only_force)
             modifier = 'rpg_distance',
             per_force = true,
             modifiers = { 'character_resource_reach_distance_bonus', 'character_item_pickup_distance_bonus', 'character_loot_pickup_distance_bonus', 'character_reach_distance_bonus' },
+            limit = 20,
             state = 0.05
         },
         {
@@ -290,6 +300,7 @@ local function get_random_buff(fetch_all, only_force)
             poll_name = 'Crafting speed',
             modifier = 'force',
             per_force = true,
+            limit = 25,
             state = 0.12
         },
         {
@@ -299,6 +310,7 @@ local function get_random_buff(fetch_all, only_force)
             poll_name = 'RPG XP point',
             modifier = 'rpg',
             per_force = true,
+            limit = 25,
             state = 0.12
         },
         {
@@ -308,6 +320,7 @@ local function get_random_buff(fetch_all, only_force)
             poll_name = 'RPG XP level',
             modifier = 'rpg',
             per_force = true,
+            limit = 10,
             state = 20
         },
         {
@@ -465,7 +478,7 @@ local function get_random_buff(fetch_all, only_force)
             tooltip = 'Selecting this buff will grant the team 1 extra wagon at start!',
             poll_name = 'Starting items (extra wagon)',
             modifier = 'locomotive',
-            limit = 4,
+            limit = 5,
             state = 1
         },
         {
@@ -1381,39 +1394,41 @@ local function clear_all_stats()
 end
 
 local function migrate_buffs_generic(buffs_table)
-    local state_buffs = get_random_buff(true)
+    local static_buffs = get_random_buff(true)
 
-    for _, data in pairs(state_buffs) do
-        for index, buff in pairs(buffs_table) do
-            if data.name == buff.name then
-                if not Public.is_modded_pt2 and data.dlc then
-                    buffs_table[index] = nil
-                    break
-                end
-                if data.add_per_buff then
-                    buff.add_per_buff = data.add_per_buff
-                end
-                if buff.replaces then
-                    buff.replaces = nil
-                end
+    local static_buffs_by_name = {}
+    for _, static_buff in pairs(static_buffs) do
+        static_buffs_by_name[static_buff.name] = static_buff
+    end
 
-                if buff.modifier == 'starting_items_1' then
-                    buff.modifier = 'starting_items'
-                end
+    for index, saved_buff in pairs(buffs_table) do
+        local static_buff = static_buffs_by_name[saved_buff.name]
 
-                if data.items and type(data.items) == 'table' then
-                    buff.items = data.items
+        if static_buff then
+            if not Public.is_modded_pt2 and static_buff.dlc then
+                buffs_table[index] = nil
+            else
+                local collected_count = saved_buff.count or 0
+                buffs_table[index] = {}
+
+                for key, value in pairs(static_buff) do
+                    buffs_table[index][key] = value
                 end
 
-                if data.limit and not buff.limit then
-                    buff.limit = data.limit
-                    buff.name = data.name
+                buffs_table[index].count = collected_count
+
+                if buffs_table[index].modifier == 'starting_items_1' then
+                    buffs_table[index].modifier = 'starting_items'
                 end
 
-                if buff.items == 0 then
+                buffs_table[index].replaces = nil
+
+                if buffs_table[index].items == 0 then
                     buffs_table[index] = nil
                 end
             end
+        else
+            buffs_table[index] = nil
         end
     end
 end
@@ -1426,248 +1441,225 @@ local function migrate_permanent_buffs()
     migrate_buffs_generic(this.permanent_buffs)
 end
 
-local function apply_buffs_generic(buffs_table, collected_table, is_permanent)
-    local starting_items = Public.get_func('starting_items')
+local function update_collected_entry(collected_table, key, name, count, discord, force_flag)
+    if not collected_table[key] then
+        collected_table[key] =
+        {
+            name = name,
+            count = count,
+            discord = discord,
+            force = force_flag
+        }
+    else
+        collected_table[key].count = collected_table[key].count + count
+    end
+end
+
+local function check_limit(limit_types, key, buff, increment)
+    increment = increment or 1
+    limit_types[key] = (limit_types[key] or 0) + increment
+    return buff.limit and limit_types[key] >= buff.limit
+end
+
+local function apply_force_buff(buff, collected_table)
+    local force = game.forces.player
+    force[buff.name] = force[buff.name] + buff.state
+    update_collected_entry(collected_table, buff.name, nil, buff.state, buff.discord, true)
+end
+
+local function apply_rpg_distance_buff(buff, collected_table)
+    local force = game.forces.player
+    for _, buff_name in pairs(buff.modifiers) do
+        if buff_name == 'character_reach_distance_bonus' then
+            buff.state = 1
+        end
+        force[buff_name] = force[buff_name] + buff.state
+        update_collected_entry(collected_table, buff_name, 'Extra Reach', buff.state, buff.discord, true)
+    end
+end
+
+local function apply_locomotive_buff(buff, collected_table, limit_types)
+    if check_limit(limit_types, 'locomotive', buff, buff.state) then
+        return true -- signal to skip this buff
+    end
+
+    this.extra_wagons = (this.extra_wagons or 0) + buff.state
+
+    update_collected_entry(collected_table, 'locomotive', 'Extra Wagons', buff.state, buff.discord)
+    return false
+end
+
+local function apply_quality_buff(buff, collected_table)
+    local quality_name = buff.name
+    local display_name = quality_name:gsub('quality_', ''):gsub('_', '-')
+
+    if quality_name == 'quality_locomotive' then
+        this.quality_trains.locomotive = buff.quality
+    elseif quality_name == 'quality_cargo_wagon' then
+        this.quality_trains['cargo-wagon'] = buff.quality
+    elseif quality_name == 'quality_buildings' then
+        this.quality_buildings = buff.quality
+    end
+
+    collected_table[quality_name] =
+    {
+        name = 'Quality ' .. display_name .. ' (' .. buff.quality .. ')!',
+        discord = buff.discord
+    }
+end
+
+local function apply_fish_buff(buff, collected_table, limit_types)
+    limit_types[buff.name] = true
+    Public.set('all_the_fish', true)
+    update_collected_entry(collected_table, 'fish', 'A thousand fishes', nil, buff.discord)
+end
+
+local function apply_tech_buff(buff, collected_table)
     local techs = Public.get_func('techs')
+
+    if not collected_table['techs'] then
+        collected_table['techs'] = {}
+    end
+
+    if type(buff.techs) ~= 'table' then
+        return true -- signal to skip
+    end
+
+    for _, tech in pairs(buff.techs) do
+        if tech and not techs[tech.name] then
+            techs[tech.name] = { name = buff.name }
+
+            collected_table['techs'][tech.name] =
+            {
+                name = tech.name,
+                buff_type = buff.name,
+                discord = buff.discord
+            }
+
+            this.delayed_tech = this.delayed_tech or {}
+            this.delayed_tech[tech.name] = tech
+        end
+    end
+    return false
+end
+
+local function apply_rpg_buff(buff, collected_table, limit_types)
+    local rpg_extra = RPG.get('rpg_extra')
+
+    if check_limit(limit_types, buff.name, buff) then
+        return true -- signal to skip
+    end
+
+    if buff.name == 'xp_bonus' then
+        rpg_extra.difficulty = (rpg_extra.difficulty or 0) + buff.state
+        update_collected_entry(collected_table, 'xp_bonus', 'XP Bonus', buff.state, buff.discord)
+    elseif buff.name == 'xp_level' then
+        rpg_extra.grant_xp_level = (rpg_extra.grant_xp_level or 0) + buff.state
+        update_collected_entry(collected_table, 'xp_level', 'XP Level Bonus', buff.state, buff.discord)
+    end
+    return false
+end
+
+local function apply_starting_items_buff(buff, collected_table)
+    local starting_items = Public.get_func('starting_items')
+
+    if not collected_table['starting_items'] then
+        collected_table['starting_items'] = {}
+    end
+
+    if type(buff.items) ~= 'table' then
+        return true -- signal to skip
+    end
+
+    for _, item in pairs(buff.items) do
+        if item then
+            if starting_items[item.name] and buff.limit and
+                starting_items[item.name].item_limit and
+                starting_items[item.name].item_limit >= buff.limit then
+                starting_items[item.name].limit_reached = true
+                return true -- skip this buff
+            end
+
+            if starting_items[item.name] then
+                starting_items[item.name].count = starting_items[item.name].count + item.count
+                starting_items[item.name].item_limit = (starting_items[item.name].item_limit or 0) + (buff.add_per_buff or 0)
+                starting_items[item.name].buff_type = buff.name
+            else
+                starting_items[item.name] =
+                {
+                    buff_type = buff.name,
+                    count = item.count,
+                    item_limit = buff.add_per_buff
+                }
+            end
+
+            if collected_table['starting_items'][item.name] then
+                collected_table['starting_items'][item.name].count =
+                    collected_table['starting_items'][item.name].count + item.count
+                collected_table['starting_items'][item.name].buff_type = buff.name
+            else
+                collected_table['starting_items'][item.name] =
+                {
+                    buff_type = buff.name,
+                    count = item.count,
+                    discord = buff.discord
+                }
+            end
+        end
+    end
+    return false
+end
+
+local function apply_buffs_generic(buffs_table, collected_table, is_permanent)
+    if not buffs_table or not next(buffs_table) then
+        return
+    end
+
+    -- Run migration
+    if is_permanent then
+        migrate_permanent_buffs()
+    else
+        migrate_buffs()
+    end
+
+    local total_buffs = 0
     local limit_types = Public.get_func('limit_types')
 
-    if buffs_table and next(buffs_table) then
-        local total_buffs = 0
+    for _, buff in pairs(buffs_table) do
+        if buff then
+            local skip_buff = false
 
-        if is_permanent then
-            migrate_permanent_buffs()
-        else
-            migrate_buffs()
-        end
-
-        local force = game.forces.player
-        for _, buff in pairs(buffs_table) do
-            if buff then
-                total_buffs = total_buffs + 1
-                if buff.modifier == 'rpg_distance' then
-                    for _, buff_name in pairs(buff.modifiers) do
-                        if buff_name == 'character_reach_distance_bonus' then
-                            buff.state = 1
-                        end
-
-                        force[buff_name] = force[buff_name] + buff.state
-
-                        if not collected_table[buff_name] then
-                            collected_table[buff_name] =
-                            {
-                                name = 'Extra Reach',
-                                count = buff.state,
-                                discord = buff.discord,
-                                force = true
-                            }
-                        else
-                            collected_table[buff_name].count = collected_table[buff_name].count + buff.state
-                        end
-                    end
-                end
-                if buff.modifier == 'force' then
-                    force[buff.name] = force[buff.name] + buff.state
-
-                    if not collected_table[buff.name] then
-                        collected_table[buff.name] =
-                        {
-                            count = buff.state,
-                            discord = buff.discord,
-                            force = true
-                        }
-                    else
-                        collected_table[buff.name].count = collected_table[buff.name].count + buff.state
-                    end
-                end
-                if buff.modifier == 'locomotive' then
-                    if not this.extra_wagons then
-                        this.extra_wagons = buff.state
-                    else
-                        this.extra_wagons = this.extra_wagons + buff.state
-                    end
-
-                    if not collected_table['locomotive'] then
-                        collected_table['locomotive'] =
-                        {
-                            name = 'Extra Wagons',
-                            count = buff.state,
-                            discord = buff.discord
-                        }
-                    else
-                        if this.extra_wagons > 5 then
-                            collected_table['locomotive'].count = this.extra_wagons
-                        else
-                            collected_table['locomotive'].count = this.extra_wagons + buff.state
-                        end
-                    end
-
-                    if this.extra_wagons > 5 then
-                        this.extra_wagons = 5
-                    end
-                end
-                if buff.name == 'quality_locomotive' then
-                    this.quality_trains.locomotive = buff.quality
-
-                    collected_table['quality_locomotive'] =
-                    {
-                        name = 'Quality locomotives (' .. buff.quality .. ')!',
-                        discord = buff.discord
-                    }
-                end
-                if buff.name == 'quality_cargo_wagon' then
-                    this.quality_trains.locomotive = buff.quality
-
-                    collected_table['quality_cargo_wagon'] =
-                    {
-                        name = 'Quality cargo-wagon (' .. buff.quality .. ')!',
-                        discord = buff.discord
-                    }
-                end
-                if buff.name == 'quality_buildings' then
-                    this.quality_trains.locomotive = buff.quality
-
-                    collected_table['quality_buildings'] =
-                    {
-                        name = 'Quality buildings (' .. buff.quality .. ')!',
-                        discord = buff.discord
-                    }
-                    this.quality_buildings = buff.quality
-                end
-                if buff.modifier == 'fish' then
-                    limit_types[buff.name] = true
-                    Public.set('all_the_fish', true)
-                    if not collected_table['fish'] then
-                        collected_table['fish'] =
-                        {
-                            name = 'A thousand fishes',
-                            discord = buff.discord
-                        }
-                    end
-                end
-                if buff.modifier == 'tech' then
-                    if not collected_table['techs'] then
-                        collected_table['techs'] = {}
-                    end
-                    if type(buff.techs) ~= 'table' then
-                        goto cont
-                    end
-
-                    for _, tech in pairs(buff.techs) do
-                        if tech then
-                            if techs[tech.name] then
-                                goto cont
-                            end
-
-                            if not techs[tech.name] then
-                                techs[tech.name] =
-                                {
-                                    name = buff.name
-                                }
-                            end
-
-                            if not collected_table['techs'][tech.name] then
-                                collected_table['techs'][tech.name] =
-                                {
-                                    name = tech.name,
-                                    buff_type = buff.name,
-                                    discord = buff.discord
-                                }
-                            end
-
-                            if not this.delayed_tech then
-                                this.delayed_tech = {}
-                            end
-
-                            this.delayed_tech[tech.name] = tech
-                        end
-                    end
-                end
-                if buff.modifier == 'rpg' then
-                    local rpg_extra = RPG.get('rpg_extra')
-                    if buff.name == 'xp_bonus' then
-                        if not rpg_extra.difficulty then
-                            rpg_extra.difficulty = buff.state
-                        else
-                            rpg_extra.difficulty = rpg_extra.difficulty + buff.state
-                        end
-                        if not collected_table['xp_bonus'] then
-                            collected_table['xp_bonus'] =
-                            {
-                                name = 'XP Bonus',
-                                count = buff.state,
-                                discord = buff.discord
-                            }
-                        else
-                            collected_table['xp_bonus'].count = collected_table['xp_bonus'].count + buff.state
-                        end
-                    end
-                    if buff.name == 'xp_level' then
-                        if not rpg_extra.grant_xp_level then
-                            rpg_extra.grant_xp_level = buff.state
-                        else
-                            rpg_extra.grant_xp_level = rpg_extra.grant_xp_level + buff.state
-                        end
-                        if not collected_table['xp_level'] then
-                            collected_table['xp_level'] =
-                            {
-                                name = 'XP Level Bonus',
-                                count = buff.state,
-                                discord = buff.discord
-                            }
-                        else
-                            collected_table['xp_level'].count = collected_table['xp_level'].count + buff.state
-                        end
-                    end
-                end
-                if buff.modifier == 'starting_items' then
-                    if not collected_table['starting_items'] then
-                        collected_table['starting_items'] = {}
-                    end
-                    if type(buff.items) ~= 'table' then
-                        goto cont
-                    end
-
-                    for _, item in pairs(buff.items) do
-                        if item then
-                            if starting_items[item.name] and buff.limit and starting_items[item.name].item_limit and starting_items[item.name].item_limit >= buff.limit then
-                                starting_items[item.name].limit_reached = true
-                                goto cont -- break if there is a limit set
-                            end
-
-                            if starting_items[item.name] then
-                                starting_items[item.name].count = starting_items[item.name].count + item.count
-                                starting_items[item.name].item_limit = starting_items[item.name].item_limit and starting_items[item.name].item_limit + buff.add_per_buff or buff.add_per_buff
-                                starting_items[item.name].buff_type = buff.name
-                            else
-                                starting_items[item.name] =
-                                {
-                                    buff_type = buff.name,
-                                    count = item.count,
-                                    item_limit = buff.add_per_buff
-                                }
-                            end
-                            if collected_table['starting_items'][item.name] then
-                                collected_table['starting_items'][item.name].count = collected_table['starting_items'][item.name].count + item.count
-                                collected_table['starting_items'][item.name].buff_type = buff.name
-                            else
-                                collected_table['starting_items'][item.name] =
-                                {
-                                    buff_type = buff.name,
-                                    count = item.count,
-                                    discord = buff.discord
-                                }
-                            end
-                        end
-                    end
-                end
+            if buff.modifier == 'force' then
+                apply_force_buff(buff, collected_table)
+            elseif buff.modifier == 'rpg_distance' then
+                apply_rpg_distance_buff(buff, collected_table)
+            elseif buff.modifier == 'locomotive' then
+                skip_buff = apply_locomotive_buff(buff, collected_table, limit_types)
+            elseif buff.name and buff.name:match('^quality_') then
+                apply_quality_buff(buff, collected_table)
+            elseif buff.modifier == 'fish' then
+                apply_fish_buff(buff, collected_table, limit_types)
+            elseif buff.modifier == 'tech' then
+                skip_buff = apply_tech_buff(buff, collected_table)
+            elseif buff.modifier == 'rpg' then
+                skip_buff = apply_rpg_buff(buff, collected_table, limit_types)
+            elseif buff.modifier == 'starting_items' then
+                skip_buff = apply_starting_items_buff(buff, collected_table)
             end
-            ::cont::
+
+            if skip_buff then
+                goto continue
+            end
+            total_buffs = total_buffs + 1
         end
-        this.total_buffs = total_buffs
-        local log_message = is_permanent and 'Applied all permanent buffs.' .. ' Total buffs: ' .. total_buffs or 'Applied all buffs.' .. ' Total buffs: ' .. total_buffs
-        Server.output_script_data(log_message)
-        Server.output_script_data('Total wagons this round: ' .. this.extra_wagons)
+        ::continue::
     end
+
+    this.total_buffs = total_buffs
+    local log_message = is_permanent and 'Applied all permanent buffs. Total buffs: ' .. total_buffs
+        or 'Applied all buffs. Total buffs: ' .. total_buffs
+    Server.output_script_data(log_message)
+    Server.output_script_data('Total wagons this round: ' .. (this.extra_wagons or 0))
 end
 
 apply_buffs = function ()
@@ -1704,10 +1696,83 @@ local function grant_non_limit_reached_buff()
             end
         end
 
-        for limit_name, _ in pairs(limit_types) do
+        for limit_name, limit_count in pairs(limit_types) do
             if limit_name == data.name then
-                all_buffs[index] = nil
+                if limit_count and data.limit then
+                    if limit_count >= data.limit then
+                        all_buffs[index] = nil
+                    end
+                else
+                    all_buffs[index] = nil
+                end
             end
+        end
+    end
+
+    shuffle(all_buffs)
+    shuffle(all_buffs)
+    shuffle(all_buffs)
+    shuffle(all_buffs)
+    shuffle(all_buffs)
+    shuffle(all_buffs)
+
+    if not all_buffs[1] then
+        return get_random_buff(nil, true)
+    end
+
+    return all_buffs[1]
+end
+
+local function grant_non_limit_reached_buff_permanent()
+    local all_buffs = get_random_buff(true)
+
+    local permanent_buff_counts = {}
+    if this.permanent_buffs then
+        for _, permanent_buff in pairs(this.permanent_buffs) do
+            if permanent_buff and permanent_buff.name then
+                permanent_buff_counts[permanent_buff.name] = (permanent_buff_counts[permanent_buff.name] or 0) + 1
+            end
+        end
+    end
+
+    for index, data in pairs(all_buffs) do
+        local should_remove = false
+
+        if not Public.is_modded_pt2 and data.dlc then
+            should_remove = true
+        end
+
+        if not should_remove and data.limit and permanent_buff_counts[data.name] then
+            if permanent_buff_counts[data.name] >= data.limit then
+                should_remove = true
+            end
+        end
+
+        if not should_remove and data.modifier == 'tech' and data.techs then
+            local techs = Public.get_func('techs')
+            for _, tech in pairs(data.techs) do
+                if tech and techs[tech.name] then
+                    should_remove = true
+                    break
+                end
+            end
+        end
+
+        if not should_remove and data.modifier == 'starting_items' and data.limit then
+            local starting_items = Public.get_func('starting_items')
+            for _, item in pairs(data.items or {}) do
+                if item and starting_items[item.name] then
+                    local current_limit = starting_items[item.name].item_limit or 0
+                    if current_limit >= data.limit then
+                        should_remove = true
+                        break
+                    end
+                end
+            end
+        end
+
+        if should_remove then
+            all_buffs[index] = nil
         end
     end
 
@@ -1750,7 +1815,7 @@ local function apply_startup_settings(settings)
     local time_to_reset = (current_date - converted_stored_date)
     this.time_to_reset = this.reset_after - time_to_reset
     if time_to_reset and time_to_reset >= this.reset_after then
-        local perm_buff = grant_non_limit_reached_buff()
+        local perm_buff = grant_non_limit_reached_buff_permanent()
         this.permanent_buffs[#this.permanent_buffs + 1] = perm_buff
         Public.save_settings_before_reset()
         Public.set_season_scores()
@@ -1849,9 +1914,6 @@ local apply_settings_token =
                 settings.season = 1
             end
 
-            if not settings.best_streak then
-                settings.best_streak = 0
-            end
 
             this.current_date = settings.current_date
             this.buffs = settings.buffs or {}
@@ -1859,8 +1921,8 @@ local apply_settings_token =
 
             this.rounds_survived = settings.rounds_survived
             this.season = settings.season
-            this.best_streak = settings.best_streak
-            this.current_streak = settings.current_streak
+            this.best_streak = settings.best_streak or 0
+            this.current_streak = settings.current_streak or 0
 
             apply_startup_settings(settings)
             local current_season = Public.get('current_season')
@@ -2219,8 +2281,8 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
     this.objectives = t
     clear_all_stats()
 
-    apply_buffs()
     apply_permanent_buffs()
+    apply_buffs()
     if refresh_gui then
         Public.refresh_frames()
     end
@@ -2520,5 +2582,17 @@ Public.on_market_item_purchased = on_market_item_purchased
 Public.grant_non_limit_reached_buff = grant_non_limit_reached_buff
 Public.apply_buffs = apply_buffs
 Public.apply_permanent_buffs = apply_permanent_buffs
+
+if _DEBUG then
+    local settings = require 'maps.mountain_fortress_v3.stateful._stateful_debug'
+    Event.on_init(
+        function ()
+            local cbl = Task.get(apply_settings_token)
+            storage.tokens.utils_server.server_time.secs = 1187954
+            cbl(settings)
+        end
+    )
+end
+
 
 return Public

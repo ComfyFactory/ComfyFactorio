@@ -11,56 +11,58 @@ local sqrt = math.sqrt
 
 local max_spill = 60
 
-local mining_chance_weights = {
-    { name = 'iron-plate',                     chance = 1000 },
-    { name = 'iron-gear-wheel',                chance = 750 },
-    { name = 'copper-plate',                   chance = 750 },
-    { name = 'copper-cable',                   chance = 500 },
-    { name = 'electronic-circuit',             chance = 300 },
-    { name = 'steel-plate',                    chance = 200 },
-    { name = 'solid-fuel',                     chance = 150 },
-    { name = 'pipe',                           chance = 100 },
-    { name = 'iron-stick',                     chance = 50 },
-    { name = 'battery',                        chance = 20 },
-    { name = 'barrel',                         chance = 10 },
-    { name = 'crude-oil-barrel',               chance = 30 },
-    { name = 'lubricant-barrel',               chance = 20 },
-    { name = 'petroleum-gas-barrel',           chance = 15 },
-    { name = 'sulfuric-acid-barrel',           chance = 15 },
-    { name = 'heavy-oil-barrel',               chance = 15 },
-    { name = 'light-oil-barrel',               chance = 15 },
-    { name = 'water-barrel',                   chance = 10 },
-    { name = 'explosives',                     chance = 5 },
-    { name = 'advanced-circuit',               chance = 5 },
-    { name = 'nuclear-fuel',                   chance = 1 },
-    { name = 'pipe-to-ground',                 chance = 10 },
-    { name = 'plastic-bar',                    chance = 5 },
-    { name = 'processing-unit',                chance = 2 },
-    { name = 'depleted-uranium-fuel-cell',     chance = 1 },
-    { name = 'uranium-fuel-cell',              chance = 1 },
-    { name = 'rocket-fuel',                    chance = 3 },
-    { name = 'low-density-structure',          chance = 1 },
-    { name = 'heat-pipe',                      chance = 1 },
-    { name = 'engine-unit',                    chance = 4 },
-    { name = 'electric-engine-unit',           chance = 2 },
-    { name = 'logistic-robot',                 chance = 1 },
-    { name = 'construction-robot',             chance = 1 },
-    { name = 'land-mine',                      chance = 3 },
-    { name = 'grenade',                        chance = 10 },
-    { name = 'rocket',                         chance = 3 },
-    { name = 'explosive-rocket',               chance = 3 },
-    { name = 'cannon-shell',                   chance = 2 },
-    { name = 'explosive-cannon-shell',         chance = 2 },
-    { name = 'uranium-cannon-shell',           chance = 1 },
+local mining_chance_weights =
+{
+    { name = 'iron-plate', chance = 1000 },
+    { name = 'iron-gear-wheel', chance = 750 },
+    { name = 'copper-plate', chance = 750 },
+    { name = 'copper-cable', chance = 500 },
+    { name = 'electronic-circuit', chance = 300 },
+    { name = 'steel-plate', chance = 200 },
+    { name = 'solid-fuel', chance = 150 },
+    { name = 'pipe', chance = 100 },
+    { name = 'iron-stick', chance = 50 },
+    { name = 'battery', chance = 20 },
+    { name = 'barrel', chance = 10 },
+    { name = 'crude-oil-barrel', chance = 30 },
+    { name = 'lubricant-barrel', chance = 20 },
+    { name = 'petroleum-gas-barrel', chance = 15 },
+    { name = 'sulfuric-acid-barrel', chance = 15 },
+    { name = 'heavy-oil-barrel', chance = 15 },
+    { name = 'light-oil-barrel', chance = 15 },
+    { name = 'water-barrel', chance = 10 },
+    { name = 'explosives', chance = 5 },
+    { name = 'advanced-circuit', chance = 5 },
+    { name = 'nuclear-fuel', chance = 1 },
+    { name = 'pipe-to-ground', chance = 10 },
+    { name = 'plastic-bar', chance = 5 },
+    { name = 'processing-unit', chance = 2 },
+    { name = 'depleted-uranium-fuel-cell', chance = 1 },
+    { name = 'uranium-fuel-cell', chance = 1 },
+    { name = 'rocket-fuel', chance = 3 },
+    { name = 'low-density-structure', chance = 1 },
+    { name = 'heat-pipe', chance = 1 },
+    { name = 'engine-unit', chance = 4 },
+    { name = 'electric-engine-unit', chance = 2 },
+    { name = 'logistic-robot', chance = 1 },
+    { name = 'construction-robot', chance = 1 },
+    { name = 'land-mine', chance = 3 },
+    { name = 'grenade', chance = 10 },
+    { name = 'rocket', chance = 3 },
+    { name = 'explosive-rocket', chance = 3 },
+    { name = 'cannon-shell', chance = 2 },
+    { name = 'explosive-cannon-shell', chance = 2 },
+    { name = 'uranium-cannon-shell', chance = 1 },
     { name = 'explosive-uranium-cannon-shell', chance = 1 },
-    { name = 'artillery-shell',                chance = 1 },
-    { name = 'cluster-grenade',                chance = 2 },
-    { name = 'defender-capsule',               chance = 5 },
-    { name = 'destroyer-capsule',              chance = 1 },
-    { name = 'distractor-capsule',             chance = 2 }
+    { name = 'artillery-shell', chance = 1 },
+    { name = 'cluster-grenade', chance = 2 },
+    { name = 'defender-capsule', chance = 5 },
+    { name = 'destroyer-capsule', chance = 1 },
+    { name = 'distractor-capsule', chance = 2 }
 }
 
-local scrap_yield_amounts = {
+local scrap_yield_amounts =
+{
     ['iron-plate'] = 16,
     ['iron-gear-wheel'] = 8,
     ['iron-stick'] = 16,
@@ -109,7 +111,8 @@ local scrap_yield_amounts = {
     ['distractor-capsule'] = 0.3
 }
 
-local valid_rocks = {
+local valid_rocks =
+{
     ['big-sand-rock'] = true,
     ['big-rock'] = true,
     ['huge-rock'] = true,
@@ -122,9 +125,13 @@ local valid_rocks = {
     ['huge-rock-crisp-2'] = true,
     ['big-rock-crisp-2'] = true,
     ['big-sand-rock-crisp-2'] = true,
+    ['big-rock-snowy'] = true,
+    ['huge-rock-snowy'] = true,
+    ['big-sand-rock-snowy'] = true,
 }
 
-local valid_trees = {
+local valid_trees =
+{
     ['dead-tree-desert'] = 'wood',
     ['dead-dry-hairy-tree'] = 'wood',
     ['dry-hairy-tree'] = 'wood',
@@ -138,7 +145,8 @@ local valid_trees = {
     ['tree-08-brown'] = 'stone'
 }
 
-local valid_scrap = {
+local valid_scrap =
+{
     ['crash-site-spaceship-wreck-small-1'] = true,
     ['crash-site-spaceship-wreck-small-2'] = true,
     ['crash-site-spaceship-wreck-small-3'] = true,
@@ -154,7 +162,8 @@ local valid_scrap = {
     ['mineable-wreckages-6'] = true,
 }
 
-local rock_yield = {
+local rock_yield =
+{
     ['big-rock'] = 1,
     ['huge-rock'] = 2,
     ['big-sand-rock'] = 1,
@@ -169,7 +178,8 @@ local rock_yield = {
     ['big-sand-rock-green'] = 1,
 }
 
-local particles = {
+local particles =
+{
     ['iron-ore'] = 'iron-ore-particle',
     ['copper-ore'] = 'copper-ore-particle',
     ['uranium-ore'] = 'coal-particle',
@@ -199,7 +209,8 @@ local function create_particles(surface, name, position, amount, cause_position)
                 frame_speed = 1,
                 vertical_speed = 0.130,
                 height = 0,
-                movement = {
+                movement =
+                {
                     (m2 - (random(0, m) * 0.01)) + d1,
                     (m2 - (random(0, m) * 0.01)) + d2
                 }
@@ -208,11 +219,12 @@ local function create_particles(surface, name, position, amount, cause_position)
     end
 end
 
-local mining_chances_ores = {
-    { name = 'iron-ore',    chance = 26 },
-    { name = 'copper-ore',  chance = 21 },
-    { name = 'coal',        chance = 17 },
-    { name = 'stone',       chance = 6 },
+local mining_chances_ores =
+{
+    { name = 'iron-ore', chance = 26 },
+    { name = 'copper-ore', chance = 21 },
+    { name = 'coal', chance = 17 },
+    { name = 'stone', chance = 6 },
     { name = 'uranium-ore', chance = 2 }
 }
 
@@ -455,7 +467,8 @@ function Public.on_player_mined_entity(event)
             return
         end
 
-        local data = {
+        local data =
+        {
             entity = entity,
             player = player
         }
