@@ -901,8 +901,8 @@ function Public.update_gui(player)
     end
 
     local mystical_chest = Public.get('mystical_chest')
-    if mystical_chest then
-        local prices = Public.get('mystical_chest_price')
+    local prices = Public.get('mystical_chest_price')
+    if mystical_chest and prices and next(prices) then
         local mystical_chest_price_init = Public.get('mystical_chest_price_init')
 
         local items_tooltip = ''
