@@ -393,9 +393,9 @@ local function get_random_buff(fetch_all, only_force)
         },
         {
             name = 'defense_3',
-            discord = 'Defense starting supplies - start with more turrets and ammo',
+            discord = 'Defense starting supplies - start with rocket launcher and ammo',
             tooltip = 'Selecting this buff will grant the team 1 rocket launcher and 100 rockets at start!',
-            poll_name = 'Starting items (more turrets and ammo)',
+            poll_name = 'Starting items (rocket launcher and ammo)',
             modifier = 'starting_items',
             limit = 1,
             add_per_buff = 1,
@@ -1698,7 +1698,7 @@ local function grant_non_limit_reached_buff()
 
         for limit_name, limit_count in pairs(limit_types) do
             if limit_name == data.name then
-                if limit_count and data.limit then
+                if limit_count and type(limit_count) ~= "boolean" and data.limit then
                     if limit_count >= data.limit then
                         all_buffs[index] = nil
                     end

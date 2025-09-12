@@ -1081,9 +1081,13 @@ end
 
 local function update_raw()
     local game_lost = Public.get('game_lost')
-
+    local game_won = Public.get('game_won')
     if game_lost then
         clear_all_frames()
+        return
+    end
+
+    if game_won then
         return
     end
 
@@ -1262,7 +1266,8 @@ local function update_raw()
                 refresh_boss_frame()
                 play_game_won()
                 WD.disable_spawning_biters(true)
-                Collapse.start_now(false)
+                Collapse.start_now(false, true)
+                Collapse.reverse_start_now(false, true)
                 WD.nuke_wave_gui()
                 Server.to_discord_embed('Game won!')
                 stateful.rounds_survived = stateful.rounds_survived + 1
@@ -1570,7 +1575,7 @@ Gui.on_click(
 
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.on_nth_tick(100, update_data)
-Event.on_nth_tick(90, update_raw)
+Event.on_nth_tick(20, update_raw)
 
 Public.boss_frame = boss_frame
 Public.clear_all_frames = clear_all_frames

@@ -370,6 +370,10 @@ end
 
 local nth_250_tick = function ()
     if game.tick < 500 then return end
+    local game_won = Public.get('game_won')
+    if game_won then
+        return
+    end
     compare_collapse_and_train()
     collapse_after_wave_200()
     Public.set_spawn_position()
@@ -377,6 +381,10 @@ end
 
 local nth_1000_tick = function ()
     if game.tick < 500 then return end
+    local game_won = Public.get('game_won')
+    if game_won then
+        return
+    end
     Public.set_difficulty()
     Public.is_creativity_mode_on()
 end

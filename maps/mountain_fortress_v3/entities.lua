@@ -1452,6 +1452,10 @@ function Public.unstuck_player(index)
 end
 
 function Public.loco_died()
+    local game_won = Public.get('game_won')
+    if game_won then
+        return
+    end
     local game_lost = Public.get('game_lost')
     if not game_lost then
         return
