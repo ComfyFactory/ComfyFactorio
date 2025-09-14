@@ -1531,6 +1531,8 @@ Gui.on_click(
     end
 )
 
+Public.jail = jail
+Public.free = free
 Public.get_is_jailed = get_is_jailed
 
 return Public

@@ -106,8 +106,8 @@ Global.register(
 
 Public.zone_settings =
 {
-    zone_depth = 800,
-    zone_width = 620
+    zone_depth = 704,
+    zone_width = 510
 }
 
 Public.valid_enemy_forces =

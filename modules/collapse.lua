@@ -185,6 +185,10 @@ local function set_reverse_collapse_tiles(surface)
     if this.reverse_size_of_tiles > 0 then
         table_shuffle_table(this.reverse_tiles)
     end
+    if not this.reverse_position or not this.reverse_position.x or not this.reverse_position.y then
+        return
+    end
+
     this.reverse_position = { x = this.reverse_position.x + this.reverse_vector[1], y = this.reverse_position.y + this.reverse_vector[2] }
     local v = this.reverse_vector
     if not v then return end
