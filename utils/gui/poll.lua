@@ -301,6 +301,7 @@ end
 local function draw_main_frame(_, player)
     local trusted = session.get_trusted_table()
     local main_frame, inside_frame = Gui.add_main_frame_with_toolbar(player, 'left', main_frame_name, nil, main_button_name, 'Polls')
+    main_frame.style.maximal_width = 300
 
     local poll_viewer_top_flow = inside_frame.add { type = 'table', column_count = 5 }
     poll_viewer_top_flow.style.horizontal_spacing = 0
