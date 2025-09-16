@@ -4,7 +4,7 @@ local Public = {}
 
 local notification = Discord.channel_names.scenario_notifications
 
---- Send a parsed message to the connected channel.
+--- Send a parsed message to the named discord channel.
 --- Requires at least a title and a description
 ---@param data table
 function Public.send_notification(data)
@@ -17,6 +17,21 @@ function Public.send_notification(data)
     data.tick = game.tick
 
     Server.to_discord_named_parsed_embed(notification, data)
+end
+
+--- Send a parsed message to the connected channel.
+--- Requires at least a title and a description
+---@param data table
+function Public.send_notification_connected_channel(data)
+    if not data or not data.title or not data.description then
+        return error("Title and description is required.", 2)
+    end
+
+    if game.tick < 10 then return end
+
+    data.tick = game.tick
+
+    Server.to_discord_embed_parsed(data)
 end
 
 --- Send a message to the connected channel.

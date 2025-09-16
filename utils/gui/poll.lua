@@ -7,6 +7,7 @@ local session = require 'utils.datastore.session_data'
 local Config = require 'utils.gui.config'
 local SpamProtection = require 'utils.spam_protection'
 local Math = require 'utils.math.math'
+local Discord = require 'utils.discord_handler'
 local Public = {}
 
 local insert = table.insert
@@ -116,47 +117,64 @@ local function do_remaining_time(poll, remaining_time_label)
     end
 end
 
-local function send_poll_result_to_discord(poll)
-    local result = { 'Poll #', poll.id }
+local function send_poll_result_to_discord(poll, complete)
+    local fields = {}
 
-    local created_by_player = poll.created_by
-    if created_by_player then
-        insert(result, ' Created by ')
-        insert(result, created_by_player)
+    -- Created by
+    if poll.created_by then
+        table.insert(fields,
+            {
+                title = "Created by",
+                description = poll.created_by,
+                inline = "false"
+            })
     end
 
+    -- Edited by
     local edited_by_players = poll.edited_by
     if next(edited_by_players) then
-        insert(result, ' Edited by ')
+        local editors = {}
         for pi, _ in pairs(edited_by_players) do
             local p = game.players[pi]
             if p and p.valid then
-                insert(result, p.name)
-                insert(result, ', ')
+                table.insert(editors, p.name)
             end
         end
-        table.remove(result)
-    end
 
-    insert(result, '\\n**Question: ')
-    insert(result, poll.question)
-    insert(result, '**\\n')
-
-    local answers = poll.answers
-    local answers_count = #answers
-    for i, a in pairs(answers) do
-        insert(result, '[')
-        insert(result, a.voted_count)
-        insert(result, '] - ')
-        insert(result, a.text)
-        if i ~= answers_count then
-            insert(result, '\\n')
+        if #editors > 0 then
+            table.insert(fields,
+                {
+                    title = "Edited by",
+                    description = table.concat(editors, ", "),
+                    inline = "false"
+                })
         end
     end
 
-    local message = table.concat(result)
-    Server.to_discord_embed(message)
+    -- Answers (each as inline field)
+    local answers = poll.answers
+    if answers and #answers > 0 then
+        for _, a in ipairs(answers) do
+            table.insert(fields,
+                {
+                    title = a.text,
+                    description = "**" .. a.voted_count .. "** votes",
+                    inline = "true"
+                })
+        end
+    end
+
+    -- Send to Discord
+    Discord.send_notification_connected_channel(
+        {
+            title = complete and "Poll #" .. poll.id .. " has finished" or "Poll #" .. poll.id,
+            description = "**Question:** " .. poll.question,
+            color = complete and "success" or "info",
+            fields = fields,
+            tick = game.tick
+        })
 end
+
 
 local function redraw_poll_viewer_content(data)
     local poll_viewer_content = data.poll_viewer_content
@@ -871,7 +889,7 @@ local function tick()
         local poll = running_polls[i]
         if poll_complete(poll) then
             table.remove(running_polls, i)
-            send_poll_result_to_discord(poll)
+            send_poll_result_to_discord(poll, true)
 
             local message = table.concat { 'Poll finished: Poll #', poll.id, ': ', poll.question }
             for _, p in pairs(game.connected_players) do
@@ -1491,7 +1509,7 @@ end
 
 function Public.send_poll_result_to_discord(id)
     if type(id) ~= 'number' then
-        Server.to_discord_embed('poll-id must be a number')
+        Server.output_script_data('poll-id must be a number')
         return
     end
 
@@ -1503,7 +1521,7 @@ function Public.send_poll_result_to_discord(id)
     end
 
     local message = table.concat { 'poll #', id, ' not found' }
-    Server.to_discord_embed(message)
+    Server.output_script_data(message)
 end
 
 function Public.poll_complete(id)
