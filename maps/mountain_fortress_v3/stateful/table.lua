@@ -1672,7 +1672,10 @@ apply_permanent_buffs = function ()
     apply_buffs_generic(this.permanent_buffs, this.permanent_buffs_collected, true)
 end
 
-local function grant_non_limit_reached_buff()
+-- Returns one or more buffs that have not hit their limit.
+-- If count is nil or 1, behaves like before (single buff).
+-- If count > 1, returns up to count unique buffs.
+local function grant_non_limit_reached_buff(count)
     local all_buffs = get_random_buff(true)
     local starting_items = Public.get_func('starting_items')
     local techs = Public.get_func('techs')
@@ -1681,11 +1684,13 @@ local function grant_non_limit_reached_buff()
     for index, data in pairs(all_buffs) do
         if not Public.is_modded_pt2 and data.dlc then
             all_buffs[index] = nil
-            break
         end
 
         for _, item_data in pairs(starting_items) do
-            if item_data.buff_type == data.name and item_data.item_limit and data.limit and item_data.item_limit >= data.limit then
+            if item_data.buff_type == data.name
+                and item_data.item_limit
+                and data.limit
+                and item_data.item_limit >= data.limit then
                 all_buffs[index] = nil
             end
         end
@@ -1709,19 +1714,26 @@ local function grant_non_limit_reached_buff()
         end
     end
 
-    shuffle(all_buffs)
-    shuffle(all_buffs)
-    shuffle(all_buffs)
-    shuffle(all_buffs)
-    shuffle(all_buffs)
-    shuffle(all_buffs)
+    for _ = 1, 5 do
+        shuffle(all_buffs)
+    end
 
     if not all_buffs[1] then
         return get_random_buff(nil, true)
     end
 
-    return all_buffs[1]
+    if not count or count == 1 then
+        return all_buffs[1]
+    end
+
+    -- Return up to 'count' unique buffs
+    local result = {}
+    for i = 1, math.min(count, #all_buffs) do
+        table.insert(result, all_buffs[i])
+    end
+    return result
 end
+
 
 local function grant_non_limit_reached_buff_permanent()
     local all_buffs = get_random_buff(true)

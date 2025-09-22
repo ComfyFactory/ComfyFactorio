@@ -546,8 +546,12 @@ local function spawn_biter(surface, position, fs, is_boss_biter, unit_settings, 
         force = 'aggressors'
     end
 
-    local e = { name = name, position = position, force = force }
+    if name == '' or name == nil then
+        Server.output_script_data('spawn_biter - name was nil?')
+        return false
+    end
 
+    local e = { name = name, position = position, force = force }
     if not surface.can_place_entity(e) then
         return false
     end

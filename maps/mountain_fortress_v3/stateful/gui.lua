@@ -1283,12 +1283,8 @@ local function update_raw()
                 if buff_selection then
                     if buff_selection.votes_enabled then
                         buff_selection.voting_started = true
-                        local buffs = {}
-                        for _ = 1, 3 do
-                            local b = Stateful.grant_non_limit_reached_buff()
-                            table.insert(buffs, b)
-                        end
-                        StatefulFunctions.init_buff_selection(buffs)
+                        local b = Stateful.grant_non_limit_reached_buff(3)
+                        StatefulFunctions.init_buff_selection(b)
 
                         Core.iter_connected_players(function (p)
                             if p and p.valid then
