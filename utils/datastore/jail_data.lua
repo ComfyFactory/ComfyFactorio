@@ -24,11 +24,12 @@ local terms_tbl = {}
 local votejail = {}
 local votefree = {}
 local revoked_permissions = {}
-local settings = {
-    playtime_for_vote = 77760000,          -- 15 days
+local settings =
+{
+    playtime_for_vote = 77760000, -- 15 days
     playtime_for_instant_jail = 362880000, -- 70 days
     -- playtime_for_instant_jail = 103680000, -- 20 days
-    clear_voted_player = 36000,            -- remove player from vote-tbl after 10 minutes
+    clear_voted_player = 36000, -- remove player from vote-tbl after 10 minutes
     clear_terms_tbl = 2000,
     votejail_count = 5,
     valid_surface = 'nauvis',
@@ -50,7 +51,8 @@ local placeholder_jail_text_box = Gui.uid_name()
 local save_button_name = Gui.uid_name()
 local discard_button_name = Gui.uid_name()
 
-local valid_commands = {
+local valid_commands =
+{
     ['free'] = true,
     ['jail'] = true
 }
@@ -76,8 +78,10 @@ Global.register(
     end
 )
 
-local Public = {
-    events = {
+local Public =
+{
+    events =
+    {
         on_player_jailed = Event.generate_event_name('on_player_jailed'),
         on_player_unjailed = Event.generate_event_name('on_player_unjailed')
     }
@@ -278,7 +282,8 @@ local function create_gulag_surface()
                     game.create_surface(
                         'Gulag',
                         {
-                            autoplace_controls = {
+                            autoplace_controls =
+                            {
                                 ['coal'] = { frequency = 23, size = 3, richness = 3 },
                                 ['stone'] = { frequency = 20, size = 3, richness = 3 },
                                 ['copper-ore'] = { frequency = 25, size = 3, richness = 3 },
@@ -323,7 +328,8 @@ local function create_gulag_surface()
             e.minable_flag = false
         end
 
-        rendering.draw_text {
+        rendering.draw_text
+        {
             text = 'The pit of despair ☹',
             surface = surface,
             target = { 0, -50 },
@@ -355,7 +361,8 @@ local function teleport_player_to_gulag(player, action, mute)
             p_data.muted = mute or false
         end
         player.teleport(gulag.find_non_colliding_position('character', { 0, 0 }, 128, 1), gulag.name)
-        local data = {
+        local data =
+        {
             player = player
         }
         Task.set_timeout_in_ticks(5, clear_gui, data)
@@ -723,6 +730,10 @@ local function jail_temporary(player, offender, msg, mute)
         votejail[offender.name].jailed = true
     end
 
+    local date = Server.get_current_date_with_time()
+
+    set_data(jailed_data_set, offender.name, { jailed = true, temporary = true, actor = player.name, reason = msg, date = date })
+
     Event.raise(Public.events.on_player_jailed, { player_index = offender.index })
 
     StatData.get_data(offender.index):increase('jailed')
@@ -813,7 +824,8 @@ local function draw_main_frame(player, offender)
     main_frame.auto_center = true
 
     local warning_message =
-        concat {
+        concat
+        {
             '[font=heading-2]You have jailed player: [color=yellow]',
             offender.name,
             '\n[/color][/font]'
@@ -831,7 +843,8 @@ local function draw_main_frame(player, offender)
     info_warning_text_style.bottom_padding = 4
 
     local abuse_message =
-        concat {
+        concat
+        {
             'Jailing is [color=red]NOT[/color] allowed to solve personal disputes, talk to each other instead of jailing!\n',
             'Jail is only a temporary solution, the jailed offender will be released in less than one week automatically.\n',
             'If the actions done by the offender was serious, report the offender to the admins on [color=yellow]https://getcomfy.eu/discord[/color]\n',
@@ -875,7 +888,8 @@ local function draw_main_frame(player, offender)
     local save_button = right_flow.add({ type = 'button', name = save_button_name, caption = 'Save report' })
     save_button.style = 'confirm_button'
 
-    local data = {
+    local data =
+    {
         offender = offender.name
     }
 
@@ -992,7 +1006,8 @@ function Public.try_ul_data(key, value, player, message, mute)
 
     key = tostring(key)
 
-    local data = {
+    local data =
+    {
         key = key,
         value = value,
         player = player,
@@ -1218,7 +1233,8 @@ Event.add(
                 return Utils.print_to(player, module_name .. 'Valid input: /jail ' .. player.name)
             end
 
-            local data = {
+            local data =
+            {
                 player = player,
                 offender = offender,
                 trusted = trusted,
@@ -1307,7 +1323,8 @@ Event.add(
                 return print(module_name .. 'No valid player given.')
             end
 
-            local data = {
+            local data =
+            {
                 offender = offender,
                 message = message,
                 cmd = cmd
@@ -1485,7 +1502,7 @@ Gui.on_click(
                 return Utils.print_to(player, module_name .. 'Reason is too short. Explain thoroughly why you jailed ' .. offender .. '!')
             end
 
-            set_data(jailed_data_set, offender, { jailed = true, actor = player.name, reason = jailed[offender].reason, date = date })
+            set_data(jailed_data_set, offender, { jailed = true, temporary = true, actor = player.name, reason = jailed[offender].reason, date = date })
         end
 
         Utils.print_to(player, module_name .. 'Jail data has been submitted!')
