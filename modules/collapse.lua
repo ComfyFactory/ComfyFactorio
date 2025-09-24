@@ -422,6 +422,18 @@ function Public.set_amount(amount)
     this.amount = amount
 end
 
+function Public.set_amount_forced(amount)
+    if not amount then
+        print_debug(9)
+        return
+    end
+    amount = math_floor(amount)
+    if amount < 0 then
+        amount = 0
+    end
+    this.amount = amount
+end
+
 function Public.set_position(position)
     if not position then
         print_debug(4)
