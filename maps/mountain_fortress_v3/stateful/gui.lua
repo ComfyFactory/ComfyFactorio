@@ -191,13 +191,13 @@ end
 local function clear_all_frames()
     Core.iter_players(
         function (player)
-            local b_frame = player.gui.screen[boss_frame_name]
+            local b_frame = player.gui.left[boss_frame_name]
             if b_frame then
                 Gui.remove_data_recursively(b_frame)
                 b_frame.destroy()
             end
 
-            local frame = player.gui.screen[main_frame_name]
+            local frame = player.gui.left[main_frame_name]
             if frame then
                 Gui.remove_data_recursively(frame)
                 frame.destroy()
@@ -209,7 +209,7 @@ end
 local function refresh_frames()
     Core.iter_connected_players(
         function (player)
-            local frame = player.gui.screen[main_frame_name]
+            local frame = player.gui.left[main_frame_name]
             if frame and frame.valid then
                 Gui.remove_data_recursively(frame)
                 frame.destroy()
@@ -581,12 +581,12 @@ end
 
 
 local function boss_frame(player, alert)
-    local main_winning_frame = player.gui.screen[main_frame_name]
+    local main_winning_frame = player.gui.left[main_frame_name]
     if main_winning_frame then
         Gui.remove_data_recursively(main_winning_frame)
         main_winning_frame.destroy()
     end
-    local main_player_boss_frame = player.gui.screen[boss_frame_name]
+    local main_player_boss_frame = player.gui.left[boss_frame_name]
     if main_player_boss_frame then
         Gui.remove_data_recursively(main_player_boss_frame)
         main_player_boss_frame.destroy()
@@ -598,7 +598,7 @@ local function boss_frame(player, alert)
     local collection = stateful.collection
     if not collection then return end
 
-    local frame = player.gui.screen.add { type = 'frame', name = boss_frame_name, caption = { 'stateful.win_conditions' }, direction = 'vertical' }
+    local frame = player.gui.left.add { type = 'frame', name = boss_frame_name, caption = { 'stateful.win_conditions' }, direction = 'vertical' }
     if not alert then
         frame.location = { x = 1, y = 45 }
     else
@@ -718,7 +718,7 @@ local function refresh_boss_frame()
 end
 
 main_frame = function (player)
-    local main_player_frame = player.gui.screen[main_frame_name]
+    local main_player_frame = player.gui.left[main_frame_name]
     if main_player_frame then
         Gui.remove_data_recursively(main_player_frame)
         main_player_frame.destroy()
@@ -730,7 +730,7 @@ main_frame = function (player)
     local breached_wall = Public.get('breached_wall')
     breached_wall = breached_wall - 1
 
-    local frame = player.gui.screen.add { type = 'frame', name = main_frame_name, caption = { 'stateful.win_conditions' }, direction = 'vertical', tooltip = { 'stateful.win_conditions_tooltip' } }
+    local frame = player.gui.left.add { type = 'frame', name = main_frame_name, caption = { 'stateful.win_conditions' }, direction = 'vertical', tooltip = { 'stateful.win_conditions_tooltip' } }
     if Gui.get_mod_gui_top_frame() then
         frame.location = { x = 0, y = 67 }
     else
@@ -927,8 +927,8 @@ local function update_data()
 
     for i = 1, #players do
         local player = players[i]
-        local f = player.gui.screen[main_frame_name]
-        local b = player.gui.screen[boss_frame_name]
+        local f = player.gui.left[main_frame_name]
+        local b = player.gui.left[boss_frame_name]
         local data = Gui.get_data(f)
         local data_boss = Gui.get_data(b)
 
@@ -1389,7 +1389,7 @@ Gui.on_click(
         local final_battle = Public.get_stateful('final_battle')
 
         if final_battle then
-            local frame = player.gui.screen[boss_frame_name]
+            local frame = player.gui.left[boss_frame_name]
             if frame then
                 Gui.remove_data_recursively(frame)
                 frame.destroy()
@@ -1398,7 +1398,7 @@ Gui.on_click(
                 boss_frame(player)
             end
         else
-            local frame = player.gui.screen[main_frame_name]
+            local frame = player.gui.left[main_frame_name]
             if frame then
                 Gui.remove_data_recursively(frame)
                 frame.destroy()
@@ -1423,14 +1423,14 @@ Gui.on_click(
             return
         end
 
-        local frame = player.gui.screen[main_frame_name]
+        local frame = player.gui.left[main_frame_name]
 
         if frame then
             Gui.remove_data_recursively(frame)
             frame.destroy()
         end
 
-        local frame_boss = player.gui.screen[boss_frame_name]
+        local frame_boss = player.gui.left[boss_frame_name]
 
         if frame_boss then
             Gui.remove_data_recursively(frame_boss)

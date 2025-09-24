@@ -53,14 +53,14 @@ local function highest_count(tbl, fair_vote)
 end
 
 local function clear_main_frame(player)
-	local screen = player.gui.center
+	local screen = player.gui.screen
 	if screen[main_frame_name] and screen[main_frame_name].valid then
 		screen[main_frame_name].destroy()
 	end
 end
 
 local function buff_main_frame(player, voted_index)
-	if player.gui.center[main_frame_name] then
+	if player.gui.screen[main_frame_name] then
 		clear_main_frame(player)
 	end
 
@@ -83,10 +83,12 @@ local function buff_main_frame(player, voted_index)
 		return
 	end
 
-	local main_frame, inside_frame = Gui.add_main_frame_with_toolbar(player, 'center', main_frame_name, nil, nil, 'Buff selection')
+	local main_frame, inside_frame = Gui.add_main_frame_with_toolbar(player, 'screen', main_frame_name, nil, nil, 'Buff selection')
 	if not inside_frame then
 		return
 	end
+
+	main_frame.force_auto_center()
 
 	for i = 1, #buff_selection.buffs, 1 do
 		local buff = buff_selection.buffs[i]
@@ -300,7 +302,7 @@ Event.on_nth_tick(60, function ()
 	Core.iter_connected_players(function (player)
 		if player and player.valid then
 			if not buff_selection.voting_closed then
-				local frame = player.gui.center[main_frame_name]
+				local frame = player.gui.screen[main_frame_name]
 				if not frame or not frame.valid then
 					local voted_index = buff_selection.all_votes[player.name] and buff_selection.all_votes[player.name].index
 					buff_main_frame(player, voted_index)
