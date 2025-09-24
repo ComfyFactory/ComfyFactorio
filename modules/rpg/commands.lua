@@ -10,48 +10,13 @@ local validate_args = function (data)
     local target = data.target
     local rpg_t = Public.get_value_from_player(target.index)
 
-    if not target then
+    if not target or not target.valid then
+        Utils.print_to(player, 'Invalid target.')
         return false
     end
 
-    if not target.valid then
-        return false
-    end
-
-    if not target.character then
-        return false
-    end
-
-    if not target.connected then
-        return false
-    end
-
-    if not game.players[target.index] then
-        return false
-    end
-
-    if not player then
-        return false
-    end
-
-    if not player.valid then
-        return false
-    end
-
-    if not player.character then
-        return false
-    end
-
-    if not player.connected then
-        return false
-    end
-
-    if not game.players[player.index] then
-        return false
-    end
-
-    if not target or not game.players[target.index] then
-        Utils.print_to(player, 'Invalid name.')
+    if not player or not player.valid then
+        Utils.print_to(player, 'Invalid player.')
         return false
     end
 
