@@ -572,7 +572,7 @@ local function spawn_biter(surface, position, fs, is_boss_biter, unit_settings, 
 
     if (increase_health_per_wave and (wave_number >= boost_units_when_wave_is_above)) and not is_boss_biter then
         local modified_unit_health = Public.get('modified_unit_health')
-        local final_health = round(modified_unit_health.current_value * unit_settings.scale_units_by_health[biter.name], 3)
+        local final_health = round(modified_unit_health.current_value * (unit_settings.scale_units_by_health[biter.name] and unit_settings.scale_units_by_health[biter.name] or 1), 3)
         if final_health < 1 then
             final_health = 1
         end
@@ -616,7 +616,7 @@ local function spawn_biter(surface, position, fs, is_boss_biter, unit_settings, 
     local active_biter_count = Public.get('active_biter_count')
     Public.set('active_biter_count', active_biter_count + 1)
     local active_biter_threat = Public.get('active_biter_threat')
-    Public.set('active_biter_threat', active_biter_threat + round(threat_values[name] * boosted_health, 2))
+    Public.set('active_biter_threat', active_biter_threat + round((threat_values[name] and threat_values[name] or 1) * boosted_health, 2))
     return biter
 end
 
@@ -658,7 +658,7 @@ local function spawn_worm(surface, position, is_boss_worm)
     if (increase_health_per_wave and (wave_number >= boost_units_when_wave_is_above)) and not is_boss_worm then
         local modified_unit_health = Public.get('modified_unit_health')
         local unit_settings = Public.get('unit_settings')
-        local final_health = round(modified_unit_health.current_value * unit_settings.scale_worms_by_health[worm.name], 3)
+        local final_health = round(modified_unit_health.current_value * (unit_settings.scale_worms_by_health[worm.name] and unit_settings.scale_worms_by_health[worm.name] or 1), 3)
         if final_health < 1 then
             final_health = 1
         end

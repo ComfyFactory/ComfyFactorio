@@ -92,7 +92,7 @@ local function spawn_biters(data)
     if random(1, 30) == 1 then
         BiterHealthBooster.add_boss_unit(unit, modified_boss_unit_health.current_value, 0.38)
     else
-        local final_health = round(modified_unit_health.current_value * unit_settings.scale_units_by_health[unit.name], 3)
+        local final_health = round(modified_unit_health.current_value * (unit_settings.scale_units_by_health[unit.name] and unit_settings.scale_units_by_health[unit.name] or 1), 3)
         if final_health < 1 then
             final_health = 1
         end
@@ -118,7 +118,7 @@ local function spawn_worms(data)
     if random(1, 30) == 1 then
         BiterHealthBooster.add_boss_unit(unit, modified_boss_unit_health.current_value, 0.38)
     else
-        local final_health = round(modified_unit_health.current_value * unit_settings.scale_worms_by_health[unit.name], 3)
+        local final_health = round(modified_unit_health.current_value * (unit_settings.scale_worms_by_health[unit.name] and unit_settings.scale_worms_by_health[unit.name] or 1), 3)
         if final_health < 1 then
             final_health = 1
         end
