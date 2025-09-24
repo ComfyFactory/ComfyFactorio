@@ -34,7 +34,11 @@ local valid_armors =
 {
     ['modular-armor'] = true,
     ['power-armor'] = true,
-    ['power-armor-mk2'] = true
+    ['power-armor-mk2'] = true,
+    ['power-armor-mk3'] = true,
+    ['power-armor-mk4'] = true,
+    ['power-armor-mk5'] = true
+
 }
 
 local non_valid_vehicles =
