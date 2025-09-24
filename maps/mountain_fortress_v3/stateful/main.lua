@@ -145,6 +145,7 @@ Event.on_nth_tick(
             WD.build_worm_custom()
             -- WD.place_custom_nest(locomotive.surface, area[1], 'aggressors_frenzy')
             Event.raise(WD.events.on_spawn_unit_group_simple, { fs = true, bypass = true, random_bosses = true, scale = 32, force = 'aggressors_frenzy' })
+            Public.set_multi_command_final_battle()
             return
         end
 
@@ -240,7 +241,7 @@ Event.add(
 )
 
 Event.on_nth_tick(
-    14400,
+    7200,
     function ()
         local final_battle = Public.get_stateful('final_battle')
         if not final_battle then

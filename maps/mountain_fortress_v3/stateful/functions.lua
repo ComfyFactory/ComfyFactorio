@@ -227,23 +227,24 @@ end
 
 function Public.init_buff_selection(buffs)
 	local buff_selection = Public.get('buff_selection')
-	if not buff_selection or not next(buff_selection) then
+	if not buff_selection or not buff_selection.buffs then
+		Server.output_script_data('buff_selection not found while initing buff selection - check stateful/table.lua')
 		return
 	end
 
 	if not buffs or #buffs == 0 then
+		Server.output_script_data('buffs not found while initing buff selection, buffs equals to zero')
 		return
 	end
+
+	buff_selection.closing_timeout = game.tick + 10800 -- 3 minutes
 
 	for i = 1, #buffs, 1 do
 		local buff = buffs[i]
 		if not buff or not next(buff) then
+			Server.output_script_data('error while iterating buffs while initing buff selection')
 			return
 		end
-
-
-		buff_selection.closing_timeout = game.tick + 10800 -- 3 minutes
-
 
 		buff_selection.buffs[#buff_selection.buffs + 1] =
 		{
@@ -256,6 +257,34 @@ function Public.init_buff_selection(buffs)
 			raw = buff
 		}
 	end
+end
+
+function Public.set_multi_command_final_battle()
+	local active_surface_index = Public.get('active_surface_index')
+	if not active_surface_index then return end
+	local surface = game.get_surface(active_surface_index)
+	if not surface or not surface.valid then
+		return
+	end
+
+	local locomotive = Public.get('locomotive')
+	if not locomotive or not locomotive.valid then
+		return
+	end
+
+	surface.set_multi_command(
+		{
+			command =
+			{
+				type = defines.command.attack,
+				target = locomotive,
+				distraction = defines.distraction.by_anything
+			},
+			unit_count = 60,
+			force = 'aggressors',
+			unit_search_distance = 256
+		}
+	)
 end
 
 Event.on_nth_tick(60, function ()
@@ -297,12 +326,27 @@ Event.on_nth_tick(60, function ()
 	buff_selection.closing_timeout = buff_selection.closing_timeout - 1
 
 	if game.tick > buff_selection.closing_timeout and not buff_selection.voting_closed then
+		buff_selection.voting_closed = true
 		set_buffs_voting()
 		local buff = buff_selection.buffs[buff_selection.index]
+		if not buff then
+			Server.output_script_data('buff not found while voting closed')
+
+			local buff_fallback = Stateful.save_settings()
+			Public.notify_won_to_discord(buff_fallback)
+			local locomotive = Public.get('locomotive')
+			if locomotive and locomotive.valid then
+				locomotive.surface.spill_item_stack({ position = locomotive.position, stack = { name = 'coin', count = 512, quality = 'normal' } })
+			end
+			Public.set('game_reset_tick', 5400)
+
+			Server.output_script_data('fallback buff granted')
+			return
+		end
+
 		local str = 'Votes have closed! Buff granted: ' .. buff.name .. '!'
 		game.print(str)
 		Server.to_discord_embed(str)
-		buff_selection.voting_closed = true
 		Public.set('game_reset_tick', 5400)
 		Public.notify_won_to_discord(buff.raw)
 		local locomotive = Public.get('locomotive')

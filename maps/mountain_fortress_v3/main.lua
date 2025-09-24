@@ -597,6 +597,9 @@ function Public.reset_map(current_task)
         force.technologies['planet-discovery-aquilo'].researched = true
     elseif surface.name == 'fortress' then
         surface.ignore_surface_conditions = true
+        if Public.is_modded_pt2 then
+            force.recipes['lightning-rod'].enabled = true -- how else will players deal with lightning?
+        end
     end
 
     -- surface.brightness_visual_weights = { 0.7, 0.7, 0.7 }

@@ -1788,12 +1788,9 @@ local function grant_non_limit_reached_buff_permanent()
         end
     end
 
-    shuffle(all_buffs)
-    shuffle(all_buffs)
-    shuffle(all_buffs)
-    shuffle(all_buffs)
-    shuffle(all_buffs)
-    shuffle(all_buffs)
+    for _ = 1, 5 do
+        shuffle(all_buffs)
+    end
 
     if not all_buffs[1] then
         return get_random_buff(nil, true)

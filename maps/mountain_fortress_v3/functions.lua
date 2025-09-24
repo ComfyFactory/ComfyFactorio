@@ -27,6 +27,14 @@ local zone_settings = Public.zone_settings
 local remove_boost_movement_speed_on_respawn
 local de = defines.events
 local is_modded = Public.is_modded
+local random = math.random
+local floor = math.floor
+local round = math.round
+local sqrt = math.sqrt
+local remove = table.remove
+local magic_crafters_per_tick = 3
+local magic_fluid_crafters_per_tick = 8
+local tile_damage = 50
 
 local notice_frame_name = Gui.uid_name()
 local close_notice_frame_name = Gui.uid_name()
@@ -71,6 +79,64 @@ local disabled_ents =
     ['rail-support'] = true,
     ['rail-ramp'] = true,
     ['railgun-turret'] = true,
+}
+
+local random_respawn_messages =
+{
+    'The doctors stitched you up as best they could.',
+    'Ow! Your right leg hurts.',
+    'Ow! Your left leg hurts.',
+    'You can feel your whole body aching.',
+    "You still have some bullet wounds that aren't patched up.",
+    'You feel dizzy but adrenalin is granting you speed.',
+    'Adrenalin is kicking in, but your body is damaged.'
+}
+
+local health_values =
+{
+    '0.35',
+    '0.40',
+    '0.45',
+    '0.50',
+    '0.55',
+    '0.60',
+    '0.65',
+    '0.70',
+    '0.75',
+    '0.80',
+    '0.85',
+    '0.90',
+    '0.95',
+    '1'
+}
+
+Global.register(
+    this,
+    function (t)
+        this = t
+    end
+)
+
+
+
+local artillery_target_entities =
+{
+    'character',
+    'tank',
+    'car',
+    'radar',
+    'lab',
+    'stone-furnace',
+    'locomotive',
+    'cargo-wagon',
+    'fluid-wagon',
+    'artillery-wagon',
+    'artillery-turret',
+    'laser-turret',
+    'gun-turret',
+    'flamethrower-turret',
+    'rocket-silo',
+    'spidertron'
 }
 
 local fishy_callback_token =
@@ -146,70 +212,35 @@ local exit_editor_mode_token =
         end
     )
 
-local random_respawn_messages =
-{
-    'The doctors stitched you up as best they could.',
-    'Ow! Your right leg hurts.',
-    'Ow! Your left leg hurts.',
-    'You can feel your whole body aching.',
-    "You still have some bullet wounds that aren't patched up.",
-    'You feel dizzy but adrenalin is granting you speed.',
-    'Adrenalin is kicking in, but your body is damaged.'
-}
+local custom_surface_funcs_token =
+    Task.register(
+        function ()
+            local active_surface_index = Public.get('active_surface_index')
+            if not active_surface_index then return end
+            local surface = game.get_surface(active_surface_index)
+            if not (surface and surface.valid) then
+                return
+            end
 
-local health_values =
-{
-    '0.35',
-    '0.40',
-    '0.45',
-    '0.50',
-    '0.55',
-    '0.60',
-    '0.65',
-    '0.70',
-    '0.75',
-    '0.80',
-    '0.85',
-    '0.90',
-    '0.95',
-    '1'
-}
+            if not Public.is_modded_pt2 then
+                return
+            end
 
-Global.register(
-    this,
-    function (t)
-        this = t
-    end
-)
+            if surface.name == 'fortress' then
+                local entities = surface.find_entities_filtered { name = artillery_target_entities, force = 'player' }
+                if #entities == 0 then
+                    return
+                end
 
-local random = math.random
-local floor = math.floor
-local round = math.round
-local sqrt = math.sqrt
-local remove = table.remove
-local magic_crafters_per_tick = 3
-local magic_fluid_crafters_per_tick = 8
-local tile_damage = 50
+                local entity = entities[random(#entities)]
+                if entity and entity.valid then
+                    local position = { x = entity.position.x + random(-120, 120), y = entity.position.y + random(-120, 120) }
+                    surface.create_entity({ name = 'lightning', position = position, force = 'enemy' })
+                end
+            end
+        end
+    )
 
-local artillery_target_entities =
-{
-    'character',
-    'tank',
-    'car',
-    'radar',
-    'lab',
-    'stone-furnace',
-    'locomotive',
-    'cargo-wagon',
-    'fluid-wagon',
-    'artillery-wagon',
-    'artillery-turret',
-    'laser-turret',
-    'gun-turret',
-    'flamethrower-turret',
-    'rocket-silo',
-    'spidertron'
-}
 
 local function debug_str(msg)
     local debug = Public.get('debug')
@@ -288,6 +319,11 @@ end
 local pause_waves_custom_callback_token =
     Task.register(
         function (event)
+            local final_battle = Public.get('final_battle')
+            if final_battle then
+                return
+            end
+
             local wave_number = WD.get_wave()
             if wave_number >= 200 then
                 Collapse.start_now(event.start, not event.start)
@@ -633,27 +669,10 @@ end
 
 
 local function do_custom_surface_funcs()
-    local active_surface_index = Public.get('active_surface_index')
-    if not active_surface_index then return end
-    local surface = game.get_surface(active_surface_index)
-    if not (surface and surface.valid) then
-        return
-    end
-
-    if not Public.is_modded_pt2 then
-        return
-    end
-
-    if surface.name == 'fortress' then
-        local entities = surface.find_entities_filtered { name = artillery_target_entities, force = 'player' }
-        if #entities == 0 then
-            return
-        end
-
-        local entity = entities[random(#entities)]
-        if entity and entity.valid then
-            surface.create_entity({ name = 'lightning', position = entity.position, force = 'enemy' })
-        end
+    local delay = 60
+    for _ = 1, 10 do
+        Task.set_timeout_in_ticks(delay, custom_surface_funcs_token)
+        delay = delay + 20
     end
 end
 
@@ -2081,6 +2100,38 @@ function Public.set_threat_values()
             ['mtn-addon-behemoth-fire-spitter-t1'] = 110,
             ['mtn-addon-behemoth-fire-spitter-t2'] = 120,
             ['mtn-addon-behemoth-fire-spitter-t3'] = 130,
+
+            ['mtn-addon-boss-piercing-biter-t1'] = 170,
+            ['mtn-addon-boss-acid-biter-t1'] = 170,
+            ['mtn-addon-boss-explosive-biter-t1'] = 170,
+            ['mtn-addon-boss-poison-biter-t1'] = 170,
+            ['mtn-addon-boss-fire-biter-t1'] = 170,
+            ['mtn-addon-boss-piercing-spitter-t1'] = 170,
+            ['mtn-addon-boss-acid-spitter-t1'] = 170,
+            ['mtn-addon-boss-explosive-spitter-t1'] = 170,
+            ['mtn-addon-boss-poison-spitter-t1'] = 170,
+            ['mtn-addon-boss-fire-spitter-t1'] = 170,
+            ['mtn-addon-boss-piercing-biter-t2'] = 190,
+            ['mtn-addon-boss-acid-biter-t2'] = 190,
+            ['mtn-addon-boss-explosive-biter-t2'] = 190,
+            ['mtn-addon-boss-poison-biter-t2'] = 190,
+            ['mtn-addon-boss-fire-biter-t2'] = 190,
+            ['mtn-addon-boss-piercing-spitter-t2'] = 190,
+            ['mtn-addon-boss-acid-spitter-t2'] = 190,
+            ['mtn-addon-boss-explosive-spitter-t2'] = 190,
+            ['mtn-addon-boss-poison-spitter-t2'] = 190,
+            ['mtn-addon-boss-fire-spitter-t2'] = 190,
+            ['mtn-addon-boss-piercing-biter-t3'] = 210,
+            ['mtn-addon-boss-acid-biter-t3'] = 210,
+            ['mtn-addon-boss-explosive-biter-t3'] = 210,
+            ['mtn-addon-boss-poison-biter-t3'] = 210,
+            ['mtn-addon-boss-fire-biter-t3'] = 210,
+            ['mtn-addon-boss-piercing-spitter-t3'] = 210,
+            ['mtn-addon-boss-acid-spitter-t3'] = 210,
+            ['mtn-addon-boss-explosive-spitter-t3'] = 210,
+            ['mtn-addon-boss-poison-spitter-t3'] = 210,
+            ['mtn-addon-boss-fire-spitter-t3'] = 210,
+
             -- worms
             ['mtn-addon-small-explosive-worm-turret'] = 20,
             ['mtn-addon-small-fire-worm-turret'] = 20,
@@ -2238,6 +2289,37 @@ function Public.set_threat_values()
         ['mtn-addon-behemoth-fire-spitter-t1'] = 0.25,
         ['mtn-addon-behemoth-fire-spitter-t2'] = 0.25,
         ['mtn-addon-behemoth-fire-spitter-t3'] = 0.25,
+
+        ['mtn-addon-boss-piercing-biter-t1'] = 0.10,
+        ['mtn-addon-boss-acid-biter-t1'] = 0.10,
+        ['mtn-addon-boss-explosive-biter-t1'] = 0.10,
+        ['mtn-addon-boss-poison-biter-t1'] = 0.10,
+        ['mtn-addon-boss-fire-biter-t1'] = 0.10,
+        ['mtn-addon-boss-piercing-spitter-t1'] = 0.10,
+        ['mtn-addon-boss-acid-spitter-t1'] = 0.10,
+        ['mtn-addon-boss-explosive-spitter-t1'] = 0.10,
+        ['mtn-addon-boss-poison-spitter-t1'] = 0.10,
+        ['mtn-addon-boss-fire-spitter-t1'] = 0.10,
+        ['mtn-addon-boss-piercing-biter-t2'] = 0.10,
+        ['mtn-addon-boss-acid-biter-t2'] = 0.10,
+        ['mtn-addon-boss-explosive-biter-t2'] = 0.10,
+        ['mtn-addon-boss-poison-biter-t2'] = 0.10,
+        ['mtn-addon-boss-fire-biter-t2'] = 0.10,
+        ['mtn-addon-boss-piercing-spitter-t2'] = 0.10,
+        ['mtn-addon-boss-acid-spitter-t2'] = 0.10,
+        ['mtn-addon-boss-explosive-spitter-t2'] = 0.10,
+        ['mtn-addon-boss-poison-spitter-t2'] = 0.10,
+        ['mtn-addon-boss-fire-spitter-t2'] = 0.10,
+        ['mtn-addon-boss-piercing-biter-t3'] = 0.10,
+        ['mtn-addon-boss-acid-biter-t3'] = 0.10,
+        ['mtn-addon-boss-explosive-biter-t3'] = 0.10,
+        ['mtn-addon-boss-poison-biter-t3'] = 0.10,
+        ['mtn-addon-boss-fire-biter-t3'] = 0.10,
+        ['mtn-addon-boss-piercing-spitter-t3'] = 0.10,
+        ['mtn-addon-boss-acid-spitter-t3'] = 0.10,
+        ['mtn-addon-boss-explosive-spitter-t3'] = 0.10,
+        ['mtn-addon-boss-poison-spitter-t3'] = 0.10,
+        ['mtn-addon-boss-fire-spitter-t3'] = 0.10,
     }
     unit_settings.scale_worms_by_health =
     {
@@ -3544,6 +3626,7 @@ local on_player_driving_changed_state = Public.on_player_driving_changed_state
 local on_pre_player_toggled_map_editor = Public.on_pre_player_toggled_map_editor
 local on_player_changed_surface = Public.on_player_changed_surface
 local on_player_clicked_gps_tag = Public.on_player_clicked_gps_tag
+local set_difficulty = Public.set_difficulty
 
 Event.add(de.on_player_joined_game, on_player_joined_game)
 Event.add(de.on_player_left_game, on_player_left_game)
@@ -3567,8 +3650,8 @@ Event.on_nth_tick(25, do_beams_away)
 Event.on_nth_tick(30, do_clear_enemy_spawners)
 Event.on_nth_tick(35, do_clear_rocks_slowly)
 Event.on_nth_tick(35, do_replace_tiles_slowly)
-Event.on_nth_tick(60, do_custom_surface_funcs)
-Event.on_nth_tick(60, Public.set_difficulty)
+Event.on_nth_tick(200, do_custom_surface_funcs)
+Event.on_nth_tick(60, set_difficulty)
 Event.add(WD.events.on_wave_created, on_wave_created)
 Event.add(WD.events.on_primary_target_missing, on_primary_target_missing)
 

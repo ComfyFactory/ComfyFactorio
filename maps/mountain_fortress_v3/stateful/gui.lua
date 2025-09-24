@@ -1282,10 +1282,10 @@ local function update_raw()
                 local buff_selection = Public.get('buff_selection')
                 if buff_selection then
                     if buff_selection.votes_enabled then
-                        buff_selection.voting_started = true
                         local b = Stateful.grant_non_limit_reached_buff(3)
                         StatefulFunctions.init_buff_selection(b)
 
+                        buff_selection.voting_started = true
                         Core.iter_connected_players(function (p)
                             if p and p.valid then
                                 StatefulFunctions.buff_main_frame(p)
@@ -1334,7 +1334,7 @@ local function update_raw()
         stateful.collection.gather_time_timer = tick + (10 * 3600)
         game.forces.enemy.set_evolution_factor(1, player.surface.name)
         play_achievement_unlocked()
-        local reverse_position = zone_settings.zone_depth * (breached_wall + 1)
+        local reverse_position = (zone_settings.zone_depth + 20) * (breached_wall + 1)
         local reversed = Public.get_stateful_settings('reversed')
         if not reversed then
             reverse_position = reverse_position * -1

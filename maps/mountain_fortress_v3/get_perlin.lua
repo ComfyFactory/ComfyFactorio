@@ -45,7 +45,16 @@ local noises =
         { modifier = 0.0435, weight = 0.0435 },
         { modifier = 0.07968, weight = 0.0315 }
     },
-    ['no_rocks_2'] = { { modifier = 0.0184, weight = 1.265 }, { modifier = 0.143, weight = 0.1045 } },
+    ['no_rocks_2'] =
+    {
+        { modifier = 0.0184, weight = 1.265 },
+        { modifier = 0.143, weight = 0.1045 }
+    },
+    ['no_rocks_3'] =
+    {
+        { modifier = 0.0134, weight = 1.165 },
+        { modifier = 0.146, weight = 0.0945 }
+    },
     ['oasis'] =
     {
         { modifier = 0.00165, weight = 1.1 },

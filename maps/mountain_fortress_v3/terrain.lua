@@ -3517,7 +3517,7 @@ local function zone_1(x, y, data, void_or_lab, adjusted_zones)
     local smol_areas = Public.get_noise('smol_areas', p, seed + 3992)
     local no_rocks_2 = Public.get_noise('no_rocks_2', p, seed + 1922)
     local cave_rivers = Public.get_noise('cave_rivers', p, seed + 31922)
-    local no_rocks = Public.get_noise('dungeon_sewer', p, seed + seed)
+    local no_rocks = Public.get_noise('no_rocks_3', p, seed + 22314)
 
     if smol_areas < 0.055 and smol_areas > -0.025 then
         entities[#entities + 1] = { name = rock_raffle[random(1, size_of_rock_raffle)], position = p }
@@ -3548,8 +3548,33 @@ local function zone_1(x, y, data, void_or_lab, adjusted_zones)
         end
     end
 
+    --Worm oil Zones
+    if no_rocks < 0.34 and no_rocks > 0.14 then
+        tiles[#tiles + 1] = { name = 'brown-refined-concrete', position = p }
+        if random(1, 450) == 1 then
+            entities[#entities + 1] = { name = 'crude-oil', position = p, amount = get_oil_amount(p) }
+        end
+        if random(1, 96) == 1 then
+            Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
+            entities[#entities + 1] =
+            {
+                name = Biters.wave_defense_roll_worm_name(),
+                position = p,
+                force = 'enemy'
+            }
+        end
+
+        if random(1, 1024) == 1 then
+            treasure[#treasure + 1] = { position = p, chest = 'iron-chest' }
+        end
+        if random(1, 64) == 1 then
+            entities[#entities + 1] = { name = 'tree-0' .. random(1, 9), position = p }
+        end
+        return
+    end
+
     --Water Ponds
-    if noise_cave_ponds < 0.24 and noise_cave_ponds > 0.04 then
+    if noise_cave_ponds < 0.14 and noise_cave_ponds > 0.04 then
         if noise_cave_ponds > 0.14 then
             tiles[#tiles + 1] = { name = 'acid-refined-concrete', position = p }
             if random(1, 4) == 1 then
@@ -3577,35 +3602,6 @@ local function zone_1(x, y, data, void_or_lab, adjusted_zones)
             return
         end
     end
-
-
-    --Worm oil Zones
-    if no_rocks < 0.40 and no_rocks > -0.20 then
-        if small_caves > 0.40 then
-            tiles[#tiles + 1] = { name = 'brown-refined-concrete', position = p }
-            if random(1, 450) == 1 then
-                entities[#entities + 1] = { name = 'crude-oil', position = p, amount = get_oil_amount(p) }
-            end
-            if random(1, 96) == 1 then
-                Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
-                entities[#entities + 1] =
-                {
-                    name = Biters.wave_defense_roll_worm_name(),
-                    position = p,
-                    force = 'enemy'
-                }
-            end
-
-            if random(1, 1024) == 1 then
-                treasure[#treasure + 1] = { position = p, chest = 'iron-chest' }
-            end
-            if random(1, 64) == 1 then
-                entities[#entities + 1] = { name = 'tree-0' .. random(1, 9), position = p }
-            end
-            return
-        end
-    end
-
 
     if noise_cave_ponds > 0.182 then
         if noise_cave_ponds > 0.542 then
