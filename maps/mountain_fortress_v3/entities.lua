@@ -748,6 +748,10 @@ local mining_events =
                 quality = 'legendary'
             end
 
+            if not Public.is_modded_pt2() then
+                quality = 'normal'
+            end
+
             surface.create_entity({ name = 'car', position = position, force = 'player', quality = quality })
             Task.set_timeout_in_ticks(5, unstuck_player_token, { index = index })
             local player = game.players[index]

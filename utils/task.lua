@@ -153,8 +153,10 @@ function Task.set_duration_task(start_tick, duration_ticks, func_token, params)
         error('cannot call when game is not available', 2)
     end
 
+    local time = game.tick + start_tick
     local callback =
     {
+        time = time,
         func_token = func_token,
         params = params,
         start_tick = game.tick + start_tick,

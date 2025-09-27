@@ -623,6 +623,7 @@ function Public.reset_map(current_task)
     Collapse.set_force_mode(false)
     Collapse.set_surface_index(surface.index)
     Collapse.start_now(false)
+    Collapse.reverse_start_now(false, false)
 
     init_bonus_drill_force()
 
