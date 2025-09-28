@@ -202,6 +202,9 @@ require 'utils.remote_chunks'
 --![[Prebuilt buildings on the map that can not be removed, you will hate this map]]--
 --require 'maps.spaghettorio'
 
+--![[Infestation Islands]]--
+require 'maps.infestation_islands.main'
+
 --![[Misc / WIP]]--
 --require 'maps.rainbow_road'
 --require 'maps.cratewood_forest'

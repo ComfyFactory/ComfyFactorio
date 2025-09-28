@@ -1,0 +1,1250 @@
+--created by Gerkiz
+local Event = require 'utils.event'
+local simplex_noise = require 'utils.math.simplex_noise'.d2
+local MapFunctions = require 'utils.tools.map_functions'
+local Scheduler = require 'utils.scheduler'
+local Public = require 'maps.infestation_islands.table'
+local Commands = require 'utils.commands'
+local BuriedBiter = require 'maps.infestation_islands.buried_biters'
+
+local island_radius = 6
+local max_island_radius = 256
+local random = math.random
+local sqrt = math.sqrt
+local abs = math.abs
+local ceil = math.ceil
+local floor = math.floor
+
+local rock_raffle =
+{
+    'big-sand-rock',
+    'big-sand-rock',
+    'big-rock',
+    'big-rock',
+    'big-rock',
+    'big-rock',
+    'big-rock',
+    'huge-rock',
+    'huge-rock'
+}
+
+local draw_path_tile_whitelist =
+{
+    ['water'] = true,
+    ['deepwater'] = true
+}
+
+local path_tile_names =
+{
+    'grass-2',
+    'grass-3',
+    'grass-4',
+    'dirt-1',
+    'dirt-2',
+    'dirt-3',
+    'dirt-4',
+    'dirt-5',
+    'dirt-6',
+    'dirt-7'
+}
+
+local function get_brush_unfiltered(size)
+    local vectors = {}
+    for x = size, size * -1, -1 do
+        for y = size * -1, size, 1 do
+            vectors[#vectors + 1] = { x = x, y = y }
+        end
+    end
+    return vectors
+end
+
+local function get_vector(position)
+    if position.x < 0 and position.y < 0 then
+        if random(1, 2) == 1 then
+            return { -1, -1 }
+        else
+            return { 1, -1 }
+        end
+    end
+    if position.x > 0 and position.y > 0 then
+        if random(1, 2) == 1 then
+            return { 1, 1 }
+        else
+            return { -1, 1 }
+        end
+    end
+    if position.x > 0 and position.y < 0 then
+        if random(1, 2) == 1 then
+            return { 1, -1 }
+        else
+            return { -1, -1 }
+        end
+    end
+    if position.x < 0 and position.y > 0 then
+        if random(1, 2) == 1 then
+            return { -1, 1 }
+        else
+            return { 1, 1 }
+        end
+    end
+end
+
+local slowly_place_brige_tiles_token =
+    Scheduler.set(
+        function (event)
+            local positions = event.positions
+            local surface = event.surface
+            surface.set_tiles(positions, true)
+        end
+    )
+
+
+local do_place_decorative_token =
+    Scheduler.set(
+        function (event)
+            local count = event.count
+            local pos_tbl = event.pos_tbl
+            local surface = event.surface
+
+            for i = 1, count do
+                local decorative = pos_tbl[i]
+                if decorative then
+                    local position = decorative.position
+                    local name = decorative.name
+                    local amount = decorative.amount
+                    surface.create_decoratives
+                    {
+                        check_collision = true,
+                        decoratives = { { name = name, position = position, amount = amount } }
+                    }
+                end
+            end
+        end
+    )
+
+local calculate_bridge_token =
+    Scheduler.set(
+        function (event)
+            local this = Public.get()
+            local seed_1 = event.seed_1
+            local seed_2 = event.seed_2
+            local m = event.m
+            local vector = event.vector
+            local base_vector = event.base_vector
+            local minimal_movement = event.minimal_movement
+            local position = this.position
+            local surface = event.surface
+            local whitelist = event.whitelist
+            local tile_name = event.tile_name
+            local brush_vectors = event.brush_vectors
+            local tick_index = event.tick_index
+            local positions = {}
+            local dec = {}
+
+            for _, brush in pairs(brush_vectors) do
+                local p = { x = position.x + brush.x, y = position.y + brush.y }
+                if whitelist then
+                    local tile = surface.get_tile(p)
+                    if tile.valid then
+                        if whitelist[tile.name] then
+                            this.path_tiles[#this.path_tiles + 1] = { name = tile_name, position = p }
+                            positions[#positions + 1] = { name = tile_name, position = p }
+                            if random(1, 2) == 1 then
+                                dec[#dec + 1] = { name = 'red-croton', position = p, amount = 1 }
+                            end
+                        end
+                    end
+                end
+            end
+
+            Scheduler.timeout(tick_index, slowly_place_brige_tiles_token, { positions = positions, surface = surface })
+
+            local data = { pos_tbl = dec }
+
+            Scheduler.timeout(tick_index, do_place_decorative_token, { child_id = slowly_place_brige_tiles_token, pos_tbl = data.pos_tbl, count = #dec, surface = surface })
+
+            local noise = simplex_noise(position.x * m, position.y * m, seed_1)
+            local noise_2 = simplex_noise(position.x * m, position.y * m, seed_2)
+
+            vector[1] = base_vector[1] + noise
+            vector[2] = base_vector[2] + noise_2
+
+            if abs(vector[1]) < minimal_movement and abs(vector[2]) < minimal_movement then
+                local i = random(1, 2)
+                if vector[i] < 0 then
+                    vector[i] = minimal_movement * -1
+                else
+                    vector[i] = minimal_movement
+                end
+            end
+
+            this.position = { x = position.x + vector[1], y = position.y + vector[2] }
+
+            local level_data =
+            {
+                position = this.position,
+                level = this.current_level,
+                radius = this.stages[this.current_stage].size
+            }
+
+            if not next(level_data.position) then
+                error('No position found for level ' .. this.current_level)
+            end
+
+            this.centered_points[this.current_level] = level_data
+        end
+    )
+
+
+local noise_vector_tiles_path_token =
+    Scheduler.set(
+        function (event)
+            local this = Public.get()
+            local surface = event.surface
+            local tbl_tiles = event.tbl_tiles
+            local position = this.position
+            local length = event.length
+            local brush_size = event.brush_size
+            local whitelist = event.whitelist
+            local seed_1 = event.seed_1
+            local seed_2 = event.seed_2
+            local m = event.m
+
+            this.vector = {}
+            local minimal_movement = 0.40
+            local brush_vectors = get_brush_unfiltered(brush_size)
+            local tile_name = tbl_tiles[random(1, #tbl_tiles)]
+
+            local base_vector = get_vector(position)
+
+            -- if (base_vector[1] == 1 or base_vector[1] == -1) and random(1, 2) == 1 then
+            -- base_vector = { base_vector[1], 1 }
+            -- end
+
+            local callback = Scheduler.get(calculate_bridge_token)
+
+            Scheduler.return_callback(
+                function (data)
+                    for _ = 1, length, 1 do
+                        data.tick_index = data.tick_index + 1
+                        callback(
+                            {
+                                seed_1 = seed_1,
+                                seed_2 = seed_2,
+                                m = m,
+                                vector = this.vector,
+                                base_vector = base_vector,
+                                minimal_movement = minimal_movement,
+                                position = position,
+                                surface = surface,
+                                whitelist = whitelist,
+                                tile_name = tile_name,
+                                brush_vectors = brush_vectors,
+                                tick_index = data.tick_index
+                            }
+                        )
+                        data.tick_index = data.tick_index + 1
+                    end
+                end
+            )
+        end
+    )
+
+local function shuffle(tbl)
+    local size = #tbl
+    for i = size, 1, -1 do
+        local rand = random(size)
+        tbl[i], tbl[rand] = tbl[rand], tbl[i]
+    end
+    return tbl
+end
+
+local function is_inside_island(x, y, radius)
+    radius = radius or island_radius
+    local distance_to_center = sqrt(x ^ 2 + y ^ 2)
+    return distance_to_center < radius
+end
+
+local function generate_decoratives()
+    local this = Public.get()
+    local decoratives_generated = this.decoratives_generated
+    if decoratives_generated then
+        return
+    end
+
+    local game_decoratives = prototypes.decorative
+    local dec_tbl = {}
+    local names = {}
+
+    for _, decorative in pairs(game_decoratives) do
+        names[#names + 1] = decorative.name
+    end
+
+    local taken = {}
+    while #dec_tbl < 3 and #names > 0 do
+        local idx = math.random(#names)
+        local name = names[idx]
+        if not taken[name] then
+            table.insert(dec_tbl, name)
+            taken[name] = true
+        end
+    end
+
+    this.decoratives_generated = dec_tbl
+end
+
+local request_to_generate_chunks_token =
+    Scheduler.set(
+        function (event)
+            local this = Public.get()
+            local size = event.size
+            local surface = event.surface
+            local position = event.position or this.path_tiles[#this.path_tiles].position
+            surface.request_to_generate_chunks(position, size)
+            game.surfaces['island'].request_to_generate_chunks(position, size)
+        end
+    )
+
+local function resource_placement(surface, position, name, amount, tiles)
+    local w_max = 256
+    local h_max = 256
+
+    local biases = { [0] = { [0] = 1 } }
+    local ti = 1
+
+    local function grow(grid, t)
+        local old = {}
+        local new_count = 0
+        for x, _ in pairs(grid) do
+            for y, _ in pairs(_) do
+                table.insert(old, { x, y })
+            end
+        end
+        for _, pos in pairs(old) do
+            local x, y = pos[1], pos[2]
+            for dx = -1, 1, 1 do
+                for dy = -1, 1, 1 do
+                    local a, b = x + dx, y + dy
+                    if (random() > 0.9) and (abs(a) < w_max) and (abs(b) < h_max) then
+                        grid[a] = grid[a] or {}
+                        if not grid[a][b] then
+                            grid[a][b] = 1 - (t / tiles)
+                            new_count = new_count + 1
+                            if (new_count + t) == tiles then
+                                return new_count
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        return new_count
+    end
+
+    repeat
+        ti = ti + grow(biases, ti)
+    until ti >= tiles
+
+    local total_bias = 0
+    for _, d in pairs(biases) do
+        for _, bias in pairs(d) do
+            total_bias = total_bias + bias
+        end
+    end
+
+    for x, _ in pairs(biases) do
+        for y, bias in pairs(_) do
+            local c = amount * (bias / total_bias)
+            if c < 1 then
+                c = 1
+            end
+            surface.create_entity
+            {
+                name = name,
+                amount = c,
+                force = 'neutral',
+                position = { position.x + x, position.y + y }
+            }
+        end
+    end
+end
+
+local function reward_level(surface, level)
+    local ores =
+    {
+        'copper-ore',
+        'iron-ore',
+        'coal',
+        'stone',
+        'uranium-ore',
+        'crude-oil'
+    }
+    local radius = level.radius * 12
+    local ore = ores[random(1, #ores)]
+    if ore == 'crude-oil' then
+        MapFunctions.draw_oil_circle(level.position, 'crude-oil', surface, 8, 200000)
+    else
+        resource_placement(surface, level.position, ore, 150000, radius)
+    end
+end
+
+local function island_noise(p, divided_by)
+    local this = Public.get()
+    local seeds = this.seeds
+    local noise_1 = simplex_noise(p.x * seeds.seed_m1, p.y * seeds.seed_m1, seeds.seed_1)
+    local noise_2 = simplex_noise(p.x * seeds.seed_m2, p.y * seeds.seed_m2, seeds.seed_2)
+    local noise_3 = simplex_noise(p.x * seeds.seed_m3, p.y * seeds.seed_m3, seeds.seed_3)
+    local noise = abs(noise_1 + noise_2 + noise_3)
+    divided_by = divided_by or 2.3
+    noise = noise / divided_by
+    return noise
+end
+
+local function connected_ground_size(surface, start, max_radius, max_count)
+    local start_x, start_y = math.floor(start.x), math.floor(start.y)
+    local queue, head = { { x = start_x, y = start_y } }, 1
+    local visited = {}
+    local count = 0
+    local dirs = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } }
+
+    local function key(x, y) return x .. "," .. y end
+
+    while head <= #queue and count < max_count do
+        local p = queue[head]; head = head + 1
+        local k = key(p.x, p.y)
+        if not visited[k] then
+            visited[k] = true
+            local t = surface.get_tile(p)
+            if t and t.valid and not t.collides_with("water_tile") then
+                count = count + 1
+                for i = 1, 4 do
+                    local nx, ny = p.x + dirs[i][1], p.y + dirs[i][2]
+                    if math.abs(nx - start_x) <= max_radius and math.abs(ny - start_y) <= max_radius then
+                        table.insert(queue, { x = nx, y = ny })
+                    end
+                end
+            end
+        end
+    end
+    return count
+end
+
+local function find_dirt_tile(surface, position)
+    local this = Public.get()
+    local min_island_tiles = 1500
+    local check_radius = 64
+
+    for r = 1, 64 do
+        local vectors = { { r, 0 }, { -r, 0 }, { 0, r }, { 0, -r } }
+        if this.current_stage == 1 then vectors = shuffle(vectors) end
+
+        for _, v in ipairs(vectors) do
+            local pos = { x = position.x + v[1], y = position.y + v[2] }
+            local tile = surface.get_tile(pos)
+            if tile and tile.valid and not tile.collides_with("water_tile") then
+                if connected_ground_size(surface, pos, check_radius, min_island_tiles) >= min_island_tiles then
+                    return tile.position
+                end
+            end
+        end
+    end
+end
+
+local function do_buried_biters()
+    local current_level = Public.get('current_level')
+    if current_level > 2 then
+        local centered_points = Public.get('centered_points')
+        local center_position = centered_points[current_level]
+        if not center_position then
+            return
+        end
+        local count = random(1, 10)
+        local position = { x = center_position.position.x + random(1, 15), y = center_position.position.y + random(1, 30) }
+        if random(1, 30) == 1 then
+            BuriedBiter.buried_biter(game.surfaces[1], position, count, 'enemy')
+        elseif random(1, 30) == 1 then
+            BuriedBiter.buried_tech(game.surfaces[1], position, count, 'enemy')
+        elseif random(1, 30) == 1 then
+            BuriedBiter.buried_worm(game.surfaces[1], position)
+        end
+    end
+end
+
+local function get_radius(position, size, divided_by)
+    local noise = island_noise(position, divided_by)
+    local rr = size
+    return rr * 0.5 + noise * rr * 0.5
+end
+
+local function print_grid_value(value, surface, position, scale, offset)
+    local this = Public.get()
+    if not this.debug_island_values then
+        return
+    end
+
+    local is_string = type(value) == 'string'
+    local color = { r = 1, g = 1, b = 1 }
+    local text = value
+
+    if not is_string then
+        scale = scale or 1
+        offset = offset or 0
+        position = { x = position.x + offset, y = position.y + offset }
+        local r = math.max(1, value) / scale
+        local g = 1 - abs(value) / scale
+        local b = math.min(1, value) / scale
+
+        if (r > 0) then
+            r = 0
+        end
+
+        if (b < 0) then
+            b = 0
+        end
+
+        if (g < 0) then
+            g = 0
+        end
+
+        r = abs(r)
+
+        color = { r = r, g = g, b = b }
+
+        text = floor(100 * value) * 0.01
+
+        if (0 == text) then
+            text = '0.00'
+        end
+    end
+
+    text = tostring(text)
+
+    local text_entity = surface.find_entity('flying-text', position)
+
+    if text_entity then
+        text_entity.text = text
+        text_entity.color = color
+        return
+    end
+
+    surface.create_entity
+    {
+        name = 'flying-text',
+        color = color,
+        text = text,
+        position = position
+    }.active = false
+end
+
+local place_tiles_token =
+    Scheduler.set(
+        function (event)
+            local this = Public.get()
+            local positions = event.positions
+            local position = event.position
+            local radius = event.radius
+            local count = event.count
+            local surface = event.surface
+
+            local tiles = {}
+            for i = 1, count do
+                local x = positions[i].x
+                local y = positions[i].y
+                local p = { x = x + position.x, y = y + position.y }
+                local tile_data = surface.get_tile(p)
+                if tile_data and tile_data.valid and (tile_data.name == 'water' or tile_data.name == 'deepwater') then
+                    local distance = sqrt(x ^ 2 + y ^ 2)
+                    local tile
+                    local watery_tile
+                    local noise_radius = get_radius(p, radius)
+                    local market_radius = get_radius(p, radius - 10, 22)
+                    local main_tile = game.surfaces['island'].get_tile(x, y)
+                    if distance > market_radius - (radius + 4) * 0.135 and distance < market_radius - (radius - 4) * 0.135 then
+                        if main_tile and main_tile.valid and distance < radius then
+                            tile = { name = main_tile.name, position = p }
+                        end
+
+                        this.market_positions[#this.market_positions + 1] = p
+                        print_grid_value(noise_radius, surface, p, 2, 0)
+                    end
+                    if distance < noise_radius - radius * 0.15 then
+                        if main_tile and main_tile.valid then
+                            tile = { name = main_tile.name, position = p }
+                        end
+                    elseif distance < noise_radius - 10 then
+                        watery_tile = { name = 'deepwater', position = p }
+                    end
+
+                    if tile then
+                        tiles[#tiles + 1] = tile
+                        this.tiles[#this.tiles + 1] = tile
+                    end
+                    if watery_tile then
+                        tiles[#tiles + 1] = watery_tile
+                    end
+                end
+            end
+            game.forces.player.chart(surface, { { position.x - 124, position.y - 124 }, { position.x + 124, position.y + 124 } })
+
+            surface.set_tiles(tiles, true)
+        end
+    )
+
+
+local do_place_simple_entities_token =
+    Scheduler.set(
+        function (event)
+            local this = Public.get()
+            local count = event.count
+            local pos_tbl = event.pos_tbl
+            local surface = event.surface
+            local seed = event.seed
+
+            local tree = this.tree_raffle[random(1, #this.tree_raffle)]
+
+            for i = 1, count do
+                local position = pos_tbl[i]
+                if position then
+                    if random(1, 32) == 1 then
+                        local noise = simplex_noise(position.x * 0.02, position.y * 0.02, seed)
+                        if noise > 0.75 or noise < -0.75 then
+                            surface.create_entity({ name = rock_raffle[random(1, #rock_raffle)], position = position })
+                        end
+                    end
+
+                    if surface.can_place_entity({ name = 'wooden-chest', position = position }) then
+                        if random(1, 64) == 1 then
+                            if simplex_noise(position.x * 0.02, position.y * 0.02, seed) > 0.25 then
+                                surface.create_entity({ name = tree, position = position })
+                            end
+                        end
+                    end
+
+                    if surface.can_place_entity({ name = 'wooden-chest', position = position }) then
+                        if random(1, 128) == 1 then
+                            if simplex_noise(position.x * 0.02, position.y * 0.02, seed) > 0.25 then
+                                local corpse = this.corpses_raffle[random(1, #this.corpses_raffle)]
+
+                                local c = surface.create_entity({ name = corpse, position = position })
+                                if c and c.valid then
+                                    c.corpse_expires = false
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    )
+
+local create_new_surface_token =
+    Scheduler.set(
+        function (event)
+            if game.surfaces['island'] then
+                return
+            end
+
+            local radius = event.radius
+
+            local map_gen_settings = {}
+            map_gen_settings.height = radius
+            map_gen_settings.width = radius
+            map_gen_settings.water = 0.001
+            map_gen_settings.terrain_segmentation = 8
+            map_gen_settings.seed = random(1, 999999999)
+            map_gen_settings.cliff_settings = { cliff_elevation_interval = random(2, 16), cliff_elevation_0 = random(2, 16) }
+            map_gen_settings.autoplace_controls =
+            {
+                ['coal'] = { frequency = 0, size = 0, richness = 0 },
+                ['stone'] = { frequency = 0, size = 0, richness = 0 },
+                ['copper-ore'] = { frequency = 0, size = 0, richness = 0 },
+                ['iron-ore'] = { frequency = 0, size = 0, richness = 0 },
+                ['uranium-ore'] = { frequency = 0, size = 0, richness = 0 },
+                ['crude-oil'] = { frequency = 0, size = 0, richness = 0 },
+                ['trees'] = { frequency = 50, size = 0.1, richness = random(0, 10) * 0.1 },
+                ['enemy-base'] = { frequency = 'none', size = 'none', richness = 'none' }
+            }
+            map_gen_settings.autoplace_settings =
+            {
+                ['tile'] =
+                {
+                    settings =
+                    {
+                        ['deepwater'] = { frequency = 1, size = 0, richness = 1 },
+                        ['deepwater-green'] = { frequency = 1, size = 0, richness = 1 },
+                        ['water'] = { frequency = 1, size = 0, richness = 1 },
+                        ['water-green'] = { frequency = 1, size = 0, richness = 1 },
+                        ['water-mud'] = { frequency = 1, size = 0, richness = 1 },
+                        ['water-shallow'] = { frequency = 1, size = 0, richness = 1 }
+                    },
+                    treat_missing_as_default = true
+                }
+            }
+            map_gen_settings.property_expression_names =
+            {
+                ['control-setting:aux:bias'] = '-0.500000',
+                ['control-setting:moisture:bias'] = '0.500000',
+                ['control-setting:moisture:frequency:multiplier'] = '4.000000',
+                ['starting-lake-noise-amplitude'] = 0,
+                ['starting-area'] = 0
+            }
+            if not game.surfaces['island'] then
+                game.create_surface('island', map_gen_settings)
+                local surface = game.surfaces['island']
+                ---@diagnostic disable-next-line: param-type-mismatch
+                surface.request_to_generate_chunks({ 0, 0 }, ceil(max_island_radius / 32))
+            end
+        end
+    )
+
+local clear_globals_token =
+    Scheduler.set(
+        function ()
+            local this = Public.get()
+            this.tiles = {}
+            this.market_positions = {}
+        end
+    )
+
+local function add_market_slot(market)
+    market.add_market_item(
+        {
+            price = {},
+            offer = { type = 'nothing', effect_description = 'Progress onwards to the next island!' }
+        }
+    )
+end
+
+local create_biters_token =
+    Scheduler.set(
+        function (event)
+            local this = Public.get()
+            local surface = event.surface
+            local position = event.position
+            local level = this.current_level or 1
+
+            local biter_types
+            local spitter_types
+            local worm_types
+            local spawner_types
+
+            if level <= 3 then
+                biter_types = { 'small-biter' }
+                spitter_types = { 'small-spitter' }
+                worm_types = { 'small-worm-turret' }
+                spawner_types = { 'biter-spawner', 'spitter-spawner' }
+            elseif level <= 6 then
+                biter_types = { 'small-biter', 'medium-biter' }
+                spitter_types = { 'small-spitter', 'medium-spitter' }
+                worm_types = { 'small-worm-turret', 'medium-worm-turret' }
+                spawner_types = { 'biter-spawner', 'spitter-spawner' }
+            elseif level <= 10 then
+                biter_types = { 'small-biter', 'medium-biter', 'big-biter' }
+                spitter_types = { 'small-spitter', 'medium-spitter', 'big-spitter' }
+                worm_types = { 'small-worm-turret', 'medium-worm-turret', 'big-worm-turret' }
+                spawner_types = { 'biter-spawner', 'spitter-spawner' }
+            else
+                biter_types = { 'medium-biter', 'big-biter', 'behemoth-biter' }
+                spitter_types = { 'medium-spitter', 'big-spitter', 'behemoth-spitter' }
+                worm_types = { 'medium-worm-turret', 'big-worm-turret', 'behemoth-worm-turret' }
+                spawner_types = { 'biter-spawner', 'spitter-spawner' }
+            end
+
+            local spawner_count = math.min(random(1, 2) + math.floor(level / 3), 5)
+            if this.current_level == 1 then
+                spawner_count = 0
+            end
+            for _ = 1, spawner_count do
+                local spawner_type = spawner_types[random(1, #spawner_types)]
+                local p = surface.find_non_colliding_position('assembling-machine-1', position, 32, 2)
+                if p then
+                    local spawner = surface.create_entity({ name = spawner_type, position = p })
+                    if spawner and spawner.valid then
+                        this.alive_enemies = this.alive_enemies + 1
+                    end
+                end
+            end
+
+            local worm_count = math.min(random(2, 4) + math.floor(level / 2), 8)
+            if this.current_level == 1 then
+                worm_count = 0
+            end
+            for _ = 1, worm_count do
+                local worm_type = worm_types[random(1, #worm_types)]
+                local p = surface.find_non_colliding_position('assembling-machine-1', position, 32, 2)
+                if p then
+                    local e = surface.create_entity({ name = worm_type, position = p })
+                    if e and e.valid then
+                        this.alive_enemies = this.alive_enemies + 1
+                    end
+                end
+            end
+
+            local base_enemy_count = 30 + (level * 10)
+            local enemy_count = random(base_enemy_count, base_enemy_count + 30)
+            if this.current_level == 1 then
+                enemy_count = 4
+            end
+            for _ = 1, enemy_count do
+                local enemy_type
+                if random(1, 2) == 1 then
+                    enemy_type = biter_types[random(1, #biter_types)]
+                else
+                    enemy_type = spitter_types[random(1, #spitter_types)]
+                end
+
+                local p = surface.find_non_colliding_position('wooden-chest', position, 16, 2)
+                if p then
+                    local e = surface.create_entity({ name = enemy_type, position = p })
+                    if e and e.valid then
+                        this.alive_enemies = this.alive_enemies + 1
+                    end
+                end
+            end
+        end
+    )
+
+local create_market_token =
+    Scheduler.set(
+        function (event)
+            local this = Public.get()
+            local surface = event.surface
+
+            local random_pos = shuffle(this.market_positions)
+            local pos = random_pos[#random_pos]
+            if not pos then
+                error('No market position found!')
+            end
+            local new_tile = find_dirt_tile(surface, pos)
+            local new_pos = surface.find_non_colliding_position('rocket-silo', new_tile, 0, 4)
+
+            if new_pos then
+                local p = new_pos
+                local market = surface.create_entity({ name = 'market', position = p, force = 'player' })
+                game.forces.player.chart(surface, { { p.x - 30, p.y - 30 }, { p.x + 30, p.y + 30 } })
+                if market and market.valid then
+                    market.minable = false
+                    local render_protect_text = rendering.draw_text
+                        {
+                            text = 'Protect this market at all costs!',
+                            surface = surface,
+                            target = { market.position.x, market.position.y - 4.5 },
+                            color = { r = 0.98, g = 0.77, b = 0.22 },
+                            scale = 2,
+                            font = 'heading-1',
+                            alignment = 'center',
+                            scale_with_zoom = false
+                        }
+                    if this.current_stage > 1 then
+                        market.destructible = false
+                    end
+
+                    local render_checkpoint_text = rendering.draw_text
+                        {
+                            text = 'Checkpoint ' .. this.current_stage,
+                            surface = surface,
+                            target = { market.position.x, market.position.y - 3.5 },
+                            color = { r = 0.98, g = 0.77, b = 0.22 },
+                            scale = 2,
+                            font = 'heading-1',
+                            alignment = 'center',
+                            scale_with_zoom = false
+                        }
+                    this.spawned_markets[this.current_stage] = { market = market, render_protect_text = render_protect_text, render_checkpoint_text = render_checkpoint_text }
+
+                    add_market_slot(market)
+                    Scheduler.timeout(10, request_to_generate_chunks_token, { size = 8, surface = surface, position = market.position, sleep = game.tick + 500 })
+                end
+                MapFunctions.draw_noise_tile_circle(p, 'blue-refined-concrete', surface, 12)
+            end
+        end
+    )
+
+local do_place_entities_token =
+    Scheduler.set(
+        function (event)
+            local this = Public.get()
+            local surface = event.surface
+            local position = event.position
+            local radius = event.radius
+            local main_island = event.main_island
+
+            if main_island then
+                MapFunctions.draw_noise_tile_circle(position, 'concrete', surface, 12)
+
+                local chest_pos =
+                {
+                    { x = position.x + 1, y = position.y + 5 * 0.5 },
+                    { x = position.x - 1, y = position.y + 6 },
+                    { x = position.x + 1, y = position.y - 5 * -0.5 },
+                    { x = position.x - 1, y = position.y + 10 * -1 }
+                }
+                shuffle(chest_pos)
+
+                local chest_raff =
+                {
+                    'crash-site-chest-1',
+                    'crash-site-chest-1',
+                    'crash-site-chest-2',
+                    'crash-site-chest-2'
+                }
+
+                this.infini_chest = surface.create_entity({ name = chest_raff[random(1, #chest_raff)], position = { chest_pos[1].x, chest_pos[1].y }, force = 'neutral' })
+                this.infini_chest.operable = false
+                this.infini_chest.destructible = false
+                this.infini_chest.minable = false
+                this.render_ammo_text = rendering.draw_text
+                    {
+                        text = 'Free ammo',
+                        surface = surface,
+                        target = this.infini_chest,
+                        color = { r = 0.98, g = 0.77, b = 0.22 },
+                        scale = 1.25,
+                        font = 'heading-1',
+                        alignment = 'center',
+                        scale_with_zoom = false
+                    }
+
+                local _y = 55
+                local ore_positions =
+                {
+                    { x = position.x + 19, y = _y },
+                    { x = position.x - 52, y = _y * 0.5 },
+                    { x = position.x + 33, y = 0 },
+                    { x = position.x - 52, y = _y * -0.5 },
+                    { x = position.x + 25, y = _y * -1 },
+                    { x = position.x - 25, y = _y * -1 }
+                }
+                shuffle(ore_positions)
+
+                resource_placement(surface, ore_positions[1], 'copper-ore', 150000, 550)
+                resource_placement(surface, ore_positions[2], 'iron-ore', 150000, 550)
+                resource_placement(surface, ore_positions[3], 'coal', 130000, 550)
+                resource_placement(surface, ore_positions[4], 'stone', 130000, 550)
+                resource_placement(surface, ore_positions[5], 'uranium-ore', 130000, 550)
+                MapFunctions.draw_oil_circle(ore_positions[6], 'crude-oil', surface, 8, 200000)
+            end
+
+            local decoratives = game.surfaces['island'].find_decoratives_filtered({ area = { { position.x - 100, position.y - 100 }, { position.x + 100, position.y + 100 } } })
+            Scheduler.return_callback(
+                function (data)
+                    for _, decorative in pairs(decoratives) do
+                        local start_index = (data.table_index - 1) * data.total_calls + 1
+                        local end_index = start_index + data.total_calls - 1
+
+                        data.pos_tbl[data.point_index] = { position = { position.x + decorative.position.x, position.y + decorative.position.y }, name = decorative.decorative.name, amount = decorative.amount }
+
+                        if data.iterator_index == end_index or data.iterator_index > #decoratives then
+                            data.table_index = data.table_index + 1
+                            data.tick_index = data.tick_index + 1
+                            Scheduler.timeout(data.tick_index, do_place_decorative_token, { pos_tbl = data.pos_tbl, count = data.total_calls, surface = surface })
+                            data.pos_tbl = {}
+                            data.point_index = 1
+                            if data.table_index > #decoratives then
+                                break
+                            end
+                        end
+                        data.iterator_index = data.iterator_index + 1
+                        data.point_index = data.point_index + 1
+                    end
+                end
+            )
+
+            local seed = random(1, 1000000)
+
+            Scheduler.return_callback(
+                function (data)
+                    for _, t in pairs(this.tiles) do
+                        local start_index = (data.table_index - 1) * data.total_calls + 1
+                        local end_index = start_index + data.total_calls - 1
+
+                        data.pos_tbl[data.point_index] = t.position
+
+                        if data.iterator_index == end_index or data.iterator_index > #this.tiles then
+                            data.table_index = data.table_index + 1
+                            data.tick_index = data.tick_index + 1
+                            Scheduler.timeout(data.tick_index, do_place_simple_entities_token, { pos_tbl = data.pos_tbl, count = data.total_calls, surface = surface, seed = seed, child_id = do_place_decorative_token })
+                            data.pos_tbl = {}
+                            data.point_index = 1
+                            if data.table_index > #this.tiles then
+                                break
+                            end
+                        end
+                        data.iterator_index = data.iterator_index + 1
+                        data.point_index = data.point_index + 1
+                    end
+                end
+            )
+
+            Scheduler.timeout(5, create_market_token, { child_id = do_place_simple_entities_token, surface = surface, position = position, radius = radius })
+            Scheduler.timeout(10, create_biters_token, { child_id = create_market_token, surface = surface, position = position, radius = radius })
+            Scheduler.timeout(15, clear_globals_token, { child_id = create_biters_token })
+            this.gamestate = 33
+        end
+    )
+
+local draw_island_inner_task_token =
+    Scheduler.set(
+        function (event)
+            local surface = event.surface
+            local position = event.position
+            local radius = event.radius
+            local main_island = event.main_island or false
+
+            local count = 1
+            local c = 1
+            local positions = {}
+            for y = radius * -1, radius, 1 do
+                for x = radius * -1, radius, 1 do
+                    positions[count] = { x = x, y = y }
+                    count = count + 1
+                    if count == 256 then
+                        c = c + 1
+                        Scheduler.timeout(c, place_tiles_token, { positions = positions, position = position, radius = radius, count = 255, surface = surface })
+                        count = 1
+                        positions = {}
+                    end
+                end
+            end
+
+            Scheduler.timeout(50, do_place_entities_token, { surface = surface, position = position, radius = radius, child_id = place_tiles_token, main_island = main_island })
+        end
+    )
+
+local set_new_island_token =
+    Scheduler.set(
+        function ()
+            local this = Public.get()
+            local position = this.path_tiles[#this.path_tiles].position
+            local radius = this.stages[this.current_stage].size
+            this.path_tiles = nil
+            Public.draw_main_island(position, radius)
+        end
+    )
+
+local draw_bridge_token =
+    Scheduler.set(
+        function (event)
+            local this = Public.get()
+            local position = event.position
+            local surface = event.surface
+            local seed_1 = random(1, 10000000)
+            local seed_2 = random(1, 10000000)
+            local m = random(1, 100) * 0.001
+
+            this.path_tiles = {}
+
+            Scheduler.timeout(
+                1,
+                noise_vector_tiles_path_token,
+                {
+                    surface = surface,
+                    tbl_tiles = path_tile_names,
+                    position = position,
+                    length = 200,
+                    brush_size = random(2, 6),
+                    whitelist = draw_path_tile_whitelist,
+                    seed_1 = seed_1,
+                    seed_2 = seed_2,
+                    m = m
+                },
+                'noise_vector_tiles_path_1'
+            )
+
+            Scheduler.timeout(10, request_to_generate_chunks_token, { size = 8, surface = surface, sleep = game.tick + 500 })
+            this.current_stage = this.current_stage + 1
+            Scheduler.timeout(50, set_new_island_token, { child_id = request_to_generate_chunks_token, sleep = game.tick + 200 })
+        end
+    )
+
+local function draw_main_island(position, radius, main_island)
+    local this = Public.get()
+    local surface = game.surfaces[1]
+
+    position = position or { x = 0, y = 0 }
+    radius = radius or 200
+
+    if (position.x == 0 and position.y == 0) then
+        main_island = true
+    end
+
+    if not this.seeds then
+        this.seeds =
+        {
+            seed_1 = random(1, 9999999),
+            seed_2 = random(1, 9999999),
+            seed_3 = random(1, 9999999),
+            seed_m1 = (random(8, 16) * 0.1) / radius,
+            seed_m2 = (random(12, 24) * 0.1) / radius,
+            seed_m3 = (random(50, 100) * 0.1) / radius
+        }
+    end
+
+    Scheduler.timeout(5, create_new_surface_token, { sleep = game.tick + 10 })
+    Scheduler.timeout(10, draw_island_inner_task_token, { child_id = create_new_surface_token, surface = surface, radius = radius, position = position, main_island = main_island })
+    this.gamestate = 33
+end
+
+local function on_chunk_generated(event)
+    if event.surface.index ~= 1 then
+        return
+    end
+    local left_top = event.area.left_top
+    local surface = event.surface
+
+    for x = 0, 31, 1 do
+        for y = 0, 31, 1 do
+            local position = { x = left_top.x + x, y = left_top.y + y }
+            if not is_inside_island(position.x, position.y) then
+                surface.set_tiles { { name = 'water', position = position } }
+            else
+                surface.set_tiles({ { name = 'black-refined-concrete', position = position } }, true)
+            end
+        end
+    end
+end
+
+local function on_entity_died(event)
+    local entity = event.entity
+    local this = Public.get()
+    if entity.name == 'market' then
+        if this.render_ammo_text then
+            this.render_ammo_text.destroy()
+            this.render_ammo_text = nil
+        end
+        if this.infini_chest and this.infini_chest.valid then
+            this.infini_chest.destroy()
+            this.infini_chest = nil
+        end
+
+        for stage, market_data in pairs(this.spawned_markets) do
+            if market_data and market_data.market and market_data.market.valid then
+                if market_data.render_protect_text then
+                    market_data.render_protect_text.destroy()
+                    market_data.render_protect_text = nil
+                end
+                if market_data.render_checkpoint_text then
+                    market_data.render_checkpoint_text.destroy()
+                    market_data.render_checkpoint_text = nil
+                end
+                if entity == market_data.market then
+                    this.nomed_marked = stage
+                end
+                market_data.market.destroy()
+            end
+        end
+        for _, player in pairs(game.connected_players) do
+            player.play_sound { path = 'utility/game_lost', volume_modifier = 1 }
+        end
+        this.game_reset_tick = 5400
+        this.game_lost = true
+        game.print('The market was overrun by hungry biters!')
+        return
+    end
+    if entity and entity.valid and entity.force.name == 'enemy' then
+        this.alive_enemies = this.alive_enemies - 1
+        if this.alive_enemies < 0 then this.alive_enemies = 0 end
+        if this.alive_enemies == 0 and not this.completed_levels[this.current_level] then
+            this.completed_levels[this.current_level] = true
+            for _, player in pairs(game.connected_players) do
+                player.play_sound { path = 'utility/game_won', volume_modifier = 1 }
+            end
+        end
+    end
+end
+
+local function on_market_item_purchased(event)
+    local entity = event.market
+    if not entity or not entity.valid then
+        return
+    end
+
+    local player = game.players[event.player_index]
+    if not player or not player.valid then
+        return
+    end
+    local this = Public.get()
+
+    if this.alive_enemies > 0 then
+        player.print('You must kill all enemies before you can buy this offer')
+        return
+    end
+
+    local offer_index = event.offer_index
+    local offers = entity.get_market_items()
+    local bought_offer = offers[offer_index].offer
+    if bought_offer.type ~= 'nothing' then
+        return
+    end
+    if string.find(bought_offer.effect_description, 'onwards') then
+        entity.remove_market_item(1)
+        entity.operable = false
+        this.position = entity.position
+
+        if this.current_level > 1 then
+            reward_level(entity.surface, this.centered_points[this.current_level])
+        end
+
+        this.spawned_markets[this.current_stage].market.destructible = true
+
+        this.current_level = this.current_level + 1
+
+        game.print(player.name .. ' has advanced to level ' .. this.current_level)
+
+        this.alive_enemies = 0
+        this.alive_boss_enemy_count = 0
+
+        Scheduler.timeout(1, draw_bridge_token, { surface = entity.surface, position = this.position, child_id = request_to_generate_chunks_token })
+    end
+end
+
+Commands.new('show_centered_gps', 'Shows the centered points of the map.')
+    :require_admin()
+    :callback(
+        function (player)
+            local this = Public.get()
+            for level, point in pairs(this.centered_points) do
+                player.print('Level ' .. level .. ':')
+                player.print('[gps=' .. point.position.x .. ',' .. point.position.y .. ',' .. player.surface.name .. ']')
+            end
+        end
+    )
+
+Commands.new('reset_island', 'Resets the island.')
+    :require_admin()
+    :callback(
+        function (player)
+            local this = Public.get()
+            this.game_reset_tick = 0
+            this.game_lost = true
+            player.print('The island has been reset!')
+        end
+    )
+
+Commands.new('set_biter_count', 'Sets the biter count.')
+    :require_admin()
+    :add_parameter('count', true, 'number')
+    :callback(
+        function (player, count)
+            local this = Public.get()
+            this.max_biters_per_island = count
+            player.print('The biter count has been set to ' .. count .. '!')
+        end
+    )
+
+Event.add(defines.events.on_chunk_generated, on_chunk_generated)
+Event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
+Event.add(defines.events.on_entity_died, on_entity_died)
+
+Public.generate_decoratives = generate_decoratives
+Public.draw_main_island = draw_main_island
+Public.on_chunk_generated = on_chunk_generated
+Public.on_entity_died = on_entity_died
+Public.on_market_item_purchased = on_market_item_purchased
+Public.do_buried_biters = do_buried_biters
+Public.buried_biter = BuriedBiter.buried_biter
+Public.buried_tech = BuriedBiter.buried_tech
+Public.buried_worm = BuriedBiter.buried_worm
+Public.reset_buried_biters = BuriedBiter.reset_buried_biters
+
+return Public
