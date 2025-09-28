@@ -458,6 +458,7 @@ function Public.pre_init_task(current_task)
     WD.set_pause_waves_custom_callback(Public.pause_waves_custom_callback_token)
     WD.set_threat_event_custom_callback(Public.check_if_spawning_near_train_custom_callback)
     WD.set_es_enabled(true)
+    BiterHealthBooster.set_module_state(true)
 
     RPG.set_x_marks_the_spot_custom_callback(Public.x_marks_the_spot_custom_callback_token)
     RPG.set_magicka_custom_callback(Public.magicka_custom_callback_token)

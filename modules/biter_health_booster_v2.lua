@@ -10,6 +10,7 @@ local WD = require 'modules.wave_defense.table'
 local Global = require 'utils.global'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
+local Server = require 'utils.server'
 
 local floor = math.floor
 local insert = table.insert
@@ -18,11 +19,14 @@ local sqrt = math.sqrt
 local round = math.round
 local Public = {}
 
-Public.events = {
+Public.events =
+{
     custom_on_entity_died = Event.generate_event_name('custom_on_entity_died')
 }
 
-local this = {
+local this =
+{
+    enabled = true,
     biter_health_boost = 1,
     biter_health_boost_forced = false,
     biter_health_boost_forces = {},
@@ -40,11 +44,13 @@ local this = {
 
 local radius = 6
 local targets = {}
-local acid_splashes = {
+local acid_splashes =
+{
     ['big-biter'] = 'acid-stream-worm-medium',
     ['behemoth-biter'] = 'acid-stream-worm-big'
 }
-local acid_lines = {
+local acid_lines =
+{
     ['small-spitter'] = 'acid-stream-spitter-small',
     ['medium-spitter'] = 'acid-stream-spitter-medium',
     ['big-spitter'] = 'acid-stream-spitter-big',
@@ -58,7 +64,8 @@ for x = radius * -1, radius, 1 do
     end
 end
 
-local projectiles = {
+local projectiles =
+{
     'slowdown-capsule',
     'defender-capsule',
     'destroyer-capsule',
@@ -78,15 +85,16 @@ Global.register(
     end
 )
 
-local filters = {
+--[[ local filters = {
     { filter = 'name', name = 'unit' },
     { filter = 'name', name = 'turret' },
     { filter = 'name', name = 'ammo-turret' },
     { filter = 'name', name = 'electric-turret' },
     { filter = 'name', name = 'unit-spawner' }
-}
+} ]]
 
-local entity_types = {
+local entity_types =
+{
     ['unit'] = true,
     ['turret'] = true,
     ['ammo-turret'] = true,
@@ -233,7 +241,8 @@ local function create_boss_healthbar(entity, size)
             x_scale = size * 15,
             y_scale = size,
             render_layer = 'light-effect',
-            target = {
+            target =
+            {
                 entity = entity,
                 offset = { 0, -2.25 },
             },
@@ -276,6 +285,9 @@ end
 
 ---@param event EventData.on_entity_damaged
 local function on_entity_damaged(event)
+    if not this.enabled then
+        return
+    end
     local biter = event.entity
     if not (biter and biter.valid) then
         return
@@ -372,6 +384,10 @@ local function on_entity_died(event)
         return
     end
 
+    if not this.enabled then
+        return
+    end
+
     local biter = event.entity
     if not (biter and biter.valid) then
         return
@@ -461,7 +477,8 @@ function Public.add_unit(unit, health_multiplier)
     end
     local health = floor(unit.max_health * health_multiplier)
     local xp_modifier = round(1 / health_multiplier, 5)
-    this.biter_health_boost_units[unit.unit_number] = {
+    this.biter_health_boost_units[unit.unit_number] =
+    {
         health,
         xp_modifier,
         { max_health = health }
@@ -483,7 +500,8 @@ function Public.add_boss_unit(unit, health_multiplier, health_bar_size)
     end
     local xp_modifier = round(1 / health_multiplier, 5)
     local health = floor(unit.max_health * health_multiplier)
-    this.biter_health_boost_units[unit.unit_number] = {
+    this.biter_health_boost_units[unit.unit_number] =
+    {
         health,
         xp_modifier,
         { max_health = health, healthbar_id = create_boss_healthbar(unit, health_bar_size) }
@@ -497,6 +515,7 @@ end
 ---@param str string
 function Public.set_active_surface(str)
     if str and type(str) == 'string' then
+        Server.output_script_data('Biter Health Booster active surface is now: ' .. tostring(str))
         this.active_surfaces = {}
         this.active_surface = str or 'nauvis'
     end
@@ -508,63 +527,79 @@ end
 ---@param value boolean
 function Public.set_surface_activity(name, value)
     if name and type(name) == 'string' and type(value) == 'boolean' then
+        Server.output_script_data('Biter Health Booster active surfaces is now: ' .. tostring(value))
         this.active_surfaces[name] = value
     end
     return this.active_surfaces
 end
 
 --- Enables that biter bosses (units with health bars) spawns acid on death.
----@param boolean
+---@param boolean boolean
 function Public.acid_nova(boolean)
+    Server.output_script_data('Biter Health Booster acid nova is now: ' .. tostring(boolean))
     this.acid_nova = boolean or false
     return this.acid_nova
 end
 
 --- Enables that we clear units from the global table when a unit dies.
----@param boolean
+---@param boolean boolean
 function Public.check_on_entity_died(boolean)
+    Server.output_script_data('Biter Health Booster check on entity died is now: ' .. tostring(boolean))
     this.check_on_entity_died = boolean or false
     return this.check_on_entity_died
 end
 
 --- Enables that biter bosses (units with health bars) spawns projectiles on death.
----@param boolean
+---@param boolean boolean
 function Public.boss_spawns_projectiles(boolean)
+    Server.output_script_data('Biter Health Booster boss spawns projectiles is now: ' .. tostring(boolean))
     this.boss_spawns_projectiles = boolean or false
 
     return this.boss_spawns_projectiles
 end
 
 --- Enables that biter bosses (units with health bars) drops loot.
----@param boolean
+---@param boolean boolean
 function Public.enable_boss_loot(boolean)
+    Server.output_script_data('Biter Health Booster enable boss loot is now: ' .. tostring(boolean))
     this.enable_boss_loot = boolean or false
 
     return this.enable_boss_loot
 end
 
 --- Forces a value of biter_health_boost
----@param boolean
+---@param boolean boolean
 function Public.enable_biter_health_boost_forced(boolean)
+    Server.output_script_data('Biter Health Booster biter health boost forced is now: ' .. tostring(boolean))
     this.biter_health_boost_forced = boolean or false
 
     return this.biter_health_boost_forced
 end
 
 --- Enables that normal units have boosted health.
----@param boolean
+---@param boolean boolean
 function Public.enable_make_normal_unit_mini_bosses(boolean)
+    Server.output_script_data('Biter Health Booster make normal unit mini bosses is now: ' .. tostring(boolean))
     this.make_normal_unit_mini_bosses = boolean or false
 
     return this.make_normal_unit_mini_bosses
 end
 
 --- Enables that enemies can recover from stun randomly.
----@param boolean
+---@param boolean boolean
 function Public.enable_randomize_stun_and_slowdown_sticker(boolean)
+    Server.output_script_data('Biter Health Booster randomize stun and slowdown sticker is now: ' .. tostring(boolean))
     this.randomize_stun_and_slowdown_sticker = boolean or false
 
     return this.randomize_stun_and_slowdown_sticker
+end
+
+--- Enables or disables the module.
+---@param boolean boolean
+function Public.set_module_state(boolean)
+    Server.output_script_data('Biter Health Booster is now: ' .. tostring(boolean))
+    this.enabled = boolean or false
+    return this.enabled
 end
 
 Event.on_init(
@@ -573,8 +608,8 @@ Event.on_init(
     end
 )
 
-Event.add(defines.events.on_entity_damaged, on_entity_damaged, filters)
+Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.on_nth_tick(7200, check_clear_table)
-Event.add(defines.events.on_entity_died, on_entity_died, filters)
+Event.add(defines.events.on_entity_died, on_entity_died)
 
 return Public

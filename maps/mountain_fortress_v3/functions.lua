@@ -1069,7 +1069,7 @@ local set_unit_raffle_token =
                     boss_raffle['mtn-addon-boss-fire-spitter-t2'] = round((level - 900) * 2.75, 6)
                 end
 
-                if level >= 1000 then
+                if level >= 1000 and level < 1100 then
                     biter_raffle['mtn-addon-behemoth-piercing-biter-t3'] = round((level - 1000) * 2.75, 6)
                     biter_raffle['mtn-addon-behemoth-acid-biter-t3'] = round((level - 1000) * 2.75, 6)
                     biter_raffle['mtn-addon-behemoth-explosive-biter-t3'] = round((level - 1000) * 2.75, 6)
@@ -1093,6 +1093,110 @@ local set_unit_raffle_token =
                     boss_raffle['mtn-addon-boss-explosive-spitter-t3'] = round((level - 1000) * 2.75, 6)
                     boss_raffle['mtn-addon-boss-poison-spitter-t3'] = round((level - 1000) * 2.75, 6)
                     boss_raffle['mtn-addon-boss-fire-spitter-t3'] = round((level - 1000) * 2.75, 6)
+                end
+
+                if level >= 1100 and level < 1200 then
+                    biter_raffle['mtn-addon-behemoth-piercing-biter-t3'] = round((level - 1100) * 2.75, 6)
+                    biter_raffle['mtn-addon-behemoth-acid-biter-t3'] = round((level - 1100) * 2.75, 6)
+                    biter_raffle['mtn-addon-behemoth-explosive-biter-t3'] = round((level - 1100) * 2.75, 6)
+                    biter_raffle['mtn-addon-behemoth-poison-biter-t3'] = round((level - 1100) * 2.75, 6)
+                    biter_raffle['mtn-addon-behemoth-fire-biter-t3'] = round((level - 1100) * 2.75, 6)
+
+                    spitter_raffle['mtn-addon-behemoth-piercing-spitter-t3'] = round((level - 1100) * 2.75, 6)
+                    spitter_raffle['mtn-addon-behemoth-acid-spitter-t3'] = round((level - 1100) * 2.75, 6)
+                    spitter_raffle['mtn-addon-behemoth-explosive-spitter-t3'] = round((level - 1100) * 2.75, 6)
+                    spitter_raffle['mtn-addon-behemoth-poison-spitter-t3'] = round((level - 1100) * 2.75, 6)
+                    spitter_raffle['mtn-addon-behemoth-fire-spitter-t3'] = round((level - 1100) * 2.75, 6)
+
+                    boss_raffle['mtn-addon-boss-piercing-biter-t4'] = round((level - 1100) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-acid-biter-t4'] = round((level - 1100) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-explosive-biter-t4'] = round((level - 1100) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-poison-biter-t4'] = round((level - 1100) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-fire-biter-t4'] = round((level - 1100) * 2.75, 6)
+
+                    boss_raffle['mtn-addon-boss-piercing-spitter-t4'] = round((level - 1100) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-acid-spitter-t4'] = round((level - 1100) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-explosive-spitter-t4'] = round((level - 1100) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-poison-spitter-t4'] = round((level - 1100) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-fire-spitter-t4'] = round((level - 1100) * 2.75, 6)
+                end
+
+                if level >= 1200 and level < 1300 then
+                    biter_raffle['mtn-addon-behemoth-piercing-biter-t3'] = round((level - 1200) * 2.75, 6)
+                    biter_raffle['mtn-addon-behemoth-acid-biter-t3'] = round((level - 1200) * 2.75, 6)
+                    biter_raffle['mtn-addon-behemoth-explosive-biter-t3'] = round((level - 1200) * 2.75, 6)
+                    biter_raffle['mtn-addon-behemoth-poison-biter-t3'] = round((level - 1200) * 2.75, 6)
+                    biter_raffle['mtn-addon-behemoth-fire-biter-t3'] = round((level - 1200) * 2.75, 6)
+
+                    spitter_raffle['mtn-addon-behemoth-piercing-spitter-t3'] = round((level - 1200) * 2.75, 6)
+                    spitter_raffle['mtn-addon-behemoth-acid-spitter-t3'] = round((level - 1200) * 2.75, 6)
+                    spitter_raffle['mtn-addon-behemoth-explosive-spitter-t3'] = round((level - 1200) * 2.75, 6)
+                    spitter_raffle['mtn-addon-behemoth-poison-spitter-t3'] = round((level - 1200) * 2.75, 6)
+                    spitter_raffle['mtn-addon-behemoth-fire-spitter-t3'] = round((level - 1200) * 2.75, 6)
+
+                    boss_raffle['mtn-addon-boss-piercing-biter-t5'] = round((level - 1200) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-acid-biter-t5'] = round((level - 1200) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-explosive-biter-t5'] = round((level - 1200) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-poison-biter-t5'] = round((level - 1200) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-fire-biter-t5'] = round((level - 1200) * 2.75, 6)
+
+                    boss_raffle['mtn-addon-boss-piercing-spitter-t5'] = round((level - 1200) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-acid-spitter-t5'] = round((level - 1200) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-explosive-spitter-t5'] = round((level - 1200) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-poison-spitter-t5'] = round((level - 1200) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-fire-spitter-t5'] = round((level - 1200) * 2.75, 6)
+                end
+
+                if level >= 1300 and level < 1400 then
+                    biter_raffle['mtn-addon-behemoth-piercing-biter-t3'] = round((level - 1300) * 2.75, 6)
+                    biter_raffle['mtn-addon-behemoth-acid-biter-t3'] = round((level - 1300) * 2.75, 6)
+                    biter_raffle['mtn-addon-behemoth-explosive-biter-t3'] = round((level - 1300) * 2.75, 6)
+                    biter_raffle['mtn-addon-behemoth-poison-biter-t3'] = round((level - 1300) * 2.75, 6)
+                    biter_raffle['mtn-addon-behemoth-fire-biter-t3'] = round((level - 1300) * 2.75, 6)
+
+                    spitter_raffle['mtn-addon-behemoth-piercing-spitter-t3'] = round((level - 1300) * 2.75, 6)
+                    spitter_raffle['mtn-addon-behemoth-acid-spitter-t3'] = round((level - 1300) * 2.75, 6)
+                    spitter_raffle['mtn-addon-behemoth-explosive-spitter-t3'] = round((level - 1300) * 2.75, 6)
+                    spitter_raffle['mtn-addon-behemoth-poison-spitter-t3'] = round((level - 1300) * 2.75, 6)
+                    spitter_raffle['mtn-addon-behemoth-fire-spitter-t3'] = round((level - 1300) * 2.75, 6)
+
+                    boss_raffle['mtn-addon-boss-piercing-biter-t6'] = round((level - 1300) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-acid-biter-t6'] = round((level - 1300) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-explosive-biter-t6'] = round((level - 1300) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-poison-biter-t6'] = round((level - 1300) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-fire-biter-t6'] = round((level - 1300) * 2.75, 6)
+
+                    boss_raffle['mtn-addon-boss-piercing-spitter-t6'] = round((level - 1300) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-acid-spitter-t6'] = round((level - 1300) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-explosive-spitter-t6'] = round((level - 1300) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-poison-spitter-t6'] = round((level - 1300) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-fire-spitter-t6'] = round((level - 1300) * 2.75, 6)
+                end
+
+                if level >= 1400  then
+                    biter_raffle['mtn-addon-behemoth-piercing-biter-t3'] = round((level - 1400) * 2.75, 6)
+                    biter_raffle['mtn-addon-behemoth-acid-biter-t3'] = round((level - 1400) * 2.75, 6)
+                    biter_raffle['mtn-addon-behemoth-explosive-biter-t3'] = round((level - 1400) * 2.75, 6)
+                    biter_raffle['mtn-addon-behemoth-poison-biter-t3'] = round((level - 1400) * 2.75, 6)
+                    biter_raffle['mtn-addon-behemoth-fire-biter-t3'] = round((level - 1400) * 2.75, 6)
+
+                    spitter_raffle['mtn-addon-behemoth-piercing-spitter-t3'] = round((level - 1400) * 2.75, 6)
+                    spitter_raffle['mtn-addon-behemoth-acid-spitter-t3'] = round((level - 1400) * 2.75, 6)
+                    spitter_raffle['mtn-addon-behemoth-explosive-spitter-t3'] = round((level - 1400) * 2.75, 6)
+                    spitter_raffle['mtn-addon-behemoth-poison-spitter-t3'] = round((level - 1400) * 2.75, 6)
+                    spitter_raffle['mtn-addon-behemoth-fire-spitter-t3'] = round((level - 1400) * 2.75, 6)
+
+                    boss_raffle['mtn-addon-boss-piercing-biter-t7'] = round((level - 1400) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-acid-biter-t7'] = round((level - 1400) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-explosive-biter-t7'] = round((level - 1400) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-poison-biter-t7'] = round((level - 1400) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-fire-biter-t7'] = round((level - 1400) * 2.75, 6)
+
+                    boss_raffle['mtn-addon-boss-piercing-spitter-t7'] = round((level - 1400) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-acid-spitter-t7'] = round((level - 1400) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-explosive-spitter-t7'] = round((level - 1400) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-poison-spitter-t7'] = round((level - 1400) * 2.75, 6)
+                    boss_raffle['mtn-addon-boss-fire-spitter-t7'] = round((level - 1400) * 2.75, 6)
                 end
 
 
@@ -2131,6 +2235,46 @@ function Public.set_threat_values()
             ['mtn-addon-boss-explosive-spitter-t3'] = 210,
             ['mtn-addon-boss-poison-spitter-t3'] = 210,
             ['mtn-addon-boss-fire-spitter-t3'] = 210,
+            ['mtn-addon-boss-piercing-biter-t4'] = 230,
+            ['mtn-addon-boss-acid-biter-t4'] = 230,
+            ['mtn-addon-boss-explosive-biter-t4'] = 230,
+            ['mtn-addon-boss-poison-biter-t4'] = 230,
+            ['mtn-addon-boss-fire-biter-t4'] = 230,
+            ['mtn-addon-boss-piercing-spitter-t4'] = 230,
+            ['mtn-addon-boss-acid-spitter-t4'] = 230,
+            ['mtn-addon-boss-explosive-spitter-t4'] = 230,
+            ['mtn-addon-boss-poison-spitter-t4'] = 230,
+            ['mtn-addon-boss-fire-spitter-t4'] = 230,
+            ['mtn-addon-boss-piercing-biter-t5'] = 250,
+            ['mtn-addon-boss-acid-biter-t5'] = 250,
+            ['mtn-addon-boss-explosive-biter-t5'] = 250,
+            ['mtn-addon-boss-poison-biter-t5'] = 250,
+            ['mtn-addon-boss-fire-biter-t5'] = 250,
+            ['mtn-addon-boss-piercing-spitter-t5'] = 250,
+            ['mtn-addon-boss-acid-spitter-t5'] = 250,
+            ['mtn-addon-boss-explosive-spitter-t5'] = 250,
+            ['mtn-addon-boss-poison-spitter-t5'] = 250,
+            ['mtn-addon-boss-fire-spitter-t5'] = 250,
+            ['mtn-addon-boss-piercing-biter-t6'] = 270,
+            ['mtn-addon-boss-acid-biter-t6'] = 270,
+            ['mtn-addon-boss-explosive-biter-t6'] = 270,
+            ['mtn-addon-boss-poison-biter-t6'] = 270,
+            ['mtn-addon-boss-fire-biter-t6'] = 270,
+            ['mtn-addon-boss-piercing-spitter-t6'] = 270,
+            ['mtn-addon-boss-acid-spitter-t6'] = 270,
+            ['mtn-addon-boss-explosive-spitter-t6'] = 270,
+            ['mtn-addon-boss-poison-spitter-t6'] = 270,
+            ['mtn-addon-boss-fire-spitter-t6'] = 270,
+            ['mtn-addon-boss-piercing-biter-t7'] = 290,
+            ['mtn-addon-boss-acid-biter-t7'] = 290,
+            ['mtn-addon-boss-explosive-biter-t7'] = 290,
+            ['mtn-addon-boss-poison-biter-t7'] = 290,
+            ['mtn-addon-boss-fire-biter-t7'] = 290,
+            ['mtn-addon-boss-piercing-spitter-t7'] = 290,
+            ['mtn-addon-boss-acid-spitter-t7'] = 290,
+            ['mtn-addon-boss-explosive-spitter-t7'] = 290,
+            ['mtn-addon-boss-poison-spitter-t7'] = 290,
+            ['mtn-addon-boss-fire-spitter-t7'] = 290,
 
             -- worms
             ['mtn-addon-small-explosive-worm-turret'] = 20,
@@ -2320,6 +2464,46 @@ function Public.set_threat_values()
         ['mtn-addon-boss-explosive-spitter-t3'] = 0.10,
         ['mtn-addon-boss-poison-spitter-t3'] = 0.10,
         ['mtn-addon-boss-fire-spitter-t3'] = 0.10,
+        ['mtn-addon-boss-piercing-biter-t4'] = 0.10,
+        ['mtn-addon-boss-acid-biter-t4'] = 0.10,
+        ['mtn-addon-boss-explosive-biter-t4'] = 0.10,
+        ['mtn-addon-boss-poison-biter-t4'] = 0.10,
+        ['mtn-addon-boss-fire-biter-t4'] = 0.10,
+        ['mtn-addon-boss-piercing-spitter-t4'] = 0.10,
+        ['mtn-addon-boss-acid-spitter-t4'] = 0.10,
+        ['mtn-addon-boss-explosive-spitter-t4'] = 0.10,
+        ['mtn-addon-boss-poison-spitter-t4'] = 0.10,
+        ['mtn-addon-boss-fire-spitter-t4'] = 0.10,
+        ['mtn-addon-boss-piercing-biter-t5'] = 0.10,
+        ['mtn-addon-boss-acid-biter-t5'] = 0.10,
+        ['mtn-addon-boss-explosive-biter-t5'] = 0.10,
+        ['mtn-addon-boss-poison-biter-t5'] = 0.10,
+        ['mtn-addon-boss-fire-biter-t5'] = 0.10,
+        ['mtn-addon-boss-piercing-spitter-t5'] = 0.10,
+        ['mtn-addon-boss-acid-spitter-t5'] = 0.10,
+        ['mtn-addon-boss-explosive-spitter-t5'] = 0.10,
+        ['mtn-addon-boss-poison-spitter-t5'] = 0.10,
+        ['mtn-addon-boss-fire-spitter-t5'] = 0.10,
+        ['mtn-addon-boss-piercing-biter-t6'] = 0.10,
+        ['mtn-addon-boss-acid-biter-t6'] = 0.10,
+        ['mtn-addon-boss-explosive-biter-t6'] = 0.10,
+        ['mtn-addon-boss-poison-biter-t6'] = 0.10,
+        ['mtn-addon-boss-fire-biter-t6'] = 0.10,
+        ['mtn-addon-boss-piercing-spitter-t6'] = 0.10,
+        ['mtn-addon-boss-acid-spitter-t6'] = 0.10,
+        ['mtn-addon-boss-explosive-spitter-t6'] = 0.10,
+        ['mtn-addon-boss-poison-spitter-t6'] = 0.10,
+        ['mtn-addon-boss-fire-spitter-t6'] = 0.10,
+        ['mtn-addon-boss-piercing-biter-t7'] = 0.10,
+        ['mtn-addon-boss-acid-biter-t7'] = 0.10,
+        ['mtn-addon-boss-explosive-biter-t7'] = 0.10,
+        ['mtn-addon-boss-poison-biter-t7'] = 0.10,
+        ['mtn-addon-boss-fire-biter-t7'] = 0.10,
+        ['mtn-addon-boss-piercing-spitter-t7'] = 0.10,
+        ['mtn-addon-boss-acid-spitter-t7'] = 0.10,
+        ['mtn-addon-boss-explosive-spitter-t7'] = 0.10,
+        ['mtn-addon-boss-poison-spitter-t7'] = 0.10,
+        ['mtn-addon-boss-fire-spitter-t7'] = 0.10,
     }
     unit_settings.scale_worms_by_health =
     {

@@ -1,4 +1,5 @@
 local Event = require 'utils.event'
+local Server = require 'utils.server'
 local Public = {}
 local loaded = {}
 local count = 1
@@ -24,6 +25,10 @@ function Public.get_handlers()
     end
 
     return handlers
+end
+
+function Public.can_run_scheduler(condition)
+    storage.can_run_scheduler = condition or false
 end
 
 function Public.search(id)
@@ -121,6 +126,13 @@ end
 
 local function on_tick()
     local tick = game.tick
+    local can_run_scheduler = storage.can_run_scheduler
+    if not can_run_scheduler then
+        storage.tick_handler = {}
+        Server.output_script_data('Scheduler task has been cleared and stopped!')
+        return
+    end
+
     local handlers = storage.tick_handler
 
     if not handlers then

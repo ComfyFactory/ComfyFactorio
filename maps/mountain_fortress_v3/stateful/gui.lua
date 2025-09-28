@@ -14,6 +14,7 @@ local Discord = require 'utils.discord'
 local format_number = require 'util'.format_number
 local Explosives = require 'modules.explosives'
 local StatefulFunctions = require 'maps.mountain_fortress_v3.stateful.functions'
+local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 
 local zone_settings = Public.zone_settings
 local send_ping_to_channel = Discord.channel_names.mtn_channel
@@ -1202,6 +1203,8 @@ local function update_raw()
                 stateful.final_battle = true
                 Public.set('final_battle', true)
                 WD.set('final_battle', true)
+                WD.set_es_enabled(false)
+                BiterHealthBooster.set_module_state(false)
 
                 collection.survive_for = game.tick + Stateful.scale((5 * 3600), (15 * 3600))
                 collection.survive_for_timer = collection.survive_for
@@ -1275,7 +1278,6 @@ local function update_raw()
                 stateful.selected_objectives = nil
 
                 Public.set('game_won', true)
-                WD.set_es_enabled(false)
 
                 game.forces.player.friendly_fire = false
 
