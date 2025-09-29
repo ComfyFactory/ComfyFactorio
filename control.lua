@@ -203,7 +203,7 @@ require 'utils.remote_chunks'
 --require 'maps.spaghettorio'
 
 --![[Infestation Islands]]--
-require 'maps.infestation_islands.main'
+--require 'maps.infestation_islands.main'
 
 --![[Misc / WIP]]--
 --require 'maps.rainbow_road'
