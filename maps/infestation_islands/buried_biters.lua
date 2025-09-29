@@ -153,6 +153,8 @@ local function spawn_biters(data)
 		return
 	end
 
+	alive_enemies = Public.get('alive_enemies')
+
 	Public.set('alive_enemies', alive_enemies + 1)
 
 	local health_boost = roll_health_boost(current_level) or 1
@@ -254,7 +256,7 @@ local function spawn_worms(data)
 	if not unit or not unit.valid then
 		return
 	end
-
+	alive_enemies = Public.get('alive_enemies')
 	Public.set('alive_enemies', alive_enemies + 1)
 
 	local health_boost = roll_health_boost(current_level) or 1

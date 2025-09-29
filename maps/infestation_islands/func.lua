@@ -17,6 +17,13 @@ local abs = math.abs
 local ceil = math.ceil
 local floor = math.floor
 
+local valid_enemy_types =
+{
+    ['unit'] = true,
+    ['turret'] = true,
+    ['unit-spawner'] = true
+}
+
 local rock_raffle =
 {
     'big-sand-rock',
@@ -460,12 +467,17 @@ local function check_alive_enemies()
         return
     end
 
-    local count = 0
-    for _, enemy in pairs(game.surfaces[1].find_entities_filtered({ force = 'enemy' })) do
-        if enemy and enemy.valid then
-            count = count + 1
-        end
+    if this.alive_enemies == 999 then
+        return
     end
+
+    local current_level = Public.get('current_level')
+    local center_position = Public.get('centered_points')[current_level]
+    if not center_position then
+        return
+    end
+
+    local count = game.surfaces[1].count_entities_filtered({ force = 'enemy', type = { 'unit', 'turret', 'unit-spawner' }, area = { { center_position.position.x - 256, center_position.position.y - 256 }, { center_position.position.x + 256, center_position.position.y + 256 } } })
 
     this.alive_enemies = count
 end
@@ -762,6 +774,7 @@ local create_biters_token =
             local surface = event.surface
             local position = event.position
             local level = this.current_level or 1
+            this.alive_enemies = 0
 
             local biter_types
             local spitter_types
@@ -1235,7 +1248,7 @@ local function on_entity_died(event)
         game.print('The market was overrun by hungry biters!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
         return
     end
-    if entity and entity.valid and entity.force.name == 'enemy' then
+    if entity and entity.valid and entity.force.name == 'enemy' and entity.type == 'unit' then
         this.alive_enemies = this.alive_enemies - 1
         entity.surface.spill_item_stack({ position = entity.position, stack = { name = 'coin', count = random(1, 5), quality = 'normal' } })
         if this.alive_enemies < 0 then this.alive_enemies = 0 end
@@ -1250,6 +1263,14 @@ local function on_entity_died(event)
                 this.game_reset_tick = 5400
             end
         end
+    end
+end
+
+local function on_entity_spawned(event)
+    local entity = event.entity
+    if entity and entity.valid and entity.force.name == 'enemy' and valid_enemy_types[entity.type] then
+        local this = Public.get()
+        this.alive_enemies = this.alive_enemies + 1
     end
 end
 
@@ -1330,6 +1351,8 @@ local function on_market_item_purchased(event)
             game.print('Magical chests have appeared near the market!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
         end
 
+        this.alive_enemies = 999
+
         Scheduler.timeout(1, draw_bridge_token, { surface = entity.surface, position = this.position, child_id = request_to_generate_chunks_token })
     elseif string.find(bought_offer.effect_description, 'more ammo') then
         local inventory = player.get_main_inventory()
@@ -1398,6 +1421,7 @@ Commands.new('set_biter_count', 'Sets the biter count.')
 Event.add(defines.events.on_chunk_generated, on_chunk_generated)
 Event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
 Event.add(defines.events.on_entity_died, on_entity_died)
+Event.add(defines.events.on_entity_spawned, on_entity_spawned)
 
 Public.draw_main_island = draw_main_island
 Public.on_chunk_generated = on_chunk_generated
