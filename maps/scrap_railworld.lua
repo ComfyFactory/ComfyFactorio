@@ -9,7 +9,7 @@ local math_floor = math.floor
 local math_abs = math.abs
 local math_sqrt = math.sqrt
 
-local loot_containers = { 'crash-site-chest-1', 'crash-site-chest-2', 'big-ship-wreck-1', 'big-ship-wreck-2', 'big-ship-wreck-3' }
+local loot_containers = { 'crash-site-chest-1', 'crash-site-chest-2', 'crash-site-spaceship-wreck-big-1', 'crash-site-spaceship-wreck-big-2', 'big-ship-wreck-3' }
 local size_of_loot_containers = #loot_containers
 
 local function init_surface()

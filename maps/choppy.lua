@@ -141,7 +141,7 @@ local function process_tile(surface, pos, tile, seed)
     end
 
     if math_random(1, 100000) == 1 then
-        local wrecks = { 'big-ship-wreck-1', 'big-ship-wreck-2', 'big-ship-wreck-3' }
+        local wrecks = { 'crash-site-spaceship-wreck-big-1', 'crash-site-spaceship-wreck-big-2', 'big-ship-wreck-3' }
         local e = surface.create_entity { name = wrecks[math_random(1, #wrecks)], position = pos, force = 'neutral' }
         e.insert({ name = 'raw-fish', count = math_random(3, 25) })
         if math_random(1, 3) == 1 then

@@ -29,7 +29,7 @@ local special_slots = {
             local item_stacks = LootRaffle.roll(math.floor(tier ^ 3.65) + 8, 100, get_item_blacklist(tier))
             local price = {}
             for _, item_stack in pairs(item_stacks) do
-                table.insert(price, {name = item_stack.name, amount = item_stack.count})
+                table.insert(price, {name = item_stack.name, count = item_stack.count})
             end
             market.add_market_item({price = price, offer = {type = 'nothing', effect_description = 'Upgrade pickaxe to tier ' .. tier .. ': ' .. pickaxe_tiers[tier]}})
         else
@@ -41,7 +41,7 @@ local special_slots = {
         local item_stacks = LootRaffle.roll(math.floor(tier ^ 3.50) + 8, 100, get_item_blacklist(tier))
         local price = {}
         for _, item_stack in pairs(item_stacks) do
-            table.insert(price, {name = item_stack.name, amount = item_stack.count})
+            table.insert(price, {name = item_stack.name, count = item_stack.count})
         end
         market.add_market_item({price = price, offer = {type = 'nothing', effect_description = 'Upgrade backpack to tier ' .. tier}})
         return tier
@@ -49,7 +49,7 @@ local special_slots = {
     [3] = function(market, cave_miner)
         local tier_pickaxe = cave_miner.pickaxe_tier + 1
         local tier_backpack = (market.force.character_inventory_slots_bonus + 2) * 0.5
-        market.add_market_item({price = {{name = 'raw-fish', amount = (tier_pickaxe + tier_backpack)}}, offer = {type = 'nothing', effect_description = 'Reroll offers'}})
+        market.add_market_item({price = {{name = 'raw-fish', count = (tier_pickaxe + tier_backpack)}}, offer = {type = 'nothing', effect_description = 'Reroll offers'}})
     end
 }
 
@@ -165,7 +165,7 @@ function Public.spawn_random_cave_market(surface, position)
             value = 1
         end
         value = math_floor(value)
-        market.add_market_item({price = {{'raw-fish', value}}, offer = {type = 'give-item', item = name, count = count}})
+        market.add_market_item({price = {{ name = 'raw-fish', count = value}}, offer = {type = 'give-item', item = name, count = count}})
     end
 
     blacklist['wood'] = true
@@ -188,7 +188,7 @@ function Public.spawn_random_cave_market(surface, position)
             value = 1
         end
         value = math_floor(value)
-        market.add_market_item({price = {{name, count}}, offer = {type = 'give-item', item = 'raw-fish', count = value}})
+        market.add_market_item({price = {{name = name, count = count}}, offer = {type = 'give-item', item = 'raw-fish', count = value}})
     end
 
     rendering.draw_light(

@@ -68,6 +68,7 @@ local function do_item(name, count, inv, storage)
         if not prev then
             return
         end
+        log(serpent.block(prev))
 
         diff = math.min(prev, -diff)
         local inserted = inv.insert({ name = name, count = diff })
@@ -104,7 +105,7 @@ local function tick()
 
         for name, _ in pairs(storage) do
             if not contents[name] then
-                do_item(name, 0, inv, storage)
+                --do_item(name, 0, inv, storage)
             end
         end
     end

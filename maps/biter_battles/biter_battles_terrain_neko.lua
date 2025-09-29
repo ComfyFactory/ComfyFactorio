@@ -416,8 +416,8 @@ function biter_battles_terrain.generate_spawn_water_pond()
         wreck_pos['x'] = silo.position.x + 60 * x
         wreck_pos['y'] = silo.position.y - 5 * x
         create_tile_cluster('water-green', pos, 450)
-        local p = surface.find_non_colliding_position('big-ship-wreck-1', { wreck_pos.x, wreck_pos.y - 3 * x }, 20, 1)
-        local e = surface.create_entity { name = 'big-ship-wreck-1', position = p, force = silo.force.name }
+        local p = surface.find_non_colliding_position('crash-site-spaceship-wreck-big-1', { wreck_pos.x, wreck_pos.y - 3 * x }, 20, 1)
+        local e = surface.create_entity { name = 'crash-site-spaceship-wreck-big-1', position = p, force = silo.force.name }
         e.insert({ name = 'copper-cable', count = 7 })
         e.insert({ name = 'iron-stick', count = 3 })
         local p = surface.find_non_colliding_position('big-ship-wreck-3', { pos.x - 3 * x, pos.y }, 20, 1)
@@ -426,8 +426,8 @@ function biter_battles_terrain.generate_spawn_water_pond()
         pos['x'] = silo.position.x - math.random(80, 90) * x
         pos['y'] = silo.position.y - math.random(50, 70) * x
         create_tile_cluster('water-green', pos, 300)
-        local p = surface.find_non_colliding_position('big-ship-wreck-2', { pos.x + 3 * x, pos.y + 1 * x }, 20, 1)
-        local e = surface.create_entity { name = 'big-ship-wreck-2', position = p, force = silo.force.name }
+        local p = surface.find_non_colliding_position('crash-site-spaceship-wreck-big-2', { pos.x + 3 * x, pos.y + 1 * x }, 20, 1)
+        local e = surface.create_entity { name = 'crash-site-spaceship-wreck-big-2', position = p, force = silo.force.name }
         e.insert({ name = 'barrel', count = 1 })
         e.insert({ name = 'lubricant-barrel', count = 2 })
         local p = surface.find_non_colliding_position('crude-oil', { pos.x - 5 * x, pos.y + 5 * x }, 50, 1)

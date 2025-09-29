@@ -90,7 +90,7 @@ function Public.treasure_chest_old(surface, position, container_name)
         { { name = 'energy-shield-equipment', count = math_random(1, 2) },          weight = 2,  d_min = 0.3, d_max = 0.8 },
         --{{name = "energy-shield-mk2-equipment", count = 1}, weight = 2, d_min = 0.8, d_max = 1},
         { { name = 'exoskeleton-equipment', count = 1 },                            weight = 1,  d_min = 0.3, d_max = 1 },
-        --{{name = "fusion-reactor-equipment", count = 1}, weight = 1, d_min = 0.8, d_max = 1},
+        --{{name = "fission-reactor-equipment", count = 1}, weight = 1, d_min = 0.8, d_max = 1},
         { { name = 'night-vision-equipment', count = 1 },                           weight = 1,  d_min = 0.3, d_max = 0.8 },
         { { name = 'personal-laser-defense-equipment', count = 1 },                 weight = 1,  d_min = 0.7, d_max = 1 },
         { { name = 'personal-roboport-equipment', count = math_random(1, 2) },      weight = 3,  d_min = 0.4, d_max = 1 },

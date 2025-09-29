@@ -75,7 +75,7 @@ local function blacklist(surface_index, special)
     if dungeontable.item_blacklist then
         if evolution_factor < 0.9 then -- floor 18
             blacklists['power-armor-mk2'] = true
-            blacklists['fusion-reactor-equipment'] = true
+            blacklists['fission-reactor-equipment'] = true
             blacklists['rocket-silo'] = true
             blacklists['atomic-bomb'] = true
         end

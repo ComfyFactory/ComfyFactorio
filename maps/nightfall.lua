@@ -92,7 +92,7 @@ local function spawn_shipwreck(surface, position)
         { { name = 'energy-shield-equipment', count = math_random(1, 2) },          weight = 2,  evolution_min = 0.3, evolution_max = 0.8 },
         { { name = 'energy-shield-mk2-equipment', count = 1 },                      weight = 2,  evolution_min = 0.7, evolution_max = 1 },
         { { name = 'exoskeleton-equipment', count = 1 },                            weight = 1,  evolution_min = 0.3, evolution_max = 1 },
-        { { name = 'fusion-reactor-equipment', count = 1 },                         weight = 1,  evolution_min = 0.5, evolution_max = 1 },
+        { { name = 'fission-reactor-equipment', count = 1 },                         weight = 1,  evolution_min = 0.5, evolution_max = 1 },
         { { name = 'night-vision-equipment', count = 1 },                           weight = 1,  evolution_min = 0.3, evolution_max = 0.8 },
         { { name = 'personal-laser-defense-equipment', count = 1 },                 weight = 2,  evolution_min = 0.4, evolution_max = 1 },
         { { name = 'exoskeleton-equipment', count = 1 },                            weight = 1,  evolution_min = 0.3, evolution_max = 1 },
@@ -197,7 +197,7 @@ local function spawn_shipwreck(surface, position)
             end
         end
     end
-    local name_raffle = { 'big-ship-wreck-1', 'big-ship-wreck-2', 'big-ship-wreck-3' }
+    local name_raffle = { 'crash-site-spaceship-wreck-big-1', 'crash-site-spaceship-wreck-big-2', 'big-ship-wreck-3' }
     local e = surface.create_entity { name = name_raffle[math_random(1, #name_raffle)], position = position, force = 'player' }
     for x = 1, math_random(2, 3), 1 do
         local loot = raffle[math_random(1, #raffle)]
@@ -547,7 +547,7 @@ local function on_chunk_generated(event)
             end
 
             if math_random(1, 2500) == 1 and tile_to_insert == false then
-                --if surface.can_place_entity({name = "big-ship-wreck-1", position = pos}) then
+                --if surface.can_place_entity({name = "crash-site-spaceship-wreck-big-1", position = pos}) then
                 spawn_shipwreck(surface, pos)
                 --end
             end

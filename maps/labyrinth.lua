@@ -595,7 +595,7 @@ local function grow_cell(chunk_position, surface) -- luacheck: ignore
         surface.regenerate_decorative(decorative_names, { chunk_pos })
 
         if unique_room == 'railway_roundabout' then
-            local e = surface.create_entity { name = 'big-ship-wreck-1', position = { left_top_x + 16, left_top_y + 22 }, force = 'player' }
+            local e = surface.create_entity { name = 'crash-site-spaceship-wreck-big-1', position = { left_top_x + 16, left_top_y + 22 }, force = 'player' }
             e.insert({ name = 'locomotive', count = 1 })
             e.insert({ name = 'nuclear-fuel', count = 1 })
         end

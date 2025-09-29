@@ -39,7 +39,7 @@ local function shuffle(tbl)
     return tbl
 end
 
-local wrecks = { 'big-ship-wreck-1', 'big-ship-wreck-2', 'big-ship-wreck-3' }
+local wrecks = { 'crash-site-spaceship-wreck-big-1', 'crash-site-spaceship-wreck-big-2', 'big-ship-wreck-3' }
 local function create_shipwreck(surface, position)
     local raffle = {}
     local loot = {
@@ -311,7 +311,7 @@ local function draw_secret_area(surface, position)
 
     local wrecks_to_place = math_random(1, math.ceil(labyrinth_cell_size * 0.33))
     for i = 1, #positions, 1 do
-        if surface.can_place_entity({ name = 'big-ship-wreck-1', position = positions[i] }) then
+        if surface.can_place_entity({ name = 'crash-site-spaceship-wreck-big-1', position = positions[i] }) then
             create_shipwreck(surface, positions[i])
             wrecks_to_place = wrecks_to_place - 1
             if wrecks_to_place <= 0 then

@@ -272,7 +272,7 @@ local function treasure_chest(position, distance_to_center)
         { { name = 'energy-shield-equipment', count = math_random(1, 2) },          weight = 2,  evolution_min = 0.3, evolution_max = 0.8 },
         { { name = 'energy-shield-mk2-equipment', count = 1 },                      weight = 2,  evolution_min = 0.7, evolution_max = 1 },
         { { name = 'exoskeleton-equipment', count = 1 },                            weight = 1,  evolution_min = 0.3, evolution_max = 1 },
-        { { name = 'fusion-reactor-equipment', count = 1 },                         weight = 1,  evolution_min = 0.5, evolution_max = 1 },
+        { { name = 'fission-reactor-equipment', count = 1 },                        weight = 1,  evolution_min = 0.5, evolution_max = 1 },
         --{{name = "night-vision-equipment", count = 1}, weight = 1, evolution_min = 0.3, evolution_max = 0.8},
         { { name = 'personal-laser-defense-equipment', count = 1 },                 weight = 2,  evolution_min = 0.5, evolution_max = 1 },
         { { name = 'exoskeleton-equipment', count = 1 },                            weight = 1,  evolution_min = 0.3, evolution_max = 1 },
@@ -433,35 +433,35 @@ end
 
 local function secret_shop(pos)
     local secret_market_items = {
-        { price = { { 'raw-fish', math_random(250, 450) } },     offer = { type = 'give-item', item = 'combat-shotgun' } },
-        { price = { { 'raw-fish', math_random(250, 450) } },     offer = { type = 'give-item', item = 'flamethrower' } },
-        { price = { { 'raw-fish', math_random(75, 125) } },      offer = { type = 'give-item', item = 'rocket-launcher' } },
-        { price = { { 'raw-fish', math_random(2, 4) } },         offer = { type = 'give-item', item = 'piercing-rounds-magazine' } },
-        { price = { { 'raw-fish', math_random(8, 16) } },        offer = { type = 'give-item', item = 'uranium-rounds-magazine' } },
-        { price = { { 'raw-fish', math_random(8, 16) } },        offer = { type = 'give-item', item = 'piercing-shotgun-shell' } },
-        { price = { { 'raw-fish', math_random(6, 12) } },        offer = { type = 'give-item', item = 'flamethrower-ammo' } },
-        { price = { { 'raw-fish', math_random(8, 16) } },        offer = { type = 'give-item', item = 'rocket' } },
-        { price = { { 'raw-fish', math_random(10, 20) } },       offer = { type = 'give-item', item = 'explosive-rocket' } },
-        { price = { { 'raw-fish', math_random(15, 30) } },       offer = { type = 'give-item', item = 'explosive-cannon-shell' } },
-        { price = { { 'raw-fish', math_random(25, 35) } },       offer = { type = 'give-item', item = 'explosive-uranium-cannon-shell' } },
-        { price = { { 'raw-fish', math_random(20, 40) } },       offer = { type = 'give-item', item = 'cluster-grenade' } },
-        { price = { { 'raw-fish', math_random(1, 3) } },         offer = { type = 'give-item', item = 'land-mine' } },
-        { price = { { 'raw-fish', math_random(250, 500) } },     offer = { type = 'give-item', item = 'modular-armor' } },
-        { price = { { 'raw-fish', math_random(1500, 3000) } },   offer = { type = 'give-item', item = 'power-armor' } },
-        { price = { { 'raw-fish', math_random(15000, 20000) } }, offer = { type = 'give-item', item = 'power-armor-mk2' } },
-        { price = { { 'raw-fish', math_random(4000, 7000) } },   offer = { type = 'give-item', item = 'fusion-reactor-equipment' } },
-        { price = { { 'raw-fish', math_random(50, 100) } },      offer = { type = 'give-item', item = 'battery-equipment' } },
-        { price = { { 'raw-fish', math_random(700, 1100) } },    offer = { type = 'give-item', item = 'battery-mk2-equipment' } },
-        { price = { { 'raw-fish', math_random(400, 700) } },     offer = { type = 'give-item', item = 'belt-immunity-equipment' } },
-        { price = { { 'raw-fish', math_random(12000, 16000) } }, offer = { type = 'give-item', item = 'night-vision-equipment' } },
-        { price = { { 'raw-fish', math_random(300, 500) } },     offer = { type = 'give-item', item = 'exoskeleton-equipment' } },
-        { price = { { 'raw-fish', math_random(350, 500) } },     offer = { type = 'give-item', item = 'personal-roboport-equipment' } },
-        { price = { { 'raw-fish', math_random(25, 50) } },       offer = { type = 'give-item', item = 'construction-robot' } },
-        { price = { { 'raw-fish', math_random(250, 450) } },     offer = { type = 'give-item', item = 'energy-shield-equipment' } },
-        { price = { { 'raw-fish', math_random(350, 550) } },     offer = { type = 'give-item', item = 'personal-laser-defense-equipment' } },
-        { price = { { 'raw-fish', math_random(100, 175) } },     offer = { type = 'give-item', item = 'loader' } },
-        { price = { { 'raw-fish', math_random(200, 350) } },     offer = { type = 'give-item', item = 'fast-loader' } },
-        { price = { { 'raw-fish', math_random(400, 600) } },     offer = { type = 'give-item', item = 'express-loader' } }
+        { price = { { name = 'raw-fish', count = math_random(250, 450) } },     offer = { type = 'give-item', item = 'combat-shotgun' } },
+        { price = { { name = 'raw-fish', count = math_random(250, 450) } },     offer = { type = 'give-item', item = 'flamethrower' } },
+        { price = { { name = 'raw-fish', count = math_random(75, 125) } },      offer = { type = 'give-item', item = 'rocket-launcher' } },
+        { price = { { name = 'raw-fish', count = math_random(2, 4) } },         offer = { type = 'give-item', item = 'piercing-rounds-magazine' } },
+        { price = { { name = 'raw-fish', count = math_random(8, 16) } },        offer = { type = 'give-item', item = 'uranium-rounds-magazine' } },
+        { price = { { name = 'raw-fish', count = math_random(8, 16) } },        offer = { type = 'give-item', item = 'piercing-shotgun-shell' } },
+        { price = { { name = 'raw-fish', count = math_random(6, 12) } },        offer = { type = 'give-item', item = 'flamethrower-ammo' } },
+        { price = { { name = 'raw-fish', count = math_random(8, 16) } },        offer = { type = 'give-item', item = 'rocket' } },
+        { price = { { name = 'raw-fish', count = math_random(10, 20) } },       offer = { type = 'give-item', item = 'explosive-rocket' } },
+        { price = { { name = 'raw-fish', count = math_random(15, 30) } },       offer = { type = 'give-item', item = 'explosive-cannon-shell' } },
+        { price = { { name = 'raw-fish', count = math_random(25, 35) } },       offer = { type = 'give-item', item = 'explosive-uranium-cannon-shell' } },
+        { price = { { name = 'raw-fish', count = math_random(20, 40) } },       offer = { type = 'give-item', item = 'cluster-grenade' } },
+        { price = { { name = 'raw-fish', count = math_random(1, 3) } },         offer = { type = 'give-item', item = 'land-mine' } },
+        { price = { { name = 'raw-fish', count = math_random(250, 500) } },     offer = { type = 'give-item', item = 'modular-armor' } },
+        { price = { { name = 'raw-fish', count = math_random(1500, 3000) } },   offer = { type = 'give-item', item = 'power-armor' } },
+        { price = { { name = 'raw-fish', count = math_random(15000, 20000) } }, offer = { type = 'give-item', item = 'power-armor-mk2' } },
+        { price = { { name = 'raw-fish', count = math_random(4000, 7000) } },   offer = { type = 'give-item', item = 'fission-reactor-equipment' } },
+        { price = { { name = 'raw-fish', count = math_random(50, 100) } },      offer = { type = 'give-item', item = 'battery-equipment' } },
+        { price = { { name = 'raw-fish', count = math_random(700, 1100) } },    offer = { type = 'give-item', item = 'battery-mk2-equipment' } },
+        { price = { { name = 'raw-fish', count = math_random(400, 700) } },     offer = { type = 'give-item', item = 'belt-immunity-equipment' } },
+        { price = { { name = 'raw-fish', count = math_random(12000, 16000) } }, offer = { type = 'give-item', item = 'night-vision-equipment' } },
+        { price = { { name = 'raw-fish', count = math_random(300, 500) } },     offer = { type = 'give-item', item = 'exoskeleton-equipment' } },
+        { price = { { name = 'raw-fish', count = math_random(350, 500) } },     offer = { type = 'give-item', item = 'personal-roboport-equipment' } },
+        { price = { { name = 'raw-fish', count = math_random(25, 50) } },       offer = { type = 'give-item', item = 'construction-robot' } },
+        { price = { { name = 'raw-fish', count = math_random(250, 450) } },     offer = { type = 'give-item', item = 'energy-shield-equipment' } },
+        { price = { { name = 'raw-fish', count = math_random(350, 550) } },     offer = { type = 'give-item', item = 'personal-laser-defense-equipment' } },
+        { price = { { name = 'raw-fish', count = math_random(100, 175) } },     offer = { type = 'give-item', item = 'loader' } },
+        { price = { { name = 'raw-fish', count = math_random(200, 350) } },     offer = { type = 'give-item', item = 'fast-loader' } },
+        { price = { { name = 'raw-fish', count = math_random(400, 600) } },     offer = { type = 'give-item', item = 'express-loader' } }
     }
     secret_market_items = shuffle(secret_market_items)
 
@@ -800,13 +800,13 @@ end
 
 local function on_player_joined_game(event)
     local surface = game.surfaces[1]
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
     if not storage.cave_miner_init_done then
         local p = surface.find_non_colliding_position('character', { 0, -40 }, 10, 1)
         game.forces['player'].set_spawn_position(p, surface)
         player.teleport(p)
         surface.daytime = 0.5
-        surface.freeze_daytime = 1
+        surface.freeze_daytime = true
         surface.min_brightness = 0.3
         surface.brightness_visual_weights = { 1, 1, 1 }
 
@@ -821,20 +821,20 @@ local function on_player_joined_game(event)
 
         storage.cave_miner_map_info =
         [[
-Delve deep for greater treasures, but also face increased dangers.
-Mining productivity research, will overhaul your mining equipment,
-reinforcing your pickaxe as well as increasing the size of your backpack.
+        Delve deep for greater treasures, but also face increased dangers.
+        Mining productivity research, will overhaul your mining equipment,
+        reinforcing your pickaxe as well as increasing the size of your backpack.
 
-Breaking rocks is exhausting and might make you hungry.
-So don´t forget to eat some fish once in a while to stay well fed.
-But be careful, eating too much might have it´s consequences too.
+        Breaking rocks is exhausting and might make you hungry.
+        So don´t forget to eat some fish once in a while to stay well fed.
+        But be careful, eating too much might have it´s consequences too.
 
-As you dig, you will encounter black bedrock that is just too solid for your pickaxe.
-Some explosives could even break through the impassable dark rock.
-All they need is a container and a well aimed shot.
+        As you dig, you will encounter black bedrock that is just too solid for your pickaxe.
+        Some explosives could even break through the impassable dark rock.
+        All they need is a container and a well aimed shot.
 
-Darkness is a hazard in the mines, stay near your lamps..
-]]
+        Darkness is a hazard in the mines, stay near your lamps..
+        ]]
 
         storage.biter_spawn_amount_weights = {}
         storage.biter_spawn_amount_weights[1] = { 64, 1 }
@@ -911,9 +911,9 @@ local function spawn_cave_inhabitant(pos, target_position)
     end
     local biter = surface.create_entity { name = entity_name, position = p }
     if target_position then
-        biter.set_command({ type = defines.command.attack_area, destination = target_position, radius = 5, distraction = defines.distraction.by_anything })
+        biter.commandable.set_command({ type = defines.command.attack_area, destination = target_position, radius = 5, distraction = defines.distraction.by_anything })
     else
-        biter.set_command(
+        biter.commandable.set_command(
             { type = defines.command.attack_area, destination = game.forces['player'].get_spawn_position(surface), radius = 5, distraction = defines.distraction.by_anything }
         )
     end
@@ -1146,7 +1146,7 @@ local function on_pre_player_mined_item(event)
     end
 
     if event.entity.type == 'tree' then
-        surface.spill_item_stack(player.position, { name = 'raw-fish', count = math.random(1, 2) }, true)
+        surface.spill_item_stack{position = player.physical_position, stack = { name = 'raw-fish', count = math.random(1, 2) }, enable_looted = true}
     end
 
     if event.entity.name == 'huge-rock' or event.entity.name == 'big-rock' or event.entity.name == 'big-sand-rock' then
@@ -1166,7 +1166,7 @@ local function on_pre_player_mined_item(event)
             Hunger.hunger_update(player, -1)
         end
 
-        surface.spill_item_stack(player.position, { name = 'raw-fish', count = math_random(1, 3) }, true)
+        surface.spill_item_stack{position = player.physical_position, stack = { name = 'raw-fish', count = math_random(1, 3) }, enable_looted = true}
     end
 end
 
@@ -1313,7 +1313,7 @@ local function on_market_item_purchased(event)
         storage.fish_bank[player.name] = storage.fish_bank[player.name] + fish_removed
         player.print(fish_removed .. ' Fish deposited into your account. Your balance is ' .. storage.fish_bank[player.name] .. '.', { r = 0.10, g = 0.75, b = 0.5 })
         player.print(bank_messages[math_random(1, #bank_messages)], { r = 0.77, g = 0.77, b = 0.77 })
-        player.create_local_flying_text({ text = tostring(fish_removed .. ' Fish deposited'), position = player.position, color = { r = 0.10, g = 0.75, b = 0.5 } })
+        player.create_local_flying_text({ text = tostring(fish_removed .. ' Fish deposited'), position = player.physical_position, color = { r = 0.10, g = 0.75, b = 0.5 } })
     end
 
     if offer_index == 2 then
@@ -1342,7 +1342,7 @@ local function on_market_item_purchased(event)
         storage.fish_bank[player.name] = storage.fish_bank[player.name] - (fish_withdrawn + fee)
         player.print(fish_withdrawn .. ' Fish withdrawn from your account. Your balance is ' .. storage.fish_bank[player.name] .. '.', { r = 0.10, g = 0.75, b = 0.5 })
         player.print(bank_messages[math_random(1, #bank_messages)], { r = 0.77, g = 0.77, b = 0.77 })
-        player.create_local_flying_text({ text = tostring(fish_withdrawn .. ' Fish withdrawn'), position = player.position, color = { r = 0.10, g = 0.75, b = 0.5 } })
+        player.create_local_flying_text({ text = tostring(fish_withdrawn .. ' Fish withdrawn'), position = player.physical_position, color = { r = 0.10, g = 0.75, b = 0.5 } })
     end
 
     if offer_index == 3 then
@@ -1360,7 +1360,6 @@ local function on_init()
     storage.rocks_yield_ore_maximum_amount = 512
     storage.rocks_yield_ore_base_amount = 35
     storage.rocks_yield_ore_distance_modifier = 0.1
-
     storage.rocks_yield_ore_veins.chance = 512
 end
 

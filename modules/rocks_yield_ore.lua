@@ -125,33 +125,33 @@ local function on_player_mined_entity(event)
     local ore_amount = math_floor(count * 0.85) + 1
     local stone_amount = math_floor(count * 0.15) + 1
 
-    player.surface.create_entity({ name = 'flying-text', position = position, text = '+' .. ore_amount .. ' [img=item/' .. ore .. ']', color = { r = 200, g = 160, b = 30 } })
+    player.create_local_flying_text({ position = position, text = '+' .. ore_amount .. ' [img=item/' .. ore .. ']', color = { r = 200, g = 160, b = 30 } })
     create_particles(player.surface, particles[ore], position, 64, { x = player.position.x, y = player.position.y })
 
     entity.destroy()
 
     if ore_amount > max_spill then
-        player.surface.spill_item_stack(position, { name = ore, count = max_spill }, true)
+        player.surface.spill_item_stack{ position = position, stack = { name = ore, count = max_spill }, enable_looted = true}
         ore_amount = ore_amount - max_spill
         local inserted_count = player.insert({ name = ore, count = ore_amount })
         ore_amount = ore_amount - inserted_count
         if ore_amount > 0 then
-            player.surface.spill_item_stack(position, { name = ore, count = ore_amount }, true)
+            player.surface.spill_item_stack{ position = position, stack = { name = ore, count = ore_amount }, enable_looted = true}
         end
     else
-        player.surface.spill_item_stack(position, { name = ore, count = ore_amount }, true)
+        player.surface.spill_item_stack{ position = position, stack = { name = ore, count = ore_amount }, enable_looted = true}
     end
 
     if stone_amount > max_spill then
-        player.surface.spill_item_stack(position, { name = 'stone', count = max_spill }, true)
+        player.surface.spill_item_stack{ position = position, stack = { name = 'stone', count = max_spill }, enable_looted = true}
         stone_amount = stone_amount - max_spill
         local inserted_count = player.insert({ name = 'stone', count = stone_amount })
         stone_amount = stone_amount - inserted_count
         if stone_amount > 0 then
-            player.surface.spill_item_stack(position, { name = 'stone', count = stone_amount }, true)
+            player.surface.spill_item_stack{ position = position, stack = { name = 'stone', count = stone_amount }, enable_looted = true}
         end
     else
-        player.surface.spill_item_stack(position, { name = 'stone', count = stone_amount }, true)
+        player.surface.spill_item_stack{ position = position, stack = { name = 'stone', count = stone_amount }, enable_looted = true}
     end
 end
 
@@ -182,11 +182,11 @@ local function on_entity_died(event)
 
     local count = math_random(6, 9)
     storage.rocks_yield_ore['ores_mined'] = storage.rocks_yield_ore['ores_mined'] + count
-    surface.spill_item_stack(pos, { name = ore, count = count }, true)
+    surface.spill_item_stack{ position = pos, stack = { name = ore, count = count }, enable_looted = true}
 
     count = math_random(1, 3)
     storage.rocks_yield_ore['ores_mined'] = storage.rocks_yield_ore['ores_mined'] + count
-    surface.spill_item_stack(pos, { name = 'stone', count = math_random(1, 3) }, true)
+    surface.spill_item_stack{ position = pos, stack = { name = 'stone', count = math_random(1, 3) }, enable_looted = true}
 
     storage.rocks_yield_ore['rocks_broken'] = storage.rocks_yield_ore['rocks_broken'] + 1
 end

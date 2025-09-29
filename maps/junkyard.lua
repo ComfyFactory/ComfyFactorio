@@ -73,7 +73,7 @@ local entity_replacements = {
     ['stone'] = scrap.get_scrap_name(4)
 }
 
-local wrecks = { 'big-ship-wreck-1', 'big-ship-wreck-2', 'big-ship-wreck-3' }
+local wrecks = { 'crash-site-spaceship-wreck-big-1', 'crash-site-spaceship-wreck-big-2', 'big-ship-wreck-3' }
 
 local scrap_buildings = {
     'nuclear-reactor',

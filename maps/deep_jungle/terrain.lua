@@ -26,7 +26,7 @@ local function secret_shop(pos, surface)
         { price = { { 'coin', random(200, 300) } },    offer = { type = 'give-item', item = 'heavy-armor' } },
         { price = { { 'coin', random(400, 800) } },    offer = { type = 'give-item', item = 'modular-armor' } },
         { price = { { 'coin', random(1000, 2000) } },  offer = { type = 'give-item', item = 'power-armor' } },
-        { price = { { 'coin', random(2500, 5000) } },  offer = { type = 'give-item', item = 'fusion-reactor-equipment' } },
+        { price = { { 'coin', random(2500, 5000) } },  offer = { type = 'give-item', item = 'fission-reactor-equipment' } },
         { price = { { 'coin', random(200, 400) } },    offer = { type = 'give-item', item = 'battery-equipment' } },
         { price = { { 'coin', random(150, 250) } },    offer = { type = 'give-item', item = 'belt-immunity-equipment' } },
         { price = { { 'coin', random(100, 200) } },    offer = { type = 'give-item', item = 'night-vision-equipment' } },

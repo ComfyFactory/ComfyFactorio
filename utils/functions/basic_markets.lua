@@ -53,7 +53,7 @@ market.armor = {
 
 market.equipment = {
     ['solar-panel-equipment'] = { value = 240, rarity = 3 },
-    ['fusion-reactor-equipment'] = { value = 9000, rarity = 7 },
+    ['fission-reactor-equipment'] = { value = 9000, rarity = 7 },
     ['energy-shield-equipment'] = { value = 400, rarity = 6 },
     ['energy-shield-mk2-equipment'] = { value = 4000, rarity = 8 },
     ['battery-equipment'] = { value = 160, rarity = 2 },

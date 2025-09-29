@@ -57,7 +57,7 @@ local function check_player_ports()
 
         --if cooldowns[player.name] - game.tick > 0 then goto continue end
 
-        if player.surface.find_entity('player-port', player.position) then
+        if player.surface.find_entity('proxy-container', player.position) then
             if cooldowns[player.name] > game.tick then
                 player.play_sound { path = 'utility/armor_insert', volume_modifier = 1 }
                 if math.random(1, 3) == 1 then
@@ -91,7 +91,7 @@ local function built_entity(event)
     if not entity or not entity.valid then
         return
     end
-    if entity.name ~= 'player-port' then
+    if entity.name ~= 'proxy-container' then
         return
     end
 

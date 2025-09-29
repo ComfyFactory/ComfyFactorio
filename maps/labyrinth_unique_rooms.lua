@@ -2947,7 +2947,7 @@ local unique_rooms = {
             { position = { x = 3.5, y = 16.5 },                name = 'heat-pipe',            direction = 0, force = 'enemy' },
             { position = { x = 6.1328125, y = 18.0546875 },    name = 'small-scorchmark',     direction = 0, force = 'neutral' },
             { position = { x = 4.5, y = 16.5 },                name = 'heat-pipe',            direction = 0, force = 'enemy' },
-            { position = { x = 8.5, y = 18.5 },                name = 'big-ship-wreck-2',     direction = 0, force = 'neutral' },
+            { position = { x = 8.5, y = 18.5 },                name = 'crash-site-spaceship-wreck-big-2',     direction = 0, force = 'neutral' },
             { position = { x = 22, y = 18.5 },                 name = 'spitter-spawner',      direction = 0, force = 'enemy' },
             { position = { x = 28, y = 18 },                   name = 'curved-rail-remnants', direction = 6, force = 'neutral' },
             { position = { x = 3.046875, y = 21.29296875 },    name = 'small-scorchmark',     direction = 0, force = 'neutral' },

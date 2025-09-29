@@ -93,7 +93,7 @@ local loot = {
     --{{name = "battery-mk2-equipment", count = 1}, weight = 2},
     { { name = 'energy-shield-equipment', count = 1 },      weight = 2 },
     { { name = 'exoskeleton-equipment', count = 1 },        weight = 2 },
-    { { name = 'fusion-reactor-equipment', count = 1 },     weight = 2 },
+    { { name = 'fission-reactor-equipment', count = 1 },     weight = 2 },
     { { name = 'repair-pack', count = 1 },                  weight = 6 },
     { { name = 'coal', count = 16 },                        weight = 3 },
     --{{name = "solid-fuel", count = 8}, weight = 2},

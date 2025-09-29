@@ -105,7 +105,7 @@ local technology_weights = {
     ['follower-robot-count-5'] = { biter = 1, spitter = 1, worm = 1 },
     ['follower-robot-count-6'] = { biter = 1, spitter = 1, worm = 1 },
     ['follower-robot-count-7'] = { biter = 1, spitter = 1, worm = 1 },
-    ['fusion-reactor-equipment'] = { biter = 1, spitter = 1, worm = 1 },
+    ['fission-reactor-equipment'] = { biter = 1, spitter = 1, worm = 1 },
     ['gate'] = { biter = 1, spitter = 1, worm = 1 },
     ['gun-turret'] = { biter = 1, spitter = 1, worm = 1 },
     ['heavy-armor'] = { biter = 5, spitter = 5, worm = 5 },

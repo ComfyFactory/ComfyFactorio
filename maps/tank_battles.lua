@@ -52,7 +52,7 @@ local loot = {
     { { name = 'uranium-cannon-shell', count = 8 },           weight = 6 },
     { { name = 'explosive-uranium-cannon-shell', count = 8 }, weight = 6 },
     { { name = 'energy-shield-equipment', count = 1 },        weight = 2 },
-    { { name = 'fusion-reactor-equipment', count = 1 },       weight = 2 },
+    { { name = 'fission-reactor-equipment', count = 1 },       weight = 2 },
     { { name = 'repair-pack', count = 1 },                    weight = 6 },
     { { name = 'coal', count = 16 },                          weight = 3 },
     { { name = 'nuclear-fuel', count = 1 },                   weight = 1 },

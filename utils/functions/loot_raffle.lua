@@ -384,7 +384,7 @@ local tech_tier_list = {
     'efficiency-module-3',
     'space-science-pack',
     'beacon',
-    'fusion-reactor-equipment',
+    'fission-reactor-equipment',
     'artillery-wagon',
     'artillery-turret',
     'artillery-shell',

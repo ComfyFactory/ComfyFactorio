@@ -87,7 +87,7 @@ local table_of_loots =
     { name = 'exoskeleton-equipment', count = 1 },
     { name = 'battery-mk2-equipment', count = 1 },
     { name = 'energy-shield-equipment', count = 1 },
-    { name = 'fusion-reactor-equipment', count = 1 },
+    { name = 'fission-reactor-equipment', count = 1 },
     { name = 'solid-fuel', count = 20 },
     { name = 'rocket-fuel', count = 10 },
     { name = 'nuclear-fuel', count = 1 },

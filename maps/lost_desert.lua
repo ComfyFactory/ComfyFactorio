@@ -52,7 +52,7 @@ local function get_noise(name, pos, seed)
 end
 
 local function shipwreck(position, surface)
-    local wrecks = { 'big-ship-wreck-1', 'big-ship-wreck-2', 'big-ship-wreck-3' }
+    local wrecks = { 'crash-site-spaceship-wreck-big-1', 'crash-site-spaceship-wreck-big-2', 'big-ship-wreck-3' }
     local wreck = wrecks[math.random(1, #wrecks)]
 
     local wreck_raffle_table = {}

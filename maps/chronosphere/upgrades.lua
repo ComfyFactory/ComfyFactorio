@@ -202,7 +202,7 @@ local function fusion_buy()
     local objective = Chrono_table.get_table()
     if objective.upgradechest[11] and objective.upgradechest[11].valid then
         local inv = objective.upgradechest[11].get_inventory(defines.inventory.chest)
-        inv.insert({name = 'fusion-reactor-equipment', count = 1})
+        inv.insert({name = 'fission-reactor-equipment', count = 1})
     end
 end
 
