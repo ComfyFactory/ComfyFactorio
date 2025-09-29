@@ -736,6 +736,52 @@ local clear_globals_token =
         end
     )
 
+local function set_multi_command()
+    local current_level = Public.get('current_level')
+    local spawned_markets = Public.get('spawned_markets')
+
+    local last_attack_tick = Public.get('last_attack_tick')
+    if last_attack_tick and last_attack_tick > game.tick then
+        return
+    end
+
+    local surface = game.surfaces[1]
+    if surface.daytime < 0.35 then
+        return
+    end
+    if surface.daytime > 0.65 then
+        return
+    end
+
+    Public.set('last_attack_tick', game.tick + 2000)
+
+    if current_level > 1 then
+        current_level = current_level - 1
+    end
+
+    if current_level == 1 then
+        return -- we don't attack during the first level
+    end
+
+    local market = spawned_markets[current_level] and spawned_markets[current_level].market
+    if not market or not market.valid then
+        return
+    end
+    surface.set_multi_command(
+        {
+            command =
+            {
+                type = defines.command.attack_area,
+                destination = market.position,
+                radius = 125,
+                distraction = defines.distraction.by_anything
+            },
+            unit_count = random(8, 32),
+            force = 'enemy',
+            unit_search_distance = 1000
+        })
+end
+
 local function add_market_slot(market)
     local this = Public.get()
     local current_level = Public.get('current_level')
@@ -1433,5 +1479,6 @@ Public.buried_tech = BuriedBiter.buried_tech
 Public.buried_worm = BuriedBiter.buried_worm
 Public.reset_buried_biters = BuriedBiter.reset_buried_biters
 Public.check_alive_enemies = check_alive_enemies
+Public.set_multi_command = set_multi_command
 
 return Public

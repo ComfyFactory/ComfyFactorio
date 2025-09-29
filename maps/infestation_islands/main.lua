@@ -279,7 +279,12 @@ local function on_init()
 
     this.piercing_ammo_grants = false
 
+    this.last_attack_tick = game.tick
+
     Func.reset_buried_biters()
+
+    surface.freeze_daytime = false
+    surface.ticks_per_day = 25200
 
     game.forces['player'].technologies['landfill'].enabled = false
     game.forces['player'].technologies['night-vision-equipment'].enabled = false
@@ -324,6 +329,7 @@ local function on_tick()
     if game.tick % 200 == 0 then
         if this.game_lost then return end
         Func.check_alive_enemies()
+        Func.set_multi_command()
         if this.completed_levels[this.current_level] then
             return
         end
