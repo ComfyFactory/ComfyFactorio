@@ -223,8 +223,9 @@ local function on_init()
     this.corpses_raffle = corpses_raffle
 
     this.stages = {}
+    this.last_level = 10
     local island_level = 12
-    for _ = 1, 30 do
+    for _ = 1, this.last_level + 1 do
         this.stages[#this.stages + 1] =
         {
             size = 16 + (32 + island_level) * 1.5
@@ -233,6 +234,8 @@ local function on_init()
     end
 
     this.stages[#this.stages].final = true
+
+    this.final_battle = false
 
     this.level_vectors = {}
     this.alive_boss_enemy_entities = {}
@@ -266,9 +269,17 @@ local function on_init()
 
     this.nomed_marked = nil
 
-    Func.reset_buried_biters()
+    this.loot_stats =
+    {
+        rare = 48,
+        normal = 48
+    }
 
-    Func.generate_decoratives()
+    this.infinite_ammo_grants = 1
+
+    this.piercing_ammo_grants = false
+
+    Func.reset_buried_biters()
 
     game.forces['player'].technologies['landfill'].enabled = false
     game.forces['player'].technologies['night-vision-equipment'].enabled = false
@@ -301,16 +312,18 @@ local function on_tick()
     if game.tick % 150 == 0 then
         drift_corpses_toward_beach()
         if this.infini_chest and this.infini_chest.valid then
-            if this.current_level > 0 and this.current_level <= 10 then
-                this.infini_chest.insert({ name = 'firearm-magazine', count = 1 })
-            elseif this.current_level > 10 then
-                this.infini_chest.insert({ name = 'piercing-rounds-magazine', count = 1 })
+            local magazine_name = 'firearm-magazine'
+            if this.piercing_ammo_grants then
+                magazine_name = 'piercing-rounds-magazine'
             end
+
+            this.infini_chest.insert({ name = magazine_name, count = this.infinite_ammo_grants or 1 })
         end
     end
 
     if game.tick % 200 == 0 then
         if this.game_lost then return end
+        Func.check_alive_enemies()
         if this.completed_levels[this.current_level] then
             return
         end
@@ -319,14 +332,38 @@ local function on_tick()
     end
 
 
-    if this.game_lost and this.game_reset_tick then
+    if (this.game_lost or this.game_won) and this.game_reset_tick then
         this.game_reset_tick = this.game_reset_tick - 1
         if this.game_reset_tick % 600 == 0 then
             game.print('Game will reset in ' .. this.game_reset_tick / 60 .. ' seconds!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
         end
         if this.game_reset_tick <= 0 then
+            if this.render_ammo_text then
+                this.render_ammo_text.destroy()
+                this.render_ammo_text = nil
+            end
+            if this.infini_chest and this.infini_chest.valid then
+                this.infini_chest.destroy()
+                this.infini_chest = nil
+            end
+
+            for _, market_data in pairs(this.spawned_markets) do
+                if market_data and market_data.market and market_data.market.valid then
+                    if market_data.render_protect_text then
+                        market_data.render_protect_text.destroy()
+                        market_data.render_protect_text = nil
+                    end
+                    if market_data.render_checkpoint_text then
+                        market_data.render_checkpoint_text.destroy()
+                        market_data.render_checkpoint_text = nil
+                    end
+                    market_data.market.destroy()
+                end
+            end
+
             this.game_reset_tick = nil
             this.game_lost = false
+            this.game_won = false
             Scheduler.can_run_scheduler(false)
             clear_surface()
             on_init()
