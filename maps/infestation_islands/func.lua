@@ -6,6 +6,8 @@ local Scheduler = require 'utils.scheduler'
 local Public = require 'maps.infestation_islands.table'
 local Commands = require 'utils.commands'
 local BuriedBiter = require 'maps.infestation_islands.buried_biters'
+local Loot = require 'maps.infestation_islands.loot'
+local ParticleEffects = require 'modules.particle_effects'
 
 local island_radius = 6
 local max_island_radius = 256
@@ -122,6 +124,15 @@ local do_place_decorative_token =
         end
     )
 
+local decoratives =
+{
+    'red-croton',
+    'brown-hairy-grass',
+    'muddy-stump',
+    'green-bush-mini',
+    'nuclear-ground-patch',
+}
+
 local calculate_bridge_token =
     Scheduler.set(
         function (event)
@@ -149,8 +160,8 @@ local calculate_bridge_token =
                         if whitelist[tile.name] then
                             this.path_tiles[#this.path_tiles + 1] = { name = tile_name, position = p }
                             positions[#positions + 1] = { name = tile_name, position = p }
-                            if random(1, 2) == 1 then
-                                dec[#dec + 1] = { name = 'red-croton', position = p, amount = 1 }
+                            if random(1, 10) == 1 then
+                                dec[#dec + 1] = { name = decoratives[random(1, #decoratives)], position = p, amount = 1 }
                             end
                         end
                     end
@@ -161,7 +172,7 @@ local calculate_bridge_token =
 
             local data = { pos_tbl = dec }
 
-            Scheduler.timeout(tick_index, do_place_decorative_token, { child_id = slowly_place_brige_tiles_token, pos_tbl = data.pos_tbl, count = #dec, surface = surface })
+            Scheduler.timeout(tick_index, do_place_decorative_token, { pos_tbl = data.pos_tbl, count = #dec, surface = surface })
 
             local noise = simplex_noise(position.x * m, position.y * m, seed_1)
             local noise_2 = simplex_noise(position.x * m, position.y * m, seed_2)
@@ -180,11 +191,17 @@ local calculate_bridge_token =
 
             this.position = { x = position.x + vector[1], y = position.y + vector[2] }
 
+            local radius = this.stages[this.current_stage].size
+
+            if this.current_stage == this.last_level then
+                radius = max_island_radius
+            end
+
             local level_data =
             {
                 position = this.position,
                 level = this.current_level,
-                radius = this.stages[this.current_stage].size
+                radius = radius
             }
 
             if not next(level_data.position) then
@@ -217,16 +234,11 @@ local noise_vector_tiles_path_token =
 
             local base_vector = get_vector(position)
 
-            -- if (base_vector[1] == 1 or base_vector[1] == -1) and random(1, 2) == 1 then
-            -- base_vector = { base_vector[1], 1 }
-            -- end
-
             local callback = Scheduler.get(calculate_bridge_token)
 
             Scheduler.return_callback(
                 function (data)
                     for _ = 1, length, 1 do
-                        data.tick_index = data.tick_index + 1
                         callback(
                             {
                                 seed_1 = seed_1,
@@ -263,34 +275,6 @@ local function is_inside_island(x, y, radius)
     radius = radius or island_radius
     local distance_to_center = sqrt(x ^ 2 + y ^ 2)
     return distance_to_center < radius
-end
-
-local function generate_decoratives()
-    local this = Public.get()
-    local decoratives_generated = this.decoratives_generated
-    if decoratives_generated then
-        return
-    end
-
-    local game_decoratives = prototypes.decorative
-    local dec_tbl = {}
-    local names = {}
-
-    for _, decorative in pairs(game_decoratives) do
-        names[#names + 1] = decorative.name
-    end
-
-    local taken = {}
-    while #dec_tbl < 3 and #names > 0 do
-        local idx = math.random(#names)
-        local name = names[idx]
-        if not taken[name] then
-            table.insert(dec_tbl, name)
-            taken[name] = true
-        end
-    end
-
-    this.decoratives_generated = dec_tbl
 end
 
 local request_to_generate_chunks_token =
@@ -470,6 +454,22 @@ local function do_buried_biters()
     end
 end
 
+local function check_alive_enemies()
+    local this = Public.get()
+    if this.alive_enemies <= 0 then
+        return
+    end
+
+    local count = 0
+    for _, enemy in pairs(game.surfaces[1].find_entities_filtered({ force = 'enemy' })) do
+        if enemy and enemy.valid then
+            count = count + 1
+        end
+    end
+
+    this.alive_enemies = count
+end
+
 local function get_radius(position, size, divided_by)
     local noise = island_noise(position, divided_by)
     local rr = size
@@ -590,6 +590,24 @@ local place_tiles_token =
         end
     )
 
+local place_decoratives_token =
+    Scheduler.set(
+        function (event)
+            local surface = event.surface
+            local mirror_decorative = event.mirror_decorative
+            for i = 1, #mirror_decorative do
+                local decorative = mirror_decorative[i]
+                if decorative and decorative.decorative and decorative.decorative.name then
+                    surface.create_decoratives
+                    {
+                        check_collision = true,
+                        decoratives = { { name = decorative.decorative.name, position = decorative.position, amount = decorative.amount } }
+                    }
+                end
+            end
+        end
+    )
+
 
 local do_place_simple_entities_token =
     Scheduler.set(
@@ -707,12 +725,34 @@ local clear_globals_token =
     )
 
 local function add_market_slot(market)
-    market.add_market_item(
+    local this = Public.get()
+    local current_level = Public.get('current_level')
+    local offers =
+    {
         {
             price = {},
             offer = { type = 'nothing', effect_description = 'Progress onwards to the next island!' }
         }
-    )
+    }
+    if random(1, 2) == 1 then
+        offers[#offers + 1] =
+        {
+            price = {},
+            offer = { type = 'nothing', effect_description = 'Generate more ammo in the infinity chest!\nPrice: ' .. 500 * current_level .. ' coins' }
+        }
+    end
+    if not this.piercing_ammo_grants then
+        if random(1, 10) == 1 then
+            offers[#offers + 1] =
+            {
+                price = {},
+                offer = { type = 'nothing', effect_description = 'Generate piercing rounds ammo in the infinity chest!\nPrice: ' .. 1000 * current_level .. ' coins' }
+            }
+        end
+    end
+    for _, offer in pairs(offers) do
+        market.add_market_item(offer)
+    end
 end
 
 local create_biters_token =
@@ -738,25 +778,55 @@ local create_biters_token =
                 spitter_types = { 'small-spitter', 'medium-spitter' }
                 worm_types = { 'small-worm-turret', 'medium-worm-turret' }
                 spawner_types = { 'biter-spawner', 'spitter-spawner' }
-            elseif level <= 10 then
+            elseif level < 8 then
                 biter_types = { 'small-biter', 'medium-biter', 'big-biter' }
                 spitter_types = { 'small-spitter', 'medium-spitter', 'big-spitter' }
                 worm_types = { 'small-worm-turret', 'medium-worm-turret', 'big-worm-turret' }
                 spawner_types = { 'biter-spawner', 'spitter-spawner' }
             else
-                biter_types = { 'medium-biter', 'big-biter', 'behemoth-biter' }
-                spitter_types = { 'medium-spitter', 'big-spitter', 'behemoth-spitter' }
-                worm_types = { 'medium-worm-turret', 'big-worm-turret', 'behemoth-worm-turret' }
+                biter_types = { 'big-biter', 'behemoth-biter', 'behemoth-biter' }
+                spitter_types = { 'big-spitter', 'behemoth-spitter', 'behemoth-spitter' }
+                worm_types = { 'big-worm-turret', 'behemoth-worm-turret', 'behemoth-worm-turret' }
                 spawner_types = { 'biter-spawner', 'spitter-spawner' }
             end
 
+            local final_battle = this.final_battle
+
+            if final_battle then
+                local center_position = this.centered_points[this.current_level]
+                local e = surface.create_entity({ name = 'rocket-silo', position = center_position.position, force = 'player' })
+                if e and e.valid then
+                    e.minable = false
+                    e.destructible = false
+                end
+            end
+
+            local random_positions =
+            {
+                { x = position.x + 10, y = position.y + 10 },
+                { x = position.x - 10, y = position.y + 10 },
+                { x = position.x + 10, y = position.y - 10 },
+                { x = position.x - 10, y = position.y - 10 },
+                { x = position.x + 15, y = position.y + 10 },
+                { x = position.x - 15, y = position.y - 10 },
+                { x = position.x + 10, y = position.y - 15 },
+                { x = position.x - 10, y = position.y + 15 }
+            }
+
+            shuffle(random_positions)
+
+            position = random_positions[random(1, #random_positions)]
+
             local spawner_count = math.min(random(1, 2) + math.floor(level / 3), 5)
+            if final_battle then
+                spawner_count = 8
+            end
             if this.current_level == 1 then
                 spawner_count = 0
             end
             for _ = 1, spawner_count do
                 local spawner_type = spawner_types[random(1, #spawner_types)]
-                local p = surface.find_non_colliding_position('assembling-machine-1', position, 32, 2)
+                local p = surface.find_non_colliding_position('rocket-silo', position, 128, 10)
                 if p then
                     local spawner = surface.create_entity({ name = spawner_type, position = p })
                     if spawner and spawner.valid then
@@ -765,13 +835,19 @@ local create_biters_token =
                 end
             end
 
+            shuffle(random_positions)
+            position = random_positions[random(1, #random_positions)]
+
             local worm_count = math.min(random(2, 4) + math.floor(level / 2), 8)
             if this.current_level == 1 then
                 worm_count = 0
             end
+            if final_battle then
+                worm_count = 32
+            end
             for _ = 1, worm_count do
                 local worm_type = worm_types[random(1, #worm_types)]
-                local p = surface.find_non_colliding_position('assembling-machine-1', position, 32, 2)
+                local p = surface.find_non_colliding_position('rocket-silo', position, 128, 10)
                 if p then
                     local e = surface.create_entity({ name = worm_type, position = p })
                     if e and e.valid then
@@ -780,10 +856,16 @@ local create_biters_token =
                 end
             end
 
+            shuffle(random_positions)
+            position = random_positions[random(1, #random_positions)]
+
             local base_enemy_count = 30 + (level * 10)
             local enemy_count = random(base_enemy_count, base_enemy_count + 30)
             if this.current_level == 1 then
                 enemy_count = 4
+            end
+            if final_battle then
+                enemy_count = 350
             end
             for _ = 1, enemy_count do
                 local enemy_type
@@ -793,11 +875,29 @@ local create_biters_token =
                     enemy_type = spitter_types[random(1, #spitter_types)]
                 end
 
-                local p = surface.find_non_colliding_position('wooden-chest', position, 16, 2)
+                local p = surface.find_non_colliding_position('wooden-chest', position, 128, 10)
                 if p then
                     local e = surface.create_entity({ name = enemy_type, position = p })
                     if e and e.valid then
+                        e.ai_settings.allow_try_return_to_spawner = false
+                        e.ai_settings.allow_destroy_when_commands_fail = false
                         this.alive_enemies = this.alive_enemies + 1
+                    end
+                end
+            end
+
+            shuffle(random_positions)
+            position = random_positions[random(1, #random_positions)]
+
+            if final_battle then
+                for _ = 1, 32 do
+                    local p = surface.find_non_colliding_position('gun-turret', position, 128, 10)
+                    if p then
+                        local e = surface.create_entity({ name = 'gun-turret', position = p, force = 'enemy' })
+                        if e and e.valid then
+                            e.insert({ name = 'uranium-rounds-magazine', count = 200 })
+                            this.alive_enemies = this.alive_enemies + 1
+                        end
                     end
                 end
             end
@@ -925,31 +1025,6 @@ local do_place_entities_token =
                 MapFunctions.draw_oil_circle(ore_positions[6], 'crude-oil', surface, 8, 200000)
             end
 
-            local decoratives = game.surfaces['island'].find_decoratives_filtered({ area = { { position.x - 100, position.y - 100 }, { position.x + 100, position.y + 100 } } })
-            Scheduler.return_callback(
-                function (data)
-                    for _, decorative in pairs(decoratives) do
-                        local start_index = (data.table_index - 1) * data.total_calls + 1
-                        local end_index = start_index + data.total_calls - 1
-
-                        data.pos_tbl[data.point_index] = { position = { position.x + decorative.position.x, position.y + decorative.position.y }, name = decorative.decorative.name, amount = decorative.amount }
-
-                        if data.iterator_index == end_index or data.iterator_index > #decoratives then
-                            data.table_index = data.table_index + 1
-                            data.tick_index = data.tick_index + 1
-                            Scheduler.timeout(data.tick_index, do_place_decorative_token, { pos_tbl = data.pos_tbl, count = data.total_calls, surface = surface })
-                            data.pos_tbl = {}
-                            data.point_index = 1
-                            if data.table_index > #decoratives then
-                                break
-                            end
-                        end
-                        data.iterator_index = data.iterator_index + 1
-                        data.point_index = data.point_index + 1
-                    end
-                end
-            )
-
             local seed = random(1, 1000000)
 
             Scheduler.return_callback(
@@ -963,7 +1038,7 @@ local do_place_entities_token =
                         if data.iterator_index == end_index or data.iterator_index > #this.tiles then
                             data.table_index = data.table_index + 1
                             data.tick_index = data.tick_index + 1
-                            Scheduler.timeout(data.tick_index, do_place_simple_entities_token, { pos_tbl = data.pos_tbl, count = data.total_calls, surface = surface, seed = seed, child_id = do_place_decorative_token })
+                            Scheduler.timeout(data.tick_index, do_place_simple_entities_token, { pos_tbl = data.pos_tbl, count = data.total_calls, surface = surface, seed = seed })
                             data.pos_tbl = {}
                             data.point_index = 1
                             if data.table_index > #this.tiles then
@@ -976,7 +1051,9 @@ local do_place_entities_token =
                 end
             )
 
-            Scheduler.timeout(5, create_market_token, { child_id = do_place_simple_entities_token, surface = surface, position = position, radius = radius })
+            if not this.final_battle then
+                Scheduler.timeout(5, create_market_token, { child_id = do_place_simple_entities_token, surface = surface, position = position, radius = radius })
+            end
             Scheduler.timeout(10, create_biters_token, { child_id = create_market_token, surface = surface, position = position, radius = radius })
             Scheduler.timeout(15, clear_globals_token, { child_id = create_biters_token })
             this.gamestate = 33
@@ -991,6 +1068,13 @@ local draw_island_inner_task_token =
             local radius = event.radius
             local main_island = event.main_island or false
 
+            local r = 100
+            game.surfaces['island'].request_to_generate_chunks({ position.x, position.y }, 2)
+            game.surfaces['island'].force_generate_chunk_requests()
+            local mirror_decorative = game.surfaces['island'].find_decoratives_filtered({ area = { { position.x - r, position.y - r }, { position.x + r, position.y + r } } })
+
+            local max_count = 400
+
             local count = 1
             local c = 1
             local positions = {}
@@ -998,16 +1082,19 @@ local draw_island_inner_task_token =
                 for x = radius * -1, radius, 1 do
                     positions[count] = { x = x, y = y }
                     count = count + 1
-                    if count == 256 then
+                    if count == max_count + 1 then
                         c = c + 1
-                        Scheduler.timeout(c, place_tiles_token, { positions = positions, position = position, radius = radius, count = 255, surface = surface })
+                        Scheduler.timeout(c, place_tiles_token, { positions = positions, position = position, radius = radius, count = max_count, surface = surface })
+
                         count = 1
                         positions = {}
                     end
                 end
             end
 
-            Scheduler.timeout(50, do_place_entities_token, { surface = surface, position = position, radius = radius, child_id = place_tiles_token, main_island = main_island })
+            Scheduler.timeout(25, place_decoratives_token, { surface = surface, mirror_decorative = mirror_decorative })
+
+            Scheduler.timeout(50, do_place_entities_token, { surface = surface, position = position, positions = positions, radius = radius, child_id = place_tiles_token, main_island = main_island })
         end
     )
 
@@ -1017,6 +1104,13 @@ local set_new_island_token =
             local this = Public.get()
             local position = this.path_tiles[#this.path_tiles].position
             local radius = this.stages[this.current_stage].size
+
+            if this.current_stage == this.last_level then
+                radius = max_island_radius
+                this.final_battle = true
+                game.forces.enemy.set_evolution_factor(1, game.surfaces[1])
+                game.print('The final island has been discovered! The battle has begun!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
+            end
             this.path_tiles = nil
             Public.draw_main_island(position, radius)
         end
@@ -1041,8 +1135,8 @@ local draw_bridge_token =
                     surface = surface,
                     tbl_tiles = path_tile_names,
                     position = position,
-                    length = 200,
-                    brush_size = random(2, 6),
+                    length = 300,
+                    brush_size = this.final_battle and 10 or 5,
                     whitelist = draw_path_tile_whitelist,
                     seed_1 = seed_1,
                     seed_2 = seed_2,
@@ -1051,9 +1145,9 @@ local draw_bridge_token =
                 'noise_vector_tiles_path_1'
             )
 
-            Scheduler.timeout(10, request_to_generate_chunks_token, { size = 8, surface = surface, sleep = game.tick + 500 })
+            Scheduler.timeout(10, request_to_generate_chunks_token, { size = 8, surface = surface })
             this.current_stage = this.current_stage + 1
-            Scheduler.timeout(50, set_new_island_token, { child_id = request_to_generate_chunks_token, sleep = game.tick + 200 })
+            Scheduler.timeout(50, set_new_island_token, { child_id = request_to_generate_chunks_token, sleep = game.tick + 50 })
         end
     )
 
@@ -1138,16 +1232,22 @@ local function on_entity_died(event)
         end
         this.game_reset_tick = 5400
         this.game_lost = true
-        game.print('The market was overrun by hungry biters!')
+        game.print('The market was overrun by hungry biters!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
         return
     end
     if entity and entity.valid and entity.force.name == 'enemy' then
         this.alive_enemies = this.alive_enemies - 1
+        entity.surface.spill_item_stack({ position = entity.position, stack = { name = 'coin', count = random(1, 5), quality = 'normal' } })
         if this.alive_enemies < 0 then this.alive_enemies = 0 end
         if this.alive_enemies == 0 and not this.completed_levels[this.current_level] then
             this.completed_levels[this.current_level] = true
             for _, player in pairs(game.connected_players) do
                 player.play_sound { path = 'utility/game_won', volume_modifier = 1 }
+            end
+            if this.current_level == this.last_level then
+                game.print('All the bugs have been vanquished from the islands! GG!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
+                this.game_won = true
+                this.game_reset_tick = 5400
             end
         end
     end
@@ -1177,24 +1277,87 @@ local function on_market_item_purchased(event)
         return
     end
     if string.find(bought_offer.effect_description, 'onwards') then
-        entity.remove_market_item(1)
-        entity.operable = false
+        if this.game_won then
+            return
+        end
+        entity.remove_market_item(offer_index)
+        if not entity.get_market_items() then
+            entity.operable = false
+        end
         this.position = entity.position
 
         if this.current_level > 1 then
             reward_level(entity.surface, this.centered_points[this.current_level])
         end
 
-        this.spawned_markets[this.current_stage].market.destructible = true
+        local market = this.spawned_markets[this.current_stage].market
+
+        market.destructible = true
 
         this.current_level = this.current_level + 1
 
-        game.print(player.name .. ' has advanced to level ' .. this.current_level)
+        game.print(player.name .. ' has advanced to level ' .. this.current_level, { color = { r = 0.22, g = 0.88, b = 0.22 } })
 
         this.alive_enemies = 0
         this.alive_boss_enemy_count = 0
 
+        local surface = entity.surface
+
+        local loot_found = 0
+        for _ = 1, random(1, 3), 1 do
+            local treasure_position = surface.find_non_colliding_position('stone-furnace', market.position, 32, 1)
+
+            if treasure_position then
+                if random(1, 2) == 1 then
+                    loot_found = loot_found + 1
+                    Loot.add_loot(surface, treasure_position, 'iron-chest', true)
+                    ParticleEffects.particle_effects(surface, treasure_position, 80)
+                elseif random(1, 20) == 1 then
+                    loot_found = loot_found + 1
+                    Loot.add_loot(surface, treasure_position, 'steel-chest', true)
+                    ParticleEffects.particle_effects(surface, treasure_position, 80)
+                elseif random(1, 40) == 1 then
+                    loot_found = loot_found + 1
+                    Loot.add_loot_rare(surface, treasure_position, 'crash-site-chest-1', random(1, 1024))
+                    ParticleEffects.particle_effects(surface, treasure_position, 120)
+                end
+            end
+        end
+
+        if loot_found == 1 then
+            game.print('A magical chest has appeared near the market!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
+        elseif loot_found > 1 then
+            game.print('Magical chests have appeared near the market!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
+        end
+
         Scheduler.timeout(1, draw_bridge_token, { surface = entity.surface, position = this.position, child_id = request_to_generate_chunks_token })
+    elseif string.find(bought_offer.effect_description, 'more ammo') then
+        local inventory = player.get_main_inventory()
+        local count = inventory.get_item_count({ name = 'coin' })
+        if count and count < 500 * this.current_level then
+            player.print('You do not have enough coins to purchase this offer!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
+            return
+        elseif not count then
+            return
+        end
+        inventory.remove({ name = 'coin', count = 500 * this.current_level })
+        this.infinite_ammo_grants = this.infinite_ammo_grants + 1
+        game.print('Infinite ammo now grants more ammo thanks to ' .. player.name .. '!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
+        entity.remove_market_item(offer_index)
+    elseif string.find(bought_offer.effect_description, 'piercing') then
+        local inventory = player.get_main_inventory()
+        local count = inventory.get_item_count({ name = 'coin' })
+        if count and count < 1000 * this.current_level then
+            player.print('You do not have enough coins to purchase this offer!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
+            return
+        elseif not count then
+            return
+        end
+        inventory.remove({ name = 'coin', count = 1000 * this.current_level })
+        this.infinite_ammo_grants = this.infinite_ammo_grants + 1
+        this.piercing_ammo_grants = true
+        game.print('Infinite ammo now grants piercing rounds ammo thanks to ' .. player.name .. '!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
+        entity.remove_market_item(offer_index)
     end
 end
 
@@ -1217,7 +1380,7 @@ Commands.new('reset_island', 'Resets the island.')
             local this = Public.get()
             this.game_reset_tick = 0
             this.game_lost = true
-            player.print('The island has been reset!')
+            player.print('The island has been reset!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
         end
     )
 
@@ -1228,7 +1391,7 @@ Commands.new('set_biter_count', 'Sets the biter count.')
         function (player, count)
             local this = Public.get()
             this.max_biters_per_island = count
-            player.print('The biter count has been set to ' .. count .. '!')
+            player.print('The biter count has been set to ' .. count .. '!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
         end
     )
 
@@ -1236,7 +1399,6 @@ Event.add(defines.events.on_chunk_generated, on_chunk_generated)
 Event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
 Event.add(defines.events.on_entity_died, on_entity_died)
 
-Public.generate_decoratives = generate_decoratives
 Public.draw_main_island = draw_main_island
 Public.on_chunk_generated = on_chunk_generated
 Public.on_entity_died = on_entity_died
@@ -1246,5 +1408,6 @@ Public.buried_biter = BuriedBiter.buried_biter
 Public.buried_tech = BuriedBiter.buried_tech
 Public.buried_worm = BuriedBiter.buried_worm
 Public.reset_buried_biters = BuriedBiter.reset_buried_biters
+Public.check_alive_enemies = check_alive_enemies
 
 return Public

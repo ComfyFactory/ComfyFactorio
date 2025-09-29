@@ -117,6 +117,8 @@ local function roll_health_boost(level)
 		return 1.5
 	elseif level <= 10 then
 		return 2
+	elseif level > 10 then
+		return 3
 	end
 end
 
@@ -153,7 +155,7 @@ local function spawn_biters(data)
 
 	Public.set('alive_enemies', alive_enemies + 1)
 
-	local health_boost = roll_health_boost(current_level)
+	local health_boost = roll_health_boost(current_level) or 1
 
 	if random(1, 30) == 1 then
 		BiterHealthBooster.add_boss_unit(unit, health_boost, 0.38)
@@ -205,7 +207,7 @@ local function spawn_tech(data)
 		return
 	end
 
-	local health_boost = roll_health_boost(current_level)
+	local health_boost = roll_health_boost(current_level) or 1
 
 
 	local unit = surface.create_entity({ name = unit_to_create, position = position, force = data.force or 'enemy' })
@@ -255,7 +257,7 @@ local function spawn_worms(data)
 
 	Public.set('alive_enemies', alive_enemies + 1)
 
-	local health_boost = roll_health_boost(current_level)
+	local health_boost = roll_health_boost(current_level) or 1
 
 	if random(1, 30) == 1 then
 		BiterHealthBooster.add_boss_unit(unit, health_boost, 0.38)
