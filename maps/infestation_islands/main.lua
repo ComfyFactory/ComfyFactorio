@@ -5,6 +5,16 @@ local Func = require 'maps.infestation_islands.func'
 local Map = require 'modules.map_info'
 local Task = require 'utils.task_token'
 local Scheduler = require 'utils.scheduler'
+local Difficulty = require 'modules.difficulty_vote_by_amount'
+
+if not script.active_mods.quality then
+    error('Quality mod is not enabled!')
+end
+
+if not script.active_mods['space-age'] then
+    error('Space Age mod is not enabled!')
+end
+
 
 local set_gamestate_token =
     Task.register(
@@ -154,6 +164,8 @@ local function on_player_joined_game(event)
         player.insert({ name = 'firearm-magazine', count = 16 })
         return
     end
+
+    Difficulty.difficulty_gui()
 end
 
 local function on_init()
@@ -173,9 +185,10 @@ local function on_init()
     this.game_lost = false
 
     local surface = game.surfaces[1]
+    surface.ignore_surface_conditions = true
     surface.request_to_generate_chunks({ x = 0, y = 0 }, 6)
 
-    local mgs = game.surfaces[1].map_gen_settings
+    local mgs = surface.map_gen_settings
     mgs.water = 9.9
     mgs.property_expression_names =
     {
@@ -184,7 +197,7 @@ local function on_init()
         ['control-setting:moisture:bias'] = '-0.050000',
         ['control-setting:moisture:frequency:multiplier'] = '6.000000',
     }
-    game.surfaces[1].map_gen_settings = mgs
+    surface.map_gen_settings = mgs
 
     local blacklist =
     {
@@ -286,12 +299,23 @@ local function on_init()
     surface.freeze_daytime = false
     surface.ticks_per_day = 25200
 
-    game.forces['player'].technologies['landfill'].enabled = false
-    game.forces['player'].technologies['night-vision-equipment'].enabled = false
-    game.forces['player'].technologies['artillery-shell-range-1'].enabled = false
-    game.forces['player'].technologies['artillery-shell-speed-1'].enabled = false
-    game.forces['player'].technologies['artillery'].enabled = false
-    game.forces['player'].technologies['atomic-bomb'].enabled = false
+    Difficulty.reset_difficulty_poll({ closing_timeout = game.tick + 36000 })
+    Difficulty.set_gui_width(20)
+    Difficulty.set('button_height', 54)
+    this.difficulty_vote_ended = false
+
+    local force = game.forces['player']
+    force.technologies['landfill'].enabled = false
+    force.technologies['night-vision-equipment'].enabled = false
+    force.technologies['artillery-shell-range-1'].enabled = false
+    force.technologies['artillery-shell-speed-1'].enabled = false
+    force.technologies['artillery'].enabled = false
+    force.technologies['atomic-bomb'].enabled = false
+    force.technologies['planet-discovery-fulgora'].researched = true
+    force.technologies['planet-discovery-gleba'].researched = true
+    force.technologies['planet-discovery-vulcanus'].researched = true
+    force.technologies['planet-discovery-aquilo'].researched = true
+    force.recipes['rocket-silo'].enabled = false
 end
 
 local gamestate_functions =
@@ -312,6 +336,11 @@ local function on_tick()
             update_stage_gui(message)
         else
             update_stage_gui()
+        end
+        if Difficulty.has_votes_ended() and not this.difficulty_vote_ended then
+            this.difficulty_vote_ended = true
+            game.print('The difficulty vote has ended! You may now progress to the next island!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
+            game.print('The difficulty is ' .. Difficulty.get('name') .. '!', { color = Difficulty.get('print_color') })
         end
     end
     if game.tick % 150 == 0 then

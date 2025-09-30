@@ -148,7 +148,7 @@ local function spawn_biters(data)
 	end
 
 
-	local unit = surface.create_entity({ name = unit_to_create, position = position, force = data.force or 'enemy' })
+	local unit = surface.create_entity({ name = unit_to_create, position = position, force = data.force or 'enemy', quality = data.quality or 'normal' })
 	if not unit or not unit.valid then
 		return
 	end
@@ -212,7 +212,7 @@ local function spawn_tech(data)
 	local health_boost = roll_health_boost(current_level) or 1
 
 
-	local unit = surface.create_entity({ name = unit_to_create, position = position, force = data.force or 'enemy' })
+	local unit = surface.create_entity({ name = unit_to_create, position = position, force = data.force or 'enemy', quality = data.quality or 'normal' })
 	if not unit or not unit.valid then
 		return
 	end
@@ -252,7 +252,7 @@ local function spawn_worms(data)
 		position = data.position
 	end
 
-	local unit = surface.create_entity({ name = unit_to_create, position = position })
+	local unit = surface.create_entity({ name = unit_to_create, position = position, quality = data.quality or 'normal' })
 	if not unit or not unit.valid then
 		return
 	end
@@ -273,7 +273,7 @@ local function spawn_worms(data)
 	end
 end
 
-function Public.buried_biter(surface, position, count, force)
+function Public.buried_biter(surface, position, count, force, quality)
 	if not (surface and surface.valid) then
 		return
 	end
@@ -307,7 +307,7 @@ function Public.buried_biter(surface, position, count, force)
 				this[game.tick + t][#this[game.tick + t] + 1] =
 				{
 					callback = 'spawn_biters',
-					data = { surface = surface, position = { x = position.x, y = position.y }, count = count or 1, force = force or 'enemy' }
+					data = { surface = surface, position = { x = position.x, y = position.y }, count = count or 1, force = force or 'enemy', quality = quality or 'normal' }
 				}
 			else
 				local tick = 2
@@ -315,7 +315,7 @@ function Public.buried_biter(surface, position, count, force)
 					this[game.tick + t][#this[game.tick + t] + 1 + tick] =
 					{
 						callback = 'spawn_biters',
-						data = { surface = surface, position = { x = position.x, y = position.y }, count = count or 1, force = force or 'enemy' }
+						data = { surface = surface, position = { x = position.x, y = position.y }, count = count or 1, force = force or 'enemy', quality = quality or 'normal' }
 					}
 					tick = tick + 2
 				end
@@ -324,7 +324,7 @@ function Public.buried_biter(surface, position, count, force)
 	end
 end
 
-function Public.buried_tech(surface, position, count, force)
+function Public.buried_tech(surface, position, count, force, quality)
 	if not (surface and surface.valid) then
 		return
 	end
@@ -358,7 +358,7 @@ function Public.buried_tech(surface, position, count, force)
 				this[game.tick + t][#this[game.tick + t] + 1] =
 				{
 					callback = 'spawn_tech',
-					data = { surface = surface, position = { x = position.x, y = position.y }, count = count or 1, force = force or 'enemy' }
+					data = { surface = surface, position = { x = position.x, y = position.y }, count = count or 1, force = force or 'enemy', quality = quality or 'normal' }
 				}
 			else
 				local tick = 2
@@ -366,7 +366,7 @@ function Public.buried_tech(surface, position, count, force)
 					this[game.tick + t][#this[game.tick + t] + 1 + tick] =
 					{
 						callback = 'spawn_tech',
-						data = { surface = surface, position = { x = position.x, y = position.y }, count = count or 1, force = force or 'enemy' }
+						data = { surface = surface, position = { x = position.x, y = position.y }, count = count or 1, force = force or 'enemy', quality = quality or 'normal' }
 					}
 					tick = tick + 2
 				end
@@ -375,7 +375,7 @@ function Public.buried_tech(surface, position, count, force)
 	end
 end
 
-function Public.buried_worm(surface, position)
+function Public.buried_worm(surface, position, quality)
 	if not (surface and surface.valid) then
 		return
 	end
@@ -404,7 +404,7 @@ function Public.buried_worm(surface, position)
 			this[game.tick + t][#this[game.tick + t] + 1] =
 			{
 				callback = 'spawn_worms',
-				data = { surface = surface, position = { x = position.x, y = position.y } }
+				data = { surface = surface, position = { x = position.x, y = position.y }, quality = quality or 'normal' }
 			}
 		end
 	end

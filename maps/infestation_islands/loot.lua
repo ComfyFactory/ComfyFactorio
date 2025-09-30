@@ -5,7 +5,8 @@ local abs = math.abs
 local floor = math.floor
 local sqrt = math.sqrt
 
-local blacklist = {
+local blacklist =
+{
     ['atomic-bomb'] = true,
     ['cargo-wagon'] = true,
     ['car'] = true,
@@ -20,6 +21,8 @@ local blacklist = {
     ['fluid-wagon'] = true,
     ['pistol'] = true
 }
+
+local qualities = Public.qualities
 
 function Public.get_distance(position)
     local difficulty = sqrt(position.x ^ 2 + position.y ^ 2) * 0.0001
@@ -64,25 +67,26 @@ function Public.add_loot(surface, position, chest, collision)
     local container = surface.create_entity({ name = chest, position = new_position, force = 'neutral', create_build_effect_smoke = false })
 
     for _, item_stack in pairs(item_stacks) do
+        item_stack.quality = qualities[random(1, #qualities)]
         container.insert(item_stack)
     end
     container.minable_flag = false
 
     if random(1, 8) == 1 then
-        container.insert({ name = 'coin', count = random(1, 32) })
+        container.insert({ name = 'coin', count = random(1, 32), quality = qualities[random(1, #qualities)] })
     elseif random(1, 32) == 1 then
-        container.insert({ name = 'coin', count = random(1, 128) })
+        container.insert({ name = 'coin', count = random(1, 128), quality = qualities[random(1, #qualities)] })
     elseif random(1, 128) == 1 then
-        container.insert({ name = 'coin', count = random(1, 256) })
+        container.insert({ name = 'coin', count = random(1, 256), quality = qualities[random(1, #qualities)] })
     elseif random(1, 256) == 1 then
-        container.insert({ name = 'coin', count = random(1, 512) })
+        container.insert({ name = 'coin', count = random(1, 512), quality = qualities[random(1, #qualities)] })
     elseif random(1, 512) == 1 then
-        container.insert({ name = 'coin', count = random(1, 1024) })
+        container.insert({ name = 'coin', count = random(1, 1024), quality = qualities[random(1, #qualities)] })
     end
 
     for _ = 1, 3, 1 do
         if random(1, 16) == 1 then
-            container.insert({ name = 'explosives', count = random(25, 50) })
+            container.insert({ name = 'explosives', count = random(25, 50), quality = qualities[random(1, #qualities)] })
         else
             break
         end
@@ -117,25 +121,26 @@ function Public.add_loot_rare(surface, position, chest, magic)
     local item_stacks = LootRaffle.roll(result, slots, blacklist)
     local container = surface.create_entity({ name = chest, position = position, force = 'neutral', create_build_effect_smoke = false })
     for _, item_stack in pairs(item_stacks) do
+        item_stack.quality = qualities[random(1, #qualities)]
         container.insert(item_stack)
     end
     container.minable_flag = false
 
     if random(1, 8) == 1 then
-        container.insert({ name = 'coin', count = random(1, 32) })
+        container.insert({ name = 'coin', count = random(1, 32), quality = qualities[random(1, #qualities)] })
     elseif random(1, 32) == 1 then
-        container.insert({ name = 'coin', count = random(1, 128) })
+        container.insert({ name = 'coin', count = random(1, 128), quality = qualities[random(1, #qualities)] })
     elseif random(1, 128) == 1 then
-        container.insert({ name = 'coin', count = random(1, 256) })
+        container.insert({ name = 'coin', count = random(1, 256), quality = qualities[random(1, #qualities)] })
     elseif random(1, 256) == 1 then
-        container.insert({ name = 'coin', count = random(1, 512) })
+        container.insert({ name = 'coin', count = random(1, 512), quality = qualities[random(1, #qualities)] })
     elseif random(1, 512) == 1 then
-        container.insert({ name = 'coin', count = random(1, 2048) })
+        container.insert({ name = 'coin', count = random(1, 2048), quality = qualities[random(1, #qualities)] })
     end
 
     for _ = 1, 3, 1 do
         if random(1, 16) == 1 then
-            container.insert({ name = 'explosives', count = random(25, 50) })
+            container.insert({ name = 'explosives', count = random(25, 50), quality = qualities[random(1, #qualities)] })
         else
             break
         end

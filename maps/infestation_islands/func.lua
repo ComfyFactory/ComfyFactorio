@@ -8,6 +8,7 @@ local Commands = require 'utils.commands'
 local BuriedBiter = require 'maps.infestation_islands.buried_biters'
 local Loot = require 'maps.infestation_islands.loot'
 local ParticleEffects = require 'modules.particle_effects'
+local Difficulty = require 'modules.difficulty_vote_by_amount'
 
 local island_radius = 6
 local max_island_radius = 256
@@ -37,6 +38,45 @@ local rock_raffle =
     'huge-rock'
 }
 
+local qualities =
+{
+    'normal',
+    'uncommon',
+    'rare',
+    'epic',
+    'legendary'
+}
+
+local ores =
+{
+    'copper-ore',
+    'iron-ore',
+    'coal',
+    'stone',
+    'uranium-ore',
+    'yellynut',
+    'yumako',
+    'carbon',
+    'spoilage',
+    'tungsten-ore',
+    'holmium-ore',
+    'scrap',
+    'ice',
+    'lithium',
+}
+
+local raw_ores =
+{
+    'copper-ore',
+    'iron-ore',
+    'coal',
+    'stone',
+    'uranium-ore',
+    'tungsten-ore',
+    'holmium-ore',
+    'scrap',
+}
+
 local draw_path_tile_whitelist =
 {
     ['water'] = true,
@@ -45,16 +85,30 @@ local draw_path_tile_whitelist =
 
 local path_tile_names =
 {
-    'grass-2',
-    'grass-3',
-    'grass-4',
-    'dirt-1',
-    'dirt-2',
-    'dirt-3',
-    'dirt-4',
-    'dirt-5',
-    'dirt-6',
-    'dirt-7'
+    'highland-yellow-rock',
+    'highland-yellow-rock',
+    'highland-dark-rock-2',
+    'highland-dark-rock-2',
+    'highland-dark-rock',
+    'highland-dark-rock',
+    'midland-cracked-lichen-dull',
+    'midland-cracked-lichen-dull',
+    'midland-cracked-lichen-dark',
+    'midland-cracked-lichen-dark',
+    'midland-turquoise-bark-2',
+    'midland-turquoise-bark-2',
+    'midland-turquoise-bark',
+    'midland-turquoise-bark',
+    'wetland-light-dead-skin',
+    'wetland-light-dead-skin',
+    'wetland-dead-skin',
+    'wetland-dead-skin',
+    'lowland-dead-skin',
+    'lowland-dead-skin',
+    'lowland-dead-skin-2',
+    'lowland-dead-skin-2',
+    'lowland-red-vein-dead',
+    'lowland-red-vein-dead',
 }
 
 local function get_brush_unfiltered(size)
@@ -361,21 +415,12 @@ local function resource_placement(surface, position, name, amount, tiles)
 end
 
 local function reward_level(surface, level)
-    local ores =
-    {
-        'copper-ore',
-        'iron-ore',
-        'coal',
-        'stone',
-        'uranium-ore',
-        'crude-oil'
-    }
-    local radius = level.radius * 12
-    local ore = ores[random(1, #ores)]
+    local radius = level.radius
+    local ore = raw_ores[random(1, #raw_ores)]
     if ore == 'crude-oil' then
-        MapFunctions.draw_oil_circle(level.position, 'crude-oil', surface, 8, 200000)
+        MapFunctions.draw_oil_circle(level.position, 'crude-oil', surface, 8, 20000)
     else
-        resource_placement(surface, level.position, ore, 150000, radius)
+        resource_placement(surface, level.position, ore, 15000, radius)
     end
 end
 
@@ -452,11 +497,11 @@ local function do_buried_biters()
         local count = random(1, 10)
         local position = { x = center_position.position.x + random(1, 15), y = center_position.position.y + random(1, 30) }
         if random(1, 30) == 1 then
-            BuriedBiter.buried_biter(game.surfaces[1], position, count, 'enemy')
+            BuriedBiter.buried_biter(game.surfaces[1], position, count, 'enemy', qualities[random(1, #qualities)])
         elseif random(1, 30) == 1 then
-            BuriedBiter.buried_tech(game.surfaces[1], position, count, 'enemy')
+            BuriedBiter.buried_tech(game.surfaces[1], position, count, 'enemy', qualities[random(1, #qualities)])
         elseif random(1, 30) == 1 then
-            BuriedBiter.buried_worm(game.surfaces[1], position)
+            BuriedBiter.buried_worm(game.surfaces[1], position, qualities[random(1, #qualities)])
         end
     end
 end
@@ -479,7 +524,12 @@ local function check_alive_enemies()
 
     local count = game.surfaces[1].count_entities_filtered({ force = 'enemy', type = { 'unit', 'turret', 'unit-spawner' }, area = { { center_position.position.x - 256, center_position.position.y - 256 }, { center_position.position.x + 256, center_position.position.y + 256 } } })
 
+    if this.alive_enemies == 0 then
+        Public.complete_level()
+        return
+    end
     this.alive_enemies = count
+    Public.complete_level()
 end
 
 local function get_radius(position, size, divided_by)
@@ -609,7 +659,8 @@ local place_decoratives_token =
             local mirror_decorative = event.mirror_decorative
             for i = 1, #mirror_decorative do
                 local decorative = mirror_decorative[i]
-                if decorative and decorative.decorative and decorative.decorative.name then
+                local tile = surface.get_tile(decorative.position)
+                if decorative and decorative.decorative and decorative.decorative.name and tile.valid and draw_path_tile_whitelist[tile.name] then
                     surface.create_decoratives
                     {
                         check_collision = true,
@@ -676,51 +727,889 @@ local create_new_surface_token =
 
             local radius = event.radius
 
-            local map_gen_settings = {}
-            map_gen_settings.height = radius
-            map_gen_settings.width = radius
-            map_gen_settings.water = 0.001
-            map_gen_settings.terrain_segmentation = 8
-            map_gen_settings.seed = random(1, 999999999)
-            map_gen_settings.cliff_settings = { cliff_elevation_interval = random(2, 16), cliff_elevation_0 = random(2, 16) }
-            map_gen_settings.autoplace_controls =
+            local map_gen_settings =
             {
-                ['coal'] = { frequency = 0, size = 0, richness = 0 },
-                ['stone'] = { frequency = 0, size = 0, richness = 0 },
-                ['copper-ore'] = { frequency = 0, size = 0, richness = 0 },
-                ['iron-ore'] = { frequency = 0, size = 0, richness = 0 },
-                ['uranium-ore'] = { frequency = 0, size = 0, richness = 0 },
-                ['crude-oil'] = { frequency = 0, size = 0, richness = 0 },
-                ['trees'] = { frequency = 50, size = 0.1, richness = random(0, 10) * 0.1 },
-                ['enemy-base'] = { frequency = 'none', size = 'none', richness = 'none' }
-            }
-            map_gen_settings.autoplace_settings =
-            {
-                ['tile'] =
+                autoplace_controls =
                 {
-                    settings =
+                    ['coal'] = { frequency = 0, size = 0, richness = 0 },
+                    ['stone'] = { frequency = 0, size = 0, richness = 0 },
+                    ['copper-ore'] = { frequency = 0, size = 0, richness = 0 },
+                    ['iron-ore'] = { frequency = 0, size = 0, richness = 0 },
+                    ['uranium-ore'] = { frequency = 0, size = 0, richness = 0 },
+                    ['crude-oil'] = { frequency = 0, size = 0, richness = 0 },
+                    ['trees'] = { frequency = 50, size = 0.1, richness = random(0, 10) * 0.1 },
+                    ['enemy-base'] = { frequency = 'none', size = 'none', richness = 'none' },
+                    nauvis_cliff =
                     {
-                        ['deepwater'] = { frequency = 1, size = 0, richness = 1 },
-                        ['deepwater-green'] = { frequency = 1, size = 0, richness = 1 },
-                        ['water'] = { frequency = 1, size = 0, richness = 1 },
-                        ['water-green'] = { frequency = 1, size = 0, richness = 1 },
-                        ['water-mud'] = { frequency = 1, size = 0, richness = 1 },
-                        ['water-shallow'] = { frequency = 1, size = 0, richness = 1 }
+                        frequency = 0,
+                        richness = 0,
+                        size = 0
                     },
-                    treat_missing_as_default = true
-                }
+                    rocks =
+                    {
+                        frequency = 1,
+                        richness = 1,
+                        size = 1
+                    },
+                    starting_area_moisture =
+                    {
+                        frequency = 1,
+                        richness = 1,
+                        size = 1
+                    },
+                    gleba_plants =
+                    {
+                        frequency = 1,
+                        richness = 1,
+                        size = 1
+                    },
+                    gleba_stone =
+                    {
+                        frequency = 1,
+                        richness = 1,
+                        size = 1
+                    },
+                    gleba_water =
+                    {
+                        frequency = 1,
+                        richness = 1,
+                        size = 1
+                    }
+                },
+                autoplace_settings =
+                {
+                    decorative =
+                    {
+                        settings =
+                        {
+                            ["barnacles-decal"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["black-sceptre"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["blood-grape"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["blood-grape-vibrant"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            brambles =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["brown-cup"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["coral-land"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["coral-stunted"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["coral-stunted-grey"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["coral-water"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["cracked-mud-decal"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["cream-nerve-roots-veins-dense"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["cream-nerve-roots-veins-sparse"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["curly-roots-orange"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["dark-mud-decal"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["fuchsia-pita"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["green-bush-mini"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["green-carpet-grass"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["green-croton"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["green-cup"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["green-hairy-grass"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["green-lettuce-lichen-1x1"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["green-lettuce-lichen-3x3"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["green-lettuce-lichen-6x6"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["green-lettuce-lichen-water-1x1"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["green-lettuce-lichen-water-3x3"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["green-lettuce-lichen-water-6x6"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["green-pita"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["green-pita-mini"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["grey-cracked-mud-decal"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["honeycomb-fungus"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["honeycomb-fungus-1x1"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["honeycomb-fungus-decayed"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["knobbly-roots"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["knobbly-roots-orange"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["lichen-decal"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["light-mud-decal"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["matches-small"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            mycelium =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["pale-lettuce-lichen-1x1"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["pale-lettuce-lichen-3x3"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["pale-lettuce-lichen-6x6"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["pale-lettuce-lichen-cups-1x1"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["pale-lettuce-lichen-cups-3x3"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["pale-lettuce-lichen-cups-6x6"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["pale-lettuce-lichen-water-1x1"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["pale-lettuce-lichen-water-3x3"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["pale-lettuce-lichen-water-6x6"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["pink-lichen-decal"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["pink-phalanges"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["polycephalum-balloon"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["polycephalum-slime"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["purple-nerve-roots-veins-dense"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["purple-nerve-roots-veins-sparse"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["red-desert-bush"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["red-lichen-decal"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["red-nerve-roots-veins-dense"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["red-nerve-roots-veins-sparse"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["red-pita"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["shroom-decal"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["solo-barnacle"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["split-gill-1x1"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["split-gill-2x2"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["split-gill-dying-1x1"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["split-gill-dying-2x2"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["split-gill-red-1x1"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["split-gill-red-2x2"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            veins =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["veins-small"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["white-carpet-grass"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["white-desert-bush"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["wispy-lichen"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["yellow-coral"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["yellow-lettuce-lichen-1x1"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["yellow-lettuce-lichen-3x3"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["yellow-lettuce-lichen-6x6"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["yellow-lettuce-lichen-cups-1x1"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["yellow-lettuce-lichen-cups-3x3"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["yellow-lettuce-lichen-cups-6x6"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            }
+                        },
+                        treat_missing_as_default = true
+                    },
+                    entity =
+                    {
+                        settings =
+                        {
+                            ["big-rock"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["big-sand-rock"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            coal =
+                            {
+                                frequency = 0,
+                                richness = 0,
+                                size = 0
+                            },
+                            ["copper-ore"] =
+                            {
+                                frequency = 0,
+                                richness = 0,
+                                size = 0
+                            },
+                            ["crude-oil"] =
+                            {
+                                frequency = 0,
+                                richness = 0,
+                                size = 0
+                            },
+                            fish =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["huge-rock"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["iron-ore"] =
+                            {
+                                frequency = 0,
+                                richness = 0,
+                                size = 0
+                            },
+                            stone =
+                            {
+                                frequency = 0,
+                                richness = 0,
+                                size = 0
+                            },
+                            ["uranium-ore"] =
+                            {
+                                frequency = 0,
+                                richness = 0,
+                                size = 0
+                            }
+                        },
+                        treat_missing_as_default = true
+                    },
+                    tile =
+                    {
+                        settings =
+                        {
+                            ["gleba-deep-lake"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["highland-dark-rock"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["highland-dark-rock-2"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["highland-yellow-rock"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["lowland-brown-blubber"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["lowland-cream-cauliflower"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["lowland-cream-cauliflower-2"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["lowland-cream-red"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["lowland-dead-skin"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["lowland-dead-skin-2"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["lowland-olive-blubber"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["lowland-olive-blubber-2"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["lowland-olive-blubber-3"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["lowland-pale-green"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["lowland-red-infection"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["lowland-red-vein"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["lowland-red-vein-2"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["lowland-red-vein-3"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["lowland-red-vein-4"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["lowland-red-vein-dead"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["midland-cracked-lichen"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["midland-cracked-lichen-dark"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["midland-cracked-lichen-dull"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["midland-turquoise-bark"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["midland-turquoise-bark-2"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["midland-yellow-crust"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["midland-yellow-crust-2"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["midland-yellow-crust-3"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["midland-yellow-crust-4"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["natural-jellynut-soil"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["natural-yumako-soil"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["pit-rock"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["wetland-blue-slime"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["wetland-dead-skin"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["wetland-green-slime"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["wetland-jellynut"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["wetland-light-dead-skin"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["wetland-light-green-slime"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["wetland-pink-tentacle"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["wetland-red-tentacle"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            },
+                            ["wetland-yumako"] =
+                            {
+                                frequency = 1,
+                                richness = 1,
+                                size = 1
+                            }
+                        },
+                        treat_missing_as_default = true
+                    }
+                },
+                cliff_settings =
+                {
+                    cliff_elevation_0 = 0,
+                    cliff_elevation_interval = 0,
+                    cliff_smoothing = 0,
+                    control = "nauvis_cliff",
+                    name = "cliff",
+                    richness = 1
+                },
+                default_enable_all_autoplace_controls = false,
+                height = radius,
+                width = radius,
+                no_enemies_mode = false,
+                peaceful_mode = false,
+                property_expression_names = {},
+                seed = random(1, 999999999),
+                starting_area = 10,
+                starting_points =
+                {
+                    {
+                        x = 0,
+                        y = 0
+                    }
+                },
             }
-            map_gen_settings.property_expression_names =
-            {
-                ['control-setting:aux:bias'] = '-0.500000',
-                ['control-setting:moisture:bias'] = '0.500000',
-                ['control-setting:moisture:frequency:multiplier'] = '4.000000',
-                ['starting-lake-noise-amplitude'] = 0,
-                ['starting-area'] = 0
-            }
+
             if not game.surfaces['island'] then
                 game.create_surface('island', map_gen_settings)
                 local surface = game.surfaces['island']
+                surface.ignore_surface_conditions = false
                 ---@diagnostic disable-next-line: param-type-mismatch
                 surface.request_to_generate_chunks({ 0, 0 }, ceil(max_island_radius / 32))
             end
@@ -827,27 +1716,57 @@ local create_biters_token =
             local worm_types
             local spawner_types
 
-            if level <= 3 then
-                biter_types = { 'small-biter' }
+            local spawn_qualities
+            local difficulty_index = Difficulty.get('index')
+
+            if level <= 1 then
+                biter_types = { 'small-biter', 'small-wriggler-pentapod' }
                 spitter_types = { 'small-spitter' }
                 worm_types = { 'small-worm-turret' }
                 spawner_types = { 'biter-spawner', 'spitter-spawner' }
+                spawn_qualities = { 'normal', 'normal' }
+            elseif level <= 3 then
+                biter_types = { 'small-biter', 'small-wriggler-pentapod', 'small-strafer-pentapod', 'medium-biter', 'medium-wriggler-pentapod' }
+                spitter_types = { 'small-spitter' }
+                worm_types = { 'small-worm-turret' }
+                spawner_types = { 'biter-spawner', 'spitter-spawner' }
+                spawn_qualities = { 'normal', 'normal' }
             elseif level <= 6 then
-                biter_types = { 'small-biter', 'medium-biter' }
+                biter_types = { 'small-biter', 'small-wriggler-pentapod', 'medium-biter', 'medium-wriggler-pentapod' }
                 spitter_types = { 'small-spitter', 'medium-spitter' }
                 worm_types = { 'small-worm-turret', 'medium-worm-turret' }
-                spawner_types = { 'biter-spawner', 'spitter-spawner' }
+                spawner_types = { 'biter-spawner', 'spitter-spawner', 'gleba-spawner', 'gleba-spawner' }
+                spawn_qualities = { 'uncommon', 'uncommon', 'rare' }
             elseif level < 8 then
-                biter_types = { 'small-biter', 'medium-biter', 'big-biter' }
+                biter_types = { 'small-biter', 'small-wriggler-pentapod', 'medium-biter', 'medium-wriggler-pentapod', 'big-biter', 'big-wriggler-pentapod', 'small-strafer-pentapod', 'medium-strafer-pentapod' }
                 spitter_types = { 'small-spitter', 'medium-spitter', 'big-spitter' }
                 worm_types = { 'small-worm-turret', 'medium-worm-turret', 'big-worm-turret' }
-                spawner_types = { 'biter-spawner', 'spitter-spawner' }
+                spawner_types = { 'biter-spawner', 'spitter-spawner', 'gleba-spawner', 'gleba-spawner' }
+                spawn_qualities = { 'rare', 'rare', 'uncommon', 'rare' }
+                if difficulty_index == 1 then
+                    spitter_types[#spitter_types + 1] = 'small-stomper-pentapod'
+                elseif difficulty_index == 2 then
+                    spitter_types[#spitter_types + 1] = 'medium-stomper-pentapod'
+                elseif difficulty_index == 3 then
+                    spitter_types[#spitter_types + 1] = 'big-stomper-pentapod'
+                end
             else
-                biter_types = { 'big-biter', 'behemoth-biter', 'behemoth-biter' }
+                biter_types = { 'big-biter', 'big-wriggler-pentapod', 'behemoth-biter', 'medium-wriggler-pentapod', 'big-strafer-pentapod', 'big-strafer-pentapod' }
                 spitter_types = { 'big-spitter', 'behemoth-spitter', 'behemoth-spitter' }
                 worm_types = { 'big-worm-turret', 'behemoth-worm-turret', 'behemoth-worm-turret' }
-                spawner_types = { 'biter-spawner', 'spitter-spawner' }
+                spawner_types = { 'biter-spawner', 'spitter-spawner', 'gleba-spawner', 'gleba-spawner' }
+                spawn_qualities = { 'epic', 'epic', 'legendary', 'legendary' }
+                if difficulty_index == 1 then
+                    spitter_types[#spitter_types + 1] = 'medium-stomper-pentapod'
+                elseif difficulty_index == 2 then
+                    spitter_types[#spitter_types + 1] = 'big-stomper-pentapod'
+                elseif difficulty_index == 3 then
+                    spitter_types[#spitter_types + 1] = 'big-stomper-pentapod'
+                end
             end
+
+            level = level * (difficulty_index + 10)
+
 
             local final_battle = this.final_battle
 
@@ -876,9 +1795,9 @@ local create_biters_token =
 
             position = random_positions[random(1, #random_positions)]
 
-            local spawner_count = math.min(random(1, 2) + math.floor(level / 3), 5)
+            local spawner_count = math.min(random(1, 2) + math.floor(level / 3), level / 2)
             if final_battle then
-                spawner_count = 8
+                spawner_count = 64
             end
             if this.current_level == 1 then
                 spawner_count = 0
@@ -887,7 +1806,7 @@ local create_biters_token =
                 local spawner_type = spawner_types[random(1, #spawner_types)]
                 local p = surface.find_non_colliding_position('rocket-silo', position, 128, 10)
                 if p then
-                    local spawner = surface.create_entity({ name = spawner_type, position = p })
+                    local spawner = surface.create_entity({ name = spawner_type, position = p, quality = spawn_qualities[random(1, #spawn_qualities)] })
                     if spawner and spawner.valid then
                         this.alive_enemies = this.alive_enemies + 1
                     end
@@ -897,18 +1816,18 @@ local create_biters_token =
             shuffle(random_positions)
             position = random_positions[random(1, #random_positions)]
 
-            local worm_count = math.min(random(2, 4) + math.floor(level / 2), 8)
+            local worm_count = math.min(random(2, 4) + math.floor(level / 2), level)
             if this.current_level == 1 then
                 worm_count = 0
             end
             if final_battle then
-                worm_count = 32
+                worm_count = 128
             end
             for _ = 1, worm_count do
                 local worm_type = worm_types[random(1, #worm_types)]
                 local p = surface.find_non_colliding_position('rocket-silo', position, 128, 10)
                 if p then
-                    local e = surface.create_entity({ name = worm_type, position = p })
+                    local e = surface.create_entity({ name = worm_type, position = p, quality = spawn_qualities[random(1, #spawn_qualities)] })
                     if e and e.valid then
                         this.alive_enemies = this.alive_enemies + 1
                     end
@@ -924,7 +1843,7 @@ local create_biters_token =
                 enemy_count = 4
             end
             if final_battle then
-                enemy_count = 350
+                enemy_count = 1100
             end
             for _ = 1, enemy_count do
                 local enemy_type
@@ -934,9 +1853,9 @@ local create_biters_token =
                     enemy_type = spitter_types[random(1, #spitter_types)]
                 end
 
-                local p = surface.find_non_colliding_position('wooden-chest', position, 128, 10)
+                local p = surface.find_non_colliding_position('wooden-chest', position, 128, 5)
                 if p then
-                    local e = surface.create_entity({ name = enemy_type, position = p })
+                    local e = surface.create_entity({ name = enemy_type, position = p, quality = spawn_qualities[random(1, #spawn_qualities)] })
                     if e and e.valid then
                         e.ai_settings.allow_try_return_to_spawner = false
                         e.ai_settings.allow_destroy_when_commands_fail = false
@@ -949,17 +1868,19 @@ local create_biters_token =
             position = random_positions[random(1, #random_positions)]
 
             if final_battle then
-                for _ = 1, 32 do
+                for _ = 1, 128 do
                     local p = surface.find_non_colliding_position('gun-turret', position, 128, 10)
                     if p then
-                        local e = surface.create_entity({ name = 'gun-turret', position = p, force = 'enemy' })
+                        local e = surface.create_entity({ name = 'gun-turret', position = p, force = 'enemy', quality = spawn_qualities[random(1, #spawn_qualities)] })
                         if e and e.valid then
-                            e.insert({ name = 'uranium-rounds-magazine', count = 200 })
+                            e.insert({ name = 'uranium-rounds-magazine', count = 200, quality = spawn_qualities[random(1, #spawn_qualities)] })
                             this.alive_enemies = this.alive_enemies + 1
                         end
                     end
                 end
             end
+
+            game.forces.player.chart(surface, { { position.x - 124, position.y - 124 }, { position.x + 124, position.y + 124 } })
         end
     )
 
@@ -1257,6 +2178,23 @@ local function on_chunk_generated(event)
     end
 end
 
+local function complete_level()
+    local this = Public.get()
+    if this.alive_enemies == 0 and not this.completed_levels[this.current_level] then
+        this.completed_levels[this.current_level] = true
+        for _, player in pairs(game.connected_players) do
+            player.play_sound { path = 'utility/game_won', volume_modifier = 1 }
+        end
+        if this.current_level == this.last_level then
+            game.print('All the bugs have been vanquished from the islands! GG!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
+            this.game_won = true
+            this.game_reset_tick = 54000
+        else
+            game.print('Level ' .. this.current_level .. ' has been completed!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
+        end
+    end
+end
+
 local function on_entity_died(event)
     local entity = event.entity
     local this = Public.get()
@@ -1296,19 +2234,11 @@ local function on_entity_died(event)
     end
     if entity and entity.valid and entity.force.name == 'enemy' and entity.type == 'unit' then
         this.alive_enemies = this.alive_enemies - 1
-        entity.surface.spill_item_stack({ position = entity.position, stack = { name = 'coin', count = random(1, 5), quality = 'normal' } })
+        entity.surface.spill_item_stack({ position = entity.position, stack = { name = 'coin', count = random(1, 5), quality = qualities[random(1, #qualities)] }, enable_looted = true })
+        entity.surface.spill_item_stack({ position = entity.position, stack = { name = ores[random(1, #ores)], count = random(1, 5), quality = qualities[random(1, #qualities)] }, enable_looted = true })
+        entity.surface.spill_item_stack({ position = entity.position, stack = { name = ores[random(1, #ores)], count = random(1, 5), quality = qualities[random(1, #qualities)] }, enable_looted = true })
         if this.alive_enemies < 0 then this.alive_enemies = 0 end
-        if this.alive_enemies == 0 and not this.completed_levels[this.current_level] then
-            this.completed_levels[this.current_level] = true
-            for _, player in pairs(game.connected_players) do
-                player.play_sound { path = 'utility/game_won', volume_modifier = 1 }
-            end
-            if this.current_level == this.last_level then
-                game.print('All the bugs have been vanquished from the islands! GG!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
-                this.game_won = true
-                this.game_reset_tick = 5400
-            end
-        end
+        complete_level()
     end
 end
 
@@ -1344,6 +2274,9 @@ local function on_market_item_purchased(event)
         return
     end
     if string.find(bought_offer.effect_description, 'onwards') then
+        if not Difficulty.has_votes_ended() then
+            return player.print('The difficulty vote has not ended yet!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
+        end
         if this.game_won then
             return
         end
@@ -1357,9 +2290,10 @@ local function on_market_item_purchased(event)
             reward_level(entity.surface, this.centered_points[this.current_level])
         end
 
-        local market = this.spawned_markets[this.current_stage].market
-
-        market.destructible = true
+        local market = this.spawned_markets[this.current_stage] and this.spawned_markets[this.current_stage].market
+        if market and market.valid then
+            market.destructible = true
+        end
 
         this.current_level = this.current_level + 1
 
@@ -1414,6 +2348,10 @@ local function on_market_item_purchased(event)
         game.print('Infinite ammo now grants more ammo thanks to ' .. player.name .. '!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
         entity.remove_market_item(offer_index)
     elseif string.find(bought_offer.effect_description, 'piercing') then
+        if this.piercing_ammo_grants then
+            entity.remove_market_item(offer_index)
+            return player.print('You already have piercing rounds ammo!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
+        end
         local inventory = player.get_main_inventory()
         local count = inventory.get_item_count({ name = 'coin' })
         if count and count < 1000 * this.current_level then
@@ -1423,7 +2361,6 @@ local function on_market_item_purchased(event)
             return
         end
         inventory.remove({ name = 'coin', count = 1000 * this.current_level })
-        this.infinite_ammo_grants = this.infinite_ammo_grants + 1
         this.piercing_ammo_grants = true
         game.print('Infinite ammo now grants piercing rounds ammo thanks to ' .. player.name .. '!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
         entity.remove_market_item(offer_index)
@@ -1464,10 +2401,30 @@ Commands.new('set_biter_count', 'Sets the biter count.')
         end
     )
 
+Commands.new('set_final_battle', 'Sets the final battle.')
+    :require_admin()
+    :callback(
+        function (player)
+            local this = Public.get()
+            this.current_level = this.last_level - 1
+            this.current_stage = this.last_level - 1
+            player.print('The final battle has been set!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
+            return true
+        end
+    )
+
+local function on_research_finished(event)
+    local research = event.research
+    if research.name == 'rocket-silo' then
+        research.force.recipes['rocket-silo'].enabled = false
+    end
+end
+
 Event.add(defines.events.on_chunk_generated, on_chunk_generated)
 Event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
 Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_entity_spawned, on_entity_spawned)
+Event.add(defines.events.on_research_finished, on_research_finished)
 
 Public.draw_main_island = draw_main_island
 Public.on_chunk_generated = on_chunk_generated
@@ -1479,6 +2436,7 @@ Public.buried_tech = BuriedBiter.buried_tech
 Public.buried_worm = BuriedBiter.buried_worm
 Public.reset_buried_biters = BuriedBiter.reset_buried_biters
 Public.check_alive_enemies = check_alive_enemies
+Public.complete_level = complete_level
 Public.set_multi_command = set_multi_command
 
 return Public

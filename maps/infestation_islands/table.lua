@@ -15,6 +15,14 @@ Global.register(
     end
 )
 
+Public.qualities = {
+    'normal',
+    'uncommon',
+    'rare',
+    'epic',
+    'legendary'
+}
+
 function Public.reset_main_table()
 end
 

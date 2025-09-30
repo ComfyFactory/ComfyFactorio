@@ -12,9 +12,12 @@ local selection_button_name = Gui.uid_name()
 local close_main_frame = Gui.uid_name()
 local top_button_name = Gui.uid_name()
 
-local this = {
-    difficulties = {
-        [1] = {
+local this =
+{
+    difficulties =
+    {
+        [1] =
+        {
             name = "I'm too young to die",
             index = 1,
             value = 0.75,
@@ -24,7 +27,8 @@ local this = {
             strength_modifier = 1.00,
             boss_modifier = 6.0
         },
-        [2] = {
+        [2] =
+        {
             name = 'Hurt me plenty',
             index = 2,
             value = 1,
@@ -34,7 +38,8 @@ local this = {
             strength_modifier = 1.25,
             boss_modifier = 7.0
         },
-        [3] = {
+        [3] =
+        {
             name = 'Ultra-violence',
             index = 3,
             value = 1.5,
@@ -45,12 +50,14 @@ local this = {
             boss_modifier = 8.0
         }
     },
-    tooltip = {
+    tooltip =
+    {
         [1] = '',
         [2] = '',
         [3] = ''
     },
     show_gui = true,
+    button_height = 37,
     value = 0.75,
     index = 1,
     fair_vote = false,
@@ -101,7 +108,8 @@ function Public.difficulty_gui()
             top[top_button_name].style.font_color = this.difficulties[this.index].print_color
         else
             local b =
-                top.add {
+                top.add
+                {
                     type = 'button',
                     caption = this.difficulties[this.index].name,
                     tooltip = tooltip,
@@ -109,15 +117,16 @@ function Public.difficulty_gui()
                 }
             b.style.font = 'heading-2'
             b.style.font_color = this.difficulties[this.index].print_color
-            b.style.minimal_height = 37
-            b.style.maximal_height = 37
+            b.style.minimal_height = this.button_height
+            b.style.maximal_height = this.button_height
             b.style.minimal_width = this.gui_width
         end
     end
 end
 
 local function highest_count(tbl)
-    local init = {
+    local init =
+    {
         count = {},
         index = {}
     }
@@ -189,7 +198,8 @@ local function poll_difficulty(player)
 
     for i = 1, #this.difficulties, 1 do
         local button_flow =
-            inside_frame.add {
+            inside_frame.add
+            {
                 type = 'flow',
                 name = tostring(i)
             }
@@ -201,7 +211,8 @@ local function poll_difficulty(player)
     end
 
     local label_flow =
-        inside_frame.add {
+        inside_frame.add
+        {
             type = 'flow'
         }
 
@@ -211,7 +222,8 @@ local function poll_difficulty(player)
     label_flow.style.horizontally_stretchable = true
 
     local timeleft_flow =
-        inside_frame.add {
+        inside_frame.add
+        {
             type = 'flow'
         }
     timeleft_flow.style.horizontal_align = 'center'
@@ -369,6 +381,10 @@ function Public.set(key, value)
     else
         return this
     end
+end
+
+function Public.has_votes_ended()
+    return game.tick > this.closing_timeout
 end
 
 Gui.on_click(
