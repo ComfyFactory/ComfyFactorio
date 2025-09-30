@@ -54,7 +54,7 @@ local ores =
     'coal',
     'stone',
     'uranium-ore',
-    'yellynut',
+    'jellynut',
     'yumako',
     'carbon',
     'spoilage',
