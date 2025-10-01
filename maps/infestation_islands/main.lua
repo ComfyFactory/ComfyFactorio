@@ -6,6 +6,7 @@ local Map = require 'modules.map_info'
 local Task = require 'utils.task_token'
 local Scheduler = require 'utils.scheduler'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
+local Server = require 'utils.server'
 
 if not script.active_mods.quality then
     error('Quality mod is not enabled!')
@@ -59,6 +60,9 @@ local reset_players_token =
                     player.teleport(p, surface)
                 end
             end
+            Public.disable_tech()
+
+            Server.to_discord_embed('** A fresh round of Infestation Islands has begun! **')
         end
     )
 
@@ -126,7 +130,7 @@ local function bring_players()
     this.gamestate = 2
 end
 
-local function drift_corpses_toward_beach()
+--[[ local function drift_corpses_toward_beach()
     local surface = game.surfaces[1]
     for _, corpse in pairs(surface.find_entities_filtered({ name = 'character-corpse' })) do
         if corpse.position.y < 0 then
@@ -141,7 +145,7 @@ local function drift_corpses_toward_beach()
             end
         end
     end
-end
+end ]]
 
 local function clear_surface()
     local surface = game.get_surface(1)
@@ -299,23 +303,12 @@ local function on_init()
     surface.freeze_daytime = false
     surface.ticks_per_day = 25200
 
+    this.market_prices = {}
+
     Difficulty.reset_difficulty_poll({ closing_timeout = game.tick + 36000 })
     Difficulty.set_gui_width(20)
     Difficulty.set('button_height', 54)
     this.difficulty_vote_ended = false
-
-    local force = game.forces['player']
-    force.technologies['landfill'].enabled = false
-    force.technologies['night-vision-equipment'].enabled = false
-    force.technologies['artillery-shell-range-1'].enabled = false
-    force.technologies['artillery-shell-speed-1'].enabled = false
-    force.technologies['artillery'].enabled = false
-    force.technologies['atomic-bomb'].enabled = false
-    force.technologies['planet-discovery-fulgora'].researched = true
-    force.technologies['planet-discovery-gleba'].researched = true
-    force.technologies['planet-discovery-vulcanus'].researched = true
-    force.technologies['planet-discovery-aquilo'].researched = true
-    force.recipes['rocket-silo'].enabled = false
 end
 
 local gamestate_functions =
@@ -337,14 +330,18 @@ local function on_tick()
         else
             update_stage_gui()
         end
-        if Difficulty.has_votes_ended() and not this.difficulty_vote_ended then
-            this.difficulty_vote_ended = true
-            game.print('The difficulty vote has ended! You may now progress to the next island!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
-            game.print('The difficulty is ' .. Difficulty.get('name') .. '!', { color = Difficulty.get('print_color') })
+        if not this.game_lost then
+            if Difficulty.has_votes_ended() and not this.difficulty_vote_ended then
+                this.difficulty_vote_ended = true
+                game.print('The difficulty vote has ended! You may now progress to the next island!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
+                Server.to_discord_embed('** The difficulty vote has ended! You may now progress to the next island! **')
+                game.print('The difficulty is ' .. Difficulty.get('name') .. '!', { color = Difficulty.get('print_color') })
+                Server.to_discord_embed('** The difficulty is ' .. Difficulty.get('name') .. '! **')
+            end
         end
     end
-    if game.tick % 150 == 0 then
-        drift_corpses_toward_beach()
+    if game.tick % 50 == 0 then
+        -- drift_corpses_toward_beach()
         if this.infini_chest and this.infini_chest.valid then
             local magazine_name = 'firearm-magazine'
             if this.piercing_ammo_grants then
@@ -357,6 +354,16 @@ local function on_tick()
 
     if game.tick % 200 == 0 then
         if this.game_lost then return end
+
+        local center_position = this.centered_points[this.current_level]
+        if not center_position then
+            center_position =
+            {
+                position = { x = 0, y = 0 }
+            }
+        end
+        game.forces.player.chart(game.surfaces[1], { { center_position.position.x - 124, center_position.position.y - 124 }, { center_position.position.x + 124, center_position.position.y + 124 } })
+
         Func.check_alive_enemies()
         Func.set_multi_command()
         if this.completed_levels[this.current_level] then

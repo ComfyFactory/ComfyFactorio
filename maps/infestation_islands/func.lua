@@ -9,6 +9,7 @@ local BuriedBiter = require 'maps.infestation_islands.buried_biters'
 local Loot = require 'maps.infestation_islands.loot'
 local ParticleEffects = require 'modules.particle_effects'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
+local Server = require 'utils.server'
 
 local island_radius = 6
 local max_island_radius = 256
@@ -99,10 +100,6 @@ local path_tile_names =
     'midland-turquoise-bark-2',
     'midland-turquoise-bark',
     'midland-turquoise-bark',
-    'wetland-light-dead-skin',
-    'wetland-light-dead-skin',
-    'wetland-dead-skin',
-    'wetland-dead-skin',
     'lowland-dead-skin',
     'lowland-dead-skin',
     'lowland-dead-skin-2',
@@ -519,7 +516,10 @@ local function check_alive_enemies()
     local current_level = Public.get('current_level')
     local center_position = Public.get('centered_points')[current_level]
     if not center_position then
-        return
+        center_position =
+        {
+            position = { x = 0, y = 0 }
+        }
     end
 
     local count = game.surfaces[1].count_entities_filtered({ force = 'enemy', type = { 'unit', 'turret', 'unit-spawner' }, area = { { center_position.position.x - 256, center_position.position.y - 256 }, { center_position.position.x + 256, center_position.position.y + 256 } } })
@@ -671,6 +671,37 @@ local place_decoratives_token =
         end
     )
 
+local function disable_tech()
+    local force = game.forces['player']
+    force.technologies['landfill'].enabled = false
+    force.technologies['night-vision-equipment'].enabled = false
+    force.technologies['artillery-shell-range-1'].enabled = false
+    force.technologies['artillery-shell-speed-1'].enabled = false
+    force.technologies['artillery'].enabled = false
+    force.technologies['atomic-bomb'].enabled = false
+    force.technologies['planet-discovery-fulgora'].researched = true
+    force.technologies['planet-discovery-gleba'].researched = true
+    force.technologies['planet-discovery-vulcanus'].researched = true
+    force.technologies['planet-discovery-aquilo'].researched = true
+    force.technologies['recycling'].researched = true
+    force.technologies['lithium-processing'].researched = true
+    force.technologies['holmium-processing'].researched = true
+    force.technologies['calcite-processing'].researched = true
+    force.technologies['agriculture'].researched = true
+    force.technologies['heating-tower'].researched = true
+    force.technologies['tungsten-carbide'].researched = true
+    force.technologies['quality-module'].researched = true
+    force.recipes['rocket-silo'].enabled = false
+    force.recipes['mech-armor'].enabled = false
+    force.recipes['railgun-turret'].enabled = false
+    force.recipes['artillery-turret'].enabled = false
+end
+
+local gleba_trees =
+{
+    'jellystem',
+    'yumako-tree'
+}
 
 local do_place_simple_entities_token =
     Scheduler.set(
@@ -696,8 +727,14 @@ local do_place_simple_entities_token =
                     if surface.can_place_entity({ name = 'wooden-chest', position = position }) then
                         if random(1, 64) == 1 then
                             if simplex_noise(position.x * 0.02, position.y * 0.02, seed) > 0.25 then
-                                surface.create_entity({ name = tree, position = position })
+                                surface.create_entity({ name = tree, position = position, tick_grown = 9999 })
                             end
+                        end
+                    end
+
+                    if random(1, 128) == 1 then
+                        if simplex_noise(position.x * 0.02, position.y * 0.02, seed) > 0.25 then
+                            surface.create_entity({ name = gleba_trees[random(1, #gleba_trees)], position = position, tick_grown = 9999 })
                         end
                     end
 
@@ -1609,7 +1646,7 @@ local create_new_surface_token =
             if not game.surfaces['island'] then
                 game.create_surface('island', map_gen_settings)
                 local surface = game.surfaces['island']
-                surface.ignore_surface_conditions = false
+                surface.ignore_surface_conditions = true
                 ---@diagnostic disable-next-line: param-type-mismatch
                 surface.request_to_generate_chunks({ 0, 0 }, ceil(max_island_radius / 32))
             end
@@ -1644,17 +1681,23 @@ local function set_multi_command()
 
     Public.set('last_attack_tick', game.tick + 2000)
 
-    if current_level > 1 then
-        current_level = current_level - 1
-    end
-
     if current_level == 1 then
         return -- we don't attack during the first level
     end
 
-    local market = spawned_markets[current_level] and spawned_markets[current_level].market
+    local market = spawned_markets[current_level - 1] and spawned_markets[current_level - 1].market
     if not market or not market.valid then
         return
+    end
+
+    local unit_count = 12
+    local difficulty_index = Difficulty.get('index')
+    if difficulty_index == 1 then
+        unit_count = random(16, 32)
+    elseif difficulty_index == 2 then
+        unit_count = random(32, 64)
+    elseif difficulty_index == 3 then
+        unit_count = random(64, 128)
     end
     surface.set_multi_command(
         {
@@ -1665,15 +1708,50 @@ local function set_multi_command()
                 radius = 125,
                 distraction = defines.distraction.by_anything
             },
-            unit_count = random(8, 32),
+            unit_count = unit_count,
             force = 'enemy',
             unit_search_distance = 1000
         })
+
+    if random(1, 10) == 1 then
+        local center_position = Public.get('centered_points')[current_level]
+        if not center_position then
+            center_position =
+            {
+                position = { x = 0, y = 0 }
+            }
+        end
+
+        local limit = 1
+        if current_level > 5 then
+            limit = 2
+        elseif current_level > 8 then
+            limit = 4
+        end
+
+        local p = center_position.position
+        local enemies = surface.find_entities_filtered({ type = 'spider-unit', force = 'enemy', area = { { p.x - 125, p.y - 125 }, { p.x + 125, p.y + 125 } }, limit = limit })
+        if enemies and enemies[1] then
+            for _, enemy in pairs(enemies) do
+                if enemy and enemy.valid then
+                    enemy.commandable.set_command(
+                        {
+                            type = defines.command.attack_area,
+                            destination = market.position,
+                            radius = 125,
+                            distraction = defines.distraction.by_anything
+                        }
+                    )
+                end
+            end
+        end
+    end
 end
 
 local function add_market_slot(market)
     local this = Public.get()
     local current_level = Public.get('current_level')
+    this.market_prices[current_level] = {}
     local offers =
     {
         {
@@ -1687,6 +1765,7 @@ local function add_market_slot(market)
             price = {},
             offer = { type = 'nothing', effect_description = 'Generate more ammo in the infinity chest!\nPrice: ' .. 500 * current_level .. ' coins' }
         }
+        this.market_prices[current_level]['ammo'] = 500 * current_level
     end
     if not this.piercing_ammo_grants then
         if random(1, 10) == 1 then
@@ -1695,6 +1774,7 @@ local function add_market_slot(market)
                 price = {},
                 offer = { type = 'nothing', effect_description = 'Generate piercing rounds ammo in the infinity chest!\nPrice: ' .. 1000 * current_level .. ' coins' }
             }
+            this.market_prices[current_level]['piercing'] = 1000 * current_level
         end
     end
     for _, offer in pairs(offers) do
@@ -1732,7 +1812,7 @@ local create_biters_token =
                 spawner_types = { 'biter-spawner', 'spitter-spawner' }
                 spawn_qualities = { 'normal', 'normal' }
             elseif level <= 6 then
-                biter_types = { 'small-biter', 'small-wriggler-pentapod', 'medium-biter', 'medium-wriggler-pentapod' }
+                biter_types = { 'small-biter', 'small-wriggler-pentapod', 'medium-biter', 'medium-wriggler-pentapod', 'small-strafer-pentapod', 'medium-strafer-pentapod' }
                 spitter_types = { 'small-spitter', 'medium-spitter' }
                 worm_types = { 'small-worm-turret', 'medium-worm-turret' }
                 spawner_types = { 'biter-spawner', 'spitter-spawner', 'gleba-spawner', 'gleba-spawner' }
@@ -2090,6 +2170,7 @@ local set_new_island_token =
                 this.final_battle = true
                 game.forces.enemy.set_evolution_factor(1, game.surfaces[1])
                 game.print('The final island has been discovered! The battle has begun!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
+                Server.to_discord_embed('** The final island has been discovered! The battle has begun! **')
             end
             this.path_tiles = nil
             Public.draw_main_island(position, radius)
@@ -2187,12 +2268,18 @@ local function complete_level()
         end
         if this.current_level == this.last_level then
             game.print('All the bugs have been vanquished from the islands! GG!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
+            Server.to_discord_embed('** All the bugs have been vanquished from the islands! GG! **')
             this.game_won = true
             this.game_reset_tick = 54000
         else
             game.print('Level ' .. this.current_level .. ' has been completed!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
+            Server.to_discord_embed('** Level ' .. this.current_level .. ' has been completed! **')
         end
     end
+end
+
+local function get_ore_count(level)
+    return random(level, level + 1)
 end
 
 local function on_entity_died(event)
@@ -2230,13 +2317,14 @@ local function on_entity_died(event)
         this.game_reset_tick = 5400
         this.game_lost = true
         game.print('The market was overrun by hungry biters!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
+        Server.to_discord_embed('** The market was overrun by hungry biters! **')
         return
     end
     if entity and entity.valid and entity.force.name == 'enemy' and entity.type == 'unit' then
         this.alive_enemies = this.alive_enemies - 1
-        entity.surface.spill_item_stack({ position = entity.position, stack = { name = 'coin', count = random(1, 5), quality = qualities[random(1, #qualities)] }, enable_looted = true })
-        entity.surface.spill_item_stack({ position = entity.position, stack = { name = ores[random(1, #ores)], count = random(1, 5), quality = qualities[random(1, #qualities)] }, enable_looted = true })
-        entity.surface.spill_item_stack({ position = entity.position, stack = { name = ores[random(1, #ores)], count = random(1, 5), quality = qualities[random(1, #qualities)] }, enable_looted = true })
+        entity.surface.spill_item_stack({ position = entity.position, stack = { name = 'coin', count = random(1, 5), quality = 'normal' }, enable_looted = true })
+        entity.surface.spill_item_stack({ position = entity.position, stack = { name = ores[random(1, #ores)], count = get_ore_count(this.current_level), quality = qualities[random(1, #qualities)] }, enable_looted = true })
+        entity.surface.spill_item_stack({ position = entity.position, stack = { name = ores[random(1, #ores)], count = get_ore_count(this.current_level), quality = qualities[random(1, #qualities)] }, enable_looted = true })
         if this.alive_enemies < 0 then this.alive_enemies = 0 end
         complete_level()
     end
@@ -2262,10 +2350,7 @@ local function on_market_item_purchased(event)
     end
     local this = Public.get()
 
-    if this.alive_enemies > 0 then
-        player.print('You must kill all enemies before you can buy this offer')
-        return
-    end
+
 
     local offer_index = event.offer_index
     local offers = entity.get_market_items()
@@ -2273,7 +2358,16 @@ local function on_market_item_purchased(event)
     if bought_offer.type ~= 'nothing' then
         return
     end
+
+    local market_prices = this.market_prices[this.current_level]
+    if not market_prices then
+        return
+    end
     if string.find(bought_offer.effect_description, 'onwards') then
+        if this.alive_enemies > 0 then
+            player.print('You must kill all enemies before you can buy this offer')
+            return
+        end
         if not Difficulty.has_votes_ended() then
             return player.print('The difficulty vote has not ended yet!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
         end
@@ -2298,6 +2392,7 @@ local function on_market_item_purchased(event)
         this.current_level = this.current_level + 1
 
         game.print(player.name .. ' has advanced to level ' .. this.current_level, { color = { r = 0.22, g = 0.88, b = 0.22 } })
+        Server.to_discord_embed('** ' .. player.name .. ' has advanced to level ' .. this.current_level .. ' **')
 
         this.alive_enemies = 0
         this.alive_boss_enemy_count = 0
@@ -2335,34 +2430,38 @@ local function on_market_item_purchased(event)
 
         Scheduler.timeout(1, draw_bridge_token, { surface = entity.surface, position = this.position, child_id = request_to_generate_chunks_token })
     elseif string.find(bought_offer.effect_description, 'more ammo') then
+        local price = market_prices['ammo']
         local inventory = player.get_main_inventory()
         local count = inventory.get_item_count({ name = 'coin' })
-        if count and count < 500 * this.current_level then
+        if count and count < price then
             player.print('You do not have enough coins to purchase this offer!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
             return
         elseif not count then
             return
         end
-        inventory.remove({ name = 'coin', count = 500 * this.current_level })
+        inventory.remove({ name = 'coin', count = price })
         this.infinite_ammo_grants = this.infinite_ammo_grants + 1
         game.print('Infinite ammo now grants more ammo thanks to ' .. player.name .. '!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
+        Server.to_discord_embed('** Infinite ammo now grants more ammo thanks to ' .. player.name .. '! **')
         entity.remove_market_item(offer_index)
     elseif string.find(bought_offer.effect_description, 'piercing') then
+        local price = market_prices['piercing']
         if this.piercing_ammo_grants then
             entity.remove_market_item(offer_index)
             return player.print('You already have piercing rounds ammo!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
         end
         local inventory = player.get_main_inventory()
         local count = inventory.get_item_count({ name = 'coin' })
-        if count and count < 1000 * this.current_level then
+        if count and count < price then
             player.print('You do not have enough coins to purchase this offer!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
             return
         elseif not count then
             return
         end
-        inventory.remove({ name = 'coin', count = 1000 * this.current_level })
+        inventory.remove({ name = 'coin', count = price })
         this.piercing_ammo_grants = true
         game.print('Infinite ammo now grants piercing rounds ammo thanks to ' .. player.name .. '!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
+        Server.to_discord_embed('** Infinite ammo now grants piercing rounds ammo thanks to ' .. player.name .. '! **')
         entity.remove_market_item(offer_index)
     end
 end
@@ -2387,6 +2486,7 @@ Commands.new('reset_island', 'Resets the island.')
             this.game_reset_tick = 0
             this.game_lost = true
             player.print('The island has been reset!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
+            Server.to_discord_embed('** The island has been reset! **')
         end
     )
 
@@ -2413,11 +2513,18 @@ Commands.new('set_final_battle', 'Sets the final battle.')
         end
     )
 
-local function on_research_finished(event)
-    local research = event.research
-    if research.name == 'rocket-silo' then
-        research.force.recipes['rocket-silo'].enabled = false
-    end
+Commands.new('send_enemies', 'Sends enemies to the market.')
+    :require_admin()
+    :callback(
+        function (player)
+            set_multi_command()
+            player.print('Enemies have been sent to the market!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
+            return true
+        end
+    )
+
+local function on_research_finished()
+    disable_tech()
 end
 
 Event.add(defines.events.on_chunk_generated, on_chunk_generated)
@@ -2438,5 +2545,6 @@ Public.reset_buried_biters = BuriedBiter.reset_buried_biters
 Public.check_alive_enemies = check_alive_enemies
 Public.complete_level = complete_level
 Public.set_multi_command = set_multi_command
+Public.disable_tech = disable_tech
 
 return Public
