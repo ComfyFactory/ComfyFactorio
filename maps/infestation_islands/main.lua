@@ -60,9 +60,6 @@ local reset_players_token =
                     player.teleport(p, surface)
                 end
             end
-            Public.disable_tech()
-
-            Server.to_discord_embed('** A fresh round of Infestation Islands has begun! **')
         end
     )
 
@@ -309,6 +306,8 @@ local function on_init()
     Difficulty.set_gui_width(20)
     Difficulty.set('button_height', 54)
     this.difficulty_vote_ended = false
+    Public.disable_tech()
+    Server.to_discord_embed('** A fresh round of Infestation Islands has begun! **')
 end
 
 local gamestate_functions =
