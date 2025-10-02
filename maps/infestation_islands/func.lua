@@ -728,7 +728,8 @@ local place_tiles_token =
                             tile = { name = main_tile.name, position = p }
                         end
                     elseif distance < noise_radius - 10 then
-                        watery_tile = { name = get_tile_name_by_level(this.current_level), position = p }
+                        local tile_name = get_tile_name_by_level(this.current_level)
+                        watery_tile = { name = tile_name, position = p }
                     end
 
                     if tile then
@@ -760,6 +761,19 @@ local place_decoratives_token =
                         check_collision = true,
                         decoratives = { { name = decorative.decorative.name, position = decorative.position, amount = decorative.amount } }
                     }
+                end
+            end
+        end
+    )
+
+local do_place_fish_token =
+    Scheduler.set(
+        function (event)
+            local surface = event.surface
+            local area = event.area
+            for _, tile in pairs(surface.find_tiles_filtered({ name = 'water', area = area })) do
+                if random(1, 32) == 1 then
+                    surface.create_entity({ name = 'fish', position = tile.position })
                 end
             end
         end
@@ -1165,7 +1179,7 @@ local create_biters_token =
                     enemy_type = spitter_types[random(1, #spitter_types)]
                 end
 
-                local p = surface.find_non_colliding_position('wooden-chest', position, 128, 5)
+                local p = surface.find_non_colliding_position('wooden-chest', position, 128, 4)
                 if p then
                     local e = surface.create_entity({ name = enemy_type, position = p, quality = spawn_qualities[random(1, #spawn_qualities)] })
                     if e and e.valid then
@@ -1385,7 +1399,7 @@ local draw_island_inner_task_token =
             end
 
             Scheduler.timeout(25, place_decoratives_token, { surface = surface, mirror_decorative = mirror_decorative })
-
+            Scheduler.timeout(30, do_place_fish_token, { surface = surface, area = { { position.x - 300, position.y - 300 }, { position.x + 300, position.y + 300 } } })
             Scheduler.timeout(50, do_place_entities_token, { surface = surface, position = position, positions = positions, radius = radius, child_id = place_tiles_token, main_island = main_island })
         end
     )

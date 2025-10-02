@@ -336,7 +336,7 @@ local function on_init()
 
     this.infinite_ammo_tick = 50
 
-    this.check_surface_daytime = false
+    this.check_surface_daytime_for_attacks = true
 
     this.disable_multi_command_attack = false
 
