@@ -7,6 +7,9 @@ local Task = require 'utils.task_token'
 local Scheduler = require 'utils.scheduler'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 local Server = require 'utils.server'
+local Autostash = require 'modules.autostash'
+local BottomFrame = require 'utils.gui.bottom_frame'
+local Misc = require 'utils.commands.misc'
 
 if not script.active_mods.quality then
     error('Quality mod is not enabled!')
@@ -24,6 +27,12 @@ local set_gamestate_token =
             this.gamestate = 1
         end
     )
+
+local set_tech_limit_token = Task.register(
+    function ()
+        Func.disable_tech()
+    end
+)
 
 local reset_players_token =
     Task.register(
@@ -43,6 +52,9 @@ local reset_players_token =
             local players = game.connected_players
             for i = 1, #players do
                 local player = players[i]
+                if player.character ~= nil then
+                    player.character.destroy()
+                end
                 player.set_controller { type = defines.controllers.god }
                 player.create_character()
                 player.insert({ name = 'raw-fish', count = 3 })
@@ -127,7 +139,10 @@ local function bring_players()
     this.gamestate = 2
 end
 
---[[ local function drift_corpses_toward_beach()
+local function drift_corpses_toward_beach()
+    if not Public.get('drift_corpses_toward_beach_enabled') then
+        return
+    end
     local surface = game.surfaces[1]
     for _, corpse in pairs(surface.find_entities_filtered({ name = 'character-corpse' })) do
         if corpse.position.y < 0 then
@@ -142,7 +157,7 @@ end
             end
         end
     end
-end ]]
+end
 
 local function clear_surface()
     local surface = game.get_surface(1)
@@ -188,6 +203,14 @@ local function on_init()
     local surface = game.surfaces[1]
     surface.ignore_surface_conditions = true
     surface.request_to_generate_chunks({ x = 0, y = 0 }, 6)
+
+    Misc.bottom_button(true)
+    BottomFrame.reset()
+    BottomFrame.activate_custom_buttons(true)
+    Autostash.bottom_button(true)
+    Autostash.insert_into_furnace(true)
+
+    this.soft_reset = true
 
     local mgs = surface.map_gen_settings
     mgs.water = 9.9
@@ -269,7 +292,10 @@ local function on_init()
 
     this.market_positions = {}
 
-    this.centered_points = {}
+    this.centered_points =
+    {
+        [1] = { position = { x = 0, y = 0 }, radius = 200, level = 1 }
+    }
 
     this.tiles = {}
 
@@ -302,12 +328,23 @@ local function on_init()
 
     this.market_prices = {}
 
+    this.drift_corpses_toward_beach_enabled = true
+
+    this.infinite_ammo_tick = 50
+
+    this.check_surface_daytime = false
+
+    this.disable_multi_command_attack = false
+
+    game.forces.enemy.set_friend('player', false)
+    game.forces.player.set_friend('enemy', false)
+
     Difficulty.reset_difficulty_poll({ closing_timeout = game.tick + 36000 })
     Difficulty.set_gui_width(20)
     Difficulty.set('button_height', 54)
     this.difficulty_vote_ended = false
-    Public.disable_tech()
     Server.to_discord_embed('** A fresh round of Infestation Islands has begun! **')
+    Task.set_timeout_in_ticks(100, set_tech_limit_token)
 end
 
 local gamestate_functions =
@@ -315,6 +352,90 @@ local gamestate_functions =
     [1] = bring_players,
     [2] = Func.draw_main_island,
 }
+
+local function has_the_game_ended(this)
+    if (this.game_lost or this.game_won) and this.game_reset_tick then
+        if this.game_reset_tick < 0 then
+            return
+        end
+
+        game.forces.enemy.set_friend('player', true)
+        game.forces.player.set_friend('enemy', true)
+
+        this.game_reset_tick = this.game_reset_tick - 1
+        if this.game_reset_tick % 600 == 0 then
+            if this.game_reset_tick > 0 then
+                local cause_msg
+                if this.restart then
+                    cause_msg = 'restart'
+                elseif this.shutdown then
+                    cause_msg = 'shutdown'
+                elseif this.soft_reset then
+                    cause_msg = 'soft-reset'
+                end
+
+                local message = 'Game will ' .. cause_msg .. ' in ' .. this.game_reset_tick / 60 .. ' seconds!'
+
+                game.print(message, { color = { r = 0.22, g = 0.88, b = 0.22 } })
+            end
+
+            if this.soft_reset and this.game_reset_tick == 0 then
+                if this.render_ammo_text then
+                    this.render_ammo_text.destroy()
+                    this.render_ammo_text = nil
+                end
+                if this.infini_chest and this.infini_chest.valid then
+                    this.infini_chest.destroy()
+                    this.infini_chest = nil
+                end
+
+                for _, market_data in pairs(this.spawned_markets) do
+                    if market_data and market_data.market and market_data.market.valid then
+                        if market_data.render_protect_text then
+                            market_data.render_protect_text.destroy()
+                            market_data.render_protect_text = nil
+                        end
+                        if market_data.render_checkpoint_text then
+                            market_data.render_checkpoint_text.destroy()
+                            market_data.render_checkpoint_text = nil
+                        end
+                        market_data.market.destroy()
+                    end
+                end
+
+                this.game_reset_tick = nil
+                this.game_lost = false
+                this.game_won = false
+                Scheduler.can_run_scheduler(false)
+                clear_surface()
+                on_init()
+                Task.set_timeout_in_ticks(500, reset_players_token)
+                return
+            end
+
+            if this.restart and this.game_reset_tick == 0 then
+                if not this.announced_message then
+                    local message = 'Soft-reset is disabled! Server will restart from scenario to load new changes.'
+                    game.print(message, { color = { r = 0.22, g = 0.88, b = 0.22 } })
+                    Server.to_discord_bold(table.concat { '*** ', message, ' ***' })
+                    Server.start_scenario('Infestation_Islands')
+                    this.announced_message = true
+                    return
+                end
+            end
+            if this.shutdown and this.game_reset_tick == 0 then
+                if not this.announced_message then
+                    local message = 'Soft-reset is disabled! Server will shutdown. Most likely because of updates.'
+                    game.print(message, { color = { r = 0.22, g = 0.88, b = 0.22 } })
+                    Server.to_discord_bold(message)
+                    Server.stop_scenario()
+                    this.announced_message = true
+                    return
+                end
+            end
+        end
+    end
+end
 
 local function on_tick()
     local this = Public.get()
@@ -339,8 +460,10 @@ local function on_tick()
             end
         end
     end
-    if game.tick % 50 == 0 then
-        -- drift_corpses_toward_beach()
+
+    local infinite_ammo_tick = Public.get('infinite_ammo_tick')
+    if game.tick % infinite_ammo_tick == 0 then
+        drift_corpses_toward_beach()
         if this.infini_chest and this.infini_chest.valid then
             local magazine_name = 'firearm-magazine'
             if this.piercing_ammo_grants then
@@ -372,46 +495,24 @@ local function on_tick()
         Func.do_buried_biters()
     end
 
+    has_the_game_ended(this)
+end
 
-    if (this.game_lost or this.game_won) and this.game_reset_tick then
-        this.game_reset_tick = this.game_reset_tick - 1
-        if this.game_reset_tick % 600 == 0 then
-            game.print('Game will reset in ' .. this.game_reset_tick / 60 .. ' seconds!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
-        end
-        if this.game_reset_tick <= 0 then
-            if this.render_ammo_text then
-                this.render_ammo_text.destroy()
-                this.render_ammo_text = nil
-            end
-            if this.infini_chest and this.infini_chest.valid then
-                this.infini_chest.destroy()
-                this.infini_chest = nil
-            end
+local handle_changes = function ()
+    Public.set('restart', true)
+    Public.set('soft_reset', false)
+    Server.output_script_data('Received new changes from backend.')
+end
 
-            for _, market_data in pairs(this.spawned_markets) do
-                if market_data and market_data.market and market_data.market.valid then
-                    if market_data.render_protect_text then
-                        market_data.render_protect_text.destroy()
-                        market_data.render_protect_text = nil
-                    end
-                    if market_data.render_checkpoint_text then
-                        market_data.render_checkpoint_text.destroy()
-                        market_data.render_checkpoint_text = nil
-                    end
-                    market_data.market.destroy()
-                end
-            end
-
-            this.game_reset_tick = nil
-            this.game_lost = false
-            this.game_won = false
-            Scheduler.can_run_scheduler(false)
-            clear_surface()
-            on_init()
-            Task.set_timeout_in_ticks(500, reset_players_token)
+Server.on_scenario_changed(
+    'Infestation_Islands',
+    function (data)
+        local scenario = data.scenario
+        if scenario == 'Infestation_Islands' then
+            handle_changes()
         end
     end
-end
+)
 
 Event.on_init(on_init)
 Event.add(defines.events.on_tick, on_tick)
