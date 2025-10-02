@@ -1623,6 +1623,10 @@ local function on_market_item_purchased(event)
         this.current_level = this.current_level + 1
 
         game.print(player.name .. ' has advanced to level ' .. this.current_level, { color = { r = 0.22, g = 0.88, b = 0.22 } })
+        if not this.notified_market_safe then
+            this.notified_market_safe = true
+            game.print('The market doesn\'t feel as safe as before.', { color = { r = 0.88, g = 0.22, b = 0.22 } })
+        end
         Server.to_discord_embed('** ' .. player.name .. ' has advanced to level ' .. this.current_level .. ' **')
 
         this.alive_enemies = 0

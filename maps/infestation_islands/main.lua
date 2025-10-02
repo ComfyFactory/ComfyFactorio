@@ -214,6 +214,8 @@ local function on_init()
 
     this.soft_reset = true
 
+    this.notified_market_safe = false
+
     local mgs = surface.map_gen_settings
     mgs.water = 9.9
     mgs.property_expression_names =
