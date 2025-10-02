@@ -498,7 +498,7 @@ local function reward_level(surface, level)
     end
     resource_placement(surface, level.position, ore, random(15000, 15000 * 5), radius * 3)
 
-    if random(1, 2) == 1 then
+    if level.level > 1 then
         local position = { x = level.position.x + random(1, 20), y = level.position.y + random(1, 20) }
         tile_placement(surface, position, plantable_soil[random(1, #plantable_soil)], radius)
     end
@@ -831,7 +831,7 @@ local do_place_simple_entities_token =
 
                     if random(1, 128) == 1 then
                         if simplex_noise(position.x * 0.02, position.y * 0.02, seed) > 0.25 then
-                            surface.create_entity({ name = gleba_trees[random(1, #gleba_trees)], position = position, tick_grown = random(1,999) })
+                            surface.create_entity({ name = gleba_trees[random(1, #gleba_trees)], position = position, tick_grown = random(1, 999) })
                         end
                     end
 
