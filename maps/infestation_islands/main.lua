@@ -107,14 +107,16 @@ local function update_stage_gui(caption_override)
     caption = caption .. stage
     caption = caption .. '/'
     caption = caption .. #this.stages - 1
-    caption = caption .. '  |  Bugs remaining: '
-    caption = caption .. this.alive_enemies
-
+    if this.alive_enemies == 0 then
+        caption = caption .. '  |  Level cleared!'
+    else
+        caption = caption .. '  |  Bugs remaining: '
+        caption = caption .. this.alive_enemies
+    end
 
     for _, player in pairs(game.connected_players) do
         if player.gui.top.stage_gui then
             player.gui.top.stage_gui.caption = caption_override or caption
-            player.gui.top.stage_gui.tooltip = 'Max biter count: ' .. this.max_biters_per_island
         end
     end
 end
