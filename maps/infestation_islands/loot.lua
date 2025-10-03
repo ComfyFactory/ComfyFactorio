@@ -19,7 +19,10 @@ local blacklist =
     ['discharge-defense-equipment'] = true,
     ['discharge-defense-remote'] = true,
     ['fluid-wagon'] = true,
-    ['pistol'] = true
+    ['pistol'] = true,
+    ['loader'] = true,
+    ['fast-loader'] = true,
+    ['express-loader'] = true
 }
 
 local qualities = Public.qualities

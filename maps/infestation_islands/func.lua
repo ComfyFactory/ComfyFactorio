@@ -515,7 +515,7 @@ local function reward_level(surface, level)
     if random(1, 2) == 1 then
         MapFunctions.draw_oil_circle(offset_oil_position, oil, surface, 8, 50000)
     end
-    resource_placement(surface, level.position, ore, random(15000, 15000 * 5), radius * 3)
+    resource_placement(surface, level.position, ore, random(45000, 45000 * 3), radius * 3)
 
     if level.level > 1 then
         local position = { x = level.position.x + random(1, 20), y = level.position.y + random(1, 20) }
