@@ -799,7 +799,7 @@ local do_place_fish_token =
 
 local function disable_tech()
     local force = game.forces['player']
-    force.technologies['landfill'].enabled = false
+    -- force.technologies['landfill'].enabled = false
     force.technologies['night-vision-equipment'].enabled = false
     force.technologies['artillery-shell-range-1'].enabled = false
     force.technologies['artillery-shell-speed-1'].enabled = false
