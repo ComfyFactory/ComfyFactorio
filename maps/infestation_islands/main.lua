@@ -1,7 +1,7 @@
 --created by Gerkiz
-local Public = require 'maps.infestation_islands.table'
+local Public = require 'maps.infestation_islands.core'
 local Event = require 'utils.event'
-local Func = require 'maps.infestation_islands.func'
+local Func = Public.func
 local Map = require 'modules.map_info'
 local Task = require 'utils.task_token'
 local Scheduler = require 'utils.scheduler'
@@ -299,6 +299,15 @@ local function on_init()
     this.centered_points =
     {
         [1] = { position = { x = 0, y = 0 }, radius = 200, level = 1 }
+    }
+
+    this.quality_list =
+    {
+        'normal',
+        'uncommon',
+        'rare',
+        'epic',
+        'legendary'
     }
 
     this.tiles = {}

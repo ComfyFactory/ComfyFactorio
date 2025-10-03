@@ -12,6 +12,7 @@ local Difficulty = require 'modules.difficulty_vote_by_amount'
 local Server = require 'utils.server'
 local MGS = require 'maps.infestation_islands.island_settings'
 local Discord = require 'utils.discord_handler'
+local Task = require 'utils.task_token'
 
 local mapkeeper = '[color=blue]Mapkeeper:[/color]'
 local CommandColor = { r = 0.98, g = 0.66, b = 0.22 }
@@ -130,6 +131,23 @@ local path_tile_names =
     'lowland-red-vein-dead',
     'lowland-red-vein-dead',
 }
+
+local close_market_gui_token =
+    Task.register(
+        function (event)
+            local player = event.player
+            if not player or not player.valid then
+                return
+            end
+            local entity = event.entity
+            if not entity or not entity.valid then
+                return
+            end
+            if player.opened ~= nil then
+                player.opened = nil
+            end
+        end
+    )
 
 local function get_brush_unfiltered(size)
     local vectors = {}
@@ -605,7 +623,7 @@ local function check_alive_enemies()
         }
     end
 
-    local count = game.surfaces[1].count_entities_filtered({ force = 'enemy', type = { 'unit', 'turret', 'unit-spawner' }, area = { { center_position.position.x - 256, center_position.position.y - 256 }, { center_position.position.x + 256, center_position.position.y + 256 } } })
+    local count = game.surfaces[1].count_entities_filtered({ force = 'enemy', type = { 'unit', 'turret', 'unit-spawner', 'spider-unit' }, area = { { center_position.position.x - 256, center_position.position.y - 256 }, { center_position.position.x + 256, center_position.position.y + 256 } } })
 
     if this.alive_enemies == 0 then
         Public.complete_level()
@@ -913,10 +931,10 @@ local function set_multi_command()
         return
     end
 
-    local check_surface_daytime = Public.get('check_surface_daytime')
+    local check_surface_daytime_for_attacks = Public.get('check_surface_daytime_for_attacks')
 
     local surface = game.surfaces[1]
-    if check_surface_daytime then
+    if check_surface_daytime_for_attacks then
         if surface.daytime < 0.35 then
             return
         end
@@ -1622,10 +1640,9 @@ local function on_market_item_purchased(event)
             return
         end
         entity.remove_market_item(offer_index)
-        if not entity.get_market_items() then
-            entity.operable = false
-        end
         this.position = entity.position
+
+
 
         reward_level(entity.surface, this.centered_points[this.current_level])
 
@@ -1693,10 +1710,6 @@ local function on_market_item_purchased(event)
         game.print('Infinite ammo now grants more ammo thanks to ' .. player.name .. '!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
         Server.to_discord_embed('** Infinite ammo now grants more ammo thanks to ' .. player.name .. '! **')
         entity.remove_market_item(offer_index)
-
-        if not entity.get_market_items() then
-            entity.operable = false
-        end
     elseif string.find(bought_offer.effect_description, 'piercing') then
         local price = market_prices['piercing'] or 1000
         if this.piercing_ammo_grants then
@@ -1716,10 +1729,13 @@ local function on_market_item_purchased(event)
         game.print('Infinite ammo now grants piercing rounds ammo thanks to ' .. player.name .. '!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
         Server.to_discord_embed('** Infinite ammo now grants piercing rounds ammo thanks to ' .. player.name .. '! **')
         entity.remove_market_item(offer_index)
+    end
 
-        if not entity.get_market_items() then
-            entity.operable = false
-        end
+    if not entity.get_market_items() then
+        Public.island_market(entity.surface, entity.position, (this.current_level * random(1, 3)) * 10)
+        Task.set_timeout_in_ticks(5, close_market_gui_token, { player = player, entity = entity })
+        game.print('The market at level ' .. this.current_level - 1 .. ' has been refilled by ' .. player.name .. '!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
+        Server.to_discord_embed('** The market at level ' .. this.current_level - 1 .. ' has been refilled by ' .. player.name .. '! **')
     end
 end
 
@@ -1836,7 +1852,7 @@ Commands.new('toggle_check_surface_daytime', 'Checks the surface daytime if an a
     :add_parameter('state', true, 'boolean')
     :callback(
         function (player, state)
-            Public.set('check_surface_daytime', state)
+            Public.set('check_surface_daytime_for_attacks', state)
             player.print('The check surface daytime has been ' .. (state and 'enabled' or 'disabled') .. '!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
         end
     )
