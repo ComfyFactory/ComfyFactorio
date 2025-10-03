@@ -76,6 +76,7 @@ local ores =
     'holmium-ore',
     'scrap',
     'ice',
+    'calcite',
     'lithium',
 }
 
