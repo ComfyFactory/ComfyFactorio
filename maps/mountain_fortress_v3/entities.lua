@@ -748,7 +748,7 @@ local mining_events =
                 quality = 'legendary'
             end
 
-            if not Public.is_modded_pt2() then
+            if not Public.is_modded_pt2 then
                 quality = 'normal'
             end
 
