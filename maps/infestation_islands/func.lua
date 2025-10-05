@@ -291,24 +291,10 @@ local calculate_bridge_token =
 
             this.position = { x = position.x + vector[1], y = position.y + vector[2] }
 
-            local radius = this.stages[this.current_stage].size
 
-            if this.current_stage == this.last_level then
-                radius = max_island_radius
-            end
+            event.positions = positions
 
-            local level_data =
-            {
-                position = this.position,
-                level = this.current_level,
-                radius = radius
-            }
-
-            if not next(level_data.position) then
-                error('No position found for level ' .. this.current_level)
-            end
-
-            this.centered_points[this.current_level] = level_data
+            return event
         end
     )
 
@@ -348,6 +334,7 @@ local noise_vector_tiles_path_token =
                                 base_vector = base_vector,
                                 minimal_movement = minimal_movement,
                                 position = position,
+                                positions = {},
                                 surface = surface,
                                 whitelist = whitelist,
                                 tile_name = tile_name,
@@ -359,6 +346,33 @@ local noise_vector_tiles_path_token =
                     end
                 end
             )
+        end
+    )
+
+local set_centered_points_token =
+    Scheduler.set(
+        function ()
+            local this = Public.get()
+            local position = this.path_tiles[#this.path_tiles].position
+
+            local radius = this.stages[this.current_stage].size
+
+            if this.current_stage == this.last_level then
+                radius = max_island_radius
+            end
+
+            local level_data =
+            {
+                position = position,
+                level = this.current_level,
+                radius = radius
+            }
+
+            if not next(level_data.position) then
+                error('No position found for level ' .. this.current_level)
+            end
+
+            this.centered_points[this.current_level] = level_data
         end
     )
 
@@ -512,9 +526,7 @@ local function reward_level(surface, level)
     local ore = raw_ores[random(1, #raw_ores)]
     local oil = oil_raffle[random(1, #oil_raffle)]
     local offset_oil_position = { x = level.position.x - random(1, 20), y = level.position.y - random(1, 20) }
-    if random(1, 2) == 1 then
-        MapFunctions.draw_oil_circle(offset_oil_position, oil, surface, 8, 50000)
-    end
+    MapFunctions.draw_oil_circle(offset_oil_position, oil, surface, 8, 50000)
     resource_placement(surface, level.position, ore, random(45000, 45000 * 3), radius * 3)
 
     if level.level > 1 then
@@ -822,9 +834,8 @@ local function disable_tech()
     force.recipes['mech-armor'].enabled = false
     force.recipes['railgun-turret'].enabled = false
     force.recipes['artillery-turret'].enabled = false
-    force.recipes['spidertron'].enabled = false
 
-    force.set_surface_hidden(game.surfaces['island'], false)
+    force.set_surface_hidden(game.surfaces['island'], true)
 end
 
 local gleba_trees =
@@ -915,6 +926,21 @@ local clear_globals_token =
             local this = Public.get()
             this.tiles = {}
             this.market_positions = {}
+        end
+    )
+
+local create_rocket_silo_token =
+    Scheduler.set(
+        function (event)
+            local surface = event.surface
+            local this = Public.get()
+            local center_position = this.centered_points[this.current_level]
+            local e = surface.create_entity({ name = 'rocket-silo', position = center_position.position, force = 'player' })
+            if e and e.valid then
+                game.forces.player.technologies['space-science-pack'].researched = true
+                e.minable = false
+                e.destructible = false
+            end
         end
     )
 
@@ -1055,6 +1081,7 @@ local create_biters_token =
             local position = event.position
             local level = this.current_level or 1
             this.alive_enemies = 0
+            local base_enemy_count
 
             local biter_types
             local spitter_types
@@ -1063,26 +1090,31 @@ local create_biters_token =
 
             local spawn_qualities
             local difficulty_index = Difficulty.get('index')
+            local raw_level = level
+            level = level * (difficulty_index + 10)
 
-            if level <= 1 then
+            if raw_level <= 1 then
                 biter_types = { 'small-biter', 'small-wriggler-pentapod' }
                 spitter_types = { 'small-spitter' }
                 worm_types = { 'small-worm-turret' }
                 spawner_types = { 'biter-spawner', 'spitter-spawner', 'gleba-spawner-small', 'gleba-spawner-small' }
                 spawn_qualities = { 'normal', 'normal' }
-            elseif level <= 3 then
+                base_enemy_count = 30 + (level * 10)
+            elseif raw_level <= 3 then
                 biter_types = { 'small-biter', 'small-wriggler-pentapod', 'small-strafer-pentapod', 'medium-biter', 'medium-wriggler-pentapod' }
                 spitter_types = { 'small-spitter' }
                 worm_types = { 'small-worm-turret' }
                 spawner_types = { 'biter-spawner', 'spitter-spawner', 'gleba-spawner-small', 'gleba-spawner-small' }
                 spawn_qualities = { 'normal', 'normal' }
-            elseif level <= 6 then
+                base_enemy_count = 30 + (level * 8)
+            elseif raw_level <= 6 then
                 biter_types = { 'small-biter', 'small-wriggler-pentapod', 'medium-biter', 'medium-wriggler-pentapod', 'small-strafer-pentapod', 'medium-strafer-pentapod' }
                 spitter_types = { 'small-spitter', 'medium-spitter' }
                 worm_types = { 'small-worm-turret', 'medium-worm-turret' }
                 spawner_types = { 'biter-spawner', 'spitter-spawner', 'gleba-spawner', 'gleba-spawner', 'gleba-spawner-small', 'gleba-spawner-small' }
                 spawn_qualities = { 'uncommon', 'uncommon', 'rare' }
-            elseif level < 8 then
+                base_enemy_count = 30 + (level * 6)
+            elseif raw_level < 8 then
                 biter_types = { 'small-biter', 'small-wriggler-pentapod', 'medium-biter', 'medium-wriggler-pentapod', 'big-biter', 'big-wriggler-pentapod', 'small-strafer-pentapod', 'medium-strafer-pentapod' }
                 spitter_types = { 'small-spitter', 'medium-spitter', 'big-spitter' }
                 worm_types = { 'small-worm-turret', 'medium-worm-turret', 'big-worm-turret' }
@@ -1095,6 +1127,7 @@ local create_biters_token =
                 elseif difficulty_index == 3 then
                     spitter_types[#spitter_types + 1] = 'big-stomper-pentapod'
                 end
+                base_enemy_count = 30 + (level * 4)
             else
                 biter_types = { 'big-biter', 'big-wriggler-pentapod', 'behemoth-biter', 'medium-wriggler-pentapod', 'big-strafer-pentapod', 'big-strafer-pentapod' }
                 spitter_types = { 'big-spitter', 'behemoth-spitter', 'behemoth-spitter' }
@@ -1108,21 +1141,12 @@ local create_biters_token =
                 elseif difficulty_index == 3 then
                     spitter_types[#spitter_types + 1] = 'big-stomper-pentapod'
                 end
+                base_enemy_count = 30 + (level * 5)
             end
 
-            level = level * (difficulty_index + 10)
 
 
             local final_battle = this.final_battle
-
-            if final_battle then
-                local center_position = this.centered_points[this.current_level]
-                local e = surface.create_entity({ name = 'rocket-silo', position = center_position.position, force = 'player' })
-                if e and e.valid then
-                    e.minable = false
-                    e.destructible = false
-                end
-            end
 
             local random_positions =
             {
@@ -1182,7 +1206,6 @@ local create_biters_token =
             shuffle(random_positions)
             position = random_positions[random(1, #random_positions)]
 
-            local base_enemy_count = 30 + (level * 10)
             local enemy_count = random(base_enemy_count, base_enemy_count + 30)
             if this.current_level == 1 then
                 enemy_count = 4
@@ -1381,6 +1404,9 @@ local do_place_entities_token =
             end
             Scheduler.timeout(10, create_biters_token, { child_id = create_market_token, surface = surface, position = position, radius = radius })
             Scheduler.timeout(15, clear_globals_token, { child_id = create_biters_token })
+            if this.current_level == 4 then
+                Scheduler.timeout(20, create_rocket_silo_token, { child_id = clear_globals_token, surface = surface })
+            end
             this.gamestate = 33
         end
     )
@@ -1470,6 +1496,8 @@ local draw_bridge_token =
                 },
                 'noise_vector_tiles_path_1'
             )
+
+            Scheduler.timeout(5, set_centered_points_token, { child_id = noise_vector_tiles_path_token })
 
             Scheduler.timeout(10, request_to_generate_chunks_token, { size = 8, surface = surface })
             this.current_stage = this.current_stage + 1
