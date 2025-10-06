@@ -12,7 +12,6 @@ local Difficulty = require 'modules.difficulty_vote_by_amount'
 local Server = require 'utils.server'
 local MGS = require 'maps.infestation_islands.island_settings'
 local Discord = require 'utils.discord_handler'
-local Task = require 'utils.task_token'
 
 local mapkeeper = '[color=blue]Mapkeeper:[/color]'
 local CommandColor = { r = 0.98, g = 0.66, b = 0.22 }
@@ -23,6 +22,38 @@ local sqrt = math.sqrt
 local abs = math.abs
 local ceil = math.ceil
 local floor = math.floor
+local min = math.min
+
+local quality_per_level = {}
+for i = 0, 50 do
+    local n = i / 50
+    local w_normal, w_uncommon, w_rare, w_epic, w_legendary = 100, 0, 0, 0, 0
+
+    if n > 0.2 then
+        w_normal, w_uncommon = 70, 30
+    end
+    if n > 0.4 then
+        w_normal, w_uncommon, w_rare = 65, 25, 10
+    end
+    if n > 0.6 then
+        w_normal, w_uncommon, w_rare, w_epic = 50, 30, 15, 5
+    end
+    if n > 0.8 then
+        w_normal, w_uncommon, w_rare, w_epic, w_legendary = 40, 30, 20, 8, 2
+    end
+
+    local total = w_normal + w_uncommon + w_rare + w_epic + w_legendary
+    quality_per_level[i] =
+    {
+        thresholds =
+        {
+            w_normal / total,
+            (w_normal + w_uncommon) / total,
+            (w_normal + w_uncommon + w_rare) / total,
+            (w_normal + w_uncommon + w_rare + w_epic) / total,
+        }
+    }
+end
 
 local valid_enemy_types =
 {
@@ -50,6 +81,8 @@ local plantable_soil =
     'artificial-jellynut-soil',
     'natural-yumako-soil',
     'artificial-yumako-soil',
+    'wetland-yumako',
+    'wetland-jellynut',
 }
 
 local qualities =
@@ -106,7 +139,8 @@ local draw_path_tile_whitelist =
     ['deepwater'] = true,
     ['brash-ice'] = true,
     ['lava-hot'] = true,
-    ['empty-space'] = true,
+    ['wetland-yumako'] = true,
+    ['wetland-jellynut'] = true,
 }
 
 local path_tile_names =
@@ -132,23 +166,6 @@ local path_tile_names =
     'lowland-red-vein-dead',
     'lowland-red-vein-dead',
 }
-
-local close_market_gui_token =
-    Task.register(
-        function (event)
-            local player = event.player
-            if not player or not player.valid then
-                return
-            end
-            local entity = event.entity
-            if not entity or not entity.valid then
-                return
-            end
-            if player.opened ~= nil then
-                player.opened = nil
-            end
-        end
-    )
 
 local function get_brush_unfiltered(size)
     local vectors = {}
@@ -527,11 +544,11 @@ local function reward_level(surface, level)
     local oil = oil_raffle[random(1, #oil_raffle)]
     local offset_oil_position = { x = level.position.x - random(1, 20), y = level.position.y - random(1, 20) }
     MapFunctions.draw_oil_circle(offset_oil_position, oil, surface, 8, 50000)
-    resource_placement(surface, level.position, ore, random(45000, 45000 * 3), radius * 3)
+    resource_placement(surface, level.position, ore, random(75000, 75000 * 3), radius * 3)
 
     if level.level > 1 then
         local position = { x = level.position.x + random(1, 20), y = level.position.y + random(1, 20) }
-        tile_placement(surface, position, plantable_soil[random(1, #plantable_soil)], radius)
+        tile_placement(surface, position, plantable_soil[random(1, #plantable_soil)], radius * 2)
     end
 end
 
@@ -597,23 +614,43 @@ local function find_dirt_tile(surface, position)
     end
 end
 
+local function get_quality_for_stage(current_level, last_level)
+    local level = current_level or 1
+    local normalized = min(level / last_level, 1.0)
+    local tier = floor(normalized * 50 + 0.5)
+    local t = quality_per_level[tier].thresholds
+
+    local r = random()
+    if r < t[1] then
+        return "normal"
+    elseif r < t[2] then
+        return "uncommon"
+    elseif r < t[3] then
+        return "rare"
+    elseif r < t[4] then
+        return "epic"
+    else
+        return "legendary"
+    end
+end
+
+
+
 local function do_buried_biters()
     local current_level = Public.get('current_level')
-    if current_level > 2 then
-        local centered_points = Public.get('centered_points')
-        local center_position = centered_points[current_level]
-        if not center_position then
-            return
-        end
-        local count = random(4, 10)
-        local position = { x = center_position.position.x + random(1, 15), y = center_position.position.y + random(1, 30) }
-        if random(1, 10) == 1 then
-            BuriedBiter.buried_biter(game.surfaces[1], position, count, 'enemy', qualities[random(1, #qualities)])
-        elseif random(1, 30) == 1 then
-            BuriedBiter.buried_tech(game.surfaces[1], position, count, 'enemy', qualities[random(1, #qualities)])
-        elseif random(1, 15) == 1 then
-            BuriedBiter.buried_worm(game.surfaces[1], position, qualities[random(1, #qualities)])
-        end
+    local centered_points = Public.get('centered_points')
+    local center_position = centered_points[current_level]
+    if not center_position then
+        return
+    end
+    local count = random(4, 10)
+    local position = { x = center_position.position.x + random(1, 15), y = center_position.position.y + random(1, 30) }
+    if random(1, 10) == 1 then
+        BuriedBiter.buried_biter(game.surfaces[1], position, count, 'enemy', qualities[#qualities])
+    elseif random(1, 15) == 1 then
+        BuriedBiter.buried_worm(game.surfaces[1], position, qualities[#qualities])
+    elseif random(1, 60) == 1 then
+        BuriedBiter.buried_spawner(game.surfaces[1], position, 1, 'enemy')
     end
 end
 
@@ -644,6 +681,19 @@ local function check_alive_enemies()
     end
     this.alive_enemies = count
     Public.complete_level()
+end
+
+local function update_evolution(this)
+    local surface = game.surfaces[1]
+    local force = game.forces.enemy
+
+    local normalized = math.min(this.current_level / this.last_level, 1)
+    local curve = math.pow(normalized, 1.3)
+
+    local evolution_factor = math.max(0.05, math.min(curve, 1.0))
+
+    force.set_evolution_factor(evolution_factor, surface)
+    Server.output_script_data(string.format("[Evo] Island level %d -> evolution %.2f", this.current_level, evolution_factor))
 end
 
 local function get_radius(position, size, divided_by)
@@ -715,10 +765,11 @@ end
 local function get_tile_name_by_level(level)
     local tile_names =
     {
-        'water',
+        'deepwater',
         'brash-ice',
         'lava-hot',
-        'deepwater',
+        'wetland-yumako',
+        'wetland-jellynut',
     }
     return tile_names[(level - 1) % #tile_names + 1]
 end
@@ -739,7 +790,7 @@ local place_tiles_token =
                 local y = positions[i].y
                 local p = { x = x + position.x, y = y + position.y }
                 local tile_data = surface.get_tile(p)
-                if tile_data and tile_data.valid and (tile_data.name == 'water' or tile_data.name == 'deepwater' or tile_data.name == 'brash-ice' or tile_data.name == 'lava-hot' or tile_data.name == 'empty-space') then
+                if tile_data and tile_data.valid and (tile_data.name == 'water' or tile_data.name == 'deepwater' or tile_data.name == 'brash-ice' or tile_data.name == 'lava-hot') then
                     local distance = sqrt(x ^ 2 + y ^ 2)
                     local tile
                     local watery_tile
@@ -758,7 +809,7 @@ local place_tiles_token =
                         if main_tile and main_tile.valid then
                             tile = { name = main_tile.name, position = p }
                         end
-                    elseif distance < noise_radius - 10 then
+                    elseif distance < noise_radius - 5 then
                         local tile_name = get_tile_name_by_level(this.current_level)
                         watery_tile = { name = tile_name, position = p }
                     end
@@ -812,7 +863,7 @@ local do_place_fish_token =
 
 local function disable_tech()
     local force = game.forces['player']
-    -- force.technologies['landfill'].enabled = false
+    force.technologies['landfill'].enabled = false
     force.technologies['night-vision-equipment'].enabled = false
     force.technologies['artillery-shell-range-1'].enabled = false
     force.technologies['artillery-shell-speed-1'].enabled = false
@@ -950,6 +1001,11 @@ local function set_multi_command()
 
     local disable_multi_command_attack = Public.get('disable_multi_command_attack')
     if disable_multi_command_attack then
+        return
+    end
+
+    local attack_grace_period = Public.get('attack_grace_period')
+    if attack_grace_period and attack_grace_period > game.tick then
         return
     end
 
@@ -1093,7 +1149,7 @@ local create_biters_token =
             local raw_level = level
             level = level * (difficulty_index + 10)
 
-            if raw_level <= 1 then
+            if raw_level <= 2 then
                 biter_types = { 'small-biter', 'small-wriggler-pentapod' }
                 spitter_types = { 'small-spitter' }
                 worm_types = { 'small-worm-turret' }
@@ -1268,7 +1324,7 @@ local create_market_token =
 
             if new_pos then
                 local p = new_pos
-                local market = surface.create_entity({ name = 'market', position = p, force = 'player' })
+                local market = surface.create_entity({ name = 'market', position = p, force = 'player', quality = qualities[random(1, #qualities)] })
                 game.forces.player.chart(surface, { { p.x - 30, p.y - 30 }, { p.x + 30, p.y + 30 } })
                 if market and market.valid then
                     market.minable = false
@@ -1401,6 +1457,7 @@ local do_place_entities_token =
 
             if not this.final_battle then
                 Scheduler.timeout(5, create_market_token, { child_id = do_place_simple_entities_token, surface = surface, position = position, radius = radius })
+                update_evolution(this)
             end
             Scheduler.timeout(10, create_biters_token, { child_id = create_market_token, surface = surface, position = position, radius = radius })
             Scheduler.timeout(15, clear_globals_token, { child_id = create_biters_token })
@@ -1544,7 +1601,7 @@ local function on_chunk_generated(event)
         for y = 0, 31, 1 do
             local position = { x = left_top.x + x, y = left_top.y + y }
             if not is_inside_island(position.x, position.y) then
-                surface.set_tiles { { name = 'empty-space', position = position } }
+                surface.set_tiles { { name = 'water', position = position } }
             else
                 surface.set_tiles({ { name = 'black-refined-concrete', position = position } }, true)
             end
@@ -1615,9 +1672,16 @@ local function on_entity_died(event)
     end
     if entity and entity.valid and entity.force.name == 'enemy' and entity.type == 'unit' then
         this.alive_enemies = this.alive_enemies - 1
+        local ore_drop_1 = ores[random(1, #ores)]
+        local ore_drop_2 = ores[random(1, #ores)]
+        local quality_1 = get_quality_for_stage(this.current_level, this.last_level)
+        local quality_2 = get_quality_for_stage(this.current_level, this.last_level)
+        if ore_drop_1 == "calcite" then quality_1 = "normal" end
+        if ore_drop_2 == "calcite" then quality_2 = "normal" end
+
         entity.surface.spill_item_stack({ position = entity.position, stack = { name = 'coin', count = random(1, 5), quality = 'normal' }, enable_looted = true })
-        entity.surface.spill_item_stack({ position = entity.position, stack = { name = ores[random(1, #ores)], count = get_ore_count(this.current_level), quality = qualities[random(1, #qualities)] }, enable_looted = true })
-        entity.surface.spill_item_stack({ position = entity.position, stack = { name = ores[random(1, #ores)], count = get_ore_count(this.current_level), quality = qualities[random(1, #qualities)] }, enable_looted = true })
+        entity.surface.spill_item_stack({ position = entity.position, stack = { name = ore_drop_1, count = get_ore_count(this.current_level), quality = quality_1 }, enable_looted = true })
+        entity.surface.spill_item_stack({ position = entity.position, stack = { name = ore_drop_2, count = get_ore_count(this.current_level), quality = quality_2 }, enable_looted = true })
         if this.alive_enemies < 0 then this.alive_enemies = 0 end
         complete_level()
     end
@@ -1721,12 +1785,17 @@ local function on_market_item_purchased(event)
             game.print('Magical chests have appeared near the market!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
         end
 
+        this.attack_grace_period = game.tick + 54000
+
         this.alive_enemies = 999
 
         Scheduler.timeout(1, draw_bridge_token, { surface = entity.surface, position = this.position, child_id = request_to_generate_chunks_token })
     elseif string.find(bought_offer.effect_description, 'more ammo') then
         local price = market_prices['ammo'] or 500
         local inventory = player.get_main_inventory()
+        if not inventory then
+            return
+        end
         local count = inventory.get_item_count({ name = 'coin' })
         if count and count < price then
             player.print('You do not have enough coins to purchase this offer!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
@@ -1746,6 +1815,9 @@ local function on_market_item_purchased(event)
             return player.print('You already have piercing rounds ammo!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
         end
         local inventory = player.get_main_inventory()
+        if not inventory then
+            return
+        end
         local count = inventory.get_item_count({ name = 'coin' })
         if count and count < price then
             player.print('You do not have enough coins to purchase this offer!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
@@ -1761,8 +1833,7 @@ local function on_market_item_purchased(event)
     end
 
     if not entity.get_market_items() then
-        Public.island_market(entity.surface, entity.position, (this.current_level * random(1, 3)) * 10)
-        Task.set_timeout_in_ticks(5, close_market_gui_token, { player = player, entity = entity })
+        Public.island_market(entity, (this.current_level * random(1, 3)) * 10)
         game.print('The market at level ' .. this.current_level - 1 .. ' has been refilled by ' .. player.name .. '!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
         Server.to_discord_embed('** The market at level ' .. this.current_level - 1 .. ' has been refilled by ' .. player.name .. '! **')
     end
@@ -2080,6 +2151,7 @@ Public.do_buried_biters = do_buried_biters
 Public.buried_biter = BuriedBiter.buried_biter
 Public.buried_tech = BuriedBiter.buried_tech
 Public.buried_worm = BuriedBiter.buried_worm
+Public.buried_spawner = BuriedBiter.buried_spawner
 Public.reset_buried_biters = BuriedBiter.reset_buried_biters
 Public.check_alive_enemies = check_alive_enemies
 Public.complete_level = complete_level

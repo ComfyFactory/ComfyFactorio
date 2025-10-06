@@ -269,7 +269,7 @@ local function on_init()
     for _ = 1, this.last_level + 1 do
         this.stages[#this.stages + 1] =
         {
-            size = 16 + (32 + island_level) * 1.5
+            size = 16 + (32 + (island_level * 2)) * 1.5
         }
         island_level = island_level + 5
     end
@@ -345,7 +345,7 @@ local function on_init()
 
     this.infinite_ammo_tick = 50
 
-    this.check_surface_daytime_for_attacks = true
+    this.check_surface_daytime_for_attacks = false
 
     this.disable_multi_command_attack = false
 
@@ -487,7 +487,7 @@ local function on_tick()
         end
     end
 
-    if game.tick % 200 == 0 then
+    if game.tick % 150 == 0 then
         if this.game_lost then return end
 
         local center_position = this.centered_points[this.current_level]

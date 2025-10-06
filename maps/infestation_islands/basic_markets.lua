@@ -285,7 +285,7 @@ function Public.get_random_item(rarity, sell, buy)
     return items_return
 end
 
-function Public.island_market(surface, position, rarity, buy)
+function Public.island_market(entity, rarity, buy)
     local types = get_types()
     table.shuffle_table(types)
     local items = get_market_item_list(rarity)
@@ -295,7 +295,7 @@ function Public.island_market(surface, position, rarity, buy)
     if #items > 0 then
         table.shuffle_table(items)
     end
-    local mrk = surface.create_entity({ name = 'market', position = position, force = 'neutral', create_build_effect_smoke = false })
+    local mrk = entity
 
     for i = 1, random(5, 10), 1 do
         local item = items[i]
