@@ -643,14 +643,16 @@ local function do_buried_biters()
     if not center_position then
         return
     end
-    local count = random(4, 10)
-    local position = { x = center_position.position.x + random(1, 15), y = center_position.position.y + random(1, 30) }
-    if random(1, 10) == 1 then
-        BuriedBiter.buried_biter(game.surfaces[1], position, count, 'enemy', qualities[#qualities])
-    elseif random(1, 15) == 1 then
-        BuriedBiter.buried_worm(game.surfaces[1], position, qualities[#qualities])
-    elseif random(1, 60) == 1 then
-        BuriedBiter.buried_spawner(game.surfaces[1], position, 1, 'enemy')
+    if current_level > 2 then
+        local count = random(4, 10)
+        local position = { x = center_position.position.x + random(1, 15), y = center_position.position.y + random(1, 30) }
+        if random(1, 10) == 1 then
+            BuriedBiter.buried_biter(game.surfaces[1], position, count, 'enemy', qualities[#qualities])
+        elseif random(1, 15) == 1 then
+            BuriedBiter.buried_worm(game.surfaces[1], position, qualities[#qualities])
+        elseif random(1, 60) == 1 then
+            BuriedBiter.buried_spawner(game.surfaces[1], position, 1, 'enemy')
+        end
     end
 end
 
