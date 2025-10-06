@@ -865,7 +865,7 @@ local do_place_fish_token =
 
 local function disable_tech()
     local force = game.forces['player']
-    force.technologies['landfill'].enabled = false
+    -- force.technologies['landfill'].enabled = false
     force.technologies['night-vision-equipment'].enabled = false
     force.technologies['artillery-shell-range-1'].enabled = false
     force.technologies['artillery-shell-speed-1'].enabled = false
@@ -1841,6 +1841,22 @@ local function on_market_item_purchased(event)
     end
 end
 
+local on_player_or_robot_built_tile = function (event)
+    local surface = game.surfaces[event.surface_index]
+
+    local tiles = event.tiles
+    if not tiles then
+        return
+    end
+
+    for _, v in pairs(tiles) do
+        local old_tile = v.old_tile
+        if old_tile.name == 'water' then
+            surface.set_tiles({ { name = 'water', position = v.position } }, true)
+        end
+    end
+end
+
 Commands.new('show_centered_gps', 'Shows the centered points of the map.')
     :require_admin()
     :callback(
@@ -2144,6 +2160,8 @@ Event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
 Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_entity_spawned, on_entity_spawned)
 Event.add(defines.events.on_research_finished, on_research_finished)
+Event.add(defines.events.on_player_built_tile, on_player_or_robot_built_tile)
+Event.add(defines.events.on_robot_built_tile, on_player_or_robot_built_tile)
 
 Public.draw_main_island = draw_main_island
 Public.on_chunk_generated = on_chunk_generated
