@@ -49,7 +49,7 @@ local reset_players_token =
                 tech.saved_progress = 0
             end
 
-            local players = game.connected_players
+            local players = game.players
             for i = 1, #players do
                 local player = players[i]
                 if player.character ~= nil then
