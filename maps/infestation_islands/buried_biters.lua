@@ -137,6 +137,7 @@ local function roll_spawner(level)
 		spawn_qualities = { 'normal', 'normal' }
 	elseif level <= 3 then
 		spawner_types = { 'biter-spawner', 'spitter-spawner', 'gleba-spawner-small', 'gleba-spawner-small' }
+		spawn_qualities = { 'normal', 'normal', 'uncommon', 'uncommon' }
 	elseif level <= 6 then
 		spawner_types = { 'biter-spawner', 'spitter-spawner', 'gleba-spawner', 'gleba-spawner', 'gleba-spawner-small', 'gleba-spawner-small' }
 		spawn_qualities = { 'uncommon', 'uncommon', 'rare' }
