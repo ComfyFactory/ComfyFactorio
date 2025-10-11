@@ -34,6 +34,37 @@ local set_tech_limit_token = Task.register(
     end
 )
 
+local function reset_player(player)
+    if player.character and player.character.valid then
+        player.character.destroy()
+    end
+    player.clear_items_inside()
+    if player.connected then
+        if not player.character then
+            player.set_controller({ type = defines.controllers.god })
+            player.create_character()
+        end
+        if player.character ~= nil then
+            player.character.destructible = true
+        end
+        player.insert({ name = 'raw-fish', count = 3 })
+        player.insert({ name = 'grenade', count = 1 })
+        player.insert({ name = 'iron-plate', count = 16 })
+        player.insert({ name = 'iron-gear-wheel', count = 8 })
+        player.insert({ name = 'stone', count = 5 })
+        player.insert({ name = 'pistol', count = 1 })
+        player.insert({ name = 'firearm-magazine', count = 16 })
+    else
+        if player.character then
+            player.character.destructible = true
+        end
+        if player.character ~= nil then
+            player.character.destroy()
+        end
+        game.remove_offline_players({ player.index })
+    end
+end
+
 local reset_players_token =
     Task.register(
         function ()
@@ -52,25 +83,7 @@ local reset_players_token =
             local players = game.players
             for i = 1, #players do
                 local player = players[i]
-                if player.character ~= nil then
-                    player.character.destroy()
-                end
-                player.set_controller { type = defines.controllers.god }
-                player.create_character()
-                player.insert({ name = 'raw-fish', count = 3 })
-                player.insert({ name = 'grenade', count = 1 })
-                player.insert({ name = 'iron-plate', count = 16 })
-                player.insert({ name = 'iron-gear-wheel', count = 8 })
-                player.insert({ name = 'stone', count = 5 })
-                player.insert({ name = 'pistol', count = 1 })
-                player.insert({ name = 'firearm-magazine', count = 16 })
-
-                local p = surface.find_non_colliding_position('character', { 0, 2 }, 8, 0.5)
-                if not p then
-                    player.teleport({ 0, 2 }, surface)
-                else
-                    player.teleport(p, surface)
-                end
+                reset_player(player)
             end
         end
     )
@@ -173,13 +186,7 @@ local function on_player_joined_game(event)
     update_stage_gui()
 
     if player.online_time == 0 then
-        player.insert({ name = 'raw-fish', count = 3 })
-        player.insert({ name = 'grenade', count = 1 })
-        player.insert({ name = 'iron-plate', count = 16 })
-        player.insert({ name = 'iron-gear-wheel', count = 8 })
-        player.insert({ name = 'stone', count = 5 })
-        player.insert({ name = 'pistol', count = 1 })
-        player.insert({ name = 'firearm-magazine', count = 16 })
+        reset_player(player)
         return
     end
 

@@ -998,17 +998,18 @@ local function raise_admins(data)
     end
 
     for name, _ in pairs(admins) do
+        admins[name] = nil
         if not new_data[name] then
             local player = game.get_player(name)
             if player and player.valid and player.admin then
                 player.admin = false
                 Public.output_script_data("Demoted: " .. player.name)
             end
-            admins[name] = nil
         end
     end
 
     for name, _ in pairs(new_data) do
+        admins[name] = true
         local player = game.get_player(name)
         if player and player.valid then
             if not player.admin then
@@ -1016,7 +1017,6 @@ local function raise_admins(data)
                 Public.output_script_data("Promoted: " .. player.name)
             end
         end
-        admins[name] = true
     end
 
     Public.output_script_data("Admin list updated: " .. serpent.line(data))
