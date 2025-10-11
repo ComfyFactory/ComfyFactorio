@@ -331,6 +331,9 @@ local function on_init()
     this.infinite_ammo_grants = 1
 
     this.piercing_ammo_grants = false
+    this.uranium_ammo_grants = false
+    this.piercing_ammo_grants_added = false
+    this.uranium_ammo_grants_added = false
 
     this.last_attack_tick = game.tick
 
@@ -348,6 +351,8 @@ local function on_init()
     this.check_surface_daytime_for_attacks = false
 
     this.disable_multi_command_attack = false
+
+    this.cooldown_complete_level = game.tick + (60 * 60 * 30)
 
     game.forces.enemy.set_friend('player', false)
     game.forces.player.set_friend('enemy', false)
@@ -481,6 +486,9 @@ local function on_tick()
             local magazine_name = 'firearm-magazine'
             if this.piercing_ammo_grants then
                 magazine_name = 'piercing-rounds-magazine'
+            end
+            if this.uranium_ammo_grants then
+                magazine_name = 'uranium-rounds-magazine'
             end
 
             this.infini_chest.insert({ name = magazine_name, count = this.infinite_ammo_grants or 1 })

@@ -647,9 +647,9 @@ local function do_buried_biters()
         local count = random(4, 10)
         local position = { x = center_position.position.x + random(1, 15), y = center_position.position.y + random(1, 30) }
         if random(1, 10) == 1 then
-            BuriedBiter.buried_biter(game.surfaces[1], position, count, 'enemy', qualities[#qualities])
+            BuriedBiter.buried_biter(game.surfaces[1], position, count, 'enemy', qualities[random(1, #qualities)])
         elseif random(1, 15) == 1 then
-            BuriedBiter.buried_worm(game.surfaces[1], position, qualities[#qualities])
+            BuriedBiter.buried_worm(game.surfaces[1], position, qualities[random(1, #qualities)])
         elseif random(1, 60) == 1 then
             BuriedBiter.buried_spawner(game.surfaces[1], position, 1, 'enemy')
         end
@@ -1116,14 +1116,26 @@ local function add_market_slot(market)
         }
         this.market_prices[market.unit_number]['ammo'] = 500 * current_level
     end
-    if not this.piercing_ammo_grants then
-        if random(1, 10) == 1 then
+    if not this.piercing_ammo_grants and (current_level >= 1 and current_level <= 3) and not this.piercing_ammo_grants_added then
+        if random(1, 2) == 1 then
             offers[#offers + 1] =
             {
                 price = {},
                 offer = { type = 'nothing', effect_description = 'Generate piercing rounds ammo in the infinity chest!\nPrice: ' .. 1000 * current_level .. ' coins' }
             }
+            this.piercing_ammo_grants_added = true
             this.market_prices[market.unit_number]['piercing'] = 1000 * current_level
+        end
+    end
+    if not this.uranium_ammo_grants and (current_level >= 7 and current_level <= this.last_level) and not this.uranium_ammo_grants_added then
+        if random(1, 2) == 1 then
+            offers[#offers + 1] =
+            {
+                price = {},
+                offer = { type = 'nothing', effect_description = 'Generate uranium rounds ammo in the infinity chest!\nPrice: ' .. 1000 * current_level .. ' coins' }
+            }
+            this.market_prices[market.unit_number]['uranium'] = 1000 * current_level
+            this.uranium_ammo_grants_added = true
         end
     end
     for _, offer in pairs(offers) do
@@ -1613,7 +1625,12 @@ end
 
 local function complete_level()
     local this = Public.get()
-    if this.alive_enemies == 0 and not this.completed_levels[this.current_level] then
+    if not this.cooldown_complete_level then
+        this.cooldown_complete_level = game.tick + (60 * 60 * 30)
+    end
+
+    if this.alive_enemies == 0 and not this.completed_levels[this.current_level] and game.tick > this.cooldown_complete_level then
+        this.cooldown_complete_level = game.tick + (60 * 60 * 30)
         this.completed_levels[this.current_level] = true
         for _, player in pairs(game.connected_players) do
             player.play_sound { path = 'utility/game_won', volume_modifier = 1 }
@@ -1831,6 +1848,28 @@ local function on_market_item_purchased(event)
         this.piercing_ammo_grants = true
         game.print('Infinite ammo now grants piercing rounds ammo thanks to ' .. player.name .. '!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
         Server.to_discord_embed('** Infinite ammo now grants piercing rounds ammo thanks to ' .. player.name .. '! **')
+        entity.remove_market_item(offer_index)
+    elseif string.find(bought_offer.effect_description, 'uranium') then
+        local price = market_prices['uranium'] or 1000
+        if this.uranium_ammo_grants then
+            entity.remove_market_item(offer_index)
+            return player.print('You already have uranium rounds ammo!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
+        end
+        local inventory = player.get_main_inventory()
+        if not inventory then
+            return
+        end
+        local count = inventory.get_item_count({ name = 'coin' })
+        if count and count < price then
+            player.print('You do not have enough coins to purchase this offer!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
+            return
+        elseif not count then
+            return
+        end
+        inventory.remove({ name = 'coin', count = price })
+        this.uranium_ammo_grants = true
+        game.print('Infinite ammo now grants uranium rounds ammo thanks to ' .. player.name .. '!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
+        Server.to_discord_embed('** Infinite ammo now grants uranium rounds ammo thanks to ' .. player.name .. '! **')
         entity.remove_market_item(offer_index)
     end
 
