@@ -352,7 +352,7 @@ local function on_init()
 
     this.disable_multi_command_attack = false
 
-    this.cooldown_complete_level = game.tick + (60 * 60 * 30)
+    this.cooldown_complete_level = game.tick + (60 * 60 * 5)
 
     game.forces.enemy.set_friend('player', false)
     game.forces.player.set_friend('enemy', false)

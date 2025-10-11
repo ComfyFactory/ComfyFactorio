@@ -1626,11 +1626,11 @@ end
 local function complete_level()
     local this = Public.get()
     if not this.cooldown_complete_level then
-        this.cooldown_complete_level = game.tick + (60 * 60 * 30)
+        this.cooldown_complete_level = game.tick + (60 * 60 * 5)
     end
 
     if this.alive_enemies == 0 and not this.completed_levels[this.current_level] and game.tick > this.cooldown_complete_level then
-        this.cooldown_complete_level = game.tick + (60 * 60 * 30)
+        this.cooldown_complete_level = game.tick + (60 * 60 * 5)
         this.completed_levels[this.current_level] = true
         for _, player in pairs(game.connected_players) do
             player.play_sound { path = 'utility/game_won', volume_modifier = 1 }
