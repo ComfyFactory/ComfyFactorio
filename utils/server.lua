@@ -992,16 +992,36 @@ local function raise_admins(data)
         return
     end
 
-    if admins and next(admins) then
-        for _, admin in pairs(admins) do
-            admins[admin] = nil
+    local new_data = {}
+    for _, name in pairs(data) do
+        new_data[name] = true
+    end
+
+    for name, _ in pairs(admins) do
+        if not new_data[name] then
+            local player = game.get_player(name)
+            if player and player.valid and player.admin then
+                player.admin = false
+                Public.output_script_data("Demoted: " .. player.name)
+            end
+            admins[name] = nil
         end
     end
 
-    for _, admin in pairs(data) do
-        admins[admin] = true
+    for name, _ in pairs(new_data) do
+        local player = game.get_player(name)
+        if player and player.valid then
+            if not player.admin then
+                player.admin = true
+                Public.output_script_data("Promoted: " .. player.name)
+            end
+        end
+        admins[name] = true
     end
+
+    Public.output_script_data("Admin list updated: " .. serpent.line(data))
 end
+
 
 local function data_set_changed(data)
     local handlers = data_set_handlers[data.data_set]

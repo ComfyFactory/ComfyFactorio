@@ -1,4 +1,5 @@
-local Poll = {
+local Poll =
+{
     send_poll_result_to_discord = function ()
     end
 }
