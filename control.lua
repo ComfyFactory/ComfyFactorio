@@ -205,6 +205,9 @@ require 'utils.remote_chunks'
 --![[Infestation Islands]]--
 --require 'maps.infestation_islands.main'
 
+--![[Test map spawns all entities for testing]]--
+--require 'maps.test_map.main'
+
 --![[Misc / WIP]]--
 --require 'maps.rainbow_road'
 --require 'maps.cratewood_forest'
