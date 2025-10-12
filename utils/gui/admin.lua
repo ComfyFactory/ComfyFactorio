@@ -1049,8 +1049,8 @@ create_admin_panel = function (data)
         ['Whisper History'] = antigrief.whisper_history
     }
 
-    local selected_index = frame.pagination_table.admin_history_select.selected_index
-    local history = frame.pagination_table.admin_history_select.items[selected_index]
+    local si = frame.pagination_table.admin_history_select.selected_index
+    local history = frame.pagination_table.admin_history_select.items[si]
 
     create_pagination_buttons(player_data, pagination_table, (history_index[history] and type(history_index[history]) == 'table' and #history_index[history] or history_index[history]))
 

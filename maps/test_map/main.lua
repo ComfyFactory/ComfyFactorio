@@ -50,7 +50,7 @@ local function create_entity_grid(surface, start_x, start_y, entities)
 				position = safe_pos
 			end
 
-			local success, err = pcall(function ()
+			local success, _ = pcall(function ()
 				local entity = surface.create_entity(
 					{
 						name = entity_name,
@@ -152,7 +152,6 @@ end
 local spawn_all_entities_token =
 	Task.register(
 		function (event)
-			local surface = event.surface
 			local player = event.player
 			if not storage.test_map_initialized then
 				game.print('[Test Map] Initializing test map...')
@@ -161,8 +160,8 @@ local spawn_all_entities_token =
 				game.map_settings.enemy_evolution.enabled = false
 				game.map_settings.pollution.enabled = false
 
-				local surface = player.surface
-				spawn_all_entities(surface)
+				local s = player.surface
+				spawn_all_entities(s)
 
 				storage.test_map_initialized = true
 				player.print('[Test Map] All entities are pawned in a grid below.')
@@ -179,7 +178,6 @@ local chart_surface_token =
 	Task.register(
 		function (event)
 			local surface = event.surface
-			local player = event.player
 			game.print('[Test Map] Charting surface...')
 			game.forces.player.chart(surface, { { -100, -1000 }, { 100, 1000 } })
 		end
