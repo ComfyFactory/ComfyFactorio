@@ -303,6 +303,10 @@ local function on_init()
 
     this.market_positions = {}
 
+    this.notified_enemies_to_attack = {}
+
+    this.rocket_silo = nil
+
     this.centered_points =
     {
         [1] = { position = { x = 0, y = 0 }, radius = 200, level = 1 }
@@ -353,7 +357,12 @@ local function on_init()
 
     this.drift_corpses_toward_beach_enabled = true
 
+    this.clear_items_on_ground_state = true
+    this.clear_items_on_ground = nil
+
     this.infinite_ammo_tick = 50
+
+    this.initial_rocket_silo_created = false
 
     this.check_surface_daytime_for_attacks = false
 
@@ -505,6 +514,8 @@ local function on_tick()
     if game.tick % 150 == 0 then
         if this.game_lost then return end
 
+        Func.is_rocket_silo_alive()
+
         local center_position = this.centered_points[this.current_level]
         if not center_position then
             center_position =
@@ -521,6 +532,16 @@ local function on_tick()
         end
 
         Func.do_buried_biters()
+    end
+
+    if this.clear_items_on_ground_state then
+        if game.tick % 450 == 0 then
+            Func.do_clear_items_on_ground_slowly()
+        end
+
+        if game.tick % 4500 == 0 then
+            Func.run_clear_items_on_ground()
+        end
     end
 
     has_the_game_ended(this)
