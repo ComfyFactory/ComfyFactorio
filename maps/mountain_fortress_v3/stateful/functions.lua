@@ -70,16 +70,6 @@ local function buff_main_frame(player, voted_index)
 	end
 
 	if game.tick > buff_selection.closing_timeout then
-		if player.online_time ~= 0 then
-			local t = math.abs(math.floor((buff_selection.closing_timeout - game.tick) / 3600))
-			local str = 'Votes have closed ' .. t
-			str = str .. ' minute'
-			if t > 1 then
-				str = str .. 's'
-			end
-			str = str .. ' ago.'
-			player.print(str)
-		end
 		return
 	end
 

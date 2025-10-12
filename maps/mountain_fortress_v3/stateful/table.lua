@@ -1681,58 +1681,75 @@ local function grant_non_limit_reached_buff(count)
     local techs = Public.get_func('techs')
     local limit_types = Public.get_func('limit_types')
 
-    for index, data in pairs(all_buffs) do
-        if not Public.is_modded_pt2 and data.dlc then
-            all_buffs[index] = nil
+    local valid_buffs = {}
+
+    for _, data in pairs(all_buffs) do
+        if (not Public.is_modded_pt2 and data.dlc) then
+            goto continue
         end
+
+        local skip = false
 
         for _, item_data in pairs(starting_items) do
             if item_data.buff_type == data.name
                 and item_data.item_limit
                 and data.limit
                 and item_data.item_limit >= data.limit then
-                all_buffs[index] = nil
+                skip = true
+                break
             end
         end
 
-        for _, tech_data in pairs(techs) do
-            if tech_data.name == data.name then
-                all_buffs[index] = nil
-            end
-        end
-
-        for limit_name, limit_count in pairs(limit_types) do
-            if limit_name == data.name then
-                if limit_count and type(limit_count) ~= "boolean" and data.limit then
-                    if limit_count >= data.limit then
-                        all_buffs[index] = nil
-                    end
-                else
-                    all_buffs[index] = nil
+        if not skip then
+            for _, tech_data in pairs(techs) do
+                if tech_data.name == data.name then
+                    skip = true
+                    break
                 end
             end
         end
+
+        if not skip then
+            for limit_name, limit_count in pairs(limit_types) do
+                if limit_name == data.name then
+                    if limit_count and type(limit_count) ~= "boolean" and data.limit then
+                        if limit_count >= data.limit then
+                            skip = true
+                        end
+                    else
+                        skip = true
+                    end
+                    break
+                end
+            end
+        end
+
+        if not skip then
+            table.insert(valid_buffs, data)
+        end
+
+        ::continue::
     end
 
     for _ = 1, 5 do
-        shuffle(all_buffs)
+        shuffle(valid_buffs)
     end
 
-    if not all_buffs[1] then
+    if #valid_buffs == 0 then
         return get_random_buff(nil, true)
     end
 
     if not count or count == 1 then
-        return all_buffs[1]
+        return valid_buffs[1]
     end
 
-    -- Return up to 'count' unique buffs
     local result = {}
-    for i = 1, math.min(count, #all_buffs) do
-        table.insert(result, all_buffs[i])
+    for i = 1, math.min(count, #valid_buffs) do
+        table.insert(result, valid_buffs[i])
     end
     return result
 end
+
 
 
 local function grant_non_limit_reached_buff_permanent()
