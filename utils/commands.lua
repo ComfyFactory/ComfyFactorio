@@ -214,9 +214,11 @@ local function execute(event)
         return
     end
 
+    local is_multiplayer = game.is_multiplayer()
+
     -- Check if the command requires the player to validate the command
     local validate_self = command_data.validate_self or false
-    if validate_self and not command_data.validated_command then
+    if validate_self and not command_data.validated_command and is_multiplayer then
         command_data.validated_command = true
         if command_data.custom_message then
             handle_error(string.format(output.command_needs_custom_validation, command_data.custom_message),

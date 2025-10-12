@@ -23,6 +23,8 @@ local floor = math.floor
 local random = math.random
 local abs = math.abs
 
+local flush_interval = 120 -- every 2 seconds (120 ticks)
+
 local this =
 {
     enabled = true,
@@ -60,9 +62,10 @@ local this =
     players_warn_on_long_texts = {},
     on_cancelled_deconstruction = { tick = 0, count = 0 },
     limit = 2000,
-    admin_button_validation = {}
+    admin_button_validation = {},
+    deconstruct_queue = {},
+    mining_window = {}
 }
-
 local ammo_names =
 {
     ['artillery-targeting-remote'] = true,
@@ -203,32 +206,108 @@ local function do_action(player, prefix, msg, ban_msg, kill)
     end
 end
 
-local function on_marked_for_deconstruction(event)
-    if not this.enabled then
-        return
+local function flush_deconstruct_log()
+    if not next(this.deconstruct_queue) then return end
+
+    local grouped = {}
+    for _, data in ipairs(this.deconstruct_queue) do
+        local player_name = data.player_name
+        if not grouped[player_name] then
+            grouped[player_name] = {}
+        end
+        table.insert(grouped[player_name], data)
     end
 
-    if not event.player_index then
-        return
+    local ind = 0
+    local success_count = 0
+    local t = math.abs(math.floor(game.tick / 60))
+    local formatted = FancyTime.short_fancy_time(t)
+
+    for player_name, entries in pairs(grouped) do
+        local entity_counts = {}
+        local details = {}
+        for _, e in ipairs(entries) do
+            local str = '[' .. formatted .. '] '
+            str = str .. player_name .. ' marked ' .. e.entity_name .. ' for deconstruction'
+            str = str .. ' at X:'
+            str = str .. e.x
+            str = str .. ' Y:'
+            str = str .. e.y
+            str = str .. ' '
+            str = str .. 'surface:' .. e.surface
+
+            entity_counts[e.entity_name] = (entity_counts[e.entity_name] or 0) + 1
+            increment(this.deconstruct_history, str)
+            if ind == 0 then
+                table.insert(details, string.format("(%d,%d,surface:%d)", e.x, e.y, e.surface))
+            end
+            ind = ind + 1
+            if ind == #entries then
+                table.insert(details, string.format("(%d,%d,surface:%d)", e.x, e.y, e.surface))
+                ind = 0
+            end
+            if e.success then
+                success_count = success_count + 1
+            end
+        end
+
+        local total = #entries
+        local summary_parts = {}
+        for name, count in pairs(entity_counts) do
+            table.insert(summary_parts, string.format("%dx %s", count, name))
+        end
+        local summary_str = table.concat(summary_parts, ", ")
+
+
+
+        local message = string.format(
+            "[%s] %s marked %d entities for deconstruction: %s | Positions: %s | Mined: %s",
+            formatted,
+            player_name,
+            total,
+            summary_str,
+            table.concat(details, ", "),
+            success_count .. ' / ' .. total
+        )
+
+        Server.log_antigrief_data('deconstruct', message)
     end
+
+    this.deconstruct_queue = {}
+end
+
+local function do_action_task()
+    flush_deconstruct_log()
+end
+
+local function on_marked_for_deconstruction(event)
+    if not this.enabled or not event.player_index then return end
 
     local player = game.get_player(event.player_index)
-    if not player or not player.valid then
-        return
-    end
-
-    if Session.get_trusted_player(player) or this.do_not_check_trusted then
-        return
-    end
+    if not player or not player.valid then return end
+    if this.do_not_check_trusted then return end
 
     local playtime = player.online_time
+    local success = false
     if Session.get_session_player(player) then
         playtime = player.online_time + Session.get_session_player(player)
+        success = true
     end
     if playtime < this.required_playtime then
-        event.entity.cancel_deconstruction(game.get_player(event.player_index).force.name)
-        player.print('You have not grown accustomed to this technology yet.', { color = { r = 0.22, g = 0.99, b = 0.99 } })
+        event.entity.cancel_deconstruction(player.force.name, player.index)
+        player.print('You are not accustomed to deconstructing yet.', { r = 0.22, g = 0.99, b = 0.99 })
+        return
     end
+
+    table.insert(this.deconstruct_queue,
+        {
+            player_name = player.name,
+            entity_name = event.entity.name,
+            x = math.floor(event.entity.position.x),
+            y = math.floor(event.entity.position.y),
+            surface = event.entity.surface.index,
+            success = success
+        })
 end
 
 local function on_player_ammo_inventory_changed(event)
@@ -331,6 +410,7 @@ local function on_built_entity(event)
         if player.admin then
             return
         end
+
         if Session.get_trusted_player(player) or this.do_not_check_trusted then
             return
         end
@@ -342,7 +422,7 @@ local function on_built_entity(event)
 
         if playtime < this.required_playtime then
             created_entity.destroy()
-            player.print('You have not grown accustomed to this technology yet.', { color = { r = 0.22, g = 0.99, b = 0.99 } })
+            player.print('You are not accustomed to building blueprints yet.', { color = { r = 0.22, g = 0.99, b = 0.99 } })
         end
     end
 end
@@ -1395,5 +1475,6 @@ Event.add(de.on_console_command, on_console_command)
 Event.add(de.on_console_chat, on_console_chat)
 Event.add(de.on_player_muted, on_player_muted)
 Event.add(de.on_player_unmuted, on_player_unmuted)
+Event.on_nth_tick(flush_interval, do_action_task)
 
 return Public

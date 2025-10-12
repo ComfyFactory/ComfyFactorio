@@ -550,55 +550,94 @@ local function search_text_locally(history, player_data, callback)
         ['Whisper History'] = antigrief.whisper_history
     }
 
-    local tooltip = 'Click to open mini camera.'
     if not player_data.current_page then
         player_data.current_page = 1
     end
 
-    local target = game.get_player(player_data.target_player_name)
     local search_text = player_data.search_text
+    local target_name = player_data.target_player_name
+    local tooltip = (history == 'Message History') and '' or 'Click to open mini camera.'
 
-    local start_index = (player_data.current_page - 1) * rows_per_page + 1
-    local end_index = start_index + rows_per_page - 1
+    if target_name == 'Select Player' then
+        target_name = nil
+    end
 
-    if target ~= nil then
-        if not history_index or not history_index[history] or #history_index[history] <= 0 then
-            return
-        end
-
-        if search_text then
-            for i = end_index, start_index, -1 do
-                local success = contains_text(history_index[history][i], nil, search_text)
-                if success then
-                    if history == 'Message History' then
-                        tooltip = ''
-                    end
-
-                    callback(history_index[history][i], tooltip)
-                end
-            end
-        else
-            for i = end_index, start_index, -1 do
-                if history_index[history][i] and history_index[history][i]:find(player_data.target_player_name) then
-                    callback(history_index[history][i], tooltip)
-                end
+    local sources = {}
+    if history == 'All History' or target_name ~= nil then
+        for _, tbl in pairs(history_index) do
+            if tbl and #tbl > 0 then
+                table.insert(sources, tbl)
             end
         end
     else
-        if search_text then
-            for i = end_index, start_index, -1 do
-                local success = contains_text(history_index[history][i], nil, search_text)
-                if success then
-                    callback(history_index[history][i], tooltip)
+        local source = history_index[history]
+        if source and #source > 0 then
+            table.insert(sources, source)
+        end
+    end
+
+    if #sources == 0 then
+        if player_data.count_label and player_data.count_label.valid then
+            player_data.count_label.caption = '0/0'
+        end
+        return
+    end
+
+    local filtered = {}
+    for _, source in ipairs(sources) do
+        for i = #source, 1, -1 do
+            local entry = source[i]
+            if not entry then goto continue end
+
+            local match = false
+
+            if search_text and target_name then
+                if contains_text(entry, nil, search_text) and entry:find(target_name) then
+                    match = true
                 end
+            elseif search_text then
+                if contains_text(entry, nil, search_text) then
+                    match = true
+                end
+            elseif target_name then
+                if entry:find(target_name) then
+                    match = true
+                end
+            else
+                match = true
             end
+
+            if match then
+                table.insert(filtered, entry)
+            end
+
+            ::continue::
+        end
+    end
+
+    local total_matches = #filtered
+    local last_page = math.ceil(total_matches / rows_per_page)
+    if player_data.current_page > last_page then
+        player_data.current_page = last_page
+    end
+
+    local start_index = (player_data.current_page - 1) * rows_per_page + 1
+    local end_index = math.min(start_index + rows_per_page - 1, total_matches)
+
+    for i = start_index, end_index do
+        callback(filtered[i], tooltip)
+    end
+
+    if player_data.count_label and player_data.count_label.valid then
+        if total_matches > 0 then
+            player_data.count_label.caption = player_data.current_page .. '/' .. last_page
         else
-            for i = end_index, start_index, -1 do
-                callback(history_index[history][i], tooltip)
-            end
+            player_data.count_label.caption = '0/0'
         end
     end
 end
+
+
 
 local function draw_events(player_data)
     local frame = player_data.frame
@@ -661,11 +700,6 @@ local function text_changed(event)
         return
     end
 
-    local is_spamming = SpamProtection.is_spamming(player, nil, 'Admin Text Changed')
-    if is_spamming then
-        return
-    end
-
     local player_data = get_player_data(player)
     player_data.frame = frame
     player_data.search_text = element.text:lower()
@@ -678,10 +712,8 @@ local function text_changed(event)
     end
 
     if player_data.search_text == '' then
-        player_data.search_text = nil
-        local last_page = ceil(player_data.table_count / rows_per_page)
-        player_data.current_page = last_page
         local data = { player = player, frame = frame }
+        this.player_data[player.name] = nil
         create_admin_panel(data)
         return
     end
@@ -938,6 +970,7 @@ create_admin_panel = function (data)
     bottomLine.style.bottom_margin = 8
 
     local histories = {}
+    insert(histories, 'All History')
     if antigrief.capsule_history then
         insert(histories, 'Capsule History')
     end
@@ -979,19 +1012,9 @@ create_admin_panel = function (data)
     local search_table = frame.add({ type = 'table', column_count = 3 })
     search_table.add({ type = 'label', caption = 'Search: ' })
     local search_text = search_table.add({ type = 'textfield' })
+    search_text.focus()
     search_text.text = player_data.search_text or ''
     search_text.style.width = 140
-    local btn =
-        search_table.add
-        {
-            type = 'sprite-button',
-            tooltip = '[color=blue]Info![/color]\nSearching does not filter the amount of pages shown.\nThis is a limitation in the Factorio engine.\nIterating over the whole table would lag the game.\nSo when searching, you will still see the same amount of pages.\nAnd the results will be "janky".',
-            sprite = 'utility/questionmark'
-        }
-    btn.style.height = 20
-    btn.style.width = 20
-    btn.enabled = false
-    btn.focus()
 
     local bottomLine2 = frame.add({ type = 'label', caption = '----------------------------------------------' })
     bottomLine2.style.font = 'default-listbox'
@@ -1008,8 +1031,11 @@ create_admin_panel = function (data)
     drop_down_2.style.right_padding = 12
     drop_down_2.style.left_padding = 12
 
+    antigrief.all_history = #antigrief.capsule_history + #antigrief.message_history + #antigrief.friendly_fire_history + #antigrief.mining_history + #antigrief.whitelist_mining_history + #antigrief.landfill_history + #antigrief.corpse_history + #antigrief.cancel_crafting_history + #antigrief.deconstruct_history + #antigrief.scenario_history + #antigrief.whisper_history
+
     local history_index =
     {
+        ['All History'] = antigrief.all_history,
         ['Capsule History'] = antigrief.capsule_history,
         ['Message History'] = antigrief.message_history,
         ['Friendly Fire History'] = antigrief.friendly_fire_history,
@@ -1023,9 +1049,10 @@ create_admin_panel = function (data)
         ['Whisper History'] = antigrief.whisper_history
     }
 
-    local history = frame.pagination_table.admin_history_select.items[frame.pagination_table.admin_history_select.selected_index]
+    local selected_index = frame.pagination_table.admin_history_select.selected_index
+    local history = frame.pagination_table.admin_history_select.items[selected_index]
 
-    create_pagination_buttons(player_data, pagination_table, #history_index[history])
+    create_pagination_buttons(player_data, pagination_table, (history_index[history] and type(history_index[history]) == 'table' and #history_index[history] or history_index[history]))
 
     player_data.frame = frame
 
@@ -1285,36 +1312,61 @@ function Public.contains_text(history, search_text, target_player_name)
     }
 
     local remote_tbl = {}
+    if not history_index then return remote_tbl end
 
-    if target_player_name and string.len(target_player_name) > 0 and game.get_player(target_player_name) ~= nil then
-        if not history_index or not history_index[history] or #history_index[history] <= 0 then
-            return
-        end
+    local histories_to_search = {}
 
-        for i = #history_index[history], 1, -1 do
-            if history_index[history][i]:find(target_player_name) then
-                if search_text then
-                    local success = contains_text(history_index[history][i], nil, search_text)
-                    if not success then
-                        goto continue
-                    end
-                end
+    if target_player_name and target_player_name ~= "" then
+        target_player_name = string.lower(target_player_name)
+    else
+        target_player_name = nil
+    end
 
-                remote_tbl[#remote_tbl + 1] = history_index[history][i]
-
-                ::continue::
+    if history == "All History" or target_player_name then
+        for name, tbl in pairs(history_index) do
+            if tbl and #tbl > 0 then
+                histories_to_search[name] = tbl
             end
         end
     else
-        for i = #history_index[history], 1, -1 do
-            if search_text then
-                local success = contains_text(history_index[history][i], nil, search_text)
-                if not success then
-                    goto continue
+        if history_index[history] and #history_index[history] > 0 then
+            histories_to_search[history] = history_index[history]
+        end
+    end
+
+    if not next(histories_to_search) then
+        return remote_tbl
+    end
+
+    for _, tbl in pairs(histories_to_search) do
+        for i = #tbl, 1, -1 do
+            local entry = tbl[i]
+            if not entry then goto continue end
+
+            local match = false
+
+            if target_player_name then
+                if string.lower(entry):find(target_player_name) then
+                    if search_text then
+                        local success = contains_text(string.lower(entry), nil, string.lower(search_text))
+                        if not success then
+                            goto continue
+                        end
+                    end
+                    match = true
                 end
+            elseif search_text then
+                local success = contains_text(string.lower(entry), nil, string.lower(search_text))
+                if success then
+                    match = true
+                end
+            else
+                match = true
             end
 
-            remote_tbl[#remote_tbl + 1] = history_index[history][i]
+            if match then
+                table.insert(remote_tbl, entry)
+            end
 
             ::continue::
         end
