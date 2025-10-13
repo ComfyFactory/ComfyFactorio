@@ -364,6 +364,8 @@ local function on_init()
 
     this.initial_rocket_silo_created = false
 
+    this.evolution_factor = 0
+
     this.check_surface_daytime_for_attacks = false
 
     this.disable_multi_command_attack = false
@@ -532,6 +534,10 @@ local function on_tick()
         end
 
         Func.do_buried_biters()
+    end
+
+    if game.tick % 500 == 0 then
+        Func.update_evolution_static()
     end
 
     if this.clear_items_on_ground_state then

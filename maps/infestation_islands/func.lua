@@ -94,24 +94,32 @@ local qualities =
     'legendary'
 }
 
-local ores =
+local mining_chances_ores =
 {
-    'copper-ore',
-    'iron-ore',
-    'coal',
-    'stone',
-    'uranium-ore',
-    'jellynut',
-    'yumako',
-    'carbon',
-    'spoilage',
-    'tungsten-ore',
-    'holmium-ore',
-    'scrap',
-    'ice',
-    'calcite',
-    'lithium',
+    { name = 'coal', chance = 26 },
+    { name = 'copper-ore', chance = 21 },
+    { name = 'iron-ore', chance = 20 },
+    { name = 'stone', chance = 15 },
+    { name = 'uranium-ore', chance = 10 },
+    { name = 'spoilage', chance = 10 },
+    { name = 'tungsten-ore', chance = 5 },
+    { name = 'holmium-ore', chance = 5 },
+    { name = 'calcite', chance = 5 },
+    { name = 'lithium', chance = 5 },
+    { name = 'jellynut', chance = 5 },
+    { name = 'yumako', chance = 5 },
+    { name = 'carbon', chance = 5 },
+    { name = 'scrap', chance = 5 },
+    { name = 'ice', chance = 5 },
 }
+
+local harvest_raffle_ores = {}
+for _, data in pairs(mining_chances_ores) do
+    for _ = 1, data.chance, 1 do
+        harvest_raffle_ores[#harvest_raffle_ores + 1] = data.name
+    end
+end
+local size_of_ore_raffle = #harvest_raffle_ores
 
 local raw_ores =
 {
@@ -707,6 +715,17 @@ local function check_alive_enemies()
     Public.complete_level()
 end
 
+local function update_evolution_static()
+    local evolution_factor = Public.get('evolution_factor')
+    if not evolution_factor then return end
+    if evolution_factor <= 0 then
+        return
+    end
+
+    local force = game.forces.enemy
+    force.set_evolution_factor(evolution_factor, game.surfaces[1])
+end
+
 local function update_evolution(this)
     local surface = game.surfaces[1]
     local force = game.forces.enemy
@@ -715,6 +734,8 @@ local function update_evolution(this)
     local curve = math.pow(normalized, 1.3)
 
     local evolution_factor = math.max(0.05, math.min(curve, 1.0))
+
+    this.evolution_factor = evolution_factor
 
     force.set_evolution_factor(evolution_factor, surface)
     Server.output_script_data(string.format("[Evo] Island level %d -> evolution %.2f", this.current_level, evolution_factor))
@@ -1819,8 +1840,8 @@ local function on_entity_died(event)
     end
     if entity and entity.valid and entity.force.name == 'enemy' and entity.type == 'unit' then
         this.alive_enemies = this.alive_enemies - 1
-        local ore_drop_1 = ores[random(1, #ores)]
-        local ore_drop_2 = ores[random(1, #ores)]
+        local ore_drop_1 = harvest_raffle_ores[random(1, size_of_ore_raffle)]
+        local ore_drop_2 = harvest_raffle_ores[random(1, size_of_ore_raffle)]
         local quality_1 = get_quality_for_stage(this.current_level, this.last_level)
         local quality_2 = get_quality_for_stage(this.current_level, this.last_level)
         if ore_drop_1 == "calcite" then quality_1 = "normal" end
@@ -2382,5 +2403,6 @@ Public.disable_tech = disable_tech
 Public.is_rocket_silo_alive = is_rocket_silo_alive
 Public.run_clear_items_on_ground = run_clear_items_on_ground
 Public.do_clear_items_on_ground_slowly = do_clear_items_on_ground_slowly
+Public.update_evolution_static = update_evolution_static
 
 return Public
