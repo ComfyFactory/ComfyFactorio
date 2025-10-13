@@ -375,6 +375,8 @@ local function on_init()
     this.cooldown_complete_level = game.tick + 100
     this.voting_to_progress_enabled = true
 
+    this.checked_island = {}
+
     game.forces.enemy.set_friend('player', false)
     game.forces.player.set_friend('enemy', false)
 
@@ -532,11 +534,9 @@ local function on_tick()
 
         Func.check_alive_enemies()
         Func.set_multi_command()
-        if this.completed_levels[this.current_level] then
-            return
+        if not this.completed_levels[this.current_level] then
+            Func.do_buried_biters()
         end
-
-        Func.do_buried_biters()
     end
 
     if game.tick % 500 == 0 then

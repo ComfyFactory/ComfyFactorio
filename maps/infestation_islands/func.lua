@@ -1116,21 +1116,37 @@ local function create_units_and_command(unit_count, market, surface, center_posi
 end
 
 local function run_clear_items_on_ground()
-    local current_level = Public.get('current_level')
-    if not current_level then
-        return
-    end
-    local centered_points = Public.get('centered_points')
-    if not centered_points or not next(centered_points) then
-        return
-    end
-    local position = centered_points[current_level]
-    if not position then
+    local this = Public.get()
+    if not this.centered_points or not next(this.centered_points) then
         return
     end
 
-    local radius = centered_points[current_level].radius + 100
-    Scheduler.timeout(20, find_items_on_ground_token, { surface = game.surfaces[1], position = position.position, radius = radius })
+    if not this.checked_island then
+        this.checked_island = {}
+    end
+
+
+    for island_level, data in pairs(this.centered_points) do
+        this.checked_island[island_level] = this.checked_island[island_level] or { next_check = 0 }
+        if this.checked_island[island_level] and game.tick < this.checked_island[island_level].next_check then
+            goto continue
+        end
+
+        if data and data.position then
+            local radius = (data.radius or 0) + 100
+
+            Scheduler.timeout(20, find_items_on_ground_token,
+                {
+                    surface = game.surfaces[1],
+                    position = data.position,
+                    radius = radius
+                })
+
+            this.checked_island[island_level] = { next_check = game.tick + 6000 }
+            break
+        end
+        ::continue::
+    end
 end
 
 local function do_clear_items_on_ground_slowly()
@@ -1849,7 +1865,7 @@ local function on_entity_died(event)
         if ore_drop_1 == "calcite" then quality_1 = "normal" end
         if ore_drop_2 == "calcite" then quality_2 = "normal" end
 
-        entity.surface.spill_item_stack({ position = entity.position, stack = { name = 'coin', count = random(1, 5), quality = 'normal' }, enable_looted = true })
+        entity.surface.spill_item_stack({ position = entity.position, stack = { name = 'coin', count = random(1, 2), quality = 'normal' }, enable_looted = true })
         entity.surface.spill_item_stack({ position = entity.position, stack = { name = ore_drop_1, count = get_ore_count(this.current_level), quality = quality_1 }, enable_looted = true })
         entity.surface.spill_item_stack({ position = entity.position, stack = { name = ore_drop_2, count = get_ore_count(this.current_level), quality = quality_2 }, enable_looted = true })
         if this.alive_enemies < 0 then this.alive_enemies = 0 end
