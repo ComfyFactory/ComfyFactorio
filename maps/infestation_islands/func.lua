@@ -12,6 +12,8 @@ local Difficulty = require 'modules.difficulty_vote_by_amount'
 local Server = require 'utils.server'
 local MGS = require 'maps.infestation_islands.island_settings'
 local Discord = require 'utils.discord_handler'
+local Poll = require 'utils.gui.poll'
+local Color = require 'utils.color_presets'
 
 local island_keeper = '[color=blue]Island Keeper: [/color]'
 local CommandColor = { r = 0.98, g = 0.66, b = 0.22 }
@@ -1775,11 +1777,11 @@ end
 local function complete_level()
     local this = Public.get()
     if not this.cooldown_complete_level then
-        this.cooldown_complete_level = game.tick + (60 * 60 * 5)
+        this.cooldown_complete_level = game.tick + (60 * 60)
     end
 
     if this.alive_enemies == 0 and not this.completed_levels[this.current_level] and game.tick > this.cooldown_complete_level then
-        this.cooldown_complete_level = game.tick + (60 * 60 * 5)
+        this.cooldown_complete_level = game.tick + (60 * 60)
         this.completed_levels[this.current_level] = true
         for _, player in pairs(game.connected_players) do
             player.play_sound { path = 'utility/game_won', volume_modifier = 1 }
@@ -1895,11 +1897,51 @@ local function on_market_item_purchased(event)
             return
         end
         if not Difficulty.has_votes_ended() then
-            return player.print('The difficulty vote has not ended yet!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
+            return player.print('The difficulty vote has not ended yet!', { color = Color.warning })
         end
         if this.game_won then
             return
         end
+        if this.voting_to_progress_enabled then
+            local can_progress = false
+            if this.islands_voting[this.current_level] and this.islands_voting[this.current_level].id and Poll.poll_complete(this.islands_voting[this.current_level].id) then
+                local _, winning_answer = Poll.poll_result(this.islands_voting[this.current_level].id)
+                if winning_answer and winning_answer.text == 'Progress!' then
+                    can_progress = true
+                end
+
+                if not can_progress and not this.islands_voting[this.current_level].timeout_until_next_vote then
+                    this.islands_voting[this.current_level].timeout_until_next_vote = game.tick + 18000
+                end
+                if not this.islands_voting[this.current_level].completed then
+                    this.islands_voting[this.current_level].completed = true
+                end
+            end
+
+            if this.islands_voting[this.current_level] and not this.islands_voting[this.current_level].completed then
+                return player.print('There is already a poll ongoing regarding the islands advancement!', { color = Color.warning })
+            end
+
+            if not this.islands_voting[this.current_level] or (this.islands_voting[this.current_level] and this.islands_voting[this.current_level].timeout_until_next_vote and game.tick >= this.islands_voting[this.current_level].timeout_until_next_vote) then
+                this.islands_voting[this.current_level] = { id = nil, completed = false, timeout_until_next_vote = nil }
+
+                local _, id = Poll.poll(
+                    {
+                        question = player.name .. ' wants to advance to island ' .. this.current_level + 1,
+                        answers = { 'Progress!', 'No, we are not ready!' },
+                        duration = 300,
+                    })
+                this.islands_voting[this.current_level].id = id
+                return
+            end
+
+            if not can_progress and game.tick < this.islands_voting[this.current_level].timeout_until_next_vote then
+                player.print('The team has decided to not progress yet to the next island!', { color = Color.warning })
+                player.print('The next vote will be available in ' .. math.floor((this.islands_voting[this.current_level].timeout_until_next_vote - game.tick) / 60) .. ' seconds!', { color = Color.warning })
+                return
+            end
+        end
+
         entity.remove_market_item(offer_index)
         this.position = entity.position
 
@@ -1973,7 +2015,7 @@ local function on_market_item_purchased(event)
         end
         local count = inventory.get_item_count({ name = 'coin' })
         if count and count < price then
-            player.print('You do not have enough coins to purchase this offer!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
+            player.print('You do not have enough coins to purchase this offer!', { color = Color.warning })
             return
         elseif not count then
             return
@@ -1987,7 +2029,7 @@ local function on_market_item_purchased(event)
         local price = market_prices['piercing'] or 1000
         if this.piercing_ammo_grants then
             entity.remove_market_item(offer_index)
-            return player.print('You already have piercing rounds ammo!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
+            return player.print('You already have piercing rounds ammo!', { color = Color.warning })
         end
         local inventory = player.get_main_inventory()
         if not inventory then
@@ -1995,7 +2037,7 @@ local function on_market_item_purchased(event)
         end
         local count = inventory.get_item_count({ name = 'coin' })
         if count and count < price then
-            player.print('You do not have enough coins to purchase this offer!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
+            player.print('You do not have enough coins to purchase this offer!', { color = Color.warning })
             return
         elseif not count then
             return
@@ -2009,7 +2051,7 @@ local function on_market_item_purchased(event)
         local price = market_prices['uranium'] or 1000
         if this.uranium_ammo_grants then
             entity.remove_market_item(offer_index)
-            return player.print('You already have uranium rounds ammo!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
+            return player.print('You already have uranium rounds ammo!', { color = Color.warning })
         end
         local inventory = player.get_main_inventory()
         if not inventory then
@@ -2017,7 +2059,7 @@ local function on_market_item_purchased(event)
         end
         local count = inventory.get_item_count({ name = 'coin' })
         if count and count < price then
-            player.print('You do not have enough coins to purchase this offer!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
+            player.print('You do not have enough coins to purchase this offer!', { color = Color.warning })
             return
         elseif not count then
             return
@@ -2071,7 +2113,7 @@ Commands.new('reset_island', 'Resets the island.')
             local this = Public.get()
             this.game_reset_tick = 0
             this.game_lost = true
-            player.print('The island has been reset!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
+            player.print('The island has been reset!', { color = Color.warning })
             Server.to_discord_embed('** The island has been reset! **')
         end
     )
@@ -2083,7 +2125,7 @@ Commands.new('set_biter_count', 'Sets the biter count.')
         function (player, count)
             local this = Public.get()
             this.max_biters_per_island = count
-            player.print('The biter count has been set to ' .. count .. '!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
+            player.print('The biter count has been set to ' .. count .. '!', { color = Color.warning })
         end
     )
 
@@ -2094,7 +2136,7 @@ Commands.new('set_final_battle', 'Sets the final battle.')
             local this = Public.get()
             this.current_level = this.last_level - 1
             this.current_stage = this.last_level - 1
-            player.print('The final battle has been set!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
+            player.print('The final battle has been set!', { color = Color.warning })
             return true
         end
     )
@@ -2104,7 +2146,7 @@ Commands.new('send_enemies', 'Sends enemies to the market.')
     :callback(
         function (player)
             set_multi_command()
-            player.print('Enemies have been sent to the market!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
+            player.print('Enemies have been sent to the market!', { color = Color.warning })
             return true
         end
     )
@@ -2115,7 +2157,7 @@ Commands.new('toggle_drift_corpses_toward_beach', 'Toggles the drift corpses tow
     :callback(
         function (player, state)
             Public.set('drift_corpses_toward_beach_enabled', state)
-            player.print('The drift corpses toward beach has been ' .. (state and 'enabled' or 'disabled') .. '!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
+            player.print('The drift corpses toward beach has been ' .. (state and 'enabled' or 'disabled') .. '!', { color = Color.warning })
         end
     )
 
@@ -2125,13 +2167,13 @@ Commands.new('set_infinite_ammo_tick', 'Sets the infinite ammo tick.')
     :callback(
         function (player, tick)
             if tick < 10 then
-                return player.print('The infinite ammo tick must be at least 10 ticks!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
+                return player.print('The infinite ammo tick must be at least 10 ticks!', { color = Color.warning })
             end
             if tick > 100 then
-                return player.print('The infinite ammo tick must be less than 100 ticks!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
+                return player.print('The infinite ammo tick must be less than 100 ticks!', { color = Color.warning })
             end
             Public.set('infinite_ammo_tick', tick)
-            player.print('The infinite ammo tick has been set to ' .. tick .. '!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
+            player.print('The infinite ammo tick has been set to ' .. tick .. '!', { color = Color.warning })
         end
     )
 
@@ -2140,6 +2182,16 @@ Commands.new('skip_difficulty_vote', 'Skips the difficulty vote.')
     :callback(
         function ()
             Difficulty.set_poll_closing_timeout(game.tick)
+        end
+    )
+
+Commands.new('toggle_voting_to_progress', 'Toggles the voting to progress.')
+    :require_admin()
+    :add_parameter('state', true, 'boolean')
+    :callback(
+        function (player, state)
+            Public.set('voting_to_progress_enabled', state)
+            player.print('The voting to progress has been ' .. (state and 'enabled' or 'disabled') .. '!', { color = Color.warning })
         end
     )
 
@@ -2156,7 +2208,7 @@ Commands.new('reward_level', 'Rewards the level.')
                 }
             end
             reward_level(game.surfaces[1], center_position)
-            player.print('Level ' .. level .. ' has been rewarded!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
+            player.print('Level ' .. level .. ' has been rewarded!', { color = Color.warning })
         end
     )
 
@@ -2166,7 +2218,7 @@ Commands.new('set_clear_items_on_ground', 'Sets the clear items on ground state.
     :callback(
         function (player, state)
             Public.set('clear_items_on_ground_state', state)
-            player.print('Clear items on ground has been ' .. (state and 'enabled' or 'disabled') .. '!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
+            player.print('Clear items on ground has been ' .. (state and 'enabled' or 'disabled') .. '!', { color = Color.warning })
         end
     )
 
@@ -2176,7 +2228,7 @@ Commands.new('toggle_check_surface_daytime', 'Checks the surface daytime if an a
     :callback(
         function (player, state)
             Public.set('check_surface_daytime_for_attacks', state)
-            player.print('The check surface daytime has been ' .. (state and 'enabled' or 'disabled') .. '!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
+            player.print('The check surface daytime has been ' .. (state and 'enabled' or 'disabled') .. '!', { color = Color.warning })
         end
     )
 
@@ -2186,7 +2238,7 @@ Commands.new('toggle_disable_multi_command_attack', 'Disables waves of enemies f
     :callback(
         function (player, state)
             Public.set('disable_multi_command_attack', state)
-            player.print('The disable multi command attack has been ' .. (state and 'enabled' or 'disabled') .. '!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
+            player.print('The disable multi command attack has been ' .. (state and 'enabled' or 'disabled') .. '!', { color = Color.warning })
         end
     )
 

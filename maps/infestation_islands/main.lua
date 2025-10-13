@@ -366,11 +366,14 @@ local function on_init()
 
     this.evolution_factor = 0
 
+    this.islands_voting = {}
+
     this.check_surface_daytime_for_attacks = false
 
     this.disable_multi_command_attack = false
 
-    this.cooldown_complete_level = game.tick + (60 * 60 * 5)
+    this.cooldown_complete_level = game.tick + 100
+    this.voting_to_progress_enabled = true
 
     game.forces.enemy.set_friend('player', false)
     game.forces.player.set_friend('enemy', false)
