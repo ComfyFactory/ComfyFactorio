@@ -1818,6 +1818,29 @@ local function get_ore_count(level)
     return random(level, level + 1)
 end
 
+local function reward_items(loot, entity)
+    local amount = loot.count
+    local surface = entity.surface
+    local position = entity.position
+    if amount > 0 then
+        if amount >= 50 then
+            for _ = 1, math.floor(amount / 50), 1 do
+                local e = surface.create_entity { name = 'item-on-ground', position = position, stack = { name = loot.name, quality = loot.quality, count = 50 } }
+                if e and e.valid then
+                    e.to_be_looted = true
+                end
+                amount = amount - 50
+            end
+        end
+        if amount > 0 then
+            local e = surface.create_entity { name = 'item-on-ground', position = position, stack = { name = loot.name, quality = loot.quality, count = amount } }
+            if e and e.valid then
+                e.to_be_looted = true
+            end
+        end
+    end
+end
+
 local function on_entity_died(event)
     local entity = event.entity
     local this = Public.get()
@@ -1865,9 +1888,9 @@ local function on_entity_died(event)
         if ore_drop_1 == "calcite" then quality_1 = "normal" end
         if ore_drop_2 == "calcite" then quality_2 = "normal" end
 
-        entity.surface.spill_item_stack({ position = entity.position, stack = { name = 'coin', count = random(1, 2), quality = 'normal' }, enable_looted = true })
-        entity.surface.spill_item_stack({ position = entity.position, stack = { name = ore_drop_1, count = get_ore_count(this.current_level), quality = quality_1 }, enable_looted = true })
-        entity.surface.spill_item_stack({ position = entity.position, stack = { name = ore_drop_2, count = get_ore_count(this.current_level), quality = quality_2 }, enable_looted = true })
+        reward_items({ name = 'coin', count = random(1, 2), quality = 'normal'}, entity)
+        reward_items({ name = ore_drop_1, count = get_ore_count(this.current_level), quality = quality_1 }, entity)
+        reward_items({ name = ore_drop_2, count = get_ore_count(this.current_level), quality = quality_2 }, entity)
         if this.alive_enemies < 0 then this.alive_enemies = 0 end
         complete_level()
     end
