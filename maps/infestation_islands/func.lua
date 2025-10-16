@@ -1557,6 +1557,7 @@ local create_biters_token =
             end
 
             game.forces.player.chart(surface, { { position.x - 124, position.y - 124 }, { position.x + 124, position.y + 124 } })
+            this.cooldown_complete_level = game.tick
         end
     )
 
@@ -1860,12 +1861,7 @@ end
 
 local function complete_level()
     local this = Public.get()
-    if not this.cooldown_complete_level then
-        this.cooldown_complete_level = game.tick + (60 * 60)
-    end
-
     if this.alive_enemies == 0 and not this.completed_levels[this.current_level] and game.tick > this.cooldown_complete_level then
-        this.cooldown_complete_level = game.tick + (60 * 60)
         this.completed_levels[this.current_level] = true
         for _, player in pairs(game.connected_players) do
             player.play_sound { path = 'utility/game_won', volume_modifier = 1 }
@@ -1969,7 +1965,8 @@ local function on_entity_died(event)
                 player = cause.player
             end
         end
-        this.alive_enemies = this.alive_enemies - 1
+
+
         local ore_drop_1 = harvest_raffle_ores[random(1, size_of_ore_raffle)]
         local ore_drop_2 = harvest_raffle_ores[random(1, size_of_ore_raffle)]
         local quality_1 = get_quality_for_stage(this.current_level, this.last_level)
@@ -1992,6 +1989,10 @@ local function on_entity_died(event)
                 player.insert({ name = ore_drop_2, count = get_ore_count(this.current_level), quality = quality_2 })
             end
         end
+        if this.cooldown_complete_level and game.tick < this.cooldown_complete_level then
+            return
+        end
+        this.alive_enemies = this.alive_enemies - 1
         if this.alive_enemies < 0 then this.alive_enemies = 0 end
         complete_level()
     end
@@ -2143,6 +2144,8 @@ local function on_market_item_purchased(event)
 
 
         this.attack_grace_period = game.tick + 54000
+
+        this.cooldown_complete_level = game.tick + (60 * 60)
 
         this.alive_enemies = 999
 
