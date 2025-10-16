@@ -190,6 +190,7 @@ local function notify_season_over_to_discord(perm_buff)
 end
 
 local function get_random_buff(fetch_all, only_force)
+    local season = this.season
     local buffs =
     {
         {
@@ -320,8 +321,8 @@ local function get_random_buff(fetch_all, only_force)
             poll_name = 'RPG XP level',
             modifier = 'rpg',
             per_force = true,
-            limit = 10,
-            state = 20
+            limit = season and season > 12 and 5 or 10,
+            state = season and season > 12 and 4 or 20
         },
         {
             name = 'chemicals_s',
@@ -478,7 +479,7 @@ local function get_random_buff(fetch_all, only_force)
             tooltip = 'Selecting this buff will grant the team 1 extra wagon at start!',
             poll_name = 'Starting items (extra wagon)',
             modifier = 'locomotive',
-            limit = 5,
+            limit = season and season > 12 and 3 or 5,
             state = 1
         },
         {

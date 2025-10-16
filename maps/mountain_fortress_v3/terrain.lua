@@ -4230,7 +4230,7 @@ Event.add(
                     target = left_top,
                     surface = surface,
                     tint = { r = 0.6, g = 0.6, b = 0.6, a = 0.6 },
-                    render_layer = 'ground'
+                    render_layer = 'above-tiles'
                 }
             )
         end
