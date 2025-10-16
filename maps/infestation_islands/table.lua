@@ -223,6 +223,8 @@ function Public.on_init()
 
     this.infinite_ammo_tick = 50
 
+    this.market_rerolls = {}
+
     this.initial_rocket_silo_created = false
 
     this.evolution_factor = 0

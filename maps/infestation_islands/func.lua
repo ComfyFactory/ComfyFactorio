@@ -695,6 +695,16 @@ local function find_dirt_tile(surface, position)
     end
 end
 
+local function get_market_level_by_unit_number(unit_number)
+    local this = Public.get()
+    for _, market_data in pairs(this.spawned_markets) do
+        if market_data.market and market_data.market.valid and market_data.market.unit_number == unit_number then
+            return market_data.current_level
+        end
+    end
+    return nil
+end
+
 local function get_quality_for_stage(current_level, last_level)
     local level = current_level or 1
     local normalized = min(level / last_level, 1.0)
@@ -1262,10 +1272,6 @@ local function set_multi_command()
 
     Public.set('last_attack_tick', game.tick + 2000)
 
-    if current_level == 1 then
-        return -- we don't attack during the first level
-    end
-
     local market = spawned_markets[current_level - 1] and spawned_markets[current_level - 1].market
     if not market or not market.valid then
         return
@@ -1598,7 +1604,7 @@ local create_market_token =
                             alignment = 'center',
                             scale_with_zoom = false
                         }
-                    this.spawned_markets[this.current_stage] = { market = market, render_protect_text = render_protect_text, render_checkpoint_text = render_checkpoint_text }
+                    this.spawned_markets[this.current_stage] = { current_level = this.current_level, market = market, render_protect_text = render_protect_text, render_checkpoint_text = render_checkpoint_text }
 
                     add_market_slot(market)
                     Scheduler.timeout(10, request_to_generate_chunks_token, { size = 8, surface = surface, position = market.position, sleep = game.tick + 500 })
@@ -2201,10 +2207,70 @@ local function on_market_item_purchased(event)
         game.print(island_keeper .. 'Infinite ammo now grants uranium rounds ammo thanks to ' .. player.name .. '!')
         Server.to_discord_embed('** Infinite ammo now grants uranium rounds ammo thanks to ' .. player.name .. '! **')
         entity.remove_market_item(offer_index)
+    elseif string.find(bought_offer.effect_description, 'reroll') then
+        local market_rerolls = Public.get('market_rerolls')
+        if not market_rerolls[entity.unit_number] then
+            return
+        end
+        local market_level = get_market_level_by_unit_number(entity.unit_number)
+        local inventory = player.get_main_inventory()
+        if not inventory then
+            return
+        end
+        local count = inventory.get_item_count({ name = 'coin' })
+        local price = market_rerolls[entity.unit_number].price
+        if count and count < price then
+            player.print('You do not have enough coins to purchase this offer!', { color = Color.warning })
+            return
+        elseif not count then
+            return
+        end
+        inventory.remove({ name = 'coin', count = price })
+
+        market_rerolls[entity.unit_number].rerolls = market_rerolls[entity.unit_number].rerolls - 1
+        if market_rerolls[entity.unit_number].rerolls < 0 then
+            market_rerolls[entity.unit_number].rerolls = 0
+        end
+        market_rerolls[entity.unit_number].price = market_rerolls[entity.unit_number].price + 250
+
+        entity.remove_market_item(offer_index)
+        Public.island_market(entity, (market_level * random(1, 3)) * 4, false, true)
+        if market_rerolls[entity.unit_number].rerolls == 0 then
+            game.print(island_keeper .. 'The market at level ' .. market_level .. ' has been re-rolled one last time by ' .. player.name .. '!')
+            Server.to_discord_embed('** The market at level ' .. market_level .. ' has been re-rolled one last time by ' .. player.name .. '! **')
+        else
+            game.print(island_keeper .. 'The market at level ' .. market_level .. ' has been re-rolled by ' .. player.name .. '!')
+            Server.to_discord_embed('** The market at level ' .. market_level .. ' has been re-rolled by ' .. player.name .. '! **')
+        end
+    elseif string.find(bought_offer.effect_description, 'Grants') then
+        local market_rerolls = Public.get('market_rerolls')
+        if not market_rerolls[entity.unit_number] then
+            return
+        end
+        local inventory = player.get_main_inventory()
+        if not inventory then
+            return
+        end
+        local count = inventory.get_item_count({ name = 'coin' })
+        local price = market_rerolls[entity.unit_number].modifier_price
+        if count and count < price then
+            player.print('You do not have enough coins to purchase this offer!', { color = Color.warning })
+            return
+        elseif not count then
+            return
+        end
+        inventory.remove({ name = 'coin', count = price })
+
+        game.forces.player[market_rerolls[entity.unit_number].modifier] = game.forces.player[market_rerolls[entity.unit_number].modifier] + market_rerolls[entity.unit_number].modifier_value
+
+        entity.remove_market_item(offer_index)
+        game.print(island_keeper .. player.name .. ' has granted the whole team ' .. market_rerolls[entity.unit_number].modifier_name .. '!')
+        Server.to_discord_embed('** ' .. player.name .. ' has granted the whole team ' .. market_rerolls[entity.unit_number].modifier_name .. '! **')
+        Server.output_script_data('** ' .. player.name .. ' has granted the whole team ' .. market_rerolls[entity.unit_number].modifier_name .. '! **')
     end
 
     if not entity.get_market_items() then
-        Public.island_market(entity, (this.current_level * random(1, 3)) * 10)
+        Public.island_market(entity, (this.current_level * random(1, 3)) * 4)
         game.print(island_keeper .. 'The market at level ' .. this.current_level - 1 .. ' has been refilled by ' .. player.name .. '!')
         Server.to_discord_embed('** The market at level ' .. this.current_level - 1 .. ' has been refilled by ' .. player.name .. '! **')
     end
