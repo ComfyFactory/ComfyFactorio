@@ -6,6 +6,7 @@ _PROFILE = false
 
 require 'utils.server'
 require 'utils.server_commands'
+require 'utils.gui.init'
 require 'utils.command_handler'
 require 'utils.utils'
 require 'utils.math.math'
@@ -22,7 +23,6 @@ require 'modules.show_inventory'
 require 'modules.inserter_drops_pickup'
 require 'modules.autostash'
 
-require 'utils.gui.init'
 require 'utils.remote_chunks'
 
 ---------------- !ENABLE MODULES HERE ----------------

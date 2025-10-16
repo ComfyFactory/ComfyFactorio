@@ -2,14 +2,10 @@
 local Public = require 'maps.infestation_islands.core'
 local Event = require 'utils.event'
 local Func = Public.func
-local Map = require 'modules.map_info'
 local Task = require 'utils.task_token'
 local Scheduler = require 'utils.scheduler'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 local Server = require 'utils.server'
-local Autostash = require 'modules.autostash'
-local BottomFrame = require 'utils.gui.bottom_frame'
-local Misc = require 'utils.commands.misc'
 
 if not script.active_mods.quality then
     error('Quality mod is not enabled!')
@@ -18,21 +14,6 @@ end
 if not script.active_mods['space-age'] then
     error('Space Age mod is not enabled!')
 end
-
-
-local set_gamestate_token =
-    Task.register(
-        function ()
-            local this = Public.get()
-            this.gamestate = 1
-        end
-    )
-
-local set_tech_limit_token = Task.register(
-    function ()
-        Func.disable_tech()
-    end
-)
 
 local function reset_player(player)
     if player.character and player.character.valid then
@@ -193,201 +174,6 @@ local function on_player_joined_game(event)
     Difficulty.difficulty_gui()
 end
 
-local function on_init()
-    local storage = Public.get()
-    for index, _ in pairs(storage) do
-        storage[index] = nil
-    end
-    local T = Map.Pop_info()
-    T.localised_category = 'infestation_islands'
-    T.main_caption_color = { r = 150, g = 150, b = 0 }
-    T.sub_caption_color = { r = 0, g = 150, b = 0 }
-
-    Scheduler.can_run_scheduler(true)
-
-    local this = Public.get()
-
-    this.game_lost = false
-
-    local surface = game.surfaces[1]
-    surface.ignore_surface_conditions = true
-    surface.request_to_generate_chunks({ x = 0, y = 0 }, 6)
-
-    Misc.bottom_button(true)
-    BottomFrame.reset()
-    BottomFrame.activate_custom_buttons(true)
-    Autostash.bottom_button(true)
-    Autostash.insert_into_furnace(true)
-
-    this.soft_reset = true
-
-    this.notified_market_safe = false
-
-    local mgs = surface.map_gen_settings
-    mgs.water = 9.9
-    mgs.property_expression_names =
-    {
-        ['control-setting:aux:bias'] = '0.500000',
-        ['control-setting:aux:frequency:multiplier'] = '6.000000',
-        ['control-setting:moisture:bias'] = '-0.050000',
-        ['control-setting:moisture:frequency:multiplier'] = '6.000000',
-    }
-    surface.map_gen_settings = mgs
-
-    local blacklist =
-    {
-        ['dark-mud-decal'] = true,
-        ['sand-dune-decal'] = true,
-        ['light-mud-decal'] = true,
-        ['puberty-decal'] = true,
-        ['sand-decal'] = true,
-        ['red-desert-decal'] = true
-    }
-    this.decorative_names = {}
-    for k, v in pairs(prototypes.decorative) do
-        if not blacklist[k] then
-            if v.autoplace_specification then
-                this.decorative_names[#this.decorative_names + 1] = k
-            end
-        end
-    end
-
-    local tree_raffle = {}
-    for _, e in pairs(prototypes.entity) do
-        if e.type == 'tree' then
-            table.insert(tree_raffle, e.name)
-        end
-    end
-
-    this.tree_raffle = tree_raffle
-
-    local corpses_raffle = {}
-    for _, e in pairs(prototypes.entity) do
-        if e.type == 'corpse' then
-            table.insert(corpses_raffle, e.name)
-        end
-    end
-
-    this.corpses_raffle = corpses_raffle
-
-    this.stages = {}
-    this.last_level = 10
-    local island_level = 12
-    for _ = 1, this.last_level + 1 do
-        this.stages[#this.stages + 1] =
-        {
-            size = 16 + (32 + (island_level * 2)) * 1.5
-        }
-        island_level = island_level + 5
-    end
-
-    this.stages[#this.stages].final = true
-
-    this.final_battle = false
-
-    this.level_vectors = {}
-    this.alive_boss_enemy_entities = {}
-    this.current_level = 0
-    this.gamestate = 0
-    Task.set_timeout_in_ticks(30, set_gamestate_token)
-
-    game.forces.player.set_spawn_position({ 0, 2 }, surface)
-
-    this.alive_enemies = 0
-    this.alive_boss_enemy_count = 0
-
-    this.current_level = this.current_level + 1
-    this.current_stage = 1
-
-    this.completed_levels = {}
-
-    this.market_positions = {}
-
-    this.notified_enemies_to_attack = {}
-
-    this.rocket_silo = nil
-
-    this.centered_points =
-    {
-        [1] = { position = { x = 0, y = 0 }, radius = 200, level = 1 }
-    }
-
-    this.quality_list =
-    {
-        'normal',
-        'uncommon',
-        'rare',
-        'epic',
-        'legendary'
-    }
-
-    this.tiles = {}
-
-    this.spawned_markets = {}
-
-    this.path_tiles = nil
-
-    this.max_biters_per_island = 150
-
-    this.seeds = nil
-
-    this.nomed_marked = nil
-
-    this.loot_stats =
-    {
-        rare = 48,
-        normal = 48
-    }
-
-    this.infinite_ammo_grants = 1
-
-    this.piercing_ammo_grants = false
-    this.uranium_ammo_grants = false
-    this.piercing_ammo_grants_added = false
-    this.uranium_ammo_grants_added = false
-
-    this.last_attack_tick = game.tick
-
-    Func.reset_buried_biters()
-
-    surface.freeze_daytime = false
-    surface.ticks_per_day = 25200
-
-    this.market_prices = {}
-
-    this.drift_corpses_toward_beach_enabled = true
-
-    this.clear_items_on_ground_state = true
-    this.clear_items_on_ground = nil
-
-    this.infinite_ammo_tick = 50
-
-    this.initial_rocket_silo_created = false
-
-    this.evolution_factor = 0
-
-    this.islands_voting = {}
-
-    this.check_surface_daytime_for_attacks = false
-
-    this.disable_multi_command_attack = false
-
-    this.cooldown_complete_level = game.tick + 100
-    this.voting_to_progress_enabled = true
-
-    this.checked_island = {}
-
-    game.forces.enemy.set_friend('player', false)
-    game.forces.player.set_friend('enemy', false)
-
-    Difficulty.reset_difficulty_poll({ closing_timeout = game.tick + 36000 })
-    Difficulty.set_gui_width(20)
-    Difficulty.set('button_height', 54)
-    this.difficulty_vote_ended = false
-    Server.to_discord_embed('** A fresh round of Infestation Islands has begun! **')
-    Task.set_timeout_in_ticks(100, set_tech_limit_token)
-end
-
 local gamestate_functions =
 {
     [1] = bring_players,
@@ -425,9 +211,9 @@ local function has_the_game_ended(this)
                     this.render_ammo_text.destroy()
                     this.render_ammo_text = nil
                 end
-                if this.infini_chest and this.infini_chest.valid then
-                    this.infini_chest.destroy()
-                    this.infini_chest = nil
+                if this.ammo_chest and this.ammo_chest.valid then
+                    this.ammo_chest.destroy()
+                    this.ammo_chest = nil
                 end
 
                 for _, market_data in pairs(this.spawned_markets) do
@@ -449,7 +235,7 @@ local function has_the_game_ended(this)
                 this.game_won = false
                 Scheduler.can_run_scheduler(false)
                 clear_surface()
-                on_init()
+                Public.on_init()
                 Task.set_timeout_in_ticks(500, reset_players_token)
                 return
             end
@@ -505,7 +291,7 @@ local function on_tick()
     local infinite_ammo_tick = Public.get('infinite_ammo_tick')
     if game.tick % infinite_ammo_tick == 0 then
         drift_corpses_toward_beach()
-        if this.infini_chest and this.infini_chest.valid then
+        if this.ammo_chest and this.ammo_chest.valid then
             local magazine_name = 'firearm-magazine'
             if this.piercing_ammo_grants then
                 magazine_name = 'piercing-rounds-magazine'
@@ -514,7 +300,7 @@ local function on_tick()
                 magazine_name = 'uranium-rounds-magazine'
             end
 
-            this.infini_chest.insert({ name = magazine_name, count = this.infinite_ammo_grants or 1 })
+            this.ammo_chest.insert({ name = magazine_name, count = this.infinite_ammo_grants or 1 })
         end
     end
 
@@ -572,6 +358,5 @@ Server.on_scenario_changed(
     end
 )
 
-Event.on_init(on_init)
 Event.add(defines.events.on_tick, on_tick)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)

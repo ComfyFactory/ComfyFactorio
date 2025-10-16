@@ -8,6 +8,7 @@ local Config = require 'utils.gui.config'
 local SpamProtection = require 'utils.spam_protection'
 local Math = require 'utils.math.math'
 local Discord = require 'utils.discord_handler'
+local Color = require 'utils.color_presets'
 local Public = {}
 
 local insert = table.insert
@@ -70,6 +71,66 @@ local create_poll_clear_name = Gui.uid_name()
 local create_poll_edit_name = Gui.uid_name()
 local create_poll_confirm_name = Gui.uid_name()
 local create_poll_delete_name = Gui.uid_name()
+
+Config.register_scenario_module(
+    {
+        id = "poll",
+        admin_only = false,
+        gui_rows = Config.register_token(
+            function (player, frame)
+                local poll_table = Public.get_no_notify_players()
+                local switch_state = 'left'
+                if poll_table[player.index] then
+                    switch_state = 'right'
+                end
+                Config.add_switch(frame, switch_state, 'poll_no_notify_toggle', { 'gui.notify_on_polls' }, { 'gui-description.notify_on_polls' })
+                frame.add({ type = 'line' })
+            end),
+        handlers =
+        {
+            ['poll_no_notify_toggle'] = Config.register_token(
+                function (player, event)
+                    local poll_table = Public.get_no_notify_players()
+                    if event.element.switch_state == 'left' then
+                        poll_table[player.index] = nil
+                        player.print('You will now be notified when polls are created.', { color = Color.green })
+                    else
+                        poll_table[player.index] = true
+                        player.print('You will no longer be notified when polls are created.', { color = Color.red })
+                    end
+                end),
+        }
+    })
+
+Config.register_scenario_module(
+    {
+        id = "poll_admin_settings",
+        admin_only = true,
+        gui_rows = Config.register_token(
+            function (_, frame)
+                local config = Config.get('gui_config')
+                local switch_state = 'right'
+                if config.poll_trusted then
+                    switch_state = 'left'
+                end
+                Config.add_switch(frame, switch_state, 'poll_trusted_toggle', 'Poll mode', 'Disables non-trusted plebs to create polls.')
+                frame.add({ type = 'line' })
+            end),
+        handlers =
+        {
+            ['poll_trusted_toggle'] = Config.register_token(
+                function (_, event)
+                    local config = Config.get('gui_config')
+                    if event.element.switch_state == 'left' then
+                        config.poll_trusted = true
+                        Config.get_actor(event, '[Poll Mode]', 'has disabled non-trusted people to do polls.')
+                    else
+                        config.poll_trusted = false
+                        Config.get_actor(event, '[Poll Mode]', 'has allowed non-trusted people to do polls.')
+                    end
+                end)
+        }
+    })
 
 local function poll_id()
     local count = polls_counter[1] + 1

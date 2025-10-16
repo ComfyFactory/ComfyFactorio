@@ -811,6 +811,7 @@ create_admin_panel = function (data)
     if selected then
         if player_names[selected] then
             selected_index = selected
+            player_data.target_player_name = player_names[selected]
         end
     end
 
@@ -970,7 +971,6 @@ create_admin_panel = function (data)
     bottomLine.style.bottom_margin = 8
 
     local histories = {}
-    insert(histories, 'All History')
     if antigrief.capsule_history then
         insert(histories, 'Capsule History')
     end
@@ -1031,11 +1031,8 @@ create_admin_panel = function (data)
     drop_down_2.style.right_padding = 12
     drop_down_2.style.left_padding = 12
 
-    antigrief.all_history = #antigrief.capsule_history + #antigrief.message_history + #antigrief.friendly_fire_history + #antigrief.mining_history + #antigrief.whitelist_mining_history + #antigrief.landfill_history + #antigrief.corpse_history + #antigrief.cancel_crafting_history + #antigrief.deconstruct_history + #antigrief.scenario_history + #antigrief.whisper_history
-
     local history_index =
     {
-        ['All History'] = antigrief.all_history,
         ['Capsule History'] = antigrief.capsule_history,
         ['Message History'] = antigrief.message_history,
         ['Friendly Fire History'] = antigrief.friendly_fire_history,
@@ -1048,6 +1045,7 @@ create_admin_panel = function (data)
         ['Scenario History'] = antigrief.scenario_history,
         ['Whisper History'] = antigrief.whisper_history
     }
+
 
     local si = frame.pagination_table.admin_history_select.selected_index
     local history = frame.pagination_table.admin_history_select.items[si]

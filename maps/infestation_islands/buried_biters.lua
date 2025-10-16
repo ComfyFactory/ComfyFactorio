@@ -1,17 +1,7 @@
 local Event = require 'utils.event'
 local Public = require 'maps.infestation_islands.table'
-local Global = require 'utils.global'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local Server = require 'utils.server'
-
-local this = {}
-
-Global.register(
-	this,
-	function (t)
-		this = t
-	end
-)
 
 local scale_units_by_health =
 {
@@ -382,12 +372,14 @@ function Public.buried_spawner(surface, position, count, force)
 		count = 1
 	end
 
+	local buried_biters = Public.get('buried_biters')
+
 	for t = 1, 60, 1 do
-		if not this[game.tick + t] then
-			this[game.tick + t] = {}
+		if not buried_biters[game.tick + t] then
+			buried_biters[game.tick + t] = {}
 		end
 
-		this[game.tick + t][#this[game.tick + t] + 1] =
+		buried_biters[game.tick + t][#buried_biters[game.tick + t] + 1] =
 		{
 			callback = 'create_particles',
 			data = { surface = surface, position = { x = position.x, y = position.y }, amount = math.ceil(t * 0.05) }
@@ -395,7 +387,7 @@ function Public.buried_spawner(surface, position, count, force)
 
 		if t == 60 then
 			if count == 1 then
-				this[game.tick + t][#this[game.tick + t] + 1] =
+				buried_biters[game.tick + t][#buried_biters[game.tick + t] + 1] =
 				{
 					callback = 'spawn_spawner',
 					data = { surface = surface, position = { x = position.x, y = position.y }, count = count or 1, force = force or 'enemy' }
@@ -403,7 +395,7 @@ function Public.buried_spawner(surface, position, count, force)
 			else
 				local tick = 2
 				for _ = 1, count do
-					this[game.tick + t][#this[game.tick + t] + 1 + tick] =
+					buried_biters[game.tick + t][#buried_biters[game.tick + t] + 1 + tick] =
 					{
 						callback = 'spawn_spawner',
 						data = { surface = surface, position = { x = position.x, y = position.y }, count = count or 1, force = force or 'enemy' }
@@ -433,12 +425,14 @@ function Public.buried_biter(surface, position, count, force, quality)
 		count = 1
 	end
 
+	local buried_biters = Public.get('buried_biters')
+
 	for t = 1, 60, 1 do
-		if not this[game.tick + t] then
-			this[game.tick + t] = {}
+		if not buried_biters[game.tick + t] then
+			buried_biters[game.tick + t] = {}
 		end
 
-		this[game.tick + t][#this[game.tick + t] + 1] =
+		buried_biters[game.tick + t][#buried_biters[game.tick + t] + 1] =
 		{
 			callback = 'create_particles',
 			data = { surface = surface, position = { x = position.x, y = position.y }, amount = math.ceil(t * 0.05) }
@@ -446,7 +440,7 @@ function Public.buried_biter(surface, position, count, force, quality)
 
 		if t == 60 then
 			if count == 1 then
-				this[game.tick + t][#this[game.tick + t] + 1] =
+				buried_biters[game.tick + t][#buried_biters[game.tick + t] + 1] =
 				{
 					callback = 'spawn_biters',
 					data = { surface = surface, position = { x = position.x, y = position.y }, count = count or 1, force = force or 'enemy', quality = quality or 'normal' }
@@ -454,7 +448,7 @@ function Public.buried_biter(surface, position, count, force, quality)
 			else
 				local tick = 2
 				for _ = 1, count do
-					this[game.tick + t][#this[game.tick + t] + 1 + tick] =
+					buried_biters[game.tick + t][#buried_biters[game.tick + t] + 1 + tick] =
 					{
 						callback = 'spawn_biters',
 						data = { surface = surface, position = { x = position.x, y = position.y }, count = count or 1, force = force or 'enemy', quality = quality or 'normal' }
@@ -484,12 +478,14 @@ function Public.buried_tech(surface, position, count, force, quality)
 		count = 1
 	end
 
+	local buried_biters = Public.get('buried_biters')
+
 	for t = 1, 60, 1 do
-		if not this[game.tick + t] then
-			this[game.tick + t] = {}
+		if not buried_biters[game.tick + t] then
+			buried_biters[game.tick + t] = {}
 		end
 
-		this[game.tick + t][#this[game.tick + t] + 1] =
+		buried_biters[game.tick + t][#buried_biters[game.tick + t] + 1] =
 		{
 			callback = 'create_particles',
 			data = { surface = surface, position = { x = position.x, y = position.y }, amount = math.ceil(t * 0.05) }
@@ -497,7 +493,7 @@ function Public.buried_tech(surface, position, count, force, quality)
 
 		if t == 60 then
 			if count == 1 then
-				this[game.tick + t][#this[game.tick + t] + 1] =
+				buried_biters[game.tick + t][#buried_biters[game.tick + t] + 1] =
 				{
 					callback = 'spawn_tech',
 					data = { surface = surface, position = { x = position.x, y = position.y }, count = count or 1, force = force or 'enemy', quality = quality or 'normal' }
@@ -505,7 +501,7 @@ function Public.buried_tech(surface, position, count, force, quality)
 			else
 				local tick = 2
 				for _ = 1, count do
-					this[game.tick + t][#this[game.tick + t] + 1 + tick] =
+					buried_biters[game.tick + t][#buried_biters[game.tick + t] + 1 + tick] =
 					{
 						callback = 'spawn_tech',
 						data = { surface = surface, position = { x = position.x, y = position.y }, count = count or 1, force = force or 'enemy', quality = quality or 'normal' }
@@ -531,19 +527,21 @@ function Public.buried_worm(surface, position, quality)
 		return
 	end
 
+	local buried_biters = Public.get('buried_biters')
+
 	for t = 1, 60, 1 do
-		if not this[game.tick + t] then
-			this[game.tick + t] = {}
+		if not buried_biters[game.tick + t] then
+			buried_biters[game.tick + t] = {}
 		end
 
-		this[game.tick + t][#this[game.tick + t] + 1] =
+		buried_biters[game.tick + t][#buried_biters[game.tick + t] + 1] =
 		{
 			callback = 'create_particles',
 			data = { surface = surface, position = { x = position.x, y = position.y }, amount = math.ceil(t * 0.05) }
 		}
 
 		if t == 60 then
-			this[game.tick + t][#this[game.tick + t] + 1] =
+			buried_biters[game.tick + t][#buried_biters[game.tick + t] + 1] =
 			{
 				callback = 'spawn_worms',
 				data = { surface = surface, position = { x = position.x, y = position.y }, quality = quality or 'normal' }
@@ -563,10 +561,11 @@ local callbacks =
 
 local function on_tick()
 	local t = game.tick
-	if not this[t] then
+	local buried_biters = Public.get('buried_biters')
+	if not buried_biters or not buried_biters[t] then
 		return
 	end
-	for _, token in pairs(this[t]) do
+	for _, token in pairs(buried_biters[t]) do
 		local callback = token.callback
 		local data = token.data
 		local cbl = callbacks[callback]
@@ -574,13 +573,7 @@ local function on_tick()
 			cbl(data)
 		end
 	end
-	this[t] = nil
-end
-
-function Public.reset_buried_biters()
-	for k, _ in pairs(this) do
-		this[k] = nil
-	end
+	buried_biters[t] = nil
 end
 
 Event.add(defines.events.on_tick, on_tick)

@@ -783,6 +783,7 @@ local function wall(p, data, adjusted_zones)
                     treasure[#treasure + 1] = { position = p, chest = 'steel-chest' }
                 end
             end
+            local enforce_wave_200_before_collapse = Public.get('enforce_wave_200_before_collapse')
             if y < 4 or y > 24 then
                 if y <= 22 then
                     if random(1, y + 1) == 1 then
@@ -803,95 +804,99 @@ local function wall(p, data, adjusted_zones)
                                 Public.set('zone1_beam2', surface.create_entity({ name = 'electric-beam', position = { x_min, p.y + 30 }, source = { x_min, p.y + 30 }, target = { x_max, p.y + 30 } }))
                                 Public.set('zone1_beam3', surface.create_entity({ name = 'electric-beam', position = { x_min, p.y + 30 }, source = { x_min, p.y + 30 }, target = { x_max, p.y + 30 } }))
                                 Public.set('alert_zone_1', true)
-                                Public.set(
-                                    'zone1_text1',
-                                    rendering.draw_text
-                                    {
-                                        text = ({ 'breached_wall.warning' }),
-                                        surface = surface,
-                                        target = { 0, p.y - 35 },
-                                        color = { r = 255, g = 106, b = 0 },
-                                        scale = 10,
-                                        font = 'heading-1',
-                                        alignment = 'center',
-                                        scale_with_zoom = false
-                                    }
-                                )
-                                Public.set(
-                                    'zone1_text2',
-                                    rendering.draw_text
-                                    {
-                                        text = ({ 'breached_wall.warning' }),
-                                        surface = surface,
-                                        target = { -180, p.y - 35 },
-                                        color = { r = 255, g = 106, b = 0 },
-                                        scale = 10,
-                                        font = 'heading-1',
-                                        alignment = 'center',
-                                        scale_with_zoom = false
-                                    }
-                                )
-                                Public.set(
-                                    'zone1_text3',
-                                    rendering.draw_text
-                                    {
-                                        text = ({ 'breached_wall.warning' }),
-                                        surface = surface,
-                                        target = { 180, p.y - 35 },
-                                        color = { r = 255, g = 106, b = 0 },
-                                        scale = 10,
-                                        font = 'heading-1',
-                                        alignment = 'center',
-                                        scale_with_zoom = false
-                                    }
-                                )
+                                if not enforce_wave_200_before_collapse then
+                                    Public.set(
+                                        'zone1_text1',
+                                        rendering.draw_text
+                                        {
+                                            text = ({ 'breached_wall.warning' }),
+                                            surface = surface,
+                                            target = { 0, p.y - 35 },
+                                            color = { r = 255, g = 106, b = 0 },
+                                            scale = 10,
+                                            font = 'heading-1',
+                                            alignment = 'center',
+                                            scale_with_zoom = false
+                                        }
+                                    )
+                                    Public.set(
+                                        'zone1_text2',
+                                        rendering.draw_text
+                                        {
+                                            text = ({ 'breached_wall.warning' }),
+                                            surface = surface,
+                                            target = { -180, p.y - 35 },
+                                            color = { r = 255, g = 106, b = 0 },
+                                            scale = 10,
+                                            font = 'heading-1',
+                                            alignment = 'center',
+                                            scale_with_zoom = false
+                                        }
+                                    )
+                                    Public.set(
+                                        'zone1_text3',
+                                        rendering.draw_text
+                                        {
+                                            text = ({ 'breached_wall.warning' }),
+                                            surface = surface,
+                                            target = { 180, p.y - 35 },
+                                            color = { r = 255, g = 106, b = 0 },
+                                            scale = 10,
+                                            font = 'heading-1',
+                                            alignment = 'center',
+                                            scale_with_zoom = false
+                                        }
+                                    )
+                                end
                             else
                                 Public.set('zone1_beam1', surface.create_entity({ name = 'electric-beam', position = { x_min, p.y }, source = { x_min, p.y }, target = { x_max, p.y } }))
                                 Public.set('zone1_beam2', surface.create_entity({ name = 'electric-beam', position = { x_min, p.y }, source = { x_min, p.y }, target = { x_max, p.y } }))
                                 Public.set('zone1_beam3', surface.create_entity({ name = 'electric-beam', position = { x_min, p.y }, source = { x_min, p.y }, target = { x_max, p.y } }))
                                 Public.set('alert_zone_1', true)
-                                Public.set(
-                                    'zone1_text1',
-                                    rendering.draw_text
-                                    {
-                                        text = ({ 'breached_wall.warning' }),
-                                        surface = surface,
-                                        target = { 0, p.y + 35 },
-                                        color = { r = 255, g = 106, b = 0 },
-                                        scale = 10,
-                                        font = 'heading-1',
-                                        alignment = 'center',
-                                        scale_with_zoom = false
-                                    }
-                                )
-                                Public.set(
-                                    'zone1_text2',
-                                    rendering.draw_text
-                                    {
-                                        text = ({ 'breached_wall.warning' }),
-                                        surface = surface,
-                                        target = { -180, p.y + 35 },
-                                        color = { r = 255, g = 106, b = 0 },
-                                        scale = 10,
-                                        font = 'heading-1',
-                                        alignment = 'center',
-                                        scale_with_zoom = false
-                                    }
-                                )
-                                Public.set(
-                                    'zone1_text3',
-                                    rendering.draw_text
-                                    {
-                                        text = ({ 'breached_wall.warning' }),
-                                        surface = surface,
-                                        target = { 180, p.y + 35 },
-                                        color = { r = 255, g = 106, b = 0 },
-                                        scale = 10,
-                                        font = 'heading-1',
-                                        alignment = 'center',
-                                        scale_with_zoom = false
-                                    }
-                                )
+                                if not enforce_wave_200_before_collapse then
+                                    Public.set(
+                                        'zone1_text1',
+                                        rendering.draw_text
+                                        {
+                                            text = ({ 'breached_wall.warning' }),
+                                            surface = surface,
+                                            target = { 0, p.y + 35 },
+                                            color = { r = 255, g = 106, b = 0 },
+                                            scale = 10,
+                                            font = 'heading-1',
+                                            alignment = 'center',
+                                            scale_with_zoom = false
+                                        }
+                                    )
+                                    Public.set(
+                                        'zone1_text2',
+                                        rendering.draw_text
+                                        {
+                                            text = ({ 'breached_wall.warning' }),
+                                            surface = surface,
+                                            target = { -180, p.y + 35 },
+                                            color = { r = 255, g = 106, b = 0 },
+                                            scale = 10,
+                                            font = 'heading-1',
+                                            alignment = 'center',
+                                            scale_with_zoom = false
+                                        }
+                                    )
+                                    Public.set(
+                                        'zone1_text3',
+                                        rendering.draw_text
+                                        {
+                                            text = ({ 'breached_wall.warning' }),
+                                            surface = surface,
+                                            target = { 180, p.y + 35 },
+                                            color = { r = 255, g = 106, b = 0 },
+                                            scale = 10,
+                                            font = 'heading-1',
+                                            alignment = 'center',
+                                            scale_with_zoom = false
+                                        }
+                                    )
+                                end
                             end
                         end
                     end

@@ -4,6 +4,7 @@ local Global = require 'utils.global'
 local Alert = require 'utils.alert'
 local Event = require 'utils.event'
 local Task = require 'utils.task_token'
+local Config = require 'utils.gui.config'
 
 local this =
 {
@@ -28,6 +29,37 @@ Global.register(
 local Public = { events = { remove_surface = Event.generate_event_name('remove_surface') } }
 local remove = table.remove
 local insert = table.insert
+
+Config.register_scenario_module(
+    {
+        id = "clear_vacant_players",
+        admin_only = false,
+        gui_rows = Config.register_token(
+            function (_, frame)
+                local switch_state = 'right'
+                if this.settings.is_enabled then
+                    switch_state = 'left'
+                end
+                Config.add_switch(frame, switch_state, 'vacant_toggle', 'Clear Vacant Players', 'Toggles offline players dropping their inventories on spawn.')
+
+                frame.add({ type = 'line' })
+            end),
+        handlers =
+        {
+            ['vacant_toggle'] = Config.register_token(
+                function (_, event)
+                    local message
+                    if event.element.switch_state == 'left' then
+                        this.settings.is_enabled = true
+                        message = 'has enabled Clear Vacant Players!'
+                    else
+                        this.settings.is_enabled = false
+                        message = 'has disabled Clear Vacant Players!'
+                    end
+                    Config.get_actor(event, '[Clear Vacant Players]', message, true)
+                end),
+        }
+    })
 
 local zoom_to_pos_token =
     Task.register(

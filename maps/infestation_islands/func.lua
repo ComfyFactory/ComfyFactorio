@@ -14,6 +14,7 @@ local MGS = require 'maps.infestation_islands.island_settings'
 local Discord = require 'utils.discord_handler'
 local Poll = require 'utils.gui.poll'
 local Color = require 'utils.color_presets'
+local Config = require 'utils.gui.config'
 
 local island_keeper = '[color=blue]Island Keeper: [/color]'
 local CommandColor = { r = 0.98, g = 0.66, b = 0.22 }
@@ -218,6 +219,13 @@ local function get_vector(position)
     end
 end
 
+local function merge_arrays(a, b)
+    for i = 1, #b do
+        a[#a + 1] = b[i]
+    end
+    return a
+end
+
 local find_items_on_ground_token =
     Scheduler.set(
         function (event)
@@ -228,6 +236,8 @@ local find_items_on_ground_token =
 
             local ents = {}
 
+            local this = Public.get()
+
             for _, entity in pairs(surface.find_entities_filtered { type = "item-entity", name = "item-on-ground", area = area }) do
                 if entity.valid then
                     ents[#ents + 1] = entity
@@ -235,7 +245,7 @@ local find_items_on_ground_token =
             end
 
             if #ents > 2000 then
-                Public.set('clear_items_on_ground', ents)
+                this.clear_items_on_ground = merge_arrays(this.clear_items_on_ground, ents)
             end
         end
     )
@@ -281,6 +291,45 @@ local decoratives =
     'green-bush-mini',
     'nuclear-ground-patch',
 }
+
+local function get_player_options(player)
+    local player_options = Public.get('player_options')
+    if not player_options[player.index] then
+        player_options[player.index] =
+        {
+            ore_drop = false
+        }
+    end
+    return player_options[player.index]
+end
+
+Config.register_scenario_module(
+    {
+        id = "infestation_islands",
+        admin_only = false,
+        gui_rows = Config.register_token(
+            function (player, frame)
+                local player_options = get_player_options(player)
+                local switch_state = 'right'
+                if player_options.ore_drop then switch_state = 'left' end
+                Config.add_switch(frame, switch_state, 'ore_drop', 'Ore Drop', 'Toggle to select if you want the ore to drop to ground or not.')
+                frame.add({ type = 'line' })
+            end),
+        handlers =
+        {
+            ore_drop = Config.register_token(
+                function (player, event)
+                    local player_options = get_player_options(player)
+                    if event.element.switch_state == 'left' then
+                        player_options.ore_drop = true
+                        player.print('Ores will now drop to ground when enemies are killed!', { color = Color.yellow })
+                    else
+                        player_options.ore_drop = false
+                        player.print('Ores will no longer drop to ground when enemies are killed!', { color = Color.yellow })
+                    end
+                end)
+        }
+    })
 
 local calculate_bridge_token =
     Scheduler.set(
@@ -932,6 +981,10 @@ local function disable_tech()
     force.recipes['mech-armor'].enabled = false
     force.recipes['railgun-turret'].enabled = false
     force.recipes['artillery-turret'].enabled = false
+    force.recipes['land-mine'].enabled = false
+    force.recipes['rail-ramp'].enabled = false
+    force.recipes['rail-support'].enabled = false
+    force.recipes['thruster'].enabled = false
 
     force.set_surface_hidden(game.surfaces['island'], true)
 end
@@ -1143,7 +1196,6 @@ local function run_clear_items_on_ground()
                 })
 
             this.checked_island[island_level] = { next_check = game.tick + 6000 }
-            break
         end
         ::continue::
     end
@@ -1155,7 +1207,7 @@ local function do_clear_items_on_ground_slowly()
         return
     end
 
-    for _ = 1, 250 do
+    for _ = 1, 1000 do
         local entity = table.remove(clear_items_on_ground, #clear_items_on_ground)
         if entity and entity.valid then
             entity.destroy()
@@ -1165,6 +1217,9 @@ end
 
 local function set_multi_command()
     local current_level = Public.get('current_level')
+    if current_level == 1 then
+        return
+    end
     local spawned_markets = Public.get('spawned_markets')
 
     local disable_multi_command_attack = Public.get('disable_multi_command_attack')
@@ -1224,6 +1279,10 @@ local function set_multi_command()
         }
     end
 
+    local count = game.surfaces[1].count_entities_filtered({ force = 'enemy', type = { 'unit', 'turret', 'unit-spawner', 'spider-unit' }, area = { { center_position.position.x - 256, center_position.position.y - 256 }, { center_position.position.x + 256, center_position.position.y + 256 } } })
+
+    if count > 1500 then return end
+
     local difficulty_index = Difficulty.get('index')
     local base_min, base_max
     if difficulty_index == 1 then
@@ -1233,6 +1292,7 @@ local function set_multi_command()
     else
         base_min, base_max = 64, 128
     end
+
 
     local scale = math.max(1, current_level * 0.1)
     local unit_count = random(base_min * scale, base_max * scale)
@@ -1577,15 +1637,15 @@ local do_place_entities_token =
                     'crash-site-chest-2'
                 }
 
-                this.infini_chest = surface.create_entity({ name = chest_raff[random(1, #chest_raff)], position = { chest_pos[1].x, chest_pos[1].y }, force = 'neutral' })
-                this.infini_chest.operable = false
-                this.infini_chest.destructible = false
-                this.infini_chest.minable = false
+                this.ammo_chest = surface.create_entity({ name = chest_raff[random(1, #chest_raff)], position = { chest_pos[1].x, chest_pos[1].y }, force = 'neutral' })
+                this.ammo_chest.operable = false
+                this.ammo_chest.destructible = false
+                this.ammo_chest.minable = false
                 this.render_ammo_text = rendering.draw_text
                     {
                         text = 'Free ammo',
                         surface = surface,
-                        target = this.infini_chest,
+                        target = this.ammo_chest,
                         color = { r = 0.98, g = 0.77, b = 0.22 },
                         scale = 1.25,
                         font = 'heading-1',
@@ -1828,6 +1888,7 @@ local function reward_items(loot, entity)
                 local e = surface.create_entity { name = 'item-on-ground', position = position, stack = { name = loot.name, quality = loot.quality, count = 50 } }
                 if e and e.valid then
                     e.to_be_looted = true
+                    e.order_deconstruction('player')
                 end
                 amount = amount - 50
             end
@@ -1836,6 +1897,7 @@ local function reward_items(loot, entity)
             local e = surface.create_entity { name = 'item-on-ground', position = position, stack = { name = loot.name, quality = loot.quality, count = amount } }
             if e and e.valid then
                 e.to_be_looted = true
+                e.order_deconstruction('player')
             end
         end
     end
@@ -1844,14 +1906,15 @@ end
 local function on_entity_died(event)
     local entity = event.entity
     local this = Public.get()
+    local cause = event.cause
     if entity.name == 'market' then
         if this.render_ammo_text then
             this.render_ammo_text.destroy()
             this.render_ammo_text = nil
         end
-        if this.infini_chest and this.infini_chest.valid then
-            this.infini_chest.destroy()
-            this.infini_chest = nil
+        if this.ammo_chest and this.ammo_chest.valid then
+            this.ammo_chest.destroy()
+            this.ammo_chest = nil
         end
 
         for stage, market_data in pairs(this.spawned_markets) do
@@ -1880,6 +1943,24 @@ local function on_entity_died(event)
         return
     end
     if entity and entity.valid and entity.force.name == 'enemy' and entity.type == 'unit' then
+        local premature = false
+        local drop_to_ground = false
+        local player = nil
+        if cause and cause.valid then
+            if string.find(cause.name, 'premature') then
+                premature = true
+                if random(1, 10) ~= 1 then
+                    return
+                end
+            end
+            if (cause.name == 'character' and cause.player) then
+                local player_options = get_player_options(cause.player)
+                if player_options then
+                    drop_to_ground = player_options.ore_drop
+                end
+                player = cause.player
+            end
+        end
         this.alive_enemies = this.alive_enemies - 1
         local ore_drop_1 = harvest_raffle_ores[random(1, size_of_ore_raffle)]
         local ore_drop_2 = harvest_raffle_ores[random(1, size_of_ore_raffle)]
@@ -1887,10 +1968,22 @@ local function on_entity_died(event)
         local quality_2 = get_quality_for_stage(this.current_level, this.last_level)
         if ore_drop_1 == "calcite" then quality_1 = "normal" end
         if ore_drop_2 == "calcite" then quality_2 = "normal" end
+        if premature then
+            quality_1 = "normal"
+            quality_2 = "normal"
+        end
 
-        reward_items({ name = 'coin', count = random(1, 2), quality = 'normal'}, entity)
-        reward_items({ name = ore_drop_1, count = get_ore_count(this.current_level), quality = quality_1 }, entity)
-        reward_items({ name = ore_drop_2, count = get_ore_count(this.current_level), quality = quality_2 }, entity)
+        if drop_to_ground then
+            reward_items({ name = 'coin', count = random(1, 2), quality = 'normal' }, entity)
+            reward_items({ name = ore_drop_1, count = get_ore_count(this.current_level), quality = quality_1 }, entity)
+            reward_items({ name = ore_drop_2, count = get_ore_count(this.current_level), quality = quality_2 }, entity)
+        else
+            if player and player.valid and player.can_insert({ name = 'coin', count = 2, quality = 'normal' }) then
+                player.insert({ name = 'coin', count = random(1, 2), quality = 'normal' })
+                player.insert({ name = ore_drop_1, count = get_ore_count(this.current_level), quality = quality_1 })
+                player.insert({ name = ore_drop_2, count = get_ore_count(this.current_level), quality = quality_2 })
+            end
+        end
         if this.alive_enemies < 0 then this.alive_enemies = 0 end
         complete_level()
     end
@@ -2159,7 +2252,7 @@ Commands.new('reset_island', 'Resets the island.')
 
 Commands.new('set_biter_count', 'Sets the biter count.')
     :require_admin()
-    :add_parameter('count', true, 'number')
+    :add_parameter('count', false, 'number')
     :callback(
         function (player, count)
             local this = Public.get()
@@ -2192,7 +2285,7 @@ Commands.new('send_enemies', 'Sends enemies to the market.')
 
 Commands.new('toggle_drift_corpses_toward_beach', 'Toggles the drift corpses toward beach.')
     :require_admin()
-    :add_parameter('state', true, 'boolean')
+    :add_parameter('state', false, 'boolean')
     :callback(
         function (player, state)
             Public.set('drift_corpses_toward_beach_enabled', state)
@@ -2202,7 +2295,7 @@ Commands.new('toggle_drift_corpses_toward_beach', 'Toggles the drift corpses tow
 
 Commands.new('set_infinite_ammo_tick', 'Sets the infinite ammo tick.')
     :require_admin()
-    :add_parameter('tick', true, 'number')
+    :add_parameter('tick', false, 'number')
     :callback(
         function (player, tick)
             if tick < 10 then
@@ -2226,7 +2319,7 @@ Commands.new('skip_difficulty_vote', 'Skips the difficulty vote.')
 
 Commands.new('toggle_voting_to_progress', 'Toggles the voting to progress.')
     :require_admin()
-    :add_parameter('state', true, 'boolean')
+    :add_parameter('state', false, 'boolean')
     :callback(
         function (player, state)
             Public.set('voting_to_progress_enabled', state)
@@ -2253,7 +2346,7 @@ Commands.new('reward_level', 'Rewards the level.')
 
 Commands.new('set_clear_items_on_ground', 'Sets the clear items on ground state.')
     :require_admin()
-    :add_parameter('state', true, 'boolean')
+    :add_parameter('state', false, 'boolean')
     :callback(
         function (player, state)
             Public.set('clear_items_on_ground_state', state)
@@ -2263,7 +2356,7 @@ Commands.new('set_clear_items_on_ground', 'Sets the clear items on ground state.
 
 Commands.new('toggle_check_surface_daytime', 'Checks the surface daytime if an attack towards the market should be sent.')
     :require_admin()
-    :add_parameter('state', true, 'boolean')
+    :add_parameter('state', false, 'boolean')
     :callback(
         function (player, state)
             Public.set('check_surface_daytime_for_attacks', state)
@@ -2273,7 +2366,7 @@ Commands.new('toggle_check_surface_daytime', 'Checks the surface daytime if an a
 
 Commands.new('toggle_disable_multi_command_attack', 'Disables waves of enemies from being sent to the market.')
     :require_admin()
-    :add_parameter('state', true, 'boolean')
+    :add_parameter('state', false, 'boolean')
     :callback(
         function (player, state)
             Public.set('disable_multi_command_attack', state)

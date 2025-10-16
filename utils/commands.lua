@@ -349,12 +349,10 @@ local function execute(event)
                     return reject('Inputted value is not of type boolean. Valid values are: true, false.')
                 end
 
-                if command_data.command_activated and param == 'true' then
-                    return handle_error(output.command_is_active, 'utility/cannot_build')
-                end
-
-                if not command_data.command_activated and param == 'false' then
-                    return handle_error(output.command_is_inactive, 'utility/cannot_build')
+                if param == 'true' then
+                    param = true
+                else
+                    param = false
                 end
 
                 handled_parameters[index] = param

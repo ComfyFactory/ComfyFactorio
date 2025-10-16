@@ -59,6 +59,10 @@ Gui.button_style = 'mod_gui_button'
 Gui.set_toggle_button(true)
 Gui.set_mod_gui_top_frame(true)
 
+if not script.active_mods['MtnFortressAddons'] then
+    error('Mtn Fortress Addons mod is not enabled! Please download it from the mod website.')
+end
+
 local collapse_kill =
 {
     entities =
