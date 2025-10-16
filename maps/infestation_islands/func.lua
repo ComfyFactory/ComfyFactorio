@@ -297,7 +297,7 @@ local function get_player_options(player)
     if not player_options[player.index] then
         player_options[player.index] =
         {
-            ore_drop = false
+            ore_drop = true
         }
     end
     return player_options[player.index]
@@ -311,7 +311,9 @@ Config.register_scenario_module(
             function (player, frame)
                 local player_options = get_player_options(player)
                 local switch_state = 'right'
-                if player_options.ore_drop then switch_state = 'left' end
+                if player_options.ore_drop then
+                    switch_state = 'left'
+                end
                 Config.add_switch(frame, switch_state, 'ore_drop', 'Ore Drop', 'Toggle to select if you want the ore to drop to ground or not.')
                 frame.add({ type = 'line' })
             end),
@@ -1893,7 +1895,7 @@ local function reward_items(loot, entity)
             for _ = 1, math.floor(amount / 50), 1 do
                 local e = surface.create_entity { name = 'item-on-ground', position = position, stack = { name = loot.name, quality = loot.quality, count = 50 } }
                 if e and e.valid then
-                    e.to_be_looted = true
+                    e.to_be_looted = false
                     e.order_deconstruction('player')
                 end
                 amount = amount - 50
@@ -1902,7 +1904,7 @@ local function reward_items(loot, entity)
         if amount > 0 then
             local e = surface.create_entity { name = 'item-on-ground', position = position, stack = { name = loot.name, quality = loot.quality, count = amount } }
             if e and e.valid then
-                e.to_be_looted = true
+                e.to_be_looted = false
                 e.order_deconstruction('player')
             end
         end
@@ -1950,7 +1952,7 @@ local function on_entity_died(event)
     end
     if entity and entity.valid and entity.force.name == 'enemy' and entity.type == 'unit' then
         local premature = false
-        local drop_to_ground = false
+        local drop_to_ground = true
         local player = nil
         if cause and cause.valid then
             if string.find(cause.name, 'premature') then
