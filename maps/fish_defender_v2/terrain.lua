@@ -10,7 +10,8 @@ local abs = math.abs
 local sqrt = math.sqrt
 
 --rock spawning code for stone pile
-local rock_raffle = {
+local rock_raffle =
+{
     'big-sand-rock',
     'big-sand-rock',
     'big-rock',
@@ -85,7 +86,8 @@ local function resource_placement(surface, position, name, amount, tiles)
 
     for x, _ in pairs(biases) do
         for y, bias in pairs(_) do
-            surface.create_entity {
+            surface.create_entity
+            {
                 name = name,
                 amount = amount * (bias / total_bias),
                 force = 'neutral',
@@ -241,58 +243,62 @@ local request_to_generate_chunks_token =
             surface.request_to_generate_chunks({ 0, 0 }, 8)
 
             local fish_eye_location = Public.get('fish_eye_location')
+            if not fish_eye_location then
+                return
+            end
 
             surface.request_to_generate_chunks(fish_eye_location, 2)
         end
     )
 
 local function initial_cargo_boxes()
-    return {
-        { name = 'coal',                count = random(32, 64) },
-        { name = 'coal',                count = random(32, 64) },
-        { name = 'coal',                count = random(32, 64) },
-        { name = 'iron-ore',            count = random(32, 128) },
-        { name = 'iron-ore',            count = random(32, 128) },
-        { name = 'iron-ore',            count = random(32, 128) },
-        { name = 'copper-ore',          count = random(32, 128) },
-        { name = 'copper-ore',          count = random(32, 128) },
-        { name = 'copper-ore',          count = random(32, 128) },
-        { name = 'submachine-gun',      count = 1 },
-        { name = 'submachine-gun',      count = 1 },
-        { name = 'submachine-gun',      count = 1 },
-        { name = 'shotgun',             count = 1 },
-        { name = 'shotgun',             count = 1 },
-        { name = 'shotgun',             count = 1 },
+    return
+    {
+        { name = 'coal', count = random(32, 64) },
+        { name = 'coal', count = random(32, 64) },
+        { name = 'coal', count = random(32, 64) },
+        { name = 'iron-ore', count = random(32, 128) },
+        { name = 'iron-ore', count = random(32, 128) },
+        { name = 'iron-ore', count = random(32, 128) },
+        { name = 'copper-ore', count = random(32, 128) },
+        { name = 'copper-ore', count = random(32, 128) },
+        { name = 'copper-ore', count = random(32, 128) },
+        { name = 'submachine-gun', count = 1 },
+        { name = 'submachine-gun', count = 1 },
+        { name = 'submachine-gun', count = 1 },
+        { name = 'shotgun', count = 1 },
+        { name = 'shotgun', count = 1 },
+        { name = 'shotgun', count = 1 },
         { name = 'burner-mining-drill', count = 1 },
         { name = 'burner-mining-drill', count = 2 },
         { name = 'burner-mining-drill', count = 1 },
         { name = 'burner-mining-drill', count = 4 },
-        { name = 'gun-turret',          count = 1 },
-        { name = 'gun-turret',          count = 1 },
-        { name = 'gun-turret',          count = 1 },
-        { name = 'shotgun-shell',       count = random(4, 5) },
-        { name = 'shotgun-shell',       count = random(4, 5) },
-        { name = 'shotgun-shell',       count = random(4, 5) },
-        { name = 'grenade',             count = random(2, 7) },
-        { name = 'grenade',             count = random(2, 8) },
-        { name = 'grenade',             count = random(2, 7) },
-        { name = 'light-armor',         count = random(2, 4) },
-        { name = 'iron-gear-wheel',     count = random(7, 15) },
-        { name = 'iron-gear-wheel',     count = random(7, 15) },
-        { name = 'iron-gear-wheel',     count = random(7, 15) },
-        { name = 'iron-gear-wheel',     count = random(7, 15) },
-        { name = 'iron-plate',          count = random(15, 23) },
-        { name = 'iron-plate',          count = random(15, 23) },
-        { name = 'iron-plate',          count = random(15, 23) },
-        { name = 'iron-plate',          count = random(15, 23) },
-        { name = 'copper-plate',        count = random(15, 23) },
-        { name = 'copper-plate',        count = random(15, 23) },
-        { name = 'copper-plate',        count = random(15, 23) },
-        { name = 'copper-plate',        count = random(15, 23) },
-        { name = 'firearm-magazine',    count = random(10, 15) },
-        { name = 'firearm-magazine',    count = random(10, 15) },
-        { name = 'firearm-magazine',    count = random(10, 15) },
-        { name = 'firearm-magazine',    count = random(10, 15) }
+        { name = 'gun-turret', count = 1 },
+        { name = 'gun-turret', count = 1 },
+        { name = 'gun-turret', count = 1 },
+        { name = 'shotgun-shell', count = random(4, 5) },
+        { name = 'shotgun-shell', count = random(4, 5) },
+        { name = 'shotgun-shell', count = random(4, 5) },
+        { name = 'grenade', count = random(2, 7) },
+        { name = 'grenade', count = random(2, 8) },
+        { name = 'grenade', count = random(2, 7) },
+        { name = 'light-armor', count = random(2, 4) },
+        { name = 'iron-gear-wheel', count = random(7, 15) },
+        { name = 'iron-gear-wheel', count = random(7, 15) },
+        { name = 'iron-gear-wheel', count = random(7, 15) },
+        { name = 'iron-gear-wheel', count = random(7, 15) },
+        { name = 'iron-plate', count = random(15, 23) },
+        { name = 'iron-plate', count = random(15, 23) },
+        { name = 'iron-plate', count = random(15, 23) },
+        { name = 'iron-plate', count = random(15, 23) },
+        { name = 'copper-plate', count = random(15, 23) },
+        { name = 'copper-plate', count = random(15, 23) },
+        { name = 'copper-plate', count = random(15, 23) },
+        { name = 'copper-plate', count = random(15, 23) },
+        { name = 'firearm-magazine', count = random(10, 15) },
+        { name = 'firearm-magazine', count = random(10, 15) },
+        { name = 'firearm-magazine', count = random(10, 15) },
+        { name = 'firearm-magazine', count = random(10, 15) }
     }
 end
 
@@ -341,7 +347,8 @@ local generate_spawn_area_token =
             end
 
             local _y = 80
-            local ore_positions = {
+            local ore_positions =
+            {
                 { x = spawn_position_x - 52, y = _y },
                 { x = spawn_position_x - 52, y = _y * 0.5 },
                 { x = spawn_position_x - 52, y = 0 },
@@ -363,13 +370,15 @@ local generate_spawn_area_token =
             map_functions.draw_oil_circle(ore_positions[5], 'crude-oil', surface, 8, 200000)
 
             local pos = surface.find_non_colliding_position('market', { spawn_position_x, 0 }, 50, 1)
-            local market = Public.set('market', place_fish_market(surface, pos))
+            Public.set('market', place_fish_market(surface, pos))
+            local market = Public.get('market')
 
             local r = 16
             for _, entity in pairs(
                 surface.find_entities_filtered(
                     {
-                        area = {
+                        area =
+                        {
                             { market.position.x - r, market.position.y - r },
                             { market.position.x + r, market.position.y + r }
                         },
