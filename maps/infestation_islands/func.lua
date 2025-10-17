@@ -244,6 +244,8 @@ local find_items_on_ground_token =
                 end
             end
 
+            this.clear_items_on_ground = this.clear_items_on_ground or {}
+
             if #ents > 2000 then
                 this.clear_items_on_ground = merge_arrays(this.clear_items_on_ground, ents)
             end
