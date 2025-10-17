@@ -369,7 +369,7 @@ function Public.island_market(entity, rarity, buy, reroll)
         mrk.add_market_item(reroll_offer)
     end
 
-    if random(1, 20) == 1 then
+    if random(1, 30) == 1 then
         local modifier = 'character_inventory_slots_bonus'
         local modifier_name = 'inventory bonus'
         local modifier_value = 15
