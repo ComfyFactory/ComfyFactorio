@@ -828,7 +828,7 @@ local function biter_attack_wave()
     local threat = Public.get('attack_wave_threat')
     local spawns_this_tick = math.min(threat, 256) -- hard cap per tick
 
-    for n = 1, spawns_this_tick do
+    for _ = 1, spawns_this_tick do
         for i = 1, #unit_groups do
             local biter = spawn_biter(unit_groups[i].position, biter_pool)
             if biter then

@@ -1950,6 +1950,13 @@ local function on_entity_died(event)
     end
     if entity and entity.valid and entity.force.name == 'enemy' and entity.type == 'unit' then
         local premature = false
+
+        if string.find(entity.name, 'premature') then
+            premature = true
+            if random(1, 10) ~= 1 then
+                return
+            end
+        end
         local drop_to_ground = true
         local player = nil
         if cause and cause.valid then
@@ -1967,7 +1974,6 @@ local function on_entity_died(event)
                 player = cause.player
             end
         end
-
 
         local ore_drop_1 = harvest_raffle_ores[random(1, size_of_ore_raffle)]
         local ore_drop_2 = harvest_raffle_ores[random(1, size_of_ore_raffle)]
