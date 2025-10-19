@@ -2,8 +2,7 @@ local Event = require 'utils.event'
 local Server = require 'utils.server'
 local Discord = require 'utils.discord_handler'
 
-local commands =
-{
+local commands = {
     ['editor'] = true,
     ['open'] = true,
     ['cheat'] = true,
@@ -16,20 +15,18 @@ local commands =
     ['debug'] = true
 }
 
-local title_to_command =
-{
-    ['editor'] = "Editor",
-    ['open'] = "Open",
-    ['cheat'] = "Cheat",
-    ['permissions'] = "Permissions",
-    ['banlist'] = "Banlist",
-    ['config'] = "Config",
-    ['command'] = "Command",
-    ['silent-command'] = "Silent Command",
-    ['sc'] = "Silent Command",
-    ['debug'] = "Debug"
+local title_to_command = {
+    ['editor'] = 'Editor',
+    ['open'] = 'Open',
+    ['cheat'] = 'Cheat',
+    ['permissions'] = 'Permissions',
+    ['banlist'] = 'Banlist',
+    ['config'] = 'Config',
+    ['command'] = 'Command',
+    ['silent-command'] = 'Silent Command',
+    ['sc'] = 'Silent Command',
+    ['debug'] = 'Debug'
 }
-
 
 local function on_console_command(event)
     local cmd = event.command
@@ -46,61 +43,61 @@ local function on_console_command(event)
         end
         executor = player.name
     else
-        executor = "Server"
+        executor = 'Server'
     end
 
-    local param = (event.parameters and event.parameters ~= "" and event.parameters) or "No parameters"
-    local server_name = Server.get_server_name() or "CommandHandler"
+    local param = (event.parameters and event.parameters ~= '' and event.parameters) or 'No parameters'
+    local server_name = Server.get_server_name() or 'CommandHandler'
 
     Discord.send_notification(
         {
             title = title_to_command[cmd],
-            description = "/" .. cmd .. " was used",
-            color = "warning",
-            fields =
-            {
+            description = '/' .. cmd .. ' was used',
+            color = 'warning',
+            fields = {
                 {
-                    title = "Server",
+                    title = 'Server',
                     description = server_name,
-                    inline = "false"
+                    inline = 'false'
                 },
                 {
-                    title = "By",
+                    title = 'By',
                     description = executor,
-                    inline = "true"
+                    inline = 'true'
                 },
                 {
-                    title = "Details",
+                    title = 'Details',
                     description = param,
-                    inline = "true"
+                    inline = 'true'
                 }
             }
-        })
+        }
+    )
 end
 
 Event.add(defines.events.on_console_command, on_console_command)
 
 Event.add(
     defines.events.on_player_promoted,
-    function (event)
+    function(event)
         local admins = Server.get_admins_data()
         local player = game.get_player(event.player_index)
         local server_name = Server.get_server_name() or 'CommandHandler'
 
         Discord.send_notification(
             {
-                title = "Admin promotion",
-                description = player.name .. " was promoted.",
-                color = "success",
-                fields =
-                {
+                title = 'Admin promotion',
+                description = player.name .. ' was promoted.',
+                color = 'success',
+                fields = {
                     {
-                        title = "Server",
+                        title = 'Server',
                         description = server_name,
-                        inline = "false"
+                        inline = 'false'
                     }
                 }
-            })
+            }
+        )
 
         if not game.is_multiplayer() then
             return
@@ -114,46 +111,46 @@ Event.add(
 )
 Event.add(
     defines.events.on_player_demoted,
-    function (event)
+    function(event)
         local player = game.get_player(event.player_index)
         local server_name = Server.get_server_name() or 'CommandHandler'
 
         Discord.send_notification(
             {
-                title = "Admin demotion",
-                description = player.name .. " was demoted.",
-                color = "warning",
-                fields =
-                {
+                title = 'Admin demotion',
+                description = player.name .. ' was demoted.',
+                color = 'warning',
+                fields = {
                     {
-                        title = "Server",
+                        title = 'Server',
                         description = server_name,
-                        inline = "false"
+                        inline = 'false'
                     }
                 }
-            })
+            }
+        )
     end
 )
 
 Event.add(
     defines.events.on_player_kicked,
-    function (event)
+    function(event)
         local player = game.get_player(event.player_index)
         local server_name = Server.get_server_name() or 'CommandHandler'
 
         Discord.send_notification(
             {
-                title = "Player kicked",
-                description = player.name .. " was kicked.",
-                color = "danger",
-                fields =
-                {
+                title = 'Player kicked',
+                description = player.name .. ' was kicked.',
+                color = 'danger',
+                fields = {
                     {
-                        title = "Server",
+                        title = 'Server',
                         description = server_name,
-                        inline = "false"
+                        inline = 'false'
                     }
                 }
-            })
+            }
+        )
     end
 )

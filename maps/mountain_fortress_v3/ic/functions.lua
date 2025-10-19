@@ -5,9 +5,9 @@ local Core = require 'utils.core'
 local JailData = require 'utils.datastore.jail_data'
 local IC = require 'maps.mountain_fortress_v3.ic.table'
 local WPT = require 'maps.mountain_fortress_v3.table'
-local OfflinePlayers = require 'modules.clear_vacant_players'
 local Event = require 'utils.event'
 local Server = require 'utils.server'
+local CreatedEvents = require 'utils.created_events'
 
 local Public = {}
 local main_tile_name = 'black-refined-concrete'
@@ -1618,7 +1618,7 @@ Public.kick_players_from_surface = kick_players_from_surface
 Public.kick_non_trusted_players_from_surface = kick_non_trusted_players_from_surface
 
 Event.add(
-    OfflinePlayers.events.remove_surface,
+    CreatedEvents.events.remove_surface,
     function (event)
         local target = event.target
         if not target then

@@ -3,6 +3,7 @@ local Server = require 'utils.server'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local SoftReset = require 'utils.functions.soft_reset'
 local Token = require 'utils.token'
+local CreatedEvents = require 'utils.created_events'
 
 local math_random = math.random
 local table_shuffle = table.shuffle_table
@@ -285,7 +286,7 @@ end
 Event.add(defines.events.on_tick, on_tick)
 
 Event.add(
-    Server.events.on_server_started,
+    CreatedEvents.events.on_server_started,
     function ()
         local this = ScenarioTable.get_table()
         if this.settings_applied then

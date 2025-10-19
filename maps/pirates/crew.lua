@@ -24,7 +24,7 @@ local Classes = require('maps.pirates.roles.classes')
 local Token = require('utils.token')
 local Task = require('utils.task')
 local SurfacesCommon = require('maps.pirates.surfaces.common')
-local BottomFrame = require('utils.gui.bottom_frame')
+local CreatedEvents = require('utils.created_events')
 
 local Public = {}
 local enum = {
@@ -437,7 +437,7 @@ function Public.leave_crew(player, to_lobby, quiet)
 		)
 		player.force = Common.lobby_force_name
 		player.create_character()
-		Event.raise(BottomFrame.events.bottom_quickbar_respawn_raise, { player_index = player.index })
+		Event.raise(CreatedEvents.events.bottom_quickbar_respawn_raise, { player_index = player.index })
 	end
 
 	memory.crewplayerindices = Utils.ordered_table_with_values_removed(memory.crewplayerindices, player.index)

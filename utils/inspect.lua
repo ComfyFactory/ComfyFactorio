@@ -1,4 +1,5 @@
-local inspect = {
+local inspect =
+{
     _VERSION = 'inspect.lua 3.1.0',
     _URL = 'http://github.com/kikito/inspect.lua',
     _DESCRIPTION = 'human-readable representations of tables',
@@ -32,23 +33,22 @@ local tostring = tostring
 
 inspect.KEY =
     setmetatable(
-    {},
-    {
-        __tostring = function()
-            return 'inspect.KEY'
-        end
-    }
-)
+        {},
+        {
+            __tostring = function ()
+                return 'inspect.KEY'
+            end
+        }
+    )
 inspect.METATABLE =
     setmetatable(
-    {},
-    {
-        __tostring = function()
-            return 'inspect.METATABLE'
-        end
-    }
-)
-
+        {},
+        {
+            __tostring = function ()
+                return 'inspect.METATABLE'
+            end
+        }
+    )
 -- Apostrophizes the string if it has quotes, but not aphostrophes
 -- Otherwise, it returns a regular quoted string
 local function smartQuote(str)
@@ -59,7 +59,8 @@ local function smartQuote(str)
 end
 
 -- \a => '\\a', \0 => '\\0', 31 => '\31'
-local shortControlCharEscapes = {
+local shortControlCharEscapes =
+{
     ['\a'] = '\\a',
     ['\b'] = '\\b',
     ['\f'] = '\\f',
@@ -89,7 +90,8 @@ local function isSequenceKey(k, sequenceLength)
     return type(k) == 'number' and 1 <= k and k <= sequenceLength and math.floor(k) == k
 end
 
-local defaultTypeOrders = {
+local defaultTypeOrders =
+{
     ['number'] = 1,
     ['boolean'] = 2,
     ['string'] = 3,
@@ -176,7 +178,7 @@ local function countTableAppearances(t, tableAppearances)
     return tableAppearances
 end
 
-local copySequence = function(s)
+local copySequence = function (s)
     local copy, len = {}, #s
     for i = 1, len do
         copy[i] = s[i]
@@ -185,7 +187,7 @@ local copySequence = function(s)
 end
 
 local function makePath(path, ...)
-    local keys = {...}
+    local keys = { ... }
     local newPath, len = copySequence(path)
     for i = 1, #keys do
         newPath[len + i] = keys[i]
@@ -224,10 +226,10 @@ end
 -------------------------------------------------------------------
 
 local Inspector = {}
-local Inspector_mt = {__index = Inspector}
+local Inspector_mt = { __index = Inspector }
 
 function Inspector:puts(...)
-    local args = {...}
+    local args = { ... }
     local buffer = self.buffer
     local len = #buffer
     for i = 1, #args do
@@ -288,7 +290,7 @@ function Inspector:putTable(t)
 
         self:puts('{')
         self:down(
-            function()
+            function ()
                 if toStringResult then
                     self:puts(' -- ', escape(toStringResult))
                     if sequenceLength >= 1 then
@@ -368,18 +370,18 @@ function inspect.inspect(root, options)
 
     local inspector =
         setmetatable(
-        {
-            depth = depth,
-            level = 0,
-            buffer = {},
-            ids = {},
-            maxIds = {},
-            newline = newline,
-            indent = indent,
-            tableAppearances = countTableAppearances(root)
-        },
-        Inspector_mt
-    )
+            {
+                depth = depth,
+                level = 0,
+                buffer = {},
+                ids = {},
+                maxIds = {},
+                newline = newline,
+                indent = indent,
+                tableAppearances = countTableAppearances(root)
+            },
+            Inspector_mt
+        )
 
     inspector:putValue(root)
 
@@ -389,7 +391,7 @@ end
 setmetatable(
     inspect,
     {
-        __call = function(_, ...)
+        __call = function (_, ...)
             return inspect.inspect(...)
         end
     }

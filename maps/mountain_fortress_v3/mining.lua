@@ -1,8 +1,8 @@
 local Public = require 'maps.mountain_fortress_v3.table'
 local RPG = require 'modules.rpg.main'
 local Event = require 'utils.event'
-local Ai = require 'modules.ai'
 local Misc = require 'utils.commands.misc'
+local CreatedEvents = require 'utils.created_events'
 require 'modules.check_fullness'
 
 local random = math.random
@@ -502,7 +502,7 @@ Event.add(
 )
 
 Event.add(
-    Ai.events.on_entity_mined,
+    CreatedEvents.events.on_entity_mined,
     function (event)
         if not event then
             return

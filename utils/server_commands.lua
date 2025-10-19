@@ -1,3 +1,4 @@
+---@diagnostic disable: lowercase-global
 local Poll =
 {
     send_poll_result_to_discord = function ()
@@ -5,6 +6,7 @@ local Poll =
 }
 local Token = require 'utils.token'
 local Server = require 'utils.server'
+local CreatedEvents = require 'utils.created_events'
 
 --- This module is for the web server to call functions and raise events.
 -- Not intended to be called by scripts.
@@ -26,11 +28,11 @@ ServerCommands.raise_scenario_changed = Server.raise_scenario_changed
 ServerCommands.get_tracked_scenario = Server.get_tracked_scenario
 
 function ServerCommands.server_started()
-    script.raise_event(Server.events.on_server_started, {})
+    script.raise_event(CreatedEvents.events.on_server_started, {})
 end
 
 function ServerCommands.changes_detected()
-    script.raise_event(Server.events.on_changes_detected, {})
+    script.raise_event(CreatedEvents.events.on_changes_detected, {})
 end
 
 ServerCommands.set_time = Server.set_time

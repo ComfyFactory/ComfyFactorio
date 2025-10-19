@@ -13,6 +13,7 @@ local FancyTime = require 'utils.tools.fancy_time'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Discord = require 'utils.discord_handler'
+local Config = require 'utils.gui.config'
 
 local Public = {}
 local match = string.match
@@ -111,6 +112,49 @@ Global.register(
         this = t
     end
 )
+
+local function trust_connected_players()
+    local trust = Session.get_trusted_table()
+    local players = game.connected_players
+    if not this.enabled then
+        for _, p in pairs(players) do
+            trust[p.name] = true
+        end
+    else
+        for _, p in pairs(players) do
+            trust[p.name] = false
+        end
+    end
+end
+
+Config.register_scenario_module(
+    {
+        id = "antigrief",
+        admin_only = true,
+        gui_rows = Config.register_token(
+            function (_, frame)
+                local switch_state = 'right'
+                if this.enabled then
+                    switch_state = 'left'
+                end
+                Config.add_switch(frame, switch_state, 'disable_antigrief', 'Antigrief', 'Toggle antigrief function.')
+                frame.add({ type = 'line' })
+            end),
+        handlers =
+        {
+            ['disable_antigrief'] = Config.register_token(
+                function (_, event)
+                    if event.element.switch_state == 'left' then
+                        this.enabled = true
+                        Config.get_actor(event, '[Antigrief]', 'has enabled the antigrief function.', true)
+                    else
+                        this.enabled = false
+                        Config.get_actor(event, '[Antigrief]', 'has disabled the antigrief function.', true)
+                    end
+                    trust_connected_players()
+                end)
+        }
+    })
 
 local function increment(t, v)
     t[#t + 1] = (v or 1)
@@ -289,11 +333,12 @@ local function on_marked_for_deconstruction(event)
 
     local playtime = player.online_time
     local success = false
+    local is_trusted = Session.get_trusted_player(player)
     if Session.get_session_player(player) then
         playtime = player.online_time + Session.get_session_player(player)
         success = true
     end
-    if playtime < this.required_playtime then
+    if playtime < this.required_playtime and not is_trusted then
         event.entity.cancel_deconstruction(player.force.name, player.index)
         player.print('You are not accustomed to deconstructing yet.', { r = 0.22, g = 0.99, b = 0.99 })
         return

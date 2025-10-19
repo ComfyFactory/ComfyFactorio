@@ -37,11 +37,6 @@ Global.register(
 )
 
 local Public = {}
-Public.events =
-{
-    on_spell_cast_success = Event.generate_event_name('on_spell_cast_success'),
-    on_spell_cast_failure = Event.generate_event_name('on_spell_cast_failure')
-}
 
 Public.points_per_level = 5
 

@@ -16,6 +16,7 @@ local RPG = require 'modules.rpg.table'
 local Beam = require 'modules.render_beam'
 local Discord = require 'utils.discord'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
+local CreatedEvents = require 'utils.created_events'
 
 local this =
 {
@@ -2410,14 +2411,14 @@ function Public.increase_enemy_damage_and_health()
     this.enemies_boosted = true
 
     if this.rounds_survived == 1 then
-        Event.raise(WD.events.on_biters_evolved, { force = game.forces.enemy, health_increase = true })
-        Event.raise(WD.events.on_biters_evolved, { force = game.forces.aggressors })
-        Event.raise(WD.events.on_biters_evolved, { force = game.forces.aggressors_frenzy })
+        Event.raise(CreatedEvents.events.on_biters_evolved, { force = game.forces.enemy, health_increase = true })
+        Event.raise(CreatedEvents.events.on_biters_evolved, { force = game.forces.aggressors })
+        Event.raise(CreatedEvents.events.on_biters_evolved, { force = game.forces.aggressors_frenzy })
     else
         for _ = 1, this.rounds_survived do
-            Event.raise(WD.events.on_biters_evolved, { force = game.forces.enemy, health_increase = true })
-            Event.raise(WD.events.on_biters_evolved, { force = game.forces.aggressors })
-            Event.raise(WD.events.on_biters_evolved, { force = game.forces.aggressors_frenzy })
+            Event.raise(CreatedEvents.events.on_biters_evolved, { force = game.forces.enemy, health_increase = true })
+            Event.raise(CreatedEvents.events.on_biters_evolved, { force = game.forces.aggressors })
+            Event.raise(CreatedEvents.events.on_biters_evolved, { force = game.forces.aggressors_frenzy })
         end
     end
 end
@@ -2483,7 +2484,7 @@ function Public.stateful_on_server_started()
 end
 
 Event.add(
-    Server.events.on_server_started,
+    CreatedEvents.events.on_server_started,
     function ()
         if this.settings_applied then
             return

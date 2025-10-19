@@ -15,13 +15,13 @@ local math2d = require 'math2d'
 local Misc = require 'utils.commands.misc'
 local Core = require 'utils.core'
 local Beams = require 'modules.render_beam'
-local BottomFrame = require 'utils.gui.bottom_frame'
 local Modifiers = require 'utils.player_modifiers'
 local Session = require 'utils.datastore.session_data'
 local ICMinimap = require 'maps.mountain_fortress_v3.ic.minimap'
 local Score = require 'utils.gui.score'
 local Gui = require 'utils.gui'
 local FunctionColor = { r = 0.98, g = 0.66, b = 0.22 }
+local CreatedEvents = require 'utils.created_events'
 
 local zone_settings = Public.zone_settings
 local remove_boost_movement_speed_on_respawn
@@ -3583,7 +3583,7 @@ function Public.set_player_to_god(player)
 
 
     Event.raise(
-        BottomFrame.events.bottom_quickbar_respawn_raise,
+        CreatedEvents.events.bottom_quickbar_respawn_raise,
         {
             player_index = player.index
         }
@@ -3836,7 +3836,7 @@ Event.on_nth_tick(35, do_clear_rocks_slowly)
 Event.on_nth_tick(35, do_replace_tiles_slowly)
 Event.on_nth_tick(200, do_custom_surface_funcs)
 Event.on_nth_tick(60, set_difficulty)
-Event.add(WD.events.on_wave_created, on_wave_created)
-Event.add(WD.events.on_primary_target_missing, on_primary_target_missing)
+Event.add(CreatedEvents.events.on_wave_created, on_wave_created)
+Event.add(CreatedEvents.events.on_primary_target_missing, on_primary_target_missing)
 
 return Public

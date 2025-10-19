@@ -4,6 +4,7 @@ local Token = require 'utils.token'
 local Task = require 'utils.task'
 local Server = require 'utils.server'
 local Event = require 'utils.event'
+local CreatedEvents = require 'utils.created_events'
 
 local set_timeout_in_ticks = Task.set_timeout_in_ticks
 local statistics_dataset = 'statistics'
@@ -13,7 +14,8 @@ local try_get_data = Server.try_get_data
 local e = defines.events
 local floor = math.floor
 
-local events = {
+local events =
+{
     map_tags_made = e.on_chart_tag_added,
     chat_messages = e.on_console_chat,
     commands_used = e.on_console_command,
@@ -29,19 +31,19 @@ local events = {
     deconstructer_planner_used = e.on_player_deconstructed_area
 }
 
-local settings = {
+local settings =
+{
     required_only_time_to_save_time = 10 * 3600,
     afk_time = 5 * 3600,
     nth_tick = 5 * 3600
 }
 
-local Public = {
-    events = {
-        on_player_removed = Event.generate_event_name('on_player_removed')
-    }
+local Public =
+{
 }
 
-local normalized_names = {
+local normalized_names =
+{
     ['map_tags_made'] = { name = 'Map-tags created', tooltip = "Tags that you've created in minimap." },
     ['chat_messages'] = { name = 'Messages', tooltip = 'Messages sent in chat.' },
     ['commands_used'] = { name = 'Commands', tooltip = 'Commands used in console.' },
@@ -125,7 +127,8 @@ local function get_data(player)
     if not data then
         local p = game.get_player(player_index)
         local name = p and p.valid and p.name or nil
-        local player_data = {
+        local player_data =
+        {
             name = name,
             tick = 0
         }
@@ -307,7 +310,7 @@ Event.add(
 )
 
 Event.add(
-    Public.events.on_player_removed,
+    CreatedEvents.events.on_player_removed,
     function (event)
         local player_index = event.player_index
         statistics[player_index] = nil

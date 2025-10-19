@@ -4,10 +4,11 @@ _DEBUG = false
 _DUMP_ENV = false
 _PROFILE = false
 
+require 'utils.created_events'
 require 'utils.server'
 require 'utils.server_commands'
 require 'utils.gui.init'
-require 'utils.command_handler'
+require 'utils.admin_handler'
 require 'utils.utils'
 require 'utils.math.math'
 require 'utils.pause_game'

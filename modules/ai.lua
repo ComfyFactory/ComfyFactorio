@@ -5,8 +5,10 @@ local Utils = require 'utils.common'
 local Global = require 'utils.global'
 local Token = require 'utils.token'
 local Task = require 'utils.task'
+local CreatedEvents = require 'utils.created_events'
 
-local this = {
+local this =
+{
     timers = {},
     characters = {},
     characters_unit_numbers = {},
@@ -20,14 +22,15 @@ Global.register(
     end
 )
 
-local Public = { events = { on_entity_mined = Event.generate_event_name('on_entity_mined') } }
+local Public = {}
 
 local max_keepalive = 54000 -- 15 minutes
 local remove = table.remove
 local round = math.round
 local default_radius = 5
 
-local armor_names = {
+local armor_names =
+{
     'power-armor-mk2',
     'power-armor',
     'modular-armor',
@@ -35,7 +38,8 @@ local armor_names = {
     'light-armor'
 }
 
-local weapon_names = {
+local weapon_names =
+{
     ['rocket-launcher'] = 'rocket',
     ['submachine-gun'] = { 'uranium-rounds-magazine', 'piercing-rounds-magazine', 'firearm-magazine' },
     ['shotgun'] = { 'piercing-shotgun-shell', 'shotgun-shell' },
@@ -43,7 +47,8 @@ local weapon_names = {
 }
 local remove_character
 
-Public.command = {
+Public.command =
+{
     noop = 0,
     seek_and_destroy_cmd = 1,
     seek_and_mine_cmd = 2
@@ -54,7 +59,8 @@ local clear_corpse_token =
         function (event)
             local position = event.position
             local surface = game.get_surface(event.surface_index)
-            local search_info = {
+            local search_info =
+            {
                 type = 'character-corpse',
                 position = position,
                 radius = 1
@@ -125,7 +131,8 @@ end
 local function add_character(player_index, entity, render_id, data)
     local index = #this.characters + 1
     if not this.characters[index] then
-        this.characters[index] = {
+        this.characters[index] =
+        {
             player_index = player_index,
             index = index,
             unit_number = entity.unit_number,
@@ -185,7 +192,8 @@ local function get_dir(src, dest)
     local dest_x = Utils.get_axis(dest, 'x')
     local dest_y = Utils.get_axis(dest, 'y')
 
-    local step = {
+    local step =
+    {
         x = nil,
         y = nil
     }
@@ -211,7 +219,8 @@ local function get_dir(src, dest)
 end
 
 local function move_to(entity, target, min_distance)
-    local state = {
+    local state =
+    {
         walking = false
     }
 
@@ -219,7 +228,8 @@ local function move_to(entity, target, min_distance)
     if min_distance < distance then
         local dir = get_dir(entity.position, target.position)
         if dir then
-            state = {
+            state =
+            {
                 walking = true,
                 direction = dir
             }
@@ -269,7 +279,8 @@ end
 
 local function shoot_at(entity, target)
     entity.selected = target
-    entity.shooting_state = {
+    entity.shooting_state =
+    {
         state = defines.shooting.shooting_enemies,
         position = target.position
     }
@@ -280,7 +291,7 @@ local function check_progress_and_raise_event(data)
         if not data.raised_event then
             data.raised_event = true
             Event.raise(
-                Public.events.on_entity_mined,
+                CreatedEvents.events.on_entity_mined,
                 {
                     player_index = data.player_index,
                     entity = data.entity.selected,
@@ -298,7 +309,8 @@ local function mine_entity(data, target)
 end
 
 local function shoot_stop(entity)
-    entity.shooting_state = {
+    entity.shooting_state =
+    {
         state = defines.shooting.not_shooting,
         position = { 0, 0 }
     }
@@ -395,15 +407,18 @@ local function seek_and_mine(data)
         position = player.position
     end
 
-    local search_info = {
+    local search_info =
+    {
         position = position,
         radius = data.radius,
-        type = {
+        type =
+        {
             'simple-entity-with-owner',
             'simple-entity',
             'tree'
         },
-        force = {
+        force =
+        {
             'neutral'
         }
     }
@@ -463,7 +478,8 @@ local function seek_enemy_and_destroy(data)
         return
     end
 
-    local search_info = {
+    local search_info =
+    {
         type = { 'unit', 'unit-spawner', 'turret' },
         position = entity.position,
         radius = data.radius,
@@ -552,10 +568,12 @@ function Public.create_char(data)
     local index = #this.characters + 1
 
     local render_id =
-        rendering.draw_text {
+        rendering.draw_text
+        {
             text = player.name .. "'s drone #" .. index,
             surface = player.surface,
-            target = {
+            target =
+            {
                 entity = entity,
                 offset = { 0, -2.25 },
             },

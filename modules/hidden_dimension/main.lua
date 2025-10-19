@@ -1,12 +1,9 @@
 --luacheck: ignore
 local Event = require 'utils.event'
 local HDT = require 'modules.hidden_dimension.table'
+local CreatedEvents = require 'utils.created_events'
 
 local Public = {}
-Public.events = {
-    reset_game = Event.generate_event_name('reset_game'),
-    init_surfaces = Event.generate_event_name('init_surfaces')
-}
 
 --- If true then surface will be picked to nauvis.
 Public.enable_auto_init = true
@@ -30,7 +27,7 @@ end
 local function teleport(entity, pos, surface)
     local sane_pos = surface.find_non_colliding_position(entity.name, pos, 0, 1, 1)
     if entity.type == 'character' then
-        for k, v in pairs(game.players) do
+        for _, v in pairs(game.players) do
             if v.character == entity then
                 v.teleport(sane_pos, surface)
             end
@@ -44,7 +41,7 @@ local function clear_surroundings(surface, pos)
         if entity[i].type ~= 'character' then
             entity[i].destroy()
         else
-            teleport(entity[i], {0, 0}, entity[i].surface)
+            teleport(entity[i], { 0, 0 }, entity[i].surface)
         end
     end
 end
@@ -69,13 +66,13 @@ local function transport_resources(container1, container2, transport_type)
         local temperature = 0
 
         local function test_for(temp)
-            local count = container.remove_fluid({name = 'steam', amount = 1, temperature = temp})
+            local count = container.remove_fluid({ name = 'steam', amount = 1, temperature = temp })
             if count ~= 0 then
                 temperature = temp
             else
                 return
             end
-            container.insert_fluid({name = 'steam', amount = count, temperature = temp})
+            container.insert_fluid({ name = 'steam', amount = count, temperature = temp })
         end
 
         test_for(15)
@@ -114,13 +111,13 @@ local function transport_resources(container1, container2, transport_type)
             temp = math_max(at, bt)
             container1.clear_fluid_inside()
             container2.clear_fluid_inside()
-            container1.insert_fluid({name = name1, amount = v, temperature = temp})
-            container2.insert_fluid({name = name2, amount = v, temperature = temp})
+            container1.insert_fluid({ name = name1, amount = v, temperature = temp })
+            container2.insert_fluid({ name = name2, amount = v, temperature = temp })
         else
             container1.clear_fluid_inside()
             container2.clear_fluid_inside()
-            container1.insert_fluid({name = name1, amount = v})
-            container2.insert_fluid({name = name2, amount = v})
+            container1.insert_fluid({ name = name1, amount = v })
+            container2.insert_fluid({ name = name2, amount = v })
         end
     end
 
@@ -128,10 +125,10 @@ local function transport_resources(container1, container2, transport_type)
         local chest1 = container1.get_inventory(defines.inventory.chest)
         local chest2 = container2.get_inventory(defines.inventory.chest)
         for k, v in pairs(chest1.get_contents()) do
-            local t = {name = k, count = v}
+            local t = { name = k, count = v }
             local c = chest2.insert(t)
             if (c > 0) then
-                chest1.remove({name = k, count = c})
+                chest1.remove({ name = k, count = c })
             end
         end
     end
@@ -168,21 +165,21 @@ local function create_underground_floor(surface, size, going_down)
         local tiles = {}
         for i = 0, area.x - 1 do
             for j = 0, area.y - 1 do
-                table_insert(tiles, {name = floor_type, position = {i + pos.x, j + pos.y}})
+                table_insert(tiles, { name = floor_type, position = { i + pos.x, j + pos.y } })
             end
         end
 
         surface.set_tiles(tiles)
     end
-    tile_generation('tutorial-grid', {x = 0, y = 0}, {x = -size / 2, y = -size / 2}, {x = size - 1, y = size})
-    tile_generation('black-refined-concrete', {x = 0, y = 0}, {x = -size / 2, y = -size / 2}, {x = size - 1, y = size})
-    tile_generation('hazard-concrete-left', {x = 0, y = 0}, {x = -3, y = -7}, {x = 6, y = 3})
+    tile_generation('tutorial-grid', { x = 0, y = 0 }, { x = -size / 2, y = -size / 2 }, { x = size - 1, y = size })
+    tile_generation('black-refined-concrete', { x = 0, y = 0 }, { x = -size / 2, y = -size / 2 }, { x = size - 1, y = size })
+    tile_generation('hazard-concrete-left', { x = 0, y = 0 }, { x = -3, y = -7 }, { x = 6, y = 3 })
 
     if going_down then
-        tile_generation('hazard-concrete-left', {x = 0, y = 0}, {x = -3, y = 3}, {x = 6, y = 3})
-        tile_generation('hazard-concrete-left', {x = 0, y = 0}, {x = -2, y = -2}, {x = 4, y = 3})
+        tile_generation('hazard-concrete-left', { x = 0, y = 0 }, { x = -3, y = 3 }, { x = 6, y = 3 })
+        tile_generation('hazard-concrete-left', { x = 0, y = 0 }, { x = -2, y = -2 }, { x = 4, y = 3 })
     else
-        tile_generation('black-refined-concrete', {x = 0, y = 0}, {x = -size / 2, y = -size / 2}, {x = size - 1, y = size})
+        tile_generation('black-refined-concrete', { x = 0, y = 0 }, { x = -size / 2, y = -size / 2 }, { x = size - 1, y = size })
     end
 end
 
@@ -203,30 +200,32 @@ local function create_main_surface(rebuild)
 
     if rebuild then
         hidden_dimension.main_surface.reference =
-            surface.create_entity {
-            name = 'car',
-            position = position,
-            force = game.forces.enemy,
-            create_build_effect_smoke = false
-        }
+            surface.create_entity
+            {
+                name = 'car',
+                position = position,
+                force = game.forces.enemy,
+                create_build_effect_smoke = false
+            }
         hidden_dimension.main_surface.reference.minable = false
         hidden_dimension.main_surface.reference.destructible = false
         hidden_dimension.main_surface.reference.operable = false
-        hidden_dimension.main_surface.reference.get_inventory(defines.inventory.fuel).insert({name = 'coal', count = 100})
+        hidden_dimension.main_surface.reference.get_inventory(defines.inventory.fuel).insert({ name = 'coal', count = 100 })
         return
     end
     if not hidden_dimension.main_surface.reference or not hidden_dimension.main_surface.reference.valid then
         hidden_dimension.main_surface.reference =
-            surface.create_entity {
-            name = 'car',
-            position = {position.x, position.y - 23},
-            force = game.forces.enemy,
-            create_build_effect_smoke = false
-        }
+            surface.create_entity
+            {
+                name = 'car',
+                position = { position.x, position.y - 23 },
+                force = game.forces.enemy,
+                create_build_effect_smoke = false
+            }
         hidden_dimension.main_surface.reference.minable = false
         hidden_dimension.main_surface.reference.destructible = false
         hidden_dimension.main_surface.reference.operable = false
-        hidden_dimension.main_surface.reference.get_inventory(defines.inventory.fuel).insert({name = 'coal', count = 100})
+        hidden_dimension.main_surface.reference.get_inventory(defines.inventory.fuel).insert({ name = 'coal', count = 100 })
         if hidden_dimension.logistic_research_level == 0 then
             return
         end
@@ -237,10 +236,10 @@ end
 local function create_underground_surfaces()
     local function create_underground(floor_table, name, going_down)
         --local underground_level
-        floor_table.surface = game.create_surface(name, {width = 14, height = 16})
+        floor_table.surface = game.create_surface(name, { width = 14, height = 16 })
         floor_table.surface.always_day = true
         floor_table.surface.daytime = 0.5
-        floor_table.surface.request_to_generate_chunks({0, 0}, 10)
+        floor_table.surface.request_to_generate_chunks({ 0, 0 }, 10)
         floor_table.surface.force_generate_chunk_requests()
         local clear_ent = floor_table.surface.find_entities()
         for i, _ in ipairs(clear_ent) do
@@ -249,17 +248,18 @@ local function create_underground_surfaces()
         floor_table.name = name
         floor_table.size = 16
 
-        floor_table.surface.destroy_decoratives({area = {{-floor_table.size, -floor_table.size}, {floor_table.size, floor_table.size}}})
+        floor_table.surface.destroy_decoratives({ area = { { -floor_table.size, -floor_table.size }, { floor_table.size, floor_table.size } } })
 
         create_underground_floor(floor_table.surface, floor_table.size, going_down)
 
         floor_table.going_up.reference =
-            floor_table.surface.create_entity {
-            name = 'car',
-            position = {0, -6},
-            force = game.forces.enemy,
-            create_build_effect_smoke = false
-        }
+            floor_table.surface.create_entity
+            {
+                name = 'car',
+                position = { 0, -6 },
+                force = game.forces.enemy,
+                create_build_effect_smoke = false
+            }
         rendering.draw_light(
             {
                 sprite = 'utility/light_medium',
@@ -267,7 +267,7 @@ local function create_underground_surfaces()
                 intensity = 1,
                 minimum_darkness = 0,
                 oriented = true,
-                color = {255, 255, 255},
+                color = { 255, 255, 255 },
                 target = floor_table.going_up.reference,
                 surface = floor_table.surface,
                 visible = true,
@@ -277,20 +277,21 @@ local function create_underground_surfaces()
         floor_table.going_up.reference.minable = false
         floor_table.going_up.reference.destructible = false
         floor_table.going_up.reference.operable = false
-        floor_table.going_up.reference.get_inventory(defines.inventory.fuel).insert({name = 'coal', count = 100})
+        floor_table.going_up.reference.get_inventory(defines.inventory.fuel).insert({ name = 'coal', count = 100 })
 
         if going_down then
             floor_table.going_down.reference =
-                floor_table.surface.create_entity {
-                name = 'car',
-                position = {0, 4},
-                force = game.forces.enemy,
-                create_build_effect_smoke = false
-            }
+                floor_table.surface.create_entity
+                {
+                    name = 'car',
+                    position = { 0, 4 },
+                    force = game.forces.enemy,
+                    create_build_effect_smoke = false
+                }
             floor_table.going_down.reference.minable = false
             floor_table.going_down.reference.destructible = false
             floor_table.going_down.reference.operable = false
-            floor_table.going_down.reference.get_inventory(defines.inventory.fuel).insert({name = 'coal', count = 100})
+            floor_table.going_down.reference.get_inventory(defines.inventory.fuel).insert({ name = 'coal', count = 100 })
 
             rendering.draw_light(
                 {
@@ -299,7 +300,7 @@ local function create_underground_surfaces()
                     intensity = 1,
                     minimum_darkness = 0,
                     oriented = true,
-                    color = {255, 255, 255},
+                    color = { 255, 255, 255 },
                     target = floor_table.going_down.reference,
                     surface = floor_table.surface,
                     visible = true,
@@ -350,13 +351,13 @@ local function logistic_update()
     local function energy_update(t)
         local g = 0
         local c = 0
-        for k, v in pairs(t) do
+        for _, v in pairs(t) do
             if (v.valid) then
                 g = g + v.energy
                 c = c + v.electric_buffer_size
             end
         end
-        for k, v in pairs(t) do
+        for _, v in pairs(t) do
             if (v.valid) then
                 local r = (v.electric_buffer_size / c)
                 v.energy = g * r
@@ -424,7 +425,7 @@ local function on_research_finished(event)
         hidden_dimension.logistic_research_level = 3
         Public.upgrade_transport_buildings(3)
     elseif event.research.name == 'electric-energy-accumulators' then
-    -- fix power
+        -- fix power
     end
 end
 
@@ -439,24 +440,26 @@ local function through_teleporter_update()
         end
 
         local function surface_play_sound(sound_path, surface, pos)
-            for k, v in pairs(game.connected_players) do
+            for _, v in pairs(game.connected_players) do
                 if v.surface.name == surface then
-                    v.play_sound {path = sound_path, position = pos}
+                    v.play_sound { path = sound_path, position = pos }
                 end
             end
         end
 
         local to_teleport_out_entity_list =
-            source.surface.find_entities_filtered {
-            area = {
-                {source.position.x - 1.1, source.position.y - 1.1},
-                {source.position.x + 1.1, source.position.y + 1.1}
-            },
-            type = 'character'
-        }
-        for i, v in ipairs(to_teleport_out_entity_list) do
+            source.surface.find_entities_filtered
+            {
+                area =
+                {
+                    { source.position.x - 1.1, source.position.y - 1.1 },
+                    { source.position.x + 1.1, source.position.y + 1.1 }
+                },
+                type = 'character'
+            }
+        for _, v in ipairs(to_teleport_out_entity_list) do
             if v.type == 'character' then
-                local pos = {x = destination.position.x, y = destination.position.y}
+                local pos = { x = destination.position.x, y = destination.position.y }
                 if v.position.y < source.position.y then
                     pos.y = pos.y + 2
                 else
@@ -487,7 +490,7 @@ end
 
 local function on_entity_cloned(event)
     local hidden_dimension = HDT.get('hidden_dimension')
-    for k, v in pairs(hidden_dimension.main_surface.entities) do
+    for _, v in pairs(hidden_dimension.main_surface.entities) do
         if event.source == v then
             event.destination.destroy()
         end
@@ -527,11 +530,11 @@ end
 function Public.init(args)
     local hidden_dimension = HDT.get('hidden_dimension')
     if args then
-        hidden_dimension.position = args.position or {x = 0, y = 3}
+        hidden_dimension.position = args.position or { x = 0, y = 3 }
         hidden_dimension.hd_surface = args.hd_surface or 'nauvis'
     else
         hidden_dimension.hd_surface = 'nauvis'
-        hidden_dimension.position = {x = 0, y = 3}
+        hidden_dimension.position = { x = 0, y = 3 }
     end
 end
 
@@ -576,30 +579,31 @@ function Public.create_chests(surface, level, build_type)
 
     local function add_container(name, pos, direction, type)
         local container_entity
-        container_entity = logistic_building.surface.find_entity(name, {logistic_building.position.x + pos.x, logistic_building.position.y + pos.y})
+        container_entity = logistic_building.surface.find_entity(name, { logistic_building.position.x + pos.x, logistic_building.position.y + pos.y })
         if container_entity == nil then
-            local pos2 = {logistic_building.position.x + pos.x, logistic_building.position.y + pos.y}
+            local pos2 = { logistic_building.position.x + pos.x, logistic_building.position.y + pos.y }
             if name == 'loader' or name == 'fast-loader' or name == 'express-loader' then
                 container_entity =
-                    logistic_building.surface.create_entity {
-                    name = name,
-                    position = pos2,
-                    force = game.forces.player,
-                    type = type
-                }
+                    logistic_building.surface.create_entity
+                    {
+                        name = name,
+                        position = pos2,
+                        force = game.forces.player,
+                        type = type
+                    }
                 container_entity.direction = direction
             elseif name == 'pipe-to-ground' then
-                container_entity = logistic_building.surface.create_entity {name = name, position = pos2, force = game.forces.player}
+                container_entity = logistic_building.surface.create_entity { name = name, position = pos2, force = game.forces.player }
                 container_entity.direction = direction
             elseif name == energy then
-                container_entity = logistic_building.surface.create_entity {name = name, position = pos2, force = game.forces.player}
+                container_entity = logistic_building.surface.create_entity { name = name, position = pos2, force = game.forces.player }
                 container_entity.minable = false
                 container_entity.destructible = false
                 container_entity.operable = false
                 container_entity.power_production = 0
                 container_entity.electric_buffer_size = 10000000
             else
-                container_entity = logistic_building.surface.create_entity {name = name, position = pos2, force = game.forces.player}
+                container_entity = logistic_building.surface.create_entity { name = name, position = pos2, force = game.forces.player }
             end
         end
         container_entity.minable = false
@@ -607,20 +611,20 @@ function Public.create_chests(surface, level, build_type)
         return container_entity
     end
 
-    surface.entities.loader_1 = add_container(loader, {x = -2, y = 0}, direction1, rotation1)
-    surface.entities.loader_2 = add_container(loader, {x = 1, y = 0}, direction2, rotation2)
-    surface.entities.chest_1 = add_container(chest, {x = -2, y = 1})
-    surface.entities.chest_2 = add_container(chest, {x = 1, y = 1})
-    surface.entities.pipe_1 = add_container('pipe-to-ground', {x = -3, y = 1}, defines.direction.west)
-    surface.entities.pipe_2 = add_container('pipe-to-ground', {x = 2, y = 1}, defines.direction.east)
+    surface.entities.loader_1 = add_container(loader, { x = -2, y = 0 }, direction1, rotation1)
+    surface.entities.loader_2 = add_container(loader, { x = 1, y = 0 }, direction2, rotation2)
+    surface.entities.chest_1 = add_container(chest, { x = -2, y = 1 })
+    surface.entities.chest_2 = add_container(chest, { x = 1, y = 1 })
+    surface.entities.pipe_1 = add_container('pipe-to-ground', { x = -3, y = 1 }, defines.direction.west)
+    surface.entities.pipe_2 = add_container('pipe-to-ground', { x = 2, y = 1 }, defines.direction.east)
     if level > 1 then
-        surface.entities.pipe_3 = add_container('pipe-to-ground', {x = -3, y = 0}, defines.direction.west)
-        surface.entities.pipe_4 = add_container('pipe-to-ground', {x = 2, y = 0}, defines.direction.east)
+        surface.entities.pipe_3 = add_container('pipe-to-ground', { x = -3, y = 0 }, defines.direction.west)
+        surface.entities.pipe_4 = add_container('pipe-to-ground', { x = 2, y = 0 }, defines.direction.east)
         if level > 2 then
             local hidden_dimension = HDT.get('hidden_dimension')
-            hidden_dimension.energy[#hidden_dimension.energy + 1] = add_container(energy, {x = 0, y = 0})
-            surface.entities.pipe_5 = add_container('pipe-to-ground', {x = -3, y = -1}, defines.direction.west)
-            surface.entities.pipe_6 = add_container('pipe-to-ground', {x = 2, y = -1}, defines.direction.east)
+            hidden_dimension.energy[#hidden_dimension.energy + 1] = add_container(energy, { x = 0, y = 0 })
+            surface.entities.pipe_5 = add_container('pipe-to-ground', { x = -3, y = -1 }, defines.direction.west)
+            surface.entities.pipe_6 = add_container('pipe-to-ground', { x = 2, y = -1 }, defines.direction.east)
         end
     end
 end
@@ -629,7 +633,7 @@ function Public.upgrade_transport_buildings(level)
     local function upgrade(transport, building_type)
         local function copy_chest_content(content, chest)
             for k, v in pairs(content) do
-                chest.insert({name = k, count = v})
+                chest.insert({ name = k, count = v })
             end
         end
 
@@ -644,17 +648,17 @@ function Public.upgrade_transport_buildings(level)
         local chest_2_inventory = transport.entities.chest_2.get_inventory(defines.inventory.chest).get_contents()
 
         local pos = transport.reference.position
-        local logistic_bb = {{pos.x - 5, pos.y - 5}, {pos.x + 5, pos.y + 5}}
+        local logistic_bb = { { pos.x - 5, pos.y - 5 }, { pos.x + 5, pos.y + 5 } }
 
         local surface = transport.reference.surface
 
         clear_surroundings(transport.reference.surface, logistic_bb)
 
-        transport.reference = surface.create_entity {name = building_type, position = pos, force = game.forces.enemy}
+        transport.reference = surface.create_entity { name = building_type, position = pos, force = game.forces.enemy }
         transport.reference.minable = false
         transport.reference.destructible = false
         transport.reference.operable = false
-        transport.reference.get_inventory(defines.inventory.fuel).insert({name = 'coal', count = 100})
+        transport.reference.get_inventory(defines.inventory.fuel).insert({ name = 'coal', count = 100 })
 
         Public.create_chests(transport, level, transport.transport_type)
 
@@ -687,7 +691,7 @@ Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_tick, on_tick)
 Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(defines.events.on_entity_cloned, on_entity_cloned)
-Event.add(Public.events.reset_game, reset_surface)
-Event.add(Public.events.init_surfaces, create_underground_surfaces)
+Event.add(CreatedEvents.events.reset_game, reset_surface)
+Event.add(CreatedEvents.events.init_surfaces, create_underground_surfaces)
 
 return Public

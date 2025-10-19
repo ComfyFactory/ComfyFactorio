@@ -1,19 +1,22 @@
 local Gui = require 'utils.gui'
 local table = require 'utils.table'
+local api = require 'utils.debug.runtime-api-stable'
 
 local gui_names = Gui.names
 local type = type
 local concat = table.concat
 local inspect = table.inspect
 local pcall = pcall
+---@diagnostic disable-next-line: deprecated
 local loadstring = loadstring
+local classes = api.classes
 
 local Public = {}
 
-local luaObject = { '{', nil, ", name = '", nil, "'}" }
-local luaPlayer = { "{LuaPlayer, name = '", nil, "', index = ", nil, '}' }
-local luaEntity = { "{LuaEntity, name = '", nil, "', unit_number = ", nil, '}' }
-local luaGuiElement = { "{LuaGuiElement, name = '", nil, "'}" }
+local luaObject = {'{', nil, ", name = '", nil, "'}"}
+local luaPlayer = {"{LuaPlayer, name = '", nil, "', index = ", nil, '}'}
+local luaEntity = {"{LuaEntity, name = '", nil, "', unit_number = ", nil, '}'}
+local luaGuiElement = {"{LuaGuiElement, name = '", nil, "'}"}
 
 local function get(obj, prop)
     return obj[prop]
@@ -29,26 +32,45 @@ local function get_name_safe(obj)
 end
 
 local function get_lua_object_type_safe(obj)
-    local s, r = pcall(get, obj, 'help')
+    local s, r = pcall(get, obj, 'object_name')
 
     if not s then
-        return
+        return type(obj)
     end
 
-    return r():match('Lua%a+')
+    return r
 end
 
 local function inspect_process(item)
+    local object_name = get_lua_object_type_safe(item)
+    if object_name and classes[object_name] then
+        local class = classes[object_name]
+        local attrs = class.attributes
+        local info = {__type = object_name}
+        local shown = 0
+        for key in pairs(attrs) do
+            local ok, val =
+                pcall(
+                function()
+                    return item[key]
+                end
+            )
+            if ok and (type(val) ~= 'table' and type(val) ~= 'userdata') then
+                info[key] = val
+                shown = shown + 1
+            end
+        end
+        return serpent.line(info, {comment = false, numformat = '%g'})
+    end
+
     if type(item) ~= 'table' or type(item.__self) ~= 'userdata' then
         return item
     end
 
     local suc, valid = pcall(get, item, 'valid')
     if not suc then
-        -- no 'valid' property
         return get_lua_object_type_safe(item) or '{NoHelp LuaObject}'
     end
-
     if not valid then
         return '{Invalid LuaObject}'
     end
@@ -61,27 +83,23 @@ local function inspect_process(item)
     if obj_type == 'LuaPlayer' then
         luaPlayer[2] = item.name or 'nil'
         luaPlayer[4] = item.index or 'nil'
-
         return concat(luaPlayer)
     elseif obj_type == 'LuaEntity' then
         luaEntity[2] = item.name or 'nil'
         luaEntity[4] = item.unit_number or 'nil'
-
         return concat(luaEntity)
     elseif obj_type == 'LuaGuiElement' then
         local name = item.name
         luaGuiElement[2] = gui_names and gui_names[name] or name or 'nil'
-
         return concat(luaGuiElement)
     else
         luaObject[2] = obj_type
         luaObject[4] = get_name_safe(item)
-
         return concat(luaObject)
     end
 end
 
-local inspect_options = { process = inspect_process }
+local inspect_options = {process = inspect_process}
 function Public.dump(data)
     return inspect(data, inspect_options)
 end
@@ -97,14 +115,14 @@ function Public.dump_ignore_builder(ignore)
         return inspect_process(item)
     end
 
-    local options = { process = process }
-    return function (data)
+    local options = {process = process}
+    return function(data)
         return inspect(data, options)
     end
 end
 
 function Public.dump_function(func)
-    local res = { 'upvalues:\n' }
+    local res = {'upvalues:\n'}
 
     if debug.getupvalue == nil then
         return concat(res)

@@ -9,6 +9,8 @@ local SpamProtection = require 'utils.spam_protection'
 local Math = require 'utils.math.math'
 local Discord = require 'utils.discord_handler'
 local Color = require 'utils.color_presets'
+local CreatedEvents = require 'utils.created_events'
+
 local Public = {}
 
 local insert = table.insert
@@ -952,6 +954,10 @@ local function tick()
             table.remove(running_polls, i)
             send_poll_result_to_discord(poll, true)
 
+            local poll_result, winning_answer = Public.poll_result(poll.id)
+
+            Event.raise(CreatedEvents.events.on_poll_complete, { player_index = poll.player_index, poll_id = poll.id, custom_data = poll.custom_data, poll_result = poll_result, winning_answer = winning_answer })
+
             local message = table.concat { 'Poll finished: Poll #', poll.id, ': ', poll.question }
             for _, p in pairs(game.connected_players) do
                 if not no_notify_players[p.index] then
@@ -961,6 +967,10 @@ local function tick()
         end
     end
 end
+
+Event.add(CreatedEvents.events.on_poll_created, function (event)
+    Public.poll(event)
+end)
 
 Event.add(defines.events.on_player_joined_game, player_joined)
 Event.add(defines.events.on_player_created, player_joined)
@@ -1512,6 +1522,7 @@ function Public.poll(data)
     local poll_data =
     {
         id = id,
+        custom_data = data.custom_data or nil,
         question = data.question,
         answers = answers,
         voters = {},
@@ -1543,22 +1554,33 @@ function Public.poll_result(id)
             local result = { 'Question: ', poll_data.question, ' Answers: ' }
             local answers = poll_data.answers
             local answers_count = #answers
-            local winning_answer = nil
+            local highest_vote = 0
+            local winners = {}
 
-            for i, a in pairs(answers) do
+            for i, a in ipairs(answers) do
                 insert(result, '( [')
                 insert(result, a.voted_count)
                 insert(result, '] - ')
                 insert(result, a.text)
                 insert(result, ' )')
 
-                if not winning_answer or a.voted_count > winning_answer.voted_count then
-                    winning_answer = a
+                if a.voted_count > highest_vote then
+                    highest_vote = a.voted_count
+                    winners = { a }
+                elseif a.voted_count == highest_vote then
+                    insert(winners, a)
                 end
 
                 if i ~= answers_count then
                     insert(result, ', ')
                 end
+            end
+
+            local winning_answer
+            if #winners == 1 then
+                winning_answer = winners[1]
+            else
+                winning_answer = { text = 'Tie', voted_count = highest_vote }
             end
 
             return table.concat(result), winning_answer
