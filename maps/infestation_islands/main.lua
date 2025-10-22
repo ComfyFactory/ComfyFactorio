@@ -24,10 +24,8 @@ local function reset_player(player)
     end
     player.clear_items_inside()
     if player.connected then
-        if not player.character then
-            player.set_controller({ type = defines.controllers.god })
-            player.create_character()
-        end
+        player.set_controller({ type = defines.controllers.god })
+        player.create_character()
         if player.character ~= nil then
             player.character.destructible = true
         end
@@ -67,7 +65,9 @@ local reset_players_token =
             local players = game.players
             for i = 1, #players do
                 local player = players[i]
-                reset_player(player)
+                if player and player.valid then
+                    reset_player(player)
+                end
             end
         end
     )
@@ -149,26 +149,6 @@ local function update_stage_gui(caption_override)
     end
 end
 
-local function bring_players()
-    local surface = game.surfaces[1]
-    for _, player in pairs(game.connected_players) do
-        if player.position.y < -1 then
-            if player.character then
-                if player.character.valid then
-                    local p = surface.find_non_colliding_position('character', { 0, 2 }, 8, 0.5)
-                    if not p then
-                        player.teleport({ 0, 2 }, surface)
-                    else
-                        player.teleport(p, surface)
-                    end
-                end
-            end
-        end
-    end
-    local this = Public.get()
-    this.gamestate = 2
-end
-
 local function drift_corpses_toward_beach()
     if not Public.get('drift_corpses_toward_beach_enabled') then
         return
@@ -207,12 +187,6 @@ local function on_player_joined_game(event)
 
     Difficulty.difficulty_gui()
 end
-
-local gamestate_functions =
-{
-    [1] = bring_players,
-    [2] = Func.draw_main_island,
-}
 
 local function has_the_game_ended(this)
     if (this.game_lost or this.game_won) and this.game_reset_tick then
@@ -300,9 +274,6 @@ end
 
 local function on_tick()
     local this = Public.get()
-    if game.tick % 25 == 0 and gamestate_functions[this.gamestate] then
-        gamestate_functions[this.gamestate]()
-    end
     if game.tick % 25 == 0 then
         if this.alive_enemies < 0 then this.alive_enemies = 0 end
         if this.game_lost then
@@ -353,12 +324,15 @@ local function on_tick()
         game.forces.player.chart(game.surfaces[1], { { center_position.position.x - 124, center_position.position.y - 124 }, { center_position.position.x + 124, center_position.position.y + 124 } })
 
         Func.check_alive_enemies()
-        Func.set_multi_command()
         if not this.completed_levels[this.current_level] then
             if not this.disable_multi_command_attack then
                 Func.do_buried_biters()
             end
         end
+    end
+
+    if game.tick % 400 == 0 then
+        Func.set_multi_command()
     end
 
     if game.tick % 500 == 0 then

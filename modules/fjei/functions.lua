@@ -257,7 +257,7 @@ local function get_localised_name(name)
 end
 
 local on_nth_translation_handler =
-    Scheduler.set(
+    Scheduler.register_function(
         function (data)
             for i = 1, #data do
                 local player_index = data[i].player_index

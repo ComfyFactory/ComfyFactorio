@@ -9,10 +9,11 @@ local Scheduler = require 'utils.scheduler'
 local Task = require 'utils.task_token'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 local Server = require 'utils.server'
+local MGS = require 'maps.infestation_islands.island_settings'
 
 local this = {}
 
-local Public = {}
+local Public = { max_island_radius_param = 256 }
 
 Global.register(
     this,
@@ -20,13 +21,6 @@ Global.register(
         this = tbl
     end
 )
-
-local set_gamestate_token =
-    Task.register(
-        function ()
-            this.gamestate = 1
-        end
-    )
 
 local set_tech_limit_token = Task.register(
     function ()
@@ -42,6 +36,23 @@ Public.qualities =
     'epic',
     'legendary'
 }
+
+local function init_mirror_surface()
+    if game.surfaces['island'] then
+        return
+    end
+
+    local map_gen_settings = MGS
+    map_gen_settings.seed = math.random(1, 999999999)
+
+    if not game.surfaces['island'] then
+        game.create_surface('island', map_gen_settings)
+        local surface = game.surfaces['island']
+        surface.ignore_surface_conditions = true
+        ---@diagnostic disable-next-line: param-type-mismatch
+        surface.request_to_generate_chunks({ 0, 0 }, math.ceil(Public.max_island_radius_param / 32))
+    end
+end
 
 function Public.get(key)
     if key then
@@ -59,6 +70,17 @@ function Public.on_init()
     for index, _ in pairs(this) do
         this[index] = nil
     end
+
+    init_mirror_surface()
+
+    for _, player in pairs(game.players) do
+        if player and player.valid then
+            player.character = nil
+            player.teleport({ x = 0, y = 0 }, game.surfaces[1])
+        end
+    end
+
+
     local T = Map.Pop_info()
     T.localised_category = 'infestation_islands'
     T.main_caption_color = { r = 150, g = 150, b = 0 }
@@ -79,6 +101,8 @@ function Public.on_init()
     Autostash.insert_into_furnace(true)
 
     this.soft_reset = true
+
+    this.bridge_position = { x = 0, y = 0 }
 
     this.notified_market_safe = false
 
@@ -148,16 +172,13 @@ function Public.on_init()
 
     this.autogenerate_islands = false
 
-    this.calculated_snake_length = 0
-    this.snake_length = 200
+    this.vector = {}
 
     this.delayed_messages = {}
 
     this.level_vectors = {}
     this.alive_boss_enemy_entities = {}
     this.current_level = 0
-    this.gamestate = 0
-    Task.set_timeout_in_ticks(30, set_gamestate_token)
 
     game.forces.player.set_spawn_position({ 0, 2 }, surface)
 
@@ -175,10 +196,23 @@ function Public.on_init()
 
     this.rocket_silo = nil
 
+    this.connected_islands = {}
+
     this.centered_points =
     {
         [1] = { position = { x = 0, y = 0 }, radius = 200, level = 1 }
     }
+
+    -- Determine island path direction (chosen once at init)
+    -- Only cardinal directions - perpendicular movement will be added randomly per island
+    local directions =
+    {
+        { name = "right", dx = 1, dy = 0 },
+        { name = "left", dx = -1, dy = 0 },
+        { name = "up", dx = 0, dy = -1 },
+        { name = "down", dx = 0, dy = 1 }
+    }
+    this.island_direction = directions[math.random(1, #directions)]
 
     this.quality_list =
     {
@@ -197,7 +231,17 @@ function Public.on_init()
 
     this.max_biters_per_island = 150
 
-    this.seeds = nil
+    if not this.seeds then
+        this.seeds =
+        {
+            seed_1 = math.random(1, 9999999),
+            seed_2 = math.random(1, 9999999),
+            seed_3 = math.random(1, 9999999),
+            seed_m1 = (math.random(8, 16) * 0.1) / 300,
+            seed_m2 = (math.random(12, 24) * 0.1) / 300,
+            seed_m3 = (math.random(50, 100) * 0.1) / 300
+        }
+    end
 
     this.nomed_marked = nil
 
@@ -252,12 +296,22 @@ function Public.on_init()
     game.forces.enemy.set_friend('player', false)
     game.forces.player.set_friend('enemy', false)
 
+    Public.draw_main_island({ x = 0, y = 0 }, 200)
+
     Difficulty.reset_difficulty_poll({ closing_timeout = game.tick + 36000 })
     Difficulty.set_gui_width(20)
     Difficulty.set('button_height', 54)
     this.difficulty_vote_ended = false
     Server.to_discord_embed('** A fresh round of Infestation Islands has begun! **')
     Task.set_timeout_in_ticks(100, set_tech_limit_token)
+
+    if _DEBUG then
+        Difficulty.set_poll_closing_timeout(game.tick)
+        this.voting_to_progress_enabled = false
+        game.speed = 4
+        Misc.set('creative_enabled', true)
+        game.print('Debug mode enabled, skipping difficulty vote and voting to progress!')
+    end
 end
 
 function Public.set(key, value)
