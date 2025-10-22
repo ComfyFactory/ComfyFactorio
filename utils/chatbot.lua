@@ -3,8 +3,10 @@ local Server = require 'utils.server'
 local Color = require 'utils.color_presets'
 local Global = require 'utils.global'
 
-local this = {
-    settings = {
+local this =
+{
+    settings =
+    {
         enable_classic_print = false
     }
 }
@@ -18,49 +20,100 @@ Global.register(
 
 local Public = {}
 
-local brain = {
+local brain =
+{
     [1] = { 'Our Discord server is at: https://getcomfy.eu/discord' },
-    [2] = {
+    [2] =
+    {
         'Need an admin? Join our discord at: https://getcomfy.eu/discord,',
         'and report it in #i-need-halp',
-        'If you have played for more than 5h in our maps then,',
-        'you are eligible to run the command /jail and /free'
+        'If you have played for some time in our maps then,',
+        'you are eligible to run the command /jail, /free and /undo_player_actions'
     },
     [3] = { 'Scenario repository for download:', 'https://github.com/ComfyFactory/ComfyFactorio' },
-    [4] = {
+    [4] =
+    {
         'If you feel like the server is lagging, run the following command:',
         '/server-ups',
         'This will display the server UPS on your top right screen.'
     },
-    [5] = {
+    [5] =
+    {
         "If you're not trusted - ask an admin to trust you."
     }
 }
-
-local links = {
+local links =
+{
     ['admin'] = brain[2],
+    ['admins'] = brain[2],
     ['administrator'] = brain[2],
-    ['discord'] = brain[1],
-    ['download'] = brain[3],
-    ['github'] = brain[3],
-    ['greifer'] = brain[2],
+    ['moderator'] = brain[2],
+    ['mod'] = brain[2],
+    ['mods'] = brain[2],
+    ['staff'] = brain[2],
     ['grief'] = brain[2],
     ['griefer'] = brain[2],
     ['griefing'] = brain[2],
-    ['mod'] = brain[2],
-    ['moderator'] = brain[2],
-    ['scenario'] = brain[3],
-    ['stealing'] = brain[2],
+    ['greifer'] = brain[2],
+    ['steal'] = brain[2],
     ['stole'] = brain[2],
+    ['stealing'] = brain[2],
     ['troll'] = brain[2],
-    ['stutter'] = brain[4],
-    ['freeze'] = brain[4],
+    ['trolling'] = brain[2],
+    ['report'] = brain[2],
+    ['abuse'] = brain[2],
+    ['cheat'] = brain[2],
+    ['cheater'] = brain[2],
+    ['cheating'] = brain[2],
+    ['hack'] = brain[2],
+    ['hacker'] = brain[2],
+    ['help'] = brain[2],
+    ['need help'] = brain[2],
+    ['jail'] = brain[2],
+    ['undo'] = brain[2],
+    ['undo_player_actions'] = brain[2],
+
+    ['discord'] = brain[1],
+    ['comfy'] = brain[1],
+    ['server'] = brain[1],
+    ['chat'] = brain[1],
+    ['voice'] = brain[1],
+    ['link'] = brain[1],
+
+    ['download'] = brain[3],
+    ['downloads'] = brain[3],
+    ['github'] = brain[3],
+    ['repo'] = brain[3],
+    ['repository'] = brain[3],
+    ['scenario'] = brain[3],
+    ['map'] = brain[3],
+    ['maps'] = brain[3],
+    ['files'] = brain[3],
+
     ['lag'] = brain[4],
     ['lagging'] = brain[4],
+    ['stutter'] = brain[4],
+    ['freeze'] = brain[4],
+    ['freezing'] = brain[4],
+    ['fps'] = brain[4],
+    ['ups'] = brain[4],
+    ['desync'] = brain[4],
+    ['latency'] = brain[4],
+    ['delay'] = brain[4],
+    ['slow'] = brain[4],
+    ['performance'] = brain[4],
+
     ['trust'] = brain[5],
     ['trusted'] = brain[5],
-    ['untrusted'] = brain[5]
+    ['untrusted'] = brain[5],
+    ['not trusted'] = brain[5],
+    ['permission'] = brain[5],
+    ['permissions'] = brain[5],
+    ['build'] = brain[5],
+    ['can’t build'] = brain[5],
+    ['cant build'] = brain[5],
 }
+
 
 local function on_player_created(event)
     local player = game.get_player(event.player_index)

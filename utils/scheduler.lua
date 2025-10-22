@@ -1,9 +1,19 @@
 local Event = require 'utils.event'
 local Server = require 'utils.server'
+local Global = require 'utils.global'
 local Public = {}
 local loaded = {}
 local count = 1
 local limit = 30
+
+local this = {}
+
+Global.register(
+    this,
+    function (tbl)
+        this = tbl
+    end
+)
 
 function Public.set(var)
     if game then
@@ -17,25 +27,25 @@ function Public.set(var)
 end
 
 function Public.get_handlers()
-    local handlers = storage.tick_handler
+    local handlers = this.tick_handler
 
     if not handlers then
-        storage.tick_handler = {}
-        handlers = storage.tick_handler
+        this.tick_handler = {}
+        handlers = this.tick_handler
     end
 
     return handlers
 end
 
 function Public.can_run_scheduler(condition)
-    storage.can_run_scheduler = condition or false
+    this.can_run_scheduler = condition or false
 end
 
 function Public.search(id)
-    local handlers = storage.tick_handler
+    local handlers = this.tick_handler
 
     for _, data in pairs(handlers) do
-        if data and (data.parent_id == id or (data.custom_name and data.custom_name == id)) then
+        if data and (data.child_id == id or (data.custom_name and data.custom_name == id)) then
             return true
         end
     end
@@ -51,7 +61,8 @@ function Public.return_callback(callback)
         return
     end
 
-    local data = {
+    local data =
+    {
         iterator_index = 1,
         tick_index = 1,
         point_index = 1,
@@ -77,7 +88,7 @@ function Public.timeout(tick, id, data, custom_name)
 
     tick = game.tick + tick
 
-    local handlers = storage.tick_handler
+    local handlers = this.tick_handler
     if not handlers then
         handlers = Public.get_handlers()
     end
@@ -90,17 +101,19 @@ function Public.timeout(tick, id, data, custom_name)
             goto retry
         end
 
-        handlers[tick] = {
+        handlers[tick] =
+        {
             id = id,
-            parent_id = id,
+            child_id = id,
             data = data,
             execute_tick = tick,
             custom_name = custom_name or nil
         }
     else
-        handlers[tick] = {
+        handlers[tick] =
+        {
             id = id,
-            parent_id = id,
+            child_id = id,
             data = data,
             execute_tick = tick,
             custom_name = custom_name or nil
@@ -109,7 +122,7 @@ function Public.timeout(tick, id, data, custom_name)
 end
 
 local function increment_handler(tick, handler)
-    local handlers = storage.tick_handler
+    local handlers = this.tick_handler
 
     ::retry::
     tick = tick + 1
@@ -126,14 +139,14 @@ end
 
 local function on_tick()
     local tick = game.tick
-    local can_run_scheduler = storage.can_run_scheduler
+    local can_run_scheduler = this.can_run_scheduler
     if not can_run_scheduler then
-        storage.tick_handler = {}
+        this.tick_handler = {}
         Server.output_script_data('Scheduler task has been cleared and stopped!')
         return
     end
 
-    local handlers = storage.tick_handler
+    local handlers = this.tick_handler
 
     if not handlers then
         handlers = Public.get_handlers()

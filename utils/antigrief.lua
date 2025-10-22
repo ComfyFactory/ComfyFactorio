@@ -1076,6 +1076,8 @@ local function on_player_deconstructed_area(event)
         return
     end
 
+
+
     local area = event.area
     local count = surface.count_entities_filtered({ area = area, type = 'resource', invert = true })
     local max_count = 0
@@ -1101,9 +1103,6 @@ local function on_player_deconstructed_area(event)
             area = area,
             force = player.force
         }
-        if not is_trusted then
-            return
-        end
 
         local msg = '[Deconstruct] ' .. player.name .. ' tried to deconstruct: ' .. count .. ' entities!'
         Utils.print_to(nil, msg)

@@ -8,7 +8,7 @@ local Task = require 'utils.task'
 local Server = require 'utils.server'
 local Event = require 'utils.event'
 local table = require 'utils.table'
-local CreatedEvents = require 'utils.created_events'
+local CustomEvents = require 'utils.created_events'
 
 local set_timeout_in_ticks = Task.set_timeout_in_ticks
 
@@ -346,7 +346,7 @@ end
 --- It's vital that we reset the online_track so we
 --- don't calculate the values wrong.
 Event.add(
-    CreatedEvents.events.on_player_removed,
+    CustomEvents.events.on_player_removed,
     function ()
         for name, _ in pairs(online_track) do
             local player = game.get_player(name)

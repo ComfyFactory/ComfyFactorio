@@ -27,6 +27,9 @@ local Public =
         on_gui_closed_main_frame = Event.generate_event_name('on_gui_closed_main_frame'),
         on_player_removed = Event.generate_event_name('on_player_removed'),
 
+        -- rpg
+        on_rpg_callback_added = Event.generate_event_name('on_rpg_callback_added'),
+
         -- config events
         on_config_changed = Event.generate_event_name('on_config_changed'),
 

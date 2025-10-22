@@ -5,7 +5,7 @@ local Alert = require 'utils.alert'
 local Event = require 'utils.event'
 local Task = require 'utils.task_token'
 local Config = require 'utils.gui.config'
-local CreatedEvents = require 'utils.created_events'
+local CustomEvents = require 'utils.created_events'
 
 local this =
 {
@@ -163,7 +163,7 @@ function Public.dump_expired_players()
                             player_inv[4] = target.get_inventory(defines.inventory.character_ammo)
                             player_inv[5] = target.get_inventory(defines.inventory.character_trash)
                             if this.offline_players_surface_removal then
-                                Event.raise(CreatedEvents.events.remove_surface, { target = target })
+                                Event.raise(CustomEvents.events.remove_surface, { target = target })
                             end
 
                             local found_items = false

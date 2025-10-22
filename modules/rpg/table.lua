@@ -3,6 +3,7 @@ local Global = require 'utils.global'
 local Task = require 'utils.task_token'
 local Event = require 'utils.event'
 local Gui = require 'utils.gui'
+local CustomEvents = require 'utils.created_events'
 
 local this =
 {
@@ -97,6 +98,31 @@ Public.auto_allocate_nodes_func =
     'Dexterity',
     'Vitality'
 }
+
+local get_value_from_player_token =
+    Task.register(
+        function (event)
+            local player_index = event.player_index
+            local player = game.get_player(player_index)
+            if not player or not player.valid then
+                return
+            end
+
+            local key = event.key
+            if not key then
+                return
+            end
+
+            return Public.get_value_from_player(player.index, key)
+        end
+    )
+
+local delay_register_token =
+    Task.register(
+        function ()
+            Event.raise(CustomEvents.events.on_rpg_callback_added, { token = get_value_from_player_token })
+        end
+    )
 
 function Public.reset_table(migrate)
     this.rpg_extra.debug = false
@@ -653,8 +679,6 @@ function Public.get_vitality_custom_callback()
     end
 end
 
-
-
 function Public.migrate_to_new_version()
     -- Public.reset_table(true)
     if this.rpg_spells then
@@ -687,6 +711,8 @@ Public.cooldown_indicator_name = cooldown_indicator_name
 
 local on_init = function ()
     Public.reset_table()
+    -- Apparently this does not work immediately, so we need to wait for 1 tick.
+    Task.set_timeout_in_ticks(1, delay_register_token)
 end
 
 Event.on_init(on_init)

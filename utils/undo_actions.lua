@@ -1,9 +1,10 @@
 local Server = require 'utils.server'
 local Event = require 'utils.event'
-local CreatedEvents = require 'utils.created_events'
+local CustomEvents = require 'utils.created_events'
 local Global = require 'utils.global'
 local Commands = require 'utils.commands'
 local Task = require 'utils.task_token'
+local Discord = require 'utils.discord_handler'
 
 local module_name = '[Undo actions] '
 local undo_polls = {}
@@ -62,7 +63,7 @@ local function do_action_poll(player)
         game.print(module_name .. player.name .. ' has ' .. undo_count .. ' entities in the undo queue. Creating poll before restoring them.')
         local unique_id = player.name .. '_' .. 'undo_poll'
 
-        Event.raise(CreatedEvents.events.on_poll_created,
+        Event.raise(CustomEvents.events.on_poll_created,
             {
                 question = player.name .. ' removed ' .. undo_count .. ' entities before getting dealt with. Proceed with restoration?',
                 answers = { 'Yes, restore the entities!', 'No, do not restore the entities!' },
@@ -184,7 +185,7 @@ local function check_undo_redo_stack(player)
     end
 end
 
-Event.add(CreatedEvents.events.on_poll_complete, function (event)
+Event.add(CustomEvents.events.on_poll_complete, function (event)
     if not event.winning_answer or not event.winning_answer.text then
         return
     end
@@ -250,7 +251,7 @@ Event.add(CreatedEvents.events.on_poll_complete, function (event)
     end
 end)
 
-Event.add(CreatedEvents.events.on_player_banned, function (event)
+Event.add(CustomEvents.events.on_player_banned, function (event)
     if not event.player_name then
         return
     end
@@ -271,7 +272,39 @@ Event.add(CreatedEvents.events.on_player_banned, function (event)
     Server.output_script_data(module_name .. 'Undo redo stack checked for ' .. player.name)
 end)
 
-Commands.new('undo_player_actions', 'Undoes the actions of a player.')
+Commands.new('undo_player_actions', 'Undoes the actions of a player as a player by creating a poll.')
+    :add_parameter('player', false, 'player')
+    :require_validation('Only utilize this command if the player is jailed and has entities in the undo queue.')
+    :require_playtime(60 * 60 * 60 * 24 * 40) -- 30 days
+    :callback(function (player, target_player)
+        if not target_player or not target_player.valid then
+            return player.print('Player is not valid.')
+        end
+
+        local undo_count = check_undo_queue(target_player)
+        if not undo_count or undo_count <= 0 then
+            return player.print('No undo count found for ' .. target_player.name .. '.')
+        end
+
+        do_action_poll(target_player)
+        player.print('Logging your actions to discord.')
+        Discord.send_notification(
+            {
+                title = 'Undo actions',
+                description = 'Undone ' .. undo_count .. ' actions for ' .. target_player.name .. ' by ' .. player.name .. '.',
+                color = 'success',
+                fields =
+                {
+                    {
+                        title = "Server",
+                        description = Server.get_server_name() or 'CommandHandler',
+                        inline = "false"
+                    }
+                }
+            })
+    end)
+
+Commands.new('undo_player_actions_admin', 'Undoes the actions of a player as an admin.')
     :add_parameter('player', false, 'player')
     :require_validation('Only utilize this command if the player is jailed and has entities in the undo queue.')
     :require_admin()
@@ -286,7 +319,22 @@ Commands.new('undo_player_actions', 'Undoes the actions of a player.')
         end
 
         check_undo_redo_stack(target_player)
+        player.print('Logging your actions to discord.')
         player.print('Undone ' .. undo_count .. ' actions for ' .. target_player.name .. '.')
+        Discord.send_notification(
+            {
+                title = 'Undo actions',
+                description = 'Undone ' .. undo_count .. ' actions for ' .. target_player.name .. ' by ' .. player.name .. '.',
+                color = 'success',
+                fields =
+                {
+                    {
+                        title = "Server",
+                        description = Server.get_server_name() or 'CommandHandler',
+                        inline = "false"
+                    }
+                }
+            })
     end)
 
 Public.check_undo_redo_stack = check_undo_redo_stack

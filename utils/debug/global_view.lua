@@ -57,7 +57,8 @@ function Public.show(container)
     right_panel_style.maximal_width = 1000
     right_panel_style.maximal_height = 1000
 
-    local data = {
+    local data =
+    {
         right_panel = right_panel,
         input_text_box = input_text_box,
         selected_header = nil,
@@ -131,7 +132,7 @@ Gui.on_click(
 
         local input_text_box = data.input_text_box
 
-        update_dump(input_text_box, data, event.player)
+        update_dump(input_text_box, data)
     end
 )
 

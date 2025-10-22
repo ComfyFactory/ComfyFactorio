@@ -13,10 +13,10 @@ local classes = api.classes
 
 local Public = {}
 
-local luaObject = {'{', nil, ", name = '", nil, "'}"}
-local luaPlayer = {"{LuaPlayer, name = '", nil, "', index = ", nil, '}'}
-local luaEntity = {"{LuaEntity, name = '", nil, "', unit_number = ", nil, '}'}
-local luaGuiElement = {"{LuaGuiElement, name = '", nil, "'}"}
+local luaObject = { '{', nil, ", name = '", nil, "'}" }
+local luaPlayer = { "{LuaPlayer, name = '", nil, "', index = ", nil, '}' }
+local luaEntity = { "{LuaEntity, name = '", nil, "', unit_number = ", nil, '}' }
+local luaGuiElement = { "{LuaGuiElement, name = '", nil, "'}" }
 
 local function get(obj, prop)
     return obj[prop]
@@ -46,21 +46,21 @@ local function inspect_process(item)
     if object_name and classes[object_name] then
         local class = classes[object_name]
         local attrs = class.attributes
-        local info = {__type = object_name}
+        local info = { __type = object_name }
         local shown = 0
         for key in pairs(attrs) do
             local ok, val =
                 pcall(
-                function()
-                    return item[key]
-                end
-            )
+                    function ()
+                        return item[key]
+                    end
+                )
             if ok and (type(val) ~= 'table' and type(val) ~= 'userdata') then
                 info[key] = val
                 shown = shown + 1
             end
         end
-        return serpent.line(info, {comment = false, numformat = '%g'})
+        return serpent.line(info, { comment = false, numformat = '%g' })
     end
 
     if type(item) ~= 'table' or type(item.__self) ~= 'userdata' then
@@ -99,7 +99,7 @@ local function inspect_process(item)
     end
 end
 
-local inspect_options = {process = inspect_process}
+local inspect_options = { process = inspect_process }
 function Public.dump(data)
     return inspect(data, inspect_options)
 end
@@ -115,21 +115,23 @@ function Public.dump_ignore_builder(ignore)
         return inspect_process(item)
     end
 
-    local options = {process = process}
-    return function(data)
+    local options = { process = process }
+    return function (data)
         return inspect(data, options)
     end
 end
 
 function Public.dump_function(func)
-    local res = {'upvalues:\n'}
+    local res = { 'upvalues:\n' }
 
+    ---@diagnostic disable-next-line: deprecated
     if debug.getupvalue == nil then
         return concat(res)
     end
 
     local i = 1
     while true do
+        ---@diagnostic disable-next-line: deprecated
         local n, v = debug.getupvalue(func, i)
 
         if n == nil then

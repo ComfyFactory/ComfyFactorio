@@ -5,7 +5,7 @@ local Utils = require 'utils.common'
 local Global = require 'utils.global'
 local Token = require 'utils.token'
 local Task = require 'utils.task'
-local CreatedEvents = require 'utils.created_events'
+local CustomEvents = require 'utils.created_events'
 
 local this =
 {
@@ -291,7 +291,7 @@ local function check_progress_and_raise_event(data)
         if not data.raised_event then
             data.raised_event = true
             Event.raise(
-                CreatedEvents.events.on_entity_mined,
+                CustomEvents.events.on_entity_mined,
                 {
                     player_index = data.player_index,
                     entity = data.entity.selected,

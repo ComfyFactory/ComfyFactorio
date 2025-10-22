@@ -130,7 +130,7 @@ function Public.on_init()
     this.corpses_raffle = corpses_raffle
 
     this.stages = {}
-    this.last_level = 10
+    this.last_level = 25
     local island_level = 12
     for _ = 1, this.last_level + 1 do
         this.stages[#this.stages + 1] =
@@ -145,6 +145,13 @@ function Public.on_init()
     this.final_battle = false
 
     this.player_options = {}
+
+    this.autogenerate_islands = false
+
+    this.calculated_snake_length = 0
+    this.snake_length = 200
+
+    this.delayed_messages = {}
 
     this.level_vectors = {}
     this.alive_boss_enemy_entities = {}
@@ -234,6 +241,8 @@ function Public.on_init()
     this.check_surface_daytime_for_attacks = false
 
     this.disable_multi_command_attack = false
+
+    this.market_target = nil
 
     this.cooldown_complete_level = game.tick + 100
     this.voting_to_progress_enabled = true

@@ -2,7 +2,8 @@ local Event = require 'utils.event'
 local Server = require 'utils.server'
 local Discord = require 'utils.discord_handler'
 
-local commands = {
+local commands =
+{
     ['editor'] = true,
     ['open'] = true,
     ['cheat'] = true,
@@ -15,7 +16,8 @@ local commands = {
     ['debug'] = true
 }
 
-local title_to_command = {
+local title_to_command =
+{
     ['editor'] = 'Editor',
     ['open'] = 'Open',
     ['cheat'] = 'Cheat',
@@ -54,7 +56,8 @@ local function on_console_command(event)
             title = title_to_command[cmd],
             description = '/' .. cmd .. ' was used',
             color = 'warning',
-            fields = {
+            fields =
+            {
                 {
                     title = 'Server',
                     description = server_name,
@@ -79,7 +82,7 @@ Event.add(defines.events.on_console_command, on_console_command)
 
 Event.add(
     defines.events.on_player_promoted,
-    function(event)
+    function (event)
         local admins = Server.get_admins_data()
         local player = game.get_player(event.player_index)
         local server_name = Server.get_server_name() or 'CommandHandler'
@@ -89,7 +92,8 @@ Event.add(
                 title = 'Admin promotion',
                 description = player.name .. ' was promoted.',
                 color = 'success',
-                fields = {
+                fields =
+                {
                     {
                         title = 'Server',
                         description = server_name,
@@ -111,7 +115,7 @@ Event.add(
 )
 Event.add(
     defines.events.on_player_demoted,
-    function(event)
+    function (event)
         local player = game.get_player(event.player_index)
         local server_name = Server.get_server_name() or 'CommandHandler'
 
@@ -120,7 +124,8 @@ Event.add(
                 title = 'Admin demotion',
                 description = player.name .. ' was demoted.',
                 color = 'warning',
-                fields = {
+                fields =
+                {
                     {
                         title = 'Server',
                         description = server_name,
@@ -134,7 +139,7 @@ Event.add(
 
 Event.add(
     defines.events.on_player_kicked,
-    function(event)
+    function (event)
         local player = game.get_player(event.player_index)
         local server_name = Server.get_server_name() or 'CommandHandler'
 
@@ -143,7 +148,8 @@ Event.add(
                 title = 'Player kicked',
                 description = player.name .. ' was kicked.',
                 color = 'danger',
-                fields = {
+                fields =
+                {
                     {
                         title = 'Server',
                         description = server_name,

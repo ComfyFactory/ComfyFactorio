@@ -3,7 +3,7 @@ local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Server = require 'utils.server'
 local SpamProtection = require 'utils.spam_protection'
-local CreatedEvents = require 'utils.created_events'
+local CustomEvents = require 'utils.created_events'
 
 local insert = table.insert
 local tostring = tostring
@@ -669,7 +669,7 @@ function Public.clear_all_screen_frames(player)
 end
 
 function Public.clear_all_active_frames(player)
-    Event.raise(CreatedEvents.events.on_gui_closed_main_frame, { player_index = player.index })
+    Event.raise(CustomEvents.events.on_gui_closed_main_frame, { player_index = player.index })
     for _, child in pairs(player.gui.left.children) do
         if child.name:find(gui_prefix) then
             remove_data_recursively(child)
@@ -942,7 +942,7 @@ function Public.refresh(player)
     for _, tab in pairs(tabbed_pane.tabs) do
         if tab.content.name ~= frame.name then
             tab.content.clear()
-            Event.raise(CreatedEvents.events.on_gui_removal, { player_index = player.index })
+            Event.raise(CustomEvents.events.on_gui_removal, { player_index = player.index })
         end
     end
 
@@ -1026,9 +1026,9 @@ Public.on_click(
         if frame then
             remove_data_recursively(frame)
             frame.destroy()
-            Event.raise(CreatedEvents.events.on_gui_removal, { player_index = player.index })
+            Event.raise(CustomEvents.events.on_gui_removal, { player_index = player.index })
             local active_frame = Public.get_player_active_frame(player)
-            Event.raise(CreatedEvents.events.on_gui_closed_main_frame,
+            Event.raise(CustomEvents.events.on_gui_closed_main_frame,
                 { player_index = player.index, element = active_frame or nil })
         else
             draw_main_frame(player)
@@ -1042,7 +1042,7 @@ Public.on_click(
         local player = event.player
         local frame = Public.get_parent_frame(player)
         local active_frame = Public.get_player_active_frame(player)
-        Event.raise(CreatedEvents.events.on_gui_closed_main_frame, { player_index = player.index, element = active_frame or nil })
+        Event.raise(CustomEvents.events.on_gui_closed_main_frame, { player_index = player.index, element = active_frame or nil })
         if frame then
             remove_data_recursively(frame)
             frame.destroy()
@@ -1055,7 +1055,7 @@ Public.on_custom_close(
     function (event)
         local player = event.player
         local active_frame = Public.get_player_active_frame(player)
-        Event.raise(CreatedEvents.events.on_gui_closed_main_frame, { player_index = player.index, element = active_frame or nil })
+        Event.raise(CustomEvents.events.on_gui_closed_main_frame, { player_index = player.index, element = active_frame or nil })
         local frame = Public.get_parent_frame(player)
         if frame then
             remove_data_recursively(frame)

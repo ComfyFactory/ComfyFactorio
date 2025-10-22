@@ -26,6 +26,11 @@ local abs = math.abs
 local ceil = math.ceil
 local floor = math.floor
 local min = math.min
+local pi = math.pi
+local cos = math.cos
+local sin = math.sin
+local pow = math.pow
+local do_misc_token
 
 local quality_per_level = {}
 for i = 0, 50 do
@@ -107,7 +112,7 @@ local mining_chances_ores =
     { name = 'spoilage', chance = 10 },
     { name = 'tungsten-ore', chance = 5 },
     { name = 'holmium-ore', chance = 5 },
-    { name = 'calcite', chance = 5 },
+    { name = 'calcite', chance = 10 },
     { name = 'lithium', chance = 5 },
     { name = 'jellynut', chance = 5 },
     { name = 'yumako', chance = 5 },
@@ -178,15 +183,97 @@ local path_tile_names =
     'lowland-red-vein-dead',
 }
 
-local function get_brush_unfiltered(size)
+local messages =
+{
+    "Snaking towards the nearest island...",
+    "The infestation spreads its reach...",
+    "Carving a path through the waters...",
+    "Extending the corruption — please stand by...",
+    "The bridge slithers through the depths...",
+    "Creeping tendrils are forming new islands...",
+    "Nature’s wrath forges a new connection...",
+    "The island keeper senses movement beneath the waters...",
+    "Roots dig deep — a new island awakens...",
+    "The corruption coils ever closer...",
+    "Spawning path tiles... and probably a few regrets...",
+    "The ground trembles as the next path takes shape...",
+    "Building a new route for our doom — hang tight...",
+    "The infestation hums... something new emerges...",
+    "Path formation in progress — please don’t fall in...",
+    "The snake slithers onward... destination unknown...",
+    "Twisting and turning — the way forward is being formed...",
+    "Stretching the tendrils of chaos to new lands...",
+    "Bridging the gap between survival and regret..."
+}
+
+local enemy_progression =
+{
+    {
+        max_level = 2,
+        biter_types = { 'small-biter', 'small-wriggler-pentapod' },
+        spitter_types = { 'small-spitter' },
+        worm_types = { 'small-worm-turret' },
+        spawner_types = { 'biter-spawner', 'spitter-spawner', 'gleba-spawner-small' },
+        spawn_qualities = { 'normal' }
+    },
+    {
+        max_level = 5,
+        biter_types = { 'small-biter', 'medium-biter', 'small-wriggler-pentapod', 'small-strafer-pentapod' },
+        spitter_types = { 'small-spitter', 'medium-spitter' },
+        worm_types = { 'small-worm-turret', 'medium-worm-turret' },
+        spawner_types = { 'biter-spawner', 'spitter-spawner', 'gleba-spawner-small' },
+        spawn_qualities = { 'normal', 'uncommon' }
+    },
+    {
+        max_level = 8,
+        biter_types = { 'medium-biter', 'big-biter', 'medium-wriggler-pentapod', 'medium-strafer-pentapod' },
+        spitter_types = { 'medium-spitter', 'big-spitter' },
+        worm_types = { 'medium-worm-turret', 'big-worm-turret' },
+        spawner_types = { 'biter-spawner', 'spitter-spawner', 'gleba-spawner' },
+        spawn_qualities = { 'uncommon', 'rare' }
+    },
+    {
+        max_level = 15,
+        biter_types = { 'big-biter', 'big-wriggler-pentapod', 'big-strafer-pentapod' },
+        spitter_types = { 'big-spitter', 'behemoth-spitter' },
+        worm_types = { 'big-worm-turret', 'behemoth-worm-turret' },
+        spawner_types = { 'biter-spawner', 'spitter-spawner', 'gleba-spawner' },
+        spawn_qualities = { 'rare', 'epic' }
+    },
+    {
+        max_level = math.huge,
+        biter_types = { 'big-biter', 'behemoth-biter', 'big-wriggler-pentapod', 'big-strafer-pentapod' },
+        spitter_types = { 'big-spitter', 'behemoth-spitter' },
+        worm_types = { 'big-worm-turret', 'behemoth-worm-turret' },
+        spawner_types = { 'biter-spawner', 'spitter-spawner', 'gleba-spawner' },
+        spawn_qualities = { 'epic', 'legendary' }
+    }
+}
+
+local function delayed_message(tick, message)
+    local this = Public.get()
+    this.delayed_messages[game.tick + tick] = message
+end
+
+local function get_brush(size, circular)
     local vectors = {}
-    for x = size, size * -1, -1 do
-        for y = size * -1, size, 1 do
-            vectors[#vectors + 1] = { x = x, y = y }
+    for x = -size, size do
+        for y = -size, size do
+            if not circular or (x * x + y * y <= size * size) then
+                vectors[#vectors + 1] = { x = x, y = y }
+            end
         end
     end
     return vectors
 end
+
+local cached_brushes = {}
+for size = 1, 40 do
+    if not cached_brushes[size] then
+        cached_brushes[size] = get_brush(size, true)
+    end
+end
+
 
 local function get_vector(position)
     if position.x < 0 and position.y < 0 then
@@ -217,6 +304,8 @@ local function get_vector(position)
             return { 1, 1 }
         end
     end
+
+    return { random(-1, 1), random(-1, 1) }
 end
 
 local function merge_arrays(a, b)
@@ -316,7 +405,7 @@ Config.register_scenario_module(
                 if player_options.ore_drop then
                     switch_state = 'left'
                 end
-                Config.add_switch(frame, switch_state, 'ore_drop', 'Ore Drop', 'Toggle to select if you want the ore to drop to ground or not.')
+                Config.add_switch(frame, switch_state, 'ore_drop', 'Ore Drop', 'Toggle to select if you want the ore to drop to ground or inserted into your inventory.')
                 frame.add({ type = 'line' })
             end),
         handlers =
@@ -326,10 +415,10 @@ Config.register_scenario_module(
                     local player_options = get_player_options(player)
                     if event.element.switch_state == 'left' then
                         player_options.ore_drop = true
-                        player.print('Ores will now drop to ground when enemies are killed!', { color = Color.yellow })
+                        player.print('Ores will now get dropped to ground when an enemy is killed!', { color = Color.yellow })
                     else
                         player_options.ore_drop = false
-                        player.print('Ores will no longer drop to ground when enemies are killed!', { color = Color.yellow })
+                        player.print('Ores will now get inserted to your inventory when an enemy is killed!', { color = Color.yellow })
                     end
                 end)
         }
@@ -347,7 +436,6 @@ local calculate_bridge_token =
             local minimal_movement = event.minimal_movement
             local position = this.position
             local surface = event.surface
-            local whitelist = event.whitelist
             local tile_name = event.tile_name
             local brush_vectors = event.brush_vectors
             local tick_index = event.tick_index
@@ -356,25 +444,20 @@ local calculate_bridge_token =
 
             for _, brush in pairs(brush_vectors) do
                 local p = { x = position.x + brush.x, y = position.y + brush.y }
-                if whitelist then
-                    local tile = surface.get_tile(p)
-                    if tile.valid then
-                        if whitelist[tile.name] then
-                            this.path_tiles[#this.path_tiles + 1] = { name = tile_name, position = p }
-                            positions[#positions + 1] = { name = tile_name, position = p }
-                            if random(1, 10) == 1 then
-                                dec[#dec + 1] = { name = decoratives[random(1, #decoratives)], position = p, amount = 1 }
-                            end
-                        end
-                    end
+                this.path_tiles[#this.path_tiles + 1] = { name = tile_name, position = p }
+                positions[#positions + 1] = { name = tile_name, position = p }
+                if random(1, 15) == 1 then
+                    dec[#dec + 1] = { name = decoratives[random(1, #decoratives)], position = p, amount = 1 }
                 end
             end
 
             Scheduler.timeout(tick_index, slowly_place_brige_tiles_token, { positions = positions, surface = surface })
-
-            local data = { pos_tbl = dec }
-
-            Scheduler.timeout(tick_index, do_place_decorative_token, { pos_tbl = data.pos_tbl, count = #dec, surface = surface })
+            Scheduler.timeout(tick_index, do_place_decorative_token,
+                {
+                    pos_tbl = dec,
+                    count = #dec,
+                    surface = surface
+                })
 
             local noise = simplex_noise(position.x * m, position.y * m, seed_1)
             local noise_2 = simplex_noise(position.x * m, position.y * m, seed_2)
@@ -391,10 +474,14 @@ local calculate_bridge_token =
                 end
             end
 
+            this.calculated_snake_length = this.calculated_snake_length + 1
+
             this.position = { x = position.x + vector[1], y = position.y + vector[2] }
 
-
-            event.positions = positions
+            if this.calculated_snake_length == (this.snake_length / 2) then
+                surface.request_to_generate_chunks(position, 8)
+                this.calculated_snake_length = 0
+            end
 
             return event
         end
@@ -402,54 +489,50 @@ local calculate_bridge_token =
 
 
 local noise_vector_tiles_path_token =
-    Scheduler.set(
-        function (event)
-            local this = Public.get()
-            local surface = event.surface
-            local tbl_tiles = event.tbl_tiles
-            local position = this.position
-            local length = event.length
-            local brush_size = event.brush_size
-            local whitelist = event.whitelist
-            local seed_1 = event.seed_1
-            local seed_2 = event.seed_2
-            local m = event.m
+    Scheduler.set(function (event)
+        local this = Public.get()
+        local surface = event.surface
+        local tbl_tiles = event.tbl_tiles
+        local position = this.position
+        local length = event.length
+        local brush_size = event.brush_size
+        local whitelist = event.whitelist
+        local seed_1 = event.seed_1
+        local seed_2 = event.seed_2
+        local m = event.m
 
-            this.vector = {}
-            local minimal_movement = 0.40
-            local brush_vectors = get_brush_unfiltered(brush_size)
-            local tile_name = tbl_tiles[random(1, #tbl_tiles)]
+        this.vector = {}
+        local minimal_movement = 0.40
+        local brush_vectors = get_brush(brush_size, true)
+        local tile_name = tbl_tiles[random(1, #tbl_tiles)]
+        local base_vector = get_vector(position)
 
-            local base_vector = get_vector(position)
+        local steps_per_tick = 10
+        local total_batches = math.ceil(length / steps_per_tick)
 
-            local callback = Scheduler.get(calculate_bridge_token)
-
-            Scheduler.return_callback(
-                function (data)
-                    for _ = 1, length, 1 do
-                        callback(
-                            {
-                                seed_1 = seed_1,
-                                seed_2 = seed_2,
-                                m = m,
-                                vector = this.vector,
-                                base_vector = base_vector,
-                                minimal_movement = minimal_movement,
-                                position = position,
-                                positions = {},
-                                surface = surface,
-                                whitelist = whitelist,
-                                tile_name = tile_name,
-                                brush_vectors = brush_vectors,
-                                tick_index = data.tick_index
-                            }
-                        )
-                        data.tick_index = data.tick_index + 1
-                    end
-                end
-            )
+        for batch = 1, total_batches do
+            for i = 1, steps_per_tick do
+                if (batch - 1) * steps_per_tick + i > length then break end
+                Scheduler.timeout(batch,
+                    calculate_bridge_token,
+                    {
+                        seed_1 = seed_1,
+                        seed_2 = seed_2,
+                        m = m,
+                        vector = this.vector,
+                        base_vector = base_vector,
+                        minimal_movement = minimal_movement,
+                        position = position,
+                        surface = surface,
+                        whitelist = whitelist,
+                        tile_name = tile_name,
+                        brush_vectors = brush_vectors,
+                        tick_index = 1
+                    }
+                )
+            end
         end
-    )
+    end)
 
 local set_centered_points_token =
     Scheduler.set(
@@ -505,7 +588,7 @@ local request_to_generate_chunks_token =
         end
     )
 
-local function resource_placement(surface, position, name, amount, tiles)
+local function resource_placement(surface, position, name, amount, tiles, level)
     local w_max = 256
     local h_max = 256
 
@@ -552,11 +635,19 @@ local function resource_placement(surface, position, name, amount, tiles)
         end
     end
 
+    local skip_tiles = false
+    if level == 1 then
+        skip_tiles = true
+    end
+
     for x, _ in pairs(biases) do
         for y, bias in pairs(_) do
             local c = amount * (bias / total_bias)
             if c < 1 then
                 c = 1
+            end
+            if not skip_tiles then
+                surface.set_tiles({ { name = 'volcanic-jagged-ground', position = { position.x + x, position.y + y } } }, true)
             end
             surface.create_entity
             {
@@ -627,12 +718,13 @@ local function reward_level(surface, level)
     local radius = level.radius
     local ore = raw_ores[random(1, #raw_ores)]
     local oil = oil_raffle[random(1, #oil_raffle)]
-    local offset_oil_position = { x = level.position.x - random(1, 20), y = level.position.y - random(1, 20) }
+    local offset_oil_position = { x = level.position.x - random(10, 20), y = level.position.y - random(10, 20) }
+    delayed_message(1, island_keeper .. 'A reward has been given for clearing the level!')
     MapFunctions.draw_oil_circle(offset_oil_position, oil, surface, 8, 50000)
-    resource_placement(surface, level.position, ore, random(75000, 75000 * 3), radius * 3)
+    resource_placement(surface, level.position, ore, random(75000, 75000 * 3), radius * 3, level.level)
 
     if level.level > 1 then
-        local position = { x = level.position.x + random(1, 20), y = level.position.y + random(1, 20) }
+        local position = { x = level.position.x + random(10, 20), y = level.position.y + random(10, 20) }
         tile_placement(surface, position, plantable_soil[random(1, #plantable_soil)], radius * 2)
     end
 end
@@ -729,8 +821,6 @@ local function get_quality_for_stage(current_level, last_level)
     end
 end
 
-
-
 local function do_buried_biters()
     local current_level = Public.get('current_level')
     local centered_points = Public.get('centered_points')
@@ -747,6 +837,46 @@ local function do_buried_biters()
             BuriedBiter.buried_worm(game.surfaces[1], position, qualities[random(1, #qualities)])
         elseif random(1, 60) == 1 then
             BuriedBiter.buried_spawner(game.surfaces[1], position, 1, 'enemy')
+        end
+    end
+end
+
+local function do_buried_biters_on_completed_levels()
+    local current_level = Public.get('current_level')
+    local centered_points = Public.get('centered_points')
+    local center_position = centered_points[current_level]
+    if not center_position then
+        return
+    end
+
+    local surface = game.surfaces[1]
+    if surface.daytime < 0.35 then
+        return
+    end
+    if surface.daytime > 0.65 then
+        return
+    end
+
+    local difficulty_index = Difficulty.get('index')
+    local base_min, base_max
+    if difficulty_index == 1 then
+        base_min, base_max = 16, 32
+    elseif difficulty_index == 2 then
+        base_min, base_max = 32, 64
+    else
+        base_min, base_max = 64, 128
+    end
+
+    local count = random(base_min, base_max)
+
+    if current_level > 2 then
+        local position = { x = center_position.position.x + random(1, 15), y = center_position.position.y + random(1, 30) }
+        if random(1, 10) == 1 then
+            BuriedBiter.buried_biter(surface, position, count, 'enemy', qualities[random(1, #qualities)])
+        elseif random(1, 15) == 1 then
+            BuriedBiter.buried_worm(surface, position, qualities[random(1, #qualities)])
+        elseif random(1, 60) == 1 then
+            BuriedBiter.buried_spawner(surface, position, 1, 'enemy')
         end
     end
 end
@@ -979,6 +1109,11 @@ local function disable_tech()
     force.technologies['artillery-shell-speed-1'].enabled = false
     force.technologies['artillery'].enabled = false
     force.technologies['atomic-bomb'].enabled = false
+    force.technologies['elevated-rail'].enabled = false
+    force.technologies['rail-support-foundations'].enabled = false
+    force.technologies['lightning-collector'].enabled = false
+    force.technologies['land-mine'].enabled = false
+    force.technologies['mech-armor'].enabled = false
     force.technologies['planet-discovery-fulgora'].researched = true
     force.technologies['planet-discovery-gleba'].researched = true
     force.technologies['planet-discovery-vulcanus'].researched = true
@@ -1124,6 +1259,7 @@ local create_rocket_silo_token =
                 e.minable = false
                 e.destructible = false
             end
+            this.initial_rocket_silo_created = true
         end
     )
 
@@ -1252,7 +1388,7 @@ local function set_multi_command()
     else
         local notified_enemies_to_attack = Public.get('notified_enemies_to_attack')
         if not notified_enemies_to_attack[current_level] then
-            game.print(island_keeper .. 'The bugs have smelled the market at island level ' .. current_level - 1 .. ' and are swarming toward it!')
+            delayed_message(1, island_keeper .. 'The bugs have smelled the market at island level ' .. current_level - 1 .. ' and are swarming toward it!')
             notified_enemies_to_attack[current_level] = true
         end
     end
@@ -1383,185 +1519,197 @@ local function add_market_slot(market)
     end
 end
 
-local create_biters_token =
-    Scheduler.set(
-        function (event)
-            local this = Public.get()
-            local surface = event.surface
-            local position = event.position
-            local level = this.current_level or 1
-            this.alive_enemies = 0
-            local base_enemy_count
+local function get_random_position(center, radius)
+    local angle = random() * pi * 2
+    local r = sqrt(random()) * radius
+    return { x = center.x + cos(angle) * r, y = center.y + sin(angle) * r }
+end
 
-            local biter_types
-            local spitter_types
-            local worm_types
-            local spawner_types
-
-            local spawn_qualities
-            local difficulty_index = Difficulty.get('index')
-            local raw_level = level
-            level = level * (difficulty_index + 10)
-
-            if raw_level <= 2 then
-                biter_types = { 'small-biter', 'small-wriggler-pentapod' }
-                spitter_types = { 'small-spitter' }
-                worm_types = { 'small-worm-turret' }
-                spawner_types = { 'biter-spawner', 'spitter-spawner', 'gleba-spawner-small', 'gleba-spawner-small' }
-                spawn_qualities = { 'normal', 'normal' }
-                base_enemy_count = 30 + (level * 10)
-            elseif raw_level <= 3 then
-                biter_types = { 'small-biter', 'small-wriggler-pentapod', 'small-strafer-pentapod', 'medium-biter', 'medium-wriggler-pentapod' }
-                spitter_types = { 'small-spitter' }
-                worm_types = { 'small-worm-turret' }
-                spawner_types = { 'biter-spawner', 'spitter-spawner', 'gleba-spawner-small', 'gleba-spawner-small' }
-                spawn_qualities = { 'normal', 'normal' }
-                base_enemy_count = 30 + (level * 8)
-            elseif raw_level <= 6 then
-                biter_types = { 'small-biter', 'small-wriggler-pentapod', 'medium-biter', 'medium-wriggler-pentapod', 'small-strafer-pentapod', 'medium-strafer-pentapod' }
-                spitter_types = { 'small-spitter', 'medium-spitter' }
-                worm_types = { 'small-worm-turret', 'medium-worm-turret' }
-                spawner_types = { 'biter-spawner', 'spitter-spawner', 'gleba-spawner', 'gleba-spawner', 'gleba-spawner-small', 'gleba-spawner-small' }
-                spawn_qualities = { 'uncommon', 'uncommon', 'rare' }
-                base_enemy_count = 30 + (level * 6)
-            elseif raw_level < 8 then
-                biter_types = { 'small-biter', 'small-wriggler-pentapod', 'medium-biter', 'medium-wriggler-pentapod', 'big-biter', 'big-wriggler-pentapod', 'small-strafer-pentapod', 'medium-strafer-pentapod' }
-                spitter_types = { 'small-spitter', 'medium-spitter', 'big-spitter' }
-                worm_types = { 'small-worm-turret', 'medium-worm-turret', 'big-worm-turret' }
-                spawner_types = { 'biter-spawner', 'spitter-spawner', 'gleba-spawner', 'gleba-spawner' }
-                spawn_qualities = { 'rare', 'rare', 'uncommon', 'rare' }
-                if difficulty_index == 1 then
-                    spitter_types[#spitter_types + 1] = 'small-stomper-pentapod'
-                elseif difficulty_index == 2 then
-                    spitter_types[#spitter_types + 1] = 'medium-stomper-pentapod'
-                elseif difficulty_index == 3 then
-                    spitter_types[#spitter_types + 1] = 'big-stomper-pentapod'
-                end
-                base_enemy_count = 30 + (level * 4)
-            else
-                biter_types = { 'big-biter', 'big-wriggler-pentapod', 'behemoth-biter', 'medium-wriggler-pentapod', 'big-strafer-pentapod', 'big-strafer-pentapod' }
-                spitter_types = { 'big-spitter', 'behemoth-spitter', 'behemoth-spitter' }
-                worm_types = { 'big-worm-turret', 'behemoth-worm-turret', 'behemoth-worm-turret' }
-                spawner_types = { 'biter-spawner', 'spitter-spawner', 'gleba-spawner', 'gleba-spawner' }
-                spawn_qualities = { 'epic', 'epic', 'legendary', 'legendary' }
-                if difficulty_index == 1 then
-                    spitter_types[#spitter_types + 1] = 'medium-stomper-pentapod'
-                elseif difficulty_index == 2 then
-                    spitter_types[#spitter_types + 1] = 'big-stomper-pentapod'
-                elseif difficulty_index == 3 then
-                    spitter_types[#spitter_types + 1] = 'big-stomper-pentapod'
-                end
-                base_enemy_count = 30 + (level * 5)
-            end
-
-
-
-            local final_battle = this.final_battle
-
-            local random_positions =
-            {
-                { x = position.x + 10, y = position.y + 10 },
-                { x = position.x - 10, y = position.y + 10 },
-                { x = position.x + 10, y = position.y - 10 },
-                { x = position.x - 10, y = position.y - 10 },
-                { x = position.x + 15, y = position.y + 10 },
-                { x = position.x - 15, y = position.y - 10 },
-                { x = position.x + 10, y = position.y - 15 },
-                { x = position.x - 10, y = position.y + 15 }
-            }
-
-            shuffle(random_positions)
-
-            position = random_positions[random(1, #random_positions)]
-
-            local spawner_count = math.min(random(1, 2) + math.floor(level / 3), level / 2)
-            if final_battle then
-                spawner_count = 64
-            end
-            if this.current_level == 1 then
-                spawner_count = 0
-            end
-            for _ = 1, spawner_count do
-                local spawner_type = spawner_types[random(1, #spawner_types)]
-                local p = surface.find_non_colliding_position('rocket-silo', position, 128, 10)
-                if p then
-                    local spawner = surface.create_entity({ name = spawner_type, position = p, quality = spawn_qualities[random(1, #spawn_qualities)] })
-                    if spawner and spawner.valid then
-                        this.alive_enemies = this.alive_enemies + 1
-                    end
-                end
-            end
-
-            shuffle(random_positions)
-            position = random_positions[random(1, #random_positions)]
-
-            local worm_count = random(12, 64)
-            if this.current_level == 1 then
-                worm_count = 0
-            end
-            if final_battle then
-                worm_count = 128
-            end
-            for _ = 1, worm_count do
-                local worm_type = worm_types[random(1, #worm_types)]
-                local p = surface.find_non_colliding_position('rocket-silo', position, 128, 10)
-                if p then
-                    local e = surface.create_entity({ name = worm_type, position = p, quality = spawn_qualities[random(1, #spawn_qualities)] })
-                    if e and e.valid then
-                        this.alive_enemies = this.alive_enemies + 1
-                    end
-                end
-            end
-
-            shuffle(random_positions)
-            position = random_positions[random(1, #random_positions)]
-
-            local enemy_count = random(base_enemy_count, base_enemy_count + 30)
-            if this.current_level == 1 then
-                enemy_count = 4
-            end
-            if final_battle then
-                enemy_count = 1100
-            end
-            for _ = 1, enemy_count do
-                local enemy_type
-                if random(1, 2) == 1 then
-                    enemy_type = biter_types[random(1, #biter_types)]
-                else
-                    enemy_type = spitter_types[random(1, #spitter_types)]
-                end
-
-                local p = surface.find_non_colliding_position('wooden-chest', position, 128, 4)
-                if p then
-                    local e = surface.create_entity({ name = enemy_type, position = p, quality = spawn_qualities[random(1, #spawn_qualities)] })
-                    if e and e.valid then
-                        e.ai_settings.allow_try_return_to_spawner = false
-                        e.ai_settings.allow_destroy_when_commands_fail = false
-                        this.alive_enemies = this.alive_enemies + 1
-                    end
-                end
-            end
-
-            shuffle(random_positions)
-            position = random_positions[random(1, #random_positions)]
-
-            if final_battle then
-                for _ = 1, 128 do
-                    local p = surface.find_non_colliding_position('gun-turret', position, 128, 10)
-                    if p then
-                        local e = surface.create_entity({ name = 'gun-turret', position = p, force = 'enemy', quality = spawn_qualities[random(1, #spawn_qualities)] })
-                        if e and e.valid then
-                            e.insert({ name = 'uranium-rounds-magazine', count = 200, quality = spawn_qualities[random(1, #spawn_qualities)] })
-                            this.alive_enemies = this.alive_enemies + 1
+local function get_enemy_tier(raw_level)
+    local prev_tier
+    for _, tier in ipairs(enemy_progression) do
+        if raw_level <= tier.max_level then
+            if prev_tier then
+                local mixed = table.deepcopy(tier)
+                for _, list_name in ipairs({ 'biter_types', 'spitter_types', 'worm_types' }) do
+                    for _, e in ipairs(prev_tier[list_name]) do
+                        if random() < 0.3 then
+                            table.insert(mixed[list_name], e)
                         end
                     end
                 end
+                return mixed
+            end
+            return tier
+        end
+        prev_tier = tier
+    end
+    return enemy_progression[#enemy_progression]
+end
+
+local create_biters_token =
+    Scheduler.set(function (event)
+        local this = Public.get()
+        local surface = event.surface
+        local position = event.position
+        local raw_level = this.current_level or 1
+        this.alive_enemies = 0
+
+        local difficulty_index = Difficulty.get('index') or 1
+        local final_battle = this.final_battle
+        local max_level = this.last_level or 50
+
+        local normalized_level = min(raw_level / max_level, 1.0)
+        local scale = pow(normalized_level, 0.8) * (1 + difficulty_index * 0.4) + 0.5
+
+        local base_enemy_count = floor((40 + raw_level * 8) * scale)
+        local spawner_count = floor((2 + raw_level * 0.5) * scale)
+        local worm_count = floor((10 + raw_level * 1.2) * scale)
+
+        spawner_count = min(spawner_count, 128)
+        worm_count = min(worm_count, 256)
+        base_enemy_count = min(base_enemy_count, 1500)
+
+        if raw_level == 1 then
+            spawner_count = 0
+            worm_count = 0
+            base_enemy_count = 4
+        end
+
+        if final_battle then
+            spawner_count = 64
+            worm_count = 128
+            base_enemy_count = 1100
+        end
+
+        local biter_types
+        local spitter_types
+        local worm_types
+        local spawner_types
+        local spawn_qualities
+
+        local tier = get_enemy_tier(raw_level)
+
+        biter_types = tier.biter_types
+        spitter_types = tier.spitter_types
+        worm_types = tier.worm_types
+        spawner_types = tier.spawner_types
+        spawn_qualities = tier.spawn_qualities
+
+        for _ = 1, spawner_count do
+            local p = surface.find_non_colliding_position('gun-turret', get_random_position(position, 80), 128, 5)
+            if p then
+                local spawner = surface.create_entity(
+                    {
+                        name = spawner_types[random(1, #spawner_types)],
+                        position = p,
+                        quality = spawn_qualities[random(1, #spawn_qualities)]
+                    })
+                if spawner and spawner.valid then
+                    this.alive_enemies = this.alive_enemies + 1
+                end
+            end
+        end
+
+        for _ = 1, worm_count do
+            local p = surface.find_non_colliding_position('gun-turret', get_random_position(position, 100), 128, 5)
+            if p then
+                local worm = surface.create_entity(
+                    {
+                        name = worm_types[random(1, #worm_types)],
+                        position = p,
+                        quality = spawn_qualities[random(1, #spawn_qualities)]
+                    })
+                if worm and worm.valid then
+                    this.alive_enemies = this.alive_enemies + 1
+                end
+            end
+        end
+
+        for _ = 1, base_enemy_count do
+            local enemy_type
+            if random(1, 2) == 1 then
+                enemy_type = biter_types[random(1, #biter_types)]
+            else
+                enemy_type = spitter_types[random(1, #spitter_types)]
             end
 
-            game.forces.player.chart(surface, { { position.x - 124, position.y - 124 }, { position.x + 124, position.y + 124 } })
-            this.cooldown_complete_level = game.tick
+            local p = surface.find_non_colliding_position('wooden-chest', get_random_position(position, 120), 128, 4)
+            if p then
+                local e = surface.create_entity(
+                    {
+                        name = enemy_type,
+                        position = p,
+                        quality = spawn_qualities[random(1, #spawn_qualities)]
+                    })
+                if e and e.valid then
+                    e.ai_settings.allow_try_return_to_spawner = false
+                    e.ai_settings.allow_destroy_when_commands_fail = false
+                    this.alive_enemies = this.alive_enemies + 1
+                end
+            end
         end
-    )
+
+        if final_battle then
+            for _ = 1, 128 do
+                local p = surface.find_non_colliding_position('gun-turret', get_random_position(position, 150), 128, 10)
+                if p then
+                    local e = surface.create_entity(
+                        {
+                            name = 'gun-turret',
+                            position = p,
+                            force = 'enemy',
+                            quality = spawn_qualities[random(1, #spawn_qualities)]
+                        })
+                    if e and e.valid then
+                        e.insert(
+                            {
+                                name = 'uranium-rounds-magazine',
+                                count = 200,
+                                quality = spawn_qualities[random(1, #spawn_qualities)]
+                            })
+                        this.alive_enemies = this.alive_enemies + 1
+                    end
+                end
+            end
+        end
+
+        if difficulty_index >= 2 then
+            local demolisher_type
+            local demolisher_count = 0
+
+            if raw_level >= 6 and raw_level <= 10 then
+                demolisher_type = 'small-demolisher'
+                demolisher_count = 4
+            elseif raw_level >= 11 and raw_level <= 20 then
+                demolisher_type = 'medium-demolisher'
+                demolisher_count = 6
+            elseif raw_level > 20 or final_battle then
+                demolisher_type = 'big-demolisher'
+                demolisher_count = 8
+            end
+
+            for _ = 1, demolisher_count do
+                local p = surface.find_non_colliding_position('gun-turret', get_random_position(position, 140), 128, 10)
+                if p then
+                    local e = surface.create_entity(
+                        {
+                            name = demolisher_type,
+                            position = p,
+                            force = 'enemy',
+                            quality = spawn_qualities[random(1, #spawn_qualities)]
+                        })
+                    if e and e.valid then
+                        this.alive_enemies = this.alive_enemies + 1
+                    end
+                end
+            end
+        end
+
+        game.forces.player.chart(surface, { { position.x - 124, position.y - 124 }, { position.x + 124, position.y + 124 } })
+        this.cooldown_complete_level = game.tick
+    end)
+
 
 local create_market_token =
     Scheduler.set(
@@ -1596,6 +1744,7 @@ local create_market_token =
                         }
                     if this.current_stage > 1 then
                         market.destructible = false
+                        this.market_target = market
                     end
 
                     local render_checkpoint_text = rendering.draw_text
@@ -1612,7 +1761,6 @@ local create_market_token =
                     this.spawned_markets[this.current_stage] = { current_level = this.current_level, market = market, render_protect_text = render_protect_text, render_checkpoint_text = render_checkpoint_text }
 
                     add_market_slot(market)
-                    Scheduler.timeout(10, request_to_generate_chunks_token, { size = 8, surface = surface, position = market.position, sleep = game.tick + 500 })
                 end
                 MapFunctions.draw_noise_tile_circle(p, 'blue-refined-concrete', surface, 12)
             end
@@ -1676,11 +1824,11 @@ local do_place_entities_token =
                 }
                 shuffle(ore_positions)
 
-                resource_placement(surface, ore_positions[1], 'copper-ore', 150000, 550)
-                resource_placement(surface, ore_positions[2], 'iron-ore', 150000, 550)
-                resource_placement(surface, ore_positions[3], 'coal', 130000, 550)
-                resource_placement(surface, ore_positions[4], 'stone', 130000, 550)
-                resource_placement(surface, ore_positions[5], 'uranium-ore', 130000, 550)
+                resource_placement(surface, ore_positions[1], 'copper-ore', 150000, 550, 1)
+                resource_placement(surface, ore_positions[2], 'iron-ore', 150000, 550, 1)
+                resource_placement(surface, ore_positions[3], 'coal', 130000, 550, 1)
+                resource_placement(surface, ore_positions[4], 'stone', 130000, 550, 1)
+                resource_placement(surface, ore_positions[5], 'uranium-ore', 130000, 550, 1)
                 MapFunctions.draw_oil_circle(ore_positions[6], 'crude-oil', surface, 8, 200000)
             end
 
@@ -1755,6 +1903,7 @@ local draw_island_inner_task_token =
             Scheduler.timeout(25, place_decoratives_token, { surface = surface, mirror_decorative = mirror_decorative })
             Scheduler.timeout(30, do_place_fish_token, { surface = surface, area = { { position.x - 300, position.y - 300 }, { position.x + 300, position.y + 300 } } })
             Scheduler.timeout(50, do_place_entities_token, { surface = surface, position = position, positions = positions, radius = radius, child_id = place_tiles_token, main_island = main_island })
+            Public.set('path_tiles', nil)
         end
     )
 
@@ -1769,13 +1918,14 @@ local set_new_island_token =
                 radius = max_island_radius
                 this.final_battle = true
                 game.forces.enemy.set_evolution_factor(1, game.surfaces[1])
-                game.print(island_keeper .. 'The final island has been discovered! The battle has begun!')
+                delayed_message(1, island_keeper .. 'The final island has been discovered! The battle has begun!')
                 Server.to_discord_embed('** The final island has been discovered! The battle has begun! **')
             end
-            this.path_tiles = nil
             Public.draw_main_island(position, radius)
         end
     )
+
+
 
 local draw_bridge_token =
     Scheduler.set(
@@ -1788,6 +1938,9 @@ local draw_bridge_token =
             local m = random(1, 100) * 0.001
 
             this.path_tiles = {}
+            this.snake_length = this.snake_length + 50
+
+            delayed_message(1, island_keeper .. messages[random(1, #messages)])
 
             Scheduler.timeout(
                 1,
@@ -1796,8 +1949,8 @@ local draw_bridge_token =
                     surface = surface,
                     tbl_tiles = path_tile_names,
                     position = position,
-                    length = 300,
-                    brush_size = this.final_battle and 15 or 8,
+                    length = this.snake_length,
+                    brush_size = this.final_battle and (18 + this.current_level) or (10 + this.current_level),
                     whitelist = draw_path_tile_whitelist,
                     seed_1 = seed_1,
                     seed_2 = seed_2,
@@ -1806,11 +1959,38 @@ local draw_bridge_token =
                 'noise_vector_tiles_path_1'
             )
 
-            Scheduler.timeout(5, set_centered_points_token, { child_id = noise_vector_tiles_path_token })
+            Scheduler.timeout(15, set_centered_points_token, { child_id = { calculate_bridge_token, noise_vector_tiles_path_token, 'noise_vector_tiles_path_1', calculate_bridge_token } })
 
-            Scheduler.timeout(10, request_to_generate_chunks_token, { size = 8, surface = surface })
+            Scheduler.timeout(20, request_to_generate_chunks_token, { child_id = { set_centered_points_token, calculate_bridge_token, noise_vector_tiles_path_token, 'noise_vector_tiles_path_1', calculate_bridge_token }, size = 8, surface = surface })
             this.current_stage = this.current_stage + 1
-            Scheduler.timeout(50, set_new_island_token, { child_id = request_to_generate_chunks_token, sleep = game.tick + 50 })
+            Scheduler.timeout(25, set_new_island_token, { child_id = { request_to_generate_chunks_token, calculate_bridge_token, noise_vector_tiles_path_token, 'noise_vector_tiles_path_1', calculate_bridge_token }, sleep = game.tick + 50 })
+
+            Scheduler.timeout(100, do_misc_token, { child_id = { create_market_token, do_place_entities_token, draw_island_inner_task_token, set_new_island_token, request_to_generate_chunks_token, calculate_bridge_token, noise_vector_tiles_path_token, 'noise_vector_tiles_path_1', calculate_bridge_token }, surface = surface })
+        end
+    )
+
+do_misc_token =
+    Scheduler.set(
+        function (event)
+            local this = Public.get()
+            local surface = event.surface
+            this.path_tiles = {}
+
+            if this.autogenerate_islands then
+                if this.current_level == this.last_level then
+                    return
+                end
+                this.current_level = this.current_level + 1
+                this.attack_grace_period = game.tick + 54000
+                this.cooldown_complete_level = game.tick + (60 * 60)
+                this.alive_enemies = 999
+                this.position = this.market_target.position
+                reward_level(surface, this.centered_points[this.current_level - 1])
+                Scheduler.timeout(1, draw_bridge_token, { surface = surface, position = this.position, child_id = request_to_generate_chunks_token })
+                return
+            end
+
+            reward_level(surface, this.centered_points[this.current_level - 1])
         end
     )
 
@@ -1874,7 +2054,7 @@ local function complete_level()
             this.game_won = true
             this.game_reset_tick = 54000
         else
-            game.print(island_keeper .. 'Level ' .. this.current_level .. ' has been completed!')
+            delayed_message(5, island_keeper .. 'Level ' .. this.current_level .. ' has been completed!')
             Server.to_discord_embed('** Level ' .. this.current_level .. ' has been completed! **')
         end
     end
@@ -1944,7 +2124,7 @@ local function on_entity_died(event)
         end
         this.game_reset_tick = 5400
         this.game_lost = true
-        game.print(island_keeper .. 'The market was overrun by hungry biters!')
+        delayed_message(10, island_keeper .. 'The market was overrun by hungry biters!')
         Server.to_discord_embed('** The market was overrun by hungry biters! **')
         return
     end
@@ -2096,8 +2276,7 @@ local function on_market_item_purchased(event)
 
         local surface = entity.surface
 
-
-        reward_level(entity.surface, this.centered_points[this.current_level])
+        -- reward_level(entity.surface, this.centered_points[this.current_level])
 
         local market = this.spawned_markets[this.current_stage] and this.spawned_markets[this.current_stage].market
         if market and market.valid then
@@ -2106,15 +2285,14 @@ local function on_market_item_purchased(event)
 
         if this.current_level == 4 then
             Scheduler.timeout(20, create_rocket_silo_token, { child_id = clear_globals_token, surface = surface, center_position = this.centered_points[4] })
-            this.initial_rocket_silo_created = true
         end
 
         this.current_level = this.current_level + 1
 
-        game.print(island_keeper .. player.name .. ' has advanced to level ' .. this.current_level)
+        delayed_message(10, island_keeper .. player.name .. ' has advanced to level ' .. this.current_level)
         if not this.notified_market_safe then
             this.notified_market_safe = true
-            game.print(island_keeper .. 'The market doesn\'t feel as safe as before.')
+            delayed_message(20, island_keeper .. 'The market doesn\'t feel as safe as before.')
         end
         Server.to_discord_embed('** ' .. player.name .. ' has advanced to level ' .. this.current_level .. ' **')
 
@@ -2144,9 +2322,9 @@ local function on_market_item_purchased(event)
         end
 
         if loot_found == 1 then
-            game.print(island_keeper .. 'A magical chest has appeared near the market!')
+            delayed_message(30, island_keeper .. 'A magical chest has appeared near the market!')
         elseif loot_found > 1 then
-            game.print(island_keeper .. 'Magical chests have appeared near the market!')
+            delayed_message(30, island_keeper .. 'Magical chests have appeared near the market!')
         end
 
 
@@ -2195,7 +2373,7 @@ local function on_market_item_purchased(event)
         end
         inventory.remove({ name = 'coin', count = price })
         this.piercing_ammo_grants = true
-        game.print(island_keeper .. 'Infinite ammo now grants piercing rounds ammo thanks to ' .. player.name .. '!')
+        delayed_message(1, island_keeper .. 'Infinite ammo now grants piercing rounds ammo thanks to ' .. player.name .. '!')
         Server.to_discord_embed('** Infinite ammo now grants piercing rounds ammo thanks to ' .. player.name .. '! **')
         entity.remove_market_item(offer_index)
     elseif string.find(bought_offer.effect_description, 'uranium') then
@@ -2217,7 +2395,7 @@ local function on_market_item_purchased(event)
         end
         inventory.remove({ name = 'coin', count = price })
         this.uranium_ammo_grants = true
-        game.print(island_keeper .. 'Infinite ammo now grants uranium rounds ammo thanks to ' .. player.name .. '!')
+        delayed_message(1, island_keeper .. 'Infinite ammo now grants uranium rounds ammo thanks to ' .. player.name .. '!')
         Server.to_discord_embed('** Infinite ammo now grants uranium rounds ammo thanks to ' .. player.name .. '! **')
         entity.remove_market_item(offer_index)
     elseif string.find(bought_offer.effect_description, 'reroll') then
@@ -2249,10 +2427,10 @@ local function on_market_item_purchased(event)
         entity.remove_market_item(offer_index)
         Public.island_market(entity, (market_level * random(1, 3)) * 4, false, true)
         if market_rerolls[entity.unit_number].rerolls == 0 then
-            game.print(island_keeper .. 'The market at level ' .. market_level .. ' has been re-rolled one last time by ' .. player.name .. '!')
+            delayed_message(1, island_keeper .. 'The market at level ' .. market_level .. ' has been re-rolled one last time by ' .. player.name .. '!')
             Server.to_discord_embed('** The market at level ' .. market_level .. ' has been re-rolled one last time by ' .. player.name .. '! **')
         else
-            game.print(island_keeper .. 'The market at level ' .. market_level .. ' has been re-rolled by ' .. player.name .. '!')
+            delayed_message(1, island_keeper .. 'The market at level ' .. market_level .. ' has been re-rolled by ' .. player.name .. '!')
             Server.to_discord_embed('** The market at level ' .. market_level .. ' has been re-rolled by ' .. player.name .. '! **')
         end
     elseif string.find(bought_offer.effect_description, 'Grants') then
@@ -2304,6 +2482,23 @@ local on_player_or_robot_built_tile = function (event)
         end
     end
 end
+
+Commands.new('toggle_autogenerate_islands', 'Toggles the autogenerate islands.')
+    :require_admin()
+    :callback(
+        function (player)
+            Public.set('autogenerate_islands', not Public.get('autogenerate_islands'))
+            player.print('The autogenerate islands has been ' .. (Public.get('autogenerate_islands') and 'enabled' or 'disabled') .. '!', { color = Color.warning })
+            local this = Public.get()
+            if this.market_target then
+                this.position = this.market_target.position
+            else
+                this.position = { x = 0, y = 0 }
+            end
+            Scheduler.timeout(1, draw_bridge_token, { surface = game.surfaces[1], position = this.position, child_id = request_to_generate_chunks_token })
+        end
+    )
+
 
 Commands.new('show_centered_gps', 'Shows the centered points of the map.')
     :require_admin()
@@ -2654,6 +2849,7 @@ Public.on_chunk_generated = on_chunk_generated
 Public.on_entity_died = on_entity_died
 Public.on_market_item_purchased = on_market_item_purchased
 Public.do_buried_biters = do_buried_biters
+Public.do_buried_biters_on_completed_levels = do_buried_biters_on_completed_levels
 Public.buried_biter = BuriedBiter.buried_biter
 Public.buried_tech = BuriedBiter.buried_tech
 Public.buried_worm = BuriedBiter.buried_worm

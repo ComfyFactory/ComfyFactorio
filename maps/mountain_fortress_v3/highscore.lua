@@ -8,7 +8,7 @@ local Score = require 'utils.gui.score'
 local WD = require 'modules.wave_defense.table'
 local Core = require 'utils.core'
 local SpamProtection = require 'utils.spam_protection'
-local CreatedEvents = require 'utils.created_events'
+local CustomEvents = require 'utils.created_events'
 
 local module_name = Gui.uid_name()
 local score_dataset = 'highscores'
@@ -779,6 +779,6 @@ Event.on_init(on_init)
 Event.add(defines.events.on_player_left_game, on_player_left_game)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_gui_click, on_gui_click)
-Event.add(CreatedEvents.events.on_server_started, Public.get_scores)
+Event.add(CustomEvents.events.on_server_started, Public.get_scores)
 
 return Public

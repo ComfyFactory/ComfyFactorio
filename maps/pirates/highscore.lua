@@ -15,7 +15,7 @@ local SpamProtection = require('utils.spam_protection')
 local Utils = require('maps.pirates.utils_local')
 local CoreData = require('maps.pirates.coredata')
 local Common = require('maps.pirates.common')
-local CreatedEvents = require('utils.created_events')
+local CustomEvents = require('utils.created_events')
 
 local module_name = Gui.uid_name()
 -- local module_name = 'Highscore'
@@ -792,6 +792,6 @@ Event.on_init(on_init)
 Event.add(defines.events.on_player_left_game, on_player_left_game)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_gui_click, on_gui_click)
-Event.add(CreatedEvents.events.on_server_started, Public.load_in_scores)
+Event.add(CustomEvents.events.on_server_started, Public.load_in_scores)
 
 return Public

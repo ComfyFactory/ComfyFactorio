@@ -4,7 +4,7 @@ local Token = require 'utils.token'
 local Task = require 'utils.task'
 local Server = require 'utils.server'
 local Event = require 'utils.event'
-local CreatedEvents = require 'utils.created_events'
+local CustomEvents = require 'utils.created_events'
 
 local set_timeout_in_ticks = Task.set_timeout_in_ticks
 local statistics_dataset = 'statistics'
@@ -310,7 +310,7 @@ Event.add(
 )
 
 Event.add(
-    CreatedEvents.events.on_player_removed,
+    CustomEvents.events.on_player_removed,
     function (event)
         local player_index = event.player_index
         statistics[player_index] = nil

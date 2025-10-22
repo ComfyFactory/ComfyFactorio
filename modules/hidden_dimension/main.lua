@@ -1,7 +1,7 @@
 --luacheck: ignore
 local Event = require 'utils.event'
 local HDT = require 'modules.hidden_dimension.table'
-local CreatedEvents = require 'utils.created_events'
+local CustomEvents = require 'utils.created_events'
 
 local Public = {}
 
@@ -691,7 +691,7 @@ Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_tick, on_tick)
 Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(defines.events.on_entity_cloned, on_entity_cloned)
-Event.add(CreatedEvents.events.reset_game, reset_surface)
-Event.add(CreatedEvents.events.init_surfaces, create_underground_surfaces)
+Event.add(CustomEvents.events.reset_game, reset_surface)
+Event.add(CustomEvents.events.init_surfaces, create_underground_surfaces)
 
 return Public

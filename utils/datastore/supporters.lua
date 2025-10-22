@@ -4,7 +4,7 @@ local Global = require 'utils.global'
 local Server = require 'utils.server'
 local Event = require 'utils.event'
 local table = require 'utils.table'
-local CreatedEvents = require 'utils.created_events'
+local CustomEvents = require 'utils.created_events'
 
 local supporters_dataset = 'supporters'
 
@@ -59,7 +59,7 @@ Server.on_data_set_changed(
 )
 
 Event.add(
-    CreatedEvents.events.on_server_started,
+    CustomEvents.events.on_server_started,
     function ()
         Public.sync_supporters()
     end

@@ -3,7 +3,7 @@ local Global = require 'utils.global'
 local Gui = require 'utils.gui'
 local Task = require 'utils.task_token'
 local Config = require 'utils.gui.config'
-local CreatedEvents = require 'utils.created_events'
+local CustomEvents = require 'utils.created_events'
 
 local this =
 {
@@ -464,7 +464,7 @@ set_location = function (player, state)
         }
     end
 
-    Event.raise(CreatedEvents.events.bottom_quickbar_location_changed, { player_index = player.index, data = data })
+    Event.raise(CustomEvents.events.bottom_quickbar_location_changed, { player_index = player.index, data = data })
 
     data.state = state
     create_frame(player, alignment, location, data)
@@ -665,7 +665,7 @@ Event.add(
 )
 
 Event.add(
-    CreatedEvents.events.bottom_quickbar_respawn_raise,
+    CustomEvents.events.bottom_quickbar_respawn_raise,
     function (event)
         if not event or not event.player_index then
             return
@@ -680,7 +680,7 @@ Event.add(
 )
 
 Event.add(
-    CreatedEvents.events.bottom_quickbar_location_changed,
+    CustomEvents.events.bottom_quickbar_location_changed,
     function (event)
         if not event or not event.player_index then
             return

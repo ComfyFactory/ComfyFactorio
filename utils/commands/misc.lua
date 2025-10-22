@@ -12,7 +12,7 @@ local Discord = require 'utils.discord_handler'
 local Commands = require 'utils.commands'
 local mapkeeper = '[color=blue]Mapkeeper:[/color]'
 local Task = require 'utils.task_token'
-local CreatedEvents = require 'utils.created_events'
+local CustomEvents = require 'utils.created_events'
 
 local this =
 {
@@ -732,7 +732,7 @@ Gui.on_click(
 )
 
 Event.add(
-    CreatedEvents.events.bottom_quickbar_location_changed,
+    CustomEvents.events.bottom_quickbar_location_changed,
     function (event)
         if not this.enabled then
             return

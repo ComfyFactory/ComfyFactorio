@@ -6,6 +6,9 @@ local Task = require 'utils.task_token'
 local Scheduler = require 'utils.scheduler'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 local Server = require 'utils.server'
+local Gui = require 'utils.gui'
+
+local stage_gui_name = Gui.uid()
 
 if not script.active_mods.quality then
     error('Quality mod is not enabled!')
@@ -69,22 +72,52 @@ local reset_players_token =
         end
     )
 
+local function get_top_frame(player, id)
+    if Gui.get_mod_gui_top_frame() then
+        return Gui.get_button_flow(player)[id]
+    else
+        return player.gui.top[id]
+    end
+end
+
 local function create_stage_gui(player)
-    if player.gui.top.stage_gui then
+    local button = get_top_frame(player, stage_gui_name)
+    if button then
         return
     end
-    local element = player.gui.top.add({ type = 'frame', name = 'stage_gui', caption = ' ' })
-    local style = element.style
-    style.minimal_height = 54
-    style.maximal_height = 54
-    style.minimal_width = 140
-    style.maximal_width = 420
-    style.top_padding = 12
-    style.left_padding = 4
-    style.right_padding = 4
-    style.bottom_padding = 2
-    style.font_color = { r = 155, g = 85, b = 25 }
-    style.font = 'default-large-bold'
+
+    if Gui.get_mod_gui_top_frame() then
+        local frame =
+            Gui.add_mod_button(
+                player,
+                {
+                    type = 'frame',
+                    name = stage_gui_name,
+                    caption = ' '
+                }
+            )
+        if frame then
+            frame.style.minimal_height = 36
+            frame.style.maximal_height = 36
+            frame.style.minimal_width = 140
+            frame.style.maximal_width = 420
+            frame.style.font_color = { r = 155, g = 85, b = 25 }
+            frame.style.font = 'heading-2'
+        end
+    else
+        local element = player.gui.top.add({ type = 'frame', name = stage_gui_name, caption = ' ' })
+        local style = element.style
+        style.minimal_height = 54
+        style.maximal_height = 54
+        style.minimal_width = 140
+        style.maximal_width = 420
+        style.top_padding = 12
+        style.left_padding = 4
+        style.right_padding = 4
+        style.bottom_padding = 2
+        style.font_color = { r = 155, g = 85, b = 25 }
+        style.font = 'default-large-bold'
+    end
 end
 
 local function update_stage_gui(caption_override)
@@ -109,8 +142,9 @@ local function update_stage_gui(caption_override)
     end
 
     for _, player in pairs(game.connected_players) do
-        if player.gui.top.stage_gui then
-            player.gui.top.stage_gui.caption = caption_override or caption
+        local frame = get_top_frame(player, stage_gui_name)
+        if frame then
+            frame.caption = caption_override or caption
         end
     end
 end
@@ -321,8 +355,23 @@ local function on_tick()
         Func.check_alive_enemies()
         Func.set_multi_command()
         if not this.completed_levels[this.current_level] then
-            Func.do_buried_biters()
+            if not this.disable_multi_command_attack then
+                Func.do_buried_biters()
+            end
         end
+    end
+
+    if game.tick % 500 == 0 then
+        if this.completed_levels[this.current_level] then
+            if not this.disable_multi_command_attack then
+                Func.do_buried_biters_on_completed_levels()
+            end
+        end
+    end
+
+    if this.delayed_messages[game.tick] then
+        game.print(this.delayed_messages[game.tick])
+        this.delayed_messages[game.tick] = nil
     end
 
     if game.tick % 500 == 0 then

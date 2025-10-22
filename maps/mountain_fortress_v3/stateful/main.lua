@@ -2,7 +2,7 @@ local Public = require 'maps.mountain_fortress_v3.stateful.table'
 local Event = require 'utils.event'
 local WD = require 'modules.wave_defense.table'
 local Beam = require 'modules.render_beam'
-local CreatedEvents = require 'utils.created_events'
+local CustomEvents = require 'utils.created_events'
 
 Public.stateful_gui = require 'maps.mountain_fortress_v3.stateful.gui'
 Public.stateful_blueprints = require 'maps.mountain_fortress_v3.stateful.blueprints'
@@ -144,7 +144,7 @@ Event.on_nth_tick(
             WD.set_main_target()
             WD.build_worm_custom()
             -- WD.place_custom_nest(locomotive.surface, area[1], 'aggressors_frenzy')
-            Event.raise(CreatedEvents.events.on_spawn_unit_group_simple, { fs = true, bypass = true, random_bosses = true, scale = 32, force = 'aggressors_frenzy' })
+            Event.raise(CustomEvents.events.on_spawn_unit_group_simple, { fs = true, bypass = true, random_bosses = true, scale = 32, force = 'aggressors_frenzy' })
             Public.set_multi_command_final_battle()
             return
         end
@@ -208,7 +208,7 @@ Event.add(
 )
 
 Event.add(
-    CreatedEvents.events.on_spell_cast_success,
+    CustomEvents.events.on_spell_cast_success,
     function (event)
         local player = game.get_player(event.player_index)
         if not player or not player.valid then
@@ -271,7 +271,7 @@ Event.on_nth_tick(
 
 Event.add(defines.events.on_pre_player_died, Public.on_pre_player_died)
 Event.add(Public.events.on_market_item_purchased, Public.on_market_item_purchased)
-Event.add(CreatedEvents.events.custom_on_entity_died, on_entity_died)
+Event.add(CustomEvents.events.custom_on_entity_died, on_entity_died)
 Event.add(defines.events.on_entity_died, on_entity_died)
 
 return Public
