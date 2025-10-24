@@ -261,6 +261,7 @@ stds.factorio_control =
         {
             fields =
             {
+                'register_metatable',
                 'on_nth_tick',
                 'on_event',
                 'on_init',
