@@ -436,8 +436,8 @@ end
 
 --- Logs a flat table with the given label
 ---@param tbl table
----@param label string
-function Public.log_flat(tbl, label)
+function Public.log_flat(tbl)
+    local label = 'Flat table'
     if type(tbl) ~= "table" then
         log(label and (label .. ": " .. tostring(tbl)) or tostring(tbl))
         return
@@ -447,11 +447,7 @@ function Public.log_flat(tbl, label)
     for k, v in pairs(tbl) do
         local vt = type(v)
         if vt == "table" then
-            if #v > 0 then
-                flat[k] = #v .. ' items'
-            else
-                flat[k] = 'empty table'
-            end
+            flat[k] = "[table]"
         elseif vt == "function" then
             flat[k] = "[function]"
         elseif vt == "userdata" then
@@ -485,5 +481,7 @@ Public.opposite_direction = util.oppositedirection
 -- @param name <string> the name of the module (ex. 'utils.core')
 -- @return <boolean>
 Public.is_module_available = util.ismoduleavailable
+
+Public.log = Public.log_flat
 
 return Public

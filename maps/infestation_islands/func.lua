@@ -14,6 +14,8 @@ local Discord = require 'utils.discord_handler'
 local Poll = require 'utils.gui.poll'
 local Color = require 'utils.color_presets'
 local Config = require 'utils.gui.config'
+local Token = require 'utils.token'
+local Core = require 'utils.core'
 
 local island_keeper = '[color=blue]Island Keeper: [/color]'
 local CommandColor = { r = 0.98, g = 0.66, b = 0.22 }
@@ -30,9 +32,7 @@ local pi = math.pi
 local cos = math.cos
 local sin = math.sin
 local pow = math.pow
-local do_misc_token
-local draw_island_inner_task_token
-local calculate_bridge_token
+local misc_uid_token = Token.uid()
 
 local decoratives =
 {
@@ -265,13 +265,6 @@ local enemy_progression =
     }
 }
 
-local function debug_print(message)
-    if not _DEBUG then
-        return
-    end
-    game.print(message)
-end
-
 local function get_player_options(player)
     local player_options = Public.get('player_options')
     if not player_options[player.index] then
@@ -346,6 +339,7 @@ end
 
 local find_items_on_ground_token =
     Scheduler.register_function(
+        'find_items_on_ground_token',
         function (event)
             local surface = event.surface
             local position = event.position
@@ -372,6 +366,7 @@ local find_items_on_ground_token =
 
 local slowly_place_brige_tiles_token =
     Scheduler.register_function(
+        'slowly_place_brige_tiles_token',
         function (event)
             local positions = event.positions
             if not positions or #positions == 0 then
@@ -389,6 +384,7 @@ local slowly_place_brige_tiles_token =
 
 local do_place_decorative_token =
     Scheduler.register_function(
+        'do_place_decorative_token',
         function (event)
             local count = event.count
             local pos_tbl = event.pos_tbl
@@ -410,96 +406,101 @@ local do_place_decorative_token =
         end
     )
 
-calculate_bridge_token =
-    Scheduler.register_function(function (event)
-        local this = Public.get()
-        local seed_1, seed_2, m = event.seed_1, event.seed_2, event.m
-        local vector = event.vector
-        local minimal_move = event.minimal_movement
-        local surface = event.surface
-        local tile_name = event.tile_name
-        local brush_vectors = event.brush_vectors
-        local tick_index = event.tick_index
-        local step_size = event.step_size or 1.0
-        local noise_scale = event.noise_scale or 0.30
-        local brush_size = event.brush_size or 10
-        local pos = this.bridge_position
+local calculate_bridge_token =
+    Scheduler.register_function(
+        'calculate_bridge_token',
+        ---@param event table
+        ---@param task Task
+        function (event, task)
+            local this = Public.get()
+            local seed_1, seed_2, m = event.seed_1, event.seed_2, event.m
+            local vector = event.vector
+            local minimal_move = event.minimal_movement
+            local surface = event.surface
+            local tile_name = event.tile_name
+            local brush_vectors = event.brush_vectors
+            local tick_index = event.tick_index
+            local step_size = event.step_size or 1.0
+            local noise_scale = event.noise_scale or 0.30
+            local brush_size = event.brush_size or 10
+            local pos = this.bridge_position
 
-        local positions, dec = {}, {}
+            local positions, dec = {}, {}
 
-        for _, b in pairs(brush_vectors) do
-            local p = { x = pos.x + b.x, y = pos.y + b.y }
-            local tile = surface.get_tile(p)
-            if tile.valid and draw_path_tile_whitelist[tile.name] then
-                positions[#positions + 1] = { name = tile_name, position = p }
-                if random(1, 30) == 1 then
-                    dec[#dec + 1] = { name = decoratives[random(1, #decoratives)], position = p, amount = 1 }
+            for _, b in pairs(brush_vectors) do
+                local p = { x = pos.x + b.x, y = pos.y + b.y }
+                local tile = surface.get_tile(p)
+                if tile.valid and draw_path_tile_whitelist[tile.name] then
+                    positions[#positions + 1] = { name = tile_name, position = p }
+                    if random(1, 30) == 1 then
+                        dec[#dec + 1] = { name = decoratives[random(1, #decoratives)], position = p, amount = 1 }
+                    end
                 end
             end
-        end
 
-        Scheduler.new(tick_index, slowly_place_brige_tiles_token)
-            :set_data({ positions = positions, surface = surface })
-            :chain_task(do_place_decorative_token)
-            :set_data({ pos_tbl = dec, count = #dec, surface = surface })
+            task:new_child(tick_index, slowly_place_brige_tiles_token)
+                :set_data({ positions = positions, surface = surface })
+                :new_child(10, do_place_decorative_token)
+                :set_data({ pos_tbl = dec, count = #dec, surface = surface })
 
-        local target
-        if event.use_route and this.bridge_route and this.bridge_route_i then
-            target = this.bridge_route[this.bridge_route_i]
-        else
-            target = this.next_island_position
-        end
-        if not target then return event end
+            local target
+            if event.use_route and this.bridge_route and this.bridge_route_i then
+                target = this.bridge_route[this.bridge_route_i]
+            else
+                target = this.next_island_position
+            end
+            if not target then return end
 
-        local dx, dy = target.x - pos.x, target.y - pos.y
-        local dist = math.sqrt(dx * dx + dy * dy)
+            local dx, dy = target.x - pos.x, target.y - pos.y
+            local dist = math.sqrt(dx * dx + dy * dy)
 
-        if dist <= math.max(brush_size, step_size * 2) then
-            if event.use_route and this.bridge_route then
-                this.bridge_route_i = (this.bridge_route_i or 1) + 1
-                local nxt = this.bridge_route[this.bridge_route_i]
-                if nxt then
-                    dx, dy = nxt.x - pos.x, nxt.y - pos.y
-                    dist = math.sqrt(dx * dx + dy * dy)
+            if dist <= math.max(brush_size, step_size * 2) then
+                if event.use_route and this.bridge_route then
+                    this.bridge_route_i = (this.bridge_route_i or 1) + 1
+                    local nxt = this.bridge_route[this.bridge_route_i]
+                    if nxt then
+                        dx, dy = nxt.x - pos.x, nxt.y - pos.y
+                        dist = math.sqrt(dx * dx + dy * dy)
+                    else
+                        this.bridge_position = { x = target.x, y = target.y }
+                        return
+                    end
                 else
                     this.bridge_position = { x = target.x, y = target.y }
-                    return event
+                    return
                 end
-            else
-                this.bridge_position = { x = target.x, y = target.y }
-                return event
             end
-        end
 
-        local dirx, diry = dx / dist, dy / dist
-        local t = math.min(1, dist / (brush_size * 6))
-        local ns = noise_scale * (t * t)
-        local n1 = simplex_noise(pos.x * m, pos.y * m, seed_1)
-        local n2 = simplex_noise(pos.x * m, pos.y * m, seed_2)
+            local dirx, diry = dx / dist, dy / dist
+            local t = math.min(1, dist / (brush_size * 6))
+            local ns = noise_scale * (t * t)
+            local n1 = simplex_noise(pos.x * m, pos.y * m, seed_1)
+            local n2 = simplex_noise(pos.x * m, pos.y * m, seed_2)
 
-        local vx = dirx * step_size + n1 * ns
-        local vy = diry * step_size + n2 * ns
+            local vx = dirx * step_size + n1 * ns
+            local vy = diry * step_size + n2 * ns
 
-        if math.abs(vx) < minimal_move and math.abs(vy) < minimal_move then
-            if random(1, 2) == 1 then
-                vx = (vx < 0) and -minimal_move or minimal_move
-            else
-                vy = (vy < 0) and -minimal_move or minimal_move
+            if math.abs(vx) < minimal_move and math.abs(vy) < minimal_move then
+                if random(1, 2) == 1 then
+                    vx = (vx < 0) and -minimal_move or minimal_move
+                else
+                    vy = (vy < 0) and -minimal_move or minimal_move
+                end
             end
-        end
 
-        local vlen = math.sqrt(vx * vx + vy * vy)
-        if vlen > dist then vx, vy = dx, dy end
+            local vlen = math.sqrt(vx * vx + vy * vy)
+            if vlen > dist then vx, vy = dx, dy end
 
-        vector[1], vector[2] = vx, vy
-        this.bridge_position = { x = pos.x + vx, y = pos.y + vy }
-
-        -- surface.request_to_generate_chunks(pos, 1)
-        return event
-    end)
+            vector[1], vector[2] = vx, vy
+            this.bridge_position = { x = pos.x + vx, y = pos.y + vy }
+        end)
 
 local noise_vector_tiles_path_token =
-    Scheduler.register_function(function (event)
+    Scheduler.register_function(
+        'noise_vector_tiles_path_token',
+        ---@param event table
+        ---@param task Task
+        function (event, task)
             local this = Public.get()
             local surface = event.surface
             local tbl_tiles = event.tbl_tiles
@@ -530,7 +531,7 @@ local noise_vector_tiles_path_token =
                 for i = 1, steps_per_tick_param do
                     local g = (batch - 1) * steps_per_tick_param + i
                     if g > l then break end
-                    Scheduler.new(batch, calculate_bridge_token)
+                    task:new_child(1, calculate_bridge_token)
                         :set_data(
                             {
                                 seed_1 = seed_1,
@@ -549,40 +550,13 @@ local noise_vector_tiles_path_token =
                             })
                 end
             end
-        end,
-        calculate_bridge_token
+        end
     )
-
-
-local init_new_island_tiles_token =
-    Scheduler.register_function(
-        function ()
-            local this = Public.get()
-            debug_print('set_new_island_token')
-            local position = this.next_island_position
-            local radius = this.stages[this.current_stage].size
-            local surface = game.surfaces[1]
-
-            if this.current_stage == this.last_level then
-                radius = Public.max_island_radius_param
-                this.final_battle = true
-                game.forces.enemy.set_evolution_factor(1, game.surfaces[1])
-                delayed_message(1, island_keeper .. 'The final island has been discovered! The battle has begun!')
-                Server.to_discord_embed('** The final island has been discovered! The battle has begun! **')
-            end
-
-            Scheduler.new(10, draw_island_inner_task_token)
-                :set_data({ surface = surface, radius = radius, position = position })
-        end,
-        draw_island_inner_task_token
-    )
-
 
 local chart_area_for_player_force_token =
     Scheduler.register_function(
+        'chart_area_for_player_force_token',
         function (event)
-            debug_print('request_to_generate_chunks_token')
-
             local next_island_position = Public.get('next_island_position')
             local surface = event.surface
             local position = event.position or next_island_position
@@ -600,39 +574,36 @@ local chart_area_for_player_force_token =
 
 
             local radius = island_data.radius + 200
-            game.print('VERBOSE: Charting island ' .. current_level .. ' at ' .. position.x .. ',' .. position.y .. ' with radius ' .. radius)
+            Core.log('VERBOSE: Charting island ' .. current_level .. ' at ' .. position.x .. ',' .. position.y .. ' with radius ' .. radius)
             game.forces.player.chart(surface, { { position.x - radius, position.y - radius }, { position.x + radius, position.y + radius } })
             event.completed = true
         end
     )
 
-local set_centered_points_token =
-    Scheduler.register_function(
-        function ()
-            local this = Public.get()
-            local position = this.next_island_position
+local function set_centered_points()
+    local this = Public.get()
+    local position = this.next_island_position
 
 
-            local radius = this.stages[this.current_stage].size
+    local radius = this.stages[this.current_stage].size
 
-            if this.current_stage == this.last_level then
-                radius = Public.max_island_radius_param
-            end
+    if this.current_stage == this.last_level then
+        radius = Public.max_island_radius_param
+    end
 
-            local level_data =
-            {
-                position = position,
-                level = this.current_level,
-                radius = radius
-            }
+    local level_data =
+    {
+        position = position,
+        level = this.current_level,
+        radius = radius
+    }
 
-            if not next(level_data.position) then
-                error('No position found for level ' .. this.current_level)
-            end
+    if not next(level_data.position) then
+        error('No position found for level ' .. this.current_level)
+    end
 
-            this.centered_points[this.current_level] = level_data
-        end
-    )
+    this.centered_points[this.current_level] = level_data
+end
 
 local function shuffle(tbl)
     local size = #tbl
@@ -1094,8 +1065,9 @@ local function get_tile_name_by_level(level)
     return tile_names[(level - 1) % #tile_names + 1]
 end
 
-local do_place_simple_entities_token =
+local do_place_corpses_token =
     Scheduler.register_function(
+        'do_place_corpses_token',
         function (event)
             local this = Public.get()
             local count = event.count
@@ -1147,12 +1119,10 @@ local do_place_simple_entities_token =
     )
 
 
---- place_tiles_token
-
-local place_tiles_token =
+local do_place_tiles_token =
     Scheduler.register_function(
-    ---@param event table
-    ---@param task MetaTask
+        'do_place_tiles_token',
+        ---@param event table
         function (event, task)
             local this = Public.get()
             local positions = event.positions
@@ -1207,14 +1177,14 @@ local place_tiles_token =
 
             local seed = random(1, 1000000)
 
-            task:chain_task(do_place_simple_entities_token)
+            task:new_child(1, do_place_corpses_token)
                 :set_data({ pos_tbl = corpse_tiles, count = #corpse_tiles, surface = surface, seed = seed })
-        end,
-        do_place_simple_entities_token
+        end
     )
 
 local place_decoratives_token =
     Scheduler.register_function(
+        'place_decoratives_token',
         function (event)
             local surface = event.surface
             local mirror_decorative = event.mirror_decorative
@@ -1234,6 +1204,7 @@ local place_decoratives_token =
 
 local do_place_fish_token =
     Scheduler.register_function(
+        'do_place_fish_token',
         function (event)
             local surface = event.surface
             local area = event.area
@@ -1284,6 +1255,7 @@ end
 
 local clear_globals_token =
     Scheduler.register_function(
+        'clear_globals_token',
         function ()
             local this = Public.get()
             this.market_positions = {}
@@ -1292,6 +1264,7 @@ local clear_globals_token =
 
 local create_rocket_silo_token =
     Scheduler.register_function(
+        'create_rocket_silo_token',
         function (event)
             local surface = event.surface
             local this = Public.get()
@@ -1399,7 +1372,7 @@ local function run_clear_items_on_ground()
         if data and data.position then
             local radius = (data.radius or 0) + 100
 
-            Scheduler.new(20, find_items_on_ground_token)
+            Scheduler.new(1, find_items_on_ground_token)
                 :set_data(
                     {
                         surface = game.surfaces[1],
@@ -1617,185 +1590,188 @@ local function get_enemy_tier(raw_level)
 end
 
 local create_biters_token =
-    Scheduler.register_function(function (event)
-        local this = Public.get()
-        local surface = event.surface
-        local position = event.position
-        local raw_level = this.current_level or 1
-        this.alive_enemies = 0
+    Scheduler.register_function(
+        'create_biters_token',
+        function (event)
+            local this = Public.get()
+            local surface = event.surface
+            local position = event.position
+            local raw_level = this.current_level or 1
+            this.alive_enemies = 0
 
-        local difficulty_index = Difficulty.get('index') or 1
-        local final_battle = this.final_battle
-        local max_level = this.last_level or 50
+            local difficulty_index = Difficulty.get('index') or 1
+            local final_battle = this.final_battle
+            local max_level = this.last_level or 50
 
-        local normalized_level = min(raw_level / max_level, 1.0)
-        local scale = pow(normalized_level, 0.8) * (1 + difficulty_index * 0.4) + 0.5
+            local normalized_level = min(raw_level / max_level, 1.0)
+            local scale = pow(normalized_level, 0.8) * (1 + difficulty_index * 0.4) + 0.5
 
-        local base_enemy_count = floor((40 + raw_level * 8) * scale)
-        local spawner_count = floor((2 + raw_level * 0.5) * scale)
-        local worm_count = floor((10 + raw_level * 1.2) * scale)
+            local base_enemy_count = floor((40 + raw_level * 8) * scale)
+            local spawner_count = floor((2 + raw_level * 0.5) * scale)
+            local worm_count = floor((10 + raw_level * 1.2) * scale)
 
-        spawner_count = min(spawner_count, 128)
-        worm_count = min(worm_count, 256)
-        base_enemy_count = min(base_enemy_count, 1500)
+            spawner_count = min(spawner_count, 128)
+            worm_count = min(worm_count, 256)
+            base_enemy_count = min(base_enemy_count, 1500)
 
-        if raw_level == 1 then
-            spawner_count = 0
-            worm_count = 0
-            base_enemy_count = 4
-        end
+            if raw_level == 1 then
+                spawner_count = 0
+                worm_count = 0
+                base_enemy_count = 4
+            end
 
-        if final_battle then
-            spawner_count = 64
-            worm_count = 128
-            base_enemy_count = 1100
-        end
+            if final_battle then
+                spawner_count = 64
+                worm_count = 128
+                base_enemy_count = 1100
+            end
 
-        local biter_types
-        local spitter_types
-        local worm_types
-        local spawner_types
-        local spawn_qualities
+            local biter_types
+            local spitter_types
+            local worm_types
+            local spawner_types
+            local spawn_qualities
 
-        local tier = get_enemy_tier(raw_level)
+            local tier = get_enemy_tier(raw_level)
 
-        biter_types = tier.biter_types
-        spitter_types = tier.spitter_types
-        worm_types = tier.worm_types
-        spawner_types = tier.spawner_types
-        spawn_qualities = tier.spawn_qualities
+            biter_types = tier.biter_types
+            spitter_types = tier.spitter_types
+            worm_types = tier.worm_types
+            spawner_types = tier.spawner_types
+            spawn_qualities = tier.spawn_qualities
 
-        for _ = 1, spawner_count do
-            local p = surface.find_non_colliding_position('gun-turret', get_random_position(position, 50), 128, 5)
-            if p then
-                local spawner = surface.create_entity(
-                    {
-                        name = spawner_types[random(1, #spawner_types)],
-                        position = p,
-                        quality = spawn_qualities[random(1, #spawn_qualities)]
-                    })
-                if spawner and spawner.valid then
-                    this.alive_enemies = this.alive_enemies + 1
+            for _ = 1, spawner_count do
+                local p = surface.find_non_colliding_position('gun-turret', get_random_position(position, 50), 128, 5)
+                if p then
+                    local spawner = surface.create_entity(
+                        {
+                            name = spawner_types[random(1, #spawner_types)],
+                            position = p,
+                            quality = spawn_qualities[random(1, #spawn_qualities)]
+                        })
+                    if spawner and spawner.valid then
+                        this.alive_enemies = this.alive_enemies + 1
+                    end
                 end
             end
-        end
 
-        for _ = 1, worm_count do
-            local p = surface.find_non_colliding_position('gun-turret', get_random_position(position, 20), 128, 5)
-            if p then
-                local worm = surface.create_entity(
-                    {
-                        name = worm_types[random(1, #worm_types)],
-                        position = p,
-                        quality = spawn_qualities[random(1, #spawn_qualities)]
-                    })
-                if worm and worm.valid then
-                    this.alive_enemies = this.alive_enemies + 1
+            for _ = 1, worm_count do
+                local p = surface.find_non_colliding_position('gun-turret', get_random_position(position, 20), 128, 5)
+                if p then
+                    local worm = surface.create_entity(
+                        {
+                            name = worm_types[random(1, #worm_types)],
+                            position = p,
+                            quality = spawn_qualities[random(1, #spawn_qualities)]
+                        })
+                    if worm and worm.valid then
+                        this.alive_enemies = this.alive_enemies + 1
+                    end
                 end
             end
-        end
 
-        local random_position = get_random_position(position, 5)
+            local random_position = get_random_position(position, 5)
 
-        if raw_level == 1 then
-            random_position = position
-        end
-
-        for _ = 1, base_enemy_count do
-            local enemy_type
-            if random(1, 2) == 1 then
-                enemy_type = biter_types[random(1, #biter_types)]
-            else
-                enemy_type = spitter_types[random(1, #spitter_types)]
+            if raw_level == 1 then
+                random_position = position
             end
 
-            local p = surface.find_non_colliding_position('wooden-chest', random_position, 128, 4)
-            if p then
-                local e = surface.create_entity(
-                    {
-                        name = enemy_type,
-                        position = p,
-                        quality = spawn_qualities[random(1, #spawn_qualities)]
-                    })
-                if e and e.valid then
-                    e.ai_settings.allow_try_return_to_spawner = false
-                    e.ai_settings.allow_destroy_when_commands_fail = false
-                    this.alive_enemies = this.alive_enemies + 1
+            for _ = 1, base_enemy_count do
+                local enemy_type
+                if random(1, 2) == 1 then
+                    enemy_type = biter_types[random(1, #biter_types)]
+                else
+                    enemy_type = spitter_types[random(1, #spitter_types)]
                 end
-            end
-        end
 
-        if final_battle then
-            for _ = 1, 128 do
-                local p = surface.find_non_colliding_position('gun-turret', get_random_position(position, 20), 128, 10)
+                local p = surface.find_non_colliding_position('wooden-chest', random_position, 128, 4)
                 if p then
                     local e = surface.create_entity(
                         {
-                            name = 'gun-turret',
+                            name = enemy_type,
                             position = p,
-                            force = 'enemy',
                             quality = spawn_qualities[random(1, #spawn_qualities)]
                         })
                     if e and e.valid then
-                        e.insert(
+                        e.ai_settings.allow_try_return_to_spawner = false
+                        e.ai_settings.allow_destroy_when_commands_fail = false
+                        this.alive_enemies = this.alive_enemies + 1
+                    end
+                end
+            end
+
+            if final_battle then
+                for _ = 1, 128 do
+                    local p = surface.find_non_colliding_position('gun-turret', get_random_position(position, 20), 128, 10)
+                    if p then
+                        local e = surface.create_entity(
                             {
-                                name = 'uranium-rounds-magazine',
-                                count = 200,
+                                name = 'gun-turret',
+                                position = p,
+                                force = 'enemy',
                                 quality = spawn_qualities[random(1, #spawn_qualities)]
                             })
-                        this.alive_enemies = this.alive_enemies + 1
+                        if e and e.valid then
+                            e.insert(
+                                {
+                                    name = 'uranium-rounds-magazine',
+                                    count = 200,
+                                    quality = spawn_qualities[random(1, #spawn_qualities)]
+                                })
+                            this.alive_enemies = this.alive_enemies + 1
+                        end
                     end
                 end
             end
-        end
 
-        if difficulty_index >= 2 then
-            local demolisher_type
-            local demolisher_count = 0
+            if difficulty_index >= 2 then
+                local demolisher_type
+                local demolisher_count = 0
 
-            if raw_level >= 6 and raw_level <= 10 then
-                demolisher_type = 'small-demolisher'
-                demolisher_count = 4
-            elseif raw_level >= 11 and raw_level <= 20 then
-                demolisher_type = 'medium-demolisher'
-                demolisher_count = 6
-            elseif raw_level > 20 or final_battle then
-                demolisher_type = 'big-demolisher'
-                demolisher_count = 8
-            end
+                if raw_level >= 6 and raw_level <= 10 then
+                    demolisher_type = 'small-demolisher'
+                    demolisher_count = 4
+                elseif raw_level >= 11 and raw_level <= 20 then
+                    demolisher_type = 'medium-demolisher'
+                    demolisher_count = 6
+                elseif raw_level > 20 or final_battle then
+                    demolisher_type = 'big-demolisher'
+                    demolisher_count = 8
+                end
 
-            for _ = 1, demolisher_count do
-                local p = surface.find_non_colliding_position('gun-turret', get_random_position(position, 30), 128, 10)
-                if p then
-                    local e = surface.create_entity(
-                        {
-                            name = demolisher_type,
-                            position = p,
-                            force = 'enemy',
-                            quality = spawn_qualities[random(1, #spawn_qualities)]
-                        })
-                    if e and e.valid then
-                        this.alive_enemies = this.alive_enemies + 1
+                for _ = 1, demolisher_count do
+                    local p = surface.find_non_colliding_position('gun-turret', get_random_position(position, 30), 128, 10)
+                    if p then
+                        local e = surface.create_entity(
+                            {
+                                name = demolisher_type,
+                                position = p,
+                                force = 'enemy',
+                                quality = spawn_qualities[random(1, #spawn_qualities)]
+                            })
+                        if e and e.valid then
+                            this.alive_enemies = this.alive_enemies + 1
+                        end
                     end
                 end
             end
-        end
 
-        local centered_point = Public.get('centered_points')
-        local current_level = Public.get('current_level')
-        local island_data = centered_point[current_level]
-        if not island_data then
-            error('No island data found for level ' .. current_level)
-            return
-        end
+            local centered_point = Public.get('centered_points')
+            local current_level = Public.get('current_level')
+            local island_data = centered_point[current_level]
+            if not island_data then
+                error('No island data found for level ' .. current_level)
+                return
+            end
 
-        game.forces.player.chart(surface, { { position.x - island_data.radius, position.y - island_data.radius }, { position.x + island_data.radius, position.y + island_data.radius } })
-        this.cooldown_complete_level = game.tick
-    end)
+            game.forces.player.chart(surface, { { position.x - island_data.radius, position.y - island_data.radius }, { position.x + island_data.radius, position.y + island_data.radius } })
+            this.cooldown_complete_level = game.tick
+        end)
 
 
 local do_create_market_token =
     Scheduler.register_function(
+        'do_create_market_token',
         function (event)
             local this = Public.get()
             local surface = event.surface
@@ -1853,7 +1829,10 @@ local do_create_market_token =
 
 local do_place_entities_token =
     Scheduler.register_function(
-        function (event)
+        'do_place_entities_token',
+        ---@param event table
+        ---@param task Task
+        function (event, task)
             local this = Public.get()
             local surface = event.surface
             local position = event.position
@@ -1919,29 +1898,45 @@ local do_place_entities_token =
             local callback_data = { surface = surface, position = position, radius = radius }
 
             if not this.final_battle then
-                Scheduler.new(5, do_create_market_token)
+                task:new_child(1, do_create_market_token)
                     :set_data(callback_data)
-                    :chain_task(create_biters_token)
+
+                    :new_child(10, create_biters_token)
                     :set_data(callback_data)
-                    :chain_task(clear_globals_token)
+
+                    :new_child(15, clear_globals_token)
                 update_evolution(this)
             else
-                Scheduler.new(5, create_biters_token)
+                task:new_child(1, create_biters_token)
                     :set_data(callback_data)
-                    :chain_task(clear_globals_token)
+                    :new_child(10, clear_globals_token)
                 update_evolution(this)
             end
         end
     )
 
-draw_island_inner_task_token =
+local draw_island_inner_task_token =
     Scheduler.register_function(
-        function (event)
-            debug_print('draw_island_inner_task_token')
+        'draw_island_inner_task_token',
+        ---@param event table
+        ---@param task Task
+        function (event, task)
+            local position = event.position or Public.get('next_island_position')
+            local current_stage = event.current_stage or Public.get('current_stage')
+            local stages = event.stages or Public.get('stages')
+            local radius = event.radius or stages[current_stage].size
+            local last_level = event.last_level or Public.get('last_level')
             local surface = event.surface
-            local position = event.position
-            local radius = event.radius
             local main_island = Public.get('current_level') == 1
+
+
+            if current_stage == last_level then
+                radius = Public.max_island_radius_param
+                Public.set('final_battle', true)
+                game.forces.enemy.set_evolution_factor(1, game.surfaces[1])
+                delayed_message(1, island_keeper .. 'The final island has been discovered! The battle has begun!')
+                Server.to_discord_embed('** The final island has been discovered! The battle has begun! **')
+            end
 
             local r = 100
             game.surfaces['island'].request_to_generate_chunks({ position.x, position.y }, 2)
@@ -1949,24 +1944,27 @@ draw_island_inner_task_token =
             local mirror_decorative = game.surfaces['island'].find_decoratives_filtered({ area = { { position.x - r, position.y - r }, { position.x + r, position.y + r } } })
 
             local max_count = 256
-
-            local parent_task = Scheduler.new_parent(9999)
-
             local count = 1
             local c = 1
             local positions = {}
+            local last_tile_task
+
             for y = radius * -1, radius, 1 do
                 for x = radius * -1, radius, 1 do
                     positions[count] = { x = x, y = y }
                     count = count + 1
+
                     if count == max_count + 1 then
                         c = c + 1
-
-                        parent_task
-                            :set_tick(game.tick)
-                            :chain_task(place_tiles_token)
-                            :set_tick(game.tick + 1)
-                            :set_data({ positions = positions, position = position, radius = radius, count = max_count, surface = surface })
+                        last_tile_task = task:new_child(1, do_place_tiles_token)
+                            :set_data(
+                                {
+                                    positions = positions,
+                                    position = position,
+                                    radius = radius,
+                                    count = max_count,
+                                    surface = surface
+                                })
 
                         count = 1
                         positions = {}
@@ -1974,16 +1972,30 @@ draw_island_inner_task_token =
                 end
             end
 
-            parent_task
-                :get_linked_task(place_tiles_token)
-                :chain_task(place_decoratives_token)
-                :set_data({ surface = surface, mirror_decorative = mirror_decorative })
-                :chain_task(do_place_fish_token)
-                :set_data({ surface = surface, area = { { position.x - 100, position.y - 100 }, { position.x + 100, position.y + 100 } } })
-                :chain_task(do_place_entities_token)
-                :set_data({ surface = surface, position = position, radius = radius, main_island = main_island })
-        end,
-        { place_tiles_token, place_decoratives_token, do_place_entities_token, do_place_fish_token }
+            if last_tile_task then
+                last_tile_task:new_child(50, place_decoratives_token)
+                    :set_data({ surface = surface, mirror_decorative = mirror_decorative })
+
+                    :new_child(50, do_place_fish_token)
+                    :set_data(
+                        {
+                            surface = surface,
+                            area =
+                            {
+                                { position.x - 100, position.y - 100 },
+                                { position.x + 100, position.y + 100 }
+                            }
+                        })
+                    :new_child(50, do_place_entities_token)
+                    :set_data(
+                        {
+                            surface = surface,
+                            position = position,
+                            radius = radius,
+                            main_island = main_island
+                        })
+            end
+        end
     )
 
 
@@ -2037,7 +2049,7 @@ local function prepare_next_island(this)
     until is_valid_position(all_islands, current_radius, new_x, new_y) or attempts >= max_attempts
 
     if attempts >= max_attempts then
-        game.print("Warning: Failed to find valid spacing for new island, forcing placement.")
+        Core.log("Warning: Failed to find valid spacing for new island, forcing placement.")
     end
 
     local nearest, nearest_dist = nil, math.huge
@@ -2065,7 +2077,7 @@ local function prepare_next_island(this)
     this.connected_islands[level] = table.deep_copy(nearest)
     this.connected_islands[level].market = this.spawned_markets[nearest.level] and this.spawned_markets[nearest.level].market and this.spawned_markets[nearest.level].market.valid and this.spawned_markets[nearest.level].market
 
-    game.print(string.format(
+    Core.log(string.format(
         "Island #%d branched from #%d at [%.1f, %.1f] (%.1f tiles, after %d tries)",
         level,
         nearest.level or 0,
@@ -2077,6 +2089,7 @@ end
 
 local init_next_island_token =
     Scheduler.register_function(
+        'init_next_island_token',
         function (event)
             local this = Public.get()
             local surface = event.surface
@@ -2086,76 +2099,65 @@ local init_next_island_token =
 
             delayed_message(1, island_keeper .. messages[random(1, #messages)])
             prepare_next_island(this)
+            set_centered_points()
 
-            Scheduler.new(1, set_centered_points_token)
-                :run_task()
 
-            Scheduler.new(1, chart_area_for_player_force_token)
-                :set_data({ surface = surface })
-                :chain_task(init_new_island_tiles_token)
 
-                :chain_task(noise_vector_tiles_path_token)
-                :set_data(
-                    {
-                        surface = surface,
-                        tbl_tiles = path_tile_names,
-                        brush_size = (this.final_battle and (18 + this.current_level) or (10 + this.current_level)),
-                        seed_1 = seed_1,
-                        seed_2 = seed_2,
-                        m = m
-                    })
-                :run_after(init_new_island_tiles_token)
-
-            this.current_stage = this.current_stage + 1
-            Scheduler.new(200, do_misc_token)
-                :set_data({ surface = surface })
-                :run_after({ noise_vector_tiles_path_token, chart_area_for_player_force_token, init_new_island_tiles_token, draw_island_inner_task_token, place_tiles_token })
+            local root = Scheduler.new(1, chart_area_for_player_force_token):set_data({ surface = surface })
+            root:new_child(500, draw_island_inner_task_token):set_data({ surface = surface })
+            root:new_child(1, noise_vector_tiles_path_token):set_data(
+                {
+                    surface = surface,
+                    tbl_tiles = path_tile_names,
+                    brush_size = (this.final_battle and (18 + this.current_level) or (10 + this.current_level)),
+                    seed_1 = seed_1,
+                    seed_2 = seed_2,
+                    m = m
+                })
+            root:new_child(1, misc_uid_token):set_data({ surface = surface })
         end
     )
 
-do_misc_token =
-    Scheduler.register_function(
-        function (event)
-            debug_print('do_misc_token')
+Scheduler.register_function(
+    'do_misc_token',
+    function (event)
+        local this = Public.get()
+        local surface = event.surface
 
-            local this = Public.get()
-            local surface = event.surface
-
-            if this.autogenerate_islands then
-                if this.current_level == this.last_level then
-                    game.tick_paused = true
-                    return
-                end
-                this.current_level = this.current_level + 1
-                this.attack_grace_period = game.tick + 54000
-                this.cooldown_complete_level = game.tick + (60 * 60)
-                this.alive_enemies = 999
-                if this.market_target then
-                    this.position = this.market_target.position
-                else
-                    this.position = { x = 0, y = 0 }
-                end
-                reward_level(surface, this.centered_points[this.current_level - 1])
-                Scheduler.new(1, init_next_island_token)
-                    :set_data({ surface = surface })
-                    :run_after(chart_area_for_player_force_token)
+        if this.autogenerate_islands then
+            if this.current_level == this.last_level then
+                game.tick_paused = true
                 return
             end
-
+            this.current_level = this.current_level + 1
+            this.current_stage = this.current_stage + 1
+            this.attack_grace_period = game.tick + 54000
+            this.cooldown_complete_level = game.tick + (60 * 60)
+            this.alive_enemies = 999
+            if this.market_target then
+                this.position = this.market_target.position
+            else
+                this.position = { x = 0, y = 0 }
+            end
             reward_level(surface, this.centered_points[this.current_level - 1])
+            Scheduler.new(1, init_next_island_token)
+                :set_data({ surface = surface })
+            return
         end
-    )
+
+        reward_level(surface, this.centered_points[this.current_level - 1])
+    end,
+    misc_uid_token
+)
 
 local function draw_main_island(position, radius)
-    debug_print('draw_main_island')
-
     local surface = game.surfaces[1]
 
     position = position or { x = 0, y = 0 }
     radius = radius or 200
 
     Scheduler.new(1, draw_island_inner_task_token)
-        :set_data({ surface = surface, radius = radius, position = position })
+        :set_data({ surface = surface, radius = radius, position = position, caller_name = 'draw_main_island' })
 end
 
 local function on_chunk_generated(event)
@@ -2420,12 +2422,13 @@ local function on_market_item_purchased(event)
         end
 
         if this.current_level == 4 then
-            Scheduler.new(20, create_rocket_silo_token)
+            Scheduler.new(1, create_rocket_silo_token)
                 :set_data({ surface = surface, center_position = this.centered_points[4] })
-                :run_after(clear_globals_token)
         end
 
         this.current_level = this.current_level + 1
+        this.current_stage = this.current_stage + 1
+
 
         delayed_message(10, island_keeper .. player.name .. ' has advanced to level ' .. this.current_level)
         if not this.notified_market_safe then
@@ -2465,8 +2468,6 @@ local function on_market_item_purchased(event)
             delayed_message(30, island_keeper .. 'Magical chests have appeared near the market!')
         end
 
-
-
         this.attack_grace_period = game.tick + 54000
 
         this.cooldown_complete_level = game.tick + (60 * 60)
@@ -2475,7 +2476,6 @@ local function on_market_item_purchased(event)
 
         Scheduler.new(1, init_next_island_token)
             :set_data({ surface = entity.surface, position = this.position })
-            :run_after(chart_area_for_player_force_token)
     elseif string.find(bought_offer.effect_description, 'more ammo') then
         local price = market_prices['ammo'] or 500
         local inventory = player.get_main_inventory()
@@ -2615,8 +2615,6 @@ local on_player_or_robot_built_tile = function (event)
         return
     end
 
-    game.print('tile built')
-
     for _, v in pairs(tiles) do
         local old_tile = v.old_tile
         if old_tile.name == 'water' then
@@ -2643,7 +2641,6 @@ Commands.new('toggle_autogenerate_islands', 'Toggles the autogenerate islands.')
             this.alive_enemies = 999
             Scheduler.new(1, init_next_island_token)
                 :set_data({ surface = game.surfaces[1], position = this.position })
-                :run_after(chart_area_for_player_force_token)
         end
     )
 
@@ -2974,7 +2971,7 @@ local function is_rocket_silo_alive()
 
     Scheduler.new(1, create_rocket_silo_token)
         :set_data({ surface = game.surfaces[1], center_position = this.centered_points[4] })
-        :run_task()
+    -- :run_task()
 
     return true
 end
