@@ -116,6 +116,8 @@ Gui.on_click(
         local id = Global.get_global(token_id)
         local content = dump(id) or 'Could not load data.'
 
+        content = 'return ' .. content
+
         if not game.is_multiplayer() then
             helpers.write_file(token_id .. '.lua', content, false, 1)
             right_panel.text = 'Content written to file on the client: ..\\script-output\\' .. token_id .. '.lua'
@@ -123,8 +125,6 @@ Gui.on_click(
             helpers.write_file(token_id .. '.lua', content, false, 0)
             right_panel.text = 'Content written to file on the server: ..\\script-output\\' .. token_id .. '.lua'
         end
-
-
     end
 )
 

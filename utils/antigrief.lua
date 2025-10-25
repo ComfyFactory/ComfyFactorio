@@ -24,8 +24,6 @@ local floor = math.floor
 local random = math.random
 local abs = math.abs
 
-local flush_interval = 120 -- every 2 seconds (120 ticks)
-
 local this =
 {
     enabled = true,
@@ -250,80 +248,6 @@ local function do_action(player, prefix, msg, ban_msg, kill)
     end
 end
 
-local function flush_deconstruct_log()
-    if not next(this.deconstruct_queue) then return end
-
-    local grouped = {}
-    for _, data in ipairs(this.deconstruct_queue) do
-        local player_name = data.player_name
-        if not grouped[player_name] then
-            grouped[player_name] = {}
-        end
-        table.insert(grouped[player_name], data)
-    end
-
-    local ind = 0
-    local success_count = 0
-    local t = math.abs(math.floor(game.tick / 60))
-    local formatted = FancyTime.short_fancy_time(t)
-
-    for player_name, entries in pairs(grouped) do
-        local entity_counts = {}
-        local details = {}
-        for _, e in ipairs(entries) do
-            local str = '[' .. formatted .. '] '
-            str = str .. player_name .. ' marked ' .. e.entity_name .. ' for deconstruction'
-            str = str .. ' at X:'
-            str = str .. e.x
-            str = str .. ' Y:'
-            str = str .. e.y
-            str = str .. ' '
-            str = str .. 'surface:' .. e.surface
-
-            entity_counts[e.entity_name] = (entity_counts[e.entity_name] or 0) + 1
-            increment(this.deconstruct_history, str)
-            if ind == 0 then
-                table.insert(details, string.format("(%d,%d,surface:%d)", e.x, e.y, e.surface))
-            end
-            ind = ind + 1
-            if ind == #entries then
-                table.insert(details, string.format("(%d,%d,surface:%d)", e.x, e.y, e.surface))
-                ind = 0
-            end
-            if e.success then
-                success_count = success_count + 1
-            end
-        end
-
-        local total = #entries
-        local summary_parts = {}
-        for name, count in pairs(entity_counts) do
-            table.insert(summary_parts, string.format("%dx %s", count, name))
-        end
-        local summary_str = table.concat(summary_parts, ", ")
-
-
-
-        local message = string.format(
-            "[%s] %s marked %d entities for deconstruction: %s | Positions: %s | Mined: %s",
-            formatted,
-            player_name,
-            total,
-            summary_str,
-            table.concat(details, ", "),
-            success_count .. ' / ' .. total
-        )
-
-        Server.log_antigrief_data('deconstruct', message)
-    end
-
-    this.deconstruct_queue = {}
-end
-
-local function do_action_task()
-    flush_deconstruct_log()
-end
-
 local function on_marked_for_deconstruction(event)
     if not this.enabled or not event.player_index then return end
 
@@ -332,27 +256,15 @@ local function on_marked_for_deconstruction(event)
     if this.do_not_check_trusted then return end
 
     local playtime = player.online_time
-    local success = false
     local is_trusted = Session.get_trusted_player(player)
     if Session.get_session_player(player) then
         playtime = player.online_time + Session.get_session_player(player)
-        success = true
     end
     if playtime < this.required_playtime and not is_trusted then
         event.entity.cancel_deconstruction(player.force.name, player.index)
         player.print('You are not accustomed to deconstructing yet.', { r = 0.22, g = 0.99, b = 0.99 })
         return
     end
-
-    table.insert(this.deconstruct_queue,
-        {
-            player_name = player.name,
-            entity_name = event.entity.name,
-            x = math.floor(event.entity.position.x),
-            y = math.floor(event.entity.position.y),
-            surface = event.entity.surface.index,
-            success = success
-        })
 end
 
 local function on_player_ammo_inventory_changed(event)
@@ -1076,8 +988,6 @@ local function on_player_deconstructed_area(event)
         return
     end
 
-
-
     local area = event.area
     local count = surface.count_entities_filtered({ area = area, type = 'resource', invert = true })
     local max_count = 0
@@ -1519,6 +1429,5 @@ Event.add(de.on_console_command, on_console_command)
 Event.add(de.on_console_chat, on_console_chat)
 Event.add(de.on_player_muted, on_player_muted)
 Event.add(de.on_player_unmuted, on_player_unmuted)
-Event.on_nth_tick(flush_interval, do_action_task)
 
 return Public

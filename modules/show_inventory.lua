@@ -2,7 +2,7 @@
 
 local Global = require 'utils.global'
 local Color = require 'utils.color_presets'
--- local SpamProtection = require 'utils.spam_protection'
+local SpamProtection = require 'utils.spam_protection'
 local Event = require 'utils.event'
 local Gui = require 'utils.gui'
 local Commands = require 'utils.commands'
@@ -382,10 +382,10 @@ local function on_gui_click(event)
         return
     end
 
-    -- local is_spamming = SpamProtection.is_spamming(player, nil, 'Player Inventory')
-    -- if is_spamming then
-    --     return
-    -- end
+    local is_spamming = SpamProtection.is_spamming(player, nil, 'Player Inventory')
+    if is_spamming then
+        return
+    end
 
     local data = get_player_data(player)
     if not data then

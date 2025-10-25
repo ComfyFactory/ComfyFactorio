@@ -411,6 +411,10 @@ function Public.set(key, value)
     end
 end
 
+function Public.get_closing_timeout()
+    return math.round((this.closing_timeout - game.tick) / 60, 0)
+end
+
 function Public.has_votes_ended()
     return game.tick > this.closing_timeout
 end

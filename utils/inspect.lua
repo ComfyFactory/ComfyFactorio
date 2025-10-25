@@ -276,12 +276,12 @@ function Inspector:putTable(t)
     if t == inspect.KEY or t == inspect.METATABLE then
         self:puts(tostring(t))
     elseif self:alreadyVisited(t) then
-        self:puts('<table ', self:getId(t), '>')
+        self:puts('[[<ref to table ', self:getId(t), '>]]')
     elseif self.level >= self.depth then
         self:puts('{...}')
     else
         if self.tableAppearances[t] > 1 then
-            self:puts('<', self:getId(t), '>')
+            self:puts('[[<', self:getId(t), '>]],')
         end
 
         local nonSequentialKeys, sequenceLength = getNonSequentialKeys(t)

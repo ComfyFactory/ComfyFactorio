@@ -3,54 +3,8 @@ local Public = require 'maps.infestation_islands.table'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local Server = require 'utils.server'
 
-local scale_units_by_health =
-{
-    ['small-biter'] = 1,
-    ['medium-biter'] = 0.75,
-    ['big-biter'] = 0.5,
-    ['behemoth-biter'] = 0.25,
-    ['small-spitter'] = 1,
-    ['medium-spitter'] = 0.75,
-    ['big-spitter'] = 0.5,
-    ['behemoth-spitter'] = 0.25,
 
-    ['small-wriggler-pentapod'] = 1,
-    ['medium-wriggler-pentapod'] = 0.75,
-    ['big-wriggler-pentapod'] = 0.5,
-    ['small-strafer-pentapod'] = 1,
-    ['medium-strafer-pentapod'] = 0.75,
-    ['big-strafer-pentapod'] = 0.5,
-
-}
-
-local scale_spawners_by_health =
-{
-    ['biter-spawner'] = 0.5,
-    ['spitter-spawner'] = 0.5,
-    ['gleba-spawner-small'] = 0.5,
-    ['gleba-spawner'] = 0.5,
-}
-
-local scale_worms_by_health =
-{
-    ['land-mine'] = 0.5, -- not active as of now
-    ['gun-turret'] = 0.5, -- not active as of now
-    ['flamethrower-turret'] = 0.4, -- not active as of now
-    ['artillery-turret'] = 0.25, -- not active as of now
-    ['small-worm-turret'] = 0.8,
-    ['medium-worm-turret'] = 0.6,
-    ['big-worm-turret'] = 0.3,
-    ['behemoth-worm-turret'] = 0.3
-}
-
-local round = math.round
-local floor = math.floor
 local random = math.random
-
-local spawn_amount_rolls = {}
-for a = 48, 1, -1 do
-    spawn_amount_rolls[#spawn_amount_rolls + 1] = floor(a ^ 5)
-end
 
 local random_particles =
 {
@@ -143,16 +97,12 @@ local function roll_spawner(level)
 end
 
 local function roll_health_boost(level)
-    if not level or level <= 3 then
+    if not level or level <= 1 then
         return 1
-    elseif level <= 6 then
-        return 1.5
-    elseif level <= 10 then
-        return 2
-    elseif level > 10 then
-        return 3
     end
+    return 1 + (level ^ 1.25) * 0.15
 end
+
 
 local function spawn_spawner(data)
     local alive_enemies = Public.get('alive_enemies')
@@ -185,20 +135,10 @@ local function spawn_spawner(data)
         return
     end
 
-    alive_enemies = Public.get('alive_enemies')
-
-    Public.set('alive_enemies', alive_enemies + 1)
-
-    local health_boost = roll_health_boost(current_level) or 1
+    local health_boost = roll_health_boost(current_level + 5) or 1
 
     if random(1, 30) == 1 then
         BiterHealthBooster.add_boss_unit(unit, health_boost, 0.38)
-    else
-        local final_health = round(health_boost * scale_spawners_by_health[unit.name], 3)
-        if final_health < 1 then
-            final_health = 1
-        end
-        BiterHealthBooster.add_unit(unit, final_health)
     end
     return true
 end
@@ -234,20 +174,10 @@ local function spawn_biters(data)
         return
     end
 
-    alive_enemies = Public.get('alive_enemies')
-
-    Public.set('alive_enemies', alive_enemies + 1)
-
-    local health_boost = roll_health_boost(current_level) or 1
+    local health_boost = roll_health_boost(current_level + 5) or 1
 
     if random(1, 30) == 1 then
         BiterHealthBooster.add_boss_unit(unit, health_boost, 0.38)
-    else
-        local final_health = round(health_boost * scale_units_by_health[unit.name], 3)
-        if final_health < 1 then
-            final_health = 1
-        end
-        BiterHealthBooster.add_unit(unit, final_health)
     end
 
     local market_target = Public.get('market_target')
@@ -302,7 +232,7 @@ local function spawn_tech(data)
         return
     end
 
-    local health_boost = roll_health_boost(current_level) or 1
+    local health_boost = roll_health_boost(current_level + 5) or 1
 
 
     local unit = surface.create_entity({ name = unit_to_create, position = position, force = data.force or 'enemy', quality = data.quality or 'normal' })
@@ -312,12 +242,6 @@ local function spawn_tech(data)
 
     if random(1, 30) == 1 then
         BiterHealthBooster.add_boss_unit(unit, health_boost, 0.38)
-    else
-        local final_health = round(health_boost * 0.5, 3)
-        if final_health < 1 then
-            final_health = 1
-        end
-        BiterHealthBooster.add_unit(unit, final_health)
     end
     return true
 end
@@ -349,23 +273,18 @@ local function spawn_worms(data)
     if not unit or not unit.valid then
         return
     end
-    alive_enemies = Public.get('alive_enemies')
-    Public.set('alive_enemies', alive_enemies + 1)
 
-    local health_boost = roll_health_boost(current_level) or 1
+    local health_boost = roll_health_boost(current_level + 5) or 1
 
     if random(1, 30) == 1 then
         BiterHealthBooster.add_boss_unit(unit, health_boost, 0.38)
-    else
-        local final_health = round(health_boost * scale_worms_by_health[unit.name], 3)
-        if final_health < 1 then
-            final_health = 1
-        end
-
-        BiterHealthBooster.add_unit(unit, final_health)
     end
 end
 
+---@param surface LuaSurface
+---@param position MapPosition
+---@param count number
+---@param force string
 function Public.buried_spawner(surface, position, count, force)
     if not (surface and surface.valid) then
         return
@@ -386,7 +305,7 @@ function Public.buried_spawner(surface, position, count, force)
 
     local buried_biters = Public.get('buried_biters')
 
-    for t = 1, 60, 1 do
+    for t = 1, 220, 1 do
         if not buried_biters[game.tick + t] then
             buried_biters[game.tick + t] = {}
         end
@@ -397,7 +316,7 @@ function Public.buried_spawner(surface, position, count, force)
             data = { surface = surface, position = { x = position.x, y = position.y }, amount = math.ceil(t * 0.05) }
         }
 
-        if t == 60 then
+        if t == 220 then
             if count == 1 then
                 buried_biters[game.tick + t][#buried_biters[game.tick + t] + 1] =
                 {
@@ -419,6 +338,11 @@ function Public.buried_spawner(surface, position, count, force)
     end
 end
 
+---@param surface LuaSurface
+---@param position MapPosition
+---@param count number
+---@param force string
+---@param quality string
 function Public.buried_biter(surface, position, count, force, quality)
     if not (surface and surface.valid) then
         return
@@ -439,7 +363,7 @@ function Public.buried_biter(surface, position, count, force, quality)
 
     local buried_biters = Public.get('buried_biters')
 
-    for t = 1, 60, 1 do
+    for t = 1, 220, 1 do
         if not buried_biters[game.tick + t] then
             buried_biters[game.tick + t] = {}
         end
@@ -450,7 +374,7 @@ function Public.buried_biter(surface, position, count, force, quality)
             data = { surface = surface, position = { x = position.x, y = position.y }, amount = math.ceil(t * 0.05) }
         }
 
-        if t == 60 then
+        if t == 220 then
             if count == 1 then
                 buried_biters[game.tick + t][#buried_biters[game.tick + t] + 1] =
                 {
@@ -472,6 +396,11 @@ function Public.buried_biter(surface, position, count, force, quality)
     end
 end
 
+---@param surface LuaSurface
+---@param position MapPosition
+---@param count number
+---@param force string
+---@param quality string
 function Public.buried_tech(surface, position, count, force, quality)
     if not (surface and surface.valid) then
         return
@@ -492,7 +421,7 @@ function Public.buried_tech(surface, position, count, force, quality)
 
     local buried_biters = Public.get('buried_biters')
 
-    for t = 1, 60, 1 do
+    for t = 1, 220, 1 do
         if not buried_biters[game.tick + t] then
             buried_biters[game.tick + t] = {}
         end
@@ -503,7 +432,7 @@ function Public.buried_tech(surface, position, count, force, quality)
             data = { surface = surface, position = { x = position.x, y = position.y }, amount = math.ceil(t * 0.05) }
         }
 
-        if t == 60 then
+        if t == 220 then
             if count == 1 then
                 buried_biters[game.tick + t][#buried_biters[game.tick + t] + 1] =
                 {
@@ -525,6 +454,9 @@ function Public.buried_tech(surface, position, count, force, quality)
     end
 end
 
+---@param surface LuaSurface
+---@param position MapPosition
+---@param quality string
 function Public.buried_worm(surface, position, quality)
     if not (surface and surface.valid) then
         return
@@ -541,7 +473,7 @@ function Public.buried_worm(surface, position, quality)
 
     local buried_biters = Public.get('buried_biters')
 
-    for t = 1, 60, 1 do
+    for t = 1, 220, 1 do
         if not buried_biters[game.tick + t] then
             buried_biters[game.tick + t] = {}
         end
@@ -552,7 +484,7 @@ function Public.buried_worm(surface, position, quality)
             data = { surface = surface, position = { x = position.x, y = position.y }, amount = math.ceil(t * 0.05) }
         }
 
-        if t == 60 then
+        if t == 220 then
             buried_biters[game.tick + t][#buried_biters[game.tick + t] + 1] =
             {
                 callback = 'spawn_worms',

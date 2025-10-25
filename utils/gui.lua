@@ -34,6 +34,7 @@ local concat = table.concat
 local names = {}
 -- global
 local data = {}
+local removed_objects = {}
 local settings =
 {
     mod_gui_top_frame = true,
@@ -43,9 +44,10 @@ local settings =
 
 Public.token =
     Global.register(
-        { data = data, settings = settings },
+        { data = data, removed_objects = removed_objects, settings = settings },
         function (tbl)
             data = tbl.data
+            removed_objects = tbl.removed_objects
             settings = tbl.settings
         end
     )
@@ -155,7 +157,10 @@ function Public.set_data(element, value)
             data[player_index] = values
         end
 
-        values[element.index] = { value = value, name = element.name }
+        local registration_number = script.register_on_object_destroyed(element)
+        removed_objects[registration_number] = player_index
+
+        values[element.index] = { value = value, name = element.name, registration_number = registration_number }
     end
 end
 
@@ -391,34 +396,6 @@ function Public.clear(element)
     remove_children_data(element)
     element.clear()
 end
-
-local function clear_invalid_data()
-    if settings.disable_clear_invalid_data then
-        return
-    end
-
-    for _, player in pairs(game.players) do
-        local player_index = player.index
-        local values = data[player_index]
-        if values then
-            for k, element in next, values do
-                if type(element) == 'table' then
-                    for key, obj in next, element do
-                        if type(obj) == 'table' and obj.valid ~= nil then
-                            if not obj.valid then
-                                element[key] = nil
-                            end
-                        end
-                    end
-                    if type(element) == 'userdata' and not element.valid then
-                        values[k] = nil
-                    end
-                end
-            end
-        end
-    end
-end
-Event.on_nth_tick(300, clear_invalid_data)
 
 local function handler_factory(event_id)
     local handlers
@@ -922,6 +899,19 @@ local function draw_main_frame(player)
     return frame, inside_frame
 end
 
+local function on_object_destroyed(event)
+    local player_index = removed_objects[event.registration_number]
+    if not player_index then return end
+
+    local element_index = event.useful_id
+    removed_objects[event.registration_number] = nil
+
+    local player_data = data[player_index]
+    if player_data then
+        player_data[element_index] = nil
+    end
+end
+
 
 function Public.get_content(player)
     local left_frame = Public.get_main_frame(player)
@@ -1167,6 +1157,8 @@ Event.add(
         top_button(player)
     end
 )
+
+Event.add(defines.events.on_object_destroyed, on_object_destroyed)
 
 function Public.data()
     return data

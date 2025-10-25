@@ -1,7 +1,5 @@
 -- Created by Gerkiz
-
 local Global = require 'utils.global'
-local Server = require 'utils.server'
 local Event = require 'utils.event'
 local Core = require 'utils.core'
 
@@ -42,9 +40,9 @@ Task.__index = Task
 script.register_metatable('Task', Task)
 
 --- Registers a callback for a task (data stage / module load time; not at runtime).
----@param name string
----@param fn   function
----@param uid? string|number
+---@param name string - Helps identify the task in the debugger
+---@param fn   function - The callback function
+---@param uid? string|number - The unique identifier for the task
 ---@return number|string|nil
 function Public.register_function(name, fn, uid)
     if game then error('Cannot register functions in runtime') end
@@ -62,9 +60,9 @@ function Public.register_function(name, fn, uid)
 end
 
 --- Gets the function by id
----@param id number|string
----@return function|nil
----@return string|nil
+---@param id number|string - The unique identifier for the task
+---@return function|nil - The callback function
+---@return string|nil - The name of the task
 function Public.get_function_by_id(id)
     return loaded[id], named[id]
 end
@@ -96,13 +94,13 @@ end
 
 
 --- Gets the callback for this task
----@return function|nil
+---@return function|nil - The callback function
 function Task:get_callback()
     return Public.get_function_by_id(self._uid)
 end
 
 --- Sets the data for this task
----@param tbl table
+---@param tbl table - The data for the task
 ---@return Task - Self for chaining
 function Task:set_data(tbl)
     self._data = tbl
@@ -117,9 +115,9 @@ function Task:log()
 end
 
 --- Creates a new child task
----@param delay number
----@param uid number|string|nil
----@return Task
+---@param delay number - The delay in ticks before the task is executed
+---@param uid number|string|nil - The unique identifier for the task
+---@return Task - The new child task
 function Task:new_child(delay, uid)
     local c = new_task(delay, uid)
     c._parent = self
@@ -128,6 +126,9 @@ function Task:new_child(delay, uid)
     return c
 end
 
+--- Runs the task
+---@param current_tick number - The current tick
+---@return boolean - Whether the task was executed
 function Task:run(current_tick)
     if self._tick and self._tick > current_tick then return false end
     if self._completed then return false end
@@ -143,6 +144,9 @@ function Task:run(current_tick)
     return true
 end
 
+--- Schedules the next task in the DFS
+---@param n Task - The task to schedule
+---@param current_tick number - The current tick
 local function schedule_next_in_dfs(n, current_tick)
     while n do
         if n._next_child_ix <= #n._children then
@@ -159,9 +163,9 @@ local function schedule_next_in_dfs(n, current_tick)
 end
 
 --- Creates a new task
----@param delay number
----@param uid number|string|nil
----@return Task
+---@param delay number - The delay in ticks before the task is executed
+---@param uid number|string|nil - The unique identifier for the task
+---@return Task - The new task
 function Public.new(delay, uid)
     local t = new_task(delay, uid)
     t._tick = game.tick + normalize_delay(delay)
@@ -170,9 +174,16 @@ function Public.new(delay, uid)
 end
 
 --- Sets whether the scheduler can run
----@param condition boolean - Whether the scheduler can run
-function Public.can_run_scheduler(condition)
+---@param condition boolean - Whether the scheduler can run (true to run, false to stop)
+function Public.set_can_run_scheduler(condition)
     this.can_run_scheduler = condition or false
+end
+
+--- Clears the tasks
+function Public.clear_tasks()
+    this.tasks = {}
+    this.next_id = 0
+    Core.log('Scheduler tasks have been cleared!')
 end
 
 Event.add(defines.events.on_tick,
@@ -181,8 +192,11 @@ Event.add(defines.events.on_tick,
 
         local can_run_scheduler = this.can_run_scheduler
         if not can_run_scheduler then
-            this.tasks = {}
-            Server.output_script_data('Scheduler task has been cleared and stopped!')
+            return
+        end
+
+        if not this.tasks or #this.tasks == 0 then
+            this.next_id = 0
             return
         end
 

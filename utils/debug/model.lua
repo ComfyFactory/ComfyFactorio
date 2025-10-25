@@ -42,25 +42,27 @@ local function get_lua_object_type_safe(obj)
 end
 
 local function inspect_process(item)
-    local object_name = get_lua_object_type_safe(item)
-    if object_name and classes[object_name] then
-        local class = classes[object_name]
-        local attrs = class.attributes
-        local info = { __type = object_name }
-        local shown = 0
-        for key in pairs(attrs) do
-            local ok, val =
-                pcall(
-                    function ()
-                        return item[key]
-                    end
-                )
-            if ok and (type(val) ~= 'table' and type(val) ~= 'userdata') then
-                info[key] = val
-                shown = shown + 1
+    if _DEBUG then
+        local object_name = get_lua_object_type_safe(item)
+        if object_name and classes[object_name] then
+            local class = classes[object_name]
+            local attrs = class.attributes
+            local info = { __type = object_name }
+            local shown = 0
+            for key in pairs(attrs) do
+                local ok, val =
+                    pcall(
+                        function ()
+                            return item[key]
+                        end
+                    )
+                if ok and (type(val) ~= 'table' and type(val) ~= 'userdata') then
+                    info[key] = val
+                    shown = shown + 1
+                end
             end
+            return serpent.line(info, { comment = false, numformat = '%g' })
         end
-        return serpent.line(info, { comment = false, numformat = '%g' })
     end
 
     if type(item) ~= 'table' or type(item.__self) ~= 'userdata' then

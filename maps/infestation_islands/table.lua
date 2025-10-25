@@ -5,7 +5,6 @@ local Autostash = require 'modules.autostash'
 local BottomFrame = require 'utils.gui.bottom_frame'
 local Misc = require 'utils.commands.misc'
 local Map = require 'modules.map_info'
-local Scheduler = require 'utils.scheduler'
 local Task = require 'utils.task_token'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 local Server = require 'utils.server'
@@ -22,11 +21,115 @@ Global.register(
     end
 )
 
-local set_tech_limit_token = Task.register(
-    function ()
-        Public.func.disable_tech()
+Public.island_keeper = '[color=blue]Island Keeper: [/color]'
+
+Public.command_color = { r = 0.98, g = 0.66, b = 0.22 }
+
+Public.island_radius_param = 6
+
+Public.decoratives =
+{
+    'red-croton',
+    'brown-hairy-grass',
+    'muddy-stump',
+    'green-bush-mini',
+    'nuclear-ground-patch',
+}
+
+Public.spooky_lines =
+{
+    "The market does not feel as safe as before...",
+    "Something feels… off around the market.",
+    "The guards whisper of strange noises beneath the ground.",
+    "The calm around the market feels forced — too quiet.",
+    "The soil near the market seems to move when no one is looking."
+}
+
+Public.overrun_messages =
+{
+    "[color=red]The ground trembles where the market once stood.[/color]",
+    "[color=red]Something vast is crawling out from beneath the ruins.[/color]",
+    "[color=red]The earth splits open — a tide of biters surges forth.[/color]",
+    "[color=red]The market’s ashes stir… the hive awakens.[/color]",
+    "[color=red]A dark roar echoes from the crater — they’re not done yet.[/color]",
+    "[color=red]The air thickens with the sound of chittering and claws.[/color]",
+    "[color=red]The soil itself seems alive where the market once stood.[/color]",
+    "[color=red]Smoke rises… and with it, the swarm.[/color]",
+    "[color=red]The silence breaks — and the ground moves.[/color]",
+    "[color=red]Biters are pouring out of the ruins![/color]",
+    "[color=red]The island is being overrun — the swarm is spreading fast![/color]",
+    "[color=red]A massive horde erupts from the fallen market![/color]",
+    "[color=red]The market’s collapse has unleashed the swarm![/color]",
+    "[color=red]The ground bursts open — enemies everywhere![/color]",
+    "[color=red]The swarm is reclaiming the island![/color]",
+    "[color=red]The defenders are gone — the biters take everything.[/color]",
+    "[color=red]They’re coming from below! The island is lost![/color]",
+    "[color=red]The market is gone… and the swarm claims what’s left.[/color]",
+    "[color=red]Only ruin remains — the swarm feasts in silence.[/color]",
+    "[color=red]The island falls quiet, except for the sound of wings and claws.[/color]",
+    "[color=red]The market’s fall has awakened something unstoppable.[/color]",
+}
+
+Public.quality_per_level = {}
+for i = 0, 50 do
+    local n = i / 50
+    local w_normal, w_uncommon, w_rare, w_epic, w_legendary = 100, 0, 0, 0, 0
+
+    if n > 0.2 then
+        w_normal, w_uncommon = 70, 30
     end
-)
+    if n > 0.4 then
+        w_normal, w_uncommon, w_rare = 65, 25, 10
+    end
+    if n > 0.6 then
+        w_normal, w_uncommon, w_rare, w_epic = 50, 30, 15, 5
+    end
+    if n > 0.8 then
+        w_normal, w_uncommon, w_rare, w_epic, w_legendary = 40, 30, 20, 8, 2
+    end
+
+    local total = w_normal + w_uncommon + w_rare + w_epic + w_legendary
+    Public.quality_per_level[i] =
+    {
+        thresholds =
+        {
+            w_normal / total,
+            (w_normal + w_uncommon) / total,
+            (w_normal + w_uncommon + w_rare) / total,
+            (w_normal + w_uncommon + w_rare + w_epic) / total,
+        }
+    }
+end
+
+Public.valid_enemy_types =
+{
+    ['unit'] = true,
+    ['turret'] = true,
+    ['unit-spawner'] = true
+}
+
+Public.rock_raffle =
+{
+    'big-sand-rock',
+    'big-sand-rock',
+    'big-rock',
+    'big-rock',
+    'big-rock',
+    'big-rock',
+    'big-rock',
+    'huge-rock',
+    'huge-rock'
+}
+
+Public.plantable_soil =
+{
+    'natural-jellynut-soil',
+    'artificial-jellynut-soil',
+    'natural-yumako-soil',
+    'artificial-yumako-soil',
+    'wetland-yumako',
+    'wetland-jellynut',
+}
 
 Public.qualities =
 {
@@ -36,6 +139,175 @@ Public.qualities =
     'epic',
     'legendary'
 }
+
+Public.mining_chances_ores =
+{
+    { name = 'coal', chance = 26 },
+    { name = 'copper-ore', chance = 21 },
+    { name = 'iron-ore', chance = 20 },
+    { name = 'stone', chance = 15 },
+    { name = 'uranium-ore', chance = 10 },
+    { name = 'spoilage', chance = 10 },
+    { name = 'tungsten-ore', chance = 5 },
+    { name = 'holmium-ore', chance = 5 },
+    { name = 'calcite', chance = 10 },
+    { name = 'lithium', chance = 5 },
+    { name = 'jellynut', chance = 5 },
+    { name = 'yumako', chance = 5 },
+    { name = 'carbon', chance = 5 },
+    { name = 'scrap', chance = 5 },
+    { name = 'ice', chance = 5 },
+}
+
+Public.harvest_raffle_ores = {}
+for _, data in pairs(Public.mining_chances_ores) do
+    for _ = 1, data.chance, 1 do
+        Public.harvest_raffle_ores[#Public.harvest_raffle_ores + 1] = data.name
+    end
+end
+Public.size_of_ore_raffle = #Public.harvest_raffle_ores
+
+Public.raw_ores =
+{
+    'copper-ore',
+    'iron-ore',
+    'coal',
+    'stone',
+    'uranium-ore',
+    'calcite',
+    'tungsten-ore',
+    'scrap',
+}
+
+Public.oil_raffle =
+{
+    'sulfuric-acid-geyser',
+    'lithium-brine',
+    'fluorine-vent',
+    'crude-oil',
+}
+
+Public.draw_path_tile_whitelist =
+{
+    ['water'] = true,
+    ['deepwater'] = true,
+    ['brash-ice'] = true,
+    ['lava-hot'] = true,
+}
+
+Public.path_tile_names =
+{
+    'highland-yellow-rock',
+    'highland-yellow-rock',
+    'highland-dark-rock-2',
+    'highland-dark-rock-2',
+    'highland-dark-rock',
+    'highland-dark-rock',
+    'midland-cracked-lichen-dull',
+    'midland-cracked-lichen-dull',
+    'midland-cracked-lichen-dark',
+    'midland-cracked-lichen-dark',
+    'midland-turquoise-bark-2',
+    'midland-turquoise-bark-2',
+    'midland-turquoise-bark',
+    'midland-turquoise-bark',
+    'lowland-dead-skin',
+    'lowland-dead-skin',
+    'lowland-dead-skin-2',
+    'lowland-dead-skin-2',
+    'lowland-red-vein-dead',
+    'lowland-red-vein-dead',
+}
+
+Public.path_tile_names_dict =
+{
+    ['highland-yellow-rock'] = true,
+    ['highland-dark-rock-2'] = true,
+    ['highland-dark-rock'] = true,
+    ['midland-cracked-lichen-dull'] = true,
+    ['midland-cracked-lichen-dark'] = true,
+    ['midland-turquoise-bark-2'] = true,
+    ['midland-turquoise-bark'] = true,
+    ['lowland-dead-skin'] = true,
+    ['lowland-dead-skin-2'] = true,
+    ['lowland-red-vein-dead'] = true,
+}
+
+Public.messages =
+{
+    "The infestation spreads its reach...",
+    "Extending the corruption — please stand by...",
+    "Creeping tendrils are forming new islands...",
+    "Nature’s wrath forges a new connection...",
+    "The island keeper senses movement beneath the waters...",
+    "Roots dig deep — a new island awakens...",
+    "The corruption coils ever closer...",
+    "Spawning path tiles... and probably a few regrets...",
+    "The ground trembles as the next path takes shape...",
+    "Building a new route for our doom — hang tight...",
+    "The infestation hums... something new emerges...",
+    "Path formation in progress — please don’t fall in...",
+    "The snake slithers onward... destination unknown...",
+    "Twisting and turning — the way forward is being formed...",
+    "Stretching the tendrils of chaos to new lands...",
+    "Bridging the gap between survival and regret..."
+}
+
+Public.gleba_trees =
+{
+    'jellystem',
+    'yumako-tree'
+}
+
+Public.enemy_progression =
+{
+    {
+        max_level = 2,
+        biter_types = { 'small-biter', 'small-wriggler-pentapod' },
+        spitter_types = { 'small-spitter' },
+        worm_types = { 'small-worm-turret' },
+        spawner_types = { 'biter-spawner', 'spitter-spawner', 'gleba-spawner-small' },
+        spawn_qualities = { 'normal' }
+    },
+    {
+        max_level = 5,
+        biter_types = { 'small-biter', 'medium-biter', 'small-wriggler-pentapod' },
+        spitter_types = { 'small-spitter', 'medium-spitter', 'small-strafer-pentapod' },
+        worm_types = { 'small-worm-turret', 'medium-worm-turret' },
+        spawner_types = { 'biter-spawner', 'spitter-spawner', 'gleba-spawner-small' },
+        spawn_qualities = { 'normal', 'uncommon' }
+    },
+    {
+        max_level = 8,
+        biter_types = { 'medium-biter', 'big-biter', 'medium-wriggler-pentapod', 'big-wriggler-pentapod', 'small-stomper-pentapod' },
+        spitter_types = { 'medium-spitter', 'big-spitter', 'small-strafer-pentapod', 'medium-strafer-pentapod' },
+        worm_types = { 'medium-worm-turret', 'big-worm-turret' },
+        spawner_types = { 'biter-spawner', 'spitter-spawner', 'gleba-spawner' },
+        spawn_qualities = { 'uncommon', 'rare' }
+    },
+    {
+        max_level = 15,
+        biter_types = { 'big-biter', 'behemoth-biter', 'big-wriggler-pentapod', 'medium-stomper-pentapod' },
+        spitter_types = { 'big-spitter', 'behemoth-spitter', 'big-strafer-pentapod', 'medium-strafer-pentapod' },
+        worm_types = { 'big-worm-turret', 'behemoth-worm-turret' },
+        spawner_types = { 'biter-spawner', 'spitter-spawner', 'gleba-spawner' },
+        spawn_qualities = { 'rare', 'epic' }
+    },
+    {
+        max_level = math.huge,
+        biter_types = { 'big-biter', 'behemoth-biter', 'big-wriggler-pentapod', 'big-stomper-pentapod' },
+        spitter_types = { 'big-spitter', 'behemoth-spitter', 'big-strafer-pentapod', 'medium-strafer-pentapod' },
+        worm_types = { 'big-worm-turret', 'behemoth-worm-turret' },
+        spawner_types = { 'biter-spawner', 'spitter-spawner', 'gleba-spawner' },
+        spawn_qualities = { 'epic', 'legendary' }
+    }
+}
+
+local set_tech_limit_token = Task.register(
+    function ()
+        Public.functions.disable_tech()
+    end
+)
 
 local function init_mirror_surface()
     if game.surfaces['island'] then
@@ -86,9 +358,8 @@ function Public.on_init()
     T.main_caption_color = { r = 150, g = 150, b = 0 }
     T.sub_caption_color = { r = 0, g = 150, b = 0 }
 
-    Scheduler.can_run_scheduler(true)
-
     this.game_lost = false
+    this.top_label_caption_override = nil
 
     local surface = game.surfaces[1]
     surface.ignore_surface_conditions = true
@@ -102,9 +373,9 @@ function Public.on_init()
 
     this.soft_reset = true
 
-    this.bridge_position = { x = 0, y = 0 }
+    this.game_over_if_market_dies = false
 
-    this.notified_market_safe = false
+    this.bridge_position = { x = 0, y = 0 }
 
     local mgs = surface.map_gen_settings
     mgs.water = 9.9
@@ -170,7 +441,7 @@ function Public.on_init()
 
     this.player_options = {}
 
-    this.autogenerate_islands = false
+    this.auto_create_islands = false
 
     this.vector = {}
 
@@ -183,12 +454,8 @@ function Public.on_init()
     game.forces.player.set_spawn_position({ 0, 2 }, surface)
 
     this.alive_enemies = 0
-    this.alive_boss_enemy_count = 0
 
     this.current_level = this.current_level + 1
-    this.current_stage = 1
-
-    this.completed_levels = {}
 
     this.market_positions = {}
 
@@ -196,9 +463,7 @@ function Public.on_init()
 
     this.rocket_silo = nil
 
-    this.connected_islands = {}
-
-    this.centered_points =
+    this.islands_data =
     {
         [1] = { position = { x = 0, y = 0 }, radius = 200, level = 1 }
     }
@@ -223,10 +488,6 @@ function Public.on_init()
         'legendary'
     }
 
-    this.tiles = {}
-
-    this.spawned_markets = {}
-
     this.path_tiles = nil
 
     this.max_biters_per_island = 150
@@ -243,7 +504,8 @@ function Public.on_init()
         }
     end
 
-    this.nomed_marked = nil
+    this.fallen_market = nil
+    this.printed_location_for_fallen_market = nil
 
     this.loot_stats =
     {
@@ -266,6 +528,8 @@ function Public.on_init()
     surface.ticks_per_day = 25200
 
     this.market_prices = {}
+
+    this.game_over_tasks_done = false
 
     this.drift_corpses_toward_beach_enabled = true
 
@@ -291,16 +555,61 @@ function Public.on_init()
     this.cooldown_complete_level = game.tick + 100
     this.voting_to_progress_enabled = true
 
+    this.reverse_start_position = true
+
     this.checked_island = {}
+
+    this.time_until_next_island_is_created = nil -- 60 * 60 * 60 -- 1 hour
+    this.time_until_next_island_is_created_static = nil
+    this.auto_generate_upon_idle = true
 
     game.forces.enemy.set_friend('player', false)
     game.forces.player.set_friend('enemy', false)
+    game.forces.enemy.set_cease_fire('player', false)
+    game.forces.player.set_cease_fire('enemy', false)
 
     Public.draw_main_island({ x = 0, y = 0 }, 200)
 
     Difficulty.reset_difficulty_poll({ closing_timeout = game.tick + 36000 })
     Difficulty.set_gui_width(20)
     Difficulty.set('button_height', 54)
+
+    Difficulty.set_difficulties(
+        {
+            [1] =
+            {
+                name = "I'm too young to die",
+                index = 1,
+                value = 1,
+                color = { r = 0.00, g = 0.25, b = 0.00 },
+                print_color = { r = 0.00, g = 0.4, b = 0.00 },
+                count = 0,
+                strength_modifier = 1.00,
+                boss_modifier = 6.0
+            },
+            [2] =
+            {
+                name = 'Hurt me plenty',
+                index = 2,
+                value = 4,
+                color = { r = 0.00, g = 0.00, b = 0.25 },
+                print_color = { r = 0.0, g = 0.0, b = 0.5 },
+                count = 0,
+                strength_modifier = 5,
+                boss_modifier = 7.0
+            },
+            [3] =
+            {
+                name = 'Ultra-violence',
+                index = 3,
+                value = 10,
+                color = { r = 255, g = 128, b = 0.00 },
+                print_color = { r = 255, g = 128, b = 0.00 },
+                count = 0,
+                strength_modifier = 12,
+                boss_modifier = 8.0
+            }
+        })
     this.difficulty_vote_ended = false
     Server.to_discord_embed('** A fresh round of Infestation Islands has begun! **')
     Task.set_timeout_in_ticks(100, set_tech_limit_token)

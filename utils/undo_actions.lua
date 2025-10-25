@@ -275,7 +275,7 @@ end)
 Commands.new('undo_player_actions', 'Undoes the actions of a player as a player by creating a poll.')
     :add_parameter('player', false, 'player')
     :require_validation('Only utilize this command if the player is jailed and has entities in the undo queue.')
-    :require_playtime(60 * 60 * 60 * 24 * 40) -- 30 days
+    :require_playtime(60 * 60 * 60 * 24 * 40) -- 40 days
     :callback(function (player, target_player)
         if not target_player or not target_player.valid then
             return player.print('Player is not valid.')

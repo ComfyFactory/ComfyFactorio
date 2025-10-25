@@ -808,6 +808,9 @@ local set_unit_raffle_token =
                 local boss_raffle = WD.get('boss_raffle') --[[@as table]]
 
                 if level >= 100 and level < 200 then
+                    WD.set('biter_raffle', {})
+                    WD.set('spitter_raffle', {})
+                    WD.set('boss_raffle', {})
                     biter_raffle['mtn-addon-small-piercing-biter-t2'] = round(2000 - level * 1.75, 6)
                     biter_raffle['mtn-addon-small-acid-biter-t2'] = round(2000 - level * 1.75, 6)
                     biter_raffle['mtn-addon-small-explosive-biter-t2'] = round(2000 - level * 1.75, 6)
@@ -833,6 +836,9 @@ local set_unit_raffle_token =
                 end
 
                 if level >= 200 and level < 250 then
+                    WD.set('biter_raffle', {})
+                    WD.set('spitter_raffle', {})
+                    WD.set('boss_raffle', {})
                     biter_raffle['mtn-addon-small-piercing-biter-t3'] = round(1500 - level * 1.75, 6)
                     biter_raffle['mtn-addon-small-acid-biter-t3'] = round(1500 - level * 1.75, 6)
                     biter_raffle['mtn-addon-small-explosive-biter-t3'] = round(1500 - level * 1.75, 6)
@@ -858,6 +864,8 @@ local set_unit_raffle_token =
                     boss_raffle['mtn-addon-medium-fire-biter-t3'] = round(1500 - (level - 1.50), 6)
                 end
                 if level >= 250 and level < 300 then
+                    WD.set('biter_raffle', {})
+                    WD.set('spitter_raffle', {})
                     if Public.is_modded_pt2 then
                         biter_raffle['medium-wriggler-pentapod'] = round(250 - (level - 250), 6)
                     end
@@ -874,6 +882,9 @@ local set_unit_raffle_token =
                     spitter_raffle['mtn-addon-medium-fire-spitter-t1'] = round(250 - (level - 250), 6)
                 end
                 if level >= 300 and level < 350 then
+                    WD.set('biter_raffle', {})
+                    WD.set('spitter_raffle', {})
+                    WD.set('boss_raffle', {})
                     biter_raffle['mtn-addon-medium-piercing-biter-t2'] = round(300 - (level - 300), 6)
                     biter_raffle['mtn-addon-medium-acid-biter-t2'] = round(300 - (level - 300), 6)
                     biter_raffle['mtn-addon-medium-explosive-biter-t2'] = round(300 - (level - 300), 6)
@@ -899,6 +910,9 @@ local set_unit_raffle_token =
                     boss_raffle['mtn-addon-big-fire-biter-t1'] = round(300 - (level - 300), 6)
                 end
                 if level >= 350 and level < 400 then
+                    WD.set('biter_raffle', {})
+                    WD.set('spitter_raffle', {})
+                    WD.set('boss_raffle', {})
                     biter_raffle['mtn-addon-medium-piercing-biter-t3'] = round(350 - (level - 350), 6)
                     biter_raffle['mtn-addon-medium-acid-biter-t3'] = round(350 - (level - 350), 6)
                     biter_raffle['mtn-addon-medium-explosive-biter-t3'] = round(350 - (level - 350), 6)
@@ -925,6 +939,8 @@ local set_unit_raffle_token =
                 end
 
                 if level >= 400 and level < 500 then
+                    WD.set('biter_raffle', {})
+                    WD.set('spitter_raffle', {})
                     boss_raffle['mtn-addon-big-piercing-spitter-t3'] = round(400 - (level - 400), 6)
                     boss_raffle['mtn-addon-big-acid-spitter-t3'] = round(400 - (level - 400), 6)
                     boss_raffle['mtn-addon-big-explosive-spitter-t3'] = round(400 - (level - 400), 6)
@@ -939,6 +955,9 @@ local set_unit_raffle_token =
                 end
 
                 if level >= 500 and level < 550 then
+                    WD.set('biter_raffle', {})
+                    WD.set('spitter_raffle', {})
+                    WD.set('boss_raffle', {})
                     if Public.is_modded_pt2 then
                         biter_raffle['big-wriggler-pentapod'] = round(500 - (level - 500) * 2, 6)
                     end
@@ -967,6 +986,9 @@ local set_unit_raffle_token =
                     boss_raffle['mtn-addon-behemoth-fire-biter-t1'] = round(500 - (level - 500) * 2, 6)
                 end
                 if level >= 550 and level < 600 then
+                    WD.set('biter_raffle', {})
+                    WD.set('spitter_raffle', {})
+                    WD.set('boss_raffle', {})
                     biter_raffle['mtn-addon-big-piercing-biter-t2'] = round(550 - (level - 550) * 2, 6)
                     biter_raffle['mtn-addon-big-acid-biter-t2'] = round(550 - (level - 550) * 2, 6)
                     biter_raffle['mtn-addon-big-explosive-biter-t2'] = round(550 - (level - 550) * 2, 6)
@@ -993,6 +1015,9 @@ local set_unit_raffle_token =
                 end
 
                 if level >= 600 and level < 800 then
+                    WD.set('biter_raffle', {})
+                    WD.set('spitter_raffle', {})
+                    WD.set('boss_raffle', {})
                     biter_raffle['mtn-addon-big-piercing-biter-t3'] = round(600 - (level - 600) * 2, 6)
                     biter_raffle['mtn-addon-big-acid-biter-t3'] = round(600 - (level - 600) * 2, 6)
                     biter_raffle['mtn-addon-big-explosive-biter-t3'] = round(600 - (level - 600) * 2, 6)
@@ -1019,6 +1044,9 @@ local set_unit_raffle_token =
                 end
 
                 if level >= 800 and level < 900 then
+                    WD.set('biter_raffle', {})
+                    WD.set('spitter_raffle', {})
+                    WD.set('boss_raffle', {})
                     biter_raffle['mtn-addon-behemoth-piercing-biter-t1'] = round((level - 800) * 2.75, 6)
                     biter_raffle['mtn-addon-behemoth-acid-biter-t1'] = round((level - 800) * 2.75, 6)
                     biter_raffle['mtn-addon-behemoth-explosive-biter-t1'] = round((level - 800) * 2.75, 6)
@@ -1044,6 +1072,9 @@ local set_unit_raffle_token =
                     boss_raffle['mtn-addon-boss-fire-spitter-t1'] = round((level - 800) * 2.75, 6)
                 end
                 if level >= 900 and level < 1000 then
+                    WD.set('biter_raffle', {})
+                    WD.set('spitter_raffle', {})
+                    WD.set('boss_raffle', {})
                     biter_raffle['mtn-addon-behemoth-piercing-biter-t2'] = round((level - 900) * 2.75, 6)
                     biter_raffle['mtn-addon-behemoth-acid-biter-t2'] = round((level - 900) * 2.75, 6)
                     biter_raffle['mtn-addon-behemoth-explosive-biter-t2'] = round((level - 900) * 2.75, 6)
@@ -1070,6 +1101,9 @@ local set_unit_raffle_token =
                 end
 
                 if level >= 1000 and level < 1100 then
+                    WD.set('biter_raffle', {})
+                    WD.set('spitter_raffle', {})
+                    WD.set('boss_raffle', {})
                     biter_raffle['mtn-addon-behemoth-piercing-biter-t3'] = round((level - 1000) * 2.75, 6)
                     biter_raffle['mtn-addon-behemoth-acid-biter-t3'] = round((level - 1000) * 2.75, 6)
                     biter_raffle['mtn-addon-behemoth-explosive-biter-t3'] = round((level - 1000) * 2.75, 6)
@@ -1096,6 +1130,9 @@ local set_unit_raffle_token =
                 end
 
                 if level >= 1100 and level < 1200 then
+                    WD.set('biter_raffle', {})
+                    WD.set('spitter_raffle', {})
+                    WD.set('boss_raffle', {})
                     biter_raffle['mtn-addon-behemoth-piercing-biter-t3'] = round((level - 1100) * 2.75, 6)
                     biter_raffle['mtn-addon-behemoth-acid-biter-t3'] = round((level - 1100) * 2.75, 6)
                     biter_raffle['mtn-addon-behemoth-explosive-biter-t3'] = round((level - 1100) * 2.75, 6)
@@ -1122,6 +1159,9 @@ local set_unit_raffle_token =
                 end
 
                 if level >= 1200 and level < 1300 then
+                    WD.set('biter_raffle', {})
+                    WD.set('spitter_raffle', {})
+                    WD.set('boss_raffle', {})
                     biter_raffle['mtn-addon-behemoth-piercing-biter-t3'] = round((level - 1200) * 2.75, 6)
                     biter_raffle['mtn-addon-behemoth-acid-biter-t3'] = round((level - 1200) * 2.75, 6)
                     biter_raffle['mtn-addon-behemoth-explosive-biter-t3'] = round((level - 1200) * 2.75, 6)
@@ -1148,6 +1188,9 @@ local set_unit_raffle_token =
                 end
 
                 if level >= 1300 and level < 1400 then
+                    WD.set('biter_raffle', {})
+                    WD.set('spitter_raffle', {})
+                    WD.set('boss_raffle', {})
                     biter_raffle['mtn-addon-behemoth-piercing-biter-t3'] = round((level - 1300) * 2.75, 6)
                     biter_raffle['mtn-addon-behemoth-acid-biter-t3'] = round((level - 1300) * 2.75, 6)
                     biter_raffle['mtn-addon-behemoth-explosive-biter-t3'] = round((level - 1300) * 2.75, 6)
@@ -1173,7 +1216,10 @@ local set_unit_raffle_token =
                     boss_raffle['mtn-addon-boss-fire-spitter-t6'] = round((level - 1300) * 2.75, 6)
                 end
 
-                if level >= 1400  then
+                if level >= 1400 then
+                    WD.set('biter_raffle', {})
+                    WD.set('spitter_raffle', {})
+                    WD.set('boss_raffle', {})
                     biter_raffle['mtn-addon-behemoth-piercing-biter-t3'] = round((level - 1400) * 2.75, 6)
                     biter_raffle['mtn-addon-behemoth-acid-biter-t3'] = round((level - 1400) * 2.75, 6)
                     biter_raffle['mtn-addon-behemoth-explosive-biter-t3'] = round((level - 1400) * 2.75, 6)

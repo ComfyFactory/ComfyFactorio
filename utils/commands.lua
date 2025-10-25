@@ -79,11 +79,10 @@ Global.register(
     this,
     function (tbl)
         this = tbl
-        for _, command in pairs(this.commands) do
-            setmetatable(command, Public.metatable)
-        end
     end
 )
+
+script.register_metatable('CommandData', Public.metatable)
 
 local function conv(v)
     if tonumber(v) then
