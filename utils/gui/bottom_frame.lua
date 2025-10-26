@@ -3,6 +3,8 @@ local Global = require 'utils.global'
 local Gui = require 'utils.gui'
 local Task = require 'utils.task_token'
 local Config = require 'utils.gui.config'
+local CustomEvents = require 'utils.created_events'
+
 local this =
 {
     players = {},
@@ -22,14 +24,7 @@ Global.register(
 -- @table events
 -- @field bottom_quickbar_respawn_raise The event triggered when the bottom quickbar is respawned or raised.
 -- @field bottom_quickbar_location_changed The event triggered when the location of the bottom quickbar is changed.
-local Public =
-{
-    events =
-    {
-        bottom_quickbar_respawn_raise = Event.generate_event_name('bottom_quickbar_respawn_raise'),
-        bottom_quickbar_location_changed = Event.generate_event_name('bottom_quickbar_location_changed')
-    }
-}
+local Public = {}
 
 local set_location
 local destroy_frame
@@ -469,7 +464,7 @@ set_location = function (player, state)
         }
     end
 
-    Event.raise(Public.events.bottom_quickbar_location_changed, { player_index = player.index, data = data })
+    Event.raise(CustomEvents.events.bottom_quickbar_location_changed, { player_index = player.index, data = data })
 
     data.state = state
     create_frame(player, alignment, location, data)
@@ -670,7 +665,7 @@ Event.add(
 )
 
 Event.add(
-    Public.events.bottom_quickbar_respawn_raise,
+    CustomEvents.events.bottom_quickbar_respawn_raise,
     function (event)
         if not event or not event.player_index then
             return
@@ -685,7 +680,7 @@ Event.add(
 )
 
 Event.add(
-    Public.events.bottom_quickbar_location_changed,
+    CustomEvents.events.bottom_quickbar_location_changed,
     function (event)
         if not event or not event.player_index then
             return

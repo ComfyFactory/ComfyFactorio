@@ -18,18 +18,17 @@ local commands =
 
 local title_to_command =
 {
-    ['editor'] = "Editor",
-    ['open'] = "Open",
-    ['cheat'] = "Cheat",
-    ['permissions'] = "Permissions",
-    ['banlist'] = "Banlist",
-    ['config'] = "Config",
-    ['command'] = "Command",
-    ['silent-command'] = "Silent Command",
-    ['sc'] = "Silent Command",
-    ['debug'] = "Debug"
+    ['editor'] = 'Editor',
+    ['open'] = 'Open',
+    ['cheat'] = 'Cheat',
+    ['permissions'] = 'Permissions',
+    ['banlist'] = 'Banlist',
+    ['config'] = 'Config',
+    ['command'] = 'Command',
+    ['silent-command'] = 'Silent Command',
+    ['sc'] = 'Silent Command',
+    ['debug'] = 'Debug'
 }
-
 
 local function on_console_command(event)
     local cmd = event.command
@@ -46,36 +45,37 @@ local function on_console_command(event)
         end
         executor = player.name
     else
-        executor = "Server"
+        executor = 'Server'
     end
 
-    local param = (event.parameters and event.parameters ~= "" and event.parameters) or "No parameters"
-    local server_name = Server.get_server_name() or "CommandHandler"
+    local param = (event.parameters and event.parameters ~= '' and event.parameters) or 'No parameters'
+    local server_name = Server.get_server_name() or 'CommandHandler'
 
     Discord.send_notification(
         {
             title = title_to_command[cmd],
-            description = "/" .. cmd .. " was used",
-            color = "warning",
+            description = '/' .. cmd .. ' was used',
+            color = 'warning',
             fields =
             {
                 {
-                    title = "Server",
+                    title = 'Server',
                     description = server_name,
-                    inline = "false"
+                    inline = 'false'
                 },
                 {
-                    title = "By",
+                    title = 'By',
                     description = executor,
-                    inline = "true"
+                    inline = 'true'
                 },
                 {
-                    title = "Details",
+                    title = 'Details',
                     description = param,
-                    inline = "true"
+                    inline = 'true'
                 }
             }
-        })
+        }
+    )
 end
 
 Event.add(defines.events.on_console_command, on_console_command)
@@ -89,18 +89,19 @@ Event.add(
 
         Discord.send_notification(
             {
-                title = "Admin promotion",
-                description = player.name .. " was promoted.",
-                color = "success",
+                title = 'Admin promotion',
+                description = player.name .. ' was promoted.',
+                color = 'success',
                 fields =
                 {
                     {
-                        title = "Server",
+                        title = 'Server',
                         description = server_name,
-                        inline = "false"
+                        inline = 'false'
                     }
                 }
-            })
+            }
+        )
 
         if not game.is_multiplayer() then
             return
@@ -120,18 +121,19 @@ Event.add(
 
         Discord.send_notification(
             {
-                title = "Admin demotion",
-                description = player.name .. " was demoted.",
-                color = "warning",
+                title = 'Admin demotion',
+                description = player.name .. ' was demoted.',
+                color = 'warning',
                 fields =
                 {
                     {
-                        title = "Server",
+                        title = 'Server',
                         description = server_name,
-                        inline = "false"
+                        inline = 'false'
                     }
                 }
-            })
+            }
+        )
     end
 )
 
@@ -143,17 +145,18 @@ Event.add(
 
         Discord.send_notification(
             {
-                title = "Player kicked",
-                description = player.name .. " was kicked.",
-                color = "danger",
+                title = 'Player kicked',
+                description = player.name .. ' was kicked.',
+                color = 'danger',
                 fields =
                 {
                     {
-                        title = "Server",
+                        title = 'Server',
                         description = server_name,
-                        inline = "false"
+                        inline = 'false'
                     }
                 }
-            })
+            }
+        )
     end
 )

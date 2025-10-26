@@ -16,6 +16,7 @@ local RPG = require 'modules.rpg.table'
 local Beam = require 'modules.render_beam'
 local Discord = require 'utils.discord'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
+local CustomEvents = require 'utils.created_events'
 
 local this =
 {
@@ -2356,6 +2357,7 @@ function Public.set_final_battle()
     local es_settings = WD.get_es('settings')
     WD.set_es('final_battle', true)
     es_settings.final_battle = true
+    es_settings.force_name = 'aggressors_frenzy'
     Public.set('final_battle', true)
 end
 
@@ -2410,14 +2412,14 @@ function Public.increase_enemy_damage_and_health()
     this.enemies_boosted = true
 
     if this.rounds_survived == 1 then
-        Event.raise(WD.events.on_biters_evolved, { force = game.forces.enemy, health_increase = true })
-        Event.raise(WD.events.on_biters_evolved, { force = game.forces.aggressors })
-        Event.raise(WD.events.on_biters_evolved, { force = game.forces.aggressors_frenzy })
+        Event.raise(CustomEvents.events.on_biters_evolved, { force = game.forces.enemy, health_increase = true })
+        Event.raise(CustomEvents.events.on_biters_evolved, { force = game.forces.aggressors })
+        Event.raise(CustomEvents.events.on_biters_evolved, { force = game.forces.aggressors_frenzy })
     else
         for _ = 1, this.rounds_survived do
-            Event.raise(WD.events.on_biters_evolved, { force = game.forces.enemy, health_increase = true })
-            Event.raise(WD.events.on_biters_evolved, { force = game.forces.aggressors })
-            Event.raise(WD.events.on_biters_evolved, { force = game.forces.aggressors_frenzy })
+            Event.raise(CustomEvents.events.on_biters_evolved, { force = game.forces.enemy, health_increase = true })
+            Event.raise(CustomEvents.events.on_biters_evolved, { force = game.forces.aggressors })
+            Event.raise(CustomEvents.events.on_biters_evolved, { force = game.forces.aggressors_frenzy })
         end
     end
 end
@@ -2483,7 +2485,7 @@ function Public.stateful_on_server_started()
 end
 
 Event.add(
-    Server.events.on_server_started,
+    CustomEvents.events.on_server_started,
     function ()
         if this.settings_applied then
             return

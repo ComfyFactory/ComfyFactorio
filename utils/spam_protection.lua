@@ -1,12 +1,16 @@
 local Event = require 'utils.event'
 local Global = require 'utils.global'
+local Commands = require 'utils.commands'
+local Server = require 'utils.server'
 local Public = {}
 
-local this = {
+local this =
+{
     prevent_spam = {}, -- the default table where all player indexes will be stored
     default_tick = 10, -- this defines the default tick to check whether or not a user is spamming a button.
     debug_text = false,
-    debug_spam = false
+    debug_spam = false,
+    show_debug_text_for = {}
 }
 
 local main_text = '[Spam Info] '
@@ -22,14 +26,14 @@ local function debug_text(str)
     if not this.debug_text then
         return
     end
-    log(main_text .. str)
+    Server.output_script_data(main_text .. str)
 end
 
 local function debug_spam(str)
     if not this.debug_spam then
         return
     end
-    log(main_text .. str)
+    Server.output_script_data(main_text .. str)
 end
 
 function Public.reset_spam_table()
@@ -59,7 +63,15 @@ function Public.is_spamming(player, value_to_compare, text)
     end
 
     if text then
-        debug_text('Frame: ' .. text)
+        if this.show_debug_text_for then
+            for name, _ in pairs(this.show_debug_text_for) do
+                local debug_player = game.get_player(name)
+                if debug_player and debug_player.valid then
+                    debug_player.print('Player ' .. player.name .. ' clicked on: ' .. text .. ' on surface: ' .. player.surface.name .. ' at position: ' .. player.position.x .. ', ' .. player.position.y .. ' at tick: ' .. game.tick)
+                end
+            end
+        end
+        debug_text('Player ' .. player.name .. ' clicked on: ' .. text .. ' on surface: ' .. player.surface.name .. ' at position: ' .. player.position.x .. ', ' .. player.position.y .. ' at tick: ' .. game.tick)
     end
 
     if game.tick_paused then
@@ -67,7 +79,7 @@ function Public.is_spamming(player, value_to_compare, text)
     end
 
     if this.debug_spam then
-        log(debug.traceback())
+        Server.output_script_data(debug.traceback())
     end
 
     local tick = game.tick
@@ -125,5 +137,42 @@ Event.on_init(
         Public.reset_spam_table()
     end
 )
+
+Commands.new('sp_debug_text', 'Spam Protection - Shows the debug text for when players are clicking gui buttons.')
+    :require_admin()
+    :add_parameter('state', false, 'boolean')
+    :callback(
+        function (player, state)
+            this.debug_text = state
+            player.print('Debug text for spam protection has been ' .. (state and 'enabled' or 'disabled') .. '!')
+        end
+    )
+
+Commands.new('sp_debug_spam', 'Spam Protection - Shows the debug spam for when players are clicking gui buttons.')
+    :require_admin()
+    :add_parameter('state', false, 'boolean')
+    :callback(
+        function (player, state)
+            this.debug_spam = state
+            player.print('Debug spam for spam protection has been ' .. (state and 'enabled' or 'disabled') .. '!')
+        end
+    )
+
+Commands.new('sp_print_text', 'Spam Protection - Prints the debug text for when players are clicking gui buttons to your console.')
+    :require_admin()
+    :add_parameter('state', false, 'boolean')
+    :callback(
+        function (player, state)
+            this.show_debug_text_for = this.show_debug_text_for or {}
+
+            if state then
+                this.show_debug_text_for[player.name] = true
+                player.print('Debug text for spam protection has been enabled!')
+            else
+                this.show_debug_text_for[player.name] = nil
+                player.print('Debug text for spam protection has been disabled!')
+            end
+        end
+    )
 
 return Public

@@ -8,6 +8,7 @@ local Task = require 'utils.task'
 local Server = require 'utils.server'
 local Event = require 'utils.event'
 local table = require 'utils.table'
+local CustomEvents = require 'utils.created_events'
 
 local set_timeout_in_ticks = Task.set_timeout_in_ticks
 
@@ -41,9 +42,6 @@ Global.register(
 )
 
 local Public = {
-    events = {
-        on_player_removed = Event.generate_event_name('on_player_removed')
-    }
 }
 
 local try_download_data_token =
@@ -348,7 +346,7 @@ end
 --- It's vital that we reset the online_track so we
 --- don't calculate the values wrong.
 Event.add(
-    Public.events.on_player_removed,
+    CustomEvents.events.on_player_removed,
     function ()
         for name, _ in pairs(online_track) do
             local player = game.get_player(name)

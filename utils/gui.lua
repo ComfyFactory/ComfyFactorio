@@ -3,6 +3,7 @@ local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Server = require 'utils.server'
 local SpamProtection = require 'utils.spam_protection'
+local CustomEvents = require 'utils.created_events'
 
 local insert = table.insert
 local tostring = tostring
@@ -10,10 +11,15 @@ local next = next
 local gui_prefix = 'comfy_'
 
 local Public = {}
-Public.events =
+
+local ordered_tab_names =
 {
-    on_gui_removal = Event.generate_event_name('on_gui_removal'),
-    on_gui_closed_main_frame = Event.generate_event_name('on_gui_closed_main_frame')
+    "Players",
+    "Admin",
+    "Groups",
+    "Scoreboard",
+    "Statistics",
+    "Config",
 }
 
 -- local to this file
@@ -28,6 +34,7 @@ local concat = table.concat
 local names = {}
 -- global
 local data = {}
+local removed_objects = {}
 local settings =
 {
     mod_gui_top_frame = true,
@@ -37,9 +44,10 @@ local settings =
 
 Public.token =
     Global.register(
-        { data = data, settings = settings },
+        { data = data, removed_objects = removed_objects, settings = settings },
         function (tbl)
             data = tbl.data
+            removed_objects = tbl.removed_objects
             settings = tbl.settings
         end
     )
@@ -149,7 +157,10 @@ function Public.set_data(element, value)
             data[player_index] = values
         end
 
-        values[element.index] = { value = value, name = element.name }
+        local registration_number = script.register_on_object_destroyed(element)
+        removed_objects[registration_number] = player_index
+
+        values[element.index] = { value = value, name = element.name, registration_number = registration_number }
     end
 end
 
@@ -385,34 +396,6 @@ function Public.clear(element)
     remove_children_data(element)
     element.clear()
 end
-
-local function clear_invalid_data()
-    if settings.disable_clear_invalid_data then
-        return
-    end
-
-    for _, player in pairs(game.players) do
-        local player_index = player.index
-        local values = data[player_index]
-        if values then
-            for k, element in next, values do
-                if type(element) == 'table' then
-                    for key, obj in next, element do
-                        if type(obj) == 'table' and obj.valid ~= nil then
-                            if not obj.valid then
-                                element[key] = nil
-                            end
-                        end
-                    end
-                    if type(element) == 'userdata' and not element.valid then
-                        values[k] = nil
-                    end
-                end
-            end
-        end
-    end
-end
-Event.on_nth_tick(300, clear_invalid_data)
 
 local function handler_factory(event_id)
     local handlers
@@ -663,7 +646,7 @@ function Public.clear_all_screen_frames(player)
 end
 
 function Public.clear_all_active_frames(player)
-    Event.raise(Public.events.on_gui_closed_main_frame, { player_index = player.index })
+    Event.raise(CustomEvents.events.on_gui_closed_main_frame, { player_index = player.index })
     for _, child in pairs(player.gui.left.children) do
         if child.name:find(gui_prefix) then
             remove_data_recursively(child)
@@ -825,17 +808,50 @@ local function draw_main_frame(player)
 
     Public.clear_all_active_frames(player)
 
-    if Public.get_main_frame(player) then
-        remove_data_recursively(Public.get_main_frame(player))
-        Public.get_main_frame(player).destroy()
+    local existing_frame = Public.get_main_frame(player)
+    if existing_frame then
+        remove_data_recursively(existing_frame)
+        existing_frame.destroy()
     end
 
     local admins = Server.get_admins_data()
+    local frame, inside_frame = Public.add_main_frame_with_toolbar(
+        player,
+        'left',
+        main_frame_name,
+        nil,
+        close_button_name,
+        'Comfy Factorio'
+    )
 
-    local frame, inside_frame = Public.add_main_frame_with_toolbar(player, 'left', main_frame_name, nil,
-        close_button_name, 'Comfy Factorio')
     local tabbed_pane = inside_frame.add({ type = 'tabbed-pane', name = 'tabbed_pane' })
-    for name, callback in pairs(tabs) do
+
+    local ordered_tabs = {}
+
+    for _, name in ipairs(ordered_tab_names) do
+        if tabs[name] then
+            table.insert(ordered_tabs, { name = name, data = tabs[name] })
+        end
+    end
+
+    for name, tab_data in pairs(tabs) do
+        local found = false
+        for _, ordered_name in ipairs(ordered_tab_names) do
+            if name == ordered_name then
+                found = true
+                break
+            end
+        end
+        if not found then
+            table.insert(ordered_tabs, { name = name, data = tab_data })
+        end
+    end
+
+
+    for _, entry in ipairs(ordered_tabs) do
+        local name = entry.name
+        local callback = entry.data
+
         if not settings.disabled_tabs[name] then
             local show = false
             local secs = Server.get_current_time()
@@ -851,8 +867,20 @@ local function draw_main_frame(player)
             end
 
             if show then
-                local tab = tabbed_pane.add({ type = 'tab', caption = name, name = callback.name, style = 'slightly_smaller_tab' })
-                local name_frame = tabbed_pane.add({ type = 'frame', name = name, direction = 'vertical', style = 'mod_gui_inside_deep_frame' })
+                local tab = tabbed_pane.add(
+                    {
+                        type = 'tab',
+                        caption = name,
+                        name = callback.name,
+                        style = 'slightly_smaller_tab'
+                    })
+                local name_frame = tabbed_pane.add(
+                    {
+                        type = 'frame',
+                        name = name,
+                        direction = 'vertical',
+                        style = 'mod_gui_inside_deep_frame'
+                    })
                 name_frame.style.padding = 8
                 tabbed_pane.add_tab(tab, name_frame)
             end
@@ -866,10 +894,24 @@ local function draw_main_frame(player)
     end
 
     player.opened = frame
-
     Public.reload_active_tab(player, true)
+
     return frame, inside_frame
 end
+
+local function on_object_destroyed(event)
+    local player_index = removed_objects[event.registration_number]
+    if not player_index then return end
+
+    local element_index = event.useful_id
+    removed_objects[event.registration_number] = nil
+
+    local player_data = data[player_index]
+    if player_data then
+        player_data[element_index] = nil
+    end
+end
+
 
 function Public.get_content(player)
     local left_frame = Public.get_main_frame(player)
@@ -890,7 +932,7 @@ function Public.refresh(player)
     for _, tab in pairs(tabbed_pane.tabs) do
         if tab.content.name ~= frame.name then
             tab.content.clear()
-            Event.raise(Public.events.on_gui_removal, { player_index = player.index })
+            Event.raise(CustomEvents.events.on_gui_removal, { player_index = player.index })
         end
     end
 
@@ -974,9 +1016,9 @@ Public.on_click(
         if frame then
             remove_data_recursively(frame)
             frame.destroy()
-            Event.raise(Public.events.on_gui_removal, { player_index = player.index })
+            Event.raise(CustomEvents.events.on_gui_removal, { player_index = player.index })
             local active_frame = Public.get_player_active_frame(player)
-            Event.raise(Public.events.on_gui_closed_main_frame,
+            Event.raise(CustomEvents.events.on_gui_closed_main_frame,
                 { player_index = player.index, element = active_frame or nil })
         else
             draw_main_frame(player)
@@ -990,7 +1032,7 @@ Public.on_click(
         local player = event.player
         local frame = Public.get_parent_frame(player)
         local active_frame = Public.get_player_active_frame(player)
-        Event.raise(Public.events.on_gui_closed_main_frame, { player_index = player.index, element = active_frame or nil })
+        Event.raise(CustomEvents.events.on_gui_closed_main_frame, { player_index = player.index, element = active_frame or nil })
         if frame then
             remove_data_recursively(frame)
             frame.destroy()
@@ -1003,7 +1045,7 @@ Public.on_custom_close(
     function (event)
         local player = event.player
         local active_frame = Public.get_player_active_frame(player)
-        Event.raise(Public.events.on_gui_closed_main_frame, { player_index = player.index, element = active_frame or nil })
+        Event.raise(CustomEvents.events.on_gui_closed_main_frame, { player_index = player.index, element = active_frame or nil })
         local frame = Public.get_parent_frame(player)
         if frame then
             remove_data_recursively(frame)
@@ -1115,6 +1157,8 @@ Event.add(
         top_button(player)
     end
 )
+
+Event.add(defines.events.on_object_destroyed, on_object_destroyed)
 
 function Public.data()
     return data

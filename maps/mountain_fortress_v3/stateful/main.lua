@@ -2,15 +2,15 @@ local Public = require 'maps.mountain_fortress_v3.stateful.table'
 local Event = require 'utils.event'
 local WD = require 'modules.wave_defense.table'
 local Beam = require 'modules.render_beam'
-local RPG = require 'modules.rpg.main'
-local BiterHealthBooster = require 'modules.biter_health_booster_v2'
+local CustomEvents = require 'utils.created_events'
 
 Public.stateful_gui = require 'maps.mountain_fortress_v3.stateful.gui'
 Public.stateful_blueprints = require 'maps.mountain_fortress_v3.stateful.blueprints'
 
 local random = math.random
 
-local valid_types = {
+local valid_types =
+{
     ['unit'] = true,
     ['turret'] = true
 }
@@ -77,6 +77,11 @@ Event.on_nth_tick(
             return
         end
 
+        local game_lost = Public.get('game_lost')
+        if game_lost then
+            return
+        end
+
         local collection = Public.get_stateful('collection')
         if not collection then
             return
@@ -97,22 +102,22 @@ Event.on_nth_tick(
                 Public.set_stateful(
                     'stateful_spawn_points',
                     {
-                        { { x = -205, y = -37 },  { x = 195, y = 37 } },
+                        { { x = -205, y = -37 }, { x = 195, y = 37 } },
                         { { x = -205, y = -112 }, { x = 195, y = 112 } },
                         { { x = -205, y = -146 }, { x = 195, y = 146 } },
                         { { x = -205, y = -112 }, { x = 195, y = 112 } },
-                        { { x = -205, y = -72 },  { x = 195, y = 72 } },
+                        { { x = -205, y = -72 }, { x = 195, y = 72 } },
                         { { x = -205, y = -146 }, { x = 195, y = 146 } },
-                        { { x = -205, y = -37 },  { x = 195, y = 37 } },
-                        { { x = -205, y = -5 },   { x = 195, y = 5 } },
-                        { { x = -205, y = -23 },  { x = 195, y = 23 } },
-                        { { x = -205, y = -5 },   { x = 195, y = 5 } },
-                        { { x = -205, y = -72 },  { x = 195, y = 72 } },
-                        { { x = -205, y = -23 },  { x = 195, y = 23 } },
-                        { { x = -205, y = -54 },  { x = 195, y = 54 } },
-                        { { x = -205, y = -80 },  { x = 195, y = 80 } },
-                        { { x = -205, y = -54 },  { x = 195, y = 54 } },
-                        { { x = -205, y = -80 },  { x = 195, y = 80 } },
+                        { { x = -205, y = -37 }, { x = 195, y = 37 } },
+                        { { x = -205, y = -5 }, { x = 195, y = 5 } },
+                        { { x = -205, y = -23 }, { x = 195, y = 23 } },
+                        { { x = -205, y = -5 }, { x = 195, y = 5 } },
+                        { { x = -205, y = -72 }, { x = 195, y = 72 } },
+                        { { x = -205, y = -23 }, { x = 195, y = 23 } },
+                        { { x = -205, y = -54 }, { x = 195, y = 54 } },
+                        { { x = -205, y = -80 }, { x = 195, y = 80 } },
+                        { { x = -205, y = -54 }, { x = 195, y = 54 } },
+                        { { x = -205, y = -80 }, { x = 195, y = 80 } },
                         { { x = -205, y = -103 }, { x = 195, y = 103 } },
                         { { x = -205, y = -150 }, { x = 195, y = 150 } },
                         { { x = -205, y = -103 }, { x = 195, y = 103 } },
@@ -135,6 +140,8 @@ Event.on_nth_tick(
             area[1].y = area[1].y + locomotive.position.y
             area[2].y = area[2].y + locomotive.position.y
 
+            WD.wave_defense_roll_boss_name()
+
             if random(1, 2) == 1 then
                 WD.set_spawn_position(area[1])
             else
@@ -144,7 +151,7 @@ Event.on_nth_tick(
             WD.set_main_target()
             WD.build_worm_custom()
             -- WD.place_custom_nest(locomotive.surface, area[1], 'aggressors_frenzy')
-            Event.raise(WD.events.on_spawn_unit_group_simple, { fs = true, bypass = true, random_bosses = true, scale = 32, force = 'aggressors_frenzy' })
+            Event.raise(CustomEvents.events.on_spawn_unit_group_simple, { fs = true, bypass = true, random_bosses = true, scale = 32, force = 'aggressors_frenzy' })
             Public.set_multi_command_final_battle()
             return
         end
@@ -208,7 +215,7 @@ Event.add(
 )
 
 Event.add(
-    RPG.events.on_spell_cast_success,
+    CustomEvents.events.on_spell_cast_success,
     function (event)
         local player = game.get_player(event.player_index)
         if not player or not player.valid then
@@ -248,6 +255,11 @@ Event.on_nth_tick(
             return
         end
 
+        local game_lost = Public.get('game_lost')
+        if game_lost then
+            return
+        end
+
         local collection = Public.get_stateful('collection')
         if not collection then
             return
@@ -271,7 +283,7 @@ Event.on_nth_tick(
 
 Event.add(defines.events.on_pre_player_died, Public.on_pre_player_died)
 Event.add(Public.events.on_market_item_purchased, Public.on_market_item_purchased)
-Event.add(BiterHealthBooster.events.custom_on_entity_died, on_entity_died)
+Event.add(CustomEvents.events.custom_on_entity_died, on_entity_died)
 Event.add(defines.events.on_entity_died, on_entity_died)
 
 return Public

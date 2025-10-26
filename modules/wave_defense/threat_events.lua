@@ -4,6 +4,7 @@ local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local Token = require 'utils.token'
 local Task = require 'utils.task_token'
 local Misc = require 'utils.commands.misc'
+local CustomEvents = require 'utils.created_events'
 
 local raise = Event.raise
 local round = math.round
@@ -371,7 +372,8 @@ local function shred_simple_entities(entity)
         entity.surface.find_entities_filtered(
             {
                 type = 'simple-entity',
-                area = {
+                area =
+                {
                     { entity.position.x - 3, entity.position.y - 3 },
                     { entity.position.x + 3, entity.position.y + 3 }
                 }
@@ -443,7 +445,7 @@ local function spawn_unit_spawner_inhabitants(entity)
             )
         end
         if biter and biter.valid then
-            raise(Public.events.on_entity_created, { entity = biter, boss_unit = false })
+            raise(CustomEvents.events.on_entity_created, { entity = biter, boss_unit = false })
         end
     end
 end

@@ -301,7 +301,7 @@ Gui.on_click(
             data.selected_element_header = selected_element_header
             if selected_element_header then
                 selected_element_header.style.font_color = Color.orange
-                update_dump(input_text_box, data, event.player)
+                update_dump(input_text_box, data)
 
                 return
             end

@@ -1,7 +1,5 @@
-local Antigrief = require 'utils.antigrief'
 local Event = require 'utils.event'
 local Color = require 'utils.color_presets'
-local SessionData = require 'utils.datastore.session_data'
 local Utils = require 'utils.core'
 local SpamProtection = require 'utils.spam_protection'
 local Token = require 'utils.token'
@@ -125,21 +123,6 @@ local function spaghett()
     end
 end
 
-local function trust_connected_players()
-    local trust = SessionData.get_trusted_table()
-    local AG = Antigrief.get()
-    local players = game.connected_players
-    if not AG.enabled then
-        for _, p in pairs(players) do
-            trust[p.name] = true
-        end
-    else
-        for _, p in pairs(players) do
-            trust[p.name] = false
-        end
-    end
-end
-
 local functions =
 {
     ['spectator_switch'] = function (event)
@@ -176,21 +159,6 @@ local functions =
             get_actor(event, '[Spaghett]', 'has disabled spaghett mode!')
         end
         spaghett()
-    end
-}
-
-local antigrief_functions =
-{
-    ['disable_antigrief'] = function (event)
-        local AG = Antigrief.get()
-        if event.element.switch_state == 'left' then
-            AG.enabled = true
-            get_actor(event, '[Antigrief]', 'has enabled the antigrief function.', true)
-        else
-            AG.enabled = false
-            get_actor(event, '[Antigrief]', 'has disabled the antigrief function.', true)
-        end
-        trust_connected_players()
     end
 }
 
@@ -257,7 +225,6 @@ local function build_config_gui(data)
     if not player then return end
     local frame = data.frame
 
-    local AG = Antigrief.get()
     local switch_state
     local label
 
@@ -351,13 +318,6 @@ local function build_config_gui(data)
 
         scroll_pane.add({ type = 'line' })
 
-        switch_state = 'right'
-        if AG.enabled then
-            switch_state = 'left'
-        end
-        add_switch(scroll_pane, switch_state, 'disable_antigrief', 'Antigrief', 'Toggle antigrief function.')
-        scroll_pane.add({ type = 'line' })
-
         if storage.tokens.maps_pirates_memory then
             label = scroll_pane.add({ type = 'label', caption = 'Pirates Settings' })
             label.style.font = 'default-bold'
@@ -406,13 +366,6 @@ local function on_gui_switch_state_changed(event)
             return
         end
         functions[event.element.name](event)
-        return
-    elseif antigrief_functions[event.element.name] then
-        local is_spamming = SpamProtection.is_spamming(player, nil, 'Config AntiGrief Elem')
-        if is_spamming then
-            return
-        end
-        antigrief_functions[event.element.name](event)
         return
     elseif pirates_functions[event.element.name] then
         local is_spamming = SpamProtection.is_spamming(player, nil, 'Config Pirates Elem')

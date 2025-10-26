@@ -11,6 +11,7 @@ local Global = require 'utils.global'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Server = require 'utils.server'
+local CustomEvents = require 'utils.created_events'
 
 local floor = math.floor
 local insert = table.insert
@@ -18,11 +19,6 @@ local random = math.random
 local sqrt = math.sqrt
 local round = math.round
 local Public = {}
-
-Public.events =
-{
-    custom_on_entity_died = Event.generate_event_name('custom_on_entity_died')
-}
 
 local this =
 {
@@ -369,13 +365,13 @@ local function on_entity_damaged(event)
 
     if cause then
         if cause.valid then
-            Event.raise(Public.events.custom_on_entity_died, event)
+            Event.raise(CustomEvents.events.custom_on_entity_died, event)
             biter.die(cause.force, cause)
             return
         end
     end
 
-    Event.raise(Public.events.custom_on_entity_died, event)
+    Event.raise(CustomEvents.events.custom_on_entity_died, event)
     biter.die(biter.force)
 end
 

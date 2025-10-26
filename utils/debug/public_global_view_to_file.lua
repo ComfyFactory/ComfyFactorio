@@ -1,6 +1,7 @@
 local Gui = require 'utils.gui'
-local Model = require 'utils.debug.model'
+local Global = require 'utils.global'
 local Color = require 'utils.color_presets'
+local Model = require 'utils.debug.model'
 
 local dump = Model.dump
 local dump_text = Model.dump_text
@@ -8,31 +9,48 @@ local concat = table.concat
 
 local Public = {}
 
-local ignore = { tokens = true }
-
 local header_name = Gui.uid_name()
 local left_panel_name = Gui.uid_name()
 local right_panel_name = Gui.uid_name()
 local input_text_box_name = Gui.uid_name()
+local filter_text_box_name = Gui.uid_name()
 local refresh_name = Gui.uid_name()
 
-Public.name = 'Storage'
+Public.name = 'Tokens (file)'
 
-function Public.show(container)
+function Public.show(container, filter)
+    container.clear()
     local main_flow = container.add { type = 'flow', direction = 'horizontal' }
 
-    local left_panel = main_flow.add { type = 'scroll-pane', name = left_panel_name }
+    local left_flow = main_flow.add({ type = 'flow', direction = 'vertical' })
+    left_flow.style.width = 400
+
+    local left_top_flow = left_flow.add { type = 'flow', direction = 'horizontal' }
+
+    local filter_text_name = left_top_flow.add { type = 'text-box', name = filter_text_box_name, tooltip = 'Filter for tokens', text = filter or '' }
+
+    if filter then
+        filter_text_name.focus()
+    end
+
+    local left_panel = left_flow.add { type = 'scroll-pane', name = left_panel_name }
     local left_panel_style = left_panel.style
     left_panel_style.width = 400
 
-    for key, _ in pairs(storage) do
-        if not ignore[key] then
-            local header = left_panel.add({ type = 'flow' }).add { type = 'label', name = header_name, caption = tostring(key) }
-            Gui.set_data(header, key)
+    for token_id, token_name in pairs(Global.names) do
+        if filter then
+            if token_name:lower():find(filter:lower()) then
+                local header = left_panel.add({ type = 'flow' }).add { type = 'label', name = header_name, caption = token_name }
+                Gui.set_data(header, token_id)
+            end
+        else
+            local header = left_panel.add({ type = 'flow' }).add { type = 'label', name = header_name, caption = token_name }
+            Gui.set_data(header, token_id)
         end
     end
 
     local right_flow = main_flow.add { type = 'flow', direction = 'vertical' }
+    right_flow.style.horizontally_stretchable = true
 
     local right_top_flow = right_flow.add { type = 'flow', direction = 'horizontal' }
 
@@ -61,8 +79,7 @@ function Public.show(container)
     {
         right_panel = right_panel,
         input_text_box = input_text_box,
-        selected_header = nil,
-        selected_token_id = nil
+        selected_header = nil
     }
 
     Gui.set_data(input_text_box, data)
@@ -74,7 +91,7 @@ Gui.on_click(
     header_name,
     function (event)
         local element = event.element
-        local key = Gui.get_data(element)
+        local token_id = Gui.get_data(element)
 
         local left_panel = element.parent.parent
         local data = Gui.get_data(left_panel)
@@ -93,11 +110,21 @@ Gui.on_click(
         element.style.font_color = Color.orange
         data.selected_header = element
 
-        input_text_box.text = concat { "storage['", key, "']" }
+        input_text_box.text = concat { 'storage.tokens.', token_id }
         input_text_box.style.font_color = Color.black
 
-        local content = dump(storage[key]) or 'nil'
-        right_panel.text = content
+        local id = Global.get_global(token_id)
+        local content = dump(id) or 'Could not load data.'
+
+        content = 'return ' .. content
+
+        if not game.is_multiplayer() then
+            helpers.write_file(token_id .. '.lua', content, false, 1)
+            right_panel.text = 'Content written to file on the client: ..\\script-output\\' .. token_id .. '.lua'
+        else
+            helpers.write_file(token_id .. '.lua', content, false, 0)
+            right_panel.text = 'Content written to file on the server: ..\\script-output\\' .. token_id .. '.lua'
+        end
     end
 )
 
@@ -121,6 +148,19 @@ Gui.on_text_changed(
     end
 )
 
+Gui.on_text_changed(
+    filter_text_box_name,
+    function (event)
+        local element = event.element
+
+        local text = element.text
+        local parent = element.parent.parent.parent.parent
+
+        Gui.remove_data_recursively(parent)
+        Public.show(parent, text)
+    end
+)
+
 Gui.on_click(
     refresh_name,
     function (event)
@@ -132,7 +172,7 @@ Gui.on_click(
 
         local input_text_box = data.input_text_box
 
-        update_dump(input_text_box, data)
+        update_dump(input_text_box, data, event.player)
     end
 )
 

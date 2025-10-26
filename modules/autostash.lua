@@ -9,6 +9,7 @@ local Event = require 'utils.event'
 local BottomFrame = require 'utils.gui.bottom_frame'
 local Gui = require 'utils.gui'
 local Task = require 'utils.task_token'
+local CustomEvents = require 'utils.created_events'
 
 local auto_stash_button_name = Gui.uid_name()
 local floor = math.floor
@@ -51,11 +52,11 @@ local on_init_token =
             if this.insert_into_furnace and this.insert_into_wagon then
                 tooltip = { "modules_auto_stash.furnace_and_wagon_tooltip" }
             elseif this.insert_into_furnace then
-                tooltip =  { "modules_auto_stash.furnace_tooltip" }
+                tooltip = { "modules_auto_stash.furnace_tooltip" }
             elseif this.insert_into_wagon then
                 tooltip = { "modules_auto_stash.wagon_tooltip" }
             else
-                tooltip =  { "modules_auto_stash.other_tooltip" }
+                tooltip = { "modules_auto_stash.other_tooltip" }
             end
 
             this.tooltip = tooltip
@@ -230,7 +231,7 @@ local function get_nearby_chests(player, a, furnace, wagon)
 
     if furnace then
         container_type = { 'furnace' }
-        inventory_type = defines.inventory.furnace_source
+        inventory_type = defines.inventory.crafter_input
     end
     if wagon then
         container_type = { 'cargo-wagon', 'logistic-container' }
@@ -982,7 +983,7 @@ Event.on_init(do_whitelist)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 
 Event.add(
-    BottomFrame.events.bottom_quickbar_location_changed,
+    CustomEvents.events.bottom_quickbar_location_changed,
     function (event)
         if not this.enabled then
             return

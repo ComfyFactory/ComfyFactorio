@@ -39,7 +39,7 @@ local output =
     admin_is_required = 'This command requires admin permissions to run.',
     supporter_is_required = 'This command requires supporter permissions to run.',
     trusted_is_required = 'This command requires trusted permissions to run.',
-    playtime_is_required = 'This command requires a minimum playtime to run.',
+    playtime_is_required = 'This command requires a minimum playtime of %s to run.',
     param_is_required = 'This command requires a parameter to run.',
     command_failed = 'Command failed to run.',
     command_success = 'Command ran successfully.',
@@ -79,11 +79,10 @@ Global.register(
     this,
     function (tbl)
         this = tbl
-        for _, command in pairs(this.commands) do
-            setmetatable(command, Public.metatable)
-        end
     end
 )
+
+script.register_metatable('CommandData', Public.metatable)
 
 local function conv(v)
     if tonumber(v) then
@@ -198,12 +197,12 @@ local function execute(event)
     if (check_playtime and not is_server) and Core.validate_player(player) then
         local playtime = Session.get_session_player(player)
         if not playtime then
-            reject(output.trusted_is_required)
+            reject(string.format(output.playtime_is_required, Core.get_formatted_playtime(check_playtime)))
             return
         end
 
         if playtime < check_playtime then
-            reject(output.playtime_is_required)
+            reject(string.format(output.playtime_is_required, Core.get_formatted_playtime(check_playtime)))
             return
         end
     end
@@ -458,7 +457,6 @@ function Public:require_admin()
     return self
 end
 
---- Requires that the command is not run from a player.
 ---@return MetaCommand
 function Public:require_server()
     self.check_server = true

@@ -7,13 +7,13 @@ local Session = require 'utils.datastore.session_data'
 local Gui = require 'utils.gui'
 local Global = require 'utils.global'
 local SpamProtection = require 'utils.spam_protection'
-local RPG = require 'modules.rpg.table'
 local Token = require 'utils.token'
 local Vars = require 'utils.player_list_vars'
 local Utils = require 'utils.utils'
 local Core = require 'utils.core'
 local Inventory = require 'modules.show_inventory'
 local Color = require 'utils.color_presets'
+local CustomEvents = require 'utils.created_events'
 
 local Public =
 {
@@ -153,7 +153,11 @@ local function get_sorted_list(sort_by)
             end
 
             if this.rpg_enabled then
-                local char = RPG.get_value_from_player(player.index, 'level')
+                local rpg_callback = this.rpg_callback_token and Token.get(this.rpg_callback_token)
+                local char
+                if rpg_callback then
+                    char = rpg_callback({ player_index = player.index, key = 'level' })
+                end
                 if not char then
                     char = 1
                 end
@@ -365,6 +369,12 @@ local function on_player_left_game()
     refresh()
 end
 
+local function on_rpg_callback_added(event)
+    if event.token then
+        this.rpg_callback_token = event.token
+    end
+end
+
 --- If the different roles should be shown in the player_list.
 ---@param value boolean
 function Public.show_roles_in_list(value)
@@ -427,5 +437,6 @@ Gui.on_click(
 
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_left_game, on_player_left_game)
+Event.add(CustomEvents.events.on_rpg_callback_added, on_rpg_callback_added)
 
 return Public

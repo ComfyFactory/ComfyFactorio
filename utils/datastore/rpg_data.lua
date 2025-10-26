@@ -8,17 +8,20 @@ local Event = require 'utils.event'
 local table = require 'utils.table'
 local RPG = require 'modules.rpg.table'
 local Color = require 'utils.color_presets'
+local CustomEvents = require 'utils.created_events'
 
 local Public = {}
 
 local set_timeout_in_ticks = Task.set_timeout_in_ticks
 
-local this = {
-    settings = {
+local this =
+{
+    settings =
+    {
         enabled = false,
-        reset_after = 7,                 -- 7 days
+        reset_after = 7, -- 7 days
         required_level_to_progress = 99, -- higher than 99 to be able to save
-        limit = 39600,                   -- level 100
+        limit = 39600, -- level 100
         dataset = 'rpg_v2_dataset',
         reset_key = 'reset_by_this_date'
     },
@@ -347,7 +350,7 @@ function Public.toggle_module(state)
 end
 
 Event.add(
-    Server.events.on_server_started,
+    CustomEvents.events.on_server_started,
     function ()
         Public.try_dl_resets()
     end

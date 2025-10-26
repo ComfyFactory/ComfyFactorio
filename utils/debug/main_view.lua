@@ -3,8 +3,10 @@ local Color = require 'utils.color_presets'
 
 local Public = {}
 
-local pages = {
+local pages =
+{
     require 'utils.debug.public_global_view',
+    require 'utils.debug.public_global_view_to_file',
     require 'utils.debug.global_view',
     require 'utils.debug.gui_data_view',
     require 'utils.debug.package_view',
@@ -31,24 +33,24 @@ function Public.open_debug(player)
         return
     end
 
-    frame = screen.add {type = 'frame', name = main_frame_name, caption = 'Debuggertron 3004', direction = 'vertical'}
+    frame = screen.add { type = 'frame', name = main_frame_name, caption = 'Debuggertron 3004', direction = 'vertical' }
     frame.auto_center = true
     local frame_style = frame.style
     frame_style.height = 600
     frame_style.width = 1100
 
-    local tab_flow = frame.add {type = 'flow', direction = 'horizontal', name = 'tab_flow'}
-    local container = frame.add {type = 'flow', name = 'container'}
+    local tab_flow = frame.add { type = 'flow', direction = 'horizontal', name = 'tab_flow' }
+    local container = frame.add { type = 'flow', name = 'container' }
     container.style.vertically_stretchable = true
 
     local data = {}
 
     for i = 1, #pages do
         local page = pages[i]
-        local tab_button = tab_flow.add({type = 'flow'}).add {type = 'button', name = tab_name, caption = page.name}
+        local tab_button = tab_flow.add({ type = 'flow' }).add { type = 'button', name = tab_name, caption = page.name }
         local tab_button_style = tab_button.style
 
-        Gui.set_data(tab_button, {index = i, frame_data = data})
+        Gui.set_data(tab_button, { index = i, frame_data = data })
 
         if i == 1 then
             tab_button_style.font_color = Color.orange
@@ -62,12 +64,12 @@ function Public.open_debug(player)
         end
     end
 
-    frame.add {type = 'button', name = close_name, caption = 'Close'}
+    frame.add { type = 'button', name = close_name, caption = 'Close' }
 end
 
 Gui.on_click(
     tab_name,
-    function(event)
+    function (event)
         local element = event.element
         local data = Gui.get_data(element)
         if not data then
@@ -97,7 +99,7 @@ Gui.on_click(
 
 Gui.on_click(
     close_name,
-    function(event)
+    function (event)
         local frame = event.player.gui.screen[main_frame_name]
         if frame then
             Gui.destroy(frame)

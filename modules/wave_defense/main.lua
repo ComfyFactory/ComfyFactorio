@@ -5,6 +5,8 @@ local Difficulty = require 'modules.difficulty_vote_by_amount'
 local Alert = require 'utils.alert'
 local Server = require 'utils.server'
 local Collapse = require 'modules.collapse'
+local CustomEvents = require 'utils.created_events'
+
 Collapse.read_tables_only = true
 
 local random = math.random
@@ -381,7 +383,7 @@ local function set_main_target()
     end
 
     Public.set('target', sec_target)
-    raise(Public.events.on_target_aquired, { target = target })
+    raise(CustomEvents.events.on_target_aquired, { target = target })
     Public.debug_print('set_main_target -- New main target ' .. sec_target.name .. ' at position x' .. sec_target.position.x .. ' y' .. sec_target.position.y .. ' selected.')
 end
 
@@ -432,7 +434,7 @@ local function set_enemy_evolution()
 
     enemy.set_evolution_factor(evolution_factor, surface_index)
 
-    raise(Public.events.on_evolution_factor_changed, { evolution_factor = evolution_factor })
+    raise(CustomEvents.events.on_evolution_factor_changed, { evolution_factor = evolution_factor })
 end
 
 local function can_units_spawn()
@@ -543,7 +545,7 @@ local function spawn_biter(surface, position, fs, is_boss_biter, unit_settings, 
     local es_settings = Public.get_es('settings')
 
     if es_settings.enabled then
-        force = 'aggressors'
+        force = es_settings.force_name
     end
 
     if name == '' or name == nil then
@@ -646,7 +648,7 @@ local function spawn_worm(surface, position, is_boss_worm)
     local es_settings = Public.get_es('settings')
 
     if es_settings.enabled then
-        force = 'aggressors'
+        force = es_settings.force_name
     end
 
     local worm = surface.create_entity({ name = name, position = position, force = force })
@@ -767,9 +769,11 @@ local function set_multi_command()
 
     local target = Public.get('target')
     if not valid(target) then
-        Event.raise(Public.events.on_primary_target_missing)
+        Event.raise(CustomEvents.events.on_primary_target_missing)
         return
     end
+
+    local es_settings = Public.get_es('settings')
 
     surface.set_multi_command(
         {
@@ -780,7 +784,7 @@ local function set_multi_command()
                 distraction = defines.distraction.none
             },
             unit_count = 256,
-            force = 'aggressors',
+            force = es_settings.enabled and es_settings.force_name or 'enemy',
             unit_search_distance = 1024
         }
     )
@@ -874,7 +878,7 @@ local function set_next_wave()
         Public.set('next_wave', game.tick + wave_interval)
     end
 
-    raise(Public.events.on_wave_created, event_data)
+    raise(CustomEvents.events.on_wave_created, event_data)
 end
 
 local function reform_group(group)
@@ -974,7 +978,7 @@ local function get_main_command(group)
 
     local target = Public.get('target')
     if not valid(target) then
-        Event.raise(Public.events.on_primary_target_missing)
+        Event.raise(CustomEvents.events.on_primary_target_missing)
         return
     end
 
@@ -1146,7 +1150,7 @@ local function give_side_commands_to_group()
 
     local target = Public.get('target')
     if not valid(target) then
-        Event.raise(Public.events.on_primary_target_missing)
+        Event.raise(CustomEvents.events.on_primary_target_missing)
         return
     end
 
@@ -1165,12 +1169,12 @@ end
 local function give_main_command_to_group()
     local target = Public.get('target')
     if not valid(target) then
-        Event.raise(Public.events.on_primary_target_missing)
+        Event.raise(CustomEvents.events.on_primary_target_missing)
         return
     end
 
     -- This is called even if the target is valid
-    Event.raise(Public.events.on_primary_target_missing)
+    Event.raise(CustomEvents.events.on_primary_target_missing)
 
     local generated_units = Public.get('generated_units')
     for _, group in pairs(generated_units.unit_groups) do
@@ -1198,7 +1202,7 @@ local function spawn_unit_group(fs, only_bosses)
     local target = Public.get('target')
     if not valid(target) then
         Public.debug_print('spawn_unit_group - Target was not valid?')
-        Event.raise(Public.events.on_primary_target_missing)
+        Event.raise(CustomEvents.events.on_primary_target_missing)
         return
     end
 
@@ -1261,7 +1265,7 @@ local function spawn_unit_group(fs, only_bosses)
 
     local force = 'enemy'
     if es_settings.enabled then
-        force = 'aggressors'
+        force = es_settings.force_name
     end
 
     local generated_units = Public.get('generated_units')
@@ -1292,7 +1296,7 @@ local function spawn_unit_group(fs, only_bosses)
                 end
                 unit_group.add_member(biter)
 
-                raise(Public.events.on_entity_created, { entity = biter, boss_unit = false })
+                raise(CustomEvents.events.on_entity_created, { entity = biter, boss_unit = false })
                 -- command_to_side_target(unit_group)
             end
         end
@@ -1322,7 +1326,7 @@ local function spawn_unit_group(fs, only_bosses)
                     break
                 end
                 unit_group.add_member(biter)
-                raise(Public.events.on_entity_created, { entity = biter, boss_unit = true })
+                raise(CustomEvents.events.on_entity_created, { entity = biter, boss_unit = true })
             end
             Public.set('boss_wave', false)
         end
@@ -1343,7 +1347,7 @@ local function spawn_unit_group(fs, only_bosses)
                 break
             end
             unit_group.add_member(biter)
-            raise(Public.events.on_entity_created, { entity = biter, boss_unit = true })
+            raise(CustomEvents.events.on_entity_created, { entity = biter, boss_unit = true })
         end
     end
 
@@ -1354,7 +1358,7 @@ local function spawn_unit_group(fs, only_bosses)
         Public.set('random_group', unit_group)
     end
     Public.set('spot', 'nil')
-    raise(Public.events.on_unit_group_created, event_data)
+    raise(CustomEvents.events.on_unit_group_created, event_data)
     return true
 end
 
@@ -1362,7 +1366,7 @@ local function spawn_unit_group_simple(fs)
     local target = Public.get('target')
     if not valid(target) then
         Public.debug_print('spawn_unit_group_simple - Target was not valid?')
-        Event.raise(Public.events.on_primary_target_missing)
+        Event.raise(CustomEvents.events.on_primary_target_missing)
         return
     end
 
@@ -1382,7 +1386,7 @@ local function spawn_unit_group_simple(fs)
 
     local force = 'enemy'
     if es_settings.enabled then
-        force = 'aggressors'
+        force = es_settings.force_name
     end
 
     local generated_units = Public.get('generated_units')
@@ -1409,7 +1413,7 @@ local function spawn_unit_group_simple(fs)
         if biter then
             s = s + 1
             unit_group.add_member(biter)
-            raise(Public.events.on_entity_created, { entity = biter, boss_unit = is_boss })
+            raise(CustomEvents.events.on_entity_created, { entity = biter, boss_unit = is_boss })
         end
     end
 
@@ -1436,7 +1440,7 @@ local function check_group_positions()
     local generated_units = Public.get('generated_units')
     local target = Public.get('target')
     if not valid(target) then
-        Event.raise(Public.events.on_primary_target_missing)
+        Event.raise(CustomEvents.events.on_primary_target_missing)
         return
     end
 
@@ -1532,7 +1536,7 @@ Event.on_nth_tick(30,
     function ()
         local tick = game.tick
 
-        local t = tick % 300
+        local t = tick % 2000
         local t2 = tick % 18000
 
         if tick_tasks[t] then
@@ -1584,7 +1588,7 @@ Event.on_nth_tick(30,
 )
 
 Event.add(
-    Public.events.on_biters_evolved,
+    CustomEvents.events.on_biters_evolved,
     function (event)
         if not event then
             event = { force = game.forces.enemy }
@@ -1598,8 +1602,8 @@ Event.add(
     end
 )
 
-Event.add(Public.events.on_spawn_unit_group, spawn_unit_group)
-Event.add(Public.events.on_spawn_unit_group_simple, spawn_unit_group_simple)
+Event.add(CustomEvents.events.on_spawn_unit_group, spawn_unit_group)
+Event.add(CustomEvents.events.on_spawn_unit_group_simple, spawn_unit_group_simple)
 
 Event.on_nth_tick(
     100,

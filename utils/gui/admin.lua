@@ -11,6 +11,7 @@ local Task = require 'utils.task_token'
 local Token = require 'utils.token'
 local Global = require 'utils.global'
 local Discord = require 'utils.discord_handler'
+local CustomEvents = require 'utils.created_events'
 
 local Public = {}
 
@@ -1012,7 +1013,7 @@ create_admin_panel = function (data)
     local search_table = frame.add({ type = 'table', column_count = 3 })
     search_table.add({ type = 'label', caption = 'Search: ' })
     local search_text = search_table.add({ type = 'textfield' })
-    search_text.focus()
+    -- search_text.focus()
     search_text.text = player_data.search_text or ''
     search_text.style.width = 140
 
@@ -1504,6 +1505,6 @@ Gui.on_checked_state_changed(
 Event.add(defines.events.on_gui_text_changed, text_changed)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_gui_selection_state_changed, on_gui_selection_state_changed)
-Event.add(Gui.events.on_gui_closed_main_frame, on_gui_closed)
+Event.add(CustomEvents.events.on_gui_closed_main_frame, on_gui_closed)
 
 return Public

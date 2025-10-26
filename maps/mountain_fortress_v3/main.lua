@@ -45,6 +45,7 @@ local OfflinePlayers = require 'modules.clear_vacant_players'
 local Beam = require 'modules.render_beam'
 local Commands = require 'utils.commands'
 local RobotLimits = require 'modules.robot_limits'
+local CustomEvents = require 'utils.created_events'
 
 local send_ping_to_channel = Discord.channel_names.mtn_channel
 local role_to_mention = Discord.role_mentions.mtn_fortress
@@ -462,6 +463,7 @@ function Public.pre_init_task(current_task)
     WD.set_pause_waves_custom_callback(Public.pause_waves_custom_callback_token)
     WD.set_threat_event_custom_callback(Public.check_if_spawning_near_train_custom_callback)
     WD.set_es_enabled(true)
+    WD.set_es('force_name', 'aggressors')
     BiterHealthBooster.set_module_state(true)
 
     RPG.set_x_marks_the_spot_custom_callback(Public.x_marks_the_spot_custom_callback_token)
@@ -641,7 +643,7 @@ function Public.reset_map(current_task)
 
 
     -- WD.set_es_unit_limit(400) -- moved to stateful
-    Event.raise(WD.events.on_game_reset, {})
+    Event.raise(CustomEvents.events.on_game_reset, {})
 
     Public.set_difficulty()
     Public.disable_creative()

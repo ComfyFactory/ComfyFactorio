@@ -12,7 +12,8 @@ local events = defines.events
 local events_to_keep = 10
 
 -- Local vars
-local Public = {
+local Public =
+{
     name = 'Events'
 }
 local name_lookup = {}
@@ -27,7 +28,8 @@ local clear_filter_name = Gui.uid_name()
 local enabled = {}
 local enabled_for_all = false
 local last_events = {}
-storage.debug_event_view = {
+storage.debug_event_view =
+{
     enabled = enabled,
     enabled_for_all = enabled_for_all,
     last_events = last_events,
@@ -43,7 +45,8 @@ function Public.on_open_debug()
         enabled = {}
         last_events = {}
 
-        storage.debug_event_view = {
+        storage.debug_event_view =
+        {
             enabled = enabled,
             last_events = last_events
         }
@@ -119,7 +122,8 @@ local function redraw_event_table(gui_table, filter)
     for _, event_name in pairs(grid_builder) do
         if filter == '' or event_name:find(filter) then
             local index = events[event_name]
-            gui_table.add({ type = 'flow' }).add {
+            gui_table.add({ type = 'flow' }).add
+            {
                 name = checkbox_name,
                 type = 'checkbox',
                 state = enabled[index] or false,
@@ -138,7 +142,8 @@ function Public.show(container)
     filter_flow.add({ type = 'label', caption = 'filter' })
     local filter_textfield = filter_flow.add({ type = 'textfield', name = filter_name, text = filter })
     local clear_button = filter_flow.add({ type = 'button', name = clear_filter_name, caption = 'clear' })
-    filter_flow.add({ type = 'flow' }).add {
+    filter_flow.add({ type = 'flow' }).add
+    {
         name = checkbox_all_name,
         type = 'checkbox',
         state = enabled_for_all or false,

@@ -1,3 +1,4 @@
+---@diagnostic disable: undefined-global
 --luacheck: ignore function_table
 --luacheck: ignore function_nth_tick_table
 --luacheck: globals script

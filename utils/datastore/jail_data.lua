@@ -11,6 +11,8 @@ local table = require 'utils.table'
 local Gui = require 'utils.gui'
 local StatData = require 'utils.datastore.statistics'
 local Commands = require 'utils.commands'
+local CustomEvents = require 'utils.created_events'
+local UndoActions = require 'utils.undo_actions'
 
 StatData.add_normalize('jailed', 'Jailed')
 
@@ -24,6 +26,7 @@ local terms_tbl = {}
 local votejail = {}
 local votefree = {}
 local revoked_permissions = {}
+local undo_polls = {}
 local settings =
 {
     playtime_for_vote = 77760000, -- 15 days
@@ -65,7 +68,8 @@ Global.register(
         settings = settings,
         player_data = player_data,
         terms_tbl = terms_tbl,
-        revoked_permissions = revoked_permissions
+        revoked_permissions = revoked_permissions,
+        undo_polls = undo_polls
     },
     function (t)
         jailed = t.jailed
@@ -75,17 +79,11 @@ Global.register(
         player_data = t.player_data
         terms_tbl = t.terms_tbl
         revoked_permissions = t.revoked_permissions
+        undo_polls = t.undo_polls
     end
 )
 
-local Public =
-{
-    events =
-    {
-        on_player_jailed = Event.generate_event_name('on_player_jailed'),
-        on_player_unjailed = Event.generate_event_name('on_player_unjailed')
-    }
-}
+local Public = {}
 
 local function validate_entity(entity)
     if not (entity and entity.valid) then
@@ -663,7 +661,7 @@ local function jail(player, offender, msg, raised, mute)
         set_data(jailed_data_set, offender, { jailed = true, actor = player, reason = msg, date = date })
     end
 
-    Event.raise(Public.events.on_player_jailed, { player_index = offender.index })
+    Event.raise(CustomEvents.events.on_player_jailed, { player_index = offender.index })
 
     StatData.get_data(to_jail_player.index):increase('jailed')
 
@@ -734,7 +732,7 @@ local function jail_temporary(player, offender, msg, mute)
 
     set_data(jailed_data_set, offender.name, { jailed = true, temporary = true, actor = player.name, reason = msg, date = date })
 
-    Event.raise(Public.events.on_player_jailed, { player_index = offender.index })
+    Event.raise(CustomEvents.events.on_player_jailed, { player_index = offender.index })
 
     StatData.get_data(offender.index):increase('jailed')
 
@@ -763,7 +761,7 @@ local function free(player, offender)
 
     set_data(jailed_data_set, offender, nil)
 
-    Event.raise(Public.events.on_player_unjailed, { player_index = offender.index })
+    Event.raise(CustomEvents.events.on_player_unjailed, { player_index = offender.index })
 
     Utils.print_to(nil, message)
     local data = Server.build_embed_data()
@@ -1198,7 +1196,7 @@ Event.on_init(
 )
 
 Event.add(
-    Server.events.on_server_started,
+    CustomEvents.events.on_server_started,
     function ()
         Public.sync_revoked_permissions()
     end
@@ -1282,10 +1280,12 @@ Event.add(
                     return
                 end
             end
+
             if player.admin then
                 if cmd == 'jail' then
                     Utils.warning(player, 'Logging your actions.')
                     message = message .. ' executed by ' .. player.name
+                    UndoActions.do_action_poll(offender)
                     Public.try_ul_data(offender, true, player.name, message)
                     return
                 elseif cmd == 'free' then
@@ -1352,6 +1352,7 @@ Event.add(
                 print(module_name .. 'Logging your actions.')
                 message = message .. ' executed by script'
                 Public.try_ul_data(offender, true, 'script', message)
+                UndoActions.do_action_poll(offender)
                 return
             elseif cmd == 'free' then
                 Public.try_ul_data(offender, false, 'script')

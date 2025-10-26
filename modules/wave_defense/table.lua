@@ -4,23 +4,12 @@ local Gui = require 'utils.gui'
 local Event = require 'utils.event'
 local Server = require 'utils.server'
 
-local this = {
+local this =
+{
     pause_waves_custom_callback = nil,
     threat_event_custom_callback = nil
 }
 local Public = {}
-Public.events = {
-    on_wave_created = Event.generate_event_name('on_wave_created'),
-    on_unit_group_created = Event.generate_event_name('on_unit_group_created'),
-    on_evolution_factor_changed = Event.generate_event_name('on_evolution_factor_changed'),
-    on_game_reset = Event.generate_event_name('on_game_reset'),
-    on_target_aquired = Event.generate_event_name('on_target_aquired'),
-    on_primary_target_missing = Event.generate_event_name('on_primary_target_missing'),
-    on_entity_created = Event.generate_event_name('on_entity_created'),
-    on_biters_evolved = Event.generate_event_name('on_biters_evolved'),
-    on_spawn_unit_group = Event.generate_event_name('on_spawn_unit_group'),
-    on_spawn_unit_group_simple = Event.generate_event_name('on_spawn_unit_group_simple')
-}
 local insert = table.insert
 
 Global.register(
@@ -31,22 +20,23 @@ Global.register(
 )
 
 Public.group_size_modifier_raffle = {}
-local group_size_chances = {
-    { 4,  0.4 },
-    { 5,  0.5 },
-    { 6,  0.6 },
-    { 7,  0.7 },
-    { 8,  0.8 },
-    { 9,  0.9 },
+local group_size_chances =
+{
+    { 4, 0.4 },
+    { 5, 0.5 },
+    { 6, 0.6 },
+    { 7, 0.7 },
+    { 8, 0.8 },
+    { 9, 0.9 },
     { 10, 1 },
-    { 9,  1.1 },
-    { 8,  1.2 },
-    { 7,  1.3 },
-    { 6,  1.4 },
-    { 5,  1.5 },
-    { 4,  1.6 },
-    { 3,  1.7 },
-    { 2,  1.8 }
+    { 9, 1.1 },
+    { 8, 1.2 },
+    { 7, 1.3 },
+    { 6, 1.4 },
+    { 5, 1.5 },
+    { 4, 1.6 },
+    { 3, 1.7 },
+    { 2, 1.8 }
 }
 
 for _, v in pairs(group_size_chances) do
@@ -75,7 +65,7 @@ function Public.reset_wave_defense()
     this.log_wave_to_discord = true
     this.paused = false
     this.pause_without_votes = true
-    this.pause_wave_in_ticks = 18000              -- 5 minutes
+    this.pause_wave_in_ticks = 18000 -- 5 minutes
     this.next_pause_interval = game.tick + 216000 -- 1 hour
     this.game_lost = false
     this.get_random_close_spawner_attempts = 5
@@ -87,7 +77,8 @@ function Public.reset_wave_defense()
     this.max_biter_age = 3600 * 60
     this.nest_building_density = 48
     this.next_wave = game.tick + 3600 * 20
-    this.enable_grace_time = {
+    this.enable_grace_time =
+    {
         enabled = true,
         set = nil
     }
@@ -116,7 +107,8 @@ function Public.reset_wave_defense()
     this.worm_raffle = {}
     this.alert_boss_wave = false
     this.remove_entities = false
-    this.pause_waves = {
+    this.pause_waves =
+    {
         index = 0
     }
     this.enable_random_spawn_positions = false
@@ -131,27 +123,32 @@ function Public.reset_wave_defense()
     this.increase_max_active_unit_groups = false
     this.increase_health_per_wave = false
     this.fill_tiles_so_biter_can_path = true
-    this.modified_unit_health = {
+    this.modified_unit_health =
+    {
         current_value = 1.2,
         limit_value = 150,
         health_increase_per_boss_wave = 0.5 -- wave % 25 == 0 at wave 2k boost is at 41.2
     }
-    this.modified_boss_unit_health = {
+    this.modified_boss_unit_health =
+    {
         current_value = 2,
         limit_value = 500,
         health_increase_per_boss_wave = 4 -- wave % 25 == 0 at wave 2k boost is at 322
     }
-    this.generated_units = {
+    this.generated_units =
+    {
         active_biters = {},
         unit_groups = {},
         unit_group_last_command = {},
-        unit_group_pos = {
+        unit_group_pos =
+        {
             index = 0,
             positions = {}
         },
         nests = {}
     }
-    this.threat_values = {
+    this.threat_values =
+    {
         ['biter-spawner'] = 128,
         ['spitter-spawner'] = 128,
         ['behemoth-biter'] = 64,
@@ -167,8 +164,10 @@ function Public.reset_wave_defense()
         ['big-worm-turret'] = 64,
         ['behemoth-worm-turret'] = 128
     }
-    this.unit_settings = {
-        scale_units_by_health = {
+    this.unit_settings =
+    {
+        scale_units_by_health =
+        {
             ['small-biter'] = 1,
             ['medium-biter'] = 0.75,
             ['big-biter'] = 0.5,
@@ -178,18 +177,20 @@ function Public.reset_wave_defense()
             ['big-spitter'] = 0.5,
             ['behemoth-spitter'] = 0.25
         },
-        scale_worms_by_health = {
-            ['land-mine'] = 0.5,           -- not active as of now
-            ['gun-turret'] = 0.5,          -- not active as of now
+        scale_worms_by_health =
+        {
+            ['land-mine'] = 0.5, -- not active as of now
+            ['gun-turret'] = 0.5, -- not active as of now
             ['flamethrower-turret'] = 0.4, -- not active as of now
-            ['artillery-turret'] = 0.25,   -- not active as of now
+            ['artillery-turret'] = 0.25, -- not active as of now
             ['small-worm-turret'] = 0.8,
             ['medium-worm-turret'] = 0.6,
             ['big-worm-turret'] = 0.3,
             ['behemoth-worm-turret'] = 0.3
         }
     }
-    this.valid_enemy_forces = {
+    this.valid_enemy_forces =
+    {
         ['enemy'] = true,
         ['aggressors'] = true,
         ['aggressors_frenzy'] = true

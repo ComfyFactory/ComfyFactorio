@@ -3,6 +3,7 @@ local format = string.format
 local match = string.match
 local gsub = string.gsub
 local serialize = serpent.line
+---@diagnostic disable-next-line: deprecated
 local debug_getupvalue = debug.getupvalue
 
 -- this
@@ -131,14 +132,6 @@ end
 ---@param message string
 function Debug.print_position(position, message)
     Debug.print(format('%s %s', serialize(position), message))
-end
-
----Executes the given callback if cheating is enabled.
----@param callback function
-function Debug.cheat(callback)
-    if _CHEATS then
-        callback()
-    end
 end
 
 --- Returns true if the function is a closure, false otherwise.

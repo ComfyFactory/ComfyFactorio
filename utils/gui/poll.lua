@@ -3,12 +3,14 @@ local Gui = require 'utils.gui'
 local Global = require 'utils.global'
 local Event = require 'utils.event'
 local Server = require 'utils.server'
-local session = require 'utils.datastore.session_data'
+local Session = require 'utils.datastore.session_data'
 local Config = require 'utils.gui.config'
 local SpamProtection = require 'utils.spam_protection'
 local Math = require 'utils.math.math'
 local Discord = require 'utils.discord_handler'
 local Color = require 'utils.color_presets'
+local CustomEvents = require 'utils.created_events'
+
 local Public = {}
 
 local insert = table.insert
@@ -29,6 +31,11 @@ local running_polls = {}
 local no_notify_players = {}
 local player_poll_index = {}
 local player_create_poll_data = {}
+local settings =
+{
+    allow_non_trusted_to_vote = false,
+    allow_non_trusted_to_create = false,
+}
 
 Global.register(
     {
@@ -37,7 +44,8 @@ Global.register(
         running_polls = running_polls,
         no_notify_players = no_notify_players,
         player_poll_index = player_poll_index,
-        player_create_poll_data = player_create_poll_data
+        player_create_poll_data = player_create_poll_data,
+        settings = settings
     },
     function (tbl)
         polls = tbl.polls
@@ -46,6 +54,7 @@ Global.register(
         no_notify_players = tbl.no_notify_players
         player_poll_index = tbl.player_poll_index
         player_create_poll_data = tbl.player_create_poll_data
+        settings = tbl.settings
     end
 )
 
@@ -108,25 +117,39 @@ Config.register_scenario_module(
         admin_only = true,
         gui_rows = Config.register_token(
             function (_, frame)
-                local config = Config.get('gui_config')
                 local switch_state = 'right'
-                if config.poll_trusted then
+                if settings.allow_non_trusted_to_create then
                     switch_state = 'left'
                 end
-                Config.add_switch(frame, switch_state, 'poll_trusted_toggle', 'Poll mode', 'Disables non-trusted plebs to create polls.')
+                Config.add_switch(frame, switch_state, 'poll_trusted_create_toggle', 'Poll create', 'Disables non-trusted plebs to create polls.')
+                frame.add({ type = 'line' })
+                switch_state = 'right'
+                if settings.allow_non_trusted_to_vote then
+                    switch_state = 'left'
+                end
+                Config.add_switch(frame, switch_state, 'poll_trusted_vote_toggle', 'Poll vote', 'Disables non-trusted plebs to vote on polls.')
                 frame.add({ type = 'line' })
             end),
         handlers =
         {
-            ['poll_trusted_toggle'] = Config.register_token(
+            ['poll_trusted_create_toggle'] = Config.register_token(
                 function (_, event)
-                    local config = Config.get('gui_config')
                     if event.element.switch_state == 'left' then
-                        config.poll_trusted = true
-                        Config.get_actor(event, '[Poll Mode]', 'has disabled non-trusted people to do polls.')
+                        settings.allow_non_trusted_to_create = true
+                        Config.get_actor(event, '[Poll create]', 'has disabled non-trusted people to do polls.')
                     else
-                        config.poll_trusted = false
-                        Config.get_actor(event, '[Poll Mode]', 'has allowed non-trusted people to do polls.')
+                        settings.allow_non_trusted_to_create = false
+                        Config.get_actor(event, '[Poll create]', 'has allowed non-trusted people to do polls.')
+                    end
+                end),
+            ['poll_trusted_vote_toggle'] = Config.register_token(
+                function (_, event)
+                    if event.element.switch_state == 'left' then
+                        settings.allow_non_trusted_to_vote = true
+                        Config.get_actor(event, '[Poll vote]', 'has disabled non-trusted people to vote on polls.')
+                    else
+                        settings.allow_non_trusted_to_vote = false
+                        Config.get_actor(event, '[Poll vote]', 'has allowed non-trusted people to vote on polls.')
                     end
                 end)
         }
@@ -378,7 +401,6 @@ local function update_poll_viewer(data)
 end
 
 local function draw_main_frame(_, player)
-    local trusted = session.get_trusted_table()
     local main_frame, inside_frame = Gui.add_main_frame_with_toolbar(player, 'left', main_frame_name, nil, main_button_name, 'Polls')
     main_frame.style.maximal_width = 300
 
@@ -430,9 +452,7 @@ local function draw_main_frame(_, player)
     local right_flow = bottom_flow.add { type = 'flow' }
     right_flow.style.horizontal_align = 'right'
 
-    local config = Config.get('gui_config')
-
-    if (trusted[player.name] or player.admin) or config.poll_trusted == false then
+    if (Session.get_trusted_player(player) or player.admin) or settings.allow_non_trusted_to_create then
         local create_poll_button = right_flow.add { type = 'button', name = create_poll_button_name, caption = 'Create Poll' }
         apply_button_style(create_poll_button)
     else
@@ -808,7 +828,16 @@ local function vote(event)
     if is_spamming then
         return
     end
+
     local player_index = event.player_index
+    local player = game.get_player(player_index)
+    if player and player.valid and not settings.allow_non_trusted_to_vote and not player.admin then
+        if not Session.get_trusted_player(player) then
+            player.print('Sorry, you need to be trusted to vote on polls.')
+            player.print('You can become trusted by asking an admin to use the /trust command on you.')
+            return
+        end
+    end
     local voted_button = event.element
     local button_data = Gui.get_data(voted_button)
     local answer = button_data.answer
@@ -952,6 +981,10 @@ local function tick()
             table.remove(running_polls, i)
             send_poll_result_to_discord(poll, true)
 
+            local poll_result, winning_answer = Public.poll_result(poll.id)
+
+            Event.raise(CustomEvents.events.on_poll_complete, { player_index = poll.player_index, poll_id = poll.id, custom_data = poll.custom_data, poll_result = poll_result, winning_answer = winning_answer })
+
             local message = table.concat { 'Poll finished: Poll #', poll.id, ': ', poll.question }
             for _, p in pairs(game.connected_players) do
                 if not no_notify_players[p.index] then
@@ -961,6 +994,10 @@ local function tick()
         end
     end
 end
+
+Event.add(CustomEvents.events.on_poll_created, function (event)
+    Public.poll(event)
+end)
 
 Event.add(defines.events.on_player_joined_game, player_joined)
 Event.add(defines.events.on_player_created, player_joined)
@@ -1512,6 +1549,7 @@ function Public.poll(data)
     local poll_data =
     {
         id = id,
+        custom_data = data.custom_data or nil,
         question = data.question,
         answers = answers,
         voters = {},
@@ -1543,22 +1581,33 @@ function Public.poll_result(id)
             local result = { 'Question: ', poll_data.question, ' Answers: ' }
             local answers = poll_data.answers
             local answers_count = #answers
-            local winning_answer = nil
+            local highest_vote = 0
+            local winners = {}
 
-            for i, a in pairs(answers) do
+            for i, a in ipairs(answers) do
                 insert(result, '( [')
                 insert(result, a.voted_count)
                 insert(result, '] - ')
                 insert(result, a.text)
                 insert(result, ' )')
 
-                if not winning_answer or a.voted_count > winning_answer.voted_count then
-                    winning_answer = a
+                if a.voted_count > highest_vote then
+                    highest_vote = a.voted_count
+                    winners = { a }
+                elseif a.voted_count == highest_vote then
+                    insert(winners, a)
                 end
 
                 if i ~= answers_count then
                     insert(result, ', ')
                 end
+            end
+
+            local winning_answer
+            if #winners == 1 then
+                winning_answer = winners[1]
+            else
+                winning_answer = { text = 'Tie', voted_count = highest_vote }
             end
 
             return table.concat(result), winning_answer

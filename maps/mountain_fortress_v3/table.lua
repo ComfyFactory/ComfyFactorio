@@ -6,6 +6,7 @@ local Task = require 'utils.task_token'
 local Config = require 'utils.gui.config'
 local Fullness = require 'modules.check_fullness'
 local Color = require 'utils.color_presets'
+local CustomEvents = require 'utils.created_events'
 
 local stateful_settings =
 {
@@ -845,7 +846,7 @@ local apply_settings_token =
     )
 
 Event.add(
-    Server.events.on_server_started,
+    CustomEvents.events.on_server_started,
     function ()
         local start_data = Server.get_start_data()
 
