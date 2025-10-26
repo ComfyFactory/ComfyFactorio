@@ -220,12 +220,11 @@ Commands.new('refresh', 'Reloads game script')
 Commands.new('spaghetti', 'Toggle between disabling bots.')
     :require_admin()
     :require_validation()
-    :is_activated()
     :add_parameter('true/false', true, 'boolean')
     :callback(
         function (player, args)
             local force = player.force
-            if args == 'true' then
+            if args then
                 game.print('The world has been spaghettified!', { color = Color.success })
                 force.technologies['logistic-system'].enabled = false
                 force.technologies['construction-robotics'].enabled = false
@@ -244,7 +243,7 @@ Commands.new('spaghetti', 'Toggle between disabling bots.')
                 force.technologies['worker-robots-speed-6'].enabled = false
                 this.spaghetti_enabled = true
                 return true
-            elseif args == 'false' then
+            elseif not args then
                 game.print('The world is no longer spaghett!', { color = Color.yellow })
                 force.technologies['logistic-system'].enabled = true
                 force.technologies['construction-robotics'].enabled = true
@@ -401,11 +400,10 @@ Commands.new('creative', 'Enables creative_mode.')
     :require_admin()
     :add_parameter('true/false', false, 'boolean')
     :require_validation()
-    :is_activated()
     :callback(
         function (player, args)
             local force = player.force
-            if args == 'true' then
+            if args then
                 game.print('[CREATIVE] ' .. player.name .. ' has activated creative-mode!', { color = Color.warning })
                 Server.to_discord_bold(table.concat { '[Creative] ' .. player.name .. ' has activated creative-mode!' })
 
@@ -420,7 +418,7 @@ Commands.new('creative', 'Enables creative_mode.')
                         Public.insert_all_items(_player)
                     end
                 end
-            elseif args == 'false' then
+            elseif not args then
                 game.print('[CREATIVE] ' .. player.name .. ' has deactivated creative-mode!', { color = Color.warning })
                 Server.to_discord_bold(table.concat { '[Creative] ' .. player.name .. ' has deactivated creative-mode!' })
 
