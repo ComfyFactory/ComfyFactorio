@@ -10,6 +10,7 @@ local Server = require 'utils.server'
 local Poll = require 'utils.gui.poll'
 local Color = require 'utils.color_presets'
 local Config = require 'utils.gui.config'
+local Session = require 'utils.datastore.session_data'
 local Core = require 'utils.core'
 
 local random = math.random
@@ -860,6 +861,11 @@ function Public.advance_to_next_island(entity, player, offer_index)
         return
     end
     if this.voting_to_progress_enabled then
+        local trusted_player = Session.get_trusted_player(player)
+        if #game.connected_players == 1 and not trusted_player then
+            return player.print(Public.island_keeper .. 'You need to be trusted to advance to the next island alone!', { color = Color.warning })
+        end
+
         local can_progress = false
         if this.islands_voting[this.current_level] and this.islands_voting[this.current_level].id and Poll.poll_complete(this.islands_voting[this.current_level].id) then
             local _, winning_answer = Poll.poll_result(this.islands_voting[this.current_level].id)
