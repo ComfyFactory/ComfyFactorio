@@ -345,7 +345,7 @@ function Public.on_init()
 
     init_mirror_surface()
 
-    for _, player in pairs(game.players) do
+    for _, player in pairs(game.connected_players) do
         if player and player.valid then
             player.character = nil
             player.teleport({ x = 0, y = 0 }, game.surfaces[1])

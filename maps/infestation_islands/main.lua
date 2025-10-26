@@ -301,7 +301,7 @@ end
 
 local function on_tick()
     local this = Public.get()
-    local island_data = this.islands_data[this.current_level]
+    local island_data = this.islands_data and this.islands_data[this.current_level]
     local tick = game.tick
 
     if this.delayed_messages[tick] then
