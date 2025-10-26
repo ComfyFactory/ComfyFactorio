@@ -455,6 +455,7 @@ local function on_market_item_purchased(event)
     if not entity.get_market_items() then
         local island_data = this.islands_data[entity.unit_number]
         if island_data and island_data.no_rerolls then
+            entity.operable = false
             return
         end
 
@@ -843,7 +844,7 @@ function Public.generate_bridge_to_next_island(entity, player, market_prices, of
     Public.delayed_message(100, Public.island_keeper .. Public.spooky_lines[random(1, #Public.spooky_lines)])
     Server.to_discord_embed('** ' .. player.name .. ' has generated a bridge to level ' .. this.current_level .. '! **')
 
-    Scheduler.new(1, Public.do_generate_bridge_token):set_data({ surface = game.surfaces[1] })
+    Scheduler.new(1, Public.do_generate_bridge_token):set_data({ surface = game.surfaces[1], reroll_enabled = true })
 end
 
 function Public.advance_to_next_island(entity, player, offer_index)
@@ -1136,12 +1137,17 @@ function Public.normalize_time_until_next_island_is_created()
     end
 
     local raw = math.round((this.time_until_next_island_is_created - game.tick) / 60 / 60, 0)
+    local raw_half = math.round(raw / 2, 0)
+
+    local half = raw_half .. ' minutes'
     local time = raw .. ' minutes'
+
     if raw == 0 then
+        half = math.round((this.time_until_next_island_is_created - game.tick) / 60, 0) .. ' seconds'
         time = math.round((this.time_until_next_island_is_created - game.tick) / 60, 0) .. ' seconds'
     end
 
-    return time, raw
+    return time, raw, half, raw_half
 end
 
 function Public.check_alive_enemies()
@@ -1373,6 +1379,54 @@ function Public.do_clear_items_on_ground_slowly()
 end
 
 function Public.set_multi_command()
+    local surface = game.get_surface('nauvis')
+    if not surface or not surface.valid then
+        return
+    end
+
+    local current_level = Public.get('current_level')
+    local islands_data = Public.get('islands_data')
+    if not islands_data or not next(islands_data) then
+        error('No islands data found')
+        return
+    end
+
+    local island_data = islands_data[current_level]
+    if not island_data then
+        error('No island data found for level ' .. current_level)
+        return
+    end
+
+    local parent_island = island_data.parent_island
+    if not parent_island then
+        error('No parent island found for level ' .. current_level)
+        return
+    end
+
+    if not island_data.bridge_generated then
+        return
+    end
+
+    if island_data and parent_island and parent_island.market and parent_island.market.valid then
+        local enemies = surface.find_entities_filtered({ type = 'unit', force = 'enemy', area = { { island_data.position.x - 30, island_data.position.y - 30 }, { island_data.position.x + 30, island_data.position.y + 30 } }, limit = 64 })
+        if enemies and enemies[1] then
+            for _, enemy in pairs(enemies) do
+                if enemy and enemy.valid then
+                    enemy.commandable.set_command(
+                        {
+                            type = defines.command.attack_area,
+                            destination = parent_island.market.position,
+                            radius = 125,
+                            distraction = defines.distraction.by_anything
+                        }
+                    )
+                end
+            end
+        end
+    end
+end
+
+function Public.send_biters_to_market()
     local current_level = Public.get('current_level')
     if current_level == 1 then
         return
@@ -1438,6 +1492,10 @@ function Public.set_multi_command()
     local market = parent_island.market
     if not market or not market.valid then
         error('No connected market found for level ' .. current_level)
+        return
+    end
+
+    if not island_data.bridge_generated then
         return
     end
 

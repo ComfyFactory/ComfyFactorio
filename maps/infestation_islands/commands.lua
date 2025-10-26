@@ -63,7 +63,7 @@ Commands.new('send_enemies', 'Sends enemies to the market.')
     :require_admin()
     :callback(
         function (player)
-            Public.set_multi_command()
+            Public.send_biters_to_market()
             player.print('Enemies have been sent to the market!', { color = Color.warning })
             return true
         end

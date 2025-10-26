@@ -972,7 +972,8 @@ Public.init_next_island_token =
 
             Public.delayed_message(1, Public.island_keeper .. Public.messages[random(1, #Public.messages)])
             Public.prepare_next_island(this)
-            Public.set_islands_data()
+            local new_island = Public.set_islands_data()
+            new_island.bridge_generated = true
 
             local root = Scheduler.new(1, Public.chart_area_for_player_force_token):set_data({ surface = surface })
             root:new_child(500, Public.do_island_creation_token):set_data({ surface = surface })
@@ -1059,8 +1060,7 @@ Public.do_generate_bridge_token =
             local seed_1 = random(1, 10000000)
             local seed_2 = random(1, 10000000)
             local m = random(1, 100) * 0.001
-
-
+            local reroll_enabled = event.reroll_enabled or false
 
             local island_data = this.islands_data[this.current_level]
             if not island_data then
@@ -1096,7 +1096,11 @@ Public.do_generate_bridge_token =
                 market.operable = false
             end
 
-            island_data.no_rerolls = true
+            if not reroll_enabled then
+                island_data.no_rerolls = true
+            end
+
+            island_data.bridge_generated = true
 
             this.islands_voting[this.current_level] = nil
 

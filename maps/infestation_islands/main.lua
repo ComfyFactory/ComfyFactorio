@@ -122,46 +122,65 @@ local function update_stage_gui()
     if not this.stages then
         return
     end
-    local caption = 'Level: '
-    local stage = this.current_level
-    if stage > #this.stages - 1 then
-        stage = #this.stages - 1
-    end
+
+    local stages = this.stages
+    local stage = math.min(this.current_level, #stages - 1)
+    local time, _, half = Public.normalize_time_until_next_island_is_created()
     local islands_data = Public.get('islands_data')
     local island_data = islands_data[stage]
-    caption = caption .. stage
-    caption = caption .. '/'
-    caption = caption .. #this.stages - 1
+
+    local caption_parts =
+    {
+        ('Level: %d/%d'):format(stage, #stages - 1)
+    }
+
     local tooltip
-    if not (island_data and island_data.spawned_biters) then
-        caption = caption .. ' | Generating...'
+    local random_quality = Public.qualities[random(1, #Public.qualities)]
+    local has_biters = island_data and island_data.spawned_biters
+    local island_complete = has_biters and island_data.completed
+    local can_auto_generate = (
+        this.auto_generate_upon_idle and
+        has_biters and
+        island_complete and
+        this.time_until_next_island_is_created and
+        this.time_until_next_island_is_created > game.tick and
+        Difficulty.has_votes_ended()
+    )
+
+    if not has_biters then
+        table.insert(caption_parts, ' | Generating...')
         tooltip = 'The biters are still generating on the island. Please wait for them to finish.'
-    elseif (this.auto_generate_upon_idle and island_data and island_data.spawned_biters and island_data.completed and this.time_until_next_island_is_created and this.time_until_next_island_is_created > game.tick and Difficulty.has_votes_ended()) then
-        caption = caption .. ' | Level cleared!'
-        caption = caption .. ' | [entity=small-biter,quality=' .. Public.qualities[random(1, #Public.qualities)] .. ']: ' .. Public.normalize_time_until_next_island_is_created()
-        tooltip = 'The next island will be generated in ' .. Public.normalize_time_until_next_island_is_created() .. '.\nUnless you progress to the next island, it will be generated automatically.\nIf you do not progress to the next island, you will not be able to reroll the next island market.\nMarket rerolls are unlocked when you manually progress to the next island.'
-    elseif (island_data and island_data.spawned_biters and island_data.completed) then
-        caption = caption .. ' | Level cleared!'
-        tooltip = 'Defenses would sure be helpful right now.\nVotes close in ' .. Difficulty.get_closing_timeout() .. ' seconds.'
-    elseif (this.auto_generate_upon_idle and island_data and island_data.auto_generated_bridge == false) then
-        caption = caption .. ' | Bugs remaining: '
-        caption = caption .. this.alive_enemies
-        caption = caption .. ' | [entity=small-biter,quality=' .. Public.qualities[random(1, #Public.qualities)] .. ']: ' .. Public.normalize_time_until_next_island_is_created()
-        tooltip = 'The bridge to the next island will be generated in ' .. Public.normalize_time_until_next_island_is_created() .. '.\nUnless you progress to the next island, it will be generated automatically.\nMarket rerolls have been removed for the next island.\nMarket rerolls are unlocked when you manually progress to the next island.'
+    elseif can_auto_generate then
+        table.insert(caption_parts, ' | Level cleared!')
+        table.insert(caption_parts, (' | [entity=small-biter,quality=%s]: %s'):format(random_quality, time))
+        tooltip = ('The next island will be generated in %s.\nThe bridge for next island will be generated in %s.\n\n' ..
+            'Unless you progress to the next island, it will be generated automatically.\n\n' ..
+            'If you do not progress to the next island, you will not be able to reroll the next island market if the bridge also generates.\n\n' ..
+            'Market rerolls are unlocked when you manually progress to the next island.'):format(half, time)
+    elseif island_complete then
+        table.insert(caption_parts, ' | Level cleared!')
+        tooltip = ('Defenses would sure be helpful right now.\nVotes close in %d seconds.'):format(Difficulty.get_closing_timeout())
+    elseif this.auto_generate_upon_idle and island_data and island_data.auto_generated_bridge == false then
+        table.insert(caption_parts, (' | Bugs remaining: %d | [entity=small-biter,quality=%s]: %s'):format(
+            this.alive_enemies, random_quality, time))
+        tooltip = ('The bridge to the next island will be generated in %s.\nUnless you progress to the next island, it will be generated automatically.\n' ..
+            'Market rerolls will be removed for the next island if the bridge is auto-generated.\nMarket rerolls are unlocked when you manually progress to the next island.'):format(time)
     else
-        caption = caption .. ' | Bugs remaining: '
-        caption = caption .. this.alive_enemies
-        tooltip = 'Vanquish the biters to capture the island. ' .. this.alive_enemies .. ' biters remaining.'
+        table.insert(caption_parts, (' | Bugs remaining: %d'):format(this.alive_enemies))
+        tooltip = ('Vanquish the biters to capture the island. %d biters remaining.'):format(this.alive_enemies)
     end
+
+    local caption = this.top_label_caption_override or table.concat(caption_parts)
 
     for _, player in pairs(game.connected_players) do
         local frame = get_top_frame(player, stage_gui_name)
         if frame and frame.valid and frame.label and frame.label.valid then
-            frame.label.caption = this.top_label_caption_override or caption
+            frame.label.caption = caption
             frame.label.tooltip = tooltip
         end
     end
 end
+
 
 local function drift_corpses_toward_beach()
     if not Public.get('drift_corpses_toward_beach_enabled') then
@@ -357,7 +376,7 @@ local function on_tick()
                     if not (island_data and island_data.auto_generated_bridge) then
                         island_data.auto_generated_bridge = true
                         game.print('The biters are forming a bridge to our island! They are coming!!!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
-                        Scheduler.new(1, Public.do_generate_bridge_token):set_data({ surface = game.surfaces[1] })
+                        Scheduler.new(1, Public.do_generate_bridge_token):set_data({ surface = game.surfaces[1], reroll_enabled = false })
                         this.time_until_next_island_is_created = nil
                     end
                 end
@@ -415,7 +434,7 @@ local function on_tick()
     end
 
     if tick % 400 == 0 then
-        Func.set_multi_command()
+        Func.send_biters_to_market()
     end
 
     if tick % 500 == 0 then
@@ -430,6 +449,10 @@ local function on_tick()
         if tick % 4500 == 0 then
             Func.run_clear_items_on_ground()
         end
+    end
+
+    if tick % 1500 == 0 then
+        Func.set_multi_command()
     end
 end
 
