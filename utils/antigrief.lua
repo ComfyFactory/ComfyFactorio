@@ -62,8 +62,6 @@ local this =
     on_cancelled_deconstruction = { tick = 0, count = 0 },
     limit = 2000,
     admin_button_validation = {},
-    deconstruct_queue = {},
-    mining_window = {}
 }
 local ammo_names =
 {

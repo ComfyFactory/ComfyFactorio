@@ -545,7 +545,7 @@ local function spawn_biter(surface, position, fs, is_boss_biter, unit_settings, 
     local es_settings = Public.get_es('settings')
 
     if es_settings.enabled then
-        force = 'aggressors'
+        force = es_settings.force_name
     end
 
     if name == '' or name == nil then
@@ -648,7 +648,7 @@ local function spawn_worm(surface, position, is_boss_worm)
     local es_settings = Public.get_es('settings')
 
     if es_settings.enabled then
-        force = 'aggressors'
+        force = es_settings.force_name
     end
 
     local worm = surface.create_entity({ name = name, position = position, force = force })
@@ -773,6 +773,8 @@ local function set_multi_command()
         return
     end
 
+    local es_settings = Public.get_es('settings')
+
     surface.set_multi_command(
         {
             command =
@@ -782,7 +784,7 @@ local function set_multi_command()
                 distraction = defines.distraction.none
             },
             unit_count = 256,
-            force = 'aggressors',
+            force = es_settings.enabled and es_settings.force_name or 'enemy',
             unit_search_distance = 1024
         }
     )
@@ -1263,7 +1265,7 @@ local function spawn_unit_group(fs, only_bosses)
 
     local force = 'enemy'
     if es_settings.enabled then
-        force = 'aggressors'
+        force = es_settings.force_name
     end
 
     local generated_units = Public.get('generated_units')
@@ -1384,7 +1386,7 @@ local function spawn_unit_group_simple(fs)
 
     local force = 'enemy'
     if es_settings.enabled then
-        force = 'aggressors'
+        force = es_settings.force_name
     end
 
     local generated_units = Public.get('generated_units')
@@ -1534,7 +1536,7 @@ Event.on_nth_tick(30,
     function ()
         local tick = game.tick
 
-        local t = tick % 300
+        local t = tick % 2000
         local t2 = tick % 18000
 
         if tick_tasks[t] then

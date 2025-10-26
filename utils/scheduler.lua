@@ -9,6 +9,7 @@ local loaded, named, count = {}, {}, 0
 local this =
 {
     tasks = {},
+    intervals = {},
     next_id = 0,
     can_run_scheduler = true
 }
@@ -32,7 +33,6 @@ Global.register(
 ---@field _children table|nil
 ---@field _next_child_ix number|nil
 ---@field _parent Task|nil
-
 local Task = {}
 Task.__index = Task
 
@@ -107,6 +107,26 @@ function Task:set_data(tbl)
     return self
 end
 
+--- Sets the interval for this task to run on
+---@param time number - The time in ticks before the task is executed
+---i.e. if you want the task to run every 10 ticks, you would set the interval to 10
+---@param until_tick number - The tick until the task should stop running
+---@return Task - Self for chaining
+function Task:set_interval(time, until_tick)
+    self._interval = normalize_delay(time)
+    self._until_tick = until_tick
+    return self
+end
+
+--- Delays this task for later execution
+---@param delay number - The delay in ticks before the task is executed
+---@return Task - Self for chaining
+function Task:set_delay(delay)
+    self._delay = normalize_delay(delay)
+    self._tick = game.tick + normalize_delay(delay)
+    return self
+end
+
 --- Validates the data for this task
 ---@return Task - Self for chaining
 function Task:log()
@@ -144,6 +164,34 @@ function Task:run(current_tick)
     return true
 end
 
+--- Runs the task on an interval
+---@param current_tick number - The current tick
+---@return boolean - Whether the task was executed
+function Task:run_interval(current_tick)
+    if self._interval and current_tick % self._interval == 0 then
+        if self._until_tick and self._until_tick <= current_tick then
+            self._completed = true
+            return false
+        end
+
+        local cb, name = self:get_callback()
+        self._name = self._name or name or self._name
+
+        if cb then
+            cb(self._data or {}, self)
+        end
+        return true
+    end
+    return false
+end
+
+--- Cancels the task
+---@return Task - Self for chaining
+function Task:cancel_task()
+    self._completed = true
+    return self
+end
+
 --- Schedules the next task in the DFS
 ---@param n Task - The task to schedule
 ---@param current_tick number - The current tick
@@ -171,6 +219,39 @@ function Public.new(delay, uid)
     t._tick = game.tick + normalize_delay(delay)
     table.insert(this.tasks, t)
     return t
+end
+
+--- Creates a new task
+---@param time number - The time in ticks before the task is executed
+---@param until_tick number - The tick until the task should stop running
+---@param uid number|string|nil - The unique identifier for the task
+---@return Task - The new task
+function Public.new_interval(time, until_tick, uid)
+    local t = new_task(1, uid)
+    t._interval = normalize_delay(time)
+    t._until_tick = until_tick
+    table.insert(this.intervals, t)
+    return t
+end
+
+--- Gets the task by unique identifier
+---@param uid number|string - The unique identifier for the task
+---@return Task|nil, number|nil - The task and the index
+function Public.get_task_by_uid(uid)
+    if not uid then
+        return nil, nil
+    end
+    for i, t in pairs(this.tasks) do
+        if t._uid == uid then
+            return t, i
+        end
+    end
+    for i, t in pairs(this.intervals) do
+        if t._uid == uid then
+            return t, i
+        end
+    end
+    return nil, nil
 end
 
 --- Sets whether the scheduler can run
@@ -207,7 +288,7 @@ Event.add(defines.events.on_tick,
             ---@class Task
             t = t
 
-            if t._tick and t._tick <= tick and not t._completed then
+            if not t._interval and t._tick and t._tick <= tick and not t._completed then
                 local ran = t:run(tick)
                 table.remove(this.tasks, i)
 
@@ -216,6 +297,36 @@ Event.add(defines.events.on_tick,
                 end
             else
                 i = i + 1
+            end
+        end
+    end)
+
+Event.add(defines.events.on_tick,
+    function ()
+        local tick = game.tick
+
+        if tick < 100 then
+            return
+        end
+
+        local can_run_scheduler = this.can_run_scheduler
+        if not can_run_scheduler then
+            return
+        end
+
+        if not this.intervals or #this.intervals == 0 then
+            return
+        end
+
+        for i = 1, #this.intervals do
+            local t = this.intervals[i]
+            ---@class Task
+            t = t
+
+            if t._interval and not t._completed then
+                t:run_interval(tick)
+            else
+                table.remove(this.intervals, i)
             end
         end
     end)

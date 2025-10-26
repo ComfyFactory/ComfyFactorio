@@ -77,6 +77,11 @@ Event.on_nth_tick(
             return
         end
 
+        local game_lost = Public.get('game_lost')
+        if game_lost then
+            return
+        end
+
         local collection = Public.get_stateful('collection')
         if not collection then
             return
@@ -134,6 +139,8 @@ Event.on_nth_tick(
 
             area[1].y = area[1].y + locomotive.position.y
             area[2].y = area[2].y + locomotive.position.y
+
+            WD.wave_defense_roll_boss_name()
 
             if random(1, 2) == 1 then
                 WD.set_spawn_position(area[1])
@@ -245,6 +252,11 @@ Event.on_nth_tick(
     function ()
         local final_battle = Public.get_stateful('final_battle')
         if not final_battle then
+            return
+        end
+
+        local game_lost = Public.get('game_lost')
+        if game_lost then
             return
         end
 

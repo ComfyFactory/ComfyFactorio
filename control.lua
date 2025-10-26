@@ -6,6 +6,7 @@ _PROFILE = false
 
 require 'utils.created_events'
 require 'utils.server'
+require 'utils.dev_server'
 require 'utils.server_commands'
 require 'utils.gui.init'
 require 'utils.admin_handler'

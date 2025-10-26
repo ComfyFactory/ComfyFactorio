@@ -2357,6 +2357,7 @@ function Public.set_final_battle()
     local es_settings = WD.get_es('settings')
     WD.set_es('final_battle', true)
     es_settings.final_battle = true
+    es_settings.force_name = 'aggressors_frenzy'
     Public.set('final_battle', true)
 end
 

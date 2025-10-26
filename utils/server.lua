@@ -193,7 +193,7 @@ end
 -- function()
 --      Trigger some sort of automated restart whenever the game ends.
 -- end)
--- Defined in CustomEvents.lua
+-- Defined in created_events.lua
 
 -- Starts a new game with the given scenario. Note that this will stop the current game and reset it.
 ---@param scenario_data string|table
