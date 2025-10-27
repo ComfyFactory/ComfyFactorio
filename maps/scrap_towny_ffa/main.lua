@@ -43,7 +43,6 @@ local JailData = require 'utils.datastore.jail_data'
 
 Gui.mod_gui_button_enabled = true
 Gui.button_style = 'mod_gui_button'
-Gui.set_toggle_button(true)
 
 local function spairs(t)
     local keys = {}

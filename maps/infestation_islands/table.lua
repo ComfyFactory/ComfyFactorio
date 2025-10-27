@@ -9,6 +9,8 @@ local Task = require 'utils.task_token'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 local Server = require 'utils.server'
 local MGS = require 'maps.infestation_islands.island_settings'
+local AntiGrief = require 'utils.antigrief'
+local Poll = require 'utils.gui.poll'
 
 local this = {}
 
@@ -401,6 +403,8 @@ function Public.on_init()
     BottomFrame.activate_custom_buttons(true)
     Autostash.bottom_button(true)
     Autostash.insert_into_furnace(true)
+    AntiGrief.reset_tables()
+    Poll.reset()
 
     this.soft_reset = true
 

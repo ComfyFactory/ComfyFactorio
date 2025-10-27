@@ -7,11 +7,10 @@ local Event = require 'utils.event'
 
 Gui.mod_gui_button_enabled = true
 Gui.button_style = 'mod_gui_button'
-Gui.set_toggle_button(true)
 Gui.set_mod_gui_top_frame(true)
 
 Event.on_init(function ()
-	Freeplay.set_enabled(true)
-	Autostash.set_enabled(true)
-	Misc.set_enabled(true)
+    Freeplay.set_enabled(true)
+    Autostash.set_enabled(true)
+    Misc.set_enabled(true)
 end)

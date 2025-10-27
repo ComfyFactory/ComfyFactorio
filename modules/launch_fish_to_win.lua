@@ -3,85 +3,102 @@
 local Event = require 'utils.event'
 local Gui = require 'utils.gui'
 
-local function goals()
-    if not storage.catplanet_goals then
-        storage.catplanet_goals = {
-            { goal = 0,        rank = false,         achieved = true },
-            {
-                goal = 100,
-                rank = 'Copper',
-                color = { r = 201, g = 133, b = 6 },
-                msg = 'You have saved the first container of fish!',
-                msg2 = 'However, this is only the beginning.',
-                achieved = false
-            },
-            {
-                goal = 1000,
-                rank = 'Bronze',
-                color = { r = 186, g = 115, b = 39 },
-                msg = 'Thankful for the fish, they sent back a toy mouse made of solid bronze!',
-                msg2 = 'They are demanding more.',
-                achieved = false
-            },
-            {
-                goal = 10000,
-                rank = 'Silver',
-                color = { r = 186, g = 178, b = 171 },
-                msg = 'In gratitude for the fish, they left you a silver furball!',
-                msg2 = 'They are still longing for more.',
-                achieved = false
-            },
-            {
-                goal = 25000,
-                rank = 'Gold',
-                color = { r = 255, g = 214, b = 33 },
-                msg = 'Pleased about the delivery, they sent back a golden audiotape with cat purrs.',
-                msg2 = 'They still demand more.',
-                achieved = false
-            },
-            {
-                goal = 50000,
-                rank = 'Platinum',
-                color = { r = 224, g = 223, b = 215 },
-                msg = 'To express their infinite love, they sent back a yarnball made of shiny material.',
-                msg2 = 'Defying all logic, they still demand more fish.',
-                achieved = false
-            },
-            {
-                goal = 100000,
-                rank = 'Diamond',
-                color = { r = 237, g = 236, b = 232 },
-                msg = 'A box arrives with a mewing kitten, it a has a diamond collar.',
-                msg2 = 'More fish? Why? What..',
-                achieved = false
-            },
-            {
-                goal = 250000,
-                rank = 'Anti-matter',
-                color = { r = 100, g = 100, b = 245 },
-                msg = 'The obese cat colapses and forms a black hole!',
-                msg2 = ':obese:',
-                achieved = false
-            },
-            {
-                goal = 500000,
-                rank = 'Black Hole',
-                color = { r = 100, g = 100, b = 245 },
-                msg = 'A letter arrives, it reads: Go to bed hooman!',
-                msg2 = 'Not yet...',
-                achieved = false
-            },
-            {
-                goal = 1000000,
-                rank = 'Blue Screen',
-                color = { r = 100, g = 100, b = 245 },
-                msg = 'Cat error #4721',
-                msg2 = '....',
-                achieved = false
-            },
-            { goal = 10000000, rank = 'Blue Screen', color = { r = 100, g = 100, b = 245 }, msg = '....', msg2 = '....', achieved = false }
-        }
+local Public = {}
+
+Gui.mod_gui_button_enabled = true
+Gui.button_style = 'mod_gui_button'
+Gui.set_mod_gui_top_frame(true)
+
+local function get_top_frame(player, id)
+    if not id then
+        id = 'fish_in_space_toggle'
     end
+
+    if Gui.get_mod_gui_top_frame() then
+        return Gui.get_button_flow(player)[id]
+    else
+        return player.gui.top[id]
+    end
+end
+
+local function goals()
+    storage.catplanet_goals =
+    {
+        { goal = 0, rank = false, achieved = true },
+        {
+            goal = 100,
+            rank = 'Copper',
+            color = { r = 201, g = 133, b = 6 },
+            msg = 'You have saved the first container of fish!',
+            msg2 = 'However, this is only the beginning.',
+            achieved = false
+        },
+        {
+            goal = 1000,
+            rank = 'Bronze',
+            color = { r = 186, g = 115, b = 39 },
+            msg = 'Thankful for the fish, they sent back a toy mouse made of solid bronze!',
+            msg2 = 'They are demanding more.',
+            achieved = false
+        },
+        {
+            goal = 10000,
+            rank = 'Silver',
+            color = { r = 186, g = 178, b = 171 },
+            msg = 'In gratitude for the fish, they left you a silver furball!',
+            msg2 = 'They are still longing for more.',
+            achieved = false
+        },
+        {
+            goal = 25000,
+            rank = 'Gold',
+            color = { r = 255, g = 214, b = 33 },
+            msg = 'Pleased about the delivery, they sent back a golden audiotape with cat purrs.',
+            msg2 = 'They still demand more.',
+            achieved = false
+        },
+        {
+            goal = 50000,
+            rank = 'Platinum',
+            color = { r = 224, g = 223, b = 215 },
+            msg = 'To express their infinite love, they sent back a yarnball made of shiny material.',
+            msg2 = 'Defying all logic, they still demand more fish.',
+            achieved = false
+        },
+        {
+            goal = 100000,
+            rank = 'Diamond',
+            color = { r = 237, g = 236, b = 232 },
+            msg = 'A box arrives with a mewing kitten, it a has a diamond collar.',
+            msg2 = 'More fish? Why? What..',
+            achieved = false
+        },
+        {
+            goal = 250000,
+            rank = 'Anti-matter',
+            color = { r = 100, g = 100, b = 245 },
+            msg = 'The obese cat colapses and forms a black hole!',
+            msg2 = ':obese:',
+            achieved = false
+        },
+        {
+            goal = 500000,
+            rank = 'Black Hole',
+            color = { r = 100, g = 100, b = 245 },
+            msg = 'A letter arrives, it reads: Go to bed hooman!',
+            msg2 = 'Not yet...',
+            achieved = false
+        },
+        {
+            goal = 1000000,
+            rank = 'Blue Screen',
+            color = { r = 100, g = 100, b = 245 },
+            msg = 'Cat error #4721',
+            msg2 = '....',
+            achieved = false
+        },
+        { goal = 10000000, rank = 'Blue Screen', color = { r = 100, g = 100, b = 245 }, msg = '....', msg2 = '....', achieved = false }
+    }
 end
 
 local function get_rank()
@@ -96,12 +113,20 @@ local function get_rank()
 end
 
 local function fish_in_space_toggle_button(player)
-    if player.gui.top['fish_in_space_toggle'] then
+    local button = get_top_frame(player)
+    if button then
         return
     end
-    local button = player.gui.top.add { name = 'fish_in_space_toggle', type = 'sprite-button', sprite = 'item/raw-fish', tooltip = 'Fish in Space', style = Gui.button_style }
-    button.style.minimal_height = 38
-    button.style.maximal_height = 38
+
+    if Gui.get_mod_gui_top_frame() then
+        button = Gui.add_mod_button(player, { name = 'fish_in_space_toggle', type = 'sprite-button', sprite = 'item/raw-fish', tooltip = 'Fish in Space', style = Gui.button_style })
+    else
+        button = player.gui.top.add { name = 'fish_in_space_toggle', type = 'sprite-button', sprite = 'item/raw-fish', tooltip = 'Fish in Space', style = Gui.button_style }
+    end
+    if button then
+        button.style.minimal_height = 36
+        button.style.maximal_height = 36
+    end
 end
 
 local function level_up_popup(player)
@@ -143,6 +168,7 @@ local function fish_in_space_gui(player)
         progress = 1
     end
     local progressbar = frame.add({ type = 'progressbar', value = progress })
+    ---@class LuaGuiElementStyle
     progressbar.style = 'achievement_progressbar'
     progressbar.style.minimal_width = 96
     progressbar.style.maximal_width = 96
@@ -188,6 +214,10 @@ local function on_rocket_launched(event)
         if slot.name ~= "raw-fish" then
             return
         end
+    end
+
+    if storage.fish_in_space == 0 then
+        goals()
     end
 
     rocket_inventory.clear()
@@ -291,3 +321,11 @@ Event.on_init(on_init)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_rocket_launch_ordered, on_rocket_launched)
+
+Public.get_top_frame = get_top_frame
+Public.fish_in_space_toggle_button = fish_in_space_toggle_button
+Public.level_up_popup = level_up_popup
+Public.fish_in_space_gui = fish_in_space_gui
+Public.fireworks = fireworks
+
+return Public

@@ -4,7 +4,7 @@
 
 local Public = require 'maps.fish_defender_v2.core'
 local Gui = require 'utils.gui'
-require 'modules.launch_fish_to_win'
+local LFTW = require 'modules.launch_fish_to_win'
 require 'modules.biters_yield_coins'
 require 'modules.custom_death_messages'
 local Unit_health_booster = require 'modules.biter_health_booster_v2'
@@ -26,7 +26,6 @@ local enable_start_grace_period = true
 
 Gui.mod_gui_button_enabled = true
 Gui.button_style = 'mod_gui_button'
-Gui.set_toggle_button(true)
 Gui.set_mod_gui_top_frame(true)
 local button_id = 'fd-stats-button'
 local fish_button_id = 'fish_defense_waves'
@@ -908,137 +907,141 @@ local function get_mvps()
     return mvp
 end
 
+local function show_mvps(t, mvp)
+    if mvp then
+        local time_played = Core.format_time(game.ticks_played)
+        local wave = Public.get('wave_count')
+
+        local mvp_defender_label = t.add({ type = 'label', caption = 'MVP Defender >> ' })
+        mvp_defender_label.style.font = 'default-listbox'
+        mvp_defender_label.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
+
+        local mvp_killscore_label = t.add({ type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score })
+        mvp_killscore_label.style.font = 'default-bold'
+        mvp_killscore_label.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
+
+        local mvp_builder_label = t.add({ type = 'label', caption = 'MVP Builder >> ' })
+        mvp_builder_label.style.font = 'default-listbox'
+        mvp_builder_label.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
+
+        local mvp_built_ent_label =
+            t.add(
+                {
+                    type = 'label',
+                    caption = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things'
+                }
+            )
+        mvp_built_ent_label.style.font = 'default-bold'
+        mvp_built_ent_label.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
+
+        local mvp_deaths_label = t.add({ type = 'label', caption = 'MVP Deaths >> ' })
+        mvp_deaths_label.style.font = 'default-listbox'
+        mvp_deaths_label.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
+
+        local mvp_deaths_name_label = t.add({ type = 'label', caption = mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times' })
+        mvp_deaths_name_label.style.font = 'default-bold'
+        mvp_deaths_name_label.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
+
+        local wave_lasted_label = t.add({ type = 'label', caption = 'Wave reached >> ' })
+        wave_lasted_label.style.font = 'default-listbox'
+        wave_lasted_label.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
+
+        local wave_lasted_name_label = t.add({ type = 'label', caption = tonumber(format_number(wave, true)) })
+        wave_lasted_name_label.style.font = 'default-bold'
+        wave_lasted_name_label.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
+
+        local results_sent = Public.get('results_sent')
+        if not results_sent then
+            local result = {}
+            insert(result, 'MVP Defender: \\n')
+            insert(result, mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score .. '\\n')
+            insert(result, '\\n')
+            insert(result, 'MVP Builder: \\n')
+            insert(result, mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things\\n')
+            insert(result, '\\n')
+            insert(result, 'MVP Deaths: \\n')
+            insert(result, mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times\\n')
+            insert(result, '\\n')
+            insert(result, 'Time Played: \\n')
+            insert(result, time_played .. '\\n')
+            insert(result, '\\n')
+            insert(result, 'Wave reached: \\n')
+            insert(result, tonumber(format_number(wave, true)))
+            local message = table.concat(result)
+            Server.to_discord_embed(message)
+            Public.set('results_sent', true)
+        end
+    end
+end
+
 local function is_game_lost()
     local game_has_ended = Public.get('game_has_ended')
     if not game_has_ended then
         return
     end
 
+    local mvp = get_mvps()
+
     local players = game.connected_players
     for i = 1, #players do
         local player = players[i]
-
-        if player.gui.left['fish_defense_game_lost'] then
-            return
-        end
-        local f =
-            player.gui.left.add(
-                {
-                    type = 'frame',
-                    name = 'fish_defense_game_lost',
-                    caption = 'The fish market was overrun! The biters are having a feast :3',
-                    direction = 'vertical'
-                }
-            )
-        f.style.font_color = { r = 0.65, g = 0.1, b = 0.99 }
-
-        local t = f.add({ type = 'table', column_count = 2 })
-
-        local survival_time_label = t.add({ type = 'label', caption = 'Survival Time >> ' })
-        survival_time_label.style.font = 'default-listbox'
-        survival_time_label.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
-
-        local market_age_label
-
-        local market_age = Public.get('market_age')
-        if not market_age then
-            return
-        end
-
-        if market_age then
-            if market_age >= 216000 then
-                market_age_label =
-                    t.add(
-                        {
-                            type = 'label',
-                            caption = math.floor(((market_age / 60) / 60) / 60) .. ' hours ' .. math.ceil((market_age % 216000 / 60) / 60) .. ' minutes'
-                        }
-                    )
-                market_age_label.style.font = 'default-bold'
-                market_age_label.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
-            else
-                market_age_label = t.add({ type = 'label', caption = math.ceil((market_age % 216000 / 60) / 60) .. ' minutes' })
-                market_age_label.style.font = 'default-bold'
-                market_age_label.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
-            end
-        end
-
-        local mvp = get_mvps()
-        if mvp then
-            local time_played = Core.format_time(game.ticks_played)
-            local wave = Public.get('wave_count')
-
-            local mvp_defender_label = t.add({ type = 'label', caption = 'MVP Defender >> ' })
-            mvp_defender_label.style.font = 'default-listbox'
-            mvp_defender_label.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
-
-            local mvp_killscore_label = t.add({ type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score })
-            mvp_killscore_label.style.font = 'default-bold'
-            mvp_killscore_label.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
-
-            local mvp_builder_label = t.add({ type = 'label', caption = 'MVP Builder >> ' })
-            mvp_builder_label.style.font = 'default-listbox'
-            mvp_builder_label.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
-
-            local mvp_built_ent_label =
-                t.add(
+        local frame = player.gui.left['fish_defense_game_lost']
+        if not frame or not frame.valid then
+            local f =
+                player.gui.left.add(
                     {
-                        type = 'label',
-                        caption = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things'
+                        type = 'frame',
+                        name = 'fish_defense_game_lost',
+                        caption = 'The fish market was overrun! The biters are having a feast :3',
+                        direction = 'vertical'
                     }
                 )
-            mvp_built_ent_label.style.font = 'default-bold'
-            mvp_built_ent_label.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
+            f.style.font_color = { r = 0.65, g = 0.1, b = 0.99 }
 
-            local mvp_deaths_label = t.add({ type = 'label', caption = 'MVP Deaths >> ' })
-            mvp_deaths_label.style.font = 'default-listbox'
-            mvp_deaths_label.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
+            local t = f.add({ type = 'table', column_count = 2 })
 
-            local mvp_deaths_name_label = t.add({ type = 'label', caption = mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times' })
-            mvp_deaths_name_label.style.font = 'default-bold'
-            mvp_deaths_name_label.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
+            local survival_time_label = t.add({ type = 'label', caption = 'Survival Time >> ' })
+            survival_time_label.style.font = 'default-listbox'
+            survival_time_label.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
 
-            local wave_lasted_label = t.add({ type = 'label', caption = 'Wave reached >> ' })
-            wave_lasted_label.style.font = 'default-listbox'
-            wave_lasted_label.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
+            local market_age_label
 
-            local wave_lasted_name_label = t.add({ type = 'label', caption = tonumber(format_number(wave, true)) })
-            wave_lasted_name_label.style.font = 'default-bold'
-            wave_lasted_name_label.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
-
-            local results_sent = Public.get('results_sent')
-            if not results_sent then
-                local result = {}
-                insert(result, 'MVP Defender: \\n')
-                insert(result, mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score .. '\\n')
-                insert(result, '\\n')
-                insert(result, 'MVP Builder: \\n')
-                insert(result, mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things\\n')
-                insert(result, '\\n')
-                insert(result, 'MVP Deaths: \\n')
-                insert(result, mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times\\n')
-                insert(result, '\\n')
-                insert(result, 'Time Played: \\n')
-                insert(result, time_played .. '\\n')
-                insert(result, '\\n')
-                insert(result, 'Wave reached: \\n')
-                insert(result, tonumber(format_number(wave, true)))
-                local message = table.concat(result)
-                Server.to_discord_embed(message)
-                Public.set('results_sent', true)
+            local market_age = Public.get('market_age')
+            if not market_age then
+                return
             end
+
+            if market_age then
+                if market_age >= 216000 then
+                    market_age_label =
+                        t.add(
+                            {
+                                type = 'label',
+                                caption = math.floor(((market_age / 60) / 60) / 60) .. ' hours ' .. math.ceil((market_age % 216000 / 60) / 60) .. ' minutes'
+                            }
+                        )
+                    market_age_label.style.font = 'default-bold'
+                    market_age_label.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
+                else
+                    market_age_label = t.add({ type = 'label', caption = math.ceil((market_age % 216000 / 60) / 60) .. ' minutes' })
+                    market_age_label.style.font = 'default-bold'
+                    market_age_label.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
+                end
+            end
+
+            show_mvps(t, mvp)
+
+            if player.gui.top.fish_in_space_toggle and player.gui.top.fish_in_space_toggle.valid then
+                player.gui.top.fish_in_space_toggle.destroy()
+            end
+
+            if player.gui.center['level_up_popup'] and player.gui.center['level_up_popup'].valid then
+                player.gui.center['level_up_popup'].destroy()
+            end
+
+            player.play_sound { path = 'utility/game_lost', volume_modifier = 0.75 }
         end
-
-        player.play_sound { path = 'utility/game_lost', volume_modifier = 0.75 }
     end
-
-    local map_settings = game.map_settings
-    map_settings.enemy_expansion.enabled = true
-    map_settings.enemy_expansion.max_expansion_distance = 15
-    map_settings.enemy_expansion.settler_group_min_size = 15
-    map_settings.enemy_expansion.settler_group_max_size = 30
-    map_settings.enemy_expansion.min_expansion_cooldown = 600
-    map_settings.enemy_expansion.max_expansion_cooldown = 600
 end
 
 local function damage_entities_in_radius(surface, position, radius, damage)
@@ -1162,7 +1165,6 @@ local function on_entity_died(event)
         Public.set('market', nil)
         Public.set('market_age', game.tick - last_reset)
         Public.set('game_has_ended', true)
-        is_game_lost()
 
         local surface = event.entity.surface
         for _, entity in pairs(surface.find_entities_filtered { type = { 'logistic-robot', 'construction-robot', 'roboport' } }) do
@@ -1211,10 +1213,6 @@ local function on_player_joined_game(event)
 
     create_wave_gui(player)
     add_fd_stats_button(player)
-
-    if game.tick > 900 then
-        is_game_lost()
-    end
 end
 
 local function deny_building(event)
@@ -1408,22 +1406,21 @@ local function on_player_respawned(event)
 end
 
 local function has_the_game_ended()
-    local market_age = Public.get('market_age')
-    if market_age then
-        local game_restart_timer = Public.get('game_restart_timer')
-        if not game_restart_timer then
-            Public.set('game_restart_timer', 5400)
+    local this = Public.get()
+    if this.market_age then
+        if not this.game_restart_timer then
+            this.game_restart_timer = 5400
         else
-            if game_restart_timer < 0 then
+            if this.game_restart_timer < 0 then
                 return
             end
-            Public.set('game_restart_timer', game_restart_timer - 30)
+            this.game_restart_timer = this.game_restart_timer - 30
         end
-        game_restart_timer = Public.get('game_restart_timer')
+
         local cause_msg
-        local restart = Public.get('restart')
-        local shutdown = Public.get('shutdown')
-        local soft_reset = Public.get('soft_reset')
+        local restart = this.restart
+        local shutdown = this.shutdown
+        local soft_reset = this.soft_reset
         if restart then
             cause_msg = 'restart'
         elseif shutdown then
@@ -1432,20 +1429,19 @@ local function has_the_game_ended()
             cause_msg = 'soft-reset'
         end
 
-        if game_restart_timer % 1800 == 0 then
-            if game_restart_timer > 0 then
-                Public.set('game_reset', true)
-                game.print('Game will ' .. cause_msg .. ' in ' .. game_restart_timer / 60 .. ' seconds!', { r = 0.22, g = 0.88, b = 0.22 })
+        if this.game_restart_timer % 1800 == 0 then
+            if this.game_restart_timer > 0 then
+                this.game_reset = true
+                game.print('Game will ' .. cause_msg .. ' in ' .. this.game_restart_timer / 60 .. ' seconds!', { r = 0.22, g = 0.88, b = 0.22 })
             end
-            if soft_reset and game_restart_timer == 0 then
-                Public.set('game_reset_tick', nil)
-                -- Server.start_scenario('Fish_Defender')
+            if soft_reset and this.game_restart_timer == 0 then
+                this.game_reset_tick = nil
                 Public.reset_game()
                 return
             end
 
             local announced_message = Public.get('announced_message')
-            if restart and game_restart_timer == 0 then
+            if restart and this.game_restart_timer == 0 then
                 if not announced_message then
                     game.print('Soft-reset is disabled. Server will restart!', { r = 0.22, g = 0.88, b = 0.22 })
                     local message = 'Soft-reset is disabled. Server will restart!'
@@ -1455,7 +1451,7 @@ local function has_the_game_ended()
                     return
                 end
             end
-            if shutdown and game_restart_timer == 0 then
+            if shutdown and this.game_restart_timer == 0 then
                 if not announced_message then
                     game.print('Soft-reset is disabled. Server is shutting down!', { r = 0.22, g = 0.88, b = 0.22 })
                     local message = 'Soft-reset is disabled. Server is shutting down!'
@@ -1471,6 +1467,7 @@ end
 
 function Public.reset_game()
     Public.reset_table()
+    Unit_health_booster.reset_table()
     local get_score = Score.get_table()
     Poll.reset()
 
@@ -1539,8 +1536,18 @@ function Public.reset_game()
         if player.gui.left['fish_defense_game_lost'] then
             player.gui.left['fish_defense_game_lost'].destroy()
         end
+
         if player.gui.left['fish_in_space'] then
             player.gui.left['fish_in_space'].destroy()
+        end
+
+        local lftw_button = LFTW.get_top_frame(player)
+        if lftw_button and lftw_button.valid then
+            lftw_button.destroy()
+        end
+
+        if player.gui.center['level_up_popup'] and player.gui.center['level_up_popup'].valid then
+            player.gui.center['level_up_popup'].destroy()
         end
     end
 
@@ -1550,18 +1557,9 @@ function Public.reset_game()
         Session.clear_player(player)
     end
 
-    --test idea
-    --local spawn_poses = {
-    --	{x = 0, y = 0},
-    --    {x = -512, y = 0},
-    --	{x = -512, y = 192},
-    --	{x = -512, y = -192}
-    --}
-
     local map_gen_settings = {}
     map_gen_settings.seed = random(10000, 99999)
     map_gen_settings.starting_area = 0.1
-    --map_gen_settings.starting_points = spawn_poses
 
     map_gen_settings.width = 4000
     map_gen_settings.height = 1800
@@ -1641,85 +1639,8 @@ function Public.reset_game()
     game.forces.player.technologies['spidertron'].researched = false
     game.reset_time_played()
 
-    if not storage.catplanet_goals then
-        storage.catplanet_goals =
-        {
-            { goal = 0, rank = false, achieved = true },
-            {
-                goal = 100,
-                rank = 'Copper',
-                color = { r = 201, g = 133, b = 6 },
-                msg = 'You have saved the first container of fish!',
-                msg2 = 'However, this is only the beginning.',
-                achieved = false
-            },
-            {
-                goal = 1000,
-                rank = 'Bronze',
-                color = { r = 186, g = 115, b = 39 },
-                msg = 'Thankful for the fish, they sent back a toy mouse made of solid bronze!',
-                msg2 = 'They are demanding more.',
-                achieved = false
-            },
-            {
-                goal = 10000,
-                rank = 'Silver',
-                color = { r = 186, g = 178, b = 171 },
-                msg = 'In gratitude for the fish, they left you a silver furball!',
-                msg2 = 'They are still longing for more.',
-                achieved = false
-            },
-            {
-                goal = 25000,
-                rank = 'Gold',
-                color = { r = 255, g = 214, b = 33 },
-                msg = 'Pleased about the delivery, they sent back a golden audiotape with cat purrs.',
-                msg2 = 'They still demand more.',
-                achieved = false
-            },
-            {
-                goal = 50000,
-                rank = 'Platinum',
-                color = { r = 224, g = 223, b = 215 },
-                msg = 'To express their infinite love, they sent back a yarnball made of shiny material.',
-                msg2 = 'Defying all logic, they still demand more fish.',
-                achieved = false
-            },
-            {
-                goal = 100000,
-                rank = 'Diamond',
-                color = { r = 237, g = 236, b = 232 },
-                msg = 'A box arrives with a mewing kitten, it a has a diamond collar.',
-                msg2 = 'More fish? Why? What..',
-                achieved = false
-            },
-            {
-                goal = 250000,
-                rank = 'Anti-matter',
-                color = { r = 100, g = 100, b = 245 },
-                msg = 'The obese cat collapses and forms a black hole!',
-                msg2 = ':obese:',
-                achieved = false
-            },
-            {
-                goal = 500000,
-                rank = 'Black Hole',
-                color = { r = 100, g = 100, b = 245 },
-                msg = 'A letter arrives, it reads: Go to bed hooman!',
-                msg2 = 'Not yet...',
-                achieved = false
-            },
-            {
-                goal = 1000000,
-                rank = 'Blue Screen',
-                color = { r = 100, g = 100, b = 245 },
-                msg = 'Cat error #4721',
-                msg2 = '....',
-                achieved = false
-            },
-            { goal = 10000000, rank = 'Blue Screen', color = { r = 100, g = 100, b = 245 }, msg = '....', msg2 = '....', achieved = false }
-        }
-    end
+    storage.fish_in_space = 0
+    storage.rocket_silos = {}
 end
 
 function Public.on_init()
@@ -1737,9 +1658,16 @@ local function on_tick()
     if not surface or not surface.valid then
         return
     end
+
     local tick = game.tick
     if tick % 30 == 0 then
         has_the_game_ended()
+        local game_has_ended = Public.get('game_has_ended')
+        if not game_has_ended then
+            is_game_lost()
+            return
+        end
+
         local market = Public.get('market')
         game.forces.player.set_surface_hidden(surface.name, true)
         if market and market.valid then

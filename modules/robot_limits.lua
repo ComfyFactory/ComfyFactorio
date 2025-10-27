@@ -1,10 +1,10 @@
-
 local Global = require 'utils.global'
 local Event = require 'utils.event'
 
 local Module = {}
 
-local settings = {
+local settings =
+{
     enabled = true,
     registered_forces = {},
     roboport_limit = 100,
@@ -14,20 +14,21 @@ local settings = {
 }
 Global.register(
     settings,
-    function(tbl)
+    function (tbl)
         settings = tbl
     end
 )
 
 local function alert(entity)
-    local messages = {
+    local messages =
+    {
         ['roboport'] = 'Too many roboports in the network, they start to deteriorate!',
         ['logistic-robot'] = 'Too many logistic robots in same network, they collide with each other often!',
         ['construction-robot'] = 'Too many construction robots in same network, they collide with each other often!',
     }
     for _, player in pairs(game.connected_players) do
-        player.add_custom_alert(entity, {type = 'virtual', name = 'signal-deny'}, messages[entity.type], true)
-        player.play_sound({path = 'utility/alert_destroyed'})
+        player.add_custom_alert(entity, { type = 'virtual', name = 'signal-deny' }, messages[entity.type], true)
+        player.play_sound({ path = 'utility/alert_destroyed' })
     end
 end
 
@@ -56,8 +57,6 @@ local function restrict_roboports(custom_force)
     end
 end
 
-
-
 local function restrict_robots(custom_force)
     local force = custom_force or game.forces.player
     local surface_networks = force.logistic_networks
@@ -85,8 +84,9 @@ end
 
 local function do_tick()
     if not settings.enabled then return end
-    for _, force in pairs(settings.registered_forces) do
-        if force.enabled then
+    for _, force_data in pairs(settings.registered_forces) do
+        local force = game.forces[force_data.force_id]
+        if force and force.enabled then
             restrict_roboports(force.force)
             restrict_robots(force.force)
         end
@@ -147,7 +147,7 @@ end
 ---@param force LuaForce
 ---@param enabled boolean
 function Module.register_force(force, enabled)
-    settings.registered_forces[force.index] = {force = force, enabled = enabled}
+    settings.registered_forces[force.index] = { force_id = force.index, enabled = enabled, force_name = force.name }
 end
 
 local function on_init()

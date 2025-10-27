@@ -57,7 +57,6 @@ local abs = math.abs
 RPG.disable_cooldowns_on_spells()
 Gui.mod_gui_button_enabled = true
 Gui.button_style = 'mod_gui_button'
-Gui.set_toggle_button(true)
 Gui.set_mod_gui_top_frame(true)
 
 if not script.active_mods['MtnFortressAddons'] then
