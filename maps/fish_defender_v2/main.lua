@@ -1663,7 +1663,7 @@ local function on_tick()
     if tick % 30 == 0 then
         has_the_game_ended()
         local game_has_ended = Public.get('game_has_ended')
-        if not game_has_ended then
+        if game_has_ended then
             is_game_lost()
             return
         end
