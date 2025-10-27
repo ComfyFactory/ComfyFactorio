@@ -423,3 +423,23 @@ Commands.new('set_auto_generate_upon_idle', 'Sets whether the next island should
             end
         end
     )
+
+Commands.new('toggle_megabonk', 'Toggles the megabonk.')
+    :require_admin()
+    :callback(
+        function (player)
+            local state = not Public.get('megabonk')
+            Public.set('megabonk', state)
+            player.print('The megabonk has been ' .. (state and 'enabled' or 'disabled') .. '!', { color = Color.warning })
+        end
+    )
+
+Commands.new('set_check_afk_players', 'Toggles the afk function for coin drops.')
+    :require_admin()
+    :callback(
+        function (player)
+            local state = not Public.get('check_afk_players_enabled')
+            Public.set('check_afk_players_enabled', state)
+            player.print('The check afk players has been ' .. (state and 'enabled' or 'disabled') .. '!', { color = Color.warning })
+        end
+    )

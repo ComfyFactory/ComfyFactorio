@@ -67,6 +67,17 @@ Config.register_scenario_module(
         }
     })
 
+local function add_units(tier, raw_level, unit_type, chance)
+    for _, entry in ipairs(Public.enemy_units[unit_type]) do
+        if raw_level >= entry.unlock_level then
+            table.insert(tier[unit_type == "qualities" and "spawn_qualities" or unit_type], entry.name)
+        end
+        if raw_level > 10 and chance and random() < chance then
+            table.insert(tier[unit_type == "qualities" and "spawn_qualities" or unit_type], entry.name)
+        end
+    end
+end
+
 local function is_inside_island(x, y, radius)
     radius = radius or Public.island_radius_param
     local distance_to_center = sqrt(x ^ 2 + y ^ 2)
@@ -188,26 +199,92 @@ local function get_quality_for_stage(current_level, last_level)
         return "legendary"
     end
 end
-
-local function roll_biter(level)
-    local choices
-    if not level or level <= 1 then
-        choices = { 'small-biter', 'small-spitter' }
-    elseif level <= 2 then
-        choices = { 'small-biter', 'medium-biter', 'small-wriggler-pentapod', 'small-spitter', 'medium-spitter' }
-    elseif level <= 5 then
-        choices = { 'small-wriggler-pentapod', 'medium-biter', 'medium-wriggler-pentapod', 'small-spitter', 'medium-spitter' }
-    elseif level <= 6 then
-        choices = { 'medium-biter', 'big-biter', 'medium-wriggler-pentapod', 'small-strafer-pentapod', 'medium-spitter', 'big-spitter' }
-    elseif level < 8 then
-        choices = { 'big-biter', 'small-wriggler-pentapod', 'medium-wriggler-pentapod', 'big-biter', 'big-wriggler-pentapod', 'small-strafer-pentapod', 'medium-strafer-pentapod', 'big-spitter' }
-    else
-        choices = { 'big-biter', 'big-wriggler-pentapod', 'behemoth-biter', 'medium-wriggler-pentapod', 'big-strafer-pentapod', 'big-strafer-pentapod', 'medium-spitter', 'big-spitter', 'behemoth-spitter' }
+function Public.get_market_from_island_data(island_data)
+    if not island_data then
+        return false
     end
-    return choices[random(1, #choices)]
+
+    local market = island_data.market
+    if not market or not market.valid then
+        return Public.get_market_from_island_data(island_data.parent_island)
+    end
+
+    if (island_data.level > 1 and not island_data.bridge_generated) or not market.destructible then
+        return Public.get_market_from_island_data(island_data.parent_island)
+    end
+
+    return market
 end
 
 local function create_units_and_command(unit_count, market, surface, position, current_level)
+    local commands = {}
+    commands[#commands + 1] =
+    {
+        type = defines.command.wander,
+        wander_in_group = true,
+        ticks_to_wait = 400,
+        radius = 125,
+        distraction = defines.distraction.by_anything
+    }
+    commands[#commands + 1] =
+    {
+        type = defines.command.go_to_location,
+        destination = { x = market.position.x, y = market.position.y },
+        ticks_to_wait = 400,
+        radius = 125,
+        distraction = defines.distraction.by_anything
+    }
+    commands[#commands + 1] =
+    {
+        type = defines.command.attack_area,
+        destination = { x = market.position.x, y = market.position.y },
+        radius = 125,
+        distraction = defines.distraction.by_anything
+    }
+
+    local ug_position = surface.find_non_colliding_position('storage-tank', position, 128, 8)
+    local unit_group
+
+    if ug_position then
+        unit_group = surface.create_unit_group({ position = ug_position, force = 'enemy' }) --[[@as LuaCommandable]]
+    else
+        unit_group = surface.create_unit_group({ position = position, force = 'enemy' }) --[[@as LuaCommandable]]
+    end
+
+    local tier = Public.get_enemy_tier_by_units(current_level)
+
+    for _ = 1, unit_count do
+        local p = surface.find_non_colliding_position('wooden-chest', position, 128, 4)
+        if p then
+            local biter_unit = tier.biter_types[random(1, #tier.biter_types)]
+            local spitter_unit = tier.spitter_types[random(1, #tier.spitter_types)]
+            local quality = tier.spawn_qualities[random(1, #tier.spawn_qualities)]
+            local unit_to_create = random(1, 2) == 1 and biter_unit or spitter_unit
+            if unit_to_create then
+                local biter = surface.create_entity({ name = unit_to_create, position = p, force = 'enemy', quality = quality })
+                if biter and biter.valid then
+                    if unit_group and unit_group.valid then
+                        unit_group.add_member(biter)
+                    end
+                end
+            end
+        end
+    end
+
+    if not unit_group or not unit_group.valid then
+        return
+    end
+
+    unit_group.set_command(
+        {
+            type = defines.command.compound,
+            structure_type = defines.compound_command.return_last,
+            commands = commands
+        }
+    )
+end
+
+local function create_spider_units_and_command(unit_count, market, surface, position, current_level)
     local commands = {}
     commands[#commands + 1] =
     {
@@ -219,13 +296,23 @@ local function create_units_and_command(unit_count, market, surface, position, c
 
     local unit_group = surface.create_unit_group({ position = position, force = 'enemy' }) --[[@as LuaCommandable]]
 
+    local tier = Public.get_enemy_tier_by_units(current_level)
+    if not tier.spider_types or #tier.spider_types == 0 then
+        return
+    end
+
     for _ = 1, unit_count do
         local p = surface.find_non_colliding_position('wooden-chest', position, 128, 4)
         if p then
-            local biter = surface.create_entity({ name = roll_biter(current_level), position = p, force = 'enemy' })
-            if biter and biter.valid then
-                if unit_group and unit_group.valid then
-                    unit_group.add_member(biter)
+            local spider_unit = tier.spider_types[random(1, #tier.spider_types)]
+            local quality = tier.spawn_qualities[random(1, #tier.spawn_qualities)]
+            local unit_to_create = spider_unit
+            if unit_to_create then
+                local spider = surface.create_entity({ name = unit_to_create, position = p, force = 'enemy', quality = quality })
+                if spider and spider.valid then
+                    if unit_group and unit_group.valid then
+                        unit_group.add_member(spider)
+                    end
                 end
             end
         end
@@ -455,12 +542,7 @@ local function on_market_item_purchased(event)
 
     if not entity.get_market_items() then
         local island_data = this.islands_data[entity.unit_number]
-        if island_data and island_data.no_rerolls then
-            entity.operable = false
-            return
-        end
-
-        Public.island_market(entity, (this.current_level * random(1, 3)) * 4)
+        Public.island_market(entity, (this.current_level * random(1, 3)) * 4, false, false, island_data.no_rerolls)
         game.print(Public.island_keeper .. 'The market at level ' .. this.current_level - 1 .. ' has been refilled by ' .. player.name .. '!')
         Server.to_discord_embed('** The market at level ' .. this.current_level - 1 .. ' has been refilled by ' .. player.name .. '! **')
     end
@@ -522,7 +604,7 @@ function Public.set_islands_data()
     {
         position = position,
         level = this.current_level,
-        radius = radius
+        radius = radius,
     }
 
     if not next(level_data.position) then
@@ -541,6 +623,174 @@ function Public.shuffle(tbl)
         tbl[i], tbl[rand] = tbl[rand], tbl[i]
     end
     return tbl
+end
+
+function Public.check_afk_players()
+    local check_afk_players_enabled = Public.get('check_afk_players_enabled')
+    if not check_afk_players_enabled then
+        return
+    end
+    for _, player in pairs(game.connected_players) do
+        if player and player.valid and player.character and player.character.valid and player.afk_time > 60 * 60 * 5 then
+            local pos = player.physical_position
+            local count = math.random(1, 256)
+            for _ = 1, count do
+                local angle = math.random() * math.pi * 2
+                local dist = math.random() * 2 + 0.5
+                local drop_pos = { x = pos.x + math.cos(angle) * dist, y = pos.y + math.sin(angle) * dist }
+                player.remove_item({ name = 'coin', count = 1 })
+                player.surface.spill_item_stack({ position = drop_pos, stack = { name = 'coin', count = 1 }, enable_looted = true })
+            end
+        end
+    end
+end
+
+function Public.poll_to_progress(player, poll_type, level, append_level)
+    local this = Public.get()
+    local island_data = this.islands_data[level]
+    if not island_data then
+        error('No island data found for level ' .. level)
+        return false
+    end
+
+    if island_data.parent_level then
+        island_data = this.islands_data[island_data.parent_level]
+        if not island_data then
+            error('No island data found for level ' .. island_data.parent_level)
+            return false
+        end
+    end
+
+    if this.voting_to_progress_enabled then
+        local trusted_player = Session.get_trusted_player(player)
+        if #game.connected_players == 1 and not trusted_player then
+            return player.print(Public.island_keeper .. 'You need to be trusted to advance to the next island alone!', { color = Color.warning })
+        end
+
+        if island_data.voting and not island_data.voting.completed then
+            player.print('There is already a poll ongoing regarding the islands advancement!', { color = Color.warning })
+            return false
+        end
+
+        if not island_data.voting or (island_data.voting and island_data.voting.timeout_until_next_vote and game.tick >= island_data.voting.timeout_until_next_vote) then
+            island_data.voting = { id = nil, completed = false, timeout_until_next_vote = nil, can_progress = false, poll_type = poll_type }
+
+            local _, id = Poll.poll(
+                {
+                    question = string.format(player.name .. ' ' .. Public.voting_messages[random(1, #Public.voting_messages)], level and append_level and level + 1 or level),
+                    answers = { 'Progress!', 'No, we are not ready!' },
+                    duration = 300,
+                })
+            island_data.voting.id = id
+            return false
+        end
+
+        if not island_data.voting.can_progress and game.tick < island_data.voting.timeout_until_next_vote then
+            player.print('The team has decided to not progress yet to the next island!', { color = Color.warning })
+            player.print('The next vote will be available in ' .. floor((island_data.voting.timeout_until_next_vote - game.tick) / 60) .. ' seconds!', { color = Color.warning })
+            return false
+        end
+        return true
+    end
+
+    return true
+end
+
+function Public.check_vote_status()
+    local this = Public.get()
+    local island_data = this.islands_data[this.current_level]
+
+
+    --TODO: check how the parent level is handled?
+    if island_data.parent_level then
+        island_data = this.islands_data[island_data.parent_level]
+        if not island_data then
+            error('No island data found for level ' .. island_data.parent_level)
+            return
+        end
+    end
+
+    if island_data.voting and island_data.voting.id and Poll.poll_complete(island_data.voting.id) and not island_data.voting.can_progress and not island_data.voting.completed then
+        local _, winning_answer = Poll.poll_result(island_data.voting.id)
+
+        if winning_answer and winning_answer.text == 'Progress!' then
+            island_data.voting.can_progress = true
+            game.print(Public.island_keeper .. 'The poll has ended - the results are in! [color=green]Yes to progress![/color]')
+            Server.to_discord_embed('** The poll has ended - the results are in! Yes to progress! **')
+
+            local offer_name
+            local offer_description
+            local poll_type = island_data.voting.poll_type
+            if poll_type == 'generate_bridge' then
+                offer_name = 'bridge'
+                offer_description = 'Generate bridge to the next island!'
+            elseif poll_type == 'advance_to_next_island' then
+                offer_name = 'onwards'
+                offer_description = 'Progress onwards to the next island!'
+            end
+
+            local market = island_data.market
+            if market and market.valid then
+                local offers = market.get_market_items()
+                if offers then
+                    for offer_index, offer_data in pairs(offers) do
+                        if offer_data and offer_data.offer and offer_data.offer.effect_description and string.find(offer_data.offer.effect_description, offer_name) then
+                            market.remove_market_item(offer_index)
+                            break
+                        end
+                    end
+                end
+
+                local new_offer =
+                {
+                    price = {},
+                    offer = { type = 'nothing', effect_description = offer_description .. '\n\nThe voting has ended! [color=green]Yes to progress![/color] ' }
+                }
+                market.add_market_item(new_offer)
+            end
+        elseif winning_answer and winning_answer.text == 'No, we are not ready!' then
+            if not island_data.voting.timeout_until_next_vote then
+                island_data.voting.timeout_until_next_vote = game.tick + 18000
+            end
+
+            local offer_name
+            local offer_description
+            local poll_type = island_data.voting.poll_type
+            if poll_type == 'generate_bridge' then
+                offer_name = 'bridge'
+                offer_description = 'Generate bridge to the next island!'
+            elseif poll_type == 'advance_to_next_island' then
+                offer_name = 'onwards'
+                offer_description = 'Progress onwards to the next island!'
+            end
+            local market = island_data.market
+            if market and market.valid then
+                local offers = market.get_market_items()
+                if offers then
+                    for offer_index, offer_data in pairs(offers) do
+                        if offer_data and offer_data.offer and offer_data.offer.effect_description and string.find(offer_data.offer.effect_description, offer_name) then
+                            market.remove_market_item(offer_index)
+                            break
+                        end
+                    end
+                end
+
+                local new_offer =
+                {
+                    price = {},
+                    offer = { type = 'nothing', effect_description = offer_description .. '\n\nThe voting has ended! [color=red]No to progress![/color]\n\nYou may try again when the cooldown has ended.' }
+                }
+                market.add_market_item(new_offer)
+            end
+            game.print(Public.island_keeper .. 'The poll has ended - the results are in! [color=red]No to progress![/color]')
+            Server.to_discord_embed('** The poll has ended - the results are in! No to progress! **')
+        end
+
+
+        if not island_data.voting.completed then
+            island_data.voting.completed = true
+        end
+    end
 end
 
 function Public.resource_placement(surface, position, name, amount, tiles, level)
@@ -618,7 +868,12 @@ end
 function Public.reward_level(surface, level)
     local radius = level.radius
     local ore = Public.raw_ores[random(1, #Public.raw_ores)]
-    local oil = Public.oil_raffle[random(1, #Public.oil_raffle)]
+    local oils = table.deep_copy(Public.oil_raffle)
+    if level.level > 10 then
+        table.insert(oils, 'fluorine-vent')
+    end
+
+    local oil = oils[random(1, #oils)]
     local offset_oil_position = { x = level.position.x - random(10, 20), y = level.position.y - random(10, 20) }
     Public.delayed_message(1, Public.island_keeper .. 'A reward has been given for clearing the island at level ' .. level.level .. '!')
     MapFunctions.draw_oil_circle(offset_oil_position, oil, surface, 8, 50000)
@@ -782,45 +1037,13 @@ function Public.generate_bridge_to_next_island(entity, player, market_prices, of
         return
     end
 
-    if this.voting_to_progress_enabled then
-        local can_progress = false
-        if this.islands_voting[this.current_level] and this.islands_voting[this.current_level].id and Poll.poll_complete(this.islands_voting[this.current_level].id) then
-            local _, winning_answer = Poll.poll_result(this.islands_voting[this.current_level].id)
-            if winning_answer and winning_answer.text == 'Progress!' then
-                can_progress = true
-            end
-
-            if not can_progress and not this.islands_voting[this.current_level].timeout_until_next_vote then
-                this.islands_voting[this.current_level].timeout_until_next_vote = game.tick + 18000
-            end
-            if not this.islands_voting[this.current_level].completed then
-                this.islands_voting[this.current_level].completed = true
-            end
-        end
-
-        if this.islands_voting[this.current_level] and not this.islands_voting[this.current_level].completed then
-            return player.print('There is already a poll ongoing regarding the islands advancement!', { color = Color.warning })
-        end
-
-        if not this.islands_voting[this.current_level] or (this.islands_voting[this.current_level] and this.islands_voting[this.current_level].timeout_until_next_vote and game.tick >= this.islands_voting[this.current_level].timeout_until_next_vote) then
-            this.islands_voting[this.current_level] = { id = nil, completed = false, timeout_until_next_vote = nil }
-
-            local _, id = Poll.poll(
-                {
-                    question = player.name .. ' wants to advance to island ' .. this.current_level + 1,
-                    answers = { 'Progress!', 'No, we are not ready!' },
-                    duration = 300,
-                })
-            this.islands_voting[this.current_level].id = id
-            return
-        end
-
-        if not can_progress and game.tick < this.islands_voting[this.current_level].timeout_until_next_vote then
-            player.print('The team has decided to not progress yet to the next island!', { color = Color.warning })
-            player.print('The next vote will be available in ' .. floor((this.islands_voting[this.current_level].timeout_until_next_vote - game.tick) / 60) .. ' seconds!', { color = Color.warning })
-            return
-        end
+    local success = Public.poll_to_progress(player, 'generate_bridge', this.current_level, false)
+    if not success then
+        return
     end
+
+    -- clear the parent level, so the next island can be created without a bridge
+    this.islands_data[this.current_level].parent_level = nil
 
     -- clear the timer, the players want to proceed
     this.time_until_next_island_is_created = nil
@@ -842,7 +1065,6 @@ function Public.generate_bridge_to_next_island(entity, player, market_prices, of
     this.islands_data[this.current_level].auto_generated_bridge = nil
 
     Public.delayed_message(10, Public.island_keeper .. player.name .. ' has generated a bridge to level ' .. this.current_level .. '!')
-    Public.delayed_message(100, Public.island_keeper .. Public.spooky_lines[random(1, #Public.spooky_lines)])
     Server.to_discord_embed('** ' .. player.name .. ' has generated a bridge to level ' .. this.current_level .. '! **')
 
     Scheduler.new(1, Public.do_generate_bridge_token):set_data({ surface = game.surfaces[1], reroll_enabled = true })
@@ -860,49 +1082,10 @@ function Public.advance_to_next_island(entity, player, offer_index)
     if this.game_won then
         return
     end
-    if this.voting_to_progress_enabled then
-        local trusted_player = Session.get_trusted_player(player)
-        if #game.connected_players == 1 and not trusted_player then
-            return player.print(Public.island_keeper .. 'You need to be trusted to advance to the next island alone!', { color = Color.warning })
-        end
 
-        local can_progress = false
-        if this.islands_voting[this.current_level] and this.islands_voting[this.current_level].id and Poll.poll_complete(this.islands_voting[this.current_level].id) then
-            local _, winning_answer = Poll.poll_result(this.islands_voting[this.current_level].id)
-            if winning_answer and winning_answer.text == 'Progress!' then
-                can_progress = true
-            end
-
-            if not can_progress and not this.islands_voting[this.current_level].timeout_until_next_vote then
-                this.islands_voting[this.current_level].timeout_until_next_vote = game.tick + 18000
-            end
-            if not this.islands_voting[this.current_level].completed then
-                this.islands_voting[this.current_level].completed = true
-            end
-        end
-
-        if this.islands_voting[this.current_level] and not this.islands_voting[this.current_level].completed then
-            return player.print('There is already a poll ongoing regarding the islands advancement!', { color = Color.warning })
-        end
-
-        if not this.islands_voting[this.current_level] or (this.islands_voting[this.current_level] and this.islands_voting[this.current_level].timeout_until_next_vote and game.tick >= this.islands_voting[this.current_level].timeout_until_next_vote) then
-            this.islands_voting[this.current_level] = { id = nil, completed = false, timeout_until_next_vote = nil }
-
-            local _, id = Poll.poll(
-                {
-                    question = player.name .. ' wants to advance to island ' .. this.current_level + 1,
-                    answers = { 'Progress!', 'No, we are not ready!' },
-                    duration = 300,
-                })
-            this.islands_voting[this.current_level].id = id
-            return
-        end
-
-        if not can_progress and game.tick < this.islands_voting[this.current_level].timeout_until_next_vote then
-            player.print('The team has decided to not progress yet to the next island!', { color = Color.warning })
-            player.print('The next vote will be available in ' .. floor((this.islands_voting[this.current_level].timeout_until_next_vote - game.tick) / 60) .. ' seconds!', { color = Color.warning })
-            return
-        end
+    local success = Public.poll_to_progress(player, 'advance_to_next_island', this.current_level, true)
+    if not success then
+        return
     end
 
     entity.remove_market_item(offer_index)
@@ -932,7 +1115,6 @@ function Public.advance_to_next_island(entity, player, offer_index)
     this.time_until_next_island_is_created = nil
 
     Public.delayed_message(10, Public.island_keeper .. player.name .. ' has advanced to level ' .. this.current_level)
-    Public.delayed_message(100, Public.island_keeper .. Public.spooky_lines[random(1, #Public.spooky_lines)])
     Server.to_discord_embed('** ' .. player.name .. ' has advanced to level ' .. this.current_level .. ' **')
 
     this.alive_enemies = 0
@@ -1078,13 +1260,14 @@ end
 function Public.do_buried_biters()
     local current_level = Public.get('current_level')
     local islands_data = Public.get('islands_data')
-    local center_position = islands_data[current_level]
-    if not center_position then
+    local island_data = islands_data[current_level]
+    if not island_data then
         return
     end
+
     if current_level > 2 then
         local count = random(4, 10)
-        local position = Public.get_random_position(center_position.position, 40)
+        local position = Public.get_random_position(island_data.position, 40)
         if random(1, 10) == 1 then
             Public.buried_biter(game.surfaces[1], position, count, 'enemy', Public.qualities[random(1, #Public.qualities)])
         elseif random(1, 15) == 1 then
@@ -1385,12 +1568,30 @@ function Public.do_clear_items_on_ground_slowly()
 end
 
 function Public.set_multi_command()
+    local current_level = Public.get('current_level')
+    if current_level == 1 then
+        return
+    end
+    local disable_multi_command_attack = Public.get('disable_multi_command_attack')
+    if disable_multi_command_attack then
+        return
+    end
+
+    local alive_enemies = Public.get('alive_enemies')
+    if alive_enemies == 0 or alive_enemies == 999 then
+        return
+    end
+
+    local attack_grace_period = Public.get('attack_grace_period')
+    if attack_grace_period and attack_grace_period > game.tick then
+        return
+    end
+
     local surface = game.get_surface('nauvis')
     if not surface or not surface.valid then
         return
     end
 
-    local current_level = Public.get('current_level')
     local islands_data = Public.get('islands_data')
     if not islands_data or not next(islands_data) then
         error('No islands data found')
@@ -1428,6 +1629,34 @@ function Public.set_multi_command()
                     )
                 end
             end
+        end
+    end
+end
+
+function Public.send_spider_units_to_market(surface, market, island_data, current_level)
+    local difficulty_index = Difficulty.get('index')
+    if not difficulty_index then
+        error('No difficulty index found')
+        return
+    end
+
+    if current_level > 2 then
+        local base_cooldown = Public.base_cooldowns[difficulty_index] or (60 * 60 * 5)
+        local base_spider_count = Public.base_spider_count[difficulty_index] or { min = 2, max = 3 }
+
+        island_data.last_spider_attack = island_data.last_spider_attack or 0
+
+        if game.tick >= island_data.last_spider_attack + base_cooldown then
+            local spider_wave = math.random(base_spider_count.min, base_spider_count.max)
+
+            create_spider_units_and_command(spider_wave, market, surface, island_data.position, current_level)
+
+            if math.random(1, 5) == 1 then
+                local bonus_wave = math.random(0, difficulty_index)
+                create_spider_units_and_command(bonus_wave, market, surface, island_data.position, current_level)
+            end
+
+            island_data.last_spider_attack = game.tick
         end
     end
 end
@@ -1477,6 +1706,8 @@ function Public.send_biters_to_market()
 
     Public.set('last_attack_tick', game.tick + 2000)
 
+    local megabonk = Public.get('megabonk')
+
     local islands_data = Public.get('islands_data')
     if not islands_data or not next(islands_data) then
         error('No islands data found')
@@ -1495,19 +1726,38 @@ function Public.send_biters_to_market()
         return
     end
 
-    local market = parent_island.market
+    local market = Public.get_market_from_island_data(parent_island)
     if not market or not market.valid then
         error('No connected market found for level ' .. current_level)
-        return
-    end
-
-    if not island_data.bridge_generated then
         return
     end
 
     local count = game.surfaces[1].count_entities_filtered({ force = 'enemy', type = { 'unit', 'turret', 'unit-spawner', 'spider-unit' }, area = { { island_data.position.x - 256, island_data.position.y - 256 }, { island_data.position.x + 256, island_data.position.y + 256 } } })
 
     if count > 1500 then return end
+
+    if not island_data.pause_waves and not island_data.pause_waves_set then
+        local spawner_count = game.surfaces[1].count_entities_filtered(
+            {
+                force = 'enemy',
+                type = { 'unit-spawner' },
+                area =
+                {
+                    { island_data.position.x - 256, island_data.position.y - 256 },
+                    { island_data.position.x + 256, island_data.position.y + 256 }
+                }
+            })
+
+        if spawner_count == 0 then
+            game.print(Public.island_keeper .. 'Quickly clear all biters from the island — if they’re not gone within 10 minutes, their ancestors will rise to finish what they started!')
+            island_data.pause_waves = game.tick + 60 * 60 * 10 -- 10 minutes
+            island_data.pause_waves_set = true
+        end
+    end
+
+    if island_data.pause_waves and game.tick < island_data.pause_waves then
+        return
+    end
 
     local difficulty_index = Difficulty.get('index')
     local base_min, base_max
@@ -1517,41 +1767,49 @@ function Public.send_biters_to_market()
         base_min, base_max = 32, 64
     end
 
+    if megabonk and island_data.pause_waves_set and not island_data.hard_wave_set then
+        island_data.hard_wave_set = true
+        game.print(Public.island_keeper .. 'Ded soon - maybe him skill issue?')
+        Server.to_discord_embed('** ' .. Public.island_keeper .. 'Ded soon - maybe him skill issue? **')
+    end
+
     local scale = max(1, current_level * 0.1)
     local unit_count = random(base_min * scale, base_max * scale)
     unit_count = floor(unit_count)
 
-    create_units_and_command(unit_count, market, surface, island_data.position, current_level)
+    if island_data.hard_wave_set then
+        unit_count = random(256, 512)
+        current_level = current_level + 5
+    end
 
-    if random(1, 10) == 1 then
-        local limit = 1
-        if current_level > 5 then
-            limit = 2
-        elseif current_level > 8 then
-            limit = 4
+    island_data.wave_count = island_data.wave_count or 0
+    island_data.wave_count = island_data.wave_count + 1
+    island_data.wave_level_evolution = island_data.wave_level_evolution or current_level
+
+    if difficulty_index == 3 then
+        if island_data.wave_count % 50 == 0 then
+            island_data.wave_level_evolution = island_data.wave_level_evolution + 1
         end
-
-        local enemies = surface.find_entities_filtered({ type = 'spider-unit', force = 'enemy', area = { { island_data.position.x - 125, island_data.position.y - 125 }, { island_data.position.x + 125, island_data.position.y + 125 } }, limit = limit })
-        if enemies and enemies[1] then
-            for _, enemy in pairs(enemies) do
-                if enemy and enemy.valid then
-                    enemy.commandable.set_command(
-                        {
-                            type = defines.command.attack_area,
-                            destination = market.position,
-                            radius = 125,
-                            distraction = defines.distraction.by_anything
-                        }
-                    )
-                end
-            end
+    elseif difficulty_index == 2 then
+        if island_data.wave_count % 150 == 0 then
+            island_data.wave_level_evolution = island_data.wave_level_evolution + 1
+        end
+    elseif difficulty_index == 1 then
+        if island_data.wave_count % 250 == 0 then
+            island_data.wave_level_evolution = island_data.wave_level_evolution + 1
         end
     end
+
+    create_units_and_command(unit_count, market, surface, island_data.position, island_data.wave_level_evolution)
+
+    Public.send_spider_units_to_market(surface, market, island_data, island_data.wave_level_evolution)
 end
 
 function Public.add_market_slot(market)
     local this = Public.get()
     local current_level = Public.get('current_level')
+
+
     this.market_prices[market.unit_number] = {}
     local offers =
     {
@@ -1560,34 +1818,36 @@ function Public.add_market_slot(market)
             offer = { type = 'nothing', effect_description = 'Progress onwards to the next island!' }
         }
     }
-    if random(1, 4) == 1 and this.infinite_ammo_grants < 10 then
-        offers[#offers + 1] =
-        {
-            price = {},
-            offer = { type = 'nothing', effect_description = 'Generate more ammo in the infinity chest!\nPrice: ' .. 500 * current_level .. ' coins' }
-        }
-        this.market_prices[market.unit_number]['ammo'] = 500 * current_level
-    end
-    if not this.piercing_ammo_grants and (current_level >= 1 and current_level <= 3) and not this.piercing_ammo_grants_added then
-        if random(1, 6) == 1 then
+    if current_level > 1 then
+        if random(1, 4) == 1 and this.infinite_ammo_grants < 10 then
             offers[#offers + 1] =
             {
                 price = {},
-                offer = { type = 'nothing', effect_description = 'Generate piercing rounds ammo in the infinity chest!\nPrice: ' .. 1000 * current_level .. ' coins' }
+                offer = { type = 'nothing', effect_description = 'Generate more ammo in the infinity chest!\nPrice: ' .. 500 * current_level .. ' coins' }
             }
-            this.piercing_ammo_grants_added = true
-            this.market_prices[market.unit_number]['piercing'] = 1000 * current_level
+            this.market_prices[market.unit_number]['ammo'] = 500 * current_level
         end
-    end
-    if not this.uranium_ammo_grants and (current_level >= 7 and current_level <= this.last_level) and not this.uranium_ammo_grants_added then
-        if random(1, 12) == 1 then
-            offers[#offers + 1] =
-            {
-                price = {},
-                offer = { type = 'nothing', effect_description = 'Generate uranium rounds ammo in the infinity chest!\nPrice: ' .. 1000 * current_level .. ' coins' }
-            }
-            this.market_prices[market.unit_number]['uranium'] = 1000 * current_level
-            this.uranium_ammo_grants_added = true
+        if not this.piercing_ammo_grants and (current_level >= 1 and current_level <= 3) and not this.piercing_ammo_grants_added then
+            if random(1, 6) == 1 then
+                offers[#offers + 1] =
+                {
+                    price = {},
+                    offer = { type = 'nothing', effect_description = 'Generate piercing rounds ammo in the infinity chest!\nPrice: ' .. 1000 * current_level .. ' coins' }
+                }
+                this.piercing_ammo_grants_added = true
+                this.market_prices[market.unit_number]['piercing'] = 1000 * current_level
+            end
+        end
+        if not this.uranium_ammo_grants and (current_level >= 7 and current_level <= this.last_level) and not this.uranium_ammo_grants_added then
+            if random(1, 12) == 1 then
+                offers[#offers + 1] =
+                {
+                    price = {},
+                    offer = { type = 'nothing', effect_description = 'Generate uranium rounds ammo in the infinity chest!\nPrice: ' .. 1000 * current_level .. ' coins' }
+                }
+                this.market_prices[market.unit_number]['uranium'] = 1000 * current_level
+                this.uranium_ammo_grants_added = true
+            end
         end
     end
     for _, offer in pairs(offers) do
@@ -1620,26 +1880,25 @@ function Public.get_random_position(center, radius)
     return { x = center.x + cos(angle) * r, y = center.y + sin(angle) * r }
 end
 
-function Public.get_enemy_tier(raw_level)
-    local prev_tier
-    for _, tier in ipairs(Public.enemy_progression) do
-        if raw_level <= tier.max_level then
-            if prev_tier then
-                local mixed = table.deepcopy(tier)
-                for _, list_name in ipairs({ 'biter_types', 'spitter_types', 'worm_types' }) do
-                    for _, e in ipairs(prev_tier[list_name]) do
-                        if random() < 0.3 then
-                            table.insert(mixed[list_name], e)
-                        end
-                    end
-                end
-                return mixed
-            end
-            return tier
-        end
-        prev_tier = tier
-    end
-    return Public.enemy_progression[#Public.enemy_progression]
+function Public.get_enemy_tier_by_units(raw_level)
+    local tier =
+    {
+        biter_types = {},
+        spitter_types = {},
+        worm_types = {},
+        spawner_types = {},
+        spawn_qualities = {},
+        spider_types = {}
+    }
+
+    add_units(tier, raw_level, "biter_types", 0.1)
+    add_units(tier, raw_level, "spitter_types", 0.1)
+    add_units(tier, raw_level, "worm_types", 0.05)
+    add_units(tier, raw_level, "spawner_types", 0)
+    add_units(tier, raw_level, "spawn_qualities", 0)
+    add_units(tier, raw_level, "spider_types", 0.01)
+
+    return tier
 end
 
 function Public.prepare_next_island(this)
@@ -1754,6 +2013,7 @@ function Public.complete_level()
         island_data.completed = true
         island_data.auto_generated_island = nil
         island_data.auto_generated_bridge = nil
+        island_data.pause_waves = nil
         for _, player in pairs(game.connected_players) do
             player.play_sound { path = 'utility/game_won', volume_modifier = 1 }
         end

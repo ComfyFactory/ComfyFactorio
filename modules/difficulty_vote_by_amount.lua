@@ -512,6 +512,17 @@ Gui.on_click(
 Event.add(defines.events.on_player_created, on_player_joined_game)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_left_game, on_player_left_game)
+Event.on_nth_tick(200, function ()
+    local connected_players = game.connected_players
+    for _, player in pairs(connected_players) do
+        local top = get_top_frame(player, top_button_name)
+        if top and top.valid then
+            local tooltip = 'Current difficulty of the map is ' .. this.difficulties[this.index].name .. '.'
+            top.caption = this.difficulties[this.index].name
+            top.tooltip = tooltip
+        end
+    end
+end)
 
 Public.top_button_name = top_button_name
 Public.clear_main_frame = clear_main_frame

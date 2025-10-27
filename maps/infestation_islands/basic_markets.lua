@@ -309,7 +309,7 @@ function Public.get_random_item(rarity, sell, buy)
     return items_return
 end
 
-function Public.island_market(entity, rarity, buy, reroll)
+function Public.island_market(entity, rarity, buy, reroll, no_rerolls)
     local types = get_types()
     table.shuffle_table(types)
     local items = get_market_item_list(rarity)
@@ -347,47 +347,49 @@ function Public.island_market(entity, rarity, buy, reroll)
         end
     end
 
-    local market_rerolls = Public.get('market_rerolls')
-    market_rerolls[mrk.unit_number] = market_rerolls[mrk.unit_number] or
-        {
-            rerolls = 10,
-            price = 200,
-        }
+    if not no_rerolls then
+        local market_rerolls = Public.get('market_rerolls')
+        market_rerolls[mrk.unit_number] = market_rerolls[mrk.unit_number] or
+            {
+                rerolls = 10,
+                price = 200,
+            }
 
-    local market_reroll = market_rerolls[mrk.unit_number]
+        local market_reroll = market_rerolls[mrk.unit_number]
 
-    local rerolls_left = market_reroll.rerolls
+        local rerolls_left = market_reroll.rerolls
 
 
-    local reroll_offer =
-    {
-        price = {},
-        offer = { type = 'nothing', effect_description = 'Reroll the market offers! (' .. rerolls_left .. ' rerolls left)\nCosts ' .. market_reroll.price .. ' coins' }
-    }
-
-    if rerolls_left > 0 then
-        mrk.add_market_item(reroll_offer)
-    end
-
-    if random(1, 30) == 1 then
-        local modifier = 'character_inventory_slots_bonus'
-        local modifier_name = 'inventory bonus'
-        local modifier_value = 15
-        if random(1, 2) == 1 then
-            modifier = 'character_item_pickup_distance_bonus'
-            modifier_name = 'item pickup distance bonus'
-            modifier_value = 2
-        end
-        market_reroll.modifier_price = 500
-        market_reroll.modifier = modifier
-        market_reroll.modifier_name = modifier_name
-        market_reroll.modifier_value = modifier_value
-        local force_modifier =
+        local reroll_offer =
         {
             price = {},
-            offer = { type = 'nothing', effect_description = 'Grants the whole team ' .. modifier_name .. '!\nCosts ' .. market_reroll.modifier_price .. ' coins' }
+            offer = { type = 'nothing', effect_description = 'Reroll the market offers! (' .. rerolls_left .. ' rerolls left)\nCosts ' .. market_reroll.price .. ' coins' }
         }
-        mrk.add_market_item(force_modifier)
+
+        if rerolls_left > 0 then
+            mrk.add_market_item(reroll_offer)
+        end
+
+        if random(1, 30) == 1 then
+            local modifier = 'character_inventory_slots_bonus'
+            local modifier_name = 'inventory bonus'
+            local modifier_value = 15
+            if random(1, 2) == 1 then
+                modifier = 'character_item_pickup_distance_bonus'
+                modifier_name = 'item pickup distance bonus'
+                modifier_value = 2
+            end
+            market_reroll.modifier_price = 500
+            market_reroll.modifier = modifier
+            market_reroll.modifier_name = modifier_name
+            market_reroll.modifier_value = modifier_value
+            local force_modifier =
+            {
+                price = {},
+                offer = { type = 'nothing', effect_description = 'Grants the whole team ' .. modifier_name .. '!\nCosts ' .. market_reroll.modifier_price .. ' coins' }
+            }
+            mrk.add_market_item(force_modifier)
+        end
     end
 
     return mrk

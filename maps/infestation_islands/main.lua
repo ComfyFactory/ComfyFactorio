@@ -128,7 +128,6 @@ local function update_stage_gui()
     local time, _, half = Public.normalize_time_until_next_island_is_created()
     local islands_data = Public.get('islands_data')
     local island_data = islands_data[stage]
-
     local caption_parts =
     {
         ('Level: %d/%d'):format(stage, #stages - 1)
@@ -147,7 +146,41 @@ local function update_stage_gui()
         Difficulty.has_votes_ended()
     )
 
-    if not has_biters then
+    local attack_grace_period = Public.get('attack_grace_period')
+    if attack_grace_period then
+        attack_grace_period = math.round((attack_grace_period - game.tick) / 60, 0)
+        if attack_grace_period < 0 then
+            attack_grace_period = '\n\n[color=yellow]The biters are marching towards the market![/color]'
+        else
+            attack_grace_period = '\n\nThe biters will attack in ' .. attack_grace_period .. ' seconds'
+        end
+    else
+        attack_grace_period = ''
+    end
+
+    local waves_sent = ''
+    if island_data.wave_count then
+        waves_sent = '\n[color=yellow]They have sent ' .. island_data.wave_count .. ' wave(s) so far.[/color]'
+        if island_data.wave_level_evolution and island_data.wave_level_evolution > this.current_level then
+            waves_sent = waves_sent .. '\n[color=yellow]They are getting stronger.[/color]'
+        end
+    end
+
+    if island_data.pause_waves then
+        local time_until_ancestors = math.round((island_data.pause_waves - game.tick) / 60 / 60, 0)
+        if time_until_ancestors > 0 then
+            time_until_ancestors = time_until_ancestors .. ' minutes'
+        else
+            time_until_ancestors = math.round((island_data.pause_waves - game.tick) / 60, 0)
+            if time_until_ancestors < 0 then
+                time_until_ancestors = 'imminent'
+            else
+                time_until_ancestors = time_until_ancestors .. ' seconds'
+            end
+        end
+        table.insert(caption_parts, (' | [entity=behemoth-biter,quality=%s] Ancestors in: %s'):format(random_quality, time_until_ancestors))
+        tooltip = ('The biters ancestors are rising to finish what they started. Quickly kill the remaining %d biters before they rise!'):format(this.alive_enemies)
+    elseif not has_biters then
         table.insert(caption_parts, ' | Generating...')
         tooltip = 'The biters are still generating on the island. Please wait for them to finish.'
     elseif can_auto_generate then
@@ -167,7 +200,7 @@ local function update_stage_gui()
             'Market rerolls will be removed for the next island if the bridge is auto-generated.\nMarket rerolls are unlocked when you manually progress to the next island.'):format(time)
     else
         table.insert(caption_parts, (' | Bugs remaining: %d'):format(this.alive_enemies))
-        tooltip = ('Vanquish the biters to capture the island. %d biters remaining.'):format(this.alive_enemies)
+        tooltip = ('Vanquish the biters to capture the island. %d biters remaining.%s%s'):format(this.alive_enemies, attack_grace_period, waves_sent)
     end
 
     local caption = this.top_label_caption_override or table.concat(caption_parts)
@@ -366,7 +399,7 @@ local function on_tick()
                 if time <= time_limit then
                     if not island_data.auto_generated_island then
                         island_data.auto_generated_island = true
-                        game.print('The biters are getting hungry!!!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
+                        game.print(Public.island_keeper .. 'The biters are getting hungry!!!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
                         Scheduler.new(1, Public.init_next_island_without_bridge_token):set_data({ surface = game.surfaces[1] })
                     end
                 end
@@ -375,7 +408,8 @@ local function on_tick()
                 if time <= 0 then
                     if not (island_data and island_data.auto_generated_bridge) then
                         island_data.auto_generated_bridge = true
-                        game.print('The biters are forming a bridge to our island! They are coming!!!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
+                        island_data.parent_level = nil
+                        game.print(Public.island_keeper .. 'The biters are forming a bridge to our island! They are coming!!!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
                         Scheduler.new(1, Public.do_generate_bridge_token):set_data({ surface = game.surfaces[1], reroll_enabled = false })
                         this.time_until_next_island_is_created = nil
                     end
@@ -394,6 +428,8 @@ local function on_tick()
         game.forces.player.chart(game.surfaces[1], { { position.x - radius, position.y - radius }, { position.x + radius, position.y + radius } })
 
         Func.is_rocket_silo_alive()
+
+        Func.check_vote_status()
     end
 
     if tick % this.infinite_ammo_tick == 0 then
@@ -413,32 +449,29 @@ local function on_tick()
 
     if tick % 100 == 0 then
         if not this.game_lost then
+            Func.check_afk_players()
             if Difficulty.has_votes_ended() and not this.difficulty_vote_ended then
                 this.difficulty_vote_ended = true
-                game.print('The difficulty vote has ended! You may now progress to the next island!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
+                game.print(Public.island_keeper .. 'The difficulty vote has ended! You may now progress to the next island!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
                 Server.to_discord_embed('** The difficulty vote has ended! You may now progress to the next island! **')
-                game.print('The difficulty is ' .. Difficulty.get('name') .. '!', { color = Difficulty.get('print_color') })
+                game.print(Public.island_keeper .. 'The difficulty is ' .. Difficulty.get('name') .. '!', { color = Difficulty.get('print_color') })
                 Server.to_discord_embed('** The difficulty is ' .. Difficulty.get('name') .. '! **')
             end
         end
     end
 
-    if tick % 150 == 0 then
-        if not this.game_lost then
-            if not island_data.completed then
-                if not this.disable_multi_command_attack then
-                    Func.do_buried_biters()
-                end
-            end
+    if tick % 200 == 0 then
+        if not (this.game_lost and island_data.completed and this.disable_multi_command_attack) and island_data.bridge_generated then
+            Func.do_buried_biters()
         end
-    end
-
-    if tick % 400 == 0 then
-        Func.send_biters_to_market()
     end
 
     if tick % 500 == 0 then
         Func.update_evolution_static()
+    end
+
+    if tick % 800 == 0 then
+        Func.send_biters_to_market()
     end
 
     if this.clear_items_on_ground_state then
@@ -451,7 +484,7 @@ local function on_tick()
         end
     end
 
-    if tick % 1500 == 0 then
+    if tick % 10000 == 0 then
         Func.set_multi_command()
     end
 end

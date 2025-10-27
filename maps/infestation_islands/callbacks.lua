@@ -306,7 +306,7 @@ Public.do_place_corpses_token =
             for i = 1, count do
                 local position = pos_tbl[i] and pos_tbl[i].position or nil
                 if position then
-                    if random(1, 32) == 1 then
+                    if random(1, 16) == 1 then
                         local noise = simplex_noise(position.x * 0.02, position.y * 0.02, seed)
                         if noise > 0.75 or noise < -0.75 then
                             surface.create_entity({ name = Public.rock_raffle[random(1, #Public.rock_raffle)], position = position })
@@ -314,7 +314,7 @@ Public.do_place_corpses_token =
                     end
 
                     if surface.can_place_entity({ name = 'wooden-chest', position = position }) then
-                        if random(1, 64) == 1 then
+                        if random(1, 32) == 1 then
                             if simplex_noise(position.x * 0.02, position.y * 0.02, seed) > 0.25 then
                                 surface.create_entity({ name = tree, position = position, tick_grown = 9999 })
                             end
@@ -328,7 +328,7 @@ Public.do_place_corpses_token =
                     end
 
                     if surface.can_place_entity({ name = 'wooden-chest', position = position }) then
-                        if random(1, 128) == 1 then
+                        if random(1, 64) == 1 then
                             if simplex_noise(position.x * 0.02, position.y * 0.02, seed) > 0.25 then
                                 local corpse = this.corpses_raffle[random(1, #this.corpses_raffle)]
 
@@ -497,9 +497,11 @@ Public.do_place_enemies_token =
 
             local base_enemy_count = floor((40 + raw_level * 8) * scale)
             local spawner_count = floor((4 + raw_level * 0.5) * scale)
+            local spider_count = floor((10 + raw_level * 2) * scale)
             local worm_count = floor((10 + raw_level * 1.2) * scale)
 
             spawner_count = min(spawner_count, 128)
+            spider_count = min(spider_count, 256)
             worm_count = min(worm_count, 256)
             base_enemy_count = min(base_enemy_count, 1500)
 
@@ -515,19 +517,14 @@ Public.do_place_enemies_token =
                 base_enemy_count = 1100
             end
 
-            local biter_types
-            local spitter_types
-            local worm_types
-            local spawner_types
-            local spawn_qualities
+            local tier = Public.get_enemy_tier_by_units(raw_level)
 
-            local tier = Public.get_enemy_tier(raw_level)
-
-            biter_types = tier.biter_types
-            spitter_types = tier.spitter_types
-            worm_types = tier.worm_types
-            spawner_types = tier.spawner_types
-            spawn_qualities = tier.spawn_qualities
+            local biter_types = tier.biter_types
+            local spitter_types = tier.spitter_types
+            local worm_types = tier.worm_types
+            local spider_types = tier.spider_types
+            local spawner_types = tier.spawner_types
+            local spawn_qualities = tier.spawn_qualities
 
             for _ = 1, spawner_count do
                 local p = surface.find_non_colliding_position('gun-turret', Public.get_random_position(position, 100), 128, 5)
@@ -535,6 +532,18 @@ Public.do_place_enemies_token =
                     surface.create_entity(
                         {
                             name = spawner_types[random(1, #spawner_types)],
+                            position = p,
+                            quality = spawn_qualities[random(1, #spawn_qualities)]
+                        })
+                end
+            end
+
+            for _ = 1, spider_count do
+                local p = surface.find_non_colliding_position('gun-turret', Public.get_random_position(position, 80), 128, 5)
+                if p then
+                    surface.create_entity(
+                        {
+                            name = spider_types[random(1, #spider_types)],
                             position = p,
                             quality = spawn_qualities[random(1, #spawn_qualities)]
                         })
@@ -1021,13 +1030,6 @@ Public.init_next_island_without_bridge_token =
                 end
             end
 
-            local offer =
-            {
-                price = {},
-                offer = { type = 'nothing', effect_description = 'Generate bridge to the next island!' }
-            }
-            market.add_market_item(offer)
-
             if this.current_level == 4 then
                 Scheduler.new(1, Public.create_rocket_silo_token)
                     :set_data({ surface = surface, center_position = this.islands_data[4] })
@@ -1035,12 +1037,21 @@ Public.init_next_island_without_bridge_token =
 
             this.current_level = this.current_level + 1
 
-            this.islands_voting[this.current_level] = nil
+            island_data.voting = nil
 
             Public.delayed_message(1, Public.island_keeper .. Public.messages[random(1, #Public.messages)])
             Public.prepare_next_island(this)
             local new_island = Public.set_islands_data()
+            new_island.parent_level = this.current_level - 1
             new_island.auto_generated_bridge = false
+            new_island.island_generated = true
+
+            local offer =
+            {
+                price = {},
+                offer = { type = 'nothing', effect_description = 'Generate bridge to the next island!' }
+            }
+            market.add_market_item(offer)
 
             local root = Scheduler.new(1, Public.chart_area_for_player_force_token):set_data({ surface = surface })
             root:new_child(500, Public.do_island_creation_token):set_data({ surface = surface })
@@ -1102,7 +1113,7 @@ Public.do_generate_bridge_token =
 
             island_data.bridge_generated = true
 
-            this.islands_voting[this.current_level] = nil
+            island_data.voting = nil
 
             Scheduler.new(1, Public.noise_vector_tiles_path_token):set_data(
                 {

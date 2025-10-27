@@ -25,7 +25,7 @@ local ordered_tab_names =
 -- local to this file
 local local_settings =
 {
-    toggle_button = false
+    toggle_button = true
 }
 local main_gui_tabs = {}
 local screen_elements = {}

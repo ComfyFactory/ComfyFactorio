@@ -861,8 +861,8 @@ local map_gen_settings =
         richness = 1
     },
     default_enable_all_autoplace_controls = false,
-    no_enemies_mode = false,
-    peaceful_mode = false,
+    no_enemies_mode = true,
+    peaceful_mode = true,
     property_expression_names = {},
     starting_area = 10,
     starting_points =

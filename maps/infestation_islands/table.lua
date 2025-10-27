@@ -27,6 +27,19 @@ Public.command_color = { r = 0.98, g = 0.66, b = 0.22 }
 
 Public.island_radius_param = 6
 
+Public.base_cooldowns =
+{
+    [1] = 60 * 60 * 6,
+    [2] = 60 * 60 * 4,
+    [3] = 60 * 60 * 2.5,
+}
+
+Public.base_spider_count =
+{
+    [1] = { min = 1, max = 2 },
+    [2] = { min = 2, max = 3 },
+    [3] = { min = 3, max = 4 },
+}
 Public.decoratives =
 {
     'red-croton',
@@ -183,7 +196,6 @@ Public.oil_raffle =
 {
     'sulfuric-acid-geyser',
     'lithium-brine',
-    'fluorine-vent',
     'crude-oil',
 }
 
@@ -259,48 +271,67 @@ Public.gleba_trees =
     'yumako-tree'
 }
 
-Public.enemy_progression =
+Public.enemy_units =
 {
+    biter_types =
     {
-        max_level = 2,
-        biter_types = { 'small-biter', 'small-wriggler-pentapod' },
-        spitter_types = { 'small-spitter' },
-        worm_types = { 'small-worm-turret' },
-        spawner_types = { 'biter-spawner', 'spitter-spawner', 'gleba-spawner-small' },
-        spawn_qualities = { 'normal' }
+        { name = 'small-biter', unlock_level = 1 },
+        { name = 'small-wriggler-pentapod', unlock_level = 1 },
+        { name = 'medium-biter', unlock_level = 3 },
+        { name = 'big-biter', unlock_level = 5 },
+        { name = 'behemoth-biter', unlock_level = 10 },
+        { name = 'medium-wriggler-pentapod', unlock_level = 4 },
+        { name = 'big-wriggler-pentapod', unlock_level = 8 },
+
     },
+    spitter_types =
     {
-        max_level = 5,
-        biter_types = { 'small-biter', 'medium-biter', 'small-wriggler-pentapod' },
-        spitter_types = { 'small-spitter', 'medium-spitter', 'small-strafer-pentapod' },
-        worm_types = { 'small-worm-turret', 'medium-worm-turret' },
-        spawner_types = { 'biter-spawner', 'spitter-spawner', 'gleba-spawner-small' },
-        spawn_qualities = { 'normal', 'uncommon' }
+        { name = 'small-spitter', unlock_level = 1 },
+        { name = 'medium-spitter', unlock_level = 3 },
+        { name = 'big-spitter', unlock_level = 5 },
+        { name = 'behemoth-spitter', unlock_level = 10 },
     },
+    spider_types =
     {
-        max_level = 8,
-        biter_types = { 'medium-biter', 'big-biter', 'medium-wriggler-pentapod', 'big-wriggler-pentapod', 'small-stomper-pentapod' },
-        spitter_types = { 'medium-spitter', 'big-spitter', 'small-strafer-pentapod', 'medium-strafer-pentapod' },
-        worm_types = { 'medium-worm-turret', 'big-worm-turret' },
-        spawner_types = { 'biter-spawner', 'spitter-spawner', 'gleba-spawner' },
-        spawn_qualities = { 'uncommon', 'rare' }
+        { name = 'small-strafer-pentapod', unlock_level = 3 },
+        { name = 'medium-strafer-pentapod', unlock_level = 5 },
+        { name = 'big-strafer-pentapod', unlock_level = 10 },
+        { name = 'small-stomper-pentapod', unlock_level = 8 },
+        { name = 'medium-stomper-pentapod', unlock_level = 12 },
+        { name = 'big-stomper-pentapod', unlock_level = 15 }
     },
+    worm_types =
     {
-        max_level = 15,
-        biter_types = { 'big-biter', 'behemoth-biter', 'big-wriggler-pentapod', 'medium-stomper-pentapod' },
-        spitter_types = { 'big-spitter', 'behemoth-spitter', 'big-strafer-pentapod', 'medium-strafer-pentapod' },
-        worm_types = { 'big-worm-turret', 'behemoth-worm-turret' },
-        spawner_types = { 'biter-spawner', 'spitter-spawner', 'gleba-spawner' },
-        spawn_qualities = { 'rare', 'epic' }
+        { name = 'small-worm-turret', unlock_level = 1 },
+        { name = 'medium-worm-turret', unlock_level = 3 },
+        { name = 'big-worm-turret', unlock_level = 5 },
+        { name = 'behemoth-worm-turret', unlock_level = 10 }
     },
+    spawner_types =
     {
-        max_level = math.huge,
-        biter_types = { 'big-biter', 'behemoth-biter', 'big-wriggler-pentapod', 'big-stomper-pentapod' },
-        spitter_types = { 'big-spitter', 'behemoth-spitter', 'big-strafer-pentapod', 'medium-strafer-pentapod' },
-        worm_types = { 'big-worm-turret', 'behemoth-worm-turret' },
-        spawner_types = { 'biter-spawner', 'spitter-spawner', 'gleba-spawner' },
-        spawn_qualities = { 'epic', 'legendary' }
+        { name = 'biter-spawner', unlock_level = 1 },
+        { name = 'spitter-spawner', unlock_level = 1 },
+        { name = 'gleba-spawner-small', unlock_level = 1 },
+        { name = 'gleba-spawner', unlock_level = 5 }
+    },
+    spawn_qualities =
+    {
+        { name = 'normal', unlock_level = 1 },
+        { name = 'uncommon', unlock_level = 3 },
+        { name = 'rare', unlock_level = 6 },
+        { name = 'epic', unlock_level = 10 },
+        { name = 'legendary', unlock_level = 15 }
     }
+}
+
+Public.voting_messages =
+{
+    'wants to advance to island %d. Do you agree?',
+    'proposes moving on to island %d.',
+    'asks if everyone\'s ready for island %d.',
+    'suggests we continue our journey to island %d.',
+    'is tempted to explore island %d. Shall we follow?',
+    'asks: "Should we travel to island %d next?"'
 }
 
 local set_tech_limit_token = Task.register(
@@ -373,6 +404,8 @@ function Public.on_init()
 
     this.soft_reset = true
 
+    this.check_afk_players_enabled = true
+
     this.game_over_if_market_dies = false
 
     this.bridge_position = { x = 0, y = 0 }
@@ -423,6 +456,8 @@ function Public.on_init()
     end
 
     this.corpses_raffle = corpses_raffle
+
+    this.megabonk = true
 
     this.stages = {}
     this.last_level = 25
@@ -543,8 +578,6 @@ function Public.on_init()
     this.initial_rocket_silo_created = false
 
     this.evolution_factor = 0
-
-    this.islands_voting = {}
 
     this.check_surface_daytime_for_attacks = false
 

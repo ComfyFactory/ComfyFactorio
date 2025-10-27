@@ -40,39 +40,6 @@ local function create_particles(data)
     end
 end
 
-local function roll_biter(level)
-    local choices
-    if not level or level <= 1 then
-        choices = { 'small-biter', 'small-spitter' }
-    elseif level <= 2 then
-        choices = { 'small-biter', 'medium-biter', 'small-wriggler-pentapod', 'small-spitter', 'medium-spitter' }
-    elseif level <= 3 then
-        choices = { 'small-wriggler-pentapod', 'small-strafer-pentapod', 'medium-biter', 'medium-wriggler-pentapod', 'small-spitter', 'medium-spitter' }
-    elseif level <= 6 then
-        choices = { 'medium-biter', 'big-biter', 'medium-wriggler-pentapod', 'small-strafer-pentapod', 'medium-strafer-pentapod', 'medium-spitter', 'big-spitter' }
-    elseif level < 8 then
-        choices = { 'big-biter', 'small-wriggler-pentapod', 'medium-wriggler-pentapod', 'big-biter', 'big-wriggler-pentapod', 'small-strafer-pentapod', 'medium-strafer-pentapod', 'big-spitter' }
-    else
-        choices = { 'big-biter', 'big-wriggler-pentapod', 'behemoth-biter', 'medium-wriggler-pentapod', 'big-strafer-pentapod', 'big-strafer-pentapod', 'medium-spitter', 'big-spitter', 'behemoth-spitter' }
-    end
-    return choices[random(1, #choices)]
-end
-
-local function roll_worm(level)
-    if not level or level <= 3 then
-        return 'small-worm-turret'
-    elseif level <= 6 then
-        local choices = { 'small-worm-turret', 'medium-worm-turret' }
-        return choices[random(1, #choices)]
-    elseif level <= 10 then
-        local choices = { 'small-worm-turret', 'medium-worm-turret', 'big-worm-turret' }
-        return choices[random(1, #choices)]
-    else
-        local choices = { 'medium-worm-turret', 'big-worm-turret', 'behemoth-worm-turret' }
-        return choices[random(1, #choices)]
-    end
-end
-
 local function roll_spawner(level)
     local spawner_types
     local spawn_qualities
@@ -161,13 +128,16 @@ local function spawn_biters(data)
         position = data.position
     end
 
-    local unit_to_create = roll_biter(current_level)
+    local tier = Public.get_enemy_tier_by_units(current_level)
+    local biter_unit = tier.biter_types[random(1, #tier.biter_types)]
+    local spitter_unit = tier.spitter_types[random(1, #tier.spitter_types)]
+
+    local unit_to_create = random(1, 2) == 1 and biter_unit or spitter_unit
 
     if not unit_to_create then
         Server.output_script_data('buried_enemies - unit_to_create was nil?')
         return
     end
-
 
     local unit = surface.create_entity({ name = unit_to_create, position = position, force = data.force or 'enemy', quality = data.quality or 'normal' })
     if not unit or not unit.valid then
@@ -254,9 +224,11 @@ local function spawn_worms(data)
     end
 
     local current_level = Public.get('current_level')
-    local unit_to_create = roll_worm(current_level)
+    local tier = Public.get_enemy_tier_by_units(current_level)
+    local unit_to_create = tier.worm_types[random(1, #tier.worm_types)]
 
     if not unit_to_create then
+        Server.output_script_data('spawn_worms - unit_to_create was nil?')
         return false
     end
 
