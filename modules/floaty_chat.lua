@@ -29,8 +29,9 @@ local function on_console_chat(event)
     end
 
     local prev_text = this.player_floaty_chat[player_index]
-    if prev_text and rendering.is_valid(prev_text) then
-        rendering.destroy(prev_text)
+    local rend = rendering.get_object_by_id(prev_text)
+    if rend and rend.valid then
+        rend.destroy()
     end
 
     local players = {}
