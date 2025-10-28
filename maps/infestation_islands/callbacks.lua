@@ -1079,14 +1079,14 @@ Public.do_generate_bridge_token =
                 return
             end
 
-            local parent_level = this.current_level - 1
-            local parent_island = this.islands_data[parent_level]
+            local parent_island = island_data.parent_island
             if not parent_island then
                 error('No parent island found for level ' .. this.current_level)
                 return
             end
 
             this.position = parent_island.market_position
+            this.next_island_position = island_data.market_position
 
             local market = parent_island.market
             if not market or not market.valid then
