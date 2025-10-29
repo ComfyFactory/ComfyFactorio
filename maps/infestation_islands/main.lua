@@ -312,6 +312,10 @@ local function has_the_game_ended(this)
                             market_data.render_checkpoint_text.destroy()
                             market_data.render_checkpoint_text = nil
                         end
+                        if market_data.chart_tag then
+                            market_data.chart_tag.destroy()
+                            market_data.chart_tag = nil
+                        end
                         market_data.market.destroy()
                         market_data.market = nil
                     end
@@ -482,6 +486,14 @@ local function on_tick()
         if tick % 4500 == 0 then
             Func.run_clear_items_on_ground()
         end
+    end
+
+    if tick % 1000 == 0 then
+        Func.check_chart_tags()
+        Func.check_spawners_without_units()
+    end
+    if tick % 1500 == 0 then
+        Func.slowly_kill_spawners_without_units()
     end
 
     if tick % 10000 == 0 then

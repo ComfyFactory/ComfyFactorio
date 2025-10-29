@@ -396,6 +396,10 @@ local function on_entity_died(event)
                     island_data.render_checkpoint_text.destroy()
                     island_data.render_checkpoint_text = nil
                 end
+                if island_data.chart_tag then
+                    island_data.chart_tag.destroy()
+                    island_data.chart_tag = nil
+                end
                 this.market_prices[entity.unit_number] = nil
                 this.islands_data[entity.unit_number] = nil
 
@@ -413,6 +417,10 @@ local function on_entity_died(event)
                             if market_data.render_checkpoint_text then
                                 market_data.render_checkpoint_text.destroy()
                                 market_data.render_checkpoint_text = nil
+                            end
+                            if market_data.chart_tag then
+                                market_data.chart_tag.destroy()
+                                market_data.chart_tag = nil
                             end
                             market_data.market.destroy()
                             market_data.market = nil
@@ -582,6 +590,30 @@ function Public.is_rocket_silo_alive()
     -- :run_task()
 
     return true
+end
+
+function Public.check_chart_tags()
+    local this = Public.get()
+    for _, island_data in pairs(this.islands_data) do
+        if island_data and island_data.market_position then
+            if island_data.chart_tag and island_data.chart_tag.valid then
+                island_data.chart_tag.position = island_data.market_position
+                island_data.chart_tag.text = '[virtual-signal=signal-any-quality] Island ' .. island_data.level
+            end
+
+            if not (island_data.chart_tag and island_data.chart_tag.valid) then
+                local chart_tag = game.forces.player.add_chart_tag(
+                    game.surfaces[1],
+                    {
+                        icon = { type = 'entity', name = 'market' },
+                        position = island_data.market_position,
+                        text = '[virtual-signal=signal-any-quality] Island ' .. island_data.level
+                    }
+                )
+                island_data.chart_tag = chart_tag
+            end
+        end
+    end
 end
 
 function Public.delayed_message(tick, message)
@@ -1065,9 +1097,6 @@ function Public.generate_bridge_to_next_island(entity, player, market_prices, of
 
     entity.remove_market_item(offer_index)
     this.position = entity.position
-    if this.islands_data[entity.unit_number] then
-        this.islands_data[entity.unit_number].captured = true
-    end
 
     local market = this.islands_data[entity.unit_number] and this.islands_data[entity.unit_number].market or nil
     if not market then error('No market found for unit number ' .. entity.unit_number .. ' and level ' .. this.current_level) end
@@ -1102,11 +1131,15 @@ function Public.advance_to_next_island(entity, player, offer_index)
         return
     end
 
+    local any_islands_not_captured = Public.any_islands_not_captured()
+
+    if any_islands_not_captured and this.current_level > 1 then
+        player.print('You must vanquish all enemies from island ' .. any_islands_not_captured.level .. ' and purchase the offer at the market before you can advance to the next island', { color = Color.warning })
+        return
+    end
+
     entity.remove_market_item(offer_index)
     this.position = entity.position
-    if this.islands_data[entity.unit_number] then
-        this.islands_data[entity.unit_number].captured = true
-    end
 
     local surface = entity.surface
 
@@ -1203,36 +1236,8 @@ function Public.capture_island(entity, player, market_prices, offer_index)
     Public.delayed_message(10, Public.island_keeper .. player.name .. ' has captured island ' .. market_prices.level)
     Server.to_discord_embed('** ' .. player.name .. ' has captured island ' .. market_prices.level .. ' **')
 
-
-    local loot_found = 0
-    for _ = 1, random(1, 3), 1 do
-        local treasure_position = surface.find_non_colliding_position('stone-furnace', market.position, 32, 1)
-
-        if treasure_position then
-            if random(1, 2) == 1 then
-                loot_found = loot_found + 1
-                Public.add_loot(surface, treasure_position, 'iron-chest', true)
-                ParticleEffects.particle_effects(surface, treasure_position, 80)
-            elseif random(1, 20) == 1 then
-                loot_found = loot_found + 1
-                Public.add_loot(surface, treasure_position, 'steel-chest', true)
-                ParticleEffects.particle_effects(surface, treasure_position, 80)
-            elseif random(1, 40) == 1 then
-                loot_found = loot_found + 1
-                Public.add_loot_rare(surface, treasure_position, 'crash-site-chest-1', random(1, 1024))
-                ParticleEffects.particle_effects(surface, treasure_position, 120)
-            end
-        end
-    end
-
     if this.islands_data[entity.unit_number] then
         this.islands_data[entity.unit_number].captured = true
-    end
-
-    if loot_found == 1 then
-        Public.delayed_message(30, Public.island_keeper .. 'A magical chest has appeared near the market!')
-    elseif loot_found > 1 then
-        Public.delayed_message(30, Public.island_keeper .. 'Magical chests have appeared near the market!')
     end
 end
 
@@ -1267,11 +1272,25 @@ function Public.has_any_islands_been_captured()
     return false
 end
 
+function Public.any_islands_not_captured()
+    local islands_data = Public.get('islands_data')
+    for _, island_data in pairs(islands_data) do
+        if island_data and not island_data.captured then
+            return island_data
+        end
+    end
+    return false
+end
+
 function Public.do_buried_biters()
     local current_level = Public.get('current_level')
     local islands_data = Public.get('islands_data')
     local island_data = islands_data[current_level]
     if not island_data then
+        return
+    end
+
+    if island_data.captured or island_data.completed then
         return
     end
 
@@ -1678,6 +1697,61 @@ function Public.send_spider_units_to_market(surface, market, island_data, curren
     end
 end
 
+function Public.check_spawners_without_units()
+    local this = Public.get()
+    if this.current_level == 1 then
+        return
+    end
+    if this.disable_multi_command_attack then
+        return
+    end
+
+    local surface = game.surfaces[1]
+
+    local tick = 100
+    for island_level, data in pairs(this.islands_data) do
+        if data and data.position and data.completed and data.captured then
+            local radius = (data.radius or 0)
+
+            Scheduler.new(tick, Public.check_spawners_on_completed_levels_token)
+                :set_data(
+                    {
+                        surface = surface,
+                        level = island_level,
+                        radius = radius
+                    })
+            tick = tick + 100
+        end
+    end
+end
+
+function Public.slowly_kill_spawners_without_units()
+    local this = Public.get()
+    if this.current_level == 1 then
+        return
+    end
+    if this.disable_multi_command_attack then
+        return
+    end
+
+    local surface = game.surfaces[1]
+
+    local tick = 100
+    for island_level, data in pairs(this.islands_data) do
+        if data and data.position and data.has_spawners then
+            local radius = (data.radius or 0)
+            Scheduler.new(tick, Public.slowly_kill_spawners_without_units_token)
+                :set_data(
+                    {
+                        surface = surface,
+                        level = island_level,
+                        radius = radius
+                    })
+            tick = tick + 100
+        end
+    end
+end
+
 function Public.send_biters_to_market()
     local current_level = Public.get('current_level')
     if current_level == 1 then
@@ -1799,7 +1873,7 @@ function Public.send_biters_to_market()
 
     if island_data.hard_wave_set then
         unit_count = random(256, 512)
-        current_level = current_level + 5
+        island_data.wave_level_evolution = island_data.wave_level_evolution + 2
     end
 
     island_data.wave_count = island_data.wave_count or 0
@@ -2030,6 +2104,7 @@ function Public.complete_level()
     local this = Public.get()
     local island_data = this.islands_data[this.current_level]
     if this.alive_enemies == 0 and not island_data.completed and game.tick > this.cooldown_complete_level then
+        island_data.captured = true
         island_data.completed = true
         island_data.auto_generated_island = nil
         island_data.auto_generated_bridge = nil

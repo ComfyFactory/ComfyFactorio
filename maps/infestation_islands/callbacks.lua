@@ -689,6 +689,15 @@ Public.do_place_market_token =
                             alignment = 'center',
                             scale_with_zoom = false
                         }
+
+                    local chart_tag = game.forces.player.add_chart_tag(
+                        surface,
+                        {
+                            icon = { type = 'entity', name = 'market' },
+                            position = market.position,
+                            text = 'Island ' .. this.current_level
+                        }
+                    )
                     if this.current_level > 1 then
                         market.destructible = false
                     end
@@ -729,6 +738,7 @@ Public.do_place_market_token =
                     island_data.current_level = island_data.level
                     island_data.render_protect_text = render_protect_text
                     island_data.render_checkpoint_text = render_checkpoint_text
+                    island_data.chart_tag = chart_tag
                     island_data.captured = false
                     -- self reference to the island data for easier access
                     this.islands_data[market.unit_number] = island_data
@@ -1171,5 +1181,80 @@ Public.do_misc_token = Scheduler.register_function(
         end
     end
 )
+
+Public.check_spawners_on_completed_levels_token =
+    Scheduler.register_function(
+        'check_spawners_on_completed_levels_token',
+        function (event)
+            local level = event.level --[[ @as number ]]
+            local radius = event.radius --[[ @as number ]]
+            local surface = event.surface --[[ @as LuaSurface ]]
+
+            local this = Public.get()
+            local island_data = this.islands_data[level]
+            if not island_data then
+                error('No island data found for level ' .. level)
+                return
+            end
+
+            local spawner_count = surface.count_entities_filtered(
+                {
+                    force = 'enemy',
+                    type = { 'unit-spawner' },
+                    area =
+                    {
+                        { island_data.position.x - radius, island_data.position.y - radius },
+                        { island_data.position.x + radius, island_data.position.y + radius }
+                    }
+                })
+
+            if spawner_count > 0 then
+                island_data.has_spawners = true
+            else
+                island_data.has_spawners = nil
+            end
+        end
+    )
+
+Public.slowly_kill_spawners_without_units_token =
+    Scheduler.register_function(
+        'slowly_kill_spawners_without_units_token',
+        function (event)
+            local level = event.level --[[ @as number ]]
+            local radius = event.radius --[[ @as number ]]
+            local surface = event.surface --[[ @as LuaSurface ]]
+
+            local this = Public.get()
+            local island_data = this.islands_data[level]
+            if not island_data then
+                error('No island data found for level ' .. level)
+                return
+            end
+
+            local spawners = surface.find_entities_filtered(
+                {
+                    force = 'enemy',
+                    type = { 'unit-spawner' },
+                    area =
+                    {
+                        { island_data.position.x - radius, island_data.position.y - radius },
+                        { island_data.position.x + radius, island_data.position.y + radius }
+                    }
+                })
+
+            if spawners and spawners[1] then
+                for _, entity in pairs(spawners) do
+                    if entity and entity.valid then
+                        entity.health = entity.health - 45
+                        entity.surface.create_entity({ name = 'blood-explosion-small', position = entity.position })
+                        if entity.health <= 45 then
+                            entity.die('enemy')
+                        end
+                    end
+                end
+            end
+        end
+    )
+
 
 return Public

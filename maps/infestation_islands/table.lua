@@ -617,6 +617,8 @@ function Public.on_init()
     game.forces.enemy.set_cease_fire('player', false)
     game.forces.player.set_cease_fire('enemy', false)
 
+    game.forces.player.friendly_fire = false
+
     Public.draw_main_island({ x = 0, y = 0 }, 200)
 
     Difficulty.reset_difficulty_poll({ closing_timeout = game.tick + 36000 })
