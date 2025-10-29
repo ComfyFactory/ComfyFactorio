@@ -88,8 +88,17 @@ require 'utils.remote_chunks'
 --require 'maps.mountain_fortress_v2.main'
 --require 'maps.mountain_fortress'
 
---![[Tower defense system]]--
---require 'maps.tower_defense.main'
+--![[Comfylatron has seized the Fish Train and turned it into a time machine]]--
+--require 'maps.chronosphere.main'
+
+--![[Launch rockets in increasingly harder getting worlds.]]--
+--require 'maps.journey.main'
+
+--![[Infestation Islands]]--
+--require 'maps.infestation_islands.main'
+
+--![[Infinite random dungeon with RPG]]--
+--require 'maps.dungeons.main'
 
 --![[Defend the market against waves of biters]]--
 --require 'maps.fish_defender_v2.main'
@@ -97,14 +106,8 @@ require 'utils.remote_chunks'
 --require 'maps.fish_defender_v1.fish_defender'
 --require 'maps.fish_defender.main'
 
---![[Comfylatron has seized the Fish Train and turned it into a time machine]]--
---require 'maps.chronosphere.main'
-
 --![[Adventure as a crew of pirates]]--
 --require 'maps.pirates.main'
-
---![[Launch rockets in increasingly harder getting worlds.]]--
---require 'maps.journey.main'
 
 --![[East VS West Survival PVP, where you breed biters with science flasks]]--
 --require 'maps.biter_hatchery.main'
@@ -119,9 +122,8 @@ require 'utils.remote_chunks'
 --![[Minesweeper?]]--
 --require 'maps.minesweeper.main'
 
---![[Infinite random dungeon with RPG]]--
---require 'maps.dungeons.main'
---require 'maps.dungeons.tiered_dungeon'
+--![[Tower defense system]]--
+--require 'maps.tower_defense.main'
 
 --![[Randomly generating Islands that have to be beaten in levels to gain credits]]--
 --require 'maps.island_troopers.main'
@@ -159,93 +161,15 @@ require 'utils.remote_chunks'
 --![[Hungry boxes eat your items, but reward you with new territory to build.]]--
 --require 'maps.expanse.main'
 
---![[Crashlanding on Junk Planet]]--
---require 'maps.junkyard'
---require 'maps.junkyard_pvp.main'
-
---![[A green maze]]--
---require 'maps.hedge_maze'
-
 --![[Dangerous forest with unique map revealing]]--
 --require 'maps.spooky_forest'
 
 --![[Defeat the biters and unlock new areas]]--
 --require 'maps.spiral_troopers'
 
---![[Railworld style terrains]]--
---require 'maps.mixed_railworld'
---require 'maps.scrap_railworld'
-
---![[It's tetris!]]--
---require 'maps.tetris.main'
-
---![[4 Team Lane Surival]]--
---require 'maps.wave_of_death.WoD'
-
---![[PVP Battles with Tanks]]--
---require 'maps.tank_conquest.tank_conquest'
---require 'maps.tank_battles'
-
---![[Terrain with lots of Rocks]]--
---require 'maps.rocky_waste'
-
---![[Landfill is reveals the map, set resources to high when rolling the map]]--
---require 'maps.lost'
-
---![[A terrain layout with many rivers]]--
---require 'maps.rivers'
-
---![[Islands Theme]]--
---require 'maps.atoll'
-
---![[Placed buildings can hardly be removed]]--
---require 'maps.refactor-io'
-
---![[Prebuilt buildings on the map that can not be removed, you will hate this map]]--
---require 'maps.spaghettorio'
-
---![[Infestation Islands]]--
---require 'maps.infestation_islands.main'
-
 --![[Test map spawns all entities for testing]]--
 --require 'maps.test_map.main'
 
---![[Misc / WIP]]--
---require 'maps.rainbow_road'
---require 'maps.cratewood_forest'
---require 'maps.maze_challenge'
---require 'maps.lost_desert'
---require 'maps.stoneblock'
---require 'maps.wave_defense'
---require 'maps.crossing'
---require 'maps.anarchy'
---require 'maps.blue_beach'
---require 'maps.nightfall'
---require 'maps.pitch_black.main'
---require 'maps.cube'
---require 'maps.mountain_race.main'
---require 'maps.native_war.main'
---require 'maps.scrap_towny_ffa.main'
----------------------------------------------------------------
-
----------------- MORE MODULES HERE ----------------
---require 'modules.hidden_dimension.main'
---require 'modules.towny.main'
---require 'modules.rpg'
---require 'modules.trees_grow'
---require 'modules.trees_randomly_die'
----------------------------------------------------------------
-
----------------- MOSTLY TERRAIN LAYOUTS HERE ----------------
---require 'utils.terrain_layouts.winter'
---require 'utils.terrain_layouts.caves'
---require 'utils.terrain_layouts.cone_to_east'
---require 'utils.terrain_layouts.biters_and_resources_east'
---require 'utils.terrain_layouts.scrap_01'
---require 'utils.terrain_layouts.scrap_02'
---require 'utils.terrain_layouts.watery_world'
---require 'utils.terrain_layouts.tree_01'
----------------------------------------------------------------
 
 --- this file exists only for the panel to sync and start from within the panel
 -- it does nothing if it's not synced from within the panel
