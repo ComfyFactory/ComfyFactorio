@@ -538,27 +538,31 @@ Public.do_place_enemies_token =
                 end
             end
 
-            for _ = 1, spider_count do
-                local p = surface.find_non_colliding_position('gun-turret', Public.get_random_position(position, 80), 128, 5)
-                if p then
-                    surface.create_entity(
-                        {
-                            name = spider_types[random(1, #spider_types)],
-                            position = p,
-                            quality = spawn_qualities[random(1, #spawn_qualities)]
-                        })
+            if spider_types and #spider_types > 0 then
+                for _ = 1, spider_count do
+                    local p = surface.find_non_colliding_position('gun-turret', Public.get_random_position(position, 80), 128, 5)
+                    if p then
+                        surface.create_entity(
+                            {
+                                name = spider_types[random(1, #spider_types)],
+                                position = p,
+                                quality = spawn_qualities[random(1, #spawn_qualities)]
+                            })
+                    end
                 end
             end
 
-            for _ = 1, worm_count do
-                local p = surface.find_non_colliding_position('gun-turret', Public.get_random_position(position, 80), 128, 5)
-                if p then
-                    surface.create_entity(
-                        {
-                            name = worm_types[random(1, #worm_types)],
-                            position = p,
-                            quality = spawn_qualities[random(1, #spawn_qualities)]
-                        })
+            if worm_types and #worm_types > 0 then
+                for _ = 1, worm_count do
+                    local p = surface.find_non_colliding_position('gun-turret', Public.get_random_position(position, 80), 128, 5)
+                    if p then
+                        surface.create_entity(
+                            {
+                                name = worm_types[random(1, #worm_types)],
+                                position = p,
+                                quality = spawn_qualities[random(1, #spawn_qualities)]
+                            })
+                    end
                 end
             end
 
@@ -647,8 +651,7 @@ Public.do_place_enemies_token =
 
             this.cooldown_complete_level = game.tick
 
-            island_data.spawned_biters = true
-            this.alive_enemies = 9999
+            island_data.ready = true
         end)
 
 
@@ -1013,7 +1016,6 @@ Public.init_next_island_without_bridge_token =
             end
 
             this.position = island_data.market_position
-            this.alive_enemies = 999
 
             local market = island_data.market
             if not market or not market.valid then
@@ -1147,7 +1149,6 @@ Public.do_misc_token = Scheduler.register_function(
             this.current_level = this.current_level + 1
             this.attack_grace_period = game.tick + 54000
             this.cooldown_complete_level = game.tick + (60 * 60)
-            this.alive_enemies = 999
             if this.market_target then
                 this.position = this.market_target.position
             else

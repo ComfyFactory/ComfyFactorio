@@ -29,7 +29,6 @@ Commands.new('toggle_auto_create_islands', 'Toggles the autogenerate islands.')
             this.current_level = this.current_level + 1
             this.attack_grace_period = game.tick + 54000
             this.cooldown_complete_level = game.tick + (60 * 60)
-            this.alive_enemies = 999
             Scheduler.new(1, Public.init_next_island_token)
                 :set_data({ surface = game.surfaces[1], position = this.position })
         end

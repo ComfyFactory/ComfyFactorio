@@ -867,17 +867,23 @@ end
 
 function Public.reward_level(surface, level)
     local radius = level.radius
-    local ore = Public.raw_ores[random(1, #Public.raw_ores)]
+    local ore_index = Public.raw_ores[random(1, #Public.raw_ores)]
     local oils = table.deep_copy(Public.oil_raffle)
     if level.level > 10 then
         table.insert(oils, 'fluorine-vent')
+    end
+
+    local ore_data = Public.raw_ores_dict[ore_index]
+    if not ore_data then
+        error('No ore found for index ' .. ore_index)
+        return
     end
 
     local oil = oils[random(1, #oils)]
     local offset_oil_position = { x = level.position.x - random(10, 20), y = level.position.y - random(10, 20) }
     Public.delayed_message(1, Public.island_keeper .. 'A reward has been given for clearing the island at level ' .. level.level .. '!')
     MapFunctions.draw_oil_circle(offset_oil_position, oil, surface, 8, 50000)
-    Public.resource_placement(surface, level.position, ore, random(75000, 75000 * 3), radius * 3, level.level)
+    Public.resource_placement(surface, level.position, ore_index, random(ore_data.min, ore_data.max * 3), radius * 3, level.level)
 
     if level.level > 1 then
         local position = { x = level.position.x + random(10, 20), y = level.position.y + random(10, 20) }
@@ -1042,8 +1048,16 @@ function Public.generate_bridge_to_next_island(entity, player, market_prices, of
         return
     end
 
-    -- clear the parent level, so the next island can be created without a bridge
-    this.islands_data[this.current_level].parent_level = nil
+    local island_data = this.islands_data[this.current_level]
+    if not island_data then
+        error('No island data found for level ' .. this.current_level)
+        return
+    end
+
+    if not island_data.ready then
+        player.print('The island at level ' .. island_data.level .. ' has not been generated yet!', { color = Color.warning })
+        return
+    end
 
     -- clear the timer, the players want to proceed
     this.time_until_next_island_is_created = nil
@@ -1151,8 +1165,6 @@ function Public.advance_to_next_island(entity, player, offer_index)
 
     this.cooldown_complete_level = game.tick + (60 * 60)
 
-    this.alive_enemies = 999
-
     Scheduler.new(1, Public.init_next_island_token)
         :set_data({ surface = entity.surface, position = this.position })
 end
@@ -1185,8 +1197,6 @@ function Public.capture_island(entity, player, market_prices, offer_index)
         Scheduler.new(1, Public.create_rocket_silo_token)
             :set_data({ surface = surface, center_position = this.islands_data[4] })
     end
-
-    Public.reward_level(surface, this.islands_data[market_prices.level])
 
     entity.destructible = true
 
@@ -1322,7 +1332,7 @@ end
 function Public.normalize_time_until_next_island_is_created()
     local this = Public.get()
     if not this.time_until_next_island_is_created then
-        return 'unknown time', 9999
+        return 'unknown time', 1337
     end
 
     local raw = math.round((this.time_until_next_island_is_created - game.tick) / 60 / 60, 0)
@@ -1341,21 +1351,25 @@ end
 
 function Public.check_alive_enemies()
     local this = Public.get()
-    if this.alive_enemies <= 0 then
+
+    local island_data = this.islands_data[this.current_level]
+    if not island_data then
+        error('No island data found for level ' .. this.current_level)
         return
     end
 
-    if this.alive_enemies == 999 then
+    if not island_data.ready then
         return
     end
 
-    local current_level = Public.get('current_level')
-    local center_position = Public.get('islands_data')[current_level] or { position = { x = 0, y = 0 }, radius = 50 }
+    if island_data.completed then
+        return
+    end
 
     local surface = game.surfaces[1]
 
-    local center = center_position.position
-    local center_radius = center_position.radius + 50
+    local center = island_data.position
+    local center_radius = island_data.radius + 50
 
     local count = surface.count_entities_filtered({ force = 'enemy', type = { 'unit', 'turret', 'unit-spawner', 'spider-unit' }, area = { { center.x - center_radius, center.y - center_radius }, { center.x + center_radius, center.y + center_radius } } })
 
@@ -1577,11 +1591,6 @@ function Public.set_multi_command()
         return
     end
 
-    local alive_enemies = Public.get('alive_enemies')
-    if alive_enemies == 0 or alive_enemies == 999 then
-        return
-    end
-
     local attack_grace_period = Public.get('attack_grace_period')
     if attack_grace_period and attack_grace_period > game.tick then
         return
@@ -1601,6 +1610,14 @@ function Public.set_multi_command()
     local island_data = islands_data[current_level]
     if not island_data then
         error('No island data found for level ' .. current_level)
+        return
+    end
+
+    if island_data.completed then
+        return
+    end
+
+    if not island_data.ready then
         return
     end
 
@@ -1671,11 +1688,6 @@ function Public.send_biters_to_market()
         return
     end
 
-    local alive_enemies = Public.get('alive_enemies')
-    if alive_enemies == 0 or alive_enemies == 999 then
-        return
-    end
-
     local attack_grace_period = Public.get('attack_grace_period')
     if attack_grace_period and attack_grace_period > game.tick then
         return
@@ -1717,6 +1729,14 @@ function Public.send_biters_to_market()
     local island_data = islands_data[current_level]
     if not island_data then
         error('No island data found for level ' .. current_level)
+        return
+    end
+
+    if not island_data.ready then
+        return
+    end
+
+    if island_data.completed then
         return
     end
 

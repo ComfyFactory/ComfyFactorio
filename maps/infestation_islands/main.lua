@@ -135,7 +135,7 @@ local function update_stage_gui()
 
     local tooltip
     local random_quality = Public.qualities[random(1, #Public.qualities)]
-    local has_biters = island_data and island_data.spawned_biters
+    local has_biters = island_data and island_data.ready
     local island_complete = has_biters and island_data.completed
     local can_auto_generate = (
         this.auto_generate_upon_idle and

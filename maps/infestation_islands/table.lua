@@ -194,6 +194,18 @@ Public.raw_ores =
     'scrap',
 }
 
+Public.raw_ores_dict =
+{
+    ['copper-ore'] = { min = 75000, max = 75000 },
+    ['iron-ore'] = { min = 75000, max = 75000 },
+    ['coal'] = { min = 75000, max = 75000 },
+    ['stone'] = { min = 75000, max = 75000 },
+    ['uranium-ore'] = { min = 75000, max = 75000 },
+    ['calcite'] = { min = 15000, max = 30000 },
+    ['tungsten-ore'] = { min = 20000, max = 40000 },
+    ['scrap'] = { min = 15000, max = 50000 },
+}
+
 Public.oil_raffle =
 {
     'sulfuric-acid-geyser',
