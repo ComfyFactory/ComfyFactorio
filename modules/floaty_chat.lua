@@ -29,9 +29,8 @@ local function on_console_chat(event)
     end
 
     local prev_text = this.player_floaty_chat[player_index]
-    local rend = rendering.get_object_by_id(prev_text)
-    if rend and rend.valid then
-        rend.destroy()
+    if prev_text and prev_text.valid then
+        prev_text.destroy()
     end
 
     local players = {}
@@ -47,7 +46,7 @@ local function on_console_chat(event)
 
     -- Draw new floaty chat text
     local color = player.color
-    local text_id = rendering.draw_text
+    local text_chat = rendering.draw_text
         {
             text = msg,
             surface = player.physical_surface,
@@ -67,7 +66,7 @@ local function on_console_chat(event)
             scale_with_zoom = false
         }
 
-    this.player_floaty_chat[player_index] = text_id
+    this.player_floaty_chat[player_index] = text_chat
 end
 
 Event.add(defines.events.on_console_chat, on_console_chat)
