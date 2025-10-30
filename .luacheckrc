@@ -211,7 +211,8 @@ stds.factorio =
                     {
                         'compare',
                         'deepcopy',
-                        'deep_copy'
+                        'deep_copy',
+                        'add_all'
                     }
                 }
             }
@@ -222,7 +223,8 @@ stds.factorio =
             {
                 'compare',
                 'deepcopy',
-                'deep_copy'
+                'deep_copy',
+                'add_all'
             }
         }
     }
