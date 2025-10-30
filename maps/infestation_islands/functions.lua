@@ -386,6 +386,12 @@ local function on_entity_died(event)
                 this.top_label_caption_override = 'The market was overrun by hungry biters at level ' .. island_data.level .. '!'
             else
                 island_data.captured = false
+
+                if island_data.level == 1 then
+                    Public.poll_to_restart(true)
+                    Public.relocate_spawn_position()
+                    Public.set_main_island_parent_island()
+                end
                 Public.delayed_message(10, Public.island_keeper .. 'The market at level ' .. island_data.level .. ' was overrun by hungry biters!')
                 game.print('[gps=' .. island_data.market_position.x .. ',' .. island_data.market_position.y .. ',' .. game.surfaces[1].name .. ']')
                 if island_data.render_protect_text then
@@ -728,10 +734,53 @@ function Public.poll_to_progress(player, poll_type, level, append_level)
     return true
 end
 
+function Public.poll_to_restart(force_restart)
+    local this = Public.get()
+    local island_data = this.islands_data[1]
+    if not island_data then
+        error('No island data found for level 1')
+        return false, 'Unexpected issue has occured.'
+    end
+
+    if force_restart then
+        island_data.voting = nil
+    end
+
+    if (not island_data.ready or not island_data.completed) then
+        return false, 'I don\'t know what you were thinking :}'
+    end
+
+    if island_data.captured then
+        return false, 'The main island is already captured by the players! You cannot vote to reset the game!'
+    end
+
+    if island_data.voting and not island_data.voting.completed then
+        return false, 'There is already a vote ongoing to reset the game.'
+    end
+
+    if not island_data.voting or (island_data.voting and island_data.voting.timeout_until_next_vote and game.tick >= island_data.voting.timeout_until_next_vote) then
+        island_data.voting = { id = nil, completed = false, timeout_until_next_vote = nil, can_progress = false }
+
+        local _, id = Poll.poll(
+            {
+                question = string.format('Island Keeper ' .. Public.game_over_messages[random(1, #Public.game_over_messages)]),
+                answers = { 'Yes, restart!', 'No, we can win this!' },
+                duration = 300,
+            })
+        island_data.voting.id = id
+        return true, 'A new vote to reset the game has been started!'
+    end
+
+    if not island_data.voting.can_progress and game.tick < island_data.voting.timeout_until_next_vote then
+        return false, 'The cooldown has not ended yet.'
+    end
+
+    return true, 'A new vote to reset the game has been started!'
+end
+
 function Public.check_vote_status()
     local this = Public.get()
     local island_data = this.islands_data[this.current_level]
-
 
     --TODO: check how the parent level is handled?
     if island_data.parent_level then
@@ -821,6 +870,39 @@ function Public.check_vote_status()
 
         if not island_data.voting.completed then
             island_data.voting.completed = true
+        end
+    end
+end
+
+function Public.game_over_vote_result()
+    local this = Public.get()
+    local island_data = this.islands_data[1]
+
+
+    if island_data.voting and island_data.voting.id and Poll.poll_complete(island_data.voting.id) and not island_data.voting.can_progress and not island_data.voting.completed then
+        local _, winning_answer = Poll.poll_result(island_data.voting.id)
+
+        if winning_answer and winning_answer.text == 'Yes, restart!' then
+            island_data.voting.can_progress = true
+            game.print(Public.island_keeper .. 'The poll has ended - the results are in! [color=green]Yes, restart![/color]')
+            Server.to_discord_embed('** The poll has ended - the results are in! Yes, restart! **')
+
+            if not island_data.voting.completed then
+                island_data.voting.completed = true
+            end
+
+            this.game_lost = true
+            this.game_reset_tick = 1
+        elseif winning_answer and winning_answer.text == 'No, we can win this!' then
+            if not island_data.voting.timeout_until_next_vote then
+                island_data.voting.timeout_until_next_vote = game.tick + 18000
+            end
+            game.print(Public.island_keeper .. 'The poll has ended - the results are in! [color=red]No, we can win this![/color]')
+            game.print('Run /vote_to_reset to start a new vote to reset the game!', { color = Color.warning })
+            Server.to_discord_embed('** The poll has ended - the results are in! No, we can win this! **')
+            if not island_data.voting.completed then
+                island_data.voting.completed = true
+            end
         end
     end
 end
@@ -1282,6 +1364,56 @@ function Public.any_islands_not_captured()
     return false
 end
 
+function Public.relocate_spawn_position()
+    local this = Public.get()
+    local islands_data = this.islands_data
+    if this.islands_data[1] and this.islands_data[1].captured then
+        game.forces.player.set_spawn_position(this.islands_data[1].position, game.surfaces[1])
+    else
+        for _, island_data in pairs(islands_data) do
+            if island_data and island_data.captured then
+                game.forces.player.set_spawn_position(island_data.position, game.surfaces[1])
+                return
+            end
+        end
+    end
+end
+
+function Public.set_main_island_parent_island()
+    local this = Public.get()
+    local main_island = this.islands_data[1]
+    if not main_island or not main_island.parent_island then
+        for _, island_data in pairs(this.islands_data) do
+            if island_data and island_data.captured then
+                main_island.parent_island = island_data
+                return
+            end
+        end
+    end
+end
+
+function Public.set_custom_level()
+    local this = Public.get()
+    if this.custom_level then
+        return
+    end
+
+    if this.current_level < 3 then
+        return
+    end
+
+    for _, island_data in pairs(this.islands_data) do
+        if island_data and not island_data.captured and (not this.custom_level_set or (this.custom_level_set and game.tick > this.custom_level_set)) then
+            if island_data.level ~= this.current_level then
+                this.custom_level = island_data.level
+                this.custom_level_set = game.tick + (60 * 60 * 5)
+                Scheduler.new(60 * 60 * 1, Public.clear_custom_level_token)
+                return
+            end
+        end
+    end
+end
+
 function Public.do_buried_biters()
     local current_level = Public.get('current_level')
     local islands_data = Public.get('islands_data')
@@ -1601,8 +1733,8 @@ function Public.do_clear_items_on_ground_slowly()
 end
 
 function Public.set_multi_command()
-    local current_level = Public.get('current_level')
-    if current_level == 1 then
+    local this = Public.get()
+    if this.current_level == 1 then
         return
     end
     local disable_multi_command_attack = Public.get('disable_multi_command_attack')
@@ -1610,8 +1742,7 @@ function Public.set_multi_command()
         return
     end
 
-    local attack_grace_period = Public.get('attack_grace_period')
-    if attack_grace_period and attack_grace_period > game.tick then
+    if this.attack_grace_period and this.attack_grace_period > game.tick then
         return
     end
 
@@ -1620,15 +1751,10 @@ function Public.set_multi_command()
         return
     end
 
-    local islands_data = Public.get('islands_data')
-    if not islands_data or not next(islands_data) then
-        error('No islands data found')
-        return
-    end
 
-    local island_data = islands_data[current_level]
+    local island_data = this.islands_data[this.custom_level or this.current_level]
     if not island_data then
-        error('No island data found for level ' .. current_level)
+        error('No island data found for level ' .. this.custom_level or this.current_level)
         return
     end
 
@@ -1642,7 +1768,11 @@ function Public.set_multi_command()
 
     local parent_island = island_data.parent_island
     if not parent_island then
-        error('No parent island found for level ' .. current_level)
+        error('No parent island found for level ' .. this.custom_level or this.current_level)
+        return
+    end
+
+    if not parent_island.captured then
         return
     end
 
@@ -1709,7 +1839,7 @@ function Public.check_spawners_without_units()
     local surface = game.surfaces[1]
 
     local tick = 100
-    for island_level, data in pairs(this.islands_data) do
+    for _, data in pairs(this.islands_data) do
         if data and data.position and data.completed and data.captured then
             local radius = (data.radius or 0)
 
@@ -1717,7 +1847,7 @@ function Public.check_spawners_without_units()
                 :set_data(
                     {
                         surface = surface,
-                        level = island_level,
+                        level = data.level,
                         radius = radius
                     })
             tick = tick + 100
@@ -1753,35 +1883,30 @@ function Public.slowly_kill_spawners_without_units()
 end
 
 function Public.send_biters_to_market()
-    local current_level = Public.get('current_level')
-    if current_level == 1 then
+    local this = Public.get()
+    if this.current_level == 1 then
         return
     end
-    local disable_multi_command_attack = Public.get('disable_multi_command_attack')
-    if disable_multi_command_attack then
+    if this.disable_multi_command_attack then
         return
     end
 
-    local attack_grace_period = Public.get('attack_grace_period')
-    if attack_grace_period and attack_grace_period > game.tick then
+    if this.attack_grace_period and this.attack_grace_period > game.tick then
         return
     else
-        local notified_enemies_to_attack = Public.get('notified_enemies_to_attack')
-        if not notified_enemies_to_attack[current_level] then
-            Public.delayed_message(1, Public.island_keeper .. 'The bugs have smelled the market at island level ' .. current_level - 1 .. ' and are swarming toward it!')
-            notified_enemies_to_attack[current_level] = true
+        if not this.notified_enemies_to_attack[this.custom_level or this.current_level] then
+            Public.delayed_message(1, Public.island_keeper .. 'The bugs have smelled the market at island level ' .. (this.custom_level or this.current_level) - 1 .. ' and are swarming toward it!')
+            this.notified_enemies_to_attack[this.custom_level or this.current_level] = true
         end
     end
 
-    local last_attack_tick = Public.get('last_attack_tick')
-    if last_attack_tick and last_attack_tick > game.tick then
+    if this.last_attack_tick and this.last_attack_tick > game.tick then
         return
     end
 
-    local check_surface_daytime_for_attacks = Public.get('check_surface_daytime_for_attacks')
 
     local surface = game.surfaces[1]
-    if check_surface_daytime_for_attacks then
+    if this.check_surface_daytime_for_attacks then
         if surface.daytime < 0.35 then
             return
         end
@@ -1790,19 +1915,11 @@ function Public.send_biters_to_market()
         end
     end
 
-    Public.set('last_attack_tick', game.tick + 2000)
+    this.last_attack_tick = game.tick + 2000
 
-    local megabonk = Public.get('megabonk')
-
-    local islands_data = Public.get('islands_data')
-    if not islands_data or not next(islands_data) then
-        error('No islands data found')
-        return
-    end
-
-    local island_data = islands_data[current_level]
+    local island_data = this.islands_data[this.custom_level or this.current_level]
     if not island_data then
-        error('No island data found for level ' .. current_level)
+        error('No island data found for level ' .. this.custom_level or this.current_level)
         return
     end
 
@@ -1816,13 +1933,17 @@ function Public.send_biters_to_market()
 
     local parent_island = island_data.parent_island
     if not parent_island then
-        error('No parent island found for level ' .. current_level)
+        error('No parent island found for level ' .. this.custom_level or this.current_level)
+        return
+    end
+
+    if not parent_island.captured then
         return
     end
 
     local market = Public.get_market_from_island_data(parent_island)
     if not market or not market.valid then
-        error('No connected market found for level ' .. current_level)
+        error('No connected market found for level ' .. this.custom_level or this.current_level)
         return
     end
 
@@ -1861,13 +1982,13 @@ function Public.send_biters_to_market()
         base_min, base_max = 32, 64
     end
 
-    if megabonk and island_data.pause_waves_set and not island_data.hard_wave_set then
+    if this.megabonk and island_data.pause_waves_set and not island_data.hard_wave_set then
         island_data.hard_wave_set = true
         game.print(Public.island_keeper .. 'Ded soon - maybe him skill issue?')
         Server.to_discord_embed('** ' .. Public.island_keeper .. 'Ded soon - maybe him skill issue? **')
     end
 
-    local scale = max(1, current_level * 0.1)
+    local scale = max(1, (this.custom_level or this.current_level) * 0.1)
     local unit_count = random(base_min * scale, base_max * scale)
     unit_count = floor(unit_count)
 
@@ -1878,7 +1999,7 @@ function Public.send_biters_to_market()
 
     island_data.wave_count = island_data.wave_count or 0
     island_data.wave_count = island_data.wave_count + 1
-    island_data.wave_level_evolution = island_data.wave_level_evolution or current_level
+    island_data.wave_level_evolution = island_data.wave_level_evolution or this.custom_level or this.current_level
 
     if difficulty_index == 3 then
         if island_data.wave_count % 50 == 0 then
@@ -1897,6 +2018,8 @@ function Public.send_biters_to_market()
     create_units_and_command(unit_count, market, surface, island_data.position, island_data.wave_level_evolution)
 
     Public.send_spider_units_to_market(surface, market, island_data, island_data.wave_level_evolution)
+
+    -- Public.set_custom_level()
 end
 
 function Public.add_market_slot(market)

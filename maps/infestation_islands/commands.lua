@@ -442,3 +442,18 @@ Commands.new('set_check_afk_players', 'Toggles the afk function for coin drops.'
             player.print('The check afk players has been ' .. (state and 'enabled' or 'disabled') .. '!', { color = Color.warning })
         end
     )
+
+Commands.new('vote_to_reset', 'Starts a new vote to reset the game if the main island has been captured.')
+    :callback(
+        function (player)
+            local success, message = Public.poll_to_restart()
+            if not success and message then
+                player.print(message, { color = Color.warning })
+                return false
+            end
+            if message then
+                player.print(message, { color = Color.warning })
+                return true
+            end
+        end
+    )

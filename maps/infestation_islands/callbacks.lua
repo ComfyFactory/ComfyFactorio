@@ -729,6 +729,10 @@ Public.do_place_market_token =
                             return
                         end
 
+                        if parent_island.level == 1 then
+                            parent_island.parent_island = island_data
+                        end
+
                         island_data.parent_island = parent_island
                         this.nearest_island_level = nil
                     end
@@ -1256,5 +1260,13 @@ Public.slowly_kill_spawners_without_units_token =
         end
     )
 
+Public.clear_custom_level_token =
+    Scheduler.register_function(
+        'clear_custom_level_token',
+        function ()
+            local this = Public.get()
+            this.custom_level = nil
+        end
+    )
 
 return Public

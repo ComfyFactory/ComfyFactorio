@@ -434,6 +434,7 @@ local function on_tick()
         Func.is_rocket_silo_alive()
 
         Func.check_vote_status()
+        Func.game_over_vote_result()
     end
 
     if tick % this.infinite_ammo_tick == 0 then

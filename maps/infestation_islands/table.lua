@@ -348,6 +348,14 @@ Public.voting_messages =
     'asks: "Should we travel to island %d next?"'
 }
 
+Public.game_over_messages =
+{
+    'wants to weather check - should we restart the server?',
+    'proposes restarting the game because we lost the main island',
+    'asks if everyone\'s fine with resetting the game',
+    'asks: "Should we restart the game?"'
+}
+
 local set_tech_limit_token = Task.register(
     function ()
         Public.functions.disable_tech()
@@ -501,6 +509,7 @@ function Public.on_init()
     this.level_vectors = {}
     this.alive_boss_enemy_entities = {}
     this.current_level = 0
+    this.custom_level = nil
 
     game.forces.player.set_spawn_position({ 0, 2 }, surface)
 
