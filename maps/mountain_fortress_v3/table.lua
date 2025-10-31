@@ -111,7 +111,7 @@ Global.register(
 Config.register_scenario_module(
     {
         id = "mountain_fortress_v3",
-        admin_only = false,
+        admin_only = true,
         gui_rows = Config.register_token(
             function (_, frame)
                 local label = frame.add({ type = 'label', caption = 'Mountain Fortress Settings' })
