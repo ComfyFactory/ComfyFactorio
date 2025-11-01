@@ -676,8 +676,15 @@ function Public.check_afk_players()
                 local angle = math.random() * math.pi * 2
                 local dist = math.random() * 2 + 0.5
                 local drop_pos = { x = pos.x + math.cos(angle) * dist, y = pos.y + math.sin(angle) * dist }
-                player.remove_item({ name = 'coin', count = 1 })
-                player.surface.spill_item_stack({ position = drop_pos, stack = { name = 'coin', count = 1 }, enable_looted = true })
+                local inventory = player.get_main_inventory()
+                if inventory and inventory.valid then
+                    if inventory.get_item_count('coin') > 0 then
+                        local count_removed = inventory.remove({ name = 'coin', count = 1 })
+                        if count_removed > 0 then
+                            player.surface.spill_item_stack({ position = drop_pos, stack = { name = 'coin', count = 1 }, enable_looted = true })
+                        end
+                    end
+                end
             end
         end
     end

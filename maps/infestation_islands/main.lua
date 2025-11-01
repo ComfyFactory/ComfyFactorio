@@ -219,19 +219,38 @@ local function drift_corpses_toward_beach()
     if not Public.get('drift_corpses_toward_beach_enabled') then
         return
     end
+
     local surface = game.surfaces[1]
     for _, corpse in pairs(surface.find_entities_filtered({ name = 'character-corpse' })) do
-        if corpse.position.y < 0 then
-            if surface.get_tile(corpse.position.x, corpse.position.y).collides_with('resource') then
-                corpse.clone
-                {
-                    position = { corpse.position.x, corpse.position.y + (math.random(50, 250) * 0.01) },
-                    surface = surface,
-                    force = corpse.force.name
-                }
+        if not corpse.valid then
+            goto continue
+        end
+
+        local force = corpse.force or game.forces.player
+        local spawn_pos = force.get_spawn_position(surface)
+        local pos = corpse.position
+
+        local dx = spawn_pos.x - pos.x
+        local dy = spawn_pos.y - pos.y
+        local dist = math.sqrt(dx * dx + dy * dy)
+        if dist < 2 then
+            goto continue
+        end
+
+        local step = 0.2 + random() * 0.15
+        local nx = dx / dist
+        local ny = dy / dist
+        local new_pos = { x = pos.x + nx * step, y = pos.y + ny * step }
+
+
+        if surface.get_tile(new_pos.x, new_pos.y).collides_with('resource') then
+            local new_corpse = corpse.clone { position = new_pos, surface = surface, force = force }
+            if new_corpse then
                 corpse.destroy()
             end
         end
+
+        ::continue::
     end
 end
 
