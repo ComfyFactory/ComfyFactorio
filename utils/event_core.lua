@@ -27,7 +27,9 @@ local function call_handlers(handlers, event)
     for i = 1, #handlers do
         if _DEBUG then
             local handler = handlers[i]
-            handler(event)
+            if handler then
+                handler(event)
+            end
         else
             xpcall(handlers[i], handler_error, event)
         end

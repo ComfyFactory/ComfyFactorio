@@ -994,6 +994,8 @@ function Public.reward_level(surface, level)
         table.insert(oils, 'fluorine-vent')
     end
 
+    Public.enable_unlock_set(level.level)
+
     local ore_data = Public.raw_ores_dict[ore_index]
     if not ore_data then
         error('No ore found for index ' .. ore_index)
@@ -1202,6 +1204,21 @@ function Public.generate_bridge_to_next_island(entity, player, market_prices, of
     Scheduler.new(1, Public.do_generate_bridge_token):set_data({ surface = game.surfaces[1], reroll_enabled = true })
 end
 
+function Public.add_basic_loot()
+    local this = Public.get()
+    if not this.ammo_chest or not this.ammo_chest.valid then
+        return
+    end
+
+    this.ammo_override = this.ammo_override + 10
+    this.ammo_chest.set_inventory_size_override(defines.inventory.chest, this.ammo_override)
+
+    this.ammo_chest.insert({ name = 'piercing-rounds-magazine', count = random(200, 400), quality = Public.qualities[random(1, #Public.qualities)] })
+    this.ammo_chest.insert({ name = 'gun-turret', count = random(1, 30), quality = Public.qualities[random(1, #Public.qualities)] })
+
+    Public.delayed_message(100, Public.island_keeper .. 'Ammo chest has been refilled with some loot!')
+end
+
 function Public.advance_to_next_island(entity, player, offer_index)
     local this = Public.get()
     if this.alive_enemies > 0 then
@@ -1282,6 +1299,8 @@ function Public.advance_to_next_island(entity, player, offer_index)
     elseif loot_found > 1 then
         Public.delayed_message(30, Public.island_keeper .. 'Magical chests have appeared near the market!')
     end
+
+    Public.add_basic_loot()
 
     this.attack_grace_period = game.tick + 54000
 
@@ -1512,7 +1531,6 @@ function Public.check_alive_enemies()
 
     local island_data = this.islands_data[this.current_level]
     if not island_data then
-        error('No island data found for level ' .. this.current_level)
         return
     end
 
@@ -1652,6 +1670,72 @@ function Public.get_tile_name_by_level(level)
         'wetland-jellynut',
     }
     return tile_names[(level - 1) % #tile_names + 1]
+end
+
+function Public.disable_unlock_set()
+    local force = game.forces.player
+    if not force then return end
+
+    local techs = 'Disabled technologies: '
+
+    for _, data in pairs(Public.island_unlock_techs) do
+        if data and data.tech and data.recipe then
+            for _, tech in pairs(data.tech or {}) do
+                local t = force.technologies[tech]
+                if t then
+                    techs = techs .. tech .. ', '
+                    t.enabled = false
+                    t.researched = false
+                end
+            end
+            for _, recipe in pairs(data.recipe or {}) do
+                local r = force.recipes[recipe]
+                if r then
+                    techs = techs .. recipe .. ', '
+                    r.enabled = false
+                end
+            end
+        end
+    end
+
+    techs = techs:gsub(',%s*$', '')
+
+    log(techs)
+end
+
+function Public.enable_unlock_set(level)
+    local force = game.forces.player
+    local data = Public.island_unlock_techs[level]
+    if not data then return end
+
+    local unlocked = Public.island_keeper .. 'New technology has been unlocked: '
+    local added = 0
+
+    for _, tech in pairs(data.tech or {}) do
+        local t = force.technologies[tech]
+        if t then
+            t.enabled = true
+            added = added + 1
+            unlocked = unlocked .. '[technology=' .. tech .. ']'
+        end
+    end
+
+    for _, recipe in pairs(data.recipe or {}) do
+        local r = force.recipes[recipe]
+        if r then
+            r.enabled = true
+            unlocked = unlocked .. '[recipe=' .. recipe .. ']'
+            added = added + 1
+        end
+    end
+
+    if added == 0 then
+        return
+    end
+
+    force.play_sound { path = 'utility/new_objective', volume_modifier = 0.6 }
+
+    game.print(unlocked)
 end
 
 function Public.disable_tech()
@@ -2006,18 +2090,18 @@ function Public.send_biters_to_market()
 
     island_data.wave_count = island_data.wave_count or 0
     island_data.wave_count = island_data.wave_count + 1
-    island_data.wave_level_evolution = island_data.wave_level_evolution or this.custom_level or this.current_level
+    island_data.wave_level_evolution = island_data.wave_level_evolution or (this.custom_level or this.current_level)
 
     if difficulty_index == 3 then
-        if island_data.wave_count % 50 == 0 then
+        if island_data.wave_count % 25 == 0 then
             island_data.wave_level_evolution = island_data.wave_level_evolution + 1
         end
     elseif difficulty_index == 2 then
-        if island_data.wave_count % 150 == 0 then
+        if island_data.wave_count % 50 == 0 then
             island_data.wave_level_evolution = island_data.wave_level_evolution + 1
         end
     elseif difficulty_index == 1 then
-        if island_data.wave_count % 250 == 0 then
+        if island_data.wave_count % 100 == 0 then
             island_data.wave_level_evolution = island_data.wave_level_evolution + 1
         end
     end
@@ -2151,7 +2235,7 @@ function Public.prepare_next_island(this)
 
     local new_x, new_y
     local attempts = 0
-    local max_attempts = 500
+    local max_attempts = 1000
     repeat
         attempts = attempts + 1
         local angle = rad(random(0, 359))

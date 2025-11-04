@@ -338,6 +338,28 @@ Public.enemy_units =
     }
 }
 
+Public.island_unlock_techs =
+{
+    [1] = { tech = {}, recipe = {} },
+    [2] = { tech = {}, recipe = {} },
+    [3] = { tech = { 'gun-turret', 'solar-energy' }, recipe = {} },
+    [4] = { tech = { 'radar', 'automobilism' }, recipe = {} },
+    [5] = { tech = {}, recipe = {} },
+    [6] = { tech = { 'laser-turret', 'uranium-processing' }, recipe = {} },
+    [7] = { tech = { 'military-3' }, recipe = {} },
+    [8] = { tech = { 'flamethrower', 'military-3' }, recipe = {} },
+    [9] = { tech = { 'explosive-rocketry' }, recipe = {} },
+    [10] = { tech = { 'tank' }, recipe = {} },
+    [11] = { tech = {}, recipe = {} },
+    [12] = { tech = { 'military-4' }, recipe = {} },
+    [13] = { tech = {}, recipe = {} },
+    [14] = { tech = { 'tesla-weapons' }, recipe = {} },
+    [15] = { tech = {}, recipe = {} },
+    [16] = { tech = {}, recipe = {} },
+    [17] = { tech = {}, recipe = {} },
+    [18] = { tech = {}, recipe = {} },
+}
+
 Public.voting_messages =
 {
     'wants to advance to island %d. Do you agree?',
@@ -501,6 +523,8 @@ function Public.on_init()
     this.player_options = {}
 
     this.auto_create_islands = false
+
+    this.ammo_override = 60
 
     this.vector = {}
 
@@ -673,6 +697,8 @@ function Public.on_init()
     this.difficulty_vote_ended = false
     Server.to_discord_embed('** A fresh round of Infestation Islands has begun! **')
     Task.set_timeout_in_ticks(100, set_tech_limit_token)
+
+    Public.disable_unlock_set()
 
     if _DEBUG then
         Difficulty.set_poll_closing_timeout(game.tick)

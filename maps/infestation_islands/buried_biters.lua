@@ -4,6 +4,7 @@ local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local Server = require 'utils.server'
 
 
+local round = math.round
 local random = math.random
 
 local random_particles =
@@ -11,6 +12,46 @@ local random_particles =
     'dirt-2-stone-particle-medium',
     'dirt-4-dust-particle',
     'coal-particle'
+}
+
+local scale_units_by_health =
+{
+    ['small-biter'] = 1,
+    ['medium-biter'] = 0.75,
+    ['big-biter'] = 0.5,
+    ['behemoth-biter'] = 0.25,
+    ['small-spitter'] = 1,
+    ['medium-spitter'] = 0.75,
+    ['big-spitter'] = 0.5,
+    ['behemoth-spitter'] = 0.25,
+
+    ['small-wriggler-pentapod'] = 1,
+    ['medium-wriggler-pentapod'] = 0.75,
+    ['big-wriggler-pentapod'] = 0.5,
+    ['small-strafer-pentapod'] = 1,
+    ['medium-strafer-pentapod'] = 0.75,
+    ['big-strafer-pentapod'] = 0.5,
+
+}
+
+local scale_spawners_by_health =
+{
+    ['biter-spawner'] = 0.5,
+    ['spitter-spawner'] = 0.5,
+    ['gleba-spawner-small'] = 0.5,
+    ['gleba-spawner'] = 0.5,
+}
+
+local scale_worms_by_health =
+{
+    ['land-mine'] = 0.5, -- not active as of now
+    ['gun-turret'] = 0.5, -- not active as of now
+    ['flamethrower-turret'] = 0.4, -- not active as of now
+    ['artillery-turret'] = 0.25, -- not active as of now
+    ['small-worm-turret'] = 0.8,
+    ['medium-worm-turret'] = 0.6,
+    ['big-worm-turret'] = 0.3,
+    ['behemoth-worm-turret'] = 0.3
 }
 
 local s_random_particles = #random_particles
@@ -106,6 +147,12 @@ local function spawn_spawner(data)
 
     if random(1, 30) == 1 then
         BiterHealthBooster.add_boss_unit(unit, health_boost, 0.38)
+    else
+        local final_health = round(health_boost * scale_spawners_by_health[unit.name], 3)
+        if final_health < 1 then
+            final_health = 1
+        end
+        BiterHealthBooster.add_unit(unit, final_health)
     end
     return true
 end
@@ -148,6 +195,12 @@ local function spawn_biters(data)
 
     if random(1, 30) == 1 then
         BiterHealthBooster.add_boss_unit(unit, health_boost, 0.38)
+    else
+        local final_health = round(health_boost * scale_units_by_health[unit.name], 3)
+        if final_health < 1 then
+            final_health = 1
+        end
+        BiterHealthBooster.add_unit(unit, final_health)
     end
 
     local market_target = Public.get('market_target')
@@ -212,6 +265,12 @@ local function spawn_tech(data)
 
     if random(1, 30) == 1 then
         BiterHealthBooster.add_boss_unit(unit, health_boost, 0.38)
+    else
+        local final_health = round(health_boost * 0.5, 3)
+        if final_health < 1 then
+            final_health = 1
+        end
+        BiterHealthBooster.add_unit(unit, final_health)
     end
     return true
 end
@@ -250,6 +309,13 @@ local function spawn_worms(data)
 
     if random(1, 30) == 1 then
         BiterHealthBooster.add_boss_unit(unit, health_boost, 0.38)
+    else
+        local final_health = round(health_boost * scale_worms_by_health[unit.name], 3)
+        if final_health < 1 then
+            final_health = 1
+        end
+
+        BiterHealthBooster.add_unit(unit, final_health)
     end
 end
 

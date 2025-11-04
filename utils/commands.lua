@@ -653,6 +653,7 @@ Public.new('get', 'Hover over an object to get its name.')
             player.print('[color=orange]Minable:[/color] ' .. (entity.minable and 'true' or 'false'))
             player.print('[color=orange]Unit Number:[/color] ' .. (entity.unit_number or 'nil'))
             player.print('[color=orange]Position:[/color] ' .. serpent.line(entity.position))
+            player.print('[color=orange]Active:[/color] ' .. (entity.active and 'true' or 'false'))
             return true
         end
     )

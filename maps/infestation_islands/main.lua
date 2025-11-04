@@ -70,6 +70,7 @@ local reset_players_token =
                     reset_player(player)
                 end
             end
+            Public.disable_unlock_set()
         end
     )
 
@@ -422,6 +423,7 @@ local function on_tick()
                 if time <= time_limit then
                     if not island_data.auto_generated_island then
                         island_data.auto_generated_island = true
+                        this.attack_grace_period = game.tick + 108000
                         game.print(Public.island_keeper .. 'The biters are getting hungry!!!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
                         Scheduler.new(1, Public.init_next_island_without_bridge_token):set_data({ surface = game.surfaces[1] })
                     end
@@ -432,6 +434,7 @@ local function on_tick()
                     if not (island_data and island_data.auto_generated_bridge) then
                         island_data.auto_generated_bridge = true
                         island_data.parent_level = nil
+                        this.attack_grace_period = game.tick + 54000
                         game.print(Public.island_keeper .. 'The biters are forming a bridge to our island! They are coming!!!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
                         Scheduler.new(1, Public.do_generate_bridge_token):set_data({ surface = game.surfaces[1], reroll_enabled = false })
                         this.time_until_next_island_is_created = nil

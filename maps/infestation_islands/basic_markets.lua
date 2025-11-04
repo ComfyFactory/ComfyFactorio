@@ -29,7 +29,6 @@ local this =
             ['artillery-shell'] = { value = 1024, rarity = 7 },
             ['rocket'] = { value = 45, rarity = 7 },
             ['explosive-rocket'] = { value = 50, rarity = 7 },
-            ['atomic-bomb'] = { value = 11000, rarity = 10 },
             ['flamethrower-ammo'] = { value = 20, rarity = 6 },
             ['explosives'] = { value = 3, rarity = 1 }
         },
@@ -82,45 +81,6 @@ local this =
             ['artillery-turret'] = { value = 9216, rarity = 8 },
             ['rocket-silo'] = { value = 64000, rarity = 10 }
         },
-        ['logistic'] =
-        {
-            ['wooden-chest'] = { value = 3, rarity = 1 },
-            ['iron-chest'] = { value = 10, rarity = 2 },
-            ['steel-chest'] = { value = 24, rarity = 3 },
-            ['storage-tank'] = { value = 32, rarity = 4 },
-            ['transport-belt'] = { value = 4, rarity = 1 },
-            ['fast-transport-belt'] = { value = 8, rarity = 4 },
-            ['express-transport-belt'] = { value = 24, rarity = 7 },
-            ['underground-belt'] = { value = 8, rarity = 1 },
-            ['fast-underground-belt'] = { value = 32, rarity = 4 },
-            ['express-underground-belt'] = { value = 64, rarity = 7 },
-            ['splitter'] = { value = 16, rarity = 1 },
-            ['fast-splitter'] = { value = 48, rarity = 4 },
-            ['express-splitter'] = { value = 128, rarity = 7 },
-            ['loader'] = { value = 100, rarity = 2 },
-            ['fast-loader'] = { value = 189, rarity = 5 },
-            ['express-loader'] = { value = 298, rarity = 8 },
-            ['burner-inserter'] = { value = 4, rarity = 1 },
-            ['inserter'] = { value = 8, rarity = 1 },
-            ['long-handed-inserter'] = { value = 12, rarity = 2 },
-            ['fast-inserter'] = { value = 16, rarity = 4 },
-            ['bulk-inserter'] = { value = 128, rarity = 7 },
-            ['small-electric-pole'] = { value = 2, rarity = 1 },
-            ['medium-electric-pole'] = { value = 12, rarity = 4 },
-            ['big-electric-pole'] = { value = 24, rarity = 5 },
-            ['substation'] = { value = 96, rarity = 8 },
-            ['pipe'] = { value = 2, rarity = 1 },
-            ['pipe-to-ground'] = { value = 8, rarity = 1 },
-            ['pump'] = { value = 16, rarity = 4 },
-            ['logistic-robot'] = { value = 28, rarity = 5 },
-            ['construction-robot'] = { value = 28, rarity = 3 },
-            ['active-provider-chest'] = { value = 128, rarity = 7 },
-            ['passive-provider-chest'] = { value = 128, rarity = 6 },
-            ['storage-chest'] = { value = 128, rarity = 6 },
-            ['buffer-chest'] = { value = 128, rarity = 7 },
-            ['requester-chest'] = { value = 128, rarity = 7 },
-            ['roboport'] = { value = 4096, rarity = 8 }
-        },
         ['vehicles'] =
         {
             ['rail'] = { value = 4, rarity = 1 },
@@ -134,23 +94,6 @@ local this =
             ['car'] = { value = 80, rarity = 1 },
             ['tank'] = { value = 1800, rarity = 5 }
         },
-        ['wire'] =
-        {
-            ['small-lamp'] = { value = 4, rarity = 1 },
-            ['arithmetic-combinator'] = { value = 16, rarity = 1 },
-            ['decider-combinator'] = { value = 16, rarity = 1 },
-            ['constant-combinator'] = { value = 16, rarity = 1 },
-            ['power-switch'] = { value = 16, rarity = 1 },
-            ['programmable-speaker'] = { value = 24, rarity = 1 }
-        },
-        ['space-age'] =
-        {
-            ['foundry'] = { value = 8096, rarity = 8 },
-            ['recycler'] = { value = 8096, rarity = 8 },
-            ['agricultural-tower'] = { value = 4096, rarity = 8 },
-            ['biochamber'] = { value = 4096, rarity = 8 },
-            ['cryogenic-plant'] = { value = 4096, rarity = 8 },
-        }
     }
 }
 
@@ -166,7 +109,6 @@ local floor = math.floor
 
 local blacklist =
 {
-    ['atomic-bomb'] = true,
     ['cargo-wagon'] = true,
     ['locomotive'] = true,
     ['artillery-wagon'] = true,
@@ -246,7 +188,7 @@ local function get_market_item_list(rarity)
 
     local types = get_types()
     local list = {}
-    for i = 1, 9 do
+    for i = 1, 7 do
         local quality_level = random(1, #quality_list)
         local quality = quality_list[quality_level]
         local branch = this.market_settings[types[i]]

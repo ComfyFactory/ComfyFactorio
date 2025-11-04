@@ -847,20 +847,24 @@ Public.do_place_entities_token =
                 }
 
                 this.ammo_chest = surface.create_entity({ name = chest_raff[random(1, #chest_raff)], position = { chest_pos[1].x, chest_pos[1].y }, force = 'neutral' })
-                this.ammo_chest.operable = false
-                this.ammo_chest.destructible = false
-                this.ammo_chest.minable = false
-                this.render_ammo_text = rendering.draw_text
-                    {
-                        text = 'Free ammo',
-                        surface = surface,
-                        target = this.ammo_chest,
-                        color = { r = 0.98, g = 0.77, b = 0.22 },
-                        scale = 1.25,
-                        font = 'heading-1',
-                        alignment = 'center',
-                        scale_with_zoom = false
-                    }
+                if this.ammo_chest then
+                    this.ammo_override = 60
+                    this.ammo_chest.set_inventory_size_override(defines.inventory.chest, this.ammo_override)
+                    this.ammo_chest.operable = false
+                    this.ammo_chest.destructible = false
+                    this.ammo_chest.minable = false
+                    this.render_ammo_text = rendering.draw_text
+                        {
+                            text = 'Free ammo',
+                            surface = surface,
+                            target = this.ammo_chest,
+                            color = { r = 0.98, g = 0.77, b = 0.22 },
+                            scale = 1.25,
+                            font = 'heading-1',
+                            alignment = 'center',
+                            scale_with_zoom = false
+                        }
+                end
 
                 local _y = 55
                 local ore_positions =
@@ -878,7 +882,7 @@ Public.do_place_entities_token =
                 Public.resource_placement(surface, ore_positions[2], 'iron-ore', 150000, 550, 1)
                 Public.resource_placement(surface, ore_positions[3], 'coal', 130000, 550, 1)
                 Public.resource_placement(surface, ore_positions[4], 'stone', 130000, 550, 1)
-                Public.resource_placement(surface, ore_positions[5], 'uranium-ore', 130000, 550, 1)
+                -- Public.resource_placement(surface, ore_positions[5], 'uranium-ore', 130000, 550, 1)
                 MapFunctions.draw_oil_circle(ore_positions[6], 'crude-oil', surface, 8, 200000)
             end
 
