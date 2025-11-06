@@ -993,9 +993,6 @@ function Public.reward_level(surface, level)
     if level.level > 10 then
         table.insert(oils, 'fluorine-vent')
     end
-
-    Public.enable_unlock_set(level.level)
-
     local ore_data = Public.raw_ores_dict[ore_index]
     if not ore_data then
         error('No ore found for index ' .. ore_index)
@@ -1703,6 +1700,9 @@ function Public.disable_unlock_set()
     log(techs)
 end
 
+-- local Func = require 'maps.infestation_islands.functions'
+-- Func.enable_unlock_set(3)
+
 function Public.enable_unlock_set(level)
     local force = game.forces.player
     local data = Public.island_unlock_techs[level]
@@ -2326,6 +2326,9 @@ function Public.complete_level()
         for _, player in pairs(game.connected_players) do
             player.play_sound { path = 'utility/game_won', volume_modifier = 1 }
         end
+
+        Public.enable_unlock_set(this.current_level)
+
         if this.current_level == this.last_level then
             game.print(Public.island_keeper .. 'All the bugs have been vanquished from the islands! GG!')
             Server.to_discord_embed('** All the bugs have been vanquished from the islands! GG! **')
