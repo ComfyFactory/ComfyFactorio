@@ -4756,7 +4756,7 @@ local function process_bits(p, data, adjusted_zones)
         adjusted_zones.starting_tile = base_tile
         adjusted_zones.rock_raffle = rock_raffle
         adjusted_zones.size_of = size_of_rock_raffle
-        adjusted_zones.tiles_raffle = vanilla_start_ground_tiles
+        adjusted_zones.tiles_raffle = nil -- no tiles for fortress
     end
 
 
