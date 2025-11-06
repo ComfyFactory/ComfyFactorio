@@ -169,12 +169,11 @@ local function create_wave_gui(player)
 
     if not wave_grace_period then
         frame.caption = 'Wave: ' .. wave_count
-        frame.style.font_color = { r = 0.88, g = 0.88, b = 0.88 }
+        frame.style.font_color = { r = 0, g = 0, b = 0 }
         frame.style.font = 'default-listbox'
         frame.style.left_padding = 4
         frame.style.right_padding = 4
         frame.style.minimal_width = 68
-        frame.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
         local next_level_progress = game.tick % wave_interval / wave_interval
 
