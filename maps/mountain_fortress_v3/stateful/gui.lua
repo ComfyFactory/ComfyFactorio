@@ -438,19 +438,19 @@ local function render_buff_collection(parent_pane, buffs_source, buffs_collected
         local flat_value_buffs = { xp_level = true, xp_bonus = true, character_health_bonus = true }
 
         if flat_value_buffs[name] then
-            return '[font=default-bold]' .. display_name .. ': ' .. count .. '[/font]'
+            return '[font=default-bold]' .. display_name .. ': ' .. count .. '[/font]\n'
         else
-            return '[font=default-bold]' .. display_name .. ': ' .. (count * 100) .. '%[/font]'
+            return '[font=default-bold]' .. display_name .. ': ' .. (count * 100) .. '%[/font]\n'
         end
     end
 
     local function format_starting_item_text(item_name, count)
-        return '[font=default-large] [item=' .. item_name .. '][/font]: [font=default-bold]' .. count .. '[/font]'
+        return '[font=default-large] [item=' .. item_name .. '][/font]: [font=default-bold]' .. count .. '[/font]\n'
     end
 
     local function format_custom_buff_text(name, count)
         local text_to_place = count or 'Unlocked'
-        return '[font=default-bold]' .. name .. ': ' .. text_to_place .. '[/font]'
+        return '[font=default-bold]' .. name .. ': ' .. text_to_place .. '[/font]\n'
     end
 
     create_section_header(parent_pane, 'Starting items')

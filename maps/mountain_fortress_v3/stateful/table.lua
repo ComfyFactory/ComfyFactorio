@@ -588,10 +588,10 @@ local function get_random_buff(fetch_all, only_force)
     if Public.is_modded_pt2 then
         buffs[#buffs + 1] =
         {
-            name = 'quality_locomotive',
+            name = 'quality_locomotive_uncommon',
             discord = 'Grants uncommon locomotive at start',
             tooltip = 'Selecting this buff will grant the team 1 uncommon locomotive at start!',
-            poll_name = 'Starting items (uncommon)',
+            poll_name = 'Uncommon locomotive',
             modifier = 'locomotive',
             limit = 1,
             quality = 'uncommon',
@@ -600,10 +600,10 @@ local function get_random_buff(fetch_all, only_force)
         }
         buffs[#buffs + 1] =
         {
-            name = 'quality_cargo_wagon',
+            name = 'quality_cargo_wagon_uncommon',
             discord = 'Grants uncommon cargo-wagon at start',
             tooltip = 'Selecting this buff will grant the team 1 uncommon cargo-wagon at start!',
-            poll_name = 'Starting items (uncommon)',
+            poll_name = 'Uncommon cargo-wagon',
             modifier = 'cargo-wagon',
             limit = 1,
             quality = 'uncommon',
@@ -612,10 +612,10 @@ local function get_random_buff(fetch_all, only_force)
         }
         buffs[#buffs + 1] =
         {
-            name = 'quality_locomotive',
+            name = 'quality_locomotive_rare',
             discord = 'Grants rare locomotive at start',
             tooltip = 'Selecting this buff will grant the team 1 rare locomotive at start!',
-            poll_name = 'Starting items (rare)',
+            poll_name = 'Rare locomotive',
             modifier = 'locomotive',
             limit = 1,
             quality = 'rare',
@@ -624,10 +624,10 @@ local function get_random_buff(fetch_all, only_force)
         }
         buffs[#buffs + 1] =
         {
-            name = 'quality_cargo_wagon',
+            name = 'quality_cargo_wagon_rare',
             discord = 'Grants rare cargo-wagon at start',
             tooltip = 'Selecting this buff will grant the team 1 rare cargo-wagon at start!',
-            poll_name = 'Starting items (rare)',
+            poll_name = 'Rare cargo-wagon',
             modifier = 'cargo-wagon',
             limit = 1,
             quality = 'rare',
@@ -636,10 +636,10 @@ local function get_random_buff(fetch_all, only_force)
         }
         buffs[#buffs + 1] =
         {
-            name = 'quality_locomotive',
+            name = 'quality_locomotive_epic',
             discord = 'Grants epic locomotive at start',
             tooltip = 'Selecting this buff will grant the team 1 epic locomotive at start!',
-            poll_name = 'Starting items (epic)',
+            poll_name = 'Epic locomotive',
             limit = 1,
             quality = 'epic',
             dlc = true,
@@ -647,10 +647,10 @@ local function get_random_buff(fetch_all, only_force)
         }
         buffs[#buffs + 1] =
         {
-            name = 'quality_cargo_wagon',
+            name = 'quality_cargo_wagon_epic',
             discord = 'Grants epic cargo-wagon at start',
             tooltip = 'Selecting this buff will grant the team 1 epic cargo-wagon at start!',
-            poll_name = 'Starting items (epic)',
+            poll_name = 'Epic cargo-wagon',
             modifier = 'cargo-wagon',
             limit = 1,
             quality = 'epic',
@@ -659,10 +659,10 @@ local function get_random_buff(fetch_all, only_force)
         }
         buffs[#buffs + 1] =
         {
-            name = 'quality_locomotive',
+            name = 'quality_locomotive_legendary',
             discord = 'Grants legendary locomotive at start',
             tooltip = 'Selecting this buff will grant the team 1 legendary locomotive at start!',
-            poll_name = 'Starting items (legendary)',
+            poll_name = 'Legendary locomotive',
             limit = 1,
             quality = 'legendary',
             dlc = true,
@@ -670,10 +670,10 @@ local function get_random_buff(fetch_all, only_force)
         }
         buffs[#buffs + 1] =
         {
-            name = 'quality_cargo_wagon',
+            name = 'quality_cargo_wagon_legendary',
             discord = 'Grants legendary cargo-wagon at start',
             tooltip = 'Selecting this buff will grant the team 1 legendary cargo-wagon at start!',
-            poll_name = 'Starting items (legendary)',
+            poll_name = 'Legendary cargo-wagon',
             limit = 1,
             quality = 'legendary',
             dlc = true,
@@ -681,10 +681,10 @@ local function get_random_buff(fetch_all, only_force)
         }
         buffs[#buffs + 1] =
         {
-            name = 'quality_buildings',
+            name = 'quality_buildings_uncommon',
             discord = 'Grants uncommon quality of buildings generating free loot!',
-            tooltip = 'Selecting this buff will grant the team 1 uncommon quality of buildings generating free loot!',
-            poll_name = 'Starting items (uncommon)',
+            tooltip = 'Selecting this buff will grant the team 1 uncommon quality wild buildings that generate free loot!',
+            poll_name = 'Wild buildings (uncommon)',
             limit = 1,
             quality = 'uncommon',
             dlc = true,
@@ -692,10 +692,10 @@ local function get_random_buff(fetch_all, only_force)
         }
         buffs[#buffs + 1] =
         {
-            name = 'quality_buildings',
+            name = 'quality_buildings_rare',
             discord = 'Grants rare quality of buildings generating free loot!',
-            tooltip = 'Selecting this buff will grant the team 1 rare quality of buildings generating free loot!',
-            poll_name = 'Starting items (rare)',
+            tooltip = 'Selecting this buff will grant the team 1 rare quality wild buildings that generate free loot!',
+            poll_name = 'Wild buildings (rare)',
             limit = 1,
             quality = 'rare',
             dlc = true,
@@ -703,10 +703,10 @@ local function get_random_buff(fetch_all, only_force)
         }
         buffs[#buffs + 1] =
         {
-            name = 'quality_buildings',
+            name = 'quality_buildings_epic',
             discord = 'Grants epic quality of buildings generating free loot!',
-            tooltip = 'Selecting this buff will grant the team 1 epic quality of buildings generating free loot!',
-            poll_name = 'Starting items (epic)',
+            tooltip = 'Selecting this buff will grant the team 1 epic quality wild buildings that generate free loot!',
+            poll_name = 'Wild buildings (epic)',
             limit = 1,
             quality = 'epic',
             dlc = true,
@@ -714,10 +714,10 @@ local function get_random_buff(fetch_all, only_force)
         }
         buffs[#buffs + 1] =
         {
-            name = 'quality_buildings',
+            name = 'quality_buildings_legendary',
             discord = 'Grants legendary quality of buildings generating free loot!',
-            tooltip = 'Selecting this buff will grant the team 1 legendary quality of buildings generating free loot!',
-            poll_name = 'Starting items (legendary)',
+            tooltip = 'Selecting this buff will grant the team legendary quality wild buildings that generate free loot!',
+            poll_name = 'Wild buildings (legendary)',
             limit = 1,
             quality = 'legendary',
             dlc = true,
@@ -1491,24 +1491,54 @@ local function apply_locomotive_buff(buff, collected_table, limit_types)
     return false
 end
 
+local quality_rank =
+{
+    common = 1,
+    uncommon = 2,
+    rare = 3,
+    epic = 4,
+    legendary = 5
+}
+
+local function is_higher_quality(new, old)
+    if not old then return true end
+    return (quality_rank[new] or 0) > (quality_rank[old] or 0)
+end
+
 local function apply_quality_buff(buff, collected_table)
     local quality_name = buff.name
-    local display_name = quality_name:gsub('quality_', ''):gsub('_', '-')
+    local display_name = quality_name
+        :gsub('^quality_', '')
+        :gsub('_[^_]+$', '')
+        :gsub('_', '-')
 
-    if quality_name == 'quality_locomotive' then
-        this.quality_trains.locomotive = buff.quality
-    elseif quality_name == 'quality_cargo_wagon' then
-        this.quality_trains['cargo-wagon'] = buff.quality
-    elseif quality_name == 'quality_buildings' then
-        this.quality_buildings = buff.quality
+    local function update_if_higher(current, new)
+        if is_higher_quality(new, current) then
+            return new
+        else
+            return current
+        end
     end
+
+    if quality_name:find('quality_locomotive') then
+        this.quality_trains.locomotive = update_if_higher(this.quality_trains.locomotive, buff.quality)
+        Server.output_script_data('Setting locomotive quality to ' .. this.quality_trains.locomotive)
+    elseif quality_name:find('quality_cargo_wagon') then
+        this.quality_trains['cargo-wagon'] = update_if_higher(this.quality_trains['cargo-wagon'], buff.quality)
+        Server.output_script_data('Setting cargo-wagon quality to ' .. this.quality_trains['cargo-wagon'])
+    elseif quality_name:find('quality_buildings') then
+        this.quality_buildings = update_if_higher(this.quality_buildings, buff.quality)
+        Server.output_script_data('Setting wild buildings quality to ' .. this.quality_buildings)
+    end
+
 
     collected_table[quality_name] =
     {
-        name = 'Quality ' .. display_name .. ' (' .. buff.quality .. ')!',
+        name = 'Quality ' .. display_name .. ' (' .. buff.quality .. ')',
         discord = buff.discord
     }
 end
+
 
 local function apply_fish_buff(buff, collected_table, limit_types)
     limit_types[buff.name] = true
@@ -1524,7 +1554,7 @@ local function apply_tech_buff(buff, collected_table)
     end
 
     if type(buff.techs) ~= 'table' then
-        return true -- signal to skip
+        return true
     end
 
     for _, tech in pairs(buff.techs) do
@@ -1627,18 +1657,19 @@ local function apply_buffs_generic(buffs_table, collected_table, is_permanent)
     local total_buffs = 0
     local limit_types = Public.get_func('limit_types')
 
+
     for _, buff in pairs(buffs_table) do
         if buff then
             local skip_buff = false
 
-            if buff.modifier == 'force' then
-                apply_force_buff(buff, collected_table)
+            if buff.name and buff.quality then
+                apply_quality_buff(buff, collected_table)
             elseif buff.modifier == 'rpg_distance' then
                 apply_rpg_distance_buff(buff, collected_table)
             elseif buff.modifier == 'locomotive' then
                 skip_buff = apply_locomotive_buff(buff, collected_table, limit_types)
-            elseif buff.name and buff.name:match('^quality_') then
-                apply_quality_buff(buff, collected_table)
+            elseif buff.modifier == 'force' then
+                apply_force_buff(buff, collected_table)
             elseif buff.modifier == 'fish' then
                 apply_fish_buff(buff, collected_table, limit_types)
             elseif buff.modifier == 'tech' then
@@ -1941,7 +1972,6 @@ local apply_settings_token =
             if not settings.season then
                 settings.season = 1
             end
-
 
             this.current_date = settings.current_date
             this.buffs = settings.buffs or {}
