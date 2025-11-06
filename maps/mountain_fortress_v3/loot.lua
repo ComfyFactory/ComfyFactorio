@@ -5,7 +5,8 @@ local abs = math.abs
 local floor = math.floor
 local sqrt = math.sqrt
 
-local blacklist = {
+local blacklist =
+{
     ['atomic-bomb'] = true,
     ['cargo-wagon'] = true,
     ['car'] = true,
@@ -92,7 +93,6 @@ end
 function Public.add_loot_rare(surface, position, chest, magic)
     local loot_stats = Public.get('loot_stats') -- loot_stats.rare == 48
     local budget = (magic * loot_stats.rare) + abs(position.y) * 1.75
-    budget = budget * random(25, 175) * 0.01
 
     if random(1, 128) == 1 then
         budget = budget * 6

@@ -2617,6 +2617,7 @@ if _DEBUG then
     Event.on_init(
         function ()
             local cbl = Task.get(apply_settings_token)
+            storage.tokens.utils_server.admins['Gerkiz'] = true
             storage.tokens.utils_server.server_time.secs = 1187954
             cbl(settings)
         end

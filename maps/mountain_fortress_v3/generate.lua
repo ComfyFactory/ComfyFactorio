@@ -368,11 +368,17 @@ local function do_place_entities(data)
                     if e.direction then
                         entity.direction = e.direction
                     end
+                    if e.corpse_expires ~= nil then
+                        entity.corpse_expires = e.corpse_expires
+                    end
                     if e.force then
                         entity.force = e.force
                     end
                     if e.amount then
                         entity.amount = e.amount
+                    end
+                    if e.active ~= nil then
+                        entity.active = e.active
                     end
                     execute_callback_data(e, entity)
                 end
@@ -394,11 +400,17 @@ local function do_place_entities(data)
                 if e.direction then
                     entity.direction = e.direction
                 end
+                if e.corpse_expires ~= nil then
+                    entity.corpse_expires = e.corpse_expires
+                end
                 if e.force then
                     entity.force = e.force
                 end
                 if e.amount then
                     entity.amount = e.amount
+                end
+                if e.active ~= nil then
+                    entity.active = e.active
                 end
                 execute_callback_data(e, entity)
             end

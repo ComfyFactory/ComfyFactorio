@@ -94,6 +94,15 @@ Public.discord_name = discord_name
 Public.is_modded = script.active_mods['MtnFortressAddons'] or false
 Public.is_modded_pt2 = script.active_mods['MtnFortressAddonsPt2'] or false
 
+Public.quality_per_level =
+{
+    [1] = { 'normal' },
+    [4] = { 'normal', 'uncommon' },
+    [6] = { 'normal', 'uncommon', 'rare' },
+    [9] = { 'normal', 'uncommon', 'rare', 'epic' },
+    [15] = { 'normal', 'uncommon', 'rare', 'epic', 'legendary' },
+}
+
 Global.register(
     this,
     function (tbl)
@@ -567,11 +576,11 @@ function Public.reset_main_table()
     }
     this.traps = {}
     this.munch_time = true
-    this.magic_requirement = 50
+    this.magic_requirement = 100
     this.loot_stats =
     {
-        rare = 48,
-        normal = 48
+        rare = 12,
+        normal = 4
     }
     this.coin_amount = 1
     this.default_surface = true
@@ -678,6 +687,10 @@ function Public.reset_main_table()
         frostbite = {},
         volcanic = {},
         tech = {},
+        gleba = {},
+        aquilo = {},
+        vulcanus = {},
+        fulgora = {},
         size = nil,
         shuffled_zones = nil,
         starting_zone = true,
@@ -717,6 +730,26 @@ function Public.reset_main_table()
     }
 
     this.game_won = false
+
+    local corpses_raffle = {}
+    for _, e in pairs(prototypes.entity) do
+        if e.type == 'corpse' then
+            table.insert(corpses_raffle, e.name)
+        end
+    end
+
+    for _, planet in pairs(game.planets) do
+        local platforms = planet.get_space_platforms('player')
+        if platforms then
+            for _, platform in pairs(platforms) do
+                if platform and platform.valid then
+                    platform.destroy()
+                end
+            end
+        end
+    end
+
+    this.corpses_raffle = corpses_raffle
 
     this.enforce_wave_200_before_collapse = true
 

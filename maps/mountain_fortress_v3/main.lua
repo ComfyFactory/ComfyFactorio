@@ -5,6 +5,11 @@ Mountain Fortress v3 is maintained by Gerkiz and hosted by Comfy.
 Want to host it? Ask Gerkiz at discord!
 
 ]]
+
+if not script.active_mods['MtnFortressAddons'] then
+    error('Mtn Fortress Addons mod is not enabled! Please download it from the mod website.')
+end
+
 require 'modules.shotgun_buff'
 require 'modules.no_deconstruction_of_neutral_entities'
 require 'modules.spawners_contain_biters'
@@ -58,10 +63,6 @@ RPG.disable_cooldowns_on_spells()
 Gui.mod_gui_button_enabled = true
 Gui.button_style = 'mod_gui_button'
 Gui.set_mod_gui_top_frame(true)
-
-if not script.active_mods['MtnFortressAddons'] then
-    error('Mtn Fortress Addons mod is not enabled! Please download it from the mod website.')
-end
 
 local collapse_kill =
 {
@@ -604,6 +605,7 @@ function Public.reset_map(current_task)
     elseif surface.name == 'fortress' then
         surface.ignore_surface_conditions = true
         if Public.is_modded_pt2 then
+            force.technologies['planet-discovery-fortress'].researched = true
             force.recipes['lightning-rod'].enabled = true -- how else will players deal with lightning?
         end
     end
@@ -781,7 +783,8 @@ function Public.to_fortress(current_task)
     local adjusted_zones = Public.get('adjusted_zones')
     local position
 
-    WD.set('game_lost', false)
+    local wd = WD.get()
+    wd.game_lost = false
 
     if adjusted_zones.reversed then
         game.forces.player.set_spawn_position({ -27, -25 }, surface)

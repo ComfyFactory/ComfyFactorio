@@ -1200,14 +1200,14 @@ function Public.create_room_surface(car)
     surface.force_generate_chunk_requests()
     exclude_surface(surface)
     for _, tile in pairs(surface.find_tiles_filtered({ area = { { -20, -2 }, { 20, 2 } } })) do
-        surface.set_tiles({ { name = out_of_map_tile, position = tile.position } }, true)
+        surface.set_tiles({ { name = 'out-of-map', position = tile.position } }, true)
     end
-    for _, tile in pairs(surface.find_tiles_filtered({ area = { { -21, -1 }, { -21, 4 } } })) do
-        surface.set_tiles({ { name = out_of_map_tile, position = tile.position } }, true)
-    end
-    for _, tile in pairs(surface.find_tiles_filtered({ area = { { 20, -1 }, { 20, 4 } } })) do
-        surface.set_tiles({ { name = out_of_map_tile, position = tile.position } }, true)
-    end
+    -- for _, tile in pairs(surface.find_tiles_filtered({ area = { { -21, -1 }, { -21, 4 } } })) do
+    --     surface.set_tiles({ { name = out_of_map_tile, position = tile.position } }, true)
+    -- end
+    -- for _, tile in pairs(surface.find_tiles_filtered({ area = { { 20, -1 }, { 20, 4 } } })) do
+    --     surface.set_tiles({ { name = out_of_map_tile, position = tile.position } }, true)
+    -- end
     local surfaces = IC.get('surfaces')
     surfaces[unit_number] = surface.index
     return surface.index

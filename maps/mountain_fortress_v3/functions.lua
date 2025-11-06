@@ -619,7 +619,7 @@ local function do_clear_enemy_spawners()
         local entity = spawner.entity
 
         if entity and entity.valid then
-            entity.health = entity.health - 1
+            entity.health = entity.health - 15
             entity.surface.create_entity({ name = 'blood-explosion-small', position = entity.position })
             if entity.health <= 1 then
                 entity.die('enemy')
@@ -669,11 +669,7 @@ end
 
 
 local function do_custom_surface_funcs()
-    local delay = 60
-    for _ = 1, 10 do
-        Task.set_timeout_in_ticks(delay, custom_surface_funcs_token)
-        delay = delay + 20
-    end
+    Task.set_timeout_in_ticks(30, custom_surface_funcs_token)
 end
 
 local function do_season_fix()
@@ -709,7 +705,7 @@ local do_season_fix_token = Task.register(do_season_fix)
 
 local elements = { "piercing", "acid", "explosive", "poison", "fire" }
 
-local types =
+local enemy_unit_types =
 {
     biter =
     {
@@ -725,6 +721,34 @@ local types =
         medium = { t1 = { 100, 300 }, t2 = { 300, 350 }, t3 = { 350, 400 } },
         big = { t1 = { 300, 550 }, t2 = { 550, 600 }, t3 = { 600, 800 } },
         behemoth = { t1 = { 600, 900 }, t2 = { 900, 1000 }, t3 = { 1000, 1400 } },
+    },
+
+    space_age =
+    {
+        wriggler =
+        {
+            small = { t1 = { 1, 100 }, t2 = { 50, 300 } },
+            medium = { t1 = { 150, 450 }, t2 = { 450, 550 } },
+            big = { t1 = { 400, 600 } }
+        },
+        strafer =
+        {
+            small = { t1 = { 200, 750 } },
+            medium = { t1 = { 750, 900 } },
+            big = { t1 = { 900, 1050 } }
+        },
+        stomper =
+        {
+            small = { t1 = { 600, 1100 } },
+            medium = { t1 = { 1100, 1200 } },
+            big = { t1 = { 1200, 1300 } }
+        },
+        demolisher =
+        {
+            small = { t1 = { 1000, 1300 } },
+            medium = { t1 = { 1300, 1400 } },
+            big = { t1 = { 1400, 1500 } }
+        }
     },
 
     boss =
@@ -752,6 +776,7 @@ local types =
     }
 }
 
+
 local function level_weight(level, min, max, multiplier)
     if not min or not max or min >= max then
         return 0
@@ -778,7 +803,7 @@ local function fill_raffles(level)
         boss_raffle = {}
     }
 
-    for family, groups in pairs(types) do
+    for family, groups in pairs(enemy_unit_types) do
         if family == "boss" then
             for boss_kind, tiers in pairs(groups) do
                 for tier, range in pairs(tiers) do
@@ -787,6 +812,21 @@ local function fill_raffles(level)
                         if weight then
                             local name = string.format("mtn-addon-boss-%s-%s-%s", element, boss_kind, tier)
                             raffles.boss_raffle[name] = weight
+                        end
+                    end
+                end
+            end
+        elseif family == "space_age" and Public.is_modded_pt2 then
+            for type_name, sizes in pairs(groups) do
+                for size, tiers in pairs(sizes) do
+                    for _, range in pairs(tiers) do
+                        local weight = level_weight(level, range[1], range[2], 2.75)
+                        if weight then
+                            local proto_name = string.format("%s-%s-pentapod", size, type_name)
+                            if type_name == "demolisher" then
+                                proto_name = string.format("%s-%s", size, type_name)
+                            end
+                            raffles.biter_raffle[proto_name] = weight
                         end
                     end
                 end
@@ -805,8 +845,10 @@ local function fill_raffles(level)
             end
         end
     end
+
     return raffles
 end
+
 
 local set_unit_raffle_token =
     Task.register(function (event)
@@ -832,17 +874,22 @@ local set_unit_raffle_token =
                 raffles.biter_raffle['big-biter'] = round((level - 500) * 2, 6)
                 raffles.spitter_raffle['big-spitter'] = round((level - 500) * 2, 6)
             end
+
             if level > 800 then
                 raffles.biter_raffle['behemoth-biter'] = round((level - 800) * 2.75, 6)
                 raffles.spitter_raffle['behemoth-spitter'] = round((level - 800) * 2.75, 6)
             end
         else
             raffles = fill_raffles(level)
+
+            raffles.biter_raffle = raffles.biter_raffle or {}
+            raffles.spitter_raffle = raffles.spitter_raffle or {}
+            raffles.boss_raffle = raffles.boss_raffle or {}
         end
 
         for _, tbl in pairs(raffles) do
             for k, v in pairs(tbl) do
-                tbl[k] = math.max(v, 0)
+                tbl[k] = math.max(v or 0, 0)
             end
         end
 
@@ -850,6 +897,7 @@ local set_unit_raffle_token =
             WD.set(k, v)
         end
     end)
+
 
 local set_worm_raffle_token =
     Task.register(
@@ -1526,6 +1574,11 @@ function Public.clear_all_chart_tags()
     charts.tags = {}
 end
 
+function Public.set_unit_raffle()
+    local unit_settings = WD.get('unit_settings')
+    unit_settings.custom_unit_raffle = set_unit_raffle_token
+end
+
 function Public.set_xp_yield()
     RPG.set_rpg_xp_yield(
         {
@@ -1540,6 +1593,18 @@ function Public.set_xp_yield()
             ['small-wriggler-pentapod'] = 1,
             ['medium-wriggler-pentapod'] = 4,
             ['big-wriggler-pentapod'] = 8,
+            ['small-wriggler-pentapod-premature'] = 1,
+            ['medium-wriggler-pentapod-premature'] = 4,
+            ['big-wriggler-pentapod-premature'] = 8,
+            ['small-strafer-pentapod'] = 10,
+            ['medium-strafer-pentapod'] = 20,
+            ['big-strafer-pentapod'] = 40,
+            ['small-stomper-pentapod'] = 40,
+            ['medium-stomper-pentapod'] = 80,
+            ['big-stomper-pentapod'] = 160,
+            ['small-demolisher'] = 100,
+            ['medium-demolisher'] = 200,
+            ['big-demolisher'] = 400,
             ['small-biter'] = 1,
             ['small-spitter'] = 1,
             ['small-worm-turret'] = 16,
@@ -1685,11 +1750,6 @@ function Public.set_xp_yield()
         })
 end
 
-function Public.set_unit_raffle()
-    local unit_settings = WD.get('unit_settings')
-    unit_settings.custom_unit_raffle = set_unit_raffle_token
-end
-
 function Public.set_threat_values()
     WD.set('threat_values',
         {
@@ -1708,10 +1768,27 @@ function Public.set_threat_values()
             ['big-worm-turret'] = 64,
             ['behemoth-worm-turret'] = 128,
 
-            -- custom biters/spitters
+            -- space age
             ['small-wriggler-pentapod'] = 1,
             ['medium-wriggler-pentapod'] = 4,
             ['big-wriggler-pentapod'] = 16,
+            ['small-wriggler-pentapod-premature'] = 1,
+            ['medium-wriggler-pentapod-premature'] = 4,
+            ['big-wriggler-pentapod-premature'] = 16,
+
+            ['small-strafer-pentapod'] = 10,
+            ['medium-strafer-pentapod'] = 20,
+            ['big-strafer-pentapod'] = 40,
+
+            ['small-stomper-pentapod'] = 40,
+            ['medium-stomper-pentapod'] = 80,
+            ['big-stomper-pentapod'] = 160,
+
+            ['small-demolisher'] = 100,
+            ['medium-demolisher'] = 200,
+            ['big-demolisher'] = 400,
+
+            -- custom biters/spitters
             ['mtn-addon-small-piercing-biter-t1'] = 2,
             ['mtn-addon-small-piercing-biter-t2'] = 3,
             ['mtn-addon-small-piercing-biter-t3'] = 4,
@@ -1929,6 +2006,26 @@ function Public.set_threat_values()
     local unit_settings = WD.get('unit_settings')
     unit_settings.scale_units_by_health =
     {
+        ['small-wriggler-pentapod'] = 1,
+        ['medium-wriggler-pentapod'] = 0.75,
+        ['big-wriggler-pentapod'] = 0.5,
+
+        ['small-wriggler-pentapod-premature'] = 1,
+        ['medium-wriggler-pentapod-premature'] = 0.75,
+        ['big-wriggler-pentapod-premature'] = 0.5,
+
+        ['small-strafer-pentapod'] = 0.7,
+        ['medium-strafer-pentapod'] = 0.5,
+        ['big-strafer-pentapod'] = 0.3,
+
+        ['small-stomper-pentapod'] = 0.7,
+        ['medium-stomper-pentapod'] = 0.5,
+        ['big-stomper-pentapod'] = 0.3,
+
+        ['small-demolisher'] = 0.4,
+        ['medium-demolisher'] = 0.3,
+        ['big-demolisher'] = 0.1,
+
         ['small-biter'] = 1,
         ['medium-biter'] = 0.75,
         ['big-biter'] = 0.5,
@@ -1937,9 +2034,6 @@ function Public.set_threat_values()
         ['medium-spitter'] = 0.75,
         ['big-spitter'] = 0.5,
         ['behemoth-spitter'] = 0.25,
-        ['small-wriggler-pentapod'] = 1,
-        ['medium-wriggler-pentapod'] = 0.75,
-        ['big-wriggler-pentapod'] = 0.5,
         ['mtn-addon-small-piercing-biter-t1'] = 0.50,
         ['mtn-addon-small-piercing-biter-t2'] = 0.50,
         ['mtn-addon-small-piercing-biter-t3'] = 0.50,
@@ -3079,6 +3173,8 @@ function Public.disable_tech()
         force.technologies['elevated-rail'].researched = false
         force.technologies['rail-support-foundations'].enabled = false
         force.technologies['rail-support-foundations'].researched = false
+        force.recipes['railgun-turret'].enabled = false
+        force.recipes['thruster'].enabled = false
     end
     force.technologies['lamp'].researched = true
     force.technologies['railway'].researched = true

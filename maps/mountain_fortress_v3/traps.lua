@@ -5,16 +5,17 @@ local random = math.random
 
 local tick_tacks = { '*tick*', '*tick*', '*tack*', '*tak*', '*tik*', '*tok*', '*run*' }
 
-local kaboom_weights = {
-    { name = 'grenade',                             chance = 7 },
-    { name = 'cluster-grenade',                     chance = 1 },
-    { name = 'destroyer-capsule',                   chance = 1 },
-    { name = 'defender-capsule',                    chance = 4 },
-    { name = 'distractor-capsule',                  chance = 2 },
-    { name = 'poison-capsule',                      chance = 2 },
-    { name = 'coin',                                chance = 2 },
+local kaboom_weights =
+{
+    { name = 'grenade', chance = 7 },
+    { name = 'cluster-grenade', chance = 1 },
+    { name = 'destroyer-capsule', chance = 1 },
+    { name = 'defender-capsule', chance = 4 },
+    { name = 'distractor-capsule', chance = 2 },
+    { name = 'poison-capsule', chance = 2 },
+    { name = 'coin', chance = 2 },
     { name = 'explosive-uranium-cannon-projectile', chance = 3 },
-    { name = 'explosive-cannon-projectile',         chance = 5 }
+    { name = 'explosive-cannon-projectile', chance = 5 }
 }
 
 local kabooms = {}
@@ -97,18 +98,21 @@ function Public.tick_tack_trap(entity)
         end
 
         if t < tick_tack_count * 60 then
-            traps[game.tick + t][#traps[game.tick + t] + 1] = {
+            traps[game.tick + t][#traps[game.tick + t] + 1] =
+            {
                 callback = 'create_flying_text',
                 params = { entity = entity, message = tick_tacks[random(1, #tick_tacks)] }
             }
         else
             if random(1, 10) == 1 then
-                traps[game.tick + t][#traps[game.tick + t] + 1] = {
+                traps[game.tick + t][#traps[game.tick + t] + 1] =
+                {
                     callback = 'create_flying_text',
                     params = { entity = entity, message = '( ͡° ͜ʖ ͡°)' }
                 }
             else
-                traps[game.tick + t][#traps[game.tick + t] + 1] = {
+                traps[game.tick + t][#traps[game.tick + t] + 1] =
+                {
                     callback = 'create_kaboom',
                     params = { entity = entity, explosion = kabooms[random(1, #kabooms)] }
                 }

@@ -7,7 +7,8 @@ StatData.add_normalize('ore_veins', 'Ore veins located'):set_tooltip('Amount of 
 local is_modded_pt2 = Public.is_modded_pt2
 local random = math.random
 
-local this = {
+local this =
+{
     raffle = {},
     mixed_ores = {},
     chance = 512,
@@ -21,18 +22,20 @@ Global.register(
     end
 )
 
-local valid_entities = {
+local valid_entities =
+{
     ['simple-entity'] = true,
     ['tree'] = true,
     ['simple-entity-with-owner'] = true
 }
 
-local size_raffle = {
+local size_raffle =
+{
     { 'giant', 65, 96 },
-    { 'huge',  33, 64 },
-    { 'big',   17, 32 },
-    { 'small', 9,  16 },
-    { 'tiny',  4,  8 }
+    { 'huge', 33, 64 },
+    { 'big', 17, 32 },
+    { 'small', 9, 16 },
+    { 'tiny', 4, 8 }
 }
 
 local function get_chances()
@@ -53,6 +56,11 @@ local function get_chances()
         if starting_planet == 'vulcanus' then
             table.insert(chances, { 'tungsten-ore', 30 })
             table.insert(chances, { 'calcite', 22 })
+        end
+        if starting_planet == 'fortress' then
+            table.insert(chances, { 'scrap', 14 })
+            table.insert(chances, { 'tungsten-ore', 12 })
+            table.insert(chances, { 'calcite', 10 })
         end
     end
 
@@ -75,6 +83,11 @@ local function set_raffle()
             table.insert(this.mixed_ores, 'scrap')
         end
         if starting_planet == 'vulcanus' then
+            table.insert(this.mixed_ores, 'tungsten-ore')
+            table.insert(this.mixed_ores, 'calcite')
+        end
+        if starting_planet == 'fortress' then
+            table.insert(this.mixed_ores, 'scrap')
             table.insert(this.mixed_ores, 'tungsten-ore')
             table.insert(this.mixed_ores, 'calcite')
         end
@@ -137,7 +150,8 @@ local function ore_vein(player, entity)
 
     local ore_entities = { { name = ore, position = { x = entity.position.x, y = entity.position.y }, amount = get_amount(entity.position) } }
     if ore == 'mixed' then
-        ore_entities = {
+        ore_entities =
+        {
             {
                 name = this.mixed_ores[random(1, #this.mixed_ores)],
                 position = { x = entity.position.x, y = entity.position.y },

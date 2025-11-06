@@ -16,6 +16,13 @@ local sub = string.sub
 local sqrt = math.sqrt
 local zone_settings = Public.zone_settings
 
+local disabled_controllers =
+{
+    [defines.controllers.editor] = true,
+    [defines.controllers.remote] = true,
+    [defines.controllers.spectator] = true,
+}
+
 local clear_breach_text_and_render = function ()
     local beam1 = Public.get('zone1_beam1')
     if beam1 and beam1.valid then
@@ -305,6 +312,8 @@ local compare_player_pos = function (player)
     local zone = floor((abs(p.y / zone_settings.zone_depth)) % adjusted_zones.size) + 1
     local rpg_t = RPG.get_value_from_player(index)
 
+    RPG.set_value_to_player(index, 'current_zone', zone)
+
     if adjusted_zones.scrap[zone] then
         if rpg_t and not rpg_t.scrap_zone then
             rpg_t.scrap_zone = true
@@ -579,17 +588,10 @@ local function on_player_changed_position(event)
         return
     end
 
-    if player.controller_type == defines.controllers.editor then
+    if disabled_controllers[player.controller_type] then
         return
     end
 
-    if player.controller_type == defines.controllers.remote then
-        return
-    end
-
-    if player.controller_type == defines.controllers.spectator then
-        return
-    end
     local surface_name = player.physical_surface.name
 
     if sub(surface_name, 0, #current_task.starting_planet) ~= current_task.starting_planet then

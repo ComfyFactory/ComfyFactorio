@@ -128,6 +128,19 @@ local valid_rocks =
     ['big-rock-snowy'] = true,
     ['huge-rock-snowy'] = true,
     ['big-sand-rock-snowy'] = true,
+    ['huge-rock-crisp-stra-1'] = true,
+    ['big-rock-crisp-stra-1'] = true,
+    ['huge-rock-crisp-stra-2'] = true,
+    ['big-rock-crisp-stra-2'] = true,
+    ['huge-rock-crisp-stra-3'] = true,
+    ['big-rock-crisp-stra-3'] = true,
+    ['huge-rock-crisp-volc-1'] = true,
+    ['big-rock-crisp-volc-1'] = true,
+    ['huge-rock-crisp-volc-2'] = true,
+    ['big-rock-crisp-volc-2'] = true,
+    ['huge-rock-crisp-volc-3'] = true,
+    ['big-rock-crisp-volc-3'] = true,
+    ['fulgurite'] = true,
 }
 
 local valid_trees =
@@ -142,7 +155,17 @@ local valid_trees =
     ['tree-02-red'] = 'copper-ore',
     ['tree-03'] = 'coal',
     ['tree-04'] = 'coal',
-    ['tree-08-brown'] = 'stone'
+    ['tree-08-brown'] = 'stone',
+    ['stingfrond'] = 'spoilage',
+    ['teflilly'] = 'tungsten-ore',
+    ['boompuff'] = 'holmium-ore',
+    ['sunnycomb'] = 'calcite',
+    ['lickmaw'] = 'lithium',
+    ['telilly'] = 'jellynut',
+    ['hairyclubnub'] = 'yumako',
+    ['funneltrunk'] = 'carbon',
+    ['slipstack'] = 'ice',
+    ['cuttlepop'] = 'scrap'
 }
 
 local valid_scrap =
@@ -160,6 +183,13 @@ local valid_scrap =
     ['mineable-wreckages-4'] = true,
     ['mineable-wreckages-5'] = true,
     ['mineable-wreckages-6'] = true,
+    ['mineable-wreckage'] = true,
+    ['mineable-wreckage-1'] = true,
+    ['mineable-wreckage-2'] = true,
+    ['mineable-wreckage-3'] = true,
+    ['mineable-wreckage-4'] = true,
+    ['mineable-wreckage-5'] = true,
+    ['mineable-wreckage-6'] = true,
 }
 
 local rock_yield =
@@ -184,7 +214,17 @@ local particles =
     ['copper-ore'] = 'copper-ore-particle',
     ['uranium-ore'] = 'coal-particle',
     ['coal'] = 'coal-particle',
-    ['stone'] = 'stone-particle'
+    ['stone'] = 'stone-particle',
+    ['spoilage'] = 'scrap-particle',
+    ['tungsten-ore'] = 'scrap-particle',
+    ['holmium-ore'] = 'scrap-particle',
+    ['calcite'] = 'calcite-particle',
+    ['lithium'] = 'scrap-particle',
+    ['jellynut'] = 'scrap-particle',
+    ['yumako'] = 'scrap-particle',
+    ['carbon'] = 'calcite-particle',
+    ['ice'] = 'scrap-particle',
+    ['scrap'] = 'scrap-particle',
 }
 
 local function create_particles(surface, name, position, amount, cause_position)
@@ -227,6 +267,27 @@ local mining_chances_ores =
     { name = 'stone', chance = 6 },
     { name = 'uranium-ore', chance = 2 }
 }
+
+if Public.is_modded_pt2 then
+    mining_chances_ores =
+    {
+        { name = 'iron-ore', chance = 26 },
+        { name = 'copper-ore', chance = 21 },
+        { name = 'coal', chance = 17 },
+        { name = 'stone', chance = 6 },
+        { name = 'uranium-ore', chance = 2 },
+        { name = 'spoilage', chance = 10 },
+        { name = 'tungsten-ore', chance = 5 },
+        { name = 'holmium-ore', chance = 5 },
+        { name = 'calcite', chance = 10 },
+        { name = 'lithium', chance = 5 },
+        { name = 'jellynut', chance = 5 },
+        { name = 'yumako', chance = 5 },
+        { name = 'carbon', chance = 5 },
+        { name = 'scrap', chance = 5 },
+        { name = 'ice', chance = 5 },
+    }
+end
 
 local harvest_raffle_ores = {}
 for _, data in pairs(mining_chances_ores) do
@@ -339,7 +400,7 @@ local function randomness(data)
     player.create_local_flying_text(
         {
             position = position,
-            text = '+' .. harvest_amount .. '  [img=item/' .. harvest .. ']',
+            text = '+' .. harvest_amount .. '  [item=' .. harvest .. ',quality=' .. data.quality .. ']',
         }
     )
 
@@ -349,25 +410,25 @@ local function randomness(data)
 
     if harvest_amount > max_spill then
         if spill_items_to_surface then
-            player.physical_surface.spill_item_stack({ position = position, stack = { name = harvest, count = max_spill, quality = 'normal' } })
+            player.physical_surface.spill_item_stack({ position = position, stack = { name = harvest, count = max_spill, quality = data.quality } })
         else
-            player.insert({ name = harvest, count = max_spill })
+            player.insert({ name = harvest, count = max_spill, quality = data.quality })
         end
         harvest_amount = harvest_amount - max_spill
         local inserted_count = player.insert({ name = harvest, count = harvest_amount })
         harvest_amount = harvest_amount - inserted_count
         if harvest_amount > 0 then
             if spill_items_to_surface then
-                player.physical_surface.spill_item_stack({ position = position, stack = { name = harvest, count = harvest_amount, quality = 'normal' } })
+                player.physical_surface.spill_item_stack({ position = position, stack = { name = harvest, count = harvest_amount, quality = data.quality } })
             else
-                player.insert({ name = harvest, count = harvest_amount })
+                player.insert({ name = harvest, count = harvest_amount, quality = data.quality })
             end
         end
     else
         if spill_items_to_surface then
-            player.physical_surface.spill_item_stack({ position = position, stack = { name = harvest, count = harvest_amount, quality = 'normal' } })
+            player.physical_surface.spill_item_stack({ position = position, stack = { name = harvest, count = harvest_amount, quality = data.quality } })
         else
-            player.insert({ name = harvest, count = harvest_amount })
+            player.insert({ name = harvest, count = harvest_amount, quality = data.quality })
         end
     end
     local particle = particles[harvest]
@@ -395,7 +456,7 @@ local function randomness_scrap(data)
     player.create_local_flying_text(
         {
             position = position,
-            text = '+' .. harvest_amount .. '  [img=item/' .. harvest .. ']',
+            text = '+' .. harvest_amount .. '  [item=' .. harvest .. ',quality=' .. data.quality .. ']',
         }
     )
 
@@ -405,25 +466,25 @@ local function randomness_scrap(data)
 
     if harvest_amount > max_spill then
         if spill_items_to_surface then
-            player.physical_surface.spill_item_stack({ position = position, stack = { name = harvest, count = max_spill, quality = 'normal' } })
+            player.physical_surface.spill_item_stack({ position = position, stack = { name = harvest, count = max_spill, quality = data.quality } })
         else
-            player.insert({ name = harvest, count = max_spill })
+            player.insert({ name = harvest, count = max_spill, quality = data.quality })
         end
         harvest_amount = harvest_amount - max_spill
         local inserted_count = player.insert({ name = harvest, count = harvest_amount })
         harvest_amount = harvest_amount - inserted_count
         if harvest_amount > 0 then
             if spill_items_to_surface then
-                player.physical_surface.spill_item_stack({ position = position, stack = { name = harvest, count = harvest_amount, quality = 'normal' } })
+                player.physical_surface.spill_item_stack({ position = position, stack = { name = harvest, count = harvest_amount, quality = data.quality } })
             else
-                player.insert({ name = harvest, count = harvest_amount })
+                player.insert({ name = harvest, count = harvest_amount, quality = data.quality })
             end
         end
     else
         if spill_items_to_surface then
-            player.physical_surface.spill_item_stack({ position = position, stack = { name = harvest, count = harvest_amount, quality = 'normal' } })
+            player.physical_surface.spill_item_stack({ position = position, stack = { name = harvest, count = harvest_amount, quality = data.quality } })
         else
-            player.insert({ name = harvest, count = harvest_amount })
+            player.insert({ name = harvest, count = harvest_amount, quality = data.quality })
         end
     end
     local particle = particles[harvest]
@@ -470,7 +531,8 @@ function Public.on_player_mined_entity(event)
         local data =
         {
             entity = entity,
-            player = player
+            player = player,
+            quality = event.quality or 'normal'
         }
 
         if event.script_character then

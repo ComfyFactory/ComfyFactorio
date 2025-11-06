@@ -129,6 +129,27 @@ local function get_random_weighted(player, weighted_table, item_index, weight_in
     end
 end
 
+local function get_quality_from_level(rpg_char)
+    if not Public.is_modded_pt2 then
+        return 'normal'
+    end
+
+    local level = rpg_char.current_zone
+    if not level then return end
+
+    if Public.quality_per_level[level] then
+        local quality = Public.quality_per_level[level]
+
+        if random(1, 2) == 1 then
+            return quality[random(1, #quality)]
+        end
+
+        return 'normal'
+    end
+
+    return 'normal'
+end
+
 local function on_entity_removed(data)
     local entity = data.entity
     local upgrades = Public.get('upgrades')
@@ -305,8 +326,6 @@ local function protect_entities(data)
     if not dmg then
         return
     end
-
-
 
     local check_heavy_damage = Public.get('check_heavy_damage')
 
@@ -532,6 +551,9 @@ local mining_events =
     },
     {
         function (entity)
+            if not entity or not entity.valid then
+                return
+            end
             if Public.is_around_train(entity) then
                 entity.destroy()
                 return
@@ -545,6 +567,9 @@ local mining_events =
     },
     {
         function (entity)
+            if not entity or not entity.valid then
+                return
+            end
             if Public.is_around_train(entity) then
                 entity.destroy()
                 return
@@ -558,6 +583,9 @@ local mining_events =
     },
     {
         function (entity)
+            if not entity or not entity.valid then
+                return
+            end
             if Public.is_around_train(entity) then
                 entity.destroy()
                 return
@@ -571,6 +599,9 @@ local mining_events =
     },
     {
         function (entity)
+            if not entity or not entity.valid then
+                return
+            end
             if Public.is_around_train(entity) then
                 entity.destroy()
                 return
@@ -584,6 +615,9 @@ local mining_events =
     },
     {
         function (entity, index)
+            if not entity or not entity.valid then
+                return
+            end
             if Public.is_around_train(entity) then
                 entity.destroy()
                 return
@@ -601,6 +635,9 @@ local mining_events =
     },
     {
         function (entity, index)
+            if not entity or not entity.valid then
+                return
+            end
             local player = game.get_player(index)
             hidden_treasure(player, entity)
             Task.set_timeout_in_ticks(5, unstuck_player_token, { index = index })
@@ -610,6 +647,9 @@ local mining_events =
     },
     {
         function (entity, index)
+            if not entity or not entity.valid then
+                return
+            end
             local player = game.get_player(index)
             hidden_treasure(player, entity)
             Task.set_timeout_in_ticks(5, unstuck_player_token, { index = index })
@@ -619,6 +659,9 @@ local mining_events =
     },
     {
         function (entity, index)
+            if not entity or not entity.valid then
+                return
+            end
             local player = game.get_player(index)
             hidden_treasure(player, entity)
             Task.set_timeout_in_ticks(5, unstuck_player_token, { index = index })
@@ -628,6 +671,9 @@ local mining_events =
     },
     {
         function (entity, index)
+            if not entity or not entity.valid then
+                return
+            end
             local player = game.get_player(index)
             hidden_treasure(player, entity)
             Task.set_timeout_in_ticks(5, unstuck_player_token, { index = index })
@@ -637,6 +683,9 @@ local mining_events =
     },
     {
         function (entity, index)
+            if not entity or not entity.valid then
+                return
+            end
             local player = game.get_player(index)
             hidden_treasure(player, entity)
             Task.set_timeout_in_ticks(5, unstuck_player_token, { index = index })
@@ -646,6 +695,9 @@ local mining_events =
     },
     {
         function (entity, index)
+            if not entity or not entity.valid then
+                return
+            end
             local player = game.get_player(index)
             hidden_treasure(player, entity)
             Task.set_timeout_in_ticks(5, unstuck_player_token, { index = index })
@@ -655,6 +707,9 @@ local mining_events =
     },
     {
         function (entity, index)
+            if not entity or not entity.valid then
+                return
+            end
             local player = game.get_player(index)
             hidden_treasure(player, entity)
             Task.set_timeout_in_ticks(5, unstuck_player_token, { index = index })
@@ -664,10 +719,21 @@ local mining_events =
     },
     {
         function (entity, index)
+            if not entity or not entity.valid then
+                return
+            end
             if Public.is_around_train(entity) then
                 entity.destroy()
                 return
             end
+
+            local player = game.get_player(index)
+            local rpg_char = RPG.get_value_from_player(player.index)
+            if not rpg_char then
+                return
+            end
+
+            local quality = get_quality_from_level(rpg_char)
 
             local ent_to_create = { 'biter-spawner', 'spitter-spawner' }
 
@@ -681,7 +747,7 @@ local mining_events =
                     name = spawner_name,
                 } <= 2
             then
-                local e = surface.create_entity({ name = spawner_name, position = position, force = 'enemy' })
+                local e = surface.create_entity({ name = spawner_name, position = position, force = 'enemy', quality = quality })
 
                 e.destructible = false
                 Task.set_timeout_in_ticks(300, immunity_spawner, { entity = e })
@@ -693,10 +759,21 @@ local mining_events =
     },
     {
         function (entity, index)
+            if not entity or not entity.valid then
+                return
+            end
             if Public.is_around_train(entity) then
                 entity.destroy()
                 return
             end
+
+            local player = game.get_player(index)
+            local rpg_char = RPG.get_value_from_player(player.index)
+            if not rpg_char then
+                return
+            end
+
+            local quality = get_quality_from_level(rpg_char)
 
             local ent_to_create = { 'biter-spawner', 'spitter-spawner' }
 
@@ -710,7 +787,7 @@ local mining_events =
                     name = spawner_name,
                 } <= 2
             then
-                local e = surface.create_entity({ name = spawner_name, position = position, force = 'enemy' })
+                local e = surface.create_entity({ name = spawner_name, position = position, force = 'enemy', quality = quality })
 
                 e.destructible = false
                 Task.set_timeout_in_ticks(300, immunity_spawner, { entity = e })
@@ -722,6 +799,9 @@ local mining_events =
     },
     {
         function (entity)
+            if not entity or not entity.valid then
+                return
+            end
             local chest = 'crash-site-chest-' .. random(1, 2)
             local container = entity.surface.create_entity({ name = chest, position = entity.position, force = 'neutral' })
             if container and container.health then
@@ -734,6 +814,9 @@ local mining_events =
     },
     {
         function (entity, index)
+            if not entity or not entity.valid then
+                return
+            end
             local position = entity.position
             local surface = entity.surface
 
@@ -772,6 +855,7 @@ local function on_player_mined_entity(event)
     if not entity.valid then
         return
     end
+
     local current_task = Public.get('current_task')
     if not current_task.done then
         return
@@ -786,12 +870,7 @@ local function on_player_mined_entity(event)
         return
     end
 
-    local d =
-    {
-        entity = entity
-    }
-
-    on_entity_removed(d)
+    on_entity_removed({ entity = entity })
 
     if disabled_threats[entity.name] then
         return
@@ -801,6 +880,8 @@ local function on_player_mined_entity(event)
 
     if entity.type == 'simple-entity' or entity.type == 'simple-entity-with-owner' or entity.type == 'tree' then
         Public.set().mined_scrap = mined_scrap + 1
+        local quality = get_quality_from_level(rpg_char)
+        event.quality = quality
         Public.on_player_mined_entity(event)
         if entity.type == 'tree' then
             if random(1, 3) == 1 then
