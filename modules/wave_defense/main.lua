@@ -6,6 +6,7 @@ local Alert = require 'utils.alert'
 local Server = require 'utils.server'
 local Collapse = require 'modules.collapse'
 local CustomEvents = require 'utils.created_events'
+local Math = require 'utils.math.math'
 
 Collapse.read_tables_only = true
 
@@ -492,135 +493,123 @@ local function get_active_unit_groups_count()
 end
 
 local function spawn_biter(surface, position, fs, is_boss_biter, unit_settings, only_spitters)
-    if not (fs and fs.bypass) then
-        if not is_boss_biter then
-            if not can_units_spawn() then
-                return false
-            end
-        end
+    if not (fs and fs.bypass) and not is_boss_biter and not can_units_spawn() then
+        return false
     end
 
-    local final_battle = Public.get('final_battle')
+    local wave_number = Public.get('wave_number')
 
+    local final_battle = Public.get('final_battle')
     local boosted_health = BiterHealthBooster.get('biter_health_boost')
     local threat_values = Public.get('threat_values')
 
-    local name
+    local function get_biter_name()
+        local name
+        local roll_boss = (fs and fs.random_bosses or is_boss_biter and wave_number > 1000)
+        local roll_spitter = (only_spitters or random(1, 100) > 73)
 
-    if (fs and fs.random_bosses) then
-        name = Public.wave_defense_roll_boss_name()
+        if roll_boss then
+            name = Public.wave_defense_roll_boss_name()
+        end
+
         if not name then
-            if only_spitters or random(1, 100) > 73 then
+            if roll_spitter then
                 name = Public.wave_defense_roll_spitter_name()
             else
                 name = Public.wave_defense_roll_biter_name()
             end
         end
-    else
-        if only_spitters or random(1, 100) > 73 then
-            name = Public.wave_defense_roll_spitter_name()
-        else
-            name = Public.wave_defense_roll_biter_name()
-        end
+
+        return name
     end
 
-    local old_position = position
-
-    local enable_random_spawn_positions = Public.get('enable_random_spawn_positions')
-
-    if enable_random_spawn_positions then
-        if random(1, 3) == 1 then
-            position = { x = (-1 * (position.x + random(1, 10))), y = (position.y + random(1, 10)) }
-        else
-            position = { x = (position.x + random(1, 10)), y = (position.y + random(1, 10)) }
-        end
-    end
-
-    position = surface.find_non_colliding_position('steel-chest', position, 3, 1)
-    if not position then
-        position = old_position
-    end
-
-    local force = 'enemy'
-    local es_settings = Public.get_es('settings')
-
-    if es_settings.enabled then
-        force = es_settings.force_name
-    end
-
-    if name == '' or name == nil then
+    local name = get_biter_name()
+    if not name or name == '' then
         Server.output_script_data('spawn_biter - name was nil?')
         return false
     end
 
-    local e = { name = name, position = position, force = force }
-    if not surface.can_place_entity(e) then
-        return false
+    local old_position = position
+    if Public.get('enable_random_spawn_positions') then
+        local offset_x = random(1, 10)
+        local offset_y = random(1, 10)
+        position =
+        {
+            x = (random(1, 3) == 1) and (-1 * (position.x + offset_x)) or (position.x + offset_x),
+            y = position.y + offset_y
+        }
     end
 
-    local biter = surface.create_entity(e)
-    if not biter or not biter.valid then
-        return false
-    end
+    position = surface.find_non_colliding_position('steel-chest', position, 3, 1) or old_position
+
+    local es_settings = Public.get_es('settings')
+    local force = (es_settings.enabled and es_settings.force_name) or 'enemy'
+
+    local entity_data = { name = name, position = position, force = force }
+    if not surface.can_place_entity(entity_data) then return false end
+
+    local biter = surface.create_entity(entity_data)
+    if not (biter and biter.valid) then return false end
 
     biter.ai_settings.allow_destroy_when_commands_fail = true
     biter.ai_settings.allow_try_return_to_spawner = false
     biter.ai_settings.do_separation = true
 
-    local increase_health_per_wave = Public.get('increase_health_per_wave')
-    local boost_units_when_wave_is_above = Public.get('boost_units_when_wave_is_above')
-    local boost_bosses_when_wave_is_above = Public.get('boost_bosses_when_wave_is_above')
-    local wave_number = Public.get('wave_number')
+    local function apply_unit_health_boost()
+        local increase = Public.get('increase_health_per_wave')
+        local threshold = Public.get('boost_units_when_wave_is_above')
 
-    if (increase_health_per_wave and (wave_number >= boost_units_when_wave_is_above)) and not is_boss_biter then
-        local modified_unit_health = Public.get('modified_unit_health')
-        local final_health = round(modified_unit_health.current_value * (unit_settings.scale_units_by_health[biter.name] and unit_settings.scale_units_by_health[biter.name] or 1), 3)
-        if final_health < 1 then
-            final_health = 1
-        end
+        if not (increase and wave_number >= threshold) or is_boss_biter then return end
+
+        local modified = Public.get('modified_unit_health')
+        local scale = unit_settings.scale_units_by_health[biter.name] or 1
+        local final_health = math.max(1, round(modified.current_value * scale, 3))
+
         Public.debug_print_health('final_health - unit: ' .. biter.name .. ' with h-m: ' .. final_health)
         BiterHealthBooster.add_unit(biter, final_health)
     end
 
-    if is_boss_biter then
-        if (wave_number >= boost_bosses_when_wave_is_above) then
-            local increase_boss_health_per_wave = Public.get('increase_boss_health_per_wave')
+    local function apply_boss_health_boost()
+        if not is_boss_biter then return end
+        if biter.name:find('boss') then return end
+
+        local boss_threshold = Public.get('boost_bosses_when_wave_is_above')
+        local increase_boss = Public.get('increase_boss_health_per_wave')
+        local modified_boss = Public.get('modified_boss_unit_health')
+
+        if wave_number >= boss_threshold then
             if final_battle then
-                local modified_boss_unit_health = Public.get('modified_boss_unit_health')
-                local add_value = modified_boss_unit_health.current_value * 0.5
-                BiterHealthBooster.add_boss_unit(biter, modified_boss_unit_health.current_value + add_value, 0.55)
+                local add_value = modified_boss.current_value * 0.5
+                BiterHealthBooster.add_boss_unit(biter, modified_boss.current_value + add_value, 0.55)
+            elseif increase_boss then
+                BiterHealthBooster.add_boss_unit(biter, modified_boss.current_value, 0.55)
             else
-                if increase_boss_health_per_wave then
-                    local modified_boss_unit_health = Public.get('modified_boss_unit_health')
-                    BiterHealthBooster.add_boss_unit(biter, modified_boss_unit_health.current_value, 0.55)
-                else
-                    local sum = boosted_health * 5
-                    BiterHealthBooster.add_boss_unit(biter, sum, 0.55)
-                end
+                BiterHealthBooster.add_boss_unit(biter, boosted_health * 5, 0.55)
             end
         else
-            local sum = boosted_health * 5
-            BiterHealthBooster.add_boss_unit(biter, sum, 0.55)
+            BiterHealthBooster.add_boss_unit(biter, boosted_health * 5, 0.55)
         end
     end
 
+    apply_unit_health_boost()
+    apply_boss_health_boost()
+
     local generated_units = Public.get('generated_units')
-
     if is_boss_biter then
-        if not generated_units.boss_units then
-            generated_units.boss_units = {}
-        end
-
-        generated_units.boss_units[#generated_units.boss_units + 1] = biter
+        generated_units.boss_units = generated_units.boss_units or {}
+        table.insert(generated_units.boss_units, biter)
     else
         generated_units.active_biters[biter.unit_number] = { entity = biter, spawn_tick = game.tick }
     end
-    local active_biter_count = Public.get('active_biter_count')
-    Public.set('active_biter_count', active_biter_count + 1)
-    local active_biter_threat = Public.get('active_biter_threat')
-    Public.set('active_biter_threat', active_biter_threat + round((threat_values[name] and threat_values[name] or 1) * boosted_health, 2))
+
+    Public.set('active_biter_count', Public.get('active_biter_count') + 1)
+
+    local threat = (threat_values[name] or 1) * boosted_health
+    Public.set('active_biter_threat', Public.get('active_biter_threat') + round(threat, 2))
+
     return biter
 end
+
 
 local function spawn_worm(surface, position, is_boss_worm)
     local boosted_health = BiterHealthBooster.get('biter_health_boost')
@@ -1191,59 +1180,55 @@ local function give_main_command_to_group()
 end
 
 local function spawn_unit_group(fs, only_bosses)
-    if fs then
-        Public.debug_print('spawn_unit_group - forcing new biters')
-    else
-        if not can_units_spawn() then
-            Public.debug_print('spawn_unit_group - Cant spawn units?')
-            return
-        end
+    local function debug(msg)
+        Public.debug_print('spawn_unit_group - ' .. msg)
     end
+
+    if fs then
+        debug('forcing new biters')
+    elseif not can_units_spawn() then
+        debug('Cant spawn units?')
+        return
+    end
+
     local target = Public.get('target')
     if not valid(target) then
-        Public.debug_print('spawn_unit_group - Target was not valid?')
+        debug('Target was not valid?')
         Event.raise(CustomEvents.events.on_primary_target_missing)
         return
     end
 
-    local max_active_unit_groups = Public.get('max_active_unit_groups')
-    if fs then
-        Public.debug_print('spawn_unit_group - forcing new biters')
-    else
-        if get_active_unit_groups_count() >= max_active_unit_groups then
-            Public.debug_print('spawn_unit_group - unit_groups at max')
-            return
-        end
-    end
-    local surface_index = Public.get('surface_index')
-    local remove_entities = Public.get('remove_entities')
-
-    local surface = game.surfaces[surface_index]
-    set_group_spawn_position(surface)
-
-    local spawn_position = get_spawn_pos()
-    if not spawn_position then
+    local max_active = Public.get('max_active_unit_groups')
+    if not fs and get_active_unit_groups_count() >= max_active then
+        debug('unit_groups at max')
         return
     end
 
+    local surface = game.surfaces[Public.get('surface_index')]
+    local remove_entities = Public.get('remove_entities')
+
+    set_group_spawn_position(surface)
+    local spawn_position = get_spawn_pos()
+    if not spawn_position then return end
+
     if check_if_near_target(spawn_position) then
         spawn_position = normalize_spawn_position()
-        Public.debug_print('spawn_unit_group - cannot spawn unit group near target')
+        debug('cannot spawn unit group near target')
         if not spawn_position then
-            Public.debug_print('spawn_unit_group - spawn_position was invalid')
+            debug('spawn_position was invalid')
             return
         end
     end
 
-    local radius = 10
     local area =
     {
-        left_top = { spawn_position.x - radius, spawn_position.y - radius },
-        right_bottom = { spawn_position.x + radius, spawn_position.y + radius }
+        left_top = { x = spawn_position.x - 10, y = spawn_position.y - 10 },
+        right_bottom = { x = spawn_position.x + 10, y = spawn_position.y + 10 }
     }
+
     for _, v in pairs(surface.find_entities_filtered { area = area, name = 'land-mine' }) do
-        if v and v.valid then
-            Public.debug_print('spawn_unit_group - found land-mines')
+        if v.valid then
+            debug('found land-mines')
             v.die()
         end
     end
@@ -1257,110 +1242,80 @@ local function spawn_unit_group(fs, only_bosses)
     local wave_number = Public.get('wave_number')
     Public.wave_defense_set_unit_raffle(wave_number)
 
-    Public.debug_print('Spawning unit group at x' .. spawn_position.x .. ' y' .. spawn_position.y)
-
-    local event_data = {}
+    debug('Spawning unit group at x' .. spawn_position.x .. ' y' .. spawn_position.y)
 
     local es_settings = Public.get_es('settings')
-
-    local force = 'enemy'
-    if es_settings.enabled then
-        force = es_settings.force_name
-    end
+    local force = es_settings.enabled and es_settings.force_name or 'enemy'
 
     local generated_units = Public.get('generated_units')
-
     local unit_group = surface.create_unit_group({ position = spawn_position, force = force }) --[[@as LuaCommandable]]
 
-    event_data.unit_group = unit_group
+    local event_data =
+    {
+        unit_group = unit_group,
+        unit_settings = Public.get('unit_settings'),
+        boss_wave = false
+    }
 
     generated_units.unit_group_pos.index = generated_units.unit_group_pos.index + 1
     generated_units.unit_group_pos.positions[unit_group.unique_id] = { position = unit_group.position, index = 0 }
-    local average_unit_group_size = Public.get('average_unit_group_size')
-    local unit_settings = Public.get('unit_settings')
-    event_data.unit_settings = unit_settings
 
-    local group_size = floor(average_unit_group_size * Public.group_size_modifier_raffle[random(1, Public.group_size_modifier_raffle_size)])
-
+    local avg_size = Public.get('average_unit_group_size')
+    local group_size = floor(avg_size * Public.group_size_modifier_raffle[random(1, Public.group_size_modifier_raffle_size)])
     event_data.group_size = group_size
-    event_data.boss_wave = false
 
-    if not fs or not fs.random_bosses then
-        local boss_wave = Public.get('boss_wave')
-        if not boss_wave and not only_bosses then
-            for _ = 1, group_size, 1 do
-                local biter = spawn_biter(surface, spawn_position, fs, false, unit_settings)
-                if not biter then
-                    Public.debug_print('spawn_unit_group - No biters were found?')
-                    break
-                end
-                unit_group.add_member(biter)
-
-                raise(CustomEvents.events.on_entity_created, { entity = biter, boss_unit = false })
-                -- command_to_side_target(unit_group)
+    local function spawn_units(count, boss, only_spitters)
+        for _ = 1, count do
+            local biter = spawn_biter(surface, spawn_position, fs, boss, event_data.unit_settings, only_spitters)
+            if not biter then
+                debug('No biter was found?')
+                break
             end
+            unit_group.add_member(biter)
+            raise(CustomEvents.events.on_entity_created, { entity = biter, boss_unit = boss })
+        end
+    end
+
+    local boss_wave = Public.get('boss_wave')
+    if not fs or not fs.random_bosses then
+        if not boss_wave and not only_bosses then
+            spawn_units(group_size, false)
         end
 
         if boss_wave or only_bosses then
             event_data.boss_wave = true
-            local count = random(1, floor(wave_number * 0.01) + 2)
-            if count > 16 then
-                count = 16
-            end
-            if count <= 4 then
-                count = 4
-            end
+            local count = Math.clamp(random(1, floor(wave_number * 0.01) + 2), 4, 16)
             event_data.spawn_count = count
-            local only_spitters = random(1, 2) == 1
-            if only_spitters then
-                es_settings.only_spitters = true
-            end
-            if es_settings.wave_number ~= wave_number then
-                es_settings.only_spitters = nil
-            end
+
+            local only_spitters = (random(1, 2) == 1)
+            es_settings.only_spitters = only_spitters and true or nil
             es_settings.wave_number = wave_number
-            for _ = 1, count, 1 do
-                local biter = spawn_biter(surface, spawn_position, fs, true, unit_settings, es_settings.only_spitters)
-                if not biter then
-                    Public.debug_print('spawn_unit_group - No biter was found?')
-                    break
-                end
-                unit_group.add_member(biter)
-                raise(CustomEvents.events.on_entity_created, { entity = biter, boss_unit = true })
-            end
+
+            spawn_units(count, true, es_settings.only_spitters)
             Public.set('boss_wave', false)
         end
     else
-        if not es_settings.generated_units then
-            es_settings.generated_units = 0
-        end
-        if es_settings.generated_units > 100 then
-            return
-        end
+        es_settings.generated_units = (es_settings.generated_units or 0)
+        if es_settings.generated_units > 100 then return end
 
         local count = fs.scale or 1
         event_data.spawn_count = count
-        for _ = 1, count, 1 do
-            local biter = spawn_biter(surface, spawn_position, fs, true, unit_settings)
-            if not biter then
-                Public.debug_print('spawn_unit_group - No biter was found?')
-                break
-            end
-            unit_group.add_member(biter)
-            raise(CustomEvents.events.on_entity_created, { entity = biter, boss_unit = true })
-        end
+        spawn_units(count, true)
     end
 
     generated_units.unit_groups[unit_group.unique_id] = unit_group
-    local unit_groups_size = Public.get('unit_groups_size')
-    Public.set('unit_groups_size', unit_groups_size + 1)
+    Public.set('unit_groups_size', Public.get('unit_groups_size') + 1)
+
     if random(1, 2) == 1 then
         Public.set('random_group', unit_group)
     end
+
     Public.set('spot', 'nil')
     raise(CustomEvents.events.on_unit_group_created, event_data)
+
     return true
 end
+
 
 local function spawn_unit_group_simple(fs)
     local target = Public.get('target')
