@@ -729,6 +729,8 @@ function Public.reset_main_table()
         voting_closed = false
     }
 
+    this.random_planet_enabled = false
+
     this.game_won = false
 
     local corpses_raffle = {}
@@ -835,12 +837,16 @@ end
 function Public.save_stateful_settings()
     local server_name_matches = Server.check_server_name(Public.discord_name)
 
-    if stateful_settings.previous_planet then
-        if planets[stateful_settings.previous_planet] then
-            stateful_settings.previous_planet = planets[stateful_settings.current_planet]
+    if this.random_planet_enabled then
+        if stateful_settings.previous_planet then
+            if planets[stateful_settings.previous_planet] then
+                stateful_settings.previous_planet = planets[stateful_settings.current_planet]
+                Server.output_script_data('Previous planet: ' .. stateful_settings.previous_planet)
+            end
+        else
+            stateful_settings.previous_planet = stateful_settings.current_planet
+            Server.output_script_data('Previous planet: ' .. stateful_settings.previous_planet)
         end
-    else
-        stateful_settings.previous_planet = stateful_settings.current_planet
     end
 
     if server_name_matches then
@@ -868,9 +874,11 @@ local apply_settings_token =
                 end
             end
 
-            if Public.is_modded_pt2 then
+            if Public.is_modded_pt2 and this.random_planet_enabled then
                 if not stateful_settings.previous_planet then
-                    stateful_settings.current_planet = all_planets[random(1, #all_planets)]
+                    local random_planet = all_planets[random(1, #all_planets)]
+                    Server.output_script_data('Previous planet is nil, setting current planet to random planet: ' .. random_planet)
+                    stateful_settings.current_planet = random_planet
                 end
             end
 
