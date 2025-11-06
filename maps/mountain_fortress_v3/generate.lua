@@ -351,7 +351,7 @@ local function do_place_entities(data)
     end
     local entity
     for _, e in pairs(data.entities) do
-        if e.collision then
+        if e.collision and e.name then
             if surface.can_place_entity(e) then
                 e.create_build_effect_smoke = false
                 entity = surface.create_entity(e)
@@ -384,35 +384,37 @@ local function do_place_entities(data)
                 end
             end
         else
-            e.create_build_effect_smoke = false
-            entity = surface.create_entity(e)
-            if entity then
-                if e.note then -- small-worm-turret, medium-worm-turret, big-worm-turret, behemoth-worm-turret
-                    local modified_unit_health = WD.get('modified_unit_health')
-                    local unit_settings = WD.get('unit_settings')
-                    local final_health = round(modified_unit_health.current_value * unit_settings.scale_worms_by_health[entity.name], 3)
-                    if final_health < 1 then
-                        final_health = 1
+            if e.name then
+                e.create_build_effect_smoke = false
+                entity = surface.create_entity(e)
+                if entity then
+                    if e.note then -- small-worm-turret, medium-worm-turret, big-worm-turret, behemoth-worm-turret
+                        local modified_unit_health = WD.get('modified_unit_health')
+                        local unit_settings = WD.get('unit_settings')
+                        local final_health = round(modified_unit_health.current_value * unit_settings.scale_worms_by_health[entity.name], 3)
+                        if final_health < 1 then
+                            final_health = 1
+                        end
+                        BiterHealthBooster.add_unit(entity, final_health)
                     end
-                    BiterHealthBooster.add_unit(entity, final_health)
+                    wintery(entity)
+                    if e.direction then
+                        entity.direction = e.direction
+                    end
+                    if e.corpse_expires ~= nil then
+                        entity.corpse_expires = e.corpse_expires
+                    end
+                    if e.force then
+                        entity.force = e.force
+                    end
+                    if e.amount then
+                        entity.amount = e.amount
+                    end
+                    if e.active ~= nil then
+                        entity.active = e.active
+                    end
+                    execute_callback_data(e, entity)
                 end
-                wintery(entity)
-                if e.direction then
-                    entity.direction = e.direction
-                end
-                if e.corpse_expires ~= nil then
-                    entity.corpse_expires = e.corpse_expires
-                end
-                if e.force then
-                    entity.force = e.force
-                end
-                if e.amount then
-                    entity.amount = e.amount
-                end
-                if e.active ~= nil then
-                    entity.active = e.active
-                end
-                execute_callback_data(e, entity)
             end
         end
     end
