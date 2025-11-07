@@ -380,16 +380,19 @@ local function hidden_treasure(player, entity)
 
     local magic = rpg.magicka
     local magic_requirement = Public.get('magic_requirement')
+    local current_zone = RPG.get_value_from_player(player.index, 'current_zone')
 
     if magic >= magic_requirement then
         local msg = rare_treasure_chest_messages[random(1, #rare_treasure_chest_messages)]
         Alert.alert_player(player, 5, msg)
-        Public.add_loot_rare(entity.surface, entity.position, 'wooden-chest', magic)
+
+        Public.add_loot_rare(entity.surface, entity.position, 'wooden-chest', magic, current_zone)
         return
     end
+
     local msg = treasure_chest_messages[random(1, #treasure_chest_messages)]
     Alert.alert_player(player, 5, msg, nil, nil, 0.3)
-    Public.add_loot(entity.surface, entity.position, chests[random(1, size_chests)])
+    Public.add_loot(entity.surface, entity.position, chests[random(1, size_chests)], nil, current_zone)
 end
 
 local function biters_chew_rocks_faster(data)
@@ -861,6 +864,8 @@ local function on_player_mined_entity(event)
         return
     end
 
+    local better_loot_from_zone = Public.get('better_loot_from_zone')
+
     local rpg_char = RPG.get_value_from_player(player.index)
     if not rpg_char then return end
 
@@ -880,8 +885,12 @@ local function on_player_mined_entity(event)
 
     if entity.type == 'simple-entity' or entity.type == 'simple-entity-with-owner' or entity.type == 'tree' then
         Public.set().mined_scrap = mined_scrap + 1
+        local zone = rpg_char.current_zone
         local quality = get_quality_from_level(rpg_char)
         event.quality = quality
+        if zone > better_loot_from_zone then
+            event.mid = true
+        end
         Public.on_player_mined_entity(event)
         if entity.type == 'tree' then
             if random(1, 3) == 1 then

@@ -712,6 +712,8 @@ function Public.reset_main_table()
     this.player_market_settings = {}
     this.player_gui_settings = {}
 
+    this.better_loot_from_zone = random(5, 9)
+
     this.quality_list =
     {
         'normal',

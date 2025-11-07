@@ -1,4 +1,4 @@
-local LootRaffle = require 'utils.functions.loot_raffle'
+local LootRaffle = require 'maps.mountain_fortress_v3.loot_raffle'
 local Public = require 'maps.mountain_fortress_v3.table'
 local random = math.random
 local abs = math.abs
@@ -19,15 +19,27 @@ local blacklist =
     ['discharge-defense-equipment'] = true,
     ['discharge-defense-remote'] = true,
     ['fluid-wagon'] = true,
-    ['pistol'] = true
+    ['pistol'] = true,
+    ['railgun'] = true,
+    ['teslagun'] = true,
+    ['mech-armor'] = true,
+    ['thruster'] = true
 }
+
+local function check_quality()
+    local quality_list = Public.get('quality_list')
+    local quality_level = random(1, #quality_list)
+    local quality = quality_list[quality_level]
+
+    return quality
+end
 
 function Public.get_distance(position)
     local difficulty = sqrt(position.x ^ 2 + position.y ^ 2) * 0.0001
     return difficulty
 end
 
-function Public.add_loot(surface, position, chest, collision)
+function Public.add_loot(surface, position, chest, collision, zone)
     local loot_stats = Public.get('loot_stats') -- loot_stats.normal == 48
     local budget = loot_stats.normal + abs(position.y) * 1.75
     budget = budget * random(25, 175) * 0.01
@@ -41,6 +53,8 @@ function Public.add_loot(surface, position, chest, collision)
         chest = 'crash-site-chest-' .. random(1, 2)
     end
 
+    local quality = check_quality()
+
     budget = floor(budget) + 1
 
     local amount = random(1, 5)
@@ -52,7 +66,7 @@ function Public.add_loot(surface, position, chest, collision)
     local c = prototypes.entity[chest]
     local slots = c.get_inventory_size(defines.inventory.chest)
 
-    local item_stacks = LootRaffle.roll(result, slots, blacklist)
+    local item_stacks = LootRaffle.roll(result, slots, blacklist, quality, zone)
     local new_position = position
 
     if collision then
@@ -70,15 +84,15 @@ function Public.add_loot(surface, position, chest, collision)
     container.minable_flag = false
 
     if random(1, 8) == 1 then
-        container.insert({ name = 'coin', count = random(1, 32) })
+        container.insert({ name = 'coin', count = random(1, 32), quality = 'normal' })
     elseif random(1, 32) == 1 then
-        container.insert({ name = 'coin', count = random(1, 128) })
+        container.insert({ name = 'coin', count = random(1, 128), quality = 'normal' })
     elseif random(1, 128) == 1 then
-        container.insert({ name = 'coin', count = random(1, 256) })
+        container.insert({ name = 'coin', count = random(1, 256), quality = quality })
     elseif random(1, 256) == 1 then
-        container.insert({ name = 'coin', count = random(1, 512) })
+        container.insert({ name = 'coin', count = random(1, 512), quality = quality })
     elseif random(1, 512) == 1 then
-        container.insert({ name = 'coin', count = random(1, 1024) })
+        container.insert({ name = 'coin', count = random(1, 1024), quality = quality })
     end
 
     for _ = 1, 3, 1 do
@@ -90,7 +104,7 @@ function Public.add_loot(surface, position, chest, collision)
     end
 end
 
-function Public.add_loot_rare(surface, position, chest, magic)
+function Public.add_loot_rare(surface, position, chest, magic, zone)
     local loot_stats = Public.get('loot_stats') -- loot_stats.rare == 48
     local budget = (magic * loot_stats.rare) + abs(position.y) * 1.75
 
@@ -103,6 +117,8 @@ function Public.add_loot_rare(surface, position, chest, magic)
         chest = 'crash-site-chest-' .. random(1, 2)
     end
 
+    local quality = check_quality()
+
     local amount = random(1, 5)
     local base_amount = 12 * amount
     local distance_mod = Public.get_distance(position)
@@ -114,7 +130,7 @@ function Public.add_loot_rare(surface, position, chest, magic)
     local c = prototypes.entity[chest]
     local slots = c.get_inventory_size(defines.inventory.chest)
 
-    local item_stacks = LootRaffle.roll(result, slots, blacklist)
+    local item_stacks = LootRaffle.roll(result, slots, blacklist, quality, zone)
     local container = surface.create_entity({ name = chest, position = position, force = 'neutral', create_build_effect_smoke = false })
     for _, item_stack in pairs(item_stacks) do
         container.insert(item_stack)
@@ -122,15 +138,15 @@ function Public.add_loot_rare(surface, position, chest, magic)
     container.minable_flag = false
 
     if random(1, 8) == 1 then
-        container.insert({ name = 'coin', count = random(1, 32) })
+        container.insert({ name = 'coin', count = random(1, 32), quality = 'normal' })
     elseif random(1, 32) == 1 then
-        container.insert({ name = 'coin', count = random(1, 128) })
+        container.insert({ name = 'coin', count = random(1, 128), quality = 'normal' })
     elseif random(1, 128) == 1 then
-        container.insert({ name = 'coin', count = random(1, 256) })
+        container.insert({ name = 'coin', count = random(1, 256), quality = quality })
     elseif random(1, 256) == 1 then
-        container.insert({ name = 'coin', count = random(1, 512) })
+        container.insert({ name = 'coin', count = random(1, 512), quality = quality })
     elseif random(1, 512) == 1 then
-        container.insert({ name = 'coin', count = random(1, 2048) })
+        container.insert({ name = 'coin', count = random(1, 2048), quality = quality })
     end
 
     for _ = 1, 3, 1 do

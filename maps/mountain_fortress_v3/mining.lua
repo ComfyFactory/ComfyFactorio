@@ -140,6 +140,8 @@ local valid_rocks =
     ['big-rock-crisp-volc-2'] = true,
     ['huge-rock-crisp-volc-3'] = true,
     ['big-rock-crisp-volc-3'] = true,
+    ['big-volcanic-rock'] = true,
+    ['huge-volcanic-rock'] = true,
     ['fulgurite'] = true,
 }
 
@@ -156,12 +158,11 @@ local valid_trees =
     ['tree-03'] = 'coal',
     ['tree-04'] = 'coal',
     ['tree-08-brown'] = 'stone',
-    ['stingfrond'] = 'spoilage',
-    ['teflilly'] = 'tungsten-ore',
-    ['boompuff'] = 'holmium-ore',
-    ['sunnycomb'] = 'calcite',
+    ['stingfrond'] = 'tungsten-ore',
+    ['boompuff'] = 'spoilage',
+    ['sunnycomb'] = 'holmium-ore',
     ['lickmaw'] = 'lithium',
-    ['telilly'] = 'jellynut',
+    ['teflilly'] = 'jellynut',
     ['hairyclubnub'] = 'yumako',
     ['funneltrunk'] = 'carbon',
     ['slipstack'] = 'ice',
@@ -268,24 +269,25 @@ local mining_chances_ores =
     { name = 'uranium-ore', chance = 2 }
 }
 
+local mining_chances_mid_ores =
+{
+}
+
 if Public.is_modded_pt2 then
-    mining_chances_ores =
+    mining_chances_mid_ores =
     {
         { name = 'iron-ore', chance = 26 },
         { name = 'copper-ore', chance = 21 },
         { name = 'coal', chance = 17 },
         { name = 'stone', chance = 6 },
         { name = 'uranium-ore', chance = 2 },
-        { name = 'spoilage', chance = 10 },
-        { name = 'tungsten-ore', chance = 5 },
-        { name = 'holmium-ore', chance = 5 },
-        { name = 'calcite', chance = 10 },
-        { name = 'lithium', chance = 5 },
-        { name = 'jellynut', chance = 5 },
-        { name = 'yumako', chance = 5 },
-        { name = 'carbon', chance = 5 },
-        { name = 'scrap', chance = 5 },
-        { name = 'ice', chance = 5 },
+        { name = 'spoilage', chance = 5 },
+        { name = 'tungsten-ore', chance = 4 },
+        { name = 'holmium-ore', chance = 4 },
+        { name = 'calcite', chance = 4 },
+        { name = 'lithium', chance = 4 },
+        { name = 'carbon', chance = 11 },
+        { name = 'ice', chance = 3 },
     }
 end
 
@@ -296,7 +298,15 @@ for _, data in pairs(mining_chances_ores) do
     end
 end
 
+local harvest_raffle_mid_ores = {}
+for _, data in pairs(mining_chances_mid_ores) do
+    for _ = 1, data.chance, 1 do
+        harvest_raffle_mid_ores[#harvest_raffle_mid_ores + 1] = data.name
+    end
+end
+
 local size_of_ore_raffle = #harvest_raffle_ores
+local size_of_mid_ore_raffle = #harvest_raffle_mid_ores
 
 local scrap_raffle = {}
 for _, data in pairs(mining_chance_weights) do
@@ -392,8 +402,13 @@ local function randomness(data)
             harvest_amount = random(1, 20)
         end
     else
-        harvest = harvest_raffle_ores[random(1, size_of_ore_raffle)]
+        if data.mid then
+            harvest = harvest_raffle_mid_ores[random(1, size_of_mid_ore_raffle)]
+        else
+            harvest = harvest_raffle_ores[random(1, size_of_ore_raffle)]
+        end
     end
+
 
     local position = { x = entity.position.x, y = entity.position.y }
 
@@ -532,7 +547,8 @@ function Public.on_player_mined_entity(event)
         {
             entity = entity,
             player = player,
-            quality = event.quality or 'normal'
+            quality = event.quality or 'normal',
+            mid = event.mid or false
         }
 
         if event.script_character then

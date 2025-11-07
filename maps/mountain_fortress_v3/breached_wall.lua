@@ -8,6 +8,7 @@ local Task = require 'utils.task_token'
 local Color = require 'utils.color_presets'
 local Session = require 'utils.datastore.session_data'
 local Modifiers = require 'utils.player_modifiers'
+local RocksYieldOreVeins = require 'maps.mountain_fortress_v3.rocks_yield_ore_veins'
 
 local floor = math.floor
 local abs = math.abs
@@ -472,6 +473,7 @@ local function distance(player)
     local breach_wall_warning = Public.get('breach_wall_warning')
     local collapse_started = Public.get('collapse_started')
     local block_non_trusted_trigger_collapse = Public.get('block_non_trusted_trigger_collapse')
+    local better_loot_from_zone = Public.get('better_loot_from_zone')
 
     local max = zone_settings.zone_depth * bonus
     local breach_max = zone_settings.zone_depth * breached_wall
@@ -501,6 +503,10 @@ local function distance(player)
         if breach_max_times then
             local placed_trains_in_zone = Public.get('placed_trains_in_zone')
             local biters = Public.get('biters')
+            if breached_wall == better_loot_from_zone + 1 then
+                RocksYieldOreVeins.add_to_raffle({ { 'tungsten-ore', 30 }, { 'calcite', 22 } })
+                RocksYieldOreVeins.add_to_mixed_ores({ 'tungsten-ore', 'calcite' })
+            end
             rpg_extra.breached_walls = rpg_extra.breached_walls + 1
             rpg_extra.reward_new_players = bonus_xp_on_join * rpg_extra.breached_walls
             Public.set('breached_wall', breached_wall + 1)

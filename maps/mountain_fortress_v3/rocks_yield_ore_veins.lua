@@ -38,6 +38,27 @@ local size_raffle =
     { 'tiny', 4, 8 }
 }
 
+function Public.add_to_raffle(raffle)
+    for _, t in pairs(raffle) do
+        if not t or not type(t[2]) == 'number' then
+            return
+        end
+
+        for _ = 1, t[2], 1 do
+            table.insert(this.raffle, t[1])
+        end
+    end
+end
+
+function Public.add_to_mixed_ores(ores)
+    for _, o in pairs(ores) do
+        if not o or not type(o) == 'string' then
+            return
+        end
+        table.insert(this.mixed_ores, o)
+    end
+end
+
 local function get_chances()
     local chances = {}
 
@@ -56,11 +77,6 @@ local function get_chances()
         if starting_planet == 'vulcanus' then
             table.insert(chances, { 'tungsten-ore', 30 })
             table.insert(chances, { 'calcite', 22 })
-        end
-        if starting_planet == 'fortress' then
-            table.insert(chances, { 'scrap', 14 })
-            table.insert(chances, { 'tungsten-ore', 12 })
-            table.insert(chances, { 'calcite', 10 })
         end
     end
 
@@ -83,11 +99,6 @@ local function set_raffle()
             table.insert(this.mixed_ores, 'scrap')
         end
         if starting_planet == 'vulcanus' then
-            table.insert(this.mixed_ores, 'tungsten-ore')
-            table.insert(this.mixed_ores, 'calcite')
-        end
-        if starting_planet == 'fortress' then
-            table.insert(this.mixed_ores, 'scrap')
             table.insert(this.mixed_ores, 'tungsten-ore')
             table.insert(this.mixed_ores, 'calcite')
         end
@@ -201,11 +212,6 @@ local function on_player_mined_entity(event)
     end
 
     local chance = this.chance
-
-    local is_around_train = Public.is_around_train_simple(player)
-    if is_around_train then
-        chance = chance / 2
-    end
 
     if random(1, chance) ~= 1 then
         return

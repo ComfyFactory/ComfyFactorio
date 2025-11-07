@@ -177,9 +177,9 @@ local function do_place_treasure(data)
                 limit = 1
             } == 0
         then
-            Public.add_loot(surface, e.position, e.chest)
+            Public.add_loot(surface, e.position, e.chest, nil, e.zone)
         else
-            Public.add_loot(surface, e.position, e.chest, true)
+            Public.add_loot(surface, e.position, e.chest, true, e.zone)
         end
     end
 end
@@ -368,6 +368,9 @@ local function do_place_entities(data)
                     if e.direction then
                         entity.direction = e.direction
                     end
+                    if e.tick_grown ~= nil then
+                        entity.tick_grown = e.tick_grown
+                    end
                     if e.corpse_expires ~= nil then
                         entity.corpse_expires = e.corpse_expires
                     end
@@ -400,6 +403,9 @@ local function do_place_entities(data)
                     wintery(entity)
                     if e.direction then
                         entity.direction = e.direction
+                    end
+                    if e.tick_grown ~= nil then
+                        entity.tick_grown = e.tick_grown
                     end
                     if e.corpse_expires ~= nil then
                         entity.corpse_expires = e.corpse_expires
