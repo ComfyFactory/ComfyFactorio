@@ -578,11 +578,11 @@ function Public.insert_all_items(player)
             end
             local item = prototypes.item
             local i = 0
-            for _k, _v in pairs(item) do
-                i = i + 1
-                if _k and _v.type ~= 'mining-tool' then
+            for _name, _data in pairs(item) do
+                if _name then
+                    i = i + 1
                     player.character_inventory_slots_bonus = Modifiers.get_single_modifier(player, 'character_inventory_slots_bonus', 'creative')
-                    player.insert { name = _k, count = _v.stack_size, quality = quality }
+                    player.insert { name = _name, count = _data.stack_size, quality = quality }
                     player.print('[CREATIVE] Inserted all base items.', { color = Color.success })
                 end
             end
