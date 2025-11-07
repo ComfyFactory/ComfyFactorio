@@ -19,6 +19,7 @@ local this =
 {
     floating_text_y_offsets = {},
     whitelist = {},
+    furnace_fuel = {},
     insert_to_neutral_chests = false,
     insert_into_furnace = false,
     insert_into_wagon = false,
@@ -634,13 +635,7 @@ local function auto_stash(player, event)
         end
     end
 
-    local furnace_list =
-    {
-        ['coal'] = 0,
-        ['iron-ore'] = 0,
-        ['copper-ore'] = 0,
-        ['stone'] = 0
-    }
+    local furnace_fuels = {}
 
     local full_insert = { full = nil, name = nil }
     for i = #inventory, 1, -1 do
@@ -649,11 +644,12 @@ local function auto_stash(player, event)
         end
         local name = inventory[i].name
         local is_resource = this.whitelist[name]
+        local is_furnace_fuel = this.furnace_fuel[name]
         if not hotbar_items[name] and not bps_blacklist[name] then
             if ctrl and this.insert_into_furnace then
                 if button == defines.mouse_button_type.right then
-                    if is_resource then
-                        furnace_list[name] = (furnace_list[name] or 0) + inventory[i].count
+                    if is_furnace_fuel or is_resource then
+                        furnace_fuels[name] = inventory[i].count or 0
                     end
                 end
             elseif shift and this.insert_into_wagon then -- insert into wagon
@@ -678,8 +674,8 @@ local function auto_stash(player, event)
         end
         ::continue::
     end
-    for furnaceName, furnaceCount in pairs(furnace_list) do
-        insert_to_furnace(inventory, chests, furnaceName, furnaceCount, floaty_text_list)
+    for furnace_name, furnace_count in pairs(furnace_fuels) do
+        insert_to_furnace(inventory, chests, furnace_name, furnace_count, floaty_text_list)
     end
 
     for _, texts in pairs(floaty_text_list) do
@@ -757,7 +753,6 @@ local function do_whitelist()
     end
     Task.delay(on_init_token, {})
     local resources = prototypes.entity
-    local items = prototypes.item
     this.whitelist = {}
     for k, _ in pairs(resources) do
         if resources[k] and resources[k].type == 'resource' and resources[k].mineable_properties then
@@ -771,10 +766,18 @@ local function do_whitelist()
         end
     end
 
+    local items = prototypes.item
     for k, _ in pairs(items) do
         if items[k] and items[k].group.name == 'resource-refining' then
             local r = items[k].name
             this.whitelist[r] = true
+        end
+        if items[k] and items[k].fuel_category and items[k].fuel_value then
+            local r = items[k].name
+            this.furnace_fuel[r] = 0
+        end
+        if items[k] and items[k].name:find('%f[%a][Oo]re%f[%A]') then
+            this.whitelist[k] = true
         end
     end
 end
