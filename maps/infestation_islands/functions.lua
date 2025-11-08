@@ -698,14 +698,6 @@ function Public.poll_to_progress(player, poll_type, level, append_level)
         return false
     end
 
-    if island_data.parent_level then
-        island_data = this.islands_data[island_data.parent_level]
-        if not island_data then
-            error('No island data found for level ' .. island_data.parent_level)
-            return false
-        end
-    end
-
     if this.voting_to_progress_enabled then
         local trusted_player = Session.get_trusted_player(player)
         if #game.connected_players == 1 and not trusted_player then
@@ -788,15 +780,6 @@ end
 function Public.check_vote_status()
     local this = Public.get()
     local island_data = this.islands_data[this.current_level]
-
-    --TODO: check how the parent level is handled?
-    if island_data.parent_level then
-        island_data = this.islands_data[island_data.parent_level]
-        if not island_data then
-            error('No island data found for level ' .. island_data.parent_level)
-            return
-        end
-    end
 
     if island_data.voting and island_data.voting.id and Poll.poll_complete(island_data.voting.id) and not island_data.voting.can_progress and not island_data.voting.completed then
         local _, winning_answer = Poll.poll_result(island_data.voting.id)
@@ -1192,8 +1175,6 @@ function Public.generate_bridge_to_next_island(entity, player, market_prices, of
     if market and market.valid then
         market.destructible = true
     end
-
-    this.islands_data[this.current_level].auto_generated_bridge = nil
 
     Public.delayed_message(10, Public.island_keeper .. player.name .. ' has generated a bridge to level ' .. this.current_level .. '!')
     Server.to_discord_embed('** ' .. player.name .. ' has generated a bridge to level ' .. this.current_level .. '! **')
@@ -2096,12 +2077,8 @@ function Public.send_biters_to_market()
         if island_data.wave_count % 25 == 0 then
             island_data.wave_level_evolution = island_data.wave_level_evolution + 1
         end
-    elseif difficulty_index == 2 then
+    elseif difficulty_index == 2 or difficulty_index == 1 then
         if island_data.wave_count % 50 == 0 then
-            island_data.wave_level_evolution = island_data.wave_level_evolution + 1
-        end
-    elseif difficulty_index == 1 then
-        if island_data.wave_count % 100 == 0 then
             island_data.wave_level_evolution = island_data.wave_level_evolution + 1
         end
     end
@@ -2321,7 +2298,6 @@ function Public.complete_level()
         island_data.captured = true
         island_data.completed = true
         island_data.auto_generated_island = nil
-        island_data.auto_generated_bridge = nil
         island_data.pause_waves = nil
         for _, player in pairs(game.connected_players) do
             player.play_sound { path = 'utility/game_won', volume_modifier = 1 }

@@ -126,7 +126,7 @@ local function update_stage_gui()
 
     local stages = this.stages
     local stage = math.min(this.current_level, #stages - 1)
-    local time, _, half = Public.normalize_time_until_next_island_is_created()
+    local time = Public.normalize_time_until_next_island_is_created()
     local islands_data = Public.get('islands_data')
     local island_data = islands_data[stage]
     local caption_parts =
@@ -187,18 +187,14 @@ local function update_stage_gui()
     elseif can_auto_generate then
         table.insert(caption_parts, ' | Level cleared!')
         table.insert(caption_parts, (' | [entity=small-biter,quality=%s]: %s'):format(random_quality, time))
-        tooltip = ('The next island will be generated in %s.\nThe bridge for next island will be generated in %s.\n\n' ..
+        tooltip = ('The next island will be generated in %s.\n\n' ..
             'Unless you progress to the next island, it will be generated automatically.\n\n' ..
-            'If you do not progress to the next island, you will not be able to reroll the next island market if the bridge also generates.\n\n' ..
-            'Market rerolls are unlocked when you manually progress to the next island.'):format(half, time)
+            'If you do not progress to the next island, you will not be able to reroll the next island market and not get any rewards.\n' ..
+            'Such as ore patches, oil patches and plantable soil.\n\n' ..
+            'Market rerolls are unlocked when you manually progress to the next island.'):format(time)
     elseif island_complete then
         table.insert(caption_parts, ' | Level cleared!')
         tooltip = ('Defenses would sure be helpful right now.\nVotes close in %d seconds.'):format(Difficulty.get_closing_timeout())
-    elseif this.auto_generate_upon_idle and island_data and island_data.auto_generated_bridge == false then
-        table.insert(caption_parts, (' | Bugs remaining: %d | [entity=small-biter,quality=%s]: %s'):format(
-            this.alive_enemies, random_quality, time))
-        tooltip = ('The bridge to the next island will be generated in %s.\nUnless you progress to the next island, it will be generated automatically.\n' ..
-            'Market rerolls will be removed for the next island if the bridge is auto-generated.\nMarket rerolls are unlocked when you manually progress to the next island.'):format(time)
     else
         table.insert(caption_parts, (' | Bugs remaining: %d'):format(this.alive_enemies))
         tooltip = ('Vanquish the biters to capture the island. %d biters remaining.%s%s'):format(this.alive_enemies, attack_grace_period, waves_sent)
@@ -417,26 +413,12 @@ local function on_tick()
                     return
                 end
 
-                local time_limit = this.time_until_next_island_is_created_static / 2
-
-                -- spawn the island before the time limit is reached
-                if time <= time_limit then
+                if time <= 0 then
                     if not island_data.auto_generated_island then
                         island_data.auto_generated_island = true
                         this.attack_grace_period = game.tick + 108000
-                        game.print(Public.island_keeper .. 'The biters are getting hungry!!!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
-                        Scheduler.new(1, Public.init_next_island_without_bridge_token):set_data({ surface = game.surfaces[1] })
-                    end
-                end
-            else
-                -- spawn the island after the time limit is reached
-                if time <= 0 then
-                    if not (island_data and island_data.auto_generated_bridge) then
-                        island_data.auto_generated_bridge = true
-                        island_data.parent_level = nil
-                        this.attack_grace_period = game.tick + 54000
-                        game.print(Public.island_keeper .. 'The biters are forming a bridge to our island! They are coming!!!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
-                        Scheduler.new(1, Public.do_generate_bridge_token):set_data({ surface = game.surfaces[1], reroll_enabled = false })
+                        game.print(Public.island_keeper .. 'The biters are getting hungry and are forming a bridge to our island! They are coming!!!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
+                        Scheduler.new(1, Public.init_next_island_with_bridge_token):set_data({ surface = game.surfaces[1] })
                         this.time_until_next_island_is_created = nil
                     end
                 end
