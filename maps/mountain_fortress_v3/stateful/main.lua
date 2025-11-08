@@ -79,6 +79,23 @@ Event.on_nth_tick(
 
         local game_lost = Public.get('game_lost')
         if game_lost then
+            local active_surface_index = Public.get('active_surface_index')
+            if not active_surface_index then
+                return
+            end
+
+            local this = Public.get()
+            if not this.cleared_biters then
+                local surface = game.surfaces[active_surface_index]
+                for c in surface.get_chunks() do
+                    for _, entity in pairs(surface.find_entities_filtered({ force = 'enemy', area = { { c.x * 32, c.y * 32 }, { c.x * 32 + 32, c.y * 32 + 32 } }, type = { "unit", "turret", "unit-spawner", "spider-unit" } })) do
+                        if entity and entity.valid then
+                            entity.destroy()
+                        end
+                    end
+                end
+                this.cleared_biters = true
+            end
             return
         end
 

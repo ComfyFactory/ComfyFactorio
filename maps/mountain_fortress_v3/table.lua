@@ -719,6 +719,8 @@ function Public.reset_main_table()
         'normal',
     }
 
+    this.cleared_biters = nil
+
     this.buff_selection =
     {
         closing_timeout = 54000,
