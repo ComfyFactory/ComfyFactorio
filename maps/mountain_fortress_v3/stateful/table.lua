@@ -510,6 +510,20 @@ local function get_random_buff(fetch_all, only_force)
             }
         },
         {
+            name = 'gun_turrets',
+            discord = 'Gun turrets - start with some gun turrets',
+            tooltip = 'Selecting this buff will grant the team 2 gun turrets at start!',
+            poll_name = 'Starting items (gun turrets)',
+            modifier = 'starting_items',
+            limit = 4,
+            add_per_buff = 2,
+            items =
+            {
+                { name = 'gun-turret', count = 2 },
+                { name = 'piercing-rounds-magazine', count = 100 }
+            }
+        },
+        {
             name = 'red_science',
             discord = 'Science tech - start with some red science packs',
             tooltip = 'Selecting this buff will grant the team 10 red science packs at start!',
@@ -588,11 +602,11 @@ local function get_random_buff(fetch_all, only_force)
     if Public.is_modded_pt2 then
         buffs[#buffs + 1] =
         {
-            name = 'quality_locomotive_uncommon',
-            discord = 'Grants uncommon locomotive at start',
-            tooltip = 'Selecting this buff will grant the team 1 uncommon locomotive at start!',
-            poll_name = 'Uncommon locomotive',
-            modifier = 'locomotive',
+            name = 'quality_trains_uncommon',
+            discord = 'Grants uncommon trains at start',
+            tooltip = 'Selecting this buff make all trains of type uncommon quality!',
+            poll_name = 'Uncommon trains',
+            modifier = 'quality_trains',
             limit = 1,
             quality = 'uncommon',
             dlc = true,
@@ -600,46 +614,24 @@ local function get_random_buff(fetch_all, only_force)
         }
         buffs[#buffs + 1] =
         {
-            name = 'quality_cargo_wagon_uncommon',
-            discord = 'Grants uncommon cargo-wagon at start',
-            tooltip = 'Selecting this buff will grant the team 1 uncommon cargo-wagon at start!',
-            poll_name = 'Uncommon cargo-wagon',
-            modifier = 'cargo-wagon',
-            limit = 1,
-            quality = 'uncommon',
-            dlc = true,
-            state = 1
-        }
-        buffs[#buffs + 1] =
-        {
-            name = 'quality_locomotive_rare',
-            discord = 'Grants rare locomotive at start',
-            tooltip = 'Selecting this buff will grant the team 1 rare locomotive at start!',
-            poll_name = 'Rare locomotive',
-            modifier = 'locomotive',
+            name = 'quality_trains_rare',
+            discord = 'Grants rare trains at start',
+            tooltip = 'Selecting this buff make all trains of type rare quality!',
+            poll_name = 'Rare trains',
+            modifier = 'quality_trains',
             limit = 1,
             quality = 'rare',
             dlc = true,
             state = 1
         }
+
         buffs[#buffs + 1] =
         {
-            name = 'quality_cargo_wagon_rare',
-            discord = 'Grants rare cargo-wagon at start',
-            tooltip = 'Selecting this buff will grant the team 1 rare cargo-wagon at start!',
-            poll_name = 'Rare cargo-wagon',
-            modifier = 'cargo-wagon',
-            limit = 1,
-            quality = 'rare',
-            dlc = true,
-            state = 1
-        }
-        buffs[#buffs + 1] =
-        {
-            name = 'quality_locomotive_epic',
-            discord = 'Grants epic locomotive at start',
-            tooltip = 'Selecting this buff will grant the team 1 epic locomotive at start!',
-            poll_name = 'Epic locomotive',
+            name = 'quality_trains_epic',
+            discord = 'Grants epic trains at start',
+            tooltip = 'Selecting this buff make all trains of type epic quality!',
+            poll_name = 'Epic trains',
+            modifier = 'quality_trains',
             limit = 1,
             quality = 'epic',
             dlc = true,
@@ -647,33 +639,11 @@ local function get_random_buff(fetch_all, only_force)
         }
         buffs[#buffs + 1] =
         {
-            name = 'quality_cargo_wagon_epic',
-            discord = 'Grants epic cargo-wagon at start',
-            tooltip = 'Selecting this buff will grant the team 1 epic cargo-wagon at start!',
-            poll_name = 'Epic cargo-wagon',
-            modifier = 'cargo-wagon',
-            limit = 1,
-            quality = 'epic',
-            dlc = true,
-            state = 1
-        }
-        buffs[#buffs + 1] =
-        {
-            name = 'quality_locomotive_legendary',
-            discord = 'Grants legendary locomotive at start',
-            tooltip = 'Selecting this buff will grant the team 1 legendary locomotive at start!',
-            poll_name = 'Legendary locomotive',
-            limit = 1,
-            quality = 'legendary',
-            dlc = true,
-            state = 1
-        }
-        buffs[#buffs + 1] =
-        {
-            name = 'quality_cargo_wagon_legendary',
-            discord = 'Grants legendary cargo-wagon at start',
-            tooltip = 'Selecting this buff will grant the team 1 legendary cargo-wagon at start!',
-            poll_name = 'Legendary cargo-wagon',
+            name = 'quality_trains_legendary',
+            discord = 'Grants legendary trains at start',
+            tooltip = 'Selecting this buff make all trains of type legendary quality!',
+            poll_name = 'Legendary trains',
+            modifier = 'quality_trains',
             limit = 1,
             quality = 'legendary',
             dlc = true,
@@ -1135,6 +1105,22 @@ local function get_random_items()
         { 'uranium-fuel-cell', scale(2500, 100000) }
     }
 
+    if Public.is_modded_pt2 then
+        table.insert(items, { 'lithium', scale(5000, 80000000) })
+        table.insert(items, { 'lithium-plate', scale(1000, 80000000) })
+        table.insert(items, { 'carbon-fiber', scale(1000, 80000000) })
+
+        table.insert(items, { 'tungsten-carbide', scale(100, 500000) })
+        table.insert(items, { 'tungsten-plate', scale(100, 500000) })
+        table.insert(items, { 'holmium-plate', scale(100, 500000) })
+        table.insert(items, { 'supercapacitor', scale(50, 500000) })
+        table.insert(items, { 'superconductor', scale(50, 500000) })
+        table.insert(items, { 'carbon', scale(100, 500000) })
+        table.insert(items, { 'turbo-splitter', scale(50, 500000) })
+        table.insert(items, { 'turbo-transport-belt', scale(50, 500000) })
+        table.insert(items, { 'turbo-underground-belt', scale(50, 500000) })
+    end
+
     shuffle(items)
     shuffle(items)
 
@@ -1240,15 +1226,6 @@ local function get_random_handcrafted_item()
 
     if Public.is_modded_pt2 then
         table.insert(items, { 'quality-module', scale(100, 50000) })
-        table.insert(items, { 'tungsten-carbide', scale(100, 50000) })
-        table.insert(items, { 'tungsten-plate', scale(100, 50000) })
-        table.insert(items, { 'holmium-plate', scale(100, 50000) })
-        table.insert(items, { 'supercapacitor', scale(50, 50000) })
-        table.insert(items, { 'superconductor', scale(50, 50000) })
-        table.insert(items, { 'carbon', scale(100, 50000) })
-        table.insert(items, { 'turbo-splitter', scale(50, 50000) })
-        table.insert(items, { 'turbo-transport-belt', scale(50, 50000) })
-        table.insert(items, { 'turbo-underground-belt', scale(50, 50000) })
     end
 
     shuffle(items)
@@ -1416,19 +1393,14 @@ local function clear_all_stats()
     this.buffs_collected = {}
     this.permanent_buffs_collected = {}
     this.extra_wagons = 0
-    this.quality_trains =
-    {
-        ['locomotive'] = 'normal',
-        ['cargo-wagon'] = 'normal',
-        ['fluid-wagon'] = 'normal'
-    }
+    this.quality_trains = 'normal'
     this.quality_buildings = 'normal'
     local rpg_extra = RPG.get('rpg_extra')
     rpg_extra.difficulty = 0
     rpg_extra.grant_xp_level = 0
 end
 
-local function migrate_buffs_generic(buffs_table)
+local function migrate_buffs_generic(saved_buffs)
     local static_buffs = get_random_buff(true)
 
     local static_buffs_by_name = {}
@@ -1436,34 +1408,39 @@ local function migrate_buffs_generic(buffs_table)
         static_buffs_by_name[static_buff.name] = static_buff
     end
 
-    for index, saved_buff in pairs(buffs_table) do
+    for index, saved_buff in pairs(saved_buffs) do
+        if saved_buff.name:find('quality_cargo_wagon') then
+            saved_buff.name = saved_buff.name:gsub('quality_cargo_wagon', 'quality_trains')
+        end
+
+        if saved_buffs[index].modifier == 'starting_items_1' then
+            saved_buffs[index].modifier = 'starting_items'
+        end
+
+
         local static_buff = static_buffs_by_name[saved_buff.name]
 
         if static_buff then
             if not Public.is_modded_pt2 and static_buff.dlc then
-                buffs_table[index] = nil
+                saved_buffs[index] = nil
             else
                 local collected_count = saved_buff.count or 0
-                buffs_table[index] = {}
+                saved_buffs[index] = {}
 
                 for key, value in pairs(static_buff) do
-                    buffs_table[index][key] = value
+                    saved_buffs[index][key] = value
                 end
 
-                buffs_table[index].count = collected_count
+                saved_buffs[index].count = collected_count
 
-                if buffs_table[index].modifier == 'starting_items_1' then
-                    buffs_table[index].modifier = 'starting_items'
-                end
+                saved_buffs[index].replaces = nil
 
-                buffs_table[index].replaces = nil
-
-                if buffs_table[index].items == 0 then
-                    buffs_table[index] = nil
+                if saved_buffs[index].items == 0 then
+                    saved_buffs[index] = nil
                 end
             end
         else
-            buffs_table[index] = nil
+            saved_buffs[index] = nil
         end
     end
 end
@@ -1540,12 +1517,6 @@ local function is_higher_quality(new, old)
 end
 
 local function apply_quality_buff(buff, collected_table)
-    local quality_name = buff.name
-    local display_name = quality_name
-        :gsub('^quality_', '')
-        :gsub('_[^_]+$', '')
-        :gsub('_', '-')
-
     local function update_if_higher(current, new)
         if is_higher_quality(new, current) then
             return new
@@ -1554,21 +1525,18 @@ local function apply_quality_buff(buff, collected_table)
         end
     end
 
-    if quality_name:find('quality_locomotive') then
-        this.quality_trains.locomotive = update_if_higher(this.quality_trains.locomotive, buff.quality)
-        Server.output_script_data('Setting locomotive quality to ' .. this.quality_trains.locomotive)
-    elseif quality_name:find('quality_cargo_wagon') then
-        this.quality_trains['cargo-wagon'] = update_if_higher(this.quality_trains['cargo-wagon'], buff.quality)
-        Server.output_script_data('Setting cargo-wagon quality to ' .. this.quality_trains['cargo-wagon'])
-    elseif quality_name:find('quality_buildings') then
+    if buff.modifier == 'quality_trains' then
+        this.quality_trains = update_if_higher(this.quality_trains, buff.quality)
+        Server.output_script_data('Setting trains quality to ' .. this.quality_trains)
+    elseif buff.name:find('quality_buildings') then
         this.quality_buildings = update_if_higher(this.quality_buildings, buff.quality)
         Server.output_script_data('Setting wild buildings quality to ' .. this.quality_buildings)
     end
 
 
-    collected_table[quality_name] =
+    collected_table[buff.name] =
     {
-        name = 'Quality ' .. display_name .. ' (' .. buff.quality .. ')',
+        name = 'Quality trains' .. ' (' .. buff.quality .. ')',
         discord = buff.discord
     }
 end
@@ -2127,12 +2095,7 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
 
     this.final_battle = false
     this.extra_wagons = 0
-    this.quality_trains =
-    {
-        ['locomotive'] = 'normal',
-        ['cargo-wagon'] = 'normal',
-        ['fluid-wagon'] = 'normal'
-    }
+    this.quality_trains = 'normal'
     this.quality_buildings = 'normal'
     if clear_buffs then
         this.buffs_collected = {}

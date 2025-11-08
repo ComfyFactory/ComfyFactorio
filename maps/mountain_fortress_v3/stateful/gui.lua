@@ -974,7 +974,7 @@ local function update_data()
                                     frame.sprite = 'utility/check_mark_green'
                                 else
                                     frame.number = supplies_data.count
-                                    frame.tooltip = 'Crafted: ' .. count .. '\nNeeded: ' .. (supplies_data.total or 0)
+                                    frame.tooltip = 'Item: ' .. supplies_data.name .. '\nCrafted: ' .. count .. '\nNeeded: ' .. (supplies_data.total or 0)
                                 end
                                 if items_done == 3 then
                                     if data.supply_completed and data.supply_completed.valid then
@@ -983,7 +983,7 @@ local function update_data()
                                 end
                             else
                                 frame.number = supplies_data.count
-                                frame.tooltip = 'Crafted: 0\nNeeded: ' .. (supplies_data.total or 0)
+                                frame.tooltip = 'Item: ' .. supplies_data.name .. '\nCrafted: 0\nNeeded: ' .. (supplies_data.total or 0)
                             end
                         end
                     end
@@ -1010,11 +1010,11 @@ local function update_data()
                         else
                             frame.number = single_item.count
                             frame.tooltip = count .. ' / ' .. single_item.total
-                            frame.tooltip = 'Crafted: ' .. count .. '\nNeeded: ' .. (single_item.total or 0)
+                            frame.tooltip = 'Item: ' .. single_item.name .. '\nCrafted: ' .. count .. '\nNeeded: ' .. (single_item.total or 0)
                         end
                     else
                         frame.number = single_item.count
-                        frame.tooltip = 'Crafted: 0\nNeeded: ' .. (single_item.total or 0)
+                        frame.tooltip = 'Item: ' .. single_item.name .. '\nCrafted: 0\nNeeded: ' .. (single_item.total or 0)
                     end
                 end
             end

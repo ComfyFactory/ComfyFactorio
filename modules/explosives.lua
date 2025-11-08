@@ -2,16 +2,30 @@ local Public = {}
 local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Collapse = require 'modules.collapse'
-local this = {
+local this =
+{
     explosives = {},
-    settings = {
+    settings =
+    {
         disabled = false,
         slow_explode = false,
         slow_explode_tick = 300,
         check_growth_below_void = false,
-        valid_items = {
+        valid_items =
+        {
             ['explosives'] = 500,
             ['cliff-explosives'] = 750
+        },
+        disabled_container_names =
+        {
+            ['buffer-chest'] = true
+        },
+        valid_container_types =
+        {
+            ['container'] = true,
+            ['logistic-container'] = true,
+            ['car'] = true,
+            ['cargo-wagon'] = true
         }
     }
 }
@@ -31,16 +45,6 @@ local shuffle_table = table.shuffle_table
 local speed = 6
 local density = 1
 local density_r = density * 0.5
-local valid_container_types = {
-    ['container'] = true,
-    ['logistic-container'] = true,
-    ['car'] = true,
-    ['cargo-wagon'] = true
-}
-
-local disabled_container_names = {
-    ['buffer-chest'] = true
-}
 
 local function pos_to_key(position)
     return tostring(position.x .. '_' .. position.y)
@@ -93,7 +97,8 @@ local function cell_birth(surface_index, origin_position, origin_tick, position,
     end
 
     --Spawn new cell.
-    this.explosives.cells[key] = {
+    this.explosives.cells[key] =
+    {
         surface_index = surface_index,
         origin_position = origin_position,
         origin_tick = origin_tick,
@@ -109,7 +114,8 @@ local function grow_cell(cell)
     local radius = math_floor((game.tick - cell.origin_tick) / 9) + 2
     local positions = {}
     for i = 1, 4, 1 do
-        local position = {
+        local position =
+        {
             x = cell.position.x + this.explosives.vectors[i][1],
             y = cell.position.y + this.explosives.vectors[i][2]
         }
@@ -122,7 +128,8 @@ local function grow_cell(cell)
     end
 
     if #positions == 0 then
-        positions[#positions + 1] = {
+        positions[#positions + 1] =
+        {
             x = cell.position.x + this.explosives.vectors[1][1],
             y = cell.position.y + this.explosives.vectors[1][2]
         }
@@ -297,11 +304,11 @@ local function on_entity_died(event)
         return
     end
 
-    if disabled_container_names[entity.name] then
+    if this.settings.disabled_container_names[entity.name] then
         return
     end
 
-    if not valid_container_types[entity.type] then
+    if not this.settings.valid_container_types[entity.type] then
         return
     end
     if this.explosives.surface_whitelist then
@@ -334,7 +341,7 @@ function Public.detonate_chest(entity)
     if not entity or not entity.valid then
         return false
     end
-    if not valid_container_types[entity.type] then
+    if not this.settings.valid_container_types[entity.type] then
         return false
     end
     if this.explosives.surface_whitelist then
