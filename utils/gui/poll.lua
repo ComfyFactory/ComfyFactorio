@@ -1646,6 +1646,68 @@ function Public.poll_complete(id)
     end
 end
 
+function Public.edit_poll(id, question, answers, duration)
+    if type(id) ~= 'number' then
+        return 'poll-id must be a number'
+    end
+
+    local poll_data = polls[id]
+    if not poll_data then
+        return 'poll not found'
+    end
+
+    local new_question = question
+    if not new_question:find('%S') then
+        return false, 'question must be a non empty string'
+    end
+
+    local new_answers = {}
+    for _, a in pairs(answers) do
+        if a.text:find('%S') then
+            local source = a.source
+            local index = #new_answers + 1
+            if source then
+                source.text = a.text
+                source.index = index
+                source.voted_count = 0
+                new_answers[index] = source
+            else
+                new_answers[index] = { text = a.text, index = index, voted_count = 0 }
+            end
+        end
+    end
+
+    if not next(new_answers) then
+        return false, 'answer array must contain at least one entry'
+    end
+
+    poll_data.question = question
+    poll_data.answers = new_answers
+    poll_data.duration = duration
+    poll_data.end_tick = game.tick + duration
+
+    for _, p in pairs(game.connected_players) do
+        local main_frame = p.gui.left[main_frame_name]
+
+        if no_notify_players[p.index] then
+            if main_frame and main_frame.valid then
+                local main_frame_data = Gui.get_data(main_frame)
+                update_poll_viewer(main_frame_data)
+            end
+        else
+            if main_frame and main_frame.valid then
+                local main_frame_data = Gui.get_data(main_frame)
+                main_frame_data.poll_index = id
+                update_poll_viewer(main_frame_data)
+            else
+                draw_main_frame(p.gui.left, p)
+            end
+        end
+    end
+
+    return true
+end
+
 Public.main_button_name = main_button_name
 
 return Public
