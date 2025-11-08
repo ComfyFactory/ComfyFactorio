@@ -635,7 +635,13 @@ local function auto_stash(player, event)
         end
     end
 
-    local furnace_fuels = {}
+    local furnace_fuels =
+    {
+        ['coal'] = 0,
+        ['iron-ore'] = 0,
+        ['copper-ore'] = 0,
+        ['stone'] = 0
+    }
 
     local full_insert = { full = nil, name = nil }
     for i = #inventory, 1, -1 do
@@ -649,7 +655,7 @@ local function auto_stash(player, event)
             if ctrl and this.insert_into_furnace then
                 if button == defines.mouse_button_type.right then
                     if is_furnace_fuel or is_resource then
-                        furnace_fuels[name] = inventory[i].count or 0
+                        furnace_fuels[name] = (furnace_fuels[name] or 0) + inventory[i].count
                     end
                 end
             elseif shift and this.insert_into_wagon then -- insert into wagon
