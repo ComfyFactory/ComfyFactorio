@@ -1493,6 +1493,7 @@ end
 
 local quality_rank =
 {
+    normal = 0,
     common = 1,
     uncommon = 2,
     rare = 3,
