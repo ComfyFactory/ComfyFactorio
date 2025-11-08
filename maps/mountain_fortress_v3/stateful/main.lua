@@ -86,6 +86,7 @@ Event.on_nth_tick(
 
             local this = Public.get()
             if not this.cleared_biters then
+                WD.disable_spawning_biters(true)
                 local surface = game.surfaces[active_surface_index]
                 for c in surface.get_chunks() do
                     for _, entity in pairs(surface.find_entities_filtered({ force = 'enemy', area = { { c.x * 32, c.y * 32 }, { c.x * 32 + 32, c.y * 32 + 32 } }, type = { "unit", "turret", "unit-spawner", "spider-unit" } })) do

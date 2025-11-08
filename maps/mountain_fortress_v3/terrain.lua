@@ -189,14 +189,8 @@ local snowy_rock_raffle =
 }
 
 if is_modded_pt2 then
-    snowy_rock_raffle[#snowy_rock_raffle + 1] =
-    {
-        'lithium-iceberg-big',
-    }
-    snowy_rock_raffle[#snowy_rock_raffle + 1] =
-    {
-        'lithium-iceberg-huge',
-    }
+    table.insert(snowy_rock_raffle, 'lithium-iceberg-big')
+    table.insert(snowy_rock_raffle, 'lithium-iceberg-huge')
 end
 
 local size_of_snowy_rock_raffle = #snowy_rock_raffle
@@ -3507,7 +3501,7 @@ local function zone_scrap_1(x, y, data, void_or_lab, adjusted_zones)
     end
 end
 
-local function zone_7(x, y, data, void_or_lab, adjusted_zones)
+local function zone_7_garden(x, y, data, void_or_lab, adjusted_zones)
     local p = { x = x, y = y }
     local seed = data.seed
     local tiles = data.tiles
@@ -4924,10 +4918,9 @@ local function zone_1(x, y, data, void_or_lab, adjusted_zones)
             Public.spawn_random_buildings(buildings, p, zone_settings.zone_depth)
         end
         if random(1, 128) == 1 then
-            Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] =
             {
-                name = Biters.wave_defense_roll_worm_name(),
+                name = 'small-worm-turret',
                 position = p,
                 force = 'enemy'
             }
@@ -4954,10 +4947,9 @@ local function zone_1(x, y, data, void_or_lab, adjusted_zones)
             entities[#entities + 1] = { name = 'crude-oil', position = p, amount = get_oil_amount(p) }
         end
         if random(1, 96) == 1 then
-            Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] =
             {
-                name = Biters.wave_defense_roll_worm_name(),
+                name = 'small-worm-turret',
                 position = p,
                 force = 'enemy'
             }
@@ -5158,7 +5150,7 @@ local zones =
     zone_3 = { fn = zone_3, weight = 100, tags = { 'main' } },
     zone_4 = { fn = zone_4, weight = 100, tags = { 'main' } },
     zone_5 = { fn = zone_5, weight = 100, tags = { 'main' } },
-    zone_7 = { fn = zone_7, weight = 100, tags = { 'main' } },
+    zone_7 = { fn = zone_7_garden, weight = 100, tags = { 'main' } },
     zone_9 = { fn = zone_9, weight = 100, tags = { 'main' } },
     zone_11 = { fn = zone_11, weight = 100, tags = { 'main' } },
     zone_12 = { fn = zone_12, weight = 100, tags = { 'main' } },
@@ -5377,7 +5369,6 @@ local function process_bits(p, data, adjusted_zones)
         adjusted_zones.size_of = size_of_rock_raffle
         adjusted_zones.tiles_raffle = nil
     end
-
 
     local generate_zone
     if adjusted_zones.starting_zone and depth then

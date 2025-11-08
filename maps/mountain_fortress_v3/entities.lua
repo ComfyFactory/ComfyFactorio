@@ -888,7 +888,7 @@ local function on_player_mined_entity(event)
         local zone = rpg_char.current_zone
         local quality = get_quality_from_level(rpg_char)
         event.quality = quality
-        if zone > better_loot_from_zone then
+        if zone and better_loot_from_zone and zone > better_loot_from_zone then
             event.mid = true
         end
         Public.on_player_mined_entity(event)

@@ -1168,8 +1168,26 @@ local function get_random_item()
         { 'speed-module-2', scale(1000, 100000) },
         { 'efficiency-module-3', scale(50, 30000) },
         { 'productivity-module-3', scale(500, 30000) },
-        { 'speed-module-3', scale(500, 30000) }
+        { 'speed-module-3', scale(500, 30000) },
+        { 'automation-science-pack', scale(1000, 400000) },
+        { 'logistic-science-pack', scale(1000, 400000) },
+        { 'military-science-pack', scale(1000, 400000) },
+        { 'chemical-science-pack', scale(1000, 400000) },
+        { 'production-science-pack', scale(1000, 400000) },
+        { 'utility-science-pack', scale(1000, 400000) },
     }
+
+    if Public.is_modded_pt2 then
+        table.insert(items, { 'quality-module', scale(100, 30000) })
+        table.insert(items, { 'quality-module-2', scale(100, 30000) })
+        table.insert(items, { 'quality-module-3', scale(100, 30000) })
+        table.insert(items, { 'space-science-pack', scale(1000, 400000) })
+        table.insert(items, { 'metallurgic-science-pack', scale(1000, 400000) })
+        table.insert(items, { 'agricultural-science-pack', scale(1000, 400000) })
+        table.insert(items, { 'electromagnetic-science-pack', scale(1000, 400000) })
+        table.insert(items, { 'cryogenic-science-pack', scale(500, 400000) })
+        table.insert(items, { 'promethium-science-pack', scale(50, 400000) })
+    end
 
     shuffle(items)
     shuffle(items)
@@ -1215,8 +1233,23 @@ local function get_random_handcrafted_item()
         { 'pipe-to-ground', scale(3000, 50000) },
         { 'efficiency-module', scale(100, 50000) },
         { 'productivity-module', scale(100, 50000) },
-        { 'speed-module', scale(100, 50000) }
+        { 'speed-module', scale(100, 50000) },
+        { 'cooked-fish', scale(100, 50000) },
+        { 'grilled-fish', scale(100, 50000) },
     }
+
+    if Public.is_modded_pt2 then
+        table.insert(items, { 'quality-module', scale(100, 50000) })
+        table.insert(items, { 'tungsten-carbide', scale(100, 50000) })
+        table.insert(items, { 'tungsten-plate', scale(100, 50000) })
+        table.insert(items, { 'holmium-plate', scale(100, 50000) })
+        table.insert(items, { 'supercapacitor', scale(50, 50000) })
+        table.insert(items, { 'superconductor', scale(50, 50000) })
+        table.insert(items, { 'carbon', scale(100, 50000) })
+        table.insert(items, { 'turbo-splitter', scale(50, 50000) })
+        table.insert(items, { 'turbo-transport-belt', scale(50, 50000) })
+        table.insert(items, { 'turbo-underground-belt', scale(50, 50000) })
+    end
 
     shuffle(items)
     shuffle(items)
