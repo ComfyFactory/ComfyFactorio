@@ -4802,7 +4802,7 @@ local function zone_forest_1(x, y, data, void_or_lab, adjusted_zones)
             if small_caves > 0.31 then
                 tiles[#tiles + 1] = { name = 'brown-refined-concrete', position = p }
                 if random(1, 450) == 1 then
-                    entities[#entities + 1] = { name = 'crude-oil', position = p, amount = get_oil_amount(p) }
+                    entities[#entities + 1] = { name = 'crude-oil', position = p, amount = (get_oil_amount(p) * 5) }
                 end
                 if random(1, 96) == 1 then
                     Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
@@ -4944,7 +4944,7 @@ local function zone_1(x, y, data, void_or_lab, adjusted_zones)
     if no_rocks < 0.34 and no_rocks > 0.14 then
         tiles[#tiles + 1] = { name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)] or 'brown-refined-concrete', position = p }
         if random(1, 450) == 1 then
-            entities[#entities + 1] = { name = 'crude-oil', position = p, amount = get_oil_amount(p) }
+            entities[#entities + 1] = { name = 'crude-oil', position = p, amount = (get_oil_amount(p) * 5) }
         end
         if random(1, 96) == 1 then
             entities[#entities + 1] =

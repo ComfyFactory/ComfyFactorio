@@ -14,6 +14,81 @@ local states =
     ['support'] = 'poison-capsule-smoke'
 }
 
+local trees_raffle =
+{
+    'dry-tree',
+    'tree-01',
+    'tree-02-red',
+    'tree-04',
+    'tree-08-brown'
+}
+
+if script.active_mods['space-age'] then
+    trees_raffle =
+    {
+        'stingfrond',
+        'teflilly',
+        'boompuff',
+        'sunnycomb',
+        'lickmaw',
+        'teflilly',
+        'hairyclubnub',
+        'funneltrunk',
+        'slipstack',
+        'cuttlepop',
+        'dry-tree',
+        'tree-01',
+        'tree-02-red',
+        'tree-04',
+        'tree-05',
+        'tree-08-brown'
+    }
+end
+
+local rock_raffle =
+{
+    'big-sand-rock',
+    'big-sand-rock',
+    'big-rock',
+    'big-rock',
+    'big-rock',
+    'big-rock',
+    'big-rock',
+    'big-rock',
+    'big-rock',
+    'big-rock',
+    'huge-rock'
+}
+
+if script.active_mods['space-age'] then
+    rock_raffle =
+    {
+        'big-sand-rock',
+        'big-sand-rock',
+        'big-rock',
+        'big-rock',
+        'big-rock',
+        'big-rock',
+        'big-rock',
+        'big-rock',
+        'big-rock',
+        'big-rock',
+        'huge-rock',
+        'big-volcanic-rock',
+        'huge-volcanic-rock',
+        'big-volcanic-rock',
+        'huge-volcanic-rock',
+        'copper-stromatolite',
+        'iron-stromatolite',
+        'copper-stromatolite',
+        'iron-stromatolite',
+        'lithium-iceberg-big',
+        'lithium-iceberg-huge',
+        'lithium-iceberg-big',
+        'lithium-iceberg-huge',
+    }
+end
+
 local repeat_sound_token
 
 local repair_buildings =
@@ -279,8 +354,8 @@ local function create_entity(data)
     Public.set_last_spell_cast(player, position)
 
     if self.biter then
-        if surface.can_place_entity { name = self.entityName, position = position } then
-            local e = surface.create_entity({ name = self.entityName, position = position, force = force })
+        if surface.can_place_entity { name = self.entity_name, position = position } then
+            local e = surface.create_entity({ name = self.entity_name, position = position, force = force })
             tame_unit_effects(player, e)
             Public.remove_mana(player, self.mana_cost)
             return true
@@ -290,16 +365,21 @@ local function create_entity(data)
         end
     end
 
+    local entity_name = self.entity_name
+
     if self.aoe then
+        if self.raffle then
+            entity_name = self.raffle[random(1, #self.raffle)]
+        end
         local has_cast = false
         for x = 1, -1, -1 do
             for y = 1, -1, -1 do
                 local pos = { x = position.x + x, y = position.y + y }
-                if surface.can_place_entity { name = self.entityName, position = pos } then
+                if surface.can_place_entity { name = entity_name, position = pos } then
                     if self.mana_cost > rpg_t.mana then
                         break
                     end
-                    local e = surface.create_entity({ name = self.entityName, position = pos, force = force })
+                    local e = surface.create_entity({ name = entity_name, position = pos, force = force })
                     has_cast = true
                     e.direction = player.character.direction
                     Public.remove_mana(player, self.mana_cost)
@@ -314,8 +394,8 @@ local function create_entity(data)
             return false
         end
     else
-        if surface.can_place_entity { name = self.entityName, position = position } then
-            local e = surface.create_entity({ name = self.entityName, position = position, force = force })
+        if surface.can_place_entity { name = self.entity_name, position = position } then
+            local e = surface.create_entity({ name = self.entity_name, position = position, force = force })
             e.direction = player.character.direction
             Public.remove_mana(player, self.mana_cost)
         else
@@ -548,15 +628,18 @@ spells[#spells + 1] =
 {
     name = { 'entity-name.tree' },
     entityName = 'tree-05',
-    level = 20,
+    raffle = trees_raffle,
+    level = 40,
     type = 'entity',
-    mana_cost = 90,
+    mana_cost = 200,
     cooldown = 300,
     aoe = true,
     enabled = true,
+    enforce_cooldown = true,
     sprite = 'entity/tree-05',
     tooltip = 'Spawns some trees',
     callback = function (data)
+        Public.register_cooldown_for_spell(data.player)
         return create_entity(data)
     end
 }
@@ -564,15 +647,18 @@ spells[#spells + 1] =
 {
     name = { 'entity-name.big-sand-rock' },
     entityName = 'big-sand-rock',
+    raffle = rock_raffle,
     level = 60,
     type = 'entity',
-    mana_cost = 120,
+    mana_cost = 200,
     cooldown = 300,
     aoe = true,
     enabled = true,
+    enforce_cooldown = true,
     sprite = 'entity/big-sand-rock',
     tooltip = 'Spawns some sandy rocks',
     callback = function (data)
+        Public.register_cooldown_for_spell(data.player)
         return create_entity(data)
     end
 }
