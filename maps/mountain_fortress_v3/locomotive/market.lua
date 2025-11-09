@@ -142,7 +142,7 @@ end
 
 local function get_items(player)
     local market_limits = Public.get('market_limits')
-    local main_market_items = Public.get('main_market_items')
+    local main_market_items = table.deepcopy(Public.get('main_market_items'))
     local flame_turret = Public.get('upgrades').flame_turret.bought
     local upgrades = Public.get('upgrades')
     local fixed_prices = Public.get('marked_fixed_prices')
@@ -850,7 +850,7 @@ local function redraw_market_items(gui, player, search_text)
     local items_table = gui.add({ type = 'table', column_count = 6 })
 
     for item, data in pairs(player_items) do
-        if not data.upgrade then
+        if not data.upgrade and not data.player_upgrade then
             if not search_text then
                 goto continue
             end
