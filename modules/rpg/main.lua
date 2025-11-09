@@ -676,7 +676,7 @@ local function on_pre_player_left_game(event)
     Public.remove_frame(player)
 end
 
-local function on_pre_player_mined_item(event)
+local function on_player_mined_entity(event)
     local entity = event.entity
     if not entity.valid then
         return
@@ -1295,7 +1295,7 @@ Event.add(defines.events.on_player_created, on_player_joined_game)
 Event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
 Event.add(defines.events.on_player_respawned, on_player_respawned)
 Event.add(defines.events.on_player_rotated_entity, on_player_rotated_entity)
-Event.add(defines.events.on_pre_player_mined_item, on_pre_player_mined_item)
+Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 if script.active_mods['MtnFortressAddons'] then
     Event.add(defines.events['mtn-shift-cast-spell'], on_player_used_capsule_custom)
 end
