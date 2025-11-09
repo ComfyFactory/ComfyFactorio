@@ -722,6 +722,10 @@ function Public.poll_to_progress(player, poll_type, level, append_level)
             return false
         end
 
+        if island_data.voting and island_data.voting.completed and not island_data.voting.can_progress and island_data.voting.timeout_until_next_vote == nil then
+            island_data.voting.timeout_until_next_vote = game.tick + 18000
+        end
+
         if not island_data.voting.can_progress and game.tick < island_data.voting.timeout_until_next_vote then
             player.print('The team has decided to not progress yet to the next island!', { color = Color.warning })
             player.print('The next vote will be available in ' .. floor((island_data.voting.timeout_until_next_vote - game.tick) / 60) .. ' seconds!', { color = Color.warning })
@@ -768,6 +772,10 @@ function Public.poll_to_restart(force_restart)
             })
         island_data.voting.id = id
         return true, 'A new vote to reset the game has been started!'
+    end
+
+    if island_data.voting and island_data.voting.completed and not island_data.voting.can_progress and island_data.voting.timeout_until_next_vote == nil then
+        island_data.voting.timeout_until_next_vote = game.tick + 18000
     end
 
     if not island_data.voting.can_progress and game.tick < island_data.voting.timeout_until_next_vote then
@@ -820,10 +828,6 @@ function Public.check_vote_status()
                 market.add_market_item(new_offer)
             end
         elseif winning_answer and winning_answer.text == 'No, we are not ready!' then
-            if not island_data.voting.timeout_until_next_vote then
-                island_data.voting.timeout_until_next_vote = game.tick + 18000
-            end
-
             local offer_name
             local offer_description
             local poll_type = island_data.voting.poll_type
@@ -857,10 +861,8 @@ function Public.check_vote_status()
             Server.to_discord_embed('** The poll has ended - the results are in! No to progress! **')
         end
 
-
-        if not island_data.voting.completed then
-            island_data.voting.completed = true
-        end
+        island_data.voting.completed = true
+        island_data.voting.timeout_until_next_vote = game.tick + 18000
     end
 end
 
@@ -877,23 +879,15 @@ function Public.game_over_vote_result()
             game.print(Public.island_keeper .. 'The poll has ended - the results are in! [color=green]Yes, restart![/color]')
             Server.to_discord_embed('** The poll has ended - the results are in! Yes, restart! **')
 
-            if not island_data.voting.completed then
-                island_data.voting.completed = true
-            end
-
             this.game_lost = true
             this.game_reset_tick = 1
         elseif winning_answer and winning_answer.text == 'No, we can win this!' then
-            if not island_data.voting.timeout_until_next_vote then
-                island_data.voting.timeout_until_next_vote = game.tick + 18000
-            end
             game.print(Public.island_keeper .. 'The poll has ended - the results are in! [color=red]No, we can win this![/color]')
             game.print('Run /vote_to_reset to start a new vote to reset the game!', { color = Color.warning })
             Server.to_discord_embed('** The poll has ended - the results are in! No, we can win this! **')
-            if not island_data.voting.completed then
-                island_data.voting.completed = true
-            end
         end
+        island_data.voting.completed = true
+        island_data.voting.timeout_until_next_vote = game.tick + 18000
     end
 end
 
