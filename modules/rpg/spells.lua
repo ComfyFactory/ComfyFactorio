@@ -353,9 +353,11 @@ local function create_entity(data)
 
     Public.set_last_spell_cast(player, position)
 
+    local entity_name = self.entityName
+
     if self.biter then
-        if surface.can_place_entity { name = self.entity_name, position = position } then
-            local e = surface.create_entity({ name = self.entity_name, position = position, force = force })
+        if surface.can_place_entity { name = entity_name, position = position } then
+            local e = surface.create_entity({ name = entity_name, position = position, force = force })
             tame_unit_effects(player, e)
             Public.remove_mana(player, self.mana_cost)
             return true
@@ -365,7 +367,6 @@ local function create_entity(data)
         end
     end
 
-    local entity_name = self.entity_name
 
     if self.aoe then
         if self.raffle then
@@ -394,8 +395,11 @@ local function create_entity(data)
             return false
         end
     else
-        if surface.can_place_entity { name = self.entity_name, position = position } then
-            local e = surface.create_entity({ name = self.entity_name, position = position, force = force })
+        if self.raffle then
+            entity_name = self.raffle[random(1, #self.raffle)]
+        end
+        if surface.can_place_entity { name = entity_name, position = position } then
+            local e = surface.create_entity({ name = entity_name, position = position, force = force })
             e.direction = player.character.direction
             Public.remove_mana(player, self.mana_cost)
         else
