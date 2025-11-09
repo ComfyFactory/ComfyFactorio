@@ -645,7 +645,7 @@ spells[#spells + 1] =
 }
 spells[#spells + 1] =
 {
-    name = { 'entity-name.big-sand-rock' },
+    name = { 'entity-name.big-rock' },
     entityName = 'big-sand-rock',
     raffle = rock_raffle,
     level = 60,
