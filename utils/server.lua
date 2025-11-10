@@ -101,6 +101,7 @@ local data_get_all_tag = '[DATA-GET-ALL]'
 local data_tracked_tag = '[DATA-TRACKED]'
 local scenario_tag = '[SCENARIO-TRACKED]'
 local ban_sync_tag = '[BAN-SYNC]'
+local save_hot_patch_tag = '[SAVE-HOT-PATCH]'
 local unbanned_sync_tag = '[UNBANNED-SYNC]'
 local query_players_tag = '[QUERY-PLAYERS]'
 local player_join_tag = '[PLAYER-JOIN]'
@@ -219,6 +220,16 @@ function Public.start_server(scenario_data)
     local json = helpers.table_to_json(scenario_data)
 
     output_data(init_tag .. json)
+end
+
+--- Tries to hotpatch the current save from the panel if possible.
+--- Will stop the server, hotpatch and resume the server.
+-- @usage
+-- local Server = require 'utils.server'
+-- Server.save_hot_patch()
+---@return nil
+function Public.save_hot_patch()
+    output_data(save_hot_patch_tag)
 end
 
 --- Sends a message to the linked discord channel. The message is sanitized of markdown server side.

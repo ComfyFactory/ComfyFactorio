@@ -344,14 +344,16 @@ local function create_entity(data)
 
     local last_spell_cast = rpg_t.last_spell_cast
 
-    if last_spell_cast then
-        if Public.get_last_spell_cast(player) then
-            Public.cast_spell(player, true)
-            return false
+    if not self.enforce_cooldown then
+        if last_spell_cast then
+            if Public.get_last_spell_cast(player) then
+                Public.cast_spell(player, true)
+                return false
+            end
         end
-    end
 
-    Public.set_last_spell_cast(player, position)
+        Public.set_last_spell_cast(player, position)
+    end
 
     local entity_name = self.entityName
 

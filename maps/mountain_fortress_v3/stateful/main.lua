@@ -166,10 +166,22 @@ Event.on_nth_tick(
                 WD.set_spawn_position(area[2])
             end
 
+            local rounds_survived = Public.get_stateful('rounds_survived')
+            local random_bosses = false
+            local scale = 32
+
+            if rounds_survived >= 10 then
+                if random(1, 2) == 1 then
+                    random_bosses = true
+                    scale = rounds_survived + 2
+                end
+            end
+
+
             WD.set_main_target()
             WD.build_worm_custom()
             -- WD.place_custom_nest(locomotive.surface, area[1], 'aggressors_frenzy')
-            Event.raise(CustomEvents.events.on_spawn_unit_group_simple, { fs = true, bypass = true, random_bosses = true, scale = 32, force = 'aggressors_frenzy' })
+            Event.raise(CustomEvents.events.on_spawn_unit_group_simple, { fs = true, bypass = true, random_bosses = random_bosses, scale = scale, force = 'aggressors_frenzy' })
             Public.set_multi_command_final_battle()
             return
         end

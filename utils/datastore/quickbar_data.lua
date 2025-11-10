@@ -212,8 +212,7 @@ function Public.save_logistics(player)
 
     local sections = {}
 
-
-    for sec = 1, 4 do
+    for sec = 1, 8 do
         local section = player.get_requester_point().get_section(sec)
         if section then
             if not sections[section.index] then

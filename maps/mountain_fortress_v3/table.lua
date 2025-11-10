@@ -579,8 +579,8 @@ function Public.reset_main_table()
     this.magic_requirement = 100
     this.loot_stats =
     {
-        rare = 12,
-        normal = 4
+        rare = 24,
+        normal = 12
     }
     this.coin_amount = 1
     this.default_surface = true

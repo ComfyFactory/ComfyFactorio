@@ -5548,6 +5548,7 @@ function Public.heavy_functions(data)
     if string.sub(surface.name, 0, #starting_planet) ~= starting_planet then
         return
     end
+
     local adjusted_zones = Public.get('adjusted_zones')
     data.reversed = adjusted_zones.reversed
 

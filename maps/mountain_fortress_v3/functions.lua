@@ -2777,6 +2777,11 @@ local function on_marked_for_deconstruction(event)
         return
     end
 
+    if player.surface.name:find('platform') then
+        return
+    end
+
+
     if player.controller_type == defines.controllers.remote then
         entity.cancel_deconstruction(player.force, player)
         player.print("You cannot deconstruct while in remote view!", { r = 1, g = 0.5, b = 0.5 })

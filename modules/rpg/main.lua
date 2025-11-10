@@ -916,8 +916,7 @@ local function on_player_used_capsule_custom(event)
         return
     end
 
-    local
-    is_spamming = SpamProtection.is_spamming(player, nil, 'RPG - on_player_used_capsule_custom')
+    local is_spamming = SpamProtection.is_spamming(player, nil, 'RPG - on_player_used_capsule_custom')
     if is_spamming then
         return
     end
@@ -941,7 +940,7 @@ local function on_player_used_capsule_custom(event)
     local rpg_t = Public.get_value_from_player(player.index)
 
     if not rpg_t.enable_entity_spawn then
-        player.print('[RPG] You must enable the button in the spell GUI to cast a spell.', { color = Color.warning })
+        player.print('[RPG] You must enable the checkbox in the spell GUI to cast a spell.', { color = Color.warning })
         return
     end
 

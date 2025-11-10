@@ -882,6 +882,7 @@ function Public.level_up_effects(player)
 end
 
 function Public.cast_spell(player, failed)
+    log(debug.traceback())
     local position = { x = player.physical_position.x - 0.75, y = player.physical_position.y - 1 }
     local b = 0.75
     if not failed then
@@ -1278,18 +1279,15 @@ end
 
 function Public.is_cooldown_active_for_player(player)
     local rpg_t = Public.get_value_from_player(player.index)
-
     local active_spell = Public.get_spell_by_name(rpg_t, rpg_t.dropdown_select_name)
+    local cooldowns = rpg_t and rpg_t.cooldowns
 
-    if not active_spell then
+    if not active_spell or not cooldowns then
         return false
     end
 
-    if not rpg_t.cooldowns or not next(rpg_t.cooldowns) or not rpg_t.cooldowns[active_spell.entityName] then
-        return false
-    end
-
-    return rpg_t.cooldowns[active_spell.entityName] > game.tick
+    local cd = cooldowns[active_spell.entityName]
+    return cd and cd > game.tick or false
 end
 
 function Public.get_cooldown_progressbar_for_player(player)
