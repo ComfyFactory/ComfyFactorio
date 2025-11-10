@@ -882,7 +882,6 @@ function Public.level_up_effects(player)
 end
 
 function Public.cast_spell(player, failed)
-    log(debug.traceback())
     local position = { x = player.physical_position.x - 0.75, y = player.physical_position.y - 1 }
     local b = 0.75
     if not failed then
