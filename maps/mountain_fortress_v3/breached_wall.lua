@@ -503,7 +503,7 @@ local function distance(player)
         if breach_max_times then
             local placed_trains_in_zone = Public.get('placed_trains_in_zone')
             local biters = Public.get('biters')
-            if breached_wall == better_loot_from_zone + 1 then
+            if breached_wall == better_loot_from_zone - 2 then
                 RocksYieldOreVeins.add_to_raffle({ { 'tungsten-ore', 30 }, { 'calcite', 22 } })
                 RocksYieldOreVeins.add_to_mixed_ores({ 'tungsten-ore', 'calcite' })
             end
