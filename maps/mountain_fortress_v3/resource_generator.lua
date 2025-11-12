@@ -299,6 +299,7 @@ local resource_loot =
         stack =
         {
             recipe = 'inserter',
+            tech = 'electronics',
             output = { item = 'inserter', min_rate = 0.6 / 60, distance_factor = 1 / 8 / 60 / 20480 }
         },
         weight = 12

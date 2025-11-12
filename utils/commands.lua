@@ -658,4 +658,21 @@ Public.new('get', 'Hover over an object to get its name.')
         end
     )
 
+Public.new('spawn', 'Spawns a new entity near the player.')
+    :require_admin()
+    :add_parameter('entity', false, 'string')
+    :add_parameter('force', true, 'string')
+    :callback(
+        function (player, name, force)
+            local surface = player.surface
+            local position = player.position
+            local entity = surface.create_entity({ name = name, position = surface.find_non_colliding_position(name, position, 10, 0.5) or position, force = force or player.force })
+            if entity then
+                player.print('Entity spawned successfully.')
+            else
+                player.print('Failed to spawn entity.')
+            end
+        end
+    )
+
 return Public

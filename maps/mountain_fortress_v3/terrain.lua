@@ -261,7 +261,8 @@ local gleba_tree_raffle =
     'hairyclubnub',
     'funneltrunk',
     'slipstack',
-    'cuttlepop'
+    'cuttlepop',
+    'water-cane'
 }
 
 local size_of_gleba_tree_raffle = #tree_raffle
@@ -4471,7 +4472,7 @@ local function zone_gleba_forest_1(x, y, data, void_or_lab, adjusted_zones)
             end
         else
             if random(1, 100) > 42 then
-                entities[#entities + 1] = { name = 'boompuff', position = p }
+                entities[#entities + 1] = { name = 'water-cane', position = p }
             end
         end
         return
@@ -5169,17 +5170,17 @@ local zones =
     zone_scrap_2 = { fn = zone_scrap_2, weight = 100, tags = { 'scrap' } },
 
     -- Crystal zones (grouped under "crystal")
-    zone_crystal_1 = { fn = zone_crystal_1, weight = 100, tags = { 'crystal' } },
+    zone_crystal_1 = { fn = zone_crystal_1, weight = 100, tags = { 'crystal' }, disabled = true },
 
     -- Volcanic zones (grouped under "volcanic")
-    zone_volcanic_1 = { fn = zone_volcanic_1, weight = 100, tags = { 'volcanic' } },
+    zone_volcanic_1 = { fn = zone_volcanic_1, weight = 100, tags = { 'volcanic' }, disabled = true },
 
     -- Tech zones (grouped under "tech")
-    zone_tech_1 = { fn = zone_tech_1, weight = 100, tags = { 'tech' } },
+    zone_tech_1 = { fn = zone_tech_1, weight = 100, tags = { 'tech' }, disabled = true },
 
     -- Frostbite zones (grouped under "frostbite")
-    zone_frostbite_1 = { fn = zone_frostbite_1, weight = 100, tags = { 'frostbite' } },
-    zone_frostbite_2 = { fn = zone_frostbite_2, weight = 100, tags = { 'frostbite' } },
+    zone_frostbite_1 = { fn = zone_frostbite_1, weight = 100, tags = { 'frostbite' }, disabled = true },
+    zone_frostbite_2 = { fn = zone_frostbite_2, weight = 100, tags = { 'frostbite' }, disabled = true },
 
     -- Gleba zones (grouped under "gleba")
     zone_gleba_1 = { fn = zone_gleba_1, weight = 100, tags = { 'gleba' }, space_age = true },
@@ -5227,26 +5228,28 @@ local function init_terrain(adjusted_zones)
 
     local zones_to_generate = {}
     for zone_name, zone_data in pairs(zones) do
-        if (space_age_enabled and zone_data.space_age) then
-            table.insert(
-                zones_to_generate,
-                {
-                    value = zone_name,
-                    tags = zone_data.tags,
-                    weight = zone_data.weight,
-                    forbidden_after = zone_data.forbidden_after or {}
-                }
-            )
-        elseif not zone_data.space_age then
-            table.insert(
-                zones_to_generate,
-                {
-                    value = zone_name,
-                    tags = zone_data.tags,
-                    weight = zone_data.weight,
-                    forbidden_after = zone_data.forbidden_after or {}
-                }
-            )
+        if not zone_data.disabled then
+            if (space_age_enabled and zone_data.space_age) then
+                table.insert(
+                    zones_to_generate,
+                    {
+                        value = zone_name,
+                        tags = zone_data.tags,
+                        weight = zone_data.weight,
+                        forbidden_after = zone_data.forbidden_after or {}
+                    }
+                )
+            elseif not zone_data.space_age then
+                table.insert(
+                    zones_to_generate,
+                    {
+                        value = zone_name,
+                        tags = zone_data.tags,
+                        weight = zone_data.weight,
+                        forbidden_after = zone_data.forbidden_after or {}
+                    }
+                )
+            end
         end
     end
 

@@ -994,6 +994,10 @@ Gui.on_click(
             end
             local can_complete = false
 
+            if _DEBUG then
+                can_complete = true
+            end
+
             for _, item in pairs(prices) do
                 local player_count = player_inv.get_item_count(item.value.name)
                 if player_count > 0 then
@@ -1049,6 +1053,10 @@ Gui.on_click(
                     all_complete = false
                     break
                 end
+            end
+
+            if _DEBUG then
+                all_complete = true
             end
 
             if all_complete then

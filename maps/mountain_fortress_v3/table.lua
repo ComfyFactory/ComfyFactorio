@@ -361,7 +361,7 @@ Config.register_scenario_module(
 
 Public.zone_settings =
 {
-    zone_depth = 704,
+    zone_depth = 480,
     zone_width = 510
 }
 
@@ -712,7 +712,7 @@ function Public.reset_main_table()
     this.player_market_settings = {}
     this.player_gui_settings = {}
 
-    this.better_loot_from_zone = random(5, 9)
+    this.better_loot_from_zone = random(4, 6)
 
     this.quality_list =
     {

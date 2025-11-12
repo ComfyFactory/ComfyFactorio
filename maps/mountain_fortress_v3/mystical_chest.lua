@@ -640,36 +640,36 @@ local mc_random_rewards =
         end),
         1024
     },
-    {
-        name = 'Lucky Looter',
-        str = 'lucky',
-        color = { r = 0.20, g = 0.35, b = 0.40 },
-        tooltip = 'Selecting this will grant a higher chance of finding better loot!',
-        func = (function (player, _)
-            local mc_rewards = Public.get('mc_rewards')
-            if mc_rewards.temp_boosts.lucky then
-                return false, '[Rewards] Lucky bonus is already applied and is currently on cooldown. Please choose another reward.'
-            end
-            mc_rewards.temp_boosts.lucky = true
-            mc_rewards.active_boosts.lucky = true
-            Task.set_timeout_in_ticks(modifier_cooldown, restore_modifier_token, { modifier = 'lucky' })
-            Task.set_timeout_in_ticks(54000, restore_active_modifier_token, { modifier = 'lucky' })
+    -- { -- needs fixing
+    --     name = 'Lucky Looter',
+    --     str = 'lucky',
+    --     color = { r = 0.20, g = 0.35, b = 0.40 },
+    --     tooltip = 'Selecting this will grant a higher chance of finding better loot!',
+    --     func = (function (player, _)
+    --         local mc_rewards = Public.get('mc_rewards')
+    --         if mc_rewards.temp_boosts.lucky then
+    --             return false, '[Rewards] Lucky bonus is already applied and is currently on cooldown. Please choose another reward.'
+    --         end
+    --         mc_rewards.temp_boosts.lucky = true
+    --         mc_rewards.active_boosts.lucky = true
+    --         Task.set_timeout_in_ticks(modifier_cooldown, restore_modifier_token, { modifier = 'lucky' })
+    --         Task.set_timeout_in_ticks(54000, restore_active_modifier_token, { modifier = 'lucky' })
 
 
-            local mystical_chest = Public.get('mystical_chest')
-            if not (mystical_chest and mystical_chest.valid) then
-                return
-            end
+    --         local mystical_chest = Public.get('mystical_chest')
+    --         if not (mystical_chest and mystical_chest.valid) then
+    --             return
+    --         end
 
-            local mystical_rewards = Public.get('mystical_rewards')
-            mystical_rewards.lucky_bonus = mystical_rewards.lucky_bonus and mystical_rewards.lucky_bonus + 1 or 1
+    --         local mystical_rewards = Public.get('mystical_rewards')
+    --         mystical_rewards.lucky_bonus = mystical_rewards.lucky_bonus and mystical_rewards.lucky_bonus + 1 or 1
 
-            Alert.alert_all_players(15, 'Lucky Looter! Bonus magicka for all!', nil, 'achievement/tech-maniac')
-            Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted lucky loot bonus to the team!', ' ***' })
-            return true
-        end),
-        1024
-    },
+    --         Alert.alert_all_players(15, 'Lucky Looter! Bonus magicka for all!', nil, 'achievement/tech-maniac')
+    --         Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted lucky loot bonus to the team!', ' ***' })
+    --         return true
+    --     end),
+    --     1024
+    -- },
     {
         name = 'Oil Barrels',
         str = 'oil',

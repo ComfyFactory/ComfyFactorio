@@ -166,7 +166,8 @@ local valid_trees =
     ['hairyclubnub'] = 'yumako',
     ['funneltrunk'] = 'carbon',
     ['slipstack'] = 'ice',
-    ['cuttlepop'] = 'scrap'
+    ['cuttlepop'] = 'scrap',
+    ['water-cane'] = 'calcite'
 }
 
 local valid_scrap =
