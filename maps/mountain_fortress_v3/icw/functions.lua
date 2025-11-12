@@ -26,6 +26,11 @@ local construct_train_token =
         function (event)
             local icw = event.icw
             local carriage = event.carriage
+            if not carriage or not carriage.valid
+            then
+                return error('Carriage was invalid, please check this out!')
+            end
+
             local train = event.train
             local chunk_position = event.chunk_position
             local saved_carriages = event.saved_carriages

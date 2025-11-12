@@ -10,7 +10,7 @@ local random = math.random
 local this =
 {
     raffle = {},
-    mixed_ores = {},
+    mixed_ores = { 'iron-ore', 'copper-ore', 'stone', 'coal' },
     chance = 512,
     amount_modifier = 1
 }
@@ -40,10 +40,6 @@ local size_raffle =
 
 function Public.add_to_raffle(raffle)
     for _, t in pairs(raffle) do
-        if not t or not type(t[2]) == 'number' then
-            return
-        end
-
         for _ = 1, t[2], 1 do
             table.insert(this.raffle, t[1])
         end
@@ -52,10 +48,23 @@ end
 
 function Public.add_to_mixed_ores(ores)
     for _, o in pairs(ores) do
-        if not o or not type(o) == 'string' then
-            return
-        end
         table.insert(this.mixed_ores, o)
+    end
+end
+
+function Public.remove_from_raffle(ores)
+    for i, m in pairs(this.raffle) do
+        for _, o in pairs(ores) do
+            if m == o then
+                this.raffle[i] = nil
+            end
+        end
+    end
+end
+
+function Public.remove_from_mixed_ores(ores)
+    for _, o in pairs(ores) do
+        table.remove_element(this.mixed_ores, o)
     end
 end
 
@@ -90,8 +99,6 @@ local function set_raffle()
             table.insert(this.raffle, t[1])
         end
     end
-
-    this.mixed_ores = { 'iron-ore', 'copper-ore', 'stone', 'coal' }
 
     local starting_planet = Public.get_planet()
     if is_modded_pt2 then

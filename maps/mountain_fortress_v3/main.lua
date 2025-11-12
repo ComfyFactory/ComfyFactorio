@@ -51,6 +51,7 @@ local Beam = require 'modules.render_beam'
 local Commands = require 'utils.commands'
 local RobotLimits = require 'modules.robot_limits'
 local CustomEvents = require 'utils.created_events'
+local RocksYieldOreVeins = require 'maps.mountain_fortress_v3.rocks_yield_ore_veins'
 
 local send_ping_to_channel = Discord.channel_names.mtn_channel
 local role_to_mention = Discord.role_mentions.mtn_fortress
@@ -446,11 +447,13 @@ function Public.pre_init_task(current_task)
     force.manual_crafting_speed_modifier = 0
     force.friendly_fire = true
 
+    RocksYieldOreVeins.remove_from_raffle({ 'calcite', 'tungsten-ore' })
+    RocksYieldOreVeins.remove_from_mixed_ores({ 'calcite', 'tungsten-ore' })
     WD.reset_wave_defense()
     WD.alert_boss_wave(true)
     WD.enable_side_target(false)
     WD.remove_entities(true)
-    WD.enable_threat_log(false) -- creates waaaay to many entries in the global table
+    WD.enable_threat_log(false)
     WD.check_collapse_position(true)
     WD.set_disable_threat_below_zero(true)
     WD.increase_boss_health_per_wave(true)
@@ -903,16 +906,15 @@ function Public.init_mtn()
     Explosives.set_destructible_tile('lab-dark-2', 1000)
     Explosives.set_destructible_tile('lava', 500)
     Explosives.set_destructible_tile('lava-hot', 500)
-
-    Explosives.set_destructible_entity('wetland-dead-skin', 1000)
-    Explosives.set_destructible_entity('wetland-light-dead-skin', 1000)
-    Explosives.set_destructible_entity('wetland-green-slime', 1000)
-    Explosives.set_destructible_entity('wetland-light-green-slime', 1000)
-    Explosives.set_destructible_entity('wetland-red-tentacle', 1000)
-    Explosives.set_destructible_entity('wetland-pink-tentacle', 1000)
-    Explosives.set_destructible_entity('wetland-blue-slime', 1000)
-    Explosives.set_destructible_entity('wetland-yumako', 1000)
-    Explosives.set_destructible_entity('wetland-jellynut', 1000)
+    Explosives.set_destructible_tile('wetland-dead-skin', 1000)
+    Explosives.set_destructible_tile('wetland-light-dead-skin', 1000)
+    Explosives.set_destructible_tile('wetland-green-slime', 1000)
+    Explosives.set_destructible_tile('wetland-light-green-slime', 1000)
+    Explosives.set_destructible_tile('wetland-red-tentacle', 1000)
+    Explosives.set_destructible_tile('wetland-pink-tentacle', 1000)
+    Explosives.set_destructible_tile('wetland-blue-slime', 1000)
+    Explosives.set_destructible_tile('wetland-yumako', 1000)
+    Explosives.set_destructible_tile('wetland-jellynut', 1000)
 
     Explosives.set_whitelist_entity('straight-rail')
     Explosives.set_whitelist_entity('curved-rail-a')
@@ -930,6 +932,7 @@ Server.on_scenario_changed(
         local scenario = data.scenario
         if scenario == 'Mountain_Fortress_v3' then
             handle_changes()
+            -- Server.save_hot_patch()
         end
     end
 )
