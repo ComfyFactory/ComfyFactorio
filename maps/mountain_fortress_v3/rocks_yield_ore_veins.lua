@@ -63,8 +63,12 @@ function Public.remove_from_raffle(ores)
 end
 
 function Public.remove_from_mixed_ores(ores)
-    for _, o in pairs(ores) do
-        table.remove_element(this.mixed_ores, o)
+    for i, m in pairs(this.mixed_ores) do
+        for _, o in pairs(ores) do
+            if m == o then
+                this.mixed_ores[i] = nil
+            end
+        end
     end
 end
 
