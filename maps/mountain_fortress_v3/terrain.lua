@@ -775,6 +775,7 @@ local function place_wagon(data, adjusted_zones)
     local entities = data.entities
     local top_y = data.top_y
     local position = { x = data.x, y = top_y + random(4, 12) * 2 }
+    local stateful = Public.get_stateful()
     local wagon_mineable =
     {
         callback = Public.disable_minable_and_ICW_callback,
@@ -829,6 +830,7 @@ local function place_wagon(data, adjusted_zones)
         name = wagon_raffle[random(1, #wagon_raffle)],
         position = position,
         force = 'player',
+        quality = stateful.quality_trains,
         callback = wagon_mineable
     }
 
