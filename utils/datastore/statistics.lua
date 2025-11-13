@@ -22,7 +22,6 @@ local events =
     machines_built = e.on_built_entity,
     items_picked_up = e.on_picked_up_item,
     tiles_built = e.on_player_built_tile,
-    join_count = e.on_player_joined_game,
     deaths = e.on_player_died,
     entities_repaired = e.on_player_repaired_entity,
     items_crafted = e.on_player_crafted_item,
@@ -118,7 +117,7 @@ end
 local function get_data(player)
     local player_index = player and type(player) == 'number' and player or player and player.valid and player.index or false
     if not player_index then
-        log('Invalid player index at get_data')
+        Server.output_script_data('Invalid player index at statistics:get_data')
         return false
     end
 
@@ -190,6 +189,28 @@ local try_upload_data_token =
                     set_data(statistics_dataset, player_name, d)
                 end
             end
+        end
+    )
+
+local on_player_created_token =
+    Token.register(
+        function (event)
+            local player = game.get_player(event.player_index)
+            if not player or not player.valid then
+                return
+            end
+            get_data(player):increase('maps_played')
+        end
+    )
+
+local on_player_joined_game_token =
+    Token.register(
+        function (event)
+            local player = game.get_player(event.player_index)
+            if not player or not player.valid then
+                return
+            end
+            get_data(player):increase('join_count')
         end
     )
 
@@ -299,6 +320,8 @@ Event.add(
     e.on_player_joined_game,
     function (event)
         get_data(event.player_index):try_get_data()
+
+        set_timeout_in_ticks(10, on_player_joined_game_token, { player_index = event.player_index })
     end
 )
 
@@ -497,7 +520,7 @@ Event.on_nth_tick(
 Event.add(
     e.on_player_created,
     function (event)
-        get_data(event.player_index):increase('maps_played')
+        set_timeout_in_ticks(10, on_player_created_token, { player_index = event.player_index })
     end
 )
 
