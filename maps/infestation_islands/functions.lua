@@ -1715,13 +1715,15 @@ end
 
 function Public.disable_tech()
     local force = game.forces['player']
-    -- force.technologies['landfill'].enabled = false
     force.technologies['night-vision-equipment'].enabled = false
     force.technologies['artillery-shell-range-1'].enabled = false
     force.technologies['artillery-shell-speed-1'].enabled = false
     force.technologies['artillery'].enabled = false
     force.technologies['atomic-bomb'].enabled = false
     force.technologies['elevated-rail'].enabled = false
+    force.technologies['captivity'].enabled = false
+    force.technologies['biter-egg-handling'].enabled = false
+    force.technologies['captive-biter-spawner'].enabled = false
     force.technologies['rail-support-foundations'].enabled = false
     force.technologies['lightning-collector'].enabled = false
     force.technologies['land-mine'].enabled = false
@@ -2018,23 +2020,35 @@ function Public.send_biters_to_market()
     if count > 1500 then return end
 
     if not island_data.pause_waves and not island_data.pause_waves_set then
-        local spawner_count = game.surfaces[1].count_entities_filtered(
+        local area =
+        {
+            { island_data.position.x - 256, island_data.position.y - 256 },
+            { island_data.position.x + 256, island_data.position.y + 256 }
+        }
+
+        local spawner_count = surface.count_entities_filtered
             {
                 force = 'enemy',
-                type = { 'unit-spawner' },
-                area =
-                {
-                    { island_data.position.x - 256, island_data.position.y - 256 },
-                    { island_data.position.x + 256, island_data.position.y + 256 }
-                }
-            })
+                type = 'unit-spawner',
+                area = area
+            }
 
-        if spawner_count == 0 then
-            game.print(Public.island_keeper .. 'Quickly clear all biters from the island — if they’re not gone within 10 minutes, their ancestors will rise to finish what they started!')
-            island_data.pause_waves = game.tick + 60 * 60 * 10 -- 10 minutes
+        local unit_count = surface.count_entities_filtered
+            {
+                force = 'enemy',
+                type = 'unit',
+                area = area
+            }
+
+        if spawner_count <= 2 or unit_count <= 5 then
+            game.print(Public.island_keeper ..
+                'Quickly clear all biters from the island — if they’re not gone within 20 minutes, their ancestors will rise to finish what they started!')
+
+            island_data.pause_waves = game.tick + 60 * 60 * 20 -- 20 minutes
             island_data.pause_waves_set = true
         end
     end
+
 
     if island_data.pause_waves and game.tick < island_data.pause_waves then
         return

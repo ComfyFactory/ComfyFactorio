@@ -170,7 +170,7 @@ Public.mining_chances_ores =
     { name = 'jellynut', chance = 5 },
     { name = 'yumako', chance = 5 },
     { name = 'carbon', chance = 5 },
-    { name = 'scrap', chance = 5 },
+    { name = 'scrap', chance = 2 },
     { name = 'ice', chance = 5 },
 }
 
@@ -203,7 +203,7 @@ Public.raw_ores_dict =
     ['uranium-ore'] = { min = 75000, max = 75000 },
     ['calcite'] = { min = 15000, max = 30000 },
     ['tungsten-ore'] = { min = 20000, max = 40000 },
-    ['scrap'] = { min = 15000, max = 50000 },
+    ['scrap'] = { min = 5000, max = 10000 },
 }
 
 Public.oil_raffle =
