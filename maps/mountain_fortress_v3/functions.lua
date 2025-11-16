@@ -2993,6 +2993,14 @@ function Public.on_player_changed_surface(event)
         return
     end
 
+    if player.controller_type == defines.controllers.remote then
+        return
+    end
+
+    if player.controller_type == defines.controllers.spectator then
+        return
+    end
+
     local surface_index = event.surface_index
     if not surface_index then
         Server.output_script_data('No surface index found - old one was removed.')
@@ -3005,7 +3013,7 @@ function Public.on_player_changed_surface(event)
 
 
 
-    if player.surface.name == 'nauvis' or player.surface.index == '1' then
+    if player.physical_surface.name == 'nauvis' or player.physical_surface.index == '1' then
         local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
         if pos then
             player.teleport(pos, surface)
@@ -3467,28 +3475,6 @@ function Public.equip_players(starting_items, recreate)
     end
 end
 
-function Public.on_player_clicked_gps_tag(event)
-    local player = game.get_player(event.player_index)
-    if not player or not player.valid then
-        return
-    end
-
-    if game.is_multiplayer() then return end
-
-    if player.name ~= 'Gerkiz' then
-        return
-    end
-
-    local position = event.position
-    local surface = event.surface
-
-    if player.surface.name ~= surface then
-        return
-    end
-
-    player.teleport(position, player.surface)
-end
-
 function Public.reset_func_table()
     this.power_sources = { index = 1 }
     this.refill_turrets = { index = 1 }
@@ -3545,7 +3531,6 @@ local on_player_respawned = Public.on_player_respawned
 local on_player_driving_changed_state = Public.on_player_driving_changed_state
 local on_pre_player_toggled_map_editor = Public.on_pre_player_toggled_map_editor
 local on_player_changed_surface = Public.on_player_changed_surface
-local on_player_clicked_gps_tag = Public.on_player_clicked_gps_tag
 local set_difficulty = Public.set_difficulty
 
 Event.add(de.on_player_joined_game, on_player_joined_game)
@@ -3561,7 +3546,6 @@ Event.add(de.on_player_changed_surface, on_player_changed_surface)
 Event.add(de.on_player_cursor_stack_changed, on_player_cursor_stack_changed)
 Event.add(de.on_chart_tag_added, on_chart_tag_added)
 Event.add(de.on_marked_for_deconstruction, on_marked_for_deconstruction)
-Event.add(de.on_player_clicked_gps_tag, on_player_clicked_gps_tag)
 Event.on_nth_tick(10, do_refill_turrets)
 Event.on_nth_tick(10, do_magic_crafters)
 Event.on_nth_tick(10, do_magic_fluid_crafters)
