@@ -405,7 +405,7 @@ function Public.move_players(current_task)
         if current_task.surface_name == 'Init' then
             player.zoom = 0.1
         end
-        local pos = surface.find_non_colliding_position("character", { x = 0, y = 0 }, 3, 0)
+        local pos = surface.find_non_colliding_position("character", { x = 0, y = 0 }, 5, 4)
         if pos then
             player.teleport(pos, surface)
         else
@@ -810,7 +810,7 @@ function Public.to_fortress(current_task)
     end
 
     for _, player in pairs(game.connected_players) do
-        local pos = surface.find_non_colliding_position('character', position, 3, 0)
+        local pos = surface.find_non_colliding_position('character', position, 5, 4)
         if pos then
             player.teleport({ x = pos.x, y = pos.y }, surface)
         else

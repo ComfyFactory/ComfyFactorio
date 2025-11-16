@@ -640,7 +640,9 @@ function Public.reset_main_table()
     this.spidertron_unlocked_at_zone = 11
     this.spidertron_unlocked_enabled = false
     -- this.void_or_tile = 'lab-dark-2'
-    if Public.is_modded then
+    if Public.is_modded_pt2 then
+        this.void_or_tile = 'lava'
+    elseif Public.is_modded then
         this.void_or_tile = 'void-tile'
     else
         this.void_or_tile = 'out-of-map'
