@@ -5456,13 +5456,15 @@ local function border_chunk(p, data, dec_tbl)
         end
 
         for _, decorative in pairs(dec_tbl) do
-            if random(1, abs(pos.y) + 3) == 1 then
-                decoratives[#decoratives + 1] =
-                {
-                    name = decorative,
-                    position = pos,
-                    amount = 1
-                }
+            if random(1, 32) == 1 then
+                if random(1, abs(pos.y) + 3) == 1 then
+                    decoratives[#decoratives + 1] =
+                    {
+                        name = decorative,
+                        position = pos,
+                        amount = 1
+                    }
+                end
             end
         end
     end

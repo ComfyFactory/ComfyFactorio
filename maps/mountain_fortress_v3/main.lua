@@ -402,6 +402,9 @@ function Public.move_players(current_task)
     end
 
     for _, player in pairs(game.players) do
+        if current_task.surface_name == 'Init' then
+            player.zoom = 0.1
+        end
         local pos = surface.find_non_colliding_position("character", { x = 0, y = 0 }, 3, 0)
         if pos then
             player.teleport(pos, surface)
@@ -412,7 +415,7 @@ function Public.move_players(current_task)
     end
     local starting_planet = Public.get_planet()
     current_task.message = 'Moved players to initial surface!'
-    current_task.delay = game.tick + 20
+    current_task.delay = game.tick + 100
     current_task.state_id = 1
     current_task.starting_planet = starting_planet
     current_task.state = 'pre_init_task'
@@ -543,9 +546,8 @@ function Public.clear_fortress(current_task)
         surface.force_generate_chunk_requests()
     end
 
-
     current_task.state = 'create_custom_fortress_surface'
-    current_task.delay = game.tick + 20
+    current_task.delay = game.tick + 100
     current_task.message = 'Cleared fortress!'
     current_task.state_id = 4
 end
@@ -560,7 +562,7 @@ function Public.create_custom_fortress_surface(current_task)
 
     WD.set('surface_index', active_surface_index)
     current_task.message = 'Created custom fortress surface!'
-    current_task.delay = game.tick + 50
+    current_task.delay = game.tick + 100
     current_task.state = 'reset_map'
     current_task.state_id = 5
 end
@@ -715,7 +717,7 @@ function Public.reset_map(current_task)
     game.forces.player.set_friend('aggressors_frenzy', false)
 
     current_task.message = 'Reset map done!'
-    current_task.delay = game.tick + 30
+    current_task.delay = game.tick + 100
     current_task.state = 'post_init_task'
     current_task.state_id = 6
 end
@@ -759,7 +761,7 @@ function Public.create_locomotive(current_task)
     end
 
     current_task.message = 'Created locomotive!'
-    current_task.delay = game.tick + 30
+    current_task.delay = game.tick + 100
     current_task.state = 'announce_new_map'
     current_task.state_id = 8
 end
@@ -774,7 +776,7 @@ function Public.announce_new_map(current_task)
     current_task.message = 'Announced new map!'
     current_task.state = 'to_fortress'
     current_task.surface_name = starting_planet
-    current_task.delay = game.tick + 20
+    current_task.delay = game.tick + 100
     current_task.state_id = 9
 end
 

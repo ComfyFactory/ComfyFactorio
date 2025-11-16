@@ -260,6 +260,8 @@ local function clear_surface()
     if platforms then
         for _, platform in pairs(platforms) do
             if platform and platform.valid then
+                local name = platform.surface.name
+                game.delete_surface(name)
                 platform.destroy()
             end
         end

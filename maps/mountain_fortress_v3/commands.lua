@@ -505,4 +505,23 @@ Commands.new('mtn_disable_collapse', 'Usable only for admins - toggles the colla
         end
     )
 
+Commands.new('mtn_grant_fake_buff', 'Usable only for admins - used to debug buff selection')
+    :require_admin()
+    :require_validation()
+    :require_offline_mode()
+    :callback(
+        function ()
+            local Core = require('utils.core')
+            Public.set('buff_selection', { buffs = {} })
+            local b = Public.grant_non_limit_reached_buff(3)
+            Public.init_buff_selection(b)
+
+            Core.iter_connected_players(function (p)
+                if p and p.valid then
+                    Public.buff_main_frame(p)
+                end
+            end)
+        end
+    )
+
 return Public

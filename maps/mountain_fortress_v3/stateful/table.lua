@@ -191,7 +191,6 @@ local function notify_season_over_to_discord(perm_buff)
 end
 
 local function get_random_buff(fetch_all, only_force)
-    local season = this.season
     local buffs =
     {
         {
@@ -322,8 +321,8 @@ local function get_random_buff(fetch_all, only_force)
             poll_name = 'RPG XP level',
             modifier = 'rpg',
             per_force = true,
-            limit = season and season > 12 and 5 or 10,
-            state = season and season > 12 and 4 or 20
+            limit = 5,
+            state = 4
         },
         {
             name = 'chemicals_s',
@@ -480,7 +479,7 @@ local function get_random_buff(fetch_all, only_force)
             tooltip = 'Selecting this buff will grant the team 1 extra wagon at start!',
             poll_name = 'Starting items (extra wagon)',
             modifier = 'locomotive',
-            limit = season and season > 12 and 3 or 5,
+            limit = 3,
             state = 1
         },
         {
@@ -1470,16 +1469,24 @@ end
 local function check_limit(limit_types, key, buff, increment)
     increment = increment or 1
     limit_types[key] = (limit_types[key] or 0) + increment
-    return buff.limit and limit_types[key] >= buff.limit
+    return buff.limit and limit_types[key] > buff.limit
 end
 
-local function apply_force_buff(buff, collected_table)
+local function apply_force_buff(buff, collected_table, limit_types)
+    if check_limit(limit_types, buff.name, buff) then
+        return true -- signal to skip
+    end
+
     local force = game.forces.player
     force[buff.name] = force[buff.name] + buff.state
     update_collected_entry(collected_table, buff.name, nil, buff.state, buff.discord, true)
 end
 
-local function apply_rpg_distance_buff(buff, collected_table)
+local function apply_rpg_distance_buff(buff, collected_table, limit_types)
+    if check_limit(limit_types, buff.modifier, buff) then
+        return true -- signal to skip
+    end
+
     local force = game.forces.player
     for _, buff_name in pairs(buff.modifiers) do
         if buff_name == 'character_reach_distance_bonus' then
@@ -1491,7 +1498,7 @@ local function apply_rpg_distance_buff(buff, collected_table)
 end
 
 local function apply_locomotive_buff(buff, collected_table, limit_types)
-    if check_limit(limit_types, 'locomotive', buff, buff.state) then
+    if check_limit(limit_types, buff.modifier, buff, buff.state) then
         return true -- signal to skip this buff
     end
 
@@ -1516,7 +1523,11 @@ local function is_higher_quality(new, old)
     return (quality_rank[new] or 0) > (quality_rank[old] or 0)
 end
 
-local function apply_quality_buff(buff, collected_table)
+local function apply_quality_buff(buff, collected_table, limit_types)
+    if check_limit(limit_types, buff.name, buff) then
+        return true -- signal to skip
+    end
+
     local function update_if_higher(current, new)
         if is_higher_quality(new, current) then
             return new
@@ -1548,7 +1559,11 @@ local function apply_fish_buff(buff, collected_table, limit_types)
     update_collected_entry(collected_table, 'fish', 'A thousand fishes', nil, buff.discord)
 end
 
-local function apply_tech_buff(buff, collected_table)
+local function apply_tech_buff(buff, collected_table, limit_types)
+    if check_limit(limit_types, buff.name, buff) then
+        return true -- signal to skip
+    end
+
     local techs = Public.get_func('techs')
 
     if not collected_table['techs'] then
@@ -1594,7 +1609,11 @@ local function apply_rpg_buff(buff, collected_table, limit_types)
     return false
 end
 
-local function apply_starting_items_buff(buff, collected_table)
+local function apply_starting_items_buff(buff, collected_table, limit_types)
+    if check_limit(limit_types, buff.name, buff) then
+        return true -- signal to skip
+    end
+
     local starting_items = Public.get_func('starting_items')
 
     if not collected_table['starting_items'] then
@@ -1665,21 +1684,21 @@ local function apply_buffs_generic(buffs_table, collected_table, is_permanent)
             local skip_buff = false
 
             if buff.name and buff.quality then
-                apply_quality_buff(buff, collected_table)
+                skip_buff = apply_quality_buff(buff, collected_table, limit_types)
             elseif buff.modifier == 'rpg_distance' then
-                apply_rpg_distance_buff(buff, collected_table)
+                skip_buff = apply_rpg_distance_buff(buff, collected_table, limit_types)
             elseif buff.modifier == 'locomotive' then
                 skip_buff = apply_locomotive_buff(buff, collected_table, limit_types)
             elseif buff.modifier == 'force' then
-                apply_force_buff(buff, collected_table)
+                skip_buff = apply_force_buff(buff, collected_table, limit_types)
             elseif buff.modifier == 'fish' then
-                apply_fish_buff(buff, collected_table, limit_types)
+                skip_buff = apply_fish_buff(buff, collected_table, limit_types)
             elseif buff.modifier == 'tech' then
-                skip_buff = apply_tech_buff(buff, collected_table)
+                skip_buff = apply_tech_buff(buff, collected_table, limit_types)
             elseif buff.modifier == 'rpg' then
                 skip_buff = apply_rpg_buff(buff, collected_table, limit_types)
             elseif buff.modifier == 'starting_items' then
-                skip_buff = apply_starting_items_buff(buff, collected_table)
+                skip_buff = apply_starting_items_buff(buff, collected_table, limit_types)
             end
 
             if skip_buff then

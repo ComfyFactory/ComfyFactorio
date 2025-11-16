@@ -16,6 +16,7 @@ local Server = require 'utils.server'
 ---@field parameters_required number
 ---@field check_server boolean
 ---@field check_backend boolean
+---@field check_offline_mode boolean
 ---@field check_admin boolean
 ---@field check_supporter boolean
 ---@field check_trusted boolean
@@ -36,6 +37,7 @@ local output =
 {
     backend_is_required = 'No backend is currently available. Please try again later.',
     server_is_required = 'This command requires to be run from the server.',
+    offline_mode_is_required = 'This command requires the server to be in offline mode to run.',
     admin_is_required = 'This command requires admin permissions to run.',
     supporter_is_required = 'This command requires supporter permissions to run.',
     trusted_is_required = 'This command requires trusted permissions to run.',
@@ -163,6 +165,13 @@ local function execute(event)
             reject(output.backend_is_required)
             return
         end
+    end
+
+    -- Check if the server is in offline mode and if the command requires it
+    local check_offline_mode = command_data.check_offline_mode or false
+    if (check_offline_mode and not is_server) and game.is_multiplayer() then
+        reject(output.offline_mode_is_required)
+        return
     end
 
     -- Check if the player is an admin and if the command requires it
@@ -475,6 +484,13 @@ end
 ---@return MetaCommand
 function Public:require_backend()
     self.check_backend = true
+    return self
+end
+
+--- Requires that the server is in offline mode
+---@return MetaCommand
+function Public:require_offline_mode()
+    self.check_offline_mode = true
     return self
 end
 

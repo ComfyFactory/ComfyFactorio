@@ -123,10 +123,11 @@ function Public.create_landing_surface()
             ['enemy-base'] = { frequency = 15, size = 0, richness = 1 }
         },
         cliff_settings = { cliff_elevation_0 = 1024, cliff_elevation_interval = 10, name = 'cliff' },
-        height = 64,
-        width = 256,
+        height = 128,
+        width = 128,
+        default_enable_all_autoplace_controls = false,
         peaceful_mode = false,
-        seed = 42,
+        seed = math.random(10000, 99999),
         starting_area = 'very-low',
         starting_points = { { x = 0, y = 0 } },
         terrain_segmentation = 'normal',
@@ -149,7 +150,7 @@ function Public.create_landing_surface()
     local walls = {}
     local tiles = {}
 
-    local area = { left_top = { x = -128, y = -32 }, right_bottom = { x = 128, y = 32 } }
+    local area = { left_top = { x = -64, y = -32 }, right_bottom = { x = 64, y = 32 } }
     for x = area.left_top.x, area.right_bottom.x, 1 do
         for y = area.left_top.y, area.right_bottom.y, 1 do
             tiles[#tiles + 1] = { name = 'black-refined-concrete', position = { x = x, y = y } }
@@ -167,11 +168,23 @@ function Public.create_landing_surface()
 
     rendering.draw_text
     {
-        text = '♦ Landing zone ♦',
+        text = 'Init zone',
         surface = surface,
         target = { 0, -50 },
         color = { r = 0.98, g = 0.66, b = 0.22 },
         scale = 10,
+        font = 'heading-1',
+        alignment = 'center',
+        scale_with_zoom = false
+    }
+
+    rendering.draw_text
+    {
+        text = 'Map is resetting, please wait a moment. All GUI buttons are disabled at the moment.',
+        surface = surface,
+        target = { 0, -40 },
+        color = { r = 0.98, g = 0.66, b = 0.22 },
+        scale = 5,
         font = 'heading-1',
         alignment = 'center',
         scale_with_zoom = false
@@ -190,6 +203,10 @@ function Public.get_reset_counter()
     return this.soft_reset_counter
 end
 
+local function is_inside_init_zone(x, y)
+    return x > -65 and x < 65 and y > -33 and y < 33
+end
+
 Event.add(defines.events.on_chunk_generated, function (event)
     local surface = event.surface
     if not valid_surfaces[surface.name] then
@@ -199,14 +216,19 @@ Event.add(defines.events.on_chunk_generated, function (event)
     local left_top = event.area.left_top
     local tiles = {}
 
-    for x = 0, 31, 1 do
-        for y = 0, 31, 1 do
-            local pos = { x = left_top.x + x, y = left_top.y + y }
-            if surface.get_tile(pos).name == 'void-tile' or surface.get_tile(pos).name == 'out-of-map' then
-                break
-            end
+    local water_tile = 'water'
+    if Public.is_modded_pt2 then
+        water_tile = 'empty-space'
+    end
 
-            insert(tiles, { name = 'ice-tile', position = pos })
+    for x = 0, 32, 1 do
+        for y = 0, 32, 1 do
+            local pos = { x = left_top.x + x, y = left_top.y + y }
+            if is_inside_init_zone(pos.x, pos.y) then
+                insert(tiles, { name = 'black-refined-concrete', position = pos })
+            else
+                insert(tiles, { name = water_tile, position = pos })
+            end
         end
     end
     surface.set_tiles(tiles, true)

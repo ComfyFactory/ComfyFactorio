@@ -274,8 +274,12 @@ local function check_if_valid_requests(chest)
     end
 end
 
-local function insert_to_furnace(player_inventory, chests, name, count, floaty_text_list)
+local function insert_to_furnace(stack, chests, floaty_text_list)
     local try = 0
+
+    local name = stack.name
+    local count = stack.count
+    local quality = stack.quality
 
     local to_insert = floor(count / #chests.chest)
     if to_insert <= 0 then
@@ -285,6 +289,8 @@ local function insert_to_furnace(player_inventory, chests, name, count, floaty_t
             return
         end
     end
+
+
 
     local variate = count % #chests.chest
     local chests_available = #chests.chest
@@ -309,14 +315,14 @@ local function insert_to_furnace(player_inventory, chests, name, count, floaty_t
                 if name == 'stone' then
                     local valid_to_insert = (amount % 2 == 0)
                     if valid_to_insert then
-                        if chest_inventory.can_insert({ name = name, count = amount }) then
-                            local inserted_count = chest_inventory.insert({ name = name, count = amount })
+                        if chest_inventory.can_insert({ name = name, count = amount, quality = quality }) then
+                            local inserted_count = chest_inventory.insert({ name = name, count = amount, quality = quality })
                             if inserted_count < 0 then
                                 return
                             end
-                            player_inventory.remove({ name = name, count = inserted_count })
-                            prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, inserted_count)
+                            stack.count = stack.count - inserted_count
                             count = count - inserted_count
+                            prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, inserted_count)
                             if count <= 0 then
                                 return
                             end
@@ -331,14 +337,14 @@ local function insert_to_furnace(player_inventory, chests, name, count, floaty_t
                         end
                     end
                 else
-                    if chest_inventory.can_insert({ name = name, count = amount }) then
-                        local inserted_count = chest_inventory.insert({ name = name, count = amount })
+                    if chest_inventory.can_insert({ name = name, count = amount, quality = quality }) then
+                        local inserted_count = chest_inventory.insert({ name = name, count = amount, quality = quality })
                         if inserted_count < 0 then
                             return
                         end
-                        player_inventory.remove({ name = name, count = inserted_count })
-                        prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, inserted_count)
+                        stack.count = stack.count - inserted_count
                         count = count - inserted_count
+                        prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, inserted_count)
                         if count <= 0 then
                             return
                         end
@@ -362,14 +368,14 @@ local function insert_to_furnace(player_inventory, chests, name, count, floaty_t
                 return
             end
             local chest_inventory = chest.get_inventory(defines.inventory.chest)
-            if chest_inventory and chest_inventory.can_insert({ name = name, count = amount }) then
-                local inserted_count = chest_inventory.insert({ name = name, count = amount })
+            if chest_inventory and chest_inventory.can_insert({ name = name, count = amount, quality = quality }) then
+                local inserted_count = chest_inventory.insert({ name = name, count = amount, quality = quality })
                 if inserted_count < 0 then
                     return
                 end
-                player_inventory.remove({ name = name, count = inserted_count })
-                prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, inserted_count)
+                stack.count = stack.count - inserted_count
                 count = count - inserted_count
+                prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, inserted_count)
                 if count <= 0 then
                     return
                 end
@@ -635,14 +641,6 @@ local function auto_stash(player, event)
         end
     end
 
-    local furnace_fuels =
-    {
-        ['coal'] = 0,
-        ['iron-ore'] = 0,
-        ['copper-ore'] = 0,
-        ['stone'] = 0
-    }
-
     local full_insert = { full = nil, name = nil }
     for i = #inventory, 1, -1 do
         if not inventory[i].valid_for_read then
@@ -655,7 +653,7 @@ local function auto_stash(player, event)
             if ctrl and this.insert_into_furnace then
                 if button == defines.mouse_button_type.right then
                     if is_furnace_fuel or is_resource then
-                        furnace_fuels[name] = (furnace_fuels[name] or 0) + inventory[i].count
+                        insert_to_furnace(inventory[i], chests, floaty_text_list)
                     end
                 end
             elseif shift and this.insert_into_wagon then -- insert into wagon
@@ -679,9 +677,6 @@ local function auto_stash(player, event)
             end
         end
         ::continue::
-    end
-    for furnace_name, furnace_count in pairs(furnace_fuels) do
-        insert_to_furnace(inventory, chests, furnace_name, furnace_count, floaty_text_list)
     end
 
     for _, texts in pairs(floaty_text_list) do
