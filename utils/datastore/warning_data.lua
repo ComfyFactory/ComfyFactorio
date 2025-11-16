@@ -6,7 +6,6 @@ local Utils = require 'utils.core'
 local Gui = require 'utils.gui'
 local Commands = require 'utils.commands'
 local Token = require 'utils.token'
-local Discord = require 'utils.discord'
 local DiscordHandler = require 'utils.discord_handler'
 
 local module_name = '[Warning handler] '
