@@ -288,7 +288,7 @@ function Public.try_dl_data(key)
 end
 
 Commands.new('warn', 'Assigns a warning to a player.')
-    :add_parameter('offender', false, 'player')
+    :add_parameter('offender', false, 'string')
     :add_parameter('reason', false, 'string')
     :require_backend()
     :callback(function (player, offender, reason)
@@ -307,8 +307,8 @@ Commands.new('warn', 'Assigns a warning to a player.')
             return false
         end
 
-        if assign_warning(offender.name, player.name, reason) then
-            Utils.print_to(player, module_name .. 'Warning assigned to ' .. offender.name .. '.')
+        if assign_warning(offender, player.name, reason) then
+            Utils.print_to(player, module_name .. 'Warning assigned to ' .. offender .. '.')
             return true
         else
             Utils.print_to(player, module_name .. 'Failed to assign warning.')
