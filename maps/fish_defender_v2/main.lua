@@ -19,6 +19,7 @@ local Score = require 'utils.gui.score'
 local AntiGrief = require 'utils.antigrief'
 local Core = require 'utils.core'
 local RobotLimits = require 'modules.robot_limits'
+local JailData = require 'utils.datastore.jail_data'
 local format_number = require 'util'.format_number
 local random = math.random
 local insert = table.insert
@@ -1487,6 +1488,7 @@ function Public.reset_game()
     end
     Difficulty.reset_difficulty_poll({ difficulty_poll_closing_timeout = wave_grace_period })
 
+
     local difficulties =
     {
         [1] =
@@ -1602,6 +1604,8 @@ function Public.reset_game()
         return
     end
 
+    JailData.set_valid_surface(surface.name)
+
     for _, tile in pairs(surface.find_tiles_filtered({ name = { 'water', 'deepwater' }, area = { { -300, -256 }, { 300, 300 } } })) do
         surface.set_tiles({ { name = Public.get_replacement_tile(surface, tile.position), position = { tile.position.x, tile.position.y } } }, true)
     end
@@ -1691,6 +1695,8 @@ local function on_tick()
                 market.die()
                 game.print('Game won!', { r = 0.22, g = 0.88, b = 0.22 })
                 game.print('Game wave limit reached! Game will soft-reset shortly.', { r = 0.22, g = 0.88, b = 0.22 })
+                local message = 'Game won! Game wave limit reached! Game will soft-reset shortly.'
+                Server.to_discord_bold(table.concat { '*** ', message, ' ***' })
             end
         end
 

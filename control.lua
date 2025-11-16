@@ -27,6 +27,102 @@ require 'modules.autostash'
 
 require 'utils.remote_chunks'
 
+---------------- ENABLE MAPS HERE ----------------
+--!Make sure only one map is enabled at a time.
+--!Remove the "--" in front of the line to enable.
+--!All lines with the "require" keyword are different maps.
+
+--![[Comfylatron has seized the Fish Train and turned it into a time machine]]--
+--require 'maps.chronosphere.main'
+
+--![[Guide a Train through rough terrain, while defending it from the biters]]--
+--require 'maps.mountain_fortress_v3.main'
+--require 'maps.mountain_fortress_v2.main'
+--require 'maps.mountain_fortress'
+
+--![[Launch rockets in increasingly harder getting worlds.]]--
+--require 'maps.journey.main'
+
+--![[Infestation Islands]]--
+--require 'maps.infestation_islands.main'
+
+--![[Infinite random dungeon with RPG]]--
+--require 'maps.dungeons.main'
+
+--![[Defend the market against waves of biters]]--
+--require 'maps.fish_defender_v2.main'
+--require 'maps.crab_defender.main'
+--require 'maps.fish_defender_v1.fish_defender'
+--require 'maps.fish_defender.main'
+
+--![[Adventure as a crew of pirates]]--
+--require 'maps.pirates.main'
+
+--![[East VS West Survival PVP, where you breed biters with science flasks]]--
+--require 'maps.biter_hatchery.main'
+
+--![[Fight in a world where everyone are prisoners]]
+--require 'maps.planet_prison'
+
+--![[Chop trees to gain resources]]--
+--require 'maps.choppy'
+--require 'maps.choppy_dx'
+
+--![[Minesweeper?]]--
+--require 'maps.minesweeper.main'
+
+--![[Tower defense system]]--
+--require 'maps.tower_defense.main'
+
+--![[North VS South Survival PVP, feed the opposing team's biters with science flasks. Disable Autostash, Group and Poll modules.]]--
+--require 'maps.biter_battles_v2.main'
+--require 'maps.biter_battles.biter_battles'
+
+--![[Randomly generating Islands that have to be beaten in levels to gain credits]]--
+--require 'maps.island_troopers.main'
+
+--![[Infinitely expanding mazes]]--
+--require 'maps.stone_maze.main'
+--require 'maps.labyrinth'
+
+--![[Extreme survival mode with thirst and limited building room]]--
+--require 'maps.desert_oasis'
+
+--![[The trees are your enemy here]]--
+--require 'maps.overgrowth'
+
+--![[Wave Defense Map split in 4 Quarters]]--
+--require 'maps.quarters'
+
+--![[Flee from the collapsing map with portable base inside train]]--
+--require 'maps.railway_troopers_v2.main'
+
+--![[Another simliar version without collapsing terrain]]--
+--require 'maps.railway_troopers.main'
+
+--![[Territorial Control - reveal the map as you walk through the mist]]--
+--require 'maps.territorial_control'
+
+--![[Deep Jungle - dangerous map]]--
+--require 'maps.deep_jungle.main'
+
+--![[You fell in a dark cave, will you survive?]]--
+--require 'maps.cave_choppy.main'
+--require 'maps.cave_miner'
+--require 'maps.cave_miner_v2.main'
+
+--![[Hungry boxes eat your items, but reward you with new territory to build.]]--
+--require 'maps.expanse.main'
+
+--![[Dangerous forest with unique map revealing]]--
+--require 'maps.spooky_forest'
+
+--![[Defeat the biters and unlock new areas]]--
+--require 'maps.spiral_troopers'
+
+--![[Test map spawns all entities for testing]]--
+--require 'maps.test_map.main'
+
 ---------------- !ENABLE MODULES HERE ----------------
 --require 'modules.rpg.main'
 --require 'modules.admins_operate_biters'
@@ -73,102 +169,6 @@ require 'utils.remote_chunks'
 --require 'modules.simple_tags'
 --require 'modules.turret_filler'
 ---------------------------------------------------------------
-
----------------- ENABLE MAPS HERE ----------------
---!Make sure only one map is enabled at a time.
---!Remove the "--" in front of the line to enable.
---!All lines with the "require" keyword are different maps.
-
---![[North VS South Survival PVP, feed the opposing team's biters with science flasks. Disable Autostash, Group and Poll modules.]]--
---require 'maps.biter_battles_v2.main'
---require 'maps.biter_battles.biter_battles'
-
---![[Guide a Train through rough terrain, while defending it from the biters]]--
---require 'maps.mountain_fortress_v3.main'
---require 'maps.mountain_fortress_v2.main'
---require 'maps.mountain_fortress'
-
---![[Comfylatron has seized the Fish Train and turned it into a time machine]]--
---require 'maps.chronosphere.main'
-
---![[Launch rockets in increasingly harder getting worlds.]]--
---require 'maps.journey.main'
-
---![[Infestation Islands]]--
---require 'maps.infestation_islands.main'
-
---![[Infinite random dungeon with RPG]]--
---require 'maps.dungeons.main'
-
---![[Defend the market against waves of biters]]--
---require 'maps.fish_defender_v2.main'
---require 'maps.crab_defender.main'
---require 'maps.fish_defender_v1.fish_defender'
---require 'maps.fish_defender.main'
-
---![[Adventure as a crew of pirates]]--
---require 'maps.pirates.main'
-
---![[East VS West Survival PVP, where you breed biters with science flasks]]--
---require 'maps.biter_hatchery.main'
-
---![[Fight in a world where everyone are prisoners]]
---require 'maps.planet_prison'
-
---![[Chop trees to gain resources]]--
---require 'maps.choppy'
---require 'maps.choppy_dx'
-
---![[Minesweeper?]]--
---require 'maps.minesweeper.main'
-
---![[Tower defense system]]--
---require 'maps.tower_defense.main'
-
---![[Randomly generating Islands that have to be beaten in levels to gain credits]]--
---require 'maps.island_troopers.main'
-
---![[Infinitely expanding mazes]]--
---require 'maps.stone_maze.main'
---require 'maps.labyrinth'
-
---![[Extreme survival mode with thirst and limited building room]]--
---require 'maps.desert_oasis'
-
---![[The trees are your enemy here]]--
---require 'maps.overgrowth'
-
---![[Wave Defense Map split in 4 Quarters]]--
---require 'maps.quarters'
-
---![[Flee from the collapsing map with portable base inside train]]--
---require 'maps.railway_troopers_v2.main'
-
---![[Another simliar version without collapsing terrain]]--
---require 'maps.railway_troopers.main'
-
---![[Territorial Control - reveal the map as you walk through the mist]]--
---require 'maps.territorial_control'
-
---![[Deep Jungle - dangerous map]]--
---require 'maps.deep_jungle.main'
-
---![[You fell in a dark cave, will you survive?]]--
---require 'maps.cave_choppy.main'
---require 'maps.cave_miner'
---require 'maps.cave_miner_v2.main'
-
---![[Hungry boxes eat your items, but reward you with new territory to build.]]--
---require 'maps.expanse.main'
-
---![[Dangerous forest with unique map revealing]]--
---require 'maps.spooky_forest'
-
---![[Defeat the biters and unlock new areas]]--
---require 'maps.spiral_troopers'
-
---![[Test map spawns all entities for testing]]--
---require 'maps.test_map.main'
 
 
 --- this file exists only for the panel to sync and start from within the panel
