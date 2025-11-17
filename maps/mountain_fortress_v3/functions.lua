@@ -3172,7 +3172,9 @@ end
 
 function Public.disable_tech()
     local force = game.forces.player
-    force.technologies['landfill'].enabled = false
+    if not Public.is_modded_pt2 then
+        force.technologies['landfill'].enabled = false
+    end
     force.technologies['spidertron'].enabled = false
     force.technologies['spidertron'].researched = false
     force.technologies['atomic-bomb'].enabled = false
