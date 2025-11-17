@@ -361,7 +361,7 @@ Config.register_scenario_module(
 
 Public.zone_settings =
 {
-    zone_depth = 480,
+    zone_depth = 704,
     zone_width = 510
 }
 
