@@ -126,6 +126,18 @@ local wagon_raffle =
 {
     'cargo-wagon',
     'locomotive',
+    'cargo-wagon',
+    'fluid-wagon',
+    'cargo-wagon',
+    'locomotive',
+    'cargo-wagon',
+    'locomotive',
+    'fluid-wagon',
+    'locomotive',
+    'fluid-wagon',
+    'locomotive',
+    'fluid-wagon',
+    'cargo-wagon',
     'fluid-wagon'
 }
 

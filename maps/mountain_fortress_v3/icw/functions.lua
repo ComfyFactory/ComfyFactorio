@@ -85,7 +85,7 @@ local function get_offset(icw, surface, offset)
     if not icw.default_surface then return { x = 0, y = 0 } end
     local position =
     {
-        x = 10000 + offset,
+        x = 2000 + offset,
         y = 0
     }
 
@@ -929,7 +929,7 @@ function Public.create_wagon(icw, created_entity)
         doors = {}
     }
     local wagon = icw.wagons[created_entity.unit_number]
-    icw.offsets = icw.offsets + 480
+    icw.offsets = icw.offsets + icw.offset_increment
 
     wagon.surface = Public.create_room_surface(icw, created_entity.unit_number)
     Public.create_wagon_room(icw, icw.wagons[created_entity.unit_number])
@@ -1368,7 +1368,7 @@ function Public.reconstruct_all_trains(reset_carriages)
                     end
 
                     new_wagon.new_chunk_position = new_position
-                    icw.offsets = icw.offsets + 480
+                    icw.offsets = icw.offsets + icw.offset_increment
                     to_construct_ids[carriages[1].unit_number] = true
                     ::continue::
                 end
