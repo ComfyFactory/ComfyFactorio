@@ -415,7 +415,7 @@ function Public.move_players(current_task)
     end
     local starting_planet = Public.get_planet()
     current_task.message = 'Moved players to initial surface!'
-    current_task.delay = game.tick + 100
+    current_task.delay = game.tick + 1
     current_task.state_id = 1
     current_task.starting_planet = starting_planet
     current_task.state = 'pre_init_task'
@@ -424,6 +424,12 @@ end
 function Public.pre_init_task(current_task)
     local this = Public.get()
     game.speed = 1
+
+    local active_surface_index = Public.get('active_surface_index')
+    local surface = game.surfaces[active_surface_index]
+    if surface and surface.valid then
+        game.delete_surface(surface.name)
+    end
 
     current_task.done = nil
     current_task.step = 1
@@ -541,9 +547,10 @@ end
 function Public.clear_fortress(current_task)
     local surface = game.surfaces[current_task.starting_planet]
     if surface then
-        surface.clear()
-        surface.request_to_generate_chunks({ x = -20, y = -22 }, 1)
-        surface.force_generate_chunk_requests()
+        game.delete_surface(surface.name)
+        -- surface.request_to_generate_chunks({ x = -20, y = -22 }, 1)
+        -- surface.force_generate_chunk_requests()
+        Public.set('active_surface_index', nil)
     end
 
     current_task.state = 'create_custom_fortress_surface'
@@ -553,11 +560,7 @@ function Public.clear_fortress(current_task)
 end
 
 function Public.create_custom_fortress_surface(current_task)
-    local fortress = game.surfaces[current_task.starting_planet]
-    if fortress then
-        fortress.clear()
-    end
-    Public.set('active_surface_index', Public.create_surface())
+    Public.set('active_surface_index', Public.create_surface(true))
     local active_surface_index = Public.get('active_surface_index')
 
     WD.set('surface_index', active_surface_index)
@@ -788,8 +791,7 @@ function Public.to_fortress(current_task)
     local adjusted_zones = Public.get('adjusted_zones')
     local position
 
-    local wd = WD.get()
-    wd.game_lost = false
+    WD.set('game_lost', false)
 
     if adjusted_zones.reversed then
         game.forces.player.set_spawn_position({ -27, -25 }, surface)

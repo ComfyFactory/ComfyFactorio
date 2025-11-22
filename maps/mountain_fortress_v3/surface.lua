@@ -31,7 +31,7 @@ local function exclude_surface(surface, state)
 end
 
 
-function Public.create_surface()
+function Public.create_surface(recreate)
     exclude_surface(game.surfaces.nauvis)
 
     local map_gen_settings =
@@ -72,7 +72,7 @@ function Public.create_surface()
     local planets = Public.get_planets()
 
     if Public.is_modded then
-        if not this.active_surface_index then
+        if not this.active_surface_index or recreate then
             this.active_surface_index = game.planets[starting_planet].create_surface().index
         else
             this.active_surface_index = Public.soft_reset_map(game.surfaces[starting_planet], map_gen_settings).index

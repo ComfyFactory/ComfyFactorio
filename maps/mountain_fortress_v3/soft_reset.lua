@@ -144,18 +144,20 @@ function Public.soft_reset_map(old_surface)
     this.soft_reset_counter = this.soft_reset_counter + 1
 
     local surface = old_surface or game.surfaces.fortress
-    surface.clear(true)
-    -- surface.request_to_generate_chunks({ 0, 0 }, 1)
-    -- surface.force_generate_chunk_requests()
+    if surface and surface.valid then
+        surface.clear(true)
+        -- surface.request_to_generate_chunks({ 0, 0 }, 1)
+        -- surface.force_generate_chunk_requests()
 
-    local radius = 512
-    local area = { { x = -radius, y = -radius }, { x = radius, y = radius } }
-    for _, entity in pairs(surface.find_entities_filtered { area = area, type = 'logistic-robot' }) do
-        entity.destroy()
-    end
+        local radius = 512
+        local area = { { x = -radius, y = -radius }, { x = radius, y = radius } }
+        for _, entity in pairs(surface.find_entities_filtered { area = area, type = 'logistic-robot' }) do
+            entity.destroy()
+        end
 
-    for _, entity in pairs(surface.find_entities_filtered { area = area, type = 'construction-robot' }) do
-        entity.destroy()
+        for _, entity in pairs(surface.find_entities_filtered { area = area, type = 'construction-robot' }) do
+            entity.destroy()
+        end
     end
 
     local message = table.concat({ mapkeeper .. ' Welcome to Mtn Fortress!' })

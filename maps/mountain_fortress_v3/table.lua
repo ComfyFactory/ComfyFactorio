@@ -745,6 +745,7 @@ function Public.reset_main_table()
             table.insert(corpses_raffle, e.name)
         end
     end
+    this.corpses_raffle = corpses_raffle
 
     for _, planet in pairs(game.planets) do
         local platforms = planet.get_space_platforms('player')
@@ -759,7 +760,6 @@ function Public.reset_main_table()
         end
     end
 
-    this.corpses_raffle = corpses_raffle
 
     this.enforce_wave_200_before_collapse = true
 
