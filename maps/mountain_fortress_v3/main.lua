@@ -426,9 +426,11 @@ function Public.pre_init_task(current_task)
     game.speed = 1
 
     local active_surface_index = Public.get('active_surface_index')
-    local surface = game.surfaces[active_surface_index]
-    if surface and surface.valid then
-        game.delete_surface(surface.name)
+    if active_surface_index then
+        local surface = game.surfaces[active_surface_index]
+        if surface and surface.valid then
+            game.delete_surface(surface.name)
+        end
     end
 
     current_task.done = nil
