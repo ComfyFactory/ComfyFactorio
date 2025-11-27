@@ -427,6 +427,27 @@ local function get_items(player)
         }
     end
 
+    if script.active_mods['space-age'] and game.forces.player.technologies['planet-discovery-vulcanus'].researched then
+        main_market_items['tungsten-ore'] =
+        {
+            stack = 50,
+            value = 'coin',
+            price = 12,
+            tooltip = ({ 'item-name.tungsten-ore' }),
+            upgrade = false,
+            static = false
+        }
+        main_market_items['calcite'] =
+        {
+            stack = 50,
+            value = 'coin',
+            price = 12,
+            tooltip = ({ 'item-name.calcite' }),
+            upgrade = false,
+            static = false
+        }
+    end
+
     if game.forces.player.technologies['artillery'].researched then
         main_market_items['artillery-turret'] =
         {
