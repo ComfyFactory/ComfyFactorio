@@ -236,7 +236,7 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'worker_robots_storage_bonus',
             discord = 'Robot storage bonus - robots carry more!',
-            tooltip = 'Selecting this buff will grant the team 100% increased robot storage!',
+            tooltip = 'Selecting this buff will grant the team +1 increased robot storage!',
             poll_name = 'Robot storage',
             modifier = 'force',
             per_force = true,
