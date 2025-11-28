@@ -5172,22 +5172,12 @@ local zones =
     zone_13 = { fn = zone_13, weight = 100, tags = { 'main' } },
 
     -- Forest zones (grouped under "forest")
-    zone_forest_1 = { fn = zone_forest_1, weight = 100, tags = { 'forest' } },
-    zone_forest_2 = { fn = zone_forest_2, weight = 100, tags = { 'forest' } },
-    zone_10 = { fn = zone_10, weight = 100, tags = { 'forest' } },
-    zone_14 = { fn = zone_14, weight = 100, tags = { 'forest' } },
-    zone_gleba_forest_1 = { fn = zone_gleba_forest_1, weight = 100, tags = { 'forest' }, space_age = true },
-    zone_gleba_forest_2 = { fn = zone_gleba_forest_2, weight = 100, tags = { 'forest' }, space_age = true },
+    zone_gleba_forest_1 = { fn = zone_gleba_forest_1, weight = 120, tags = { 'forest' }, space_age = true },
+    zone_gleba_forest_2 = { fn = zone_gleba_forest_2, weight = 120, tags = { 'forest' }, space_age = true },
 
     -- Scrap zones (grouped under "scrap")
     zone_scrap_1 = { fn = zone_scrap_1, weight = 100, tags = { 'scrap' } },
     zone_scrap_2 = { fn = zone_scrap_2, weight = 100, tags = { 'scrap' } },
-
-    -- Crystal zones (grouped under "crystal")
-    zone_crystal_1 = { fn = zone_crystal_1, weight = 100, tags = { 'crystal' }, disabled = true },
-
-    -- Volcanic zones (grouped under "volcanic")
-    zone_volcanic_1 = { fn = zone_volcanic_1, weight = 100, tags = { 'volcanic' }, disabled = true },
 
     -- Tech zones (grouped under "tech")
     zone_tech_1 = { fn = zone_tech_1, weight = 100, tags = { 'tech' }, disabled = true },
@@ -5197,18 +5187,35 @@ local zones =
     zone_frostbite_2 = { fn = zone_frostbite_2, weight = 100, tags = { 'frostbite' }, disabled = true },
 
     -- Gleba zones (grouped under "gleba")
-    zone_gleba_1 = { fn = zone_gleba_1, weight = 100, tags = { 'gleba' }, space_age = true },
-    zone_gleba_2 = { fn = zone_gleba_2, weight = 100, tags = { 'gleba' }, space_age = true },
+    zone_gleba_1 = { fn = zone_gleba_1, weight = 120, tags = { 'gleba' }, space_age = true },
+    zone_gleba_2 = { fn = zone_gleba_2, weight = 120, tags = { 'gleba' }, space_age = true },
 
     -- Fulgora tech zones (grouped under "fulgora_tech")
-    zone_fulgora_tech_1 = { fn = zone_fulgora_tech_1, weight = 100, tags = { 'fulgora_tech' }, space_age = true },
+    zone_fulgora_tech_1 = { fn = zone_fulgora_tech_1, weight = 120, tags = { 'fulgora_tech' }, space_age = true },
 
     -- Vulcanus zones (grouped under "vulcanus")
-    zone_vulcanus_1 = { fn = zone_vulcanus_1, weight = 100, tags = { 'vulcanus' } },
+    zone_vulcanus_1 = { fn = zone_vulcanus_1, weight = 120, tags = { 'vulcanus' } },
 
     -- Aquilo zones (grouped under "aquilo")
-    zone_aquilo_1 = { fn = zone_aquilo_1, weight = 100, tags = { 'aquilo' } },
+    zone_aquilo_1 = { fn = zone_aquilo_1, weight = 120, tags = { 'aquilo' } },
 }
+
+if not Public.is_modded_pt2 then
+    -- Crystal zones (grouped under "crystal")
+    zones.zone_crystal_1 = { fn = zone_crystal_1, weight = 100, tags = { 'crystal' }, disabled = true }
+
+    -- Volcanic zones (grouped under "volcanic")
+    zones.zone_volcanic_1 = { fn = zone_volcanic_1, weight = 100, tags = { 'volcanic' }, disabled = true }
+    zones.zone_forest_1 = { fn = zone_forest_1, weight = 100, tags = { 'forest' } }
+    zones.zone_forest_2 = { fn = zone_forest_2, weight = 100, tags = { 'forest' } }
+    zones.zone_10 = { fn = zone_10, weight = 100, tags = { 'forest' } }
+    zones.zone_14 = { fn = zone_14, weight = 100, tags = { 'forest' } }
+else
+    zones.zone_forest_1 = { fn = zone_forest_1, weight = 50, tags = { 'forest' } }
+    zones.zone_forest_2 = { fn = zone_forest_2, weight = 50, tags = { 'forest' } }
+    zones.zone_10 = { fn = zone_10, weight = 50, tags = { 'forest' } }
+    zones.zone_14 = { fn = zone_14, weight = 50, tags = { 'forest' } }
+end
 
 local planets =
 {

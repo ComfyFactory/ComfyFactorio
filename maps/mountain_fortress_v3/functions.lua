@@ -3168,6 +3168,11 @@ local disable_recipes = function (force)
     force.recipes['locomotive'].enabled = false
     force.recipes['pistol'].enabled = false
     force.recipes['discharge-defense-equipment'].enabled = false
+
+    -- local current_planet = Public.get_planet()
+    -- if Public.is_modded_pt2 and current_planet == 'fortress' then
+    --     force.recipes['thruster'].enabled = false
+    -- end
 end
 
 function Public.disable_tech()

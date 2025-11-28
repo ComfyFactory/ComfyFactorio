@@ -12,7 +12,6 @@ end
 
 require 'modules.shotgun_buff'
 require 'modules.no_deconstruction_of_neutral_entities'
-require 'modules.spawners_contain_biters'
 require 'maps.mountain_fortress_v3.ic.main'
 require 'modules.wave_defense.main'
 require 'modules.melee_mode'
@@ -52,6 +51,7 @@ local Commands = require 'utils.commands'
 local RobotLimits = require 'modules.robot_limits'
 local CustomEvents = require 'utils.created_events'
 local RocksYieldOreVeins = require 'maps.mountain_fortress_v3.rocks_yield_ore_veins'
+local SpawnersContainBiters = require 'modules.spawners_contain_biters'
 
 local send_ping_to_channel = Discord.channel_names.mtn_channel
 local role_to_mention = Discord.role_mentions.mtn_fortress
@@ -460,6 +460,10 @@ function Public.pre_init_task(current_task)
 
     RocksYieldOreVeins.remove_from_raffle({ 'calcite', 'tungsten-ore' })
     RocksYieldOreVeins.remove_from_mixed_ores({ 'calcite', 'tungsten-ore' })
+
+    local current_planet = Public.get_planet()
+    SpawnersContainBiters.add_surface(current_planet)
+
     WD.reset_wave_defense()
     WD.alert_boss_wave(true)
     WD.enable_side_target(false)
@@ -530,6 +534,7 @@ function Public.pre_init_task(current_task)
 end
 
 function Public.init_stateful(current_task)
+    ICW.reset()
     Public.reset_main_table()
     Public.stateful.enable(true)
     Public.stateful.reset_stateful(false, true)
@@ -583,7 +588,6 @@ function Public.reset_map(current_task)
     BottomFrame.reset()
     Public.reset_buried_biters()
     Poll.reset()
-    ICW.reset()
     ICW.set('default_surface', this.default_surface)
     IC.reset()
     IC.allowed_surface(game.surfaces[this.active_surface_index].name)
@@ -756,6 +760,8 @@ function Public.create_locomotive(current_task)
         Collapse.set_direction('north')
         Public.locomotive_spawn(surface, { x = -18, y = 25 }, adjusted_zones.reversed)
     end
+
+    Server.output_script_data('Created locomotive!')
 
     Public.render_train_hp()
     Public.render_direction(surface, adjusted_zones.reversed)

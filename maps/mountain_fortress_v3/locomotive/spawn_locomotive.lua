@@ -167,24 +167,6 @@ function Public.locomotive_spawn(surface, position, reversed)
         stateful.quality_trains = 'normal'
     end
 
-    local quality_size =
-    {
-        ['normal'] = 40,
-        ['uncommon'] = 45,
-        ['rare'] = 50,
-        ['epic'] = 55,
-        ['legendary'] = 70
-    }
-
-    ICW.set('wagon_areas',
-        {
-            ['cargo-wagon'] = { left_top = { x = -quality_size[stateful.quality_trains], y = 0 }, right_bottom = { x = quality_size[stateful.quality_trains], y = 100 } },
-            ['fluid-wagon'] = { left_top = { x = -quality_size[stateful.quality_trains], y = 0 }, right_bottom = { x = quality_size[stateful.quality_trains], y = 100 } },
-            ['locomotive'] = { left_top = { x = -quality_size[stateful.quality_trains], y = 0 }, right_bottom = { x = quality_size[stateful.quality_trains], y = 100 } }
-        })
-
-
-
     if reversed then
         position.y = position.y - (6 * extra_wagons)
         for y = -6, 6, 2 do

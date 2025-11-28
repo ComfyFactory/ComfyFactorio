@@ -418,6 +418,16 @@ local function spawn_unit_spawner_inhabitants(entity)
     if entity.type ~= 'unit-spawner' then
         return
     end
+    local entity_surface = entity.surface
+    local surface_index = Public.get('surface_index')
+    local surface = game.surfaces[surface_index]
+    if not surface then
+        return
+    end
+    if string.sub(entity_surface.name, 0, #surface.name) ~= surface.name then
+        return
+    end
+
     local wave_number = Public.get('wave_number')
     local count = 8 + math.floor(wave_number * 0.1)
     if count > 128 then

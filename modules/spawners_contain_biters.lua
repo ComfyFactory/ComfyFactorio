@@ -1,9 +1,25 @@
 -- spawners release biters on death -- by mewmew
 
 local Event = require 'utils.event'
+local Global = require 'utils.global'
 local math_random = math.random
 
-local biter_building_inhabitants = {
+local Public = {}
+
+local this =
+{
+    valid_surface = {}
+}
+
+Global.register(
+    this,
+    function (tbl)
+        this = tbl
+    end
+)
+
+local biter_building_inhabitants =
+{
     [1] = { { 'small-biter', 8, 16 } },
     [2] = { { 'small-biter', 12, 24 } },
     [3] = { { 'small-biter', 8, 16 }, { 'medium-biter', 1, 2 } },
@@ -17,10 +33,17 @@ local biter_building_inhabitants = {
 }
 
 local function on_entity_died(event)
-    if not event.entity.valid then
+    local entity = event.entity
+    if not entity.valid then
         return
     end
-    local entity = event.entity
+    if not this.valid_surface[entity.surface.name] then
+        if entity.force.name == 'enemy' then
+            entity.destroy()
+            return
+        end
+        return
+    end
     if entity.type ~= 'unit-spawner' then
         return
     end
@@ -43,4 +66,14 @@ local function on_entity_died(event)
     end
 end
 
+function Public.add_surface(surface_name)
+    local surface = game.surfaces[surface_name]
+    if not surface then
+        return
+    end
+    this.valid_surface[surface.name] = true
+end
+
 Event.add(defines.events.on_entity_died, on_entity_died)
+
+return Public

@@ -7,7 +7,8 @@ local insert = table.insert
 local floor = math.floor
 local random = math.random
 
-local coin_yield = {
+local coin_yield =
+{
     ['behemoth-biter'] = 5,
     ['behemoth-spitter'] = 5,
     ['behemoth-worm-turret'] = 10,
@@ -165,7 +166,8 @@ local coin_yield = {
     ['mtn-addon-giant-worm-turret'] = 200,
 }
 
-local entities_that_earn_coins = {
+local entities_that_earn_coins =
+{
     ['artillery-turret'] = true,
     ['gun-turret'] = true,
     ['laser-turret'] = true,
@@ -176,7 +178,12 @@ local function check_quality()
     local quality_list = Public.get('quality_list')
     local quality_level = random(1, #quality_list)
     local quality = quality_list[quality_level]
-    return quality
+
+    if random(1, 2) == 1 then
+        return quality[random(1, #quality)]
+    end
+
+    return 'normal'
 end
 
 --extra coins for "boss" biters from biter_health_booster.lua
@@ -228,7 +235,10 @@ local function on_entity_died(event)
         return
     end
 
-
+    local current_planet = Public.get_planet()
+    if string.sub(entity.surface.name, 0, #current_planet) ~= current_planet then
+        return
+    end
 
     local cause = event.cause
 

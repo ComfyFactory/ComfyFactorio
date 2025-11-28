@@ -17,6 +17,7 @@ local Beam = require 'modules.render_beam'
 local Discord = require 'utils.discord'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 local CustomEvents = require 'utils.created_events'
+local ICW = require 'maps.mountain_fortress_v3.icw.table'
 
 local this =
 {
@@ -2360,6 +2361,22 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
     if refresh_gui then
         Public.refresh_frames()
     end
+
+    local quality_size =
+    {
+        ['normal'] = 40,
+        ['uncommon'] = 45,
+        ['rare'] = 50,
+        ['epic'] = 55,
+        ['legendary'] = 70
+    }
+
+    ICW.set('wagon_areas',
+        {
+            ['cargo-wagon'] = { left_top = { x = -quality_size[this.quality_trains], y = 0 }, right_bottom = { x = quality_size[this.quality_trains], y = 100 } },
+            ['fluid-wagon'] = { left_top = { x = -quality_size[this.quality_trains], y = 0 }, right_bottom = { x = quality_size[this.quality_trains], y = 100 } },
+            ['locomotive'] = { left_top = { x = -quality_size[this.quality_trains], y = 0 }, right_bottom = { x = quality_size[this.quality_trains], y = 100 } }
+        })
 end
 
 function Public.move_all_players()

@@ -751,7 +751,7 @@ function Public.reset_main_table()
         local platforms = planet.get_space_platforms('player')
         if platforms then
             for _, platform in pairs(platforms) do
-                if platform and platform.valid then
+                if platform and platform.valid and platform.surface and platform.surface.valid then
                     local name = platform.surface.name
                     game.delete_surface(name)
                     platform.destroy()
