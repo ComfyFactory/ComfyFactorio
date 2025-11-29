@@ -927,6 +927,7 @@ function Public.init_mtn()
     Explosives.set_destructible_tile('wetland-blue-slime', 1000)
     Explosives.set_destructible_tile('wetland-yumako', 1000)
     Explosives.set_destructible_tile('wetland-jellynut', 1000)
+    Explosives.set_destructible_tile('brash-ice', 1000)
 
     Explosives.set_whitelist_entity('straight-rail')
     Explosives.set_whitelist_entity('curved-rail-a')
