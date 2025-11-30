@@ -113,8 +113,7 @@ local function on_player_died(event)
 end
 
 local function on_train_created()
-    local icw = ICW.get()
-    Functions.request_reconstruction(icw)
+    Functions.request_reconstruction()
 end
 
 local function on_gui_click(event)
@@ -192,8 +191,32 @@ Event.add(defines.events.on_entity_cloned, on_entity_cloned)
 Event.add(
     defines.events.on_built_entity,
     function (event)
+        log(serpent.block('here'))
         local icw = ICW.get()
-        return Functions.create_wagon(icw, event.entity)
+        local quality_size =
+        {
+            ['normal'] = 40,
+            ['uncommon'] = 45,
+            ['rare'] = 50,
+            ['epic'] = 55,
+            ['legendary'] = 70
+        }
+
+        local entity = event.entity
+        if not entity or not entity.valid then
+            return
+        end
+
+        local quality = entity.quality.name
+
+        local quality_areas =
+        {
+            ['cargo-wagon'] = { left_top = { x = -quality_size[quality], y = 0 }, right_bottom = { x = quality_size[quality], y = 100 } },
+            ['fluid-wagon'] = { left_top = { x = -quality_size[quality], y = 0 }, right_bottom = { x = quality_size[quality], y = 100 } },
+            ['locomotive'] = { left_top = { x = -quality_size[quality], y = 0 }, right_bottom = { x = quality_size[quality], y = 100 } }
+        }
+
+        return Functions.create_wagon(icw, event.entity, quality_areas)
     end
 )
 Event.add(defines.events.on_player_warp_entered, function (event)

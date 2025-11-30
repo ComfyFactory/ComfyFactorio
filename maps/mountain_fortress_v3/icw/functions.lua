@@ -889,7 +889,7 @@ function Public.create_wagon_room(icw, wagon)
     end
 end
 
-function Public.create_wagon(icw, created_entity)
+function Public.create_wagon(icw, created_entity, quality_areas)
     if not validate_entity(created_entity) then
         return
     end
@@ -900,6 +900,10 @@ function Public.create_wagon(icw, created_entity)
 
     local wagon_types = ICW.get('wagon_types')
     local wagon_areas = ICW.get('wagon_areas')
+
+    if quality_areas then
+        wagon_areas = quality_areas
+    end
 
     local position = get_offset(icw, created_entity.surface, icw.offsets)
 

@@ -693,6 +693,12 @@ function Public.reset()
     this.players = {}
 end
 
+function Public.creative()
+    Modifiers.set('creative_enabled', true)
+    this.creative_enabled = true
+    game.forces.player.enable_all_prototypes()
+end
+
 function Public.bottom_button(value)
     print('Setting bottom button.')
     this.bottom_button = value or false
