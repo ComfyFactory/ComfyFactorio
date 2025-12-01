@@ -71,7 +71,7 @@ Event.add(CustomEvents.events.on_server_started, function ()
     end
 
     local server_name_matches = false
-    for name, _ in pairs(valid_dev_names) do
+    for _, name in pairs(valid_dev_names) do
         if Server.check_server_name(name) then
             server_name_matches = true
             break
