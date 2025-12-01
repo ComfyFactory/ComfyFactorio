@@ -191,7 +191,6 @@ Event.add(defines.events.on_entity_cloned, on_entity_cloned)
 Event.add(
     defines.events.on_built_entity,
     function (event)
-        log(serpent.block('here'))
         local icw = ICW.get()
         local quality_size =
         {
