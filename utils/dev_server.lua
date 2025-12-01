@@ -16,6 +16,15 @@ local this =
     interval_in_ticks = 30 * 60 * 60 -- 30 minutes
 }
 
+local valid_dev_names =
+{
+    'developer',
+    'dev_server',
+    'test',
+    'test_server',
+    'dev',
+}
+
 Global.register(
     this,
     function (tbl)
@@ -61,7 +70,14 @@ Event.add(CustomEvents.events.on_server_started, function ()
         return
     end
 
-    local server_name_matches = Server.check_server_name('developer') or Server.check_server_name('dev_server') or Server.check_server_name('test')
+    local server_name_matches = false
+    for name, _ in pairs(valid_dev_names) do
+        if Server.check_server_name(name) then
+            server_name_matches = true
+            break
+        end
+    end
+
     if server_name_matches then
         this.dev_server = true
         Server.output_script_data('Server is a developer server, shutting down in 24 hours...')

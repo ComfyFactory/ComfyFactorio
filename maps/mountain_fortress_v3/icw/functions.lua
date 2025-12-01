@@ -1428,63 +1428,55 @@ function Public.reconstruct_all_trains(reset_carriages)
                 end
             end
         elseif #carriages > 1 then
-            if not icw.train_locomotives then
-                icw.train_locomotives = {}
-            end
+            local oldest_locomotive = nil
+            local lowest_unit_number = nil
 
-            local train_id = carriages[1].unit_number
-            local primary_locomotive = nil
-            local primary_loco_unit_number = icw.train_locomotives[train_id]
-
-            if primary_loco_unit_number then
-                for _, carriage in pairs(carriages) do
-                    if carriage and carriage.valid and carriage.unit_number == primary_loco_unit_number then
-                        primary_locomotive = carriage
-                        break
+            for _, carriage in pairs(carriages) do
+                if carriage and carriage.valid and carriage.type == 'locomotive' then
+                    if not lowest_unit_number or carriage.unit_number < lowest_unit_number then
+                        oldest_locomotive = carriage
+                        lowest_unit_number = carriage.unit_number
                     end
                 end
             end
 
-            if primary_locomotive then
-                local sorted_carriages = {}
-                for _, carriage in pairs(carriages) do
-                    sorted_carriages[#sorted_carriages + 1] = carriage
-                end
-
-                table.sort(sorted_carriages, function (a, b)
-                    return a.unit_number < b.unit_number
-                end)
-
+            if oldest_locomotive then
                 local loco_index = nil
-                for i, carriage in ipairs(sorted_carriages) do
-                    if carriage.unit_number == primary_locomotive.unit_number then
+                for i, carriage in ipairs(carriages) do
+                    if carriage.unit_number == oldest_locomotive.unit_number then
                         loco_index = i
                         break
                     end
                 end
 
                 if loco_index then
-                    local back_stock = primary_locomotive.get_connected_rolling_stock(defines.rail_direction.back)
-                    local should_reverse = false
+                    local connected_wagon = nil
 
                     if loco_index > 1 then
-                        if back_stock == sorted_carriages[loco_index - 1] then
-                            should_reverse = true
-                        end
-                    elseif loco_index < #sorted_carriages then
-                        if back_stock == sorted_carriages[loco_index + 1] then
-                            should_reverse = true
+                        connected_wagon = carriages[loco_index - 1]
+                    elseif loco_index < #carriages then
+                        connected_wagon = carriages[loco_index + 1]
+                    end
+
+                    local should_reverse = false
+                    if connected_wagon and connected_wagon.valid and oldest_locomotive.valid then
+                        if oldest_locomotive.position.y > connected_wagon.position.y then
+                            if loco_index == 1 then
+                                should_reverse = true
+                            end
+                        else
+                            if loco_index > 1 then
+                                should_reverse = true
+                            end
                         end
                     end
 
                     if should_reverse then
                         local reversed = {}
-                        for i = #sorted_carriages, 1, -1 do
-                            reversed[#reversed + 1] = sorted_carriages[i]
+                        for i = #carriages, 1, -1 do
+                            reversed[#reversed + 1] = carriages[i]
                         end
                         carriages = reversed
-                    else
-                        carriages = sorted_carriages
                     end
                 end
             end
