@@ -8,6 +8,7 @@ local Gui = require 'utils.gui'
 local SpamProtection = require 'utils.spam_protection'
 local Core = require 'utils.core'
 local LinkedChests = require 'maps.mountain_fortress_v3.icw.linked_chests'
+local DevServer = require 'utils.dev_server'
 
 local deep_copy = table.deep_copy
 local random = math.random
@@ -794,6 +795,11 @@ function Public.create_room_surface(icw, unit_number)
     surface.daytime = 0.1
     surface.request_to_generate_chunks({ 16, 16 }, 1)
     surface.force_generate_chunk_requests()
+
+    if DevServer.is_dev_server() then
+        surface.ignore_surface_conditions = true
+    end
+
     exclude_surface(surface)
     for _, tile in pairs(surface.find_tiles_filtered({ area = { { -2, -2 }, { 2, 2 } } })) do
         surface.set_tiles({ { name = out_of_map_tile, position = tile.position } }, true)

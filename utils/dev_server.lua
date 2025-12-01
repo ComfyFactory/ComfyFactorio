@@ -13,7 +13,8 @@ local Public = {}
 local this =
 {
     shutdown_in_ticks = 60 * 60 * 60 * 24, -- 24 hours
-    interval_in_ticks = 30 * 60 * 60 -- 30 minutes
+    interval_in_ticks = 30 * 60 * 60, -- 30 minutes
+    dev_server = false,
 }
 
 local valid_dev_names =
@@ -178,5 +179,9 @@ Commands.new('change_interval_time', 'Changes how often the server will notify p
             end
         end
     )
+
+function Public.is_dev_server()
+    return this.dev_server
+end
 
 return Public

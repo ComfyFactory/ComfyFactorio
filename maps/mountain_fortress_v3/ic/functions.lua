@@ -8,6 +8,7 @@ local WPT = require 'maps.mountain_fortress_v3.table'
 local Event = require 'utils.event'
 local Server = require 'utils.server'
 local CustomEvents = require 'utils.created_events'
+local DevServer = require 'utils.dev_server'
 
 local Public = {}
 local main_tile_name = 'black-refined-concrete'
@@ -1198,6 +1199,11 @@ function Public.create_room_surface(car)
     surface.daytime = 0.1
     surface.request_to_generate_chunks({ 16, 16 }, 1)
     surface.force_generate_chunk_requests()
+
+    if DevServer.is_dev_server() then
+        surface.ignore_surface_conditions = true
+    end
+
     exclude_surface(surface)
     for _, tile in pairs(surface.find_tiles_filtered({ area = { { -20, -2 }, { 20, 2 } } })) do
         surface.set_tiles({ { name = 'out-of-map', position = tile.position } }, true)
