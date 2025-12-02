@@ -5,6 +5,7 @@ local Task = require 'utils.task'
 local Server = require 'utils.server'
 local Event = require 'utils.event'
 local CustomEvents = require 'utils.created_events'
+local DevServer = require 'utils.dev_server'
 
 local set_timeout_in_ticks = Task.set_timeout_in_ticks
 local statistics_dataset = 'statistics'
@@ -176,6 +177,10 @@ local try_upload_data_token =
                 return
             end
 
+            if DevServer.is_dev_server() then
+                return
+            end
+
             if stats then
                 -- we don't want to clutter the database with players less than 10 minutes played.
                 if player.online_time <= settings.required_only_time_to_save_time then
@@ -239,6 +244,10 @@ function Public:save()
     end
 
     if self.tick < 10 then
+        return
+    end
+
+    if DevServer.is_dev_server() then
         return
     end
 

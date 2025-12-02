@@ -4,6 +4,7 @@ local Global = require 'utils.global'
 local Server = require 'utils.server'
 local SpamProtection = require 'utils.spam_protection'
 local CustomEvents = require 'utils.created_events'
+local DevServer = require 'utils.dev_server'
 
 local insert = table.insert
 local tostring = tostring
@@ -814,6 +815,11 @@ local function draw_main_frame(player)
         existing_frame.destroy()
     end
 
+    local title = 'Comfy Factorio'
+    if DevServer.is_dev_server() then
+        title = 'Comfy Factorio (Development Server)'
+    end
+
     local admins = Server.get_admins_data()
     local frame, inside_frame = Public.add_main_frame_with_toolbar(
         player,
@@ -821,7 +827,7 @@ local function draw_main_frame(player)
         main_frame_name,
         nil,
         close_button_name,
-        'Comfy Factorio'
+        title
     )
 
     local tabbed_pane = inside_frame.add({ type = 'tabbed-pane', name = 'tabbed_pane' })

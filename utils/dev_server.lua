@@ -12,8 +12,8 @@ local Public = {}
 
 local this =
 {
-    shutdown_in_ticks = 60 * 60 * 60 * 24, -- 24 hours
-    interval_in_ticks = 30 * 60 * 60, -- 30 minutes
+    shutdown_in_ticks = 60 * 60 * 60 * 12, -- 12 hours
+    interval_in_ticks = 10 * 60 * 60, -- 10 minutes
     dev_server = false,
 }
 
@@ -59,10 +59,27 @@ local notify_players_token =
     Scheduler.register_function(
         'notify_players_token',
         function ()
+            local ticks_remaining = this.shutdown_in_ticks - game.tick
+            if ticks_remaining < 0 then ticks_remaining = 0 end
+            local total_minutes = math.floor(ticks_remaining / 3600)
+            local hours = math.floor(total_minutes / 60)
+            local minutes = total_minutes % 60
+
+            local message = '[Script Handler] Server is shutting down in '
+            if hours > 0 then
+                message = message .. hours .. ' hour' .. (hours > 1 and 's' or '')
+                if minutes > 0 then
+                    message = message .. ' and ' .. minutes .. ' minute' .. (minutes > 1 and 's' or '')
+                end
+            else
+                message = message .. minutes .. ' minute' .. (minutes > 1 and 's' or '')
+            end
+            message = message .. '...'
+
             local players = game.connected_players
             for i = 1, #players do
                 local player = players[i]
-                player.print('[Script Handler] Server is shutting down in ' .. math.round((this.shutdown_in_ticks - game.tick) / 60 / 60 / 60, 0) .. ' hours...', { color = Color.warning })
+                player.print(message, { color = Color.warning })
             end
         end)
 

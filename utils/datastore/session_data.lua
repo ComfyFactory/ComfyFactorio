@@ -9,6 +9,7 @@ local Server = require 'utils.server'
 local Event = require 'utils.event'
 local table = require 'utils.table'
 local CustomEvents = require 'utils.created_events'
+local DevServer = require 'utils.dev_server'
 
 local set_timeout_in_ticks = Task.set_timeout_in_ticks
 
@@ -16,7 +17,8 @@ local session_data_set = 'sessions'
 local session = {}
 local online_track = {}
 local trusted = {}
-local settings = {
+local settings =
+{
     trusted_value = 24 * 60 * 3600, -- 24h
     required_only_time_to_save_time = 10 * 3600,
     nth_tick = 5 * 3600
@@ -41,7 +43,8 @@ Global.register(
     end
 )
 
-local Public = {
+local Public =
+{
 }
 
 local try_download_data_token =
@@ -82,6 +85,8 @@ local try_upload_data_token =
                 return
             end
 
+
+
             if value then
                 -- we don't want to clutter the database with players less than 10 minutes played.
                 if player.online_time <= settings.required_only_time_to_save_time then
@@ -111,7 +116,11 @@ local try_upload_data_token =
                 if new_time > settings.trusted_value then
                     trusted[player_index] = true
                 end
-                set_data(session_data_set, player_index, new_time)
+
+                if not DevServer.is_dev_server() then
+                    set_data(session_data_set, player_index, new_time)
+                end
+
                 session[player_index] = new_time
                 online_track[player_index] = player.online_time
             else
@@ -119,7 +128,9 @@ local try_upload_data_token =
                     if not session[player_index] then
                         session[player_index] = 0
                     end
-                    set_data(session_data_set, player_index, session[player_index])
+                    if not DevServer.is_dev_server() then
+                        set_data(session_data_set, player_index, session[player_index])
+                    end
                 end
             end
         end
