@@ -48,6 +48,7 @@ local save_hot_patch_notify_token =
 
                 game.print(hotpatch .. 'The server will be stopped in ' .. time_left .. ' seconds.')
                 game.print(hotpatch .. 'To abort the hotpatch, use the command /abort-patch-save.')
+                Server.output_script_data(hotpatch .. 'The server will be stopped in ' .. time_left .. ' seconds.')
             end
         end
     )
