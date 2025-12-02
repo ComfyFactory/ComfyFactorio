@@ -2,7 +2,6 @@
 --luacheck: ignore 561
 local Global = require 'utils.global'
 local Core = require 'utils.core'
-local Session = require 'utils.datastore.session_data'
 local Supporters = require 'utils.datastore.supporters'
 local Task = require 'utils.task_token'
 local Server = require 'utils.server'
@@ -85,6 +84,16 @@ Global.register(
 )
 
 script.register_metatable('CommandData', Public.metatable)
+
+local function get_trusted_player(player)
+    local session_storage = storage.tokens.utils_datastore_session_data
+    return session_storage and session_storage.trusted and player and player.valid and session_storage.trusted[player.name] or false
+end
+
+local function get_session_player(player)
+    local session_storage = storage.tokens.utils_datastore_session_data
+    return session_storage and session_storage.session and player and player.valid and session_storage.session[player.name] or false
+end
 
 local function conv(v)
     if tonumber(v) then
@@ -184,7 +193,7 @@ local function execute(event)
     -- Check if the player is trusted and if the command requires it
     local check_trusted = command_data.check_trusted or false
     if (check_trusted and not is_server) and Core.validate_player(player) then
-        local is_trusted = Session.get_trusted_player(player)
+        local is_trusted = get_trusted_player(player)
         if not is_trusted then
             reject(output.trusted_is_required)
             return
@@ -204,7 +213,7 @@ local function execute(event)
     -- Check if the player has the required playtime and if the command requires it
     local check_playtime = command_data.check_playtime or false
     if (check_playtime and not is_server) and Core.validate_player(player) then
-        local playtime = Session.get_session_player(player)
+        local playtime = get_session_player(player)
         if not playtime then
             reject(string.format(output.playtime_is_required, Core.get_formatted_playtime(check_playtime)))
             return
