@@ -12,8 +12,8 @@ local Public = {}
 
 local this =
 {
-    shutdown_in_ticks = 60 * 60 * 60 * 12, -- 12 hours
-    interval_in_ticks = 10 * 60 * 60, -- 10 minutes
+    shutdown_in_ticks = 60 * 60 * 60 * 4, -- 4 hours
+    interval_in_ticks = 5 * 60 * 60, -- 5 minutes
     dev_server = false,
 }
 
@@ -51,30 +51,37 @@ local shutdown_server_token =
                         }
                     }
                 })
+            this.shutdown_task_uid = nil
+            this.notify_task_uid = nil
             Server.output_script_data('Time has been reached, shutting down server from script.')
             Server.stop_scenario()
         end)
+
+local function get_shutdown_time_message()
+    local ticks_remaining = this.shutdown_in_ticks - game.tick
+    if ticks_remaining < 0 then ticks_remaining = 0 end
+    local total_minutes = math.floor(ticks_remaining / 3600)
+    local hours = math.floor(total_minutes / 60)
+    local minutes = total_minutes % 60
+
+    local message = '[Script Handler] Server is shutting down in '
+    if hours > 0 then
+        message = message .. hours .. ' hour' .. (hours > 1 and 's' or '')
+        if minutes > 0 then
+            message = message .. ' and ' .. minutes .. ' minute' .. (minutes > 1 and 's' or '')
+        end
+    else
+        message = message .. minutes .. ' minute' .. (minutes > 1 and 's' or '')
+    end
+    message = message .. '...'
+    return message
+end
 
 local notify_players_token =
     Scheduler.register_function(
         'notify_players_token',
         function ()
-            local ticks_remaining = this.shutdown_in_ticks - game.tick
-            if ticks_remaining < 0 then ticks_remaining = 0 end
-            local total_minutes = math.floor(ticks_remaining / 3600)
-            local hours = math.floor(total_minutes / 60)
-            local minutes = total_minutes % 60
-
-            local message = '[Script Handler] Server is shutting down in '
-            if hours > 0 then
-                message = message .. hours .. ' hour' .. (hours > 1 and 's' or '')
-                if minutes > 0 then
-                    message = message .. ' and ' .. minutes .. ' minute' .. (minutes > 1 and 's' or '')
-                end
-            else
-                message = message .. minutes .. ' minute' .. (minutes > 1 and 's' or '')
-            end
-            message = message .. '...'
+            local message = get_shutdown_time_message()
 
             local players = game.connected_players
             for i = 1, #players do
@@ -82,6 +89,22 @@ local notify_players_token =
                 player.print(message, { color = Color.warning })
             end
         end)
+
+Event.add(defines.events.on_player_joined_game, function (event)
+    local player = game.get_player(event.player_index)
+
+    if _DEBUG then
+        player.print('[color=yellow][Script Handler][/color] This is a development server running with [color=orange]_DEBUG[/color] enabled.')
+    else
+        player.print('[color=yellow][Script Handler][/color] This is a development server.')
+    end
+
+    local message = get_shutdown_time_message()
+
+    if player then
+        player.print(message, { color = Color.warning })
+    end
+end)
 
 Event.add(CustomEvents.events.on_server_started, function ()
     if this.shutdown_task_uid then

@@ -103,6 +103,23 @@ Public.quality_per_level =
     [15] = { 'normal', 'uncommon', 'rare', 'epic', 'legendary' },
 }
 
+Public.quality_per_level_objectives =
+{
+    [1] = { 'normal' },
+    [10] = { 'normal', 'uncommon' },
+    [25] = { 'normal', 'uncommon', 'rare' },
+    [50] = { 'normal', 'uncommon', 'rare', 'epic' },
+    [75] = { 'normal', 'uncommon', 'rare', 'epic', 'legendary' },
+}
+
+Public.qualities = {
+    'normal',
+    'uncommon',
+    'rare',
+    'epic',
+    'legendary',
+}
+
 Global.register(
     this,
     function (tbl)
@@ -890,7 +907,9 @@ local apply_settings_token =
                 end
             end
 
-            Public.stateful_on_server_started()
+            if type(Public.stateful_on_server_started) == "function" then
+                Public.stateful_on_server_started()
+            end
         end
     )
 

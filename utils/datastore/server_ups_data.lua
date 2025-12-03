@@ -14,7 +14,7 @@ local function set_location(player)
     end
     local res = player.display_resolution
     local uis = player.display_scale
-    label.location = { x = res.width - 423 * uis, y = 30 * uis }
+    label.location = { x = res.width - 423 * uis, y = 60 * uis }
 end
 
 local function create_label(player)

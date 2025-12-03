@@ -1,4 +1,4 @@
-require 'utils.start'
+require 'utils.comfy_logo'
 local Freeplay = require 'utils.freeplay'
 local Autostash = require 'modules.autostash'
 local Misc = require 'utils.commands.misc'

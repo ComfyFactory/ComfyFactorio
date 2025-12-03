@@ -222,6 +222,10 @@ Event.add(
                 return
             end
 
+            if item.quality.name ~= handcrafted_items.quality then
+                return
+            end
+
             handcrafted_items.actual = handcrafted_items.actual + item.count
         end
     end

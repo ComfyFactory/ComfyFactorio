@@ -898,7 +898,7 @@ local function player_joined(event)
                     type = 'sprite-button',
                     name = main_button_name,
                     sprite = 'item/programmable-speaker',
-                    tooltip = 'Let your question be heard!',
+                    tooltip = 'Poll your thoughts',
                     style = Gui.button_style
                 }
             )
@@ -924,7 +924,7 @@ local function player_joined(event)
                     type = 'sprite-button',
                     name = main_button_name,
                     sprite = 'item/programmable-speaker',
-                    tooltip = 'Let your question be heard!',
+                    tooltip = 'Create a poll',
                     style = Gui.button_style
                 }
             b.style.maximal_height = 38

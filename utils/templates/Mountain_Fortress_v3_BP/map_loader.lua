@@ -1,3 +1,4 @@
+require 'utils.comfy_logo'
 local Event = require 'utils.event'
 local Freeplay = require 'utils.freeplay'
 require 'maps.mountain_fortress_v3.icw.main'

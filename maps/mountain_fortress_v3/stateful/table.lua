@@ -727,7 +727,7 @@ local function get_random_buff(fetch_all, only_force)
     return buffs[1]
 end
 
-local function get_item_produced_count(item_name)
+local function get_item_produced_count(item_name, quality)
     local force = game.forces.player
     local statistics = Public.get('statistics')
 
@@ -751,7 +751,7 @@ local function get_item_produced_count(item_name)
     for _, surface in pairs(game.surfaces) do
         if surface.valid then
             local surface_name = surface.name
-            local current_production = force.get_item_production_statistics(surface_name).input_counts[item_name] or 0
+            local current_production = force.get_item_production_statistics(surface_name).get_input_count({ name = item_name, quality = quality }) or 0
 
             if not statistics.surface_production[item_name][surface_name] then
                 statistics.surface_production[item_name][surface_name] = current_production
@@ -877,6 +877,27 @@ local function on_pre_player_died(event)
     -- player.ticks_to_respawn = 1800 * (this.rounds_survived + 1)
 
     Task.set_timeout_in_ticks(5, search_corpse_token, { player_index = player.index })
+end
+
+local function get_random_quality()
+    if not Public.is_modded_pt2 then
+        return 'normal'
+    end
+
+    local rounds = this.rounds_survived
+    local quality_per_level = Public.quality_per_level_objectives
+    local best_key = 1
+
+    for level, _ in pairs(quality_per_level) do
+        if rounds >= level then
+            if level > best_key then
+                best_key = level
+            end
+        end
+    end
+
+    local quality_list = quality_per_level[best_key]
+    return quality_list[random(1, #quality_list)]
 end
 
 local function on_market_item_purchased(event)
@@ -1126,17 +1147,17 @@ local function get_random_items()
 
     local container =
     {
-        [1] = { name = items[1][1], count = items[1][2] },
-        [2] = { name = items[2][1], count = items[2][2] },
-        [3] = { name = items[3][1], count = items[3][2] }
+        [1] = { name = items[1][1], count = items[1][2], quality = get_random_quality() },
+        [2] = { name = items[2][1], count = items[2][2], quality = get_random_quality() },
+        [3] = { name = items[3][1], count = items[3][2], quality = get_random_quality() }
     }
 
     if this.test_mode then
         container =
         {
-            [1] = { name = items[1].products[1].name, count = 1 },
-            [2] = { name = items[2].products[1].name, count = 1 },
-            [3] = { name = items[3].products[1].name, count = 1 }
+            [1] = { name = items[1].products[1].name, count = 1, quality = get_random_quality() },
+            [2] = { name = items[2].products[1].name, count = 1, quality = get_random_quality() },
+            [3] = { name = items[3].products[1].name, count = 1, quality = get_random_quality() }
         }
     end
 
@@ -1180,7 +1201,7 @@ local function get_random_item()
     shuffle(items)
     shuffle(items)
 
-    return { name = items[1][1], count = items[1][2] }
+    return { name = items[1][1], count = items[1][2], quality = get_random_quality() }
 end
 
 local function get_random_handcrafted_item()
@@ -1233,7 +1254,7 @@ local function get_random_handcrafted_item()
     shuffle(items)
     shuffle(items)
 
-    return { name = items[1][1], count = items[1][2] }
+    return { name = items[1][1], count = items[1][2], quality = get_random_quality() }
 end
 
 local function get_random_spell()
@@ -1264,8 +1285,9 @@ local function get_random_spell()
     shuffle(items)
     shuffle(items)
 
-    return { name = items[1][1], count = items[1][2] }
+    return { name = items[1][1], count = items[1][2], quality = get_random_quality() }
 end
+
 
 local function get_random_research_recipe()
     -- scale(10, 20)
@@ -2213,7 +2235,8 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
             {
                 actual = 0,
                 expected = item.count,
-                name = item.name
+                name = item.name,
+                quality = item.quality
             }
         end
         if not this.objectives.handcrafted_items_any or (this.objectives_completed ~= nil and this.objectives_completed.handcrafted_items_any) then
@@ -2221,7 +2244,8 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
             {
                 actual = 0,
                 expected = scale(50000, 4000000),
-                name = 'Any'
+                name = 'Any',
+                quality = get_random_quality()
             }
         end
         if not this.objectives.cast_spell or (this.objectives_completed ~= nil and this.objectives_completed.cast_spell) then
@@ -2230,7 +2254,7 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
             {
                 actual = 0,
                 expected = item.count,
-                name = item.name
+                name = item.name,
             }
         end
         if not this.objectives.cast_spell_any or (this.objectives_completed ~= nil and this.objectives_completed.cast_spell_any) then
