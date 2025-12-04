@@ -91,7 +91,7 @@ local notify_players_token =
         end)
 
 Event.add(defines.events.on_player_joined_game, function (event)
-    if this.dev_server then
+    if not this.dev_server then
         return
     end
 
