@@ -1254,7 +1254,7 @@ local function get_random_handcrafted_item()
     shuffle(items)
     shuffle(items)
 
-    return { name = items[1][1], count = items[1][2], quality = get_random_quality() }
+    return { name = items[1][1], count = items[1][2], quality = 'normal' }
 end
 
 local function get_random_spell()
@@ -1285,7 +1285,7 @@ local function get_random_spell()
     shuffle(items)
     shuffle(items)
 
-    return { name = items[1][1], count = items[1][2], quality = get_random_quality() }
+    return { name = items[1][1], count = items[1][2] }
 end
 
 
@@ -2245,7 +2245,7 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
                 actual = 0,
                 expected = scale(50000, 4000000),
                 name = 'Any',
-                quality = get_random_quality()
+                quality = 'normal'
             }
         end
         if not this.objectives.cast_spell or (this.objectives_completed ~= nil and this.objectives_completed.cast_spell) then
