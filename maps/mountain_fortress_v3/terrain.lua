@@ -12,7 +12,7 @@ local is_modded_pt2 = Public.is_modded_pt2
 
 local zone_settings = Public.zone_settings
 local worm_level_modifier = 0.19
-local base_tile = 'grass-1'
+-- local base_tile = 'grass-1'
 
 local vanilla_start_ground_tiles =
 {
@@ -4911,13 +4911,15 @@ local function zone_forest_1(x, y, data, void_or_lab, adjusted_zones)
     end
 end
 
-local function zone_1(x, y, data, void_or_lab, adjusted_zones)
+local function zone_1(x, y, data, _, adjusted_zones)
     local p = { x = x, y = y }
     local seed = data.seed
     local buildings = data.buildings
     local tiles = data.tiles
     local entities = data.entities
     local markets = data.markets
+
+    local void_or_lab = 'void-tile'
 
     local small_caves = Public.get_noise('small_caves', p, seed + 34883)
     local noise_cave_ponds = Public.get_noise('cave_rivers_2', p, seed + 28939)
@@ -5388,10 +5390,10 @@ local function process_bits(p, data, adjusted_zones)
         adjusted_zones.size_of = size_of_aquilo_rock_raffle
         adjusted_zones.tiles_raffle = start_aquilo_tiles
     else
-        adjusted_zones.starting_tile = base_tile
+        adjusted_zones.starting_tile = start_aquilo_tiles[random(1, #start_aquilo_tiles)]
         adjusted_zones.rock_raffle = rock_raffle
         adjusted_zones.size_of = size_of_rock_raffle
-        adjusted_zones.tiles_raffle = nil
+        adjusted_zones.tiles_raffle = start_aquilo_tiles
     end
 
     local generate_zone
@@ -5419,16 +5421,6 @@ local function border_chunk(p, data, dec_tbl)
 
     local pos = p
 
-    if data.reversed then
-        if p.y < -74 then
-            return
-        end
-    else
-        if p.y > 74 then
-            return
-        end
-    end
-
     if random(1, ceil(abs(pos.y) + abs(pos.y)) + 64) == 1 then
         entities[#entities + 1] = { name = trees[random(1, #trees)], position = pos }
     end
@@ -5444,8 +5436,10 @@ local function border_chunk(p, data, dec_tbl)
             tiles[#tiles + 1] = { name = start_fulgora_tiles[index], position = pos }
         elseif starting_planet == 'aquilo' then
             tiles[#tiles + 1] = { name = start_aquilo_tiles[index], position = pos }
-        else
+        elseif starting_planet == 'vulcanus' then
             tiles[#tiles + 1] = { name = start_vulcanus_tiles[index], position = pos }
+        else
+            tiles[#tiles + 1] = { name = start_aquilo_tiles[index], position = pos }
         end
     end
 
@@ -5492,6 +5486,8 @@ end
 local function biter_chunk(p, data)
     local surface = data.surface
     local entities = data.entities
+    local tiles = data.tiles
+    local pos = p
     local tile_positions = {}
 
     tile_positions[#tile_positions + 1] = p
@@ -5530,6 +5526,22 @@ local function biter_chunk(p, data)
                 force = 'enemy',
                 callback = disable_worms
             }
+        end
+    end
+
+    local noise = Public.get_noise('cave_rivers_2', pos, data.seed)
+    local index = floor(noise * 32) % 11 + 1
+    local tile = surface.get_tile(pos)
+    local starting_planet = Public.get_planet()
+    if tile and tile.valid and tile.name ~= 'black-refined-concrete' then
+        if starting_planet == 'fulgora' then
+            tiles[#tiles + 1] = { name = start_fulgora_tiles[index], position = pos }
+        elseif starting_planet == 'aquilo' then
+            tiles[#tiles + 1] = { name = start_aquilo_tiles[index], position = pos }
+        elseif starting_planet == 'vulcanus' then
+            tiles[#tiles + 1] = { name = start_vulcanus_tiles[index], position = pos }
+        else
+            tiles[#tiles + 1] = { name = start_aquilo_tiles[index], position = pos }
         end
     end
 end
