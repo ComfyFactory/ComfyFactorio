@@ -6,6 +6,7 @@ local SpamProtection = require 'utils.spam_protection'
 local BottomFrame = require 'utils.gui.bottom_frame'
 local Gui = require 'utils.gui'
 local Color = require 'utils.color_presets'
+local CustomEvents = require 'utils.created_events'
 
 local Public = {}
 local module_name = '[color=blue][Charging station][/color] '
@@ -149,7 +150,7 @@ Gui.on_click(
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 
 Event.add(
-    BottomFrame.events.bottom_quickbar_location_changed,
+    CustomEvents.events.bottom_quickbar_location_changed,
     function (event)
         local player_index = event.player_index
         if not player_index then

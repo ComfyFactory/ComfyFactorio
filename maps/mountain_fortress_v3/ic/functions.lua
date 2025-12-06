@@ -5,9 +5,10 @@ local Core = require 'utils.core'
 local JailData = require 'utils.datastore.jail_data'
 local IC = require 'maps.mountain_fortress_v3.ic.table'
 local WPT = require 'maps.mountain_fortress_v3.table'
-local OfflinePlayers = require 'modules.clear_vacant_players'
 local Event = require 'utils.event'
 local Server = require 'utils.server'
+local CustomEvents = require 'utils.created_events'
+local DevServer = require 'utils.dev_server'
 
 local Public = {}
 local main_tile_name = 'black-refined-concrete'
@@ -1198,16 +1199,21 @@ function Public.create_room_surface(car)
     surface.daytime = 0.1
     surface.request_to_generate_chunks({ 16, 16 }, 1)
     surface.force_generate_chunk_requests()
+
+    if DevServer.is_dev_server() then
+        surface.ignore_surface_conditions = true
+    end
+
     exclude_surface(surface)
     for _, tile in pairs(surface.find_tiles_filtered({ area = { { -20, -2 }, { 20, 2 } } })) do
-        surface.set_tiles({ { name = out_of_map_tile, position = tile.position } }, true)
+        surface.set_tiles({ { name = 'out-of-map', position = tile.position } }, true)
     end
-    for _, tile in pairs(surface.find_tiles_filtered({ area = { { -21, -1 }, { -21, 4 } } })) do
-        surface.set_tiles({ { name = out_of_map_tile, position = tile.position } }, true)
-    end
-    for _, tile in pairs(surface.find_tiles_filtered({ area = { { 20, -1 }, { 20, 4 } } })) do
-        surface.set_tiles({ { name = out_of_map_tile, position = tile.position } }, true)
-    end
+    -- for _, tile in pairs(surface.find_tiles_filtered({ area = { { -21, -1 }, { -21, 4 } } })) do
+    --     surface.set_tiles({ { name = out_of_map_tile, position = tile.position } }, true)
+    -- end
+    -- for _, tile in pairs(surface.find_tiles_filtered({ area = { { 20, -1 }, { 20, 4 } } })) do
+    --     surface.set_tiles({ { name = out_of_map_tile, position = tile.position } }, true)
+    -- end
     local surfaces = IC.get('surfaces')
     surfaces[unit_number] = surface.index
     return surface.index
@@ -1618,7 +1624,7 @@ Public.kick_players_from_surface = kick_players_from_surface
 Public.kick_non_trusted_players_from_surface = kick_non_trusted_players_from_surface
 
 Event.add(
-    OfflinePlayers.events.remove_surface,
+    CustomEvents.events.remove_surface,
     function (event)
         local target = event.target
         if not target then

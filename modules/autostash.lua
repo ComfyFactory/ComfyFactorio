@@ -9,6 +9,7 @@ local Event = require 'utils.event'
 local BottomFrame = require 'utils.gui.bottom_frame'
 local Gui = require 'utils.gui'
 local Task = require 'utils.task_token'
+local CustomEvents = require 'utils.created_events'
 
 local auto_stash_button_name = Gui.uid_name()
 local floor = math.floor
@@ -18,6 +19,7 @@ local this =
 {
     floating_text_y_offsets = {},
     whitelist = {},
+    furnace_fuel = {},
     insert_to_neutral_chests = false,
     insert_into_furnace = false,
     insert_into_wagon = false,
@@ -51,11 +53,11 @@ local on_init_token =
             if this.insert_into_furnace and this.insert_into_wagon then
                 tooltip = { "modules_auto_stash.furnace_and_wagon_tooltip" }
             elseif this.insert_into_furnace then
-                tooltip =  { "modules_auto_stash.furnace_tooltip" }
+                tooltip = { "modules_auto_stash.furnace_tooltip" }
             elseif this.insert_into_wagon then
                 tooltip = { "modules_auto_stash.wagon_tooltip" }
             else
-                tooltip =  { "modules_auto_stash.other_tooltip" }
+                tooltip = { "modules_auto_stash.other_tooltip" }
             end
 
             this.tooltip = tooltip
@@ -230,7 +232,7 @@ local function get_nearby_chests(player, a, furnace, wagon)
 
     if furnace then
         container_type = { 'furnace' }
-        inventory_type = defines.inventory.furnace_source
+        inventory_type = defines.inventory.crafter_input
     end
     if wagon then
         container_type = { 'cargo-wagon', 'logistic-container' }
@@ -272,110 +274,148 @@ local function check_if_valid_requests(chest)
     end
 end
 
-local function insert_to_furnace(player_inventory, chests, name, count, floaty_text_list)
-    local try = 0
+local function insert_to_furnace(inventory, stack, chests, floaty_text_list)
+    local name = stack.name
+    local quality = stack.quality
+    local total_count = stack.count
 
-    local to_insert = floor(count / #chests.chest)
-    if to_insert <= 0 then
-        if count > 0 then
-            to_insert = count
-        else
-            return
-        end
+    if total_count <= 0 then
+        return
     end
 
-    local variate = count % #chests.chest
-    local chests_available = #chests.chest
-    local tries = #chests.chest
+    local chest_list = chests.chest
+    if not chest_list or #chest_list == 0 then
+        return
+    end
+
+    local chest_count = #chest_list
+    local try = 0
+    local max_tries = chest_count
+
+    local function apply_and_remove(inserted, chest)
+        if inserted <= 0 then return 0 end
+
+        if not inventory then return 0 end
+
+        local removed = inventory.remove(
+            {
+                name = name,
+                count = inserted,
+                quality = quality
+            })
+
+        if removed <= 0 then return 0 end
+
+        total_count = total_count - removed
+
+        prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, removed)
+
+        return removed
+    end
+
+    local function check_weight()
+        if chest_count <= 0 then return 0, 0 end
+        local base = math.floor(total_count / chest_count)
+        local var = total_count % chest_count
+        return base, var
+    end
+
+    local to_insert, variate = check_weight()
 
     ::retry::
 
-    --Attempt to store into furnaces.
-    for chestnr, chest in pairs(chests.chest) do
-        local chest_inventory = chests.inventory[chestnr]
+    for chest_index, chest in pairs(chest_list) do --burnable
+        if total_count <= 0 then return end
+
+        local chest_inventory = chests.inventory[chest_index]
+        if not chest_inventory then
+            goto continue
+        end
+
+        if chest.type ~= "furnace" and chest.type ~= "assembling-machine" then
+            goto continue
+        end
+
         local amount = to_insert
         if variate > 0 then
             amount = amount + 1
             variate = variate - 1
         end
+
         if amount <= 0 then
             return
         end
 
-        if chest_inventory then
-            if (chest.type == 'furnace' or chest.type == 'assembling-machine') then
-                if name == 'stone' then
-                    local valid_to_insert = (amount % 2 == 0)
-                    if valid_to_insert then
-                        if chest_inventory.can_insert({ name = name, count = amount }) then
-                            local inserted_count = chest_inventory.insert({ name = name, count = amount })
-                            if inserted_count < 0 then
-                                return
-                            end
-                            player_inventory.remove({ name = name, count = inserted_count })
-                            prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, inserted_count)
-                            count = count - inserted_count
-                            if count <= 0 then
-                                return
-                            end
-                        end
-                    else
-                        try = try + 1
-                        if try <= tries then
-                            chests_available = chests_available - 1
-                            to_insert = floor(count / chests_available)
-                            variate = count % chests_available
-                            goto retry
-                        end
-                    end
+        if amount > total_count then
+            amount = total_count
+        end
+
+        if name == "stone" then
+            if amount % 2 ~= 0 then
+                try = try + 1
+                if try <= max_tries then
+                    chest_count = chest_count - 1
+                    if chest_count <= 0 then return end
+                    to_insert, variate = check_weight()
+                    goto retry
                 else
-                    if chest_inventory.can_insert({ name = name, count = amount }) then
-                        local inserted_count = chest_inventory.insert({ name = name, count = amount })
-                        if inserted_count < 0 then
-                            return
-                        end
-                        player_inventory.remove({ name = name, count = inserted_count })
-                        prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, inserted_count)
-                        count = count - inserted_count
-                        if count <= 0 then
-                            return
-                        end
-                    end
+                    return
                 end
             end
         end
+
+        if chest_inventory.can_insert({ name = name, count = amount, quality = quality }) then
+            local inserted = chest_inventory.insert(
+                {
+                    name = name,
+                    count = amount,
+                    quality = quality
+                })
+
+            apply_and_remove(inserted, chest)
+        end
+
+        ::continue::
     end
 
-    to_insert = floor(count / #chests.chest)
-    variate = count % #chests.chest
+    to_insert, variate = check_weight()
 
-    for _, chest in pairs(chests.chest) do -- fuel
-        if chest.type == 'furnace' or chest.type == 'assembling-machine' then
-            local amount = to_insert
-            if variate > 0 then
-                amount = amount + 1
-                variate = variate - 1
-            end
-            if amount <= 0 then
-                return
-            end
-            local chest_inventory = chest.get_inventory(defines.inventory.chest)
-            if chest_inventory and chest_inventory.can_insert({ name = name, count = amount }) then
-                local inserted_count = chest_inventory.insert({ name = name, count = amount })
-                if inserted_count < 0 then
-                    return
-                end
-                player_inventory.remove({ name = name, count = inserted_count })
-                prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, inserted_count)
-                count = count - inserted_count
-                if count <= 0 then
-                    return
-                end
-            end
+    for _, chest in pairs(chest_list) do --fuel
+        if total_count <= 0 then return end
+
+        if chest.type ~= "furnace" and chest.type ~= "assembling-machine" then
+            goto end_func
         end
+
+        local amount = to_insert
+        if variate > 0 then
+            amount = amount + 1
+            variate = variate - 1
+        end
+
+        if amount <= 0 then
+            return
+        end
+
+        if amount > total_count then
+            amount = total_count
+        end
+
+        local inv = chest.get_inventory(defines.inventory.chest)
+        if inv and inv.can_insert({ name = name, count = amount, quality = quality }) then
+            local inserted = inv.insert(
+                {
+                    name = name,
+                    count = amount,
+                    quality = quality
+                })
+
+            apply_and_remove(inserted, chest)
+        end
+
+        ::end_func::
     end
 end
-
 local function insert_into_wagon(stack, chests, name, floaty_text_list)
     -- Attempt to load filtered cargo wagon
     for chestnr, chest in pairs(chests.chest) do
@@ -633,12 +673,12 @@ local function auto_stash(player, event)
         end
     end
 
-    local furnace_list =
+    local furnace_fuels =
     {
-        ['coal'] = 0,
-        ['iron-ore'] = 0,
-        ['copper-ore'] = 0,
-        ['stone'] = 0
+        ['coal'] = { count = 0, quality = nil },
+        ['iron-ore'] = { count = 0, quality = nil },
+        ['copper-ore'] = { count = 0, quality = nil },
+        ['stone'] = { count = 0, quality = nil }
     }
 
     local full_insert = { full = nil, name = nil }
@@ -648,11 +688,14 @@ local function auto_stash(player, event)
         end
         local name = inventory[i].name
         local is_resource = this.whitelist[name]
+        local is_furnace_fuel = this.furnace_fuel[name]
         if not hotbar_items[name] and not bps_blacklist[name] then
             if ctrl and this.insert_into_furnace then
                 if button == defines.mouse_button_type.right then
-                    if is_resource then
-                        furnace_list[name] = (furnace_list[name] or 0) + inventory[i].count
+                    if is_furnace_fuel or is_resource then
+                        furnace_fuels[name] = furnace_fuels[name] or { count = 0, quality = nil }
+                        furnace_fuels[name].count = furnace_fuels[name].count + inventory[i].count
+                        furnace_fuels[name].quality = inventory[i].quality
                     end
                 end
             elseif shift and this.insert_into_wagon then -- insert into wagon
@@ -677,8 +720,9 @@ local function auto_stash(player, event)
         end
         ::continue::
     end
-    for furnaceName, furnaceCount in pairs(furnace_list) do
-        insert_to_furnace(inventory, chests, furnaceName, furnaceCount, floaty_text_list)
+    for item_name, item_data in pairs(furnace_fuels) do
+        local stack = { name = item_name, count = item_data.count, quality = item_data.quality }
+        insert_to_furnace(inventory, stack, chests, floaty_text_list)
     end
 
     for _, texts in pairs(floaty_text_list) do
@@ -756,7 +800,6 @@ local function do_whitelist()
     end
     Task.delay(on_init_token, {})
     local resources = prototypes.entity
-    local items = prototypes.item
     this.whitelist = {}
     for k, _ in pairs(resources) do
         if resources[k] and resources[k].type == 'resource' and resources[k].mineable_properties then
@@ -770,10 +813,18 @@ local function do_whitelist()
         end
     end
 
+    local items = prototypes.item
     for k, _ in pairs(items) do
         if items[k] and items[k].group.name == 'resource-refining' then
             local r = items[k].name
             this.whitelist[r] = true
+        end
+        if items[k] and items[k].fuel_category and items[k].fuel_value then
+            local r = items[k].name
+            this.furnace_fuel[r] = 0
+        end
+        if items[k] and items[k].name:find('%f[%a][Oo]re%f[%A]') then
+            this.whitelist[k] = true
         end
     end
 end
@@ -982,7 +1033,7 @@ Event.on_init(do_whitelist)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 
 Event.add(
-    BottomFrame.events.bottom_quickbar_location_changed,
+    CustomEvents.events.bottom_quickbar_location_changed,
     function (event)
         if not this.enabled then
             return

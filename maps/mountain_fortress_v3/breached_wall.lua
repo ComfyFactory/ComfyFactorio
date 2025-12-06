@@ -8,6 +8,7 @@ local Task = require 'utils.task_token'
 local Color = require 'utils.color_presets'
 local Session = require 'utils.datastore.session_data'
 local Modifiers = require 'utils.player_modifiers'
+local RocksYieldOreVeins = require 'maps.mountain_fortress_v3.rocks_yield_ore_veins'
 
 local floor = math.floor
 local abs = math.abs
@@ -15,6 +16,13 @@ local random = math.random
 local sub = string.sub
 local sqrt = math.sqrt
 local zone_settings = Public.zone_settings
+
+local disabled_controllers =
+{
+    [defines.controllers.editor] = true,
+    [defines.controllers.remote] = true,
+    [defines.controllers.spectator] = true,
+}
 
 local clear_breach_text_and_render = function ()
     local beam1 = Public.get('zone1_beam1')
@@ -29,6 +37,11 @@ local clear_breach_text_and_render = function ()
     if beam3 and beam3.valid then
         beam3.destroy()
     end
+    local enforce_wave_200_before_collapse = Public.get('enforce_wave_200_before_collapse')
+    if enforce_wave_200_before_collapse then
+        return
+    end
+
     local zone1_text1 = Public.get('zone1_text1')
     if zone1_text1 and zone1_text1.valid then
         Public.get('zone1_text1').text = 'Collapse has begun!'
@@ -300,6 +313,8 @@ local compare_player_pos = function (player)
     local zone = floor((abs(p.y / zone_settings.zone_depth)) % adjusted_zones.size) + 1
     local rpg_t = RPG.get_value_from_player(index)
 
+    RPG.set_value_to_player(index, 'current_zone', zone)
+
     if adjusted_zones.scrap[zone] then
         if rpg_t and not rpg_t.scrap_zone then
             rpg_t.scrap_zone = true
@@ -458,6 +473,7 @@ local function distance(player)
     local breach_wall_warning = Public.get('breach_wall_warning')
     local collapse_started = Public.get('collapse_started')
     local block_non_trusted_trigger_collapse = Public.get('block_non_trusted_trigger_collapse')
+    local better_loot_from_zone = Public.get('better_loot_from_zone')
 
     local max = zone_settings.zone_depth * bonus
     local breach_max = zone_settings.zone_depth * breached_wall
@@ -487,6 +503,10 @@ local function distance(player)
         if breach_max_times then
             local placed_trains_in_zone = Public.get('placed_trains_in_zone')
             local biters = Public.get('biters')
+            if breached_wall == better_loot_from_zone - 2 then
+                RocksYieldOreVeins.add_to_raffle({ { 'tungsten-ore', 30 }, { 'calcite', 22 } })
+                RocksYieldOreVeins.add_to_mixed_ores({ 'tungsten-ore', 'calcite' })
+            end
             rpg_extra.breached_walls = rpg_extra.breached_walls + 1
             rpg_extra.reward_new_players = bonus_xp_on_join * rpg_extra.breached_walls
             Public.set('breached_wall', breached_wall + 1)
@@ -574,17 +594,10 @@ local function on_player_changed_position(event)
         return
     end
 
-    if player.controller_type == defines.controllers.editor then
+    if disabled_controllers[player.controller_type] then
         return
     end
 
-    if player.controller_type == defines.controllers.remote then
-        return
-    end
-
-    if player.controller_type == defines.controllers.spectator then
-        return
-    end
     local surface_name = player.physical_surface.name
 
     if sub(surface_name, 0, #current_task.starting_planet) ~= current_task.starting_planet then

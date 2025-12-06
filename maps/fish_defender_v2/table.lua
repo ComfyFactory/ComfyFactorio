@@ -48,62 +48,73 @@ function Public.reset_table()
     -- this.wave_grace_period = game.tick + 3600
     this.boss_biters = {}
     this.acid_lines_delay = {}
-    this.entity_limits = {
+    this.entity_limits =
+    {
         ['ammo-turret'] = { placed = 1, limit = 6, str = 'gun turret', slot_price = 70 },
         ['electric-turret'] = { placed = 0, limit = 1, str = 'laser turret', slot_price = 300 },
         ['artillery-turret'] = { placed = 0, limit = 1, str = 'artillery turret', slot_price = 500 },
         ['fluid-turret'] = { placed = 0, limit = 0, str = 'flamethrower turret', slot_price = 50000 },
         ['land-mine'] = { placed = 0, limit = 1, str = 'mine', slot_price = 20 }
     }
-    this.difficulties_votes = {
-        [1] = {
+    this.difficulties_votes =
+    {
+        [1] =
+        {
             wave_interval = 5000,
             amount_modifier = 0.90,
             strength_modifier = 0.90,
             boss_modifier = 5.0
         },
-        [2] = {
+        [2] =
+        {
             wave_interval = 3500,
             amount_modifier = 1.00,
             strength_modifier = 1.00,
             boss_modifier = 6.0
         },
-        [3] = {
+        [3] =
+        {
             wave_interval = 3400,
             amount_modifier = 1.10,
             strength_modifier = 1.30,
             boss_modifier = 7.0
         },
-        [4] = {
+        [4] =
+        {
             wave_interval = 3200,
             amount_modifier = 1.20,
             strength_modifier = 1.60,
             boss_modifier = 8.0
         },
-        [5] = {
+        [5] =
+        {
             wave_interval = 3000,
             amount_modifier = 1.40,
             strength_modifier = 2.20,
             boss_modifier = 9.0
         }
     }
-    this.boss_waves = {
+    this.boss_waves =
+    {
         [50] = { { name = 'big-biter', count = 3 } },
         [100] = { { name = 'behemoth-biter', count = 1 } },
         [150] = { { name = 'behemoth-spitter', count = 4 }, { name = 'big-spitter', count = 16 } },
-        [200] = {
-            { name = 'behemoth-biter',   count = 4 },
+        [200] =
+        {
+            { name = 'behemoth-biter', count = 4 },
             { name = 'behemoth-spitter', count = 2 },
-            { name = 'big-biter',        count = 32 }
+            { name = 'big-biter', count = 32 }
         },
-        [250] = {
-            { name = 'behemoth-biter',   count = 8 },
+        [250] =
+        {
+            { name = 'behemoth-biter', count = 8 },
             { name = 'behemoth-spitter', count = 4 },
-            { name = 'big-spitter',      count = 32 }
+            { name = 'big-spitter', count = 32 }
         },
         [300] = { { name = 'behemoth-biter', count = 16 }, { name = 'behemoth-spitter', count = 8 } }
     }
-    this.comfylatron_habitat = {
+    this.comfylatron_habitat =
+    {
         left_top = { x = -1500, y = -1500 },
         right_bottom = { x = -80, y = 1500 }
     }

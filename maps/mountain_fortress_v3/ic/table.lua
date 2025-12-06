@@ -1,6 +1,5 @@
 local Global = require 'utils.global'
 local Event = require 'utils.event'
-local WPT = require 'maps.mountain_fortress_v3.table'
 
 local this = {}
 Global.register(
@@ -10,15 +9,16 @@ Global.register(
     end
 )
 
-local Public = {
-    events = {
+local Public =
+{
+    events =
+    {
         on_player_kicked_from_surface = Event.generate_event_name('on_player_kicked_from_surface'),
         used_car_door = Event.generate_event_name('used_car_door')
     }
 }
 
 function Public.reset()
-    local starting_planet = WPT.get_planet()
     if this.surfaces then
         for _, index in pairs(this.surfaces) do
             local surface = game.surfaces[index]
@@ -38,7 +38,7 @@ function Public.reset()
     this.renders = {}
     this.saved_surfaces = {}
     this.surfaces_deleted_by_button = {}
-    this.allowed_surface = starting_planet
+    this.allowed_surface = 'nauvis'
     this.trust_system = {}
     this.players = {}
     this.players_persistent = {}
@@ -46,13 +46,15 @@ function Public.reset()
     this.surfaces = {}
     this.minimap = {}
     this.misc_settings = {}
-    this.entity_type = {
+    this.entity_type =
+    {
         ['car'] = true,
         ['tank'] = true,
         ['spidertron'] = true,
         ['spider-vehicle'] = true
     }
-    this.car_areas = {
+    this.car_areas =
+    {
         ['car'] = { left_top = { x = -20, y = 0 }, right_bottom = { x = 20, y = 20 } },
         ['tank'] = { left_top = { x = -30, y = 0 }, right_bottom = { x = 30, y = 40 } },
         ['spidertron'] = { left_top = { x = -40, y = 0 }, right_bottom = { x = 40, y = 60 } },

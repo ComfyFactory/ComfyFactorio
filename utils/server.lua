@@ -3,6 +3,7 @@ local Task = require 'utils.task'
 local Global = require 'utils.global'
 local Event = require 'utils.event'
 local Print = require('utils.print_override')
+local CustomEvents = require 'utils.created_events'
 
 -- local constants
 local floor = math.floor
@@ -100,6 +101,7 @@ local data_get_all_tag = '[DATA-GET-ALL]'
 local data_tracked_tag = '[DATA-TRACKED]'
 local scenario_tag = '[SCENARIO-TRACKED]'
 local ban_sync_tag = '[BAN-SYNC]'
+local save_hot_patch_tag = '[SAVE-HOT-PATCH]'
 local unbanned_sync_tag = '[UNBANNED-SYNC]'
 local query_players_tag = '[QUERY-PLAYERS]'
 local player_join_tag = '[PLAYER-JOIN]'
@@ -184,15 +186,15 @@ end
 -- local Server = require 'utils.server'
 -- local Event = require 'utils.event'
 --
--- Event.add(Server.events.on_server_started,
+-- Event.add(CustomEvents.events.on_server_started,
 -- function()
 --      Server.try_get_all_data('regulars', callback)
 -- end)
--- Event.add(Server.events.on_changes_detected,
+-- Event.add(CustomEvents.events.on_changes_detected,
 -- function()
 --      Trigger some sort of automated restart whenever the game ends.
 -- end)
-Public.events = { on_server_started = Event.generate_event_name('on_server_started'), on_changes_detected = Event.generate_event_name('on_changes_detected') }
+-- Defined in created_events.lua
 
 -- Starts a new game with the given scenario. Note that this will stop the current game and reset it.
 ---@param scenario_data string|table
@@ -218,6 +220,16 @@ function Public.start_server(scenario_data)
     local json = helpers.table_to_json(scenario_data)
 
     output_data(init_tag .. json)
+end
+
+--- Tries to hotpatch the current save from the panel if possible.
+--- Will stop the server, hotpatch and resume the server.
+-- @usage
+-- local Server = require 'utils.server'
+-- Server.save_hot_patch()
+---@return nil
+function Public.save_hot_patch()
+    output_data(save_hot_patch_tag)
 end
 
 --- Sends a message to the linked discord channel. The message is sanitized of markdown server side.
@@ -992,16 +1004,36 @@ local function raise_admins(data)
         return
     end
 
-    if admins and next(admins) then
-        for _, admin in pairs(admins) do
-            admins[admin] = nil
+    local new_data = {}
+    for _, name in pairs(data) do
+        new_data[name] = true
+    end
+
+    for name, _ in pairs(admins) do
+        admins[name] = nil
+        if not new_data[name] then
+            local player = game.get_player(name)
+            if player and player.valid and player.admin then
+                player.admin = false
+                Public.output_script_data("Demoted: " .. player.name)
+            end
         end
     end
 
-    for _, admin in pairs(data) do
-        admins[admin] = true
+    for name, _ in pairs(new_data) do
+        admins[name] = true
+        local player = game.get_player(name)
+        if player and player.valid then
+            if not player.admin then
+                player.admin = true
+                Public.output_script_data("Promoted: " .. player.name)
+            end
+        end
     end
+
+    Public.output_script_data("Admin list updated: " .. serpent.line(data))
 end
+
 
 local function data_set_changed(data)
     local handlers = data_set_handlers[data.data_set]
@@ -1574,6 +1606,7 @@ function Public.ban_handler(event)
 
     if cmd == 'ban' then
         Public.set_data(jailed_data_set, target, nil) -- this is added here since we don't want to clutter the jail dataset.
+        Event.raise(CustomEvents.events.on_player_banned, { player_name = target })
     end
 end
 

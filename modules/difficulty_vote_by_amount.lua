@@ -79,6 +79,14 @@ Global.register(
     end
 )
 
+local function get_top_frame(player, id)
+    if Gui.get_mod_gui_top_frame() then
+        return Gui.get_button_flow(player)[id]
+    else
+        return player.gui.top[id]
+    end
+end
+
 local function clear_main_frame(player)
     local screen = player.gui.center
     if screen[main_frame_name] and screen[main_frame_name].valid then
@@ -87,9 +95,9 @@ local function clear_main_frame(player)
 end
 
 local function clear_top_frame(player)
-    local top = player.gui.top
-    if top[top_button_name] and top[top_button_name].valid then
-        top[top_button_name].destroy()
+    local top = get_top_frame(player, top_button_name)
+    if top and top.valid then
+        top.destroy()
     end
 end
 
@@ -101,25 +109,45 @@ function Public.difficulty_gui()
     local tooltip = 'Current difficulty of the map is ' .. this.difficulties[this.index].name .. '.'
 
     for _, player in pairs(game.connected_players) do
-        local top = player.gui.top
-        if top[top_button_name] then
-            top[top_button_name].caption = this.difficulties[this.index].name
-            top[top_button_name].tooltip = this.button_tooltip or tooltip
-            top[top_button_name].style.font_color = this.difficulties[this.index].print_color
-        else
-            local b =
-                top.add
+        local top = get_top_frame(player, top_button_name)
+        if Gui.get_mod_gui_top_frame() then
+            local button = Gui.add_mod_button(
+                player,
                 {
                     type = 'button',
+                    name = top_button_name,
                     caption = this.difficulties[this.index].name,
                     tooltip = tooltip,
-                    name = top_button_name
+                    style = Gui.button_style
                 }
-            b.style.font = 'heading-2'
-            b.style.font_color = this.difficulties[this.index].print_color
-            b.style.minimal_height = this.button_height
-            b.style.maximal_height = this.button_height
-            b.style.minimal_width = this.gui_width
+            )
+            if button then
+                button.style.font_color = this.difficulties[this.index].print_color
+                button.style.font = 'heading-2'
+                button.style.minimal_height = 36
+                button.style.maximal_height = 36
+                button.style.minimal_width = this.gui_width
+            end
+        else
+            if top then
+                top.caption = this.difficulties[this.index].name
+                top.tooltip = this.button_tooltip or tooltip
+                top.style.font_color = this.difficulties[this.index].print_color
+            else
+                local b =
+                    player.gui.top.add
+                    {
+                        type = 'button',
+                        caption = this.difficulties[this.index].name,
+                        tooltip = tooltip,
+                        name = top_button_name
+                    }
+                b.style.font = 'heading-2'
+                b.style.font_color = this.difficulties[this.index].print_color
+                b.style.minimal_height = this.button_height
+                b.style.maximal_height = this.button_height
+                b.style.minimal_width = this.gui_width
+            end
         end
     end
 end
@@ -383,6 +411,10 @@ function Public.set(key, value)
     end
 end
 
+function Public.get_closing_timeout()
+    return math.round((this.closing_timeout - game.tick) / 60, 0)
+end
+
 function Public.has_votes_ended()
     return game.tick > this.closing_timeout
 end
@@ -480,6 +512,17 @@ Gui.on_click(
 Event.add(defines.events.on_player_created, on_player_joined_game)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_left_game, on_player_left_game)
+Event.on_nth_tick(200, function ()
+    local connected_players = game.connected_players
+    for _, player in pairs(connected_players) do
+        local top = get_top_frame(player, top_button_name)
+        if top and top.valid then
+            local tooltip = 'Current difficulty of the map is ' .. this.difficulties[this.index].name .. '.'
+            top.caption = this.difficulties[this.index].name
+            top.tooltip = tooltip
+        end
+    end
+end)
 
 Public.top_button_name = top_button_name
 Public.clear_main_frame = clear_main_frame

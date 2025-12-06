@@ -12,8 +12,10 @@ local Discord = require 'utils.discord_handler'
 local Commands = require 'utils.commands'
 local mapkeeper = '[color=blue]Mapkeeper:[/color]'
 local Task = require 'utils.task_token'
+local CustomEvents = require 'utils.created_events'
 
-local this = {
+local this =
+{
     enabled = true,
     players = {},
     bottom_button = false
@@ -121,7 +123,8 @@ Commands.new('remove_chunks', 'Iterates over a surface and removes chunks that a
 
             for chunk in chunks do
                 if surface.is_chunk_generated(chunk) then
-                    local area = {
+                    local area =
+                    {
                         left_top = { chunk.area.left_top.x - 64, chunk.area.left_top.y - 64 },
                         right_bottom = { chunk.area.right_bottom.x + 64, chunk.area.right_bottom.y + 64 }
                     }
@@ -217,12 +220,11 @@ Commands.new('refresh', 'Reloads game script')
 Commands.new('spaghetti', 'Toggle between disabling bots.')
     :require_admin()
     :require_validation()
-    :is_activated()
     :add_parameter('true/false', true, 'boolean')
     :callback(
         function (player, args)
             local force = player.force
-            if args == 'true' then
+            if args then
                 game.print('The world has been spaghettified!', { color = Color.success })
                 force.technologies['logistic-system'].enabled = false
                 force.technologies['construction-robotics'].enabled = false
@@ -241,7 +243,7 @@ Commands.new('spaghetti', 'Toggle between disabling bots.')
                 force.technologies['worker-robots-speed-6'].enabled = false
                 this.spaghetti_enabled = true
                 return true
-            elseif args == 'false' then
+            elseif not args then
                 game.print('The world is no longer spaghett!', { color = Color.yellow })
                 force.technologies['logistic-system'].enabled = true
                 force.technologies['construction-robotics'].enabled = true
@@ -287,8 +289,10 @@ Commands.new('generate_map', 'Pregenerates map.')
         end
     )
 
-Commands.new('repair', 'Revives all ghost entities.')
+Commands.new('repair', 'Revives all ghost entities and inserts all missing modules into the entities.')
     :require_admin()
+    :add_alias('fix')
+    :add_alias('revive')
     :require_validation()
     :add_parameter('1-50', true, 'number')
     :callback(
@@ -306,19 +310,38 @@ Commands.new('repair', 'Revives all ghost entities.')
             local radius = { { x = (player.position.x + -args), y = (player.position.y + -args) }, { x = (player.position.x + args), y = (player.position.y + args) } }
 
             local c = 0
+            local modules = 0
             for _, v in pairs(player.surface.find_entities_filtered { type = 'entity-ghost', area = radius }) do
                 if v and v.valid then
                     c = c + 1
-                    v.silent_revive()
+                    local _, entity, item_proxy = v.silent_revive()
+                    if entity and entity.valid then
+                        if item_proxy and item_proxy.valid then
+                            for _, plan in pairs(item_proxy.insert_plan) do
+                                if entity.get_module_inventory().index == plan.items.in_inventory[1].inventory then
+                                    item_proxy.proxy_target.get_module_inventory().insert { name = plan.id.name, quality = plan.id.quality, count = 999 }
+                                    modules = modules + 1
+                                end
+                            end
+                            item_proxy.destroy()
+                        end
+                    end
                 end
             end
+
+
 
             if c == 0 then
                 player.print('No entities to repair were found!')
                 return false
             end
 
-            Discord.send_notification_raw(nil, player.name .. ' repaired ' .. c .. ' entities!')
+            if modules > 0 then
+                Discord.send_notification_raw(nil, player.name .. ' repaired ' .. c .. ' entities and inserted all missing modules into the entities.')
+                return 'Repaired ' .. c .. ' entities and inserted all missing modules into the entities.'
+            end
+
+            Discord.send_notification_raw(nil, player.name .. ' repaired ' .. c .. ' entities.')
             return 'Repaired ' .. c .. ' entities!'
         end
     )
@@ -331,7 +354,8 @@ Commands.new('dump_layout', 'Dump the current map-layout.')
             local surface = player.surface
             game.write_file('layout.lua', '', false)
 
-            local area = {
+            local area =
+            {
                 left_top = { x = 0, y = 0 },
                 right_bottom = { x = 32, y = 32 }
             }
@@ -376,11 +400,10 @@ Commands.new('creative', 'Enables creative_mode.')
     :require_admin()
     :add_parameter('true/false', false, 'boolean')
     :require_validation()
-    :is_activated()
     :callback(
         function (player, args)
             local force = player.force
-            if args == 'true' then
+            if args then
                 game.print('[CREATIVE] ' .. player.name .. ' has activated creative-mode!', { color = Color.warning })
                 Server.to_discord_bold(table.concat { '[Creative] ' .. player.name .. ' has activated creative-mode!' })
 
@@ -395,7 +418,7 @@ Commands.new('creative', 'Enables creative_mode.')
                         Public.insert_all_items(_player)
                     end
                 end
-            elseif args == 'false' then
+            elseif not args then
                 game.print('[CREATIVE] ' .. player.name .. ' has deactivated creative-mode!', { color = Color.warning })
                 Server.to_discord_bold(table.concat { '[Creative] ' .. player.name .. ' has deactivated creative-mode!' })
 
@@ -555,11 +578,11 @@ function Public.insert_all_items(player)
             end
             local item = prototypes.item
             local i = 0
-            for _k, _v in pairs(item) do
-                i = i + 1
-                if _k and _v.type ~= 'mining-tool' then
+            for _name, _data in pairs(item) do
+                if _name then
+                    i = i + 1
                     player.character_inventory_slots_bonus = Modifiers.get_single_modifier(player, 'character_inventory_slots_bonus', 'creative')
-                    player.insert { name = _k, count = _v.stack_size, quality = quality }
+                    player.insert { name = _name, count = _data.stack_size, quality = quality }
                     player.print('[CREATIVE] Inserted all base items.', { color = Color.success })
                 end
             end
@@ -670,6 +693,12 @@ function Public.reset()
     this.players = {}
 end
 
+function Public.creative()
+    Modifiers.set('creative_enabled', true)
+    this.creative_enabled = true
+    game.forces.player.enable_all_prototypes()
+end
+
 function Public.bottom_button(value)
     print('Setting bottom button.')
     this.bottom_button = value or false
@@ -707,7 +736,7 @@ Gui.on_click(
 )
 
 Event.add(
-    BottomFrame.events.bottom_quickbar_location_changed,
+    CustomEvents.events.bottom_quickbar_location_changed,
     function (event)
         if not this.enabled then
             return

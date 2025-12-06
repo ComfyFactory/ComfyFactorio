@@ -7,9 +7,10 @@ StatData.add_normalize('ore_veins', 'Ore veins located'):set_tooltip('Amount of 
 local is_modded_pt2 = Public.is_modded_pt2
 local random = math.random
 
-local this = {
+local this =
+{
     raffle = {},
-    mixed_ores = {},
+    mixed_ores = { 'iron-ore', 'copper-ore', 'stone', 'coal' },
     chance = 512,
     amount_modifier = 1
 }
@@ -21,19 +22,55 @@ Global.register(
     end
 )
 
-local valid_entities = {
+local valid_entities =
+{
     ['simple-entity'] = true,
     ['tree'] = true,
     ['simple-entity-with-owner'] = true
 }
 
-local size_raffle = {
+local size_raffle =
+{
     { 'giant', 65, 96 },
-    { 'huge',  33, 64 },
-    { 'big',   17, 32 },
-    { 'small', 9,  16 },
-    { 'tiny',  4,  8 }
+    { 'huge', 33, 64 },
+    { 'big', 17, 32 },
+    { 'small', 9, 16 },
+    { 'tiny', 4, 8 }
 }
+
+function Public.add_to_raffle(raffle)
+    for _, t in pairs(raffle) do
+        for _ = 1, t[2], 1 do
+            table.insert(this.raffle, t[1])
+        end
+    end
+end
+
+function Public.add_to_mixed_ores(ores)
+    for _, o in pairs(ores) do
+        table.insert(this.mixed_ores, o)
+    end
+end
+
+function Public.remove_from_raffle(ores)
+    for i, m in pairs(this.raffle) do
+        for _, o in pairs(ores) do
+            if m == o then
+                this.raffle[i] = nil
+            end
+        end
+    end
+end
+
+function Public.remove_from_mixed_ores(ores)
+    for i, m in pairs(this.mixed_ores) do
+        for _, o in pairs(ores) do
+            if m == o then
+                this.mixed_ores[i] = nil
+            end
+        end
+    end
+end
 
 local function get_chances()
     local chances = {}
@@ -66,8 +103,6 @@ local function set_raffle()
             table.insert(this.raffle, t[1])
         end
     end
-
-    this.mixed_ores = { 'iron-ore', 'copper-ore', 'stone', 'coal' }
 
     local starting_planet = Public.get_planet()
     if is_modded_pt2 then
@@ -137,7 +172,8 @@ local function ore_vein(player, entity)
 
     local ore_entities = { { name = ore, position = { x = entity.position.x, y = entity.position.y }, amount = get_amount(entity.position) } }
     if ore == 'mixed' then
-        ore_entities = {
+        ore_entities =
+        {
             {
                 name = this.mixed_ores[random(1, #this.mixed_ores)],
                 position = { x = entity.position.x, y = entity.position.y },
@@ -187,11 +223,6 @@ local function on_player_mined_entity(event)
     end
 
     local chance = this.chance
-
-    local is_around_train = Public.is_around_train_simple(player)
-    if is_around_train then
-        chance = chance / 2
-    end
 
     if random(1, chance) ~= 1 then
         return

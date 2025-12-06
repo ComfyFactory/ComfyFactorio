@@ -8,6 +8,7 @@ local Gui = require 'utils.gui'
 local SpamProtection = require 'utils.spam_protection'
 local Core = require 'utils.core'
 local LinkedChests = require 'maps.mountain_fortress_v3.icw.linked_chests'
+local DevServer = require 'utils.dev_server'
 
 local deep_copy = table.deep_copy
 local random = math.random
@@ -26,6 +27,10 @@ local construct_train_token =
         function (event)
             local icw = event.icw
             local carriage = event.carriage
+            if not carriage or not carriage.valid then
+                return error('Carriage was invalid, please check this out!')
+            end
+
             local train = event.train
             local chunk_position = event.chunk_position
             local saved_carriages = event.saved_carriages
@@ -35,7 +40,42 @@ local construct_train_token =
             move_room_to_train(icw, train, carriage_wagon, saved_carriages)
             carriage_wagon.chunk_position.x = chunk_position.x
         end
-        , 999)
+    )
+
+local clear_old_surfaces_token =
+    Task.register(
+        function ()
+            local icw = ICW.get()
+            local surfaces_in_use = {}
+
+            for _, wagon in pairs(icw.wagons) do
+                if wagon.surface and wagon.surface.valid then
+                    surfaces_in_use[wagon.surface.index] = true
+                end
+            end
+
+            for _, train in pairs(icw.trains) do
+                if train.surface and train.surface.valid then
+                    surfaces_in_use[train.surface.index] = true
+                end
+            end
+
+            local new_surfaces = {}
+            for _, surface in pairs(icw.surfaces) do
+                if surface and surface.valid then
+                    local is_in_use = surfaces_in_use[surface.index]
+                    local is_default = icw.default_surface and surface.name == WPT.get_planet()
+
+                    if not is_in_use and not is_default then
+                        game.delete_surface(surface)
+                    else
+                        new_surfaces[#new_surfaces + 1] = surface
+                    end
+                end
+            end
+            icw.surfaces = new_surfaces
+        end
+    )
 
 chunk_reveal_token =
     Task.register(
@@ -77,10 +117,12 @@ end
 local size_of_debris = #fallout_debris
 
 local function get_offset(icw, surface, offset)
-    if not icw.default_surface then return { x = 0, y = 0 } end
+    if not icw.default_surface then
+        return { x = 0, y = 0 }
+    end
     local position =
     {
-        x = 10000 + offset,
+        x = 2000 + offset,
         y = 0
     }
 
@@ -109,10 +151,22 @@ local add_chests_to_wagon_token =
 
             local positions =
             {
-                { position1, 0, "_1" }, { position1, -1, "_2" }, { position1, -2, "_3" }, { position1, -3, "_4" },
-                { position2, 0, "_5" }, { position2, 1, "_6" }, { position2, 2, "_7" }, { position2, 3, "_8" },
-                { position3, 0, "_9" }, { position3, -1, "_10" }, { position3, -2, "_11" }, { position3, -3, "_12" },
-                { position4, 0, "_13" }, { position4, 1, "_14" }, { position4, 2, "_15" }, { position4, 3, "_16" }
+                { position1, 0, '_1' },
+                { position1, -1, '_2' },
+                { position1, -2, '_3' },
+                { position1, -3, '_4' },
+                { position2, 0, '_5' },
+                { position2, 1, '_6' },
+                { position2, 2, '_7' },
+                { position2, 3, '_8' },
+                { position3, 0, '_9' },
+                { position3, -1, '_10' },
+                { position3, -2, '_11' },
+                { position3, -3, '_12' },
+                { position4, 0, '_13' },
+                { position4, 1, '_14' },
+                { position4, 2, '_15' },
+                { position4, 3, '_16' }
             }
 
             for _, pos_data in ipairs(positions) do
@@ -127,6 +181,8 @@ local add_chests_to_wagon_token =
 reconstruct_all_trains =
     Task.register(
         function ()
+            local icw = ICW.get()
+            icw.reconstruction_pending = false
             Public.reconstruct_all_trains()
         end
     )
@@ -230,8 +286,12 @@ local function get_saved_carriages(icw, carriages)
     end
 end
 
-
 function Public.request_reconstruction()
+    local icw = ICW.get()
+    if icw.reconstruction_pending then
+        return
+    end
+    icw.reconstruction_pending = true
     Task.set_timeout_in_ticks(5, reconstruct_all_trains, {})
 end
 
@@ -243,15 +303,6 @@ local function validate_entity(entity)
         return false
     end
     return true
-end
-
-local function delete_empty_surfaces(icw)
-    for k, surface in pairs(icw.surfaces) do
-        if not icw.trains[tonumber(surface.name)] then
-            game.delete_surface(surface)
-            icw.surfaces[k] = nil
-        end
-    end
 end
 
 local function kick_players_from_surface(wagon)
@@ -282,7 +333,6 @@ local function kick_players_from_surface(wagon)
     end
 end
 
-
 -- This function broke whenever a player tried to connect a wagon - sent them straight to the void and instantly killed them.
 --[[
 local function kick_players_out_of_vehicles(wagon)
@@ -296,8 +346,10 @@ local function kick_players_out_of_vehicles(wagon)
     end
 end
 ]]
-
 local function teleport_char(position, destination_area, wagon)
+    if not wagon.surface or not wagon.surface.valid then
+        return
+    end
     for _, e in pairs(wagon.surface.find_entities_filtered({ name = 'character', area = wagon.area })) do
         local player = e.player
         if player then
@@ -405,7 +457,9 @@ function Public.hazardous_debris()
     end
     local icw = ICW.get()
     local wagon = icw.wagons[locomotive.unit_number]
-    if not wagon then return end
+    if not wagon then
+        return
+    end
 
     local surface = wagon.surface
     local speed = icw.speed
@@ -603,25 +657,27 @@ local function construct_wagon_doors(icw, wagon)
         end
         local e
         if (x - area.left_top.x) < 0 then
-            e = surface.create_entity(
-                {
-                    name = 'warp',
-                    position = { x - 0.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5) },
-                    force = 'neutral',
-                    create_build_effect_smoke = false,
-                    direction = defines.direction.west
-                }
-            )
+            e =
+                surface.create_entity(
+                    {
+                        name = 'warp',
+                        position = { x - 0.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5) },
+                        force = 'neutral',
+                        create_build_effect_smoke = false,
+                        direction = defines.direction.west
+                    }
+                )
         else
-            e = surface.create_entity(
-                {
-                    name = 'warp',
-                    position = { x, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5) },
-                    force = 'neutral',
-                    create_build_effect_smoke = false,
-                    direction = defines.direction.east
-                }
-            )
+            e =
+                surface.create_entity(
+                    {
+                        name = 'warp',
+                        position = { x, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5) },
+                        force = 'neutral',
+                        create_build_effect_smoke = false,
+                        direction = defines.direction.east
+                    }
+                )
         end
         e.destructible = false
         e.minable_flag = false
@@ -683,7 +739,9 @@ function Public.kill_wagon(icw, entity)
         return
     end
 
-    if wagon.light and wagon.light.valid then wagon.light.destroy() end
+    if wagon.light and wagon.light.valid then
+        wagon.light.destroy()
+    end
 
     clear_saved_carriages(icw, entity.unit_number)
 
@@ -699,7 +757,10 @@ function Public.kill_wagon(icw, entity)
         surface.set_tiles({ { name = out_of_map_tile, position = { x = p.x + 0.5, y = p.y } } }, true)
         surface.set_tiles({ { name = out_of_map_tile, position = { x = p.x - 1, y = p.y } } }, true)
     end
-    wagon.entity.force.chart(surface, wagon.area)
+    local chart_area = deep_copy(wagon.area)
+    chart_area.left_top.x = chart_area.left_top.x - 5
+    chart_area.right_bottom.x = chart_area.right_bottom.x + 5
+    game.forces.player.chart(surface, chart_area)
     icw.wagons[entity.unit_number] = nil
     Public.request_reconstruction()
 end
@@ -734,6 +795,11 @@ function Public.create_room_surface(icw, unit_number)
     surface.daytime = 0.1
     surface.request_to_generate_chunks({ 16, 16 }, 1)
     surface.force_generate_chunk_requests()
+
+    if DevServer.is_dev_server() then
+        surface.ignore_surface_conditions = true
+    end
+
     exclude_surface(surface)
     for _, tile in pairs(surface.find_tiles_filtered({ area = { { -2, -2 }, { 2, 2 } } })) do
         surface.set_tiles({ { name = out_of_map_tile, position = tile.position } }, true)
@@ -863,20 +929,21 @@ function Public.create_wagon_room(icw, wagon)
         y = wagon.area.left_top.y + (wagon.area.right_bottom.y - wagon.area.left_top.y) * 0.5
     }
 
-    wagon.light = rendering.draw_light(
-        {
-            sprite = 'utility/light_medium',
-            scale = 55.5,
-            intensity = 1,
-            minimum_darkness = 0,
-            oriented = true,
-            color = { 255, 255, 255 },
-            target = center_position,
-            surface = surface,
-            visible = true,
-            only_in_alt_mode = false
-        }
-    )
+    wagon.light =
+        rendering.draw_light(
+            {
+                sprite = 'utility/light_medium',
+                scale = 55.5,
+                intensity = 1,
+                minimum_darkness = 0,
+                oriented = true,
+                color = { 255, 255, 255 },
+                target = center_position,
+                surface = surface,
+                visible = true,
+                only_in_alt_mode = false
+            }
+        )
 
     if wagon.entity.type == 'cargo-wagon' then
         local task = Task.get(add_chests_to_wagon_token)
@@ -884,7 +951,7 @@ function Public.create_wagon_room(icw, wagon)
     end
 end
 
-function Public.create_wagon(icw, created_entity)
+function Public.create_wagon(icw, created_entity, quality_areas)
     if not validate_entity(created_entity) then
         return
     end
@@ -895,6 +962,10 @@ function Public.create_wagon(icw, created_entity)
 
     local wagon_types = ICW.get('wagon_types')
     local wagon_areas = ICW.get('wagon_areas')
+
+    if quality_areas then
+        wagon_areas = quality_areas
+    end
 
     local position = get_offset(icw, created_entity.surface, icw.offsets)
 
@@ -924,7 +995,7 @@ function Public.create_wagon(icw, created_entity)
         doors = {}
     }
     local wagon = icw.wagons[created_entity.unit_number]
-    icw.offsets = icw.offsets + 480
+    icw.offsets = icw.offsets + icw.offset_increment
 
     wagon.surface = Public.create_room_surface(icw, created_entity.unit_number)
     Public.create_wagon_room(icw, icw.wagons[created_entity.unit_number])
@@ -993,7 +1064,9 @@ function Public.use_cargo_wagon_door_with_entity(icw, player, door)
         return
     end
 
-    if player and player.valid and player.character == nil then return end
+    if player and player.valid and player.character == nil then
+        return
+    end
 
     player_data.fallback_surface = wagon.entity.surface.index
     player_data.fallback_position = { wagon.entity.position.x, wagon.entity.position.y }
@@ -1004,7 +1077,6 @@ function Public.use_cargo_wagon_door_with_entity(icw, player, door)
         player_data.pos = player.physical_position.x
         return
     end
-
 
     if icw.default_surface then
         if player.physical_position.x < 800 then
@@ -1121,6 +1193,11 @@ move_room_to_train = function (icw, train, wagon, carriages)
         return
     end
 
+    if not train.surface or not train.surface.valid then
+        error('Train surface is invalid, please check this out!')
+        return
+    end
+
     train.wagons[#train.wagons + 1] = wagon.entity.unit_number
 
     local ltx = carriages and carriages.new_area and carriages.new_area.left_top.x or wagon.area.left_top.x
@@ -1142,9 +1219,16 @@ move_room_to_train = function (icw, train, wagon, carriages)
         carriages.top_y = train.top_y
     end
 
+    if not wagon.surface or not wagon.surface.valid then
+        return
+    end
+
     if destination_area.left_top.x == wagon.area.left_top.x and destination_area.left_top.y == wagon.area.left_top.y and wagon.surface.name == train.surface.name then
         return
     end
+
+    local old_area = deep_copy(wagon.area)
+    local old_surface = wagon.surface
 
     kick_players_from_surface(wagon)
     -- kick_players_out_of_vehicles(wagon)
@@ -1177,7 +1261,19 @@ move_room_to_train = function (icw, train, wagon, carriages)
         player.teleport(position, train.surface)
     end
 
-    Public.clear_old_area(wagon)
+    wagon.surface = train.surface
+    wagon.area = destination_area
+    wagon.transfer_entities = {}
+
+    if old_surface and old_surface.valid and old_area then
+        local clear_area = deep_copy(old_area)
+        clear_area.left_top.x = clear_area.left_top.x - 10.5
+        clear_area.right_bottom.x = clear_area.right_bottom.x + 10.5
+        for _, tile in pairs(old_surface.find_tiles_filtered({ area = clear_area })) do
+            old_surface.set_tiles({ { name = out_of_map_tile, position = tile.position } }, true)
+        end
+        game.forces.player.chart(old_surface, clear_area)
+    end
 
     if icw.default_surface then
         wagon.entity.force.chart(wagon.surface, destination_area)
@@ -1185,11 +1281,6 @@ move_room_to_train = function (icw, train, wagon, carriages)
         wagon.entity.force.chart(wagon.surface, wagon.area)
     end
 
-
-
-    wagon.surface = train.surface
-    wagon.area = destination_area
-    wagon.transfer_entities = {}
     construct_wagon_doors(icw, wagon)
 
     local left_top_y = wagon.area.left_top.y
@@ -1214,20 +1305,21 @@ move_room_to_train = function (icw, train, wagon, carriages)
             y = wagon.area.left_top.y + (wagon.area.right_bottom.y - wagon.area.left_top.y) * 0.5
         }
 
-        wagon.light = rendering.draw_light(
-            {
-                sprite = 'utility/light_medium',
-                scale = 55.5,
-                intensity = 1,
-                minimum_darkness = 0,
-                oriented = true,
-                color = { 255, 255, 255 },
-                target = center_position,
-                surface = wagon.surface,
-                visible = true,
-                only_in_alt_mode = false
-            }
-        )
+        wagon.light =
+            rendering.draw_light(
+                {
+                    sprite = 'utility/light_medium',
+                    scale = 55.5,
+                    intensity = 1,
+                    minimum_darkness = 0,
+                    oriented = true,
+                    color = { 255, 255, 255 },
+                    target = center_position,
+                    surface = wagon.surface,
+                    visible = true,
+                    only_in_alt_mode = false
+                }
+            )
     end
 end
 
@@ -1242,6 +1334,19 @@ function Public.construct_train(icw, carriages)
     local train = { surface = Public.create_room_surface(icw, unit_number), wagons = {}, top_y = 0 }
     icw.trains[unit_number] = train
 
+    if not icw.train_locomotives then
+        icw.train_locomotives = {}
+    end
+
+    if not icw.train_locomotives[unit_number] then
+        for _, carriage in ipairs(carriages) do
+            if carriage and carriage.valid and carriage.type == 'locomotive' then
+                icw.train_locomotives[unit_number] = carriage.unit_number
+                break
+            end
+        end
+    end
+
     local saved_carriages
 
     local wagon = icw.wagons[unit_number]
@@ -1249,11 +1354,13 @@ function Public.construct_train(icw, carriages)
         saved_carriages = get_saved_carriages(icw, old_carriages)
         wagon.chunk_position = wagon.new_chunk_position
         wagon.new_chunk_position = nil
-        -- move_room_to_train(icw, train, wagon, saved_carriages)
+        if not icw.default_surface then
+            move_room_to_train(icw, train, wagon, saved_carriages)
+        end
     end
 
     local timeout = 5
-    for _, carriage in pairs(carriages) do
+    for _, carriage in ipairs(carriages) do
         Task.set_timeout_in_ticks(timeout, construct_train_token, { icw = icw, carriage = carriage, train = train, chunk_position = wagon.chunk_position, saved_carriages = saved_carriages })
         timeout = timeout + 5
     end
@@ -1272,6 +1379,7 @@ function Public.clear_old_area(wagon)
     for _, tile in pairs(wagon.surface.find_tiles_filtered({ area = old_area })) do
         wagon.surface.set_tiles({ { name = out_of_map_tile, position = tile.position } }, true)
     end
+    game.forces.player.chart(wagon.surface, old_area)
 end
 
 function Public.reconstruct_all_trains(reset_carriages)
@@ -1291,36 +1399,91 @@ function Public.reconstruct_all_trains(reset_carriages)
     for unit_number, wagon in pairs(icw.wagons) do
         if not validate_entity(wagon.entity) then
             icw.wagons[unit_number] = nil
-            Public.request_reconstruction()
-            return false
-        end
-
-        local locomotive = WPT.get('locomotive')
-        if not (locomotive and locomotive.valid) then
             return false
         end
 
         local carriages = wagon.entity.train.carriages
+        local locomotive = WPT.get('locomotive')
 
-        for i, carriage in pairs(carriages) do
-            if carriage == locomotive then
-                local adjusted_zones = WPT.get('adjusted_zones')
+        if (locomotive and locomotive.valid) then
+            local should_reverse = false
+            for i, carriage in pairs(carriages) do
+                if carriage == locomotive then
+                    local adjusted_zones = WPT.get('adjusted_zones')
 
-                local stock
-                if adjusted_zones.reversed then
-                    stock = locomotive.get_connected_rolling_stock(defines.rail_direction.back)
-                else
-                    stock = locomotive.get_connected_rolling_stock(defines.rail_direction.front)
-                end
-                if stock ~= carriages[i - 1] then
-                    local n = 1
-                    local m = #carriages
-                    while (n < m) do
-                        carriages[n], carriages[m] = carriages[m], carriages[n]
-                        n = n + 1
-                        m = m - 1
+                    local stock
+                    if adjusted_zones.reversed then
+                        stock = locomotive.get_connected_rolling_stock(defines.rail_direction.back)
+                    else
+                        stock = locomotive.get_connected_rolling_stock(defines.rail_direction.front)
+                    end
+                    if stock ~= carriages[i - 1] then
+                        should_reverse = true
                     end
                     break
+                end
+            end
+
+            if should_reverse then
+                local n = 1
+                local m = #carriages
+                while (n < m) do
+                    carriages[n], carriages[m] = carriages[m], carriages[n]
+                    n = n + 1
+                    m = m - 1
+                end
+            end
+        elseif #carriages > 1 then
+            local oldest_locomotive = nil
+            local lowest_unit_number = nil
+
+            for _, carriage in pairs(carriages) do
+                if carriage and carriage.valid and carriage.type == 'locomotive' then
+                    if not lowest_unit_number or carriage.unit_number < lowest_unit_number then
+                        oldest_locomotive = carriage
+                        lowest_unit_number = carriage.unit_number
+                    end
+                end
+            end
+
+            if oldest_locomotive then
+                local loco_index = nil
+                for i, carriage in ipairs(carriages) do
+                    if carriage.unit_number == oldest_locomotive.unit_number then
+                        loco_index = i
+                        break
+                    end
+                end
+
+                if loco_index then
+                    local connected_wagon = nil
+
+                    if loco_index > 1 then
+                        connected_wagon = carriages[loco_index - 1]
+                    elseif loco_index < #carriages then
+                        connected_wagon = carriages[loco_index + 1]
+                    end
+
+                    local should_reverse = false
+                    if connected_wagon and connected_wagon.valid and oldest_locomotive.valid then
+                        if oldest_locomotive.position.y > connected_wagon.position.y then
+                            if loco_index == 1 then
+                                should_reverse = true
+                            end
+                        else
+                            if loco_index > 1 then
+                                should_reverse = true
+                            end
+                        end
+                    end
+
+                    if should_reverse then
+                        local reversed = {}
+                        for i = #carriages, 1, -1 do
+                            reversed[#reversed + 1] = carriages[i]
+                        end
+                        carriages = reversed
+                    end
                 end
             end
         end
@@ -1363,7 +1526,7 @@ function Public.reconstruct_all_trains(reset_carriages)
                     end
 
                     new_wagon.new_chunk_position = new_position
-                    icw.offsets = icw.offsets + 480
+                    icw.offsets = icw.offsets + icw.offset_increment
                     to_construct_ids[carriages[1].unit_number] = true
                     ::continue::
                 end
@@ -1380,12 +1543,12 @@ function Public.reconstruct_all_trains(reset_carriages)
                 end
             end
 
-            if next(to_construct_ids) then
+            if next(to_construct_ids) or not icw.default_surface then
                 Public.construct_train(icw, carriages)
             end
         end
     end
-    delete_empty_surfaces(icw)
+    Task.set_timeout_in_ticks(25, clear_old_surfaces_token)
     return true
 end
 

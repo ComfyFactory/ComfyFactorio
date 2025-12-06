@@ -104,6 +104,10 @@ function Public.enable_fullness(value)
     return this.fullness_enabled
 end
 
+function Public.is_enabled()
+    return this.fullness_enabled
+end
+
 function Public.get(key)
     if key then
         return this[key]

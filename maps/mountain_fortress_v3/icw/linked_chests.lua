@@ -1260,8 +1260,6 @@ Event.on_nth_tick(10000,
             return
         end
 
-        Server.output_script_data(module_name .. 'Checking linked chests - this will stutter the server a bit.')
-
         if not this.invalid_containers then
             this.invalid_containers = {}
         end

@@ -58,7 +58,7 @@ local function apply_logistic_network(player, saved_data)
                 for i, slot in pairs(saved_data) do
                     if slot and (slot.name or slot) and check_if_item_exists(slot.name or slot) then
                         local item = prototypes.item[slot.name or slot]
-                        local item_stack = { min = slot.min or 1, max = slot.max or 1, value = { comparator = "=", name = slot.name or slot, quality = "normal", type = slot.type or item.type or nil } }
+                        local item_stack = { min = slot.min or 1, max = slot.max or 1, value = { comparator = "=", name = slot.name or slot, quality = slot.quality or "normal", type = slot.type or item.type or nil } }
                         pcall(old_section.set_slot, i, item_stack)
                     end
                 end
@@ -79,7 +79,7 @@ local function apply_logistic_network(player, saved_data)
                     if slots and type(slots) == 'table' then
                         for i, slot in pairs(slots) do
                             if slot and slot.name and check_if_item_exists(slot.name) then
-                                local item_stack = { min = slot.min, max = slot.max, value = { comparator = "=", name = slot.name, quality = "normal", type = slot.type or nil } }
+                                local item_stack = { min = slot.min, max = slot.max, value = { comparator = "=", name = slot.name, quality = slot.quality or "normal", type = slot.type or nil } }
                                 pcall(new_section.set_slot, i, item_stack)
                             end
                         end
@@ -187,7 +187,7 @@ function Public.save_quickbar(player)
     for i = 1, 100 do
         local slot = player.get_quick_bar_slot(i)
         if slot ~= nil and not ignored_items[slot.name] then
-            slots[i] = slot.name
+            slots[i] = { name = slot.name, quality = slot.quality or "normal" }
         end
     end
     if next(slots) then
@@ -212,8 +212,7 @@ function Public.save_logistics(player)
 
     local sections = {}
 
-
-    for sec = 1, 4 do
+    for sec = 1, 8 do
         local section = player.get_requester_point().get_section(sec)
         if section then
             if not sections[section.index] then
@@ -279,13 +278,19 @@ local remove_quickbar = Public.remove_quickbar
 local remove_logistics = Public.remove_logistics
 
 Commands.new('save-quickbar', 'Save your personal quickbar preset so it´s always the same.')
-    :require_backend()
     :callback(
         function (player)
             save_quickbar(player)
-            player.print('Quickbar saved.')
+            player.print('Quickbar saved.', { color = Color.success })
         end
     )
+
+Commands.new('restore-quickbar', 'Restores your personal quickbar preset from the datastore.')
+    :callback(
+        function (player)
+            fetch_quickbar_on_join(player)
+            player.print('Quickbar restored.', { color = Color.success })
+        end)
 
 Commands.new('save-logistics', 'Save your personal logistics preset so it´s always the same.')
     :require_backend()
@@ -296,8 +301,16 @@ Commands.new('save-logistics', 'Save your personal logistics preset so it´s alw
                 player.print('An error occured while trying to save your logistics slots.', { color = { color = Color.warning } })
                 return false
             end
-            player.print('Notice: only the first 400 slots are saved.', { color = { color = Color.warning } })
-            player.print('Logistics saved.')
+            player.print('Notice: only 8 sections are saved.', { color = { color = Color.warning } })
+            player.print('Logistics saved.', { color = Color.success })
+        end
+    )
+
+Commands.new('restore-logistics', 'Restores your personal logistics preset from the datastore.')
+    :callback(
+        function (player)
+            fetch_logistics_on_join(player)
+            player.print('Logistics restored.', { color = Color.success })
         end
     )
 
@@ -306,7 +319,7 @@ Commands.new('remove-quickbar', 'Removes your personal quickbar preset from the 
     :callback(
         function (player)
             remove_quickbar(player)
-            player.print('Quickbar removed.')
+            player.print('Quickbar removed.', { color = Color.success })
         end
     )
 
@@ -315,7 +328,7 @@ Commands.new('remove-logistics', 'Removes your personal logistics preset from th
     :callback(
         function (player)
             remove_logistics(player)
-            player.print('Logistics removed.')
+            player.print('Logistics removed.', { color = Color.success })
         end
     )
 

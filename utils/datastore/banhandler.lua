@@ -9,33 +9,34 @@ local ban_by_join_enabled = false
 
 local try_get_ban = Server.try_get_ban
 
-local valid_commands = {
+local valid_commands =
+{
     ['ban'] = true
 }
 
 local try_get_is_banned_token =
     Token.register(
-    function(data)
-        if not data then
-            return
-        end
+        function (data)
+            if not data then
+                return
+            end
 
-        local username = data.username
-        if not username then
-            return
-        end
+            local username = data.username
+            if not username then
+                return
+            end
 
-        local state = data.state
+            local state = data.state
 
-        if state == true then
-            game.ban_player(data.username, data.reason)
+            if state == true then
+                game.ban_player(data.username, data.reason)
+            end
         end
-    end
-)
+    )
 
 Event.add(
     defines.events.on_player_joined_game,
-    function(event)
+    function (event)
         if not ban_by_join_enabled then
             return
         end
@@ -56,7 +57,7 @@ Event.add(
 
 Event.add(
     defines.events.on_console_command,
-    function(event)
+    function (event)
         if valid_commands[event.command] then
             Server.ban_handler(event)
         end

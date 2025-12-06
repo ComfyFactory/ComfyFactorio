@@ -2,7 +2,6 @@
 --luacheck: ignore 561
 local Global = require 'utils.global'
 local Core = require 'utils.core'
-local Session = require 'utils.datastore.session_data'
 local Supporters = require 'utils.datastore.supporters'
 local Task = require 'utils.task_token'
 local Server = require 'utils.server'
@@ -16,6 +15,7 @@ local Server = require 'utils.server'
 ---@field parameters_required number
 ---@field check_server boolean
 ---@field check_backend boolean
+---@field check_offline_mode boolean
 ---@field check_admin boolean
 ---@field check_supporter boolean
 ---@field check_trusted boolean
@@ -36,10 +36,11 @@ local output =
 {
     backend_is_required = 'No backend is currently available. Please try again later.',
     server_is_required = 'This command requires to be run from the server.',
+    offline_mode_is_required = 'This command requires the server to be in offline mode to run.',
     admin_is_required = 'This command requires admin permissions to run.',
     supporter_is_required = 'This command requires supporter permissions to run.',
     trusted_is_required = 'This command requires trusted permissions to run.',
-    playtime_is_required = 'This command requires a minimum playtime to run.',
+    playtime_is_required = 'This command requires a minimum playtime of %s to run.',
     param_is_required = 'This command requires a parameter to run.',
     command_failed = 'Command failed to run.',
     command_success = 'Command ran successfully.',
@@ -79,11 +80,20 @@ Global.register(
     this,
     function (tbl)
         this = tbl
-        for _, command in pairs(this.commands) do
-            setmetatable(command, Public.metatable)
-        end
     end
 )
+
+script.register_metatable('CommandData', Public.metatable)
+
+local function get_trusted_player(player)
+    local session_storage = storage.tokens.utils_datastore_session_data
+    return session_storage and session_storage.trusted and player and player.valid and session_storage.trusted[player.name] or false
+end
+
+local function get_session_player(player)
+    local session_storage = storage.tokens.utils_datastore_session_data
+    return session_storage and session_storage.session and player and player.valid and session_storage.session[player.name] or false
+end
 
 local function conv(v)
     if tonumber(v) then
@@ -166,6 +176,13 @@ local function execute(event)
         end
     end
 
+    -- Check if the server is in offline mode and if the command requires it
+    local check_offline_mode = command_data.check_offline_mode or false
+    if (check_offline_mode and not is_server) and game.is_multiplayer() then
+        reject(output.offline_mode_is_required)
+        return
+    end
+
     -- Check if the player is an admin and if the command requires it
     local check_admin = command_data.check_admin or false
     if (check_admin and not is_server) and player and not player.admin then
@@ -176,7 +193,7 @@ local function execute(event)
     -- Check if the player is trusted and if the command requires it
     local check_trusted = command_data.check_trusted or false
     if (check_trusted and not is_server) and Core.validate_player(player) then
-        local is_trusted = Session.get_trusted_player(player)
+        local is_trusted = get_trusted_player(player)
         if not is_trusted then
             reject(output.trusted_is_required)
             return
@@ -196,14 +213,14 @@ local function execute(event)
     -- Check if the player has the required playtime and if the command requires it
     local check_playtime = command_data.check_playtime or false
     if (check_playtime and not is_server) and Core.validate_player(player) then
-        local playtime = Session.get_session_player(player)
+        local playtime = get_session_player(player)
         if not playtime then
-            reject(output.trusted_is_required)
+            reject(string.format(output.playtime_is_required, Core.get_formatted_playtime(check_playtime)))
             return
         end
 
         if playtime < check_playtime then
-            reject(output.playtime_is_required)
+            reject(string.format(output.playtime_is_required, Core.get_formatted_playtime(check_playtime)))
             return
         end
     end
@@ -214,9 +231,11 @@ local function execute(event)
         return
     end
 
+    local is_multiplayer = game.is_multiplayer()
+
     -- Check if the command requires the player to validate the command
     local validate_self = command_data.validate_self or false
-    if validate_self and not command_data.validated_command then
+    if validate_self and not command_data.validated_command and is_multiplayer then
         command_data.validated_command = true
         if command_data.custom_message then
             handle_error(string.format(output.command_needs_custom_validation, command_data.custom_message),
@@ -347,12 +366,18 @@ local function execute(event)
                     return reject('Inputted value is not of type boolean. Valid values are: true, false.')
                 end
 
-                if command_data.command_activated and param == 'true' then
+                --[[  if command_data.command_activated and param == 'true' then
                     return handle_error(output.command_is_active, 'utility/cannot_build')
                 end
 
                 if not command_data.command_activated and param == 'false' then
                     return handle_error(output.command_is_inactive, 'utility/cannot_build')
+                end ]]
+
+                if param == 'true' then
+                    param = true
+                else
+                    param = false
                 end
 
                 handled_parameters[index] = param
@@ -458,7 +483,6 @@ function Public:require_admin()
     return self
 end
 
---- Requires that the command is not run from a player.
 ---@return MetaCommand
 function Public:require_server()
     self.check_server = true
@@ -469,6 +493,13 @@ end
 ---@return MetaCommand
 function Public:require_backend()
     self.check_backend = true
+    return self
+end
+
+--- Requires that the server is in offline mode
+---@return MetaCommand
+function Public:require_offline_mode()
+    self.check_offline_mode = true
     return self
 end
 
@@ -647,7 +678,25 @@ Public.new('get', 'Hover over an object to get its name.')
             player.print('[color=orange]Minable:[/color] ' .. (entity.minable and 'true' or 'false'))
             player.print('[color=orange]Unit Number:[/color] ' .. (entity.unit_number or 'nil'))
             player.print('[color=orange]Position:[/color] ' .. serpent.line(entity.position))
+            player.print('[color=orange]Active:[/color] ' .. (entity.active and 'true' or 'false'))
             return true
+        end
+    )
+
+Public.new('spawn', 'Spawns a new entity near the player.')
+    :require_admin()
+    :add_parameter('entity', false, 'string')
+    :add_parameter('force', true, 'string')
+    :callback(
+        function (player, name, force)
+            local surface = player.surface
+            local position = player.position
+            local entity = surface.create_entity({ name = name, position = surface.find_non_colliding_position(name, position, 10, 0.5) or position, force = force or player.force })
+            if entity then
+                player.print('Entity spawned successfully.')
+            else
+                player.print('Failed to spawn entity.')
+            end
         end
     )
 

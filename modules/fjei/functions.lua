@@ -257,7 +257,8 @@ local function get_localised_name(name)
 end
 
 local on_nth_translation_handler =
-    Scheduler.set(
+    Scheduler.register_function(
+        'on_nth_translation_handler',
         function (data)
             for i = 1, #data do
                 local player_index = data[i].player_index
@@ -331,9 +332,9 @@ function Public.handle_translations_fetch(player)
 
     local data = player_data.translated_data
 
-    for key, name in pairs(sorted_item_list) do
+    for _, name in pairs(sorted_item_list) do
         if item_whitelist[name] and not data[name] then
-            Scheduler.timer(tick, on_nth_translation_handler, { name = name, player_index = player.index })
+            Scheduler.new(tick, on_nth_translation_handler):set_data({ name = name, player_index = player.index })
         end
     end
 end
@@ -342,9 +343,9 @@ function Public.build_tables()
     storage.fjei = {}
     storage.fjei.player_data = {}
     storage.fjei.item_whitelist_translated = {}
-    set_item_list()                      --creates list of all items as key and two tables for each key containing [1] product recipes and [2] ingredient recipes
-    set_sorted_item_list()               --creates sorted list of all items in the game for faster searching
-    set_crafting_machines()              --creates list of available crafting entities
+    set_item_list() --creates list of all items as key and two tables for each key containing [1] product recipes and [2] ingredient recipes
+    set_sorted_item_list() --creates sorted list of all items in the game for faster searching
+    set_crafting_machines() --creates list of available crafting entities
     set_item_whitelists_for_all_forces() --whitelist to only display researched items in the browser for the force
 end
 

@@ -10,6 +10,7 @@ local StatData = require 'utils.datastore.statistics'
 local WD = require 'modules.wave_defense.table'
 local Math2D = require 'math2d'
 local Color = require 'utils.color_presets'
+local CustomEvents = require 'utils.created_events'
 
 StatData.add_normalize('spells', 'Spells casted')
 
@@ -675,7 +676,7 @@ local function on_pre_player_left_game(event)
     Public.remove_frame(player)
 end
 
-local function on_pre_player_mined_item(event)
+local function on_player_mined_entity(event)
     local entity = event.entity
     if not entity.valid then
         return
@@ -915,8 +916,7 @@ local function on_player_used_capsule_custom(event)
         return
     end
 
-    local
-    is_spamming = SpamProtection.is_spamming(player, nil, 'RPG - on_player_used_capsule_custom')
+    local is_spamming = SpamProtection.is_spamming(player, nil, 'RPG - on_player_used_capsule_custom')
     if is_spamming then
         return
     end
@@ -940,7 +940,7 @@ local function on_player_used_capsule_custom(event)
     local rpg_t = Public.get_value_from_player(player.index)
 
     if not rpg_t.enable_entity_spawn then
-        player.print('[RPG] You must enable the button in the spell GUI to cast a spell.', { color = Color.warning })
+        player.print('[RPG] You must enable the checkbox in the spell GUI to cast a spell.', { color = Color.warning })
         return
     end
 
@@ -1043,7 +1043,7 @@ local function on_player_used_capsule_custom(event)
         rpg_t.amount = 1
     end
 
-    Event.raise(Public.events.on_spell_cast_success, { player_index = player.index, spell_name = spell.entityName, amount = rpg_t.amount })
+    Event.raise(CustomEvents.events.on_spell_cast_success, { player_index = player.index, spell_name = spell.entityName, amount = rpg_t.amount })
 
     StatData.get_data(player):increase('spells')
 
@@ -1223,7 +1223,7 @@ local function on_player_used_capsule(event)
         rpg_t.amount = 1
     end
 
-    Event.raise(Public.events.on_spell_cast_success, { player_index = player.index, spell_name = spell.entityName, amount = rpg_t.amount })
+    Event.raise(CustomEvents.events.on_spell_cast_success, { player_index = player.index, spell_name = spell.entityName, amount = rpg_t.amount })
 
     StatData.get_data(player):increase('spells')
 
@@ -1294,7 +1294,7 @@ Event.add(defines.events.on_player_created, on_player_joined_game)
 Event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
 Event.add(defines.events.on_player_respawned, on_player_respawned)
 Event.add(defines.events.on_player_rotated_entity, on_player_rotated_entity)
-Event.add(defines.events.on_pre_player_mined_item, on_pre_player_mined_item)
+Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 if script.active_mods['MtnFortressAddons'] then
     Event.add(defines.events['mtn-shift-cast-spell'], on_player_used_capsule_custom)
 end

@@ -142,7 +142,7 @@ end
 
 local function get_items(player)
     local market_limits = Public.get('market_limits')
-    local main_market_items = Public.get('main_market_items')
+    local main_market_items = table.deepcopy(Public.get('main_market_items'))
     local flame_turret = Public.get('upgrades').flame_turret.bought
     local upgrades = Public.get('upgrades')
     local fixed_prices = Public.get('marked_fixed_prices')
@@ -427,6 +427,27 @@ local function get_items(player)
         }
     end
 
+    if script.active_mods['space-age'] and game.forces.player.technologies['planet-discovery-vulcanus'].researched then
+        main_market_items['tungsten-ore'] =
+        {
+            stack = 50,
+            value = 'coin',
+            price = 12,
+            tooltip = ({ 'item-name.tungsten-ore' }),
+            upgrade = false,
+            static = false
+        }
+        main_market_items['calcite'] =
+        {
+            stack = 50,
+            value = 'coin',
+            price = 12,
+            tooltip = ({ 'item-name.calcite' }),
+            upgrade = false,
+            static = false
+        }
+    end
+
     if game.forces.player.technologies['artillery'].researched then
         main_market_items['artillery-turret'] =
         {
@@ -705,7 +726,7 @@ local function get_items(player)
 
 
     for _, item in pairs(main_market_items) do
-        if item.static then
+        if not item.upgrade and not item.player_upgrade then
             item.price = item.price * quality_price
         end
     end
@@ -825,7 +846,7 @@ local function redraw_market_items(gui, player, search_text)
                 frame.add(
                     {
                         type = 'label',
-                        caption = concat { '[item=', data.value, ',quality=' .. quality .. ']: ' } .. format_number(floor(item_cost), true)
+                        caption = concat { '[item=', data.value, ',quality=normal]: ' } .. format_number(floor(item_cost), true)
                     }
                 )
             label.style.font = 'default-bold'
@@ -850,7 +871,7 @@ local function redraw_market_items(gui, player, search_text)
     local items_table = gui.add({ type = 'table', column_count = 6 })
 
     for item, data in pairs(player_items) do
-        if not data.upgrade then
+        if not data.upgrade and not data.player_upgrade then
             if not search_text then
                 goto continue
             end
@@ -966,7 +987,7 @@ local function redraw_market_items(gui, player, search_text)
                 frame.add(
                     {
                         type = 'label',
-                        caption = concat { '[item=', data.value, ',quality=' .. quality .. ']: ' } .. format_number(floor(item_cost), true)
+                        caption = concat { '[item=', data.value, ',quality=normal]: ' } .. format_number(floor(item_cost), true)
                     }
                 )
             label.style.font = 'default-bold'
@@ -1222,7 +1243,7 @@ local function gui_opened(event)
             local text_input_right =
                 bottom_grid.add(
                     {
-                        name = 'quality',
+                        name = 'quality_text',
                         type = 'drop-down',
                         items = qual,
                         selected_index = player_data and player_data.quality or 1,
@@ -1728,7 +1749,7 @@ local function on_gui_selection_state_changed(event)
     local name = event.element.name
     local player = game.get_player(event.player_index)
     local selected_index = event.element.selected_index
-    if name == 'quality' then
+    if name == 'quality_text' then
         local player_data = get_player_data(player)
         player_data.quality = selected_index
     end

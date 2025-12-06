@@ -1,3 +1,4 @@
+---@diagnostic disable: undefined-global
 --luacheck: ignore function_table
 --luacheck: ignore function_nth_tick_table
 --luacheck: globals script
@@ -245,7 +246,8 @@ function Event.add_removable(event_name, token, event_reference)
 
     local tokens = token_handlers[event_reference]
     if not tokens then
-        token_handlers[event_reference] = {
+        token_handlers[event_reference] =
+        {
             data = token,
             event_name = event_name
         }
@@ -604,5 +606,14 @@ core_on_load(add_handlers)
 core_on_configuration_changed(add_handlers)
 function_table = {}
 function_nth_tick_table = {}
+
+Event.add(defines.events.on_player_created, function (event)
+    local player = game.get_player(event.player_index)
+    if player then
+        player.gui.top.style = 'packed_horizontal_flow'
+        player.gui.left.style = 'vertical_flow'
+        -- player.show_on_map = false -- hide selection on minimap
+    end
+end)
 
 return Event

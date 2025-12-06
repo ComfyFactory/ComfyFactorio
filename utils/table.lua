@@ -238,7 +238,7 @@ end
 
 --- Clears all existing entries in a table
 ---@param t table to clear
----@param array boolean to indicate whether the table is an array or not
+---@param array boolean|nil to indicate whether the table is an array or not
 function table.clear_table(t, array)
     if array then
         for i = 1, #t do

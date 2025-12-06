@@ -2,6 +2,7 @@ local Public = require 'modules.wave_defense.table'
 local Event = require 'utils.event'
 local Global = require 'utils.global'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
+local CustomEvents = require 'utils.created_events'
 
 local this = {}
 
@@ -23,7 +24,8 @@ for a = 48, 1, -1 do
     spawn_amount_rolls[#spawn_amount_rolls + 1] = floor(a ^ 5)
 end
 
-local random_particles = {
+local random_particles =
+{
     'dirt-2-stone-particle-medium',
     'dirt-4-dust-particle',
     'coal-particle'
@@ -99,7 +101,7 @@ local function spawn_biters(data)
         BiterHealthBooster.add_unit(unit, final_health)
     end
 
-    Event.raise(Public.events.on_entity_created, { entity = unit, boss_unit = false })
+    Event.raise(CustomEvents.events.on_entity_created, { entity = unit, boss_unit = false })
 end
 
 local function spawn_worms(data)
@@ -155,7 +157,8 @@ function Public.buried_biter(surface, position, max, entity_name, force)
             this[game.tick + t] = {}
         end
 
-        this[game.tick + t][#this[game.tick + t] + 1] = {
+        this[game.tick + t][#this[game.tick + t] + 1] =
+        {
             callback = 'create_particles',
             data = { surface = surface, position = { x = position.x, y = position.y }, amount = 4 }
         }
@@ -163,7 +166,8 @@ function Public.buried_biter(surface, position, max, entity_name, force)
         if t > 90 then
             if t % 30 == 29 then
                 a = a + 1
-                this[game.tick + t][#this[game.tick + t] + 1] = {
+                this[game.tick + t][#this[game.tick + t] + 1] =
+                {
                     callback = 'spawn_biters',
                     data = { surface = surface, position = { x = position.x, y = position.y }, entity_name = entity_name, force = force or 'enemy' }
                 }
@@ -202,13 +206,15 @@ function Public.buried_worm(surface, position)
             this[game.tick + t] = {}
         end
 
-        this[game.tick + t][#this[game.tick + t] + 1] = {
+        this[game.tick + t][#this[game.tick + t] + 1] =
+        {
             callback = 'create_particles',
             data = { surface = surface, position = { x = position.x, y = position.y }, amount = 4 }
         }
 
         if not a then
-            this[game.tick + t][#this[game.tick + t] + 1] = {
+            this[game.tick + t][#this[game.tick + t] + 1] =
+            {
                 callback = 'spawn_worms',
                 data = { surface = surface, position = { x = position.x, y = position.y } }
             }
@@ -217,7 +223,8 @@ function Public.buried_worm(surface, position)
     end
 end
 
-local callbacks = {
+local callbacks =
+{
     ['create_particles'] = create_particles,
     ['spawn_biters'] = spawn_biters,
     ['spawn_worms'] = spawn_worms

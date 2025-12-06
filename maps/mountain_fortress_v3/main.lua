@@ -5,9 +5,13 @@ Mountain Fortress v3 is maintained by Gerkiz and hosted by Comfy.
 Want to host it? Ask Gerkiz at discord!
 
 ]]
+
+if not script.active_mods['MtnFortressAddons'] then
+    error('Mtn Fortress Addons mod is not enabled! Please download it from the mod website.')
+end
+
 require 'modules.shotgun_buff'
 require 'modules.no_deconstruction_of_neutral_entities'
-require 'modules.spawners_contain_biters'
 require 'maps.mountain_fortress_v3.ic.main'
 require 'modules.wave_defense.main'
 require 'modules.melee_mode'
@@ -45,6 +49,9 @@ local OfflinePlayers = require 'modules.clear_vacant_players'
 local Beam = require 'modules.render_beam'
 local Commands = require 'utils.commands'
 local RobotLimits = require 'modules.robot_limits'
+local CustomEvents = require 'utils.created_events'
+local RocksYieldOreVeins = require 'maps.mountain_fortress_v3.rocks_yield_ore_veins'
+local SpawnersContainBiters = require 'modules.spawners_contain_biters'
 
 local send_ping_to_channel = Discord.channel_names.mtn_channel
 local role_to_mention = Discord.role_mentions.mtn_fortress
@@ -56,7 +63,6 @@ local abs = math.abs
 RPG.disable_cooldowns_on_spells()
 Gui.mod_gui_button_enabled = true
 Gui.button_style = 'mod_gui_button'
-Gui.set_toggle_button(true)
 Gui.set_mod_gui_top_frame(true)
 
 local collapse_kill =
@@ -396,7 +402,10 @@ function Public.move_players(current_task)
     end
 
     for _, player in pairs(game.players) do
-        local pos = surface.find_non_colliding_position("character", { x = 0, y = 0 }, 3, 0)
+        if current_task.surface_name == 'Init' then
+            player.zoom = 0.1
+        end
+        local pos = surface.find_non_colliding_position("character", { x = 0, y = 0 }, 5, 4)
         if pos then
             player.teleport(pos, surface)
         else
@@ -406,7 +415,7 @@ function Public.move_players(current_task)
     end
     local starting_planet = Public.get_planet()
     current_task.message = 'Moved players to initial surface!'
-    current_task.delay = game.tick + 20
+    current_task.delay = game.tick + 1
     current_task.state_id = 1
     current_task.starting_planet = starting_planet
     current_task.state = 'pre_init_task'
@@ -415,6 +424,14 @@ end
 function Public.pre_init_task(current_task)
     local this = Public.get()
     game.speed = 1
+
+    local active_surface_index = Public.get('active_surface_index')
+    if active_surface_index then
+        local surface = game.surfaces[active_surface_index]
+        if surface and surface.valid then
+            game.delete_surface(surface.name)
+        end
+    end
 
     current_task.done = nil
     current_task.step = 1
@@ -441,11 +458,17 @@ function Public.pre_init_task(current_task)
     force.manual_crafting_speed_modifier = 0
     force.friendly_fire = true
 
+    RocksYieldOreVeins.remove_from_raffle({ 'calcite', 'tungsten-ore' })
+    RocksYieldOreVeins.remove_from_mixed_ores({ 'calcite', 'tungsten-ore' })
+
+    local current_planet = Public.get_planet()
+    SpawnersContainBiters.add_surface(current_planet)
+
     WD.reset_wave_defense()
     WD.alert_boss_wave(true)
     WD.enable_side_target(false)
     WD.remove_entities(true)
-    WD.enable_threat_log(false) -- creates waaaay to many entries in the global table
+    WD.enable_threat_log(false)
     WD.check_collapse_position(true)
     WD.set_disable_threat_below_zero(true)
     WD.increase_boss_health_per_wave(true)
@@ -458,6 +481,7 @@ function Public.pre_init_task(current_task)
     WD.set_pause_waves_custom_callback(Public.pause_waves_custom_callback_token)
     WD.set_threat_event_custom_callback(Public.check_if_spawning_near_train_custom_callback)
     WD.set_es_enabled(true)
+    WD.set_es('force_name', 'aggressors')
     BiterHealthBooster.set_module_state(true)
 
     RPG.set_x_marks_the_spot_custom_callback(Public.x_marks_the_spot_custom_callback_token)
@@ -510,6 +534,7 @@ function Public.pre_init_task(current_task)
 end
 
 function Public.init_stateful(current_task)
+    ICW.reset()
     Public.reset_main_table()
     Public.stateful.enable(true)
     Public.stateful.reset_stateful(false, true)
@@ -529,29 +554,25 @@ end
 function Public.clear_fortress(current_task)
     local surface = game.surfaces[current_task.starting_planet]
     if surface then
-        surface.clear()
-        surface.request_to_generate_chunks({ x = -20, y = -22 }, 1)
-        surface.force_generate_chunk_requests()
+        game.delete_surface(surface.name)
+        -- surface.request_to_generate_chunks({ x = -20, y = -22 }, 1)
+        -- surface.force_generate_chunk_requests()
+        Public.set('active_surface_index', nil)
     end
 
-
     current_task.state = 'create_custom_fortress_surface'
-    current_task.delay = game.tick + 20
+    current_task.delay = game.tick + 100
     current_task.message = 'Cleared fortress!'
     current_task.state_id = 4
 end
 
 function Public.create_custom_fortress_surface(current_task)
-    local fortress = game.surfaces[current_task.starting_planet]
-    if fortress then
-        fortress.clear()
-    end
-    Public.set('active_surface_index', Public.create_surface())
+    Public.set('active_surface_index', Public.create_surface(true))
     local active_surface_index = Public.get('active_surface_index')
 
     WD.set('surface_index', active_surface_index)
     current_task.message = 'Created custom fortress surface!'
-    current_task.delay = game.tick + 50
+    current_task.delay = game.tick + 100
     current_task.state = 'reset_map'
     current_task.state_id = 5
 end
@@ -567,7 +588,6 @@ function Public.reset_map(current_task)
     BottomFrame.reset()
     Public.reset_buried_biters()
     Poll.reset()
-    ICW.reset()
     ICW.set('default_surface', this.default_surface)
     IC.reset()
     IC.allowed_surface(game.surfaces[this.active_surface_index].name)
@@ -599,6 +619,7 @@ function Public.reset_map(current_task)
     elseif surface.name == 'fortress' then
         surface.ignore_surface_conditions = true
         if Public.is_modded_pt2 then
+            force.technologies['planet-discovery-fortress'].researched = true
             force.recipes['lightning-rod'].enabled = true -- how else will players deal with lightning?
         end
     end
@@ -637,7 +658,7 @@ function Public.reset_map(current_task)
 
 
     -- WD.set_es_unit_limit(400) -- moved to stateful
-    Event.raise(WD.events.on_game_reset, {})
+    Event.raise(CustomEvents.events.on_game_reset, {})
 
     Public.set_difficulty()
     Public.disable_creative()
@@ -705,7 +726,7 @@ function Public.reset_map(current_task)
     game.forces.player.set_friend('aggressors_frenzy', false)
 
     current_task.message = 'Reset map done!'
-    current_task.delay = game.tick + 30
+    current_task.delay = game.tick + 100
     current_task.state = 'post_init_task'
     current_task.state_id = 6
 end
@@ -740,6 +761,8 @@ function Public.create_locomotive(current_task)
         Public.locomotive_spawn(surface, { x = -18, y = 25 }, adjusted_zones.reversed)
     end
 
+    Server.output_script_data('Created locomotive!')
+
     Public.render_train_hp()
     Public.render_direction(surface, adjusted_zones.reversed)
 
@@ -749,7 +772,7 @@ function Public.create_locomotive(current_task)
     end
 
     current_task.message = 'Created locomotive!'
-    current_task.delay = game.tick + 30
+    current_task.delay = game.tick + 100
     current_task.state = 'announce_new_map'
     current_task.state_id = 8
 end
@@ -764,7 +787,7 @@ function Public.announce_new_map(current_task)
     current_task.message = 'Announced new map!'
     current_task.state = 'to_fortress'
     current_task.surface_name = starting_planet
-    current_task.delay = game.tick + 20
+    current_task.delay = game.tick + 100
     current_task.state_id = 9
 end
 
@@ -797,7 +820,7 @@ function Public.to_fortress(current_task)
     end
 
     for _, player in pairs(game.connected_players) do
-        local pos = surface.find_non_colliding_position('character', position, 3, 0)
+        local pos = surface.find_non_colliding_position('character', position, 5, 4)
         if pos then
             player.teleport({ x = pos.x, y = pos.y }, surface)
         else
@@ -893,6 +916,19 @@ function Public.init_mtn()
     Explosives.set_destructible_tile('water-shallow', 1000)
     Explosives.set_destructible_tile('water-mud', 1000)
     Explosives.set_destructible_tile('lab-dark-2', 1000)
+    Explosives.set_destructible_tile('lava', 500)
+    Explosives.set_destructible_tile('lava-hot', 500)
+    Explosives.set_destructible_tile('wetland-dead-skin', 1000)
+    Explosives.set_destructible_tile('wetland-light-dead-skin', 1000)
+    Explosives.set_destructible_tile('wetland-green-slime', 1000)
+    Explosives.set_destructible_tile('wetland-light-green-slime', 1000)
+    Explosives.set_destructible_tile('wetland-red-tentacle', 1000)
+    Explosives.set_destructible_tile('wetland-pink-tentacle', 1000)
+    Explosives.set_destructible_tile('wetland-blue-slime', 1000)
+    Explosives.set_destructible_tile('wetland-yumako', 1000)
+    Explosives.set_destructible_tile('wetland-jellynut', 1000)
+    Explosives.set_destructible_tile('brash-ice', 1000)
+
     Explosives.set_whitelist_entity('straight-rail')
     Explosives.set_whitelist_entity('curved-rail-a')
     Explosives.set_whitelist_entity('curved-rail-b')
@@ -909,6 +945,7 @@ Server.on_scenario_changed(
         local scenario = data.scenario
         if scenario == 'Mountain_Fortress_v3' then
             handle_changes()
+            -- Server.save_hot_patch()
         end
     end
 )

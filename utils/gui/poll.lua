@@ -3,11 +3,14 @@ local Gui = require 'utils.gui'
 local Global = require 'utils.global'
 local Event = require 'utils.event'
 local Server = require 'utils.server'
-local session = require 'utils.datastore.session_data'
+local Session = require 'utils.datastore.session_data'
 local Config = require 'utils.gui.config'
 local SpamProtection = require 'utils.spam_protection'
 local Math = require 'utils.math.math'
 local Discord = require 'utils.discord_handler'
+local Color = require 'utils.color_presets'
+local CustomEvents = require 'utils.created_events'
+
 local Public = {}
 
 local insert = table.insert
@@ -28,6 +31,11 @@ local running_polls = {}
 local no_notify_players = {}
 local player_poll_index = {}
 local player_create_poll_data = {}
+local settings =
+{
+    allow_non_trusted_to_vote = false,
+    allow_non_trusted_to_create = false,
+}
 
 Global.register(
     {
@@ -36,7 +44,8 @@ Global.register(
         running_polls = running_polls,
         no_notify_players = no_notify_players,
         player_poll_index = player_poll_index,
-        player_create_poll_data = player_create_poll_data
+        player_create_poll_data = player_create_poll_data,
+        settings = settings
     },
     function (tbl)
         polls = tbl.polls
@@ -45,6 +54,7 @@ Global.register(
         no_notify_players = tbl.no_notify_players
         player_poll_index = tbl.player_poll_index
         player_create_poll_data = tbl.player_create_poll_data
+        settings = tbl.settings
     end
 )
 
@@ -70,6 +80,80 @@ local create_poll_clear_name = Gui.uid_name()
 local create_poll_edit_name = Gui.uid_name()
 local create_poll_confirm_name = Gui.uid_name()
 local create_poll_delete_name = Gui.uid_name()
+
+Config.register_scenario_module(
+    {
+        id = "poll",
+        admin_only = false,
+        gui_rows = Config.register_token(
+            function (player, frame)
+                local poll_table = Public.get_no_notify_players()
+                local switch_state = 'left'
+                if poll_table[player.index] then
+                    switch_state = 'right'
+                end
+                Config.add_switch(frame, switch_state, 'poll_no_notify_toggle', { 'gui.notify_on_polls' }, { 'gui-description.notify_on_polls' })
+                frame.add({ type = 'line' })
+            end),
+        handlers =
+        {
+            ['poll_no_notify_toggle'] = Config.register_token(
+                function (player, event)
+                    local poll_table = Public.get_no_notify_players()
+                    if event.element.switch_state == 'left' then
+                        poll_table[player.index] = nil
+                        player.print('You will now be notified when polls are created.', { color = Color.green })
+                    else
+                        poll_table[player.index] = true
+                        player.print('You will no longer be notified when polls are created.', { color = Color.red })
+                    end
+                end),
+        }
+    })
+
+Config.register_scenario_module(
+    {
+        id = "poll_admin_settings",
+        admin_only = true,
+        gui_rows = Config.register_token(
+            function (_, frame)
+                local switch_state = 'right'
+                if settings.allow_non_trusted_to_create then
+                    switch_state = 'left'
+                end
+                Config.add_switch(frame, switch_state, 'poll_trusted_create_toggle', 'Poll create', 'Disables non-trusted plebs to create polls.')
+                frame.add({ type = 'line' })
+                switch_state = 'right'
+                if settings.allow_non_trusted_to_vote then
+                    switch_state = 'left'
+                end
+                Config.add_switch(frame, switch_state, 'poll_trusted_vote_toggle', 'Poll vote', 'Disables non-trusted plebs to vote on polls.')
+                frame.add({ type = 'line' })
+            end),
+        handlers =
+        {
+            ['poll_trusted_create_toggle'] = Config.register_token(
+                function (_, event)
+                    if event.element.switch_state == 'left' then
+                        settings.allow_non_trusted_to_create = true
+                        Config.get_actor(event, '[Poll create]', 'has disabled non-trusted people to do polls.')
+                    else
+                        settings.allow_non_trusted_to_create = false
+                        Config.get_actor(event, '[Poll create]', 'has allowed non-trusted people to do polls.')
+                    end
+                end),
+            ['poll_trusted_vote_toggle'] = Config.register_token(
+                function (_, event)
+                    if event.element.switch_state == 'left' then
+                        settings.allow_non_trusted_to_vote = true
+                        Config.get_actor(event, '[Poll vote]', 'has disabled non-trusted people to vote on polls.')
+                    else
+                        settings.allow_non_trusted_to_vote = false
+                        Config.get_actor(event, '[Poll vote]', 'has allowed non-trusted people to vote on polls.')
+                    end
+                end)
+        }
+    })
 
 local function poll_id()
     local count = polls_counter[1] + 1
@@ -317,7 +401,6 @@ local function update_poll_viewer(data)
 end
 
 local function draw_main_frame(_, player)
-    local trusted = session.get_trusted_table()
     local main_frame, inside_frame = Gui.add_main_frame_with_toolbar(player, 'left', main_frame_name, nil, main_button_name, 'Polls')
     main_frame.style.maximal_width = 300
 
@@ -369,9 +452,7 @@ local function draw_main_frame(_, player)
     local right_flow = bottom_flow.add { type = 'flow' }
     right_flow.style.horizontal_align = 'right'
 
-    local config = Config.get('gui_config')
-
-    if (trusted[player.name] or player.admin) or config.poll_trusted == false then
+    if (Session.get_trusted_player(player) or player.admin) or settings.allow_non_trusted_to_create then
         local create_poll_button = right_flow.add { type = 'button', name = create_poll_button_name, caption = 'Create Poll' }
         apply_button_style(create_poll_button)
     else
@@ -747,7 +828,16 @@ local function vote(event)
     if is_spamming then
         return
     end
+
     local player_index = event.player_index
+    local player = game.get_player(player_index)
+    if player and player.valid and not settings.allow_non_trusted_to_vote and not player.admin then
+        if not Session.get_trusted_player(player) then
+            player.print('Sorry, you need to be trusted to vote on polls.')
+            player.print('You can become trusted by asking an admin to use the /trust command on you.')
+            return
+        end
+    end
     local voted_button = event.element
     local button_data = Gui.get_data(voted_button)
     local answer = button_data.answer
@@ -808,7 +898,7 @@ local function player_joined(event)
                     type = 'sprite-button',
                     name = main_button_name,
                     sprite = 'item/programmable-speaker',
-                    tooltip = 'Let your question be heard!',
+                    tooltip = 'Poll your thoughts',
                     style = Gui.button_style
                 }
             )
@@ -834,7 +924,7 @@ local function player_joined(event)
                     type = 'sprite-button',
                     name = main_button_name,
                     sprite = 'item/programmable-speaker',
-                    tooltip = 'Let your question be heard!',
+                    tooltip = 'Create a poll',
                     style = Gui.button_style
                 }
             b.style.maximal_height = 38
@@ -891,6 +981,10 @@ local function tick()
             table.remove(running_polls, i)
             send_poll_result_to_discord(poll, true)
 
+            local poll_result, winning_answer = Public.poll_result(poll.id)
+
+            Event.raise(CustomEvents.events.on_poll_complete, { player_index = poll.player_index, poll_id = poll.id, custom_data = poll.custom_data, poll_result = poll_result, winning_answer = winning_answer })
+
             local message = table.concat { 'Poll finished: Poll #', poll.id, ': ', poll.question }
             for _, p in pairs(game.connected_players) do
                 if not no_notify_players[p.index] then
@@ -900,6 +994,10 @@ local function tick()
         end
     end
 end
+
+Event.add(CustomEvents.events.on_poll_created, function (event)
+    Public.poll(event)
+end)
 
 Event.add(defines.events.on_player_joined_game, player_joined)
 Event.add(defines.events.on_player_created, player_joined)
@@ -1451,6 +1549,7 @@ function Public.poll(data)
     local poll_data =
     {
         id = id,
+        custom_data = data.custom_data or nil,
         question = data.question,
         answers = answers,
         voters = {},
@@ -1482,22 +1581,33 @@ function Public.poll_result(id)
             local result = { 'Question: ', poll_data.question, ' Answers: ' }
             local answers = poll_data.answers
             local answers_count = #answers
-            local winning_answer = nil
+            local highest_vote = 0
+            local winners = {}
 
-            for i, a in pairs(answers) do
+            for i, a in ipairs(answers) do
                 insert(result, '( [')
                 insert(result, a.voted_count)
                 insert(result, '] - ')
                 insert(result, a.text)
                 insert(result, ' )')
 
-                if not winning_answer or a.voted_count > winning_answer.voted_count then
-                    winning_answer = a
+                if a.voted_count > highest_vote then
+                    highest_vote = a.voted_count
+                    winners = { a }
+                elseif a.voted_count == highest_vote then
+                    insert(winners, a)
                 end
 
                 if i ~= answers_count then
                     insert(result, ', ')
                 end
+            end
+
+            local winning_answer
+            if #winners == 1 then
+                winning_answer = winners[1]
+            else
+                winning_answer = { text = 'Tie', voted_count = highest_vote }
             end
 
             return table.concat(result), winning_answer
@@ -1534,6 +1644,68 @@ function Public.poll_complete(id)
             return poll_complete(poll_data)
         end
     end
+end
+
+function Public.edit_poll(id, question, answers, duration)
+    if type(id) ~= 'number' then
+        return 'poll-id must be a number'
+    end
+
+    local poll_data = polls[id]
+    if not poll_data then
+        return 'poll not found'
+    end
+
+    local new_question = question
+    if not new_question:find('%S') then
+        return false, 'question must be a non empty string'
+    end
+
+    local new_answers = {}
+    for _, a in pairs(answers) do
+        if a.text:find('%S') then
+            local source = a.source
+            local index = #new_answers + 1
+            if source then
+                source.text = a.text
+                source.index = index
+                source.voted_count = 0
+                new_answers[index] = source
+            else
+                new_answers[index] = { text = a.text, index = index, voted_count = 0 }
+            end
+        end
+    end
+
+    if not next(new_answers) then
+        return false, 'answer array must contain at least one entry'
+    end
+
+    poll_data.question = question
+    poll_data.answers = new_answers
+    poll_data.duration = duration
+    poll_data.end_tick = game.tick + duration
+
+    for _, p in pairs(game.connected_players) do
+        local main_frame = p.gui.left[main_frame_name]
+
+        if no_notify_players[p.index] then
+            if main_frame and main_frame.valid then
+                local main_frame_data = Gui.get_data(main_frame)
+                update_poll_viewer(main_frame_data)
+            end
+        else
+            if main_frame and main_frame.valid then
+                local main_frame_data = Gui.get_data(main_frame)
+                main_frame_data.poll_index = id
+                update_poll_viewer(main_frame_data)
+            else
+                draw_main_frame(p.gui.left, p)
+            end
+        end
+    end
+
+    return true
 end
 
 Public.main_button_name = main_button_name

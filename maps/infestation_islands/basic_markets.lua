@@ -29,7 +29,6 @@ local this =
             ['artillery-shell'] = { value = 1024, rarity = 7 },
             ['rocket'] = { value = 45, rarity = 7 },
             ['explosive-rocket'] = { value = 50, rarity = 7 },
-            ['atomic-bomb'] = { value = 11000, rarity = 10 },
             ['flamethrower-ammo'] = { value = 20, rarity = 6 },
             ['explosives'] = { value = 3, rarity = 1 }
         },
@@ -57,10 +56,12 @@ local this =
         {
             ['solar-panel-equipment'] = { value = 240, rarity = 3 },
             ['fission-reactor-equipment'] = { value = 9000, rarity = 7 },
+            ['fusion-reactor-equipment'] = { value = 15000, rarity = 8 },
             ['energy-shield-equipment'] = { value = 400, rarity = 6 },
             ['energy-shield-mk2-equipment'] = { value = 4000, rarity = 8 },
             ['battery-equipment'] = { value = 160, rarity = 2 },
             ['battery-mk2-equipment'] = { value = 2000, rarity = 8 },
+            ['toolbelt-equipment'] = { value = 1000, rarity = 7 },
             ['personal-laser-defense-equipment'] = { value = 2500, rarity = 7 },
             ['discharge-defense-equipment'] = { value = 8444, rarity = 8 },
             ['belt-immunity-equipment'] = { value = 200, rarity = 1 },
@@ -80,45 +81,6 @@ local this =
             ['artillery-turret'] = { value = 9216, rarity = 8 },
             ['rocket-silo'] = { value = 64000, rarity = 10 }
         },
-        ['logistic'] =
-        {
-            ['wooden-chest'] = { value = 3, rarity = 1 },
-            ['iron-chest'] = { value = 10, rarity = 2 },
-            ['steel-chest'] = { value = 24, rarity = 3 },
-            ['storage-tank'] = { value = 32, rarity = 4 },
-            ['transport-belt'] = { value = 4, rarity = 1 },
-            ['fast-transport-belt'] = { value = 8, rarity = 4 },
-            ['express-transport-belt'] = { value = 24, rarity = 7 },
-            ['underground-belt'] = { value = 8, rarity = 1 },
-            ['fast-underground-belt'] = { value = 32, rarity = 4 },
-            ['express-underground-belt'] = { value = 64, rarity = 7 },
-            ['splitter'] = { value = 16, rarity = 1 },
-            ['fast-splitter'] = { value = 48, rarity = 4 },
-            ['express-splitter'] = { value = 128, rarity = 7 },
-            ['loader'] = { value = 100, rarity = 2 },
-            ['fast-loader'] = { value = 189, rarity = 5 },
-            ['express-loader'] = { value = 298, rarity = 8 },
-            ['burner-inserter'] = { value = 4, rarity = 1 },
-            ['inserter'] = { value = 8, rarity = 1 },
-            ['long-handed-inserter'] = { value = 12, rarity = 2 },
-            ['fast-inserter'] = { value = 16, rarity = 4 },
-            ['bulk-inserter'] = { value = 128, rarity = 7 },
-            ['small-electric-pole'] = { value = 2, rarity = 1 },
-            ['medium-electric-pole'] = { value = 12, rarity = 4 },
-            ['big-electric-pole'] = { value = 24, rarity = 5 },
-            ['substation'] = { value = 96, rarity = 8 },
-            ['pipe'] = { value = 2, rarity = 1 },
-            ['pipe-to-ground'] = { value = 8, rarity = 1 },
-            ['pump'] = { value = 16, rarity = 4 },
-            ['logistic-robot'] = { value = 28, rarity = 5 },
-            ['construction-robot'] = { value = 28, rarity = 3 },
-            ['active-provider-chest'] = { value = 128, rarity = 7 },
-            ['passive-provider-chest'] = { value = 128, rarity = 6 },
-            ['storage-chest'] = { value = 128, rarity = 6 },
-            ['buffer-chest'] = { value = 128, rarity = 7 },
-            ['requester-chest'] = { value = 128, rarity = 7 },
-            ['roboport'] = { value = 4096, rarity = 8 }
-        },
         ['vehicles'] =
         {
             ['rail'] = { value = 4, rarity = 1 },
@@ -132,15 +94,6 @@ local this =
             ['car'] = { value = 80, rarity = 1 },
             ['tank'] = { value = 1800, rarity = 5 }
         },
-        ['wire'] =
-        {
-            ['small-lamp'] = { value = 4, rarity = 1 },
-            ['arithmetic-combinator'] = { value = 16, rarity = 1 },
-            ['decider-combinator'] = { value = 16, rarity = 1 },
-            ['constant-combinator'] = { value = 16, rarity = 1 },
-            ['power-switch'] = { value = 16, rarity = 1 },
-            ['programmable-speaker'] = { value = 24, rarity = 1 }
-        }
     }
 }
 
@@ -156,7 +109,6 @@ local floor = math.floor
 
 local blacklist =
 {
-    ['atomic-bomb'] = true,
     ['cargo-wagon'] = true,
     ['locomotive'] = true,
     ['artillery-wagon'] = true,
@@ -165,7 +117,11 @@ local blacklist =
     ['land-mine'] = true,
     ['car'] = true,
     ['tank'] = true,
-    ['spidertron'] = true
+    ['spidertron'] = true,
+    ['loader'] = true,
+    ['fast-loader'] = true,
+    ['express-loader'] = true,
+    ['rocket-silo'] = true,
 }
 
 local function get_types()
@@ -184,7 +140,17 @@ local function get_resource_market_sells()
         { price = { { name = 'coin', count = random(5, 10) } }, offer = { type = 'give-item', item = 'copper-ore', count = 50 } },
         { price = { { name = 'coin', count = random(5, 10) } }, offer = { type = 'give-item', item = 'stone', count = 50 } },
         { price = { { name = 'coin', count = random(5, 10) } }, offer = { type = 'give-item', item = 'coal', count = 50 } },
-        { price = { { name = 'coin', count = random(8, 16) } }, offer = { type = 'give-item', item = 'uranium-ore', count = 50 } },
+        { price = { { name = 'coin', count = random(5, 10) } }, offer = { type = 'give-item', item = 'uranium-ore', count = 50 } },
+        { price = { { name = 'coin', count = random(5, 10) } }, offer = { type = 'give-item', item = 'spoilage', count = 50 } },
+        { price = { { name = 'coin', count = random(5, 10) } }, offer = { type = 'give-item', item = 'tungsten-ore', count = 50 } },
+        { price = { { name = 'coin', count = random(5, 10) } }, offer = { type = 'give-item', item = 'holmium-ore', count = 50 } },
+        { price = { { name = 'coin', count = random(5, 10) } }, offer = { type = 'give-item', item = 'calcite', count = 50 } },
+        { price = { { name = 'coin', count = random(5, 10) } }, offer = { type = 'give-item', item = 'lithium', count = 50 } },
+        { price = { { name = 'coin', count = random(5, 10) } }, offer = { type = 'give-item', item = 'jellynut', count = 50 } },
+        { price = { { name = 'coin', count = random(5, 10) } }, offer = { type = 'give-item', item = 'yumako', count = 50 } },
+        { price = { { name = 'coin', count = random(5, 10) } }, offer = { type = 'give-item', item = 'carbon', count = 50 } },
+        { price = { { name = 'coin', count = random(5, 10) } }, offer = { type = 'give-item', item = 'scrap', count = 50 } },
+        { price = { { name = 'coin', count = random(5, 10) } }, offer = { type = 'give-item', item = 'ice', count = 50 } },
         { price = { { name = 'coin', count = random(2, 4) } }, offer = { type = 'give-item', item = 'crude-oil-barrel', count = 1 } }
     }
     table.shuffle_table(sells)
@@ -222,7 +188,7 @@ local function get_market_item_list(rarity)
 
     local types = get_types()
     local list = {}
-    for i = 1, 9 do
+    for i = 1, 7 do
         local quality_level = random(1, #quality_list)
         local quality = quality_list[quality_level]
         local branch = this.market_settings[types[i]]
@@ -285,7 +251,7 @@ function Public.get_random_item(rarity, sell, buy)
     return items_return
 end
 
-function Public.island_market(entity, rarity, buy)
+function Public.island_market(entity, rarity, buy, reroll, no_rerolls)
     local types = get_types()
     table.shuffle_table(types)
     local items = get_market_item_list(rarity)
@@ -297,7 +263,11 @@ function Public.island_market(entity, rarity, buy)
     end
     local mrk = entity
 
-    for i = 1, random(5, 10), 1 do
+    if reroll then
+        mrk.clear_market_items()
+    end
+
+    for i = 1, random(5, 25), 1 do
         local item = items[i]
         if not item then
             break
@@ -316,6 +286,51 @@ function Public.island_market(entity, rarity, buy)
         local buys = get_resource_market_buys()
         for i = 1, random(1, 3), 1 do
             mrk.add_market_item(buys[i])
+        end
+    end
+
+    if not no_rerolls then
+        local market_rerolls = Public.get('market_rerolls')
+        market_rerolls[mrk.unit_number] = market_rerolls[mrk.unit_number] or
+            {
+                rerolls = 10,
+                price = 200,
+            }
+
+        local market_reroll = market_rerolls[mrk.unit_number]
+
+        local rerolls_left = market_reroll.rerolls
+
+
+        local reroll_offer =
+        {
+            price = {},
+            offer = { type = 'nothing', effect_description = 'Reroll the market offers! (' .. rerolls_left .. ' rerolls left)\nCosts ' .. market_reroll.price .. ' coins' }
+        }
+
+        if rerolls_left > 0 then
+            mrk.add_market_item(reroll_offer)
+        end
+
+        if random(1, 30) == 1 then
+            local modifier = 'character_inventory_slots_bonus'
+            local modifier_name = 'inventory bonus'
+            local modifier_value = 15
+            if random(1, 2) == 1 then
+                modifier = 'character_item_pickup_distance_bonus'
+                modifier_name = 'item pickup distance bonus'
+                modifier_value = 2
+            end
+            market_reroll.modifier_price = 500
+            market_reroll.modifier = modifier
+            market_reroll.modifier_name = modifier_name
+            market_reroll.modifier_value = modifier_value
+            local force_modifier =
+            {
+                price = {},
+                offer = { type = 'nothing', effect_description = 'Grants the whole team ' .. modifier_name .. '!\nCosts ' .. market_reroll.modifier_price .. ' coins' }
+            }
+            mrk.add_market_item(force_modifier)
         end
     end
 

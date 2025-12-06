@@ -3,6 +3,10 @@ local Global = require 'utils.global'
 local Server = require 'utils.server'
 local Event = require 'utils.event'
 local Task = require 'utils.task_token'
+local Config = require 'utils.gui.config'
+local Fullness = require 'modules.check_fullness'
+local Color = require 'utils.color_presets'
+local CustomEvents = require 'utils.created_events'
 
 local stateful_settings =
 {
@@ -90,6 +94,32 @@ Public.discord_name = discord_name
 Public.is_modded = script.active_mods['MtnFortressAddons'] or false
 Public.is_modded_pt2 = script.active_mods['MtnFortressAddonsPt2'] or false
 
+Public.quality_per_level =
+{
+    [1] = { 'normal' },
+    [4] = { 'normal', 'uncommon' },
+    [6] = { 'normal', 'uncommon', 'rare' },
+    [9] = { 'normal', 'uncommon', 'rare', 'epic' },
+    [15] = { 'normal', 'uncommon', 'rare', 'epic', 'legendary' },
+}
+
+Public.quality_per_level_objectives =
+{
+    [1] = { 'normal' },
+    [10] = { 'normal', 'uncommon' },
+    [25] = { 'normal', 'uncommon', 'rare' },
+    [50] = { 'normal', 'uncommon', 'rare', 'epic' },
+    [75] = { 'normal', 'uncommon', 'rare', 'epic', 'legendary' },
+}
+
+Public.qualities = {
+    'normal',
+    'uncommon',
+    'rare',
+    'epic',
+    'legendary',
+}
+
 Global.register(
     this,
     function (tbl)
@@ -103,6 +133,248 @@ Global.register(
         stateful_settings = tbl
     end
 )
+
+Config.register_scenario_module(
+    {
+        id = "mountain_fortress_v3",
+        admin_only = true,
+        gui_rows = Config.register_token(
+            function (_, frame)
+                local label = frame.add({ type = 'label', caption = 'Mountain Fortress Settings' })
+                label.style.font = 'default-bold'
+                label.style.padding = 0
+                label.style.left_padding = 10
+                label.style.top_padding = 10
+                label.style.horizontal_align = 'left'
+                label.style.vertical_align = 'bottom'
+                label.style.font_color = Color.green
+
+                local switch_state = 'right'
+                if Fullness.is_enabled() then
+                    switch_state = 'left'
+                end
+                Config.add_switch(frame, switch_state, 'disable_fullness', 'Inventory Fullness', 'On = Enables inventory fullness.\nOff = Disables inventory fullness.')
+
+                frame.add({ type = 'line' })
+
+                switch_state = 'right'
+                if this.offline_players_enabled then
+                    switch_state = 'left'
+                end
+                Config.add_switch(frame, switch_state, 'offline_players', 'Offline Players', 'On = Enables offline player inventory drop.\nOff = Disables offline player inventory drop.')
+
+                frame.add({ type = 'line' })
+
+                switch_state = 'right'
+                if this.collapse_grace then
+                    switch_state = 'left'
+                end
+                Config.add_switch(frame, switch_state, 'collapse_grace', 'Collapse', 'On = Enables collapse after wave 200.\nOff = Disables collapse - you must breach the first zone for collapse to occur.')
+
+                frame.add({ type = 'line' })
+
+                switch_state = 'right'
+                if this.spill_items_to_surface then
+                    switch_state = 'left'
+                end
+                Config.add_switch(frame, switch_state, 'spill_items_to_surface', 'Spill Ores', 'On = Enables ore spillage to surface when mining.\nOff = Disables ore spillage to surface when mining.')
+                frame.add({ type = 'line' })
+
+                switch_state = 'right'
+                if this.void_or_tile then
+                    switch_state = 'left'
+                end
+                Config.add_switch(frame, switch_state, 'void_or_tile', 'Void Tiles', 'On = Changes the tiles to out-of-map.\nOff = Changes the tiles to lab-dark-2')
+                frame.add({ type = 'line' })
+
+                switch_state = 'right'
+                if this.trusted_only_car_tanks then
+                    switch_state = 'left'
+                end
+                Config.add_switch(frame, switch_state, 'trusted_only_car_tanks', 'Market Purchase', 'On = Allows only trusted people to buy car/tanks.\nOff = Allows everyone to buy car/tanks.')
+                frame.add({ type = 'line' })
+
+                switch_state = 'right'
+                if this.allow_decon then
+                    switch_state = 'left'
+                end
+                Config.add_switch(frame, switch_state, 'allow_decon', 'Deconstruct IC', 'On = Allows decon on car/tanks/trains.\nOff = Disables decon on car/tanks/trains.')
+                frame.add({ type = 'line' })
+
+                switch_state = 'right'
+                if this.allow_decon_main_surface then
+                    switch_state = 'left'
+                end
+                Config.add_switch(frame, switch_state, 'allow_decon_main_surface', 'Deconstruct Surface', 'On = Allows decon on main surface.\nOff = Disables decon on main surface.')
+                frame.add({ type = 'line' })
+
+                switch_state = 'right'
+                if this.christmas_mode then
+                    switch_state = 'left'
+                end
+                Config.add_switch(frame, switch_state, 'christmas_mode', 'Wintery Mode', 'On = Enables wintery mode.\nOff = Disables wintery mode.')
+                frame.add({ type = 'line' })
+
+                switch_state = 'right'
+                if not this.adjusted_zones.disable_terrain then
+                    switch_state = 'left'
+                end
+                Config.add_switch(frame, switch_state, 'disable_terrain', 'Disable Terrain', 'On = Enable terrain gen.\nOff = Disables terrain gen.')
+                frame.add({ type = 'line' })
+
+                switch_state = 'right'
+                if this.block_non_trusted_trigger_collapse then
+                    switch_state = 'left'
+                end
+                Config.add_switch(frame, switch_state, 'toggle_trusted_collapse', 'Non-trusted Collapse', 'On = Allow non-trusted to trigger collapse.\nOff = Disallow non-trusted to trigger collapse.')
+                frame.add({ type = 'line' })
+            end),
+        handlers =
+        {
+            ['disable_fullness'] = Config.register_token(
+                function (_, event)
+                    if event.element.switch_state == 'left' then
+                        Fullness.enable_fullness(true)
+                        Config.get_actor(event, '[Fullness]', 'has enabled the inventory fullness function.')
+                    else
+                        Fullness.enable_fullness(false)
+                        Config.get_actor(event, '[Fullness]', 'has disabled the inventory fullness function.')
+                    end
+                end),
+            ['offline_players'] = Config.register_token(
+                function (_, event)
+                    if event.element.switch_state == 'left' then
+                        this.offline_players_enabled = true
+                        Config.get_actor(event, '[Offline Players]', 'has enabled the offline player function.')
+                    else
+                        this.offline_players_enabled = false
+                        Config.get_actor(event, '[Offline Players]', 'has disabled the offline player function.')
+                    end
+                end),
+            ['collapse_grace'] = Config.register_token(
+                function (_, event)
+                    if event.element.switch_state == 'left' then
+                        this.collapse_grace = true
+                        Config.get_actor(event, '[Collapse]', 'has enabled the collapse function. Collapse will occur after wave 100!')
+                    else
+                        this.collapse_grace = false
+                        Config.get_actor(event, '[Collapse]', 'has disabled the collapse function. You must breach the first zone for collapse to occur!')
+                    end
+                end),
+            ['spill_items_to_surface'] = Config.register_token(
+                function (_, event)
+                    if event.element.switch_state == 'left' then
+                        this.spill_items_to_surface = true
+                        Config.get_actor(event, '[Item Spill]', 'has enabled the ore spillage function. Ores now drop to surface when mining.')
+                    else
+                        this.spill_items_to_surface = false
+                        Config.get_actor(event, '[Item Spill]', 'has disabled the item spillage function. Ores no longer drop to surface when mining.')
+                    end
+                end),
+            ['void_or_tile'] = Config.register_token(
+                function (_, event)
+                    if event.element.switch_state == 'left' then
+                        this.void_or_tile = 'out-of-map'
+                        Config.get_actor(event, '[Void]', 'has changes the tiles of the zones to: out-of-map (void)')
+                    else
+                        this.void_or_tile = 'lab-dark-2'
+                        Config.get_actor(event, '[Void]', 'has changes the tiles of the zones to: dark-tiles (flammable tiles)')
+                    end
+                end),
+            ['trusted_only_car_tanks'] = Config.register_token(
+                function (_, event)
+                    if event.element.switch_state == 'left' then
+                        this.trusted_only_car_tanks = true
+                        Config.get_actor(event, '[Market]', 'has changed so only trusted people can buy car/tanks.', true)
+                    else
+                        this.trusted_only_car_tanks = false
+                        Config.get_actor(event, '[Market]', 'has changed so everybody can buy car/tanks.', true)
+                    end
+                end),
+            ['allow_decon'] = Config.register_token(
+                function (_, event)
+                    if event.element.switch_state == 'left' then
+                        local limited_group = game.permissions.get_group('limited')
+                        if limited_group then
+                            limited_group.set_allows_action(defines.input_action.deconstruct, true)
+                        end
+                        this.allow_decon = true
+                        Config.get_actor(event, '[Decon]', 'has allowed decon on car/tanks/trains.', true)
+                    else
+                        local limited_group = game.permissions.get_group('limited')
+                        if limited_group then
+                            limited_group.set_allows_action(defines.input_action.deconstruct, false)
+                        end
+                        this.allow_decon = false
+                        Config.get_actor(event, '[Decon]', 'has disabled decon on car/tanks/trains.', true)
+                    end
+                end),
+            ['allow_decon_main_surface'] = Config.register_token(
+                function (_, event)
+                    if event.element.switch_state == 'left' then
+                        local near_locomotive_group = game.permissions.get_group('near_locomotive')
+                        if near_locomotive_group then
+                            near_locomotive_group.set_allows_action(defines.input_action.deconstruct, true)
+                        end
+                        local default_group = game.permissions.get_group('Default')
+                        if default_group then
+                            default_group.set_allows_action(defines.input_action.deconstruct, true)
+                        end
+                        local main_surface_group = game.permissions.get_group('main_surface')
+                        if main_surface_group then
+                            main_surface_group.set_allows_action(defines.input_action.deconstruct, true)
+                        end
+                        this.allow_decon_main_surface = true
+                        Config.get_actor(event, '[Decon]', 'has allowed decon on main surface.', true)
+                    else
+                        local near_locomotive_group = game.permissions.get_group('near_locomotive')
+                        if near_locomotive_group then
+                            near_locomotive_group.set_allows_action(defines.input_action.deconstruct, false)
+                        end
+                        local default_group = game.permissions.get_group('Default')
+                        if default_group then
+                            default_group.set_allows_action(defines.input_action.deconstruct, false)
+                        end
+                        local main_surface_group = game.permissions.get_group('main_surface')
+                        if main_surface_group then
+                            main_surface_group.set_allows_action(defines.input_action.deconstruct, false)
+                        end
+                        this.allow_decon_main_surface = false
+                        Config.get_actor(event, '[Decon]', 'has disabled decon on main surface.', true)
+                    end
+                end),
+            ['christmas_mode'] = Config.register_token(
+                function (_, event)
+                    if event.element.switch_state == 'left' then
+                        this.winter_mode = true
+                        Config.get_actor(event, '[WinteryMode]', 'has enabled wintery mode.', true)
+                    else
+                        this.winter_mode = false
+                        Config.get_actor(event, '[WinteryMode]', 'has disabled wintery mode.', true)
+                    end
+                end),
+            ['disable_terrain'] = Config.register_token(
+                function (_, event)
+                    if event.element.switch_state == 'left' then
+                        this.adjusted_zones.disable_terrain = false
+                        Config.get_actor(event, '[TerrainGen]', 'has enabled terrain gen.', true)
+                    else
+                        this.adjusted_zones.disable_terrain = true
+                        Config.get_actor(event, '[TerrainGen]', 'has disabled terrain gen.', true)
+                    end
+                end),
+            ['toggle_trusted_collapse'] = Config.register_token(
+                function (_, event)
+                    if event.element.switch_state == 'left' then
+                        this.block_non_trusted_trigger_collapse = true
+                        Config.get_actor(event, '[Collapse]', 'has enabled that non-trusted players can trigger collapse.', true)
+                    else
+                        this.block_non_trusted_trigger_collapse = false
+                        Config.get_actor(event, '[Collapse]', 'has disabled that non-trusted players can trigger collapse.', true)
+                    end
+                end)
+        }
+    })
 
 Public.zone_settings =
 {
@@ -321,11 +593,11 @@ function Public.reset_main_table()
     }
     this.traps = {}
     this.munch_time = true
-    this.magic_requirement = 50
+    this.magic_requirement = 100
     this.loot_stats =
     {
-        rare = 48,
-        normal = 48
+        rare = 24,
+        normal = 12
     }
     this.coin_amount = 1
     this.default_surface = true
@@ -385,7 +657,9 @@ function Public.reset_main_table()
     this.spidertron_unlocked_at_zone = 11
     this.spidertron_unlocked_enabled = false
     -- this.void_or_tile = 'lab-dark-2'
-    if Public.is_modded then
+    if Public.is_modded_pt2 then
+        this.void_or_tile = 'lava'
+    elseif Public.is_modded then
         this.void_or_tile = 'void-tile'
     else
         this.void_or_tile = 'out-of-map'
@@ -432,6 +706,10 @@ function Public.reset_main_table()
         frostbite = {},
         volcanic = {},
         tech = {},
+        gleba = {},
+        aquilo = {},
+        vulcanus = {},
+        fulgora = {},
         size = nil,
         shuffled_zones = nil,
         starting_zone = true,
@@ -453,10 +731,14 @@ function Public.reset_main_table()
     this.player_market_settings = {}
     this.player_gui_settings = {}
 
+    this.better_loot_from_zone = random(4, 6)
+
     this.quality_list =
     {
         'normal',
     }
+
+    this.cleared_biters = nil
 
     this.buff_selection =
     {
@@ -470,7 +752,31 @@ function Public.reset_main_table()
         voting_closed = false
     }
 
+    this.random_planet_enabled = false
+
     this.game_won = false
+
+    local corpses_raffle = {}
+    for _, e in pairs(prototypes.entity) do
+        if e.type == 'corpse' then
+            table.insert(corpses_raffle, e.name)
+        end
+    end
+    this.corpses_raffle = corpses_raffle
+
+    for _, planet in pairs(game.planets) do
+        local platforms = planet.get_space_platforms('player')
+        if platforms then
+            for _, platform in pairs(platforms) do
+                if platform and platform.valid and platform.surface and platform.surface.valid then
+                    local name = platform.surface.name
+                    game.delete_surface(name)
+                    platform.destroy()
+                end
+            end
+        end
+    end
+
 
     this.enforce_wave_200_before_collapse = true
 
@@ -556,12 +862,16 @@ end
 function Public.save_stateful_settings()
     local server_name_matches = Server.check_server_name(Public.discord_name)
 
-    if stateful_settings.previous_planet then
-        if planets[stateful_settings.previous_planet] then
-            stateful_settings.previous_planet = planets[stateful_settings.current_planet]
+    if this.random_planet_enabled then
+        if stateful_settings.previous_planet then
+            if planets[stateful_settings.previous_planet] then
+                stateful_settings.previous_planet = planets[stateful_settings.current_planet]
+                Server.output_script_data('Previous planet: ' .. stateful_settings.previous_planet)
+            end
+        else
+            stateful_settings.previous_planet = stateful_settings.current_planet
+            Server.output_script_data('Previous planet: ' .. stateful_settings.previous_planet)
         end
-    else
-        stateful_settings.previous_planet = stateful_settings.current_planet
     end
 
     if server_name_matches then
@@ -589,18 +899,22 @@ local apply_settings_token =
                 end
             end
 
-            if Public.is_modded_pt2 then
+            if Public.is_modded_pt2 and this.random_planet_enabled then
                 if not stateful_settings.previous_planet then
-                    stateful_settings.current_planet = all_planets[random(1, #all_planets)]
+                    local random_planet = all_planets[random(1, #all_planets)]
+                    Server.output_script_data('Previous planet is nil, setting current planet to random planet: ' .. random_planet)
+                    stateful_settings.current_planet = random_planet
                 end
             end
 
-            Public.stateful_on_server_started()
+            if type(Public.stateful_on_server_started) == "function" then
+                Public.stateful_on_server_started()
+            end
         end
     )
 
 Event.add(
-    Server.events.on_server_started,
+    CustomEvents.events.on_server_started,
     function ()
         local start_data = Server.get_start_data()
 

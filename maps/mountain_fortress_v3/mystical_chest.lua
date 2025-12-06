@@ -640,36 +640,36 @@ local mc_random_rewards =
         end),
         1024
     },
-    {
-        name = 'Lucky Looter',
-        str = 'lucky',
-        color = { r = 0.20, g = 0.35, b = 0.40 },
-        tooltip = 'Selecting this will grant a higher chance of finding better loot!',
-        func = (function (player, _)
-            local mc_rewards = Public.get('mc_rewards')
-            if mc_rewards.temp_boosts.lucky then
-                return false, '[Rewards] Lucky bonus is already applied and is currently on cooldown. Please choose another reward.'
-            end
-            mc_rewards.temp_boosts.lucky = true
-            mc_rewards.active_boosts.lucky = true
-            Task.set_timeout_in_ticks(modifier_cooldown, restore_modifier_token, { modifier = 'lucky' })
-            Task.set_timeout_in_ticks(54000, restore_active_modifier_token, { modifier = 'lucky' })
+    -- { -- needs fixing
+    --     name = 'Lucky Looter',
+    --     str = 'lucky',
+    --     color = { r = 0.20, g = 0.35, b = 0.40 },
+    --     tooltip = 'Selecting this will grant a higher chance of finding better loot!',
+    --     func = (function (player, _)
+    --         local mc_rewards = Public.get('mc_rewards')
+    --         if mc_rewards.temp_boosts.lucky then
+    --             return false, '[Rewards] Lucky bonus is already applied and is currently on cooldown. Please choose another reward.'
+    --         end
+    --         mc_rewards.temp_boosts.lucky = true
+    --         mc_rewards.active_boosts.lucky = true
+    --         Task.set_timeout_in_ticks(modifier_cooldown, restore_modifier_token, { modifier = 'lucky' })
+    --         Task.set_timeout_in_ticks(54000, restore_active_modifier_token, { modifier = 'lucky' })
 
 
-            local mystical_chest = Public.get('mystical_chest')
-            if not (mystical_chest and mystical_chest.valid) then
-                return
-            end
+    --         local mystical_chest = Public.get('mystical_chest')
+    --         if not (mystical_chest and mystical_chest.valid) then
+    --             return
+    --         end
 
-            local mystical_rewards = Public.get('mystical_rewards')
-            mystical_rewards.lucky_bonus = mystical_rewards.lucky_bonus and mystical_rewards.lucky_bonus + 1 or 1
+    --         local mystical_rewards = Public.get('mystical_rewards')
+    --         mystical_rewards.lucky_bonus = mystical_rewards.lucky_bonus and mystical_rewards.lucky_bonus + 1 or 1
 
-            Alert.alert_all_players(15, 'Lucky Looter! Bonus magicka for all!', nil, 'achievement/tech-maniac')
-            Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted lucky loot bonus to the team!', ' ***' })
-            return true
-        end),
-        1024
-    },
+    --         Alert.alert_all_players(15, 'Lucky Looter! Bonus magicka for all!', nil, 'achievement/tech-maniac')
+    --         Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted lucky loot bonus to the team!', ' ***' })
+    --         return true
+    --     end),
+    --     1024
+    -- },
     {
         name = 'Oil Barrels',
         str = 'oil',
@@ -744,7 +744,7 @@ local mc_random_rewards =
         name = 'Movement bonus',
         str = 'movement',
         color = { r = 0.00, g = 0.25, b = 0.00 },
-        tooltip = 'Selecting this will grant the team a bonus movement speed for 15 minutes!',
+        tooltip = 'Selecting this will grant the team a bonus movement speed for 30 minutes!',
         func = (function (player, zone)
             local mc_rewards = Public.get('mc_rewards')
             local force = game.forces.player
@@ -757,7 +757,7 @@ local mc_random_rewards =
 
             mc_rewards.temp_boosts.movement = true
 
-            Task.set_timeout_in_ticks(54000, restore_movement_speed_token, { speed = force.character_running_speed_modifier })
+            Task.set_timeout_in_ticks(108000, restore_movement_speed_token, { speed = force.character_running_speed_modifier })
             local scale_factor = 0.5 + (zone / 10)
             local speed = 0.6 * scale_factor
             if speed > 1 then
@@ -775,7 +775,7 @@ local mc_random_rewards =
         name = 'Mining bonus',
         str = 'mining',
         color = { r = 0.00, g = 0.00, b = 0.25 },
-        tooltip = 'Selecting this will grant the team a bonus mining speed for 15 minutes!',
+        tooltip = 'Selecting this will grant the team a bonus mining speed for 30 minutes!',
         func = (function (player)
             local mc_rewards = Public.get('mc_rewards')
             local force = game.forces.player
@@ -788,7 +788,7 @@ local mc_random_rewards =
 
             mc_rewards.temp_boosts.mining = true
 
-            Task.set_timeout_in_ticks(54000, restore_mining_speed_token)
+            Task.set_timeout_in_ticks(108000, restore_mining_speed_token)
             force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 1
             local message = ({ 'locomotive.mining_bonus', player.name })
             Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
@@ -801,7 +801,7 @@ local mc_random_rewards =
         name = 'Crafting speed bonus',
         str = 'crafting',
         color = { r = 0.00, g = 0.00, b = 0.25 },
-        tooltip = 'Selecting this will grant all players 100% crafting bonus for 15 minutes!',
+        tooltip = 'Selecting this will grant all players 100% crafting bonus for 30 minutes!',
         func = (function (player)
             local mc_rewards = Public.get('mc_rewards')
             local force = game.forces.player
@@ -814,7 +814,7 @@ local mc_random_rewards =
 
             mc_rewards.temp_boosts.crafting = true
 
-            Task.set_timeout_in_ticks(54000, restore_crafting_speed_token)
+            Task.set_timeout_in_ticks(108000, restore_crafting_speed_token)
             force.manual_crafting_speed_modifier = force.manual_crafting_speed_modifier + 2
             local message = ({ 'locomotive.crafting_bonus', player.name })
             Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')

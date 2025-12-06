@@ -169,7 +169,8 @@ function Public.update_gui(player)
     gui.threat.tooltip = { 'wave_defense.tooltip_1', biter_health_boost * 100, max_active_biters }
     ---@diagnostic disable-next-line: param-type-mismatch
     gui.threat_value.caption = floor(threat)
-    gui.threat_value.tooltip = {
+    gui.threat_value.tooltip =
+    {
         'wave_defense.tooltip_1',
         biter_health_boost * 100,
         max_active_biters

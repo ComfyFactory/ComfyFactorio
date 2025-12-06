@@ -2,6 +2,8 @@ local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Gui = require 'utils.gui'
 local Task = require 'utils.task_token'
+local Config = require 'utils.gui.config'
+local CustomEvents = require 'utils.created_events'
 
 local this =
 {
@@ -22,14 +24,7 @@ Global.register(
 -- @table events
 -- @field bottom_quickbar_respawn_raise The event triggered when the bottom quickbar is respawned or raised.
 -- @field bottom_quickbar_location_changed The event triggered when the location of the bottom quickbar is changed.
-local Public =
-{
-    events =
-    {
-        bottom_quickbar_respawn_raise = Event.generate_event_name('bottom_quickbar_respawn_raise'),
-        bottom_quickbar_location_changed = Event.generate_event_name('bottom_quickbar_location_changed')
-    }
-}
+local Public = {}
 
 local set_location
 local destroy_frame
@@ -53,6 +48,104 @@ local sections =
     [11] = 6,
     [12] = 6
 }
+
+Config.register_scenario_module(
+    {
+        id = "bottom_frame",
+        admin_only = false,
+        gui_rows = Config.register_token(
+            function (player, frame)
+                local switch_state
+
+                local autostash = is_loaded('modules.autostash')
+                if autostash then
+                    switch_state = 'right'
+                    local bottom_frame = Public.get_player_data(player)
+                    if bottom_frame and bottom_frame.top then
+                        switch_state = 'left'
+                    end
+                    Config.add_switch(frame, switch_state, 'top_location', 'Position - top', 'Toggle to select if you want the bottom buttons at the top or the bottom.')
+                    frame.add({ type = 'line' })
+                end
+
+                switch_state = 'right'
+                local bottom_frame = Public.get_player_data(player)
+                if bottom_frame and bottom_frame.bottom_state == 'bottom_left' then
+                    switch_state = 'left'
+                end
+                Config.add_switch(frame, switch_state, 'bottom_location', 'Position - bottom', 'Toggle to select if you want the bottom button on the left side or the right side.')
+
+                frame.add({ type = 'line' })
+
+                switch_state = 'right'
+                if bottom_frame and bottom_frame.above then
+                    switch_state = 'left'
+                end
+                Config.add_switch(frame, switch_state, 'middle_location', 'Position - middle', 'Toggle to select if you want the bottom button above the quickbar or the side of the quickbar.')
+
+                frame.add({ type = 'line' })
+
+                switch_state = 'right'
+                if bottom_frame and bottom_frame.portable then
+                    switch_state = 'left'
+                end
+                Config.add_switch(frame, switch_state, 'portable_button', 'Position - portable', 'Toggle to select if you want the bottom button to be portable or not.')
+                frame.add({ type = 'line' })
+            end),
+        handlers =
+        {
+            ['top_location'] = Config.register_token(
+                function (player, _)
+                    local data = Public.get_player_data(player)
+                    if data and data.state and not data.top then
+                        Public.set_top(player, true)
+                    else
+                        Public.set_top(player, false)
+                    end
+                end),
+            ['bottom_location'] = Config.register_token(
+                function (player, event)
+                    if event.element.switch_state == 'left' then
+                        Public.set_location(player, 'bottom_left')
+                    else
+                        Public.set_location(player, 'bottom_right')
+                    end
+                end),
+            ['middle_location'] = Config.register_token(
+                function (player, event)
+                    local data = Public.get_player_data(player)
+                    if event.element.switch_state == 'left' then
+                        data.above = true
+                        data.portable = false
+                    else
+                        data.above = false
+                        data.portable = false
+                    end
+                    if not data.bottom_state then
+                        data.bottom_state = 'bottom_right'
+                    end
+
+                    Public.set_location(player, data.bottom_state)
+                end),
+            ['portable_button'] = Config.register_token(
+                function (player, event)
+                    local data = Public.get_player_data(player)
+                    if event.element.switch_state == 'left' then
+                        data.above = false
+                        data.portable = true
+                    else
+                        data.portable = false
+                        data.above = false
+                    end
+
+                    if not data.bottom_state then
+                        data.bottom_state = 'bottom_right'
+                    end
+
+                    Public.set_location(player, data.bottom_state)
+                end),
+        }
+    })
 
 local check_bottom_buttons_token =
     Task.register(
@@ -371,7 +464,7 @@ set_location = function (player, state)
         }
     end
 
-    Event.raise(Public.events.bottom_quickbar_location_changed, { player_index = player.index, data = data })
+    Event.raise(CustomEvents.events.bottom_quickbar_location_changed, { player_index = player.index, data = data })
 
     data.state = state
     create_frame(player, alignment, location, data)
@@ -572,7 +665,7 @@ Event.add(
 )
 
 Event.add(
-    Public.events.bottom_quickbar_respawn_raise,
+    CustomEvents.events.bottom_quickbar_respawn_raise,
     function (event)
         if not event or not event.player_index then
             return
@@ -587,7 +680,7 @@ Event.add(
 )
 
 Event.add(
-    Public.events.bottom_quickbar_location_changed,
+    CustomEvents.events.bottom_quickbar_location_changed,
     function (event)
         if not event or not event.player_index then
             return

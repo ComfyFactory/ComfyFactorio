@@ -1,6 +1,4 @@
 local Public = {}
-local Session = require 'utils.datastore.session_data'
-local Jailed = require 'utils.datastore.jail_data'
 local Supporters = require 'utils.datastore.supporters'
 local Gui = require 'utils.gui'
 
@@ -334,8 +332,8 @@ Public.gui_data = function (data)
     local rpg_enabled = data.rpg_enabled
     local poke_player_frame_name = data.poke_player_frame_name
 
-    local play_table = Session.get_trusted_table()
-    local jailed = Jailed.get_jailed_table()
+    local play_table = storage.tokens.utils_datastore_session_data.trusted
+    local jailed = storage.tokens.utils_datastore_jail_data.jailed
 
     local connected_players = #game.connected_players
     local players = game.players

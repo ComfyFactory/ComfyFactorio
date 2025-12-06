@@ -4,6 +4,8 @@ local Token = require 'utils.token'
 local Task = require 'utils.task'
 local Server = require 'utils.server'
 local Event = require 'utils.event'
+local CustomEvents = require 'utils.created_events'
+local DevServer = require 'utils.dev_server'
 
 local set_timeout_in_ticks = Task.set_timeout_in_ticks
 local statistics_dataset = 'statistics'
@@ -13,14 +15,14 @@ local try_get_data = Server.try_get_data
 local e = defines.events
 local floor = math.floor
 
-local events = {
+local events =
+{
     map_tags_made = e.on_chart_tag_added,
     chat_messages = e.on_console_chat,
     commands_used = e.on_console_command,
     machines_built = e.on_built_entity,
     items_picked_up = e.on_picked_up_item,
     tiles_built = e.on_player_built_tile,
-    join_count = e.on_player_joined_game,
     deaths = e.on_player_died,
     entities_repaired = e.on_player_repaired_entity,
     items_crafted = e.on_player_crafted_item,
@@ -29,19 +31,19 @@ local events = {
     deconstructer_planner_used = e.on_player_deconstructed_area
 }
 
-local settings = {
+local settings =
+{
     required_only_time_to_save_time = 10 * 3600,
     afk_time = 5 * 3600,
     nth_tick = 5 * 3600
 }
 
-local Public = {
-    events = {
-        on_player_removed = Event.generate_event_name('on_player_removed')
-    }
+local Public =
+{
 }
 
-local normalized_names = {
+local normalized_names =
+{
     ['map_tags_made'] = { name = 'Map-tags created', tooltip = "Tags that you've created in minimap." },
     ['chat_messages'] = { name = 'Messages', tooltip = 'Messages sent in chat.' },
     ['commands_used'] = { name = 'Commands', tooltip = 'Commands used in console.' },
@@ -116,7 +118,7 @@ end
 local function get_data(player)
     local player_index = player and type(player) == 'number' and player or player and player.valid and player.index or false
     if not player_index then
-        log('Invalid player index at get_data')
+        Server.output_script_data('Invalid player index at statistics:get_data')
         return false
     end
 
@@ -125,7 +127,8 @@ local function get_data(player)
     if not data then
         local p = game.get_player(player_index)
         local name = p and p.valid and p.name or nil
-        local player_data = {
+        local player_data =
+        {
             name = name,
             tick = 0
         }
@@ -174,6 +177,10 @@ local try_upload_data_token =
                 return
             end
 
+            if DevServer.is_dev_server() then
+                return
+            end
+
             if stats then
                 -- we don't want to clutter the database with players less than 10 minutes played.
                 if player.online_time <= settings.required_only_time_to_save_time then
@@ -187,6 +194,28 @@ local try_upload_data_token =
                     set_data(statistics_dataset, player_name, d)
                 end
             end
+        end
+    )
+
+local on_player_created_token =
+    Token.register(
+        function (event)
+            local player = game.get_player(event.player_index)
+            if not player or not player.valid then
+                return
+            end
+            get_data(player):increase('maps_played')
+        end
+    )
+
+local on_player_joined_game_token =
+    Token.register(
+        function (event)
+            local player = game.get_player(event.player_index)
+            if not player or not player.valid then
+                return
+            end
+            get_data(player):increase('join_count')
         end
     )
 
@@ -215,6 +244,10 @@ function Public:save()
     end
 
     if self.tick < 10 then
+        return
+    end
+
+    if DevServer.is_dev_server() then
         return
     end
 
@@ -296,6 +329,8 @@ Event.add(
     e.on_player_joined_game,
     function (event)
         get_data(event.player_index):try_get_data()
+
+        set_timeout_in_ticks(10, on_player_joined_game_token, { player_index = event.player_index })
     end
 )
 
@@ -307,7 +342,7 @@ Event.add(
 )
 
 Event.add(
-    Public.events.on_player_removed,
+    CustomEvents.events.on_player_removed,
     function (event)
         local player_index = event.player_index
         statistics[player_index] = nil
@@ -494,7 +529,7 @@ Event.on_nth_tick(
 Event.add(
     e.on_player_created,
     function (event)
-        get_data(event.player_index):increase('maps_played')
+        set_timeout_in_ticks(10, on_player_created_token, { player_index = event.player_index })
     end
 )
 

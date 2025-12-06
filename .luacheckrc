@@ -211,7 +211,8 @@ stds.factorio =
                     {
                         'compare',
                         'deepcopy',
-                        'deep_copy'
+                        'deep_copy',
+                        'add_all'
                     }
                 }
             }
@@ -222,7 +223,8 @@ stds.factorio =
             {
                 'compare',
                 'deepcopy',
-                'deep_copy'
+                'deep_copy',
+                'add_all'
             }
         }
     }
@@ -261,6 +263,7 @@ stds.factorio_control =
         {
             fields =
             {
+                'register_metatable',
                 'on_nth_tick',
                 'on_event',
                 'on_init',

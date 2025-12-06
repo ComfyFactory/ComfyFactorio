@@ -392,12 +392,21 @@ local function objective_frames(player, stateful, player_frame, objective, data)
         local flow = player_frame.add({ type = 'flow' })
         local item_table = flow.add({ type = 'table', name = 'item_table', column_count = 3 })
         if objective_name ~= 'single_item' then
-            data.supply[#data.supply + 1] = item_table.add({ type = 'sprite-button', name = supplies[1].name, sprite = 'item/' .. supplies[1].name, enabled = false, number = supplies[1].count })
-            data.supply[#data.supply + 1] = item_table.add({ type = 'sprite-button', name = supplies[2].name, sprite = 'item/' .. supplies[2].name, enabled = false, number = supplies[2].count })
-            data.supply[#data.supply + 1] = item_table.add({ type = 'sprite-button', name = supplies[3].name, sprite = 'item/' .. supplies[3].name, enabled = false, number = supplies[3].count })
+            local c1 = item_table.add({ type = 'sprite-button', name = supplies[1].name, sprite = 'item/' .. supplies[1].name, enabled = false, number = supplies[1].count, quality = supplies[1].quality })
+            c1.quality = supplies[1].quality
+            local c2 = item_table.add({ type = 'sprite-button', name = supplies[2].name, sprite = 'item/' .. supplies[2].name, enabled = false, number = supplies[2].count, quality = supplies[2].quality })
+            c2.quality = supplies[2].quality
+            local c3 = item_table.add({ type = 'sprite-button', name = supplies[3].name, sprite = 'item/' .. supplies[3].name, enabled = false, number = supplies[3].count, quality = supplies[3].quality })
+            c3.quality = supplies[3].quality
+            data.supply[#data.supply + 1] = c1
+            data.supply[#data.supply + 1] = c2
+            data.supply[#data.supply + 1] = c3
         else
             local single_item = stateful.objectives.single_item
-            data.single_item = item_table.add({ type = 'sprite-button', name = single_item.name, sprite = 'item/' .. single_item.name, enabled = false, number = single_item.count })
+            local c = item_table.add({ type = 'sprite-button', name = single_item.name, sprite = 'item/' .. single_item.name, enabled = false, number = single_item.count, quality = single_item.quality })
+            c.quality = single_item.quality
+
+            data.single_item = c
         end
 
         return
@@ -438,19 +447,19 @@ local function render_buff_collection(parent_pane, buffs_source, buffs_collected
         local flat_value_buffs = { xp_level = true, xp_bonus = true, character_health_bonus = true }
 
         if flat_value_buffs[name] then
-            return '[font=default-bold]' .. display_name .. ': ' .. count .. '[/font]'
+            return '[font=default-bold]' .. display_name .. ': ' .. count .. '[/font]\n'
         else
-            return '[font=default-bold]' .. display_name .. ': ' .. (count * 100) .. '%[/font]'
+            return '[font=default-bold]' .. display_name .. ': ' .. (count * 100) .. '%[/font]\n'
         end
     end
 
     local function format_starting_item_text(item_name, count)
-        return '[font=default-large] [item=' .. item_name .. '][/font]: [font=default-bold]' .. count .. '[/font]'
+        return '[font=default-large] [item=' .. item_name .. '][/font]: [font=default-bold]' .. count .. '[/font]\n'
     end
 
     local function format_custom_buff_text(name, count)
         local text_to_place = count or 'Unlocked'
-        return '[font=default-bold]' .. name .. ': ' .. text_to_place .. '[/font]'
+        return '[font=default-bold]' .. name .. ': ' .. text_to_place .. '[/font]\n'
     end
 
     create_section_header(parent_pane, 'Starting items')
@@ -961,7 +970,7 @@ local function update_data()
                         local frame = data.supply[index]
                         if frame and frame.valid then
                             local supplies_data = supplies[index]
-                            local count = Stateful.get_item_produced_count(supplies_data.name)
+                            local count = Stateful.get_item_produced_count(supplies_data.name, supplies_data.quality)
                             if count then
                                 if not supplies_data.total then
                                     supplies_data.total = supplies_data.count
@@ -974,7 +983,7 @@ local function update_data()
                                     frame.sprite = 'utility/check_mark_green'
                                 else
                                     frame.number = supplies_data.count
-                                    frame.tooltip = 'Crafted: ' .. count .. '\nNeeded: ' .. (supplies_data.total or 0)
+                                    frame.tooltip = 'Item: ' .. supplies_data.name .. ' (' .. supplies_data.quality .. ')' .. '\nCrafted: ' .. count .. '\nNeeded: ' .. (supplies_data.total or 0)
                                 end
                                 if items_done == 3 then
                                     if data.supply_completed and data.supply_completed.valid then
@@ -983,7 +992,7 @@ local function update_data()
                                 end
                             else
                                 frame.number = supplies_data.count
-                                frame.tooltip = 'Crafted: 0\nNeeded: ' .. (supplies_data.total or 0)
+                                frame.tooltip = 'Item: ' .. supplies_data.name .. ' (' .. supplies_data.quality .. ')' .. '\nCrafted: 0\nNeeded: ' .. (supplies_data.total or 0)
                             end
                         end
                     end
@@ -994,7 +1003,7 @@ local function update_data()
                 local single_item = stateful.objectives.single_item
                 if single_item then
                     local frame = data.single_item
-                    local count = Stateful.get_item_produced_count(single_item.name)
+                    local count = Stateful.get_item_produced_count(single_item.name, single_item.quality)
                     if count then
                         if not single_item.total then
                             single_item.total = single_item.count
@@ -1010,11 +1019,11 @@ local function update_data()
                         else
                             frame.number = single_item.count
                             frame.tooltip = count .. ' / ' .. single_item.total
-                            frame.tooltip = 'Crafted: ' .. count .. '\nNeeded: ' .. (single_item.total or 0)
+                            frame.tooltip = 'Item: ' .. single_item.name .. ' (' .. single_item.quality .. ')' .. '\nCrafted: ' .. count .. '\nNeeded: ' .. (single_item.total or 0)
                         end
                     else
                         frame.number = single_item.count
-                        frame.tooltip = 'Crafted: 0\nNeeded: ' .. (single_item.total or 0)
+                        frame.tooltip = 'Item: ' .. single_item.name .. ' (' .. single_item.quality .. ')' .. '\nCrafted: 0\nNeeded: ' .. (single_item.total or 0)
                     end
                 end
             end
@@ -1120,8 +1129,9 @@ local function update_raw()
                 stateful.objectives_completed.randomized_zone = true
                 stateful.objectives_time_spent.randomized_zone = tick
                 play_achievement_unlocked()
-                Alert.alert_all_players(100, 'Objective: [color=blue]Breach zone[/color] has been completed!')
-                Server.to_discord_embed('Objective: **Breach zone** has been completed!')
+                local reward = Public.reward_goal_completion()
+                Alert.alert_all_players(100, 'Objective: [color=blue]Breach zone[/color] has been completed! ' .. reward .. '!')
+                Server.to_discord_embed('Objective: **Breach zone** has been completed! ' .. reward .. '!')
                 stateful.objectives_completed_count = stateful.objectives_completed_count + 1
             end
         end
@@ -1131,7 +1141,7 @@ local function update_raw()
         local items_done = 0
         for index = 1, #stateful.objectives.supplies do
             local supplies_data = stateful.objectives.supplies[index]
-            local count = Stateful.get_item_produced_count(supplies_data.name)
+            local count = Stateful.get_item_produced_count(supplies_data.name, supplies_data.quality)
             if count then
                 if not supplies_data.total then
                     supplies_data.total = supplies_data.count
@@ -1145,8 +1155,9 @@ local function update_raw()
                     if not stateful.objectives_completed.supplies then
                         stateful.objectives_completed.supplies = true
                         stateful.objectives_time_spent.supplies = tick
-                        Alert.alert_all_players(100, 'Objective: [color=blue]Produce items[/color] has been completed!')
-                        Server.to_discord_embed('Objective: **Produce items** has been completed!')
+                        local reward = Public.reward_goal_completion()
+                        Alert.alert_all_players(100, 'Objective: [color=blue]Produce items[/color] has been completed! ' .. reward .. '!')
+                        Server.to_discord_embed('Objective: **Produce items** has been completed! ' .. reward .. '!')
                         play_achievement_unlocked()
                         stateful.objectives_completed_count = stateful.objectives_completed_count + 1
                     end
@@ -1161,7 +1172,7 @@ local function update_raw()
     end
 
     if stateful.objectives.single_item then
-        local count = Stateful.get_item_produced_count(stateful.objectives.single_item.name)
+        local count = Stateful.get_item_produced_count(stateful.objectives.single_item.name, stateful.objectives.single_item.quality)
         if count then
             if not stateful.objectives.single_item.total then
                 stateful.objectives.single_item.total = stateful.objectives.single_item.count
@@ -1173,8 +1184,9 @@ local function update_raw()
                     stateful.objectives_completed.single_item = true
                     stateful.objectives_time_spent.single_item = tick
                     play_achievement_unlocked()
-                    Alert.alert_all_players(100, 'Objective: [color=blue]Produce item[/color] has been completed!')
-                    Server.to_discord_embed('Objective: **Produce item** has been completed!')
+                    local reward = Public.reward_goal_completion()
+                    Alert.alert_all_players(100, 'Objective: [color=blue]Produce item[/color] has been completed! ' .. reward .. '!')
+                    Server.to_discord_embed('Objective: **Produce item** has been completed! ' .. reward .. '!')
                     stateful.objectives_completed_count = stateful.objectives_completed_count + 1
                 end
             end
@@ -1317,8 +1329,9 @@ local function update_raw()
             if completed and completed == true and not stateful.objectives_completed[objective_name] then
                 stateful.objectives_completed[objective_name] = true
                 stateful.objectives_time_spent[objective_name] = tick
-                Alert.alert_all_players(100, 'Objective: [color=blue]' .. objective.discord .. '[/color] has been completed!')
-                Server.to_discord_embed('Objective: **' .. objective.discord .. '** has been completed!')
+                local reward = Public.reward_goal_completion()
+                Alert.alert_all_players(100, 'Objective: [color=blue]' .. objective.discord .. '[/color] has been completed! ' .. reward .. '!')
+                Server.to_discord_embed('Objective: **' .. objective.discord .. '** has been completed! ' .. reward .. '!')
                 play_achievement_unlocked()
                 stateful.objectives_completed_count = stateful.objectives_completed_count + 1
             end

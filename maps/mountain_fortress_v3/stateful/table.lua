@@ -16,6 +16,8 @@ local RPG = require 'modules.rpg.table'
 local Beam = require 'modules.render_beam'
 local Discord = require 'utils.discord'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
+local CustomEvents = require 'utils.created_events'
+local ICW = require 'maps.mountain_fortress_v3.icw.table'
 
 local this =
 {
@@ -235,7 +237,7 @@ local function get_random_buff(fetch_all, only_force)
         {
             name = 'worker_robots_storage_bonus',
             discord = 'Robot storage bonus - robots carry more!',
-            tooltip = 'Selecting this buff will grant the team 100% increased robot storage!',
+            tooltip = 'Selecting this buff will grant the team +1 increased robot storage!',
             poll_name = 'Robot storage',
             modifier = 'force',
             per_force = true,
@@ -320,8 +322,8 @@ local function get_random_buff(fetch_all, only_force)
             poll_name = 'RPG XP level',
             modifier = 'rpg',
             per_force = true,
-            limit = 10,
-            state = 20
+            limit = 5,
+            state = 4
         },
         {
             name = 'chemicals_s',
@@ -478,7 +480,7 @@ local function get_random_buff(fetch_all, only_force)
             tooltip = 'Selecting this buff will grant the team 1 extra wagon at start!',
             poll_name = 'Starting items (extra wagon)',
             modifier = 'locomotive',
-            limit = 5,
+            limit = 3,
             state = 1
         },
         {
@@ -505,6 +507,20 @@ local function get_random_buff(fetch_all, only_force)
             items =
             {
                 { name = 'steel-plate', count = 100 }
+            }
+        },
+        {
+            name = 'gun_turrets',
+            discord = 'Gun turrets - start with some gun turrets',
+            tooltip = 'Selecting this buff will grant the team 2 gun turrets at start!',
+            poll_name = 'Starting items (gun turrets)',
+            modifier = 'starting_items',
+            limit = 4,
+            add_per_buff = 2,
+            items =
+            {
+                { name = 'gun-turret', count = 2 },
+                { name = 'piercing-rounds-magazine', count = 100 }
             }
         },
         {
@@ -586,11 +602,11 @@ local function get_random_buff(fetch_all, only_force)
     if Public.is_modded_pt2 then
         buffs[#buffs + 1] =
         {
-            name = 'quality_locomotive',
-            discord = 'Grants uncommon locomotive at start',
-            tooltip = 'Selecting this buff will grant the team 1 uncommon locomotive at start!',
-            poll_name = 'Starting items (uncommon)',
-            modifier = 'locomotive',
+            name = 'quality_trains_uncommon',
+            discord = 'Grants uncommon trains at start',
+            tooltip = 'Selecting this buff make all trains of type uncommon quality!',
+            poll_name = 'Uncommon trains',
+            modifier = 'quality_trains',
             limit = 1,
             quality = 'uncommon',
             dlc = true,
@@ -598,46 +614,24 @@ local function get_random_buff(fetch_all, only_force)
         }
         buffs[#buffs + 1] =
         {
-            name = 'quality_cargo_wagon',
-            discord = 'Grants uncommon cargo-wagon at start',
-            tooltip = 'Selecting this buff will grant the team 1 uncommon cargo-wagon at start!',
-            poll_name = 'Starting items (uncommon)',
-            modifier = 'cargo-wagon',
-            limit = 1,
-            quality = 'uncommon',
-            dlc = true,
-            state = 1
-        }
-        buffs[#buffs + 1] =
-        {
-            name = 'quality_locomotive',
-            discord = 'Grants rare locomotive at start',
-            tooltip = 'Selecting this buff will grant the team 1 rare locomotive at start!',
-            poll_name = 'Starting items (rare)',
-            modifier = 'locomotive',
+            name = 'quality_trains_rare',
+            discord = 'Grants rare trains at start',
+            tooltip = 'Selecting this buff make all trains of type rare quality!',
+            poll_name = 'Rare trains',
+            modifier = 'quality_trains',
             limit = 1,
             quality = 'rare',
             dlc = true,
             state = 1
         }
+
         buffs[#buffs + 1] =
         {
-            name = 'quality_cargo_wagon',
-            discord = 'Grants rare cargo-wagon at start',
-            tooltip = 'Selecting this buff will grant the team 1 rare cargo-wagon at start!',
-            poll_name = 'Starting items (rare)',
-            modifier = 'cargo-wagon',
-            limit = 1,
-            quality = 'rare',
-            dlc = true,
-            state = 1
-        }
-        buffs[#buffs + 1] =
-        {
-            name = 'quality_locomotive',
-            discord = 'Grants epic locomotive at start',
-            tooltip = 'Selecting this buff will grant the team 1 epic locomotive at start!',
-            poll_name = 'Starting items (epic)',
+            name = 'quality_trains_epic',
+            discord = 'Grants epic trains at start',
+            tooltip = 'Selecting this buff make all trains of type epic quality!',
+            poll_name = 'Epic trains',
+            modifier = 'quality_trains',
             limit = 1,
             quality = 'epic',
             dlc = true,
@@ -645,22 +639,11 @@ local function get_random_buff(fetch_all, only_force)
         }
         buffs[#buffs + 1] =
         {
-            name = 'quality_cargo_wagon',
-            discord = 'Grants epic cargo-wagon at start',
-            tooltip = 'Selecting this buff will grant the team 1 epic cargo-wagon at start!',
-            poll_name = 'Starting items (epic)',
-            modifier = 'cargo-wagon',
-            limit = 1,
-            quality = 'epic',
-            dlc = true,
-            state = 1
-        }
-        buffs[#buffs + 1] =
-        {
-            name = 'quality_locomotive',
-            discord = 'Grants legendary locomotive at start',
-            tooltip = 'Selecting this buff will grant the team 1 legendary locomotive at start!',
-            poll_name = 'Starting items (legendary)',
+            name = 'quality_trains_legendary',
+            discord = 'Grants legendary trains at start',
+            tooltip = 'Selecting this buff make all trains of type legendary quality!',
+            poll_name = 'Legendary trains',
+            modifier = 'quality_trains',
             limit = 1,
             quality = 'legendary',
             dlc = true,
@@ -668,21 +651,10 @@ local function get_random_buff(fetch_all, only_force)
         }
         buffs[#buffs + 1] =
         {
-            name = 'quality_cargo_wagon',
-            discord = 'Grants legendary cargo-wagon at start',
-            tooltip = 'Selecting this buff will grant the team 1 legendary cargo-wagon at start!',
-            poll_name = 'Starting items (legendary)',
-            limit = 1,
-            quality = 'legendary',
-            dlc = true,
-            state = 1
-        }
-        buffs[#buffs + 1] =
-        {
-            name = 'quality_buildings',
+            name = 'quality_buildings_uncommon',
             discord = 'Grants uncommon quality of buildings generating free loot!',
-            tooltip = 'Selecting this buff will grant the team 1 uncommon quality of buildings generating free loot!',
-            poll_name = 'Starting items (uncommon)',
+            tooltip = 'Selecting this buff will grant the team 1 uncommon quality wild buildings that generate free loot!',
+            poll_name = 'Wild buildings (uncommon)',
             limit = 1,
             quality = 'uncommon',
             dlc = true,
@@ -690,10 +662,10 @@ local function get_random_buff(fetch_all, only_force)
         }
         buffs[#buffs + 1] =
         {
-            name = 'quality_buildings',
+            name = 'quality_buildings_rare',
             discord = 'Grants rare quality of buildings generating free loot!',
-            tooltip = 'Selecting this buff will grant the team 1 rare quality of buildings generating free loot!',
-            poll_name = 'Starting items (rare)',
+            tooltip = 'Selecting this buff will grant the team 1 rare quality wild buildings that generate free loot!',
+            poll_name = 'Wild buildings (rare)',
             limit = 1,
             quality = 'rare',
             dlc = true,
@@ -701,10 +673,10 @@ local function get_random_buff(fetch_all, only_force)
         }
         buffs[#buffs + 1] =
         {
-            name = 'quality_buildings',
+            name = 'quality_buildings_epic',
             discord = 'Grants epic quality of buildings generating free loot!',
-            tooltip = 'Selecting this buff will grant the team 1 epic quality of buildings generating free loot!',
-            poll_name = 'Starting items (epic)',
+            tooltip = 'Selecting this buff will grant the team 1 epic quality wild buildings that generate free loot!',
+            poll_name = 'Wild buildings (epic)',
             limit = 1,
             quality = 'epic',
             dlc = true,
@@ -712,10 +684,10 @@ local function get_random_buff(fetch_all, only_force)
         }
         buffs[#buffs + 1] =
         {
-            name = 'quality_buildings',
+            name = 'quality_buildings_legendary',
             discord = 'Grants legendary quality of buildings generating free loot!',
-            tooltip = 'Selecting this buff will grant the team 1 legendary quality of buildings generating free loot!',
-            poll_name = 'Starting items (legendary)',
+            tooltip = 'Selecting this buff will grant the team legendary quality wild buildings that generate free loot!',
+            poll_name = 'Wild buildings (legendary)',
             limit = 1,
             quality = 'legendary',
             dlc = true,
@@ -755,7 +727,7 @@ local function get_random_buff(fetch_all, only_force)
     return buffs[1]
 end
 
-local function get_item_produced_count(item_name)
+local function get_item_produced_count(item_name, quality)
     local force = game.forces.player
     local statistics = Public.get('statistics')
 
@@ -779,7 +751,7 @@ local function get_item_produced_count(item_name)
     for _, surface in pairs(game.surfaces) do
         if surface.valid then
             local surface_name = surface.name
-            local current_production = force.get_item_production_statistics(surface_name).input_counts[item_name] or 0
+            local current_production = force.get_item_production_statistics(surface_name).get_input_count({ name = item_name, quality = quality }) or 0
 
             if not statistics.surface_production[item_name][surface_name] then
                 statistics.surface_production[item_name][surface_name] = current_production
@@ -905,6 +877,27 @@ local function on_pre_player_died(event)
     -- player.ticks_to_respawn = 1800 * (this.rounds_survived + 1)
 
     Task.set_timeout_in_ticks(5, search_corpse_token, { player_index = player.index })
+end
+
+local function get_random_quality()
+    if not Public.is_modded_pt2 then
+        return 'normal'
+    end
+
+    local rounds = this.rounds_survived
+    local quality_per_level = Public.quality_per_level_objectives
+    local best_key = 1
+
+    for level, _ in pairs(quality_per_level) do
+        if rounds >= level then
+            if level > best_key then
+                best_key = level
+            end
+        end
+    end
+
+    local quality_list = quality_per_level[best_key]
+    return quality_list[random(1, #quality_list)]
 end
 
 local function on_market_item_purchased(event)
@@ -1133,22 +1126,38 @@ local function get_random_items()
         { 'uranium-fuel-cell', scale(2500, 100000) }
     }
 
+    if Public.is_modded_pt2 then
+        table.insert(items, { 'lithium', scale(5000, 80000000) })
+        table.insert(items, { 'lithium-plate', scale(1000, 80000000) })
+        table.insert(items, { 'carbon-fiber', scale(1000, 80000000) })
+
+        table.insert(items, { 'tungsten-carbide', scale(100, 500000) })
+        table.insert(items, { 'tungsten-plate', scale(100, 500000) })
+        table.insert(items, { 'holmium-plate', scale(100, 500000) })
+        table.insert(items, { 'supercapacitor', scale(50, 500000) })
+        table.insert(items, { 'superconductor', scale(50, 500000) })
+        table.insert(items, { 'carbon', scale(100, 500000) })
+        table.insert(items, { 'turbo-splitter', scale(50, 500000) })
+        table.insert(items, { 'turbo-transport-belt', scale(50, 500000) })
+        table.insert(items, { 'turbo-underground-belt', scale(50, 500000) })
+    end
+
     shuffle(items)
     shuffle(items)
 
     local container =
     {
-        [1] = { name = items[1][1], count = items[1][2] },
-        [2] = { name = items[2][1], count = items[2][2] },
-        [3] = { name = items[3][1], count = items[3][2] }
+        [1] = { name = items[1][1], count = items[1][2], quality = get_random_quality() },
+        [2] = { name = items[2][1], count = items[2][2], quality = get_random_quality() },
+        [3] = { name = items[3][1], count = items[3][2], quality = get_random_quality() }
     }
 
     if this.test_mode then
         container =
         {
-            [1] = { name = items[1].products[1].name, count = 1 },
-            [2] = { name = items[2].products[1].name, count = 1 },
-            [3] = { name = items[3].products[1].name, count = 1 }
+            [1] = { name = items[1].products[1].name, count = 1, quality = get_random_quality() },
+            [2] = { name = items[2].products[1].name, count = 1, quality = get_random_quality() },
+            [3] = { name = items[3].products[1].name, count = 1, quality = get_random_quality() }
         }
     end
 
@@ -1166,15 +1175,33 @@ local function get_random_item()
         { 'speed-module-2', scale(1000, 100000) },
         { 'efficiency-module-3', scale(50, 30000) },
         { 'productivity-module-3', scale(500, 30000) },
-        { 'speed-module-3', scale(500, 30000) }
+        { 'speed-module-3', scale(500, 30000) },
+        { 'automation-science-pack', scale(1000, 400000) },
+        { 'logistic-science-pack', scale(1000, 400000) },
+        { 'military-science-pack', scale(1000, 400000) },
+        { 'chemical-science-pack', scale(1000, 400000) },
+        { 'production-science-pack', scale(1000, 400000) },
+        { 'utility-science-pack', scale(1000, 400000) },
     }
 
+    if Public.is_modded_pt2 then
+        table.insert(items, { 'quality-module', scale(100, 30000) })
+        table.insert(items, { 'quality-module-2', scale(100, 30000) })
+        table.insert(items, { 'quality-module-3', scale(100, 30000) })
+        table.insert(items, { 'space-science-pack', scale(1000, 400000) })
+        table.insert(items, { 'metallurgic-science-pack', scale(1000, 400000) })
+        table.insert(items, { 'agricultural-science-pack', scale(1000, 400000) })
+        table.insert(items, { 'electromagnetic-science-pack', scale(1000, 400000) })
+        table.insert(items, { 'cryogenic-science-pack', scale(500, 400000) })
+        table.insert(items, { 'promethium-science-pack', scale(50, 400000) })
+    end
+
     shuffle(items)
     shuffle(items)
     shuffle(items)
     shuffle(items)
 
-    return { name = items[1][1], count = items[1][2] }
+    return { name = items[1][1], count = items[1][2], quality = get_random_quality() }
 end
 
 local function get_random_handcrafted_item()
@@ -1213,15 +1240,21 @@ local function get_random_handcrafted_item()
         { 'pipe-to-ground', scale(3000, 50000) },
         { 'efficiency-module', scale(100, 50000) },
         { 'productivity-module', scale(100, 50000) },
-        { 'speed-module', scale(100, 50000) }
+        { 'speed-module', scale(100, 50000) },
+        { 'cooked-fish', scale(100, 50000) },
+        { 'grilled-fish', scale(100, 50000) },
     }
 
+    if Public.is_modded_pt2 then
+        table.insert(items, { 'quality-module', scale(100, 50000) })
+    end
+
     shuffle(items)
     shuffle(items)
     shuffle(items)
     shuffle(items)
 
-    return { name = items[1][1], count = items[1][2] }
+    return { name = items[1][1], count = items[1][2], quality = 'normal' }
 end
 
 local function get_random_spell()
@@ -1254,6 +1287,7 @@ local function get_random_spell()
 
     return { name = items[1][1], count = items[1][2] }
 end
+
 
 local function get_random_research_recipe()
     -- scale(10, 20)
@@ -1381,19 +1415,14 @@ local function clear_all_stats()
     this.buffs_collected = {}
     this.permanent_buffs_collected = {}
     this.extra_wagons = 0
-    this.quality_trains =
-    {
-        ['locomotive'] = 'normal',
-        ['cargo-wagon'] = 'normal',
-        ['fluid-wagon'] = 'normal'
-    }
+    this.quality_trains = 'normal'
     this.quality_buildings = 'normal'
     local rpg_extra = RPG.get('rpg_extra')
     rpg_extra.difficulty = 0
     rpg_extra.grant_xp_level = 0
 end
 
-local function migrate_buffs_generic(buffs_table)
+local function migrate_buffs_generic(saved_buffs)
     local static_buffs = get_random_buff(true)
 
     local static_buffs_by_name = {}
@@ -1401,34 +1430,39 @@ local function migrate_buffs_generic(buffs_table)
         static_buffs_by_name[static_buff.name] = static_buff
     end
 
-    for index, saved_buff in pairs(buffs_table) do
+    for index, saved_buff in pairs(saved_buffs) do
+        if saved_buff.name:find('quality_cargo_wagon') then
+            saved_buff.name = saved_buff.name:gsub('quality_cargo_wagon', 'quality_trains')
+        end
+
+        if saved_buffs[index].modifier == 'starting_items_1' then
+            saved_buffs[index].modifier = 'starting_items'
+        end
+
+
         local static_buff = static_buffs_by_name[saved_buff.name]
 
         if static_buff then
             if not Public.is_modded_pt2 and static_buff.dlc then
-                buffs_table[index] = nil
+                saved_buffs[index] = nil
             else
                 local collected_count = saved_buff.count or 0
-                buffs_table[index] = {}
+                saved_buffs[index] = {}
 
                 for key, value in pairs(static_buff) do
-                    buffs_table[index][key] = value
+                    saved_buffs[index][key] = value
                 end
 
-                buffs_table[index].count = collected_count
+                saved_buffs[index].count = collected_count
 
-                if buffs_table[index].modifier == 'starting_items_1' then
-                    buffs_table[index].modifier = 'starting_items'
-                end
+                saved_buffs[index].replaces = nil
 
-                buffs_table[index].replaces = nil
-
-                if buffs_table[index].items == 0 then
-                    buffs_table[index] = nil
+                if saved_buffs[index].items == 0 then
+                    saved_buffs[index] = nil
                 end
             end
         else
-            buffs_table[index] = nil
+            saved_buffs[index] = nil
         end
     end
 end
@@ -1458,16 +1492,24 @@ end
 local function check_limit(limit_types, key, buff, increment)
     increment = increment or 1
     limit_types[key] = (limit_types[key] or 0) + increment
-    return buff.limit and limit_types[key] >= buff.limit
+    return buff.limit and limit_types[key] > buff.limit
 end
 
-local function apply_force_buff(buff, collected_table)
+local function apply_force_buff(buff, collected_table, limit_types)
+    if check_limit(limit_types, buff.name, buff) then
+        return true -- signal to skip
+    end
+
     local force = game.forces.player
     force[buff.name] = force[buff.name] + buff.state
     update_collected_entry(collected_table, buff.name, nil, buff.state, buff.discord, true)
 end
 
-local function apply_rpg_distance_buff(buff, collected_table)
+local function apply_rpg_distance_buff(buff, collected_table, limit_types)
+    if check_limit(limit_types, buff.modifier, buff) then
+        return true -- signal to skip
+    end
+
     local force = game.forces.player
     for _, buff_name in pairs(buff.modifiers) do
         if buff_name == 'character_reach_distance_bonus' then
@@ -1479,7 +1521,7 @@ local function apply_rpg_distance_buff(buff, collected_table)
 end
 
 local function apply_locomotive_buff(buff, collected_table, limit_types)
-    if check_limit(limit_types, 'locomotive', buff, buff.state) then
+    if check_limit(limit_types, buff.modifier, buff, buff.state) then
         return true -- signal to skip this buff
     end
 
@@ -1489,24 +1531,50 @@ local function apply_locomotive_buff(buff, collected_table, limit_types)
     return false
 end
 
-local function apply_quality_buff(buff, collected_table)
-    local quality_name = buff.name
-    local display_name = quality_name:gsub('quality_', ''):gsub('_', '-')
+local quality_rank =
+{
+    normal = 0,
+    common = 1,
+    uncommon = 2,
+    rare = 3,
+    epic = 4,
+    legendary = 5
+}
 
-    if quality_name == 'quality_locomotive' then
-        this.quality_trains.locomotive = buff.quality
-    elseif quality_name == 'quality_cargo_wagon' then
-        this.quality_trains['cargo-wagon'] = buff.quality
-    elseif quality_name == 'quality_buildings' then
-        this.quality_buildings = buff.quality
+local function is_higher_quality(new, old)
+    if not old then return true end
+    return (quality_rank[new] or 0) > (quality_rank[old] or 0)
+end
+
+local function apply_quality_buff(buff, collected_table, limit_types)
+    if check_limit(limit_types, buff.name, buff) then
+        return true -- signal to skip
     end
 
-    collected_table[quality_name] =
+    local function update_if_higher(current, new)
+        if is_higher_quality(new, current) then
+            return new
+        else
+            return current
+        end
+    end
+
+    if buff.modifier == 'quality_trains' then
+        this.quality_trains = update_if_higher(this.quality_trains, buff.quality)
+        Server.output_script_data('Setting trains quality to ' .. this.quality_trains)
+    elseif buff.name:find('quality_buildings') then
+        this.quality_buildings = update_if_higher(this.quality_buildings, buff.quality)
+        Server.output_script_data('Setting wild buildings quality to ' .. this.quality_buildings)
+    end
+
+
+    collected_table[buff.name] =
     {
-        name = 'Quality ' .. display_name .. ' (' .. buff.quality .. ')!',
+        name = 'Quality trains' .. ' (' .. buff.quality .. ')',
         discord = buff.discord
     }
 end
+
 
 local function apply_fish_buff(buff, collected_table, limit_types)
     limit_types[buff.name] = true
@@ -1514,7 +1582,11 @@ local function apply_fish_buff(buff, collected_table, limit_types)
     update_collected_entry(collected_table, 'fish', 'A thousand fishes', nil, buff.discord)
 end
 
-local function apply_tech_buff(buff, collected_table)
+local function apply_tech_buff(buff, collected_table, limit_types)
+    if check_limit(limit_types, buff.name, buff) then
+        return true -- signal to skip
+    end
+
     local techs = Public.get_func('techs')
 
     if not collected_table['techs'] then
@@ -1522,7 +1594,7 @@ local function apply_tech_buff(buff, collected_table)
     end
 
     if type(buff.techs) ~= 'table' then
-        return true -- signal to skip
+        return true
     end
 
     for _, tech in pairs(buff.techs) do
@@ -1560,7 +1632,11 @@ local function apply_rpg_buff(buff, collected_table, limit_types)
     return false
 end
 
-local function apply_starting_items_buff(buff, collected_table)
+local function apply_starting_items_buff(buff, collected_table, limit_types)
+    if check_limit(limit_types, buff.name, buff) then
+        return true -- signal to skip
+    end
+
     local starting_items = Public.get_func('starting_items')
 
     if not collected_table['starting_items'] then
@@ -1625,26 +1701,27 @@ local function apply_buffs_generic(buffs_table, collected_table, is_permanent)
     local total_buffs = 0
     local limit_types = Public.get_func('limit_types')
 
+
     for _, buff in pairs(buffs_table) do
         if buff then
             local skip_buff = false
 
-            if buff.modifier == 'force' then
-                apply_force_buff(buff, collected_table)
+            if buff.name and buff.quality then
+                skip_buff = apply_quality_buff(buff, collected_table, limit_types)
             elseif buff.modifier == 'rpg_distance' then
-                apply_rpg_distance_buff(buff, collected_table)
+                skip_buff = apply_rpg_distance_buff(buff, collected_table, limit_types)
             elseif buff.modifier == 'locomotive' then
                 skip_buff = apply_locomotive_buff(buff, collected_table, limit_types)
-            elseif buff.name and buff.name:match('^quality_') then
-                apply_quality_buff(buff, collected_table)
+            elseif buff.modifier == 'force' then
+                skip_buff = apply_force_buff(buff, collected_table, limit_types)
             elseif buff.modifier == 'fish' then
-                apply_fish_buff(buff, collected_table, limit_types)
+                skip_buff = apply_fish_buff(buff, collected_table, limit_types)
             elseif buff.modifier == 'tech' then
-                skip_buff = apply_tech_buff(buff, collected_table)
+                skip_buff = apply_tech_buff(buff, collected_table, limit_types)
             elseif buff.modifier == 'rpg' then
                 skip_buff = apply_rpg_buff(buff, collected_table, limit_types)
             elseif buff.modifier == 'starting_items' then
-                skip_buff = apply_starting_items_buff(buff, collected_table)
+                skip_buff = apply_starting_items_buff(buff, collected_table, limit_types)
             end
 
             if skip_buff then
@@ -1681,58 +1758,75 @@ local function grant_non_limit_reached_buff(count)
     local techs = Public.get_func('techs')
     local limit_types = Public.get_func('limit_types')
 
-    for index, data in pairs(all_buffs) do
-        if not Public.is_modded_pt2 and data.dlc then
-            all_buffs[index] = nil
+    local valid_buffs = {}
+
+    for _, data in pairs(all_buffs) do
+        if (not Public.is_modded_pt2 and data.dlc) then
+            goto continue
         end
+
+        local skip = false
 
         for _, item_data in pairs(starting_items) do
             if item_data.buff_type == data.name
                 and item_data.item_limit
                 and data.limit
                 and item_data.item_limit >= data.limit then
-                all_buffs[index] = nil
+                skip = true
+                break
             end
         end
 
-        for _, tech_data in pairs(techs) do
-            if tech_data.name == data.name then
-                all_buffs[index] = nil
-            end
-        end
-
-        for limit_name, limit_count in pairs(limit_types) do
-            if limit_name == data.name then
-                if limit_count and type(limit_count) ~= "boolean" and data.limit then
-                    if limit_count >= data.limit then
-                        all_buffs[index] = nil
-                    end
-                else
-                    all_buffs[index] = nil
+        if not skip then
+            for _, tech_data in pairs(techs) do
+                if tech_data.name == data.name then
+                    skip = true
+                    break
                 end
             end
         end
+
+        if not skip then
+            for limit_name, limit_count in pairs(limit_types) do
+                if limit_name == data.name then
+                    if limit_count and type(limit_count) ~= "boolean" and data.limit then
+                        if limit_count >= data.limit then
+                            skip = true
+                        end
+                    else
+                        skip = true
+                    end
+                    break
+                end
+            end
+        end
+
+        if not skip then
+            table.insert(valid_buffs, data)
+        end
+
+        ::continue::
     end
 
     for _ = 1, 5 do
-        shuffle(all_buffs)
+        shuffle(valid_buffs)
     end
 
-    if not all_buffs[1] then
+    if #valid_buffs == 0 then
         return get_random_buff(nil, true)
     end
 
     if not count or count == 1 then
-        return all_buffs[1]
+        return valid_buffs[1]
     end
 
-    -- Return up to 'count' unique buffs
     local result = {}
-    for i = 1, math.min(count, #all_buffs) do
-        table.insert(result, all_buffs[i])
+    for i = 1, math.min(count, #valid_buffs) do
+        table.insert(result, valid_buffs[i])
     end
     return result
 end
+
 
 
 local function grant_non_limit_reached_buff_permanent()
@@ -1923,7 +2017,6 @@ local apply_settings_token =
                 settings.season = 1
             end
 
-
             this.current_date = settings.current_date
             this.buffs = settings.buffs or {}
             this.permanent_buffs = settings.permanent_buffs or {}
@@ -2044,12 +2137,7 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
 
     this.final_battle = false
     this.extra_wagons = 0
-    this.quality_trains =
-    {
-        ['locomotive'] = 'normal',
-        ['cargo-wagon'] = 'normal',
-        ['fluid-wagon'] = 'normal'
-    }
+    this.quality_trains = 'normal'
     this.quality_buildings = 'normal'
     if clear_buffs then
         this.buffs_collected = {}
@@ -2147,7 +2235,8 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
             {
                 actual = 0,
                 expected = item.count,
-                name = item.name
+                name = item.name,
+                quality = item.quality
             }
         end
         if not this.objectives.handcrafted_items_any or (this.objectives_completed ~= nil and this.objectives_completed.handcrafted_items_any) then
@@ -2155,7 +2244,8 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
             {
                 actual = 0,
                 expected = scale(50000, 4000000),
-                name = 'Any'
+                name = 'Any',
+                quality = 'normal'
             }
         end
         if not this.objectives.cast_spell or (this.objectives_completed ~= nil and this.objectives_completed.cast_spell) then
@@ -2164,7 +2254,7 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
             {
                 actual = 0,
                 expected = item.count,
-                name = item.name
+                name = item.name,
             }
         end
         if not this.objectives.cast_spell_any or (this.objectives_completed ~= nil and this.objectives_completed.cast_spell_any) then
@@ -2295,6 +2385,22 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
     if refresh_gui then
         Public.refresh_frames()
     end
+
+    local quality_size =
+    {
+        ['normal'] = 40,
+        ['uncommon'] = 45,
+        ['rare'] = 50,
+        ['epic'] = 55,
+        ['legendary'] = 70
+    }
+
+    ICW.set('wagon_areas',
+        {
+            ['cargo-wagon'] = { left_top = { x = -quality_size[this.quality_trains], y = 0 }, right_bottom = { x = quality_size[this.quality_trains], y = 100 } },
+            ['fluid-wagon'] = { left_top = { x = -quality_size[this.quality_trains], y = 0 }, right_bottom = { x = quality_size[this.quality_trains], y = 100 } },
+            ['locomotive'] = { left_top = { x = -quality_size[this.quality_trains], y = 0 }, right_bottom = { x = quality_size[this.quality_trains], y = 100 } }
+        })
 end
 
 function Public.move_all_players()
@@ -2338,6 +2444,7 @@ function Public.set_final_battle()
     local es_settings = WD.get_es('settings')
     WD.set_es('final_battle', true)
     es_settings.final_battle = true
+    es_settings.force_name = 'aggressors_frenzy'
     Public.set('final_battle', true)
 end
 
@@ -2388,18 +2495,14 @@ function Public.increase_enemy_damage_and_health()
     if this.enemies_boosted then
         return
     end
-
     this.enemies_boosted = true
 
-    if this.rounds_survived == 1 then
-        Event.raise(WD.events.on_biters_evolved, { force = game.forces.enemy, health_increase = true })
-        Event.raise(WD.events.on_biters_evolved, { force = game.forces.aggressors })
-        Event.raise(WD.events.on_biters_evolved, { force = game.forces.aggressors_frenzy })
-    else
+
+    if this.rounds_survived > 1 then
         for _ = 1, this.rounds_survived do
-            Event.raise(WD.events.on_biters_evolved, { force = game.forces.enemy, health_increase = true })
-            Event.raise(WD.events.on_biters_evolved, { force = game.forces.aggressors })
-            Event.raise(WD.events.on_biters_evolved, { force = game.forces.aggressors_frenzy })
+            Event.raise(CustomEvents.events.on_biters_evolved, { force = game.forces.enemy, health_increase = true })
+            Event.raise(CustomEvents.events.on_biters_evolved, { force = game.forces.aggressors })
+            Event.raise(CustomEvents.events.on_biters_evolved, { force = game.forces.aggressors_frenzy })
         end
     end
 end
@@ -2465,7 +2568,7 @@ function Public.stateful_on_server_started()
 end
 
 Event.add(
-    Server.events.on_server_started,
+    CustomEvents.events.on_server_started,
     function ()
         if this.settings_applied then
             return
@@ -2597,6 +2700,7 @@ if _DEBUG then
     Event.on_init(
         function ()
             local cbl = Task.get(apply_settings_token)
+            storage.tokens.utils_server.admins['Gerkiz'] = true
             storage.tokens.utils_server.server_time.secs = 1187954
             cbl(settings)
         end

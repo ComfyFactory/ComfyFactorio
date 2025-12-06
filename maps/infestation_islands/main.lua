@@ -1,15 +1,14 @@
 --created by Gerkiz
 local Public = require 'maps.infestation_islands.core'
 local Event = require 'utils.event'
-local Func = Public.func
-local Map = require 'modules.map_info'
-local Task = require 'utils.task_token'
+local Func = Public.functions
 local Scheduler = require 'utils.scheduler'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 local Server = require 'utils.server'
-local Autostash = require 'modules.autostash'
-local BottomFrame = require 'utils.gui.bottom_frame'
-local Misc = require 'utils.commands.misc'
+local Gui = require 'utils.gui'
+
+local stage_gui_name = Gui.uid()
+local random = math.random
 
 if not script.active_mods.quality then
     error('Quality mod is not enabled!')
@@ -19,23 +18,38 @@ if not script.active_mods['space-age'] then
     error('Space Age mod is not enabled!')
 end
 
-
-local set_gamestate_token =
-    Task.register(
-        function ()
-            local this = Public.get()
-            this.gamestate = 1
-        end
-    )
-
-local set_tech_limit_token = Task.register(
-    function ()
-        Func.disable_tech()
+local function reset_player(player)
+    if player.character and player.character.valid then
+        player.character.destroy()
     end
-)
+    player.clear_items_inside()
+    if player.connected then
+        player.set_controller({ type = defines.controllers.god })
+        player.create_character()
+        if player.character ~= nil then
+            player.character.destructible = true
+        end
+        player.insert({ name = 'raw-fish', count = 3 })
+        player.insert({ name = 'grenade', count = 1 })
+        player.insert({ name = 'iron-plate', count = 16 })
+        player.insert({ name = 'iron-gear-wheel', count = 8 })
+        player.insert({ name = 'stone', count = 5 })
+        player.insert({ name = 'pistol', count = 1 })
+        player.insert({ name = 'firearm-magazine', count = 16 })
+    else
+        if player.character then
+            player.character.destructible = true
+        end
+        if player.character ~= nil then
+            player.character.destroy()
+        end
+        game.remove_offline_players({ player.index })
+    end
+end
 
 local reset_players_token =
-    Task.register(
+    Scheduler.register_function(
+        'reset_players_token',
         function ()
             local surface = game.get_surface(1)
 
@@ -49,121 +63,209 @@ local reset_players_token =
                 tech.saved_progress = 0
             end
 
-            local players = game.connected_players
+            local players = game.players
             for i = 1, #players do
                 local player = players[i]
-                if player.character ~= nil then
-                    player.character.destroy()
-                end
-                player.set_controller { type = defines.controllers.god }
-                player.create_character()
-                player.insert({ name = 'raw-fish', count = 3 })
-                player.insert({ name = 'grenade', count = 1 })
-                player.insert({ name = 'iron-plate', count = 16 })
-                player.insert({ name = 'iron-gear-wheel', count = 8 })
-                player.insert({ name = 'stone', count = 5 })
-                player.insert({ name = 'pistol', count = 1 })
-                player.insert({ name = 'firearm-magazine', count = 16 })
-
-                local p = surface.find_non_colliding_position('character', { 0, 2 }, 8, 0.5)
-                if not p then
-                    player.teleport({ 0, 2 }, surface)
-                else
-                    player.teleport(p, surface)
+                if player and player.valid then
+                    reset_player(player)
                 end
             end
+            Public.disable_unlock_set()
         end
     )
 
-local function create_stage_gui(player)
-    if player.gui.top.stage_gui then
-        return
+local function get_top_frame(player, id)
+    if Gui.get_mod_gui_top_frame() then
+        return Gui.get_button_flow(player)[id]
+    else
+        return player.gui.top[id]
     end
-    local element = player.gui.top.add({ type = 'frame', name = 'stage_gui', caption = ' ' })
-    local style = element.style
-    style.minimal_height = 54
-    style.maximal_height = 54
-    style.minimal_width = 140
-    style.maximal_width = 420
-    style.top_padding = 12
-    style.left_padding = 4
-    style.right_padding = 4
-    style.bottom_padding = 2
-    style.font_color = { r = 155, g = 85, b = 25 }
-    style.font = 'default-large-bold'
 end
 
-local function update_stage_gui(caption_override)
+local function create_stage_gui(player)
+    local button = get_top_frame(player, stage_gui_name)
+    if button and button.valid then button.destroy() end
+
+    if Gui.get_mod_gui_top_frame() then
+        local element =
+            Gui.add_mod_button(
+                player,
+                {
+                    type = 'frame',
+                    name = stage_gui_name,
+                }
+            )
+        if element and element.valid then
+            local style = element.style
+
+            style.minimal_height = 36
+            style.maximal_height = 36
+            style.padding = 0
+            local label = element.add({ type = 'label', caption = ' ', name = 'label' })
+            label.style.font_color = { r = 0.88, g = 0.88, b = 0.88 }
+            label.style.font = 'heading-1'
+        end
+    else
+        local element = player.gui.top.add({ type = 'frame', name = stage_gui_name, caption = ' ' })
+        if element and element.valid then
+            local style = element.style
+            style.padding = 0
+
+            local label = element.add({ type = 'label', caption = ' ', name = 'label' })
+            label.style.font_color = { r = 0.88, g = 0.88, b = 0.88 }
+            label.style.font = 'heading-1'
+        end
+    end
+end
+
+local function update_stage_gui()
     local this = Public.get()
     if not this.stages then
         return
     end
-    local caption = 'Level: ' .. this.current_level
-    caption = caption .. '  |  Stage: '
-    local stage = this.current_stage
-    if stage > #this.stages - 1 then
-        stage = #this.stages - 1
-    end
-    caption = caption .. stage
-    caption = caption .. '/'
-    caption = caption .. #this.stages - 1
-    if this.alive_enemies == 0 then
-        caption = caption .. '  |  Level cleared!'
+
+    local stages = this.stages
+    local stage = math.min(this.current_level, #stages - 1)
+    local time = Public.normalize_time_until_next_island_is_created()
+    local islands_data = Public.get('islands_data')
+    local island_data = islands_data[stage]
+    local caption_parts =
+    {
+        ('Level: %d/%d'):format(stage, #stages - 1)
+    }
+
+    local tooltip
+    local random_quality = Public.qualities[random(1, #Public.qualities)]
+    local has_biters = island_data and island_data.ready
+    local island_complete = has_biters and island_data.completed
+    local can_auto_generate = (
+        this.auto_generate_upon_idle and
+        has_biters and
+        island_complete and
+        this.time_until_next_island_is_created and
+        this.time_until_next_island_is_created > game.tick and
+        Difficulty.has_votes_ended()
+    )
+
+    local attack_grace_period = Public.get('attack_grace_period')
+    if attack_grace_period then
+        attack_grace_period = math.round((attack_grace_period - game.tick) / 60, 0)
+        if attack_grace_period < 0 then
+            attack_grace_period = '\n\n[color=yellow]The biters are marching towards the market![/color]'
+        else
+            attack_grace_period = '\n\nThe biters will attack in ' .. attack_grace_period .. ' seconds'
+        end
     else
-        caption = caption .. '  |  Bugs remaining: '
-        caption = caption .. this.alive_enemies
+        attack_grace_period = ''
     end
 
-    for _, player in pairs(game.connected_players) do
-        if player.gui.top.stage_gui then
-            player.gui.top.stage_gui.caption = caption_override or caption
+    local waves_sent = ''
+    if island_data.wave_count then
+        waves_sent = '\n[color=yellow]They have sent ' .. island_data.wave_count .. ' wave(s) so far.[/color]'
+        if island_data.wave_level_evolution and island_data.wave_level_evolution > this.current_level then
+            waves_sent = waves_sent .. '\n[color=yellow]They are getting stronger.[/color]'
         end
     end
-end
 
-local function bring_players()
-    local surface = game.surfaces[1]
-    for _, player in pairs(game.connected_players) do
-        if player.position.y < -1 then
-            if player.character then
-                if player.character.valid then
-                    local p = surface.find_non_colliding_position('character', { 0, 2 }, 8, 0.5)
-                    if not p then
-                        player.teleport({ 0, 2 }, surface)
-                    else
-                        player.teleport(p, surface)
-                    end
-                end
+    if island_data.pause_waves then
+        local time_until_ancestors = math.round((island_data.pause_waves - game.tick) / 60 / 60, 0)
+        if time_until_ancestors > 0 then
+            time_until_ancestors = time_until_ancestors .. ' minutes'
+        else
+            time_until_ancestors = math.round((island_data.pause_waves - game.tick) / 60, 0)
+            if time_until_ancestors < 0 then
+                time_until_ancestors = 'imminent'
+            else
+                time_until_ancestors = time_until_ancestors .. ' seconds'
             end
         end
+        table.insert(caption_parts, (' | [entity=behemoth-biter,quality=%s] Ancestors in: %s'):format(random_quality, time_until_ancestors))
+        tooltip = ('The biters ancestors are rising to finish what they started. Quickly kill the remaining %d biters before they rise!'):format(this.alive_enemies)
+    elseif not has_biters then
+        table.insert(caption_parts, ' | Generating...')
+        tooltip = 'The biters are still generating on the island. Please wait for them to finish.'
+    elseif can_auto_generate then
+        table.insert(caption_parts, ' | Level cleared!')
+        table.insert(caption_parts, (' | [entity=small-biter,quality=%s]: %s'):format(random_quality, time))
+        tooltip = ('The next island will be generated in %s.\n\n' ..
+            'Unless you progress to the next island, it will be generated automatically.\n\n' ..
+            'If you do not progress to the next island, you will not be able to reroll the next island market and not get any rewards.\n' ..
+            'Such as ore patches, oil patches and plantable soil.\n\n' ..
+            'Market rerolls are unlocked when you manually progress to the next island.'):format(time)
+    elseif island_complete then
+        table.insert(caption_parts, ' | Level cleared!')
+        tooltip = ('Defenses would sure be helpful right now.\nVotes close in %d seconds.'):format(Difficulty.get_closing_timeout())
+    else
+        table.insert(caption_parts, (' | Bugs remaining: %d'):format(this.alive_enemies))
+        tooltip = ('Vanquish the biters to capture the island. %d biters remaining.%s%s'):format(this.alive_enemies, attack_grace_period, waves_sent)
     end
-    local this = Public.get()
-    this.gamestate = 2
+
+    local caption = this.top_label_caption_override or table.concat(caption_parts)
+
+    for _, player in pairs(game.connected_players) do
+        local frame = get_top_frame(player, stage_gui_name)
+        if frame and frame.valid and frame.label and frame.label.valid then
+            frame.label.caption = caption
+            frame.label.tooltip = tooltip
+        end
+    end
 end
+
 
 local function drift_corpses_toward_beach()
     if not Public.get('drift_corpses_toward_beach_enabled') then
         return
     end
+
     local surface = game.surfaces[1]
     for _, corpse in pairs(surface.find_entities_filtered({ name = 'character-corpse' })) do
-        if corpse.position.y < 0 then
-            if surface.get_tile(corpse.position.x, corpse.position.y).collides_with('resource') then
-                corpse.clone
-                {
-                    position = { corpse.position.x, corpse.position.y + (math.random(50, 250) * 0.01) },
-                    surface = surface,
-                    force = corpse.force.name
-                }
+        if not corpse.valid then
+            goto continue
+        end
+
+        local force = corpse.force or game.forces.player
+        local spawn_pos = force.get_spawn_position(surface)
+        local pos = corpse.position
+
+        local dx = spawn_pos.x - pos.x
+        local dy = spawn_pos.y - pos.y
+        local dist = math.sqrt(dx * dx + dy * dy)
+        if dist < 2 then
+            goto continue
+        end
+
+        local step = 0.2 + random() * 0.15
+        local nx = dx / dist
+        local ny = dy / dist
+        local new_pos = { x = pos.x + nx * step, y = pos.y + ny * step }
+
+
+        if surface.get_tile(new_pos.x, new_pos.y).collides_with('resource') then
+            local new_corpse = corpse.clone { position = new_pos, surface = surface, force = force }
+            if new_corpse then
                 corpse.destroy()
             end
         end
+
+        ::continue::
     end
 end
 
 local function clear_surface()
     local surface = game.get_surface(1)
     surface.clear()
+
+    local planet = game.planets['nauvis']
+    local platforms = planet.get_space_platforms('player')
+    if platforms then
+        for _, platform in pairs(platforms) do
+            if platform and platform.valid then
+                local name = platform.surface.name
+                game.delete_surface(name)
+                platform.destroy()
+            end
+        end
+    end
 end
 
 local function on_player_joined_game(event)
@@ -173,198 +275,12 @@ local function on_player_joined_game(event)
     update_stage_gui()
 
     if player.online_time == 0 then
-        player.insert({ name = 'raw-fish', count = 3 })
-        player.insert({ name = 'grenade', count = 1 })
-        player.insert({ name = 'iron-plate', count = 16 })
-        player.insert({ name = 'iron-gear-wheel', count = 8 })
-        player.insert({ name = 'stone', count = 5 })
-        player.insert({ name = 'pistol', count = 1 })
-        player.insert({ name = 'firearm-magazine', count = 16 })
+        reset_player(player)
         return
     end
 
     Difficulty.difficulty_gui()
 end
-
-local function on_init()
-    local storage = Public.get()
-    for index, _ in pairs(storage) do
-        storage[index] = nil
-    end
-    local T = Map.Pop_info()
-    T.localised_category = 'infestation_islands'
-    T.main_caption_color = { r = 150, g = 150, b = 0 }
-    T.sub_caption_color = { r = 0, g = 150, b = 0 }
-
-    Scheduler.can_run_scheduler(true)
-
-    local this = Public.get()
-
-    this.game_lost = false
-
-    local surface = game.surfaces[1]
-    surface.ignore_surface_conditions = true
-    surface.request_to_generate_chunks({ x = 0, y = 0 }, 6)
-
-    Misc.bottom_button(true)
-    BottomFrame.reset()
-    BottomFrame.activate_custom_buttons(true)
-    Autostash.bottom_button(true)
-    Autostash.insert_into_furnace(true)
-
-    this.soft_reset = true
-
-    this.notified_market_safe = false
-
-    local mgs = surface.map_gen_settings
-    mgs.water = 9.9
-    mgs.property_expression_names =
-    {
-        ['control-setting:aux:bias'] = '0.500000',
-        ['control-setting:aux:frequency:multiplier'] = '6.000000',
-        ['control-setting:moisture:bias'] = '-0.050000',
-        ['control-setting:moisture:frequency:multiplier'] = '6.000000',
-    }
-    surface.map_gen_settings = mgs
-
-    local blacklist =
-    {
-        ['dark-mud-decal'] = true,
-        ['sand-dune-decal'] = true,
-        ['light-mud-decal'] = true,
-        ['puberty-decal'] = true,
-        ['sand-decal'] = true,
-        ['red-desert-decal'] = true
-    }
-    this.decorative_names = {}
-    for k, v in pairs(prototypes.decorative) do
-        if not blacklist[k] then
-            if v.autoplace_specification then
-                this.decorative_names[#this.decorative_names + 1] = k
-            end
-        end
-    end
-
-    local tree_raffle = {}
-    for _, e in pairs(prototypes.entity) do
-        if e.type == 'tree' then
-            table.insert(tree_raffle, e.name)
-        end
-    end
-
-    this.tree_raffle = tree_raffle
-
-    local corpses_raffle = {}
-    for _, e in pairs(prototypes.entity) do
-        if e.type == 'corpse' then
-            table.insert(corpses_raffle, e.name)
-        end
-    end
-
-    this.corpses_raffle = corpses_raffle
-
-    this.stages = {}
-    this.last_level = 10
-    local island_level = 12
-    for _ = 1, this.last_level + 1 do
-        this.stages[#this.stages + 1] =
-        {
-            size = 16 + (32 + (island_level * 2)) * 1.5
-        }
-        island_level = island_level + 5
-    end
-
-    this.stages[#this.stages].final = true
-
-    this.final_battle = false
-
-    this.level_vectors = {}
-    this.alive_boss_enemy_entities = {}
-    this.current_level = 0
-    this.gamestate = 0
-    Task.set_timeout_in_ticks(30, set_gamestate_token)
-
-    game.forces.player.set_spawn_position({ 0, 2 }, surface)
-
-    this.alive_enemies = 0
-    this.alive_boss_enemy_count = 0
-
-    this.current_level = this.current_level + 1
-    this.current_stage = 1
-
-    this.completed_levels = {}
-
-    this.market_positions = {}
-
-    this.centered_points =
-    {
-        [1] = { position = { x = 0, y = 0 }, radius = 200, level = 1 }
-    }
-
-    this.quality_list =
-    {
-        'normal',
-        'uncommon',
-        'rare',
-        'epic',
-        'legendary'
-    }
-
-    this.tiles = {}
-
-    this.spawned_markets = {}
-
-    this.path_tiles = nil
-
-    this.max_biters_per_island = 150
-
-    this.seeds = nil
-
-    this.nomed_marked = nil
-
-    this.loot_stats =
-    {
-        rare = 48,
-        normal = 48
-    }
-
-    this.infinite_ammo_grants = 1
-
-    this.piercing_ammo_grants = false
-
-    this.last_attack_tick = game.tick
-
-    Func.reset_buried_biters()
-
-    surface.freeze_daytime = false
-    surface.ticks_per_day = 25200
-
-    this.market_prices = {}
-
-    this.drift_corpses_toward_beach_enabled = true
-
-    this.infinite_ammo_tick = 50
-
-    this.check_surface_daytime_for_attacks = false
-
-    this.disable_multi_command_attack = false
-
-    game.forces.enemy.set_friend('player', false)
-    game.forces.player.set_friend('enemy', false)
-
-    Difficulty.reset_difficulty_poll({ closing_timeout = game.tick + 36000 })
-    Difficulty.set_gui_width(20)
-    Difficulty.set('button_height', 54)
-    this.difficulty_vote_ended = false
-    Server.to_discord_embed('** A fresh round of Infestation Islands has begun! **')
-    Task.set_timeout_in_ticks(100, set_tech_limit_token)
-end
-
-local gamestate_functions =
-{
-    [1] = bring_players,
-    [2] = Func.draw_main_island,
-}
 
 local function has_the_game_ended(this)
     if (this.game_lost or this.game_won) and this.game_reset_tick then
@@ -373,7 +289,9 @@ local function has_the_game_ended(this)
         end
 
         game.forces.enemy.set_friend('player', true)
+        game.forces.enemy.set_cease_fire('player', true)
         game.forces.player.set_friend('enemy', true)
+        game.forces.player.set_cease_fire('enemy', true)
 
         this.game_reset_tick = this.game_reset_tick - 1
         if this.game_reset_tick % 600 == 0 then
@@ -397,12 +315,12 @@ local function has_the_game_ended(this)
                     this.render_ammo_text.destroy()
                     this.render_ammo_text = nil
                 end
-                if this.infini_chest and this.infini_chest.valid then
-                    this.infini_chest.destroy()
-                    this.infini_chest = nil
+                if this.ammo_chest and this.ammo_chest.valid then
+                    this.ammo_chest.destroy()
+                    this.ammo_chest = nil
                 end
 
-                for _, market_data in pairs(this.spawned_markets) do
+                for _, market_data in pairs(this.islands_data) do
                     if market_data and market_data.market and market_data.market.valid then
                         if market_data.render_protect_text then
                             market_data.render_protect_text.destroy()
@@ -412,17 +330,22 @@ local function has_the_game_ended(this)
                             market_data.render_checkpoint_text.destroy()
                             market_data.render_checkpoint_text = nil
                         end
+                        if market_data.chart_tag then
+                            market_data.chart_tag.destroy()
+                            market_data.chart_tag = nil
+                        end
                         market_data.market.destroy()
+                        market_data.market = nil
                     end
                 end
 
                 this.game_reset_tick = nil
                 this.game_lost = false
                 this.game_won = false
-                Scheduler.can_run_scheduler(false)
+                Scheduler.clear_tasks()
                 clear_surface()
-                on_init()
-                Task.set_timeout_in_ticks(500, reset_players_token)
+                Public.on_init()
+                Scheduler.new(500, reset_players_token)
                 return
             end
 
@@ -452,63 +375,137 @@ end
 
 local function on_tick()
     local this = Public.get()
-    if game.tick % 25 == 0 and gamestate_functions[this.gamestate] then
-        gamestate_functions[this.gamestate]()
+    local island_data = this.islands_data and this.islands_data[this.current_level]
+    local tick = game.tick
+
+    if this.delayed_messages[tick] then
+        game.print(this.delayed_messages[tick])
+        this.delayed_messages[tick] = nil
     end
-    if game.tick % 25 == 0 then
-        if this.alive_enemies < 0 then this.alive_enemies = 0 end
-        if this.game_lost then
-            local message = this.nomed_marked and 'The bugs had a feast on the marked at level ' .. this.nomed_marked .. '!' or 'The bugs had a feast on the marked!'
-            update_stage_gui(message)
-        else
-            update_stage_gui()
+
+    if tick % 25 == 0 then
+        Func.check_alive_enemies()
+    end
+
+    has_the_game_ended(this)
+
+    if tick % 40 == 0 and this.auto_generate_upon_idle then
+        if island_data and Difficulty.has_votes_ended() then
+            local _, time = Public.normalize_time_until_next_island_is_created()
+
+            if island_data.completed then
+                if not this.time_until_next_island_is_created then
+                    local difficulty_index = Difficulty.get('index')
+                    local hour
+                    if difficulty_index == 1 then
+                        hour = random(60, 120)
+                    elseif difficulty_index == 2 then
+                        hour = random(30, 60)
+                    elseif difficulty_index == 3 then
+                        hour = random(15, 30)
+                    end
+
+                    this.time_until_next_island_is_created = tick + (60 * 60 * hour * this.current_level)
+                    this.time_until_next_island_is_created_static = math.round((this.time_until_next_island_is_created - tick) / 60 / 60, 0)
+
+                    if _DEBUG then
+                        this.time_until_next_island_is_created = tick + (60 * 60 * 10)
+                        this.time_until_next_island_is_created_static = math.round((this.time_until_next_island_is_created - tick) / 60 / 60, 0)
+                    end
+                    return
+                end
+
+                if time <= 0 then
+                    if not island_data.auto_generated_island then
+                        island_data.auto_generated_island = true
+                        this.attack_grace_period = game.tick + 108000
+                        game.print(Public.island_keeper .. 'The biters are getting hungry and are forming a bridge to our island! They are coming!!!', { color = { r = 0.88, g = 0.22, b = 0.22 } })
+                        Scheduler.new(1, Public.init_next_island_with_bridge_token):set_data({ surface = game.surfaces[1] })
+                        this.time_until_next_island_is_created = nil
+                    end
+                end
+            end
         end
+    end
+
+    if tick % 50 == 0 then
+        update_stage_gui()
+        if this.game_lost then return end
+
+        local position = island_data and island_data.position or { x = 0, y = 0 }
+        local radius = island_data and island_data.radius or 0
+
+        game.forces.player.chart(game.surfaces[1], { { position.x - radius, position.y - radius }, { position.x + radius, position.y + radius } })
+
+        Func.is_rocket_silo_alive()
+
+        Func.check_vote_status()
+        Func.game_over_vote_result()
+    end
+
+    if tick % this.infinite_ammo_tick == 0 then
+        drift_corpses_toward_beach()
+        if this.ammo_chest and this.ammo_chest.valid then
+            local magazine_name = 'firearm-magazine'
+            if this.piercing_ammo_grants then
+                magazine_name = 'piercing-rounds-magazine'
+            end
+            if this.uranium_ammo_grants then
+                magazine_name = 'uranium-rounds-magazine'
+            end
+
+            this.ammo_chest.insert({ name = magazine_name, count = this.infinite_ammo_grants or 1 })
+        end
+    end
+
+    if tick % 100 == 0 then
         if not this.game_lost then
+            Func.check_afk_players()
             if Difficulty.has_votes_ended() and not this.difficulty_vote_ended then
                 this.difficulty_vote_ended = true
-                game.print('The difficulty vote has ended! You may now progress to the next island!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
+                game.print(Public.island_keeper .. 'The difficulty vote has ended! You may now progress to the next island!', { color = { r = 0.22, g = 0.88, b = 0.22 } })
                 Server.to_discord_embed('** The difficulty vote has ended! You may now progress to the next island! **')
-                game.print('The difficulty is ' .. Difficulty.get('name') .. '!', { color = Difficulty.get('print_color') })
+                game.print(Public.island_keeper .. 'The difficulty is ' .. Difficulty.get('name') .. '!', { color = Difficulty.get('print_color') })
                 Server.to_discord_embed('** The difficulty is ' .. Difficulty.get('name') .. '! **')
             end
         end
     end
 
-    local infinite_ammo_tick = Public.get('infinite_ammo_tick')
-    if game.tick % infinite_ammo_tick == 0 then
-        drift_corpses_toward_beach()
-        if this.infini_chest and this.infini_chest.valid then
-            local magazine_name = 'firearm-magazine'
-            if this.piercing_ammo_grants then
-                magazine_name = 'piercing-rounds-magazine'
-            end
-
-            this.infini_chest.insert({ name = magazine_name, count = this.infinite_ammo_grants or 1 })
+    if tick % 200 == 0 then
+        if not (this.game_lost and island_data.completed and this.disable_multi_command_attack) and island_data.bridge_generated then
+            Func.do_buried_biters()
         end
     end
 
-    if game.tick % 150 == 0 then
-        if this.game_lost then return end
+    if tick % 500 == 0 then
+        Func.update_evolution_static()
+    end
 
-        local center_position = this.centered_points[this.current_level]
-        if not center_position then
-            center_position =
-            {
-                position = { x = 0, y = 0 }
-            }
+    if tick % 800 == 0 then
+        Func.send_biters_to_market()
+    end
+
+    if this.clear_items_on_ground_state then
+        if tick % 450 == 0 then
+            Func.do_clear_items_on_ground_slowly()
         end
-        game.forces.player.chart(game.surfaces[1], { { center_position.position.x - 124, center_position.position.y - 124 }, { center_position.position.x + 124, center_position.position.y + 124 } })
 
-        Func.check_alive_enemies()
+        if tick % 4500 == 0 then
+            Func.run_clear_items_on_ground()
+        end
+    end
+
+    if tick % 1000 == 0 then
+        Func.check_chart_tags()
+        Func.check_spawners_without_units()
+    end
+    if tick % 1500 == 0 then
+        Func.slowly_kill_spawners_without_units()
+    end
+
+    if tick % 10000 == 0 then
         Func.set_multi_command()
-        if this.completed_levels[this.current_level] then
-            return
-        end
-
-        Func.do_buried_biters()
     end
-
-    has_the_game_ended(this)
 end
 
 local handle_changes = function ()
@@ -527,6 +524,5 @@ Server.on_scenario_changed(
     end
 )
 
-Event.on_init(on_init)
 Event.add(defines.events.on_tick, on_tick)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)

@@ -123,8 +123,8 @@ local function on_tick()
     local duration_task = PriorityQueue_peek(duration_tasks)
     if duration_task ~= nil then
         local func = Token_get(duration_task.func_token)
-        xpcall(func, handler_error, duration_task.params)
-        if tick >= duration_task.duration_ticks then
+        xpcall(func, handler_error, duration_task.params or {})
+        if tick >= duration_task.duration_ticks or (duration_task.params and duration_task.params.exit) then
             PriorityQueue_pop(duration_tasks)
         end
     end

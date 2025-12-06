@@ -434,6 +434,33 @@ function Public.validate_player(player_ident, check_admin)
     return player, player.name, player.index
 end
 
+--- Logs a flat table with the given label
+---@param tbl table
+function Public.log_flat(tbl)
+    local label = 'Flat table'
+    if type(tbl) ~= "table" then
+        log(label and (label .. ": " .. tostring(tbl)) or tostring(tbl))
+        return
+    end
+
+    local flat = {}
+    for k, v in pairs(tbl) do
+        local vt = type(v)
+        if vt == "table" then
+            flat[k] = "[table]"
+        elseif vt == "function" then
+            flat[k] = "[function]"
+        elseif vt == "userdata" then
+            flat[k] = "[userdata]"
+        else
+            flat[k] = v
+        end
+    end
+
+    local msg = (label and (label .. ": ") or "") .. serpent.block(flat, { comment = false, numformat = "%g" })
+    log(msg)
+end
+
 -- add utility functions that exist in base factorio/util
 require 'util'
 
@@ -454,5 +481,7 @@ Public.opposite_direction = util.oppositedirection
 -- @param name <string> the name of the module (ex. 'utils.core')
 -- @return <boolean>
 Public.is_module_available = util.ismoduleavailable
+
+Public.log = Public.log_flat
 
 return Public

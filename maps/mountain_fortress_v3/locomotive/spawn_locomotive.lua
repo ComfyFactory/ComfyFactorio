@@ -156,19 +156,15 @@ local set_loco_cargo =
 function Public.locomotive_spawn(surface, position, reversed)
     local this = Public.get()
     local extra_wagons = Public.get_stateful('extra_wagons')
-    local quality_trains = Public.get_stateful('quality_trains')
+    local stateful = Public.get_stateful()
+
 
     if not extra_wagons then
         extra_wagons = 0
     end
 
-    if not quality_trains then
-        quality_trains =
-        {
-            ['locomotive'] = 'normal',
-            ['cargo_wagon'] = 'normal',
-            ['fluid_wagon'] = 'normal'
-        }
+    if not stateful.quality_trains then
+        stateful.quality_trains = 'normal'
     end
 
     if reversed then
@@ -176,12 +172,12 @@ function Public.locomotive_spawn(surface, position, reversed)
         for y = -6, 6, 2 do
             surface.create_entity({ name = 'straight-rail', position = { position.x, position.y + y }, force = 'player', direction = 0 })
         end
-        this.locomotive = surface.create_entity({ name = 'locomotive', position = { position.x, position.y + -3 }, force = 'player', direction = defines.direction.south, quality = quality_trains.locomotive })
+        this.locomotive = surface.create_entity({ name = 'locomotive', position = { position.x, position.y + -3 }, force = 'player', direction = defines.direction.south, quality = stateful.quality_trains })
         if this.locomotive and this.locomotive.valid then
             this.locomotive.get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 100 })
         end
 
-        this.locomotive_cargo = surface.create_entity({ name = 'cargo-wagon', position = { position.x, position.y + 3 }, force = 'player', direction = defines.direction.south, quality = quality_trains.cargo_wagon })
+        this.locomotive_cargo = surface.create_entity({ name = 'cargo-wagon', position = { position.x, position.y + 3 }, force = 'player', direction = defines.direction.south, quality = stateful.quality_trains })
         if this.locomotive_cargo and this.locomotive_cargo.valid then
             this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'raw-fish', count = 8 })
         end
@@ -189,12 +185,12 @@ function Public.locomotive_spawn(surface, position, reversed)
         for y = -6, 6, 2 do
             surface.create_entity({ name = 'straight-rail', position = { position.x, position.y + y }, force = 'player', direction = 0 })
         end
-        this.locomotive = surface.create_entity({ name = 'locomotive', position = { position.x, position.y + -3 }, force = 'player', quality = quality_trains.locomotive })
+        this.locomotive = surface.create_entity({ name = 'locomotive', position = { position.x, position.y + -3 }, force = 'player', quality = stateful.quality_trains })
         if this.locomotive and this.locomotive.valid then
             this.locomotive.get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 100 })
         end
 
-        this.locomotive_cargo = surface.create_entity({ name = 'cargo-wagon', position = { position.x, position.y + 3 }, force = 'player', quality = quality_trains.cargo_wagon })
+        this.locomotive_cargo = surface.create_entity({ name = 'cargo-wagon', position = { position.x, position.y + 3 }, force = 'player', quality = stateful.quality_trains })
         if this.locomotive_cargo and this.locomotive_cargo.valid then
             this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'raw-fish', count = 8 })
         end
@@ -287,7 +283,7 @@ function Public.locomotive_spawn(surface, position, reversed)
         end
 
         for _ = 1, extra_wagons do
-            local new_wagon = surface.create_entity({ name = 'cargo-wagon', position = new_position, force = 'player', defines.direction.north })
+            local new_wagon = surface.create_entity({ name = 'cargo-wagon', position = new_position, force = 'player', defines.direction.north, quality = stateful.quality_trains })
             if new_wagon and new_wagon.valid then
                 new_wagon.minable_flag = false
                 new_wagon.operable = true

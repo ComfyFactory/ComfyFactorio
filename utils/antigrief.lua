@@ -13,6 +13,7 @@ local FancyTime = require 'utils.tools.fancy_time'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Discord = require 'utils.discord_handler'
+local Config = require 'utils.gui.config'
 
 local Public = {}
 local match = string.match
@@ -60,9 +61,8 @@ local this =
     players_warn_on_long_texts = {},
     on_cancelled_deconstruction = { tick = 0, count = 0 },
     limit = 2000,
-    admin_button_validation = {}
+    admin_button_validation = {},
 }
-
 local ammo_names =
 {
     ['artillery-targeting-remote'] = true,
@@ -108,6 +108,49 @@ Global.register(
         this = t
     end
 )
+
+local function trust_connected_players()
+    local trust = Session.get_trusted_table()
+    local players = game.connected_players
+    if not this.enabled then
+        for _, p in pairs(players) do
+            trust[p.name] = true
+        end
+    else
+        for _, p in pairs(players) do
+            trust[p.name] = false
+        end
+    end
+end
+
+Config.register_scenario_module(
+    {
+        id = "antigrief",
+        admin_only = true,
+        gui_rows = Config.register_token(
+            function (_, frame)
+                local switch_state = 'right'
+                if this.enabled then
+                    switch_state = 'left'
+                end
+                Config.add_switch(frame, switch_state, 'disable_antigrief', 'Antigrief', 'Toggle antigrief function.')
+                frame.add({ type = 'line' })
+            end),
+        handlers =
+        {
+            ['disable_antigrief'] = Config.register_token(
+                function (_, event)
+                    if event.element.switch_state == 'left' then
+                        this.enabled = true
+                        Config.get_actor(event, '[Antigrief]', 'has enabled the antigrief function.', true)
+                    else
+                        this.enabled = false
+                        Config.get_actor(event, '[Antigrief]', 'has disabled the antigrief function.', true)
+                    end
+                    trust_connected_players()
+                end)
+        }
+    })
 
 local function increment(t, v)
     t[#t + 1] = (v or 1)
@@ -204,30 +247,21 @@ local function do_action(player, prefix, msg, ban_msg, kill)
 end
 
 local function on_marked_for_deconstruction(event)
-    if not this.enabled then
-        return
-    end
-
-    if not event.player_index then
-        return
-    end
+    if not this.enabled or not event.player_index then return end
 
     local player = game.get_player(event.player_index)
-    if not player or not player.valid then
-        return
-    end
-
-    if Session.get_trusted_player(player) or this.do_not_check_trusted then
-        return
-    end
+    if not player or not player.valid then return end
+    if this.do_not_check_trusted then return end
 
     local playtime = player.online_time
+    local is_trusted = Session.get_trusted_player(player)
     if Session.get_session_player(player) then
         playtime = player.online_time + Session.get_session_player(player)
     end
-    if playtime < this.required_playtime then
-        event.entity.cancel_deconstruction(game.get_player(event.player_index).force.name)
-        player.print('You have not grown accustomed to this technology yet.', { color = { r = 0.22, g = 0.99, b = 0.99 } })
+    if playtime < this.required_playtime and not is_trusted then
+        event.entity.cancel_deconstruction(player.force.name, player.index)
+        player.print('You are not accustomed to deconstructing yet.', { r = 0.22, g = 0.99, b = 0.99 })
+        return
     end
 end
 
@@ -331,6 +365,7 @@ local function on_built_entity(event)
         if player.admin then
             return
         end
+
         if Session.get_trusted_player(player) or this.do_not_check_trusted then
             return
         end
@@ -342,7 +377,7 @@ local function on_built_entity(event)
 
         if playtime < this.required_playtime then
             created_entity.destroy()
-            player.print('You have not grown accustomed to this technology yet.', { color = { r = 0.22, g = 0.99, b = 0.99 } })
+            player.print('You are not accustomed to building blueprints yet.', { color = { r = 0.22, g = 0.99, b = 0.99 } })
         end
     end
 end
@@ -976,9 +1011,6 @@ local function on_player_deconstructed_area(event)
             area = area,
             force = player.force
         }
-        if not is_trusted then
-            return
-        end
 
         local msg = '[Deconstruct] ' .. player.name .. ' tried to deconstruct: ' .. count .. ' entities!'
         Utils.print_to(nil, msg)

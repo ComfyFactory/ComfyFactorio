@@ -4,18 +4,20 @@ local Global = require 'utils.global'
 local Server = require 'utils.server'
 local Event = require 'utils.event'
 local table = require 'utils.table'
+local CustomEvents = require 'utils.created_events'
 
 local supporters_dataset = 'supporters'
 
 local Public = {}
 
-local this = {
+local this =
+{
     supporters = {}
 }
 
 Global.register(
     this,
-    function(tbl)
+    function (tbl)
         this = tbl
     end
 )
@@ -30,19 +32,19 @@ end
 --- Writes the data called back from the server into the supporter table, clearing any previous entries
 local sync_supporters_callback =
     Token.register(
-    function(data)
-        if not data then
-            return
+        function (data)
+            if not data then
+                return
+            end
+            if not data.entries then
+                return
+            end
+            table.clear_table(this.supporters)
+            for k, v in pairs(data.entries) do
+                this.supporters[k] = v
+            end
         end
-        if not data.entries then
-            return
-        end
-        table.clear_table(this.supporters)
-        for k, v in pairs(data.entries) do
-            this.supporters[k] = v
-        end
-    end
-)
+    )
 
 --- Signals the server to retrieve the supporters dataset
 function Public.sync_supporters()
@@ -51,14 +53,14 @@ end
 
 Server.on_data_set_changed(
     supporters_dataset,
-    function(data)
+    function (data)
         this.supporters[data.key] = data.value
     end
 )
 
 Event.add(
-    Server.events.on_server_started,
-    function()
+    CustomEvents.events.on_server_started,
+    function ()
         Public.sync_supporters()
     end
 )
