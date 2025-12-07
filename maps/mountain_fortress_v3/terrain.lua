@@ -3548,7 +3548,7 @@ local function zone_7_garden(x, y, data, void_or_lab, adjusted_zones)
     local noise_ores = Public.get_noise('no_rocks_2', p, seed + seed)
 
     if cave_rivers_3 > -0.20 and cave_rivers_3 < 0.20 then
-        tiles[#tiles + 1] = { name = (adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)] or 'grass-') .. floor(cave_rivers_3 * 32) % 3 + 1, position = p }
+        tiles[#tiles + 1] = { name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)] or ('grass-' .. floor(cave_rivers_3 * 32) % 3 + 1), position = p }
         if cave_rivers_3 > -0.10 and cave_rivers_3 < 0.10 then
             if random(1, 8) == 1 and no_rocks_2 > -0.25 then
                 entities[#entities + 1] = { name = 'tree-01', position = p }
@@ -3573,7 +3573,7 @@ local function zone_7_garden(x, y, data, void_or_lab, adjusted_zones)
     end
 
     if cave_rivers_4 > -0.20 and cave_rivers_4 < 0.20 then
-        tiles[#tiles + 1] = { name = (adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)] or 'grass-') .. floor(cave_rivers_4 * 32) % 3 + 1, position = p }
+        tiles[#tiles + 1] = { name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)] or ('grass-' .. floor(cave_rivers_4 * 32) % 3 + 1), position = p }
         if cave_rivers_4 > -0.10 and cave_rivers_4 < 0.10 then
             local success = place_wagon(data, adjusted_zones)
             if success then
@@ -5406,6 +5406,11 @@ local function process_bits(p, data, adjusted_zones)
         end
     end
 
+    if not adjusted_zones.zone_by_index then
+        adjusted_zones.zone_by_index = {}
+    end
+    adjusted_zones.zone_by_index[index] = adjusted_zones.shuffled_zones[index]
+
     local x = p.x
     local y = p.y
 
@@ -5428,7 +5433,7 @@ local function border_chunk(p, data, dec_tbl)
     game.forces.player.chart(surface, { { p.x - 32, p.y - 32 }, { p.x + 32, p.y + 32 } })
 
     local noise = Public.get_noise('cave_rivers_2', pos, data.seed)
-    local index = floor(noise * 32) % 11 + 1
+    local index = floor(noise * 32) % 10 + 1
     local tile = surface.get_tile(pos)
     local starting_planet = Public.get_planet()
     if tile and tile.valid and tile.name ~= 'black-refined-concrete' then
@@ -5530,7 +5535,7 @@ local function biter_chunk(p, data)
     end
 
     local noise = Public.get_noise('cave_rivers_2', pos, data.seed)
-    local index = floor(noise * 32) % 11 + 1
+    local index = floor(noise * 32) % 10 + 1
     local tile = surface.get_tile(pos)
     local starting_planet = Public.get_planet()
     if tile and tile.valid and tile.name ~= 'black-refined-concrete' then
