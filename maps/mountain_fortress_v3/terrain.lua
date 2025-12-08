@@ -5398,7 +5398,7 @@ local function process_bits(p, data, adjusted_zones)
 
     local generate_zone
     if adjusted_zones.starting_zone and depth then
-        generate_zone = zone_3
+        generate_zone = zone_1
     else
         generate_zone = zones[adjusted_zones.shuffled_zones[index]].fn
         if not generate_zone then
