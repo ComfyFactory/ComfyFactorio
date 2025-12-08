@@ -2482,7 +2482,7 @@ local function zone_vulcanus_1(x, y, data, _, adjusted_zones)
         --Main Rock Terrain
         local no_rocks_2 = Public.get_noise('no_rocks_2', p, seed + seed)
         if no_rocks_2 > 0.80 or no_rocks_2 < -0.80 then
-            tiles[#tiles + 1] = { name = (adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)] or 'dirt-') .. floor(no_rocks_2 * 8) % 2 + 5, position = p }
+            tiles[#tiles + 1] = { name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)] or ('dirt-' .. floor(no_rocks_2 * 8) % 2 + 5), position = p }
             if random(1, 512) == 1 then
                 spawn_treasure(data, p, 'wooden-chest')
             end
@@ -2660,7 +2660,7 @@ local function zone_aquilo_1(x, y, data, void_or_lab, adjusted_zones)
         --Main Rock Terrain
         local no_rocks_2 = Public.get_noise('no_rocks_2', p, seed + seed)
         if no_rocks_2 > 0.80 or no_rocks_2 < -0.80 then
-            tiles[#tiles + 1] = { name = (adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)] or 'dirt-') .. floor(no_rocks_2 * 8) % 2 + 5, position = p }
+            tiles[#tiles + 1] = { name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)] or ('dirt-' .. floor(no_rocks_2 * 8) % 2 + 5), position = p }
             if random(1, 512) == 1 then
                 spawn_treasure(data, p, 'wooden-chest')
             end
