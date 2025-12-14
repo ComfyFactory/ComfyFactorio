@@ -80,6 +80,8 @@ local start_aquilo_tiles =
 
 if not has_space_age() then
     start_vulcanus_tiles = vanilla_start_ground_tiles
+    start_aquilo_tiles = vanilla_start_ground_tiles
+    start_fulgora_tiles = vanilla_start_ground_tiles
 end
 
 local out_of_map_tile = 'out-of-map'
@@ -5145,6 +5147,9 @@ local function fortress_callback(x, y, data)
     local seed = data.seed + 10000
     local entities = data.entities
     local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed + seed)
+    if not Public.is_modded_pt2 then
+        return
+    end
 
     if noise_cave_ponds > 0.65 then
         if noise_cave_ponds > 0.80 then
@@ -5395,6 +5400,8 @@ local function process_bits(p, data, adjusted_zones)
         adjusted_zones.size_of = size_of_rock_raffle
         adjusted_zones.tiles_raffle = start_aquilo_tiles
     end
+
+
 
     local generate_zone
     if adjusted_zones.starting_zone and depth then

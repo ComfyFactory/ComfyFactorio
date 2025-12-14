@@ -222,7 +222,7 @@ Event.add(
                 return
             end
 
-            if item.quality.name ~= handcrafted_items.quality then
+            if handcrafted_items.quality and handcrafted_items.quality ~= item.quality.name then
                 return
             end
 
