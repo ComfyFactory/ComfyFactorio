@@ -1264,8 +1264,6 @@ local function get_random_handcrafted_item()
         { 'efficiency-module', scale(100, 50000) },
         { 'productivity-module', scale(100, 50000) },
         { 'speed-module', scale(100, 50000) },
-        { 'cooked-fish', scale(100, 50000) },
-        { 'grilled-fish', scale(100, 50000) },
     }
 
     if Public.is_modded_pt2 then
