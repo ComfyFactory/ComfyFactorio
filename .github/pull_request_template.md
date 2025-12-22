@@ -4,7 +4,7 @@
 
 ### Tested Changes:
 
-1. [ ] Have you lint your code (lua lint) locally prior to submission?
+1. [ ] Have you lint your code (`luacheck .`) locally prior to submission?
 
 ### Changes to Core Features:
 
