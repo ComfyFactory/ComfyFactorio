@@ -286,9 +286,14 @@ end
 local function check_entity_for_items(item)
     local items = this.settings.valid_items
     for name, damage in pairs(items) do
-        local amount = item.get_item_count(name)
-        if amount and amount > 1 then
-            return amount, damage
+        local total_amount = 0
+        for _, quality in pairs(prototypes.quality) do
+            local amount = item.get_item_count({ name = name, quality = quality.name })
+            total_amount = total_amount + amount
+        end
+
+        if total_amount > 1 then
+            return total_amount, damage
         end
     end
     return false

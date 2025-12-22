@@ -1096,6 +1096,28 @@ local function scale_lin(setting, limit, factor)
     return floor(scale_value)
 end
 
+local function make_entry(item)
+    local quality_multiplier =
+    {
+        normal = 1.0,
+        uncommon = 0.75,
+        rare = 0.5,
+        epic = 0.25,
+        legendary = 0.1
+    }
+
+    local quality = get_random_quality()
+    local multiplier = quality_multiplier[quality] or 1
+    local count = math.floor(item[2] * multiplier)
+
+    return
+    {
+        name = item[1],
+        count = math.max(1, count),
+        quality = quality
+    }
+end
+
 local function get_random_items()
     local items =
     {
@@ -1147,22 +1169,23 @@ local function get_random_items()
 
     local container =
     {
-        [1] = { name = items[1][1], count = items[1][2], quality = get_random_quality() },
-        [2] = { name = items[2][1], count = items[2][2], quality = get_random_quality() },
-        [3] = { name = items[3][1], count = items[3][2], quality = get_random_quality() }
+        [1] = make_entry(items[1]),
+        [2] = make_entry(items[2]),
+        [3] = make_entry(items[3])
     }
 
     if this.test_mode then
         container =
         {
-            [1] = { name = items[1].products[1].name, count = 1, quality = get_random_quality() },
-            [2] = { name = items[2].products[1].name, count = 1, quality = get_random_quality() },
-            [3] = { name = items[3].products[1].name, count = 1, quality = get_random_quality() }
+            [1] = { name = items[1][1], count = 1, quality = get_random_quality() },
+            [2] = { name = items[2][1], count = 1, quality = get_random_quality() },
+            [3] = { name = items[3][1], count = 1, quality = get_random_quality() }
         }
     end
 
     return container
 end
+
 
 local function get_random_item()
     local items =
@@ -1201,7 +1224,7 @@ local function get_random_item()
     shuffle(items)
     shuffle(items)
 
-    return { name = items[1][1], count = items[1][2], quality = get_random_quality() }
+    return make_entry(items[1])
 end
 
 local function get_random_handcrafted_item()
@@ -1241,8 +1264,6 @@ local function get_random_handcrafted_item()
         { 'efficiency-module', scale(100, 50000) },
         { 'productivity-module', scale(100, 50000) },
         { 'speed-module', scale(100, 50000) },
-        { 'cooked-fish', scale(100, 50000) },
-        { 'grilled-fish', scale(100, 50000) },
     }
 
     if Public.is_modded_pt2 then
@@ -1254,8 +1275,9 @@ local function get_random_handcrafted_item()
     shuffle(items)
     shuffle(items)
 
-    return { name = items[1][1], count = items[1][2], quality = 'normal' }
+    return { name = items[1][1], count = items[1][2] }
 end
+
 
 local function get_random_spell()
     local items =

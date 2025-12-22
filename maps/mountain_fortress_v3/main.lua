@@ -620,6 +620,10 @@ function Public.reset_map(current_task)
         surface.ignore_surface_conditions = true
         if Public.is_modded_pt2 then
             force.technologies['planet-discovery-fortress'].researched = true
+            force.technologies['planet-discovery-gleba'].researched = true
+            force.technologies['planet-discovery-vulcanus'].researched = true
+            force.technologies['planet-discovery-fulgora'].researched = true
+            force.technologies['planet-discovery-aquilo'].researched = true
             force.recipes['lightning-rod'].enabled = true -- how else will players deal with lightning?
         end
     end

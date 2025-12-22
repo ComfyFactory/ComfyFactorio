@@ -6,6 +6,7 @@ _PROFILE = false
 
 require 'utils.created_events'
 require 'utils.server'
+require 'utils.event'
 require 'utils.dev_server'
 require 'utils.server_commands'
 require 'utils.gui.init'
@@ -26,6 +27,14 @@ require 'modules.inserter_drops_pickup'
 require 'modules.autostash'
 
 require 'utils.remote_chunks'
+
+if _DUMP_ENV then
+    require 'utils.dump_env'
+end
+
+if _PROFILE then
+    require 'utils.profiler'
+end
 
 ---------------- ENABLE MAPS HERE ----------------
 --!Make sure only one map is enabled at a time.
@@ -174,24 +183,6 @@ require 'utils.remote_chunks'
 --- this file exists only for the panel to sync and start from within the panel
 -- it does nothing if it's not synced from within the panel
 require 'map_loader'
-
-if _DUMP_ENV then
-    require 'utils.dump_env'
-end
-
-if _PROFILE then
-    require 'utils.profiler'
-end
-
-local function on_player_created(event)
-    local player = game.players[event.player_index]
-    player.gui.top.style = 'packed_horizontal_flow'
-    player.gui.left.style = 'vertical_flow'
-    -- player.show_on_map = false -- hide selection on minimap
-end
-
-local Event = require 'utils.event'
-Event.add(defines.events.on_player_created, on_player_created)
 
 local loaded = _G.package.loaded
 function require(path)
