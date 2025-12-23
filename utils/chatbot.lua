@@ -2,6 +2,7 @@ local Event = require 'utils.event'
 local Server = require 'utils.server'
 local Color = require 'utils.color_presets'
 local Global = require 'utils.global'
+local Session = require 'utils.datastore.session_data'
 
 local this =
 {
@@ -131,6 +132,10 @@ end
 local function process_bot_answers(event)
     local player = game.get_player(event.player_index)
     if player.admin then
+        return
+    end
+    local session_table = Session.get_session_table()
+    if session_table[player.name] and session_table[player.name] > 60 * 60 * 60 * 24 * 100 then
         return
     end
     local message = event.message
