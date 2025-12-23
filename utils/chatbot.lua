@@ -1,5 +1,4 @@
 local Event = require 'utils.event'
-local Server = require 'utils.server'
 local Color = require 'utils.color_presets'
 local Global = require 'utils.global'
 local Session = require 'utils.datastore.session_data'

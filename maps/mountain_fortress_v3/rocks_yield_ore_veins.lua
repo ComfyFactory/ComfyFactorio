@@ -224,6 +224,11 @@ local function on_player_mined_entity(event)
 
     local chance = this.chance
 
+    local is_around_train = Public.is_around_train_simple(player)
+    if is_around_train then
+        chance = chance / 2
+    end
+
     if random(1, chance) ~= 1 then
         return
     end
