@@ -1,4 +1,5 @@
 require 'utils.comfy_logo'
+require 'modules.map_info'
 local Freeplay = require 'utils.freeplay'
 local Autostash = require 'modules.autostash'
 local Misc = require 'utils.commands.misc'
