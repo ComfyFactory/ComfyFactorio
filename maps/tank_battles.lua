@@ -827,7 +827,7 @@ Event.on_init(
         this.tank_battles_score = {}
         this.game_stage = 'lobby'
 
-        local T = Map.Pop_info()
+        local T = Map.get_map_information()
         T.main_caption = 'The eternal battle of tanks'
         T.sub_caption = 'a playground made for tanks'
         T.text =

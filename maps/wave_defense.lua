@@ -30,7 +30,7 @@ local function on_player_left_game()
 end
 
 local function on_init()
-    local T = Map.Pop_info()
+    local T = Map.get_map_information()
     T.main_caption = 'Wave Defense'
     T.sub_caption = '~~~~~~'
     T.text =

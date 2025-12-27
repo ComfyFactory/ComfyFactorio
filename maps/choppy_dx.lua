@@ -702,7 +702,7 @@ local function on_entity_died(event)
 end
 
 local on_init = function ()
-    local T = Map.Pop_info()
+    local T = Map.get_map_information()
     T.main_caption = 'Choppy'
     T.sub_caption = ''
     T.text =

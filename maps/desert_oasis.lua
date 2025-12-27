@@ -213,7 +213,7 @@ local function on_chunk_generated(event)
 end
 
 local function on_init()
-    local T = Map_info.Pop_info()
+    local T = Map_info.get_map_information()
     T.localised_category = 'desert_oasis'
     T.main_caption_color = { r = 170, g = 170, b = 0 }
     T.sub_caption_color = { r = 120, g = 120, b = 0 }

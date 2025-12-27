@@ -574,7 +574,7 @@ local function on_research_finished(event)
 end
 
 local on_init = function ()
-    local T = Map.Pop_info()
+    local T = Map.get_map_information()
     T.main_caption = 'J u n k y a r d'
     T.sub_caption = '    ..the scrap is your friend..'
     T.text =

@@ -545,7 +545,7 @@ local function on_pre_player_left_game(event)
 end
 
 local function on_init()
-    local T = Map_info.Pop_info()
+    local T = Map_info.get_map_information()
     T.localised_category = 'expanse'
     T.main_caption_color = { r = 170, g = 170, b = 0 }
     T.sub_caption_color = { r = 120, g = 120, b = 0 }

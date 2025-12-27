@@ -1211,7 +1211,7 @@ local function on_init(reset)
     game.forces.player.technologies['spidertron'].researched = false
     game.reset_time_played()
 
-    local T = Map.Pop_info()
+    local T = Map.get_map_information()
     T.localised_category = 'fish_defender'
     T.main_caption_color = { r = 0.11, g = 0.8, b = 0.44 }
     T.sub_caption_color = { r = 0.33, g = 0.66, b = 0.9 }

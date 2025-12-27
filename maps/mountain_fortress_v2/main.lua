@@ -575,7 +575,7 @@ local function tick()
 end
 
 local function on_init()
-    local T = Map.Pop_info()
+    local T = Map.get_map_information()
     T.localised_category = 'mountain_fortress'
     T.main_caption_color = { r = 150, g = 150, b = 0 }
     T.sub_caption_color = { r = 0, g = 150, b = 0 }

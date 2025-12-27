@@ -2,6 +2,7 @@ local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Gui = require 'utils.gui'
 local Task = require 'utils.task_token'
+local Public = {}
 
 local module_name = Gui.uid_name()
 
@@ -33,12 +34,6 @@ local call_active_tab_token =
             Gui.call_existing_tab(player, 'Map Info')
         end
     )
-
-local Public = {}
-
-function Public.Pop_info()
-    return map_info
-end
 
 local function create_map_intro(data)
     local frame = data.frame
@@ -112,6 +107,34 @@ local function on_player_joined_game(event)
         Gui.call_existing_tab(player, 'Map Info')
         Task.set_timeout_in_ticks(5, call_active_tab_token, { player_index = player.index })
     end
+end
+
+
+function Public.get_map_information()
+    return map_info
+end
+
+
+function Public.set_map_main_caption(caption)
+    if not caption then
+        return error('caption is required to set the map information')
+    end
+    map_info.main_caption = caption
+end
+
+function Public.set_map_sub_caption(caption)
+    if not caption then
+        return error('caption is required to set the map information')
+    end
+    map_info.sub_caption = caption
+end
+
+function Public.set_map_text(text)
+    if not text then
+        return error('text is required to set the map information')
+    end
+
+    map_info.text = text
 end
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 
