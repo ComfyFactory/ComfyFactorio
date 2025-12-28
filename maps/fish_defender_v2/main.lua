@@ -20,7 +20,6 @@ local AntiGrief = require 'utils.antigrief'
 local Core = require 'utils.core'
 local RobotLimits = require 'modules.robot_limits'
 local JailData = require 'utils.datastore.jail_data'
-local format_number = require 'util'.format_number
 local random = math.random
 local insert = table.insert
 local enable_start_grace_period = true
@@ -946,7 +945,7 @@ local function show_mvps(t, mvp)
         wave_lasted_label.style.font = 'default-listbox'
         wave_lasted_label.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
 
-        local wave_lasted_name_label = t.add({ type = 'label', caption = tonumber(format_number(wave, true)) })
+        local wave_lasted_name_label = t.add({ type = 'label', caption = tonumber(wave) })
         wave_lasted_name_label.style.font = 'default-bold'
         wave_lasted_name_label.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
@@ -966,7 +965,7 @@ local function show_mvps(t, mvp)
             insert(result, time_played .. '\\n')
             insert(result, '\\n')
             insert(result, 'Wave reached: \\n')
-            insert(result, tonumber(format_number(wave, true)))
+            insert(result, tonumber(wave))
             local message = table.concat(result)
             Server.to_discord_embed(message)
             Public.set('results_sent', true)
@@ -1649,7 +1648,7 @@ end
 function Public.on_init()
     Public.reset_game()
     RobotLimits.enable(false)
-    local T = Map.Pop_info()
+    local T = Map.get_map_information()
     T.localised_category = 'fish_defender'
     T.main_caption_color = { r = 0.11, g = 0.8, b = 0.44 }
     T.sub_caption_color = { r = 0.33, g = 0.66, b = 0.9 }

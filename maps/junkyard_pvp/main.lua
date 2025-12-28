@@ -217,7 +217,7 @@ local function on_init()
         ['east'] = {}
     }
 
-    local T = Map.Pop_info()
+    local T = Map.get_map_information()
     T.main_caption = 'Junkyard PVP'
     T.sub_caption = 'a playground made of scrap'
     T.text =

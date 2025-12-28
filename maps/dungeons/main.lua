@@ -399,7 +399,7 @@ local function on_init()
     storage.rocks_yield_ore_base_amount = 100
     storage.rocks_yield_ore_distance_modifier = 0.001
 
-    local T = MapInfo.Pop_info()
+    local T = MapInfo.get_map_information()
     T.localised_category = 'dungeons'
     T.main_caption_color = { r = 0, g = 0, b = 0 }
     T.sub_caption_color = { r = 150, g = 0, b = 20 }

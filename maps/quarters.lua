@@ -228,7 +228,7 @@ local function on_player_left_game(event)
 end
 
 local function on_init()
-    local T = Map.Pop_info()
+    local T = Map.get_map_information()
     T.main_caption = '4 Quarters'
     T.sub_caption = 'coal ++ iron ++ copper ++ stone'
     T.text =

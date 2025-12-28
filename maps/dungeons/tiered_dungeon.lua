@@ -808,7 +808,7 @@ local function on_init()
     -- rpg_table.enable_mana = true
     -- setup_magic()
 
-    local T = MapInfo.Pop_info()
+    local T = MapInfo.get_map_information()
     T.localised_category = 'dungeons_tiered'
     T.main_caption_color = { r = 0, g = 0, b = 0 }
     T.sub_caption_color = { r = 150, g = 0, b = 20 }

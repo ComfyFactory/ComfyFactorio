@@ -112,7 +112,8 @@ Public.quality_per_level_objectives =
     [75] = { 'normal', 'uncommon', 'rare', 'epic', 'legendary' },
 }
 
-Public.qualities = {
+Public.qualities =
+{
     'normal',
     'uncommon',
     'rare',
@@ -593,12 +594,14 @@ function Public.reset_main_table()
     }
     this.traps = {}
     this.munch_time = true
-    this.magic_requirement = 100
+    this.magic_requirement = 50
     this.loot_stats =
     {
         rare = 24,
         normal = 12
     }
+    this.is_quality_from_production_enabled = false
+    this.skip_enemies_on_daytime = true
     this.coin_amount = 1
     this.default_surface = true
     this.difficulty_set = false
@@ -770,10 +773,16 @@ function Public.reset_main_table()
             for _, platform in pairs(platforms) do
                 if platform and platform.valid and platform.surface and platform.surface.valid then
                     local name = platform.surface.name
+                    Server.output_script_data('Clearing platform surface: ' .. name)
                     game.delete_surface(name)
                     platform.destroy()
                 end
             end
+        end
+
+        if planet.surface and planet.surface.name ~= stateful_settings.current_planet then
+            Server.output_script_data('Clearing surface: ' .. planet.surface.name)
+            planet.surface.clear()
         end
     end
 
