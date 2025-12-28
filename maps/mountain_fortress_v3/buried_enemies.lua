@@ -25,7 +25,8 @@ for a = 48, 1, -1 do
     spawn_amount_rolls[#spawn_amount_rolls + 1] = floor(a ^ 5)
 end
 
-local random_particles = {
+local random_particles =
+{
     'dirt-2-stone-particle-medium',
     'dirt-4-dust-particle',
     'coal-particle'
@@ -88,6 +89,10 @@ local function spawn_biters(data)
         unit_to_create = WD.wave_defense_roll_biter_name()
     end
 
+    if string.find(unit_to_create, 'demolisher') then
+        return false
+    end
+
     if not unit_to_create then
         Server.output_script_data('buried_enemies - unit_to_create was nil?')
         return
@@ -133,7 +138,8 @@ local function spawn_tech(data)
         end
     end
 
-    local rand_tech = {
+    local rand_tech =
+    {
         'defender',
         'destroyer',
         'distractor'
@@ -232,21 +238,24 @@ function Public.buried_biter(surface, position, count, force)
             this[game.tick + t] = {}
         end
 
-        this[game.tick + t][#this[game.tick + t] + 1] = {
+        this[game.tick + t][#this[game.tick + t] + 1] =
+        {
             callback = 'create_particles',
             data = { surface = surface, position = { x = position.x, y = position.y }, amount = math.ceil(t * 0.05) }
         }
 
         if t == 60 then
             if count == 1 then
-                this[game.tick + t][#this[game.tick + t] + 1] = {
+                this[game.tick + t][#this[game.tick + t] + 1] =
+                {
                     callback = 'spawn_biters',
                     data = { surface = surface, position = { x = position.x, y = position.y }, count = count or 1, force = force or 'enemy' }
                 }
             else
                 local tick = 2
                 for _ = 1, count do
-                    this[game.tick + t][#this[game.tick + t] + 1 + tick] = {
+                    this[game.tick + t][#this[game.tick + t] + 1 + tick] =
+                    {
                         callback = 'spawn_biters',
                         data = { surface = surface, position = { x = position.x, y = position.y }, count = count or 1, force = force or 'enemy' }
                     }
@@ -280,21 +289,24 @@ function Public.buried_tech(surface, position, count, force)
             this[game.tick + t] = {}
         end
 
-        this[game.tick + t][#this[game.tick + t] + 1] = {
+        this[game.tick + t][#this[game.tick + t] + 1] =
+        {
             callback = 'create_particles',
             data = { surface = surface, position = { x = position.x, y = position.y }, amount = math.ceil(t * 0.05) }
         }
 
         if t == 60 then
             if count == 1 then
-                this[game.tick + t][#this[game.tick + t] + 1] = {
+                this[game.tick + t][#this[game.tick + t] + 1] =
+                {
                     callback = 'spawn_tech',
                     data = { surface = surface, position = { x = position.x, y = position.y }, count = count or 1, force = force or 'enemy' }
                 }
             else
                 local tick = 2
                 for _ = 1, count do
-                    this[game.tick + t][#this[game.tick + t] + 1 + tick] = {
+                    this[game.tick + t][#this[game.tick + t] + 1 + tick] =
+                    {
                         callback = 'spawn_tech',
                         data = { surface = surface, position = { x = position.x, y = position.y }, count = count or 1, force = force or 'enemy' }
                     }
@@ -324,13 +336,15 @@ function Public.buried_worm(surface, position)
             this[game.tick + t] = {}
         end
 
-        this[game.tick + t][#this[game.tick + t] + 1] = {
+        this[game.tick + t][#this[game.tick + t] + 1] =
+        {
             callback = 'create_particles',
             data = { surface = surface, position = { x = position.x, y = position.y }, amount = math.ceil(t * 0.05) }
         }
 
         if t == 60 then
-            this[game.tick + t][#this[game.tick + t] + 1] = {
+            this[game.tick + t][#this[game.tick + t] + 1] =
+            {
                 callback = 'spawn_worms',
                 data = { surface = surface, position = { x = position.x, y = position.y } }
             }
@@ -338,7 +352,8 @@ function Public.buried_worm(surface, position)
     end
 end
 
-local callbacks = {
+local callbacks =
+{
     ['create_particles'] = create_particles,
     ['spawn_biters'] = spawn_biters,
     ['spawn_worms'] = spawn_worms,

@@ -323,7 +323,7 @@ local function get_random_buff(fetch_all, only_force)
             modifier = 'rpg',
             per_force = true,
             limit = 5,
-            state = 4
+            state = 20
         },
         {
             name = 'chemicals_s',
@@ -731,6 +731,10 @@ local function get_item_produced_count(item_name, quality)
     local force = game.forces.player
     local statistics = Public.get('statistics')
 
+    if not Public.get('is_quality_from_production_enabled') then
+        quality = 'normal'
+    end
+
     if not statistics.surface_production then
         statistics.surface_production = {}
     end
@@ -881,6 +885,10 @@ end
 
 local function get_random_quality()
     if not Public.is_modded_pt2 then
+        return 'normal'
+    end
+
+    if not Public.get('is_quality_from_production_enabled') then
         return 'normal'
     end
 

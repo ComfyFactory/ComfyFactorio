@@ -2,6 +2,7 @@ local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Gui = require 'utils.gui'
 local Task = require 'utils.task_token'
+local Public = {}
 
 local module_name = Gui.uid_name()
 
@@ -34,13 +35,20 @@ local call_active_tab_token =
         end
     )
 
-local Public = {}
-
-function Public.Pop_info()
-    return map_info
+local function has_map_info()
+    if map_info.main_caption and map_info.text and map_info.sub_caption then
+        return true
+    elseif map_info.localised_category then
+        return true
+    end
+    return false
 end
 
 local function create_map_intro(data)
+    if not has_map_info() then
+        return
+    end
+
     local frame = data.frame
     frame.clear()
     frame.style.padding = 4
@@ -52,9 +60,6 @@ local function create_map_intro(data)
     line.style.top_margin = 4
     line.style.bottom_margin = 4
 
-    if not map_info.localised_category then
-        return
-    end
 
     local caption = map_info.main_caption or { map_info.localised_category .. '.map_info_main_caption' }
     local sub_caption = map_info.sub_caption or { map_info.localised_category .. '.map_info_sub_caption' }
@@ -107,12 +112,44 @@ end
 local create_map_intro_token = Task.register(create_map_intro)
 
 local function on_player_joined_game(event)
+    if not has_map_info() then
+        return
+    end
+
     local player = game.players[event.player_index]
     if player.online_time == 0 then
         Gui.call_existing_tab(player, 'Map Info')
         Task.set_timeout_in_ticks(5, call_active_tab_token, { player_index = player.index })
     end
 end
+
+
+function Public.get_map_information()
+    return map_info
+end
+
+function Public.set_map_main_caption(caption)
+    if not caption then
+        return error('caption is required to set the map information')
+    end
+    map_info.main_caption = caption
+end
+
+function Public.set_map_sub_caption(caption)
+    if not caption then
+        return error('caption is required to set the map information')
+    end
+    map_info.sub_caption = caption
+end
+
+function Public.set_map_text(text)
+    if not text then
+        return error('text is required to set the map information')
+    end
+
+    map_info.text = text
+end
+
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 
 Gui.add_tab_to_gui({ name = module_name, caption = 'Map Info', id = create_map_intro_token, admin = false })

@@ -508,7 +508,7 @@ local function on_init()
         ['east'] = {}
     }
 
-    local T = Map.Pop_info()
+    local T = Map.get_map_information()
     T.main_caption = 'Biter Hatchery'
     T.sub_caption = '*nibble nibble nom nom*'
     T.text =

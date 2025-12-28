@@ -1,7 +1,7 @@
 local Event = require 'utils.event'
-local Server = require 'utils.server'
 local Color = require 'utils.color_presets'
 local Global = require 'utils.global'
+local Session = require 'utils.datastore.session_data'
 
 local this =
 {
@@ -128,12 +128,7 @@ local function on_player_created(event)
     end
 end
 
-local function process_bot_answers(event)
-    local player = game.get_player(event.player_index)
-    if player.admin then
-        return
-    end
-    local message = event.message
+local function process_bot_answers(player, message)
     message = string.lower(message)
     for word in string.gmatch(message, '%g+') do
         if links[word] then
@@ -149,11 +144,31 @@ local function on_console_chat(event)
     if not event.player_index then
         return
     end
-    local secs = Server.get_current_time()
-    if not secs then
+
+    local player = game.get_player(event.player_index)
+    if not player or not player.valid then
         return
     end
-    process_bot_answers(event)
+
+    local trusted = Session.get_trusted_player(player)
+    local message = event.message
+
+    -- check if the message starts with ! or / if so then show the bot answers
+    if string.sub(message, 1, 1) == '!' or string.sub(message, 1, 1) == '/' then
+        -- remove the ! or / from the message
+        message = string.sub(message, 2)
+
+        process_bot_answers(player, message)
+        return
+    end
+
+    -- If the player is trusted, don't process the bot answers
+    if trusted or player.admin then
+        return
+    end
+
+
+    process_bot_answers(player, message)
 end
 
 --- Enables the classic print when a player is created.

@@ -500,6 +500,24 @@ local function give_coin(player)
     end
 end
 
+local function should_skip_enemies_on_daytime(entity)
+    local skip_enemies_on_daytime = Public.get('skip_enemies_on_daytime')
+    if not skip_enemies_on_daytime then
+        return false
+    end
+
+    if entity.surface.daytime < 0.35 then
+        entity.destroy()
+        return true
+    end
+    if entity.surface.daytime > 0.65 then
+        entity.destroy()
+        return true
+    end
+
+    return false
+end
+
 local immunity_spawner =
     Task.register(
         function (data)
@@ -562,6 +580,10 @@ local mining_events =
                 return
             end
 
+            if should_skip_enemies_on_daytime(entity) then
+                return
+            end
+
             Public.buried_biter(entity.surface, entity.position)
             entity.destroy()
         end,
@@ -575,6 +597,10 @@ local mining_events =
             end
             if Public.is_around_train(entity) then
                 entity.destroy()
+                return
+            end
+
+            if should_skip_enemies_on_daytime(entity) then
                 return
             end
 
@@ -594,6 +620,10 @@ local mining_events =
                 return
             end
 
+            if should_skip_enemies_on_daytime(entity) then
+                return
+            end
+
             Public.buried_worm(entity.surface, entity.position)
             entity.destroy()
         end,
@@ -607,6 +637,10 @@ local mining_events =
             end
             if Public.is_around_train(entity) then
                 entity.destroy()
+                return
+            end
+
+            if should_skip_enemies_on_daytime(entity) then
                 return
             end
 
@@ -625,6 +659,11 @@ local mining_events =
                 entity.destroy()
                 return
             end
+
+            if should_skip_enemies_on_daytime(entity) then
+                return
+            end
+
 
             local player = game.get_player(index)
 
@@ -730,6 +769,10 @@ local mining_events =
                 return
             end
 
+            if should_skip_enemies_on_daytime(entity) then
+                return
+            end
+
             local player = game.get_player(index)
             local rpg_char = RPG.get_value_from_player(player.index)
             if not rpg_char then
@@ -767,6 +810,10 @@ local mining_events =
             end
             if Public.is_around_train(entity) then
                 entity.destroy()
+                return
+            end
+
+            if should_skip_enemies_on_daytime(entity) then
                 return
             end
 
@@ -812,7 +859,7 @@ local mining_events =
                 container.health = random(1, container.health)
             end
         end,
-        64,
+        256,
         'VSMG #1'
     },
     {
@@ -846,6 +893,38 @@ local mining_events =
         end,
         32,
         'Car #1'
+    },
+    {
+        function (entity, index)
+            if not entity or not entity.valid then
+                return
+            end
+            local position = entity.position
+            local surface = entity.surface
+
+            local quality = 'normal'
+            if random(1, 256) == 1 then
+                quality = 'uncommon'
+            elseif random(1, 512) == 1 then
+                quality = 'rare'
+            elseif random(1, 1024) == 1 then
+                quality = 'epic'
+            elseif random(1, 2048) == 1 then
+                quality = 'legendary'
+            end
+
+            if not Public.is_modded_pt2 then
+                quality = 'normal'
+            end
+
+            surface.create_entity({ name = 'tank', position = position, force = 'player', quality = quality })
+            Task.set_timeout_in_ticks(5, unstuck_player_token, { index = index })
+            local player = game.players[index]
+            local msg = ({ 'entity.found_car', player.name })
+            Alert.alert_player(player, 15, msg)
+        end,
+        16,
+        'Tank #1'
     }
 }
 

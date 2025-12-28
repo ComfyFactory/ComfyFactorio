@@ -1583,6 +1583,14 @@ function Public.set_unit_raffle()
     unit_settings.custom_unit_raffle = set_unit_raffle_token
 end
 
+function Public.get_rpg_from_player(player)
+    local rpg_t = RPG.get_value_from_player(player.index)
+    if not rpg_t then
+        return
+    end
+    return rpg_t
+end
+
 function Public.set_xp_yield()
     RPG.set_rpg_xp_yield(
         {
@@ -3169,10 +3177,10 @@ local disable_recipes = function (force)
     force.recipes['pistol'].enabled = false
     force.recipes['discharge-defense-equipment'].enabled = false
 
-    local current_planet = Public.get_planet()
-    if Public.is_modded_pt2 and current_planet == 'fortress' then
-        force.recipes['thruster'].enabled = false
-    end
+    -- local current_planet = Public.get_planet()
+    -- if Public.is_modded_pt2 and current_planet == 'fortress' then
+    --     force.recipes['thruster'].enabled = false
+    -- end
 end
 
 function Public.disable_tech()

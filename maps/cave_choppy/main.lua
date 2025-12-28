@@ -1913,7 +1913,7 @@ local function disable_tech()
 end
 
 local function on_init()
-    local T = Map.Pop_info()
+    local T = Map.get_map_information()
     T.main_caption = 'Cave Choppy'
     T.sub_caption = '    ..warping between dimensions..'
     T.text =

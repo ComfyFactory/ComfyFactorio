@@ -235,7 +235,7 @@ local function on_init()
     storage.rocks_yield_ore_veins.amount_modifier = 0.20
     storage.rocks_yield_ore_veins.chance = 1024
 
-    local T = Map_info.Pop_info()
+    local T = Map_info.get_map_information()
     T.localised_category = 'cave_miner'
     T.main_caption_color = { r = 200, g = 100, b = 0 }
     T.sub_caption_color = { r = 0, g = 175, b = 175 }

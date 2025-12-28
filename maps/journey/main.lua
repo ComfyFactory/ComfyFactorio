@@ -250,7 +250,7 @@ local function on_nth_tick()
 end
 
 local function on_init()
-    local T = Map.Pop_info()
+    local T = Map.get_map_information()
     T.localised_category = 'journey'
     T.main_caption_color = {r = 100, g = 20, b = 255}
     T.sub_caption_color = {r = 100, g = 100, b = 100}

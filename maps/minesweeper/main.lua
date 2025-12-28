@@ -624,7 +624,7 @@ local function on_init()
     minesweeper.disarmed_mines = 0
     minesweeper.triggered_mines = 0
 
-    local T = Map.Pop_info()
+    local T = Map.get_map_information()
     T.localised_category = 'minesweeper'
     T.main_caption_color = {r = 255, g = 125, b = 55}
     T.sub_caption_color = {r = 0, g = 250, b = 150}
