@@ -26,20 +26,18 @@ local score_key_modded = 'pirate_ship_scores_modded'
 
 local Public = {}
 local insert = table.insert
-local this =
-{
+local this = {
 	score_table = { player = {} },
 	sort_by = {},
 }
 
-Global.register(this, function (t)
+Global.register(this, function(t)
 	this = t
 end)
 
 local function sort_list(method, column_name, score_list)
-	local comparators =
-	{
-		['ascending'] = function (a, b)
+	local comparators = {
+		['ascending'] = function(a, b)
 			if column_name == 'completion_time' then
 				return ((a[column_name] < b[column_name]) and not (a[column_name] == 0 and b[column_name] ~= 0))
 					or (a[column_name] ~= 0 and b[column_name] == 0) --put all 0s at the end
@@ -52,7 +50,7 @@ local function sort_list(method, column_name, score_list)
 			end
 		end,
 		--nosort
-		['descending'] = function (a, b)
+		['descending'] = function(a, b)
 			if column_name == 'completion_time' then
 				return ((b[column_name] < a[column_name]) and not (a[column_name] == 0 and b[column_name] ~= 0))
 					or (a[column_name] ~= 0 and b[column_name] == 0) --put all 0s at the end
@@ -148,8 +146,7 @@ local function get_tables_of_scores_by_type(scores)
 	table.sort(completion_times_latestv)
 	table.sort(leagues_travelled_latestv)
 
-	return
-	{
+	return {
 		latest_version = latest_version,
 		completion_times = completion_times,
 		leagues_travelled = leagues_travelled,
@@ -166,39 +163,38 @@ end
 
 local function get_score_cuttofs(tables_of_scores_by_type)
 	local completion_times_cutoff = #tables_of_scores_by_type.completion_times > 8
-		and tables_of_scores_by_type.completion_times[8]
+			and tables_of_scores_by_type.completion_times[8]
 		or 9999999
 	local completion_times_mediump_latestv_cutoff = #tables_of_scores_by_type.completion_times_mediump_latestv > 4
-		and tables_of_scores_by_type.completion_times_mediump_latestv[4]
+			and tables_of_scores_by_type.completion_times_mediump_latestv[4]
 		or 9999999
 	local completion_times_hard_cutoff = #tables_of_scores_by_type.completion_times_hard > 4
-		and tables_of_scores_by_type.completion_times_hard[4]
+			and tables_of_scores_by_type.completion_times_hard[4]
 		or 9999999
 	local completion_times_nightmare_cutoff = #tables_of_scores_by_type.completion_times_hard > 2
-		and tables_of_scores_by_type.completion_times_hard[2]
+			and tables_of_scores_by_type.completion_times_hard[2]
 		or 9999999
 	local completion_times_latestv_cutoff = #tables_of_scores_by_type.completion_times_latestv > 8
-		and tables_of_scores_by_type.completion_times_latestv[8]
+			and tables_of_scores_by_type.completion_times_latestv[8]
 		or 9999999
 
 	local leagues_travelled_cutoff = #tables_of_scores_by_type.leagues_travelled > 8
-		and tables_of_scores_by_type.leagues_travelled[-8]
+			and tables_of_scores_by_type.leagues_travelled[-8]
 		or 0
 	local leagues_travelled_mediump_latestv_cutoff = #tables_of_scores_by_type.leagues_travelled_mediump_latestv > 4
-		and tables_of_scores_by_type.leagues_travelled_mediump_latestv[-4]
+			and tables_of_scores_by_type.leagues_travelled_mediump_latestv[-4]
 		or 0
 	local leagues_travelled_hard_cutoff = #tables_of_scores_by_type.leagues_travelled_hard > 4
-		and tables_of_scores_by_type.leagues_travelled_hard[-4]
+			and tables_of_scores_by_type.leagues_travelled_hard[-4]
 		or 0
 	local leagues_travelled_nightmare_cutoff = #tables_of_scores_by_type.leagues_travelled_hard > 2
-		and tables_of_scores_by_type.leagues_travelled_hard[-2]
+			and tables_of_scores_by_type.leagues_travelled_hard[-2]
 		or 0
 	local leagues_travelled_latestv_cutoff = #tables_of_scores_by_type.leagues_travelled_latestv > 86
-		and tables_of_scores_by_type.leagues_travelled_latestv[-8]
+			and tables_of_scores_by_type.leagues_travelled_latestv[-8]
 		or 0
 
-	return
-	{
+	return {
 		completion_times_cutoff = completion_times_cutoff,
 		completion_times_mediump_latestv_cutoff = completion_times_mediump_latestv_cutoff,
 		completion_times_hard_cutoff = completion_times_hard_cutoff,
@@ -355,8 +351,7 @@ local function local_highscores_write_stats(
 		-- end
 
 		if crew_secs_id then
-			t.runs[crew_secs_id] =
-			{
+			t.runs[crew_secs_id] = {
 				name = name,
 				captain_name = captain_name,
 				version = version,
@@ -376,7 +371,7 @@ local function local_highscores_write_stats(
 	-- log(_inspect(t))
 end
 
-local load_in_scores = Token.register(function (data)
+local load_in_scores = Token.register(function(data)
 	local value = data.value
 	if not this.score_table['player'] then
 		this.score_table['player'] = {}
@@ -466,8 +461,7 @@ local function get_saved_scores_for_displaying()
 
 	if score_data and score_data.runs then
 		for _, score in pairs(score_data.runs or {}) do
-			insert(score_list,
-			{
+			insert(score_list, {
 				name = score and score.name,
 				captain_name = score and score.captain_name,
 				completion_time = score and score.completion_time or 99999,
@@ -478,8 +472,7 @@ local function get_saved_scores_for_displaying()
 			})
 		end
 	else
-		score_list[#score_list + 1] =
-		{
+		score_list[#score_list + 1] = {
 			name = 'Nothing here yet',
 			captain_name = '',
 			completion_time = 0,
@@ -525,8 +518,7 @@ local function score_gui(data)
 	local t = frame.add({ type = 'table', column_count = 7 })
 
 	-- Score headers
-	local headers =
-	{
+	local headers = {
 		{ name = '_name', caption = { 'pirates.highscore_heading_crew' } },
 		{
 			column = 'captain_name',
@@ -574,8 +566,7 @@ local function score_gui(data)
 		end
 
 		-- Header
-		local label = t.add(
-		{
+		local label = t.add({
 			type = 'label',
 			caption = cap,
 			name = header.name,
@@ -602,8 +593,7 @@ local function score_gui(data)
 	end
 
 	-- New pane for scores (while keeping headers at same position)
-	local scroll_pane = frame.add(
-	{
+	local scroll_pane = frame.add({
 		type = 'scroll-pane',
 		name = 'score_scroll_pane',
 		direction = 'vertical',
@@ -625,8 +615,7 @@ local function score_gui(data)
 		--         p = {color = {r = random(1, 255), g = random(1, 255), b = random(1, 255)}}
 		--     end
 		-- end
-		local special_color =
-		{
+		local special_color = {
 			r = p.color.r * 0.6 + 0.4,
 			g = p.color.g * 0.6 + 0.4,
 			b = p.color.b * 0.6 + 0.4,
@@ -638,11 +627,10 @@ local function score_gui(data)
 		local l = entry.leagues_travelled > 0 and entry.leagues_travelled or '?'
 		local v = entry.version and entry.version or '?'
 		local d = entry.difficulty > 0
-			and CoreData.difficulty_options[CoreData.get_difficulty_option_from_value(entry.difficulty)].text
+				and CoreData.difficulty_options[CoreData.get_difficulty_option_from_value(entry.difficulty)].text
 			or '?'
 		local c = entry.max_players > 0 and entry.max_players or '?'
-		local line =
-		{
+		local line = {
 			{ caption = entry.name, color = special_color },
 			{ caption = entry.captain_name or '?' },
 			{ caption = tostring(n) },
@@ -654,8 +642,7 @@ local function score_gui(data)
 		local default_color = { r = 0.9, g = 0.9, b = 0.9 }
 
 		for _, column in ipairs(line) do
-			local label = t.add(
-			{
+			local label = t.add({
 				type = 'label',
 				caption = column.caption,
 				color = column.color or default_color,
@@ -696,8 +683,7 @@ local function on_gui_click(event)
 	local name = event.element.name
 
 	-- Handles click on a score header
-	local element_to_column =
-	{
+	local element_to_column = {
 		['_captain_name'] = 'captain_name',
 		['_version'] = 'version',
 		['_completion_time'] = 'completion_time',
@@ -740,8 +726,7 @@ end
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	if player.index and this.sort_by and not this.sort_by[player.index] then
-		this.sort_by[player.index] =
-		{
+		this.sort_by[player.index] = {
 			{ method = 'ascending', column = 'completion_time' },
 			{ method = 'descending', column = 'leagues_travelled' },
 			{ method = 'descending', column = 'version' },
@@ -758,7 +743,7 @@ local function on_player_left_game(event)
 	end
 end
 
-Server.on_data_set_changed(score_dataset, function (data)
+Server.on_data_set_changed(score_dataset, function(data)
 	local key
 	if is_game_modded() then
 		key = score_key_modded
@@ -774,8 +759,7 @@ Server.on_data_set_changed(score_dataset, function (data)
 	end
 end)
 
-Gui.add_tab_to_gui(
-{
+Gui.add_tab_to_gui({
 	name = module_name,
 	caption = 'Highscore',
 	id = score_gui_token,
@@ -783,9 +767,9 @@ Gui.add_tab_to_gui(
 	only_server_sided = true,
 })
 
-Gui.on_click(module_name, function (event)
+Gui.on_click(module_name, function(event)
 	local player = event.player
-	Gui.reload_active_tab(player, nil, 'Highscore')
+	Gui.reload_active_tab(player)
 end)
 
 Event.on_init(on_init)
