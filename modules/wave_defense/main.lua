@@ -551,9 +551,11 @@ local function spawn_biter(surface, position, fs, is_boss_biter, unit_settings, 
     local biter = surface.create_entity(entity_data)
     if not (biter and biter.valid) then return false end
 
-    biter.ai_settings.allow_destroy_when_commands_fail = true
-    biter.ai_settings.allow_try_return_to_spawner = false
-    biter.ai_settings.do_separation = true
+    if biter.type == 'unit' or biter.type == 'spider-unit' then
+        biter.ai_settings.allow_destroy_when_commands_fail = true
+        biter.ai_settings.allow_try_return_to_spawner = false
+        biter.ai_settings.do_separation = true
+    end
 
     local function apply_unit_health_boost()
         local increase = Public.get('increase_health_per_wave')
