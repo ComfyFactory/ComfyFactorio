@@ -786,6 +786,17 @@ local function biter_attack_wave()
         m = m * Public.get_current_difficulty_amount_modifier()
     end
 
+    local boss_warning_waves_count = 5
+    if (wave_count + boss_warning_waves_count) % 50 == 0 then
+        game.print(
+            {
+                'fish_defender_v2.boss_warning',
+                { 'fish_defender_v2.' .. (wave_count + boss_warning_waves_count) },
+                boss_warning_waves_count,
+            },
+            { color = { r = 0.8, g = 0.8, b = 0.8 } }
+        )
+    end
     if wave_count % 50 == 0 then
         Public.set('attack_wave_threat', math.floor(wave_count * (m * 1.5)))
         local attack_wave_threat = Public.get('attack_wave_threat')
