@@ -3,34 +3,34 @@
 --luacheck: ignore
 --luacheck ignores because tick_interval arguments are a code templating choice...
 
-local Memory = require('maps.pirates.memory')
-local Gui = require('maps.pirates.gui.gui')
-local Ai = require('maps.pirates.ai')
-local Structures = require('maps.pirates.structures.structures')
-local Boats = require('maps.pirates.structures.boats.boats')
-local Islands = require('maps.pirates.surfaces.islands.islands')
-local IslandEnum = require('maps.pirates.surfaces.islands.island_enum')
-local Surfaces = require('maps.pirates.surfaces.surfaces')
-local PiratesApiEvents = require('maps.pirates.api_events')
-local Roles = require('maps.pirates.roles.roles')
-local Progression = require('maps.pirates.progression')
-local Crowsnest = require('maps.pirates.surfaces.crowsnest')
-local Hold = require('maps.pirates.surfaces.hold')
-local Cabin = require('maps.pirates.surfaces.cabin')
-local Balance = require('maps.pirates.balance')
-local Common = require('maps.pirates.common')
-local CoreData = require('maps.pirates.coredata')
-local Overworld = require('maps.pirates.overworld')
-local Utils = require('maps.pirates.utils_local')
-local Crew = require('maps.pirates.crew')
+local Memory = require("maps.pirates.memory")
+local Gui = require("maps.pirates.gui.gui")
+local Ai = require("maps.pirates.ai")
+local Structures = require("maps.pirates.structures.structures")
+local Boats = require("maps.pirates.structures.boats.boats")
+local Islands = require("maps.pirates.surfaces.islands.islands")
+local IslandEnum = require("maps.pirates.surfaces.islands.island_enum")
+local Surfaces = require("maps.pirates.surfaces.surfaces")
+local PiratesApiEvents = require("maps.pirates.api_events")
+local Roles = require("maps.pirates.roles.roles")
+local Progression = require("maps.pirates.progression")
+local Crowsnest = require("maps.pirates.surfaces.crowsnest")
+local Hold = require("maps.pirates.surfaces.hold")
+local Cabin = require("maps.pirates.surfaces.cabin")
+local Balance = require("maps.pirates.balance")
+local Common = require("maps.pirates.common")
+local CoreData = require("maps.pirates.coredata")
+local Overworld = require("maps.pirates.overworld")
+local Utils = require("maps.pirates.utils_local")
+local Crew = require("maps.pirates.crew")
 -- local Parrot = require 'maps.pirates.parrot'
-local Math = require('maps.pirates.math')
-local _inspect = require('utils.inspect').inspect
-local Kraken = require('maps.pirates.surfaces.sea.kraken')
+local Math = require("maps.pirates.math")
+local _inspect = require("utils.inspect").inspect
+local Kraken = require("maps.pirates.surfaces.sea.kraken")
 
-local Quest = require('maps.pirates.quest')
+local Quest = require("maps.pirates.quest")
 -- local ShopDock = require 'maps.pirates.shop.dock'
-local QuestStructures = require('maps.pirates.structures.quest_structures.quest_structures')
+local QuestStructures = require("maps.pirates.structures.quest_structures.quest_structures")
 
 local Public = {}
 
@@ -69,7 +69,7 @@ function Public.prevent_unbarreling_off_ship(tick_interval)
 	end
 	local surface = game.surfaces[surface_name]
 
-	local assemblers = surface.find_entities_filtered({ type = 'assembling-machine', force = memory.force_name })
+	local assemblers = surface.find_entities_filtered({ type = "assembling-machine", force = memory.force_name })
 
 	for _, a in pairs(assemblers) do
 		if a and a.valid then
@@ -78,12 +78,12 @@ function Public.prevent_unbarreling_off_ship(tick_interval)
 				r
 				and r.subgroup
 				and r.subgroup.name
-				and r.subgroup.name == 'fill-barrel'
-				and not (r.name and r.name == 'fill-water-barrel')
+				and r.subgroup.name == "fill-barrel"
+				and not (r.name and r.name == "fill-water-barrel")
 			then
 				if not Boats.on_boat(boat, a.position) then
-					Common.notify_force_error(memory.force, { 'pirates.error_cant_carry_barrels' })
-					a.set_recipe('fill-water-barrel')
+					Common.notify_force_error(memory.force, { "pirates.error_cant_carry_barrels" })
+					a.set_recipe("fill-water-barrel")
 				end
 			end
 		end
@@ -127,7 +127,7 @@ function Public.apply_restrictions_to_machines(tick_interval)
 					memory.crafters_disabled = true
 					should_update = true
 					Boats.update_EEIs(boat)
-					Common.parrot_speak(memory.force, { 'pirates.parrot_crafters_disabled' })
+					Common.parrot_speak(memory.force, { "pirates.parrot_crafters_disabled" })
 				end
 			end
 		end
@@ -170,7 +170,7 @@ function Public.apply_restrictions_to_machines(tick_interval)
 
 	for _, surface in ipairs(surfaces_to_check) do
 		local crafters = surface.find_entities_filtered({
-			type = { 'assembling-machine', 'furnace', 'lab' },
+			type = { "assembling-machine", "furnace", "lab" },
 			force = memory.force_name,
 		})
 		-- local drills = surface.find_entities_filtered {
@@ -178,7 +178,7 @@ function Public.apply_restrictions_to_machines(tick_interval)
 		-- 	force = memory.force_name
 		-- }
 		local power_machines = surface.find_entities_filtered({
-			type = { 'generator', 'solar-panel', 'boiler', 'reactor' },
+			type = { "generator", "solar-panel", "boiler", "reactor" },
 			force = memory.force_name,
 		})
 
@@ -238,7 +238,7 @@ function Public.prevent_disembark(tick_interval)
 				and cant_disembark_players[player.index]
 				and (not Boats.on_boat(boat, player.character.position))
 			then
-				Common.notify_player_error(player, { 'pirates.error_disembark' })
+				Common.notify_player_error(player, { "pirates.error_disembark" })
 
 				if player.driving then
 					local vehicle = player.vehicle
@@ -247,7 +247,7 @@ function Public.prevent_disembark(tick_interval)
 						if passenger then
 							vehicle.set_passenger(nil)
 							local p =
-								passenger.surface.find_non_colliding_position('character', memory.spawnpoint, 5, 0.1)
+								passenger.surface.find_non_colliding_position("character", memory.spawnpoint, 5, 0.1)
 							if p then
 								passenger.teleport(p)
 							else
@@ -259,7 +259,7 @@ function Public.prevent_disembark(tick_interval)
 					end
 				end
 
-				local p = player.character.surface.find_non_colliding_position('character', memory.spawnpoint, 5, 0.1)
+				local p = player.character.surface.find_non_colliding_position("character", memory.spawnpoint, 5, 0.1)
 				if p then
 					player.character.teleport(p)
 				else
@@ -289,7 +289,7 @@ function Public.check_all_spawners_dead(tick_interval)
 			local spawners_count = Common.spawner_count(surface)
 			if spawners_count == 0 then
 				destination.static_params.base_cost_to_undock = nil
-				Common.notify_force(memory.force, { 'pirates.destroyed_all_nests' })
+				Common.notify_force(memory.force, { "pirates.destroyed_all_nests" })
 			end
 		end
 	end
@@ -357,13 +357,13 @@ function Public.ship_deplete_fuel(tick_interval)
 	local contents = inv.get_contents()
 	local count = 0
 	for _, item in ipairs(contents) do
-		if item.name == 'coal' then
+		if item.name == "coal" then
 			count = count + item.count
 		end
 	end
 
 	if count > 0 then
-		inv.remove({ name = 'coal', count = count })
+		inv.remove({ name = "coal", count = count })
 	end
 
 	memory.stored_fuel = memory.stored_fuel + count + rate * tick_interval / 60
@@ -377,11 +377,11 @@ function Public.ship_deplete_fuel(tick_interval)
 		)
 	then --12 minutes
 		memory.parrot_fuel_most_recent_warning = game.tick
-		Common.parrot_speak(memory.force, { 'pirates.parrot_fuel_warning' })
+		Common.parrot_speak(memory.force, { "pirates.parrot_fuel_warning" })
 	end
 
 	if memory.stored_fuel < 0 then
-		Crew.try_lose({ 'pirates.loss_out_of_fuel' })
+		Crew.try_lose({ "pirates.loss_out_of_fuel" })
 	end
 end
 
@@ -391,7 +391,7 @@ function Public.victory_continue_reminder()
 	if memory.victory_continue_reminder and game.tick >= memory.victory_continue_reminder then
 		memory.victory_continue_reminder = nil
 		if memory.boat.state == Boats.enum_state.ATSEA_VICTORIOUS then
-			Common.notify_force(memory.force, { 'pirates.victory_continue_reminder' }, CoreData.colors.notify_victory)
+			Common.notify_force(memory.force, { "pirates.victory_continue_reminder" }, CoreData.colors.notify_victory)
 		end
 	end
 end
@@ -439,8 +439,8 @@ function Public.captain_warn_afk(tick_interval)
 				and player.afk_time >= Common.afk_time - 20 * 60 - 60 - tick_interval
 				and player.afk_time < Common.afk_time - 20 * 60
 			then
-				Common.notify_player_announce(player, { 'pirates.warn_nearly_afk_captain' })
-				player.play_sound({ path = 'utility/scenario_message' })
+				Common.notify_player_announce(player, { "pirates.warn_nearly_afk_captain" })
+				player.play_sound({ path = "utility/scenario_message" })
 			end
 		end
 	end
@@ -478,7 +478,7 @@ function Public.prune_offline_characters_list(tick_interval)
 					end
 
 					if any then
-						Common.notify_force_light(memory.force, { 'pirates.recover_offline_player_items' })
+						Common.notify_force_light(memory.force, { "pirates.recover_offline_player_items" })
 					end
 
 					pcall(function()
@@ -519,13 +519,13 @@ function Public.periodic_free_resources(tick_interval)
 
 	if game.tick % (300 * 30) == 0 and (destination and destination.subtype == IslandEnum.enum.RADIOACTIVE) then -- every 150 seconds
 		local count = 2
-		Common.give_items_to_crew({ { name = 'sulfuric-acid-barrel', count = count } })
+		Common.give_items_to_crew({ { name = "sulfuric-acid-barrel", count = count } })
 		local force = memory.force
 		if not (force and force.valid) then
 			return
 		end
 		local message =
-			{ 'pirates.granted_1', { 'pirates.granted_periodic_resource' }, count .. ' [item=sulfuric-acid-barrel]' }
+			{ "pirates.granted_1", { "pirates.granted_periodic_resource" }, count .. " [item=sulfuric-acid-barrel]" }
 		Common.notify_force_light(force, message)
 	end
 end
@@ -558,10 +558,10 @@ function Public.pick_up_ghosts_tick(tick_interval)
 	for i = 1, #ghosts do
 		local ghost = ghosts[i]
 
-		if ghost.state == 'on_ground' then
+		if ghost.state == "on_ground" then
 			local p = ghost.position
 
-			local nearby_characters = surface.find_entities_filtered({ position = p, radius = 3, name = 'character' })
+			local nearby_characters = surface.find_entities_filtered({ position = p, radius = 3, name = "character" })
 			local nearby_characters_count = #nearby_characters
 			if nearby_characters_count > 0 then
 				local player
@@ -581,9 +581,9 @@ function Public.pick_up_ghosts_tick(tick_interval)
 				if player then
 					ghost.ghostobject_rendering.destroy()
 
-					ghost.state = 'picked_up'
+					ghost.state = "picked_up"
 
-					Common.notify_force(player.force, { 'pirates.find_ghost', player.name })
+					Common.notify_force(player.force, { "pirates.find_ghost", player.name })
 
 					dynamic_data.quest_progress = dynamic_data.quest_progress + 1
 					Quest.try_resolve_quest()
@@ -597,13 +597,13 @@ local function interpret_shorthanded_force_name(shorthanded_name)
 	local memory = Memory.get_crew_memory()
 
 	local ret
-	if shorthanded_name == 'ancient-friendly' then
+	if shorthanded_name == "ancient-friendly" then
 		ret = memory.ancient_friendly_force_name
-	elseif shorthanded_name == 'ancient-hostile' then
+	elseif shorthanded_name == "ancient-hostile" then
 		ret = memory.ancient_enemy_force_name
-	elseif shorthanded_name == 'crew' then
+	elseif shorthanded_name == "crew" then
 		ret = memory.force_name
-	elseif shorthanded_name == 'enemy' then
+	elseif shorthanded_name == "enemy" then
 		ret = memory.enemy_force_name
 	else
 		ret = shorthanded_name
@@ -651,7 +651,7 @@ function Public.place_cached_structures(tick_interval)
 			-- x: {..., -2, 2, 6, ...}
 			-- y: {..., -1.5, 2.5, 6.5, ...}
 			-- The position would be corrected in "try_place" function, but it gets adjusted later with "terraingen_coordinates_offset", so have to do it here
-			if special.name == 'small_cliff_base' then
+			if special.name == "small_cliff_base" then
 				position.x = position.x - position.x % 4
 				position.y = position.y - position.y % 4
 
@@ -676,7 +676,7 @@ function Public.place_cached_structures(tick_interval)
 					force_name = interpret_shorthanded_force_name(c.force)
 				end
 
-				if c.type == 'tiles' then
+				if c.type == "tiles" then
 					local tiles = {}
 					for _, p in pairs(Common.tile_positions_from_blueprint(c.bp_string, c.offset)) do
 						tiles[#tiles + 1] = { name = c.tile_name, position = Utils.psum({ position, p }) }
@@ -684,7 +684,7 @@ function Public.place_cached_structures(tick_interval)
 					if #tiles > 0 then
 						surface.set_tiles(tiles, true)
 					end
-				elseif c.type == 'water_tiles' then
+				elseif c.type == "water_tiles" then
 					local tiles = {}
 					for _, p in pairs(c.positions) do
 						tiles[#tiles + 1] = { name = c.tile_name, position = Utils.psum({ position, p, c.offset }) }
@@ -692,7 +692,7 @@ function Public.place_cached_structures(tick_interval)
 					if #tiles > 0 then
 						surface.set_tiles(tiles, true)
 					end
-				elseif c.type == 'cliffs' then
+				elseif c.type == "cliffs" then
 					--local c2 = {type = c.type, force_name = force_name, built_entities = {}}
 
 					for _, e in pairs(c.instances) do
@@ -706,12 +706,12 @@ function Public.place_cached_structures(tick_interval)
 					end
 
 					--saved_components[#saved_components + 1] = c2
-				elseif c.type == 'entities' or c.type == 'entities_minable' then
+				elseif c.type == "entities" or c.type == "entities_minable" then
 					local c2 = { type = c.type, force_name = force_name, built_entities = {} }
 
 					for _, e in pairs(c.instances) do
 						local p = Utils.psum({ position, e.position, c.offset })
-						if c.type == 'entities_minable' then
+						if c.type == "entities_minable" then
 							surface.create_entity({
 								name = Balance.pick_random_drilling_ore(),
 								position = p,
@@ -719,9 +719,9 @@ function Public.place_cached_structures(tick_interval)
 								force = force_name,
 								amount = Balance.pick_drilling_ore_amount(),
 							})
-						elseif c.name == 'pumpjack' then
+						elseif c.name == "pumpjack" then
 							surface.create_entity({
-								name = 'crude-oil',
+								name = "crude-oil",
 								position = p,
 								amount = Balance.pick_default_oil_amount(),
 							})
@@ -737,11 +737,11 @@ function Public.place_cached_structures(tick_interval)
 					end
 
 					saved_components[#saved_components + 1] = c2
-				elseif c.type == 'vehicles' then
+				elseif c.type == "vehicles" then
 					local c2 = { type = c.type, force_name = force_name, built_entities = {} }
 
 					if memory.overworldx >= 1000 then
-						c.name = 'tank'
+						c.name = "tank"
 					end
 
 					for _, e in pairs(c.instances) do
@@ -751,7 +751,7 @@ function Public.place_cached_structures(tick_interval)
 					end
 
 					saved_components[#saved_components + 1] = c2
-				elseif c.type == 'entities_grid' then
+				elseif c.type == "entities_grid" then
 					local c2 = { type = c.type, force_name = force_name, built_entities = {} }
 
 					for x = Math.ceil(-c.width / 2), Math.ceil(c.width / 2), 1 do
@@ -768,7 +768,7 @@ function Public.place_cached_structures(tick_interval)
 					end
 
 					saved_components[#saved_components + 1] = c2
-				elseif c.type == 'entities_randomlyplaced' then
+				elseif c.type == "entities_randomlyplaced" then
 					local c2 = { type = c.type, force_name = force_name, built_entities = {} }
 					local occupied_positions = {}
 
@@ -779,10 +779,10 @@ function Public.place_cached_structures(tick_interval)
 							local rng_x = Math.random(-c.r, c.r)
 							local rng_y = Math.random(-c.r, c.r)
 							local p = Utils.psum({ position, c.offset, { x = rng_x, y = rng_y } })
-							local key = p.x .. ',' .. p.y
+							local key = p.x .. "," .. p.y
 							if not occupied_positions[key] then
 								local name = c.name
-								if name == 'random-worm' then
+								if name == "random-worm" then
 									name = Common.get_random_worm_type(memory.evolution_factor)
 								end
 								local e = { name = name, position = p, force = force_name }
@@ -798,7 +798,7 @@ function Public.place_cached_structures(tick_interval)
 					end
 
 					saved_components[#saved_components + 1] = c2
-				elseif c.type == 'entities_randomlyplaced_border' then
+				elseif c.type == "entities_randomlyplaced_border" then
 					local c2 = { type = c.type, force_name = force_name, built_entities = {} }
 					local occupied_positions = {}
 
@@ -823,7 +823,7 @@ function Public.place_cached_structures(tick_interval)
 								end
 							end
 							local p2 = Utils.psum({ position, c.offset, p })
-							local key = p2.x .. ',' .. p2.y
+							local key = p2.x .. "," .. p2.y
 							if not occupied_positions[key] then
 								local e = { name = c.name, position = p2, force = force_name }
 								if surface.can_place_entity(e) then
@@ -1022,7 +1022,7 @@ function Public.loading_update_lobby(tick_interval, memory, boat, destination_in
 	if memory.loading_ticks >= 350 - Common.loading_interval then
 		if Boats.players_on_boat_count(boat) > 0 then
 			if memory.loading_ticks < 350 then
-				Common.notify_game({ '', '[' .. memory.name .. '] ', { 'pirates.loading_new_game' } })
+				Common.notify_game({ "", "[" .. memory.name .. "] ", { "pirates.loading_new_game" } })
 			elseif memory.loading_ticks > 410 then
 				if not Crowsnest.get_crowsnest_surface() then
 					Crew.initialise_crowsnest_1()
@@ -1085,7 +1085,7 @@ function Public.loading_update_lobby(tick_interval, memory, boat, destination_in
 
 		Progression.go_from_starting_dock_to_first_destination()
 
-		log('starting game for crew ' .. memory.name)
+		log("starting game for crew " .. memory.name)
 	end
 end
 
@@ -1163,21 +1163,21 @@ function Public.crowsnest_steer(tick_interval)
 
 	local inv_left = left_chest.get_inventory(defines.inventory.chest)
 	local inv_right = right_chest.get_inventory(defines.inventory.chest)
-	local count_left = inv_left.get_item_count('rail-signal')
-	local count_right = inv_right.get_item_count('rail-signal')
+	local count_left = inv_left.get_item_count("rail-signal")
+	local count_right = inv_right.get_item_count("rail-signal")
 
 	if count_left >= 50 and count_right < 50 and memory.overworldy > -24 then
 		if Overworld.try_overworld_move_v2({ x = 0, y = -24 }) then
 			local force = memory.force
-			Common.notify_force(force, { 'pirates.steer_left' })
-			inv_left.remove({ name = 'rail-signal', count = 50 })
+			Common.notify_force(force, { "pirates.steer_left" })
+			inv_left.remove({ name = "rail-signal", count = 50 })
 		end
 		return
 	elseif count_right >= 50 and count_left < 50 and memory.overworldy < 24 then
 		if Overworld.try_overworld_move_v2({ x = 0, y = 24 }) then
 			local force = memory.force
-			Common.notify_force(force, { 'pirates.steer_right' })
-			inv_right.remove({ name = 'rail-signal', count = 50 })
+			Common.notify_force(force, { "pirates.steer_right" })
+			inv_right.remove({ name = "rail-signal", count = 50 })
 		end
 		return
 	end
@@ -1234,7 +1234,7 @@ function Public.silo_update(tick_interval)
 		if p and pollution then
 			local surface = game.surfaces[destination.surface_name]
 			if surface and surface.valid then
-				game.get_pollution_statistics(surface).on_flow('rocket-silo', pollution)
+				game.get_pollution_statistics(surface).on_flow("rocket-silo", pollution)
 				memory.floating_pollution = (memory.floating_pollution or 0) + 3 * pollution / 4
 				surface.pollute(p, pollution / 4)
 
@@ -1246,7 +1246,7 @@ function Public.silo_update(tick_interval)
 					dynamic_data.parrot_silo_warned = true
 					local spawners_count = Common.spawner_count(surface)
 					if spawners_count > 0 then
-						Common.parrot_speak(memory.force, { 'pirates.parrot_silo_warning' })
+						Common.parrot_speak(memory.force, { "pirates.parrot_silo_warning" })
 					end
 				elseif
 					dynamic_data.rocket_silo_energy_consumed >= dynamic_data.rocket_silo_energy_needed
@@ -1286,7 +1286,7 @@ function Public.slower_boat_tick(tick_interval)
 		local surface = game.surfaces[destination.surface_name]
 		if surface and surface.valid then
 			surface.pollute(p, pollution)
-			game.get_pollution_statistics(destination.surface_name).on_flow('locomotive', pollution)
+			game.get_pollution_statistics(destination.surface_name).on_flow("locomotive", pollution)
 		end
 	end
 
@@ -1332,7 +1332,7 @@ function Public.LOS_tick(tick_interval)
 		or (
 			destination.static_params
 			and destination.static_params.base_cost_to_undock
-			and destination.static_params.base_cost_to_undock['launch_rocket'] == true
+			and destination.static_params.base_cost_to_undock["launch_rocket"] == true
 		)
 	then
 		local silos = destination.dynamic_data.rocketsilos
@@ -1399,7 +1399,7 @@ function Public.Kraken_Destroyed_Backup_check(tick_interval) -- a server became 
 			end
 
 			local but_none_are = some_spawners_should_be_alive
-				and #surface.find_entities_filtered({ name = 'biter-spawner', force = memory.enemy_force_name })
+				and #surface.find_entities_filtered({ name = "biter-spawner", force = memory.enemy_force_name })
 					== 0
 			if but_none_are then
 				for i = 1, Kraken.kraken_slots do
@@ -1443,7 +1443,7 @@ function Public.quest_progress_tick(tick_interval)
 
 			local total_flow_count = force.get_item_production_statistics(surface).get_flow_count({
 				name = dynamic_data.quest_params.item,
-				category = 'input',
+				category = "input",
 				precision_index = defines.flow_precision_index.five_seconds,
 				count = false,
 			})
@@ -1454,7 +1454,7 @@ function Public.quest_progress_tick(tick_interval)
 					total_flow_count = total_flow_count
 						+ force.get_item_production_statistics(hold_surface).get_flow_count({
 							name = dynamic_data.quest_params.item,
-							category = 'input',
+							category = "input",
 							precision_index = defines.flow_precision_index.five_seconds,
 							count = false,
 						})
@@ -1466,7 +1466,7 @@ function Public.quest_progress_tick(tick_interval)
 				total_flow_count = total_flow_count
 					+ force.get_item_production_statistics(cabin_surface).get_flow_count({
 						name = dynamic_data.quest_params.item,
-						category = 'input',
+						category = "input",
 						precision_index = defines.flow_precision_index.five_seconds,
 						count = false,
 					})
@@ -1482,7 +1482,7 @@ function Public.quest_progress_tick(tick_interval)
 
 			local total_count = force.get_item_production_statistics(surface).get_flow_count({
 				name = dynamic_data.quest_params.item,
-				category = 'input',
+				category = "input",
 				precision_index = defines.flow_precision_index.one_thousand_hours,
 				count = true,
 			})
@@ -1493,7 +1493,7 @@ function Public.quest_progress_tick(tick_interval)
 					total_count = total_count
 						+ force.get_item_production_statistics(hold_surface).get_flow_count({
 							name = dynamic_data.quest_params.item,
-							category = 'input',
+							category = "input",
 							precision_index = defines.flow_precision_index.one_thousand_hours,
 							count = true,
 						})
@@ -1505,7 +1505,7 @@ function Public.quest_progress_tick(tick_interval)
 				total_count = total_count
 					+ force.get_item_production_statistics(cabin_surface).get_flow_count({
 						name = dynamic_data.quest_params.item,
-						category = 'input',
+						category = "input",
 						precision_index = defines.flow_precision_index.one_thousand_hours,
 						count = true,
 					})
@@ -1549,9 +1549,9 @@ function Public.silo_insta_update()
 						if dynamic_data.rocket_silo_charged_bools and not dynamic_data.rocket_silo_charged_bools[i] then
 							dynamic_data.rocket_silo_charged_bools[i] = true
 							local inv = silo.get_inventory(defines.inventory.assembling_machine_input)
-							inv.insert({ name = 'processing-unit', count = 10 })
-							inv.insert({ name = 'low-density-structure', count = 10 })
-							inv.insert({ name = 'rocket-fuel', count = 10 })
+							inv.insert({ name = "processing-unit", count = 10 })
+							inv.insert({ name = "low-density-structure", count = 10 })
+							inv.insert({ name = "rocket-fuel", count = 10 })
 						end
 					else
 						silo.energy = 0
@@ -1678,7 +1678,7 @@ function Public.check_for_cliff_explosives_in_hold_wooden_chests()
 	for i, chest in pairs(input_chests) do
 		-- @TODO: decide what to do when chest is invalid (perhaps it was destroyed by some future feature)
 		if chest and chest.valid then
-			local item_count = chest.get_item_count('cliff-explosives')
+			local item_count = chest.get_item_count("cliff-explosives")
 			if item_count and item_count > 0 then
 				if not queued_chests_timers[i] then
 					queued_chests_timers[i] = tick_tack_timer
@@ -1697,14 +1697,14 @@ function Public.check_for_cliff_explosives_in_hold_wooden_chests()
 
 			if timer <= 0 then
 				-- check if sneaky players didn't decide to remove the explosives just before the explosion
-				local item_count = chest.get_item_count('cliff-explosives')
+				local item_count = chest.get_item_count("cliff-explosives")
 				if item_count and item_count > 0 then
 					local explosion = {
-						name = 'wooden-chest-explosion',
+						name = "wooden-chest-explosion",
 						position = chest.position,
 					}
 					local remnants = {
-						name = 'wooden-chest-remnants',
+						name = "wooden-chest-remnants",
 						position = chest.position,
 					}
 
@@ -1717,12 +1717,12 @@ function Public.check_for_cliff_explosives_in_hold_wooden_chests()
 
 				queued_chests_timers[i] = nil
 			else
-				local tick_tacks = { '*tick*', '*tick*', '*tack*', '*tak*', '*tik*', '*tok*' }
+				local tick_tacks = { "*tick*", "*tick*", "*tack*", "*tak*", "*tik*", "*tok*" }
 
 				for _, player in pairs(game.connected_players) do
 					if player.surface_index == surface.index then
 						player.create_local_flying_text({
-							name = 'flying-text',
+							name = "flying-text",
 							position = chest.position,
 							text = tick_tacks[Math.random(#tick_tacks)],
 							color = { r = 0.75, g = 0.75, b = 0.75 },
@@ -1761,7 +1761,7 @@ local function equalise_fluid_storage_pair(storage1, storage2)
 		amount = source_fluid.amount * 0.5
 	end
 
-	if amount <= 0 then
+	if amount <= 1 then
 		return
 	end
 
@@ -1844,7 +1844,7 @@ function Public.update_time_remaining()
 			and Boats.need_resources_to_undock(Common.overworldx(), destination.subtype)
 			and (not Common.query_can_pay_cost_to_leave())
 		then
-			Crew.try_lose({ 'pirates.loss_resources_were_not_collected_in_time' })
+			Crew.try_lose({ "pirates.loss_resources_were_not_collected_in_time" })
 		else
 			Common.consume_undock_cost_resources()
 			Progression.retreat_from_island(false)

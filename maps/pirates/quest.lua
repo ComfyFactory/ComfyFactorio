@@ -24,7 +24,7 @@ local enum = {
 	RESOURCECOUNT = 'Resource Count',
 	WORMS = 'Worms',
 	FISH = 'Fish',
-	COMPILATRON = 'Compilatron', -- compilatron is robot that looks like sheep
+	-- COMPILATRON = "Compilatron", -- compilatron is robot that looks like sheep
 }
 Public.enum = enum
 
@@ -36,7 +36,7 @@ Public.quest_icons = {
 	[enum.RESOURCEFLOW] = '',
 	[enum.RESOURCECOUNT] = '',
 	[enum.FISH] = '[item=raw-fish]',
-	[enum.COMPILATRON] = '[entity=compilatron]',
+	-- [enum.COMPILATRON] = "[entity=compilatron]",
 }
 
 -- @TODO remake into a loot-style table:
@@ -131,12 +131,14 @@ end
 
 function Public.initialise_random_cave_island_quest()
 	local rng = Math.random(100)
-	if rng <= 30 then
+	if rng <= 50 then
 		Public.initialise_fish_quest()
-	elseif rng <= 60 then
-		Public.initialise_worms_quest()
 	else
-		Public.initialise_compilatron_quest()
+		Public.initialise_worms_quest()
+		-- elseif rng <= 60 then
+		-- 	Public.initialise_worms_quest()
+		-- else
+		-- 	Public.initialise_compilatron_quest()
 	end
 end
 
@@ -347,21 +349,21 @@ function Public.initialise_fish_quest()
 	return true
 end
 
--- Rescue compilatrons under the heavy rocks (currently Cave island exclusive, because it's hard to calculate "quest_progressneeded")
-function Public.initialise_compilatron_quest()
-	local destination = Common.current_destination()
+-- -- Rescue compilatrons under the heavy rocks (currently Cave island exclusive, because it's hard to calculate "quest_progressneeded")
+-- function Public.initialise_compilatron_quest()
+-- 	local destination = Common.current_destination()
 
-	if not destination and destination.dynamic_data then
-		return false
-	end
+-- 	if not destination and destination.dynamic_data then
+-- 		return false
+-- 	end
 
-	destination.dynamic_data.quest_type = enum.COMPILATRON
-	destination.dynamic_data.quest_reward = Public.quest_reward()
-	destination.dynamic_data.quest_progress = 0
-	destination.dynamic_data.quest_progressneeded = Math.random(50, 80) -- assuming that chance to find compilatron is 1/20
+-- 	destination.dynamic_data.quest_type = enum.COMPILATRON
+-- 	destination.dynamic_data.quest_reward = Public.quest_reward()
+-- 	destination.dynamic_data.quest_progress = 0
+-- 	destination.dynamic_data.quest_progressneeded = Math.random(50, 80) -- assuming that chance to find compilatron is 1/20
 
-	return true
-end
+-- 	return true
+-- end
 
 function Public.try_resolve_quest()
 	local memory = Memory.get_crew_memory()
