@@ -1,16 +1,16 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-local Math = require('maps.pirates.math')
-local Raffle = require('utils.math.raffle')
-local Server = require('utils.server')
-local Utils = require('maps.pirates.utils_local')
-local CoreData = require('maps.pirates.coredata')
-local Memory = require('maps.pirates.memory')
-local _inspect = require('utils.inspect').inspect
+local Math = require("maps.pirates.math")
+local Raffle = require("utils.math.raffle")
+local Server = require("utils.server")
+local Utils = require("maps.pirates.utils_local")
+local CoreData = require("maps.pirates.coredata")
+local Memory = require("maps.pirates.memory")
+local _inspect = require("utils.inspect").inspect
 
 -- local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 
-local LootRaffle = require('utils.functions.loot_raffle')
+local LootRaffle = require("utils.functions.loot_raffle")
 -- local simplex_noise = require 'utils.math.simplex_noise'.d2
 -- local perlin_noise = require 'utils.math.perlin_noise'
 -- local Force_health_booster = require 'modules.force_health_booster'
@@ -27,7 +27,7 @@ Public.protected_but_not_private_run_cap = 2
 
 -- auto-disbanding when there are no players left in the crew:
 -- Public.autodisband_hours = nil
-Public.autodisband_hours = 24 * 4 -- should not be zero (as this messes with saving and loading a game, which boots the player for a moment.) Also note that the server may run very slowly when no-one is on it.
+Public.autodisband_hours = 24 * 3 -- should not be zero (as this messes with saving and loading a game, which boots the player for a moment.) Also note that the server may run very slowly when no-one is on it.
 
 Public.boat_steps_at_a_time = 1
 
@@ -61,21 +61,21 @@ Public.afk_time = 60 * 60 * 5
 Public.afk_warning_time = 60 * 60 * 4.5
 Public.temporarily_logged_off_player_data_preservation_minutes = 3
 Public.logout_unprotected_items = {
-	'uranium-235',
-	'uranium-238',
-	'fluid-wagon',
-	'coal',
-	'electric-engine-unit',
-	'flying-robot-frame',
-	'advanced-circuit',
-	'beacon',
-	'speed-module-3',
-	'speed-module-2',
-	'roboport',
-	'construction-robot',
+	"uranium-235",
+	"uranium-238",
+	"fluid-wagon",
+	"coal",
+	"electric-engine-unit",
+	"flying-robot-frame",
+	"advanced-circuit",
+	"beacon",
+	"speed-module-3",
+	"speed-module-2",
+	"roboport",
+	"construction-robot",
 } --internal inventories of these will not be preserved
 
-Public.lobby_force_name = 'player'
+Public.lobby_force_name = "player"
 
 -- Public.mainshop_rate_limit_ticks = 11
 
@@ -159,51 +159,51 @@ end
 
 function Public.notify_game(message, color_override)
 	color_override = color_override or CoreData.colors.notify_game
-	game.print({ '', '>> ', message }, { color = color_override })
+	game.print({ "", ">> ", message }, { color = color_override })
 end
 
 function Public.notify_lobby(message, color_override)
 	color_override = color_override or CoreData.colors.notify_lobby
-	game.forces[Public.lobby_force_name].print({ '', '>> ', message }, { color = color_override })
+	game.forces[Public.lobby_force_name].print({ "", ">> ", message }, { color = color_override })
 end
 
 function Public.notify_force(force, message, color_override)
 	color_override = color_override or CoreData.colors.notify_force
-	force.print({ '', '>> ', message }, { color = color_override })
+	force.print({ "", ">> ", message }, { color = color_override })
 end
 
 function Public.notify_force_light(force, message, color_override)
 	color_override = color_override or CoreData.colors.notify_force_light
-	force.print({ '', '>> ', message }, { color = color_override })
+	force.print({ "", ">> ", message }, { color = color_override })
 end
 
 function Public.notify_force_error(force, message, color_override)
 	color_override = color_override or CoreData.colors.notify_error
-	force.print({ '', '>> ', message }, { color = color_override })
-	force.play_sound({ path = 'utility/cannot_build' })
+	force.print({ "", ">> ", message }, { color = color_override })
+	force.play_sound({ path = "utility/cannot_build" })
 end
 
 function Public.notify_player_error(player, message, color_override)
 	color_override = color_override or CoreData.colors.notify_error
-	player.print({ '', '## ', { 'pirates.notify_whisper' }, ' ', message }, { color = color_override })
-	player.play_sound({ path = 'utility/cannot_build' })
+	player.print({ "", "## ", { "pirates.notify_whisper" }, " ", message }, { color = color_override })
+	player.play_sound({ path = "utility/cannot_build" })
 end
 
 function Public.notify_player_expected(player, message, color_override)
 	color_override = color_override or CoreData.colors.notify_player_expected
-	player.print({ '', '## ', { 'pirates.notify_whisper' }, ' ', message }, { color = color_override })
+	player.print({ "", "## ", { "pirates.notify_whisper" }, " ", message }, { color = color_override })
 end
 
 function Public.notify_player_announce(player, message, color_override)
 	color_override = color_override or CoreData.colors.notify_player_announce
-	player.print({ '', '## ', { 'pirates.notify_whisper' }, ' ', message }, { color = color_override })
+	player.print({ "", "## ", { "pirates.notify_whisper" }, " ", message }, { color = color_override })
 end
 
 function Public.parrot_speak(force, message)
-	force.print({ '', { 'pirates.notify_parrot' }, ' ', message }, { color = CoreData.colors.parrot })
+	force.print({ "", { "pirates.notify_parrot" }, " ", message }, { color = CoreData.colors.parrot })
 
 	local memory = Memory.get_crew_memory()
-	Server.to_discord_embed_raw({ '', '[' .. memory.name .. '] ', { 'pirates.notify_parrot' }, ' ', message }, true)
+	Server.to_discord_embed_raw({ "", "[" .. memory.name .. "] ", { "pirates.notify_parrot" }, " ", message }, true)
 end
 
 function Public.flying_text(surface, position, text)
@@ -262,7 +262,7 @@ function Public.raffle_from_processed_loot_data(processed_loot_data, how_many, g
 		local data = processed_loot_data[i]
 		table.insert(
 			loot_types,
-			{ ['name'] = data.name, ['min_count'] = data.min_count, ['max_count'] = data.max_count }
+			{ ["name"] = data.name, ["min_count"] = data.min_count, ["max_count"] = data.max_count }
 		)
 
 		local destination = Public.current_destination()
@@ -321,8 +321,8 @@ function Public.give(player, stacks, spill_position, short_form, spill_surface, 
 		return
 	end
 
-	local text1 = ''
-	local text2 = ''
+	local text1 = ""
+	local text2 = ""
 
 	local stacks2 = stacks
 	table.sort(stacks2, function(a, b)
@@ -355,7 +355,7 @@ function Public.give(player, stacks, spill_position, short_form, spill_surface, 
 				if itemcount >= 50 then
 					for i = 1, Math.floor(itemcount / 50), 1 do
 						local e = spill_surface.create_entity({
-							name = 'item-on-ground',
+							name = "item-on-ground",
 							position = spill_position,
 							stack = { name = itemname, count = 50 },
 						})
@@ -396,38 +396,38 @@ function Public.give(player, stacks, spill_position, short_form, spill_surface, 
 		if itemcount_remember >= 0 then
 			if short_form then
 				text1 = text1
-					.. '[color='
+					.. "[color="
 					.. flying_text_color.r
-					.. ','
+					.. ","
 					.. flying_text_color.g
-					.. ','
+					.. ","
 					.. flying_text_color.b
-					.. ']'
-					.. '+'
+					.. "]"
+					.. "+"
 					.. itemcount_remember
-					.. '[/color]'
+					.. "[/color]"
 			else
-				text1 = text1 .. '[color=1,1,1]'
-				text1 = text1 .. '+'
-				text1 = text1 .. itemcount_remember .. '[/color] [item=' .. itemname .. ']'
+				text1 = text1 .. "[color=1,1,1]"
+				text1 = text1 .. "+"
+				text1 = text1 .. itemcount_remember .. "[/color] [item=" .. itemname .. "]"
 			end
 		else
 			if short_form then
 				text1 = text1
-					.. '[color='
+					.. "[color="
 					.. flying_text_color.r
-					.. ','
+					.. ","
 					.. flying_text_color.g
-					.. ','
+					.. ","
 					.. flying_text_color.b
-					.. ']'
-					.. '-'
+					.. "]"
+					.. "-"
 					.. -itemcount_remember
-					.. '[/color]'
+					.. "[/color]"
 			else
-				text1 = text1 .. '[color=1,1,1]'
-				text1 = text1 .. '-'
-				text1 = text1 .. -itemcount_remember .. '[/color] [item=' .. itemname .. ']'
+				text1 = text1 .. "[color=1,1,1]"
+				text1 = text1 .. "-"
+				text1 = text1 .. -itemcount_remember .. "[/color] [item=" .. itemname .. "]"
 			end
 		end
 
@@ -451,41 +451,41 @@ function Public.give(player, stacks, spill_position, short_form, spill_surface, 
 
 			if #stacks2 > 1 then
 				text2 = text2
-					.. '[color='
+					.. "[color="
 					.. flying_text_color.r
-					.. ','
+					.. ","
 					.. flying_text_color.g
-					.. ','
+					.. ","
 					.. flying_text_color.b
-					.. ']'
+					.. "]"
 					.. new_total_count
-					.. '[/color]'
+					.. "[/color]"
 			else
-				text2 = '[color='
+				text2 = "[color="
 					.. flying_text_color.r
-					.. ','
+					.. ","
 					.. flying_text_color.g
-					.. ','
+					.. ","
 					.. flying_text_color.b
-					.. ']('
+					.. "]("
 					.. new_total_count
-					.. ')[/color]'
+					.. ")[/color]"
 			end
 			if j < #stacks2 then
-				text2 = text2 .. ', '
+				text2 = text2 .. ", "
 			end
 		end
 
 		if j < #stacks2 then
-			text1 = text1 .. ', '
+			text1 = text1 .. ", "
 		end
 	end
 
-	if text2 ~= '' then
+	if text2 ~= "" then
 		if #stacks2 > 1 then
-			text2 = '(' .. text2 .. ')'
+			text2 = "(" .. text2 .. ")"
 		end
-		Public.flying_text(spill_surface, flying_text_position, text1 .. ' [font=count-font]' .. text2 .. '[/font]')
+		Public.flying_text(spill_surface, flying_text_position, text1 .. " [font=count-font]" .. text2 .. "[/font]")
 	else
 		Public.flying_text(spill_surface, flying_text_position, text1)
 	end
@@ -539,10 +539,10 @@ function Public.set_biter_surplus_evo_modifiers()
 		-- health_fractional_mod = 0
 		damage_fractional_mod = 0
 	end
-	enemy_force.set_ammo_damage_modifier('melee', damage_fractional_mod)
-	enemy_force.set_ammo_damage_modifier('biological', damage_fractional_mod)
-	enemy_force.set_ammo_damage_modifier('artillery-shell', damage_fractional_mod)
-	enemy_force.set_ammo_damage_modifier('flamethrower', damage_fractional_mod)
+	enemy_force.set_ammo_damage_modifier("melee", damage_fractional_mod)
+	enemy_force.set_ammo_damage_modifier("biological", damage_fractional_mod)
+	enemy_force.set_ammo_damage_modifier("artillery-shell", damage_fractional_mod)
+	enemy_force.set_ammo_damage_modifier("flamethrower", damage_fractional_mod)
 
 	-- this event is behaving really weirdly, e.g. messing up samurai damage:
 	-- Force_health_booster.set_health_modifier(enemy_force.index, 1 + health_fractional_mod)
@@ -598,7 +598,7 @@ function Public.time_adjusted_departure_cost(cost)
 
 			local new_cost = {}
 			for name, count in pairs(cost) do
-				if type(count) == 'number' then
+				if type(count) == "number" then
 					-- new_cost[name] = Math.ceil(count * cost_fraction)
 					new_cost[name] = Math.floor(count * cost_fraction)
 				else
@@ -609,26 +609,26 @@ function Public.time_adjusted_departure_cost(cost)
 			ret = new_cost
 		end
 
-		local resources_strings1 = ''
+		local resources_strings1 = ""
 		local j = 1
 		for name, count in pairs(cost) do
-			if name ~= 'launch_rocket' then
+			if name ~= "launch_rocket" then
 				if j > 1 then
-					resources_strings1 = resources_strings1 .. ', '
+					resources_strings1 = resources_strings1 .. ", "
 				end
-				resources_strings1 = resources_strings1 .. count .. ' [item=' .. name .. ']'
+				resources_strings1 = resources_strings1 .. count .. " [item=" .. name .. "]"
 
 				j = j + 1
 			end
 		end
-		local resources_strings2 = ''
+		local resources_strings2 = ""
 		j = 1
 		for name, count in pairs(ret) do
-			if name ~= 'launch_rocket' then
+			if name ~= "launch_rocket" then
 				if j > 1 then
-					resources_strings2 = resources_strings2 .. ', '
+					resources_strings2 = resources_strings2 .. ", "
 				end
-				resources_strings2 = resources_strings2 .. count .. ' [item=' .. name .. ']'
+				resources_strings2 = resources_strings2 .. count .. " [item=" .. name .. "]"
 
 				j = j + 1
 			end
@@ -669,7 +669,7 @@ function Public.query_can_pay_cost_to_leave()
 
 	local can_leave = true
 	for name, count in pairs(adjusted_cost) do
-		if name == 'launch_rocket' and count == true then
+		if name == "launch_rocket" and count == true then
 			if not destination.dynamic_data.rocket_launched then
 				can_leave = false
 			end
@@ -717,9 +717,9 @@ function Public.surface_place_random_obstacle_boxes(
 				placed = placed + 1
 				local p = boxposition()
 				for j = 1, size ^ 2 do
-					local p2 = surface.find_non_colliding_position('wooden-chest', p, 5, 0.1, true) or p
+					local p2 = surface.find_non_colliding_position("wooden-chest", p, 5, 0.1, true) or p
 					local e = surface.create_entity({
-						name = 'wooden-chest',
+						name = "wooden-chest",
 						position = p2,
 						force = memory.force_name,
 						create_build_effect_smoke = false,
@@ -827,11 +827,11 @@ function Public.new_healthbar(
 	location_override = location_override or Memory.get_crew_memory()
 
 	local render1 = rendering.draw_sprite({
-		sprite = 'virtual-signal/signal-white',
+		sprite = "virtual-signal/signal-white",
 		tint = { 0, 200, 0 },
 		x_scale = size * 15,
 		y_scale = size,
-		render_layer = 'light-effect',
+		render_layer = "light-effect",
 		target = {
 			entity = target_entity,
 			offset = { 0, -2.5 + extra_offset },
@@ -841,7 +841,7 @@ function Public.new_healthbar(
 	local render2
 	if text then
 		render2 = rendering.draw_text({
-			text = '',
+			text = "",
 			color = { 255, 255, 255 },
 			scale = 1.2 + size * 2,
 			target = {
@@ -849,7 +849,7 @@ function Public.new_healthbar(
 				offset = { 0, -3.6 - size * 0.6 + extra_offset },
 			},
 			surface = target_entity.surface,
-			alignment = 'center',
+			alignment = "center",
 		})
 	end
 
@@ -959,7 +959,7 @@ function Public.update_healthbar_rendering(new_healthbar, health)
 		render1.color = { Math.floor(255 - 255 * m), Math.floor(200 * m), 0 }
 
 		if render2 then
-			render2.text = string.format('HP: %d/%d', Math.ceil(health), Math.ceil(max_health))
+			render2.text = string.format("HP: %d/%d", Math.ceil(health), Math.ceil(max_health))
 		end
 	else
 		render1.destroy()
@@ -972,23 +972,23 @@ end
 function Public.spawner_count(surface)
 	local memory = Memory.get_crew_memory()
 
-	local spawners = surface.find_entities_filtered({ type = 'unit-spawner', force = memory.enemy_force_name })
+	local spawners = surface.find_entities_filtered({ type = "unit-spawner", force = memory.enemy_force_name })
 	return #spawners or 0
 end
 
 function Public.create_poison_clouds(surface, position)
 	local random_angles = { Math.rad(Math.random(359)), Math.rad(Math.random(359)) }
 
-	surface.create_entity({ name = 'poison-cloud', position = { x = position.x, y = position.y } })
+	surface.create_entity({ name = "poison-cloud", position = { x = position.x, y = position.y } })
 	surface.create_entity({
-		name = 'poison-cloud',
+		name = "poison-cloud",
 		position = {
 			x = position.x + 12 * Math.cos(random_angles[1]),
 			y = position.y + 12 * Math.sin(random_angles[1]),
 		},
 	})
 	surface.create_entity({
-		name = 'poison-cloud',
+		name = "poison-cloud",
 		position = {
 			x = position.x + 12 * Math.cos(random_angles[2]),
 			y = position.y + 12 * Math.sin(random_angles[2]),
@@ -1056,14 +1056,14 @@ function Public.can_place_silo_setup(surface, p, points_to_avoid, silo_count, ge
 
 	Public.ensure_chunks_at(surface, p, 0.2)
 
-	build_check_type_name = build_check_type_name or 'manual'
+	build_check_type_name = build_check_type_name or "manual"
 	local build_check_type = defines.build_check_type[build_check_type_name]
 	local s = true
 	local allowed = true
 	for i = 1, silo_count do
 		local pos = { x = p.x + 9 * (i - 1), y = p.y }
 		s = (
-			surface.can_place_entity({ name = 'rocket-silo', position = pos, build_check_type = build_check_type })
+			surface.can_place_entity({ name = "rocket-silo", position = pos, build_check_type = build_check_type })
 			or (generous and i > 2)
 		) and s
 
@@ -1093,28 +1093,30 @@ function Public.default_map_gen_settings(width, height, seed)
 	seed = seed or Math.random(1, 1000000)
 
 	local map_gen_settings = {
-		['seed'] = seed,
-		['width'] = width,
-		['height'] = height,
-		['water'] = 0,
+		["seed"] = seed,
+		["width"] = width,
+		["height"] = height,
+		["water"] = 0,
 		--FIXME: Back when this was at x=2000, a crash was caused once by a player spawning at x=2000. So there will be a crash in future under unknown circumstances if there is no space at x=0,y=0.
-		['starting_points'] = { { x = 0, y = 0 } },
+		["starting_points"] = { { x = 0, y = 0 } },
 
-		['cliff_settings'] = { cliff_elevation_interval = 0, cliff_elevation_0 = 0 },
-		['default_enable_all_autoplace_controls'] = true,
-		['autoplace_settings'] = {
-			['entity'] = { treat_missing_as_default = false },
-			['tile'] = { treat_missing_as_default = false },
-			['decorative'] = prototypes.space_location.nauvis.map_gen_settings.autoplace_settings.decorative,
+		["cliff_settings"] = { cliff_elevation_interval = 0, cliff_elevation_0 = 0 },
+		["default_enable_all_autoplace_controls"] = true,
+		["autoplace_settings"] = {
+			["entity"] = { treat_missing_as_default = false },
+			["tile"] = { treat_missing_as_default = false },
+			["decorative"] = prototypes.space_location.nauvis.map_gen_settings.autoplace_settings.decorative,
 		},
-		['peaceful_mode'] = true,
-		['property_expression_names'] = {},
+		["peaceful_mode"] = false,
+		["property_expression_names"] = {},
 	}
+
+	map_gen_settings["autoplace_settings"]["decorative"]["treat_missing_as_default"] = false
 
 	-- TODO: Remove this code if Wube fixes this 'bug'
 	for _, decorative in pairs(prototypes.decorative) do
 		if not map_gen_settings.autoplace_settings.decorative.settings[decorative.name] then
-			map_gen_settings.autoplace_settings.decorative.settings[decorative.name] = { frequency = 'none' }
+			map_gen_settings.autoplace_settings.decorative.settings[decorative.name] = { frequency = "none" }
 		end
 	end
 
@@ -1124,10 +1126,10 @@ end
 function Public.build_from_blueprint(bp_string, surface, pos, force, flipped)
 	flipped = flipped or false
 
-	local bp_entity = game.surfaces['nauvis'].create_entity({
-		name = 'item-on-ground',
+	local bp_entity = game.surfaces["nauvis"].create_entity({
+		name = "item-on-ground",
 		position = { x = 158.5, y = 158.5 },
-		stack = 'blueprint',
+		stack = "blueprint",
 	})
 	bp_entity.stack.import_stack(bp_string)
 
@@ -1154,13 +1156,13 @@ function Public.build_from_blueprint(bp_string, surface, pos, force, flipped)
 
 	-- once again, to revive wagons:
 	for _, e in pairs(entities) do
-		if e and e.valid and e.type and e.type == 'entity-ghost' then
+		if e and e.valid and e.type and e.type == "entity-ghost" then
 			local _collisions, revived_entity = e.silent_revive()
 			rev_entities[#rev_entities + 1] = revived_entity
 
-			if revived_entity and revived_entity.valid and revived_entity.name == 'locomotive' then
+			if revived_entity and revived_entity.valid and revived_entity.name == "locomotive" then
 				revived_entity.color = { 255, 106, 52 }
-				revived_entity.get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 16 })
+				revived_entity.get_inventory(defines.inventory.fuel).insert({ name = "wood", count = 16 })
 				revived_entity.operable = false
 			end
 		end
@@ -1175,25 +1177,25 @@ function Public.build_small_loco(surface, pos, force, color)
 	local p3 = { x = pos.x, y = pos.y + 2 }
 	local es = {}
 	es[1] = surface.create_entity({
-		name = 'straight-rail',
+		name = "straight-rail",
 		position = p1,
 		force = force,
 		create_build_effect_smoke = false,
 	})
 	es[2] = surface.create_entity({
-		name = 'straight-rail',
+		name = "straight-rail",
 		position = p2,
 		force = force,
 		create_build_effect_smoke = false,
 	})
 	es[3] = surface.create_entity({
-		name = 'straight-rail',
+		name = "straight-rail",
 		position = p3,
 		force = force,
 		create_build_effect_smoke = false,
 	})
 	es[4] =
-		surface.create_entity({ name = 'locomotive', position = p1, force = force, create_build_effect_smoke = false })
+		surface.create_entity({ name = "locomotive", position = p1, force = force, create_build_effect_smoke = false })
 	for _, e in pairs(es) do
 		if e and e.valid then
 			e.destructible = false
@@ -1204,15 +1206,15 @@ function Public.build_small_loco(surface, pos, force, color)
 	end
 	if es[4] and es[4].valid then
 		es[4].color = color
-		es[4].get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 16 })
+		es[4].get_inventory(defines.inventory.fuel).insert({ name = "wood", count = 16 })
 	end
 end
 
 function Public.add_tiles_from_blueprint(tilesTable, bp_string, tile_name, offset)
-	local bp_entity = game.surfaces['nauvis'].create_entity({
-		name = 'item-on-ground',
+	local bp_entity = game.surfaces["nauvis"].create_entity({
+		name = "item-on-ground",
 		position = { x = 158.5, y = 158.5 },
-		stack = 'blueprint',
+		stack = "blueprint",
 	})
 	bp_entity.stack.import_stack(bp_string)
 
@@ -1233,10 +1235,10 @@ end
 function Public.tile_positions_from_blueprint(bp_string, offset)
 	-- May '22 change: There seems to be a base game bug(?) which causes the tiles to be offset. We now correct for that (with ` - (max_x - min_x)/2` and ` - (max_y - min_y)/2`).
 
-	local bp_entity = game.surfaces['nauvis'].create_entity({
-		name = 'item-on-ground',
+	local bp_entity = game.surfaces["nauvis"].create_entity({
+		name = "item-on-ground",
 		position = { x = 158.5, y = 158.5 },
-		stack = 'blueprint',
+		stack = "blueprint",
 	})
 	bp_entity.stack.import_stack(bp_string)
 
@@ -1281,10 +1283,10 @@ end
 function Public.tile_positions_from_blueprint_arrayform(bp_string, offset)
 	-- does not include the above May '22 fix yet, so may give different results
 
-	local bp_entity = game.surfaces['nauvis'].create_entity({
-		name = 'item-on-ground',
+	local bp_entity = game.surfaces["nauvis"].create_entity({
+		name = "item-on-ground",
 		position = { x = 158.5, y = 158.5 },
-		stack = 'blueprint',
+		stack = "blueprint",
 	})
 	bp_entity.stack.import_stack(bp_string)
 
@@ -1308,10 +1310,10 @@ function Public.tile_positions_from_blueprint_arrayform(bp_string, offset)
 end
 
 function Public.entity_positions_from_blueprint(bp_string, offset)
-	local bp_entity = game.surfaces['nauvis'].create_entity({
-		name = 'item-on-ground',
+	local bp_entity = game.surfaces["nauvis"].create_entity({
+		name = "item-on-ground",
 		position = { x = 158.5, y = 158.5 },
-		stack = 'blueprint',
+		stack = "blueprint",
 	})
 	bp_entity.stack.import_stack(bp_string)
 
@@ -1335,25 +1337,25 @@ function Public.get_random_unit_type(evolution)
 
 	if Math.random(5) == 1 then
 		if r < 1 - 1 / 0.15 * (evolution - 0.25) then
-			return 'small-biter'
+			return "small-biter"
 		elseif r < 1 - 1 / 0.3 * (evolution - 0.4) then
-			return 'small-spitter'
+			return "small-spitter"
 		elseif r < 1 - 0.85 / 0.5 * (evolution - 0.5) then
-			return 'medium-spitter'
+			return "medium-spitter"
 		elseif r < 1 - 0.4 / 0.1 * (evolution - 0.9) then
-			return 'big-spitter'
+			return "big-spitter"
 		else
-			return 'behemoth-spitter'
+			return "behemoth-spitter"
 		end
 	else
 		if r < 1 - 1 / 0.4 * (evolution - 0.2) then
-			return 'small-biter'
+			return "small-biter"
 		elseif r < 1 - 0.8 / 0.5 * (evolution - 0.5) then
-			return 'medium-biter'
+			return "medium-biter"
 		elseif r < 1 - 0.4 / 0.1 * (evolution - 0.9) then
-			return 'big-biter'
+			return "big-biter"
 		else
-			return 'behemoth-biter'
+			return "behemoth-biter"
 		end
 	end
 end
@@ -1363,13 +1365,13 @@ function Public.get_random_biter_type(evolution)
 	local r = Math.random()
 
 	if r < 1 - 1 / 0.4 * (evolution - 0.2) then
-		return 'small-biter'
+		return "small-biter"
 	elseif r < 1 - 0.8 / 0.5 * (evolution - 0.5) then
-		return 'medium-biter'
+		return "medium-biter"
 	elseif r < 1 - 0.4 / 0.1 * (evolution - 0.9) then
-		return 'big-biter'
+		return "big-biter"
 	else
-		return 'behemoth-biter'
+		return "behemoth-biter"
 	end
 end
 
@@ -1378,13 +1380,13 @@ function Public.get_random_spitter_type(evolution)
 	local r = Math.random()
 
 	if r < 1 - 1 / 0.3 * (evolution - 0.4) then
-		return 'small-spitter'
+		return "small-spitter"
 	elseif r < 1 - 0.85 / 0.5 * (evolution - 0.5) then
-		return 'medium-spitter'
+		return "medium-spitter"
 	elseif r < 1 - 0.4 / 0.1 * (evolution - 0.9) then
-		return 'big-spitter'
+		return "big-spitter"
 	else
-		return 'behemoth-spitter'
+		return "behemoth-spitter"
 	end
 end
 
@@ -1393,13 +1395,13 @@ function Public.get_random_worm_type(evolution)
 	local r = Math.random()
 
 	if r < 1 - 1 / 0.7 * (evolution + 0.1) then
-		return 'small-worm-turret'
+		return "small-worm-turret"
 	elseif r < 1 - 0.75 / 0.75 * (evolution - 0.25) then
-		return 'medium-worm-turret'
+		return "medium-worm-turret"
 	elseif r < 1 - 0.4 / 0.4 * (evolution - 0.6) then
-		return 'big-worm-turret'
+		return "big-worm-turret"
 	else
-		return 'behemoth-worm-turret'
+		return "behemoth-worm-turret"
 	end
 end
 
@@ -1495,7 +1497,7 @@ function Public.validate_player(player)
 		return true
 	else
 		if _DEBUG then
-			log('player validation fail: ' .. (player.name or 'noname'))
+			log("player validation fail: " .. (player.name or "noname"))
 		end
 		return false
 	end
@@ -1644,9 +1646,9 @@ function Public.give_items_to_crew(items)
 	local chest, chest2
 
 	local is_coin = false
-	if items.name and items.name == 'coin' then
+	if items.name and items.name == "coin" then
 		is_coin = true
-	elseif type(items) == 'table' and #items > 0 and items[1].name == 'coin' then
+	elseif type(items) == "table" and #items > 0 and items[1].name == "coin" then
 		is_coin = true
 	end
 
@@ -1692,7 +1694,7 @@ function Public.give_items_to_crew(items)
 				end
 			else
 				if _DEBUG then
-					log('give_items_to_crew: i2.name is nil. _inspect:')
+					log("give_items_to_crew: i2.name is nil. _inspect:")
 					log(_inspect(items))
 					log(_inspect(i2))
 				end
@@ -1723,7 +1725,7 @@ end
 
 function Public.version_to_array(v)
 	local vArray = {}
-	if type(v) == 'number' then --this is a legacy form
+	if type(v) == "number" then --this is a legacy form
 		local vs = tostring(v)
 		for i = 1, string.len(vs) do
 			local char = vs:sub(i, i)
@@ -1734,7 +1736,7 @@ function Public.version_to_array(v)
 	else
 		for i = 1, string.len(v) do
 			local char = v:sub(i, i)
-			if char ~= '.' then
+			if char ~= "." then
 				vArray[#vArray + 1] = char
 			end
 		end
@@ -1825,22 +1827,22 @@ end
 
 -- prefer memory.force_name if possible
 function Public.get_crew_force_name(id)
-	return string.format('crew-%03d', id)
+	return string.format("crew-%03d", id)
 end
 
 -- prefer memory.enemy_force_name if possible
 function Public.get_enemy_force_name(id)
-	return string.format('enemy-%03d', id)
+	return string.format("enemy-%03d", id)
 end
 
 -- prefer memory.ancient_friendly_force_name if possible
 function Public.get_ancient_friendly_force_name(id)
-	return string.format('ancient-friendly-%03d', id)
+	return string.format("ancient-friendly-%03d", id)
 end
 
 -- prefer memory.ancient_enemy_force_name if possible
 function Public.get_ancient_hostile_force_name(id)
-	return string.format('ancient-hostile-%03d', id)
+	return string.format("ancient-hostile-%03d", id)
 end
 
 function Public.get_id_from_force_name(force_name)
@@ -1860,13 +1862,13 @@ end
 -- Connected with crew.lua recipe and technology disables
 function Public.get_item_blacklist(tier)
 	local blacklist = LootRaffle.get_tech_blacklist(tier)
-	blacklist['landfill'] = true
-	blacklist['locomotive'] = true
-	blacklist['cargo-wagon'] = true
-	blacklist['fluid-wagon'] = true
-	blacklist['train-stop'] = true
-	blacklist['rail-signal'] = true
-	blacklist['rail-chain-signal'] = true
+	blacklist["landfill"] = true
+	blacklist["locomotive"] = true
+	blacklist["cargo-wagon"] = true
+	blacklist["fluid-wagon"] = true
+	blacklist["train-stop"] = true
+	blacklist["rail-signal"] = true
+	blacklist["rail-chain-signal"] = true
 	-- blacklist['tank'] = true
 	-- blacklist['cannon-shell'] = true
 	-- blacklist['explosive-cannon-shell'] = true
@@ -1876,24 +1878,24 @@ function Public.get_item_blacklist(tier)
 	-- blacklist['productivity-module-3'] = true
 	-- blacklist['efficiency-module-3'] = true
 	-- blacklist['space-science-pack'] = true
-	blacklist['artillery-wagon'] = true
-	blacklist['artillery-turret'] = true
+	blacklist["artillery-wagon"] = true
+	blacklist["artillery-turret"] = true
 	-- blacklist['uranium-cannon-shell'] = true
 	-- blacklist['explosive-uranium-cannon-shell'] = true
-	blacklist['satellite'] = true
-	blacklist['rocket-silo'] = true
+	blacklist["satellite"] = true
+	blacklist["rocket-silo"] = true
 	-- blacklist['destroyer-capsule'] = true
 	-- blacklist['spidertron'] = true
-	blacklist['discharge-defense-remote'] = true
-	blacklist['discharge-defense-equipment'] = true
-	blacklist['loader'] = true
-	blacklist['fast-loader'] = true
-	blacklist['express-loader'] = true
-	blacklist['land-mine'] = true
-	blacklist['wood'] = true -- too easy to acquire
+	blacklist["discharge-defense-remote"] = true
+	blacklist["discharge-defense-equipment"] = true
+	blacklist["loader"] = true
+	blacklist["fast-loader"] = true
+	blacklist["express-loader"] = true
+	blacklist["land-mine"] = true
+	blacklist["wood"] = true -- too easy to acquire
 
-	blacklist['speed-module-2'] = true
-	blacklist['speed-module-3'] = true
+	blacklist["speed-module-2"] = true
+	blacklist["speed-module-3"] = true
 
 	return blacklist
 end
@@ -2044,14 +2046,14 @@ function Public.delete_entities(surface, position, width, height)
 	for _, e in pairs(existing) do
 		if
 			not (
-				e.name == 'iron-ore'
-				or e.name == 'copper-ore'
-				or e.name == 'stone'
-				or e.name == 'uranium-ore'
-				or e.name == 'crude-oil'
+				e.name == "iron-ore"
+				or e.name == "copper-ore"
+				or e.name == "stone"
+				or e.name == "uranium-ore"
+				or e.name == "crude-oil"
 			)
 		then
-			if e.name ~= 'rocket-silo' then
+			if e.name ~= "rocket-silo" then
 				e.destroy()
 			end
 		end
@@ -2063,7 +2065,7 @@ function Public.replace_unwalkable_tiles(surface, position, width, height)
 		left_top = { position.x - width / 2, position.y - height / 2 },
 		right_bottom = { position.x + width / 2 + 0.5, position.y + height / 2 + 0.5 },
 	}
-	local existing = surface.find_tiles_filtered({ area = area, collision_mask = 'water_tile' })
+	local existing = surface.find_tiles_filtered({ area = area, collision_mask = "water_tile" })
 	if not existing then
 		return
 	end
@@ -2071,7 +2073,7 @@ function Public.replace_unwalkable_tiles(surface, position, width, height)
 	local tiles = {}
 
 	for _, t in pairs(existing) do
-		tiles[#tiles + 1] = { name = 'landfill', position = t.position }
+		tiles[#tiles + 1] = { name = "landfill", position = t.position }
 	end
 
 	if #tiles > 0 then
@@ -2083,7 +2085,7 @@ function Public.get_valid_spawners(surface)
 	local memory = Memory.get_crew_memory()
 	local destination = Public.current_destination()
 
-	local spawners = surface.find_entities_filtered({ type = 'unit-spawner', force = memory.enemy_force_name })
+	local spawners = surface.find_entities_filtered({ type = "unit-spawner", force = memory.enemy_force_name })
 
 	local boat_spawners = {}
 

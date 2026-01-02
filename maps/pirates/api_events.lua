@@ -1,21 +1,21 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-local Memory = require('maps.pirates.memory')
-local Balance = require('maps.pirates.balance')
-local Math = require('maps.pirates.math')
-local Common = require('maps.pirates.common')
-local SurfacesCommon = require('maps.pirates.surfaces.common')
-local CoreData = require('maps.pirates.coredata')
-local Utils = require('maps.pirates.utils_local')
-local _inspect = require('utils.inspect').inspect
-local Ai = require('maps.pirates.ai')
+local Memory = require("maps.pirates.memory")
+local Balance = require("maps.pirates.balance")
+local Math = require("maps.pirates.math")
+local Common = require("maps.pirates.common")
+local SurfacesCommon = require("maps.pirates.surfaces.common")
+local CoreData = require("maps.pirates.coredata")
+local Utils = require("maps.pirates.utils_local")
+local _inspect = require("utils.inspect").inspect
+local Ai = require("maps.pirates.ai")
 -- local Structures = require 'maps.pirates.structures.structures'
-local Boats = require('maps.pirates.structures.boats.boats')
-local Surfaces = require('maps.pirates.surfaces.surfaces')
+local Boats = require("maps.pirates.structures.boats.boats")
+local Surfaces = require("maps.pirates.surfaces.surfaces")
 -- local Progression = require 'maps.pirates.progression'
-local IslandEnum = require('maps.pirates.surfaces.islands.island_enum')
-local Roles = require('maps.pirates.roles.roles')
-local Permissions = require('maps.pirates.permissions')
+local IslandEnum = require("maps.pirates.surfaces.islands.island_enum")
+local Roles = require("maps.pirates.roles.roles")
+local Permissions = require("maps.pirates.permissions")
 -- local Gui = require 'maps.pirates.gui.gui'
 -- local Sea = require 'maps.pirates.surfaces.sea.sea'
 -- local Hold = require 'maps.pirates.surfaces.hold'
@@ -23,20 +23,20 @@ local Permissions = require('maps.pirates.permissions')
 -- local Crowsnest = require 'maps.pirates.surfaces.crowsnest'
 -- local Ores = require 'maps.pirates.ores'
 -- local Parrot = require 'maps.pirates.parrot'
-local Kraken = require('maps.pirates.surfaces.sea.kraken')
-local Jailed = require('utils.datastore.jail_data')
-local Crew = require('maps.pirates.crew')
-local Quest = require('maps.pirates.quest')
-local Shop = require('maps.pirates.shop.shop')
-local Loot = require('maps.pirates.loot')
-local Task = require('utils.task')
-local Token = require('utils.token')
-local Classes = require('maps.pirates.roles.classes')
-local Ores = require('maps.pirates.ores')
-local Server = require('utils.server')
+local Kraken = require("maps.pirates.surfaces.sea.kraken")
+local Jailed = require("utils.datastore.jail_data")
+local Crew = require("maps.pirates.crew")
+local Quest = require("maps.pirates.quest")
+local Shop = require("maps.pirates.shop.shop")
+local Loot = require("maps.pirates.loot")
+local Task = require("utils.task")
+local Token = require("utils.token")
+local Classes = require("maps.pirates.roles.classes")
+local Ores = require("maps.pirates.ores")
+local Server = require("utils.server")
 -- local Modifers = require 'player_modifiers'
-local GuiWelcome = require('maps.pirates.gui.welcome')
-local tick_tack_trap = require('utils.functions.tick_tack_trap')
+local GuiWelcome = require("maps.pirates.gui.welcome")
+local tick_tack_trap = require("utils.functions.tick_tack_trap")
 
 local Public = {}
 
@@ -56,23 +56,23 @@ function Public.silo_die()
 	then
 		local surface = destination.dynamic_data.rocketsilos[1].surface
 		surface.create_entity({
-			name = 'big-artillery-explosion',
+			name = "big-artillery-explosion",
 			position = destination.dynamic_data.rocketsilos[1].position,
 		})
 
 		if memory.boat and memory.boat.surface_name and surface.name == memory.boat.surface_name then
 			if CoreData.rocket_silo_death_causes_loss then
 				-- Crew.lose_life()
-				Crew.try_lose({ 'pirates.loss_silo_destroyed' })
+				Crew.try_lose({ "pirates.loss_silo_destroyed" })
 			elseif not destination.dynamic_data.rocket_launched then
 				if
 					destination.static_params
 					and destination.static_params.base_cost_to_undock
-					and destination.static_params.base_cost_to_undock['launch_rocket'] == true
+					and destination.static_params.base_cost_to_undock["launch_rocket"] == true
 				then
-					Crew.try_lose({ 'pirates.loss_silo_destroyed_before_necessary_launch' })
+					Crew.try_lose({ "pirates.loss_silo_destroyed_before_necessary_launch" })
 				else
-					Common.notify_force(force, { 'pirates.silo_destroyed' })
+					Common.notify_force(force, { "pirates.silo_destroyed" })
 				end
 			end
 		end
@@ -104,23 +104,23 @@ local function biters_chew_stuff_faster(event)
 		return
 	end --Enemy Forces only
 
-	if event.entity.force.name == 'neutral' or event.entity.force.name == 'environment' then
+	if event.entity.force.name == "neutral" or event.entity.force.name == "environment" then
 		event.entity.health = event.entity.health - event.final_damage_amount * 5
 		event.final_damage_amount = event.final_damage_amount * 6
 		if destination and destination.type == Surfaces.enum.ISLAND and destination.subtype == IslandEnum.enum.MAZE then
 			event.entity.health = event.entity.health - event.final_damage_amount
 			event.final_damage_amount = event.final_damage_amount * 2
 		end
-	elseif event.entity.name == 'pipe' then
+	elseif event.entity.name == "pipe" then
 		event.entity.health = event.entity.health - event.final_damage_amount * 0.5
 		event.final_damage_amount = event.final_damage_amount * 1.5
-	elseif event.entity.name == 'stone-furnace' then
+	elseif event.entity.name == "stone-furnace" then
 		event.entity.health = event.entity.health - event.final_damage_amount * 0.5
 		event.final_damage_amount = event.final_damage_amount * 1.5
 	elseif
-		event.entity.name == 'wooden-chest'
-		or event.entity.name == 'stone-chest'
-		or event.entity.name == 'steel-chest'
+		event.entity.name == "wooden-chest"
+		or event.entity.name == "stone-chest"
+		or event.entity.name == "steel-chest"
 	then
 		event.entity.health = event.entity.health - event.final_damage_amount * 0.5
 		event.final_damage_amount = event.final_damage_amount * 1.5
@@ -156,14 +156,14 @@ local function handle_damage_to_silo(event)
 			and destination.dynamic_data.rocketsilos[1].valid
 			and entity == Common.current_destination().dynamic_data.rocketsilos[1]
 		then
-			if string.sub(event.cause.force.name, 1, 4) ~= 'crew' then -- may as well check this
+			if string.sub(event.cause.force.name, 1, 4) ~= "crew" then -- may as well check this
 				-- play alert sound for all crew members
 				if memory.seconds_until_alert_sound_can_be_played_again <= 0 then
 					memory.seconds_until_alert_sound_can_be_played_again = Balance.alert_sound_max_frequency_in_seconds
 
 					for _, player_index in pairs(memory.crewplayerindices) do
 						local player = game.players[player_index]
-						player.play_sound({ path = 'utility/alert_destroyed', volume_modifier = 1 })
+						player.play_sound({ path = "utility/alert_destroyed", volume_modifier = 1 })
 					end
 				end
 
@@ -256,7 +256,7 @@ end
 local function handle_damage_to_artillery(event)
 	local memory = Memory.get_crew_memory()
 
-	if not (event.entity and event.entity.valid and event.entity.name and event.entity.name == 'artillery-turret') then
+	if not (event.entity and event.entity.valid and event.entity.name and event.entity.name == "artillery-turret") then
 		return
 	end
 
@@ -276,7 +276,7 @@ local function handle_damage_to_artillery(event)
 
 			for _, player_index in pairs(memory.crewplayerindices) do
 				local player = game.players[player_index]
-				player.play_sound({ path = 'utility/alert_destroyed', volume_modifier = 1 })
+				player.play_sound({ path = "utility/alert_destroyed", volume_modifier = 1 })
 			end
 		end
 
@@ -305,7 +305,7 @@ local function handle_damage_to_krakens(event)
 	if not event.entity.name then
 		return
 	end
-	if event.entity.name ~= 'biter-spawner' then
+	if event.entity.name ~= "biter-spawner" then
 		return
 	end
 
@@ -322,19 +322,19 @@ local function handle_damage_to_krakens(event)
 
 	local unit_number = event.entity.unit_number
 
-	if event.damage_type.name and event.damage_type.name == 'poison' then
+	if event.damage_type.name and event.damage_type.name == "poison" then
 		event.final_damage_amount = event.final_damage_amount / 1.25
-	elseif event.damage_type.name and (event.damage_type.name == 'explosion') then
+	elseif event.damage_type.name and (event.damage_type.name == "explosion") then
 		event.final_damage_amount = event.final_damage_amount / 1.5
-	elseif event.damage_type.name and (event.damage_type.name == 'fire') then
+	elseif event.damage_type.name and (event.damage_type.name == "fire") then
 		event.final_damage_amount = event.final_damage_amount / 1.25
 	end
 	-- and additionally:
-	if event.cause and event.cause.valid and event.cause.name == 'artillery-turret' then
+	if event.cause and event.cause.valid and event.cause.name == "artillery-turret" then
 		event.final_damage_amount = event.final_damage_amount / 1.5
 	end
 
-	if event.damage_type.name and (event.damage_type.name == 'laser') then
+	if event.damage_type.name and (event.damage_type.name == "laser") then
 		event.final_damage_amount = event.final_damage_amount / 7 --laser turrets are in range. give some resistance
 	end
 
@@ -363,7 +363,7 @@ local function handle_damage_to_players(event)
 
 	-- if not (event.cause.name == 'small-biter') or (event.cause.name == 'small-spitter') or (event.cause.name == 'medium-biter') or (event.cause.name == 'medium-spitter') or (event.cause.name == 'big-biter') or (event.cause.name == 'big-spitter') or (event.cause.name == 'behemoth-biter') or (event.cause.name == 'behemoth-spitter') then return end
 
-	if not (event.entity and event.entity.valid and event.entity.name and event.entity.name == 'character') then
+	if not (event.entity and event.entity.valid and event.entity.name and event.entity.name == "character") then
 		return
 	end
 
@@ -392,7 +392,7 @@ local function handle_damage_to_players(event)
 
 	--game.print('on damage info: {name: ' .. event.damage_type.name .. ', object_name: ' .. event.damage_type.object_name .. '}')
 
-	if event.damage_type.name == 'poison' then --make all poison damage stronger against players
+	if event.damage_type.name == "poison" then --make all poison damage stronger against players
 		damage_multiplier = damage_multiplier * Balance.poison_damage_multiplier
 	else
 		if class then
@@ -423,7 +423,7 @@ local function handle_damage_to_players(event)
 						and Common.validate_player_and_character(player)
 					then
 						player.character.surface.create_entity({
-							name = 'slowdown-sticker',
+							name = "slowdown-sticker",
 							position = player.character.position,
 							speed = 1.5,
 							force = player.force,
@@ -481,11 +481,11 @@ local function handle_enemy_nighttime_damage_bonus(event)
 		return
 	end
 
-	if event.entity.name == 'character' then
+	if event.entity.name == "character" then
 		return
 	end
 
-	if event.damage_type.name == 'impact' then
+	if event.damage_type.name == "impact" then
 		return
 	end --avoid circularity
 
@@ -499,7 +499,7 @@ local function handle_enemy_nighttime_damage_bonus(event)
 	local bonusDamage = event.final_damage_amount * Balance.biter_timeofday_bonus_damage(event.cause.surface.darkness)
 
 	if bonusDamage > 0 then
-		event.entity.damage(bonusDamage, event.cause.force, 'impact', event.cause)
+		event.entity.damage(bonusDamage, event.cause.force, "impact", event.cause)
 	end
 end
 
@@ -515,18 +515,18 @@ local function handle_damage_dealt_by_players(event)
 	if not event.entity.valid then
 		return
 	end
-	if event.cause.name ~= 'character' then
+	if event.cause.name ~= "character" then
 		return
 	end
-	if event.entity.name == 'character' then
+	if event.entity.name == "character" then
 		return
 	end
 
 	local character = event.cause
 	local player = character.player
 
-	local physical = event.damage_type.name == 'physical'
-	local acid = event.damage_type.name == 'acid'
+	local physical = event.damage_type.name == "physical"
+	local acid = event.damage_type.name == "acid"
 
 	local player_index = player.index
 	local class = Classes.get_class(player_index)
@@ -539,7 +539,7 @@ local function handle_damage_dealt_by_players(event)
 			local nearby_players = character.surface.find_entities_filtered({
 				position = character.position,
 				radius = Balance.quartermaster_range,
-				type = { 'character' },
+				type = { "character" },
 			})
 
 			for _, p2 in pairs(nearby_players) do
@@ -565,11 +565,11 @@ local function handle_damage_dealt_by_players(event)
 					event.entity.valid
 					and weapon.valid_for_read
 					and ammo.valid_for_read
-					and weapon.name == 'pistol'
+					and weapon.name == "pistol"
 					and (
-						ammo.name == 'firearm-magazine'
-						or ammo.name == 'piercing-rounds-magazine'
-						or ammo.name == 'uranium-rounds-magazine'
+						ammo.name == "firearm-magazine"
+						or ammo.name == "piercing-rounds-magazine"
+						or ammo.name == "uranium-rounds-magazine"
 					)
 				then
 					-- event.entity.damage((Balance.pistol_damage_multiplier() - 1) * event.final_damage_amount, character.force, 'impact', character) --triggers this function again, but not physical this time
@@ -605,7 +605,7 @@ local function handle_damage_dealt_by_players(event)
 
 			local big_number = 1000
 
-			local extra_physical_damage_from_research_multiplier = 1 + memory.force.get_ammo_damage_modifier('bullet')
+			local extra_physical_damage_from_research_multiplier = 1 + memory.force.get_ammo_damage_modifier("bullet")
 
 			if melee then
 				if physical then
@@ -655,7 +655,7 @@ local function handle_damage_dealt_by_players(event)
 						force = player.force,
 					})
 					if nearest and nearest.valid then
-						nearest.damage(surplus / big_number, character.force, 'acid', character)
+						nearest.damage(surplus / big_number, character.force, "acid", character)
 					end
 				end
 			end
@@ -671,7 +671,7 @@ local function handle_poison_resistance_in_swamp(event)
 		return
 	end
 
-	if not (event.damage_type.name and event.damage_type.name == 'poison') then
+	if not (event.damage_type.name and event.damage_type.name == "poison") then
 		return
 	end
 
@@ -686,7 +686,7 @@ local function handle_poison_resistance_in_swamp(event)
 
 	if
 		not (
-			(entity.type and entity.type == 'tree')
+			(entity.type and entity.type == "tree")
 			or (event.entity.force and event.entity.force.name == memory.enemy_force_name)
 		)
 	then
@@ -716,19 +716,19 @@ local function handle_maze_walls_damage_resistance(event)
 
 	if
 		not (
-			(entity.type and entity.type == 'tree')
-			or entity.name == 'huge-rock'
-			or entity.name == 'big-rock'
-			or entity.name == 'big-sand-rock'
+			(entity.type and entity.type == "tree")
+			or entity.name == "huge-rock"
+			or entity.name == "big-rock"
+			or entity.name == "big-sand-rock"
 		)
 	then
 		return
 	end
 
-	if event.damage_type.name and (event.damage_type.name == 'explosion' or event.damage_type.name == 'poison') then
+	if event.damage_type.name and (event.damage_type.name == "explosion" or event.damage_type.name == "poison") then
 		event.entity.health = event.entity.health + event.final_damage_amount
 		event.final_damage_amount = 0
-	elseif event.damage_type.name and event.damage_type.name == 'fire' then
+	elseif event.damage_type.name and event.damage_type.name == "fire" then
 		-- put out forest fires:
 		for _, e2 in
 			pairs(entity.surface.find_entities_filtered({
@@ -736,7 +736,7 @@ local function handle_maze_walls_damage_resistance(event)
 					{ entity.position.x - 4, entity.position.y - 4 },
 					{ entity.position.x + 4, entity.position.y + 4 },
 				},
-				name = 'fire-flame-on-tree',
+				name = "fire-flame-on-tree",
 			}))
 		do
 			if e2.valid then
@@ -745,7 +745,7 @@ local function handle_maze_walls_damage_resistance(event)
 		end
 	else
 		if event.cause and event.cause.valid then
-			if string.sub(event.cause.force.name, 1, 4) == 'crew' then --player damage only
+			if string.sub(event.cause.force.name, 1, 4) == "crew" then --player damage only
 				event.entity.health = event.entity.health + event.final_damage_amount * 0.9
 				event.final_damage_amount = event.final_damage_amount * 0.1
 			end
@@ -976,14 +976,14 @@ local function player_mined_tree(event)
 
 	destination.dynamic_data.wood_remaining = destination.dynamic_data.wood_remaining - amount
 
-	give[#give + 1] = { name = 'wood', count = amount }
+	give[#give + 1] = { name = "wood", count = amount }
 
 	if class == Classes.enum.LUMBERJACK then
 		Classes.lumberjack_bonus_items(give)
 	else
 		if Math.random(Balance.every_nth_tree_gives_coins) == 1 then --tuned
 			local a = Balance.coin_amount_from_tree()
-			give[#give + 1] = { name = 'coin', count = a }
+			give[#give + 1] = { name = "coin", count = a }
 			memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks
 				+ a
 		end
@@ -995,11 +995,11 @@ local function player_mined_tree(event)
 		if Math.random(512) == 1 then
 			local placed = Ores.try_ore_spawn(entity.surface, entity.position, entity.name, 0, true)
 			if placed then
-				Common.notify_player_expected(player, { 'pirates.ore_discovered' })
+				Common.notify_player_expected(player, { "pirates.ore_discovered" })
 			end
 		elseif Math.random(1024) == 1 then
 			local e = entity.surface.create_entity({
-				name = 'wooden-chest',
+				name = "wooden-chest",
 				position = entity.position,
 				force = memory.ancient_friendly_force_name,
 			})
@@ -1015,7 +1015,7 @@ local function player_mined_tree(event)
 					inv.insert(l)
 				end
 
-				Common.notify_player_expected(player, { 'pirates.chest_discovered' })
+				Common.notify_player_expected(player, { "pirates.chest_discovered" })
 			end
 		end
 	end
@@ -1050,17 +1050,17 @@ local function player_mined_fish(event)
 
 		if class == Classes.enum.FISHERMAN then
 			fish_amount = fish_amount + Balance.fisherman_fish_bonus
-			to_give[#to_give + 1] = { name = 'raw-fish', count = fish_amount }
+			to_give[#to_give + 1] = { name = "raw-fish", count = fish_amount }
 		elseif class == Classes.enum.MASTER_ANGLER then
 			fish_amount = fish_amount + Balance.master_angler_fish_bonus
-			to_give[#to_give + 1] = { name = 'raw-fish', count = fish_amount }
-			to_give[#to_give + 1] = { name = 'coin', count = Balance.master_angler_coin_bonus }
+			to_give[#to_give + 1] = { name = "raw-fish", count = fish_amount }
+			to_give[#to_give + 1] = { name = "coin", count = Balance.master_angler_coin_bonus }
 		elseif class == Classes.enum.DREDGER then
 			fish_amount = fish_amount + Balance.dredger_fish_bonus
-			to_give[#to_give + 1] = { name = 'raw-fish', count = fish_amount }
+			to_give[#to_give + 1] = { name = "raw-fish", count = fish_amount }
 			to_give[#to_give + 1] = Loot.dredger_loot()[1]
 		else
-			to_give[#to_give + 1] = { name = 'raw-fish', count = fish_amount }
+			to_give[#to_give + 1] = { name = "raw-fish", count = fish_amount }
 		end
 
 		Common.give(player, to_give, entity.position)
@@ -1077,7 +1077,7 @@ local function player_mined_fish(event)
 			end
 		end
 	else
-		Common.notify_player_error(player, { 'pirates.cant_catch_fish' })
+		Common.notify_player_error(player, { "pirates.cant_catch_fish" })
 	end
 end
 
@@ -1116,7 +1116,7 @@ local function player_mined_resource(event)
 
 	if memory.overworldx > 0 then --no coins on first map, else the optimal strategy is to handmine everything there
 		local a = 1
-		give[#give + 1] = { name = 'coin', count = a }
+		give[#give + 1] = { name = "coin", count = a }
 		memory.playtesting_stats.coins_gained_by_ore = memory.playtesting_stats.coins_gained_by_ore + a
 	end
 
@@ -1159,20 +1159,20 @@ local function player_mined_rock(event)
 
 		if Math.random(1, 35) == 1 then
 			tick_tack_trap(entity.surface, entity.position, enemy_force)
-		elseif Math.random(1, 20) == 1 then
-			entity.surface.create_entity({ name = 'compilatron', position = entity.position, force = memory.force })
+		-- elseif Math.random(1, 20) == 1 then
+		-- 	entity.surface.create_entity({ name = "compilatron", position = entity.position, force = memory.force })
 
-			if
-				destination
-				and destination.dynamic_data
-				and destination.dynamic_data.quest_type
-				and not destination.dynamic_data.quest_complete
-			then
-				if destination.dynamic_data.quest_type == Quest.enum.COMPILATRON then
-					destination.dynamic_data.quest_progress = destination.dynamic_data.quest_progress + 1
-					Quest.try_resolve_quest()
-				end
-			end
+		-- 	if
+		-- 		destination
+		-- 		and destination.dynamic_data
+		-- 		and destination.dynamic_data.quest_type
+		-- 		and not destination.dynamic_data.quest_complete
+		-- 	then
+		-- 		if destination.dynamic_data.quest_type == Quest.enum.COMPILATRON then
+		-- 			destination.dynamic_data.quest_progress = destination.dynamic_data.quest_progress + 1
+		-- 			Quest.try_resolve_quest()
+		-- 		end
+		-- 	end
 		elseif Math.random(1, 10) == 1 then
 			if Math.random(1, 4) == 1 then
 				entity.surface.create_entity({
@@ -1194,33 +1194,33 @@ local function player_mined_rock(event)
 		local c2 = {}
 
 		if memory.overworldx >= 0 then --used to be only later levels
-			if entity.name == 'huge-rock' then
+			if entity.name == "huge-rock" then
 				local a = Math.ceil(1.5 * Balance.coin_amount_from_rock())
-				c2[#c2 + 1] = { name = 'coin', count = a, color = CoreData.colors.coin }
+				c2[#c2 + 1] = { name = "coin", count = a, color = CoreData.colors.coin }
 				memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks
 					+ a
 				if Math.random(1, 35) == 1 then
-					c2[#c2 + 1] = { name = 'crude-oil-barrel', count = 1, color = CoreData.colors.oil }
+					c2[#c2 + 1] = { name = "crude-oil-barrel", count = 1, color = CoreData.colors.oil }
 				end
 			else
 				local a = Balance.coin_amount_from_rock()
-				c2[#c2 + 1] = { name = 'coin', count = a, color = CoreData.colors.coin }
+				c2[#c2 + 1] = { name = "coin", count = a, color = CoreData.colors.coin }
 				memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks
 					+ a
 				if Math.random(1, 35 * 3) == 1 then
-					c2[#c2 + 1] = { name = 'crude-oil-barrel', count = 1, color = CoreData.colors.oil }
+					c2[#c2 + 1] = { name = "crude-oil-barrel", count = 1, color = CoreData.colors.oil }
 				end
 			end
 		end
 
 		for _, item in ipairs(c) do
-			if item.name == 'coal' and #c2 <= 1 then --if oil, then no coal
+			if item.name == "coal" and #c2 <= 1 then --if oil, then no coal
 				c2[#c2 + 1] = {
 					name = item.name,
 					count = Math.ceil(item.count * (player.force.mining_drill_productivity_bonus + 1)),
 					color = CoreData.colors.coal,
 				}
-			elseif item.name == 'stone' then
+			elseif item.name == "stone" then
 				c2[#c2 + 1] = {
 					name = item.name,
 					count = Math.ceil(item.count * (player.force.mining_drill_productivity_bonus + 1)),
@@ -1280,26 +1280,26 @@ local function event_on_player_mined_entity(event)
 	local crew_id = Common.get_id_from_force_name(player.force.name)
 	Memory.set_working_id(crew_id)
 
-	if player.character.surface.name == 'gulag' then
+	if player.character.surface.name == "gulag" then
 		event.buffer.clear()
 		return
 	end
 
-	if entity.type == 'tree' then
+	if entity.type == "tree" then
 		player_mined_tree(event)
 		event.buffer.clear()
-	elseif entity.type == 'fish' then
+	elseif entity.type == "fish" then
 		player_mined_fish(event)
 		event.buffer.clear()
 	elseif
-		entity.name == 'coal'
-		or entity.name == 'stone'
-		or entity.name == 'copper-ore'
-		or entity.name == 'iron-ore'
+		entity.name == "coal"
+		or entity.name == "stone"
+		or entity.name == "copper-ore"
+		or entity.name == "iron-ore"
 	then
 		player_mined_resource(event)
 		event.buffer.clear()
-	elseif entity.name == 'huge-rock' or entity.name == 'big-rock' or entity.name == 'big-sand-rock' then
+	elseif entity.name == "huge-rock" or entity.name == "big-rock" or entity.name == "big-sand-rock" then
 		player_mined_rock(event)
 		event.buffer.clear()
 	end
@@ -1311,7 +1311,7 @@ local function shred_nearby_simple_entities(entity)
 		return
 	end
 	local simple_entities = entity.surface.find_entities_filtered({
-		type = { 'simple-entity', 'tree' },
+		type = { "simple-entity", "tree" },
 		area = { { entity.position.x - 3, entity.position.y - 3 }, { entity.position.x + 3, entity.position.y + 3 } },
 	})
 	if #simple_entities == 0 then
@@ -1349,14 +1349,14 @@ local function base_kill_rewards(event)
 	end
 
 	local revenge_target
-	if event.cause and event.cause.valid and event.cause.name == 'character' then
+	if event.cause and event.cause.valid and event.cause.name == "character" then
 		revenge_target = event.cause
 	end
 
 	-- This gives enemy loot straight to combat robot owner's inventory instead of dropping it on the ground
 	if
 		event.cause
-		and (event.cause.name == 'defender' or event.cause.name == 'distractor' or event.cause.name == 'destroyer')
+		and (event.cause.name == "defender" or event.cause.name == "distractor" or event.cause.name == "destroyer")
 	then
 		if event.cause.combat_robot_owner and event.cause.combat_robot_owner.valid then
 			revenge_target = event.cause.combat_robot_owner
@@ -1373,38 +1373,38 @@ local function base_kill_rewards(event)
 	local coin_amount
 	local fish_amount
 
-	if entity_name == 'small-worm-turret' then
+	if entity_name == "small-worm-turret" then
 		iron_amount = 5
 		coin_amount = 50
 		fish_amount = 1 * Balance.chef_fish_received_for_worm_kill
 		memory.playtesting_stats.coins_gained_by_nests_and_worms = memory.playtesting_stats.coins_gained_by_nests_and_worms
 			+ coin_amount
-	elseif entity_name == 'medium-worm-turret' then
+	elseif entity_name == "medium-worm-turret" then
 		iron_amount = 20
 		coin_amount = 90
 		fish_amount = 2 * Balance.chef_fish_received_for_worm_kill
 		memory.playtesting_stats.coins_gained_by_nests_and_worms = memory.playtesting_stats.coins_gained_by_nests_and_worms
 			+ coin_amount
-	elseif entity_name == 'biter-spawner' or entity_name == 'spitter-spawner' then
+	elseif entity_name == "biter-spawner" or entity_name == "spitter-spawner" then
 		iron_amount = 30
 		coin_amount = 100
 		fish_amount = 0 -- cooking spawners don't really fit class fantasy imo
 		memory.playtesting_stats.coins_gained_by_nests_and_worms = memory.playtesting_stats.coins_gained_by_nests_and_worms
 			+ coin_amount
-	elseif entity_name == 'big-worm-turret' then
+	elseif entity_name == "big-worm-turret" then
 		iron_amount = 30
 		coin_amount = 140
 		fish_amount = 2 * Balance.chef_fish_received_for_worm_kill
 		memory.playtesting_stats.coins_gained_by_nests_and_worms = memory.playtesting_stats.coins_gained_by_nests_and_worms
 			+ coin_amount
-	elseif entity_name == 'behemoth-worm-turret' then
+	elseif entity_name == "behemoth-worm-turret" then
 		iron_amount = 50
 		coin_amount = 260
 		fish_amount = 3 * Balance.chef_fish_received_for_worm_kill
 		memory.playtesting_stats.coins_gained_by_nests_and_worms = memory.playtesting_stats.coins_gained_by_nests_and_worms
 			+ coin_amount
 	elseif memory.overworldx > 0 then --avoid coin farming on first island
-		if entity_name == 'small-biter' then
+		if entity_name == "small-biter" then
 			-- if Math.random(2) == 1 then
 			-- 	coin_amount = 1
 			-- end
@@ -1412,37 +1412,37 @@ local function base_kill_rewards(event)
 			fish_amount = 0 * Balance.chef_fish_received_for_biter_kill
 			memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters
 				+ coin_amount
-		elseif entity_name == 'small-spitter' then
+		elseif entity_name == "small-spitter" then
 			coin_amount = 1
 			fish_amount = 0 * Balance.chef_fish_received_for_biter_kill
 			memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters
 				+ coin_amount
-		elseif entity_name == 'medium-biter' then
+		elseif entity_name == "medium-biter" then
 			coin_amount = 2
 			fish_amount = 1 * Balance.chef_fish_received_for_biter_kill
 			memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters
 				+ coin_amount
-		elseif entity_name == 'medium-spitter' then
+		elseif entity_name == "medium-spitter" then
 			coin_amount = 2
 			fish_amount = 1 * Balance.chef_fish_received_for_biter_kill
 			memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters
 				+ coin_amount
-		elseif entity_name == 'big-biter' then
+		elseif entity_name == "big-biter" then
 			coin_amount = 4
 			fish_amount = 2 * Balance.chef_fish_received_for_biter_kill
 			memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters
 				+ coin_amount
-		elseif entity_name == 'big-spitter' then
+		elseif entity_name == "big-spitter" then
 			coin_amount = 4
 			fish_amount = 2 * Balance.chef_fish_received_for_biter_kill
 			memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters
 				+ coin_amount
-		elseif entity_name == 'behemoth-biter' then
+		elseif entity_name == "behemoth-biter" then
 			coin_amount = 8
 			fish_amount = 3 * Balance.chef_fish_received_for_biter_kill
 			memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters
 				+ coin_amount
-		elseif entity_name == 'behemoth-spitter' then
+		elseif entity_name == "behemoth-spitter" then
 			coin_amount = 8
 			fish_amount = 3 * Balance.chef_fish_received_for_biter_kill
 			memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters
@@ -1453,15 +1453,15 @@ local function base_kill_rewards(event)
 	local stack = {}
 
 	if iron_amount and iron_amount > 0 then
-		stack[#stack + 1] = { name = 'iron-plate', count = iron_amount }
+		stack[#stack + 1] = { name = "iron-plate", count = iron_amount }
 	end
 
 	if coin_amount and coin_amount > 0 then
-		stack[#stack + 1] = { name = 'coin', count = coin_amount }
+		stack[#stack + 1] = { name = "coin", count = coin_amount }
 	end
 
 	if class_is_chef and fish_amount and fish_amount > 0 then
-		stack[#stack + 1] = { name = 'raw-fish', count = fish_amount }
+		stack[#stack + 1] = { name = "raw-fish", count = fish_amount }
 	end
 
 	local short_form = (not iron_amount) and true or false
@@ -1478,7 +1478,7 @@ local function base_kill_rewards(event)
 	end
 
 	if
-		(entity_name == 'biter-spawner' or entity_name == 'spitter-spawner')
+		(entity_name == "biter-spawner" or entity_name == "spitter-spawner")
 		and entity.position
 		and entity.surface
 		and entity.surface.valid
@@ -1495,11 +1495,11 @@ local function base_kill_rewards(event)
 			end
 		end
 		if boat_spawner then
-			Ai.revenge_group(entity.surface, entity.position, revenge_target, 'biter', 0.3, 2)
-		elseif entity_name == 'biter-spawner' then
-			Ai.revenge_group(entity.surface, entity.position, revenge_target, 'biter')
+			Ai.revenge_group(entity.surface, entity.position, revenge_target, "biter", 0.3, 2)
+		elseif entity_name == "biter-spawner" then
+			Ai.revenge_group(entity.surface, entity.position, revenge_target, "biter")
 		else
-			Ai.revenge_group(entity.surface, entity.position, revenge_target, 'spitter')
+			Ai.revenge_group(entity.surface, entity.position, revenge_target, "spitter")
 		end
 	end
 end
@@ -1556,28 +1556,28 @@ local function event_on_entity_died(event)
 
 	base_kill_rewards(event)
 
-	if memory.scripted_biters and entity.type == 'unit' and entity.force.name == memory.enemy_force_name then
+	if memory.scripted_biters and entity.type == "unit" and entity.force.name == memory.enemy_force_name then
 		memory.scripted_biters[entity.unit_number] = nil
 	end
 
-	if entity.force.index == 3 or entity.force.name == 'environment' then
+	if entity.force.index == 3 or entity.force.name == "environment" then
 		if event.cause and event.cause.valid and event.cause.force.name == memory.enemy_force_name then
 			shred_nearby_simple_entities(entity)
 		end
 	end
 
 	if event.entity and event.entity.valid and event.entity.force and event.entity.force.name == memory.force_name then
-		if boat and boat.cannonscount and entity.name == 'artillery-turret' then
+		if boat and boat.cannonscount and entity.name == "artillery-turret" then
 			boat.cannonscount = boat.cannonscount - 1
 			-- if boat.cannonscount <= 0 then
 			-- 	Crew.try_lose()
 			-- end
-			Crew.try_lose({ 'pirates.loss_cannon_destroyed' })
+			Crew.try_lose({ "pirates.loss_cannon_destroyed" })
 		end
 	end
 
 	if entity and entity.valid and entity.force and entity.force.name == memory.enemy_force_name then
-		if entity.name == 'biter-spawner' or entity.name == 'spitter-spawner' then
+		if entity.name == "biter-spawner" or entity.name == "spitter-spawner" then
 			spawner_died(event)
 			-- I think the only reason krakens don't trigger this right now is that they are destroyed rather than .die()
 		else
@@ -1588,7 +1588,7 @@ local function event_on_entity_died(event)
 				and destination.dynamic_data.quest_type
 				and not destination.dynamic_data.quest_complete
 			then
-				if destination.dynamic_data.quest_type == Quest.enum.WORMS and entity.type == 'turret' then
+				if destination.dynamic_data.quest_type == Quest.enum.WORMS and entity.type == "turret" then
 					destination.dynamic_data.quest_progress = destination.dynamic_data.quest_progress + 1
 					Quest.try_resolve_quest()
 				end
@@ -1615,7 +1615,7 @@ local function event_on_entity_died(event)
 				local target_pos = Math.vector_sum(entity.position, offset)
 
 				local stream = surface.create_entity({
-					name = 'acid-stream-spitter-big',
+					name = "acid-stream-spitter-big",
 					position = entity.position,
 					force = memory.enemy_force_name,
 					source = entity.position,
@@ -1657,6 +1657,11 @@ local function event_on_research_finished(event)
 	-- figure out which crew this is about:
 	local research = event.research
 	local force = research.force
+
+	if force.name == Common.lobby_force_name then
+		return
+	end
+
 	local crew_id = Common.get_id_from_force_name(force.name)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
@@ -1664,20 +1669,20 @@ local function event_on_research_finished(event)
 	if not memory.game_lost then --this condition should prevent discord messages being fired when the crew disbands and gets reset
 		-- using a localised string means we have to write this out (recall that "" signals concatenation)
 		memory.force.print(
-			{ '', '>> ', { 'pirates.research_notification', research.localised_name } },
+			{ "", ">> ", { "pirates.research_notification", research.localised_name } },
 			{ color = CoreData.colors.notify_force_light }
 		)
 
 		Server.to_discord_embed_raw({
-			'',
-			'[' .. memory.name .. '] ',
-			{ 'pirates.research_notification', prototypes.technology[research.name].localised_name },
+			"",
+			"[" .. memory.name .. "] ",
+			{ "pirates.research_notification", prototypes.technology[research.name].localised_name },
 		}, true)
 	end
 
-	for _, e in ipairs(research.effects) do
+	for _, e in ipairs(research.prototype.effects) do
 		local t = e.type
-		if t == 'ammo-damage' then
+		if t == "ammo-damage" then
 			local category = e.ammo_category
 			local factor = Balance.player_ammo_damage_modifiers()[category]
 
@@ -1686,7 +1691,7 @@ local function event_on_research_finished(event)
 				local m = e.modifier
 				force.set_ammo_damage_modifier(category, current_m + factor * m)
 			end
-		elseif t == 'gun-speed' then
+		elseif t == "gun-speed" then
 			local category = e.ammo_category
 			local factor = Balance.player_gun_speed_modifiers()[category]
 
@@ -1695,7 +1700,7 @@ local function event_on_research_finished(event)
 				local m = e.modifier
 				force.set_gun_speed_modifier(category, current_m + factor * m)
 			end
-		elseif t == 'turret-attack' then
+		elseif t == "turret-attack" then
 			local category = e.turret_id
 			local factor = Balance.player_turret_attack_modifiers()[category]
 
@@ -1718,11 +1723,11 @@ local function event_on_player_joined_game(event)
 	--figure out if we should drop them back into a crew:
 
 	if not Server.get_current_time() then -- don't run this on servers because I'd need to negotiate that with the rest of Comfy
-		player.print({ 'pirates.thesixthroc_support_toast' }, { color = { r = 1, g = 0.4, b = 0.9 } })
+		player.print({ "pirates.thesixthroc_support_toast" }, { color = { r = 1, g = 0.4, b = 0.9 } })
 	end
 
 	if _DEBUG then
-		game.print('Debug mode on. Use /go to get started, /1 /4 /32 etc to change game speed.')
+		game.print("Debug mode on. Use /go to get started, /1 /4 /32 etc to change game speed.")
 	end
 
 	local crew_to_put_back_in = nil
@@ -1742,7 +1747,7 @@ local function event_on_player_joined_game(event)
 	-- end
 
 	if crew_to_put_back_in then
-		log('INFO: ' .. player.name .. ' (crew ID: ' .. crew_to_put_back_in .. ') joined the game')
+		log("INFO: " .. player.name .. " (crew ID: " .. crew_to_put_back_in .. ") joined the game")
 
 		Memory.set_working_id(crew_to_put_back_in)
 		Crew.join_crew(player, true)
@@ -1753,10 +1758,10 @@ local function event_on_player_joined_game(event)
 		end
 
 		if _DEBUG then
-			log('putting player back in their old crew')
+			log("putting player back in their old crew")
 		end
 	else
-		log('INFO: ' .. player.name .. ' (crew ID: NONE) joined the game')
+		log("INFO: " .. player.name .. " (crew ID: NONE) joined the game")
 		if player.character and player.character.valid then
 			player.character.destroy()
 		end
@@ -1766,7 +1771,7 @@ local function event_on_player_joined_game(event)
 		local spawnpoint = Common.lobby_spawnpoint
 		local surface = game.surfaces[CoreData.lobby_surface_name]
 
-		player.teleport(surface.find_non_colliding_position('character', spawnpoint, 32, 0.5) or spawnpoint, surface)
+		player.teleport(surface.find_non_colliding_position("character", spawnpoint, 32, 0.5) or spawnpoint, surface)
 		Permissions.update_privileges(player)
 
 		if not player.name then
@@ -1779,7 +1784,7 @@ local function event_on_player_joined_game(event)
 			Common.ensure_chunks_at(surface, spawnpoint, 5)
 		end
 
-		Common.notify_player_expected(player, { 'pirates.welcome_main_chat' })
+		Common.notify_player_expected(player, { "pirates.welcome_main_chat" })
 
 		if not _DEBUG then
 			GuiWelcome.show_welcome_window(player)
@@ -1854,9 +1859,9 @@ local function event_on_pre_player_left_game(event)
 	-- figure out which crew this is about:
 	local crew_id = Common.get_id_from_force_name(player.force.name)
 	if crew_id then
-		log('INFO: ' .. player.name .. ' (crew ID: ' .. crew_id .. ') left the game')
+		log("INFO: " .. player.name .. " (crew ID: " .. crew_id .. ") left the game")
 	else
-		log('INFO: ' .. player.name .. ' (crew ID: NONE) left the game')
+		log("INFO: " .. player.name .. " (crew ID: NONE) left the game")
 	end
 
 	Memory.set_working_id(crew_id)
@@ -1914,10 +1919,10 @@ local function on_player_changed_surface(event)
 	if not player.is_cursor_empty() then
 		if player.cursor_stack and player.cursor_stack.valid_for_read then
 			local blacklisted = {
-				['small-electric-pole'] = true,
-				['medium-electric-pole'] = true,
-				['big-electric-pole'] = true,
-				['substation'] = true,
+				["small-electric-pole"] = true,
+				["medium-electric-pole"] = true,
+				["big-electric-pole"] = true,
+				["substation"] = true,
 			}
 			if blacklisted[player.cursor_stack.name] then
 				player.get_main_inventory().insert(player.cursor_stack)
@@ -1939,7 +1944,7 @@ function Public.player_entered_vehicle(player, vehicle)
 		return
 	end
 	if not vehicle then
-		log('no vehicle')
+		log("no vehicle")
 		return
 	end
 	-- if not vehicle.name then log('no vehicle') return end
@@ -1965,7 +1970,7 @@ function Public.player_entered_vehicle(player, vehicle)
 
 	local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(player.character.surface.name)
 
-	if vehicle.name == 'car' then
+	if vehicle.name == "car" then
 		-- A way to make player driven vehicles work
 		if vehicle.minable then
 			return
@@ -1981,25 +1986,25 @@ function Public.player_entered_vehicle(player, vehicle)
 			else
 				Surfaces.player_goto_crows_nest(player, player_relative_pos)
 			end
-			player.play_sound({ path = 'utility/picked_up_item' })
+			player.play_sound({ path = "utility/picked_up_item" })
 		elseif surfacedata.type == Surfaces.enum.CROWSNEST then
 			Surfaces.player_exit_crows_nest(player, player_relative_pos)
-			player.play_sound({ path = 'utility/picked_up_item' })
+			player.play_sound({ path = "utility/picked_up_item" })
 		elseif surfacedata.type == Surfaces.enum.CABIN then
 			Surfaces.player_exit_cabin(player, player_relative_pos)
-			player.play_sound({ path = 'utility/picked_up_item' })
+			player.play_sound({ path = "utility/picked_up_item" })
 		end
 		vehicle.color = { 148, 106, 52 }
 
 		player.driving = false
-	elseif vehicle.name == 'locomotive' then
+	elseif vehicle.name == "locomotive" then
 		if
 			surfacedata.type ~= Surfaces.enum.HOLD
 			and surfacedata.type ~= Surfaces.enum.LOBBY
 			and Math.abs(player_boat_relative_pos.y) < 8
 		then --<8 in order not to enter holds of boats you haven't bought yet
 			Surfaces.player_goto_hold(player, player_relative_pos, 1)
-			player.play_sound({ path = 'utility/picked_up_item' })
+			player.play_sound({ path = "utility/picked_up_item" })
 		elseif surfacedata.type == Surfaces.enum.HOLD then
 			local current_hold_index = surfacedata.destination_index
 			if current_hold_index >= memory.hold_surface_count then
@@ -2007,7 +2012,7 @@ function Public.player_entered_vehicle(player, vehicle)
 			else
 				Surfaces.player_goto_hold(player, player_relative_pos, current_hold_index + 1)
 			end
-			player.play_sound({ path = 'utility/picked_up_item' })
+			player.play_sound({ path = "utility/picked_up_item" })
 		end
 
 		player.driving = false
@@ -2032,7 +2037,7 @@ function Public.event_on_chunk_generated(event)
 	if not surface.valid then
 		return
 	end
-	if surface.name == 'nauvis' or surface.name == 'piratedev1' or surface.name == 'gulag' then
+	if surface.name == "nauvis" or surface.name == "piratedev1" or surface.name == "gulag" then
 		return
 	end
 
@@ -2098,7 +2103,7 @@ function Public.event_on_chunk_generated(event)
 
 	if not width then
 		width = 999
-		log('no surface width? ' .. type)
+		log("no surface width? " .. type)
 	end
 	if not height then
 		height = 999
@@ -2131,7 +2136,7 @@ function Public.event_on_chunk_generated(event)
 				})
 			else
 				tiles[#tiles + 1] =
-					{ name = 'out-of-map', position = Utils.psum({ p, { 1, terraingen_coordinates_offset } }) }
+					{ name = "out-of-map", position = Utils.psum({ p, { 1, terraingen_coordinates_offset } }) }
 			end
 		end
 	end
@@ -2176,14 +2181,14 @@ function Public.event_on_chunk_generated(event)
 			-- recoordinatize:
 			special.position = Utils.psum({ special.position, { -1, terraingen_coordinates_offset } })
 
-			if special.name == 'buried-treasure' then
+			if special.name == "buried-treasure" then
 				if destination.dynamic_data.buried_treasure and crewid ~= 0 then
 					destination.dynamic_data.buried_treasure[#destination.dynamic_data.buried_treasure + 1] =
 						{ treasure = Loot.buried_treasure_loot(), position = special.position }
 				end
-			elseif special.name == 'chest' then
+			elseif special.name == "chest" then
 				local e = surface.create_entity({
-					name = 'wooden-chest',
+					name = "wooden-chest",
 					position = special.position,
 					force = memory.ancient_friendly_force_name,
 				})
@@ -2195,12 +2200,12 @@ function Public.event_on_chunk_generated(event)
 					local water_tiles = surface.find_tiles_filtered({
 						position = special.position,
 						radius = 0.1,
-						collision_mask = 'water_tile',
+						collision_mask = "water_tile",
 					})
 
 					if water_tiles then
 						for _, t in pairs(water_tiles) do
-							landfill_tiles[#landfill_tiles + 1] = { name = 'landfill', position = t.position }
+							landfill_tiles[#landfill_tiles + 1] = { name = "landfill", position = t.position }
 						end
 					end
 
@@ -2211,9 +2216,9 @@ function Public.event_on_chunk_generated(event)
 						inv.insert(l)
 					end
 				end
-			elseif special.name == 'market' then
+			elseif special.name == "market" then
 				local e = surface.create_entity({
-					name = 'market',
+					name = "market",
 					position = special.position,
 					force = memory.ancient_friendly_force_name,
 				})
@@ -2227,8 +2232,8 @@ function Public.event_on_chunk_generated(event)
 					end
 				end
 			elseif
-				special.name == 'crash-site-spaceship-wreck-big-2'
-				or special.name == 'crash-site-spaceship-wreck-big-1'
+				special.name == "crash-site-spaceship-wreck-big-2"
+				or special.name == "crash-site-spaceship-wreck-big-1"
 			then
 				local e = surface.create_entity({
 					name = special.name,
@@ -2275,8 +2280,8 @@ function Public.event_on_chunk_generated(event)
 			surface.can_place_entity(e2)
 			or (
 				destination.subtype == IslandEnum.enum.WALKWAYS
-				and string.sub(e.name, -11) == 'worm-turret'
-				and surface.get_tile(e.position.x, e.position.y).name == 'water-shallow'
+				and string.sub(e.name, -11) == "worm-turret"
+				and surface.get_tile(e.position.x, e.position.y).name == "water-shallow"
 			)
 		then
 			local ee = surface.create_entity(e)
@@ -2326,17 +2331,17 @@ local function event_on_rocket_launched(event)
 	destination.dynamic_data.rocket_launched = true
 	if memory.stored_fuel then
 		memory.stored_fuel = memory.stored_fuel + rocket_launch_coal_reward
-		Common.give_items_to_crew({ { name = 'coin', count = rocket_launch_coin_reward } })
+		Common.give_items_to_crew({ { name = "coin", count = rocket_launch_coin_reward } })
 		memory.playtesting_stats.coins_gained_by_rocket_launches = memory.playtesting_stats.coins_gained_by_rocket_launches
 			+ rocket_launch_coin_reward
 	end
 
 	local force = memory.force
 	local message = {
-		'pirates.granted_2',
-		{ 'pirates.granted_rocket_launch' },
-		Math.floor(rocket_launch_coin_reward / 100) / 10 .. 'k [item=coin]',
-		Math.floor(rocket_launch_coal_reward / 100) / 10 .. 'k [item=coal]',
+		"pirates.granted_2",
+		{ "pirates.granted_rocket_launch" },
+		Math.floor(rocket_launch_coin_reward / 100) / 10 .. "k [item=coin]",
+		Math.floor(rocket_launch_coal_reward / 100) / 10 .. "k [item=coal]",
 	}
 	Common.notify_force_light(force, message)
 
@@ -2385,7 +2390,7 @@ local function event_on_built_entity(event)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
 
-	if entity.name == 'land-mine' then
+	if entity.name == "land-mine" then
 		memory.players_to_last_landmine_placement_tick = memory.players_to_last_landmine_placement_tick or {}
 		memory.players_to_last_landmine_placement_tick[player.index] = game.tick
 	end
@@ -2398,16 +2403,16 @@ local function event_on_built_entity(event)
 		and entity.position
 	then
 		if
-			(entity.type and (entity.type == 'underground-belt'))
-			or (entity.name == 'entity-ghost' and entity.ghost_type and (entity.ghost_type == 'underground-belt'))
+			(entity.type and (entity.type == "underground-belt"))
+			or (entity.name == "entity-ghost" and entity.ghost_type and (entity.ghost_type == "underground-belt"))
 		then
 			if Boats.on_boat(memory.boat, entity.position) then
 				-- if (entity.type and (entity.type == 'underground-belt' or entity.type == 'pipe-to-ground')) or (entity.name == 'entity-ghost' and entity.ghost_type and (entity.ghost_type == 'underground-belt' or entity.ghost_type == 'pipe-to-ground')) then
-				if not (entity.name and entity.name == 'entity-ghost') then
+				if not (entity.name and entity.name == "entity-ghost") then
 					player.insert({ name = entity.name, count = 1 })
 				end
 				entity.destroy()
-				Common.notify_player_error(player, { 'pirates.error_build_undergrounds_on_boat' })
+				Common.notify_player_error(player, { "pirates.error_build_undergrounds_on_boat" })
 				return
 			end
 		end
@@ -2436,7 +2441,7 @@ local function event_on_console_chat(event)
 	end
 
 	local global_memory = Memory.get_global_memory()
-	local tag = player.tag or ''
+	local tag = player.tag or ""
 	local color = player.chat_color
 
 	local crew_id = Common.get_id_from_force_name(player.force.name)
@@ -2444,16 +2449,16 @@ local function event_on_console_chat(event)
 	local memory = Memory.get_crew_memory()
 
 	local message_prefix = player.name .. tag
-	local full_message = message_prefix .. ': ' .. event.message
+	local full_message = message_prefix .. ": " .. event.message
 
 	if player.force.name == Common.lobby_force_name then
 		for _, index in pairs(global_memory.crew_active_ids) do
 			local recipient_force_name = global_memory.crew_memories[index].force_name
-			game.forces[recipient_force_name].print(message_prefix .. ' [LOBBY]: ' .. event.message, { color = color })
+			game.forces[recipient_force_name].print(message_prefix .. " [LOBBY]: " .. event.message, { color = color })
 		end
 	else
 		if memory.name then
-			full_message = message_prefix .. ' [' .. memory.name .. ']: ' .. event.message
+			full_message = message_prefix .. " [" .. memory.name .. "]: " .. event.message
 		end
 		game.forces.player.print(full_message, { color = color })
 	end
@@ -2483,7 +2488,7 @@ local remove_boost_movement_speed_on_respawn = Token.register(function(data)
 	end
 	memory.speed_boost_characters[player.index] = nil
 
-	Common.notify_player_expected(player, { 'pirates.respawn_speed_bonus_removed' })
+	Common.notify_player_expected(player, { "pirates.respawn_speed_bonus_removed" })
 end)
 
 local boost_movement_speed_on_respawn = Token.register(function(data)
@@ -2504,7 +2509,7 @@ local boost_movement_speed_on_respawn = Token.register(function(data)
 	memory.speed_boost_characters[player.index] = true
 
 	Task.set_timeout_in_ticks(1200, remove_boost_movement_speed_on_respawn, { player = player, crew_id = crew_id })
-	Common.notify_player_expected(player, { 'pirates.respawn_speed_bonus_applied' })
+	Common.notify_player_expected(player, { "pirates.respawn_speed_bonus_applied" })
 end)
 
 local function event_on_player_respawned(event)
@@ -2578,25 +2583,25 @@ local function event_on_gui_opened(event)
 		return
 	end
 
-	if player.permission_group.name == 'cabin_privileged' then
-		if entity.name == 'red-chest' then
+	if player.permission_group.name == "cabin_privileged" then
+		if entity.name == "red-chest" then
 			-- Even the captain has to wait for items to be removed from the red chests by loaders:
 			player.opened = nil
 		end
-	elseif player.permission_group.name == 'cabin' then
+	elseif player.permission_group.name == "cabin" then
 		if
-			entity.name == 'wooden-chest'
-			or entity.name == 'iron-chest'
-			or entity.name == 'steel-chest'
-			or entity.name == 'red-chest'
-			or entity.name == 'blue-chest'
+			entity.name == "wooden-chest"
+			or entity.name == "iron-chest"
+			or entity.name == "steel-chest"
+			or entity.name == "red-chest"
+			or entity.name == "blue-chest"
 		then
 			player.opened = nil
 		end
 	end
 end
 
-local event = require('utils.event')
+local event = require("utils.event")
 event.add(defines.events.on_built_entity, event_on_built_entity)
 event.add(defines.events.on_entity_damaged, event_on_entity_damaged)
 event.add(defines.events.on_entity_died, event_on_entity_died)

@@ -1,39 +1,39 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/ComfyFactory/ComfyFactorio and https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
-local Memory = require('maps.pirates.memory')
-local Common = require('maps.pirates.common')
-local CoreData = require('maps.pirates.coredata')
+local Memory = require("maps.pirates.memory")
+local Common = require("maps.pirates.common")
+local CoreData = require("maps.pirates.coredata")
 -- local Utils = require 'maps.pirates.utils_local'
-local Math = require('maps.pirates.math')
+local Math = require("maps.pirates.math")
 -- local Surfaces = require 'maps.pirates.surfaces.surfaces'
-local Roles = require('maps.pirates.roles.roles')
-local Crew = require('maps.pirates.crew')
-local Progression = require('maps.pirates.progression')
+local Roles = require("maps.pirates.roles.roles")
+local Crew = require("maps.pirates.crew")
+local Progression = require("maps.pirates.progression")
 -- local Structures = require 'maps.pirates.structures.structures'
-local _inspect = require('utils.inspect').inspect
-local Boats = require('maps.pirates.structures.boats.boats')
-local GuiCommon = require('maps.pirates.gui.common')
+local _inspect = require("utils.inspect").inspect
+local Boats = require("maps.pirates.structures.boats.boats")
+local GuiCommon = require("maps.pirates.gui.common")
 -- local Server = require 'utils.server'
 local Public = {}
 
-local window_name = 'runs'
+local window_name = "runs"
 
 local function flow_add_proposal_slider(flow, name, displayname, indices_count, starting_index, tooltip)
 	local flow2, flow3, flow4
 
 	flow2 = flow.add({
 		name = name,
-		type = 'flow',
-		direction = 'vertical',
+		type = "flow",
+		direction = "vertical",
 	})
-	flow2.style.horizontal_align = 'left'
+	flow2.style.horizontal_align = "left"
 	flow2.style.width = 130
 
 	flow3 = flow2.add({
-		type = 'label',
+		type = "label",
 		caption = displayname,
 	})
-	flow3.style.font = 'default-semibold'
+	flow3.style.font = "default-semibold"
 	flow3.style.height = 20
 	flow3.style.margin = 0
 	flow3.style.padding = 0
@@ -44,15 +44,15 @@ local function flow_add_proposal_slider(flow, name, displayname, indices_count, 
 
 	flow3 = flow2.add({
 		name = name,
-		type = 'flow',
-		direction = 'vertical',
+		type = "flow",
+		direction = "vertical",
 	})
-	flow3.style.horizontal_align = 'center'
+	flow3.style.horizontal_align = "center"
 	flow3.style.width = 130
 
 	flow4 = flow3.add({
-		name = 'slider',
-		type = 'slider',
+		name = "slider",
+		type = "slider",
 		value_step = 1,
 		minimum_value = 1,
 		maximum_value = indices_count,
@@ -65,11 +65,11 @@ local function flow_add_proposal_slider(flow, name, displayname, indices_count, 
 	flow4.tooltip = tooltip
 
 	flow4 = flow3.add({
-		name = 'readoff_text',
-		type = 'label',
-		caption = '',
+		name = "readoff_text",
+		type = "label",
+		caption = "",
 	})
-	flow4.style.font = 'default-listbox'
+	flow4.style.font = "default-listbox"
 	flow4.style.height = 20
 	flow4.style.margin = 0
 	flow4.style.padding = 0
@@ -78,8 +78,8 @@ local function flow_add_proposal_slider(flow, name, displayname, indices_count, 
 	flow4.tooltip = tooltip
 
 	flow2 = flow.add({
-		name = name .. '_readoff_icon',
-		type = 'sprite-button',
+		name = name .. "_readoff_icon",
+		type = "sprite-button",
 		enabled = false,
 	})
 	flow2.style.width = 48
@@ -162,65 +162,65 @@ function Public.toggle_window(player)
 	local flow, flow2, flow3, flow4, flow5, flow6
 
 	--*** OVERALL FLOW ***--
-	if player.gui.screen[window_name .. '_piratewindow'] then
-		player.gui.screen[window_name .. '_piratewindow'].destroy()
+	if player.gui.screen[window_name .. "_piratewindow"] then
+		player.gui.screen[window_name .. "_piratewindow"].destroy()
 		return
 	end
 
 	window = GuiCommon.new_window(player, window_name)
-	window.caption = { 'pirates.gui_runs_play' }
+	window.caption = { "pirates.gui_runs_play" }
 
 	flow = window.add({
-		type = 'scroll-pane',
-		name = 'scroll_pane',
-		direction = 'vertical',
-		horizontal_scroll_policy = 'never',
-		vertical_scroll_policy = 'auto-and-reserve-space',
+		type = "scroll-pane",
+		name = "scroll_pane",
+		direction = "vertical",
+		horizontal_scroll_policy = "never",
+		vertical_scroll_policy = "auto-and-reserve-space",
 	})
 	flow.style.maximal_height = 500
 	flow.style.bottom_margin = 10
 
 	--*** ONGOING RUNS ***--
 
-	flow2 = GuiCommon.flow_add_section(flow, 'ongoing_runs', { 'pirates.gui_runs_ongoing_runs' })
+	flow2 = GuiCommon.flow_add_section(flow, "ongoing_runs", { "pirates.gui_runs_ongoing_runs" })
 
 	flow3 = flow2.add({
-		name = 'helpful_tip',
-		type = 'label',
-		caption = { 'pirates.gui_runs_ongoing_runs_helpful_tip' },
+		name = "helpful_tip",
+		type = "label",
+		caption = { "pirates.gui_runs_ongoing_runs_helpful_tip" },
 	})
 	flow3.style.font_color = { r = 0.90, g = 0.90, b = 0.90 }
 	flow3.style.single_line = false
 	flow3.style.maximal_width = 160
 
 	flow3 = flow2.add({
-		name = 'ongoing_runs_listbox',
-		type = 'list-box',
+		name = "ongoing_runs_listbox",
+		type = "list-box",
 	})
 	flow3.style.margin = 2
 	flow3.style.right_margin = 5
 	flow3.style.horizontally_stretchable = true
 
 	flow3 = flow2.add({
-		name = 'join_protected_crew_info',
-		type = 'label',
-		caption = { 'pirates.gui_join_protected_run_info' },
+		name = "join_protected_crew_info",
+		type = "label",
+		caption = { "pirates.gui_join_protected_run_info" },
 		visible = false,
 	})
 	flow3.style.single_line = false
 
 	flow3 = flow2.add({
-		name = 'join_private_crew_info',
-		type = 'label',
-		caption = { 'pirates.gui_join_private_run_info' },
+		name = "join_private_crew_info",
+		type = "label",
+		caption = { "pirates.gui_join_private_run_info" },
 		visible = false,
 	})
 	flow3.style.single_line = false
 
 	flow3 = flow2.add({
-		name = 'password',
-		type = 'textfield',
-		text = '',
+		name = "password",
+		type = "textfield",
+		text = "",
 		visible = false,
 	})
 	flow3.style.width = 150
@@ -229,86 +229,86 @@ function Public.toggle_window(player)
 	flow3.style.bottom_margin = 3
 
 	flow3 = flow2.add({
-		name = 'flow_buttons',
-		type = 'flow',
-		direction = 'horizontal',
+		name = "flow_buttons",
+		type = "flow",
+		direction = "horizontal",
 	})
 
 	flow4 = flow3.add({
-		name = 'join_crew',
-		type = 'button',
-		caption = { 'pirates.gui_runs_ongoing_runs_join_crew' },
+		name = "join_crew",
+		type = "button",
+		caption = { "pirates.gui_runs_ongoing_runs_join_crew" },
 	})
 	flow4.style.minimal_width = 95
-	flow4.style.font = 'default-bold'
+	flow4.style.font = "default-bold"
 	flow4.style.font_color = { r = 0.10, g = 0.10, b = 0.10 }
 
 	flow3 = flow2.add({
-		name = 'wait_to_join',
-		type = 'label',
+		name = "wait_to_join",
+		type = "label",
 	})
 	flow3.style.left_margin = 5
 
 	flow3 = flow2.add({
-		name = 'leaving_prompt',
-		type = 'label',
-		caption = { 'pirates.gui_runs_ongoing_runs_hop_on_board' },
+		name = "leaving_prompt",
+		type = "label",
+		caption = { "pirates.gui_runs_ongoing_runs_hop_on_board" },
 	})
 	flow3.style.left_margin = 5
 
 	-- PROPOSALS --
 
-	flow2 = GuiCommon.flow_add_section(flow, 'proposals', { 'pirates.gui_runs_proposals' })
-	flow2.style.horizontal_align = 'center'
+	flow2 = GuiCommon.flow_add_section(flow, "proposals", { "pirates.gui_runs_proposals" })
+	flow2.style.horizontal_align = "center"
 
 	flow3 = flow2.add({
-		name = 'proposals_listbox',
-		type = 'list-box',
+		name = "proposals_listbox",
+		type = "list-box",
 	})
 	flow3.style.margin = 2
 	flow3.style.right_margin = 5
 	flow3.style.horizontally_stretchable = true
 
 	flow3 = flow2.add({
-		name = 'flow_buttons',
-		type = 'flow',
-		direction = 'horizontal',
+		name = "flow_buttons",
+		type = "flow",
+		direction = "horizontal",
 	})
 
 	flow4 = flow3.add({
-		name = 'abandon_proposal',
-		type = 'button',
-		caption = { 'pirates.gui_runs_proposals_abandon_proposal' },
+		name = "abandon_proposal",
+		type = "button",
+		caption = { "pirates.gui_runs_proposals_abandon_proposal" },
 	})
 	flow4.style.minimal_width = 150
-	flow4.style.font = 'default-bold'
+	flow4.style.font = "default-bold"
 	flow4.style.font_color = { r = 0.10, g = 0.10, b = 0.10 }
 	flow4.style.bottom_margin = 4
 	flow4.style.top_margin = 4
 
 	-- PROPOSAL MAKER --
 
-	flow3 = GuiCommon.flow_add_subpanel(flow2, 'proposal_maker')
+	flow3 = GuiCommon.flow_add_subpanel(flow2, "proposal_maker")
 
 	flow4 = flow3.add({
-		name = 'body',
-		type = 'flow',
-		direction = 'vertical',
+		name = "body",
+		type = "flow",
+		direction = "vertical",
 	})
-	flow4.style.horizontal_align = 'center'
-	flow4.style.vertical_align = 'center'
+	flow4.style.horizontal_align = "center"
+	flow4.style.vertical_align = "center"
 
 	flow5 = flow4.add({
-		type = 'label',
-		caption = { 'pirates.gui_runs_proposal_maker_run_name' },
+		type = "label",
+		caption = { "pirates.gui_runs_proposal_maker_run_name" },
 	})
-	flow5.style.font = 'default-semibold'
+	flow5.style.font = "default-semibold"
 
 	flow5 = flow4.add({
-		name = 'namefield',
-		type = 'textfield',
-		caption = { 'pirates.gui_runs_proposal_maker_run_name_2' },
-		text = '',
+		name = "namefield",
+		type = "textfield",
+		caption = { "pirates.gui_runs_proposal_maker_run_name_2" },
+		text = "",
 	})
 	flow5.style.width = 150
 	flow5.style.height = 24
@@ -317,47 +317,47 @@ function Public.toggle_window(player)
 	-- CREW SETTINGS --
 
 	flow5 = flow4.add({
-		name = 'settings',
-		type = 'flow',
-		direction = 'vertical',
+		name = "settings",
+		type = "flow",
+		direction = "vertical",
 	})
-	flow5.style.horizontal_align = 'left'
+	flow5.style.horizontal_align = "left"
 	flow5.style.bottom_margin = 5
 
 	flow5.add({
-		name = 'protected_checkbox',
-		type = 'checkbox',
-		caption = { 'pirates.gui_runs_proposal_maker_protected' },
+		name = "protected_checkbox",
+		type = "checkbox",
+		caption = { "pirates.gui_runs_proposal_maker_protected" },
 		state = false,
-		tooltip = { 'pirates.gui_runs_proposal_maker_protected_tooltip' },
+		tooltip = { "pirates.gui_runs_proposal_maker_protected_tooltip" },
 	})
 
 	flow5.add({
-		name = 'private_checkbox',
-		type = 'checkbox',
-		caption = { 'pirates.gui_runs_proposal_maker_private' },
+		name = "private_checkbox",
+		type = "checkbox",
+		caption = { "pirates.gui_runs_proposal_maker_private" },
 		state = false,
-		tooltip = { 'pirates.gui_runs_proposal_maker_private_tooltip' },
+		tooltip = { "pirates.gui_runs_proposal_maker_private_tooltip" },
 	})
 
 	flow5.add({
-		name = 'blueprints_disabled_checkbox',
-		type = 'checkbox',
-		caption = { 'pirates.gui_runs_proposal_maker_blueprints_disabled' },
+		name = "blueprints_disabled_checkbox",
+		type = "checkbox",
+		caption = { "pirates.gui_runs_proposal_maker_blueprints_disabled" },
 		state = false,
 	})
 
 	flow6 = flow5.add({
-		name = 'password_label',
-		type = 'label',
-		caption = { 'pirates.gui_runs_proposal_maker_password' },
+		name = "password_label",
+		type = "label",
+		caption = { "pirates.gui_runs_proposal_maker_password" },
 	})
-	flow6.style.font = 'default-semibold'
+	flow6.style.font = "default-semibold"
 
 	flow6 = flow5.add({
-		name = 'password',
-		type = 'textfield',
-		text = '',
+		name = "password",
+		type = "textfield",
+		text = "",
 	})
 	flow6.style.width = 150
 	flow6.style.height = 24
@@ -365,16 +365,16 @@ function Public.toggle_window(player)
 	flow6.style.bottom_margin = 3
 
 	flow6 = flow5.add({
-		name = 'confirm_password_label',
-		type = 'label',
-		caption = { 'pirates.gui_runs_proposal_maker_confirm_password' },
+		name = "confirm_password_label",
+		type = "label",
+		caption = { "pirates.gui_runs_proposal_maker_confirm_password" },
 	})
-	flow6.style.font = 'default-semibold'
+	flow6.style.font = "default-semibold"
 
 	flow6 = flow5.add({
-		name = 'confirm_password',
-		type = 'textfield',
-		text = '',
+		name = "confirm_password",
+		type = "textfield",
+		text = "",
 	})
 	flow6.style.width = 150
 	flow6.style.height = 24
@@ -384,8 +384,8 @@ function Public.toggle_window(player)
 	-- CREW SIZE LIMIT SLIDER --
 
 	flow5 = flow4.add({
-		name = 'capacity_options',
-		type = 'table',
+		name = "capacity_options",
+		type = "table",
 		column_count = 2,
 	})
 	flow5.style.width = 200
@@ -393,11 +393,11 @@ function Public.toggle_window(player)
 
 	flow_add_proposal_slider(
 		flow5,
-		'capacity',
-		{ 'pirates.gui_runs_proposal_maker_capacity' },
+		"capacity",
+		{ "pirates.gui_runs_proposal_maker_capacity" },
 		#CoreData.capacity_options,
 		5,
-		{ 'pirates.capacity_tooltip' }
+		{ "pirates.capacity_tooltip" }
 	)
 	-- flow_add_proposal_slider(flow5, 'difficulty', 'Difficulty', #CoreData.difficulty_options, 2, {'pirates.difficulty_tooltip'})
 	-- flow_add_proposal_switch(flow5, 'mode', 'Mode', 'left', {'pirates.mode_tooltip'})
@@ -405,46 +405,46 @@ function Public.toggle_window(player)
 	flow5.visible = false --maybe will bring this back for the speedrun ship?
 
 	flow5 = flow4.add({
-		name = 'propose_crew',
-		type = 'button',
-		caption = { 'pirates.gui_runs_proposal_maker_propose' },
+		name = "propose_crew",
+		type = "button",
+		caption = { "pirates.gui_runs_proposal_maker_propose" },
 	})
 	flow5.style.minimal_width = 75
-	flow5.style.font = 'default-bold'
+	flow5.style.font = "default-bold"
 	flow5.style.font_color = { r = 0.10, g = 0.10, b = 0.10 }
 
 	-- LAUNCH YOUR PROPOSAL --
 
 	flow3 = flow2.add({
-		name = 'flow_proposal_launch',
-		type = 'flow',
-		direction = 'vertical',
+		name = "flow_proposal_launch",
+		type = "flow",
+		direction = "vertical",
 	})
 
 	flow4 = flow3.add({
-		name = 'proposal_crew_count_capped',
-		type = 'label',
-		caption = { 'pirates.gui_runs_launch_error_2' },
-	})
-	flow4.style.single_line = false
-
-	flow4 = flow3.add({
-		name = 'proposal_insufficient_sloops',
-		type = 'label',
-		caption = { 'pirates.gui_runs_launch_error_4' },
+		name = "proposal_crew_count_capped",
+		type = "label",
+		caption = { "pirates.gui_runs_launch_error_2" },
 	})
 	flow4.style.single_line = false
 
 	flow4 = flow3.add({
-		name = 'launch_crew',
-		type = 'button',
-		caption = { 'pirates.gui_runs_launch' },
+		name = "proposal_insufficient_sloops",
+		type = "label",
+		caption = { "pirates.gui_runs_launch_error_4" },
+	})
+	flow4.style.single_line = false
+
+	flow4 = flow3.add({
+		name = "launch_crew",
+		type = "button",
+		caption = { "pirates.gui_runs_launch" },
 	})
 	flow4.style.minimal_width = 150
-	flow4.style.font = 'default-bold'
+	flow4.style.font = "default-bold"
 	flow4.style.font_color = { r = 0.10, g = 0.10, b = 0.10 }
 
-	GuiCommon.flow_add_close_button(window, window_name .. '_piratebutton')
+	GuiCommon.flow_add_close_button(window, window_name .. "_piratebutton")
 end
 
 -- function Public.regular_update(player)
@@ -458,7 +458,7 @@ function Public.full_update(player)
 	local global_memory = Memory.get_global_memory()
 	local memory = Memory.get_crew_memory()
 
-	local window = player.gui.screen['runs_piratewindow']
+	local window = player.gui.screen["runs_piratewindow"]
 	if not window then
 		return
 	end
@@ -478,37 +478,37 @@ function Public.full_update(player)
 				or #mem.crewplayerindices
 
 			local crew_info = {
-				'',
-				'[font=scenario-message-dialog]',
-				mem.name .. ' (',
+				"",
+				"[font=scenario-message-dialog]",
+				mem.name .. " (",
 				{
-					'pirates.player_count_description',
+					"pirates.player_count_description",
 					count,
 				},
-				')[/font] — [item=',
+				")[/font] — [item=",
 				CoreData.difficulty_options[mem.difficulty_option].icon,
-				'], [item=rail]',
+				"], [item=rail]",
 				mem.overworldx or 0,
-				', [entity=small-biter]',
-				string.format('%.0f', (mem.evolution_factor or 0) * 100),
-				'%',
+				", [entity=small-biter]",
+				string.format("%.0f", (mem.evolution_factor or 0) * 100),
+				"%",
 			}
 
 			if mem.run_is_private then
-				table.insert(crew_info, ', ')
-				table.insert(crew_info, { 'pirates.run_condition_private_2' })
+				table.insert(crew_info, ", ")
+				table.insert(crew_info, { "pirates.run_condition_private_2" })
 			end
 			if mem.run_is_protected then
-				table.insert(crew_info, ', ')
-				table.insert(crew_info, { 'pirates.run_condition_captain_protected_2' })
+				table.insert(crew_info, ", ")
+				table.insert(crew_info, { "pirates.run_condition_captain_protected_2" })
 			end
 			if mem.run_has_blueprints_disabled then
-				table.insert(crew_info, ', ')
-				table.insert(crew_info, { 'pirates.run_condition_blueprints_disabled_2' })
+				table.insert(crew_info, ", ")
+				table.insert(crew_info, { "pirates.run_condition_blueprints_disabled_2" })
 			end
 
 			local crew_info_with_id = {
-				'pirates.second_element',
+				"pirates.second_element",
 				mem.id,
 				crew_info,
 			}
@@ -548,7 +548,8 @@ function Public.full_update(player)
 			and selected_crew.tempbanned_from_joining_data[player.index]
 			and game.tick
 				< selected_crew.tempbanned_from_joining_data[player.index] + Common.ban_from_rejoining_crew_ticks
-		ongoing_runs.body.wait_to_join.visible = show_wait_message
+		ongoing_runs.body.wait_to_join.visible = show_wait_message and true or false
+
 		if show_wait_message then
 			local wait_time = selected_crew
 					and Math.ceil(
@@ -558,7 +559,7 @@ function Public.full_update(player)
 						) / 60
 					)
 				or 0
-			ongoing_runs.body.wait_to_join.caption = { 'pirates.gui_runs_wait_to_join', tostring(wait_time) }
+			ongoing_runs.body.wait_to_join.caption = { "pirates.gui_runs_wait_to_join", tostring(wait_time) }
 		end
 
 		ongoing_runs.body.leaving_prompt.visible = playercrew_status.leaving
@@ -568,10 +569,10 @@ function Public.full_update(player)
 
 		if selected_crew then
 			if ongoing_runs.body.join_protected_crew_info.visible then
-				ongoing_runs.body.join_protected_crew_info.caption = { 'pirates.gui_join_protected_run_info' }
+				ongoing_runs.body.join_protected_crew_info.caption = { "pirates.gui_join_protected_run_info" }
 			end
 			if ongoing_runs.body.join_private_crew_info.visible then
-				ongoing_runs.body.join_private_crew_info.caption = { 'pirates.gui_join_private_run_info' }
+				ongoing_runs.body.join_private_crew_info.caption = { "pirates.gui_join_private_run_info" }
 			end
 		end
 	end
@@ -583,29 +584,29 @@ function Public.full_update(player)
 		local wrappedproposals = {}
 		for _, proposal in pairs(global_memory.crewproposals) do
 			local proposal_info = {
-				'',
-				'[font=scenario-message-dialog]',
-				proposal.name .. '[/font]',
+				"",
+				"[font=scenario-message-dialog]",
+				proposal.name .. "[/font]",
 			}
 			if proposal.run_is_private or proposal.run_is_protected or proposal.run_has_blueprints_disabled then
 				local i = 0
-				table.insert(proposal_info, ' — ')
+				table.insert(proposal_info, " — ")
 				if proposal.run_is_private then
-					table.insert(proposal_info, { 'pirates.run_condition_private_2' })
+					table.insert(proposal_info, { "pirates.run_condition_private_2" })
 					i = i + 1
 				end
 				if proposal.run_is_protected then
 					if i > 0 then
-						table.insert(proposal_info, ', ')
+						table.insert(proposal_info, ", ")
 					end
-					table.insert(proposal_info, { 'pirates.run_condition_captain_protected_2' })
+					table.insert(proposal_info, { "pirates.run_condition_captain_protected_2" })
 					i = i + 1
 				end
 				if proposal.run_has_blueprints_disabled then
 					if i > 0 then
-						table.insert(proposal_info, ', ')
+						table.insert(proposal_info, ", ")
 					end
-					table.insert(proposal_info, { 'pirates.run_condition_blueprints_disabled_2' })
+					table.insert(proposal_info, { "pirates.run_condition_blueprints_disabled_2" })
 					-- i = i + 1
 				end
 			end
@@ -626,8 +627,8 @@ function Public.full_update(player)
 		if proposals.body.proposal_maker.visible then
 			local capacity_slider = proposals.body.proposal_maker.body.capacity_options.capacity.capacity
 			local capacity_option = CoreData.capacity_options[capacity_slider.slider.slider_value]
-			capacity_slider.readoff_text.caption = capacity_option.text == '∞'
-					and { 'pirates.gui_runs_proposal_maker_no_limit' }
+			capacity_slider.readoff_text.caption = capacity_option.text == "∞"
+					and { "pirates.gui_runs_proposal_maker_no_limit" }
 				or capacity_option.text
 			proposals.body.proposal_maker.body.capacity_options.capacity_readoff_icon.sprite = capacity_option.icon
 
@@ -652,15 +653,15 @@ function Public.click(event)
 
 	local eventname = event.element.name
 
-	if not player.gui.screen[window_name .. '_piratewindow'] then
+	if not player.gui.screen[window_name .. "_piratewindow"] then
 		return
 	end
-	local flow = player.gui.screen[window_name .. '_piratewindow'].scroll_pane
+	local flow = player.gui.screen[window_name .. "_piratewindow"].scroll_pane
 
 	local global_memory = Memory.get_global_memory()
 	-- local memory = Memory.get_crew_memory()
 
-	if eventname == 'join_crew' then
+	if eventname == "join_crew" then
 		local listbox = flow.ongoing_runs.body.ongoing_runs_listbox
 
 		-- It was observed that "listbox.get_item(listbox.selected_index)" can produce "Index out of range error"
@@ -679,18 +680,18 @@ function Public.click(event)
 					flow.ongoing_runs.body.password.visible = false
 
 					if memory.run_is_protected and (not Roles.captain_exists()) then
-						Common.notify_player_expected(player, { 'pirates.player_joins_protected_run_with_no_captain' })
-						Common.notify_player_expected(player, { 'pirates.create_new_crew_tip' })
+						Common.notify_player_expected(player, { "pirates.player_joins_protected_run_with_no_captain" })
+						Common.notify_player_expected(player, { "pirates.create_new_crew_tip" })
 					end
 				else
-					Common.notify_player_error(player, { 'pirates.gui_join_private_run_error_wrong_password' })
+					Common.notify_player_error(player, { "pirates.gui_join_private_run_error_wrong_password" })
 				end
 			else
 				Crew.join_crew(player)
 
 				if memory.run_is_protected and (not Roles.captain_exists()) then
-					Common.notify_player_expected(player, { 'pirates.player_joins_protected_run_with_no_captain' })
-					Common.notify_player_expected(player, { 'pirates.create_new_crew_tip' })
+					Common.notify_player_expected(player, { "pirates.player_joins_protected_run_with_no_captain" })
+					Common.notify_player_expected(player, { "pirates.create_new_crew_tip" })
 				end
 			end
 
@@ -698,9 +699,9 @@ function Public.click(event)
 		end
 	end
 
-	if eventname == 'propose_crew' then
+	if eventname == "propose_crew" then
 		if #global_memory.crew_active_ids >= global_memory.active_crews_cap_in_memory then
-			Common.notify_player_error(player, { 'pirates.gui_runs_launch_error_5' })
+			Common.notify_player_error(player, { "pirates.gui_runs_launch_error_5" })
 			return
 		end
 
@@ -730,7 +731,7 @@ function Public.click(event)
 		if run_is_private then
 			-- Make sure private run can be created
 			if private_run_count >= global_memory.private_run_cap then
-				Common.notify_player_error(player, { 'pirates.gui_runs_proposal_maker_error_private_run_limit' })
+				Common.notify_player_error(player, { "pirates.gui_runs_proposal_maker_error_private_run_limit" })
 				return
 			end
 
@@ -740,7 +741,7 @@ function Public.click(event)
 					global_memory.crew_memories[id].run_is_private
 					and global_memory.crew_memories[id].created_by_player == player.index
 				then
-					Common.notify_player_error(player, { 'pirates.gui_runs_proposal_maker_error_two_private_runs' })
+					Common.notify_player_error(player, { "pirates.gui_runs_proposal_maker_error_two_private_runs" })
 					return
 				end
 			end
@@ -752,23 +753,23 @@ function Public.click(event)
 			then
 				Common.notify_player_error(
 					player,
-					{ 'pirates.gui_runs_proposal_maker_error_private_run_password_no_match' }
+					{ "pirates.gui_runs_proposal_maker_error_private_run_password_no_match" }
 				)
 				return
 			end
 
 			-- Check if passwords aren't empty
-			if flow.proposals.body.proposal_maker.body.settings.password.text == '' then
+			if flow.proposals.body.proposal_maker.body.settings.password.text == "" then
 				Common.notify_player_error(
 					player,
-					{ 'pirates.gui_runs_proposal_maker_error_private_run_password_empty' }
+					{ "pirates.gui_runs_proposal_maker_error_private_run_password_empty" }
 				)
 				return
 			end
 		elseif run_is_protected then
 			-- Make sure protected run can be created
 			if protected_but_not_private_run_count >= global_memory.protected_but_not_private_run_cap then
-				Common.notify_player_error(player, { 'pirates.gui_runs_proposal_maker_error_protected_run_limit' })
+				Common.notify_player_error(player, { "pirates.gui_runs_proposal_maker_error_protected_run_limit" })
 				return
 			end
 
@@ -778,7 +779,7 @@ function Public.click(event)
 					global_memory.crew_memories[id].run_is_protected
 					and global_memory.crew_memories[id].created_by_player == player.index
 				then
-					Common.notify_player_error(player, { 'pirates.gui_runs_proposal_maker_error_two_protected_runs' })
+					Common.notify_player_error(player, { "pirates.gui_runs_proposal_maker_error_two_protected_runs" })
 					return
 				end
 			end
@@ -792,7 +793,7 @@ function Public.click(event)
 			end
 		end
 		if player_run_count >= 2 then
-			Common.notify_player_error(player, { 'pirates.gui_runs_proposal_maker_error_three_runs' })
+			Common.notify_player_error(player, { "pirates.gui_runs_proposal_maker_error_three_runs" })
 			return
 		end
 
@@ -801,10 +802,10 @@ function Public.click(event)
 
 		local capacity_option =
 			flow.proposals.body.proposal_maker.body.capacity_options.capacity.capacity.slider.slider_value
-		local difficulty_option = 1
+		local difficulty_option = 2
 
-		if (not proposal_name) or (proposal_name == '') then
-			proposal_name = 'NoName'
+		if (not proposal_name) or (proposal_name == "") then
+			proposal_name = "NoName"
 		end
 
 		-- make name unique
@@ -856,14 +857,14 @@ function Public.click(event)
 
 		if run_is_private then
 			Common.notify_lobby({
-				'pirates.proposal_propose_private',
+				"pirates.proposal_propose_private",
 				player.name,
 				proposal_name,
 				CoreData.capacity_options[capacity_option].text3,
 			})
 		else
 			Common.notify_lobby({
-				'pirates.proposal_propose',
+				"pirates.proposal_propose",
 				player.name,
 				proposal_name,
 				CoreData.capacity_options[capacity_option].text3,
@@ -874,12 +875,12 @@ function Public.click(event)
 		return
 	end
 
-	if eventname == 'abandon_proposal' then
+	if eventname == "abandon_proposal" then
 		Crew.player_abandon_proposal(player)
 		return
 	end
 
-	if eventname == 'launch_crew' then
+	if eventname == "launch_crew" then
 		if GuiCommon.crew_overall_state_bools(player.index).proposal_can_launch then --double check
 			for k, proposal in pairs(global_memory.crewproposals) do
 				if proposal.created_by_player == player.index then
@@ -896,7 +897,7 @@ function Public.click(event)
 						if private_run_count >= global_memory.private_run_cap then
 							Common.notify_player_error(
 								player,
-								{ 'pirates.gui_runs_proposal_maker_error_private_run_limit' }
+								{ "pirates.gui_runs_proposal_maker_error_private_run_limit" }
 							)
 							return
 						end
@@ -914,7 +915,7 @@ function Public.click(event)
 						if protected_but_not_private_run_count >= global_memory.protected_but_not_private_run_cap then
 							Common.notify_player_error(
 								player,
-								{ 'pirates.gui_runs_proposal_maker_error_protected_run_limit' }
+								{ "pirates.gui_runs_proposal_maker_error_protected_run_limit" }
 							)
 							return
 						end

@@ -7,6 +7,7 @@ local Math = require('maps.pirates.math')
 local Loot = require('maps.pirates.loot')
 -- local Utils = require 'maps.pirates.utils_local'
 local _inspect = require('utils.inspect').inspect
+local Common = require('maps.pirates.common')
 
 --@add stuff from new quest structures to this file?
 local Public = {}
@@ -105,6 +106,9 @@ function Public.configure_structure_entities(special_name, components)
 					local inv = e.get_inventory(defines.inventory.assembling_machine_input)
 					e.set_recipe('kovarex-enrichment-process')
 					inv.insert({ name = 'uranium-235', count = 20 })
+					-- Hack when porting to 2.0, since we can't use unresearched recipes anymore:
+					e.force = Common.lobby_force_name
+					game.forces[Common.lobby_force_name].technologies["kovarex-enrichment-process"].researched = true
 				elseif e.name == 'gun-turret' and special_name == 'small_radioactive_centrifuge' then
 					e.force = memory.force
 				elseif e.name == 'fast-splitter' and special_name == 'small_radioactive_centrifuge' then
