@@ -506,6 +506,11 @@ local function should_skip_enemies_on_daytime(entity)
         return false
     end
 
+    local darkness = Public.get('darkness')
+    if not darkness then
+        return false
+    end
+
     if entity.surface.daytime < 0.35 then
         entity.destroy()
         return true

@@ -3,9 +3,11 @@ local Global = require 'utils.global'
 local Gui = require 'utils.gui'
 local Commands = require 'utils.commands'
 
-local this = {
+local this =
+{
     renders = {},
-    valid_targets = {
+    valid_targets =
+    {
         'character',
         'tank',
         'car',
@@ -16,7 +18,8 @@ local this = {
         'artillery-turret',
         'spidertron'
     },
-    backup_valid_targets = {
+    backup_valid_targets =
+    {
         'character',
         'tank',
         'car',
@@ -108,7 +111,7 @@ function Public:set_render_scalar_size()
     end
 
     self.render_id.y_scale = 3.5 -- 1.5
-    self.render_id.x_scale = 7   -- 2
+    self.render_id.x_scale = 7 -- 2
     self.render_id.color = { r = 1, g = 0.7, b = 0.7 }
 end
 
@@ -351,7 +354,7 @@ function Public.new(sprite, surface, ttl, scalar, delayed)
         render.delayed = game.tick + delayed
         render.ttl = ttl or (game.tick + delayed) + 7200 -- 2 minutes duration
     else
-        render.ttl = ttl or game.tick + 7200             -- 2 minutes duration
+        render.ttl = ttl or game.tick + 7200 -- 2 minutes duration
         render:validate()
         if not scalar then
             render:set_render_scalar_size()

@@ -219,6 +219,10 @@ local function get_market_item_list(rarity)
         rarity = 10
     end
     local quality_list = Public.get('quality_list')
+    local is_coin_quality_enabled = Public.get('is_coin_quality_enabled')
+    if not is_coin_quality_enabled then
+        quality_list = { 'normal' }
+    end
     local quality_level = random(1, #quality_list)
     local quality = quality_list[quality_level]
     local types = get_types()

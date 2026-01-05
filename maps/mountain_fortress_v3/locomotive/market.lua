@@ -111,7 +111,12 @@ end
 
 local function get_player_quality_int(player)
     if not player or not player.valid then
-        return 'normal'
+        return 1
+    end
+
+    local is_coin_quality_enabled = Public.get('is_coin_quality_enabled')
+    if not is_coin_quality_enabled then
+        return 1
     end
 
     local player_data = get_player_data(player)
@@ -127,6 +132,12 @@ local function get_item_count(player, name)
     local quality_list = Public.get('quality_list')
     local quality = quality_list[player_data.quality]
     local inventory = player.get_main_inventory()
+
+    local is_coin_quality_enabled = Public.get('is_coin_quality_enabled')
+    if not is_coin_quality_enabled then
+        quality = 'normal'
+    end
+
     return inventory.get_item_count({ name = name, quality = quality })
 end
 
@@ -1227,7 +1238,9 @@ local function gui_opened(event)
         }
     )
 
-    if script.active_mods.quality then
+    local is_coin_quality_enabled = Public.get('is_coin_quality_enabled')
+
+    if script.active_mods.quality and is_coin_quality_enabled then
         if game.forces.player.technologies['quality-module'].researched then
             local quality_list = Public.get('quality_list')
             local bg_right = bottom_grid.add({ type = 'label', caption = ({ 'locomotive.quality_text' }) })

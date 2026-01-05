@@ -470,6 +470,7 @@ function Public.reset_main_table()
     this.game_reset_tick = nil
     this.find_void_tiles_and_replace = nil
     -- @end
+    this.darkness = false
     this.breach_wall_warning = false
     this.icw_locomotive = nil
     this.game_lost = false
@@ -756,6 +757,10 @@ function Public.reset_main_table()
     }
 
     this.random_planet_enabled = false
+
+    this.is_coin_quality_enabled = false
+
+    this.forced_locomotive_size = true
 
     this.game_won = false
 

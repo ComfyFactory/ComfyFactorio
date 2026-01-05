@@ -1257,6 +1257,7 @@ local function update_raw()
                 local darkness = Public.get_stateful_settings('darkness')
                 if darkness then
                     Public.set_stateful_settings('darkness', false)
+                    Public.set('darkness', false)
                     Server.output_script_data('Darkness is now disabled')
                     surface.brightness_visual_weights = { a = 1, b = 0, g = 0, r = 0 }
                     local message = '[color=yellow]Darkness:[/color] The nights seem to be lighter!'
@@ -1265,6 +1266,7 @@ local function update_raw()
                     Server.output_script_data('Darkness is now enabled')
                     surface.brightness_visual_weights = { a = 1, b = 0.7, g = 0.7, r = 0.7 }
                     Public.set_stateful_settings('darkness', true)
+                    Public.set('darkness', true)
                     local message = '[color=yellow]Darkness:[/color] The nights seem to be darker!'
                     Alert.alert_all_players(100, message)
                 end

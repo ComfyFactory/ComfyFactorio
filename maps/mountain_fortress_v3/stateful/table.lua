@@ -2425,11 +2425,18 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
         ['legendary'] = 70
     }
 
+    local quality_train = this.quality_trains
+
+    local forced_locomotive_size = Public.get('forced_locomotive_size')
+    if forced_locomotive_size then
+        quality_train = 'legendary'
+    end
+
     ICW.set('wagon_areas',
         {
-            ['cargo-wagon'] = { left_top = { x = -quality_size[this.quality_trains], y = 0 }, right_bottom = { x = quality_size[this.quality_trains], y = 100 } },
-            ['fluid-wagon'] = { left_top = { x = -quality_size[this.quality_trains], y = 0 }, right_bottom = { x = quality_size[this.quality_trains], y = 100 } },
-            ['locomotive'] = { left_top = { x = -quality_size[this.quality_trains], y = 0 }, right_bottom = { x = quality_size[this.quality_trains], y = 100 } }
+            ['cargo-wagon'] = { left_top = { x = -quality_size[quality_train], y = 0 }, right_bottom = { x = quality_size[quality_train], y = 100 } },
+            ['fluid-wagon'] = { left_top = { x = -quality_size[quality_train], y = 0 }, right_bottom = { x = quality_size[quality_train], y = 100 } },
+            ['locomotive'] = { left_top = { x = -quality_size[quality_train], y = 0 }, right_bottom = { x = quality_size[quality_train], y = 100 } }
         })
 end
 

@@ -109,6 +109,11 @@ function Public.add_loot(surface, position, chest, collision, zone)
     end
     container.minable_flag = false
 
+    local is_coin_quality_enabled = Public.get('is_coin_quality_enabled')
+    if not is_coin_quality_enabled then
+        quality = 'normal'
+    end
+
     if random(1, 8) == 1 then
         container.insert({ name = 'coin', count = random(1, 32), quality = 'normal' })
     elseif random(1, 32) == 1 then
@@ -162,6 +167,11 @@ function Public.add_loot_rare(surface, position, chest, magic, zone)
         container.insert(item_stack)
     end
     container.minable_flag = false
+
+    local is_coin_quality_enabled = Public.get('is_coin_quality_enabled')
+    if not is_coin_quality_enabled then
+        quality = 'normal'
+    end
 
     if random(1, 8) == 1 then
         container.insert({ name = 'coin', count = random(1, 32), quality = 'normal' })
