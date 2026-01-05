@@ -1676,7 +1676,9 @@ commands.add_command(
         end
 
         if err then
-            output_data(err)
+            if storage.debug_cc then
+                output_data(err)
+            end
         end
     end
 )
