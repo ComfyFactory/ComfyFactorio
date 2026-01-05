@@ -202,20 +202,21 @@ local function get_quality_area(area, quality)
     local lt_quality_y = 0
     local rb_quality_x = 0
     local rb_quality_y = 0
+
     if quality == 'uncommon' then
-        lt_quality_x = -5
-        rb_quality_y = 5
+        lt_quality_y = -6
+        rb_quality_y = 6
     end
     if quality == 'rare' then
-        lt_quality_x = -10
+        lt_quality_y = -10
         rb_quality_y = 10
     end
     if quality == 'epic' then
-        lt_quality_x = -15
-        rb_quality_y = 15
+        lt_quality_y = -16
+        rb_quality_y = 16
     end
     if quality == 'legendary' then
-        lt_quality_x = -20
+        lt_quality_y = -20
         rb_quality_y = 20
     end
 

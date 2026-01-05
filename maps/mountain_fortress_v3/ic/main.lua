@@ -36,6 +36,20 @@ local function on_player_mined_entity(event)
     end
 end
 
+
+local function on_marked_for_deconstruction(event)
+    local entity = event.entity
+    if not entity or not entity.valid then
+        return
+    end
+
+    local valid_types = IC.get_types()
+    if (valid_types[entity.type] or valid_types[entity.name]) then
+        entity.cancel_deconstruction(game.players[event.player_index].force.name, event.player_index)
+    end
+end
+
+
 local function on_robot_mined_entity(event)
     local entity = event.entity
 
@@ -251,5 +265,6 @@ Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_player_changed_surface, changed_surface)
 Event.add(IC.events.on_player_kicked_from_surface, trigger_on_player_kicked_from_surface)
 Event.add(defines.events.on_gui_switch_state_changed, on_gui_switch_state_changed)
+Event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 
 return Public
