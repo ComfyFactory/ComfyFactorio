@@ -1615,6 +1615,64 @@ local lightning =
 
 spells[#spells + 1] = lightning
 
+if script.active_mods['space-age'] then
+    spells[#spells + 1] =
+    {
+        name = { 'spells.preserve' },
+        entityName = 'preservation',
+        target = false,
+        amount = 1,
+        damage = false,
+        force = 'player',
+        level = 60,
+        type = 'special',
+        mana_cost = 150,
+        cooldown = 1000,
+        enabled = true,
+        enforce_cooldown = true,
+        sprite = 'item/ice',
+        tooltip = 'Refreshes the spoil percent of items in your inventory.',
+        callback = function (data)
+            local self = data.self
+            local player = data.player
+            local rpg_t = data.rpg_t
+            local inv = player.get_main_inventory()
+            local count = 0
+
+            if inv and inv.valid then
+                for i = 1, #inv do
+                    local item_stack = inv[i]
+                    if item_stack and item_stack.valid_for_read and item_stack.spoil_percent and item_stack.spoil_percent > 0 then
+                        if self.mana_cost >= rpg_t.mana then
+                            break
+                        end
+
+                        item_stack.spoil_percent = 0
+                        Public.remove_mana(player, self.mana_cost)
+                        count = count + 1
+                    end
+                end
+            end
+
+            local cursor = player.cursor_stack
+            if cursor and cursor.valid_for_read and cursor.spoil_percent and self.mana_cost <= rpg_t.mana and cursor.spoil_percent > 0 then
+                cursor.spoil_percent = 0
+                Public.remove_mana(player, self.mana_cost)
+                count = count + 1
+            end
+
+            if count == 0 then
+                Public.cast_spell(player, true)
+                return false
+            end
+
+            Public.register_cooldown_for_spell(player)
+            Public.cast_spell(player)
+            return true
+        end
+    }
+end
+
 -- if _DEBUG then
 --     for i = 1, #spells do
 --         local spell = spells[i]

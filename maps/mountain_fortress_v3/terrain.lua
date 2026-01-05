@@ -294,11 +294,31 @@ local gleba_harvest_tiles =
 
 local size_of_gleba_harvest_tiles = #gleba_harvest_tiles
 
+local water_tiles =
+{
+    'water',
+    'deepwater',
+    'gleba-deep-lake',
+    'wetland-blue-slime',
+    'ammoniacal-ocean',
+    'ammoniacal-ocean-2'
+}
+
+local size_of_water_tiles = #water_tiles
+
 local function get_gleba_harvest_tile_index(p, seed)
     local noise = simplex_noise(p.x * 0.025, p.y * 0.025, seed + 987)
     local index = floor(((noise + 1) * 0.5) * size_of_gleba_harvest_tiles) + 1
     if index < 1 then index = 1 end
     if index > size_of_gleba_harvest_tiles then index = size_of_gleba_harvest_tiles end
+    return index
+end
+
+local function get_water_tile_index(p, seed)
+    local noise = simplex_noise(p.x * 0.025, p.y * 0.025, seed + 987)
+    local index = floor(((noise + 1) * 0.5) * size_of_water_tiles) + 1
+    if index < 1 then index = 1 end
+    if index > size_of_water_tiles then index = size_of_water_tiles end
     return index
 end
 
@@ -910,7 +930,7 @@ local function wall(p, data, adjusted_zones)
     if y > 9 + cave_ponds * 6 and y < 23 + small_caves * 6 then
         if small_caves > 0.02 or cave_ponds > 0.02 then
             if small_caves > 0.005 then
-                tiles[#tiles + 1] = { name = 'water', position = p }
+                tiles[#tiles + 1] = { name = water_tiles[get_water_tile_index(p, seed)], position = p }
             else
                 tiles[#tiles + 1] = { name = 'water-shallow', position = p }
                 if random(1, 20) == 1 then
@@ -2375,7 +2395,7 @@ local function zone_vulcanus_1(x, y, data, _, adjusted_zones)
     local smol_areas = Public.get_noise('smol_areas', p, seed + seed)
 
     if abs(noise_large_caves) > 0.7 then
-        tiles[#tiles + 1] = { name = 'water', position = p }
+        tiles[#tiles + 1] = { name = water_tiles[get_water_tile_index(p, seed)], position = p }
         if random(1, 16) == 1 then
             entities[#entities + 1] = { name = 'fish', position = p }
         end
@@ -2737,7 +2757,7 @@ local function zone_14(x, y, data, _, adjusted_zones)
     end
 
     if small_caves < -0.34 or small_caves > 0.34 then
-        tiles[#tiles + 1] = { name = 'water', position = p }
+        tiles[#tiles + 1] = { name = water_tiles[get_water_tile_index(p, seed)], position = p }
         if random(1, 128) == 1 then
             entities[#entities + 1] = { name = 'fish', position = p }
         end
@@ -2966,7 +2986,7 @@ local function zone_11(x, y, data, _, adjusted_zones)
     local smol_areas = Public.get_noise('smol_areas', p, seed + seed)
 
     if noise_1 > 0.7 then
-        tiles[#tiles + 1] = { name = 'water', position = p }
+        tiles[#tiles + 1] = { name = water_tiles[get_water_tile_index(p, seed)], position = p }
         if random(1, 48) == 1 then
             entities[#entities + 1] = { name = 'fish', position = p }
         end
@@ -3243,7 +3263,7 @@ local function zone_9(x, y, data, _, adjusted_zones)
         return
     end
 
-    tiles[#tiles + 1] = { name = 'water', position = p }
+    tiles[#tiles + 1] = { name = water_tiles[get_water_tile_index(p, seed)], position = p }
     if random(1, 96) == 1 then
         entities[#entities + 1] = { name = 'fish', position = p }
     end
@@ -3541,7 +3561,7 @@ local function zone_7_garden(x, y, data, void_or_lab, adjusted_zones)
     local smol_areas = Public.get_noise('smol_areas', p, seed + seed)
 
     if cave_rivers_3 > -0.025 and cave_rivers_3 < 0.025 and no_rocks_2 > -0.6 then
-        tiles[#tiles + 1] = { name = 'water', position = p }
+        tiles[#tiles + 1] = { name = water_tiles[get_water_tile_index(p, seed)], position = p }
         if random(1, 128) == 1 then
             entities[#entities + 1] = { name = 'fish', position = p }
         end
@@ -3549,7 +3569,7 @@ local function zone_7_garden(x, y, data, void_or_lab, adjusted_zones)
     end
 
     if cave_rivers_4 > -0.025 and cave_rivers_4 < 0.025 and no_rocks_2 > -0.6 then
-        tiles[#tiles + 1] = { name = 'water', position = p }
+        tiles[#tiles + 1] = { name = water_tiles[get_water_tile_index(p, seed)], position = p }
         if random(1, 128) == 1 then
             entities[#entities + 1] = { name = 'fish', position = p }
         end
@@ -3892,7 +3912,7 @@ local function zone_4(x, y, data, void_or_lab, adjusted_zones)
     local smol_areas = Public.get_noise('smol_areas', p, seed + seed)
 
     if abs(noise_large_caves) > 0.7 then
-        tiles[#tiles + 1] = { name = 'water', position = p }
+        tiles[#tiles + 1] = { name = water_tiles[get_water_tile_index(p, seed)], position = p }
         if random(1, 16) == 1 then
             entities[#entities + 1] = { name = 'fish', position = p }
         end

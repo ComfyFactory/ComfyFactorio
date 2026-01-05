@@ -220,11 +220,14 @@ local function get_market_item_list(rarity)
     end
     local quality_list = Public.get('quality_list')
     local is_coin_quality_enabled = Public.get('is_coin_quality_enabled')
-    if not is_coin_quality_enabled then
-        quality_list = { 'normal' }
-    end
     local quality_level = random(1, #quality_list)
     local quality = quality_list[quality_level]
+    local coin_quality = quality
+
+    if not is_coin_quality_enabled then
+        coin_quality = 'normal'
+    end
+
     local types = get_types()
     local list = {}
     for i = 1, 9 do
@@ -239,7 +242,7 @@ local function get_market_item_list(rarity)
                 if price > 64000 then
                     price = 64000
                 end
-                list[#list + 1] = { price = { { name = 'coin', count = price * quality_level, quality = quality } }, offer = { type = 'give-item', item = k, quality = quality } }
+                list[#list + 1] = { price = { { name = 'coin', count = price * quality_level, quality = coin_quality } }, offer = { type = 'give-item', item = k, quality = quality } }
             end
         end
     end
