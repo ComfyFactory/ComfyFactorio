@@ -45,7 +45,8 @@ end
 --require 'maps.chronosphere.main'
 
 --![[Guide a Train through rough terrain, while defending it from the biters]]--
---require 'maps.mountain_fortress_v3.main'
+-- require 'utils.templates.Mountain_Fortress_v3_BP.map_loader'
+require 'maps.mountain_fortress_v3.main'
 --require 'maps.mountain_fortress_v2.main'
 --require 'maps.mountain_fortress'
 
