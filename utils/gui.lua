@@ -13,19 +13,17 @@ local gui_prefix = 'comfy_'
 
 local Public = {}
 
-local ordered_tab_names =
-{
-    "Players",
-    "Admin",
-    "Groups",
-    "Scoreboard",
-    "Statistics",
-    "Config",
+local ordered_tab_names = {
+    'Players',
+    'Admin',
+    'Groups',
+    'Scoreboard',
+    'Statistics',
+    'Config'
 }
 
 -- local to this file
-local local_settings =
-{
+local local_settings = {
     toggle_button = true
 }
 local main_gui_tabs = {}
@@ -36,8 +34,7 @@ local names = {}
 -- global
 local data = {}
 local removed_objects = {}
-local settings =
-{
+local settings = {
     mod_gui_top_frame = true,
     disabled_tabs = {},
     disable_clear_invalid_data = true
@@ -45,13 +42,13 @@ local settings =
 
 Public.token =
     Global.register(
-        { data = data, removed_objects = removed_objects, settings = settings },
-        function (tbl)
-            data = tbl.data
-            removed_objects = tbl.removed_objects
-            settings = tbl.settings
-        end
-    )
+    {data = data, removed_objects = removed_objects, settings = settings},
+    function(tbl)
+        data = tbl.data
+        removed_objects = tbl.removed_objects
+        settings = tbl.settings
+    end
+)
 
 Public.names = names
 
@@ -84,7 +81,7 @@ function Public.uid_name()
 
     local token = tostring(Token.uid())
 
-    local name = concat { token, ' - ', filepath, ':line:', line }
+    local name = concat {token, ' - ', filepath, ':line:', line}
     names[token] = name
 
     return token
@@ -129,8 +126,8 @@ local function get_button_flow(player)
         return gui.mod_gui_button_flow
     end
 
-    local frame = gui.mod_gui_top_frame or gui.add { type = "frame", name = "mod_gui_top_frame", direction = "horizontal", style = "slot_window_frame" }
-    return frame.mod_gui_inner_frame or frame.add { type = "frame", name = "mod_gui_inner_frame", style = "mod_gui_inside_deep_frame" }
+    local frame = gui.mod_gui_top_frame or gui.add {type = 'frame', name = 'mod_gui_top_frame', direction = 'horizontal', style = 'slot_window_frame'}
+    return frame.mod_gui_inner_frame or frame.add {type = 'frame', name = 'mod_gui_inner_frame', style = 'mod_gui_inside_deep_frame'}
 end
 
 -- Associates data with the LuaGuiElement. If data is nil then removes the data
@@ -161,7 +158,7 @@ function Public.set_data(element, value)
         local registration_number = script.register_on_object_destroyed(element)
         removed_objects[registration_number] = player_index
 
-        values[element.index] = { value = value, name = element.name, registration_number = registration_number }
+        values[element.index] = {value = value, name = element.name, registration_number = registration_number}
     end
 end
 
@@ -192,7 +189,7 @@ function Public.set_data_parent(parent, element, value)
             values[parent.index] = {}
         end
 
-        values[parent.index][element.index] = { value = value, name = element.name }
+        values[parent.index][element.index] = {value = value, name = element.name}
     end
 end
 
@@ -205,7 +202,6 @@ function Public.get_data(element)
     if not element.index then
         return
     end
-
 
     local player_index = element.player_index
 
@@ -242,24 +238,23 @@ function Public.get_data_parent(parent, element)
 end
 
 -- Adds a gui that is alike the factorio native gui.
-function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_settings_button_name,
-    close_main_frame_name, name, info, inside_table_count)
+function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_settings_button_name, close_main_frame_name, name, info, inside_table_count)
     if not align then
         return
     end
     local main_frame
     if align == 'left' then
         validate_frame_and_destroy(player.gui.left, set_frame_name)
-        main_frame = player.gui.left.add { type = 'frame', name = set_frame_name, direction = 'vertical' }
+        main_frame = player.gui.left.add {type = 'frame', name = set_frame_name, direction = 'vertical'}
     elseif align == 'center' then
         validate_frame_and_destroy(player.gui.center, set_frame_name)
-        main_frame = player.gui.center.add { type = 'frame', name = set_frame_name, direction = 'vertical' }
+        main_frame = player.gui.center.add {type = 'frame', name = set_frame_name, direction = 'vertical'}
     elseif align == 'screen' then
         validate_frame_and_destroy(player.gui.screen, set_frame_name)
-        main_frame = player.gui.screen.add { type = 'frame', name = set_frame_name, direction = 'vertical' }
+        main_frame = player.gui.screen.add {type = 'frame', name = set_frame_name, direction = 'vertical'}
     end
 
-    local titlebar = main_frame.add { type = 'flow', name = 'titlebar', direction = 'horizontal' } --[[@as LuaGuiElement]]
+    local titlebar = main_frame.add {type = 'flow', name = 'titlebar', direction = 'horizontal'} --[[@as LuaGuiElement]]
     titlebar.style.horizontal_spacing = 8
     titlebar.style = 'horizontal_flow'
 
@@ -267,15 +262,14 @@ function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_s
         titlebar.drag_target = main_frame
     end
 
-    titlebar.add
-    {
+    titlebar.add {
         type = 'label',
         name = 'main_label',
         style = 'frame_title',
         caption = name,
         ignored_by_interaction = true
     }
-    local widget = titlebar.add { type = 'empty-widget', style = 'draggable_space', ignored_by_interaction = true }
+    local widget = titlebar.add {type = 'empty-widget', style = 'draggable_space', ignored_by_interaction = true}
     widget.style.left_margin = 4
     widget.style.right_margin = 4
     widget.style.height = 24
@@ -283,34 +277,30 @@ function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_s
 
     if set_settings_button_name then
         if not info then
-            titlebar.add
-            {
+            titlebar.add {
                 type = 'sprite-button',
                 name = set_settings_button_name,
                 style = 'frame_action_button',
                 sprite = Public.settings_white_icon,
-                mouse_button_filter = { 'left' },
+                mouse_button_filter = {'left'},
                 hovered_sprite = Public.settings_black_icon,
                 clicked_sprite = Public.settings_black_icon,
                 tooltip = 'Settings',
-                tags =
-                {
+                tags = {
                     action = 'open_settings_gui'
                 }
             }
         else
-            titlebar.add
-            {
+            titlebar.add {
                 type = 'sprite-button',
                 name = set_settings_button_name,
                 style = 'frame_action_button',
                 sprite = Public.info_icon,
-                mouse_button_filter = { 'left' },
+                mouse_button_filter = {'left'},
                 hovered_sprite = Public.info_icon,
                 clicked_sprite = Public.info_icon,
                 tooltip = 'Info',
-                tags =
-                {
+                tags = {
                     action = 'open_settings_gui'
                 }
             }
@@ -320,30 +310,28 @@ function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_s
     local close_button
 
     if close_main_frame_name then
-        close_button = titlebar.add
-            {
-                type = 'sprite-button',
-                name = close_main_frame_name,
-                style = 'frame_action_button',
-                mouse_button_filter = { 'left' },
-                sprite = 'utility/close',
-                hovered_sprite = 'utility/close_fat',
-                clicked_sprite = 'utility/close_fat',
-                tooltip = 'Close',
-                tags =
-                {
-                    action = 'close_main_frame_gui'
-                }
+        close_button =
+            titlebar.add {
+            type = 'sprite-button',
+            name = close_main_frame_name,
+            style = 'frame_action_button',
+            mouse_button_filter = {'left'},
+            sprite = 'utility/close',
+            hovered_sprite = 'utility/close_fat',
+            clicked_sprite = 'utility/close_fat',
+            tooltip = 'Close',
+            tags = {
+                action = 'close_main_frame_gui'
             }
+        }
     end
 
     local inside_frame =
-        main_frame.add
-        {
-            type = 'table',
-            column_count = 1 or inside_table_count,
-            name = 'inside_frame'
-        }
+        main_frame.add {
+        type = 'table',
+        column_count = 1 or inside_table_count,
+        name = 'inside_frame'
+    }
 
     return main_frame, inside_frame, close_button
 end
@@ -431,13 +419,12 @@ local function handler_factory(event_id)
         end
     end
 
-    return function (element_name, handler)
+    return function(element_name, handler)
         if not element_name then
             return error('Element name is required when passing it onto the handler_factory.', 2)
         end
         if not handler or not type(handler) == 'function' then
-            return error(
-                'Handler is required when passing it onto the handler_factory and needs to be of type function.', 2)
+            return error('Handler is required when passing it onto the handler_factory and needs to be of type function.', 2)
         end
 
         if not handlers then
@@ -464,7 +451,7 @@ local function custom_raise(handlers, element, player)
         return
     end
 
-    handler({ element = element, player = player })
+    handler({element = element, player = player})
 end
 
 -- Disabled the handler so it does not clean then data table of invalid data.
@@ -596,7 +583,7 @@ function Public.add_tab_to_gui(tbl)
     local only_server_sided = tbl.only_server_sided or false
 
     if not main_gui_tabs[tbl.caption] then
-        main_gui_tabs[tbl.caption] = { id = tbl.id, name = tbl.name, admin = admin, only_server_sided = only_server_sided }
+        main_gui_tabs[tbl.caption] = {id = tbl.id, name = tbl.name, admin = admin, only_server_sided = only_server_sided}
     else
         error('Given name: ' .. tbl.caption .. ' already exists in table.')
     end
@@ -647,7 +634,7 @@ function Public.clear_all_screen_frames(player)
 end
 
 function Public.clear_all_active_frames(player)
-    Event.raise(CustomEvents.events.on_gui_closed_main_frame, { player_index = player.index })
+    Event.raise(CustomEvents.events.on_gui_closed_main_frame, {player_index = player.index})
     for _, child in pairs(player.gui.left.children) do
         if child.name:find(gui_prefix) then
             remove_data_recursively(child)
@@ -724,8 +711,7 @@ function Public.reload_active_tab(player, forced, tab_name)
     end
     local callback = Token.get(id)
 
-    local d =
-    {
+    local d = {
         player = player,
         frame = main_tab
     }
@@ -735,25 +721,35 @@ end
 
 local function top_button(player)
     if settings.mod_gui_top_frame then
-        local button = Public.add_mod_button(player,
-            { type = 'sprite-button', name = main_button_name, sprite = 'item/raw-fish', style = Public.button_style })
+        local button = Public.add_mod_button(player, {type = 'sprite-button', name = main_button_name, sprite = 'item/raw-fish', style = Public.button_style})
         if button then
             button.style.minimal_height = 36
             button.style.maximal_height = 36
             button.style.minimal_width = 40
             button.style.padding = -2
         end
+
+        if player.gui.top.mod_gui_top_frame and player.gui.top.mod_gui_top_frame.valid and player.gui.top.mod_gui_top_frame.mod_gui_inner_frame and player.gui.top.mod_gui_top_frame.mod_gui_inner_frame.valid then
+            for _, frame in pairs(player.gui.top.mod_gui_top_frame.mod_gui_inner_frame.children) do
+                if frame and frame.valid then
+                    frame.style.minimal_height = 36
+                    frame.style.maximal_height = 36
+                end
+            end
+        end
     else
         if player.gui.top[main_button_name] then
             return
         end
-        local button = player.gui.top.add(
+        local button =
+            player.gui.top.add(
             {
                 type = 'sprite-button',
                 name = main_button_name,
                 sprite = 'item/raw-fish',
                 style = Public.button_style
-            })
+            }
+        )
         button.style.minimal_height = 38
         button.style.maximal_height = 38
         button.style.minimal_width = 40
@@ -769,17 +765,17 @@ local function top_toggle_button(player)
     if Public.get_mod_gui_top_frame() then
         local b =
             Public.add_mod_button(
-                player,
-                {
-                    type = 'sprite-button',
-                    name = main_toggle_button_name,
-                    sprite = 'utility/preset',
-                    tooltip = 'Click to hide top buttons!',
-                    style = Public.button_style
-                }
-            )
+            player,
+            {
+                type = 'sprite-button',
+                name = main_toggle_button_name,
+                sprite = 'utility/preset',
+                tooltip = 'Click to hide top buttons!',
+                style = Public.button_style
+            }
+        )
         if b then
-            b.style.font_color = { 165, 165, 165 }
+            b.style.font_color = {165, 165, 165}
             b.style.font = 'default-semibold'
             b.style.minimal_height = 36
             b.style.maximal_height = 36
@@ -790,14 +786,14 @@ local function top_toggle_button(player)
     else
         local b =
             player.gui.top.add(
-                {
-                    type = 'sprite-button',
-                    name = main_toggle_button_name,
-                    sprite = 'utility/preset',
-                    style = Public.button_style,
-                    tooltip = 'Click to hide top buttons!'
-                }
-            )
+            {
+                type = 'sprite-button',
+                name = main_toggle_button_name,
+                sprite = 'utility/preset',
+                style = Public.button_style,
+                tooltip = 'Click to hide top buttons!'
+            }
+        )
         b.style.padding = 2
         b.style.width = 20
         b.style.maximal_height = 38
@@ -821,22 +817,15 @@ local function draw_main_frame(player)
     end
 
     local admins = Server.get_admins_data()
-    local frame, inside_frame = Public.add_main_frame_with_toolbar(
-        player,
-        'left',
-        main_frame_name,
-        nil,
-        close_button_name,
-        title
-    )
+    local frame, inside_frame = Public.add_main_frame_with_toolbar(player, 'left', main_frame_name, nil, close_button_name, title)
 
-    local tabbed_pane = inside_frame.add({ type = 'tabbed-pane', name = 'tabbed_pane' })
+    local tabbed_pane = inside_frame.add({type = 'tabbed-pane', name = 'tabbed_pane'})
 
     local ordered_tabs = {}
 
     for _, name in ipairs(ordered_tab_names) do
         if tabs[name] then
-            table.insert(ordered_tabs, { name = name, data = tabs[name] })
+            table.insert(ordered_tabs, {name = name, data = tabs[name]})
         end
     end
 
@@ -849,10 +838,9 @@ local function draw_main_frame(player)
             end
         end
         if not found then
-            table.insert(ordered_tabs, { name = name, data = tab_data })
+            table.insert(ordered_tabs, {name = name, data = tab_data})
         end
     end
-
 
     for _, entry in ipairs(ordered_tabs) do
         local name = entry.name
@@ -863,7 +851,9 @@ local function draw_main_frame(player)
             local secs = Server.get_current_time()
 
             if callback.only_server_sided then
-                if secs then show = true end
+                if secs then
+                    show = true
+                end
             elseif callback.admin == true then
                 if player.admin and (not secs or (secs and admins[player.name])) then
                     show = true
@@ -873,20 +863,24 @@ local function draw_main_frame(player)
             end
 
             if show then
-                local tab = tabbed_pane.add(
+                local tab =
+                    tabbed_pane.add(
                     {
                         type = 'tab',
                         caption = name,
                         name = callback.name,
                         style = 'slightly_smaller_tab'
-                    })
-                local name_frame = tabbed_pane.add(
+                    }
+                )
+                local name_frame =
+                    tabbed_pane.add(
                     {
                         type = 'frame',
                         name = name,
                         direction = 'vertical',
                         style = 'mod_gui_inside_deep_frame'
-                    })
+                    }
+                )
                 name_frame.style.padding = 8
                 tabbed_pane.add_tab(tab, name_frame)
             end
@@ -907,7 +901,9 @@ end
 
 local function on_object_destroyed(event)
     local player_index = removed_objects[event.registration_number]
-    if not player_index then return end
+    if not player_index then
+        return
+    end
 
     local element_index = event.useful_id
     removed_objects[event.registration_number] = nil
@@ -917,7 +913,6 @@ local function on_object_destroyed(event)
         player_data[element_index] = nil
     end
 end
-
 
 function Public.get_content(player)
     local left_frame = Public.get_main_frame(player)
@@ -938,7 +933,7 @@ function Public.refresh(player)
     for _, tab in pairs(tabbed_pane.tabs) do
         if tab.content.name ~= frame.name then
             tab.content.clear()
-            Event.raise(CustomEvents.events.on_gui_removal, { player_index = player.index })
+            Event.raise(CustomEvents.events.on_gui_removal, {player_index = player.index})
         end
     end
 
@@ -1011,7 +1006,7 @@ Public.on_value_changed = handler_factory(defines.events.on_gui_value_changed)
 
 Public.on_click(
     main_button_name,
-    function (event)
+    function(event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Main button')
         if is_spamming then
             return
@@ -1022,10 +1017,9 @@ Public.on_click(
         if frame then
             remove_data_recursively(frame)
             frame.destroy()
-            Event.raise(CustomEvents.events.on_gui_removal, { player_index = player.index })
+            Event.raise(CustomEvents.events.on_gui_removal, {player_index = player.index})
             local active_frame = Public.get_player_active_frame(player)
-            Event.raise(CustomEvents.events.on_gui_closed_main_frame,
-                { player_index = player.index, element = active_frame or nil })
+            Event.raise(CustomEvents.events.on_gui_closed_main_frame, {player_index = player.index, element = active_frame or nil})
         else
             draw_main_frame(player)
         end
@@ -1034,11 +1028,11 @@ Public.on_click(
 
 Public.on_click(
     close_button_name,
-    function (event)
+    function(event)
         local player = event.player
         local frame = Public.get_parent_frame(player)
         local active_frame = Public.get_player_active_frame(player)
-        Event.raise(CustomEvents.events.on_gui_closed_main_frame, { player_index = player.index, element = active_frame or nil })
+        Event.raise(CustomEvents.events.on_gui_closed_main_frame, {player_index = player.index, element = active_frame or nil})
         if frame then
             remove_data_recursively(frame)
             frame.destroy()
@@ -1048,10 +1042,10 @@ Public.on_click(
 
 Public.on_custom_close(
     main_frame_name,
-    function (event)
+    function(event)
         local player = event.player
         local active_frame = Public.get_player_active_frame(player)
-        Event.raise(CustomEvents.events.on_gui_closed_main_frame, { player_index = player.index, element = active_frame or nil })
+        Event.raise(CustomEvents.events.on_gui_closed_main_frame, {player_index = player.index, element = active_frame or nil})
         local frame = Public.get_parent_frame(player)
         if frame then
             remove_data_recursively(frame)
@@ -1062,7 +1056,7 @@ Public.on_custom_close(
 
 Public.on_click(
     main_toggle_button_name,
-    function (event)
+    function(event)
         local button = event.element
         local player = event.player
         local top = player.gui.top
@@ -1112,8 +1106,9 @@ Public.on_click(
     end
 )
 
-Event.add(defines.events.on_gui_click,
-    function (event)
+Event.add(
+    defines.events.on_gui_click,
+    function(event)
         local element = event.element
         if not element or not element.valid then
             return
@@ -1147,7 +1142,7 @@ Event.add(defines.events.on_gui_click,
 
 Event.add(
     defines.events.on_player_created,
-    function (event)
+    function(event)
         local player = game.get_player(event.player_index)
         if local_settings.toggle_button then
             top_toggle_button(player)
@@ -1158,7 +1153,7 @@ Event.add(
 
 Event.add(
     defines.events.on_player_joined_game,
-    function (event)
+    function(event)
         local player = game.get_player(event.player_index)
         top_button(player)
     end
