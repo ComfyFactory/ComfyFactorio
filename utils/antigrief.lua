@@ -62,6 +62,7 @@ local this =
     on_cancelled_deconstruction = { tick = 0, count = 0 },
     limit = 2000,
     admin_button_validation = {},
+    robot_mining_pending = {},
 }
 local ammo_names =
 {
@@ -1214,6 +1215,103 @@ local function on_player_unmuted(event)
     Discord.send_notification(message)
 end
 
+local function get_distance(pos1, pos2)
+    local dx = pos1.x - pos2.x
+    local dy = pos1.y - pos2.y
+    return math.sqrt(dx * dx + dy * dy)
+end
+
+local function flush_robot_mining_logs()
+    if not this.enabled then
+        return
+    end
+
+    local current_tick = game.tick
+    local time_threshold = 60
+
+    for player_index, clusters in pairs(this.robot_mining_pending) do
+        local player = game.get_player(player_index)
+        if not player or not player.valid then
+            this.robot_mining_pending[player_index] = nil
+        else
+            local clusters_to_remove = {}
+            local clusters_to_process = {}
+
+            for cluster_id, cluster in pairs(clusters) do
+                if current_tick - cluster.last_tick >= time_threshold or cluster.total_count >= 100 then
+                    table.insert(clusters_to_process, cluster_id)
+                end
+            end
+
+            for _, cluster_id in pairs(clusters_to_process) do
+                local cluster = clusters[cluster_id]
+                if not this.mining_history then
+                    this.mining_history = {}
+                end
+
+                if this.limit > 0 and #this.mining_history > this.limit then
+                    overflow(this.mining_history)
+                end
+
+                local t = abs(floor((cluster.last_tick) / 60))
+                local formatted = FancyTime.short_fancy_time(t)
+
+                local batch_size = 100
+                local processed = 0
+                local entities_to_remove = {}
+
+                for entity_name, count in pairs(cluster.entities) do
+                    if processed >= batch_size then
+                        break
+                    end
+
+                    if this.limit > 0 and #this.mining_history > this.limit then
+                        overflow(this.mining_history)
+                    end
+
+                    local str = '[' .. formatted .. '] '
+                    str = str .. player.name .. ' (robot) mined '
+                    if count > 1 then
+                        str = str .. count .. 'x ' .. entity_name
+                    else
+                        str = str .. entity_name
+                    end
+                    str = str .. ' at X:'
+                    str = str .. floor(cluster.position.x)
+                    str = str .. ' Y:'
+                    str = str .. floor(cluster.position.y)
+                    str = str .. ' '
+                    str = str .. 'surface:' .. cluster.surface_index
+                    increment(this.mining_history, str)
+                    Server.log_antigrief_data('mining', str)
+
+                    entities_to_remove[entity_name] = true
+                    processed = processed + 1
+                end
+
+                for entity_name in pairs(entities_to_remove) do
+                    local count = cluster.entities[entity_name]
+                    cluster.total_count = cluster.total_count - count
+                    cluster.entities[entity_name] = nil
+                end
+
+                if cluster.total_count == 0 or not next(cluster.entities) then
+                    table.insert(clusters_to_remove, cluster_id)
+                end
+            end
+
+            for _, cluster_id in pairs(clusters_to_remove) do
+                clusters[cluster_id] = nil
+            end
+
+            if not next(clusters) then
+                this.robot_mining_pending[player_index] = nil
+            end
+        end
+    end
+end
+
+-- This is used to track robot mining activity and flush logs when a cluster is complete.
 local function on_robot_mined_entity(event)
     if not this.enabled then
         return
@@ -1239,27 +1337,52 @@ local function on_robot_mined_entity(event)
                         return
                     end
 
-                    if not this.mining_history then
-                        this.mining_history = {}
+                    if not this.robot_mining_pending[player.index] then
+                        this.robot_mining_pending[player.index] = {}
                     end
 
-                    if this.limit > 0 and #this.mining_history > this.limit then
-                        overflow(this.mining_history)
+                    local clusters = this.robot_mining_pending[player.index]
+                    local current_tick = game.tick
+                    local distance_threshold = 50
+                    local time_threshold = 60
+                    local entity_pos = { x = entity.position.x, y = entity.position.y }
+                    local entity_surface = entity.surface.index
+
+                    local found_cluster = nil
+                    for _, cluster in pairs(clusters) do
+                        if cluster.surface_index == entity_surface then
+                            local distance = get_distance(cluster.position, entity_pos)
+                            local time_diff = current_tick - cluster.last_tick
+                            if distance <= distance_threshold and time_diff <= time_threshold then
+                                found_cluster = cluster
+                                break
+                            end
+                        end
                     end
 
-                    local t = abs(floor((game.tick) / 60))
-                    local formatted = FancyTime.short_fancy_time(t)
-                    local str = '[' .. formatted .. '] '
-                    str = str .. player.name .. ' (robot) mined '
-                    str = str .. entity.name
-                    str = str .. ' at X:'
-                    str = str .. floor(entity.position.x)
-                    str = str .. ' Y:'
-                    str = str .. floor(entity.position.y)
-                    str = str .. ' '
-                    str = str .. 'surface:' .. entity.surface.index
-                    increment(this.mining_history, str)
-                    Server.log_antigrief_data('mining', str)
+                    if not found_cluster then
+                        local cluster_id = #clusters + 1
+                        found_cluster = {
+                            entities = {},
+                            total_count = 0,
+                            position = { x = entity.position.x, y = entity.position.y },
+                            surface_index = entity_surface,
+                            first_tick = current_tick,
+                            last_tick = current_tick
+                        }
+                        clusters[cluster_id] = found_cluster
+                    end
+
+                    if not found_cluster.entities[entity.name] then
+                        found_cluster.entities[entity.name] = 0
+                    end
+                    found_cluster.entities[entity.name] = found_cluster.entities[entity.name] + 1
+                    found_cluster.total_count = found_cluster.total_count + 1
+                    found_cluster.last_tick = current_tick
+
+                    if found_cluster.total_count >= 100 then
+                        flush_robot_mining_logs()
+                    end
                     return
                 end
             end
@@ -1457,6 +1580,7 @@ function Public.set(key, value)
 end
 
 Event.on_init(on_init)
+Event.on_nth_tick(60, flush_robot_mining_logs)
 Event.add(de.on_player_mined_entity, on_player_mined_entity)
 Event.add(de.on_entity_died, on_entity_died)
 Event.add(de.on_built_entity, on_built_entity)
