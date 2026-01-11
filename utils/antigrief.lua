@@ -1214,6 +1214,59 @@ local function on_player_unmuted(event)
     Discord.send_notification(message)
 end
 
+local function on_robot_mined_entity(event)
+    if not this.enabled then
+        return
+    end
+
+    local entity = event.entity
+    if not entity or not entity.valid then
+        return
+    end
+
+    local robot = event.robot
+    if not robot or not robot.valid then
+        return
+    end
+
+    local net_point = robot.logistic_network
+    if net_point and net_point.storage_points then
+        for _, point in pairs(net_point.storage_points) do
+            if point then
+                if point.owner and point.owner.valid and point.owner.name == 'character' then
+                    local player = point.owner.player
+                    if not player or not player.valid then
+                        return
+                    end
+
+                    if not this.mining_history then
+                        this.mining_history = {}
+                    end
+
+                    if this.limit > 0 and #this.mining_history > this.limit then
+                        overflow(this.mining_history)
+                    end
+
+                    local t = abs(floor((game.tick) / 60))
+                    local formatted = FancyTime.short_fancy_time(t)
+                    local str = '[' .. formatted .. '] '
+                    str = str .. player.name .. ' (robot) mined '
+                    str = str .. entity.name
+                    str = str .. ' at X:'
+                    str = str .. floor(entity.position.x)
+                    str = str .. ' Y:'
+                    str = str .. floor(entity.position.y)
+                    str = str .. ' '
+                    str = str .. 'surface:' .. entity.surface.index
+                    increment(this.mining_history, str)
+                    Server.log_antigrief_data('mining', str)
+                    return
+                end
+            end
+        end
+    end
+end
+
 --- This is used for the RPG module, when casting capsules.
 ---@param player LuaPlayer
 ---@param position table
@@ -1427,5 +1480,6 @@ Event.add(de.on_console_command, on_console_command)
 Event.add(de.on_console_chat, on_console_chat)
 Event.add(de.on_player_muted, on_player_muted)
 Event.add(de.on_player_unmuted, on_player_unmuted)
+Event.add(de.on_robot_mined_entity, on_robot_mined_entity)
 
 return Public
