@@ -2318,7 +2318,7 @@ function Public.find_void_tiles_and_replace()
             }
         end
 
-        local tiles = surface.find_tiles_filtered({ area = area, name = { 'out-of-map', 'water', 'deepwater', 'water-green', 'deepwater-green', 'void-tile' } })
+        local tiles = surface.find_tiles_filtered({ area = area, name = { 'out-of-map', 'water', 'deepwater', 'water-green', 'deepwater-green', 'void-tile', 'lava-hot' } })
         if tiles and #tiles > 0 then
             Public.set('tiles_to_replace', tiles)
         end
