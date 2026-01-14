@@ -787,13 +787,13 @@ local function get_items(player)
 
     if zone_purchase_enabled and next_index then
         local gleba_count = get_zone_purchase_count('gleba')
-        if gleba_count < 2 then
+        if gleba_count < 1 then
             main_market_items['purchase_zone_gleba'] =
             {
                 stack = 1,
                 value = 'coin',
                 price = zone_purchase_price,
-                tooltip = 'Purchase Gleba zone for index ' .. next_index .. ' (' .. gleba_count .. '/2)',
+                tooltip = 'Purchase Gleba zone for index ' .. next_index .. ' (' .. gleba_count .. '/1)',
                 sprite = 'space-location/gleba',
                 upgrade = true,
                 static = true,
@@ -804,13 +804,13 @@ local function get_items(player)
         end
 
         local aquilo_count = get_zone_purchase_count('aquilo')
-        if aquilo_count < 2 then
+        if aquilo_count < 1 then
             main_market_items['purchase_zone_aquilo'] =
             {
                 stack = 1,
                 value = 'coin',
                 price = zone_purchase_price,
-                tooltip = 'Purchase Aquilo zone for index ' .. next_index .. ' (' .. aquilo_count .. '/2)',
+                tooltip = 'Purchase Aquilo zone for index ' .. next_index .. ' (' .. aquilo_count .. '/1)',
                 sprite = 'space-location/aquilo',
                 upgrade = true,
                 static = true,
@@ -821,13 +821,13 @@ local function get_items(player)
         end
 
         local vulcanus_count = get_zone_purchase_count('vulcanus')
-        if vulcanus_count < 2 then
+        if vulcanus_count < 1 then
             main_market_items['purchase_zone_vulcanus'] =
             {
                 stack = 1,
                 value = 'coin',
                 price = zone_purchase_price,
-                tooltip = 'Purchase Vulcanus zone for index ' .. next_index .. ' (' .. vulcanus_count .. '/2)',
+                tooltip = 'Purchase Vulcanus zone for index ' .. next_index .. ' (' .. vulcanus_count .. '/1)',
                 sprite = 'space-location/vulcanus',
                 upgrade = true,
                 static = true,
@@ -838,13 +838,13 @@ local function get_items(player)
         end
 
         local fulgora_count = get_zone_purchase_count('fulgora')
-        if fulgora_count < 2 then
+        if fulgora_count < 1 then
             main_market_items['purchase_zone_fulgora'] =
             {
                 stack = 1,
                 value = 'coin',
                 price = zone_purchase_price,
-                tooltip = 'Purchase Fulgora zone for index ' .. next_index .. ' (' .. fulgora_count .. '/2)',
+                tooltip = 'Purchase Fulgora zone for index ' .. next_index .. ' (' .. fulgora_count .. '/1)',
                 sprite = 'space-location/fulgora',
                 upgrade = true,
                 static = true,
@@ -1865,8 +1865,8 @@ local function gui_click(event)
         end
 
         local zone_count = get_zone_purchase_count(item.zone_name)
-        if zone_count >= 2 then
-            player.print('This zone type has already been purchased 2 times!', { color = { r = 0.98, g = 0.66, b = 0.22 } })
+        if zone_count >= 1 then
+            player.print('This zone type has already been purchased 1 time!', { color = { r = 0.98, g = 0.66, b = 0.22 } })
             return
         end
 
