@@ -735,6 +735,125 @@ local function get_items(player)
         }
     end
 
+    local purchased_zones = Public.get('purchased_zones')
+    if not purchased_zones then
+        Public.set('purchased_zones', {})
+        purchased_zones = Public.get('purchased_zones')
+    end
+
+    local max_zone_reached = 0
+    for _, p in pairs(game.connected_players) do
+        local rpg_data = RPG.get_value_from_player(p.index, 'max_zone')
+        if rpg_data and rpg_data > max_zone_reached then
+            max_zone_reached = rpg_data
+        end
+    end
+
+    local zone_purchase_price = 50000
+    local zone_purchase_enabled = Public.is_modded_pt2 and max_zone_reached >= 3
+
+    local function get_next_available_index()
+        local adjusted_zones = Public.get('adjusted_zones')
+        local max_index = adjusted_zones.size or 132
+        local start_index = max_zone_reached + 1
+        if start_index < 3 then
+            start_index = 3
+        end
+        for i = start_index, max_index do
+            if not purchased_zones[i] then
+                if not adjusted_zones.zone_by_index or not adjusted_zones.zone_by_index[i] then
+                    return i
+                end
+            end
+        end
+        return nil
+    end
+
+    local function get_zone_purchase_count(zone_name)
+        local count = 0
+        for _, zone_data in pairs(purchased_zones) do
+            local zone = zone_data
+            if type(zone_data) == 'table' then
+                zone = zone_data.zone
+            end
+            if zone == zone_name then
+                count = count + 1
+            end
+        end
+        return count
+    end
+
+    local next_index = get_next_available_index()
+
+    if zone_purchase_enabled and next_index then
+        local gleba_count = get_zone_purchase_count('gleba')
+        if gleba_count < 2 then
+            main_market_items['purchase_zone_gleba'] =
+            {
+                stack = 1,
+                value = 'coin',
+                price = zone_purchase_price,
+                tooltip = 'Purchase Gleba zone for index ' .. next_index .. ' (' .. gleba_count .. '/2)',
+                sprite = 'space-location/gleba',
+                upgrade = true,
+                static = true,
+                enabled = true,
+                zone_purchase = true,
+                zone_name = 'gleba'
+            }
+        end
+
+        local aquilo_count = get_zone_purchase_count('aquilo')
+        if aquilo_count < 2 then
+            main_market_items['purchase_zone_aquilo'] =
+            {
+                stack = 1,
+                value = 'coin',
+                price = zone_purchase_price,
+                tooltip = 'Purchase Aquilo zone for index ' .. next_index .. ' (' .. aquilo_count .. '/2)',
+                sprite = 'space-location/aquilo',
+                upgrade = true,
+                static = true,
+                enabled = true,
+                zone_purchase = true,
+                zone_name = 'aquilo'
+            }
+        end
+
+        local vulcanus_count = get_zone_purchase_count('vulcanus')
+        if vulcanus_count < 2 then
+            main_market_items['purchase_zone_vulcanus'] =
+            {
+                stack = 1,
+                value = 'coin',
+                price = zone_purchase_price,
+                tooltip = 'Purchase Vulcanus zone for index ' .. next_index .. ' (' .. vulcanus_count .. '/2)',
+                sprite = 'space-location/vulcanus',
+                upgrade = true,
+                static = true,
+                enabled = true,
+                zone_purchase = true,
+                zone_name = 'vulcanus'
+            }
+        end
+
+        local fulgora_count = get_zone_purchase_count('fulgora')
+        if fulgora_count < 2 then
+            main_market_items['purchase_zone_fulgora'] =
+            {
+                stack = 1,
+                value = 'coin',
+                price = zone_purchase_price,
+                tooltip = 'Purchase Fulgora zone for index ' .. next_index .. ' (' .. fulgora_count .. '/2)',
+                sprite = 'space-location/fulgora',
+                upgrade = true,
+                static = true,
+                enabled = true,
+                zone_purchase = true,
+                zone_name = 'fulgora'
+            }
+        end
+    end
 
     for _, item in pairs(main_market_items) do
         if not item.upgrade and not item.player_upgrade then
@@ -1695,6 +1814,93 @@ local function gui_click(event)
         rpg_t.reset = false
 
         this.upgrades.rpg_reset_skills_purchased = this.upgrades.rpg_reset_skills_purchased + 1
+        redraw_market_items(data.item_frame, player, data.search_text)
+        redraw_coins_left(data.coins_left, player)
+        return
+    end
+
+    if item.zone_purchase then
+        local purchased_zones = Public.get('purchased_zones')
+        if not purchased_zones then
+            Public.set('purchased_zones', {})
+            purchased_zones = Public.get('purchased_zones')
+        end
+
+        local function get_next_available_index()
+            local max_zone_reached = 0
+            for _, p in pairs(game.connected_players) do
+                local rpg_data = RPG.get_value_from_player(p.index, 'max_zone')
+                if rpg_data and rpg_data > max_zone_reached then
+                    max_zone_reached = rpg_data
+                end
+            end
+            local adjusted_zones = Public.get('adjusted_zones')
+            local max_index = adjusted_zones.size or 132
+            local start_index = max_zone_reached + 1
+            if start_index < 3 then
+                start_index = 3
+            end
+            for i = start_index, max_index do
+                if not purchased_zones[i] then
+                    if not adjusted_zones.zone_by_index or not adjusted_zones.zone_by_index[i] then
+                        return i
+                    end
+                end
+            end
+            return nil
+        end
+
+        local function get_zone_purchase_count(zone_name)
+            local count = 0
+            for _, zone_data in pairs(purchased_zones) do
+                local zone = zone_data
+                if type(zone_data) == 'table' then
+                    zone = zone_data.zone
+                end
+                if zone == zone_name then
+                    count = count + 1
+                end
+            end
+            return count
+        end
+
+        local zone_count = get_zone_purchase_count(item.zone_name)
+        if zone_count >= 2 then
+            player.print('This zone type has already been purchased 2 times!', { color = { r = 0.98, g = 0.66, b = 0.22 } })
+            return
+        end
+
+        local next_index = get_next_available_index()
+        if not next_index then
+            player.print('All zone slots are already purchased!', { color = { r = 0.98, g = 0.66, b = 0.22 } })
+            return
+        end
+
+        local adjusted_zones = Public.get('adjusted_zones')
+        if adjusted_zones and adjusted_zones.zone_by_index and adjusted_zones.zone_by_index[next_index] then
+            player.print('This zone has already been generated!', { color = { r = 0.98, g = 0.66, b = 0.22 } })
+            return
+        end
+
+        local zone_player_item_count = get_item_count(player, item.value)
+        if zone_player_item_count < price then
+            player.print('Not enough coins!', { color = { r = 0.98, g = 0.66, b = 0.22 } })
+            return
+        end
+
+        remove_item_count(player, item.value, price)
+        purchased_zones[next_index] = { zone = item.zone_name, player = player.name }
+
+        local message = ({ 'locomotive.zone_purchased', shopkeeper, player.name, item.zone_name, next_index, format_number(price, true) })
+        Alert.alert_all_players(5, message)
+        Server.to_discord_bold(
+            table.concat
+            {
+                player.name .. ' has purchased ' .. item.zone_name .. ' zone for index ' .. next_index .. ' for ' .. format_number(price, true) .. ' coins.'
+            }
+        )
+
+        Event.raise(Public.events.on_market_item_purchased, { cost = price })
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
         return

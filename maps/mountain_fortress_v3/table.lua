@@ -734,6 +734,7 @@ function Public.reset_main_table()
     this.wagons_in_the_wild = {}
     this.player_market_settings = {}
     this.player_gui_settings = {}
+    this.purchased_zones = {}
 
     this.better_loot_from_zone = random(4, 6)
 

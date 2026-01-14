@@ -5434,16 +5434,66 @@ local function process_bits(p, data, adjusted_zones)
     if adjusted_zones.starting_zone and depth then
         generate_zone = zone_1
     else
-        generate_zone = zones[adjusted_zones.shuffled_zones[index]].fn
-        if not generate_zone then
-            generate_zone = zones[adjusted_zones.shuffled_zones[adjusted_zones.size]].fn
+        if not adjusted_zones.zone_by_index then
+            adjusted_zones.zone_by_index = {}
+        end
+
+        if not adjusted_zones.zone_by_index[index] then
+            local purchased_zones = Public.get('purchased_zones')
+            if purchased_zones and purchased_zones[index] then
+                local zone_data = purchased_zones[index]
+                local zone_name
+                if type(zone_data) == 'table' then
+                    zone_name = zone_data.zone
+                else
+                    zone_name = zone_data
+                end
+                if zone_name == 'gleba' then
+                    generate_zone = zone_gleba_1
+                    adjusted_zones.zone_by_index[index] = 'zone_gleba_1'
+                elseif zone_name == 'aquilo' then
+                    generate_zone = zone_aquilo_1
+                    adjusted_zones.zone_by_index[index] = 'zone_aquilo_1'
+                elseif zone_name == 'vulcanus' then
+                    generate_zone = zone_vulcanus_1
+                    adjusted_zones.zone_by_index[index] = 'zone_vulcanus_1'
+                elseif zone_name == 'fulgora' then
+                    generate_zone = zone_fulgora_tech_1
+                    adjusted_zones.zone_by_index[index] = 'zone_fulgora_tech_1'
+                else
+                    generate_zone = zones[adjusted_zones.shuffled_zones[index]].fn
+                    adjusted_zones.zone_by_index[index] = adjusted_zones.shuffled_zones[index]
+                    if not generate_zone then
+                        generate_zone = zones[adjusted_zones.shuffled_zones[adjusted_zones.size]].fn
+                        adjusted_zones.zone_by_index[index] = adjusted_zones.shuffled_zones[adjusted_zones.size]
+                    end
+                end
+            else
+                generate_zone = zones[adjusted_zones.shuffled_zones[index]].fn
+                adjusted_zones.zone_by_index[index] = adjusted_zones.shuffled_zones[index]
+                if not generate_zone then
+                    generate_zone = zones[adjusted_zones.shuffled_zones[adjusted_zones.size]].fn
+                    adjusted_zones.zone_by_index[index] = adjusted_zones.shuffled_zones[adjusted_zones.size]
+                end
+            end
+        else
+            local zone_name = adjusted_zones.zone_by_index[index]
+            if zone_name == 'zone_gleba_1' then
+                generate_zone = zone_gleba_1
+            elseif zone_name == 'zone_aquilo_1' then
+                generate_zone = zone_aquilo_1
+            elseif zone_name == 'zone_vulcanus_1' then
+                generate_zone = zone_vulcanus_1
+            elseif zone_name == 'zone_fulgora_tech_1' then
+                generate_zone = zone_fulgora_tech_1
+            else
+                generate_zone = zones[zone_name].fn
+                if not generate_zone then
+                    generate_zone = zones[adjusted_zones.shuffled_zones[adjusted_zones.size]].fn
+                end
+            end
         end
     end
-
-    if not adjusted_zones.zone_by_index then
-        adjusted_zones.zone_by_index = {}
-    end
-    adjusted_zones.zone_by_index[index] = adjusted_zones.shuffled_zones[index]
 
     local x = p.x
     local y = p.y

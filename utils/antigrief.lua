@@ -975,6 +975,10 @@ local function on_player_deconstructed_area(event)
         return
     end
 
+    if not game.is_multiplayer() then
+        return
+    end
+
     local surface = event.surface
 
     local surface_name = this.decon_surface_blacklist
@@ -1362,7 +1366,8 @@ local function on_robot_mined_entity(event)
 
                     if not found_cluster then
                         local cluster_id = #clusters + 1
-                        found_cluster = {
+                        found_cluster =
+                        {
                             entities = {},
                             total_count = 0,
                             position = { x = entity.position.x, y = entity.position.y },

@@ -313,6 +313,17 @@ local compare_player_pos = function (player)
     local zone = floor((abs(p.y / zone_settings.zone_depth)) % adjusted_zones.size) + 1
     local rpg_t = RPG.get_value_from_player(index)
 
+    local max_zone = RPG.get_value_from_player(index, 'max_zone')
+    if not max_zone then
+        RPG.set_value_to_player(index, 'max_zone', zone)
+        max_zone = zone
+    end
+
+    if zone > max_zone then
+        max_zone = zone
+        RPG.set_value_to_player(index, 'max_zone', max_zone)
+    end
+
     RPG.set_value_to_player(index, 'current_zone', zone)
 
     if adjusted_zones.scrap[zone] then
