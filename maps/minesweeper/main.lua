@@ -25,7 +25,8 @@ Global.register(
     end
 )
 
-local number_colors = {
+local number_colors =
+{
     [1] = { 0, 0, 210 },
     [2] = { 0, 100, 0 },
     [3] = { 180, 0, 0 },
@@ -37,7 +38,8 @@ local number_colors = {
     [11] = { 185, 0, 255 }
 }
 
-local rendering_tile_values = {
+local rendering_tile_values =
+{
     ['nuclear-ground'] = { offset = { 0.6, -0.2 }, zoom = 3, font = 'scenario-message-dialog' },
     --['stone-path'] = {offset = {0.54, -0.27}, zoom = 3, font = 'default-large'},
     ['stone-path'] = { offset = { 0.52, -0.28 }, zoom = 3, font = 'default-large-bold' },
@@ -103,10 +105,10 @@ local function update_rendering(cell, position)
     end
 
     if cell[2] then
-        rendering.destroy(cell[2])
+        cell[2].destroy()
     end
     if cell[3] then
-        rendering.destroy(cell[3])
+        cell[3].destroy()
     end
 
     local cell_value = cell[1]
@@ -128,7 +130,8 @@ local function update_rendering(cell, position)
     end
 
     cell[2] =
-        rendering.draw_text {
+        rendering.draw_text
+        {
             text = text,
             surface = surface,
             target = p,
@@ -148,7 +151,8 @@ local function update_rendering(cell, position)
     end
 
     cell[3] =
-        rendering.draw_rectangle {
+        rendering.draw_rectangle
+        {
             width = 2,
             filled = false,
             surface = surface,
@@ -180,10 +184,10 @@ local function kill_cell(position)
         return
     end
     if cell[2] then
-        rendering.destroy(cell[2])
+        cell[2].destroy()
     end
     if cell[3] then
-        rendering.destroy(cell[3])
+        cell[3].destroy()
     end
     minesweeper.cells[key] = nil
 end
@@ -604,7 +608,8 @@ local function on_init()
     local mgs = surface.map_gen_settings
     mgs.water = 0
     mgs.cliff_settings = { cliff_elevation_interval = 0, cliff_elevation_0 = 0 }
-    mgs.autoplace_controls = {
+    mgs.autoplace_controls =
+    {
         ['coal'] = { frequency = 0, size = 0, richness = 0 },
         ['stone'] = { frequency = 0, size = 0, richness = 0 },
         ['copper-ore'] = { frequency = 0, size = 0, richness = 0 },
@@ -626,8 +631,8 @@ local function on_init()
 
     local T = Map.get_map_information()
     T.localised_category = 'minesweeper'
-    T.main_caption_color = {r = 255, g = 125, b = 55}
-    T.sub_caption_color = {r = 0, g = 250, b = 150}
+    T.main_caption_color = { r = 255, g = 125, b = 55 }
+    T.sub_caption_color = { r = 0, g = 250, b = 150 }
 end
 
 local Event = require 'utils.event'
