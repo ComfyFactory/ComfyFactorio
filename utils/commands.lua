@@ -60,6 +60,7 @@ local validate_types =
     ['boolean'] = true,
     ['player'] = true,
     ['player-online'] = true,
+    ['position'] = true,
     ['player-admin'] = true,
     ['server'] = true,
     ['surface'] = true
@@ -278,6 +279,44 @@ local function execute(event)
         end
     end
 
+    if processed_input:find('%b{}') then
+        parameters = {}
+        current_index = 0
+        parameter_count = 0
+        local braces_segments = {}
+
+        local braced_input = processed_input:gsub('(%b{})', function (segment)
+            local no_spaces_segment = segment:gsub('%s', '%%s')
+            braces_segments[no_spaces_segment] = segment
+            return ' ' .. no_spaces_segment .. ' '
+        end)
+
+        for word in braced_input:gmatch('%S+') do
+            parameter_count = parameter_count + 1
+            local quoted_word = quoted_segments[word]
+            local braced_word = braces_segments[word]
+            local formatted_word = word
+
+            if quoted_word then
+                formatted_word = '"' .. quoted_word .. '"'
+            elseif braced_word then
+                formatted_word = braced_word
+            end
+
+            if parameter_count > command_data.parameters_count then
+                if current_index == 0 then current_index = 1 end
+                if parameters[current_index] then
+                    parameters[current_index] = parameters[current_index] .. ' ' .. formatted_word
+                else
+                    parameters[current_index] = formatted_word
+                end
+            else
+                current_index = current_index + 1
+                parameters[current_index] = formatted_word
+            end
+        end
+    end
+
     -- Check the param count
     local parameters_count = #parameters
     if parameters_count < command_data.parameters_required then
@@ -322,6 +361,22 @@ local function execute(event)
                     return reject('Player is not online.')
                 end
                 handled_parameters[index] = player_data
+                index = index + 1
+            end
+            if param_data.as_type == 'position' and param ~= nil then
+                local func, _ = load('return ' .. param, 'command_param', 't', {})
+                local position
+                if func then
+                    position = func()
+                end
+
+                if type(position) ~= 'table' then
+                    return reject('Inputted value is not of type table. Valid values are: { x = 0, y = 0 }')
+                end
+                if not position.x or not position.y then
+                    return reject('Inputted value is not of type position. Valid values are: { x = 0, y = 0 }')
+                end
+                handled_parameters[index] = position
                 index = index + 1
             end
             if param_data.as_type == 'player-admin' and param ~= nil then
@@ -535,6 +590,7 @@ end
 ---| '"player-admin"'
 ---| '"server"'
 ---| '"surface"'
+---| '"position"'
 
 --- Adds a parameter to the command.
 ---@param name string
@@ -697,6 +753,16 @@ Public.new('spawn', 'Spawns a new entity near the player.')
             else
                 player.print('Failed to spawn entity.')
             end
+        end
+    )
+
+Public.new('tp', 'Teleports the player to a specific position.')
+    :require_admin()
+    :add_parameter('position', false, 'position')
+    :add_parameter('surface', true, 'surface')
+    :callback(
+        function (player, position, surface)
+            player.teleport(position, surface)
         end
     )
 

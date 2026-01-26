@@ -1,19 +1,41 @@
 -- level up ranks with launching satellites -- by mewmew
+-- modified by gerkiz
 
 local Event = require 'utils.event'
 local Server = require 'utils.server'
 local Global = require 'utils.global'
+local Gui = require 'utils.gui'
+
 if script.active_mods['space-age'] then
-    error('Satellite Score Module can be used only while the Space Age mod is not enabled. (Most likely you try to run scenario not compatible with Space Age, try disabling it in Mods.)', 2)
+    error('Satellite Score is incompatible with the Space Age mod. Disable Space Age to run this scenario.', 2)
 end
 
 local this = {}
+
 Global.register(
     this,
     function (tbl)
         this = tbl
     end
 )
+
+Gui.mod_gui_button_enabled = true
+Gui.button_style = 'mod_gui_button'
+Gui.set_mod_gui_top_frame(true)
+
+
+local function get_top_frame(player, id)
+    if not id then
+        id = 'satellite_score_toggle_button'
+    end
+
+    if Gui.get_mod_gui_top_frame() then
+        return Gui.get_button_flow(player)[id]
+    else
+        return player.gui.top[id]
+    end
+end
+
 
 local function get_rank()
     for i = #this.satellite_score, 1, -1 do
@@ -24,34 +46,26 @@ local function get_rank()
 end
 
 local function satellite_score_toggle_button(player)
-    if player.gui.top['satellite_score_toggle_button'] then
+    local button = get_top_frame(player)
+    if button then
         return
     end
-    local button = player.gui.top.add { name = 'satellite_score_toggle_button', type = 'sprite-button', sprite = 'item/satellite', tooltip = 'Satellites in Space' }
-    button.style.font = 'default-bold'
-    button.style.minimal_height = 38
-    button.style.maximal_height = 38
-    button.style.minimal_width = 38
-    button.style.padding = 1
-end
---[[
-local function level_up_popup(player)
-    local reward = storage.satellite_score[get_rank()]
-    if player.gui.center['level_up_popup'] then
-        player.gui.center['level_up_popup'].destroy()
+
+    if Gui.get_mod_gui_top_frame() then
+        button = Gui.add_mod_button(player, { name = 'satellite_score_toggle_button', type = 'sprite-button', sprite = 'item/satellite', tooltip = 'Satellites in Space', style = Gui.button_style })
+    else
+        button = player.gui.top.add { name = 'satellite_score_toggle_button', type = 'sprite-button', sprite = 'item/satellite', tooltip = 'Satellites in Space', style = Gui.button_style }
     end
-    local frame = player.gui.center.add({type = 'frame', name = 'level_up_popup', direction = 'vertical'})
-    local label = frame.add({type = 'label', caption = reward.msg})
-    label.style.font = 'default-listbox'
-    label.style.font_color = reward.color
-    local button = frame.add({type = 'button', caption = reward.msg2, name = 'level_up_popup_close'})
-    button.style.minimal_width = string.len(reward.msg) * 7
-    button.style.font = 'default-listbox'
-    button.style.font_color = {r = 0.77, g = 0.77, b = 0.77}
-end ]]
+    if button then
+        button.style.minimal_height = 36
+        button.style.maximal_height = 36
+    end
+end
+
 local function satellites_in_space_gui(player)
-    --if storage.satellites_in_space == 0 then return end
     local i = get_rank()
+
+    satellite_score_toggle_button(player)
 
     if player.gui.left['satellites_in_space'] then
         player.gui.left['satellites_in_space'].destroy()
@@ -88,6 +102,7 @@ local function on_rocket_launched(event)
     if c == 0 then
         return
     end
+
     this.satellites_in_space = this.satellites_in_space + c
 
     local i = get_rank()
@@ -99,7 +114,6 @@ local function on_rocket_launched(event)
     if not this.satellite_score[i].achieved then
         for _, player in pairs(game.connected_players) do
             player.play_sound { path = 'utility/game_won', volume_modifier = 0.9 }
-            --level_up_popup(player)
         end
         this.satellite_score[i].achieved = true
     end
@@ -112,26 +126,27 @@ end
 
 local function init()
     this.satellites_in_space = 0
-    this.satellite_score = {
-        { goal = 0,          rank = false,             achieved = true },
-        { goal = 1,          rank = 'Copper',          color = { r = 201, g = 133, b = 6 },   msg = '', msg2 = '', achieved = false },
-        { goal = 10,         rank = 'Iron',            color = { r = 219, g = 216, b = 206 }, msg = '', msg2 = '', achieved = false },
-        { goal = 100,        rank = 'Bronze',          color = { r = 186, g = 115, b = 39 },  msg = '', msg2 = '', achieved = false },
-        { goal = 500,        rank = 'Silver',          color = { r = 186, g = 178, b = 171 }, msg = '', msg2 = '', achieved = false },
-        { goal = 1000,       rank = 'Gold',            color = { r = 255, g = 214, b = 33 },  msg = '', msg2 = '', achieved = false },
-        { goal = 2500,       rank = 'Platinum',        color = { r = 224, g = 223, b = 215 }, msg = '', msg2 = '', achieved = false },
-        { goal = 5000,       rank = 'Diamond',         color = { r = 237, g = 236, b = 232 }, msg = '', msg2 = '', achieved = false },
-        { goal = 10000,      rank = 'Iridium',         color = { r = 255, g = 220, b = 220 }, msg = '', msg2 = '', achieved = false },
-        { goal = 20000,      rank = 'Anti-Matter',     color = { r = 190, g = 255, b = 190 }, msg = '', msg2 = '', achieved = false },
-        { goal = 30000,      rank = 'Orange Dwarf',    color = { r = 255, g = 150, b = 50 },  msg = '', msg2 = '', achieved = false },
-        { goal = 40000,      rank = 'Blue Supergiant', color = { r = 130, g = 130, b = 255 }, msg = '', msg2 = '', achieved = false },
-        { goal = 50000,      rank = 'Red Hypergiant',  color = { r = 255, g = 90, b = 90 },   msg = '', msg2 = '', achieved = false },
-        { goal = 75000,      rank = 'Neutron Star',    color = { r = 200, g = 200, b = 255 }, msg = '', msg2 = '', achieved = false },
-        { goal = 100000,     rank = 'Supernova',       color = { r = 200, g = 255, b = 200 }, msg = '', msg2 = '', achieved = false },
-        { goal = 150000,     rank = 'Black Hole',      color = { r = 0, g = 0, b = 0 },       msg = '', msg2 = '', achieved = false },
-        { goal = 1000000,    rank = 'Blue Screen',     color = { r = 100, g = 100, b = 245 }, msg = '', msg2 = '', achieved = false },
-        { goal = 10000000,   rank = '?????',           color = { r = 0, g = 0, b = 0 },       msg = '', msg2 = '', achieved = false },
-        { goal = 1000000000, rank = '?!??!?',          color = { r = 0, g = 0, b = 0 },       msg = '', msg2 = '', achieved = false }
+    this.satellite_score =
+    {
+        { goal = 0, rank = false, achieved = true },
+        { goal = 1, rank = 'Copper', color = { r = 201, g = 133, b = 6 }, msg = '', msg2 = '', achieved = false },
+        { goal = 10, rank = 'Iron', color = { r = 219, g = 216, b = 206 }, msg = '', msg2 = '', achieved = false },
+        { goal = 100, rank = 'Bronze', color = { r = 186, g = 115, b = 39 }, msg = '', msg2 = '', achieved = false },
+        { goal = 500, rank = 'Silver', color = { r = 186, g = 178, b = 171 }, msg = '', msg2 = '', achieved = false },
+        { goal = 1000, rank = 'Gold', color = { r = 255, g = 214, b = 33 }, msg = '', msg2 = '', achieved = false },
+        { goal = 2500, rank = 'Platinum', color = { r = 224, g = 223, b = 215 }, msg = '', msg2 = '', achieved = false },
+        { goal = 5000, rank = 'Diamond', color = { r = 237, g = 236, b = 232 }, msg = '', msg2 = '', achieved = false },
+        { goal = 10000, rank = 'Iridium', color = { r = 255, g = 220, b = 220 }, msg = '', msg2 = '', achieved = false },
+        { goal = 20000, rank = 'Anti-Matter', color = { r = 190, g = 255, b = 190 }, msg = '', msg2 = '', achieved = false },
+        { goal = 30000, rank = 'Orange Dwarf', color = { r = 255, g = 150, b = 50 }, msg = '', msg2 = '', achieved = false },
+        { goal = 40000, rank = 'Blue Supergiant', color = { r = 130, g = 130, b = 255 }, msg = '', msg2 = '', achieved = false },
+        { goal = 50000, rank = 'Red Hypergiant', color = { r = 255, g = 90, b = 90 }, msg = '', msg2 = '', achieved = false },
+        { goal = 75000, rank = 'Neutron Star', color = { r = 200, g = 200, b = 255 }, msg = '', msg2 = '', achieved = false },
+        { goal = 100000, rank = 'Supernova', color = { r = 200, g = 255, b = 200 }, msg = '', msg2 = '', achieved = false },
+        { goal = 150000, rank = 'Black Hole', color = { r = 0, g = 0, b = 0 }, msg = '', msg2 = '', achieved = false },
+        { goal = 1000000, rank = 'Blue Screen', color = { r = 100, g = 100, b = 245 }, msg = '', msg2 = '', achieved = false },
+        { goal = 10000000, rank = '?????', color = { r = 0, g = 0, b = 0 }, msg = '', msg2 = '', achieved = false },
+        { goal = 1000000000, rank = '?!??!?', color = { r = 0, g = 0, b = 0 }, msg = '', msg2 = '', achieved = false }
     }
 end
 

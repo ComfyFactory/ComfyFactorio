@@ -1622,15 +1622,28 @@ function Public.pause_game(status)
     end
 end
 
-local function command_handler(callback, ...)
+local function command_handler(command_name, callback, ...)
+    local chunk
+    local success, err
+
     if type(callback) == 'function' then
-        local success, err = pcall(callback, ...)
-        return success, err
+        success, err = pcall(callback, ...)
     else
         ---@diagnostic disable-next-line: deprecated, param-type-mismatch
-        local success, err = pcall(loadstring(callback), ...)
-        return success, err
+        chunk, err = loadstring(callback)
+
+        if not chunk then
+            return false, string.format('[%s] loadstring failed: %s\nCallback: %s', command_name, err, callback)
+        end
+
+        success, err = pcall(chunk, ...)
     end
+
+    if not success then
+        err = string.format('[%s] Runtime error: %s\nCallback: %s', command_name, tostring(err), callback)
+    end
+
+    return success, err
 end
 
 --- The command 'cc' is only used by the server so it can communicate through the web-panel api to the instances that it starts.
@@ -1648,21 +1661,28 @@ commands.add_command(
         if not callback then
             return
         end
+
         if not string.find(callback, '%s') and not string.find(callback, 'return') then
             callback = 'return ' .. callback
         end
-        local success, err = command_handler(callback)
+
+        local success, err = command_handler('cc', callback)
+
         if not success and type(err) == 'string' then
             local _end = string.find(err, 'stack traceback')
             if _end then
-                err = string.sub(err, 0, _end - 2)
+                err = string.sub(err, 1, _end - 2)
             end
         end
-        if err or err == false then
-            output_data(err)
+
+        if err then
+            if storage.debug_cc then
+                output_data(err)
+            end
         end
     end
 )
+
 
 --- The [JOIN] and [LEAVE] messages Factorio sends to stdout aren't sent in all cases of
 --  players joining or leaving. So we send our own [PLAYER-JOIN] and [PLAYER-LEAVE] tags.

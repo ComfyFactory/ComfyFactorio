@@ -1,10 +1,12 @@
+local util = require('util')
+local crash_site = require('crash-site')
 local Global = require 'utils.global'
 local Event = require 'utils.event'
 local BottomFrame = require 'utils.gui.bottom_frame'
 local Task = require 'utils.task_token'
 local Public = {}
 
-if script.active_mods["space-age"] then
+if script.active_mods['space-age'] then
     require 'utils.freeplay.space_age_finish'
 else
     require 'utils.freeplay.silo_script'
@@ -15,7 +17,7 @@ local this =
     created_items = {},
     respawn_items = {},
     enabled = true,
-    skip_intro = true,
+    skip_intro = false,
     chart_distance = 0,
     disable_crashsite = false,
     crashed_ship_items = {},
@@ -31,9 +33,6 @@ Global.register(
     end
 )
 
-local util = require('util')
-local crash_site = require('crash-site')
-
 local clear_mod_gui_top_frame_token =
     Task.register(
         function (event)
@@ -44,7 +43,22 @@ local clear_mod_gui_top_frame_token =
             end
 
             if player.gui.top.mod_gui_top_frame and player.gui.top.mod_gui_top_frame.valid then
-                player.gui.top.mod_gui_top_frame.destroy()
+                player.gui.top.mod_gui_top_frame.visible = false
+            end
+        end
+    )
+
+local show_mod_gui_top_frame_token =
+    Task.register(
+        function (event)
+            local player_index = event.player_index
+            local player = game.get_player(player_index)
+            if not player or not player.valid then
+                return
+            end
+
+            if player.gui.top.mod_gui_top_frame and player.gui.top.mod_gui_top_frame.valid then
+                player.gui.top.mod_gui_top_frame.visible = true
             end
         end
     )
@@ -113,26 +127,30 @@ local chart_starting_area = function ()
 end
 
 local init_ending_info = function ()
-    local is_space_age = script.active_mods["space-age"]
+    local is_space_age = script.active_mods['space-age']
     local info =
     {
-        image_path = is_space_age and "utils/files/victory-space-age.png" or "utils/files/victory.png",
-        title = { "gui-game-finished.victory" },
-        message = is_space_age and { "victory-message-space-age" } or { "victory-message" },
+        image_path = is_space_age and 'utils/files/victory-space-age.png' or 'utils/files/victory.png',
+        title = { 'gui-game-finished.victory' },
+        message = is_space_age and { 'victory-message-space-age' } or { 'victory-message' },
         bullet_points =
         {
-            { "victory-bullet-point-1" },
-            { "victory-bullet-point-2" },
-            { "victory-bullet-point-3" },
-            { "victory-bullet-point-4" }
+            { 'victory-bullet-point-1' },
+            { 'victory-bullet-point-2' },
+            { 'victory-bullet-point-3' },
+            { 'victory-bullet-point-4' }
         },
-        final_message = { "victory-final-message" },
+        final_message = { 'victory-final-message' }
     }
     game.set_win_ending_info(info)
 end
 
 local on_player_joined_game = function (event)
     if not this.clear_mod_gui_top then
+        return
+    end
+
+    if event.player_index ~= 1 then
         return
     end
 
@@ -170,6 +188,7 @@ local on_player_created = function (event)
                 BottomFrame.toggle_player_frame(player, false)
                 Task.set_timeout_in_ticks(1, toggle_screen_for_player_token, { index = player.index, state = false })
                 crash_site.create_cutscene(player, { -5, -4 })
+                this.crash_site_cutscene_active = true
             end
             return
         end
@@ -185,12 +204,15 @@ local on_player_respawned = function (event)
 end
 
 local on_cutscene_waypoint_reached = function (event)
-    if this.enabled then
+    if not this.crash_site_cutscene_active then
         return
     end
+
     if not crash_site.is_crash_site_cutscene(event) then
         return
     end
+
+    Task.set_timeout_in_ticks(5, show_mod_gui_top_frame_token, event)
 
     local player = game.get_player(event.player_index)
 
@@ -210,16 +232,17 @@ local on_cutscene_waypoint_reached = function (event)
 end
 
 local skip_crash_site_cutscene = function (event)
-    if this.enabled then
+    if not this.crash_site_cutscene_active then
         return
     end
-
     if event.player_index ~= 1 then
         return
     end
     if event.tick > 2000 then
         return
     end
+
+    Task.set_timeout_in_ticks(5, show_mod_gui_top_frame_token, event)
 
     local player = game.get_player(event.player_index)
     if player.controller_type == defines.controllers.cutscene then
@@ -239,9 +262,12 @@ local skip_crash_site_cutscene = function (event)
 end
 
 local on_cutscene_cancelled = function (event)
-    if this.enabled then
+    if not this.crash_site_cutscene_active then
         return
     end
+    Task.set_timeout_in_ticks(5, show_mod_gui_top_frame_token, event)
+
+    this.crash_site_cutscene_active = nil
 
     local player = game.get_player(event.player_index)
     if player.gui.screen.skip_cutscene_label then
@@ -292,7 +318,7 @@ local freeplay_interface =
         return this.custom_intro_message
     end,
     set_chart_distance = function (value)
-        this.chart_distance = tonumber(value) or error("Remote call parameter to freeplay set chart distance must be a number")
+        this.chart_distance = tonumber(value) or error('Remote call parameter to freeplay set chart distance must be a number')
     end,
     get_disable_crashsite = function ()
         return this.disable_crashsite
@@ -348,6 +374,7 @@ end
 
 Event.on_init(
     function ()
+        game.allow_tip_activation = true
         local game_has_mods = is_game_modded()
         if game_has_mods then
             this.created_items = created_items()
@@ -361,6 +388,7 @@ Event.on_init(
 )
 
 local on_configuration_changed = function ()
+    game.allow_tip_activation = true
     this.created_items = this.created_items or created_items()
     this.respawn_items = this.respawn_items or respawn_items()
     this.crashed_ship_items = this.crashed_ship_items or ship_items()
@@ -379,11 +407,27 @@ Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_created, on_player_created)
 Event.add(defines.events.on_player_respawned, on_player_respawned)
 Event.add(defines.events.on_cutscene_waypoint_reached, on_cutscene_waypoint_reached)
-Event.add('crash-site-skip-cutscene', skip_crash_site_cutscene)
+Event.add(defines.events['crash-site-skip-cutscene'], skip_crash_site_cutscene)
 Event.add(defines.events.on_cutscene_cancelled, on_cutscene_cancelled)
 
 function Public.set_enabled(value)
     this.enabled = value or false
+end
+
+function Public.set_skip_intro(value)
+    this.skip_intro = value or false
+end
+
+function Public.set_custom_surface_name(value)
+    this.custom_surface_name = value or nil
+end
+
+function Public.set_clear_mod_gui_top(value)
+    this.clear_mod_gui_top = value or false
+end
+
+function Public.set_disable_crashsite(value)
+    this.disable_crashsite = value or false
 end
 
 return Public

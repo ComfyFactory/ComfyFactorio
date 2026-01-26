@@ -1,5 +1,6 @@
 local Event = require 'utils.event'
 local Public = require 'maps.mountain_fortress_v3.table'
+local simplex_noise = require 'utils.math.simplex_noise'.d2
 local Biters = require 'modules.wave_defense.biter_rolls'
 
 local random = math.random
@@ -12,7 +13,7 @@ local is_modded_pt2 = Public.is_modded_pt2
 
 local zone_settings = Public.zone_settings
 local worm_level_modifier = 0.19
--- local base_tile = 'grass-1'
+local base_tile = 'grass-1'
 
 local vanilla_start_ground_tiles =
 {
@@ -292,6 +293,34 @@ local gleba_harvest_tiles =
 }
 
 local size_of_gleba_harvest_tiles = #gleba_harvest_tiles
+
+local water_tiles =
+{
+    'water',
+    'deepwater',
+    'gleba-deep-lake',
+    'wetland-blue-slime',
+    'ammoniacal-ocean',
+    'ammoniacal-ocean-2'
+}
+
+local size_of_water_tiles = #water_tiles
+
+local function get_gleba_harvest_tile_index(p, seed)
+    local noise = simplex_noise(p.x * 0.025, p.y * 0.025, seed + 987)
+    local index = floor(((noise + 1) * 0.5) * size_of_gleba_harvest_tiles) + 1
+    if index < 1 then index = 1 end
+    if index > size_of_gleba_harvest_tiles then index = size_of_gleba_harvest_tiles end
+    return index
+end
+
+local function get_water_tile_index(p, seed)
+    local noise = simplex_noise(p.x * 0.025, p.y * 0.025, seed + 987)
+    local index = floor(((noise + 1) * 0.5) * size_of_water_tiles) + 1
+    if index < 1 then index = 1 end
+    if index > size_of_water_tiles then index = size_of_water_tiles end
+    return index
+end
 
 local gleba_tiles =
 {
@@ -901,7 +930,7 @@ local function wall(p, data, adjusted_zones)
     if y > 9 + cave_ponds * 6 and y < 23 + small_caves * 6 then
         if small_caves > 0.02 or cave_ponds > 0.02 then
             if small_caves > 0.005 then
-                tiles[#tiles + 1] = { name = 'water', position = p }
+                tiles[#tiles + 1] = { name = water_tiles[get_water_tile_index(p, seed)], position = p }
             else
                 tiles[#tiles + 1] = { name = 'water-shallow', position = p }
                 if random(1, 20) == 1 then
@@ -2054,7 +2083,7 @@ local function zone_gleba_1(x, y, data, void_or_lab, adjusted_zones)
 
     if noise_cave_ponds > 0.670 then
         if noise_cave_ponds > 0.750 then
-            tiles[#tiles + 1] = { name = zone_data.secondary_tile, position = p }
+            tiles[#tiles + 1] = { name = gleba_harvest_tiles[get_gleba_harvest_tile_index(p, seed)], position = p }
             if random(1, 4) == 1 then
                 markets[#markets + 1] = p
             end
@@ -2084,7 +2113,7 @@ local function zone_gleba_1(x, y, data, void_or_lab, adjusted_zones)
     end
 
     if noise_cave_ponds > 0.74 then
-        tiles[#tiles + 1] = { name = zone_data.secondary_tile, position = p }
+        tiles[#tiles + 1] = { name = gleba_harvest_tiles[get_gleba_harvest_tile_index(p, seed)], position = p }
         if cave_rivers < -0.502 then
             tiles[#tiles + 1] = { name = 'refined-hazard-concrete-right', position = p }
         end
@@ -2111,7 +2140,7 @@ local function zone_gleba_1(x, y, data, void_or_lab, adjusted_zones)
     if p.y < -64 + noise_cave_ponds * 10 then
         if no_rocks < 0.11 and no_rocks > -0.11 then
             if small_caves > 0.21 then
-                tiles[#tiles + 1] = { name = zone_data.secondary_tile, position = p }
+                tiles[#tiles + 1] = { name = gleba_harvest_tiles[get_gleba_harvest_tile_index(p, seed)], position = p }
                 if random(1, 450) == 1 then
                     entities[#entities + 1] = { name = 'crude-oil', position = p, amount = get_oil_amount(p) }
                 end
@@ -2215,7 +2244,7 @@ local function zone_gleba_2(x, y, data, void_or_lab, adjusted_zones)
 
     if noise_cave_ponds > 0.670 then
         if noise_cave_ponds > 0.750 then
-            tiles[#tiles + 1] = { name = zone_data.secondary_tile, position = p }
+            tiles[#tiles + 1] = { name = gleba_harvest_tiles[get_gleba_harvest_tile_index(p, seed)], position = p }
             if random(1, 4) == 1 then
                 markets[#markets + 1] = p
             end
@@ -2227,7 +2256,7 @@ local function zone_gleba_2(x, y, data, void_or_lab, adjusted_zones)
             end
             return
         elseif noise_cave_ponds > 0.850 then
-            tiles[#tiles + 1] = { name = zone_data.secondary_tile, position = p }
+            tiles[#tiles + 1] = { name = gleba_harvest_tiles[get_gleba_harvest_tile_index(p, seed)], position = p }
             if random(1, 4) == 1 then
                 markets[#markets + 1] = p
             end
@@ -2260,10 +2289,10 @@ local function zone_gleba_2(x, y, data, void_or_lab, adjusted_zones)
         if noise_cave_ponds > 0.850 then
             tiles[#tiles + 1] = { name = zone_data.main_tile, position = p }
         else
-            tiles[#tiles + 1] = { name = zone_data.secondary_tile, position = p }
+            tiles[#tiles + 1] = { name = gleba_harvest_tiles[get_gleba_harvest_tile_index(p, seed)], position = p }
         end
         if cave_rivers < -0.502 then
-            tiles[#tiles + 1] = { name = zone_data.secondary_tile, position = p }
+            tiles[#tiles + 1] = { name = gleba_harvest_tiles[get_gleba_harvest_tile_index(p, seed)], position = p }
         end
         if random(1, 64) == 1 then
             entities[#entities + 1] = { name = zone_data.tree_raffle[random(1, zone_data.size_of_tree_raffle)], position = p }
@@ -2278,7 +2307,7 @@ local function zone_gleba_2(x, y, data, void_or_lab, adjusted_zones)
     if p.y < -64 + noise_cave_ponds * 10 then
         if no_rocks < 0.11 and no_rocks > -0.11 then
             if small_caves > 0.21 then
-                tiles[#tiles + 1] = { name = zone_data.secondary_tile, position = p }
+                tiles[#tiles + 1] = { name = gleba_harvest_tiles[get_gleba_harvest_tile_index(p, seed)], position = p }
                 if random(1, 450) == 1 then
                     entities[#entities + 1] = { name = 'crude-oil', position = p, amount = get_oil_amount(p) }
                 end
@@ -2329,7 +2358,7 @@ local function zone_gleba_2(x, y, data, void_or_lab, adjusted_zones)
     if random(1, 2048) == 1 then
         spawn_treasure(data, p, 'iron-chest')
     end
-    tiles[#tiles + 1] = { name = zone_data.secondary_tile, position = p }
+    tiles[#tiles + 1] = { name = gleba_harvest_tiles[get_gleba_harvest_tile_index(p, seed)], position = p }
     if random(1, 125) > 25 then
         entities[#entities + 1] = { name = adjusted_zones.rock_raffle[random(1, adjusted_zones.size_of)], position = p }
     end
@@ -2366,7 +2395,7 @@ local function zone_vulcanus_1(x, y, data, _, adjusted_zones)
     local smol_areas = Public.get_noise('smol_areas', p, seed + seed)
 
     if abs(noise_large_caves) > 0.7 then
-        tiles[#tiles + 1] = { name = 'water', position = p }
+        tiles[#tiles + 1] = { name = water_tiles[get_water_tile_index(p, seed)], position = p }
         if random(1, 16) == 1 then
             entities[#entities + 1] = { name = 'fish', position = p }
         end
@@ -2728,7 +2757,7 @@ local function zone_14(x, y, data, _, adjusted_zones)
     end
 
     if small_caves < -0.34 or small_caves > 0.34 then
-        tiles[#tiles + 1] = { name = 'water', position = p }
+        tiles[#tiles + 1] = { name = water_tiles[get_water_tile_index(p, seed)], position = p }
         if random(1, 128) == 1 then
             entities[#entities + 1] = { name = 'fish', position = p }
         end
@@ -2957,7 +2986,7 @@ local function zone_11(x, y, data, _, adjusted_zones)
     local smol_areas = Public.get_noise('smol_areas', p, seed + seed)
 
     if noise_1 > 0.7 then
-        tiles[#tiles + 1] = { name = 'water', position = p }
+        tiles[#tiles + 1] = { name = water_tiles[get_water_tile_index(p, seed)], position = p }
         if random(1, 48) == 1 then
             entities[#entities + 1] = { name = 'fish', position = p }
         end
@@ -3234,7 +3263,7 @@ local function zone_9(x, y, data, _, adjusted_zones)
         return
     end
 
-    tiles[#tiles + 1] = { name = 'water', position = p }
+    tiles[#tiles + 1] = { name = water_tiles[get_water_tile_index(p, seed)], position = p }
     if random(1, 96) == 1 then
         entities[#entities + 1] = { name = 'fish', position = p }
     end
@@ -3532,7 +3561,7 @@ local function zone_7_garden(x, y, data, void_or_lab, adjusted_zones)
     local smol_areas = Public.get_noise('smol_areas', p, seed + seed)
 
     if cave_rivers_3 > -0.025 and cave_rivers_3 < 0.025 and no_rocks_2 > -0.6 then
-        tiles[#tiles + 1] = { name = 'water', position = p }
+        tiles[#tiles + 1] = { name = water_tiles[get_water_tile_index(p, seed)], position = p }
         if random(1, 128) == 1 then
             entities[#entities + 1] = { name = 'fish', position = p }
         end
@@ -3540,7 +3569,7 @@ local function zone_7_garden(x, y, data, void_or_lab, adjusted_zones)
     end
 
     if cave_rivers_4 > -0.025 and cave_rivers_4 < 0.025 and no_rocks_2 > -0.6 then
-        tiles[#tiles + 1] = { name = 'water', position = p }
+        tiles[#tiles + 1] = { name = water_tiles[get_water_tile_index(p, seed)], position = p }
         if random(1, 128) == 1 then
             entities[#entities + 1] = { name = 'fish', position = p }
         end
@@ -3883,7 +3912,7 @@ local function zone_4(x, y, data, void_or_lab, adjusted_zones)
     local smol_areas = Public.get_noise('smol_areas', p, seed + seed)
 
     if abs(noise_large_caves) > 0.7 then
-        tiles[#tiles + 1] = { name = 'water', position = p }
+        tiles[#tiles + 1] = { name = water_tiles[get_water_tile_index(p, seed)], position = p }
         if random(1, 16) == 1 then
             entities[#entities + 1] = { name = 'fish', position = p }
         end
@@ -4606,7 +4635,7 @@ local function zone_gleba_forest_2(x, y, data, void_or_lab, adjusted_zones)
     if noise_cave_ponds > 0.74 then
         tiles[#tiles + 1] = { name = zone_data.main_tile, position = p }
         if cave_rivers < -0.502 then
-            tiles[#tiles + 1] = { name = zone_data.secondary_tile, position = p }
+            tiles[#tiles + 1] = { name = gleba_harvest_tiles[get_gleba_harvest_tile_index(p, seed)], position = p }
         end
         if random(1, 64) == 1 then
             entities[#entities + 1] = { name = zone_data.tree_raffle[random(1, zone_data.size_of_tree_raffle)], position = p }
@@ -5395,28 +5424,76 @@ local function process_bits(p, data, adjusted_zones)
         adjusted_zones.size_of = size_of_aquilo_rock_raffle
         adjusted_zones.tiles_raffle = start_aquilo_tiles
     else
-        adjusted_zones.starting_tile = start_aquilo_tiles[random(1, #start_aquilo_tiles)]
+        adjusted_zones.starting_tile = base_tile
         adjusted_zones.rock_raffle = rock_raffle
         adjusted_zones.size_of = size_of_rock_raffle
-        adjusted_zones.tiles_raffle = start_aquilo_tiles
+        adjusted_zones.tiles_raffle = nil
     end
-
-
 
     local generate_zone
     if adjusted_zones.starting_zone and depth then
         generate_zone = zone_1
     else
-        generate_zone = zones[adjusted_zones.shuffled_zones[index]].fn
-        if not generate_zone then
-            generate_zone = zones[adjusted_zones.shuffled_zones[adjusted_zones.size]].fn
+        if not adjusted_zones.zone_by_index then
+            adjusted_zones.zone_by_index = {}
+        end
+
+        if not adjusted_zones.zone_by_index[index] then
+            local purchased_zones = Public.get('purchased_zones')
+            if purchased_zones and purchased_zones[index] then
+                local zone_data = purchased_zones[index]
+                local zone_name
+                if type(zone_data) == 'table' then
+                    zone_name = zone_data.zone
+                else
+                    zone_name = zone_data
+                end
+                if zone_name == 'gleba' then
+                    generate_zone = zone_gleba_1
+                    adjusted_zones.zone_by_index[index] = 'zone_gleba_1'
+                elseif zone_name == 'aquilo' then
+                    generate_zone = zone_aquilo_1
+                    adjusted_zones.zone_by_index[index] = 'zone_aquilo_1'
+                elseif zone_name == 'vulcanus' then
+                    generate_zone = zone_vulcanus_1
+                    adjusted_zones.zone_by_index[index] = 'zone_vulcanus_1'
+                elseif zone_name == 'fulgora' then
+                    generate_zone = zone_fulgora_tech_1
+                    adjusted_zones.zone_by_index[index] = 'zone_fulgora_tech_1'
+                else
+                    generate_zone = zones[adjusted_zones.shuffled_zones[index]].fn
+                    adjusted_zones.zone_by_index[index] = adjusted_zones.shuffled_zones[index]
+                    if not generate_zone then
+                        generate_zone = zones[adjusted_zones.shuffled_zones[adjusted_zones.size]].fn
+                        adjusted_zones.zone_by_index[index] = adjusted_zones.shuffled_zones[adjusted_zones.size]
+                    end
+                end
+            else
+                generate_zone = zones[adjusted_zones.shuffled_zones[index]].fn
+                adjusted_zones.zone_by_index[index] = adjusted_zones.shuffled_zones[index]
+                if not generate_zone then
+                    generate_zone = zones[adjusted_zones.shuffled_zones[adjusted_zones.size]].fn
+                    adjusted_zones.zone_by_index[index] = adjusted_zones.shuffled_zones[adjusted_zones.size]
+                end
+            end
+        else
+            local zone_name = adjusted_zones.zone_by_index[index]
+            if zone_name == 'zone_gleba_1' then
+                generate_zone = zone_gleba_1
+            elseif zone_name == 'zone_aquilo_1' then
+                generate_zone = zone_aquilo_1
+            elseif zone_name == 'zone_vulcanus_1' then
+                generate_zone = zone_vulcanus_1
+            elseif zone_name == 'zone_fulgora_tech_1' then
+                generate_zone = zone_fulgora_tech_1
+            else
+                generate_zone = zones[zone_name].fn
+                if not generate_zone then
+                    generate_zone = zones[adjusted_zones.shuffled_zones[adjusted_zones.size]].fn
+                end
+            end
         end
     end
-
-    if not adjusted_zones.zone_by_index then
-        adjusted_zones.zone_by_index = {}
-    end
-    adjusted_zones.zone_by_index[index] = adjusted_zones.shuffled_zones[index]
 
     local x = p.x
     local y = p.y
@@ -5451,7 +5528,7 @@ local function border_chunk(p, data, dec_tbl)
         elseif starting_planet == 'vulcanus' then
             tiles[#tiles + 1] = { name = start_vulcanus_tiles[index], position = pos }
         else
-            tiles[#tiles + 1] = { name = start_aquilo_tiles[index], position = pos }
+            tiles[#tiles + 1] = { name = start_vulcanus_tiles[index], position = pos }
         end
     end
 
@@ -5553,7 +5630,7 @@ local function biter_chunk(p, data)
         elseif starting_planet == 'vulcanus' then
             tiles[#tiles + 1] = { name = start_vulcanus_tiles[index], position = pos }
         else
-            tiles[#tiles + 1] = { name = start_aquilo_tiles[index], position = pos }
+            tiles[#tiles + 1] = { name = start_vulcanus_tiles[index], position = pos }
         end
     end
 end

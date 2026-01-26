@@ -1130,7 +1130,7 @@ spells[#spells + 1] =
     damage = false,
     range = 30,
     force = 'player',
-    level = 50,
+    level = 25,
     type = 'special',
     mana_cost = 140,
     enforce_cooldown = true,
@@ -1138,6 +1138,30 @@ spells[#spells + 1] =
     enabled = true,
     sprite = 'item/raw-fish',
     tooltip = 'Spawns some fishies',
+    callback = function (data)
+        Public.register_cooldown_for_spell(data.player)
+
+        return insert_onto(data)
+    end
+}
+spells[#spells + 1] =
+{
+    name = { 'spells.crude_oil' },
+    entityName = 'crude-oil-barrel',
+    target = false,
+    amount = 3,
+    capsule = true,
+    damage = false,
+    range = 30,
+    force = 'player',
+    level = 35,
+    type = 'special',
+    mana_cost = 200,
+    enforce_cooldown = true,
+    cooldown = 150,
+    enabled = true,
+    sprite = 'item/crude-oil-barrel',
+    tooltip = 'Spawns some crude oil barrels',
     callback = function (data)
         Public.register_cooldown_for_spell(data.player)
 
@@ -1538,6 +1562,116 @@ local drone_mine =
 }
 
 spells[#spells + 1] = drone_mine
+
+local lightning =
+{
+    name = 'Lightning',
+    entityName = 'electric-beam',
+    target = true,
+    range = 35,
+    amount = 1,
+    damage = true,
+    force = 'player',
+    level = 60,
+    type = 'special',
+    mana_cost = 350,
+    cooldown = 150,
+    enabled = true,
+    enforce_cooldown = true,
+    log_spell = true,
+    sprite = 'item/electric-energy-interface',
+    tooltip = 'Strikes enemies with lightning.',
+    callback = function (data)
+        local player = data.player
+        local position = data.position
+        local surface = player.surface
+        local damage = Public.get_player_level(player)
+
+        damage = damage / 4
+
+        Public.register_cooldown_for_spell(player)
+        Public.remove_mana(player, data.self.mana_cost)
+
+        for _ = 1, 12 do
+            surface.create_entity({ name = 'laser-effect', position = { x = position.x + random(-2, 2), y = position.y + random(-2, 2) }, target = { x = position.x + random(-2, 2), y = position.y + random(-2, 2) } })
+        end
+
+        local entities = surface.find_entities_filtered(
+            {
+                area = { { position.x - 8, position.y - 8 }, { position.x + 8, position.y + 8 } },
+                force = 'enemy'
+            })
+
+        for _, entity in pairs(entities) do
+            if entity.valid and entity.health then
+                entity.damage(damage, player.force, 'electric')
+            end
+        end
+
+        Public.cast_spell(player)
+        return true
+    end
+}
+
+spells[#spells + 1] = lightning
+
+if script.active_mods['space-age'] then
+    spells[#spells + 1] =
+    {
+        name = { 'spells.preserve' },
+        entityName = 'preservation',
+        target = false,
+        amount = 1,
+        damage = false,
+        force = 'player',
+        level = 60,
+        type = 'special',
+        mana_cost = 150,
+        cooldown = 1000,
+        enabled = true,
+        enforce_cooldown = true,
+        sprite = 'item/ice',
+        tooltip = 'Refreshes the spoil percent of items in your inventory.',
+        callback = function (data)
+            local self = data.self
+            local player = data.player
+            local rpg_t = data.rpg_t
+            local inv = player.get_main_inventory()
+            local count = 0
+
+            if inv and inv.valid then
+                for i = 1, #inv do
+                    local item_stack = inv[i]
+                    if item_stack and item_stack.valid_for_read and item_stack.spoil_percent and item_stack.spoil_percent > 0 then
+                        if self.mana_cost >= rpg_t.mana then
+                            break
+                        end
+
+                        item_stack.spoil_percent = 0
+                        Public.remove_mana(player, self.mana_cost)
+                        count = count + 1
+                    end
+                end
+            end
+
+            local cursor = player.cursor_stack
+            if cursor and cursor.valid_for_read and cursor.spoil_percent and self.mana_cost <= rpg_t.mana and cursor.spoil_percent > 0 then
+                cursor.spoil_percent = 0
+                Public.remove_mana(player, self.mana_cost)
+                count = count + 1
+            end
+
+            if count == 0 then
+                Public.cast_spell(player, true)
+                return false
+            end
+
+            Public.register_cooldown_for_spell(player)
+            Public.cast_spell(player)
+            return true
+        end
+    }
+end
 
 -- if _DEBUG then
 --     for i = 1, #spells do

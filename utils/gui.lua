@@ -15,12 +15,12 @@ local Public = {}
 
 local ordered_tab_names =
 {
-    "Players",
-    "Admin",
-    "Groups",
-    "Scoreboard",
-    "Statistics",
-    "Config",
+    'Players',
+    'Admin',
+    'Groups',
+    'Scoreboard',
+    'Statistics',
+    'Config'
 }
 
 -- local to this file
@@ -129,8 +129,8 @@ local function get_button_flow(player)
         return gui.mod_gui_button_flow
     end
 
-    local frame = gui.mod_gui_top_frame or gui.add { type = "frame", name = "mod_gui_top_frame", direction = "horizontal", style = "slot_window_frame" }
-    return frame.mod_gui_inner_frame or frame.add { type = "frame", name = "mod_gui_inner_frame", style = "mod_gui_inside_deep_frame" }
+    local frame = gui.mod_gui_top_frame or gui.add { type = 'frame', name = 'mod_gui_top_frame', direction = 'horizontal', style = 'slot_window_frame' }
+    return frame.mod_gui_inner_frame or frame.add { type = 'frame', name = 'mod_gui_inner_frame', style = 'mod_gui_inside_deep_frame' }
 end
 
 -- Associates data with the LuaGuiElement. If data is nil then removes the data
@@ -206,7 +206,6 @@ function Public.get_data(element)
         return
     end
 
-
     local player_index = element.player_index
 
     local values = data[player_index]
@@ -242,8 +241,7 @@ function Public.get_data_parent(parent, element)
 end
 
 -- Adds a gui that is alike the factorio native gui.
-function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_settings_button_name,
-    close_main_frame_name, name, info, inside_table_count)
+function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_settings_button_name, close_main_frame_name, name, info, inside_table_count)
     if not align then
         return
     end
@@ -320,7 +318,8 @@ function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_s
     local close_button
 
     if close_main_frame_name then
-        close_button = titlebar.add
+        close_button =
+            titlebar.add
             {
                 type = 'sprite-button',
                 name = close_main_frame_name,
@@ -436,8 +435,7 @@ local function handler_factory(event_id)
             return error('Element name is required when passing it onto the handler_factory.', 2)
         end
         if not handler or not type(handler) == 'function' then
-            return error(
-                'Handler is required when passing it onto the handler_factory and needs to be of type function.', 2)
+            return error('Handler is required when passing it onto the handler_factory and needs to be of type function.', 2)
         end
 
         if not handlers then
@@ -733,10 +731,20 @@ function Public.reload_active_tab(player, forced, tab_name)
     return callback(d)
 end
 
+local function resize_top_buttons(player)
+    if player.gui.top.mod_gui_top_frame and player.gui.top.mod_gui_top_frame.valid and player.gui.top.mod_gui_top_frame.mod_gui_inner_frame and player.gui.top.mod_gui_top_frame.mod_gui_inner_frame.valid then
+        for _, frame in pairs(player.gui.top.mod_gui_top_frame.mod_gui_inner_frame.children) do
+            if frame and frame.valid then
+                frame.style.minimal_height = 36
+                frame.style.maximal_height = 36
+            end
+        end
+    end
+end
+
 local function top_button(player)
     if settings.mod_gui_top_frame then
-        local button = Public.add_mod_button(player,
-            { type = 'sprite-button', name = main_button_name, sprite = 'item/raw-fish', style = Public.button_style })
+        local button = Public.add_mod_button(player, { type = 'sprite-button', name = main_button_name, sprite = 'item/raw-fish', style = Public.button_style })
         if button then
             button.style.minimal_height = 36
             button.style.maximal_height = 36
@@ -747,13 +755,15 @@ local function top_button(player)
         if player.gui.top[main_button_name] then
             return
         end
-        local button = player.gui.top.add(
-            {
-                type = 'sprite-button',
-                name = main_button_name,
-                sprite = 'item/raw-fish',
-                style = Public.button_style
-            })
+        local button =
+            player.gui.top.add(
+                {
+                    type = 'sprite-button',
+                    name = main_button_name,
+                    sprite = 'item/raw-fish',
+                    style = Public.button_style
+                }
+            )
         button.style.minimal_height = 38
         button.style.maximal_height = 38
         button.style.minimal_width = 40
@@ -821,14 +831,7 @@ local function draw_main_frame(player)
     end
 
     local admins = Server.get_admins_data()
-    local frame, inside_frame = Public.add_main_frame_with_toolbar(
-        player,
-        'left',
-        main_frame_name,
-        nil,
-        close_button_name,
-        title
-    )
+    local frame, inside_frame = Public.add_main_frame_with_toolbar(player, 'left', main_frame_name, nil, close_button_name, title)
 
     local tabbed_pane = inside_frame.add({ type = 'tabbed-pane', name = 'tabbed_pane' })
 
@@ -853,7 +856,6 @@ local function draw_main_frame(player)
         end
     end
 
-
     for _, entry in ipairs(ordered_tabs) do
         local name = entry.name
         local callback = entry.data
@@ -863,7 +865,9 @@ local function draw_main_frame(player)
             local secs = Server.get_current_time()
 
             if callback.only_server_sided then
-                if secs then show = true end
+                if secs then
+                    show = true
+                end
             elseif callback.admin == true then
                 if player.admin and (not secs or (secs and admins[player.name])) then
                     show = true
@@ -873,20 +877,24 @@ local function draw_main_frame(player)
             end
 
             if show then
-                local tab = tabbed_pane.add(
-                    {
-                        type = 'tab',
-                        caption = name,
-                        name = callback.name,
-                        style = 'slightly_smaller_tab'
-                    })
-                local name_frame = tabbed_pane.add(
-                    {
-                        type = 'frame',
-                        name = name,
-                        direction = 'vertical',
-                        style = 'mod_gui_inside_deep_frame'
-                    })
+                local tab =
+                    tabbed_pane.add(
+                        {
+                            type = 'tab',
+                            caption = name,
+                            name = callback.name,
+                            style = 'slightly_smaller_tab'
+                        }
+                    )
+                local name_frame =
+                    tabbed_pane.add(
+                        {
+                            type = 'frame',
+                            name = name,
+                            direction = 'vertical',
+                            style = 'mod_gui_inside_deep_frame'
+                        }
+                    )
                 name_frame.style.padding = 8
                 tabbed_pane.add_tab(tab, name_frame)
             end
@@ -907,7 +915,9 @@ end
 
 local function on_object_destroyed(event)
     local player_index = removed_objects[event.registration_number]
-    if not player_index then return end
+    if not player_index then
+        return
+    end
 
     local element_index = event.useful_id
     removed_objects[event.registration_number] = nil
@@ -917,7 +927,6 @@ local function on_object_destroyed(event)
         player_data[element_index] = nil
     end
 end
-
 
 function Public.get_content(player)
     local left_frame = Public.get_main_frame(player)
@@ -1024,8 +1033,7 @@ Public.on_click(
             frame.destroy()
             Event.raise(CustomEvents.events.on_gui_removal, { player_index = player.index })
             local active_frame = Public.get_player_active_frame(player)
-            Event.raise(CustomEvents.events.on_gui_closed_main_frame,
-                { player_index = player.index, element = active_frame or nil })
+            Event.raise(CustomEvents.events.on_gui_closed_main_frame, { player_index = player.index, element = active_frame or nil })
         else
             draw_main_frame(player)
         end
@@ -1112,7 +1120,8 @@ Public.on_click(
     end
 )
 
-Event.add(defines.events.on_gui_click,
+Event.add(
+    defines.events.on_gui_click,
     function (event)
         local element = event.element
         if not element or not element.valid then
@@ -1160,6 +1169,7 @@ Event.add(
     defines.events.on_player_joined_game,
     function (event)
         local player = game.get_player(event.player_index)
+        resize_top_buttons(player)
         top_button(player)
     end
 )

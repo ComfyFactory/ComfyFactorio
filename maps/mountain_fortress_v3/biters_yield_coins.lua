@@ -251,6 +251,11 @@ local function on_entity_died(event)
     local p
     local reward_has_been_given = false
 
+    local is_coin_quality_enabled = Public.get('is_coin_quality_enabled')
+    if not is_coin_quality_enabled then
+        quality = 'normal'
+    end
+
     if cause then
         if cause.valid then
             if (cause and cause.name == 'character' and cause.player) then

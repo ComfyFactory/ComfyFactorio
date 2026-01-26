@@ -470,6 +470,7 @@ function Public.reset_main_table()
     this.game_reset_tick = nil
     this.find_void_tiles_and_replace = nil
     -- @end
+    this.darkness = false
     this.breach_wall_warning = false
     this.icw_locomotive = nil
     this.game_lost = false
@@ -680,7 +681,7 @@ function Public.reset_main_table()
         highest = 10,
         lowest = 4
     }
-    this.mining_bonus_till_wave = 200 -- changed from 100 to 200
+    this.mining_bonus_till_wave = 225 -- changed from 100 to 225
     this.mining_bonus = 0
     this.disable_mining_boost = false
     this.market_announce = game.tick + 1200
@@ -733,6 +734,7 @@ function Public.reset_main_table()
     this.wagons_in_the_wild = {}
     this.player_market_settings = {}
     this.player_gui_settings = {}
+    this.purchased_zones = {}
 
     this.better_loot_from_zone = random(4, 6)
 
@@ -756,6 +758,10 @@ function Public.reset_main_table()
     }
 
     this.random_planet_enabled = false
+
+    this.is_coin_quality_enabled = false
+
+    this.forced_locomotive_size = true
 
     this.game_won = false
 
