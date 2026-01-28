@@ -191,6 +191,9 @@ function Public.update_privileges(player)
 		return
 	end
 
+	local crew_id = Common.get_id_from_force_name(player.force.name)
+	Memory.set_working_id(crew_id)
+
 	local memory = Memory.get_crew_memory()
 	local bps_disabled_suffix = memory.run_has_blueprints_disabled and '_bps_disabled' or ''
 

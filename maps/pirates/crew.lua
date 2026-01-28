@@ -406,17 +406,23 @@ function Public.leave_crew(player, to_lobby, quiet)
 			memory.temporarily_logged_off_player_data = {}
 		end
 
-		memory.temporarily_logged_off_player_data[player.index] = {
-			on_island = (player_surface_type == Surfaces.enum.ISLAND),
-			on_boat = (player_surface_type == boat_surface_type)
-				and Boats.on_boat(memory.boat, player.character.position),
-			surface_name = player.character.surface.name,
-			position = player.character.position,
-			tick = game.tick,
-		}
+		if to_lobby then
+			-- When leaving via menu, send items to crew cabin immediately
+			Common.send_important_items_from_player_to_crew(player, true)
+		else
+			-- When disconnecting, store items temporarily for later retrieval or transfer
+			memory.temporarily_logged_off_player_data[player.index] = {
+				on_island = (player_surface_type == Surfaces.enum.ISLAND),
+				on_boat = (player_surface_type == boat_surface_type)
+					and Boats.on_boat(memory.boat, player.character.position),
+				surface_name = player.character.surface.name,
+				position = player.character.position,
+				tick = game.tick,
+			}
 
-		-- This is preferred to leaving a corpse, because it's less burden on other players. (It may also be slightly preferred to sending the items to the crew immediately!
-		Common.temporarily_store_logged_off_character_items(player)
+			-- This is preferred to leaving a corpse, because it's less burden on other players.
+			Common.temporarily_store_logged_off_character_items(player)
+		end
 
 		char.destroy()
 
