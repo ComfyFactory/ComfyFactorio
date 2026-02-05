@@ -1052,12 +1052,12 @@ function Public.reset_crew_and_enemy_force(id)
 	-- crew_force.technologies['productivity-module-3'].enabled = false
 
 	-- crew_force.technologies['speed-module'].enabled = true
-	-- crew_force.technologies['speed-module-2'].enabled = false
-	-- crew_force.technologies['speed-module-3'].enabled = false
+	crew_force.technologies['speed-module-2'].enabled = false
+	crew_force.technologies['speed-module-3'].enabled = false
 	-- crew_force.technologies['efficiency-module'].enabled = true
 	-- crew_force.technologies['efficiency-module-2'].enabled = false
 	-- crew_force.technologies['efficiency-module-3'].enabled = false
-	-- crew_force.technologies['automation-3'].enabled = false
+	crew_force.technologies['automation-3'].enabled = false
 	-- crew_force.technologies['rocket-silo'].enabled = false --Probably need to disable this tech if we're playing on space age
 	-- crew_force.technologies['space-scienkce-pack'].enabled = false
 	-- crew_force.technologies['mining-productivity-3'].enabled = false
@@ -1128,6 +1128,7 @@ function Public.disable_recipes(crew_force)
 
 	crew_force.recipes['speed-module-2'].enabled = false
 	crew_force.recipes['speed-module-3'].enabled = false
+	crew_force.recipes['assembling-machine-3'].enabled = false
 end
 
 return Public
