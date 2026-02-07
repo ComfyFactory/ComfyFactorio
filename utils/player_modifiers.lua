@@ -236,6 +236,9 @@ Event.add(defines.events.on_player_respawned, on_player_respawned)
 Event.add(defines.events.on_player_removed, on_player_removed)
 
 Event.on_nth_tick(60, function ()
+    if script.active_mods['RPG'] then
+        return
+    end
     Core.iter_connected_players(function (player)
         Public.update_player_modifiers(player)
     end)
