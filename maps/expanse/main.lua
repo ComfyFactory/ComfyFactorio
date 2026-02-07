@@ -257,10 +257,11 @@ local function reset()
     for _, player in pairs(game.players) do
         player.teleport(surface.find_non_colliding_position('character', { expanse.square_size * 0.5, expanse.square_size * 0.5 }, 8, 0.5) or {5, 5}, surface)
     end
+    game.reset_time_played()
     script.raise_event(expanse.events.mission_gui_update, {})
 end
 
-local ores = { 'copper-ore', 'iron-ore', 'stone', 'coal', 'iron-ore', 'copper-ore', 'coal' }
+local ores = { 'copper-ore', 'iron-ore', 'stone', 'coal', 'iron-ore', 'copper-ore', 'coal', 'iron-ore' }
 local function generate_ore(surface, left_top)
     local seed = game.surfaces[1].map_gen_settings.seed
     local left_top_x = left_top.x
@@ -274,7 +275,7 @@ local function generate_ore(surface, left_top)
                 local noise = GetNoise('smol_areas', pos, seed)
                 if math.abs(noise) > 0.78 or math.abs(noise) < 0.11 then
                     local amount = 500 + math.sqrt(pos.x ^ 2 + pos.y ^ 2) * 4
-                    local i = math.floor(noise * 40 + math.abs(pos.x) * 0.05) % 7 + 1
+                    local i = math.floor(noise * 40 + math.abs(pos.x) * 0.05) % 8 + 1
                     surface.create_entity({ name = ores[i], position = pos, amount = amount })
                 end
             end
@@ -516,10 +517,18 @@ end
 
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
+    local surface = game.surfaces[expanse.active_surface_index]
     if player.online_time == 0 then
-        local surface = game.surfaces[expanse.active_surface_index]
         player.teleport(surface.find_non_colliding_position('character', { expanse.square_size * 0.5, expanse.square_size * 0.5 }, 32, 0.5) or {0,0}, surface)
     end
+
+    if player.surface.index ~= expanse.active_surface_index then
+        player.character = nil
+        player.set_controller({ type = defines.controllers.god })
+        player.create_character()
+        player.teleport(surface.find_non_colliding_position('character', player.force.get_spawn_position(surface), 32, 0.5) or { 0, 0 }, surface)
+    end
+
     create_button(player)
 end
 
