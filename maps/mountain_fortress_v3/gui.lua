@@ -1159,7 +1159,7 @@ Gui.on_click(
 
 Public.changed_surface = changed_surface
 
-Event.on_nth_tick(10, function ()
+Event.on_nth_tick(20, function ()
     local spectate = Public.get('spectate')
     Core.iter_connected_players(function (player)
         changed_surface(player)

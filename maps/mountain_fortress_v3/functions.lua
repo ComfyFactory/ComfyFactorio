@@ -212,6 +212,7 @@ local exit_editor_mode_token =
         end
     )
 
+--[[
 local custom_surface_funcs_token =
     Task.register(
         function ()
@@ -240,7 +241,7 @@ local custom_surface_funcs_token =
             end
         end
     )
-
+ ]]
 
 local function debug_str(msg)
     local debug = Public.get('debug')
@@ -668,9 +669,9 @@ local function do_replace_tiles_slowly()
 end
 
 
-local function do_custom_surface_funcs()
-    Task.set_timeout_in_ticks(30, custom_surface_funcs_token)
-end
+-- local function do_custom_surface_funcs()
+-- Task.set_timeout_in_ticks(30, custom_surface_funcs_token)
+-- end
 
 local function do_season_fix()
     local active_surface_index = Public.get('active_surface_index')
@@ -3569,7 +3570,7 @@ Event.on_nth_tick(25, do_beams_away)
 Event.on_nth_tick(30, do_clear_enemy_spawners)
 Event.on_nth_tick(35, do_clear_rocks_slowly)
 Event.on_nth_tick(35, do_replace_tiles_slowly)
-Event.on_nth_tick(200, do_custom_surface_funcs)
+-- Event.on_nth_tick(200, do_custom_surface_funcs)
 Event.on_nth_tick(60, set_difficulty)
 Event.add(CustomEvents.events.on_wave_created, on_wave_created)
 Event.add(CustomEvents.events.on_primary_target_missing, on_primary_target_missing)
