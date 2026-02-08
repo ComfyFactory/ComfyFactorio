@@ -262,6 +262,10 @@ function Public.spell_gui_settings(player)
                 }
             )
         cooldown.style.maximal_width = 170
+        local data = {
+            cooldown = cooldown
+        }
+        Gui.set_data(main_frame, data)
         Public.update_spell_gui(player, nil)
     else
         main_frame.destroy()
@@ -318,7 +322,8 @@ function Public.extra_settings(player)
             setting_grid.add(
                 {
                     type = 'label',
-                    caption = ({ 'rpg_settings.health_text_label' })
+                    caption = ({ 'rpg_settings.health_text_label' }),
+                    tooltip = ({ 'rpg_settings.health_text_tooltip' })
                 }
             )
 
@@ -332,30 +337,90 @@ function Public.extra_settings(player)
         input_style.height = 35
         input_style.vertical_align = 'center'
         health_bar_gui_input = create_input_element(health_bar_input, 'boolean', rpg_t.show_bars)
-        health_bar_gui_input.tooltip = ({ 'rpg_settings.tooltip_check' })
+        health_bar_gui_input.tooltip = ({ 'rpg_settings.health_text_tooltip' })
         if not rpg_extra.enable_mana then
             health_bar_label.caption = ({ 'rpg_settings.health_only_text_label' })
         end
     end
-    local level_text_label =
+
+    if not rpg_t.show_notification then rpg_t.show_notification = true end
+
+    local show_notification =
         setting_grid.add(
             {
                 type = 'label',
-                caption = ({ 'rpg_settings.level_text_label' })
+                caption = ({ 'rpg_settings.show_notification_label' }),
+                tooltip = ({ 'rpg_settings.show_notification_tooltip' })
             }
         )
 
-    local style = level_text_label.style
-    style.horizontally_stretchable = true
-    style.height = 35
-    style.vertical_align = 'center'
+    local show_notification_style = show_notification.style
+    show_notification_style.horizontally_stretchable = true
+    show_notification_style.height = 35
+    show_notification_style.vertical_align = 'center'
 
-    local level_text_input = setting_grid.add({ type = 'flow' })
-    local input_style = level_text_input.style
-    input_style.height = 35
-    input_style.vertical_align = 'center'
-    local level_text_gui_input = create_input_element(level_text_input, 'boolean', rpg_t.show_level_text)
-    level_text_gui_input.tooltip = ({ 'rpg_settings.tooltip_check' })
+    local show_notification_input = setting_grid.add({ type = 'flow' })
+    local show_notification_input_style = show_notification_input.style
+    show_notification_input_style.height = 35
+    show_notification_input_style.vertical_align = 'center'
+    local show_notification_gui_input = create_input_element(show_notification_input, 'boolean', rpg_t.show_notification)
+    data.show_notification_gui_input = show_notification_gui_input
+
+    local crafting_chance_input
+    if rpg_extra.enable_crafting_chance then
+        local enable_crafting_chance_label =
+            setting_grid.add(
+                {
+                    type = 'label',
+                    caption = ({ 'rpg_settings.enable_crafting_chance_label' }),
+                    tooltip = ({ 'rpg_settings.enable_crafting_chance_tooltip' })
+                }
+            )
+
+        local crafting_style = enable_crafting_chance_label.style
+        crafting_style.horizontally_stretchable = true
+        crafting_style.height = 35
+        crafting_style.vertical_align = 'center'
+
+        local crafting_chance_flow = setting_grid.add({ type = 'flow' })
+        local crafting_input_style = crafting_chance_flow.style
+        crafting_input_style.height = 35
+        crafting_input_style.vertical_align = 'center'
+        crafting_chance_input = create_input_element(crafting_chance_flow, 'boolean', rpg_t.crafting_chance)
+        crafting_chance_input.tooltip = ({ 'rpg_settings.enable_crafting_chance_tooltip' })
+    end
+
+    local show_lvl_txt_input
+    if rpg_extra.enable_show_lvl_txt then
+        local enable_show_lvl_txt_label =
+            setting_grid.add(
+                {
+                    type = 'label',
+                    caption = ({ 'rpg_settings.enable_lvl_txt_label' }),
+                    tooltip = ({ 'rpg_settings.enable_lvl_txt_tooltip' })
+                }
+            )
+
+        local enable_show_lvl_txt_label_style = enable_show_lvl_txt_label.style
+        enable_show_lvl_txt_label_style.horizontally_stretchable = true
+        enable_show_lvl_txt_label_style.height = 35
+        enable_show_lvl_txt_label_style.vertical_align = 'center'
+
+        local show_lvl_txt_flow = setting_grid.add({ type = 'flow' })
+        local show_lvl_txt_flow_style = show_lvl_txt_flow.style
+        show_lvl_txt_flow_style.height = 35
+        show_lvl_txt_flow_style.vertical_align = 'center'
+        show_lvl_txt_input = create_input_element(show_lvl_txt_flow, 'boolean', rpg_t.show_lvl_txt)
+        show_lvl_txt_input.tooltip = ({ 'rpg_settings.enable_lvl_txt_tooltip' })
+    end
+
+    if rpg_extra.enable_crafting_chance and crafting_chance_input and crafting_chance_input.valid then
+        data.crafting_chance_input = crafting_chance_input
+    end
+
+    if rpg_extra.enable_show_lvl_txt and show_lvl_txt_input and show_lvl_txt_input.valid then
+        data.show_lvl_txt_input = show_lvl_txt_input
+    end
 
     local reset_label =
         setting_grid.add(
@@ -741,8 +806,6 @@ function Public.extra_settings(player)
     if rpg_extra.enable_auto_allocate then
         data.auto_allocate_gui_input = auto_allocate_gui_input
     end
-
-    data.level_text_gui_input = level_text_gui_input
 
     local bottom_flow = main_frame.add({ type = 'flow', direction = 'horizontal' })
 

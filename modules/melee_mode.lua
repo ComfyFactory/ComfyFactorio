@@ -8,7 +8,12 @@ local Task = require 'utils.task_token'
 local melee_mode_name = Gui.uid_name()
 
 local state = {}
-Global.register(state, function (s) state = s end)
+Global.register(
+    state,
+    function (s)
+        state = s
+    end
+)
 
 local delay_add_inner_frame_token =
     Task.register(
@@ -42,14 +47,16 @@ local function create_gui_button(player)
     if player.gui.top[melee_mode_name] then
         return
     end
-    local tooltip = { "modules_melee.tooltip" }
-    local b = player.gui.top.add(
-        {
-            type = 'sprite-button',
-            sprite = 'item/pistol',
-            name = melee_mode_name,
-            tooltip = tooltip
-        })
+    local tooltip = { 'modules_melee.tooltip' }
+    local b =
+        player.gui.top.add(
+            {
+                type = 'sprite-button',
+                sprite = 'item/pistol',
+                name = melee_mode_name,
+                tooltip = tooltip
+            }
+        )
     b.style.font_color = { r = 0.11, g = 0.8, b = 0.44 }
     b.style.font = 'heading-1'
     b.style.minimal_height = 40
@@ -159,17 +166,17 @@ local function on_gui_click(event)
     local mm = player.gui.top[melee_mode_name]
     if mm and mm.valid and mm.sprite == 'item/pistol' then
         if change_to_melee(player) then
-            player.print({ "modules_melee.change_to_melee" })
+            player.print({ 'modules_melee.change_to_melee' })
             mm.sprite = 'technology/steel-axe'
         else
-            player.print({ "modules_melee.change_to_melee_failed" })
+            player.print({ 'modules_melee.change_to_melee_failed' })
         end
     else
         if change_to_ranged(player) then
-            player.print({ "modules_melee.change_to_ranged" })
+            player.print({ 'modules_melee.change_to_ranged' })
             mm.sprite = 'item/pistol'
         else
-            player.print({ "modules_melee.change_to_ranged_failed" })
+            player.print({ 'modules_melee.change_to_ranged_failed' })
         end
     end
 end
@@ -206,21 +213,51 @@ local function player_inventory_changed(player_index, inv_id, name)
     local inv = player.get_inventory(inv_id)
     local moved = move_to_main(player, inv, player.get_main_inventory())
     if #moved > 0 then
-        player.print({ "modules_melee.move_to_main_inventory", moved_to_string(moved) })
+        player.print({ 'modules_melee.move_to_main_inventory', moved_to_string(moved) })
     end
     if not inv or not inv.is_empty() then
-        player.print({ "modules_melee.move_to_main_inventory_failed", name })
+        player.print({ 'modules_melee.move_to_main_inventory_failed', name })
     end
 end
 
 local function on_player_ammo_inventory_changed(event)
-    if event.tick < 200 then return end
+    if event.tick < 200 then
+        return
+    end
     player_inventory_changed(event.player_index, defines.inventory.character_ammo, 'ammo')
 end
 
 local function on_player_gun_inventory_changed(event)
-    if event.tick < 200 then return end
+    if event.tick < 200 then
+        return
+    end
     player_inventory_changed(event.player_index, defines.inventory.character_guns, 'guns')
+end
+
+local function on_mtn_melee_change_weapon(event)
+    local player = game.get_player(event.player_index)
+    if not player or not player.valid then
+        return
+    end
+    local old_frame = BottomFrame.get_frame_by_element_name(player, melee_mode_name)
+    if old_frame and old_frame.sprite == 'item/pistol' then
+        if change_to_melee(player) then
+            player.print({ 'modules_melee.change_to_melee' })
+            old_frame.sprite = 'technology/steel-axe'
+            BottomFrame.refresh_inner_frames(player)
+        else
+            player.print({ 'modules_melee.change_to_melee_failed' })
+        end
+    else
+        if change_to_ranged(player) then
+            player.print({ 'modules_melee.change_to_ranged' })
+            old_frame.sprite = 'item/pistol'
+            BottomFrame.refresh_inner_frames(player)
+        else
+            player.print({ 'modules_melee.change_to_ranged_failed' })
+        end
+    end
+    on_gui_click(event)
 end
 
 Gui.on_click(
@@ -236,30 +273,15 @@ Gui.on_click(
             return
         end
 
-        local old_frame = BottomFrame.get_frame_by_element_name(player, melee_mode_name)
-        if old_frame and old_frame.sprite == 'item/pistol' then
-            if change_to_melee(player) then
-                player.print({ "modules_melee.change_to_melee" })
-                old_frame.sprite = 'technology/steel-axe'
-                BottomFrame.refresh_inner_frames(player)
-            else
-                player.print({ "modules_melee.change_to_melee_failed" })
-            end
-        else
-            if change_to_ranged(player) then
-                player.print({ "modules_melee.change_to_ranged" })
-                old_frame.sprite = 'item/pistol'
-                BottomFrame.refresh_inner_frames(player)
-            else
-                player.print({ "modules_melee.change_to_ranged_failed" })
-            end
-        end
-
-        on_gui_click(event)
+        on_mtn_melee_change_weapon(event)
     end
 )
 
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_gui_click, on_gui_click)
+if script.active_mods['MtnFortressAddons'] then
+    Event.add(defines.events.on_mtn_melee_change_weapon, on_mtn_melee_change_weapon)
+end
+
 Event.add(defines.events.on_player_ammo_inventory_changed, on_player_ammo_inventory_changed)
 Event.add(defines.events.on_player_gun_inventory_changed, on_player_gun_inventory_changed)

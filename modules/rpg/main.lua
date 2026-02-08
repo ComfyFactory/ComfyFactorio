@@ -918,21 +918,25 @@ local function on_player_used_capsule_custom(event)
 
     local is_spamming = SpamProtection.is_spamming(player, nil, 'RPG - on_player_used_capsule_custom')
     if is_spamming then
+        Public.show_notification(player, 'You are spamming the spell.', Color.warning)
         return
     end
     local projectile_types = Public.get_projectiles
 
     if not player.character or not player.character.valid then
+        Public.show_notification(player, 'You must have a character to cast a spell.', Color.warning)
         return
     end
 
     if not Public.check_is_surface_valid(player) then
+        Public.show_notification(player, 'You must be on the correct surface to cast a spell.', Color.warning)
         return
     end
 
     if Public.get_x_position() then
         local x = Public.get_x_position()
         if player.physical_position.x > x then
+            Public.show_notification(player, 'You must be to the left of the map to cast a spell.', Color.warning)
             return
         end
     end
@@ -949,18 +953,21 @@ local function on_player_used_capsule_custom(event)
 
     local spell = Public.get_spell_by_name(rpg_t, rpg_t.dropdown_select_name)
     if not spell then
+        Public.show_notification(player, 'Invalid spell selected.', Color.warning)
         return
     end
 
     if spell.enforce_cooldown then
         if Public.is_cooldown_active_for_player(player) then
             Public.cast_spell(player, true)
+            Public.show_notification(player, 'You are on cooldown for this spell.', Color.warning)
             return
         end
     end
 
     local position = event.cursor_position
     if not position then
+        Public.show_notification(player, 'You must have a cursor position to cast a spell.', Color.warning)
         return
     end
 
@@ -972,19 +979,23 @@ local function on_player_used_capsule_custom(event)
     }
 
     if not spell.enabled then
+        Public.show_notification(player, 'This spell is not enabled.', Color.warning)
         return Public.cast_spell(player, true)
     end
 
     if rpg_t.level < spell.level then
+        Public.show_notification(player, 'You are not high enough level to cast this spell.', Color.warning)
         return Public.cast_spell(player, true)
     end
 
     if not Math2D.bounding_box.contains_point(area, player.physical_position) then
+        Public.show_notification(player, 'You are too far away to cast this spell.', Color.warning)
         Public.cast_spell(player, true)
         return
     end
 
     if mana < spell.mana_cost then
+        Public.show_notification(player, 'You do not have enough mana to cast the spell.', Color.warning)
         return Public.cast_spell(player, true)
     end
 
@@ -1036,6 +1047,7 @@ local function on_player_used_capsule_custom(event)
 
     local cast_spell = spell.callback(data, funcs)
     if not cast_spell then
+        Public.show_notification(player, 'Failed to cast the spell.', Color.warning)
         return
     end
 
@@ -1089,30 +1101,38 @@ local function on_player_used_capsule(event)
     end
 
     if not player.character or not player.character.valid then
+        Public.show_notification(player, 'You must have a character to cast a spell.', Color.warning)
         return
     end
 
     if not Public.check_is_surface_valid(player) then
+        Public.show_notification(player, 'You must be on the correct surface to cast a spell.', Color.warning)
         return
     end
 
     local item = event.item
 
     if not item then
+        Public.show_notification(player, 'You must have an raw-fish to cast a spell.', Color.warning)
         return
     end
 
     local name = item.name
 
     local rpg_t = Public.get_value_from_player(player.index)
-    if not rpg_t then return end
+    if not rpg_t then
+        Public.show_notification(player, 'Invalid player data.', Color.warning)
+        return
+    end
 
     if name == 'cooked-fish' or name == 'grilled-fish' then
+        Public.show_notification(player, 'You must have a raw-fish to cast a spell.', Color.warning)
         Public.get_mana_modifier_from_using_fish(player, name)
         return
     end
 
     if name ~= 'raw-fish' then
+        Public.show_notification(player, 'You must have a raw-fish to cast a spell.', Color.warning)
         return
     end
 
@@ -1121,6 +1141,7 @@ local function on_player_used_capsule(event)
 
 
     if not rpg_t.enable_entity_spawn then
+        Public.show_notification(player, 'You must enable the checkbox in the spell GUI to cast a spell.', Color.warning)
         return
     end
 
@@ -1129,18 +1150,21 @@ local function on_player_used_capsule(event)
 
     local spell = Public.get_spell_by_name(rpg_t, rpg_t.dropdown_select_name)
     if not spell then
+        Public.show_notification(player, 'Invalid spell selected.', Color.warning)
         return
     end
 
     if spell.enforce_cooldown then
         if Public.is_cooldown_active_for_player(player) then
             Public.cast_spell(player, true)
+            Public.show_notification(player, 'You are on cooldown for this spell.', Color.warning)
             return
         end
     end
 
     local position = event.position
     if not position then
+        Public.show_notification(player, 'You must have a position to cast a spell.', Color.warning)
         return
     end
 
@@ -1152,19 +1176,23 @@ local function on_player_used_capsule(event)
     }
 
     if not spell.enabled then
+        Public.show_notification(player, 'This spell is not enabled.', Color.warning)
         return Public.cast_spell(player, true)
     end
 
     if rpg_t.level < spell.level then
+        Public.show_notification(player, 'You are not high enough level to cast this spell.', Color.warning)
         return Public.cast_spell(player, true)
     end
 
     if not Math2D.bounding_box.contains_point(area, player.physical_position) then
+        Public.show_notification(player, 'You are too far away to cast this spell.', Color.warning)
         Public.cast_spell(player, true)
         return
     end
 
     if mana < spell.mana_cost then
+        Public.show_notification(player, 'You do not have enough mana to cast the spell.', Color.warning)
         return Public.cast_spell(player, true)
     end
 
@@ -1216,6 +1244,7 @@ local function on_player_used_capsule(event)
 
     local cast_spell = spell.callback(data, funcs)
     if not cast_spell then
+        Public.show_notification(player, 'Failed to cast the spell.', Color.warning)
         return
     end
 
@@ -1279,6 +1308,7 @@ local function tick()
         if enable_mana then
             regen_mana_player(players)
         end
+        Public.update_cooldown(players)
     end
 end
 
