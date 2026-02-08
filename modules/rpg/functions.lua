@@ -1590,6 +1590,7 @@ function Public.rpg_reset_player(player, one_time_reset)
         },
         show_lvl_txt = true,
         crafting_chance = true,
+        quality_crafting_chance = true,
         show_notification = true,
         has_been_notified_about_notification = false,
     }
@@ -1825,7 +1826,7 @@ function Public.show_notification(player, message, color)
         return
     end
     color = color or Color.white
-    player.print('[RPG] ' .. message, { color = color })
+    player.print('[color=yellow][RPG][/color] ' .. message, { color = color })
 end
 
 Public.has_health_boost = has_health_boost

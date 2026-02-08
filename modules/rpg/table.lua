@@ -139,6 +139,7 @@ function Public.reset_table(migrate)
     this.rpg_extra.surface_name = 'nauvis'
     this.rpg_extra.enable_health_and_mana_bars = false
     this.rpg_extra.enable_crafting_chance = true
+    this.rpg_extra.enable_quality_crafting_chance = true
     this.rpg_extra.enable_show_lvl_txt = true
     this.rpg_extra.enable_mana = false
     this.rpg_extra.mana_limit = 100000

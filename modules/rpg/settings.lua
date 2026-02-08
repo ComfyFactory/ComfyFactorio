@@ -262,7 +262,8 @@ function Public.spell_gui_settings(player)
                 }
             )
         cooldown.style.maximal_width = 170
-        local data = {
+        local data =
+        {
             cooldown = cooldown
         }
         Gui.set_data(main_frame, data)
@@ -390,6 +391,30 @@ function Public.extra_settings(player)
         crafting_chance_input.tooltip = ({ 'rpg_settings.enable_crafting_chance_tooltip' })
     end
 
+    local quality_crafting_chance_input
+    if rpg_extra.enable_quality_crafting_chance then
+        local enable_quality_crafting_chance_label =
+            setting_grid.add(
+                {
+                    type = 'label',
+                    caption = ({ 'rpg_settings.enable_quality_crafting_chance_label' }),
+                    tooltip = ({ 'rpg_settings.enable_quality_crafting_chance_tooltip' })
+                }
+            )
+
+        local quality_crafting_style = enable_quality_crafting_chance_label.style
+        quality_crafting_style.horizontally_stretchable = true
+        quality_crafting_style.height = 35
+        quality_crafting_style.vertical_align = 'center'
+
+        local quality_crafting_chance_flow = setting_grid.add({ type = 'flow' })
+        local quality_crafting_chance_input_style = quality_crafting_chance_flow.style
+        quality_crafting_chance_input_style.height = 35
+        quality_crafting_chance_input_style.vertical_align = 'center'
+        quality_crafting_chance_input = create_input_element(quality_crafting_chance_flow, 'boolean', rpg_t.quality_crafting_chance)
+        quality_crafting_chance_input.tooltip = ({ 'rpg_settings.enable_quality_crafting_chance_tooltip' })
+    end
+
     local show_lvl_txt_input
     if rpg_extra.enable_show_lvl_txt then
         local enable_show_lvl_txt_label =
@@ -416,6 +441,10 @@ function Public.extra_settings(player)
 
     if rpg_extra.enable_crafting_chance and crafting_chance_input and crafting_chance_input.valid then
         data.crafting_chance_input = crafting_chance_input
+    end
+
+    if rpg_extra.enable_quality_crafting_chance and quality_crafting_chance_input and quality_crafting_chance_input.valid then
+        data.quality_crafting_chance_input = quality_crafting_chance_input
     end
 
     if rpg_extra.enable_show_lvl_txt and show_lvl_txt_input and show_lvl_txt_input.valid then

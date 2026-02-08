@@ -292,16 +292,28 @@ local function draw_main_frame(player, location)
 
     local duped_items = rpg_t.duped_items or 0
 
-    add_gui_description(left_bottom_table, ({ 'rpg_gui.strength_name' }), w1, ({ 'rpg_gui.strength_tooltip' }))
-    add_gui_stat(left_bottom_table, rpg_t.strength, w2, ({ 'rpg_gui.strength_tooltip' }))
+    local strength_tooltip = ({ 'rpg_gui.strength_tooltip' })
+    if rpg_extra.enable_range_buffs then
+        strength_tooltip = ({ 'rpg_gui.strength_ranged_damage_tooltip' })
+    end
+
+    add_gui_description(left_bottom_table, ({ 'rpg_gui.strength_name' }), w1, strength_tooltip)
+    add_gui_stat(left_bottom_table, rpg_t.strength, w2, strength_tooltip)
     add_gui_increase_stat(left_bottom_table, 'strength', player)
 
     add_gui_description(left_bottom_table, ({ 'rpg_gui.magic_name' }), w1, ({ 'rpg_gui.magic_tooltip' }))
     add_gui_stat(left_bottom_table, rpg_t.magicka, w2, ({ 'rpg_gui.magic_tooltip' }))
     add_gui_increase_stat(left_bottom_table, 'magicka', player)
 
-    add_gui_description(left_bottom_table, ({ 'rpg_gui.dexterity_name' }), w1, ({ 'rpg_gui.dexterity_tooltip', duped_items }))
-    add_gui_stat(left_bottom_table, rpg_t.dexterity, w2, ({ 'rpg_gui.dexterity_tooltip', duped_items }))
+    local dexterity_tooltip = ({ 'rpg_gui.dexterity_tooltip', duped_items })
+    if script.active_mods['space-age'] and rpg_t.quality_crafting_chance then
+        dexterity_tooltip = ({ 'rpg_gui.dexterity_quality_tooltip', duped_items })
+    end
+
+    local dex_desc = add_gui_description(left_bottom_table, ({ 'rpg_gui.dexterity_name' }), w1, dexterity_tooltip)
+    local dex_stat = add_gui_stat(left_bottom_table, rpg_t.dexterity, w2, dexterity_tooltip)
+    data.dex_desc = dex_desc
+    data.dex_stat = dex_stat
 
     add_gui_increase_stat(left_bottom_table, 'dexterity', player)
 
@@ -619,6 +631,7 @@ Gui.on_click(
 
         local health_bar_gui_input = data.health_bar_gui_input
         local crafting_chance_input = data.crafting_chance_input
+        local quality_crafting_chance_input = data.quality_crafting_chance_input
         local show_lvl_txt_input = data.show_lvl_txt_input
         local reset_gui_input = data.reset_gui_input
         local show_notification_gui_input = data.show_notification_gui_input
@@ -809,6 +822,14 @@ Gui.on_click(
                     rpg_t.crafting_chance = false
                 elseif crafting_chance_input.state then
                     rpg_t.crafting_chance = true
+                end
+            end
+
+            if quality_crafting_chance_input and quality_crafting_chance_input.valid then
+                if not quality_crafting_chance_input.state then
+                    rpg_t.quality_crafting_chance = false
+                elseif quality_crafting_chance_input.state then
+                    rpg_t.quality_crafting_chance = true
                 end
             end
 

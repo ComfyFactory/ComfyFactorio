@@ -2,6 +2,7 @@ local Public = {}
 local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Collapse = require 'modules.collapse'
+local Commands = require 'utils.commands'
 local this =
 {
     explosives = {},
@@ -11,6 +12,7 @@ local this =
         slow_explode = false,
         slow_explode_tick = 300,
         check_growth_below_void = false,
+        explosive_limit = 999,
         valid_items =
         {
             ['explosives'] = 500,
@@ -292,6 +294,10 @@ local function check_entity_for_items(item)
             total_amount = total_amount + amount
         end
 
+        if total_amount > this.settings.explosive_limit then
+            total_amount = this.settings.explosive_limit
+        end
+
         if total_amount > 1 then
             return total_amount, damage
         end
@@ -448,6 +454,25 @@ end
 local function on_init()
     Public.reset()
 end
+
+Commands.new('explosives-limit', 'Sets the explosive limit')
+    :require_admin()
+    :add_parameter('limit', true, 'number')
+    :callback(
+        function (player, limit)
+            if not limit then return end
+            if limit < 1 then
+                player.print('Explosive limit cannot be less than 1')
+                return
+            end
+            if limit > 5000 then
+                player.print('Explosive limit cannot be greater than 5000')
+                return
+            end
+            this.settings.explosive_limit = limit
+            player.print('Explosive limit set to ' .. limit)
+        end
+    )
 
 Event.on_init(on_init)
 Event.on_nth_tick(speed, tick)

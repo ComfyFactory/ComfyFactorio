@@ -729,6 +729,15 @@ local function on_player_mined_entity(event)
     Public.reward_mana(player, 0.5 * distance_multiplier)
 end
 
+local quality_to_color =
+{
+    ['normal'] = '[color=white]Normal[/color]',
+    ['uncommon'] = '[color=green]Uncommon[/color]',
+    ['rare'] = '[color=blue]Rare[/color]',
+    ['epic'] = '[color=purple]Epic[/color]',
+    ['legendary'] = '[color=orange]Legendary[/color]',
+}
+
 local function on_player_crafted_item(event)
     if not event.recipe.energy then
         return
@@ -770,17 +779,45 @@ local function on_player_crafted_item(event)
         local success = r < chance
         if success then
             Public.set_crafting_boost(player, get_dex_modifier)
-            local d = random(0, 2999)
-            local item_dupe = d < chance
-            if item_dupe and final_xp < 6 then
-                local reward =
-                {
-                    name = item.name,
-                    count = 1
-                }
+            local reward_roll = random(0, 9999)
+            local reward_threshold = 10000 - chance * 5
+            if reward_roll < reward_threshold then
+                local rpg_t = Public.get_value_from_player(player.index)
+                if not rpg_t then return end
+                local quality = 'normal'
+                if script.active_mods['space-age'] and Public.get_value_from_player(player.index).quality_crafting_chance then
+                    local qr = random(1, 100)
+                    if qr <= 2 then
+                        quality = 'legendary'
+                    elseif qr <= 8 then
+                        quality = 'epic'
+                    elseif qr <= 25 then
+                        quality = 'rare'
+                    elseif qr <= 65 then
+                        quality = 'uncommon'
+                    end
+                end
+                local reward = { name = item.name, count = 1 }
+                if quality ~= 'normal' then
+                    reward.quality = quality
+                end
                 Public.increment_duped_crafted_items(player)
                 if player.can_insert(reward) then
                     player.insert(reward)
+                    Public.show_notification(player, 'Duped ' .. item.name .. ' (' .. quality_to_color[quality] .. ') while crafting!', Color.info)
+                    local duped_items = rpg_t.duped_items or 0
+                    local f = player.gui.screen[main_frame_name]
+                    if f and f.valid then
+                        local d = Gui.get_data(f)
+                        if d.dex_desc and d.dex_desc.valid then
+                            d.dex_desc.tooltip = ({ 'rpg_gui.dexterity_tooltip', duped_items })
+                        end
+                        if d.dex_stat and d.dex_stat.valid then
+                            d.dex_stat.tooltip = ({ 'rpg_gui.dexterity_tooltip', duped_items })
+                        end
+                    end
+                else
+                    Public.show_notification(player, 'Not enough space in inventory to dupe ' .. item.name .. ' (' .. quality_to_color[quality] .. ')!', Color.warning)
                 end
             end
         end
