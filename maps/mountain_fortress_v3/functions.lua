@@ -212,7 +212,6 @@ local exit_editor_mode_token =
         end
     )
 
---[[
 local custom_surface_funcs_token =
     Task.register(
         function ()
@@ -241,7 +240,6 @@ local custom_surface_funcs_token =
             end
         end
     )
- ]]
 
 local function debug_str(msg)
     local debug = Public.get('debug')
@@ -670,8 +668,11 @@ end
 
 
 local function do_custom_surface_funcs()
-    -- do nothing
-    -- Task.set_timeout_in_ticks(30, custom_surface_funcs_token)
+    if not Public.get('do_custom_surface_funcs') then
+        return
+    end
+
+    Task.set_timeout_in_ticks(30, custom_surface_funcs_token)
 end
 
 local function do_season_fix()
