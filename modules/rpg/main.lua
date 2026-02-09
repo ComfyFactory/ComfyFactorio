@@ -955,25 +955,21 @@ local function on_player_used_capsule_custom(event)
 
     local is_spamming = SpamProtection.is_spamming(player, nil, 'RPG - on_player_used_capsule_custom')
     if is_spamming then
-        Public.show_notification(player, 'You are spamming the spell.', Color.warning)
         return
     end
     local projectile_types = Public.get_projectiles
 
     if not player.character or not player.character.valid then
-        Public.show_notification(player, 'You must have a character to cast a spell.', Color.warning)
         return
     end
 
     if not Public.check_is_surface_valid(player) then
-        Public.show_notification(player, 'You must be on the correct surface to cast a spell.', Color.warning)
         return
     end
 
     if Public.get_x_position() then
         local x = Public.get_x_position()
         if player.physical_position.x > x then
-            Public.show_notification(player, 'You must be to the left of the map to cast a spell.', Color.warning)
             return
         end
     end
@@ -981,7 +977,6 @@ local function on_player_used_capsule_custom(event)
     local rpg_t = Public.get_value_from_player(player.index)
 
     if not rpg_t.enable_entity_spawn then
-        player.print('[RPG] You must enable the checkbox in the spell GUI to cast a spell.', { color = Color.warning })
         return
     end
 
@@ -1138,19 +1133,16 @@ local function on_player_used_capsule(event)
     end
 
     if not player.character or not player.character.valid then
-        Public.show_notification(player, 'You must have a character to cast a spell.', Color.warning)
         return
     end
 
     if not Public.check_is_surface_valid(player) then
-        Public.show_notification(player, 'You must be on the correct surface to cast a spell.', Color.warning)
         return
     end
 
     local item = event.item
 
     if not item then
-        Public.show_notification(player, 'You must have an raw-fish to cast a spell.', Color.warning)
         return
     end
 
@@ -1163,13 +1155,11 @@ local function on_player_used_capsule(event)
     end
 
     if name == 'cooked-fish' or name == 'grilled-fish' then
-        Public.show_notification(player, 'You must have a raw-fish to cast a spell.', Color.warning)
         Public.get_mana_modifier_from_using_fish(player, name)
         return
     end
 
     if name ~= 'raw-fish' then
-        Public.show_notification(player, 'You must have a raw-fish to cast a spell.', Color.warning)
         return
     end
 
@@ -1178,7 +1168,6 @@ local function on_player_used_capsule(event)
 
 
     if not rpg_t.enable_entity_spawn then
-        Public.show_notification(player, 'You must enable the checkbox in the spell GUI to cast a spell.', Color.warning)
         return
     end
 
