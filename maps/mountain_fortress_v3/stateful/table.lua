@@ -1224,6 +1224,9 @@ local function get_random_item()
         table.insert(items, { 'agricultural-science-pack', scale(1000, 400000) })
         table.insert(items, { 'electromagnetic-science-pack', scale(1000, 400000) })
         table.insert(items, { 'cryogenic-science-pack', scale(500, 400000) })
+    end
+
+    if this.rounds_survived > 100 then
         table.insert(items, { 'promethium-science-pack', scale(50, 400000) })
     end
 
