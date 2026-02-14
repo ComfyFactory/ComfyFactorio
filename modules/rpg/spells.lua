@@ -349,7 +349,7 @@ local function create_entity(data)
         if last_spell_cast then
             if Public.get_last_spell_cast(player) then
                 Public.cast_spell(player, true)
-                Public.show_notification(player, 'You must move to a new position to cast a spell.', Color.warning)
+                Public.display_notification(player, 'You must move to a new position to cast a spell.', Color.warning)
                 return false
             end
         end
@@ -366,7 +366,7 @@ local function create_entity(data)
             Public.remove_mana(player, self.mana_cost)
             return true
         else
-            Public.show_notification(player, 'Cannot place entity.', Color.warning)
+            Public.display_notification(player, 'Cannot place entity.', Color.warning)
             Public.cast_spell(player, true)
             return false
         end
@@ -408,7 +408,7 @@ local function create_entity(data)
             e.direction = player.character.direction
             Public.remove_mana(player, self.mana_cost)
         else
-            Public.show_notification(player, 'Cannot place entity.', Color.warning)
+            Public.display_notification(player, 'Cannot place entity.', Color.warning)
             Public.cast_spell(player, true)
             return false
         end
@@ -947,7 +947,7 @@ spells[#spells + 1] =
 
 
         if rpg_t.mana < rpg_t.mana_max then
-            Public.show_notification(player, 'You must have full mana to cast this spell.', Color.warning)
+            Public.display_notification(player, 'You must have full mana to cast this spell.', Color.warning)
             Public.cast_spell(player, true)
             return false
         end
@@ -962,7 +962,7 @@ spells[#spells + 1] =
 
         local ore_name = ore_raffle[random(1, #ore_raffle)]
         if not prototypes.entity[ore_name] then
-            Public.show_notification(player, 'Invalid ore name.', Color.warning)
+            Public.display_notification(player, 'Invalid ore name.', Color.warning)
             Public.cast_spell(player, true)
             return false
         end

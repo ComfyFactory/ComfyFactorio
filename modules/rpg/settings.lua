@@ -344,7 +344,7 @@ function Public.extra_settings(player)
         end
     end
 
-    if not rpg_t.show_notification then rpg_t.show_notification = true end
+    if rpg_t.show_notification == nil then rpg_t.show_notification = true end
 
     local show_notification =
         setting_grid.add(

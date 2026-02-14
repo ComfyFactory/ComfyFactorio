@@ -1858,7 +1858,7 @@ end
 --- @param player LuaPlayer
 --- @param message string
 --- @param color table
-function Public.show_notification(player, message, color)
+function Public.display_notification(player, message, color)
     if not player or not player.valid then
         return
     end

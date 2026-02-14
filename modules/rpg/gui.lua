@@ -663,7 +663,7 @@ Gui.on_click(
         end
 
         if not rpg_t.has_been_notified_about_notification then
-            Public.show_notification(player, 'To disable notifications, check the "Show notifications?" checkbox in the settings.', Color.success)
+            Public.display_notification(player, 'To disable notifications, check the "Show notifications?" checkbox in the settings.', Color.success)
             rpg_t.has_been_notified_about_notification = true
         end
 

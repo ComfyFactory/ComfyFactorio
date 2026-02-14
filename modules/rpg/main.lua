@@ -774,54 +774,85 @@ local function on_player_crafted_item(event)
     if not get_dex_modifier then return end
 
     if get_dex_modifier >= 10 then
-        local chance = Public.get_crafting_bonus_chance(player) * 10
-        local r = random(0, 1999)
-        local success = r < chance
-        if success then
-            Public.set_crafting_boost(player, get_dex_modifier)
-            local reward_roll = random(0, 9999)
-            local reward_threshold = 10000 - chance * 5
-            if reward_roll < reward_threshold then
+        local effective_max_dex = rpg_extra.effective_max_dex or 600
+
+        local dex = math.min(get_dex_modifier, effective_max_dex)
+        local normalized = dex / effective_max_dex
+        local curved = normalized ^ 0.8
+        local boost_chance = curved * 0.60 -- 60%
+        local dupe_chance = curved * 0.25 -- 25%
+
+        if random() < boost_chance then
+            Public.set_crafting_boost(player, dex)
+
+            if random() < dupe_chance then
                 local rpg_t = Public.get_value_from_player(player.index)
                 if not rpg_t then return end
-                local quality = 'normal'
-                if script.active_mods['space-age'] and Public.get_value_from_player(player.index).quality_crafting_chance then
+
+                local quality = "normal"
+
+                if script.active_mods["space-age"] and rpg_t.quality_crafting_chance then
                     local qr = random(1, 100)
+
                     if qr <= 2 then
-                        quality = 'legendary'
+                        quality = "legendary"
                     elseif qr <= 8 then
-                        quality = 'epic'
+                        quality = "epic"
                     elseif qr <= 25 then
-                        quality = 'rare'
+                        quality = "rare"
                     elseif qr <= 65 then
-                        quality = 'uncommon'
+                        quality = "uncommon"
                     end
                 end
-                local reward = { name = item.name, count = 1 }
-                if quality ~= 'normal' then
+
+                local reward =
+                {
+                    name = item.name,
+                    count = 1
+                }
+
+                if quality ~= "normal" then
                     reward.quality = quality
                 end
-                Public.increment_duped_crafted_items(player)
+
                 if player.can_insert(reward) then
                     player.insert(reward)
-                    Public.show_notification(player, 'Duped ' .. item.name .. ' (' .. quality_to_color[quality] .. ') while crafting!', Color.info)
+                    Public.increment_duped_crafted_items(player)
+
+                    if quality ~= "normal" then
+                        Public.display_notification(
+                            player,
+                            "Duped " .. item.name .. " (" .. quality_to_color[quality] .. ") while crafting!",
+                            Color.info
+                        )
+                    end
+
                     local duped_items = rpg_t.duped_items or 0
                     local f = player.gui.screen[main_frame_name]
+
                     if f and f.valid then
                         local d = Gui.get_data(f)
+
                         if d.dex_desc and d.dex_desc.valid then
-                            d.dex_desc.tooltip = ({ 'rpg_gui.dexterity_tooltip', duped_items })
+                            d.dex_desc.tooltip = { "rpg_gui.dexterity_tooltip", duped_items }
                         end
+
                         if d.dex_stat and d.dex_stat.valid then
-                            d.dex_stat.tooltip = ({ 'rpg_gui.dexterity_tooltip', duped_items })
+                            d.dex_stat.tooltip = { "rpg_gui.dexterity_tooltip", duped_items }
                         end
                     end
                 else
-                    Public.show_notification(player, 'Not enough space in inventory to dupe ' .. item.name .. ' (' .. quality_to_color[quality] .. ')!', Color.warning)
+                    Public.display_notification(
+                        player,
+                        "Not enough space in inventory to dupe " .. item.name .. "!",
+                        Color.warning
+                    )
                 end
             end
         end
     end
+
+
 
     Public.gain_xp(player, final_xp)
     Public.reward_mana(player, amount)
@@ -985,21 +1016,21 @@ local function on_player_used_capsule_custom(event)
 
     local spell = Public.get_spell_by_name(rpg_t, rpg_t.dropdown_select_name)
     if not spell then
-        Public.show_notification(player, 'Invalid spell selected.', Color.warning)
+        Public.display_notification(player, 'Invalid spell selected.', Color.warning)
         return
     end
 
     if spell.enforce_cooldown then
         if Public.is_cooldown_active_for_player(player) then
             Public.cast_spell(player, true)
-            Public.show_notification(player, 'You are on cooldown for this spell.', Color.warning)
+            Public.display_notification(player, 'You are on cooldown for this spell.', Color.warning)
             return
         end
     end
 
     local position = event.cursor_position
     if not position then
-        Public.show_notification(player, 'You must have a cursor position to cast a spell.', Color.warning)
+        Public.display_notification(player, 'You must have a cursor position to cast a spell.', Color.warning)
         return
     end
 
@@ -1011,23 +1042,23 @@ local function on_player_used_capsule_custom(event)
     }
 
     if not spell.enabled then
-        Public.show_notification(player, 'This spell is not enabled.', Color.warning)
+        Public.display_notification(player, 'This spell is not enabled.', Color.warning)
         return Public.cast_spell(player, true)
     end
 
     if rpg_t.level < spell.level then
-        Public.show_notification(player, 'You are not high enough level to cast this spell.', Color.warning)
+        Public.display_notification(player, 'You are not high enough level to cast this spell.', Color.warning)
         return Public.cast_spell(player, true)
     end
 
     if not Math2D.bounding_box.contains_point(area, player.physical_position) then
-        Public.show_notification(player, 'You are too far away to cast this spell.', Color.warning)
+        Public.display_notification(player, 'You are too far away to cast this spell.', Color.warning)
         Public.cast_spell(player, true)
         return
     end
 
     if mana < spell.mana_cost then
-        Public.show_notification(player, 'You do not have enough mana to cast the spell.', Color.warning)
+        Public.display_notification(player, 'You do not have enough mana to cast the spell.', Color.warning)
         return Public.cast_spell(player, true)
     end
 
@@ -1079,7 +1110,7 @@ local function on_player_used_capsule_custom(event)
 
     local cast_spell = spell.callback(data, funcs)
     if not cast_spell then
-        Public.show_notification(player, 'Failed to cast the spell.', Color.warning)
+        Public.display_notification(player, 'Failed to cast the spell.', Color.warning)
         return
     end
 
@@ -1150,7 +1181,7 @@ local function on_player_used_capsule(event)
 
     local rpg_t = Public.get_value_from_player(player.index)
     if not rpg_t then
-        Public.show_notification(player, 'Invalid player data.', Color.warning)
+        Public.display_notification(player, 'Invalid player data.', Color.warning)
         return
     end
 
@@ -1176,21 +1207,21 @@ local function on_player_used_capsule(event)
 
     local spell = Public.get_spell_by_name(rpg_t, rpg_t.dropdown_select_name)
     if not spell then
-        Public.show_notification(player, 'Invalid spell selected.', Color.warning)
+        Public.display_notification(player, 'Invalid spell selected.', Color.warning)
         return
     end
 
     if spell.enforce_cooldown then
         if Public.is_cooldown_active_for_player(player) then
             Public.cast_spell(player, true)
-            Public.show_notification(player, 'You are on cooldown for this spell.', Color.warning)
+            Public.display_notification(player, 'You are on cooldown for this spell.', Color.warning)
             return
         end
     end
 
     local position = event.position
     if not position then
-        Public.show_notification(player, 'You must have a position to cast a spell.', Color.warning)
+        Public.display_notification(player, 'You must have a position to cast a spell.', Color.warning)
         return
     end
 
@@ -1202,23 +1233,23 @@ local function on_player_used_capsule(event)
     }
 
     if not spell.enabled then
-        Public.show_notification(player, 'This spell is not enabled.', Color.warning)
+        Public.display_notification(player, 'This spell is not enabled.', Color.warning)
         return Public.cast_spell(player, true)
     end
 
     if rpg_t.level < spell.level then
-        Public.show_notification(player, 'You are not high enough level to cast this spell.', Color.warning)
+        Public.display_notification(player, 'You are not high enough level to cast this spell.', Color.warning)
         return Public.cast_spell(player, true)
     end
 
     if not Math2D.bounding_box.contains_point(area, player.physical_position) then
-        Public.show_notification(player, 'You are too far away to cast this spell.', Color.warning)
+        Public.display_notification(player, 'You are too far away to cast this spell.', Color.warning)
         Public.cast_spell(player, true)
         return
     end
 
     if mana < spell.mana_cost then
-        Public.show_notification(player, 'You do not have enough mana to cast the spell.', Color.warning)
+        Public.display_notification(player, 'You do not have enough mana to cast the spell.', Color.warning)
         return Public.cast_spell(player, true)
     end
 
@@ -1270,7 +1301,7 @@ local function on_player_used_capsule(event)
 
     local cast_spell = spell.callback(data, funcs)
     if not cast_spell then
-        Public.show_notification(player, 'Failed to cast the spell.', Color.warning)
+        Public.display_notification(player, 'Failed to cast the spell.', Color.warning)
         return
     end
 
