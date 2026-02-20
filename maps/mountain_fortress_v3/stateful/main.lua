@@ -4,6 +4,7 @@ local WD = require 'modules.wave_defense.table'
 local Beam = require 'modules.render_beam'
 local CustomEvents = require 'utils.created_events'
 
+Public.stateful_buffs = require 'maps.mountain_fortress_v3.stateful.buffs'
 Public.stateful_gui = require 'maps.mountain_fortress_v3.stateful.gui'
 Public.stateful_blueprints = require 'maps.mountain_fortress_v3.stateful.blueprints'
 

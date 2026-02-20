@@ -748,9 +748,9 @@ local enemy_unit_types =
         },
         demolisher =
         {
-            small = { t1 = { 1000, 1300 } },
-            medium = { t1 = { 1300, 1400 } },
-            big = { t1 = { 1400, 1500 } }
+            small = { t1 = { 1300, 1600 } },
+            medium = { t1 = { 1600, 1700 } },
+            big = { t1 = { 1700, 1800 } }
         }
     },
 
