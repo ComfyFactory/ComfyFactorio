@@ -1,6 +1,6 @@
 local shuffle = table.shuffle_table
 
-local Public = {}
+local Public = require 'maps.mountain_fortress_v3.table'
 
 function Public.get_random_buff(fetch_all, only_force)
     local buffs =
