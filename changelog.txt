@@ -1,7 +1,8 @@
 ---------------------------------------------------------------------------------------------------
 Version: 1.9.1
-Date: ????
-  Changes:
+Date: 2026-02-22
+  Balancing:
+    - Speed modules T2+3 and Assembling machines T3 can no longer be researched, leaving them as valuable loot.
 ---------------------------------------------------------------------------------------------------
 Version: 1.9.0
 Date: 2026-02-05
