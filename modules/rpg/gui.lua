@@ -292,16 +292,28 @@ local function draw_main_frame(player, location)
 
     local duped_items = rpg_t.duped_items or 0
 
-    add_gui_description(left_bottom_table, ({ 'rpg_gui.strength_name' }), w1, ({ 'rpg_gui.strength_tooltip' }))
-    add_gui_stat(left_bottom_table, rpg_t.strength, w2, ({ 'rpg_gui.strength_tooltip' }))
+    local strength_tooltip = ({ 'rpg_gui.strength_tooltip' })
+    if rpg_extra.enable_range_buffs then
+        strength_tooltip = ({ 'rpg_gui.strength_ranged_damage_tooltip' })
+    end
+
+    add_gui_description(left_bottom_table, ({ 'rpg_gui.strength_name' }), w1, strength_tooltip)
+    add_gui_stat(left_bottom_table, rpg_t.strength, w2, strength_tooltip)
     add_gui_increase_stat(left_bottom_table, 'strength', player)
 
     add_gui_description(left_bottom_table, ({ 'rpg_gui.magic_name' }), w1, ({ 'rpg_gui.magic_tooltip' }))
     add_gui_stat(left_bottom_table, rpg_t.magicka, w2, ({ 'rpg_gui.magic_tooltip' }))
     add_gui_increase_stat(left_bottom_table, 'magicka', player)
 
-    add_gui_description(left_bottom_table, ({ 'rpg_gui.dexterity_name' }), w1, ({ 'rpg_gui.dexterity_tooltip', duped_items }))
-    add_gui_stat(left_bottom_table, rpg_t.dexterity, w2, ({ 'rpg_gui.dexterity_tooltip', duped_items }))
+    local dexterity_tooltip = ({ 'rpg_gui.dexterity_tooltip', duped_items })
+    if script.active_mods['space-age'] and rpg_t.quality_crafting_chance then
+        dexterity_tooltip = ({ 'rpg_gui.dexterity_quality_tooltip', duped_items })
+    end
+
+    local dex_desc = add_gui_description(left_bottom_table, ({ 'rpg_gui.dexterity_name' }), w1, dexterity_tooltip)
+    local dex_stat = add_gui_stat(left_bottom_table, rpg_t.dexterity, w2, dexterity_tooltip)
+    data.dex_desc = dex_desc
+    data.dex_stat = dex_stat
 
     add_gui_increase_stat(left_bottom_table, 'dexterity', player)
 
@@ -472,7 +484,7 @@ function Public.draw_level_text(player)
         return
     end
 
-    if not rpg_t.show_level_text then
+    if not rpg_t.show_lvl_txt then
         if rpg_t.text and rpg_t.text.valid then
             rpg_t.text.destroy()
             rpg_t.text = nil
@@ -492,29 +504,31 @@ function Public.draw_level_text(player)
 
     if player.character.surface.index ~= player.surface.index then return end
 
-    rpg_t.text =
-        rendering.draw_text
-        {
-            text = 'lvl ' .. rpg_t.level,
-            surface = player.surface,
-            target =
+    if rpg_t.show_lvl_txt then
+        rpg_t.text =
+            rendering.draw_text
             {
-                entity = player.character,
-                offset = { 0, -3.25 },
-            },
-            color =
-            {
-                r = player.color.r * 0.6 + 0.25,
-                g = player.color.g * 0.6 + 0.25,
-                b = player.color.b * 0.6 + 0.25,
-                a = 1
-            },
-            players = players,
-            scale = 1.00,
-            font = 'default-large-semibold',
-            alignment = 'center',
-            scale_with_zoom = false
-        }
+                text = 'lvl ' .. rpg_t.level,
+                surface = player.surface,
+                target =
+                {
+                    entity = player.character,
+                    offset = { 0, -3.25 },
+                },
+                color =
+                {
+                    r = player.color.r * 0.6 + 0.25,
+                    g = player.color.g * 0.6 + 0.25,
+                    b = player.color.b * 0.6 + 0.25,
+                    a = 1
+                },
+                players = players,
+                scale = 1.00,
+                font = 'default-large-semibold',
+                alignment = 'center',
+                scale_with_zoom = false
+            }
+    end
 end
 
 function Public.toggle(player, recreate)
@@ -616,7 +630,11 @@ Gui.on_click(
         end
 
         local health_bar_gui_input = data.health_bar_gui_input
+        local crafting_chance_input = data.crafting_chance_input
+        local quality_crafting_chance_input = data.quality_crafting_chance_input
+        local show_lvl_txt_input = data.show_lvl_txt_input
         local reset_gui_input = data.reset_gui_input
+        local show_notification_gui_input = data.show_notification_gui_input
         local conjure_gui_input = data.conjure_gui_input
         local spell_gui_input1 = data.spell_gui_input1
         local spell_gui_input2 = data.spell_gui_input2
@@ -626,7 +644,6 @@ Gui.on_click(
         local stone_path_gui_input = data.stone_path_gui_input
         local aoe_punch_gui_input = data.aoe_punch_gui_input
         local auto_allocate_gui_input = data.auto_allocate_gui_input
-        local level_text_gui_input = data.level_text_gui_input
 
         local character_build_distance_bonus = data.character_build_distance_bonus
         local character_crafting_speed_modifier = data.character_crafting_speed_modifier
@@ -641,6 +658,14 @@ Gui.on_click(
         local character_running_speed_modifier = data.character_running_speed_modifier
 
         local rpg_t = Public.get_value_from_player(player.index)
+        if not rpg_t then
+            return
+        end
+
+        if not rpg_t.has_been_notified_about_notification then
+            Public.display_notification(player, 'To disable notifications, check the "Show notifications?" checkbox in the settings.', Color.success)
+            rpg_t.has_been_notified_about_notification = true
+        end
 
         if frame and frame.valid then
             if auto_allocate_gui_input and auto_allocate_gui_input.valid and auto_allocate_gui_input.selected_index then
@@ -676,6 +701,14 @@ Gui.on_click(
                     rpg_t.explosive_bullets = false
                 elseif explosive_bullets_gui_input.state then
                     rpg_t.explosive_bullets = true
+                end
+            end
+
+            if show_notification_gui_input and show_notification_gui_input.valid then
+                if not show_notification_gui_input.state then
+                    rpg_t.show_notification = false
+                elseif show_notification_gui_input.state then
+                    rpg_t.show_notification = true
                 end
             end
 
@@ -784,15 +817,32 @@ Gui.on_click(
                 end
             end
 
-            if level_text_gui_input and level_text_gui_input.valid then
-                if not level_text_gui_input.state then
-                    rpg_t.show_level_text = false
+            if crafting_chance_input and crafting_chance_input.valid then
+                if not crafting_chance_input.state then
+                    rpg_t.crafting_chance = false
+                elseif crafting_chance_input.state then
+                    rpg_t.crafting_chance = true
+                end
+            end
+
+            if quality_crafting_chance_input and quality_crafting_chance_input.valid then
+                if not quality_crafting_chance_input.state then
+                    rpg_t.quality_crafting_chance = false
+                elseif quality_crafting_chance_input.state then
+                    rpg_t.quality_crafting_chance = true
+                end
+            end
+
+            if show_lvl_txt_input and show_lvl_txt_input.valid then
+                if not show_lvl_txt_input.state then
+                    rpg_t.show_lvl_txt = false
                     Public.draw_level_text(player)
-                elseif level_text_gui_input.state then
-                    rpg_t.show_level_text = true
+                elseif show_lvl_txt_input.state then
+                    rpg_t.show_lvl_txt = true
                     Public.draw_level_text(player)
                 end
             end
+
             remove_target_frame(frame)
 
             if player.gui.screen[main_frame_name] then

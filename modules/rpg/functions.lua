@@ -585,6 +585,46 @@ function Public.update_health(player)
     end
 end
 
+function Public.update_cooldown(players)
+    for i = 1, #players do
+        local player = players[i]
+        local rpg_t = Public.get_value_from_player(player.index)
+
+        if player and player.valid and player.character and player.character.valid and Public.check_is_surface_valid(player) and rpg_t then
+            if player.gui.screen[spell_gui_frame_name] then
+                local f = player.gui.screen[spell_gui_frame_name]
+                local data = Gui.get_data(f)
+                if data and data.cooldown and data.cooldown.valid then
+                    local active_spell = Public.get_spell_by_name(rpg_t, rpg_t.dropdown_select_name)
+                    local spell_name = active_spell and rpg_t.cooldowns and rpg_t.cooldowns[active_spell.entityName]
+                    if spell_name then
+                        if type(spell_name) == 'table' then
+                            local end_tick = spell_name and spell_name.cooldown or 0
+                            if not end_tick then
+                                end_tick = 0
+                            end
+
+                            local ticks_left = end_tick and (end_tick - game.tick) or 0
+                            if ticks_left < 0 then
+                                ticks_left = 0
+                            end
+                            local seconds_left = math.ceil(ticks_left / 60)
+                            if seconds_left == 0 then
+                                data.cooldown.tooltip = 'Shows the cooldown of the active spell.'
+                            else
+                                data.cooldown.tooltip = 'Shows the cooldown of the active spell. Time remaining: ' .. seconds_left .. ' second' .. (seconds_left == 1 and '' or 's')
+                            end
+                        else
+                            Server.output_script_data('End tick for player ' .. player.name .. ' is not a table. Setting cooldown to nil for spell ' .. active_spell.entityName .. '.')
+                            rpg_t.cooldowns[active_spell.entityName] = nil
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
 function Public.log_aoe_punch(callback)
     local debug = Public.get('rpg_extra').debug_aoe_punch
     if not debug then
@@ -1273,7 +1313,21 @@ function Public.register_cooldown_for_spell(player)
         rpg_t.cooldowns = {}
     end
 
-    rpg_t.cooldowns[active_spell.entityName] = game.tick + active_spell.cooldown
+    if rpg_t.special_cooldown then
+        rpg_t.cooldowns[active_spell.entityName] =
+        {
+            cooldown = game.tick + rpg_t.special_cooldown,
+            delay = rpg_t.special_cooldown
+        }
+        rpg_t.special_cooldown = nil
+        return
+    end
+
+    rpg_t.cooldowns[active_spell.entityName] =
+    {
+        cooldown = game.tick + active_spell.cooldown,
+        delay = active_spell.cooldown
+    }
 end
 
 function Public.is_cooldown_active_for_player(player)
@@ -1286,7 +1340,12 @@ function Public.is_cooldown_active_for_player(player)
     end
 
     local cd = cooldowns[active_spell.entityName]
-    return cd and cd > game.tick or false
+    if not cd or not cd.cooldown then
+        cooldowns[active_spell.entityName] = nil
+        return false
+    end
+
+    return cd.cooldown > game.tick or false
 end
 
 function Public.get_cooldown_progressbar_for_player(player)
@@ -1314,6 +1373,21 @@ show_cooldown_progressbar =
 
             local tick = event.tick
             local now = game.tick
+            local name = event.name
+
+            local rpg_t = Public.get_value_from_player(player.index)
+            if not rpg_t then
+                return
+            end
+
+            local cooldowns = rpg_t.cooldowns
+            if not cooldowns then
+                return
+            end
+
+            if not cooldowns[name] then
+                return
+            end
 
             local element = Public.get_cooldown_progressbar_for_player(player)
             if not element or not element.valid then
@@ -1327,11 +1401,6 @@ show_cooldown_progressbar =
 
             if now >= tick then
                 element.value = 0
-                return
-            end
-
-            local rpg_t = Public.get_value_from_player(player.index)
-            if not rpg_t then
                 return
             end
 
@@ -1373,6 +1442,7 @@ show_cooldown =
             local fade = ((now - tick) / event.delay) + 1
 
             if not player.character then
+                Task.set_timeout_in_ticks(update_rate, show_cooldown, event)
                 return
             end
 
@@ -1407,11 +1477,39 @@ function Public.register_cooldown_for_player(player, spell)
     if not rpg_t.cooldown_enabled then
         rpg_t.cooldown_enabled = true
     end
-    Task.set_timeout_in_ticks(update_rate, show_cooldown, { player_index = player.index, tick = game.tick + spell.cooldown, delay = spell.cooldown })
+
+    local player_spell = rpg_t.cooldowns and rpg_t.cooldowns[spell.entityName]
+    if not player_spell or not type(player_spell) == 'table' then
+        rpg_t.cooldowns[spell.entityName] = nil
+        return
+    end
+
+    local delay = player_spell.delay
+    if not delay then
+        delay = spell.cooldown
+    end
+
+    Task.set_timeout_in_ticks(update_rate, show_cooldown, { player_index = player.index, tick = game.tick + delay, delay = delay })
 end
 
 function Public.register_cooldown_for_player_progressbar(player, spell)
-    Task.set_timeout_in_ticks(update_rate, show_cooldown_progressbar, { player_index = player.index, tick = game.tick + spell.cooldown, delay = spell.cooldown, name = spell.entityName })
+    local rpg_t = Public.get_value_from_player(player.index)
+    if not rpg_t then
+        return
+    end
+
+    local player_spell = rpg_t.cooldowns and rpg_t.cooldowns[spell.entityName]
+    if not player_spell or not type(player_spell) == 'table' then
+        rpg_t.cooldowns[spell.entityName] = nil
+        return
+    end
+
+    local delay = player_spell.delay
+    if not delay then
+        delay = spell.cooldown
+    end
+
+    Task.set_timeout_in_ticks(update_rate, show_cooldown_progressbar, { player_index = player.index, tick = game.tick + delay, delay = delay, name = spell.entityName })
 end
 
 --- Gives connected player some bonus xp if the map was preemptively shut down.
@@ -1527,14 +1625,18 @@ function Public.rpg_reset_player(player, one_time_reset)
         last_mined_entity_position = { x = 0, y = 0 },
         last_spell_cast = { x = 0, y = 0 },
         show_bars = false,
-        show_level_text = true,
         stone_path = false,
         aoe_punch = false,
         auto_toggle_features =
         {
             stone_path = false,
             aoe_punch = false
-        }
+        },
+        show_lvl_txt = true,
+        crafting_chance = true,
+        quality_crafting_chance = true,
+        show_notification = true,
+        has_been_notified_about_notification = false,
     }
 
     if one_time_reset then
@@ -1750,6 +1852,25 @@ function Public.distribute_pool()
     local players = game.connected_players
     Public.global_pool(players, count)
     print('Distributed the global XP pool')
+end
+
+--- Shows a notification to a player.
+--- @param player LuaPlayer
+--- @param message string
+--- @param color table
+function Public.display_notification(player, message, color)
+    if not player or not player.valid then
+        return
+    end
+    local rpg_t = Public.get_value_from_player(player.index)
+    if not rpg_t then
+        return
+    end
+    if not rpg_t.show_notification then
+        return
+    end
+    color = color or Color.white
+    player.print('[color=yellow][RPG][/color] ' .. message, { color = color })
 end
 
 Public.has_health_boost = has_health_boost

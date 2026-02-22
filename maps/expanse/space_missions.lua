@@ -142,6 +142,7 @@ local function tier4_object(expanse, surface, left_top, repeats)
             pad.minable_flag = false
             pad.destructible = false
             expanse.landing_pad = pad
+            game.forces.player.recipes['cargo-landing-pad'].enabled = true
             return true
         elseif expanse.tiered_specials[4].unlocks == 1 then
             local silo = surface.create_entity({name = 'rocket-silo', position = position, force = game.forces.player})
@@ -572,7 +573,8 @@ function Public.convert_entities(surface, left_top, tier, cell_size)
             ['dry-tree'] = 'ashland-lichen-tree-flaming',
             ['stone'] = 'calcite',
             ['copper-ore'] = 'coal',
-            ['iron-ore'] = 'tungsten-ore'
+            ['iron-ore'] = 'tungsten-ore',
+            ['big-rock'] = 'big-volcanic-rock'
 
         }
     elseif SA and tier == 7 then --fulgora

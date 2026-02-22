@@ -7,6 +7,7 @@ local Public = {}
 
 Public.register = Token.register
 Public.get = Token.get
+Public.uid = Token.uid
 
 Public.set_timeout_in_ticks = Task.set_timeout_in_ticks
 Public.set_duration_task = Task.set_duration_task

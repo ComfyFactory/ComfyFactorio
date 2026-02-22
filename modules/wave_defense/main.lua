@@ -881,7 +881,11 @@ local function reform_group(group)
     if position then
         local new_group = group.surface.create_unit_group { position = position, force = group.force }
         for _, biter in pairs(group.members) do
-            new_group.add_member(biter)
+            if string.find(biter.name, 'demolisher') then
+                Public.debug_print('reform_group - demolisher was added to new group but cannot be controlled')
+            else
+                new_group.add_member(biter)
+            end
         end
         Public.debug_print('Creating new unit group, because old one was stuck.')
         generated_units.unit_groups[new_group.unique_id] = new_group
@@ -1273,7 +1277,11 @@ local function spawn_unit_group(fs, only_bosses)
                 debug('No biter was found?')
                 break
             end
-            unit_group.add_member(biter)
+            if string.find(biter.name, 'demolisher') then
+                Public.debug_print('spawn_units - demolisher was spawned but cannot be controlled')
+            else
+                unit_group.add_member(biter)
+            end
             raise(CustomEvents.events.on_entity_created, { entity = biter, boss_unit = boss })
         end
     end
@@ -1369,7 +1377,11 @@ local function spawn_unit_group_simple(fs)
         local biter = spawn_biter(surface, spawn_position, fs, is_boss, unit_settings)
         if biter then
             s = s + 1
-            unit_group.add_member(biter)
+            if string.find(biter.name, 'demolisher') then
+                Public.debug_print('spawn_unit_group_simple - demolisher was spawned but cannot be controlled')
+            else
+                unit_group.add_member(biter)
+            end
             raise(CustomEvents.events.on_entity_created, { entity = biter, boss_unit = is_boss })
         end
     end

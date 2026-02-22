@@ -126,6 +126,7 @@ local delay_register_token =
 
 function Public.reset_table(migrate)
     this.rpg_extra.debug = false
+    this.rpg_extra.effective_max_dex = 600
     this.rpg_extra.breached_walls = 1
     this.rpg_extra.reward_new_players = 0
     this.rpg_extra.level_limit_enabled = false
@@ -138,6 +139,9 @@ function Public.reset_table(migrate)
     this.rpg_extra.difficulty = false
     this.rpg_extra.surface_name = 'nauvis'
     this.rpg_extra.enable_health_and_mana_bars = false
+    this.rpg_extra.enable_crafting_chance = true
+    this.rpg_extra.enable_quality_crafting_chance = true
+    this.rpg_extra.enable_show_lvl_txt = true
     this.rpg_extra.enable_mana = false
     this.rpg_extra.mana_limit = 100000
     this.rpg_extra.enable_wave_defense = false
@@ -163,7 +167,7 @@ function Public.reset_table(migrate)
         ['iron-gear-wheel'] = true,
         ['pipe'] = true
     }
-    this.tweaked_crafting_items_enabled = false
+    this.tweaked_crafting_items_enabled = true
     if not migrate then
         this.rpg_t = {}
     end

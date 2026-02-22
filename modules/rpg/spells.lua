@@ -3,6 +3,7 @@ local Task = require 'utils.task_token'
 local Ai = require 'modules.ai'
 local Gui = require 'utils.gui'
 local Modifiers = require 'utils.player_modifiers'
+local Color = require 'utils.color_presets'
 
 local spells = {}
 local random = math.random
@@ -348,6 +349,7 @@ local function create_entity(data)
         if last_spell_cast then
             if Public.get_last_spell_cast(player) then
                 Public.cast_spell(player, true)
+                Public.display_notification(player, 'You must move to a new position to cast a spell.', Color.warning)
                 return false
             end
         end
@@ -364,6 +366,7 @@ local function create_entity(data)
             Public.remove_mana(player, self.mana_cost)
             return true
         else
+            Public.display_notification(player, 'Cannot place entity.', Color.warning)
             Public.cast_spell(player, true)
             return false
         end
@@ -405,6 +408,7 @@ local function create_entity(data)
             e.direction = player.character.direction
             Public.remove_mana(player, self.mana_cost)
         else
+            Public.display_notification(player, 'Cannot place entity.', Color.warning)
             Public.cast_spell(player, true)
             return false
         end
@@ -919,6 +923,93 @@ spells[#spells + 1] =
         return create_projectiles(data)
     end
 }
+local ore_raffle = { 'iron-ore', 'copper-ore', 'coal', 'stone', 'uranium-ore' }
+spells[#spells + 1] =
+{
+    name = { 'spells.spawn_ore_patch' },
+    entityName = 'spawn_ore_patch',
+    target = true,
+    force = 'player',
+    level = 30,
+    type = 'special',
+    mana_cost = 400,
+    enforce_cooldown = true,
+    cooldown = 15 * 60 * 60,
+    enabled = true,
+    log_spell = true,
+    sprite = 'entity/iron-ore',
+    tooltip = 'Spawns random ore patch. Uses all mana. Total ore = (Mana x 10) x Level factor (up to 5x). Size increases with level.',
+    callback = function (data)
+        local player = data.player
+        local rpg_t = data.rpg_t
+        local position = data.position
+        local surface = data.surface
+
+
+        if rpg_t.mana < rpg_t.mana_max then
+            Public.display_notification(player, 'You must have full mana to cast this spell.', Color.warning)
+            Public.cast_spell(player, true)
+            return false
+        end
+
+        local mana_spent = floor(rpg_t.mana)
+        local level_factor = math.min(5, 1 + (rpg_t.level - 30) * (4 / 125))
+        local total_ore = floor((mana_spent * 10) * level_factor)
+        if total_ore < 1 then
+            Public.cast_spell(player, true)
+            return false
+        end
+
+        local ore_name = ore_raffle[random(1, #ore_raffle)]
+        if not prototypes.entity[ore_name] then
+            Public.display_notification(player, 'Invalid ore name.', Color.warning)
+            Public.cast_spell(player, true)
+            return false
+        end
+
+        local radius = Public.get_area_of_effect_range(player)
+        if radius > 32 then radius = 32 end
+
+        local positions = {}
+        for x = -radius, radius do
+            for y = -radius, radius do
+                local dist = math.sqrt(x * x + y * y)
+                local edge = radius * (0.88 + random(0, 24) / 100)
+                if dist <= edge then
+                    local pos = { x = position.x + x, y = position.y + y }
+                    if surface.can_place_entity({ name = ore_name, position = pos }) then
+                        positions[#positions + 1] = pos
+                    end
+                end
+            end
+        end
+
+        if #positions == 0 then
+            Public.cast_spell(player, true)
+            return false
+        end
+
+        local amount_per = floor(total_ore / #positions)
+        local remainder = total_ore - amount_per * #positions
+        for i = 1, #positions do
+            local pos = positions[i]
+            local amount = amount_per + (i == 1 and remainder or 0)
+            if amount > 0 then
+                surface.create_entity({ name = ore_name, position = pos, amount = amount })
+            end
+        end
+
+        -- Scale the cooldown based on the level
+        local cooldown_scale = 1 + (rpg_t.level - 30) * (4 / 125)
+        local cooldown = 15 * 60 * 60 * cooldown_scale
+        rpg_t.special_cooldown = cooldown
+        Public.register_cooldown_for_spell(player)
+
+        Public.remove_mana(player, 999999999)
+        Public.cast_spell(player)
+        return true
+    end
+}
 spells[#spells + 1] =
 {
     name = { 'item-name.rocket' },
@@ -1313,7 +1404,7 @@ spells[#spells + 1] =
             pos = game.forces.player.get_spawn_position(surface)
             player.teleport(pos, surface)
         end
-        Public.remove_mana(player, 999999)
+        Public.remove_mana(player, 99999999)
         Public.damage_player_over_time(player, random(8, 16))
         player.play_sound { path = 'utility/armor_insert', volume_modifier = 1 }
         Public.cast_spell(player)
@@ -1574,7 +1665,7 @@ local lightning =
     force = 'player',
     level = 60,
     type = 'special',
-    mana_cost = 350,
+    mana_cost = 150,
     cooldown = 150,
     enabled = true,
     enforce_cooldown = true,
@@ -1592,13 +1683,24 @@ local lightning =
         Public.register_cooldown_for_spell(player)
         Public.remove_mana(player, data.self.mana_cost)
 
-        for _ = 1, 12 do
-            surface.create_entity({ name = 'laser-effect', position = { x = position.x + random(-2, 2), y = position.y + random(-2, 2) }, target = { x = position.x + random(-2, 2), y = position.y + random(-2, 2) } })
+        local range = Public.get_area_of_effect_range(player)
+
+        local radius = random(8, math.max(8, 1 + range / 2))
+        if radius > 32 then radius = 32 end
+        local ray_count = math.max(32, range)
+        for i = 1, ray_count do
+            local angle = 2 * math.pi * (i - 1) / ray_count
+            local r = radius * (0.6 + random(0, 40) / 100)
+            local px = position.x + r * math.cos(angle)
+            local py = position.y + r * math.sin(angle)
+            local tx = position.x + r * math.cos(angle + 0.5) * random(80, 120) / 100
+            local ty = position.y + r * math.sin(angle + 0.5) * random(80, 120) / 100
+            surface.create_entity({ name = 'laser-effect', position = { x = px, y = py }, target = { x = tx, y = ty } })
         end
 
         local entities = surface.find_entities_filtered(
             {
-                area = { { position.x - 8, position.y - 8 }, { position.x + 8, position.y + 8 } },
+                area = { { position.x - radius, position.y - radius }, { position.x + radius, position.y + radius } },
                 force = 'enemy'
             })
 
@@ -1669,6 +1771,70 @@ if script.active_mods['space-age'] then
             Public.register_cooldown_for_spell(player)
             Public.cast_spell(player)
             return true
+        end
+    }
+    spells[#spells + 1] =
+    {
+        name = { 'entity-name.turbo-transport-belt' },
+        entityName = 'turbo-transport-belt',
+        level = 80,
+        type = 'item',
+        mana_cost = 400,
+        cooldown = 70,
+        aoe = true,
+        enabled = true,
+        sprite = 'recipe/turbo-transport-belt',
+        tooltip = 'Spawns some turbo transport belts',
+        callback = function (data)
+            return create_entity(data)
+        end
+    }
+    spells[#spells + 1] =
+    {
+        name = { 'entity-name.turbo-underground-belt' },
+        entityName = 'turbo-underground-belt',
+        level = 80,
+        type = 'item',
+        mana_cost = 400,
+        cooldown = 70,
+        aoe = true,
+        enabled = true,
+        sprite = 'recipe/turbo-underground-belt',
+        tooltip = 'Spawns some turbo underground belts',
+        callback = function (data)
+            return create_entity(data)
+        end
+    }
+    spells[#spells + 1] =
+    {
+        name = { 'entity-name.turbo-splitter' },
+        entityName = 'turbo-splitter',
+        level = 80,
+        type = 'item',
+        mana_cost = 400,
+        cooldown = 70,
+        aoe = true,
+        enabled = true,
+        sprite = 'recipe/turbo-splitter',
+        tooltip = 'Spawns some turbo splitters',
+        callback = function (data)
+            return create_entity(data)
+        end
+    }
+    spells[#spells + 1] =
+    {
+        name = { 'entity-name.steel-wall' },
+        entityName = 'steel-wall',
+        level = 30,
+        type = 'item',
+        mana_cost = 100,
+        cooldown = 70,
+        aoe = true,
+        enabled = true,
+        sprite = 'recipe/steel-wall',
+        tooltip = 'Spawns some steel walls',
+        callback = function (data)
+            return create_entity(data)
         end
     }
 end

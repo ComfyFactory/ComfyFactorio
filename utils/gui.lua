@@ -1,4 +1,4 @@
-local Token = require 'utils.token'
+local Task = require 'utils.task_token'
 local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Server = require 'utils.server'
@@ -82,7 +82,7 @@ function Public.uid_name()
     local filepath = info.source:match('^@__level__/(.+)$'):sub(1, -5)
     local line = info.currentline
 
-    local token = tostring(Token.uid())
+    local token = tostring(Task.uid())
 
     local name = concat { token, ' - ', filepath, ':line:', line }
     names[token] = name
@@ -91,7 +91,7 @@ function Public.uid_name()
 end
 
 function Public.uid()
-    return Token.uid()
+    return Task.uid()
 end
 
 local main_frame_name = Public.uid_name()
@@ -110,6 +110,17 @@ Public.frame_style = 'non_draggable_frame'
 Public.button_style = 'mod_gui_button'
 Public.top_flow_button_enabled_style = 'menu_button_continue'
 Public.top_flow_button_disabled_style = Public.button_style
+
+local fix_frame_style_token =
+    Task.register(
+        function (event)
+            local frame = event.frame
+            if not frame or not frame.valid then
+                return
+            end
+            frame.style.padding = 10
+        end
+    )
 
 --- Verifies if a frame is valid and destroys it.
 ---@param align userdata
@@ -720,7 +731,7 @@ function Public.reload_active_tab(player, forced, tab_name)
     if not id then
         return
     end
-    local callback = Token.get(id)
+    local callback = Task.get(id)
 
     local d =
     {
@@ -892,10 +903,13 @@ local function draw_main_frame(player)
                             type = 'frame',
                             name = name,
                             direction = 'vertical',
-                            style = 'mod_gui_inside_deep_frame'
+                            style = 'deep_frame_in_shallow_frame'
                         }
                     )
-                name_frame.style.padding = 8
+                tab.style.padding = 10
+
+                Task.set_timeout_in_ticks(10, fix_frame_style_token, { frame = name_frame })
+
                 tabbed_pane.add_tab(tab, name_frame)
             end
         end

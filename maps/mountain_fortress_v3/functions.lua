@@ -241,7 +241,6 @@ local custom_surface_funcs_token =
         end
     )
 
-
 local function debug_str(msg)
     local debug = Public.get('debug')
     if not debug then
@@ -669,6 +668,10 @@ end
 
 
 local function do_custom_surface_funcs()
+    if not Public.get('do_custom_surface_funcs') then
+        return
+    end
+
     Task.set_timeout_in_ticks(30, custom_surface_funcs_token)
 end
 
@@ -745,9 +748,9 @@ local enemy_unit_types =
         },
         demolisher =
         {
-            small = { t1 = { 1000, 1300 } },
-            medium = { t1 = { 1300, 1400 } },
-            big = { t1 = { 1400, 1500 } }
+            small = { t1 = { 1300, 1600 } },
+            medium = { t1 = { 1600, 1700 } },
+            big = { t1 = { 1700, 1800 } }
         }
     },
 
