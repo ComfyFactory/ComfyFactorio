@@ -574,76 +574,40 @@ commands.add_command("remove_classes", { "pirates.cmd_explain_dev" }, function(c
 end)
 
 -- *** *** --
---*** GO COMMAND LOGIC (also used by singleplayer auto-go in api_events.lua) ***--
--- *** *** --
-
--- Token registrations for the /go command workflow
-local go_2 = Token.register(function(data)
-	Memory.set_working_id(data.id)
-	local memory = Memory.get_crew_memory()
-
-	memory.loading_ticks = 0
-
-	-- local surface = game.surfaces[Common.current_destination().surface_name]
-	-- surface.request_to_generate_chunks({x = 0, y = 0}, 10)
-	-- surface.force_generate_chunk_requests()
-	Progression.go_from_starting_dock_to_first_destination()
-end)
-local go_1 = Token.register(function(data)
-	Memory.set_working_id(data.id)
-	local memory = Memory.get_crew_memory()
-	Overworld.ensure_lane_generated_up_to(0, Crowsnest.Data.visibilitywidth)
-	Overworld.ensure_lane_generated_up_to(24, Crowsnest.Data.visibilitywidth)
-	Overworld.ensure_lane_generated_up_to(-24, Crowsnest.Data.visibilitywidth)
-
-	for i = 1, #memory.destinations do
-		if memory.destinations[i].overworld_position.x == 0 then
-			memory.map_being_loaded_destination_index = i
-			break
-		end
-	end
-
-	memory.currentdestination_index = memory.map_being_loaded_destination_index
-	Surfaces.create_surface(Common.current_destination())
-	Task.set_timeout_in_ticks(60, go_2, { id = data.id })
-end)
-
--- Execute the /go command logic for a player. Returns true on success, false if already in a crew.
-local function execute_go(player)
-	if Common.get_id_from_force_name(player.character.force.name) then
-		return false -- Already in a crew
-	end
-
-	local proposal = {
-		capacity_option = 3,
-		difficulty_option = 4,
-		name = "SingleplayerRun",
-		created_by_player = player.index,
-		run_is_protected = false,
-		run_is_private = false,
-	}
-
-	Crew.initialise_crew(proposal, player.position)
-	Crew.initialise_crowsnest() -- contains a Task
-
-	local memory = Memory.get_crew_memory()
-	local boat = Utils.deepcopy(Surfaces.Lobby.StartingBoats[memory.id])
-
-	for _, p in pairs(game.connected_players) do
-		p.teleport({ x = -30, y = boat.position.y }, game.surfaces[boat.surface_name])
-	end
-
-	Progression.set_off_from_starting_dock()
-	Task.set_timeout_in_ticks(120, go_1, { id = memory.id })
-
-	return true
-end
-
--- *** *** --
 --*** DEVELOPER COMMANDS ***--
 -- *** *** --
 
 if _DEBUG then
+	local go_2 = Token.register(function(data)
+		Memory.set_working_id(data.id)
+		local memory = Memory.get_crew_memory()
+
+		memory.loading_ticks = 0
+
+		-- local surface = game.surfaces[Common.current_destination().surface_name]
+		-- surface.request_to_generate_chunks({x = 0, y = 0}, 10)
+		-- surface.force_generate_chunk_requests()
+		Progression.go_from_starting_dock_to_first_destination()
+	end)
+	local go_1 = Token.register(function(data)
+		Memory.set_working_id(data.id)
+		local memory = Memory.get_crew_memory()
+		Overworld.ensure_lane_generated_up_to(0, Crowsnest.Data.visibilitywidth)
+		Overworld.ensure_lane_generated_up_to(24, Crowsnest.Data.visibilitywidth)
+		Overworld.ensure_lane_generated_up_to(-24, Crowsnest.Data.visibilitywidth)
+
+		for i = 1, #memory.destinations do
+			if memory.destinations[i].overworld_position.x == 0 then
+				memory.map_being_loaded_destination_index = i
+				break
+			end
+		end
+
+		memory.currentdestination_index = memory.map_being_loaded_destination_index
+		Surfaces.create_surface(Common.current_destination())
+		Task.set_timeout_in_ticks(60, go_2, { id = data.id })
+	end)
+
 	-- Move overworld boat right by a lot (you can jump over islands that way to skip them)
 	commands.add_command("jump", { "pirates.cmd_explain_dev" }, function(cmd)
 		cmd_set_memory(cmd)
@@ -680,9 +644,41 @@ if _DEBUG then
 	-- Teleport player to available boat in lobby, automatically start journey and arrive at sea faster
 	commands.add_command("go", { "pirates.cmd_explain_dev" }, function(cmd)
 		cmd_set_memory(cmd)
+		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
 			local player = game.players[cmd.player_index]
-			if not execute_go(player) then
+			-- Doesn't completely prevent server from crashing when used twice at lobby, but at least saves from crashing when boat leaves lobby
+			if not Common.get_id_from_force_name(player.character.force.name) then
+				local proposal = {
+					capacity_option = 3,
+					difficulty_option = 4,
+					name = "AdminRun",
+					created_by_player = cmd.player_index,
+					run_is_protected = false,
+					run_is_private = false,
+				}
+
+				Crew.initialise_crew(proposal, player.position)
+				Crew.initialise_crowsnest() --contains a Task
+
+				local memory = Memory.get_crew_memory()
+				local boat = Utils.deepcopy(Surfaces.Lobby.StartingBoats[memory.id])
+
+				for _, p in pairs(game.connected_players) do
+					p.teleport({ x = -30, y = boat.position.y }, game.surfaces[boat.surface_name])
+				end
+
+				Progression.set_off_from_starting_dock()
+
+				-- local memory = Memory.get_crew_memory()
+				-- local boat = Utils.deepcopy(Surfaces.Lobby.StartingBoats[memory.id])
+				-- memory.boat = boat
+				-- boat.dockedposition = boat.position
+				-- boat.decksteeringchests = {}
+				-- boat.crows_nest_steering_chests = {}
+
+				Task.set_timeout_in_ticks(120, go_1, { id = memory.id })
+			else
 				game.print("Can't use this command when run has already launched")
 			end
 		end

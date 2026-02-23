@@ -12,9 +12,7 @@ local Ai = require("maps.pirates.ai")
 -- local Structures = require 'maps.pirates.structures.structures'
 local Boats = require("maps.pirates.structures.boats.boats")
 local Surfaces = require("maps.pirates.surfaces.surfaces")
-local Progression = require("maps.pirates.progression")
-local Overworld = require("maps.pirates.overworld")
-local Crowsnest = require("maps.pirates.surfaces.crowsnest")
+-- local Progression = require 'maps.pirates.progression'
 local IslandEnum = require("maps.pirates.surfaces.islands.island_enum")
 local Roles = require("maps.pirates.roles.roles")
 local Permissions = require("maps.pirates.permissions")
@@ -39,80 +37,6 @@ local Server = require("utils.server")
 -- local Modifers = require 'player_modifiers'
 local GuiWelcome = require("maps.pirates.gui.welcome")
 local tick_tack_trap = require("utils.functions.tick_tack_trap")
-
--- Token callbacks for singleplayer auto-go functionality
-local singleplayer_go_2 = Token.register(function(data)
-	Memory.set_working_id(data.id)
-	local memory = Memory.get_crew_memory()
-	memory.loading_ticks = 0
-	Progression.go_from_starting_dock_to_first_destination()
-end)
-
-local singleplayer_go_1 = Token.register(function(data)
-	Memory.set_working_id(data.id)
-	local memory = Memory.get_crew_memory()
-	Overworld.ensure_lane_generated_up_to(0, Crowsnest.Data.visibilitywidth)
-	Overworld.ensure_lane_generated_up_to(24, Crowsnest.Data.visibilitywidth)
-	Overworld.ensure_lane_generated_up_to(-24, Crowsnest.Data.visibilitywidth)
-
-	for i = 1, #memory.destinations do
-		if memory.destinations[i].overworld_position.x == 0 then
-			memory.map_being_loaded_destination_index = i
-			break
-		end
-	end
-
-	memory.currentdestination_index = memory.map_being_loaded_destination_index
-	Surfaces.create_surface(Common.current_destination())
-	Task.set_timeout_in_ticks(60, singleplayer_go_2, { id = data.id })
-end)
-
--- Delayed callback that performs the actual auto-go after lobby boats are ready
-local singleplayer_auto_go_delayed
-singleplayer_auto_go_delayed = Token.register(function(data)
-	local global_memory = Memory.get_global_memory()
-
-	-- Check if lobby boats are ready (they're created at tick 2)
-	if not global_memory.lobby_boats or not global_memory.lobby_boats[1] then
-		-- Boats not ready yet, retry in a few ticks
-		Task.set_timeout_in_ticks(5, singleplayer_auto_go_delayed, data)
-		return
-	end
-
-	local player = game.players[data.player_index]
-	if not player or not player.valid then
-		return
-	end
-
-	local proposal = {
-		capacity_option = 3,
-		difficulty_option = 4,
-		name = player.name .. (string.sub(player.name, -1) == "s" and "' Ship" or "'s Ship"),
-		created_by_player = player.index,
-		run_is_protected = false,
-		run_is_private = false,
-	}
-
-	Crew.initialise_crew(proposal, player.position)
-	Crew.initialise_crowsnest()
-
-	local memory = Memory.get_crew_memory()
-	local boat = Utils.deepcopy(Surfaces.Lobby.StartingBoats[memory.id])
-
-	for _, p in pairs(game.connected_players) do
-		p.teleport({ x = -30, y = boat.position.y }, game.surfaces[boat.surface_name])
-	end
-
-	Progression.set_off_from_starting_dock()
-	memory.boat.speed = 1 -- Small initial speed to start movement
-	Task.set_timeout_in_ticks(120, singleplayer_go_1, { id = memory.id })
-end)
-
--- Schedule auto-go for singleplayer games (equivalent to /go command)
-local function schedule_singleplayer_auto_go(player)
-	-- Delay execution to ensure lobby boats are ready (they're created at tick 2)
-	Task.set_timeout_in_ticks(5, singleplayer_auto_go_delayed, { player_index = player.index })
-end
 
 local Public = {}
 
@@ -1860,24 +1784,13 @@ local function event_on_player_joined_game(event)
 			Common.ensure_chunks_at(surface, spawnpoint, 5)
 		end
 
-		-- In singleplayer, automatically start the game on first join instead of showing the welcome message
-		local should_auto_go = false
-		if not global_memory.singleplayer_auto_go_checked then
-			global_memory.singleplayer_auto_go_checked = true
-			should_auto_go = not game.is_multiplayer()
+		Common.notify_player_expected(player, { "pirates.welcome_main_chat" })
+
+		if not _DEBUG then
+			GuiWelcome.show_welcome_window(player)
 		end
 
 		player.force = Common.lobby_force_name
-
-		if should_auto_go then
-			schedule_singleplayer_auto_go(player)
-		else
-			Common.notify_player_expected(player, { "pirates.welcome_main_chat" })
-
-			if not _DEBUG then
-				GuiWelcome.show_welcome_window(player)
-			end
-		end
 
 		-- NOTE: It was suggested to always spawn players in lobby, in hopes that they may want to create their crew increasing the popularity of scenario. Hence the following code is disabled.
 
