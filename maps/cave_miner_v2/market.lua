@@ -21,35 +21,36 @@ local function get_item_blacklist(tier)
     return blacklist
 end
 
-local special_slots = {
-    [1] = function(market, cave_miner)
+local special_slots =
+{
+    [1] = function (market, cave_miner)
         local pickaxe_tiers = Constants.pickaxe_tiers
         local tier = cave_miner.pickaxe_tier + 1
         if pickaxe_tiers[tier] then
             local item_stacks = LootRaffle.roll(math.floor(tier ^ 3.65) + 8, 100, get_item_blacklist(tier))
             local price = {}
             for _, item_stack in pairs(item_stacks) do
-                table.insert(price, {name = item_stack.name, amount = item_stack.count})
+                table.insert(price, { name = item_stack.name, count = item_stack.count })
             end
-            market.add_market_item({price = price, offer = {type = 'nothing', effect_description = 'Upgrade pickaxe to tier ' .. tier .. ': ' .. pickaxe_tiers[tier]}})
+            market.add_market_item({ price = price, offer = { type = 'nothing', effect_description = 'Upgrade pickaxe to tier ' .. tier .. ': ' .. pickaxe_tiers[tier] } })
         else
-            market.add_market_item({price = price, offer = {type = 'nothing', effect_description = 'Maximum pickaxe upgrade reached!'}})
+            market.add_market_item({ price = {}, offer = { type = 'nothing', effect_description = 'Maximum pickaxe upgrade reached!' } })
         end
     end,
-    [2] = function(market, cave_miner)
+    [2] = function (market, _)
         local tier = (market.force.character_inventory_slots_bonus + 2) * 0.5
         local item_stacks = LootRaffle.roll(math.floor(tier ^ 3.50) + 8, 100, get_item_blacklist(tier))
         local price = {}
         for _, item_stack in pairs(item_stacks) do
-            table.insert(price, {name = item_stack.name, amount = item_stack.count})
+            table.insert(price, { name = item_stack.name, count = item_stack.count })
         end
-        market.add_market_item({price = price, offer = {type = 'nothing', effect_description = 'Upgrade backpack to tier ' .. tier}})
+        market.add_market_item({ price = price, offer = { type = 'nothing', effect_description = 'Upgrade backpack to tier ' .. tier } })
         return tier
     end,
-    [3] = function(market, cave_miner)
+    [3] = function (market, cave_miner)
         local tier_pickaxe = cave_miner.pickaxe_tier + 1
         local tier_backpack = (market.force.character_inventory_slots_bonus + 2) * 0.5
-        market.add_market_item({price = {{name = 'raw-fish', amount = (tier_pickaxe + tier_backpack)}}, offer = {type = 'nothing', effect_description = 'Reroll offers'}})
+        market.add_market_item({ price = { { name = 'raw-fish', count = (tier_pickaxe + tier_backpack) } }, offer = { type = 'nothing', effect_description = 'Reroll offers' } })
     end
 }
 
@@ -67,7 +68,7 @@ end
 
 function Public.spawn(cave_miner)
     local surface = game.surfaces.nauvis
-    local market = surface.create_entity({name = 'market', position = {0, 0}, force = 'player'})
+    local market = surface.create_entity({ name = 'market', position = { 0, 0 }, force = 'player' })
     rendering.draw_light(
         {
             sprite = 'utility/light_medium',
@@ -75,7 +76,7 @@ function Public.spawn(cave_miner)
             intensity = 0.8,
             minimum_darkness = 0,
             oriented = true,
-            color = {255, 255, 255},
+            color = { 255, 255, 255 },
             target = market,
             surface = surface,
             visible = true,
@@ -98,16 +99,15 @@ function Public.offer_bought(event, cave_miner)
     local player = game.players[event.player_index]
     local market = event.market
     local offer_index = event.offer_index
-    local count = event.count
     local offers = market.get_market_items()
     local bought_offer = offers[offer_index].offer
     if bought_offer.type ~= 'nothing' then
         return
     end
     if offer_index == 1 and Constants.pickaxe_tiers[cave_miner.pickaxe_tier + 1] then
-        market.force.play_sound({path = 'utility/new_objective', volume_modifier = 0.75})
+        market.force.play_sound({ path = 'utility/new_objective', volume_modifier = 0.75 })
         cave_miner.pickaxe_tier = cave_miner.pickaxe_tier + 1
-        local speed = Functions.set_mining_speed(cave_miner, player.force)
+        Functions.set_mining_speed(cave_miner, player.force)
         game.print('Pickaxe has been upgraded to: ' .. Constants.pickaxe_tiers[cave_miner.pickaxe_tier] .. '!')
         Public.refresh_offer(market, cave_miner, 1)
         Public.refresh_offer(market, cave_miner, 3)
@@ -116,11 +116,11 @@ function Public.offer_bought(event, cave_miner)
     end
     if offer_index == 2 then
         market.force.character_inventory_slots_bonus = market.force.character_inventory_slots_bonus + 2
-        market.force.play_sound({path = 'utility/new_objective', volume_modifier = 0.75})
+        market.force.play_sound({ path = 'utility/new_objective', volume_modifier = 0.75 })
         game.print('Backpack has been upgraded to tier ' .. (market.force.character_inventory_slots_bonus + 2) * 0.5 .. '!')
         Public.refresh_offer(market, cave_miner, 2)
         Public.refresh_offer(market, cave_miner, 3)
-        Functions.update_top_gui(cave_miner, 2)
+        Functions.update_top_gui(cave_miner)
         return
     end
     if offer_index == 3 then
@@ -136,12 +136,12 @@ end
 
 function Public.spawn_random_cave_market(surface, position)
     local r = 64
-    if surface.count_entities_filtered({name = 'market', area = {{position.x - r, position.y - r}, {position.x + r, position.y + r}}}) > 0 then
+    if surface.count_entities_filtered({ name = 'market', area = { { position.x - r, position.y - r }, { position.x + r, position.y + r } } }) > 0 then
         return
     end
 
     local difficulty_modifier = Functions.get_difficulty_modifier(position)
-    local market = surface.create_entity({name = 'market', position = position, force = 'player'})
+    local market = surface.create_entity({ name = 'market', position = position, force = 'player' })
     local worth = math_floor(difficulty_modifier * 10000) + 256
     local blacklist = LootRaffle.get_tech_blacklist(difficulty_modifier + 0.20)
     blacklist['discharge-defense-remote'] = true
@@ -158,14 +158,14 @@ function Public.spawn_random_cave_market(surface, position)
         end
     end
     for name, value in pairs(items) do
-        local value = value * math_random(20, 36) * 0.01
+        value = value * math_random(20, 36) * 0.01
         local count = 1
         if value < 1 then
             count = math_floor(1 / value)
             value = 1
         end
         value = math_floor(value)
-        market.add_market_item({price = {{'raw-fish', value}}, offer = {type = 'give-item', item = name, count = count}})
+        market.add_market_item({ price = { { name = 'raw-fish', count = value } }, offer = { type = 'give-item', item = name, count = count } })
     end
 
     blacklist['wood'] = true
@@ -173,7 +173,6 @@ function Public.spawn_random_cave_market(surface, position)
     blacklist['fast-loader'] = true
     blacklist['loader'] = true
 
-    local items = {}
     for _ = 1, 2, 1 do
         local item_buys = LootRaffle.roll(worth, 3, blacklist)
         for _, item_stack in pairs(item_buys) do
@@ -181,14 +180,14 @@ function Public.spawn_random_cave_market(surface, position)
         end
     end
     for name, value in pairs(items) do
-        local value = value * math_random(4, 8) * 0.01
+        value = value * math_random(4, 8) * 0.01
         local count = 1
         if value < 1 then
             count = math_floor(1 / value)
             value = 1
         end
         value = math_floor(value)
-        market.add_market_item({price = {{name, count}}, offer = {type = 'give-item', item = 'raw-fish', count = value}})
+        market.add_market_item({ price = { { name = name, count = count } }, offer = { type = 'give-item', item = 'raw-fish', count = value } })
     end
 
     rendering.draw_light(
@@ -198,7 +197,7 @@ function Public.spawn_random_cave_market(surface, position)
             intensity = 0.8,
             minimum_darkness = 0,
             oriented = true,
-            color = {255, 255, 255},
+            color = { 255, 255, 255 },
             target = market,
             surface = surface,
             visible = true,

@@ -1,7 +1,8 @@
 local Event = require 'utils.event'
 local Server = require 'utils.server'
 
-local difficulties = {
+local difficulties =
+{
     [1] = { name = 'Peaceful', str = '25%', value = 0.25, color = { r = 0.00, g = 0.45, b = 0.00 }, print_color = { r = 0.00, g = 0.9, b = 0.00 } },
     [2] = { name = 'Piece of cake', str = '50%', value = 0.5, color = { r = 0.00, g = 0.35, b = 0.00 }, print_color = { r = 0.00, g = 0.7, b = 0.00 } },
     [3] = { name = 'Easy', str = '75%', value = 0.75, color = { r = 0.00, g = 0.25, b = 0.00 }, print_color = { r = 0.00, g = 0.5, b = 0.00 } },
@@ -68,11 +69,12 @@ local function poll_difficulty(player)
     frame.add({ type = 'label', caption = '- - - - - - - - - - - - - - - - - - - -' })
 
     local b = frame.add({ type = 'button', name = 'close', caption = 'Close (' .. math.floor((timeout - tick) / 3600) .. ' minutes left)' })
-    b.style.font_color = { r = 0.66, g = 0.0, b = 0.66 }
-    b.style.font = 'default-semibold'
-    b.style.horizontal_align = 'center'
-    b.style.minimal_width = 96
-    b.style = 'dialog_button'
+    local b_style = b.style
+    b_style.font_color = { r = 0.66, g = 0.0, b = 0.66 }
+    b_style.font = 'default-semibold'
+    b_style.horizontal_align = 'center'
+    b_style.minimal_width = 96
+    b_style = 'dialog_button'
 end
 
 local function set_difficulty()

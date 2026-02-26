@@ -1,125 +1,144 @@
 local Public = {}
 
-Public.treasures = {
-    ['wooden-chest'] = {
+Public.treasures =
+{
+    ['wooden-chest'] =
+    {
         tech_bonus = 0.1,
         amount_multiplier = 1,
         description = 'an old wooden crate.'
     },
-    ['iron-chest'] = {
+    ['iron-chest'] =
+    {
         tech_bonus = 0.15,
         amount_multiplier = 1.5,
         description = 'an antique iron crate.'
     },
-    ['steel-chest'] = {
+    ['steel-chest'] =
+    {
         tech_bonus = 0.2,
         amount_multiplier = 2,
         description = 'a shiny metal box!'
     },
-    ['crash-site-spaceship-wreck-medium-1'] = {
+    ['crash-site-spaceship-wreck-medium-1'] =
+    {
         tech_bonus = 0.25,
         amount_multiplier = 2.5,
         description = 'a spaceship wreck piece!'
     },
-    ['crash-site-spaceship-wreck-medium-2'] = {
+    ['crash-site-spaceship-wreck-medium-2'] =
+    {
         tech_bonus = 0.25,
         amount_multiplier = 2.5,
         description = 'a space station wreck piece, containing some precious scrap!'
     },
-    ['crash-site-spaceship-wreck-medium-3'] = {
+    ['crash-site-spaceship-wreck-medium-3'] =
+    {
         tech_bonus = 0.25,
         amount_multiplier = 2.5,
         description = 'a wreck piece, containing rare scrap!'
     },
-    ['crash-site-spaceship-wreck-big-1'] = {
+    ['crash-site-spaceship-wreck-big-1'] =
+    {
         tech_bonus = 0.30,
         amount_multiplier = 3,
         description = 'a big wreck.'
     },
-    ['crash-site-spaceship-wreck-big-2'] = {
+    ['crash-site-spaceship-wreck-big-2'] =
+    {
         tech_bonus = 0.30,
         amount_multiplier = 3,
         description = 'a station wreck!'
     },
-    ['big-ship-wreck-1'] = {
+    ['big-ship-wreck-1'] =
+    {
         tech_bonus = 0.35,
         amount_multiplier = 3.5,
         description = 'a crashed space ship! The cargo is still intact!'
     },
-    ['big-ship-wreck-2'] = {
+    ['big-ship-wreck-2'] =
+    {
         tech_bonus = 0.35,
         amount_multiplier = 3.5,
         description = 'a crashed space ship!'
     },
-    ['big-ship-wreck-3'] = {
+    ['big-ship-wreck-3'] =
+    {
         tech_bonus = 0.35,
         amount_multiplier = 3.5,
         description = 'a crashed starship!'
     },
-    ['crash-site-chest-1'] = {
+    ['crash-site-chest-1'] =
+    {
         tech_bonus = 0.40,
         amount_multiplier = 4,
         description = 'a drop pod capsule! It is filled with useful loot!'
     },
-    ['crash-site-chest-2'] = {
+    ['crash-site-chest-2'] =
+    {
         tech_bonus = 0.40,
         amount_multiplier = 4,
         description = 'a cargo pod capsule! It is filled with nice things!'
     },
-    ['crash-site-spaceship'] = {
+    ['crash-site-spaceship'] =
+    {
         tech_bonus = 0.5,
         amount_multiplier = 5,
         description = 'a big crashed spaceship! There are treasures inside..'
     }
 }
 
-Public.chat_color = {200, 200, 200}
+Public.chat_color = { 200, 200, 200 }
 
-Public.starting_items = {
+Public.starting_items =
+{
     ['pistol'] = 1,
     ['firearm-magazine'] = 8,
     ['wood'] = 8,
     ['raw-fish'] = 3
 }
 
-Public.reveal_chain_brush_sizes = {
+Public.reveal_chain_brush_sizes =
+{
     ['unit'] = 7,
     ['unit-spawner'] = 15,
     ['turret'] = 9
 }
 
-Public.spawn_market_items = {
-    {price = {{'raw-fish', 1}}, offer = {type = 'give-item', item = 'rail', count = 2}},
-    {price = {{'raw-fish', 1}}, offer = {type = 'give-item', item = 'rail-signal', count = 1}},
-    {price = {{'raw-fish', 1}}, offer = {type = 'give-item', item = 'rail-chain-signal', count = 1}},
-    {price = {{'raw-fish', 8}}, offer = {type = 'give-item', item = 'train-stop'}},
-    {price = {{'raw-fish', 50}}, offer = {type = 'give-item', item = 'locomotive'}},
-    {price = {{'raw-fish', 20}}, offer = {type = 'give-item', item = 'cargo-wagon'}},
-    {price = {{'raw-fish', 3}}, offer = {type = 'give-item', item = 'decider-combinator'}},
-    {price = {{'raw-fish', 3}}, offer = {type = 'give-item', item = 'arithmetic-combinator'}},
-    {price = {{'raw-fish', 2}}, offer = {type = 'give-item', item = 'constant-combinator'}},
-    {price = {{'raw-fish', 4}}, offer = {type = 'give-item', item = 'programmable-speaker'}},
-    {price = {{'raw-fish', 2}}, offer = {type = 'give-item', item = 'small-lamp'}},
-    {price = {{'raw-fish', 1}}, offer = {type = 'give-item', item = 'firearm-magazine', count = 2}},
-    {price = {{'raw-fish', 2}}, offer = {type = 'give-item', item = 'piercing-rounds-magazine'}},
-    {price = {{'raw-fish', 2}}, offer = {type = 'give-item', item = 'grenade'}},
-    {price = {{'raw-fish', 1}}, offer = {type = 'give-item', item = 'land-mine'}},
-    {price = {{'raw-fish', 1}}, offer = {type = 'give-item', item = 'explosives', count = 3}},
-    {price = {{'raw-fish', 1}}, offer = {type = 'give-item', item = 'wood', count = 10}},
-    {price = {{'raw-fish', 1}}, offer = {type = 'give-item', item = 'iron-ore', count = 10}},
-    {price = {{'raw-fish', 1}}, offer = {type = 'give-item', item = 'copper-ore', count = 10}},
-    {price = {{'raw-fish', 1}}, offer = {type = 'give-item', item = 'stone', count = 10}},
-    {price = {{'raw-fish', 1}}, offer = {type = 'give-item', item = 'coal', count = 10}},
-    {price = {{'raw-fish', 1}}, offer = {type = 'give-item', item = 'uranium-ore', count = 5}},
-    {price = {{'wood', 15}}, offer = {type = 'give-item', item = 'raw-fish', count = 1}},
-    {price = {{'iron-ore', 15}}, offer = {type = 'give-item', item = 'raw-fish', count = 1}},
-    {price = {{'copper-ore', 15}}, offer = {type = 'give-item', item = 'raw-fish', count = 1}},
-    {price = {{'stone', 15}}, offer = {type = 'give-item', item = 'raw-fish', count = 1}},
-    {price = {{'coal', 15}}, offer = {type = 'give-item', item = 'raw-fish', count = 1}},
-    {price = {{'uranium-ore', 7}}, offer = {type = 'give-item', item = 'raw-fish', count = 1}}
+Public.spawn_market_items =
+{
+    { price = { { name = 'raw-fish', count = 1 } }, offer = { type = 'give-item', item = 'rail', count = 2 } },
+    { price = { { name = 'raw-fish', count = 1 } }, offer = { type = 'give-item', item = 'rail-signal', count = 1 } },
+    { price = { { name = 'raw-fish', count = 1 } }, offer = { type = 'give-item', item = 'rail-chain-signal', count = 1 } },
+    { price = { { name = 'raw-fish', count = 8 } }, offer = { type = 'give-item', item = 'train-stop' } },
+    { price = { { name = 'raw-fish', count = 50 } }, offer = { type = 'give-item', item = 'locomotive' } },
+    { price = { { name = 'raw-fish', count = 20 } }, offer = { type = 'give-item', item = 'cargo-wagon' } },
+    { price = { { name = 'raw-fish', count = 3 } }, offer = { type = 'give-item', item = 'decider-combinator' } },
+    { price = { { name = 'raw-fish', count = 3 } }, offer = { type = 'give-item', item = 'arithmetic-combinator' } },
+    { price = { { name = 'raw-fish', count = 2 } }, offer = { type = 'give-item', item = 'constant-combinator' } },
+    { price = { { name = 'raw-fish', count = 4 } }, offer = { type = 'give-item', item = 'programmable-speaker' } },
+    { price = { { name = 'raw-fish', count = 2 } }, offer = { type = 'give-item', item = 'small-lamp' } },
+    { price = { { name = 'raw-fish', count = 1 } }, offer = { type = 'give-item', item = 'firearm-magazine', count = 2 } },
+    { price = { { name = 'raw-fish', count = 2 } }, offer = { type = 'give-item', item = 'piercing-rounds-magazine' } },
+    { price = { { name = 'raw-fish', count = 2 } }, offer = { type = 'give-item', item = 'grenade' } },
+    { price = { { name = 'raw-fish', count = 1 } }, offer = { type = 'give-item', item = 'land-mine' } },
+    { price = { { name = 'raw-fish', count = 1 } }, offer = { type = 'give-item', item = 'explosives', count = 3 } },
+    { price = { { name = 'raw-fish', count = 1 } }, offer = { type = 'give-item', item = 'wood', count = 10 } },
+    { price = { { name = 'raw-fish', count = 1 } }, offer = { type = 'give-item', item = 'iron-ore', count = 10 } },
+    { price = { { name = 'raw-fish', count = 1 } }, offer = { type = 'give-item', item = 'copper-ore', count = 10 } },
+    { price = { { name = 'raw-fish', count = 1 } }, offer = { type = 'give-item', item = 'stone', count = 10 } },
+    { price = { { name = 'raw-fish', count = 1 } }, offer = { type = 'give-item', item = 'coal', count = 10 } },
+    { price = { { name = 'raw-fish', count = 1 } }, offer = { type = 'give-item', item = 'uranium-ore', count = 5 } },
+    { price = { { name = 'wood', count = 15 } }, offer = { type = 'give-item', item = 'raw-fish', count = 1 } },
+    { price = { { name = 'iron-ore', count = 15 } }, offer = { type = 'give-item', item = 'raw-fish', count = 1 } },
+    { price = { { name = 'copper-ore', count = 15 } }, offer = { type = 'give-item', item = 'raw-fish', count = 1 } },
+    { price = { { name = 'stone', count = 15 } }, offer = { type = 'give-item', item = 'raw-fish', count = 1 } },
+    { price = { { name = 'coal', count = 15 } }, offer = { type = 'give-item', item = 'raw-fish', count = 1 } },
+    { price = { { name = 'uranium-ore', count = 7 } }, offer = { type = 'give-item', item = 'raw-fish', count = 1 } }
 }
 
-Public.pickaxe_tiers = {
+Public.pickaxe_tiers =
+{
     'Wood',
     'Plastic',
     'Bone',

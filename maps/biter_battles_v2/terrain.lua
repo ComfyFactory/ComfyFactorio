@@ -14,7 +14,6 @@ local GetNoise = require 'utils.math.get_noise'
 local simplex_noise = require 'utils.math.simplex_noise'.d2
 local spawn_circle_size = 39
 local ores = { 'copper-ore', 'iron-ore', 'stone', 'coal' }
-local rocks = { 'big-sand-rock', 'big-sand-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'huge-rock' }
 
 local chunk_tile_vectors = {}
 for x = 0, 31, 1 do
@@ -25,13 +24,14 @@ end
 local size_of_chunk_tile_vectors = #chunk_tile_vectors
 
 local loading_chunk_vectors = {}
-for k, v in pairs(chunk_tile_vectors) do
+for _, v in pairs(chunk_tile_vectors) do
     if v[1] == 0 or v[1] == 31 or v[2] == 0 or v[2] == 31 then
         table_insert(loading_chunk_vectors, v)
     end
 end
 
-local wrecks = {
+local wrecks =
+{
     'crash-site-spaceship-wreck-big-1',
     'crash-site-spaceship-wreck-big-2',
     'crash-site-spaceship-wreck-medium-1',
@@ -43,7 +43,8 @@ local valid_wrecks = {}
 for _, wreck in pairs(wrecks) do
     valid_wrecks[wreck] = true
 end
-local loot_blacklist = {
+local loot_blacklist =
+{
     ['automation-science-pack'] = true,
     ['logistic-science-pack'] = true,
     ['military-science-pack'] = true,
@@ -105,19 +106,20 @@ local function create_mirrored_tile_chain(surface, tile, count, straightness)
 
     local position = { x = tile.position.x, y = tile.position.y }
 
-    local modifiers = {
-        { x = 0,  y = -1 },
+    local modifiers =
+    {
+        { x = 0, y = -1 },
         { x = -1, y = 0 },
-        { x = 1,  y = 0 },
-        { x = 0,  y = 1 },
+        { x = 1, y = 0 },
+        { x = 0, y = 1 },
         { x = -1, y = 1 },
-        { x = 1,  y = -1 },
-        { x = 1,  y = 1 },
+        { x = 1, y = -1 },
+        { x = 1, y = 1 },
         { x = -1, y = -1 }
     }
     modifiers = shuffle(modifiers)
 
-    for a = 1, count, 1 do
+    for _ = 1, count, 1 do
         local tile_placed = false
 
         if math_random(0, 100) > straightness then
@@ -146,7 +148,7 @@ local function get_replacement_tile(surface, position)
     for i = 1, 128, 1 do
         local vectors = { { 0, i }, { 0, i * -1 }, { i, 0 }, { i * -1, 0 } }
         table.shuffle_table(vectors)
-        for k, v in pairs(vectors) do
+        for _, v in pairs(vectors) do
             local tile = surface.get_tile(position.x + v[1], position.y + v[2])
             if not tile.collides_with('resource') then
                 if tile.name ~= 'stone-path' then
@@ -175,7 +177,6 @@ local function draw_noise_ore_patch(position, name, surface, radius, richness)
         return
     end
     local seed = game.surfaces['bb_source'].map_gen_settings.seed
-    local noise_seed_add = 25000
     local richness_part = richness / radius
     for y = radius * -3, radius * 3, 1 do
         for x = radius * -3, radius * 3, 1 do
@@ -369,9 +370,9 @@ local function generate_extra_worm_turrets(surface, left_top)
             worm.active = false
 
             -- add some scrap
-            for c = 1, math_random(0, 4), 1 do
+            for _ = 1, math_random(0, 4), 1 do
                 local vector = scrap_vectors[math_random(1, size_of_scrap_vectors)]
-                local position = { worm.position.x + vector[1], worm.position.y + vector[2] }
+                position = { worm.position.x + vector[1], worm.position.y + vector[2] }
                 local name = wrecks[math_random(1, size_of_wrecks)]
                 position = surface.find_non_colliding_position(name, position, 16, 1)
                 if position then
@@ -469,7 +470,7 @@ local function mixed_ore(surface, left_top_x, left_top_y)
         for y = 0, 31, 1 do
             local pos = { x = left_top_x + x, y = left_top_y + y }
             if surface.can_place_entity({ name = 'iron-ore', position = pos }) then
-                local noise = GetNoise('bb_ore', pos, seed)
+                noise = GetNoise('bb_ore', pos, seed)
                 if noise > 0.72 then
                     local amount = math_random(800, 1000) + math_sqrt(pos.x ^ 2 + pos.y ^ 2) * 3
                     local i = math_floor(noise * 25 + math_abs(pos.x) * 0.05) % 4 + 1
@@ -604,15 +605,15 @@ end
 function Public.generate_additional_spawn_ore(surface)
     local r = 130
     local area = { { r * -1, r * -1 }, { r, 0 } }
-    local ores = {}
-    ores['iron-ore'] = surface.count_entities_filtered({ name = 'iron-ore', area = area })
-    ores['copper-ore'] = surface.count_entities_filtered({ name = 'copper-ore', area = area })
-    ores['coal'] = surface.count_entities_filtered({ name = 'coal', area = area })
-    ores['stone'] = surface.count_entities_filtered({ name = 'stone', area = area })
-    for ore, ore_count in pairs(ores) do
+    local gen_ores = {}
+    gen_ores['iron-ore'] = surface.count_entities_filtered({ name = 'iron-ore', area = area })
+    gen_ores['copper-ore'] = surface.count_entities_filtered({ name = 'copper-ore', area = area })
+    gen_ores['coal'] = surface.count_entities_filtered({ name = 'coal', area = area })
+    gen_ores['stone'] = surface.count_entities_filtered({ name = 'stone', area = area })
+    for ore, ore_count in pairs(gen_ores) do
         if ore_count < 1000 or ore_count == nil then
             local pos = {}
-            for a = 1, 32, 1 do
+            for _ = 1, 32, 1 do
                 pos = { x = -96 + math_random(0, 192), y = -20 - math_random(0, 96) }
                 if surface.can_place_entity({ name = 'coal', position = pos, amount = 1 }) then
                     break
@@ -661,7 +662,7 @@ function Public.generate_silo(surface)
     silo.minable = false
     silo.active = false
 
-    for i = 1, 32, 1 do
+    for _ = 1, 32, 1 do
         create_mirrored_tile_chain(surface, { name = 'stone-path', position = silo.position }, 32, 10)
     end
 
@@ -731,10 +732,10 @@ function Public.minable_wrecks(event)
 
     local loot_worth = math_floor(math_abs(entity.position.x * 0.02)) + math_random(16, 32)
     local blacklist = LootRaffle.get_tech_blacklist(math_abs(entity.position.x * 0.0001) + 0.10)
-    for k, v in pairs(blacklist) do
+    for k, _ in pairs(blacklist) do
         print(k)
     end
-    for k, v in pairs(loot_blacklist) do
+    for k, _ in pairs(loot_blacklist) do
         blacklist[k] = true
     end
     local item_stacks = LootRaffle.roll(loot_worth, math_random(1, 3), blacklist)
@@ -776,7 +777,8 @@ function Public.restrict_landfill(surface, inventory, tiles)
 end
 
 --Construction Robot Restriction
-local robot_build_restriction = {
+local robot_build_restriction =
+{
     ['north'] = function (y)
         if y >= -10 then
             return true

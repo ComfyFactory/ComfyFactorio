@@ -1,8 +1,13 @@
 --luacheck: ignore
+if script.active_mods['space-age'] then
+    error('This map is incompatible with the Space Age mod. Disable Space Age to run this map.', 2)
+end
+
 require 'modules.no_turrets'
 require 'modules.no_acid_puddles'
-local CoreGui = require 'utils.gui'
 require 'maps.biter_hatchery.share_chat'
+local CoreGui = require 'utils.gui'
+local Event = require 'utils.event'
 local Map_score = require 'utils.gui.map_score'
 local unit_raffle = require 'maps.biter_hatchery.raffle_tables'
 local Terrain = require 'maps.biter_hatchery.terrain'
@@ -24,7 +29,8 @@ Global.register(
 )
 
 local m = 2
-local health_boost_food_values = {
+local health_boost_food_values =
+{
     ['automation-science-pack'] = 0.000001 * m,
     ['logistic-science-pack'] = 0.000003 * m,
     ['military-science-pack'] = 0.00000822 * m,
@@ -203,7 +209,8 @@ local function send_unit_groups()
                 {
                     type = defines.command.compound,
                     structure_type = defines.compound_command.return_last,
-                    commands = {
+                    commands =
+                    {
                         {
                             type = defines.command.attack_area,
                             destination = { x = force.target.position.x, y = force.target.position.y },
@@ -223,7 +230,8 @@ local function send_unit_groups()
     end
 end
 
-local border_teleport = {
+local border_teleport =
+{
     ['east'] = 1,
     ['west'] = -1
 }
@@ -340,7 +348,8 @@ local function on_player_joined_game(event)
 end
 
 --Construction Robot Restriction
-local robot_build_restriction = {
+local robot_build_restriction =
+{
     ['east'] = function (x)
         if x < 0 then
             return true
@@ -407,7 +416,7 @@ local function on_player_used_spider_remote(event)
     vehicle.autopilot_destination = nil
 end
 
-local function game_in_progress(hatchery)
+local function game_in_progress()
     local game_tick = game.tick
     if game_tick % 30 ~= 0 then
         return
@@ -440,7 +449,8 @@ local function game_in_progress(hatchery)
     nom()
 end
 
-local no_mirror_states = {
+local no_mirror_states =
+{
     ['init'] = true,
     ['reset_nauvis'] = true,
     ['prepare_east'] = true,
@@ -471,7 +481,8 @@ local function on_chunk_generated(event)
     Terrain.combat_area(event)
 end
 
-local gamestates = {
+local gamestates =
+{
     ['init'] = Team.init,
     ['reset_nauvis'] = Terrain.reset_nauvis,
     ['prepare_east'] = Terrain.prepare_east,
@@ -503,7 +514,8 @@ local function on_init()
     game.map_settings.enemy_evolution.time_factor = 0
     game.map_settings.enemy_expansion.enabled = false
     game.map_settings.pollution.enabled = false
-    storage.map_forces = {
+    storage.map_forces =
+    {
         ['west'] = {},
         ['east'] = {}
     }
@@ -534,10 +546,9 @@ local function on_init()
     Team.reset_forces()
 end
 
-local Event = require 'utils.event'
 Event.on_init(on_init)
 Event.add(defines.events.on_tick, on_tick)
-Event.add(defines.events.on_player_used_spider_remote, on_player_used_spider_remote)
+Event.add(defines.events.on_player_used_spidertron_remote, on_player_used_spider_remote)
 Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)

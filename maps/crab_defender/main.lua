@@ -1,3 +1,7 @@
+if script.active_mods['space-age'] then
+    error('This map is incompatible with the Space Age mod. Disable Space Age to run this map.', 2)
+end
+
 require 'maps.crab_defender.terrain'
 require 'maps.crab_defender.market'
 require 'maps.crab_defender.commands'

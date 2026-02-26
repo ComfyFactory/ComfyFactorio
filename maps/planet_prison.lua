@@ -1,6 +1,10 @@
 -- map by Cogito
 -- heavily modified by Gerkiz
 
+if script.active_mods['space-age'] then
+    error('This map is incompatible with the Space Age mod. Disable Space Age to run this map.', 2)
+end
+
 local Global = require 'utils.global'
 local Session = require 'utils.datastore.session_data'
 local Event = require 'utils.event'

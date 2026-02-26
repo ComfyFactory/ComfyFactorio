@@ -8,14 +8,17 @@ local Discord = require 'utils.discord_handler'
 
 local module_name = '[Undo actions] '
 local undo_polls = {}
+local undo_inventories = {}
 local Public = {}
 
 Global.register(
     {
-        undo_polls = undo_polls
+        undo_polls = undo_polls,
+        undo_inventories = undo_inventories
     },
     function (tbl)
         undo_polls = tbl.undo_polls
+        undo_inventories = tbl.undo_inventories
     end
 )
 
@@ -93,6 +96,39 @@ local converted_entities =
     ['straight-rail'] = 'rail',
     ['curved-rail'] = 'rail',
 }
+
+local function on_pre_player_mined_item(event)
+    local entity = event.entity
+    if not entity or not entity.valid then
+        return
+    end
+    local player_index = event.player_index
+    undo_inventories[player_index] = undo_inventories[player_index] or {}
+    if not entity.get_output_inventory() then return end
+
+    local max_inv = entity.get_max_inventory_index() or 0
+    for inv_id = 1, max_inv do
+        local inv = entity.get_inventory(inv_id)
+        if inv and inv.valid then
+            local stacks = {}
+            for slot = 1, #inv do
+                local stack = inv[slot]
+                if stack.valid_for_read then
+                    stacks[#stacks + 1] = stack.export_stack()
+                end
+            end
+            if #stacks > 0 then
+                table.insert(undo_inventories[player_index], {
+                    entity_name = entity.name,
+                    position = { x = entity.position.x, y = entity.position.y },
+                    surface_index = entity.surface.index,
+                    inventory_index = inv_id,
+                    stacks = stacks,
+                })
+            end
+        end
+    end
+end
 
 local function check_undo_redo_stack(player)
     if not type(player) == 'userdata' then
@@ -183,7 +219,51 @@ local function check_undo_redo_stack(player)
             player.undo_redo_stack.remove_undo_item(player.undo_redo_stack.get_undo_item_count())
         end
     end
+
+
+    local player_index = player.index
+    local saved_inventories = undo_inventories[player_index]
+    if saved_inventories and #saved_inventories > 0 then
+        for j = 1, #saved_inventories do
+            local entry = saved_inventories[j]
+            local surface = game.get_surface(entry.surface_index)
+            if surface and surface.valid then
+                local entity = surface.find_entity(entry.entity_name, entry.position)
+                if entity and entity.valid then
+                    local inv = entity.get_inventory(entry.inventory_index)
+                    if inv and inv.valid and entry.stacks and #entry.stacks > 0 then
+                        for k = 1, #entry.stacks do
+                            local stack_data = entry.stacks[k]
+                            local player_has = player.get_item_count(stack_data.name)
+                            if player_has > 0 then
+                                local to_restore = math.min(stack_data.count or 0, player_has)
+                                if to_restore > 0 then
+                                    local insert_spec = {}
+                                    for key, val in pairs(stack_data) do
+                                        insert_spec[key] = val
+                                    end
+                                    insert_spec.count = to_restore
+                                    local inserted = inv.insert(insert_spec)
+                                    if inserted > 0 then
+                                        local remove_spec = {}
+                                        for key, val in pairs(stack_data) do
+                                            remove_spec[key] = val
+                                        end
+                                        remove_spec.count = inserted
+                                        player.remove_item(remove_spec)
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        undo_inventories[player_index] = nil
+    end
 end
+
+Event.add(defines.events.on_pre_player_mined_item, on_pre_player_mined_item)
 
 Event.add(CustomEvents.events.on_poll_complete, function (event)
     if not event.winning_answer or not event.winning_answer.text then

@@ -28,7 +28,8 @@ function Public.initial_setup()
         p.set_allows_action(defines.input_action[action_name], false)
     end
 
-    local defs = {
+    local defs =
+    {
         defines.input_action.activate_copy,
         defines.input_action.activate_cut,
         defines.input_action.activate_paste,
@@ -62,9 +63,10 @@ function Public.initial_setup()
     storage.gui_refresh_delay = 0
     storage.game_lobby_active = true
     storage.bb_debug = false
-    storage.bb_settings = {
+    storage.bb_settings =
+    {
         --TEAM SETTINGS--
-        ['team_balancing'] = true,   --Should players only be able to join a team that has less or equal members than the opposing team?
+        ['team_balancing'] = true, --Should players only be able to join a team that has less or equal members than the opposing team?
         ['only_admins_vote'] = false --Are only admins able to vote on the global difficulty?
     }
 
@@ -79,17 +81,20 @@ function Public.initial_setup()
     end
 
     --Playground Surface
-    local map_gen_settings = {
+    map_gen_settings =
+    {
         ['water'] = 0,
         ['starting_area'] = 1,
         ['cliff_settings'] = { cliff_elevation_interval = 0, cliff_elevation_0 = 0 },
         ['default_enable_all_autoplace_controls'] = false,
-        ['autoplace_settings'] = {
+        ['autoplace_settings'] =
+        {
             ['entity'] = { treat_missing_as_default = false },
             ['tile'] = { treat_missing_as_default = false },
             ['decorative'] = { treat_missing_as_default = false }
         },
-        autoplace_controls = {
+        autoplace_controls =
+        {
             ['coal'] = { frequency = 0, size = 0, richness = 0 },
             ['stone'] = { frequency = 0, size = 0, richness = 0 },
             ['copper-ore'] = { frequency = 0, size = 0, richness = 0 },
@@ -100,7 +105,7 @@ function Public.initial_setup()
             ['enemy-base'] = { frequency = 0, size = 0, richness = 0 }
         }
     }
-    local surface = game.create_surface('biter_battles', map_gen_settings)
+    game.create_surface('biter_battles', map_gen_settings)
 end
 
 --Terrain Source Surface
@@ -111,7 +116,8 @@ function Public.source_surface()
     map_gen_settings.starting_area = 2.5
     map_gen_settings.terrain_segmentation = math.random(30, 40) * 0.1
     map_gen_settings.cliff_settings = { cliff_elevation_interval = 0, cliff_elevation_0 = 0 }
-    map_gen_settings.autoplace_controls = {
+    map_gen_settings.autoplace_controls =
+    {
         ['coal'] = { frequency = 2.5, size = 0.65, richness = 0.5 },
         ['stone'] = { frequency = 2.5, size = 0.65, richness = 0.5 },
         ['copper-ore'] = { frequency = 3.5, size = 0.65, richness = 0.5 },
@@ -217,28 +223,28 @@ function Public.forces()
     f.set_friend('south_biters', true)
     f.share_chart = true
 
-    local f = game.forces['south']
+    f = game.forces['south']
     f.set_spawn_position({ 0, 44 }, surface)
     f.set_cease_fire('player', true)
     f.set_friend('spectator', true)
     f.set_friend('north_biters', true)
     f.share_chart = true
 
-    local f = game.forces['north_biters']
+    f = game.forces['north_biters']
     f.set_friend('south_biters', true)
     f.set_friend('south', true)
     f.set_friend('player', true)
     f.set_friend('spectator', true)
     f.share_chart = false
 
-    local f = game.forces['south_biters']
+    f = game.forces['south_biters']
     f.set_friend('north_biters', true)
     f.set_friend('north', true)
     f.set_friend('player', true)
     f.set_friend('spectator', true)
     f.share_chart = false
 
-    local f = game.forces['spectator']
+    f = game.forces['spectator']
     f.set_spawn_position({ 0, 0 }, surface)
     f.technologies['toolbelt'].researched = true
     f.set_cease_fire('north_biters', true)
@@ -248,7 +254,7 @@ function Public.forces()
     f.set_cease_fire('player', true)
     f.share_chart = true
 
-    local f = game.forces['player']
+    f = game.forces['player']
     f.set_spawn_position({ 0, 0 }, surface)
     f.set_cease_fire('spectator', true)
     f.set_cease_fire('north_biters', true)
@@ -262,7 +268,6 @@ function Public.forces()
         game.forces[force.name].technologies['artillery-shell-range-1'].enabled = false
         game.forces[force.name].technologies['artillery-shell-speed-1'].enabled = false
         game.forces[force.name].technologies['atomic-bomb'].enabled = false
-        game.forces[force.name].research_queue_enabled = true
         storage.target_entities[force.index] = {}
         storage.spy_fish_timeout[force.name] = 0
         storage.active_biters[force.name] = {}

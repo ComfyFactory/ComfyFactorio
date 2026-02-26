@@ -10,6 +10,10 @@ Cell Values:
 
 ]] --
 
+if script.active_mods['space-age'] then
+    error('This map is incompatible with the Space Age mod. Disable Space Age to run this map.', 2)
+end
+
 require 'modules.satellite_score'
 
 local Functions = require 'maps.minesweeper.functions'
@@ -98,7 +102,7 @@ local size_of_solving_vector_tables = #solving_vector_tables
 
 local function update_rendering(cell, position)
     local surface = game.surfaces[1]
-    local tile = surface.get_tile(position)
+    local tile = surface.get_tile(position.x, position.y)
     local tile_values = rendering_tile_values[tile.name]
     if not tile_values then
         tile_values = { offset = { 0.6, -0.2 }, zoom = 3, font = 'scenario-message-dialog' }
@@ -210,7 +214,7 @@ local function visit_cell(position)
             cell[1] = -1
             for _, vector in pairs(cell_update_vectors) do
                 local p = { x = position.x + vector[1], y = position.y + vector[2] }
-                local key = Functions.position_to_string(p)
+                key = Functions.position_to_string(p)
                 if minesweeper.cells[key] and minesweeper.cells[key][1] < 10 then
                     table.insert(minesweeper.visit_queue, { x = p.x, y = p.y })
                 end
@@ -229,7 +233,7 @@ local function visit_cell(position)
     if not cell then
         minesweeper.cells[key] = {}
     end
-    local cell = minesweeper.cells[key]
+    cell = minesweeper.cells[key]
 
     cell[1] = get_adjacent_mine_count(position)
 
@@ -309,10 +313,10 @@ local function solve_attempt(position)
             local marked_positions = are_mines_marked_around_target(p)
             if marked_positions then
                 solved = true
-                for _, p in pairs(marked_positions) do
-                    minesweeper.cells[Functions.position_to_string(p)][1] = -1
-                    visit_cell(p)
-                    Functions.disarm_reward(p)
+                for _, pp in pairs(marked_positions) do
+                    minesweeper.cells[Functions.position_to_string(pp)][1] = -1
+                    visit_cell(pp)
+                    Functions.disarm_reward(pp)
                 end
             end
         end
@@ -364,7 +368,7 @@ local function mark_mine(entity, player)
     --Trigger all adjacent mines when missplacing a disarming furnace.
     for _, vector in pairs(cell_update_vectors) do
         local p = { x = position.x + vector[1], y = position.y + vector[2] }
-        local key = Functions.position_to_string(p)
+        key = Functions.position_to_string(p)
         if minesweeper.cells[key] and minesweeper.cells[key][1] == 10 then
             Functions.kaboom(p)
             score_change = score_change - 8
@@ -385,15 +389,15 @@ local function add_mines_to_chunk(left_top, distance_to_center)
     end
 
     local shuffle_index = {}
-    for i = 1, size_of_chunk_divide_vectors, 1 do
-        table.insert(shuffle_index, i)
+    for iv = 1, size_of_chunk_divide_vectors, 1 do
+        table.insert(shuffle_index, iv)
     end
     table.shuffle_table(shuffle_index)
 
     -- place shuffled mines
     if distance_to_center < 128 then
-        for i = 1, mine_count, 1 do
-            local vector = chunk_divide_vectors[shuffle_index[i]]
+        for iv = 1, mine_count, 1 do
+            local vector = chunk_divide_vectors[shuffle_index[iv]]
             local position = { x = left_top.x + vector[1], y = left_top.y + vector[2] }
             if not Functions.is_spawn(position) then
                 local key = Functions.position_to_string(position)
@@ -402,8 +406,8 @@ local function add_mines_to_chunk(left_top, distance_to_center)
             end
         end
     else
-        for i = 1, mine_count, 1 do
-            local vector = chunk_divide_vectors[shuffle_index[i]]
+        for iv = 1, mine_count, 1 do
+            local vector = chunk_divide_vectors[shuffle_index[iv]]
             local position = { x = left_top.x + vector[1], y = left_top.y + vector[2] }
             local key = Functions.position_to_string(position)
             minesweeper.cells[key] = { 10 }
@@ -528,7 +532,7 @@ local function on_robot_built_entity(event)
     deny_building(event)
 end
 
-local function update_built_tiles(surface, tiles)
+local function update_built_tiles(tiles)
     for _, placed_tile in pairs(tiles) do
         local cell_position = Functions.position_to_cell_position(placed_tile.position)
         local key = Functions.position_to_string(cell_position)
@@ -536,7 +540,7 @@ local function update_built_tiles(surface, tiles)
         if not cell and Functions.is_minefield_tile(placed_tile.position) then
             minesweeper.cells[key] = { 9 }
         end
-        local cell = minesweeper.cells[key]
+        cell = minesweeper.cells[key]
         if cell then
             update_rendering(cell, cell_position)
         end
@@ -544,19 +548,19 @@ local function update_built_tiles(surface, tiles)
 end
 
 local function on_player_built_tile(event)
-    update_built_tiles(game.surfaces[event.surface_index], event.tiles)
+    update_built_tiles(event.tiles)
 end
 
 local function on_robot_built_tile(event)
-    update_built_tiles(event.robot.surface, event.tiles)
+    update_built_tiles(event.tiles)
 end
 
 local function on_player_mined_tile(event)
-    update_built_tiles(game.surfaces[event.surface_index], event.tiles)
+    update_built_tiles(event.tiles)
 end
 
 local function on_robot_mined_tile(event)
-    update_built_tiles(event.robot.surface, event.tiles)
+    update_built_tiles(event.tiles)
 end
 
 local function on_player_created(event)

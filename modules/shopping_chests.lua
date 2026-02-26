@@ -1,6 +1,7 @@
 local Public = {}
 
-local shop_list = {
+local shop_list =
+{
     ['coal'] = 1,
     ['copper-ore'] = 1,
     ['crude-oil-barrel'] = 7.5,
@@ -14,7 +15,7 @@ local shop_list = {
 }
 
 function Public.create_shopping_chest(surface, position, destructible)
-    local entity = surface.create_entity({ name = 'logistic-chest-requester', position = position, force = 'shopping_chests' })
+    local entity = surface.create_entity({ name = 'requester-chest', position = position, force = 'shopping_chests' })
     entity.minable = false
     if not destructible then
         entity.destructible = false
@@ -22,7 +23,7 @@ function Public.create_shopping_chest(surface, position, destructible)
 end
 
 function Public.create_dump_chest(surface, position, destructible)
-    local entity = surface.create_entity({ name = 'logistic-chest-passive-provider', position = position, force = 'shopping_chests' })
+    local entity = surface.create_entity({ name = 'passive-provider-chest', position = position, force = 'shopping_chests' })
     entity.minable = false
     if not destructible then
         entity.destructible = false
@@ -141,13 +142,13 @@ local function on_gui_opened(event)
         return
     end
 
-    if event.entity.name == 'logistic-chest-passive-provider' then
+    if event.entity.name == 'passive-provider-chest' then
         storage.dump_chests[#storage.dump_chests + 1] = event.entity
         storage.registerd_shopping_chests[index] = true
         event.entity.surface.create_entity({ name = 'flying-text', position = event.entity.position, text = 'Chest registered, shop active!', color = { r = 200, g = 160, b = 30 } })
         return
     end
-    if event.entity.name == 'logistic-chest-requester' then
+    if event.entity.name == 'requester-chest' then
         storage.shopping_chests[#storage.shopping_chests + 1] = event.entity
         storage.registerd_shopping_chests[index] = true
         event.entity.surface.create_entity({ name = 'flying-text', position = event.entity.position, text = 'Chest registered, shop active!', color = { r = 200, g = 160, b = 30 } })

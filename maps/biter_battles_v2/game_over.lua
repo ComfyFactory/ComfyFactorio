@@ -16,7 +16,8 @@ local role_to_mention = Discord.role_mentions.biter_battles
 
 local Public = {}
 
-local gui_values = {
+local gui_values =
+{
     ['north'] = { c1 = 'Team North', color1 = { r = 0.55, g = 0.55, b = 0.99 } },
     ['south'] = { c1 = 'Team South', color1 = { r = 0.99, g = 0.33, b = 0.33 } }
 }
@@ -147,24 +148,24 @@ local function show_mvps(player)
     local t = frame.add({ type = 'table', column_count = 2 })
     local mvp = get_mvps('north')
     if mvp then
-        local l = t.add({ type = 'label', caption = 'Defender >> ' })
+        l = t.add({ type = 'label', caption = 'Defender >> ' })
         l.style.font = 'default-listbox'
         l.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
-        local l = t.add({ type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score })
+        l = t.add({ type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score })
         l.style.font = 'default-bold'
         l.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
-        local l = t.add({ type = 'label', caption = 'Builder >> ' })
+        l = t.add({ type = 'label', caption = 'Builder >> ' })
         l.style.font = 'default-listbox'
         l.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
-        local l = t.add({ type = 'label', caption = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things' })
+        l = t.add({ type = 'label', caption = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things' })
         l.style.font = 'default-bold'
         l.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
-        local l = t.add({ type = 'label', caption = 'Deaths >> ' })
+        l = t.add({ type = 'label', caption = 'Deaths >> ' })
         l.style.font = 'default-listbox'
         l.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
-        local l = t.add({ type = 'label', caption = mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times' })
+        l = t.add({ type = 'label', caption = mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times' })
         l.style.font = 'default-bold'
         l.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
@@ -185,31 +186,31 @@ local function show_mvps(player)
         end
     end
 
-    local l = frame.add({ type = 'label', caption = 'MVPs - South:' })
+    l = frame.add({ type = 'label', caption = 'MVPs - South:' })
     l.style.font = 'default-listbox'
     l.style.font_color = { r = 0.99, g = 0.33, b = 0.33 }
 
-    local t = frame.add({ type = 'table', column_count = 2 })
-    local mvp = get_mvps('south')
+    t = frame.add({ type = 'table', column_count = 2 })
+    mvp = get_mvps('south')
     if mvp then
-        local l = t.add({ type = 'label', caption = 'Defender >> ' })
+        l = t.add({ type = 'label', caption = 'Defender >> ' })
         l.style.font = 'default-listbox'
         l.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
-        local l = t.add({ type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score })
+        l = t.add({ type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score })
         l.style.font = 'default-bold'
         l.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
-        local l = t.add({ type = 'label', caption = 'Builder >> ' })
+        l = t.add({ type = 'label', caption = 'Builder >> ' })
         l.style.font = 'default-listbox'
         l.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
-        local l = t.add({ type = 'label', caption = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things' })
+        l = t.add({ type = 'label', caption = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things' })
         l.style.font = 'default-bold'
         l.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
-        local l = t.add({ type = 'label', caption = 'Deaths >> ' })
+        l = t.add({ type = 'label', caption = 'Deaths >> ' })
         l.style.font = 'default-listbox'
         l.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
-        local l = t.add({ type = 'label', caption = mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times' })
+        l = t.add({ type = 'label', caption = mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times' })
         l.style.font = 'default-bold'
         l.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
@@ -231,7 +232,8 @@ local function show_mvps(player)
     end
 end
 
-local enemy_team_of = {
+local enemy_team_of =
+{
     ['north'] = 'south',
     ['south'] = 'north'
 }
@@ -331,7 +333,6 @@ local function biter_killed_the_silo(event)
     if cause and cause.valid and cause.type == 'unit' then
         return true
     end
-    return
 end
 
 function Public.silo_death(event)

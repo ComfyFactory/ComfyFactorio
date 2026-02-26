@@ -47,8 +47,6 @@ end
 --![[Guide a Train through rough terrain, while defending it from the biters]]--
 -- require 'utils.templates.Mountain_Fortress_v3_BP.map_loader'
 --require 'maps.mountain_fortress_v3.main'
---require 'maps.mountain_fortress_v2.main'
---require 'maps.mountain_fortress'
 
 --![[Launch rockets in increasingly harder getting worlds.]]--
 --require 'maps.journey.main'
@@ -62,8 +60,6 @@ end
 --![[Defend the market against waves of biters]]--
 --require 'maps.fish_defender_v2.main'
 --require 'maps.crab_defender.main'
---require 'maps.fish_defender_v1.fish_defender'
---require 'maps.fish_defender.main'
 
 --![[Adventure as a crew of pirates]]--
 --require 'maps.pirates.main'
@@ -81,15 +77,12 @@ end
 --![[Minesweeper?]]--
 --require 'maps.minesweeper.main'
 
---![[Tower defense system]]--
---require 'maps.tower_defense.main'
+--![[A map where you build towns and fight against other towns and the biters.]]--
+--require 'maps.scrap_towny_ffa.main'
 
 --![[North VS South Survival PVP, feed the opposing team's biters with science flasks. Disable Autostash, Group and Poll modules.]]--
 --require 'maps.biter_battles_v2.main'
 --require 'maps.biter_battles.biter_battles'
-
---![[Randomly generating Islands that have to be beaten in levels to gain credits]]--
---require 'maps.island_troopers.main'
 
 --![[Infinitely expanding mazes]]--
 --require 'maps.stone_maze.main'
@@ -106,8 +99,6 @@ end
 
 --![[Flee from the collapsing map with portable base inside train]]--
 --require 'maps.railway_troopers_v2.main'
-
---![[Another simliar version without collapsing terrain]]--
 --require 'maps.railway_troopers.main'
 
 --![[Territorial Control - reveal the map as you walk through the mist]]--
@@ -129,6 +120,9 @@ end
 
 --![[Defeat the biters and unlock new areas]]--
 --require 'maps.spiral_troopers'
+
+--![[A map where you cross a river and fight against the biters.]]--
+--require 'maps.crossing'
 
 --![[Test map spawns all entities for testing]]--
 --require 'maps.test_map.main'
