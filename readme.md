@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://getcomfy.eu/">
-    <img alt="logo" src="https://cdn.discordapp.com/icons/433039858794233858/a_ca6daa1189d44955478d0e0ba6e2effb.gif?size=128" width="120">
+    <img alt="logo" src="https://cdn.discordapp.com/avatars/493392617258876948/a_a9c32e5038113ded9b49d47406eecc5a.gif?size=128" width="120">
   </a>
   <br>
   <a href="https://github.com/ComfyFactory/ComfyFactorio/tags">
