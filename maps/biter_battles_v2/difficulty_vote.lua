@@ -69,12 +69,12 @@ local function poll_difficulty(player)
     frame.add({ type = 'label', caption = '- - - - - - - - - - - - - - - - - - - -' })
 
     local b = frame.add({ type = 'button', name = 'close', caption = 'Close (' .. math.floor((timeout - tick) / 3600) .. ' minutes left)' })
+    b.style.type = 'dialog_button'
     local b_style = b.style
     b_style.font_color = { r = 0.66, g = 0.0, b = 0.66 }
     b_style.font = 'default-semibold'
     b_style.horizontal_align = 'center'
     b_style.minimal_width = 96
-    b_style = 'dialog_button'
 end
 
 local function set_difficulty()
