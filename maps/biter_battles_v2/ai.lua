@@ -24,7 +24,8 @@ local size_of_vectors = #attack_vectors.north
 local unit_type_raffle = { 'biter', 'biter', 'biter', 'mixed', 'mixed', 'spitter' }
 local size_of_unit_type_raffle = #unit_type_raffle
 
-local threat_values = {
+local threat_values =
+{
     ['small-spitter'] = 1.5,
     ['small-biter'] = 1.5,
     ['medium-spitter'] = 4.5,
@@ -164,7 +165,8 @@ Public.send_near_biters_to_silo = function ()
 
     game.surfaces['biter_battles'].set_multi_command(
         {
-            command = {
+            command =
+            {
                 type = defines.command.attack,
                 target = storage.rocket_silo['north'],
                 distraction = defines.distraction.none
@@ -177,7 +179,8 @@ Public.send_near_biters_to_silo = function ()
 
     game.surfaces['biter_battles'].set_multi_command(
         {
-            command = {
+            command =
+            {
                 type = defines.command.attack,
                 target = storage.rocket_silo['south'],
                 distraction = defines.distraction.none
@@ -302,7 +305,8 @@ local function send_group(unit_group, force_name, side_target)
     position = unit_group.surface.find_non_colliding_position('stone-furnace', position, 96, 1)
     if position then
         if math.abs(position.y) < math.abs(unit_group.position.y) then
-            commands[#commands + 1] = {
+            commands[#commands + 1] =
+            {
                 type = defines.command.attack_area,
                 destination = position,
                 radius = 16,
@@ -311,14 +315,16 @@ local function send_group(unit_group, force_name, side_target)
         end
     end
 
-    commands[#commands + 1] = {
+    commands[#commands + 1] =
+    {
         type = defines.command.attack_area,
         destination = target,
         radius = 32,
         distraction = defines.distraction.by_enemy
     }
 
-    commands[#commands + 1] = {
+    commands[#commands + 1] =
+    {
         type = defines.command.attack,
         target = storage.rocket_silo[force_name],
         distraction = defines.distraction.by_enemy
@@ -372,7 +378,7 @@ local function get_nearby_biter_nest(target_entity)
     end
     local best_distance = (center.x - spawner.position.x) ^ 2 + (center.y - spawner.position.y) ^ 2
 
-    for i = 1, 16, 1 do
+    for _ = 1, 16, 1 do
         local new_spawner = get_random_spawner(biter_force_name)
         local new_distance = (center.x - new_spawner.position.x) ^ 2 + (center.y - new_spawner.position.y) ^ 2
         if new_distance < best_distance then

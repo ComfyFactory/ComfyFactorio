@@ -1,5 +1,10 @@
 --luacheck: ignore
 --optionals
+
+if script.active_mods['space-age'] then
+    error('This map is incompatible with the Space Age mod. Disable Space Age to run this map.', 2)
+end
+
 require 'modules.satellite_score'
 require 'modules.dangerous_goods'
 require 'modules.spawners_contain_biters'
@@ -18,11 +23,11 @@ require 'utils.table'
 
 require 'maps.stone_maze.global_functions'
 
-local event = require 'utils.event'
-local table_insert = table.insert
+local Event = require 'utils.event'
 local math_random = math.random
 
-local disabled_for_deconstruction = {
+local disabled_for_deconstruction =
+{
     ['fish'] = true,
     ['huge-rock'] = true,
     ['big-rock'] = true,
@@ -40,7 +45,8 @@ grid_size = 24
 --manual_mining_speed_modifier = 1
 main_ground_tile = 'dirt-3'
 rock_raffle = { 'huge-rock', 'big-rock', 'big-rock', 'big-rock' }
-tree_raffle = {
+tree_raffle =
+{
     'tree-01',
     'tree-02',
     'tree-03',
@@ -63,7 +69,8 @@ tree_raffle = {
     'dead-grey-trunk'
 }
 
-local visited_tile_translation = {
+local visited_tile_translation =
+{
     --["dirt-7"] = "grass-2",
     ['dirt-3'] = 'dirt-7',
     ['dirt-5'] = 'dirt-7'
@@ -107,7 +114,7 @@ local function increase_depth()
     if evo > 1 then
         evo = 1
     end
-    game.forces.enemy.evolution_factor = evo
+    game.forces.enemy.set_evolution_factor(evo, game.surfaces.nauvis)
 end
 
 local function coord_to_string(pos)
@@ -122,8 +129,10 @@ local function coord_to_string(pos)
     return tostring(x .. '_' .. y)
 end
 
-local cells = {
-    ['2x2'] = {
+local cells =
+{
+    ['2x2'] =
+    {
         size_x = 2,
         size_y = 2,
         ['0_-1'] = { { -1, -1 }, { 0, -1 } },
@@ -131,7 +140,8 @@ local cells = {
         ['-1_0'] = { { -1, -1 }, { -1, 0 } },
         ['1_0'] = { { 0, 0 }, { 0, -1 } }
     },
-    ['3x3'] = {
+    ['3x3'] =
+    {
         size_x = 3,
         size_y = 3,
         ['0_-1'] = { { -2, -2 }, { -1, -2 }, { 0, -2 } },
@@ -141,7 +151,8 @@ local cells = {
     }
 }
 
-local cells_1x1 = {
+local cells_1x1 =
+{
     --["0_-1"] = {core = {{0, 0}}, border = {{-1, 0}, {1, 0}, {-1, -1}, {1, -1}, {0, -1}}},
     --["0_1"] = {core = {{0, 0}}, border = {{-1, 0}, {1, 0}, {1, 1}, {-1, 1}, {0, 1}}},
     --["-1_0"] = {core = {{0, 0}}, border = {{-1, 0}, {-1, -1}, {-1, 1}, {0, -1}, {0, 1}}},
@@ -165,8 +176,8 @@ end
 
 local function get_chunk_position(position)
     local chunk_position = {}
-    position.x = math.floor(position.x, 0)
-    position.y = math.floor(position.y, 0)
+    position.x = math.floor(position.x)
+    position.y = math.floor(position.y)
     for x = 0, 31, 1 do
         if (position.x - x) % 32 == 0 then
             chunk_position.x = (position.x - x) / 32
@@ -273,7 +284,8 @@ local function can_1x1_expand(cell_position, direction)
     return true
 end
 
-local multi_cell_chances = {
+local multi_cell_chances =
+{
     '3x3',
     '2x2',
     '2x2',
@@ -379,7 +391,6 @@ end
 local function on_chunk_generated(event)
     local surface = event.surface
     local left_top = event.area.left_top
-    local tiles = {}
 
     if left_top.x == 0 and left_top.y == 0 then
         for x = 0, 31, 1 do
@@ -418,11 +429,6 @@ local function on_player_joined_game(event)
     draw_depth_gui()
 end
 
---local function on_research_finished(event)
---if not event.research.force.technologies["steel-axe"].researched then return end
---event.research.force.manual_mining_speed_modifier = manual_mining_speed_modifier + 2
---end
-
 local function on_marked_for_deconstruction(event)
     if disabled_for_deconstruction[event.entity.name] then
         event.entity.cancel_deconstruction(game.players[event.player_index].force.name)
@@ -432,14 +438,15 @@ local function on_marked_for_deconstruction(event)
     end
 end
 
-local function on_init(event)
+local function on_init()
     storage.maze_cells = {}
     storage.maze_depth = 0
-    storage.enemy_appearances = {
-        { biter = 'small-biter',    spitter = 'small-spitter',    worm = 'small-worm-turret',    ammo = 'firearm-magazine',         chance = 100 },
-        { biter = 'medium-biter',   spitter = 'medium-spitter',   worm = 'medium-worm-turret',   ammo = 'piercing-rounds-magazine', chance = 0 },
-        { biter = 'big-biter',      spitter = 'big-spitter',      worm = 'big-worm-turret',      ammo = 'uranium-rounds-magazine',  chance = 0 },
-        { biter = 'behemoth-biter', spitter = 'behemoth-spitter', worm = 'behemoth-worm-turret', ammo = 'uranium-rounds-magazine',  chance = 0 }
+    storage.enemy_appearances =
+    {
+        { biter = 'small-biter', spitter = 'small-spitter', worm = 'small-worm-turret', ammo = 'firearm-magazine', chance = 100 },
+        { biter = 'medium-biter', spitter = 'medium-spitter', worm = 'medium-worm-turret', ammo = 'piercing-rounds-magazine', chance = 0 },
+        { biter = 'big-biter', spitter = 'big-spitter', worm = 'big-worm-turret', ammo = 'uranium-rounds-magazine', chance = 0 },
+        { biter = 'behemoth-biter', spitter = 'behemoth-spitter', worm = 'behemoth-worm-turret', ammo = 'uranium-rounds-magazine', chance = 0 }
     }
 
     game.forces['player'].set_spawn_position({ x = 2, y = 2 }, game.surfaces.nauvis)
@@ -450,9 +457,8 @@ local function on_init(event)
     game.map_settings.enemy_evolution.pollution_factor = 0
 end
 
-event.on_init(on_init)
-event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
-event.add(defines.events.on_player_changed_position, on_player_changed_position)
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
-event.add(defines.events.on_chunk_generated, on_chunk_generated)
---event.add(defines.events.on_research_finished, on_research_finished)
+Event.on_init(on_init)
+Event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
+Event.add(defines.events.on_player_changed_position, on_player_changed_position)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_chunk_generated, on_chunk_generated)

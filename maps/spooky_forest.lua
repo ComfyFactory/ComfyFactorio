@@ -18,11 +18,10 @@ require 'modules.rocks_broken_paint_tiles'
 require 'modules.rpg'
 require 'modules.hunger'
 
-local shapes = require 'utils.tools.shapes'
-local event = require 'utils.event'
-local map_functions = require 'utils.tools.map_functions'
-local simplex_noise = require 'utils.math.simplex_noise'
-simplex_noise = simplex_noise.d2
+local Shapes = require 'utils.tools.shapes'
+local Event = require 'utils.event'
+local MapFunctions = require 'utils.tools.map_functions'
+local SimplexNoise = require 'utils.math.simplex_noise'.d2
 
 local math_random = math.random
 local insert = table.insert
@@ -37,7 +36,8 @@ local function shuffle(tbl)
     return tbl
 end
 
-local worm_raffle_table = {
+local worm_raffle_table =
+{
     [1] = { 'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'small-worm-turret' },
     [2] = { 'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'medium-worm-turret' },
     [3] = { 'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'medium-worm-turret', 'medium-worm-turret' },
@@ -50,7 +50,8 @@ local worm_raffle_table = {
     [10] = { 'medium-worm-turret', 'big-worm-turret', 'big-worm-turret', 'big-worm-turret', 'big-worm-turret', 'big-worm-turret' }
 }
 
-local biters_in_the_trees = {
+local biters_in_the_trees =
+{
     [1] = { 'small-biter', 'small-biter', 'small-biter', 'small-biter', 'small-spitter', 'small-spitter' },
     [2] = { 'small-biter', 'small-biter', 'small-biter', 'small-spitter', 'small-spitter', 'medium-biter' },
     [3] = { 'small-biter', 'small-biter', 'small-biter', 'small-biter', 'medium-biter', 'medium-spitter' },
@@ -76,48 +77,47 @@ local biters_in_the_trees = {
 local rock_raffle = { 'big-sand-rock', 'big-sand-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'big-rock', 'huge-rock' }
 
 local function secret_shop(pos, surface)
-    local secret_market_items = {
-        { price = { { 'raw-fish', math_random(75, 125) } },  offer = { type = 'give-item', item = 'combat-shotgun' } },
-        { price = { { 'raw-fish', math_random(40, 60) } },   offer = { type = 'give-item', item = 'rocket-launcher' } },
-        { price = { { 'raw-fish', math_random(1, 2) } },     offer = { type = 'give-item', item = 'piercing-rounds-magazine' } },
-        { price = { { 'raw-fish', math_random(3, 6) } },     offer = { type = 'give-item', item = 'uranium-rounds-magazine' } },
-        { price = { { 'raw-fish', math_random(1, 4) } },     offer = { type = 'give-item', item = 'piercing-shotgun-shell' } },
-        { price = { { 'raw-fish', math_random(1, 2) } },     offer = { type = 'give-item', item = 'rocket' } },
-        { price = { { 'raw-fish', math_random(2, 3) } },     offer = { type = 'give-item', item = 'explosive-rocket' } },
-        { price = { { 'raw-fish', math_random(1, 2) } },     offer = { type = 'give-item', item = 'explosive-cannon-shell' } },
-        { price = { { 'raw-fish', math_random(3, 6) } },     offer = { type = 'give-item', item = 'explosive-uranium-cannon-shell' } },
-        { price = { { 'raw-fish', math_random(4, 8) } },     offer = { type = 'give-item', item = 'cluster-grenade' } },
-        { price = { { 'raw-fish', math_random(1, 2) } },     offer = { type = 'give-item', item = 'land-mine' } },
-        { price = { { 'raw-fish', math_random(25, 50) } },   offer = { type = 'give-item', item = 'heavy-armor' } },
-        { price = { { 'raw-fish', math_random(125, 250) } }, offer = { type = 'give-item', item = 'modular-armor' } },
-        { price = { { 'raw-fish', math_random(300, 600) } }, offer = { type = 'give-item', item = 'power-armor' } },
-        { price = { { 'raw-fish', math_random(300, 600) } }, offer = { type = 'give-item', item = 'fusion-reactor-equipment' } },
-        { price = { { 'raw-fish', math_random(20, 40) } },   offer = { type = 'give-item', item = 'battery-equipment' } },
-        { price = { { 'raw-fish', math_random(100, 150) } }, offer = { type = 'give-item', item = 'belt-immunity-equipment' } },
-        { price = { { 'raw-fish', math_random(40, 80) } },   offer = { type = 'give-item', item = 'night-vision-equipment' } },
-        { price = { { 'raw-fish', math_random(60, 120) } },  offer = { type = 'give-item', item = 'exoskeleton-equipment' } },
-        { price = { { 'raw-fish', math_random(60, 120) } },  offer = { type = 'give-item', item = 'personal-roboport-equipment' } },
-        { price = { { 'raw-fish', math_random(3, 9) } },     offer = { type = 'give-item', item = 'construction-robot' } },
-        { price = { { 'raw-fish', math_random(100, 200) } }, offer = { type = 'give-item', item = 'energy-shield-equipment' } },
-        { price = { { 'raw-fish', math_random(200, 400) } }, offer = { type = 'give-item', item = 'personal-laser-defense-equipment' } },
-        { price = { { 'raw-fish', math_random(30, 60) } },   offer = { type = 'give-item', item = 'loader' } },
-        { price = { { 'raw-fish', math_random(50, 80) } },   offer = { type = 'give-item', item = 'fast-loader' } },
-        { price = { { 'raw-fish', math_random(70, 100) } },  offer = { type = 'give-item', item = 'express-loader' } },
-        { price = { { 'raw-fish', math_random(30, 60) } },   offer = { type = 'give-item', item = 'locomotive' } },
-        { price = { { 'raw-fish', math_random(15, 35) } },   offer = { type = 'give-item', item = 'cargo-wagon' } },
-        { price = { { 'raw-fish', math_random(1, 4) } },     offer = { type = 'give-item', item = 'grenade' } },
-        { price = { { 'raw-fish', 1 } },                     offer = { type = 'give-item', item = 'rail', count = 4 } },
-        --	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'rail-signal', count = 2}},
-        --	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'rail-chain-signal', count = 2}},
-        { price = { { 'raw-fish', 5 } },                     offer = { type = 'give-item', item = 'train-stop' } },
-        { price = { { 'raw-fish', 1 } },                     offer = { type = 'give-item', item = 'small-lamp' } },
-        { price = { { 'raw-fish', 2 } },                     offer = { type = 'give-item', item = 'firearm-magazine' } },
-        { price = { { 'raw-fish', 1 } },                     offer = { type = 'give-item', item = 'wood', count = math_random(25, 75) } },
-        { price = { { 'raw-fish', 1 } },                     offer = { type = 'give-item', item = 'iron-ore', count = math_random(25, 75) } },
-        { price = { { 'raw-fish', 1 } },                     offer = { type = 'give-item', item = 'copper-ore', count = math_random(25, 75) } },
-        { price = { { 'raw-fish', 1 } },                     offer = { type = 'give-item', item = 'stone', count = math_random(25, 75) } },
-        { price = { { 'raw-fish', 1 } },                     offer = { type = 'give-item', item = 'coal', count = math_random(25, 75) } },
-        { price = { { 'raw-fish', 1 } },                     offer = { type = 'give-item', item = 'uranium-ore', count = math_random(25, 75) } }
+    local secret_market_items =
+    {
+        { price = { { name = 'raw-fish', count = math_random(75, 125) } }, offer = { type = 'give-item', item = 'combat-shotgun' } },
+        { price = { { name = 'raw-fish', count = math_random(40, 60) } }, offer = { type = 'give-item', item = 'rocket-launcher' } },
+        { price = { { name = 'raw-fish', count = math_random(1, 2) } }, offer = { type = 'give-item', item = 'piercing-rounds-magazine' } },
+        { price = { { name = 'raw-fish', count = math_random(3, 6) } }, offer = { type = 'give-item', item = 'uranium-rounds-magazine' } },
+        { price = { { name = 'raw-fish', count = math_random(1, 4) } }, offer = { type = 'give-item', item = 'piercing-shotgun-shell' } },
+        { price = { { name = 'raw-fish', count = math_random(1, 2) } }, offer = { type = 'give-item', item = 'rocket' } },
+        { price = { { name = 'raw-fish', count = math_random(2, 3) } }, offer = { type = 'give-item', item = 'explosive-rocket' } },
+        { price = { { name = 'raw-fish', count = math_random(1, 2) } }, offer = { type = 'give-item', item = 'explosive-cannon-shell' } },
+        { price = { { name = 'raw-fish', count = math_random(3, 6) } }, offer = { type = 'give-item', item = 'explosive-uranium-cannon-shell' } },
+        { price = { { name = 'raw-fish', count = math_random(4, 8) } }, offer = { type = 'give-item', item = 'cluster-grenade' } },
+        { price = { { name = 'raw-fish', count = math_random(1, 2) } }, offer = { type = 'give-item', item = 'land-mine' } },
+        { price = { { name = 'raw-fish', count = math_random(25, 50) } }, offer = { type = 'give-item', item = 'heavy-armor' } },
+        { price = { { name = 'raw-fish', count = math_random(125, 250) } }, offer = { type = 'give-item', item = 'modular-armor' } },
+        { price = { { name = 'raw-fish', count = math_random(300, 600) } }, offer = { type = 'give-item', item = 'power-armor' } },
+        { price = { { name = 'raw-fish', count = math_random(300, 600) } }, offer = { type = 'give-item', item = 'fusion-reactor-equipment' } },
+        { price = { { name = 'raw-fish', count = math_random(20, 40) } }, offer = { type = 'give-item', item = 'battery-equipment' } },
+        { price = { { name = 'raw-fish', count = math_random(100, 150) } }, offer = { type = 'give-item', item = 'belt-immunity-equipment' } },
+        { price = { { name = 'raw-fish', count = math_random(40, 80) } }, offer = { type = 'give-item', item = 'night-vision-equipment' } },
+        { price = { { name = 'raw-fish', count = math_random(60, 120) } }, offer = { type = 'give-item', item = 'exoskeleton-equipment' } },
+        { price = { { name = 'raw-fish', count = math_random(60, 120) } }, offer = { type = 'give-item', item = 'personal-roboport-equipment' } },
+        { price = { { name = 'raw-fish', count = math_random(3, 9) } }, offer = { type = 'give-item', item = 'construction-robot' } },
+        { price = { { name = 'raw-fish', count = math_random(100, 200) } }, offer = { type = 'give-item', item = 'energy-shield-equipment' } },
+        { price = { { name = 'raw-fish', count = math_random(200, 400) } }, offer = { type = 'give-item', item = 'personal-laser-defense-equipment' } },
+        { price = { { name = 'raw-fish', count = math_random(30, 60) } }, offer = { type = 'give-item', item = 'loader' } },
+        { price = { { name = 'raw-fish', count = math_random(50, 80) } }, offer = { type = 'give-item', item = 'fast-loader' } },
+        { price = { { name = 'raw-fish', count = math_random(70, 100) } }, offer = { type = 'give-item', item = 'express-loader' } },
+        { price = { { name = 'raw-fish', count = math_random(30, 60) } }, offer = { type = 'give-item', item = 'locomotive' } },
+        { price = { { name = 'raw-fish', count = math_random(15, 35) } }, offer = { type = 'give-item', item = 'cargo-wagon' } },
+        { price = { { name = 'raw-fish', count = math_random(1, 4) } }, offer = { type = 'give-item', item = 'grenade' } },
+        { price = { { name = 'raw-fish', count = 1 } }, offer = { type = 'give-item', item = 'rail', count = 4 } },
+        { price = { { name = 'raw-fish', count = 5 } }, offer = { type = 'give-item', item = 'train-stop' } },
+        { price = { { name = 'raw-fish', count = 1 } }, offer = { type = 'give-item', item = 'small-lamp' } },
+        { price = { { name = 'raw-fish', count = 2 } }, offer = { type = 'give-item', item = 'firearm-magazine' } },
+        { price = { { name = 'raw-fish', count = 1 } }, offer = { type = 'give-item', item = 'wood', count = math_random(25, 75) } },
+        { price = { { name = 'raw-fish', count = 1 } }, offer = { type = 'give-item', item = 'iron-ore', count = math_random(25, 75) } },
+        { price = { { name = 'raw-fish', count = 1 } }, offer = { type = 'give-item', item = 'copper-ore', count = math_random(25, 75) } },
+        { price = { { name = 'raw-fish', count = 1 } }, offer = { type = 'give-item', item = 'stone', count = math_random(25, 75) } },
+        { price = { { name = 'raw-fish', count = 1 } }, offer = { type = 'give-item', item = 'coal', count = math_random(25, 75) } },
+        { price = { { name = 'raw-fish', count = 1 } }, offer = { type = 'give-item', item = 'uranium-ore', count = math_random(25, 75) } }
     }
     secret_market_items = shuffle(secret_market_items)
 
@@ -130,7 +130,7 @@ local function secret_shop(pos, surface)
 end
 
 local function spawn_biter(surface, position)
-    local e = math.ceil(game.forces.enemy.evolution_factor * 20)
+    local e = math.ceil(game.forces.enemy.get_evolution_factor('spooky_forest') * 20)
     if e < 1 then
         e = 1
     end
@@ -150,33 +150,33 @@ local function get_noise(name, pos)
     local noise = {}
     local noise_seed_add = 25000
     if name == 'water' then
-        noise[1] = simplex_noise(pos.x * 0.02, pos.y * 0.02, seed)
+        noise[1] = SimplexNoise(pos.x * 0.02, pos.y * 0.02, seed)
         seed = seed + noise_seed_add
-        noise[2] = simplex_noise(pos.x * 0.1, pos.y * 0.1, seed)
+        noise[2] = SimplexNoise(pos.x * 0.1, pos.y * 0.1, seed)
         seed = seed + noise_seed_add
-        local noise = noise[1] + noise[2] * 0.2
+        noise = noise[1] + noise[2] * 0.2
         return noise
     end
     seed = seed + noise_seed_add
     if name == 'grass' then
         --noise[1] = simplex_noise(pos.x * 0.1, pos.y * 0.1, seed)
-        noise[1] = simplex_noise(pos.x * 0.08, pos.y * 0.08, seed)
+        noise[1] = SimplexNoise(pos.x * 0.08, pos.y * 0.08, seed)
         seed = seed + noise_seed_add
-        local noise = noise[1]
+        noise = noise[1]
         return noise
     end
     seed = seed + noise_seed_add
     if name == 'trees' then
-        noise[1] = simplex_noise(pos.x * 0.045, pos.y * 0.045, seed)
+        noise[1] = SimplexNoise(pos.x * 0.045, pos.y * 0.045, seed)
         seed = seed + noise_seed_add
-        local noise = noise[1]
+        noise = noise[1]
         return noise
     end
     seed = seed + noise_seed_add
     if name == 'spawners' then
-        noise[1] = simplex_noise(pos.x * 0.02, pos.y * 0.02, seed)
+        noise[1] = SimplexNoise(pos.x * 0.02, pos.y * 0.02, seed)
         seed = seed + noise_seed_add
-        local noise = noise[1]
+        noise = noise[1]
         return noise
     end
 end
@@ -194,7 +194,7 @@ local function get_entity(position)
                 entity_name = rock_raffle[math_random(1, #rock_raffle)]
                 if math_random(1, 24) == 1 then
                     if position.x > 32 or position.x < -32 or position.y > 32 or position.y < -32 then
-                        local e = math.ceil(game.forces.enemy.evolution_factor * 10)
+                        local e = math.ceil(game.forces.enemy.get_evolution_factor('spooky_forest') * 10)
                         if e < 1 then
                             e = 1
                         end
@@ -234,7 +234,7 @@ local function get_noise_tile(position)
         tile_name = 'grass-2'
     end
 
-    local noise = get_noise('water', position)
+    noise = get_noise('water', position)
     if noise > 0.71 then
         tile_name = 'water'
         if noise > 0.78 then
@@ -251,8 +251,8 @@ end
 
 local function get_chunk_position(position)
     local chunk_position = {}
-    position.x = math.floor(position.x, 0)
-    position.y = math.floor(position.y, 0)
+    position.x = math.floor(position.x)
+    position.y = math.floor(position.y)
     for x = 0, 31, 1 do
         if (position.x - x) % 32 == 0 then
             chunk_position.x = (position.x - x) / 32
@@ -281,7 +281,7 @@ local function regenerate_decoratives_for_chunk(surface, position)
 end
 
 local function uncover_map(surface, position, radius_min, radius_max)
-    local circles = shapes.circles
+    local circles = Shapes.circles
     local tiles = {}
     local fishes = {}
     local regenerate_decoratives = false
@@ -335,7 +335,7 @@ end
 local function uncover_map_for_player(player)
     local position = player.position
     local surface = player.surface
-    local circles = shapes.circles
+    local circles = Shapes.circles
     local tiles = {}
     local fishes = {}
     local uncover_map_schedule = {}
@@ -396,8 +396,8 @@ local function uncover_map_for_player(player)
     end
 end
 
-local ore_spill_raffle = { 'iron-ore', 'iron-ore', 'iron-ore', 'iron-ore', 'copper-ore', 'copper-ore', 'copper-ore', 'coal', 'coal' }
-local ore_spawn_raffle = {
+local ore_spawn_raffle =
+{
     'iron-ore',
     'iron-ore',
     'iron-ore',
@@ -437,12 +437,12 @@ local function on_entity_died(event)
         if math_random(1, 2) ~= 1 then
             local name = ore_spawn_raffle[math.random(1, #ore_spawn_raffle)]
             local pos = { x = event.entity.position.x, y = event.entity.position.y }
-            local amount_modifier = math.ceil(1 + game.forces.enemy.evolution_factor * 10)
-            local size_modifier = math.floor(game.forces.enemy.evolution_factor * 4)
+            local amount_modifier = math.ceil(1 + game.forces.enemy.get_evolution_factor('spooky_forest') * 10)
+            local size_modifier = math.floor(game.forces.enemy.get_evolution_factor('spooky_forest') * 4)
             if name == 'crude-oil' then
-                map_functions.draw_oil_circle(pos, name, surface, 4, math.ceil(100000 * amount_modifier))
+                MapFunctions.draw_oil_circle(pos, name, surface, 4, math.ceil(100000 * amount_modifier))
             else
-                map_functions.draw_smoothed_out_ore_circle(pos, name, surface, 6 + size_modifier, math.ceil(500 * amount_modifier))
+                MapFunctions.draw_smoothed_out_ore_circle(pos, name, surface, 6 + size_modifier, math.ceil(500 * amount_modifier))
             end
         end
     end
@@ -463,7 +463,8 @@ local function on_player_joined_game(event)
         local map_gen_settings = {}
         map_gen_settings.water = 'small'
         map_gen_settings.cliff_settings = { cliff_elevation_interval = 22, cliff_elevation_0 = 22 }
-        map_gen_settings.autoplace_controls = {
+        map_gen_settings.autoplace_controls =
+        {
             ['coal'] = { frequency = 'none', size = 'none', richness = 'none' },
             ['stone'] = { frequency = 'none', size = 'none', richness = 'none' },
             ['copper-ore'] = { frequency = 'none', size = 'none', richness = 'none' },
@@ -475,7 +476,7 @@ local function on_player_joined_game(event)
         game.create_surface('spooky_forest', map_gen_settings)
         local surface = game.surfaces['spooky_forest']
         surface.daytime = 0.5
-        surface.freeze_daytime = 1
+        surface.freeze_daytime = true
         game.forces['player'].set_spawn_position({ 0, 0 }, surface)
 
         game.map_settings.enemy_expansion.enabled = true
@@ -585,7 +586,7 @@ local function on_chunk_generated(event)
         for y = 0, 31, 1 do
             local tile_to_insert = 'out-of-map'
             local pos = { x = position_left_top.x + x, y = position_left_top.y + y }
-            local tile_name = surface.get_tile(pos).name
+            local tile_name = surface.get_tile(pos.x, pos.y).name
             if tile_name ~= 'stone-path' then
                 insert(tiles, { name = tile_to_insert, position = pos })
             end
@@ -608,7 +609,8 @@ local function on_player_mined_entity(event)
     end
 end
 
-local disabled_for_deconstruction = {
+local disabled_for_deconstruction =
+{
     ['fish'] = true,
     ['huge-rock'] = true,
     ['big-rock'] = true,
@@ -624,7 +626,7 @@ local function on_marked_for_deconstruction(event)
     end
 end
 
-local function on_research_finished(event)
+local function on_research_finished()
     game.forces.player.recipes['flamethrower-turret'].enabled = false
 end
 
@@ -647,7 +649,7 @@ local function break_some_random_trees(surface)
     end
     if #trees ~= 0 then
         trees = shuffle(trees)
-        for i = 1, math_random(4 + math.floor(game.forces.enemy.evolution_factor * 8), 8 + math.floor(game.forces.enemy.evolution_factor * 16)), 1 do
+        for i = 1, math_random(4 + math.floor(game.forces.enemy.get_evolution_factor('spooky_forest') * 8), 8 + math.floor(game.forces.enemy.get_evolution_factor('spooky_forest') * 16)), 1 do
             if not trees[i] then
                 break
             end
@@ -665,11 +667,11 @@ local function break_some_random_trees(surface)
     if not rocks[1] then
         return
     end
-    local e = math.ceil(game.forces.enemy.evolution_factor * 10)
+    local e = math.ceil(game.forces.enemy.get_evolution_factor('spooky_forest') * 10)
     if e < 1 then
         e = 1
     end
-    entity_name = worm_raffle_table[e][math_random(1, #worm_raffle_table[e])]
+    local entity_name = worm_raffle_table[e][math_random(1, #worm_raffle_table[e])]
     surface.create_entity({ name = entity_name, position = rocks[1].position, force = 'enemy' })
     rocks[1].die('enemy')
 end
@@ -695,14 +697,14 @@ local function on_tick()
     end
 end
 
-event.add(defines.events.on_tick, on_tick)
-event.add(defines.events.on_research_finished, on_research_finished)
-event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
-event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
-event.add(defines.events.on_entity_died, on_entity_died)
-event.add(defines.events.on_chunk_generated, on_chunk_generated)
-event.add(defines.events.on_player_changed_position, on_player_changed_position)
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_tick, on_tick)
+Event.add(defines.events.on_research_finished, on_research_finished)
+Event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
+Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
+Event.add(defines.events.on_entity_died, on_entity_died)
+Event.add(defines.events.on_chunk_generated, on_chunk_generated)
+Event.add(defines.events.on_player_changed_position, on_player_changed_position)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 
 require 'modules.rocks_yield_ore'
 storage.rocks_yield_ore_base_amount = 100

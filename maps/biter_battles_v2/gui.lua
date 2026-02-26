@@ -3,7 +3,7 @@ local Public = {}
 local Server = require 'utils.server'
 
 local bb_config = require 'maps.biter_battles_v2.config'
-local event = require 'utils.event'
+local Event = require 'utils.event'
 local Functions = require 'maps.biter_battles_v2.functions'
 local feed_the_biters = require 'maps.biter_battles_v2.feeding'
 local Tables = require 'maps.biter_battles_v2.tables'
@@ -15,8 +15,10 @@ local math_random = math.random
 
 require 'maps.biter_battles_v2.spec_spy'
 
-local gui_values = {
-    ['north'] = {
+local gui_values =
+{
+    ['north'] =
+    {
         force = 'north',
         biter_force = 'north_biters',
         c1 = bb_config.north_side_team_name,
@@ -29,7 +31,8 @@ local gui_values = {
         tech_spy = 'spy-north-tech',
         prod_spy = 'spy-north-prod'
     },
-    ['south'] = {
+    ['south'] =
+    {
         force = 'south',
         biter_force = 'south_biters',
         c1 = bb_config.south_side_team_name,
@@ -66,7 +69,7 @@ local function create_first_join_gui(player)
     local b = frame.add { type = 'label', caption = 'Defend your Rocket Silo!' }
     b.style.font = 'heading-1'
     b.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
-    local b = frame.add { type = 'label', caption = "Feed the enemy team's biters to gain advantage!" }
+    b = frame.add { type = 'label', caption = "Feed the enemy team's biters to gain advantage!" }
     b.style.font = 'heading-2'
     b.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
 
@@ -83,11 +86,11 @@ local function create_first_join_gui(player)
         l.style.font_color = gui_value.color1
         l.style.single_line = false
         l.style.maximal_width = 290
-        local l = t.add { type = 'label', caption = '  -  ' }
-        local l = t.add { type = 'label', caption = #game.forces[gui_value.force].connected_players .. ' Players ' }
+        l = t.add { type = 'label', caption = '  -  ' }
+        l = t.add { type = 'label', caption = #game.forces[gui_value.force].connected_players .. ' Players ' }
         l.style.font_color = { r = 0.22, g = 0.88, b = 0.22 }
 
-        local c = gui_value.c2
+        c = gui_value.c2
         local font_color = gui_value.color1
         if storage.game_lobby_active then
             font_color = { r = 0.7, g = 0.7, b = 0.7 }
@@ -95,13 +98,13 @@ local function create_first_join_gui(player)
             c = c .. math.ceil((storage.game_lobby_timeout - game.tick) / 60)
             c = c .. ')'
         end
-        local t = frame.add { type = 'table', column_count = 4 }
+        t = frame.add { type = 'table', column_count = 4 }
         for _, p in pairs(game.forces[gui_value.force].connected_players) do
-            local l = t.add({ type = 'label', caption = p.name })
+            l = t.add({ type = 'label', caption = p.name })
             l.style.font_color = { r = p.color.r * 0.6 + 0.4, g = p.color.g * 0.6 + 0.4, b = p.color.b * 0.6 + 0.4, a = 1 }
             l.style.font = 'heading-2'
         end
-        local b = frame.add { type = 'sprite-button', name = gui_value.n1, caption = c }
+        b = frame.add { type = 'sprite-button', name = gui_value.n1, caption = c }
         b.style.font = 'default-large-bold'
         b.style.font_color = font_color
         b.style.minimal_width = 350
@@ -111,7 +114,8 @@ end
 
 local function add_tech_button(elem, gui_value)
     local tech_button =
-        elem.add {
+        elem.add
+        {
             type = 'sprite-button',
             name = gui_value.tech_spy,
             sprite = 'item/space-science-pack'
@@ -119,17 +123,6 @@ local function add_tech_button(elem, gui_value)
     tech_button.style.height = 25
     tech_button.style.width = 25
     tech_button.style.left_margin = 3
-end
-
-local function add_prod_button(elem, gui_value)
-    local prod_button =
-        elem.add {
-            type = 'sprite-button',
-            name = gui_value.prod_spy,
-            sprite = 'item/assembling-machine-3'
-        }
-    prod_button.style.height = 25
-    prod_button.style.width = 25
 end
 
 function Public.create_main_gui(player)
@@ -167,7 +160,7 @@ function Public.create_main_gui(player)
     end
 
     local first_team = true
-    for k, gui_value in pairs(gui_values) do
+    for _, gui_value in pairs(gui_values) do
         -- Line separator
         if not first_team then
             frame.add { type = 'line', caption = 'this line', direction = 'horizontal' }
@@ -190,12 +183,12 @@ function Public.create_main_gui(player)
         l.style.maximal_width = 102
 
         -- Number of players
-        local l = t.add { type = 'label', caption = ' - ' }
-        local c = #game.forces[gui_value.force].connected_players .. ' Player'
+        l = t.add { type = 'label', caption = ' - ' }
+        c = #game.forces[gui_value.force].connected_players .. ' Player'
         if #game.forces[gui_value.force].connected_players ~= 1 then
             c = c .. 's'
         end
-        local l = t.add { type = 'label', caption = c }
+        l = t.add { type = 'label', caption = c }
         l.style.font = 'default'
         l.style.font_color = { r = 0.22, g = 0.88, b = 0.22 }
 
@@ -207,18 +200,18 @@ function Public.create_main_gui(player)
 
         -- Player list
         if storage.bb_view_players[player.name] == true then
-            local t = frame.add { type = 'table', column_count = 4 }
+            t = frame.add { type = 'table', column_count = 4 }
             for _, p in pairs(game.forces[gui_value.force].connected_players) do
-                local l = t.add { type = 'label', caption = p.name }
+                l = t.add { type = 'label', caption = p.name }
                 l.style.font_color = { r = p.color.r * 0.6 + 0.4, g = p.color.g * 0.6 + 0.4, b = p.color.b * 0.6 + 0.4, a = 1 }
             end
         end
 
         -- Statistics
-        local t = frame.add { type = 'table', name = 'stats_' .. gui_value.force, column_count = 5 }
+        t = frame.add { type = 'table', name = 'stats_' .. gui_value.force, column_count = 5 }
 
         -- Evolution
-        local l = t.add { type = 'label', caption = 'Evo:' }
+        l = t.add { type = 'label', caption = 'Evo:' }
         --l.style.minimal_width = 25
         local biter_force = game.forces[gui_value.biter_force]
         local tooltip =
@@ -228,17 +221,17 @@ function Public.create_main_gui(player)
         l.tooltip = tooltip
 
         local evo = math.floor(1000 * storage.bb_evolution[gui_value.biter_force]) * 0.1
-        local l = t.add { type = 'label', caption = evo .. '%' }
+        l = t.add { type = 'label', caption = evo .. '%' }
         l.style.minimal_width = 40
         l.style.font_color = gui_value.color2
         l.style.font = 'default-bold'
         l.tooltip = tooltip
 
         -- Threat
-        local l = t.add { type = 'label', caption = 'Threat: ' }
+        l = t.add { type = 'label', caption = 'Threat: ' }
         l.style.minimal_width = 25
         l.tooltip = gui_value.t2
-        local l = t.add { type = 'label', name = 'threat_' .. gui_value.force, caption = math.floor(storage.bb_threat[gui_value.biter_force]) }
+        l = t.add { type = 'label', name = 'threat_' .. gui_value.force, caption = math.floor(storage.bb_threat[gui_value.biter_force]) }
         l.style.font_color = gui_value.color2
         l.style.font = 'default-bold'
         l.style.width = 50
@@ -250,16 +243,16 @@ function Public.create_main_gui(player)
 
     -- Spectate / Rejoin team
     if is_spec then
-        local b = t.add { type = 'sprite-button', name = 'bb_leave_spectate', caption = 'Join Team' }
+        t.add { type = 'sprite-button', name = 'bb_leave_spectate', caption = 'Join Team' }
     else
-        local b = t.add { type = 'sprite-button', name = 'bb_spectate', caption = 'Spectate' }
+        t.add { type = 'sprite-button', name = 'bb_spectate', caption = 'Spectate' }
     end
 
     -- Playerlist button
     if storage.bb_view_players[player.name] == true then
-        local b = t.add { type = 'sprite-button', name = 'bb_hide_players', caption = 'Playerlist' }
+        t.add { type = 'sprite-button', name = 'bb_hide_players', caption = 'Playerlist' }
     else
-        local b = t.add { type = 'sprite-button', name = 'bb_view_players', caption = 'Playerlist' }
+        t.add { type = 'sprite-button', name = 'bb_view_players', caption = 'Playerlist' }
     end
 
     local b_width = is_spec and 97 or 86
@@ -414,7 +407,8 @@ function spectate(player, forced_join)
 end
 
 local function join_gui_click(name, player)
-    local team = {
+    local team =
+    {
         ['join_north_button'] = 'north',
         ['join_south_button'] = 'south'
     }
@@ -541,7 +535,7 @@ local function on_player_joined_game(event)
     Public.create_main_gui(player)
 end
 
-event.add(defines.events.on_gui_click, on_gui_click)
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_gui_click, on_gui_click)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 
 return Public

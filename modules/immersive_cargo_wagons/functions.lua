@@ -5,7 +5,6 @@ local Constants = require 'modules.immersive_cargo_wagons.constants'
 
 local table_insert = table.insert
 local table_remove = table.remove
-local math_round = math.round
 local math_random = math.random
 
 function Public.request_reconstruction(icw)
@@ -35,7 +34,8 @@ end
 local function connect_power_pole(entity, wagon_area_left_top_y)
     local surface = entity.surface
     local max_wire_distance = entity.prototype.max_wire_distance
-    local area = {
+    local area =
+    {
         { entity.position.x - max_wire_distance, entity.position.y - max_wire_distance },
         { entity.position.x + max_wire_distance, entity.position.y - 1 }
     }
@@ -176,10 +176,11 @@ local function output_cargo(wagon, passive_chest)
     end
 end
 
-local transfer_functions = {
+local transfer_functions =
+{
     ['storage-tank'] = divide_fluid,
-    ['logistic-chest-requester'] = input_cargo,
-    ['logistic-chest-passive-provider'] = output_cargo
+    ['requester-chest'] = input_cargo,
+    ['passive-provider-chest'] = output_cargo
 }
 
 local function get_wagon_for_entity(icw, entity)
@@ -188,7 +189,7 @@ local function get_wagon_for_entity(icw, entity)
         return
     end
     local position = entity.position
-    for k, unit_number in pairs(train.wagons) do
+    for _, unit_number in pairs(train.wagons) do
         local wagon = icw.wagons[unit_number]
         if wagon then
             local left_top = wagon.area.left_top
@@ -238,7 +239,8 @@ local function get_player_data(icw, player)
         return player_data
     end
 
-    icw.players[player.index] = {
+    icw.players[player.index] =
+    {
         surface = 1,
         fallback_surface = 1,
         zoom = 0.30,
@@ -287,14 +289,16 @@ function Public.create_room_surface(icw, unit_number)
     if game.surfaces[tostring(unit_number)] then
         return game.surfaces[tostring(unit_number)]
     end
-    local map_gen_settings = {
+    local map_gen_settings =
+    {
         ['width'] = 2,
         ['height'] = 2,
         ['water'] = 0,
         ['starting_area'] = 1,
         ['cliff_settings'] = { cliff_elevation_interval = 0, cliff_elevation_0 = 0 },
         ['default_enable_all_autoplace_controls'] = true,
-        ['autoplace_settings'] = {
+        ['autoplace_settings'] =
+        {
             ['entity'] = { treat_missing_as_default = false },
             ['tile'] = { treat_missing_as_default = true },
             ['decorative'] = { treat_missing_as_default = false }
@@ -362,7 +366,8 @@ function Public.create_wagon_room(icw, wagon)
 
     if wagon.entity.type == 'fluid-wagon' then
         local height = area.right_bottom.y - area.left_top.y
-        local positions = {
+        local positions =
+        {
             { area.right_bottom.x, area.left_top.y + height * 0.25 },
             { area.right_bottom.x, area.left_top.y + height * 0.75 },
             { area.left_top.x - 1, area.left_top.y + height * 0.25 },
@@ -392,7 +397,7 @@ function Public.create_wagon_room(icw, wagon)
         local e =
             surface.create_entity(
                 {
-                    name = 'logistic-chest-requester',
+                    name = 'requester-chest',
                     position = position,
                     force = 'neutral',
                     create_build_effect_smoke = false
@@ -404,7 +409,7 @@ function Public.create_wagon_room(icw, wagon)
         e2 =
             surface.create_entity(
                 {
-                    name = 'logistic-chest-passive-provider',
+                    name = 'passive-provider-chest',
                     position = { position[1] + v[1], position[2] + v[2] },
                     force = 'neutral',
                     create_build_effect_smoke = false
@@ -430,7 +435,8 @@ function Public.create_wagon(icw, created_entity, delay_surface)
     end
     local wagon_area = Constants.wagon_areas[created_entity.type]
 
-    icw.wagons[created_entity.unit_number] = {
+    icw.wagons[created_entity.unit_number] =
+    {
         entity = created_entity,
         area = { left_top = { x = wagon_area.left_top.x, y = wagon_area.left_top.y }, right_bottom = { x = wagon_area.right_bottom.x, y = wagon_area.right_bottom.y } },
         doors = {},
@@ -505,7 +511,7 @@ function Public.use_cargo_wagon_door(icw, player, door)
         local surface = wagon.entity.surface
         local x_vector = (door.position.x / math.abs(door.position.x)) * 2
         local position = { wagon.entity.position.x + x_vector, wagon.entity.position.y }
-        local position = surface.find_non_colliding_position('character', position, 128, 0.5)
+        position = surface.find_non_colliding_position('character', position, 128, 0.5)
         if not position then
             return
         end
@@ -541,7 +547,8 @@ local function move_room_to_train(icw, train, wagon)
 
     table_insert(train.wagons, wagon.entity.unit_number)
 
-    local destination_area = {
+    local destination_area =
+    {
         left_top = { x = wagon.area.left_top.x, y = train.top_y },
         right_bottom = { x = wagon.area.right_bottom.x, y = train.top_y + (wagon.area.right_bottom.y - wagon.area.left_top.y) }
     }
@@ -615,7 +622,7 @@ function Public.construct_train(icw, carriages)
     local train = { surface = Public.create_room_surface(icw, unit_number), wagons = {}, top_y = 0 }
     icw.trains[unit_number] = train
 
-    for k, carriage in pairs(carriages) do
+    for _, carriage in pairs(carriages) do
         move_room_to_train(icw, train, icw.wagons[carriage.unit_number])
     end
 end
@@ -643,7 +650,7 @@ end
 function Public.item_transfer(icw)
     for _, wagon in pairs(icw.wagons) do
         if wagon.transfer_entities then
-            for k, e in pairs(wagon.transfer_entities) do
+            for _, e in pairs(wagon.transfer_entities) do
                 transfer_functions[e.name](wagon, e)
             end
         end
@@ -674,7 +681,7 @@ function Public.draw_minimap(icw, player, surface, position)
 end
 
 function Public.update_minimap(icw)
-    for k, player in pairs(game.connected_players) do
+    for _, player in pairs(game.connected_players) do
         if player.character and player.character.valid then
             local wagon = get_wagon_for_entity(icw, player.character)
             if wagon then

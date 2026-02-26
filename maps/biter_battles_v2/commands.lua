@@ -1,6 +1,5 @@
 --luacheck:ignore
 local Server = require 'utils.server'
-local mapkeeper = '[color=blue]Mapkeeper:[/color]'
 
 commands.add_command(
     'scenario',

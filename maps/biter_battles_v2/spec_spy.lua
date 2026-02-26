@@ -1,13 +1,14 @@
 local Global = require 'utils.global'
 
-local this = {
+local this =
+{
     -- map player <> force
     initialForce = {}
 }
 
 Global.register(
     this,
-    function(t)
+    function (t)
         this = t
     end
 )
@@ -50,7 +51,8 @@ local function spy_prod_handler(event)
     if not event.element.valid then
         return
     end
-    local elementToForce = {
+    local elementToForce =
+    {
         ['spy-north-prod'] = 'north',
         ['spy-south-prod'] = 'south'
     }
@@ -66,7 +68,8 @@ local function spy_tech_handler(event)
     if not event.element.valid then
         return
     end
-    local elementToForce = {
+    local elementToForce =
+    {
         ['spy-north-tech'] = 'north',
         ['spy-south-tech'] = 'south'
     }

@@ -1,4 +1,9 @@
 --luacheck: ignore
+
+if script.active_mods['space-age'] then
+    error('This map is incompatible with the Space Age mod. Disable Space Age to run this map.', 2)
+end
+
 local Constants = require 'maps.cave_miner_v2.constants'
 local Event = require 'utils.event'
 local Explosives = require 'modules.explosives_2'
@@ -6,7 +11,6 @@ local Autostash = require 'modules.autostash'
 local Functions = require 'maps.cave_miner_v2.functions'
 local Global = require 'utils.global'
 local Market = require 'maps.cave_miner_v2.market'
-local Server = require 'utils.server'
 local Terrain = require 'maps.cave_miner_v2.terrain'
 local Map_info = require 'modules.map_info'
 
@@ -87,8 +91,6 @@ local function on_player_mined_entity(event)
     if not entity.valid then
         return
     end
-    local surface = entity.surface
-    local position = entity.position
     if entity.type == 'simple-entity' then
         cave_miner.rocks_broken = cave_miner.rocks_broken + 1
         local f = table.get_random_weighted(Functions.mining_events)
@@ -117,7 +119,7 @@ local function on_entity_spawned(event)
     unit.destroy()
 end
 
-local function init(cave_miner)
+local function init()
     local tick = game.ticks_played
     if tick % 60 ~= 0 then
         return
@@ -150,7 +152,7 @@ local function init(cave_miner)
     cave_miner.gamestate = 'spawn_players'
 end
 
-local function spawn_players(cave_miner)
+local function spawn_players()
     local tick = game.ticks_played
     if tick % 60 ~= 0 then
         return
@@ -163,7 +165,8 @@ local function spawn_players(cave_miner)
     cave_miner.gamestate = 'game_in_progress'
 end
 
-local game_tasks = {
+local game_tasks =
+{
     [15] = Functions.update_top_gui,
     [30] = function ()
         local reveal = cave_miner.reveal_queue[1]
@@ -180,7 +183,7 @@ local game_tasks = {
     [45] = Functions.darkness
 }
 
-local function game_in_progress(cave_miner)
+local function game_in_progress()
     local tick = game.ticks_played % 60
     if not game_tasks[tick] then
         return
@@ -188,14 +191,15 @@ local function game_in_progress(cave_miner)
     game_tasks[tick](cave_miner)
 end
 
-local gamestates = {
+local gamestates =
+{
     ['init'] = init,
     ['spawn_players'] = spawn_players,
     ['game_in_progress'] = game_in_progress
 }
 
 local function on_tick()
-    gamestates[cave_miner.gamestate](cave_miner)
+    gamestates[cave_miner.gamestate]()
 end
 
 local function on_init()

@@ -1,6 +1,10 @@
 --luacheck: ignore
 -- By Gerkiz
 
+if script.active_mods['space-age'] then
+    error('This map is incompatible with the Space Age mod. Disable Space Age to run this map.', 2)
+end
+
 require 'forest_world'
 require 'player_elevator'
 require 'modules.rocks_broken_paint_tiles'
@@ -15,7 +19,8 @@ local Map = require 'modules.map_info'
 
 local spawn_dome_size = 8000
 
-local darkness_messages = {
+local darkness_messages =
+{
     'Something is lurking in the dark...',
     'A shadow moves. I doubt it is friendly...',
     'The silence grows louder...',
@@ -28,7 +33,8 @@ local darkness_messages = {
     'You feel like, something is watching you...'
 }
 
-local rock_inhabitants = {
+local rock_inhabitants =
+{
     [1] = { 'small-biter' },
     [2] = { 'small-biter', 'small-biter', 'small-biter', 'small-biter', 'small-biter', 'medium-biter' },
     [3] = { 'small-biter', 'small-biter', 'small-biter', 'small-biter', 'medium-biter', 'medium-biter' },
@@ -47,7 +53,8 @@ local rock_inhabitants = {
     [16] = { 'big-biter', 'big-biter', 'big-biter', 'behemoth-biter', 'behemoth-biter', 'behemoth-spitter' },
     [17] = { 'big-biter', 'big-biter', 'behemoth-biter', 'behemoth-biter', 'behemoth-biter', 'behemoth-spitter' },
     [18] = { 'big-biter', 'behemoth-biter', 'behemoth-biter', 'behemoth-biter', 'behemoth-biter', 'behemoth-spitter' },
-    [19] = {
+    [19] =
+    {
         'behemoth-biter',
         'behemoth-biter',
         'behemoth-biter',
@@ -55,7 +62,8 @@ local rock_inhabitants = {
         'behemoth-biter',
         'behemoth-spitter'
     },
-    [20] = {
+    [20] =
+    {
         'behemoth-biter',
         'behemoth-biter',
         'behemoth-biter',
@@ -65,8 +73,10 @@ local rock_inhabitants = {
     }
 }
 
-local worm_raffle_table = {
-    [1] = {
+local worm_raffle_table =
+{
+    [1] =
+    {
         'small-worm-turret',
         'small-worm-turret',
         'small-worm-turret',
@@ -74,7 +84,8 @@ local worm_raffle_table = {
         'small-worm-turret',
         'small-worm-turret'
     },
-    [2] = {
+    [2] =
+    {
         'small-worm-turret',
         'small-worm-turret',
         'small-worm-turret',
@@ -82,7 +93,8 @@ local worm_raffle_table = {
         'small-worm-turret',
         'medium-worm-turret'
     },
-    [3] = {
+    [3] =
+    {
         'small-worm-turret',
         'small-worm-turret',
         'small-worm-turret',
@@ -90,7 +102,8 @@ local worm_raffle_table = {
         'medium-worm-turret',
         'medium-worm-turret'
     },
-    [4] = {
+    [4] =
+    {
         'small-worm-turret',
         'small-worm-turret',
         'small-worm-turret',
@@ -98,7 +111,8 @@ local worm_raffle_table = {
         'medium-worm-turret',
         'medium-worm-turret'
     },
-    [5] = {
+    [5] =
+    {
         'small-worm-turret',
         'small-worm-turret',
         'medium-worm-turret',
@@ -106,7 +120,8 @@ local worm_raffle_table = {
         'medium-worm-turret',
         'big-worm-turret'
     },
-    [6] = {
+    [6] =
+    {
         'small-worm-turret',
         'medium-worm-turret',
         'medium-worm-turret',
@@ -114,7 +129,8 @@ local worm_raffle_table = {
         'medium-worm-turret',
         'big-worm-turret'
     },
-    [7] = {
+    [7] =
+    {
         'medium-worm-turret',
         'medium-worm-turret',
         'medium-worm-turret',
@@ -122,7 +138,8 @@ local worm_raffle_table = {
         'big-worm-turret',
         'big-worm-turret'
     },
-    [8] = {
+    [8] =
+    {
         'medium-worm-turret',
         'medium-worm-turret',
         'medium-worm-turret',
@@ -130,7 +147,8 @@ local worm_raffle_table = {
         'big-worm-turret',
         'big-worm-turret'
     },
-    [9] = {
+    [9] =
+    {
         'medium-worm-turret',
         'medium-worm-turret',
         'medium-worm-turret',
@@ -138,7 +156,8 @@ local worm_raffle_table = {
         'big-worm-turret',
         'big-worm-turret'
     },
-    [10] = {
+    [10] =
+    {
         'medium-worm-turret',
         'medium-worm-turret',
         'medium-worm-turret',
@@ -196,7 +215,7 @@ for x = 89, 1, -1 do
     player_hunger_buff[x] = buff_top_value - y * 0.015
     y = y + 1
 end
-local y = 1
+y = 1
 for x = 111, 200, 1 do
     player_hunger_buff[x] = buff_top_value - y * 0.015
     y = y + 1
@@ -225,29 +244,32 @@ local function create_cave_miner_stats_gui(player)
     end
 
     local captions = {}
-    local caption_style = {
-        { 'font',          'default-bold' },
-        { 'font_color',    { r = 0.63, g = 0.63, b = 0.63 } },
-        { 'top_padding',   2 },
-        { 'left_padding',  0 },
+    local caption_style =
+    {
+        { 'font', 'default-bold' },
+        { 'font_color', { r = 0.63, g = 0.63, b = 0.63 } },
+        { 'top_padding', 2 },
+        { 'left_padding', 0 },
         { 'right_padding', 0 },
         { 'minimal_width', 0 }
     }
     local stat_numbers = {}
-    local stat_number_style = {
-        { 'font',          'default-bold' },
-        { 'font_color',    { r = 0.77, g = 0.77, b = 0.77 } },
-        { 'top_padding',   2 },
-        { 'left_padding',  0 },
+    local stat_number_style =
+    {
+        { 'font', 'default-bold' },
+        { 'font_color', { r = 0.77, g = 0.77, b = 0.77 } },
+        { 'top_padding', 2 },
+        { 'left_padding', 0 },
         { 'right_padding', 0 },
         { 'minimal_width', 0 }
     }
     local separators = {}
-    local separator_style = {
-        { 'font',          'default-bold' },
-        { 'font_color',    { r = 0.15, g = 0.15, b = 0.89 } },
-        { 'top_padding',   2 },
-        { 'left_padding',  2 },
+    local separator_style =
+    {
+        { 'font', 'default-bold' },
+        { 'font_color', { r = 0.15, g = 0.15, b = 0.89 } },
+        { 'top_padding', 2 },
+        { 'left_padding', 2 },
         { 'right_padding', 2 },
         { 'minimal_width', 0 }
     }
@@ -264,7 +286,7 @@ local function create_cave_miner_stats_gui(player)
     caption_hunger.style.font_color = player_hunger_color_list[storage.player_hunger[player.name]]
     caption_hunger.style.top_padding = 2
 
-    local frame = player.gui.top.add { type = 'frame', name = 'caver_miner_stats_frame' }
+    frame = player.gui.top.add { type = 'frame', name = 'caver_miner_stats_frame' }
     frame.style.minimal_height = 38
     frame.style.maximal_height = 38
 
@@ -291,7 +313,7 @@ local function create_cave_miner_stats_gui(player)
     captions[3] = t.add { type = 'label', caption = '[img=item.productivity-module] :' }
     captions[3].tooltip = 'Current mining speed bonus.'
     local x = math.floor(game.forces.player.manual_mining_speed_modifier * 100 + player_hunger_buff[storage.player_hunger[player.name]] * 100)
-    local str = ''
+    str = ''
     if x > 0 then
         str = str .. '+'
     end
@@ -303,7 +325,7 @@ local function create_cave_miner_stats_gui(player)
         separators[3] = t.add { type = 'label', caption = '|' }
 
         captions[5] = t.add { type = 'label', caption = '[img=utility.hand] :' }
-        local str = '+'
+        str = '+'
         str = str .. tostring(game.forces.player.mining_drill_productivity_bonus * 100)
         str = str .. '%'
         stat_numbers[4] = t.add { type = 'label', caption = str }
@@ -339,18 +361,19 @@ end
 
 local function treasure_chest(position, distance_to_center)
     local chest_raffle = {}
-    local chest_loot = {
+    local chest_loot =
+    {
         --{{name = "steel-axe", count = math.random(1,3)}, weight = 2, evolution_min = 0.0, evolution_max = 0.5},
-        { { name = 'submachine-gun', count = math.random(1, 3) },     weight = 3, evolution_min = 0.0, evolution_max = 0.1 },
+        { { name = 'submachine-gun', count = math.random(1, 3) }, weight = 3, evolution_min = 0.0, evolution_max = 0.1 },
         { { name = 'slowdown-capsule', count = math.random(16, 32) }, weight = 1, evolution_min = 0.3, evolution_max = 0.7 },
-        { { name = 'poison-capsule', count = math.random(16, 32) },   weight = 3, evolution_min = 0.3, evolution_max = 1 },
+        { { name = 'poison-capsule', count = math.random(16, 32) }, weight = 3, evolution_min = 0.3, evolution_max = 1 },
         {
             { name = 'uranium-cannon-shell', count = math.random(16, 32) },
             weight = 5,
             evolution_min = 0.6,
             evolution_max = 1
         },
-        { { name = 'cannon-shell', count = math.random(16, 32) },  weight = 5, evolution_min = 0.4, evolution_max = 0.7 },
+        { { name = 'cannon-shell', count = math.random(16, 32) }, weight = 5, evolution_min = 0.4, evolution_max = 0.7 },
         {
             { name = 'explosive-uranium-cannon-shell', count = math.random(16, 32) },
             weight = 5,
@@ -363,24 +386,24 @@ local function treasure_chest(position, distance_to_center)
             evolution_min = 0.4,
             evolution_max = 0.8
         },
-        { { name = 'shotgun', count = 1 },                         weight = 2, evolution_min = 0.0, evolution_max = 0.2 },
+        { { name = 'shotgun', count = 1 }, weight = 2, evolution_min = 0.0, evolution_max = 0.2 },
         { { name = 'shotgun-shell', count = math.random(16, 32) }, weight = 5, evolution_min = 0.0, evolution_max = 0.2 },
-        { { name = 'combat-shotgun', count = 1 },                  weight = 3, evolution_min = 0.3, evolution_max = 0.8 },
+        { { name = 'combat-shotgun', count = 1 }, weight = 3, evolution_min = 0.3, evolution_max = 0.8 },
         {
             { name = 'piercing-shotgun-shell', count = math.random(16, 32) },
             weight = 10,
             evolution_min = 0.2,
             evolution_max = 1
         },
-        { { name = 'flamethrower', count = 1 },                        weight = 3, evolution_min = 0.3, evolution_max = 0.6 },
+        { { name = 'flamethrower', count = 1 }, weight = 3, evolution_min = 0.3, evolution_max = 0.6 },
         { { name = 'flamethrower-ammo', count = math.random(16, 32) }, weight = 5, evolution_min = 0.3, evolution_max = 1 },
-        { { name = 'rocket-launcher', count = 1 },                     weight = 3, evolution_min = 0.2, evolution_max = 0.6 },
-        { { name = 'rocket', count = math.random(16, 32) },            weight = 5, evolution_min = 0.2, evolution_max = 0.7 },
-        { { name = 'explosive-rocket', count = math.random(16, 32) },  weight = 5, evolution_min = 0.3, evolution_max = 1 },
-        { { name = 'land-mine', count = math.random(16, 32) },         weight = 5, evolution_min = 0.2, evolution_max = 0.7 },
-        { { name = 'grenade', count = math.random(16, 32) },           weight = 5, evolution_min = 0.0, evolution_max = 0.5 },
-        { { name = 'cluster-grenade', count = math.random(16, 32) },   weight = 5, evolution_min = 0.4, evolution_max = 1 },
-        { { name = 'firearm-magazine', count = math.random(32, 128) }, weight = 5, evolution_min = 0,   evolution_max = 0.3 },
+        { { name = 'rocket-launcher', count = 1 }, weight = 3, evolution_min = 0.2, evolution_max = 0.6 },
+        { { name = 'rocket', count = math.random(16, 32) }, weight = 5, evolution_min = 0.2, evolution_max = 0.7 },
+        { { name = 'explosive-rocket', count = math.random(16, 32) }, weight = 5, evolution_min = 0.3, evolution_max = 1 },
+        { { name = 'land-mine', count = math.random(16, 32) }, weight = 5, evolution_min = 0.2, evolution_max = 0.7 },
+        { { name = 'grenade', count = math.random(16, 32) }, weight = 5, evolution_min = 0.0, evolution_max = 0.5 },
+        { { name = 'cluster-grenade', count = math.random(16, 32) }, weight = 5, evolution_min = 0.4, evolution_max = 1 },
+        { { name = 'firearm-magazine', count = math.random(32, 128) }, weight = 5, evolution_min = 0, evolution_max = 0.3 },
         {
             { name = 'piercing-rounds-magazine', count = math.random(32, 128) },
             weight = 5,
@@ -393,42 +416,42 @@ local function treasure_chest(position, distance_to_center)
             evolution_min = 0.5,
             evolution_max = 1
         },
-        { { name = 'defender-capsule', count = math.random(8, 16) },   weight = 2, evolution_min = 0.0, evolution_max = 0.7 },
+        { { name = 'defender-capsule', count = math.random(8, 16) }, weight = 2, evolution_min = 0.0, evolution_max = 0.7 },
         { { name = 'distractor-capsule', count = math.random(8, 16) }, weight = 2, evolution_min = 0.2, evolution_max = 1 },
-        { { name = 'destroyer-capsule', count = math.random(8, 16) },  weight = 2, evolution_min = 0.3, evolution_max = 1 },
+        { { name = 'destroyer-capsule', count = math.random(8, 16) }, weight = 2, evolution_min = 0.3, evolution_max = 1 },
         --{{name = "atomic-bomb", count = math.random(8,16)}, weight = 1, evolution_min = 0.3, evolution_max = 1},
-        { { name = 'light-armor', count = 1 },                         weight = 3, evolution_min = 0,   evolution_max = 0.1 },
-        { { name = 'heavy-armor', count = 1 },                         weight = 3, evolution_min = 0.1, evolution_max = 0.3 },
-        { { name = 'modular-armor', count = 1 },                       weight = 2, evolution_min = 0.2, evolution_max = 0.6 },
-        { { name = 'power-armor', count = 1 },                         weight = 2, evolution_min = 0.4, evolution_max = 1 },
+        { { name = 'light-armor', count = 1 }, weight = 3, evolution_min = 0, evolution_max = 0.1 },
+        { { name = 'heavy-armor', count = 1 }, weight = 3, evolution_min = 0.1, evolution_max = 0.3 },
+        { { name = 'modular-armor', count = 1 }, weight = 2, evolution_min = 0.2, evolution_max = 0.6 },
+        { { name = 'power-armor', count = 1 }, weight = 2, evolution_min = 0.4, evolution_max = 1 },
         --{{name = "power-armor-mk2", count = 1}, weight = 1, evolution_min = 0.9, evolution_max = 1},
-        { { name = 'battery-equipment', count = 1 },                   weight = 2, evolution_min = 0.3, evolution_max = 0.7 },
-        { { name = 'battery-mk2-equipment', count = 1 },               weight = 2, evolution_min = 0.6, evolution_max = 1 },
-        { { name = 'belt-immunity-equipment', count = 1 },             weight = 1, evolution_min = 0.3, evolution_max = 1 },
+        { { name = 'battery-equipment', count = 1 }, weight = 2, evolution_min = 0.3, evolution_max = 0.7 },
+        { { name = 'battery-mk2-equipment', count = 1 }, weight = 2, evolution_min = 0.6, evolution_max = 1 },
+        { { name = 'belt-immunity-equipment', count = 1 }, weight = 1, evolution_min = 0.3, evolution_max = 1 },
         --{{name = "solar-panel-equipment", count = math.random(1,4)}, weight = 5, evolution_min = 0.3, evolution_max = 0.8},
-        { { name = 'discharge-defense-equipment', count = 1 },         weight = 1, evolution_min = 0.5, evolution_max = 0.8 },
+        { { name = 'discharge-defense-equipment', count = 1 }, weight = 1, evolution_min = 0.5, evolution_max = 0.8 },
         {
             { name = 'energy-shield-equipment', count = math.random(1, 2) },
             weight = 2,
             evolution_min = 0.3,
             evolution_max = 0.8
         },
-        { { name = 'energy-shield-mk2-equipment', count = 1 },        weight = 2, evolution_min = 0.7, evolution_max = 1 },
-        { { name = 'exoskeleton-equipment', count = 1 },              weight = 1, evolution_min = 0.3, evolution_max = 1 },
-        { { name = 'fusion-reactor-equipment', count = 1 },           weight = 1, evolution_min = 0.5, evolution_max = 1 },
+        { { name = 'energy-shield-mk2-equipment', count = 1 }, weight = 2, evolution_min = 0.7, evolution_max = 1 },
+        { { name = 'exoskeleton-equipment', count = 1 }, weight = 1, evolution_min = 0.3, evolution_max = 1 },
+        { { name = 'fission-reactor-equipment', count = 1 }, weight = 1, evolution_min = 0.5, evolution_max = 1 },
         --{{name = "night-vision-equipment", count = 1}, weight = 1, evolution_min = 0.3, evolution_max = 0.8},
-        { { name = 'personal-laser-defense-equipment', count = 1 },   weight = 2, evolution_min = 0.5, evolution_max = 1 },
-        { { name = 'exoskeleton-equipment', count = 1 },              weight = 1, evolution_min = 0.3, evolution_max = 1 },
+        { { name = 'personal-laser-defense-equipment', count = 1 }, weight = 2, evolution_min = 0.5, evolution_max = 1 },
+        { { name = 'exoskeleton-equipment', count = 1 }, weight = 1, evolution_min = 0.3, evolution_max = 1 },
         { { name = 'iron-gear-wheel', count = math.random(80, 100) }, weight = 3, evolution_min = 0.0, evolution_max = 0.3 },
-        { { name = 'copper-cable', count = math.random(100, 200) },   weight = 3, evolution_min = 0.0, evolution_max = 0.3 },
-        { { name = 'engine-unit', count = math.random(16, 32) },      weight = 2, evolution_min = 0.1, evolution_max = 0.5 },
+        { { name = 'copper-cable', count = math.random(100, 200) }, weight = 3, evolution_min = 0.0, evolution_max = 0.3 },
+        { { name = 'engine-unit', count = math.random(16, 32) }, weight = 2, evolution_min = 0.1, evolution_max = 0.5 },
         {
             { name = 'electric-engine-unit', count = math.random(16, 32) },
             weight = 2,
             evolution_min = 0.4,
             evolution_max = 0.8
         },
-        { { name = 'battery', count = math.random(50, 150) },          weight = 2, evolution_min = 0.3, evolution_max = 0.8 },
+        { { name = 'battery', count = math.random(50, 150) }, weight = 2, evolution_min = 0.3, evolution_max = 0.8 },
         { { name = 'advanced-circuit', count = math.random(50, 150) }, weight = 3, evolution_min = 0.4, evolution_max = 1 },
         {
             { name = 'electronic-circuit', count = math.random(50, 150) },
@@ -436,14 +459,14 @@ local function treasure_chest(position, distance_to_center)
             evolution_min = 0.0,
             evolution_max = 0.4
         },
-        { { name = 'processing-unit', count = math.random(50, 150) }, weight = 3,  evolution_min = 0.7, evolution_max = 1 },
-        { { name = 'explosives', count = math.random(40, 50) },       weight = 10, evolution_min = 0.0, evolution_max = 1 },
-        { { name = 'lubricant-barrel', count = math.random(4, 10) },  weight = 1,  evolution_min = 0.3, evolution_max = 0.5 },
-        { { name = 'rocket-fuel', count = math.random(4, 10) },       weight = 2,  evolution_min = 0.3, evolution_max = 0.7 },
-        { { name = 'steel-plate', count = math.random(25, 75) },      weight = 2,  evolution_min = 0.1, evolution_max = 0.3 },
-        { { name = 'nuclear-fuel', count = 1 },                       weight = 2,  evolution_min = 0.7, evolution_max = 1 },
-        { { name = 'burner-inserter', count = math.random(8, 16) },   weight = 3,  evolution_min = 0.0, evolution_max = 0.1 },
-        { { name = 'inserter', count = math.random(8, 16) },          weight = 3,  evolution_min = 0.0, evolution_max = 0.4 },
+        { { name = 'processing-unit', count = math.random(50, 150) }, weight = 3, evolution_min = 0.7, evolution_max = 1 },
+        { { name = 'explosives', count = math.random(40, 50) }, weight = 10, evolution_min = 0.0, evolution_max = 1 },
+        { { name = 'lubricant-barrel', count = math.random(4, 10) }, weight = 1, evolution_min = 0.3, evolution_max = 0.5 },
+        { { name = 'rocket-fuel', count = math.random(4, 10) }, weight = 2, evolution_min = 0.3, evolution_max = 0.7 },
+        { { name = 'steel-plate', count = math.random(25, 75) }, weight = 2, evolution_min = 0.1, evolution_max = 0.3 },
+        { { name = 'nuclear-fuel', count = 1 }, weight = 2, evolution_min = 0.7, evolution_max = 1 },
+        { { name = 'burner-inserter', count = math.random(8, 16) }, weight = 3, evolution_min = 0.0, evolution_max = 0.1 },
+        { { name = 'inserter', count = math.random(8, 16) }, weight = 3, evolution_min = 0.0, evolution_max = 0.4 },
         {
             { name = 'long-handed-inserter', count = math.random(8, 16) },
             weight = 3,
@@ -457,7 +480,7 @@ local function treasure_chest(position, distance_to_center)
             evolution_min = 0.4,
             evolution_max = 1
         },
-        { { name = 'bulk-inserter', count = math.random(4, 8) },  weight = 3, evolution_min = 0.3, evolution_max = 1 },
+        { { name = 'bulk-inserter', count = math.random(4, 8) }, weight = 3, evolution_min = 0.3, evolution_max = 1 },
         {
             { name = 'small-electric-pole', count = math.random(16, 24) },
             weight = 3,
@@ -471,12 +494,12 @@ local function treasure_chest(position, distance_to_center)
             evolution_max = 1
         },
         { { name = 'big-electric-pole', count = math.random(4, 8) }, weight = 3, evolution_min = 0.3, evolution_max = 1 },
-        { { name = 'substation', count = math.random(2, 4) },        weight = 3, evolution_min = 0.5, evolution_max = 1 },
-        { { name = 'wooden-chest', count = math.random(16, 24) },    weight = 3, evolution_min = 0.0, evolution_max = 0.2 },
-        { { name = 'iron-chest', count = math.random(4, 8) },        weight = 3, evolution_min = 0.1, evolution_max = 0.4 },
-        { { name = 'steel-chest', count = math.random(4, 8) },       weight = 3, evolution_min = 0.3, evolution_max = 1 },
-        { { name = 'small-lamp', count = math.random(16, 32) },      weight = 3, evolution_min = 0.1, evolution_max = 0.3 },
-        { { name = 'rail', count = math.random(25, 75) },            weight = 3, evolution_min = 0.1, evolution_max = 0.6 },
+        { { name = 'substation', count = math.random(2, 4) }, weight = 3, evolution_min = 0.5, evolution_max = 1 },
+        { { name = 'wooden-chest', count = math.random(16, 24) }, weight = 3, evolution_min = 0.0, evolution_max = 0.2 },
+        { { name = 'iron-chest', count = math.random(4, 8) }, weight = 3, evolution_min = 0.1, evolution_max = 0.4 },
+        { { name = 'steel-chest', count = math.random(4, 8) }, weight = 3, evolution_min = 0.3, evolution_max = 1 },
+        { { name = 'small-lamp', count = math.random(16, 32) }, weight = 3, evolution_min = 0.1, evolution_max = 0.3 },
+        { { name = 'rail', count = math.random(25, 75) }, weight = 3, evolution_min = 0.1, evolution_max = 0.6 },
         {
             { name = 'assembling-machine-1', count = math.random(2, 4) },
             weight = 3,
@@ -490,16 +513,16 @@ local function treasure_chest(position, distance_to_center)
             evolution_max = 0.8
         },
         { { name = 'assembling-machine-3', count = math.random(1, 2) }, weight = 3, evolution_min = 0.5, evolution_max = 1 },
-        { { name = 'accumulator', count = math.random(4, 8) },          weight = 3, evolution_min = 0.4, evolution_max = 1 },
-        { { name = 'offshore-pump', count = math.random(1, 3) },        weight = 2, evolution_min = 0.0, evolution_max = 0.1 },
-        { { name = 'beacon', count = math.random(1, 2) },               weight = 3, evolution_min = 0.7, evolution_max = 1 },
-        { { name = 'boiler', count = math.random(4, 8) },               weight = 3, evolution_min = 0.0, evolution_max = 0.3 },
-        { { name = 'steam-engine', count = math.random(2, 4) },         weight = 3, evolution_min = 0.0, evolution_max = 0.5 },
-        { { name = 'steam-turbine', count = math.random(1, 2) },        weight = 2, evolution_min = 0.6, evolution_max = 1 },
+        { { name = 'accumulator', count = math.random(4, 8) }, weight = 3, evolution_min = 0.4, evolution_max = 1 },
+        { { name = 'offshore-pump', count = math.random(1, 3) }, weight = 2, evolution_min = 0.0, evolution_max = 0.1 },
+        { { name = 'beacon', count = math.random(1, 2) }, weight = 3, evolution_min = 0.7, evolution_max = 1 },
+        { { name = 'boiler', count = math.random(4, 8) }, weight = 3, evolution_min = 0.0, evolution_max = 0.3 },
+        { { name = 'steam-engine', count = math.random(2, 4) }, weight = 3, evolution_min = 0.0, evolution_max = 0.5 },
+        { { name = 'steam-turbine', count = math.random(1, 2) }, weight = 2, evolution_min = 0.6, evolution_max = 1 },
         --{{name = "nuclear-reactor", count = 1}, weight = 1, evolution_min = 0.6, evolution_max = 1},
-        { { name = 'centrifuge', count = math.random(1, 2) },           weight = 1, evolution_min = 0.6, evolution_max = 1 },
-        { { name = 'heat-pipe', count = math.random(4, 8) },            weight = 2, evolution_min = 0.5, evolution_max = 1 },
-        { { name = 'heat-exchanger', count = math.random(2, 4) },       weight = 2, evolution_min = 0.5, evolution_max = 1 },
+        { { name = 'centrifuge', count = math.random(1, 2) }, weight = 1, evolution_min = 0.6, evolution_max = 1 },
+        { { name = 'heat-pipe', count = math.random(4, 8) }, weight = 2, evolution_min = 0.5, evolution_max = 1 },
+        { { name = 'heat-exchanger', count = math.random(2, 4) }, weight = 2, evolution_min = 0.5, evolution_max = 1 },
         {
             { name = 'arithmetic-combinator', count = math.random(8, 16) },
             weight = 1,
@@ -507,10 +530,10 @@ local function treasure_chest(position, distance_to_center)
             evolution_max = 1
         },
         { { name = 'constant-combinator', count = math.random(8, 16) }, weight = 1, evolution_min = 0.1, evolution_max = 1 },
-        { { name = 'decider-combinator', count = math.random(8, 16) },  weight = 1, evolution_min = 0.1, evolution_max = 1 },
-        { { name = 'power-switch', count = math.random(1, 2) },         weight = 1, evolution_min = 0.1, evolution_max = 1 },
+        { { name = 'decider-combinator', count = math.random(8, 16) }, weight = 1, evolution_min = 0.1, evolution_max = 1 },
+        { { name = 'power-switch', count = math.random(1, 2) }, weight = 1, evolution_min = 0.1, evolution_max = 1 },
         { { name = 'programmable-speaker', count = math.random(4, 8) }, weight = 1, evolution_min = 0.1, evolution_max = 1 },
-        { { name = 'chemical-plant', count = math.random(1, 3) },       weight = 3, evolution_min = 0.3, evolution_max = 1 },
+        { { name = 'chemical-plant', count = math.random(1, 3) }, weight = 3, evolution_min = 0.3, evolution_max = 1 },
         {
             { name = 'burner-mining-drill', count = math.random(2, 4) },
             weight = 3,
@@ -535,7 +558,7 @@ local function treasure_chest(position, distance_to_center)
             evolution_min = 0.5,
             evolution_max = 1
         },
-        { { name = 'express-splitter', count = math.random(2, 4) },   weight = 3, evolution_min = 0.5, evolution_max = 1 },
+        { { name = 'express-splitter', count = math.random(2, 4) }, weight = 3, evolution_min = 0.5, evolution_max = 1 },
         {
             { name = 'fast-transport-belt', count = math.random(25, 75) },
             weight = 3,
@@ -548,34 +571,34 @@ local function treasure_chest(position, distance_to_center)
             evolution_min = 0.2,
             evolution_max = 0.7
         },
-        { { name = 'fast-splitter', count = math.random(2, 4) },      weight = 3, evolution_min = 0.2, evolution_max = 0.3 },
-        { { name = 'transport-belt', count = math.random(25, 75) },   weight = 3, evolution_min = 0,   evolution_max = 0.3 },
-        { { name = 'underground-belt', count = math.random(4, 8) },   weight = 3, evolution_min = 0,   evolution_max = 0.3 },
-        { { name = 'splitter', count = math.random(2, 4) },           weight = 3, evolution_min = 0,   evolution_max = 0.3 },
+        { { name = 'fast-splitter', count = math.random(2, 4) }, weight = 3, evolution_min = 0.2, evolution_max = 0.3 },
+        { { name = 'transport-belt', count = math.random(25, 75) }, weight = 3, evolution_min = 0, evolution_max = 0.3 },
+        { { name = 'underground-belt', count = math.random(4, 8) }, weight = 3, evolution_min = 0, evolution_max = 0.3 },
+        { { name = 'splitter', count = math.random(2, 4) }, weight = 3, evolution_min = 0, evolution_max = 0.3 },
         --{{name = "oil-refinery", count = math.random(2,4)}, weight = 2, evolution_min = 0.3, evolution_max = 1},
-        { { name = 'pipe', count = math.random(30, 50) },             weight = 3, evolution_min = 0.0, evolution_max = 0.3 },
-        { { name = 'pipe-to-ground', count = math.random(4, 8) },     weight = 1, evolution_min = 0.2, evolution_max = 0.5 },
-        { { name = 'pumpjack', count = math.random(1, 3) },           weight = 1, evolution_min = 0.3, evolution_max = 0.8 },
-        { { name = 'pump', count = math.random(1, 2) },               weight = 1, evolution_min = 0.3, evolution_max = 0.8 },
+        { { name = 'pipe', count = math.random(30, 50) }, weight = 3, evolution_min = 0.0, evolution_max = 0.3 },
+        { { name = 'pipe-to-ground', count = math.random(4, 8) }, weight = 1, evolution_min = 0.2, evolution_max = 0.5 },
+        { { name = 'pumpjack', count = math.random(1, 3) }, weight = 1, evolution_min = 0.3, evolution_max = 0.8 },
+        { { name = 'pump', count = math.random(1, 2) }, weight = 1, evolution_min = 0.3, evolution_max = 0.8 },
         --{{name = "solar-panel", count = math.random(8,16)}, weight = 3, evolution_min = 0.4, evolution_max = 0.9},
-        { { name = 'electric-furnace', count = math.random(2, 4) },   weight = 3, evolution_min = 0.5, evolution_max = 1 },
-        { { name = 'steel-furnace', count = math.random(4, 8) },      weight = 3, evolution_min = 0.2, evolution_max = 0.7 },
-        { { name = 'stone-furnace', count = math.random(8, 16) },     weight = 3, evolution_min = 0.0, evolution_max = 0.1 },
-        { { name = 'radar', count = math.random(1, 2) },              weight = 1, evolution_min = 0.1, evolution_max = 0.3 },
-        { { name = 'rail-signal', count = math.random(8, 16) },       weight = 2, evolution_min = 0.2, evolution_max = 0.8 },
+        { { name = 'electric-furnace', count = math.random(2, 4) }, weight = 3, evolution_min = 0.5, evolution_max = 1 },
+        { { name = 'steel-furnace', count = math.random(4, 8) }, weight = 3, evolution_min = 0.2, evolution_max = 0.7 },
+        { { name = 'stone-furnace', count = math.random(8, 16) }, weight = 3, evolution_min = 0.0, evolution_max = 0.1 },
+        { { name = 'radar', count = math.random(1, 2) }, weight = 1, evolution_min = 0.1, evolution_max = 0.3 },
+        { { name = 'rail-signal', count = math.random(8, 16) }, weight = 2, evolution_min = 0.2, evolution_max = 0.8 },
         { { name = 'rail-chain-signal', count = math.random(8, 16) }, weight = 2, evolution_min = 0.2, evolution_max = 0.8 },
-        { { name = 'stone-wall', count = math.random(25, 75) },       weight = 1, evolution_min = 0.1, evolution_max = 0.5 },
-        { { name = 'gate', count = math.random(4, 8) },               weight = 1, evolution_min = 0.1, evolution_max = 0.5 },
-        { { name = 'storage-tank', count = math.random(1, 4) },       weight = 3, evolution_min = 0.3, evolution_max = 0.6 },
-        { { name = 'train-stop', count = math.random(1, 2) },         weight = 1, evolution_min = 0.2, evolution_max = 0.7 },
+        { { name = 'stone-wall', count = math.random(25, 75) }, weight = 1, evolution_min = 0.1, evolution_max = 0.5 },
+        { { name = 'gate', count = math.random(4, 8) }, weight = 1, evolution_min = 0.1, evolution_max = 0.5 },
+        { { name = 'storage-tank', count = math.random(1, 4) }, weight = 3, evolution_min = 0.3, evolution_max = 0.6 },
+        { { name = 'train-stop', count = math.random(1, 2) }, weight = 1, evolution_min = 0.2, evolution_max = 0.7 },
         --{{name = "express-loader", count = math.random(1,3)}, weight = 1, evolution_min = 0.5, evolution_max = 1},
         --{{name = "fast-loader", count = math.random(1,3)}, weight = 1, evolution_min = 0.2, evolution_max = 0.7},
         --{{name = "loader", count = math.random(1,3)}, weight = 1, evolution_min = 0.0, evolution_max = 0.5},
-        { { name = 'lab', count = math.random(1, 2) },                weight = 2, evolution_min = 0.0, evolution_max = 0.1 },
+        { { name = 'lab', count = math.random(1, 2) }, weight = 2, evolution_min = 0.0, evolution_max = 0.1 },
         --{{name = "roboport", count = math.random(2,4)}, weight = 2, evolution_min = 0.6, evolution_max = 1},
         --{{name = "flamethrower-turret", count = math.random(1,3)}, weight = 3, evolution_min = 0.5, evolution_max = 1},
         --{{name = "laser-turret", count = math.random(4,8)}, weight = 3, evolution_min = 0.5, evolution_max = 1},
-        { { name = 'gun-turret', count = math.random(2, 6) },         weight = 3, evolution_min = 0.2, evolution_max = 0.9 }
+        { { name = 'gun-turret', count = math.random(2, 6) }, weight = 3, evolution_min = 0.2, evolution_max = 0.9 }
     }
 
     distance_to_center = distance_to_center - spawn_dome_size
@@ -588,7 +611,7 @@ local function treasure_chest(position, distance_to_center)
         distance_to_center = 1
     end
     for _, t in pairs(chest_loot) do
-        for x = 1, t.weight, 1 do
+        for _ = 1, t.weight, 1 do
             if t.evolution_min <= distance_to_center and t.evolution_max >= distance_to_center then
                 table.insert(chest_raffle, t[1])
             end
@@ -605,7 +628,7 @@ local function treasure_chest(position, distance_to_center)
     local e = game.surfaces['cave_miner'].create_entity({ name = n, position = position, force = 'player' })
     e.minable = false
     local i = e.get_inventory(defines.inventory.chest)
-    for x = 1, math.random(3, 5), 1 do
+    for _ = 1, math.random(3, 5), 1 do
         local loot = chest_raffle[math.random(1, #chest_raffle)]
         i.insert(loot)
     end
@@ -636,7 +659,7 @@ local function rare_treasure_chest(position)
     table.insert(rare_treasure_chest_loot_weights, { { name = 'destroyer-capsule', count = math.random(4, 8) }, 3 })
     table.insert(rare_treasure_chest_loot_weights, { { name = 'atomic-bomb', count = 1 }, 1 })
     for _, t in pairs(rare_treasure_chest_loot_weights) do
-        for x = 1, t[2], 1 do
+        for _ = 1, t[2], 1 do
             table.insert(rare_treasure_chest_raffle_table, t[1])
         end
     end
@@ -644,58 +667,59 @@ local function rare_treasure_chest(position)
     local e = game.surfaces[1].create_entity { name = 'steel-chest', position = p, force = 'player' }
     e.minable = false
     local i = e.get_inventory(defines.inventory.chest)
-    for x = 1, math.random(2, 3), 1 do
+    for _ = 1, math.random(2, 3), 1 do
         local loot = rare_treasure_chest_raffle_table[math.random(1, #rare_treasure_chest_raffle_table)]
         i.insert(loot)
     end
 end
 
 local function secret_shop(pos)
-    local secret_market_items = {
-        { price = { { 'raw-fish', math.random(250, 450) } }, offer = { type = 'give-item', item = 'combat-shotgun' } },
-        { price = { { 'raw-fish', math.random(250, 450) } }, offer = { type = 'give-item', item = 'flamethrower' } },
-        { price = { { 'raw-fish', math.random(75, 125) } },  offer = { type = 'give-item', item = 'rocket-launcher' } },
-        { price = { { 'raw-fish', math.random(2, 4) } },     offer = { type = 'give-item', item = 'piercing-rounds-magazine' } },
-        { price = { { 'raw-fish', math.random(8, 16) } },    offer = { type = 'give-item', item = 'uranium-rounds-magazine' } },
-        { price = { { 'raw-fish', math.random(8, 16) } },    offer = { type = 'give-item', item = 'piercing-shotgun-shell' } },
-        { price = { { 'raw-fish', math.random(6, 12) } },    offer = { type = 'give-item', item = 'flamethrower-ammo' } },
-        { price = { { 'raw-fish', math.random(8, 16) } },    offer = { type = 'give-item', item = 'rocket' } },
-        { price = { { 'raw-fish', math.random(10, 20) } },   offer = { type = 'give-item', item = 'explosive-rocket' } },
-        { price = { { 'raw-fish', math.random(15, 30) } },   offer = { type = 'give-item', item = 'explosive-cannon-shell' } },
+    local secret_market_items =
+    {
+        { price = { { name = 'raw-fish', count = math.random(250, 450) } }, offer = { type = 'give-item', item = 'combat-shotgun' } },
+        { price = { { name = 'raw-fish', count = math.random(250, 450) } }, offer = { type = 'give-item', item = 'flamethrower' } },
+        { price = { { name = 'raw-fish', count = math.random(75, 125) } }, offer = { type = 'give-item', item = 'rocket-launcher' } },
+        { price = { { name = 'raw-fish', count = math.random(2, 4) } }, offer = { type = 'give-item', item = 'piercing-rounds-magazine' } },
+        { price = { { name = 'raw-fish', count = math.random(8, 16) } }, offer = { type = 'give-item', item = 'uranium-rounds-magazine' } },
+        { price = { { name = 'raw-fish', count = math.random(8, 16) } }, offer = { type = 'give-item', item = 'piercing-shotgun-shell' } },
+        { price = { { name = 'raw-fish', count = math.random(6, 12) } }, offer = { type = 'give-item', item = 'flamethrower-ammo' } },
+        { price = { { name = 'raw-fish', count = math.random(8, 16) } }, offer = { type = 'give-item', item = 'rocket' } },
+        { price = { { name = 'raw-fish', count = math.random(10, 20) } }, offer = { type = 'give-item', item = 'explosive-rocket' } },
+        { price = { { name = 'raw-fish', count = math.random(15, 30) } }, offer = { type = 'give-item', item = 'explosive-cannon-shell' } },
         {
-            price = { { 'raw-fish', math.random(25, 35) } },
+            price = { { name = 'raw-fish', count = math.random(25, 35) } },
             offer = { type = 'give-item', item = 'explosive-uranium-cannon-shell' }
         },
-        { price = { { 'raw-fish', math.random(20, 40) } },       offer = { type = 'give-item', item = 'cluster-grenade' } },
-        { price = { { 'raw-fish', math.random(1, 3) } },         offer = { type = 'give-item', item = 'land-mine' } },
-        { price = { { 'raw-fish', math.random(250, 500) } },     offer = { type = 'give-item', item = 'modular-armor' } },
-        { price = { { 'raw-fish', math.random(1500, 3000) } },   offer = { type = 'give-item', item = 'power-armor' } },
-        { price = { { 'raw-fish', math.random(15000, 20000) } }, offer = { type = 'give-item', item = 'power-armor-mk2' } },
+        { price = { { name = 'raw-fish', count = math.random(20, 40) } }, offer = { type = 'give-item', item = 'cluster-grenade' } },
+        { price = { { name = 'raw-fish', count = math.random(1, 3) } }, offer = { type = 'give-item', item = 'land-mine' } },
+        { price = { { name = 'raw-fish', count = math.random(250, 500) } }, offer = { type = 'give-item', item = 'modular-armor' } },
+        { price = { { name = 'raw-fish', count = math.random(1500, 3000) } }, offer = { type = 'give-item', item = 'power-armor' } },
+        { price = { { name = 'raw-fish', count = math.random(15000, 20000) } }, offer = { type = 'give-item', item = 'power-armor-mk2' } },
         {
-            price = { { 'raw-fish', math.random(4000, 7000) } },
-            offer = { type = 'give-item', item = 'fusion-reactor-equipment' }
+            price = { { name = 'raw-fish', count = math.random(4000, 7000) } },
+            offer = { type = 'give-item', item = 'fission-reactor-equipment' }
         },
-        { price = { { 'raw-fish', math.random(50, 100) } },   offer = { type = 'give-item', item = 'battery-equipment' } },
-        { price = { { 'raw-fish', math.random(700, 1100) } }, offer = { type = 'give-item', item = 'battery-mk2-equipment' } },
-        { price = { { 'raw-fish', math.random(400, 700) } },  offer = { type = 'give-item', item = 'belt-immunity-equipment' } },
+        { price = { { name = 'raw-fish', count = math.random(50, 100) } }, offer = { type = 'give-item', item = 'battery-equipment' } },
+        { price = { { name = 'raw-fish', count = math.random(700, 1100) } }, offer = { type = 'give-item', item = 'battery-mk2-equipment' } },
+        { price = { { name = 'raw-fish', count = math.random(400, 700) } }, offer = { type = 'give-item', item = 'belt-immunity-equipment' } },
         {
-            price = { { 'raw-fish', math.random(12000, 16000) } },
+            price = { { name = 'raw-fish', count = math.random(12000, 16000) } },
             offer = { type = 'give-item', item = 'night-vision-equipment' }
         },
-        { price = { { 'raw-fish', math.random(300, 500) } }, offer = { type = 'give-item', item = 'exoskeleton-equipment' } },
+        { price = { { name = 'raw-fish', count = math.random(300, 500) } }, offer = { type = 'give-item', item = 'exoskeleton-equipment' } },
         {
-            price = { { 'raw-fish', math.random(350, 500) } },
+            price = { { name = 'raw-fish', count = math.random(350, 500) } },
             offer = { type = 'give-item', item = 'personal-roboport-equipment' }
         },
-        { price = { { 'raw-fish', math.random(25, 50) } },   offer = { type = 'give-item', item = 'construction-robot' } },
-        { price = { { 'raw-fish', math.random(250, 450) } }, offer = { type = 'give-item', item = 'energy-shield-equipment' } },
+        { price = { { name = 'raw-fish', count = math.random(25, 50) } }, offer = { type = 'give-item', item = 'construction-robot' } },
+        { price = { { name = 'raw-fish', count = math.random(250, 450) } }, offer = { type = 'give-item', item = 'energy-shield-equipment' } },
         {
-            price = { { 'raw-fish', math.random(350, 550) } },
+            price = { { name = 'raw-fish', count = math.random(350, 550) } },
             offer = { type = 'give-item', item = 'personal-laser-defense-equipment' }
         },
-        { price = { { 'raw-fish', math.random(100, 175) } }, offer = { type = 'give-item', item = 'loader' } },
-        { price = { { 'raw-fish', math.random(200, 350) } }, offer = { type = 'give-item', item = 'fast-loader' } },
-        { price = { { 'raw-fish', math.random(400, 600) } }, offer = { type = 'give-item', item = 'express-loader' } }
+        { price = { { name = 'raw-fish', count = math.random(100, 175) } }, offer = { type = 'give-item', item = 'loader' } },
+        { price = { { name = 'raw-fish', count = math.random(200, 350) } }, offer = { type = 'give-item', item = 'fast-loader' } },
+        { price = { { name = 'raw-fish', count = math.random(400, 600) } }, offer = { type = 'give-item', item = 'express-loader' } }
     }
     secret_market_items = shuffle(secret_market_items)
 
@@ -735,7 +759,6 @@ local function on_chunk_generated(event)
     local extra_tree_positions = {}
     local spawn_tree_positions = {}
     local tile_to_insert = false
-    local entity_has_been_placed = false
     local pos_x = 0
     local pos_y = 0
     local tile_distance_to_center = 0
@@ -752,9 +775,9 @@ local function on_chunk_generated(event)
     local m3 = 0.10 --07
 
     for x = 0, 31, 1 do
-        for y = 0, 31, 1 do
+        for yv = 0, 31, 1 do
             pos_x = event.area.left_top.x + x
-            pos_y = event.area.left_top.y + y
+            pos_y = event.area.left_top.y + yv
             tile_distance_to_center = pos_x ^ 2 + pos_y ^ 2
 
             noise[1] = simplex_noise(pos_x / 350, pos_y / 350, storage.noise_seed + current_noise_seed_add)
@@ -867,10 +890,11 @@ local function on_chunk_generated(event)
                             if math.random(1, 48) == 1 then
                                 local p = surface.find_non_colliding_position('crude-oil', { pos_x, pos_y }, 5, 1)
                                 if p then
-                                    surface.create_entity {
+                                    surface.create_entity
+                                    {
                                         name = 'crude-oil',
                                         position = p,
-                                        amount = math.floor(math.random(25000 + tile_distance_to_center * 0.5, 50000 + tile_distance_to_center), 0)
+                                        amount = math.floor(math.random(25000 + tile_distance_to_center * 0.5, 50000 + tile_distance_to_center))
                                     }
                                 end
                             end
@@ -964,9 +988,9 @@ local function on_chunk_generated(event)
 
     for _, p in pairs(enemy_worm_positions) do
         if math.random(1, 300) == 1 then
-            local tile_distance_to_center = math.sqrt(p[1] ^ 2 + p[2] ^ 2)
+            tile_distance_to_center = math.sqrt(p[1] ^ 2 + p[2] ^ 2)
             if tile_distance_to_center > storage.worm_free_zone_radius then
-                local raffle_index = math.ceil((tile_distance_to_center - storage.worm_free_zone_radius) * 0.01, 0)
+                local raffle_index = math.ceil((tile_distance_to_center - storage.worm_free_zone_radius) * 0.01)
                 if raffle_index < 1 then
                     raffle_index = 1
                 end
@@ -981,9 +1005,9 @@ local function on_chunk_generated(event)
 
     for _, p in pairs(enemy_can_place_worm_positions) do
         if math.random(1, 30) == 1 then
-            local tile_distance_to_center = math.sqrt(p[1] ^ 2 + p[2] ^ 2)
+            tile_distance_to_center = math.sqrt(p[1] ^ 2 + p[2] ^ 2)
             if tile_distance_to_center > storage.worm_free_zone_radius then
-                local raffle_index = math.ceil((tile_distance_to_center - storage.worm_free_zone_radius) * 0.01, 0)
+                local raffle_index = math.ceil((tile_distance_to_center - storage.worm_free_zone_radius) * 0.01)
                 if raffle_index < 1 then
                     raffle_index = 1
                 end
@@ -1009,7 +1033,8 @@ local function on_chunk_generated(event)
     for _, p in pairs(secret_shop_locations) do
         if math.random(1, 10) == 1 then
             if
-                surface.count_entities_filtered {
+                surface.count_entities_filtered
+                {
                     area = { { p[1] - 125, p[2] - 125 }, { p[1] + 125, p[2] + 125 } },
                     name = 'market',
                     limit = 1
@@ -1060,7 +1085,8 @@ local function hunger_update(player, food_value)
     if past_hunger == 200 and storage.player_hunger[player.name] + food_value > 200 then
         storage.player_hunger[player.name] = player_hunger_spawn_value
         player.character.die('player')
-        local t = {
+        local t =
+        {
             ' ate too much and exploded.',
             ' should have gone on a diet.',
             ' needs to work on their bad eating habbits.',
@@ -1102,7 +1128,7 @@ local function on_player_joined_game(event)
     local player = game.players[event.player_index]
     if not storage.cave_miner_init_done then
         surface.daytime = 0.5
-        surface.freeze_daytime = 1
+        surface.freeze_daytime = true
         game.forces['player'].technologies['landfill'].enabled = false
         game.forces['player'].technologies['night-vision-equipment'].enabled = false
         game.forces['player'].technologies['artillery-shell-range-1'].enabled = false
@@ -1130,13 +1156,14 @@ local function on_player_joined_game(event)
         storage.biter_spawn_amount_weights[6] = { 2, 64 }
         storage.biter_spawn_amount_raffle = {}
         for _, t in pairs(storage.biter_spawn_amount_weights) do
-            for x = 1, t[2], 1 do
+            for _ = 1, t[2], 1 do
                 table.insert(storage.biter_spawn_amount_raffle, t[1])
             end
         end
 
         storage.rock_density = 62 ---- table.insert value up to 100
-        storage.rock_raffle = {
+        storage.rock_raffle =
+        {
             'big-sand-rock',
             'big-sand-rock',
             'big-rock',
@@ -1169,7 +1196,7 @@ local function on_player_joined_game(event)
         storage.rock_mining_chance_weights[4] = { 'uranium-ore', 3 }
         storage.mining_raffle_table = {}
         for _, t in pairs(storage.rock_mining_chance_weights) do
-            for x = 1, t[2], 1 do
+            for _ = 1, t[2], 1 do
                 table.insert(storage.mining_raffle_table, t[1])
             end
         end
@@ -1203,7 +1230,7 @@ local function spawn_cave_inhabitant(pos, target_position)
     end
     local surface = game.surfaces['cave_miner']
     local tile_distance_to_center = math.sqrt(pos.x ^ 2 + pos.y ^ 2)
-    local rock_inhabitants_index = math.ceil((tile_distance_to_center - math.sqrt(spawn_dome_size)) * 0.015, 0)
+    local rock_inhabitants_index = math.ceil((tile_distance_to_center - math.sqrt(spawn_dome_size)) * 0.015)
     if rock_inhabitants_index < 1 then
         rock_inhabitants_index = 1
     end
@@ -1248,9 +1275,9 @@ local function find_first_entity_spiral_scan(pos, entities, range)
         pos.y = pos.y - 1
         pos.x = pos.x - 1
         for modifier = 1, -1, -2 do
-            for x = 1, z, 1 do
+            for _ = 1, z, 1 do
                 pos.x = pos.x + modifier
-                local t = surface.get_tile(pos)
+                local t = surface.get_tile(pos.x, pos.y)
                 if t.name == 'out-of-map' then
                     out_of_map_count = out_of_map_count + 1
                 end
@@ -1262,9 +1289,9 @@ local function find_first_entity_spiral_scan(pos, entities, range)
                     return e[1].position
                 end
             end
-            for y = 1, z, 1 do
+            for _ = 1, z, 1 do
                 pos.y = pos.y + modifier
-                local t = surface.get_tile(pos)
+                local t = surface.get_tile(pos.x, pos.y)
                 if t.name == 'out-of-map' then
                     out_of_map_count = out_of_map_count + 1
                 end
@@ -1306,12 +1333,12 @@ local function biter_attack_event()
             end
         end
         if #valid_positions > 1 then
-            for y = math.random(1, 2), #valid_positions, 2 do
-                if y > #valid_positions then
+            for yv = math.random(1, 2), #valid_positions, 2 do
+                if yv > #valid_positions then
                     break
                 end
                 for x = 1, storage.biter_spawn_amount_raffle[math.random(1, #storage.biter_spawn_amount_raffle)], 1 do
-                    table.insert(storage.biter_spawn_schedule, { game.tick + 20 * x, valid_positions[y] })
+                    table.insert(storage.biter_spawn_schedule, { game.tick + 20 * x, valid_positions[yv] })
                 end
             end
         end
@@ -1324,7 +1351,7 @@ local function darkness_events()
             return
         end
         if storage.darkness_threat_level[p.name] > 4 then
-            for x = 1, 2 + storage.darkness_threat_level[p.name], 1 do
+            for _ = 1, 2 + storage.darkness_threat_level[p.name], 1 do
                 spawn_cave_inhabitant(p.position)
             end
             local biters_found = p.surface.find_enemy_units(p.position, 12, 'player')
@@ -1358,7 +1385,8 @@ local function darkness_checks()
                 storage.darkness_threat_level[p.name] = 0
             else
                 local light_source_entities =
-                    p.surface.find_entities_filtered {
+                    p.surface.find_entities_filtered
+                    {
                         area = { { p.position.x - 12, p.position.y - 12 }, { p.position.x + 12, p.position.y + 12 } },
                         name = 'small-lamp'
                     }
@@ -1381,7 +1409,8 @@ local function darkness_checks()
     end
 end
 
-local healing_amount = {
+local healing_amount =
+{
     ['big-rock'] = 4,
     ['big-sand-rock'] = 4,
     ['huge-rock'] = 16
@@ -1402,14 +1431,14 @@ local function heal_rocks()
 end
 
 local function on_tick()
-    local storage = {}
+    local content = {}
     if game.tick % 30 == 0 then
-        if storage.biter_spawn_schedule then
-            for x = 1, #storage.biter_spawn_schedule, 1 do
-                if storage.biter_spawn_schedule[x] then
-                    if game.tick >= storage.biter_spawn_schedule[x][1] then
-                        local pos = { x = storage.biter_spawn_schedule[x][2].x, y = storage.biter_spawn_schedule[x][2].y }
-                        storage.biter_spawn_schedule[x] = nil
+        if content.biter_spawn_schedule then
+            for x = 1, #content.biter_spawn_schedule, 1 do
+                if content.biter_spawn_schedule[x] then
+                    if game.tick >= content.biter_spawn_schedule[x][1] then
+                        local pos = { x = content.biter_spawn_schedule[x][2].x, y = content.biter_spawn_schedule[x][2].y }
+                        content.biter_spawn_schedule[x] = nil
                         spawn_cave_inhabitant(pos)
                     end
                 end
@@ -1439,14 +1468,18 @@ local function on_tick()
     if game.tick == 150 then
         local surface = game.surfaces['cave_miner']
         local p = game.surfaces['cave_miner'].find_non_colliding_position('market', { 0, -15 }, 60, 2)
-        local x = game.surfaces['cave_miner'].find_non_colliding_position('player-port', { -5, -15 }, 60, 2)
-        local o = game.surfaces['cave_miner'].find_non_colliding_position('player-port', { 5, -25 }, 60, 2)
+        local x = game.surfaces['cave_miner'].find_non_colliding_position('market', { -5, -15 }, 60, 2)
+        local o = game.surfaces['cave_miner'].find_non_colliding_position('market', { 5, -25 }, 60, 2)
 
         storage.market = surface.create_entity { name = 'market', position = p }
-        storage.surface_cave_elevator = surface.create_entity { name = 'player-port', position = x, force = game.forces.neutral }
-        storage.surface_cave_chest = Module.create_chest(surface, o, storage)
+        surface.set_tiles({ { name = 'tutorial-grid', position = { x.x, x.y } } })
+        surface.set_tiles({ { name = 'tutorial-grid', position = { x.x, x.y + 1 } } })
+        surface.set_tiles({ { name = 'tutorial-grid', position = { x.x + 1, x.y } } })
+        surface.set_tiles({ { name = 'tutorial-grid', position = { x.x + 1, x.y + 1 } } })
+        storage.surface_cave_chest = Module.create_chest(surface, o, content)
 
-        rendering.draw_text {
+        rendering.draw_text
+        {
             text = 'Storage',
             surface = surface,
             target = storage.surface_cave_chest,
@@ -1455,16 +1488,18 @@ local function on_tick()
             alignment = 'center'
         }
 
-        rendering.draw_text {
+        rendering.draw_text
+        {
             text = 'Elevator',
             surface = surface,
-            target = storage.surface_cave_elevator,
+            target = { x.x, x.y },
             target_offset = { 0, 1 },
             color = { r = 0.98, g = 0.66, b = 0.22 },
             alignment = 'center'
         }
 
-        rendering.draw_text {
+        rendering.draw_text
+        {
             text = 'Market',
             surface = surface,
             target = storage.market,
@@ -1476,8 +1511,6 @@ local function on_tick()
         storage.market.destructible = false
         storage.surface_cave_chest.minable = false
         storage.surface_cave_chest.destructible = false
-        storage.surface_cave_elevator.minable = false
-        storage.surface_cave_elevator.destructible = false
 
         if enable_fishbank_terminal then
             storage.market.add_market_item({ price = {}, offer = { type = 'nothing', effect_description = 'Deposit Fish' } })
@@ -1492,7 +1525,8 @@ local function on_tick()
     end
 end
 
-local disabled_for_deconstruction = {
+local disabled_for_deconstruction =
+{
     ['fish'] = true,
     ['huge-rock'] = true,
     ['big-rock'] = true,
@@ -1507,7 +1541,8 @@ local function on_marked_for_deconstruction(event)
     end
 end
 
-local treasure_chest_messages = {
+local treasure_chest_messages =
+{
     "You notice an old crate within the rubble. It's filled with treasure!",
     "You find a chest underneath the broken rocks. It's filled with goodies!",
     'We has found the precious!'
@@ -1528,7 +1563,7 @@ local function pre_player_mined_item(event)
     end
 
     if event.entity.type == 'tree' then
-        surface.spill_item_stack(player.position, { name = 'raw-fish', count = math.random(1, 2) }, true)
+        surface.spill_item_stack { position = player.position, stack = { name = 'raw-fish', count = math.random(1, 2) }, enable_looted = true }
     end
 
     if event.entity.name == 'huge-rock' or event.entity.name == 'big-rock' or event.entity.name == 'big-sand-rock' then
@@ -1549,8 +1584,8 @@ local function pre_player_mined_item(event)
             hunger_update(player, -1)
         end
 
-        surface.spill_item_stack(player.position, { name = 'raw-fish', count = math.random(3, 4) }, true)
-        local bonus_amount = math.floor((tile_distance_to_center - math.sqrt(spawn_dome_size)) * 0.10, 0)
+        surface.spill_item_stack { position = player.position, stack = { name = 'raw-fish', count = math.random(3, 4) }, enable_looted = true }
+        local bonus_amount = math.floor((tile_distance_to_center - math.sqrt(spawn_dome_size)) * 0.10)
         if bonus_amount < 1 then
             bonus_amount = 0
         end
@@ -1567,38 +1602,37 @@ local function pre_player_mined_item(event)
 
         local mined_loot = storage.mining_raffle_table[math.random(1, #storage.mining_raffle_table)]
 
-        surface.create_entity(
+
+        player.create_local_flying_text(
             {
-                name = 'flying-text',
                 position = rock_position,
                 text = '+' .. amount .. ' [img=item/' .. mined_loot .. ']',
                 color = { r = 0.98, g = 0.66, b = 0.22 }
             }
         )
-        --surface.create_entity({name = "flying-text", position = rock_position, text = amount .. " " .. ore_floaty_texts[mined_loot][1], color = ore_floaty_texts[mined_loot][2]})
 
         if amount > storage.ore_spill_cap then
-            surface.spill_item_stack(rock_position, { name = mined_loot, count = storage.ore_spill_cap }, true)
+            surface.spill_item_stack { position = rock_position, stack = { name = mined_loot, count = storage.ore_spill_cap }, enable_looted = true }
             amount = amount - storage.ore_spill_cap
             local i = player.insert { name = mined_loot, count = amount }
             amount = amount - i
             if amount > 0 then
-                surface.spill_item_stack(rock_position, { name = mined_loot, count = amount }, true)
+                surface.spill_item_stack { position = rock_position, stack = { name = mined_loot, count = amount }, enable_looted = true }
             end
         else
-            surface.spill_item_stack(rock_position, { name = mined_loot, count = amount }, true)
+            surface.spill_item_stack { position = rock_position, stack = { name = mined_loot, count = amount }, enable_looted = true }
         end
 
         if amount_of_stone > storage.ore_spill_cap then
-            surface.spill_item_stack(rock_position, { name = 'stone', count = storage.ore_spill_cap }, true)
+            surface.spill_item_stack { position = rock_position, stack = { name = 'stone', count = storage.ore_spill_cap }, enable_looted = true }
             amount_of_stone = amount_of_stone - storage.ore_spill_cap
             local i = player.insert { name = 'stone', count = amount_of_stone }
             amount_of_stone = amount_of_stone - i
             if amount_of_stone > 0 then
-                surface.spill_item_stack(rock_position, { name = 'stone', count = amount_of_stone }, true)
+                surface.spill_item_stack { position = rock_position, stack = { name = 'stone', count = amount_of_stone }, enable_looted = true }
             end
         else
-            surface.spill_item_stack(rock_position, { name = 'stone', count = amount_of_stone }, true)
+            surface.spill_item_stack { position = rock_position, stack = { name = 'stone', count = amount_of_stone }, enable_looted = true }
         end
 
         storage.stats_rocks_broken = storage.stats_rocks_broken + 1
@@ -1606,11 +1640,12 @@ local function pre_player_mined_item(event)
 
         if math.random(1, 32) == 1 then
             local p = { x = rock_position.x, y = rock_position.y }
-            local tile_distance_to_center = p.x ^ 2 + p.y ^ 2
+            tile_distance_to_center = p.x ^ 2 + p.y ^ 2
             if tile_distance_to_center > spawn_dome_size + 100 then
                 local radius = 32
                 if
-                    surface.count_entities_filtered {
+                    surface.count_entities_filtered
+                    {
                         area = { { p.x - radius, p.y - radius }, { p.x + radius, p.y + radius } },
                         type = 'resource',
                         limit = 1
@@ -1618,7 +1653,8 @@ local function pre_player_mined_item(event)
                 then
                     local size_raffle = { { 'huge', 33, 42 }, { 'big', 17, 32 }, { '', 8, 16 }, { 'tiny', 3, 7 } }
                     local size = size_raffle[math.random(1, #size_raffle)]
-                    local ore_prints = {
+                    local ore_prints =
+                    {
                         coal = { 'dark', 'Coal' },
                         ['iron-ore'] = { 'shiny', 'Iron' },
                         ['copper-ore'] = { 'glimmering', 'Copper' },
@@ -1633,8 +1669,8 @@ local function pre_player_mined_item(event)
                     local ore_entities_placed = 0
                     local modifier_raffle = { { 0, -1 }, { -1, 0 }, { 1, 0 }, { 0, 1 } }
                     while ore_entities_placed < math.random(size[2], size[3]) do
-                        local a = math.ceil((math.random(tile_distance_to_center * 4, tile_distance_to_center * 5)) / 1 + ore_entities_placed * 0.5, 0)
-                        for x = 1, 150, 1 do
+                        local a = math.ceil((math.random(tile_distance_to_center * 4, tile_distance_to_center * 5)) / 1 + ore_entities_placed * 0.5)
+                        for _ = 1, 150, 1 do
                             local m = modifier_raffle[math.random(1, #modifier_raffle)]
                             local pos = { x = p.x + m[1], y = p.y + m[2] }
                             if surface.can_place_entity({ name = mined_loot, position = pos, amount = a }) then
@@ -1669,7 +1705,8 @@ local function on_player_mined_entity(event)
                 if health > 200 then
                     player.print('You got bitten by an angry cave piranha.', { r = 0.75, g = 0.0, b = 0.0 })
                 else
-                    local messages = {
+                    local messages =
+                    {
                         'Ouch.. That hurt! Better be careful now.',
                         'Just a fleshwound.',
                         'Better keep those hands to yourself or you might loose them.'
@@ -1682,7 +1719,6 @@ local function on_player_mined_entity(event)
 end
 
 local function on_entity_damaged(event)
-    local entity = event.entity
     if not event.entity.valid then
         return
     end
@@ -1704,7 +1740,8 @@ local function on_entity_damaged(event)
             rock_is_alive = false
         end
         if rock_is_alive then
-            storage.damaged_rocks[tostring(event.entity.position.x) .. tostring(event.entity.position.y)] = {
+            storage.damaged_rocks[tostring(event.entity.position.x) .. tostring(event.entity.position.y)] =
+            {
                 last_damage = game.tick,
                 entity = event.entity
             }
@@ -1721,11 +1758,11 @@ local function on_entity_damaged(event)
             local p = { x = event.entity.position.x, y = event.entity.position.y }
             local drop_amount = math.random(4, 8)
             event.entity.destroy()
-            game.surfaces['cave_miner'].spill_item_stack(p, { name = 'stone', count = drop_amount }, true)
+            game.surfaces['cave_miner'].spill_item_stack { position = p, stack = { name = 'stone', count = drop_amount }, enable_looted = true }
 
             local drop_amount_ore = math.random(16, 32)
             local ore = storage.mining_raffle_table[math.random(1, #storage.mining_raffle_table)]
-            game.surfaces['cave_miner'].spill_item_stack(p, { name = ore, count = drop_amount_ore }, true)
+            game.surfaces['cave_miner'].spill_item_stack { position = p, stack = { name = ore, count = drop_amount_ore }, enable_looted = true }
 
             storage.stats_rocks_broken = storage.stats_rocks_broken + 1
             storage.stats_ores_found = storage.stats_ores_found + drop_amount + drop_amount_ore
@@ -1817,7 +1854,8 @@ local function changed_surface(event)
     player.print('Hungry? Take a look at our market offers! No questions asked.', { r = 0.10, g = 0.75, b = 0.5 })
 end
 
-local bank_messages = {
+local bank_messages =
+{
     'Caves are dangerous. Did you hear about our insurance programs?',
     'Get your wealth flowing today with Fishbank!',
     'Hungry? Take a look at our credit offers! No questions asked.',
@@ -1856,9 +1894,8 @@ local function on_market_item_purchased(event)
         storage.fish_bank[player.name] = storage.fish_bank[player.name] + fish_removed
         player.print(fish_removed .. ' Fish deposited into your account. Your balance is ' .. storage.fish_bank[player.name] .. '.', { r = 0.10, g = 0.75, b = 0.5 })
         player.print(bank_messages[math.random(1, #bank_messages)], { r = 0.77, g = 0.77, b = 0.77 })
-        player.surface.create_entity(
+        player.create_local_flying_text(
             {
-                name = 'flying-text',
                 position = player.position,
                 text = tostring(fish_removed .. ' Fish deposited'),
                 color = { r = 0.10, g = 0.75, b = 0.5 }
@@ -1875,7 +1912,7 @@ local function on_market_item_purchased(event)
         local requested_withdraw_amount = 500
         local fee = 10
         if storage.fish_bank[player.name] < requested_withdraw_amount + fee then
-            fee = math.ceil(storage.fish_bank[player.name] * 0.01, 0)
+            fee = math.ceil(storage.fish_bank[player.name] * 0.01)
             if storage.fish_bank[player.name] < 10 then
                 fee = 0
             end
@@ -1889,9 +1926,8 @@ local function on_market_item_purchased(event)
         storage.fish_bank[player.name] = storage.fish_bank[player.name] - (fish_withdrawn + fee)
         player.print(fish_withdrawn .. ' Fish withdrawn from your account. Your balance is ' .. storage.fish_bank[player.name] .. '.', { r = 0.10, g = 0.75, b = 0.5 })
         player.print(bank_messages[math.random(1, #bank_messages)], { r = 0.77, g = 0.77, b = 0.77 })
-        player.surface.create_entity(
+        player.create_local_flying_text(
             {
-                name = 'flying-text',
                 position = player.position,
                 text = tostring(fish_withdrawn .. ' Fish withdrawn'),
                 color = { r = 0.10, g = 0.75, b = 0.5 }
@@ -1907,7 +1943,6 @@ end
 local function disable_tech()
     game.forces.player.technologies['spidertron'].enabled = false
     game.forces.player.technologies['spidertron'].researched = false
-    game.forces.player.technologies['optics'].researched = true
     game.forces.player.technologies['artillery'].researched = false
     game.forces.player.technologies['atomic-bomb'].enabled = false
 end

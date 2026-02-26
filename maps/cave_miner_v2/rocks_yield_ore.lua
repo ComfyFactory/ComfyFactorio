@@ -6,13 +6,15 @@ local math_random = math.random
 local math_floor = math.floor
 local math_sqrt = math.sqrt
 
-local rock_yield = {
+local rock_yield =
+{
     ['big-rock'] = 1,
     ['huge-rock'] = 2,
     ['big-sand-rock'] = 1
 }
 
-local particles = {
+local particles =
+{
     ['iron-ore'] = 'iron-ore-particle',
     ['copper-ore'] = 'copper-ore-particle',
     ['uranium-ore'] = 'coal-particle',
@@ -53,7 +55,7 @@ local function create_particles(surface, name, position, amount, cause_position)
         direction_mod_2 = (cause_position.y - position.y) * 0.025
     end
 
-    for i = 1, amount, 1 do
+    for _ = 1, amount, 1 do
         local m = math_random(4, 10)
         local m2 = m * 0.005
 
@@ -64,7 +66,8 @@ local function create_particles(surface, name, position, amount, cause_position)
                 frame_speed = 1,
                 vertical_speed = 0.130,
                 height = 0,
-                movement = {
+                movement =
+                {
                     (m2 - (math_random(0, m) * 0.01)) + direction_mod,
                     (m2 - (math_random(0, m) * 0.01)) + direction_mod_2
                 }
@@ -117,9 +120,8 @@ local function on_player_mined_entity(event)
     local ore_amount = math_floor(count * (1 - stone_m)) + 1
     local stone_amount = math_floor(count * stone_m) + 1
 
-    player.surface.create_entity(
+    player.create_local_flying_text(
         {
-            name = 'flying-text',
             position = position,
             text = '+' .. ore_amount .. ' [img=item/' .. ore .. ']  +' .. stone_amount .. ' [img=item/stone]',
             color = { r = 200, g = 160, b = 30 }
@@ -183,7 +185,7 @@ local function on_entity_died(event)
     storage.rocks_yield_ore['ores_mined'] = storage.rocks_yield_ore['ores_mined'] + count
     surface.spill_item_stack(pos, { name = ore, count = count }, true)
 
-    local count = math_random(2, 8)
+    count = math_random(2, 8)
     storage.rocks_yield_ore['ores_mined'] = storage.rocks_yield_ore['ores_mined'] + count
     surface.spill_item_stack(pos, { name = 'stone', count = math_random(1, 3) }, true)
 

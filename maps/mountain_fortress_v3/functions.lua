@@ -78,7 +78,7 @@ local disabled_ents =
 {
     ['rail-support'] = true,
     ['rail-ramp'] = true,
-    ['railgun-turret'] = true,
+    ['railgun-turret'] = false,
 }
 
 local random_respawn_messages =

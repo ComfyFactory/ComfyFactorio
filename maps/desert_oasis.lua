@@ -1,3 +1,7 @@
+if script.active_mods['space-age'] then
+    error('This map is incompatible with the Space Age mod. Disable Space Age to run this map.', 2)
+end
+
 if not script.active_mods['space-age'] then
     require 'modules.satellite_score'
 end
@@ -17,7 +21,8 @@ local sand_damage = oasis_start * 100 + 16
 
 local trees = { 'tree-01', 'tree-04', 'tree-06', 'tree-08-red', 'tree-08', 'tree-09' }
 
-local safe_tiles = {
+local safe_tiles =
+{
     ['stone-path'] = true,
     ['concrete'] = true,
     ['hazard-concrete-left'] = true,
@@ -35,7 +40,7 @@ local safe_tiles = {
 }
 
 local function calculate_vulcanus(surface, position)
-    local temperatures = surface.calculate_tile_properties({'vulcanus_temperature'}, {position})
+    local temperatures = surface.calculate_tile_properties({ 'vulcanus_temperature' }, { position })
     local temperature = temperatures and temperatures['vulcanus_temperature'][1]
     -- 75 mini hot, 100 hot a lot
     -- 50% moisture, 0% moisture
@@ -51,20 +56,20 @@ local function calculate_nauvis(_surface, position)
 end
 
 local function calculate_fulgora(surface, position)
-    local elevations = surface.calculate_tile_properties({'fulgora_elevation'}, {position})
+    local elevations = surface.calculate_tile_properties({ 'fulgora_elevation' }, { position })
     local elevation = elevations['fulgora_elevation'][1]
     -- 0 ocean, 105 plateaus
     -- 60% moisture, 45% moisture
-    local moisture = math.round((-1/7) * elevation + 60, 1)
+    local moisture = math.round((-1 / 7) * elevation + 60, 1)
     return moisture
 end
 
 local function calculate_gleba(surface, position)
-    local elevations = surface.calculate_tile_properties({'gleba_elevation'}, {position})
+    local elevations = surface.calculate_tile_properties({ 'gleba_elevation' }, { position })
     local elevation = elevations['gleba_elevation'][1]
     -- 0 water, 150 plateaus
     -- 100%+ moisture, 80% moisture
-    local moisture = math.round((-2/15) * elevation + 100, 1)
+    local moisture = math.round((-2 / 15) * elevation + 100, 1)
     return moisture
 end
 
@@ -74,7 +79,8 @@ local function calculate_aquilo(_surface, _position)
 end
 
 local function get_moisture(surface, position)
-    local planet_calcs = {
+    local planet_calcs =
+    {
         nauvis = calculate_nauvis,
         gleba = calculate_gleba,
         vulcanus = calculate_vulcanus,
@@ -129,7 +135,7 @@ local function draw_oasis(surface, left_top, seed)
                     else
                         tiles[#tiles + 1] = { name = 'water-shallow', position = position }
                         if math_random(1, 6) == 1 then
-                            decoratives[#decoratives + 1] = {name = 'green-bush-mini', position = position, amount = math_random(1, 6)}
+                            decoratives[#decoratives + 1] = { name = 'green-bush-mini', position = position, amount = math_random(1, 6) }
                         end
                     end
 
@@ -150,10 +156,10 @@ local function draw_oasis(surface, left_top, seed)
                     end
                 end
             elseif noise < -0.9 then
-                decoratives[#decoratives + 1] = {name = 'sand-decal', position = position, amount = 1}
+                decoratives[#decoratives + 1] = { name = 'sand-decal', position = position, amount = 1 }
             else
                 if math_random(1, 6) == 1 then
-                    decoratives[#decoratives + 1] = {name = 'sand-dune-decal', position = position, amount = 1}
+                    decoratives[#decoratives + 1] = { name = 'sand-dune-decal', position = position, amount = 1 }
                 end
             end
         end
@@ -166,7 +172,7 @@ local function draw_oasis(surface, left_top, seed)
             surface.create_entity(entity)
         end
     end
-    surface.create_decoratives({decoratives = decoratives, check_collision = true})
+    surface.create_decoratives({ decoratives = decoratives, check_collision = true })
 end
 
 local function create_crash_site(surface, position)
@@ -208,7 +214,7 @@ local function on_chunk_generated(event)
     end
     draw_oasis(surface, left_top, seed)
     if left_top.x == 64 and left_top.y == 64 then
-        create_crash_site(surface, {75, 75})
+        create_crash_site(surface, { 75, 75 })
     end
 end
 
@@ -218,16 +224,19 @@ local function on_init()
     T.main_caption_color = { r = 170, g = 170, b = 0 }
     T.sub_caption_color = { r = 120, g = 120, b = 0 }
 
-    local map_gen_settings = {
+    local map_gen_settings =
+    {
         water = 0.0,
-        property_expression_names = {
+        property_expression_names =
+        {
             temperature = 50,
             moisture = 0,
             elevation = 'elevation_nauvis'
         },
         starting_area = 2,
         terrain_segmentation = 0.1,
-        cliff_settings = {
+        cliff_settings =
+        {
             cliff_elevation_interval = 40,
             cliff_elevation_0 = 0,
             cliff_smoothing = 0,
@@ -236,7 +245,8 @@ local function on_init()
             control = 'nauvis_cliff'
         },
         default_enable_all_autoplace_controls = false,
-        autoplace_controls = {
+        autoplace_controls =
+        {
             ['coal'] = { frequency = 23, size = 0.5, richness = 1.25 },
             ['stone'] = { frequency = 20, size = 0.5, richness = 0.66 },
             ['copper-ore'] = { frequency = 25, size = 0.5, richness = 1.25 },
@@ -245,124 +255,152 @@ local function on_init()
             ['crude-oil'] = { frequency = 50, size = 0.55, richness = 2 },
             ['trees'] = { frequency = 0.75, size = 0.75, richness = 0.1 },
             ['enemy-base'] = { frequency = 15, size = 1, richness = 1 },
-            ['nauvis_cliff'] = {frequency = 5, size = 3, richness = 2},
-            ['rocks'] = {frequency = 3, size = 6, richness = 5}
+            ['nauvis_cliff'] = { frequency = 5, size = 3, richness = 2 },
+            ['rocks'] = { frequency = 3, size = 6, richness = 5 }
         },
-        autoplace_settings = {
-            decorative = {
+        autoplace_settings =
+        {
+            decorative =
+            {
                 treat_missing_as_default = false,
-                settings = {
+                settings =
+                {
 
-                    ['red-desert-bush'] = {
+                    ['red-desert-bush'] =
+                    {
                         frequency = 4,
                         richness = 4,
                         size = 4
                     },
-                    ['white-desert-bush'] = {
+                    ['white-desert-bush'] =
+                    {
                         frequency = 4,
                         richness = 4,
                         size = 4
                     },
-                    ['small-rock'] = {
+                    ['small-rock'] =
+                    {
                         frequency = 4,
                         richness = 4,
                         size = 4
                     },
-                    ['small-sand-rock'] = {
+                    ['small-sand-rock'] =
+                    {
                         frequency = 6,
                         richness = 4,
                         size = 4
                     },
-                    ['medium-sand-rock'] = {
+                    ['medium-sand-rock'] =
+                    {
                         frequency = 8,
                         richness = 4,
                         size = 4
                     },
                 }
             },
-            tile = {
+            tile =
+            {
                 treat_missing_as_default = false,
-                settings = {
-                    ["red-desert-1"] = {
+                settings =
+                {
+                    ["red-desert-1"] =
+                    {
                         frequency = 1,
                         richness = 1,
                         size = 1
                     },
-                    ["red-desert-2"] = {
+                    ["red-desert-2"] =
+                    {
                         frequency = 1,
                         richness = 1,
                         size = 1
                     },
-                    ["red-desert-3"] = {
+                    ["red-desert-3"] =
+                    {
                         frequency = 1,
                         richness = 1,
                         size = 1
                     },
-                    ["sand-1"] = {
+                    ["sand-1"] =
+                    {
                         frequency = 1,
                         richness = 1,
                         size = 1
                     },
-                    ["sand-2"] = {
+                    ["sand-2"] =
+                    {
                         frequency = 1,
                         richness = 1,
                         size = 1
                     },
-                    ["sand-3"] = {
+                    ["sand-3"] =
+                    {
                         frequency = 1,
                         richness = 1,
                         size = 1
                     },
                 }
             },
-            entity = {
-                settings = {
-                    coal = {
+            entity =
+            {
+                settings =
+                {
+                    coal =
+                    {
                         frequency = 1,
                         richness = 1,
                         size = 1
                     },
-                    ["copper-ore"] = {
+                    ["copper-ore"] =
+                    {
                         frequency = 1,
                         richness = 1,
                         size = 1
                     },
-                    ["crude-oil"] = {
+                    ["crude-oil"] =
+                    {
                         frequency = 1,
                         richness = 1,
                         size = 1
                     },
-                    fish = {
+                    fish =
+                    {
                         frequency = 1,
                         richness = 1,
                         size = 1
                     },
-                    ['big-sand-rock'] = {
+                    ['big-sand-rock'] =
+                    {
                         frequency = 5,
                         size = 3,
                         richness = 3
                     },
-                    ['huge-sand-rock'] = {
+                    ['huge-sand-rock'] =
+                    {
                         frequency = 5,
                         size = 3,
                         richness = 3
                     },
-                    ["huge-rock"] = {
+                    ["huge-rock"] =
+                    {
                         frequency = 1,
                         richness = 1,
                         size = 1
                     },
-                    ["iron-ore"] = {
+                    ["iron-ore"] =
+                    {
                         frequency = 1,
                         richness = 1,
                         size = 1
                     },
-                    stone = {
+                    stone =
+                    {
                         frequency = 1,
                         richness = 1,
                         size = 1
                     },
-                    ["uranium-ore"] = {
+                    ["uranium-ore"] =
+                    {
                         frequency = 1,
                         richness = 1,
                         size = 1
@@ -397,7 +435,8 @@ local function on_init()
     force.technologies['cliff-explosives'].enabled = false
 end
 
-local type_whitelist = {
+local type_whitelist =
+{
     ['artillery-wagon'] = true,
     ['car'] = true,
     ['spider-vehicle'] = true,
@@ -454,14 +493,14 @@ local function deny_building(event)
             if item then
                 player.insert(item)
             end
-            FT.flying_text(player, entity.surface , entity.position, 'Can not be built in the sands!', { r = 0.98, g = 0.66, b = 0.22 })
+            FT.flying_text(player, entity.surface, entity.position, 'Can not be built in the sands!', { r = 0.98, g = 0.66, b = 0.22 })
         end
     else
         local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
         if item then
             inventory.insert(item)
         end
-        FT.flying_text(nil, entity.surface , entity.position, 'Can not be built in the sands!', { r = 0.98, g = 0.66, b = 0.22 })
+        FT.flying_text(nil, entity.surface, entity.position, 'Can not be built in the sands!', { r = 0.98, g = 0.66, b = 0.22 })
     end
     entity.destroy()
 end
@@ -508,7 +547,7 @@ local function on_player_joined_game(event)
         player.insert({ name = 'stone', count = 5 })
         player.insert({ name = 'pistol', count = 1 })
         player.insert({ name = 'firearm-magazine', count = 16 })
-        player.teleport(game.surfaces.nauvis.find_non_colliding_position('character', { 64, 64 }, 50, 0.5) or {64, 64}, 'nauvis')
+        player.teleport(game.surfaces.nauvis.find_non_colliding_position('character', { 64, 64 }, 50, 0.5) or { 64, 64 }, 'nauvis')
     end
 end
 

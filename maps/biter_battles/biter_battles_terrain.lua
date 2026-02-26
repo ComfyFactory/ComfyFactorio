@@ -1,8 +1,7 @@
 --luacheck:ignore
-local simplex_noise = require 'utils.math.simplex_noise'
-local simplex_noise = simplex_noise.d2
-local event = require 'utils.event'
-local biter_battles_terrain = {}
+local SimplexNoise = require 'utils.math.simplex_noise'.d2
+local Event = require 'utils.event'
+local BiterBattleTerrain = {}
 local math_random = math.random
 local table_insert = table.insert
 
@@ -36,15 +35,15 @@ local function on_chunk_generated(event)
             local tile_to_insert = false
             local entity_has_been_placed = false
 
-            noise[1] = simplex_noise(pos_x / 250, pos_y / 250, seed)
-            noise[2] = simplex_noise(pos_x / 75, pos_y / 75, seed + 10000)
-            noise[8] = simplex_noise(pos_x / 15, pos_y / 15, seed + 40000)
+            noise[1] = SimplexNoise(pos_x / 250, pos_y / 250, seed)
+            noise[2] = SimplexNoise(pos_x / 75, pos_y / 75, seed + 10000)
+            noise[8] = SimplexNoise(pos_x / 15, pos_y / 15, seed + 40000)
             noise[3] = noise[1] + noise[2] * 0.2 + noise[8] * 0.02
 
-            noise[4] = simplex_noise(pos_x / 200, pos_y / 200, seed + 15000)
-            noise[5] = simplex_noise(pos_x / 20, pos_y / 20, seed + 20000)
-            noise[6] = simplex_noise(pos_x / 8, pos_y / 8, seed + 25000)
-            noise[7] = simplex_noise(pos_x / 400, pos_y / 400, seed + 35000)
+            noise[4] = SimplexNoise(pos_x / 200, pos_y / 200, seed + 15000)
+            noise[5] = SimplexNoise(pos_x / 20, pos_y / 20, seed + 20000)
+            noise[6] = SimplexNoise(pos_x / 8, pos_y / 8, seed + 25000)
+            noise[7] = SimplexNoise(pos_x / 400, pos_y / 400, seed + 35000)
             local water_noise = noise[4] + (noise[6] * 0.006) + (noise[5] * 0.04)
 
             local a = ore_amount * (1 + (noise[2] * 0.3))
@@ -85,7 +84,8 @@ local function on_chunk_generated(event)
 
     if event.area.left_top.y < 160 or event.area.left_top.y > -192 then
         local tiles = {}
-        local spawn_tile = surface.get_tile(game.forces.south.get_spawn_position(surface))
+        local pos = game.forces.south.get_spawn_position(surface)
+        local spawn_tile = surface.get_tile(pos.x, pos.y)
         local radius = 24 --starting pond radius
         local radsquare = radius * radius
         local horizontal_border_width = storage.horizontal_border_width
@@ -96,8 +96,8 @@ local function on_chunk_generated(event)
                 local pos_y = event.area.left_top.y + y
                 local tile_to_insert = false
                 local tile_distance_to_center = pos_x ^ 2 + pos_y ^ 2
-                noise[4] = simplex_noise(pos_x / 85, pos_y / 85, seed + 20000)
-                noise[5] = simplex_noise(pos_x / 7, pos_y / 7, seed + 30000)
+                noise[4] = SimplexNoise(pos_x / 85, pos_y / 85, seed + 20000)
+                noise[5] = SimplexNoise(pos_x / 7, pos_y / 7, seed + 30000)
                 noise[7] = 1 + (noise[4] + (noise[5] * 0.75)) * 0.11
                 if pos_y >= ((horizontal_border_width / 2) * -1) * noise[7] and pos_y <= (horizontal_border_width / 2) * noise[7] then
                     if pos_x < 20 and pos_x > -20 then
@@ -203,8 +203,8 @@ local function find_tile_placement_spot_around_target_position(tilename, positio
         while i <= scan_radius do
             y = y - density
             x = x - density
-            for a = 1, i, 1 do
-                local scanned_tile = surface.get_tile(x, y)
+            for _ = 1, i, 1 do
+                scanned_tile = surface.get_tile(x, y)
                 if scanned_tile.name ~= tilename then
                     table_insert(cluster_tiles, { name = tilename, position = { x, y } })
                     surface.set_tiles(cluster_tiles, auto_correct)
@@ -212,8 +212,8 @@ local function find_tile_placement_spot_around_target_position(tilename, positio
                 end
                 x = x + density
             end
-            for a = 1, i, 1 do
-                local scanned_tile = surface.get_tile(x, y)
+            for _ = 1, i, 1 do
+                scanned_tile = surface.get_tile(x, y)
                 if scanned_tile.name ~= tilename then
                     table_insert(cluster_tiles, { name = tilename, position = { x, y } })
                     surface.set_tiles(cluster_tiles, auto_correct)
@@ -221,8 +221,8 @@ local function find_tile_placement_spot_around_target_position(tilename, positio
                 end
                 y = y + density
             end
-            for a = 1, i, 1 do
-                local scanned_tile = surface.get_tile(x, y)
+            for _ = 1, i, 1 do
+                scanned_tile = surface.get_tile(x, y)
                 if scanned_tile.name ~= tilename then
                     table_insert(cluster_tiles, { name = tilename, position = { x, y } })
                     surface.set_tiles(cluster_tiles, auto_correct)
@@ -230,8 +230,8 @@ local function find_tile_placement_spot_around_target_position(tilename, positio
                 end
                 x = x - density
             end
-            for a = 1, i, 1 do
-                local scanned_tile = surface.get_tile(x, y)
+            for _ = 1, i, 1 do
+                scanned_tile = surface.get_tile(x, y)
                 if scanned_tile.name ~= tilename then
                     table_insert(cluster_tiles, { name = tilename, position = { x, y } })
                     surface.set_tiles(cluster_tiles, auto_correct)
@@ -248,36 +248,36 @@ local function find_tile_placement_spot_around_target_position(tilename, positio
         while i <= scan_radius do
             y = y - density
             x = x - density
-            for a = 1, i, 1 do
+            for _ = 1, i, 1 do
                 x = x + density
-                local scanned_tile = surface.get_tile(x, y)
+                scanned_tile = surface.get_tile(x, y)
                 if scanned_tile.name ~= tilename then
                     table_insert(cluster_tiles, { name = tilename, position = { x, y } })
                     surface.set_tiles(cluster_tiles, auto_correct)
                     return true, x, y
                 end
             end
-            for a = 1, i, 1 do
+            for _ = 1, i, 1 do
                 y = y + density
-                local scanned_tile = surface.get_tile(x, y)
+                scanned_tile = surface.get_tile(x, y)
                 if scanned_tile.name ~= tilename then
                     table_insert(cluster_tiles, { name = tilename, position = { x, y } })
                     surface.set_tiles(cluster_tiles, auto_correct)
                     return true, x, y
                 end
             end
-            for a = 1, i, 1 do
+            for _ = 1, i, 1 do
                 x = x - density
-                local scanned_tile = surface.get_tile(x, y)
+                scanned_tile = surface.get_tile(x, y)
                 if scanned_tile.name ~= tilename then
                     table_insert(cluster_tiles, { name = tilename, position = { x, y } })
                     surface.set_tiles(cluster_tiles, auto_correct)
                     return true, x, y
                 end
             end
-            for a = 1, i, 1 do
+            for _ = 1, i, 1 do
                 y = y - density
-                local scanned_tile = surface.get_tile(x, y)
+                scanned_tile = surface.get_tile(x, y)
                 if scanned_tile.name ~= tilename then
                     table_insert(cluster_tiles, { name = tilename, position = { x, y } })
                     surface.set_tiles(cluster_tiles, auto_correct)
@@ -293,8 +293,8 @@ local function find_tile_placement_spot_around_target_position(tilename, positio
         while i <= scan_radius do
             y = y - density
             x = x + density
-            for a = 1, i, 1 do
-                local scanned_tile = surface.get_tile(x, y)
+            for _ = 1, i, 1 do
+                scanned_tile = surface.get_tile(x, y)
                 if scanned_tile.name ~= tilename then
                     table_insert(cluster_tiles, { name = tilename, position = { x, y } })
                     surface.set_tiles(cluster_tiles, auto_correct)
@@ -302,8 +302,8 @@ local function find_tile_placement_spot_around_target_position(tilename, positio
                 end
                 y = y + density
             end
-            for a = 1, i, 1 do
-                local scanned_tile = surface.get_tile(x, y)
+            for _ = 1, i, 1 do
+                scanned_tile = surface.get_tile(x, y)
                 if scanned_tile.name ~= tilename then
                     table_insert(cluster_tiles, { name = tilename, position = { x, y } })
                     surface.set_tiles(cluster_tiles, auto_correct)
@@ -311,8 +311,8 @@ local function find_tile_placement_spot_around_target_position(tilename, positio
                 end
                 x = x - density
             end
-            for a = 1, i, 1 do
-                local scanned_tile = surface.get_tile(x, y)
+            for _ = 1, i, 1 do
+                scanned_tile = surface.get_tile(x, y)
                 if scanned_tile.name ~= tilename then
                     table_insert(cluster_tiles, { name = tilename, position = { x, y } })
                     surface.set_tiles(cluster_tiles, auto_correct)
@@ -320,8 +320,8 @@ local function find_tile_placement_spot_around_target_position(tilename, positio
                 end
                 y = y - density
             end
-            for a = 1, i, 1 do
-                local scanned_tile = surface.get_tile(x, y)
+            for _ = 1, i, 1 do
+                scanned_tile = surface.get_tile(x, y)
                 if scanned_tile.name ~= tilename then
                     table_insert(cluster_tiles, { name = tilename, position = { x, y } })
                     surface.set_tiles(cluster_tiles, auto_correct)
@@ -338,36 +338,36 @@ local function find_tile_placement_spot_around_target_position(tilename, positio
         while i <= scan_radius do
             y = y - density
             x = x + density
-            for a = 1, i, 1 do
+            for _ = 1, i, 1 do
                 y = y + density
-                local scanned_tile = surface.get_tile(x, y)
+                scanned_tile = surface.get_tile(x, y)
                 if scanned_tile.name ~= tilename then
                     table_insert(cluster_tiles, { name = tilename, position = { x, y } })
                     surface.set_tiles(cluster_tiles, auto_correct)
                     return true, x, y
                 end
             end
-            for a = 1, i, 1 do
+            for _ = 1, i, 1 do
                 x = x - density
-                local scanned_tile = surface.get_tile(x, y)
+                scanned_tile = surface.get_tile(x, y)
                 if scanned_tile.name ~= tilename then
                     table_insert(cluster_tiles, { name = tilename, position = { x, y } })
                     surface.set_tiles(cluster_tiles, auto_correct)
                     return true, x, y
                 end
             end
-            for a = 1, i, 1 do
+            for _ = 1, i, 1 do
                 y = y - density
-                local scanned_tile = surface.get_tile(x, y)
+                scanned_tile = surface.get_tile(x, y)
                 if scanned_tile.name ~= tilename then
                     table_insert(cluster_tiles, { name = tilename, position = { x, y } })
                     surface.set_tiles(cluster_tiles, auto_correct)
                     return true, x, y
                 end
             end
-            for a = 1, i, 1 do
+            for _ = 1, i, 1 do
                 x = x + density
-                local scanned_tile = surface.get_tile(x, y)
+                scanned_tile = surface.get_tile(x, y)
                 if scanned_tile.name ~= tilename then
                     table_insert(cluster_tiles, { name = tilename, position = { x, y } })
                     surface.set_tiles(cluster_tiles, auto_correct)
@@ -382,11 +382,7 @@ end
 
 local function create_tile_cluster(tilename, position, amount)
     local mode = 'ball'
-    local cluster_tiles = {}
-    local surface = game.surfaces['surface']
     local pos = position
-    local x = pos.x
-    local y = pos.y
     for i = 1, amount, 1 do
         local b, x, y = find_tile_placement_spot_around_target_position(tilename, pos, mode)
         if b == true then
@@ -404,47 +400,46 @@ local function create_tile_cluster(tilename, position, amount)
     end
 end
 
-function biter_battles_terrain.generate_spawn_water_pond()
+function BiterBattleTerrain.generate_spawn_water_pond()
     local x = 1
     local surface = game.surfaces['surface']
     for _, silo in pairs(storage.rocket_silo) do
         local pos = {}
-        local wreck_pos = {}
         pos['x'] = silo.position.x + 60 * x
         pos['y'] = silo.position.y - 5 * x
         create_tile_cluster('water-green', pos, 450)
-        local p = surface.find_non_colliding_position('big-ship-wreck-1', { pos['x'], pos['y'] - 3 * x }, 20, 1)
-        local e = surface.create_entity { name = 'big-ship-wreck-1', position = p, force = silo.force.name }
+        local p = surface.find_non_colliding_position('crash-site-spaceship-wreck-big-1', { pos['x'], pos['y'] - 3 * x }, 20, 1)
+        local e = surface.create_entity { name = 'crash-site-spaceship-wreck-big-1', position = p, force = silo.force.name }
         e.insert({ name = 'copper-cable', count = 7 })
         e.insert({ name = 'iron-stick', count = 3 })
-        local p = surface.find_non_colliding_position('big-ship-wreck-3', { pos.x - 3 * x, pos.y }, 20, 1)
-        local e = surface.create_entity { name = 'big-ship-wreck-3', position = p, force = silo.force.name }
+        p = surface.find_non_colliding_position('crash-site-spaceship-wreck-big-2', { pos.x - 3 * x, pos.y }, 20, 1)
+        e = surface.create_entity { name = 'crash-site-spaceship-wreck-big-2', position = p, force = silo.force.name }
         e.insert({ name = 'land-mine', count = 6 })
         pos['x'] = silo.position.x - 80 * x
         pos['y'] = silo.position.y - 60 * x
         create_tile_cluster('water-green', pos, 300)
-        local p = surface.find_non_colliding_position('big-ship-wreck-2', { pos.x + 3 * x, pos.y - 5 * x }, 20, 1)
-        local e = surface.create_entity { name = 'big-ship-wreck-2', position = p, force = silo.force.name }
+        p = surface.find_non_colliding_position('crash-site-spaceship-wreck-medium-1', { pos.x + 3 * x, pos.y - 5 * x }, 20, 1)
+        e = surface.create_entity { name = 'crash-site-spaceship-wreck-medium-1', position = p, force = silo.force.name }
         e.insert({ name = 'barrel', count = 1 })
         e.insert({ name = 'lubricant-barrel', count = 2 })
-        local p = surface.find_non_colliding_position('crude-oil', { pos.x - 5 * x, pos.y + 5 * x }, 50, 1)
-        local e = surface.create_entity { name = 'crude-oil', position = p, amount = 225000 }
+        p = surface.find_non_colliding_position('crude-oil', { pos.x - 5 * x, pos.y + 5 * x }, 50, 1)
+        e = surface.create_entity { name = 'crude-oil', position = p, amount = 225000 }
         x = -1
     end
 
-    for x = -200, 200, 1 do
+    for xv = -200, 200, 1 do
         for y = -200, 200, 1 do
-            local t = surface.get_tile(x, y)
+            local t = surface.get_tile(xv, y)
             if t.name == 'water-green' then
-                if surface.can_place_entity { name = 'fish', position = { x, y } } and math_random(1, 12) == 1 then
-                    surface.create_entity { name = 'fish', position = { x, y } }
+                if surface.can_place_entity { name = 'fish', position = { xv, y } } and math_random(1, 12) == 1 then
+                    surface.create_entity { name = 'fish', position = { xv, y } }
                 end
             end
         end
     end
 end
 
-function biter_battles_terrain.clear_spawn_ores()
+function BiterBattleTerrain.clear_spawn_ores()
     local surface = game.surfaces['surface']
     for x = -200, 200, 1 do
         for y = -200, 200, 1 do
@@ -461,7 +456,7 @@ function biter_battles_terrain.clear_spawn_ores()
     end
 end
 
-function biter_battles_terrain.generate_market()
+function BiterBattleTerrain.generate_market()
     local surface = game.surfaces['surface']
     for z = -1, 1, 2 do
         local f = 'north'
@@ -480,20 +475,20 @@ function biter_battles_terrain.generate_market()
         end
         m.minable = false
         m.destructible = false
-        m.add_market_item { price = { { 'raw-fish', 1 } }, offer = { type = 'give-item', item = 'small-electric-pole', count = 2 } }
-        m.add_market_item { price = { { 'raw-fish', 1 } }, offer = { type = 'give-item', item = 'firearm-magazine', count = 2 } }
-        m.add_market_item { price = { { 'raw-fish', 2 } }, offer = { type = 'give-item', item = 'grenade' } }
-        m.add_market_item { price = { { 'raw-fish', 2 } }, offer = { type = 'give-item', item = 'land-mine', count = 1 } }
-        m.add_market_item { price = { { 'raw-fish', 5 } }, offer = { type = 'give-item', item = 'light-armor' } }
-        m.add_market_item { price = { { 'raw-fish', 8 } }, offer = { type = 'give-item', item = 'radar' } }
-        m.add_market_item { price = { { 'iron-ore', 50 } }, offer = { type = 'give-item', item = 'raw-fish' } }
-        m.add_market_item { price = { { 'copper-ore', 50 } }, offer = { type = 'give-item', item = 'raw-fish' } }
-        m.add_market_item { price = { { 'stone', 50 } }, offer = { type = 'give-item', item = 'raw-fish' } }
-        m.add_market_item { price = { { 'coal', 50 } }, offer = { type = 'give-item', item = 'raw-fish' } }
+        m.add_market_item { price = { { name = 'raw-fish', count = 1 } }, offer = { type = 'give-item', item = 'small-electric-pole', count = 2 } }
+        m.add_market_item { price = { { name = 'raw-fish', count = 1 } }, offer = { type = 'give-item', item = 'firearm-magazine', count = 2 } }
+        m.add_market_item { price = { { name = 'raw-fish', count = 2 } }, offer = { type = 'give-item', item = 'grenade' } }
+        m.add_market_item { price = { { name = 'raw-fish', count = 2 } }, offer = { type = 'give-item', item = 'land-mine', count = 1 } }
+        m.add_market_item { price = { { name = 'raw-fish', count = 5 } }, offer = { type = 'give-item', item = 'light-armor' } }
+        m.add_market_item { price = { { name = 'raw-fish', count = 8 } }, offer = { type = 'give-item', item = 'radar' } }
+        m.add_market_item { price = { { name = 'iron-ore', count = 50 } }, offer = { type = 'give-item', item = 'raw-fish' } }
+        m.add_market_item { price = { { name = 'copper-ore', count = 50 } }, offer = { type = 'give-item', item = 'raw-fish' } }
+        m.add_market_item { price = { { name = 'stone', count = 50 } }, offer = { type = 'give-item', item = 'raw-fish' } }
+        m.add_market_item { price = { { name = 'coal', count = 50 } }, offer = { type = 'give-item', item = 'raw-fish' } }
     end
 end
 
-function biter_battles_terrain.generate_artillery()
+function BiterBattleTerrain.generate_artillery()
     local tiles = {}
     local surface = game.surfaces['surface']
     storage.spawn_artillery = {}
@@ -533,19 +528,19 @@ function biter_battles_terrain.generate_artillery()
     surface.set_tiles(tiles, true)
 end
 
-function biter_battles_terrain.generate_spawn_ores(ore_layout)
+function BiterBattleTerrain.generate_spawn_ores(ore_layout)
     local surface = game.surfaces['surface']
     local seed = game.surfaces[1].map_gen_settings.seed
     local tiles = {}
     --generate ores around silos
-    local ore_layout = 'windows'
+    ore_layout = ore_layout or 'windows'
     --local ore_layout = "4squares"
     local ore_amount = 850
 
     if ore_layout == '4squares' then
         local size = 22
         for _, rocket_silo in pairs(storage.rocket_silo) do
-            local tiles = {}
+            tiles = {}
             for x = (size + 1) * -1, size + 1, 1 do
                 for y = (size + 1) * -1, size + 1, 1 do
                     table_insert(tiles, { name = 'stone-path', position = { rocket_silo.position.x + x, rocket_silo.position.y + y } })
@@ -566,13 +561,15 @@ function biter_battles_terrain.generate_spawn_ores(ore_layout)
             for y = size * -1, size, 1 do
                 if x > 0 and y < 0 then
                     if
-                        surface.can_place_entity {
+                        surface.can_place_entity
+                        {
                             name = 'stone',
                             position = { storage.rocket_silo['south'].position.x + x, storage.rocket_silo['south'].position.y + y },
                             amount = ore_amount
                         }
                     then
-                        surface.create_entity {
+                        surface.create_entity
+                        {
                             name = 'stone',
                             position = { storage.rocket_silo['south'].position.x + x, storage.rocket_silo['south'].position.y + y },
                             amount = ore_amount
@@ -581,13 +578,15 @@ function biter_battles_terrain.generate_spawn_ores(ore_layout)
                 end
                 if x < 0 and y < 0 then
                     if
-                        surface.can_place_entity {
+                        surface.can_place_entity
+                        {
                             name = 'coal',
                             position = { storage.rocket_silo['south'].position.x + x, storage.rocket_silo['south'].position.y + y },
                             amount = ore_amount
                         }
                     then
-                        surface.create_entity {
+                        surface.create_entity
+                        {
                             name = 'coal',
                             position = { storage.rocket_silo['south'].position.x + x, storage.rocket_silo['south'].position.y + y },
                             amount = ore_amount
@@ -596,13 +595,15 @@ function biter_battles_terrain.generate_spawn_ores(ore_layout)
                 end
                 if x < 0 and y > 0 then
                     if
-                        surface.can_place_entity {
+                        surface.can_place_entity
+                        {
                             name = 'copper-ore',
                             position = { storage.rocket_silo['south'].position.x + x, storage.rocket_silo['south'].position.y + y },
                             amount = ore_amount
                         }
                     then
-                        surface.create_entity {
+                        surface.create_entity
+                        {
                             name = 'copper-ore',
                             position = { storage.rocket_silo['south'].position.x + x, storage.rocket_silo['south'].position.y + y },
                             amount = ore_amount
@@ -611,13 +612,15 @@ function biter_battles_terrain.generate_spawn_ores(ore_layout)
                 end
                 if x > 0 and y > 0 then
                     if
-                        surface.can_place_entity {
+                        surface.can_place_entity
+                        {
                             name = 'iron-ore',
                             position = { storage.rocket_silo['south'].position.x + x, storage.rocket_silo['south'].position.y + y },
                             amount = ore_amount
                         }
                     then
-                        surface.create_entity {
+                        surface.create_entity
+                        {
                             name = 'iron-ore',
                             position = { storage.rocket_silo['south'].position.x + x, storage.rocket_silo['south'].position.y + y },
                             amount = ore_amount
@@ -626,13 +629,15 @@ function biter_battles_terrain.generate_spawn_ores(ore_layout)
                 end
                 if x < 0 and y > 0 then
                     if
-                        surface.can_place_entity {
+                        surface.can_place_entity
+                        {
                             name = 'stone',
                             position = { storage.rocket_silo['north'].position.x + x, storage.rocket_silo['north'].position.y + y },
                             amount = ore_amount
                         }
                     then
-                        surface.create_entity {
+                        surface.create_entity
+                        {
                             name = 'stone',
                             position = { storage.rocket_silo['north'].position.x + x, storage.rocket_silo['north'].position.y + y },
                             amount = ore_amount
@@ -641,13 +646,15 @@ function biter_battles_terrain.generate_spawn_ores(ore_layout)
                 end
                 if x > 0 and y > 0 then
                     if
-                        surface.can_place_entity {
+                        surface.can_place_entity
+                        {
                             name = 'coal',
                             position = { storage.rocket_silo['north'].position.x + x, storage.rocket_silo['north'].position.y + y },
                             amount = ore_amount
                         }
                     then
-                        surface.create_entity {
+                        surface.create_entity
+                        {
                             name = 'coal',
                             position = { storage.rocket_silo['north'].position.x + x, storage.rocket_silo['north'].position.y + y },
                             amount = ore_amount
@@ -656,13 +663,15 @@ function biter_battles_terrain.generate_spawn_ores(ore_layout)
                 end
                 if x > 0 and y < 0 then
                     if
-                        surface.can_place_entity {
+                        surface.can_place_entity
+                        {
                             name = 'copper-ore',
                             position = { storage.rocket_silo['north'].position.x + x, storage.rocket_silo['north'].position.y + y },
                             amount = ore_amount
                         }
                     then
-                        surface.create_entity {
+                        surface.create_entity
+                        {
                             name = 'copper-ore',
                             position = { storage.rocket_silo['north'].position.x + x, storage.rocket_silo['north'].position.y + y },
                             amount = ore_amount
@@ -671,13 +680,15 @@ function biter_battles_terrain.generate_spawn_ores(ore_layout)
                 end
                 if x < 0 and y < 0 then
                     if
-                        surface.can_place_entity {
+                        surface.can_place_entity
+                        {
                             name = 'iron-ore',
                             position = { storage.rocket_silo['north'].position.x + x, storage.rocket_silo['north'].position.y + y },
                             amount = ore_amount
                         }
                     then
-                        surface.create_entity {
+                        surface.create_entity
+                        {
                             name = 'iron-ore',
                             position = { storage.rocket_silo['north'].position.x + x, storage.rocket_silo['north'].position.y + y },
                             amount = ore_amount
@@ -703,24 +714,24 @@ function biter_battles_terrain.generate_spawn_ores(ore_layout)
         local m4 = 23
 
         for x = m4 * -1, m4, 1 do
-            local noise = simplex_noise(x * m1, 1 * m1, seed + 50000)
+            local noise = SimplexNoise(x * m1, 1 * m1, seed + 50000)
             noise = noise * m2 + m3
             for y = (m4 + 1) * -1 * noise, m4 * noise, 1 do
                 table_insert(tiles, { name = 'stone-path', position = { storage.rocket_silo['north'].position.x + x, storage.rocket_silo['north'].position.y + y } })
             end
-            local noise = simplex_noise(x * m1, 1 * m1, seed + 60000)
+            noise = SimplexNoise(x * m1, 1 * m1, seed + 60000)
             noise = noise * m2 + m3
             for y = (m4 + 1) * -1 * noise, m4 * noise, 1 do
                 table_insert(tiles, { name = 'stone-path', position = { storage.rocket_silo['south'].position.x + x, storage.rocket_silo['south'].position.y + y } })
             end
         end
         for y = (m4 + 1) * -1, m4, 1 do
-            local noise = simplex_noise(y * m1, 1 * m1, seed + 50000)
+            local noise = SimplexNoise(y * m1, 1 * m1, seed + 50000)
             noise = noise * m2 + m3
             for x = m4 * -1 * noise, m4 * noise, 1 do
                 table_insert(tiles, { name = 'stone-path', position = { storage.rocket_silo['north'].position.x + x, storage.rocket_silo['north'].position.y + y } })
             end
-            local noise = simplex_noise(y * m1, 1 * m1, seed + 60000)
+            noise = SimplexNoise(y * m1, 1 * m1, seed + 60000)
             noise = noise * m2 + m3
             for x = m4 * -1 * noise, m4 * noise, 1 do
                 table_insert(tiles, { name = 'stone-path', position = { storage.rocket_silo['south'].position.x + x, storage.rocket_silo['south'].position.y + y } })
@@ -728,7 +739,8 @@ function biter_battles_terrain.generate_spawn_ores(ore_layout)
         end
         surface.set_tiles(tiles, true)
 
-        local ore = {
+        local ore =
+        {
             'stone',
             'stone',
             'stone',
@@ -753,13 +765,15 @@ function biter_battles_terrain.generate_spawn_ores(ore_layout)
             for x = -4 - z, 4 + z, 1 do
                 for y = -5 - z, 4 + z, 1 do
                     if
-                        surface.can_place_entity {
+                        surface.can_place_entity
+                        {
                             name = ore[z],
                             position = { storage.rocket_silo['south'].position.x + x, storage.rocket_silo['south'].position.y + y },
                             amount = ore_amount
                         }
                     then
-                        surface.create_entity {
+                        surface.create_entity
+                        {
                             name = ore[z],
                             position = { storage.rocket_silo['south'].position.x + x, storage.rocket_silo['south'].position.y + y },
                             amount = ore_amount
@@ -772,13 +786,15 @@ function biter_battles_terrain.generate_spawn_ores(ore_layout)
             for x = -4 - z, 4 + z, 1 do
                 for y = -5 - z, 4 + z, 1 do
                     if
-                        surface.can_place_entity {
+                        surface.can_place_entity
+                        {
                             name = ore[z],
                             position = { storage.rocket_silo['north'].position.x + x, storage.rocket_silo['north'].position.y + y },
                             amount = ore_amount
                         }
                     then
-                        surface.create_entity {
+                        surface.create_entity
+                        {
                             name = ore[z],
                             position = { storage.rocket_silo['north'].position.x + x, storage.rocket_silo['north'].position.y + y },
                             amount = ore_amount
@@ -799,6 +815,6 @@ function biter_battles_terrain.generate_spawn_ores(ore_layout)
     end
 end
 
-event.add(defines.events.on_chunk_generated, on_chunk_generated)
+Event.add(defines.events.on_chunk_generated, on_chunk_generated)
 
-return biter_battles_terrain
+return BiterBattleTerrain
