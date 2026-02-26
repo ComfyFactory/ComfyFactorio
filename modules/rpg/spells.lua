@@ -330,6 +330,7 @@ local function create_projectiles(data)
         end
     end
 
+    Public.register_cooldown_for_spell(player)
     Public.cast_spell(player)
     return true
 end
@@ -374,13 +375,13 @@ local function create_entity(data)
 
 
     if self.aoe then
-        if self.raffle then
-            entity_name = self.raffle[random(1, #self.raffle)]
-        end
         local has_cast = false
         for x = 1, -1, -1 do
             for y = 1, -1, -1 do
                 local pos = { x = position.x + x, y = position.y + y }
+                if self.raffle then
+                    entity_name = self.raffle[random(1, #self.raffle)]
+                end
                 if surface.can_place_entity { name = entity_name, position = pos } then
                     if self.mana_cost > rpg_t.mana then
                         break
@@ -550,6 +551,38 @@ spells[#spells + 1] =
     enabled = true,
     sprite = 'recipe/express-transport-belt',
     tooltip = 'Spawns some express transport belts',
+    callback = function (data)
+        return create_entity(data)
+    end
+}
+spells[#spells + 1] =
+{
+    name = { 'entity-name.splitter' },
+    entityName = 'splitter',
+    level = 1,
+    type = 'item',
+    mana_cost = 30,
+    cooldown = 70,
+    aoe = true,
+    enabled = true,
+    sprite = 'recipe/splitter',
+    tooltip = 'Spawns some splitters',
+    callback = function (data)
+        return create_entity(data)
+    end
+}
+spells[#spells + 1] =
+{
+    name = { 'entity-name.fast-splitter' },
+    entityName = 'fast-splitter',
+    level = 10,
+    type = 'item',
+    mana_cost = 100,
+    cooldown = 70,
+    aoe = true,
+    enabled = true,
+    sprite = 'recipe/fast-splitter',
+    tooltip = 'Spawns some fast splitters',
     callback = function (data)
         return create_entity(data)
     end
@@ -782,7 +815,7 @@ spells[#spells + 1] =
     level = 10,
     type = 'item',
     mana_cost = 100,
-    cooldown = 150,
+    cooldown = 50,
     enabled = true,
     log_spell = true,
     sprite = 'recipe/shotgun-shell',
@@ -802,7 +835,7 @@ spells[#spells + 1] =
     level = 30,
     type = 'item',
     mana_cost = 100,
-    cooldown = 150,
+    cooldown = 50,
     enabled = true,
     enforce_cooldown = true,
     log_spell = true,
@@ -1606,7 +1639,6 @@ local drone_enemy =
     callback = function (data)
         local self = data.self
         local player = data.player
-        Public.register_cooldown_for_spell(player)
         local suc = Ai.create_char({ player_index = player.index, command = 1, search_local = true })
         if not suc then
             Public.cast_spell(player, true)
@@ -1615,6 +1647,7 @@ local drone_enemy =
 
         Public.cast_spell(player)
         Public.remove_mana(player, self.mana_cost)
+        Public.register_cooldown_for_spell(player)
         return true
     end
 }
@@ -1639,7 +1672,6 @@ local drone_mine =
     callback = function (data)
         local self = data.self
         local player = data.player
-        Public.register_cooldown_for_spell(player)
         local suc = Ai.create_char({ player_index = player.index, command = 2, search_local = false })
         if not suc then
             Public.cast_spell(player, true)
@@ -1648,6 +1680,7 @@ local drone_mine =
 
         Public.cast_spell(player)
         Public.remove_mana(player, self.mana_cost)
+        Public.register_cooldown_for_spell(player)
         return true
     end
 }

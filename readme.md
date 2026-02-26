@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://getcomfy.eu/">
-    <img alt="logo" src="http://getcomfy.eu/lib/a_ca6daa1189d44955478d0e0ba6e2effb.gif?size=128" width="120">
+    <img alt="logo" src="https://getcomfy.eu/comfy.gif?size=128" width="120">
   </a>
   <br>
   <a href="https://github.com/ComfyFactory/ComfyFactorio/tags">

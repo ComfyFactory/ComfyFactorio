@@ -961,6 +961,9 @@ Event.add(defines.events.on_tick, scenario_manager)
 Event.on_nth_tick(40, nth_40_tick)
 Event.on_nth_tick(250, nth_250_tick)
 Event.on_nth_tick(1000, nth_1000_tick)
-Event.on_init(Public.init_mtn)
+Event.on_init(function ()
+    Public.init_mtn()
+    Public.create_lookup_table()
+end)
 
 return Public

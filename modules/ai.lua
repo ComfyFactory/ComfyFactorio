@@ -528,35 +528,35 @@ end
 ----- @usage local Ai = require 'modules.ai' Ai.create_char({player_index = game.player.index, command = 1})
 function Public.create_char(data)
     if not data or not type(data) == 'table' then
-        return error('No data was provided or the provided data was not a table.', 2)
+        return false, error('No data was provided or the provided data was not a table.', 2)
     end
 
     if not data.player_index or not data.command then
-        return error('No correct data was provided.', 2)
+        return false, error('No correct data was provided.', 2)
     end
 
     if data.command ~= Public.command.seek_and_destroy_cmd and data.command ~= Public.command.attack_objects_cmd and data.command ~= Public.command.seek_and_mine_cmd then
-        return error('No correct command was provided.', 2)
+        return false, error('No correct command was provided.', 2)
     end
 
     local player = game.get_player(data.player_index)
     if not player or not player.valid or not player.connected then
-        return error('Provided player was not valid or not connected.', 2)
+        return false, error('Provided player was not valid or not connected.', 2)
     end
 
     local count = count_active_characters(data.player_index)
     if count and count >= 5 then
-        return false
+        return false, error('Maximum number of characters reached.', 2)
     end
 
     local surface = player.surface
     local valid_position = surface.find_non_colliding_position('character', { x = player.position.x, y = player.position.y + 2 }, 3, 0.5)
     if not valid_position then
-        return
+        return false, error('No valid position found.', 2)
     end
     local entity = surface.create_entity { name = 'character', position = valid_position, force = player.force }
     if not entity or not entity.valid then
-        return
+        return false, error('Failed to create entity.', 2)
     end
 
     entity.associated_player = player
@@ -585,6 +585,7 @@ function Public.create_char(data)
         }
 
     add_character(player.index, entity, render_id, data)
+    return true
 end
 
 Event.on_nth_tick(

@@ -46,6 +46,7 @@ local dataset_key_modded_previous = 'mtn_v3_modded_previous'
 local dataset_key_previous_dev = 'mtn_v3_previous_dev'
 local dataset_key_modded_previous_dev = 'mtn_v3_previous_dev'
 local send_ping_to_channel = Discord.channel_names.mtn_channel
+local lookup_table = {}
 local apply_buffs
 local apply_permanent_buffs
 
@@ -528,8 +529,18 @@ local locomotive_market_coins_spent_token =
 
 local minerals_farmed_token =
     Task.register(
-        function (event)
-            local actual = get_entity_mined_count(event, 'rock') + get_entity_mined_count(event, 'tree')
+        function ()
+            local force = game.forces.player
+            local starting_planet = Public.get_planet()
+
+            local count = 0
+            for name, entity_count in pairs(force.get_entity_build_count_statistics(starting_planet).output_counts) do
+                if lookup_table[name] then
+                    count = count + entity_count
+                end
+            end
+
+            local actual = count
             local expected = this.objectives.minerals_farmed
             if actual >= expected then
                 return true, { 'stateful.minerals_mined' }, { 'stateful.done', format_number(expected, true), format_number(expected, true) }, { 'stateful.generic_tooltip' }, { 'stateful.tooltip_completed' }
@@ -757,24 +768,24 @@ end
 local function get_random_spell()
     local items =
     {
-        { 'small-biter', scale(100, 2500) },
-        { 'small-spitter', scale(100, 2500) },
-        { 'medium-biter', scale(100, 2500) },
-        { 'medium-spitter', scale(100, 2500) },
-        { 'shotgun-shell', scale(100, 2500) },
-        { 'grenade', scale(100, 2500) },
-        { 'cluster-grenade', scale(100, 2500) },
-        { 'cannon-shell', scale(100, 2500) },
-        { 'explosive-cannon-shell', scale(100, 2500) },
-        { 'uranium-cannon-shell', scale(100, 2500) },
-        { 'rocket', scale(100, 2500) },
-        { 'acid-stream-spitter-big', scale(100, 2500) },
-        { 'explosives', scale(100, 2500) },
-        { 'distractor-capsule', scale(100, 2500) },
-        { 'defender-capsule', scale(100, 2500) },
-        { 'destroyer-capsule', scale(100, 2500) },
-        { 'warp-gate', scale(100, 2500) },
-        { 'haste', scale(100, 2500) }
+        { 'small-biter', scale(100, 2500, 1.01) },
+        { 'small-spitter', scale(100, 2500, 1.01) },
+        { 'medium-biter', scale(100, 2500, 1.01) },
+        { 'medium-spitter', scale(100, 2500, 1.01) },
+        { 'shotgun-shell', scale(100, 2500, 1.01) },
+        { 'grenade', scale(100, 2500, 1.01) },
+        { 'cluster-grenade', scale(100, 2500, 1.01) },
+        { 'cannon-shell', scale(100, 2500, 1.01) },
+        { 'explosive-cannon-shell', scale(100, 2500, 1.01) },
+        { 'uranium-cannon-shell', scale(100, 2500, 1.01) },
+        { 'rocket', scale(100, 2500, 1.01) },
+        { 'acid-stream-spitter-big', scale(100, 2500, 1.01) },
+        { 'explosives', scale(100, 2500, 1.01) },
+        { 'distractor-capsule', scale(100, 2500, 1.01) },
+        { 'defender-capsule', scale(100, 2500, 1.01) },
+        { 'destroyer-capsule', scale(100, 2500, 1.01) },
+        { 'warp-gate', scale(100, 2500, 1.01) },
+        { 'haste', scale(100, 2500, 1.01) }
     }
 
     shuffle(items)
@@ -1716,13 +1727,13 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
             this.objectives.single_item = get_random_item()
         end
         if not this.objectives.killed_enemies or (this.objectives_completed ~= nil and this.objectives_completed.killed_enemies) then
-            this.objectives.killed_enemies = scale(25000, 400000, 1.035)
+            this.objectives.killed_enemies = scale(25000, 400000, 1.03)
         end
         if not this.objectives.killed_enemies_type or (this.objectives_completed ~= nil and this.objectives_completed.killed_enemies_type) then
             this.objectives.killed_enemies_type =
             {
                 actual = 0,
-                expected = scale(10000, 400000, 1.035),
+                expected = scale(10000, 400000, 1.03),
                 damage_type = damage_types[random(1, #damage_types)]
             }
         end
@@ -1740,7 +1751,7 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
             this.objectives.handcrafted_items_any =
             {
                 actual = 0,
-                expected = scale(50000, 4000000),
+                expected = scale(50000, 4000000, 1.04),
                 name = 'Any',
                 quality = 'normal'
             }
@@ -1777,14 +1788,14 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
             this.objectives.locomotive_market_coins_spent =
             {
                 spent = 0,
-                required = scale(50000)
+                required = scale(50000, nil, 1.02)
             }
         end
         if not this.objectives.minerals_farmed or (this.objectives_completed ~= nil and this.objectives_completed.minerals_farmed) then
-            this.objectives.minerals_farmed = scale(25000, 250000)
+            this.objectives.minerals_farmed = scale(25000, 250000, 1.02)
         end
         if not this.objectives.rockets_launched or (this.objectives_completed ~= nil and this.objectives_completed.rockets_launched) then
-            this.objectives.rockets_launched = scale(10, 700)
+            this.objectives.rockets_launched = scale(10, 700, 1.02)
         end
     end
 
@@ -1938,6 +1949,15 @@ function Public.move_all_players()
             end
         end
     )
+end
+
+function Public.create_lookup_table()
+    local entities = prototypes.entity
+    for name, entity in pairs(entities) do
+        if entity.type == 'tree' or entity.type == 'simple-entity' or entity.type == 'simple-entity-with-owner' then
+            lookup_table[entity.name] = name
+        end
+    end
 end
 
 function Public.set_final_battle()
