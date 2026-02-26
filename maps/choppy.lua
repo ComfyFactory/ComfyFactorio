@@ -1,5 +1,8 @@
 --luacheck: ignore
 --choppy-- mewmew made this --
+if script.active_mods['space-age'] then
+    error('This map is incompatible with the Space Age mod. Disable Space Age to run this map.', 2)
+end
 
 require 'modules.dynamic_landfill'
 require 'modules.satellite_score'
@@ -8,24 +11,22 @@ local Map = require 'modules.map_info'
 local unearthing_worm = require 'utils.functions.unearthing_worm'
 local unearthing_biters = require 'utils.functions.unearthing_biters'
 local tick_tack_trap = require 'utils.functions.tick_tack_trap'
-local create_entity_chain = require 'utils.functions.create_entity_chain'
-local create_tile_chain = require 'utils.functions.create_tile_chain'
 
 local simplex_noise = require 'utils.math.simplex_noise'.d2
-local event = require 'utils.event'
+local Event = require 'utils.event'
 local table_insert = table.insert
 local math_random = math.random
-local map_functions = require 'utils.tools.map_functions'
 
-local disabled_for_deconstruction = {
+local disabled_for_deconstruction =
+{
     ['fish'] = true,
     ['huge-rock'] = true,
     ['big-rock'] = true,
     ['big-sand-rock'] = true,
-    ['mineable-wreckage'] = true
 }
 
-local tile_replacements = {
+local tile_replacements =
+{
     ['dirt-1'] = 'grass-1',
     ['dirt-2'] = 'grass-2',
     ['dirt-3'] = 'grass-3',
@@ -42,7 +43,8 @@ local tile_replacements = {
 }
 
 local rocks = { 'big-rock', 'big-rock', 'huge-rock' }
-local decos = {
+local decos =
+{
     'green-hairy-grass',
     'green-hairy-grass',
     'green-hairy-grass',
@@ -55,7 +57,8 @@ local decos = {
 }
 local decos_inside_forest = { 'brown-asterisk', 'brown-asterisk', 'brown-carpet-grass', 'brown-hairy-grass' }
 
-local noises = {
+local noises =
+{
     ['forest_location'] = { { modifier = 0.006, weight = 1 }, { modifier = 0.01, weight = 0.25 }, { modifier = 0.05, weight = 0.15 }, { modifier = 0.1, weight = 0.05 } },
     ['forest_density'] = { { modifier = 0.01, weight = 1 }, { modifier = 0.05, weight = 0.5 }, { modifier = 0.1, weight = 0.025 } }
 }
@@ -68,16 +71,8 @@ local function get_noise(name, pos, seed)
     return noise
 end
 
-local function shuffle(tbl)
-    local size = #tbl
-    for i = size, 1, -1 do
-        local rand = math_random(size)
-        tbl[i], tbl[rand] = tbl[rand], tbl[i]
-    end
-    return tbl
-end
-
-local entities_to_convert = {
+local entities_to_convert =
+{
     ['coal'] = true,
     ['copper-ore'] = true,
     ['iron-ore'] = true,
@@ -92,7 +87,8 @@ local entities_to_convert = {
     ['thorium-ore'] = true
 }
 
-local trees_to_remove = {
+local trees_to_remove =
+{
     ['dead-dry-hairy-tree'] = true,
     ['dead-grey-trunk'] = true,
     ['dead-tree-desert'] = true,
@@ -141,7 +137,7 @@ local function process_tile(surface, pos, tile, seed)
     end
 
     if math_random(1, 100000) == 1 then
-        local wrecks = { 'big-ship-wreck-1', 'big-ship-wreck-2', 'big-ship-wreck-3' }
+        local wrecks = { 'crash-site-spaceship-wreck-big-1', 'crash-site-spaceship-wreck-big-2', 'crash-site-spaceship-wreck-medium-1' }
         local e = surface.create_entity { name = wrecks[math_random(1, #wrecks)], position = pos, force = 'neutral' }
         e.insert({ name = 'raw-fish', count = math_random(3, 25) })
         if math_random(1, 3) == 1 then
@@ -189,7 +185,6 @@ local function on_chunk_generated(event)
     local surface = event.surface
     local left_top = event.area.left_top
     local tiles = {}
-    local entities = {}
     local seed = game.surfaces[1].map_gen_settings.seed
 
     --surface.destroy_decoratives({area = event.area})
@@ -200,7 +195,6 @@ local function on_chunk_generated(event)
 
     for x = 0.5, 31.5, 1 do
         for y = 0.5, 31.5, 1 do
-            local tile_to_insert = false
             local pos = { x = left_top.x + x, y = left_top.y + y }
 
             local tile = surface.get_tile(pos)
@@ -265,7 +259,8 @@ local function on_player_joined_game(event)
 
     game.surfaces['nauvis'].ticks_per_day = game.surfaces['nauvis'].ticks_per_day * 2
 
-    storage.entity_yield = {
+    storage.entity_yield =
+    {
         ['tree-01'] = { 'iron-ore' },
         ['tree-02-red'] = { 'copper-ore' },
         ['tree-04'] = { 'coal' },
@@ -343,16 +338,15 @@ local function on_player_mined_entity(event)
 
         local main_item = storage.entity_yield[entity.name][math_random(1, #storage.entity_yield[entity.name])]
 
-        entity.surface.create_entity(
+        local player = game.players[event.player_index]
+
+        player.create_local_flying_text(
             {
-                name = 'flying-text',
                 position = entity.position,
                 text = '+' .. amount .. ' [item=' .. main_item .. '] +' .. second_item_amount .. ' [item=' .. second_item .. ']',
                 color = { r = 0.8, g = 0.8, b = 0.8 }
             }
         )
-
-        local player = game.players[event.player_index]
 
         local inserted_count = player.insert({ name = main_item, count = amount })
         amount = amount - inserted_count
@@ -360,8 +354,8 @@ local function on_player_mined_entity(event)
             entity.surface.spill_item_stack(entity.position, { name = main_item, count = amount }, true)
         end
 
-        local inserted_count = player.insert({ name = second_item, count = second_item_amount })
-        second_item_amount = second_item_amount - inserted_count
+        local second_inserted_count = player.insert({ name = second_item, count = second_item_amount })
+        second_item_amount = second_item_amount - second_inserted_count
         if second_item_amount > 0 then
             entity.surface.spill_item_stack(entity.position, { name = second_item, count = second_item_amount }, true)
         end
@@ -415,10 +409,10 @@ local on_init = function ()
     T.sub_caption_color = { r = 255, g = 0, b = 255 }
 end
 
-event.on_init(on_init)
-event.add(defines.events.on_research_finished, on_research_finished)
-event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
-event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
-event.add(defines.events.on_entity_died, on_entity_died)
-event.add(defines.events.on_chunk_generated, on_chunk_generated)
+Event.on_init(on_init)
+Event.add(defines.events.on_research_finished, on_research_finished)
+Event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
+Event.add(defines.events.on_entity_died, on_entity_died)
+Event.add(defines.events.on_chunk_generated, on_chunk_generated)

@@ -1,5 +1,10 @@
 -- Biter Battles -- mewmew made this --
 --luacheck:ignore
+
+if script.active_mods['space-age'] then
+    error('This map is incompatible with the Space Age mod. Disable Space Age to run this map.', 2)
+end
+
 local Server = require 'utils.server'
 local Score = require 'utils.gui.score'
 local Global = require 'utils.global'
@@ -8,8 +13,8 @@ require 'modules.explosive_biters'
 require 'modules.spawners_contain_biters'
 require 'modules.custom_death_messages'
 
-local biter_battles_terrain = require 'maps.biter_battles.biter_battles_terrain'
-local event = require 'utils.event'
+local BiterBattleTerrain = require 'maps.biter_battles.biter_battles_terrain'
+local Event = require 'utils.event'
 local math_random = math.random
 local insert = table.insert
 
@@ -22,7 +27,8 @@ Global.register(
     end
 )
 
-local food_names = {
+local food_names =
+{
     ['automation-science-pack'] = 'automation science',
     ['logistic-science-pack'] = 'logistic science',
     ['military-science-pack'] = 'military science',
@@ -32,7 +38,8 @@ local food_names = {
     ['space-science-pack'] = 'space science'
 }
 
-local food_values = {
+local food_values =
+{
     ['automation-science-pack'] = 0.00000100,
     ['logistic-science-pack'] = 0.00000292,
     ['military-science-pack'] = 0.00001225,
@@ -91,7 +98,7 @@ local function create_biter_battle_sprite_button(player)
 end
 
 local function get_sorted_list(column_name, score_list)
-    for x = 1, #score_list, 1 do
+    for _ = 1, #score_list, 1 do
         for y = 1, #score_list, 1 do
             if not score_list[y + 1] then
                 break
@@ -160,24 +167,24 @@ local function show_mvps(player)
     local t = frame.add({ type = 'table', column_count = 2 })
     local mvp = get_mvps('north')
     if mvp then
-        local l = t.add({ type = 'label', caption = 'Defender >> ' })
+        l = t.add({ type = 'label', caption = 'Defender >> ' })
         l.style.font = 'default-listbox'
         l.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
-        local l = t.add({ type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score })
+        l = t.add({ type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score })
         l.style.font = 'default-bold'
         l.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
-        local l = t.add({ type = 'label', caption = 'Builder >> ' })
+        l = t.add({ type = 'label', caption = 'Builder >> ' })
         l.style.font = 'default-listbox'
         l.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
-        local l = t.add({ type = 'label', caption = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things' })
+        l = t.add({ type = 'label', caption = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things' })
         l.style.font = 'default-bold'
         l.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
-        local l = t.add({ type = 'label', caption = 'Deaths >> ' })
+        l = t.add({ type = 'label', caption = 'Deaths >> ' })
         l.style.font = 'default-listbox'
         l.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
-        local l = t.add({ type = 'label', caption = mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times' })
+        l = t.add({ type = 'label', caption = mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times' })
         l.style.font = 'default-bold'
         l.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
@@ -198,31 +205,31 @@ local function show_mvps(player)
         end
     end
 
-    local l = frame.add({ type = 'label', caption = 'MVPs - South:' })
+    l = frame.add({ type = 'label', caption = 'MVPs - South:' })
     l.style.font = 'default-listbox'
     l.style.font_color = { r = 0.99, g = 0.33, b = 0.33 }
 
-    local t = frame.add({ type = 'table', column_count = 2 })
-    local mvp = get_mvps('south')
+    t = frame.add({ type = 'table', column_count = 2 })
+    mvp = get_mvps('south')
     if mvp then
-        local l = t.add({ type = 'label', caption = 'Defender >> ' })
+        l = t.add({ type = 'label', caption = 'Defender >> ' })
         l.style.font = 'default-listbox'
         l.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
-        local l = t.add({ type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score })
+        l = t.add({ type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score })
         l.style.font = 'default-bold'
         l.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
-        local l = t.add({ type = 'label', caption = 'Builder >> ' })
+        l = t.add({ type = 'label', caption = 'Builder >> ' })
         l.style.font = 'default-listbox'
         l.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
-        local l = t.add({ type = 'label', caption = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things' })
+        l = t.add({ type = 'label', caption = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things' })
         l.style.font = 'default-bold'
         l.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
-        local l = t.add({ type = 'label', caption = 'Deaths >> ' })
+        l = t.add({ type = 'label', caption = 'Deaths >> ' })
         l.style.font = 'default-listbox'
         l.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
-        local l = t.add({ type = 'label', caption = mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times' })
+        l = t.add({ type = 'label', caption = mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times' })
         l.style.font = 'default-bold'
         l.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
@@ -267,7 +274,8 @@ local function create_biter_battle_menu(player)
     if player.force.name == 'north' or player.force.name == 'south' then
         frame.add { type = 'table', name = 'biter_battle_table', column_count = 4 }
         local t = frame.biter_battle_table
-        local foods = {
+        local foods =
+        {
             'automation-science-pack',
             'logistic-science-pack',
             'military-science-pack',
@@ -289,7 +297,7 @@ local function create_biter_battle_menu(player)
         local b = frame.add { type = 'label', caption = 'Defend your team´s rocket silo!' }
         b.style.font = 'default-bold'
         b.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
-        local b = frame.add { type = 'label', caption = 'Feed the enemy team´s biters to gain advantage!' }
+        b = frame.add { type = 'label', caption = 'Feed the enemy team´s biters to gain advantage!' }
         b.style.font = 'default-bold'
         b.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
         frame.add { type = 'label', caption = '-----------------------------------------------------------' }
@@ -299,13 +307,13 @@ local function create_biter_battle_menu(player)
     local l = t.add { type = 'label', caption = 'Team North' }
     l.style.font = 'default-bold'
     l.style.font_color = { r = 0.55, g = 0.55, b = 0.99 }
-    local l = t.add { type = 'label', caption = '  -  ' }
-    local l = t.add { type = 'label', caption = #game.forces['north'].connected_players .. ' Players ' }
+    l = t.add { type = 'label', caption = '  -  ' }
+    l = t.add { type = 'label', caption = #game.forces['north'].connected_players .. ' Players ' }
     l.style.font_color = { r = 0.22, g = 0.88, b = 0.22 }
 
     if player.force.name ~= 'player' then
         if storage.biter_battle_view_players[player.name] == true then
-            local t = frame.add { type = 'table', column_count = 4 }
+            t = frame.add { type = 'table', column_count = 4 }
             for _, p in pairs(game.forces.north.connected_players) do
                 local color = {}
                 color = p.color
@@ -313,23 +321,23 @@ local function create_biter_battle_menu(player)
                 color.g = color.g * 0.6 + 0.4
                 color.b = color.b * 0.6 + 0.4
                 color.a = 1
-                local l = t.add { type = 'label', caption = p.name }
+                l = t.add { type = 'label', caption = p.name }
                 l.style.font_color = color
             end
         end
 
-        local t = frame.add { type = 'table', column_count = 4 }
-        local l = t.add { type = 'label', caption = 'Nerf: ' }
+        t = frame.add { type = 'table', column_count = 4 }
+        l = t.add { type = 'label', caption = 'Nerf: ' }
         l.style.minimal_width = 25
         l.tooltip = 'Damage nerf of the team.'
-        local l = t.add { type = 'label', caption = math.round(storage.team_nerf['north'] * 100, 1) .. ' ' }
+        l = t.add { type = 'label', caption = math.round(storage.team_nerf['north'] * 100, 1) .. ' ' }
         l.style.minimal_width = 40
         l.style.font_color = { r = 0.66, g = 0.66, b = 0.99 }
         l.style.font = 'default-bold'
-        local l = t.add { type = 'label', caption = ' Biter Rage: ' }
+        l = t.add { type = 'label', caption = ' Biter Rage: ' }
         l.style.minimal_width = 25
         l.tooltip = 'Increases damage and the amount of angry biters.'
-        local l = t.add { type = 'label', caption = math.round(storage.biter_rage['north'], 0) }
+        l = t.add { type = 'label', caption = math.round(storage.biter_rage['north'], 0) }
         l.style.font_color = { r = 0.66, g = 0.66, b = 0.99 }
         l.style.font = 'default-bold'
         l.style.minimal_width = 25
@@ -344,7 +352,7 @@ local function create_biter_battle_menu(player)
             c = c .. math.round((storage.game_lobby_timeout - game.tick) / 60, 0)
             c = c .. ')'
         end
-        local t = frame.add { type = 'table', column_count = 4 }
+        t = frame.add { type = 'table', column_count = 4 }
         for _, p in pairs(game.forces.north.connected_players) do
             local color = {}
             color = p.color
@@ -352,7 +360,7 @@ local function create_biter_battle_menu(player)
             color.g = color.g * 0.6 + 0.4
             color.b = color.b * 0.6 + 0.4
             color.a = 1
-            local l = t.add { type = 'label', caption = p.name }
+            l = t.add { type = 'label', caption = p.name }
             l.style.font_color = color
         end
         local b = frame.add { type = 'sprite-button', name = 'join_north_button', caption = c }
@@ -364,17 +372,17 @@ local function create_biter_battle_menu(player)
         frame.add { type = 'label', caption = '--------------------------' }
     end
 
-    local t = frame.add { type = 'table', column_count = 3 }
-    local l = t.add { type = 'label', caption = 'Team South' }
+    t = frame.add { type = 'table', column_count = 3 }
+    l = t.add { type = 'label', caption = 'Team South' }
     l.style.font = 'default-bold'
     l.style.font_color = { r = 0.99, g = 0.33, b = 0.33 }
-    local l = t.add { type = 'label', caption = '  -  ' }
-    local l = t.add { type = 'label', caption = #game.forces['south'].connected_players .. ' Players ' }
+    l = t.add { type = 'label', caption = '  -  ' }
+    l = t.add { type = 'label', caption = #game.forces['south'].connected_players .. ' Players ' }
     l.style.font_color = { r = 0.22, g = 0.88, b = 0.22 }
 
     if player.force.name ~= 'player' then
         if storage.biter_battle_view_players[player.name] == true then
-            local t = frame.add { type = 'table', column_count = 4 }
+            t = frame.add { type = 'table', column_count = 4 }
             for _, p in pairs(game.forces.south.connected_players) do
                 local color = {}
                 color = p.color
@@ -382,23 +390,23 @@ local function create_biter_battle_menu(player)
                 color.g = color.g * 0.6 + 0.4
                 color.b = color.b * 0.6 + 0.4
                 color.a = 1
-                local l = t.add { type = 'label', caption = p.name }
+                l = t.add { type = 'label', caption = p.name }
                 l.style.font_color = color
             end
         end
 
-        local t = frame.add { type = 'table', column_count = 4 }
-        local l = t.add { type = 'label', caption = 'Nerf: ' }
+        t = frame.add { type = 'table', column_count = 4 }
+        l = t.add { type = 'label', caption = 'Nerf: ' }
         l.tooltip = 'Damage nerf of the team.'
         l.style.minimal_width = 25
-        local l = t.add { type = 'label', caption = math.round(storage.team_nerf['south'] * 100, 1) .. ' ' }
+        l = t.add { type = 'label', caption = math.round(storage.team_nerf['south'] * 100, 1) .. ' ' }
         l.style.minimal_width = 40
         l.style.font_color = { r = 0.99, g = 0.44, b = 0.44 }
         l.style.font = 'default-bold'
-        local l = t.add { type = 'label', caption = ' Biter Rage: ' }
+        l = t.add { type = 'label', caption = ' Biter Rage: ' }
         l.style.minimal_width = 25
         l.tooltip = 'Increases damage and the amount of angry biters.'
-        local l = t.add { type = 'label', caption = math.round(storage.biter_rage['south'], 0) }
+        l = t.add { type = 'label', caption = math.round(storage.biter_rage['south'], 0) }
         l.style.font_color = { r = 0.99, g = 0.44, b = 0.44 }
         l.style.font = 'default-bold'
         l.style.minimal_width = 25
@@ -413,7 +421,7 @@ local function create_biter_battle_menu(player)
             c = c .. math.round((storage.game_lobby_timeout - game.tick) / 60, 0)
             c = c .. ')'
         end
-        local t = frame.add { type = 'table', column_count = 4 }
+        t = frame.add { type = 'table', column_count = 4 }
         for _, p in pairs(game.forces.south.connected_players) do
             local color = {}
             color = p.color
@@ -421,7 +429,7 @@ local function create_biter_battle_menu(player)
             color.g = color.g * 0.6 + 0.4
             color.b = color.b * 0.6 + 0.4
             color.a = 1
-            local l = t.add { type = 'label', caption = p.name }
+            l = t.add { type = 'label', caption = p.name }
             l.style.font_color = color
         end
         local b = frame.add { type = 'sprite-button', name = 'join_south_button', caption = c }
@@ -431,17 +439,17 @@ local function create_biter_battle_menu(player)
     end
 
     if storage.team_chosen[player.name] then
-        local t = frame.add { type = 'table', column_count = 2 }
+        t = frame.add { type = 'table', column_count = 2 }
         if player.force.name == 'spectator' then
-            local b = t.add { type = 'sprite-button', name = 'biter_battle_leave_spectate', caption = 'Join Team' }
+            t.add { type = 'sprite-button', name = 'biter_battle_leave_spectate', caption = 'Join Team' }
         else
-            local b = t.add { type = 'sprite-button', name = 'biter_battle_spectate', caption = 'Spectate' }
+            t.add { type = 'sprite-button', name = 'biter_battle_spectate', caption = 'Spectate' }
         end
 
         if storage.biter_battle_view_players[player.name] == true then
-            local b = t.add { type = 'sprite-button', name = 'biter_battle_hide_players', caption = 'Playerlist' }
+            t.add { type = 'sprite-button', name = 'biter_battle_hide_players', caption = 'Playerlist' }
         else
-            local b = t.add { type = 'sprite-button', name = 'biter_battle_view_players', caption = 'Playerlist' }
+            t.add { type = 'sprite-button', name = 'biter_battle_view_players', caption = 'Playerlist' }
         end
         for _, b in pairs(t.children) do
             b.style.font = 'default-bold'
@@ -485,7 +493,6 @@ local function join_team(player, team)
                 game.print('Team ' .. player.force.name .. ' player ' .. player.name .. ' is no longer spectating.', { r = 0.98, g = 0.66, b = 0.22 })
             else
                 game.print(player.name .. ' has joined team ' .. player.force.name .. '!', { r = 0.98, g = 0.66, b = 0.22 })
-                local i = player.get_inventory(defines.inventory.character_main)
                 player.insert { name = 'pistol', count = 1 }
                 player.insert { name = 'raw-fish', count = 3 }
                 player.insert { name = 'firearm-magazine', count = 16 }
@@ -541,7 +548,8 @@ local function on_player_joined_game(event)
         map_gen_settings.water = 'none'
         map_gen_settings.starting_area = '5'
         map_gen_settings.cliff_settings = { cliff_elevation_interval = 12, cliff_elevation_0 = 32 }
-        map_gen_settings.autoplace_controls = {
+        map_gen_settings.autoplace_controls =
+        {
             ['coal'] = { frequency = '0.8', size = '1', richness = '0.3' },
             ['stone'] = { frequency = '0.8', size = '1', richness = '0.3' },
             ['copper-ore'] = { frequency = '0.8', size = '2', richness = '0.3' },
@@ -595,8 +603,6 @@ local function on_player_joined_game(event)
             game.forces[name].set_turret_attack_modifier('flamethrower-turret', -0.5)
             --game.forces[name].set_ammo_damage_modifier("artillery-shell", -0.95)
             game.forces[name].set_ammo_damage_modifier('shotgun-shell', 0.5)
-
-            game.forces[name].research_queue_enabled = true
         end
 
         game.forces['spectator'].technologies['toolbelt'].researched = true
@@ -606,16 +612,16 @@ local function on_player_joined_game(event)
         f.set_friend('spectator', true)
         f.share_chart = true
         f.set_spawn_position({ 0, -26 }, surface)
-        local f = game.forces['south']
+        f = game.forces['south']
         f.set_cease_fire('player', true)
         f.set_friend('spectator', true)
         f.share_chart = true
         f.set_spawn_position({ 0, 26 }, surface)
-        local f = game.forces['spectator']
+        f = game.forces['spectator']
         f.set_spawn_position({ 0, 0 }, surface)
         f.set_friend('north', true)
         f.set_friend('south', true)
-        local f = game.forces['player']
+        f = game.forces['player']
         f.set_spawn_position({ 0, 0 }, surface)
 
         storage.biter_battles_init_done = true
@@ -640,11 +646,11 @@ local function on_player_joined_game(event)
     refresh_gui()
 end
 
-local function on_player_created(event)
+local function on_player_created()
     refresh_gui()
 end
 
-local function on_player_left_game(event)
+local function on_player_left_game()
     if game.connected_players == 1 and storage.game_lobby_active == true then
         storage.game_lobby_timeout = game.tick + 599940
     end
@@ -686,7 +692,6 @@ local function feed_the_biters(food_type, player)
         return
     end
 
-    local surface = game.surfaces['surface']
     local enemy_team = ''
     if player.force.name == 'south' then
         enemy_team = 'north'
@@ -730,7 +735,6 @@ local function feed_the_biters(food_type, player)
     end
 
     local nerf_gain = 0
-    local rage_gain = 0
     if food_amount > 0 then
         nerf_gain = food_values[food_type] * food_amount
 
@@ -738,7 +742,7 @@ local function feed_the_biters(food_type, player)
         local nerf_multiplier = 1
         local rage_food_value = food_values[food_type] * 12500000 --10000000
         --biter rage calculation
-        for x = 0, food_amount, 1 do
+        for _ = 0, food_amount, 1 do
             local rage_diminish_multiplier = 1 / (((storage.biter_rage[enemy_team] ^ 2.9) + 8000) / 500)
             storage.biter_rage[enemy_team] = storage.biter_rage[enemy_team] + (rage_food_value * rage_diminish_multiplier)
         end
@@ -770,7 +774,7 @@ local function feed_the_biters(food_type, player)
             x = x + 1
         end
 
-        local x = 1
+        x = 1
         for _, w in pairs(turret_types) do
             if f.get_turret_attack_modifier(w) - (nerf_gain * ammo_modifier[x]) < lowest_possible_modifier then
                 m = lowest_possible_modifier
@@ -781,7 +785,7 @@ local function feed_the_biters(food_type, player)
             x = x + 1
         end
 
-        local x = 1
+        x = 1
         for _, w in pairs(ammo_speed) do
             if f.get_gun_speed_modifier(w) - (nerf_gain * ammo_speed_modifier[x]) < lowest_possible_modifier then
                 m = lowest_possible_modifier
@@ -892,7 +896,7 @@ local function create_fireworks_rocket(surface, position)
     local m = math_random(16, 36)
     local m2 = m * 0.005
 
-    for i = 1, 80, 1 do
+    for _ = 1, 80, 1 do
         surface.create_entity(
             {
                 name = particle,
@@ -930,8 +934,9 @@ local function on_entity_died(event)
                 if not traps[game.tick + t] then
                     traps[game.tick + t] = {}
                 end
-                for x = 1, 4, 1 do
-                    traps[game.tick + t][#traps[game.tick + t] + 1] = {
+                for _ = 1, 4, 1 do
+                    traps[game.tick + t][#traps[game.tick + t] + 1] =
+                    {
                         callback = 'create_fireworks_rocket',
                         params = { event.entity.surface, { x = radius - math_random(0, radius * 2), y = radius - math_random(0, radius * 2) } }
                     }
@@ -1026,7 +1031,7 @@ local function biter_attack_silo(team, requested_amount, mode)
             valid_biters = get_valid_biters(requested_amount, y_modifier, 0, 1500 * y_modifier, 500)
         end
 
-        local f = math.floor(#valid_biters / requested_amount, 0)
+        local f = math.floor(#valid_biters / requested_amount)
         if f < 1 then
             f = 1
         end
@@ -1057,46 +1062,8 @@ local function biter_attack_silo(team, requested_amount, mode)
         end
     end
 
-    --[[
-	if mode == "line" then
-		local valid_biters = get_valid_biters(requested_amount, y_modifier, 0, 150*y_modifier, 500)
-		if #valid_biters < requested_amount then
-			valid_biters = get_valid_biters(requested_amount, y_modifier, 0, 1500*y_modifier, 500)
-		end
-
-		local array_start = 1
-		local f = math.floor(#valid_biters/requested_amount,0)
-		if f >= 2 then
-			array_start = requested_amount * math_random(1,f-1)
-			if math_random(1,f) == 1 then array_start = 1 end
-		end
-		local x = 0
-		for y = array_start,#valid_biters,1 do
-			x = x + 1
-			if not valid_biters[y] then break end
-			if #biters_selected_for_attack >= requested_amount then break end
-			biters_selected_for_attack[x] = valid_biters[y]
-		end
-
-		if math_random(1,3) == 1 then
-			for _, biter in pairs(biters_selected_for_attack) do
-				biter.set_command({type=defines.command.attack_area, destination=storage.biter_attack_main_target[team], radius=12, distraction=defines.distraction.by_anything})
-			end
-		else
-			for _, biter in pairs(biters_selected_for_attack) do
-				biter.set_command({type=defines.command.attack_area, destination=storage.biter_attack_main_target[team], radius=12, distraction=defines.distraction.by_enemy})
-			end
-		end
-
-		if storage.biter_battles_debug then
-			game.players[1].print(#valid_biters .. " valid biters found.")
-			game.players[1].print(#biters_selected_for_attack .. " going for a line attack, table start = " .. array_start)
-		end
-	end
-	]]
     if mode == 'ball' then
         local height = 0
-        local width = 0
         local c = 0
         local tolerance = 5
         local distance_to_base_modifier = 2.6
@@ -1141,7 +1108,7 @@ local function biter_attack_silo(team, requested_amount, mode)
             additional_empty_space_checks = 32
             if r == 1 then
                 --west attack
-                local additional_checks = additional_empty_space_checks
+                additional_checks = additional_empty_space_checks
                 for x = 0, -8192, -32 do
                     c = surface.count_entities_filtered { area = { { x - 32, gathering_point_y - 48 }, { x, gathering_point_y + 48 } }, force = team }
                     if c <= tolerance then
@@ -1158,7 +1125,7 @@ local function biter_attack_silo(team, requested_amount, mode)
 
             if r == 2 then
                 --east attack
-                local additional_checks = additional_empty_space_checks
+                additional_checks = additional_empty_space_checks
                 for x = 32, 8192, 32 do
                     c = surface.count_entities_filtered { area = { { x - 32, gathering_point_y - 48 }, { x, gathering_point_y + 48 } }, force = team }
                     if c <= tolerance then
@@ -1223,8 +1190,8 @@ local function biter_attack_silo(team, requested_amount, mode)
             additional_empty_space_checks = 32
 
             --vertical attack --
-            local c = 0
-            local additional_checks = additional_empty_space_checks
+            c = 0
+            additional_checks = additional_empty_space_checks
             for pos_y = 0, 8192 * y_modifier, 32 * y_modifier do
                 c = surface.count_entities_filtered { area = { { gathering_point_x - 48, pos_y - 32 }, { gathering_point_x + 48, pos_y } }, force = team }
                 if c <= tolerance then
@@ -1241,7 +1208,7 @@ local function biter_attack_silo(team, requested_amount, mode)
 
         valid_biters = get_valid_biters(requested_amount, y_modifier, gathering_point_x, gathering_point_y)
 
-        local f = math.floor(#valid_biters / requested_amount, 0)
+        local f = math.floor(#valid_biters / requested_amount)
         if f < 1 then
             f = 1
         end
@@ -1259,7 +1226,8 @@ local function biter_attack_silo(team, requested_amount, mode)
 
         --alternate attack if there is water
         local t =
-            surface.count_tiles_filtered {
+            surface.count_tiles_filtered
+            {
                 area = { { gathering_point_x - 8, gathering_point_y - 8 }, { gathering_point_x + 8, gathering_point_y + 8 } },
                 name = { 'deepwater', 'water', 'water-green' }
             }
@@ -1305,7 +1273,8 @@ local function send_near_biter_to_silo()
     end
     game.surfaces['surface'].set_multi_command(
         {
-            command = {
+            command =
+            {
                 type = defines.command.attack,
                 target = storage.rocket_silo['north'],
                 distraction = defines.distraction.none
@@ -1318,7 +1287,8 @@ local function send_near_biter_to_silo()
 
     game.surfaces['surface'].set_multi_command(
         {
-            command = {
+            command =
+            {
                 type = defines.command.attack,
                 target = storage.rocket_silo['south'],
                 distraction = defines.distraction.none
@@ -1330,7 +1300,7 @@ local function send_near_biter_to_silo()
     )
 end
 
-local function on_tick(event)
+local function on_tick()
     if storage.rocket_silo_destroyed then
         if not storage.game_restart_timeout then
             storage.game_restart_timeout = 7200
@@ -1460,10 +1430,10 @@ local function on_chunk_generated(event)
         storage.biter_attack_main_target['north'] = storage.rocket_silo['north'].position
         storage.biter_attack_main_target['south'] = storage.rocket_silo['south'].position
 
-        biter_battles_terrain.clear_spawn_ores()
-        biter_battles_terrain.generate_spawn_water_pond()
-        biter_battles_terrain.generate_spawn_ores('windows')
-        biter_battles_terrain.generate_market()
+        BiterBattleTerrain.clear_spawn_ores()
+        BiterBattleTerrain.generate_spawn_water_pond()
+        BiterBattleTerrain.generate_spawn_ores()
+        BiterBattleTerrain.generate_market()
 
         --biter_battles_terrain.generate_artillery()
 
@@ -1687,24 +1657,17 @@ local function on_robot_built_tile(event)
     end
 end
 
-local function on_research_finished(event)
-    --game.forces.north.recipes["flamethrower-turret"].enabled = false
-    --game.forces.south.recipes["flamethrower-turret"].enabled = false
-end
-
-event.add(defines.events.on_robot_built_tile, on_robot_built_tile)
-event.add(defines.events.on_chunk_generated, on_chunk_generated)
-event.add(defines.events.on_research_finished, on_research_finished)
-event.add(defines.events.on_built_entity, on_built_entity)
-event.add(defines.events.on_player_built_tile, on_player_built_tile)
-event.add(defines.events.on_rocket_launched, on_rocket_launched)
-event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
-event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
-event.add(defines.events.on_entity_damaged, on_entity_damaged)
-event.add(defines.events.on_player_left_game, on_player_left_game)
-event.add(defines.events.on_entity_died, on_entity_died)
-event.add(defines.events.on_tick, on_tick)
-event.add(defines.events.on_player_created, on_player_created)
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
-event.add(defines.events.on_gui_click, on_gui_click)
-event.add(defines.events.on_console_chat, on_console_chat)
+Event.add(defines.events.on_robot_built_tile, on_robot_built_tile)
+Event.add(defines.events.on_chunk_generated, on_chunk_generated)
+Event.add(defines.events.on_player_built_tile, on_player_built_tile)
+Event.add(defines.events.on_rocket_launched, on_rocket_launched)
+Event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
+Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
+Event.add(defines.events.on_entity_damaged, on_entity_damaged)
+Event.add(defines.events.on_player_left_game, on_player_left_game)
+Event.add(defines.events.on_entity_died, on_entity_died)
+Event.add(defines.events.on_tick, on_tick)
+Event.add(defines.events.on_player_created, on_player_created)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_gui_click, on_gui_click)
+Event.add(defines.events.on_console_chat, on_console_chat)

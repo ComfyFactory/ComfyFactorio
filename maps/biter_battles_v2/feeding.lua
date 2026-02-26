@@ -6,14 +6,13 @@ local Server = require 'utils.server'
 
 local tables = require 'maps.biter_battles_v2.tables'
 local food_values = tables.food_values
-local force_translation = tables.force_translation
 local enemy_team_of = tables.enemy_team_of
 
 local minimum_modifier = 125
 local maximum_modifier = 250
 local player_amount_for_maximum_threat_gain = 20
 
-function get_instant_threat_player_count_modifier()
+local function get_instant_threat_player_count_modifier()
     local current_player_count = #game.forces.north.connected_players + #game.forces.south.connected_players
     local gain_per_player = (maximum_modifier - minimum_modifier) / player_amount_for_maximum_threat_gain
     local m = minimum_modifier + gain_per_player * current_player_count
@@ -58,7 +57,8 @@ local function print_feeding_msg(player, food, flask_amount)
     if storage.tm_custom_name['south'] then
         s = storage.tm_custom_name['south']
     end
-    local team_strings = {
+    local team_strings =
+    {
         ['north'] = table.concat({ '[color=120, 120, 255]', n, "'s[/color]" }),
         ['south'] = table.concat({ '[color=255, 65, 65]', s, "'s[/color]" })
     }
@@ -93,21 +93,9 @@ local function add_stats(player, food, flask_amount, biter_force_name, evo_befor
         table.concat({ '[color=', player.color.r * 0.6 + 0.35, ',', player.color.g * 0.6 + 0.35, ',', player.color.b * 0.6 + 0.35, ']', player.name, '[/color]' })
     local formatted_food = table.concat({ '[color=', food_values[food].color, '][/color]', '[img=item/', food, ']' })
     local formatted_amount = table.concat({ '[font=heading-1][color=255,255,255]' .. flask_amount .. '[/color][/font]' })
-    local n = bb_config.north_side_team_name
-    local s = bb_config.south_side_team_name
-    if storage.tm_custom_name['north'] then
-        n = storage.tm_custom_name['north']
-    end
-    if storage.tm_custom_name['south'] then
-        s = storage.tm_custom_name['south']
-    end
-    local team_strings = {
-        ['north'] = table.concat({ '[color=120, 120, 255]', n, '[/color]' }),
-        ['south'] = table.concat({ '[color=255, 65, 65]', s, '[/color]' })
-    }
+
     if flask_amount > 1 then
         local tick = game.ticks_played
-        local feed_time = math.round(tick, 0)
         local feed_time_mins = math.round(tick / (60 * 60), 0)
         local minute_unit = ''
         if feed_time_mins <= 1 then
@@ -134,7 +122,7 @@ local function add_stats(player, food, flask_amount, biter_force_name, evo_befor
         if storage.science_logs_total_north == nil then
             storage.science_logs_total_north = { 0 }
             storage.science_logs_total_south = { 0 }
-            for a = 1, 7 do
+            for _ = 1, 7 do
                 table.insert(storage.science_logs_total_north, 0)
                 table.insert(storage.science_logs_total_south, 0)
             end
@@ -180,7 +168,7 @@ function set_evo_and_threat(flask_amount, food, biter_force_name)
 
     local food_value = food_values[food].value * storage.difficulty_vote_value
 
-    for a = 1, flask_amount, 1 do
+    for _ = 1, flask_amount, 1 do
         ---SET EVOLUTION
         local e2 = (game.forces[biter_force_name].evolution_factor * 100) + 1
         local diminishing_modifier = (1 / (10 ^ (e2 * 0.017))) / (e2 * 0.5)
@@ -194,7 +182,7 @@ function set_evo_and_threat(flask_amount, food, biter_force_name)
         end
 
         --ADD INSTANT THREAT
-        local diminishing_modifier = 1 / (0.2 + (e2 * 0.018))
+        diminishing_modifier = 1 / (0.2 + (e2 * 0.018))
         storage.bb_threat[biter_force_name] = storage.bb_threat[biter_force_name] + (food_value * instant_threat_player_count_modifier * diminishing_modifier)
         storage.bb_threat[biter_force_name] = math_round(storage.bb_threat[biter_force_name], decimals)
     end

@@ -5,7 +5,8 @@ local bb_config = require 'maps.biter_battles_v2.config'
 local table_remove = table.remove
 local table_insert = table.insert
 
-local direction_translation = {
+local direction_translation =
+{
     [0] = 4,
     [1] = 5,
     [2] = 6,
@@ -16,7 +17,8 @@ local direction_translation = {
     [7] = 3
 }
 
-local cliff_orientation_translation = {
+local cliff_orientation_translation =
+{
     ['east-to-none'] = 'west-to-none',
     ['east-to-north'] = 'west-to-south',
     ['east-to-south'] = 'west-to-north',
@@ -39,7 +41,8 @@ local cliff_orientation_translation = {
     ['none-to-west'] = 'none-to-east'
 }
 
-local entity_copy_functions = {
+local entity_copy_functions =
+{
     ['tree'] = function (surface, entity, target_position)
         if not surface.can_place_entity({ name = entity.name, position = target_position }) then
             return
@@ -60,7 +63,6 @@ local entity_copy_functions = {
             return
         end
         surface.create_entity(mirror_entity)
-        return
     end,
     ['resource'] = function (surface, entity, target_position)
         surface.create_entity({ name = entity.name, position = target_position, amount = entity.amount })
@@ -106,16 +108,22 @@ local entity_copy_functions = {
         if inventory.is_empty() then
             return
         end
-        for name, count in pairs(inventory.get_contents()) do
-            e.insert({ name = name, count = count })
+        for _, data in pairs(inventory.get_contents()) do
+            e.insert({ name = data.name, count = data.count })
         end
     end,
     ['wall'] = function (surface, entity, target_position, force_name)
         local e = entity.clone({ position = target_position, surface = surface, force = force_name })
+        if not e then
+            return
+        end
         e.active = true
     end,
     ['container'] = function (surface, entity, target_position, force_name)
         local e = entity.clone({ position = target_position, surface = surface, force = force_name })
+        if not e then
+            return
+        end
         e.active = true
     end,
     ['fish'] = function (surface, entity, target_position)
@@ -335,7 +343,8 @@ local function south_work()
     clear_source_surface(terrain_gen)
 end
 
-local works = {
+local works =
+{
     [1] = north_work,
     [2] = south_work
 }

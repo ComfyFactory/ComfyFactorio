@@ -40,7 +40,7 @@ end
 
 function Public.roll_biter_amount()
     local max_chance = 0
-    for k, v in pairs(spawn_amount_rolls) do
+    for _, v in pairs(spawn_amount_rolls) do
         max_chance = max_chance + v
     end
     local r = math_random(0, max_chance)
@@ -64,12 +64,12 @@ function Public.reveal(cave_miner, surface, source_surface, position, brushsize)
     local copied_tiles = {}
     local i = 0
     local brushsize_square = brushsize ^ 2
-    for _, tile in pairs(source_surface.find_tiles_filtered({ area = { { position.x - brushsize, position.y - brushsize }, { position.x + brushsize, position.y + brushsize } } })) do
-        local tile_position = tile.position
-        if tile.name ~= 'lab-dark-2' and tile.name ~= 'lab-dark-1' and (position.x - tile_position.x) ^ 2 + (position.y - tile_position.y) ^ 2 < brushsize_square then
+    for _, tile2 in pairs(source_surface.find_tiles_filtered({ area = { { position.x - brushsize, position.y - brushsize }, { position.x + brushsize, position.y + brushsize } } })) do
+        local tile_position = tile2.position
+        if tile2.name ~= 'lab-dark-2' and tile2.name ~= 'lab-dark-1' and (position.x - tile_position.x) ^ 2 + (position.y - tile_position.y) ^ 2 < brushsize_square then
             i = i + 1
-            copied_tiles[i] = { name = 'lab-dark-1', position = tile.position }
-            tiles[i] = { name = tile.name, position = tile.position }
+            copied_tiles[i] = { name = 'lab-dark-1', position = tile2.position }
+            tiles[i] = { name = tile2.name, position = tile2.position }
         end
     end
     surface.set_tiles(tiles, true, false, false, false)
@@ -144,7 +144,7 @@ function Public.spawn_random_biter(surface, position, multiplier)
     return unit
 end
 
-function Public.rock_spawns_biters(cave_miner, position)
+function Public.rock_spawns_biters(position)
     local amount = Public.roll_biter_amount()
     local surface = game.surfaces.nauvis
     local difficulty_modifier = Public.get_difficulty_modifier(position)
@@ -185,8 +185,8 @@ function Public.loot_crate(surface, position, container_name, player_index)
         text = player.name .. ' uncovered ' .. description
     end
 
-    for _, player in pairs(game.forces.player.connected_players) do
-        player.add_custom_alert(container, { type = 'item', name = 'wooden-chest' }, text, true)
+    for _, p in pairs(game.forces.player.connected_players) do
+        p.add_custom_alert(container, { type = 'item', name = 'wooden-chest' }, text, true)
     end
 end
 
@@ -213,7 +213,7 @@ function Public.create_top_gui(player)
     label.style.margin = 0
     label.style.padding = 0
 
-    local label = frame.add({ type = 'label', caption = 'Loading...' })
+    label = frame.add({ type = 'label', caption = 'Loading...' })
     label.style.font = 'heading-2'
     label.style.font_color = { 225, 225, 225 }
     label.style.margin = 0
@@ -304,9 +304,10 @@ function Public.darkness(cave_miner)
     end
 end
 
-Public.mining_events = {
+Public.mining_events =
+{
     {
-        function (cave_miner, entity, player_index)
+        function (_, entity, _)
             if math.random(1, 8) == 1 then
                 entity.surface.spill_item_stack(entity.position, { name = 'raw-fish', count = 1 }, true)
             end
@@ -315,7 +316,7 @@ Public.mining_events = {
         'Nothing'
     },
     {
-        function (cave_miner, entity, player_index)
+        function (_, entity, _)
             local amount = Public.roll_biter_amount()
             local position = entity.position
             local surface = entity.surface
@@ -329,7 +330,7 @@ Public.mining_events = {
         'Mixed_Biters'
     },
     {
-        function (cave_miner, entity, player_index)
+        function (_, entity, _)
             local amount = Public.roll_biter_amount()
             local position = entity.position
             local surface = entity.surface
@@ -343,7 +344,7 @@ Public.mining_events = {
         'Biters'
     },
     {
-        function (cave_miner, entity, player_index)
+        function (_, entity, _)
             local amount = Public.roll_biter_amount()
             local position = entity.position
             local surface = entity.surface
@@ -357,7 +358,7 @@ Public.mining_events = {
         'Spitters'
     },
     {
-        function (cave_miner, entity, player_index)
+        function (_, entity, player_index)
             local position = entity.position
             local surface = entity.surface
             Public.loot_crate(surface, position, 'wooden-chest', player_index)
@@ -366,7 +367,7 @@ Public.mining_events = {
         'Treasure_Tier_1'
     },
     {
-        function (cave_miner, entity, player_index)
+        function (_, entity, player_index)
             local position = entity.position
             local surface = entity.surface
             Public.loot_crate(surface, position, 'iron-chest', player_index)
@@ -375,7 +376,7 @@ Public.mining_events = {
         'Treasure_Tier_2'
     },
     {
-        function (cave_miner, entity, player_index)
+        function (_, entity, player_index)
             local position = entity.position
             local surface = entity.surface
             Public.loot_crate(surface, position, 'steel-chest', player_index)
@@ -384,7 +385,7 @@ Public.mining_events = {
         'Treasure_Tier_3'
     },
     {
-        function (cave_miner, entity, player_index)
+        function (_, entity, player_index)
             local position = entity.position
             local surface = entity.surface
             Public.loot_crate(surface, position, 'crash-site-spaceship-wreck-medium-' .. math_random(1, 3), player_index)
@@ -393,7 +394,7 @@ Public.mining_events = {
         'Treasure_Tier_4'
     },
     {
-        function (cave_miner, entity, player_index)
+        function (_, entity, player_index)
             local position = entity.position
             local surface = entity.surface
             Public.loot_crate(surface, position, 'crash-site-spaceship-wreck-big-' .. math_random(1, 2), player_index)
@@ -402,7 +403,7 @@ Public.mining_events = {
         'Treasure_Tier_5'
     },
     {
-        function (cave_miner, entity, player_index)
+        function (_, entity, player_index)
             local position = entity.position
             local surface = entity.surface
             Public.loot_crate(surface, position, 'big-ship-wreck-' .. math_random(1, 3), player_index)
@@ -411,7 +412,7 @@ Public.mining_events = {
         'Treasure_Tier_6'
     },
     {
-        function (cave_miner, entity, player_index)
+        function (_, entity, player_index)
             local position = entity.position
             local surface = entity.surface
             Public.loot_crate(surface, position, 'crash-site-chest-' .. math_random(1, 2), player_index)
@@ -420,7 +421,7 @@ Public.mining_events = {
         'Treasure_Tier_7'
     },
     {
-        function (cave_miner, entity, player_index)
+        function (_, entity, player_index)
             local position = entity.position
             local surface = entity.surface
             Public.loot_crate(surface, position, 'crash-site-spaceship', player_index)
@@ -430,7 +431,7 @@ Public.mining_events = {
         'Treasure_Tier_8'
     },
     {
-        function (cave_miner, entity, player_index)
+        function (_, entity, player_index)
             local position = entity.position
             local surface = entity.surface
             local unit = Public.spawn_random_biter(surface, position, 2)
@@ -440,7 +441,7 @@ Public.mining_events = {
         'Pet'
     },
     {
-        function (cave_miner, entity, player_index)
+        function (_, entity, player_index)
             local position = entity.position
             local surface = entity.surface
             surface.create_entity({ name = 'biter-spawner', position = position, force = 'enemy' })
@@ -450,7 +451,7 @@ Public.mining_events = {
         'Nest'
     },
     {
-        function (cave_miner, entity, player_index)
+        function (_, entity, player_index)
             local position = entity.position
             local surface = entity.surface
             Public.place_worm(surface, position, 1)
@@ -460,7 +461,7 @@ Public.mining_events = {
         'Worm'
     },
     {
-        function (cave_miner, entity, player_index)
+        function (_, entity, player_index)
             local position = entity.position
             if position.x ^ 2 + position.y ^ 2 < 8000 then
                 return
@@ -490,16 +491,15 @@ Public.mining_events = {
         function (cave_miner, entity, player_index)
             local position = entity.position
             local surface = entity.surface
-            local entity = surface.create_entity({ name = cave_miner.buildings_raffle[math_random(1, #cave_miner.buildings_raffle)], position = position, force = 'player' })
+            entity = surface.create_entity({ name = cave_miner.buildings_raffle[math_random(1, #cave_miner.buildings_raffle)], position = position, force = 'player' })
             entity.health = math_random(1, entity.max_health)
-            local player = game.players[player_index]
             game.print(Public.get_colored_name(player_index) .. ' discovered an abandoned building', Constants.chat_color)
         end,
         128,
         'Abandoned Building'
     },
     {
-        function (cave_miner, entity, player_index)
+        function (_, entity, player_index)
             local position = entity.position
             local surface = entity.surface
             surface.create_entity({ name = 'car', position = position, force = 'player' })
@@ -511,7 +511,7 @@ Public.mining_events = {
         'Car'
     },
     {
-        function (cave_miner, entity, player_index)
+        function (_, entity, player_index)
             local position = entity.position
             local surface = entity.surface
             local tick = game.tick
@@ -536,15 +536,16 @@ Public.mining_events = {
     }
 }
 
-Public.on_entity_died = {
-    ['unit'] = function (cave_miner, entity)
+Public.on_entity_died =
+{
+    ['unit'] = function (_, entity)
         local position = entity.position
         local surface = entity.surface
         if math.random(1, 8) == 1 then
             surface.spill_item_stack(position, { name = 'raw-fish', count = 1 }, true)
         end
     end,
-    ['unit-spawner'] = function (cave_miner, entity)
+    ['unit-spawner'] = function (_, entity)
         local position = entity.position
         local surface = entity.surface
         local a = 64 * 0.0001
@@ -558,7 +559,7 @@ Public.on_entity_died = {
         local position = entity.position
         cave_miner.rocks_broken = cave_miner.rocks_broken + 1
         if math.random(1, 6) == 1 then
-            Public.rock_spawns_biters(cave_miner, position)
+            Public.rock_spawns_biters(position)
         end
     end,
     ['container'] = function (cave_miner, entity)

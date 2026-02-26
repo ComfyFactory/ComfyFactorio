@@ -14,7 +14,8 @@ local Minimap = require 'maps.chronosphere.minimap'
 
 local function create_gui(player)
     local frame = player.gui.top.add({type = 'frame', name = 'chronosphere'})
-    frame.style.maximal_height = 38
+    frame.style.minimal_height = 40
+    frame.style.maximal_height = 40
     local label
     local button
 

@@ -2,6 +2,10 @@
 
 --require "modules.rpg"
 
+if script.active_mods['space-age'] then
+    error('This map is incompatible with the Space Age mod. Disable Space Age to run this map.', 2)
+end
+
 local Public = require 'maps.fish_defender_v2.core'
 local Gui = require 'utils.gui'
 local LFTW = require 'modules.launch_fish_to_win'

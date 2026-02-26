@@ -1,5 +1,9 @@
 -- Biter Battles v2 -- by MewMew
 
+if script.active_mods['space-age'] then
+    error('This map is incompatible with the Space Age mod. Disable Space Age to run this map.', 2)
+end
+
 local Ai = require 'maps.biter_battles_v2.ai'
 local Functions = require 'maps.biter_battles_v2.functions'
 local Game_over = require 'maps.biter_battles_v2.game_over'
@@ -9,6 +13,7 @@ local Mirror_terrain = require 'maps.biter_battles_v2.mirror_terrain'
 require 'modules.simple_tags'
 local Team_manager = require 'maps.biter_battles_v2.team_manager'
 local Terrain = require 'maps.biter_battles_v2.terrain'
+local Event = require 'utils.event'
 
 require 'maps.biter_battles_v2.sciencelogs_tab'
 require 'maps.biter_battles_v2.commands'
@@ -72,10 +77,11 @@ local function on_entity_died(event)
     Game_over.silo_death(event)
 end
 
-local tick_minute_functions = {
+local tick_minute_functions =
+{
     [300 * 1] = Ai.raise_evo,
     [300 * 2] = Ai.destroy_inactive_biters,
-    [300 * 3 + 30 * 0] = Ai.pre_main_attack,     -- setup for main_attack
+    [300 * 3 + 30 * 0] = Ai.pre_main_attack, -- setup for main_attack
     [300 * 3 + 30 * 1] = Ai.perform_main_attack, -- call perform_main_attack 7 times on different ticks
     [300 * 3 + 30 * 2] = Ai.perform_main_attack, -- some of these might do nothing (if there are no wave left)
     [300 * 3 + 30 * 3] = Ai.perform_main_attack,
@@ -151,7 +157,6 @@ local function on_init()
     Init.load_spawn()
 end
 
-local Event = require 'utils.event'
 Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_chunk_generated, on_chunk_generated)
 Event.add(defines.events.on_console_chat, on_console_chat)

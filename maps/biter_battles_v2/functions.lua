@@ -7,7 +7,8 @@ local table_insert = table.insert
 local table_remove = table.remove
 local string_find = string.find
 
-local balance_functions = {
+local balance_functions =
+{
     ['flamethrower'] = function (force_name)
         storage.combat_balance[force_name].flamethrower_damage = -0.65
         game.forces[force_name].set_turret_attack_modifier('flamethrower-turret', storage.combat_balance[force_name].flamethrower_damage)
@@ -41,7 +42,8 @@ local balance_functions = {
     end
 }
 
-local no_turret_blacklist = {
+local no_turret_blacklist =
+{
     ['ammo-turret'] = true,
     ['artillery-turret'] = true,
     ['electric-turret'] = true,
@@ -49,14 +51,16 @@ local no_turret_blacklist = {
 }
 
 local landfill_biters_vectors = { { 0, 0 }, { 1, 0 }, { 0, 1 }, { -1, 0 }, { 0, -1 } }
-local landfill_biters = {
+local landfill_biters =
+{
     ['big-biter'] = true,
     ['big-spitter'] = true,
     ['behemoth-biter'] = true,
     ['behemoth-spitter'] = true
 }
 
-local target_entity_types = {
+local target_entity_types =
+{
     ['assembling-machine'] = true,
     ['boiler'] = true,
     ['furnace'] = true,
@@ -143,7 +147,7 @@ function Public.biters_landfill(entity)
         if tile.collides_with('resource') then
             surface.set_tiles({ { name = 'landfill', position = tile.position } })
             local particle_pos = { tile.position.x + 0.5, tile.position.y + 0.5 }
-            for i = 1, 50, 1 do
+            for _ = 1, 50, 1 do
                 surface.create_particle(
                     {
                         name = 'stone-particle',
@@ -286,7 +290,7 @@ function Public.share_chat(event)
     end
     if player.force.name == 'spectator' then
         --Skip messages that would spoil coordinates from spectators
-        local a, b = string_find(event.message, 'gps=', 1, false)
+        local a, _ = string_find(event.message, 'gps=', 1, false)
         if a then
             return
         end
@@ -348,7 +352,7 @@ function Public.show_intro(player)
         player.gui.center['map_intro_frame'].destroy()
     end
     local frame = player.gui.center.add { type = 'frame', name = 'map_intro_frame', direction = 'vertical' }
-    local frame = frame.add { type = 'frame' }
+    frame = frame.add { type = 'frame' }
     local l = frame.add { type = 'label', caption = { 'biter_battles.map_info' }, name = 'biter_battles_map_intro' }
     l.style.single_line = false
     l.style.font = 'heading-2'

@@ -3,7 +3,8 @@
 
 local Tabs = require 'utils.gui'
 local tables = require 'maps.biter_battles_v2.tables'
-local event = require 'utils.event'
+local Event = require 'utils.event'
+local Gui = require 'utils.gui'
 local bb_config = require 'maps.biter_battles_v2.config'
 local food_values = tables.food_values
 local food_long_and_short = tables.food_long_and_short
@@ -38,7 +39,7 @@ local function add_science_logs(player, element)
     if storage.science_logs_total_north == nil then
         storage.science_logs_total_north = { 0 }
         storage.science_logs_total_south = { 0 }
-        for i = 1, 7 do
+        for _ = 1, 7 do
             table.insert(storage.science_logs_total_north, 0)
             table.insert(storage.science_logs_total_south, 0)
         end
@@ -47,7 +48,8 @@ local function add_science_logs(player, element)
     local t_summary = science_scrollpanel.add { type = 'table', name = 'science_logs_summary_header_table', column_count = 8 }
     local width_summary_columns = tonumber(94)
     local width_summary_first_column = tonumber(110)
-    local column_widths = {
+    local column_widths =
+    {
         width_summary_first_column,
         width_summary_columns,
         width_summary_columns,
@@ -57,7 +59,8 @@ local function add_science_logs(player, element)
         width_summary_columns,
         width_summary_columns
     }
-    local headersSummary = {
+    local headersSummary =
+    {
         [1] = '',
         [2] = storage.science_logs_category_potion[1],
         [3] = storage.science_logs_category_potion[2],
@@ -78,25 +81,25 @@ local function add_science_logs(player, element)
     label.style.minimal_width = width_summary_first_column
     label.style.maximal_width = width_summary_first_column
     for i = 1, 7 do
-        local label = summary_panel_table.add { type = 'label', name = 'science_logs_total_north_' .. i, caption = storage.science_logs_total_north[i] }
+        label = summary_panel_table.add { type = 'label', name = 'science_logs_total_north_' .. i, caption = storage.science_logs_total_north[i] }
         label.style.minimal_width = width_summary_columns
         label.style.maximal_width = width_summary_columns
     end
     science_scrollpanel.add({ type = 'line' })
 
     summary_panel_table2 = science_scrollpanel.add { type = 'table', column_count = 8 }
-    local label = summary_panel_table2.add { type = 'label', name = 'science_logs_total_south_header', caption = 'Total sent by south' }
+    label = summary_panel_table2.add { type = 'label', name = 'science_logs_total_south_header', caption = 'Total sent by south' }
     label.style.minimal_width = width_summary_first_column
     label.style.maximal_width = width_summary_first_column
     for i = 1, 7 do
-        local label = summary_panel_table2.add { type = 'label', name = 'science_logs_total_south' .. i, caption = storage.science_logs_total_south[i] }
+        label = summary_panel_table2.add { type = 'label', name = 'science_logs_total_south' .. i, caption = storage.science_logs_total_south[i] }
         label.style.minimal_width = width_summary_columns
         label.style.maximal_width = width_summary_columns
     end
     science_scrollpanel.add({ type = 'line' })
 
     summary_panel_table3 = science_scrollpanel.add { type = 'table', column_count = 8 }
-    local label = summary_panel_table3.add { type = 'label', name = 'science_logs_total_passive_feed_header', caption = 'Total passive feed' }
+    label = summary_panel_table3.add { type = 'label', name = 'science_logs_total_passive_feed_header', caption = 'Total passive feed' }
     label.style.minimal_width = width_summary_first_column
     label.style.maximal_width = width_summary_first_column
     for i = 1, 7 do
@@ -104,7 +107,7 @@ local function add_science_logs(player, element)
         if storage.total_passive_feed_redpotion ~= nil then
             text_passive_feed = math.round(storage.total_passive_feed_redpotion * food_value_table_version[1] / food_value_table_version[i], 1)
         end
-        local label = summary_panel_table3.add { type = 'label', name = 'science_logs_passive_feed' .. i, caption = text_passive_feed }
+        label = summary_panel_table3.add { type = 'label', name = 'science_logs_passive_feed' .. i, caption = text_passive_feed }
         label.style.minimal_width = width_summary_columns
         label.style.maximal_width = width_summary_columns
     end
@@ -130,15 +133,16 @@ local function add_science_logs(player, element)
     local dropdown_evofilter = t_filter.add { name = 'dropdown-evofilter', type = 'drop-down', items = evofilter_list, selected_index = storage.dropdown_users_choice_evo_filter[player.name] }
 
     local t = science_scrollpanel.add { type = 'table', name = 'science_logs_header_table', column_count = 4 }
-    local column_widths = { tonumber(75), tonumber(310), tonumber(165), tonumber(230) }
-    local headers = {
+    column_widths = { tonumber(75), tonumber(310), tonumber(165), tonumber(230) }
+    local headers =
+    {
         [1] = 'Time',
         [2] = 'Details',
         [3] = 'Evo jump',
         [4] = 'Threat jump'
     }
     for _, w in ipairs(column_widths) do
-        local label = t.add { type = 'label', caption = headers[_] }
+        label = t.add { type = 'label', caption = headers[_] }
         label.style.minimal_width = w
         label.style.maximal_width = w
         label.style.font = 'default-bold'
@@ -156,7 +160,8 @@ local function add_science_logs(player, element)
     if storage.tm_custom_name['south'] then
         s = storage.tm_custom_name['south']
     end
-    local team_strings = {
+    local team_strings =
+    {
         ['north'] = table.concat({ '[color=120, 120, 255]', n, '[/color]' }),
         ['south'] = table.concat({ '[color=255, 65, 65]', s, '[/color]' })
     }
@@ -182,24 +187,26 @@ local function add_science_logs(player, element)
                         (dropdown_evofilter.selected_index == 7 and (storage.science_logs_evo_jump_difference[i] >= 2)) or
                         (dropdown_evofilter.selected_index == 8 and (storage.science_logs_evo_jump_difference[i] >= 1))
                     then
-                        science_panel_table = science_scrollpanel.add { type = 'table', column_count = 4 }
-                        local label = science_panel_table.add { type = 'label', name = 'science_logs_date' .. i, caption = storage.science_logs_date[i] }
+                        local science_panel_table = science_scrollpanel.add { type = 'table', column_count = 4 }
+                        label = science_panel_table.add { type = 'label', name = 'science_logs_date' .. i, caption = storage.science_logs_date[i] }
                         label.style.minimal_width = column_widths[1]
                         label.style.maximal_width = column_widths[1]
                         label.style.horizontal_align = 'center'
-                        local label = science_panel_table.add { type = 'label', name = 'science_logs_text' .. i, caption = storage.science_logs_text[i] .. custom_force_name }
+                        label = science_panel_table.add { type = 'label', name = 'science_logs_text' .. i, caption = storage.science_logs_text[i] .. custom_force_name }
                         label.style.minimal_width = column_widths[2]
                         label.style.maximal_width = column_widths[2]
-                        local label =
-                            science_panel_table.add {
+                        label =
+                            science_panel_table.add
+                            {
                                 type = 'label',
                                 name = 'science_logs_evo_jump' .. i,
                                 caption = storage.science_logs_evo_jump[i] .. '   [color=200,200,200](+' .. storage.science_logs_evo_jump_difference[i] .. ')[/color]'
                             }
                         label.style.minimal_width = column_widths[3]
                         label.style.maximal_width = column_widths[3]
-                        local label =
-                            science_panel_table.add {
+                        label =
+                            science_panel_table.add
+                            {
                                 type = 'label',
                                 name = 'science_logs_threat' .. i,
                                 caption = storage.science_logs_threat[i] .. '   [color=200,200,200](+' .. storage.science_logs_threat_jump_difference[i] .. ')[/color]'
@@ -249,7 +256,7 @@ local function on_gui_selection_state_changed(event)
     end
 end
 
-event.add(defines.events.on_gui_selection_state_changed, on_gui_selection_state_changed)
+Event.add(defines.events.on_gui_selection_state_changed, on_gui_selection_state_changed)
 
 Tabs.add_tab_to_gui({ name = module_name, caption = 'MutagenLog', id = build_config_gui_token, admin = false })
 

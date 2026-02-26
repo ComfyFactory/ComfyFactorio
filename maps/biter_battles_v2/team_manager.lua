@@ -2,10 +2,11 @@
 local Public = {}
 local Server = require 'utils.server'
 
-local forces = {
-    { name = 'north',     color = { r = 0, g = 0, b = 200 } },
+local forces =
+{
+    { name = 'north', color = { r = 0, g = 0, b = 200 } },
     { name = 'spectator', color = { r = 111, g = 111, b = 111 } },
-    { name = 'south',     color = { r = 200, g = 0, b = 0 } }
+    { name = 'south', color = { r = 200, g = 0, b = 0 } }
 }
 
 local function get_player_array(force_name)
@@ -26,7 +27,8 @@ local function freeze_players()
         storage.team_manager_default_permissions[action_name] = p.allows_action(defines.input_action[action_name])
         p.set_allows_action(defines.input_action[action_name], false)
     end
-    local defs = {
+    local defs =
+    {
         defines.input_action.write_to_console,
         defines.input_action.gui_click,
         defines.input_action.gui_selection_state_changed,
@@ -55,7 +57,8 @@ local function leave_corpse(player)
         return
     end
 
-    local inventories = {
+    local inventories =
+    {
         player.get_inventory(defines.inventory.character_main),
         player.get_inventory(defines.inventory.character_guns),
         player.get_inventory(defines.inventory.character_ammo),
@@ -117,7 +120,7 @@ function Public.draw_top_toggle_button(player)
     if player.gui.top['team_manager_toggle_button'] then
         player.gui.top['team_manager_toggle_button'].destroy()
     end
-    local button = player.gui.top.add({ type = 'sprite-button', name = 'team_manager_toggle_button', caption = 'Team Manager', tooltip = tooltip })
+    local button = player.gui.top.add({ type = 'sprite-button', name = 'team_manager_toggle_button', caption = 'Team Manager' })
     button.style.font = 'heading-2'
     button.style.font_color = { r = 0.88, g = 0.55, b = 0.11 }
     button.style.minimal_height = 38
@@ -147,11 +150,11 @@ local function draw_manager_gui(player)
             l.style.font = 'heading-1'
             i2 = i2 + 1
         else
-            local tt = t.add({ type = 'label', caption = ' ' })
+            t.add({ type = 'label', caption = ' ' })
         end
     end
 
-    local i2 = 1
+    i2 = 1
     for i = 1, #forces * 2 - 1, 1 do
         if i % 2 == 1 then
             local list_box = t.add({ type = 'list-box', name = 'team_manager_list_box_' .. i2, items = get_player_array(forces[i2].name) })
@@ -165,7 +168,7 @@ local function draw_manager_gui(player)
             b.style.font = 'heading-1'
             b.style.maximal_height = 38
             b.style.maximal_width = 38
-            local b = tt.add({ type = 'sprite-button', name = i2, caption = '←' })
+            b = tt.add({ type = 'sprite-button', name = i2, caption = '←' })
             b.style.font = 'heading-1'
             b.style.maximal_height = 38
             b.style.maximal_width = 38
@@ -174,7 +177,7 @@ local function draw_manager_gui(player)
 
     frame.add({ type = 'label', caption = '' })
 
-    local t = frame.add({ type = 'table', name = 'team_manager_bottom_buttons', column_count = 4 })
+    t = frame.add({ type = 'table', name = 'team_manager_bottom_buttons', column_count = 4 })
     local button =
         t.add(
             {
@@ -285,7 +288,7 @@ local function custom_team_name_gui(player, force_name)
         text = storage.tm_custom_name[force_name]
     end
 
-    local textfield = frame.add({ type = 'textfield', name = force_name, text = text })
+    frame.add({ type = 'textfield', name = force_name, text = text })
     local t = frame.add({ type = 'table', column_count = 2 })
     local button =
         t.add(
@@ -298,7 +301,7 @@ local function custom_team_name_gui(player, force_name)
         )
     button.style.font = 'heading-2'
 
-    local button =
+    button =
         t.add(
             {
                 type = 'button',
@@ -395,7 +398,7 @@ local function team_manager_gui_click(event)
     if not element.parent then
         return
     end
-    local element = element.parent
+    element = element.parent
     if element.name ~= 'team_manager_root_table' then
         return
     end

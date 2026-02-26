@@ -1,3 +1,7 @@
+if script.active_mods['space-age'] then
+    error('This map is incompatible with the Space Age mod. Disable Space Age to run this map.', 2)
+end
+
 require 'modules.no_deconstruction_of_neutral_entities'
 require 'modules.spawners_contain_biters'
 require 'modules.biters_yield_coins'
@@ -130,7 +134,8 @@ local function on_init()
     map_gen_settings.water = 'none'
     map_gen_settings.starting_area = 'normal'
     map_gen_settings.cliff_settings = { cliff_elevation_interval = 4, cliff_elevation_0 = 0.1 }
-    map_gen_settings.autoplace_controls = {
+    map_gen_settings.autoplace_controls =
+    {
         ['coal'] = { frequency = 'none', size = 'none', richness = 'none' },
         ['stone'] = { frequency = 'none', size = 'none', richness = 'none' },
         ['copper-ore'] = { frequency = 'none', size = 'none', richness = 'none' },

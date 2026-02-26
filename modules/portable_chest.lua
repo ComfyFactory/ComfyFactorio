@@ -69,7 +69,7 @@ local function create_button(player)
     mod(player).add(
         {
             type = 'sprite-button',
-            sprite = 'item/logistic-chest-requester',
+            sprite = 'item/requester-chest',
             name = main_button_name,
             tooltip = 'Portable inventory stash!',
             style = m_gui.button_style

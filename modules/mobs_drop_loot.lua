@@ -4,7 +4,8 @@ local shuffle = table.shuffle_table
 local insert = table.insert
 local random = math.random
 
-local item_worths = {
+local item_worths =
+{
     ['wooden-chest'] = 2,
     ['iron-chest'] = 8,
     ['steel-chest'] = 32,
@@ -45,11 +46,11 @@ local item_worths = {
     ['tank'] = 4096,
     ['logistic-robot'] = 256,
     ['construction-robot'] = 256,
-    ['logistic-chest-active-provider'] = 256,
-    ['logistic-chest-passive-provider'] = 256,
-    ['logistic-chest-storage'] = 256,
-    ['logistic-chest-buffer'] = 512,
-    ['logistic-chest-requester'] = 512,
+    ['active-provider-chest'] = 256,
+    ['passive-provider-chest'] = 256,
+    ['storage-chest'] = 256,
+    ['buffer-chest'] = 512,
+    ['requester-chest'] = 512,
     ['roboport'] = 2048,
     ['small-lamp'] = 4,
     ['arithmetic-combinator'] = 16,

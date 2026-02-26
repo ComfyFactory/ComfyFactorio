@@ -1,12 +1,19 @@
 --luacheck: ignore
+
+if script.active_mods['space-age'] then
+    error('This map is incompatible with the Space Age mod. Disable Space Age to run this map.', 2)
+end
+
 require 'modules.mineable_wreckage_yields_scrap'
 require 'modules.wave_defense.main'
 local Map = require 'modules.map_info'
 local WD = require 'modules.wave_defense.table'
+local Event = require 'utils.event'
 local simplex_noise = require 'utils.math.simplex_noise'.d2
 local spawn_size = 96
 local wall_thickness = 3
-local small_scraps = {
+local small_scraps =
+{
     'crash-site-spaceship-wreck-small-1',
     'crash-site-spaceship-wreck-small-1',
     'crash-site-spaceship-wreck-small-2',
@@ -126,22 +133,6 @@ local function spawn_area(event)
     end
 end
 
-local function get_quarter_name(position)
-    if position.x < 0 then
-        if position.y < 0 then
-            return 'NW'
-        else
-            return 'SW'
-        end
-    else
-        if position.y < 0 then
-            return 'NE'
-        else
-            return 'SE'
-        end
-    end
-end
-
 local function draw_borders(surface, left_top, area)
     if left_top.x == 0 or left_top.x == -32 then
         for x = 0, 31, 1 do
@@ -219,11 +210,11 @@ local function set_difficulty()
     end
 end
 
-local function on_player_joined_game(event)
+local function on_player_joined_game()
     set_difficulty()
 end
 
-local function on_player_left_game(event)
+local function on_player_left_game()
     set_difficulty()
 end
 
@@ -243,14 +234,15 @@ local function on_init()
         )
     T.main_caption_color = { r = 0, g = 120, b = 0 }
     T.sub_caption_color = { r = 255, g = 0, b = 255 }
-    for i, quarter in pairs({ 'coal', 'iron-ore', 'stone', 'copper-ore' }) do
+    for _, quarter in pairs({ 'coal', 'iron-ore', 'stone', 'copper-ore' }) do
         local map_gen_settings = {}
         map_gen_settings.seed = math.random(1, 999999999)
         map_gen_settings.water = math.random(25, 50) * 0.01
         map_gen_settings.starting_area = 1.5
         map_gen_settings.terrain_segmentation = math.random(25, 50) * 0.1
         map_gen_settings.cliff_settings = { cliff_elevation_interval = 0, cliff_elevation_0 = 0 }
-        map_gen_settings.autoplace_controls = {
+        map_gen_settings.autoplace_controls =
+        {
             ['coal'] = { frequency = 0, size = 0.5, richness = 0.5 },
             ['stone'] = { frequency = 0, size = 0.5, richness = 0.5 },
             ['copper-ore'] = { frequency = 0, size = 0.5, richness = 0.5 },
@@ -271,33 +263,9 @@ local function on_init()
 
         game.create_surface(quarter, map_gen_settings)
     end
-
-    --[[
-	game.map_settings.enemy_expansion.enabled = true
-	game.map_settings.enemy_expansion.settler_group_min_size = 8
-	game.map_settings.enemy_expansion.settler_group_max_size = 16
-	game.map_settings.enemy_expansion.min_expansion_cooldown = 2700
-	game.map_settings.enemy_expansion.max_expansion_cooldown = 2700
-
-	game.map_settings.pollution.enabled = true
-	game.map_settings.enemy_evolution.enabled = true
-
-	local modifier_factor = 2
-
-	--default game setting values
-	storage.enemy_evolution_destroy_factor = game.map_settings.enemy_evolution.destroy_factor * modifier_factor
-	storage.enemy_evolution_time_factor = game.map_settings.enemy_evolution.time_factor * modifier_factor
-	storage.enemy_evolution_pollution_factor = game.map_settings.enemy_evolution.pollution_factor * modifier_factor
-	]]
 end
 
-local event = require 'utils.event'
---event.on_nth_tick(60, tick)
-event.on_init(on_init)
-event.add(defines.events.on_chunk_generated, on_chunk_generated)
---event.add(defines.events.on_entity_died, on_entity_died)
---event.add(defines.events.on_research_finished, on_research_finished)
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
-event.add(defines.events.on_player_left_game, on_player_left_game)
-
---require "modules.difficulty_vote"
+Event.on_init(on_init)
+Event.add(defines.events.on_chunk_generated, on_chunk_generated)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_player_left_game, on_player_left_game)

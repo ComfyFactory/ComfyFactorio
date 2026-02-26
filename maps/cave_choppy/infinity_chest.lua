@@ -22,9 +22,9 @@ Global.register(
 local chest_gui_frame_name = Gui.uid_name()
 local chest_content_table_name = Gui.uid_name()
 
-function Public.create_chest(surface, position, storage)
+function Public.create_chest(surface, position, content)
     local entity = surface.create_entity { name = 'infinity-chest', position = position, force = 'neutral' }
-    chests[entity.unit_number] = { entity = entity, storage = storage }
+    chests[entity.unit_number] = { entity = entity, content = content }
     return entity
 end
 
@@ -36,7 +36,7 @@ local function built_entity(event)
 
     entity.active = false
 
-    chests[entity.unit_number] = { entity = entity, storage = {} }
+    chests[entity.unit_number] = { entity = entity, content = {} }
 end
 
 local function get_stack_size(name)
@@ -49,7 +49,7 @@ local function get_stack_size(name)
     return proto.stack_size
 end
 
-local function do_item(name, count, inv, storage)
+local function do_item(name, count, inv, content)
     local size = get_stack_size(name)
     local diff = count - size
 
@@ -61,10 +61,10 @@ local function do_item(name, count, inv, storage)
 
     if diff > 0 then
         inv.remove({ name = name, count = diff })
-        local prev = storage[name] or 0
+        local prev = content[name] or 0
         new_amount = prev + diff
     elseif diff < 0 then
-        local prev = storage[name]
+        local prev = content[name]
         if not prev then
             return
         end
@@ -75,9 +75,9 @@ local function do_item(name, count, inv, storage)
     end
 
     if new_amount == 0 then
-        storage[name] = nil
+        content[name] = nil
     else
-        storage[name] = new_amount
+        content[name] = new_amount
     end
 end
 
@@ -94,24 +94,28 @@ local function tick()
     if not entity or not entity.valid then
         chests[chest_id] = nil
     else
-        local storage = chest_data.storage
+        local content = chest_data.content
         local inv = entity.get_inventory(1) --defines.inventory.chest
         local contents = inv.get_contents()
 
-        for name, count in pairs(contents) do
-            do_item(name, count, inv, storage)
+        if not next(contents) then
+            return
         end
 
-        for name, _ in pairs(storage) do
-            if not contents[name] then
-                do_item(name, 0, inv, storage)
+        for _, data in pairs(contents) do
+            do_item(data.name, data.count, inv, content)
+        end
+
+        for _, data in pairs(content) do
+            if not contents[data.name] then
+                do_item(data.name, 0, inv, content)
             end
         end
     end
 end
 
 local function create_chest_gui_content(frame, player, chest)
-    local storage = chest.storage
+    local content = chest.content
     local inv = chest.entity.get_inventory(1).get_contents()
 
     local grid = frame[chest_content_table_name]
@@ -122,25 +126,27 @@ local function create_chest_gui_content(frame, player, chest)
         grid = frame.add { type = 'table', name = chest_content_table_name, column_count = 10, style = 'slot_table' }
     end
 
-    for name, count in pairs(storage) do
-        local number = count + (inv[name] or 0)
-        grid.add {
+    for _, data in pairs(chest.content) do
+        local number = data.count + (inv[data.name] or 0)
+        grid.add
+        {
             type = 'sprite-button',
-            sprite = 'item/' .. name,
+            sprite = 'item/' .. data.name,
             number = number,
-            tooltip = name,
+            tooltip = data.name,
             --style = 'slot_button'
             enabled = false
         }
     end
 
-    for name, count in pairs(inv) do
-        if not storage[name] then
-            grid.add {
+    for _, data in pairs(inv) do
+        if not content[data.name] then
+            grid.add
+            {
                 type = 'sprite-button',
-                sprite = 'item/' .. name,
-                number = count,
-                tooltip = name,
+                sprite = 'item/' .. data.name,
+                number = data.count,
+                tooltip = data.name,
                 --style = 'slot_button'
                 enabled = false
             }
@@ -206,7 +212,8 @@ local function gui_opened(event)
     end
 
     local frame =
-        player.gui.center.add {
+        player.gui.center.add
+        {
             type = 'frame',
             name = chest_gui_frame_name,
             caption = 'Infinite Storage Chest',
@@ -214,7 +221,8 @@ local function gui_opened(event)
         }
 
     local text =
-        frame.add {
+        frame.add
+        {
             type = 'label',
             caption = format(
                 'This chest stores unlimited quantity of items (up to 48 different item types).\nThe chest is best used with an inserter to add / remove items.\nIf the chest is mined or destroyed the items are lost.'

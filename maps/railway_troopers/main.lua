@@ -26,14 +26,16 @@ local function set_commands(unit_group)
     for x = position.x, -8196, -32 do
         if surface.is_chunk_generated({ math_floor(x / 32), math_floor(position.y / 32) }) then
             if math_random(1, 16) == 1 then
-                commands[#commands + 1] = {
+                commands[#commands + 1] =
+                {
                     type = defines.command.build_base,
                     destination = { x = x, y = position.y },
                     distraction = defines.distraction.by_anything,
                     ignore_planner = true
                 }
             else
-                commands[#commands + 1] = {
+                commands[#commands + 1] =
+                {
                     type = defines.command.attack_area,
                     destination = { x = x, y = position.y },
                     radius = 16,
@@ -135,10 +137,10 @@ local function draw_east_side(surface, left_top)
 
     if left_top.y == 0 and left_top.x < 64 then
         for x = 0, 30, 2 do
-            surface.create_entity({ name = 'straight-rail', position = { left_top.x + x, 0 }, direction = 2, force = 'player' })
+            surface.create_entity({ name = 'straight-rail', position = { left_top.x + x, 0 }, direction = 4, force = 'player' })
         end
         if left_top.x == -32 then
-            local entity = surface.create_entity({ name = 'cargo-wagon', position = { -24, 0 }, force = 'player', direction = 2 })
+            local entity = surface.create_entity({ name = 'cargo-wagon', position = { -24, 0 }, force = 'player', direction = 4 })
             entity.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'firearm-magazine', count = 600 })
             entity.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'shotgun', count = 2 })
             entity.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'shotgun-shell', count = 64 })
@@ -146,7 +148,7 @@ local function draw_east_side(surface, left_top)
             entity.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'grenade', count = 32 })
             entity.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'pistol', count = 10 })
             entity.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'rail', count = 100 })
-            entity = surface.create_entity({ name = 'locomotive', position = { -18, 0 }, force = 'player', direction = 2 })
+            entity = surface.create_entity({ name = 'locomotive', position = { -18, 0 }, force = 'player', direction = 4 })
             entity.get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 25 })
         end
     end
@@ -191,7 +193,8 @@ local function on_chunk_generated(event)
     end
 end
 
-local type_whitelist = {
+local type_whitelist =
+{
     ['artillery-wagon'] = true,
     ['car'] = true,
     ['cargo-wagon'] = true,
@@ -307,11 +310,13 @@ local function on_init()
     game.map_settings.enemy_expansion.max_expansion_distance = 16
     game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 0.25
 
-    local map_gen_settings = {
+    local map_gen_settings =
+    {
         ['water'] = 0,
         ['starting_area'] = 0.60,
         ['cliff_settings'] = { cliff_elevation_interval = 0, cliff_elevation_0 = 0 },
-        ['autoplace_controls'] = {
+        ['autoplace_controls'] =
+        {
             ['coal'] = { frequency = 0, size = 0.65, richness = 0.5 },
             ['stone'] = { frequency = 0, size = 0.65, richness = 0.5 },
             ['copper-ore'] = { frequency = 0, size = 0.65, richness = 0.5 },
@@ -335,7 +340,8 @@ local function on_init()
     force.technologies['railway'].researched = true
     force.technologies['engine'].researched = true
 
-    local types_to_disable = {
+    local types_to_disable =
+    {
         ['ammo'] = true,
         ['armor'] = true,
         ['car'] = true,

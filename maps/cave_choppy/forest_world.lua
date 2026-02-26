@@ -15,16 +15,18 @@ local Simplex = require 'utils.math.simplex_noise'.d2
 local Event = require 'utils.event'
 local table_insert = table.insert
 local math_random = math.random
+local Task = require 'utils.task_token'
 
-local disabled_for_deconstruction = {
+local disabled_for_deconstruction =
+{
     ['fish'] = true,
     ['huge-rock'] = true,
     ['big-rock'] = true,
     ['big-sand-rock'] = true,
-    ['mineable-wreckage'] = true
 }
 
-local tile_replacements = {
+local tile_replacements =
+{
     ['dirt-1'] = 'grass-1',
     ['dirt-2'] = 'grass-2',
     ['dirt-3'] = 'grass-3',
@@ -41,7 +43,8 @@ local tile_replacements = {
 }
 
 local rocks = { 'big-rock', 'big-rock', 'huge-rock' }
-local decos = {
+local decos =
+{
     'green-hairy-grass',
     'green-hairy-grass',
     'green-hairy-grass',
@@ -54,19 +57,34 @@ local decos = {
 }
 local decos_inside_forest = { 'brown-asterisk', 'brown-asterisk', 'brown-carpet-grass', 'brown-hairy-grass' }
 
-local noises = {
-    ['forest_location'] = {
+local noises =
+{
+    ['forest_location'] =
+    {
         { modifier = 0.006, weight = 1 },
-        { modifier = 0.01,  weight = 0.25 },
-        { modifier = 0.05,  weight = 0.15 },
-        { modifier = 0.1,   weight = 0.05 }
+        { modifier = 0.01, weight = 0.25 },
+        { modifier = 0.05, weight = 0.15 },
+        { modifier = 0.1, weight = 0.05 }
     },
-    ['forest_density'] = {
+    ['forest_density'] =
+    {
         { modifier = 0.01, weight = 1 },
         { modifier = 0.05, weight = 0.5 },
-        { modifier = 0.1,  weight = 0.025 }
+        { modifier = 0.1, weight = 0.025 }
     }
 }
+
+local create_tiles_token =
+    Task.register(
+        function (event)
+            local surface = event.surface
+            surface.set_tiles({ { name = 'tutorial-grid', position = { 1, -4 } } })
+            surface.set_tiles({ { name = 'tutorial-grid', position = { 1, -5 } } })
+            surface.set_tiles({ { name = 'tutorial-grid', position = { 2, -4 } } })
+            surface.set_tiles({ { name = 'tutorial-grid', position = { 2, -5 } } })
+        end
+    )
+
 local function get_noise(name, pos, seed)
     local noise = 0
     for _, n in pairs(noises[name]) do
@@ -76,7 +94,8 @@ local function get_noise(name, pos, seed)
     return noise
 end
 
-local entities_to_convert = {
+local entities_to_convert =
+{
     ['coal'] = true,
     ['copper-ore'] = true,
     ['iron-ore'] = true,
@@ -91,7 +110,8 @@ local entities_to_convert = {
     ['thorium-ore'] = true
 }
 
-local trees_to_remove = {
+local trees_to_remove =
+{
     ['dead-dry-hairy-tree'] = true,
     ['dead-grey-trunk'] = true,
     ['dead-tree-desert'] = true,
@@ -114,7 +134,8 @@ local trees_to_remove = {
     ['tree-09-red'] = true
 }
 
-local choppy_messages = {
+local choppy_messages =
+{
     'We should branch out.',
     "Wood? Well that's the root of the problem.",
     'Going out for chopping? Son of a birch.',
@@ -129,29 +150,32 @@ local function create_choppy_stats_gui(player)
     end
 
     local captions = {}
-    local caption_style = {
-        { 'font',          'default-bold' },
-        { 'font_color',    { r = 0.63, g = 0.63, b = 0.63 } },
-        { 'top_padding',   2 },
-        { 'left_padding',  0 },
+    local caption_style =
+    {
+        { 'font', 'default-bold' },
+        { 'font_color', { r = 0.63, g = 0.63, b = 0.63 } },
+        { 'top_padding', 2 },
+        { 'left_padding', 0 },
         { 'right_padding', 0 },
         { 'minimal_width', 0 }
     }
     local stat_numbers = {}
-    local stat_number_style = {
-        { 'font',          'default-bold' },
-        { 'font_color',    { r = 0.77, g = 0.77, b = 0.77 } },
-        { 'top_padding',   2 },
-        { 'left_padding',  0 },
+    local stat_number_style =
+    {
+        { 'font', 'default-bold' },
+        { 'font_color', { r = 0.77, g = 0.77, b = 0.77 } },
+        { 'top_padding', 2 },
+        { 'left_padding', 0 },
         { 'right_padding', 0 },
         { 'minimal_width', 0 }
     }
     local separators = {}
-    local separator_style = {
-        { 'font',          'default-bold' },
-        { 'font_color',    { r = 0.15, g = 0.15, b = 0.89 } },
-        { 'top_padding',   2 },
-        { 'left_padding',  2 },
+    local separator_style =
+    {
+        { 'font', 'default-bold' },
+        { 'font_color', { r = 0.15, g = 0.15, b = 0.89 } },
+        { 'top_padding', 2 },
+        { 'left_padding', 2 },
         { 'right_padding', 2 },
         { 'minimal_width', 0 }
     }
@@ -195,7 +219,7 @@ local function create_choppy_stats_gui(player)
         separators[3] = t.add { type = 'label', caption = '|' }
 
         captions[3] = t.add { type = 'label', caption = '[img=utility.hand] :' }
-        local str = '+'
+        str = '+'
         str = str .. tostring(game.forces.player.mining_drill_productivity_bonus * 100)
         str = str .. '%'
         stat_numbers[3] = t.add { type = 'label', caption = str }
@@ -284,7 +308,7 @@ local function process_tile(surface, pos, tile, seed)
     end
 
     if math_random(1, 100000) == 1 then
-        local wrecks = { 'big-ship-wreck-1', 'big-ship-wreck-2', 'big-ship-wreck-3' }
+        local wrecks = { 'crash-site-spaceship-wreck-big-1', 'crash-site-spaceship-wreck-big-2', 'crash-site-spaceship-wreck-medium-1' }
         local e = surface.create_entity { name = wrecks[math_random(1, #wrecks)], position = pos, force = 'neutral' }
         e.insert({ name = 'raw-fish', count = math_random(3, 25) })
         if math_random(1, 3) == 1 then
@@ -310,7 +334,8 @@ local function process_tile(surface, pos, tile, seed)
         surface.create_decoratives(
             {
                 check_collision = false,
-                decoratives = {
+                decoratives =
+                {
                     {
                         name = decos_inside_forest[math_random(1, #decos_inside_forest)],
                         position = pos,
@@ -335,7 +360,8 @@ local function process_tile(surface, pos, tile, seed)
         surface.create_decoratives(
             {
                 check_collision = false,
-                decoratives = {
+                decoratives =
+                {
                     {
                         name = decos_inside_forest[math_random(1, #decos_inside_forest)],
                         position = pos,
@@ -430,7 +456,8 @@ local function on_player_joined_game()
 
     game.surfaces['choppy'].ticks_per_day = game.surfaces['choppy'].ticks_per_day * 2
 
-    storage.entity_yield = {
+    storage.entity_yield =
+    {
         ['tree-01'] = { 'iron-ore' },
         ['tree-02-red'] = { 'copper-ore' },
         ['tree-04'] = { 'coal' },
@@ -537,10 +564,10 @@ local function on_player_mined_entity(event)
         end
 
         local main_item = storage.entity_yield[entity.name][math_random(1, #storage.entity_yield[entity.name])]
+        local player = game.players[event.player_index]
 
-        entity.surface.create_entity(
+        player.create_local_flying_text(
             {
-                name = 'flying-text',
                 position = entity.position,
                 text = '+' .. amount .. ' [item=' .. main_item .. '] +' .. second_item_amount .. ' [item=' .. second_item .. ']',
                 color = { r = 0.8, g = 0.8, b = 0.8 }
@@ -551,18 +578,17 @@ local function on_player_mined_entity(event)
         storage.stats_wood_chopped = storage.stats_wood_chopped + 1
         refresh_gui()
 
-        local player = game.players[event.player_index]
 
         local inserted_count = player.insert({ name = main_item, count = amount })
         amount = amount - inserted_count
         if amount > 0 then
-            entity.surface.spill_item_stack(entity.position, { name = main_item, count = amount }, true)
+            entity.surface.spill_item_stack { position = entity.position, stack = { name = main_item, count = amount }, enable_looted = true }
         end
 
-        local inserted_count = player.insert({ name = second_item, count = second_item_amount })
+        inserted_count = player.insert({ name = second_item, count = second_item_amount })
         second_item_amount = second_item_amount - inserted_count
         if second_item_amount > 0 then
-            entity.surface.spill_item_stack(entity.position, { name = second_item, count = second_item_amount }, true)
+            entity.surface.spill_item_stack { position = entity.position, stack = { name = second_item, count = second_item_amount }, enable_looted = true }
         end
     end
 end
@@ -589,7 +615,8 @@ local function on_entity_died(event)
         for _, entity in pairs(
             event.entity.surface.find_entities_filtered(
                 {
-                    area = {
+                    area =
+                    {
                         { event.entity.position.x - 4, event.entity.position.y - 4 },
                         { event.entity.position.x + 4, event.entity.position.y + 4 }
                     },
@@ -610,14 +637,17 @@ local function init_surface(surface)
 end
 
 local function init()
-    local storage = {}
+    local content = {}
     local newPlace = init_surface(game.create_surface('choppy'))
     local surface = game.surfaces['choppy']
     newPlace.request_to_generate_chunks({ 0, 0 }, 4)
-    storage.surface_choppy_elevator = surface.create_entity({ name = 'player-port', position = { 1, -4 }, force = game.forces.neutral })
-    storage.surface_choppy_chest = Module.create_chest(surface, { 1, -8 }, storage)
 
-    rendering.draw_text {
+    Task.set_timeout_in_ticks(400, create_tiles_token, { surface = newPlace })
+
+    storage.surface_choppy_chest = Module.create_chest(surface, { 1, -8 }, content)
+
+    rendering.draw_text
+    {
         text = 'Storage',
         surface = surface,
         target = storage.surface_choppy_chest,
@@ -626,10 +656,11 @@ local function init()
         alignment = 'center'
     }
 
-    rendering.draw_text {
+    rendering.draw_text
+    {
         text = 'Elevator',
         surface = surface,
-        target = storage.surface_choppy_elevator,
+        target = { 1, -4 },
         target_offset = { 0, 1 },
         color = { r = 0.98, g = 0.66, b = 0.22 },
         alignment = 'center'
@@ -637,8 +668,6 @@ local function init()
 
     storage.surface_choppy_chest.minable = false
     storage.surface_choppy_chest.destructible = false
-    storage.surface_choppy_elevator.minable = false
-    storage.surface_choppy_elevator.destructible = false
 end
 
 Event.on_init(init)

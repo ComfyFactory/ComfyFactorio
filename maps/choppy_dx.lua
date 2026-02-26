@@ -1,4 +1,8 @@
 --luacheck: ignore
+if script.active_mods['space-age'] then
+    error('This map is incompatible with the Space Age mod. Disable Space Age to run this map.', 2)
+end
+
 --choppy-- mewmew made this --
 --neko barons attempt to mix up map gen--
 
@@ -22,15 +26,16 @@ local math_random = math.random
 
 --storage.choppy_nightmare = true
 
-local disabled_for_deconstruction = {
+local disabled_for_deconstruction =
+{
     ['fish'] = true,
     ['huge-rock'] = true,
     ['big-rock'] = true,
-    ['big-sand-rock'] = true,
-    ['mineable-wreckage'] = true
+    ['big-sand-rock'] = true
 }
 
-local tile_replacements = {
+local tile_replacements =
+{
     ['dirt-1'] = 'grass-1',
     ['dirt-2'] = 'grass-2',
     ['dirt-3'] = 'grass-3',
@@ -47,7 +52,8 @@ local tile_replacements = {
 }
 
 local rocks = { 'big-rock', 'big-rock', 'huge-rock' }
-local decos = {
+local decos =
+{
     'green-hairy-grass',
     'green-hairy-grass',
     'green-hairy-grass',
@@ -60,21 +66,24 @@ local decos = {
 }
 -- local decos_inside_forest = {"brown-asterisk","brown-asterisk", "brown-carpet-grass","brown-hairy-grass"} // unused?
 
-local noises = {
+local noises =
+{
     --["forest_location"] = {{modifier = 0.006, weight = 1}, {modifier = 0.01, weight = 0.25}, {modifier = 0.05, weight = 0.15}, {modifier = 0.1, weight = 0.05}},
-    ['forest_location'] = {
+    ['forest_location'] =
+    {
         { modifier = 0.006, weight = 0.60 },
-        { modifier = 0.01,  weight = 0.20 },
-        { modifier = 0.05,  weight = 0.12 },
-        { modifier = 0.1,   weight = 0.08 }
+        { modifier = 0.01, weight = 0.20 },
+        { modifier = 0.05, weight = 0.12 },
+        { modifier = 0.1, weight = 0.08 }
     },
     ['forest_density'] = { { modifier = 0.01, weight = 0.8 }, { modifier = 0.05, weight = 0.4 } },
     --["forest_region"] = {{modifier = 0.001, weight = 1}, {modifier = 0.025, weight = 0.5}, {modifier = 0.02, weight = 0.025}}
-    ['forest_region'] = {
+    ['forest_region'] =
+    {
         { modifier = 0.0005, weight = 0.85 },
-        { modifier = 0.005,  weight = 0.25 },
-        { modifier = 0.01,   weight = 0.15 },
-        { modifier = 0.05,   weight = 0.05 }
+        { modifier = 0.005, weight = 0.25 },
+        { modifier = 0.01, weight = 0.15 },
+        { modifier = 0.05, weight = 0.05 }
     }
 }
 local function get_noise(name, pos, seed)
@@ -86,7 +95,8 @@ local function get_noise(name, pos, seed)
     return noise
 end
 
-local entities_to_convert = {
+local entities_to_convert =
+{
     ['coal'] = true,
     ['copper-ore'] = true,
     ['iron-ore'] = true,
@@ -101,7 +111,8 @@ local entities_to_convert = {
     ['thorium-ore'] = true
 }
 
-local trees_to_remove = {
+local trees_to_remove =
+{
     ['dead-dry-hairy-tree'] = true,
     ['dead-grey-trunk'] = true,
     ['dead-tree-desert'] = true,
@@ -152,7 +163,7 @@ local function process_tile(surface, pos, tile, entities, seed)
     end
 
     if math_random(1, 100000) == 1 then
-        local wrecks = { 'big-ship-wreck-1', 'big-ship-wreck-2', 'big-ship-wreck-3' }
+        local wrecks = { 'crash-site-spaceship-wreck-big-1', 'crash-site-spaceship-wreck-big-2', 'crash-site-spaceship-wreck-medium-1' }
         local e = surface.create_entity { name = wrecks[math_random(1, #wrecks)], position = pos, force = 'neutral' }
         e.insert({ name = 'raw-fish', count = math_random(3, 25) })
         if math_random(1, 3) == 1 then
@@ -277,7 +288,7 @@ local function process_chunk(area)
         for y = 0.5, 31.5, 1 do
             local pos = { x = left_top.x + x, y = left_top.y + y }
 
-            local tile = surface.get_tile(pos)
+            local tile = surface.get_tile(pos.x, pos.y)
             if tile_replacements[tile.name] then
                 tiles[#tiles + 1] = { name = tile_replacements[tile.name], position = pos }
             end
@@ -382,7 +393,8 @@ local function on_player_joined_game(event)
 
     --game.surfaces["nauvis"].ticks_per_day = game.surfaces["nauvis"].ticks_per_day * 2
 
-    storage.entity_yield = {
+    storage.entity_yield =
+    {
         ['tree-01'] = { 'iron-ore' },
         ['tree-02-red'] = { 'copper-ore' },
         ['tree-04'] = { 'coal' },
@@ -534,7 +546,8 @@ local function generate_treevein(entity, player)
     local radius = 28
     --player.print("checking")
     if
-        surface.count_entities_filtered {
+        surface.count_entities_filtered
+        {
             area = { { p.x - radius, p.y - radius }, { p.x + radius, p.y + radius } },
             name = { 'iron-ore', 'copper-ore', 'coal', 'stone', 'uranium-ore' },
             limit = 1
@@ -550,8 +563,8 @@ local function generate_treevein(entity, player)
         local modifier_raffle = { { 0, -1 }, { -1, 0 }, { 1, 0 }, { 0, 1 } }
         local ores_to_place = math_random(size[2], size[3]) + math.floor(ore_count * 0.040)
         while ore_entities_placed < ores_to_place do
-            local a = math.ceil(math_random(ore_count * 14, ore_count * 20) + ore_entities_placed * 8, 0)
-            for x = 1, 150, 1 do
+            local a = math.ceil(math_random(ore_count * 14, ore_count * 20) + ore_entities_placed * 8)
+            for _ = 1, 150, 1 do
                 local m = modifier_raffle[math_random(1, #modifier_raffle)]
                 local pos = { x = p.x + m[1], y = p.y + m[2] }
                 if surface.can_place_entity({ name = mined_loot, position = pos, amount = a }) then
@@ -648,8 +661,8 @@ local function on_player_mined_entity(event)
             entity.surface.spill_item_stack(entity.position, { name = main_item, count = amount }, true)
         end
 
-        local inserted_count = player.insert({ name = second_item, count = second_item_amount })
-        second_item_amount = second_item_amount - inserted_count
+        local second_inserted_count = player.insert({ name = second_item, count = second_item_amount })
+        second_item_amount = second_item_amount - second_inserted_count
         if second_item_amount > 0 then
             entity.surface.spill_item_stack(entity.position, { name = second_item, count = second_item_amount }, true)
         end
@@ -686,7 +699,8 @@ local function on_entity_died(event)
         for _, entity in pairs(
             event.entity.surface.find_entities_filtered(
                 {
-                    area = {
+                    area =
+                    {
                         { event.entity.position.x - 4, event.entity.position.y - 4 },
                         { event.entity.position.x + 4, event.entity.position.y + 4 }
                     },

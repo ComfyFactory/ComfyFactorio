@@ -1,8 +1,8 @@
 -- crossing -- by mewmew --
 
 local Event = require 'utils.event'
-local map_functions = require 'utils.tools.map_functions'
-local simplex_noise = require 'utils.math.simplex_noise'.d2
+local MapFunctions = require 'utils.tools.map_functions'
+local SimplexNoise = require 'utils.math.simplex_noise'.d2
 
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
@@ -33,7 +33,7 @@ local function on_chunk_generated(event)
 
     if left_top.x > 128 then
         if not storage.spawn_ores_generated then
-            map_functions.draw_noise_tile_circle({ x = 0, y = 0 }, 'water', surface, 24)
+            MapFunctions.draw_noise_tile_circle({ x = 0, y = 0 }, 'water', surface, 24)
             storage.spawn_ores_generated = true
         end
     end
@@ -42,10 +42,10 @@ local function on_chunk_generated(event)
         for x = 0, 31, 1 do
             for y = 0, 31, 1 do
                 local pos = { x = left_top.x + x, y = left_top.y + y }
-                local noise_1 = simplex_noise(pos.x * 0.02, pos.y * 0.02, seed)
+                local noise_1 = SimplexNoise(pos.x * 0.02, pos.y * 0.02, seed)
 
                 if pos.x > -80 + (noise_1 * 8) and pos.x < 80 + (noise_1 * 8) then
-                    local tile = surface.get_tile(pos)
+                    local tile = surface.get_tile(pos.x, pos.y)
                     if tile.name == 'water' or tile.name == 'deepwater' then
                         surface.set_tiles({ { name = 'grass-2', position = pos } })
                     end
@@ -66,10 +66,10 @@ local function on_chunk_generated(event)
         for x = 0, 31, 1 do
             for y = 0, 31, 1 do
                 local pos = { x = left_top.x + x, y = left_top.y + y }
-                local noise_1 = simplex_noise(pos.x * 0.015, pos.y * 0.015, seed)
+                local noise_1 = SimplexNoise(pos.x * 0.015, pos.y * 0.015, seed)
 
                 if pos.y > -80 + (noise_1 * 8) and pos.y < 80 + (noise_1 * 8) then
-                    local tile = surface.get_tile(pos)
+                    local tile = surface.get_tile(pos.x, pos.y)
                     if tile.name == 'water' or tile.name == 'deepwater' then
                         surface.set_tiles({ { name = 'grass-2', position = pos } })
                     end

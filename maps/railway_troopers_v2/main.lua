@@ -1,8 +1,13 @@
+if script.active_mods['space-age'] then
+    error('This map is incompatible with the Space Age mod. Disable Space Age to run this map.', 2)
+end
+
 local Difficulty = require 'modules.difficulty_vote'
 require 'modules.satellite_score'
 require 'modules.biters_yield_ore'
 
-local difficulties_votes = {
+local difficulties_votes =
+{
     [1] = 32,
     [2] = 16,
     [3] = 8,
@@ -24,10 +29,10 @@ local math_abs = math.abs
 
 local function place_spawn_entities(surface)
     for x = 0, 96, 2 do
-        surface.create_entity({ name = 'straight-rail', position = { -96 + x, 0 }, direction = 2, force = 'player' })
+        surface.create_entity({ name = 'straight-rail', position = { -96 + x, 0 }, direction = 4, force = 'player' })
     end
 
-    local entity = surface.create_entity({ name = 'cargo-wagon', position = { -24, 1 }, force = 'player', direction = 2 })
+    local entity = surface.create_entity({ name = 'cargo-wagon', position = { -24, 1 }, force = 'player', direction = 4 })
     entity.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'submachine-gun', count = 3 })
     entity.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'firearm-magazine', count = 600 })
     entity.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'shotgun', count = 2 })
@@ -127,7 +132,8 @@ local function map_reset()
     force.technologies['engine'].researched = true
     force.technologies['fluid-wagon'].researched = true
 
-    local types_to_disable = {
+    local types_to_disable =
+    {
         ['ammo'] = true,
         ['armor'] = true,
         ['car'] = true,
@@ -282,12 +288,14 @@ local function on_init()
         surface.delete_chunk({ chunk.x, chunk.y })
     end
 
-    local new_map_gen_settings = {
+    local new_map_gen_settings =
+    {
         ['water'] = 0.50,
         ['starting_area'] = 0.60,
         terrain_segmentation = 20,
         ['cliff_settings'] = { cliff_elevation_interval = 0, cliff_elevation_0 = 0 },
-        ['autoplace_controls'] = {
+        ['autoplace_controls'] =
+        {
             ['coal'] = { frequency = 15, size = 0.20, richness = 0.25 },
             ['stone'] = { frequency = 15, size = 0.20, richness = 0.25 },
             ['copper-ore'] = { frequency = 15, size = 0.20, richness = 0.25 },

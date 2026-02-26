@@ -30,9 +30,9 @@ Global.register(
         chests = chests,
         inventories = inventories
     },
-    function (global)
-        chests = storage.chests
-        inventories = storage.inventories
+    function (tbl)
+        chests = tbl.chests
+        inventories = tbl.inventories
     end
 )
 
@@ -40,8 +40,8 @@ Global.register(
     {
         cooldowns = cooldowns
     },
-    function (global)
-        cooldowns = storage.cooldowns
+    function (tbl)
+        cooldowns = tbl.cooldowns
     end
 )
 
@@ -57,13 +57,12 @@ local function check_player_ports()
 
         --if cooldowns[player.name] - game.tick > 0 then goto continue end
 
-        if player.surface.find_entity('player-port', player.position) then
+        if player.surface.get_tile(player.position.x, player.position.y).name == 'tutorial-grid' then
             if cooldowns[player.name] > game.tick then
                 player.play_sound { path = 'utility/armor_insert', volume_modifier = 1 }
                 if math.random(1, 3) == 1 then
-                    player.surface.create_entity(
+                    player.create_local_flying_text(
                         {
-                            name = 'flying-text',
                             position = player.position,
                             text = math.ceil((cooldowns[tostring(player.name)] - game.tick) / 60),
                             color = { r = math.random(130, 170), g = math.random(130, 170), b = 130 }
@@ -73,7 +72,7 @@ local function check_player_ports()
                 goto continue
             end
             local surface_name = player.surface.name == 'cave_miner' and 'choppy' or 'cave_miner'
-            local pos = surface_name == 'cave_miner' and storage.surface_cave_elevator.position or { 1, -4 }
+            local pos = surface_name == 'cave_miner' and { 1, -4 } or { 1, -4 }
             local safe_pos = game.surfaces[surface_name].find_non_colliding_position('character', pos, 20, 1)
             if safe_pos then
                 player.teleport(safe_pos, surface_name)
@@ -86,19 +85,6 @@ local function check_player_ports()
     end
 end
 
-local function built_entity(event)
-    local entity = event.entity
-    if not entity or not entity.valid then
-        return
-    end
-    if entity.name ~= 'player-port' then
-        return
-    end
-
-    entity.minable = false
-    entity.destructible = false
-    entity.operable = false
-end
 
 local function tick()
     if not chests['cave_miner'] then
@@ -124,26 +110,26 @@ local function tick()
 
     local ci = civ.get_contents()
     local oi = oiv.get_contents()
-    for item, count in pairs(ci) do
-        local count2 = oi[item] or 0
-        local diff = count - count2
+    for _, data in pairs(ci) do
+        local count2 = oi[data.name] or 0
+        local diff = data.count - count2
         if diff > 1 then
-            local count2 = oiv.insert { name = item, count = math.floor(diff / 2) }
+            count2 = oiv.insert { name = data.name, count = math.floor(diff / 2) }
             if count2 > 0 then
-                civ.remove { name = item, count = count2 }
+                civ.remove { name = data.name, count = count2 }
             end
         elseif diff < -1 then
-            local count2 = civ.insert { name = item, count = math.floor(-diff / 2) }
+            count2 = civ.insert { name = data.name, count = math.floor(-diff / 2) }
             if count2 > 0 then
-                oiv.remove { name = item, count = count2 }
+                oiv.remove { name = data.name, count = count2 }
             end
         end
     end
-    for item, count in pairs(oi) do
-        if count > 1 and not ci[item] then
-            local count2 = civ.insert { name = item, count = math.floor(count / 2) }
+    for _, data in pairs(oi) do
+        if data.count > 1 and not ci[data.name] then
+            local count2 = civ.insert { name = data.name, count = math.floor(data.count / 2) }
             if count2 > 0 then
-                oiv.remove { name = item, count = count2 }
+                oiv.remove { name = data.name, count = count2 }
             end
         end
     end
@@ -151,4 +137,3 @@ end
 
 Event.add(defines.events.on_tick, tick)
 Event.on_nth_tick(60, check_player_ports)
-Event.add(defines.events.on_built_entity, built_entity)
