@@ -87,8 +87,8 @@ local function do_tick()
     for _, force_data in pairs(settings.registered_forces) do
         local force = game.forces[force_data.force_id]
         if force and force_data.enabled then
-            restrict_roboports(force.force)
-            restrict_robots(force.force)
+            restrict_roboports(force)
+            restrict_robots(force)
         end
     end
 end
