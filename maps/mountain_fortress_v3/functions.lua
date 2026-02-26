@@ -745,12 +745,6 @@ local enemy_unit_types =
             small = { t1 = { 600, 1100 } },
             medium = { t1 = { 1100, 1200 } },
             big = { t1 = { 1200, 1300 } }
-        },
-        demolisher =
-        {
-            small = { t1 = { 1300, 1600 } },
-            medium = { t1 = { 1600, 1700 } },
-            big = { t1 = { 1700, 1800 } }
         }
     },
 
@@ -775,6 +769,12 @@ local enemy_unit_types =
             t5 = { 1200, 1300 },
             t6 = { 1300, 1400 },
             t7 = { 1400, 1500 }
+        },
+        demolisher =
+        {
+            small = { t1 = { 1300, 1600 } },
+            medium = { t1 = { 1600, 1700 } },
+            big = { t1 = { 1700, 1800 } }
         }
     }
 }
@@ -813,8 +813,13 @@ local function fill_raffles(level)
                     for _, element in ipairs(elements) do
                         local weight = level_weight(level, range[1], range[2], 2.75)
                         if weight then
-                            local name = string.format("mtn-addon-boss-%s-%s-%s", element, boss_kind, tier)
-                            raffles.boss_raffle[name] = weight
+                            if boss_kind == "demolisher" and Public.is_modded_pt2 then
+                                local name = string.format("%s-%s", tier, range)
+                                raffles.boss_raffle[name] = weight
+                            else
+                                local name = string.format("mtn-addon-boss-%s-%s-%s", element, boss_kind, tier)
+                                raffles.boss_raffle[name] = weight
+                            end
                         end
                     end
                 end
