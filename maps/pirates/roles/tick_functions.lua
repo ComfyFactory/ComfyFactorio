@@ -11,6 +11,7 @@ local Common = require('maps.pirates.common')
 local CoreData = require('maps.pirates.coredata')
 local Math = require('maps.pirates.math')
 local _inspect = require('utils.inspect').inspect
+local PlayerModifiers = require('utils.player_modifiers')
 
 local Public = {}
 
@@ -314,13 +315,13 @@ function Public.update_character_properties(tick_interval)
 				-- end
 
 				if class == Classes.enum.FISHERMAN then
-					character.character_reach_distance_bonus = Balance.fisherman_reach_bonus
+					PlayerModifiers.update_single_modifier(player, 'character_reach_distance_bonus', 'pirates', Balance.fisherman_reach_bonus)
 				elseif class == Classes.enum.MASTER_ANGLER then
-					character.character_reach_distance_bonus = Balance.master_angler_reach_bonus
+					PlayerModifiers.update_single_modifier(player, 'character_reach_distance_bonus', 'pirates', Balance.master_angler_reach_bonus)
 				elseif class == Classes.enum.DREDGER then
-					character.character_reach_distance_bonus = Balance.dredger_reach_bonus
+					PlayerModifiers.update_single_modifier(player, 'character_reach_distance_bonus', 'pirates', Balance.dredger_reach_bonus)
 				else
-					character.character_reach_distance_bonus = 0
+					PlayerModifiers.update_single_modifier(player, 'character_reach_distance_bonus', 'pirates', 0)
 				end
 
 				if class == Classes.enum.SCOUT then
@@ -357,7 +358,7 @@ function Public.update_character_properties(tick_interval)
 				end
 			end
 
-			character.character_running_speed_modifier = speed_boost - 1
+			PlayerModifiers.update_single_modifier(player, 'character_running_speed_modifier', 'pirates', speed_boost - 1)
 
 			-- If they're a SAMURAI or HATAMOTO, and have a weapon equipped, unequip it:
 			if class == Classes.enum.SAMURAI or class == Classes.enum.HATAMOTO then
