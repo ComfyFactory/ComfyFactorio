@@ -57,6 +57,13 @@ Global.register(
     end
 )
 
+Global.register(
+    lookup_table,
+    function (tbl)
+        lookup_table = tbl
+    end
+)
+
 local damage_types = { 'physical', 'explosion', 'laser' }
 
 local buff_to_string =
