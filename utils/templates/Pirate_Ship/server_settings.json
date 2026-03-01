@@ -2,5 +2,5 @@
     "Name": "Pirate Ship",
     "Description": "Be the captain of a pirate ship, plundering resources and besting your enemies. Collect resources and fuel the ship in order to survive as many leagues as possible. The captain performs actions such as steering the boat, while other crewmates assist. Doubloons can be spent at various markets throughout the game.",
     "Scenario": "Pirate_Ship",
-    "ModPack": ""
+    "ModPack": "Vanilla"
 }

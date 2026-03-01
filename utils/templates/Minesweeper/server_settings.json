@@ -2,5 +2,5 @@
     "Name": "Minesweeper",
     "Description": "Find all the mines without blowing yourself up!",
     "Scenario": "Minesweeper",
-    "ModPack": ""
+    "ModPack": "Vanilla"
 }
