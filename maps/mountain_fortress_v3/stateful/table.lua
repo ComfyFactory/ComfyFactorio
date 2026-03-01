@@ -540,6 +540,10 @@ local minerals_farmed_token =
             local force = game.forces.player
             local starting_planet = Public.get_planet()
 
+            if not lookup_table or not next(lookup_table) then
+                Public.create_lookup_table()
+            end
+
             local count = 0
             for name, entity_count in pairs(force.get_entity_build_count_statistics(starting_planet).output_counts) do
                 if lookup_table[name] then

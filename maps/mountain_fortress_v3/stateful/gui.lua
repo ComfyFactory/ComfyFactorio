@@ -1217,7 +1217,7 @@ local function update_raw()
                 WD.set('final_battle', true)
                 WD.set_es_enabled(false)
                 BiterHealthBooster.set_module_state(false)
-
+                Public.clear_platforms()
                 collection.survive_for = game.tick + Stateful.scale((5 * 3600), (15 * 3600))
                 collection.survive_for_timer = collection.survive_for
                 WD.disable_spawning_biters(false)
