@@ -177,7 +177,6 @@ local function create_wave_gui(player)
         frame.style.font = 'default-listbox'
         frame.style.left_padding = 4
         frame.style.right_padding = 4
-        frame.style.minimal_width = 68
 
         local next_level_progress = game.tick % wave_interval / wave_interval
 
@@ -1708,8 +1707,8 @@ local function on_tick()
             if market and market.valid then
                 market.die()
                 game.print('Game won!', { r = 0.22, g = 0.88, b = 0.22 })
-                game.print('Game wave limit reached! Game will soft-reset shortly.', { r = 0.22, g = 0.88, b = 0.22 })
-                local message = 'Game won! Game wave limit reached! Game will soft-reset shortly.'
+                game.print('Wave limit reached! Game will soft-reset shortly.', { r = 0.22, g = 0.88, b = 0.22 })
+                local message = 'Game won! Wave limit reached! Game will soft-reset shortly.'
                 Server.to_discord_bold(table.concat { '*** ', message, ' ***' })
             end
         end

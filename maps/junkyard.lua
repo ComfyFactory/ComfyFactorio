@@ -7,8 +7,6 @@ require 'modules.mineable_wreckage_yields_scrap'
 require 'modules.rocks_heal_over_time'
 require 'modules.spawners_contain_biters'
 require 'modules.biters_yield_coins'
---require "maps.modules.fluids_are_explosive"
---require "maps.modules.explosives_are_explosive"
 require 'modules.dangerous_nights'
 require 'modules.dangerous_goods'
 
@@ -16,18 +14,18 @@ local Map = require 'modules.map_info'
 local unearthing_worm = require 'utils.functions.unearthing_worm'
 local unearthing_biters = require 'utils.functions.unearthing_biters'
 local tick_tack_trap = require 'utils.functions.tick_tack_trap'
-local create_entity_chain = require 'utils.functions.create_entity_chain'
 local create_tile_chain = require 'utils.functions.create_tile_chain'
 
 local simplex_noise = require 'utils.math.simplex_noise'
 simplex_noise = simplex_noise.d2
-local event = require 'utils.event'
+local Event = require 'utils.event'
 local table_insert = table.insert
 local math_random = math.random
 local map_functions = require 'utils.tools.map_functions'
 local scrap = require 'utils.tools.scrap'
 
-local disabled_for_deconstruction = {
+local disabled_for_deconstruction =
+{
     ['fish'] = true,
     ['huge-rock'] = true,
     ['big-rock'] = true,
@@ -40,7 +38,8 @@ local disabled_for_deconstruction = {
     ['crash-site-spaceship-wreck-small-6'] = true
 }
 
-local tile_replacements = {
+local tile_replacements =
+{
     ['grass-1'] = 'dirt-7',
     ['grass-2'] = 'dirt-6',
     ['grass-3'] = 'dirt-5',
@@ -52,7 +51,8 @@ local tile_replacements = {
     ['sand-3'] = 'dirt-5'
 }
 
-local entity_replacements = {
+local entity_replacements =
+{
     ['tree-01'] = 'dead-grey-trunk',
     ['tree-02'] = 'tree-06-brown',
     ['tree-03'] = 'dead-grey-trunk',
@@ -75,33 +75,6 @@ local entity_replacements = {
 
 local wrecks = { 'big-ship-wreck-1', 'big-ship-wreck-2', 'big-ship-wreck-3' }
 
-local scrap_buildings = {
-    'nuclear-reactor',
-    'centrifuge',
-    'beacon',
-    'chemical-plant',
-    'assembling-machine-1',
-    'assembling-machine-2',
-    'assembling-machine-3',
-    'oil-refinery',
-    'arithmetic-combinator',
-    'constant-combinator',
-    'decider-combinator',
-    'programmable-speaker',
-    'steam-turbine',
-    'steam-engine',
-    'chemical-plant',
-    'assembling-machine-1',
-    'assembling-machine-2',
-    'assembling-machine-3',
-    'oil-refinery',
-    'arithmetic-combinator',
-    'constant-combinator',
-    'decider-combinator',
-    'programmable-speaker',
-    'steam-turbine',
-    'steam-engine'
-}
 
 local function shuffle(tbl)
     local size = #tbl
@@ -125,84 +98,85 @@ local function get_noise(name, pos)
         noise[3] = simplex_noise(pos.x * 0.05, pos.y * 0.05, seed)
         seed = seed + noise_seed_add
         noise[4] = simplex_noise(pos.x * 0.1, pos.y * 0.1, seed)
-        local noise = noise[1] + noise[2] * 0.35 + noise[3] * 0.23 + noise[4] * 0.11
+        noise = noise[1] + noise[2] * 0.35 + noise[3] * 0.23 + noise[4] * 0.11
         return noise
     end
 end
 
 local function create_shipwreck(surface, position)
     local raffle = {}
-    local loot = {
-        { { name = 'iron-gear-wheel', count = math_random(80, 100) },       weight = 3, evolution_min = 0.0, evolution_max = 0.3 },
-        { { name = 'copper-cable', count = math_random(100, 200) },         weight = 3, evolution_min = 0.0, evolution_max = 0.3 },
-        { { name = 'engine-unit', count = math_random(16, 32) },            weight = 2, evolution_min = 0.1, evolution_max = 0.5 },
-        { { name = 'electric-engine-unit', count = math_random(16, 32) },   weight = 2, evolution_min = 0.4, evolution_max = 0.8 },
-        { { name = 'battery', count = math_random(40, 80) },                weight = 2, evolution_min = 0.3, evolution_max = 0.8 },
-        { { name = 'advanced-circuit', count = math_random(40, 80) },       weight = 3, evolution_min = 0.4, evolution_max = 1 },
-        { { name = 'electronic-circuit', count = math_random(100, 200) },   weight = 3, evolution_min = 0.0, evolution_max = 0.4 },
-        { { name = 'processing-unit', count = math_random(30, 60) },        weight = 3, evolution_min = 0.7, evolution_max = 1 },
-        { { name = 'explosives', count = math_random(25, 50) },             weight = 1, evolution_min = 0.2, evolution_max = 0.6 },
-        { { name = 'lubricant-barrel', count = math_random(4, 10) },        weight = 1, evolution_min = 0.3, evolution_max = 0.5 },
-        { { name = 'rocket-fuel', count = math_random(4, 10) },             weight = 2, evolution_min = 0.3, evolution_max = 0.7 },
-        { { name = 'steel-plate', count = math_random(50, 100) },           weight = 2, evolution_min = 0.1, evolution_max = 0.3 },
-        { { name = 'nuclear-fuel', count = 1 },                             weight = 2, evolution_min = 0.7, evolution_max = 1 },
-        { { name = 'burner-inserter', count = math_random(4, 8) },          weight = 3, evolution_min = 0.0, evolution_max = 0.1 },
-        { { name = 'inserter', count = math_random(4, 8) },                 weight = 3, evolution_min = 0.0, evolution_max = 0.4 },
-        { { name = 'long-handed-inserter', count = math_random(4, 8) },     weight = 3, evolution_min = 0.0, evolution_max = 0.4 },
-        { { name = 'fast-inserter', count = math_random(4, 8) },            weight = 3, evolution_min = 0.1, evolution_max = 1 },
-        { { name = 'bulk-inserter', count = math_random(2, 4) },            weight = 1, evolution_min = 0.4, evolution_max = 1 },
-        { { name = 'bulk-inserter', count = math_random(2, 4) },            weight = 3, evolution_min = 0.3, evolution_max = 1 },
-        { { name = 'small-electric-pole', count = math_random(8, 16) },     weight = 3, evolution_min = 0.0, evolution_max = 0.3 },
-        { { name = 'medium-electric-pole', count = math_random(4, 8) },     weight = 3, evolution_min = 0.2, evolution_max = 1 },
-        { { name = 'wooden-chest', count = math_random(16, 24) },           weight = 3, evolution_min = 0.0, evolution_max = 0.2 },
-        { { name = 'iron-chest', count = math_random(4, 8) },               weight = 3, evolution_min = 0.1, evolution_max = 0.4 },
-        { { name = 'steel-chest', count = math_random(4, 8) },              weight = 3, evolution_min = 0.3, evolution_max = 1 },
-        { { name = 'small-lamp', count = math_random(8, 16) },              weight = 3, evolution_min = 0.1, evolution_max = 0.3 },
-        { { name = 'rail', count = math_random(50, 75) },                   weight = 3, evolution_min = 0.1, evolution_max = 0.6 },
-        { { name = 'assembling-machine-1', count = math_random(1, 2) },     weight = 3, evolution_min = 0.0, evolution_max = 0.3 },
-        { { name = 'assembling-machine-2', count = math_random(1, 2) },     weight = 3, evolution_min = 0.2, evolution_max = 0.8 },
-        { { name = 'offshore-pump', count = 1 },                            weight = 2, evolution_min = 0.0, evolution_max = 0.1 },
+    local loot =
+    {
+        { { name = 'iron-gear-wheel', count = math_random(80, 100) }, weight = 3, evolution_min = 0.0, evolution_max = 0.3 },
+        { { name = 'copper-cable', count = math_random(100, 200) }, weight = 3, evolution_min = 0.0, evolution_max = 0.3 },
+        { { name = 'engine-unit', count = math_random(16, 32) }, weight = 2, evolution_min = 0.1, evolution_max = 0.5 },
+        { { name = 'electric-engine-unit', count = math_random(16, 32) }, weight = 2, evolution_min = 0.4, evolution_max = 0.8 },
+        { { name = 'battery', count = math_random(40, 80) }, weight = 2, evolution_min = 0.3, evolution_max = 0.8 },
+        { { name = 'advanced-circuit', count = math_random(40, 80) }, weight = 3, evolution_min = 0.4, evolution_max = 1 },
+        { { name = 'electronic-circuit', count = math_random(100, 200) }, weight = 3, evolution_min = 0.0, evolution_max = 0.4 },
+        { { name = 'processing-unit', count = math_random(30, 60) }, weight = 3, evolution_min = 0.7, evolution_max = 1 },
+        { { name = 'explosives', count = math_random(25, 50) }, weight = 1, evolution_min = 0.2, evolution_max = 0.6 },
+        { { name = 'lubricant-barrel', count = math_random(4, 10) }, weight = 1, evolution_min = 0.3, evolution_max = 0.5 },
+        { { name = 'rocket-fuel', count = math_random(4, 10) }, weight = 2, evolution_min = 0.3, evolution_max = 0.7 },
+        { { name = 'steel-plate', count = math_random(50, 100) }, weight = 2, evolution_min = 0.1, evolution_max = 0.3 },
+        { { name = 'nuclear-fuel', count = 1 }, weight = 2, evolution_min = 0.7, evolution_max = 1 },
+        { { name = 'burner-inserter', count = math_random(4, 8) }, weight = 3, evolution_min = 0.0, evolution_max = 0.1 },
+        { { name = 'inserter', count = math_random(4, 8) }, weight = 3, evolution_min = 0.0, evolution_max = 0.4 },
+        { { name = 'long-handed-inserter', count = math_random(4, 8) }, weight = 3, evolution_min = 0.0, evolution_max = 0.4 },
+        { { name = 'fast-inserter', count = math_random(4, 8) }, weight = 3, evolution_min = 0.1, evolution_max = 1 },
+        { { name = 'bulk-inserter', count = math_random(2, 4) }, weight = 1, evolution_min = 0.4, evolution_max = 1 },
+        { { name = 'bulk-inserter', count = math_random(2, 4) }, weight = 3, evolution_min = 0.3, evolution_max = 1 },
+        { { name = 'small-electric-pole', count = math_random(8, 16) }, weight = 3, evolution_min = 0.0, evolution_max = 0.3 },
+        { { name = 'medium-electric-pole', count = math_random(4, 8) }, weight = 3, evolution_min = 0.2, evolution_max = 1 },
+        { { name = 'wooden-chest', count = math_random(16, 24) }, weight = 3, evolution_min = 0.0, evolution_max = 0.2 },
+        { { name = 'iron-chest', count = math_random(4, 8) }, weight = 3, evolution_min = 0.1, evolution_max = 0.4 },
+        { { name = 'steel-chest', count = math_random(4, 8) }, weight = 3, evolution_min = 0.3, evolution_max = 1 },
+        { { name = 'small-lamp', count = math_random(8, 16) }, weight = 3, evolution_min = 0.1, evolution_max = 0.3 },
+        { { name = 'rail', count = math_random(50, 75) }, weight = 3, evolution_min = 0.1, evolution_max = 0.6 },
+        { { name = 'assembling-machine-1', count = math_random(1, 2) }, weight = 3, evolution_min = 0.0, evolution_max = 0.3 },
+        { { name = 'assembling-machine-2', count = math_random(1, 2) }, weight = 3, evolution_min = 0.2, evolution_max = 0.8 },
+        { { name = 'offshore-pump', count = 1 }, weight = 2, evolution_min = 0.0, evolution_max = 0.1 },
         --{{name = "beacon", count = 1}, weight = 3, evolution_min = 0.7, evolution_max = 1},
         --{{name = "boiler", count = math_random(2,4)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
         --{{name = "steam-engine", count = math_random(1,2)}, weight = 3, evolution_min = 0.0, evolution_max = 0.5},
         --{{name = "steam-turbine", count = math_random(1,2)}, weight = 2, evolution_min = 0.5, evolution_max = 1},
         --{{name = "nuclear-reactor", count = 1}, weight = 2, evolution_min = 0.5, evolution_max = 1},
         --{{name = "centrifuge", count = math_random(1,2)}, weight = 2, evolution_min = 0.5, evolution_max = 1},
-        { { name = 'heat-pipe', count = math_random(8, 12) },               weight = 2, evolution_min = 0.5, evolution_max = 1 },
+        { { name = 'heat-pipe', count = math_random(8, 12) }, weight = 2, evolution_min = 0.5, evolution_max = 1 },
         --{{name = "heat-exchanger", count = math_random(2,4)}, weight = 2, evolution_min = 0.5, evolution_max = 1},
-        { { name = 'arithmetic-combinator', count = math_random(8, 16) },   weight = 1, evolution_min = 0.1, evolution_max = 1 },
-        { { name = 'constant-combinator', count = math_random(8, 16) },     weight = 1, evolution_min = 0.1, evolution_max = 1 },
-        { { name = 'decider-combinator', count = math_random(8, 16) },      weight = 1, evolution_min = 0.1, evolution_max = 1 },
-        { { name = 'power-switch', count = math_random(2, 4) },             weight = 1, evolution_min = 0.1, evolution_max = 1 },
-        { { name = 'programmable-speaker', count = math_random(2, 4) },     weight = 1, evolution_min = 0.1, evolution_max = 1 },
+        { { name = 'arithmetic-combinator', count = math_random(8, 16) }, weight = 1, evolution_min = 0.1, evolution_max = 1 },
+        { { name = 'constant-combinator', count = math_random(8, 16) }, weight = 1, evolution_min = 0.1, evolution_max = 1 },
+        { { name = 'decider-combinator', count = math_random(8, 16) }, weight = 1, evolution_min = 0.1, evolution_max = 1 },
+        { { name = 'power-switch', count = math_random(2, 4) }, weight = 1, evolution_min = 0.1, evolution_max = 1 },
+        { { name = 'programmable-speaker', count = math_random(2, 4) }, weight = 1, evolution_min = 0.1, evolution_max = 1 },
         --{{name = "chemical-plant", count = math_random(2,4)}, weight = 3, evolution_min = 0.3, evolution_max = 1},
-        { { name = 'burner-mining-drill', count = math_random(2, 4) },      weight = 3, evolution_min = 0.0, evolution_max = 0.2 },
-        { { name = 'electric-mining-drill', count = math_random(2, 4) },    weight = 3, evolution_min = 0.2, evolution_max = 0.6 },
+        { { name = 'burner-mining-drill', count = math_random(2, 4) }, weight = 3, evolution_min = 0.0, evolution_max = 0.2 },
+        { { name = 'electric-mining-drill', count = math_random(2, 4) }, weight = 3, evolution_min = 0.2, evolution_max = 0.6 },
         { { name = 'express-transport-belt', count = math_random(25, 75) }, weight = 3, evolution_min = 0.5, evolution_max = 1 },
         { { name = 'express-underground-belt', count = math_random(4, 8) }, weight = 3, evolution_min = 0.5, evolution_max = 1 },
-        { { name = 'express-splitter', count = math_random(2, 4) },         weight = 3, evolution_min = 0.5, evolution_max = 1 },
-        { { name = 'fast-transport-belt', count = math_random(25, 75) },    weight = 3, evolution_min = 0.2, evolution_max = 0.7 },
-        { { name = 'fast-underground-belt', count = math_random(4, 8) },    weight = 3, evolution_min = 0.2, evolution_max = 0.7 },
-        { { name = 'fast-splitter', count = math_random(2, 4) },            weight = 3, evolution_min = 0.2, evolution_max = 0.3 },
-        { { name = 'transport-belt', count = math_random(25, 75) },         weight = 3, evolution_min = 0,   evolution_max = 0.3 },
-        { { name = 'underground-belt', count = math_random(4, 8) },         weight = 3, evolution_min = 0,   evolution_max = 0.3 },
-        { { name = 'splitter', count = math_random(2, 4) },                 weight = 3, evolution_min = 0,   evolution_max = 0.3 },
-        { { name = 'pipe', count = math_random(40, 50) },                   weight = 3, evolution_min = 0.0, evolution_max = 0.3 },
-        { { name = 'pipe-to-ground', count = math_random(8, 16) },          weight = 1, evolution_min = 0.2, evolution_max = 0.5 },
+        { { name = 'express-splitter', count = math_random(2, 4) }, weight = 3, evolution_min = 0.5, evolution_max = 1 },
+        { { name = 'fast-transport-belt', count = math_random(25, 75) }, weight = 3, evolution_min = 0.2, evolution_max = 0.7 },
+        { { name = 'fast-underground-belt', count = math_random(4, 8) }, weight = 3, evolution_min = 0.2, evolution_max = 0.7 },
+        { { name = 'fast-splitter', count = math_random(2, 4) }, weight = 3, evolution_min = 0.2, evolution_max = 0.3 },
+        { { name = 'transport-belt', count = math_random(25, 75) }, weight = 3, evolution_min = 0, evolution_max = 0.3 },
+        { { name = 'underground-belt', count = math_random(4, 8) }, weight = 3, evolution_min = 0, evolution_max = 0.3 },
+        { { name = 'splitter', count = math_random(2, 4) }, weight = 3, evolution_min = 0, evolution_max = 0.3 },
+        { { name = 'pipe', count = math_random(40, 50) }, weight = 3, evolution_min = 0.0, evolution_max = 0.3 },
+        { { name = 'pipe-to-ground', count = math_random(8, 16) }, weight = 1, evolution_min = 0.2, evolution_max = 0.5 },
         --{{name = "pumpjack", count = math_random(1,2)}, weight = 1, evolution_min = 0.3, evolution_max = 0.8},
-        { { name = 'pump', count = math_random(1, 4) },                     weight = 1, evolution_min = 0.3, evolution_max = 0.8 },
+        { { name = 'pump', count = math_random(1, 4) }, weight = 1, evolution_min = 0.3, evolution_max = 0.8 },
         --{{name = "steel-furnace", count = math_random(4,8)}, weight = 3, evolution_min = 0.2, evolution_max = 0.7},
         --{{name = "stone-furnace", count = math_random(8,16)}, weight = 3, evolution_min = 0.0, evolution_max = 0.1},
         --{{name = "radar", count = math_random(1,2)}, weight = 1, evolution_min = 0.1, evolution_max = 0.3},
-        { { name = 'rail-signal', count = math_random(8, 16) },             weight = 2, evolution_min = 0.2, evolution_max = 0.8 },
-        { { name = 'rail-chain-signal', count = math_random(8, 16) },       weight = 2, evolution_min = 0.2, evolution_max = 0.8 },
-        { { name = 'stone-wall', count = math_random(25, 75) },             weight = 1, evolution_min = 0.1, evolution_max = 0.5 },
-        { { name = 'gate', count = math_random(4, 8) },                     weight = 1, evolution_min = 0.1, evolution_max = 0.5 },
+        { { name = 'rail-signal', count = math_random(8, 16) }, weight = 2, evolution_min = 0.2, evolution_max = 0.8 },
+        { { name = 'rail-chain-signal', count = math_random(8, 16) }, weight = 2, evolution_min = 0.2, evolution_max = 0.8 },
+        { { name = 'stone-wall', count = math_random(25, 75) }, weight = 1, evolution_min = 0.1, evolution_max = 0.5 },
+        { { name = 'gate', count = math_random(4, 8) }, weight = 1, evolution_min = 0.1, evolution_max = 0.5 },
         --{{name = "storage-tank", count = math_random(2,4)}, weight = 3, evolution_min = 0.3, evolution_max = 0.6},
-        { { name = 'train-stop', count = math_random(1, 2) },               weight = 1, evolution_min = 0.2, evolution_max = 0.7 },
-        { { name = 'express-loader', count = math_random(1, 2) },           weight = 1, evolution_min = 0.5, evolution_max = 1 },
-        { { name = 'fast-loader', count = math_random(1, 2) },              weight = 1, evolution_min = 0.2, evolution_max = 0.7 },
-        { { name = 'loader', count = math_random(1, 2) },                   weight = 1, evolution_min = 0.0, evolution_max = 0.5 }
+        { { name = 'train-stop', count = math_random(1, 2) }, weight = 1, evolution_min = 0.2, evolution_max = 0.7 },
+        { { name = 'express-loader', count = math_random(1, 2) }, weight = 1, evolution_min = 0.5, evolution_max = 1 },
+        { { name = 'fast-loader', count = math_random(1, 2) }, weight = 1, evolution_min = 0.2, evolution_max = 0.7 },
+        { { name = 'loader', count = math_random(1, 2) }, weight = 1, evolution_min = 0.0, evolution_max = 0.5 }
         --{{name = "lab", count = math_random(2,4)}, weight = 2, evolution_min = 0.0, evolution_max = 0.1}
     }
 
@@ -217,45 +191,46 @@ local function create_shipwreck(surface, position)
     end
 
     for _, t in pairs(loot) do
-        for x = 1, t.weight, 1 do
+        for _ = 1, t.weight, 1 do
             if t.evolution_min <= distance_to_center and t.evolution_max >= distance_to_center then
                 table.insert(raffle, t[1])
             end
         end
     end
     local e = surface.create_entity { name = wrecks[math_random(1, #wrecks)], position = position, force = 'scrap' }
-    for x = 1, math_random(2, 3), 1 do
-        local loot = raffle[math_random(1, #raffle)]
+    for _ = 1, math_random(2, 3), 1 do
+        loot = raffle[math_random(1, #raffle)]
         e.insert(loot)
     end
 end
 
 local function secret_shop(pos, surface)
-    local secret_market_items = {
-        { price = { { 'coin', math_random(30, 60) } },       offer = { type = 'give-item', item = 'construction-robot' } },
-        { price = { { 'coin', math_random(100, 200) } },     offer = { type = 'give-item', item = 'loader' } },
-        { price = { { 'coin', math_random(200, 300) } },     offer = { type = 'give-item', item = 'fast-loader' } },
-        { price = { { 'coin', math_random(300, 500) } },     offer = { type = 'give-item', item = 'express-loader' } },
-        { price = { { 'coin', math_random(100, 200) } },     offer = { type = 'give-item', item = 'locomotive' } },
-        { price = { { 'coin', math_random(75, 150) } },      offer = { type = 'give-item', item = 'cargo-wagon' } },
-        { price = { { 'coin', math_random(2, 3) } },         offer = { type = 'give-item', item = 'rail' } },
-        { price = { { 'coin', math_random(4, 12) } },        offer = { type = 'give-item', item = 'small-lamp' } },
-        { price = { { 'coin', math_random(80, 160) } },      offer = { type = 'give-item', item = 'car' } },
-        { price = { { 'coin', math_random(300, 600) } },     offer = { type = 'give-item', item = 'electric-furnace' } },
-        { price = { { 'coin', math_random(80, 160) } },      offer = { type = 'give-item', item = 'efficiency-module' } },
-        { price = { { 'coin', math_random(80, 160) } },      offer = { type = 'give-item', item = 'productivity-module' } },
-        { price = { { 'coin', math_random(80, 160) } },      offer = { type = 'give-item', item = 'speed-module' } },
-        { price = { { 'coin', math_random(5, 10) } },        offer = { type = 'give-item', item = 'wood', count = 50 } },
-        { price = { { 'coin', math_random(5, 10) } },        offer = { type = 'give-item', item = 'iron-ore', count = 50 } },
-        { price = { { 'coin', math_random(5, 10) } },        offer = { type = 'give-item', item = 'copper-ore', count = 50 } },
-        { price = { { 'coin', math_random(5, 10) } },        offer = { type = 'give-item', item = 'stone', count = 50 } },
-        { price = { { 'coin', math_random(5, 10) } },        offer = { type = 'give-item', item = 'coal', count = 50 } },
-        { price = { { 'coin', math_random(8, 16) } },        offer = { type = 'give-item', item = 'uranium-ore', count = 50 } },
-        { price = { { 'wood', math_random(10, 12) } },       offer = { type = 'give-item', item = 'coin' } },
-        { price = { { 'iron-ore', math_random(10, 12) } },   offer = { type = 'give-item', item = 'coin' } },
+    local secret_market_items =
+    {
+        { price = { { 'coin', math_random(30, 60) } }, offer = { type = 'give-item', item = 'construction-robot' } },
+        { price = { { 'coin', math_random(100, 200) } }, offer = { type = 'give-item', item = 'loader' } },
+        { price = { { 'coin', math_random(200, 300) } }, offer = { type = 'give-item', item = 'fast-loader' } },
+        { price = { { 'coin', math_random(300, 500) } }, offer = { type = 'give-item', item = 'express-loader' } },
+        { price = { { 'coin', math_random(100, 200) } }, offer = { type = 'give-item', item = 'locomotive' } },
+        { price = { { 'coin', math_random(75, 150) } }, offer = { type = 'give-item', item = 'cargo-wagon' } },
+        { price = { { 'coin', math_random(2, 3) } }, offer = { type = 'give-item', item = 'rail' } },
+        { price = { { 'coin', math_random(4, 12) } }, offer = { type = 'give-item', item = 'small-lamp' } },
+        { price = { { 'coin', math_random(80, 160) } }, offer = { type = 'give-item', item = 'car' } },
+        { price = { { 'coin', math_random(300, 600) } }, offer = { type = 'give-item', item = 'electric-furnace' } },
+        { price = { { 'coin', math_random(80, 160) } }, offer = { type = 'give-item', item = 'efficiency-module' } },
+        { price = { { 'coin', math_random(80, 160) } }, offer = { type = 'give-item', item = 'productivity-module' } },
+        { price = { { 'coin', math_random(80, 160) } }, offer = { type = 'give-item', item = 'speed-module' } },
+        { price = { { 'coin', math_random(5, 10) } }, offer = { type = 'give-item', item = 'wood', count = 50 } },
+        { price = { { 'coin', math_random(5, 10) } }, offer = { type = 'give-item', item = 'iron-ore', count = 50 } },
+        { price = { { 'coin', math_random(5, 10) } }, offer = { type = 'give-item', item = 'copper-ore', count = 50 } },
+        { price = { { 'coin', math_random(5, 10) } }, offer = { type = 'give-item', item = 'stone', count = 50 } },
+        { price = { { 'coin', math_random(5, 10) } }, offer = { type = 'give-item', item = 'coal', count = 50 } },
+        { price = { { 'coin', math_random(8, 16) } }, offer = { type = 'give-item', item = 'uranium-ore', count = 50 } },
+        { price = { { 'wood', math_random(10, 12) } }, offer = { type = 'give-item', item = 'coin' } },
+        { price = { { 'iron-ore', math_random(10, 12) } }, offer = { type = 'give-item', item = 'coin' } },
         { price = { { 'copper-ore', math_random(10, 12) } }, offer = { type = 'give-item', item = 'coin' } },
-        { price = { { 'stone', math_random(10, 12) } },      offer = { type = 'give-item', item = 'coin' } },
-        { price = { { 'coal', math_random(10, 12) } },       offer = { type = 'give-item', item = 'coin' } },
+        { price = { { 'stone', math_random(10, 12) } }, offer = { type = 'give-item', item = 'coin' } },
+        { price = { { 'coal', math_random(10, 12) } }, offer = { type = 'give-item', item = 'coin' } },
         { price = { { 'uranium-ore', math_random(8, 10) } }, offer = { type = 'give-item', item = 'coin' } }
     }
     secret_market_items = shuffle(secret_market_items)
@@ -266,43 +241,6 @@ local function secret_shop(pos, surface)
     for i = 1, math.random(6, 8), 1 do
         market.add_market_item(secret_market_items[i])
     end
-end
-
-local function place_random_scrap_entity(surface, position)
-    local r = math.random(1, 100)
-    if r < 15 then
-        local e = surface.create_entity({ name = scrap_buildings[math.random(1, #scrap_buildings)], position = position, force = 'scrap' })
-        if e.name == 'nuclear-reactor' then
-            create_entity_chain(surface, { name = 'heat-pipe', position = position, force = 'player' }, math_random(16, 32), 25)
-        end
-        if e.name == 'chemical-plant' or e.name == 'steam-turbine' or e.name == 'steam-engine' or e.name == 'oil-refinery' then
-            create_entity_chain(surface, { name = 'pipe', position = position, force = 'player' }, math_random(8, 16), 25)
-        end
-        e.active = false
-        return
-    end
-    --if r < 25 then
-    --	local e = surface.create_entity({name = "substation", position = position, force = "scrap"})
-    --	e.active = false
-    --	return
-    --end
-    --if r < 70 then
-    --	local e = surface.create_entity({name = "medium-electric-pole", position = position, force = "scrap"})
-    --	e.active = false
-    --	return
-    --end
-    if r < 100 then
-        local e = surface.create_entity({ name = 'gun-turret', position = position, force = 'scrap_defense' })
-        e.insert({ name = 'piercing-rounds-magazine', count = math.random(8, 128) })
-        return
-    end
-
-    local e = surface.create_entity({ name = 'storage-tank', position = position, force = 'scrap', direction = math.random(0, 3) })
-    local fluids = { 'crude-oil', 'lubricant', 'heavy-oil', 'light-oil', 'petroleum-gas', 'sulfuric-acid', 'water' }
-    e.fluidbox[1] = { name = fluids[math.random(1, #fluids)], amount = math.random(15000, 25000) }
-    create_entity_chain(surface, { name = 'pipe', position = position, force = 'player' }, math_random(6, 8), 1)
-    create_entity_chain(surface, { name = 'pipe', position = position, force = 'player' }, math_random(6, 8), 1)
-    create_entity_chain(surface, { name = 'pipe', position = position, force = 'player' }, math_random(15, 30), 80)
 end
 
 local function create_inner_content(surface, pos, noise)
@@ -371,11 +309,9 @@ local function on_chunk_generated(event)
     local surface = event.surface
     local left_top = event.area.left_top
     local tiles = {}
-    local entities = {}
 
     for x = 0, 31, 1 do
         for y = 0, 31, 1 do
-            local tile_to_insert = false
             local pos = { x = left_top.x + x, y = left_top.y + y }
 
             local tile = surface.get_tile(pos)
@@ -391,10 +327,6 @@ local function on_chunk_generated(event)
                     else
                         if math_random(1, 512) == 1 then
                             create_shipwreck(surface, pos)
-                        else
-                            if math_random(1, 512) == 1 then
-                                --luacheck: ignore(surface, pos)
-                            end
                         end
                     end
                 else
@@ -417,7 +349,7 @@ local function on_chunk_generated(event)
     end
     map_functions.draw_rainbow_patch_v2({ x = 0, y = 0 }, surface, 12, 2500)
     local p = surface.find_non_colliding_position('character-corpse', { 2, -2 }, 32, 2)
-    local e = surface.create_entity({ name = 'character-corpse', position = p })
+    surface.create_entity({ name = 'character-corpse', position = p })
     local scraps = scrap.get_scrap_true_array()
 
     for _, e in pairs(surface.find_entities_filtered({ area = { { -50, -50 }, { 50, 50 } } })) do
@@ -489,7 +421,7 @@ local function on_player_joined_game(event)
         return
     end
 
-    game.forces['player'].technologies['optics'].researched = true
+    game.forces['player'].technologies['lamp'].researched = true
 
     game.surfaces['nauvis'].ticks_per_day = game.surfaces['nauvis'].ticks_per_day * 2
     game.surfaces['nauvis'].min_brightness = 0.08
@@ -512,7 +444,7 @@ end
 local function on_force_created(event)
     event.force.set_friend(game.forces.scrap, true)
     game.forces.scrap.set_friend(event.force, true)
-    event.force.technologies['optics'].researched = true
+    event.force.technologies['lamp'].researched = true
 end
 
 local function on_player_mined_entity(event)
@@ -521,7 +453,8 @@ local function on_player_mined_entity(event)
         return
     end
 
-    local scraps = {
+    local scraps =
+    {
         ['crash-site-spaceship-wreck-small-1'] = true,
         ['crash-site-spaceship-wreck-small-2'] = true,
         ['crash-site-spaceship-wreck-small-3'] = true,
@@ -607,12 +540,12 @@ local on_init = function ()
     T.sub_caption_color = { r = 0, g = 150, b = 0 }
 end
 
-event.on_init(on_init)
-event.add(defines.events.on_force_created, on_force_created)
-event.add(defines.events.on_research_finished, on_research_finished)
-event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
-event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
-event.add(defines.events.on_entity_died, on_entity_died)
-event.add(defines.events.on_chunk_generated, on_chunk_generated)
-event.add(defines.events.on_chunk_charted, on_chunk_charted)
+Event.on_init(on_init)
+Event.add(defines.events.on_force_created, on_force_created)
+Event.add(defines.events.on_research_finished, on_research_finished)
+Event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
+Event.add(defines.events.on_entity_died, on_entity_died)
+Event.add(defines.events.on_chunk_generated, on_chunk_generated)
+Event.add(defines.events.on_chunk_charted, on_chunk_charted)

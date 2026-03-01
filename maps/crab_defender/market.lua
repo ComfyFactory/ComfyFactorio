@@ -9,15 +9,17 @@ local Event = require 'utils.event'
 local FDT = require 'maps.crab_defender.table'
 local Server = require 'utils.server'
 
-local slot_upgrade_offers = {
-    [1] = {'gun-turret', 'gun turret'},
-    [2] = {'laser-turret', 'laser turret'},
-    [3] = {'artillery-turret', 'artillery turret'},
-    [4] = {'flamethrower-turret', 'flamethrower turret'},
-    [5] = {'land-mine', 'land mine'}
+local slot_upgrade_offers =
+{
+    [1] = { 'gun-turret', 'gun turret' },
+    [2] = { 'laser-turret', 'laser turret' },
+    [3] = { 'artillery-turret', 'artillery turret' },
+    [4] = { 'flamethrower-turret', 'flamethrower turret' },
+    [5] = { 'land-mine', 'land mine' }
 }
 
-local special_descriptions = {
+local special_descriptions =
+{
     ['flame-boots'] = 'Flame Boots - Get yourself some hot boots.',
     ['explosive-bullets'] = 'Unlock Explosive Bullets - Submachine-Gun and Pistol gains a chance to deal splash damage.',
     ['bouncy-shells'] = 'Unlock Bouncy Shells - Shotgun projectiles may bounce to multiple targets.',
@@ -33,7 +35,7 @@ local function refresh_market_offers()
     if not this.market or not this.market.valid then
         return
     end
-    for i = 1, 100, 1 do
+    for _ = 1, 100, 1 do
         local a = this.market.remove_market_item(1)
         if a == false then
             break
@@ -59,57 +61,58 @@ local function refresh_market_offers()
     local str5 = 'Landmine Slot for ' .. tostring(math.ceil((this.entity_limits['land-mine'].limit / 3) * this.entity_limits['land-mine'].slot_price))
     str5 = str5 .. ' Coins.'
 
-    local market_items = {
-        {price = {}, offer = {type = 'nothing', effect_description = str1}},
-        {price = {}, offer = {type = 'nothing', effect_description = str2}},
-        {price = {}, offer = {type = 'nothing', effect_description = str3}},
-        {price = {}, offer = {type = 'nothing', effect_description = str4}},
-        {price = {}, offer = {type = 'nothing', effect_description = str5}},
-        {price = {{'coin', 5}}, offer = {type = 'give-item', item = 'raw-fish', count = 1}},
-        {price = {{'coin', 1}}, offer = {type = 'give-item', item = 'wood', count = 8}},
-        {price = {{'coin', 8}}, offer = {type = 'give-item', item = 'grenade', count = 1}},
-        {price = {{'coin', 32}}, offer = {type = 'give-item', item = 'cluster-grenade', count = 1}},
-        {price = {{'coin', 1}}, offer = {type = 'give-item', item = 'land-mine', count = 1}},
-        {price = {{'coin', 80}}, offer = {type = 'give-item', item = 'car', count = 1}},
-        {price = {{'coin', 1200}}, offer = {type = 'give-item', item = 'tank', count = 1}},
-        {price = {{'coin', 3}}, offer = {type = 'give-item', item = 'cannon-shell', count = 1}},
-        {price = {{'coin', 7}}, offer = {type = 'give-item', item = 'explosive-cannon-shell', count = 1}},
-        {price = {{'coin', 50}}, offer = {type = 'give-item', item = 'gun-turret', count = 1}},
-        {price = {{'coin', 300}}, offer = {type = 'give-item', item = 'laser-turret', count = 1}},
-        {price = {{'coin', 450}}, offer = {type = 'give-item', item = 'artillery-turret', count = 1}},
-        {price = {{'coin', 10}}, offer = {type = 'give-item', item = 'artillery-shell', count = 1}},
-        {price = {{'coin', 25}}, offer = {type = 'give-item', item = 'artillery-targeting-remote', count = 1}},
-        {price = {{'coin', 1}}, offer = {type = 'give-item', item = 'firearm-magazine', count = 1}},
-        {price = {{'coin', 4}}, offer = {type = 'give-item', item = 'piercing-rounds-magazine', count = 1}},
-        {price = {{'coin', 2}}, offer = {type = 'give-item', item = 'shotgun-shell', count = 1}},
-        {price = {{'coin', 6}}, offer = {type = 'give-item', item = 'piercing-shotgun-shell', count = 1}},
-        {price = {{'coin', 30}}, offer = {type = 'give-item', item = 'submachine-gun', count = 1}},
-        {price = {{'coin', 250}}, offer = {type = 'give-item', item = 'combat-shotgun', count = 1}},
-        {price = {{'coin', 450}}, offer = {type = 'give-item', item = 'flamethrower', count = 1}},
-        {price = {{'coin', 25}}, offer = {type = 'give-item', item = 'flamethrower-ammo', count = 1}},
-        {price = {{'coin', 125}}, offer = {type = 'give-item', item = 'rocket-launcher', count = 1}},
-        {price = {{'coin', 2}}, offer = {type = 'give-item', item = 'rocket', count = 1}},
-        {price = {{'coin', 7}}, offer = {type = 'give-item', item = 'explosive-rocket', count = 1}},
-        {price = {{'coin', 7500}}, offer = {type = 'give-item', item = 'atomic-bomb', count = 1}},
-        {price = {{'coin', 40}}, offer = {type = 'give-item', item = 'poison-capsule', count = 1}},
-        {price = {{'coin', 4}}, offer = {type = 'give-item', item = 'defender-capsule', count = 1}},
-        {price = {{'coin', 10}}, offer = {type = 'give-item', item = 'light-armor', count = 1}},
-        {price = {{'coin', 125}}, offer = {type = 'give-item', item = 'heavy-armor', count = 1}},
-        {price = {{'coin', 350}}, offer = {type = 'give-item', item = 'modular-armor', count = 1}},
-        {price = {{'coin', 1500}}, offer = {type = 'give-item', item = 'power-armor', count = 1}},
-        {price = {{'coin', 12000}}, offer = {type = 'give-item', item = 'power-armor-mk2', count = 1}},
-        {price = {{'coin', 50}}, offer = {type = 'give-item', item = 'solar-panel-equipment', count = 1}},
-        {price = {{'coin', 2250}}, offer = {type = 'give-item', item = 'fusion-reactor-equipment', count = 1}},
-        {price = {{'coin', 100}}, offer = {type = 'give-item', item = 'battery-equipment', count = 1}},
-        {price = {{'coin', 200}}, offer = {type = 'give-item', item = 'energy-shield-equipment', count = 1}},
-        {price = {{'coin', 850}}, offer = {type = 'give-item', item = 'personal-laser-defense-equipment', count = 1}},
-        {price = {{'coin', 175}}, offer = {type = 'give-item', item = 'exoskeleton-equipment', count = 1}},
-        {price = {{'coin', 125}}, offer = {type = 'give-item', item = 'night-vision-equipment', count = 1}},
-        {price = {{'coin', 200}}, offer = {type = 'give-item', item = 'belt-immunity-equipment', count = 1}},
-        {price = {{'coin', 250}}, offer = {type = 'give-item', item = 'personal-roboport-equipment', count = 1}},
-        {price = {{'coin', 35}}, offer = {type = 'give-item', item = 'construction-robot', count = 1}},
-        {price = {{'coin', 25}}, offer = {type = 'give-item', item = 'cliff-explosives', count = 1}},
-        {price = {{'coin', 80}}, offer = {type = 'nothing', effect_description = special_descriptions['flame-boots']}}
+    local market_items =
+    {
+        { price = {}, offer = { type = 'nothing', effect_description = str1 } },
+        { price = {}, offer = { type = 'nothing', effect_description = str2 } },
+        { price = {}, offer = { type = 'nothing', effect_description = str3 } },
+        { price = {}, offer = { type = 'nothing', effect_description = str4 } },
+        { price = {}, offer = { type = 'nothing', effect_description = str5 } },
+        { price = { { name = 'coin', count = 5 } }, offer = { type = 'give-item', item = 'raw-fish', count = 1 } },
+        { price = { { name = 'coin', count = 1 } }, offer = { type = 'give-item', item = 'wood', count = 8 } },
+        { price = { { name = 'coin', count = 8 } }, offer = { type = 'give-item', item = 'grenade', count = 1 } },
+        { price = { { name = 'coin', count = 32 } }, offer = { type = 'give-item', item = 'cluster-grenade', count = 1 } },
+        { price = { { name = 'coin', count = 1 } }, offer = { type = 'give-item', item = 'land-mine', count = 1 } },
+        { price = { { name = 'coin', count = 80 } }, offer = { type = 'give-item', item = 'car', count = 1 } },
+        { price = { { name = 'coin', count = 1200 } }, offer = { type = 'give-item', item = 'tank', count = 1 } },
+        { price = { { name = 'coin', count = 3 } }, offer = { type = 'give-item', item = 'cannon-shell', count = 1 } },
+        { price = { { name = 'coin', count = 7 } }, offer = { type = 'give-item', item = 'explosive-cannon-shell', count = 1 } },
+        { price = { { name = 'coin', count = 50 } }, offer = { type = 'give-item', item = 'gun-turret', count = 1 } },
+        { price = { { name = 'coin', count = 300 } }, offer = { type = 'give-item', item = 'laser-turret', count = 1 } },
+        { price = { { name = 'coin', count = 450 } }, offer = { type = 'give-item', item = 'artillery-turret', count = 1 } },
+        { price = { { name = 'coin', count = 10 } }, offer = { type = 'give-item', item = 'artillery-shell', count = 1 } },
+        { price = { { name = 'coin', count = 25 } }, offer = { type = 'give-item', item = 'artillery-targeting-remote', count = 1 } },
+        { price = { { name = 'coin', count = 1 } }, offer = { type = 'give-item', item = 'firearm-magazine', count = 1 } },
+        { price = { { name = 'coin', count = 4 } }, offer = { type = 'give-item', item = 'piercing-rounds-magazine', count = 1 } },
+        { price = { { name = 'coin', count = 2 } }, offer = { type = 'give-item', item = 'shotgun-shell', count = 1 } },
+        { price = { { name = 'coin', count = 6 } }, offer = { type = 'give-item', item = 'piercing-shotgun-shell', count = 1 } },
+        { price = { { name = 'coin', count = 30 } }, offer = { type = 'give-item', item = 'submachine-gun', count = 1 } },
+        { price = { { name = 'coin', count = 250 } }, offer = { type = 'give-item', item = 'combat-shotgun', count = 1 } },
+        { price = { { name = 'coin', count = 450 } }, offer = { type = 'give-item', item = 'flamethrower', count = 1 } },
+        { price = { { name = 'coin', count = 25 } }, offer = { type = 'give-item', item = 'flamethrower-ammo', count = 1 } },
+        { price = { { name = 'coin', count = 125 } }, offer = { type = 'give-item', item = 'rocket-launcher', count = 1 } },
+        { price = { { name = 'coin', count = 2 } }, offer = { type = 'give-item', item = 'rocket', count = 1 } },
+        { price = { { name = 'coin', count = 7 } }, offer = { type = 'give-item', item = 'explosive-rocket', count = 1 } },
+        { price = { { name = 'coin', count = 7500 } }, offer = { type = 'give-item', item = 'atomic-bomb', count = 1 } },
+        { price = { { name = 'coin', count = 40 } }, offer = { type = 'give-item', item = 'poison-capsule', count = 1 } },
+        { price = { { name = 'coin', count = 4 } }, offer = { type = 'give-item', item = 'defender-capsule', count = 1 } },
+        { price = { { name = 'coin', count = 10 } }, offer = { type = 'give-item', item = 'light-armor', count = 1 } },
+        { price = { { name = 'coin', count = 125 } }, offer = { type = 'give-item', item = 'heavy-armor', count = 1 } },
+        { price = { { name = 'coin', count = 350 } }, offer = { type = 'give-item', item = 'modular-armor', count = 1 } },
+        { price = { { name = 'coin', count = 1500 } }, offer = { type = 'give-item', item = 'power-armor', count = 1 } },
+        { price = { { name = 'coin', count = 12000 } }, offer = { type = 'give-item', item = 'power-armor-mk2', count = 1 } },
+        { price = { { name = 'coin', count = 50 } }, offer = { type = 'give-item', item = 'solar-panel-equipment', count = 1 } },
+        { price = { { name = 'coin', count = 2250 } }, offer = { type = 'give-item', item = 'fission-reactor-equipment', count = 1 } },
+        { price = { { name = 'coin', count = 100 } }, offer = { type = 'give-item', item = 'battery-equipment', count = 1 } },
+        { price = { { name = 'coin', count = 200 } }, offer = { type = 'give-item', item = 'energy-shield-equipment', count = 1 } },
+        { price = { { name = 'coin', count = 850 } }, offer = { type = 'give-item', item = 'personal-laser-defense-equipment', count = 1 } },
+        { price = { { name = 'coin', count = 175 } }, offer = { type = 'give-item', item = 'exoskeleton-equipment', count = 1 } },
+        { price = { { name = 'coin', count = 125 } }, offer = { type = 'give-item', item = 'night-vision-equipment', count = 1 } },
+        { price = { { name = 'coin', count = 200 } }, offer = { type = 'give-item', item = 'belt-immunity-equipment', count = 1 } },
+        { price = { { name = 'coin', count = 250 } }, offer = { type = 'give-item', item = 'personal-roboport-equipment', count = 1 } },
+        { price = { { name = 'coin', count = 35 } }, offer = { type = 'give-item', item = 'construction-robot', count = 1 } },
+        { price = { { name = 'coin', count = 25 } }, offer = { type = 'give-item', item = 'cliff-explosives', count = 1 } },
+        { price = { { name = 'coin', count = 80 } }, offer = { type = 'nothing', effect_description = special_descriptions['flame-boots'] } }
     }
 
     for _, item in pairs(market_items) do
@@ -119,48 +122,40 @@ local function refresh_market_offers()
     if not this.trapped_capsules_unlocked then
         this.market.add_market_item(
             {
-                price = {{'coin', 3500}},
-                offer = {type = 'nothing', effect_description = special_descriptions['trapped-capsules']}
+                price = { { name = 'coin', count = 3500 } },
+                offer = { type = 'nothing', effect_description = special_descriptions['trapped-capsules'] }
             }
         )
     end
     if not this.explosive_bullets_unlocked then
         this.market.add_market_item(
             {
-                price = {{'coin', 4500}},
-                offer = {type = 'nothing', effect_description = special_descriptions['explosive-bullets']}
+                price = { { name = 'coin', count = 4500 } },
+                offer = { type = 'nothing', effect_description = special_descriptions['explosive-bullets'] }
             }
         )
     end
     if not this.bouncy_shells_unlocked then
         this.market.add_market_item(
             {
-                price = {{'coin', 10000}},
-                offer = {type = 'nothing', effect_description = special_descriptions['bouncy-shells']}
+                price = { { name = 'coin', count = 10000 } },
+                offer = { type = 'nothing', effect_description = special_descriptions['bouncy-shells'] }
             }
         )
     end
     if not this.vehicle_nanobots_unlocked then
         this.market.add_market_item(
             {
-                price = {{'coin', 15000}},
-                offer = {type = 'nothing', effect_description = special_descriptions['vehicle-nanobots']}
+                price = { { name = 'coin', count = 15000 } },
+                offer = { type = 'nothing', effect_description = special_descriptions['vehicle-nanobots'] }
             }
         )
     end
-    --[[
-	if not this.crumbly_walls_unlocked then
-		this.market.add_market_item({price = {{"coin", 35000}}, offer = {type = 'nothing', effect_description = special_descriptions["crumbly-walls"]}})
-	end
-	if not this.ultra_mines_unlocked then
-		this.market.add_market_item({price = {{"coin", 45000}}, offer = {type = 'nothing', effect_description = special_descriptions["ultra-mines"]}})
-	end
-	]]
     if not this.laser_pointer_unlocked then
         this.market.add_market_item(
             {
-                price = {{'coin', 65000}},
-                offer = {type = 'nothing', effect_description = special_descriptions['laser-pointer']}
+                price = { { name = 'coin', count = 65000 } },
+                offer = { type = 'nothing', effect_description = special_descriptions['laser-pointer'] }
             }
         )
     end
@@ -180,20 +175,21 @@ local function slot_upgrade(player, offer_index)
         price = (this.entity_limits[slot_upgrade_offers[offer_index][1]].limit + 1) * this.entity_limits[slot_upgrade_offers[offer_index][1]].slot_price
     end
 
-    local coins_removed = player.remove_item({name = 'coin', count = price})
+    local coins_removed = player.remove_item({ name = 'coin', count = price })
     if coins_removed ~= price then
         if coins_removed > 0 then
-            player.insert({name = 'coin', count = coins_removed})
+            player.insert({ name = 'coin', count = coins_removed })
         end
-        player.print('Not enough coins.', {r = 0.22, g = 0.77, b = 0.44})
+        player.print('Not enough coins.', { r = 0.22, g = 0.77, b = 0.44 })
         return false
     end
 
     this.entity_limits[slot_upgrade_offers[offer_index][1]].limit = this.entity_limits[slot_upgrade_offers[offer_index][1]].limit + gain
-    game.print(player.name .. ' has bought a ' .. slot_upgrade_offers[offer_index][2] .. ' slot for ' .. price .. ' coins!', {r = 0.22, g = 0.77, b = 0.44})
+    game.print(player.name .. ' has bought a ' .. slot_upgrade_offers[offer_index][2] .. ' slot for ' .. price .. ' coins!', { r = 0.22, g = 0.77, b = 0.44 })
     if math.random(1, 2) == 1 then
         Server.to_discord_bold(
-            table.concat {
+            table.concat
+            {
                 '*** ' .. player.name .. ' has bought a ' .. slot_upgrade_offers[offer_index][2] .. ' slot for ' .. price .. ' coins! ***'
             }
         )
@@ -223,62 +219,62 @@ local function on_market_item_purchased(event)
     end
 
     if bought_offer.effect_description == special_descriptions['flame-boots'] then
-        game.print(player.name .. ' has bought themselves some flame boots.', {r = 0.22, g = 0.77, b = 0.44})
+        game.print(player.name .. ' has bought themselves some flame boots.', { r = 0.22, g = 0.77, b = 0.44 })
         if not this.flame_boots[player.index].fuel then
             this.flame_boots[player.index].fuel = math.random(1500, 3000)
         else
             this.flame_boots[player.index].fuel = this.flame_boots[player.index].fuel + math.random(1500, 3000)
         end
 
-        player.print('Fuel remaining: ' .. this.flame_boots[player.index].fuel, {r = 0.22, g = 0.77, b = 0.44})
+        player.print('Fuel remaining: ' .. this.flame_boots[player.index].fuel, { r = 0.22, g = 0.77, b = 0.44 })
         refresh_market_offers()
         return
     end
 
     if bought_offer.effect_description == special_descriptions['explosive-bullets'] then
-        game.print(player.name .. ' has unlocked explosive bullets.', {r = 0.22, g = 0.77, b = 0.44})
+        game.print(player.name .. ' has unlocked explosive bullets.', { r = 0.22, g = 0.77, b = 0.44 })
         this.explosive_bullets_unlocked = true
         refresh_market_offers()
         return
     end
 
     if bought_offer.effect_description == special_descriptions['bouncy-shells'] then
-        game.print(player.name .. ' has unlocked bouncy shells.', {r = 0.22, g = 0.77, b = 0.44})
+        game.print(player.name .. ' has unlocked bouncy shells.', { r = 0.22, g = 0.77, b = 0.44 })
         this.bouncy_shells_unlocked = true
         refresh_market_offers()
         return
     end
 
     if bought_offer.effect_description == special_descriptions['trapped-capsules'] then
-        game.print(player.name .. ' has unlocked trapped capsules!', {r = 0.22, g = 0.77, b = 0.44})
+        game.print(player.name .. ' has unlocked trapped capsules!', { r = 0.22, g = 0.77, b = 0.44 })
         this.trapped_capsules_unlocked = true
         refresh_market_offers()
         return
     end
 
     if bought_offer.effect_description == special_descriptions['ultra-mines'] then
-        game.print(player.name .. ' has unlocked ultra mines!', {r = 0.22, g = 0.77, b = 0.44})
+        game.print(player.name .. ' has unlocked ultra mines!', { r = 0.22, g = 0.77, b = 0.44 })
         this.ultra_mines_unlocked = true
         refresh_market_offers()
         return
     end
 
     if bought_offer.effect_description == special_descriptions['laser-pointer'] then
-        game.print(player.name .. ' has unleashed the quest to slay the red dot!', {r = 0.22, g = 0.77, b = 0.44})
+        game.print(player.name .. ' has unleashed the quest to slay the red dot!', { r = 0.22, g = 0.77, b = 0.44 })
         this.laser_pointer_unlocked = true
         refresh_market_offers()
         return
     end
 
     if bought_offer.effect_description == special_descriptions['crumbly-walls'] then
-        game.print(player.name .. ' has unlocked crumbly walls!', {r = 0.22, g = 0.77, b = 0.44})
+        game.print(player.name .. ' has unlocked crumbly walls!', { r = 0.22, g = 0.77, b = 0.44 })
         this.crumbly_walls_unlocked = true
         refresh_market_offers()
         return
     end
 
     if bought_offer.effect_description == special_descriptions['vehicle-nanobots'] then
-        game.print(player.name .. ' has unlocked vehicle nanobots!', {r = 0.22, g = 0.77, b = 0.44})
+        game.print(player.name .. ' has unlocked vehicle nanobots!', { r = 0.22, g = 0.77, b = 0.44 })
         this.vehicle_nanobots_unlocked = true
         refresh_market_offers()
         return

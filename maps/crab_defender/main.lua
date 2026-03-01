@@ -7,7 +7,6 @@ require 'maps.crab_defender.market'
 require 'maps.crab_defender.commands'
 require 'maps.crab_defender.shotgun_buff'
 require 'maps.crab_defender.on_entity_damaged'
-require 'modules.rocket_launch_always_yields_science'
 require 'modules.biters_yield_coins'
 require 'modules.dangerous_goods'
 require 'modules.custom_death_messages'
@@ -26,12 +25,16 @@ local FDT = require 'maps.crab_defender.table'
 local Score = require 'utils.gui.score'
 local Task = require 'utils.task_token'
 local Color = require 'utils.color_presets'
+local Gui = require 'utils.gui'
 local insert = table.insert
 local enable_start_grace_period = true
 
 local random = math.random
 local floor = math.floor
 local spawn_biters_token
+local button_id = 'fd-stats-button'
+local crab_button_id = 'crab_defender_waves'
+local progress_button_id = 'crab_defender_progress'
 
 local Public = {}
 
@@ -47,9 +50,17 @@ local starting_items =
 local disable_tech = function ()
     game.forces.player.technologies['spidertron'].enabled = false
     game.forces.player.technologies['spidertron'].researched = false
-    game.forces.player.technologies['optics'].researched = true
+    game.forces.player.technologies['lamp'].researched = true
     game.forces.player.technologies['artillery'].researched = false
     game.forces.player.technologies['atomic-bomb'].enabled = false
+end
+
+local function get_top_frame(player, id)
+    if Gui.get_mod_gui_top_frame() then
+        return Gui.get_button_flow(player)[id]
+    else
+        return player.gui.top[id]
+    end
 end
 
 function Public.reset_game()
@@ -161,45 +172,119 @@ end
 
 local biter_count_limit = 1024
 
-local create_wave_gui = function (player)
-    if player.gui.top['crab_defender_waves'] then
-        player.gui.top['crab_defender_waves'].destroy()
+local function check_timer(this)
+    local wave_grace_period = this.wave_grace_period
+    if not wave_grace_period then
+        return
     end
+
+    if wave_grace_period < game.tick then
+        this.wave_grace_period = 72000
+    end
+end
+
+local function create_wave_gui(player)
+    local button = get_top_frame(player, crab_button_id)
+    if button then
+        button.destroy()
+    end
+
+    local frame
+
     local this = FDT.get()
-    local frame = player.gui.top.add({ type = 'frame', name = 'crab_defender_waves' })
-    frame.style.maximal_height = 38
 
-    if not this.wave_grace_period then
-        local label = frame.add({ type = 'label', caption = 'Wave: ' .. (this.wave_count or 0) })
-        label.style.font_color = { r = 0.88, g = 0.88, b = 0.88 }
-        label.style.font = 'default-listbox'
-        label.style.left_padding = 4
-        label.style.right_padding = 4
-        label.style.minimal_width = 68
-        label.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
-
-        local next_level_progress = game.tick % this.wave_interval / this.wave_interval
-
-        local progressbar = frame.add({ type = 'progressbar', name = 'progressbar', value = next_level_progress })
-        progressbar.style = 'achievement_progressbar'
-        progressbar.style.minimal_width = 96
-        progressbar.style.maximal_width = 96
-        progressbar.style.padding = -1
-        progressbar.style.top_padding = 1
-        progressbar.style.height = 20
+    if Gui.get_mod_gui_top_frame() then
+        frame =
+            Gui.add_mod_button(
+                player,
+                {
+                    type = 'button',
+                    name = crab_button_id,
+                }
+            )
+        if frame then
+            frame.style.font_color = { 165, 165, 165 }
+            frame.style.font = 'default-semibold'
+            frame.style.minimal_height = 36
+            frame.style.maximal_height = 36
+            frame.style.minimal_width = 100
+            frame.style.padding = -2
+        end
     else
-        local time_remaining = floor(((this.wave_grace_period - (game.tick % this.wave_grace_period)) / 60) / 60)
+        frame = player.gui.top.add({ type = 'frame', name = crab_button_id })
+        frame.style.minimal_height = 38
+        frame.style.maximal_height = 38
+        frame.style.top_padding = 6
+        frame.style.right_padding = 12
+        frame.style.bottom_padding = 5
+        frame.style.left_padding = 12
+    end
+
+    local wave_count = 0
+    local wave_count_public = this.wave_count
+    local wave_grace_period = this.wave_grace_period
+    local wave_interval = this.wave_interval
+
+    if wave_count_public then
+        wave_count = wave_count_public
+    end
+
+    if not wave_grace_period then
+        frame.caption = 'Wave: ' .. wave_count
+        frame.style.font_color = { r = 0, g = 0, b = 0 }
+        frame.style.font = 'default-listbox'
+        frame.style.left_padding = 4
+        frame.style.right_padding = 4
+
+        local next_level_progress = game.tick % wave_interval / wave_interval
+
+        local progress = get_top_frame(player, progress_button_id)
+        if progress then
+            progress.destroy()
+        end
+
+        if Gui.get_mod_gui_top_frame() then
+            progress =
+                Gui.add_mod_button(
+                    player,
+                    {
+                        type = 'progressbar',
+                        name = progress_button_id,
+                        value = next_level_progress
+                    }
+                )
+            if progress then
+                progress.style = 'achievement_progressbar'
+                progress.style.minimal_width = 96
+                progress.style.maximal_width = 96
+                progress.style.padding = 5
+                progress.style.height = 35
+            end
+        else
+            progress = player.gui.top.add({ name = progress_button_id, type = 'progressbar', value = next_level_progress })
+            progress.style = 'achievement_progressbar'
+            progress.style.minimal_width = 96
+            progress.style.maximal_width = 96
+            progress.style.padding = -1
+            progress.style.top_padding = 1
+            progress.style.height = 20
+        end
+
+        storage.progress = progress
+    else
+        local time_remaining = math.floor(((wave_grace_period - (game.tick % wave_grace_period)) / 60) / 60)
         if time_remaining <= 0 then
             this.wave_grace_period = nil
             return
+        else
+            check_timer(this)
         end
 
-        local label = frame.add({ type = 'label', caption = 'Waves will start in ' .. time_remaining .. ' minutes.' })
-        label.style.font_color = { r = 0.88, g = 0.88, b = 0.88 }
-        label.style.font = 'default-listbox'
-        label.style.left_padding = 4
-        label.style.right_padding = 4
-        label.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
+        frame.caption = 'Waves will start in ' .. time_remaining .. ' minutes.'
+        frame.style.font_color = { r = 0, g = 0, b = 0 }
+        frame.style.font = 'default-listbox'
+        frame.style.left_padding = 4
+        frame.style.right_padding = 4
 
         if not enable_start_grace_period then
             this.wave_grace_period = nil
@@ -252,7 +337,7 @@ local show_fd_stats = function (player)
     end
 end
 
-local update_fd_stats = function ()
+local function update_fd_stats()
     for _, player in pairs(game.connected_players) do
         if player.gui.left['fd-stats'] then
             show_fd_stats(player)
@@ -260,18 +345,42 @@ local update_fd_stats = function ()
     end
 end
 
-local add_fd_stats_button = function (player)
-    local button_id = 'fd-stats-button'
-    if player.gui.top[button_id] then
-        player.gui.top[button_id].destroy()
+local function add_fd_stats_button(player)
+    local button = get_top_frame(player, button_id)
+    if button then
+        button.destroy()
     end
 
-    player.gui.top.add
-    {
-        type = 'sprite-button',
-        name = button_id,
-        sprite = 'item/submachine-gun'
-    }
+    if Gui.get_mod_gui_top_frame() then
+        button =
+            Gui.add_mod_button(
+                player,
+                {
+                    type = 'sprite-button',
+                    name = button_id,
+                    sprite = 'item/submachine-gun',
+                    style = Gui.button_style
+                }
+            )
+        if button then
+            button.style.font_color = { 165, 165, 165 }
+            button.style.font = 'default-semibold'
+            button.style.minimal_height = 36
+            button.style.maximal_height = 36
+            button.style.minimal_width = 40
+            button.style.padding = -2
+        end
+    else
+        local b =
+            player.gui.top.add
+            {
+                type = 'sprite-button',
+                name = button_id,
+                sprite = 'item/submachine-gun',
+                style = Gui.button_style
+            }
+        b.style.maximal_height = 38
+    end
 end
 
 local on_gui_click = function (event)
@@ -344,7 +453,7 @@ local get_biter_initial_pool = function ()
         }
         return biter_pool
     end
-    if game.forces.enemy.evolution_factor < 0.1 then
+    if game.forces.enemy.get_evolution_factor('crab_defender') < 0.1 then
         biter_pool =
         {
             { name = 'small-biter', threat = threat_values.small_biter, weight = 3 },
@@ -352,7 +461,7 @@ local get_biter_initial_pool = function ()
         }
         return biter_pool
     end
-    if game.forces.enemy.evolution_factor < 0.2 then
+    if game.forces.enemy.get_evolution_factor('crab_defender') < 0.2 then
         biter_pool =
         {
             { name = 'small-biter', threat = threat_values.small_biter, weight = 10 },
@@ -362,7 +471,7 @@ local get_biter_initial_pool = function ()
         }
         return biter_pool
     end
-    if game.forces.enemy.evolution_factor < 0.3 then
+    if game.forces.enemy.get_evolution_factor('crab_defender') < 0.3 then
         biter_pool =
         {
             { name = 'small-biter', threat = threat_values.small_biter, weight = 18 },
@@ -373,7 +482,7 @@ local get_biter_initial_pool = function ()
         }
         return biter_pool
     end
-    if game.forces.enemy.evolution_factor < 0.4 then
+    if game.forces.enemy.get_evolution_factor('crab_defender') < 0.4 then
         biter_pool =
         {
             { name = 'small-biter', threat = threat_values.small_biter, weight = 2 },
@@ -385,7 +494,7 @@ local get_biter_initial_pool = function ()
         }
         return biter_pool
     end
-    if game.forces.enemy.evolution_factor < 0.5 then
+    if game.forces.enemy.get_evolution_factor('crab_defender') < 0.5 then
         biter_pool =
         {
             { name = 'small-biter', threat = threat_values.small_biter, weight = 2 },
@@ -397,7 +506,7 @@ local get_biter_initial_pool = function ()
         }
         return biter_pool
     end
-    if game.forces.enemy.evolution_factor < 0.6 then
+    if game.forces.enemy.get_evolution_factor('crab_defender') < 0.6 then
         biter_pool =
         {
             { name = 'medium-biter', threat = threat_values.medium_biter, weight = 4 },
@@ -407,7 +516,7 @@ local get_biter_initial_pool = function ()
         }
         return biter_pool
     end
-    if game.forces.enemy.evolution_factor < 0.7 then
+    if game.forces.enemy.get_evolution_factor('crab_defender') < 0.7 then
         biter_pool =
         {
             { name = 'behemoth-biter', threat = threat_values.small_biter, weight = 2 },
@@ -419,7 +528,7 @@ local get_biter_initial_pool = function ()
         }
         return biter_pool
     end
-    if game.forces.enemy.evolution_factor < 0.8 then
+    if game.forces.enemy.get_evolution_factor('crab_defender') < 0.8 then
         biter_pool =
         {
             { name = 'behemoth-biter', threat = threat_values.small_biter, weight = 2 },
@@ -431,7 +540,7 @@ local get_biter_initial_pool = function ()
         }
         return biter_pool
     end
-    if game.forces.enemy.evolution_factor <= 0.9 then
+    if game.forces.enemy.get_evolution_factor('crab_defender') <= 0.9 then
         biter_pool =
         {
             { name = 'big-biter', threat = threat_values.big_biter, weight = 12 },
@@ -441,7 +550,7 @@ local get_biter_initial_pool = function ()
         }
         return biter_pool
     end
-    if game.forces.enemy.evolution_factor <= 1 then
+    if game.forces.enemy.get_evolution_factor('crab_defender') <= 1 then
         biter_pool =
         {
             { name = 'big-biter', threat = threat_values.big_biter, weight = 4 },
@@ -739,7 +848,7 @@ local biter_attack_wave = function ()
     if evolution > 1 then
         evolution = 1
     end
-    game.forces.enemy.evolution_factor = evolution
+    game.forces.enemy.set_evolution_factor(evolution, 'crab_defender')
 
     local y_raffle = get_y_coord_raffle_table()
     local x_raffle = get_x_coord_raffle_table()
@@ -834,9 +943,7 @@ local get_mvps = function ()
     return mvp
 end
 
-local is_game_lost = function ()
-    local this = FDT.get()
-
+local function is_game_lost(this)
     if not this.game_has_ended then
         return
     end
@@ -961,19 +1068,28 @@ local damage_entities_in_radius = function (surface, position, radius, damage)
     end
 end
 
-local market_kill_visuals = function ()
-    local this = FDT.get()
+local function market_kill_visuals(this)
     local surface = game.surfaces[this.active_surface_index]
     if not surface or not surface.valid then
         return
     end
-
-    if not surface or not surface.valid then
+    local market = this.market
+    if not market or not market.valid then
         return
     end
-
-    if not this.market or not this.market.valid then
-        return
+    local m = 32
+    local m2 = m * 0.005
+    for _ = 1, 1024, 1 do
+        surface.create_particle(
+            {
+                name = 'branch-particle',
+                position = market.position,
+                frame_speed = 0.1,
+                vertical_speed = 0.1,
+                height = 0.1,
+                movement = { m2 - (math.random(0, m) * 0.01), m2 - (math.random(0, m) * 0.01) }
+            }
+        )
     end
 
     for x = -5, 5, 0.5 do
@@ -982,7 +1098,7 @@ local market_kill_visuals = function ()
                 surface.create_trivial_smoke(
                     {
                         name = 'smoke-fast',
-                        position = { this.market.position.x + (x * 0.35), this.market.position.y + (y * 0.35) }
+                        position = { market.position.x + (x * 0.35), market.position.y + (y * 0.35) }
                     }
                 )
             end
@@ -990,13 +1106,13 @@ local market_kill_visuals = function ()
                 surface.create_trivial_smoke(
                     {
                         name = 'train-smoke',
-                        position = { this.market.position.x + (x * 0.35), this.market.position.y + (y * 0.35) }
+                        position = { market.position.x + (x * 0.35), market.position.y + (y * 0.35) }
                     }
                 )
             end
         end
     end
-    surface.spill_item_stack(this.market.position, { name = 'raw-fish', count = 1024 }, true)
+    surface.spill_item_stack({ position = market.position, stack = { name = 'raw-fish', count = 1024, quality = 'normal' }, enable_looted = true })
 end
 
 local biter_splash_damage =
@@ -1082,12 +1198,12 @@ local on_entity_died = function (event)
     end
 
     if entity == this.market then
-        market_kill_visuals()
+        market_kill_visuals(this)
         this.market.die()
         this.market = nil
         this.market_age = game.tick - this.last_reset
         this.game_has_ended = true
-        is_game_lost()
+        is_game_lost(this)
         return
     end
 
@@ -1124,7 +1240,7 @@ local on_player_joined_game = function (event)
     add_fd_stats_button(player)
 
     if game.tick > 900 then
-        is_game_lost()
+        is_game_lost(this)
     end
 end
 
@@ -1150,9 +1266,9 @@ local function deny_building(event)
                     inventory.insert({ name = entity.name, count = 1 })
                 end
             end
-            event.entity.surface.create_entity(
+            local player = game.get_player(event.player_index)
+            player.create_local_flying_text(
                 {
-                    name = 'flying-text',
                     position = entity.position,
                     text = 'To save map performance, you can only build within the crab claws',
                     color = { r = 0.98, g = 0.66, b = 0.22 }
@@ -1190,9 +1306,9 @@ local on_built_entity = function (event)
     if this.entity_limits[entity.name] then
         if this.entity_limits[entity.name].placed < this.entity_limits[entity.name].limit then
             this.entity_limits[entity.name].placed = this.entity_limits[entity.name].placed + 1
-            surface.create_entity(
+            local player = game.get_player(event.player_index)
+            player.create_local_flying_text(
                 {
-                    name = 'flying-text',
                     position = entity.position,
                     text = this.entity_limits[entity.name].placed .. ' / ' .. this.entity_limits[entity.name].limit .. ' ' .. this.entity_limits[entity.name].str .. 's',
                     color = { r = 0.98, g = 0.66, b = 0.22 }
@@ -1200,15 +1316,14 @@ local on_built_entity = function (event)
             )
             update_fd_stats()
         else
-            surface.create_entity(
+            local player = game.get_player(event.player_index)
+            player.create_local_flying_text(
                 {
-                    name = 'flying-text',
                     position = entity.position,
                     text = this.entity_limits[entity.name].str .. ' limit reached.',
                     color = { r = 0.82, g = 0.11, b = 0.11 }
                 }
             )
-            local player = game.players[event.player_index]
             player.insert({ name = entity.name, count = 1 })
             if get_score then
                 if get_score[player.force.name] then
@@ -1249,24 +1364,8 @@ local on_robot_built_entity = function (event)
     if this.entity_limits[entity.name] then
         if this.entity_limits[entity.name].placed < this.entity_limits[entity.name].limit then
             this.entity_limits[entity.name].placed = this.entity_limits[entity.name].placed + 1
-            surface.create_entity(
-                {
-                    name = 'flying-text',
-                    position = entity.position,
-                    text = this.entity_limits[entity.name].placed .. ' / ' .. this.entity_limits[entity.name].limit .. ' ' .. this.entity_limits[entity.name].str .. 's',
-                    color = { r = 0.98, g = 0.66, b = 0.22 }
-                }
-            )
             update_fd_stats()
         else
-            surface.create_entity(
-                {
-                    name = 'flying-text',
-                    position = entity.position,
-                    text = this.entity_limits[entity.name].str .. ' limit reached.',
-                    color = { r = 0.82, g = 0.11, b = 0.11 }
-                }
-            )
             local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
             inventory.insert({ name = entity.name, count = 1 })
             entity.destroy()
@@ -1469,7 +1568,9 @@ local on_tick = function ()
             if this.market and this.market.valid then
                 this.market.die()
                 game.print('Game won!', { r = 0.22, g = 0.88, b = 0.22 })
-                game.print('Game wave limit reached! Game will soft-reset shortly.', { r = 0.22, g = 0.88, b = 0.22 })
+                game.print('Wave limit reached! Game will soft-reset shortly.', { r = 0.22, g = 0.88, b = 0.22 })
+                local message = 'Game won! Wave limit reached! Game will soft-reset shortly.'
+                Server.to_discord_bold(table.concat { '*** ', message, ' ***' })
                 return
             end
         end

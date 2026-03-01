@@ -19,7 +19,7 @@ local function get_replacement_tile(surface, position)
     for i = 1, 128, 1 do
         local vectors = { { 0, i }, { 0, i * -1 }, { i, 0 }, { i * -1, 0 } }
         shuffle(vectors)
-        for k, v in pairs(vectors) do
+        for _, v in pairs(vectors) do
             local tile = surface.get_tile(position.x + v[1], position.y + v[2])
             if not tile.collides_with('resource') then
                 return tile.name
@@ -101,7 +101,8 @@ local function render_market_hp()
     end
 
     this.caption =
-        rendering.draw_text {
+        rendering.draw_text
+        {
             text = 'Crab Market',
             surface = surface,
             target = this.market,
@@ -147,9 +148,10 @@ local function generate_spawn_area(this, surface)
         find_entities_filtered(
             {
                 type = { 'resource', 'cliff' },
-                area = {
+                area =
+                {
                     { spawn_position_x - 128, spawn_position_y - 132 },
-                    { spawn_position_x + 64,  spawn_position_y + 32 }
+                    { spawn_position_x + 64, spawn_position_y + 32 }
                 }
             }
         )
@@ -169,10 +171,11 @@ local function generate_spawn_area(this, surface)
         end
     end
 
-    local ore_positions = {
+    local ore_positions =
+    {
         { x = spawn_position_x - 80, y = spawn_position_y + 50 },
         { x = spawn_position_x - 40, y = spawn_position_y + 50 },
-        { x = spawn_position_x,      y = spawn_position_y + 50 },
+        { x = spawn_position_x, y = spawn_position_y + 50 },
         { x = spawn_position_x + 40, y = spawn_position_y + 50 },
         { x = spawn_position_x + 80, y = spawn_position_y + 50 }
     }
@@ -193,7 +196,8 @@ local function generate_spawn_area(this, surface)
     for _, entity in pairs(
         find_entities_filtered(
             {
-                area = {
+                area =
+                {
                     { this.market.position.x - r, this.market.position.y - r },
                     { this.market.position.x + r, this.market.position.y + r }
                 },
@@ -244,7 +248,7 @@ local function process_chunk(left_top)
     end
     local find_entities_filtered = surface.find_entities_filtered
 
-    generate_spawn_area(this, surface, left_top)
+    generate_spawn_area(this, surface)
     enemy_territory(surface, left_top)
 
     for _, entity in pairs(
