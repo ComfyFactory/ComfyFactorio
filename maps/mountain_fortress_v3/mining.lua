@@ -11,6 +11,17 @@ local sqrt = math.sqrt
 
 local max_spill = 60
 
+local blacklisted_ores_for_quality =
+{
+    ['holmium-ore'] = true,
+    ['lithium'] = true,
+    ['ice'] = true,
+    ['calcite'] = true,
+    ['tungsten-ore'] = true,
+    ['jellynut'] = true,
+    ['yumako'] = true,
+}
+
 local mining_chance_weights =
 {
     { name = 'iron-plate', chance = 1000 },
@@ -59,6 +70,26 @@ local mining_chance_weights =
     { name = 'defender-capsule', chance = 5 },
     { name = 'destroyer-capsule', chance = 1 },
     { name = 'distractor-capsule', chance = 2 }
+}
+
+local fulgora_ruin_chance_weights =
+{
+    { name = 'scrap', chance = 100 },
+    { name = 'steel-plate', chance = 50 },
+    { name = 'iron-gear-wheel', chance = 50 },
+    { name = 'iron-stick', chance = 50 },
+    { name = 'copper-cable', chance = 50 },
+    { name = 'stone', chance = 50 },
+}
+
+local fulgora_ruin_yield_amounts =
+{
+    ['scrap'] = 20,
+    ['steel-plate'] = 14,
+    ['iron-gear-wheel'] = 18,
+    ['iron-stick'] = 18,
+    ['copper-cable'] = 18,
+    ['stone'] = 18,
 }
 
 local scrap_yield_amounts =
@@ -194,6 +225,17 @@ local valid_scrap =
     ['mineable-wreckage-6'] = true,
 }
 
+local valid_fulgora_ruins =
+{
+    ['fulgoran-ruin-big'] = true,
+    ['fulgoran-ruin-colossal'] = true,
+    ['fulgoran-ruin-huge'] = true,
+    ['fulgoran-ruin-medium'] = true,
+    ['fulgoran-ruin-small'] = true,
+    ['fulgoran-ruin-stonehenge'] = true,
+    ['fulgoran-ruin-vault'] = true,
+}
+
 local rock_yield =
 {
     ['big-rock'] = 1,
@@ -318,6 +360,15 @@ end
 
 local size_of_scrap_raffle = #scrap_raffle
 
+local fulgora_ruin_raffle = {}
+for _, data in pairs(fulgora_ruin_chance_weights) do
+    for _ = 1, data.chance, 1 do
+        fulgora_ruin_raffle[#fulgora_ruin_raffle + 1] = data.name
+    end
+end
+
+local size_of_fulgora_ruin_raffle = #fulgora_ruin_raffle
+
 local function get_amount(data)
     local entity = data.entity
     local mining_utils = Public.get('mining_utils')
@@ -410,6 +461,9 @@ local function randomness(data)
         end
     end
 
+    if blacklisted_ores_for_quality[harvest] then
+        data.quality = 'normal'
+    end
 
     local position = { x = entity.position.x, y = entity.position.y }
 
@@ -467,6 +521,69 @@ local function randomness_scrap(data)
     local r2 = math.ceil(scrap_yield_amounts[harvest] * (1.7 + (amount_bonus * 1.7)))
     local harvest_amount = math.random(r1, r2)
 
+    if blacklisted_ores_for_quality[harvest] then
+        data.quality = 'normal'
+    end
+
+    local position = { x = entity.position.x, y = entity.position.y }
+
+    player.create_local_flying_text(
+        {
+            position = position,
+            text = '+' .. harvest_amount .. '  [item=' .. harvest .. ',quality=' .. data.quality .. ']',
+        }
+    )
+
+    if data.debug_mode then -- we're debugging - don't insert items
+        return
+    end
+
+    if harvest_amount > max_spill then
+        if spill_items_to_surface then
+            player.physical_surface.spill_item_stack({ position = position, stack = { name = harvest, count = max_spill, quality = data.quality } })
+        else
+            player.insert({ name = harvest, count = max_spill, quality = data.quality })
+        end
+        harvest_amount = harvest_amount - max_spill
+        local inserted_count = player.insert({ name = harvest, count = harvest_amount })
+        harvest_amount = harvest_amount - inserted_count
+        if harvest_amount > 0 then
+            if spill_items_to_surface then
+                player.physical_surface.spill_item_stack({ position = position, stack = { name = harvest, count = harvest_amount, quality = data.quality } })
+            else
+                player.insert({ name = harvest, count = harvest_amount, quality = data.quality })
+            end
+        end
+    else
+        if spill_items_to_surface then
+            player.physical_surface.spill_item_stack({ position = position, stack = { name = harvest, count = harvest_amount, quality = data.quality } })
+        else
+            player.insert({ name = harvest, count = harvest_amount, quality = data.quality })
+        end
+    end
+    local particle = particles[harvest]
+    if data.script_character then
+        create_particles(player.physical_surface, particle, position, 64, { x = data.script_character.position.x, y = data.script_character.position.y })
+    else
+        create_particles(player.physical_surface, particle, position, 64, { x = player.physical_position.x, y = player.physical_position.y })
+    end
+end
+
+local function randomness_fulgora_ruin(data)
+    local entity = data.entity
+    local player = data.player
+    local spill_items_to_surface = Public.get('spill_items_to_surface')
+
+    local harvest = fulgora_ruin_raffle[random(1, size_of_fulgora_ruin_raffle)]
+    local amount_bonus = game.forces.player.mining_drill_productivity_bonus * 2
+    local r1 = math.ceil(fulgora_ruin_yield_amounts[harvest] * (0.3 + (amount_bonus * 0.3)))
+    local r2 = math.ceil(fulgora_ruin_yield_amounts[harvest] * (1.7 + (amount_bonus * 1.7)))
+    local harvest_amount = math.random(r1, r2)
+
+    if blacklisted_ores_for_quality[harvest] then
+        data.quality = 'normal'
+    end
+
     local position = { x = entity.position.x, y = entity.position.y }
 
     player.create_local_flying_text(
@@ -523,15 +640,18 @@ function Public.on_player_mined_entity(event)
     end
 
     local is_scrap = false
-
+    local is_fulgora_ruin = false
     if valid_scrap[entity.name] then
         is_scrap = true
+    end
+    if valid_fulgora_ruins[entity.name] then
+        is_fulgora_ruin = true
     end
 
     local buffer = event.buffer
     local creative_enabled = Misc.get('creative_enabled')
 
-    if valid_rocks[entity.name] or valid_trees[entity.name] or is_scrap then
+    if valid_rocks[entity.name] or valid_trees[entity.name] or is_scrap or is_fulgora_ruin then
         if buffer then
             buffer.clear()
         end
@@ -563,6 +683,8 @@ function Public.on_player_mined_entity(event)
         data.debug_mode = debug_mode or false
         if scrap_zone or is_scrap then
             randomness_scrap(data)
+        elseif is_fulgora_ruin then
+            randomness_fulgora_ruin(data)
         else
             randomness(data)
         end

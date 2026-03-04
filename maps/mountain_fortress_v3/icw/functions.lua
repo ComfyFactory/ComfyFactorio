@@ -103,9 +103,9 @@ chunk_reveal_token =
         end
     )
 
-for x = fallout_width * -1 - 55, fallout_width + 55, 1 do
-    if x < -55 or x > 55 then
-        for y = fallout_width * -1 - 55, fallout_width + 55, 1 do
+for x = fallout_width * -1 - 80, fallout_width + 80, 1 do
+    if x < -80 or x > 80 then
+        for y = fallout_width * -1 - 80, fallout_width + 80, 1 do
             local position = { x = x, y = y }
             local fallout = sqrt(position.x ^ 2 + position.y ^ 2)
             if fallout > fallout_width then

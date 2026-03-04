@@ -124,13 +124,31 @@ function Public.wave_defense_roll_worm_name(exclude)
 
     if exclude then
         local copied_raffle = {}
-        for k, v in pairs(worm_raffle) do
-            if not string.find(k, exclude, 1, true) then
-                copied_raffle[k] = v
+        if type(exclude) == 'string' then
+            for k, v in pairs(worm_raffle) do
+                if not string.find(k, exclude, 1, true) then
+                    copied_raffle[k] = v
+                end
             end
-        end
-        if next(copied_raffle) then
-            worm_raffle = copied_raffle
+            if next(copied_raffle) then
+                worm_raffle = copied_raffle
+            end
+        elseif type(exclude) == 'table' then
+            for k, v in pairs(worm_raffle) do
+                local matched = false
+                for _, excluded_name in pairs(exclude) do
+                    if string.find(k, excluded_name, 1, true) then
+                        matched = true
+                        break
+                    end
+                end
+                if not matched then
+                    copied_raffle[k] = v
+                end
+            end
+            if next(copied_raffle) then
+                worm_raffle = copied_raffle
+            end
         end
     end
 

@@ -12,7 +12,7 @@ local Discord = require 'utils.discord'
 local Core = require 'utils.core'
 local Diff = require 'modules.difficulty_vote_by_amount'
 local format_number = require 'util'.format_number
-local RPG_Progression = require 'utils.datastore.rpg_data'
+local RPG_Progression = require 'utils.datastore.rpg_prestige_data'
 local WD = require 'modules.wave_defense.table'
 local StatData = require 'utils.datastore.statistics'
 StatData.add_normalize('coins', 'Coins collected'):set_tooltip('The amount of coins the player has collected through mining/killed enemies.')

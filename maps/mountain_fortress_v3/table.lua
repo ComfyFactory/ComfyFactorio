@@ -757,7 +757,7 @@ function Public.reset_main_table()
         voting_closed = false
     }
 
-    this.random_planet_enabled = false
+    this.random_planet_enabled = true
 
     this.is_coin_quality_enabled = false
 

@@ -21,4 +21,7 @@ Public.settings = Settings
 local Commands = require 'modules.rpg.commands'
 Public.commands = Commands
 
+local SettingsData = require 'utils.datastore.rpg_data'
+Public.settings_data = SettingsData
+
 return Public

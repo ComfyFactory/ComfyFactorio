@@ -1950,19 +1950,19 @@ end
 --- Gets a spell by name.
 ---@param rpg_t table
 ---@param spell_name string
----@return table|boolean
+---@return table|boolean, int|boolean
 function Public.get_spell_by_name(rpg_t, spell_name)
     local _spells = Public.get_all_spells_filtered(rpg_t)
-    for _, data in pairs(_spells) do
+    for index, data in pairs(_spells) do
         if data and data.name[1] == spell_name then
-            return data
+            return data, index
         end
         if data and data.name == spell_name then
-            return data
+            return data, index
         end
     end
 
-    return false
+    return false, false
 end
 
 --- Gets a spell by name.
@@ -2111,6 +2111,23 @@ function Public.get_all_spells_filtered(rpg_t)
     end
 
     return new_spells, spell_names
+end
+
+--- This will check if the player has high enough level to access a spell
+---@param rpg_t table
+---@param spell_name string
+---@return table|boolean, int|boolean
+function Public.has_enough_level_to_access_spell(rpg_t, spell_name)
+    local spell, index = Public.get_spell_by_name(rpg_t, spell_name)
+    if not spell then
+        return false, false
+    end
+
+    if rpg_t.level >= spell.level then
+        return spell, index
+    else
+        return false, false
+    end
 end
 
 --- This will disable the cooldown of all spells.

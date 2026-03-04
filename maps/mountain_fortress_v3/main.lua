@@ -44,7 +44,7 @@ local Misc = require 'utils.commands.misc'
 local Modifiers = require 'utils.player_modifiers'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local JailData = require 'utils.datastore.jail_data'
-local RPG_Progression = require 'utils.datastore.rpg_data'
+local RPG_Progression = require 'utils.datastore.rpg_prestige_data'
 local OfflinePlayers = require 'modules.clear_vacant_players'
 local Beam = require 'modules.render_beam'
 local Commands = require 'utils.commands'
@@ -796,14 +796,14 @@ function Public.announce_new_map(current_task)
 end
 
 function Public.to_fortress(current_task)
+    WD.set('game_lost', false)
     local surface = game.get_surface(current_task.surface_name)
     if not surface or not surface.valid then
+        Server.output_script_data('To Fortress: Surface not valid - please check this out!')
         return
     end
     local adjusted_zones = Public.get('adjusted_zones')
     local position
-
-    WD.set('game_lost', false)
 
     if adjusted_zones.reversed then
         game.forces.player.set_spawn_position({ -27, -25 }, surface)

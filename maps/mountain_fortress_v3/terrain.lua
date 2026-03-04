@@ -1388,7 +1388,7 @@ local function zone_volcanic_1(x, y, data, void_or_lab, adjusted_zones)
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] =
             {
-                name = Biters.wave_defense_roll_worm_name('fire'),
+                name = Biters.wave_defense_roll_worm_name({ 'fire', 'poison' }),
                 position = p,
                 force = 'enemy',
                 note = true
@@ -1455,7 +1455,7 @@ local function zone_volcanic_1(x, y, data, void_or_lab, adjusted_zones)
                     Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
                     entities[#entities + 1] =
                     {
-                        name = Biters.wave_defense_roll_worm_name('fire'),
+                        name = Biters.wave_defense_roll_worm_name({ 'fire', 'poison' }),
                         position = p,
                         force = 'enemy'
                     }
@@ -1758,7 +1758,7 @@ local function zone_frostbite_1(x, y, data, void_or_lab)
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] =
             {
-                name = Biters.wave_defense_roll_worm_name('fire'),
+                name = Biters.wave_defense_roll_worm_name({ 'fire', 'poison' }),
                 position = p,
                 force = 'enemy',
                 note = true
@@ -1829,7 +1829,7 @@ local function zone_frostbite_1(x, y, data, void_or_lab)
                     Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
                     entities[#entities + 1] =
                     {
-                        name = Biters.wave_defense_roll_worm_name('fire'),
+                        name = Biters.wave_defense_roll_worm_name({ 'fire', 'poison' }),
                         position = p,
                         force = 'enemy'
                     }
@@ -1893,7 +1893,7 @@ local function zone_frostbite_2(x, y, data, void_or_lab)
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] =
             {
-                name = Biters.wave_defense_roll_worm_name('fire'),
+                name = Biters.wave_defense_roll_worm_name({ 'fire', 'poison' }),
                 position = p,
                 force = 'enemy',
                 note = true
@@ -1977,7 +1977,7 @@ local function zone_frostbite_2(x, y, data, void_or_lab)
                     Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
                     entities[#entities + 1] =
                     {
-                        name = Biters.wave_defense_roll_worm_name('fire'),
+                        name = Biters.wave_defense_roll_worm_name({ 'fire', 'poison' }),
                         position = p,
                         force = 'enemy'
                     }
@@ -2061,7 +2061,7 @@ local function zone_gleba_1(x, y, data, void_or_lab, adjusted_zones)
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] =
             {
-                name = Biters.wave_defense_roll_worm_name('fire'),
+                name = Biters.wave_defense_roll_worm_name({ 'fire', 'poison' }),
                 position = p,
                 force = 'enemy',
                 note = true
@@ -2148,7 +2148,7 @@ local function zone_gleba_1(x, y, data, void_or_lab, adjusted_zones)
                     Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
                     entities[#entities + 1] =
                     {
-                        name = Biters.wave_defense_roll_worm_name('fire'),
+                        name = Biters.wave_defense_roll_worm_name({ 'fire', 'poison' }),
                         position = p,
                         force = 'enemy'
                     }
@@ -2222,7 +2222,7 @@ local function zone_gleba_2(x, y, data, void_or_lab, adjusted_zones)
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] =
             {
-                name = Biters.wave_defense_roll_worm_name('fire'),
+                name = Biters.wave_defense_roll_worm_name({ 'fire', 'poison' }),
                 position = p,
                 force = 'enemy',
                 note = true
@@ -2315,7 +2315,7 @@ local function zone_gleba_2(x, y, data, void_or_lab, adjusted_zones)
                     Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
                     entities[#entities + 1] =
                     {
-                        name = Biters.wave_defense_roll_worm_name('fire'),
+                        name = Biters.wave_defense_roll_worm_name({ 'fire', 'poison' }),
                         position = p,
                         force = 'enemy'
                     }
@@ -2765,7 +2765,7 @@ local function zone_14(x, y, data, _, adjusted_zones)
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] =
             {
-                name = Biters.wave_defense_roll_worm_name('fire'),
+                name = Biters.wave_defense_roll_worm_name({ 'fire', 'poison' }),
                 position = p,
                 force = 'enemy',
                 note = true
@@ -3114,7 +3114,7 @@ local function zone_10(x, y, data, _, adjusted_zones)
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] =
             {
-                name = Biters.wave_defense_roll_worm_name('fire'),
+                name = Biters.wave_defense_roll_worm_name({ 'fire', 'poison' }),
                 position = p,
                 force = 'enemy',
                 note = true
@@ -3132,7 +3132,7 @@ local function zone_10(x, y, data, _, adjusted_zones)
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] =
             {
-                name = Biters.wave_defense_roll_worm_name('fire'),
+                name = Biters.wave_defense_roll_worm_name({ 'fire', 'poison' }),
                 position = p,
                 force = 'enemy',
                 note = true
@@ -3151,7 +3151,7 @@ local function zone_10(x, y, data, _, adjusted_zones)
                 Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
                 entities[#entities + 1] =
                 {
-                    name = Biters.wave_defense_roll_worm_name('fire'),
+                    name = Biters.wave_defense_roll_worm_name({ 'fire', 'poison' }),
                     position = p,
                     force = 'enemy',
                     note = true
@@ -3174,7 +3174,7 @@ local function zone_10(x, y, data, _, adjusted_zones)
                 Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
                 entities[#entities + 1] =
                 {
-                    name = Biters.wave_defense_roll_worm_name('fire'),
+                    name = Biters.wave_defense_roll_worm_name({ 'fire', 'poison' }),
                     position = p,
                     force = 'enemy',
                     note = true
@@ -3712,7 +3712,7 @@ local function zone_forest_2(x, y, data, void_or_lab, adjusted_zones)
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] =
             {
-                name = Biters.wave_defense_roll_worm_name('fire'),
+                name = Biters.wave_defense_roll_worm_name({ 'fire', 'poison' }),
                 position = p,
                 force = 'enemy',
                 note = true
@@ -3734,7 +3734,7 @@ local function zone_forest_2(x, y, data, void_or_lab, adjusted_zones)
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] =
             {
-                name = Biters.wave_defense_roll_worm_name('fire'),
+                name = Biters.wave_defense_roll_worm_name({ 'fire', 'poison' }),
                 position = p,
                 force = 'enemy',
                 note = true
@@ -3751,7 +3751,7 @@ local function zone_forest_2(x, y, data, void_or_lab, adjusted_zones)
                     Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
                     entities[#entities + 1] =
                     {
-                        name = Biters.wave_defense_roll_worm_name('fire'),
+                        name = Biters.wave_defense_roll_worm_name({ 'fire', 'poison' }),
                         position = p,
                         force = 'enemy',
                         note = true
@@ -3774,7 +3774,7 @@ local function zone_forest_2(x, y, data, void_or_lab, adjusted_zones)
                     Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
                     entities[#entities + 1] =
                     {
-                        name = Biters.wave_defense_roll_worm_name('fire'),
+                        name = Biters.wave_defense_roll_worm_name({ 'fire', 'poison' }),
                         position = p,
                         force = 'enemy',
                         note = true
@@ -4375,7 +4375,7 @@ local function zone_gleba_forest_1(x, y, data, void_or_lab, adjusted_zones)
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] =
             {
-                name = Biters.wave_defense_roll_worm_name('fire'),
+                name = Biters.wave_defense_roll_worm_name({ 'fire', 'poison' }),
                 position = p,
                 force = 'enemy',
                 note = true
@@ -4459,7 +4459,7 @@ local function zone_gleba_forest_1(x, y, data, void_or_lab, adjusted_zones)
                     Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
                     entities[#entities + 1] =
                     {
-                        name = Biters.wave_defense_roll_worm_name('fire'),
+                        name = Biters.wave_defense_roll_worm_name({ 'fire', 'poison' }),
                         position = p,
                         force = 'enemy',
                         note = true
@@ -4505,7 +4505,7 @@ local function zone_gleba_forest_1(x, y, data, void_or_lab, adjusted_zones)
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] =
             {
-                name = Biters.wave_defense_roll_worm_name('fire'),
+                name = Biters.wave_defense_roll_worm_name({ 'fire', 'poison' }),
                 position = p,
                 force = 'enemy',
                 note = true
@@ -4528,7 +4528,7 @@ local function zone_gleba_forest_1(x, y, data, void_or_lab, adjusted_zones)
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] =
             {
-                name = Biters.wave_defense_roll_worm_name('fire'),
+                name = Biters.wave_defense_roll_worm_name({ 'fire', 'poison' }),
                 position = p,
                 force = 'enemy',
                 note = true
@@ -4580,7 +4580,7 @@ local function zone_gleba_forest_2(x, y, data, void_or_lab, adjusted_zones)
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] =
             {
-                name = Biters.wave_defense_roll_worm_name('fire'),
+                name = Biters.wave_defense_roll_worm_name({ 'fire', 'poison' }),
                 position = p,
                 force = 'enemy',
                 note = true
@@ -4664,7 +4664,7 @@ local function zone_gleba_forest_2(x, y, data, void_or_lab, adjusted_zones)
                     Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
                     entities[#entities + 1] =
                     {
-                        name = Biters.wave_defense_roll_worm_name('fire'),
+                        name = Biters.wave_defense_roll_worm_name({ 'fire', 'poison' }),
                         position = p,
                         force = 'enemy',
                         note = true
@@ -4710,7 +4710,7 @@ local function zone_gleba_forest_2(x, y, data, void_or_lab, adjusted_zones)
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] =
             {
-                name = Biters.wave_defense_roll_worm_name('fire'),
+                name = Biters.wave_defense_roll_worm_name({ 'fire', 'poison' }),
                 position = p,
                 force = 'enemy',
                 note = true
@@ -4733,7 +4733,7 @@ local function zone_gleba_forest_2(x, y, data, void_or_lab, adjusted_zones)
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] =
             {
-                name = Biters.wave_defense_roll_worm_name('fire'),
+                name = Biters.wave_defense_roll_worm_name({ 'fire', 'poison' }),
                 position = p,
                 force = 'enemy',
                 note = true
@@ -4778,7 +4778,7 @@ local function zone_forest_1(x, y, data, void_or_lab, adjusted_zones)
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] =
             {
-                name = Biters.wave_defense_roll_worm_name('fire'),
+                name = Biters.wave_defense_roll_worm_name({ 'fire', 'poison' }),
                 position = p,
                 force = 'enemy',
                 note = true
@@ -4854,7 +4854,7 @@ local function zone_forest_1(x, y, data, void_or_lab, adjusted_zones)
                     Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
                     entities[#entities + 1] =
                     {
-                        name = Biters.wave_defense_roll_worm_name('fire'),
+                        name = Biters.wave_defense_roll_worm_name({ 'fire', 'poison' }),
                         position = p,
                         force = 'enemy',
                         note = true
@@ -4900,7 +4900,7 @@ local function zone_forest_1(x, y, data, void_or_lab, adjusted_zones)
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] =
             {
-                name = Biters.wave_defense_roll_worm_name('fire'),
+                name = Biters.wave_defense_roll_worm_name({ 'fire', 'poison' }),
                 position = p,
                 force = 'enemy',
                 note = true
@@ -4923,7 +4923,7 @@ local function zone_forest_1(x, y, data, void_or_lab, adjusted_zones)
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] =
             {
-                name = Biters.wave_defense_roll_worm_name('fire'),
+                name = Biters.wave_defense_roll_worm_name({ 'fire', 'poison' }),
                 position = p,
                 force = 'enemy',
                 note = true
@@ -4952,12 +4952,12 @@ local function zone_1(x, y, data, _, adjusted_zones)
 
     local void_or_lab = 'void-tile'
 
-    local small_caves = Public.get_noise('small_caves', p, seed + 34883)
-    local noise_cave_ponds = Public.get_noise('cave_rivers_2', p, seed + 28939)
-    local smol_areas = Public.get_noise('smol_areas', p, seed + 3992)
-    local no_rocks_2 = Public.get_noise('no_rocks_2', p, seed + 1922)
-    local cave_rivers = Public.get_noise('cave_rivers', p, seed + 31922)
-    local no_rocks = Public.get_noise('no_rocks_3', p, seed + 22314)
+    local small_caves = Public.get_noise('small_caves', p, seed + 134883)
+    local noise_cave_ponds = Public.get_noise('cave_rivers_2', p, seed + 128939)
+    local smol_areas = Public.get_noise('smol_areas', p, seed + 13992)
+    local no_rocks_2 = Public.get_noise('no_rocks_2', p, seed + 11922)
+    local cave_rivers = Public.get_noise('cave_rivers', p, seed + 131922)
+    local no_rocks = Public.get_noise('no_rocks_3', p, seed + 122314)
 
     if smol_areas < 0.055 and smol_areas > -0.025 then
         -- entities[#entities + 1] = { name = rock_raffle[random(1, size_of_rock_raffle)], position = p }
@@ -5003,7 +5003,7 @@ local function zone_1(x, y, data, _, adjusted_zones)
             }
         end
 
-        if random(1, 1024) == 1 then
+        if random(1, 512) == 1 then
             spawn_treasure(data, p, 'iron-chest')
         end
         if random(1, 64) == 1 then
@@ -5015,7 +5015,7 @@ local function zone_1(x, y, data, _, adjusted_zones)
     --Water Ponds
     if noise_cave_ponds < 0.14 and noise_cave_ponds > 0.04 then
         if noise_cave_ponds > 0.14 then
-            tiles[#tiles + 1] = { name = 'acid-refined-concrete', position = p }
+            tiles[#tiles + 1] = { name = 'blue-refined-concrete', position = p }
             if random(1, 4) == 1 then
                 markets[#markets + 1] = p
             end
