@@ -5528,7 +5528,7 @@ local function border_chunk(p, data, dec_tbl)
         elseif starting_planet == 'vulcanus' then
             tiles[#tiles + 1] = { name = start_vulcanus_tiles[index], position = pos }
         else
-            tiles[#tiles + 1] = { name = start_vulcanus_tiles[index], position = pos }
+            tiles[#tiles + 1] = { name = start_aquilo_tiles[index], position = pos }
         end
     end
 

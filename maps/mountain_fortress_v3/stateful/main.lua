@@ -71,7 +71,7 @@ Event.add(
 )
 
 Event.on_nth_tick(
-    150,
+    350,
     function ()
         local final_battle = Public.get_stateful('final_battle')
         if not final_battle then
@@ -173,7 +173,7 @@ Event.on_nth_tick(
             local random_bosses = false
             local scale = 32
 
-            if rounds_survived >= 10 then
+            if rounds_survived >= 25 then
                 if random(1, 2) == 1 then
                     random_bosses = true
                     scale = rounds_survived + 2
