@@ -1247,6 +1247,14 @@ local function update_raw()
                 collection.survive_for_timer = 0
                 refresh_frames()
 
+                local random_planet_enabled = Public.get('random_planet_enabled')
+
+                if Public.is_modded_pt2 and random_planet_enabled then
+                    local current_planet = Public.get_stateful_settings('current_planet')
+                    Public.set_stateful_settings('last_won_planet', current_planet)
+                    Public.set_stateful_settings('next_planet', Public.get_new_random_planet())
+                end
+
                 local reversed = Public.get_stateful_settings('reversed')
                 if reversed then
                     Public.set_stateful_settings('reversed', false)

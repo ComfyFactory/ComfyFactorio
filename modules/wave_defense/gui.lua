@@ -120,6 +120,9 @@ function Public.update_gui(player)
     local max_active_biters = Public.get('max_active_biters')
     local threat = Public.get('threat')
     local enable_threat_log = Public.get('enable_threat_log')
+    if max_active_biters and max_active_biters > 0 then
+        max_active_biters = math.round(max_active_biters, 0)
+    end
 
     gui.label.caption = { 'wave_defense.gui_2' }
     if not paused then
@@ -127,9 +130,10 @@ function Public.update_gui(player)
         if wave_number == 0 then
             gui.label.caption = { 'wave_defense.gui_1' }
             gui.wave_number.caption = floor((next_wave - game.tick) / 60) + 1 .. 's'
+        else
+            gui.label.tooltip = 'Next pause will occur in: ' .. floor((Public.get('next_pause_interval') - game.tick) / 60 / 60) + 1 .. ' minute(s)'
+            gui.wave_number.tooltip = 'Next pause will occur in: ' .. floor((Public.get('next_pause_interval') - game.tick) / 60 / 60) + 1 .. ' minute(s)'
         end
-        gui.label.tooltip = 'Next pause will occur in: ' .. floor((Public.get('next_pause_interval') - game.tick) / 60 / 60) + 1 .. ' minute(s)'
-        gui.wave_number.tooltip = 'Next pause will occur in: ' .. floor((Public.get('next_pause_interval') - game.tick) / 60 / 60) + 1 .. ' minute(s)'
         local interval = next_wave - last_wave
         local value = 0
         if interval > 0 then

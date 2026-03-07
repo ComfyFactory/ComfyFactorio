@@ -153,9 +153,9 @@ function Public.create_landing_surface()
     local area = { left_top = { x = -64, y = -32 }, right_bottom = { x = 64, y = 32 } }
     for x = area.left_top.x, area.right_bottom.x, 1 do
         for y = area.left_top.y, area.right_bottom.y, 1 do
-            tiles[#tiles + 1] = { name = 'volcanic-cracks-hot', position = { x = x, y = y } }
+            tiles[#tiles + 1] = { name = 'concrete', position = { x = x, y = y } }
             if x == area.left_top.x or x == area.right_bottom.x or y == area.left_top.y or y == area.right_bottom.y then
-                walls[#walls + 1] = { name = 'stone-wall', force = 'neutral', position = { x = x, y = y } }
+                walls[#walls + 1] = { name = 'steel-wall', force = 'neutral', position = { x = x, y = y } }
             end
         end
     end
@@ -225,7 +225,7 @@ Event.add(defines.events.on_chunk_generated, function (event)
         for y = 0, 32, 1 do
             local pos = { x = left_top.x + x, y = left_top.y + y }
             if is_inside_init_zone(pos.x, pos.y) then
-                insert(tiles, { name = 'volcanic-cracks-hot', position = pos })
+                insert(tiles, { name = 'concrete', position = pos })
             else
                 insert(tiles, { name = water_tile, position = pos })
             end

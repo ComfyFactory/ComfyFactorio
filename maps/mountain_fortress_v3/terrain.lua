@@ -218,7 +218,7 @@ local aquilo_rock_raffle =
     'lithium-iceberg-big',
     'lithium-iceberg-huge',
 }
-table.add_all(aquilo_rock_raffle, rock_raffle)
+-- table.add_all(aquilo_rock_raffle, rock_raffle)
 local size_of_aquilo_rock_raffle = #aquilo_rock_raffle
 
 local gleba_rock_raffle =
@@ -2029,7 +2029,7 @@ local function zone_frostbite_2(x, y, data, void_or_lab)
     end
 end
 
-local function zone_gleba_1(x, y, data, void_or_lab, adjusted_zones)
+local function zone_gleba_1(x, y, data, _, adjusted_zones)
     local p = { x = x, y = y }
     local seed = data.seed
     local buildings = data.buildings
@@ -2068,17 +2068,6 @@ local function zone_gleba_1(x, y, data, void_or_lab, adjusted_zones)
             }
         end
         return
-    end
-
-    if noise_cave_ponds < 0.101 and noise_cave_ponds > -0.402 then
-        if small_caves > 0.52 then
-            tiles[#tiles + 1] = { name = void_or_lab, position = p }
-            return
-        end
-        if small_caves < -0.22 then
-            tiles[#tiles + 1] = { name = void_or_lab, position = p }
-            return
-        end
     end
 
     if noise_cave_ponds > 0.670 then
@@ -2189,7 +2178,7 @@ local function zone_gleba_1(x, y, data, void_or_lab, adjusted_zones)
     end
 end
 
-local function zone_gleba_2(x, y, data, void_or_lab, adjusted_zones)
+local function zone_gleba_2(x, y, data, _, adjusted_zones)
     local p = { x = x, y = y }
     local seed = data.seed
     local buildings = data.buildings
@@ -2229,17 +2218,6 @@ local function zone_gleba_2(x, y, data, void_or_lab, adjusted_zones)
             }
         end
         return
-    end
-
-    if noise_cave_ponds < 0.101 and noise_cave_ponds > -0.402 then
-        if small_caves > 0.52 then
-            tiles[#tiles + 1] = { name = void_or_lab, position = p }
-            return
-        end
-        if small_caves < -0.22 then
-            tiles[#tiles + 1] = { name = void_or_lab, position = p }
-            return
-        end
     end
 
     if noise_cave_ponds > 0.670 then
@@ -4966,12 +4944,14 @@ local function zone_1(x, y, data, _, adjusted_zones)
             Public.spawn_random_buildings(buildings, p, zone_settings.zone_depth)
         end
         if random(1, 128) == 1 then
-            entities[#entities + 1] =
-            {
-                name = 'small-worm-turret',
-                position = p,
-                force = 'enemy'
-            }
+            if adjusted_zones.starting_planet ~= 'nauvis' then
+                entities[#entities + 1] =
+                {
+                    name = 'small-worm-turret',
+                    position = p,
+                    force = 'enemy'
+                }
+            end
         end
         return
     end
@@ -4995,12 +4975,14 @@ local function zone_1(x, y, data, _, adjusted_zones)
             entities[#entities + 1] = { name = 'crude-oil', position = p, amount = (get_oil_amount(p) * 5) }
         end
         if random(1, 96) == 1 then
-            entities[#entities + 1] =
-            {
-                name = 'small-worm-turret',
-                position = p,
-                force = 'enemy'
-            }
+            if adjusted_zones.starting_planet ~= 'nauvis' then
+                entities[#entities + 1] =
+                {
+                    name = 'small-worm-turret',
+                    position = p,
+                    force = 'enemy'
+                }
+            end
         end
 
         if random(1, 512) == 1 then
@@ -5191,7 +5173,20 @@ local function fortress_callback(x, y, data)
     end
 end
 
-
+local function nauvis_callback(x, y, data)
+    local p = { x = x, y = y }
+    local seed = data.seed + 10000
+    local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed + seed)
+    if noise_cave_ponds > 0.65 then
+        if noise_cave_ponds > 0.80 then
+            return
+        end
+        if random(1, 32) == 1 then
+            spawn_treasure(data, p, 'iron-chest')
+            return
+        end
+    end
+end
 
 local zones =
 {
@@ -5259,7 +5254,8 @@ local planets =
     vulcanus = vulcanus_callback,
     gleba = gleba_callback,
     aquilo = aquilo_callback,
-    fortress = fortress_callback
+    fortress = fortress_callback,
+    nauvis = nauvis_callback
 }
 
 local function shuffle_terrains(adjusted_zones, new_zone)
@@ -5527,13 +5523,11 @@ local function border_chunk(p, data, dec_tbl)
             tiles[#tiles + 1] = { name = start_aquilo_tiles[index], position = pos }
         elseif starting_planet == 'vulcanus' then
             tiles[#tiles + 1] = { name = start_vulcanus_tiles[index], position = pos }
-        else
-            tiles[#tiles + 1] = { name = start_aquilo_tiles[index], position = pos }
         end
     end
 
     local corpse_raffle = Public.get('corpses_raffle')
-    if random(1, ceil(abs(pos.y) + abs(pos.y)) + 24) == 1 then
+    if random(1, ceil(abs(pos.y) + abs(pos.y)) + 164) == 1 then
         local corpse = corpse_raffle[random(1, #corpse_raffle)]
 
         entities[#entities + 1] =

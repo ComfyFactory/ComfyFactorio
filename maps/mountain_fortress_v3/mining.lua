@@ -174,6 +174,8 @@ local valid_rocks =
     ['big-volcanic-rock'] = true,
     ['huge-volcanic-rock'] = true,
     ['fulgurite'] = true,
+    ['lithium-iceberg-big'] = true,
+    ['lithium-iceberg-huge'] = true,
 }
 
 local valid_trees =
@@ -314,6 +316,11 @@ local mining_chances_ores =
 
 local mining_chances_mid_ores =
 {
+    { name = 'iron-ore', chance = 26 },
+    { name = 'copper-ore', chance = 21 },
+    { name = 'coal', chance = 17 },
+    { name = 'stone', chance = 6 },
+    { name = 'uranium-ore', chance = 2 },
 }
 
 if Public.is_modded_pt2 then
@@ -323,14 +330,14 @@ if Public.is_modded_pt2 then
         { name = 'copper-ore', chance = 21 },
         { name = 'coal', chance = 17 },
         { name = 'stone', chance = 6 },
-        { name = 'uranium-ore', chance = 2 },
+        { name = 'uranium-ore', chance = 4 },
         { name = 'spoilage', chance = 5 },
         { name = 'tungsten-ore', chance = 4 },
         { name = 'holmium-ore', chance = 4 },
-        { name = 'calcite', chance = 4 },
-        { name = 'lithium', chance = 4 },
+        { name = 'calcite', chance = 10 },
+        { name = 'lithium', chance = 10 },
         { name = 'carbon', chance = 11 },
-        { name = 'ice', chance = 3 },
+        { name = 'ice', chance = 10 },
     }
 end
 
@@ -446,7 +453,8 @@ local function randomness(data)
     local harvest
     local harvest_amount
 
-    harvest_amount = get_amount(data)
+    harvest_amount = get_amount(data) * data.multiplier
+    harvest_amount = math.floor(harvest_amount)
 
     if valid_trees[entity.name] then
         harvest = valid_trees[entity.name]
@@ -519,7 +527,8 @@ local function randomness_scrap(data)
     local amount_bonus = game.forces.player.mining_drill_productivity_bonus * 2
     local r1 = math.ceil(scrap_yield_amounts[harvest] * (0.3 + (amount_bonus * 0.3)))
     local r2 = math.ceil(scrap_yield_amounts[harvest] * (1.7 + (amount_bonus * 1.7)))
-    local harvest_amount = math.random(r1, r2)
+    local harvest_amount = math.random(r1, r2) * data.multiplier
+    harvest_amount = math.floor(harvest_amount)
 
     if blacklisted_ores_for_quality[harvest] then
         data.quality = 'normal'
@@ -578,7 +587,8 @@ local function randomness_fulgora_ruin(data)
     local amount_bonus = game.forces.player.mining_drill_productivity_bonus * 2
     local r1 = math.ceil(fulgora_ruin_yield_amounts[harvest] * (0.3 + (amount_bonus * 0.3)))
     local r2 = math.ceil(fulgora_ruin_yield_amounts[harvest] * (1.7 + (amount_bonus * 1.7)))
-    local harvest_amount = math.random(r1, r2)
+    local harvest_amount = math.random(r1, r2) * data.multiplier
+    harvest_amount = math.floor(harvest_amount)
 
     if blacklisted_ores_for_quality[harvest] then
         data.quality = 'normal'
@@ -664,10 +674,20 @@ function Public.on_player_mined_entity(event)
             return
         end
 
+        local multiplier = 1
+
+        local current_planet = Public.get_planet()
+        if current_planet == 'fulgora' or current_planet == 'aquilo' then
+            multiplier = 1.2
+        elseif current_planet == 'nauvis' then
+            multiplier = 1.5
+        end
+
         local data =
         {
             entity = entity,
             player = player,
+            multiplier = multiplier,
             quality = event.quality or 'normal',
             mid = event.mid or false
         }

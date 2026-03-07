@@ -461,6 +461,12 @@ function Public.pre_init_task(current_task)
     RocksYieldOreVeins.remove_from_raffle({ 'calcite', 'tungsten-ore' })
     RocksYieldOreVeins.remove_from_mixed_ores({ 'calcite', 'tungsten-ore' })
 
+    local next_planet = Public.get_stateful_settings('next_planet')
+    if next_planet then
+        Public.set_stateful_settings('current_planet', next_planet)
+        Server.output_script_data('Setting current planet to next planet: ' .. next_planet)
+    end
+
     local current_planet = Public.get_planet()
     SpawnersContainBiters.add_surface(current_planet)
 
@@ -561,7 +567,7 @@ function Public.clear_fortress(current_task)
     end
 
     current_task.state = 'create_custom_fortress_surface'
-    current_task.delay = game.tick + 100
+    current_task.delay = game.tick + 50
     current_task.message = 'Cleared fortress!'
     current_task.state_id = 4
 end
@@ -572,7 +578,7 @@ function Public.create_custom_fortress_surface(current_task)
 
     WD.set('surface_index', active_surface_index)
     current_task.message = 'Created custom fortress surface!'
-    current_task.delay = game.tick + 100
+    current_task.delay = game.tick + 50
     current_task.state = 'reset_map'
     current_task.state_id = 5
 end
@@ -608,6 +614,11 @@ function Public.reset_map(current_task)
         surface.daytime = 0.45
     end
 
+    local current_planet = Public.get_planet()
+    if current_planet == 'nauvis' then
+        game.surfaces['nauvis'].clear()
+    end
+
     if surface.name == 'fulgora' then
         force.technologies['planet-discovery-fulgora'].researched = true
     elseif surface.name == 'vulcanus' then
@@ -624,7 +635,7 @@ function Public.reset_map(current_task)
             force.technologies['planet-discovery-vulcanus'].researched = true
             force.technologies['planet-discovery-fulgora'].researched = true
             force.technologies['planet-discovery-aquilo'].researched = true
-            force.recipes['lightning-rod'].enabled = true -- how else will players deal with lightning?
+            -- force.recipes['lightning-rod'].enabled = true -- how else will players deal with lightning?
         end
     end
 
@@ -658,8 +669,6 @@ function Public.reset_map(current_task)
     force.set_ammo_damage_modifier('artillery-shell', -0.95)
     force.worker_robots_battery_modifier = 4
     force.worker_robots_storage_bonus = 15
-
-
 
     -- WD.set_es_unit_limit(400) -- moved to stateful
     Event.raise(CustomEvents.events.on_game_reset, {})
@@ -730,7 +739,7 @@ function Public.reset_map(current_task)
     game.forces.player.set_friend('aggressors_frenzy', false)
 
     current_task.message = 'Reset map done!'
-    current_task.delay = game.tick + 100
+    current_task.delay = game.tick + 50
     current_task.state = 'post_init_task'
     current_task.state_id = 6
 end
@@ -791,7 +800,7 @@ function Public.announce_new_map(current_task)
     current_task.message = 'Announced new map!'
     current_task.state = 'to_fortress'
     current_task.surface_name = starting_planet
-    current_task.delay = game.tick + 100
+    current_task.delay = game.tick + 50
     current_task.state_id = 9
 end
 

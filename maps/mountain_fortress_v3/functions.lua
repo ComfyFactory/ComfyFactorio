@@ -806,7 +806,20 @@ local function fill_raffles(level)
         boss_raffle = {}
     }
 
+    local current_planet = Public.get_stateful_settings('current_planet')
+    local excluded_families = {}
+
+    if current_planet == "gleba" then
+        excluded_families.biter = true
+    end
+
+
     for family, groups in pairs(enemy_unit_types) do
+        if excluded_families[family] then
+            Server.output_script_data(family .. ' is excluded for ' .. current_planet)
+            goto skip_family
+        end
+
         if family == "boss" then
             for boss_kind, tiers in pairs(groups) do
                 for tier, range in pairs(tiers) do
@@ -852,7 +865,9 @@ local function fill_raffles(level)
                 end
             end
         end
+        ::skip_family::
     end
+
 
     return raffles
 end
@@ -2832,8 +2847,6 @@ function Public.on_player_joined_game(event)
             Public.add_player_to_permission_group(player, 'init_island', true)
         end
     end
-
-
 
     if player.online_time < 1 then
         if not players[player.index] then

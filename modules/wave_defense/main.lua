@@ -1165,6 +1165,7 @@ local function give_main_command_to_group()
     local target = Public.get('target')
     if not valid(target) then
         Event.raise(CustomEvents.events.on_primary_target_missing)
+        Server.output_script_data('give_main_command_to_group failed - target is not valid')
         return
     end
 
@@ -1177,6 +1178,8 @@ local function give_main_command_to_group()
             if group.valid then
                 if group.surface.index == target.surface.index then
                     command_to_main_target(group)
+                else
+                    Server.output_script_data('give_main_command_to_group failed - group is on a different surface than the target')
                 end
             else
                 get_active_unit_groups_count()

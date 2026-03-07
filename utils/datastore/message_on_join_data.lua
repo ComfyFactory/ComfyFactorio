@@ -3,6 +3,7 @@ local Token = require 'utils.token'
 local Server = require 'utils.server'
 local Event = require 'utils.event'
 local Commands = require 'utils.commands'
+local Supporters = require 'utils.datastore.supporters'
 
 local message_dataset = 'regulars'
 local set_data = Server.set_data
@@ -40,11 +41,17 @@ function Public.fetch(key)
     end
 end
 
-Commands.new('save-message', 'Sets your custom join message. "{name}" will be replaced with your username.')
+Commands.new('set-join-message', 'Sets your custom join message. "{name}" will be replaced with your username.')
     :require_backend()
     :add_parameter('message', false, 'string')
     :callback(
         function (player, message)
+            if not Supporters.is_supporter(player.name) and not player.admin then
+                player.print('To get access to this command, please become a supporter.')
+                player.print('You can become a supporter by donating either via ko-fi or patreon.')
+                return false
+            end
+
             if message == '' or message == 'Name' then
                 player.print('You did not specify a message.')
                 return false
@@ -58,10 +65,16 @@ Commands.new('save-message', 'Sets your custom join message. "{name}" will be re
         end
     )
 
-Commands.new('remove-message', 'Removes your custom join message.')
+Commands.new('remove-join-message', 'Removes your custom join message.')
     :require_backend()
     :callback(
         function (player)
+            if not Supporters.is_supporter(player.name) and not player.admin then
+                player.print('To get access to this command, please become a supporter.')
+                player.print('You can become a supporter by donating either via ko-fi or patreon.')
+                return false
+            end
+
             set_data(message_dataset, player.name, nil)
             player.print('Your message has been removed.')
         end

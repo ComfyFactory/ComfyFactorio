@@ -3,6 +3,7 @@ local Token = require 'utils.token'
 local Server = require 'utils.server'
 local Event = require 'utils.event'
 local Commands = require 'utils.commands'
+local Supporters = require 'utils.datastore.supporters'
 
 local tag_dataset = 'tags'
 local set_data = Server.set_data
@@ -45,11 +46,17 @@ function Public.fetch(key)
     end
 end
 
-Commands.new('save-tag', 'Sets your custom tag that is persistent.')
+Commands.new('set-player-tag', 'Sets your custom tag that is persistent.')
     :add_parameter('tag', false, 'string')
     :require_backend()
     :callback(
         function (player, tag)
+            if not Supporters.is_supporter(player.name) and not player.admin then
+                player.print('To get access to this command, please become a supporter.')
+                player.print('You can become a supporter by donating either via ko-fi or patreon.')
+                return false
+            end
+
             if alphanumeric(tag) then
                 player.print('Tag is not valid.')
                 return false
@@ -71,10 +78,16 @@ Commands.new('save-tag', 'Sets your custom tag that is persistent.')
         end
     )
 
-Commands.new('remove-tag', 'Removes your custom tag.')
+Commands.new('remove-player-tag', 'Removes your custom tag.')
     :require_backend()
     :callback(
         function (player)
+            if not Supporters.is_supporter(player.name) and not player.admin then
+                player.print('To get access to this command, please become a supporter.')
+                player.print('You can become a supporter by donating either via ko-fi or patreon.')
+                return false
+            end
+
             set_data(tag_dataset, player.name, nil)
             player.tag = ''
             player.print('Your tag has been removed.')

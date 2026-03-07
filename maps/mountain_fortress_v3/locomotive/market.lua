@@ -397,6 +397,28 @@ local function get_items(player)
             static = true
         }
     end
+    local current_planet = Public.get_stateful_settings('current_planet')
+    if current_planet == 'aquilo' then
+        main_market_items['heating-tower'] =
+        {
+            stack = 1,
+            value = 'coin',
+            price = 128,
+            tooltip = ({ 'entity-name.heating-tower' }),
+            upgrade = false,
+            static = true
+        }
+    elseif current_planet == 'fulgora' then
+        main_market_items['lightning-rod'] =
+        {
+            stack = 1,
+            value = 'coin',
+            price = 128,
+            tooltip = ({ 'entity-name.lightning-rod' }),
+            upgrade = false,
+            static = true
+        }
+    end
     main_market_items['linked-chest'] =
     {
         stack = 1,

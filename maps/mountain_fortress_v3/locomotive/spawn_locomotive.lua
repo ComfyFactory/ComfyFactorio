@@ -110,6 +110,17 @@ local set_loco_cargo =
 
             local cargo_boxes = initial_cargo_boxes()
 
+            local current_planet = Public.get_stateful_settings('current_planet')
+            if current_planet == 'aquilo' then
+                for _ = 1, 6 do
+                    cargo_boxes[#cargo_boxes + 1] = { name = 'heating-tower', count = random(3, 6) }
+                end
+            elseif current_planet == 'fulgora' then
+                for _ = 1, 6 do
+                    cargo_boxes[#cargo_boxes + 1] = { name = 'lightning-rod', count = random(3, 6) }
+                end
+            end
+
             local p = {}
 
             local rad = 16 ^ 2

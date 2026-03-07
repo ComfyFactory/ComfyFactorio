@@ -17,22 +17,12 @@ local stateful_settings =
 
 local planets =
 {
-    ['fortress'] = true,
-    ['fulgora'] = true,
-    ['aquilo'] = true,
-    ['gleba'] = true,
-    ['vulcanus'] = true,
-    ['nauvis'] = true
-}
-
-local all_planets =
-{
-    'fortress',
-    'fulgora',
-    'aquilo',
-    'gleba',
-    'vulcanus',
-    'nauvis'
+    ['fortress'] = 'fortress',
+    ['fulgora'] = 'fulgora',
+    ['aquilo'] = 'aquilo',
+    ['gleba'] = 'gleba',
+    ['vulcanus'] = 'vulcanus',
+    ['nauvis'] = 'nauvis'
 }
 
 local this =
@@ -68,7 +58,8 @@ local this =
         starting_zone = false,
         reversed = stateful_settings.reversed,
         disable_terrain = false
-    }
+    },
+    random_planet_enabled = true,
 }
 
 
@@ -85,6 +76,17 @@ Public.events =
     on_market_item_purchased = Event.generate_event_name('on_market_item_purchased'),
     on_locomotive_cargo_missing = Event.generate_event_name('on_locomotive_cargo_missing'),
 }
+
+Public.all_planets =
+{
+    'fortress',
+    'fulgora',
+    'aquilo',
+    'gleba',
+    'vulcanus',
+    'nauvis'
+}
+
 
 local init_name = 'Init'
 Public.init_name = init_name
@@ -757,8 +759,6 @@ function Public.reset_main_table()
         voting_closed = false
     }
 
-    this.random_planet_enabled = true
-
     this.is_coin_quality_enabled = false
 
     this.forced_locomotive_size = true
@@ -877,23 +877,19 @@ end
 function Public.save_stateful_settings()
     local server_name_matches = Server.check_server_name(Public.discord_name)
 
-    if this.random_planet_enabled then
-        if stateful_settings.previous_planet then
-            if planets[stateful_settings.previous_planet] then
-                stateful_settings.previous_planet = planets[stateful_settings.current_planet]
-                Server.output_script_data('Previous planet: ' .. stateful_settings.previous_planet)
-            end
-        else
-            stateful_settings.previous_planet = stateful_settings.current_planet
-            Server.output_script_data('Previous planet: ' .. stateful_settings.previous_planet)
-        end
-    end
-
     if server_name_matches then
         Server.set_data(dataset, dataset_key, stateful_settings)
     else
         Server.set_data(dataset, dataset_key_dev, stateful_settings)
     end
+
+    Server.output_script_data('Stateful settings saved')
+end
+
+function Public.get_new_random_planet()
+    local random_planet = Public.all_planets[random(1, #Public.all_planets)]
+    Server.output_script_data('Generating new random planet: ' .. random_planet)
+    return random_planet
 end
 
 local apply_settings_token =
@@ -914,17 +910,13 @@ local apply_settings_token =
                 end
             end
 
-            if Public.is_modded_pt2 and this.random_planet_enabled then
-                if not stateful_settings.previous_planet then
-                    local random_planet = all_planets[random(1, #all_planets)]
-                    Server.output_script_data('Previous planet is nil, setting current planet to random planet: ' .. random_planet)
-                    stateful_settings.current_planet = random_planet
-                end
-            end
+            Server.output_script_data('Mtn Modded Part 2: ' .. tostring(Public.is_modded_pt2))
+            Server.output_script_data('Random planet enabled: ' .. tostring(this.random_planet_enabled))
 
             if type(Public.stateful_on_server_started) == "function" then
                 Public.stateful_on_server_started()
             end
+            Server.output_script_data('Stateful settings applied')
         end
     )
 
