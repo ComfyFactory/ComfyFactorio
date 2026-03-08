@@ -816,7 +816,6 @@ local function fill_raffles(level)
 
     for family, groups in pairs(enemy_unit_types) do
         if excluded_families[family] then
-            Server.output_script_data(family .. ' is excluded for ' .. current_planet)
             goto skip_family
         end
 

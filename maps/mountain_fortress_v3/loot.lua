@@ -92,6 +92,10 @@ function Public.add_loot(surface, position, chest, collision, zone)
     local c = prototypes.entity[chest]
     local slots = c.get_inventory_size(defines.inventory.chest)
 
+    if zone <= 0 then
+        zone = 1
+    end
+
     local item_stacks = LootRaffle.roll(result, slots, blacklist, quality, zone)
     local new_position = position
 
