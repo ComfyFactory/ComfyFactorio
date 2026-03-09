@@ -11,7 +11,7 @@ local CustomEvents = require 'utils.created_events'
 local stateful_settings =
 {
     reversed = false,
-    current_planet = 'nauvis',
+    current_planet = 'fortress',
     darkness = false
 }
 
