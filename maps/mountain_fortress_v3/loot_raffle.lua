@@ -384,6 +384,7 @@ local quality_blacklist =
 }
 
 local function get_zone_loot_bias(budget, zone)
+    zone = zone and (type(zone) == 'number' and zone) or 1
     if this.zone_loot_bias[zone] then
         return this.zone_loot_bias[zone]
     end
@@ -484,6 +485,7 @@ function Public.roll_item_stack(remaining_budget, blacklist, quality, zone)
 end
 
 function Public.roll(remaining_budget, max_slots, blacklist, quality, zone)
+    zone = zone and (type(zone) == 'number' and zone) or 1
     local item_stack_set, item_stack_set_worth = {}, 0
     local zone_mult = (this.zone_loot_bias[zone] and this.zone_loot_bias[zone].value_multiplier or 1)
 

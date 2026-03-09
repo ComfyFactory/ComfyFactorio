@@ -32,7 +32,7 @@ end
 
 
 function Public.create_surface(recreate)
-    exclude_surface(game.surfaces.nauvis)
+    -- exclude_surface(game.surfaces.nauvis)
 
     local map_gen_settings =
     {

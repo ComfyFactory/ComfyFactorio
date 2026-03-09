@@ -381,6 +381,9 @@ local function hidden_treasure(player, entity)
     local magic = rpg.magicka
     local magic_requirement = Public.get('magic_requirement')
     local current_zone = RPG.get_value_from_player(player.index, 'current_zone')
+    if not current_zone or type(current_zone) ~= 'number' then
+        current_zone = 1
+    end
 
     if magic >= magic_requirement then
         local msg = rare_treasure_chest_messages[random(1, #rare_treasure_chest_messages)]

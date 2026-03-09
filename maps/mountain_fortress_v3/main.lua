@@ -619,25 +619,16 @@ function Public.reset_map(current_task)
         game.surfaces['nauvis'].clear()
     end
 
-    if surface.name == 'fulgora' then
-        force.technologies['planet-discovery-fulgora'].researched = true
-    elseif surface.name == 'vulcanus' then
-        force.technologies['planet-discovery-vulcanus'].researched = true
-    elseif surface.name == 'gleba' then
-        force.technologies['planet-discovery-gleba'].researched = true
-    elseif surface.name == 'aquilo' then
-        force.technologies['planet-discovery-aquilo'].researched = true
-    elseif surface.name == 'fortress' then
-        surface.ignore_surface_conditions = true
-        if Public.is_modded_pt2 then
-            force.technologies['planet-discovery-fortress'].researched = true
-            force.technologies['planet-discovery-gleba'].researched = true
-            force.technologies['planet-discovery-vulcanus'].researched = true
-            force.technologies['planet-discovery-fulgora'].researched = true
-            force.technologies['planet-discovery-aquilo'].researched = true
-            -- force.recipes['lightning-rod'].enabled = true -- how else will players deal with lightning?
-        end
-    end
+    current_task.starting_planet = current_planet
+
+
+    surface.ignore_surface_conditions = true
+    force.technologies['planet-discovery-fortress'].researched = true
+    force.technologies['planet-discovery-gleba'].researched = true
+    force.technologies['planet-discovery-vulcanus'].researched = true
+    force.technologies['planet-discovery-fulgora'].researched = true
+    force.technologies['planet-discovery-aquilo'].researched = true
+    -- force.recipes['lightning-rod'].enabled = true -- how else will players deal with lightning?
 
     -- surface.brightness_visual_weights = { 0.7, 0.7, 0.7 }
 

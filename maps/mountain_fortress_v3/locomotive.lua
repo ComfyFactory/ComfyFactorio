@@ -871,8 +871,6 @@ local function tick()
     end
 
     if ticker % 120 == 0 then
-        -- tp_player()
-
         boost_players()
     end
 
