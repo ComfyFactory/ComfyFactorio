@@ -19,7 +19,7 @@ local planets =
 {
     ['fortress'] = 'fortress',
     ['fulgora'] = 'fulgora',
-    ['aquilo'] = 'aquilo',
+    -- ['aquilo'] = 'aquilo',
     ['gleba'] = 'gleba',
     ['vulcanus'] = 'vulcanus',
     ['nauvis'] = 'nauvis'
@@ -81,7 +81,7 @@ Public.all_planets =
 {
     'fortress',
     'fulgora',
-    'aquilo',
+    -- 'aquilo',
     'gleba',
     'vulcanus',
     'nauvis'
