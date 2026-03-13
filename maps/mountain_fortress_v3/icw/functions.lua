@@ -122,7 +122,7 @@ local function get_offset(icw, surface, offset)
     end
     local position =
     {
-        x = 2000 + offset,
+        x = 2030 + offset,
         y = 0
     }
 
