@@ -898,6 +898,8 @@ local apply_settings_token =
             local server_name_matches = Server.check_server_name(Public.discord_name)
             local settings = data and data.value or nil
 
+            Server.output_script_data('Applying settings token for stateful settings.')
+
             if not settings then
                 if server_name_matches then
                     Server.set_data(dataset, dataset_key, stateful_settings)
@@ -906,11 +908,11 @@ local apply_settings_token =
                 end
             else
                 for k, v in pairs(settings) do
-                    if v and v == 'aquilo' then
+                    if v and type(v) == 'string' and v == 'aquilo' then
                         v = 'nauvis'
+                        Server.output_script_data('Setting aquilo to nauvis')
                     end
                     stateful_settings[k] = v
-                    Server.output_script_data('Setting ' .. k .. ' to ' .. v)
                 end
             end
 
