@@ -906,7 +906,11 @@ local apply_settings_token =
                 end
             else
                 for k, v in pairs(settings) do
+                    if v and v == 'aquilo' then
+                        v = 'nauvis'
+                    end
                     stateful_settings[k] = v
+                    Server.output_script_data('Setting ' .. k .. ' to ' .. v)
                 end
             end
 
