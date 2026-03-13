@@ -930,6 +930,7 @@ Event.add(
         local start_data = Server.get_start_data()
 
         if not start_data.initialized then
+            Server.output_script_data('Server started event triggered')
             local server_name_matches = Server.check_server_name(Public.discord_name)
 
             if server_name_matches then
