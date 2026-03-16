@@ -46,7 +46,8 @@ local dataset_key_modded_previous = 'mtn_v3_modded_previous'
 local dataset_key_previous_dev = 'mtn_v3_previous_dev'
 local dataset_key_modded_previous_dev = 'mtn_v3_previous_dev'
 local send_ping_to_channel = Discord.channel_names.mtn_channel
-local lookup_table = {}
+local minerals_lookup_table = {}
+local enemies_lookup_table = {}
 local apply_buffs
 local apply_permanent_buffs
 
@@ -58,9 +59,16 @@ Global.register(
 )
 
 Global.register(
-    lookup_table,
+    minerals_lookup_table,
     function (tbl)
-        lookup_table = tbl
+        minerals_lookup_table = tbl
+    end
+)
+
+Global.register(
+    enemies_lookup_table,
+    function (tbl)
+        enemies_lookup_table = tbl
     end
 )
 
@@ -403,7 +411,20 @@ local empty_token =
 local killed_enemies_token =
     Task.register(
         function ()
-            local actual = Public.get_killed_enemies_count('biter', 'spitter')
+            local force = game.forces.player
+            local starting_planet = Public.get_planet()
+
+            if not enemies_lookup_table or not next(enemies_lookup_table) then
+                Public.create_enemies_lookup_table()
+            end
+
+            local actual = 0
+            for name, entity_count in pairs(force.get_entity_build_count_statistics(starting_planet).output_counts) do
+                if enemies_lookup_table[name] then
+                    actual = actual + entity_count
+                end
+            end
+
             local expected = this.objectives.killed_enemies
             if actual >= expected then
                 return true, { 'stateful.enemies_killed' }, { 'stateful.done', format_number(expected, true), format_number(expected, true) }, { 'stateful.generic_tooltip' }, { 'stateful.tooltip_completed' }
@@ -540,13 +561,13 @@ local minerals_farmed_token =
             local force = game.forces.player
             local starting_planet = Public.get_planet()
 
-            if not lookup_table or not next(lookup_table) then
-                Public.create_lookup_table()
+            if not minerals_lookup_table or not next(minerals_lookup_table) then
+                Public.create_minerals_lookup_table()
             end
 
             local count = 0
             for name, entity_count in pairs(force.get_entity_build_count_statistics(starting_planet).output_counts) do
-                if lookup_table[name] then
+                if minerals_lookup_table[name] then
                     count = count + entity_count
                 end
             end
@@ -1962,11 +1983,20 @@ function Public.move_all_players()
     )
 end
 
-function Public.create_lookup_table()
+function Public.create_minerals_lookup_table()
     local entities = prototypes.entity
     for name, entity in pairs(entities) do
         if entity.type == 'tree' or entity.type == 'simple-entity' or entity.type == 'simple-entity-with-owner' then
-            lookup_table[entity.name] = name
+            minerals_lookup_table[entity.name] = name
+        end
+    end
+end
+
+function Public.create_enemies_lookup_table()
+    local entities = prototypes.entity
+    for name, entity in pairs(entities) do
+        if entity.type == 'unit' then
+            enemies_lookup_table[entity.name] = name
         end
     end
 end

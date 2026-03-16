@@ -963,7 +963,8 @@ Event.on_nth_tick(250, nth_250_tick)
 Event.on_nth_tick(1000, nth_1000_tick)
 Event.on_init(function ()
     Public.init_mtn()
-    Public.create_lookup_table()
+    Public.create_minerals_lookup_table()
+    Public.create_enemies_lookup_table()
 end)
 
 return Public

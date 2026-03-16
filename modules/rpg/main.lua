@@ -1006,6 +1006,9 @@ local function on_player_used_capsule_custom(event)
     end
 
     local rpg_t = Public.get_value_from_player(player.index)
+    if not rpg_t then
+        return
+    end
 
     if not rpg_t.enable_entity_spawn then
         return
