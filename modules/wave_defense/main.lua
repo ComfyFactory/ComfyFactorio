@@ -573,18 +573,23 @@ local function spawn_biter(surface, position, fs, is_boss_biter, unit_settings, 
 
     local function apply_boss_health_boost()
         if not is_boss_biter then return end
-        if biter.name:find('boss') then return end
 
         local boss_threshold = Public.get('boost_bosses_when_wave_is_above')
         local increase_boss = Public.get('increase_boss_health_per_wave')
         local modified_boss = Public.get('modified_boss_unit_health')
 
+        local boss_health = modified_boss.current_value
+
+        if biter.name:find('boss') then
+            boss_health = 10
+        end
+
         if wave_number >= boss_threshold then
             if final_battle then
                 local add_value = modified_boss.current_value * 0.5
-                BiterHealthBooster.add_boss_unit(biter, modified_boss.current_value + add_value, 0.55)
+                BiterHealthBooster.add_boss_unit(biter, boss_health + add_value, 0.55)
             elseif increase_boss then
-                BiterHealthBooster.add_boss_unit(biter, modified_boss.current_value, 0.55)
+                BiterHealthBooster.add_boss_unit(biter, boss_health, 0.55)
             else
                 BiterHealthBooster.add_boss_unit(biter, boosted_health * 5, 0.55)
             end

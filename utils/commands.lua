@@ -104,6 +104,85 @@ local function conv(v)
     return v
 end
 
+local handlers = {}
+
+handlers["player"] = function (param)
+    local p = game.get_player(param)
+    if not p then return nil, "Player was not found." end
+    return p
+end
+
+handlers["player-online"] = function (param)
+    local p = game.get_player(param)
+    if not p or not p.valid then return nil, "Player was not found." end
+    if not p.connected then return nil, "Player is not online." end
+    return p
+end
+
+handlers["player-admin"] = function (param)
+    local p = game.get_player(param)
+    if not p or not p.valid then return nil, "Player was not found." end
+    if not p.admin then return nil, "Player is not an admin." end
+    return p
+end
+
+handlers["surface"] = function (param)
+    if type(param) ~= "string" then
+        return nil, 'Inputted value is not of type string. Valid values are: "string"'
+    end
+
+    local s = game.get_surface(param)
+    if not s then return nil, "Surface was not found." end
+    return s
+end
+
+handlers["position"] = function (param)
+    local func = load("return " .. param, "command_param", "t", {})
+    local pos = func and func()
+
+    if type(pos) ~= "table" then
+        return nil, "Inputted value is not of type table. Valid values are: { x = 0, y = 0 }"
+    end
+
+    if not pos.x or not pos.y then
+        return nil, "Inputted value is not of type position. Valid values are: { x = 0, y = 0 }"
+    end
+
+    return pos
+end
+
+handlers["server"] = function (param)
+    local p = game.get_player(param)
+    if p and p.valid then
+        return nil, "Not running from server."
+    end
+    return param
+end
+
+handlers["number"] = function (param)
+    local n = tonumber(param)
+    if not n then
+        return nil, "Inputted value is not of type number. Valid values are: 1, 2, 3, etc."
+    end
+    return n
+end
+
+handlers["integer"] = handlers["number"]
+
+handlers["string"] = function (param)
+    if type(param) ~= "string" then
+        return nil, 'Inputted value is not of type string. Valid values are: "string"'
+    end
+    return param
+end
+
+handlers["boolean"] = function (param)
+    if not check_boolean[param] then
+        return nil, "Inputted value is not of type boolean. Valid values are: true, false."
+    end
+    return param == "true"
+end
+
 --- Handles errors.
 ---@param message string
 ---@param notify_sound string
@@ -133,6 +212,102 @@ local function internal_error(has_run, name, message)
         end
     end
     return not has_run
+end
+
+local function parseCommandArguments(input, command_data)
+    local tokens = {}
+    local i = 1
+    if input == nil then
+        return tokens
+    end
+    local len = #input
+
+    while i <= len do
+        local s, e = input:find("^%s+", i)
+        if s then
+            i = e + 1
+        else
+            local char = input:sub(i, i)
+
+            if char == '"' then
+                local j = i + 1
+                local buffer = {}
+
+                while j <= len do
+                    local c = input:sub(j, j)
+
+                    if c == '"' then break end
+
+                    if c == "\\" then
+                        j = j + 1
+                        c = input:sub(j, j)
+                    end
+
+                    table.insert(buffer, c)
+                    j = j + 1
+                end
+
+                table.insert(tokens, table.concat(buffer))
+                i = j + 1
+            elseif char == '{' then
+                local depth = 1
+                local j = i + 1
+                local buffer = { "{" }
+
+                while j <= len and depth > 0 do
+                    local c = input:sub(j, j)
+
+                    if c == '{' then depth = depth + 1 end
+                    if c == '}' then depth = depth - 1 end
+
+                    table.insert(buffer, c)
+                    j = j + 1
+                end
+
+                table.insert(tokens, table.concat(buffer))
+                i = j
+            else
+                local j = i
+                local buffer = {}
+
+                while j <= len and not input:sub(j, j):match("%s") do
+                    table.insert(buffer, input:sub(j, j))
+                    j = j + 1
+                end
+
+                table.insert(tokens, table.concat(buffer))
+                i = j
+            end
+        end
+    end
+
+    local max = command_data.parameters_count
+
+    if not max then
+        return tokens
+    end
+
+    if #tokens == max then
+        return tokens
+    end
+
+    if #tokens < max then
+        return tokens
+    end
+
+    if command_data.catch_all_last then
+        local result = {}
+
+        for index = 1, max - 1 do
+            result[index] = tokens[index]
+        end
+
+        result[max] = table.concat(tokens, " ", max)
+
+        return result
+    end
+
+    return tokens
 end
 
 ---@param event EventData.on_console_command
@@ -247,75 +422,7 @@ local function execute(event)
         return
     end
 
-    -- Extract quoted arguments
-    local input_text = event.parameter or ''
-    local quoted_segments = {}
-
-    local processed_input =
-        input_text:gsub(
-            '"([^"]-)"',
-            function (segment)
-                local no_spaces_segment = segment:gsub('%s', '%%s')
-                quoted_segments[no_spaces_segment] = segment
-                return ' ' .. no_spaces_segment .. ' '
-            end
-        )
-
-    -- Extract unquoted arguments
-    local parameters = {}
-    local current_index = 0
-    local parameter_count = 0
-
-    for word in processed_input:gmatch('%S+') do
-        parameter_count = parameter_count + 1
-        local quoted_word = quoted_segments[word]
-        local formatted_word = quoted_word and ('"' .. quoted_word .. '"') or word
-
-        if parameter_count > command_data.parameters_count then
-            parameters[current_index] = parameters[current_index] .. ' ' .. formatted_word
-        else
-            current_index = current_index + 1
-            parameters[current_index] = formatted_word
-        end
-    end
-
-    if processed_input:find('%b{}') then
-        parameters = {}
-        current_index = 0
-        parameter_count = 0
-        local braces_segments = {}
-
-        local braced_input = processed_input:gsub('(%b{})', function (segment)
-            local no_spaces_segment = segment:gsub('%s', '%%s')
-            braces_segments[no_spaces_segment] = segment
-            return ' ' .. no_spaces_segment .. ' '
-        end)
-
-        for word in braced_input:gmatch('%S+') do
-            parameter_count = parameter_count + 1
-            local quoted_word = quoted_segments[word]
-            local braced_word = braces_segments[word]
-            local formatted_word = word
-
-            if quoted_word then
-                formatted_word = '"' .. quoted_word .. '"'
-            elseif braced_word then
-                formatted_word = braced_word
-            end
-
-            if parameter_count > command_data.parameters_count then
-                if current_index == 0 then current_index = 1 end
-                if parameters[current_index] then
-                    parameters[current_index] = parameters[current_index] .. ' ' .. formatted_word
-                else
-                    parameters[current_index] = formatted_word
-                end
-            else
-                current_index = current_index + 1
-                parameters[current_index] = formatted_word
-            end
-        end
-    end
+    local parameters = parseCommandArguments(event.parameter, command_data)
 
     -- Check the param count
     local parameters_count = #parameters
@@ -325,119 +432,28 @@ local function execute(event)
     end
 
     -- Parse the arguments
-    local index = 1
     local handled_parameters = {}
+
+    local index_count = 1
     for _, param_data in pairs(command_data.parameters) do
         if param_data.as_type then
-            local param = conv(parameters[index])
-            if param_data.as_type == 'player' and param ~= nil then
-                local player_name = param
-                local player_data = game.get_player(player_name) --[[@type LuaPlayer]]
-                if not player_data then
-                    return reject('Player was not found.')
-                end
-                handled_parameters[index] = player_data
-                index = index + 1
-            end
-            if param_data.as_type == 'surface' and param ~= nil then
-                local surface_name = param
-                if type(surface_name) ~= 'string' then
-                    return reject('Inputted value is not of type string. Valid values are: "string"')
-                end
-                local surface_data = game.get_surface(surface_name) --[[@type LuaSurface]]
-                if not surface_data then
-                    return reject('Surface was not found.')
-                end
-                handled_parameters[index] = surface_data
-                index = index + 1
-            end
-            if param_data.as_type == 'player-online' and param ~= nil then
-                local player_name = param
-                local player_data = game.get_player(player_name) --[[@type LuaPlayer]]
-                if not player_data or not player_data.valid then
-                    return reject('Player was not found.')
-                end
-                if not player_data.connected then
-                    return reject('Player is not online.')
-                end
-                handled_parameters[index] = player_data
-                index = index + 1
-            end
-            if param_data.as_type == 'position' and param ~= nil then
-                local func, _ = load('return ' .. param, 'command_param', 't', {})
-                local position
-                if func then
-                    position = func()
-                end
+            local handler = handlers[param_data.as_type]
 
-                if type(position) ~= 'table' then
-                    return reject('Inputted value is not of type table. Valid values are: { x = 0, y = 0 }')
-                end
-                if not position.x or not position.y then
-                    return reject('Inputted value is not of type position. Valid values are: { x = 0, y = 0 }')
-                end
-                handled_parameters[index] = position
-                index = index + 1
+            if not handler then
+                return reject("Unknown parameter type: " .. param_data.as_type)
             end
-            if param_data.as_type == 'player-admin' and param ~= nil then
-                local player_name = param
-                local player_data = game.get_player(player_name) --[[@type LuaPlayer]]
-                if not player_data or not player_data.valid then
-                    return reject('Player was not found.')
-                end
-                if not player_data.admin then
-                    return reject('Player is not an admin.')
-                end
-                handled_parameters[index] = player_data
-                index = index + 1
-            end
-            if param_data.as_type == 'server' and param ~= nil then
-                local player_name = param
-                local player_data = game.get_player(player_name) --[[@type LuaPlayer]]
-                if player_data and player_data.valid then
-                    return reject('Not running from server.')
-                end
-                handled_parameters[index] = player_data
-                index = index + 1
-            end
-            if (param_data.as_type == 'number' or param_data.as_type == 'integer') and param ~= nil then
-                local num = tonumber(param)
-                if not num then
-                    return reject('Inputted value is not of type number. Valid values are: 1, 2, 3, etc.')
-                end
-                handled_parameters[index] = num
-                index = index + 1
-            end
-            if param_data.as_type == 'string' and param ~= nil then
-                if type(param) ~= 'string' then
-                    return reject('Inputted value is not of type string. Valid values are: "string"')
-                end
 
-                handled_parameters[index] = param
-                index = index + 1
+            local param = conv(parameters[index_count])
+            local value, err = handler(param)
+
+            if err and not param_data.optional and param == nil then
+                return reject(err)
+            elseif err and param_data.optional and param ~= nil then
+                return reject(err)
             end
-            if param_data.as_type == 'boolean' and param ~= nil then
-                if not check_boolean[param] then
-                    return reject('Inputted value is not of type boolean. Valid values are: true, false.')
-                end
 
-                --[[  if command_data.command_activated and param == 'true' then
-                    return handle_error(output.command_is_active, 'utility/cannot_build')
-                end
-
-                if not command_data.command_activated and param == 'false' then
-                    return handle_error(output.command_is_inactive, 'utility/cannot_build')
-                end ]]
-
-                if param == 'true' then
-                    param = true
-                else
-                    param = false
-                end
-
-                handled_parameters[index] = param
-                index = index + 1
-            end
+            table.insert(handled_parameters, value)
+            index_count = index_count + 1
         end
     end
 

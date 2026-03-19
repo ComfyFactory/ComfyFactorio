@@ -45,16 +45,17 @@ Commands.new('wd_spawn_wave', 'Usable only for admins - spawns the current wave!
     :require_admin()
     :require_validation()
     :add_parameter('wave count', true, 'number')
+    :add_parameter('bosses', true, 'boolean')
     :callback(
-        function (player, number)
+        function (player, number, bosses)
             if number then
                 for _ = 1, number, 1 do
                     Public.set_next_wave()
                 end
-                Public.spawn_unit_group({ true }, false)
+                Public.spawn_unit_group({ true }, bosses or false)
             else
                 Public.set_next_wave()
-                Public.spawn_unit_group({ true }, false)
+                Public.spawn_unit_group({ true }, bosses or false)
             end
             player.print(module_name .. ' wave spawned!')
             return true

@@ -12,6 +12,7 @@ local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Server = require 'utils.server'
 local CustomEvents = require 'utils.created_events'
+local Commands = require 'utils.commands'
 
 local floor = math.floor
 local insert = table.insert
@@ -468,6 +469,8 @@ end
 ---@param unit userdata
 ---@param health_multiplier number
 function Public.add_unit(unit, health_multiplier)
+    if this.biter_health_boost_units[unit.unit_number] then return end
+
     if not health_multiplier then
         health_multiplier = this.biter_health_boost
     end
@@ -607,5 +610,64 @@ Event.on_init(
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.on_nth_tick(7200, check_clear_table)
 Event.add(defines.events.on_entity_died, on_entity_died)
+
+Commands.new('bhb_print_health', 'Prints the health of a unit')
+    :require_admin()
+    :callback(
+        function (player)
+            local unit = player.selected
+            if not unit or not unit.valid then
+                return
+            end
+            local health_pool = this.biter_health_boost_units[unit.unit_number]
+            if not health_pool then
+                return
+            end
+            if health_pool[1] then
+                player.print('Health: ' .. health_pool[1])
+            else
+                player.print('Health: 0')
+            end
+            if health_pool[3].max_health then
+                player.print('Max Health: ' .. health_pool[3].max_health)
+            else
+                player.print('Max Health: 0')
+            end
+            if health_pool[2] then
+                player.print('XP Modifier: ' .. health_pool[2])
+            else
+                player.print('XP Modifier: 0')
+            end
+            return true
+        end
+    )
+
+Commands.new('bhb_add_unit', 'Adds a unit to the health boost pool')
+    :require_admin()
+    :add_parameter('health_multiplier', true, 'number')
+    :callback(
+        function (player, health_multiplier)
+            local unit = player.selected
+            if not unit or not unit.valid then
+                return
+            end
+            Public.add_unit(unit, health_multiplier or 2)
+            player.print('Unit added to the health boost pool')
+        end
+    )
+
+Commands.new('bhb_add_boss_unit', 'Adds a boss unit to the health boost pool')
+    :require_admin()
+    :add_parameter('health_multiplier', true, 'number')
+    :callback(
+        function (player, health_multiplier)
+            local unit = player.selected
+            if not unit or not unit.valid then
+                return
+            end
+            Public.add_boss_unit(unit, health_multiplier or 2, 0.5)
+            player.print('Boss unit added to the health boost pool')
+        end
+    )
 
 return Public
