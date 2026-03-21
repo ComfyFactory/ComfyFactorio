@@ -419,7 +419,7 @@ local killed_enemies_token =
             end
 
             local actual = 0
-            for name, entity_count in pairs(force.get_entity_build_count_statistics(starting_planet).output_counts) do
+            for name, entity_count in pairs(force.get_kill_count_statistics(starting_planet).input_counts) do
                 if enemies_lookup_table[name] then
                     actual = actual + entity_count
                 end
