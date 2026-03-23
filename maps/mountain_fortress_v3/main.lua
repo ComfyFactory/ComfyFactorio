@@ -935,6 +935,7 @@ function Public.init_mtn()
     Explosives.set_destructible_tile('ammoniacal-ocean', 1000)
     Explosives.set_destructible_tile('ammoniacal-ocean-2', 1000)
     Explosives.set_destructible_tile('gleba-deep-lake', 1000)
+    Explosives.set_destructible_tile('oil-ocean-shallow', 1000)
 
     Explosives.set_whitelist_entity('straight-rail')
     Explosives.set_whitelist_entity('curved-rail-a')
