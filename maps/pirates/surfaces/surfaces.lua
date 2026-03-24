@@ -275,6 +275,7 @@ function Public.destination_on_arrival(destination)
 		memory.active_sea_enemies = {}
 	end
 	memory.active_sea_enemies.krakens = {}
+	memory.active_sea_enemies.kraken_count = 0
 
 	if destination.type == enum.ISLAND then
 		destination.dynamic_data.rocket_silo_energy_needed = Balance.silo_energy_needed_MJ() * 1000000
