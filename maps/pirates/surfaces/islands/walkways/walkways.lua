@@ -45,13 +45,13 @@ function Public.terrain(args)
 	if noises.height(p) < 0.05 then
 		args.tiles[#args.tiles + 1] = { name = 'water-mud', position = p }
 	elseif noises.height(p) < 0.1 then
-		args.tiles[#args.tiles + 1] = { name = 'landfill', position = p }
+		args.tiles[#args.tiles + 1] = { name = 'dirt-7', position = p }
 		if Math.random() < 1 / 50 then
 			args.decoratives[#args.decoratives + 1] = { name = 'brown-asterisk', position = p, amount = 1 }
 		end
 	else
 		if noises.walkways(p) < 0.34 then
-			args.tiles[#args.tiles + 1] = { name = 'landfill', position = p }
+			args.tiles[#args.tiles + 1] = { name = 'dirt-7', position = p }
 
 			if noises.walkways(p) <= 0.01 then
 				if Math.random(40) == 1 then

@@ -1043,8 +1043,9 @@ function Public.reset_crew_and_enemy_force(id)
 	-- crew_force.technologies['productivity-module-3'].enabled = false
 
 	-- crew_force.technologies['speed-module'].enabled = true
-	crew_force.technologies['speed-module-2'].enabled = false
-	crew_force.technologies['speed-module-3'].enabled = false
+	-- techs enabled so tech tree can progress to utility science; recipes stay disabled in disable_recipes()
+	crew_force.technologies['speed-module-2'].enabled = true
+	crew_force.technologies['speed-module-3'].enabled = true
 	-- crew_force.technologies['efficiency-module'].enabled = true
 	-- crew_force.technologies['efficiency-module-2'].enabled = false
 	-- crew_force.technologies['efficiency-module-3'].enabled = false
