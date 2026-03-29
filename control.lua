@@ -21,6 +21,7 @@ require 'utils.chatbot'
 require 'utils.common_commands'
 require 'utils.antigrief'
 require 'utils.debug.command'
+require 'utils.role.main'
 require 'modules.floaty_chat'
 require 'modules.show_inventory'
 require 'modules.inserter_drops_pickup'
@@ -41,11 +42,14 @@ end
 --!Remove the "--" in front of the line to enable.
 --!All lines with the "require" keyword are different maps.
 
+--![[OARC - Multiplayer spawn]]--
+--require 'maps.oarc.main'
+
 --![[Comfylatron has seized the Fish Train and turned it into a time machine]]--
 --require 'maps.chronosphere.main'
 
 --![[Guide a Train through rough terrain, while defending it from the biters]]--
--- require 'utils.templates.Mountain_Fortress_v3_BP.map_loader'
+--require 'utils.templates.Mountain_Fortress_v3_BP.map_loader'
 --require 'maps.mountain_fortress_v3.main'
 
 --![[Launch rockets in increasingly harder getting worlds.]]--
@@ -173,7 +177,6 @@ end
 --require 'modules.simple_tags'
 --require 'modules.turret_filler'
 ---------------------------------------------------------------
-
 
 --- this file exists only for the panel to sync and start from within the panel
 -- it does nothing if it's not synced from within the panel

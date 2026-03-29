@@ -46,7 +46,11 @@ local Public =
 
         -- poll events
         on_poll_complete = Event.generate_event_name('on_poll_complete'),
-        on_poll_created = Event.generate_event_name('on_poll_created')
+        on_poll_created = Event.generate_event_name('on_poll_created'),
+
+        -- session data events
+        on_player_trusted = Event.generate_event_name('on_player_trusted'),
+        on_player_untrusted = Event.generate_event_name('on_player_untrusted'),
     }
 }
 

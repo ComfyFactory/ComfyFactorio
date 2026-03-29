@@ -390,6 +390,28 @@ Event.add(
     end
 )
 
+Event.add(
+    CustomEvents.events.on_player_trusted,
+    function (event)
+        local player = game.get_player(event.player_index)
+        if not player or not player.valid then
+            return
+        end
+        Public.set_trusted_player(player)
+    end
+)
+
+Event.add(
+    CustomEvents.events.on_player_untrusted,
+    function (event)
+        local player = game.get_player(event.player_index)
+        if not player or not player.valid then
+            return
+        end
+        Public.set_untrusted_player(player)
+    end
+)
+
 Event.on_nth_tick(settings.nth_tick, upload_data)
 
 Server.on_data_set_changed(

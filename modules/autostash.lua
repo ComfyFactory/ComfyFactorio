@@ -798,7 +798,10 @@ local function do_whitelist()
     if not this.enabled then
         return
     end
-    Task.delay(on_init_token, {})
+    local callback = Task.get(on_init_token)
+    if callback then
+        callback({})
+    end
     local resources = prototypes.entity
     this.whitelist = {}
     for k, _ in pairs(resources) do

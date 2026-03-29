@@ -5,6 +5,7 @@ local Core = require 'utils.core'
 local Supporters = require 'utils.datastore.supporters'
 local Task = require 'utils.task_token'
 local Server = require 'utils.server'
+local Roles = require 'utils.role.main'
 
 ---@class CommandData
 ---@field name string
@@ -18,6 +19,7 @@ local Server = require 'utils.server'
 ---@field check_offline_mode boolean
 ---@field check_admin boolean
 ---@field check_supporter boolean
+---@field check_role string[]
 ---@field check_trusted boolean
 ---@field check_playtime number
 ---@field callback function
@@ -44,6 +46,7 @@ local output =
     param_is_required = 'This command requires a parameter to run.',
     command_failed = 'Command failed to run.',
     command_success = 'Command ran successfully.',
+    role_is_required = 'This command requires the player to have the %s role to run.',
     command_needs_validation =
     'This command requires validation to run. Please re-run the command if you wish to proceed.',
     command_needs_custom_validation =
@@ -386,6 +389,23 @@ local function execute(event)
         end
     end
 
+    -- Check if the player has the required role and if the command requires it
+    local check_role = command_data.check_role or false
+    if check_role then
+        local has_roles = false
+        for _, role in pairs(check_role) do
+            if Roles.allowed(player, role) then
+                has_roles = true
+                break
+            end
+        end
+
+        if not has_roles then
+            reject(string.format(output.role_is_required, table.concat(check_role, ', ')))
+            return
+        end
+    end
+
     -- Check if the player has the required playtime and if the command requires it
     local check_playtime = command_data.check_playtime or false
     if (check_playtime and not is_server) and Core.validate_player(player) then
@@ -588,6 +608,18 @@ function Public:require_trusted()
     return self
 end
 
+--- Requires the player to have a minimum role to run the command.
+---@param role_name string
+---@return MetaCommand
+function Public:require_role(role_name)
+    if not self.check_role then
+        self.check_role = {}
+    end
+
+    table.insert(self.check_role, role_name)
+    return self
+end
+
 --- Requires the player to have a minimum playtime to run the command.
 ---@param playtime integer|number
 ---@return MetaCommand
@@ -781,5 +813,62 @@ Public.new('tp', 'Teleports the player to a specific position.')
             player.teleport(position, surface)
         end
     )
+
+local function interface(callback, ...)
+    if type(callback) == 'function' then
+        local success, err = pcall(callback, ...)
+        return success, err
+    else
+        local success, err = pcall(load(callback), ...)
+        return success, err
+    end
+end
+
+Public.new('interface', 'Runs the given input from the script')
+    :require_role('interface')
+    :add_parameter('callback', false, 'string')
+    :callback(function (player, callback)
+        if not callback then
+            return
+        end
+        if not string.find(callback, '%s') and not string.find(callback, 'return') and not string.find(callback, 'return') then
+            callback = 'return ' .. callback
+        end
+        if player and not string.find(callback, 'utils.event') then
+            callback =
+                'local player, surface, force, entity = game.player, game.player.surface, game.player.force, game.player.selected;' ..
+                callback
+        end
+        if
+            string.find(callback, 'Roles') or string.find(callback, 'roles') or string.find(callback, 'Role') or
+            string.find(callback, 'role') and not string.find(callback, 'utils.event')
+        then
+            callback =
+                'local Roles = require "utils.role.main"; local Role = Roles; local roles = Roles; local role = Role; Roles.get_role(game.player);' ..
+                callback
+        end
+
+        if not string.find(callback, 'utils.event') then
+            callback = 'local Event = require "utils.event";' .. callback
+        end
+
+        if not string.find(callback, 'utils.gui') then
+            callback = 'local Gui = require "utils.gui";' .. callback
+        end
+
+        local success, err = interface(callback)
+        if not success then
+            if type(err) == 'string' then
+                local _end = string.find(err, 'stack traceback')
+                if _end then
+                    err = string.sub(err, 0, _end - 2)
+                end
+
+                err = err:gsub('..-/temp/currently%-playing..-%....', '')
+                err = '[color=red][Interface error][/color] ' .. err
+                pcall(player.print, err)
+            end
+        end
+    end)
 
 return Public

@@ -81,6 +81,28 @@ local chests =
     ['logistic-container'] = true
 }
 
+local create_ghost_token =
+    Token.register(
+        function (event)
+            local player_index = event.player_index
+            local player = game.get_player(player_index)
+            if not player or not player.valid then
+                return
+            end
+
+            local ghost = event.ghost
+            local position = event.position
+            ghost.clone({ position = position, force = player.force, surface = player.surface, create_build_effect_smoke = false })
+            ghost.destroy()
+
+            -- local force = event.force
+            -- local inner_name = event.inner_name
+            -- local last_user = event.last_user
+            -- player.surface.create_entity({ name = 'entity-ghost', position = position, force = force, inner_name = inner_name, last_user = last_user })
+        end,
+        true
+    )
+
 -- Clears the player from players_warn_when_decon tbl.
 local clear_player_decon_warnings =
     Token.register(
@@ -130,6 +152,15 @@ Config.register_scenario_module(
         admin_only = true,
         gui_rows = Config.register_token(
             function (_, frame)
+                local label = frame.add({ type = 'label', caption = 'Antigrief Settings' })
+                label.style.font = 'default-bold'
+                label.style.padding = 0
+                label.style.left_padding = 10
+                label.style.top_padding = 10
+                label.style.horizontal_align = 'left'
+                label.style.vertical_align = 'bottom'
+                label.style.font_color = Color.green
+
                 local switch_state = 'right'
                 if this.enabled then
                     switch_state = 'left'
@@ -261,6 +292,29 @@ local function on_marked_for_deconstruction(event)
     end
     if playtime < this.required_playtime and not is_trusted then
         event.entity.cancel_deconstruction(player.force.name, player.index)
+        player.print('You are not accustomed to deconstructing yet.', { r = 0.22, g = 0.99, b = 0.99 })
+        return
+    end
+end
+
+local function on_pre_ghost_deconstructed(event)
+    if not this.enabled or not event.player_index then return end
+
+    local player = game.get_player(event.player_index)
+    if not player or not player.valid then return end
+    if this.do_not_check_trusted then return end
+
+    local ghost = event.ghost
+
+    local playtime = player.online_time
+    local is_trusted = Session.get_trusted_player(player)
+    if Session.get_session_player(player) then
+        playtime = player.online_time + Session.get_session_player(player)
+    end
+    if playtime < this.required_playtime and not is_trusted then
+        -- Task.set_timeout_in_ticks(5, create_ghost_token, { player_index = player.index, position = ghost.position, force = player.force, inner_name = ghost.ghost_name, last_user = ghost.last_user and ghost.last_user.valid and ghost.last_user.name or player.name })
+        local new_ghost = ghost.clone({ position = { x = 0, y = 0 }, force = player.force, surface = 'gulag', create_build_effect_smoke = false })
+        Task.set_timeout_in_ticks(5, create_ghost_token, { player_index = player.index, ghost = new_ghost, position = ghost.position })
         player.print('You are not accustomed to deconstructing yet.', { r = 0.22, g = 0.99, b = 0.99 })
         return
     end
@@ -1591,6 +1645,7 @@ Event.add(de.on_entity_died, on_entity_died)
 Event.add(de.on_built_entity, on_built_entity)
 Event.add(de.on_gui_opened, on_gui_opened)
 Event.add(de.on_marked_for_deconstruction, on_marked_for_deconstruction)
+Event.add(de.on_pre_ghost_deconstructed, on_pre_ghost_deconstructed)
 Event.add(de.on_player_deconstructed_area, on_player_deconstructed_area)
 Event.add(de.on_marked_for_upgrade, on_marked_for_upgrade)
 Event.add(de.on_cancelled_deconstruction, on_cancelled_deconstruction)

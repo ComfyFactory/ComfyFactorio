@@ -1,34 +1,55 @@
+local Global = require 'utils.global'
 local Event = require 'utils.event'
 
-local diversity = 0.20
-local exempt_area = 200       --This is the radius of the starting area that can't be affected.
-local stone_byproduct = false --Delete patches of stone.  Stone only appears as a byproduct.
-local stone_ratio = 0.25      --If math.random() is between diversity and this, it's stone.
+local Public = {}
 
---Build a table of potential ores to pick from.  Uranium is exempt from popping up randomly.
+local insert = table.insert
+
+local this =
+{
+    diversity_quote = 1,
+    exempt_area = 200,
+    stone_byproduct = false,
+    stone_byproduct_ratio = 0.25,
+    diverse_ores = {}
+}
+
+Global.register(
+    this,
+    function (tbl)
+        this = tbl
+    end
+)
+
 local function init()
-    storage.diverse_ores = {}
-    for k, v in pairs(prototypes.entity) do
+    for _, v in pairs(prototypes.entity) do
         if v.type == 'resource' and v.resource_category == 'basic-solid' and v.mineable_properties.required_fluid == nil then
-            table.insert(storage.diverse_ores, v.name)
+            insert(this.diverse_ores, v.name)
         end
     end
 end
 
-local function scramble(event)
-    local ores = event.surface.find_entities_filtered { type = 'resource', area = event.area }
-    for k, v in pairs(ores) do
-        if math.abs(v.position.x) > exempt_area or math.abs(v.position.y) > exempt_area then
+function Public.scramble(event)
+    local surface = event.surface
+    if not surface then
+        return
+    end
+
+    local area = event.area
+
+    local ores = surface.find_entities_filtered { type = 'resource', area = area }
+    for _, v in pairs(ores) do
+        if math.abs(v.position.x) > this.exempt_area or math.abs(v.position.y) > this.exempt_area then
             if v.prototype.resource_category == 'basic-solid' then
                 local random = math.random()
-                if v.name == 'stone' and stone_byproduct then
+                if v.name == 'stone' and this.stone_byproduct then
                     v.destroy()
-                elseif random < diversity then --Replace!
-                    local refugee = storage.diverse_ores[math.random(#storage.diverse_ores)]
-                    event.surface.create_entity { name = refugee, position = v.position, amount = v.amount }
+                elseif random < this.diversity_quote then --Replace!
+                    local o = this.diverse_ores[math.random(#this.diverse_ores)]
+                    surface.create_entity { name = o, position = v.position, amount = v.amount }
                     v.destroy()
-                elseif stone_byproduct and random < stone_ratio then --Replace with stone!
-                    event.surface.create_entity { name = 'stone', position = v.position, amount = v.amount }
+                elseif this.stone_byproduct and random < this.stone_byproduct_ratio then
+                    surface.create_entity { name = 'stone', position = v.position, amount = v.amount }
                     v.destroy()
                 end
             end
@@ -36,5 +57,10 @@ local function scramble(event)
     end
 end
 
+function Public.register()
+    Event.add(defines.events.on_chunk_generated, Public.scramble)
+end
+
 Event.on_init(init)
-Event.add(defines.events.on_chunk_generated, scramble)
+
+return Public
