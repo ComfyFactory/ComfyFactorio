@@ -393,6 +393,7 @@ local nth_1000_tick = function ()
     end
     Public.set_difficulty()
     Public.is_creativity_mode_on()
+    Public.check_for_spawners_on_train()
 end
 
 function Public.move_players(current_task)
