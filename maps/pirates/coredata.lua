@@ -200,7 +200,7 @@ Public.difficulty_options = {
 	},
 	{
 		value = 2,
-		icon = 'atomic-bomb',
+		icon = 'explosive-rocket',
 		text = { 'pirates.difficulty_nightmare' },
 		associated_color = { r = 170, g = 60, b = 60 },
 	},
