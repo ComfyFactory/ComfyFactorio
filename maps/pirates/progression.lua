@@ -419,7 +419,12 @@ function Public.try_retreat_from_island(player, manual) -- Assumes the cost can 
 		end
 	else
 		if player and Common.validate_player(player) then
-			Common.notify_force_error(player.force, { 'pirates.error_undock_insufficient_resources' })
+			local shortfall = Common.undock_cost_shortfall_string()
+			if shortfall ~= "" then
+				Common.notify_force_error(player.force, { 'pirates.error_undock_insufficient_resources_detail', shortfall })
+			else
+				Common.notify_force_error(player.force, { 'pirates.error_undock_insufficient_resources' })
+			end
 		end
 	end
 end
