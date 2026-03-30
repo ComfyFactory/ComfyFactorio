@@ -38,7 +38,7 @@ local function on_entity_died(event)
         return
     end
     if not this.valid_surface[entity.surface.name] then
-        if entity.force.name == 'enemy' then
+        if entity.force.name == 'enemy' and (entity.type == 'unit-spawner' or entity.type == 'unit') then
             entity.destroy()
             return
         end

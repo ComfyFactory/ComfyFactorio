@@ -49,6 +49,9 @@ local convert_chest_to_infinite_chest = Gui.uid_name()
 local item_name_frame_name = Gui.uid_name()
 local upgrade_chest_btn_name = Gui.uid_name()
 local master_chest_btn_name = Gui.uid_name()
+local info_chest_btn_name = Gui.uid_name('info_chest')
+local player_container_summary_frame_name = Gui.uid_name('player_container_summary_frame')
+local player_container_summary_close_btn_name = Gui.uid_name('player_container_summary_close_btn')
 
 local default_limit = 1000
 local module_name = '[Infinity Chests] '
@@ -78,9 +81,17 @@ local function draw_convert_chest_button(parent, entity)
         Gui.destroy(frame)
     end
 
+    local ancor_type = defines.relative_gui_type.container_gui
+
+    if entity.type == 'asteroid-collector' then
+        ancor_type = defines.relative_gui_type.asteroid_collector_gui
+    elseif entity.type == 'space-platform-hub' then
+        ancor_type = defines.relative_gui_type.space_platform_hub_gui
+    end
+
     local anchor =
     {
-        gui = defines.relative_gui_type.container_gui,
+        gui = ancor_type,
         position = defines.relative_gui_position.right
     }
     frame =
@@ -154,6 +165,127 @@ local function item_counter(container)
     end
 
     return count
+end
+
+local function aggregate_owned_container_items(player)
+    local merged_items = {}
+    for _, container in pairs(this.main_containers) do
+        local private = container and container.private
+        if private and private.owner == player.index then
+            local item_storage = container.item_storage
+            if item_storage then
+                for item_name, item_count in pairs(item_storage) do
+                    if type(item_name) == 'string' and item_name ~= 'count' and type(item_count) == 'number' and item_count > 0 then
+                        merged_items[item_name] = (merged_items[item_name] or 0) + item_count
+                    end
+                end
+            end
+
+            local content = container.content
+            if content and content.valid then
+                for _, item_data in pairs(content.get_contents()) do
+                    if item_data and item_data.name and item_data.count and item_data.count > 0 then
+                        merged_items[item_data.name] = (merged_items[item_data.name] or 0) + item_data.count
+                    end
+                end
+            end
+        end
+    end
+    return merged_items
+end
+
+local function destroy_player_container_summary_frame(player)
+    local frame = player.gui.center[player_container_summary_frame_name]
+    if frame and frame.valid then
+        Gui.destroy(frame)
+    end
+end
+
+local function draw_player_container_summary_frame(player)
+    destroy_player_container_summary_frame(player)
+    local frame =
+        player.gui.center.add
+        {
+            type = 'frame',
+            name = player_container_summary_frame_name,
+            caption = 'All items across all containers',
+            direction = 'vertical'
+        }
+
+    local header = frame.add { type = 'flow', direction = 'horizontal' }
+    header.style.horizontally_stretchable = true
+    local spacer = header.add { type = 'empty-widget' }
+    spacer.style.horizontally_stretchable = true
+    local close_button =
+        header.add
+        {
+            type = 'sprite-button',
+            name = player_container_summary_close_btn_name,
+            style = 'frame_action_button',
+            mouse_button_filter = { 'left' },
+            sprite = 'utility/close',
+            hovered_sprite = 'utility/close_fat',
+            clicked_sprite = 'utility/close_fat',
+            tooltip = 'Close',
+            tags =
+            {
+                action = 'close_main_frame_gui'
+            }
+        }
+    close_button.style.left_margin = 4
+
+    local items = aggregate_owned_container_items(player)
+    local entries = {}
+    for item_name, item_count in pairs(items) do
+        entries[#entries + 1] = { name = item_name, count = item_count }
+    end
+    table.sort(
+        entries,
+        function (a, b)
+            return a.count > b.count
+        end
+    )
+
+    if #entries == 0 then
+        frame.add { type = 'label', caption = 'No items stored in your containers.' }
+        player.opened = frame
+        return
+    end
+
+    local scroll_pane =
+        frame.add
+        {
+            type = 'scroll-pane',
+            vertical_scroll_policy = 'auto',
+            horizontal_scroll_policy = 'never'
+        }
+    scroll_pane.style.maximal_height = 420
+    scroll_pane.style.maximal_width = 620
+    scroll_pane.style.vertically_squashable = true
+    scroll_pane.style.horizontally_stretchable = true
+
+    local table_items = scroll_pane.add { type = 'table', column_count = 10 }
+    local item_prototypes = prototypes.item
+    for _, entry in pairs(entries) do
+        local item_name = entry.name
+        local item_count = entry.count
+        local item_prototype = item_prototypes[item_name]
+        if item_prototype then
+            local button =
+                table_items.add
+                {
+                    type = 'sprite-button',
+                    sprite = 'item/' .. item_name,
+                    style = 'slot_button',
+                    number = item_count,
+                    name = item_name,
+                    tooltip = { '', item_prototype.localised_name, '\nCount: ', item_count }
+                }
+            button.enabled = false
+        end
+    end
+
+    -- player.opened = frame
 end
 
 local function does_exists(unit_number)
@@ -324,7 +456,9 @@ toggle_render = function (container)
 end
 
 local function create_chest(entity, player)
-    entity.active = false
+    if entity.type == 'container' then
+        entity.active = false
+    end
     local unit_number = entity.unit_number
 
     if not does_exists(unit_number) then
@@ -924,7 +1058,7 @@ local function check_mode_on_chest(data)
     if mode == 1 then
         if data.container.limit.state and data.count > data.container.limit.number and data.container.direction.state == 'import' then
             data.container.full = true
-            data.inv.set_bar(1)
+            data.inv.set_bar()
         else
             data.container.full = false
             data.inv.set_bar()
@@ -1512,6 +1646,7 @@ local function gui_opened(event)
         btntbl.add
         {
             type = 'sprite-button',
+            name = info_chest_btn_name,
             tooltip = '[color=blue]Info![/color]\nChest ID: ' ..
                 unit_number ..
                 '\nThis chest stores unlimited quantity of items (up to ' ..
@@ -1521,10 +1656,10 @@ local function gui_opened(event)
         }
     btn.style.height = 20
     btn.style.width = 20
-    btn.enabled = false
+    btn.enabled = true
     btn.focus()
 
-    if entity.name ~= 'passive-provider-chest' then
+    if entity.name ~= 'passive-provider-chest' and entity.type == 'container' then
         local upgradebtn =
             btntbl.add
             {
@@ -1760,12 +1895,12 @@ local function gui_closed(event)
 
     if type == defines.gui_type.custom then
         local data = this.inf_gui[player.name]
-        if not data then
-            return
+        if data then
+            data.frame.destroy()
+            this.inf_gui[player.name] = nil
         end
-        data.frame.destroy()
-        this.inf_gui[player.name] = nil
     end
+    destroy_player_container_summary_frame(player)
 end
 
 local function state_changed(event)
@@ -2164,7 +2299,9 @@ local function on_entity_settings_pasted(event)
     destination_container.direction.state = source_container.direction.state
 
     destination_container.private = source_container.private
-    destination_container.mode = source_container.mode
+    if source_container.mode == 3 then
+        destination_container.mode = source_container.mode
+    end
 
     if source_container.linked_to and not destination_container.linked_to then
         goto continue
@@ -2262,6 +2399,25 @@ Event.on_nth_tick(
 )
 
 Gui.on_click(
+    info_chest_btn_name,
+    function (event)
+        local player = event.player
+        local summary_frame = player.gui.center[player_container_summary_frame_name]
+        if summary_frame and summary_frame.valid then
+            Gui.destroy(summary_frame)
+            return
+        end
+        draw_player_container_summary_frame(player)
+    end)
+
+Gui.on_click(
+    player_container_summary_close_btn_name,
+    function (event)
+        destroy_player_container_summary_frame(event.player)
+    end
+)
+
+Gui.on_click(
     convert_chest_to_infinite_chest,
     function (event)
         local player = event.player
@@ -2318,6 +2474,7 @@ Event.add(
         if panel and panel.valid then
             Gui.destroy(panel)
         end
+        destroy_player_container_summary_frame(player)
     end
 )
 

@@ -1308,23 +1308,25 @@ Gui.on_click(
 
         local offset = { x = math.floor(position.x), y = math.floor(position.y) }
         local i = 0
-        for x = -radius - 2, radius + 2 do
-            for y = -radius - 2, radius + 2 do
-                if x ^ 2 + y ^ 2 < radius ^ 2 then
-                    local check_entities =
-                        player.surface.find_entities_filtered
-                        {
-                            area = { { x + offset.x - 1, y + offset.y - 1 }, { x + offset.x, y + offset.y } }
-                        }
-                    if check_entities then
-                        for _, entity in pairs(check_entities) do
-                            if entity.name ~= 'character' then
-                                i = i + 1
+        if not player.surface.name:find('platform') then
+            for x = -radius - 2, radius + 2 do
+                for y = -radius - 2, radius + 2 do
+                    if x ^ 2 + y ^ 2 < radius ^ 2 then
+                        local check_entities =
+                            player.surface.find_entities_filtered
+                            {
+                                area = { { x + offset.x - 1, y + offset.y - 1 }, { x + offset.x, y + offset.y } }
+                            }
+                        if check_entities then
+                            for _, entity in pairs(check_entities) do
+                                if entity.name ~= 'character' then
+                                    i = i + 1
+                                end
                             end
-                        end
-                        if i >= 1 then
-                            player.print('[Warp] There are entities nearby and warp cannot be created.', Color.warning)
-                            return
+                            if i >= 1 then
+                                player.print('[Warp] There are entities nearby and warp cannot be created.', Color.warning)
+                                return
+                            end
                         end
                     end
                 end

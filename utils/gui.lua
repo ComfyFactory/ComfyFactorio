@@ -123,7 +123,7 @@ Public.Styles =
     }
 }
 
-function Public.uid_name()
+function Public.uid_name(prefix)
     if game then
         return error('This function is not allowed to be called in this context.', 2)
     end
@@ -132,7 +132,7 @@ function Public.uid_name()
     local filepath = info.source:match('^@__level__/(.+)$'):sub(1, -5)
     local line = info.currentline
 
-    local token = tostring(Task.uid())
+    local token = tostring(Task.uid(prefix))
 
     local name = concat { token, ' - ', filepath, ':line:', line }
     names[token] = name
