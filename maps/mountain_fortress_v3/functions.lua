@@ -2945,6 +2945,30 @@ function Public.is_creativity_mode_on()
     end
 end
 
+function Public.check_for_spawners_on_train()
+    local carriages = ICW.get('carriages')
+    local icw_locomotive = Public.get('icw_locomotive')
+    if not carriages or not icw_locomotive then
+        return
+    end
+
+    for _, carriage in pairs(carriages) do
+        local new_area = carriage.new_area
+        local area =
+        {
+            left_top = { x = new_area.left_top.x, y = -carriage.top_y },
+            right_bottom = { x = new_area.right_bottom.x, y = carriage.top_y }
+        }
+        local surface = icw_locomotive.surface
+        local entities = surface.find_entities_filtered({ area = area })
+        for _, entity in pairs(entities) do
+            if entity.name == 'captive-biter-spawner' or entity.type == 'unit-spawner' then
+                entity.destroy()
+            end
+        end
+    end
+end
+
 function Public.disable_creative()
     Misc.set('creative_enabled', false)
 end
