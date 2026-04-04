@@ -3,7 +3,6 @@
 
 -- local Memory = require 'maps.pirates.memory'
 -- local Common = require 'maps.pirates.common'
-local CoreData = require('maps.pirates.coredata')
 -- local Utils = require 'maps.pirates.utils_local'
 -- local Math = require 'maps.pirates.math'
 -- local Surfaces = require 'maps.pirates.surfaces.surfaces'
