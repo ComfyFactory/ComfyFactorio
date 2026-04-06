@@ -90,6 +90,9 @@ end
 
 local converted_entities =
 {
+    ['legacy-straight-rail'] = 'rail',
+    ['legacy-curved-rail'] = 'rail',
+    ['half-diagonal-rail'] = 'rail',
     ['straight-rail'] = 'rail',
     ['curved-rail'] = 'rail',
 }

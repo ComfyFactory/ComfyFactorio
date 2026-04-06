@@ -34,7 +34,7 @@ local insert = table.insert
 Config.register_scenario_module(
     {
         id = "clear_vacant_players",
-        admin_only = false,
+        admin_only = true,
         gui_rows = Config.register_token(
             function (_, frame)
                 local switch_state = 'right'
