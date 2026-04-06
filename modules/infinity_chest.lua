@@ -83,11 +83,11 @@ local function draw_convert_chest_button(parent, entity)
 
     local ancor_type = defines.relative_gui_type.container_gui
 
-    if entity.type == 'asteroid-collector' then
-        ancor_type = defines.relative_gui_type.asteroid_collector_gui
-    elseif entity.type == 'space-platform-hub' then
-        ancor_type = defines.relative_gui_type.space_platform_hub_gui
-    end
+    -- if entity.type == 'asteroid-collector' then
+    --     ancor_type = defines.relative_gui_type.asteroid_collector_gui
+    -- elseif entity.type == 'space-platform-hub' then
+    --     ancor_type = defines.relative_gui_type.space_platform_hub_gui
+    -- end
 
     local anchor =
     {
