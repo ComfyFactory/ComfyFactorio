@@ -869,8 +869,6 @@ function Public.remove_player(index)
             end
         end
     end
-
-    this.saved_containers[index] = nil
 end
 
 local function on_gui_checked_state_changed(event)
