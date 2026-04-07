@@ -2346,175 +2346,240 @@ function Public.find_void_tiles_and_replace()
     end
 end
 
-function Public.set_difficulty()
-    local final_battle = Public.get('final_battle')
-    if final_battle then
-        return
-    end
-    local pre_final_battle = Public.get('pre_final_battle')
-    if pre_final_battle then
-        return
-    end
+local difficulty_balance =
+{
+    [1] = { max_active_biters = 768, threat_gain = 1.2, early_wave_interval = 4500, late_wave_interval = 3600, player_step = 60, minimum_wave_interval = 2000 },
+    [2] = { max_active_biters = 845, threat_gain = 2, early_wave_interval = 3000, late_wave_interval = 2600, player_step = 45, minimum_wave_interval = 1800 },
+    [3] = { max_active_biters = 1000, threat_gain = 4, early_wave_interval = 2600, late_wave_interval = 2200, player_step = 30, minimum_wave_interval = 1600 }
+}
 
-    local game_lost = Public.get('game_lost')
-    if game_lost then
-        return
-    end
+local function get_difficulty_balance(index)
+    return difficulty_balance[index] or difficulty_balance[2]
+end
+
+local function should_skip_difficulty_update()
+    return Public.get('final_battle') or Public.get('pre_final_battle') or Public.get('game_lost')
+end
+
+local function get_difficulty_context()
     local Diff = Difficulty.get()
     if not Diff then
         return
     end
-    local wave_defense_table = WD.get_table()
-    local check_if_threat_below_zero = Public.get('check_if_threat_below_zero')
-    local collapse_amount = Public.get('collapse_amount')
-    local collapse_speed = Public.get('collapse_speed')
+
     local difficulty = Public.get('difficulty')
     if not difficulty then
         return
     end
-    local mining_bonus_till_wave = Public.get('mining_bonus_till_wave')
-    local mining_bonus = Public.get('mining_bonus')
-    local disable_mining_boost = Public.get('disable_mining_boost')
-    local wave_number = WD.get_wave()
-    local player_count = calc_players()
 
     if not Diff.value then
         Diff.value = 0.1
     end
 
-    if not wave_defense_table.enforce_max_active_biters then
-        if Diff.index == 1 then
-            wave_defense_table.max_active_biters = 768 + player_count * (90 * Diff.value)
-        elseif Diff.index == 2 then
-            wave_defense_table.max_active_biters = 845 + player_count * (90 * Diff.value)
-        elseif Diff.index == 3 then
-            wave_defense_table.max_active_biters = 1000 + player_count * (90 * Diff.value)
-        end
+    local wave_defense_table = WD.get_table()
+    local player_count = calc_players()
 
-        if wave_defense_table.max_active_biters >= 4000 then
-            wave_defense_table.max_active_biters = 4000
-        end
+    return
+    {
+        Diff = Diff,
+        balance = get_difficulty_balance(Diff.index),
+        difficulty = difficulty,
+        wave_defense_table = wave_defense_table,
+        check_if_threat_below_zero = Public.get('check_if_threat_below_zero'),
+        collapse_amount = Public.get('collapse_amount'),
+        collapse_speed = Public.get('collapse_speed'),
+        mining_bonus_till_wave = Public.get('mining_bonus_till_wave'),
+        mining_bonus = Public.get('mining_bonus'),
+        disable_mining_boost = Public.get('disable_mining_boost'),
+        wave_number = WD.get_wave(),
+        player_count = player_count
+    }
+end
+
+local function apply_max_active_biters(context)
+    local wave_defense_table = context.wave_defense_table
+    if wave_defense_table.enforce_max_active_biters then
+        return
     end
 
-    -- threat gain / wave
-    if Diff.index == 1 then
-        wave_defense_table.threat_gain_multiplier = 1.2 + player_count * Diff.value * 0.1
-    elseif Diff.index == 2 then
-        wave_defense_table.threat_gain_multiplier = 2 + player_count * Diff.value * 0.1
-    elseif Diff.index == 3 then
-        wave_defense_table.threat_gain_multiplier = 4 + player_count * Diff.value * 0.1
+    local max_active_biters = context.balance.max_active_biters + context.player_count * (90 * context.Diff.value)
+    if max_active_biters >= 4000 then
+        max_active_biters = 4000
     end
+    wave_defense_table.max_active_biters = max_active_biters
+end
 
-    -- local amount = player_count * 0.40 + 2 -- too high?
-    local amount = player_count * difficulty.multiply + 2
+local function apply_threat_gain_multiplier(context)
+    context.wave_defense_table.threat_gain_multiplier = context.balance.threat_gain + context.player_count * context.Diff.value * 0.1
+end
+
+local function compute_collapse_amount(context)
+    local amount = context.player_count * context.difficulty.multiply + 2
     amount = floor(amount)
-    if amount < difficulty.lowest then
-        amount = difficulty.lowest
-    elseif amount > difficulty.highest then
-        amount = difficulty.highest -- lowered from 20 to 10
+
+    if amount < context.difficulty.lowest then
+        amount = context.difficulty.lowest
+    elseif amount > context.difficulty.highest then
+        amount = context.difficulty.highest
     end
 
-    local wave = WD.get('wave_number')
+    return amount
+end
 
-    local threat_check = nil
-
-    if check_if_threat_below_zero then
-        threat_check = wave_defense_table.threat <= 0
+local function compute_wave_interval(context)
+    local wave_interval = context.balance.late_wave_interval - context.player_count * context.balance.player_step
+    if context.wave_number < 100 then
+        wave_interval = context.balance.early_wave_interval - context.player_count * context.balance.player_step
     end
 
-    if Diff.index == 1 then
-        if wave < 100 then
-            wave_defense_table.wave_interval = 4500
-        else
-            wave_defense_table.wave_interval = 3600 - player_count * 60
-        end
-
-        if wave_defense_table.wave_interval < 2000 or threat_check then
-            wave_defense_table.wave_interval = 2000
-        end
-    elseif Diff.index == 2 then
-        if wave < 100 then
-            wave_defense_table.wave_interval = 3000
-        else
-            wave_defense_table.wave_interval = 2600 - player_count * 60
-        end
-        if wave_defense_table.wave_interval < 1800 or threat_check then
-            wave_defense_table.wave_interval = 1800
-        end
-    elseif Diff.index == 3 then
-        if wave < 100 then
-            wave_defense_table.wave_interval = 3000
-        else
-            wave_defense_table.wave_interval = 1600 - player_count * 60
-        end
-        wave_defense_table.wave_interval = 1600 - player_count * 60
-        if wave_defense_table.wave_interval < 1600 or threat_check then
-            wave_defense_table.wave_interval = 1600
-        end
+    local threat_floor_applied = false
+    local threat_check = false
+    if context.check_if_threat_below_zero then
+        threat_check = context.wave_defense_table.threat <= 0
     end
 
-    if collapse_amount then
-        Collapse.set_amount(collapse_amount)
+    if wave_interval < context.balance.minimum_wave_interval then
+        wave_interval = context.balance.minimum_wave_interval
+        threat_floor_applied = true
+    end
+
+    if threat_check then
+        wave_interval = context.balance.minimum_wave_interval
+        threat_floor_applied = true
+    end
+
+    return wave_interval, threat_check, threat_floor_applied
+end
+
+local function log_wave_interval(context, wave_interval, threat_check, threat_floor_applied)
+    local debug_key =
+        table.concat(
+            {
+                tostring(context.Diff.index or 'nil'),
+                tostring(context.player_count or 'nil'),
+                tostring(wave_interval or 'nil'),
+                tostring(threat_check),
+                tostring(threat_floor_applied)
+            },
+            ':'
+        )
+
+    local previous_debug_key = Public.get('difficulty_wave_interval_debug')
+    local should_log = previous_debug_key ~= debug_key
+
+    if context.player_count < 0 then
+        should_log = true
+    end
+
+    if context.Diff.index ~= 1 and context.Diff.index ~= 2 and context.Diff.index ~= 3 then
+        should_log = true
+    end
+
+    if should_log then
+        Public.set('difficulty_wave_interval_debug', debug_key)
+        Server.output_script_data(
+            'Difficulty interval: diff='
+            .. tostring(context.Diff.index)
+            .. ', wave='
+            .. tostring(context.wave_number)
+            .. ', players='
+            .. tostring(context.player_count)
+            .. ', interval='
+            .. tostring(wave_interval)
+            .. ', threat_check='
+            .. tostring(threat_check)
+            .. ', threat_floor='
+            .. tostring(threat_floor_applied)
+        )
+    end
+end
+
+local function apply_collapse_settings(context, amount)
+    if context.collapse_amount then
+        Collapse.set_amount(context.collapse_amount)
     else
         Collapse.set_amount(amount)
     end
-    if collapse_speed then
-        Collapse.set_speed(collapse_speed)
+
+    if context.collapse_speed then
+        Collapse.set_speed(context.collapse_speed)
+        return
+    end
+
+    if context.player_count >= 1 and context.player_count <= 8 then
+        Collapse.set_speed(8)
+    elseif context.player_count > 8 and context.player_count <= 20 then
+        Collapse.set_speed(7)
+    elseif context.player_count > 20 and context.player_count <= 35 then
+        Collapse.set_speed(6)
+    elseif context.player_count > 35 then
+        Collapse.set_speed(5)
+    end
+end
+
+local function apply_mining_bonus(context)
+    if context.player_count < 1 or context.disable_mining_boost then
+        return
+    end
+
+    local force = game.forces.player
+    local previous_mining_bonus = Public.get('previous_mining_bonus') or 0
+    local mining_bonus
+
+    force.manual_mining_speed_modifier = force.manual_mining_speed_modifier - previous_mining_bonus
+    if force.manual_mining_speed_modifier < 0 then
+        force.manual_mining_speed_modifier = 0
+    end
+
+    if context.wave_number >= context.mining_bonus_till_wave then
+        Server.output_script_data('Mining bonus is disabled, as the wave number is ' .. context.wave_number .. ' and mining_bonus_till_wave is ' .. context.mining_bonus_till_wave)
+        Server.output_script_data('Force manual mining speed modifier is now: ' .. force.manual_mining_speed_modifier)
+        Public.set('disable_mining_boost', true)
+        Public.set('previous_mining_bonus', 0)
+        return
+    end
+
+    if context.player_count <= 5 then
+        mining_bonus = 3
+    elseif context.player_count <= 10 then
+        mining_bonus = 1
     else
-        if player_count >= 1 and player_count <= 8 then
-            Collapse.set_speed(8)
-        elseif player_count > 8 and player_count <= 20 then
-            Collapse.set_speed(7)
-        elseif player_count > 20 and player_count <= 35 then
-            Collapse.set_speed(6)
-        elseif player_count > 35 then
-            Collapse.set_speed(5)
-        end
+        mining_bonus = 0
     end
 
-    if player_count >= 1 and not disable_mining_boost then
-        local force = game.forces.player
-
-        if wave_number < mining_bonus_till_wave then
-            if player_count <= 5 then
-                mining_bonus = 3
-            elseif player_count <= 10 then
-                mining_bonus = 1
-            else
-                mining_bonus = 0
-            end
-        end
-
-        local previous_mining_bonus = Public.get('previous_mining_bonus') or 0
-
-        force.manual_mining_speed_modifier = force.manual_mining_speed_modifier - previous_mining_bonus
-
-        if force.manual_mining_speed_modifier < 0 then
-            force.manual_mining_speed_modifier = 0
-        end
-
-        -- If mining bonuses are still enabled (wave number check)
-        if wave_number < mining_bonus_till_wave then
-            -- Apply new bonus if changed
-            if mining_bonus ~= previous_mining_bonus then
-                Server.output_script_data('Mining bonus changed from ' .. previous_mining_bonus .. ' to ' .. mining_bonus)
-            end
-
-            force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + mining_bonus
-            Public.set('previous_mining_bonus', mining_bonus)
-            Public.set('mining_bonus', mining_bonus)
-        else
-            Server.output_script_data('Mining bonus is disabled, as the wave number is ' .. wave_number .. ' and mining_bonus_till_wave is ' .. mining_bonus_till_wave)
-            Server.output_script_data('Force manual mining speed modifier is now: ' .. force.manual_mining_speed_modifier)
-            Public.set('disable_mining_boost', true)
-            Public.set('previous_mining_bonus', 0)
-        end
-
-        -- Final clamp
-        if force.manual_mining_speed_modifier < 0 then
-            force.manual_mining_speed_modifier = 0
-        end
+    if mining_bonus ~= previous_mining_bonus then
+        Server.output_script_data('Mining bonus changed from ' .. previous_mining_bonus .. ' to ' .. mining_bonus)
     end
+
+    force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + mining_bonus
+    if force.manual_mining_speed_modifier < 0 then
+        force.manual_mining_speed_modifier = 0
+    end
+
+    Public.set('previous_mining_bonus', mining_bonus)
+    Public.set('mining_bonus', mining_bonus)
+end
+
+function Public.set_difficulty()
+    if should_skip_difficulty_update() then
+        return
+    end
+
+    local context = get_difficulty_context()
+    if not context then
+        return
+    end
+
+    apply_max_active_biters(context)
+    apply_threat_gain_multiplier(context)
+
+    local amount = compute_collapse_amount(context)
+    local wave_interval, threat_check, threat_floor_applied = compute_wave_interval(context)
+    context.wave_defense_table.wave_interval = wave_interval
+    log_wave_interval(context, wave_interval, threat_check, threat_floor_applied)
+
+    apply_collapse_settings(context, amount)
+    apply_mining_bonus(context)
 end
 
 function Public.render_direction(surface, reversed)

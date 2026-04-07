@@ -467,8 +467,11 @@ function Public.pre_init_task(current_task)
         Server.output_script_data('Setting current planet to next planet: ' .. next_planet)
     end
 
-    local current_planet = Public.get_planet()
-    SpawnersContainBiters.add_surface(current_planet)
+    for _, surface in pairs(game.surfaces) do
+        if surface and surface.valid then
+            SpawnersContainBiters.add_surface(surface.name)
+        end
+    end
 
     WD.reset_wave_defense()
     WD.alert_boss_wave(true)
