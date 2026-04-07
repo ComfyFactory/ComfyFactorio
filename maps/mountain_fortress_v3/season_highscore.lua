@@ -5,7 +5,6 @@ local Server = require 'utils.server'
 local Gui = require 'utils.gui'
 local Task = require 'utils.task_token'
 local SpamProtection = require 'utils.spam_protection'
-local CustomEvents = require 'utils.created_events'
 
 local module_name = Gui.uid_name()
 local score_dataset = 'seasons'
@@ -374,6 +373,6 @@ Gui.on_click(
 Event.add(defines.events.on_player_left_game, on_player_left_game)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_gui_click, on_gui_click)
-Event.add(CustomEvents.events.on_server_started, Public.get_season_scores)
+Event.add(ServerCommands.events.on_server_started, Public.get_season_scores)
 
 return Public

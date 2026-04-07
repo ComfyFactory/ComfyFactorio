@@ -35,11 +35,11 @@ local Alert = require 'utils.alert'
 local MT = require 'maps.oarc.table'
 local ChunkCleaner = require 'utils.chunk_removal'
 local HD = require 'modules.hidden_dimension.table'
-local Roles = require 'utils.role.main'
 local Worms = require 'modules.surrounded_by_worms'
 local SpawnEnt = require 'modules.spawn_ent.main'
 local BottomFrame = require 'utils.gui.bottom_frame'
 local Misc = require 'utils.commands.misc'
+local SessionData = require 'utils.datastore.session_data'
 
 require 'maps.oarc.evolution'
 
@@ -286,7 +286,7 @@ Event.add(
             return
         end
 
-        if not Roles.allowed(player, 'unlimited-radars') then
+        if not SessionData.allowed(player, 'unlimited-radars') then
             if entity.name == 'radar' then
                 if entity.surface.count_entities_filtered({ type = 'radar', position = position, radius = 64 }) > 1 then
                     player.surface.create_entity(

@@ -3,7 +3,6 @@ local Global = require 'utils.global'
 local Task = require 'utils.task_token'
 local Event = require 'utils.event'
 local Gui = require 'utils.gui'
-local CustomEvents = require 'utils.created_events'
 
 local this =
 {
@@ -120,7 +119,7 @@ local get_value_from_player_token =
 local delay_register_token =
     Task.register(
         function ()
-            Event.raise(CustomEvents.events.on_rpg_callback_added, { token = get_value_from_player_token })
+            Event.raise(ServerCommands.events.on_rpg_callback_added, { token = get_value_from_player_token })
         end
     )
 

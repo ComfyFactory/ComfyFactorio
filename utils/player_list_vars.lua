@@ -1,7 +1,7 @@
 local Public = {}
 local Supporters = require 'utils.datastore.supporters'
 local Gui = require 'utils.gui'
-local Roles = require 'utils.role.main'
+local SessionData = require 'utils.datastore.session_data'
 
 Public.ranks =
 {
@@ -399,7 +399,7 @@ Public.gui_data = function (data)
             end
 
             local role_tooltip = ''
-            local Role = Roles.get_role(player.name)
+            local Role = SessionData.get_role(player.name)
             if Role and Role.name then
                 role_tooltip = '\nRole: [color=' .. Role.role_color.r .. ',' .. Role.role_color.g .. ',' .. Role.role_color.b .. ']' .. Role.name .. '[/color]'
             end

@@ -163,7 +163,7 @@ function Public.create_surface(is_modded)
 end
 
 local function on_init()
-    if is_game_modded() then
+    if ServerCommands.is_game_modded() then
         this.surface_name = 'nauvis'
         this.modded = true
         Public.create_surface(true)

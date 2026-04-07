@@ -3,7 +3,6 @@ local Task = require 'utils.task'
 local Global = require 'utils.global'
 local Event = require 'utils.event'
 local Print = require('utils.print_override')
-local CustomEvents = require 'utils.created_events'
 
 -- local constants
 local floor = math.floor
@@ -186,11 +185,11 @@ end
 -- local Server = require 'utils.server'
 -- local Event = require 'utils.event'
 --
--- Event.add(CustomEvents.events.on_server_started,
+-- Event.add(ServerCommands.events.on_server_started,
 -- function()
 --      Server.try_get_all_data('regulars', callback)
 -- end)
--- Event.add(CustomEvents.events.on_changes_detected,
+-- Event.add(ServerCommands.events.on_changes_detected,
 -- function()
 --      Trigger some sort of automated restart whenever the game ends.
 -- end)
@@ -1606,7 +1605,7 @@ function Public.ban_handler(event)
 
     if cmd == 'ban' then
         Public.set_data(jailed_data_set, target, nil) -- this is added here since we don't want to clutter the jail dataset.
-        Event.raise(CustomEvents.events.on_player_banned, { player_name = target })
+        Event.raise(ServerCommands.events.on_player_banned, { player_name = target })
     end
 end
 

@@ -9,6 +9,7 @@ local this =
 }
 
 local insert = table.insert
+local has_space_age = ServerCommands.has_space_age()
 
 Global.register(
     this,
@@ -87,7 +88,7 @@ function Public.create_surface(recreate)
 
     game.surfaces[starting_planet].map_gen_settings = map_gen_settings
 
-    if has_space_age() then
+    if has_space_age then
         for planet, _ in pairs(planets) do
             if planet ~= 'nauvis' then
                 game.planets[planet].create_surface()

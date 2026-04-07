@@ -11,7 +11,6 @@ local table = require 'utils.table'
 local Gui = require 'utils.gui'
 local StatData = require 'utils.datastore.statistics'
 local Commands = require 'utils.commands'
-local CustomEvents = require 'utils.created_events'
 local UndoActions = require 'utils.undo_actions'
 
 StatData.add_normalize('jailed', 'Jailed')
@@ -661,7 +660,7 @@ local function jail(player, offender, msg, raised, mute)
         set_data(jailed_data_set, offender, { jailed = true, actor = player, reason = msg, date = date })
     end
 
-    Event.raise(CustomEvents.events.on_player_jailed, { player_index = offender.index })
+    Event.raise(ServerCommands.events.on_player_jailed, { player_index = offender.index })
 
     StatData.get_data(to_jail_player.index):increase('jailed')
 
@@ -732,7 +731,7 @@ local function jail_temporary(player, offender, msg, mute)
 
     set_data(jailed_data_set, offender.name, { jailed = true, temporary = true, actor = player.name, reason = msg, date = date })
 
-    Event.raise(CustomEvents.events.on_player_jailed, { player_index = offender.index })
+    Event.raise(ServerCommands.events.on_player_jailed, { player_index = offender.index })
 
     StatData.get_data(offender.index):increase('jailed')
 
@@ -761,7 +760,7 @@ local function free(player, offender)
 
     set_data(jailed_data_set, offender, nil)
 
-    Event.raise(CustomEvents.events.on_player_unjailed, { player_index = offender.index })
+    Event.raise(ServerCommands.events.on_player_unjailed, { player_index = offender.index })
 
     Utils.print_to(nil, message)
     local data = Server.build_embed_data()
@@ -1196,7 +1195,7 @@ Event.on_init(
 )
 
 Event.add(
-    CustomEvents.events.on_server_started,
+    ServerCommands.events.on_server_started,
     function ()
         Public.sync_revoked_permissions()
     end

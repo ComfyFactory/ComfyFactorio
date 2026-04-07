@@ -2,7 +2,7 @@ local Surface = require 'utils.surface'
 local MT = require 'maps.oarc.table'
 local Alert = require 'utils.alert'
 local HD = require 'modules.hidden_dimension.main'
-local Roles = require 'utils.role.main'
+local SessionData = require 'utils.datastore.session_data'
 
 local table_insert = table.insert
 local table_remove = table.remove
@@ -1405,11 +1405,11 @@ local function draw_town_spawn_new(player, position)
 
     local count
 
-    if Roles.allowed(player, 'bonus-ore-x4') then
+    if SessionData.allowed(player, 'bonus-ore-x4') then
         count = 4
-    elseif Roles.allowed(player, 'bonus-ore-x3') then
+    elseif SessionData.allowed(player, 'bonus-ore-x3') then
         count = 3
-    elseif Roles.allowed(player, 'bonus-ore-x2') then
+    elseif SessionData.allowed(player, 'bonus-ore-x2') then
         count = 2
     else
         count = 1
@@ -1469,7 +1469,7 @@ local function draw_town_spawn_new(player, position)
     end
     if car_pos then
         local hidden_dimension_enabled = MT.get('hidden_dimension_enabled')
-        if Roles.allowed(player, 'personal_hidden_dimension') and hidden_dimension_enabled then
+        if SessionData.allowed(player, 'personal_hidden_dimension') and hidden_dimension_enabled then
             HD.create(player, car_pos)
         end
     end

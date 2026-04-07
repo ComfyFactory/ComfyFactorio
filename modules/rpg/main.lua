@@ -10,7 +10,6 @@ local StatData = require 'utils.datastore.statistics'
 local WD = require 'modules.wave_defense.table'
 local Math2D = require 'math2d'
 local Color = require 'utils.color_presets'
-local CustomEvents = require 'utils.created_events'
 
 StatData.add_normalize('spells', 'Spells casted')
 
@@ -1121,7 +1120,7 @@ local function on_player_used_capsule_custom(event)
         rpg_t.amount = 1
     end
 
-    Event.raise(CustomEvents.events.on_spell_cast_success, { player_index = player.index, spell_name = spell.entityName, amount = rpg_t.amount })
+    Event.raise(ServerCommands.events.on_spell_cast_success, { player_index = player.index, spell_name = spell.entityName, amount = rpg_t.amount })
 
     StatData.get_data(player):increase('spells')
 
@@ -1312,7 +1311,7 @@ local function on_player_used_capsule(event)
         rpg_t.amount = 1
     end
 
-    Event.raise(CustomEvents.events.on_spell_cast_success, { player_index = player.index, spell_name = spell.entityName, amount = rpg_t.amount })
+    Event.raise(ServerCommands.events.on_spell_cast_success, { player_index = player.index, spell_name = spell.entityName, amount = rpg_t.amount })
 
     StatData.get_data(player):increase('spells')
 

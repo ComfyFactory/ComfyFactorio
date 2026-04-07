@@ -8,7 +8,6 @@ local Gui = require 'utils.gui'
 local SpamProtection = require 'utils.spam_protection'
 local Core = require 'utils.core'
 local LinkedChests = require 'maps.mountain_fortress_v3.icw.linked_chests'
-local DevServer = require 'utils.dev_server'
 
 local deep_copy = table.deep_copy
 local random = math.random
@@ -796,7 +795,7 @@ function Public.create_room_surface(icw, unit_number)
     surface.request_to_generate_chunks({ 16, 16 }, 1)
     surface.force_generate_chunk_requests()
 
-    if DevServer.is_dev_server() then
+    if ServerCommands.is_dev_server() then
         surface.ignore_surface_conditions = true
     end
 

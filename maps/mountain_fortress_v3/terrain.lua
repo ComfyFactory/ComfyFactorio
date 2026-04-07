@@ -79,7 +79,7 @@ local start_aquilo_tiles =
     'snow-patchy',
 }
 
-if not has_space_age() then
+if not ServerCommands.has_space_age() then
     start_vulcanus_tiles = vanilla_start_ground_tiles
     start_aquilo_tiles = vanilla_start_ground_tiles
     start_fulgora_tiles = vanilla_start_ground_tiles

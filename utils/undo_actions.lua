@@ -1,6 +1,5 @@
 local Server = require 'utils.server'
 local Event = require 'utils.event'
-local CustomEvents = require 'utils.created_events'
 local Global = require 'utils.global'
 local Commands = require 'utils.commands'
 local Task = require 'utils.task_token'
@@ -63,7 +62,7 @@ local function do_action_poll(player)
         game.print(module_name .. player.name .. ' has ' .. undo_count .. ' entities in the undo queue. Creating poll before restoring them.')
         local unique_id = player.name .. '_' .. 'undo_poll'
 
-        Event.raise(CustomEvents.events.on_poll_created,
+        Event.raise(ServerCommands.events.on_poll_created,
             {
                 question = player.name .. ' removed ' .. undo_count .. ' entities before getting dealt with. Proceed with restoration?',
                 answers = { 'Yes, restore the entities!', 'No, do not restore the entities!' },
@@ -188,7 +187,7 @@ local function check_undo_redo_stack(player)
     end
 end
 
-Event.add(CustomEvents.events.on_poll_complete, function (event)
+Event.add(ServerCommands.events.on_poll_complete, function (event)
     if not event.winning_answer or not event.winning_answer.text then
         return
     end
@@ -254,7 +253,7 @@ Event.add(CustomEvents.events.on_poll_complete, function (event)
     end
 end)
 
-Event.add(CustomEvents.events.on_player_banned, function (event)
+Event.add(ServerCommands.events.on_player_banned, function (event)
     if not event.player_name then
         return
     end

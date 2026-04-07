@@ -1,7 +1,6 @@
 local Event = require 'utils.event'
 local HDT = require 'modules.hidden_dimension.table'
-local Roles = require 'utils.role.main'
-local CustomEvents = require 'utils.created_events'
+local SessionData = require 'utils.datastore.session_data'
 
 local Public = {}
 
@@ -75,7 +74,7 @@ local function get_or_set_player(player, position)
             reset_counter = 1
         }
 
-        if Roles.allowed(player, 'instant_hd_unlock') then
+        if SessionData.allowed(player, 'instant_hd_unlock') then
             hidden_dimension.players[player.name].instant_unlocked_available = true
         end
     end
@@ -1004,7 +1003,7 @@ Event.add(
         get_player_by_force(
             force,
             function (hidden_dimension, player)
-                if Roles.allowed(player, 'instant_hd_unlock') then
+                if SessionData.allowed(player, 'instant_hd_unlock') then
                     return
                 end
 
@@ -1091,8 +1090,8 @@ Event.add(
     end
 )
 
-Event.add(CustomEvents.events.reset_game, reset_surface)
-Event.add(CustomEvents.events.init_surfaces, create_underground_surfaces)
+Event.add(ServerCommands.events.reset_game, reset_surface)
+Event.add(ServerCommands.events.init_surfaces, create_underground_surfaces)
 
 Public.reset_player = reset_player
 Public.create = create

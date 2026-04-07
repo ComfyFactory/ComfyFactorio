@@ -3,7 +3,7 @@ local Global = require 'utils.global'
 local Color = require 'utils.color_presets'
 local Gui = require 'utils.gui'
 local Misc = require 'utils.commands.misc'
-local Roles = require 'utils.role.main'
+local SessionData = require 'utils.datastore.session_data'
 local Token = require 'utils.token'
 local Task = require 'utils.task'
 local Commands = require 'utils.commands'
@@ -125,7 +125,7 @@ local function remove_gui(player)
 end
 
 local function create_button(player)
-    if not Roles.allowed(player, 'portable-chest') then
+    if not SessionData.allowed(player, 'portable-chest') then
         if Gui.get_button_flow(player)[main_button_name] then
             Gui.get_button_flow(player)[main_button_name].destroy()
         end
@@ -792,7 +792,7 @@ local reassign_settings_button =
     )
 
 Event.add(
-    Roles.events.on_role_change,
+    ServerCommands.events.on_role_set_static,
     function (event)
         Task.set_timeout_in_ticks(10, reassign_settings_button, { player_index = event.player_index })
     end

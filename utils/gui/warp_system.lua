@@ -2,7 +2,7 @@ local Gui = require 'utils.gui'
 local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Color = require 'utils.color_presets'
-local Roles = require 'utils.role.main'
+local SessionData = require 'utils.datastore.session_data'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Utils = require 'utils.utils'
@@ -360,7 +360,7 @@ function Public.make_tag(name, pos, shared)
 end
 
 function Public.create_warp_button(player)
-    if not Roles.allowed(player, 'show-warp') then
+    if not SessionData.allowed(player, 'show-warp') then
         if Gui.get_button_flow(player)[main_button_name] then
             Gui.get_button_flow(player)[main_button_name].destroy()
         end
@@ -393,7 +393,7 @@ local function draw_create_warp(parent, player)
     local posy = position.y
     local dist2 = 100 ^ 2
     local p = get_player_data(player)
-    if not Roles.allowed(player, 'always-warp') then
+    if not SessionData.allowed(player, 'always-warp') then
         for _, warp in pairs(this.warps) do
             local pos = warp.position
             if (posx - pos.x) ^ 2 + (posy - pos.y) ^ 2 < dist2 then
@@ -567,7 +567,7 @@ end
 
 local function draw_remove_warp(parent, player)
     parent.clear()
-    if player.admin or Roles.allowed(player, 'remove-warp') then
+    if player.admin or SessionData.allowed(player, 'remove-warp') then
         local btn =
             parent.add
             {
@@ -672,7 +672,7 @@ local function draw_player_warp_only(player, p, frame_tbl, sub_table, name, warp
 
     local bottom_warp_flow = frame_tbl.add { type = 'flow', name = name }
 
-    if bottom_warp_flow.name ~= 'Spawn' and (warp.created_by == player.index or Roles.allowed(player, 'warp-override')) then
+    if bottom_warp_flow.name ~= 'Spawn' and (warp.created_by == player.index or SessionData.allowed(player, 'warp-override')) then
         local tooltip
         if warp.created_by == player.index then
             tooltip = 'Edit warp: ' .. bottom_warp_flow.name
@@ -800,7 +800,7 @@ local function draw_main_frame(player, left, are_you_sure)
     button_flow.style.horizontal_align = 'right'
     button_flow.style.horizontally_stretchable = true
 
-    if Roles.allowed(player, 'create-warp') or player.admin then
+    if SessionData.allowed(player, 'create-warp') or player.admin then
         local button = button_flow.add { type = 'button', name = create_warp_button_name, caption = 'Create Warp' }
         Gui.apply_button_style(button)
     else
@@ -1207,7 +1207,7 @@ warp_icon_button =
 
             local position
 
-            if not Roles.allowed(player, 'always-warp') then
+            if not SessionData.allowed(player, 'always-warp') then
                 if Public.is_spam(p, player) then
                     return
                 end
@@ -1289,7 +1289,7 @@ Gui.on_click(
         local p = get_player_data(player)
 
         local position = player.position
-        if not Roles.allowed(player, 'always-warp') then
+        if not SessionData.allowed(player, 'always-warp') then
             if Public.is_spam(p, player) then
                 return
             end
@@ -1445,7 +1445,7 @@ Event.add(defines.events.on_player_died, on_player_died)
 Event.add(defines.events.on_player_created, on_player_joined_game)
 Event.add(defines.events.on_player_left_game, on_player_left_game)
 Event.add(
-    Roles.events.on_role_change,
+    ServerCommands.events.on_role_change,
     function (event)
         Task.set_timeout_in_ticks(10, reassign_warp_button, { player_index = event.player_index })
     end

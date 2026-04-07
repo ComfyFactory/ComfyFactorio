@@ -4,10 +4,6 @@ _DEBUG = false
 _DUMP_ENV = false
 _PROFILE = false
 
-require 'utils.created_events'
-require 'utils.server'
-require 'utils.event'
-require 'utils.dev_server'
 require 'utils.server_commands'
 require 'utils.gui.init'
 require 'utils.admin_handler'
@@ -21,7 +17,6 @@ require 'utils.chatbot'
 require 'utils.common_commands'
 require 'utils.antigrief'
 require 'utils.debug.command'
-require 'utils.role.main'
 require 'modules.floaty_chat'
 require 'modules.show_inventory'
 require 'modules.inserter_drops_pickup'
@@ -50,7 +45,7 @@ end
 
 --![[Guide a Train through rough terrain, while defending it from the biters]]--
 --require 'utils.templates.Mountain_Fortress_v3_BP.map_loader'
---require 'maps.mountain_fortress_v3.main'
+require 'maps.mountain_fortress_v3.main'
 
 --![[Launch rockets in increasingly harder getting worlds.]]--
 --require 'maps.journey.main'
@@ -184,5 +179,5 @@ require 'map_loader'
 
 local loaded = _G.package.loaded
 function require(path)
-    return loaded[normalize_path(path)] or error('Can only require files at runtime that have been required in the control stage.', 2)
+    return loaded[ServerCommands.normalize_path(path)] or error('Can only require files at runtime that have been required in the control stage.', 2)
 end

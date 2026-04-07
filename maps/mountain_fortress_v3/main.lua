@@ -49,7 +49,6 @@ local OfflinePlayers = require 'modules.clear_vacant_players'
 local Beam = require 'modules.render_beam'
 local Commands = require 'utils.commands'
 local RobotLimits = require 'modules.robot_limits'
-local CustomEvents = require 'utils.created_events'
 local RocksYieldOreVeins = require 'maps.mountain_fortress_v3.rocks_yield_ore_veins'
 local SpawnersContainBiters = require 'modules.spawners_contain_biters'
 
@@ -663,7 +662,7 @@ function Public.reset_map(current_task)
     force.worker_robots_storage_bonus = 15
 
     -- WD.set_es_unit_limit(400) -- moved to stateful
-    Event.raise(CustomEvents.events.on_game_reset, {})
+    Event.raise(ServerCommands.events.on_game_reset, {})
 
     Public.set_difficulty()
     Public.disable_creative()

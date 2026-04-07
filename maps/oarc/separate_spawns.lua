@@ -10,7 +10,7 @@ local CP = require 'utils.utils'
 local BottomFrame = require 'utils.gui.bottom_frame'
 local ChunkCleaner = require 'utils.chunk_removal'
 local HD = require 'modules.hidden_dimension.main'
-local Roles = require 'utils.role.main'
+local SessionData = require 'utils.datastore.session_data'
 local IC = require 'modules.infinity_chest'
 local Warp = require 'utils.gui.warp_system'
 local PortableChest = require 'modules.portable_chest'
@@ -183,7 +183,7 @@ function Public.SeparateSpawnsPlayerCreated(player_index, forced)
             player.character.active = false
         end
     end
-    if not is_game_modded() then
+    if not ServerCommands.is_game_modded() then
         player.force = main_force_name
     end
     Public.DisplayWelcomeTextGui(player)
@@ -1014,7 +1014,7 @@ function Public.SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
             Utils.CreateWaterStrip(game.get_surface(surface_name), { x = pos.x, y = pos.y + 1 }, water_data.length)
             Utils.create_market(player, { x = pos.x, y = pos.y - 2 })
             if this.hidden_dimension_enabled then
-                if Roles.allowed(player, 'personal_hidden_dimension') then
+                if SessionData.allowed(player, 'personal_hidden_dimension') then
                     HD.create(player, { x = pos.x + 8, y = pos.y - 2 })
                 end
             end
@@ -1027,7 +1027,7 @@ function Public.SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
             Utils.CreateWaterStrip(game.get_surface(surface_name), { x = pos.x, y = pos.y + 1 }, water_data.length)
             Utils.create_market(player, { x = pos.x, y = pos.y - 2 })
             if this.hidden_dimension_enabled then
-                if Roles.allowed(player, 'personal_hidden_dimension') then
+                if SessionData.allowed(player, 'personal_hidden_dimension') then
                     HD.create(player, { x = pos.x + 8, y = pos.y - 2 })
                 end
             end
@@ -1421,7 +1421,7 @@ function Public.DisplaySpawnOptions(player)
     local currently_disabled = 'This option is currently disabled since we are trying out new generations.'
 
     local circle_lay
-    if Roles.allowed(player, 'circle_square') then
+    if SessionData.allowed(player, 'circle_square') then
         circle_lay =
             layout_flow.add
             {
@@ -1445,7 +1445,7 @@ function Public.DisplaySpawnOptions(player)
     end
     local square_lay
     if MT.get('layout_square_enabled') then
-        if Roles.allowed(player, 'layout_square') then
+        if SessionData.allowed(player, 'layout_square') then
             square_lay =
                 layout_flow.add
                 {
@@ -1500,7 +1500,7 @@ function Public.DisplaySpawnOptions(player)
         state = true,
         tooltip = 'Start without modular armor.'
     }
-    if Roles.allowed(player, 'modular_armor') then
+    if SessionData.allowed(player, 'modular_armor') then
         modular_armor_Flow.add
         {
             name = 'modular_armor',

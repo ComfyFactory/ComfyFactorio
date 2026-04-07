@@ -2,7 +2,7 @@ local Color = require 'utils.color_presets'
 local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Gui = require 'utils.gui'
-local Role = require 'utils.role.main'
+local SessionData = require 'utils.datastore.session_data'
 local Commands = require 'utils.commands'
 
 local this =
@@ -60,9 +60,9 @@ local function validate_entity(entity)
 end
 
 local function get_role_turret_limit(player)
-    local role = Role.get_role(player)
-    if this.turret_limits_per_role[role.power] then
-        return this.turret_limits_per_role[role.power]
+    local role_index = SessionData.get_role_index(player)
+    if this.turret_limits_per_role[role_index] then
+        return this.turret_limits_per_role[role_index]
     end
 end
 

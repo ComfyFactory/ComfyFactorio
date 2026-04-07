@@ -4,7 +4,7 @@ local Gui = require 'utils.gui'
 local Color = require 'utils.color_presets'
 local Event = require 'utils.event'
 local Modifiers = require 'utils.player_modifiers'
-local Roles = require 'utils.role.main'
+local SessionData = require 'utils.datastore.session_data'
 local Token = require 'utils.token'
 local Task = require 'utils.task'
 
@@ -593,7 +593,7 @@ local function gui_closed(event)
 end
 
 function Public.draw_button(player)
-    if not Roles.allowed(player, 'game-settings') then
+    if not SessionData.allowed(player, 'game-settings') then
         if Gui.get_button_flow(player)[main_button_name] then
             Gui.get_button_flow(player)[main_button_name].destroy()
         end
@@ -651,7 +651,7 @@ local reassign_settings_button =
     )
 
 Event.add(
-    Roles.events.on_role_change,
+    ServerCommands.events.on_role_change,
     function (event)
         Task.set_timeout_in_ticks(10, reassign_settings_button, { player_index = event.player_index })
     end

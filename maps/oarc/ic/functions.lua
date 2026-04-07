@@ -7,8 +7,6 @@ local IC = require 'maps.oarc.ic.table'
 local Surface = require 'utils.surface'
 local Event = require 'utils.event'
 local Server = require 'utils.server'
-local CustomEvents = require 'utils.created_events'
-local DevServer = require 'utils.dev_server'
 
 local Public = {}
 local main_tile_name = 'black-refined-concrete'
@@ -1196,7 +1194,7 @@ function Public.create_room_surface(car)
     surface.request_to_generate_chunks({ 16, 16 }, 1)
     surface.force_generate_chunk_requests()
 
-    if DevServer.is_dev_server() then
+    if ServerCommands.is_dev_server() then
         surface.ignore_surface_conditions = true
     end
 
@@ -1620,7 +1618,7 @@ Public.kick_players_from_surface = kick_players_from_surface
 Public.kick_non_trusted_players_from_surface = kick_non_trusted_players_from_surface
 
 Event.add(
-    CustomEvents.events.remove_surface,
+    ServerCommands.events.remove_surface,
     function (event)
         local target = event.target
         if not target then

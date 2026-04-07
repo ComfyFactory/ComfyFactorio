@@ -2,7 +2,6 @@ local Public = require 'modules.wave_defense.table'
 local Event = require 'utils.event'
 local Global = require 'utils.global'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
-local CustomEvents = require 'utils.created_events'
 
 local this = {}
 
@@ -101,7 +100,7 @@ local function spawn_biters(data)
         BiterHealthBooster.add_unit(unit, final_health)
     end
 
-    Event.raise(CustomEvents.events.on_entity_created, { entity = unit, boss_unit = false })
+    Event.raise(ServerCommands.events.on_entity_created, { entity = unit, boss_unit = false })
 end
 
 local function spawn_worms(data)

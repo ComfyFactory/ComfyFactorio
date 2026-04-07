@@ -1,5 +1,5 @@
 local Global = require 'utils.global'
-local Roles = require 'utils.role.main'
+local SessionData = require 'utils.datastore.session_data'
 local Event = require 'utils.event'
 local Commands = require 'utils.commands'
 local Color = require 'utils.color_presets'
@@ -93,7 +93,7 @@ Event.add(
         end
 
         if this.valid_types[entity.type] then
-            if Roles.allowed(player, 'tree-decon') then
+            if SessionData.allowed(player, 'tree-decon') then
                 this.to_remove[#this.to_remove + 1] = { player_index = player.index, entity = entity }
             end
         end

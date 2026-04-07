@@ -13,7 +13,6 @@ local Utils = require 'utils.utils'
 local Core = require 'utils.core'
 local Inventory = require 'modules.show_inventory'
 local Color = require 'utils.color_presets'
-local CustomEvents = require 'utils.created_events'
 local Config = require 'utils.gui.config'
 
 local Public =
@@ -486,6 +485,6 @@ Gui.on_click(
 
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_left_game, on_player_left_game)
-Event.add(CustomEvents.events.on_rpg_callback_added, on_rpg_callback_added)
+Event.add(ServerCommands.events.on_rpg_callback_added, on_rpg_callback_added)
 
 return Public

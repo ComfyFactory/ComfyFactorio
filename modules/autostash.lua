@@ -9,7 +9,6 @@ local Event = require 'utils.event'
 local BottomFrame = require 'utils.gui.bottom_frame'
 local Gui = require 'utils.gui'
 local Task = require 'utils.task_token'
-local CustomEvents = require 'utils.created_events'
 
 local auto_stash_button_name = Gui.uid_name()
 local floor = math.floor
@@ -1036,7 +1035,7 @@ Event.on_init(do_whitelist)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 
 Event.add(
-    CustomEvents.events.bottom_quickbar_location_changed,
+    ServerCommands.events.bottom_quickbar_location_changed,
     function (event)
         if not this.enabled then
             return

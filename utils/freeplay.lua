@@ -375,8 +375,7 @@ end
 Event.on_init(
     function ()
         game.allow_tip_activation = true
-        local game_has_mods = is_game_modded()
-        if game_has_mods then
+        if ServerCommands.is_game_modded() then
             this.created_items = created_items()
             this.respawn_items = respawn_items()
             this.crashed_ship_items = ship_items()

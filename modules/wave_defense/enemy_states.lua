@@ -6,7 +6,6 @@ local Public = require 'modules.wave_defense.table'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 local Beams = require 'modules.render_beam'
 local Server = require 'utils.server'
-local CustomEvents = require 'utils.created_events'
 
 local random = math.random
 local abs = math.abs
@@ -1162,7 +1161,7 @@ function Public._esp:work(tick)
         self.last_command = tick + 500
 
         if this.target_settings.main_target and this.target_settings.main_target.valid and this.target_settings.main_target.name == 'character' then
-            Event.raise(CustomEvents.events.on_primary_target_missing)
+            Event.raise(ServerCommands.events.on_primary_target_missing)
         end
     end
 
@@ -1216,12 +1215,12 @@ end
 Event.on_init(on_init)
 Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
-Event.add(CustomEvents.events.on_wave_created, on_wave_created)
-Event.add(CustomEvents.events.on_unit_group_created, on_unit_group_created)
-Event.add(CustomEvents.events.on_entity_created, on_entity_created)
-Event.add(CustomEvents.events.on_target_aquired, on_target_aquired)
-Event.add(CustomEvents.events.on_evolution_factor_changed, on_evolution_factor_changed)
-Event.add(CustomEvents.events.on_game_reset, on_init)
+Event.add(ServerCommands.events.on_wave_created, on_wave_created)
+Event.add(ServerCommands.events.on_unit_group_created, on_unit_group_created)
+Event.add(ServerCommands.events.on_entity_created, on_entity_created)
+Event.add(ServerCommands.events.on_target_aquired, on_target_aquired)
+Event.add(ServerCommands.events.on_evolution_factor_changed, on_evolution_factor_changed)
+Event.add(ServerCommands.events.on_game_reset, on_init)
 Event.on_nth_tick(100, check_states)
 
 --- This gets values from our table

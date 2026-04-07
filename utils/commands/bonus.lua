@@ -2,7 +2,7 @@ local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Modifiers = require 'utils.player_modifiers'
 local Color = require 'utils.color_presets'
-local Roles = require 'utils.role.main'
+local SessionData = require 'utils.datastore.session_data'
 local Commands = require 'utils.commands'
 
 local Public = {}
@@ -45,12 +45,12 @@ Commands.new('bonus', 'Set your player bonus (speed, mining etc)')
     :add_parameter('bonus', false, 'integer')
     :callback(function (player, bonus)
         local limit = 50
-        local player_role = Roles.get_player_role(player)
+        local player_role = SessionData.get_role(player)
         if player_role.name == 'Casual' then
             limit = 25
         end
         if not bonus or bonus < 0 or bonus > limit then
-            if not Roles.allowed(player, 'bonus-override') then
+            if not SessionData.allowed(player, 'bonus-override') then
                 player.print('Invalid range. Valid range is between 0 - ' .. limit .. '.', Color.fail)
                 return
             end
@@ -81,7 +81,7 @@ Event.add(
     defines.events.on_pre_player_died,
     function (event)
         local player = game.players[event.player_index]
-        if Roles.allowed(player, 'bonus-respawn') then
+        if SessionData.allowed(player, 'bonus-respawn') then
             player.ticks_to_respawn = 120
         end
     end
