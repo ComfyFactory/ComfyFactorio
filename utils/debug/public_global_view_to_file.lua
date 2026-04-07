@@ -27,6 +27,8 @@ function Public.show(container, filter)
 
     local left_top_flow = left_flow.add { type = 'flow', direction = 'horizontal' }
 
+    local filter_label = left_top_flow.add { type = 'label', caption = 'Filter' }
+    filter_label.style.top_padding = 4
     local filter_text_name = left_top_flow.add { type = 'text-box', name = filter_text_box_name, tooltip = 'Filter for tokens', text = filter or '' }
 
     if filter then
