@@ -45,7 +45,7 @@ end
 
 --![[Guide a Train through rough terrain, while defending it from the biters]]--
 --require 'utils.templates.Mountain_Fortress_v3_BP.map_loader'
-require 'maps.mountain_fortress_v3.main'
+--require 'maps.mountain_fortress_v3.main'
 
 --![[Launch rockets in increasingly harder getting worlds.]]--
 --require 'maps.journey.main'
