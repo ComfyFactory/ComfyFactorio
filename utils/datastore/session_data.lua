@@ -1,4 +1,9 @@
 -- created by Gerkiz for ComfyFactorio
+---@class Role
+---@field allowed table
+---@field index number
+---@field name string
+
 local Global = require 'utils.global'
 local Core = require 'utils.core'
 local Color = require 'utils.color_presets'
@@ -8,15 +13,19 @@ local Task = require 'utils.task'
 local Server = require 'utils.server'
 local Event = require 'utils.event'
 local table = require 'utils.table'
-local CustomEvents = require 'utils.created_events'
-local DevServer = require 'utils.dev_server'
 
 local set_timeout_in_ticks = Task.set_timeout_in_ticks
 
+local default_role_index = 7
 local session_data_set = 'sessions'
+local roles_data_set = 'roles'
+local assigned_roles_data_set = 'assigned_roles'
 local session = {}
 local online_track = {}
 local trusted = {}
+---@type table<string, Role>
+local roles = {}
+local assigned_roles = {}
 local settings =
 {
     trusted_value = 24 * 60 * 3600, -- 24h
@@ -28,24 +37,26 @@ local try_get_data = Server.try_get_data
 local try_get_data_and_print = Server.try_get_data_and_print
 local concat = table.concat
 
+local Public = {}
+
 Global.register(
     {
         session = session,
         online_track = online_track,
         trusted = trusted,
-        settings = settings
+        settings = settings,
+        roles = roles,
+        assigned_roles = assigned_roles
     },
     function (tbl)
         session = tbl.session
         online_track = tbl.online_track
         trusted = tbl.trusted
         settings = tbl.settings
+        roles = tbl.roles
+        assigned_roles = tbl.assigned_roles
     end
 )
-
-local Public =
-{
-}
 
 local try_download_data_token =
     Token.register(
@@ -117,7 +128,7 @@ local try_upload_data_token =
                     trusted[player_index] = true
                 end
 
-                if not DevServer.is_dev_server() then
+                if not ServerCommands.is_dev_server() then
                     set_data(session_data_set, player_index, new_time)
                 end
 
@@ -128,7 +139,7 @@ local try_upload_data_token =
                     if not session[player_index] then
                         session[player_index] = 0
                     end
-                    if not DevServer.is_dev_server() then
+                    if not ServerCommands.is_dev_server() then
                         set_data(session_data_set, player_index, session[player_index])
                     end
                 end
@@ -182,6 +193,45 @@ local function upload_data()
         set_timeout_in_ticks(count, nth_tick_token, { name = player.name })
     end
 end
+
+
+--- Writes the data called back from the server into the roles table, clearing any previous entries
+local sync_roles_callback =
+    Token.register(
+        function (data)
+            if not data then
+                return
+            end
+            if not data.entries then
+                return
+            end
+
+            table.clear_table(roles)
+            for name, role in pairs(data.entries) do
+                ---@cast role Role
+                roles[name] = role
+            end
+        end
+    )
+
+--- Writes the data called back from the server into the assigned_roles table, clearing any previous entries
+local sync_assigned_roles_callback =
+    Token.register(
+        function (data)
+            if not data then
+                return
+            end
+            if not data.entries then
+                return
+            end
+
+            table.clear_table(assigned_roles)
+
+            for name, role in pairs(data.entries) do
+                assigned_roles[string.lower(name)] = role
+            end
+        end
+    )
 
 --- Prints out game.tick to real hour/minute
 ---@param ticks int
@@ -354,10 +404,74 @@ function Public.reset_online_track(player)
     online_track[name] = 0
 end
 
+--- Signals the server to retrieve the roles dataset
+function Public.sync_roles()
+    Server.try_get_all_data(roles_data_set, sync_roles_callback)
+end
+
+--- Signals the server to retrieve the roles dataset
+function Public.sync_assigned_roles()
+    Server.try_get_all_data(assigned_roles_data_set, sync_assigned_roles_callback)
+end
+
+--- Checks if a player has a given role
+---@param player LuaPlayer
+---@param action string
+---@return boolean
+function Public.allowed(player, action)
+    if not player or not player.valid then
+        return false
+    end
+    local role = Public.get_role(player)
+    ---@cast role Role
+    if not role then
+        return false
+    end
+
+    return role.allowed[action] or false
+end
+
+--- Returns the role of a player
+---@param player LuaPlayer
+---@return table|boolean
+function Public.get_role(player)
+    if not player then return false end
+    if type(player) == 'table' then
+        if player.index then
+            player = game.get_player(player.index)
+        end
+    elseif type(player) == 'string' then
+        player = game.get_player(player)
+    end
+
+    if not player or not player.valid then
+        return false
+    end
+
+    local role = assigned_roles[string.lower(player.name)]
+    if not role then
+        return false
+    end
+
+    return roles[role]
+end
+
+--- Returns the index of a player's role
+---@param player LuaPlayer
+---@return number|boolean
+function Public.get_role_index(player)
+    local role = Public.get_role(player)
+    if not role then
+        return default_role_index
+    end
+    ---@cast role Role
+    return role.index
+end
+
 --- It's vital that we reset the online_track so we
 --- don't calculate the values wrong.
 Event.add(
-    CustomEvents.events.on_player_removed,
+    ServerCommands.events.on_player_removed,
     function ()
         for name, _ in pairs(online_track) do
             local player = game.get_player(name)
@@ -390,6 +504,28 @@ Event.add(
     end
 )
 
+Event.add(
+    ServerCommands.events.on_player_trusted,
+    function (event)
+        local player = game.get_player(event.player_index)
+        if not player or not player.valid then
+            return
+        end
+        Public.set_trusted_player(player)
+    end
+)
+
+Event.add(
+    ServerCommands.events.on_player_untrusted,
+    function (event)
+        local player = game.get_player(event.player_index)
+        if not player or not player.valid then
+            return
+        end
+        Public.set_untrusted_player(player)
+    end
+)
+
 Event.on_nth_tick(settings.nth_tick, upload_data)
 
 Server.on_data_set_changed(
@@ -406,6 +542,32 @@ Server.on_data_set_changed(
                 end
             end
         end
+    end
+)
+
+Server.on_data_set_changed(
+    roles_data_set,
+    function (data)
+        local name = data.key
+        local role = data.value
+        roles[name] = role
+    end
+)
+
+Server.on_data_set_changed(
+    assigned_roles_data_set,
+    function (data)
+        local name = data.key
+        local role = data.value
+        assigned_roles[string.lower(name)] = role
+    end
+)
+
+Event.add(
+    ServerCommands.events.on_server_started,
+    function ()
+        Public.sync_roles()
+        Public.sync_assigned_roles()
     end
 )
 

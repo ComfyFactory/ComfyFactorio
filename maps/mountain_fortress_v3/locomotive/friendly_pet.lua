@@ -4,7 +4,7 @@ local Public = require 'maps.mountain_fortress_v3.table'
 local random = math.random
 local biters
 
-if has_space_age() then
+if ServerCommands.has_space_age() then
     biters = {
         'small-biter',
         'medium-biter',

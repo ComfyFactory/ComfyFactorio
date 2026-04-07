@@ -78,7 +78,7 @@ Commands.new('stats', 'Check what stats a user has!')
         end
     )
 
-Commands.new('rpg_give_xp', 'Give players XP!')
+Commands.new('rpg_give_xp_to_all', 'Give players XP!')
     :require_admin()
     :require_validation("Running this again will grant EVERY player XP. Are you sure you want to continue?")
     :add_parameter('amount', false, 'number')
@@ -86,6 +86,16 @@ Commands.new('rpg_give_xp', 'Give players XP!')
         function (_, amount)
             Public.give_xp(amount)
             game.print('Distributed ' .. amount .. ' of xp.')
+        end
+    )
+
+Commands.new('rpg_give_xp_to_player', 'Give XP to a player!')
+    :require_admin()
+    :add_parameter('target', false, 'player')
+    :add_parameter('amount', false, 'number')
+    :callback(
+        function (_, target, amount)
+            Public.gain_xp(target, amount)
         end
     )
 

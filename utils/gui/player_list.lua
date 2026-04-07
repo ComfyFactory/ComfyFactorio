@@ -13,14 +13,15 @@ local Utils = require 'utils.utils'
 local Core = require 'utils.core'
 local Inventory = require 'modules.show_inventory'
 local Color = require 'utils.color_presets'
-local CustomEvents = require 'utils.created_events'
+local Config = require 'utils.gui.config'
 
 local Public =
 {
     settings =
     {
-        disable_camera_for_non_admins = false
-    }
+        disable_camera_for_non_admins = false,
+    },
+
 }
 
 local module_name = Gui.uid_name()
@@ -42,7 +43,8 @@ local this =
         sorting_method = {}
     },
     rpg_enabled = false,
-    show_roles_in_list = false
+    show_roles_in_list = false,
+    player_settings = {}
 }
 
 Global.register(
@@ -51,6 +53,44 @@ Global.register(
         this = t
     end
 )
+
+Config.register_scenario_module(
+    {
+        id = "player_list",
+        admin_only = true,
+        gui_rows = Config.register_token(
+            function (player, frame)
+                local label = frame.add({ type = 'label', caption = 'Player List Settings' })
+                label.style.font = 'default-bold'
+                label.style.padding = 0
+                label.style.left_padding = 10
+                label.style.top_padding = 10
+                label.style.horizontal_align = 'left'
+                label.style.vertical_align = 'bottom'
+                label.style.font_color = Color.green
+
+                local switch_state = 'right'
+                if this.player_settings[player.index] and this.player_settings[player.index].show_all_players then
+                    switch_state = 'left'
+                end
+                Config.add_switch(frame, switch_state, 'show_all_players', 'Show All Players', 'On = Shows all players.\nOff = Shows only connected players.')
+
+                frame.add({ type = 'line' })
+            end),
+        handlers =
+        {
+            ['show_all_players'] = Config.register_token(
+                function (player, event)
+                    if event.element.switch_state == 'left' then
+                        this.player_settings[player.index] = { show_all_players = true }
+                        player.print('Now showing all players.', { color = Color.green })
+                    else
+                        this.player_settings[player.index] = { show_all_players = false }
+                        player.print('Now showing only connected players.', { color = Color.green })
+                    end
+                end),
+        }
+    })
 
 local symbol_asc = '⬆️'
 local symbol_desc = '⬇️'
@@ -138,10 +178,16 @@ local function get_rank(player)
     return ranks[m]
 end
 
-local function get_sorted_list(sort_by)
+local function get_sorted_list(sort_by, show_all_players)
     local session_table = Session.get_session_table()
     local player_list = {}
-    Core.iter_connected_players(
+
+    local func = Core.iter_connected_players
+    if show_all_players then
+        func = Core.iter_players
+    end
+
+    func(
         function (player, index)
             local player_data = player_list[index] or {}
             player_data.rank = get_rank(player)
@@ -254,7 +300,9 @@ local function player_list_show(data)
 
     player_list_panel_table = player_list_panel_table.add { type = 'table', name = 'player_list_panel_table', column_count = #gui_data }
 
-    local player_list = get_sorted_list(sort_by)
+    local show_all_players = this.player_settings[data.player.index] and this.player_settings[data.player.index].show_all_players or false
+
+    local player_list = get_sorted_list(sort_by, show_all_players)
     for i = 1, #player_list, 1 do
         local player = player_list[i]
         for _, setting in pairs(gui_data) do
@@ -437,6 +485,6 @@ Gui.on_click(
 
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_left_game, on_player_left_game)
-Event.add(CustomEvents.events.on_rpg_callback_added, on_rpg_callback_added)
+Event.add(ServerCommands.events.on_rpg_callback_added, on_rpg_callback_added)
 
 return Public

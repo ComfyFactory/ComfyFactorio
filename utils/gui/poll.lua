@@ -9,7 +9,6 @@ local SpamProtection = require 'utils.spam_protection'
 local Math = require 'utils.math.math'
 local Discord = require 'utils.discord_handler'
 local Color = require 'utils.color_presets'
-local CustomEvents = require 'utils.created_events'
 
 local Public = {}
 
@@ -983,7 +982,7 @@ local function tick()
 
             local poll_result, winning_answer = Public.poll_result(poll.id)
 
-            Event.raise(CustomEvents.events.on_poll_complete, { player_index = poll.player_index, poll_id = poll.id, custom_data = poll.custom_data, poll_result = poll_result, winning_answer = winning_answer })
+            Event.raise(ServerCommands.events.on_poll_complete, { player_index = poll.player_index, poll_id = poll.id, custom_data = poll.custom_data, poll_result = poll_result, winning_answer = winning_answer })
 
             local message = table.concat { 'Poll finished: Poll #', poll.id, ': ', poll.question }
             for _, p in pairs(game.connected_players) do
@@ -995,7 +994,7 @@ local function tick()
     end
 end
 
-Event.add(CustomEvents.events.on_poll_created, function (event)
+Event.add(ServerCommands.events.on_poll_created, function (event)
     Public.poll(event)
 end)
 

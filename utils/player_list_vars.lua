@@ -1,8 +1,10 @@
 local Public = {}
 local Supporters = require 'utils.datastore.supporters'
 local Gui = require 'utils.gui'
+local SessionData = require 'utils.datastore.session_data'
 
-Public.ranks = {
+Public.ranks =
+{
     'item/burner-mining-drill',
     'item/burner-mining-drill',
     'item/burner-mining-drill',
@@ -187,7 +189,8 @@ Public.ranks = {
     'achievement/you-are-doing-it-right'
 }
 
-Public.pokemessages = {
+Public.pokemessages =
+{
     'a stick',
     'a leaf',
     'a moldy carrot',
@@ -339,13 +342,15 @@ Public.gui_data = function (data)
     local players = game.players
 
     local gui_data = {}
-    gui_data[#gui_data + 1] = {
+    gui_data[#gui_data + 1] =
+    {
         width = 40,
         header_width = 35,
         name = '[color=0.1,0.7,0.1]' .. tostring(connected_players) .. '[/color]',
         func = function (player_list_panel_table, player, index)
             local sprite =
-                player_list_panel_table.add {
+                player_list_panel_table.add
+                {
                     type = 'sprite',
                     name = 'player_rank_sprite_' .. index,
                     sprite = player.rank
@@ -357,7 +362,8 @@ Public.gui_data = function (data)
         sorter = function (self, player_tbl)
             local flow = player_tbl.add { type = 'flow' }
             local header_label =
-                flow.add {
+                flow.add
+                {
                     type = 'label',
                     name = header_label_name,
                     caption = self.name
@@ -370,7 +376,8 @@ Public.gui_data = function (data)
             header_label.style.horizontal_align = 'right'
         end
     }
-    gui_data[#gui_data + 1] = {
+    gui_data[#gui_data + 1] =
+    {
         width = 155,
         header_width = 150,
         header = 'username',
@@ -391,18 +398,24 @@ Public.gui_data = function (data)
                 end
             end
 
+            local role_tooltip = ''
+            local Role = SessionData.get_role(player.name)
+            if Role and Role.name then
+                role_tooltip = '\nRole: [color=' .. Role.role_color.r .. ',' .. Role.role_color.g .. ',' .. Role.role_color.b .. ']' .. Role.name .. '[/color]'
+            end
+
             if player.admin then
                 trusted = '[color=red][A][/color]' .. trusted
-                tooltip = 'This player is an admin of this server.' .. tooltip
+                tooltip = 'This player is an admin of this server.' .. tooltip .. role_tooltip
             elseif jailed[player.name] then
                 trusted = '[color=orange][J][/color]' .. trusted
-                tooltip = 'This player is currently jailed.' .. minimap .. tooltip
+                tooltip = 'This player is currently jailed.' .. minimap .. tooltip .. role_tooltip
             elseif play_table[player.name] then
                 trusted = '[color=green][T][/color]' .. trusted
-                tooltip = 'This player is trusted.' .. minimap .. tooltip
+                tooltip = 'This player is trusted.' .. minimap .. tooltip .. role_tooltip
             else
                 trusted = '[color=black][U][/color]' .. trusted
-                tooltip = 'This player is not trusted.' .. minimap .. tooltip
+                tooltip = 'This player is not trusted.' .. minimap .. tooltip .. role_tooltip
             end
 
             tooltip = tooltip .. '\nRight-click to view their inventory!'
@@ -417,12 +430,14 @@ Public.gui_data = function (data)
             -- Name
 
             local name_flow =
-                player_list_panel_table.add {
+                player_list_panel_table.add
+                {
                     type = 'flow'
                 }
 
             local name_label =
-                name_flow.add {
+                name_flow.add
+                {
                     type = 'label',
                     name = locate_player_frame_name,
                     caption = caption,
@@ -432,7 +447,8 @@ Public.gui_data = function (data)
             Gui.set_data(name_label, player.index)
 
             name_label.style.font = 'default'
-            name_label.style.font_color = {
+            name_label.style.font_color =
+            {
                 r = .4 + player.color.r * 0.6,
                 g = .4 + player.color.g * 0.6,
                 b = .4 + player.color.b * 0.6
@@ -444,7 +460,8 @@ Public.gui_data = function (data)
         sorter = function (self, player_tbl)
             local flow = player_tbl.add { type = 'flow', name = 'username' }
             local header_label =
-                flow.add {
+                flow.add
+                {
                     type = 'label',
                     name = header_label_name,
                     caption = self.name,
@@ -455,14 +472,16 @@ Public.gui_data = function (data)
         end
     }
     if rpg_enabled then
-        gui_data[#gui_data + 1] = {
+        gui_data[#gui_data + 1] =
+        {
             width = 90,
             header = 'rpg',
             header_width = 90,
             name = 'RPG level',
             func = function (player_list_panel_table, player)
                 local rpg_level_label =
-                    player_list_panel_table.add {
+                    player_list_panel_table.add
+                    {
                         type = 'label',
                         caption = player.rpg_level
                     }
@@ -473,7 +492,8 @@ Public.gui_data = function (data)
             sorter = function (self, player_tbl)
                 local flow = player_tbl.add { type = 'flow', name = 'rpg' }
                 local header_label =
-                    flow.add {
+                    flow.add
+                    {
                         type = 'label',
                         name = header_label_name,
                         caption = self.name,
@@ -484,14 +504,16 @@ Public.gui_data = function (data)
             end
         }
     end
-    gui_data[#gui_data + 1] = {
+    gui_data[#gui_data + 1] =
+    {
         width = 90,
         header = 'coins',
         header_width = 90,
         name = 'Coins',
         func = function (player_list_panel_table, player)
             local coins_label =
-                player_list_panel_table.add {
+                player_list_panel_table.add
+                {
                     type = 'label',
                     caption = player.coins
                 }
@@ -502,7 +524,8 @@ Public.gui_data = function (data)
         sorter = function (self, player_tbl)
             local flow = player_tbl.add { type = 'flow', name = 'coins' }
             local header_label =
-                flow.add {
+                flow.add
+                {
                     type = 'label',
                     name = header_label_name,
                     caption = self.name,
@@ -512,7 +535,8 @@ Public.gui_data = function (data)
             header_label.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
         end
     }
-    gui_data[#gui_data + 1] = {
+    gui_data[#gui_data + 1] =
+    {
         width = 145,
         header = 'total_time',
         header_width = 150,
@@ -520,7 +544,8 @@ Public.gui_data = function (data)
         func = function (player_list_panel_table, player)
             -- Total time
             local total_label =
-                player_list_panel_table.add {
+                player_list_panel_table.add
+                {
                     type = 'label',
                     caption = player.total_played_time,
                     tooltip = 'Total time played across all Comfy servers.'
@@ -532,7 +557,8 @@ Public.gui_data = function (data)
         sorter = function (self, player_tbl)
             local flow = player_tbl.add { type = 'flow', name = 'total_time' }
             local header_label =
-                flow.add {
+                flow.add
+                {
                     type = 'label',
                     name = header_label_name,
                     caption = self.name,
@@ -542,7 +568,8 @@ Public.gui_data = function (data)
             header_label.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
         end
     }
-    gui_data[#gui_data + 1] = {
+    gui_data[#gui_data + 1] =
+    {
         width = 165,
         header_width = 175,
         header = 'current_time',
@@ -550,7 +577,8 @@ Public.gui_data = function (data)
         func = function (player_list_panel_table, player)
             -- Current time
             local current_label =
-                player_list_panel_table.add {
+                player_list_panel_table.add
+                {
                     type = 'label',
                     caption = player.played_time,
                     tooltip = 'Current time played on this server.'
@@ -562,7 +590,8 @@ Public.gui_data = function (data)
         sorter = function (self, player_tbl)
             local flow = player_tbl.add { type = 'flow', name = 'current_time' }
             local header_label =
-                flow.add {
+                flow.add
+                {
                     type = 'label',
                     name = header_label_name,
                     caption = self.name,
@@ -572,7 +601,8 @@ Public.gui_data = function (data)
             header_label.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
         end
     }
-    gui_data[#gui_data + 1] = {
+    gui_data[#gui_data + 1] =
+    {
         width = 50,
         header_width = 60,
         header = 'poke',
@@ -599,7 +629,8 @@ Public.gui_data = function (data)
         sorter = function (self, player_tbl)
             local flow = player_tbl.add { type = 'flow', name = 'poke' }
             local header_label =
-                flow.add {
+                flow.add
+                {
                     type = 'label',
                     name = header_label_name,
                     caption = self.name,
@@ -613,7 +644,8 @@ Public.gui_data = function (data)
     return gui_data
 end
 
-local comparators = {
+local comparators =
+{
     ['poke_asc'] = function (a, b)
         if not a.pokes then
             return

@@ -9,7 +9,6 @@ local Event = require 'utils.event'
 local BottomFrame = require 'utils.gui.bottom_frame'
 local Gui = require 'utils.gui'
 local Task = require 'utils.task_token'
-local CustomEvents = require 'utils.created_events'
 
 local auto_stash_button_name = Gui.uid_name()
 local floor = math.floor
@@ -798,7 +797,10 @@ local function do_whitelist()
     if not this.enabled then
         return
     end
-    Task.delay(on_init_token, {})
+    local callback = Task.get(on_init_token)
+    if callback then
+        callback({})
+    end
     local resources = prototypes.entity
     this.whitelist = {}
     for k, _ in pairs(resources) do
@@ -1033,7 +1035,7 @@ Event.on_init(do_whitelist)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 
 Event.add(
-    CustomEvents.events.bottom_quickbar_location_changed,
+    ServerCommands.events.bottom_quickbar_location_changed,
     function (event)
         if not this.enabled then
             return

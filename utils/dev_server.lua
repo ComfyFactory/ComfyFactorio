@@ -2,7 +2,6 @@
 local Server = require 'utils.server'
 local Scheduler = require 'utils.scheduler'
 local Event = require 'utils.event'
-local CustomEvents = require 'utils.created_events'
 local Global = require 'utils.global'
 local Color = require 'utils.color_presets'
 local Commands = require 'utils.commands'
@@ -110,7 +109,7 @@ Event.add(defines.events.on_player_joined_game, function (event)
     end
 end)
 
-Event.add(CustomEvents.events.on_server_started, function ()
+Event.add(ServerCommands.events.on_server_started, function ()
     if this.shutdown_task_uid then
         return
     end

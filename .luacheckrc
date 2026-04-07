@@ -59,11 +59,6 @@ globals =
     'Debug',
     '_LIFECYCLE',
     '_STAGE',
-    'is_loaded',
-    'is_loaded_bool',
-    'is_game_modded',
-    'normalize_path',
-    'has_space_age',
     'require'
 }
 max_line_length = LINE_LENGTH

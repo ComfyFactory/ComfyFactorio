@@ -8,7 +8,7 @@ local Event = require 'utils.event'
 local table = require 'utils.table'
 local RPG = require 'modules.rpg.table'
 local Color = require 'utils.color_presets'
-local CustomEvents = require 'utils.created_events'
+
 
 local Public = {}
 
@@ -350,7 +350,7 @@ function Public.toggle_module(state)
 end
 
 Event.add(
-    CustomEvents.events.on_server_started,
+    ServerCommands.events.on_server_started,
     function ()
         Public.try_dl_resets()
     end

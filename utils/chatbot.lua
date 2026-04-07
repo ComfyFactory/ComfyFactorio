@@ -2,6 +2,7 @@ local Event = require 'utils.event'
 local Color = require 'utils.color_presets'
 local Global = require 'utils.global'
 local Session = require 'utils.datastore.session_data'
+local Core = require 'utils.core'
 
 local this =
 {
@@ -180,4 +181,26 @@ end
 Event.add(defines.events.on_player_created, on_player_created)
 Event.add(defines.events.on_console_chat, on_console_chat)
 
+Event.on_nth_tick(
+    108000,
+    function ()
+        if game.tick <= 10 then
+            return
+        end
+        local players = #game.connected_players
+        game.print('[color=blue][Chat Bot][/color]: There are ' .. players .. ' players online.')
+        game.print('[color=blue][Chat Bot][/color]: The map has been running for ' .. Core.format_time(game.ticks_played) .. '.')
+    end
+)
+
+
+Event.on_nth_tick(
+    216000,
+    function ()
+        if game.tick <= 10 then
+            return
+        end
+        game.print('[color=blue][Chat Bot][/color]: If you have any issues or feedback, please join our discord at: https://getcomfy.eu/discord.')
+    end
+)
 return Public

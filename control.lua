@@ -4,10 +4,6 @@ _DEBUG = false
 _DUMP_ENV = false
 _PROFILE = false
 
-require 'utils.created_events'
-require 'utils.server'
-require 'utils.event'
-require 'utils.dev_server'
 require 'utils.server_commands'
 require 'utils.gui.init'
 require 'utils.admin_handler'
@@ -41,11 +37,14 @@ end
 --!Remove the "--" in front of the line to enable.
 --!All lines with the "require" keyword are different maps.
 
+--![[OARC - Multiplayer spawn]]--
+--require 'maps.oarc.main'
+
 --![[Comfylatron has seized the Fish Train and turned it into a time machine]]--
 --require 'maps.chronosphere.main'
 
 --![[Guide a Train through rough terrain, while defending it from the biters]]--
--- require 'utils.templates.Mountain_Fortress_v3_BP.map_loader'
+--require 'utils.templates.Mountain_Fortress_v3_BP.map_loader'
 --require 'maps.mountain_fortress_v3.main'
 
 --![[Launch rockets in increasingly harder getting worlds.]]--
@@ -174,12 +173,11 @@ end
 --require 'modules.turret_filler'
 ---------------------------------------------------------------
 
-
 --- this file exists only for the panel to sync and start from within the panel
 -- it does nothing if it's not synced from within the panel
 require 'map_loader'
 
 local loaded = _G.package.loaded
 function require(path)
-    return loaded[normalize_path(path)] or error('Can only require files at runtime that have been required in the control stage.', 2)
+    return loaded[ServerCommands.normalize_path(path)] or error('Can only require files at runtime that have been required in the control stage.', 2)
 end

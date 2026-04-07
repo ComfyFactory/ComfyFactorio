@@ -11,7 +11,6 @@ local Task = require 'utils.task_token'
 local Token = require 'utils.token'
 local Global = require 'utils.global'
 local Discord = require 'utils.discord_handler'
-local CustomEvents = require 'utils.created_events'
 
 local Public = {}
 
@@ -30,7 +29,9 @@ local create_admin_panel
 
 local this =
 {
-    player_data = {}
+    player_data = {},
+    custom_tokens = {},
+    custom_buttons = {}
 }
 
 Global.register(
@@ -897,7 +898,20 @@ create_admin_panel = function (data)
             }
         ),
         t.add({ type = 'button', caption = 'Kill', name = 'kill', tooltip = 'Kills the selected player instantly.' })
+
     }
+    if this.custom_buttons and next(this.custom_buttons) then
+        for _, button in pairs(this.custom_buttons) do
+            t.add(
+                {
+                    type = button.type,
+                    caption = button.caption,
+                    name = button.name,
+                    tooltip = button.tooltip
+                }
+            )
+        end
+    end
     for _, button in pairs(buttons) do
         button.style.font = 'default-bold'
         --button.style.font_color = { r=0.99, g=0.11, b=0.11}
@@ -1197,6 +1211,26 @@ local function on_gui_click(event)
         return
     end
 
+    if this.custom_tokens[name] then
+        local callback = Token.get(this.custom_tokens[name])
+        if not callback then
+            return error('Invalid custom token while executing on_gui_click', 2)
+        end
+        local target_player_name = frame['admin_player_select'].items[frame['admin_player_select'].selected_index]
+        if not target_player_name then
+            return
+        end
+        if target_player_name == 'Select Player' then
+            player.print('[AdminGui] No target player selected.', { color = { r = 0.88, g = 0.88, b = 0.88 } })
+            return
+        end
+        local target_player = game.players[target_player_name]
+        if target_player.connected == true then
+            callback({ target_player = target_player.index, player = player.index })
+        end
+        return
+    end
+
     if admin_global_functions[name] then
         admin_global_functions[name](player)
         return
@@ -1292,6 +1326,21 @@ Gui.on_click(
         Gui.reload_active_tab(player, nil, 'Admin')
     end
 )
+
+function Public.add_custom_button(button)
+    if not button.type or not button.caption or not button.name or not button.tooltip then
+        return error('Invalid button data while adding custom button', 2)
+    end
+
+    table.insert(this.custom_buttons, button)
+end
+
+function Public.add_custom_token(token)
+    if not token.name or not token.token then
+        return error('Invalid token data while adding custom token', 2)
+    end
+    this.custom_tokens[token.name] = token.token
+end
 
 function Public.contains_text(history, search_text, target_player_name)
     local antigrief = AntiGrief.get()
@@ -1505,6 +1554,6 @@ Gui.on_checked_state_changed(
 Event.add(defines.events.on_gui_text_changed, text_changed)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_gui_selection_state_changed, on_gui_selection_state_changed)
-Event.add(CustomEvents.events.on_gui_closed_main_frame, on_gui_closed)
+Event.add(ServerCommands.events.on_gui_closed_main_frame, on_gui_closed)
 
 return Public
