@@ -792,7 +792,7 @@ local reassign_settings_button =
     )
 
 Event.add(
-    ServerCommands.events.on_role_set_static,
+    ServerCommands.events.on_role_change,
     function (event)
         Task.set_timeout_in_ticks(10, reassign_settings_button, { player_index = event.player_index })
     end

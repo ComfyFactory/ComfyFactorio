@@ -560,6 +560,11 @@ Server.on_data_set_changed(
         local name = data.key
         local role = data.value
         assigned_roles[string.lower(name)] = role
+
+        local player = game.get_player(name)
+        if player and player.valid then
+            Event.raise(ServerCommands.events.on_role_change, { player_index = player.index, role = role })
+        end
     end
 )
 
