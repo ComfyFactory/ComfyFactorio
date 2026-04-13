@@ -1435,6 +1435,10 @@ show_cooldown =
             local now = game.tick
             if now >= tick then
                 local rpg_t = Public.get_value_from_player(player.index)
+                if not rpg_t then
+                    Server.output_script_data('No rpg_t found for player: ' .. tostring(player.name))
+                    return
+                end
                 rpg_t.cooldown_enabled = nil
                 return
             end
@@ -1442,6 +1446,11 @@ show_cooldown =
             local fade = ((now - tick) / event.delay) + 1
 
             if not player.character then
+                Task.set_timeout_in_ticks(update_rate, show_cooldown, event)
+                return
+            end
+
+            if player.physical_surface.name ~= player.character.surface.name then
                 Task.set_timeout_in_ticks(update_rate, show_cooldown, event)
                 return
             end

@@ -1630,16 +1630,23 @@ local function gui_click(event)
             fill_circle = true
         end
 
-        this.circle =
-            rendering.draw_circle
-            {
-                surface = game.surfaces[this.active_surface_index],
-                target = this.locomotive,
-                color = this.locomotive.color,
-                filled = false,
-                radius = this.upgrades.locomotive_aura_radius,
-                only_in_alt_mode = fill_circle
-            }
+        if not this.locomotive or not this.locomotive.valid then
+            Server.output_script_data('Locomotive not valid, skipping circle draw')
+            return
+        else
+            this.circle =
+                rendering.draw_circle
+                {
+                    surface = game.surfaces[this.active_surface_index],
+                    target = this.locomotive,
+                    color = this.locomotive.color,
+                    filled = false,
+                    radius = this.upgrades.locomotive_aura_radius,
+                    only_in_alt_mode = fill_circle
+                }
+        end
+
+
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)

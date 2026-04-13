@@ -975,7 +975,17 @@ function Public.roll_item_stack(remaining_budget, blacklist)
         end
     end
 
-    local stack_size = prototypes.item[item_name].stack_size * 32
+    if not item_name then
+        Server.output_script_data('No item name found for remaining budget: ' .. tostring(remaining_budget))
+        Server.output_script_data('Item name: ' .. tostring(item_name))
+        return
+    end
+
+    local stack_size = prototypes.item[item_name] and prototypes.item[item_name].stack_size and prototypes.item[item_name].stack_size * 32
+    if not stack_size then
+        Server.output_script_data('No stack size found for item name: ' .. tostring(item_name) .. ' with worth: ' .. tostring(item_worth))
+        return
+    end
 
     local item_count = 1
 

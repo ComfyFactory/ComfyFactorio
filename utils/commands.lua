@@ -479,9 +479,13 @@ local function execute(event)
     end
 
     -- Run the command callback if everything is validated
-    local unpacked_data = not command_data.skip_param and unpack(handled_parameters) or event.parameter
     local callback = Task.get(command_data.callback)
-    local success, err = pcall(callback, player, unpacked_data)
+    local success, err
+    if not command_data.skip_param then
+        success, err = pcall(callback, player, unpack(handled_parameters))
+    else
+        success, err = pcall(callback, player, event.parameter)
+    end
     if internal_error(success, command_data.name, err) then
         return reject(output.command_failed)
     end

@@ -772,19 +772,9 @@ function Public.reset_main_table()
     end
     this.corpses_raffle = corpses_raffle
 
-    for _, planet in pairs(game.planets) do
-        local platforms = planet.get_space_platforms('player')
-        if platforms then
-            for _, platform in pairs(platforms) do
-                if platform and platform.valid and platform.surface and platform.surface.valid then
-                    local name = platform.surface.name
-                    Server.output_script_data('Clearing platform surface: ' .. name)
-                    game.delete_surface(name)
-                    platform.destroy()
-                end
-            end
-        end
+    Public.clear_platforms()
 
+    for _, planet in pairs(game.planets) do
         if planet.surface and planet.surface.name ~= stateful_settings.current_planet then
             Server.output_script_data('Clearing surface: ' .. planet.surface.name)
             planet.surface.clear()
