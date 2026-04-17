@@ -120,7 +120,7 @@ local is_locomotive_valid = function ()
     end
 end
 
-local is_player_valid = function ()
+--[[ local is_player_valid = function ()
     local players = game.connected_players
     for i = 1, #players do
         local player = players[i]
@@ -129,7 +129,7 @@ local is_player_valid = function ()
             player.create_character()
         end
     end
-end
+end ]]
 
 local has_the_game_ended = function ()
     local game_reset_tick = Public.get('game_reset_tick')
@@ -367,7 +367,7 @@ local nth_40_tick = function ()
         update_gui(player)
     end
     lock_locomotive_positions()
-    is_player_valid()
+    -- is_player_valid()
     is_locomotive_valid()
     has_the_game_ended()
     chunk_load()
