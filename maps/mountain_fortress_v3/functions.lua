@@ -3433,18 +3433,19 @@ function Public.set_player_to_god(player)
         return false
     end
 
-    local old_group = game.permissions.get_group(spectate[player.index].old_group)
-    if old_group then
-        old_group.add_player(player)
+    if spectate[player.index] then
+        local old_group = game.permissions.get_group(spectate[player.index].old_group)
+        if old_group then
+            old_group.add_player(player)
+        end
     end
 
     spectate[player.index] = nil
 
-    player.set_controller({ type = defines.controllers.god })
-    player.create_character()
     local active_surface_index = Public.get('active_surface_index')
     local surface = game.get_surface(active_surface_index)
     if not surface or not surface.valid then
+        Server.output_script_data('No surface found for player ' .. player.name .. '!')
         return false
     end
 
@@ -3455,6 +3456,9 @@ function Public.set_player_to_god(player)
         pos = game.forces.player.get_spawn_position(surface)
         player.teleport(pos, surface)
     end
+
+    player.set_controller({ type = defines.controllers.god })
+    player.create_character()
 
 
     Event.raise(
