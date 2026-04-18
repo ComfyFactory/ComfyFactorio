@@ -1127,10 +1127,6 @@ Gui.on_selection_state_changed(
             return
         end
 
-        if player.character ~= nil then
-            player.character.destroy()
-        end
-
         player.set_controller({ type = defines.controllers.spectator })
 
         player.teleport({ x = 0, y = 0 }, surface_name)

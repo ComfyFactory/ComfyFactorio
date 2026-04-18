@@ -124,11 +124,9 @@ local is_player_valid = function ()
     local players = game.connected_players
     for i = 1, #players do
         local player = players[i]
-        if not player.controller_type == defines.controllers.spectator then
-            if player.connected and player.controller_type == 2 then
-                player.set_controller { type = defines.controllers.god }
-                player.create_character()
-            end
+        if player.connected and player.controller_type == defines.controllers.god then
+            player.set_controller { type = defines.controllers.god }
+            player.create_character()
         end
     end
 end
