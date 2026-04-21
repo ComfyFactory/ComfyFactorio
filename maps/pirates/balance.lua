@@ -556,7 +556,7 @@ function Public.class_cost(at_dock)
 end
 
 function Public.weapon_damage_upgrade_percentage()
-	return 3
+	return 2
 end
 
 function Public.weapon_damage_upgrade_price()
