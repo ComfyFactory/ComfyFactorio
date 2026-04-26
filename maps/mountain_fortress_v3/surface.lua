@@ -20,8 +20,8 @@ Global.register(
 
 local valid_surfaces =
 {
-    ['Gulag'] = true,
-    ['Init'] = true,
+    ['gulag'] = true,
+    ['init'] = true,
 }
 
 
@@ -106,7 +106,7 @@ function Public.create_surface(recreate)
 end
 
 function Public.create_landing_surface()
-    if game.surfaces['Init'] then
+    if game.surfaces['init'] then
         return
     end
 
@@ -137,7 +137,7 @@ function Public.create_landing_surface()
 
     local surface
     if not this.landing_surface_index then
-        surface = game.create_surface('Init', map_gen_settings)
+        surface = game.create_surface('init', map_gen_settings)
     end
 
     if not surface or not surface.valid then return end

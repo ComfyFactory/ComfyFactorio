@@ -2899,7 +2899,7 @@ function Public.on_player_joined_game(event)
 
     local current_task = Public.get('current_task')
     if not current_task.done then
-        local init_surface = game.get_surface('Init')
+        local init_surface = game.get_surface('init')
         if init_surface and init_surface.valid then
             surface = init_surface
             Score.init_player_table(player, true)
@@ -2981,15 +2981,15 @@ function Public.on_player_joined_game(event)
         end
     end
 
-    if player.surface.name == 'nauvis' or player.surface.index == '1' then
-        local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
-        if pos then
-            player.teleport(pos, surface)
-        else
-            pos = game.forces.player.get_spawn_position(surface)
-            player.teleport(pos, surface)
-        end
-    end
+    -- if player.surface.name == 'nauvis' or player.surface.index == '1' then
+    --     local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
+    --     if pos then
+    --         player.teleport(pos, surface)
+    --     else
+    --         pos = game.forces.player.get_spawn_position(surface)
+    --         player.teleport(pos, surface)
+    --     end
+    -- end
 end
 
 function Public.on_player_created(event)
@@ -3124,22 +3124,20 @@ function Public.on_player_changed_surface(event)
         Server.output_script_data('No surface index found - old one was removed.')
     end
 
-    local starting_planet = Public.get_planet()
+    -- local starting_planet = Public.get_planet()
 
-    local active_surface_index = Public.get('active_surface_index')
-    local surface = game.surfaces[active_surface_index or starting_planet]
+    -- local active_surface_index = Public.get('active_surface_index')
+    -- local surface = game.surfaces[active_surface_index or starting_planet]
 
-
-
-    if player.physical_surface.name == 'nauvis' or player.physical_surface.index == '1' then
-        local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
-        if pos then
-            player.teleport(pos, surface)
-        else
-            pos = game.forces.player.get_spawn_position(surface)
-            player.teleport(pos, surface)
-        end
-    end
+    -- if player.physical_surface.name == 'nauvis' or player.physical_surface.index == '1' then
+    --     local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
+    --     if pos then
+    --         player.teleport(pos, surface)
+    --     else
+    --         pos = game.forces.player.get_spawn_position(surface)
+    --         player.teleport(pos, surface)
+    --     end
+    -- end
 end
 
 function Public.hinder_buildings_on_planet(event)

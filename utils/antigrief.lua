@@ -313,7 +313,7 @@ local function on_pre_ghost_deconstructed(event)
     end
     if playtime < this.required_playtime and not is_trusted then
         -- Task.set_timeout_in_ticks(5, create_ghost_token, { player_index = player.index, position = ghost.position, force = player.force, inner_name = ghost.ghost_name, last_user = ghost.last_user and ghost.last_user.valid and ghost.last_user.name or player.name })
-        local new_ghost = ghost.clone({ position = { x = 0, y = 0 }, force = player.force, surface = 'gulag', create_build_effect_smoke = false })
+        local new_ghost = ghost.clone({ position = { x = 0, y = 0 }, force = player.force, surface = game.surfaces.gulag, create_build_effect_smoke = false })
         Task.set_timeout_in_ticks(5, create_ghost_token, { player_index = player.index, ghost = new_ghost, position = ghost.position })
         player.print('You are not accustomed to deconstructing yet.', { r = 0.22, g = 0.99, b = 0.99 })
         return

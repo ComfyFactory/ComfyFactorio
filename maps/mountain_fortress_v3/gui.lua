@@ -255,9 +255,9 @@ local function create_spectate_main_frame(player, redraw)
 
         local surfaces = {}
         for _, surface in pairs(game.surfaces) do
-            if surface.name ~= 'nauvis' then
-                table.insert(surfaces, surface.name)
-            end
+            -- if surface.name ~= 'nauvis' then
+            table.insert(surfaces, surface.name)
+            -- end
         end
 
         data.surface_picker_label = surface_picker_right_flow.add({ name = spectate_surface_picker_name, type = 'drop-down', items = surfaces, selected_index = 1 })
@@ -773,7 +773,7 @@ on_player_changed_surface = function (event)
         return
     end
     local surface = game.get_surface(event.surface_index or player.surface.index)
-    if surface.name == 'Init' then return end
+    if surface.name == 'init' then return end
     changed_surface(player)
 end
 

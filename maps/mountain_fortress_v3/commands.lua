@@ -184,7 +184,7 @@ Commands.new('scenario', 'Usable only for admins - controls the scenario!')
                             }
                         })
                 end
-                Public.set_task('move_players', 'Init')
+                Public.set_task('move_players', 'init')
                 player.print('Game has been reset!')
             end
         end
@@ -271,7 +271,7 @@ Commands.new('mtn_reverse_map', 'Usable only for admins - reverses the map!')
                         }
                     }
                 })
-            Public.set_task('move_players', 'Init')
+            Public.set_task('move_players', 'init')
             game.print(mapkeeper .. player.name .. ', has reverse the map and reset the game!',
                 { color = CommandColor })
             player.print('Map reversed.')

@@ -535,7 +535,7 @@ local map_gen_action_token = Task.register(map_gen_action)
 -- @param event <table> the event table from on_chunk_generated
 local function schedule_chunk(event)
     local surface = event.surface
-    if surface.name == 'Init' then return end
+    if surface.name == 'init' then return end
     local shape = generate_map
 
     if event.tick < 1 then
@@ -583,7 +583,7 @@ end
 -- @param event <table> the event table from on_chunk_generated
 local function force_do_chunk(event)
     local surface = event.surface
-    if surface.name == 'Init' then return end
+    if surface.name == 'init' then return end
     local shape = generate_map
 
     if not surface.valid then

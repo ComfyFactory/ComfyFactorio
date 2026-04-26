@@ -39,7 +39,7 @@ local this =
     current_task =
     {
         state = 'move_players',
-        surface_name = 'Init',
+        surface_name = 'init',
         default_task = 'move_players',
         show_messages = false,
         step = 1
@@ -87,7 +87,7 @@ Public.all_planets =
 }
 
 
-local init_name = 'Init'
+local init_name = 'init'
 Public.init_name = init_name
 local discord_name = 'Mtn Fortress'
 Public.discord_name = discord_name
@@ -840,7 +840,7 @@ end
 
 function Public.set_task(task, surface_name)
     this.current_task.state = task
-    this.current_task.surface_name = surface_name or 'Init'
+    this.current_task.surface_name = surface_name or 'init'
 end
 
 function Public.is_task_done()

@@ -158,7 +158,7 @@ local has_the_game_ended = function ()
             if this.soft_reset and this.game_reset_tick == 0 then
                 this.game_reset_tick = nil
                 Public.set_scores()
-                Public.set_task('move_players', 'Init')
+                Public.set_task('move_players', 'init')
                 return
             end
 
@@ -402,7 +402,7 @@ function Public.move_players(current_task)
     end
 
     for _, player in pairs(game.players) do
-        if current_task.surface_name == 'Init' then
+        if current_task.surface_name == 'init' then
             player.zoom = 0.1
         end
         local pos = surface.find_non_colliding_position("character", { x = 0, y = 0 }, 5, 4)
