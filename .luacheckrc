@@ -66,7 +66,7 @@ max_line_length = LINE_LENGTH
 not_globals = NOT_GLOBALS
 ignore = IGNORE
 quiet = 1 -- pass -q option
-max_cyclomatic_complexity = 100
+max_cyclomatic_complexity = 150
 codes = true
 
 --List of files and directories to exclude

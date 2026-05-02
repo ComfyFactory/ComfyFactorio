@@ -30,6 +30,7 @@ local rpg_settings_keys =
     'dropdown_select_name_1',
     'dropdown_select_name_2',
     'dropdown_select_name_3',
+    'spell_slot_count',
     -- 'allocate_index',
     'enable_entity_spawn',
     'show_bars',
@@ -93,9 +94,13 @@ local function apply_settings_to_player(player, saved)
                 RPG.set_value_to_player(player.index, index_key, spell_index)
             end
         else
+            if k == 'spell_slot_count' then
+                v = RPG.get_spell_slot_count({ spell_slot_count = v })
+            end
             RPG.set_value_to_player(player.index, k, v)
         end
     end
+    RPG.clamp_active_spell_to_visible_slots(rpg_t)
 end
 
 local fetch_rpg_settings_token =
