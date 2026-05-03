@@ -3572,11 +3572,11 @@ function Public.equip_players(player, starting_items, recreate)
         Modifiers.update_player_modifiers(player)
         if not recreate then
             starting_items = starting_items or this.starting_items
-            if this.starting_items['modular-armor'] then
+            if starting_items['modular-armor'] then
                 player.insert({ name = 'modular-armor', count = 1 })
             end
 
-            for item, item_data in pairs(this.starting_items) do
+            for item, item_data in pairs(starting_items) do
                 if item ~= 'modular-armor' then
                     local equip = prototypes.equipment[item]
                     if equip then

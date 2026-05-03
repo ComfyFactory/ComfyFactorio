@@ -5050,7 +5050,7 @@ local function zone_1(x, y, data, _, adjusted_zones)
             Public.spawn_random_buildings(buildings, p, zone_settings.zone_depth)
         end
 
-        if random(1, math.max(16, 128 - season * 3)) == 1 then
+        if random(1, 128) == 1 then
             if adjusted_zones.starting_planet ~= 'nauvis' then
                 entities[#entities + 1] =
                 {
@@ -5094,7 +5094,7 @@ local function zone_1(x, y, data, _, adjusted_zones)
             }
         end
 
-        if random(1, math.max(24, 96 - season * 2)) == 1 then
+        if random(1, 256) == 1 then
             if adjusted_zones.starting_planet ~= 'nauvis' then
                 entities[#entities + 1] =
                 {
