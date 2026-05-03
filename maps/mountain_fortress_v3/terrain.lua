@@ -488,7 +488,7 @@ end
 
 local function threshold_shift(base_min, base_max)
     local az = Public.get('adjusted_zones')
-    local season = (az and az.season) or 0
+    local season = (az and az.season) or 1
     local shift = season * 0.005
     return base_min - shift, base_max + shift
 end
