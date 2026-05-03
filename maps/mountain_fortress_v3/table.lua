@@ -583,6 +583,10 @@ function Public.reset_main_table()
     this.breached_wall = 1
     this.pre_final_battle = false
     this.final_battle = false
+    if remote.interfaces.tnt then
+        remote.call("tnt", "set_module_status", true)
+        remote.call("tnt", "allow_robot_placement", false)
+    end
     this.disable_link_chest_cheese_mode = true
     this.left_top =
     {

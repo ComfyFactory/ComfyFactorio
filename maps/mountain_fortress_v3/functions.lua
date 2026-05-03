@@ -1555,6 +1555,24 @@ local function on_player_cursor_stack_changed(event)
         return
     end
 
+    if string.find(item.name, 'tnt') then
+        -- if final battle, clear stack and print a message
+        if Public.get('final_battle') then
+            player.print('TNT cannot be used during the final battle.', { color = Color.warning })
+            player.insert(item)
+            player.cursor_stack.clear()
+            return
+        end
+
+        -- if inside the locomotive, insert the stack back to the player inventory
+        if player.physical_position.x > 700 then
+            player.print('TNT cannot be used when inside the locomotive.', { color = Color.warning })
+            player.insert(item)
+            player.cursor_stack.clear()
+            return
+        end
+    end
+
     local name = item.name
 
     local blacklisted_spawn_items =

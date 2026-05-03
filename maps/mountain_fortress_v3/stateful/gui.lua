@@ -1215,6 +1215,9 @@ local function update_raw()
                 end
                 LinkedChests.clear_linked_frames()
                 stateful.final_battle = true
+                if remote.interfaces.tnt then
+                    remote.call("tnt", "set_module_status", false)
+                end
                 Public.set('final_battle', true)
                 WD.set('final_battle', true)
                 WD.set_es_enabled(false)

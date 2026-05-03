@@ -35,6 +35,10 @@ function Public.reset()
     this.offset_increment = 560
     this.default_surface = false
     this.final_battle = false
+    if remote.interfaces.tnt then
+        remote.call("tnt", "set_module_status", true)
+        remote.call("tnt", "allow_robot_placement", false)
+    end
     this.hazardous_debris = true
     this.current_wagon_index = nil
     this.trains = {}
