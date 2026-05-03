@@ -7,7 +7,6 @@ local Task = require 'utils.task_token'
 local shuffle = table.shuffle_table
 local WD = require 'modules.wave_defense.table'
 local format_number = require 'util'.format_number
-local ICWF = require 'maps.mountain_fortress_v3.icw.functions'
 local ICWT = require 'maps.mountain_fortress_v3.icw.table'
 local Core = require 'utils.core'
 local Public = require 'maps.mountain_fortress_v3.table'
