@@ -1009,10 +1009,6 @@ local function on_player_used_capsule_custom(event)
         return
     end
 
-    if not rpg_t.enable_entity_spawn then
-        return
-    end
-
     local mana = rpg_t.mana
     local surface = player.surface
 
