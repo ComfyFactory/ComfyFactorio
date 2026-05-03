@@ -209,14 +209,14 @@ local remove_non_migrated_doors_token =
 local function get_tile_name()
     -- local main_tile_name = 'tutorial-grid'
     -- local main_tile_name = 'stone-path'
-    local starting_planet = WPT.get_planet()
-    if starting_planet == 'nauvis' or starting_planet == 'fortress' then
-        return 'black-refined-concrete'
-    elseif starting_planet == 'fulgora' then
-        return 'black-refined-concrete'
-    end
+    -- local starting_planet = WPT.get_planet()
+    -- if starting_planet == 'nauvis' or starting_planet == 'fortress' then
+    --     return 'black-refined-concrete'
+    -- elseif starting_planet == 'fulgora' then
+    --     return 'black-refined-concrete'
+    -- end
 
-    return 'black-refined-concrete'
+    return 'refined-concrete'
 end
 
 local function has_wagon_id(carriages, id)
@@ -591,26 +591,25 @@ local transfer_functions =
     ['storage-tank'] = divide_fluid
 }
 
+local function position_in_wagon_area(position, wagon)
+    local area = wagon and wagon.area
+    if not area then
+        return false
+    end
+    local left_top = area.left_top
+    local right_bottom = area.right_bottom
+    return position.x >= left_top.x and position.y >= left_top.y and position.x <= right_bottom.x and position.y <= right_bottom.y
+end
+
 local function get_wagon_for_entity(icw, entity)
     if not validate_entity(entity) then
         return
     end
 
-    local train = icw.trains[tonumber(entity.surface.name)]
-
-    if not train then
-        return
-    end
-
     local position = entity.position
-    for _, unit_number in pairs(train.wagons) do
-        local wagon = icw.wagons[unit_number]
-        if wagon then
-            local left_top = wagon.area.left_top
-            local right_bottom = wagon.area.right_bottom
-            if position.x >= left_top.x and position.y >= left_top.y and position.x <= right_bottom.x and position.y <= right_bottom.y then
-                return wagon
-            end
+    for _, wagon in pairs(icw.wagons) do
+        if wagon and position_in_wagon_area(position, wagon) then
+            return wagon
         end
     end
     return false
@@ -1587,9 +1586,9 @@ function Public.draw_minimap(icw, player, surface, position)
         frame = player.gui.left.add({ type = 'frame', direction = 'vertical', name = 'icw_main_frame', caption = 'Minimap' })
     end
     local element = frame['icw_sub_frame']
-    if not frame.icw_auto_switch then
-        frame.add({ type = 'switch', name = 'icw_auto_switch', allow_none_state = false, left_label_caption = { 'gui.map_on' }, right_label_caption = { 'gui.map_off' } })
-    end
+    -- if not frame.icw_auto_switch then
+    --     frame.add({ type = 'switch', name = 'icw_auto_switch', allow_none_state = false, left_label_caption = { 'gui.map_on' }, right_label_caption = { 'gui.map_off' } })
+    -- end
     if not element then
         element =
             player.gui.left.icw_main_frame.add(

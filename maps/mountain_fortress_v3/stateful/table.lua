@@ -1961,7 +1961,7 @@ function Public.move_all_players()
         return
     end
 
-    ICWF.disable_auto_minimap()
+    -- ICWF.disable_auto_minimap()
 
     local message = ({ 'stateful.final_boss_message_start' })
     Alert.alert_all_players(50, message, nil, nil, 1)

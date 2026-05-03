@@ -3554,57 +3554,55 @@ function Public.clear_spec_tag(player)
     end
 end
 
-function Public.equip_players(starting_items, recreate)
+function Public.equip_players(player, starting_items, recreate)
     local players = Public.get('players')
 
-    for _, player in pairs(game.players) do
-        if player.character and player.character.valid then
-            player.character.destroy()
+    if player.character and player.character.valid then
+        player.character.destroy()
+    end
+    player.clear_items_inside()
+    if player.connected then
+        if not player.character then
+            player.set_controller({ type = defines.controllers.god })
+            player.create_character()
         end
-        player.clear_items_inside()
-        if player.connected then
-            if not player.character then
-                player.set_controller({ type = defines.controllers.god })
-                player.create_character()
+        if player.character ~= nil then
+            player.character.destructible = true
+        end
+        Modifiers.update_player_modifiers(player)
+        if not recreate then
+            starting_items = starting_items or this.starting_items
+            if this.starting_items['modular-armor'] then
+                player.insert({ name = 'modular-armor', count = 1 })
             end
-            if player.character ~= nil then
-                player.character.destructible = true
-            end
-            Modifiers.update_player_modifiers(player)
-            if not recreate then
-                starting_items = starting_items or this.starting_items
-                if this.starting_items['modular-armor'] then
-                    player.insert({ name = 'modular-armor', count = 1 })
-                end
 
-                for item, item_data in pairs(this.starting_items) do
-                    if item ~= 'modular-armor' then
-                        local equip = prototypes.equipment[item]
-                        if equip then
-                            local p_armor = player.get_inventory(defines.inventory.character_armor)
-                            if p_armor and p_armor.valid and p_armor[1] and p_armor[1].valid_for_read and p_armor[1].grid and p_armor[1].grid.valid then
-                                for _ = 1, item_data.count do
-                                    p_armor[1].grid.put({ name = item })
-                                end
-                            else
-                                player.insert({ name = item, count = item_data.count })
+            for item, item_data in pairs(this.starting_items) do
+                if item ~= 'modular-armor' then
+                    local equip = prototypes.equipment[item]
+                    if equip then
+                        local p_armor = player.get_inventory(defines.inventory.character_armor)
+                        if p_armor and p_armor.valid and p_armor[1] and p_armor[1].valid_for_read and p_armor[1].grid and p_armor[1].grid.valid then
+                            for _ = 1, item_data.count do
+                                p_armor[1].grid.put({ name = item })
                             end
                         else
                             player.insert({ name = item, count = item_data.count })
                         end
+                    else
+                        player.insert({ name = item, count = item_data.count })
                     end
                 end
             end
-            Public.show_all_gui(player)
-            Public.clear_spec_tag(player)
-        else
-            if player.character then
-                player.character.destructible = true
-            end
-            players[player.index] = nil
-            Session.clear_player(player)
-            game.remove_offline_players({ player.index })
         end
+        Public.show_all_gui(player)
+        Public.clear_spec_tag(player)
+    else
+        if player.character then
+            player.character.destructible = true
+        end
+        players[player.index] = nil
+        Session.clear_player(player)
+        game.remove_offline_players({ player.index })
     end
 end
 

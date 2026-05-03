@@ -438,6 +438,8 @@ end
 
 local function changed_surface(player)
     local main_toggle_button_name = Gui.main_toggle_button_name
+    local fish_main_button_name = Gui.top_main_gui_button
+    local stateful_top_main_button_name = Public.stateful_main_button_name
     local poll_button = Polls.main_button_name
     local rpg_button = RPG.draw_main_frame_name
     local rpg_frame = RPG.main_frame_name
@@ -452,6 +454,8 @@ local function changed_surface(player)
     local wagon_surface = icw_locomotive.surface
     local main_toggle_button = get_top_frame_custom(player, main_toggle_button_name)
     local info_button = get_top_frame_custom(player, main_button_name)
+    local fish_main_button = get_top_frame_custom(player, fish_main_button_name)
+    local stateful_top_main_button = get_top_frame_custom(player, stateful_top_main_button_name)
     local wd = get_top_frame_custom(player, 'wave_defense')
     local info_detailed = get_top_frame_custom(player, main_frame_name)
     local spectate = get_top_frame_custom(player, spectate_button_name)
@@ -497,8 +501,15 @@ local function changed_surface(player)
         if main_toggle_button and not main_toggle_button.visible then
             main_toggle_button.visible = true
         end
+        player.gui.top.mod_gui_top_frame.visible = true
         if minimap and minimap.visible then
             minimap.visible = false
+        end
+        if fish_main_button and not fish_main_button.visible then
+            fish_main_button.visible = true
+        end
+        if stateful_top_main_button and not stateful_top_main_button.visible then
+            stateful_top_main_button.visible = true
         end
         if rpg_b and not rpg_b.visible then
             rpg_b.visible = true
@@ -549,17 +560,24 @@ local function changed_surface(player)
 
         return
     elseif (player.physical_surface == wagon_surface or player.physical_position.x > 700) then
+        player.gui.top.mod_gui_top_frame.visible = false
         if main_toggle_button and main_toggle_button.visible then
             main_toggle_button.visible = false
         end
         if wd then
             wd.visible = false
         end
+        if fish_main_button and fish_main_button.visible then
+            fish_main_button.visible = false
+        end
         if spectate then
             spectate.visible = false
         end
         if minimap_button and not minimap_button.visible then
-            minimap_button.visible = false
+            minimap_button.visible = true
+        end
+        if stateful_top_main_button and stateful_top_main_button.visible then
+            stateful_top_main_button.visible = false
         end
         if rpg_b then
             rpg_b.visible = false
@@ -607,11 +625,17 @@ local function changed_surface(player)
         if wd then
             wd.visible = false
         end
+        if fish_main_button and fish_main_button.visible then
+            fish_main_button.visible = false
+        end
         if spectate then
             spectate.visible = false
         end
         if minimap_button and not minimap_button.visible then
             minimap_button.visible = false
+        end
+        if stateful_top_main_button and stateful_top_main_button.visible then
+            stateful_top_main_button.visible = false
         end
         if rpg_b then
             rpg_b.visible = false
@@ -783,8 +807,12 @@ local function enable_guis(event)
         return
     end
 
+    local stateful_top_main_button_name = Public.stateful_main_button_name
+    local fish_main_button_name = Gui.top_main_gui_button
     local main_toggle_button_name = Gui.main_toggle_button_name
     local main_toggle_button = get_top_frame_custom(player, main_toggle_button_name)
+    local fish_main_button = get_top_frame_custom(player, fish_main_button_name)
+    local stateful_top_main_button = get_top_frame_custom(player, stateful_top_main_button_name)
     local rpg_button = RPG.draw_main_frame_name
     local info = get_top_frame_custom(player, main_button_name)
     local wd = get_top_frame_custom(player, 'wave_defense')
@@ -813,6 +841,14 @@ local function enable_guis(event)
 
     if rpg_b and not rpg_b.visible then
         rpg_b.visible = true
+    end
+
+    if fish_main_button and not fish_main_button.visible then
+        fish_main_button.visible = true
+    end
+
+    if stateful_top_main_button and not stateful_top_main_button.visible then
+        stateful_top_main_button.visible = true
     end
 
     if diff and not diff.visible then
