@@ -28,6 +28,18 @@ local this =
             ['logistic-container'] = true,
             ['car'] = true,
             ['cargo-wagon'] = true
+        },
+        valid_chest_names =
+        {
+            ['tnt-chest-small'] = true,
+            ['tnt-chest-medium'] = true,
+            ['tnt-chest-large'] = true
+        },
+        chest_damage =
+        {
+            ['tnt-chest-small'] = { radius = 30 },
+            ['tnt-chest-medium'] = { radius = 60 },
+            ['tnt-chest-large'] = { radius = 100 }
         }
     }
 }
@@ -305,6 +317,43 @@ local function check_entity_for_items(item)
     return false
 end
 
+local function initial_cell_health(radius)
+    return math.max(280, radius * radius * 14 + radius * 72)
+end
+
+local function on_built_entity(event)
+    if this.settings.disabled then
+        return false
+    end
+
+    local entity = event.entity
+    if not entity.valid then
+        return
+    end
+
+    if not this.settings.valid_chest_names[entity.name] then
+        return
+    end
+
+    if not this.settings.chest_damage[entity.name] then
+        return
+    end
+
+    if this.explosives.surface_whitelist then
+        if not this.explosives.surface_whitelist[entity.surface.name] then
+            return
+        end
+    end
+
+    local health = initial_cell_health(this.settings.chest_damage[entity.name].radius)
+    if not health then
+        return
+    end
+
+    cell_birth(entity.surface.index, { x = entity.position.x, y = entity.position.y }, game.tick, { x = entity.position.x, y = entity.position.y }, health)
+    entity.destroy()
+end
+
 local function on_entity_died(event)
     if this.settings.disabled then
         return false
@@ -477,5 +526,6 @@ Commands.new('explosives-limit', 'Sets the explosive limit')
 Event.on_init(on_init)
 Event.on_nth_tick(speed, tick)
 Event.add(defines.events.on_entity_died, on_entity_died)
+Event.add(defines.events.on_built_entity, on_built_entity)
 
 return Public

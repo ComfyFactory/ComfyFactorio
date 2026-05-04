@@ -1674,10 +1674,6 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
     this.test_mode = false
 
     this.final_battle = false
-    if remote.interfaces.tnt then
-        remote.call("tnt", "set_module_status", true)
-        remote.call("tnt", "allow_robot_placement", false)
-    end
     this.extra_wagons = 0
     this.quality_trains = 'normal'
     this.quality_buildings = 'normal'
@@ -2013,9 +2009,6 @@ function Public.set_final_battle()
     es_settings.final_battle = true
     es_settings.force_name = 'aggressors_frenzy'
     Public.set('final_battle', true)
-    if remote.interfaces.tnt then
-        remote.call("tnt", "set_module_status", false)
-    end
 end
 
 function Public.allocate()
