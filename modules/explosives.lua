@@ -318,7 +318,24 @@ local function check_entity_for_items(item)
 end
 
 local function initial_cell_health(radius)
-    return math.max(280, radius * radius * 14 + radius * 72)
+    local min_damage
+    local max_damage = 0
+    for _, damage in pairs(this.settings.valid_items) do
+        if not min_damage or damage < min_damage then
+            min_damage = damage
+        end
+        if damage > max_damage then
+            max_damage = damage
+        end
+    end
+    if not min_damage then
+        min_damage = 500
+        max_damage = 750
+    end
+    local min_health = 2 * min_damage
+    local max_health = this.settings.explosive_limit * max_damage
+    local raw = radius * radius * 14 + radius * 72
+    return math.max(min_health, math.min(max_health, raw))
 end
 
 local function on_built_entity(event)
