@@ -2542,7 +2542,7 @@ local function apply_mining_bonus(context)
 
     local force = game.forces.player
     local previous_mining_bonus = Public.get('previous_mining_bonus') or 0
-    local mining_bonus
+    local mining_bonus = 0
 
     force.manual_mining_speed_modifier = force.manual_mining_speed_modifier - previous_mining_bonus
     if force.manual_mining_speed_modifier < 0 then
@@ -2557,12 +2557,17 @@ local function apply_mining_bonus(context)
         return
     end
 
-    if context.player_count <= 5 then
-        mining_bonus = 3
-    elseif context.player_count <= 10 then
-        mining_bonus = 1
+    local buffs_collected = Public.get_stateful('buffs_collected')
+    if buffs_collected and buffs_collected.manual_mining_speed_modifier then
+        mining_bonus = mining_bonus + buffs_collected.manual_mining_speed_modifier.count
+    end
+
+    if context.player_count <= 10 then
+        mining_bonus = mining_bonus + 3
+    elseif context.player_count <= 20 then
+        mining_bonus = mining_bonus + 1
     else
-        mining_bonus = 0
+        mining_bonus = mining_bonus + 0
     end
 
     if mining_bonus ~= previous_mining_bonus then
@@ -2730,7 +2735,6 @@ function Public.boost_difficulty()
 
     local force = game.forces.player
 
-    force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.5
     force.character_running_speed_modifier = force.character_running_speed_modifier + 0.15
     force.manual_crafting_speed_modifier = force.manual_crafting_speed_modifier + 0.15
     Public.set('coin_amount', 1)
