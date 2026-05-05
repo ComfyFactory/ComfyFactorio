@@ -5464,7 +5464,6 @@ local function init_terrain(adjusted_zones)
     adjusted_zones.shuffled_zones = generated_zones
     adjusted_zones.init_terrain = true
     adjusted_zones.season = Public.get_stateful('season')
-    log(serpent.block('Season: ' .. adjusted_zones.season))
 end
 
 local function process_bits(p, data, adjusted_zones)
@@ -5843,7 +5842,6 @@ function Public.heavy_functions(data)
     init_terrain(adjusted_zones)
     if not adjusted_zones.season then
         adjusted_zones.season = Public.get_stateful('season')
-        log(serpent.block(adjusted_zones.season))
     end
 
     if not data.seed then

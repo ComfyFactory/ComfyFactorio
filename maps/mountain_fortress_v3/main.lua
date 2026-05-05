@@ -51,6 +51,7 @@ local Commands = require 'utils.commands'
 local RobotLimits = require 'modules.robot_limits'
 local RocksYieldOreVeins = require 'maps.mountain_fortress_v3.rocks_yield_ore_veins'
 local SpawnersContainBiters = require 'modules.spawners_contain_biters'
+local Session = require 'utils.datastore.session_data'
 local Core = require 'utils.core'
 
 local send_ping_to_channel = Discord.channel_names.mtn_channel
@@ -402,7 +403,19 @@ function Public.move_players(current_task)
         return
     end
 
+    local players = Public.get('players')
     Core.iter_players(function (player)
+        if not player.connected then
+            if player.character then
+                player.character.destructible = true
+            end
+            players[player.index] = nil
+            Session.clear_player(player)
+            game.remove_offline_players({ player.index })
+        end
+    end)
+
+    Core.iter_connected_players(function (player)
         if current_task.surface_name == 'init' then
             player.zoom = 0.1
         end
@@ -851,7 +864,7 @@ function Public.to_fortress(current_task)
         Public.add_player_to_permission_group(player, 'near_locomotive', true)
     end)
 
-    Core.iter_players(function (player)
+    Core.iter_connected_players(function (player)
         if player.controller_type == defines.controllers.god or player.controller_type == defines.controllers.spectator then
             player.set_controller { type = defines.controllers.god }
             player.create_character()
