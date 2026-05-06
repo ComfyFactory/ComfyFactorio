@@ -801,6 +801,20 @@ local remove_car =
         end
     )
 
+local remove_entity =
+    Task.register(
+        function (data)
+            local player = data.player
+            local entity = data.entity
+            if not entity or not entity.valid then
+                return
+            end
+
+            player.remove_item({ name = entity.name, count = 1, quality = entity.quality.name })
+            player.remove_item({ name = entity.name, count = 1, quality = 'normal' })
+        end
+    )
+
 local find_remove_car =
     Task.register(
         function (data)
@@ -880,6 +894,12 @@ function Public.save_car(event)
             car = car
         }
         Task.set_timeout_in_ticks(10, remove_car, params)
+        local params_entity =
+        {
+            player = player,
+            entity = entity
+        }
+        Task.set_timeout_in_ticks(10, remove_entity, params_entity)
         if restore_on_theft then
             local e = player.physical_surface.create_entity({ name = car.name, position = position, force = player.force, create_build_effect_smoke = false, quality = car.quality or 'normal' })
             e.health = health
