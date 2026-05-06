@@ -560,7 +560,7 @@ local function changed_surface(player)
 
         return
     elseif (player.physical_surface == wagon_surface or player.physical_position.x > 700) then
-        player.gui.top.mod_gui_top_frame.visible = false
+        player.gui.top.mod_gui_top_frame.visible = true
         if main_toggle_button and main_toggle_button.visible then
             main_toggle_button.visible = false
         end
@@ -568,7 +568,7 @@ local function changed_surface(player)
             wd.visible = false
         end
         if fish_main_button and fish_main_button.visible then
-            fish_main_button.visible = false
+            fish_main_button.visible = true
         end
         if spectate then
             spectate.visible = false
@@ -577,7 +577,7 @@ local function changed_surface(player)
             minimap_button.visible = true
         end
         if stateful_top_main_button and stateful_top_main_button.visible then
-            stateful_top_main_button.visible = false
+            stateful_top_main_button.visible = true
         end
         if rpg_b then
             rpg_b.visible = false

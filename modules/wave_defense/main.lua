@@ -1582,7 +1582,7 @@ Event.add(ServerCommands.events.on_spawn_unit_group, spawn_unit_group)
 Event.add(ServerCommands.events.on_spawn_unit_group_simple, spawn_unit_group_simple)
 
 Event.on_nth_tick(
-    100,
+    200,
     function ()
         local final_battle = Public.get('final_battle')
         if final_battle then

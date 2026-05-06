@@ -856,7 +856,7 @@ local mining_events =
         'Nest #2'
     },
     {
-        function (entity)
+        function (entity, index)
             if not entity or not entity.valid then
                 return
             end
@@ -865,10 +865,45 @@ local mining_events =
             if container and container.health then
                 container.insert({ name = 'vehicle-machine-gun', count = 1 })
                 container.health = random(1, container.health)
+                local player = game.players[index]
+                local msg = ({ 'entity.found_vsmg', player.name })
+                Alert.alert_player(player, 15, msg)
             end
         end,
         256,
         'VSMG #1'
+    },
+    {
+        function (entity, index)
+            if not entity or not entity.valid then
+                return
+            end
+            local chest = 'crash-site-chest-' .. random(1, 2)
+            local container = entity.surface.create_entity({ name = chest, position = entity.position, force = 'neutral' })
+            if container and container.health then
+                container.insert({ name = 'coin', count = random(1024, 4096) })
+                container.health = random(1, container.health)
+                local player = game.players[index]
+                local msg = ({ 'entity.found_coin', player.name })
+                Alert.alert_all_players_location(player, msg, nil, 15)
+            end
+        end,
+        128,
+        'Coin #1'
+    },
+    {
+        function (entity, index)
+            if not entity or not entity.valid then
+                return
+            end
+
+            local player = game.players[index]
+            local msg = ({ 'entity.found_rpg_xp', player.name })
+            RPG.gain_xp(player, random(1000, 3000), true)
+            Alert.alert_all_players_location(player, msg, nil, 15)
+        end,
+        64,
+        'RPG XP #1'
     },
     {
         function (entity, index)
@@ -897,7 +932,7 @@ local mining_events =
             Task.set_timeout_in_ticks(5, unstuck_player_token, { index = index })
             local player = game.players[index]
             local msg = ({ 'entity.found_car', player.name })
-            Alert.alert_player(player, 15, msg)
+            Alert.alert_all_players_location(player, msg, nil, 15)
         end,
         32,
         'Car #1'
@@ -928,11 +963,47 @@ local mining_events =
             surface.create_entity({ name = 'tank', position = position, force = 'player', quality = quality })
             Task.set_timeout_in_ticks(5, unstuck_player_token, { index = index })
             local player = game.players[index]
-            local msg = ({ 'entity.found_car', player.name })
-            Alert.alert_player(player, 15, msg)
+            local msg = ({ 'entity.found_tank', player.name })
+            Alert.alert_all_players_location(player, msg, nil, 15)
         end,
         16,
         'Tank #1'
+    },
+    {
+        function (entity, index)
+            if not entity or not entity.valid then
+                return
+            end
+            local chest = 'crash-site-chest-' .. random(1, 2)
+            local container = entity.surface.create_entity({ name = chest, position = entity.position, force = 'neutral' })
+            if container and container.health then
+                container.insert({ name = 'power-armor-mk2', count = 1 })
+                container.health = random(1, container.health)
+                local player = game.players[index]
+                local msg = ({ 'entity.found_mk2', player.name })
+                Alert.alert_all_players_location(player, msg, nil, 15)
+            end
+        end,
+        8,
+        'Power Armor MK2 #1'
+    },
+    {
+        function (entity, index)
+            if not entity or not entity.valid then
+                return
+            end
+            local chest = 'crash-site-chest-' .. random(1, 2)
+            local container = entity.surface.create_entity({ name = chest, position = entity.position, force = 'neutral' })
+            if container and container.health then
+                container.insert({ name = 'spidertron', count = 1 })
+                container.health = random(1, container.health)
+                local player = game.players[index]
+                local msg = ({ 'entity.found_spidertron', player.name })
+                Alert.alert_all_players_location(player, msg, nil, 15)
+            end
+        end,
+        8,
+        'Spidertron #1'
     }
 }
 
