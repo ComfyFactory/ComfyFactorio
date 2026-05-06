@@ -796,7 +796,8 @@ local remove_car =
         function (data)
             local player = data.player
             local car = data.car
-            player.remove_item({ name = car.name, count = 1 })
+            player.remove_item({ name = car.name, count = 1, quality = car.quality })
+            player.remove_item({ name = car.name, count = 1, quality = 'normal' })
         end
     )
 
@@ -861,7 +862,8 @@ function Public.save_car(event)
         {
             index = p.surface.index,
             types = types,
-            position = p.physical_position
+            position = p.physical_position,
+            quality = car.quality
         }
 
         Task.set_timeout_in_ticks(1, find_remove_car, find_remove_car_args)
@@ -882,8 +884,8 @@ function Public.save_car(event)
             local e = player.physical_surface.create_entity({ name = car.name, position = position, force = player.force, create_build_effect_smoke = false, quality = car.quality or 'normal' })
             e.health = health
             restore_surface(p, e)
-        elseif p.can_insert({ name = car.name, count = 1 }) then
-            p.insert({ name = car.name, count = 1, health = health })
+        elseif p.can_insert({ name = car.name, count = 1, quality = car.quality }) then
+            p.insert({ name = car.name, count = 1, health = health, quality = car.quality })
             p.print(module_tag .. 'Your car was stolen from you - the gods foresaw this and granted you a new one.', { color = Color.info })
         end
     end
