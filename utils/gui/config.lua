@@ -35,7 +35,7 @@ local spaghett_entity_blacklist =
 {
     ['requester-chest'] = true,
     ['buffer-chest'] = true,
-    ['active-chest-provider'] = true
+    ['active-provider-chest'] = true
 }
 
 function Public.register_scenario_module(data)

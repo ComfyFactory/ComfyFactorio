@@ -13,6 +13,7 @@ local math_floor = math.floor
 
 local function get_item_worths(level, specific_only)
     local SA = script.active_mods['space-age']
+    local spaghet = game and (not game.forces.player.technologies['logistic-system'].enabled) or false
     local item_worths = {
         [1] = {
             --basic stuff
@@ -204,9 +205,9 @@ local function get_item_worths(level, specific_only)
             ['uranium-rounds-magazine'] = 42,
             ['uranium-cannon-shell'] = 70,
             ['explosive-uranium-cannon-shell'] = 75,
-            ['active-provider-chest'] = not SA and 100 or nil, --3x4 + 1x30 + 1x50
-            ['buffer-chest'] = not SA and 100 or nil,
-            ['requester-chest'] = not SA and 100 or nil,
+            ['active-provider-chest'] = not SA and (not spaghet and 100 or nil) or nil, --3x4 + 1x30 + 1x50
+            ['buffer-chest'] = not SA and (not spaghet and 100 or nil) or nil,
+            ['requester-chest'] = not SA and (not spaghet and 100 or nil) or nil,
             ['personal-roboport-mk2-equipment'] = not SA and 25000 or nil, -- 100x160 + 20x80 + 5x1250
         },
         [5] = {
@@ -254,9 +255,9 @@ local function get_item_worths(level, specific_only)
                 ['efficiency-module-2'] = 1800,
                 ['productivity-module-2'] = 1800,
                 ['quality-module-2'] = 1800,
-                ['active-provider-chest'] = 100, --3x4 + 1x30 + 1x50
-                ['buffer-chest'] = 100,
-                ['requester-chest'] = 100,
+                ['active-provider-chest'] = not spaghet and 100 or nil, --3x4 + 1x30 + 1x50
+                ['buffer-chest'] = not spaghet and 100 or nil,
+                ['requester-chest'] = not spaghet and 100 or nil,
                 ['thruster'] = 1000, --10x6 + 10x160 + 5x30
                 ['nuclear-fuel'] = 1250,
             },

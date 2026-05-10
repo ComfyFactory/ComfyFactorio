@@ -308,8 +308,7 @@ Public.costs = {
             ['uranium-238|normal'] = 100,
             ['roboport|normal'] = 20,
             ['assembling-machine-3|normal'] = 20,
-            ['requester-chest|normal'] = 25,
-            ['passive-provider-chest|normal'] = 25,
+            ['passive-provider-chest|normal'] = 50,
         },
         [6] = {
             ['foundry|normal'] = 10,

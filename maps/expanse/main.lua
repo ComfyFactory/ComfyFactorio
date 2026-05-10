@@ -178,7 +178,7 @@ local function reset()
         [1] = {unlocks = 0, tiles = 0},
         [2] = {unlocks = 0, tiles = 0},
         [3] = {unlocks = 4, tiles = 0}, --uranium guaranteed
-        [4] = {unlocks = 2, tiles = 0}, --landing pad and silo
+        [4] = {unlocks = 3, tiles = 0}, --landing pad and silo and one guaranteed oil
         [5] = {unlocks = SA and 5 or 1, tiles = 0}, --silos
         [6] = {unlocks = 80, tiles = 0}, --vulcanus
         [7] = {unlocks = 80, tiles = 0}, --fulgora
