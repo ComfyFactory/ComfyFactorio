@@ -176,7 +176,7 @@ local function aggregate_owned_container_items(player)
             if item_storage then
                 for item_name, item_count in pairs(item_storage) do
                     if type(item_name) == 'string' and item_name ~= 'count' and type(item_count) == 'number' and item_count > 0 then
-                        merged_items[item_name] = (merged_items[item_name] or 0) + item_count
+                        merged_items[item_name] = { count = (merged_items[item_name] and merged_items[item_name].count or 0) + item_count, surface = container.chest.surface.name, position = container.chest.position }
                     end
                 end
             end
@@ -185,7 +185,7 @@ local function aggregate_owned_container_items(player)
             if content and content.valid then
                 for _, item_data in pairs(content.get_contents()) do
                     if item_data and item_data.name and item_data.count and item_data.count > 0 then
-                        merged_items[item_data.name] = (merged_items[item_data.name] or 0) + item_data.count
+                        merged_items[item_data.name] = { count = (merged_items[item_data.name] and merged_items[item_data.name].count or 0) + item_data.count, surface = container.chest.surface.name, position = container.chest.position }
                     end
                 end
             end
@@ -236,8 +236,11 @@ local function draw_player_container_summary_frame(player)
 
     local items = aggregate_owned_container_items(player)
     local entries = {}
-    for item_name, item_count in pairs(items) do
-        entries[#entries + 1] = { name = item_name, count = item_count }
+    for item_name, item_data in pairs(items) do
+        local item_count = item_data.count
+        local surface = item_data.surface
+        local position = item_data.position
+        entries[#entries + 1] = { name = item_name, count = item_count, surface = surface, position = position }
     end
     table.sort(
         entries,
@@ -269,6 +272,8 @@ local function draw_player_container_summary_frame(player)
     for _, entry in pairs(entries) do
         local item_name = entry.name
         local item_count = entry.count
+        local surface = entry.surface
+        local position = entry.position
         local item_prototype = item_prototypes[item_name]
         if item_prototype then
             local button =
@@ -279,7 +284,7 @@ local function draw_player_container_summary_frame(player)
                     style = 'slot_button',
                     number = item_count,
                     name = item_name,
-                    tooltip = { '', item_prototype.localised_name, '\nCount: ', item_count }
+                    tooltip = { '', item_prototype.localised_name, '\nCount: ', item_count, '\nSurface: ', surface, '\nPosition: ', position.x, ', ', position.y }
                 }
             button.enabled = false
         end

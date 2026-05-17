@@ -889,7 +889,8 @@ Gui.on_click(
                 rpg_t.dropdown_select_index_8 = spell_gui_input8.selected_index
             end
 
-            Public.clamp_active_spell_to_visible_slots(rpg_t)
+            -- TODO: currently breaks when switching spell
+            -- Public.clamp_active_spell_to_visible_slots(rpg_t)
             Public.rebuild_spell_gui_frame(player)
 
             if player.gui.screen[spell_gui_frame_name] then

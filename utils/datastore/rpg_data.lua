@@ -24,12 +24,11 @@ local this =
 local set_data = Server.set_data
 local try_get_data = Server.try_get_data
 
+local MAX_SPELL_SLOTS = 8
+
 local rpg_settings_keys =
 {
     'dropdown_select_name',
-    'dropdown_select_name_1',
-    'dropdown_select_name_2',
-    'dropdown_select_name_3',
     'spell_slot_count',
     -- 'allocate_index',
     'enable_entity_spawn',
@@ -48,6 +47,32 @@ Global.register(
     end
 )
 
+local function copy_setting_value(out, k, v)
+    if v == nil then
+        return
+    end
+    if type(v) == 'table' then
+        out[k] = {}
+        for k2, v2 in pairs(v) do
+            out[k][k2] = v2
+        end
+    else
+        out[k] = v
+    end
+end
+
+local function spell_slot_name_key(slot)
+    return 'dropdown_select_name_' .. slot
+end
+
+local function get_spell_slot_from_name_key(k)
+    local slot = tonumber(string.match(k, '^dropdown_select_name_(%d+)$'))
+    if slot and slot >= 1 and slot <= MAX_SPELL_SLOTS then
+        return slot
+    end
+    return nil
+end
+
 local function build_settings_from_player(player)
     local rpg_t = RPG.get_value_from_player(player.index)
     if not rpg_t or type(rpg_t) ~= 'table' then
@@ -55,17 +80,10 @@ local function build_settings_from_player(player)
     end
     local out = {}
     for _, k in ipairs(rpg_settings_keys) do
-        local v = rpg_t[k]
-        if v ~= nil then
-            if type(v) == 'table' then
-                out[k] = {}
-                for k2, v2 in pairs(v) do
-                    out[k][k2] = v2
-                end
-            else
-                out[k] = v
-            end
-        end
+        copy_setting_value(out, k, rpg_t[k])
+    end
+    for slot = 1, MAX_SPELL_SLOTS do
+        copy_setting_value(out, spell_slot_name_key(slot), rpg_t[spell_slot_name_key(slot)])
     end
     if next(out) then
         return out
@@ -86,12 +104,12 @@ local function apply_settings_to_player(player, saved)
             RPG.draw_level_text(player)
         end
 
-        if string.sub(k, 1, 21) == 'dropdown_select_name_' then
+        local slot = get_spell_slot_from_name_key(k)
+        if slot then
             local spell, spell_index = Spells.has_enough_level_to_access_spell(rpg_t, v)
             if spell and spell_index then
                 RPG.set_value_to_player(player.index, k, v)
-                local index_key = 'dropdown_select_index_' .. string.sub(k, 22)
-                RPG.set_value_to_player(player.index, index_key, spell_index)
+                RPG.set_value_to_player(player.index, 'dropdown_select_index_' .. slot, spell_index)
             end
         else
             if k == 'spell_slot_count' then

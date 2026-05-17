@@ -1859,7 +1859,7 @@ local function on_built_entity(event)
     {
         ['burner-mining-drill'] = true,
         ['electric-mining-drill'] = true,
-        ['big-mining-drill'] = true
+        -- ['big-mining-drill'] = true -- currently overpowered
     }
 
     if valid_drills[entity.name] then
@@ -1955,7 +1955,7 @@ local function on_robot_built_entity(event)
     {
         ['burner-mining-drill'] = true,
         ['electric-mining-drill'] = true,
-        ['big-mining-drill'] = true
+        -- ['big-mining-drill'] = true -- currently overpowered
     }
 
     if valid_drills[entity.name] then
