@@ -406,12 +406,11 @@ function Public.move_players(current_task)
     local players = Public.get('players')
     Core.iter_players(function (player)
         if not player.connected then
-            if player.character then
-                player.character.destructible = true
-            end
+            player.clear_items_inside()
             players[player.index] = nil
             Session.clear_player(player)
-            game.remove_offline_players({ player.index })
+            Server.output_script_data('Removing offline player from init task: ' .. player.name)
+            game.remove_offline_players({ player })
         end
     end)
 
@@ -421,6 +420,7 @@ function Public.move_players(current_task)
         end
 
         if player.controller_type == defines.controllers.god or player.controller_type == defines.controllers.spectator then
+            player.clear_items_inside()
             player.set_controller { type = defines.controllers.god }
             player.create_character()
             Event.raise(
@@ -445,6 +445,7 @@ function Public.move_players(current_task)
     current_task.state_id = 1
     current_task.starting_planet = starting_planet
     current_task.state = 'pre_init_task'
+    Server.output_script_data('Moved players to initial surface!')
 end
 
 function Public.pre_init_task(current_task)
@@ -564,6 +565,7 @@ function Public.pre_init_task(current_task)
     current_task.message = 'Pre init done!'
     current_task.state = 'init_stateful'
     current_task.state_id = 2
+    Server.output_script_data('Pre init done!')
 end
 
 function Public.init_stateful(current_task)
@@ -582,6 +584,7 @@ function Public.init_stateful(current_task)
     current_task.message = 'Initialized stateful!'
     current_task.state = 'clear_fortress'
     current_task.state_id = 3
+    Server.output_script_data('Initialized stateful!')
 end
 
 function Public.clear_fortress(current_task)
@@ -597,6 +600,7 @@ function Public.clear_fortress(current_task)
     current_task.delay = game.tick + 50
     current_task.message = 'Cleared fortress!'
     current_task.state_id = 4
+    Server.output_script_data('Cleared fortress!')
 end
 
 function Public.create_custom_fortress_surface(current_task)
@@ -608,6 +612,7 @@ function Public.create_custom_fortress_surface(current_task)
     current_task.delay = game.tick + 50
     current_task.state = 'reset_map'
     current_task.state_id = 5
+    Server.output_script_data('Created custom fortress surface!')
 end
 
 function Public.reset_map(current_task)
@@ -760,6 +765,7 @@ function Public.reset_map(current_task)
     current_task.delay = game.tick + 50
     current_task.state = 'post_init_task'
     current_task.state_id = 6
+    Server.output_script_data('Reset map done!')
 end
 
 function Public.post_init_task(current_task)
@@ -768,6 +774,7 @@ function Public.post_init_task(current_task)
     current_task.message = 'Post init done!'
     current_task.state = 'create_locomotive'
     current_task.state_id = 7
+    Server.output_script_data('Post init done!')
 end
 
 function Public.create_locomotive(current_task)
@@ -806,6 +813,7 @@ function Public.create_locomotive(current_task)
     current_task.delay = game.tick + 100
     current_task.state = 'announce_new_map'
     current_task.state_id = 8
+    Server.output_script_data('Created locomotive!')
 end
 
 function Public.announce_new_map(current_task)
@@ -820,6 +828,7 @@ function Public.announce_new_map(current_task)
     current_task.surface_name = starting_planet
     current_task.delay = game.tick + 50
     current_task.state_id = 9
+    Server.output_script_data('Announced new map!')
 end
 
 function Public.to_fortress(current_task)
@@ -862,9 +871,7 @@ function Public.to_fortress(current_task)
             player.teleport({ x = position.x, y = position.y }, surface)
         end
         Public.add_player_to_permission_group(player, 'near_locomotive', true)
-    end)
 
-    Core.iter_connected_players(function (player)
         if player.controller_type == defines.controllers.god or player.controller_type == defines.controllers.spectator then
             player.set_controller { type = defines.controllers.god }
             player.create_character()
@@ -889,6 +896,7 @@ function Public.to_fortress(current_task)
     current_task.message = 'Moved players back to fortress!'
     current_task.state_id = 10
     current_task.done = true
+    Server.output_script_data('Moved players back to fortress!')
 end
 
 function Public.init_mtn()

@@ -248,7 +248,7 @@ local function on_mtn_melee_change_weapon(event)
         else
             player.print({ 'modules_melee.change_to_melee_failed' })
         end
-    else
+    elseif old_frame and old_frame.sprite == 'technology/steel-axe' then
         if change_to_ranged(player) then
             player.print({ 'modules_melee.change_to_ranged' })
             old_frame.sprite = 'item/pistol'

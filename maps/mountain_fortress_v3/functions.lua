@@ -116,7 +116,22 @@ Global.register(
     end
 )
 
-
+local quality_rank =
+{
+    ['quality-module'] =
+    {
+        'uncommon',
+        'rare',
+    },
+    ['epic-quality'] =
+    {
+        'epic',
+    },
+    ['legendary-quality'] =
+    {
+        'legendary',
+    }
+}
 
 local artillery_target_entities =
 {
@@ -504,7 +519,7 @@ local function do_magic_fluid_crafters()
 
                 local fb_data = entity.get_fluid(fluidbox_index) or { name = data.item, amount = 0 }
                 fb_data.amount = fb_data.amount + fcount
-                fb_data.quality = data.quality
+                -- fb_data.quality = 'normal'
                 entity.set_fluid(fluidbox_index, fb_data)
 
                 entity.products_finished = entity.products_finished + fcount
@@ -1244,6 +1259,8 @@ Public.power_source_callback =
         end
     )
 
+
+
 Public.magic_item_crafting_callback =
     Task.register(
         function (entity, data)
@@ -1259,7 +1276,7 @@ Public.magic_item_crafting_callback =
             local force = game.forces.player
 
             local tech = callback_data.tech
-            if not callback_data.testing then
+            if callback_data.testing == nil then
                 if tech then
                     if not force.technologies[tech].researched then
                         entity.destroy()
@@ -1271,9 +1288,18 @@ Public.magic_item_crafting_callback =
             local quality_buildings = Public.get_stateful('quality_buildings')
             local quality = quality_buildings or 'normal'
 
+            if not Public.has_correct_quality_unlocked(quality) then
+                quality = 'normal'
+            end
+
             local recipe = callback_data.recipe
+            local fluid = callback_data.fluid
             if recipe then
-                entity.set_recipe(recipe, quality)
+                if fluid then
+                    entity.set_recipe(recipe, 'normal')
+                else
+                    entity.set_recipe(recipe, quality)
+                end
             else
                 local furance_item = callback_data.furance_item
                 if furance_item then
@@ -1337,9 +1363,8 @@ Public.magic_item_crafting_callback_weighted =
             end
 
             local force = game.forces.player
-
             local tech = stack.tech
-            if not callback_data.testing then
+            if stack.testing == nil then
                 if tech then
                     if force.technologies[tech] then
                         if not force.technologies[tech].researched then
@@ -1351,15 +1376,24 @@ Public.magic_item_crafting_callback_weighted =
             end
 
             local quality_buildings = Public.get_stateful('quality_buildings')
-            local quality = 'normal'
+            local quality = quality_buildings or 'normal'
 
             if random(1, 32) == 1 then
                 quality = quality_buildings or 'normal'
             end
 
+            if not Public.has_correct_quality_unlocked(quality) then
+                quality = 'normal'
+            end
+
             local recipe = stack.recipe
+            local fluid = stack.fluid
             if recipe then
-                entity.set_recipe(recipe, quality)
+                if fluid then
+                    entity.set_recipe(recipe, 'normal')
+                else
+                    entity.set_recipe(recipe, quality)
+                end
             else
                 local furance_item = stack.furance_item
                 if furance_item then
@@ -2581,6 +2615,25 @@ local function apply_mining_bonus(context)
 
     Public.set('previous_mining_bonus', mining_bonus)
     Public.set('mining_bonus', mining_bonus)
+end
+
+function Public.has_correct_quality_unlocked(quality)
+    local force = game.forces.player
+
+    if quality == 'normal' then
+        return true
+    end
+
+    for tech_name, qualities in pairs(quality_rank) do
+        for _, q in pairs(qualities) do
+            if q == quality then
+                local tech = force.technologies[tech_name]
+                return tech and tech.researched
+            end
+        end
+    end
+
+    return false
 end
 
 function Public.set_difficulty()

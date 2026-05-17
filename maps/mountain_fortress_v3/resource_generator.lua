@@ -32,6 +32,7 @@ local science_loot =
         stack =
         {
             recipe = 'automation-science-pack',
+            tech = 'automation-science-pack',
             output = { item = 'automation-science-pack', min_rate = 3 / 800, distance_factor = 1 / 8 / 60 / 20480 }
         },
         weight = 4
@@ -106,6 +107,7 @@ local ammo_loot =
         stack =
         {
             recipe = 'shotgun-shell',
+            tech = 'military',
             output = { item = 'shotgun-shell', min_rate = 2 / 800, distance_factor = 1 / 8 / 60 / 20480 }
         },
         weight = 4
@@ -127,6 +129,7 @@ local oil_loot =
         stack =
         {
             recipe = 'basic-oil-processing',
+            fluid = true,
             tech = 'oil-processing',
             output =
             {
@@ -142,6 +145,7 @@ local oil_loot =
         stack =
         {
             recipe = 'advanced-oil-processing',
+            fluid = true,
             tech = 'advanced-oil-processing',
             output =
             {
@@ -317,6 +321,7 @@ local resource_loot =
         stack =
         {
             recipe = 'electronic-circuit',
+            tech = 'electronics',
             output = { item = 'electronic-circuit', min_rate = 1 / 4 / 60, distance_factor = 1 / 8 / 60 / 20480 }
         },
         weight = 2
@@ -351,6 +356,7 @@ local resource_loot =
         stack =
         {
             recipe = 'underground-belt',
+            tech = 'electronics',
             output = { item = 'underground-belt', min_rate = 1 / 4 / 60, distance_factor = 1 / 8 / 60 / 20480 }
         },
         weight = 8
@@ -359,6 +365,7 @@ local resource_loot =
         stack =
         {
             recipe = 'small-electric-pole',
+            tech = 'electronics',
             output = { item = 'small-electric-pole', min_rate = 1 / 4 / 60, distance_factor = 1 / 8 / 60 / 20480 }
         },
         weight = 8

@@ -257,6 +257,9 @@ local function do_place_buildings(data)
         return
     end
     local quality = Public.get_stateful_settings('quality_buildings') or 'normal'
+    if not Public.has_correct_quality_unlocked(quality) then
+        quality = 'normal'
+    end
     -- local force = game.forces.player
     local entity
     for _, e in ipairs(data.buildings) do
