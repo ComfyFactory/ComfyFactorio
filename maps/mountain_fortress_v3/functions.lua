@@ -3119,6 +3119,26 @@ function Public.on_player_respawned(event)
     if not player or not player.valid then
         return
     end
+
+    local starting_planet = Public.get_planet()
+    if starting_planet ~= 'nauvis' then
+        if player.physical_surface.name == 'nauvis' then
+            local active_surface_index = Public.get('active_surface_index')
+            local surface = game.surfaces[active_surface_index]
+            if not surface or not surface.valid then
+                return
+            end
+
+            local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
+            if pos then
+                player.teleport(pos, surface)
+            else
+                pos = game.forces.player.get_spawn_position(surface)
+                player.teleport(pos, surface)
+            end
+        end
+    end
+
     if player.character and player.character.valid then
         Task.set_timeout_in_ticks(15, boost_movement_speed_on_respawn, { player = player })
         player.character.health = round(player.character.health * health_values[random(1, #health_values)])

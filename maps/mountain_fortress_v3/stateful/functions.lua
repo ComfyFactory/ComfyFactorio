@@ -16,7 +16,23 @@ local table = table
 local main_frame_name = Gui.uid_name()
 local selection_button_name = Gui.uid_name()
 
-local function highest_count(tbl, fair_vote)
+local buff_option_colors =
+{
+    {
+        color = { r = 165, g = 42, b = 42 },
+        print_color = { r = 0.0, g = 0.55, b = 0.0 }
+    },
+    {
+        color = { r = 124, g = 252, b = 0 },
+        print_color = { r = 0.75, g = 0.0, b = 0.0 }
+    },
+    {
+        color = { r = 0, g = 0, b = 128 },
+        print_color = { r = 0.0, g = 0.15, b = 0.55 }
+    }
+}
+
+local function highest_count(tbl)
     if #tbl == 0 then
         return nil
     end
@@ -28,6 +44,10 @@ local function highest_count(tbl, fair_vote)
         end
     end
 
+    if highest == 0 then
+        return nil
+    end
+
     local winners = {}
     for _, v in ipairs(tbl) do
         if v.count == highest then
@@ -35,23 +55,15 @@ local function highest_count(tbl, fair_vote)
         end
     end
 
-    if #winners == 1 then
-        return winners[1]
-    end
-
     if #winners == 0 then
         return nil
     end
 
-    if fair_vote then
-        return winners[math.random(#winners)]
-    else
-        local sum = 0
-        for _, idx in ipairs(winners) do
-            sum = sum + idx
-        end
-        return math.floor((sum / #winners) + 0.5)
+    if #winners == 1 then
+        return winners[1]
     end
+
+    return winners[math.random(#winners)]
 end
 
 local function clear_main_frame(player)
@@ -93,7 +105,7 @@ local function buff_main_frame(player, voted_index)
             }
         button_flow.style.horizontal_align = 'center'
         button_flow.style.horizontally_stretchable = true
-        local b = button_flow.add({ type = 'button', name = selection_button_name, caption = buff.name })
+        local b = button_flow.add({ type = 'button', name = selection_button_name, caption = buff.name .. ' (' .. buff.count .. ')' })
         b.style.horizontal_align = 'center'
         b.style.vertical_align = 'center'
         b.style.font_color = buff.color
@@ -105,16 +117,24 @@ local function buff_main_frame(player, voted_index)
         end
     end
 
-    local label_flow =
-        inside_frame.add
-        {
-            type = 'flow'
-        }
+    if buff_selection.index and buff_selection.buffs[buff_selection.index] then
+        local leader = buff_selection.buffs[buff_selection.index]
+        local leader_flow =
+            inside_frame.add
+            {
+                type = 'flow'
+            }
+        leader_flow.style.horizontal_align = 'center'
+        leader_flow.style.horizontally_stretchable = true
+        leader_flow.add(
+            {
+                type = 'label',
+                caption = 'Current leader: ' .. leader.name .. ' (' .. leader.count .. ')'
+            }
+        )
+    end
 
     inside_frame.add({ type = 'line' })
-
-    label_flow.style.horizontal_align = 'center'
-    label_flow.style.horizontally_stretchable = true
 
     local timer_flow =
         inside_frame.add
@@ -152,13 +172,35 @@ local function set_buffs_voting()
         return
     end
 
+    local buff = buff_selection.buffs[index]
+    if buff.count <= 0 then
+        return
+    end
+
     if buff_selection.index ~= index then
-        local message = table.concat({ '*** Current buff has changed to ', buff_selection.buffs[index].name, '! ***' })
-        game.print(message, { color = buff_selection.buffs[index].print_color })
+        local message = table.concat({ '*** Current buff has changed to ', buff.name, '! ***' })
+        game.print(message, { color = buff.print_color })
     end
     buff_selection.index = index
-    buff_selection.name = buff_selection.buffs[index].name
-    buff_selection.value = buff_selection.buffs[index].value
+    buff_selection.name = buff.name
+    buff_selection.value = buff.value
+end
+
+local function refresh_buff_frames()
+    local buff_selection = Public.get('buff_selection')
+    if not buff_selection or not next(buff_selection) then
+        return
+    end
+
+    Core.iter_connected_players(function (player)
+        if player and player.valid then
+            local frame = player.gui.screen[main_frame_name]
+            if frame and frame.valid then
+                local voted_index = buff_selection.all_votes[player.name] and buff_selection.all_votes[player.name].index
+                buff_main_frame(player, voted_index)
+            end
+        end
+    end)
 end
 
 Gui.on_click(
@@ -208,20 +250,16 @@ Gui.on_click(
         buff_selection.all_votes[player.name] = { voted = true, index = i }
 
         set_buffs_voting()
-        buff_main_frame(player, i)
+        refresh_buff_frames()
         clear_main_frame(player)
         local message = '*** ' .. player.name .. ' has voted for ' .. buff_selection.buffs[i].name .. '! ***'
         game.print(message, { color = buff_selection.buffs[i].print_color })
     end
 )
 
-local function get_random_color()
-    return { r = math.random(), g = math.random(), b = math.random() }
-end
-
 function Public.init_buff_selection(buffs)
     local buff_selection = Public.get('buff_selection')
-    if not buff_selection or not buff_selection.buffs then
+    if not buff_selection then
         Server.output_script_data('buff_selection not found while initing buff selection - check stateful/table.lua')
         return
     end
@@ -231,6 +269,10 @@ function Public.init_buff_selection(buffs)
         return
     end
 
+    buff_selection.buffs = {}
+    buff_selection.all_votes = {}
+    buff_selection.voting_closed = false
+    buff_selection.index = nil
     buff_selection.closing_timeout = game.tick + 10800 -- 3 minutes
 
     for i = 1, #buffs, 1 do
@@ -240,14 +282,16 @@ function Public.init_buff_selection(buffs)
             return
         end
 
-        buff_selection.buffs[#buff_selection.buffs + 1] =
+        local option_colors = buff_option_colors[i] or buff_option_colors[((i - 1) % #buff_option_colors) + 1]
+
+        buff_selection.buffs[i] =
         {
             name = buff.poll_name,
             tooltip = buff.tooltip,
             count = 0,
-            index = #buff_selection.buffs + 1,
-            color = get_random_color(),
-            print_color = get_random_color(),
+            index = i,
+            color = option_colors.color,
+            print_color = option_colors.print_color,
             raw = buff
         }
     end
