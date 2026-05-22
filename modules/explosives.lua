@@ -13,6 +13,7 @@ local this =
         slow_explode_tick = 300,
         check_growth_below_void = false,
         explosive_limit = 999,
+        max_active_explosives = 5,
         valid_items =
         {
             ['explosives'] = 500,
@@ -62,6 +63,26 @@ local density_r = density * 0.5
 
 local function pos_to_key(position)
     return tostring(position.x .. '_' .. position.y)
+end
+
+local function origin_to_key(origin_tick, origin_position)
+    return tostring(origin_tick .. '_' .. origin_position.x .. '_' .. origin_position.y)
+end
+
+local function count_active_explosions()
+    if not this.explosives.cells then
+        return 0
+    end
+    local origins = {}
+    local count = 0
+    for _, cell in pairs(this.explosives.cells) do
+        local key = origin_to_key(cell.origin_tick, cell.origin_position)
+        if not origins[key] then
+            origins[key] = true
+            count = count + 1
+        end
+    end
+    return count
 end
 
 local function check_y_pos(position)
@@ -362,6 +383,11 @@ local function on_built_entity(event)
         end
     end
 
+    if count_active_explosions() >= this.settings.max_active_explosives then
+        entity.destroy()
+        return
+    end
+
     local health = initial_cell_health(this.settings.chest_damage[entity.name].radius)
     if not health then
         return
@@ -515,6 +541,10 @@ end
 
 function Public.slow_explode_tick(value)
     this.settings.slow_explode_tick = value or 300
+end
+
+function Public.set_max_active_explosives(value)
+    this.settings.max_active_explosives = value or 5
 end
 
 local function on_init()
