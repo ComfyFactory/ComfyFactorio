@@ -2205,7 +2205,7 @@ function Public.event_on_chunk_generated(event)
 
 					if water_tiles then
 						for _, t in pairs(water_tiles) do
-							landfill_tiles[#landfill_tiles + 1] = { name = "dirt-7", position = t.position }
+							landfill_tiles[#landfill_tiles + 1] = { name = "landfill", position = t.position }
 						end
 					end
 

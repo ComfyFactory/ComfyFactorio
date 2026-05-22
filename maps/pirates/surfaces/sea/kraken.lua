@@ -393,7 +393,12 @@ function Public.try_spawn_kraken()
 	local possible_slots = {}
 	for i = 1, Public.kraken_slots do
 		if not memory.active_sea_enemies.krakens[i] then
-			possible_slots[#possible_slots + 1] = i
+			-- Don't reuse a slot where a kraken just died (prevents "resurrection" if there are two krakens on the same spot on map)
+			local death_tick = memory.active_sea_enemies.kraken_death_ticks
+				and memory.active_sea_enemies.kraken_death_ticks[i]
+			if not death_tick or game.tick - death_tick > 60 * 5 then
+				possible_slots[#possible_slots + 1] = i
+			end
 		end
 	end
 
@@ -516,6 +521,10 @@ function Public.kraken_die(kraken_id)
 	if memory.active_sea_enemies.krakens[kraken_id] then
 		memory.active_sea_enemies.kraken_count = Math.max(0, memory.active_sea_enemies.kraken_count - 1)
 		memory.active_sea_enemies.krakens[kraken_id] = nil
+		if not memory.active_sea_enemies.kraken_death_ticks then
+			memory.active_sea_enemies.kraken_death_ticks = {}
+		end
+		memory.active_sea_enemies.kraken_death_ticks[kraken_id] = game.tick
 	end
 
 	local reward_items = Balance.kraken_kill_reward_items()

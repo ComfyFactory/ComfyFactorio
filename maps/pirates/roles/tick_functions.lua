@@ -378,7 +378,7 @@ function Public.update_character_properties(tick_interval)
 							{ 'pirates.discard_weapon_to_inventory', Classes.display_form(class) }
 						)
 					else
-						player.character.surface.spill_item_stack(player.character.position, main_gun_inv[1])
+						player.character.surface.spill_item_stack({ position = player.character.position, stack = main_gun_inv[1] })
 
 						Common.notify_player_error(
 							player,

@@ -1231,6 +1231,7 @@ local function process_entity_on_boat(
 	newsurface_name,
 	unique_entities_list,
 	wire_connections_matrix,
+	fluid_entity_tracking,
 	e
 )
 	if e and e.valid and (not Utils.contains(unique_entities_list, e)) then
@@ -1241,6 +1242,18 @@ local function process_entity_on_boat(
 		for _, player in pairs(game.connected_players) do
 			if player.opened == e then
 				table.insert(players_with_gui_open, player)
+			end
+		end
+
+		-- Save fluidbox contents before any processing. TODO: Prevent pipes from draining, currently they drain slowly.
+		local saved_fluids
+		if fluid_entity_tracking and name ~= 'pipe' and name ~= 'pipe-to-ground' and e.fluidbox and #e.fluidbox > 0 then
+			for fi = 1, #e.fluidbox do
+				local fluid = e.fluidbox[fi]
+				if fluid then
+					if not saved_fluids then saved_fluids = {} end
+					saved_fluids[fi] = { name = fluid.name, amount = fluid.amount, temperature = fluid.temperature }
+				end
 			end
 		end
 
@@ -1285,6 +1298,16 @@ local function process_entity_on_boat(
 					wire_connections_matrix,
 					e
 				)
+			end
+		end
+
+		-- Track the new entity for fluid restoration
+		if saved_fluids then
+			if ee and ee.valid then
+				fluid_entity_tracking[#fluid_entity_tracking + 1] = { entity = ee, fluids = saved_fluids }
+			elseif e and e.valid then
+				-- Entity was teleported in place (characters, same-surface teleportable entities)
+				fluid_entity_tracking[#fluid_entity_tracking + 1] = { entity = e, fluids = saved_fluids }
 			end
 		end
 
@@ -1566,6 +1589,7 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 	local oldposition = boat.position
 	newposition = newposition or oldposition
 
+
 	local scope = Public.get_scope(boat)
 
 	local memory = Memory.get_crew_memory()
@@ -1826,6 +1850,12 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 		end
 	end
 
+	-- Track entities with fluid through processing for later restoration.
+	-- During same-surface clone+destroy, fluid gets redistributed between the
+	-- clone and original while they briefly coexist on the same fluid network.
+	-- We save exact amounts before processing and restore them afterward.
+	local fluid_entity_tracking = {}
+
 	local wire_connections_matrix = {}
 	-- local underground_belt_neighbours_matrix = {}
 
@@ -1842,8 +1872,24 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 			newsurface_name,
 			unique_entities_list,
 			wire_connections_matrix,
+			fluid_entity_tracking,
 			e
 		)
+	end
+
+	-- Restore saved fluidbox contents to moved entities
+	if #fluid_entity_tracking > 0 then
+		for _, entry in ipairs(fluid_entity_tracking) do
+			local e = entry.entity
+			if e and e.valid then
+				for fi = 1, #e.fluidbox do
+					if entry.fluids[fi] then
+						e.fluidbox[fi] = entry.fluids[fi]
+					end
+				end
+
+			end
+		end
 	end
 
 	if first_rail_found_p then

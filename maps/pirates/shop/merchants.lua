@@ -74,7 +74,7 @@ function Public.generate_merchant_trades(market)
 			})
 			market.add_market_item({
 				price = { { name = 'coin', count = 6000 }, { name = 'raw-fish', count = 10 } },
-				offer = { type = 'give-item', item = 'fusion-reactor-equipment', count = 1 },
+				offer = { type = 'give-item', item = 'fission-reactor-equipment', count = 1 },
 			})
 			market.add_market_item({
 				price = { { name = 'coin', count = 1000 }, { name = 'raw-fish', count = 10 } },

@@ -26,22 +26,25 @@ function Public.toggle_window(player)
 	local flow, flow2
 
 	local window = player.gui.screen[window_name .. "_piratewindow"]
-	if
-		window
-		and window.close_button_flow
-		and window.close_button_flow.hflow
-		and window.close_button_flow.hflow.switch_auto_map
-	then
-		local switch_state = window.close_button_flow.hflow.switch_auto_map.switch_state
-		local auto_map = true
-		if switch_state == "right" then
-			auto_map = false
-		end
-		GuiCommon.update_gui_memory(player, window_name, "auto_map", auto_map)
+	if window then
+		if
+			window.close_button_flow
+			and window.close_button_flow.hflow
+			and window.close_button_flow.hflow.switch_auto_map
+		then
+			local switch_state = window.close_button_flow.hflow.switch_auto_map.switch_state
+			local auto_map = true
+			if switch_state == "right" then
+				auto_map = false
+			end
+			GuiCommon.update_gui_memory(player, window_name, "auto_map", auto_map)
 
-		window.destroy()
-		return
-	end -- else:
+			window.destroy()
+			return
+		else
+			window.destroy()
+		end
+	end
 
 	flow = GuiCommon.new_window(player, window_name)
 	flow.caption = { "pirates.gui_minimap_outside_view" }
@@ -254,8 +257,13 @@ local function on_player_changed_surface(event)
 
 	local window = player.gui.screen[window_name .. "_piratewindow"]
 
-	local from_hold_or_cabin_bool = string.sub(game.surfaces[event.surface_index].name, 9, 12) == "Hold"
-		or string.sub(game.surfaces[event.surface_index].name, 9, 13) == "Cabin"
+	local from_surface = game.surfaces[event.surface_index]
+	if not from_surface then
+		return
+	end
+
+	local from_hold_or_cabin_bool = string.sub(from_surface.name, 9, 12) == "Hold"
+		or string.sub(from_surface.name, 9, 13) == "Cabin"
 	local to_hold_or_cabin_bool = string.sub(player.character.surface.name, 9, 12) == "Hold"
 		or string.sub(player.character.surface.name, 9, 13) == "Cabin"
 

@@ -42,7 +42,7 @@ Public.samurai_damage_dealt_with_melee = 30
 Public.hatamoto_damage_taken_multiplier = 0.3
 Public.hatamoto_damage_dealt_when_not_melee_multiplier = 0.75
 Public.hatamoto_damage_dealt_with_melee = 50
-Public.iron_leg_damage_taken_multiplier = 0.24
+Public.iron_leg_damage_taken_multiplier = 0.35
 Public.iron_leg_iron_ore_required = 3000
 Public.deckhand_extra_speed = 1.25
 Public.deckhand_ore_grant_multiplier = 5
@@ -112,7 +112,7 @@ Public.EEI_stages = { --multipliers
 function Public.scripted_biters_pollution_cost_multiplier()
 	local early_game_factor = 1 + 1.2 / ((1 + (Common.overworldx() / 40)) ^ (1.5 + Common.difficulty_scale())) -- the complicated factor makes the early-game easier; in particular the first island, but on easier difficulties the next few islands as well
 
-	local factor_accounting_for_new_damage_upgrades = 0.983 ^ (Common.overworldx() / 40)
+	local factor_accounting_for_new_damage_upgrades = 0.995 ^ (Common.overworldx() / 40)
 
 	return (1.1 / Math.sloped(Common.difficulty_scale(), 0.7))
 		* early_game_factor
@@ -344,7 +344,7 @@ function Public.base_evolution_leagues(leagues)
 		-- end --extra slope from 600 to 1000 adds 2.5% evo
 
 		evo = (0.0201 * (overworldx / 40)) * Math.sloped(Common.difficulty_scale(), 0.4)
-		evo = evo + 0.02 * Common.difficulty_scale()
+		evo = evo + 0.01 * Common.difficulty_scale() + 0.015 * Common.difficulty_scale() ^ 2
 	end
 
 	return evo
@@ -556,7 +556,7 @@ function Public.class_cost(at_dock)
 end
 
 function Public.weapon_damage_upgrade_percentage()
-	return 5
+	return 2
 end
 
 function Public.weapon_damage_upgrade_price()
@@ -594,7 +594,7 @@ function Public.kraken_evo_increase_per_second()
 end
 
 function Public.sandworm_evo_increase_per_spawn()
-	return (1 / 100) * (1 / 7) * Math.sloped(Common.difficulty_scale(), 3 / 5)
+	return (1 / 100) * (1 / 21) * Math.sloped(Common.difficulty_scale(), 3 / 5)
 end
 
 function Public.kraken_kill_reward_items()
