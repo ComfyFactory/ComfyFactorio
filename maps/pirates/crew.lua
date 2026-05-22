@@ -587,17 +587,6 @@ function Public.disband_crew(donotprint)
 		game.delete_surface(game.surfaces[cabinname])
 	end
 
-	local s = Hold.get_hold_surface(1)
-	if s and s.valid then
-		log('hold failed to delete')
-	end
-
-	s = Cabin.get_cabin_surface()
-	if s and s.valid then
-		log(_inspect(cabinname))
-		log('cabin failed to delete')
-	end
-
 	local crowsnestname = SurfacesCommon.encode_surface_name(memory.id, 0, Surfaces.enum.CROWSNEST, nil)
 	if game.surfaces[crowsnestname] then
 		game.delete_surface(game.surfaces[crowsnestname])
@@ -1040,6 +1029,8 @@ function Public.reset_crew_and_enemy_force(id)
 
 	-- crew_force.technologies['steel-axe'].enabled = false
 
+	crew_force.technologies['oil-processing'].researched = true
+
 	crew_force.technologies['nuclear-power'].enabled = true
 
 	crew_force.technologies['effect-transmission'].enabled = true
@@ -1052,8 +1043,9 @@ function Public.reset_crew_and_enemy_force(id)
 	-- crew_force.technologies['productivity-module-3'].enabled = false
 
 	-- crew_force.technologies['speed-module'].enabled = true
-	crew_force.technologies['speed-module-2'].enabled = false
-	crew_force.technologies['speed-module-3'].enabled = false
+	-- techs enabled so tech tree can progress to utility science; recipes stay disabled in disable_recipes()
+	crew_force.technologies['speed-module-2'].enabled = true
+	crew_force.technologies['speed-module-3'].enabled = true
 	-- crew_force.technologies['efficiency-module'].enabled = true
 	-- crew_force.technologies['efficiency-module-2'].enabled = false
 	-- crew_force.technologies['efficiency-module-3'].enabled = false

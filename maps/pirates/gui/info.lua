@@ -3,7 +3,6 @@
 
 -- local Memory = require 'maps.pirates.memory'
 -- local Common = require 'maps.pirates.common'
-local CoreData = require('maps.pirates.coredata')
 -- local Utils = require 'maps.pirates.utils_local'
 -- local Math = require 'maps.pirates.math'
 -- local Surfaces = require 'maps.pirates.surfaces.surfaces'
@@ -53,11 +52,6 @@ function Public.toggle_window(player)
 	flow2 = Public.flow_add_info_tab(flow, { 'pirates.gui_info_tips' })
 
 	Public.flow_add_info_sections(flow2, { 'new_players', 'tips' })
-
-	flow2 = Public.flow_add_info_tab(flow, { 'pirates.gui_info_updates' })
-
-	Public.flow_add_info_sections(flow2, { '1', '2' })
-	-- Public.flow_add_info_sections(flow2, {'updates', 'bugs'})
 
 	flow2 = Public.flow_add_info_tab(flow, { 'pirates.gui_info_credits' })
 
@@ -121,12 +115,7 @@ function Public.flow_add_info_tab(flow, tab_name)
 
 	flow5 = flow4.add({
 		type = 'label',
-		caption = {
-			'',
-			{ 'pirates.softmod_info_header_before_version_number' },
-			CoreData.version_string,
-			{ 'pirates.softmod_info_header_after_version_number' },
-		},
+		caption = 'Pirate Ship',
 	})
 	flow5.style.font_color = GuiCommon.friendly_font_color
 	flow5.style.font = 'heading-1'
@@ -244,8 +233,6 @@ function Public.full_update(player)
 	elseif flow2.selected_tab_index == 2 then
 		flow2.style.height = 500
 	elseif flow2.selected_tab_index == 3 then
-		flow2.style.height = 500
-	elseif flow2.selected_tab_index == 4 then
 		flow2.style.height = 350
 	end
 end

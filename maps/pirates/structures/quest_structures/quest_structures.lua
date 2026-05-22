@@ -416,15 +416,6 @@ function Public.tick_quest_structure_entry_price_check()
 					if item_count > 0 then
 						red_invs[count].insert({ name = k, count = item_count })
 						count = count + 1
-					else
-						log(
-							'Error (non-critical): item_count is not positive. v: '
-								.. v
-								.. '; removed: '
-								.. removed
-								.. '; entry_price.batchSize: '
-								.. entry_price.batchSize
-						)
 					end
 				end
 			end

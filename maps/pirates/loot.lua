@@ -466,7 +466,7 @@ Public.maze_treasure_data_raw = {
 	{ 1, 0, 2, true, 'personal-roboport-mk2-equipment', 1, 1 },
 	{ 1, 0, 0.8, false, 'night-vision-equipment', 1, 1 },
 	{ 2, 0, 1, false, 'personal-laser-defense-equipment', 1, 1 },
-	{ 1, 0, 1, false, 'fusion-reactor-equipment', 1, 1 },
+	{ 1, 0, 1, false, 'fission-reactor-equipment', 1, 1 },
 	{ 4, 0, 1, false, 'exoskeleton-equipment', 1, 1 },
 
 	{ 2, -0.7, 1.3, true, 'advanced-circuit', 40, 90 },
@@ -528,7 +528,7 @@ Public.dredger_loot_raw = {
 	{ 0.008, 0, 1, false, 'personal-laser-defense-equipment', 1, 1 },
 	{ 0.008, 0, 2, true, 'energy-shield-mk2-equipment', 1, 1 },
 	{ 0.008, -1, 1, true, 'personal-roboport-equipment', 1, 1 },
-	{ 0.004, 0, 1, false, 'fusion-reactor-equipment', 1, 1 },
+	{ 0.004, 0, 1, false, 'fission-reactor-equipment', 1, 1 },
 	{ 0.004, 0, 2, true, 'personal-roboport-mk2-equipment', 1, 1 },
 }
 

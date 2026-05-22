@@ -79,7 +79,7 @@ function Public.terrain(args)
 			if noises.mood(p) < 0.1 then
 				local rng = Math.random()
 				if rng < 0.0004 then
-					args.entities[#args.entities + 1] = { name = 'tesla-turret-remnants', position = args.p }
+					args.entities[#args.entities + 1] = { name = 'gun-turret-remnants', position = args.p }
 				elseif rng < 0.0007 then
 					args.entities[#args.entities + 1] = { name = 'spidertron-remnants', position = args.p }
 				elseif rng < 0.001 then

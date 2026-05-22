@@ -684,6 +684,39 @@ function Public.query_can_pay_cost_to_leave()
 	return can_leave
 end
 
+function Public.undock_cost_shortfall_string()
+	local memory = Memory.get_crew_memory()
+	local boat = memory.boat
+	local destination = Public.current_destination()
+	if not (boat and destination) then
+		return ""
+	end
+
+	local cost = destination.static_params.base_cost_to_undock
+	if not cost then
+		return ""
+	end
+
+	local adjusted_cost = Public.time_adjusted_departure_cost(cost)
+
+	local parts = {}
+	for name, count in pairs(adjusted_cost) do
+		if name == "launch_rocket" and count == true then
+			if not destination.dynamic_data.rocket_launched then
+				parts[#parts + 1] = "[img=item/rocket-silo] Rocket launch"
+			end
+		elseif type(count) == "number" then
+			local stored = (memory.boat.stored_resources and memory.boat.stored_resources[name]) or 0
+			local needed = count - stored
+			if needed > 0 then
+				parts[#parts + 1] = needed .. " [item=" .. name .. "]"
+			end
+		end
+	end
+
+	return table.concat(parts, ", ")
+end
+
 -- This function assumes you're placing obstacle boxes in the hold
 function Public.surface_place_random_obstacle_boxes(
 	surface,

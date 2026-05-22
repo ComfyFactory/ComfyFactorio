@@ -200,9 +200,15 @@ Public.difficulty_options = {
 	},
 	{
 		value = 2,
-		icon = 'atomic-bomb',
+		icon = 'explosive-rocket',
 		text = { 'pirates.difficulty_nightmare' },
 		associated_color = { r = 170, g = 60, b = 60 },
+	},
+	{
+		value = 2.5,
+		icon = 'atomic-bomb',
+		text = { 'pirates.difficulty_relentless' },
+		associated_color = { r = 120, g = 20, b = 60 },
 	},
 }
 
@@ -214,8 +220,10 @@ function Public.get_difficulty_option_from_value(difficulty_value)
 		return 2
 	elseif difficulty_value <= 1.7 then
 		return 3
-	else
+	elseif difficulty_value <= 2.2 then
 		return 4
+	else
+		return 5
 	end
 end
 

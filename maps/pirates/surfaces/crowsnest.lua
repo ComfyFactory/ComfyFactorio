@@ -284,6 +284,9 @@ end
 function Public.paint_water_between_overworld_positions(overworldx1, overworldx2)
 	-- local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[Public.crowsnest_surface_name()]
+	if not surface then
+		return
+	end
 
 	Common.ensure_chunks_at(surface, { x = overworldx2, y = 0 }, 10)
 
@@ -304,6 +307,9 @@ end
 function Public.paint_crowsnest_background_tiles()
 	-- local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[Public.crowsnest_surface_name()]
+	if not surface then
+		return
+	end
 
 	local tiles = {}
 	for y = -(Public.Data.height + 32 - 1) / 2, (Public.Data.height + 32 - 1) / 2, 1 do
