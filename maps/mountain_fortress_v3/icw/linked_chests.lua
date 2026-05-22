@@ -77,7 +77,7 @@ local clear_chest_token =
 local create_clear_chest_token =
     Task.register(
         function (event)
-            local surface = game.get_surface('Gulag')
+            local surface = game.get_surface('gulag')
             local entity = surface.create_entity { name = 'linked-chest', position = { x = -62, y = -6 }, force = game.forces.player }
             if not entity or not entity.valid then
                 return

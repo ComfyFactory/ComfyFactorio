@@ -178,4 +178,29 @@ function Module.convert_date(year, month, day)
     return (day - 32075 + sub(1461 * (year + 4800 + d), 4) + sub(367 * (month - 2 - d * 12), 12) - sub(3 * sub(year + 4900 + d, 100), 4)) - 2415021
 end
 
+function Module.inside(pos, area)
+    local lt = area.left_top
+    local rb = area.right_bottom
+
+    return pos.x >= lt.x and pos.y >= lt.y and pos.x <= rb.x and pos.y <= rb.y
+end
+
+function Module.contains_positions(tbl, area)
+    for _, pos in pairs(tbl) do
+        if Module.inside(pos.position, area) then
+            return true
+        end
+    end
+    return false
+end
+
+function Module.contains_positions_only(tbl, area)
+    for _, pos in pairs(tbl) do
+        if Module.inside(pos, area) then
+            return true
+        end
+    end
+    return false
+end
+
 return Module

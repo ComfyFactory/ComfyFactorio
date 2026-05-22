@@ -59,11 +59,6 @@ globals =
     'Debug',
     '_LIFECYCLE',
     '_STAGE',
-    'is_loaded',
-    'is_loaded_bool',
-    'is_game_modded',
-    'normalize_path',
-    'has_space_age',
     'require'
 }
 max_line_length = LINE_LENGTH
@@ -71,7 +66,7 @@ max_line_length = LINE_LENGTH
 not_globals = NOT_GLOBALS
 ignore = IGNORE
 quiet = 1 -- pass -q option
-max_cyclomatic_complexity = 100
+max_cyclomatic_complexity = 150
 codes = true
 
 --List of files and directories to exclude

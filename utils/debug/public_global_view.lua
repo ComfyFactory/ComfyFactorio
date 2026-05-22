@@ -14,9 +14,38 @@ local left_panel_name = Gui.uid_name()
 local right_panel_name = Gui.uid_name()
 local input_text_box_name = Gui.uid_name()
 local filter_text_box_name = Gui.uid_name()
+local right_filter_text_box_name = Gui.uid_name()
 local refresh_name = Gui.uid_name()
 
 Public.name = 'Tokens'
+
+local function filter_dump_content(content, filter)
+    if not filter or filter == '' then
+        return content or ''
+    end
+
+    content = content or ''
+    local filtered_lines = {}
+    local normalized_filter = filter:lower()
+
+    for line in content:gmatch('[^\r\n]+') do
+        if line:lower():find(normalized_filter, 1, true) then
+            filtered_lines[#filtered_lines + 1] = line
+        end
+    end
+
+    if #filtered_lines == 0 then
+        return ''
+    end
+
+    return concat(filtered_lines, '\n')
+end
+
+local function update_right_panel(data)
+    local right_filter_text_box = data.right_filter_text_box
+    local filter = right_filter_text_box and right_filter_text_box.text or nil
+    data.right_panel.text = filter_dump_content(data.raw_content, filter)
+end
 
 function Public.show(container, filter)
     container.clear()
@@ -27,6 +56,8 @@ function Public.show(container, filter)
 
     local left_top_flow = left_flow.add { type = 'flow', direction = 'horizontal' }
 
+    local filter_label = left_top_flow.add { type = 'label', caption = 'Filter' }
+    filter_label.style.top_padding = 4
     local filter_text_name = left_top_flow.add { type = 'text-box', name = filter_text_box_name, tooltip = 'Filter for tokens', text = filter or '' }
 
     if filter then
@@ -54,6 +85,11 @@ function Public.show(container, filter)
 
     local right_top_flow = right_flow.add { type = 'flow', direction = 'horizontal' }
 
+    local right_filter_text_box = right_top_flow.add { type = 'text-box', name = right_filter_text_box_name, tooltip = 'Filter current content' }
+    local right_filter_text_box_style = right_filter_text_box.style
+    right_filter_text_box_style.width = 220
+    right_filter_text_box_style.height = 32
+
     local input_text_box = right_top_flow.add { type = 'text-box', name = input_text_box_name }
     local input_text_box_style = input_text_box.style
     input_text_box_style.horizontally_stretchable = true
@@ -75,13 +111,17 @@ function Public.show(container, filter)
     right_panel_style.maximal_width = 1000
     right_panel_style.maximal_height = 1000
 
-    local data = {
+    local data =
+    {
         right_panel = right_panel,
+        right_filter_text_box = right_filter_text_box,
         input_text_box = input_text_box,
-        selected_header = nil
+        selected_header = nil,
+        raw_content = ''
     }
 
     Gui.set_data(input_text_box, data)
+    Gui.set_data(right_filter_text_box, data)
     Gui.set_data(left_panel, data)
     Gui.set_data(refresh_button, data)
 end
@@ -98,7 +138,6 @@ Gui.on_click(
             return
         end
 
-        local right_panel = data.right_panel
         local selected_header = data.selected_header
         local input_text_box = data.input_text_box
 
@@ -113,11 +152,11 @@ Gui.on_click(
         input_text_box.style.font_color = Color.black
 
         local id = Global.get_global(token_id)
-        local content = dump(id) or 'Could not load data.'
+        data.raw_content = dump(id) or 'Could not load data.'
         -- if content:find('function_handlers') then
         --     content = '{}' -- desync handler
         -- end
-        right_panel.text = content
+        update_right_panel(data)
     end
 )
 
@@ -127,7 +166,8 @@ local function update_dump(text_input, data)
         text_input.style.font_color = Color.red
     else
         text_input.style.font_color = Color.black
-        data.right_panel.text = ouput
+        data.raw_content = ouput
+        update_right_panel(data)
     end
 end
 
@@ -138,6 +178,19 @@ Gui.on_text_changed(
         local data = Gui.get_data(element)
 
         update_dump(element, data)
+    end
+)
+
+Gui.on_text_changed(
+    right_filter_text_box_name,
+    function (event)
+        local element = event.element
+        local data = Gui.get_data(element)
+        if not data then
+            return
+        end
+
+        update_right_panel(data)
     end
 )
 
@@ -165,7 +218,7 @@ Gui.on_click(
 
         local input_text_box = data.input_text_box
 
-        update_dump(input_text_box, data, event.player)
+        update_dump(input_text_box, data)
     end
 )
 

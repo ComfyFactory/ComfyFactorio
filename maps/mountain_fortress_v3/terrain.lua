@@ -79,7 +79,7 @@ local start_aquilo_tiles =
     'snow-patchy',
 }
 
-if not has_space_age() then
+if not ServerCommands.has_space_age() then
     start_vulcanus_tiles = vanilla_start_ground_tiles
     start_aquilo_tiles = vanilla_start_ground_tiles
     start_fulgora_tiles = vanilla_start_ground_tiles
@@ -455,6 +455,42 @@ local function make_weights(zones)
         weights[entry.zone] = { cb = callback[entry.cb], prob = entry.prob }
     end
     return weights
+end
+
+local function seasonal_noise(name, p, seed, offset)
+    local az = Public.get('adjusted_zones')
+    local season = (az and az.season) or 0
+
+    local s = seed + offset + (season * 5000)
+
+    local n = Public.get_noise(name, p, s)
+
+    if name == "cave_rivers" then
+        n = n * (1 + season * 0.02)
+    elseif name == "cave_rivers_2" then
+        n = n * (1 + season * 0.015)
+    elseif name == "small_caves" then
+        n = n * (1 + season * 0.01)
+    elseif name == "no_rocks_3" then
+        n = n * (1 - season * 0.01)
+    elseif name == "no_rocks_2" then
+        n = n * (1 - season * 0.008)
+    elseif name == "cave_ponds" then
+        n = n * (1 + season * 0.012)
+    elseif name == "large_caves" then
+        n = n * (1 + season * 0.01)
+    elseif name == "dungeons" then
+        n = n * (1 + season * 0.008)
+    end
+
+    return n
+end
+
+local function noise_shift(base_min, base_max)
+    local az = Public.get('adjusted_zones')
+    local season = (az and az.season) or 1
+    local shift = season * 0.005
+    return base_min - shift, base_max + shift
 end
 
 local function add_gleba_required_trees(entities, position)
@@ -925,8 +961,8 @@ local function wall(p, data, adjusted_zones)
     local seed = data.seed
     local y = data.yv
 
-    local small_caves = Public.get_noise('small_caves', p, seed + seed)
-    local cave_ponds = Public.get_noise('cave_rivers', p, seed + seed)
+    local small_caves = seasonal_noise('small_caves', p, seed, seed)
+    local cave_ponds = seasonal_noise('cave_rivers', p, seed, seed)
     if y > 9 + cave_ponds * 6 and y < 23 + small_caves * 6 then
         if small_caves > 0.02 or cave_ponds > 0.02 then
             if small_caves > 0.005 then
@@ -946,7 +982,7 @@ local function wall(p, data, adjusted_zones)
                 entities[#entities + 1] = { name = 'fish', position = p }
             end
         else
-            local noise = Public.get_noise('dungeon_sewer', p, data.seed)
+            local noise = seasonal_noise('dungeon_sewer', p, data.seed, 0)
             local index = floor(noise * 32) % 9 + 1
             tiles[#tiles + 1] = { name = nuclear_tiles[index], position = p }
 
@@ -963,7 +999,7 @@ local function wall(p, data, adjusted_zones)
             end
         end
     else
-        local noise = Public.get_noise('dungeon_sewer', p, data.seed)
+        local noise = seasonal_noise('dungeon_sewer', p, data.seed, 0)
         local index = floor(noise * 32) % 9 + 1
         tiles[#tiles + 1] = { name = nuclear_tiles[index], position = p }
 
@@ -1217,11 +1253,11 @@ local function zone_crystal_1(x, y, data, void_or_lab, adjusted_zones)
         return
     end
 
-    local small_caves = Public.get_noise('dungeons', p, seed + 12345)
-    local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed + 67890)
-    local smol_areas = Public.get_noise('smol_areas', p, seed + 11111)
-    local cave_rivers = Public.get_noise('cave_rivers', p, seed + 22222)
-    local no_rocks = Public.get_noise('no_rocks', p, seed + 33333)
+    local small_caves = seasonal_noise('dungeons', p, seed, 12345)
+    local noise_cave_ponds = seasonal_noise('cave_ponds', p, seed, 67890)
+    local smol_areas = seasonal_noise('smol_areas', p, seed, 11111)
+    local cave_rivers = seasonal_noise('cave_rivers', p, seed, 22222)
+    local no_rocks = seasonal_noise('no_rocks', p, seed, 33333)
     if smol_areas < 0.055 and smol_areas > -0.025 then
         tiles[#tiles + 1] = { name = 'blue-refined-concrete', position = p }
         if random(1, 32) == 1 then
@@ -1327,10 +1363,10 @@ local function zone_crystal_1(x, y, data, void_or_lab, adjusted_zones)
     end
 
     local maze_p = { x = floor(p.x - p.x % 10), y = floor(p.y - p.y % 10) }
-    local maze_noise = Public.get_noise('no_rocks_2', maze_p, seed)
+    local maze_noise = seasonal_noise('no_rocks_2', maze_p, seed, 0)
     if maze_noise > -0.35 and maze_noise < 0.35 then
         tiles[#tiles + 1] = { name = 'dirt-7', position = p }
-        local no_rocks_2 = Public.get_noise('no_rocks_2', p, seed)
+        local no_rocks_2 = seasonal_noise('no_rocks_2', p, seed, 0)
         if random(1, 2) == 1 and no_rocks_2 > -0.5 then
             entities[#entities + 1] = { name = adjusted_zones.rock_raffle[random(1, adjusted_zones.size_of)], position = p }
         end
@@ -1374,10 +1410,10 @@ local function zone_volcanic_1(x, y, data, void_or_lab, adjusted_zones)
     end
 
 
-    local small_caves = Public.get_noise('dungeons', p, seed + 44444)
-    local noise_large_caves = Public.get_noise('large_caves', p, seed + 55555)
-    local smol_areas = Public.get_noise('smol_areas', p, seed + 66666)
-    local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed + 77777)
+    local small_caves = seasonal_noise('dungeons', p, seed, 44444)
+    local noise_large_caves = seasonal_noise('large_caves', p, seed, 55555)
+    local smol_areas = seasonal_noise('smol_areas', p, seed, 66666)
+    local noise_cave_ponds = seasonal_noise('cave_ponds', p, seed, 77777)
 
     if smol_areas < 0.055 and smol_areas > -0.025 then
         tiles[#tiles + 1] = { name = 'deepwater-green', position = p }
@@ -1401,10 +1437,18 @@ local function zone_volcanic_1(x, y, data, void_or_lab, adjusted_zones)
         if noise_cave_ponds < 0.15 and noise_cave_ponds > -0.15 then
             if small_caves > 0.32 then
                 tiles[#tiles + 1] = { name = void_or_lab, position = p }
+                -- spawn some random grilled fishes
+                if random(1, 32) == 1 then
+                    entities[#entities + 1] = { name = 'grilled-fish', position = p }
+                end
                 return
             end
             if small_caves < -0.32 then
                 tiles[#tiles + 1] = { name = void_or_lab, position = p }
+                -- spawn some random cooked fishes
+                if random(1, 32) == 1 then
+                    entities[#entities + 1] = { name = 'cooked-fish', position = p }
+                end
                 return
             end
         end
@@ -1417,7 +1461,7 @@ local function zone_volcanic_1(x, y, data, void_or_lab, adjusted_zones)
             return
         end
 
-        local cave_rivers = Public.get_noise('cave_rivers', p, seed + 88888)
+        local cave_rivers = seasonal_noise('cave_rivers', p, seed, 88888)
         if cave_rivers < 0.037 and cave_rivers > -0.037 then
             if noise_cave_ponds < 0.1 then
                 tiles[#tiles + 1] = { name = 'water-shallow', position = p }
@@ -1444,7 +1488,7 @@ local function zone_volcanic_1(x, y, data, void_or_lab, adjusted_zones)
             return
         end
 
-        local no_rocks = Public.get_noise('no_rocks', p, seed + 99999)
+        local no_rocks = seasonal_noise('no_rocks', p, seed, 99999)
         if no_rocks < 0.20 and no_rocks > -0.20 then
             if small_caves > 0.30 then
                 tiles[#tiles + 1] = { name = 'dirt-' .. floor(noise_cave_ponds * 32) % 7 + 1, position = p }
@@ -1465,7 +1509,7 @@ local function zone_volcanic_1(x, y, data, void_or_lab, adjusted_zones)
         end
     end
 
-    local noise_1 = Public.get_noise('small_caves', p, seed)
+    local noise_1 = seasonal_noise('small_caves', p, seed, 0)
     if noise_1 > -0.30 and noise_1 < 0.30 then
         if noise_1 > -0.14 and noise_1 < 0.14 then
             tiles[#tiles + 1] = { name = 'dirt-7', position = p }
@@ -1481,19 +1525,19 @@ local function zone_volcanic_1(x, y, data, void_or_lab, adjusted_zones)
         return
     end
 
-    local iron_noise = Public.get_noise('ore', p, seed + 5000)
+    local iron_noise = seasonal_noise('ore', p, seed, 5000)
     if iron_noise > 0.75 then
         entities[#entities + 1] = { name = 'iron-ore', position = p, amount = 1000 + abs(iron_noise * 1000) }
     end
-    local copper_noise = Public.get_noise('ore', p, seed + 10000)
+    local copper_noise = seasonal_noise('ore', p, seed, 10000)
     if copper_noise > 0.75 then
         entities[#entities + 1] = { name = 'copper-ore', position = p, amount = 1000 + abs(copper_noise * 1000) }
     end
-    local coal_noise = Public.get_noise('ore', p, seed + 15000)
+    local coal_noise = seasonal_noise('ore', p, seed, 15000)
     if coal_noise > 0.75 then
         entities[#entities + 1] = { name = 'coal', position = p, amount = 1000 + abs(coal_noise * 1000) }
     end
-    local stone_noise = Public.get_noise('ore', p, seed + 20000)
+    local stone_noise = seasonal_noise('ore', p, seed, 20000)
     if stone_noise > 0.75 then
         entities[#entities + 1] = { name = 'stone', position = p, amount = 1000 + abs(stone_noise * 1000) }
     end
@@ -1523,18 +1567,26 @@ local function zone_tech_1(x, y, data, void_or_lab, adjusted_zones)
         return
     end
 
-    local tech_ruins = Public.get_noise('scrapyard', p, seed + 111111)
+    local tech_ruins = seasonal_noise('scrapyard', p, seed, 111111)
 
-    local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed)
-    local small_caves = Public.get_noise('small_caves', p, seed)
+    local noise_cave_ponds = seasonal_noise('cave_ponds', p, seed, 0)
+    local small_caves = seasonal_noise('small_caves', p, seed, 0)
     if noise_cave_ponds < 0.15 and noise_cave_ponds > -0.15 then
         if small_caves > 0.35 then
             tiles[#tiles + 1] = { name = void_or_lab, position = p }
+            -- spawn some random grilled fishes
+            if random(1, 32) == 1 then
+                entities[#entities + 1] = { name = 'grilled-fish', position = p }
+            end
             return
         end
 
         if small_caves < -0.35 then
             tiles[#tiles + 1] = { name = void_or_lab, position = p }
+            -- spawn some random cooked fishes
+            if random(1, 32) == 1 then
+                entities[#entities + 1] = { name = 'cooked-fish', position = p }
+            end
             return
         end
     end
@@ -1608,7 +1660,7 @@ local function zone_tech_1(x, y, data, void_or_lab, adjusted_zones)
         return
     end
 
-    local cave_ponds = Public.get_noise('cave_ponds', p, seed)
+    local cave_ponds = seasonal_noise('cave_ponds', p, seed, 0)
     if cave_ponds < -0.6 and tech_ruins > -0.2 and tech_ruins < 0.2 then
         tiles[#tiles + 1] = { name = 'deepwater-green', position = p }
         if random(1, 16) == 1 then
@@ -1634,18 +1686,26 @@ local function zone_fulgora_tech_1(x, y, data, void_or_lab, adjusted_zones)
         return
     end
 
-    local tech_ruins = Public.get_noise('scrapyard', p, seed + 111111)
+    local tech_ruins = seasonal_noise('scrapyard', p, seed, 111111)
 
-    local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed)
-    local small_caves = Public.get_noise('small_caves', p, seed)
+    local noise_cave_ponds = seasonal_noise('cave_ponds', p, seed, 0)
+    local small_caves = seasonal_noise('small_caves', p, seed, 0)
     if noise_cave_ponds < 0.15 and noise_cave_ponds > -0.15 then
         if small_caves > 0.35 then
             tiles[#tiles + 1] = { name = void_or_lab, position = p }
+            -- spawn some random grilled fishes
+            if random(1, 32) == 1 then
+                entities[#entities + 1] = { name = 'grilled-fish', position = p }
+            end
             return
         end
 
         if small_caves < -0.35 then
             tiles[#tiles + 1] = { name = void_or_lab, position = p }
+            -- spawn some random cooked fishes
+            if random(1, 32) == 1 then
+                entities[#entities + 1] = { name = 'cooked-fish', position = p }
+            end
             return
         end
     end
@@ -1717,7 +1777,7 @@ local function zone_fulgora_tech_1(x, y, data, void_or_lab, adjusted_zones)
         return
     end
 
-    local cave_ponds = Public.get_noise('cave_ponds', p, seed)
+    local cave_ponds = seasonal_noise('cave_ponds', p, seed, 0)
     if cave_ponds < -0.6 and tech_ruins > -0.2 and tech_ruins < 0.2 then
         tiles[#tiles + 1] = { name = 'deepwater-green', position = p }
         if random(1, 16) == 1 then
@@ -1744,10 +1804,10 @@ local function zone_frostbite_1(x, y, data, void_or_lab)
         return
     end
 
-    local small_caves = Public.get_noise('dungeons', p, seed + 333333)
-    local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed + 444444)
-    local smol_areas = Public.get_noise('smol_areas', p, seed + 555555)
-    local cave_rivers = Public.get_noise('cave_rivers', p, seed + 666666)
+    local small_caves = seasonal_noise('dungeons', p, seed, 333333)
+    local noise_cave_ponds = seasonal_noise('cave_ponds', p, seed, 444444)
+    local smol_areas = seasonal_noise('smol_areas', p, seed, 555555)
+    local cave_rivers = seasonal_noise('cave_rivers', p, seed, 666666)
 
     if smol_areas < 0.055 and smol_areas > -0.025 then
         tiles[#tiles + 1] = { name = 'deepwater-green', position = p }
@@ -1817,7 +1877,7 @@ local function zone_frostbite_1(x, y, data, void_or_lab)
         return
     end
 
-    local no_rocks = Public.get_noise('no_rocks', p, seed + 777777)
+    local no_rocks = seasonal_noise('no_rocks', p, seed, 777777)
     if p.y < -64 + noise_cave_ponds * 10 then
         if no_rocks < 0.11 and no_rocks > -0.11 then
             if small_caves > 0.31 then
@@ -1840,9 +1900,9 @@ local function zone_frostbite_1(x, y, data, void_or_lab)
     end
 
     local maze_p = { x = floor(p.x - p.x % 10), y = floor(p.y - p.y % 10) }
-    local maze_noise = Public.get_noise('no_rocks_2', maze_p, seed)
+    local maze_noise = seasonal_noise('no_rocks_2', maze_p, seed, 0)
     if maze_noise > -0.35 and maze_noise < 0.35 then
-        local no_rocks_2 = Public.get_noise('no_rocks_2', p, seed)
+        local no_rocks_2 = seasonal_noise('no_rocks_2', p, seed, 0)
         if random(1, 2) == 1 and no_rocks_2 > -0.5 then
             entities[#entities + 1] = { name = snowy_rock_raffle[random(1, size_of_snowy_rock_raffle)], position = p }
         end
@@ -1879,10 +1939,10 @@ local function zone_frostbite_2(x, y, data, void_or_lab)
         return
     end
 
-    local small_caves = Public.get_noise('dungeons', p, seed)
-    local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed)
-    local smol_areas = Public.get_noise('smol_areas', p, seed)
-    local cave_rivers = Public.get_noise('cave_rivers', p, seed)
+    local small_caves = seasonal_noise('dungeons', p, seed, 0)
+    local noise_cave_ponds = seasonal_noise('cave_ponds', p, seed, 0)
+    local smol_areas = seasonal_noise('smol_areas', p, seed, 0)
+    local cave_rivers = seasonal_noise('cave_rivers', p, seed, 0)
 
     if smol_areas < 0.055 and smol_areas > -0.025 then
         tiles[#tiles + 1] = { name = 'deepwater-green', position = p }
@@ -1965,7 +2025,7 @@ local function zone_frostbite_2(x, y, data, void_or_lab)
         return
     end
 
-    local no_rocks = Public.get_noise('no_rocks', p, seed + 777777)
+    local no_rocks = seasonal_noise('no_rocks', p, seed, 777777)
     if p.y < -64 + noise_cave_ponds * 10 then
         if no_rocks < 0.11 and no_rocks > -0.11 then
             if small_caves > 0.31 then
@@ -1988,9 +2048,9 @@ local function zone_frostbite_2(x, y, data, void_or_lab)
     end
 
     local maze_p = { x = floor(p.x - p.x % 10), y = floor(p.y - p.y % 10) }
-    local maze_noise = Public.get_noise('no_rocks_2', maze_p, seed)
+    local maze_noise = seasonal_noise('no_rocks_2', maze_p, seed, 0)
     if maze_noise > -0.35 and maze_noise < 0.35 then
-        local no_rocks_2 = Public.get_noise('no_rocks_2', p, seed)
+        local no_rocks_2 = seasonal_noise('no_rocks_2', p, seed, 0)
         if random(1, 2) == 1 and no_rocks_2 > -0.5 then
             entities[#entities + 1] = { name = snowy_rock_raffle[random(1, size_of_snowy_rock_raffle)], position = p }
         end
@@ -2047,10 +2107,10 @@ local function zone_gleba_1(x, y, data, _, adjusted_zones)
         return
     end
 
-    local small_caves = Public.get_noise('dungeons', p, seed + 333333)
-    local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed + 444444)
-    local smol_areas = Public.get_noise('smol_areas', p, seed + 555555)
-    local cave_rivers = Public.get_noise('cave_rivers', p, seed + 666666)
+    local small_caves = seasonal_noise('dungeons', p, seed, 333333)
+    local noise_cave_ponds = seasonal_noise('cave_ponds', p, seed, 444444)
+    local smol_areas = seasonal_noise('smol_areas', p, seed, 555555)
+    local cave_rivers = seasonal_noise('cave_rivers', p, seed, 666666)
 
     if smol_areas < 0.055 and smol_areas > -0.025 then
         tiles[#tiles + 1] = { name = zone_data.water_tile, position = p }
@@ -2125,7 +2185,7 @@ local function zone_gleba_1(x, y, data, _, adjusted_zones)
         return
     end
 
-    local no_rocks = Public.get_noise('no_rocks', p, seed + 777777)
+    local no_rocks = seasonal_noise('no_rocks', p, seed, 777777)
     if p.y < -64 + noise_cave_ponds * 10 then
         if no_rocks < 0.11 and no_rocks > -0.11 then
             if small_caves > 0.21 then
@@ -2148,9 +2208,9 @@ local function zone_gleba_1(x, y, data, _, adjusted_zones)
     end
 
     local maze_p = { x = floor(p.x - p.x % 10), y = floor(p.y - p.y % 10) }
-    local maze_noise = Public.get_noise('no_rocks_2', maze_p, seed)
+    local maze_noise = seasonal_noise('no_rocks_2', maze_p, seed, 0)
     if maze_noise > -0.35 and maze_noise < 0.35 then
-        local no_rocks_2 = Public.get_noise('no_rocks_2', p, seed)
+        local no_rocks_2 = seasonal_noise('no_rocks_2', p, seed, 0)
         if random(1, 2) == 1 and no_rocks_2 > -0.5 then
             entities[#entities + 1] = { name = rock_raffle[random(1, size_of_rock_raffle)], position = p }
         end
@@ -2196,11 +2256,11 @@ local function zone_gleba_2(x, y, data, _, adjusted_zones)
         return
     end
 
-    local small_caves = Public.get_noise('dungeons', p, seed)
-    local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed)
-    local smol_areas = Public.get_noise('smol_areas', p, seed)
-    local cave_rivers = Public.get_noise('cave_rivers', p, seed)
-    local no_rocks_2 = Public.get_noise('no_rocks_2', p, seed + 1922)
+    local small_caves = seasonal_noise('dungeons', p, seed, 0)
+    local noise_cave_ponds = seasonal_noise('cave_ponds', p, seed, 0)
+    local smol_areas = seasonal_noise('smol_areas', p, seed, 0)
+    local cave_rivers = seasonal_noise('cave_rivers', p, seed, 0)
+    local no_rocks_2 = seasonal_noise('no_rocks_2', p, seed, 1922)
 
     if smol_areas < 0.055 and smol_areas > -0.025 then
         tiles[#tiles + 1] = { name = zone_data.water_tile, position = p }
@@ -2281,7 +2341,7 @@ local function zone_gleba_2(x, y, data, _, adjusted_zones)
         return
     end
 
-    local no_rocks = Public.get_noise('no_rocks', p, seed + 777777)
+    local no_rocks = seasonal_noise('no_rocks', p, seed, 777777)
     if p.y < -64 + noise_cave_ponds * 10 then
         if no_rocks < 0.11 and no_rocks > -0.11 then
             if small_caves > 0.21 then
@@ -2367,10 +2427,10 @@ local function zone_vulcanus_1(x, y, data, _, adjusted_zones)
         return
     end
 
-    local noise_large_caves = Public.get_noise('large_caves', p, seed)
-    local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed)
-    local small_caves = Public.get_noise('dungeons', p, seed)
-    local smol_areas = Public.get_noise('smol_areas', p, seed + seed)
+    local noise_large_caves = seasonal_noise('large_caves', p, seed, 0)
+    local noise_cave_ponds = seasonal_noise('cave_ponds', p, seed, 0)
+    local small_caves = seasonal_noise('dungeons', p, seed, 0)
+    local smol_areas = seasonal_noise('smol_areas', p, seed, seed)
 
     if abs(noise_large_caves) > 0.7 then
         tiles[#tiles + 1] = { name = water_tiles[get_water_tile_index(p, seed)], position = p }
@@ -2437,11 +2497,19 @@ local function zone_vulcanus_1(x, y, data, _, adjusted_zones)
     if noise_cave_ponds < 0.15 and noise_cave_ponds > -0.15 then
         if small_caves > 0.75 then
             tiles[#tiles + 1] = { name = 'lava-hot', position = p }
+            -- spawn some random grilled fishes
+            if random(1, 32) == 1 then
+                entities[#entities + 1] = { name = 'grilled-fish', position = p }
+            end
             return
         end
 
         if small_caves < -0.75 then
             tiles[#tiles + 1] = { name = 'lava-hot', position = p }
+            -- spawn some random cooked fishes
+            if random(1, 32) == 1 then
+                entities[#entities + 1] = { name = 'cooked-fish', position = p }
+            end
             return
         end
     end
@@ -2489,7 +2557,7 @@ local function zone_vulcanus_1(x, y, data, _, adjusted_zones)
 
     if noise_large_caves > -0.2 and noise_large_caves < 0.2 then
         --Main Rock Terrain
-        local no_rocks_2 = Public.get_noise('no_rocks_2', p, seed + seed)
+        local no_rocks_2 = seasonal_noise('no_rocks_2', p, seed, seed)
         if no_rocks_2 > 0.80 or no_rocks_2 < -0.80 then
             tiles[#tiles + 1] = { name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)] or ('dirt-' .. floor(no_rocks_2 * 8) % 2 + 5), position = p }
             if random(1, 512) == 1 then
@@ -2521,6 +2589,10 @@ local function zone_vulcanus_1(x, y, data, _, adjusted_zones)
     end
 
     tiles[#tiles + 1] = { name = 'lava-hot', position = p }
+    -- spawn some random grilled fishes
+    if random(1, 64) == 1 then
+        entities[#entities + 1] = { name = 'grilled-fish', position = p }
+    end
 end
 
 local function zone_aquilo_1(x, y, data, void_or_lab, adjusted_zones)
@@ -2542,10 +2614,10 @@ local function zone_aquilo_1(x, y, data, void_or_lab, adjusted_zones)
         return
     end
 
-    local noise_large_caves = Public.get_noise('large_caves', p, seed)
-    local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed)
-    local small_caves = Public.get_noise('dungeons', p, seed)
-    local smol_areas = Public.get_noise('smol_areas', p, seed + seed)
+    local noise_large_caves = seasonal_noise('large_caves', p, seed, 0)
+    local noise_cave_ponds = seasonal_noise('cave_ponds', p, seed, 0)
+    local small_caves = seasonal_noise('dungeons', p, seed, 0)
+    local smol_areas = seasonal_noise('smol_areas', p, seed, seed)
 
     if abs(noise_large_caves) > 0.7 then
         tiles[#tiles + 1] = { name = 'brash-ice', position = p }
@@ -2667,7 +2739,7 @@ local function zone_aquilo_1(x, y, data, void_or_lab, adjusted_zones)
 
     if noise_large_caves > -0.2 and noise_large_caves < 0.2 then
         --Main Rock Terrain
-        local no_rocks_2 = Public.get_noise('no_rocks_2', p, seed + seed)
+        local no_rocks_2 = seasonal_noise('no_rocks_2', p, seed, seed)
         if no_rocks_2 > 0.80 or no_rocks_2 < -0.80 then
             tiles[#tiles + 1] = { name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)] or ('dirt-' .. floor(no_rocks_2 * 8) % 2 + 5), position = p }
             if random(1, 512) == 1 then
@@ -2712,9 +2784,9 @@ local function zone_14(x, y, data, _, adjusted_zones)
         return
     end
 
-    local small_caves = Public.get_noise('small_caves', p, seed)
-    local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed)
-    local smol_areas = Public.get_noise('smol_areas', p, seed + seed)
+    local small_caves = seasonal_noise('small_caves', p, seed, 0)
+    local noise_cave_ponds = seasonal_noise('cave_ponds', p, seed, 0)
+    local smol_areas = seasonal_noise('smol_areas', p, seed, seed)
 
     --Resource Spots
     if smol_areas < -0.71 then
@@ -2792,9 +2864,9 @@ local function zone_13(x, y, data, _, adjusted_zones)
     local entities = data.entities
     local buildings = data.buildings
 
-    local small_caves = Public.get_noise('small_caves', p, seed)
-    local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed)
-    local smol_areas = Public.get_noise('smol_areas', p, seed + seed)
+    local small_caves = seasonal_noise('small_caves', p, seed, 0)
+    local noise_cave_ponds = seasonal_noise('cave_ponds', p, seed, 0)
+    local smol_areas = seasonal_noise('smol_areas', p, seed, seed)
 
     --Resource Spots
     if smol_areas < -0.72 then
@@ -2873,9 +2945,9 @@ local function zone_12(x, y, data, void_or_lab, adjusted_zones)
     local buildings = data.buildings
     local markets = data.markets
 
-    local noise_1 = Public.get_noise('small_caves', p, seed)
-    local noise_2 = Public.get_noise('no_rocks_2', p, seed + seed)
-    local smol_areas = Public.get_noise('smol_areas', p, seed + seed)
+    local noise_1 = seasonal_noise('small_caves', p, seed, 0)
+    local noise_2 = seasonal_noise('no_rocks_2', p, seed, seed)
+    local smol_areas = seasonal_noise('smol_areas', p, seed, seed)
 
     --Resource Spots
     if smol_areas < -0.72 then
@@ -2959,9 +3031,9 @@ local function zone_11(x, y, data, _, adjusted_zones)
     local buildings = data.buildings
     local markets = data.markets
 
-    local noise_1 = Public.get_noise('small_caves', p, seed)
-    local noise_2 = Public.get_noise('no_rocks_2', p, seed + seed)
-    local smol_areas = Public.get_noise('smol_areas', p, seed + seed)
+    local noise_1 = seasonal_noise('small_caves', p, seed, 0)
+    local noise_2 = seasonal_noise('no_rocks_2', p, seed, seed)
+    local smol_areas = seasonal_noise('smol_areas', p, seed, seed)
 
     if noise_1 > 0.7 then
         tiles[#tiles + 1] = { name = water_tiles[get_water_tile_index(p, seed)], position = p }
@@ -3026,7 +3098,7 @@ local function zone_11(x, y, data, _, adjusted_zones)
         return
     end
 
-    local noise_forest_location = Public.get_noise('forest_location', p, seed)
+    local noise_forest_location = seasonal_noise('forest_location', p, seed, 0)
     if noise_forest_location > 0.095 then
         if noise_forest_location > 0.6 then
             if random(1, 100) > 42 then
@@ -3065,8 +3137,8 @@ local function zone_10(x, y, data, _, adjusted_zones)
         return
     end
 
-    local scrapyard = Public.get_noise('scrapyard', p, seed)
-    local smol_areas = Public.get_noise('smol_areas', p, seed + seed)
+    local scrapyard = seasonal_noise('scrapyard', p, seed, 0)
+    local smol_areas = seasonal_noise('smol_areas', p, seed, seed)
 
     if scrapyard < -0.70 or scrapyard > 0.70 then
         tiles[#tiles + 1] = { name = 'grass-3', position = p }
@@ -3122,7 +3194,7 @@ local function zone_10(x, y, data, _, adjusted_zones)
         tiles[#tiles + 1] = { name = 'water-shallow', position = p }
         return
     end
-    local noise_forest_location = Public.get_noise('forest_location', p, seed)
+    local noise_forest_location = seasonal_noise('forest_location', p, seed, 0)
     if scrapyard > -0.15 and scrapyard < 0.15 then
         if noise_forest_location > 0.095 then
             if random(1, 256) == 1 then
@@ -3184,12 +3256,12 @@ local function zone_9(x, y, data, _, adjusted_zones)
     local markets = data.markets
 
     local maze_p = { x = floor(p.x - p.x % 10), y = floor(p.y - p.y % 10) }
-    local maze_noise = Public.get_noise('no_rocks_2', maze_p, seed)
-    local smol_areas = Public.get_noise('smol_areas', p, seed + seed)
+    local maze_noise = seasonal_noise('no_rocks_2', maze_p, seed, 0)
+    local smol_areas = seasonal_noise('smol_areas', p, seed, seed)
 
     if maze_noise > -0.35 and maze_noise < 0.35 then
         tiles[#tiles + 1] = { name = (adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)] or 'dirt-7'), position = p }
-        local no_rocks_2 = Public.get_noise('no_rocks_2', p, seed)
+        local no_rocks_2 = seasonal_noise('no_rocks_2', p, seed, 0)
         if random(1, 2) == 1 and no_rocks_2 > -0.5 then
             entities[#entities + 1] = { name = adjusted_zones.rock_raffle[random(1, adjusted_zones.size_of)], position = p }
         end
@@ -3259,20 +3331,28 @@ local function zone_scrap_2(x, y, data, void_or_lab, adjusted_zones)
         return
     end
 
-    local scrapyard_modified = Public.get_noise('scrapyard_modified', p, seed)
-    local cave_rivers = Public.get_noise('cave_rivers', p, seed + seed)
+    local scrapyard_modified = seasonal_noise('scrapyard_modified', p, seed, 0)
+    local cave_rivers = seasonal_noise('cave_rivers', p, seed, seed)
 
     --Chasms
-    local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed)
-    local small_caves = Public.get_noise('small_caves', p, seed)
+    local noise_cave_ponds = seasonal_noise('cave_ponds', p, seed, 0)
+    local small_caves = seasonal_noise('small_caves', p, seed, 0)
     if noise_cave_ponds < 0.15 and noise_cave_ponds > -0.15 then
         if small_caves > 0.35 then
             tiles[#tiles + 1] = { name = void_or_lab, position = p }
+            -- spawn some random grilled fishes
+            if random(1, 32) == 1 then
+                entities[#entities + 1] = { name = 'grilled-fish', position = p }
+            end
             return
         end
 
         if small_caves < -0.35 then
             tiles[#tiles + 1] = { name = void_or_lab, position = p }
+            -- spawn some random cooked fishes
+            if random(1, 32) == 1 then
+                entities[#entities + 1] = { name = 'cooked-fish', position = p }
+            end
             return
         end
     end
@@ -3346,7 +3426,7 @@ local function zone_scrap_2(x, y, data, void_or_lab, adjusted_zones)
         return
     end
 
-    local cave_ponds = Public.get_noise('cave_ponds', p, seed)
+    local cave_ponds = seasonal_noise('cave_ponds', p, seed, 0)
     if cave_ponds < -0.6 and scrapyard_modified > -0.2 and scrapyard_modified < 0.2 then
         tiles[#tiles + 1] = { name = 'deepwater-green', position = p }
         if random(1, 128) == 1 then
@@ -3362,7 +3442,7 @@ local function zone_scrap_2(x, y, data, void_or_lab, adjusted_zones)
         end
     end
 
-    local large_caves = Public.get_noise('large_caves', p, seed)
+    local large_caves = seasonal_noise('large_caves', p, seed, 0)
     if scrapyard_modified > -0.15 and scrapyard_modified < 0.15 then
         if floor(large_caves * 10) % 4 < 3 then
             tiles[#tiles + 1] = { name = 'dirt-7', position = p }
@@ -3398,20 +3478,28 @@ local function zone_scrap_1(x, y, data, void_or_lab, adjusted_zones)
         return
     end
 
-    local scrapyard = Public.get_noise('scrapyard', p, seed)
-    local smol_areas = Public.get_noise('smol_areas', p, seed + seed)
+    local scrapyard = seasonal_noise('scrapyard', p, seed, 0)
+    local smol_areas = seasonal_noise('smol_areas', p, seed, seed)
 
     --Chasms
-    local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed)
-    local small_caves = Public.get_noise('small_caves', p, seed)
+    local noise_cave_ponds = seasonal_noise('cave_ponds', p, seed, 0)
+    local small_caves = seasonal_noise('small_caves', p, seed, 0)
     if noise_cave_ponds < 0.15 and noise_cave_ponds > -0.15 then
         if small_caves > 0.35 then
             tiles[#tiles + 1] = { name = void_or_lab, position = p }
+            -- spawn some random grilled fishes
+            if random(1, 32) == 1 then
+                entities[#entities + 1] = { name = 'grilled-fish', position = p }
+            end
             return
         end
 
         if small_caves < -0.35 then
             tiles[#tiles + 1] = { name = void_or_lab, position = p }
+            -- spawn some random cooked fishes
+            if random(1, 32) == 1 then
+                entities[#entities + 1] = { name = 'cooked-fish', position = p }
+            end
             return
         end
     end
@@ -3485,7 +3573,7 @@ local function zone_scrap_1(x, y, data, void_or_lab, adjusted_zones)
         return
     end
 
-    local cave_ponds = Public.get_noise('cave_ponds', p, seed)
+    local cave_ponds = seasonal_noise('cave_ponds', p, seed, 0)
     if cave_ponds < -0.6 and scrapyard > -0.2 and scrapyard < 0.2 then
         tiles[#tiles + 1] = { name = 'deepwater-green', position = p }
         if random(1, 128) == 1 then
@@ -3501,7 +3589,7 @@ local function zone_scrap_1(x, y, data, void_or_lab, adjusted_zones)
         end
     end
 
-    local large_caves = Public.get_noise('large_caves', p, seed)
+    local large_caves = seasonal_noise('large_caves', p, seed, 0)
     if scrapyard > -0.15 and scrapyard < 0.15 then
         if floor(large_caves * 10) % 4 < 3 then
             tiles[#tiles + 1] = { name = 'dirt-7', position = p }
@@ -3533,28 +3621,30 @@ local function zone_7_garden(x, y, data, void_or_lab, adjusted_zones)
     local buildings = data.buildings
     local markets = data.markets
 
-    local cave_rivers_3 = Public.get_noise('cave_rivers_2', p, seed)
-    local cave_rivers_4 = Public.get_noise('cave_rivers_2', p, seed + seed)
-    local no_rocks_2 = Public.get_noise('no_rocks_2', p, seed)
-    local smol_areas = Public.get_noise('smol_areas', p, seed + seed)
+    local cave_rivers_3 = seasonal_noise('cave_rivers_2', p, seed, 0)
+    local cave_rivers_4 = seasonal_noise('cave_rivers_2', p, seed, seed)
+    local no_rocks_2 = seasonal_noise('no_rocks_2', p, seed, 0)
+    local smol_areas = seasonal_noise('smol_areas', p, seed, seed)
+    local season = adjusted_zones.season or 0
 
-    if cave_rivers_3 > -0.025 and cave_rivers_3 < 0.025 and no_rocks_2 > -0.6 then
+    local rv1_min, rv1_max = noise_shift(-0.025, 0.025)
+    if cave_rivers_3 > rv1_min and cave_rivers_3 < rv1_max and no_rocks_2 > -0.6 then
         tiles[#tiles + 1] = { name = water_tiles[get_water_tile_index(p, seed)], position = p }
-        if random(1, 128) == 1 then
+        if random(1, math.max(48, 128 - season * 2)) == 1 then
             entities[#entities + 1] = { name = 'fish', position = p }
         end
         return
     end
 
-    if cave_rivers_4 > -0.025 and cave_rivers_4 < 0.025 and no_rocks_2 > -0.6 then
+    if cave_rivers_4 > rv1_min and cave_rivers_4 < rv1_max and no_rocks_2 > -0.6 then
         tiles[#tiles + 1] = { name = water_tiles[get_water_tile_index(p, seed)], position = p }
-        if random(1, 128) == 1 then
+        if random(1, math.max(48, 128 - season * 2)) == 1 then
             entities[#entities + 1] = { name = 'fish', position = p }
         end
         return
     end
 
-    local noise_ores = Public.get_noise('no_rocks_2', p, seed + seed)
+    local noise_ores = seasonal_noise('no_rocks_2', p, seed, seed)
 
     if cave_rivers_3 > -0.20 and cave_rivers_3 < 0.20 then
         tiles[#tiles + 1] = { name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)] or ('grass-' .. floor(cave_rivers_3 * 32) % 3 + 1), position = p }
@@ -3610,17 +3700,25 @@ local function zone_7_garden(x, y, data, void_or_lab, adjusted_zones)
     end
 
     --Chasms
-    local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed)
-    local small_caves = Public.get_noise('small_caves', p, seed)
-    if noise_cave_ponds < 0.25 and noise_cave_ponds > -0.25 then
+    local noise_cave_ponds = seasonal_noise('cave_ponds', p, seed, 0)
+    local small_caves = seasonal_noise('small_caves', p, seed, 0)
+    local chasm_min, chasm_max = noise_shift(-0.25, 0.25)
+    if noise_cave_ponds < chasm_max and noise_cave_ponds > chasm_min then
         if small_caves > 0.55 then
             tiles[#tiles + 1] = { name = void_or_lab, position = p }
+            -- spawn some random grilled fishes
+            if random(1, 32) == 1 then
+                entities[#entities + 1] = { name = 'grilled-fish', position = p }
+            end
             return
         end
 
         if small_caves < -0.55 then
             tiles[#tiles + 1] = { name = void_or_lab, position = p }
-
+            -- spawn some random cooked fishes
+            if random(1, 32) == 1 then
+                entities[#entities + 1] = { name = 'cooked-fish', position = p }
+            end
             return
         end
     end
@@ -3653,21 +3751,29 @@ local function zone_forest_2(x, y, data, void_or_lab, adjusted_zones)
         return
     end
 
-    local large_caves = Public.get_noise('large_caves', p, seed)
-    local cave_rivers = Public.get_noise('cave_rivers', p, seed)
-    local smol_areas = Public.get_noise('smol_areas', p, seed + seed)
+    local large_caves = seasonal_noise('large_caves', p, seed, 0)
+    local cave_rivers = seasonal_noise('cave_rivers', p, seed, 0)
+    local smol_areas = seasonal_noise('smol_areas', p, seed, seed)
 
     --Chasms
-    local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed)
-    local small_caves = Public.get_noise('small_caves', p, seed)
+    local noise_cave_ponds = seasonal_noise('cave_ponds', p, seed, 0)
+    local small_caves = seasonal_noise('small_caves', p, seed, 0)
     if noise_cave_ponds < 0.45 and noise_cave_ponds > -0.45 then
         if small_caves > 0.45 then
             tiles[#tiles + 1] = { name = void_or_lab, position = p }
+            -- spawn some random grilled fishes
+            if random(1, 32) == 1 then
+                entities[#entities + 1] = { name = 'grilled-fish', position = p }
+            end
             return
         end
 
         if small_caves < -0.45 then
             tiles[#tiles + 1] = { name = void_or_lab, position = p }
+            -- spawn some random cooked fishes
+            if random(1, 32) == 1 then
+                entities[#entities + 1] = { name = 'cooked-fish', position = p }
+            end
             return
         end
     end
@@ -3699,7 +3805,7 @@ local function zone_forest_2(x, y, data, void_or_lab, adjusted_zones)
 
         return
     end
-    local noise_forest_location = Public.get_noise('forest_location', p, seed)
+    local noise_forest_location = seasonal_noise('forest_location', p, seed, 0)
     if cave_rivers > -0.1 and cave_rivers < 0.1 then
         local success = place_wagon(data, adjusted_zones)
         if success then
@@ -3790,9 +3896,9 @@ local function zone_5(x, y, data, void_or_lab, adjusted_zones)
     local entities = data.entities
     local buildings = data.buildings
 
-    local small_caves = Public.get_noise('small_caves', p, seed)
-    local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed)
-    local smol_areas = Public.get_noise('smol_areas', p, seed + seed)
+    local small_caves = seasonal_noise('small_caves', p, seed, 0)
+    local noise_cave_ponds = seasonal_noise('cave_ponds', p, seed, 0)
+    local smol_areas = seasonal_noise('smol_areas', p, seed, seed)
 
     if small_caves > -0.24 and small_caves < 0.24 then
         tiles[#tiles + 1] = { name = (adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)] or 'dirt-7'), position = p }
@@ -3874,6 +3980,10 @@ local function zone_5(x, y, data, void_or_lab, adjusted_zones)
     end
 
     tiles[#tiles + 1] = { name = void_or_lab, position = p }
+    -- spawn some random grilled fishes
+    if random(1, 64) == 1 then
+        entities[#entities + 1] = { name = 'grilled-fish', position = p }
+    end
 end
 
 local function zone_4(x, y, data, void_or_lab, adjusted_zones)
@@ -3884,10 +3994,10 @@ local function zone_4(x, y, data, void_or_lab, adjusted_zones)
     local buildings = data.buildings
     local markets = data.markets
 
-    local noise_large_caves = Public.get_noise('large_caves', p, seed)
-    local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed)
-    local small_caves = Public.get_noise('dungeons', p, seed)
-    local smol_areas = Public.get_noise('smol_areas', p, seed + seed)
+    local noise_large_caves = seasonal_noise('large_caves', p, seed, 0)
+    local noise_cave_ponds = seasonal_noise('cave_ponds', p, seed, 0)
+    local small_caves = seasonal_noise('dungeons', p, seed, 0)
+    local smol_areas = seasonal_noise('smol_areas', p, seed, seed)
 
     if abs(noise_large_caves) > 0.7 then
         tiles[#tiles + 1] = { name = water_tiles[get_water_tile_index(p, seed)], position = p }
@@ -3943,11 +4053,19 @@ local function zone_4(x, y, data, void_or_lab, adjusted_zones)
     if noise_cave_ponds < 0.15 and noise_cave_ponds > -0.15 then
         if small_caves > 0.75 then
             tiles[#tiles + 1] = { name = void_or_lab, position = p }
+            -- spawn some random grilled fishes
+            if random(1, 32) == 1 then
+                entities[#entities + 1] = { name = 'grilled-fish', position = p }
+            end
             return
         end
 
         if small_caves < -0.75 then
             tiles[#tiles + 1] = { name = void_or_lab, position = p }
+            -- spawn some random cooked fishes
+            if random(1, 32) == 1 then
+                entities[#entities + 1] = { name = 'cooked-fish', position = p }
+            end
             return
         end
     end
@@ -3985,7 +4103,7 @@ local function zone_4(x, y, data, void_or_lab, adjusted_zones)
 
     if noise_large_caves > -0.2 and noise_large_caves < 0.2 then
         --Main Rock Terrain
-        local no_rocks_2 = Public.get_noise('no_rocks_2', p, seed + seed)
+        local no_rocks_2 = seasonal_noise('no_rocks_2', p, seed, seed)
         if no_rocks_2 > 0.80 or no_rocks_2 < -0.80 then
             tiles[#tiles + 1] = { name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)] or ('dirt-' .. floor(no_rocks_2 * 8) % 2 + 5), position = p }
             if random(1, 512) == 1 then
@@ -4006,6 +4124,10 @@ local function zone_4(x, y, data, void_or_lab, adjusted_zones)
     end
 
     tiles[#tiles + 1] = { name = void_or_lab, position = p }
+    -- spawn some random grilled fishes
+    if random(1, 64) == 1 then
+        entities[#entities + 1] = { name = 'grilled-fish', position = p }
+    end
 end
 
 local function zone_3(x, y, data, void_or_lab, adjusted_zones)
@@ -4016,12 +4138,12 @@ local function zone_3(x, y, data, void_or_lab, adjusted_zones)
     local buildings = data.buildings
     local markets = data.markets
 
-    local small_caves = Public.get_noise('dungeons', p, seed + seed)
-    local small_caves_2 = Public.get_noise('small_caves_2', p, seed + seed)
-    local noise_large_caves = Public.get_noise('large_caves', p, seed + seed)
-    local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed)
-    local cave_miner = Public.get_noise('cave_miner_01', p, seed)
-    local smol_areas = Public.get_noise('smol_areas', p, seed + seed)
+    local small_caves = seasonal_noise('dungeons', p, seed, seed)
+    local small_caves_2 = seasonal_noise('small_caves_2', p, seed, seed)
+    local noise_large_caves = seasonal_noise('large_caves', p, seed, seed)
+    local noise_cave_ponds = seasonal_noise('cave_ponds', p, seed, 0)
+    local cave_miner = seasonal_noise('cave_miner_01', p, seed, 0)
+    local smol_areas = seasonal_noise('smol_areas', p, seed, seed)
 
     --Resource Spots
     if smol_areas < 0.055 and smol_areas > -0.025 then
@@ -4073,19 +4195,26 @@ local function zone_3(x, y, data, void_or_lab, adjusted_zones)
         if noise_cave_ponds < 0.12 and noise_cave_ponds > -0.12 then
             if small_caves > 0.85 then
                 tiles[#tiles + 1] = { name = void_or_lab, position = p }
+                -- spawn some random grilled fishes
+                if random(1, 32) == 1 then
+                    entities[#entities + 1] = { name = 'grilled-fish', position = p }
+                end
 
                 return
             end
 
             if small_caves < -0.85 then
                 tiles[#tiles + 1] = { name = void_or_lab, position = p }
-
+                -- spawn some random cooked fishes
+                if random(1, 32) == 1 then
+                    entities[#entities + 1] = { name = 'cooked-fish', position = p }
+                end
                 return
             end
         end
 
         --Rivers
-        local cave_rivers = Public.get_noise('cave_rivers', p, seed + seed)
+        local cave_rivers = seasonal_noise('cave_rivers', p, seed, seed)
         if cave_rivers < 0.024 and cave_rivers > -0.024 then
             if noise_cave_ponds > 0.2 then
                 tiles[#tiles + 1] = { name = 'water-shallow', position = p }
@@ -4095,7 +4224,7 @@ local function zone_3(x, y, data, void_or_lab, adjusted_zones)
                 return
             end
         end
-        local cave_rivers_2 = Public.get_noise('cave_rivers_2', p, seed)
+        local cave_rivers_2 = seasonal_noise('cave_rivers_2', p, seed, 0)
         if cave_rivers_2 < 0.024 and cave_rivers_2 > -0.024 then
             if noise_cave_ponds < 0.4 then
                 tiles[#tiles + 1] = { name = 'water-shallow', position = p }
@@ -4111,7 +4240,7 @@ local function zone_3(x, y, data, void_or_lab, adjusted_zones)
             return
         end
 
-        local no_rocks = Public.get_noise('no_rocks', p, seed + seed)
+        local no_rocks = seasonal_noise('no_rocks', p, seed, seed)
         --Worm oil Zones
         if no_rocks < 0.20 and no_rocks > -0.20 then
             if small_caves > 0.35 then
@@ -4144,7 +4273,7 @@ local function zone_3(x, y, data, void_or_lab, adjusted_zones)
         end
 
         --Main Rock Terrain
-        local no_rocks_2 = Public.get_noise('no_rocks_2', p, seed + seed)
+        local no_rocks_2 = seasonal_noise('no_rocks_2', p, seed, seed)
         if no_rocks_2 > 0.80 or no_rocks_2 < -0.80 then
             local success = place_wagon(data, adjusted_zones)
             if success then
@@ -4170,6 +4299,10 @@ local function zone_3(x, y, data, void_or_lab, adjusted_zones)
 
     if cave_miner < 0.32 and cave_miner > -0.32 then
         tiles[#tiles + 1] = { name = void_or_lab, position = p }
+        -- spawn some random grilled fishes
+        if random(1, 64) == 1 then
+            entities[#entities + 1] = { name = 'grilled-fish', position = p }
+        end
     else
         tiles[#tiles + 1] = { name = 'deepwater-green', position = p }
     end
@@ -4182,18 +4315,21 @@ local function zone_2(x, y, data, void_or_lab, adjusted_zones)
     local buildings = data.buildings
     local entities = data.entities
     local markets = data.markets
+    local season = adjusted_zones.season or 0
 
-    local small_caves = Public.get_noise('dungeons', p, seed)
-    local noise_large_caves = Public.get_noise('large_caves', p, seed)
-    local smol_areas = Public.get_noise('smol_areas', p, seed + seed)
+    local small_caves = seasonal_noise('dungeons', p, seed, 0)
+    local noise_large_caves = seasonal_noise('large_caves', p, seed, 0)
+    local smol_areas = seasonal_noise('smol_areas', p, seed, seed)
 
-    --Resource Spots
-    if smol_areas < 0.055 and smol_areas > -0.025 then
+    local smin, smax = noise_shift(-0.025, 0.055)
+    if smol_areas < smax and smol_areas > smin then
         tiles[#tiles + 1] = { name = 'deepwater-green', position = p }
+
         if random(1, 32) == 1 then
             Public.spawn_random_buildings(buildings, p)
         end
-        if random(1, 128) == 1 then
+
+        if random(1, math.max(16, 128 - season * 3)) == 1 then
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] =
             {
@@ -4206,36 +4342,49 @@ local function zone_2(x, y, data, void_or_lab, adjusted_zones)
         return
     end
 
-    if noise_large_caves > -0.75 and noise_large_caves < 0.75 then
-        local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed)
+    local lmin, lmax = noise_shift(-0.75, 0.75)
+    if noise_large_caves > lmin and noise_large_caves < lmax then
+        local noise_cave_ponds = seasonal_noise('cave_ponds', p, seed, 0)
 
-        --Chasms
-        if noise_cave_ponds < 0.15 and noise_cave_ponds > -0.15 then
-            if small_caves > 0.32 then
+        -- Chasms
+        local cmin, cmax = noise_shift(-0.15, 0.15)
+        if noise_cave_ponds < cmax and noise_cave_ponds > cmin then
+            if small_caves > (0.32 - season * 0.01) then
                 tiles[#tiles + 1] = { name = void_or_lab, position = p }
-
+                -- spawn some random grilled fishes
+                if random(1, 32) == 1 then
+                    entities[#entities + 1] = { name = 'grilled-fish', position = p }
+                end
                 return
             end
-            if small_caves < -0.32 then
+            if small_caves < (-0.32 + season * 0.01) then
                 tiles[#tiles + 1] = { name = void_or_lab, position = p }
+                -- spawn some random cooked fishes
+                if random(1, 32) == 1 then
+                    entities[#entities + 1] = { name = 'cooked-fish', position = p }
+                end
                 return
             end
         end
 
-        --Green Water Ponds
-        if noise_cave_ponds > 0.80 then
+        -- Green Water Ponds
+        if noise_cave_ponds > (0.80 - season * 0.01) then
             tiles[#tiles + 1] = { name = 'deepwater-green', position = p }
+
             if random(1, 16) == 1 then
                 entities[#entities + 1] = { name = 'fish', position = p }
             end
             return
         end
 
-        --Rivers
-        local cave_rivers = Public.get_noise('cave_rivers', p, seed + seed)
-        if cave_rivers < 0.037 and cave_rivers > -0.037 then
+        -- Rivers
+        local cave_rivers = seasonal_noise('cave_rivers', p, seed, seed)
+        local rmin, rmax = noise_shift(-0.037, 0.037)
+
+        if cave_rivers < rmax and cave_rivers > rmin then
             if noise_cave_ponds < 0.1 then
                 tiles[#tiles + 1] = { name = 'water-shallow', position = p }
+
                 if random(1, 64) == 1 then
                     entities[#entities + 1] = { name = 'fish', position = p }
                 end
@@ -4243,32 +4392,61 @@ local function zone_2(x, y, data, void_or_lab, adjusted_zones)
             end
         end
 
-        if noise_cave_ponds > 0.66 then
-            tiles[#tiles + 1] = { name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)] or ('dirt-' .. random(4, 6)), position = p }
+        if noise_cave_ponds > (0.66 - season * 0.01) then
+            tiles[#tiles + 1] =
+            {
+                name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)] or ('dirt-' .. random(4, 6)),
+                position = p
+            }
             return
         end
 
-        --Market Spots
-        if noise_cave_ponds < -0.80 then
-            tiles[#tiles + 1] = { name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)] or ('grass-' .. floor(noise_cave_ponds * 32) % 3 + 1), position = p }
+        if noise_cave_ponds < (-0.80 + season * 0.01) then
+            tiles[#tiles + 1] =
+            {
+                name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)]
+                    or ('grass-' .. floor(noise_cave_ponds * 32) % 3 + 1),
+                position = p
+            }
+
             if random(1, 32) == 1 then
                 markets[#markets + 1] = p
             end
+
             if random(1, 16) == 1 then
-                entities[#entities + 1] = { name = 'tree-0' .. random(1, 9), position = p }
+                entities[#entities + 1] =
+                {
+                    name = 'tree-0' .. random(1, 9),
+                    position = p
+                }
             end
+
             return
         end
 
-        local no_rocks = Public.get_noise('no_rocks', p, seed + seed)
-        --Worm oil Zones
-        if no_rocks < 0.20 and no_rocks > -0.20 then
-            if small_caves > 0.30 then
-                tiles[#tiles + 1] = { name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)] or ('dirt-' .. floor(noise_cave_ponds * 32) % 7 + 1), position = p }
+        local no_rocks = seasonal_noise('no_rocks', p, seed, seed)
+
+        -- Worm oil Zones
+        local nmin, nmax = noise_shift(-0.20, 0.20)
+        if no_rocks < nmax and no_rocks > nmin then
+            if small_caves > (0.30 - season * 0.01) then
+                tiles[#tiles + 1] =
+                {
+                    name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)]
+                        or ('dirt-' .. floor(noise_cave_ponds * 32) % 7 + 1),
+                    position = p
+                }
+
                 if random(1, 450) == 1 then
-                    entities[#entities + 1] = { name = 'crude-oil', position = p, amount = get_oil_amount(p) }
+                    entities[#entities + 1] =
+                    {
+                        name = 'crude-oil',
+                        position = p,
+                        amount = get_oil_amount(p) * (1 - season * 0.01)
+                    }
                 end
-                if random(1, 64) == 1 then
+
+                if random(1, math.max(16, 64 - season * 2)) == 1 then
                     Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
                     entities[#entities + 1] =
                     {
@@ -4282,42 +4460,68 @@ local function zone_2(x, y, data, void_or_lab, adjusted_zones)
                 if random(1, 256) == 1 then
                     spawn_turret(entities, p, 2)
                 end
-                if random(1, 1024) == 1 then
+
+                if random(1, math.max(256, 1024 - season * 20)) == 1 then
                     spawn_treasure(data, p, 'wooden-chest')
                 end
-                if random(1, 64) == 1 then
+
+                if random(1, math.max(16, 64 - season)) == 1 then
                     entities[#entities + 1] = { name = 'dead-tree-desert', position = p }
                 end
                 return
             end
         end
 
-        --Main Rock Terrain
-        local no_rocks_2 = Public.get_noise('no_rocks_2', p, seed + seed)
-        if no_rocks_2 > 0.80 or no_rocks_2 < -0.80 then
+        -- Main Rock Terrain
+        local no_rocks_2 = seasonal_noise('no_rocks_2', p, seed, seed)
+
+        if no_rocks_2 > (0.80 - season * 0.01) or no_rocks_2 < (-0.80 + season * 0.01) then
             local success = place_wagon(data, adjusted_zones)
             if success then
                 return
             end
-            tiles[#tiles + 1] = { name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)] or ('grass-' .. random(1, 4)), position = p }
-            if random(1, 512) == 1 then
+
+            tiles[#tiles + 1] =
+            {
+                name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)]
+                    or ('grass-' .. random(1, 4)),
+                position = p
+            }
+
+            if random(1, math.max(256, 512 - season * 10)) == 1 then
                 spawn_treasure(data, p, 'wooden-chest')
             end
 
             return
         end
 
-        if random(1, 2048) == 1 then
+        if random(1, math.max(512, 2048 - season * 20)) == 1 then
             spawn_treasure(data, p, 'wooden-chest')
         end
-        tiles[#tiles + 1] = { name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)] or ('grass-' .. random(1, 4)), position = p }
-        if random(1, 100) > 25 then
-            entities[#entities + 1] = { name = adjusted_zones.rock_raffle[random(1, adjusted_zones.size_of)], position = p }
+
+        tiles[#tiles + 1] =
+        {
+            name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)]
+                or ('grass-' .. random(1, 4)),
+            position = p
+        }
+
+        if random(1, math.max(25, 100 - season * 2)) > 25 then
+            entities[#entities + 1] =
+            {
+                name = adjusted_zones.rock_raffle[random(1, adjusted_zones.size_of)],
+                position = p
+            }
         end
+
         return
     end
 
     tiles[#tiles + 1] = { name = void_or_lab, position = p }
+    -- spawn some random grilled fishes
+    if random(1, 64) == 1 then
+        entities[#entities + 1] = { name = 'grilled-fish', position = p }
+    end
 end
 
 local function zone_gleba_forest_1(x, y, data, void_or_lab, adjusted_zones)
@@ -4339,9 +4543,9 @@ local function zone_gleba_forest_1(x, y, data, void_or_lab, adjusted_zones)
         return
     end
 
-    local small_caves = Public.get_noise('dungeons', p, seed + seed)
-    local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed)
-    local smol_areas = Public.get_noise('smol_areas', p, seed + seed)
+    local small_caves = seasonal_noise('dungeons', p, seed, seed)
+    local noise_cave_ponds = seasonal_noise('cave_ponds', p, seed, 0)
+    local smol_areas = seasonal_noise('smol_areas', p, seed, seed)
 
     --Resource Spots
     if smol_areas < 0.055 and smol_areas > -0.025 then
@@ -4366,10 +4570,18 @@ local function zone_gleba_forest_1(x, y, data, void_or_lab, adjusted_zones)
     if noise_cave_ponds < 0.101 and noise_cave_ponds > -0.102 then
         if small_caves > 0.52 then
             tiles[#tiles + 1] = { name = void_or_lab, position = p }
+            -- spawn some random grilled fishes
+            if random(1, 32) == 1 then
+                entities[#entities + 1] = { name = 'grilled-fish', position = p }
+            end
             return
         end
         if small_caves < -0.52 then
             tiles[#tiles + 1] = { name = void_or_lab, position = p }
+            -- spawn some random cooked fishes
+            if random(1, 32) == 1 then
+                entities[#entities + 1] = { name = 'cooked-fish', position = p }
+            end
             return
         end
     end
@@ -4394,7 +4606,7 @@ local function zone_gleba_forest_1(x, y, data, void_or_lab, adjusted_zones)
     end
 
     --Rivers
-    local cave_rivers = Public.get_noise('cave_rivers', p, seed + seed)
+    local cave_rivers = seasonal_noise('cave_rivers', p, seed, seed)
     if cave_rivers < 0.041 and cave_rivers > -0.042 then
         if noise_cave_ponds > 0 then
             tiles[#tiles + 1] = { name = 'water-shallow', position = p }
@@ -4416,7 +4628,7 @@ local function zone_gleba_forest_1(x, y, data, void_or_lab, adjusted_zones)
         return
     end
 
-    local no_rocks = Public.get_noise('no_rocks', p, seed + seed)
+    local no_rocks = seasonal_noise('no_rocks', p, seed, seed)
     --Worm oil Zones
     if p.y < -64 + noise_cave_ponds * 10 then
         if no_rocks < 0.11 and no_rocks > -0.11 then
@@ -4456,7 +4668,7 @@ local function zone_gleba_forest_1(x, y, data, void_or_lab, adjusted_zones)
     end
 
     --Main Rock Terrain
-    local no_rocks_2 = Public.get_noise('no_rocks_2', p, seed + seed)
+    local no_rocks_2 = seasonal_noise('no_rocks_2', p, seed, seed)
     if no_rocks_2 > 0.64 or no_rocks_2 < -0.64 then
         local success = place_wagon(data, adjusted_zones)
         if success then
@@ -4477,7 +4689,7 @@ local function zone_gleba_forest_1(x, y, data, void_or_lab, adjusted_zones)
         spawn_treasure(data, p, 'iron-chest')
     end
     tiles[#tiles + 1] = { name = 'nuclear-ground', position = p }
-    local noise_forest_location = Public.get_noise('forest_location', p, seed)
+    local noise_forest_location = seasonal_noise('forest_location', p, seed, 0)
     if noise_forest_location > 0.095 then
         if random(1, 256) == 1 then
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
@@ -4544,9 +4756,9 @@ local function zone_gleba_forest_2(x, y, data, void_or_lab, adjusted_zones)
         return
     end
 
-    local small_caves = Public.get_noise('dungeons', p, seed + seed)
-    local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed)
-    local smol_areas = Public.get_noise('smol_areas', p, seed + seed)
+    local small_caves = seasonal_noise('dungeons', p, seed, seed)
+    local noise_cave_ponds = seasonal_noise('cave_ponds', p, seed, 0)
+    local smol_areas = seasonal_noise('smol_areas', p, seed, seed)
 
     --Resource Spots
     if smol_areas < 0.055 and smol_areas > -0.025 then
@@ -4571,10 +4783,18 @@ local function zone_gleba_forest_2(x, y, data, void_or_lab, adjusted_zones)
     if noise_cave_ponds < 0.101 and noise_cave_ponds > -0.102 then
         if small_caves > 0.52 then
             tiles[#tiles + 1] = { name = void_or_lab, position = p }
+            -- spawn some random grilled fishes
+            if random(1, 32) == 1 then
+                entities[#entities + 1] = { name = 'grilled-fish', position = p }
+            end
             return
         end
         if small_caves < -0.52 then
             tiles[#tiles + 1] = { name = void_or_lab, position = p }
+            -- spawn some random cooked fishes
+            if random(1, 32) == 1 then
+                entities[#entities + 1] = { name = 'cooked-fish', position = p }
+            end
             return
         end
     end
@@ -4599,7 +4819,7 @@ local function zone_gleba_forest_2(x, y, data, void_or_lab, adjusted_zones)
     end
 
     --Rivers
-    local cave_rivers = Public.get_noise('cave_rivers', p, seed + seed)
+    local cave_rivers = seasonal_noise('cave_rivers', p, seed, seed)
     if cave_rivers < 0.041 and cave_rivers > -0.042 then
         if noise_cave_ponds > 0 then
             tiles[#tiles + 1] = { name = 'water-shallow', position = p }
@@ -4621,7 +4841,7 @@ local function zone_gleba_forest_2(x, y, data, void_or_lab, adjusted_zones)
         return
     end
 
-    local no_rocks = Public.get_noise('no_rocks', p, seed + seed)
+    local no_rocks = seasonal_noise('no_rocks', p, seed, seed)
     --Worm oil Zones
     if p.y < -64 + noise_cave_ponds * 10 then
         if no_rocks < 0.11 and no_rocks > -0.11 then
@@ -4661,7 +4881,7 @@ local function zone_gleba_forest_2(x, y, data, void_or_lab, adjusted_zones)
     end
 
     --Main Rock Terrain
-    local no_rocks_2 = Public.get_noise('no_rocks_2', p, seed + seed)
+    local no_rocks_2 = seasonal_noise('no_rocks_2', p, seed, seed)
     if no_rocks_2 > 0.64 or no_rocks_2 < -0.64 then
         local success = place_wagon(data, adjusted_zones)
         if success then
@@ -4682,7 +4902,7 @@ local function zone_gleba_forest_2(x, y, data, void_or_lab, adjusted_zones)
         spawn_treasure(data, p, 'iron-chest')
     end
     tiles[#tiles + 1] = { name = 'nuclear-ground', position = p }
-    local noise_forest_location = Public.get_noise('forest_location', p, seed)
+    local noise_forest_location = seasonal_noise('forest_location', p, seed, 0)
     if noise_forest_location > 0.095 then
         if random(1, 256) == 1 then
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
@@ -4742,9 +4962,9 @@ local function zone_forest_1(x, y, data, void_or_lab, adjusted_zones)
         return
     end
 
-    local small_caves = Public.get_noise('dungeons', p, seed + seed)
-    local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed)
-    local smol_areas = Public.get_noise('smol_areas', p, seed + seed)
+    local small_caves = seasonal_noise('dungeons', p, seed, seed)
+    local noise_cave_ponds = seasonal_noise('cave_ponds', p, seed, 0)
+    local smol_areas = seasonal_noise('smol_areas', p, seed, seed)
 
     --Resource Spots
     if smol_areas < 0.055 and smol_areas > -0.025 then
@@ -4769,10 +4989,18 @@ local function zone_forest_1(x, y, data, void_or_lab, adjusted_zones)
     if noise_cave_ponds < 0.101 and noise_cave_ponds > -0.102 then
         if small_caves > 0.52 then
             tiles[#tiles + 1] = { name = void_or_lab, position = p }
+            -- spawn some random grilled fishes
+            if random(1, 32) == 1 then
+                entities[#entities + 1] = { name = 'grilled-fish', position = p }
+            end
             return
         end
         if small_caves < -0.52 then
             tiles[#tiles + 1] = { name = void_or_lab, position = p }
+            -- spawn some random cooked fishes
+            if random(1, 32) == 1 then
+                entities[#entities + 1] = { name = 'cooked-fish', position = p }
+            end
             return
         end
     end
@@ -4797,7 +5025,7 @@ local function zone_forest_1(x, y, data, void_or_lab, adjusted_zones)
     end
 
     --Rivers
-    local cave_rivers = Public.get_noise('cave_rivers', p, seed + seed)
+    local cave_rivers = seasonal_noise('cave_rivers', p, seed, seed)
     if cave_rivers < 0.041 and cave_rivers > -0.042 then
         if noise_cave_ponds > 0 then
             tiles[#tiles + 1] = { name = 'water-shallow', position = p }
@@ -4819,7 +5047,7 @@ local function zone_forest_1(x, y, data, void_or_lab, adjusted_zones)
         return
     end
 
-    local no_rocks = Public.get_noise('no_rocks', p, seed + seed)
+    local no_rocks = seasonal_noise('no_rocks', p, seed, seed)
     --Worm oil Zones
     if p.y < -64 + noise_cave_ponds * 10 then
         if no_rocks < 0.11 and no_rocks > -0.11 then
@@ -4851,7 +5079,7 @@ local function zone_forest_1(x, y, data, void_or_lab, adjusted_zones)
     end
 
     --Main Rock Terrain
-    local no_rocks_2 = Public.get_noise('no_rocks_2', p, seed + seed)
+    local no_rocks_2 = seasonal_noise('no_rocks_2', p, seed, seed)
     if no_rocks_2 > 0.64 or no_rocks_2 < -0.64 then
         local success = place_wagon(data, adjusted_zones)
         if success then
@@ -4872,7 +5100,7 @@ local function zone_forest_1(x, y, data, void_or_lab, adjusted_zones)
         spawn_treasure(data, p, 'iron-chest')
     end
     tiles[#tiles + 1] = { name = 'nuclear-ground', position = p }
-    local noise_forest_location = Public.get_noise('forest_location', p, seed)
+    local noise_forest_location = seasonal_noise('forest_location', p, seed, 0)
     if noise_forest_location > 0.095 then
         if random(1, 256) == 1 then
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
@@ -4928,22 +5156,28 @@ local function zone_1(x, y, data, _, adjusted_zones)
     local entities = data.entities
     local markets = data.markets
 
-    local void_or_lab = 'void-tile'
 
-    local small_caves = Public.get_noise('small_caves', p, seed + 134883)
-    local noise_cave_ponds = Public.get_noise('cave_rivers_2', p, seed + 128939)
-    local smol_areas = Public.get_noise('smol_areas', p, seed + 13992)
-    local no_rocks_2 = Public.get_noise('no_rocks_2', p, seed + 11922)
-    local cave_rivers = Public.get_noise('cave_rivers', p, seed + 131922)
-    local no_rocks = Public.get_noise('no_rocks_3', p, seed + 122314)
+    local noise_cave_ponds = seasonal_noise('cave_rivers_2', p, seed, 128939)
+    local smol_areas = seasonal_noise('smol_areas', p, seed, 13992)
+    local no_rocks_2 = seasonal_noise('no_rocks_2', p, seed, 11922)
+    local cave_rivers = seasonal_noise('cave_rivers', p, seed, 131922)
+    local no_rocks = seasonal_noise('no_rocks_3', p, seed, 122314)
 
-    if smol_areas < 0.055 and smol_areas > -0.025 then
-        -- entities[#entities + 1] = { name = rock_raffle[random(1, size_of_rock_raffle)], position = p }
-        entities[#entities + 1] = { name = adjusted_zones.rock_raffle[random(1, adjusted_zones.size_of)], position = p }
+    local season = adjusted_zones.season or 0
+    local shift_min, shift_max = noise_shift(-0.025, 0.055)
+
+    if smol_areas < shift_max and smol_areas > shift_min then
+        entities[#entities + 1] =
+        {
+            name = adjusted_zones.rock_raffle[random(1, adjusted_zones.size_of)],
+            position = p
+        }
+
         if random(1, 32) == 1 then
             Public.spawn_random_buildings(buildings, p, zone_settings.zone_depth)
         end
-        if random(1, 128) == 1 then
+
+        if random(1, 512) == 1 then
             if adjusted_zones.starting_planet ~= 'nauvis' then
                 entities[#entities + 1] =
                 {
@@ -4956,25 +5190,24 @@ local function zone_1(x, y, data, _, adjusted_zones)
         return
     end
 
-    --Chasms
-    if noise_cave_ponds < 0.505 and noise_cave_ponds > -0.112 then
-        if small_caves > 0.52 then
-            tiles[#tiles + 1] = { name = void_or_lab, position = p }
-            return
-        end
-        if small_caves < -0.52 then
-            tiles[#tiles + 1] = { name = void_or_lab, position = p }
-            return
-        end
-    end
+    local rmin, rmax = noise_shift(0.14, 0.34)
+    if no_rocks < rmax and no_rocks > rmin then
+        tiles[#tiles + 1] =
+        {
+            name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)] or 'brown-refined-concrete',
+            position = p
+        }
 
-    --Worm oil Zones
-    if no_rocks < 0.34 and no_rocks > 0.14 then
-        tiles[#tiles + 1] = { name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)] or 'brown-refined-concrete', position = p }
         if random(1, 450) == 1 then
-            entities[#entities + 1] = { name = 'crude-oil', position = p, amount = (get_oil_amount(p) * 5) }
+            entities[#entities + 1] =
+            {
+                name = 'crude-oil',
+                position = p,
+                amount = get_oil_amount(p) * (1 - season * 0.01) * 5
+            }
         end
-        if random(1, 96) == 1 then
+
+        if random(1, 1024) == 1 then
             if adjusted_zones.starting_planet ~= 'nauvis' then
                 entities[#entities + 1] =
                 {
@@ -4985,38 +5218,37 @@ local function zone_1(x, y, data, _, adjusted_zones)
             end
         end
 
-        if random(1, 512) == 1 then
+        if random(1, math.max(128, 512 - season * 10)) == 1 then
             spawn_treasure(data, p, 'iron-chest')
         end
-        if random(1, 64) == 1 then
+
+        if random(1, math.max(16, 64 - season)) == 1 then
             entities[#entities + 1] = { name = 'tree-0' .. random(1, 9), position = p }
         end
         return
     end
 
-    --Water Ponds
-    if noise_cave_ponds < 0.14 and noise_cave_ponds > 0.04 then
+    local wmin, wmax = noise_shift(0.04, 0.14)
+    if noise_cave_ponds < wmax and noise_cave_ponds > wmin then
         if noise_cave_ponds > 0.14 then
             tiles[#tiles + 1] = { name = 'blue-refined-concrete', position = p }
-            if random(1, 4) == 1 then
-                markets[#markets + 1] = p
-            end
-            if random(1, 4) == 1 then
-                entities[#entities + 1] = { name = tree_raffle[random(1, size_of_tree_raffle)], position = p }
-            end
+            if random(1, 4) == 1 then markets[#markets + 1] = p end
+            if random(1, 4) == 1 then entities[#entities + 1] = { name = tree_raffle[random(1, size_of_tree_raffle)], position = p } end
             return
         end
         tiles[#tiles + 1] = { name = 'deepwater', position = p }
+
         if random(1, 16) == 1 then
             entities[#entities + 1] = { name = 'fish', position = p }
         end
         return
     end
 
-    --Rivers
-    if cave_rivers < 0.042 and cave_rivers > -0.062 then
+    local rvmin, rvmax = noise_shift(-0.062, 0.042)
+    if cave_rivers < rvmax and cave_rivers > rvmin then
         if noise_cave_ponds > 0.1 then
             tiles[#tiles + 1] = { name = 'water-shallow', position = p }
+
             if random(1, 64) == 1 then
                 entities[#entities + 1] = { name = 'fish', position = p }
             end
@@ -5024,42 +5256,62 @@ local function zone_1(x, y, data, _, adjusted_zones)
         end
     end
 
-    if noise_cave_ponds > 0.182 then
-        if noise_cave_ponds > 0.542 then
-            if cave_rivers > -0.302 then
-                tiles[#tiles + 1] = { name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)] or 'refined-hazard-concrete-right', position = p }
+    if noise_cave_ponds > (0.182 - season * 0.005) then
+        if noise_cave_ponds > (0.542 - season * 0.005) then
+            if cave_rivers > (-0.302 + season * 0.01) then
+                tiles[#tiles + 1] =
+                {
+                    name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)] or 'refined-hazard-concrete-right',
+                    position = p
+                }
             end
         end
-        if random(1, 64) == 1 then
+
+        if random(1, math.max(16, 64 - season)) == 1 then
             entities[#entities + 1] = { name = tree_raffle[random(1, size_of_tree_raffle)], position = p }
         end
         return
     end
 
-    --Main Rock Terrain
-    if no_rocks_2 > 0.334 and no_rocks_2 < 0.544 then
+    local mmin, mmax = noise_shift(0.334, 0.544)
+    if no_rocks_2 > mmin and no_rocks_2 < mmax then
         local success = place_wagon(data, adjusted_zones)
         if success then
             return
         end
-        tiles[#tiles + 1] = { name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)] or 'nuclear-ground', position = p }
-        if random(1, 18) == 1 then
+
+        tiles[#tiles + 1] =
+        {
+            name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)] or 'nuclear-ground',
+            position = p
+        }
+
+        if random(1, math.max(6, 18 - season)) == 1 then
             entities[#entities + 1] = { name = 'tree-0' .. random(1, 9), position = p }
         end
 
-        if random(1, 512) == 1 then
+        if random(1, math.max(128, 512 - season * 10)) == 1 then
             spawn_treasure(data, p, 'iron-chest')
         end
         return
     end
 
-    if random(1, 2048) == 1 then
+    if random(1, math.max(512, 2048 - season * 20)) == 1 then
         spawn_treasure(data, p, 'iron-chest')
     end
-    tiles[#tiles + 1] = { name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)] or 'nuclear-ground', position = p }
-    if random(1, 125) > 25 then
-        -- entities[#entities + 1] = { name = rock_raffle[random(1, size_of_rock_raffle)], position = p }
-        entities[#entities + 1] = { name = adjusted_zones.rock_raffle[random(1, adjusted_zones.size_of)], position = p }
+
+    tiles[#tiles + 1] =
+    {
+        name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[random(1, #adjusted_zones.tiles_raffle)] or 'nuclear-ground',
+        position = p
+    }
+
+    if random(1, math.max(32, 125 - season * 2)) > 25 then
+        entities[#entities + 1] =
+        {
+            name = adjusted_zones.rock_raffle[random(1, adjusted_zones.size_of)],
+            position = p
+        }
     end
 end
 
@@ -5067,7 +5319,7 @@ local function fulgora_callback(x, y, data)
     local p = { x = x, y = y }
     local seed = data.seed + 10000
     local entities = data.entities
-    local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed + seed)
+    local noise_cave_ponds = seasonal_noise('cave_ponds', p, seed, seed)
 
     if noise_cave_ponds > 0.65 then
         if noise_cave_ponds > 0.80 then
@@ -5093,7 +5345,7 @@ local function vulcanus_callback(x, y, data)
     local p = { x = x, y = y }
     local seed = data.seed + 10000
     local entities = data.entities
-    local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed + seed)
+    local noise_cave_ponds = seasonal_noise('cave_ponds', p, seed, seed)
 
     if noise_cave_ponds > 0.65 then
         if noise_cave_ponds > 0.80 then
@@ -5110,7 +5362,7 @@ local function gleba_callback(x, y, data)
     local p = { x = x, y = y }
     local seed = data.seed + 10000
     local entities = data.entities
-    local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed + seed)
+    local noise_cave_ponds = seasonal_noise('cave_ponds', p, seed, seed)
 
     if noise_cave_ponds > 0.65 then
         if noise_cave_ponds > 0.80 then
@@ -5136,7 +5388,7 @@ local function aquilo_callback(x, y, data)
     local p = { x = x, y = y }
     local seed = data.seed + 10000
     local entities = data.entities
-    local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed + seed)
+    local noise_cave_ponds = seasonal_noise('cave_ponds', p, seed, seed)
 
     if noise_cave_ponds > 0.65 then
         if noise_cave_ponds > 0.80 then
@@ -5157,7 +5409,7 @@ local function fortress_callback(x, y, data)
     local p = { x = x, y = y }
     local seed = data.seed + 10000
     local entities = data.entities
-    local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed + seed)
+    local noise_cave_ponds = seasonal_noise('cave_ponds', p, seed, seed)
     if not Public.is_modded_pt2 then
         return
     end
@@ -5176,7 +5428,7 @@ end
 local function nauvis_callback(x, y, data)
     local p = { x = x, y = y }
     local seed = data.seed + 10000
-    local noise_cave_ponds = Public.get_noise('cave_ponds', p, seed + seed)
+    local noise_cave_ponds = seasonal_noise('cave_ponds', p, seed, seed)
     if noise_cave_ponds > 0.65 then
         if noise_cave_ponds > 0.80 then
             return
@@ -5319,6 +5571,7 @@ local function init_terrain(adjusted_zones)
     adjusted_zones.size = size
     adjusted_zones.shuffled_zones = generated_zones
     adjusted_zones.init_terrain = true
+    adjusted_zones.season = Public.get_stateful('season')
 end
 
 local function process_bits(p, data, adjusted_zones)
@@ -5512,7 +5765,7 @@ local function border_chunk(p, data, dec_tbl)
 
     game.forces.player.chart(surface, { { p.x - 32, p.y - 32 }, { p.x + 32, p.y + 32 } })
 
-    local noise = Public.get_noise('cave_rivers_2', pos, data.seed)
+    local noise = seasonal_noise('cave_rivers_2', pos, data.seed, 0)
     local index = floor(noise * 32) % 10 + 1
     local tile = surface.get_tile(pos)
     local starting_planet = Public.get_planet()
@@ -5523,6 +5776,9 @@ local function border_chunk(p, data, dec_tbl)
             tiles[#tiles + 1] = { name = start_aquilo_tiles[index], position = pos }
         elseif starting_planet == 'vulcanus' then
             tiles[#tiles + 1] = { name = start_vulcanus_tiles[index], position = pos }
+        elseif starting_planet == 'fortress' then
+            index = floor(noise * 32) % 6 + 1
+            tiles[#tiles + 1] = { name = 'dirt-' .. index, position = pos }
         end
     end
 
@@ -5612,7 +5868,7 @@ local function biter_chunk(p, data)
         end
     end
 
-    local noise = Public.get_noise('cave_rivers_2', pos, data.seed)
+    local noise = seasonal_noise('cave_rivers_2', pos, data.seed, 0)
     local index = floor(noise * 32) % 10 + 1
     local tile = surface.get_tile(pos)
     local starting_planet = Public.get_planet()
@@ -5692,6 +5948,9 @@ function Public.heavy_functions(data)
     end
 
     init_terrain(adjusted_zones)
+    if not adjusted_zones.season then
+        adjusted_zones.season = Public.get_stateful('season')
+    end
 
     if not data.seed then
         data.seed = Public.get('random_seed')

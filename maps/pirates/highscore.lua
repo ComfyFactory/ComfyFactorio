@@ -15,7 +15,7 @@ local SpamProtection = require('utils.spam_protection')
 local Utils = require('maps.pirates.utils_local')
 local CoreData = require('maps.pirates.coredata')
 local Common = require('maps.pirates.common')
-local CustomEvents = require('utils.created_events')
+local ServerCommands = require('utils.created_events')
 
 local module_name = Gui.uid_name()
 -- local module_name = 'Highscore'
@@ -388,7 +388,7 @@ function Public.load_in_scores()
 		-- FULL CLEAN task (erases everything...):
 		-- server_set_data(score_dataset, score_key, {})
 
-		if is_game_modded() then
+		if ServerCommands.is_game_modded() then
 			Server.try_get_data(score_dataset, score_key_modded, load_in_scores)
 		elseif _DEBUG then
 			Server.try_get_data(score_dataset, score_key_debug, load_in_scores)
@@ -435,7 +435,7 @@ function Public.write_score(
 			max_players
 		)
 
-		if is_game_modded() then
+		if ServerCommands.is_game_modded() then
 			Server.set_data(score_dataset, score_key_modded, this.score_table['player'])
 		elseif _DEBUG then
 			Server.set_data(score_dataset, score_key_debug, this.score_table['player'])
@@ -745,7 +745,7 @@ end
 
 Server.on_data_set_changed(score_dataset, function(data)
 	local key
-	if is_game_modded() then
+	if ServerCommands.is_game_modded() then
 		key = score_key_modded
 	elseif _DEBUG then
 		key = score_key_debug
@@ -776,6 +776,6 @@ Event.on_init(on_init)
 Event.add(defines.events.on_player_left_game, on_player_left_game)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_gui_click, on_gui_click)
-Event.add(CustomEvents.events.on_server_started, Public.load_in_scores)
+Event.add(ServerCommands.events.on_server_started, Public.load_in_scores)
 
 return Public

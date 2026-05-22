@@ -5,6 +5,7 @@ local Core = require 'utils.core'
 local Supporters = require 'utils.datastore.supporters'
 local Task = require 'utils.task_token'
 local Server = require 'utils.server'
+local SessionData = require 'utils.datastore.session_data'
 
 ---@class CommandData
 ---@field name string
@@ -18,6 +19,8 @@ local Server = require 'utils.server'
 ---@field check_offline_mode boolean
 ---@field check_admin boolean
 ---@field check_supporter boolean
+---@field check_role string[]
+---@field skip_param boolean
 ---@field check_trusted boolean
 ---@field check_playtime number
 ---@field callback function
@@ -44,6 +47,7 @@ local output =
     param_is_required = 'This command requires a parameter to run.',
     command_failed = 'Command failed to run.',
     command_success = 'Command ran successfully.',
+    role_is_required = 'This command requires the player to have the %s role to run.',
     command_needs_validation =
     'This command requires validation to run. Please re-run the command if you wish to proceed.',
     command_needs_custom_validation =
@@ -63,7 +67,8 @@ local validate_types =
     ['position'] = true,
     ['player-admin'] = true,
     ['server'] = true,
-    ['surface'] = true
+    ['surface'] = true,
+    ['any'] = true
 }
 
 local check_boolean =
@@ -85,16 +90,6 @@ Global.register(
 )
 
 script.register_metatable('CommandData', Public.metatable)
-
-local function get_trusted_player(player)
-    local session_storage = storage.tokens.utils_datastore_session_data
-    return session_storage and session_storage.trusted and player and player.valid and session_storage.trusted[player.name] or false
-end
-
-local function get_session_player(player)
-    local session_storage = storage.tokens.utils_datastore_session_data
-    return session_storage and session_storage.session and player and player.valid and session_storage.session[player.name] or false
-end
 
 local function conv(v)
     if tonumber(v) then
@@ -176,6 +171,10 @@ handlers["string"] = function (param)
     return param
 end
 
+handlers["any"] = function (param)
+    return param
+end
+
 handlers["boolean"] = function (param)
     if not check_boolean[param] then
         return nil, "Inputted value is not of type boolean. Valid values are: true, false."
@@ -215,6 +214,11 @@ local function internal_error(has_run, name, message)
 end
 
 local function parseCommandArguments(input, command_data)
+    local skip_param = command_data.skip_param or false
+    if skip_param then
+        return input
+    end
+
     local tokens = {}
     local i = 1
     if input == nil then
@@ -369,7 +373,7 @@ local function execute(event)
     -- Check if the player is trusted and if the command requires it
     local check_trusted = command_data.check_trusted or false
     if (check_trusted and not is_server) and Core.validate_player(player) then
-        local is_trusted = get_trusted_player(player)
+        local is_trusted = SessionData.get_trusted_player(player)
         if not is_trusted then
             reject(output.trusted_is_required)
             return
@@ -386,10 +390,27 @@ local function execute(event)
         end
     end
 
+    -- Check if the player has the required role and if the command requires it
+    local check_role = command_data.check_role or false
+    if check_role then
+        local has_roles = false
+        for _, role in pairs(check_role) do
+            if SessionData.allowed(player, role) then
+                has_roles = true
+                break
+            end
+        end
+
+        if not has_roles then
+            reject(string.format(output.role_is_required, table.concat(check_role, ', ')))
+            return
+        end
+    end
+
     -- Check if the player has the required playtime and if the command requires it
     local check_playtime = command_data.check_playtime or false
     if (check_playtime and not is_server) and Core.validate_player(player) then
-        local playtime = get_session_player(player)
+        local playtime = SessionData.get_session_player(player)
         if not playtime then
             reject(string.format(output.playtime_is_required, Core.get_formatted_playtime(check_playtime)))
             return
@@ -459,7 +480,12 @@ local function execute(event)
 
     -- Run the command callback if everything is validated
     local callback = Task.get(command_data.callback)
-    local success, err = pcall(callback, player, unpack(handled_parameters))
+    local success, err
+    if not command_data.skip_param then
+        success, err = pcall(callback, player, unpack(handled_parameters))
+    else
+        success, err = pcall(callback, player, event.parameter)
+    end
     if internal_error(success, command_data.name, err) then
         return reject(output.command_failed)
     end
@@ -588,6 +614,25 @@ function Public:require_trusted()
     return self
 end
 
+--- Requires the player to have a minimum role to run the command.
+---@param role_name string
+---@return MetaCommand
+function Public:require_role(role_name)
+    if not self.check_role then
+        self.check_role = {}
+    end
+
+    table.insert(self.check_role, role_name)
+    return self
+end
+
+--- Skips the param validation/extraction process.
+---@return MetaCommand
+function Public:skip_param_validation()
+    self.skip_param = true
+    return self
+end
+
 --- Requires the player to have a minimum playtime to run the command.
 ---@param playtime integer|number
 ---@return MetaCommand
@@ -607,6 +652,7 @@ end
 ---| '"server"'
 ---| '"surface"'
 ---| '"position"'
+---| '"any"'
 
 --- Adds a parameter to the command.
 ---@param name string
@@ -781,5 +827,63 @@ Public.new('tp', 'Teleports the player to a specific position.')
             player.teleport(position, surface)
         end
     )
+
+local function interface(callback, ...)
+    if type(callback) == 'function' then
+        local success, err = pcall(callback, ...)
+        return success, err
+    else
+        local success, err = pcall(load(callback), ...)
+        return success, err
+    end
+end
+
+Public.new('interface', 'Runs the given input from the script')
+    :require_role('interface')
+    :skip_param_validation()
+    :add_parameter('callback', false, 'any')
+    :callback(function (player, callback)
+        if not callback then
+            return
+        end
+        if not string.find(callback, '%s') and not string.find(callback, 'return') and not string.find(callback, 'return') then
+            callback = 'return ' .. callback
+        end
+        if player and not string.find(callback, 'utils.event') then
+            callback =
+                'local player, surface, force, entity = game.player, game.player.surface, game.player.force, game.player.selected;' ..
+                callback
+        end
+        if
+            string.find(callback, 'Roles') or string.find(callback, 'roles') or string.find(callback, 'Role') or
+            string.find(callback, 'role') and not string.find(callback, 'utils.event')
+        then
+            callback =
+                'local Roles = require "utils.datastore.session_data"; local Role = Roles; local roles = Roles; local role = Role; Roles.get_role(game.player);' ..
+                callback
+        end
+
+        if not string.find(callback, 'utils.event') then
+            callback = 'local Event = require "utils.event";' .. callback
+        end
+
+        if not string.find(callback, 'utils.gui') then
+            callback = 'local Gui = require "utils.gui";' .. callback
+        end
+
+        local success, err = interface(callback)
+        if not success then
+            if type(err) == 'string' then
+                local _end = string.find(err, 'stack traceback')
+                if _end then
+                    err = string.sub(err, 0, _end - 2)
+                end
+
+                err = err:gsub('..-/temp/currently%-playing..-%....', '')
+                err = '[color=red][Interface error][/color] ' .. err
+                pcall(player.print, err)
+            end
+        end
+    end)
 
 return Public

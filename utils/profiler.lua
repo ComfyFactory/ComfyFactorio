@@ -8,32 +8,36 @@ if (debug.sethook) then
     local Token = require 'utils.token'
     local Event = require 'utils.event'
 
-    local Public = {
+    local Public =
+    {
         call_tree = nil,
         is_running = false
     }
 
     local stop_profiler_token =
         Token.register(
-        function()
-            Public.stop()
-            game.print('[PROFILER] Stopped!')
-            log('[PROFILER] Stopped!')
-        end
-    )
+            function ()
+                Public.stop()
+                game.print('[PROFILER] Stopped!')
+                log('[PROFILER] Stopped!')
+            end
+        )
 
     -- we can have this on runtime,
     -- but never ever can a player run this without notifying us.
-    local allowed = {
+    local allowed =
+    {
         ['Gerkiz'] = true,
         ['mewmew'] = true
     }
 
-    local ignored_functions = {
+    local ignored_functions =
+    {
         [debug.sethook] = true
     }
 
-    local named_sources = {
+    local named_sources =
+    {
         ['[string "local n, v = "serpent", "0.30" -- (C) 2012-17..."]'] = 'serpent'
     }
 
@@ -102,7 +106,8 @@ if (debug.sethook) then
 
         Public.is_running = true
 
-        Public.call_tree = {
+        Public.call_tree =
+        {
             name = 'root',
             calls = 0,
             profiler = create_profiler(),
@@ -110,11 +115,11 @@ if (debug.sethook) then
         }
 
         --	Array of Call
-        local stack = {[0] = Public.call_tree}
+        local stack = { [0] = Public.call_tree }
         local stack_count = 0
 
         debug.sethook(
-            function(event)
+            function (event)
                 local info = debug_getinfo(2, 'nSf')
 
                 if ignored_functions[info.func] then
@@ -152,7 +157,8 @@ if (debug.sethook) then
                     local profilerStartFunc
                     if currCall == nil then
                         local prof = create_profiler()
-                        currCall = {
+                        currCall =
+                        {
                             name = name,
                             calls = 1,
                             profiler = prof
@@ -185,13 +191,14 @@ if (debug.sethook) then
             'cr'
         )
     end
+
     ignored_functions[Public.start] = true
 
     local function dump_tree(averageMs)
         local function sort_Call(a, b)
             return a.calls > b.calls
         end
-        local fullStr = {''}
+        local fullStr = { '' }
         local str = fullStr
         local line = 1
 
@@ -208,7 +215,7 @@ if (debug.sethook) then
                 local call = sort[ii]
 
                 if line >= 19 then --Localised string can only have up to 20 parameters
-                    local newStr = {''} --So nest them!
+                    local newStr = { '' } --So nest them!
                     str[line + 1] = newStr
                     str = newStr
                     line = 1
@@ -242,7 +249,7 @@ if (debug.sethook) then
 
         debug.sethook()
 
-        local text = {'', '\n\n----------PROFILER DUMP----------\n', dump_tree(averageMs), '\n\n----------PROFILER STOPPED----------\n'}
+        local text = { '', '\n\n----------PROFILER DUMP----------\n', dump_tree(averageMs), '\n\n----------PROFILER STOPPED----------\n' }
         if message ~= nil then
             text[#text + 1] = string.format('Reason: %s\n', message)
         end
@@ -250,11 +257,12 @@ if (debug.sethook) then
         Public.call_tree = nil
         Public.is_running = false
     end
+
     ignored_functions[Public.stop] = true
 
     if _PROFILE then
         Event.on_init(
-            function()
+            function ()
                 game.print('[PROFILER] Started!')
                 log('[PROFILER] Started!')
                 Public.start()

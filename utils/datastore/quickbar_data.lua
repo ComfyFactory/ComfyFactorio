@@ -14,6 +14,7 @@ local logistics_dataset = 'logistics'
 local logistics_dataset_modded = 'logistics_modded'
 local set_data = Server.set_data
 local try_get_data = Server.try_get_data
+local is_game_modded = ServerCommands.is_game_modded()
 
 local this =
 {
@@ -152,8 +153,7 @@ local fetch_logistics =
 -- @param LuaPlayer
 function Public.fetch_quickbar(player)
     local dataset = quickbar_dataset
-    local game_has_mods = is_game_modded()
-    if game_has_mods then
+    if is_game_modded then
         dataset = quickbar_dataset_modded
     end
 
@@ -164,8 +164,7 @@ end
 -- @param LuaPlayer
 function Public.fetch_logistics(player)
     local dataset = logistics_dataset
-    local game_has_mods = is_game_modded()
-    if game_has_mods then
+    if is_game_modded then
         dataset = logistics_dataset_modded
     end
 
@@ -177,8 +176,7 @@ end
 function Public.save_quickbar(player)
     local dataset = quickbar_dataset
 
-    local game_has_mods = is_game_modded()
-    if game_has_mods then
+    if is_game_modded then
         dataset = quickbar_dataset_modded
     end
 
@@ -205,8 +203,7 @@ function Public.save_logistics(player)
         return false
     end
 
-    local game_has_mods = is_game_modded()
-    if game_has_mods then
+    if is_game_modded then
         dataset = logistics_dataset_modded
     end
 
@@ -247,8 +244,7 @@ end
 function Public.remove_quickbar(player)
     local dataset = quickbar_dataset
 
-    local game_has_mods = is_game_modded()
-    if game_has_mods then
+    if is_game_modded then
         dataset = quickbar_dataset_modded
     end
 
@@ -261,8 +257,7 @@ end
 function Public.remove_logistics(player)
     local dataset = logistics_dataset
 
-    local game_has_mods = is_game_modded()
-    if game_has_mods then
+    if is_game_modded then
         dataset = logistics_dataset_modded
     end
 

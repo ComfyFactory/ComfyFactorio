@@ -7,7 +7,6 @@ local Task = require 'utils.task_token'
 local shuffle = table.shuffle_table
 local WD = require 'modules.wave_defense.table'
 local format_number = require 'util'.format_number
-local ICWF = require 'maps.mountain_fortress_v3.icw.functions'
 local ICWT = require 'maps.mountain_fortress_v3.icw.table'
 local Core = require 'utils.core'
 local Public = require 'maps.mountain_fortress_v3.table'
@@ -16,7 +15,6 @@ local RPG = require 'modules.rpg.table'
 local Beam = require 'modules.render_beam'
 local Discord = require 'utils.discord'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
-local CustomEvents = require 'utils.created_events'
 local ICW = require 'maps.mountain_fortress_v3.icw.table'
 
 local this =
@@ -1962,7 +1960,7 @@ function Public.move_all_players()
         return
     end
 
-    ICWF.disable_auto_minimap()
+    -- ICWF.disable_auto_minimap()
 
     local message = ({ 'stateful.final_boss_message_start' })
     Alert.alert_all_players(50, message, nil, nil, 1)
@@ -2065,9 +2063,9 @@ function Public.increase_enemy_damage_and_health()
 
     if this.rounds_survived > 1 then
         for _ = 1, this.rounds_survived do
-            Event.raise(CustomEvents.events.on_biters_evolved, { force = game.forces.enemy, health_increase = true })
-            Event.raise(CustomEvents.events.on_biters_evolved, { force = game.forces.aggressors })
-            Event.raise(CustomEvents.events.on_biters_evolved, { force = game.forces.aggressors_frenzy })
+            Event.raise(ServerCommands.events.on_biters_evolved, { force = game.forces.enemy, health_increase = true })
+            Event.raise(ServerCommands.events.on_biters_evolved, { force = game.forces.aggressors })
+            Event.raise(ServerCommands.events.on_biters_evolved, { force = game.forces.aggressors_frenzy })
         end
     end
 end
@@ -2133,7 +2131,7 @@ function Public.stateful_on_server_started()
 end
 
 Event.add(
-    CustomEvents.events.on_server_started,
+    ServerCommands.events.on_server_started,
     function ()
         if this.settings_applied then
             return

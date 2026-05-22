@@ -6,7 +6,6 @@ local Task = require 'utils.task_token'
 local Config = require 'utils.gui.config'
 local Fullness = require 'modules.check_fullness'
 local Color = require 'utils.color_presets'
-local CustomEvents = require 'utils.created_events'
 
 local stateful_settings =
 {
@@ -40,7 +39,7 @@ local this =
     current_task =
     {
         state = 'move_players',
-        surface_name = 'Init',
+        surface_name = 'init',
         default_task = 'move_players',
         show_messages = false,
         step = 1
@@ -88,7 +87,7 @@ Public.all_planets =
 }
 
 
-local init_name = 'Init'
+local init_name = 'init'
 Public.init_name = init_name
 local discord_name = 'Mtn Fortress'
 Public.discord_name = discord_name
@@ -584,6 +583,9 @@ function Public.reset_main_table()
     this.breached_wall = 1
     this.pre_final_battle = false
     this.final_battle = false
+    if remote.interfaces.tnt then
+        remote.call("tnt", "set_module_status", false)
+    end
     this.disable_link_chest_cheese_mode = true
     this.left_top =
     {
@@ -773,19 +775,9 @@ function Public.reset_main_table()
     end
     this.corpses_raffle = corpses_raffle
 
-    for _, planet in pairs(game.planets) do
-        local platforms = planet.get_space_platforms('player')
-        if platforms then
-            for _, platform in pairs(platforms) do
-                if platform and platform.valid and platform.surface and platform.surface.valid then
-                    local name = platform.surface.name
-                    Server.output_script_data('Clearing platform surface: ' .. name)
-                    game.delete_surface(name)
-                    platform.destroy()
-                end
-            end
-        end
+    Public.clear_platforms()
 
+    for _, planet in pairs(game.planets) do
         if planet.surface and planet.surface.name ~= stateful_settings.current_planet then
             Server.output_script_data('Clearing surface: ' .. planet.surface.name)
             planet.surface.clear()
@@ -851,7 +843,7 @@ end
 
 function Public.set_task(task, surface_name)
     this.current_task.state = task
-    this.current_task.surface_name = surface_name or 'Init'
+    this.current_task.surface_name = surface_name or 'init'
 end
 
 function Public.is_task_done()
@@ -927,7 +919,7 @@ local apply_settings_token =
     )
 
 Event.add(
-    CustomEvents.events.on_server_started,
+    ServerCommands.events.on_server_started,
     function ()
         local start_data = Server.get_start_data()
 

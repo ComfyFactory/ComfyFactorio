@@ -11,7 +11,6 @@ local table = require 'utils.table'
 local Gui = require 'utils.gui'
 local StatData = require 'utils.datastore.statistics'
 local Commands = require 'utils.commands'
-local CustomEvents = require 'utils.created_events'
 local UndoActions = require 'utils.undo_actions'
 
 StatData.add_normalize('jailed', 'Jailed')
@@ -236,9 +235,9 @@ local function get_player_data(player, remove)
 end
 
 local function get_gulag_permission_group()
-    local gulag = game.permissions.get_group('Gulag')
+    local gulag = game.permissions.get_group('gulag')
     if not gulag then
-        gulag = game.permissions.create_group('Gulag')
+        gulag = game.permissions.create_group('gulag')
         for action_name, _ in pairs(defines.input_action) do
             ---@diagnostic disable-next-line: need-check-nil
             gulag.set_allows_action(defines.input_action[action_name], false)
@@ -270,7 +269,7 @@ local function exclude_surface(surface)
 end
 
 local function create_gulag_surface()
-    local surface = game.surfaces['Gulag']
+    local surface = game.surfaces['gulag']
     if not surface then
         local walls = {}
         local tiles = {}
@@ -278,7 +277,7 @@ local function create_gulag_surface()
             function ()
                 surface =
                     game.create_surface(
-                        'Gulag',
+                        'gulag',
                         {
                             autoplace_controls =
                             {
@@ -305,7 +304,7 @@ local function create_gulag_surface()
             end
         )
         if not surface then
-            surface = game.create_surface('Gulag', { width = 40, height = 40 })
+            surface = game.create_surface('gulag', { width = 40, height = 40 })
         end
         surface.always_day = true
         surface.request_to_generate_chunks({ 0, 0 }, 1)
@@ -338,7 +337,7 @@ local function create_gulag_surface()
             scale_with_zoom = false
         }
     end
-    surface = game.surfaces['Gulag']
+    surface = game.surfaces['gulag']
     exclude_surface(surface)
     return surface
 end
@@ -350,7 +349,7 @@ local function teleport_player_to_gulag(player, action, mute)
     end
 
     if action == 'jail' then
-        local gulag = game.surfaces['Gulag']
+        local gulag = game.surfaces['gulag']
         if p_data and not p_data.locked then
             p_data.fallback_surface_index = player.surface.index
             p_data.position = player.position
@@ -661,7 +660,7 @@ local function jail(player, offender, msg, raised, mute)
         set_data(jailed_data_set, offender, { jailed = true, actor = player, reason = msg, date = date })
     end
 
-    Event.raise(CustomEvents.events.on_player_jailed, { player_index = offender.index })
+    Event.raise(ServerCommands.events.on_player_jailed, { player_index = offender.index })
 
     StatData.get_data(to_jail_player.index):increase('jailed')
 
@@ -732,7 +731,7 @@ local function jail_temporary(player, offender, msg, mute)
 
     set_data(jailed_data_set, offender.name, { jailed = true, temporary = true, actor = player.name, reason = msg, date = date })
 
-    Event.raise(CustomEvents.events.on_player_jailed, { player_index = offender.index })
+    Event.raise(ServerCommands.events.on_player_jailed, { player_index = offender.index })
 
     StatData.get_data(offender.index):increase('jailed')
 
@@ -761,7 +760,7 @@ local function free(player, offender)
 
     set_data(jailed_data_set, offender, nil)
 
-    Event.raise(CustomEvents.events.on_player_unjailed, { player_index = offender.index })
+    Event.raise(ServerCommands.events.on_player_unjailed, { player_index = offender.index })
 
     Utils.print_to(nil, message)
     local data = Server.build_embed_data()
@@ -1196,7 +1195,7 @@ Event.on_init(
 )
 
 Event.add(
-    CustomEvents.events.on_server_started,
+    ServerCommands.events.on_server_started,
     function ()
         Public.sync_revoked_permissions()
     end
@@ -1376,7 +1375,7 @@ Event.add(
             return
         end
 
-        local surface = game.surfaces['Gulag']
+        local surface = game.surfaces['gulag']
 
         if player.surface.index ~= surface.index then
             local p_data = get_player_data(player)
@@ -1406,7 +1405,7 @@ Event.add(
             return
         end
 
-        local surface = game.surfaces['Gulag']
+        local surface = game.surfaces['gulag']
         if player.surface.index ~= surface.index then
             local p_data = get_player_data(player)
             if jailed[player.name] and p_data and p_data.locked then

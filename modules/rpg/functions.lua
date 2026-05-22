@@ -1435,6 +1435,10 @@ show_cooldown =
             local now = game.tick
             if now >= tick then
                 local rpg_t = Public.get_value_from_player(player.index)
+                if not rpg_t then
+                    Server.output_script_data('No rpg_t found for player: ' .. tostring(player.name))
+                    return
+                end
                 rpg_t.cooldown_enabled = nil
                 return
             end
@@ -1442,6 +1446,11 @@ show_cooldown =
             local fade = ((now - tick) / event.delay) + 1
 
             if not player.character then
+                Task.set_timeout_in_ticks(update_rate, show_cooldown, event)
+                return
+            end
+
+            if player.physical_surface.name ~= player.character.surface.name then
                 Task.set_timeout_in_ticks(update_rate, show_cooldown, event)
                 return
             end
@@ -1606,12 +1615,7 @@ function Public.rpg_reset_player(player, one_time_reset)
         cooldowns = {},
         dropdown_select_index = 1,
         dropdown_select_name = Public.all_spells[1].name[1],
-        dropdown_select_index_1 = 1,
-        dropdown_select_name_1 = Public.all_spells[1].name[1],
-        dropdown_select_index_2 = 2,
-        dropdown_select_name_2 = Public.all_spells[2].name[1],
-        dropdown_select_index_3 = 3,
-        dropdown_select_name_3 = Public.all_spells[3].name[1],
+        spell_slot_count = 3,
         allocate_index = 1,
         amount = 0,
         explosive_bullets = false,
@@ -1650,7 +1654,16 @@ function Public.rpg_reset_player(player, one_time_reset)
         base_reset_values.bonus = 1
     end
 
+
     rpg_t = Public.set_new_player_tbl(player.index, base_reset_values)
+
+    local filtered_spells = Public.get_all_spells_filtered(rpg_t)
+    for i = 1, 8 do
+        if i == 9 then break end
+        local spell = filtered_spells[i]
+        base_reset_values['dropdown_select_name_' .. i] = spell.name[1]
+        base_reset_values['dropdown_select_index_' .. i] = i
+    end
 
     if one_time_reset then
         rpg_t.points_left = old_values.points_left + old_values.total

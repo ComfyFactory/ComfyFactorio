@@ -137,7 +137,14 @@ end
 local function tier4_object(expanse, surface, left_top, repeats)
     local position = surface.find_non_colliding_position_in_box('rocket-silo', {{left_top.x, left_top.y}, {left_top.x + 15, left_top.y + 15}}, 1, false)
     if position and math.random(1, math.max(1, 20 - repeats)) == 1 then
-        if expanse.tiered_specials[4].unlocks == 2 then
+        if expanse.tiered_specials[4].unlocks == 3 then
+            for _ = 1, 2, 1 do
+                local pos = surface.find_non_colliding_position_in_box('crude-oil', {{left_top.x, left_top.y}, {left_top.x + 15, left_top.y + 15}}, 1, false)
+                if pos then
+                    surface.create_entity({name = 'crude-oil', position = pos, amount = 500000})
+                end
+            end
+        elseif expanse.tiered_specials[4].unlocks == 2 then
             local pad = surface.create_entity({name = 'cargo-landing-pad', position = position, force = game.forces.player})
             pad.minable_flag = false
             pad.destructible = false
@@ -813,6 +820,7 @@ function Public.rocket_delivery(expanse, pod)
         end
     end
     script.raise_event(expanse.events.mission_gui_update, { tier = tier })
+    expanse.cargo_pods[pod.unit_number] = nil
     if level < 1 then return end
 
     for item, amount in pairs(reqs[level]) do

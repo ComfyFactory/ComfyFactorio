@@ -7,8 +7,6 @@ local IC = require 'maps.mountain_fortress_v3.ic.table'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local Event = require 'utils.event'
 local Server = require 'utils.server'
-local CustomEvents = require 'utils.created_events'
-local DevServer = require 'utils.dev_server'
 
 local Public = {}
 local main_tile_name = 'black-refined-concrete'
@@ -798,7 +796,22 @@ local remove_car =
         function (data)
             local player = data.player
             local car = data.car
-            player.remove_item({ name = car.name, count = 1 })
+            player.remove_item({ name = car.name, count = 1, quality = car.quality })
+            player.remove_item({ name = car.name, count = 1, quality = 'normal' })
+        end
+    )
+
+local remove_entity =
+    Task.register(
+        function (data)
+            local player = data.player
+            local entity = data.entity
+            if not entity or not entity.valid then
+                return
+            end
+
+            player.remove_item({ name = entity.name, count = 1, quality = entity.quality.name })
+            player.remove_item({ name = entity.name, count = 1, quality = 'normal' })
         end
     )
 
@@ -863,7 +876,8 @@ function Public.save_car(event)
         {
             index = p.surface.index,
             types = types,
-            position = p.physical_position
+            position = p.physical_position,
+            quality = car.quality
         }
 
         Task.set_timeout_in_ticks(1, find_remove_car, find_remove_car_args)
@@ -880,12 +894,18 @@ function Public.save_car(event)
             car = car
         }
         Task.set_timeout_in_ticks(10, remove_car, params)
+        local params_entity =
+        {
+            player = player,
+            entity = entity
+        }
+        Task.set_timeout_in_ticks(10, remove_entity, params_entity)
         if restore_on_theft then
             local e = player.physical_surface.create_entity({ name = car.name, position = position, force = player.force, create_build_effect_smoke = false, quality = car.quality or 'normal' })
             e.health = health
             restore_surface(p, e)
-        elseif p.can_insert({ name = car.name, count = 1 }) then
-            p.insert({ name = car.name, count = 1, health = health })
+        elseif p.can_insert({ name = car.name, count = 1, quality = car.quality }) then
+            p.insert({ name = car.name, count = 1, health = health, quality = car.quality })
             p.print(module_tag .. 'Your car was stolen from you - the gods foresaw this and granted you a new one.', { color = Color.info })
         end
     end
@@ -1201,7 +1221,7 @@ function Public.create_room_surface(car)
     surface.request_to_generate_chunks({ 16, 16 }, 1)
     surface.force_generate_chunk_requests()
 
-    if DevServer.is_dev_server() then
+    if ServerCommands.is_dev_server() then
         surface.ignore_surface_conditions = true
     end
 
@@ -1625,7 +1645,7 @@ Public.kick_players_from_surface = kick_players_from_surface
 Public.kick_non_trusted_players_from_surface = kick_non_trusted_players_from_surface
 
 Event.add(
-    CustomEvents.events.remove_surface,
+    ServerCommands.events.remove_surface,
     function (event)
         local target = event.target
         if not target then

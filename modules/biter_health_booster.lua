@@ -12,7 +12,7 @@ local entity_types = {
     ['unit-spawner'] = true
 }
 
-if is_loaded('maps.biter_hatchery.terrain') then
+if ServerCommands.is_loaded('maps.biter_hatchery.terrain') then
     entity_types['unit-spawner'] = nil
 end
 

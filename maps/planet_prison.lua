@@ -1070,7 +1070,7 @@ init_player = function (p, non_tp)
 
     p.minimap_enabled = false
     p.force.set_surface_hidden(surface, true)
-    p.force.set_surface_hidden('Gulag', true)
+    p.force.set_surface_hidden('gulag', true)
     p.force.set_surface_hidden('nauvis', true)
     local default_group = game.permissions.get_group('Default')
     default_group.add_player(p)

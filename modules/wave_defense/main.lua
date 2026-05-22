@@ -5,7 +5,6 @@ local Difficulty = require 'modules.difficulty_vote_by_amount'
 local Alert = require 'utils.alert'
 local Server = require 'utils.server'
 local Collapse = require 'modules.collapse'
-local CustomEvents = require 'utils.created_events'
 local Math = require 'utils.math.math'
 
 Collapse.read_tables_only = true
@@ -384,7 +383,7 @@ local function set_main_target()
     end
 
     Public.set('target', sec_target)
-    raise(CustomEvents.events.on_target_aquired, { target = target })
+    raise(ServerCommands.events.on_target_aquired, { target = target })
     Public.debug_print('set_main_target -- New main target ' .. sec_target.name .. ' at position x' .. sec_target.position.x .. ' y' .. sec_target.position.y .. ' selected.')
 end
 
@@ -435,7 +434,7 @@ local function set_enemy_evolution()
 
     enemy.set_evolution_factor(evolution_factor, surface_index)
 
-    raise(CustomEvents.events.on_evolution_factor_changed, { evolution_factor = evolution_factor })
+    raise(ServerCommands.events.on_evolution_factor_changed, { evolution_factor = evolution_factor })
 end
 
 local function can_units_spawn()
@@ -765,7 +764,7 @@ local function set_multi_command()
 
     local target = Public.get('target')
     if not valid(target) then
-        Event.raise(CustomEvents.events.on_primary_target_missing)
+        Event.raise(ServerCommands.events.on_primary_target_missing)
         return
     end
 
@@ -874,7 +873,7 @@ local function set_next_wave()
         Public.set('next_wave', game.tick + wave_interval)
     end
 
-    raise(CustomEvents.events.on_wave_created, event_data)
+    raise(ServerCommands.events.on_wave_created, event_data)
 end
 
 local function reform_group(group)
@@ -978,7 +977,7 @@ local function get_main_command(group)
 
     local target = Public.get('target')
     if not valid(target) then
-        Event.raise(CustomEvents.events.on_primary_target_missing)
+        Event.raise(ServerCommands.events.on_primary_target_missing)
         return
     end
 
@@ -1150,7 +1149,7 @@ local function give_side_commands_to_group()
 
     local target = Public.get('target')
     if not valid(target) then
-        Event.raise(CustomEvents.events.on_primary_target_missing)
+        Event.raise(ServerCommands.events.on_primary_target_missing)
         return
     end
 
@@ -1169,13 +1168,13 @@ end
 local function give_main_command_to_group()
     local target = Public.get('target')
     if not valid(target) then
-        Event.raise(CustomEvents.events.on_primary_target_missing)
+        Event.raise(ServerCommands.events.on_primary_target_missing)
         Server.output_script_data('give_main_command_to_group failed - target is not valid')
         return
     end
 
     -- This is called even if the target is valid
-    Event.raise(CustomEvents.events.on_primary_target_missing)
+    Event.raise(ServerCommands.events.on_primary_target_missing)
 
     local generated_units = Public.get('generated_units')
     for _, group in pairs(generated_units.unit_groups) do
@@ -1208,7 +1207,7 @@ local function spawn_unit_group(fs, only_bosses)
     local target = Public.get('target')
     if not valid(target) then
         debug('Target was not valid?')
-        Event.raise(CustomEvents.events.on_primary_target_missing)
+        Event.raise(ServerCommands.events.on_primary_target_missing)
         return
     end
 
@@ -1290,7 +1289,7 @@ local function spawn_unit_group(fs, only_bosses)
             else
                 unit_group.add_member(biter)
             end
-            raise(CustomEvents.events.on_entity_created, { entity = biter, boss_unit = boss })
+            raise(ServerCommands.events.on_entity_created, { entity = biter, boss_unit = boss })
         end
     end
 
@@ -1329,7 +1328,7 @@ local function spawn_unit_group(fs, only_bosses)
     end
 
     Public.set('spot', 'nil')
-    raise(CustomEvents.events.on_unit_group_created, event_data)
+    raise(ServerCommands.events.on_unit_group_created, event_data)
 
     return true
 end
@@ -1339,7 +1338,7 @@ local function spawn_unit_group_simple(fs)
     local target = Public.get('target')
     if not valid(target) then
         Public.debug_print('spawn_unit_group_simple - Target was not valid?')
-        Event.raise(CustomEvents.events.on_primary_target_missing)
+        Event.raise(ServerCommands.events.on_primary_target_missing)
         return
     end
 
@@ -1390,7 +1389,7 @@ local function spawn_unit_group_simple(fs)
             else
                 unit_group.add_member(biter)
             end
-            raise(CustomEvents.events.on_entity_created, { entity = biter, boss_unit = is_boss })
+            raise(ServerCommands.events.on_entity_created, { entity = biter, boss_unit = is_boss })
         end
     end
 
@@ -1417,7 +1416,7 @@ local function check_group_positions()
     local generated_units = Public.get('generated_units')
     local target = Public.get('target')
     if not valid(target) then
-        Event.raise(CustomEvents.events.on_primary_target_missing)
+        Event.raise(ServerCommands.events.on_primary_target_missing)
         return
     end
 
@@ -1464,7 +1463,7 @@ local function log_threat()
     end
 end
 
-if is_loaded_bool('maps.mountain_fortress_v3.table') then
+if ServerCommands.is_loaded_bool('maps.mountain_fortress_v3.table') then
     local Core = require 'maps.mountain_fortress_v3.core'
 
     check_if_near_target = function (position)
@@ -1565,7 +1564,7 @@ Event.on_nth_tick(30,
 )
 
 Event.add(
-    CustomEvents.events.on_biters_evolved,
+    ServerCommands.events.on_biters_evolved,
     function (event)
         if not event then
             event = { force = game.forces.enemy }
@@ -1579,11 +1578,11 @@ Event.add(
     end
 )
 
-Event.add(CustomEvents.events.on_spawn_unit_group, spawn_unit_group)
-Event.add(CustomEvents.events.on_spawn_unit_group_simple, spawn_unit_group_simple)
+Event.add(ServerCommands.events.on_spawn_unit_group, spawn_unit_group)
+Event.add(ServerCommands.events.on_spawn_unit_group_simple, spawn_unit_group_simple)
 
 Event.on_nth_tick(
-    100,
+    200,
     function ()
         local final_battle = Public.get('final_battle')
         if final_battle then

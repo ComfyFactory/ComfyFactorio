@@ -9,6 +9,7 @@ local this =
 }
 
 local insert = table.insert
+local has_space_age = ServerCommands.has_space_age()
 
 Global.register(
     this,
@@ -19,8 +20,8 @@ Global.register(
 
 local valid_surfaces =
 {
-    ['Gulag'] = true,
-    ['Init'] = true,
+    ['gulag'] = true,
+    ['init'] = true,
 }
 
 
@@ -87,7 +88,7 @@ function Public.create_surface(recreate)
 
     game.surfaces[starting_planet].map_gen_settings = map_gen_settings
 
-    if has_space_age() then
+    if has_space_age then
         for planet, _ in pairs(planets) do
             if planet ~= 'nauvis' then
                 game.planets[planet].create_surface()
@@ -105,7 +106,7 @@ function Public.create_surface(recreate)
 end
 
 function Public.create_landing_surface()
-    if game.surfaces['Init'] then
+    if game.surfaces['init'] then
         return
     end
 
@@ -123,8 +124,8 @@ function Public.create_landing_surface()
             ['enemy-base'] = { frequency = 15, size = 0, richness = 1 }
         },
         cliff_settings = { cliff_elevation_0 = 1024, cliff_elevation_interval = 10, name = 'cliff' },
-        height = 128,
-        width = 128,
+        height = 256,
+        width = 256,
         default_enable_all_autoplace_controls = false,
         peaceful_mode = false,
         seed = math.random(10000, 99999),
@@ -136,7 +137,7 @@ function Public.create_landing_surface()
 
     local surface
     if not this.landing_surface_index then
-        surface = game.create_surface('Init', map_gen_settings)
+        surface = game.create_surface('init', map_gen_settings)
     end
 
     if not surface or not surface.valid then return end
@@ -153,7 +154,7 @@ function Public.create_landing_surface()
     local area = { left_top = { x = -64, y = -32 }, right_bottom = { x = 64, y = 32 } }
     for x = area.left_top.x, area.right_bottom.x, 1 do
         for y = area.left_top.y, area.right_bottom.y, 1 do
-            tiles[#tiles + 1] = { name = 'concrete', position = { x = x, y = y } }
+            tiles[#tiles + 1] = { name = 'nuclear-ground', position = { x = x, y = y } }
             if x == area.left_top.x or x == area.right_bottom.x or y == area.left_top.y or y == area.right_bottom.y then
                 walls[#walls + 1] = { name = 'steel-wall', force = 'neutral', position = { x = x, y = y } }
             end
@@ -218,14 +219,14 @@ Event.add(defines.events.on_chunk_generated, function (event)
 
     local water_tile = 'water'
     if Public.is_modded_pt2 then
-        water_tile = 'deepwater-green'
+        water_tile = 'empty-space'
     end
 
     for x = 0, 32, 1 do
         for y = 0, 32, 1 do
             local pos = { x = left_top.x + x, y = left_top.y + y }
             if is_inside_init_zone(pos.x, pos.y) then
-                insert(tiles, { name = 'concrete', position = pos })
+                insert(tiles, { name = 'nuclear-ground', position = pos })
             else
                 insert(tiles, { name = water_tile, position = pos })
             end

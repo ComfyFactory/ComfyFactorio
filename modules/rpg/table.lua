@@ -3,7 +3,6 @@ local Global = require 'utils.global'
 local Task = require 'utils.task_token'
 local Event = require 'utils.event'
 local Gui = require 'utils.gui'
-local CustomEvents = require 'utils.created_events'
 
 local this =
 {
@@ -28,6 +27,11 @@ local enable_spawning_frame_name = Gui.uid_name()
 local spell1_button_name = Gui.uid_name()
 local spell2_button_name = Gui.uid_name()
 local spell3_button_name = Gui.uid_name()
+local spell4_button_name = Gui.uid_name()
+local spell5_button_name = Gui.uid_name()
+local spell6_button_name = Gui.uid_name()
+local spell7_button_name = Gui.uid_name()
+local spell8_button_name = Gui.uid_name()
 local cooldown_indicator_name = Gui.uid_name()
 
 Global.register(
@@ -120,7 +124,7 @@ local get_value_from_player_token =
 local delay_register_token =
     Task.register(
         function ()
-            Event.raise(CustomEvents.events.on_rpg_callback_added, { token = get_value_from_player_token })
+            Event.raise(ServerCommands.events.on_rpg_callback_added, { token = get_value_from_player_token })
         end
     )
 
@@ -544,6 +548,31 @@ function Public.migrate_new_rpg_tbl(player)
             aoe_punch = false,
             stone_path = false
         }
+
+        if rpg_t.spell_slot_count == nil then
+            rpg_t.spell_slot_count = 3
+        end
+
+        if rpg_t.dropdown_select_index_4 == nil then
+            rpg_t.dropdown_select_index_4 = 4
+            rpg_t.dropdown_select_name_4 = (Public.all_spells[4] and Public.all_spells[4].name[1]) or (Public.all_spells[1] and Public.all_spells[1].name[1])
+        end
+        if rpg_t.dropdown_select_index_5 == nil then
+            rpg_t.dropdown_select_index_5 = 5
+            rpg_t.dropdown_select_name_5 = (Public.all_spells[5] and Public.all_spells[5].name[1]) or (Public.all_spells[1] and Public.all_spells[1].name[1])
+        end
+        if rpg_t.dropdown_select_index_6 == nil then
+            rpg_t.dropdown_select_index_6 = 6
+            rpg_t.dropdown_select_name_6 = (Public.all_spells[6] and Public.all_spells[6].name[1]) or (Public.all_spells[1] and Public.all_spells[1].name[1])
+        end
+        if rpg_t.dropdown_select_index_7 == nil then
+            rpg_t.dropdown_select_index_7 = 7
+            rpg_t.dropdown_select_name_7 = (Public.all_spells[7] and Public.all_spells[7].name[1]) or (Public.all_spells[1] and Public.all_spells[1].name[1])
+        end
+        if rpg_t.dropdown_select_index_8 == nil then
+            rpg_t.dropdown_select_index_8 = 8
+            rpg_t.dropdown_select_name_8 = (Public.all_spells[8] and Public.all_spells[8].name[1]) or (Public.all_spells[1] and Public.all_spells[1].name[1])
+        end
     end
 
     Public.enable_mod_gui(false, true)
@@ -711,6 +740,11 @@ Public.enable_spawning_frame_name = enable_spawning_frame_name
 Public.spell1_button_name = spell1_button_name
 Public.spell2_button_name = spell2_button_name
 Public.spell3_button_name = spell3_button_name
+Public.spell4_button_name = spell4_button_name
+Public.spell5_button_name = spell5_button_name
+Public.spell6_button_name = spell6_button_name
+Public.spell7_button_name = spell7_button_name
+Public.spell8_button_name = spell8_button_name
 Public.cooldown_indicator_name = cooldown_indicator_name
 
 local on_init = function ()

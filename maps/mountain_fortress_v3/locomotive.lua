@@ -564,8 +564,8 @@ local function on_research_finished(event)
 
     local breached_wall = Public.get('breached_wall')
     add_random_loot_to_main_market(breached_wall)
-    local message = ({ 'locomotive.new_items_at_market' })
-    Alert.alert_all_players(5, message, nil, 'achievement/tech-maniac', 0.1)
+    -- local message = ({ 'locomotive.new_items_at_market' })
+    -- Alert.alert_all_players(5, message, nil, 'achievement/tech-maniac', 0.1)
     Public.refresh_gui()
 end
 

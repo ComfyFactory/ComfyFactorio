@@ -21,7 +21,6 @@ local ICMinimap = require 'maps.mountain_fortress_v3.ic.minimap'
 local Score = require 'utils.gui.score'
 local Gui = require 'utils.gui'
 local FunctionColor = { r = 0.98, g = 0.66, b = 0.22 }
-local CustomEvents = require 'utils.created_events'
 
 local zone_settings = Public.zone_settings
 local remove_boost_movement_speed_on_respawn
@@ -117,7 +116,22 @@ Global.register(
     end
 )
 
-
+local quality_rank =
+{
+    ['quality-module'] =
+    {
+        'uncommon',
+        'rare',
+    },
+    ['epic-quality'] =
+    {
+        'epic',
+    },
+    ['legendary-quality'] =
+    {
+        'legendary',
+    }
+}
 
 local artillery_target_entities =
 {
@@ -505,7 +519,7 @@ local function do_magic_fluid_crafters()
 
                 local fb_data = entity.get_fluid(fluidbox_index) or { name = data.item, amount = 0 }
                 fb_data.amount = fb_data.amount + fcount
-                fb_data.quality = data.quality
+                -- fb_data.quality = 'normal'
                 entity.set_fluid(fluidbox_index, fb_data)
 
                 entity.products_finished = entity.products_finished + fcount
@@ -1245,6 +1259,8 @@ Public.power_source_callback =
         end
     )
 
+
+
 Public.magic_item_crafting_callback =
     Task.register(
         function (entity, data)
@@ -1260,7 +1276,7 @@ Public.magic_item_crafting_callback =
             local force = game.forces.player
 
             local tech = callback_data.tech
-            if not callback_data.testing then
+            if callback_data.testing == nil then
                 if tech then
                     if not force.technologies[tech].researched then
                         entity.destroy()
@@ -1272,9 +1288,18 @@ Public.magic_item_crafting_callback =
             local quality_buildings = Public.get_stateful('quality_buildings')
             local quality = quality_buildings or 'normal'
 
+            if not Public.has_correct_quality_unlocked(quality) then
+                quality = 'normal'
+            end
+
             local recipe = callback_data.recipe
+            local fluid = callback_data.fluid
             if recipe then
-                entity.set_recipe(recipe, quality)
+                if fluid then
+                    entity.set_recipe(recipe, 'normal')
+                else
+                    entity.set_recipe(recipe, quality)
+                end
             else
                 local furance_item = callback_data.furance_item
                 if furance_item then
@@ -1338,9 +1363,8 @@ Public.magic_item_crafting_callback_weighted =
             end
 
             local force = game.forces.player
-
             local tech = stack.tech
-            if not callback_data.testing then
+            if stack.testing == nil then
                 if tech then
                     if force.technologies[tech] then
                         if not force.technologies[tech].researched then
@@ -1352,15 +1376,24 @@ Public.magic_item_crafting_callback_weighted =
             end
 
             local quality_buildings = Public.get_stateful('quality_buildings')
-            local quality = 'normal'
+            local quality = quality_buildings or 'normal'
 
             if random(1, 32) == 1 then
                 quality = quality_buildings or 'normal'
             end
 
+            if not Public.has_correct_quality_unlocked(quality) then
+                quality = 'normal'
+            end
+
             local recipe = stack.recipe
+            local fluid = stack.fluid
             if recipe then
-                entity.set_recipe(recipe, quality)
+                if fluid then
+                    entity.set_recipe(recipe, 'normal')
+                else
+                    entity.set_recipe(recipe, quality)
+                end
             else
                 local furance_item = stack.furance_item
                 if furance_item then
@@ -1554,6 +1587,24 @@ local function on_player_cursor_stack_changed(event)
 
     if not item.valid_for_read then
         return
+    end
+
+    if string.find(item.name, 'tnt') then
+        -- if final battle, clear stack and print a message
+        if Public.get('final_battle') then
+            player.print('TNT cannot be used during the final battle.', { color = Color.warning })
+            player.insert(item)
+            player.cursor_stack.clear()
+            return
+        end
+
+        -- if inside the locomotive, insert the stack back to the player inventory
+        if player.physical_position.x > 700 then
+            player.print('TNT cannot be used when inside the locomotive.', { color = Color.warning })
+            player.insert(item)
+            player.cursor_stack.clear()
+            return
+        end
     end
 
     local name = item.name
@@ -2347,175 +2398,264 @@ function Public.find_void_tiles_and_replace()
     end
 end
 
-function Public.set_difficulty()
-    local final_battle = Public.get('final_battle')
-    if final_battle then
-        return
-    end
-    local pre_final_battle = Public.get('pre_final_battle')
-    if pre_final_battle then
-        return
-    end
+local difficulty_balance =
+{
+    [1] = { max_active_biters = 768, threat_gain = 1.2, early_wave_interval = 4500, late_wave_interval = 3600, player_step = 60, minimum_wave_interval = 2000 },
+    [2] = { max_active_biters = 845, threat_gain = 2, early_wave_interval = 3000, late_wave_interval = 2600, player_step = 45, minimum_wave_interval = 1800 },
+    [3] = { max_active_biters = 1000, threat_gain = 4, early_wave_interval = 2600, late_wave_interval = 2200, player_step = 30, minimum_wave_interval = 1600 }
+}
 
-    local game_lost = Public.get('game_lost')
-    if game_lost then
-        return
-    end
+local function get_difficulty_balance(index)
+    return difficulty_balance[index] or difficulty_balance[2]
+end
+
+local function should_skip_difficulty_update()
+    return Public.get('final_battle') or Public.get('pre_final_battle') or Public.get('game_lost')
+end
+
+local function get_difficulty_context()
     local Diff = Difficulty.get()
     if not Diff then
         return
     end
-    local wave_defense_table = WD.get_table()
-    local check_if_threat_below_zero = Public.get('check_if_threat_below_zero')
-    local collapse_amount = Public.get('collapse_amount')
-    local collapse_speed = Public.get('collapse_speed')
+
     local difficulty = Public.get('difficulty')
     if not difficulty then
         return
     end
-    local mining_bonus_till_wave = Public.get('mining_bonus_till_wave')
-    local mining_bonus = Public.get('mining_bonus')
-    local disable_mining_boost = Public.get('disable_mining_boost')
-    local wave_number = WD.get_wave()
-    local player_count = calc_players()
 
     if not Diff.value then
         Diff.value = 0.1
     end
 
-    if not wave_defense_table.enforce_max_active_biters then
-        if Diff.index == 1 then
-            wave_defense_table.max_active_biters = 768 + player_count * (90 * Diff.value)
-        elseif Diff.index == 2 then
-            wave_defense_table.max_active_biters = 845 + player_count * (90 * Diff.value)
-        elseif Diff.index == 3 then
-            wave_defense_table.max_active_biters = 1000 + player_count * (90 * Diff.value)
-        end
+    local wave_defense_table = WD.get_table()
+    local player_count = calc_players()
 
-        if wave_defense_table.max_active_biters >= 4000 then
-            wave_defense_table.max_active_biters = 4000
-        end
+    return
+    {
+        Diff = Diff,
+        balance = get_difficulty_balance(Diff.index),
+        difficulty = difficulty,
+        wave_defense_table = wave_defense_table,
+        check_if_threat_below_zero = Public.get('check_if_threat_below_zero'),
+        collapse_amount = Public.get('collapse_amount'),
+        collapse_speed = Public.get('collapse_speed'),
+        mining_bonus_till_wave = Public.get('mining_bonus_till_wave'),
+        mining_bonus = Public.get('mining_bonus'),
+        disable_mining_boost = Public.get('disable_mining_boost'),
+        wave_number = WD.get_wave(),
+        player_count = player_count
+    }
+end
+
+local function apply_max_active_biters(context)
+    local wave_defense_table = context.wave_defense_table
+    if wave_defense_table.enforce_max_active_biters then
+        return
     end
 
-    -- threat gain / wave
-    if Diff.index == 1 then
-        wave_defense_table.threat_gain_multiplier = 1.2 + player_count * Diff.value * 0.1
-    elseif Diff.index == 2 then
-        wave_defense_table.threat_gain_multiplier = 2 + player_count * Diff.value * 0.1
-    elseif Diff.index == 3 then
-        wave_defense_table.threat_gain_multiplier = 4 + player_count * Diff.value * 0.1
+    local max_active_biters = context.balance.max_active_biters + context.player_count * (90 * context.Diff.value)
+    if max_active_biters >= 4000 then
+        max_active_biters = 4000
     end
+    wave_defense_table.max_active_biters = max_active_biters
+end
 
-    -- local amount = player_count * 0.40 + 2 -- too high?
-    local amount = player_count * difficulty.multiply + 2
+local function apply_threat_gain_multiplier(context)
+    context.wave_defense_table.threat_gain_multiplier = context.balance.threat_gain + context.player_count * context.Diff.value * 0.1
+end
+
+local function compute_collapse_amount(context)
+    local amount = context.player_count * context.difficulty.multiply + 2
     amount = floor(amount)
-    if amount < difficulty.lowest then
-        amount = difficulty.lowest
-    elseif amount > difficulty.highest then
-        amount = difficulty.highest -- lowered from 20 to 10
+
+    if amount < context.difficulty.lowest then
+        amount = context.difficulty.lowest
+    elseif amount > context.difficulty.highest then
+        amount = context.difficulty.highest
     end
 
-    local wave = WD.get('wave_number')
+    return amount
+end
 
-    local threat_check = nil
-
-    if check_if_threat_below_zero then
-        threat_check = wave_defense_table.threat <= 0
+local function compute_wave_interval(context)
+    local wave_interval = context.balance.late_wave_interval - context.player_count * context.balance.player_step
+    if context.wave_number < 100 then
+        wave_interval = context.balance.early_wave_interval - context.player_count * context.balance.player_step
     end
 
-    if Diff.index == 1 then
-        if wave < 100 then
-            wave_defense_table.wave_interval = 4500
-        else
-            wave_defense_table.wave_interval = 3600 - player_count * 60
-        end
-
-        if wave_defense_table.wave_interval < 2000 or threat_check then
-            wave_defense_table.wave_interval = 2000
-        end
-    elseif Diff.index == 2 then
-        if wave < 100 then
-            wave_defense_table.wave_interval = 3000
-        else
-            wave_defense_table.wave_interval = 2600 - player_count * 60
-        end
-        if wave_defense_table.wave_interval < 1800 or threat_check then
-            wave_defense_table.wave_interval = 1800
-        end
-    elseif Diff.index == 3 then
-        if wave < 100 then
-            wave_defense_table.wave_interval = 3000
-        else
-            wave_defense_table.wave_interval = 1600 - player_count * 60
-        end
-        wave_defense_table.wave_interval = 1600 - player_count * 60
-        if wave_defense_table.wave_interval < 1600 or threat_check then
-            wave_defense_table.wave_interval = 1600
-        end
+    local threat_floor_applied = false
+    local threat_check = false
+    if context.check_if_threat_below_zero then
+        threat_check = context.wave_defense_table.threat <= 0
     end
 
-    if collapse_amount then
-        Collapse.set_amount(collapse_amount)
+    if wave_interval < context.balance.minimum_wave_interval then
+        wave_interval = context.balance.minimum_wave_interval
+        threat_floor_applied = true
+    end
+
+    if threat_check then
+        wave_interval = context.balance.minimum_wave_interval
+        threat_floor_applied = true
+    end
+
+    return wave_interval, threat_check, threat_floor_applied
+end
+
+local function log_wave_interval(context, wave_interval, threat_check, threat_floor_applied)
+    local debug_key =
+        table.concat(
+            {
+                tostring(context.Diff.index or 'nil'),
+                tostring(context.player_count or 'nil'),
+                tostring(wave_interval or 'nil'),
+                tostring(threat_check),
+                tostring(threat_floor_applied)
+            },
+            ':'
+        )
+
+    local previous_debug_key = Public.get('difficulty_wave_interval_debug')
+    local should_log = previous_debug_key ~= debug_key
+
+    if context.player_count < 0 then
+        should_log = true
+    end
+
+    if context.Diff.index ~= 1 and context.Diff.index ~= 2 and context.Diff.index ~= 3 then
+        should_log = true
+    end
+
+    if should_log then
+        Public.set('difficulty_wave_interval_debug', debug_key)
+        Server.output_script_data(
+            'Difficulty interval: diff='
+            .. tostring(context.Diff.index)
+            .. ', wave='
+            .. tostring(context.wave_number)
+            .. ', players='
+            .. tostring(context.player_count)
+            .. ', interval='
+            .. tostring(wave_interval)
+            .. ', threat_check='
+            .. tostring(threat_check)
+            .. ', threat_floor='
+            .. tostring(threat_floor_applied)
+        )
+    end
+end
+
+local function apply_collapse_settings(context, amount)
+    if context.collapse_amount then
+        Collapse.set_amount(context.collapse_amount)
     else
         Collapse.set_amount(amount)
     end
-    if collapse_speed then
-        Collapse.set_speed(collapse_speed)
+
+    if context.collapse_speed then
+        Collapse.set_speed(context.collapse_speed)
+        return
+    end
+
+    if context.player_count >= 1 and context.player_count <= 8 then
+        Collapse.set_speed(8)
+    elseif context.player_count > 8 and context.player_count <= 20 then
+        Collapse.set_speed(7)
+    elseif context.player_count > 20 and context.player_count <= 35 then
+        Collapse.set_speed(6)
+    elseif context.player_count > 35 then
+        Collapse.set_speed(5)
+    end
+end
+
+local function apply_mining_bonus(context)
+    if context.player_count < 1 or context.disable_mining_boost then
+        return
+    end
+
+    local force = game.forces.player
+    local previous_mining_bonus = Public.get('previous_mining_bonus') or 0
+    local mining_bonus = 0
+
+    force.manual_mining_speed_modifier = force.manual_mining_speed_modifier - previous_mining_bonus
+    if force.manual_mining_speed_modifier < 0 then
+        force.manual_mining_speed_modifier = 0
+    end
+
+    if context.wave_number >= context.mining_bonus_till_wave then
+        Server.output_script_data('Mining bonus is disabled, as the wave number is ' .. context.wave_number .. ' and mining_bonus_till_wave is ' .. context.mining_bonus_till_wave)
+        Server.output_script_data('Force manual mining speed modifier is now: ' .. force.manual_mining_speed_modifier)
+        Public.set('disable_mining_boost', true)
+        Public.set('previous_mining_bonus', 0)
+        return
+    end
+
+    local buffs_collected = Public.get_stateful('buffs_collected')
+    if buffs_collected and buffs_collected.manual_mining_speed_modifier then
+        mining_bonus = mining_bonus + buffs_collected.manual_mining_speed_modifier.count
+    end
+
+    if context.player_count <= 10 then
+        mining_bonus = mining_bonus + 3
+    elseif context.player_count <= 20 then
+        mining_bonus = mining_bonus + 1
     else
-        if player_count >= 1 and player_count <= 8 then
-            Collapse.set_speed(8)
-        elseif player_count > 8 and player_count <= 20 then
-            Collapse.set_speed(7)
-        elseif player_count > 20 and player_count <= 35 then
-            Collapse.set_speed(6)
-        elseif player_count > 35 then
-            Collapse.set_speed(5)
+        mining_bonus = mining_bonus + 0
+    end
+
+    if mining_bonus ~= previous_mining_bonus then
+        Server.output_script_data('Mining bonus changed from ' .. previous_mining_bonus .. ' to ' .. mining_bonus)
+    end
+
+    force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + mining_bonus
+    if force.manual_mining_speed_modifier < 0 then
+        force.manual_mining_speed_modifier = 0
+    end
+
+    Public.set('previous_mining_bonus', mining_bonus)
+    Public.set('mining_bonus', mining_bonus)
+end
+
+function Public.has_correct_quality_unlocked(quality)
+    local force = game.forces.player
+
+    if quality == 'normal' then
+        return true
+    end
+
+    for tech_name, qualities in pairs(quality_rank) do
+        for _, q in pairs(qualities) do
+            if q == quality then
+                local tech = force.technologies[tech_name]
+                return tech and tech.researched
+            end
         end
     end
 
-    if player_count >= 1 and not disable_mining_boost then
-        local force = game.forces.player
+    return false
+end
 
-        if wave_number < mining_bonus_till_wave then
-            if player_count <= 5 then
-                mining_bonus = 3
-            elseif player_count <= 10 then
-                mining_bonus = 1
-            else
-                mining_bonus = 0
-            end
-        end
-
-        local previous_mining_bonus = Public.get('previous_mining_bonus') or 0
-
-        force.manual_mining_speed_modifier = force.manual_mining_speed_modifier - previous_mining_bonus
-
-        if force.manual_mining_speed_modifier < 0 then
-            force.manual_mining_speed_modifier = 0
-        end
-
-        -- If mining bonuses are still enabled (wave number check)
-        if wave_number < mining_bonus_till_wave then
-            -- Apply new bonus if changed
-            if mining_bonus ~= previous_mining_bonus then
-                Server.output_script_data('Mining bonus changed from ' .. previous_mining_bonus .. ' to ' .. mining_bonus)
-            end
-
-            force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + mining_bonus
-            Public.set('previous_mining_bonus', mining_bonus)
-            Public.set('mining_bonus', mining_bonus)
-        else
-            Server.output_script_data('Mining bonus is disabled, as the wave number is ' .. wave_number .. ' and mining_bonus_till_wave is ' .. mining_bonus_till_wave)
-            Server.output_script_data('Force manual mining speed modifier is now: ' .. force.manual_mining_speed_modifier)
-            Public.set('disable_mining_boost', true)
-            Public.set('previous_mining_bonus', 0)
-        end
-
-        -- Final clamp
-        if force.manual_mining_speed_modifier < 0 then
-            force.manual_mining_speed_modifier = 0
-        end
+function Public.set_difficulty()
+    if should_skip_difficulty_update() then
+        return
     end
+
+    local context = get_difficulty_context()
+    if not context then
+        return
+    end
+
+    apply_max_active_biters(context)
+    apply_threat_gain_multiplier(context)
+
+    local amount = compute_collapse_amount(context)
+    local wave_interval, threat_check, threat_floor_applied = compute_wave_interval(context)
+    context.wave_defense_table.wave_interval = wave_interval
+    log_wave_interval(context, wave_interval, threat_check, threat_floor_applied)
+
+    apply_collapse_settings(context, amount)
+    apply_mining_bonus(context)
 end
 
 function Public.render_direction(surface, reversed)
@@ -2648,7 +2788,6 @@ function Public.boost_difficulty()
 
     local force = game.forces.player
 
-    force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.5
     force.character_running_speed_modifier = force.character_running_speed_modifier + 0.15
     force.manual_crafting_speed_modifier = force.manual_crafting_speed_modifier + 0.15
     Public.set('coin_amount', 1)
@@ -2835,7 +2974,7 @@ function Public.on_player_joined_game(event)
 
     local current_task = Public.get('current_task')
     if not current_task.done then
-        local init_surface = game.get_surface('Init')
+        local init_surface = game.get_surface('init')
         if init_surface and init_surface.valid then
             surface = init_surface
             Score.init_player_table(player, true)
@@ -2917,15 +3056,15 @@ function Public.on_player_joined_game(event)
         end
     end
 
-    if player.surface.name == 'nauvis' or player.surface.index == '1' then
-        local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
-        if pos then
-            player.teleport(pos, surface)
-        else
-            pos = game.forces.player.get_spawn_position(surface)
-            player.teleport(pos, surface)
-        end
-    end
+    -- if player.surface.name == 'nauvis' or player.surface.index == '1' then
+    --     local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
+    --     if pos then
+    --         player.teleport(pos, surface)
+    --     else
+    --         pos = game.forces.player.get_spawn_position(surface)
+    --         player.teleport(pos, surface)
+    --     end
+    -- end
 end
 
 function Public.on_player_created(event)
@@ -2954,16 +3093,18 @@ function Public.check_for_spawners_on_train()
 
     for _, carriage in pairs(carriages) do
         local new_area = carriage.new_area
-        local area =
-        {
-            left_top = { x = new_area.left_top.x, y = -carriage.top_y },
-            right_bottom = { x = new_area.right_bottom.x, y = carriage.top_y }
-        }
-        local surface = icw_locomotive.surface
-        local entities = surface.find_entities_filtered({ area = area })
-        for _, entity in pairs(entities) do
-            if entity.name == 'captive-biter-spawner' or entity.type == 'unit-spawner' then
-                entity.destroy()
+        if carriage.top_y then
+            local area =
+            {
+                left_top = { x = new_area.left_top.x, y = -carriage.top_y },
+                right_bottom = { x = new_area.right_bottom.x, y = carriage.top_y }
+            }
+            local surface = icw_locomotive.surface
+            local entities = surface.find_entities_filtered({ area = area })
+            for _, entity in pairs(entities) do
+                if entity.name == 'captive-biter-spawner' or entity.type == 'unit-spawner' then
+                    entity.destroy()
+                end
             end
         end
     end
@@ -3058,22 +3199,20 @@ function Public.on_player_changed_surface(event)
         Server.output_script_data('No surface index found - old one was removed.')
     end
 
-    local starting_planet = Public.get_planet()
+    -- local starting_planet = Public.get_planet()
 
-    local active_surface_index = Public.get('active_surface_index')
-    local surface = game.surfaces[active_surface_index or starting_planet]
+    -- local active_surface_index = Public.get('active_surface_index')
+    -- local surface = game.surfaces[active_surface_index or starting_planet]
 
-
-
-    if player.physical_surface.name == 'nauvis' or player.physical_surface.index == '1' then
-        local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
-        if pos then
-            player.teleport(pos, surface)
-        else
-            pos = game.forces.player.get_spawn_position(surface)
-            player.teleport(pos, surface)
-        end
-    end
+    -- if player.physical_surface.name == 'nauvis' or player.physical_surface.index == '1' then
+    --     local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
+    --     if pos then
+    --         player.teleport(pos, surface)
+    --     else
+    --         pos = game.forces.player.get_spawn_position(surface)
+    --         player.teleport(pos, surface)
+    --     end
+    -- end
 end
 
 function Public.hinder_buildings_on_planet(event)
@@ -3290,18 +3429,24 @@ function Public.on_research_finished(event)
         end
     end
 
+
+
     if script.active_mods.quality then
         local quality_list = Public.get('quality_list')
         if research.name == 'quality-module' then
+            bonus_drill.technologies['quality-module'].researched = true
             quality_list[#quality_list + 1] = 'uncommon'
         end
         if research.name == 'quality-module-2' then
+            bonus_drill.technologies['quality-module-2'].researched = true
             quality_list[#quality_list + 1] = 'rare'
         end
         if research.name == 'epic-quality' then
+            bonus_drill.technologies['epic-quality'].researched = true
             quality_list[#quality_list + 1] = 'epic'
         end
         if research.name == 'legendary-quality' then
+            bonus_drill.technologies['legendary-quality'].researched = true
             quality_list[#quality_list + 1] = 'legendary'
         end
     end
@@ -3361,18 +3506,19 @@ function Public.set_player_to_god(player)
         return false
     end
 
-    local old_group = game.permissions.get_group(spectate[player.index].old_group)
-    if old_group then
-        old_group.add_player(player)
+    if spectate[player.index] then
+        local old_group = game.permissions.get_group(spectate[player.index].old_group)
+        if old_group then
+            old_group.add_player(player)
+        end
     end
 
     spectate[player.index] = nil
 
-    player.set_controller({ type = defines.controllers.god })
-    player.create_character()
     local active_surface_index = Public.get('active_surface_index')
     local surface = game.get_surface(active_surface_index)
     if not surface or not surface.valid then
+        Server.output_script_data('No surface found for player ' .. player.name .. '!')
         return false
     end
 
@@ -3384,9 +3530,12 @@ function Public.set_player_to_god(player)
         player.teleport(pos, surface)
     end
 
+    player.set_controller({ type = defines.controllers.god })
+    player.create_character()
+
 
     Event.raise(
-        CustomEvents.events.bottom_quickbar_respawn_raise,
+        ServerCommands.events.bottom_quickbar_respawn_raise,
         {
             player_index = player.index
         }
@@ -3480,57 +3629,55 @@ function Public.clear_spec_tag(player)
     end
 end
 
-function Public.equip_players(starting_items, recreate)
+function Public.equip_players(player, starting_items, recreate)
     local players = Public.get('players')
 
-    for _, player in pairs(game.players) do
-        if player.character and player.character.valid then
-            player.character.destroy()
+    if player.character and player.character.valid then
+        player.character.destroy()
+    end
+    player.clear_items_inside()
+    if player.connected then
+        if not player.character then
+            player.set_controller({ type = defines.controllers.god })
+            player.create_character()
         end
-        player.clear_items_inside()
-        if player.connected then
-            if not player.character then
-                player.set_controller({ type = defines.controllers.god })
-                player.create_character()
+        if player.character ~= nil then
+            player.character.destructible = true
+        end
+        Modifiers.update_player_modifiers(player)
+        if not recreate then
+            starting_items = starting_items or this.starting_items
+            if starting_items['modular-armor'] then
+                player.insert({ name = 'modular-armor', count = 1 })
             end
-            if player.character ~= nil then
-                player.character.destructible = true
-            end
-            Modifiers.update_player_modifiers(player)
-            if not recreate then
-                starting_items = starting_items or this.starting_items
-                if this.starting_items['modular-armor'] then
-                    player.insert({ name = 'modular-armor', count = 1 })
-                end
 
-                for item, item_data in pairs(this.starting_items) do
-                    if item ~= 'modular-armor' then
-                        local equip = prototypes.equipment[item]
-                        if equip then
-                            local p_armor = player.get_inventory(defines.inventory.character_armor)
-                            if p_armor and p_armor.valid and p_armor[1] and p_armor[1].valid_for_read and p_armor[1].grid and p_armor[1].grid.valid then
-                                for _ = 1, item_data.count do
-                                    p_armor[1].grid.put({ name = item })
-                                end
-                            else
-                                player.insert({ name = item, count = item_data.count })
+            for item, item_data in pairs(starting_items) do
+                if item ~= 'modular-armor' then
+                    local equip = prototypes.equipment[item]
+                    if equip then
+                        local p_armor = player.get_inventory(defines.inventory.character_armor)
+                        if p_armor and p_armor.valid and p_armor[1] and p_armor[1].valid_for_read and p_armor[1].grid and p_armor[1].grid.valid then
+                            for _ = 1, item_data.count do
+                                p_armor[1].grid.put({ name = item })
                             end
                         else
                             player.insert({ name = item, count = item_data.count })
                         end
+                    else
+                        player.insert({ name = item, count = item_data.count })
                     end
                 end
             end
-            Public.show_all_gui(player)
-            Public.clear_spec_tag(player)
-        else
-            if player.character then
-                player.character.destructible = true
-            end
-            players[player.index] = nil
-            Session.clear_player(player)
-            game.remove_offline_players({ player.index })
         end
+        Public.show_all_gui(player)
+        Public.clear_spec_tag(player)
+    else
+        if player.character then
+            player.character.destructible = true
+        end
+        players[player.index] = nil
+        Session.clear_player(player)
+        game.remove_offline_players({ player.index })
     end
 end
 
@@ -3615,7 +3762,7 @@ Event.on_nth_tick(35, do_clear_rocks_slowly)
 Event.on_nth_tick(35, do_replace_tiles_slowly)
 Event.on_nth_tick(200, do_custom_surface_funcs)
 Event.on_nth_tick(60, set_difficulty)
-Event.add(CustomEvents.events.on_wave_created, on_wave_created)
-Event.add(CustomEvents.events.on_primary_target_missing, on_primary_target_missing)
+Event.add(ServerCommands.events.on_wave_created, on_wave_created)
+Event.add(ServerCommands.events.on_primary_target_missing, on_primary_target_missing)
 
 return Public

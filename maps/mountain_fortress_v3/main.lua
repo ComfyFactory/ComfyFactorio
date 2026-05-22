@@ -49,9 +49,10 @@ local OfflinePlayers = require 'modules.clear_vacant_players'
 local Beam = require 'modules.render_beam'
 local Commands = require 'utils.commands'
 local RobotLimits = require 'modules.robot_limits'
-local CustomEvents = require 'utils.created_events'
 local RocksYieldOreVeins = require 'maps.mountain_fortress_v3.rocks_yield_ore_veins'
 local SpawnersContainBiters = require 'modules.spawners_contain_biters'
+local Session = require 'utils.datastore.session_data'
+local Core = require 'utils.core'
 
 local send_ping_to_channel = Discord.channel_names.mtn_channel
 local role_to_mention = Discord.role_mentions.mtn_fortress
@@ -125,7 +126,7 @@ local is_player_valid = function ()
     local players = game.connected_players
     for i = 1, #players do
         local player = players[i]
-        if player.connected and player.controller_type == 2 then
+        if player.connected and player.controller_type == defines.controllers.god then
             player.set_controller { type = defines.controllers.god }
             player.create_character()
         end
@@ -159,7 +160,7 @@ local has_the_game_ended = function ()
             if this.soft_reset and this.game_reset_tick == 0 then
                 this.game_reset_tick = nil
                 Public.set_scores()
-                Public.set_task('move_players', 'Init')
+                Public.set_task('move_players', 'init')
                 return
             end
 
@@ -402,10 +403,34 @@ function Public.move_players(current_task)
         return
     end
 
-    for _, player in pairs(game.players) do
-        if current_task.surface_name == 'Init' then
+    local players = Public.get('players')
+    Core.iter_players(function (player)
+        if not player.connected then
+            player.clear_items_inside()
+            players[player.index] = nil
+            Session.clear_player(player)
+            Server.output_script_data('Removing offline player from init task: ' .. player.name)
+            game.remove_offline_players({ player })
+        end
+    end)
+
+    Core.iter_connected_players(function (player)
+        if current_task.surface_name == 'init' then
             player.zoom = 0.1
         end
+
+        if player.controller_type == defines.controllers.god or player.controller_type == defines.controllers.spectator then
+            player.clear_items_inside()
+            player.set_controller { type = defines.controllers.god }
+            player.create_character()
+            Event.raise(
+                ServerCommands.events.bottom_quickbar_respawn_raise,
+                {
+                    player_index = player.index
+                }
+            )
+        end
+
         local pos = surface.find_non_colliding_position("character", { x = 0, y = 0 }, 5, 4)
         if pos then
             player.teleport(pos, surface)
@@ -413,13 +438,14 @@ function Public.move_players(current_task)
             player.teleport({ x = 0, y = 0 }, surface)
         end
         player.clear_items_inside()
-    end
+    end)
     local starting_planet = Public.get_planet()
     current_task.message = 'Moved players to initial surface!'
     current_task.delay = game.tick + 1
     current_task.state_id = 1
     current_task.starting_planet = starting_planet
     current_task.state = 'pre_init_task'
+    Server.output_script_data('Moved players to initial surface!')
 end
 
 function Public.pre_init_task(current_task)
@@ -468,8 +494,11 @@ function Public.pre_init_task(current_task)
         Server.output_script_data('Setting current planet to next planet: ' .. next_planet)
     end
 
-    local current_planet = Public.get_planet()
-    SpawnersContainBiters.add_surface(current_planet)
+    for _, surface in pairs(game.surfaces) do
+        if surface and surface.valid then
+            SpawnersContainBiters.add_surface(surface.name)
+        end
+    end
 
     WD.reset_wave_defense()
     WD.alert_boss_wave(true)
@@ -501,9 +530,7 @@ function Public.pre_init_task(current_task)
     WD.set('spawn_position', { x = 0, y = 84 })
     WD.set('game_lost', true)
 
-    local players = game.connected_players
-    for i = 1, #players do
-        local player = players[i]
+    Core.iter_players(function (player)
         Score.init_player_table(player, true)
         Misc.insert_all_items(player)
         Modifiers.reset_player_modifiers(player)
@@ -515,7 +542,7 @@ function Public.pre_init_task(current_task)
         Event.raise(Public.events.reset_map, { player_index = player.index })
         Public.add_player_to_permission_group(player, 'init_island', true)
         player.print(mapkeeper .. ' Map is resetting, please wait a moment. All GUI buttons are disabled at the moment.')
-    end
+    end)
 
     Public.reset_func_table()
     RPG.reset_table()
@@ -538,6 +565,7 @@ function Public.pre_init_task(current_task)
     current_task.message = 'Pre init done!'
     current_task.state = 'init_stateful'
     current_task.state_id = 2
+    Server.output_script_data('Pre init done!')
 end
 
 function Public.init_stateful(current_task)
@@ -556,6 +584,7 @@ function Public.init_stateful(current_task)
     current_task.message = 'Initialized stateful!'
     current_task.state = 'clear_fortress'
     current_task.state_id = 3
+    Server.output_script_data('Initialized stateful!')
 end
 
 function Public.clear_fortress(current_task)
@@ -571,6 +600,7 @@ function Public.clear_fortress(current_task)
     current_task.delay = game.tick + 50
     current_task.message = 'Cleared fortress!'
     current_task.state_id = 4
+    Server.output_script_data('Cleared fortress!')
 end
 
 function Public.create_custom_fortress_surface(current_task)
@@ -582,6 +612,7 @@ function Public.create_custom_fortress_surface(current_task)
     current_task.delay = game.tick + 50
     current_task.state = 'reset_map'
     current_task.state_id = 5
+    Server.output_script_data('Created custom fortress surface!')
 end
 
 function Public.reset_map(current_task)
@@ -663,7 +694,7 @@ function Public.reset_map(current_task)
     force.worker_robots_storage_bonus = 15
 
     -- WD.set_es_unit_limit(400) -- moved to stateful
-    Event.raise(CustomEvents.events.on_game_reset, {})
+    Event.raise(ServerCommands.events.on_game_reset, {})
 
     Public.set_difficulty()
     Public.disable_creative()
@@ -734,6 +765,7 @@ function Public.reset_map(current_task)
     current_task.delay = game.tick + 50
     current_task.state = 'post_init_task'
     current_task.state_id = 6
+    Server.output_script_data('Reset map done!')
 end
 
 function Public.post_init_task(current_task)
@@ -742,6 +774,7 @@ function Public.post_init_task(current_task)
     current_task.message = 'Post init done!'
     current_task.state = 'create_locomotive'
     current_task.state_id = 7
+    Server.output_script_data('Post init done!')
 end
 
 function Public.create_locomotive(current_task)
@@ -780,6 +813,7 @@ function Public.create_locomotive(current_task)
     current_task.delay = game.tick + 100
     current_task.state = 'announce_new_map'
     current_task.state_id = 8
+    Server.output_script_data('Created locomotive!')
 end
 
 function Public.announce_new_map(current_task)
@@ -794,6 +828,7 @@ function Public.announce_new_map(current_task)
     current_task.surface_name = starting_planet
     current_task.delay = game.tick + 50
     current_task.state_id = 9
+    Server.output_script_data('Announced new map!')
 end
 
 function Public.to_fortress(current_task)
@@ -824,7 +859,11 @@ function Public.to_fortress(current_task)
         end
     end
 
-    for _, player in pairs(game.connected_players) do
+    RPG.rpg_reset_all_players()
+    local starting_items = Public.get_func('starting_items')
+
+
+    Core.iter_connected_players(function (player)
         local pos = surface.find_non_colliding_position('character', position, 5, 4)
         if pos then
             player.teleport({ x = pos.x, y = pos.y }, surface)
@@ -832,17 +871,32 @@ function Public.to_fortress(current_task)
             player.teleport({ x = position.x, y = position.y }, surface)
         end
         Public.add_player_to_permission_group(player, 'near_locomotive', true)
-    end
 
-    RPG.rpg_reset_all_players()
-    local starting_items = Public.get_func('starting_items')
-    Public.equip_players(starting_items, false)
+        if player.controller_type == defines.controllers.god or player.controller_type == defines.controllers.spectator then
+            player.set_controller { type = defines.controllers.god }
+            player.create_character()
+            Event.raise(
+                ServerCommands.events.bottom_quickbar_respawn_raise,
+                {
+                    player_index = player.index
+                }
+            )
+        end
+
+        for _, ele in pairs(player.gui.top.children) do
+            if ele and ele.valid and ele.name ~= Gui.main_toggle_button_name then
+                ele.visible = true
+            end
+        end
+        Public.equip_players(player, starting_items, false)
+    end)
 
     Public.stateful.activate_delayed_techs(game.forces.player)
 
     current_task.message = 'Moved players back to fortress!'
     current_task.state_id = 10
     current_task.done = true
+    Server.output_script_data('Moved players back to fortress!')
 end
 
 function Public.init_mtn()

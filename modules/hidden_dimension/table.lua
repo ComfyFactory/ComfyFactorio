@@ -1,8 +1,13 @@
 local Global = require 'utils.global'
 local Event = require 'utils.event'
 
-local this = {
-    hidden_dimension = {
+local this =
+{
+    module_enabled = false,
+    multiplayer_enabled = false,
+    hidden_dimension =
+    {
+        players = {},
         logistic_research_level = 0,
         energy = {}
     }
@@ -13,16 +18,18 @@ local deepcopy = table.deepcopy
 
 Global.register(
     this,
-    function(tbl)
+    function (tbl)
         this = tbl
     end
 )
 
-Public.transport_table = {
+Public.transport_table =
+{
     transport_type = 'in_and_out',
     reference = nil,
     name = nil,
-    entities = {
+    entities =
+    {
         chest_1 = nil,
         chest_2 = nil,
         loader_1 = nil,
@@ -36,7 +43,8 @@ Public.transport_table = {
     }
 }
 
-Public.levels_table = {
+Public.levels_table =
+{
     surface = nil,
     size = nil,
     going_up = deepcopy(Public.transport_table),
@@ -61,8 +69,16 @@ function Public.get(key)
     end
 end
 
+function Public.module_enabled(state)
+    this.module_enabled = state or false
+end
+
+function Public.multiplayer_enabled(state)
+    this.multiplayer_enabled = state or false
+end
+
 Event.on_init(
-    function()
+    function ()
         Public.reset_table()
     end
 )

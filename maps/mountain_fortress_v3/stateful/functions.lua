@@ -391,15 +391,11 @@ Event.on_nth_tick(60, function ()
 end)
 
 function Public.clear_platforms()
-    for _, planet in pairs(game.planets) do
-        local platforms = planet.get_space_platforms('player')
-        if platforms then
-            for _, platform in pairs(platforms) do
-                if platform and platform.valid and platform.surface and platform.surface.valid then
-                    local name = platform.surface.name
-                    game.delete_surface(name)
-                    platform.destroy()
-                end
+    for _, surface in pairs(game.surfaces) do
+        if surface and surface.valid then
+            if string.match(surface.name, 'platform-.*') then
+                Server.output_script_data('Clearing platform surface: ' .. surface.name)
+                game.delete_surface(surface.name)
             end
         end
     end

@@ -12,7 +12,6 @@ local Discord = require 'utils.discord_handler'
 local Commands = require 'utils.commands'
 local mapkeeper = '[color=blue]Mapkeeper:[/color]'
 local Task = require 'utils.task_token'
-local CustomEvents = require 'utils.created_events'
 
 local this =
 {
@@ -540,7 +539,7 @@ local on_player_joined_game = function (player)
     Public.insert_all_items(player)
 end
 
-local quality = has_space_age() and 'legendary' or 'normal'
+local quality = ServerCommands.has_space_age() and 'legendary' or 'normal'
 
 function Public.insert_all_items(player)
     if this.creative_enabled and not this.players[player.index] then
@@ -736,7 +735,7 @@ Gui.on_click(
 )
 
 Event.add(
-    CustomEvents.events.bottom_quickbar_location_changed,
+    ServerCommands.events.bottom_quickbar_location_changed,
     function (event)
         if not this.enabled then
             return

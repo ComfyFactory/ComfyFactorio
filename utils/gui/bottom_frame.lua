@@ -3,7 +3,6 @@ local Global = require 'utils.global'
 local Gui = require 'utils.gui'
 local Task = require 'utils.task_token'
 local Config = require 'utils.gui.config'
-local CustomEvents = require 'utils.created_events'
 
 local this =
 {
@@ -57,7 +56,7 @@ Config.register_scenario_module(
             function (player, frame)
                 local switch_state
 
-                local autostash = is_loaded('modules.autostash')
+                local autostash = ServerCommands.is_loaded('modules.autostash')
                 if autostash then
                     switch_state = 'right'
                     local bottom_frame = Public.get_player_data(player)
@@ -464,7 +463,7 @@ set_location = function (player, state)
         }
     end
 
-    Event.raise(CustomEvents.events.bottom_quickbar_location_changed, { player_index = player.index, data = data })
+    Event.raise(ServerCommands.events.bottom_quickbar_location_changed, { player_index = player.index, data = data })
 
     data.state = state
     create_frame(player, alignment, location, data)
@@ -665,7 +664,7 @@ Event.add(
 )
 
 Event.add(
-    CustomEvents.events.bottom_quickbar_respawn_raise,
+    ServerCommands.events.bottom_quickbar_respawn_raise,
     function (event)
         if not event or not event.player_index then
             return
@@ -680,7 +679,7 @@ Event.add(
 )
 
 Event.add(
-    CustomEvents.events.bottom_quickbar_location_changed,
+    ServerCommands.events.bottom_quickbar_location_changed,
     function (event)
         if not event or not event.player_index then
             return

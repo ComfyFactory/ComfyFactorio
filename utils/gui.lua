@@ -3,15 +3,36 @@ local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Server = require 'utils.server'
 local SpamProtection = require 'utils.spam_protection'
-local CustomEvents = require 'utils.created_events'
-local DevServer = require 'utils.dev_server'
+local Color = require 'utils.color_presets'
 
 local insert = table.insert
 local tostring = tostring
 local next = next
 local gui_prefix = 'comfy_'
 
-local Public = {}
+local GuiMetaMethods = {}
+
+local Public =
+{
+    uid = 1000,
+    events = {},
+    defines = {},
+    file_paths = {},
+    debug_info = {},
+    execute =
+    {
+        __call = function (self, parent, ...)
+            local frame = self.render_frame(self.name, parent, ...)
+            if self.render_style then
+                if frame and frame.valid and frame.style then
+                    self.render_style(frame.style, frame, ...)
+                end
+            end
+            return frame
+        end,
+        __index = GuiMetaMethods
+    }
+}
 
 local ordered_tab_names =
 {
@@ -73,7 +94,34 @@ Public.x_icon = 'file/utils/files/x.png'
 Public.info_icon = 'file/utils/files/info.png'
 Public.mod_gui_button_enabled = false
 
-function Public.uid_name()
+function Public.sprite_style(size, padding, style)
+    style = style or {}
+    style.padding = padding or -2
+    style.height = size
+    style.width = size
+    return style
+end
+
+Public.Styles =
+{
+    [20] = Public.sprite_style(20, 0),
+    [22] = Public.sprite_style(20, nil, { right_margin = -3 }),
+    [23] = Public.sprite_style(23, nil, { right_margin = -3 }),
+    [32] = { height = 32, width = 32, left_margin = 1 },
+    [40] = { height = 40, width = 40, left_margin = 1 },
+    ['button'] =
+    {
+        font = 'default-semibold',
+        height = 26,
+        minimal_width = 26,
+        top_padding = 0,
+        bottom_padding = 0,
+        left_padding = 2,
+        right_padding = 2
+    }
+}
+
+function Public.uid_name(prefix)
     if game then
         return error('This function is not allowed to be called in this context.', 2)
     end
@@ -82,16 +130,12 @@ function Public.uid_name()
     local filepath = info.source:match('^@__level__/(.+)$'):sub(1, -5)
     local line = info.currentline
 
-    local token = tostring(Task.uid())
+    local token = tostring(Task.uid(prefix))
 
     local name = concat { token, ' - ', filepath, ':line:', line }
     names[token] = name
 
     return token
-end
-
-function Public.uid()
-    return Task.uid()
 end
 
 local main_frame_name = Public.uid_name()
@@ -110,6 +154,82 @@ Public.frame_style = 'non_draggable_frame'
 Public.button_style = 'mod_gui_button'
 Public.top_flow_button_enabled_style = 'menu_button_continue'
 Public.top_flow_button_disabled_style = Public.button_style
+
+function GuiMetaMethods:add_style(object)
+    if not object then
+        return self
+    end
+
+    if type(object) == 'table' then
+        if Public.debug_info[self.name] then
+            Public.debug_info[self.name].render_style = object
+            self.render_style = function (style)
+                for key, value in pairs(object) do
+                    style[key] = value
+                end
+            end
+        end
+    else
+        if Public.debug_info[self.name] then
+            Public.debug_info[self.name].render_style = 'Function'
+            self.render_style = object
+        end
+    end
+
+    return self
+end
+
+function GuiMetaMethods:raise_custom_event(event)
+    local element = event.element
+    if not element or not element.valid then
+        return self
+    end
+
+    -- Get the event handler for this element
+    local handler = self[event.name]
+    if not handler then
+        return self
+    end
+
+    -- Get the player for this event
+    local player_index = event.player_index or element.player_index
+    local player = game.get_player(player_index)
+    if not player or not player.valid then
+        return self
+    end
+    event.player = player
+
+    handler(player, element, event)
+
+    return self
+end
+
+function Public.new_frame(object)
+    local element = setmetatable({}, Public.execute)
+
+    local uid = Public.uid + 1
+    Public.uid = uid
+    local name = tostring(uid)
+    element.name = name
+    Public.debug_info[name] = { render_frame = 'None', style = 'None', events = {} }
+
+    if type(object) == 'table' then
+        Public.debug_info[name].render_frame = object
+        object.name = name
+        element.render_frame = function (_, parent)
+            return parent.add(object)
+        end
+    else
+        Public.debug_info[name].render_frame = 'Function'
+        element.render_frame = object
+    end
+
+    local file_path = debug.getinfo(2, 'S').source:match('^@__level__/(.+)$'):sub(1, -5)
+    Public.file_paths[name] = file_path
+    Public.defines[name] = element
+
+    return element
+end
 
 local fix_frame_style_token =
     Task.register(
@@ -142,6 +262,24 @@ local function get_button_flow(player)
 
     local frame = gui.mod_gui_top_frame or gui.add { type = 'frame', name = 'mod_gui_top_frame', direction = 'horizontal', style = 'slot_window_frame' }
     return frame.mod_gui_inner_frame or frame.add { type = 'frame', name = 'mod_gui_inner_frame', style = 'mod_gui_inside_deep_frame' }
+end
+
+local function hide_button_flow(player)
+    local gui = player.gui.top
+    local button_flow = gui.mod_gui_button_flow
+    if not button_flow then
+        return
+    end
+    button_flow.visible = false
+end
+
+local function show_button_flow(player)
+    local gui = player.gui.top
+    local button_flow = gui.mod_gui_button_flow
+    if not button_flow then
+        return
+    end
+    button_flow.visible = true
 end
 
 -- Associates data with the LuaGuiElement. If data is nil then removes the data
@@ -358,6 +496,42 @@ function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_s
     return main_frame, inside_frame, close_button
 end
 
+function Public.add_main_frame(parent, parent_frame_name, frame_name, frame_tooltip, max_height, min_width)
+    local main_frame = parent[parent_frame_name]
+    if main_frame then
+        return main_frame
+    end
+    main_frame =
+        parent.add(
+            {
+                type = 'frame',
+                name = parent_frame_name,
+                caption = frame_name,
+                tooltip = frame_tooltip,
+            }
+        )
+    main_frame.style.padding = 9
+    main_frame.style.use_header_filler = true
+    main_frame.style.maximal_height = max_height or 500
+    main_frame.style.maximal_width = 500
+    main_frame.style.minimal_width = min_width or 250
+
+    local frame =
+        main_frame.add
+        {
+            type = 'frame',
+            direction = 'vertical',
+            style = 'inside_shallow_frame_packed'
+        }
+    frame.style.padding = 4
+    frame.style.horizontally_stretchable = true
+    frame.style.maximal_height = max_height or 500
+    frame.style.maximal_width = 500
+    frame.style.minimal_width = min_width or 250
+
+    return frame, main_frame
+end
+
 -- Removes data associated with LuaGuiElement and its children recursively.
 function Public.remove_data_recursively(element)
     set_data(element, nil)
@@ -464,6 +638,31 @@ local function handler_factory(event_id)
         end
     end
 end
+
+local function event_handler_factory(event_name)
+    Event.add(
+        event_name,
+        function (event)
+            local element = event.element
+            if not element or not element.valid then
+                return
+            end
+            local element_define = Public.defines[element.name]
+            if not element_define then
+                return
+            end
+
+            element_define:raise_custom_event(event)
+        end
+    )
+
+    return function (self, handler)
+        insert(Public.debug_info[self.name].events, debug.getinfo(1, 'n').name)
+        self[event_name] = handler
+        return self
+    end
+end
+
 
 --luacheck: ignore custom_raise
 ---@diagnostic disable-next-line: unused-function, unused-local
@@ -655,8 +854,17 @@ function Public.clear_all_screen_frames(player)
     end
 end
 
+function Public.clear_all_left_frames(player)
+    for _, child in pairs(player.gui.left.children) do
+        if child.name:find(gui_prefix) then
+            remove_data_recursively(child)
+            child.destroy()
+        end
+    end
+end
+
 function Public.clear_all_active_frames(player)
-    Event.raise(CustomEvents.events.on_gui_closed_main_frame, { player_index = player.index })
+    Event.raise(ServerCommands.events.on_gui_closed_main_frame, { player_index = player.index })
     for _, child in pairs(player.gui.left.children) do
         if child.name:find(gui_prefix) then
             remove_data_recursively(child)
@@ -837,7 +1045,7 @@ local function draw_main_frame(player)
     end
 
     local title = 'Comfy Factorio'
-    if DevServer.is_dev_server() then
+    if ServerCommands.is_dev_server() then
         title = 'Comfy Factorio (Development Server)'
     end
 
@@ -961,12 +1169,62 @@ function Public.refresh(player)
     for _, tab in pairs(tabbed_pane.tabs) do
         if tab.content.name ~= frame.name then
             tab.content.clear()
-            Event.raise(CustomEvents.events.on_gui_removal, { player_index = player.index })
+            Event.raise(ServerCommands.events.on_gui_removal, { player_index = player.index })
         end
     end
 
     Public.reload_active_tab(player, true)
     return true
+end
+
+function Public.toggle_top_buttons(player, state)
+    if not player or not player.valid then
+        return
+    end
+    local mod_gui_top_frame = player.gui.top.mod_gui_top_frame
+    if not mod_gui_top_frame or not mod_gui_top_frame.valid then
+        return
+    end
+    local mod_gui_inner_frame = mod_gui_top_frame.mod_gui_inner_frame
+    if not mod_gui_inner_frame or not mod_gui_inner_frame.valid then
+        return
+    end
+
+    for _, gui_data in pairs(mod_gui_inner_frame.children) do
+        if gui_data and gui_data.valid then
+            gui_data.enabled = state
+        end
+    end
+end
+
+function Public.set_tab(player, tab_name, status)
+    settings.disabled_tabs[tab_name] = status
+    local left_frame = Public.get_main_frame(player)
+    if left_frame then
+        left_frame.destroy()
+        draw_main_frame(player)
+        return
+    end
+
+    Public.reload_active_tab(player)
+end
+
+function Public.bar(frame, width)
+    if not frame or not frame.valid then
+        return
+    end
+
+    local line =
+        frame.add
+        {
+            type = 'progressbar',
+            size = 1,
+            value = 1
+        }
+    line.style.height = 3
+    line.style.width = width or 10
+    line.style.color = Color.white
+    return line
 end
 
 function Public.call_existing_tab(player, name)
@@ -987,8 +1245,197 @@ function Public.call_existing_tab(player, name)
     end
 end
 
+function Public.get_player_from_element(element)
+    if not element or not element.valid then
+        return
+    end
+    return game.players[element.player_index]
+end
+
+function Public.apply_direction_button_style(button)
+    local button_style = button.style
+    button_style.width = 24
+    button_style.height = 24
+    button_style.top_padding = 0
+    button_style.bottom_padding = 0
+    button_style.left_padding = 0
+    button_style.right_padding = 0
+    button_style.font = 'default-listbox'
+end
+
+function Public.apply_button_style(button)
+    local button_style = button.style
+    button_style.font = 'default-semibold'
+    button_style.height = 26
+    button_style.minimal_width = 26
+    button_style.top_padding = 0
+    button_style.bottom_padding = 0
+    button_style.left_padding = 2
+    button_style.right_padding = 2
+end
+
+--------------------------------------------------------------------------------
+-- GUI Functions
+--------------------------------------------------------------------------------
+Public.my_fixed_width_style =
+{
+    minimal_width = 450,
+    maximal_width = 450
+}
+Public.my_label_style =
+{
+    single_line = false,
+    font_color = { r = 1, g = 1, b = 1 },
+    top_padding = 0,
+    bottom_padding = 0,
+    font = 'default-listbox'
+}
+Public.my_label_header_style =
+{
+    single_line = false,
+    font = 'default-game',
+    font_color = { r = 1, g = 1, b = 1 },
+    top_padding = 0,
+    bottom_padding = 0
+}
+Public.my_label_header_grey_style =
+{
+    single_line = false,
+    font = 'heading-1',
+    font_color = { r = 0.6, g = 0.6, b = 0.6 },
+    top_padding = 0,
+    bottom_padding = 0
+}
+Public.my_note_style =
+{
+    single_line = false,
+    font = 'default-small-semibold',
+    font_color = { r = 1, g = 0.5, b = 0.5 },
+    top_padding = 0,
+    bottom_padding = 0
+}
+Public.my_warning_style =
+{
+    single_line = false,
+    font_color = { r = 1, g = 0.1, b = 0.1 },
+    top_padding = 0,
+    bottom_padding = 0
+}
+Public.my_spacer_style =
+{
+    minimal_height = 2,
+    top_padding = 0,
+    bottom_padding = 0
+}
+Public.my_small_button_style =
+{
+    font = 'default-small-semibold'
+}
+Public.my_player_list_fixed_width_style =
+{
+    minimal_width = 200,
+    maximal_width = 400,
+    maximal_height = 200
+}
+Public.my_player_list_admin_style =
+{
+    font = 'default-semibold',
+    font_color = { r = 1, g = 0.5, b = 0.5 },
+    minimal_width = 200,
+    top_padding = 0,
+    bottom_padding = 0,
+    single_line = false
+}
+Public.my_player_list_style =
+{
+    font = 'default-semibold',
+    minimal_width = 200,
+    top_padding = 0,
+    bottom_padding = 0,
+    single_line = false
+}
+Public.my_player_list_offline_style =
+{
+    font_color = { r = 0.5, g = 0.5, b = 0.5 },
+    minimal_width = 200,
+    top_padding = 0,
+    bottom_padding = 0,
+    single_line = false
+}
+Public.my_player_list_style_spacer =
+{
+    minimal_height = 20
+}
+Public.my_color_red = { r = 1, g = 0.1, b = 0.1 }
+
+Public.my_longer_label_style =
+{
+    maximal_width = 600,
+    single_line = false,
+    font_color = { r = 1, g = 1, b = 1 },
+    top_padding = 0,
+    bottom_padding = 0
+}
+Public.my_longer_warning_style =
+{
+    maximal_width = 600,
+    single_line = false,
+    font_color = { r = 1, g = 0.1, b = 0.1 },
+    top_padding = 0,
+    bottom_padding = 0
+}
+
+
+-- Apply a style option to a GUI
+function Public.ApplyStyle(guiIn, styleIn)
+    for k, v in pairs(styleIn) do
+        guiIn.style[k] = v
+    end
+end
+
+-- Shorter way to add a label with a style
+function Public.AddLabel(guiIn, name, message, style)
+    local g =
+        guiIn.add
+        {
+            name = name,
+            type = 'label',
+            caption = message
+        }
+    if (type(style) == 'table') then
+        Public.ApplyStyle(g, style)
+    else
+        g.style = style
+    end
+end
+
+function Public.AddLabelCaption(guiIn, name, style)
+    local g =
+        guiIn.add
+        {
+            type = 'label',
+            caption = name
+        }
+    if (type(style) == 'table') then
+        Public.ApplyStyle(g, style)
+    else
+        g.style = style
+    end
+end
+
+-- Shorter way to add a spacer
+function Public.AddSpacer(guiIn)
+    Public.ApplyStyle(guiIn.add { type = 'label', caption = ' ' }, Public.my_spacer_style)
+end
+
+function Public.AddSpacerLine(guiIn)
+    Public.ApplyStyle(guiIn.add { type = 'line', direction = 'horizontal' }, Public.my_spacer_style)
+end
+
 Public.get_button_flow = get_button_flow
 Public.mod_button = get_button_flow
+Public.hide_button_flow = hide_button_flow
+Public.show_button_flow = show_button_flow
 
 -- Register a handler for the on_gui_checked_state_changed event for LuaGuiElements with element_name.
 -- Can only have one handler per element name.
@@ -1032,6 +1479,90 @@ Public.on_text_changed = handler_factory(defines.events.on_gui_text_changed)
 -- Adds a player field to the event table.
 Public.on_value_changed = handler_factory(defines.events.on_gui_value_changed)
 
+--- Called when the player opens a GUI.
+-- @tparam function handler the event handler which will be called
+-- @usage element_define:on_open(function(event)
+--  event.player.print(table.inspect(event))
+--end)
+GuiMetaMethods.on_open = event_handler_factory(defines.events.on_gui_opened)
+
+--- Called when the player closes the GUI they have open.
+-- @tparam function handler the event handler which will be called
+-- @usage element_define:on_close(function(event)
+--  event.player.print(table.inspect(event))
+--end)
+GuiMetaMethods.on_close = event_handler_factory(defines.events.on_gui_closed)
+
+--- Called when LuaGuiElement is clicked.
+-- @tparam function handler the event handler which will be called
+-- @usage element_define:on_click(function(event)
+--  event.player.print(table.inspect(event))
+--end)
+GuiMetaMethods.on_click = event_handler_factory(defines.events.on_gui_click)
+
+--- Called when a LuaGuiElement is confirmed, for example by pressing Enter in a textfield.
+-- @tparam function handler the event handler which will be called
+-- @usage element_define:on_confirmed(function(event)
+--  event.player.print(table.inspect(event))
+--end)
+GuiMetaMethods.on_confirmed = event_handler_factory(defines.events.on_gui_confirmed)
+
+--- Called when LuaGuiElement checked state is changed (related to checkboxes and radio buttons).
+-- @tparam function handler the event handler which will be called
+-- @usage element_define:on_checked_changed(function(event)
+--  event.player.print(table.inspect(event))
+--end)
+GuiMetaMethods.on_checked_changed = event_handler_factory(defines.events.on_gui_checked_state_changed)
+
+--- Called when LuaGuiElement element value is changed (related to choose element buttons).
+-- @tparam function handler the event handler which will be called
+-- @usage element_define:on_elem_changed(function(event)
+--  event.player.print(table.inspect(event))
+--end)
+GuiMetaMethods.on_elem_changed = event_handler_factory(defines.events.on_gui_elem_changed)
+
+--- Called when LuaGuiElement element location is changed (related to frames in player.gui.screen).
+-- @tparam function handler the event handler which will be called
+-- @usage element_define:on_location_changed(function(event)
+--  event.player.print(table.inspect(event))
+--end)
+GuiMetaMethods.on_location_changed = event_handler_factory(defines.events.on_gui_location_changed)
+
+--- Called when LuaGuiElement selected tab is changed (related to tabbed-panes).
+-- @tparam function handler the event handler which will be called
+-- @usage element_define:on_tab_changed(function(event)
+--  event.player.print(table.inspect(event))
+--end)
+GuiMetaMethods.on_tab_changed = event_handler_factory(defines.events.on_gui_selected_tab_changed)
+
+--- Called when LuaGuiElement selection state is changed (related to drop-downs and listboxes).
+-- @tparam function handler the event handler which will be called
+-- @usage element_define:on_selection_changed(function(event)
+--  event.player.print(table.inspect(event))
+--end)
+GuiMetaMethods.on_selection_changed = event_handler_factory(defines.events.on_gui_selection_state_changed)
+
+--- Called when LuaGuiElement switch state is changed (related to switches).
+-- @tparam function handler the event handler which will be called
+-- @usage element_define:on_switch_changed(function(event)
+--  event.player.print(table.inspect(event))
+--end)
+GuiMetaMethods.on_switch_changed = event_handler_factory(defines.events.on_gui_switch_state_changed)
+
+--- Called when LuaGuiElement text is changed by the player.
+-- @tparam function handler the event handler which will be called
+-- @usage element_define:on_text_changed(function(event)
+--  event.player.print(table.inspect(event))
+--end)
+GuiMetaMethods.on_text_changed = event_handler_factory(defines.events.on_gui_text_changed)
+
+--- Called when LuaGuiElement slider value is changed (related to the slider element).
+-- @tparam function handler the event handler which will be called
+-- @usage element_define:on_value_changed(function(event)
+--  event.player.print(table.inspect(event))
+--end)
+GuiMetaMethods.on_value_changed = event_handler_factory(defines.events.on_gui_value_changed)
+
 Public.on_click(
     main_button_name,
     function (event)
@@ -1045,9 +1576,9 @@ Public.on_click(
         if frame then
             remove_data_recursively(frame)
             frame.destroy()
-            Event.raise(CustomEvents.events.on_gui_removal, { player_index = player.index })
+            Event.raise(ServerCommands.events.on_gui_removal, { player_index = player.index })
             local active_frame = Public.get_player_active_frame(player)
-            Event.raise(CustomEvents.events.on_gui_closed_main_frame, { player_index = player.index, element = active_frame or nil })
+            Event.raise(ServerCommands.events.on_gui_closed_main_frame, { player_index = player.index, element = active_frame or nil })
         else
             draw_main_frame(player)
         end
@@ -1060,7 +1591,7 @@ Public.on_click(
         local player = event.player
         local frame = Public.get_parent_frame(player)
         local active_frame = Public.get_player_active_frame(player)
-        Event.raise(CustomEvents.events.on_gui_closed_main_frame, { player_index = player.index, element = active_frame or nil })
+        Event.raise(ServerCommands.events.on_gui_closed_main_frame, { player_index = player.index, element = active_frame or nil })
         if frame then
             remove_data_recursively(frame)
             frame.destroy()
@@ -1073,7 +1604,7 @@ Public.on_custom_close(
     function (event)
         local player = event.player
         local active_frame = Public.get_player_active_frame(player)
-        Event.raise(CustomEvents.events.on_gui_closed_main_frame, { player_index = player.index, element = active_frame or nil })
+        Event.raise(ServerCommands.events.on_gui_closed_main_frame, { player_index = player.index, element = active_frame or nil })
         local frame = Public.get_parent_frame(player)
         if frame then
             remove_data_recursively(frame)

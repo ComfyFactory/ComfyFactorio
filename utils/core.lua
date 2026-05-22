@@ -137,7 +137,7 @@ function Public.iter_players(callback)
     for i = 1, #players do
         local player = players[i]
         if player and player.valid then
-            callback(player)
+            callback(player, i)
         end
     end
 end
@@ -459,6 +459,35 @@ function Public.log_flat(tbl)
 
     local msg = (label and (label .. ": ") or "") .. serpent.block(flat, { comment = false, numformat = "%g" })
     log(msg)
+end
+
+function Public.tick_to_display_format(tick)
+    if not Public.is_type(tick, 'number') then
+        return '0H 0M'
+    end
+    if Public.tick_to_min(tick) < 10 then
+        return string.format('%.2f M', tick / (3600 * game.speed))
+    else
+        return string.format('%d H %d M', Public.tick_to_hour(tick), Public.tick_to_min(tick) - 60 * Public.tick_to_hour(tick))
+    end
+end
+
+function Public.tick_to_hour(tick)
+    if not Public.is_type(tick, 'number') then
+        return 0
+    end
+    return math.floor(tick / (216000 * game.speed))
+end
+
+function Public.tick_to_min(tick)
+    if not Public.is_type(tick, 'number') then
+        return 0
+    end
+    return math.floor(tick / (3600))
+end
+
+function Public.is_type(v, test_type)
+    return test_type and v and type(v) == test_type or not test_type and not v or false
 end
 
 -- add utility functions that exist in base factorio/util

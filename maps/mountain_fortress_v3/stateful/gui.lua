@@ -32,6 +32,8 @@ local random = math.random
 local floor = math.floor
 local main_frame
 
+Public.stateful_main_button_name = main_button_name
+
 local function create_particles(surface, name, position, amount, cause_position)
     local d1 = (-100 + random(0, 200)) * 0.0004
     local d2 = (-100 + random(0, 200)) * 0.0004

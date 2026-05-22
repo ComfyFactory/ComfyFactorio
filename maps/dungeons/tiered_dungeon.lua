@@ -130,7 +130,7 @@ local function draw_depth_gui()
         if player.gui.top.dungeon_depth then
             player.gui.top.dungeon_depth.destroy()
         end
-        if surface.name == 'Gulag' or surface.name == 'nauvis' or surface.name == 'dungeons_floor_arena' then
+        if surface.name == 'gulag' or surface.name == 'nauvis' or surface.name == 'dungeons_floor_arena' then
             return
         end
         local element = player.gui.top.add({ type = 'sprite-button', name = 'dungeon_depth' })
@@ -329,7 +329,7 @@ end
 
 local function on_chunk_generated(event)
     local surface = event.surface
-    if surface.name == 'nauvis' or surface.name == 'Gulag' or surface.name == 'dungeons_floor_arena' then
+    if surface.name == 'nauvis' or surface.name == 'gulag' or surface.name == 'dungeons_floor_arena' then
         return
     end
 

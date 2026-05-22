@@ -13,7 +13,8 @@ local map_info =
     main_caption_color = { r = 0.6, g = 0.3, b = 0.99 },
     sub_caption = nil,
     sub_caption_color = { r = 0.2, g = 0.9, b = 0.2 },
-    text = nil
+    text = nil,
+    call_map_info_on_join = true
 }
 
 Global.register(
@@ -112,7 +113,7 @@ end
 local create_map_intro_token = Task.register(create_map_intro)
 
 local function on_player_joined_game(event)
-    if not has_map_info() then
+    if not has_map_info() or not map_info.call_map_info_on_join then
         return
     end
 
@@ -123,6 +124,9 @@ local function on_player_joined_game(event)
     end
 end
 
+function Public.call_map_info_on_join(state)
+    map_info.call_map_info_on_join = state or false
+end
 
 function Public.get_map_information()
     return map_info

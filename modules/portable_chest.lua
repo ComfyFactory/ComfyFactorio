@@ -2,22 +2,17 @@ local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Color = require 'utils.color_presets'
 local Gui = require 'utils.gui'
-local m_gui = require 'mod-gui'
-local mod = m_gui.get_button_flow
-local SpamProtection = require 'utils.spam_protection'
+local Misc = require 'utils.commands.misc'
+local SessionData = require 'utils.datastore.session_data'
+local Token = require 'utils.token'
+local Task = require 'utils.task'
+local Commands = require 'utils.commands'
 
 local this =
 {
-    inf_chests = {},
-    inf_storage = {},
-    inf_gui = {},
-    player_chests = {},
-    viewing_player = {},
-    editor = {},
+    main_containers = {},
     ores_only = false,
-    allow_barrels = true,
-    total_slots = {},
-    stack_size = {}
+    allow_barrels = true
 }
 
 local ore_names =
@@ -36,6 +31,7 @@ local main_button_name = Gui.uid_name()
 local main_frame_name = Gui.uid_name()
 local stack_slider_name = Gui.uid_name()
 local delete_mode_name = Gui.uid_name()
+local close_name = Gui.uid_name()
 
 local Public = {}
 
@@ -50,31 +46,112 @@ function Public.get_table()
     return this
 end
 
-local function clear_gui(player)
-    local data = this.inf_gui[player.index]
-    if not data then
-        return
-    end
-    if data.frame and data.frame.valid then
-        Gui.remove_data_recursively(data.frame)
-        data.frame.destroy()
-    end
-    this.inf_gui[player.index] = nil
-    if this.viewing_player[player.index] then
-        this.viewing_player[player.index] = nil
+local function does_exists(player_index)
+    local containers = this.main_containers
+    if containers[player_index] then
+        return true
+    else
+        return false
     end
 end
 
+local function add_object(player_index)
+    local containers = this.main_containers
+
+    if not does_exists(player_index) then
+        containers[player_index] =
+        {
+            chest_id = player_index,
+            item_storage =
+            {
+                ['normal'] = {},
+                ['uncommon'] = {},
+                ['rare'] = {},
+                ['epic'] = {},
+                ['legendary'] = {}
+            },
+            stack_size = 1,
+            total_slots = 50,
+            gui = {}
+        }
+    end
+end
+
+local function get_quality(name, quality)
+    return name .. '_' .. quality
+end
+
+local function fetch_container(player_index)
+    local containers = this.main_containers
+    if containers[player_index] then
+        return containers[player_index]
+    end
+end
+
+local function clear_gui(player)
+    local container = fetch_container(player.index)
+    if not container then
+        return
+    end
+
+    local data = container.gui
+    if not data.main_frame then
+        return
+    end
+
+    Gui.remove_data_recursively(data.main_frame)
+    Gui.remove_data_recursively(data.item_frame)
+
+    local screen = player.gui.screen
+    local frame = screen[main_frame_name]
+
+    if frame and frame.valid then
+        frame.destroy()
+    end
+
+    if data.viewing_player then
+        data.viewing_player = false
+    end
+
+    container.gui = {}
+end
+
+local function remove_gui(player)
+    local container = fetch_container(player.index)
+    if not next(container.gui) then
+        return
+    end
+    container.gui = {}
+end
+
 local function create_button(player)
-    mod(player).add(
+    if not SessionData.allowed(player, 'portable-chest') then
+        if Gui.get_button_flow(player)[main_button_name] then
+            Gui.get_button_flow(player)[main_button_name].destroy()
+        end
+        return
+    end
+    if Gui.get_button_flow(player)[main_button_name] then
+        return
+    end
+
+    local button = Gui.get_button_flow(player).add(
         {
             type = 'sprite-button',
             sprite = 'item/requester-chest',
             name = main_button_name,
             tooltip = 'Portable inventory stash!',
-            style = m_gui.button_style
+            style = Gui.button_style
         }
     )
+    if button then
+        button.style.font_color = { 165, 165, 165 }
+        button.style.font = 'default-semibold'
+        button.style.minimal_height = 36
+        button.style.maximal_height = 36
+        button.style.minimal_width = 40
+        button.style.padding = -2
+    end
 end
 
 local function validate_player(player)
@@ -96,46 +173,60 @@ local function validate_player(player)
     return true
 end
 
-local function item(item_name, item_count, player, storage)
-    local stack_size = this.stack_size[player.index]
+local function item(data, inv, quality_storage, stack_size)
     local item_stack
-    if stack_size then
-        item_stack = prototypes.item[item_name].stack_size * stack_size
-    else
-        item_stack = prototypes.item[item_name].stack_size
+    local proto = prototypes.item[data.name]
+    local chest_item = quality_storage[data.name]
+    if not proto then
+        quality_storage[data.name] = nil
+        return
     end
 
-    local diff = item_count - item_stack
+    if stack_size then
+        item_stack = proto.stack_size * stack_size
+    else
+        item_stack = proto.stack_size
+    end
+
+
+    local diff = data.count - item_stack
 
     if diff > 0 then
-        local count = player.remove({ name = item_name, count = diff })
-        if not storage[item_name] then
-            storage[item_name] = count
+        local s = { name = data.name, count = diff, quality = data.quality }
+        local count = inv.remove(s)
+        if not chest_item then
+            quality_storage[data.name] = { name = data.name, count = count, quality = data.quality }
         else
-            storage[item_name] = storage[item_name] + count
+            chest_item.count = chest_item.count + count
         end
     elseif diff < 0 then
-        if not storage[item_name] or storage[item_name] <= 0 then
+        if not chest_item or chest_item.count <= 0 then
             goto continue
         end
-        if storage[item_name] > (diff * -1) then
-            local inserted = player.insert({ name = item_name, count = (diff * -1) })
-            storage[item_name] = storage[item_name] - inserted
+        if chest_item.count > (diff * -1) then
+            local s = { name = data.name, count = (diff * -1), quality = data.quality }
+            local inserted = inv.insert(s)
+            chest_item.count = chest_item.count - inserted
         else
-            player.insert({ name = item_name, count = storage[item_name] })
-            storage[item_name] = 0
+            local s = { name = data.name, count = chest_item.count, quality = data.quality }
+            inv.insert(s)
+            chest_item.count = 0
         end
     end
     ::continue::
 end
 
-local function update_chest()
-    for chest_id, player in pairs(this.inf_chests) do
-        if not player.valid then
+local function update_containers()
+    local containers = this.main_containers
+    for index, _ in pairs(containers) do
+        local player = game.get_player(index)
+        if not player or not player.valid then
             goto continue
         end
-        local storage = this.inf_storage[chest_id]
-        if not storage then
+        local container = fetch_container(index)
+        local stack_size = container.stack_size
+        local item_storage = container.item_storage
+        if not item_storage then
             goto continue
         end
 
@@ -145,15 +236,23 @@ local function update_chest()
         end
         local content = inv.get_contents()
 
-        for item_name, item_count in pairs(content) do
-            if storage[item_name] then
-                item(item_name, item_count, inv, storage)
+        local temp_inv = {}
+
+
+        for _, data in pairs(content) do
+            temp_inv[data.name .. '_' .. data.quality] = { count = data.count, quality = data.quality }
+            if item_storage[data.quality][data.name] then
+                item(data, inv, item_storage[data.quality], stack_size)
             end
         end
 
-        for item_name, _ in pairs(storage) do
-            if not content[item_name] then
-                item(item_name, 0, inv, storage)
+        for _, storage_quality in pairs(item_storage) do
+            for item_name, data in pairs(storage_quality) do
+                local inventory_item = temp_inv[item_name .. '_' .. data.quality]
+                if (not inventory_item) or inventory_item.quality == data.quality and inventory_item.count == 0 then
+                    local s = { name = item_name, count = 0, quality = data.quality }
+                    item(s, inv, item_storage[data.quality], stack_size)
+                end
             end
         end
 
@@ -161,28 +260,27 @@ local function update_chest()
     end
 end
 
-local function draw_main_frame(player, target, chest_id)
-    chest_id = chest_id or this.player_chests[player.index].chest_id
-    if not chest_id then
-        return
+local function draw_main_frame(player, target)
+    local container = fetch_container(player.index)
+    local p = player
+    if target and target.valid then
+        container = fetch_container(target.index)
+        p = target
     end
-    local p = target or player
-    local frame =
-        player.gui.screen.add
-        {
-            type = 'frame',
-            caption = p.name .. '´s private portable stash',
-            direction = 'vertical',
-            name = main_frame_name
-        }
+
+    local frame, main_frame = Gui.add_main_frame_with_toolbar(player.gui.screen, 'screen', main_frame_name, nil, close_name,
+        p.name .. '´s private portable stash', 'Your personal storage chest.')
+    container.gui.main_frame = main_frame
     frame.auto_center = true
 
     local data = {}
 
     local controls = frame.add { type = 'flow', direction = 'horizontal' }
     local items = frame.add { type = 'flow', direction = 'vertical' }
+    container.gui.item_frame = items
 
     local tbl = controls.add { type = 'table', column_count = 1 }
+    tbl.style.cell_padding = 4
     local btn =
         tbl.add
         {
@@ -196,14 +294,14 @@ local function draw_main_frame(player, target, chest_id)
     btn.focus()
 
     if not player.admin and this.ores_only then
-        this.total_slots[player.index] = 6
+        container.total_slots = 6
     end
 
     local amount_and_types
     if this.ores_only then
-        amount_and_types = this.total_slots[player.index] .. ' different ore'
+        amount_and_types = container.total_slots .. ' different ore'
     else
-        amount_and_types = this.total_slots[player.index] .. ' different item'
+        amount_and_types = container.total_slots .. ' different item'
     end
 
     local text =
@@ -215,7 +313,7 @@ local function draw_main_frame(player, target, chest_id)
     text.style.single_line = false
 
     local tbl_2 = tbl.add { type = 'table', column_count = 4 }
-    local stack_size = this.stack_size[player.index]
+    local stack_size = container.stack_size
 
     local stack_value = tbl_2.add({ type = 'label', caption = 'Stack Size: ' .. stack_size .. ' ' })
     stack_value.style.font = 'default-bold'
@@ -225,7 +323,7 @@ local function draw_main_frame(player, target, chest_id)
         tbl_2.add(
             {
                 type = 'slider',
-                minimum_value = 1,
+                minimum_value = 0,
                 maximum_value = 10,
                 name = stack_slider_name,
                 value = stack_size
@@ -245,98 +343,97 @@ local function draw_main_frame(player, target, chest_id)
     tbl.add({ type = 'line' })
 
     player.opened = frame
+    container.gui.updated = false
+    container.gui.delete_mode = false
+
     if target and target.valid then
-        this.viewing_player[player.index] = true
+        container.gui.viewing_player = true
     else
-        if this.viewing_player[player.index] then
-            this.viewing_player[player.index] = nil
+        if container.gui.viewing_player then
+            container.gui.viewing_player = false
         end
     end
-    this.inf_gui[player.index] =
-    {
-        item_frame = items,
-        frame = frame,
-        updated = false,
-        delete_mode = false
-    }
 end
 
 local function update_gui()
-    for _, player in pairs(game.connected_players) do
-        local chest_gui_data = this.inf_gui[player.index]
-        if not chest_gui_data then
+    local players = game.connected_players
+    for i = 1, #players do
+        local player = players[i]
+
+        local container = fetch_container(player.index)
+        if not container then
             goto continue
         end
-        local frame = chest_gui_data.item_frame
+
+        local frame = container.gui.item_frame
         if not frame or not frame.valid then
-            clear_gui(player)
+            remove_gui(player)
             goto continue
         end
 
-        local data = this.player_chests[player.index]
-        if not data then
-            goto continue
-        end
-
-        local chest_id = data.chest_id
+        local chest_id = container.chest_id
         if not chest_id then
             goto continue
         end
-        if this.inf_gui[player.index].updated then
+        if container.gui.updated then
             goto continue
         end
         frame.clear()
 
         local tbl = frame.add { type = 'table', column_count = 10, name = 'personal_inventory' }
+
+        tbl.style.cell_padding = 0
         local total = 0
         local items = {}
 
-        local storage = this.inf_storage[chest_id]
+        local item_storage = container.item_storage
 
-        if not storage then
+        if not item_storage then
             goto no_storage
         end
-        for item_name, item_count in pairs(storage) do
-            total = total + 1
-            items[item_name] = item_count
+        for _, quality_storage in pairs(item_storage) do
+            for _, data in pairs(quality_storage) do
+                total = total + 1
+                items[#items + 1] = { name = data.name, count = data.count, quality = data.quality }
+            end
         end
         ::no_storage::
 
-        local delete_mode = this.inf_gui[player.index].delete_mode
-
         local btn
-        for item_name, item_count in pairs(items) do
+        for _, item_data in pairs(items) do
             btn =
                 tbl.add
                 {
                     type = 'sprite-button',
-                    sprite = 'item/' .. item_name,
+                    sprite = 'item/' .. item_data.name,
                     style = 'slot_button',
-                    number = item_count,
-                    name = item_name
+                    tooltip = 'Name: ' .. item_data.name .. '\n' .. 'Quality: ' .. item_data.quality,
+                    number = item_data.count,
+                    name = get_quality(item_data.name, item_data.quality)
                 }
+
             btn.enabled = true
             btn.style.height = size
             btn.style.width = size
-            if delete_mode then
+            if container.gui.delete_mode then
                 btn.tooltip = 'Press to delete this item.'
             end
             btn.focus()
         end
 
-        while total < this.total_slots[player.index] do
-            local btns = tbl.add { type = 'choose-elem-button', style = 'slot_button', elem_type = 'item' }
-            btns.enabled = true
-            btns.style.height = size
-            btns.style.width = size
-            btns.focus()
-            if this.viewing_player[player.index] then
-                btns.enabled = false
+        while total < container.total_slots do
+            local btn_1 = tbl.add { type = 'choose-elem-button', style = 'slot_button', elem_type = 'item-with-quality' }
+            btn_1.enabled = true
+            btn_1.style.height = size
+            btn_1.style.width = size
+            btn_1.focus()
+            if container.gui.viewing_player then
+                btn_1.enabled = false
             end
             total = total + 1
         end
 
-        this.inf_gui[player.index].updated = true
+        container.gui.updated = true
         ::continue::
     end
 end
@@ -357,105 +454,102 @@ local function gui_click(event)
     if parent.name ~= 'personal_inventory' then
         return
     end
-    local chest_id = this.player_chests[player.index].chest_id
-    if not chest_id then
-        return
-    end
 
-    if this.viewing_player[player.index] then
+    local container = fetch_container(player.index)
+
+    if container.gui.viewing_player then
         goto update
     end
 
     local shift = event.shift
     local ctrl = event.control
     local name = element.name
-    local storage = this.inf_storage[chest_id]
-    local delete_mode = this.inf_gui[player.index].delete_mode
+    local item_storage = container.item_storage
 
-    if not storage then
+    if not item_storage then
         return
     end
 
-    if delete_mode then
-        storage[name] = nil
-        this.inf_gui[player.index].updated = false
+    local stripped_name = string.gsub(name, "_.*", "")
+    local quality = string.match(name, "_(.+)$")
+
+    local quality_storage = item_storage[quality]
+    if not quality_storage then return end
+
+
+    if container.gui.delete_mode then
+        quality_storage[stripped_name] = nil
+        container.gui.updated = false
         return
     end
 
-    if this.editor[player.index] then
-        if not storage[name] then
+    local creative_enabled = Misc.get('creative_enabled')
+    if player.admin and (container.editor or creative_enabled) then
+        if not quality_storage[stripped_name] then
             return
         end
         if ctrl then
-            storage[name] = storage[name] + 5000000
-            this.inf_gui[player.index].updated = false
+            quality_storage[stripped_name].count = quality_storage[stripped_name].count + 5000000
+            container.gui.updated = false
             goto update
         elseif shift then
-            storage[name] = storage[name] - 5000000
-            this.inf_gui[player.index].updated = false
-            if storage[name] <= 0 then
-                storage[name] = nil
+            quality_storage[stripped_name].count = quality_storage[stripped_name].count - 5000000
+            container.gui.updated = false
+            if quality_storage[stripped_name].count <= 0 then
+                quality_storage[stripped_name] = nil
             end
             goto update
         end
     end
 
-    if storage[name] and storage[name] <= 0 then
-        storage[name] = nil
-        if this.inf_gui[player.index] then
-            this.inf_gui[player.index].updated = false
-        end
+    if quality_storage[stripped_name] and quality_storage[stripped_name].count and quality_storage[stripped_name].count <= 0 then
+        quality_storage[stripped_name] = nil
+        container.gui.updated = false
         goto update
     end
 
     if ctrl then
-        local count = storage[name]
+        local count = quality_storage[stripped_name] and quality_storage[stripped_name].count
         if not count then
             return
         end
-        local inserted = player.insert { name = name, count = count }
+        local inserted = player.insert { name = stripped_name, count = count, quality = quality_storage[stripped_name].quality }
         if not inserted then
             return
         end
         if inserted == count then
-            storage[name] = nil
+            quality_storage[stripped_name] = nil
         else
-            storage[name] = storage[name] - inserted
+            quality_storage[stripped_name].count = quality_storage[stripped_name].count - inserted
         end
-        if this.inf_gui[player.index] then
-            this.inf_gui[player.index].updated = false
-        end
+        container.gui.updated = false
     elseif shift then
-        local count = storage[name]
-        local stack = prototypes.item[name].stack_size
+        local count = quality_storage[stripped_name] and quality_storage[stripped_name].count
         if not count then
             return
         end
+
+
+        if not prototypes.item[stripped_name] then
+            quality_storage[stripped_name] = nil
+            return
+        end
+
+        local stack = prototypes.item[stripped_name].stack_size
         if not stack then
             return
         end
         if count > stack then
-            local inserted = player.insert { name = name, count = stack }
-            storage[name] = storage[name] - inserted
+            local inserted = player.insert { name = stripped_name, count = stack, quality = quality_storage[stripped_name].quality }
+            quality_storage[stripped_name].count = quality_storage[stripped_name].count - inserted
         else
-            player.insert { name = name, count = count }
-            storage[name] = nil
+            player.insert { name = stripped_name, count = count, quality = quality_storage[stripped_name].quality }
+            quality_storage[stripped_name] = nil
         end
-        if this.inf_gui[player.index] then
-            this.inf_gui[player.index].updated = false
-        end
+        container.gui.updated = false
     end
 
     ::update::
-end
-
-local function gui_closed(event)
-    local player = game.get_player(event.player_index)
-    local type = event.gui_type
-
-    if type == defines.gui_type.custom then
-        clear_gui(player)
-    end
 end
 
 local function on_gui_elem_changed(event)
@@ -476,45 +570,54 @@ local function on_gui_elem_changed(event)
         return
     end
 
-    local chest_id = this.player_chests[player.index].chest_id
+    local container = fetch_container(player.index)
+    local chest_id = container.chest_id
     if not chest_id then
         return
     end
-    local storage = this.inf_storage[chest_id]
-    if not storage then
-        this.inf_storage[chest_id] = {}
-        storage = this.inf_storage[chest_id]
+    local item_storage = container.item_storage
+    if not item_storage then
+        container.item_storage = {}
+
+        item_storage = container.item_storage
     end
-    local name = element.elem_value
+
+    if not element.elem_value then return end
+
+    local name = element.elem_value.name
+    local quality = element.elem_value.quality
 
     if not name then
         return
     end
 
+    local creative_enabled = Misc.get('creative_enabled')
+
+    local storage_quality = item_storage[quality]
+
     if this.ores_only then
         if not ore_names[name] then
-            player.print('You can only stash ores and wood.', { color = Color.warning })
+            player.print('You can only stash ores and wood.', Color.warning)
             goto update
         end
     end
 
     if this.allow_barrels then
         if string.match(name, 'barrel') then
-            player.print('You can´t stash barrels.', { color = Color.warning })
+            player.print('You can´t stash barrels.', Color.warning)
             goto update
         end
     end
 
-    storage[name] = 0
-    if this.editor[player.index] then
-        storage[name] = 5000000
+    storage_quality[name] = { name = name, count = 0, quality = quality }
+
+    if player.admin and (container.editor or creative_enabled) then
+        storage_quality[name].count = 5000000
     end
 
     ::update::
 
-    if this.inf_gui[player.index] then
-        this.inf_gui[player.index].updated = false
-    end
+    container.gui.updated = false
 end
 
 local function on_player_joined_game(event)
@@ -522,35 +625,16 @@ local function on_player_joined_game(event)
     if not (player and player.valid) then
         return
     end
-    local chest_id = Gui.uid()
-    if not this.player_chests[player.index] then
-        this.player_chests[player.index] =
-        {
-            chest_id = chest_id
-        }
+
+    if not does_exists(player.index) then
+        add_object(player.index)
     end
 
-    chest_id = this.player_chests[player.index].chest_id
-
-    if not this.inf_chests[chest_id] then
-        this.inf_chests[chest_id] = player
-    end
-
-    if not this.stack_size[player.index] then
-        this.stack_size[player.index] = 1
-    end
-
-    if not this.total_slots[player.index] then
-        this.total_slots[player.index] = 50
-    end
-
-    if not mod(player)[main_button_name] then
-        create_button(player)
-    end
+    create_button(player)
 end
 
 local function tick()
-    update_chest()
+    update_containers()
     update_gui()
 end
 
@@ -577,10 +661,6 @@ end
 Gui.on_click(
     main_button_name,
     function (event)
-        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Portable Chest Main Button')
-        if is_spamming then
-            return
-        end
         local player = game.get_player(event.player_index)
         if not player or not player.valid or not player.character then
             return
@@ -589,13 +669,25 @@ Gui.on_click(
         local screen = player.gui.screen
         local main_frame = screen[main_frame_name]
         if main_frame and main_frame.valid then
-            clear_gui(player)
+            Gui.clear_all_screen_frames(player)
         else
+            Gui.clear_all_active_frames(player)
             draw_main_frame(player)
         end
     end
 )
 
+Gui.on_click(
+    close_name,
+    function (event)
+        local player = game.get_player(event.player_index)
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        Gui.clear_all_screen_frames(player)
+    end
+)
 Gui.on_value_changed(
     stack_slider_name,
     function (event)
@@ -616,9 +708,10 @@ Gui.on_value_changed(
         local screen = player.gui.screen
         local main_frame = screen[main_frame_name]
         if main_frame and main_frame.valid then
-            this.stack_size[player.index] = element.slider_value
-            stack_value.caption = 'Stack Size: ' .. this.stack_size[player.index] .. ' '
-            this.inf_gui[player.index].updated = false
+            local container = fetch_container(player.index)
+            container.stack_size = element.slider_value
+            stack_value.caption = 'Stack Size: ' .. container.stack_size .. ' '
+            container.gui.updated = false
         end
     end
 )
@@ -637,47 +730,33 @@ Gui.on_checked_state_changed(
 
         local screen = player.gui.screen
         local main_frame = screen[main_frame_name]
-        if main_frame and main_frame.valid then
-            this.inf_gui[player.index].delete_mode = element.state
-            this.inf_gui[player.index].updated = false
+        local container = fetch_container(player.index)
+        if container and main_frame and main_frame.valid then
+            container.gui.delete_mode = element.state
+            container.gui.updated = false
         end
     end
 )
 
-commands.add_command(
-    'open_stash',
-    'Opens a players private stash!',
-    function (cmd)
-        local player = game.player
-
-        if not validate_player(player) then
+Commands.new('open_stash', 'Opens a players private stash!')
+    :require_role('portable_chest')
+    :callback(function (player, target_player)
+        if not target_player or not target_player.valid then
+            player.print('Please type a valid player name.', Color.warning)
             return
         end
-
-        if not cmd.parameter then
-            return
-        end
-        local target_player = game.players[cmd.parameter]
 
         if target_player == player then
-            return player.print('Cannot open self.', { color = Color.warning })
+            return player.print('Cannot open self.', Color.warning)
         end
 
         if target_player.admin then
             return
         end
 
-        if target_player and target_player.valid then
-            local chest_id = this.player_chests[target_player.index].chest_id
-            if not chest_id then
-                return
-            end
-            draw_main_frame(player, target_player, chest_id)
-        else
-            player.print('Please type a valid player name.', { color = Color.warning })
-        end
+        draw_main_frame(player, target_player)
     end
-)
+    )
 
 function Public.ores_only(value)
     if value then
@@ -686,6 +765,10 @@ function Public.ores_only(value)
         this.ores_only = false
     end
     return this.ores_only
+end
+
+function Public.remove_player(index)
+    this.main_containers[index] = nil
 end
 
 function Public.allow_barrels(value)
@@ -697,12 +780,50 @@ function Public.allow_barrels(value)
     return this.allow_barrels
 end
 
+local reassign_settings_button =
+    Token.register(
+        function (data)
+            local player_index = data.player_index
+            local player = game.get_player(player_index)
+            if player and player.valid then
+                create_button(player)
+            end
+        end
+    )
+
+Event.add(
+    ServerCommands.events.on_role_change,
+    function (event)
+        Task.set_timeout_in_ticks(10, reassign_settings_button, { player_index = event.player_index })
+    end
+)
+
 Event.on_nth_tick(10, tick)
 Event.add(defines.events.on_gui_click, gui_click)
-Event.add(defines.events.on_gui_closed, gui_closed)
-Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_player_created, on_player_joined_game)
 Event.add(defines.events.on_gui_elem_changed, on_gui_elem_changed)
 Event.add(defines.events.on_pre_player_left_game, on_pre_player_left_game)
 Event.add(defines.events.on_player_died, on_player_died)
+Event.add(
+    defines.events.on_player_removed,
+    function (event)
+        Public.remove_player(event.player_index)
+    end
+)
+
+Event.add(
+    defines.events.on_gui_closed,
+    function (event)
+        local player = game.get_player(event.player_index)
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        clear_gui(player)
+    end
+)
+
+Public.create_player = add_object
+Public.create_button = create_button
 
 return Public
