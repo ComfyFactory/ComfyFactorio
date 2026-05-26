@@ -1577,6 +1577,9 @@ function Public.toggle_auto(icw, player)
 end
 
 function Public.draw_minimap(icw, player, surface, position)
+    if not ICW.get('icw_minimap_enabled') then
+        return
+    end
     if not (surface and surface.valid) then
         return
     end
