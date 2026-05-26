@@ -20,6 +20,41 @@ local immunity_spawner =
         end
     )
 
+local slowly_spawn_biters_token =
+    Token.register(
+        function (data)
+            local surface = data.surface
+            if not surface or not surface.valid then
+                return
+            end
+            if not data.position then
+                return
+            end
+            local position = { data.position.x + (-4 + math.random(0, 8)), data.position.y + (-4 + math.random(0, 8)) }
+            local biter
+            if math.random(1, 4) == 1 then
+                biter = surface.create_entity(
+                    {
+                        name = Public.wave_defense_roll_spitter_name(),
+                        position = position,
+                        force = 'enemy'
+                    }
+                )
+            else
+                biter = surface.create_entity(
+                    {
+                        name = Public.wave_defense_roll_biter_name(),
+                        position = position,
+                        force = 'enemy'
+                    }
+                )
+            end
+            if biter and biter.valid then
+                raise(ServerCommands.events.on_entity_created, { entity = biter, boss_unit = false })
+            end
+        end
+    )
+
 local function is_boss(entity)
     local unit_number = entity.unit_number
     local biter_health_boost_units = BiterHealthBooster.get('biter_health_boost_units')
@@ -433,29 +468,13 @@ local function spawn_unit_spawner_inhabitants(entity)
         count = 128
     end
     Public.wave_defense_set_unit_raffle(wave_number)
+    local tick_to_spawn = 10
     for _ = 1, count, 1 do
-        local position = { entity.position.x + (-4 + math.random(0, 8)), entity.position.y + (-4 + math.random(0, 8)) }
-        local biter
-        if math.random(1, 4) == 1 then
-            biter = entity.surface.create_entity(
-                {
-                    name = Public.wave_defense_roll_spitter_name(),
-                    position = position,
-                    force = 'enemy'
-                }
-            )
-        else
-            biter = entity.surface.create_entity(
-                {
-                    name = Public.wave_defense_roll_biter_name(),
-                    position = position,
-                    force = 'enemy'
-                }
-            )
+        tick_to_spawn = tick_to_spawn + random(1, 10)
+        if tick_to_spawn > 200 then
+            tick_to_spawn = 10
         end
-        if biter and biter.valid then
-            raise(ServerCommands.events.on_entity_created, { entity = biter, boss_unit = false })
-        end
+        Task.set_timeout_in_ticks(tick_to_spawn, slowly_spawn_biters_token, { surface = entity.surface, position = entity.position })
     end
 end
 

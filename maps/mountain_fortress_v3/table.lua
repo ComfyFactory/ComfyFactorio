@@ -675,6 +675,7 @@ function Public.reset_main_table()
     this.validate_spider = {}
     this.check_afk_players = true
     this.winter_mode = false
+    this.icw_minimap_enabled = false
     this.sent_to_discord = false
     this.send_mvp_to_discord = false
     this.decoratives_generated = nil

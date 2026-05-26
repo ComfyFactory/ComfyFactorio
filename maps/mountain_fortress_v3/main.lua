@@ -404,7 +404,7 @@ function Public.move_players(current_task)
     end
 
     local players = Public.get('players')
-    Core.iter_players(function (player)
+    Core.iter_players_all(function (player)
         if not player.connected then
             player.clear_items_inside()
             players[player.index] = nil
@@ -418,9 +418,9 @@ function Public.move_players(current_task)
         if current_task.surface_name == 'init' then
             player.zoom = 0.1
         end
+        player.clear_items_inside()
 
         if player.controller_type == defines.controllers.god or player.controller_type == defines.controllers.spectator then
-            player.clear_items_inside()
             player.set_controller { type = defines.controllers.god }
             player.create_character()
             Event.raise(
