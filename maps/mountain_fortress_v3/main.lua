@@ -404,15 +404,16 @@ function Public.move_players(current_task)
     end
 
     local players = Public.get('players')
-    Core.iter_players_all(function (player)
+    Core.iter_players(function (player)
         if not player.connected then
             player.clear_items_inside()
             players[player.index] = nil
             Session.clear_player(player)
             Server.output_script_data('Removing offline player from init task: ' .. player.name)
-            game.remove_offline_players({ player })
         end
     end)
+
+    game.remove_offline_players()
 
     Core.iter_connected_players(function (player)
         if current_task.surface_name == 'init' then
