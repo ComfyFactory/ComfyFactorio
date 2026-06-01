@@ -1250,7 +1250,7 @@ local function process_entity_on_boat(
 		if fluid_entity_tracking and name ~= 'pipe' and name ~= 'pipe-to-ground' and e.fluidbox and #e.fluidbox > 0 then
 			for fi = 1, #e.fluidbox do
 				local fluid = e.fluidbox[fi]
-				if fluid then
+				if fluid and fluid.amount and fluid.amount > 0 then
 					if not saved_fluids then saved_fluids = {} end
 					saved_fluids[fi] = { name = fluid.name, amount = fluid.amount, temperature = fluid.temperature }
 				end
