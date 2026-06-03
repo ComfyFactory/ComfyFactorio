@@ -799,7 +799,7 @@ function Public.create_room_surface(icw, unit_number)
     end
 
     exclude_surface(surface)
-    for _, tile in pairs(surface.find_tiles_filtered({ area = { { -2, -2 }, { 2, 2 } } })) do
+    for _, tile in pairs(surface.find_tiles_filtered({ area = { { -80, -80 }, { 80, 80 } } })) do
         surface.set_tiles({ { name = out_of_map_tile, position = tile.position } }, true)
     end
     icw.surfaces[#icw.surfaces + 1] = surface
