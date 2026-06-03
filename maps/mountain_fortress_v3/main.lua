@@ -531,7 +531,7 @@ function Public.pre_init_task(current_task)
     WD.set('spawn_position', { x = 0, y = 84 })
     WD.set('game_lost', true)
 
-    Core.iter_players(function (player)
+    for _, player in pairs(game.players) do
         Score.init_player_table(player, true)
         Misc.insert_all_items(player)
         Modifiers.reset_player_modifiers(player)
@@ -543,7 +543,7 @@ function Public.pre_init_task(current_task)
         Event.raise(Public.events.reset_map, { player_index = player.index })
         Public.add_player_to_permission_group(player, 'init_island', true)
         player.print(mapkeeper .. ' Map is resetting, please wait a moment. All GUI buttons are disabled at the moment.')
-    end)
+    end
 
     Public.reset_func_table()
     RPG.reset_table()

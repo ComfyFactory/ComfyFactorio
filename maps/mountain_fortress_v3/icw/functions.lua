@@ -117,7 +117,7 @@ local size_of_debris = #fallout_debris
 
 local function get_offset(icw, surface, offset)
     if not icw.default_surface then
-        return { x = 0, y = 0 }
+        return { x = 70, y = 0 }
     end
     local position =
     {
