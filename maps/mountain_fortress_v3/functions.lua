@@ -1286,7 +1286,11 @@ Public.magic_item_crafting_callback =
             end
 
             local quality_buildings = Public.get_stateful('quality_buildings')
-            local quality = quality_buildings or 'normal'
+            local quality = 'normal'
+
+            if random(1, 32) == 1 then
+                quality = quality_buildings or 'normal'
+            end
 
             -- if not Public.has_correct_quality_unlocked(quality) then
             --     quality = 'normal'
@@ -1377,7 +1381,7 @@ Public.magic_item_crafting_callback_weighted =
             end
 
             local quality_buildings = Public.get_stateful('quality_buildings')
-            local quality = quality_buildings or 'normal'
+            local quality = 'normal'
 
             if random(1, 32) == 1 then
                 quality = quality_buildings or 'normal'
