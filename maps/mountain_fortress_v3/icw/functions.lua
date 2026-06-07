@@ -117,7 +117,7 @@ local size_of_debris = #fallout_debris
 
 local function get_offset(icw, surface, offset)
     if not icw.default_surface then
-        return { x = 0, y = 0 }
+        return { x = 70, y = 0 }
     end
     local position =
     {
@@ -763,7 +763,7 @@ function Public.kill_wagon(icw, entity)
     Public.request_reconstruction()
 end
 
-function Public.create_room_surface(icw, unit_number)
+function Public.create_room_surface(icw, unit_number, position)
     local current_planet = WPT.get_planet()
     if game.surfaces[current_planet] and icw.default_surface then
         return game.surfaces[current_planet]
@@ -774,7 +774,7 @@ function Public.create_room_surface(icw, unit_number)
     end
     local map_gen_settings =
     {
-        ['width'] = 2,
+        ['width'] = 64,
         ['height'] = 2,
         ['water'] = 0,
         ['starting_area'] = 1,
@@ -791,7 +791,7 @@ function Public.create_room_surface(icw, unit_number)
     surface.no_enemies_mode = true
     surface.freeze_daytime = true
     surface.daytime = 0.1
-    surface.request_to_generate_chunks({ 16, 16 }, 1)
+    surface.request_to_generate_chunks(position, 2)
     surface.force_generate_chunk_requests()
 
     if ServerCommands.is_dev_server() then
@@ -799,7 +799,7 @@ function Public.create_room_surface(icw, unit_number)
     end
 
     exclude_surface(surface)
-    for _, tile in pairs(surface.find_tiles_filtered({ area = { { -2, -2 }, { 2, 2 } } })) do
+    for _, tile in pairs(surface.find_tiles_filtered({ area = { { position.x - 200, position.y - 50 }, { position.x + 50, position.y + 200 } } })) do
         surface.set_tiles({ { name = out_of_map_tile, position = tile.position } }, true)
     end
     icw.surfaces[#icw.surfaces + 1] = surface
@@ -995,7 +995,7 @@ function Public.create_wagon(icw, created_entity, quality_areas)
     local wagon = icw.wagons[created_entity.unit_number]
     icw.offsets = icw.offsets + icw.offset_increment
 
-    wagon.surface = Public.create_room_surface(icw, created_entity.unit_number)
+    wagon.surface = Public.create_room_surface(icw, created_entity.unit_number, position)
     Public.create_wagon_room(icw, icw.wagons[created_entity.unit_number])
 
     Public.request_reconstruction()
@@ -1577,6 +1577,9 @@ function Public.toggle_auto(icw, player)
 end
 
 function Public.draw_minimap(icw, player, surface, position)
+    if not ICW.get('icw_minimap_enabled') then
+        return
+    end
     if not (surface and surface.valid) then
         return
     end

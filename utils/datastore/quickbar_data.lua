@@ -53,17 +53,22 @@ local function apply_logistic_network(player, saved_data)
     if player.get_requester_point() then
         if saved_data[1] and (saved_data[1].name or not saved_data[1].group) then
             local old_section = player.get_requester_point().get_section(1)
+            local has_data = false
             if old_section then
-                old_section.group = 'Migrated from old format'
-                old_section.active = true
                 for i, slot in pairs(saved_data) do
                     if slot and (slot.name or slot) and check_if_item_exists(slot.name or slot) then
+                        has_data = true
                         local item = prototypes.item[slot.name or slot]
                         local item_stack = { min = slot.min or 1, max = slot.max or 1, value = { comparator = "=", name = slot.name or slot, quality = slot.quality or "normal", type = slot.type or item.type or nil } }
                         pcall(old_section.set_slot, i, item_stack)
                     end
                 end
             end
+            if has_data then
+                old_section.group = 'Migrated from old format'
+                old_section.active = true
+            end
+
             return true
         else
             for index, section in pairs(saved_data) do

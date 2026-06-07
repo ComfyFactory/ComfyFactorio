@@ -142,6 +142,16 @@ function Public.iter_players(callback)
     end
 end
 
+--- Iterates over all players
+---@param callback function
+function Public.iter_players_all(callback)
+    local players = game.players
+    for i = 1, #players do
+        local player = players[i]
+        callback(player, i)
+    end
+end
+
 function Public.output_message(value, color, player)
     color = color and Color[color] or Color.white
 

@@ -88,6 +88,14 @@ function Public.create_surface(recreate)
 
     game.surfaces[starting_planet].map_gen_settings = map_gen_settings
 
+    if starting_planet ~= 'nauvis' then
+        local nauvis_map_gen_settings = game.surfaces.nauvis.map_gen_settings
+        nauvis_map_gen_settings.width = 64
+        nauvis_map_gen_settings.height = 64
+        game.surfaces.nauvis.map_gen_settings = nauvis_map_gen_settings
+        game.surfaces.nauvis.clear()
+    end
+
     if has_space_age then
         for planet, _ in pairs(planets) do
             if planet ~= 'nauvis' then

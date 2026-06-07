@@ -1039,6 +1039,12 @@ local function update_data()
                 data.gather_time_label.caption = time_left
             end
 
+            if not stateful.selected_objectives or not next(stateful.selected_objectives) then
+                Server.output_script_data('No selected objectives - this is a bug!')
+                Server.stop_scenario()
+                return
+            end
+
             if data.random_objectives and next(data.random_objectives) then
                 for index = 1, #data.random_objectives do
                     local frame_data = data.random_objectives[index]

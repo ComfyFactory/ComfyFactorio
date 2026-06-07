@@ -132,7 +132,7 @@ local function output_data(primary, secondary)
     local output = primary .. (secondary or '')
     local secs = server_time.secs
 
-    if not secs or not start_data or not start_data.output then
+    if not secs or not start_data or not start_data.output or not game.is_multiplayer() then
         return raw_print(output)
     end
 

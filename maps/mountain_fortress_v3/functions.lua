@@ -1288,9 +1288,10 @@ Public.magic_item_crafting_callback =
             local quality_buildings = Public.get_stateful('quality_buildings')
             local quality = quality_buildings or 'normal'
 
-            if not Public.has_correct_quality_unlocked(quality) then
-                quality = 'normal'
-            end
+            -- if not Public.has_correct_quality_unlocked(quality) then
+            --     quality = 'normal'
+            -- end
+
 
             local recipe = callback_data.recipe
             local fluid = callback_data.fluid
@@ -1382,9 +1383,9 @@ Public.magic_item_crafting_callback_weighted =
                 quality = quality_buildings or 'normal'
             end
 
-            if not Public.has_correct_quality_unlocked(quality) then
-                quality = 'normal'
-            end
+            -- if not Public.has_correct_quality_unlocked(quality) then
+            --     quality = 'normal'
+            -- end
 
             local recipe = stack.recipe
             local fluid = stack.fluid
@@ -3119,6 +3120,26 @@ function Public.on_player_respawned(event)
     if not player or not player.valid then
         return
     end
+
+    local starting_planet = Public.get_planet()
+    if starting_planet ~= 'nauvis' then
+        if player.physical_surface.name == 'nauvis' then
+            local active_surface_index = Public.get('active_surface_index')
+            local surface = game.surfaces[active_surface_index]
+            if not surface or not surface.valid then
+                return
+            end
+
+            local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
+            if pos then
+                player.teleport(pos, surface)
+            else
+                pos = game.forces.player.get_spawn_position(surface)
+                player.teleport(pos, surface)
+            end
+        end
+    end
+
     if player.character and player.character.valid then
         Task.set_timeout_in_ticks(15, boost_movement_speed_on_respawn, { player = player })
         player.character.health = round(player.character.health * health_values[random(1, #health_values)])

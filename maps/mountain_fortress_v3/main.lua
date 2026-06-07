@@ -52,6 +52,7 @@ local RobotLimits = require 'modules.robot_limits'
 local RocksYieldOreVeins = require 'maps.mountain_fortress_v3.rocks_yield_ore_veins'
 local SpawnersContainBiters = require 'modules.spawners_contain_biters'
 local Session = require 'utils.datastore.session_data'
+local RPG_Settings = require 'utils.datastore.rpg_data'
 local Core = require 'utils.core'
 
 local send_ping_to_channel = Discord.channel_names.mtn_channel
@@ -410,17 +411,18 @@ function Public.move_players(current_task)
             players[player.index] = nil
             Session.clear_player(player)
             Server.output_script_data('Removing offline player from init task: ' .. player.name)
-            game.remove_offline_players({ player })
         end
     end)
+
+    game.remove_offline_players()
 
     Core.iter_connected_players(function (player)
         if current_task.surface_name == 'init' then
             player.zoom = 0.1
         end
+        player.clear_items_inside()
 
         if player.controller_type == defines.controllers.god or player.controller_type == defines.controllers.spectator then
-            player.clear_items_inside()
             player.set_controller { type = defines.controllers.god }
             player.create_character()
             Event.raise(
@@ -530,7 +532,7 @@ function Public.pre_init_task(current_task)
     WD.set('spawn_position', { x = 0, y = 84 })
     WD.set('game_lost', true)
 
-    Core.iter_players(function (player)
+    for _, player in pairs(game.players) do
         Score.init_player_table(player, true)
         Misc.insert_all_items(player)
         Modifiers.reset_player_modifiers(player)
@@ -542,7 +544,7 @@ function Public.pre_init_task(current_task)
         Event.raise(Public.events.reset_map, { player_index = player.index })
         Public.add_player_to_permission_group(player, 'init_island', true)
         player.print(mapkeeper .. ' Map is resetting, please wait a moment. All GUI buttons are disabled at the moment.')
-    end)
+    end
 
     Public.reset_func_table()
     RPG.reset_table()
@@ -871,6 +873,8 @@ function Public.to_fortress(current_task)
             player.teleport({ x = position.x, y = position.y }, surface)
         end
         Public.add_player_to_permission_group(player, 'near_locomotive', true)
+
+        RPG_Settings.fetch_rpg_settings(player)
 
         if player.controller_type == defines.controllers.god or player.controller_type == defines.controllers.spectator then
             player.set_controller { type = defines.controllers.god }
