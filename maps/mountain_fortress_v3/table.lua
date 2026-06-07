@@ -458,6 +458,7 @@ Public.locomotive_warning_blueprint = [[
 0eNqNU1tu2zAQvMt+U4GfSa2rBAFBSWt5Eb5AUk5VQwfoQXqxnqRLOqFbxGirL2ofM7PD5QU6PaEPZBO0F6De2Qjt8wUijVbpHLPKILSAGvsUqG/QYhjnhjswHFWPsAggO+BXaNfLiwC0iRLhFab8zNJOpsPABeIDLhMlZVPTO9ORVckFEOBd5F5nMy/jNbvVw17A/H5iIm5LwWnZ4UmdiXu4MLIwKrp/PzP5TdWyLOKTmE0V44MbgzJGdRqb6FG94j0128N/qOkp9BMlybmhdh8pxCRvnqbZF0+LIKg6EjH/eHIxwRW9WATtKv8Yr0KxqYWf33+UgneqnDDI13G1oLDIs+KLlRSlp9SfoD0qHVFATM5Lr9VMdpTRTXaINUfMFybDqiQNhdW6hOX8yAbCnzwZpFP9qzw7PWX5fLk1ZtyQBxq163hiAUpr9ya907M/OTtXymuvfDdS4yC7ufpUapbcjOHTlCfGK4nbaDnkrDTK19i11WCMasyC4N4ibOsFRMNCm7rqrBf/vgdr3oM7iDvx72dzB/fLByoP3U3HIwb24lu2dlW//MTeKJT39bwWa7ER6xeOUULDfLfnzOayVwV+/7g57A6H/dN2v909bZblF9amX4U=]]
 
 function Public.reset_main_table()
+    Server.output_script_data('Resetting Mtn main table')
     -- @start
     this.default_surface = false
     this.space_age = script.active_mods['space-age'] or false
@@ -779,12 +780,11 @@ function Public.reset_main_table()
     Public.clear_platforms()
 
     for _, planet in pairs(game.planets) do
-        if planet.surface and planet.surface.name ~= stateful_settings.current_planet then
+        if planet.surface then
             Server.output_script_data('Clearing surface: ' .. planet.surface.name)
             planet.surface.clear()
         end
     end
-
 
     this.enforce_wave_200_before_collapse = true
 

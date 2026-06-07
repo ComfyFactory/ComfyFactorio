@@ -1288,9 +1288,10 @@ Public.magic_item_crafting_callback =
             local quality_buildings = Public.get_stateful('quality_buildings')
             local quality = quality_buildings or 'normal'
 
-            if not Public.has_correct_quality_unlocked(quality) then
-                quality = 'normal'
-            end
+            -- if not Public.has_correct_quality_unlocked(quality) then
+            --     quality = 'normal'
+            -- end
+
 
             local recipe = callback_data.recipe
             local fluid = callback_data.fluid
@@ -1382,9 +1383,9 @@ Public.magic_item_crafting_callback_weighted =
                 quality = quality_buildings or 'normal'
             end
 
-            if not Public.has_correct_quality_unlocked(quality) then
-                quality = 'normal'
-            end
+            -- if not Public.has_correct_quality_unlocked(quality) then
+            --     quality = 'normal'
+            -- end
 
             local recipe = stack.recipe
             local fluid = stack.fluid
