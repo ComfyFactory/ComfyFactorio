@@ -85,7 +85,7 @@ function Public.launch_rockets(expanse)
             local station = SA and expanse.space_platform.hub or expanse.nonspace_pad
             silo.launch_rocket({type = defines.cargo_destination.station, station = station})
         end
-
+    --/cc local station = storage.tokens.maps_expanse_main.space_platform.hub   local silo = storage.tokens.maps_expanse_main.rocket_silos[442260].entity    silo.launch_rocket({type = defines.cargo_destination.station, station = station})
     end
 end
 
@@ -144,6 +144,7 @@ local function tier4_object(expanse, surface, left_top, repeats)
                     surface.create_entity({name = 'crude-oil', position = pos, amount = 500000})
                 end
             end
+            return true
         elseif expanse.tiered_specials[4].unlocks == 2 then
             local pad = surface.create_entity({name = 'cargo-landing-pad', position = position, force = game.forces.player})
             pad.minable_flag = false
@@ -816,7 +817,7 @@ function Public.rocket_delivery(expanse, pod)
         if (req[key] or 0) > (expanse.missions[tier].delivered[key] or 0) then
             local used = math.min(req[key] - (expanse.missions[tier].delivered[key] or 0), item.count)
             expanse.missions[tier].delivered[key] = math.min((expanse.missions[tier].delivered[key] or 0) + item.count, req[key])
-            inventory.remove({name = item.name, count = used})
+            inventory.remove({name = item.name, quality = item.quality, count = used})
         end
     end
     script.raise_event(expanse.events.mission_gui_update, { tier = tier })
