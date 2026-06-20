@@ -85,7 +85,6 @@ function Public.launch_rockets(expanse)
             local station = SA and expanse.space_platform.hub or expanse.nonspace_pad
             silo.launch_rocket({type = defines.cargo_destination.station, station = station})
         end
-    --/cc local station = storage.tokens.maps_expanse_main.space_platform.hub   local silo = storage.tokens.maps_expanse_main.rocket_silos[442260].entity    silo.launch_rocket({type = defines.cargo_destination.station, station = station})
     end
 end
 
