@@ -72,7 +72,16 @@ local ammo_names =
     ['grenade'] = true,
     ['atomic-bomb'] = true,
     ['cliff-explosives'] = true,
-    ['rocket'] = true
+    ['rocket'] = true,
+    ['artillery-shell'] = true,
+    ['cannon-shell'] = true,
+    ['explosive-cannon-shell'] = true,
+    ['explosive-rocket'] = true,
+    ['explosive-uranium-cannon-shell'] = true,
+    ['flamethrower-ammo'] = true,
+    ['railgun-ammo'] = true,
+    ['tesla-ammo'] = true,
+    ['uranium-cannon-shell'] = true,
 }
 
 local chests =
