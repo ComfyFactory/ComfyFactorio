@@ -1548,7 +1548,7 @@ function Public.silo_insta_update()
 
 						if dynamic_data.rocket_silo_charged_bools and not dynamic_data.rocket_silo_charged_bools[i] then
 							dynamic_data.rocket_silo_charged_bools[i] = true
-							local inv = silo.get_inventory(defines.inventory.assembling_machine_input)
+							local inv = silo.get_inventory(defines.inventory.crafter_input)
 							inv.insert({ name = "processing-unit", count = 10 })
 							inv.insert({ name = "low-density-structure", count = 10 })
 							inv.insert({ name = "rocket-fuel", count = 10 })
