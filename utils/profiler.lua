@@ -102,7 +102,7 @@ if (debug.sethook) then
             return
         end
 
-        local create_profiler = script.create_profiler
+        local create_profiler = helpers.create_profiler
 
         Public.is_running = true
 
