@@ -897,9 +897,9 @@ local function spawn_cave_inhabitant(pos, target_position)
     end
     local biter = surface.create_entity { name = entity_name, position = p }
     if target_position then
-        biter.set_command({ type = defines.command.attack_area, destination = target_position, radius = 5, distraction = defines.distraction.by_anything })
+        biter.commandable.set_command({ type = defines.command.attack_area, destination = target_position, radius = 5, distraction = defines.distraction.by_anything })
     else
-        biter.set_command(
+        biter.commandable.set_command(
             { type = defines.command.attack_area, destination = game.forces['player'].get_spawn_position(surface), radius = 5, distraction = defines.distraction.by_anything }
         )
     end
@@ -1003,7 +1003,7 @@ local function darkness_events()
             local biters_found = game.surfaces[1].find_enemy_units(p.position, 12, 'player')
             if p.character then
                 for _, biter in pairs(biters_found) do
-                    biter.set_command({ type = defines.command.attack, target = p.character, distraction = defines.distraction.none })
+                    biter.commandable.set_command({ type = defines.command.attack, target = p.character, distraction = defines.distraction.none })
                 end
                 p.character.damage(math_random(storage.darkness_threat_level[p.name] * 2, storage.darkness_threat_level[p.name] * 3), 'enemy')
             end
@@ -1205,6 +1205,12 @@ local function on_entity_damaged(event)
 end
 
 local function on_entity_died(event)
+    if not event.entity then
+        return
+    end
+    if not event.entity.valid then
+        return
+    end
     if not rocks[event.entity.name] then
         return
     end
