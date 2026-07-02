@@ -1,5 +1,6 @@
 -- hunger module by mewmew --
 local Public = {}
+local Gui = require 'utils.gui'
 local P = require 'utils.player_modifiers'
 
 local starve_messages = { ' ran out of foodstamps.', ' starved.', ' should not have skipped breakfast today.' }
@@ -78,14 +79,30 @@ for x = max_buff_high, max_debuff_high, 1 do
 end
 
 local function create_hunger_gui(player)
-    if player.gui.top['hunger_frame'] then
-        player.gui.top['hunger_frame'].destroy()
+    local element
+    if Gui.get_mod_gui_top_frame() then
+        if player.gui.top['hunger_frame'] then
+            player.gui.top['hunger_frame'].destroy()
+        end
+        element = Gui.add_mod_button(player, { type = 'sprite-button', name = 'hunger_frame', caption = ' ', style = Gui.button_style })
+    else
+        if player.gui.top['hunger_frame'] then
+            player.gui.top['hunger_frame'].destroy()
+        end
+        element = player.gui.top.add { type = 'sprite-button', name = 'hunger_frame', caption = ' ' }
     end
-    local element = player.gui.top.add { type = 'sprite-button', name = 'hunger_frame', caption = ' ' }
+    if not element then
+        return
+    end
     element.style.font = 'default-bold'
-    element.style.minimal_height = 38
+    if Gui.get_mod_gui_top_frame() then
+        element.style.minimal_height = 36
+        element.style.maximal_height = 36
+    else
+        element.style.minimal_height = 38
+        element.style.maximal_height = 38
+    end
     element.style.minimal_width = 128
-    element.style.maximal_height = 38
     element.style.padding = 0
     element.style.margin = 0
     element.style.vertical_align = 'center'
@@ -93,14 +110,26 @@ local function create_hunger_gui(player)
 end
 
 local function update_hunger_gui(player)
-    if not player.gui.top['hunger_frame'] then
+    local element = player.gui.top['hunger_frame']
+    if Gui.get_mod_gui_top_frame() then
+        element = Gui.get_button_flow(player)['hunger_frame']
+    end
+    if not element then
         create_hunger_gui(player)
+        if Gui.get_mod_gui_top_frame() then
+            element = Gui.get_button_flow(player)['hunger_frame']
+        else
+            element = player.gui.top['hunger_frame']
+        end
+    end
+    if not element then
+        return
     end
     local str = tostring(storage.player_hunger[player.name])
     str = str .. '% '
     str = str .. player_hunger_stages[storage.player_hunger[player.name]]
-    player.gui.top['hunger_frame'].caption = str
-    player.gui.top['hunger_frame'].style.font_color = player_hunger_color_list[storage.player_hunger[player.name]]
+    element.caption = str
+    element.style.font_color = player_hunger_color_list[storage.player_hunger[player.name]]
 end
 
 function Public.hunger_update(player, food_value)

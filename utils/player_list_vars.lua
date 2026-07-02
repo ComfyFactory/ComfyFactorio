@@ -384,41 +384,57 @@ Public.gui_data = function (data)
         name = 'Online / [color=0.7,0.1,0.1]' .. tostring(#players - connected_players) .. '[/color]' .. ' Offline',
         func = function (player_list_panel_table, player)
             local supporter, supportertbl = Supporters.is_supporter(player.name)
+            local verified = SessionData.get_verified_player(player.name)
             local trusted = ''
-            local tooltip = ''
-            local minimap = '\nLeft-click to show this person on map! '
+            local tooltip_lines = {}
+            local show_minimap_tooltip = false
 
             if supporter then
                 if supportertbl.monthly then
                     trusted = '[color=yellow][DM][/color]'
-                    tooltip = '\nThis player is a monthly supporter.'
+                    tooltip_lines[#tooltip_lines + 1] = 'This player is a monthly supporter.'
                 else
                     trusted = '[color=yellow][D][/color]'
-                    tooltip = '\nThis player has supported us.'
+                    tooltip_lines[#tooltip_lines + 1] = 'This player has supported us.'
                 end
             end
 
-            local role_tooltip = ''
+            local role_tooltip
             local Role = SessionData.get_role(player.name)
             if Role and Role.name then
-                role_tooltip = '\nRole: [color=' .. Role.role_color.r .. ',' .. Role.role_color.g .. ',' .. Role.role_color.b .. ']' .. Role.name .. '[/color]'
+                role_tooltip = 'Role: [color=' .. Role.role_color.r .. ',' .. Role.role_color.g .. ',' .. Role.role_color.b .. ']' .. Role.name .. '[/color]'
             end
 
             if player.admin then
                 trusted = '[color=red][A][/color]' .. trusted
-                tooltip = 'This player is an admin of this server.' .. tooltip .. role_tooltip
+                tooltip_lines[#tooltip_lines + 1] = 'This player is an admin of this server.'
             elseif jailed[player.name] then
                 trusted = '[color=orange][J][/color]' .. trusted
-                tooltip = 'This player is currently jailed.' .. minimap .. tooltip .. role_tooltip
+                tooltip_lines[#tooltip_lines + 1] = 'This player is currently jailed.'
+                show_minimap_tooltip = true
+            elseif verified then
+                trusted = '[color=blue][V][/color]' .. trusted
+                tooltip_lines[#tooltip_lines + 1] = 'This player is verified.'
+                show_minimap_tooltip = true
             elseif play_table[player.name] then
                 trusted = '[color=green][T][/color]' .. trusted
-                tooltip = 'This player is trusted.' .. minimap .. tooltip .. role_tooltip
-            else
+                tooltip_lines[#tooltip_lines + 1] = 'This player is trusted.'
+                show_minimap_tooltip = true
+            elseif not play_table[player.name] and not player.admin then
                 trusted = '[color=black][U][/color]' .. trusted
-                tooltip = 'This player is not trusted.' .. minimap .. tooltip .. role_tooltip
+                tooltip_lines[#tooltip_lines + 1] = 'This player is not trusted.'
+                show_minimap_tooltip = true
             end
 
-            tooltip = tooltip .. '\nRight-click to view their inventory!'
+            if show_minimap_tooltip then
+                tooltip_lines[#tooltip_lines + 1] = 'Left-click to show this person on map!'
+            end
+            if role_tooltip then
+                tooltip_lines[#tooltip_lines + 1] = role_tooltip
+            end
+            tooltip_lines[#tooltip_lines + 1] = 'Right-click to view their inventory!'
+
+            local tooltip = table.concat(tooltip_lines, '\n')
 
             local caption
             if show_roles_in_list or player.admin then
