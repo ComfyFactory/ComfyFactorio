@@ -12,6 +12,7 @@ Public.uid = Token.uid
 Public.set_timeout_in_ticks = Task.set_timeout_in_ticks
 Public.set_duration_task = Task.set_duration_task
 Public.set_timeout_in_ticks_text = Task.set_timeout_in_ticks_text
+Public.set_timeout_in_ticks_text_to_player = Task.set_timeout_in_ticks_text_to_player
 Public.set_timeout = Task.set_timeout
 Public.queue_task = Task.queue_task
 Public.get_queue_speed = Task.get_queue_speed

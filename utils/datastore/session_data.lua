@@ -20,6 +20,8 @@ local default_role_index = 7
 local session_data_set = 'sessions'
 local roles_data_set = 'roles'
 local assigned_roles_data_set = 'assigned_roles'
+local verified_data_set = 'verified_users'
+local verified_users = {}
 local session = {}
 local online_track = {}
 local trusted = {}
@@ -46,7 +48,8 @@ Global.register(
         trusted = trusted,
         settings = settings,
         roles = roles,
-        assigned_roles = assigned_roles
+        assigned_roles = assigned_roles,
+        verified_users = verified_users
     },
     function (tbl)
         session = tbl.session
@@ -55,6 +58,7 @@ Global.register(
         settings = tbl.settings
         roles = tbl.roles
         assigned_roles = tbl.assigned_roles
+        verified_users = tbl.verified_users
     end
 )
 
@@ -233,6 +237,26 @@ local sync_assigned_roles_callback =
         end
     )
 
+--- Writes the data called back from the server into the verified_users table, clearing any previous entries
+local sync_verified_users_callback =
+    Token.register(
+        function (data)
+            if not data then
+                return
+            end
+            if not data.entries then
+                return
+            end
+
+            table.clear_table(verified_users)
+
+            for _, entry in pairs(data.entries) do
+                local name = entry.factorio_account_name
+                verified_users[name] = true
+            end
+        end
+    )
+
 --- Prints out game.tick to real hour/minute
 ---@param ticks int
 ---@param h int
@@ -345,7 +369,7 @@ end
 ---@param player? LuaPlayer
 ---@return table|boolean
 function Public.get_trusted_player(player)
-    return trusted and player and player.valid and trusted[player.name] or false
+    return Public.get_verified_player(player.name) or (trusted and player and player.valid and trusted[player.name] or false)
 end
 
 --- Set a player as trusted
@@ -374,6 +398,13 @@ function Public.get_session_player(player)
     end
 
     return session and player and player.valid and session[player.name] or false
+end
+
+--- Returns the table of verified_users
+---@param player_name string
+---@return table|boolean
+function Public.get_verified_player(player_name)
+    return verified_users[player_name] or false
 end
 
 --- Returns the table of settings
@@ -412,6 +443,11 @@ end
 --- Signals the server to retrieve the roles dataset
 function Public.sync_assigned_roles()
     Server.try_get_all_data(assigned_roles_data_set, sync_assigned_roles_callback)
+end
+
+--- Signals the server to retrieve the verified users dataset
+function Public.sync_verified_users()
+    Server.try_get_all_data(verified_data_set, sync_verified_users_callback)
 end
 
 --- Checks if a player has a given role
@@ -568,11 +604,22 @@ Server.on_data_set_changed(
     end
 )
 
+Server.on_data_set_changed(
+    verified_data_set,
+    function (data)
+        local entry = data.value
+        if entry and entry.factorio_account_name then
+            verified_users[entry.factorio_account_name] = true
+        end
+    end
+)
+
 Event.add(
     ServerCommands.events.on_server_started,
     function ()
         Public.sync_roles()
         Public.sync_assigned_roles()
+        Public.sync_verified_users()
     end
 )
 

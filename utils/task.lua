@@ -67,7 +67,29 @@ local delay_print_token =
                 color = Color.info
             end
 
-            game.print(text, color)
+            game.print(text, { color = color })
+        end
+    )
+
+local delay_print_to_player_token =
+    Token.register(
+        function (event)
+            local player = event.player
+            if not player or not player.valid then
+                return
+            end
+
+            local text = event.text
+            if not text then
+                return
+            end
+
+            local color = event.color
+            if not color then
+                color = Color.info
+            end
+
+            player.print(text, { color = color })
         end
     )
 
@@ -176,6 +198,23 @@ function Task.set_timeout_in_ticks_text(ticks, params)
     end
     local time = game.tick + ticks
     local callback = { time = time, func_token = delay_print_token, params = params }
+    PriorityQueue_push(callbacks, callback)
+end
+
+--- Allows you to set a timer (in ticks) after which the tokened function will be run with params given as an argument
+-- The params must contain a player parameter, which is a valid LuaPlayer
+-- Cannot be called before init
+-- @param ticks <number>
+-- @param params <any> the argument to send to the tokened function
+function Task.set_timeout_in_ticks_text_to_player(ticks, params)
+    if not game then
+        error('cannot call when game is not available', 2)
+    end
+    if not params or not params.player or not params.player.valid then
+        error('player is not valid or not provided', 2)
+    end
+    local time = game.tick + ticks
+    local callback = { time = time, func_token = delay_print_to_player_token, params = params }
     PriorityQueue_push(callbacks, callback)
 end
 

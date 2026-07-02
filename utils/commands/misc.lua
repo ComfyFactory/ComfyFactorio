@@ -471,7 +471,6 @@ Commands.new('delete_uncharted_chunks', 'Deletes all chunks that are not charted
 
 local function clear_corpses(cmd)
     local player
-    local trusted = Session.get_trusted_table()
     local param
     if cmd and cmd.player then
         player = cmd.player
@@ -485,7 +484,7 @@ local function clear_corpses(cmd)
         return
     end
     local p = player.print
-    if not trusted[player.name] then
+    if not Session.get_trusted_player(player) then
         if not player.admin then
             p('[ERROR] Only admins and trusted weebs are allowed to run this command!', { color = Color.fail })
             return

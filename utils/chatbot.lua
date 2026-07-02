@@ -40,7 +40,8 @@ local brain =
     },
     [5] =
     {
-        "If you're not trusted - ask an admin to trust you."
+        "Antigrief protection is active.",
+        "Some actions are restricted until player verifies on our Discord via /verify command or reaches trusted status automatically after 24 hours of total playtime."
     }
 }
 local links =

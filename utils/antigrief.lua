@@ -379,6 +379,45 @@ local function on_player_joined_game(event)
     end
 end
 
+local function on_player_created(event)
+    local player = game.get_player(event.player_index)
+    if not player or not player.valid then
+        return
+    end
+
+    local secs = Server.get_current_time()
+    if secs == nil or secs == false then
+        return
+    end
+
+    if not this.enabled then
+        return
+    end
+
+    if not Session.get_trusted_player(player) then
+        Task.set_timeout_in_ticks_text_to_player(150,
+            {
+                player = player,
+                text = 'Antigrief protection is active.',
+                color = Color.warning
+            })
+
+        Task.set_timeout_in_ticks_text_to_player(200,
+            {
+                player = player,
+                text = 'Some actions are restricted until you verify on our Discord via /verify command or reach trusted status automatically after 24 hours of total playtime.',
+                color = Color.warning
+            })
+
+        Task.set_timeout_in_ticks_text_to_player(250,
+            {
+                player = player,
+                text = 'Thanks for helping us keep the community safe!',
+                color = Color.warning
+            })
+    end
+end
+
 local function on_player_built_tile(event)
     if not this.enabled then
         return
@@ -1674,5 +1713,5 @@ Event.add(de.on_console_chat, on_console_chat)
 Event.add(de.on_player_muted, on_player_muted)
 Event.add(de.on_player_unmuted, on_player_unmuted)
 Event.add(de.on_robot_mined_entity, on_robot_mined_entity)
-
+Event.add(de.on_player_created, on_player_created)
 return Public
