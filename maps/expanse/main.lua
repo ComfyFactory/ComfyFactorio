@@ -307,7 +307,7 @@ local function on_chunk_generated(event)
                 end
                 generate_ore(surface, event.area.left_top)
                 for _, unit in pairs(surface.find_entities_filtered({ area = event.area, type = { 'unit', 'turret', 'unit-spawner', 'fish' }, force = { 'enemy', 'neutral' } })) do
-                    unit.disabled_by_script = false
+                    unit.disabled_by_script = true
                 end
             end
         end
@@ -341,7 +341,7 @@ local function on_area_cloned(event)
     local source_surface = event.source_surface
     local dest_surface = event.destination_surface
     for _, cloned_entity in pairs(dest_surface.find_entities(event.destination_area)) do
-        cloned_entity.disabled_by_script = true
+        cloned_entity.disabled_by_script = false
         if cloned_entity.type == 'unit-spawner' then
             Functions.spawn_units(cloned_entity)
         end

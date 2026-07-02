@@ -462,7 +462,7 @@ end
 
 local function create_chest(entity, player)
     if entity.type == 'container' then
-        entity.disabled_by_script = false
+        entity.disabled_by_script = true
     end
     local unit_number = entity.unit_number
 

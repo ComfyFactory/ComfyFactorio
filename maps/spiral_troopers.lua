@@ -579,7 +579,7 @@ local function on_built_entity(event)
             }
             local enemy_count = event.entity.surface.count_entities_filtered({ force = 'enemy', area = a, limit = 1 })
             if enemy_count > 0 then
-                event.entity.disabled_by_script = false
+                event.entity.disabled_by_script = true
                 if event.player_index then
                     local player = game.players[event.player_index]
                     player.print('The turret seems to be malfunctioning near those creatures.', { r = 0.75, g = 0.0, b = 0.0 })
@@ -593,7 +593,7 @@ local function on_entity_damaged(event)
 	for _, e in pairs(disabled_entities) do
 		if e == event.entity.name then
 			if event.entity.health <= event.final_damage_amount then
-				event.entity.disabled_by_script = true
+				event.entity.disabled_by_script = false
 				event.entity.die("enemy")
 			end
 		end

@@ -223,7 +223,7 @@ Event.add(
         local surface_name = Surface.get_surface_name()
 
         -- Move the player to the game surface immediately.
-        local pos = game.get_surface(surface_name).find_non_colliding_position('character', { x = 0, y = 0 }, 3, 0, true)
+        local pos = game.get_surface(surface_name).find_non_colliding_position('character', { x = 0, y = 0 }, 3, 0)
         if not pos then
             return
         end

@@ -175,7 +175,7 @@ local function toggle_render(container)
 end
 
 local function create_connection(entity, player)
-    entity.disabled_by_script = false
+    entity.disabled_by_script = true
     local unit_number = entity.unit_number
 
     if not does_exists(unit_number) then

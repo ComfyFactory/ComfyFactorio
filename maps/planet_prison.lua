@@ -627,7 +627,7 @@ local function init_game()
         if player.character == nil then
             player.set_controller({ type = defines.controllers.god })
             player.create_character()
-            player.character.disabled_by_script = false
+            player.character.disabled_by_script = true
         end
 
         local timer = Timers.set_timer(time, delay_move_player_token)
@@ -1074,7 +1074,7 @@ init_player = function (p, non_tp)
     p.force.set_surface_hidden('nauvis', true)
     local default_group = game.permissions.get_group('Default')
     default_group.add_player(p)
-    p.character.disabled_by_script = true
+    p.character.disabled_by_script = false
     redraw_gui(p)
     if not non_tp then
         do_spawn_point(p)

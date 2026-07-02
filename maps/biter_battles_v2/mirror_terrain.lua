@@ -117,14 +117,14 @@ local entity_copy_functions =
         if not e then
             return
         end
-        e.disabled_by_script = true
+        e.disabled_by_script = false
     end,
     ['container'] = function (surface, entity, target_position, force_name)
         local e = entity.clone({ position = target_position, surface = surface, force = force_name })
         if not e then
             return
         end
-        e.disabled_by_script = true
+        e.disabled_by_script = false
     end,
     ['fish'] = function (surface, entity, target_position)
         local mirror_entity = { name = entity.name, position = target_position }

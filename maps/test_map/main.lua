@@ -58,7 +58,7 @@ local function create_entity_grid(surface, start_x, start_y, entities)
                         force = 'player'
                     })
                 if entity and entity.valid then
-                    entity.disabled_by_script = false
+                    entity.disabled_by_script = true
                     if entity.type == 'unit' or entity.type == 'turret' then
                         if entity.force then
                             entity.force = 'neutral'

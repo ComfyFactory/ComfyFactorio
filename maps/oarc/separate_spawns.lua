@@ -176,11 +176,11 @@ function Public.SeparateSpawnsPlayerCreated(player_index, forced)
 
     if player.connected then
         if player.character and player.character.valid then
-            player.character.disabled_by_script = false
+            player.character.disabled_by_script = true
         else
             player.set_controller({ type = defines.controllers.god })
             player.create_character()
-            player.character.disabled_by_script = false
+            player.character.disabled_by_script = true
         end
     end
     if not ServerCommands.is_game_modded() then
@@ -234,7 +234,7 @@ function Public.find_unused_spawns(player, remove_player, forced)
         -- along with the map chunks being cleared.
         player.teleport({ x = 0, y = 0 }, surface_name)
         if player and player.character and player.character.valid then
-            player.character.disabled_by_script = true
+            player.character.disabled_by_script = false
         end
 
         -- Clear out global variables for that player
@@ -1056,7 +1056,7 @@ function Public.SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
     player.teleport(pos, surface_name)
 
     if player and player.character and player.character.valid then
-        player.character.disabled_by_script = true
+        player.character.disabled_by_script = false
     end
 
     -- Chart the area.
@@ -1087,9 +1087,9 @@ function Public.SendPlayerToSpawn(player)
 
     local dest = this.playerSpawns[player.name]
     if not dest then
-        pos = player.surface.find_non_colliding_position('character', { x = 0, y = 0 }, 3, 0, 5)
+        pos = player.surface.find_non_colliding_position('character', { x = 0, y = 0 }, 3, 0)
     else
-        pos = player.surface.find_non_colliding_position('character', dest, 3, 0, 5)
+        pos = player.surface.find_non_colliding_position('character', dest, 3, 0)
     end
     if (Public.DoesPlayerHaveCustomSpawn(player)) then
         if pos then
@@ -1098,17 +1098,17 @@ function Public.SendPlayerToSpawn(player)
             player.teleport(this.playerSpawns[player.name], player.surface)
         end
         if player and player.character and player.character.valid then
-            player.character.disabled_by_script = true
+            player.character.disabled_by_script = false
         end
     else
         if not dest then
-            player.teleport(player.surface.find_non_colliding_position('character', { x = 0, y = 0 }, 3, 0, 5),
+            player.teleport(player.surface.find_non_colliding_position('character', { x = 0, y = 0 }, 3, 0),
                 player.surface)
         else
-            player.teleport(player.surface.find_non_colliding_position('character', dest, 3, 0, 5), player.surface)
+            player.teleport(player.surface.find_non_colliding_position('character', dest, 3, 0), player.surface)
         end
         if player and player.character and player.character.valid then
-            player.character.disabled_by_script = true
+            player.character.disabled_by_script = false
         end
     end
 end
@@ -1124,7 +1124,7 @@ function Public.SendPlayerToRandomSpawn(player)
     if (rndSpawn == 0) then
         player.teleport(game.forces[this.main_force_name].get_spawn_position(surface_name), surface_name)
         if player and player.character and player.character.valid then
-            player.character.disabled_by_script = true
+            player.character.disabled_by_script = false
         end
     else
         counter = counter + 1
@@ -1132,7 +1132,7 @@ function Public.SendPlayerToRandomSpawn(player)
             if (counter == rndSpawn) then
                 player.teleport(spawn.pos)
                 if player and player.character and player.character.valid then
-                    player.character.disabled_by_script = true
+                    player.character.disabled_by_script = false
                 end
                 break
             end
@@ -1839,12 +1839,11 @@ function Public.SpawnOptsGuiClick(event)
         Gui.toggle_top_buttons(player, true)
         Gui.set_tab(player, "Spawn Controls", true)
         if player and player.character and player.character.valid then
-            player.character.disabled_by_script = true
+            player.character.disabled_by_script = false
         end
     elseif ((elemName == 'isolated_spawn_near') or (elemName == 'isolated_spawn_far')) then
         Gui.show_button_flow(player)
         BottomFrame.toggle_player_frame(player, true)
-        --game.permissions.get_group("Default").add_player(player)
         -- Create a new spawn point
         local newSpawn = { x = 0, y = 0 }
 
@@ -2035,7 +2034,7 @@ function Public.SharedSpwnOptsGuiClick(event)
                             Gui.toggle_top_buttons(joiningPlayer, true)
                             Gui.set_tab(joiningPlayer, module_name, false)
                             if joiningPlayer and joiningPlayer.character and joiningPlayer.character.valid then
-                                joiningPlayer.character.disabled_by_script = true
+                                joiningPlayer.character.disabled_by_script = false
                             end
                             return
                         else
@@ -2422,7 +2421,7 @@ function Public.SpawnCtrlGuiClick(event)
                 Gui.set_tab(joiningPlayer, module_name, false)
 
                 if joiningPlayer and joiningPlayer.character and joiningPlayer.character.valid then
-                    joiningPlayer.character.disabled_by_script = true
+                    joiningPlayer.character.disabled_by_script = false
                 end
             else
                 Utils.SendBroadcastMsg({ 'ms-player-left-while-joining', joinQueuePlayerChoice })
@@ -2939,8 +2938,6 @@ function Public.BuddySpawnRequestMenuClick(event)
         Gui.toggle_top_buttons(game.players[requesterName], false)
         Gui.set_tab(player, module_name, false)
         Gui.set_tab(game.players[requesterName], module_name, false)
-        --game.permissions.get_group("Default").add_player(player)
-        --game.permissions.get_group("Default").add_player(requesterName)
     end
 
     -- Check if player is cancelling the request.

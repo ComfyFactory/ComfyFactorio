@@ -172,7 +172,7 @@ local enemy_territory_token =
                                     else
                                         entity = surface.create_entity({ name = 'biter-spawner', force = 'decoratives', position = pos })
                                     end
-                                    entity.disabled_by_script = false
+                                    entity.disabled_by_script = true
                                     entity.destructible = false
                                 end
                             end

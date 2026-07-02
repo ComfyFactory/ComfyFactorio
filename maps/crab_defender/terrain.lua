@@ -76,7 +76,7 @@ local function enemy_territory(surface, left_top)
                             else
                                 entity = surface.create_entity({ name = 'biter-spawner', force = 'decoratives', position = pos })
                             end
-                            entity.disabled_by_script = false
+                            entity.disabled_by_script = true
                             entity.destructible = false
                         end
                     end

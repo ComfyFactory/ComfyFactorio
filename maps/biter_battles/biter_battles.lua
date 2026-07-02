@@ -1396,11 +1396,11 @@ local function on_tick()
 		if game.tick % 300 == 0 then
 			local i = storage.spawn_artillery["south"].get_inventory(defines.inventory.turret_ammo)
 			if i.get_item_count("artillery-shell") == 0 then
-				storage.spawn_artillery["south"].disabled_by_script = false
+				storage.spawn_artillery["south"].disabled_by_script = true
 				storage.spawn_artillery_south_activate = false
 			else
 				if storage.spawn_artillery_south_activate == true then
-					storage.spawn_artillery["south"].disabled_by_script = true
+					storage.spawn_artillery["south"].disabled_by_script = false
 				end
 				storage.spawn_artillery_south_activate = true
 			end

@@ -389,7 +389,7 @@ toggle_render = function (container)
 end
 
 local function create_container(entity, stack, player)
-    entity.disabled_by_script = false
+    entity.disabled_by_script = true
     local unit_number = entity.unit_number
 
     if not does_exists(unit_number) then
