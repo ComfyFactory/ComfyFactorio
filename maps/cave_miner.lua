@@ -16,6 +16,7 @@ require 'modules.biter_noms_you'
 require 'modules.rpg'
 local Map = require 'modules.map_info'
 local Event = require 'utils.event'
+local Gui = require 'utils.gui'
 local Hunger = require 'modules.hunger'
 
 local enable_fishbank_terminal = false
@@ -94,11 +95,27 @@ local function shuffle(tbl)
 end
 
 local function create_cave_miner_button(player)
-    if player.gui.top['caver_miner_stats_toggle_button'] then
-        player.gui.top['caver_miner_stats_toggle_button'].destroy()
+    local b
+    if Gui.get_mod_gui_top_frame() then
+        if player.gui.top['caver_miner_stats_toggle_button'] then
+            player.gui.top['caver_miner_stats_toggle_button'].destroy()
+        end
+        b = Gui.add_mod_button(player, { type = 'sprite-button', name = 'caver_miner_stats_toggle_button', sprite = 'utility/lua_snippet_tool_icon', style = Gui.button_style })
+    else
+        if player.gui.top['caver_miner_stats_toggle_button'] then
+            player.gui.top['caver_miner_stats_toggle_button'].destroy()
+        end
+        b = player.gui.top.add({ type = 'sprite-button', name = 'caver_miner_stats_toggle_button', sprite = 'utility/lua_snippet_tool_icon' })
     end
-    local b = player.gui.top.add({ type = 'sprite-button', name = 'caver_miner_stats_toggle_button', sprite = 'utility/lua_snippet_tool_icon' })
-    b.style.minimal_height = 38
+    if not b then
+        return
+    end
+    if Gui.get_mod_gui_top_frame() then
+        b.style.minimal_height = 36
+        b.style.maximal_height = 36
+    else
+        b.style.minimal_height = 38
+    end
     b.style.minimal_width = 38
     b.style.padding = 1
 end
@@ -143,6 +160,7 @@ local function create_cave_miner_stats_gui(player)
     }
 
     local frame = player.gui.top.add { type = 'frame', name = 'caver_miner_stats_frame' }
+    frame.style.height = 53
 
     local t = frame.add { type = 'table', column_count = 11 }
 
@@ -199,6 +217,7 @@ local function create_cave_miner_stats_gui(player)
     end
     stat_numbers[1].style.minimal_width = 9 * string.len(tostring(storage.rocks_yield_ore['ores_mined']))
     stat_numbers[2].style.minimal_width = 9 * string.len(tostring(storage.rocks_yield_ore['rocks_broken']))
+    frame.style.top_padding = 10
 end
 
 local function refresh_gui()

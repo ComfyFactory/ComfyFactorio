@@ -127,26 +127,57 @@ local function get_one_punch_chance(player)
 end
 
 local function draw_gui_char_button(player)
-    if player.gui.top.rpg then
+    local b
+    if Tabs.get_mod_gui_top_frame() then
+        if player.gui.top.rpg then
+            player.gui.top.rpg.destroy()
+        end
+        if Tabs.get_button_flow(player).rpg then
+            return
+        end
+        b = Tabs.add_mod_button(player, { type = 'sprite-button', name = 'rpg', caption = 'CHAR', style = Tabs.button_style })
+    else
+        if player.gui.top.rpg then
+            return
+        end
+        b = player.gui.top.add({ type = 'sprite-button', name = 'rpg', caption = 'CHAR' })
+    end
+    if not b then
         return
     end
-    local b = player.gui.top.add({ type = 'sprite-button', name = 'rpg', caption = 'CHAR' })
     b.style.font_color = { 165, 165, 165 }
     b.style.font = 'heading-1'
-    b.style.minimal_height = 38
+    if Tabs.get_mod_gui_top_frame() then
+        b.style.minimal_height = 36
+        b.style.maximal_height = 36
+    else
+        b.style.minimal_height = 38
+    end
     b.style.minimal_width = 60
     b.style.padding = 0
     b.style.margin = 0
 end
 
 local function update_char_button(player)
-    if not player.gui.top.rpg then
+    local b = player.gui.top.rpg
+    if Tabs.get_mod_gui_top_frame() then
+        b = Tabs.get_button_flow(player).rpg
+    end
+    if not b then
         draw_gui_char_button(player)
+        if Tabs.get_mod_gui_top_frame() then
+            b = Tabs.get_button_flow(player).rpg
+        else
+            b = player.gui.top.rpg
+        end
+    end
+    if not b then
+        return
     end
     if rpg_t[player.index].points_left > 0 then
-        player.gui.top.rpg.style.font_color = { 245, 0, 0 }
+        b.style.font_color = { 245, 0, 0 }
     else
-        player.gui.top.rpg.style.font_color = { 175, 175, 175 }
+        b.style.font_color = { 175, 175, 175 }
     end
 end
 
