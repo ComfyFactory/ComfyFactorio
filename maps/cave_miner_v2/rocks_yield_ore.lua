@@ -1,4 +1,5 @@
 --luacheck: ignore
+local Event = require 'utils.event'
 local Functions = require 'maps.cave_miner_v2.functions'
 
 local max_spill = 60
@@ -132,27 +133,27 @@ local function on_player_mined_entity(event)
     entity.destroy()
 
     if ore_amount > max_spill then
-        player.surface.spill_item_stack(position, { name = ore, count = max_spill }, true)
+        player.surface.spill_item_stack({ position = position, stack = { name = ore, count = max_spill }, enable_looted = true })
         ore_amount = ore_amount - max_spill
         local inserted_count = player.insert({ name = ore, count = ore_amount })
         ore_amount = ore_amount - inserted_count
         if ore_amount > 0 then
-            player.surface.spill_item_stack(position, { name = ore, count = ore_amount }, true)
+            player.surface.spill_item_stack({ position = position, stack = { name = ore, count = ore_amount }, enable_looted = true })
         end
     else
-        player.surface.spill_item_stack(position, { name = ore, count = ore_amount }, true)
+        player.surface.spill_item_stack({ position = position, stack = { name = ore, count = ore_amount }, enable_looted = true })
     end
 
     if stone_amount > max_spill then
-        player.surface.spill_item_stack(position, { name = 'stone', count = max_spill }, true)
+        player.surface.spill_item_stack({ position = position, stack = { name = 'stone', count = max_spill }, enable_looted = true })
         stone_amount = stone_amount - max_spill
         local inserted_count = player.insert({ name = 'stone', count = stone_amount })
         stone_amount = stone_amount - inserted_count
         if stone_amount > 0 then
-            player.surface.spill_item_stack(position, { name = 'stone', count = stone_amount }, true)
+            player.surface.spill_item_stack({ position = position, stack = { name = 'stone', count = stone_amount }, enable_looted = true })
         end
     else
-        player.surface.spill_item_stack(position, { name = 'stone', count = stone_amount }, true)
+        player.surface.spill_item_stack({ position = position, stack = { name = 'stone', count = stone_amount }, enable_looted = true })
     end
 end
 
@@ -183,11 +184,11 @@ local function on_entity_died(event)
 
     local count = math_random(7, 15)
     storage.rocks_yield_ore['ores_mined'] = storage.rocks_yield_ore['ores_mined'] + count
-    surface.spill_item_stack(pos, { name = ore, count = count }, true)
+    surface.spill_item_stack({ position = pos, stack = { name = ore, count = count }, enable_looted = true })
 
     count = math_random(2, 8)
     storage.rocks_yield_ore['ores_mined'] = storage.rocks_yield_ore['ores_mined'] + count
-    surface.spill_item_stack(pos, { name = 'stone', count = math_random(1, 3) }, true)
+    surface.spill_item_stack({ position = pos, stack = { name = 'stone', count = math_random(1, 3) }, enable_looted = true })
 
     storage.rocks_yield_ore['rocks_broken'] = storage.rocks_yield_ore['rocks_broken'] + 1
 end
@@ -208,7 +209,6 @@ local function on_init()
     end
 end
 
-local Event = require 'utils.event'
 Event.on_init(on_init)
 Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)

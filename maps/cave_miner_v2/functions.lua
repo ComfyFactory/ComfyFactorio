@@ -309,7 +309,7 @@ Public.mining_events =
     {
         function (_, entity, _)
             if math.random(1, 8) == 1 then
-                entity.surface.spill_item_stack(entity.position, { name = 'raw-fish', count = 1 }, true)
+                entity.surface.spill_item_stack({ position = entity.position, stack = { name = 'raw-fish', count = 1 }, enable_looted = true })
             end
         end,
         350000,
@@ -542,7 +542,7 @@ Public.on_entity_died =
         local position = entity.position
         local surface = entity.surface
         if math.random(1, 8) == 1 then
-            surface.spill_item_stack(position, { name = 'raw-fish', count = 1 }, true)
+            surface.spill_item_stack({ position = position, stack = { name = 'raw-fish', count = 1 }, enable_looted = true })
         end
     end,
     ['unit-spawner'] = function (_, entity)
