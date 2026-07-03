@@ -424,13 +424,13 @@ local function validate_args(data)
     local get_offender_player = game.get_player(offender)
 
     if not validate_entity(get_offender_player) then
-        Utils.print_to(player, module_name .. 'No valid player given. Reason is no longer required.')
+        Utils.print_to(player, module_name .. 'No valid player given. Reason is no longer required in this command context.')
         Utils.print_to(player, module_name .. 'Valid input: /jail ' .. player.name)
         return false
     end
 
     if not offender or not get_offender_player then
-        Utils.print_to(player, module_name .. 'No valid player given. Reason is no longer required.')
+        Utils.print_to(player, module_name .. 'No valid player given. Reason is no longer required in this command context.')
         Utils.print_to(player, module_name .. 'Valid input: /jail ' .. player.name)
         return false
     end
@@ -490,7 +490,7 @@ local function validate_args(data)
         return false
     end
 
-    if cmd == 'jail' and message and string.len(message) <= 10 then
+    if cmd == 'jail' and message and string.len(message) <= 20 then
         Utils.print_to(player, module_name .. 'Reason is too short.')
         return false
     end
@@ -549,7 +549,7 @@ local function validate_server_args(data)
         return false
     end
 
-    if cmd == 'jail' and message and string.len(message) <= 10 then
+    if cmd == 'jail' and message and string.len(message) <= 20 then
         print(module_name .. 'Reason is too short.')
         return false
     end
@@ -1498,7 +1498,7 @@ Gui.on_click(
         end
 
         if jailed[offender] and jailed[offender].reason then
-            if string.len(jailed[offender].reason) <= 40 then
+            if string.len(jailed[offender].reason) <= 20 then
                 return Utils.print_to(player, module_name .. 'Reason is too short. Explain thoroughly why you jailed ' .. offender .. '!')
             end
 

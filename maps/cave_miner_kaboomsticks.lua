@@ -1665,46 +1665,53 @@ local circle_coordinates =
 }
 
 local function process_explosion_tile(pos, explosion_index, current_radius)
-    local surface = game.surfaces[storage.explosion_schedule[explosion_index].surface]
+    local schedule = storage.explosion_schedule and storage.explosion_schedule[explosion_index]
+    if not schedule or not schedule.surface or not pos then
+        return false
+    end
+    local surface = game.surfaces[schedule.surface]
+    if not surface or not surface.valid then
+        return false
+    end
     local target_entities = surface.find_entities_filtered({ area = { { pos.x - 0.5, pos.y - 0.5 }, { pos.x + 0.499, pos.y + 0.499 } } })
     local explosion_animation = 'explosion'
 
     local tile = surface.get_tile(pos.x, pos.y)
     if tile.name == 'out-of-map' then
-        if storage.explosion_schedule[explosion_index].damage_remaining >= out_of_map_tile_health then
+        if schedule.damage_remaining >= out_of_map_tile_health then
             explosion_animation = 'big-explosion'
             surface.set_tiles({ { name = 'dirt-5', position = pos } }, true)
         end
-        storage.explosion_schedule[explosion_index].damage_remaining = storage.explosion_schedule[explosion_index].damage_remaining - out_of_map_tile_health
+        schedule.damage_remaining = schedule.damage_remaining - out_of_map_tile_health
     else
         local decay_explosion = true
         for _, entity in pairs(target_entities) do
-            if entity.health then
+            if entity.valid and entity.health then
                 decay_explosion = false
             end
         end
         if decay_explosion then
-            storage.explosion_schedule[explosion_index].damage_remaining = storage.explosion_schedule[explosion_index].damage_remaining - empty_tile_damage_decay
+            schedule.damage_remaining = schedule.damage_remaining - empty_tile_damage_decay
         end
     end
 
     for _, entity in pairs(target_entities) do
-        if entity.health then
-            if entity.health < storage.explosion_schedule[explosion_index].damage_remaining then
+        if entity and entity.valid and entity.health then
+            if entity.health < schedule.damage_remaining then
                 explosion_animation = 'big-explosion'
                 if entity.health > 500 then
                     explosion_animation = 'big-artillery-explosion'
                 end
-                storage.explosion_schedule[explosion_index].damage_remaining = storage.explosion_schedule[explosion_index].damage_remaining - entity.health
+                schedule.damage_remaining = schedule.damage_remaining - entity.health
                 entity.damage(999999, 'player', 'explosion')
             else
-                storage.explosion_schedule[explosion_index].damage_remaining = storage.explosion_schedule[explosion_index].damage_remaining - entity.health
-                entity.damage(storage.explosion_schedule[explosion_index].damage_remaining, 'player', 'explosion')
+                entity.damage(schedule.damage_remaining, 'player', 'explosion')
+                schedule.damage_remaining = schedule.damage_remaining - entity.health
             end
         end
     end
 
-    if storage.explosion_schedule[explosion_index].damage_remaining > 5000 and current_radius < 2 then
+    if schedule.damage_remaining > 5000 and current_radius < 2 then
         if math.random(1, 2) == 1 then
             explosion_animation = 'big-explosion'
         else
@@ -1714,7 +1721,7 @@ local function process_explosion_tile(pos, explosion_index, current_radius)
 
     surface.create_entity({ name = explosion_animation, position = pos })
 
-    if storage.explosion_schedule[explosion_index].damage_remaining <= 0 then
+    if schedule.damage_remaining <= 0 then
         return false
     end
 
@@ -1722,11 +1729,19 @@ local function process_explosion_tile(pos, explosion_index, current_radius)
 end
 
 local function create_explosion_schedule(entity)
+    if not entity.valid then
+        return
+    end
     local inventory = defines.inventory.chest
     if entity.type == 'car' then
         inventory = defines.inventory.car_trunk
+    elseif entity.type == 'cargo-wagon' then
+        inventory = defines.inventory.cargo_wagon
     end
     local i = entity.get_inventory(inventory)
+    if not i then
+        return
+    end
     local explosives_amount = i.get_item_count('explosives')
     if explosives_amount < 1 then
         return
@@ -1756,6 +1771,9 @@ end
 
 local function on_entity_damaged(event)
     local entity = event.entity
+    if not entity.valid or not entity.health then
+        return
+    end
     if entity.type == 'container' or entity.type == 'logistic-container' then
         if math.random(1, 3) == 1 or entity.health <= 0 then
             create_explosion_schedule(event.entity)
@@ -1779,18 +1797,23 @@ local function on_tick()
         local tick = game.tick
         local explosion_schedule_is_alive = false
         for explosion_index = 1, #storage.explosion_schedule, 1 do
-            if #storage.explosion_schedule[explosion_index] > 0 then
+            local schedule = storage.explosion_schedule[explosion_index]
+            if schedule and schedule.surface then
                 explosion_schedule_is_alive = true
-                for radius = 1, #storage.explosion_schedule[explosion_index], 1 do
-                    if storage.explosion_schedule[explosion_index][radius].trigger_tick == tick then
-                        for tile_index = 1, #storage.explosion_schedule[explosion_index][radius], 1 do
-                            local continue_explosion = process_explosion_tile(storage.explosion_schedule[explosion_index][radius][tile_index], explosion_index, radius)
+                for radius = 1, 23, 1 do
+                    if schedule[radius] and schedule[radius].trigger_tick == tick then
+                        for tile_index = 1, #schedule[radius], 1 do
+                            local pos = schedule[radius][tile_index]
+                            if not pos then
+                                break
+                            end
+                            local continue_explosion = process_explosion_tile(pos, explosion_index, radius)
                             if not continue_explosion then
                                 storage.explosion_schedule[explosion_index] = {}
                                 break
                             end
                         end
-                        if radius == #storage.explosion_schedule[explosion_index] then
+                        if radius == 23 then
                             storage.explosion_schedule[explosion_index] = {}
                         end
                         break
