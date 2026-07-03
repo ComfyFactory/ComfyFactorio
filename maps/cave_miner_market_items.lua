@@ -2,7 +2,6 @@ local items = {}
 items.spawn =
 {
     { price = { { name = 'raw-fish', count = 5 } }, offer = { type = 'give-item', item = 'rail', count = 4 } },
-    { price = { { name = 'raw-fish', count = 150 } }, offer = { type = 'give-item', item = 'infinity-chest', count = 1 } },
     { price = { { name = 'raw-fish', count = 5 } }, offer = { type = 'give-item', item = 'rail-signal', count = 2 } },
     { price = { { name = 'raw-fish', count = 5 } }, offer = { type = 'give-item', item = 'rail-chain-signal', count = 2 } },
     { price = { { name = 'raw-fish', count = 10 } }, offer = { type = 'give-item', item = 'train-stop' } },

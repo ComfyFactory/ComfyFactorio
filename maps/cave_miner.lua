@@ -19,7 +19,7 @@ local Event = require 'utils.event'
 local Gui = require 'utils.gui'
 local Hunger = require 'modules.hunger'
 
-local enable_fishbank_terminal = false
+local enable_fishbank_terminal = true
 local simplex_noise = require 'utils.math.simplex_noise'
 local market_items = require 'maps.cave_miner_market_items'
 local math_random = math.random
@@ -965,7 +965,7 @@ local function biter_attack_event()
     for _, player in pairs(game.connected_players) do
         if player.character then
             if player.character.driving == false then
-                local position = { x = player.position.x, y = player.position.y }
+                local position = { x = player.physical_position.x, y = player.physical_position.y }
                 local p = find_first_entity_spiral_scan(position, { 'huge-rock', 'big-rock', 'big-sand-rock' }, 32)
                 if p then
                     if p.x ^ 2 + p.y ^ 2 > spawn_dome_size then
@@ -998,9 +998,9 @@ local function darkness_events()
     for _, p in pairs(game.connected_players) do
         if storage.darkness_threat_level[p.name] > 4 then
             for _ = 1, 2 + storage.darkness_threat_level[p.name], 1 do
-                spawn_cave_inhabitant(p.position)
+                spawn_cave_inhabitant(p.physical_position)
             end
-            local biters_found = game.surfaces[1].find_enemy_units(p.position, 12, 'player')
+            local biters_found = game.surfaces[1].find_enemy_units(p.physical_position, 12, 'player')
             if p.character then
                 for _, biter in pairs(biters_found) do
                     biter.commandable.set_command({ type = defines.command.attack, target = p.character, distraction = defines.distraction.none })
@@ -1020,7 +1020,7 @@ local function darkness_checks()
         if p.character then
             p.character.disable_flashlight()
         end
-        local tile_distance_to_center = math.sqrt(p.position.x ^ 2 + p.position.y ^ 2)
+        local tile_distance_to_center = math.sqrt(p.physical_position.x ^ 2 + p.physical_position.y ^ 2)
         if tile_distance_to_center < math.sqrt(spawn_dome_size) then
             storage.darkness_threat_level[p.name] = 0
         else
@@ -1028,7 +1028,7 @@ local function darkness_checks()
                 storage.darkness_threat_level[p.name] = 0
             else
                 local light_source_entities =
-                    game.surfaces[1].find_entities_filtered { area = { { p.position.x - 12, p.position.y - 12 }, { p.position.x + 12, p.position.y + 12 } }, name = 'small-lamp' }
+                    game.surfaces[1].find_entities_filtered { area = { { p.physical_position.x - 12, p.physical_position.y - 12 }, { p.physical_position.x + 12, p.physical_position.y + 12 } }, name = 'small-lamp' }
                 for _, lamp in pairs(light_source_entities) do
                     local circuit = lamp.get_or_create_control_behavior()
                     if circuit then
@@ -1133,7 +1133,7 @@ local function on_pre_player_mined_item(event)
     end
 
     if event.entity.type == 'tree' then
-        surface.spill_item_stack({ position = player.position, stack = { name = 'raw-fish', count = math.random(1, 2) }, enable_looted = true })
+        surface.spill_item_stack({ position = player.physical_position, stack = { name = 'raw-fish', count = math.random(1, 2) }, enable_looted = true })
     end
 
     if event.entity.name == 'huge-rock' or event.entity.name == 'big-rock' or event.entity.name == 'big-sand-rock' then
@@ -1153,7 +1153,7 @@ local function on_pre_player_mined_item(event)
             Hunger.hunger_update(player, -1)
         end
 
-        surface.spill_item_stack({ position = player.position, stack = { name = 'raw-fish', count = math_random(1, 3) }, enable_looted = true })
+        surface.spill_item_stack({ position = player.physical_position, stack = { name = 'raw-fish', count = math_random(1, 3) }, enable_looted = true })
     end
 end
 
@@ -1298,7 +1298,7 @@ local function on_market_item_purchased(event)
         storage.fish_bank[player.name] = storage.fish_bank[player.name] + fish_removed
         player.print(fish_removed .. ' Fish deposited into your account. Your balance is ' .. storage.fish_bank[player.name] .. '.', { r = 0.10, g = 0.75, b = 0.5 })
         player.print(bank_messages[math_random(1, #bank_messages)], { r = 0.77, g = 0.77, b = 0.77 })
-        player.create_local_flying_text({ text = tostring(fish_removed .. ' Fish deposited'), position = player.position, color = { r = 0.10, g = 0.75, b = 0.5 } })
+        player.create_local_flying_text({ text = tostring(fish_removed .. ' Fish deposited'), position = player.physical_position, color = { r = 0.10, g = 0.75, b = 0.5 } })
     end
 
     if offer_index == 2 then
@@ -1327,7 +1327,7 @@ local function on_market_item_purchased(event)
         storage.fish_bank[player.name] = storage.fish_bank[player.name] - (fish_withdrawn + fee)
         player.print(fish_withdrawn .. ' Fish withdrawn from your account. Your balance is ' .. storage.fish_bank[player.name] .. '.', { r = 0.10, g = 0.75, b = 0.5 })
         player.print(bank_messages[math_random(1, #bank_messages)], { r = 0.77, g = 0.77, b = 0.77 })
-        player.create_local_flying_text({ text = tostring(fish_withdrawn .. ' Fish withdrawn'), position = player.position, color = { r = 0.10, g = 0.75, b = 0.5 } })
+        player.create_local_flying_text({ text = tostring(fish_withdrawn .. ' Fish withdrawn'), position = player.physical_position, color = { r = 0.10, g = 0.75, b = 0.5 } })
     end
 
     if offer_index == 3 then

@@ -19,6 +19,7 @@ local math_floor = math.floor
 local Global = require 'utils.global'
 local Tabs = require 'utils.gui'
 local P = require 'utils.player_modifiers'
+local Event = require 'utils.event'
 local visuals_delay = 1800
 local level_up_floating_text_color = { 0, 205, 0 }
 local xp_floating_text_color = { 157, 157, 157 }
@@ -26,10 +27,11 @@ local experience_levels = { 0 }
 for a = 1, 9999, 1 do
     experience_levels[#experience_levels + 1] = experience_levels[#experience_levels] + a * 8
 end
-local gain_info_tooltip = ({'rpg_gui.gain_info_tooltip'})
+local gain_info_tooltip = ({ 'rpg_gui.gain_info_tooltip' })
 
 local rpg_t = {}
-local rpg_frame_icons = {
+local rpg_frame_icons =
+{
     'entity/small-worm-turret',
     'entity/medium-worm-turret',
     'entity/big-worm-turret',
@@ -62,7 +64,8 @@ function Public.get_table()
     return rpg_t
 end
 
-local classes = {
+local classes =
+{
     ['engineer'] = { "rpg_gui.role_engineer" },
     ['strength'] = { "rpg_gui.role_strength" },
     ['magic'] = { "rpg_gui.role_magic" },
@@ -70,7 +73,8 @@ local classes = {
     ['vitality'] = { "rpg_gui.role_vitality" },
 }
 
-local xp_yield = {
+local xp_yield =
+{
     ['behemoth-biter'] = 16,
     ['behemoth-spitter'] = 16,
     ['behemoth-worm-turret'] = 64,
@@ -90,17 +94,18 @@ local xp_yield = {
     ['spitter-spawner'] = 64
 }
 
-local enemy_types = {
+local enemy_types =
+{
     ['unit'] = true,
     ['unit-spawner'] = true,
     ['turret'] = true
 }
 
 local function level_up_effects(player)
-    local position = { x = player.position.x - 0.75, y = player.position.y - 1 }
-    player.create_local_flying_text { text = '+LVL', position = player.position, color = level_up_floating_text_color, time_to_live = 120 }
+    local position = { x = player.physical_position.x - 0.75, y = player.physical_position.y - 1 }
+    player.create_local_flying_text { text = '+LVL', position = player.physical_position, color = level_up_floating_text_color, time_to_live = 120 }
     local b = 0.75
-    for a = 1, 5, 1 do
+    for _ = 1, 5, 1 do
         local p = { (position.x + 0.4) + (b * -1 + math_random(0, b * 20) * 0.1), position.y + (b * -1 + math_random(0, b * 20) * 0.1) }
         player.create_local_flying_text({ text = '✚', position = p, color = { 255, math_random(0, 100), 0 }, time_to_live = 120 })
     end
@@ -245,7 +250,7 @@ local function add_gui_stat(element, value, width)
     return e
 end
 
-local function add_gui_increase_stat(element, name, player, width)
+local function add_gui_increase_stat(element, name, player)
     local sprite = 'virtual-signal/signal-red'
     local symbol = '✚'
     if rpg_t[player.index].points_left <= 0 then
@@ -302,66 +307,66 @@ local function draw_gui(player, forced)
     local e = add_gui_stat(t, player.name, 200)
     e.style.font_color = player.chat_color
     e.style.font = 'default-large-bold'
-    local e = add_gui_stat(t, get_class(player), 200)
+    e = add_gui_stat(t, get_class(player), 200)
     e.style.font = 'default-large-bold'
 
     add_separator(frame, 400)
 
-    local t = frame.add({ type = 'table', column_count = 4 })
+    t = frame.add({ type = 'table', column_count = 4 })
     t.style.cell_padding = 1
 
-    add_gui_description(t, ({'rpg_gui.level_name'}), 80)
+    add_gui_description(t, ({ 'rpg_gui.level_name' }), 80)
     add_gui_stat(t, rpg_t[player.index].level, 80)
 
-    add_gui_description(t, ({'rpg_gui.experience_name'}), 100)
-    local e = add_gui_stat(t, math.floor(rpg_t[player.index].xp), 125)
+    add_gui_description(t, ({ 'rpg_gui.experience_name' }), 100)
+    e = add_gui_stat(t, math.floor(rpg_t[player.index].xp), 125)
     e.tooltip = gain_info_tooltip
 
     add_gui_description(t, ' ', 75)
     add_gui_description(t, ' ', 75)
 
-    add_gui_description(t, ({'rpg_gui.next_level_name'}), 100)
-    local e = add_gui_stat(t, experience_levels[rpg_t[player.index].level + 1], 125)
+    add_gui_description(t, ({ 'rpg_gui.next_level_name' }), 100)
+    e = add_gui_stat(t, experience_levels[rpg_t[player.index].level + 1], 125)
     e.tooltip = gain_info_tooltip
 
     add_separator(frame, 400)
 
-    local t = frame.add({ type = 'table', column_count = 2 })
+    t = frame.add({ type = 'table', column_count = 2 })
     local tt = t.add({ type = 'table', column_count = 3 })
     tt.style.cell_padding = 1
     local w1 = 85
     local w2 = 63
 
     local tip = { 'rpg_gui.strength_tooltip_2' }
-    local e = add_gui_description(tt, { 'rpg_gui.strength_name' }, w1)
+    e = add_gui_description(tt, { 'rpg_gui.strength_name' }, w1)
     e.tooltip = tip
-    local e = add_gui_stat(tt, rpg_t[player.index].strength, w2)
+    e = add_gui_stat(tt, rpg_t[player.index].strength, w2)
     e.tooltip = tip
     add_gui_increase_stat(tt, 'strength', player)
 
-    local tip = { 'rpg_gui.magic_tooltip_2' }
-    local e = add_gui_description(tt, { 'rpg_gui.magic_name' }, w1)
+    tip = { 'rpg_gui.magic_tooltip_2' }
+    e = add_gui_description(tt, { 'rpg_gui.magic_name' }, w1)
     e.tooltip = tip
-    local e = add_gui_stat(tt, rpg_t[player.index].magic, w2)
+    e = add_gui_stat(tt, rpg_t[player.index].magic, w2)
     e.tooltip = tip
     add_gui_increase_stat(tt, 'magic', player)
 
-    local tip = { 'rpg_gui.dexterity_tooltip_2' }
-    local e = add_gui_description(tt, { 'rpg_gui.dexterity_name' }, w1)
+    tip = { 'rpg_gui.dexterity_tooltip_2' }
+    e = add_gui_description(tt, { 'rpg_gui.dexterity_name' }, w1)
     e.tooltip = tip
-    local e = add_gui_stat(tt, rpg_t[player.index].dexterity, w2)
+    e = add_gui_stat(tt, rpg_t[player.index].dexterity, w2)
     e.tooltip = tip
     add_gui_increase_stat(tt, 'dexterity', player)
 
-    local tip = { 'rpg_gui.vitality_tooltip_2' }
-    local e = add_gui_description(tt, { 'rpg_gui.vitality_name' }, w1)
+    tip = { 'rpg_gui.vitality_tooltip_2' }
+    e = add_gui_description(tt, { 'rpg_gui.vitality_name' }, w1)
     e.tooltip = tip
-    local e = add_gui_stat(tt, rpg_t[player.index].vitality, w2)
+    e = add_gui_stat(tt, rpg_t[player.index].vitality, w2)
     e.tooltip = tip
     add_gui_increase_stat(tt, 'vitality', player)
 
     add_gui_description(tt, { 'rpg_gui.points_to_dist' }, w1)
-    local e = add_gui_stat(tt, rpg_t[player.index].points_left, w2)
+    e = add_gui_stat(tt, rpg_t[player.index].points_left, w2)
     e.style.font_color = { 200, 0, 0 }
     add_gui_description(tt, ' ', w2)
 
@@ -371,26 +376,27 @@ local function draw_gui(player, forced)
 
     add_gui_description(tt, { 'rpg_gui.life_name' }, w1)
     add_gui_stat(tt, math.floor(player.character.health), w2)
-    add_gui_stat(tt, math.floor(player.character.max_health + player.character_health_bonus + player.force.character_health_bonus), w2)
+    local proto_char = prototypes.entity.character.get_max_health('normal')
+    add_gui_stat(tt, math.floor(proto_char + player.character_health_bonus + player.force.character_health_bonus), w2)
 
     local shield = 0
     local shield_max = 0
-    local i = player.character.get_inventory(defines.inventory.character_armor)
-    if not i.is_empty() then
-        if i[1].grid then
-            shield = math.floor(i[1].grid.shield)
-            shield_max = math.floor(i[1].grid.max_shield)
+    local armor_inventory = player.character.get_inventory(defines.inventory.character_armor)
+    if not armor_inventory.is_empty() then
+        if armor_inventory[1].grid then
+            shield = math.floor(armor_inventory[1].grid.shield)
+            shield_max = math.floor(armor_inventory[1].grid.max_shield)
         end
     end
     add_gui_description(tt, { 'rpg_gui.shield_name' }, w1)
     add_gui_stat(tt, shield, w2)
     add_gui_stat(tt, shield_max, w2)
 
-    local tt = t.add({ type = 'table', column_count = 3 })
+    tt = t.add({ type = 'table', column_count = 3 })
     tt.style.cell_padding = 1
     local w0 = 2
-    local w1 = 80
-    local w2 = 80
+    w1 = 80
+    w2 = 80
 
     add_gui_description(tt, ' ', w0)
     add_gui_description(tt, { 'rpg_gui.mining_name' }, w1)
@@ -399,71 +405,72 @@ local function draw_gui(player, forced)
 
     add_gui_description(tt, ' ', w0)
     add_gui_description(tt, { 'rpg_gui.slot_name' }, w1)
-    local value = '+ ' .. player.force.character_inventory_slots_bonus + player.character_inventory_slots_bonus
+    value = '+ ' .. player.force.character_inventory_slots_bonus + player.character_inventory_slots_bonus
     add_gui_stat(tt, value, w2)
 
     add_gui_description(tt, ' ', w0)
     add_gui_description(tt, { 'rpg_gui.melee_name' }, w1)
-    local value = 100 * (1 + get_melee_modifier(player)) .. '%'
-    local e = add_gui_stat(tt, value, w2)
+    value = 100 * (1 + get_melee_modifier(player)) .. '%'
+    e = add_gui_stat(tt, value, w2)
     e.tooltip = 'Life on-hit: ' .. get_life_on_hit(player) .. '\nOne punch chance: ' .. get_one_punch_chance(player) .. '%'
 
-    local e = add_gui_description(tt, '', w0)
+    e = add_gui_description(tt, '', w0)
     e.style.maximal_height = 10
-    local e = add_gui_description(tt, '', w0)
+    e = add_gui_description(tt, '', w0)
     e.style.maximal_height = 10
-    local e = add_gui_description(tt, '', w0)
+    e = add_gui_description(tt, '', w0)
     e.style.maximal_height = 10
 
-    local value = '+ ' .. (player.force.character_reach_distance_bonus + player.character_reach_distance_bonus)
-    local tooltip = ({
-        'rpg_gui.bonus_tooltip',
-        player.character_reach_distance_bonus,
-        player.character_build_distance_bonus,
-        player.character_item_drop_distance_bonus,
-        player.character_loot_pickup_distance_bonus,
-        player.character_item_pickup_distance_bonus,
-        player.character_resource_reach_distance_bonus
-    })
+    value = '+ ' .. (player.force.character_reach_distance_bonus + player.character_reach_distance_bonus)
+    local tooltip = (
+        {
+            'rpg_gui.bonus_tooltip',
+            player.character_reach_distance_bonus,
+            player.character_build_distance_bonus,
+            player.character_item_drop_distance_bonus,
+            player.character_loot_pickup_distance_bonus,
+            player.character_item_pickup_distance_bonus,
+            player.character_resource_reach_distance_bonus
+        })
     add_gui_description(tt, ' ', w0)
-    local e = add_gui_description(tt, { 'rpg_gui.reach_distance' }, w1)
+    e = add_gui_description(tt, { 'rpg_gui.reach_distance' }, w1)
     e.tooltip = tooltip
-    local e = add_gui_stat(tt, value, w2)
+    e = add_gui_stat(tt, value, w2)
     e.tooltip = tooltip
 
-    local e = add_gui_description(tt, '', w0)
+    e = add_gui_description(tt, '', w0)
     e.style.maximal_height = 10
-    local e = add_gui_description(tt, '', w0)
+    e = add_gui_description(tt, '', w0)
     e.style.maximal_height = 10
-    local e = add_gui_description(tt, '', w0)
+    e = add_gui_description(tt, '', w0)
     e.style.maximal_height = 10
 
     add_gui_description(tt, ' ', w0)
     add_gui_description(tt, { 'rpg_gui.crafting_speed' }, w1)
-    local value = (player.force.manual_crafting_speed_modifier + player.character_crafting_speed_modifier + 1) * 100 .. '%'
+    value = (player.force.manual_crafting_speed_modifier + player.character_crafting_speed_modifier + 1) * 100 .. '%'
     add_gui_stat(tt, value, w2)
 
     add_gui_description(tt, ' ', w0)
     add_gui_description(tt, { 'rpg_gui.running_speed' }, w1)
-    local value = (player.force.character_running_speed_modifier + player.character_running_speed_modifier + 1) * 100 .. '%'
+    value = (player.force.character_running_speed_modifier + player.character_running_speed_modifier + 1) * 100 .. '%'
     add_gui_stat(tt, value, w2)
 
-    local e = add_gui_description(tt, '', w0)
+    e = add_gui_description(tt, '', w0)
     e.style.maximal_height = 10
-    local e = add_gui_description(tt, '', w0)
+    e = add_gui_description(tt, '', w0)
     e.style.maximal_height = 10
-    local e = add_gui_description(tt, '', w0)
+    e = add_gui_description(tt, '', w0)
     e.style.maximal_height = 10
 
     add_gui_description(tt, ' ', w0)
     add_gui_description(tt, { 'rpg_gui.health_bonus_name' }, w1)
-    local value = '+ ' .. (player.force.character_health_bonus + player.character_health_bonus)
+    value = '+ ' .. (player.force.character_health_bonus + player.character_health_bonus)
     add_gui_stat(tt, value, w2)
 
     add_separator(frame, 400)
-    local t = frame.add({ type = 'table', column_count = 14 })
+    t = frame.add({ type = 'table', column_count = 14 })
     for i = 1, 14, 1 do
-        local e = t.add({ type = 'sprite', sprite = rpg_frame_icons[i] })
+        e = t.add({ type = 'sprite', sprite = rpg_frame_icons[i] })
         e.style.maximal_width = 24
         e.style.maximal_height = 24
         e.style.padding = 0
@@ -495,14 +502,17 @@ local function draw_level_text(player)
     end
 
     rpg_t[player.index].text =
-        rendering.draw_text {
+        rendering.draw_text
+        {
             text = 'lvl ' .. rpg_t[player.index].level,
             surface = player.surface,
-            target = {
+            target =
+            {
                 entity = player.character,
                 offset = { 0, -3.25 },
             },
-            color = {
+            color =
+            {
                 r = player.color.r * 0.6 + 0.25,
                 g = player.color.g * 0.6 + 0.25,
                 b = player.color.b * 0.6 + 0.25,
@@ -556,9 +566,10 @@ local function gain_xp(player, amount)
     if rpg_t[player.index].last_floaty_text > game.tick then
         return
     end
-    player.create_local_flying_text {
+    player.create_local_flying_text
+    {
         text = '+' .. rpg_t[player.index].xp_since_last_floaty_text .. ' xp',
-        position = player.position,
+        position = player.physical_position,
         color = xp_floating_text_color,
         time_to_live = 120,
         speed = 2
@@ -575,7 +586,8 @@ function Public.rpg_reset_player(player)
         player.set_controller({ type = defines.controllers.god })
         player.create_character()
     end
-    rpg_t[player.index] = {
+    rpg_t[player.index] =
+    {
         level = 1,
         xp = 0,
         strength = 10,
@@ -645,7 +657,7 @@ local function on_gui_click(event)
     end
 
     if event.button == defines.mouse_button_type.right then
-        for a = 1, 5, 1 do
+        for _ = 1, 5, 1 do
             if rpg_t[player.index].points_left <= 0 then
                 draw_gui(player, true)
                 return
@@ -678,7 +690,8 @@ local function train_type_cause(cause)
     return players
 end
 
-local get_cause_player = {
+local get_cause_player =
+{
     ['character'] = function (cause)
         if not cause.player then
             return
@@ -789,14 +802,6 @@ local function one_punch(character, target, damage)
     vector[1] = vector[1] * 1000
     vector[2] = vector[2] * 1000
 
-    character.surface.create_entity(
-        {
-            name = 'flying-text',
-            position = { character.position.x + base_vector[1] * 0.5, character.position.y + base_vector[2] * 0.5 },
-            text = 'ONE PUNCH',
-            color = { 255, 0, 0 }
-        }
-    )
     character.surface.create_entity({ name = 'blood-explosion-huge', position = target.position })
     character.surface.create_entity({ name = 'big-artillery-explosion', position = { target.position.x + vector[1] * 0.5, target.position.y + vector[2] * 0.5 } })
 
@@ -971,7 +976,8 @@ local function on_player_changed_position(event)
     gain_xp(player, 1.0)
 end
 
-local building_and_mining_blacklist = {
+local building_and_mining_blacklist =
+{
     ['tile-ghost'] = true,
     ['entity-ghost'] = true,
     ['item-entity'] = true
@@ -1041,21 +1047,20 @@ local function on_player_joined_game(event)
     update_player_stats(player)
 end
 
-local function on_init(event)
+local function on_init()
     table.shuffle_table(rpg_frame_icons)
 end
 
-local event = require 'utils.event'
-event.on_init(on_init)
-event.add(defines.events.on_entity_damaged, on_entity_damaged)
-event.add(defines.events.on_entity_died, on_entity_died)
-event.add(defines.events.on_gui_click, on_gui_click)
-event.add(defines.events.on_player_changed_position, on_player_changed_position)
-event.add(defines.events.on_player_crafted_item, on_player_crafted_item)
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
-event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
-event.add(defines.events.on_player_respawned, on_player_respawned)
-event.add(defines.events.on_player_rotated_entity, on_player_rotated_entity)
-event.add(defines.events.on_pre_player_mined_item, on_pre_player_mined_item)
+Event.on_init(on_init)
+Event.add(defines.events.on_entity_damaged, on_entity_damaged)
+Event.add(defines.events.on_entity_died, on_entity_died)
+Event.add(defines.events.on_gui_click, on_gui_click)
+Event.add(defines.events.on_player_changed_position, on_player_changed_position)
+Event.add(defines.events.on_player_crafted_item, on_player_crafted_item)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
+Event.add(defines.events.on_player_respawned, on_player_respawned)
+Event.add(defines.events.on_player_rotated_entity, on_player_rotated_entity)
+Event.add(defines.events.on_pre_player_mined_item, on_pre_player_mined_item)
 
 return Public
