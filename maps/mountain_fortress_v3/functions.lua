@@ -177,7 +177,7 @@ local fishy_callback_token =
                     if game.tick >= fish_alert_cooldown then
                         WD.set('fish_alert_cooldown', game.tick + 4000)
                         local msg = 'The biters feast on the cooked fish near collapse! Threat increased by 100!'
-                        Alert.alert_all_players(60, msg)
+                        Alert.alert_all_players(60, msg, nil, nil, nil, 'global')
                     end
                 end
             end
@@ -194,7 +194,7 @@ local fishy_callback_token =
                     if game.tick >= fish_alert_cooldown then
                         WD.set('fish_alert_cooldown', game.tick + 4000)
                         local msg = 'The biters feast on the grilled fish near collapse! Threat increased by 200!'
-                        Alert.alert_all_players(60, msg)
+                        Alert.alert_all_players(60, msg, nil, nil, nil, 'global')
                     end
                 end
             end
@@ -341,7 +341,7 @@ local pause_waves_custom_callback_token =
             if wave_number >= 200 then
                 Collapse.start_now(event.start, not event.start)
                 local status_str = event.start and 'is active once again!' or 'has stopped!'
-                Alert.alert_all_players(30, 'Collapse ' .. status_str, nil, 'achievement/tech-maniac', 0.6)
+                Alert.alert_all_players(30, 'Collapse ' .. status_str, nil, 'achievement/tech-maniac', 0.6, 'global')
             end
         end
     )
@@ -2978,7 +2978,7 @@ function Public.on_player_joined_game(event)
     local surface = game.surfaces[active_surface_index or starting_planet]
 
     local current_task = Public.get('current_task')
-    if not current_task.done then
+    if not current_task.done and not Public.get('first_boot') then
         local init_surface = game.get_surface('init')
         if init_surface and init_surface.valid then
             surface = init_surface
@@ -2996,10 +2996,10 @@ function Public.on_player_joined_game(event)
             players[player.index] = {}
         end
         local message = ({ 'main.greeting', player.name })
-        Alert.alert_player(player, 15, message)
+        Alert.alert_player(player, 15, message, nil, nil, nil, 'personal')
         if Public.get('death_mode') then
             local death_message = ({ 'main.death_mode_warning' })
-            Alert.alert_player(player, 15, death_message)
+            Alert.alert_player(player, 15, death_message, nil, nil, nil, 'personal')
         end
         player.clear_items_inside()
         -- if Public.is_modded then
@@ -3007,7 +3007,11 @@ function Public.on_player_joined_game(event)
         -- end
 
         for item, data in pairs(this.starting_items) do
-            player.insert({ name = item, count = data.count })
+            local stack = { name = item, count = data.quality and 1 or data.count }
+            if data.quality then
+                stack.quality = data.quality
+            end
+            player.insert(stack)
         end
     end
 
@@ -3492,7 +3496,7 @@ function Public.on_research_finished(event)
 
     if research.name == 'steel-axe' then
         local msg = 'Steel-axe technology has been researched, 100% has been applied.\nBuy Pickaxe-upgrades in the market to boost it even more!'
-        Alert.alert_all_players(30, msg, nil, 'achievement/tech-maniac', 0.6)
+        Alert.alert_all_players(30, msg, nil, 'achievement/tech-maniac', 0.6, 'global')
     end
 
     local force_name = research.force.name
@@ -3673,23 +3677,37 @@ function Public.equip_players(player, starting_items, recreate)
         if not recreate then
             starting_items = starting_items or this.starting_items
             if starting_items['modular-armor'] then
-                player.insert({ name = 'modular-armor', count = 1 })
+                local armor_data = starting_items['modular-armor']
+                local armor_stack = { name = 'modular-armor', count = 1 }
+                if armor_data.quality then
+                    armor_stack.quality = armor_data.quality
+                end
+                player.insert(armor_stack)
             end
 
             for item, item_data in pairs(starting_items) do
                 if item ~= 'modular-armor' then
                     local equip = prototypes.equipment[item]
+                    local stack = { name = item, count = item_data.quality and 1 or item_data.count }
+                    if item_data.quality then
+                        stack.quality = item_data.quality
+                    end
                     if equip then
                         local p_armor = player.get_inventory(defines.inventory.character_armor)
                         if p_armor and p_armor.valid and p_armor[1] and p_armor[1].valid_for_read and p_armor[1].grid and p_armor[1].grid.valid then
-                            for _ = 1, item_data.count do
-                                p_armor[1].grid.put({ name = item })
+                            local put_count = item_data.quality and 1 or item_data.count
+                            for _ = 1, put_count do
+                                local put_stack = { name = item }
+                                if item_data.quality then
+                                    put_stack.quality = item_data.quality
+                                end
+                                p_armor[1].grid.put(put_stack)
                             end
                         else
-                            player.insert({ name = item, count = item_data.count })
+                            player.insert(stack)
                         end
                     else
-                        player.insert({ name = item, count = item_data.count })
+                        player.insert(stack)
                     end
                 end
             end

@@ -1525,7 +1525,7 @@ local function gui_click(event)
                 offer,
                 format_number(price, true)
             })
-        Alert.alert_all_players(5, message)
+        Alert.alert_all_players(5, message, nil, nil, nil, 'global')
         Server.to_discord_bold(
             table.concat
             {
@@ -1549,7 +1549,7 @@ local function gui_click(event)
 
         Event.raise(Public.events.on_market_item_purchased, { cost = price })
 
-        Alert.alert_all_players(5, message)
+        Alert.alert_all_players(5, message, nil, nil, nil, 'global')
         Server.to_discord_bold(
             table.concat
             {
@@ -1609,7 +1609,7 @@ local function gui_click(event)
 
         local message = ({ 'locomotive.aura_bought_info', shopkeeper, player.name, format_number(price, true) })
 
-        Alert.alert_all_players(5, message)
+        Alert.alert_all_players(5, message, nil, nil, nil, 'global')
         Server.to_discord_bold(
             table.concat
             {
@@ -1660,7 +1660,7 @@ local function gui_click(event)
 
         Event.raise(Public.events.on_market_item_purchased, { cost = price })
 
-        Alert.alert_all_players(5, message)
+        Alert.alert_all_players(5, message, nil, nil, nil, 'minor', 'xp')
         Server.to_discord_bold(
             table.concat
             {
@@ -1689,7 +1689,7 @@ local function gui_click(event)
 
         Event.raise(Public.events.on_market_item_purchased, { cost = price })
 
-        Alert.alert_all_players(5, message)
+        Alert.alert_all_players(5, message, nil, nil, nil, 'global')
         Server.to_discord_bold(
             table.concat
             {
@@ -1717,7 +1717,7 @@ local function gui_click(event)
 
         Event.raise(Public.events.on_market_item_purchased, { cost = price })
 
-        Alert.alert_all_players(5, message)
+        Alert.alert_all_players(5, message, nil, nil, nil, 'global')
         Server.to_discord_bold(
             table.concat
             {
@@ -1744,7 +1744,7 @@ local function gui_click(event)
                     player.name,
                     format_number(price, true)
                 })
-            Alert.alert_all_players(5, message)
+            Alert.alert_all_players(5, message, nil, nil, nil, 'global')
             Server.to_discord_bold(
                 table.concat
                 {
@@ -1760,7 +1760,7 @@ local function gui_click(event)
                     item.stack,
                     format_number(price, true)
                 })
-            Alert.alert_all_players(5, message)
+            Alert.alert_all_players(5, message, nil, nil, nil, 'global')
             Server.to_discord_bold(
                 table.concat
                 {
@@ -1791,7 +1791,7 @@ local function gui_click(event)
                     format_number(price, true)
                 })
 
-            Alert.alert_all_players(3, message)
+            Alert.alert_all_players(3, message, nil, nil, nil, 'global')
 
             if price >= 1000 then
                 Server.to_discord_bold(
@@ -1831,7 +1831,7 @@ local function gui_click(event)
 
         remove_item_count(player, item.value, price)
         local message = ({ 'locomotive.rpg_reset_skills_bought_info', shopkeeper, player.name, format_number(price, true) })
-        Alert.alert_all_players(5, message)
+        Alert.alert_all_players(5, message, nil, nil, nil, 'global')
         Server.to_discord_bold(
             table.concat
             {
@@ -1921,7 +1921,7 @@ local function gui_click(event)
         purchased_zones[next_index] = { zone = item.zone_name, player = player.name }
 
         local message = ({ 'locomotive.zone_purchased', shopkeeper, player.name, item.zone_name, next_index, format_number(price, true) })
-        Alert.alert_all_players(5, message)
+        Alert.alert_all_players(5, message, nil, nil, nil, 'global')
         Server.to_discord_bold(
             table.concat
             {

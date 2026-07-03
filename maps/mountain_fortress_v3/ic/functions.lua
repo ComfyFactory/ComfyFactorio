@@ -97,7 +97,7 @@ local enable_car_to_be_mined =
                 {
                     position = entity.position
                 }
-                Alert.alert_all_players_location(p, msg, nil, 30)
+                Alert.alert_all_players_location(p, msg, nil, 30, 'player_event')
             end
         end
     )

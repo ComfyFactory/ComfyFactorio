@@ -236,7 +236,7 @@ local restore_mining_speed_token =
                 force.manual_mining_speed_modifier = force.manual_mining_speed_modifier - 0.5
                 mc_rewards.temp_boosts.mining = nil
                 local message = ({ 'locomotive.mining_bonus_end' })
-                Alert.alert_all_players(10, message, nil, 'achievement/tech-maniac')
+                Alert.alert_all_players(10, message, nil, 'achievement/tech-maniac', nil, 'global')
             end
         end
     )
@@ -250,7 +250,7 @@ local restore_crafting_speed_token =
                 force.manual_crafting_speed_modifier = force.manual_crafting_speed_modifier - 1
                 mc_rewards.temp_boosts.crafting = nil
                 local message = ({ 'locomotive.crafting_bonus_end' })
-                Alert.alert_all_players(10, message, nil, 'achievement/tech-maniac')
+                Alert.alert_all_players(10, message, nil, 'achievement/tech-maniac', nil, 'global')
             end
         end
     )
@@ -266,7 +266,7 @@ local restore_modifier_token =
 
             mc_rewards.temp_boosts[modifier] = false
             local message = ({ 'locomotive.restore_bonus_end', modifier })
-            Alert.alert_all_players(10, message, nil, 'achievement/tech-maniac')
+            Alert.alert_all_players(10, message, nil, 'achievement/tech-maniac', nil, 'global')
         end
     )
 
@@ -281,7 +281,7 @@ local restore_active_modifier_token =
 
             mc_rewards.active_boosts[modifier] = false
             local message = ({ 'locomotive.bonus_bonus_end', modifier:gsub("_", " ") })
-            Alert.alert_all_players(10, message, nil, 'achievement/tech-maniac')
+            Alert.alert_all_players(10, message, nil, 'achievement/tech-maniac', nil, 'global')
 
             if modifier == 'coins' then
                 Public.set('coin_amount', Public.get('coin_amount_previous'))
@@ -304,7 +304,7 @@ local restore_movement_speed_token =
                 force.character_running_speed_modifier = event.speed
                 mc_rewards.temp_boosts.movement = nil
                 local message = ({ 'locomotive.movement_bonus_end' })
-                Alert.alert_all_players(10, message, nil, 'achievement/tech-maniac')
+                Alert.alert_all_players(10, message, nil, 'achievement/tech-maniac', nil, 'global')
             end
         end
     )
@@ -331,7 +331,7 @@ local mc_random_rewards =
             rng = floor(rng * scale_factor)
             RPG.add_to_global_pool(rng)
             local message = ({ 'locomotive.xp_bonus', player.name })
-            Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
+            Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac', nil, 'minor', 'xp')
             Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted xp bonus for the whole team!', ' ***' })
             return true
         end),
@@ -371,7 +371,7 @@ local mc_random_rewards =
                 end
             end
 
-            Alert.alert_all_players(15, 'Science for all! Check out the mystical chest!', nil, 'achievement/tech-maniac')
+            Alert.alert_all_players(15, 'Science for all! Check out the mystical chest!', nil, 'achievement/tech-maniac', nil, 'global')
             Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted science bonus to the team!', ' ***' })
             return true
         end),
@@ -411,7 +411,7 @@ local mc_random_rewards =
                 end
             end
 
-            Alert.alert_all_players(15, 'Ammo for all! Check out the mystical chest!', nil, 'achievement/tech-maniac')
+            Alert.alert_all_players(15, 'Ammo for all! Check out the mystical chest!', nil, 'achievement/tech-maniac', nil, 'global')
             Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted ammo bonus to the team!', ' ***' })
             return true
         end),
@@ -457,7 +457,7 @@ local mc_random_rewards =
             local mystical_rewards = Public.get('mystical_rewards')
             mystical_rewards.market_reroll_bonus = mystical_rewards.market_reroll_bonus and mystical_rewards.market_reroll_bonus + 1 or 1
 
-            Alert.alert_all_players(15, 'Market reroll! All markets in the main surface have been rerolled!', nil, 'achievement/tech-maniac')
+            Alert.alert_all_players(15, 'Market reroll! All markets in the main surface have been rerolled!', nil, 'achievement/tech-maniac', nil, 'global')
             Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted market reroll bonus to the team!', ' ***' })
             return true
         end),
@@ -488,7 +488,7 @@ local mc_random_rewards =
             local mystical_rewards = Public.get('mystical_rewards')
             mystical_rewards.coins_bonus = mystical_rewards.coins_bonus and mystical_rewards.coins_bonus + 1 or 1
 
-            Alert.alert_all_players(15, 'Coins overclock! Get extra coins when killing biters!', nil, 'achievement/tech-maniac')
+            Alert.alert_all_players(15, 'Coins overclock! Get extra coins when killing biters!', nil, 'achievement/tech-maniac', nil, 'minor', 'coins')
             Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted coins overclock bonus to the team!', ' ***' })
             return true
         end),
@@ -588,7 +588,7 @@ local mc_random_rewards =
             local mystical_rewards = Public.get('mystical_rewards')
             mystical_rewards.tactical_bacon_bonus = mystical_rewards.tactical_bacon_bonus and mystical_rewards.tactical_bacon_bonus + 1 or 1
 
-            Alert.alert_all_players(15, 'Tactical Bacon! Get extra defensive items - check out the mystical chest!', nil, 'achievement/tech-maniac')
+            Alert.alert_all_players(15, 'Tactical Bacon! Get extra defensive items - check out the mystical chest!', nil, 'achievement/tech-maniac', nil, 'global')
             Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted tactical bacon bonus to the team!', ' ***' })
             return true
         end),
@@ -619,7 +619,7 @@ local mc_random_rewards =
             local mystical_rewards = Public.get('mystical_rewards')
             mystical_rewards.lab_overclock_bonus = mystical_rewards.lab_overclock_bonus and mystical_rewards.lab_overclock_bonus + 1 or 1
 
-            Alert.alert_all_players(15, 'Lab Overclock! Get extra lab research techs faster!', nil, 'achievement/tech-maniac')
+            Alert.alert_all_players(15, 'Lab Overclock! Get extra lab research techs faster!', nil, 'achievement/tech-maniac', nil, 'global')
             Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted lab overclock bonus to the team!', ' ***' })
             return true
         end),
@@ -650,7 +650,7 @@ local mc_random_rewards =
             local mystical_rewards = Public.get('mystical_rewards')
             mystical_rewards.prototype_data_disk_bonus = mystical_rewards.prototype_data_disk_bonus and mystical_rewards.prototype_data_disk_bonus + 1 or 1
 
-            Alert.alert_all_players(15, 'Prototype Data Disk! Get extra market items more cheaper!', nil, 'achievement/tech-maniac')
+            Alert.alert_all_players(15, 'Prototype Data Disk! Get extra market items more cheaper!', nil, 'achievement/tech-maniac', nil, 'global')
             Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted prototype data disk bonus to the team!', ' ***' })
             return true
         end),
@@ -680,7 +680,7 @@ local mc_random_rewards =
     --         local mystical_rewards = Public.get('mystical_rewards')
     --         mystical_rewards.lucky_bonus = mystical_rewards.lucky_bonus and mystical_rewards.lucky_bonus + 1 or 1
 
-    --         Alert.alert_all_players(15, 'Lucky Looter! Bonus magicka for all!', nil, 'achievement/tech-maniac')
+    --         Alert.alert_all_players(15, 'Lucky Looter! Bonus magicka for all!', nil, 'achievement/tech-maniac', nil, 'global')
     --         Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted lucky loot bonus to the team!', ' ***' })
     --         return true
     --     end),
@@ -714,7 +714,7 @@ local mc_random_rewards =
                 mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'crude-oil-barrel', count = random(200, 480) }, enable_looted = true })
             end
 
-            Alert.alert_all_players(15, 'Oil for all! Check out the mystical chest!', nil, 'achievement/tech-maniac')
+            Alert.alert_all_players(15, 'Oil for all! Check out the mystical chest!', nil, 'achievement/tech-maniac', nil, 'global')
             Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted oil bonus to the team!', ' ***' })
             return true
         end),
@@ -750,7 +750,7 @@ local mc_random_rewards =
                 end
             end
             local message = ({ 'locomotive.coin_bonus', p.name })
-            Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
+            Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac', nil, 'minor', 'coins')
             Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. p.name .. ' has granted coinsies for the whole team!', ' ***' })
             return true
         end),
@@ -781,7 +781,7 @@ local mc_random_rewards =
             end
             force.character_running_speed_modifier = force.character_running_speed_modifier + speed
             local message = ({ 'locomotive.movement_bonus', player.name })
-            Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
+            Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac', nil, 'global')
             Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted movement speed bonus for the whole team!', ' ***' })
             return true
         end),
@@ -807,7 +807,7 @@ local mc_random_rewards =
             Task.set_timeout_in_ticks(108000, restore_mining_speed_token)
             force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 1
             local message = ({ 'locomotive.mining_bonus', player.name })
-            Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
+            Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac', nil, 'global')
             Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted mining speed bonus for the whole team!', ' ***' })
             return true
         end),
@@ -833,7 +833,7 @@ local mc_random_rewards =
             Task.set_timeout_in_ticks(108000, restore_crafting_speed_token)
             force.manual_crafting_speed_modifier = force.manual_crafting_speed_modifier + 2
             local message = ({ 'locomotive.crafting_bonus', player.name })
-            Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
+            Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac', nil, 'global')
             Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted crafting speed bonus for the whole team!', ' ***' })
             return true
         end),

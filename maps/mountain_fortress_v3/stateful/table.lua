@@ -129,7 +129,11 @@ local function notify_season_over_to_discord(perm_buff)
             if stateful.buffs_collected.starting_items then
                 buffs = buffs .. 'Starting items:\n'
                 for item_name, item_data in pairs(stateful.buffs_collected.starting_items) do
-                    buffs = buffs .. upperCase(item_name) .. ': ' .. item_data.count
+                    if item_data.quality then
+                        buffs = buffs .. upperCase(item_name) .. ': ' .. upperCase(item_data.quality)
+                    else
+                        buffs = buffs .. upperCase(item_name) .. ': ' .. item_data.count
+                    end
                     buffs = buffs .. '\n'
                 end
                 buffs = buffs .. '\n'
@@ -1033,6 +1037,13 @@ local function check_limit(limit_types, key, buff, increment)
     return buff.limit and limit_types[key] > buff.limit
 end
 
+local function get_buff_limit_key(buff)
+    if buff.modifier == 'locomotive' or buff.modifier == 'rpg_distance' then
+        return buff.modifier
+    end
+    return buff.name
+end
+
 local function apply_force_buff(buff, collected_table, limit_types)
     if check_limit(limit_types, buff.name, buff) then
         return true -- signal to skip
@@ -1082,6 +1093,190 @@ local quality_rank =
 local function is_higher_quality(new, old)
     if not old then return true end
     return (quality_rank[new] or 0) > (quality_rank[old] or 0)
+end
+
+local quality_ladder = Public.qualities
+
+local function is_quality_mod_active()
+    return script.active_mods.quality and true or false
+end
+
+local function next_quality(current)
+    for i = 1, #quality_ladder - 1 do
+        if quality_ladder[i] == current then
+            return quality_ladder[i + 1]
+        end
+    end
+end
+
+local function is_starting_item_buff_maxed(buff, starting_items)
+    if buff.quality_item then
+        local item_data = starting_items[buff.quality_item]
+        if not item_data then
+            return false
+        end
+        if is_quality_mod_active() then
+            return item_data.quality == 'legendary'
+        end
+        return true
+    end
+
+    if not buff.items then
+        return false
+    end
+
+    for _, item in pairs(buff.items) do
+        if item and starting_items[item.name] then
+            local item_data = starting_items[item.name]
+            if item_data.item_limit and buff.limit and item_data.item_limit >= buff.limit then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+local function is_starting_item_buff_available(buff, starting_items, techs)
+    if buff.requires_tech and not techs[buff.requires_tech] then
+        return false
+    end
+    if buff.requires_item_quality then
+        local req = buff.requires_item_quality
+        local item_data = starting_items[req.name]
+        if not item_data or item_data.quality ~= req.quality then
+            return false
+        end
+    end
+    return true
+end
+
+local function get_buff_grant_count(buff_name)
+    local count = 0
+
+    if this.buffs then
+        for _, buff in pairs(this.buffs) do
+            if buff and buff.name == buff_name then
+                count = count + 1
+            end
+        end
+    end
+
+    if this.permanent_buffs then
+        for _, buff in pairs(this.permanent_buffs) do
+            if buff and buff.name == buff_name then
+                count = count + 1
+            end
+        end
+    end
+
+    return count
+end
+
+local function is_quality_tier_buff_obsolete(buff)
+    if not buff.quality then
+        return false
+    end
+
+    local current
+    if buff.name:find('quality_buildings') then
+        current = this.quality_buildings or 'normal'
+    elseif buff.modifier == 'quality_trains' or buff.name:find('quality_trains') then
+        current = this.quality_trains or 'normal'
+    else
+        return false
+    end
+
+    return (quality_rank[buff.quality] or 0) <= (quality_rank[current] or 0)
+end
+
+local function is_buff_unavailable_for_vote(buff, starting_items, techs, limit_types)
+    if is_quality_tier_buff_obsolete(buff) then
+        return true
+    end
+
+    if buff.quality_item then
+        if is_starting_item_buff_maxed(buff, starting_items) then
+            return true
+        end
+    else
+        for _, item_data in pairs(starting_items) do
+            if item_data.buff_type == buff.name
+                and item_data.item_limit
+                and buff.limit
+                and item_data.item_limit >= buff.limit then
+                return true
+            end
+        end
+    end
+
+    if not is_starting_item_buff_available(buff, starting_items, techs) then
+        return true
+    end
+
+    if buff.modifier == 'tech' and buff.techs then
+        for _, tech in pairs(buff.techs) do
+            if tech and techs[tech.name] then
+                return true
+            end
+        end
+    end
+
+    if buff.modifier == 'locomotive' and buff.limit and (this.extra_wagons or 0) >= buff.limit then
+        return true
+    end
+
+    local limit_key = get_buff_limit_key(buff)
+    local limit_count = limit_types[limit_key]
+    if limit_count then
+        if type(limit_count) == 'boolean' then
+            return true
+        end
+        if buff.limit and limit_count >= buff.limit then
+            return true
+        end
+    end
+
+    return false
+end
+
+local function resolve_buff_poll_name(buff)
+    if not buff.quality_item then
+        return buff.poll_name
+    end
+    local starting_items = Public.get_func('starting_items')
+    local item_data = starting_items[buff.quality_item]
+    local quality = (item_data and item_data.quality) or 'normal'
+    return '[item=' .. buff.quality_item .. ',quality=' .. quality .. '] ' .. buff.poll_name
+end
+
+local function copy_buff_with_display(buff)
+    local copy = {}
+    for key, value in pairs(buff) do
+        copy[key] = value
+    end
+    copy.display_name = resolve_buff_poll_name(buff)
+    return copy
+end
+
+local function update_collected_starting_item(collected_table, item_name, item_data, buff)
+    if collected_table['starting_items'][item_name] then
+        local entry = collected_table['starting_items'][item_name]
+        if item_data.quality then
+            entry.quality = item_data.quality
+            entry.count = 1
+        else
+            entry.count = (entry.count or 0) + (item_data.count or 0)
+        end
+        entry.buff_type = buff.name
+    else
+        collected_table['starting_items'][item_name] =
+        {
+            buff_type = buff.name,
+            count = item_data.quality and 1 or item_data.count,
+            quality = item_data.quality,
+            discord = buff.discord
+        }
+    end
 end
 
 local function apply_quality_buff(buff, collected_table, limit_types)
@@ -1183,6 +1378,60 @@ local function apply_starting_items_buff(buff, collected_table, limit_types)
 
     if type(buff.items) ~= 'table' then
         return true -- signal to skip
+    end
+
+    if buff.quality_item then
+        local primary_name = buff.quality_item
+        local primary_item_data = starting_items[primary_name]
+        local quality_mode = is_quality_mod_active()
+
+        if quality_mode and primary_item_data and primary_item_data.quality == 'legendary' then
+            primary_item_data.limit_reached = true
+            return true
+        end
+
+        if not quality_mode and primary_item_data then
+            primary_item_data.limit_reached = true
+            return true
+        end
+
+        if primary_item_data then
+            if quality_mode then
+                local new_quality = next_quality(primary_item_data.quality or 'normal')
+                if new_quality then
+                    primary_item_data.quality = new_quality
+                end
+            else
+                primary_item_data.count = primary_item_data.count + 1
+            end
+            primary_item_data.item_limit = (primary_item_data.item_limit or 0) + (buff.add_per_buff or 1)
+            primary_item_data.buff_type = buff.name
+            update_collected_starting_item(collected_table, primary_name, primary_item_data, buff)
+        else
+            for _, item in pairs(buff.items) do
+                if item then
+                    if item.name == primary_name then
+                        starting_items[item.name] =
+                        {
+                            buff_type = buff.name,
+                            count = 1,
+                            quality = quality_mode and 'normal' or nil,
+                            item_limit = buff.add_per_buff or 1
+                        }
+                        update_collected_starting_item(collected_table, item.name, starting_items[item.name], buff)
+                    elseif not starting_items[item.name] then
+                        starting_items[item.name] =
+                        {
+                            buff_type = buff.name,
+                            count = item.count,
+                            item_limit = buff.add_per_buff
+                        }
+                        update_collected_starting_item(collected_table, item.name, starting_items[item.name], buff)
+                    end
+                end
+            end
+        end
+        return false
     end
 
     for _, item in pairs(buff.items) do
@@ -1303,44 +1552,8 @@ local function grant_non_limit_reached_buff(count)
             goto continue
         end
 
-        local skip = false
-
-        for _, item_data in pairs(starting_items) do
-            if item_data.buff_type == data.name
-                and item_data.item_limit
-                and data.limit
-                and item_data.item_limit >= data.limit then
-                skip = true
-                break
-            end
-        end
-
-        if not skip then
-            for _, tech_data in pairs(techs) do
-                if tech_data.name == data.name then
-                    skip = true
-                    break
-                end
-            end
-        end
-
-        if not skip then
-            for limit_name, limit_count in pairs(limit_types) do
-                if limit_name == data.name then
-                    if limit_count and type(limit_count) ~= "boolean" and data.limit then
-                        if limit_count >= data.limit then
-                            skip = true
-                        end
-                    else
-                        skip = true
-                    end
-                    break
-                end
-            end
-        end
-
-        if not skip then
-            table.insert(valid_buffs, data)
+        if not is_buff_unavailable_for_vote(data, starting_items, techs, limit_types) then
+            table.insert(valid_buffs, copy_buff_with_display(data))
         end
 
         ::continue::
@@ -1351,7 +1564,11 @@ local function grant_non_limit_reached_buff(count)
     end
 
     if #valid_buffs == 0 then
-        return Public.get_random_buff(nil, true)
+        Server.output_script_data('No valid buffs available for vote - all buffs at limit')
+        if not count or count == 1 then
+            return nil
+        end
+        return {}
     end
 
     if not count or count == 1 then
@@ -1360,7 +1577,7 @@ local function grant_non_limit_reached_buff(count)
 
     local result = {}
     for i = 1, math.min(count, #valid_buffs) do
-        table.insert(result, valid_buffs[i])
+        result[i] = valid_buffs[i]
     end
     return result
 end
@@ -1369,15 +1586,8 @@ end
 
 local function grant_non_limit_reached_buff_permanent()
     local all_buffs = Public.get_random_buff(true)
-
-    local permanent_buff_counts = {}
-    if this.permanent_buffs then
-        for _, permanent_buff in pairs(this.permanent_buffs) do
-            if permanent_buff and permanent_buff.name then
-                permanent_buff_counts[permanent_buff.name] = (permanent_buff_counts[permanent_buff.name] or 0) + 1
-            end
-        end
-    end
+    local starting_items = Public.get_func('starting_items')
+    local techs = Public.get_func('techs')
 
     for index, data in pairs(all_buffs) do
         local should_remove = false
@@ -1386,14 +1596,19 @@ local function grant_non_limit_reached_buff_permanent()
             should_remove = true
         end
 
-        if not should_remove and data.limit and permanent_buff_counts[data.name] then
-            if permanent_buff_counts[data.name] >= data.limit then
-                should_remove = true
-            end
+        if not should_remove and data.limit and get_buff_grant_count(data.name) >= data.limit then
+            should_remove = true
+        end
+
+        if not should_remove and is_quality_tier_buff_obsolete(data) then
+            should_remove = true
+        end
+
+        if not should_remove and data.modifier == 'locomotive' and data.limit and (this.extra_wagons or 0) >= data.limit then
+            should_remove = true
         end
 
         if not should_remove and data.modifier == 'tech' and data.techs then
-            local techs = Public.get_func('techs')
             for _, tech in pairs(data.techs) do
                 if tech and techs[tech.name] then
                     should_remove = true
@@ -1403,16 +1618,25 @@ local function grant_non_limit_reached_buff_permanent()
         end
 
         if not should_remove and data.modifier == 'starting_items' and data.limit then
-            local starting_items = Public.get_func('starting_items')
-            for _, item in pairs(data.items or {}) do
-                if item and starting_items[item.name] then
-                    local current_limit = starting_items[item.name].item_limit or 0
-                    if current_limit >= data.limit then
-                        should_remove = true
-                        break
+            if data.quality_item then
+                if is_starting_item_buff_maxed(data, starting_items) then
+                    should_remove = true
+                end
+            else
+                for _, item in pairs(data.items or {}) do
+                    if item and starting_items[item.name] then
+                        local current_limit = starting_items[item.name].item_limit or 0
+                        if current_limit >= data.limit then
+                            should_remove = true
+                            break
+                        end
                     end
                 end
             end
+        end
+
+        if not should_remove and not is_starting_item_buff_available(data, starting_items, techs) then
+            should_remove = true
         end
 
         if should_remove then
@@ -1428,7 +1652,7 @@ local function grant_non_limit_reached_buff_permanent()
         return Public.get_random_buff(nil, true)
     end
 
-    return all_buffs[1]
+    return copy_buff_with_display(all_buffs[1])
 end
 
 local function apply_startup_settings(settings)
@@ -1899,7 +2123,7 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
     if Diff.index == 3 then
         local message = ({ 'stateful.difficulty_step' })
         local delay = 25
-        Alert.set_timeout_in_ticks_alert(delay, { text = message })
+        Alert.set_timeout_in_ticks_alert(delay, { text = message, category = 'global' })
     end
 
     Public.set('coin_amount', Diff.index)
@@ -1963,7 +2187,7 @@ function Public.move_all_players()
     -- ICWF.disable_auto_minimap()
 
     local message = ({ 'stateful.final_boss_message_start' })
-    Alert.alert_all_players(50, message, nil, nil, 1)
+    Alert.alert_all_players(50, message, nil, nil, 1, 'global')
     Core.iter_connected_players(
     ---@param player LuaPlayer
         function (player)
@@ -2254,6 +2478,7 @@ Public.scale = scale
 Public.on_pre_player_died = on_pre_player_died
 Public.on_market_item_purchased = on_market_item_purchased
 Public.grant_non_limit_reached_buff = grant_non_limit_reached_buff
+Public.resolve_buff_poll_name = resolve_buff_poll_name
 Public.apply_buffs = apply_buffs
 Public.apply_permanent_buffs = apply_permanent_buffs
 

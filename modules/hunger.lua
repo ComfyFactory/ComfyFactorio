@@ -203,7 +203,8 @@ end
 local function on_player_used_capsule(event)
     if event.item.name == 'raw-fish' then
         local player = game.players[event.player_index]
-        if player.character.health < player.character.max_health + player.character_health_bonus + player.force.character_health_bonus then
+        local proto_char = prototypes.entity.character.get_max_health('normal')
+        if player.character.health < proto_char + player.character_health_bonus + player.force.character_health_bonus then
             return
         end
         Public.hunger_update(player, player_hunger_fish_food_value)
