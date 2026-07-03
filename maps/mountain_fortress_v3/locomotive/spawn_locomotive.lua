@@ -294,7 +294,8 @@ function Public.locomotive_spawn(surface, position, reversed)
         end
 
         for _ = 1, extra_wagons do
-            local new_wagon = surface.create_entity({ name = 'cargo-wagon', position = new_position, force = 'player', defines.direction.north, quality = stateful.quality_trains })
+            local wagon_name = random(1, 100) <= 30 and 'fluid-wagon' or 'cargo-wagon'
+            local new_wagon = surface.create_entity({ name = wagon_name, position = new_position, force = 'player', defines.direction.north, quality = stateful.quality_trains })
             if new_wagon and new_wagon.valid then
                 new_wagon.minable_flag = false
                 new_wagon.operable = true
@@ -311,7 +312,7 @@ function Public.locomotive_spawn(surface, position, reversed)
     end
 
     Task.set_timeout_in_ticks(50, set_loco_cargo, data)
-    Task.set_timeout_in_ticks(300, place_tiles_token, { surface = surface, position = position })
+    Task.set_timeout_in_ticks(500, place_tiles_token, { surface = surface, position = position })
 
     game.forces.player.set_spawn_position({ this.locomotive.position.x - 5, this.locomotive.position.y }, locomotive.surface)
 end

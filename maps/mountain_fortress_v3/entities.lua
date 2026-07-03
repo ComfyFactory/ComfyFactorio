@@ -253,7 +253,7 @@ local function set_train_final_health(final_damage_amount, repair)
                     position = locomotive.position
                 }
                 local msg = ({ 'entity.train_taking_damage' })
-                Alert.alert_all_players_location(p, msg)
+                Alert.alert_all_players_location(p, msg, nil, nil, 'global')
                 Public.set().poison_deployed = true
             end
         elseif locomotive_health >= lower_low and locomotive_health <= higher_low then
@@ -271,7 +271,7 @@ local function set_train_final_health(final_damage_amount, repair)
                     position = locomotive.position
                 }
                 local msg = ({ 'entity.train_taking_damage' })
-                Alert.alert_all_players_location(p, msg)
+                Alert.alert_all_players_location(p, msg, nil, nil, 'global')
                 Public.set().robotics_deployed = true
             end
         elseif locomotive_health >= locomotive_max_health then
@@ -387,14 +387,14 @@ local function hidden_treasure(player, entity)
 
     if magic >= magic_requirement then
         local msg = rare_treasure_chest_messages[random(1, #rare_treasure_chest_messages)]
-        Alert.alert_player(player, 5, msg)
+        Alert.alert_player(player, 5, msg, nil, nil, nil, 'personal')
 
         Public.add_loot_rare(entity.surface, entity.position, 'wooden-chest', magic, current_zone)
         return
     end
 
     local msg = treasure_chest_messages[random(1, #treasure_chest_messages)]
-    Alert.alert_player(player, 5, msg, nil, nil, 0.3)
+    Alert.alert_player(player, 5, msg, nil, nil, 0.3, 'personal')
     Public.add_loot(entity.surface, entity.position, chests[random(1, size_chests)], nil, current_zone)
 end
 
@@ -867,7 +867,7 @@ local mining_events =
                 container.health = random(1, container.health)
                 local player = game.players[index]
                 local msg = ({ 'entity.found_vsmg', player.name })
-                Alert.alert_player(player, 15, msg)
+                Alert.alert_player(player, 15, msg, nil, nil, nil, 'personal', 'vmg')
             end
         end,
         256,
@@ -885,7 +885,7 @@ local mining_events =
                 container.health = random(1, container.health)
                 local player = game.players[index]
                 local msg = ({ 'entity.found_coin', player.name })
-                Alert.alert_all_players_location(player, msg, nil, 15)
+                Alert.alert_all_players_location(player, msg, nil, 15, 'minor', 'coins')
             end
         end,
         128,
@@ -900,7 +900,7 @@ local mining_events =
             local player = game.players[index]
             local msg = ({ 'entity.found_rpg_xp', player.name })
             RPG.gain_xp(player, random(1000, 3000), true)
-            Alert.alert_all_players_location(player, msg, nil, 15)
+            Alert.alert_all_players_location(player, msg, nil, 15, 'minor', 'xp')
         end,
         64,
         'RPG XP #1'
@@ -932,7 +932,7 @@ local mining_events =
             Task.set_timeout_in_ticks(5, unstuck_player_token, { index = index })
             local player = game.players[index]
             local msg = ({ 'entity.found_car', player.name })
-            Alert.alert_all_players_location(player, msg, nil, 15)
+            Alert.alert_all_players_location(player, msg, nil, 15, 'player_event')
         end,
         32,
         'Car #1'
@@ -964,7 +964,7 @@ local mining_events =
             Task.set_timeout_in_ticks(5, unstuck_player_token, { index = index })
             local player = game.players[index]
             local msg = ({ 'entity.found_tank', player.name })
-            Alert.alert_all_players_location(player, msg, nil, 15)
+            Alert.alert_all_players_location(player, msg, nil, 15, 'player_event')
         end,
         16,
         'Tank #1'
@@ -981,7 +981,7 @@ local mining_events =
                 container.health = random(1, container.health)
                 local player = game.players[index]
                 local msg = ({ 'entity.found_mk2', player.name })
-                Alert.alert_all_players_location(player, msg, nil, 15)
+                Alert.alert_all_players_location(player, msg, nil, 15, 'player_event')
             end
         end,
         8,
@@ -999,7 +999,7 @@ local mining_events =
                 container.health = random(1, container.health)
                 local player = game.players[index]
                 local msg = ({ 'entity.found_spidertron', player.name })
-                Alert.alert_all_players_location(player, msg, nil, 15)
+                Alert.alert_all_players_location(player, msg, nil, 15, 'player_event')
             end
         end,
         8,
@@ -1753,7 +1753,7 @@ function Public.loco_died()
     {
         position = p,
     }
-    Alert.alert_all_players_location(pos, msg)
+    Alert.alert_all_players_location(pos, msg, nil, nil, 'global')
     game.forces.enemy.set_friend('player', true)
     game.forces.aggressors.set_friend('player', true)
     game.forces.aggressors_frenzy.set_friend('player', true)

@@ -286,7 +286,7 @@ function Public.init_buff_selection(buffs)
 
         buff_selection.buffs[i] =
         {
-            name = buff.poll_name,
+            name = buff.display_name or Stateful.resolve_buff_poll_name(buff),
             tooltip = buff.tooltip,
             count = 0,
             index = i,

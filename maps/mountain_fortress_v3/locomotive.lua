@@ -544,12 +544,12 @@ local function on_research_finished(event)
 
     if name == 'discharge-defense-equipment' then
         local message = ({ 'locomotive.discharge_unlocked' })
-        Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac', 0.1)
+        Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac', 0.1, 'global')
     end
 
     if name == 'artillery' then
         local message = ({ 'locomotive.artillery_unlocked' })
-        Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac', 0.1)
+        Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac', 0.1, 'global')
     end
 
     local locomotive = Public.get('locomotive')
@@ -859,6 +859,92 @@ end
 local boost_players = Public.boost_players_around_train
 local pollute_area = Public.transfer_pollution
 
+local function is_in_train_area(entity)
+    local icw = ICW.get_table()
+    if not icw or not icw.wagons then
+        return false
+    end
+
+    local position = entity.position
+    for _, wagon in pairs(icw.wagons) do
+        local area = wagon.area
+        if area and wagon.surface and wagon.surface.index == entity.surface.index then
+            local left_top = area.left_top
+            local right_bottom = area.right_bottom
+            if position.x >= left_top.x and position.y >= left_top.y and position.x <= right_bottom.x and position.y <= right_bottom.y then
+                return true
+            end
+        end
+    end
+
+    return false
+end
+
+local function clear_train_area_biters()
+    if Public.get('clear_train_area_biters') == false then
+        return
+    end
+
+    local destroyed = 0
+    local max_destroy = 500
+    local icw_locomotive = Public.get('icw_locomotive')
+    local carriages = ICW.get('carriages')
+    if icw_locomotive and carriages then
+        for _, carriage in pairs(carriages) do
+            local new_area = carriage.new_area
+            if new_area and carriage.top_y then
+                log(serpent.block('new area'))
+                local area =
+                {
+                    left_top = { x = new_area.left_top.x, y = -carriage.top_y },
+                    right_bottom = { x = new_area.right_bottom.x, y = carriage.top_y }
+                }
+                log(serpent.block(area))
+                local entities = icw_locomotive.surface.find_entities_filtered
+                    {
+                        area = { area.left_top, area.right_bottom },
+                        force = 'enemy',
+                        type = { 'unit', 'spider-unit' }
+                    }
+                for _, entity in pairs(entities) do
+                    if entity.valid then
+                        entity.destroy()
+                    end
+                    destroyed = destroyed + 1
+                    if destroyed >= max_destroy then
+                        return
+                    end
+                end
+            end
+        end
+    end
+
+    if not Public.get('default_surface') then
+        local icw = ICW.get_table()
+        if icw and icw.wagons then
+            for _, wagon in pairs(icw.wagons) do
+                if wagon.area and wagon.surface and wagon.surface.valid then
+                    local entities = wagon.surface.find_entities_filtered
+                        {
+                            area = { wagon.area.left_top, wagon.area.right_bottom },
+                            force = 'enemy',
+                            type = { 'unit', 'spider-unit' }
+                        }
+                    for _, entity in pairs(entities) do
+                        if entity.valid then
+                            entity.destroy()
+                        end
+                        destroyed = destroyed + 1
+                        if destroyed >= max_destroy then
+                            return
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
 local function tick()
     local ticker = game.tick
 
@@ -872,6 +958,7 @@ local function tick()
 
     if ticker % 120 == 0 then
         boost_players()
+        clear_train_area_biters()
     end
 
     if ticker % 1200 == 0 then
@@ -884,9 +971,34 @@ local function tick()
     end
 end
 
+local function on_train_area_enemy_created(event)
+    if Public.get('clear_train_area_biters') == false then
+        return
+    end
+
+    local entity = event.entity
+    if not entity or not entity.valid then
+        return
+    end
+    if entity.force.name ~= 'enemy' then
+        return
+    end
+    if entity.type ~= 'unit' and entity.type ~= 'spider-unit' then
+        return
+    end
+    if not is_in_train_area(entity) then
+        return
+    end
+
+    entity.destroy()
+end
+
 Event.on_nth_tick(5, tick)
 Event.on_nth_tick(150, set_carriages)
 
+Event.add(defines.events.on_entity_spawned, on_train_area_enemy_created)
+Event.add(defines.events.on_built_entity, on_train_area_enemy_created)
+Event.add(defines.events.script_raised_built, on_train_area_enemy_created)
 Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
 Event.add(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)

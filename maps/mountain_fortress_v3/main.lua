@@ -16,6 +16,15 @@ require 'maps.mountain_fortress_v3.ic.main'
 require 'modules.wave_defense.main'
 require 'modules.melee_mode'
 
+local Alert = require 'utils.alert'
+
+Alert.filters =
+{
+    xp = 'notify_xp',
+    coins = 'notify_coins',
+    vmg = 'notify_vmg'
+}
+
 local Event = require 'utils.event'
 local Gui = require 'utils.gui'
 local Public = require 'maps.mountain_fortress_v3.core'
@@ -37,7 +46,8 @@ local Poll = require 'utils.gui.poll'
 local Collapse = require 'modules.collapse'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 local Task = require 'utils.task_token'
-local Alert = require 'utils.alert'
+local Config = require 'utils.gui.config'
+local Color = require 'utils.color_presets'
 local BottomFrame = require 'utils.gui.bottom_frame'
 local AntiGrief = require 'utils.antigrief'
 local Misc = require 'utils.commands.misc'
@@ -212,7 +222,7 @@ local collapse_message =
             {
                 position = pos
             }
-            Alert.alert_all_players_location(collapse_position, message)
+            Alert.alert_all_players_location(collapse_position, message, nil, nil, 'global')
         end
     )
 
@@ -454,6 +464,10 @@ function Public.pre_init_task(current_task)
     local this = Public.get()
     game.speed = 1
 
+    if not current_task.starting_planet then
+        current_task.starting_planet = Public.get_planet()
+    end
+
     local active_surface_index = Public.get('active_surface_index')
     if active_surface_index then
         local surface = game.surfaces[active_surface_index]
@@ -542,8 +556,10 @@ function Public.pre_init_task(current_task)
         WD.destroy_wave_gui(player)
         ICMinimap.kill_minimap(player)
         Event.raise(Public.events.reset_map, { player_index = player.index })
-        Public.add_player_to_permission_group(player, 'init_island', true)
-        player.print(mapkeeper .. ' Map is resetting, please wait a moment. All GUI buttons are disabled at the moment.')
+        if not Public.get('first_boot') then
+            Public.add_player_to_permission_group(player, 'init_island', true)
+            player.print(mapkeeper .. ' Map is resetting, please wait a moment. All GUI buttons are disabled at the moment.')
+        end
     end
 
     Public.reset_func_table()
@@ -900,6 +916,7 @@ function Public.to_fortress(current_task)
     current_task.message = 'Moved players back to fortress!'
     current_task.state_id = 10
     current_task.done = true
+    Public.set('first_boot', false)
     Server.output_script_data('Moved players back to fortress!')
 end
 
@@ -953,8 +970,6 @@ function Public.init_mtn()
     PL.show_roles_in_list(true)
     PL.rpg_enabled(true)
     Collapse.set_kill_specific_entities(collapse_kill)
-
-    Public.create_landing_surface()
 
     local tooltip =
     {
@@ -1026,5 +1041,69 @@ Event.on_init(function ()
     Public.create_minerals_lookup_table()
     Public.create_enemies_lookup_table()
 end)
+
+Config.register_scenario_module(
+    {
+        id = 'alert_notifications',
+        admin_only = false,
+        gui_rows = Config.register_token(
+            function (player, frame)
+                local prefs = Alert.get_notify_prefs(player)
+
+                local switch_state = 'left'
+                if prefs.notify_xp == false then
+                    switch_state = 'right'
+                end
+                Config.add_switch(frame, switch_state, 'alert_notify_xp_toggle', { 'alert.notify_xp_label' }, { 'alert.notify_xp_tooltip' })
+                frame.add({ type = 'line' })
+
+                switch_state = 'left'
+                if prefs.notify_coins == false then
+                    switch_state = 'right'
+                end
+                Config.add_switch(frame, switch_state, 'alert_notify_coins_toggle', { 'alert.notify_coins_label' }, { 'alert.notify_coins_tooltip' })
+                frame.add({ type = 'line' })
+
+                switch_state = 'left'
+                if prefs.notify_vmg == false then
+                    switch_state = 'right'
+                end
+                Config.add_switch(frame, switch_state, 'alert_notify_vmg_toggle', { 'alert.notify_vmg_label' }, { 'alert.notify_vmg_tooltip' })
+                frame.add({ type = 'line' })
+            end),
+        handlers =
+        {
+            ['alert_notify_xp_toggle'] = Config.register_token(
+                function (player, event)
+                    if event.element.switch_state == 'left' then
+                        Alert.set_notify_pref(player, 'notify_xp', true)
+                        player.print('XP notifications enabled.', { color = Color.green })
+                    else
+                        Alert.set_notify_pref(player, 'notify_xp', false)
+                        player.print('XP notifications disabled.', { color = Color.red })
+                    end
+                end),
+            ['alert_notify_coins_toggle'] = Config.register_token(
+                function (player, event)
+                    if event.element.switch_state == 'left' then
+                        Alert.set_notify_pref(player, 'notify_coins', true)
+                        player.print('Coin notifications enabled.', { color = Color.green })
+                    else
+                        Alert.set_notify_pref(player, 'notify_coins', false)
+                        player.print('Coin notifications disabled.', { color = Color.red })
+                    end
+                end),
+            ['alert_notify_vmg_toggle'] = Config.register_token(
+                function (player, event)
+                    if event.element.switch_state == 'left' then
+                        Alert.set_notify_pref(player, 'notify_vmg', true)
+                        player.print('VMG notifications enabled.', { color = Color.green })
+                    else
+                        Alert.set_notify_pref(player, 'notify_vmg', false)
+                        player.print('VMG notifications disabled.', { color = Color.red })
+                    end
+                end)
+        }
+    })
 
 return Public

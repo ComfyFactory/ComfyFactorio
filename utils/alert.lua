@@ -11,19 +11,29 @@ local next = next
 
 local Public = {}
 
+Public.categories =
+{
+    global = { sound = 'utility/new_objective', volume = 0.65 },
+    player_event = { sound = 'utility/scenario_message', volume = 0.50 },
+    personal = { sound = 'utility/scenario_message', volume = 0.40 },
+    minor = { sound = 'utility/scenario_message', volume = 0.30 }
+}
+
 local settings = {}
 local active_alerts = {}
 local id_counter = { 0 }
+local player_settings = {}
 local alert_zoom_to_pos = Gui.uid_name()
 
 local on_tick
 
 Global.register(
-    { active_alerts = active_alerts, id_counter = id_counter, settings = settings },
+    { active_alerts = active_alerts, id_counter = id_counter, settings = settings, player_settings = player_settings },
     function (tbl)
         active_alerts = tbl.active_alerts
         id_counter = tbl.id_counter
         settings = tbl.settings
+        player_settings = tbl.player_settings
     end
 )
 
@@ -36,6 +46,36 @@ local close_alert_name = Gui.uid_name()
 -- Two elements in the same parent cannot have the same name. If you need your
 -- own name you can use Public.close_alert(element)
 Public.close_alert_name = close_alert_name
+
+local function resolve_alert_sound(category, volume_override)
+    if category and Public.categories[category] then
+        local cat = Public.categories[category]
+        return cat.sound, volume_override or cat.volume
+    end
+    return 'utility/new_objective', volume_override or 0.60
+end
+
+Public.filters = {}
+
+local function should_notify(player, filter)
+    if not filter then
+        return true
+    end
+    local key = Public.filters[filter]
+    if not key then
+        return true
+    end
+    local prefs = player_settings[player.index]
+    if not prefs then
+        return true
+    end
+    if prefs[key] == false then
+        return false
+    end
+    return true
+end
+
+Public.should_notify = should_notify
 
 local delay_print_alert_token =
     Task.register(
@@ -53,7 +93,7 @@ local delay_print_alert_token =
             local sprite = event.sprite
             local color = event.color
 
-            Public.alert_all_players(ttl, text, color, sprite, 1)
+            Public.alert_all_players(ttl, text, color, sprite, 1, event.category, event.filter)
         end
     )
 
@@ -254,8 +294,20 @@ on_tick =
 ---@param duration number
 ---@param template function
 ---@param sound string|nil sound to play, nil to not play anything
-function Public.alert_player_template(player, duration, template, sound, volume)
-    sound = sound or 'utility/new_objective'
+---@param volume number|nil volume of the alert
+---@param category string category of the alert
+---@param filter string filter of the alert
+function Public.alert_player_template(player, duration, template, sound, volume, category, filter)
+    if not should_notify(player, filter) then
+        return
+    end
+
+    if not sound then
+        sound, volume = resolve_alert_sound(category, volume)
+    else
+        volume = volume or 0.60
+    end
+
     local container = alert_to(player, duration, sound, volume)
     if container then
         template(container, player)
@@ -268,12 +320,22 @@ end
 ---@param duration number
 ---@param template function
 ---@param sound string sound to play, nil to not play anything
-function Public.alert_force_template(force, duration, template, sound)
-    sound = sound or 'utility/new_objective'
+---@param category string category of the alert
+---@param filter string filter of the alert
+function Public.alert_force_template(force, duration, template, sound, volume, category, filter)
     local players = force.connected_players
     for i = 1, #players do
         local player = players[i]
-        template(alert_to(player, duration, sound), player)
+        if should_notify(player, filter) then
+            local alert_sound = sound
+            local alert_volume = volume
+            if not alert_sound then
+                alert_sound, alert_volume = resolve_alert_sound(category, volume)
+            else
+                alert_volume = alert_volume or 0.60
+            end
+            template(alert_to(player, duration, alert_sound, alert_volume), player)
+        end
     end
 end
 
@@ -282,12 +344,23 @@ end
 ---@param duration number
 ---@param template function
 ---@param sound string|nil sound to play, nil to not play anything
-function Public.alert_all_players_template(duration, template, sound)
-    sound = sound or 'utility/new_objective'
+---@param volume number|nil volume of the alert
+---@param category string category of the alert
+---@param filter string filter of the alert
+function Public.alert_all_players_template(duration, template, sound, volume, category, filter)
     local players = game.connected_players
     for i = 1, #players do
         local player = players[i]
-        template(alert_to(player, duration, sound), player)
+        if should_notify(player, filter) then
+            local alert_sound = sound
+            local alert_volume = volume
+            if not alert_sound then
+                alert_sound, alert_volume = resolve_alert_sound(category, volume)
+            else
+                alert_volume = alert_volume or 0.60
+            end
+            template(alert_to(player, duration, alert_sound, alert_volume), player)
+        end
     end
 end
 
@@ -295,7 +368,10 @@ end
 ---@param player LuaPlayer
 ---@param message string|table
 ---@param color string|table|nil
-function Public.alert_all_players_location(player, message, color, duration)
+---@param duration number|nil duration of the alert
+---@param category string|nil category of the alert
+---@param filter string|nil filter of the alert
+function Public.alert_all_players_location(player, message, color, duration, category, filter)
     local length = duration or 15
     Public.alert_all_players_template(
         length,
@@ -321,7 +397,11 @@ function Public.alert_all_players_location(player, message, color, duration)
             local label_style = label.style
             label_style.single_line = false
             label_style.font_color = color or Color.comfy
-        end
+        end,
+        nil,
+        nil,
+        category,
+        filter
     )
 end
 
@@ -330,7 +410,10 @@ end
 ---@param duration number
 ---@param message string|table
 ---@param color string|table|nil
-function Public.alert_player(player, duration, message, color, sprite, volume)
+---@param volume number|nil volume of the alert
+---@param category string|nil category of the alert
+---@param filter string|nil filter of the alert
+function Public.alert_player(player, duration, message, color, sprite, volume, category, filter)
     Public.alert_player_template(
         player,
         duration,
@@ -346,7 +429,9 @@ function Public.alert_player(player, duration, message, color, sprite, volume)
             label.style.font_color = color or Color.comfy
         end,
         nil,
-        volume
+        volume,
+        category,
+        filter
     )
 end
 
@@ -355,7 +440,9 @@ end
 ---@param duration number
 ---@param message string|table
 ---@param color string|table|nil
-function Public.alert_player_warning(player, duration, message, color)
+---@param category string|nil category of the alert
+---@param filter string|nil filter of the alert
+function Public.alert_player_warning(player, duration, message, color, category, filter)
     Public.alert_player_template(
         player,
         duration,
@@ -369,7 +456,11 @@ function Public.alert_player_warning(player, duration, message, color)
             local label = container.add({ type = 'label', name = close_alert_name, caption = message })
             label.style.single_line = false
             label.style.font_color = color or Color.comfy
-        end
+        end,
+        nil,
+        nil,
+        category,
+        filter
     )
 end
 
@@ -377,11 +468,13 @@ end
 ---@param force LuaForce
 ---@param duration number
 ---@param message string|table
-function Public.alert_force(force, duration, message)
+---@param category string|nil category of the alert
+---@param filter string|nil filter of the alert
+function Public.alert_force(force, duration, message, category, filter)
     local players = force.connected_players
     for i = 1, #players do
         local player = players[i]
-        Public.alert_player(player, duration, message)
+        Public.alert_player(player, duration, message, nil, nil, nil, category, filter)
     end
 end
 
@@ -389,11 +482,14 @@ end
 ---@param duration number
 ---@param message string|table
 ---@param color string|table|nil
-function Public.alert_all_players(duration, message, color, sprite, volume)
+---@param volume number|nil volume of the alert
+---@param category string|nil category of the alert
+---@param filter string|nil filter of the alert
+function Public.alert_all_players(duration, message, color, sprite, volume, category, filter)
     local players = game.connected_players
     for i = 1, #players do
         local player = players[i]
-        Public.alert_player(player, duration, message, color, sprite, volume)
+        Public.alert_player(player, duration, message, color, sprite, volume, category, filter)
     end
 end
 
@@ -402,6 +498,24 @@ end
 function Public.add_custom_zoom_to_pos(token_id)
     settings.custom_zoom_to_pos = token_id or nil
 end
+
+function Public.get_notify_prefs(player)
+    return player_settings[player.index] or {}
+end
+
+function Public.set_notify_pref(player, key, enabled)
+    if not player_settings[player.index] then
+        player_settings[player.index] = {}
+    end
+    player_settings[player.index][key] = enabled
+end
+
+Event.add(
+    defines.events.on_player_removed,
+    function (event)
+        player_settings[event.player_index] = nil
+    end
+)
 
 Commands.new('notify_all_players', 'Usable only for admins - sends an alert message to all players!')
     :add_parameter('message', false, 'string')

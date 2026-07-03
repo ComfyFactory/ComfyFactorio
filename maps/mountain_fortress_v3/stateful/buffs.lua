@@ -207,10 +207,11 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'defense_3',
             discord = 'Defense starting supplies - start with rocket launcher and ammo',
-            tooltip = 'Selecting this buff will grant the team 1 rocket launcher and 100 rockets at start!',
+            tooltip = 'Selecting this buff will grant the team 1 rocket launcher and 100 rockets at start! Repeat picks upgrade launcher quality.',
             poll_name = 'Starting items (rocket launcher and ammo)',
             modifier = 'starting_items',
-            limit = 1,
+            quality_item = 'rocket-launcher',
+            limit = 5,
             add_per_buff = 1,
             items =
             {
@@ -221,10 +222,11 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'armor',
             discord = 'Armor starting supplies - start with some armor and solar panels',
-            tooltip = 'Selecting this buff will grant the team 1 modular armor and 2 solar panel equipment at start!',
+            tooltip = 'Selecting this buff will grant the team 1 modular armor and 2 solar panel equipment at start! Repeat picks upgrade armor quality.',
             poll_name = 'Starting items (armor and solar panels)',
             modifier = 'starting_items',
-            limit = 1,
+            quality_item = 'modular-armor',
+            limit = 5,
             add_per_buff = 1,
             items =
             {
@@ -350,10 +352,11 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'roboport_equipement',
             discord = 'Equipement tech - start with a personal roboport',
-            tooltip = 'Selecting this buff will grant the team 1 personal roboport equipment at start!',
+            tooltip = 'Selecting this buff will grant the team 1 personal roboport equipment at start! Repeat picks upgrade roboport quality.',
             poll_name = 'Starting items (personal roboport)',
             modifier = 'starting_items',
-            limit = 4,
+            quality_item = 'personal-roboport-equipment',
+            limit = 5,
             add_per_buff = 1,
             items =
             {
@@ -397,6 +400,36 @@ function Public.get_random_buff(fetch_all, only_force)
             techs =
             {
                 { name = 'military-2', count = 1 }
+            }
+        },
+        {
+            name = 'starting_car',
+            discord = 'Vehicle starting supplies - start with a car',
+            tooltip = 'Selecting this buff will grant the team 1 car at start! Repeat picks upgrade car quality. Requires military 2 tech unlocked.',
+            poll_name = 'Starting Car',
+            modifier = 'starting_items',
+            quality_item = 'car',
+            requires_tech = 'military-2',
+            limit = 5,
+            add_per_buff = 1,
+            items =
+            {
+                { name = 'car', count = 1 }
+            }
+        },
+        {
+            name = 'starting_tank',
+            discord = 'Vehicle starting supplies - start with a tank',
+            tooltip = 'Selecting this buff will grant the team 1 tank at start! Repeat picks upgrade tank quality. Requires legendary car.',
+            poll_name = 'Starting Tank',
+            modifier = 'starting_items',
+            quality_item = 'tank',
+            requires_item_quality = { name = 'car', quality = 'legendary' },
+            limit = 5,
+            add_per_buff = 1,
+            items =
+            {
+                { name = 'tank', count = 1 }
             }
         },
         {

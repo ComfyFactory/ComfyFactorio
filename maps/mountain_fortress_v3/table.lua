@@ -38,8 +38,9 @@ local this =
     -- new initializer for scenario management because the old one sucked hard
     current_task =
     {
-        state = 'move_players',
-        surface_name = 'init',
+        state = 'pre_init_task',
+        surface_name = 'nauvis',
+        starting_planet = 'fortress',
         default_task = 'move_players',
         show_messages = false,
         step = 1
@@ -59,6 +60,7 @@ local this =
         disable_terrain = false
     },
     random_planet_enabled = true,
+    first_boot = true,
 }
 
 
@@ -230,6 +232,13 @@ Config.register_scenario_module(
                 end
                 Config.add_switch(frame, switch_state, 'toggle_trusted_collapse', 'Non-trusted Collapse', 'On = Allow non-trusted to trigger collapse.\nOff = Disallow non-trusted to trigger collapse.')
                 frame.add({ type = 'line' })
+
+                switch_state = 'right'
+                if this.clear_train_area_biters ~= false then
+                    switch_state = 'left'
+                end
+                Config.add_switch(frame, switch_state, 'clear_train_area_biters', 'Train Area Biters', 'On = Removes biters in the train/wagon interior area.\nOff = Allows biters inside the train area.')
+                frame.add({ type = 'line' })
             end),
         handlers =
         {
@@ -373,6 +382,16 @@ Config.register_scenario_module(
                     else
                         this.block_non_trusted_trigger_collapse = false
                         Config.get_actor(event, '[Collapse]', 'has disabled that non-trusted players can trigger collapse.', true)
+                    end
+                end),
+            ['clear_train_area_biters'] = Config.register_token(
+                function (_, event)
+                    if event.element.switch_state == 'left' then
+                        this.clear_train_area_biters = true
+                        Config.get_actor(event, '[Train Area]', 'has enabled train area biter clearing.', true)
+                    else
+                        this.clear_train_area_biters = false
+                        Config.get_actor(event, '[Train Area]', 'has disabled train area biter clearing.', true)
                     end
                 end)
         }
@@ -649,6 +668,7 @@ function Public.reset_main_table()
     this.market_rpg_purchased = {}
     this.mystical_chest_price = nil
     this.collapse_grace = true
+    this.clear_train_area_biters = true
     this.corpse_removal_disabled = true
     this.locomotive_biter = nil
     this.disconnect_wagon = false
@@ -843,8 +863,12 @@ function Public.set_stateful_settings(key, value)
 end
 
 function Public.set_task(task, surface_name)
+    surface_name = surface_name or 'init'
+    if task == 'move_players' and surface_name == 'init' then
+        require('maps.mountain_fortress_v3.surface').create_landing_surface()
+    end
     this.current_task.state = task
-    this.current_task.surface_name = surface_name or 'init'
+    this.current_task.surface_name = surface_name
 end
 
 function Public.is_task_done()

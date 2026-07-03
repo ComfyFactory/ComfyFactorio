@@ -92,7 +92,7 @@ local collapse_message =
             {
                 position = pos
             }
-            Alert.alert_all_players_location(collapse_position, message)
+            Alert.alert_all_players_location(collapse_position, message, nil, nil, 'global')
         end
     )
 
@@ -133,7 +133,7 @@ local spidertron_unlocked =
                 if event.bw then
                     message = ({ 'breached_wall.spidertron_unlocked_bw' })
                 end
-                Alert.alert_all_players(30, message, nil, 'achievement/tech-maniac', 0.1)
+                Alert.alert_all_players(30, message, nil, 'achievement/tech-maniac', 0.1, 'global')
             end
         end
     )
@@ -147,7 +147,7 @@ local first_player_to_zone =
             end
             local breached_wall = data.breached_wall
             local message = ({ 'breached_wall.first_to_reach', player.name, breached_wall })
-            Alert.alert_all_players(10, message)
+            Alert.alert_all_players(10, message, nil, nil, nil, 'global')
             Public.shuffle_prices()
         end
     )
@@ -156,7 +156,7 @@ local artillery_warning =
     Task.register(
         function ()
             local message = ({ 'breached_wall.artillery_warning' })
-            Alert.alert_all_players(10, message)
+            Alert.alert_all_players(10, message, nil, nil, nil, 'global')
         end
     )
 
@@ -172,10 +172,10 @@ local breach_wall_warning_teleport = function (player, check_trusted)
 
     if not check_trusted then
         local message = ({ 'breached_wall.warning_teleport', player.name })
-        Alert.alert_all_players(40, message)
+        Alert.alert_all_players(40, message, nil, nil, nil, 'global')
     else
         local message = ({ 'breached_wall.warning_not_trusted_teleport', player.name })
-        Alert.alert_all_players(40, message)
+        Alert.alert_all_players(40, message, nil, nil, nil, 'global')
     end
     local pos = player.physical_surface.find_non_colliding_position('character', player.force.get_spawn_position(player.physical_surface), 3, 0)
     if pos then
@@ -207,7 +207,7 @@ local breach_wall_enforced = function (player)
     local adjusted_zones = Public.get('adjusted_zones')
 
     local message = ({ 'breached_wall.warning_teleport_enforced', player.name })
-    Alert.alert_all_players(40, message)
+    Alert.alert_all_players(40, message, nil, nil, nil, 'global')
     if adjusted_zones.reversed then
         player.teleport({ position.x, position.y - 10 }, surface)
     else
@@ -234,7 +234,7 @@ local spidertron_too_far =
         function (data)
             local player = data.player
             local message = ({ 'breached_wall.cheating_through', player.name })
-            Alert.alert_all_players(30, message)
+            Alert.alert_all_players(30, message, nil, nil, nil, 'global')
         end
     )
 

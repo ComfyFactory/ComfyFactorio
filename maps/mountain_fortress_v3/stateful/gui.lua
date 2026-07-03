@@ -186,9 +186,9 @@ local function notify_won_to_discord(buff)
 
     Public.post_mvp_to_discord()
 
-    Alert.alert_all_players(100, 'Buff granted: ' .. buff.discord)
-    Alert.alert_all_players(100, 'Buff granted: ' .. buff.discord)
-    Alert.alert_all_players(100, 'Buff granted: ' .. buff.discord)
+    Alert.alert_all_players(100, 'Buff granted: ' .. buff.discord, nil, nil, nil, 'global')
+    Alert.alert_all_players(100, 'Buff granted: ' .. buff.discord, nil, nil, nil, 'global')
+    Alert.alert_all_players(100, 'Buff granted: ' .. buff.discord, nil, nil, nil, 'global')
 end
 
 local function clear_all_frames()
@@ -234,7 +234,7 @@ local warn_player_sound_token =
             end
             local particle = event.particle
 
-            player.play_sound { path = 'utility/new_objective', volume_modifier = 0.75 }
+            player.play_sound { path = 'utility/scenario_message', volume_modifier = 0.75 }
 
             create_particles(player.physical_surface, particle, player.physical_position, 128)
         end
@@ -320,7 +320,7 @@ end
 local function play_achievement_unlocked()
     Core.iter_connected_players(
         function (player)
-            player.play_sound { path = 'utility/achievement_unlocked', volume_modifier = 0.75 }
+            player.play_sound { path = 'utility/tutorial_notice', volume_modifier = 0.75 }
             Task.set_timeout_in_ticks(10, spread_particles_token, { player_index = player.index, particle = 'iron-ore-particle' })
             Task.set_timeout_in_ticks(15, spread_particles_token, { player_index = player.index, particle = 'branch-particle' })
             Task.set_timeout_in_ticks(20, spread_particles_token, { player_index = player.index, particle = 'copper-ore-particle' })
@@ -455,7 +455,10 @@ local function render_buff_collection(parent_pane, buffs_source, buffs_collected
         end
     end
 
-    local function format_starting_item_text(item_name, count)
+    local function format_starting_item_text(item_name, count, quality)
+        if quality then
+            return '[font=default-large] [item=' .. item_name .. ',quality=' .. quality .. '][/font]: [font=default-bold]' .. quality .. '[/font]\n'
+        end
         return '[font=default-large] [item=' .. item_name .. '][/font]: [font=default-bold]' .. count .. '[/font]\n'
     end
 
@@ -481,7 +484,7 @@ local function render_buff_collection(parent_pane, buffs_source, buffs_collected
 
     if buffs_collected_source.starting_items then
         for item_name, item_data in pairs(buffs_collected_source.starting_items) do
-            local text = format_starting_item_text(item_name, item_data.count)
+            local text = format_starting_item_text(item_name, item_data.count, item_data.quality)
             create_input_element(starting_grid, 'label', text, nil, nil, item_data.discord, 30)
         end
     end
@@ -1138,7 +1141,7 @@ local function update_raw()
                 stateful.objectives_time_spent.randomized_zone = tick
                 play_achievement_unlocked()
                 local reward = Public.reward_goal_completion()
-                Alert.alert_all_players(100, 'Objective: [color=blue]Breach zone[/color] has been completed! ' .. reward .. '!')
+                Alert.alert_all_players(100, 'Objective: [color=blue]Breach zone[/color] has been completed! ' .. reward .. '!', nil, nil, nil, 'global')
                 Server.to_discord_embed('Objective: **Breach zone** has been completed! ' .. reward .. '!')
                 stateful.objectives_completed_count = stateful.objectives_completed_count + 1
             end
@@ -1164,7 +1167,7 @@ local function update_raw()
                         stateful.objectives_completed.supplies = true
                         stateful.objectives_time_spent.supplies = tick
                         local reward = Public.reward_goal_completion()
-                        Alert.alert_all_players(100, 'Objective: [color=blue]Produce items[/color] has been completed! ' .. reward .. '!')
+                        Alert.alert_all_players(100, 'Objective: [color=blue]Produce items[/color] has been completed! ' .. reward .. '!', nil, nil, nil, 'global')
                         Server.to_discord_embed('Objective: **Produce items** has been completed! ' .. reward .. '!')
                         play_achievement_unlocked()
                         stateful.objectives_completed_count = stateful.objectives_completed_count + 1
@@ -1193,7 +1196,7 @@ local function update_raw()
                     stateful.objectives_time_spent.single_item = tick
                     play_achievement_unlocked()
                     local reward = Public.reward_goal_completion()
-                    Alert.alert_all_players(100, 'Objective: [color=blue]Produce item[/color] has been completed! ' .. reward .. '!')
+                    Alert.alert_all_players(100, 'Objective: [color=blue]Produce item[/color] has been completed! ' .. reward .. '!', nil, nil, nil, 'global')
                     Server.to_discord_embed('Objective: **Produce item** has been completed! ' .. reward .. '!')
                     stateful.objectives_completed_count = stateful.objectives_completed_count + 1
                 end
@@ -1277,14 +1280,14 @@ local function update_raw()
                     Server.output_script_data('Darkness is now disabled')
                     surface.brightness_visual_weights = { a = 1, b = 0, g = 0, r = 0 }
                     local message = '[color=yellow]Darkness:[/color] The nights seem to be lighter!'
-                    Alert.alert_all_players(100, message)
+                    Alert.alert_all_players(100, message, nil, nil, nil, 'global')
                 else
                     Server.output_script_data('Darkness is now enabled')
                     surface.brightness_visual_weights = { a = 1, b = 0.7, g = 0.7, r = 0.7 }
                     Public.set_stateful_settings('darkness', true)
                     Public.set('darkness', true)
                     local message = '[color=yellow]Darkness:[/color] The nights seem to be darker!'
-                    Alert.alert_all_players(100, message)
+                    Alert.alert_all_players(100, message, nil, nil, nil, 'global')
                 end
 
                 game.forces.enemy.set_friend('player', true)
@@ -1348,7 +1351,7 @@ local function update_raw()
                 stateful.objectives_completed[objective_name] = true
                 stateful.objectives_time_spent[objective_name] = tick
                 local reward = Public.reward_goal_completion()
-                Alert.alert_all_players(100, 'Objective: [color=blue]' .. objective.discord .. '[/color] has been completed! ' .. reward .. '!')
+                Alert.alert_all_players(100, 'Objective: [color=blue]' .. objective.discord .. '[/color] has been completed! ' .. reward .. '!', nil, nil, nil, 'global')
                 Server.to_discord_embed('Objective: **' .. objective.discord .. '** has been completed! ' .. reward .. '!')
                 play_achievement_unlocked()
                 stateful.objectives_completed_count = stateful.objectives_completed_count + 1
@@ -1360,8 +1363,8 @@ local function update_raw()
         stateful.objectives_completed.boss_time = true
 
         Server.to_discord_embed('All objectives has been completed! Take your time to prepare for the final push!')
-        Alert.alert_all_players(300, 'All objectives has been completed!')
-        Alert.alert_all_players(300, 'Take your time to prepare for the final push!')
+        Alert.alert_all_players(300, 'All objectives has been completed!', nil, nil, nil, 'global')
+        Alert.alert_all_players(300, 'Take your time to prepare for the final push!', nil, nil, nil, 'global')
 
         stateful.collection.gather_time = tick + (10 * 3600)
         stateful.collection.gather_time_timer = tick + (10 * 3600)
@@ -1378,7 +1381,7 @@ local function update_raw()
         Collapse.set_reverse_position({ 0, reverse_position })
         Collapse.set_reverse_direction()
         Collapse.reverse_start_now(true)
-        Alert.alert_all_players(200, 'Reverse collapse has been initiated!')
+        Alert.alert_all_players(200, 'Reverse collapse has been initiated!', nil, nil, nil, 'global')
         Server.to_discord_embed('Reverse collapse has been initiated!')
         -- Public.stateful_blueprints.blueprint()
         WD.nuke_wave_gui()
