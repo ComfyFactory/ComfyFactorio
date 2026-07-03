@@ -893,13 +893,11 @@ local function clear_train_area_biters()
         for _, carriage in pairs(carriages) do
             local new_area = carriage.new_area
             if new_area and carriage.top_y then
-                log(serpent.block('new area'))
                 local area =
                 {
                     left_top = { x = new_area.left_top.x, y = -carriage.top_y },
                     right_bottom = { x = new_area.right_bottom.x, y = carriage.top_y }
                 }
-                log(serpent.block(area))
                 local entities = icw_locomotive.surface.find_entities_filtered
                     {
                         area = { area.left_top, area.right_bottom },
