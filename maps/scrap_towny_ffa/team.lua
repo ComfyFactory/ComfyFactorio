@@ -1066,7 +1066,6 @@ local function setup_enemy_force()
         e_force.set_friend(game.forces['rogue'], true)
         e_force.set_cease_fire(game.forces['rogue'], true)
     else
-
         e_force.set_friend(game.forces['rogue'], false)
         e_force.set_cease_fire(game.forces['rogue'], false)
     end
@@ -1156,7 +1155,6 @@ local function on_entity_damaged(event)
             if cause.type == 'character' and force.index == game.forces['player'].index then
                 local player = cause.player
                 if player and player.valid and force.index == game.forces['player'].index then
-
                     set_player_to_rogue(player)
                 end
             end
@@ -1164,26 +1162,22 @@ local function on_entity_damaged(event)
             if cause.type == 'car' or cause.type == 'tank' then
                 local driver = cause.get_driver()
                 if driver and driver.valid then
-
                     local player = driver
                     if driver.object_name == 'LuaEntity' then
                         player = driver.player
                     end
                     if player and player.valid and player.force.index == game.forces['player'].index then
-
                         set_player_to_rogue(player)
                     end
                 end
 
                 local passenger = cause.get_passenger()
                 if passenger and passenger.valid then
-
                     local player = passenger
                     if passenger.object_name == 'LuaEntity' then
                         player = passenger.player
                     end
                     if player and player.valid and player.force.index == game.forces['player'].index then
-
                         set_player_to_rogue(player)
 
                         cause.force = game.forces['rogue']
@@ -1195,7 +1189,6 @@ local function on_entity_damaged(event)
                 local train = cause.train
                 for _, passenger in pairs(train.passengers) do
                     if passenger and passenger.valid then
-
                         local player = passenger
                         if passenger.object_name == 'LuaEntity' then
                             player = passenger.player
@@ -1212,7 +1205,6 @@ local function on_entity_damaged(event)
             if cause.type == 'combat-robot' then
                 local owner = cause.combat_robot_owner
                 if owner and owner.valid and owner.force == game.forces['player'] then
-
                     set_player_to_rogue(owner)
 
                     cause.force = game.forces['rogue']
@@ -1253,6 +1245,9 @@ local function on_console_command(event)
 end
 
 local function on_console_chat(event)
+    if not event.player_index then
+        return
+    end
     local player = game.players[event.player_index]
     if string_match(string_lower(event.message), '%[armor%=') then
         player.clear_console()
