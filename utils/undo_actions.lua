@@ -96,6 +96,13 @@ local converted_entities =
     ['curved-rail'] = 'rail',
 }
 
+local ignored_entity_types =
+{
+    ['simple-entity'] = true,
+    ['simple-entity-with-owner'] = true,
+    ['tree'] = true,
+}
+
 local function check_undo_redo_stack(player)
     if not type(player) == 'userdata' then
         error('Player is not userdata.')
@@ -128,6 +135,11 @@ local function check_undo_redo_stack(player)
                     local target = action.target
                     if not (target and target.name and target.position) then
                         Server.output_script_data(module_name .. 'Invalid target data.')
+                        goto continue_action
+                    end
+
+                    local prototype = prototypes.entity[target.name]
+                    if prototype and ignored_entity_types[prototype.type] then
                         goto continue_action
                     end
 
