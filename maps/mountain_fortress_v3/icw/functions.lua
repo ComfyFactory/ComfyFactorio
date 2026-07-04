@@ -412,7 +412,7 @@ local function equal_fluid(source_tank, target_tank)
     if amount > 0 then
         local inserted_amount = target_tank.insert_fluid({ name = source_fluid.name, amount = amount, temperature = source_fluid.temperature })
         if inserted_amount > 0 then
-            source_tank.remove_fluid({ name = source_fluid.name, amount = inserted_amount })
+            source_tank.remove_fluid(inserted_amount, 1)
         end
     end
 end

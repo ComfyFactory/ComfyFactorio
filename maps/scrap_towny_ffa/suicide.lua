@@ -4,7 +4,6 @@ local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 
 local yellow = { r = 200, g = 200, b = 0 }
 
--- Must be at least 1 minute
 local minutes_to_die = 5
 
 local one_minute = 60 * 60
@@ -31,7 +30,7 @@ suicide_handler =
             end
 
             if not this.suicides[player.index] then
-                -- the suicide was cancelled (the character died)
+
                 return
             end
 

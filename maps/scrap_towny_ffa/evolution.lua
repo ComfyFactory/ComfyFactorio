@@ -5,37 +5,39 @@ local Public = {}
 local math_floor = math.floor
 local math_log10 = math.log10
 
-local biters = {
+local biters =
+{
     [1] = 'small-biter',
     [2] = 'medium-biter',
     [3] = 'big-biter',
     [4] = 'behemoth-biter'
 }
 
-local spitters = {
+local spitters =
+{
     [1] = 'small-spitter',
     [2] = 'medium-spitter',
     [3] = 'big-spitter',
     [4] = 'behemoth-spitter'
 }
 
-local worms = {
+local worms =
+{
     [1] = 'small-worm-turret',
     [2] = 'medium-worm-turret',
     [3] = 'big-worm-turret',
     [4] = 'behemoth-worm-turret'
 }
 
--- evolution max distance in tiles
 local max_evolution_distance = 1024
 local max_pollution_behemoth = 256
 local max_pollution_big = 64
 local max_pollution_medium = 16
--- max_factor < 1.0 means technology sum of weights will be greater than 1.0
+
 local max_factor = 0.8
 
--- technology weights (biter, spitter, worm)
-local technology_weights = {
+local technology_weights =
+{
     ['advanced-electronics'] = { biter = 1, spitter = 1, worm = 1 },
     ['advanced-electronics-2'] = { biter = 1, spitter = 1, worm = 1 },
     ['advanced-material-processing'] = { biter = 1, spitter = 1, worm = 1 },
@@ -240,22 +242,11 @@ max_spitter_weight = max_spitter_weight * max_factor
 max_worm_weight = max_worm_weight * max_factor
 
 local function get_unit_size(evolution)
-    -- returns a value 1-4 that represents the unit size
 
-    -- basically evo values of:  0%      10%     20%     30%     40%     50%     60%     70%     80%     90%     100%
-    --                           -----------------------------------------------------------------------------------
-    -- small unit chances are    100%    60%     40%     30%     20%     15%     7.5%    0%      0%      0%      0%
-    -- medium unit chances are   0%      40%     40%     30%     20%     15%     7.5%    12.5%   25%     0%      0%
-    -- big unit chances are      0%      0%      20%     40%     60%     60%     75%     75%     50%     50%     0%
-    -- behemoth unit chances are 0%      0%      0%      0%      0%      10%     10%     12.5%   25%     50%     100%
-    -- and curve accordingly in between evo values
-
-    -- magic stuff happens here
-    -- 0%
     if (evolution < 0.1) then
         return 1
     end
-    -- 10%
+
     if (evolution >= 0.1 and evolution < 0.2) then
         local r = math.random()
         if r < 0.6 then
@@ -263,7 +254,7 @@ local function get_unit_size(evolution)
         end
         return 2
     end
-    -- 20%
+
     if (evolution >= 0.2 and evolution < 0.3) then
         local r = math.random()
         if r < 0.8 then
@@ -275,7 +266,7 @@ local function get_unit_size(evolution)
         end
         return 3
     end
-    -- 30%
+
     if (evolution >= 0.3 and evolution < 0.4) then
         local r = math.random()
         if r < 0.6 then
@@ -287,7 +278,7 @@ local function get_unit_size(evolution)
         end
         return 3
     end
-    -- 40%
+
     if (evolution >= 0.4 and evolution < 0.5) then
         local r = math.random()
         if r < 0.4 then
@@ -299,7 +290,7 @@ local function get_unit_size(evolution)
         end
         return 3
     end
-    -- 50%
+
     if (evolution >= 0.5 and evolution < 0.6) then
         local r = math.random()
         if r < 0.9 then
@@ -314,7 +305,7 @@ local function get_unit_size(evolution)
         end
         return 4
     end
-    -- 60%
+
     if (evolution >= 0.60 and evolution < 0.70) then
         local r = math.random()
         if r < 0.9 then
@@ -329,7 +320,7 @@ local function get_unit_size(evolution)
         end
         return 4
     end
-    -- 70%
+
     if (evolution >= 0.70 and evolution < 0.80) then
         local r = math.random()
         if r < 0.985 then
@@ -341,7 +332,7 @@ local function get_unit_size(evolution)
         end
         return 4
     end
-    -- 80%
+
     if (evolution >= 0.80 and evolution < 0.90) then
         local r = math.random()
         if r < 0.75 then
@@ -353,7 +344,7 @@ local function get_unit_size(evolution)
         end
         return 4
     end
-    -- 90%
+
     if (evolution >= 0.90 and evolution < 1) then
         local r = math.random()
         if r < 0.5 then
@@ -361,23 +352,22 @@ local function get_unit_size(evolution)
         end
         return 4
     end
-    -- 100%
+
     if (evolution >= 1.0) then
         return 4
     end
 end
 
 local function distance_squared(pos1, pos2)
-    -- calculate the distance squared
+
     local dx = pos1.x - pos2.x
     local dy = pos1.y - pos2.y
     local d2 = dx * dx + dy * dy
     return d2
 end
 
--- calculate the relative evolution based on evolution factor (0.0-1.0) and distance factor (0.0-1.0)
 local function calculate_relative_evolution(evolution_factor, distance_factor)
-    -- distance factor will be from 0.0 to 1.0 but drop off dramatically towards zero
+
     local log_distance_factor = math_log10(distance_factor * 10 + 1)
     local evo = log_distance_factor * evolution_factor
     if evo < 0.0 then
@@ -393,19 +383,19 @@ local function get_relative_biter_evolution(position)
     local this = ScenarioTable.get_table()
     local relative_evolution = 0.0
     local max_d2 = max_evolution_distance * max_evolution_distance
-    -- for all of the teams
+
     local teams = this.town_centers
     for _, town_center in pairs(teams) do
         local market = town_center.market
         if market == nil or not market.valid then
             return relative_evolution
         end
-        -- calculate the distance squared
+
         local d2 = distance_squared(position, market.position)
         if d2 < max_d2 then
-            -- get the distance factor (0.0-1.0)
+
             local distance_factor = 1.0 - d2 / max_d2
-            -- get the evolution factor (0.0-1.0)
+
             if not town_center.evolution then
                 town_center.evolution = {}
             end
@@ -413,7 +403,7 @@ local function get_relative_biter_evolution(position)
                 town_center.evolution.biters = 0.0
             end
             local evo = calculate_relative_evolution(town_center.evolution.biters, distance_factor)
-            -- get the highest of the relative evolutions of each town
+
             relative_evolution = math.max(relative_evolution, evo)
         end
     end
@@ -424,19 +414,19 @@ local function get_relative_spitter_evolution(position)
     local this = ScenarioTable.get_table()
     local relative_evolution = 0.0
     local max_d2 = max_evolution_distance * max_evolution_distance
-    -- for all of the teams
+
     local teams = this.town_centers
     for _, town_center in pairs(teams) do
         local market = town_center.market
         if market == nil or not market.valid then
             return relative_evolution
         end
-        -- calculate the distance squared
+
         local d2 = distance_squared(position, market.position)
         if d2 < max_d2 then
-            -- get the distance factor (0.0-1.0)
+
             local distance_factor = 1.0 - d2 / max_d2
-            -- get the evolution factor (0.0-1.0)
+
             if not town_center.evolution then
                 town_center.evolution = {}
             end
@@ -444,7 +434,7 @@ local function get_relative_spitter_evolution(position)
                 town_center.evolution.spitters = 0.0
             end
             local evo = calculate_relative_evolution(town_center.evolution.spitters, distance_factor)
-            -- get the highest of the relative evolutions of each town
+
             relative_evolution = math.max(relative_evolution, evo)
         end
     end
@@ -455,19 +445,19 @@ local function get_relative_worm_evolution(position)
     local this = ScenarioTable.get_table()
     local relative_evolution = 0.0
     local max_d2 = max_evolution_distance * max_evolution_distance
-    -- for all of the teams
+
     local teams = this.town_centers
     for _, town_center in pairs(teams) do
         local market = town_center.market
         if market == nil or not market.valid then
             return relative_evolution
         end
-        -- calculate the distance squared
+
         local d2 = distance_squared(position, market.position)
         if d2 < max_d2 then
-            -- get the distance factor (0.0-1.0)
+
             local distance_factor = 1.0 - d2 / max_d2
-            -- get the evolution factor (0.0-1.0)
+
             if not town_center.evolution then
                 town_center.evolution = {}
             end
@@ -475,22 +465,11 @@ local function get_relative_worm_evolution(position)
                 town_center.evolution.worms = 0.0
             end
             local evo = calculate_relative_evolution(town_center.evolution.worms, distance_factor)
-            -- get the highest of the relative evolutions of each town
+
             relative_evolution = math.max(relative_evolution, evo)
         end
     end
     return relative_evolution
-end
-
-function Public.get_highest_evolution()
-    local this = ScenarioTable.get_table()
-    local max_evo = 0
-    for _, town_center in pairs(this.town_centers) do
-        if town_center.evolution.worms > max_evo then
-            max_evo = town_center.evolution.worms
-        end
-    end
-    return max_evo
 end
 
 function Public.get_evolution(position)
@@ -514,7 +493,7 @@ local function get_nearby_location(position, surface, radius, entity_name)
 end
 
 local function set_biter_type(entity)
-    -- checks nearby evolution levels for bases and returns an appropriately leveled type
+
     local position = entity.position
     local evo = get_relative_biter_evolution(position)
     local unit_size = get_unit_size(evo)
@@ -554,12 +533,12 @@ local function set_biter_type(entity)
         e.copy_settings(entity)
         e.ai_settings.allow_try_return_to_spawner = true
         entity.destroy()
-        --log("spawned " .. entity_name)
+
     end
 end
 
 local function set_spitter_type(entity)
-    -- checks nearby evolution levels for bases and returns an appropriately leveled type
+
     local position = entity.position
     local evo = get_relative_spitter_evolution(position)
     local unit_size = get_unit_size(evo)
@@ -599,12 +578,12 @@ local function set_spitter_type(entity)
         e.copy_settings(entity)
         e.ai_settings.allow_try_return_to_spawner = true
         entity.destroy()
-        --log("spawned " .. entity_name)
+
     end
 end
 
 local function set_worm_type(entity)
-    -- checks nearby evolution levels for bases and returns an appropriately leveled type
+
     local position = entity.position
     local evo = get_relative_worm_evolution(position)
     local unit_size = get_unit_size(evo)
@@ -616,7 +595,7 @@ local function set_worm_type(entity)
     if entity.valid then
         entity.destroy()
         surface.create_entity({ name = entity_name, position = position })
-        --log("spawned " .. entity_name)
+
     end
 end
 
@@ -650,21 +629,19 @@ local function is_worm(entity)
     return false
 end
 
--- update evolution based on research completed (weighted)
--- sets the evolution to a value from 0.0 to 1.0 based on research progress
 local function update_evolution(force_name, technology)
     if technology == nil then
         return
     end
     local this = ScenarioTable.get_table()
     local town_center = this.town_centers[force_name]
-    -- town_center is a reference to a global table
+
     if not town_center then
         return
     end
-    -- initialize if not already
+
     local evo = town_center.evolution
-    -- get the weights for this technology
+
     local weight = technology_weights[technology]
     if weight == nil then
         log('no technology_weights for ' .. technology)
@@ -673,8 +650,7 @@ local function update_evolution(force_name, technology)
     local biter_weight = weight.biter
     local spitter_weight = weight.spitter
     local worm_weight = weight.worm
-    -- update the evolution values (0.0 to 1.0)
-    -- max weights might be less than 1.0, to allow for evo > 1.0
+
     local b = (biter_weight / max_biter_weight)
     local s = (spitter_weight / max_spitter_weight)
     local w = (worm_weight / max_worm_weight)
@@ -695,7 +671,7 @@ end
 
 local function on_entity_spawned(event)
     local entity = event.entity
-    -- check the unit type and handle appropriately
+
     if is_biter(entity) then
         set_biter_type(entity)
     end

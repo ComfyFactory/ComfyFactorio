@@ -2,7 +2,7 @@ local Public = {}
 
 local function initialize_limbo()
     if game.surfaces['limbo'] then
-        -- clear the surface
+
         game.surfaces['limbo'].clear(false)
     else
         game.create_surface('limbo')

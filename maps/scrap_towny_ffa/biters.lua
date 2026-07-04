@@ -20,6 +20,7 @@ Global.register(
 
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local Evolution = require 'maps.scrap_towny_ffa.evolution'
+local Team = require 'maps.scrap_towny_ffa.team'
 
 local function get_commmands(target)
     local commands = {}
@@ -45,20 +46,39 @@ local function get_commmands(target)
     return commands
 end
 
+local function swarm_eligible_town(town_center)
+    if ScenarioTable.enabled('boss_swarms_online_only') and #town_center.market.force.connected_players == 0 then
+        return false
+    end
+    if ScenarioTable.enabled('boss_swarms_respect_afk') and town_center.marked_afk then
+        return false
+    end
+    return #town_center.market.force.connected_players > 0
+        and town_center.evolution.biters > 0.2
+        and game.tick - (town_center.last_swarm or 0) >= 20 * 60 * 60
+end
+
 local function roll_market()
     local this = ScenarioTable.get_table()
     local town_centers = this.town_centers
     if town_centers == nil or table_size(town_centers) == 0 then
         return
     end
+    local use_swarm_filter = ScenarioTable.enabled('boss_swarms_respect_afk') or ScenarioTable.enabled('boss_swarms_online_only')
     local keyset = {}
     for town_name, town_center in pairs(town_centers) do
+        if use_swarm_filter and not swarm_eligible_town(town_center) then
+            goto continue
+        end
         local evolution = Evolution.get_biter_evolution(town_center.market.position)
         local tries = math_floor(evolution * 20)
-        -- 1 try for each 5% of evolution
         for _ = 1, tries, 1 do
             table_insert(keyset, town_name)
         end
+        ::continue::
+    end
+    if #keyset == 0 then
+        return
     end
     local tc = math_random(1, #keyset)
     return town_centers[keyset[tc]]
@@ -67,7 +87,7 @@ end
 local function get_random_close_spawner(surface, market, radius)
     local units = surface.find_enemy_units(market.position, radius, market.force)
     if units ~= nil and #units > 0 then
-        -- found units, shuffle the list
+
         table_shuffle(units)
         while units[1] do
             local unit = units[1]
@@ -125,10 +145,9 @@ local function new_town(town_center)
         return false
     end
 
-    -- cooldown for swarms on new towns is 15 minutes
     local cooldown_ticks = 15 * 3600
     local elapsed_ticks = game.tick - town_center.creation_tick
-    -- skip if within first 30 minutes and town evolution < 0.25
+
     if elapsed_ticks < cooldown_ticks and town_center.evolution.biters < 0.15 then
         return true
     end
@@ -148,11 +167,11 @@ function Public.swarm(town_center, radius)
     if not tc or r > 512 then
         return
     end
-    -- cancel if relatively new town
+
     if tc and new_town(tc) then
         return
     end
-    -- skip if we have to many swarms already
+
     local count = table_size(this.swarms)
     local towns = table_size(this.town_centers)
     if count > 3 * towns then
@@ -166,12 +185,11 @@ function Public.swarm(town_center, radius)
     local market = tc.market
     local surface = market.surface
 
-    -- find a spawner
     local spawner = get_random_close_spawner(surface, market, r)
     if not spawner then
         r = r + 16
         local future = game.tick + 1
-        -- schedule to run this method again with a higher radius on next tick
+
         if not tick_schedule[future] then
             tick_schedule[future] = {}
         end
@@ -182,7 +200,6 @@ function Public.swarm(town_center, radius)
         return
     end
 
-    -- get our evolution at the spawner location
     local evolution
     if spawner.name == 'spitter-spawner' then
         evolution = Evolution.get_biter_evolution(spawner)
@@ -190,10 +207,8 @@ function Public.swarm(town_center, radius)
         evolution = Evolution.get_spitter_evolution(spawner)
     end
 
-    -- get the evolution at the market location
     local market_evolution = Evolution.get_evolution(market.position)
 
-    -- get our target amount of enemies based on relative evolution
     local count2 = (evolution * 124) + 4
 
     local units = spawner.surface.find_enemy_units(spawner.position, 16, market.force)
@@ -210,11 +225,6 @@ function Public.swarm(town_center, radius)
         return
     end
 
-    -- try up to 10 times to throw in a boss based on market evolution
-    -- evolution = 0%, chances 0 in 10
-    -- evoution = 10%, chances 1 in 10
-    -- evolution = 20%, chances 2 in 10
-    -- evolution = 100%, chances 10 in 10
     local health_multiplier = 40 * market_evolution + 10
     for _ = 1, math_floor(market_evolution * 10), 1 do
         if math_random(1, 2) == 1 then
@@ -258,7 +268,7 @@ local function on_unit_group_finished_gathering(event)
         if not town_center then
             return
         end
-        -- cancel if relatively new town
+
         if new_town(town_center) then
             return
         end
@@ -294,5 +304,39 @@ end
 Event.on_init(on_init)
 Event.add(defines.events.on_tick, on_tick)
 Event.add(defines.events.on_unit_group_finished_gathering, on_unit_group_finished_gathering)
+
+local function biter_chatter()
+    if not ScenarioTable.enabled('biter_chatter') then
+        return
+    end
+    storage.last_chatter_time = storage.last_chatter_time or {}
+    local current_tick = game.tick
+    for _, player in pairs(game.connected_players) do
+        if Team.is_outlander(player.force)
+            and game.forces.enemy.get_cease_fire(player.force)
+            and player.character then
+            if not storage.last_chatter_time[player.index] or current_tick - storage.last_chatter_time[player.index] >= 600 then
+                local biters = player.surface.find_entities_filtered({
+                    type = 'unit',
+                    area = { { player.position.x - 10, player.position.y - 10 }, { player.position.x + 10, player.position.y + 10 } },
+                    force = 'enemy'
+                })
+                if #biters > 0 then
+                    player.surface.create_entity({
+                        name = 'flying-text',
+                        position = biters[1].position,
+                        text = 'Hey outlander, let\'s raid a town together!',
+                        color = { r = 1, g = 0.5, b = 0.25 }
+                    })
+                    storage.last_chatter_time[player.index] = current_tick
+                end
+            end
+        end
+    end
+end
+
+if ScenarioTable.enabled('biter_chatter') then
+    Event.on_nth_tick(60, biter_chatter)
+end
 
 return Public

@@ -1,4 +1,4 @@
--- spawners release biters on death -- by mewmew
+
 local Event = require 'utils.event'
 local Evolution = require 'maps.scrap_towny_ffa.evolution'
 

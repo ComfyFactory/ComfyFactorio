@@ -1,12 +1,41 @@
-local Event = require 'utils.event'
-local get_noise = require 'utils.math.get_noise'
-local ScenarioTable = require 'maps.scrap_towny_ffa.table'
-local Scrap = require 'maps.scrap_towny_ffa.scrap'
-local get_perlin = require 'utils.math.get_perlin'
-
 local table_insert = table.insert
 local math_random = math.random
 local math_floor = math.floor
+local math_abs = math.abs
+local math_sqrt = math.sqrt
+
+local Public = {}
+
+local ScenarioTable = require 'maps.scrap_towny_ffa.table'
+local get_noise = require 'utils.math.get_noise'
+local Scrap = require 'maps.scrap_towny_ffa.scrap'
+local Spaceship = require 'maps.scrap_towny_ffa.spaceship'
+
+Public.central_ores_radius = 15
+Public.central_oil_radius_inner = 20
+Public.central_oil_radius_outer = 25
+
+Public.map_size = { 2048, 2048 }
+
+function Public.reveal_strategic_resources(force)
+
+    local this = ScenarioTable.get()
+    local surface = game.surfaces.nauvis
+    force.chart(surface, { { -1, -1 }, { 1, 1 } })
+    force.chart(surface, { this.uranium_patch_location, this.uranium_patch_location })
+end
+
+local function gen_uranium_location()
+    local east = (math.random(2) == 1) and -1 or 1
+    local top = (math.random(2) == 1) and -1 or 1
+    return { x = east * (Public.map_size[1] / 2 - 50), y = top * (Public.map_size[2] / 2 - 50) }
+end
+
+local function init()
+    local this = ScenarioTable.get()
+    this.uranium_patch_location = gen_uranium_location()
+end
+Public.init = init
 
 local scrap_entities =
 {
@@ -23,8 +52,21 @@ local scrap_entities_index = table.size(scrap_entities)
 
 local scrap_containers =
 {
+    { name = 'mineable-wreckage', size = 3 },
+    { name = 'mineable-wreckage', size = 3 },
+    { name = 'mineable-wreckage', size = 3 },
+    { name = 'mineable-wreckage', size = 3 },
+    { name = 'mineable-wreckage', size = 3 },
+    { name = 'mineable-wreckage', size = 3 },
+    { name = 'mineable-wreckage', size = 3 },
+    { name = 'mineable-wreckage', size = 3 },
+    { name = 'mineable-wreckage', size = 3 },
     { name = 'crash-site-chest-1', size = 8 },
     { name = 'crash-site-chest-2', size = 8 },
+    { name = 'mineable-wreckage', size = 1 },
+    { name = 'mineable-wreckage', size = 1 },
+    { name = 'mineable-wreckage', size = 1 },
+    { name = 'mineable-wreckage', size = 1 },
     { name = 'mineable-wreckage', size = 1 },
     { name = 'mineable-wreckage', size = 1 },
     { name = 'mineable-wreckage', size = 1 },
@@ -73,18 +115,19 @@ local container_loot_chance =
     { name = 'logistic-robot', chance = 1 },
     { name = 'low-density-structure', chance = 1 },
     { name = 'lubricant-barrel', chance = 20 },
-    { name = 'nuclear-fuel', chance = 1 },
+
     { name = 'petroleum-gas-barrel', chance = 30 },
     { name = 'pipe', chance = 100 },
     { name = 'pipe-to-ground', chance = 10 },
     { name = 'plastic-bar', chance = 5 },
     { name = 'processing-unit', chance = 2 },
 
+    { name = "rocket-fuel", chance = 3 },
     { name = 'solid-fuel', chance = 100 },
     { name = 'steel-plate', chance = 150 },
     { name = 'sulfuric-acid-barrel', chance = 15 },
 
-    { name = 'uranium-fuel-cell', chance = 1 },
+    { name = "uranium-fuel-cell", chance = 1 },
 
     { name = 'water-barrel', chance = 10 }
 }
@@ -110,6 +153,7 @@ local container_loot_amounts =
     ['explosive-cannon-shell'] = 2,
 
     ['explosives'] = 4,
+    ['green-wire'] = 8,
     ['grenade'] = 6,
     ['heat-pipe'] = 1,
     ['heavy-oil-barrel'] = 3,
@@ -121,20 +165,22 @@ local container_loot_amounts =
     ['logistic-robot'] = 0.3,
     ['low-density-structure'] = 0.3,
     ['lubricant-barrel'] = 3,
-    ['nuclear-fuel'] = 0.1,
+
     ['petroleum-gas-barrel'] = 3,
     ['pipe'] = 8,
     ['pipe-to-ground'] = 1,
     ['plastic-bar'] = 4,
     ['processing-unit'] = 2,
+    ['red-wire'] = 8,
 
+    ["rocket-fuel"] = 0.3,
     ['solid-fuel'] = 4,
     ['steel-plate'] = 4,
     ['sulfuric-acid-barrel'] = 3,
 
-    ['uranium-fuel-cell'] = 0.3,
+    ["uranium-fuel-cell"] = 0.3,
 
-    ['water-barrel'] = 3
+    ['water-barrel'] = 3,
 }
 
 local scrap_raffle = {}
@@ -147,10 +193,6 @@ end
 local size_of_scrap_raffle = #scrap_raffle
 
 local function place_scrap(surface, position)
-    local this = ScenarioTable.get_table()
-    if this.spaceships == nil then
-        this.spaceships = {}
-    end
 
     if math_random(1, 700) == 1 then
         if position.x ^ 2 + position.x ^ 2 > 4096 then
@@ -160,6 +202,11 @@ local function place_scrap(surface, position)
             e.insert({ name = 'piercing-rounds-magazine', count = 100 })
             return
         end
+    end
+
+    if math_random(1, 1000) == 1 then
+        Spaceship.place(surface, position)
+        return
     end
 
     if math_random(1, 128) == 1 then
@@ -185,10 +232,10 @@ local function place_scrap(surface, position)
 end
 
 local function is_scrap_area(n)
-    if n > 0.5 then
+    if n > 0.6 then
         return true
     end
-    if n < -0.5 then
+    if n < -0.6 then
         return true
     end
 end
@@ -210,7 +257,8 @@ local function landfill_under(entity)
     local surface = entity.surface
     for _, v in pairs(vectors) do
         local position = { entity.position.x + v[1], entity.position.y + v[2] }
-        if not surface.get_tile(position).collides_with('resource') then
+        local tile = surface.get_tile(position)
+        if tile.name ~= "blue-refined-concrete" and not tile.collides_with('resource') then
             surface.set_tiles({ { name = 'landfill', position = position } }, true)
         end
     end
@@ -237,64 +285,17 @@ local function on_entity_died(event)
 end
 
 local function on_chunk_generated(event)
-
     local surface = event.surface
-    local this = ScenarioTable.get_table()
-    local map_surface = game.get_surface(this.active_surface_index)
-    if not map_surface or not map_surface.valid then
+    if (surface.name ~= 'nauvis') then
         return
     end
-    if (surface.name ~= map_surface.name) then
-        return
-    end
+    local this = ScenarioTable.get()
     local seed = surface.map_gen_settings.seed
     local left_top_x = event.area.left_top.x
     local left_top_y = event.area.left_top.y
 
     local position
     local noise
-
-    if this.surface_terrain == 'forest' then
-        for x = 0, 31, 1 do
-            for y = 0, 31, 1 do
-                position = { x = left_top_x + x, y = left_top_y + y }
-                local cave_ponds = get_perlin('cave_ponds', position, seed)
-                local bridges = get_perlin('cave_rivers', position, seed)
-
-                if bridges > 0.15 and bridges < 0.25 then
-                    surface.set_tiles({ { name = 'water', position = position } }, true)
-                    if cave_ponds > 0.1 and cave_ponds < 0.25 then
-                        surface.set_tiles({ { name = 'dirt-1', position = position } }, true)
-                    end
-                    if math_random(1, 48) == 1 then
-                        surface.create_entity({ name = 'fish', position = position, force = 'neutral' })
-                    end
-                end
-                if math_random(1, 3) > 1 then
-                    if not surface.get_tile(position).collides_with('resource') then
-                        noise = get_noise('scrap_towny_ffa', position, seed)
-                        if is_scrap_area(noise) then
-                            place_scrap(surface, position)
-                        end
-                    end
-                end
-            end
-        end
-    else
-        for x = 0, 31, 1 do
-            for y = 0, 31, 1 do
-                position = { x = left_top_x + x, y = left_top_y + y }
-                if math_random(1, 3) > 1 then
-                    if not surface.get_tile(position).collides_with('resource') then
-                        noise = get_noise('scrap_towny_ffa', position, seed)
-                        if is_scrap_area(noise) then
-                            place_scrap(surface, position)
-                        end
-                    end
-                end
-            end
-        end
-    end
 
     local chunk_position = event.position
 
@@ -314,7 +315,6 @@ local function on_chunk_generated(event)
             return
         end
     end
-
     if chunk_position.x < -33 or chunk_position.x > 32 or chunk_position.y < -33 or chunk_position.y > 32 then
         local area = { { x = left_top_x, y = left_top_y }, { x = left_top_x + 31, y = left_top_y + 31 } }
         local entities = surface.find_entities(area)
@@ -330,25 +330,118 @@ local function on_chunk_generated(event)
         return
     end
 
-    move_away_biteys(surface, event.area)
+    for x = 0, 31, 1 do
+        for y = 0, 31, 1 do
+            position = { x = left_top_x + x, y = left_top_y + y }
+            if math.sqrt(position.x ^ 2 + position.y ^ 2) > Public.central_oil_radius_outer + 10 then
+                if math_random(1, 3) > 1 then
+                    if not surface.get_tile(position).collides_with('resource') then
+                        noise = get_noise('scrap_towny_ffa', position, seed)
+                        if is_scrap_area(noise) then
+                            surface.set_tiles({ { name = 'dirt-' .. math_floor(math_abs(noise) * 6) % 6 + 2, position = position } }, true)
+                            place_scrap(surface, position)
+                        end
+                    end
+                end
+            end
+        end
+    end
 
+    if chunk_position.x >= -2 and chunk_position.x <= 2 and chunk_position.y >= -2 and chunk_position.y <= 2 then
+        local ores = { 'iron-ore', 'copper-ore', 'stone', 'coal' }
+        local amount = 50000
+        local oil_amount = 1000000
+
+        for x = 0, 31, 1 do
+            for y = 0, 31, 1 do
+                position = { x = left_top_x + x, y = left_top_y + y }
+                local distance_to_center = math.sqrt(position.x ^ 2 + position.y ^ 2)
+                if distance_to_center < Public.central_ores_radius then
+                    noise = get_noise('scrap_towny_ffa', position, seed)
+                    surface.set_tiles({ { name = 'dirt-' .. math_floor(math_abs(noise) * 6) % 6 + 2, position = position } }, true)
+                    surface.create_entity({ name = ores[math.random(1, 4)], position = position, amount = amount })
+                elseif distance_to_center > Public.central_oil_radius_inner and distance_to_center < Public.central_oil_radius_outer then
+                    if math_random(1, 50) == 1 then
+                        local position_nc = surface.find_non_colliding_position("crude-oil", position, 3, 1)
+                        if position_nc then
+                            surface.create_entity({ name = 'crude-oil', position = position_nc, amount = oil_amount })
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    local uranium_patch_radius = 3
+    local uranium_amount = 100000
+    local uranium_patch_location = this.uranium_patch_location
+    if math.abs(chunk_position.x - math.floor(uranium_patch_location.x / 32)) <= 1 and math.abs(chunk_position.y - math.floor(uranium_patch_location.y / 32)) <= 1 then
+        for x = 0, 31, 1 do
+            for y = 0, 31, 1 do
+                position = { x = left_top_x + x, y = left_top_y + y }
+                local distance_to_uranium_patch_center = math_sqrt((position.x - uranium_patch_location.x) ^ 2 + (position.y - uranium_patch_location.y) ^ 2)
+                if distance_to_uranium_patch_center <= uranium_patch_radius then
+                    surface.set_tiles({ { name = 'dirt-' .. math_floor(math_abs(noise) * 6) % 6 + 2, position = position } }, true)
+                    surface.create_entity({ name = 'uranium-ore', position = position, amount = uranium_amount })
+                end
+            end
+        end
+    end
+
+    if math_random(1, 80) == 1 then
+        local ores = { 'iron-ore', 'copper-ore', 'stone', 'coal' }
+        local amount = 500
+        local max_radius = 8
+        local offset_x = math_random(max_radius, 32 - max_radius)
+        local offset_y = math_random(max_radius, 32 - max_radius)
+
+        for x = -max_radius, max_radius, 1 do
+            for y = -max_radius, max_radius, 1 do
+                position = { x = left_top_x + x + offset_x, y = left_top_y + y + offset_y }
+                local distance_to_center = math_abs(math_sqrt(x ^ 2 + y ^ 2))
+                if distance_to_center < max_radius then
+                    local ore_type = ores[math_random(1, 4)]
+                    if surface.can_place_entity({ name = ore_type, position = position }) then
+                        surface.create_entity({ name = ore_type, position = position, amount = amount })
+                    end
+                end
+            end
+        end
+    end
+
+    move_away_biteys(surface, event.area)
+end
+
+local function add_chart_tag_if_none(force, surface, position, icon, text)
+    if #force.find_chart_tags(surface, { { position.x - 0.1, position.y - 0.1 }, { position.x + 0.1, position.y + 0.1 } }) == 0 then
+        force.add_chart_tag(surface, { icon = { type = 'item', name = icon }, position = position, text = text })
+    end
 end
 
 local function on_chunk_charted(event)
     local force = event.force
-    local this = ScenarioTable.get_table()
-    local surface = game.get_surface(this.active_surface_index)
-    if not surface or not surface.valid then
-        return
-    end
+    local surface = game.surfaces[event.surface_index]
+    local this = ScenarioTable.get()
     if force.valid then
-        if force == game.forces['player'] or force == game.forces['rogue'] then
-            force.clear_chart(surface)
+        local position = event.position
+        if position.x == 0 and position.y == 0 then
+            add_chart_tag_if_none(force, surface, position, 'coin', "Treasure")
+        end
+
+        local uranium_patch_location = this.uranium_patch_location
+        if position.x == math.floor(uranium_patch_location.x / 32) and position.y == math.floor(uranium_patch_location.y / 32) then
+            add_chart_tag_if_none(force, surface, uranium_patch_location, 'uranium-ore', "Deep Uranium")
         end
     end
 end
 
-Event.add(defines.events.on_chunk_generated, on_chunk_generated)
-Event.add(defines.events.on_chunk_charted, on_chunk_charted)
-Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
-Event.add(defines.events.on_entity_died, on_entity_died)
+local Event = require 'utils.event'
+if ScenarioTable.mode('map_mode') == 'fixed' then
+    Event.on_init(init)
+    Event.add(defines.events.on_chunk_generated, on_chunk_generated)
+    Event.add(defines.events.on_chunk_charted, on_chunk_charted)
+    Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
+    Event.add(defines.events.on_entity_died, on_entity_died)
+end
+
+return Public

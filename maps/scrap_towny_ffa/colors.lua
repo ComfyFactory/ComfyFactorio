@@ -171,7 +171,7 @@ function Public.get_random_color()
         color.g = green
         color.b = blue
         if not is_color_used(color, town_centers) then
-            --log("color = " .. name)
+
             return { name = name, color = color }
         end
     end

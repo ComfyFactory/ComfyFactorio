@@ -9,7 +9,6 @@ local table_size = table.size
 
 local town_zoning_entity_types = { 'wall', 'gate', 'electric-pole', 'ammo-turret', 'electric-turret', 'fluid-turret' }
 
--- these should be allowed to place inside any base by anyone as neutral
 local neutral_whitelist = {
     ['burner-inserter'] = true,
     ['car'] = true,
@@ -50,7 +49,6 @@ local function refund_item(event, item_name)
         end
     end
 
-    -- return item to robot, but don't replace ghost (otherwise might loop)
     local robot = event.robot
     if robot and robot.valid then
         local inventory = robot.get_inventory(defines.inventory.robot_cargo)
@@ -132,15 +130,14 @@ function Public.is_another_character_near(surface, position, force)
     return false
 end
 
--- is the position near another town?
 function Public.near_another_town(force_name, position, surface, radius)
-    -- check for nearby town centers
+
     if force_name == nil then
         return false
     end
     local this = ScenarioTable.get_table()
     local forces = {}
-    -- check for nearby town centers
+
     local fail = false
     if table_size(this.town_centers) > 0 then
         for _, town_center in pairs(this.town_centers) do
@@ -167,7 +164,6 @@ function Public.near_another_town(force_name, position, surface, radius)
         end
     end
 
-    -- check for nearby town entities
     if table.size(forces) > 0 then
         if
             surface.count_entities_filtered(
@@ -391,7 +387,6 @@ local function prevent_tiles_near_towns(event)
     return fail
 end
 
--- called when a player places an item, or a ghost
 local function on_built_entity(event)
     if prevent_entity_in_restricted_zone(event) then
         return
@@ -410,7 +405,6 @@ local function on_robot_built_entity(event)
     end
 end
 
--- called when a player places landfill
 local function on_player_built_tile(event)
     if prevent_landfill_in_restricted_zone(event) then
         return
@@ -436,5 +430,32 @@ Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_player_built_tile, on_player_built_tile)
 Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 Event.add(defines.events.on_robot_built_tile, on_robot_built_tile)
+
+storage.build_rate_limits = storage.build_rate_limits or {}
+
+function Public.build_error_notification(force_or_player, surface, position, msg, player_sound)
+    local show = true
+    if force_or_player then
+        storage.build_rate_limits.build = storage.build_rate_limits.build or {}
+        local force_name = force_or_player.name
+        local force_limit = storage.build_rate_limits.build[force_name]
+        if force_limit and game.tick - force_limit <= 30 then
+            show = false
+        else
+            storage.build_rate_limits.build[force_name] = game.tick
+        end
+    end
+    if show then
+        surface.create_entity({
+            name = 'flying-text',
+            position = position,
+            text = msg,
+            color = { r = 0.77, g = 0.0, b = 0.0 }
+        })
+    end
+    if player_sound then
+        player_sound.play_sound({ path = 'utility/cannot_build', position = player_sound.position, volume_modifier = 0.75 })
+    end
+end
 
 return Public

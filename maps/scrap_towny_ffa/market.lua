@@ -2,10 +2,15 @@ local Event = require 'utils.event'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local Town_center = require 'maps.scrap_towny_ffa.town_center'
 
+local PvPTownShield
+if ScenarioTable.enabled('market_afk_offer') then
+    PvPTownShield = require 'maps.scrap_towny_ffa.pvp_town_shield'
+end
+
 local table_insert = table.insert
 
-local upgrade_functions = {
-    -- Upgrade Town Center Health
+local upgrade_functions =
+{
     [1] = function (town_center, player)
         local market = town_center.market
         local surface = market.surface
@@ -18,7 +23,6 @@ local upgrade_functions = {
         surface.play_sound({ path = 'utility/achievement_unlocked', position = player.physical_position, volume_modifier = 1 })
         return true
     end,
-    -- Upgrade Backpack
     [2] = function (town_center, player)
         local market = town_center.market
         local force = market.force
@@ -30,7 +34,6 @@ local upgrade_functions = {
         surface.play_sound({ path = 'utility/achievement_unlocked', position = player.physical_position, volume_modifier = 1 })
         return true
     end,
-    -- Upgrade Mining Productivity
     [3] = function (town_center, player)
         local market = town_center.market
         local force = market.force
@@ -43,7 +46,6 @@ local upgrade_functions = {
         surface.play_sound({ path = 'utility/achievement_unlocked', position = player.physical_position, volume_modifier = 1 })
         return true
     end,
-    -- Upgrade Pickaxe Speed
     [4] = function (town_center, player)
         local market = town_center.market
         local force = market.force
@@ -56,7 +58,6 @@ local upgrade_functions = {
         surface.play_sound({ path = 'utility/achievement_unlocked', position = player.physical_position, volume_modifier = 1 })
         return true
     end,
-    -- Upgrade Crafting Speed
     [5] = function (town_center, player)
         local market = town_center.market
         local force = market.force
@@ -69,7 +70,6 @@ local upgrade_functions = {
         surface.play_sound({ path = 'utility/achievement_unlocked', position = player.physical_position, volume_modifier = 1 })
         return true
     end,
-    -- Laser Turret Slot
     [6] = function (town_center, player)
         local market = town_center.market
         local surface = market.surface
@@ -77,7 +77,6 @@ local upgrade_functions = {
         surface.play_sound({ path = 'utility/new_objective', position = player.physical_position, volume_modifier = 1 })
         return true
     end,
-    -- Set Spawn Point
     [7] = function (town_center, player)
         local this = ScenarioTable.get_table()
         local market = town_center.market
@@ -87,8 +86,15 @@ local upgrade_functions = {
         this.spawn_point[player.index] = spawn_point
         surface.play_sound({ path = 'utility/scenario_message', position = player.physical_position, volume_modifier = 1 })
         return false
-    end
+    end,
 }
+
+if PvPTownShield then
+    upgrade_functions[8] = function (town_center, player)
+        PvPTownShield.request_afk_shield(town_center, player)
+        return false
+    end
+end
 
 local function clear_offers(market)
     for _ = 1, 256, 1 do
@@ -104,7 +110,6 @@ local function set_offers(town_center)
     local force = market.force
     local market_items = {}
 
-    -- special offers
     local special_offers = {}
     if town_center.max_health < 50000 then
         special_offers[1] = { { { name = 'coin', count = town_center.max_health * 0.1 } }, 'Upgrade Town Center Health' }
@@ -135,11 +140,13 @@ local function set_offers(town_center)
     special_offers[6] = { { { name = 'coin', count = (town_center.upgrades.laser_turret.slots * 200) } }, laser_turret }
     local spawn_point = 'Set Spawn Point'
     special_offers[7] = { {}, spawn_point }
+    if ScenarioTable.enabled('market_afk_offer') then
+        special_offers[8] = { {}, 'AFK Mode (PvP Shield, No boss attacks, No market pollution)' }
+    end
     for _, v in pairs(special_offers) do
         table_insert(market_items, { price = v[1], offer = { type = 'nothing', effect_description = v[2] } })
     end
 
-    -- item purchases
     table_insert(market_items, { price = { { name = 'coin', count = 25 } }, offer = { type = 'give-item', item = 'raw-fish', count = 1 } })
     table_insert(market_items, { price = { { name = 'coin', count = 6 } }, offer = { type = 'give-item', item = 'wood', count = 1 } })
     table_insert(market_items, { price = { { name = 'coin', count = 1 } }, offer = { type = 'give-item', item = 'iron-ore', count = 6 } })
@@ -151,7 +158,6 @@ local function set_offers(town_center)
     table_insert(market_items, { price = { { name = 'coin', count = 300 } }, offer = { type = 'give-item', item = 'loader', count = 1 } })
     table_insert(market_items, { price = { { name = 'coin', count = 600 } }, offer = { type = 'give-item', item = 'fast-loader', count = 1 } })
     table_insert(market_items, { price = { { name = 'coin', count = 900 } }, offer = { type = 'give-item', item = 'express-loader', count = 1 } })
-    -- item selling
     table_insert(market_items, { price = { { name = 'raw-fish', count = 1 } }, offer = { type = 'give-item', item = 'coin', count = 15 } })
     table_insert(market_items, { price = { { name = 'wood', count = 1 } }, offer = { type = 'give-item', item = 'coin', count = 3 } })
     table_insert(market_items, { price = { { name = 'iron-ore', count = 7 } }, offer = { type = 'give-item', item = 'coin', count = 1 } })
@@ -196,11 +202,12 @@ local function refresh_offers(event)
             player.opened = nil
             for _, p in pairs(game.connected_players) do
                 if p.surface == player.surface then
-                    p.create_local_flying_text({
-                        position = { market.position.x - 1.75, market.position.y },
-                        text = 'Sorry, we are closed.',
-                        color = { r = 0.77, g = 0.0, b = 0.0 }
-                    })
+                    p.create_local_flying_text(
+                        {
+                            position = { market.position.x - 1.75, market.position.y },
+                            text = 'Sorry, we are closed.',
+                            color = { r = 0.77, g = 0.0, b = 0.0 }
+                        })
                 end
             end
         end
@@ -221,7 +228,6 @@ local function offer_purchased(event)
         return
     end
     if upgrade_functions[offer_index](town_center, player) then
-        -- reimburse extra purchased
         if count > 1 then
             local offers = market.get_market_items()
             if offers[offer_index].price ~= nil then
@@ -230,7 +236,6 @@ local function offer_purchased(event)
             end
         end
     else
-        -- reimburse purchase
         local offers = market.get_market_items()
         if offers[offer_index].price ~= nil then
             local price = offers[offer_index].price[1].amount
@@ -239,7 +244,6 @@ local function offer_purchased(event)
     end
 end
 
--- called for all gui events
 local function on_gui_opened(event)
     local gui_type = event.gui_type
     if gui_type ~= defines.gui_type.entity then
@@ -254,7 +258,6 @@ local function on_gui_opened(event)
     end
 end
 
--- called for all market events
 local function on_market_item_purchased(event)
     local market = event.market
     if market.name == 'market' then
@@ -304,7 +307,8 @@ local function get_connected_entities(market)
     if not market.valid then
         return {}
     end
-    local items = {
+    local items =
+    {
         'burner-inserter',
         'inserter',
         'long-handed-inserter',
@@ -314,7 +318,8 @@ local function get_connected_entities(market)
         'fast-loader',
         'express-loader'
     }
-    local items2 = {
+    local items2 =
+    {
         'long-handed-inserter'
     }
     local bb = market.bounding_box
@@ -330,7 +335,6 @@ local function get_connected_entities(market)
 end
 
 local function get_inserter_filter(entity)
-    -- return the first filter
     local filter_mode = entity.inserter_filter_mode
     if filter_mode == 'whitelist' then
         return entity.get_filter(1)
@@ -339,12 +343,10 @@ local function get_inserter_filter(entity)
 end
 
 local function get_loader_filter(entity, index)
-    -- return first two filter types
     return entity.get_filter(index)
 end
 
 local function get_loader_market_position(entity)
-    -- gets the position of the market relative to the loader
     local position = { x = entity.position.x, y = entity.position.y }
     local orientation = entity.orientation
     local type = entity.loader_type
@@ -387,15 +389,13 @@ local function output_inserter_items(town_center, trade, entity)
     end
 end
 
-local function trade_scrap_for_coin(town_center, market, trade, stack)
+local function trade_scrap_for_coin(town_center, trade, stack)
     local item = stack.name
     local amount = stack.count
-    -- buffer the input in an item buffer that can be sold for coin
     if town_center.input_buffer[item] == nil then
         town_center.input_buffer[item] = 0
     end
     town_center.input_buffer[item] = town_center.input_buffer[item] + amount
-    --log("input_buffer[" .. item .. "] = " .. town_center.input_buffer[item])
 
     local price = trade.price[1].amount
     local count = trade.offer.count
@@ -403,11 +403,9 @@ local function trade_scrap_for_coin(town_center, market, trade, stack)
         town_center.input_buffer[item] = town_center.input_buffer[item] - price
         town_center.coin_balance = town_center.coin_balance + count
     end
-    Town_center.update_coin_balance(market.force)
-    --log("input_buffer[" .. item .. "] = " .. town_center.input_buffer[item])
 end
 
-local function trade_coin_for_items(town_center, market, trade)
+local function trade_coin_for_items(town_center, trade)
     local item = trade.offer.item
     local count = trade.offer.count
     local price = trade.price[1].amount
@@ -422,26 +420,21 @@ local function trade_coin_for_items(town_center, market, trade)
             break
         end
     end
-    Town_center.update_coin_balance(market.force)
 end
 
 local function handle_loader_output(town_center, market, entity, index)
     local line = entity.get_transport_line(index)
-    -- get loader filters
     local filter = get_loader_filter(entity, index)
     if filter == nil then
         return
     end
     if filter == 'coin' then
-        -- output for coins
         while town_center.coin_balance > 0 and line.can_insert_at_back() do
             town_center.coin_balance = town_center.coin_balance - 1
             local stack = { name = 'coin', count = 1 }
             line.insert_at_back(stack)
         end
-        Town_center.update_coin_balance(market.force)
     else
-        -- output for matching purchases
         local offers = market.get_market_items()
         if offers == nil then
             set_offers(town_center)
@@ -451,7 +444,7 @@ local function handle_loader_output(town_center, market, entity, index)
                 if trade.offer.type == 'give-item' then
                     local item = trade.price[1].name
                     if item == 'coin' and trade.offer.item == filter then
-                        trade_coin_for_items(town_center, market, trade)
+                        trade_coin_for_items(town_center, trade)
                         output_loader_items(town_center, trade, entity, index)
                     end
                 end
@@ -461,7 +454,6 @@ local function handle_loader_output(town_center, market, entity, index)
 end
 
 local function handle_inserter_output(town_center, market, entity)
-    -- get inserter filter
     local filter = get_inserter_filter(entity)
     if filter == nil then
         return
@@ -469,7 +461,6 @@ local function handle_inserter_output(town_center, market, entity)
     local amount = max_stack_size(entity)
     local stack = { name = 'coin', count = amount }
     if filter == 'coin' then
-        -- output coins
         if amount > town_center.coin_balance then
             amount = town_center.coin_balance
         end
@@ -478,9 +469,7 @@ local function handle_inserter_output(town_center, market, entity)
             town_center.coin_balance = town_center.coin_balance - amount
             entity.held_stack.set_stack(stack)
         end
-        Town_center.update_coin_balance(market.force)
     else
-        -- for matching coin purchases
         local offers = market.get_market_items()
         if offers == nil then
             set_offers(town_center)
@@ -490,7 +479,7 @@ local function handle_inserter_output(town_center, market, entity)
                 if trade.offer.type == 'give-item' and trade.offer.item == filter then
                     local item = trade.price[1].name
                     if item == 'coin' then
-                        trade_coin_for_items(town_center, market, trade)
+                        trade_coin_for_items(town_center, trade)
                         output_inserter_items(town_center, trade, entity)
                     end
                 end
@@ -501,17 +490,14 @@ end
 
 local function handle_loader_input(town_center, market, entity, index)
     local line = entity.get_transport_line(index)
-    -- check for a line item at the back where we can pull
     if line.valid then
         local length = #line
         if length > 1 or (length == 1 and line.can_insert_at_back()) then
             local line_item = line[length].name
             local stack = { name = line_item, count = 1 }
             if line_item == 'coin' then
-                -- insert coins
                 line.remove_item(stack)
                 town_center.coin_balance = town_center.coin_balance + stack.count
-                Town_center.update_coin_balance(market.force)
             else
                 local offers = market.get_market_items()
                 if offers == nil then
@@ -522,9 +508,8 @@ local function handle_loader_input(town_center, market, entity, index)
                         if trade.offer.type == 'give-item' then
                             local item = trade.price[1].name
                             if item == stack.name and trade.offer.item == 'coin' then
-                                -- trade scrap for coin
                                 line.remove_item(stack)
-                                trade_scrap_for_coin(town_center, market, trade, stack)
+                                trade_scrap_for_coin(town_center, trade, stack)
                             end
                         end
                     end
@@ -535,13 +520,10 @@ local function handle_loader_input(town_center, market, entity, index)
 end
 
 local function handle_inserter_input(town_center, market, entity)
-    -- check if stack is coin or resource
     local stack = { name = entity.held_stack.name, count = entity.held_stack.count }
     if stack.name == 'coin' and stack.count > 0 then
-        -- insert coins
         entity.remove_item(stack)
         town_center.coin_balance = town_center.coin_balance + stack.count
-        Town_center.update_coin_balance(market.force)
     else
         local offers = market.get_market_items()
         if offers == nil then
@@ -552,9 +534,8 @@ local function handle_inserter_input(town_center, market, entity)
                 if trade.offer.type == 'give-item' and trade.offer.item == 'coin' then
                     local item = trade.price[1].name
                     if item == stack.name and trade.offer.item == 'coin' then
-                        -- trade scrap for coin
                         entity.remove_item(stack)
-                        trade_scrap_for_coin(town_center, market, trade, stack)
+                        trade_scrap_for_coin(town_center, trade, stack)
                     end
                 end
             end
@@ -564,24 +545,17 @@ end
 
 local function handle_market_input(town_center, market, entity)
     if is_loader(entity) then
-        -- handle loader input
-        -- we don't care about filters
         local max_index = entity.get_max_transport_line_index()
         for index = 1, max_index, 1 do
             handle_loader_input(town_center, market, entity, index)
         end
     else
-        -- handle inserter input
-        -- we don't care about filters
         local stack = entity.held_stack
         if stack ~= nil then
-            -- if there is a pickup target
             local spos = entity.held_stack_position
             local dpos = entity.drop_position
             if equal(spos, dpos) then
                 if stack.valid_for_read and stack.count > 0 then
-                    -- if there is a stack
-                    -- insert an item into the market
                     handle_inserter_input(town_center, market, entity)
                 end
             end
@@ -591,7 +565,6 @@ end
 
 local function handle_market_output(town_center, market, entity)
     if is_loader(entity) then
-        -- handle loader output
         local max_index = entity.get_max_transport_line_index()
         for index = 1, max_index, 1 do
             if get_loader_filter(entity, index) ~= nil then
@@ -600,19 +573,13 @@ local function handle_market_output(town_center, market, entity)
         end
     else
         if is_filtered_inserter(entity) then
-            -- handle inserter output
             if entity.drop_target ~= nil then
-                -- if the pickup position is inside the market
-                --log("inside pickup position and there is a drop target")
                 local stack = entity.held_stack
                 local spos = entity.held_stack_position
                 local ppos = entity.pickup_position
                 if equal(spos, ppos) then
-                    -- if the stack position is inside the market
                     if stack == nil or stack.count == 0 then
-                        -- if there is space on the stack
-                        -- pull an item from the market
-                        handle_inserter_output(town_center, market, entity, stack)
+                        handle_inserter_output(town_center, market, entity)
                     end
                 end
             end
@@ -658,10 +625,8 @@ local function on_tick(_)
         return
     end
     for _, town_center in pairs(this.town_centers) do
-        -- get connected entities on markets
         local market = town_center.market
         local entities = get_connected_entities(market)
-        -- handle connected entity
         for _, entity in pairs(entities) do
             if entity.force == market.force then
                 handle_connected_entity(town_center, market, entity)

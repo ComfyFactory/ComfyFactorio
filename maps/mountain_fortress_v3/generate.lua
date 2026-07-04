@@ -384,7 +384,7 @@ local function do_place_entities(data)
                         entity.amount = e.amount
                     end
                     if e.active ~= nil then
-                        entity.active = e.active
+                        entity.disabled_by_script = not e.active
                     end
                     execute_callback_data(e, entity)
                 end
@@ -420,7 +420,7 @@ local function do_place_entities(data)
                         entity.amount = e.amount
                     end
                     if e.active ~= nil then
-                        entity.active = e.active
+                        entity.disabled_by_script = not e.active
                     end
                     execute_callback_data(e, entity)
                 end

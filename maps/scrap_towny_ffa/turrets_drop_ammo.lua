@@ -7,9 +7,13 @@ local function on_entity_died(event)
     local entity = event.entity
     local surface = entity.surface
     if entity.type == 'ammo-turret' and entity.force.name == 'enemy' then
-        local min = math_min(entity.get_item_count('piercing-rounds-magazine'), 20)
+        local inv = entity.get_inventory(defines.inventory.turret_ammo)
+        if not inv then
+            return
+        end
+        local min = math_min(inv.get_item_count('piercing-rounds-magazine'), 20)
         if min > 0 then
-            surface.spill_item_stack(entity.position, {name = 'piercing-rounds-magazine', count = math_random(1, min)}, true)
+            surface.spill_item_stack({ position = entity.position, stack = { name = 'piercing-rounds-magazine', count = math_random(1, min) }, enable_looted = true })
         end
     end
 end

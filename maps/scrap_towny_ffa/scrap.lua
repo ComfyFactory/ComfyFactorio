@@ -1,20 +1,9 @@
 local Public = {}
 
 local scrapable = {
-    ['crash-site-spaceship-wreck-small-1'] = true,
-    ['crash-site-spaceship-wreck-small-2'] = true,
-    ['crash-site-spaceship-wreck-small-3'] = true,
-    ['crash-site-spaceship-wreck-small-4'] = true,
-    ['crash-site-spaceship-wreck-small-5'] = true,
-    ['crash-site-spaceship-wreck-small-6'] = true,
+    ['mineable-wreckage'] = true,
     ['crash-site-chest-1'] = true,
-    ['crash-site-chest-2'] = true,
-    ['crash-site-spaceship-wreck-medium-1'] = true,
-    ['crash-site-spaceship-wreck-medium-2'] = true,
-    ['crash-site-spaceship-wreck-medium-3'] = true,
-    ['crash-site-spaceship-wreck-big-1'] = true,
-    ['crash-site-spaceship-wreck-big-2'] = true,
-    ['crash-site-spaceship'] = true
+    ['crash-site-chest-2'] = true
 }
 
 function Public.is_scrap(entity)

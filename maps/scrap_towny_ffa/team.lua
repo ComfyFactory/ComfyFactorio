@@ -2,7 +2,6 @@ local Event = require 'utils.event'
 local Server = require 'utils.server'
 local Map = require 'maps.scrap_towny_ffa.map'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
-local CombatBalance = require 'maps.scrap_towny_ffa.combat_balance'
 
 local Public = {}
 
@@ -17,12 +16,14 @@ local rogue_color = { 150, 150, 150 }
 local rogue_chat_color = { 170, 170, 170 }
 local item_drop_radius = 1.65
 
-local destroy_wall_types = {
+local destroy_wall_types =
+{
     ['gate'] = true,
     ['wall'] = true
 }
 
-local destroy_military_types = {
+local destroy_military_types =
+{
     ['ammo-turret'] = true,
     ['artillery-turret'] = true,
     ['artillery-wagon'] = true,
@@ -37,25 +38,29 @@ local destroy_military_types = {
     ['rocket-silo'] = true
 }
 
-local destroy_robot_types = {
+local destroy_robot_types =
+{
     ['combat-robot'] = true,
     ['construction-robot'] = true,
     ['logistic-robot'] = true
 }
 
-local storage_types = {
+local storage_types =
+{
     ['container'] = true,
     ['logistic-container'] = true,
     ['storage-tank'] = true
 }
 
-local player_force_disabled_recipes = {
+local player_force_disabled_recipes =
+{
     'lab',
     'automation-science-pack',
     'stone-brick',
     'radar'
 }
-local all_force_enabled_recipes = {
+local all_force_enabled_recipes =
+{
     'submachine-gun',
     'shotgun',
     'shotgun-shell'
@@ -69,8 +74,6 @@ local function update_member_limit(force)
     local this = ScenarioTable.get_table()
     local town_centers = this.town_centers
 
-    -- Limit is increased by counting towns that are the limit
-    -- This will ensure no single town has many more players than another
     local limit = 1
     while true do
         local towns_near_limit = 0
@@ -105,16 +108,49 @@ local function can_force_accept_member(force)
     return true
 end
 
-function Public.is_rogue(force)
-    return force.name == 'rogue'
-end
-
 function Public.is_outlander(force)
-    return force.name == 'player'
+    if ScenarioTable.mode('outlander_forces') == 'individual' then
+        return string.sub(force.name, 1, 2) == 'o_'
+    end
+    return force.name == 'player' or force.name == 'rogue'
 end
 
 function Public.is_towny(force)
+    if ScenarioTable.mode('outlander_forces') == 'individual' then
+        return string.sub(force.name, 1, 2) == 't_'
+    end
     return force.name ~= 'rogue' and force.name ~= 'player'
+end
+
+function Public.non_town_display_name(force)
+    assert(not Public.is_towny(force))
+    if Public.is_outlander(force) then
+        if ScenarioTable.mode('outlander_forces') == 'individual' then
+            return string.sub(force.name, 3)
+        end
+        return force.name
+    elseif force == game.forces.enemy then
+        return 'the biters'
+    else
+        return force.name
+    end
+end
+
+function Public.is_friendly_towards(my_force, other_force)
+    return my_force == other_force or my_force.get_friend(other_force) or my_force.get_cease_fire(other_force)
+end
+
+local function force_display_name(force)
+    if Public.is_towny(force) then
+        local town_center = ScenarioTable.get_table().town_centers[force.name]
+        if town_center then
+            return town_center.town_name
+        end
+    end
+    if Public.is_outlander(force) then
+        return Public.non_town_display_name(force)
+    end
+    return force.name
 end
 
 function Public.has_key(index)
@@ -207,6 +243,19 @@ local function reset_player(player)
     end
 end
 
+local function update_balance_hud(player, in_town)
+    if ScenarioTable.enabled('research_balance') then
+        require('maps.scrap_towny_ffa.research_balance').player_changes_town_status(player, in_town)
+    end
+    if ScenarioTable.enabled('dynamic_damage_modifier') or ScenarioTable.enabled('hud_damage') then
+        require('maps.scrap_towny_ffa.combat_balance').player_changes_town_status(player, in_town)
+    end
+    local TownStatus = require 'maps.scrap_towny_ffa.town_status'
+    if TownStatus.enabled() then
+        TownStatus.player_changes_town_status(player, in_town)
+    end
+end
+
 function Public.add_player_to_town(player, town_center)
     if not player or not player.valid then
         log('player nil or not valid!')
@@ -231,9 +280,9 @@ function Public.add_player_to_town(player, town_center)
 
     update_member_limit(force)
     game.print('>> The member limit for all towns is now: ' .. this.member_limit, { 255, 255, 0 })
+    update_balance_hud(player, true)
 end
 
--- given to player upon respawn
 function Public.give_player_items(player)
     if not player or not player.valid then
         log('player nil or not valid!')
@@ -246,9 +295,64 @@ function Public.give_player_items(player)
     end
 end
 
+local outlander_force_disabled_recipes =
+{
+    'automation-science-pack',
+    'logistic-science-pack',
+    'chemical-science-pack',
+    'military-science-pack',
+    'production-science-pack',
+    'utility-science-pack',
+    'lab',
+    'radar',
+}
+
+local function set_biter_peace(force, peace)
+    game.forces.enemy.set_cease_fire(force, peace)
+    force.set_cease_fire(game.forces.enemy, peace)
+end
+
+local function create_outlander_force(player)
+    local force = game.create_force('o_' .. player.name)
+    if ScenarioTable.enabled('individual_outlander_peace_with_biters') then
+        set_biter_peace(force, true)
+    end
+    force.share_chart = true
+    force.friendly_fire = true
+    if game.permissions.get_group('outlander') == nil then
+        game.permissions.create_group('outlander')
+    end
+    game.permissions.get_group('outlander').add_player(player)
+    force.disable_research()
+    for _, recipe_name in pairs(outlander_force_disabled_recipes) do
+        if force.recipes[recipe_name] then
+            force.recipes[recipe_name].enabled = false
+        end
+    end
+    require('maps.scrap_towny_ffa.combat_balance').init_player_weapon_damage(force)
+    if ScenarioTable.mode('map_mode') == 'fixed' then
+        local MapLayout = require 'maps.scrap_towny_ffa.map_layout'
+        MapLayout.reveal_strategic_resources(force)
+    end
+    return force
+end
+
+local function set_player_to_individual_outlander(player)
+    player.force = create_outlander_force(player)
+    player.tag = '[Outlander]'
+    Map.disable_world_map(player)
+    Public.set_player_color(player)
+    Public.give_key(player.index)
+end
+
 function Public.set_player_to_outlander(player)
     if not player or not player.valid then
         log('player nil or not valid!')
+        return
+    end
+    if ScenarioTable.mode('outlander_forces') == 'individual' then
+        set_player_to_individual_outlander(player)
+        update_balance_hud(player, false)
         return
     end
     player.force = game.forces.player
@@ -260,6 +364,7 @@ function Public.set_player_to_outlander(player)
     Map.disable_world_map(player)
     Public.set_player_color(player)
     Public.give_key(player.index)
+    update_balance_hud(player, false)
 end
 
 local function set_player_to_rogue(player)
@@ -299,22 +404,19 @@ local function ally_outlander(player, target)
     local target_force = target.force
     local target_town_center = this.town_centers[target_force.name]
 
-    -- don't handle if towns not yet enabled
     if not this.towns_enabled then
         player.print('You must wait for more players to join!', { 255, 255, 0 })
         return false
     end
-    -- don't handle request if target is not a town
+
     if not Public.is_towny(requesting_force) and not Public.is_towny(target_force) then
         return false
     end
 
-    -- don't handle request to  another town if already in a town
     if Public.is_towny(requesting_force) and Public.is_towny(target_force) then
         return false
     end
 
-    -- handle the request
     if not Public.is_towny(requesting_force) and Public.is_towny(target_force) then
         this.requests[player.index] = target_force.name
 
@@ -342,7 +444,6 @@ local function ally_outlander(player, target)
         return true
     end
 
-    -- handle the approval
     if Public.is_towny(requesting_force) and not Public.is_towny(target_force) then
         if target.type ~= 'character' then
             return true
@@ -551,7 +652,8 @@ local function reset_permissions(permission_group)
 end
 
 local function enable_blueprints(permission_group)
-    local defs = {
+    local defs =
+    {
         defines.input_action.alt_select_blueprint_entities,
         defines.input_action.cancel_new_blueprint,
         defines.input_action.change_blueprint_record_label,
@@ -580,7 +682,8 @@ local function enable_blueprints(permission_group)
 end
 
 local function disable_blueprints(permission_group)
-    local defs = {
+    local defs =
+    {
         defines.input_action.alt_select_blueprint_entities,
         defines.input_action.cancel_new_blueprint,
         defines.input_action.change_blueprint_record_label,
@@ -609,7 +712,8 @@ local function disable_blueprints(permission_group)
 end
 
 local function enable_deconstruct(permission_group)
-    local defs = {
+    local defs =
+    {
         defines.input_action.deconstruct,
         defines.input_action.clear_selected_deconstruction_item,
         defines.input_action.cancel_deconstruct,
@@ -624,7 +728,8 @@ local function enable_deconstruct(permission_group)
 end
 
 local function disable_deconstruct(permission_group)
-    local defs = {
+    local defs =
+    {
         defines.input_action.deconstruct,
         defines.input_action.clear_selected_deconstruction_item,
         defines.input_action.cancel_deconstruct,
@@ -637,16 +742,6 @@ local function disable_deconstruct(permission_group)
         permission_group.set_allows_action(d, false)
     end
 end
-
---local function enable_artillery(force, permission_group)
---    permission_group.set_allows_action(defines.input_action.use_artillery_remote, true)
---    force.technologies['artillery'].enabled = true
---    force.technologies['artillery-shell-range-1'].enabled = true
---    force.technologies['artillery-shell-speed-1'].enabled = true
---    force.recipes['artillery-turret'].enabled = false
---    force.recipes['artillery-wagon'].enabled = false
---    force.recipes['artillery-shell'].enabled = false
---end
 
 local function disable_artillery(force, permission_group)
     permission_group.set_allows_action(defines.input_action.toggle_artillery_auto_targeting, false)
@@ -697,10 +792,9 @@ local function disable_achievements(permission_group)
     permission_group.set_allows_action(defines.input_action.open_achievements_gui, false)
 end
 
--- setup a team force
 function Public.add_new_force(force_name)
     local this = ScenarioTable.get_table()
-    -- disable permissions
+
     local force = game.create_force(force_name)
     local surface = game.get_surface(this.active_surface_index)
     if not surface or not surface.valid then
@@ -717,18 +811,18 @@ function Public.add_new_force(force_name)
     disable_cluster_grenades(force)
     enable_radar(surface, force)
     disable_achievements(permission_group)
-    -- friendly fire
+
     force.friendly_fire = true
-    -- disable technologies
+
     for _, recipe_name in pairs(all_force_enabled_recipes) do
         force.recipes[recipe_name].enabled = true
     end
-    -- balance initial combat
-    CombatBalance.init_player_weapon_damage(force)
+
+    require('maps.scrap_towny_ffa.combat_balance').init_player_weapon_damage(force)
     if (this.testing_mode == true) then
         local e_force = game.forces['enemy']
-        e_force.set_friend(force, true)     -- team force should not be attacked by turrets
-        e_force.set_cease_fire(force, true) -- team force should not be attacked by units
+        e_force.set_friend(force, true)
+        e_force.set_cease_fire(force, true)
         force.enable_all_prototypes()
         force.research_all_technologies()
     end
@@ -785,7 +879,7 @@ local function kill_force(force_name, cause)
                 e.die()
             elseif destroy_wall_types[e.type] then
                 e.die()
-            elseif storage_types[e.type] ~= true then -- spare chests
+            elseif storage_types[e.type] ~= true then
                 local random = math_random()
                 if random > 0.5 or e.health == nil then
                     e.die()
@@ -806,12 +900,11 @@ local function kill_force(force_name, cause)
     this.town_centers[force_name] = nil
     delete_chart_tag_for_all_forces(market)
 
-    -- reward the killer
     local message
     if is_suicide then
         message = town_name .. ' has given up'
     elseif cause == nil or not cause.valid or cause.force == nil then
-        message = town_name .. ' has fallen to an unknown entity (DEBUG ID 0)!' -- TODO: remove after some testing
+        message = town_name .. ' has fallen to an unknown entity (DEBUG ID 0)!'
     elseif cause.force.name == 'player' or cause.force.name == 'rogue' then
         local items = { name = 'coin', count = balance }
         town_center.coin_balance = 0
@@ -830,7 +923,7 @@ local function kill_force(force_name, cause)
         elseif cause.force.name == 'rogue' then
             message = town_name .. ' has fallen to rogues!'
         else
-            message = town_name .. ' has fallen to an unknown entity (DEBUG ID 1)!' -- TODO: remove after some testing
+            message = town_name .. ' has fallen to an unknown entity (DEBUG ID 1)!'
         end
     elseif cause.force.name ~= 'enemy' then
         if this.town_centers[cause.force.name] ~= nil then
@@ -845,7 +938,7 @@ local function kill_force(force_name, cause)
                 message = town_name .. ' has fallen to ' .. killer_town_center.town_name .. '!'
             end
         else
-            message = town_name .. ' has fallen to an unknown entity (DEBUG ID 2)!' -- TODO: remove after some testing
+            message = town_name .. ' has fallen to an unknown entity (DEBUG ID 2)!'
             log('cause.force.name=' .. cause.force.name)
         end
     else
@@ -862,7 +955,7 @@ local function on_forces_merged()
     if not map_surface or not map_surface.valid then
         return
     end
-    -- Remove any ghosts that have been moved into neutral after a town is destroyed. This caused desyncs before.
+
     for _, e in pairs(map_surface.find_entities_filtered({ force = 'neutral', type = 'entity-ghost' })) do
         if e.valid then
             e.destroy()
@@ -886,12 +979,11 @@ local function setup_neutral_force()
     force.recipes['logistic-science-pack'].enabled = false
 end
 
--- setup the player force (this is the default for Outlanders)
 local function setup_player_force()
     local this = ScenarioTable.get_table()
     local force = game.forces.player
     local permission_group = game.permissions.create_group('outlander')
-    -- disable permissions
+
     local surface = game.get_surface(this.active_surface_index)
     if not surface or not surface.valid then
         return
@@ -906,9 +998,9 @@ local function setup_player_force()
     disable_cluster_grenades(force)
     disable_radar(surface, force)
     disable_achievements(permission_group)
-    -- friendly fire
+
     force.friendly_fire = true
-    -- disable recipes
+
     local recipes = force.recipes
     for _, recipe_name in pairs(player_force_disabled_recipes) do
         recipes[recipe_name].enabled = false
@@ -916,7 +1008,7 @@ local function setup_player_force()
     for _, recipe_name in pairs(all_force_enabled_recipes) do
         recipes[recipe_name].enabled = true
     end
-    CombatBalance.init_player_weapon_damage(force)
+    require('maps.scrap_towny_ffa.combat_balance').init_player_weapon_damage(force)
     if (this.testing_mode == true) then
         force.enable_all_prototypes()
     end
@@ -929,7 +1021,7 @@ local function setup_rogue_force()
         force = game.create_force('rogue')
     end
     local permission_group = game.permissions.create_group('rogue')
-    -- disable permissions
+
     local surface = game.get_surface(this.active_surface_index)
     if not surface or not surface.valid then
         return
@@ -944,9 +1036,9 @@ local function setup_rogue_force()
     disable_cluster_grenades(force)
     disable_radar(surface, force)
     disable_achievements(permission_group)
-    -- friendly fire
+
     force.friendly_fire = true
-    -- disable recipes
+
     local recipes = force.recipes
     for _, recipe_name in pairs(player_force_disabled_recipes) do
         recipes[recipe_name].enabled = false
@@ -954,7 +1046,7 @@ local function setup_rogue_force()
     for _, recipe_name in pairs(all_force_enabled_recipes) do
         recipes[recipe_name].enabled = true
     end
-    CombatBalance.init_player_weapon_damage(force)
+    require('maps.scrap_towny_ffa.combat_balance').init_player_weapon_damage(force)
     if (this.testing_mode == true) then
         force.enable_all_prototypes()
     end
@@ -967,16 +1059,16 @@ local function setup_enemy_force()
     if not surface or not surface.valid then
         return
     end
-    e_force.set_evolution_factor(1, surface.name)          -- this should never change since we are changing biter types on spawn
-    e_force.set_friend(game.forces.player, true)           -- outlander force (player) should not be attacked by turrets
-    e_force.set_cease_fire(game.forces.player, true)       -- outlander force (player) should not be attacked by units
+    e_force.set_evolution_factor(1, surface.name)
+    e_force.set_friend(game.forces.player, true)
+    e_force.set_cease_fire(game.forces.player, true)
     if (this.testing_mode == true) then
-        e_force.set_friend(game.forces['rogue'], true)     -- rogue force (rogue) should not be attacked by turrets
-        e_force.set_cease_fire(game.forces['rogue'], true) -- rogue force (rogue) should not be attacked by units
+        e_force.set_friend(game.forces['rogue'], true)
+        e_force.set_cease_fire(game.forces['rogue'], true)
     else
-        -- note, these don't prevent an outlander or rogue from attacking a unit or spawner, we need to handle separately
-        e_force.set_friend(game.forces['rogue'], false)     -- rogue force (rogue) should be attacked by turrets
-        e_force.set_cease_fire(game.forces['rogue'], false) -- rogue force (rogue) should be attacked by units
+
+        e_force.set_friend(game.forces['rogue'], false)
+        e_force.set_cease_fire(game.forces['rogue'], false)
     end
 end
 
@@ -989,9 +1081,55 @@ local function reset_forces()
     end
 end
 
+local cease_fire_item_drop_radius = 1.5
+
+local function set_cease_fire(player, entity)
+    if not ScenarioTable.enabled('cease_fire_fish') then
+        return
+    end
+    local position = entity.position
+    local surface = player.surface
+    local area = { { position.x - cease_fire_item_drop_radius, position.y - cease_fire_item_drop_radius }, { position.x + cease_fire_item_drop_radius, position.y + cease_fire_item_drop_radius } }
+    local requesting_force = player.force
+    local target
+
+    for _, e in pairs(surface.find_entities_filtered({ type = { 'character', 'market' }, area = area })) do
+        if e.force.name ~= requesting_force.name then
+            target = e
+            break
+        end
+    end
+
+    if not target then
+        return
+    end
+    local target_force = target.force
+    if target_force == game.forces.enemy or target_force == game.forces.neutral then
+        return
+    end
+
+    if requesting_force.get_cease_fire(target_force) then
+        player.print('You already have a cease fire agreement with ' .. force_display_name(target_force), { 255, 255, 0 })
+        return
+    end
+
+    requesting_force.set_cease_fire(target_force, true)
+    local pm_tag = '[Private message] '
+    if target_force.get_cease_fire(requesting_force) then
+        requesting_force.print(pm_tag .. 'You have agreed on a mutual cease-fire with ' .. force_display_name(target_force), { 255, 255, 0 })
+        target_force.print(pm_tag .. force_display_name(requesting_force) .. ' has agreed on a mutual cease-fire with you', { 255, 255, 0 })
+    else
+        requesting_force.print(pm_tag .. 'You have set a one-sided cease-fire with ' .. force_display_name(target_force), { 255, 255, 0 })
+        target_force.print(pm_tag .. force_display_name(requesting_force) .. ' has set one-sided cease-fire with you', { 255, 255, 0 })
+    end
+end
+
 local function on_player_dropped_item(event)
     local player = game.players[event.player_index]
     local entity = event.entity
+    if not entity or not entity.valid or not entity.stack.valid_for_read then
+        return
+    end
     if entity.stack.name == 'coin' then
         ally_town(player, entity)
         return
@@ -999,6 +1137,9 @@ local function on_player_dropped_item(event)
     if entity.stack.name == 'coal' then
         declare_war(player, entity)
         return
+    end
+    if entity.stack.name == 'raw-fish' then
+        set_cease_fire(player, entity)
     end
 end
 
@@ -1010,71 +1151,70 @@ local function on_entity_damaged(event)
     local cause = event.cause
     local force = event.force
 
-    -- special case to handle enemies attacked by outlanders
     if entity.force == game.forces['enemy'] then
         if cause ~= nil then
             if cause.type == 'character' and force.index == game.forces['player'].index then
                 local player = cause.player
                 if player and player.valid and force.index == game.forces['player'].index then
-                    -- set the force of the player to rogue until they die or create a town
+
                     set_player_to_rogue(player)
                 end
             end
-            -- cars and tanks
+
             if cause.type == 'car' or cause.type == 'tank' then
                 local driver = cause.get_driver()
                 if driver and driver.valid then
-                    -- driver may be LuaEntity or LuaPlayer
+
                     local player = driver
                     if driver.object_name == 'LuaEntity' then
                         player = driver.player
                     end
                     if player and player.valid and player.force.index == game.forces['player'].index then
-                        -- set the force of the player to rogue until they die or create a town
+
                         set_player_to_rogue(player)
                     end
                 end
 
                 local passenger = cause.get_passenger()
                 if passenger and passenger.valid then
-                    -- passenger may be LuaEntity or LuaPlayer
+
                     local player = passenger
                     if passenger.object_name == 'LuaEntity' then
                         player = passenger.player
                     end
                     if player and player.valid and player.force.index == game.forces['player'].index then
-                        -- set the force of the player to rogue until they die or create a town
+
                         set_player_to_rogue(player)
-                        -- set the vehicle to rogue
+
                         cause.force = game.forces['rogue']
                     end
                 end
             end
-            -- trains
+
             if cause.type == 'locomotive' or cause.type == 'cargo-wagon' or cause.type == 'fluid-wagon' or cause.type == 'artillery-wagon' then
                 local train = cause.train
                 for _, passenger in pairs(train.passengers) do
                     if passenger and passenger.valid then
-                        -- passenger may be LuaEntity or LuaPlayer
+
                         local player = passenger
                         if passenger.object_name == 'LuaEntity' then
                             player = passenger.player
                         end
                         if player and player.valid and player.force.index == game.forces['player'].index then
                             set_player_to_rogue(player)
-                            -- set the vehicle to rogue
+
                             cause.force = game.forces['rogue']
                         end
                     end
                 end
             end
-            -- combat robots
+
             if cause.type == 'combat-robot' then
                 local owner = cause.combat_robot_owner
                 if owner and owner.valid and owner.force == game.forces['player'] then
-                    -- set the force of the player to rogue until they die or create a town
+
                     set_player_to_rogue(owner)
-                    -- set the robot to rogue
+
                     cause.force = game.forces['rogue']
                 end
             end
@@ -1135,4 +1275,118 @@ Event.add(defines.events.on_post_entity_died, on_post_entity_died)
 Event.add(defines.events.on_console_command, on_console_command)
 Event.add(defines.events.on_console_chat, on_console_chat)
 Event.add(defines.events.on_forces_merged, on_forces_merged)
+
+function Public.on_cease_fire_damage(event)
+    if not ScenarioTable.enabled('cease_fire_fish') then
+        return
+    end
+    local entity = event.entity
+    if not entity or not entity.valid then
+        return
+    end
+    local damaged_force = entity.force
+    local attacker_force = event.force
+    if not attacker_force or not attacker_force.valid then
+        return
+    end
+
+    if damaged_force.get_cease_fire(attacker_force) or attacker_force.get_cease_fire(damaged_force) then
+        if damaged_force == game.forces.enemy then
+            attacker_force.print('You have broken the peace with the biters. They will seek revenge!', { r = 1, g = 0, b = 0 })
+        else
+            attacker_force.print('You broke a cease fire agreement with ' .. force_display_name(damaged_force), { 255, 255, 0 })
+        end
+        damaged_force.print('A cease fire agreement with you was broken by ' .. force_display_name(attacker_force), { 255, 255, 0 })
+        if attacker_force ~= game.forces.enemy then
+            damaged_force.set_cease_fire(attacker_force, false)
+            attacker_force.set_cease_fire(damaged_force, false)
+        end
+    end
+end
+
+if ScenarioTable.enabled('kick_town_member') then
+    commands.add_command(
+        'kick-town-member',
+        'Removes a member from your town',
+        function (cmd)
+            local player = game.players[cmd.player_index]
+            if not player or not player.valid then
+                return
+            end
+            local param = cmd.parameter
+            if not param then
+                player.print('[ERROR] No player name provided', { 255, 0, 0 })
+                return
+            end
+            local target_player = game.players[param]
+            if not target_player then
+                player.print('[ERROR] No player with that name was found', { 255, 0, 0 })
+                return
+            end
+            if target_player == player then
+                player.print("Can't kick yourself, drop coal on town center instead", { 255, 0, 0 })
+                return
+            end
+            if target_player.force ~= player.force then
+                player.print('Player is not in your town', { 255, 0, 0 })
+                return
+            end
+            if string.find(target_player.force.name, target_player.name) then
+                player.print("Can't kick the town founder", { 255, 0, 0 })
+                return
+            end
+            local this = ScenarioTable.get_table()
+            local town_center = this.town_centers[player.force.name]
+            game.print(player.name .. ' has banished ' .. target_player.name .. ' from ' .. town_center.town_name, { 255, 255, 0 })
+            Public.set_player_to_outlander(target_player)
+            this.requests[player.index] = nil
+        end
+    )
+end
+
+function Public.on_player_joined(player)
+    if ScenarioTable.mode('outlander_forces') ~= 'individual' then
+        return
+    end
+    if player.force.name == 'player' then
+        if player.online_time > 0 then
+            player.print(
+                "Welcome back, outlander! You've left the server for some time, "
+                .. 'so your buildings have become neutral and your map and diplomacy has reset',
+                { 255, 255, 0 }
+            )
+        end
+        player.force = create_outlander_force(player)
+    end
+end
+
+local function delete_old_outlander_forces()
+    if ScenarioTable.mode('outlander_forces') ~= 'individual' then
+        return
+    end
+    local current_tick = game.tick
+    local cleanup_after_age = 3600 * 60
+    for _, force in pairs(game.forces) do
+        if Public.is_outlander(force) then
+            local all_players_offline = true
+            for _, force_player in pairs(force.players) do
+                if current_tick - force_player.last_online < cleanup_after_age then
+                    all_players_offline = false
+                    break
+                end
+            end
+            if all_players_offline then
+                for _, force_player in pairs(force.players) do
+                    force_player.force = 'player'
+                end
+                game.merge_forces(force, 'neutral')
+            end
+        end
+    end
+end
+
+if ScenarioTable.mode('outlander_forces') == 'individual' then
+    Event.on_nth_tick(3600, delete_old_outlander_forces)
+end
+
 return Public

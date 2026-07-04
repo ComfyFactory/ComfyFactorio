@@ -5,13 +5,12 @@ local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local Nauvis = require 'maps.scrap_towny_ffa.nauvis'
 local Team = require 'maps.scrap_towny_ffa.team'
 local Player = require 'maps.scrap_towny_ffa.player'
+local Info = require 'maps.scrap_towny_ffa.info'
 local Color = require 'utils.color_presets'
 local table_insert = table.insert
 
 local Public = {}
 
--- game duration in ticks
--- 7d * 24h * 60m * 60s * 60t
 local game_duration = 36288000
 local armageddon_duration = 3600
 local warning_duration = 600
@@ -41,12 +40,6 @@ end
 local function warning()
     Alert.alert_all_players(5, 'The world is ending!', Color.white, 'warning-white', 1.0)
 end
-
--- local function armageddon()
---     if not get_victorious_force() then
---         Nauvis.armageddon()
---     end
--- end
 
 local function do_soft_reset()
     local this = ScenarioTable.get_table()
@@ -165,9 +158,7 @@ local function on_tick()
         if (tick + armageddon_duration + warning_duration) % game_duration == 0 then
             warning()
         end
-        -- if (tick + armageddon_duration) % game_duration == 0 then
-        --     armageddon()
-        -- end
+
         if (tick + 1) % game_duration == 0 then
             Nauvis.clear_nuke_schedule()
             Team.reset_all_forces()
@@ -361,5 +352,64 @@ commands.add_command(
 
 Event.on_nth_tick(10, on_tick)
 Event.add(defines.events.on_rocket_launched, on_rocket_launched)
+
+local function reset_map_part_1()
+    ScenarioTable.reset_table()
+    if ScenarioTable.mode('map_mode') == 'fixed' then
+        local MapLayout = require 'maps.scrap_towny_ffa.map_layout'
+        MapLayout.init()
+    end
+    game.reset_time_played()
+    game.reset_game_state()
+    for _, player in pairs(game.players) do
+        player.teleport({ 0, 0 }, game.surfaces['limbo'])
+    end
+end
+
+local function reset_map_part_2()
+    Nauvis.initialize()
+end
+
+local function reset_map_part_3()
+    Team.initialize()
+    for _, player in pairs(game.players) do
+        if player.connected then
+            Player.initialize(player)
+            Player.spawn(player)
+        else
+            player.force = game.forces.neutral
+        end
+        Team.set_player_color(player)
+        Player.load_buffs(player)
+        if ScenarioTable.enabled('hud_last_winner') and ScenarioTable.enabled('persist_last_winner') then
+            Info.update_last_winner_name(player)
+        end
+    end
+    Alert.alert_all_players(10, 'The world has been reset!', Color.white, 'restart_required', 1.0)
+end
+
+local function on_auto_reset_tick()
+    if not storage.game_end_sequence_start then
+        return
+    end
+    local tick = game.tick
+    if tick == storage.game_end_sequence_start then
+        Alert.alert_all_players(60, 'The world is about to reset!', Color.white, 'warning-white', 1.0)
+    elseif tick == storage.game_end_sequence_start + 60 * 60 then
+        game.print('The world will now reset. This can cause the game to hang for a while....', { 255, 255, 0 })
+        Team.reset_all_forces()
+    elseif tick == storage.game_end_sequence_start + 60 * 60 + 1 then
+        reset_map_part_1()
+    elseif tick == storage.game_end_sequence_start + 60 * 60 + 31 then
+        reset_map_part_2()
+    elseif tick == storage.game_end_sequence_start + 60 * 60 + 61 then
+        reset_map_part_3()
+        storage.game_end_sequence_start = nil
+    end
+end
+
+if ScenarioTable.enabled('auto_reset_on_win') then
+    Event.on_nth_tick(1, on_auto_reset_tick)
+end
 
 return Public
