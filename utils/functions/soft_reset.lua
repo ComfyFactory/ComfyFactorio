@@ -128,7 +128,7 @@ function Public.change_entities_to_neutral(surface, force, delete_pollution)
     for _, entity in pairs(entities) do
         if entity.valid then
             entity.force = 'neutral'
-            entity.active = false
+            entity.disabled_by_script = false
         end
     end
     if delete_pollution then

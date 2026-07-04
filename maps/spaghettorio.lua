@@ -158,7 +158,7 @@ local function on_chunk_generated(event)
         local d = direction_raffle[math_random(1, #direction_raffle)]
         if surface.can_place_entity({ name = e.name, position = e.position, direction = d }) then
             local entity = surface.create_entity { name = e.name, position = e.position, direction = d, force = 'player' }
-            entity.minable = false
+            entity.minable_flag = false
             entity.destructible = false
             if entity.name == 'stone-furnace' or entity.name == 'steel-furnace' then
                 entity.energy = 1

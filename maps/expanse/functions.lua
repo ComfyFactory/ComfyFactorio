@@ -417,7 +417,7 @@ function Public.expand(expanse, left_top)
         if is_container_position_valid(expanse, position) then
             local e = surface.create_entity({ name = 'requester-chest', position = position, force = 'neutral' })
             e.destructible = false
-            e.minable = false
+            e.minable_flag = false
         end
     end
     local custom_tier = tier

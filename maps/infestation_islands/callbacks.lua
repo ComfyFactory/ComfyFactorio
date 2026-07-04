@@ -472,7 +472,7 @@ Public.create_rocket_silo_token =
             if e and e.valid then
                 this.rocket_silo = e
                 game.forces.player.technologies['space-science-pack'].researched = true
-                e.minable = false
+                e.minable_flag = false
                 e.destructible = false
             end
             this.initial_rocket_silo_created = true
@@ -678,7 +678,7 @@ Public.do_place_market_token =
                 local p = new_pos
                 local market = surface.create_entity({ name = 'market', position = p, force = 'player', quality = Public.qualities[random(1, #Public.qualities)] })
                 if market and market.valid then
-                    market.minable = false
+                    market.minable_flag = false
                     local render_protect_text = rendering.draw_text
                         {
                             text = 'Protect this market at all costs!',
@@ -767,7 +767,7 @@ Public.do_revive_market_token =
             if position then
                 local market = surface.create_entity({ name = 'market', position = position, force = 'player', quality = Public.qualities[random(1, #Public.qualities)] })
                 if market and market.valid then
-                    market.minable = false
+                    market.minable_flag = false
                     market.destructible = false
                     local render_protect_text = rendering.draw_text
                         {
@@ -853,7 +853,7 @@ Public.do_place_entities_token =
                     this.ammo_chest.set_inventory_size_override(defines.inventory.chest, this.ammo_override)
                     this.ammo_chest.operable = false
                     this.ammo_chest.destructible = false
-                    this.ammo_chest.minable = false
+                    this.ammo_chest.minable_flag = false
                     this.render_ammo_text = rendering.draw_text
                         {
                             text = 'Free ammo',

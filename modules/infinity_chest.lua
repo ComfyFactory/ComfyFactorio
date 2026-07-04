@@ -462,7 +462,7 @@ end
 
 local function create_chest(entity, player)
     if entity.type == 'container' then
-        entity.active = false
+        entity.disabled_by_script = false
     end
     local unit_number = entity.unit_number
 
@@ -1069,14 +1069,14 @@ local function check_mode_on_chest(data)
             data.inv.set_bar()
         end
         chest.destructible = false
-        chest.minable = false
+        chest.minable_flag = false
     elseif mode == 2 then
         data.inv.set_bar(1)
         chest.destructible = true
-        chest.minable = true
+        chest.minable_flag = true
     elseif mode == 3 then
         chest.destructible = false
-        chest.minable = false
+        chest.minable_flag = false
         if data.container.direction.state == 'export' then
             data.inv.set_bar()
         end

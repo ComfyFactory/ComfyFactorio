@@ -133,7 +133,7 @@ end
 
 local function place_fish_market(surface, position)
     local market = surface.create_entity({ name = 'market', position = position, force = 'player' })
-    market.minable = false
+    market.minable_flag = false
 
     return market
 end
@@ -172,7 +172,7 @@ local enemy_territory_token =
                                     else
                                         entity = surface.create_entity({ name = 'biter-spawner', force = 'decoratives', position = pos })
                                     end
-                                    entity.active = false
+                                    entity.disabled_by_script = false
                                     entity.destructible = false
                                 end
                             end

@@ -175,7 +175,7 @@ local function draw_east_side(surface, left_top)
             else
                 e.direction = 0
             end
-            e.minable = false
+            e.minable_flag = false
             e.destructible = false
             --e.insert({name = "coal", count = math_random(8, 36)})
         end

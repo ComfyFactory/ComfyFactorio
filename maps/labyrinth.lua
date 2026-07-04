@@ -969,7 +969,7 @@ local function spawn_infinity_chest(pos, surface)
     local x = math_random(1, #infinity_chests)
     local e = surface.create_entity { name = 'infinity-chest', position = pos, force = 'player' }
     e.set_infinity_container_filter(1, { name = infinity_chests[x][1], count = infinity_chests[x][2] })
-    e.minable = false
+    e.minable_flag = false
     e.destructible = false
     e.operable = false
 end
@@ -1182,7 +1182,7 @@ local function on_chunk_generated(event)
                             }
                             if surface.count_entities_filtered { area = a, name = 'infinity-chest', limit = 1 } == 0 then
                                 local e = surface.create_entity { name = 'infinity-chest', position = pos, force = 'player' }
-                                e.minable = false
+                                e.minable_flag = false
                                 e.destructible = false
                                 e.operable = false
                                 e.remove_unfiltered_items = true

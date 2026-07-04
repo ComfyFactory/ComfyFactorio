@@ -626,7 +626,7 @@ local function treasure_chest(position, distance_to_center)
         n = 'steel-chest'
     end
     local e = game.surfaces['cave_miner'].create_entity({ name = n, position = position, force = 'player' })
-    e.minable = false
+    e.minable_flag = false
     local i = e.get_inventory(defines.inventory.chest)
     for _ = 1, math.random(3, 5), 1 do
         local loot = chest_raffle[math.random(1, #chest_raffle)]
@@ -665,7 +665,7 @@ local function rare_treasure_chest(position)
     end
 
     local e = game.surfaces[1].create_entity { name = 'steel-chest', position = p, force = 'player' }
-    e.minable = false
+    e.minable_flag = false
     local i = e.get_inventory(defines.inventory.chest)
     for _ = 1, math.random(2, 3), 1 do
         local loot = rare_treasure_chest_raffle_table[math.random(1, #rare_treasure_chest_raffle_table)]
@@ -1509,7 +1509,7 @@ local function on_tick()
         }
 
         storage.market.destructible = false
-        storage.surface_cave_chest.minable = false
+        storage.surface_cave_chest.minable_flag = false
         storage.surface_cave_chest.destructible = false
 
         if enable_fishbank_terminal then

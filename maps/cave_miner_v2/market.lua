@@ -84,7 +84,7 @@ function Public.spawn(cave_miner)
         }
     )
     market.destructible = false
-    market.minable = false
+    market.minable_flag = false
 
     for i = 1, 3, 1 do
         special_slots[i](market, cave_miner)
@@ -205,7 +205,7 @@ function Public.spawn_random_cave_market(surface, position)
         }
     )
     market.destructible = false
-    market.minable = false
+    market.minable_flag = false
 end
 
 return Public

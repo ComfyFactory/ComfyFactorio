@@ -538,7 +538,7 @@ local function player_toggled_autofill_on_container(event)
             if not isMember then
                 if (force.refill_chests_placed < limit) then
                     Public.add_chest_to_force(player, entity)
-                    entity.minable = false
+                    entity.minable_flag = false
                     local _, id = contains_chest(force.refill_chests, entity)
                     local placeholder = 'Chest ID: ' .. id
                     player.print('[Autofill] Chest added to autofill!', Color.success)
@@ -551,7 +551,7 @@ local function player_toggled_autofill_on_container(event)
                 end
             else
                 player.print('[Autofill] Chest removed from autofill!', Color.warning)
-                entity.minable = true
+                entity.minable_flag = true
                 Public.remove_chest_from_force(player, entity)
                 local tooltip =
                     '[color=blue][AutoFill][/color]\nYou can easily toggle this chest autofill status.\n\nAmmo in this chest will inserted automatically onto turrets that are owned by your force.\nYou currently have: ' ..

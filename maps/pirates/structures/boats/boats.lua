@@ -226,7 +226,7 @@ function Public.upgrade_chests(boat, new_chest)
 	for _, p in pairs(ps) do
 		local es = surface.find_entities_filtered({ name = 'wooden-chest', position = p, radius = 0.05 })
 		if es and #es == 1 then
-			es[1].minable = true
+			es[1].minable_flag = true
 			es[1].destructible = true
 			es[1].rotatable = true
 		end
@@ -237,7 +237,7 @@ function Public.upgrade_chests(boat, new_chest)
 			spill = false,
 			force = boat.force_name,
 		})
-		e2.minable = false
+		e2.minable_flag = false
 		e2.destructible = false
 		e2.rotatable = false
 	end
@@ -289,16 +289,16 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 				if e and e.valid then
 					if etype == 'static_inoperable' then
 						e.destructible = false
-						e.minable = false
+						e.minable_flag = false
 						e.rotatable = false
 						e.operable = false
 					elseif etype == 'static' then
 						e.destructible = false
-						e.minable = false
+						e.minable_flag = false
 						e.rotatable = false
 					elseif etype == 'inaccessible' then
 						e.destructible = false
-						e.minable = false
+						e.minable_flag = false
 						e.rotatable = false
 						e.operable = false
 						e.force = 'environment'
@@ -324,7 +324,7 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 				})
 				if e and e.valid then
 					e.destructible = false
-					e.minable = false
+					e.minable_flag = false
 					e.rotatable = false
 					e.operable = false
 					e.electric_buffer_size = boat.EEIelectric_buffer_size
@@ -349,7 +349,7 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 				})
 				if e and e.valid then
 					e.destructible = false
-					e.minable = false
+					e.minable_flag = false
 					e.rotatable = false
 					if i == 1 then
 						boat.upstairs_pole = e
@@ -376,7 +376,7 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 				})
 				if e and e.valid then
 					e.destructible = false
-					e.minable = false
+					e.minable_flag = false
 					e.rotatable = true
 
 					boat.upstairs_fluid_storages[i] = e
@@ -394,7 +394,7 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 					create_build_effect_smoke = false,
 				})
 				if e and e.valid then
-					e.minable = false
+					e.minable_flag = false
 					if p.y > 0 then
 						e.direction = defines.direction.south
 					end
@@ -422,11 +422,11 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 					})
 				if wall1 and wall2 and wall3 and wall1.valid and wall2.valid and wall3.valid then
 					wall1.destructible = false
-					wall1.minable = false
+					wall1.minable_flag = false
 					wall2.destructible = false
-					wall2.minable = false
+					wall2.minable_flag = false
 					wall3.destructible = false
-					wall3.minable = false
+					wall3.minable_flag = false
 				end
 			end
 		end
@@ -444,7 +444,7 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 					e.get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 16 })
 					e.color = { 148, 106, 52 }
 					e.destructible = false
-					e.minable = false
+					e.minable_flag = false
 					e.rotatable = false
 					e.operable = false
 				end
@@ -464,7 +464,7 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 				e.get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 16 })
 				e.color = { 148, 106, 52 }
 				e.destructible = false
-				e.minable = false
+				e.minable_flag = false
 				e.rotatable = false
 				e.operable = false
 			end
@@ -484,7 +484,7 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 				})
 				if ee and ee.valid then
 					ee.destructible = false
-					ee.minable = false
+					ee.minable_flag = false
 					ee.rotatable = false
 					if p.y < 0 then
 						boat.decksteeringchests.left = ee
@@ -532,7 +532,7 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 		-- 	if e and e.valid then
 		-- 		e.destructible = false
 		-- 		e.operable = false
-		-- 		e.minable = false
+		-- 		e.minable_flag = false
 		-- 		e.rotatable = false
 		-- 		boat.questrewardchest = e
 		-- 	end
@@ -562,7 +562,7 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 				})
 				if e and e.valid then
 					e.destructible = false
-					e.minable = false
+					e.minable_flag = false
 					e.rotatable = false
 					e.operable = false
 					e.linked_belt_type = b.type
@@ -598,7 +598,7 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 		})
 		if e and e.valid then
 			e.destructible = false
-			e.minable = false
+			e.minable_flag = false
 			e.rotatable = false
 			boat.market = e
 		end
@@ -866,7 +866,7 @@ end
 -- 	-- 		local p2 = surface.find_non_colliding_position('assembling-machine-1', p, 2, 0.1, true)
 -- 	-- 		local e = surface.create_entity{name = 'wooden-chest', position = p2, force = memory.force_name, create_build_effect_smoke = false}
 -- 	-- 		e.destructible = false
--- 	-- 		e.minable = false
+-- 	-- 		e.minable_flag = false
 -- 	-- 		e.rotatable = false
 -- 	-- 	end
 -- 	-- end
@@ -876,7 +876,7 @@ end
 -- 		if p then
 -- 			local e = surface.create_entity{name = 'wooden-chest', position = p, force = memory.force_name, create_build_effect_smoke = false}
 -- 			e.destructible = false
--- 			e.minable = false
+-- 			e.minable_flag = false
 -- 			e.rotatable = false
 -- 			if contents[i] then
 -- 				local inventory = e.get_inventory(defines.inventory.chest)

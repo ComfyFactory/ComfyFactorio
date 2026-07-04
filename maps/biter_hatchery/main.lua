@@ -321,7 +321,7 @@ local function on_entity_died(event)
     end
 
     for _, e in pairs(entity.surface.find_entities_filtered({ type = 'unit' })) do
-        e.active = false
+        e.disabled_by_script = false
     end
 end
 

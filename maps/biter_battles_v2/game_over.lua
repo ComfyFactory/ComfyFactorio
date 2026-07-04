@@ -321,10 +321,10 @@ end
 
 local function freeze_all_biters(surface)
     for _, e in pairs(surface.find_entities_filtered({ force = 'north_biters' })) do
-        e.active = false
+        e.disabled_by_script = false
     end
     for _, e in pairs(surface.find_entities_filtered({ force = 'south_biters' })) do
-        e.active = false
+        e.disabled_by_script = false
     end
 end
 

@@ -161,7 +161,7 @@ function Public.draw_team_nests(hatchery)
         surface.create_entity({ name = 'small-worm-turret', position = p, force = 'west' })
         surface.create_decoratives { check_collision = false, decoratives = { { name = 'enemy-decal', position = p, amount = 1 } } }
     end
-    e.active = false
+    e.disabled_by_script = false
     storage.map_forces.west.hatchery = e
     storage.map_forces.east.target = e
     surface.create_decoratives { check_collision = false, decoratives = { { name = 'enemy-decal', position = e.position, amount = 3 } } }
@@ -175,7 +175,7 @@ function Public.draw_team_nests(hatchery)
         surface.create_decoratives { check_collision = false, decoratives = { { name = 'enemy-decal', position = p, amount = 1 } } }
     end
 
-    e.active = false
+    e.disabled_by_script = false
     storage.map_forces.east.hatchery = e
     storage.map_forces.west.target = e
     surface.create_decoratives { check_collision = false, decoratives = { { name = 'enemy-decal', position = e.position, amount = 3 } } }

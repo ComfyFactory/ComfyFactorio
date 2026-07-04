@@ -246,7 +246,7 @@ function Public.build_from_blueprint(bp_string, pos, force, flipped)
                 local entity = e.surface.create_entity { name = 'blue-chest', position = e.position, force = e.force }
                 if entity and entity.valid then
                     entity.destructible = false
-                    entity.minable = false
+                    entity.minable_flag = false
                     entity.rotatable = false
                     entity.operable = false
                 end
@@ -254,7 +254,7 @@ function Public.build_from_blueprint(bp_string, pos, force, flipped)
                 local _, entity = e.silent_revive()
                 if entity and entity.valid then
                     entity.destructible = false
-                    entity.minable = false
+                    entity.minable_flag = false
                     entity.rotatable = false
                     entity.operable = false
                     if entity.energy then

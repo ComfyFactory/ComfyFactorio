@@ -109,7 +109,7 @@ local function treasure_chest(position)
     end
 
     local e = game.surfaces['deep_jungle'].create_entity { name = 'wooden-chest', position = position, force = 'player' }
-    e.minable = false
+    e.minable_flag = false
     local i = e.get_inventory(defines.inventory.chest)
     for _ = 1, random(3, 7), 1 do
         local loot = treasure_chest_raffle_table[random(1, #treasure_chest_raffle_table)]
@@ -140,7 +140,7 @@ local function rare_treasure_chest(position)
     end
 
     local e = game.surfaces['deep_jungle'].create_entity { name = 'steel-chest', position = position, force = 'player' }
-    e.minable = false
+    e.minable_flag = false
     local i = e.get_inventory(defines.inventory.chest)
     for _ = 1, random(2, 3), 1 do
         local loot = rare_treasure_chest_raffle_table[random(1, #rare_treasure_chest_raffle_table)]

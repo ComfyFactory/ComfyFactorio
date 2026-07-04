@@ -1019,7 +1019,7 @@ function Public.CreateWall(surface, pos)
     local wall = surface.create_entity({ name = 'stone-wall', position = pos, force = main_force_name })
     if wall then
         wall.destructible = false
-        wall.minable = false
+        wall.minable_flag = false
     end
 end
 

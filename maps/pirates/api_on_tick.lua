@@ -184,12 +184,12 @@ function Public.apply_restrictions_to_machines(tick_interval)
 
 		for _, machine in ipairs(crafters) do
 			if machine and machine.valid then
-				machine.active = not memory.crafters_disabled
+				machine.disabled_by_script = not memory.crafters_disabled
 			end
 		end
 		for _, machine in ipairs(power_machines) do
 			if machine and machine.valid then
-				machine.active = not memory.crafters_disabled
+				machine.disabled_by_script = not memory.crafters_disabled
 			end
 		end
 	end

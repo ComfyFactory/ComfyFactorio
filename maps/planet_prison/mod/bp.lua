@@ -280,7 +280,7 @@ local function _build_entities(surf, point, entities, hook, player)
         end
 
         if ent.revoke_minable then
-            e.minable = false
+            e.minable_flag = false
         end
 
         if ent.operable then

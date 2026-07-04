@@ -90,7 +90,7 @@ local entity_copy_functions =
         end
         storage.rocket_silo[force_name] =
             surface.create_entity({ name = entity.name, position = target_position, direction = direction_translation[entity.direction], force = force_name })
-        storage.rocket_silo[force_name].minable = false
+        storage.rocket_silo[force_name].minable_flag = false
         Functions.add_target_entity(storage.rocket_silo[force_name])
     end,
     ['ammo-turret'] = function (surface, entity, target_position, force_name)
@@ -117,14 +117,14 @@ local entity_copy_functions =
         if not e then
             return
         end
-        e.active = true
+        e.disabled_by_script = true
     end,
     ['container'] = function (surface, entity, target_position, force_name)
         local e = entity.clone({ position = target_position, surface = surface, force = force_name })
         if not e then
             return
         end
-        e.active = true
+        e.disabled_by_script = true
     end,
     ['fish'] = function (surface, entity, target_position)
         local mirror_entity = { name = entity.name, position = target_position }

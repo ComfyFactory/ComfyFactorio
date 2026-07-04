@@ -250,7 +250,7 @@ function Public.make_warp_point(player, position, surface, icon, force, name, sh
                 }
             entity.destructible = false
             entity.health = 0
-            entity.minable = false
+            entity.minable_flag = false
             entity.rotatable = false
             entities[#entities + 1] = entity
         end

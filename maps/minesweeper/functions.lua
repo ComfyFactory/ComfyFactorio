@@ -120,7 +120,7 @@ function Public.disarm_reward(position)
 		local p = {x = position.x + math.random(0, 1), y = position.y + math.random(0, 1)}
 		local container = surface.create_entity({name = "crash-site-chest-" .. math.random(1, 2), position = p, force = "neutral"})
 		for _, item_stack in pairs(item_stacks) do container.insert(item_stack) end
-		container.minable = false
+		container.minable_flag = false
 		unstuck_players_around_position(surface, p)
 		return
 	end

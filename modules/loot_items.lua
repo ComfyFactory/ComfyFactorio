@@ -154,7 +154,7 @@ function Public.add(surface, position, chest)
     end
 
     local e = surface.create_entity({ name = chest, position = position, force = "neutral" })
-    e.minable = false
+    e.minable_flag = false
     local i = e.get_inventory(defines.inventory.chest)
     for _ = 1, math_random(2, 6), 1 do
         Public.loot = chest_raffle[math_random(1, #chest_raffle)]

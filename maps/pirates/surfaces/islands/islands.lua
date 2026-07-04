@@ -320,7 +320,7 @@ function Public.spawn_silo_setup(points_to_avoid)
 				destination.dynamic_data.rocketsilos = {}
 			end
 			destination.dynamic_data.rocketsilos[#destination.dynamic_data.rocketsilos + 1] = silo
-			silo.minable = false
+			silo.minable_flag = false
 			silo.rotatable = false
 			silo.operable = false
 			if i == 1 then
@@ -346,7 +346,7 @@ function Public.spawn_silo_setup(points_to_avoid)
 	-- local substation = surface.create_entity({name = 'substation', position = {x = p_silo.x - 8.5, y = p_silo.y - 0.5}, force = force, create_build_effect_smoke = false})
 	-- if substation and substation.valid then
 	-- 	substation.destructible = false
-	-- 	substation.minable = false
+	-- 	substation.minable_flag = false
 	-- 	substation.rotatable = false
 	-- end
 
@@ -354,7 +354,7 @@ function Public.spawn_silo_setup(points_to_avoid)
 	-- if eei and eei.valid then
 	-- 	memory.islandeei = eei
 	-- 	eei.destructible = false
-	-- 	eei.minable = false
+	-- 	eei.minable_flag = false
 	-- 	eei.rotatable = false
 	-- 	eei.operable = false
 	-- 	eei.electric_buffer_size = memory.islandeeijoulesperrocket / 100

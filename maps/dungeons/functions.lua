@@ -169,7 +169,7 @@ function Public.common_loot_crate(surface, position, special)
     for _, item_stack in pairs(item_stacks) do
         container.insert(item_stack)
     end
-    container.minable = false
+    container.minable_flag = false
 end
 
 function Public.uncommon_loot_crate(surface, position, special)
@@ -178,7 +178,7 @@ function Public.uncommon_loot_crate(surface, position, special)
     for _, item_stack in pairs(item_stacks) do
         container.insert(item_stack)
     end
-    container.minable = false
+    container.minable_flag = false
 end
 
 function Public.rare_loot_crate(surface, position, special)
@@ -187,7 +187,7 @@ function Public.rare_loot_crate(surface, position, special)
     for _, item_stack in pairs(item_stacks) do
         container.insert(item_stack)
     end
-    container.minable = false
+    container.minable_flag = false
 end
 
 function Public.epic_loot_crate(surface, position, special)
@@ -212,7 +212,7 @@ function Public.epic_loot_crate(surface, position, special)
             container.insert(item_stack)
         end
     end
-    container.minable = false
+    container.minable_flag = false
 end
 
 function Public.crash_site_chest(surface, position, special)
@@ -258,7 +258,7 @@ function Public.market(surface, position)
     table.shuffle_table(offers)
     local market = surface.create_entity({ name = 'market', position = position, force = 'neutral' })
     market.destructible = false
-    market.minable = false
+    market.minable_flag = false
     local text = 'Buys: '
     for i = 1, math.random(6, 10), 1 do
         market.add_market_item(offers[i])
@@ -270,7 +270,7 @@ end
 function Public.laboratory(surface, position)
     local lab = surface.create_entity({ name = 'lab', position = position, force = 'neutral' })
     lab.destructible = false
-    lab.minable = false
+    lab.minable_flag = false
     local evo = Public.get_dungeon_evolution_factor(surface.index)
     local amount = math.min(200, math_floor(evo * 100))
     amount = math.max(amount, 1)
@@ -627,14 +627,14 @@ function Public.draw_spawn(surface)
                 local chest = surface.create_entity({ name = 'blue-chest', position = { -12 + iv * 8, -4 }, force = 'player' })
                 dungeontable.transport_chests_inputs[surface.index][iv] = chest
                 chest.destructible = false
-                chest.minable = false
+                chest.minable_flag = false
             end
             dungeontable.transport_poles_outputs[surface.index] = {}
             for ix = 1, 2, 1 do
                 local pole = surface.create_entity({ name = 'constant-combinator', position = { -15 + ix * 10, -5 }, force = 'player' })
                 dungeontable.transport_poles_outputs[surface.index][ix] = pole
                 pole.destructible = false
-                pole.minable = false
+                pole.minable_flag = false
             end
         end
         dungeontable.transport_chests_outputs[surface.index] = {}
@@ -642,14 +642,14 @@ function Public.draw_spawn(surface)
             local chest = surface.create_entity({ name = 'red-chest', position = { -12 + ic * 8, 4 }, force = 'player' })
             dungeontable.transport_chests_outputs[surface.index][ic] = chest
             chest.destructible = false
-            chest.minable = false
+            chest.minable_flag = false
         end
         dungeontable.transport_poles_inputs[surface.index] = {}
         for ib = 1, 2, 1 do
             local pole = surface.create_entity({ name = 'medium-electric-pole', position = { -15 + ib * 10, 5 }, force = 'player' })
             dungeontable.transport_poles_inputs[surface.index][ib] = pole
             pole.destructible = false
-            pole.minable = false
+            pole.minable_flag = false
         end
     end
 

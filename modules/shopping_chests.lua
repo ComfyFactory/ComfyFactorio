@@ -16,7 +16,7 @@ local shop_list =
 
 function Public.create_shopping_chest(surface, position, destructible)
     local entity = surface.create_entity({ name = 'requester-chest', position = position, force = 'shopping_chests' })
-    entity.minable = false
+    entity.minable_flag = false
     if not destructible then
         entity.destructible = false
     end
@@ -24,7 +24,7 @@ end
 
 function Public.create_dump_chest(surface, position, destructible)
     local entity = surface.create_entity({ name = 'passive-provider-chest', position = position, force = 'shopping_chests' })
-    entity.minable = false
+    entity.minable_flag = false
     if not destructible then
         entity.destructible = false
     end

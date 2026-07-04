@@ -759,7 +759,7 @@ function Public.surface_place_random_obstacle_boxes(
 					})
 					memory.hold_surface_destroyable_wooden_chests[e.unit_number] = e
 					e.destructible = false
-					e.minable = false
+					e.minable_flag = false
 					e.rotatable = false
 					if contents[placed] and j == 1 then
 						local inventory = e.get_inventory(defines.inventory.chest)
@@ -1232,7 +1232,7 @@ function Public.build_small_loco(surface, pos, force, color)
 	for _, e in pairs(es) do
 		if e and e.valid then
 			e.destructible = false
-			e.minable = false
+			e.minable_flag = false
 			e.rotatable = false
 			e.operable = false
 		end

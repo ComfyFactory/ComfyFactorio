@@ -62,7 +62,7 @@ local function place_scrap(surface, position)
         for _, item_stack in pairs(item_stacks) do
             inventory.insert(item_stack)
         end
-        container.minable = false
+        container.minable_flag = false
         return
     end
 

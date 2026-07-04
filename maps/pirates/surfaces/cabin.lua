@@ -188,7 +188,7 @@ function Public.create_cabin_surface()
 			})
 			if e and e.valid then
 				e.destructible = false
-				e.minable = false
+				e.minable_flag = false
 				e.rotatable = false
 				e.operable = false
 				e.linked_belt_type = b.type
@@ -225,7 +225,7 @@ function Public.create_cabin_surface()
 			})
 			if e and e.valid then
 				e.destructible = false
-				e.minable = false
+				e.minable_flag = false
 				e.rotatable = false
 				e.operable = false
 				if filter then
@@ -249,7 +249,7 @@ function Public.create_cabin_surface()
 			})
 			if e and e.valid then
 				e.destructible = false
-				e.minable = false
+				e.minable_flag = false
 				e.rotatable = false
 				-- e.operable = false
 				boat.input_chests[#boat.input_chests + 1] = e
@@ -265,7 +265,7 @@ function Public.create_cabin_surface()
 		})
 		if e and e.valid then
 			e.destructible = false
-			e.minable = false
+			e.minable_flag = false
 			e.rotatable = false
 			-- e.operable = false
 			boat.output_chest = e
@@ -280,7 +280,7 @@ function Public.create_cabin_surface()
 		})
 		if e and e.valid then
 			e.destructible = false
-			e.minable = false
+			e.minable_flag = false
 			e.rotatable = false
 			-- e.operable = false
 			boat.backup_output_chest = e
@@ -291,7 +291,7 @@ function Public.create_cabin_surface()
 		for _, e2 in pairs(es) do
 			if e2 and e2.valid then
 				e2.destructible = false
-				e2.minable = false
+				e2.minable_flag = false
 				e2.rotatable = false
 				e2.operable = false
 			end
@@ -304,7 +304,7 @@ function Public.create_cabin_surface()
 		-- for _, e2 in pairs(es2) do
 		-- 	if e2 and e2.valid then
 		-- 		e2.destructible = false
-		-- 		e2.minable = false
+		-- 		e2.minable_flag = false
 		-- 		e2.rotatable = false
 		-- 	end
 		-- end
@@ -318,7 +318,7 @@ function Public.create_cabin_surface()
 			e.get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 16 })
 			e.color = { 148, 106, 52 }
 			e.destructible = false
-			e.minable = false
+			e.minable_flag = false
 			e.rotatable = false
 			e.operable = false
 		end
@@ -331,7 +331,7 @@ function Public.create_cabin_surface()
 		})
 		if e and e.valid then
 			e.destructible = false
-			e.minable = false
+			e.minable_flag = false
 			e.rotatable = false
 			for i, offer in pairs(Public.cabin_shop_data) do
 				offer.price = Public.get_market_random_price(i) or offer.price

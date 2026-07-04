@@ -473,7 +473,7 @@ function BiterBattleTerrain.generate_market()
                 ee.destroy()
             end
         end
-        m.minable = false
+        m.minable_flag = false
         m.destructible = false
         m.add_market_item { price = { { name = 'raw-fish', count = 1 } }, offer = { type = 'give-item', item = 'small-electric-pole', count = 2 } }
         m.add_market_item { price = { { name = 'raw-fish', count = 1 } }, offer = { type = 'give-item', item = 'firearm-magazine', count = 2 } }
@@ -499,7 +499,7 @@ function BiterBattleTerrain.generate_artillery()
         end
         storage.spawn_artillery[f] = surface.create_entity { name = 'artillery-turret', position = { 55 * z, 26 * z }, force = f }
         local e = storage.spawn_artillery[f]
-        e.minable = false
+        e.minable_flag = false
         e.destructible = false
         local entities = surface.find_entities({ { e.position.x - 3, e.position.y - 4 }, { e.position.x + 3, e.position.y + 4 } })
         for _, ee in pairs(entities) do
@@ -508,7 +508,7 @@ function BiterBattleTerrain.generate_artillery()
             end
         end
         local m = surface.create_entity { name = 'market', position = { e.position.x, e.position.y + (3 * z) }, force = f }
-        m.minable = false
+        m.minable_flag = false
         m.destructible = false
         m.add_market_item { price = { { 'raw-fish', 2 } }, offer = { type = 'give-item', item = 'grenade' } }
         m.add_market_item { price = { { 'raw-fish', 1 } }, offer = { type = 'give-item', item = 'land-mine', count = 1 } }

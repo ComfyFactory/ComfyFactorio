@@ -61,7 +61,7 @@ local function treasure_chest(surface, position)
     for _, item_stack in pairs(item_stacks) do
         container.insert(item_stack)
     end
-    container.minable = false
+    container.minable_flag = false
 end
 
 local function on_player_joined_game(event)

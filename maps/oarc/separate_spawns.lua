@@ -176,11 +176,11 @@ function Public.SeparateSpawnsPlayerCreated(player_index, forced)
 
     if player.connected then
         if player.character and player.character.valid then
-            player.character.active = false
+            player.character.disabled_by_script = false
         else
             player.set_controller({ type = defines.controllers.god })
             player.create_character()
-            player.character.active = false
+            player.character.disabled_by_script = false
         end
     end
     if not ServerCommands.is_game_modded() then
@@ -234,7 +234,7 @@ function Public.find_unused_spawns(player, remove_player, forced)
         -- along with the map chunks being cleared.
         player.teleport({ x = 0, y = 0 }, surface_name)
         if player and player.character and player.character.valid then
-            player.character.active = true
+            player.character.disabled_by_script = true
         end
 
         -- Clear out global variables for that player
@@ -1056,7 +1056,7 @@ function Public.SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
     player.teleport(pos, surface_name)
 
     if player and player.character and player.character.valid then
-        player.character.active = true
+        player.character.disabled_by_script = true
     end
 
     -- Chart the area.
@@ -1098,7 +1098,7 @@ function Public.SendPlayerToSpawn(player)
             player.teleport(this.playerSpawns[player.name], player.surface)
         end
         if player and player.character and player.character.valid then
-            player.character.active = true
+            player.character.disabled_by_script = true
         end
     else
         if not dest then
@@ -1108,7 +1108,7 @@ function Public.SendPlayerToSpawn(player)
             player.teleport(player.surface.find_non_colliding_position('character', dest, 3, 0, 5), player.surface)
         end
         if player and player.character and player.character.valid then
-            player.character.active = true
+            player.character.disabled_by_script = true
         end
     end
 end
@@ -1124,7 +1124,7 @@ function Public.SendPlayerToRandomSpawn(player)
     if (rndSpawn == 0) then
         player.teleport(game.forces[this.main_force_name].get_spawn_position(surface_name), surface_name)
         if player and player.character and player.character.valid then
-            player.character.active = true
+            player.character.disabled_by_script = true
         end
     else
         counter = counter + 1
@@ -1132,7 +1132,7 @@ function Public.SendPlayerToRandomSpawn(player)
             if (counter == rndSpawn) then
                 player.teleport(spawn.pos)
                 if player and player.character and player.character.valid then
-                    player.character.active = true
+                    player.character.disabled_by_script = true
                 end
                 break
             end
@@ -1839,7 +1839,7 @@ function Public.SpawnOptsGuiClick(event)
         Gui.toggle_top_buttons(player, true)
         Gui.set_tab(player, "Spawn Controls", true)
         if player and player.character and player.character.valid then
-            player.character.active = true
+            player.character.disabled_by_script = true
         end
     elseif ((elemName == 'isolated_spawn_near') or (elemName == 'isolated_spawn_far')) then
         Gui.show_button_flow(player)
@@ -2035,7 +2035,7 @@ function Public.SharedSpwnOptsGuiClick(event)
                             Gui.toggle_top_buttons(joiningPlayer, true)
                             Gui.set_tab(joiningPlayer, module_name, false)
                             if joiningPlayer and joiningPlayer.character and joiningPlayer.character.valid then
-                                joiningPlayer.character.active = true
+                                joiningPlayer.character.disabled_by_script = true
                             end
                             return
                         else
@@ -2422,7 +2422,7 @@ function Public.SpawnCtrlGuiClick(event)
                 Gui.set_tab(joiningPlayer, module_name, false)
 
                 if joiningPlayer and joiningPlayer.character and joiningPlayer.character.valid then
-                    joiningPlayer.character.active = true
+                    joiningPlayer.character.disabled_by_script = true
                 end
             else
                 Utils.SendBroadcastMsg({ 'ms-player-left-while-joining', joinQueuePlayerChoice })

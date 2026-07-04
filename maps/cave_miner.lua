@@ -386,7 +386,7 @@ local function treasure_chest(position, distance_to_center)
         n = 'steel-chest'
     end
     local e = game.surfaces[1].create_entity({ name = n, position = position, force = 'neutral' })
-    e.minable = false
+    e.minable_flag = false
     local i = e.get_inventory(defines.inventory.chest)
     for _ = 1, math_random(3, 5), 1 do
         local loot = chest_raffle[math_random(1, #chest_raffle)]
@@ -425,7 +425,7 @@ function rare_treasure_chest(position)
     end
 
     local e = game.surfaces[1].create_entity { name = 'steel-chest', position = p, force = 'player' }
-    e.minable = false
+    e.minable_flag = false
     local i = e.get_inventory(defines.inventory.chest)
     for _ = 1, math_random(2, 3), 1 do
         local loot = rare_treasure_chest_raffle_table[math_random(1, #rare_treasure_chest_raffle_table)]

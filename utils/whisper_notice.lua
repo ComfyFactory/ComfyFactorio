@@ -13,7 +13,7 @@ local try_get_data = Server.try_get_data
 
 Global.register(
     this,
-    function(tbl)
+    function (tbl)
         this = tbl
     end
 )
@@ -33,16 +33,17 @@ end
 
 local has_accepted_token =
     Task.register(
-    function(data)
-        local player_name = data.key
-        local value = data.value
-        if value and value.accepted then
-            this[player_name] = {
-                accepted_whisper_tos = true
-            }
+        function (data)
+            local player_name = data.key
+            local value = data.value
+            if value and value.accepted then
+                this[player_name] =
+                {
+                    accepted_whisper_tos = true
+                }
+            end
         end
-    end
-)
+    )
 
 local function remove_target_frame(target_frame)
     Gui.remove_data_recursively(target_frame)
@@ -61,44 +62,44 @@ local function draw_notice_frame(player)
     main_frame.auto_center = true
 
     if player.character ~= nil then
-        player.character.active = false
+        player.character.disabled_by_script = false
     end
 
-    local content_flow = inside_table.add {type = 'flow', direction = 'horizontal'}
+    local content_flow = inside_table.add { type = 'flow', direction = 'horizontal' }
     content_flow.style.top_padding = 16
     content_flow.style.bottom_padding = 16
     content_flow.style.left_padding = 24
     content_flow.style.right_padding = 24
     content_flow.style.horizontally_stretchable = false
 
-    local sprite_flow = content_flow.add {type = 'flow'}
+    local sprite_flow = content_flow.add { type = 'flow' }
     sprite_flow.style.vertical_align = 'center'
     sprite_flow.style.vertically_stretchable = true
 
-    sprite_flow.add {type = 'sprite', sprite = 'utility/warning_icon'}
+    sprite_flow.add { type = 'sprite', sprite = 'utility/warning_icon' }
 
-    local label_flow = content_flow.add {type = 'flow'}
+    local label_flow = content_flow.add { type = 'flow' }
     label_flow.style.horizontal_align = 'left'
     label_flow.style.top_padding = 10
     label_flow.style.left_padding = 24
 
     local warning_message =
-        '[font=heading-2]Whisper notice![/font]\nIn order to provide our free services, ComfyFactorio must be entitled to access, monitor and/or review text chat, including "whisper" chat, in the event of complaints from other users or rule(s) violations.\n\nBy clicking the check box below, you agree that ComfyFactorio has the right to monitor and review personal messages you send or receive on our servers.\n\nComfyFactorio will [font=default-bold]not[/font] use the information for any reason other than pursuing such violations.'
+    '[font=heading-2]Whisper notice![/font]\nIn order to provide our free services, ComfyFactorio must be entitled to access, monitor and/or review text chat, including "whisper" chat, in the event of complaints from other users or rule(s) violations.\n\nBy clicking the check box below, you agree that ComfyFactorio has the right to monitor and review personal messages you send or receive on our servers.\n\nComfyFactorio will [font=default-bold]not[/font] use the information for any reason other than pursuing such violations.'
 
     label_flow.style.horizontally_stretchable = true
-    local label = label_flow.add {type = 'label', caption = warning_message}
+    local label = label_flow.add { type = 'label', caption = warning_message }
     label.style.single_line = false
 
-    local bottom_flow = main_frame.add({type = 'flow', direction = 'horizontal'})
+    local bottom_flow = main_frame.add({ type = 'flow', direction = 'horizontal' })
 
-    local left_flow = bottom_flow.add({type = 'flow'})
+    local left_flow = bottom_flow.add({ type = 'flow' })
     left_flow.style.horizontal_align = 'left'
     left_flow.style.horizontally_stretchable = true
 
-    local right_flow = bottom_flow.add({type = 'flow'})
+    local right_flow = bottom_flow.add({ type = 'flow' })
     right_flow.style.horizontal_align = 'right'
 
-    local save_button = right_flow.add({type = 'button', name = save_button_name, caption = 'OK'})
+    local save_button = right_flow.add({ type = 'button', name = save_button_name, caption = 'OK' })
     save_button.style = 'confirm_button'
 
     player.opened = main_frame
@@ -109,7 +110,8 @@ local function on_console_command(event)
         return
     end
 
-    local valid_commands = {
+    local valid_commands =
+    {
         ['r'] = true,
         ['whisper'] = true
     }
@@ -137,7 +139,7 @@ end
 Event.add(defines.events.on_console_command, on_console_command)
 Event.add(
     defines.events.on_player_joined_game,
-    function(event)
+    function (event)
         local player = game.get_player(event.player_index)
         if not player or not player.valid then
             return
@@ -160,7 +162,7 @@ Event.add(
 
 Gui.on_click(
     save_button_name,
-    function(event)
+    function (event)
         local player = event.player
         if not player or not player.valid then
             return
@@ -176,10 +178,10 @@ Gui.on_click(
         end
 
         if player.character ~= nil then
-            player.character.active = true
+            player.character.disabled_by_script = true
         end
         local date = Server.get_current_date_with_time()
-        set_data(whisper_dataset, player.name, {accepted = true, date = date})
+        set_data(whisper_dataset, player.name, { accepted = true, date = date })
 
         if frame and frame.valid then
             remove_target_frame(frame)

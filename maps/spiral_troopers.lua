@@ -347,7 +347,7 @@ local function grow_level()
                         map_functions.draw_smoothed_out_ore_circle(pos, ore, surface, 14, 400 * storage.spiral_troopers_level)
                         local unlocker = surface.create_entity({ name = 'burner-inserter', position = pos, force = 'player' })
                         unlocker.destructible = false
-                        unlocker.minable = false
+                        unlocker.minable_flag = false
                     end
 
                     if x >= 4 and x <= 5 and y >= 4 and y <= 5 then
@@ -399,7 +399,7 @@ local function grow_level()
     for x, e in pairs(entities) do
         local entity = surface.create_entity(e)
         entity.destructible = false
-        entity.minable = false
+        entity.minable_flag = false
         table.insert(storage.checkpoint_barriers[storage.spiral_troopers_level], entity)
     end
     storage.checkpoint_barriers[storage.spiral_troopers_level] = shuffle(storage.checkpoint_barriers[storage.spiral_troopers_level])
@@ -579,7 +579,7 @@ local function on_built_entity(event)
             }
             local enemy_count = event.entity.surface.count_entities_filtered({ force = 'enemy', area = a, limit = 1 })
             if enemy_count > 0 then
-                event.entity.active = false
+                event.entity.disabled_by_script = false
                 if event.player_index then
                     local player = game.players[event.player_index]
                     player.print('The turret seems to be malfunctioning near those creatures.', { r = 0.75, g = 0.0, b = 0.0 })
@@ -593,7 +593,7 @@ local function on_entity_damaged(event)
 	for _, e in pairs(disabled_entities) do
 		if e == event.entity.name then
 			if event.entity.health <= event.final_damage_amount then
-				event.entity.active = true
+				event.entity.disabled_by_script = true
 				event.entity.die("enemy")
 			end
 		end

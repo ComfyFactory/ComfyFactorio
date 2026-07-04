@@ -1396,11 +1396,11 @@ local function on_tick()
 		if game.tick % 300 == 0 then
 			local i = storage.spawn_artillery["south"].get_inventory(defines.inventory.turret_ammo)
 			if i.get_item_count("artillery-shell") == 0 then
-				storage.spawn_artillery["south"].active = false
+				storage.spawn_artillery["south"].disabled_by_script = false
 				storage.spawn_artillery_south_activate = false
 			else
 				if storage.spawn_artillery_south_activate == true then
-					storage.spawn_artillery["south"].active = true
+					storage.spawn_artillery["south"].disabled_by_script = true
 				end
 				storage.spawn_artillery_south_activate = true
 			end
@@ -1422,9 +1422,9 @@ local function on_chunk_generated(event)
     if event.area.left_top.x > 128 then
         storage.rocket_silo = {}
         storage.rocket_silo['north'] = surface.create_entity { name = 'rocket-silo', position = { 0, (storage.horizontal_border_width * 3.8) * -1 }, force = 'north' }
-        storage.rocket_silo['north'].minable = false
+        storage.rocket_silo['north'].minable_flag = false
         storage.rocket_silo['south'] = surface.create_entity { name = 'rocket-silo', position = { 0, storage.horizontal_border_width * 3.8 }, force = 'south' }
-        storage.rocket_silo['south'].minable = false
+        storage.rocket_silo['south'].minable_flag = false
 
         storage.biter_attack_main_target = {}
         storage.biter_attack_main_target['north'] = storage.rocket_silo['north'].position

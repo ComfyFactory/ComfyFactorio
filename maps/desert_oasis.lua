@@ -184,7 +184,7 @@ local function create_crash_site(surface, position)
     if not e or not e.valid then return end
     e.insert({ name = 'repair-pack', count = 2 })
     e.insert({ name = 'water-barrel', count = 5 })
-    e.minable = false
+    e.minable_flag = false
 end
 
 local function on_chunk_generated(event)

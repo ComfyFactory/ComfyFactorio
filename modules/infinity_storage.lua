@@ -389,7 +389,7 @@ toggle_render = function (container)
 end
 
 local function create_container(entity, stack, player)
-    entity.active = false
+    entity.disabled_by_script = false
     local unit_number = entity.unit_number
 
     if not does_exists(unit_number) then
@@ -785,13 +785,13 @@ local function check_mode_on_container(data)
 
     if mode == 1 then
         container.destructible = false
-        container.minable = false
+        container.minable_flag = false
     elseif mode == 2 then
         container.destructible = true
-        container.minable = true
+        container.minable_flag = true
     elseif mode == 3 then
         container.destructible = false
-        container.minable = false
+        container.minable_flag = false
     end
 end
 
