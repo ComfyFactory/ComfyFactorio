@@ -126,12 +126,6 @@ local function check_undo_redo_stack(player)
                         goto continue_action
                     end
 
-                    local surface = game.get_surface(action.surface_index)
-                    if not (surface and surface.valid) then
-                        Server.output_script_data(module_name .. 'Invalid surface for action.')
-                        goto continue_action
-                    end
-
                     local target = action.target
                     if not (target and target.name and target.position) then
                         Server.output_script_data(module_name .. 'Invalid target data.')
@@ -140,6 +134,12 @@ local function check_undo_redo_stack(player)
 
                     local prototype = prototypes.entity[target.name]
                     if prototype and ignored_entity_types[prototype.type] then
+                        goto continue_action
+                    end
+
+                    local surface = game.get_surface(action.surface_index)
+                    if not (surface and surface.valid) then
+                        Server.output_script_data(module_name .. 'Invalid surface for action.')
                         goto continue_action
                     end
 
